@@ -4,7 +4,7 @@
 
 ## Seen
 
-A task's decision record lives only in its run's weft (`_lym/discussion/decision-record.md`): a cancelled run leaves it in the records history, and no new task takes it along.
+A task's decision record lived only in its run's weft (`_lym/discussion/decision-record.md`): a cancelled run left it in the records history, and no new task took it along.
 So when Discussion finds a task too large, or the operator decides a tapestry run should rather be split, what Discussion found is lost or must be copied out by hand.
 Several notes circled the same question (where the decision record lives, how a task is split); this note joins them.
 
@@ -15,15 +15,18 @@ Several notes circled the same question (where the decision record lives, how a 
 - Changing one's mind loses nothing: the run is cancelled, the record stays on the board, and it can be split into discussed tasks or made a project.
 - lym itself writes the record field, at Discussion's approval and at each `lym loom decision add`, so the field is exempt from the lock on a claimed entry.
   That lock exists only so the orch does not change a task's text after its agents have read it; a record written by lym is not that.
-- Split out (2026-11-03): storing the record and the flag is task `decision-record-on-board`; the block, `motif` and `arras` are task `shed-sub-run-block`; skipping Discussion for a discussed entry is a gate check on that block, a follow-up waiting on both.
+- Built (2026-11-03): task `decision-record-on-board` stores the record and the flag.
+  The record is the file `decision-<slug>.md` at the Bolt root beside `board.json`, which carries only a `discussed` boolean; `lym board get` shows the flag and `--record` prints the record; `lym loom decision store` re-copies it by hand.
+  Runs already past Discussion are not backfilled, and approval inside a sub-run block stores no record until the gate follow-up.
+- Built (2026-11-03): task `shed-sub-run-block` adds the block row, the recipe `motif` (tapestry's Discussion rows) and a trial recipe `arras` (`motif` through a block, then tapestry's rows from Drift-Baseline on).
+- Still open: skipping Discussion for a discussed entry, the gate check on that block, now the running task `tapestry-motif-block`.
 
 ## Discussion as a run of its own (operator, 2026-11-03)
 
 How a task is best cut into smaller tasks is known only once its Discussion is done, so the split comes after Discussion, not before.
 
 - A Discussion-only run, the recipe `motif` (operator, 2026-11-03: the motif is the design decided before the weaving; `cartoon`, the drawing the weaver follows, is kept for a later Plan block), interactive or not, runs Discussion-Write and its review and nothing else, then stores the record and flags the entry discussed, as the core above says.
-- It runs beside today's courses as an experiment; tapestry without it is unchanged.
-- Discussion-Write and its review are defined once (operator, 2026-11-03): `motif` is tapestry's Discussion segment as a recipe of its own, and the recipe `arras` beside tapestry runs it through the sub-run block of note `shed-sub-run-block` when the entry is not discussed, passing on at once when it is, with the record read from Bolt into `_lym/discussion`.
+  The recipe exists; the running task `tapestry-motif-block` has tapestry run it as a block, removes `arras`, and leaves `motif` runnable alone.
 - A discussed entry then goes one of two ways, chosen after its Discussion:
   1. Tapestry from Plan, skipping Discussion-Write: Plan-Write and Webster as today.
   2. The part split: the record's scope is cut into darn tasks with contracts and `depends_on`, which run independently, each a task of its own.
@@ -45,7 +48,7 @@ How a task is best cut into smaller tasks is known only once its Discussion is d
 
 ## Open
 
-- Where the records live: in `board.json`, or in a file of their own in the Bolt checkout beside it with the same entry-level replay, since a record is often 10–30 KB.
 - A split record's format: each part must still pass the discussion check.
 - Whether the old run's commits, if any, are kept when a run is cancelled for a split.
 - `stitch`: contract precision, how large the whole-task review's fixes may be, and how often the choice between `stitch` and tapestry before the run is right.
+- Settled (2026-11-03): the records live in a file of their own beside `board.json`, not in it.
