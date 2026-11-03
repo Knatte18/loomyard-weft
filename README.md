@@ -38,7 +38,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Owner `neve`
 
-### Tasks (7)
+### Tasks (8)
 
 Concrete and claimable; only a task can run.
 
@@ -54,11 +54,13 @@ Held by a run; its scope is locked until the run ends.
 | T5 | **Preflight refuses lym own state files under _lym**<br>• Commit or exempt every file lym writes under _lym on a stop path, such as go-settle.jsonl | [`preflight-clean-skips-lym-state`](design-preflight-clean-skips-lym-state.md) | darn · solid | Code-Burler-Fix | neve | 28m<br>27m | preflight, shed |
 | T6 | **config reconcile never migrates profiles.yaml, so a hub seeded before the loom-to-tapestry rename stops tapestry runs at Seed-Child** | [`reconcile-migrates-profiles`](design-reconcile-migrates-profiles.md) | darn · solid | Darn-Write | neve | 12m<br>12m | reconcile, profiles, config |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T4 | **Drift scope settable in a task's run_settings; Drift-Baseline agent only when unset** | [`drift-scope-in-run-settings`](design-drift-scope-in-run-settings.md) | darn · solid |  | 0m<br>0m | drift, config |
 
 #### Layer A (2)
 
@@ -69,7 +71,7 @@ Waits only on Running, Ready or Draft entries.
 | T7 | **fabric remove deletes the whole worktree directory, ignored files included** | [`fabric-remove-ignored-files`](design-fabric-remove-ignored-files.md) | darn · solid | T3 | 1h<br>1h | fabric |
 | T8 | **Batten treats a stray non-worktree directory as a gone pair, and a beam landing accepts its own beam mark** | [`batten-stray-dir-and-beam-mark`](design-batten-stray-dir-and-beam-mark.md) | darn · solid | T3 | 1h<br>1h | batten, pawl |
 
-### Notes (42)
+### Notes (41)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -112,7 +114,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 11d<br>5d | burler, claude |
 | E24 |  | **A status-bar button asks for a value, so an agent opened from it gets a name**<br>• Button entries take ask, filling {answer}; the agent button asks for the strand name, and term becomes terminal | [`button-ask-name`](design-button-ask-name.md) | 1d<br>1d | reed, config |
 
-#### Features (18)
+#### Features (17)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -133,4 +135,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 1h<br>1h | shuttle, codex, loom |
 | F16 |  | **Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | 12m<br>12m | drift, shed |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>1d | burler, shed, orch, quarry, report |
-| F18 |  | **Drift scope settable in a task's run_settings; Drift-Baseline agent only when unset** | [`drift-scope-in-run-settings`](design-drift-scope-in-run-settings.md) | 0m<br>0m | drift, config |
