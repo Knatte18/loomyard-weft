@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -34,6 +34,51 @@
       "output": "",
       "at": "2026-11-03T14:49:12Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/beam-after-motif/_lym/landing/summary.md",
+      "at": "2026-11-03T15:10:34Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-03T14:53:41.093200712Z",
+          "end": "2026-11-03T14:53:41.111476122Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-03T15:00:40.189254629Z",
+          "end": "2026-11-03T15:00:40.23297676Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-03T14:53:41.239437672Z",
+          "end": "2026-11-03T15:00:23.551920349Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-03T15:00:24.069796868Z",
+          "end": "2026-11-03T15:00:40.126933443Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-03T15:00:40.362715284Z",
+          "end": "2026-11-03T15:09:43.879717887Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-03T15:09:43.954270569Z",
+          "end": "2026-11-03T15:09:43.955703489Z"
+        }
+      ]
     }
   ],
   "product": {
