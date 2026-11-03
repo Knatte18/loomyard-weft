@@ -6,7 +6,7 @@
      the engine fills the parent and edit directives, and BaselineTable fills the rest.
      scope_note is the only optional marker: it is empty until a scope is recorded, and then says so.
      There are no conditionals anywhere in this file.
-lym-stencil: sha256=4d8b3205355ff23f82e0897aeaf8679f7adcc0ce710c6895cb8f8c9a676e870d build=93eaaa45e651200ba26b1c4e7ff552726aa3bff2 time=2026-11-03T08:50:13Z -->
+lym-stencil: sha256=ba37212cee666b6830a61c0d1a0f1b470060243de22dc032fb29cf2242aaa1aa build=4cb1c4b1bc75b53d7bce750e8671b0dbb679c14f time=2026-11-03T17:09:42Z -->
 
 # Drift baseline — scope the regression of this task
 
@@ -33,9 +33,12 @@ When none does, or the task touches no code the suite runs, such as documentatio
 
 Otherwise choose the scope that fits what the task changes:
 
-- `off` for a task the suite cannot reach, as above, or one that changes the model's behavior on purpose, so a comparison against the old behavior would only report the intended change.
-- `partial` for a task that changes some behavior on purpose; name each test that will drift totally with `--skip <test>`, and leave the rest in the compare.
-- `full` for a pure refactoring, where nothing may drift.
+- `off` for a task the suite cannot reach, as above.
+- `full` for every task the suite reaches, a pure refactoring and a task that changes behavior on purpose alike.
+  Intended drift stays in the compare: the verify agent accepts each test that drifts as you expect with a reason, and any other line that moves in the same test still shows as a regression.
+- `partial` only for a task that makes some tests meaningless or nondeterministic, such as a test of a feature the task removes or one whose output the task makes vary from run to run; name each such test with `--skip <test>`, and leave the rest in the compare.
+
+Never skip a test because the task changes its output on purpose: a skipped test is never compared, so a regression in it goes unseen.
 
 ## Step 3 — Record the scope
 
@@ -46,7 +49,8 @@ The verb refuses a second call, so call it once: when it refuses because a scope
 ## Step 4 — Write the baseline report
 
 Write your reasoning and the drift you expect, freeform, to `{{.baseline_path}}`.
-Name the tests you expect to drift and why, so the agent that judges the compare later can tell intended drift from a regression.
+Name each test you expect to drift, the lines or values in it that will change and why, and say that every other line of it must stay as it is, so the agent that judges the compare later accepts the intended drift with a reason and treats any other drift as a regression.
+Name each skipped test and why it is skipped.
 When the scope was already recorded, write the report against that scope.
 
 Then end your turn.
