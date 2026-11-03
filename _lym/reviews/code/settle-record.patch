@@ -1,0 +1,987 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index a8f2d49a..2853a9f2 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -63,7 +63,7 @@
+ - `PATTERN-agent-messaging` — Messaging another session from an agent: only through creel, never an engine's own tool, bar a fork addressed in-session under ForkSubagents. (test)
+ - `PATTERN-shuttle-provider-seam` — Touching a provider or shuttle run: specifics only under `internal/shuttleengine/<engine>`, model-specs via `NewModelChoice`, a strand stopped via the stop verb, a negative finish after `allOutputFilesExist`. (test) — [background](pattern/PATTERN-shuttle-provider-seam.md)
+ - `PATTERN-interactive-spawn` — Spawning an agent: an interactive tmux session driven through reed, never headless `claude` with `-p` or `--print`. (test) — [background](pattern/PATTERN-interactive-spawn.md)
+-- `PATTERN-pane-text-injection` — Typing into an agent pane: reed's guarded paste-submit, an interrupt key only via shuttle's guards, a covered session held; the orch pane and creel journal only via creel. (test) — [background](pattern/PATTERN-pane-text-injection.md)
++- `PATTERN-pane-text-injection` — Typing into an agent pane: reed's guarded paste-submit, an interrupt key only via shuttle's guards, the guarded picker close and dismissal included, a covered session held; the orch pane and creel journal only via creel. (test) — [background](pattern/PATTERN-pane-text-injection.md)
+ - `PATTERN-agent-name` — Forming, parsing or matching an agent name: only `internal/agentname`, a strand's full name formed once by reed; a spawned role is its module's constant.
+ - `PATTERN-wait-mark-display-only` — Marking a pane waiting: only reed's `SetWaitMark`; no Go decision reads `@lym_wait` or `@lym_wait_start`.
+ - `PATTERN-shell-guard-table` — Guarding a shell command or building a pane-shell string: only `internal/shellguard`'s table, every engine rendering every row, and `internal/shell`, importing only stdlib.
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index 5da94112..503bb19a 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -233,6 +233,8 @@
+ // StrayInput is the judgment beside that rule: a box holding exactly one character that is neither a letter, a digit nor whitespace, with no running turn on screen, is a stray-character candidate and the character is returned; the lone `%` is never one.
+ // IdleSession, StrayInput and RunningTurn share one running-turn reading, the "esc to interrupt" hint matched over the whole capture.
+ // RewindPicker reads the rewind picker: the picker's subtitle is on screen and no input box is, so a transcript quoting the subtitle above a live box is not the picker.
++// DismissiblePicker reads the mid-session pickers in its table, today the autocompact picker ("We recommend compacting earlier" with "esc not now"), the same way: every phrase of the picker on screen and no input box.
++// It answers one Escape, which closes the picker and keeps the current setting.
+ // InterruptSettle is 2 seconds, assuming Claude Code's double-Esc window is shorter, so two keys lym sends never read as a double Esc.
+ //
+ // Beside the clear sequence (`/clear`) and the compact sequence (`/compact`), the engine realizes skill loading, in skillload.go.
+diff --git a/internal/shuttleengine/claudeengine/session.go b/internal/shuttleengine/claudeengine/session.go
+index e2c27ac7..83e5f8d6 100644
+--- a/internal/shuttleengine/claudeengine/session.go
++++ b/internal/shuttleengine/claudeengine/session.go
+@@ -6,6 +6,7 @@ package claudeengine
+ 
+ import (
+ 	"regexp"
++	"slices"
+ 	"strconv"
+ 	"strings"
+ 	"time"
+@@ -23,8 +24,9 @@ var (
+ 	_ shuttleengine.StrayInputReader = (*Claude)(nil)
+ 	_ shuttleengine.TextPaster       = (*Claude)(nil)
+ 
+-	_ shuttleengine.InterruptGuard     = (*Claude)(nil)
+-	_ shuttleengine.RewindPickerReader = (*Claude)(nil)
++	_ shuttleengine.InterruptGuard          = (*Claude)(nil)
++	_ shuttleengine.RewindPickerReader      = (*Claude)(nil)
++	_ shuttleengine.DismissiblePickerReader = (*Claude)(nil)
+ )
+ 
+ // pastePlaceholderShape matches the whole input-box reading Claude Code shows for a collapsed paste: `[Pasted text #<n>]` or `[Pasted text #<n> +<m> lines]`.
+@@ -159,6 +161,40 @@ func (c *Claude) RewindPicker(capture string) bool {
+ 	return !boxShown
+ }
+ 
++// escapeKey is the tmux name of the Escape key.
++const escapeKey = "Escape"
++
++// dismissiblePicker is a Claude Code mid-session picker that Escape closes while keeping the current setting.
++type dismissiblePicker struct {
++	// name names the picker in logs and hold reasons.
++	name string
++	// needles are phrases in normalizeCapture form that must all be on screen.
++	needles []string
++}
++
++// dismissiblePickers are the mid-session pickers DismissiblePicker recognises.
++// The autocompact picker asks whether to autocompact earlier, and its Escape answers "not now".
++var dismissiblePickers = []dismissiblePicker{
++	{name: "autocompact", needles: []string{"werecommendcompactingearlier", "escnotnow"}},
++}
++
++// DismissiblePicker reports whether capture shows one of Claude Code's known mid-session pickers in place of the input box, and returns its name and one Escape, which closes it and keeps the current setting.
++// Every needle of the picker must be on screen and the input box must not, so a transcript quoting the wording above a live box is not the picker.
++// Bound: a release that rewords the picker leaves it unrecognised.
++func (c *Claude) DismissiblePicker(capture string) (name string, keys []shuttleengine.PaneInput, ok bool) {
++	if _, boxShown := inputBoxInterior(capture); boxShown {
++		return "", nil, false
++	}
++	normalized := normalizeCapture(capture)
++	for _, picker := range dismissiblePickers {
++		missing := slices.ContainsFunc(picker.needles, func(needle string) bool { return !strings.Contains(normalized, needle) })
++		if !missing {
++			return picker.name, []shuttleengine.PaneInput{{Key: escapeKey}}, true
++		}
++	}
++	return "", nil, false
++}
++
+ // InterruptSettle returns how long after an interrupt key the pane is left alone before it is read again.
+ // It exceeds Claude Code's double-Esc window, so two of lym's keys never read as a double Esc.
+ func (c *Claude) InterruptSettle() time.Duration {
+diff --git a/internal/shuttleengine/claudeengine/session_test.go b/internal/shuttleengine/claudeengine/session_test.go
+index 3c4e69c6..2f640075 100644
+--- a/internal/shuttleengine/claudeengine/session_test.go
++++ b/internal/shuttleengine/claudeengine/session_test.go
+@@ -138,6 +138,40 @@ func TestInterruptGuardReadings(t *testing.T) {
+ 	}
+ }
+ 
++func TestDismissiblePicker(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	rule := "────────────────────────────────"
++	tests := []struct {
++		name     string
++		capture  string
++		wantName string
++		wantKeys []shuttleengine.PaneInput
++		wantOK   bool
++	}{
++		{"autocompact picker", readPaneFixture(t, "pane-autocompact-picker.txt"), "autocompact", []shuttleengine.PaneInput{{Key: "Escape"}}, true},
++		{
++			name:    "transcript quoting the picker above an empty box",
++			capture: "● it read: We recommend compacting earlier, esc not now\n\n" + rule + "\n❯ \n" + rule + "\n  ? for shortcuts\n",
++		},
++		{name: "one phrase alone", capture: "   We recommend compacting earlier\n\n   ❯ 1. Autocompact at 400k\n"},
++		{name: "rewind picker", capture: readPaneFixture(t, "pane-rewind-picker.txt")},
++		{name: "idle empty box", capture: readPaneFixture(t, "pane-idle-empty.txt")},
++	}
++	c := New()
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			name, keys, ok := c.DismissiblePicker(tt.capture)
++			if name != tt.wantName || ok != tt.wantOK || !reflect.DeepEqual(keys, tt.wantKeys) {
++				t.Errorf("DismissiblePicker = (%q, %v, %v); want (%q, %v, %v)", name, keys, ok, tt.wantName, tt.wantKeys, tt.wantOK)
++			}
++		})
++	}
++}
++
+ func TestInputBoxText(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/shuttleengine/claudeengine/startup.go b/internal/shuttleengine/claudeengine/startup.go
+index 214ea5f9..2f7b100f 100644
+--- a/internal/shuttleengine/claudeengine/startup.go
++++ b/internal/shuttleengine/claudeengine/startup.go
+@@ -220,7 +220,7 @@ func normalizeCapture(capture string) string {
+ // InterruptSequence returns the key choreography that interrupts a claude turn: a single Escape key
+ // press.
+ func (c *Claude) InterruptSequence() []shuttleengine.PaneInput {
+-	return []shuttleengine.PaneInput{{Key: "Escape"}}
++	return []shuttleengine.PaneInput{{Key: escapeKey}}
+ }
+ 
+ // gateAcceptNeedles are whitespace-stripped, lowercased phrases identifying a gate's ACCEPTING
+diff --git a/internal/shuttleengine/claudeengine/testdata/pane-autocompact-picker.txt b/internal/shuttleengine/claudeengine/testdata/pane-autocompact-picker.txt
+new file mode 100644
+index 00000000..5199b3d2
+--- /dev/null
++++ b/internal/shuttleengine/claudeengine/testdata/pane-autocompact-picker.txt
+@@ -0,0 +1,13 @@
++● Fixed the comment wrap and committed.
++
++✻ Crunched for 12s · done 14:02
++
++────────────────────────────────────────────────────
++   We recommend compacting earlier
++
++   Long sessions work better when autocompact runs before the context is full.
++
++   ❯ 1. Autocompact at 400k
++     2. Keep the current setting
++
++   Enter to confirm · esc not now
+diff --git a/internal/shuttleengine/conditionedsend.go b/internal/shuttleengine/conditionedsend.go
+index 497e9bd7..fe9f412f 100644
+--- a/internal/shuttleengine/conditionedsend.go
++++ b/internal/shuttleengine/conditionedsend.go
+@@ -68,7 +68,7 @@ func conditionedReading(sc sendContext, want SendCondition) error {
+ 		return fmt.Errorf("%w: strand %q reads %s (%s), want %s (%s)", ErrSendConditionUnmet, sc.guid, state.Name, state.Cause, want.State, want.Cause)
+ 	}
+ 	if reading := judgeReadiness(state, false, readBox(sc.engine, capture)); !reading.ready {
+-		return &SessionBusyError{Reason: reading.reason, Draft: reading.draft != "", Err: fmt.Errorf("%w: strand %q: %s; retry once the session can take input", ErrSessionBusy, sc.guid, reading.reason)}
++		return &SessionBusyError{Reason: reading.reason, Draft: reading.draft != "", NoInputBox: reading.reason == readinessReasonNoInputBox, Err: fmt.Errorf("%w: strand %q: %s; retry once the session can take input", ErrSessionBusy, sc.guid, reading.reason)}
+ 	}
+ 	if hold := operatorActivityHold(sc.reed, sc.guid, sc.activityFailures); hold != "" {
+ 		return &SessionBusyError{Reason: hold, Err: fmt.Errorf("%w: strand %q: %s; retry once the operator is idle", ErrSessionBusy, sc.guid, hold)}
+diff --git a/internal/shuttleengine/conditionedsend_test.go b/internal/shuttleengine/conditionedsend_test.go
+index 557451ea..dbd5cb0b 100644
+--- a/internal/shuttleengine/conditionedsend_test.go
++++ b/internal/shuttleengine/conditionedsend_test.go
+@@ -56,6 +56,7 @@ func TestRunner_SendConditioned(t *testing.T) {
+ 		wantIs          error
+ 		wantBusyError   bool
+ 		wantDraft       bool
++		wantNoInputBox  bool
+ 		wantTurnStarted bool
+ 		// wantTyped is whether the line reached the pane.
+ 		wantTyped bool
+@@ -70,7 +71,7 @@ func TestRunner_SendConditioned(t *testing.T) {
+ 		{name: "draft", events: stalled, box: "half a thought", wantBusyError: true, wantDraft: true, wantIs: ErrSessionBusy, wantBox: "half a thought"},
+ 		{name: "lone stray character", events: stalled, box: "x", wantBusyError: true, wantDraft: true, wantIs: ErrSessionBusy, wantBox: "x"},
+ 		{name: "operator active", events: stalled, active: true, wantBusyError: true, wantIs: ErrSessionBusy},
+-		{name: "no input box", events: stalled, frame: "IDLE\nsome menu", wantBusyError: true, wantIs: ErrSessionBusy},
++		{name: "no input box", events: stalled, frame: "IDLE\nsome menu", wantBusyError: true, wantNoInputBox: true, wantIs: ErrSessionBusy},
+ 		{name: "rewind picker", events: stalled, frame: "REWIND-PICKER\n1. an entry", wantIs: ErrRewindPickerOpen},
+ 		{name: "not landed", events: stalled, swallowEnter: true, wantIs: ErrSubmissionNotLanded, wantTyped: true, wantBox: line, wantSubmitKeys: true},
+ 		{name: "pending record of an earlier send", events: stalled, pasteEngine: true, startsTurn: true, wantTurnStarted: true, wantTyped: true},
+@@ -131,8 +132,8 @@ func TestRunner_SendConditioned(t *testing.T) {
+ 				t.Fatalf("SendConditioned() error = %v, want it to wrap %v", err, tt.wantIs)
+ 			}
+ 			var busy *SessionBusyError
+-			if got := errors.As(err, &busy); got != tt.wantBusyError || (got && busy.Draft != tt.wantDraft) {
+-				t.Errorf("SendConditioned() error = %v, want a *SessionBusyError = %v with Draft %v", err, tt.wantBusyError, tt.wantDraft)
++			if got := errors.As(err, &busy); got != tt.wantBusyError || (got && (busy.Draft != tt.wantDraft || busy.NoInputBox != tt.wantNoInputBox)) {
++				t.Errorf("SendConditioned() error = %v, want a *SessionBusyError = %v with Draft %v and NoInputBox %v", err, tt.wantBusyError, tt.wantDraft, tt.wantNoInputBox)
+ 			}
+ 			if turnStarted != tt.wantTurnStarted {
+ 				t.Errorf("turnStarted = %v, want %v", turnStarted, tt.wantTurnStarted)
+diff --git a/internal/shuttleengine/dismisspicker_test.go b/internal/shuttleengine/dismisspicker_test.go
+new file mode 100644
+index 00000000..14beb1b8
+--- /dev/null
++++ b/internal/shuttleengine/dismisspicker_test.go
+@@ -0,0 +1,63 @@
++// dismisspicker_test.go covers the guards and the settle of dismissPicker over a guarded fake engine and a fake pane.
++
++package shuttleengine
++
++import (
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestDismissPicker_Guards pins that a picker shown over a running turn gets no key and records no try, so a later poll can try again,
++// and that a picker over a quiet pane gets one Escape, records the try and leaves the pane alone for the engine's interrupt settle.
++func TestDismissPicker_Guards(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const settle = 2 * time.Second
++	tests := []struct {
++		name        string
++		capture     string
++		wantHandled bool
++		wantEscapes int
++		wantSlept   time.Duration
++	}{
++		{name: "a picker over a running turn", capture: "COMPACT-PICKER RUNNING"},
++		{name: "a picker over a quiet pane", capture: "COMPACT-PICKER", wantHandled: true, wantEscapes: 1, wantSlept: settle},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			engine := &guardedDismissPickerEngine{
++				dismissPickerEngine: dismissPickerEngine{readinessEngine: readinessEngine{idleEngine: idleEngine{sessionFakeEngine: sessionFakeEngine{liveness: LivenessAlive}}}},
++				settle:              settle,
++			}
++			rig := newGateRig(t, Config{SendReadyTimeoutS: 1}, "STOP:turn1\n", withGateEngine(engine))
++			rig.reed.picker = tt.capture
++			picker := &pickerDismissal{}
++
++			_, handled := dismissPicker(rig.run.newSendContext(), engine, &turnStartHold{}, &strayClear{}, picker, tt.capture)
++
++			if handled != tt.wantHandled {
++				t.Errorf("handled = %v, want %v", handled, tt.wantHandled)
++			}
++			if picker.tried != tt.wantHandled {
++				t.Errorf("picker.tried = %v, want %v", picker.tried, tt.wantHandled)
++			}
++			escapes := 0
++			for _, call := range rig.reed.SendKeyCalls {
++				if call.Key == "Escape" {
++					escapes++
++				}
++			}
++			if escapes != tt.wantEscapes {
++				t.Errorf("Escape keys = %d, want %d", escapes, tt.wantEscapes)
++			}
++			if slept := rig.clock.Now().Sub(rig.start); slept != tt.wantSlept {
++				t.Errorf("clock advanced %v, want %v", slept, tt.wantSlept)
++			}
++		})
++	}
++}
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 6a6c5121..5bd8d203 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -339,6 +339,10 @@
+ // The close waits the engine's interrupt settle, captures the pane once more and sends nothing further, so it never selects an entry.
+ // It always fails the operation with ErrRewindPickerOpen, which never wraps ErrSessionBusy, so nothing is typed or interrupted after it.
+ // A verified send whose picker capture fails skips the close when the idle wait's polls follow, and fails closed when no polls do.
++// During a verified send's idle wait, a held reading whose capture an engine with DismissiblePickerReader reads as a known mid-session picker gets that picker's keys, at most once per send.
++// The keys keep the provider's current setting and go out only when the operator was not active in the quiet window and the engine's InterruptGuard, where it has one, reads no running turn.
++// The pane then settles for the engine's interrupt settle and the wait reads it again, so the send goes on once the input box is back.
++// A send still held by a pane showing no input box fails with a SessionBusyError whose NoInputBox is set.
+ // Runner.InterruptRestoring is the interrupt for a caller that must leave the box empty: its key goes only through that same guarded interrupt, and it then clears the prompt the provider restores into the box.
+ // For an engine with RestoredPromptClearer and InputBoxReader, it reads the box before the key, and only a box read empty then is cleared after it.
+ // After the engine's interrupt settle it reads the box, and a box still empty gets one more settle and one more read.
+@@ -407,6 +411,7 @@
+ // A failed outcome carries the failing entry's findings text on GateOutcome.Findings beside that terminal reason, because finalize removes the findings file with the run directory.
+ // A failed entry with budget remaining is re-prompted with one default line naming the findings file, unless the entry sets GateEntry.Reprompt, whose rendered line is sent instead.
+ // Every send validates its text, so a renderer returning several lines, or an empty or whitespace-only line, fails the send and ends the loop with the attempts spent so far.
++// A re-prompt held by a busy session spends no attempt and is re-sent on a later tick, but one held maxNoInputBoxReprompts times in a row by a pane showing no input box ends the loop with the attempts spent so far, so a picker shuttle cannot dismiss ends the wait instead of holding the run until its deadline.
+ // A pending answer holds the run at a turn boundary without re-prompting or counting a failure:
+ // the wait loop sends the entry's carried text once, keeps polling, and re-evaluates with no new arrival while the writer is idle at most once per gateRecheckEvery.
+ // The deadline and liveness checks keep running, and a deadline or liveness finalize evaluates each entry's optional Final closure in place of Gate, reporting the entry waiting.
+diff --git a/internal/shuttleengine/engine.go b/internal/shuttleengine/engine.go
+index d5e8d6bc..34b52e7f 100644
+--- a/internal/shuttleengine/engine.go
++++ b/internal/shuttleengine/engine.go
+@@ -391,6 +391,12 @@ type RewindPickerReader interface {
+ 	RewindPicker(capture string) bool
+ }
+ 
++// DismissiblePickerReader is an optional capability beside Engine: the provider's reading of a known mid-session picker that covers its input box and that the provider's own keys close while keeping the current setting.
++type DismissiblePickerReader interface {
++	// DismissiblePicker reports whether capture shows such a picker in place of the input box, and returns the picker's name and the keys that close it.
++	DismissiblePicker(capture string) (name string, keys []PaneInput, ok bool)
++}
++
+ // StyledBoxReader is an optional capability beside Engine: the provider's way of turning a styled pane capture into the plain capture its box readings take.
+ type StyledBoxReader interface {
+ 	// PlainBoxCapture takes a capture reed's CapturePaneStyled returned and answers the plain capture:
+diff --git a/internal/shuttleengine/fakes_test.go b/internal/shuttleengine/fakes_test.go
+index a8da8fc7..471da49c 100644
+--- a/internal/shuttleengine/fakes_test.go
++++ b/internal/shuttleengine/fakes_test.go
+@@ -993,11 +993,39 @@ func (e *pickerOnlyEngine) RewindPicker(capture string) bool {
+ 	return strings.Contains(capture, "REWIND-PICKER")
+ }
+ 
++// dismissPickerEngine is readinessEngine plus the DismissiblePickerReader capability: a capture shows the picker when it contains "COMPACT-PICKER", and Escape closes it.
++type dismissPickerEngine struct {
++	readinessEngine
++}
++
++func (e *dismissPickerEngine) DismissiblePicker(capture string) (string, []PaneInput, bool) {
++	if !strings.Contains(capture, "COMPACT-PICKER") {
++		return "", nil, false
++	}
++	return "compact", []PaneInput{{Key: "Escape"}}, true
++}
++
+ var (
+-	_ RewindPickerReader = (*pickerEngine)(nil)
+-	_ RewindPickerReader = (*pickerOnlyEngine)(nil)
++	_ RewindPickerReader      = (*pickerEngine)(nil)
++	_ RewindPickerReader      = (*pickerOnlyEngine)(nil)
++	_ DismissiblePickerReader = (*dismissPickerEngine)(nil)
+ )
+ 
++// guardedDismissPickerEngine is dismissPickerEngine plus the InterruptGuard capability: a capture shows a running turn when it contains "RUNNING", and the interrupt settle is settle.
++type guardedDismissPickerEngine struct {
++	dismissPickerEngine
++
++	settle time.Duration
++}
++
++func (e *guardedDismissPickerEngine) RunningTurn(capture string) bool {
++	return strings.Contains(capture, "RUNNING")
++}
++
++func (e *guardedDismissPickerEngine) InterruptSettle() time.Duration { return e.settle }
++
++var _ InterruptGuard = (*guardedDismissPickerEngine)(nil)
++
+ // idleReed is a fakeReed whose pane reads busyFrame until idleAt on its clock and "IDLE" after, followed by the last text typed.
+ // A zero idleAt reads idle at once, and a zero failAt never fails a capture.
+ // From failAt on, every capture fails.
+@@ -1043,6 +1071,7 @@ var _ ReedOps = (*idleReed)(nil)
+ // tuiReed is a fakeReed standing in for a Claude pane over time on its clock.
+ // The pane reads busy until busyUntil and "IDLE" after, then the history of submitted texts and the input box after a caret.
+ // Typed text lands in the box, C-u empties it, and Enter submits the box into the history once swallowEnterUntil has passed.
++// While picker is set the pane shows it alone, and Escape clears it unless pickerSticky is set.
+ type tuiReed struct {
+ 	*fakeReed
+ 
+@@ -1050,6 +1079,9 @@ type tuiReed struct {
+ 	busyUntil         time.Time
+ 	swallowEnterUntil time.Time
+ 
++	picker       string
++	pickerSticky bool
++
+ 	box     string
+ 	history []string
+ 	// typedAt is the clock time of the first SendText; zero while nothing was typed.
+@@ -1101,6 +1133,10 @@ func (r *tuiReed) SendKey(guid, key string) error {
+ 		if !r.clock.Now().Before(r.swallowEnterUntil) {
+ 			r.submitBox()
+ 		}
++	case "Escape":
++		if !r.pickerSticky {
++			r.picker = ""
++		}
+ 	}
+ 	return r.fakeReed.SendKey(guid, key)
+ }
+@@ -1133,6 +1169,9 @@ func (r *tuiReed) CapturePaneStyled(guid string) (string, error) {
+ 
+ // frame draws the pane with drawnSuggestion after the caret while the box is empty.
+ func (r *tuiReed) frame(drawnSuggestion string) string {
++	if r.picker != "" {
++		return r.picker
++	}
+ 	box := r.box
+ 	if box == "" {
+ 		box = drawnSuggestion
+diff --git a/internal/shuttleengine/gate_noinputbox_test.go b/internal/shuttleengine/gate_noinputbox_test.go
+new file mode 100644
+index 00000000..0d89f1ab
+--- /dev/null
++++ b/internal/shuttleengine/gate_noinputbox_test.go
+@@ -0,0 +1,126 @@
++// gate_noinputbox_test.go covers how the gated wait loop counts re-prompt sends held by a pane with no input box:
++// only holds in a row count, and a hold of another kind, a new arrival or a turn start after the boundary restarts the count, as does a delivered re-prompt followed by an arrival.
++
++package shuttleengine
++
++import (
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// noInputBoxStep is one change a test makes to the pane and the events file once the clock reaches at.
++// picker replaces the pane's picker, so an empty one shows the input box, and line is appended to the events file when non-empty.
++type noInputBoxStep struct {
++	at     time.Duration
++	picker string
++	line   string
++}
++
++// TestGate_NoInputBoxBoundCountsHoldsInARow pins that maxNoInputBoxReprompts counts consecutive holds by a pane with no input box.
++// A hold of another kind, a new arrival and a turn start after the boundary each restart the count.
++// A delivered re-prompt followed by an arrival is one row: the two resets cover for each other, so the row pins them together.
++// It is not parallel: it captures the process-wide logger.
++func TestGate_NoInputBoxBoundCountsHoldsInARow(t *testing.T) {
++	tiergate.Require(t, 0)
++	const (
++		menu      = "some menu"
++		boundWarn = "re-prompt held by a pane with no input box past the bound"
++	)
++
++	// A send waits out its one-second idle window and the loop sleeps one second between ticks, so a send starts every two seconds and ends one second later.
++	var alternating []noInputBoxStep
++	for at := 2 * time.Second; at < 30*time.Second; at += 2 * time.Second {
++		picker := ""
++		if (at/(2*time.Second))%2 == 0 {
++			picker = menu
++		}
++		alternating = append(alternating, noInputBoxStep{at: at, picker: picker})
++	}
++
++	tests := []struct {
++		name  string
++		steps []noInputBoxStep
++		// interrupted makes the engine report any turn start interrupted.
++		interrupted    bool
++		active         bool
++		wantSends      int
++		wantAttempts   int
++		wantEndBefore  time.Duration
++		wantEndAtLeast time.Duration
++		wantBoundWarn  bool
++	}{
++		{
++			name: "a hold of another kind between no-input-box holds restarts the count", steps: alternating, active: true,
++			wantEndAtLeast: 30 * time.Second,
++		},
++		{
++			name:  "a new arrival restarts the count",
++			steps: []noInputBoxStep{{at: 8 * time.Second, picker: menu, line: "STOP:turn2"}},
++			// Four holds precede the arrival at 8 s; five fresh ones end the loop at 17 s.
++			wantEndAtLeast: 14 * time.Second, wantEndBefore: 30 * time.Second, wantBoundWarn: true,
++		},
++		{
++			name:  "a delivered re-prompt followed by a new arrival restarts the count",
++			steps: []noInputBoxStep{{at: 8 * time.Second}, {at: 10 * time.Second, picker: menu, line: "STOP:turn2"}},
++			// The pane clears at 8 s and the re-prompt is delivered; the arrival at 10 s brings five fresh holds.
++			wantSends: 1, wantAttempts: 1, wantEndAtLeast: 16 * time.Second, wantEndBefore: 30 * time.Second, wantBoundWarn: true,
++		},
++		{
++			name:        "a turn start after the boundary restarts the count",
++			steps:       []noInputBoxStep{{at: 8 * time.Second, picker: menu, line: "START"}},
++			interrupted: true,
++			// Four holds precede the turn start at 8 s; the boundary it clears is restored at once, and its next hold would be the fifth without the restart.
++			wantEndAtLeast: 30 * time.Second,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			buf := logcapture.CaptureVerbose(t)
++
++			engine := &dismissPickerEngine{readinessEngine: readinessEngine{idleEngine: idleEngine{sessionFakeEngine: sessionFakeEngine{liveness: LivenessAlive}}}}
++			engine.interrupted = tt.interrupted
++			rig := newGateRig(t, Config{SendReadyTimeoutS: 1}, "STOP:turn1\n", withGateEngine(engine))
++			rig.reed.picker, rig.reed.pickerSticky = menu, true
++			rig.reed.ActiveQueue = []bool{tt.active}
++			next := 0
++			rig.clock.onSleep = func(now time.Time) {
++				for next < len(tt.steps) && now.Sub(rig.start) >= tt.steps[next].at {
++					step := tt.steps[next]
++					next++
++					rig.reed.picker = step.picker
++					if step.line != "" {
++						appendEventsLine(t, rig.eventsPath, step.line)
++					}
++				}
++			}
++
++			result, err := rig.run.Wait()
++			if err != nil {
++				t.Fatalf("Wait() error: %v", err)
++			}
++			if sends := len(rig.reed.SendTextCalls); sends != tt.wantSends {
++				t.Errorf("SendText calls = %d, want %d", sends, tt.wantSends)
++			}
++			if result.Gate == nil || result.Gate.Attempts != tt.wantAttempts {
++				t.Errorf("Gate = %+v, want %d attempts spent", result.Gate, tt.wantAttempts)
++			}
++			ended := rig.clock.Now().Sub(rig.start)
++			if tt.wantEndBefore > 0 && ended >= tt.wantEndBefore {
++				t.Errorf("ended %v after the start, want before %v", ended, tt.wantEndBefore)
++			}
++			if tt.wantEndAtLeast > 0 && ended < tt.wantEndAtLeast {
++				t.Errorf("ended %v after the start, want at least %v", ended, tt.wantEndAtLeast)
++			}
++			wantWarns := 0
++			if tt.wantBoundWarn {
++				wantWarns = 1
++			}
++			if warns := countLevelLines(buf.String(), "WARN", boundWarn); warns != wantWarns {
++				t.Errorf("bound WARN lines = %d, want %d; log: %s", warns, wantWarns, buf.String())
++			}
++		})
++	}
++}
+diff --git a/internal/shuttleengine/gate_test.go b/internal/shuttleengine/gate_test.go
+index d1b4fb86..812b183f 100644
+--- a/internal/shuttleengine/gate_test.go
++++ b/internal/shuttleengine/gate_test.go
+@@ -788,6 +788,13 @@ type gateRigSettings struct {
+ 	entry *GateEntry
+ 	// strandName is the run record's StrandName.
+ 	strandName string
++	// engine replaces the rig's tuiEngine as the run's engine when non-nil.
++	engine Engine
++}
++
++// withGateEngine runs the rig's run on engine in place of its tuiEngine.
++func withGateEngine(engine Engine) gateRigOption {
++	return func(s *gateRigSettings) { s.engine = engine }
+ }
+ 
+ // gateRigOption adjusts one setting of newGateRig.
+@@ -834,7 +841,11 @@ func newGateRig(t *testing.T, cfg Config, events string, opts ...gateRigOption)
+ 	if settings.entry != nil {
+ 		entry = *settings.entry
+ 	}
+-	rig.run = newFixture(t, rig.reed, rig.engine, withConfig(cfg)).newRun(Spec{OutputFiles: []string{outputFile}, Timeout: time.Hour},
++	var engine Engine = rig.engine
++	if settings.engine != nil {
++		engine = settings.engine
++	}
++	rig.run = newFixture(t, rig.reed, engine, withConfig(cfg)).newRun(Spec{OutputFiles: []string{outputFile}, Timeout: time.Hour},
+ 		withRunDir(runDir),
+ 		withRunState(RunState{StrandGUID: "strand-1", StrandName: settings.strandName, SessionID: "session-1", EventsPath: eventsPath}),
+ 		withRunClock(rig.clock, rig.start.Add(30*time.Second)),
+@@ -1241,3 +1252,119 @@ func TestGate_UnsentRepromptRetries(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestGate_RepromptOverPicker pins a re-prompt whose pane shows a picker in place of the input box, for an engine with the readiness reading:
++// a picker the engine knows is dismissed with its key and the re-prompt delivered;
++// a pane with no input box that the dismissal does not clear ends the loop after maxNoInputBoxReprompts held sends with no attempt spent, one key per send for a known picker, whether or not the key can be sent, and none for an unknown one;
++// and an operator active over a known picker gets no key and holds the re-prompt until the run deadline.
++// It is not parallel: it captures the process-wide logger.
++func TestGate_RepromptOverPicker(t *testing.T) {
++	tiergate.Require(t, 0)
++	const boundWarn = "re-prompt held by a pane with no input box past the bound"
++	tests := []struct {
++		name         string
++		picker       string
++		sticky       bool
++		active       bool
++		sendKeyErr   bool
++		wantSends    int
++		wantAttempts int
++		wantEscapes  int
++		// wantEndBefore bounds the clock at the end from above, from the start; zero leaves it unchecked.
++		wantEndBefore time.Duration
++		// wantEndAtLeast bounds the clock at the end from below, from the start; zero leaves it unchecked.
++		wantEndAtLeast time.Duration
++		wantBoundWarn  bool
++	}{
++		{
++			name: "a known picker is dismissed and the re-prompt delivered", picker: "COMPACT-PICKER",
++			wantSends: 1, wantAttempts: 1, wantEscapes: 1,
++		},
++		{
++			name: "a known picker its key does not close ends the loop after the bound", picker: "COMPACT-PICKER", sticky: true,
++			wantEscapes: maxNoInputBoxReprompts, wantEndBefore: 30 * time.Second, wantBoundWarn: true,
++		},
++		{
++			name: "a known picker whose key cannot be sent ends the loop after the bound", picker: "COMPACT-PICKER", sticky: true, sendKeyErr: true,
++			wantEscapes: maxNoInputBoxReprompts, wantEndBefore: 30 * time.Second, wantBoundWarn: true,
++		},
++		{
++			name: "an unknown picker ends the loop after the bound with no key", picker: "some menu", sticky: true,
++			wantEndBefore: 30 * time.Second, wantBoundWarn: true,
++		},
++		{
++			name: "an operator active over a known picker gets no key and holds until the deadline", picker: "COMPACT-PICKER", active: true,
++			wantEndAtLeast: 30 * time.Second,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			buf := logcapture.CaptureVerbose(t)
++
++			engine := &dismissPickerEngine{readinessEngine: readinessEngine{idleEngine: idleEngine{sessionFakeEngine: sessionFakeEngine{liveness: LivenessAlive}}}}
++			rig := newGateRig(t, Config{SendReadyTimeoutS: 1}, "STOP:turn1\n", withGateEngine(engine))
++			rig.reed.picker, rig.reed.pickerSticky = tt.picker, tt.sticky
++			rig.reed.ActiveQueue = []bool{tt.active}
++			if tt.sendKeyErr {
++				rig.reed.SendKeyErr = errors.New("tmux: no such pane")
++			}
++
++			result, err := rig.run.Wait()
++			if err != nil {
++				t.Fatalf("Wait() error: %v", err)
++			}
++			if sends := len(rig.reed.SendTextCalls); sends != tt.wantSends {
++				t.Errorf("SendText calls = %d, want %d", sends, tt.wantSends)
++			}
++			if result.Gate == nil || result.Gate.Attempts != tt.wantAttempts {
++				t.Errorf("Gate = %+v, want %d attempts spent", result.Gate, tt.wantAttempts)
++			}
++			escapes := 0
++			for _, call := range rig.reed.SendKeyCalls {
++				if call.Key == "Escape" {
++					escapes++
++				}
++			}
++			if escapes != tt.wantEscapes {
++				t.Errorf("Escape keys = %d, want %d", escapes, tt.wantEscapes)
++			}
++			ended := rig.clock.Now().Sub(rig.start)
++			if tt.wantEndBefore > 0 && ended >= tt.wantEndBefore {
++				t.Errorf("ended %v after the start, want before %v", ended, tt.wantEndBefore)
++			}
++			if tt.wantEndAtLeast > 0 && ended < tt.wantEndAtLeast {
++				t.Errorf("ended %v after the start, want at least %v", ended, tt.wantEndAtLeast)
++			}
++			wantWarns := 0
++			if tt.wantBoundWarn {
++				wantWarns = 1
++			}
++			if warns := countLevelLines(buf.String(), "WARN", boundWarn); warns != wantWarns {
++				t.Errorf("bound WARN lines = %d, want %d; log: %s", warns, wantWarns, buf.String())
++			}
++		})
++	}
++}
++
++// TestAwaitIdleSession_FailedDismissalKeyHoldsAsNoInputBox pins that a send held at its first poll by a dismissal key that could not be sent still reports a pane with no input box, so the gated loop counts it toward its bound.
++func TestAwaitIdleSession_FailedDismissalKeyHoldsAsNoInputBox(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	engine := &dismissPickerEngine{readinessEngine: readinessEngine{idleEngine: idleEngine{sessionFakeEngine: sessionFakeEngine{liveness: LivenessAlive}}}}
++	rig := newGateRig(t, Config{SendReadyTimeoutS: 1}, "STOP:turn1\n", withGateEngine(engine))
++	rig.reed.picker, rig.reed.pickerSticky = "COMPACT-PICKER", true
++	rig.reed.SendKeyErr = errors.New("tmux: no such pane")
++	sc := rig.run.newSendContext()
++	sc.deadline = rig.clock.Now()
++
++	err := awaitIdleSession(sc)
++
++	var busy *SessionBusyError
++	if !errors.As(err, &busy) || !busy.NoInputBox {
++		t.Fatalf("awaitIdleSession() error = %v, want a *SessionBusyError with NoInputBox set", err)
++	}
++	if keys := rig.reed.SendKeyCalls; len(keys) != 1 || keys[0].Key != "Escape" {
++		t.Errorf("keys = %+v, want one Escape", keys)
++	}
++}
+diff --git a/internal/shuttleengine/interruptguard.go b/internal/shuttleengine/interruptguard.go
+index 04b1c4bd..4c9315cd 100644
+--- a/internal/shuttleengine/interruptguard.go
++++ b/internal/shuttleengine/interruptguard.go
+@@ -1,4 +1,4 @@
+-// interruptguard.go holds the guarded interrupt and the guarded rewind-picker close: every interrupt key shuttle sends into a pane passes the pane guard here.
++// interruptguard.go holds the guarded interrupt and the guarded rewind-picker close: every interrupt key shuttle sends into a pane passes the pane guard here, bar the guarded dismissal of a known mid-session picker during a send's idle wait.
+ package shuttleengine
+ 
+ import (
+diff --git a/internal/shuttleengine/run.go b/internal/shuttleengine/run.go
+index 7ec7cf80..b5e2b084 100644
+--- a/internal/shuttleengine/run.go
++++ b/internal/shuttleengine/run.go
+@@ -446,6 +446,8 @@ type Run struct {
+ 	// unsentReprompt marks that a re-prompt send at this boundary failed busy or unlanded; while it is set the loop re-sends the re-prompt on a later tick with no new writer event.
+ 	// It is cleared by a successful re-prompt, a new arrival and a writer turn that starts meanwhile.
+ 	unsentReprompt bool
++	// noBoxReprompts counts the consecutive re-prompt sends held by a pane showing no input box; it is cleared wherever unsentReprompt is, and by a held send of any other kind.
++	noBoxReprompts int
+ 	// lastGateEvalAt is the run clock's time of the last gate evaluation at a boundary, zero before the first; the loop re-reads a pending entry no sooner than gateRecheckEvery after it.
+ 	lastGateEvalAt time.Time
+ 
+diff --git a/internal/shuttleengine/send.go b/internal/shuttleengine/send.go
+index cd677693..3edd3b23 100644
+--- a/internal/shuttleengine/send.go
++++ b/internal/shuttleengine/send.go
+@@ -20,11 +20,13 @@ var ErrSessionBusy = errors.New("shuttle: the session is not idle")
+ // SessionBusyError is the error of a verified send held by its idle wait.
+ // Reason is the hold the wait's last reading named, without the pane's last lines.
+ // Draft is true when that hold is text in the input box.
++// NoInputBox is true when that hold is a pane showing no input box to an engine that reads one, as when a picker covers the box.
+ // Err is the full error, which wraps ErrSessionBusy, and is what Error returns, so the message is Err's.
+ type SessionBusyError struct {
+-	Reason string
+-	Draft  bool
+-	Err    error
++	Reason     string
++	Draft      bool
++	NoInputBox bool
++	Err        error
+ }
+ 
+ // Error returns the message of the full error.
+@@ -163,6 +165,7 @@ func windowPollCap(window, minInterval time.Duration) int {
+ // Otherwise every poll takes the session's readiness reading, which is built on the hook-derived session state;
+ // when that state is unknown the poll falls back to the pane, which must classify ready and idle, and for an engine that parses session signals no turn start may be left unmatched by a later turn end, unless the pane has read idle for turnStartIdleOverride or the engine reports that turn interrupted.
+ // An engine that reads the unmatched turn in flight keeps the send waiting past turnStartIdleOverride, until a turn end, a reported interrupt, a later session start or the send-ready window ends it.
++// A held reading over a picker the engine knows how to dismiss gets the picker's keys at most once per call; see dismissPicker.
+ func awaitIdleSession(sc sendContext) error {
+ 	cycler, ok := sc.engine.(SessionCycler)
+ 	if !ok {
+@@ -195,14 +198,15 @@ func awaitIdleSession(sc sendContext) error {
+ 	interval := idlePollInitial
+ 	maxPolls := windowPollCap(sendReadyTimeout(sc.cfg), idlePollInitial)
+ 	stray := &strayClear{}
++	picker := &pickerDismissal{}
+ 	for poll := 1; ; poll++ {
+-		busy := busyReading(sc, cycler, hold, stray)
++		busy := busyReading(sc, cycler, hold, stray, picker)
+ 		if busy.reason == "" {
+ 			return nil
+ 		}
+ 		now := sc.clock.Now()
+ 		if !now.Before(limit) || poll >= maxPolls {
+-			return &SessionBusyError{Reason: busy.reason, Draft: busy.draft, Err: fmt.Errorf("%w: strand %q: %s; retry once the session is idle. The pane's last lines:\n%s", ErrSessionBusy, sc.guid, busy.reason, paneTail(sc.reed, sc.guid))}
++			return &SessionBusyError{Reason: busy.reason, Draft: busy.draft, NoInputBox: busy.noInputBox || busy.reason == readinessReasonNoInputBox, Err: fmt.Errorf("%w: strand %q: %s; retry once the session is idle. The pane's last lines:\n%s", ErrSessionBusy, sc.guid, busy.reason, paneTail(sc.reed, sc.guid))}
+ 		}
+ 		sc.clock.Sleep(min(interval, limit.Sub(now)))
+ 		interval = min(interval*2, idlePollMax)
+@@ -210,9 +214,11 @@ func awaitIdleSession(sc sendContext) error {
+ }
+ 
+ // busyHold is one idle-wait reading's answer: reason is what keeps the session from being idle, empty when it is idle, and draft is true when that hold is text in the input box.
++// noInputBox is true when that hold is a pane showing no input box, which includes a dismissal whose key could not be sent.
+ type busyHold struct {
+-	reason string
+-	draft  bool
++	reason     string
++	draft      bool
++	noInputBox bool
+ }
+ 
+ // busyReading polls the pane and the events file once and returns what keeps the session from being idle, an empty reason when it is idle.
+@@ -223,8 +229,9 @@ type busyHold struct {
+ // A lone stray-character candidate in the box, on the hook reading held only for that draft or on the pane reading ready but not idle, is cleared once per stray, behind a full guard reading;
+ // see clearStrayCharacter.
+ // Once stray records a clear, every reading of the attempt is a post-clear reading, and a box still holding exactly the recorded character reads as empty.
++// A reading that is not ready over a picker the engine knows how to dismiss is handed to dismissPicker until picker records a try.
+ // Every pane-reading hold whose box reads non-empty quotes the box.
+-func busyReading(sc sendContext, cycler SessionCycler, hold *turnStartHold, stray *strayClear) busyHold {
++func busyReading(sc sendContext, cycler SessionCycler, hold *turnStartHold, stray *strayClear, picker *pickerDismissal) busyHold {
+ 	capture, err := boxCapture(sc.reed, sc.engine, sc.guid)
+ 	if err != nil {
+ 		return busyHold{reason: fmt.Sprintf("the pane could not be captured: %v", err)}
+@@ -236,11 +243,16 @@ func busyReading(sc sendContext, cycler SessionCycler, hold *turnStartHold, stra
+ 		case isCandidate && character == reading.draft && stray.cleared && character == stray.character:
+ 			reading = readiness{ready: true}
+ 		case isCandidate && character == reading.draft && !stray.cleared:
+-			if busy, handled := clearStrayCharacter(sc, cycler, hold, stray, character); handled {
++			if busy, handled := clearStrayCharacter(sc, cycler, hold, stray, picker, character); handled {
+ 				return busy
+ 			}
+ 		}
+ 	}
++	if !reading.ready && !picker.tried {
++		if busy, handled := dismissPicker(sc, cycler, hold, stray, picker, capture); handled {
++			return busy
++		}
++	}
+ 	switch {
+ 	case reading.ready:
+ 		return busyHold{reason: operatorActivityHold(sc.reed, sc.guid, sc.activityFailures)}
+@@ -266,7 +278,7 @@ func busyReading(sc sendContext, cycler SessionCycler, hold *turnStartHold, stra
+ 		unmatched = fmt.Sprintf("a turn start at %s has no turn end", turnStart.At.Format(time.RFC3339))
+ 	}
+ 	if isCandidate && !stray.cleared && unmatched == "" {
+-		if busy, handled := clearStrayCharacter(sc, cycler, hold, stray, character); handled {
++		if busy, handled := clearStrayCharacter(sc, cycler, hold, stray, picker, character); handled {
+ 			return busy
+ 		}
+ 	}
+@@ -303,7 +315,7 @@ func strayCandidate(engine Engine, capture string) (character string, ok bool) {
+ // else the clear plays right after this reading with no wait or other key between, stray records the character, the box settles for SubmitSettle, and a second full reading is taken.
+ // That post-clear reading is the write's guard reading, and busy is what it returns.
+ // The active-operator hold is a draft hold, a failed clear is not, and the post-clear reading carries its own kind.
+-func clearStrayCharacter(sc sendContext, cycler SessionCycler, hold *turnStartHold, stray *strayClear, character string) (busy busyHold, handled bool) {
++func clearStrayCharacter(sc sendContext, cycler SessionCycler, hold *turnStartHold, stray *strayClear, picker *pickerDismissal, character string) (busy busyHold, handled bool) {
+ 	clearer, canClear := sc.engine.(InputBoxClearer)
+ 	reader, canRead := sc.engine.(InputBoxReader)
+ 	if !canClear || !canRead {
+@@ -317,7 +329,45 @@ func clearStrayCharacter(sc sendContext, cycler SessionCycler, hold *turnStartHo
+ 	}
+ 	stray.cleared, stray.character = true, character
+ 	sc.clock.Sleep(reader.SubmitSettle())
+-	return busyReading(sc, cycler, hold, stray), true
++	return busyReading(sc, cycler, hold, stray, picker), true
++}
++
++// pickerDismissal is the dismissible-picker state of one send attempt's idle wait: the zero value has tried no dismissal.
++type pickerDismissal struct {
++	tried bool
++}
++
++// dismissPicker closes a picker the engine knows how to dismiss when capture shows one, so the send can go on to the input box behind it.
++// handled is false for an engine without DismissiblePickerReader, for a capture it reads no picker in, and for one its InterruptGuard reads a running turn in, since the picker's keys may interrupt a turn; the caller then holds as for any other reading.
++// Otherwise an active operator holds the send without a key, since the operator may be answering the picker, and a later poll tries again.
++// Else the picker's keys play once, picker records the try, the pane settles for the engine's interrupt settle where it has one, and a second full reading is taken, which busy returns.
++// A key that cannot be sent holds the send as a pane with no input box, since the picker still covers it.
++// The keys keep the provider's current setting, so the dismissal answers nothing on the session's behalf.
++func dismissPicker(sc sendContext, cycler SessionCycler, hold *turnStartHold, stray *strayClear, picker *pickerDismissal, capture string) (busy busyHold, handled bool) {
++	reader, ok := sc.engine.(DismissiblePickerReader)
++	if !ok {
++		return busyHold{}, false
++	}
++	name, keys, shown := reader.DismissiblePicker(capture)
++	if !shown {
++		return busyHold{}, false
++	}
++	guard, guarded := sc.engine.(InterruptGuard)
++	if guarded && guard.RunningTurn(capture) {
++		return busyHold{}, false
++	}
++	if activity := operatorActivityHold(sc.reed, sc.guid, sc.activityFailures); activity != "" {
++		return busyHold{reason: fmt.Sprintf("%s; the provider's %s picker is open", activity, name)}, true
++	}
++	picker.tried = true
++	if err := playInputs(sc.reed, sc.guid, keys); err != nil {
++		return busyHold{reason: fmt.Sprintf("dismissing the provider's %s picker failed: %v", name, err), noInputBox: true}, true
++	}
++	logger.Info("shuttle: dismissed the provider's picker before a send", "strandGUID", sc.guid, "picker", name)
++	if guarded {
++		sc.clock.Sleep(guard.InterruptSettle())
++	}
++	return busyReading(sc, cycler, hold, stray, picker), true
+ }
+ 
+ // withBoxQuote returns reason followed by the input box's text, as a draft hold, when the engine reads a non-empty box in capture, and the bare reason otherwise.
+@@ -869,6 +919,7 @@ func (run *Run) boundaryIdle() bool {
+ 	run.gateAtBoundary = false
+ 	run.boundaryHeld = false
+ 	run.unsentReprompt = false
++	run.noBoxReprompts = 0
+ 	run.startCleared = true
+ 	run.startHold = turnStartHold{}
+ 	logger.Info("shuttle: gate: a turn started after the boundary, holding the gate send", "strandGUID", run.state.StrandGUID, "turnStartAt", turnStart.At)
+diff --git a/internal/shuttleengine/wait.go b/internal/shuttleengine/wait.go
+index 271e9547..7d6fcce2 100644
+--- a/internal/shuttleengine/wait.go
++++ b/internal/shuttleengine/wait.go
+@@ -30,6 +30,7 @@
+ // and the boundary is restored when the engine reports that turn interrupted, a session start follows it, or the pane has read idle for turnStartIdleOverride while the engine does not read that turn in flight.
+ // Every gate send goes through sendWithin, so its idle wait and submit window end by the run deadline.
+ // A re-prompt that fails busy or unlanded spends no attempt and is re-sent on a later tick, bounded by the run deadline.
++// One held maxNoInputBoxReprompts times in a row by a pane showing no input box ends the loop with the attempts spent so far, so a picker shuttle cannot dismiss does not hold the run until its deadline.
+ // A gated run off the boundary, mid-turn or attached with no boundary seen, also asks each entry's read-only Expired probe once per gateRecheckEvery;
+ // the first entry whose wait bound has run out finalizes the run done, so the bound ends the wait even when the writer never ends its turn.
+ // That finalize call is a positive outcome, so it needs no allOutputFilesExist check.
+@@ -132,6 +133,10 @@ const pollFloor = time.Second
+ // A verdict read this much later costs nothing, and each evaluation re-reads the entries' files.
+ const gateRecheckEvery = 5 * time.Second
+ 
++// maxNoInputBoxReprompts bounds the consecutive re-prompt sends a pane showing no input box may hold before the gated loop ends with the attempts spent so far.
++// Each held send has already waited out its idle window, so the bound ends a wait on a picker shuttle cannot dismiss within a few idle windows rather than at the run deadline.
++const maxNoInputBoxReprompts = 5
++
+ // pollInterval returns Wait's tick interval, flooring a value below pollFloor (non-positive included) to pollFloor to prevent busy-spinning.
+ // It floors silently; LoadConfig logs the one warning.
+ func pollInterval(cfg Config) time.Duration {
+@@ -339,6 +344,7 @@ func (run *Run) Wait() (Result, error) {
+ 				run.gateAtBoundary = true
+ 				run.startCleared = false
+ 				run.unsentReprompt = false
++				run.noBoxReprompts = 0
+ 				run.boundaryHeld = false
+ 				if run.covered {
+ 					// A pause covers the session: nothing is evaluated or sent until the first uncovered tick.
+@@ -507,7 +513,7 @@ func gateEntryError(name, problem string) error {
+ // A pass, a terminal failure (GateResult.Terminal, whatever the entry's failure count, with no re-prompt and no count incremented), or a failure whose budget is spent, finalizes done.
+ // A failure with budget remaining re-prompts and keeps polling.
+ // A re-prompt send that fails with ErrSessionBusy, ErrSubmissionNotLanded or ErrPaused leaves the entry's failure and sent counts unchanged, clears the memo and keeps the writer at the boundary with the re-prompt marked unsent, so a later tick re-sends it until the run deadline;
+-// any other re-prompt send failure ends the loop as it always has.
++// the maxNoInputBoxReprompts-th such failure in a row that is a pane showing no input box instead finalizes done with the attempts spent so far, and any other re-prompt send failure ends the loop as it always has.
+ // A pending result sends its Send text when non-empty and keeps polling;
+ // a failed pending send warns once per entry and episode, naming the entry, the error and the closure's way-forward, logs Debug while it keeps failing and Info when it is delivered, leaves the entry pending and the writer at the boundary, and never ends the loop.
+ // The memo is cleared after a pending result, so the next evaluation, and a finalize after it, read the closures afresh.
+@@ -545,6 +551,17 @@ func (run *Run) handleGatedBoundary() (Result, bool, error) {
+ 	}
+ 	if serr := run.sendWithin(reprompt); serr != nil {
+ 		if errors.Is(serr, ErrSessionBusy) || errors.Is(serr, ErrSubmissionNotLanded) || errors.Is(serr, ErrPaused) {
++			var busy *SessionBusyError
++			if errors.As(serr, &busy) && busy.NoInputBox {
++				run.noBoxReprompts++
++			} else {
++				run.noBoxReprompts = 0
++			}
++			if run.noBoxReprompts >= maxNoInputBoxReprompts {
++				logger.Warn("shuttle: gate: re-prompt held by a pane with no input box past the bound, ending the loop with the attempts spent so far", "strandGUID", run.state.StrandGUID, "sessionID", run.state.SessionID, "gate", run.gate[failed].Name, "holds", run.noBoxReprompts, "error", serr)
++				result, ferr := run.finalize(OutcomeDone)
++				return result, true, ferr
++			}
+ 			// No attempt was spent: keep the writer at the boundary and re-send on a later tick.
+ 			// The send cleared its own text where it could, but for an engine with the idle reading a box it left occupied fails that re-send busy, until the run deadline ends the loop.
+ 			// A held send is an ordinary retry iteration: Info when it first holds, Debug while it stays held.
+@@ -562,6 +579,7 @@ func (run *Run) handleGatedBoundary() (Result, bool, error) {
+ 		return result, true, ferr
+ 	}
+ 	run.unsentReprompt = false
++	run.noBoxReprompts = 0
+ 	run.gateAtBoundary = false
+ 	run.boundaryHeld = false
+ 	run.gateFails[failed]++
+diff --git a/pattern/PATTERN-pane-text-injection.md b/pattern/PATTERN-pane-text-injection.md
+index a7b40e74..2744f517 100644
+--- a/pattern/PATTERN-pane-text-injection.md
++++ b/pattern/PATTERN-pane-text-injection.md
+@@ -1,6 +1,6 @@
+ # PATTERN-pane-text-injection
+ 
+-Text lym types into an agent pane never merges with, submits or wipes an operator's draft, and never closes a menu the operator has open.
++Text lym types into an agent pane never merges with, submits or wipes an operator's draft, and its picker dismissal holds while an operator was active in the pane within `operator_quiet_s`, which is what protects an operator's open menu.
+ The bounded exception is a lone stray character in an idle box: the guard clears it once per send attempt, behind a full guard reading, and a character that survives is submitted at the head of the message.
+ 
+ - Text reaches a pane only through reed's paste-submit: one tmux invocation that pastes the text and, when the provider's Enter submits a paste, sends the Enter in the same command list.
+@@ -23,25 +23,28 @@ The bounded exception is a lone stray character in an idle box: the guard clears
+   It fires only on text that appeared in a box read empty before the key, at most once per call and never without a passing guard reading: the pane ready, no running turn, a readable box and no active operator.
+   Its keys are the provider's restored-prompt clear, no `Escape`, `C-c` or Enter, at most two per line the read showed, and the text is the stopped turn's own prompt, already in the transcript.
+   A guard reading that fails sends nothing, and the text stays as a draft the next send holds on.
+-- Explicit key deliveries stay outside the rule: `Runner.Interrupt`, `Runner.InterruptRestoring`, `Runner.Inject`, `InterruptSequence`, the trust-prompt dismissal, the clear sent into a box holding exactly one stray-character candidate the guard reading found and the restored-prompt clear.
++- Explicit key deliveries stay outside the rule: `Runner.Interrupt`, `Runner.InterruptRestoring`, `Runner.Inject`, `InterruptSequence`, the trust-prompt dismissal, the clear sent into a box holding exactly one stray-character candidate the guard reading found, the restored-prompt clear and the guarded picker dismissal.
+   Each names its keys itself and is not text for a draft box.
+   `Runner.Interrupt` and `Runner.Inject` stay outside this rule as explicit key deliveries, but their interrupt key follows the guarded interrupt below.
+ 
+ ## Guarded interrupt
+ 
+-An interrupt key reaches an agent pane only through shuttle's two pane guards, and every other path refuses it.
++An interrupt key reaches an agent pane only through shuttle's guarded interrupt and its two guarded picker paths below, and every other path refuses it.
+ 
+ - The guarded interrupt (`Runner.Interrupt`, `Run.Interrupt`) sends the provider's interrupt sequence only after the ready-agent-pane check and a fresh capture the provider reads as a running turn.
+   A pane with no running turn gets nothing and `ErrNoRunningTurn`, and a capture that fails sends nothing.
+ - A caller that retries an interrupt waits at least the provider's settle time (`Runner.InterruptSettle`) after its first key before it reads again, and sends the retry through the guarded interrupt.
+   So lym's own keys land at least the settle apart and never open the rewind picker.
+-- The guarded picker close is the one exception: before every interrupt and every verified send it sends exactly one key of the interrupt sequence, only into a capture the provider reads as the rewind picker.
++- The guarded picker close is one of two exceptions: before every interrupt and every verified send it sends exactly one key of the interrupt sequence, only into a capture the provider reads as the rewind picker.
+   It then re-captures after the settle, never selects an entry, never sends a second key, and fails the operation with `ErrRewindPickerOpen`.
++- The guarded picker dismissal is the other exception, in a verified send's idle wait: the engine names the keys, which for Claude's autocompact picker are one `Escape` that keeps the current setting.
++  It fires only into a capture the provider reads as that known picker with no input box, only when the provider's running-turn check reads no running turn, and only when no operator was active in the pane within `operator_quiet_s`.
++  It plays at most once per send attempt, then waits the provider's interrupt settle and reads the pane again, and never selects an entry.
+ - `Runner.Inject` skips the ready-pane check, so it refuses any input list holding a key of the engine's interrupt sequence (case-insensitive, `C-[` read as `Escape`) or a `Text` with a control character, whatever its `SettleMS` and neighbours, and names `lym creel interrupt`.
+   A tmux spelling of the interrupt key beyond those still passes, bounded by Inject having no production caller.
+ - The orch watcher's hub-pause interrupt is the one key the watcher still sends: it reaches the orch pane through the guarded interrupt, under the exemption the orch pane section below keeps for it.
+ - `Runner.InterruptRestoring` is a second entry point: its key goes only through the guarded interrupt, and its clear is the engine's restored-prompt clear of the box, never an interrupt key.
+-- The tests that pin it: `TestRun_Interrupt_PlaysEscape`, `TestRunner_InterruptRestoring`, `TestGuardedPickerClose` and `TestRunner_Inject_RefusesAnyInterruptKey` in `internal/shuttleengine`.
++- The tests that pin it: `TestRun_Interrupt_PlaysEscape`, `TestRunner_InterruptRestoring`, `TestGuardedPickerClose`, `TestGate_RepromptOverPicker`, `TestDismissPicker_Guards` and `TestRunner_Inject_RefusesAnyInterruptKey` in `internal/shuttleengine`.
+ 
+ ## A pause holds prompts
+ 
