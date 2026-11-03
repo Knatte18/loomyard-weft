@@ -15,15 +15,15 @@ Several notes circled the same question (where the decision record lives, how a 
 - Changing one's mind loses nothing: the run is cancelled, the record stays on the board, and it can be split into discussed tasks or made a project.
 - lym itself writes the record field, at Discussion's approval and at each `lym loom decision add`, so the field is exempt from the lock on a claimed entry.
   That lock exists only so the orch does not change a task's text after its agents have read it; a record written by lym is not that.
-- Split out (2026-11-03): storing the record and the flag is task `decision-record-on-board`; the block and `cartoon` are task `shed-sub-run-block`; skipping Discussion for a discussed entry is a gate check on that block, a follow-up waiting on both.
+- Split out (2026-11-03): storing the record and the flag is task `decision-record-on-board`; the block, `motif` and `arras` are task `shed-sub-run-block`; skipping Discussion for a discussed entry is a gate check on that block, a follow-up waiting on both.
 
 ## Discussion as a run of its own (operator, 2026-11-03)
 
 How a task is best cut into smaller tasks is known only once its Discussion is done, so the split comes after Discussion, not before.
 
-- A Discussion-only run, the recipe `cartoon` (operator, 2026-11-03: a tapestry cartoon is the full-size design drawn before the weaving, which the weaver follows), interactive or not, runs Discussion-Write and its review and nothing else, then stores the record and flags the entry discussed, as the core above says.
+- A Discussion-only run, the recipe `motif` (operator, 2026-11-03: the motif is the design decided before the weaving; `cartoon`, the drawing the weaver follows, is kept for a later Plan block), interactive or not, runs Discussion-Write and its review and nothing else, then stores the record and flags the entry discussed, as the core above says.
 - It runs beside today's courses as an experiment; tapestry without it is unchanged.
-- Discussion-Write and its review are defined once (operator, 2026-11-03): `cartoon` is tapestry's Discussion segment as a recipe of its own, and tapestry runs it through the sub-run block of note `shed-sub-run-block` when the entry is not discussed, passing on at once when it is, with the record read from Bolt into `_lym/discussion`.
+- Discussion-Write and its review are defined once (operator, 2026-11-03): `motif` is tapestry's Discussion segment as a recipe of its own, and the recipe `arras` beside tapestry runs it through the sub-run block of note `shed-sub-run-block` when the entry is not discussed, passing on at once when it is, with the record read from Bolt into `_lym/discussion`.
 - A discussed entry then goes one of two ways, chosen after its Discussion:
   1. Tapestry from Plan, skipping Discussion-Write: Plan-Write and Webster as today.
   2. The part split: the record's scope is cut into darn tasks with contracts and `depends_on`, which run independently, each a task of its own.
