@@ -1,0 +1,1707 @@
+diff --git a/internal/battencli/dobbynotice.go b/internal/battencli/dobbynotice.go
+index 94db5420..a54a7ad1 100644
+--- a/internal/battencli/dobbynotice.go
++++ b/internal/battencli/dobbynotice.go
+@@ -104,7 +104,7 @@ func readNoticeChild(prime *lymcwd.Location, slug string, locateTask func() (*ly
+ 		Error:           status.Error,
+ 		HistoryLen:      len(status.History),
+ 		Modified:        info.ModTime(),
+-		PairDir:         taskLocation.AnchorPath(),
++		PairDir:         taskLocation.WorktreePath(),
+ 	}
+ 	if capped {
+ 		child.RespawnCap = battenshed.RespawnCap
+diff --git a/internal/battencli/dobbynotice_test.go b/internal/battencli/dobbynotice_test.go
+index 18ce2289..cfb69225 100644
+--- a/internal/battencli/dobbynotice_test.go
++++ b/internal/battencli/dobbynotice_test.go
+@@ -168,8 +168,8 @@ func TestReadNoticeChild(t *testing.T) {
+ 			if !child.NewestHistory.Equal(newestHistory) || !child.Modified.Equal(statusWritten) {
+ 				t.Errorf("readNoticeChild() newest history %v, modified %v; want %v and %v", child.NewestHistory, child.Modified, newestHistory, statusWritten)
+ 			}
+-			if child.PairDir != taskLocation.AnchorPath() {
+-				t.Errorf("readNoticeChild() PairDir = %q; want %q", child.PairDir, taskLocation.AnchorPath())
++			if child.PairDir != taskLocation.WorktreePath() {
++				t.Errorf("readNoticeChild() PairDir = %q; want the task worktree root %q", child.PairDir, taskLocation.WorktreePath())
+ 			}
+ 			wantCap := 0
+ 			if tt.wantCapped {
+diff --git a/internal/battencli/lifecycle_integration_test.go b/internal/battencli/lifecycle_integration_test.go
+index 68a04f57..06fdf376 100644
+--- a/internal/battencli/lifecycle_integration_test.go
++++ b/internal/battencli/lifecycle_integration_test.go
+@@ -1565,10 +1565,11 @@ func stepTeardown_SiblingDirtOutsideRecordPathsRefusesShutdown(t *testing.T, h *
+ 	}
+ }
+ 
+-// stepPairDirNamesTheTaskWorktree pins the InnerRun.PairDir seam to the task worktree's own anchor, resolved on Call over a real pair.
++// stepPairDirNamesTheTaskWorktree pins the InnerRun.PairDir seam to the task worktree's root, resolved on Call over a real pair anchored at a subdirectory, where the root and the anchor differ.
+ func stepPairDirNamesTheTaskWorktree(t *testing.T, h *hubforge.Hub) {
+ 	slug := "batten-pair-dir"
+ 	hubforge.AddPair(t, h, slug)
++	hubforge.ReanchorPair(t, h, slug, "backend")
+ 
+ 	c := wireForHub(t, h, slug, nil)
+ 
+@@ -1580,8 +1581,11 @@ func stepPairDirNamesTheTaskWorktree(t *testing.T, h *hubforge.Hub) {
+ 	if err != nil {
+ 		t.Fatalf("resolve task location: %v", err)
+ 	}
+-	if got != taskLocation.AnchorPath() {
+-		t.Errorf("PairDir() = %q; want %q", got, taskLocation.AnchorPath())
++	if taskLocation.AnchorPath() == taskLocation.WorktreePath() {
++		t.Fatalf("task location anchor %q equals its worktree root; want a subdirectory anchor", taskLocation.AnchorPath())
++	}
++	if got != taskLocation.WorktreePath() {
++		t.Errorf("PairDir() = %q; want the task worktree root %q", got, taskLocation.WorktreePath())
+ 	}
+ }
+ 
+diff --git a/internal/battencli/wire.go b/internal/battencli/wire.go
+index a95be32a..91f9cfa3 100644
+--- a/internal/battencli/wire.go
++++ b/internal/battencli/wire.go
+@@ -1108,7 +1108,7 @@ func (c *battenCLI) wire(location *lymcwd.Location, slug string) error {
+ 				if err != nil {
+ 					return "", err
+ 				}
+-				return taskLocation.AnchorPath(), nil
++				return taskLocation.WorktreePath(), nil
+ 			},
+ 			// ReadDecision and DriverAlive resolve the task worktree on Call like every seam here, never at wiring time.
+ 			// No verb writes an approval or rejection record any more, so an awaiting child is never resumed on an operator decision.
+diff --git a/internal/configcli/configcli.go b/internal/configcli/configcli.go
+index 4790a2b2..5169f797 100644
+--- a/internal/configcli/configcli.go
++++ b/internal/configcli/configcli.go
+@@ -280,15 +280,14 @@ func setChecked(dirs configengine.Dirs, module configreg.Module, layer configeng
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	if failure := newLoadFailure(module, dirs, before); failure != nil {
++	if failure := newLoadFailure(module, before, module.CheckLoad(dirs)); failure != nil {
+ 		return nil, rollBack(path, snap, fmt.Errorf("%w; %s unchanged", failure, path))
+ 	}
+ 	return preserved, nil
+ }
+ 
+-// newLoadFailure loads module through its own loader under dirs and returns a refusal when it fails with an error other than before, the load's error ahead of the write.
+-func newLoadFailure(module configreg.Module, dirs configengine.Dirs, before error) error {
+-	after := module.CheckLoad(dirs)
++// newLoadFailure returns a refusal when after, the module's check once a write is made, fails with an error other than before, the check's error ahead of the write.
++func newLoadFailure(module configreg.Module, before, after error) error {
+ 	if after == nil || (before != nil && before.Error() == after.Error()) {
+ 		return nil
+ 	}
+@@ -344,7 +343,7 @@ func editMachine(dirs configDirs, out io.Writer, mod configreg.Module, path stri
+ 		}
+ 		return output.Err(out, err.Error())
+ 	}
+-	if failure := newLoadFailure(mod, dirs.engineDirs(), before); failure != nil {
++	if failure := newLoadFailure(mod, before, mod.CheckLoad(dirs.engineDirs())); failure != nil {
+ 		return output.Err(out, rollBack(path, snap, fmt.Errorf("%w; %s unchanged", failure, path)).Error())
+ 	}
+ 	return output.Ok(out, map[string]any{
+diff --git a/internal/configcli/configcli_test.go b/internal/configcli/configcli_test.go
+index 478b8866..d237d316 100644
+--- a/internal/configcli/configcli_test.go
++++ b/internal/configcli/configcli_test.go
+@@ -23,6 +23,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/configreg"
+ 	"github.com/Knatte18/loomyard/internal/darnengine"
++	"github.com/Knatte18/loomyard/internal/driftengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/lenses"
+@@ -924,6 +925,79 @@ func TestDispatchHubWideBoard(t *testing.T) {
+ 				assertJSONErrContains(t, out, "changed while the editor was open")
+ 			},
+ 		},
++		{
++			name:        "drift set of a dir missing in the prime is refused naming the resolved path",
++			module:      "drift",
++			seed:        driftengine.ConfigTemplate(),
++			setFlags:    []string{`capture={command: "p {baseline_dir}", dir: dotnet, timeout_min: 3}`},
++			wantCode:    1,
++			wantCommits: 1,
++			check: func(t *testing.T, fx hubFixture, hubFile, out string) {
++				if hubFile != driftengine.ConfigTemplate() {
++					t.Errorf("hub file changed on a refused set; got %q", hubFile)
++				}
++				assertJSONErrContains(t, out, `drift config key "capture.dir"`)
++				assertJSONErrContains(t, out, filepath.Join(fx.layout.WorktreePath(), "dotnet"))
++			},
++		},
++		{
++			name:        "drift set of a dir present in the prime is written",
++			module:      "drift",
++			seed:        driftengine.ConfigTemplate(),
++			setFlags:    []string{`capture={command: "p {baseline_dir}", dir: _lym, timeout_min: 3}`},
++			wantCommits: 1,
++			check: func(t *testing.T, fx hubFixture, hubFile, out string) {
++				if !strings.Contains(hubFile, "dir: _lym") {
++					t.Errorf("hub file lacks the written dir; got %q", hubFile)
++				}
++			},
++		},
++		{
++			name:        "gate set of a build dir missing in the prime is refused naming the resolved path",
++			module:      "gate",
++			seed:        gateslot.ConfigTemplate(),
++			setFlags:    []string{`build={command: make, dir: gone, timeout_min: 1}`},
++			wantCode:    1,
++			wantCommits: 1,
++			check: func(t *testing.T, fx hubFixture, hubFile, out string) {
++				if hubFile != gateslot.ConfigTemplate() {
++					t.Errorf("hub file changed on a refused set; got %q", hubFile)
++				}
++				assertJSONErrContains(t, out, `key "build.dir"`)
++				assertJSONErrContains(t, out, filepath.Join(fx.layout.WorktreePath(), "gone"))
++			},
++		},
++		{
++			name:   "drift editor save of a dir missing in the prime is refused and the staging copy kept",
++			module: "drift",
++			seed:   driftengine.ConfigTemplate(),
++			editor: func(fx hubFixture) configengine.EditorFunc {
++				return fakeEditor(driftWithCaptureDir("dotnet"), nil)
++			},
++			wantCode:    1,
++			wantCommits: 1,
++			check: func(t *testing.T, fx hubFixture, hubFile, out string) {
++				assertSaveRefused(t, fx, "drift", hubFile, out, driftengine.ConfigTemplate(), driftWithCaptureDir("dotnet"),
++					[]string{`drift config key "capture.dir"`, filepath.Join(fx.layout.WorktreePath(), "dotnet")}, nil)
++			},
++		},
++		{
++			name:   "drift editor save over a file whose dir already failed the same check keeps the failure and is written",
++			module: "drift",
++			seed:   driftWithCaptureDir("dotnet"),
++			editor: func(fx hubFixture) configengine.EditorFunc {
++				return fakeEditor(strings.Replace(driftWithCaptureDir("dotnet"), "verify_max_runs: 8", "verify_max_runs: 9", 1), nil)
++			},
++			wantCommits: 1,
++			check: func(t *testing.T, fx hubFixture, hubFile, out string) {
++				if want := strings.Replace(driftWithCaptureDir("dotnet"), "verify_max_runs: 8", "verify_max_runs: 9", 1); hubFile != want {
++					t.Errorf("hub file = %q; want the saved bytes %q", hubFile, want)
++				}
++				if _, err := os.Stat(configengine.StagingFile(fx.worktree, "drift")); !os.IsNotExist(err) {
++					t.Errorf("staging file remains after a written save; stat err = %v", err)
++				}
++			},
++		},
+ 		{
+ 			name:   "darn editor save emptying tree_scope is written",
+ 			module: "darn",
+@@ -1028,13 +1102,24 @@ func darnWithTreeScope(trees string) string {
+ 	return strings.Replace(darnengine.ConfigTemplate(), "tree_scope: {}", "tree_scope:"+trees, 1)
+ }
+ 
++// driftWithCaptureDir returns drift's template with a capture declared in dir.
++func driftWithCaptureDir(dir string) string {
++	return strings.Replace(driftengine.ConfigTemplate(), "capture: {}", `capture: {command: "p {baseline_dir}", dir: `+dir+`, timeout_min: 3}`, 1)
++}
++
+ // assertDarnSaveRefused checks a refused darn editor save: the board file still holds seeded, the staging copy holds saved, and the error names each of wantErr, none of notErr, and the staging path.
+ func assertDarnSaveRefused(t *testing.T, fx hubFixture, hubFile, out, seeded, saved string, wantErr, notErr []string) {
++	t.Helper()
++	assertSaveRefused(t, fx, "darn", hubFile, out, seeded, saved, wantErr, notErr)
++}
++
++// assertSaveRefused checks a refused editor save of module: the board file still holds seeded, the staging copy holds saved, and the error names each of wantErr, none of notErr, and the staging path.
++func assertSaveRefused(t *testing.T, fx hubFixture, module, hubFile, out, seeded, saved string, wantErr, notErr []string) {
+ 	t.Helper()
+ 	if hubFile != seeded {
+ 		t.Errorf("hub file changed on a refused save; got %q", hubFile)
+ 	}
+-	staging := configengine.StagingFile(fx.worktree, "darn")
++	staging := configengine.StagingFile(fx.worktree, module)
+ 	if kept, err := os.ReadFile(staging); err != nil || string(kept) != saved {
+ 		t.Errorf("staging file = %q, %v; want the saved bytes %q", kept, err, saved)
+ 	}
+diff --git a/internal/configcli/doc.go b/internal/configcli/doc.go
+index d12ca017..9b4f08ab 100644
+--- a/internal/configcli/doc.go
++++ b/internal/configcli/doc.go
+@@ -69,6 +69,7 @@
+ //
+ // Every `--set` write, on any layer, and every hub-wide editor save is then checked by loading the module through its own loader (`configreg.Module.CheckLoad`), and the written file is put back as it was when the load fails.
+ // A Bolt-checkout write loads the board file alone, and any other write loads the worktree's stack.
++// A Bolt-checkout write of a module that declares commands (`configreg.Module.CheckDirs`) also refuses a command `dir` that is no existing directory in the prime, naming the key and the resolved path.
+ // The refusal names the module and carries the loader's error, which names the key, so `--set 'plan=["opus[medium]", "sonnet[high]"]'` on loom's single-model `plan` key is refused rather than stored as a string.
+ // The bound: the load also runs before the write, and a write is refused only when the load then fails with a different error, so a stack already failing to load, such as one with no base layer, still takes a write that leaves that failure as it was.
+ // A refused hub-wide editor save keeps the staging copy and answers with its own way forward in place of the `--set` one: it names the loader's error, says the hub file is unchanged and names the staging copy's path.
+diff --git a/internal/configcli/hubwide.go b/internal/configcli/hubwide.go
+index 184272f5..010b9a9b 100644
+--- a/internal/configcli/hubwide.go
++++ b/internal/configcli/hubwide.go
+@@ -30,6 +30,8 @@ import (
+ type configDirs struct {
+ 	worktree string
+ 	board    string
++	// root is the worktree root, which a hub-wide write's check of a command dir resolves a relative dir against.
++	root string
+ 
+ 	// layer is the --layer value: empty, or one of the four layer names.
+ 	// Empty selects the module's own default, the worktree file of a per-worktree module and the hub file of a hub-wide one.
+@@ -77,7 +79,7 @@ func (d configDirs) refuseHubWrite(out io.Writer) (exitCode int, refused bool) {
+ // dirsOf returns the config base dirs for the worktree l resolves to.
+ // The board is empty when the hub's board dir does not exist, as for a worktree that is no hub's.
+ func dirsOf(l *lymcwd.Location) configDirs {
+-	return configDirs{worktree: baseDirOf(l), board: fabricengine.ConfigDirs(l).Board}
++	return configDirs{worktree: baseDirOf(l), board: fabricengine.ConfigDirs(l).Board, root: l.WorktreePath()}
+ }
+ 
+ // layerNames are the values --layer takes.
+@@ -320,6 +322,16 @@ func validateHubFile(boardDir string, module configreg.Module) error {
+ 	return err
+ }
+ 
++// checkHubModule loads module's board file alone through its own loader and, for a module that declares commands, checks each command dir against the worktree of dirs.
++// A hub-wide write runs only from the prime, so a dir is checked against the prime.
++func checkHubModule(dirs configDirs, module configreg.Module) error {
++	boardDirs := configengine.Dirs{Board: dirs.board}
++	if err := module.CheckLoad(boardDirs); err != nil || module.CheckDirs == nil {
++		return err
++	}
++	return module.CheckDirs(boardDirs, dirs.root, dirs.worktree)
++}
++
+ // reportHubWrite turns the outcome of a hub-commit round trip into the command's envelope.
+ // writeErr is the write closure's own error, which tells a refused write from a failed commit.
+ func reportHubWrite(out io.Writer, module, path string, commitErr, writeErr error, extra map[string]any) int {
+@@ -340,8 +352,8 @@ func reportHubWrite(out io.Writer, module, path string, commitErr, writeErr erro
+ }
+ 
+ // setHubWide writes pairs into a hub-wide module's file at the board dir and commits it in the Bolt checkout.
+-// The file is validated strictly before the commit, then loaded alone through the module's own loader, and restored on any failure.
+-// The loader refuses the write only with a failure the file did not already load with.
++// The file is validated strictly before the commit, then loaded alone through the module's own loader, its command dirs checked against the prime, and restored on any failure.
++// The check refuses the write only with a failure the file did not already have.
+ func setHubWide(dirs configDirs, out io.Writer, module configreg.Module, pairs []yamlengine.KV, commit hubCommitFunc) int {
+ 	path := configengine.ConfigFile(dirs.board, module.Name)
+ 	boardDirs := configengine.Dirs{Board: dirs.board}
+@@ -350,13 +362,13 @@ func setHubWide(dirs configDirs, out io.Writer, module configreg.Module, pairs [
+ 	commitErr := commit(module.Name, func() error {
+ 		snap, err := snapshotFile(path)
+ 		if err == nil {
+-			before := module.CheckLoad(boardDirs)
++			before := checkHubModule(dirs, module)
+ 			preserved, err = configengine.Set(boardDirs, module.Spec(), configengine.LayerDefault, pairs)
+ 			if err == nil {
+ 				err = validateHubFile(dirs.board, module)
+ 			}
+ 			if err == nil {
+-				err = newLoadFailure(module, boardDirs, before)
++				err = newLoadFailure(module, before, checkHubModule(dirs, module))
+ 			}
+ 			if err != nil {
+ 				err = rollBack(path, snap, err)
+@@ -406,7 +418,7 @@ func editHubWide(dirs configDirs, out io.Writer, module configreg.Module, edit c
+ 
+ 	var writeErr error
+ 	commitErr := commit(module.Name, func() error {
+-		writeErr = copyStagedToHub(path, staging, base, template, dirs.board, module)
++		writeErr = copyStagedToHub(path, staging, base, template, dirs, module)
+ 		return writeErr
+ 	})
+ 	if errors.Is(writeErr, errHubFileChanged) {
+@@ -421,8 +433,8 @@ func editHubWide(dirs configDirs, out io.Writer, module configreg.Module, edit c
+ 
+ // copyStagedToHub writes the staged bytes to the hub file when it still holds the bytes the staging copy was taken from,
+ // validates it strictly and restores the previous file on failure.
+-// It then loads the board file alone through the module's own loader and restores the previous file when that load fails with an error other than the one the file already loaded with, returning an error wrapping errHubFileLoad and the loader's.
+-func copyStagedToHub(path, staging string, base []byte, template, boardDir string, module configreg.Module) error {
++// It then loads the board file alone through the module's own loader, checks its command dirs against the prime, and restores the previous file when that check fails with an error other than the one the file already had, returning an error wrapping errHubFileLoad and the check's.
++func copyStagedToHub(path, staging string, base []byte, template string, dirs configDirs, module configreg.Module) error {
+ 	snap, err := snapshotFile(path)
+ 	if err != nil {
+ 		return err
+@@ -438,14 +450,14 @@ func copyStagedToHub(path, staging string, base []byte, template, boardDir strin
+ 	if err != nil {
+ 		return fmt.Errorf("read staging copy: %w", err)
+ 	}
+-	before := module.CheckLoad(configengine.Dirs{Board: boardDir})
++	before := checkHubModule(dirs, module)
+ 	if err := fsx.AtomicWriteBytes(path, staged); err != nil {
+ 		return rollBack(path, snap, err)
+ 	}
+-	if err := validateHubFile(boardDir, module); err != nil {
++	if err := validateHubFile(dirs.board, module); err != nil {
+ 		return rollBack(path, snap, err)
+ 	}
+-	if after := module.CheckLoad(configengine.Dirs{Board: boardDir}); after != nil && (before == nil || before.Error() != after.Error()) {
++	if after := checkHubModule(dirs, module); after != nil && (before == nil || before.Error() != after.Error()) {
+ 		return rollBack(path, snap, fmt.Errorf("%w: %w", errHubFileLoad, after))
+ 	}
+ 	return nil
+diff --git a/internal/configreg/configreg.go b/internal/configreg/configreg.go
+index e661b7d5..c3eecb23 100644
+--- a/internal/configreg/configreg.go
++++ b/internal/configreg/configreg.go
+@@ -81,6 +81,9 @@ type Module struct {
+ 	// CheckLoad runs the module's own loader over the layer stack under dirs and returns its error, discarding the loaded config.
+ 	// Every module sets it, so a write can be checked against exactly what a later reader refuses.
+ 	CheckLoad func(dirs configengine.Dirs) error
++	// CheckDirs, when non-nil, loads the module under dirs and refuses a command dir that is no existing directory in the worktree at worktreeRoot, whose anchored directory is anchorDir.
++	// A module whose keys declare commands sets it, so a hub-wide write refuses a dir that would fail every run in the prime.
++	CheckDirs func(dirs configengine.Dirs, worktreeRoot, anchorDir string) error
+ 	// Spec returns the module's own layered-load spec: its name, template, open maps, hub-wide flag and per-key classification.
+ 	Spec func() configengine.Spec
+ 	// LocalKeys are the keys of a hub-wide module a local override may set, derived from Spec.
+@@ -131,9 +134,9 @@ func Modules() []Module {
+ 		{Name: "board", Template: boardengine.ConfigTemplate, OpenMaps: boardengine.ConfigOpenMaps(), HubWide: true, CheckLoad: checkLoadNamed(boardengine.LoadConfig, "board"), Spec: boardengine.ConfigSpec},
+ 		{Name: "darn", Template: darnengine.ConfigTemplate, OpenMaps: darnengine.ConfigOpenMaps(), HubWide: true, Migrate: darnengine.MigrateConfig, CheckLoad: checkLoadNamed(darnengine.LoadConfig, "darn"), Spec: darnengine.ConfigSpec},
+ 		{Name: "desktop", Template: desktophook.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(desktophook.LoadConfig), Spec: desktophook.ConfigSpec},
+-		{Name: "drift", Template: driftengine.ConfigTemplate, OpenMaps: driftengine.ConfigOpenMaps(), HubWide: true, CheckLoad: checkLoad(driftengine.LoadConfig), Spec: driftengine.ConfigSpec},
++		{Name: "drift", Template: driftengine.ConfigTemplate, OpenMaps: driftengine.ConfigOpenMaps(), HubWide: true, CheckLoad: checkLoad(driftengine.LoadConfig), CheckDirs: driftengine.CheckDirs, Spec: driftengine.ConfigSpec},
+ 		{Name: "fabric", Template: fabricengine.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(fabricengine.LoadConfig), Spec: fabricengine.ConfigSpec},
+-		{Name: "gate", Template: gateslot.ConfigTemplate, OpenMaps: gateslot.ConfigOpenMaps(), PerNameMaps: gateslot.ConfigPerNameMaps(), HubWide: true, Migrate: gateslot.MigrateConfig, MigrateHubBase: gateslot.SeedAdoptGate, CheckLoad: checkLoad(gateslot.LoadConfig), Spec: gateslot.ConfigSpec},
++		{Name: "gate", Template: gateslot.ConfigTemplate, OpenMaps: gateslot.ConfigOpenMaps(), PerNameMaps: gateslot.ConfigPerNameMaps(), HubWide: true, Migrate: gateslot.MigrateConfig, MigrateHubBase: gateslot.SeedAdoptGate, CheckLoad: checkLoad(gateslot.LoadConfig), CheckDirs: gateslot.CheckDirs, Spec: gateslot.ConfigSpec},
+ 		{Name: "heddle", Template: heddleengine.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(heddleengine.LoadConfig), Spec: heddleengine.ConfigSpec},
+ 		{Name: "landing", Template: landingshed.ConfigTemplate, OpenMaps: landingshed.ConfigOpenMaps(), HubWide: true, SeedsFromPrime: true, Migrate: landingshed.MigrateConfig, CheckLoad: checkLoadNamed(landingshed.LoadConfig, "landing"), Spec: landingshed.ConfigSpec},
+ 		{Name: "language", Template: languageconfig.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(languageconfig.Load), Spec: languageconfig.ConfigSpec},
+diff --git a/internal/driftcli/cli.go b/internal/driftcli/cli.go
+index ada6dfd8..2963ec73 100644
+--- a/internal/driftcli/cli.go
++++ b/internal/driftcli/cli.go
+@@ -239,18 +239,10 @@ Example:
+ 				if err != nil {
+ 					return nil, err
+ 				}
+-				pool, waitDir := w.slots()
+-				result, err := driftengine.RunCompare(cmd.Context(), driftengine.CompareRequest{
+-					Paths:     w.paths,
+-					AnchorDir: w.anchor(),
+-					Step:      step,
+-					Pool:      pool,
+-					WaitDir:   waitDir,
+-					Skip:      driftengine.SkipList(scope),
+-					Timeout:   stepTimeout(step),
+-					Now:       time.Now,
+-					LockRetry: compareLockRetry,
+-				})
++				request := w.compareRequest(step)
++				request.Skip = driftengine.SkipList(scope)
++				request.LockRetry = compareLockRetry
++				result, err := driftengine.RunCompare(cmd.Context(), request)
+ 				if err != nil {
+ 					return nil, err
+ 				}
+@@ -301,17 +293,9 @@ func runSideCapture(cmd *cobra.Command, w *worktree) (any, error) {
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	pool, waitDir := w.slots()
+-	result, err := driftengine.RunSideCapture(cmd.Context(), driftengine.CaptureRequest{
+-		Paths:     w.paths,
+-		AnchorDir: w.anchor(),
+-		Step:      step,
+-		Pool:      pool,
+-		WaitDir:   waitDir,
+-		Skip:      driftengine.SkipList(scope),
+-		Timeout:   stepTimeout(step),
+-		Now:       time.Now,
+-	})
++	request := w.captureRequest(step)
++	request.Skip = driftengine.SkipList(scope)
++	result, err := driftengine.RunSideCapture(cmd.Context(), request)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -420,26 +404,18 @@ func runCaptureChild(cmd *cobra.Command) {
+ 		return
+ 	}
+ 
+-	pool, waitDir := w.slots()
+-	_, runErr := driftengine.RunCapture(ctx, driftengine.CaptureRequest{
+-		Paths:     w.paths,
+-		AnchorDir: w.anchor(),
+-		Step:      step,
+-		Pool:      pool,
+-		WaitDir:   waitDir,
+-		Skip:      scope.Skip,
+-		Check: func() (string, error) {
+-			head, err := checkMainCapture(w)
+-			if err != nil {
+-				fail(err)
+-				return "", err
+-			}
+-			return head, nil
+-		},
+-		Timeout:   stepTimeout(step),
+-		Now:       time.Now,
+-		LockRetry: captureLockRetry,
+-	})
++	request := w.captureRequest(step)
++	request.Skip = scope.Skip
++	request.Check = func() (string, error) {
++		head, err := checkMainCapture(w)
++		if err != nil {
++			fail(err)
++			return "", err
++		}
++		return head, nil
++	}
++	request.LockRetry = captureLockRetry
++	_, runErr := driftengine.RunCapture(ctx, request)
+ 	if runErr != nil {
+ 		clihelp.SetExit(ctx, 1)
+ 		logger.Warn("drift: the capture child ended with an error", "error", runErr.Error())
+diff --git a/internal/driftcli/doc.go b/internal/driftcli/doc.go
+index 0c7d6c12..ce047a51 100644
+--- a/internal/driftcli/doc.go
++++ b/internal/driftcli/doc.go
+@@ -11,7 +11,7 @@
+ // The run status is read under its lock from the self run, and the agent-session mark from the run counter; together they tell the Drift-Verify agent session from a caller at a halt.
+ // HEAD, the branch point and the tracked dirty paths come from the worktree's fabric: the branch point is the merge base of HEAD with the parent branch the origin record names.
+ // The gate slots come from hubgeom.GateSlots, and the capture child is registered under the run-process directory with the worktree name as owner.
+-// The engine is told the anchored directory lymcwd resolves, where the capture child starts and a command step's relative dir is joined on.
++// The engine is told the worktree root lymcwd resolves, which a command step's relative dir is joined onto, and the anchored directory, where the capture child starts and a step with no dir runs.
+ //
+ // # Capture
+ //
+diff --git a/internal/driftcli/wiring.go b/internal/driftcli/wiring.go
+index bde9e09e..ad486045 100644
+--- a/internal/driftcli/wiring.go
++++ b/internal/driftcli/wiring.go
+@@ -39,12 +39,12 @@ func openWorktree(cmd *cobra.Command) (*worktree, error) {
+ 	return &worktree{location: location, paths: driftengine.NewPaths(location.AnchorPath())}, nil
+ }
+ 
+-// root returns the worktree root, which names the capture's job.
++// root returns the worktree root, which names the capture's job and a drift command's relative dir is joined onto.
+ func (w *worktree) root() string {
+ 	return w.location.WorktreePath()
+ }
+ 
+-// anchor returns the anchored directory the capture child starts in and a drift command's relative dir is joined onto.
++// anchor returns the anchored directory the capture child starts in and a drift command with no dir runs in.
+ func (w *worktree) anchor() string {
+ 	return w.location.AnchorPath()
+ }
+@@ -114,6 +114,38 @@ func (w *worktree) slots() (*gateslot.Pool, string) {
+ 	return hubgeom.GateSlots(w.location), gateslot.WaitDir(w.location.AnchorPath())
+ }
+ 
++// captureRequest describes a capture of step in this worktree, which the caller completes with its skip list, precondition and lock bound.
++// A relative step dir is joined onto the worktree root, and a step with no dir runs in the anchored directory.
++func (w *worktree) captureRequest(step driftengine.CommandStep) driftengine.CaptureRequest {
++	pool, waitDir := w.slots()
++	return driftengine.CaptureRequest{
++		Paths:       w.paths,
++		WorktreeDir: w.root(),
++		AnchorDir:   w.anchor(),
++		Step:        step,
++		Pool:        pool,
++		WaitDir:     waitDir,
++		Timeout:     stepTimeout(step),
++		Now:         time.Now,
++	}
++}
++
++// compareRequest describes a compare of step in this worktree, which the caller completes with its skip list and lock bound.
++// A relative step dir is joined onto the worktree root, and a step with no dir runs in the anchored directory.
++func (w *worktree) compareRequest(step driftengine.CommandStep) driftengine.CompareRequest {
++	pool, waitDir := w.slots()
++	return driftengine.CompareRequest{
++		Paths:       w.paths,
++		WorktreeDir: w.root(),
++		AnchorDir:   w.anchor(),
++		Step:        step,
++		Pool:        pool,
++		WaitDir:     waitDir,
++		Timeout:     stepTimeout(step),
++		Now:         time.Now,
++	}
++}
++
+ // stepTimeout returns how long a declared step may run.
+ func stepTimeout(step driftengine.CommandStep) time.Duration {
+ 	return time.Duration(step.TimeoutMin) * time.Minute
+diff --git a/internal/driftcli/wiring_request_test.go b/internal/driftcli/wiring_request_test.go
+new file mode 100644
+index 00000000..febcda27
+--- /dev/null
++++ b/internal/driftcli/wiring_request_test.go
+@@ -0,0 +1,33 @@
++// wiring_request_test.go checks the two bases the capture and compare requests of a drift verb carry.
++
++package driftcli
++
++import (
++	"path/filepath"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/driftengine"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestWorktreeRequests_JoinOnTheWorktreeRootAndStartInTheAnchor covers the bases of a capture and a compare request for a worktree anchored at a subdirectory, where the worktree root and the anchored directory differ.
++func TestWorktreeRequests_JoinOnTheWorktreeRootAndStartInTheAnchor(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	location := &lymcwd.Location{HubPath: filepath.Join(t.TempDir(), "hub"), WorktreeName: "pair", AnchorRel: "backend"}
++	root, anchor := filepath.Join(location.HubPath, "pair"), filepath.Join(location.HubPath, "pair", "backend")
++	w := &worktree{location: location, paths: driftengine.NewPaths(location.AnchorPath())}
++	step := driftengine.CommandStep{Command: "p {baseline_dir}", Dir: "tests", TimeoutMin: 3}
++
++	capture := w.captureRequest(step)
++	if capture.WorktreeDir != root || capture.AnchorDir != anchor || capture.Timeout != 3*time.Minute || capture.Step.Dir != "tests" {
++		t.Errorf("captureRequest() = %+v; want WorktreeDir %q, AnchorDir %q, a 3m timeout and the step", capture, root, anchor)
++	}
++	compare := w.compareRequest(step)
++	if compare.WorktreeDir != root || compare.AnchorDir != anchor || compare.Timeout != 3*time.Minute || compare.Step.Dir != "tests" {
++		t.Errorf("compareRequest() = %+v; want WorktreeDir %q, AnchorDir %q, a 3m timeout and the step", compare, root, anchor)
++	}
++}
+diff --git a/internal/driftengine/capture.go b/internal/driftengine/capture.go
+index 0345fe76..90f356b5 100644
+--- a/internal/driftengine/capture.go
++++ b/internal/driftengine/capture.go
+@@ -25,7 +25,9 @@ const CaptureHaltPrefix = "drift capture halt: "
+ type CaptureRequest struct {
+ 	// Paths are the drift paths of the task's anchor root.
+ 	Paths Paths
+-	// AnchorDir is the absolute anchored directory the command's relative dir is joined onto.
++	// WorktreeDir is the absolute worktree root the command's relative dir is joined onto.
++	WorktreeDir string
++	// AnchorDir is the absolute anchored directory a command with no dir runs in.
+ 	AnchorDir string
+ 	// Step is the declared capture command.
+ 	Step CommandStep
+@@ -87,11 +89,13 @@ func RunCapture(ctx context.Context, req CaptureRequest) (CaptureRecord, error)
+ 
+ 	rec.Log = logPathFor(p.LogsDir, "capture", req.Now())
+ 	outcome, err := runStep(ctx, stepRun{
++		WorktreeDir: req.WorktreeDir,
+ 		AnchorDir:   req.AnchorDir,
++		Name:        stepCapture,
+ 		Step:        req.Step,
+ 		Pool:        req.Pool,
+ 		WaitDir:     req.WaitDir,
+-		Site:        "drift capture",
++		Site:        siteCapture,
+ 		BaselineDir: p.BaselineDir,
+ 		SkipFile:    p.SkipFile,
+ 		LogPath:     rec.Log,
+@@ -224,11 +228,13 @@ func RunSideCapture(ctx context.Context, req CaptureRequest) (SideResult, error)
+ 
+ 	result := SideResult{Dir: dir, Log: logPathFor(p.LogsDir, "side-capture", req.Now())}
+ 	outcome, err := runStep(ctx, stepRun{
++		WorktreeDir: req.WorktreeDir,
+ 		AnchorDir:   req.AnchorDir,
++		Name:        stepCapture,
+ 		Step:        req.Step,
+ 		Pool:        req.Pool,
+ 		WaitDir:     req.WaitDir,
+-		Site:        "drift side capture",
++		Site:        siteSideCapture,
+ 		BaselineDir: dir,
+ 		SkipFile:    p.SkipFile,
+ 		LogPath:     result.Log,
+diff --git a/internal/driftengine/capture_test.go b/internal/driftengine/capture_test.go
+index 583f9294..aef2c453 100644
+--- a/internal/driftengine/capture_test.go
++++ b/internal/driftengine/capture_test.go
+@@ -40,15 +40,16 @@ func newCaptureFixture(t *testing.T, command string) *captureFixture {
+ 	return &captureFixture{
+ 		pool: pool,
+ 		req: CaptureRequest{
+-			Paths:     NewPaths(root),
+-			AnchorDir: root,
+-			Step:      CommandStep{Command: command, Dir: ".", TimeoutMin: 1},
+-			Pool:      pool,
+-			WaitDir:   t.TempDir(),
+-			Check:     func() (string, error) { return "head1", nil },
+-			Timeout:   time.Minute,
+-			Now:       time.Now,
+-			LockRetry: time.Second,
++			Paths:       NewPaths(root),
++			WorktreeDir: root,
++			AnchorDir:   root,
++			Step:        CommandStep{Command: command, TimeoutMin: 1},
++			Pool:        pool,
++			WaitDir:     t.TempDir(),
++			Check:       func() (string, error) { return "head1", nil },
++			Timeout:     time.Minute,
++			Now:         time.Now,
++			LockRetry:   time.Second,
+ 		},
+ 	}
+ }
+@@ -145,6 +146,63 @@ func TestRunCapture(t *testing.T) {
+ 		})
+ 	}
+ 
++	t.Run("the step's dir", func(t *testing.T) {
++		t.Parallel()
++		// Each row runs under an anchor at the worktree's dotnet subdirectory, the geometry where the two bases differ.
++		dirs := []struct {
++			name string
++			dir  string
++			// ranIn is where the command ran, relative to the worktree root; empty when the dir is refused.
++			ranIn string
++		}{
++			{name: "NoDirRunsInTheAnchor", dir: "", ranIn: "dotnet"},
++			{name: "ARelativeDirJoinsTheWorktreeRootNotTheAnchor", dir: "dotnet", ranIn: "dotnet"},
++			{name: "AMissingDirIsRefusedBeforeTheCommand", dir: "dotnet/dotnet"},
++		}
++		for _, tt := range dirs {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				f := newCaptureFixture(t, "pwd -P > {baseline_dir}/ran")
++				root := f.req.WorktreeDir
++				f.req.AnchorDir = filepath.Join(root, "dotnet")
++				if err := os.MkdirAll(f.req.AnchorDir, 0o755); err != nil {
++					t.Fatalf("MkdirAll() = %v; want nil", err)
++				}
++				f.req.Step.Dir = tt.dir
++
++				rec, err := RunCapture(context.Background(), f.req)
++				if tt.ranIn == "" {
++					resolved := filepath.Join(root, filepath.FromSlash(tt.dir))
++					for _, want := range []string{resolved, `drift.yaml key "capture.dir"`, "lym config drift --set capture.dir=<dir> from the prime", "then lym drift capture and lym loom resume"} {
++						if err == nil || !strings.Contains(err.Error(), want) || !strings.Contains(rec.Reason, want) {
++							t.Errorf("RunCapture() = %+v, %v; want an error and a reason naming %q", rec, err, want)
++						}
++					}
++					if rec.State != CaptureFailed {
++						t.Errorf("RunCapture() state = %q; want %q", rec.State, CaptureFailed)
++					}
++					if _, statErr := os.Stat(rec.Log); !errors.Is(statErr, os.ErrNotExist) {
++						t.Errorf("the log %s exists; want no command started", rec.Log)
++					}
++					if !slotFree(t, f.pool) {
++						t.Errorf("the slot is held after a refused dir")
++					}
++					return
++				}
++				if err != nil || rec.State != CapturePassed {
++					t.Fatalf("RunCapture() = %+v, %v; want a passed record", rec, err)
++				}
++				want, err := filepath.EvalSymlinks(filepath.Join(root, tt.ranIn))
++				if err != nil {
++					t.Fatalf("EvalSymlinks() = %v; want nil", err)
++				}
++				if got := strings.TrimSpace(readFile(t, filepath.Join(f.req.Paths.BaselineDir, "ran"))); got != want {
++					t.Errorf("the command ran in %s; want %s", got, want)
++				}
++			})
++		}
++	})
++
+ 	t.Run("a command past the timeout has its tree killed and fails", func(t *testing.T) {
+ 		t.Parallel()
+ 		f := newCaptureFixture(t, "sleep 60 & echo $! > {baseline_dir}/child.pid; wait")
+@@ -260,6 +318,47 @@ func TestRunCapture(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a side capture's relative dir joins the worktree root, not the anchor", func(t *testing.T) {
++		t.Parallel()
++		f := newCaptureFixture(t, "pwd -P > {baseline_dir}/ran")
++		f.req.AnchorDir = filepath.Join(f.req.WorktreeDir, "dotnet")
++		if err := os.MkdirAll(f.req.AnchorDir, 0o755); err != nil {
++			t.Fatalf("MkdirAll() = %v; want nil", err)
++		}
++		f.req.Step.Dir = "dotnet"
++
++		got, err := RunSideCapture(context.Background(), f.req)
++		if err != nil || got.ExitCode != 0 {
++			t.Fatalf("RunSideCapture() = %+v, %v; want exit 0", got, err)
++		}
++		want, err := filepath.EvalSymlinks(f.req.AnchorDir)
++		if err != nil {
++			t.Fatalf("EvalSymlinks() = %v; want nil", err)
++		}
++		if ran := strings.TrimSpace(readFile(t, filepath.Join(got.Dir, "ran"))); ran != want {
++			t.Errorf("the command ran in %s; want %s", ran, want)
++		}
++	})
++
++	t.Run("a side capture of a missing dir is refused with the side capture as its way forward", func(t *testing.T) {
++		t.Parallel()
++		f := newCaptureFixture(t, "true")
++		f.req.Step.Dir = "gone"
++
++		_, err := RunSideCapture(context.Background(), f.req)
++		for _, want := range []string{filepath.Join(f.req.WorktreeDir, "gone"), `drift.yaml key "capture.dir"`, "lym config drift --set capture.dir=<dir> from the prime, then lym drift capture --side"} {
++			if err == nil || !strings.Contains(err.Error(), want) {
++				t.Errorf("RunSideCapture() = %v; want an error naming %q", err, want)
++			}
++		}
++		if err != nil && strings.Contains(err.Error(), "lym loom resume") {
++			t.Errorf("RunSideCapture() = %v; want no loom resume in a side capture's way forward", err)
++		}
++		if !slotFree(t, f.pool) {
++			t.Errorf("the slot is held after a refused dir")
++		}
++	})
++
+ 	t.Run("a side capture writes the next numbered directory and leaves the main capture's files", func(t *testing.T) {
+ 		t.Parallel()
+ 		f := newCaptureFixture(t, "echo side > {baseline_dir}/p.json")
+diff --git a/internal/driftengine/compare.go b/internal/driftengine/compare.go
+index 4769534c..60a5c4f6 100644
+--- a/internal/driftengine/compare.go
++++ b/internal/driftengine/compare.go
+@@ -21,7 +21,9 @@ import (
+ type CompareRequest struct {
+ 	// Paths are the drift paths of the task's anchor root.
+ 	Paths Paths
+-	// AnchorDir is the absolute anchored directory the command's relative dir is joined onto.
++	// WorktreeDir is the absolute worktree root the command's relative dir is joined onto.
++	WorktreeDir string
++	// AnchorDir is the absolute anchored directory a command with no dir runs in.
+ 	AnchorDir string
+ 	// Step is the declared compare command.
+ 	Step CommandStep
+@@ -75,11 +77,13 @@ func RunCompare(ctx context.Context, req CompareRequest) (CompareResult, error)
+ 	}
+ 	result := CompareResult{Log: logPathFor(p.LogsDir, "compare", req.Now())}
+ 	outcome, err := runStep(ctx, stepRun{
++		WorktreeDir: req.WorktreeDir,
+ 		AnchorDir:   req.AnchorDir,
++		Name:        stepCompare,
+ 		Step:        req.Step,
+ 		Pool:        req.Pool,
+ 		WaitDir:     req.WaitDir,
+-		Site:        "drift compare",
++		Site:        siteCompare,
+ 		BaselineDir: p.BaselineDir,
+ 		SkipFile:    p.SkipFile,
+ 		LogPath:     result.Log,
+diff --git a/internal/driftengine/compare_test.go b/internal/driftengine/compare_test.go
+index 02270bd1..eb094a87 100644
+--- a/internal/driftengine/compare_test.go
++++ b/internal/driftengine/compare_test.go
+@@ -22,14 +22,15 @@ func newCompareFixture(t *testing.T, command string) (CompareRequest, *gateslot.
+ 	t.Helper()
+ 	f := newCaptureFixture(t, command)
+ 	return CompareRequest{
+-		Paths:     f.req.Paths,
+-		AnchorDir: f.req.AnchorDir,
+-		Step:      f.req.Step,
+-		Pool:      f.pool,
+-		WaitDir:   f.req.WaitDir,
+-		Timeout:   time.Minute,
+-		Now:       time.Now,
+-		LockRetry: time.Second,
++		Paths:       f.req.Paths,
++		WorktreeDir: f.req.WorktreeDir,
++		AnchorDir:   f.req.AnchorDir,
++		Step:        f.req.Step,
++		Pool:        f.pool,
++		WaitDir:     f.req.WaitDir,
++		Timeout:     time.Minute,
++		Now:         time.Now,
++		LockRetry:   time.Second,
+ 	}, f.pool
+ }
+ 
+@@ -110,6 +111,44 @@ func TestRunCompare(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a missing dir is refused naming the compare key and resume as the way forward", func(t *testing.T) {
++		t.Parallel()
++		req, pool := newCompareFixture(t, "true")
++		req.Step.Dir = "gone"
++		_, err := RunCompare(context.Background(), req)
++		for _, want := range []string{filepath.Join(req.WorktreeDir, "gone"), `drift.yaml key "compare.dir"`, "lym config drift --set compare.dir=<dir> from the prime, then lym loom resume"} {
++			if err == nil || !strings.Contains(err.Error(), want) {
++				t.Errorf("RunCompare() = %v; want an error naming %q", err, want)
++			}
++		}
++		if err != nil && strings.Contains(err.Error(), "lym drift capture") {
++			t.Errorf("RunCompare() = %v; want no capture in a compare's way forward", err)
++		}
++		if !slotFree(t, pool) {
++			t.Errorf("the slot is held after a refused dir")
++		}
++	})
++
++	t.Run("a relative dir joins the worktree root, not the anchor", func(t *testing.T) {
++		t.Parallel()
++		req, _ := newCompareFixture(t, "pwd -P > ran.txt")
++		req.AnchorDir = filepath.Join(req.WorktreeDir, "dotnet")
++		if err := os.MkdirAll(req.AnchorDir, 0o755); err != nil {
++			t.Fatalf("MkdirAll() = %v; want nil", err)
++		}
++		req.Step.Dir = "dotnet"
++		if got, err := RunCompare(context.Background(), req); err != nil || !got.Passed {
++			t.Fatalf("RunCompare() = %+v, %v; want a pass", got, err)
++		}
++		want, err := filepath.EvalSymlinks(req.AnchorDir)
++		if err != nil {
++			t.Fatalf("EvalSymlinks() = %v; want nil", err)
++		}
++		if got := strings.TrimSpace(readFile(t, filepath.Join(req.AnchorDir, "ran.txt"))); got != want {
++			t.Errorf("the command ran in %s; want %s", got, want)
++		}
++	})
++
+ 	t.Run("a shortened timeout kills the tree and fails", func(t *testing.T) {
+ 		t.Parallel()
+ 		req, pool := newCompareFixture(t, "sleep 60")
+diff --git a/internal/driftengine/config.go b/internal/driftengine/config.go
+index 690d9a08..283d31c0 100644
+--- a/internal/driftengine/config.go
++++ b/internal/driftengine/config.go
+@@ -11,6 +11,7 @@ import (
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
+ 	"github.com/Knatte18/loomyard/internal/yamlengine"
+ 	"gopkg.in/yaml.v3"
+@@ -41,7 +42,7 @@ const (
+ type CommandStep struct {
+ 	// Command is the shell command the step runs, holding the {baseline_dir} placeholder.
+ 	Command string `yaml:"command"`
+-	// Dir is the run directory, absolute or relative to the anchored directory.
++	// Dir is the run directory, absolute or relative to the worktree root; empty runs the step in the worktree's anchored directory.
+ 	Dir string `yaml:"dir"`
+ 	// Env is the environment the command runs with, over the process environment.
+ 	Env map[string]string `yaml:"env"`
+@@ -126,7 +127,7 @@ func ConfigSpec() configengine.Spec {
+ }
+ 
+ // LoadConfig loads and validates the drift module's configuration strictly through the hub-wide layer stack under dirs.
+-// A declared step needs a command holding {baseline_dir} and a timeout_min of at least 1, and its dir defaults to ".";
++// A declared step needs a command holding {baseline_dir} and a timeout_min of at least 1;
+ // an all-empty step is undeclared and loads as the zero CommandStep.
+ // A scope must be empty, off, partial or full, and skip names tests under scope partial only, where it is required.
+ // Every refusal names the key and lym config drift as the way forward.
+@@ -219,11 +220,29 @@ func decodeStep(name string, file stepFile) (CommandStep, error) {
+ 	if *file.TimeoutMin < 1 {
+ 		return CommandStep{}, refuseKey(name+".timeout_min", fmt.Sprintf("%d; want at least 1", *file.TimeoutMin))
+ 	}
+-	step := CommandStep{Command: file.Command, Dir: file.Dir, Env: file.Env, TimeoutMin: *file.TimeoutMin}
+-	if step.Dir == "" {
+-		step.Dir = "."
++	return CommandStep{Command: file.Command, Dir: file.Dir, Env: file.Env, TimeoutMin: *file.TimeoutMin}, nil
++}
++
++// CheckDirs loads the drift config under dirs and refuses a declared step whose dir is no existing directory in the worktree at worktreeRoot, whose anchored directory is anchorDir.
++// A hub-wide drift config write runs it against the prime, so a dir that would fail every capture or compare is refused when it is written.
++func CheckDirs(dirs configengine.Dirs, worktreeRoot, anchorDir string) error {
++	cfg, err := LoadConfig(dirs)
++	if err != nil {
++		return err
+ 	}
+-	return step, nil
++	steps := []struct {
++		name string
++		step CommandStep
++	}{{stepCapture, cfg.Capture}, {stepCompare, cfg.Compare}}
++	for _, declared := range steps {
++		if declared.step.Command == "" {
++			continue
++		}
++		if _, err := gateslot.StatCommandDir(worktreeRoot, anchorDir, declared.step.Dir); err != nil {
++			return refuseKey(declared.name+".dir", err.Error())
++		}
++	}
++	return nil
+ }
+ 
+ // Step returns the declared capture or compare step.
+diff --git a/internal/driftengine/config_test.go b/internal/driftengine/config_test.go
+index 7212f949..f2554ef6 100644
+--- a/internal/driftengine/config_test.go
++++ b/internal/driftengine/config_test.go
+@@ -38,11 +38,11 @@ func TestConfigSpec_SetNestedKeys(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("LoadConfig() = %v; want nil", err)
+ 	}
+-	wantCapture := CommandStep{Command: "profile --out {baseline_dir}", Dir: ".", Env: map[string]string{"NAME": "1"}, TimeoutMin: 45}
++	wantCapture := CommandStep{Command: "profile --out {baseline_dir}", Env: map[string]string{"NAME": "1"}, TimeoutMin: 45}
+ 	if !reflect.DeepEqual(cfg.Capture, wantCapture) {
+ 		t.Errorf("LoadConfig() capture = %+v; want %+v", cfg.Capture, wantCapture)
+ 	}
+-	wantCompare := CommandStep{Command: "cmp {baseline_dir}", Dir: ".", TimeoutMin: 5}
++	wantCompare := CommandStep{Command: "cmp {baseline_dir}", TimeoutMin: 5}
+ 	if !reflect.DeepEqual(cfg.Compare, wantCompare) {
+ 		t.Errorf("LoadConfig() compare = %+v; want %+v", cfg.Compare, wantCompare)
+ 	}
+@@ -84,7 +84,7 @@ func TestConfigSpec_SetWholeSteps(t *testing.T) {
+ 	if !reflect.DeepEqual(cfg.Capture, wantCapture) {
+ 		t.Errorf("LoadConfig() capture = %+v; want %+v", cfg.Capture, wantCapture)
+ 	}
+-	wantCompare := CommandStep{Command: "cmp {baseline_dir}", Dir: ".", Env: map[string]string{"NAME": "1"}, TimeoutMin: 5}
++	wantCompare := CommandStep{Command: "cmp {baseline_dir}", Env: map[string]string{"NAME": "1"}, TimeoutMin: 5}
+ 	if !reflect.DeepEqual(cfg.Compare, wantCompare) {
+ 		t.Errorf("LoadConfig() compare = %+v; want %+v", cfg.Compare, wantCompare)
+ 	}
+@@ -115,6 +115,65 @@ func seedDriftConfig(t *testing.T, baseDir, contents string) {
+ 	}
+ }
+ 
++// TestCheckDirs pins that a declared step whose dir resolves to no existing directory under the worktree root is refused.
++// The refusal names the step's key and the resolved path.
++// An existing dir, an unset dir and an undeclared step pass.
++func TestCheckDirs(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	root := t.TempDir()
++	anchor := filepath.Join(root, "dotnet")
++	if err := os.MkdirAll(anchor, 0o755); err != nil {
++		t.Fatalf("MkdirAll() = %v; want nil", err)
++	}
++	tests := []struct {
++		name    string
++		capture string
++		// compare is the compare line; empty leaves the template's undeclared one.
++		compare string
++		// wantErr are the texts the refusal names; empty when the dirs pass.
++		wantErr []string
++	}{
++		{name: "AnUndeclaredStepPasses", capture: "capture: {}"},
++		{
++			name:    "ADirMissingUnderTheWorktreeRootOfTheCompareIsRefused",
++			capture: "capture: {}",
++			compare: `compare: {command: "c {baseline_dir}", dir: gone, timeout_min: 1}`,
++			wantErr: []string{`drift config key "compare.dir"`, filepath.Join(root, "gone"), "lym config drift"},
++		},
++		{name: "NoDirPasses", capture: `capture: {command: "p {baseline_dir}", timeout_min: 1}`},
++		{name: "AnExistingDirUnderTheWorktreeRootPasses", capture: `capture: {command: "p {baseline_dir}", dir: dotnet, timeout_min: 1}`},
++		{
++			name:    "ADirMissingUnderTheWorktreeRootIsRefused",
++			capture: `capture: {command: "p {baseline_dir}", dir: dotnet/dotnet, timeout_min: 1}`,
++			wantErr: []string{`drift config key "capture.dir"`, filepath.Join(root, "dotnet", "dotnet"), "lym config drift"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			board := t.TempDir()
++			lines := map[string]string{"capture": tt.capture}
++			if tt.compare != "" {
++				lines["compare"] = tt.compare
++			}
++			seedDriftConfig(t, board, withKeys(t, lines))
++			err := CheckDirs(configengine.Dirs{Board: board}, root, anchor)
++			if len(tt.wantErr) == 0 {
++				if err != nil {
++					t.Errorf("CheckDirs() = %v; want nil", err)
++				}
++				return
++			}
++			for _, want := range tt.wantErr {
++				if err == nil || !strings.Contains(err.Error(), want) {
++					t.Errorf("CheckDirs() = %v; want an error naming %q", err, want)
++				}
++			}
++		})
++	}
++}
++
+ // withKey returns the template with the line of key replaced by line.
+ func withKey(t *testing.T, key, line string) string {
+ 	t.Helper()
+@@ -182,10 +241,10 @@ func TestLoadConfig(t *testing.T) {
+ 	}{
+ 		{name: "template defaults", seed: true, contents: ConfigTemplate(), want: templateConfig(func(*Config) {})},
+ 		{
+-			name: "a declared capture loads with dir defaulted", seed: true,
++			name: "a declared capture with no dir loads with an empty dir", seed: true,
+ 			contents: withKey(t, "capture", capture),
+ 			want: templateConfig(func(c *Config) {
+-				c.Capture = CommandStep{Command: "profile --out {baseline_dir}", Dir: ".", TimeoutMin: 30}
++				c.Capture = CommandStep{Command: "profile --out {baseline_dir}", TimeoutMin: 30}
+ 			}),
+ 		},
+ 		{
+diff --git a/internal/driftengine/doc.go b/internal/driftengine/doc.go
+index e3ee754c..04ba6797 100644
+--- a/internal/driftengine/doc.go
++++ b/internal/driftengine/doc.go
+@@ -5,7 +5,9 @@
+ // and `scope` and `skip`, a task's regression scope and the tests scope partial leaves out, which a task sets in its board entry's `run_settings`.
+ // LoadConfig refuses a scope other than empty, `off`, `partial` or `full`, a partial scope with no skipped test and a skipped test under any other scope.
+ // A declared command holds the placeholder `{baseline_dir}`, the directory the capture writes its profile files to and the compare reads them from, and may hold `{skip_file}`, a file naming one skipped test per line.
+-// A step's relative `dir` is joined onto the worktree's anchored directory, the one every drift run is told.
++// A step's `dir` resolves by gateslot.ResolveCommandDir, so it means the directory a gate tier's `dir` means: relative to the worktree root, absolute as written, and the worktree's anchored directory when unset; every drift run is told both directories.
++// Before a step's command starts, a `dir` that is no existing directory fails naming the resolved path, the `drift.yaml` key and, as the way forward, `lym config drift --set <step>.dir=<dir>` from the prime, then `lym drift capture` and `lym loom resume` for the capture, `lym drift capture --side` for the side capture and `lym loom resume` for the compare.
++// CheckDirs refuses the same `dir` over the loaded config against a told worktree, which a hub-wide `lym config drift` write runs against the prime.
+ // `capture` and `compare` are executable keys, so only the template and the hub's board default layer set them, with `lym config drift --set 'capture={command: ..., timeout_min: N}'`.
+ // Once a step is declared, `--set` also changes one of its keys alone, as in `--set capture.env.NAME=1` or `--set compare.timeout_min=10`, and refuses a key a step lacks;
+ // a step left with keys but no command fails the load check, so a first declaration sets `command` and `timeout_min` together.
+diff --git a/internal/driftengine/seats.go b/internal/driftengine/seats.go
+index 19f489dd..2a4296e1 100644
+--- a/internal/driftengine/seats.go
++++ b/internal/driftengine/seats.go
+@@ -8,8 +8,11 @@ package driftengine
+ import (
+ 	"encoding/json"
+ 	"fmt"
++	"path/filepath"
++	"strings"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/languageconfig"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
+ 	"github.com/Knatte18/loomyard/internal/pattern"
+@@ -116,6 +119,8 @@ type BaselineInputs struct {
+ 	StencilsDir string
+ 	// WorktreeRoot is the task worktree the agent works in.
+ 	WorktreeRoot string
++	// AnchorDir is the worktree's anchored directory, where a capture with no dir runs.
++	AnchorDir string
+ 	// Subject is SubjectDecisionRecord or SubjectBoardEntry.
+ 	Subject string
+ 	// Slug is the board entry's slug; required for SubjectBoardEntry.
+@@ -128,22 +133,29 @@ type BaselineInputs struct {
+ 	ScopeNote string
+ }
+ 
+-// captureReading returns the sentence part naming the declared capture command and its run directory, which the baseline agent judges the suite's reach from.
+-func captureReading(step CommandStep) string {
++// captureReading returns the sentence part naming the declared capture command and the directory it runs in, which the baseline agent judges the suite's reach from.
++// The directory is shown relative to worktreeRoot, and whole when it lies outside it.
++func captureReading(step CommandStep, worktreeRoot, anchorDir string) string {
+ 	if step.Command == "" {
+ 		return "not declared yet, so judge the suite's reach from the repository's test setup alone"
+ 	}
+-	return fmt.Sprintf("`%s`, run in `%s` under the anchored directory", step.Command, step.Dir)
++	resolved := gateslot.ResolveCommandDir(worktreeRoot, anchorDir, step.Dir)
++	rel, err := filepath.Rel(worktreeRoot, resolved)
++	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
++		return fmt.Sprintf("`%s`, run in `%s`", step.Command, resolved)
++	}
++	return fmt.Sprintf("`%s`, run in `%s` relative to the worktree root", step.Command, rel)
+ }
+ 
+ // BaselineTable builds the seatengine.Table of one Drift-Baseline spawn: one lead whose only output is baseline.md.
+ // An empty required field of in is refused by name, and cfg.BaselineModel is resolved against reg.
+-// The prompt names cfg.Capture's command, so the agent can check whether the suite reaches the task's change.
++// The prompt names cfg.Capture's command and the directory it runs in, so the agent can check whether the suite reaches the task's change.
+ // The table carries no gate and no scope record output, since Go writes the record and a fresh spawn archives its outputs.
+ func BaselineTable(in BaselineInputs, cfg Config, reg modelspec.Registry) (seatengine.Table, error) {
+ 	err := requireTold("BaselineTable", []struct{ field, value string }{
+ 		{"StencilsDir", in.StencilsDir},
+ 		{"WorktreeRoot", in.WorktreeRoot},
++		{"AnchorDir", in.AnchorDir},
+ 		{"DecisionRecordPath", in.DecisionRecordPath},
+ 		{"BaselineReportPath", in.BaselineReportPath},
+ 	})
+@@ -165,7 +177,7 @@ func BaselineTable(in BaselineInputs, cfg Config, reg modelspec.Registry) (seate
+ 		Timeout:    baselineTimeout,
+ 		Values: map[string]string{
+ 			"subject_reading": reading,
+-			"capture_command": captureReading(cfg.Capture),
++			"capture_command": captureReading(cfg.Capture, in.WorktreeRoot, in.AnchorDir),
+ 			"baseline_path":   in.BaselineReportPath,
+ 			"scope_note":      in.ScopeNote,
+ 		},
+diff --git a/internal/driftengine/seats_test.go b/internal/driftengine/seats_test.go
+index 448a2503..3a728237 100644
+--- a/internal/driftengine/seats_test.go
++++ b/internal/driftengine/seats_test.go
+@@ -54,10 +54,11 @@ func TestSeatTables(t *testing.T) {
+ 
+ 	baseline := func(t *testing.T) BaselineInputs {
+ 		t.Helper()
+-		dir := t.TempDir()
++		dir, root := t.TempDir(), t.TempDir()
+ 		return BaselineInputs{
+ 			StencilsDir:        stencilkit.Seed(t),
+-			WorktreeRoot:       t.TempDir(),
++			WorktreeRoot:       root,
++			AnchorDir:          root,
+ 			Subject:            SubjectDecisionRecord,
+ 			Slug:               "fix-the-thing",
+ 			DecisionRecordPath: filepath.Join(dir, "decision-record.md"),
+@@ -89,6 +90,7 @@ func TestSeatTables(t *testing.T) {
+ 		}{
+ 			{"StencilsDir", func(in *BaselineInputs) { in.StencilsDir = "" }},
+ 			{"WorktreeRoot", func(in *BaselineInputs) { in.WorktreeRoot = "" }},
++			{"AnchorDir", func(in *BaselineInputs) { in.AnchorDir = "" }},
+ 			{"DecisionRecordPath", func(in *BaselineInputs) { in.DecisionRecordPath = "" }},
+ 			{"BaselineReportPath", func(in *BaselineInputs) { in.BaselineReportPath = "" }},
+ 		}
+@@ -195,6 +197,37 @@ func TestSeatTables(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("the capture's run directory is told relative to the worktree root", func(t *testing.T) {
++		t.Parallel()
++		outside := t.TempDir()
++		rows := []struct {
++			name string
++			dir  string
++			want string
++		}{
++			{"NoDirRunsInTheAnchor", "", "`p {baseline_dir}`, run in `dotnet` relative to the worktree root"},
++			{"DotIsTheWorktreeRoot", ".", "`p {baseline_dir}`, run in `.` relative to the worktree root"},
++			{"ARelativeDirIsKept", "tests", "`p {baseline_dir}`, run in `tests` relative to the worktree root"},
++			{"AnAbsoluteDirOutsideTheRootIsToldWhole", outside, "`p {baseline_dir}`, run in `" + outside + "`"},
++		}
++		for _, row := range rows {
++			t.Run(row.name, func(t *testing.T) {
++				t.Parallel()
++				in := baseline(t)
++				in.AnchorDir = filepath.Join(in.WorktreeRoot, "dotnet")
++				captured := cfg
++				captured.Capture = CommandStep{Command: "p {baseline_dir}", Dir: row.dir}
++				table, err := BaselineTable(in, captured, seatRegistry(t))
++				if err != nil {
++					t.Fatalf("BaselineTable() = _, %v; want nil error", err)
++				}
++				if got := table.Values["capture_command"]; got != row.want {
++					t.Errorf("capture_command = %q; want %q", got, row.want)
++				}
++			})
++		}
++	})
++
+ 	t.Run("the verify lead and its prompt", func(t *testing.T) {
+ 		t.Parallel()
+ 		in := verify(t)
+diff --git a/internal/driftengine/steprun.go b/internal/driftengine/steprun.go
+index 2ebac4d7..475ebc10 100644
+--- a/internal/driftengine/steprun.go
++++ b/internal/driftengine/steprun.go
+@@ -26,10 +26,21 @@ import (
+ // stampLayout is the UTC time layout that names a run's log file.
+ const stampLayout = "20060102T150405.000Z"
+ 
++// The sites a drift command runs from, which label its slot holder and wait record and word the way forward of a refused dir.
++const (
++	siteCapture     = "drift capture"
++	siteSideCapture = "drift side capture"
++	siteCompare     = "drift compare"
++)
++
+ // stepRun is one drift command to run.
+ type stepRun struct {
+-	// AnchorDir is the absolute anchored directory a relative step dir is joined onto.
++	// WorktreeDir is the absolute worktree root a relative step dir is joined onto.
++	WorktreeDir string
++	// AnchorDir is the absolute anchored directory a step with no dir runs in.
+ 	AnchorDir string
++	// Name is the step's drift.yaml key, capture or compare, which a refusal of its dir names.
++	Name string
+ 	// Step is the declared command.
+ 	Step CommandStep
+ 	// Pool is the gate-slot pool the run takes one slot of.
+@@ -65,11 +76,16 @@ type stepOutcome struct {
+ 
+ // runStep waits for a slot, runs the command and returns once its whole tree is gone.
+ // On an error the slot is already released; on success the caller releases it through the outcome.
++// A step whose dir is no existing directory is refused before it waits for a slot, so a shell never fails to start in a missing directory.
+ func runStep(ctx context.Context, run stepRun) (stepOutcome, error) {
+ 	command, err := renderCommand(run)
+ 	if err != nil {
+ 		return stepOutcome{}, err
+ 	}
++	dir, err := gateslot.StatCommandDir(run.WorktreeDir, run.AnchorDir, run.Step.Dir)
++	if err != nil {
++		return stepOutcome{}, missingDirRefusal(run, err)
++	}
+ 	if err := os.MkdirAll(filepath.Dir(run.LogPath), 0o755); err != nil {
+ 		return stepOutcome{}, fmt.Errorf("drift: create the log directory: %w", err)
+ 	}
+@@ -94,10 +110,7 @@ func runStep(ctx context.Context, run stepRun) (stepOutcome, error) {
+ 
+ 	shellName, shellFlag := verifyrun.ShellFor(runtime.GOOS)
+ 	cmd := exec.Command(shellName, shellFlag, command)
+-	cmd.Dir = run.Step.Dir
+-	if !filepath.IsAbs(cmd.Dir) {
+-		cmd.Dir = filepath.Join(run.AnchorDir, cmd.Dir)
+-	}
++	cmd.Dir = dir
+ 	cmd.Env = gateslot.HolderEnv(slices.Concat(os.Environ(), renderEnv(run.Step.Env)), lease, limits.Tier0Parallel)
+ 	cmd.Stdout, cmd.Stderr = logFile, logFile
+ 
+@@ -136,6 +149,19 @@ func runStep(ctx context.Context, run stepRun) (stepOutcome, error) {
+ 	return stepOutcome{ExitCode: exit, TimedOut: timedOut, release: release}, nil
+ }
+ 
++// missingDirRefusal is the refusal of a step whose dir is no existing directory.
++// It names the config key and the resolved path, and as the way forward the write that fixes the key from the prime, where hub-wide config is written, and then the verbs that run the step again from its site.
++func missingDirRefusal(run stepRun, cause error) error {
++	again := "lym loom resume"
++	switch run.Site {
++	case siteCapture:
++		again = "lym drift capture and lym loom resume"
++	case siteSideCapture:
++		again = "lym drift capture --side"
++	}
++	return fmt.Errorf("drift: the %s command cannot start: %s.yaml key %q: %w; way forward: lym config drift --set %s.dir=<dir> from the prime, then %s", run.Site, configModule, run.Name+".dir", cause, run.Name, again)
++}
++
+ // acquireSlot writes a wait record, waits for one slot with no deadline and removes the record.
+ func acquireSlot(ctx context.Context, run stepRun) (*gateslot.Lease, gateslot.Limits, error) {
+ 	limits, err := run.Pool.Limits()
+diff --git a/internal/driftengine/template.yaml b/internal/driftengine/template.yaml
+index df0340da..6064c2fd 100644
+--- a/internal/driftengine/template.yaml
++++ b/internal/driftengine/template.yaml
+@@ -1,6 +1,6 @@
+ enabled: false  # true turns on the regression rows Drift-Baseline, Drift-Await and Drift-Verify in the tapestry and darn recipes; false leaves them out
+-capture: {}  # the command that records the regression baseline, written whole as {command, dir, env, timeout_min}; {} declares none; the command must hold {baseline_dir}, where it writes its profile files, and may hold {skip_file}, a file naming one skipped test per line; write it with lym config drift --set 'capture={command: "...", timeout_min: 30}'; once declared, change one key alone with lym config drift --set capture.timeout_min=45
+-compare: {}  # the command that compares the branch against the baseline, written whole as {command, dir, env, timeout_min}; {} declares none; the command must hold {baseline_dir}, may hold {skip_file}, and exits 0 when nothing drifted; write it with lym config drift --set 'compare={command: "...", timeout_min: 30}'; once declared, change one key alone with lym config drift --set compare.timeout_min=45
++capture: {}  # the command that records the regression baseline, written whole as {command, dir, env, timeout_min}; {} declares none; dir is absolute or relative to the worktree root, the base gate.yaml's dir uses too, no dir runs in the worktree's anchor, and a hub write refuses a dir that is no existing directory in the prime; the command must hold {baseline_dir}, where it writes its profile files, and may hold {skip_file}, a file naming one skipped test per line; write it with lym config drift --set 'capture={command: "...", timeout_min: 30}'; once declared, change one key alone with lym config drift --set capture.timeout_min=45
++compare: {}  # the command that compares the branch against the baseline, written whole as {command, dir, env, timeout_min}; {} declares none; dir resolves as capture's does; the command must hold {baseline_dir}, may hold {skip_file}, and exits 0 when nothing drifted; write it with lym config drift --set 'compare={command: "...", timeout_min: 30}'; once declared, change one key alone with lym config drift --set compare.timeout_min=45
+ baseline_model: sonnet[medium]  # model-spec for the Drift-Baseline agent, which records the task's regression scope (see contracts/specs/llm-model-spec.md)
+ verify_model: opus[high]  # model-spec for the Drift-Verify agent, which judges, accepts and fixes drift (see contracts/specs/llm-model-spec.md)
+ verify_interactive: false  # true runs the Drift-Verify agent as a session with the operator in its pane: it presents the drift per test and per quantity with the baseline agent's expectation, and records each acceptance or fix the operator decides, so an operator must be present; false, the default, runs it autonomously, judging and accepting drift itself
+diff --git a/internal/gateslot/config.go b/internal/gateslot/config.go
+index b7864bc1..8f4ea1b4 100644
+--- a/internal/gateslot/config.go
++++ b/internal/gateslot/config.go
+@@ -8,6 +8,7 @@ import (
+ 	"fmt"
+ 	"os"
+ 	"path"
++	"path/filepath"
+ 	"slices"
+ 	"strings"
+ 	"time"
+@@ -306,6 +307,51 @@ func decodeBuild(file buildFile) (BuildStep, error) {
+ 	return BuildStep{About: file.About, Command: file.Command, Dir: file.Dir, Env: file.Env, TimeoutMin: *file.TimeoutMin}, nil
+ }
+ 
++// ResolveCommandDir returns the directory a hub command whose configured dir is dir runs in:
++// the anchored directory anchorDir when dir is empty, dir itself when absolute, and otherwise dir joined onto the worktree root worktreeRoot.
++// It is the rule the drift steps and the hub-wide dir checks resolve a dir by.
++// The gate's own run path reaches the same directory by filling an unset dir with the anchor relative to the worktree root and joining the result onto the root, so one value means one directory in every config file.
++func ResolveCommandDir(worktreeRoot, anchorDir, dir string) string {
++	switch {
++	case dir == "":
++		return anchorDir
++	case filepath.IsAbs(dir):
++		return dir
++	default:
++		return filepath.Join(worktreeRoot, dir)
++	}
++}
++
++// StatCommandDir returns the directory a hub command whose configured dir is dir runs in, resolved against worktreeRoot and anchorDir.
++// It refuses one that is no existing directory with an error naming dir and the resolved path.
++func StatCommandDir(worktreeRoot, anchorDir, dir string) (string, error) {
++	resolved := ResolveCommandDir(worktreeRoot, anchorDir, dir)
++	if info, err := os.Stat(resolved); err == nil && info.IsDir() {
++		return resolved, nil
++	}
++	return resolved, fmt.Errorf("dir %q resolves to %s, which is no existing directory; want an existing directory, absolute or relative to the worktree root, or no dir to run in the worktree's anchor", dir, resolved)
++}
++
++// CheckDirs loads the gate config under dirs and refuses a tier or build dir that is no existing directory in the worktree at worktreeRoot, whose anchored directory is anchorDir.
++// A hub-wide gate config write runs it against the prime, so a dir that would fail every gate run is refused when it is written.
++func CheckDirs(dirs configengine.Dirs, worktreeRoot, anchorDir string) error {
++	cfg, err := LoadConfig(dirs)
++	if err != nil {
++		return err
++	}
++	for _, key := range sortedKeys(cfg.Tiers) {
++		if _, err := StatCommandDir(worktreeRoot, anchorDir, cfg.Tiers[key].Dir); err != nil {
++			return useRefusal("key %q: %v", "tiers."+key+".dir", err)
++		}
++	}
++	if cfg.Build.Command != "" {
++		if _, err := StatCommandDir(worktreeRoot, anchorDir, cfg.Build.Dir); err != nil {
++			return useRefusal("key %q: %v", "build.dir", err)
++		}
++	}
++	return nil
++}
++
+ // Inert reports whether the worktree-relative slash path rel matches an inert_paths pattern:
+ // a pattern without a slash matches the path's base name, a pattern with one matches the whole path.
+ // A pattern path.Match rejects matches nothing.
+diff --git a/internal/gateslot/config_test.go b/internal/gateslot/config_test.go
+index 2a61e5fe..478d6017 100644
+--- a/internal/gateslot/config_test.go
++++ b/internal/gateslot/config_test.go
+@@ -136,6 +136,97 @@ func seedGateConfig(t *testing.T, contents string) string {
+ 	return baseDir
+ }
+ 
++// TestResolveCommandDir pins the one base every hub command's dir resolves against: the anchor for no dir, the worktree root for a relative dir and an absolute dir as written.
++func TestResolveCommandDir(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	root := t.TempDir()
++	anchor := filepath.Join(root, "dotnet")
++	absolute := t.TempDir()
++	tests := []struct {
++		name string
++		dir  string
++		want string
++	}{
++		{"NoDirRunsInTheAnchor", "", anchor},
++		{"ARelativeDirJoinsTheWorktreeRoot", "dotnet", filepath.Join(root, "dotnet")},
++		{"DotIsTheWorktreeRoot", ".", root},
++		{"AnAbsoluteDirIsKept", absolute, absolute},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := ResolveCommandDir(root, anchor, tt.dir); got != tt.want {
++				t.Errorf("ResolveCommandDir(%q, %q, %q) = %q; want %q", root, anchor, tt.dir, got, tt.want)
++			}
++		})
++	}
++}
++
++// TestCheckDirs pins that a tier or build dir resolving to no existing directory is refused naming its key and the resolved path, and that existing and unset dirs pass.
++func TestCheckDirs(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	root := t.TempDir()
++	anchor := filepath.Join(root, "dotnet")
++	if err := os.MkdirAll(anchor, 0o755); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(filepath.Join(root, "afile"), nil, 0o644); err != nil {
++		t.Fatal(err)
++	}
++	const tier1 = "  tier1: {command: run, timeout_min: 1, counter: vstest}\n"
++	tests := []struct {
++		name  string
++		tiers string
++		build string
++		// wantErr are the texts the refusal names; empty when the dirs pass.
++		wantErr []string
++	}{
++		{
++			name:  "ExistingAndUnsetDirsPass",
++			tiers: "tiers:\n  tier0: {command: run, dir: dotnet, timeout_min: 1, counter: vstest}\n" + tier1,
++			build: "build: {command: make, timeout_min: 1}\n",
++		},
++		{
++			name:    "AMissingTierDirIsRefused",
++			tiers:   "tiers:\n  tier0: {command: run, dir: dotnet/dotnet, timeout_min: 1, counter: vstest}\n",
++			build:   "build: {}\n",
++			wantErr: []string{`key "tiers.tier0.dir"`, filepath.Join(root, "dotnet", "dotnet"), `"lym config gate" from the prime`},
++		},
++		{
++			name:    "ADirNamingARegularFileIsRefused",
++			tiers:   "tiers:\n  tier0: {command: run, dir: afile, timeout_min: 1, counter: vstest}\n",
++			build:   "build: {}\n",
++			wantErr: []string{`key "tiers.tier0.dir"`, filepath.Join(root, "afile")},
++		},
++		{
++			name:    "AMissingBuildDirIsRefused",
++			tiers:   "tiers:\n" + tier1,
++			build:   "build: {command: make, dir: gone, timeout_min: 1}\n",
++			wantErr: []string{`key "build.dir"`, filepath.Join(root, "gone")},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			contents := strings.Replace(strings.Replace(ConfigTemplate(), "\ntiers: {}\n", "\n"+tt.tiers, 1), "\nbuild: {}\n", "\n"+tt.build, 1)
++			err := CheckDirs(configengine.Dirs{Board: seedGateConfig(t, contents)}, root, anchor)
++			if len(tt.wantErr) == 0 {
++				if err != nil {
++					t.Errorf("CheckDirs() = %v; want nil", err)
++				}
++				return
++			}
++			for _, want := range tt.wantErr {
++				if err == nil || !strings.Contains(err.Error(), want) {
++					t.Errorf("CheckDirs() = %v; want an error naming %q", err, want)
++				}
++			}
++		})
++	}
++}
++
+ func TestLoadConfig(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index cacef4d9..8222e99f 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -65,6 +65,9 @@
+ // A tier may also hold `filter`, its own test-filter expression, `shared_build: true`, which makes the tier depend on the build step, and `carry: false`, which keeps a green run from being carried over an unchanged tree; Tier.NoCarry is the negative form, so a zero Tier carries.
+ // A tier whose command holds TestTimeoutPlaceholder may hold `test_timeout_min`, the minutes the placeholder renders for the test runner's own per-binary bound, DefaultTestTimeoutMin when unset, so a hub raises `go test`'s own `-timeout` default from config instead of a literal in the command.
+ // `build` holds `about`, `command`, `dir` (default the worktree's anchor, filled by `Config.WithDefaultDir`), `env` and `timeout_min`; the template's `build: {}` is no build step, and a declared step has a non-empty Config.Build.Command.
++// ResolveCommandDir is the base of a `dir` for the drift steps and the hub-wide dir checks: relative to the worktree root, absolute as written, and the worktree's anchor when unset.
++// The gate's run path reaches the same directory for a tier's and the build's `dir`, through Config.WithDefaultDir, which fills an unset dir with the anchor relative to the root, and its join of the dir onto the worktree root.
++// StatCommandDir refuses a `dir` that resolves to no existing directory, naming the resolved path, and CheckDirs applies it to every tier and the build, which a hub-wide `lym config gate` write runs against the prime.
+ // `inert_paths` lists glob patterns of files no test reads: Config.Inert matches a worktree-relative slash path through `path.Match`, a pattern without a slash against the path's base name and one with a slash against the whole path, and a pattern `path.Match` rejects matches nothing.
+ // Config.AllInert is true only when the list and the paths are both non-empty and every path is inert.
+ // The `dotnet` scoper derives the impacted C# test projects and classes from the type-name closure over test classes.
+diff --git a/internal/gateslot/template.yaml b/internal/gateslot/template.yaml
+index 099603ed..7d4773ff 100644
+--- a/internal/gateslot/template.yaml
++++ b/internal/gateslot/template.yaml
+@@ -5,7 +5,7 @@ fixer_timeout_min: 30  # minutes a cold gate fixer may run before the call that
+ # The hub's test tiers, keyed tier0, tier1, and so on; the template declares none.
+ # A tier is written whole with one flow mapping: lym config gate --set 'tiers.tier0={command: "go test -json {targets} {args}", all_targets: ./..., timeout_min: 60, counter: go-json}'
+ # It holds command (with {targets}, {parallel}, {args} and {test_timeout} placeholders), timeout_min (at least 1) and counter (go-json or vstest), and all_targets when the command holds {targets}.
+-# It may also hold about, dir (relative to the worktree root; default the worktree's anchor), env, parallel (at least 1, default 1), covers (lower tier numbers its command runs anyway), slots (a count of at least 1, or all; default 1), prebuilt_lym and manual (true keeps a tier above tier0 out of lym gate test --upto, so it runs only when --tier names it).
++# It may also hold about, dir (absolute or relative to the worktree root, the base drift.yaml's dir uses too; default the worktree's anchor; a hub write refuses one that is no existing directory in the prime), env, parallel (at least 1, default 1), covers (lower tier numbers its command runs anyway), slots (a count of at least 1, or all; default 1), prebuilt_lym and manual (true keeps a tier above tier0 out of lym gate test --upto, so it runs only when --tier names it).
+ # Four more keys: filter (the tier's own test-filter expression, allowed only when the command holds {filter}), shared_build (true runs the hub's build step first, once per call), carry (false keeps a green run from being carried over an unchanged tree; default true) and test_timeout_min (the minutes {test_timeout} renders as, such as 20m for go test -timeout {test_timeout}, at least 1, allowed only when the command holds {test_timeout}; default 20).
+ # Inside the mapping a value holding a brace, comma or bracket is a double-quoted string.
+ # One key of a declared tier is set alone with its dotted path: lym config gate --set tiers.tier0.env.LYM_TEST_TIER=0
+@@ -34,7 +34,7 @@ gates:
+ scoper: none
+ 
+ # The build a tier with shared_build runs once per call; {} declares none.
+-# It holds command and timeout_min (at least 1), and may hold about, dir (relative to the worktree root; default the worktree's anchor) and env.
++# It holds command and timeout_min (at least 1), and may hold about, dir (absolute or relative to the worktree root; default the worktree's anchor; a hub write refuses one that is no existing directory in the prime) and env.
+ build: {}
+ 
+ # Glob patterns of files no test reads, such as "*.md" or "docs/*": a pattern without a slash matches the file's base name, one with a slash the whole worktree-relative path.
+diff --git a/internal/loomcli/driftwiring.go b/internal/loomcli/driftwiring.go
+index 90af0c2d..e092c53b 100644
+--- a/internal/loomcli/driftwiring.go
++++ b/internal/loomcli/driftwiring.go
+@@ -126,6 +126,7 @@ func driftDeps(location *lymcwd.Location, statusPath, statusLockPath string, tab
+ 			return driftengine.BaselineTable(driftengine.BaselineInputs{
+ 				StencilsDir:        tables.stencilsDir,
+ 				WorktreeRoot:       location.WorktreePath(),
++				AnchorDir:          location.AnchorPath(),
+ 				Subject:            tables.subject,
+ 				Slug:               tables.slug,
+ 				DecisionRecordPath: tables.decisionRecordPath,
+@@ -150,18 +151,11 @@ func driftDeps(location *lymcwd.Location, statusPath, statusLockPath string, tab
+ 			if err != nil {
+ 				return driftengine.CaptureRecord{}, err
+ 			}
+-			return driftengine.RunCapture(ctx, driftengine.CaptureRequest{
+-				Paths:     paths,
+-				AnchorDir: location.AnchorPath(),
+-				Step:      step,
+-				Pool:      pool,
+-				WaitDir:   waitDir,
+-				Skip:      scope.Skip,
+-				Check:     checkMain,
+-				Timeout:   time.Duration(step.TimeoutMin) * time.Minute,
+-				Now:       time.Now,
+-				LockRetry: driftCaptureLockRetry,
+-			})
++			request := driftCaptureRequest(location, paths, pool, waitDir, step)
++			request.Skip = scope.Skip
++			request.Check = checkMain
++			request.LockRetry = driftCaptureLockRetry
++			return driftengine.RunCapture(ctx, request)
+ 		},
+ 		Sleep: sleepContext,
+ 		VerifyTable: func(told driftengine.VerifyTold) (seatengine.Table, error) {
+@@ -192,21 +186,44 @@ func driftDeps(location *lymcwd.Location, statusPath, statusLockPath string, tab
+ 			if err != nil {
+ 				return driftengine.CompareResult{}, err
+ 			}
+-			return driftengine.RunCompare(ctx, driftengine.CompareRequest{
+-				Paths:     paths,
+-				AnchorDir: location.AnchorPath(),
+-				Step:      step,
+-				Pool:      pool,
+-				WaitDir:   waitDir,
+-				Skip:      driftengine.SkipList(scope),
+-				Timeout:   time.Duration(step.TimeoutMin) * time.Minute,
+-				Now:       time.Now,
+-				LockRetry: driftCompareLockRetry,
+-			})
++			request := driftCompareRequest(location, paths, pool, waitDir, step)
++			request.Skip = driftengine.SkipList(scope)
++			request.LockRetry = driftCompareLockRetry
++			return driftengine.RunCompare(ctx, request)
+ 		},
+ 	}
+ }
+ 
++// driftCaptureRequest describes a capture of step over location's worktree, which the caller completes with its skip list, precondition and lock bound.
++// A relative step dir is joined onto the worktree root, and a step with no dir runs in the anchored directory.
++func driftCaptureRequest(location *lymcwd.Location, paths driftengine.Paths, pool *gateslot.Pool, waitDir string, step driftengine.CommandStep) driftengine.CaptureRequest {
++	return driftengine.CaptureRequest{
++		Paths:       paths,
++		WorktreeDir: location.WorktreePath(),
++		AnchorDir:   location.AnchorPath(),
++		Step:        step,
++		Pool:        pool,
++		WaitDir:     waitDir,
++		Timeout:     time.Duration(step.TimeoutMin) * time.Minute,
++		Now:         time.Now,
++	}
++}
++
++// driftCompareRequest describes a compare of step over location's worktree, which the caller completes with its skip list and lock bound.
++// A relative step dir is joined onto the worktree root, and a step with no dir runs in the anchored directory.
++func driftCompareRequest(location *lymcwd.Location, paths driftengine.Paths, pool *gateslot.Pool, waitDir string, step driftengine.CommandStep) driftengine.CompareRequest {
++	return driftengine.CompareRequest{
++		Paths:       paths,
++		WorktreeDir: location.WorktreePath(),
++		AnchorDir:   location.AnchorPath(),
++		Step:        step,
++		Pool:        pool,
++		WaitDir:     waitDir,
++		Timeout:     time.Duration(step.TimeoutMin) * time.Minute,
++		Now:         time.Now,
++	}
++}
++
+ // captureSpawnRequest describes the start of the detached capture child of executable over location.
+ // The child runs in the anchored directory, since every lym verb resolves its worktree from a cwd equal to it.
+ func captureSpawnRequest(location *lymcwd.Location, paths driftengine.Paths, executable string) driftengine.SpawnRequest {
+diff --git a/internal/loomcli/driftwiring_integration_test.go b/internal/loomcli/driftwiring_integration_test.go
+index f13d3c26..cb42190c 100644
+--- a/internal/loomcli/driftwiring_integration_test.go
++++ b/internal/loomcli/driftwiring_integration_test.go
+@@ -1,4 +1,4 @@
+-// driftwiring_integration_test.go checks that the Drift seams loomcli builds run the capture and the compare in the anchored directory of a hub anchored at a subdirectory, not the worktree root.
++// driftwiring_integration_test.go checks that the Drift seams loomcli builds run the capture and the compare where a step's dir resolves in a hub anchored at a subdirectory: the anchored directory for no dir, and the worktree root joined with a relative dir.
+ 
+ package loomcli_test
+ 
+@@ -21,74 +21,89 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestDriftDeps_RunInTheAnchoredDirectory covers the capture and the compare seams over a hub anchored at a subdirectory:
+-// each declared command records its working directory, and both must be the anchored directory.
+-func TestDriftDeps_RunInTheAnchoredDirectory(t *testing.T) {
++// TestDriftDeps_RunWhereTheStepsDirResolves covers the capture and the compare seams over a hub anchored at a subdirectory:
++// each declared command records its working directory, which must be the anchored directory both for a step with no dir and for a step whose dir `backend` is joined onto the worktree root.
++// A relative dir joined onto the anchored directory instead names a directory that does not exist, so the run is refused.
++func TestDriftDeps_RunWhereTheStepsDirResolves(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "backend", Pairs: []string{hubforge.TemplatePairSlug}})
+-	anchor := filepath.Join(h.PairCodeWorktree(hubforge.TemplatePairSlug), "backend")
+-	loc, err := lymcwd.Resolve(anchor)
+-	if err != nil {
+-		t.Fatal(err)
+-	}
+-	if loc.AnchorPath() != anchor || loc.AnchorPath() == loc.WorktreePath() {
+-		t.Fatalf("anchored path = %q, worktree = %q; want an anchor below the worktree root", loc.AnchorPath(), loc.WorktreePath())
++	rows := []struct {
++		name string
++		// dirLine is the dir key of both steps, with its indentation and newline; empty sets none.
++		dirLine string
++	}{
++		{"NoDirRunsInTheAnchor", ""},
++		{"ARelativeDirJoinsTheWorktreeRoot", "  dir: backend\n"},
+ 	}
++	for _, tt := range rows {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "backend", Pairs: []string{hubforge.TemplatePairSlug}})
++			anchor := filepath.Join(h.PairCodeWorktree(hubforge.TemplatePairSlug), "backend")
++			loc, err := lymcwd.Resolve(anchor)
++			if err != nil {
++				t.Fatal(err)
++			}
++			if loc.AnchorPath() != anchor || loc.AnchorPath() == loc.WorktreePath() {
++				t.Fatalf("anchored path = %q, worktree = %q; want an anchor below the worktree root", loc.AnchorPath(), loc.WorktreePath())
++			}
+ 
+-	cwds := filepath.Join(t.TempDir(), "cwds")
+-	driftYAML := fmt.Sprintf(`capture:
++			cwds := filepath.Join(t.TempDir(), "cwds")
++			driftYAML := fmt.Sprintf(`capture:
+   command: |
+     pwd >> %q
+     mkdir -p {baseline_dir} && echo ok > {baseline_dir}/profile.txt
+-  timeout_min: 1
++%s  timeout_min: 1
+ compare:
+   command: 'pwd >> %q; : {baseline_dir}'
+-  timeout_min: 1
+-`, cwds, cwds)
+-	driftFile := configengine.ConfigFile(h.BoardDir(), "drift")
+-	if err := os.MkdirAll(filepath.Dir(driftFile), 0o755); err != nil {
+-		t.Fatal(err)
+-	}
+-	if err := os.WriteFile(driftFile, []byte(driftYAML), 0o644); err != nil {
+-		t.Fatal(err)
+-	}
++%s  timeout_min: 1
++`, cwds, tt.dirLine, cwds, tt.dirLine)
++			driftFile := configengine.ConfigFile(h.BoardDir(), "drift")
++			if err := os.MkdirAll(filepath.Dir(driftFile), 0o755); err != nil {
++				t.Fatal(err)
++			}
++			if err := os.WriteFile(driftFile, []byte(driftYAML), 0o644); err != nil {
++				t.Fatal(err)
++			}
+ 
+-	statusPath, statusLockPath := shedrun.StatusFile(loc, shedrun.SelfRunID), shedrun.StatusLock(loc, shedrun.SelfRunID)
+-	if err := os.MkdirAll(filepath.Dir(statusLockPath), 0o755); err != nil {
+-		t.Fatal(err)
+-	}
+-	baseline := shedengine.Status{CurrentProducer: "Drift-Baseline", State: shedengine.StateRunning}
+-	if err := state.WriteJSON(statusPath, statusLockPath, baseline); err != nil {
+-		t.Fatal(err)
+-	}
++			statusPath, statusLockPath := shedrun.StatusFile(loc, shedrun.SelfRunID), shedrun.StatusLock(loc, shedrun.SelfRunID)
++			if err := os.MkdirAll(filepath.Dir(statusLockPath), 0o755); err != nil {
++				t.Fatal(err)
++			}
++			baseline := shedengine.Status{CurrentProducer: "Drift-Baseline", State: shedengine.StateRunning}
++			if err := state.WriteJSON(statusPath, statusLockPath, baseline); err != nil {
++				t.Fatal(err)
++			}
+ 
+-	deps := loomcli.DriftDepsAt(loc, statusPath, statusLockPath)
+-	record, err := deps.RunCapture(context.Background())
+-	if err != nil || record.State != driftengine.CapturePassed {
+-		t.Fatalf("RunCapture() = %+v, %v; want a passed capture", record, err)
+-	}
+-	result, err := deps.Compare(context.Background())
+-	if err != nil || !result.Passed {
+-		t.Fatalf("Compare() = %+v, %v; want a passed compare", result, err)
+-	}
++			deps := loomcli.DriftDepsAt(loc, statusPath, statusLockPath)
++			record, err := deps.RunCapture(context.Background())
++			if err != nil || record.State != driftengine.CapturePassed {
++				t.Fatalf("RunCapture() = %+v, %v; want a passed capture", record, err)
++			}
++			result, err := deps.Compare(context.Background())
++			if err != nil || !result.Passed {
++				t.Fatalf("Compare() = %+v, %v; want a passed compare", result, err)
++			}
+ 
+-	want, err := filepath.EvalSymlinks(anchor)
+-	if err != nil {
+-		t.Fatal(err)
+-	}
+-	data, err := os.ReadFile(cwds)
+-	if err != nil {
+-		t.Fatal(err)
+-	}
+-	got := strings.Split(strings.TrimSpace(string(data)), "\n")
+-	if len(got) != 2 {
+-		t.Fatalf("recorded working directories = %q; want one each from the capture and the compare", got)
+-	}
+-	for i, dir := range got {
+-		if dir != want {
+-			t.Errorf("command %d ran in %q; want the anchored directory %q", i, dir, want)
+-		}
++			want, err := filepath.EvalSymlinks(anchor)
++			if err != nil {
++				t.Fatal(err)
++			}
++			data, err := os.ReadFile(cwds)
++			if err != nil {
++				t.Fatal(err)
++			}
++			got := strings.Split(strings.TrimSpace(string(data)), "\n")
++			if len(got) != 2 {
++				t.Fatalf("recorded working directories = %q; want one each from the capture and the compare", got)
++			}
++			for i, dir := range got {
++				if dir != want {
++					t.Errorf("command %d ran in %q; want the anchored directory %q", i, dir, want)
++				}
++			}
++		})
+ 	}
+ }
