@@ -36,6 +36,12 @@ Expected:
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-03): Drift children start in the anchored directory
+
+Decision: The drift capture and compare children start in the anchored directory. The fix resolves that directory through internal/lymcwd from the worktree's .lym-anchor and hands the drift engine an absolute path; the drift producer never joins the anchor path by hand.
+
+Rationale: Starting the children at the worktree root breaks PATTERN-cwd-resolution in PATTERN.md (operator, 2026-11-03).
+
 ## Constraints
 
 ## Auto-mode assumptions
