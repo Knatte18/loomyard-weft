@@ -221,29 +221,6 @@
       "revised": "2026-11-01T12:04:29Z"
     },
     {
-      "id": 910,
-      "handle": "T1",
-      "slug": "sandbox-dotnet-gate",
-      "title": "Drive the C# sandbox hub through a Drift and subdirectory-anchor trial and report what breaks",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "dotnet",
-        "gate",
-        "drift"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there",
-      "body": "## Seen (operator, 2026-11-03)\n\nThe agents and orchs that drive Drift hit many problems, because Drift was never tested for real.\nDrift's capture and compare start in the directory `.lym-anchor` names (`drift-anchor-and-skip`), but that was tested with fakes and integration tests only, never against a real hub whose anchor is not `.`.\nThe dotnet scoper and the shared build are not proved on a C# repository either.\n\n## Goal\n\nThis darn run drives the C# sandbox hub `lym-csharp-LYMHUB` (shortname `cs`, anchor `lym-csharp/dotnet`, over `Knatte18/lym-csharp`) through a fixed trial and reports what breaks:\n\n- Drift: baseline capture, scope, compare, verify and waive, end to end on real runs.\n- An anchor other than `.`: every row of a run, Drift's included, works from `lym-csharp/dotnet` and not from the repository root.\n- The dotnet scoper and the shared build.\n\n## Set up already (hub orch, 2026-11-03)\n\n- The hub's Bolt checkout was moved from `_board` to `_bolt` by hand, and Neve took the hub over with `lym adopt root`.\n- `gate.yaml`: `scoper: dotnet`, a `build` step, tiers with `{targets}`, `{filter}` and `--no-build`, and `drift-verify` among the gate keys.\n- `drift.yaml`: `enabled: true`, with capture and compare through `dotnet run --project src/LymCsharp.Regression`.\n- Three darn `light` tasks on the `cs` board, chained by `depends_on` so each Drift outcome stands alone:\n  1. `pipeflow-reynolds-helper`: a behavior-preserving refactor; Drift must compare clean.\n  2. `churchill-friction`: a new friction model and one new regression case; shows how Drift treats a case the baseline lacks.\n  3. `report-significant-digits`: an intended output change; Drift must report it and its verify accept it with a reason.\n\n## Steps\n\n1. Read the `cs` hub's adopt check result; a red check is the first finding.\n2. Release the three `cs` tasks, one at a time as each lands, with `lym board set-status` run through `env -C /home/knatte/Code/lym-csharp-LYMHUB/lym-csharp/dotnet`; the `cs` hub's dobby starts them and its orch settles their stops.\n3. Follow each run to its landing or a stop it cannot pass, reading `lym batten status`, `lym loom status`, `lym drift status` and the run's drive reports.\n4. Run exactly these three trial tasks once each; start no other task on `cs`.\n\n## Deliverable\n\n- A report `docs/research/drift-csharp-trial-2026-11-03.md`: per trial task, what each Drift row and each gate did, with the anchor and the scoper's scope, and every fault seen with its evidence.\n- Each lym fault becomes a bug note on this hub's board, one finding per note, with the module labels it touches.\n- No code change to lym in this run: fixes are tasks of their own.\n",
-      "status": "draft",
-      "created": "2026-10-29T13:53:36Z",
-      "revised": "2026-11-03T14:20:34Z",
-      "profile": "docs"
-    },
-    {
       "id": 911,
       "handle": "F7",
       "slug": "creel-cross-hub-mail",
