@@ -1,6 +1,6 @@
 # Per-machine environment variables, exported to every process lym starts for the hub
 
-`machine-env-vars` · Task · feature, config, gate, drift, shuttle · running · PR-Review
+`machine-env-vars` · Task · feature, config, gate, drift, shuttle · running · Finalize
 
 Imported from [issue #19](https://github.com/Knatte18/loomyard/issues/19).
 
