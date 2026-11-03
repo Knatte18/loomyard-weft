@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-03 09:22 UTC; every age below is as of then.
+Rendered 2026-11-03 09:23 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -51,8 +51,8 @@ Held by a run; its scope is locked until the run ends.
 | T1 | **A shed block runs a whole sub-recipe inline as one producer, so recipes reuse one another** | [`shed-sub-run-block`](design-shed-sub-run-block.md) | tapestry | Code-Burler-Review | neve | 2h<br>2h | shed, loom |
 | T2 | **An approved Discussion stores its decision record on the board entry and flags it discussed** | [`decision-record-on-board`](design-decision-record-on-board.md) | tapestry · light | Code-Burler-Fix | neve | 2h<br>2h | board, loom |
 | T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Plan-Burler-Review | neve | 12h<br>1h | batten, fabric |
-| T4 | **Drift-Baseline halt shows the capture child error**<br>• Carry the capture child log error into the halt, and drop resume as a way forward when it cannot help | [`drift-child-error-in-halt`](design-drift-child-error-in-halt.md) | darn · solid | Finalize | neve | 21m<br>21m | drift |
-| T5 | **Preflight refuses lym own state files under _lym**<br>• Commit or exempt every file lym writes under _lym on a stop path, such as go-settle.jsonl | [`preflight-clean-skips-lym-state`](design-preflight-clean-skips-lym-state.md) | darn · solid | Code-Bouncer | neve | 21m<br>21m | preflight, shed |
+| T4 | **Drift-Baseline halt shows the capture child error**<br>• Carry the capture child log error into the halt, and drop resume as a way forward when it cannot help | [`drift-child-error-in-halt`](design-drift-child-error-in-halt.md) | darn · solid | Finalize | neve | 22m<br>21m | drift |
+| T5 | **Preflight refuses lym own state files under _lym**<br>• Commit or exempt every file lym writes under _lym on a stop path, such as go-settle.jsonl | [`preflight-clean-skips-lym-state`](design-preflight-clean-skips-lym-state.md) | darn · solid | Code-Burler-Review | neve | 22m<br>21m | preflight, shed |
 | T6 | **config reconcile never migrates profiles.yaml, so a hub seeded before the loom-to-tapestry rename stops tapestry runs at Seed-Child** | [`reconcile-migrates-profiles`](design-reconcile-migrates-profiles.md) | darn · solid | Darn-Write | neve | 6m<br>6m | reconcile, profiles, config |
 
 #### Ready (0)
@@ -98,7 +98,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E1 |  | **A wake from hibernate checks what moved on origin and lets runs go on only when nothing did and a switch allows it** | [`hibernate-wake-resume-switch`](design-hibernate-wake-resume-switch.md) | 13h<br>13h | hibernate, tender, fabric |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 4w<br>1d | shuttle, codex |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 6d<br>1d | batten, stencil, config |
-| E4 |  | **Prove the dotnet scoper, shared build and Drift on the C# sandbox hub**<br>• Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there | [`sandbox-dotnet-gate`](design-sandbox-dotnet-gate.md) | 4d<br>30m | dotnet, gate |
+| E4 |  | **Prove the dotnet scoper, shared build and Drift on the C# sandbox hub**<br>• Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there | [`sandbox-dotnet-gate`](design-sandbox-dotnet-gate.md) | 4d<br>31m | dotnet, gate |
 | E5 |  | **A landing notice is not lost when set late, when dobby was down, or when the orch is absent**<br>• Close the known limits landing-watch left: a late notify_on_land, a Land passed while dobby was down, and a dropped line when no orch is live | [`landing-watch-limits`](design-landing-watch-limits.md) | 2d<br>2d | dobby, orch |
 | E6 |  | **Plan rubric's test-economy rule conflicts with decision-record acceptance criteria phrased as rendered-output checks** | [`rubric-test-economy-vs-criteria`](design-rubric-test-economy-vs-criteria.md) | 12h<br>12h | burler, loom, stencil |
 | E7 |  | **Each part agent plans and builds its own part, instead of joining the parts into one plan** | [`parts-plan-and-build`](design-parts-plan-and-build.md) | 12h<br>12h | loom |
