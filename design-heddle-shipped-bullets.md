@@ -1,6 +1,6 @@
 # Shipped heddle instructions as short imperative bullets
 
-`heddle-shipped-bullets` · Task · enhancement, heddle · draft
+`heddle-shipped-bullets` · Task · enhancement, heddle
 
 The shipped heddle entries `lym-batching` and `lym-plan-edits-before-gate` (`internal/heddleengine/shipped.json`) render into every worktree's `CLAUDE.local.md` as walls of prose; the operator judges that agents do not take such text seriously and asks for short imperative bullet points (operator, 2026-11-03).
 

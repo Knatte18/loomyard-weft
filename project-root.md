@@ -23,11 +23,13 @@ Held by a run; its scope is locked until the run ends.
 | T5 | **Run windows show the board handle in their titles**<br>• Konsole window titled T4: <slug>, tmux overview window T4: overview, beam overview P1: beam: <slug> | [`window-titles-show-handle`](design-window-titles-show-handle.md) | darn · light | Code-Burler-Fix | neve | 34m<br>34m | reed, batten, termwindow |
 | T11 | **Map where fabricengine test time goes and propose cuts**<br>• Docs-only survey: time, git processes and files per fixture on neve, what hubforge templates already cover, ranked proposals<br>• `darn: writer fable[high]` | [`fabric-test-speed-survey`](design-fabric-test-speed-survey.md) | darn · docs | Darn-Write | neve | 29m<br>29m | fabric, testkit, docs |
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T2 | **Shipped heddle instructions as short imperative bullets**<br>• Rewrite the lym-batching and lym-plan-edits-before-gate shipped entries from prose walls into headed imperative bullet lists | [`heddle-shipped-bullets`](design-heddle-shipped-bullets.md) | darn · light |  | 0m<br>0m | heddle |
 
 ### Layer A (2)
 
@@ -37,14 +39,6 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T7 | **fabric remove deletes the whole worktree directory, ignored files included** | [`fabric-remove-ignored-files`](design-fabric-remove-ignored-files.md) | darn · solid | T3 | 3h<br>3h | fabric |
 | T8 | **Batten treats a stray non-worktree directory as a gone pair, and a beam landing accepts its own beam mark** | [`batten-stray-dir-and-beam-mark`](design-batten-stray-dir-and-beam-mark.md) | darn · light | T3 | 3h<br>3h | batten, pawl |
-
-### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Shipped heddle instructions as short imperative bullets**<br>• Rewrite the lym-batching and lym-plan-edits-before-gate shipped entries from prose walls into headed imperative bullet lists | [`heddle-shipped-bullets`](design-heddle-shipped-bullets.md) | darn · light |  | 0m<br>0m | heddle |
 
 ## Notes (33)
 
