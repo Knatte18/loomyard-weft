@@ -2,8 +2,6 @@
 
 `codex-skills-guards` · Task · feature, shuttle, codex · running · Darn-Write
 
-Depends on: [`codex-engine-core`](design-codex-engine-core.md)
-
 Part 2 of project `codex-engine`.
 Its Sketch is the project's stored decision record: read it with `lym board get P2 --record`.
 
