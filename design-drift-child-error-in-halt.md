@@ -1,6 +1,6 @@
 # Drift-Baseline halt shows the capture child error
 
-`drift-child-error-in-halt` · Task · enhancement, drift · running · Code-Burler-Fix
+`drift-child-error-in-halt` · Task · enhancement, drift · running · Code-Bouncer
 
 From [issue #26](https://github.com/Knatte18/loomyard/issues/26).
 
