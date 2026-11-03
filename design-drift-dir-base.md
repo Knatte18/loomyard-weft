@@ -1,6 +1,6 @@
 # One base for a command dir; a missing Drift dir fails by name
 
-`drift-dir-base` · Task · bug, drift, gate, config · running · Record-Write
+`drift-dir-base` · Task · bug, drift, gate, config · running · Darn-Write
 
 Depends on: [`gate-orphan-pipe-hang`](design-gate-orphan-pipe-hang.md)
 
