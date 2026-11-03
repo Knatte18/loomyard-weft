@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-03 10:03 UTC; every age below is as of then.
+Rendered 2026-11-03 10:05 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -31,31 +31,30 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Measure the effect of the agent-turns project**<br>• Turns, calls per turn and cost before and after P2 agent-turns, for darn writers, Webster forks and review roles | [`agent-turns-effect`](design-agent-turns-effect.md) | 1d<br>1d | tools |
-| R2 |  | **Plan and Discussion writers explore through parallel Sonnet agents that return only what is relevant**<br>• Bench the guidance that sends Plan and Discussion writers' lookups to parallel Sonnet subagents against a writer given none | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 1d<br>20h | loom |
-| R3 |  | **Measure the effect of the batching breach hook**<br>• After the batching breach hook lands, compare breach turns and context tokens against the 28-session baseline and tune its thresholds | [`batching-hook-effect`](design-batching-hook-effect.md) | 22h<br>20h | claude, shuttle, tools |
+| R2 |  | **Plan and Discussion writers explore through parallel Sonnet agents that return only what is relevant**<br>• Bench the guidance that sends Plan and Discussion writers' lookups to parallel Sonnet subagents against a writer given none | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 1d<br>21h | loom |
+| R3 |  | **Measure the effect of the batching breach hook**<br>• After the batching breach hook lands, compare breach turns and context tokens against the 28-session baseline and tune its thresholds | [`batching-hook-effect`](design-batching-hook-effect.md) | 22h<br>21h | claude, shuttle, tools |
 
-## [P0 Root: entries under no project](project-root.md) (45)
+## [P0 Root: entries under no project](project-root.md) (44)
 
 Owner `neve`
 
-### Tasks (10)
+### Tasks (9)
 
 Concrete and claimable; only a task can run.
 
-#### Running (8)
+#### Running (7)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Tapestry runs Discussion through a motif block and skips it for a discussed entry; motif runs alone; arras goes**<br>• Tapestry uses the motif block, skips it when the entry is flagged discussed, motif becomes a runnable recipe, and arras is removed | [`tapestry-motif-block`](design-tapestry-motif-block.md) | darn · solid | Darn-Write | neve | 21m<br>21m | shed, loom |
-| T2 | **A beam session shows the pawl run checklist in a second overview window beside the beam overview** | [`pawl-checklist-hidden-in-beam`](design-pawl-checklist-hidden-in-beam.md) | arras · light | Plan-Write | neve | 2h<br>17m | pawl, orch, reed |
+| T1 | **Tapestry runs Discussion through a motif block and skips it for a discussed entry; motif runs alone; arras goes**<br>• Tapestry uses the motif block, skips it when the entry is flagged discussed, motif becomes a runnable recipe, and arras is removed | [`tapestry-motif-block`](design-tapestry-motif-block.md) | darn · solid | Darn-Write | neve | 22m<br>22m | shed, loom |
+| T2 | **A beam session shows the pawl run checklist in a second overview window beside the beam overview** | [`pawl-checklist-hidden-in-beam`](design-pawl-checklist-hidden-in-beam.md) | arras · light | Plan-Write | neve | 2h<br>19m | pawl, orch, reed |
 | T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Webster | neve | 13h<br>2h | batten, fabric |
-| T5 | **Darn-Write seat halts: stencil darn-template-write has unfilled marker subagent_model** | [`seat-stencil-marker-unfilled`](design-seat-stencil-marker-unfilled.md) | darn · solid | Darn-Write | neve | 13h<br>10m | stencil, shed |
-| T6 | **config reconcile never migrates profiles.yaml, so a hub seeded before the loom-to-tapestry rename stops tapestry runs at Seed-Child** | [`reconcile-migrates-profiles`](design-reconcile-migrates-profiles.md) | darn · solid | Finalize | neve | 47m<br>47m | reconcile, profiles, config |
-| T9 | **Run ends with a background shell outstanding: its commit and gate result are lost** | [`run-done-with-background-shell`](design-run-done-with-background-shell.md) | darn · solid | Darn-Write | neve | 13h<br>10m | shuttle, webster, gate |
-| T10 | **lym config drift refuses the whole-map capture and compare form its own key description prescribes** | [`drift-config-whole-map-set`](design-drift-config-whole-map-set.md) | darn · light | Darn-Write | neve | 2h<br>10m | drift, config |
-| T11 | **Plan verbs: validate-plan cannot target a glyphless test file, insert-card leaves bare card N mentions stale**<br>• Let edit-test-file target a test file with no toc symbols, and make insert-card rewrite or report bare card N mentions | [`plan-verbs-glyphless-and-refs`](design-plan-verbs-glyphless-and-refs.md) | darn · solid | Darn-Write | neve | 13h<br>10m | loom, quarry |
+| T5 | **Darn-Write seat halts: stencil darn-template-write has unfilled marker subagent_model** | [`seat-stencil-marker-unfilled`](design-seat-stencil-marker-unfilled.md) | darn · solid | Darn-Write | neve | 13h<br>12m | stencil, shed |
+| T9 | **Run ends with a background shell outstanding: its commit and gate result are lost** | [`run-done-with-background-shell`](design-run-done-with-background-shell.md) | darn · solid | Darn-Write | neve | 13h<br>12m | shuttle, webster, gate |
+| T10 | **lym config drift refuses the whole-map capture and compare form its own key description prescribes** | [`drift-config-whole-map-set`](design-drift-config-whole-map-set.md) | darn · light | Darn-Write | neve | 2h<br>12m | drift, config |
+| T11 | **Plan verbs: validate-plan cannot target a glyphless test file, insert-card leaves bare card N mentions stale**<br>• Let edit-test-file target a test file with no toc symbols, and make insert-card rewrite or report bare card N mentions | [`plan-verbs-glyphless-and-refs`](design-plan-verbs-glyphless-and-refs.md) | darn · solid | Darn-Write | neve | 13h<br>11m | loom, quarry |
 
 #### Ready (0)
 
@@ -123,10 +122,18 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 4d<br>4d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 | F10 |  | **The arbiter settles review escalations and records their decisions, so they never reach the orch**<br>• Decision escalations become eligible for the arbiter, and the arbiter may record decisions and accept or continue a review | [`arbiter-settles-escalations`](design-arbiter-settles-escalations.md) | 1d<br>1d | burler, arbiter, dobby, orch |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 4w<br>1d | board, ide, orch |
-| F12 |  | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md) | 21h<br>37m | claude, shuttle, config |
+| F12 |  | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md) | 21h<br>39m | claude, shuttle, config |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 3w<br>1d | webster |
-| F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 11d<br>8m | loom, board, batten, workspaces |
+| F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 11d<br>10m | loom, board, batten, workspaces |
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 2h<br>2h | shuttle, codex, loom |
-| F16 |  | **Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | 47m<br>47m | drift, shed |
+| F16 |  | **Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | 49m<br>49m | drift, shed |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>1d | burler, shed, orch, quarry, report |
-| F18 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 4w<br>28m | shuttle, codex |
+| F18 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 4w<br>30m | shuttle, codex |
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T6 | **config reconcile never migrates profiles.yaml, so a hub seeded before the loom-to-tapestry rename stops tapestry runs at Seed-Child** | [`reconcile-migrates-profiles`](design-reconcile-migrates-profiles.md) | 49m<br>48m | reconcile, profiles, config |
