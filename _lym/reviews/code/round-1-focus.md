@@ -1,0 +1,14 @@
+---
+round: 1
+focus:
+  - "internal/driftengine/verify.go `recordCompare` and its two call sites (`pass`, `runAgent`'s Done case): does every path that ends a compare record it, with the right baseline commit, compared commit and result? Check that the agent path's hard-coded `passed = true` and its `told.BaselineHead` match what the compare actually read, and that a failed or halted compare cannot leave a stale passed record."
+  - "internal/driftengine/verdict.go `Verdict` and `renderVerdict`: against the board entry's Expected list (scope, baseline branch point, compare result, each drifted test with accept reason or waive reason), does the rendered section carry every item, and does each scope and waiver state (off, partial, full, waived, not run, unruled acceptance) render correctly? Check the early return for a missing scope record against what `ReadScope` does."
+  - "internal/landingshed/finalize_pr.go `withSection` and its callers in Finalize and Publish/PR-Review: is the section appended after the body and before the credit block on the pull request body and on the landing commit message, on a first publish and on a re-run refresh, without doubling when the artifact is rewritten? Check the trimming of the body against `LandingMessage`."
+  - "Stencil wording against the board entry's Expected: `landing-template-describe.md` and `landing-template-pr-review.md` carry the verdict, tell the agent to drop or rewrite a summary line that asks for a check Drift made, and drop or weaken no rule already in the stencils. Check that every new marker (`drift_verdict`) is filled non-empty at each call site, since `stencil.FillWith` requires it."
+  - "Seam wiring: `Deps.DriftVerdict` in internal/landingshed/deps.go, internal/loomcli/landingdeps.go, internal/loomcli/wiring.go and internal/testkit/envkit/envkit.go. Is the seam set on every production path that builds Describe, PR-Review and Finalize, and does a nil seam behave as the docs say? Does any path pass a verdict to one consumer but not another?"
+  - "Scope against the board entry: the entry asks for the verdict in the summary and pull request and in the PR-Review prompt; the diff also appends it to the landing commit and edits `loom-final-summary-spec.md`, `doc.go` files and `ScopeRecord`. Decide which of these the entry licenses, and whether the docs the repository's rules name for this kind of change landed in the same diff."
+  - "Test economy in internal/driftengine/verdict_test.go, verify_test.go and the landingshed tests: does each new test cover behavior no existing test covers, and does any added behavior (the agent-path record, the nil seam, the re-run refresh) lack coverage?"
+---
+
+Seed pass only: the focus entries name where to look and which question to settle; none states a verdict.
+The decision record holds the board entry under `## Goal` and nothing else, so the measuring stick is that entry.
