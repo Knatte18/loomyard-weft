@@ -1,6 +1,6 @@
-# A beam session loses the pawl run checklist when the beam overview takes the overview window
+# A beam session shows the pawl run checklist in a second overview window beside the beam overview
 
-`pawl-checklist-hidden-in-beam` · Note · bug, pawl, orch, reed
+`pawl-checklist-hidden-in-beam` · Note · enhancement, pawl, orch, reed
 
 ## Seen (operator, 2026-11-03)
 
