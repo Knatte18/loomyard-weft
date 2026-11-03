@@ -1,0 +1,18 @@
+---
+round: 1
+focus:
+  - "internal/fabricengine/add.go, addadopt.go and the adopt-only option (card 4): does the adopt-only path skip every fork-only check the record's D1 lists, and only those, and does each permanent refusal in D2's closed set come back as a typed error that `errors.Is`/`errors.As` can match?"
+  - "internal/fabricengine/teardownlock.go and its callers (card 5, 8): is the lock taken exclusive in Add, DiscardTaskBranch and the sweep, and shared on every pair push including the synchronous `commit-records` one? Check lock ordering and release on every error path of Add, and whether the sweep's one-try skip reports the slug."
+  - "internal/fabricengine/remove.go, archive.go, remoteleftover.go (card 6, 7): in the archive step, does the weft branch push come before the archive tag, run under the remote-refs lock, and pass the pause gate? Is the diverged origin tip fetched by SHA before its tag is made? Is the delete leased on the tip the deleter archived in all three paths (removal, origin-only, sweep), and is a lost lease reported as kept rather than failed?"
+  - "internal/gitrepo/push.go, pushretry.go (card 1, 2): is the \"missing necessary objects\" retry confined to the archive-tag push and bounded by the existing delays? Does the tracking drop remove both the ref and the upstream config in one step under the lock?"
+  - "internal/fabricengine/originreconcile.go (card 9): without the resume option, does the run scope still return today's error from `originTargets` for every other caller, `DropLocal` from `lym adopt` among them? With it, is the absent pair reported and is no branch of it judged?"
+  - "internal/battencli resume path (card 10, 12): does the pre-run follow the record's D1 steps 1-4 in order? Does it use a task-worktree test that treats a non-worktree path as absent? Does it refuse a continue pass whose task worktree is absent? Does the failed stop fire only on a permanent answer and only for a `running` status, with a Busy run lock treated as transient? Check the per-row way forwards in followup/stuck text against D2, in particular the Land restore steps, the tag choice by latest committer date and `done` child status, and the ordering warning about `lym fabric cleanup --apply`."
+  - "internal/pairteardown/followup.go, internal/landingshed/finalize_owner.go, stuck.go, internal/tendercli/deps.go (card 13): does every way forward that names `lym fabric remove` for a batten run's slug carry the row-correct follow-up, with Finalize's owner-pause stop left as the record's exception? Does `lym fabric remove` warn only for the rows D3 lists and change no batten record?"
+  - "contracts/stencils/shed/shed-template-tackler.md (card 14): does the rule match D5 on ls-remote reading, branch absence, and the ancestor-versus-unsettled distinction, without dropping or weakening an existing tackler rule?"
+  - "pattern/ diff: does it land both entries under the record's PATTERN changes (`PATTERN-slug-remote-order` add, `PATTERN-push-both-sides` change) with the declared text? Does the PATTERN-fabric-git edit have a license in the record?"
+  - "Commit messages: check for `Pattern-Departure:` trailers and judge any departure from the plan against them."
+  - "New tests across fabricengine, gitrepo, battencli: look for duplicated coverage between the *_integration_test.go files, assertions on stencil prose, and D-level behavior with no test (D7 `commit-records` skip, D8 warp-branch tracking drop, D2 transient-versus-permanent split)."
+---
+
+Seed rationale: the diff spans the plan's cards and carries lock, ordering and typed-error invariants whose failure paths are the likeliest place for a defect.
+Entries name where to look and the question to settle; none pre-states a verdict.
