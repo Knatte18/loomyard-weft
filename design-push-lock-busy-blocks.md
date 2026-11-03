@@ -1,6 +1,6 @@
 # lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human
 
-`push-lock-busy-blocks` · Task · bug, fabric, landing · running · PR-Review
+`push-lock-busy-blocks` · Task · bug, fabric, landing · running · Finalize
 
 Imported from [issue #37](https://github.com/Knatte18/loomyard/issues/37).
 
