@@ -1,0 +1,24 @@
+# Relevant files
+
+- `docs/research/codex-spike-2026-10-24/report.md` — launch line, pane classifier table, send sequence, hook payloads and rollout events the engine is built from
+- `docs/research/codex-hook-delivery-2026-10-28/report.md` — linked-worktree trust case and why Codex takes no creel mail by hook yet
+- `docs/research/codex-feasibility.md` — the Claude couplings a second engine meets and the original step list
+- `docs/research/stencil-engine-audit-2026-10-24/report.md` — the engine-specific stencil blocks and the missing engine-keyed include choice
+- `internal/shuttleengine/engine.go` `Engine`, `Launch`, `SkillLoader`, `TextPaster`, `InputBoxReader`, `InterruptGuard`, `SessionCycler`, `ToolBoundaryContextRenderer` — the provider seam and optional capabilities codexengine implements
+- `internal/shuttleengine/engineset.go` `EngineSet`, `Lookup` — how a spec's engine name resolves
+- `internal/shuttleengine/doc.go` — run loop contract: skills refusal, paste path, startup, hold deferral, await verbs
+- `internal/shuttleengine/claudeengine/doc.go` — the reference engine: hooks, events file stamps, deny rows, skill load, pane readings
+- `internal/shuttleengines/shuttleengines.go` `registry`, `ConfigModule`, `build`, `EnvScrub` — where codexengine registers with its config module and scrub
+- `internal/modelspec/registry.go` `builtins`, `Resolve` — built-in alias fallback that gains the Codex aliases
+- `internal/modelspec/template.yaml` — operator-owned alias template
+- `internal/seatengine/doc.go` — seat kinds, validation, notice sender, hold deferral, probe and resume the assistant kind joins
+- `contracts/stencils/seat/seat-directive-chair.md` — chair directive the assistant-chair block parallels
+- `contracts/stencils/seat/seat-directive-advisor.md` — advisor directive that relies on creel mail
+- `internal/burlerengine/doc.go` — review half, cluster fan, consolidation and origin keys
+- `internal/burlerengine/review.go` `reviewTable`, `Review`, `concludeReview`, `ReviewResult` — the review table that gains the assistant seat
+- `internal/burlerengine/modelkeys.go` `ModelSpecList`, `ValidateModelSpecList` — per-round model-spec list grammar the assist keys follow
+- `contracts/stencils/burler/burler-template-reviewer.md` — reviewer stencil the assisted variant extends
+- `internal/shedrecipe/entries_discussionwrite.go` `discussionWriteEntry` — how a seat table with advisors is wired through the multi-LLM producer
+- `internal/loomengine/template.yaml` — loom review keys the assist keys sit beside
+- `internal/heddleengine/target.go` `targetTable` — codex-file and codex-prompt targets
+- `internal/heddleengine/render.go` `fileText` — codex-file render that gains the CLAUDE.md fallback
