@@ -1,18 +1,25 @@
-# lym ide spawn on a beam opens the beam's workspace file
+# lym ide spawn opens a beam's workspace file
 
-`lym ide spawn <beam>`, which the reed `code` button in the `beam` group runs, now regenerates the workspace files and opens the beam's own `<hub>/<RepoName>-<beam>.code-workspace` (the beam, its parent, `Bolt` and the beam's pairs), as `lym ide spawn <prime>` opens the hub workspace.
+`lym ide spawn <beam>` now regenerates and opens the beam's workspace file `<hub>/<RepoName>-<beam>.code-workspace`, as the prime opens the hub workspace.
+Before, only the prime got a workspace file; a beam opened its bare worktree folder, so the reed `code` button in the `beam` group never reached the beam's parent, `Bolt` or its pairs.
 A task slug still opens its bare folder.
-
-## What changed
-
-- `internal/ideengine/spawn.go`: `seed` treats a slug whose origin record carries the beam mark as a beam.
-  For a beam it regenerates through `fabricengine.RegenerateHubWorkspace`, after writing the beam's `.vscode/` config, and sets the launch path to `fabricengine.BeamWorkspacePath`; the window command runs in the hub directory, as for the prime.
-  `lym ide seed <beam>` regenerates the files too and launches nothing; `lym ide menu` gets the new behaviour through `Spawn`.
-- Package and CLI docs and the ide entry of `docs/overview.md` name the beam case.
-- `internal/ideengine`: a new scenario step, `beam opens the beam workspace`, marks a pair a beam and asserts the seed writes the beam's file with its workspace title and launches nothing, and the spawn launches that file with the beam as its first folder and runs the window command once.
 
 ## Design decisions
 
-- Beam-ness is read from the pair's origin record, the same mark the regeneration writes a beam's file by, rather than the board's beam flag, so the file opened is always one the regeneration just wrote.
-- An unreadable origin record is logged at Warn and degrades to the bare folder, matching the existing degrade for an unresolvable prime; once a slug is known to be a beam, a regeneration error is returned, as on the prime path.
-- `lym ide open` is unchanged: it opens a task's folder and writes nothing.
+- A slug counts as a beam when its pair's origin record carries the beam mark, the same mark the workspace regeneration writes a beam's file by.
+  `isBeam` in `internal/ideengine/spawn.go` reads it through `fabricengine.ReadOriginFor`.
+- An unreadable or absent origin record degrades to the bare folder with a `Warn` log, like a failure to resolve the prime's name.
+  Once a slug is a beam, every error from the regeneration is returned, never degraded.
+- A beam spawn or seed regenerates the hub workspace file and every beam's file through `fabricengine.RegenerateHubWorkspace`, then launches the beam's own file.
+  The `.vscode/` config is written first, so the beam's file splices the settings just written.
+- `lym ide seed` follows the same path for a beam and launches nothing.
+
+## Tests and docs
+
+- `spawn_hub_integration_test.go` covers a beam seed (title, no launch), a beam spawn (file launched, beam first folder, window command run once), and the degrade for a missing records lock directory and for an absent origin record.
+- `docs/overview.md` and the package comments in `internal/ideengine` and `internal/idecli` describe the beam path.
+
+## To check by hand
+
+- Click the reed `code` button on a real beam and confirm VS Code opens `<RepoName>-<beam>.code-workspace` with the beam, its parent, `Bolt` and its pairs.
+- The new integration steps were not run in this description step; run `lym gate test ./internal/ideengine`.
