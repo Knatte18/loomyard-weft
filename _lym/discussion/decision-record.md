@@ -26,4 +26,14 @@ The check belongs where the stale base does harm, not at the wake (operator, 202
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-2-review.md; fixer report: _lym/reviews/code/round-2-fixer-report.md.
+  - code-repo-literal-duplicated (class consistency, severity BLOCKING, open in rounds 2)
+  - parent-notice-path-outside-shedrun (class consistency, severity BLOCKING, open in rounds 2)
+  - pr-review-pushtask-pausepair-untested (class scope, severity MEDIUM, open in rounds 1, 2)
+  - skip-closure-untested (class scope, severity MEDIUM, open in rounds 1, 2)
+  - stopped-check-callers-unpinned (class scope, severity MEDIUM, open in rounds 1, 2)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
