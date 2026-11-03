@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (7)
+### Running (8)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -23,16 +23,15 @@ Held by a run; its scope is locked until the run ends.
 | T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Webster | neve | 14h<br>3h | batten, fabric |
 | T4 | **Webster treats the anchor as the git worktree in a subpath-anchored hub**<br>• Webster opens git and resolves plan paths at the worktree root, not the anchor, so a subpath-anchored hub reaches code | [`webster-subpath-anchor`](design-webster-subpath-anchor.md) | darn · solid | Darn-Write | neve | 39m<br>39m | webster, cwd, parsers |
 | T5 | **Darn-Write seat halts: stencil darn-template-write has unfilled marker subagent_model** | [`seat-stencil-marker-unfilled`](design-seat-stencil-marker-unfilled.md) | darn · solid | Finalize | neve | 14h<br>1h | stencil, shed |
-| T6 | **The orch role explains how to make a project into a beam**<br>• The prime orch in the Models hub did not know beam create is the only way, and patched a plain task run by hand. | [`orch-role-making-a-beam`](design-orch-role-making-a-beam.md) | darn · light | Code-Burler-Fix | neve | 1d<br>12m | orch, pawl |
+| T6 | **The orch role explains how to make a project into a beam**<br>• The prime orch in the Models hub did not know beam create is the only way, and patched a plain task run by hand. | [`orch-role-making-a-beam`](design-orch-role-making-a-beam.md) | darn · light | Code-Burler-Fix | neve | 1d<br>13m | orch, pawl |
 | T9 | **Run ends with a background shell outstanding: its commit and gate result are lost** | [`run-done-with-background-shell`](design-run-done-with-background-shell.md) | darn · solid | Code-Burler-Fix | neve | 14h<br>1h | shuttle, webster, gate |
+| T10 | **Darn-Write writer runs no gate itself when the cold fixer is on**<br>• The darn writer prompt still has the writer run and fix lym gate test; with the gate fixer on it should run none | [`darn-writer-runs-no-gate`](design-darn-writer-runs-no-gate.md) | darn · light | Worktree-Create | neve | 0m<br>0m | darn, stencil, gate |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T10 | **Darn-Write writer runs no gate itself when the cold fixer is on**<br>• The darn writer prompt still has the writer run and fix lym gate test; with the gate fixer on it should run none | [`darn-writer-runs-no-gate`](design-darn-writer-runs-no-gate.md) | darn · light |  | 0m<br>0m | darn, stencil, gate |
+_None._
 
 ### Layer A (2)
 
