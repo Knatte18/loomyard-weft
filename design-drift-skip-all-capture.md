@@ -1,6 +1,6 @@
 # A partial scope that skips every test ends in a capture that wrote no file, with no cause named
 
-`drift-skip-all-capture` · Task · bug, drift · running · Drift-Verify
+`drift-skip-all-capture` · Task · bug, drift · running · Code-Bouncer
 
 A partial Drift scope that skips every test is accepted, and its capture then fails as `exit 0 but wrote no file`, a reason that names neither the skips nor a way out.
 
