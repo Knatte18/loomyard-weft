@@ -1,0 +1,293 @@
+diff --git a/contracts/orchrole/orch-role.md b/contracts/orchrole/orch-role.md
+index 4dda0bbe..de401bbc 100644
+--- a/contracts/orchrole/orch-role.md
++++ b/contracts/orchrole/orch-role.md
+@@ -44,12 +44,14 @@ This list holds every `lym` command you may use, and `lym <command> --help` give
+    A darn run has no Discussion review: its Code-Review perch, the one tapestry runs, reviews the writer's diff before Describe unless the run's `code_max_bounces` is 0, in `loom.yaml` or the task's `run_settings`, and its Finalize lands it as tapestry's does.
+    Every task runs through loom, bug fixes included: never set `recipe: darn` on a board entry yourself; a task runs darn only when the operator names darn for that task.
+ 2. A halted or paused batten run waits for you: dobby does not resume it.
++   The one exception is a paused run whose work already reached its parent: dobby finishes it through Land and Worktree-Teardown once no `lym tender pause` entry covers it.
+    Once its cause is known (see Investigating a stop), resume it with a hand pass, `lym batten run <slug>`, which you run only on the operator's word or after judging the stop under Investigating a stop.
+    A halted child (blocked, paused or failed) is still resumed with `lym loom resume` in the task worktree.
+    When `lym loom resume` refuses, its message names the way forward (`lym batten run <slug>` to bring a dead driver back, or `lym loom start`),
+    and you take it.
+ 3. Hold a run with `lym batten pause <slug>`, and send it to a producer with `lym batten goto <slug> --to <producer>`.
+    Both leave the batten run paused, so resume it with the hand pass `lym batten run <slug>`.
++   A `lym batten pause` or `lym batten goto` does not hold a run whose work already reached its parent, since dobby finishes that run; hold it with `lym tender pause <slug>`.
+    To give up a run for good, end it with `lym batten cancel <slug>` from the prime when the operator asks, and add `--remove` to discard its pair.
+    A kept pair needs `lym batten cancel <slug> --remove` before the slug runs again.
+ 4. Watch runs through their notices and mail only: keep no polling shell, start no Monitor for a run, and never read `lym batten status` on your own to check on runs, since a command's own output says what it did.
+diff --git a/internal/battencli/cli.go b/internal/battencli/cli.go
+index 5c0490f4..717d0a66 100644
+--- a/internal/battencli/cli.go
++++ b/internal/battencli/cli.go
+@@ -270,6 +270,10 @@ in the persist that records the paused state.
+ strand name, beside the request. The label is recorded in the paused run's
+ pause_reason; shed is reserved for lym's own automatic steps and refused.
+ 
++A paused run whose work already reached its parent is not held: dobby
++finishes it through Land and Worktree-Teardown. Hold such a run with
++lym tender pause <slug>.
++
+ The run-id positional is required in practice, even though cobra accepts
+ its absence: prime hosts many slug-addressed batten runs, so an omitted
+ run-id refuses by name rather than defaulting to "self".
+@@ -308,6 +312,10 @@ run's pause reason. A bounce-budget-exhausted halt is lifted only by
+ and never re-opens a finished run. goto moves a halted run only back, to a row at or before its current row (strictly before when the run is awaiting), and refuses a running run.
+ Worktree-Teardown is reachable only once the child run is done.
+ 
++A paused run whose work already reached its parent is not held: dobby
++finishes it through Land and Worktree-Teardown. Hold such a run with
++lym tender pause <slug>.
++
+ The run-id positional is required in practice, even though cobra accepts
+ its absence: prime hosts many slug-addressed batten runs, so an omitted
+ run-id refuses by name rather than defaulting to "self".
+diff --git a/internal/battencli/dobbyreads.go b/internal/battencli/dobbyreads.go
+index 533960dc..5cadba39 100644
+--- a/internal/battencli/dobbyreads.go
++++ b/internal/battencli/dobbyreads.go
+@@ -121,9 +121,13 @@ func readDobbyRunStatus(path string) (shedengine.Status, bool, error) {
+ 	return status, true, nil
+ }
+ 
++// unreadableReachedParent keeps one failure episode per paused run whose reached-parent judgment does not read, keyed by slug, so a persistent failure logs one Warn and not one line per dobby tick.
++var unreadableReachedParent logger.EpisodeSet
++
+ // DobbyRuns builds the RunView of every batten run whose parent worktree is geom's, with the pause coverage read from the record at pauseRecord.
+ // A run's place against its Land row is battenrecipe.LandOutcomeOf's, and a landed run carries the landing commit its landing recorded, empty when none is readable.
+ // A run's slot reading comes from its board entry on the local board at geom.BoardDir, which runTakesNoSlot judges.
++// A paused run also carries whether its work already reached its parent, judged as a cancel judges it; a judgment that does not read leaves it unreached with one Warn, so the run stays paused.
+ func DobbyRuns(prime *lymcwd.Location, geom dobbyengine.Geometry, parents *DobbyParents, pauseRecord string) ([]dobbyengine.RunView, error) {
+ 	runs, err := dobbyParentRuns(prime, geom, parents)
+ 	if err != nil {
+@@ -181,6 +185,20 @@ func DobbyRuns(prime *lymcwd.Location, geom dobbyengine.Geometry, parents *Dobby
+ 				view.LandingCommit = commit
+ 				return nil
+ 			},
++			func() error {
++				if run.status.State != shedengine.StatePaused {
++					unreadableReachedParent.Recover(slug, "battencli: the run left paused, so whether its work reached its parent is no longer read", "slug", slug)
++					return nil
++				}
++				reached, err := hubChildReachedParent(prime, slug)(run.status, true)
++				if err != nil {
++					unreadableReachedParent.Fail(slug, "battencli: whether a paused run's work reached its parent is unreadable, so the run stays paused", "slug", slug, "error", err)
++					return nil
++				}
++				unreadableReachedParent.Recover(slug, "battencli: whether a paused run's work reached its parent reads again", "slug", slug)
++				view.ReachedParent = reached
++				return nil
++			},
+ 		}
+ 		for _, read := range reads {
+ 			if err := read(); err != nil {
+diff --git a/internal/beamcli/dobbypairanchor_test.go b/internal/beamcli/dobbypairanchor_test.go
+index 3b652f53..4e906121 100644
+--- a/internal/beamcli/dobbypairanchor_test.go
++++ b/internal/beamcli/dobbypairanchor_test.go
+@@ -184,6 +184,51 @@ func TestDobbyLandings_CountsOnlyThisMachine(t *testing.T) {
+ 	}
+ }
+ 
++func TestDobbyRuns_ReadsWhetherAPausedRunsWorkReachedItsParent(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	prime := h.Location
++	type fixture struct{ batten, child string }
++	fixtures := map[string]fixture{
++		"teardown":     {batten: `{"state":"paused","current_producer":"Worktree-Teardown"}`},
++		"finalizedkid": {batten: `{"state":"paused","current_producer":"Run-Shed"}`, child: `{"state":"paused","current_producer":"Finalize","history":[{"producer":"Finalize","outcome":"done","output":"","at":"2026-10-31T10:00:00Z"}]}`},
++		"midrun":       {batten: `{"state":"paused","current_producer":"Run-Shed"}`},
++		"running":      {batten: `{"state":"running","current_producer":"Worktree-Teardown"}`},
++	}
++	for slug, f := range fixtures {
++		hubforge.AddPair(t, h, slug)
++		seedBattenRun(t, prime, slug)
++		if err := os.WriteFile(shedrun.StatusFile(prime, slug), []byte(f.batten), 0o644); err != nil {
++			t.Fatalf("write the status of %s: %v", slug, err)
++		}
++		if f.child == "" {
++			continue
++		}
++		childStatus := shedrun.StatusFile(&lymcwd.Location{HubPath: h.Path, WorktreeName: slug, AnchorRel: "."}, shedrun.SelfRunID)
++		if err := os.MkdirAll(filepath.Dir(childStatus), 0o755); err != nil {
++			t.Fatalf("mkdir %s: %v", filepath.Dir(childStatus), err)
++		}
++		if err := os.WriteFile(childStatus, []byte(f.child), 0o644); err != nil {
++			t.Fatalf("write the child status of %s: %v", slug, err)
++		}
++	}
++
++	views, err := battencli.DobbyRuns(prime, dobbyengine.Geometry{}, battencli.NewDobbyParents(prime), filepath.Join(t.TempDir(), "pause.json"))
++	if err != nil {
++		t.Fatalf("DobbyRuns() = _, %v; want nil", err)
++	}
++	got := map[string]bool{}
++	for _, view := range views {
++		got[view.Slug] = view.ReachedParent
++	}
++	want := map[string]bool{"teardown": true, "finalizedkid": true, "midrun": false, "running": false}
++	if !reflect.DeepEqual(got, want) {
++		t.Errorf("DobbyRuns() ReachedParent = %v; want %v", got, want)
++	}
++}
++
+ func TestDobbyRuns_ReadsTheLandOutcomeAndTheLandingCommit(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+diff --git a/internal/beamcli/doc.go b/internal/beamcli/doc.go
+index 0a3ed131..9ec6a2ed 100644
+--- a/internal/beamcli/doc.go
++++ b/internal/beamcli/doc.go
+@@ -132,7 +132,7 @@
+ // `hubDobbyDeps` fills every seam of the engine from told paths, the dobby's working directory being the hub root and never a worktree:
+ //   - the local batten status files of the prime and the board's tasks through `battencli.DobbyRuns`, `battencli.DobbyLandings`, which reads the landings of this machine's name only, and `battencli.DobbyTasks`, which a beam's window reads too, and each run's parent through `hubgeom.ParentOf`;
+ //   - `battencli.DobbyRuns` also marks each run `NoSlot` through the run's board entry, so a pawl run without its landing hold takes no slot under `max_runs`;
+-//   - `battencli.DobbyRuns` also reads each run's place against its Land row through `battenrecipe.LandOutcomeOf`, with the landing commit through `shedrun.ReadLandedCommit`, and `ClearNotifyOnLand` clears a landed entry's request through `boardengine`;
++//   - `battencli.DobbyRuns` also reads each run's place against its Land row through `battenrecipe.LandOutcomeOf`, with the landing commit through `shedrun.ReadLandedCommit`, and for a paused run whether its work already reached its parent by the judgment `lym batten cancel` refuses on, and `ClearNotifyOnLand` clears a landed entry's request through `boardengine`;
+ //   - the landing step of a beam's dobby: `CanLand` through `beamLandReading`, where the beam's ready record says whether it is flagged ready, `battencli.ReadBeamLandBlockers` whether nothing works under it, and the parent through `hubgeom.ParentOf` with `Owners.Effective` and `Owners.AdoptSubject` says which other machine owns it and what `lym adopt` takes, and `Land`, the `land` sequence of `lym beam land` itself; the prime's dobby is given neither;
+ //   - the board and the owners through `boardengine`, and the pause record through `pauserecord`;
+ //   - the file watch through `internal/fswatch`, one watcher per directory merged into the loop's one channel;
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index b3d955e8..8bf6ab3f 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -67,8 +67,9 @@
+ // The passes:
+ //
+ //   - Each tick lists the runs whose parent worktree is this dobby's, from the prime's local batten status files and never the board, so a run whose task Land already pruned is still driven through its teardown.
+-//   - A run gets a pass only while batten's state is running and its cancel marker is absent, never while a pass of it is in flight; a held driver lock reads as in flight, so a pass left by a dead dobby is waited for and never doubled.
+-//     A halted or paused batten run gets no pass; the orch or the operator resumes it with a hand pass.
++//   - A run gets a pass only while batten's state is running, or paused with its work already on its parent, and its cancel marker is absent, never while a pass of it is in flight; a held driver lock reads as in flight, so a pass left by a dead dobby is waited for and never doubled.
++//     A halted batten run gets no pass, nor does a paused one whose work has not reached its parent; the orch or the operator resumes it with a hand pass.
++//     A paused run whose work already reached its parent, RunView.ReachedParent, has nothing left to decide: while no pause entry covers it, each trigger gives it a full pass, which resumes it through its Land and Worktree-Teardown rows, and a covering pause holds it until the lift.
+ //   - A done batten run is driven no further: once no pass of it is in flight, it takes no slot under `max_runs`, gets no pass, and its entry leaves the state record.
+ //     The board tidy still reads its history.
+ //   - A pass is triggered by a write of the child's status file, by a write of batten's own status file later than the run's last pass exit, by a probe tick once per probe interval, by the dobby's start and by the lift of a pause that covered the run.
+diff --git a/internal/dobbyengine/passes.go b/internal/dobbyengine/passes.go
+index fae0570a..3a13082a 100644
+--- a/internal/dobbyengine/passes.go
++++ b/internal/dobbyengine/passes.go
+@@ -15,6 +15,8 @@ import (
+ const (
+ 	// runStateRunning is the batten status state of a run that has not halted, paused, failed or finished.
+ 	runStateRunning = "running"
++	// runStatePaused is the batten status state of a run a pause request, a pause condition or a cancelled pass left paused.
++	runStatePaused = "paused"
+ 	// runStateDone is the batten status state of a run that finished, which dobby drives no further.
+ 	runStateDone = "done"
+ 	// producerRunShed is the batten producer that waits on the child run, the only row a continue pass may re-enter.
+@@ -50,6 +52,15 @@ type RunView struct {
+ 	Landed   bool
+ 	// LandingCommit is the commit the run's landing put on its parent branch, empty when none is recorded.
+ 	LandingCommit string
++	// ReachedParent reports whether the run's work already reached its parent branch, so only its Land and Worktree-Teardown rows are left.
++	// It is read for a paused run only.
++	ReachedParent bool
++}
++
++// drivable reports whether batten's state lets dobby give run a pass: running, or paused with its work already on its parent.
++// Such a paused run has nothing left to decide, and only its landing and teardown finish it.
++func drivable(run RunView) bool {
++	return run.State == runStateRunning || (run.State == runStatePaused && run.ReachedParent)
+ }
+ 
+ // PassExit is how a `lym batten run` pass ended: its exit code and its last error text.
+@@ -87,14 +98,15 @@ type passTrigger struct {
+ }
+ 
+ // planPass decides, for one run and trigger, none, a continue pass or a full pass.
+-// There is none unless batten's state is running, none while the cancel marker exists or a pass is in flight, and a held driver lock reads as in flight.
++// There is none unless batten's state is running, or paused with the run's work already on its parent, none while the cancel marker exists or a pass is in flight, and a held driver lock reads as in flight.
++// Such a paused run gets only full passes, and none while a pause covers it but the one at the lift.
+ // A write of batten's own status file triggers only when it is later than the run's last pass exit, so a pass's own writes never trigger the next.
+ // A run a hold-caller entry covers gets none either, an owned-elsewhere run included, and its lift gives it the full pass.
+ // While a pause covers the run, only a continue pass runs, and the full pass at the lift; an owed full pass waits for the lift.
+ // A continue pass needs the run at Run-Shed with no full pass owed and no lift to answer, and every other pass is full, with no reopen while the origin-owed marker stands.
+ // A run recorded owned elsewhere gets a full pass at the lift of its covering pause, and while no pause covers it a full pass on each probe tick; no other trigger gives it one.
+ func planPass(run RunView, rs RunState, trigger passTrigger, covered bool) passKind {
+-	if run.State != runStateRunning || run.CancelMarker || trigger.InFlight || run.DriverLockHeld {
++	if !drivable(run) || run.CancelMarker || trigger.InFlight || run.DriverLockHeld {
+ 		return passNone
+ 	}
+ 	if run.Held {
+@@ -118,12 +130,12 @@ func planPass(run RunView, rs RunState, trigger passTrigger, covered bool) passK
+ 		switch {
+ 		case trigger.Lift:
+ 			return full
+-		case rs.FullPassOwed || run.Producer != producerRunShed:
++		case rs.FullPassOwed || run.Producer != producerRunShed || run.State != runStateRunning:
+ 			return passNone
+ 		}
+ 		return passContinue
+ 	}
+-	if rs.FullPassOwed || run.Producer != producerRunShed || run.OriginOwed || trigger.Lift {
++	if rs.FullPassOwed || run.Producer != producerRunShed || run.State != runStateRunning || run.OriginOwed || trigger.Lift {
+ 		return full
+ 	}
+ 	return passContinue
+@@ -171,7 +183,7 @@ func (d *daemon) drivePasses(ctx context.Context, now time.Time) error {
+ 		}
+ 		trigger := d.triggerFor(run)
+ 		kind := planPass(run, rs, trigger, run.Covered)
+-		if !trigger.InFlight && (run.State != runStateRunning || run.CancelMarker) {
++		if !trigger.InFlight && (!drivable(run) || run.CancelMarker) {
+ 			// No pass answers the lift while the run cannot be given one, and a later pass must not inherit it.
+ 			delete(d.liftPending, run.Slug)
+ 		}
+diff --git a/internal/dobbyengine/passes_test.go b/internal/dobbyengine/passes_test.go
+index e77aa773..bf19f5d1 100644
+--- a/internal/dobbyengine/passes_test.go
++++ b/internal/dobbyengine/passes_test.go
+@@ -34,6 +34,21 @@ func TestPlanPass(t *testing.T) {
+ 		{"AnotherProducerGivesFull", func(run *RunView, _ *RunState) { run.Producer = "Land" }, probe, false, passFull},
+ 		{"HaltedGivesNone", func(run *RunView, _ *RunState) { run.State = "blocked" }, probe, false, passNone},
+ 		{"FailedGivesNone", func(run *RunView, _ *RunState) { run.State = "failed" }, probe, false, passNone},
++		{"PausedGivesNone", func(run *RunView, _ *RunState) { run.State = runStatePaused }, probe, false, passNone},
++		{"HaltedReachedParentGivesNone", func(run *RunView, _ *RunState) { run.State = "blocked"; run.ReachedParent = true }, probe, false, passNone},
++		{"PausedReachedParentGivesFull", func(run *RunView, _ *RunState) { run.State = runStatePaused; run.ReachedParent = true }, probe, false, passFull},
++		{"PausedReachedParentOwnedElsewhereProbeGivesFull", func(run *RunView, rs *RunState) {
++			run.State = runStatePaused
++			run.ReachedParent = true
++			rs.OwnedElsewhere = true
++		}, probe, false, passFull},
++		{"PausedReachedParentHeldGivesNone", func(run *RunView, _ *RunState) {
++			run.State = runStatePaused
++			run.ReachedParent = true
++			run.Held = true
++		}, passTrigger{Lift: true}, true, passNone},
++		{"PausedReachedParentCoveredGivesNone", func(run *RunView, _ *RunState) { run.State = runStatePaused; run.ReachedParent = true }, probe, true, passNone},
++		{"PausedReachedParentCoveredLiftGivesFull", func(run *RunView, _ *RunState) { run.State = runStatePaused; run.ReachedParent = true }, passTrigger{Lift: true}, true, passFull},
+ 		{"CancelMarkedGivesNone", func(run *RunView, _ *RunState) { run.CancelMarker = true }, probe, false, passNone},
+ 		{"InFlightGivesNone", nil, passTrigger{ProbeTick: true, InFlight: true}, false, passNone},
+ 		{"HeldDriverLockReadsAsInFlight", func(run *RunView, _ *RunState) { run.DriverLockHeld = true }, probe, false, passNone},
+@@ -519,4 +534,26 @@ func TestDrivePasses_ExitHandling(t *testing.T) {
+ 			t.Errorf("passes = %+v; want a continue pass at the first probe tick and a continue pass after the run runs again", spawned)
+ 		}
+ 	})
++
++	t.Run("a lift seen by a paused run whose work reached its parent is kept while its driver lock is held", func(t *testing.T) {
++		t.Parallel()
++		run := runningRun("task")
++		run.State, run.ReachedParent = runStatePaused, true
++		h := newPassHarness(t, run)
++		h.fake.runs[0].Covered = true
++		h.tick(false)
++		h.fake.runs[0].Covered = false
++		h.fake.runs[0].DriverLockHeld = true
++		h.tick(false)
++		if got := len(h.fake.spawned); got != 0 {
++			t.Fatalf("passes with the driver lock held = %d; want 0", got)
++		}
++
++		h.fake.runs[0].DriverLockHeld = false
++		h.tick(false)
++		spawned := h.fake.spawnsOf("task")
++		if len(spawned) != 1 || spawned[0].continuePass {
++			t.Errorf("passes after the driver lock was released = %+v; want the lift's full pass", spawned)
++		}
++	})
+ }
