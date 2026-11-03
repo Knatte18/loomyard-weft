@@ -300,12 +300,13 @@
         "batten"
       ],
       "issues": [],
+      "priority": "low",
       "depends_on": [],
       "isolated": false,
       "brief": "lym asks an idle interactive agent to commit what it has and end, and the run resumes later",
       "body": "## Seen (operator, 2026-10-31)\n\nAn interactive run (the `sampler` recipe, landed by task `interactive-recipe`) waits for the operator in its pane at the `Sampler-Session` row, and has dobby's quiet notice and the step watchdog off while it does.\nThe row waits with no timeout until the agent runs `lym loom sampler-done` at the operator's word.\nSince lym runs the agent, it can watch how long the agent has waited.\n\n## Idea\n\nWhen the agent has been idle for a set time, lym asks it to write down what it has, commit it, and end its session; the run pauses, and the operator picks it up another time with the agent resumed from that state.\n",
       "created": "2026-10-31T14:33:35Z",
-      "revised": "2026-11-01T06:58:45Z"
+      "revised": "2026-11-03T16:21:40Z"
     },
     {
       "id": 933,
