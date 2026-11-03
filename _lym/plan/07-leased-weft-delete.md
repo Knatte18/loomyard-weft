@@ -15,9 +15,9 @@
 - `internal/fabricengine_test#TestCleanup_ApplyArchivesEachOrphanBeforeDeleting`
 
 **Create:**
-- `plan:internal/fabricengine#removeBeforeWeftDeleteHook` -> `var removeBeforeWeftDeleteHook func()`
-- `plan:internal/fabricengine#SetRemoveBeforeWeftDeleteHookForTest` -> `func SetRemoveBeforeWeftDeleteHookForTest(t testing.TB, hook func())`
-- `plan:internal/fabricengine_test#TestRemove_LeasedWeftDelete` -> `func TestRemove_LeasedWeftDelete(t *testing.T)`
+- `internal/fabricengine#removeBeforeWeftDeleteHook`
+- `internal/fabricengine#SetRemoveBeforeWeftDeleteHookForTest`
+- `internal/fabricengine_test#TestRemove_LeasedWeftDelete`
 
 **Extends:**
 - `internal/fabricengine/doc.go`

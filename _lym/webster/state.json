@@ -1,6 +1,6 @@
 {
   "runGuid": "9280df8cdbfd5778a93dca9b9e59bd44",
-  "planFingerprint": "ed2a8fe11cce449f37606c5f13b01655ad15cd517122c9848453b9b450ef1d20",
+  "planFingerprint": "02feab05b1ed9fa3b4fcdc4c1b9a638cf9cb48c9678493247db39d575ec7c9e6",
   "planFileHashes": {
     "00-overview.md": "ed05f10a913442cf79425c86cea2496e21115ee0814f3fa1ccd1121d409a9122",
     "01-gitrepo-lease-and-retry.md": "7c9de31d7bf9209d24a20a50de76fac73f43b657d1f7fca28fa66dd753c0dd60",
@@ -9,8 +9,8 @@
     "04-add-adopt-only.md": "2c600fa4c43e8fe6c893099419b6f5003584ed655148ce5930bbf4d0365ab7c0",
     "05-teardown-lock-add-discard-push.md": "fdd1ab3c45b527569ae93ca9aeb2a98998a156c095757dd0607f95affa2b4e6b",
     "06-remove-archive-order.md": "f092ebba41bddf5b1a826cd63b1d76da17db7e77c9e0a1e7ae4c3209f4e4f60e",
-    "07-leased-weft-delete.md": "8ebe9b20ed85b66b5734a5fa4ba88695a4faba9c1d2e80036ee528982bcb3654",
-    "08-cleanup-teardown-lock.md": "21a60bf445f1d15fb8f6495e839afcec3ec0dae24a52507b51092eb6a84a2620",
+    "07-leased-weft-delete.md": "a2e7e092339f3b35931e53d7efb554c449839065dba9819a62e990cd39e2acb3",
+    "08-cleanup-teardown-lock.md": "007a5e253d939e7a6862edd41e01977a210b8f00a07eb5fb4d22b4f8a5847d3c",
     "09-reconcile-absent-pair.md": "b5073d0e7f94bf857e19d38b3c496a6ae8cd224d934e346ad0b60d1a9a536cda",
     "10-batten-resume-readopt.md": "9d49d20b29a7b44c3955c93c75f831f15fd5ba9e9b594a9055c42c4db4079058",
     "11-records-tag-reads.md": "976962ee0967415f747b20ccbd915ef3389bac53acf3ba4291fad438d58b1178",
@@ -355,7 +355,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "8c367ba1767cd7b167f0db07436c37c8",
   "masterSessionId": "87115963-d0b5-4d72-bf90-38335a1927d4",
   "masterEngine": "claude",
@@ -450,8 +450,8 @@
         "09-reconcile-absent-pair"
       ],
       "cardHashes": {
-        "07-leased-weft-delete": "8ebe9b20ed85b66b5734a5fa4ba88695a4faba9c1d2e80036ee528982bcb3654",
-        "08-cleanup-teardown-lock": "21a60bf445f1d15fb8f6495e839afcec3ec0dae24a52507b51092eb6a84a2620",
+        "07-leased-weft-delete": "a2e7e092339f3b35931e53d7efb554c449839065dba9819a62e990cd39e2acb3",
+        "08-cleanup-teardown-lock": "007a5e253d939e7a6862edd41e01977a210b8f00a07eb5fb4d22b4f8a5847d3c",
         "09-reconcile-absent-pair": "b5073d0e7f94bf857e19d38b3c496a6ae8cd224d934e346ad0b60d1a9a536cda"
       },
       "startSha": "4a3948498a570e59f272055450ff54ac26178bf8",
@@ -459,12 +459,32 @@
       "spawnedAt": "2026-11-03T10:35:14Z",
       "sessionId": "87115963-d0b5-4d72-bf90-38335a1927d4",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-leased-weft-delete",
+        "status": "done",
+        "head_sha": "e9238fdd5fe6f011c09438754ddb8edd7c911a0e",
+        "deviations": [
+          "internal/fabricengine/cleanup.go",
+          "internal/fabricengine/cleanupremotewarp.go",
+          "internal/fabricengine/remove.go"
+        ]
+      },
+      "cardShas": [
+        "e9238fdd5fe6f011c09438754ddb8edd7c911a0e"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-batten-remote-order/87115963-d0b5-4d72-bf90-38335a1927d4/subagents/agent-a620465628d6a503c.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-batten-remote-order/87115963-d0b5-4d72-bf90-38335a1927d4/subagents/agent-a620465628d6a503c.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-batten-remote-order/87115963-d0b5-4d72-bf90-38335a1927d4/subagents/agent-ad0bcb92cf8ad6c29.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-batten-remote-order/87115963-d0b5-4d72-bf90-38335a1927d4/subagents/agent-a2b5bec2de69f2f56.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-batten-remote-order/87115963-d0b5-4d72-bf90-38335a1927d4/subagents/agent-a2b5bec2de69f2f56.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-batten-remote-order/87115963-d0b5-4d72-bf90-38335a1927d4/subagents/agent-a620465628d6a503c.jsonl"
   ]
 }

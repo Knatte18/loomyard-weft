@@ -1,7 +1,7 @@
 # Card 8 — cleanup-teardown-lock
 
 **Create:**
-- `plan:internal/fabricengine#SetCleanupAfterEnumerateForTest` -> `func SetCleanupAfterEnumerateForTest(t *Topology, hook func())`
+- `internal/fabricengine#SetCleanupAfterEnumerateForTest`
 
 **Edit:**
 - `internal/fabricengine#Topology`
