@@ -1,6 +1,8 @@
 # Run windows show the board handle in their titles
 
-`window-titles-show-handle` · Task · enhancement, reed, batten, termwindow · draft
+`window-titles-show-handle` · Task · enhancement, reed, batten, termwindow
+
+Depends on: [`pawl-checklist-hidden-in-beam`](design-pawl-checklist-hidden-in-beam.md)
 
 The operator names runs by board handle (`T4`, `P1`), but no window shows it: a run's Konsole window is titled with the worktree directory's base name, the slug, and its tmux overview window is named `overview` (operator, 2026-11-03).
 
