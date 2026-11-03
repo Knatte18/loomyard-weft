@@ -325,7 +325,6 @@
       "isolated": false,
       "brief": "Move lym hibernate request into dobby; the past-Land test is already shared",
       "body": "## Seen (operator, 2026-10-31)\n\n`lym hibernate request` runs a daemon of its own that waits for the runs to land and every session to pause before it hibernates the machine.\nDobby already drives every run of its worktree to its end, and `battenrecipe.PastLand` is the one past-Land test that dobby and the hibernate daemon share (built by `landing-watch`).\n\n## Goal\n\nThe hibernate request moves into dobby, so no daemon of its own waits on the runs.\n\n## Decisions (operator, 2026-11-03)\n\n- The prime's dobby carries the request: it reads the runs of every beam, so a request with `--after-all` waits on all of them, and the request is watched and cancelled in one place.\n  No beam's dobby carries or votes on it.\n- The request is kept on disk: when the prime's dobby is not running or dies while it waits, it takes the request up again when it starts.\n- The wait for every session to pause moves over unchanged, the fork rule included; a change to how forks are handled is a task of its own, later.\n- A hub pause leaves the dobby that waits on the request outside it, so the pause the request adds never stops the wait.\n",
-      "status": "draft",
       "created": "2026-10-31T14:39:51Z",
       "revised": "2026-11-03T15:13:31Z",
       "profile": "solid"
@@ -797,7 +796,7 @@
       "isolated": false,
       "brief": "adoptcli, fronttask and boardengine tell the reader to run lym board remove with a bare slug; the verb takes JSON or a bare handle",
       "body": "Several way-forward texts tell the reader to run `lym board remove \u003cslug\u003e`, a form the verb refuses.\n\n## Seen\n\nOn the `cs` hub (2026-11-03), removing the adopt fix task `adopt-fix-root-t1` as the fix loop's notice names it:\n\n```\n$ lym board remove adopt-fix-root-t1\n{\"error\":\"invalid json: invalid character 'a' looking for beginning of value\",\"ok\":false}\n```\n\n`lym board remove '{\"slug\":\"adopt-fix-root-t1\"}'` worked.\n`lym board remove --help` takes a JSON object with `slug`, `id` or `handle`, or a bare handle such as `T4`, never a bare slug.\n\nThe bare-slug form is named in:\n\n- `internal/adoptcli/fixloop.go` (the fix loop's drop line) and `internal/adoptcli/green.go` (a failed fix-task removal)\n- `internal/fronttask/fronttask.go` (`RemoveError.HandRemoval` and the one-open-front-task refusal)\n- `internal/boardengine/front.go` (the fixed-front-task refusal)\n- `internal/adoptcli/doc.go`\n\n## Expected\n\nEvery way forward names a command the verb accepts: either `lym board remove` takes a bare slug as it takes a bare handle, or each text names `lym board remove '{\"slug\":\"\u003cslug\u003e\"}'`.\nA test pins that each way-forward command these packages render parses.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Describe",
       "created": "2026-11-03T14:27:03Z",
       "revised": "2026-11-03T14:47:33Z",
       "profile": "light"
