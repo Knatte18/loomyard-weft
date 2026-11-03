@@ -1,0 +1,17 @@
+{
+  "current_producer": "",
+  "state": "running",
+  "error": "",
+  "pause_requested": false,
+  "activity": {
+    "now": "",
+    "last": "",
+    "wait": ""
+  },
+  "history": [],
+  "product": {
+    "slug": "codex-stencil-blocks",
+    "parent": "codex-engine",
+    "start_sha": null
+  }
+}
