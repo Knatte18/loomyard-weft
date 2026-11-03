@@ -1,6 +1,6 @@
 # Bench Plan and Discussion fixers on Sonnet against Opus
 
-`fixers-on-sonnet` · Task · research, burler, claude · running · Drift-Await
+`fixers-on-sonnet` · Task · research, burler, claude · running · Darn-Write
 
 Depends on: [`concrete-review-findings`](design-concrete-review-findings.md)
 
