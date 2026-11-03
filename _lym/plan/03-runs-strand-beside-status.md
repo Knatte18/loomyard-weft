@@ -21,7 +21,8 @@
 D3's runs half and D4: the runs strand takes the first overview place, beside a loom status strand and never in its place.
 
 - `RunsStrandOrder` is the runs strand's overview order key, zero, so the beam overview is the session's first window; it is exported because loomcli derives the status strand's key from it (card 4), and it is the one declaration of the value (`PATTERN-named-constants`).
-- `runsStrandAddSpec` sets `Display.Order: RunsStrandOrder` beside the anchor and the title.
+- `runsStrandAddSpec` sets `Display.Order: RunsStrandOrder` beside the anchor and the title; its doc comment calls the runs strand's window the session's first overview window.
+- `runs.go`'s file header calls the runs strand's window the session's first overview window.
 - `ensureRunsStrand` stops looking for a loom status strand: with no runs strand it adds one; a current runs strand is kept and a stale one replaced, as today.
   The `loomStatus` lookup, its replace case, its warning text and the `loomengine` import go; the doc comment drops the two sentences about replacing a loom status strand.
 - `RunsStrandName`'s comment drops "A loom bootstrap in a beam's session reads it to leave the session's one overview window to this strand"; it is the runs strand's role.
@@ -29,6 +30,7 @@ D3's runs half and D4: the runs strand takes the first overview place, beside a 
 - `doc.go`: the runs-strand sentence says the runs strand holds the session's first overview window, beside a `loom-status` strand a pawl run's `lym loom start` added, and keeps the warning half.
 - `internal/orchengine/doc.go`: the bring-up sentence calls the runs strand "the session's first overview window"; its "the beam's window is the first window" half stays.
 - `docs/overview.md`: the batten entry's sentence "Ensuring it replaces a `loom-status` strand a pawl run's `lym loom start` put in the overview window first" says ensuring it adds the runs strand beside such a strand, as the session's first overview window.
+  The orch entry's clause "ensuring it replaces a `loom-status` strand a pawl run's `lym loom start` put in the overview window first" says the same.
 
 Tests, `TestStart_EnsuresTheRunsStrandBeforeTheOrch` (tier0):
 - `wantDisplay` gains `Order: RunsStrandOrder`.

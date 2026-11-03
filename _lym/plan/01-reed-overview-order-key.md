@@ -11,6 +11,8 @@
 - `internal/reedengine#Engine.addStrandLocked`
 - `internal/reedengine#Engine.ReplaceStrand`
 - `internal/reedengine#refuseWindowMove`
+- `internal/reedengine#isOverview`
+- `internal/reedengine#bindingArgvs`
 - `internal/reedengine/doc.go`
 - `internal/reedengine/bar.go`
 - `internal/reedengine/render#TestDisplayDecodesRetiredKeysIgnored`
@@ -22,7 +24,6 @@
 
 **Uses:**
 - `internal/reedengine#parseSessionWindows`
-- `internal/reedengine#isOverview`
 - `internal/reedengine#windowOfPane`
 - `internal/reedengine#Strand`
 
@@ -32,6 +33,7 @@ D1: the overview anchor holds several strands, ordered by a display order key.
 `render.Display` gains `Order int` with the JSON tag `order,omitempty`, documented as the overview strand's place among the session's overview windows, read only for an overview strand, its zero value the first place.
 A display an older lym recorded carries no `order` key and so decodes as key zero; that is D5's no-migration rule.
 `AnchorOverview`'s comment drops "the session's one overview strand" and says an overview strand gets a window of its own among the session's first windows, in ascending order key.
+`isOverview`'s doc comment says it reports whether d places a strand in an overview window, one of the session's first windows; only the comment changes.
 
 Placement (`windoworder.go`):
 - `overviewWindowKeys` maps the window id of each overview strand's bound pane to that strand's `Display.Order`, from the strands and the session's pane-to-window map; a strand with no pane, a pane the map lacks and a non-overview strand are left out.
@@ -53,6 +55,7 @@ Refusals:
 `doc.go`: the "Overview anchor" paragraph says the anchor places any number of strands, each alone in a window of its own at the session's lowest indexes in ascending order key, a new, relaunched or replacement one opening after the last overview window whose key is not higher, else before the lowest-index window; it drops the one-per-session refusal sentences and adds the `UpdateStrand` order refusal; "the one-per-session refusal" leaves the `isOverview` list.
 The "Window order" paragraphs say the overview windows, in ascending order key, come first, and state the new `-a`/`-b` placement.
 The status-bar sentence ("the overview's button is first") and the Alt+Up/Alt+Down sentence ("the session's first window, the overview") say the overview windows' buttons come first and the step wraps forward to the session's first window, the lowest-index overview.
+`bindingArgvs`'s doc comment says the same of the step's forward target: the session's first window, the lowest-index overview; only the comment changes.
 `windoworder.go`'s file header says the overview windows come first in ascending order key, then the agent windows in start order.
 `bar.go`'s header says line 1 reads the overview windows first, then the agents in start order, then the shell button, and that it reads own windows, the overview windows among them.
 
@@ -68,7 +71,7 @@ Tests:
   Each subtest computes its want from the window listing, never as a literal: the expected overview titles in order, then every other visible window but the shell in listing order (the `plain` window and the agents), then `shell`, then the hidden windows.
   The existing `agentNames` helper excludes only the name `overview`, so these subtests compare the overview prefix by the explicit titles and take the rest of the visible windows with those titles excluded.
   - `AnOverviewWithAHigherKeyOpensAfterTheFirstThenAnAgentAfterBoth`: with the shell window selected, add `pawl` (`Order: 1`, `Title: "pawl"`, cmd `exit`), want the titles `beam: prime, pawl` first and the rest as computed; the `pawl` window's marks `[#{@lym_own}][#{@lym_unseen}][#{@strand_color}][#{@lym_overview}]` read `[1][][][1]` and the current window is still the shell window, so the second overview window keeps every property of the first; add an own-window agent, want it after `pawl` and before `shell`, hidden windows still last.
-  - `RelaunchingOrReplacingEitherOverviewKeepsTheOrder`: wait for `pawl`'s pane to die, relaunch it with `AddStrand` `IfAbsent` and cmd `sleep 300`; replace `pawl` with `ReplaceStrand`; select `beam: prime`'s window and replace it with `ReplaceStrand`; after each the names keep `beam: prime, pawl` first, and after the last the current window is the new `beam: prime` window.
+  - `RelaunchingOrReplacingEitherOverviewKeepsTheOrder`: wait for `pawl`'s pane to die, relaunch it with `AddStrand` `IfAbsent`, which relaunches its stored command `exit`, so the row asserts only the order after the relaunch; replace `pawl` with `ReplaceStrand`; select `beam: prime`'s window and replace it with `ReplaceStrand`; after each the names keep `beam: prime, pawl` first, and after the last the current window is the new `beam: prime` window.
   - `AddedInTheOtherOrderTheOverviewsEndInTheSameOrder`: remove `beam: prime`, add it again with key 0, want it before `pawl`.
   - `EqualKeysSitInTheOrderTheyLastOpened`: add `third` (`Order: 1`), want `beam: prime, pawl, third`; replace `pawl`, want `beam: prime, third, pawl`.
   Strand variables later subtests read stay as they are, since these run last.
