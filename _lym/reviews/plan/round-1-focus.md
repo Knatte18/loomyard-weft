@@ -1,0 +1,16 @@
+---
+round: 1
+focus:
+  - "Fidelity: walk D1–D8 and every Constraint in the decision record against the cards. Which Decision step has no carrying card, and which card's scope has no licence? Check D1's reuse of a standing records worktree and the adopt-only skips, D2's closed set of typed refusals, D4 step 3's second archive tag and the retry on 'missing necessary objects', D6's cleanup-sweep archive of the origin tip, and D7's shared lock on the synchronous commit-records push."
+  - "Card order: cards 3, 4, 5 edit the same `Add`, cards 6–8 depend on the lock and lease from cards 1, 2 and 5, and cards 10, 12, 13 depend on 4, 9 and 11. Does any card use a symbol a later card creates? Name the card and the later card."
+  - "Overview Shared Decisions: `d5-no-prose-test` and `d3-sites-outside-fabric` depart from acceptance criteria and from D3's 'every stop or refusal'. Are the departures carried by the cards as written, and does any card plan a test on stencil prose or leave a D3 site uncarried without an `Added after Discussion` entry?"
+  - "Attack surface: adopt-only `Add` (card 4), the run-scope absent-pair option (card 9) and the batten re-adopt (card 10) let a pass re-create a pair without an operator step. Does each card's Intent state what it can now skip or let through and what bounds it? Does the lock-skip in card 8 and the lease-kept delete in card 7 state theirs?"
+  - "Reachability of refusals: for each prescribed refusal or guard branch in cards 4, 5, 7, 8, 9, 10, 12 (typed refusals, lock-wait refusal, held-lock skip, lease-refused keep, absent-pair error without the option), is there a named input and a named test that reaches it, and does an upstream check in `Add` or the reconcile reject that input first?"
+  - "Edit-card glyphs: for cards editing `internal/fabricengine`, `internal/gitrepo`, `internal/battencli`, `internal/pairteardown` and `internal/tendercli`, do targets list member glyphs where the Intent names symbols, and carry the re-sign arrow where the Intent changes parameters, results or receivers (`Add`, the lease-delete, the reconcile run-scope function, the push functions)? Is any `Extends` placed on a ref the card rewrites?"
+  - "Test economy and granularity: do cards 3, 4, 5, 9 plan new tests for behaviour another card's test or an existing fabricengine, gitrepo or battencli test already covers? Is any card split below an independently reviewable unit, or merged across two?"
+  - "Research steps and board: does any card leave a fact to be found out while it runs, or carry a halt rule for one? Does any card edit this task's own board entry, or file or promote a task rather than a note?"
+  - "Verify lines and PATTERN fit: does any `**Verify:**` line name a raw test command rather than one `lym gate test --wait` call? Check each card against `PATTERN.md` and the pattern entries the plan cites (`PATTERN-fabric-isolation`, `PATTERN-fabric-git`, `PATTERN-remote-refs-lock`, `PATTERN-push-both-sides`, `PATTERN-test-speed`, `PATTERN-slug-remote-order`)."
+---
+
+Seeded from `_lym/plan/00-overview.md` and `_lym/discussion/decision-record.md`; no card file was read, so the entries name where to look, not what is wrong.
+`lens-review*.md` files in the plan directory are not cards and are not in the Card Index.
