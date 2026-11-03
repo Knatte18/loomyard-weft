@@ -1,11 +1,11 @@
 {
-  "current_producer": "Parts-Write",
+  "current_producer": "Parts-Plan-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Parts-Write",
-    "last": "Drift-Baseline → skipped",
+    "now": "Parts-Plan-Write",
+    "last": "Parts-Write → skipped",
     "wait": ""
   },
   "history": [
@@ -90,6 +90,13 @@
       "output": "",
       "at": "2026-11-03T07:42:07Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Parts-Write",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-03T07:42:07Z",
+      "reason": "tapestry.plan_split = false"
     }
   ],
   "product": {
