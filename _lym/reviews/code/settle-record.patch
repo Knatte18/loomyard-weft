@@ -1,0 +1,1179 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index a8f2d49a..fdc2d50c 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -33,7 +33,7 @@
+ - `PATTERN-parent-lock` — Moving, merging into or landing on a local parent branch, or merging a run's pull request: only in a run's Finalize, under `internal/parentlock`'s lock for that parent.
+ - `PATTERN-owner-machine` — Starting, resuming or landing a run: only where its entry is not owned elsewhere; owners only on root and beam projects, set only by `boardengine`'s owner setter; any other entry reads its `hubgeom.ParentOf` owner; a dobby continue pass is no resume. — [background](pattern/PATTERN-owner-machine.md)
+ - `PATTERN-pair-parent` — Picking a new pair's parent for a board entry or reading an entry's owner through its parent: only `ParentBeam` and hubgeom's one `ParentOf`, never the acting worktree.
+-- `PATTERN-github-auth` — Calling GitHub: auth only via internal/githubclient; no other production package runs gh; only lym selfreport create files an issue; only PR-Review, Finalize and pair teardown open, merge or close a pull request. (test)
++- `PATTERN-github-auth` — Calling GitHub: auth only via internal/githubclient; no other production package runs gh; only lym selfreport create files an issue; only PR-Review, Finalize and pair teardown open, reopen, merge or close a pull request. (test)
+ - `PATTERN-fabric-isolation` — Changing fabric: it learns nothing of IDEs, shuttle, the board or heddle; a module reaches fabric through a general seam, never one tailored to it. — [background](pattern/PATTERN-fabric-isolation.md)
+ 
+ ## Shed and loom
+@@ -41,7 +41,7 @@
+ - `PATTERN-shed-recipe-registry` — Adding producer or recipe row: one `Constructor` map in `internal/shedrecipe`, bar `Implementer`'s; a row's value looked up by key, a side action a `Command` row, a row off by one config key its `entry_gate`, one whose off reads more its own call. — [background](pattern/PATTERN-shed-recipe-registry.md)
+ - `PATTERN-loom-contract` — Adding a loom recipe: it declares `contract: loom`, checked by Shed's recipe loader; `lym loom` verbs serve loom runs only; a verb for some loom recipes refuses on others by the recipe's rows, never its name.
+ - `PATTERN-project-record` — Changing a beam project's scope once its pawl run passed Preflight: only `lym loom decision add <beam-slug>` on its project record, never a board body edit; a member reads the record from the beam's worktree, never writes it.
+-- `PATTERN-pull-request-mode` — Deciding whether a landing goes through a pull request: only landingshed's one resolver, from the receiving worktree's `beam.pull_request`, the entry's `pull_request` field, the origin and whether git sees task commits past the parent; no profile or run setting carries it.
++- `PATTERN-pull-request-mode` — Deciding whether a landing goes through a pull request: only landingshed's one resolver, from the receiving `beam.pull_request`, the entry's `pull_request`, the parent's GitHub rules, the origin and task commits past the parent; no run setting carries it; a yes merges on GitHub.
+ - `PATTERN-shed-driver` — Driving a shed run: generic verb bodies only in `internal/shedverbs`, the step-until-stop loop only in `internal/sheddriver`, run paths, ids and `Seed` only in `internal/shedrun`. (test) — [background](pattern/PATTERN-shed-driver.md)
+ - `PATTERN-shed-stop-chain` — A shed run's stop: rule table, tackler, arbiter, then parent, for every recipe; a stop the driver's arbiter seam marks as judged first, by row and reason, skips the tackler; arbiter keys in shed.yaml, batten's overridable in batten.yaml, a loom recipe's own via its profile block.
+ - `PATTERN-dobby-starts-runs` — Starting or driving a board task's run: its parent's dobby, from an empty status, in batten passes; a hand `lym batten run` is one pass.
+diff --git a/contracts/stencils/landing/landing-template-pr-review.md b/contracts/stencils/landing/landing-template-pr-review.md
+index 9a1684c9..e9d02dc4 100644
+--- a/contracts/stencils/landing/landing-template-pr-review.md
++++ b/contracts/stencils/landing/landing-template-pr-review.md
+@@ -39,4 +39,4 @@ When the operator says they are satisfied and asks you to continue:
+ 
+ 1. Commit or discard your work so the worktree is clean.
+ 2. Run `lym loom pr-continue`.
+-   It closes the pull request and lands the task through the ordinary landing, with its gate.
++   It ends the review, and the ordinary landing then merges the pull request on GitHub, after its gate.
+diff --git a/docs/overview.md b/docs/overview.md
+index d73cfe7e..b6eaf9da 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -603,8 +603,8 @@ User-facing modules each get one `lym <module>` namespace:
+   a darn run's tail is `Darn-Write → Drift-Verify → Code-Review → Describe → PR-Review → Finalize`, with no `Parent-Align`.
+   The three regression rows, `Drift-Baseline` before `Parts-Write` in loom and before `Drift-Await` in darn, `Drift-Await` before `Webster` in loom and before `Darn-Write` in darn, and `Drift-Verify` as above, each carry the entry gate `drift.enabled` of the hub-wide `drift.yaml`, so a hub that leaves it off records each of them skipped and spawns or runs nothing for them.
+   `Parent-Align` merges the parent's upstream tip into the task with no parent lock, verifies the merged tree through the `parent-align` gate key and runs the merge fixer in parent-align mode, which settles a conflict or a failing tree and aligns the task to what the parent brought in; it writes the merge record with the aligned tip, and the Code-Perch then reviews the task's code against that.
+-  `PR-Review` lands the task through a GitHub pull request when the resolver says so: it pushes the task branch, opens or finds the pull request, sets its title and body from the change description, records it and waits on it, and otherwise passes.
+-  The wait takes no parent lock: it gates and pushes the agent's commits through the `pr-review` gate key, never onto a merged pull request, and mails a failure to the agent, reads the pull request at most once a minute and before each gate, and ends Done when the pull request is merged or approved at the gated head, or when the operator's `lym loom pr-continue` makes the row close it, and Stuck on any other ending; a pause that covers the run holds it, and the driver strand's mark reads `PR #<n>`.
++  `PR-Review` lands the task through a GitHub pull request when the resolver says so, from the parent's `beam.yaml`, the entry and GitHub's rules for the parent branch: it pushes the task branch, opens or finds the pull request, sets its title and body from the change description, records it and waits on it, and otherwise passes.
++  The wait takes no parent lock: it gates and pushes the agent's commits through the `pr-review` gate key, never onto a merged pull request, and mails a failure to the agent, reads the pull request at most once a minute and before each gate, and ends Done when the pull request is merged or approved at the gated head, or when the operator's `lym loom pr-continue` ends the review, which leaves the pull request for `Finalize` to merge on GitHub, and Stuck on any other ending; a pause that covers the run holds it, and the driver strand's mark reads `PR #<n>`.
+   `Finalize` takes the parent lock first, merges the parent into the task in place, resolving a conflict with the conflict session under the lock; it runs the `finalize` gate key and the merge fixer in finalize mode, lands on the parent with the credit block and releases the lock on every exit.
+   It frees the lock while its fixer or fix review works, then takes it again at the front of the queue, merges the parent anew and verifies under the lock before it lands.
+   Finalize never reroutes: a fixer change over the caps goes to its fix review, which reads only the fixer's commits, and a rejection hands the findings back to the fixer to fix in place, for up to `finalize_fix_review_rounds` reviews; an approval lands it, and the last review that does not approve halts for the operator, whose `lym loom circling accept` lands the change with the open findings in the change description.
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index 0d518007..afa0135b 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -5,7 +5,7 @@
+ // A beam.yaml it cannot read is Stuck with Halt naming the worktree and `lym config beam`, and a resolver Halt is Stuck with Halt.
+ // A no logs the reason, closes a recorded pull request GitHub reports open with the comment `lym closed this pull request: <reason>`, drops the record and ends Done.
+ // A yes pushes the task branch, then finds the pull request the record names or the open one on the task branch, else opens one, sets its title from the change description and its body from the description's body and the credit block, and records its number, URL, base and head, and then waits on it in process.
+-// The record's gated head is set to the task head on the first entry only, so a re-entry keeps it, and a record the operator's ending marked closed keeps the run's ending when the task head is still the gated one and starts a new review when it is not.
++// The record's gated head is set to the task head on the first entry only, so a re-entry keeps it, and a record carrying the operator's ending keeps the run's ending when the task head is still the gated one and starts a new review when it is not.
+ //
+ // The wait has no timeout and wakes at least a second apart, doubling to a minute while nothing changes and back to a second when the task head moves.
+ // Each wake re-reads the record, which the agent's `lym loom pr-continue` writes the continue flag into; a record write goes through the record's update so a flag written meanwhile survives.
+@@ -15,13 +15,13 @@
+ // The pull request's status is read at most once a minute, the entry's own read counting as the first, and at once on the first wake that sees the continue flag.
+ // Merged at the gated head on a clean tree is Done, and merged without task commits or at another head is Stuck with Halt naming the way forward.
+ // Closed after the operator's ending is Done on a clean tree, and closed otherwise is Stuck with Halt.
+-// The continue flag on an open pull request at a clean gated head closes it with a comment, records the ending and is Done; an open one approved at the gated and task head is Done.
++// The continue flag on an open or closed pull request at a clean gated head records the operator's ending and is Done, and leaves the pull request as it is for Finalize to merge on GitHub, so ending the review never lands the run by a direct push; an open one approved at the gated and task head is Done.
+ // A merged pull request takes the merged verdicts whatever the flag says, and an uncommitted file at any ending is Stuck with Halt.
+ // A pause that covers the run holds the row in process, before its push and at each wake, and does no gate, push or GitHub call meanwhile.
+ //
+ // The row keeps one interactive agent session per run, in a window of its own in the task worktree, for the operator to discuss the pull request in; the row never waits on its output.
+ // After it records the pull request, and before it waits, it reuses the recorded strand when that is live, resumes the recorded session id when the strand is not, and otherwise starts a new session.
+-// A review the operator already ended through a closed record gets no session.
++// A review whose record carries the operator's ending gets no session.
+ // The session starts from the `landing-template-pr-review` stencil filled with paths only, under the `pr_reviewer` model, with the publish shell guard installed and the pane process registered under the run.
+ // A start that fails transiently is an error the driver re-steps, and any other start failure is Stuck with Halt naming `lym loom resume`.
+ // The row stops the session before each read that may end the review, which is a merged pull request, an approval of the gated head and the continue flag, and resumes it when that read keeps waiting.
+@@ -38,6 +38,12 @@
+ // A wanted pull request needs an origin on github.com that the owner and repository parse from, an upstream for the parent and no push skip.
+ // A wanted pull request on a task branch with no commit beyond its parent is a no, before any origin fact is judged, since GitHub opens none on an empty branch; both rows then take the no path, and Finalize's parent-side merge commits nothing.
+ // A missing fact is a Halt when the parent is required or the field is on, and a no with the fact named when the parent is on alone; an origin on github.com that names no repository is a Halt in every mode that wants a pull request.
++// It also takes whether GitHub's rules for the parent branch require a pull request, which counts as a required parent whatever beam.yaml and the field say, since GitHub refuses the direct push a landing without one ends in.
++// Both rows read those rules, `GET repos/{owner}/{repo}/rules/branches/{branch}`, only when beam.yaml and the field give a no for a task branch with commits and an origin a pull request could be opened on, and then ask the resolver again with them.
++// A cancelled context and a transient failure of that read are errors the driver re-steps.
++// Any other failure of the read is a Halt when the run holds a pull request record, since reading it as no rule would close that pull request and land by a direct push GitHub refuses; an unusable token is the exception.
++// For a run with no record, any other failure, an unusable token included, logs a Warn and reads as no rule.
++// Bound: a rule the read misses, and branch protection set outside repository rules, still end in a direct push GitHub refuses.
+ //
+ // A merge or test failure at Parent-Align or Finalize is owned by the recipe: it ends in the row's fixer or a halt to the orch, and Finalize never sends the run back to an earlier row.
+ //
+@@ -228,13 +234,14 @@
+ // After the parent-side merge and before the push, Finalize marks the board task done and hands the parent pair's head, the landing commit, to the told Deps.RecordLanding, whose failure is only logged.
+ //
+ // Finalize lands through the run's pull request, which it merges on GitHub only here, under the parent lock.
+-// Right after it takes the lock it asks ResolvePullRequest the question PR-Review asked, from the same beam.yaml, entry field, origin and task-branch commits, and a Finalize with no `ParentMode` seam skips the step and lands locally.
++// Right after it takes the lock it asks ResolvePullRequest the question PR-Review asked, from the same beam.yaml, entry field, parent-branch rules, origin and task-branch commits, and a Finalize with no `ParentMode` seam skips the step and lands locally.
+ // A no closes a recorded pull request GitHub reports open with the comment `lym closed this pull request: <reason>`, removes the record, and lands locally.
+-// A yes with no record is Stuck with Halt naming `lym loom goto PR-Review`, and a yes whose pull request GitHub reports closed while the record is not marked closed for continue is Stuck with Halt naming a reopen on GitHub and `lym batten cancel`; only PR-Review writes that mark.
+-// A yes whose record is marked closed for continue and whose pull request is closed is the operator's ending, and lands locally with Finalize's gate and credit block.
++// A yes never lands by a local merge pushed to the parent.
++// A yes with no record is Stuck with Halt naming `lym loom goto PR-Review`, and a yes whose pull request GitHub reports closed while the record carries no operator's ending is Stuck with Halt naming a reopen on GitHub and `lym batten cancel`; only PR-Review writes that mark.
++// A yes whose record carries the operator's ending and whose pull request is closed is reopened on GitHub and merged like an open one, since GitHub squash-merges only an open pull request; a failed reopen is judged as any GitHub failure.
+ // A merged pull request makes no GitHub merge, and the parent sync fast-forwards to the merged upstream so the parent-side merge takes the already-landed path.
+ // An open one is merged on GitHub after the lock re-check and before the parent-side merge: Finalize pushes the task branch, merges with the pushed head as the expected head, `squash` choosing the method, the change description's title as the commit title and its body and the credit block as the commit message, then fetches and fast-forwards the parent pair.
+-// A merge GitHub refuses as pending is retried for at most a minute under the lock, a method refusal names `lym config landing --set squash=<true|false>`, and any other refusal names a second person's approval and, for the operator alone, `lym loom goto PR-Review`.
++// A merge GitHub refuses as pending is retried for at most a minute under the lock, a method refusal names `lym config landing --set squash=<true|false>`, and any other refusal names a second person's approval or a settled check or conflict, and `lym batten cancel`.
+ // The retry after a merge-in-required error never merges on GitHub a second time.
+ // Every GitHub failure is judged as PR-Review judges one, with each halt opening with LandingStopPrefix.
+ //
+diff --git a/internal/landingshed/finalize.go b/internal/landingshed/finalize.go
+index f9a70f44..d9684b28 100644
+--- a/internal/landingshed/finalize.go
++++ b/internal/landingshed/finalize.go
+@@ -167,9 +167,10 @@ func NewFinalize(deps Deps) (*Finalize, error) {
+ // The re-read and the landing are not atomic: a release between them is caught only by the parent push's rejection.
+ // The landing commit carries the change description and, after a blank line, the credit block, when the config yields one.
+ //
+-// Right after the lock it follows the pull-request resolver: a no closes a recorded open pull request, drops the record and lands locally;
++// Right after the lock it follows the pull-request resolver, asked with GitHub's rules for the parent branch: a no closes a recorded open pull request, drops the record and lands locally;
++// a rules read that fails for a reason other than a transient or token one halts when a pull request is recorded, and closes nothing;
+ // a yes needs the recorded pull request and halts without one, and halts on one closed without the operator's ending;
+-// the operator's ending, a closed pull request whose record is marked closed for continue, lands locally with the gate and credit block, and a merged one lands through the already-landed path.
++// a closed pull request whose record carries the operator's ending is reopened and merged on GitHub like an open one, and a merged one lands through the already-landed path.
+ // An open pull request is merged on GitHub just before the parent-side merge, with the pushed task head as its expected head, and the parent pair is fast-forwarded to the merge, so the parent-side merge then finds the parent holding the task's work.
+ //
+ // Finalize is idempotent over an already-landed parent: when the parent already contains the task's
+diff --git a/internal/landingshed/finalize_pr.go b/internal/landingshed/finalize_pr.go
+index 61ed02e2..2cceff01 100644
+--- a/internal/landingshed/finalize_pr.go
++++ b/internal/landingshed/finalize_pr.go
+@@ -100,10 +100,10 @@ func (fz *Finalize) githubFailure(ctx context.Context, action string, err error)
+ 	return fz.halt(ctx, LandingStopPrefix+githubHaltReason(action, err))
+ }
+ 
+-// pullRequestLanding decides, under the parent lock, how the landing relates to the run's pull request, following ResolvePullRequest and never the record alone.
++// pullRequestLanding decides, under the parent lock, how the landing relates to the run's pull request, following ResolvePullRequest, asked with GitHub's rules for the parent branch, and never the record alone.
+ // A no closes a recorded pull request GitHub reports open, removes the record and lands locally.
+ // A yes needs the recorded pull request: an absent record, and a closed pull request the operator did not end the review with, are halts.
+-// A yes with the record's ClosedForContinue and a closed pull request lands locally, a merged pull request lands through the parent-side merge's already-landed path, and an open one is marked to merge on GitHub.
++// A yes never lands by a local merge pushed to the parent: a merged pull request lands through the parent-side merge's already-landed path, an open one is marked to merge on GitHub, and a closed one whose record carries the operator's ending is reopened and marked to merge, since GitHub merges only an open pull request.
+ // A Finalize with no ParentMode seam skips the step and lands locally.
+ // stop is true when Call returns the other values at once.
+ func (fz *Finalize) pullRequestLanding(ctx context.Context) (prLanding, shedengine.Outcome, shedengine.OutputPointer, error, bool) {
+@@ -134,14 +134,17 @@ func (fz *Finalize) pullRequestLanding(ctx context.Context) (prLanding, shedengi
+ 	if err != nil {
+ 		return ended(fz.errorStop(ctx, fmt.Errorf("landingshed: %s: read whether the task branch has commits beyond its parent: %w", finalizeName, err)))
+ 	}
+-	decision := ResolvePullRequest(fz.deps.Slug, mode, field, origin, hasCommits)
+-	if decision.Halt != "" {
+-		return halt(decision.Halt)
+-	}
+ 	rec, found, err := pullrequest.ReadRecord(pr.RecordPath, pr.RecordLockPath)
+ 	if err != nil {
+ 		return ended(fz.errorStop(ctx, fmt.Errorf("landingshed: %s: read the pull request record: %w", finalizeName, err)))
+ 	}
++	decision, err := resolveWithParentRule(ctx, finalizeName, fz.deps, mode, field, origin, hasCommits, found)
++	if err != nil {
++		return ended(fz.errorStop(ctx, err))
++	}
++	if decision.Halt != "" {
++		return halt(decision.Halt)
++	}
+ 
+ 	if !decision.Open {
+ 		if !found {
+@@ -165,10 +168,13 @@ func (fz *Finalize) pullRequestLanding(ctx context.Context) (prLanding, shedengi
+ 	case pullrequest.StateOpen:
+ 		return prLanding{merge: true, api: api, record: rec}, "", shedengine.OutputPointer{}, nil, false
+ 	case pullrequest.StateClosed:
+-		if rec.ClosedForContinue {
+-			return prLanding{}, "", shedengine.OutputPointer{}, nil, false
++		if !rec.ReviewEnded {
++			return halt(fmt.Sprintf("the run's pull request %s was closed without a merge; way forward: reopen it on GitHub, then lym loom goto PR-Review, or lym batten cancel %s", rec.URL, fz.deps.Slug))
+ 		}
+-		return halt(fmt.Sprintf("the run's pull request %s was closed without a merge; way forward: reopen it on GitHub, then lym loom goto PR-Review, or lym batten cancel %s", rec.URL, fz.deps.Slug))
++		if err := api.Reopen(ctx, rec.Number); err != nil {
++			return ended(fz.githubFailure(ctx, "reopen the pull request", err))
++		}
++		return prLanding{merge: true, api: api, record: rec}, "", shedengine.OutputPointer{}, nil, false
+ 	}
+ 	return prLanding{}, "", shedengine.OutputPointer{}, nil, false
+ }
+@@ -259,7 +265,7 @@ func (fz *Finalize) mergeRefusalReason(rec pullrequest.Record, refusal *pullrequ
+ 	if refusal.Kind == pullrequest.RefusalMethod {
+ 		return fmt.Sprintf("GitHub refused the merge method for pull request %s: %s; way forward: set landing.yaml's squash to the method the repository allows with lym config landing --set squash=<true|false> in the prime worktree, or allow the method in the repository's settings, then run lym loom resume", rec.URL, refusal.Message)
+ 	}
+-	return fmt.Sprintf("GitHub refused to merge pull request %s: %s; way forward: a second person approves the pull request again or settles the required check or conflict on GitHub, then runs lym loom resume; the operator alone runs lym loom goto PR-Review and asks the PR-Review agent to continue, which closes the pull request and lands the task locally through Finalize", rec.URL, refusal.Message)
++	return fmt.Sprintf("GitHub refused to merge pull request %s: %s; way forward: a second person approves the pull request again or settles the required check or conflict on GitHub, then runs lym loom resume; or the operator runs lym batten cancel %s", rec.URL, refusal.Message, fz.deps.Slug)
+ }
+ 
+ // mergedButNotPulledReason is the Stuck reason of a pull request merged on GitHub whose merge the parent pair could not take in.
+diff --git a/internal/landingshed/finalize_pr_test.go b/internal/landingshed/finalize_pr_test.go
+index b52b1793..589ac216 100644
+--- a/internal/landingshed/finalize_pr_test.go
++++ b/internal/landingshed/finalize_pr_test.go
+@@ -6,6 +6,7 @@ import (
+ 	"context"
+ 	"errors"
+ 	"fmt"
++	"net/http"
+ 	"net/url"
+ 	"path/filepath"
+ 	"slices"
+@@ -44,7 +45,7 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 		}
+ 		return rec
+ 	}
+-	closedForContinue := func(r *pullrequest.Record) { r.ClosedForContinue = true }
++	reviewEnded := func(r *pullrequest.Record) { r.ReviewEnded = true }
+ 	withContinue := func(r *pullrequest.Record) { r.Continue = true }
+ 	refusal := func(kind pullrequest.RefusalKind, message string) scriptedCall {
+ 		return scriptedCall{err: &pullrequest.MergeRefusal{Kind: kind, Message: message}}
+@@ -81,6 +82,8 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 		// wantNotInReason are substrings the reason must not hold.
+ 		wantNotInReason []string
+ 		wantNoRecord    bool
++		// wantRecordKept asserts the record's file is still there.
++		wantRecordKept bool
+ 	}{
+ 		{
+ 			name: "UnreadableParentModeHaltsNamingTheWorktreeBehindTheLandingPrefix", parentErr: errors.New("bad yaml"),
+@@ -93,23 +96,53 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 		{
+ 			name: "NoClosesAnOpenRecordedPullRequestRemovesTheRecordAndMergesLocally", parentMode: "off", record: recorded(), scripts: statusScript(open),
+ 			wantOutcome: shedengine.Done, wantMerges: 1, wantNoRecord: true, wantOrder: "merge,mark,push",
+-			wantCalls: []string{"Status 7", "Close 7 lym closed this pull request: pull request off: the parent's beam.yaml pull_request is off and the entry's pull_request is empty"},
++			wantCalls: []string{"RequiresPullRequest main", "Status 7", "Close 7 lym closed this pull request: pull request off: the parent's beam.yaml pull_request is off and the entry's pull_request is empty"},
++		},
++		{
++			name: "AnOffParentWhoseBranchRulesRequireAPullRequestMergesTheRecordedOneOnGitHub", parentMode: "off", record: recorded(),
++			scripts:     map[string][]scriptedCall{"RequiresPullRequest": {{found: true}}, "Status": {open}, "Merge": {{}}},
++			wantOutcome: shedengine.Done, wantMerges: 1, wantOrder: "task-push,fast-forward,merge,mark,push",
++			wantCalls: []string{"RequiresPullRequest main", "Status 7", wantGitHubMerge},
++		},
++		{
++			name: "ATransientParentRuleReadIsAnErrorStopWithNoMerge", parentMode: "off", record: recorded(),
++			scripts: map[string][]scriptedCall{"RequiresPullRequest": {{err: context.DeadlineExceeded}}},
++			wantErr: true, wantErrText: "read GitHub's rules for the parent branch", wantCalls: []string{"RequiresPullRequest main"},
++		},
++		{
++			name: "AnUnreadableParentRuleWithARecordedPullRequestHaltsClosesNothingAndKeepsTheRecord", parentMode: "off", record: recorded(),
++			scripts:     map[string][]scriptedCall{"RequiresPullRequest": {{err: githubErrorResponse(http.StatusNotFound, "Not Found")}}},
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"read GitHub's rules for the parent branch", "Not Found", "lym loom resume"},
++			wantCalls: []string{"RequiresPullRequest main"}, wantRecordKept: true,
++		},
++		{
++			name: "AnUnresolvableTokenOnTheParentRuleReadReadsAsNoRuleAndLandsLocally", parentMode: "off",
++			scripts:     map[string][]scriptedCall{"RequiresPullRequest": {{err: &url.Error{Op: "Get", URL: "https://api.github.com", Err: githubclient.ErrTokenUnresolvable}}}},
++			wantOutcome: shedengine.Done, wantMerges: 1, wantOrder: "merge,mark,push", wantCalls: []string{"RequiresPullRequest main"},
+ 		},
+ 		{
+ 			name: "YesWithNoRecordHaltsNamingGotoPRReview", parentMode: "on",
+ 			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"has no pull request recorded", "lym loom goto PR-Review"},
+ 		},
+ 		{
+-			name: "YesWithAClosedRecordNotClosedForContinueHaltsNamingReopenAndCancel", parentMode: "on", record: recorded(), scripts: statusScript(closed),
++			name: "YesWithAClosedRecordWithoutTheOperatorsEndingHaltsNamingReopenAndCancel", parentMode: "on", record: recorded(), scripts: statusScript(closed),
+ 			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"reopen it on GitHub", "lym loom goto PR-Review", "lym batten cancel me"}, wantCalls: []string{"Status 7"},
+ 		},
+ 		{
+-			name: "AContinueFlagWithoutClosedForContinueHaltsAsWell", parentMode: "on", record: recorded(withContinue), scripts: statusScript(closed),
++			name: "AContinueFlagWithoutTheRecordedEndingHaltsAsWell", parentMode: "on", record: recorded(withContinue), scripts: statusScript(closed),
+ 			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"closed without a merge"}, wantCalls: []string{"Status 7"},
+ 		},
+ 		{
+-			name: "ClosedForContinueMergesLocallyWithNoGitHubMerge", parentMode: "on", record: recorded(closedForContinue), scripts: statusScript(closed),
+-			wantOutcome: shedengine.Done, wantMerges: 1, wantOrder: "merge,mark,push", wantCalls: []string{"Status 7"},
++			name: "TheOperatorsEndingOnAClosedPullRequestReopensItAndMergesOnGitHub", parentMode: "on", record: recorded(reviewEnded),
++			scripts:     map[string][]scriptedCall{"Status": {closed}, "Merge": {{}}},
++			wantOutcome: shedengine.Done, wantMerges: 1, wantOrder: "task-push,fast-forward,merge,mark,push",
++			wantCalls: []string{"Status 7", "Reopen 7", wantGitHubMerge},
++		},
++		{
++			name: "AFailedReopenHaltsNamingGitHubsMessageAndMergesNothing", parentMode: "on", record: recorded(reviewEnded),
++			scripts:     map[string][]scriptedCall{"Status": {closed}, "Reopen": {{err: errors.New("state cannot be changed")}}},
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"reopen the pull request", "state cannot be changed", "lym loom resume"},
++			wantCalls: []string{"Status 7", "Reopen 7"},
+ 		},
+ 		{
+ 			name: "AMergedPullRequestMakesNoGitHubMergeAndLandsThroughTheParentSideMerge", parentMode: "on", record: recorded(), scripts: statusScript(merged),
+@@ -135,9 +168,10 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 			wantOutcome: shedengine.Done, wantMerges: 1, wantCalls: []string{"Status 7", wantGitHubMerge, wantGitHubMerge},
+ 		},
+ 		{
+-			name: "APendingRefusalForOverAMinuteHaltsNamingAnApprovalAndTheOperatorsWay", parentMode: "on", record: recorded(),
++			name: "APendingRefusalForOverAMinuteHaltsNamingAnApprovalAndTheCancel", parentMode: "on", record: recorded(),
+ 			scripts:     mergeScript(open, refusal(pullrequest.RefusalPending, "Base branch was modified")),
+-			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"Base branch was modified", "approves the pull request again", "lym loom goto PR-Review", "lym loom resume"},
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"Base branch was modified", "approves the pull request again", "lym batten cancel me", "lym loom resume"},
++			wantNotInReason: []string{"locally", "lym loom goto PR-Review"},
+ 			// Retries sleep 1, 2, 4, 8, 16 and 32 seconds, so the seventh refusal is the first past the minute.
+ 			wantCalls: append([]string{"Status 7"}, slices.Repeat([]string{wantGitHubMerge}, 7)...),
+ 		},
+@@ -147,9 +181,9 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"Merge commits are not allowed", "lym config landing --set squash=<true|false>", "lym loom resume"}, wantCalls: []string{"Status 7", wantGitHubMerge},
+ 		},
+ 		{
+-			name: "AnotherRefusalHaltsNamingGitHubsMessageAndGotoPRReview", parentMode: "on", record: recorded(),
++			name: "AnotherRefusalHaltsNamingGitHubsMessageAndTheCancel", parentMode: "on", record: recorded(),
+ 			scripts:     mergeScript(open, refusal(pullrequest.RefusalOther, "Required status check is expected")),
+-			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"Required status check is expected", "lym loom goto PR-Review", "ask"}, wantCalls: []string{"Status 7", wantGitHubMerge},
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"Required status check is expected", "lym batten cancel me"}, wantCalls: []string{"Status 7", wantGitHubMerge},
+ 		},
+ 		{
+ 			name: "ATransientMergeFailureIsAnError", parentMode: "on", record: recorded(),
+@@ -289,8 +323,8 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 			if !lockHeldAtMode {
+ 				t.Error("the parent lock was not held when the pull-request mode was read; want the decision made under the lock")
+ 			}
+-			if _, found, rerr := pullrequest.ReadRecord(deps.PullRequest.RecordPath, deps.PullRequest.RecordLockPath); rerr != nil || (tt.wantNoRecord && found) {
+-				t.Errorf("ReadRecord() found = %v, error = %v; want no record left: %v", found, rerr, tt.wantNoRecord)
++			if _, found, rerr := pullrequest.ReadRecord(deps.PullRequest.RecordPath, deps.PullRequest.RecordLockPath); rerr != nil || (tt.wantNoRecord && found) || (tt.wantRecordKept && !found) {
++				t.Errorf("ReadRecord() found = %v, error = %v; want no record left: %v, record kept: %v", found, rerr, tt.wantNoRecord, tt.wantRecordKept)
+ 			}
+ 		})
+ 	}
+diff --git a/internal/landingshed/prreview.go b/internal/landingshed/prreview.go
+index 30aba186..29f004f5 100644
+--- a/internal/landingshed/prreview.go
++++ b/internal/landingshed/prreview.go
+@@ -25,7 +25,7 @@ const (
+ )
+ 
+ // PRReview is the ShedProducer that lands a run through a GitHub pull request when ResolvePullRequest says so.
+-// A no closes any pull request the run recorded and passes; a yes pushes the task branch, finds or opens the pull request, sets its title from the change description and its body from the description's body and the credit block, records it, keeps one interactive session for the operator to discuss it in, and waits on it.
++// A no closes any pull request the run recorded and passes, except that a failed read of GitHub's rules with a pull request recorded is Stuck and closes nothing; a yes pushes the task branch, finds or opens the pull request, sets its title from the change description and its body from the description's body and the credit block, records it, keeps one interactive session for the operator to discuss it in, and waits on it.
+ // The wait gates and pushes the agent's commits, and ends when the pull request is merged or approved, or closed or continued by the operator.
+ // It takes no parent lock.
+ type PRReview struct {
+@@ -86,7 +86,14 @@ func (p *PRReview) decide(ctx context.Context) (shedengine.Outcome, shedengine.O
+ 		return "", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: read whether the task branch has commits beyond its parent: %w", p.name, err)
+ 	}
+ 
+-	decision := ResolvePullRequest(p.deps.Slug, mode, field, origin, hasCommits)
++	_, recordFound, err := pullrequest.ReadRecord(pr.RecordPath, pr.RecordLockPath)
++	if err != nil {
++		return "", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: read the pull request record: %w", p.name, err)
++	}
++	decision, err := resolveWithParentRule(ctx, p.name, p.deps, mode, field, origin, hasCommits, recordFound)
++	if err != nil {
++		return "", shedengine.OutputPointer{}, err
++	}
+ 	if decision.Halt != "" {
+ 		return stuckVerdict(ctx, p.name, decision.Halt, true)
+ 	}
+@@ -210,8 +217,8 @@ func (p *PRReview) openPullRequest(ctx context.Context, origin Origin) (shedengi
+ 	if err != nil {
+ 		return p.githubFailure(ctx, "open the GitHub client", err)
+ 	}
+-	if found && rec.ClosedForContinue {
+-		// The operator already ended this review and lym closed its pull request.
++	if found && rec.ReviewEnded {
++		// The operator already ended this review.
+ 		// A head past the one gated then means commits were added since that need review, so the review starts afresh.
+ 		if head == rec.GatedHead {
+ 			return p.wait(ctx, api, rec, nil, time.Time{})
+@@ -489,7 +496,7 @@ func (p *PRReview) wake(ctx context.Context, api pullrequest.API, state *prWaitS
+ 	if err != nil {
+ 		return end("", shedengine.OutputPointer{}, err)
+ 	}
+-	outcome, pointer, ended, err = p.judge(ctx, api, state, status, rec, head, dirty)
++	outcome, pointer, ended, err = p.judge(ctx, status, rec, head, dirty)
+ 	if err == nil && !ended && stopped {
+ 		if err = p.resumeSession(ctx); err != nil {
+ 			return end("", shedengine.OutputPointer{}, err)
+@@ -635,12 +642,10 @@ func (p *PRReview) pollFailure(ctx context.Context, state *prWaitState, action s
+ 	return outcome, pointer, true, gerr
+ }
+ 
+-// continueComment is the comment lym closes the pull request with when the operator ends the review through the agent.
+-const continueComment = "the operator ended the review through the PR-Review agent; lym closes this pull request and the run lands through Finalize"
+-
+ // judge reads the pull request's status against the record and the task worktree, and reports whether it ends the call.
+-// A merged pull request takes the merged verdicts whatever the continue flag says, since nothing is left to close.
+-func (p *PRReview) judge(ctx context.Context, api pullrequest.API, state *prWaitState, status pullrequest.Status, rec pullrequest.Record, head string, dirty []string) (shedengine.Outcome, shedengine.OutputPointer, bool, error) {
++// A merged pull request takes the merged verdicts whatever the continue flag says, since nothing is left to merge.
++// The operator's ending leaves the pull request as GitHub has it, for Finalize to merge on GitHub, so ending the review never lands the run by a direct push to the parent.
++func (p *PRReview) judge(ctx context.Context, status pullrequest.Status, rec pullrequest.Record, head string, dirty []string) (shedengine.Outcome, shedengine.OutputPointer, bool, error) {
+ 	done := func() (shedengine.Outcome, shedengine.OutputPointer, bool, error) {
+ 		return shedengine.Done, shedengine.OutputPointer{}, true, nil
+ 	}
+@@ -669,33 +674,29 @@ func (p *PRReview) judge(ctx context.Context, api pullrequest.API, state *prWait
+ 
+ 	case pullrequest.StateClosed:
+ 		switch {
+-		case rec.ClosedForContinue && clean:
++		case rec.ReviewEnded && clean:
+ 			return done()
+-		case rec.ClosedForContinue:
++		case rec.ReviewEnded:
+ 			return stuck(p.dirtyEndReason(rec.Number, dirty))
+ 		case rec.Continue && clean && gated:
+-			if err := p.updateRecord(func(r *pullrequest.Record) { r.ClosedForContinue = true }); err != nil {
+-				return "", shedengine.OutputPointer{}, true, err
+-			}
+-			return done()
++			return p.endReview(rec)
+ 		case rec.Continue:
+ 			return "", shedengine.OutputPointer{}, false, nil
+ 		}
+ 		return stuck(fmt.Sprintf("pull request #%d was closed on GitHub without being merged; way forward: reopen it on GitHub and run lym loom resume, or run lym batten cancel %s", rec.Number, p.deps.Slug))
+ 
+ 	case pullrequest.StateOpen:
++		if rec.ReviewEnded {
++			if clean {
++				return done()
++			}
++			return stuck(p.dirtyEndReason(rec.Number, dirty))
++		}
+ 		if rec.Continue {
+ 			if !clean || !gated {
+ 				return "", shedengine.OutputPointer{}, false, nil
+ 			}
+-			if err := api.Close(ctx, rec.Number, continueComment); err != nil {
+-				outcome, pointer, ended, ferr := p.pollFailure(ctx, state, "close the pull request", err)
+-				return outcome, pointer, ended, ferr
+-			}
+-			if err := p.updateRecord(func(r *pullrequest.Record) { r.ClosedForContinue = true }); err != nil {
+-				return "", shedengine.OutputPointer{}, true, err
+-			}
+-			return done()
++			return p.endReview(rec)
+ 		}
+ 		if status.Approved && !status.ChangesRequested && status.HeadSHA == rec.GatedHead && status.HeadSHA == head && clean {
+ 			return done()
+@@ -704,6 +705,16 @@ func (p *PRReview) judge(ctx context.Context, api pullrequest.API, state *prWait
+ 	return "", shedengine.OutputPointer{}, false, nil
+ }
+ 
++// endReview records the operator's ending in the record, unless rec already carries it, and ends the call Done.
++func (p *PRReview) endReview(rec pullrequest.Record) (shedengine.Outcome, shedengine.OutputPointer, bool, error) {
++	if !rec.ReviewEnded {
++		if err := p.updateRecord(func(r *pullrequest.Record) { r.ReviewEnded = true }); err != nil {
++			return "", shedengine.OutputPointer{}, true, err
++		}
++	}
++	return shedengine.Done, shedengine.OutputPointer{}, true, nil
++}
++
+ // dirtyEndReason is the Stuck reason for a review that ended with uncommitted changes in the task worktree.
+ func (p *PRReview) dirtyEndReason(number int, dirty []string) string {
+ 	return fmt.Sprintf("pull request #%d ended the review, but the task worktree has uncommitted changes: %s; way forward: discard them in the task worktree, after filing any worth keeping as a board note, then run lym loom resume", number, listShown(dirty))
+diff --git a/internal/landingshed/prreview_session_test.go b/internal/landingshed/prreview_session_test.go
+index 2314cfe9..b835ac72 100644
+--- a/internal/landingshed/prreview_session_test.go
++++ b/internal/landingshed/prreview_session_test.go
+@@ -209,7 +209,7 @@ func TestPRReview_Session(t *testing.T) {
+ 			cancelAtSleep: cancelAtFirstSleep, wantCanceled: true,
+ 		},
+ 		{
+-			name: "ReentryWithAKeptClosedForContinueRecordStartsNone", record: recordedAtHead(withStrand("g-old", "sess-old"), func(r *pullrequest.Record) { r.ClosedForContinue = true }),
++			name: "ReentryWithAKeptReviewEndedRecordStartsNone", record: recordedAtHead(withStrand("g-old", "sess-old"), func(r *pullrequest.Record) { r.ReviewEnded = true }),
+ 			scripts:     map[string][]scriptedCall{"Status": {closed}},
+ 			wantOutcome: shedengine.Done,
+ 		},
+diff --git a/internal/landingshed/prreview_test.go b/internal/landingshed/prreview_test.go
+index 128ee228..19be1318 100644
+--- a/internal/landingshed/prreview_test.go
++++ b/internal/landingshed/prreview_test.go
+@@ -93,6 +93,16 @@ func (f *fakePullRequestAPI) Merge(_ context.Context, number int, expectedHead s
+ 	return f.next("Merge", fmt.Sprintf("%d|%s|%v|%s|%s", number, expectedHead, squash, title, message)).err
+ }
+ 
++func (f *fakePullRequestAPI) Reopen(_ context.Context, number int) error {
++	return f.next("Reopen", fmt.Sprint(number)).err
++}
++
++// RequiresPullRequest answers the scripted call's found as whether the branch's rules require a pull request.
++func (f *fakePullRequestAPI) RequiresPullRequest(_ context.Context, branch string) (bool, error) {
++	s := f.next("RequiresPullRequest", branch)
++	return s.found, s.err
++}
++
+ func TestPRReview_Call(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -143,7 +153,50 @@ func TestPRReview_Call(t *testing.T) {
+ 		wantNoRecord bool
+ 	}{
+ 		{
+-			name: "OffWithNoFieldIsDoneAndCallsNoGitHub", parentMode: "off", origin: githubOrigin,
++			name: "OffWithNoFieldReadsTheParentRulesAndIsDone", parentMode: "off", origin: githubOrigin,
++			wantOutcome: shedengine.Done,
++			wantCalls:   []string{"RequiresPullRequest main"},
++		},
++		{
++			name: "OffWithAParentRuleRequiringAPullRequestOpensOne", parentMode: "off", origin: githubOrigin,
++			scripts:     map[string][]scriptedCall{"RequiresPullRequest": {{found: true}}, "Create": {created}, "Status": {mergedAtHead}},
++			wantOutcome: shedengine.Done, wantPushes: 1,
++			wantCalls:  []string{"RequiresPullRequest main", "FindOpen task main", wantCreateCall, "Status 7"},
++			wantRecord: &pullrequest.Record{Number: 7, URL: recordedURLSeen, Base: "main", Head: "task", GatedHead: taskHead},
++		},
++		{
++			name: "AnUnreadableParentRuleReadsAsNoRuleAndIsDone", parentMode: "off", origin: githubOrigin,
++			scripts:     map[string][]scriptedCall{"RequiresPullRequest": {{err: githubErrorResponse(http.StatusNotFound, "Not Found")}}},
++			wantOutcome: shedengine.Done,
++			wantCalls:   []string{"RequiresPullRequest main"},
++		},
++		{
++			name: "AnUnreadableParentRuleWithARecordedPullRequestHaltsAndKeepsThePullRequest", parentMode: "off", origin: githubOrigin,
++			record:      &pullrequest.Record{Number: 7},
++			scripts:     map[string][]scriptedCall{"RequiresPullRequest": {{err: githubErrorResponse(http.StatusNotFound, "Not Found")}}},
++			wantOutcome: shedengine.Stuck, wantHalt: true,
++			wantReason: []string{"read GitHub's rules for the parent branch", "Not Found", "lym loom resume"},
++			wantCalls:  []string{"RequiresPullRequest main"},
++			wantRecord: &pullrequest.Record{Number: 7},
++		},
++		{
++			name: "AnUnresolvableTokenOnTheParentRuleReadReadsAsNoRuleAndIsDone", parentMode: "off", origin: githubOrigin,
++			scripts:     map[string][]scriptedCall{"RequiresPullRequest": {{err: &url.Error{Op: "Get", URL: "https://api.github.com", Err: githubclient.ErrTokenUnresolvable}}}},
++			wantOutcome: shedengine.Done,
++			wantCalls:   []string{"RequiresPullRequest main"},
++		},
++		{
++			name: "ATransientParentRuleReadIsAnError", parentMode: "off", origin: githubOrigin,
++			scripts: map[string][]scriptedCall{"RequiresPullRequest": {{err: context.DeadlineExceeded}}},
++			wantErr: true, wantErrText: "read GitHub's rules for the parent branch",
++			wantCalls: []string{"RequiresPullRequest main"},
++		},
++		{
++			name: "AnEmptyTaskBranchUnderOffDoesNotReadTheParentRules", parentMode: "off", origin: githubOrigin, taskEmpty: true,
++			wantOutcome: shedengine.Done,
++		},
++		{
++			name: "ALocalOriginUnderOffDoesNotReadTheParentRules", parentMode: "off", origin: localOrigin,
+ 			wantOutcome: shedengine.Done,
+ 		},
+ 		{
+@@ -158,7 +211,7 @@ func TestPRReview_Call(t *testing.T) {
+ 			record:      &pullrequest.Record{Number: 7},
+ 			scripts:     map[string][]scriptedCall{"Status": {{status: pullrequest.Status{State: pullrequest.StateMerged}}}},
+ 			wantOutcome: shedengine.Done, wantNoRecord: true,
+-			wantCalls: []string{"Status 7"},
++			wantCalls: []string{"RequiresPullRequest main", "Status 7"},
+ 		},
+ 		{
+ 			name: "UnreadableParentModeHaltsNamingTheWorktree", parentErr: errors.New("bad yaml"), origin: githubOrigin,
+@@ -195,16 +248,16 @@ func TestPRReview_Call(t *testing.T) {
+ 			wantRecord: &pullrequest.Record{Number: 9, URL: "u9", Base: "main", Head: "task", GatedHead: taskHead},
+ 		},
+ 		{
+-			name: "ClosedForContinueAtTheGatedHeadKeepsTheRecordAndWaitsOnlyToJudgeIt", parentMode: "on", origin: githubOrigin,
+-			record:      &pullrequest.Record{Number: 7, ClosedForContinue: true, GatedHead: taskHead},
++			name: "ReviewEndedAtTheGatedHeadKeepsTheRecordAndWaitsOnlyToJudgeIt", parentMode: "on", origin: githubOrigin,
++			record:      &pullrequest.Record{Number: 7, ReviewEnded: true, GatedHead: taskHead},
+ 			scripts:     map[string][]scriptedCall{"Status": {closed}},
+ 			wantOutcome: shedengine.Done, wantPushes: 1,
+ 			wantCalls:  []string{"Status 7"},
+-			wantRecord: &pullrequest.Record{Number: 7, ClosedForContinue: true, GatedHead: taskHead},
++			wantRecord: &pullrequest.Record{Number: 7, ReviewEnded: true, GatedHead: taskHead},
+ 		},
+ 		{
+-			name: "ClosedForContinuePastTheGatedHeadOpensANewPullRequest", parentMode: "on", origin: githubOrigin,
+-			record:      &pullrequest.Record{Number: 7, ClosedForContinue: true, GatedHead: recordedGated},
++			name: "ReviewEndedPastTheGatedHeadOpensANewPullRequest", parentMode: "on", origin: githubOrigin,
++			record:      &pullrequest.Record{Number: 7, ReviewEnded: true, GatedHead: recordedGated},
+ 			scripts:     map[string][]scriptedCall{"Create": {{ref: pullrequest.Ref{Number: 8, URL: "u8"}}}, "Status": {mergedAtHead}},
+ 			wantOutcome: shedengine.Done, wantPushes: 1,
+ 			wantCalls:  []string{"FindOpen task main", wantCreateCall, "Status 8"},
+@@ -410,6 +463,25 @@ func TestPRReview_Call(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("ContextCancelledBeforeTheParentRuleReadIsAnErrorWrappingTheCancel", func(t *testing.T) {
++		t.Parallel()
++		fx := newPRReviewFixture(t, "off", nil, "", githubOrigin, nil, map[string][]scriptedCall{"RequiresPullRequest": {{err: errors.New("rules unreadable")}}}, nil)
++		ctx, cancel := context.WithCancel(context.Background())
++		fx.deps.PullRequest.Origin = func() (Origin, error) {
++			cancel()
++			return githubOrigin, nil
++		}
++
++		outcome, _, err := NewPRReview("PR-Review", fx.deps).Call(ctx)
++
++		if !errors.Is(err, context.Canceled) || outcome != "" {
++			t.Errorf("Call() = %q, %v; want an empty outcome and an error wrapping context.Canceled", outcome, err)
++		}
++		if diff := cmp.Diff([]string{"RequiresPullRequest main"}, fx.api.calls); diff != "" {
++			t.Errorf("GitHub calls mismatch (-want +got):\n%s", diff)
++		}
++	})
++
+ 	t.Run("CancelledContextIsAnError", func(t *testing.T) {
+ 		t.Parallel()
+ 		fx := newPRReviewFixture(t, "on", nil, "", githubOrigin, nil, nil, nil)
+diff --git a/internal/landingshed/prreview_wait_test.go b/internal/landingshed/prreview_wait_test.go
+index bcc839f8..2334351a 100644
+--- a/internal/landingshed/prreview_wait_test.go
++++ b/internal/landingshed/prreview_wait_test.go
+@@ -127,7 +127,6 @@ func once(fn func()) func() {
+ func TestPRReview_Wait(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	// The wait captures the process-global logger, so this test and its subtests stay serial.
+-	const continueClose = "Close 7 " + continueComment
+ 	const editSeven = "Edit 7|Change title|" + wantPRBody
+ 	open := scriptedCall{status: pullrequest.Status{State: pullrequest.StateOpen}}
+ 	closed := scriptedCall{status: pullrequest.Status{State: pullrequest.StateClosed}}
+@@ -156,7 +155,7 @@ func TestPRReview_Wait(t *testing.T) {
+ 		return rec
+ 	}
+ 	withContinue := func(r *pullrequest.Record) { r.Continue = true }
+-	withClosedForContinue := func(r *pullrequest.Record) { r.ClosedForContinue = true }
++	withReviewEnded := func(r *pullrequest.Record) { r.ReviewEnded = true }
+ 	withStrand := func(r *pullrequest.Record) { r.StrandName = "pr-strand" }
+ 	writeContinue := func(w *waitWorld) {
+ 		err := pullrequest.UpdateRecord(w.deps.PullRequest.RecordPath, w.deps.PullRequest.RecordLockPath, func(r *pullrequest.Record) error {
+@@ -266,20 +265,20 @@ func TestPRReview_Wait(t *testing.T) {
+ 			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"reopen it on GitHub", "lym batten cancel the-slug"},
+ 		},
+ 		{
+-			name: "ClosedForContinueOnACleanTreeIsDone", record: seed("h1", withClosedForContinue), scripts: statusScript(closed),
+-			wantOutcome: shedengine.Done, wantCalls: []string{"Status 7"}, wantRecord: seed("h1", withClosedForContinue),
++			name: "ReviewEndedOnAClosedPullRequestOnACleanTreeIsDone", record: seed("h1", withReviewEnded), scripts: statusScript(closed),
++			wantOutcome: shedengine.Done, wantCalls: []string{"Status 7"}, wantRecord: seed("h1", withReviewEnded),
+ 		},
+ 		{
+-			name: "ClosedForContinueOnADirtyTreeHaltsNamingTheFiles", record: seed("h1", withClosedForContinue), scripts: statusScript(closed), dirty: []string{"wip.go"},
++			name: "ReviewEndedOnADirtyTreeHaltsNamingTheFiles", record: seed("h1", withReviewEnded), scripts: statusScript(closed), dirty: []string{"wip.go"},
+ 			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"uncommitted changes: wip.go", "discard them", "lym loom resume"},
+ 		},
+ 		{
+ 			name: "ContinueOnAClosedPullRequestAtTheGatedHeadIsDoneAndRecordsIt", record: seed("h1", withContinue), scripts: statusScript(closed),
+-			wantOutcome: shedengine.Done, wantRecord: seed("h1", withContinue, withClosedForContinue),
++			wantOutcome: shedengine.Done, wantRecord: seed("h1", withContinue, withReviewEnded),
+ 		},
+ 		{
+ 			name: "ContinueOnAClosedPullRequestWithAnUngatedCleanHeadGatesItFirst", record: seed("h1", withContinue), scripts: statusScript(closed), head: "h2",
+-			wantOutcome: shedengine.Done, wantRecord: &pullrequest.Record{Number: 7, URL: "u7", GatedHead: "h2", Continue: true, ClosedForContinue: true}, gatePushes: 1,
++			wantOutcome: shedengine.Done, wantRecord: &pullrequest.Record{Number: 7, URL: "u7", GatedHead: "h2", Continue: true, ReviewEnded: true}, gatePushes: 1,
+ 		},
+ 		{
+ 			name: "ContinueOnAClosedPullRequestOnADirtyTreeKeepsWaiting", record: seed("h1", withContinue), scripts: statusScript(closed), dirty: []string{"wip.go"},
+@@ -297,12 +296,20 @@ func TestPRReview_Wait(t *testing.T) {
+ 			wantOutcome: shedengine.Done, wantCalls: []string{"Status 7"},
+ 		},
+ 		{
+-			name: "ContinueOnAnOpenPullRequestAtTheGatedHeadClosesItAndIsDone", record: seed("h1", withContinue), scripts: statusScript(open),
+-			wantOutcome: shedengine.Done, wantCalls: []string{"Status 7", editSeven, continueClose},
+-			wantRecord: recorded("h1", withContinue, withClosedForContinue),
++			name: "ContinueOnAnOpenPullRequestAtTheGatedHeadRecordsTheEndingLeavesItOpenAndIsDone", record: seed("h1", withContinue), scripts: statusScript(open),
++			wantOutcome: shedengine.Done, wantCalls: []string{"Status 7", editSeven},
++			wantRecord: recorded("h1", withContinue, withReviewEnded),
+ 		},
+ 		{
+-			name:   "ContinueOnAnOpenPullRequestAtAnUngatedCleanHeadKeepsWaitingWithoutClosing",
++			name: "ReviewEndedOnAnOpenPullRequestOnACleanTreeIsDoneWithoutEditingIt", record: seed("h1", withContinue, withReviewEnded), scripts: statusScript(open),
++			wantOutcome: shedengine.Done, wantCalls: []string{"Status 7"}, wantRecord: seed("h1", withContinue, withReviewEnded),
++		},
++		{
++			name: "ReviewEndedOnAnOpenPullRequestOnADirtyTreeHaltsNamingTheFiles", record: seed("h1", withContinue, withReviewEnded), scripts: statusScript(open), dirty: []string{"wip.go"},
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"uncommitted changes: wip.go", "discard them", "lym loom resume"},
++		},
++		{
++			name:   "ContinueOnAnOpenPullRequestAtAnUngatedCleanHeadKeepsWaitingWithoutEndingTheReview",
+ 			record: seed("h1", withContinue, func(r *pullrequest.Record) { r.MailedHead = "h2" }), scripts: statusScript(open), head: "h2",
+ 			setup:   func(w *waitWorld) { w.cancelAfter(2) },
+ 			wantErr: context.Canceled, wantCalls: []string{"Status 7", editSeven},
+@@ -523,7 +530,7 @@ func TestPRReview_Wait(t *testing.T) {
+ 			wantOutcome: shedengine.Done, wantCalls: []string{"FindOpen task main", "Create task main|Change title|" + wantPRBody, "Status 7"},
+ 		},
+ 		{
+-			name: "TheContinueFlagWrittenBetweenWakesPollsAtOnceAndClosesThePullRequest", record: seed("h1"), scripts: statusScript(open),
++			name: "TheContinueFlagWrittenBetweenWakesPollsAtOnceAndEndsTheReview", record: seed("h1"), scripts: statusScript(open),
+ 			setup: func(w *waitWorld) {
+ 				w.onSleep = func(w *waitWorld, n int) {
+ 					if n == 1 {
+@@ -532,15 +539,15 @@ func TestPRReview_Wait(t *testing.T) {
+ 				}
+ 			},
+ 			wantOutcome: shedengine.Done,
+-			wantCalls:   []string{"Status 7", editSeven, "Status 7", continueClose},
+-			wantRecord:  recorded("h1", withContinue, withClosedForContinue),
++			wantCalls:   []string{"Status 7", editSeven, "Status 7"},
++			wantRecord:  recorded("h1", withContinue, withReviewEnded),
+ 		},
+ 		{
+-			name: "AChangeToTheRecordEndsTheSleepEarlyAndTheContinueFlagClosesThePullRequestAfterTheFloor", record: seed("h1"), scripts: statusScript(open),
++			name: "AChangeToTheRecordEndsTheSleepEarlyAndTheContinueFlagEndsTheReviewAfterTheFloor", record: seed("h1"), scripts: statusScript(open),
+ 			setup:       changeDuringFirstSleep(0),
+ 			wantOutcome: shedengine.Done,
+-			wantCalls:   []string{"Status 7", editSeven, "Status 7", continueClose},
+-			wantRecord:  recorded("h1", withContinue, withClosedForContinue),
++			wantCalls:   []string{"Status 7", editSeven, "Status 7"},
++			wantRecord:  recorded("h1", withContinue, withReviewEnded),
+ 			check: func(t *testing.T, w *waitWorld, _ string) {
+ 				// The clock stands still in the cut sleep, so the rest of the floor is a whole second.
+ 				want := []time.Duration{time.Second, time.Second}
+@@ -557,8 +564,8 @@ func TestPRReview_Wait(t *testing.T) {
+ 			setup:               changeDuringFirstSleep(400 * time.Millisecond),
+ 			restsFloorRemainder: true,
+ 			wantOutcome:         shedengine.Done,
+-			wantCalls:           []string{"Status 7", editSeven, "Status 7", continueClose},
+-			wantRecord:          recorded("h1", withContinue, withClosedForContinue),
++			wantCalls:           []string{"Status 7", editSeven, "Status 7"},
++			wantRecord:          recorded("h1", withContinue, withReviewEnded),
+ 			check: func(t *testing.T, w *waitWorld, _ string) {
+ 				want := []time.Duration{time.Second, 600 * time.Millisecond}
+ 				if diff := cmp.Diff(want, w.sleeps); diff != "" {
+@@ -570,8 +577,8 @@ func TestPRReview_Wait(t *testing.T) {
+ 			name: "AChangeAfterTheFloorHasPassedWakesAtOnceWithoutAnotherSleep", record: seed("h1"), scripts: statusScript(open),
+ 			setup:       changeDuringFirstSleep(time.Second),
+ 			wantOutcome: shedengine.Done,
+-			wantCalls:   []string{"Status 7", editSeven, "Status 7", continueClose},
+-			wantRecord:  recorded("h1", withContinue, withClosedForContinue),
++			wantCalls:   []string{"Status 7", editSeven, "Status 7"},
++			wantRecord:  recorded("h1", withContinue, withReviewEnded),
+ 			check: func(t *testing.T, w *waitWorld, _ string) {
+ 				want := []time.Duration{time.Second}
+ 				if diff := cmp.Diff(want, w.sleeps); diff != "" {
+diff --git a/internal/landingshed/prsession.go b/internal/landingshed/prsession.go
+index fe79bd0d..366a5b50 100644
+--- a/internal/landingshed/prsession.go
++++ b/internal/landingshed/prsession.go
+@@ -210,7 +210,7 @@ func (p *PRReview) resumeSession(ctx context.Context) error {
+ 	if err != nil {
+ 		return fmt.Errorf("landingshed: %s: read the pull request record: %w", p.name, err)
+ 	}
+-	if !found || rec.ClosedForContinue {
++	if !found || rec.ReviewEnded {
+ 		return nil
+ 	}
+ 	_, err = p.ensureSession(ctx, rec)
+diff --git a/internal/landingshed/pullrequestmode.go b/internal/landingshed/pullrequestmode.go
+index ecb44aeb..ceb0dde9 100644
+--- a/internal/landingshed/pullrequestmode.go
++++ b/internal/landingshed/pullrequestmode.go
+@@ -1,8 +1,9 @@
+-// pullrequestmode.go holds ResolvePullRequest, the one decision of whether a landing goes through a pull request.
++// pullrequestmode.go holds ResolvePullRequest, the one decision of whether a landing goes through a pull request, and the read of GitHub's rules for the parent branch both landing rows ask it with.
+ 
+ package landingshed
+ 
+ import (
++	"context"
+ 	"fmt"
+ 	"strings"
+ 
+@@ -42,15 +43,17 @@ type PullRequestDecision struct {
+ 
+ // ResolvePullRequest decides whether a landing goes through a pull request.
+ // parentMode is the receiving branch's beam.yaml pull_request (on, off or required) and entryField the landing entry's pull_request (empty, on or off); slug is the landing run's slug.
++// parentRuleRequired reports whether GitHub's rules for the parent branch require a pull request, and counts as a required parent whatever beam.yaml says, since GitHub refuses the direct push a landing with no pull request ends in.
+ // A required parent wants one whatever the field says, an on parent wants one unless the field is off, and an off parent wants one only when the field is on.
+ // A field off under a required parent logs one Warn and still wants one.
+ // A wanted pull request needs, in this order, an origin on github.com, an origin ParseOwnerRepo accepts, an upstream for the parent and no push skip.
+ // A missing fact is a Halt when the parent is required or the field is on, and an origin on github.com that ParseOwnerRepo refuses is always a Halt; any other missing fact under an on parent alone is no pull request, naming the fact.
+ // A wanted pull request on a task branch with no commit beyond its parent, taskHasCommits false, is no pull request before any origin fact is judged, since GitHub opens none on an empty branch.
+-// It reads no file: the caller reads the parent's beam.yaml, the entry and the task branch and tells the values.
+-func ResolvePullRequest(slug, parentMode, entryField string, origin Origin, taskHasCommits bool) PullRequestDecision {
+-	if parentMode == pullRequestRequired && entryField == pullRequestOff {
+-		logger.Warn("landingshed: the entry's pull_request is off but the parent's beam.yaml pull_request is required, so a pull request is still required", "slug", slug)
++// It reads no file: the caller reads the parent's beam.yaml, the entry, the parent branch's rules and the task branch and tells the values.
++func ResolvePullRequest(slug, parentMode, entryField string, parentRuleRequired bool, origin Origin, taskHasCommits bool) PullRequestDecision {
++	required := parentMode == pullRequestRequired || parentRuleRequired
++	if required && entryField == pullRequestOff {
++		logger.Warn("landingshed: the entry's pull_request is off but the parent's beam.yaml pull_request is required or GitHub's rules for the parent branch require a pull request, so a pull request is still required", "slug", slug)
+ 	}
+ 
+ 	field := entryField
+@@ -62,6 +65,8 @@ func ResolvePullRequest(slug, parentMode, entryField string, origin Origin, task
+ 	switch {
+ 	case parentMode == pullRequestRequired:
+ 		wanted, demand = true, "the parent's beam.yaml pull_request is required"
++	case parentRuleRequired:
++		wanted, demand = true, "GitHub's rules for the parent branch require a pull request"
+ 	case entryField == pullRequestOn:
+ 		wanted, demand = true, "the entry's pull_request is on"
+ 	case parentMode == pullRequestOn && entryField != pullRequestOff:
+@@ -76,20 +81,67 @@ func ResolvePullRequest(slug, parentMode, entryField string, origin Origin, task
+ 
+ 	owner, repo, missing, alwaysHalt := checkOrigin(origin)
+ 	if missing == "" {
+-		return PullRequestDecision{Open: true, Reason: fmt.Sprintf("pull request on: the parent's beam.yaml pull_request is %s, the entry's pull_request is %s and the origin is %s/%s", parentMode, field, owner, repo)}
++		rule := ""
++		if parentRuleRequired {
++			rule = ", GitHub's rules for the parent branch require one"
++		}
++		return PullRequestDecision{Open: true, Reason: fmt.Sprintf("pull request on: the parent's beam.yaml pull_request is %s%s, the entry's pull_request is %s and the origin is %s/%s", parentMode, rule, field, owner, repo)}
+ 	}
+ 
+-	demanded := parentMode == pullRequestRequired || entryField == pullRequestOn
++	demanded := required || entryField == pullRequestOn
+ 	if !demanded && !alwaysHalt {
+ 		return PullRequestDecision{Reason: fmt.Sprintf("no pull request: the parent's beam.yaml pull_request is on and %s", missing)}
+ 	}
+ 	halt := fmt.Sprintf("a pull request is required here (%s) but %s; way forward: give the hub a GitHub origin, an upstream for the parent branch and no push skip, then run lym loom resume", demand, missing)
+-	if entryField == pullRequestOn && parentMode != pullRequestRequired {
++	if entryField == pullRequestOn && !required {
+ 		halt += fmt.Sprintf(", or run lym batten cancel %s and start a new run with the entry's pull_request changed", slug)
+ 	}
+ 	return PullRequestDecision{Halt: halt}
+ }
+ 
++// resolveWithParentRule asks ResolvePullRequest for the run deps tells, and asks it again with GitHub's rules for the parent branch when its answer is a no that would land a non-empty task by direct push to an origin a pull request could be opened on.
++// The rules are read only then, so a landing beam.yaml or the entry already sends through a pull request, and one that never reaches GitHub, makes no extra call.
++// A cancelled context and a transient failure of the read are errors the driver re-steps.
++// recordFound reports whether the run already holds a pull request record, which shows the rule applied when the pull request was opened.
++// Then any other failure of the read except an unusable token is a Halt, since reading it as no rule would close the recorded pull request and land by a direct push GitHub refuses.
++// Otherwise any failure of the read, an unusable token included, logs one Warn and reads as no rule, so the landing goes as beam.yaml and the entry say.
++func resolveWithParentRule(ctx context.Context, name string, deps Deps, parentMode, entryField string, origin Origin, taskHasCommits, recordFound bool) (PullRequestDecision, error) {
++	decision := ResolvePullRequest(deps.Slug, parentMode, entryField, false, origin, taskHasCommits)
++	if decision.Open || decision.Halt != "" || !taskHasCommits {
++		return decision, nil
++	}
++	if _, _, missing, _ := checkOrigin(origin); missing != "" {
++		return decision, nil
++	}
++	const action = "read GitHub's rules for the parent branch"
++	required, err := readParentRule(ctx, deps, origin.URL)
++	if err != nil {
++		if !tokenFailure(err) {
++			if terr := transientFailure(ctx, name, action, err); terr != nil {
++				return PullRequestDecision{}, terr
++			}
++			if recordFound {
++				return PullRequestDecision{Halt: githubHaltReason(action, err)}, nil
++			}
++		}
++		logger.Warn("landingshed: GitHub's rules for the parent branch are unreadable, so the landing goes as beam.yaml and the entry say", "row", name, "branch", deps.ParentBranch, "cause", err)
++		return decision, nil
++	}
++	if !required {
++		return decision, nil
++	}
++	return ResolvePullRequest(deps.Slug, parentMode, entryField, true, origin, taskHasCommits), nil
++}
++
++// readParentRule reports whether GitHub's rules for deps.ParentBranch, on the repository originURL names, require a pull request.
++func readParentRule(ctx context.Context, deps Deps, originURL string) (bool, error) {
++	api, err := deps.PullRequest.API(originURL)
++	if err != nil {
++		return false, err
++	}
++	return api.RequiresPullRequest(ctx, deps.ParentBranch)
++}
++
+ // checkOrigin returns the origin's owner and repository, or the first missing fact in the order a pull request needs them, or "" when none is missing.
+ // alwaysHalt is true for an origin on github.com that ParseOwnerRepo refuses.
+ func checkOrigin(origin Origin) (owner, repo, missing string, alwaysHalt bool) {
+diff --git a/internal/landingshed/pullrequestmode_test.go b/internal/landingshed/pullrequestmode_test.go
+index bc405865..3af46517 100644
+--- a/internal/landingshed/pullrequestmode_test.go
++++ b/internal/landingshed/pullrequestmode_test.go
+@@ -1,4 +1,4 @@
+-// pullrequestmode_test.go covers ResolvePullRequest: the nine mode and field combinations, the warning for an off field under a required parent, each origin fact that blocks a pull request, and an empty task branch.
++// pullrequestmode_test.go covers ResolvePullRequest: the nine mode and field combinations, the warning for an off field under a required parent, a parent branch GitHub's rules guard, each origin fact that blocks a pull request, and an empty task branch.
+ 
+ package landingshed
+ 
+@@ -13,7 +13,7 @@ import (
+ // TestResolvePullRequest stays serial: logcapture redirects the process-global logger.
+ func TestResolvePullRequest(t *testing.T) {
+ 	tiergate.Require(t, 0)
+-	const warnLine = "the entry's pull_request is off but the parent's beam.yaml pull_request is required"
++	const warnLine = "the entry's pull_request is off but the parent's beam.yaml pull_request is required or GitHub's rules for the parent branch require a pull request"
+ 	githubOrigin := Origin{URL: "https://github.com/o/r.git", Upstream: true}
+ 
+ 	t.Run("ModeAndFieldCombinations", func(t *testing.T) {
+@@ -29,7 +29,7 @@ func TestResolvePullRequest(t *testing.T) {
+ 		for _, tt := range tests {
+ 			t.Run(tt.parent+"_"+tt.field, func(t *testing.T) {
+ 				logs := logcapture.CaptureVerbose(t)
+-				got := ResolvePullRequest("slug", tt.parent, tt.field, githubOrigin, true)
++				got := ResolvePullRequest("slug", tt.parent, tt.field, false, githubOrigin, true)
+ 				if got.Open != tt.wantOpen || got.Halt != "" || got.Reason == "" {
+ 					t.Errorf("ResolvePullRequest(%q, %q) = %+v; want Open %v, no halt and a reason", tt.parent, tt.field, got, tt.wantOpen)
+ 				}
+@@ -39,12 +39,56 @@ func TestResolvePullRequest(t *testing.T) {
+ 				}
+ 			})
+ 		}
+-		off := ResolvePullRequest("slug", "off", "", githubOrigin, true)
++		off := ResolvePullRequest("slug", "off", "", false, githubOrigin, true)
+ 		if want := "pull request off: the parent's beam.yaml pull_request is off and the entry's pull_request is empty"; off.Reason != want {
+ 			t.Errorf("off reason = %q; want %q", off.Reason, want)
+ 		}
+ 	})
+ 
++	t.Run("ParentRule", func(t *testing.T) {
++		const ruleDemand = "GitHub's rules for the parent branch require a pull request"
++		local := Origin{URL: "/srv/hub.git", Upstream: true}
++		tests := []struct {
++			name           string
++			parent         string
++			field          string
++			origin         Origin
++			taskHasCommits bool
++			wantOpen       bool
++			// wantIn is a substring the halt holds when it is not empty, and otherwise the reason.
++			wantIn   string
++			wantHalt bool
++			wantWarn bool
++		}{
++			{name: "OffParentOpensOne", parent: "off", origin: githubOrigin, taskHasCommits: true, wantOpen: true, wantIn: "GitHub's rules for the parent branch require one"},
++			{name: "FieldOffStillOpensOneAndWarns", parent: "on", field: "off", origin: githubOrigin, taskHasCommits: true, wantOpen: true, wantIn: "GitHub's rules for the parent branch require one", wantWarn: true},
++			{name: "AMissingOriginFactHaltsWithNoCancelClause", parent: "off", field: "on", origin: local, taskHasCommits: true, wantHalt: true, wantIn: ruleDemand},
++			{name: "AnEmptyTaskBranchIsNo", parent: "off", origin: githubOrigin, wantIn: "the task branch has no commits beyond its parent"},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				logs := logcapture.CaptureVerbose(t)
++				got := ResolvePullRequest("slug", tt.parent, tt.field, true, tt.origin, tt.taskHasCommits)
++				if got.Open != tt.wantOpen || (got.Halt != "") != tt.wantHalt {
++					t.Fatalf("ResolvePullRequest(%q, %q, rule) = %+v; want Open %v, halt %v", tt.parent, tt.field, got, tt.wantOpen, tt.wantHalt)
++				}
++				text := got.Reason
++				if tt.wantHalt {
++					text = got.Halt
++				}
++				if !strings.Contains(text, tt.wantIn) {
++					t.Errorf("ResolvePullRequest() text = %q; want it to hold %q", text, tt.wantIn)
++				}
++				if strings.Contains(got.Halt, "lym batten cancel") {
++					t.Errorf("Halt = %q; want no cancel clause under a rule that requires a pull request", got.Halt)
++				}
++				if gotWarn := strings.Contains(logs.String(), warnLine); gotWarn != tt.wantWarn {
++					t.Errorf("warned = %v; want %v\n%s", gotWarn, tt.wantWarn, logs.String())
++				}
++			})
++		}
++	})
++
+ 	t.Run("Origins", func(t *testing.T) {
+ 		const haltStart = "a pull request is required here ("
+ 		const wayForward = "way forward: give the hub a GitHub origin, an upstream for the parent branch and no push skip, then run lym loom resume"
+@@ -80,7 +124,7 @@ func TestResolvePullRequest(t *testing.T) {
+ 		for _, tt := range tests {
+ 			t.Run(tt.name, func(t *testing.T) {
+ 				logcapture.CaptureVerbose(t)
+-				got := ResolvePullRequest("slug", tt.parent, tt.field, tt.origin, true)
++				got := ResolvePullRequest("slug", tt.parent, tt.field, false, tt.origin, true)
+ 				if got.Open {
+ 					t.Fatalf("ResolvePullRequest() = %+v; want no pull request", got)
+ 				}
+@@ -120,7 +164,7 @@ func TestResolvePullRequest(t *testing.T) {
+ 		for _, tt := range tests {
+ 			t.Run(tt.name, func(t *testing.T) {
+ 				logcapture.CaptureVerbose(t)
+-				got := ResolvePullRequest("slug", tt.parent, tt.field, tt.origin, false)
++				got := ResolvePullRequest("slug", tt.parent, tt.field, false, tt.origin, false)
+ 				if got.Open || got.Halt != "" || !strings.Contains(got.Reason, tt.wantIn) {
+ 					t.Errorf("ResolvePullRequest(%q, %q, %+v, false) = %+v; want no pull request, no halt and a reason holding %q", tt.parent, tt.field, tt.origin, got, tt.wantIn)
+ 				}
+diff --git a/internal/loomcli/prcontinue.go b/internal/loomcli/prcontinue.go
+index 6fcef0ac..d0cfd4b8 100644
+--- a/internal/loomcli/prcontinue.go
++++ b/internal/loomcli/prcontinue.go
+@@ -1,6 +1,6 @@
+ // prcontinue.go implements the `pr-continue` loom verb: the PR-Review agent's flag that the operator is satisfied with the review and the run goes on.
+ // The verb only sets Continue in the run's pull-request record.
+-// The PR-Review row reads the flag, closes the pull request and ends the row, and Finalize then lands the run locally under its own gate and credit block.
++// The PR-Review row reads the flag, records the ending and ends the row, leaving the pull request open, and Finalize then merges it on GitHub under its own gate and credit block.
+ 
+ package loomcli
+ 
+@@ -19,7 +19,7 @@ import (
+ const prContinueNoRecord = "loom: pr-continue: this run has no pull request record, so there is no review to end; way forward: wait until the PR-Review row has opened the pull request, then run lym loom pr-continue again"
+ 
+ // prContinueVerb sets Continue in the pull-request record at recordPath, guarded by the lock at lockPath, and reports a JSON envelope naming the pull request, returning the exit code.
+-// A record already carrying Continue or ClosedForContinue succeeds the same way and is not written again.
++// A record already carrying Continue or ReviewEnded succeeds the same way and is not written again.
+ // A run with no record is refused, and an unreadable or unwritable record is an error envelope carrying the error.
+ func prContinueVerb(out io.Writer, recordPath, lockPath string) int {
+ 	rec, found, err := pullrequest.ReadRecord(recordPath, lockPath)
+@@ -29,7 +29,7 @@ func prContinueVerb(out io.Writer, recordPath, lockPath string) int {
+ 	if !found {
+ 		return output.Err(out, prContinueNoRecord)
+ 	}
+-	if !rec.Continue && !rec.ClosedForContinue {
++	if !rec.Continue && !rec.ReviewEnded {
+ 		err := pullrequest.UpdateRecord(recordPath, lockPath, func(rec *pullrequest.Record) error {
+ 			rec.Continue = true
+ 			return nil
+@@ -44,7 +44,7 @@ func prContinueVerb(out io.Writer, recordPath, lockPath string) int {
+ 	return output.Ok(out, map[string]any{
+ 		"continue": true,
+ 		"url":      rec.URL,
+-		"note":     "the run will close pull request " + rec.URL + " and land through Finalize",
++		"note":     "the run ends the review and Finalize merges pull request " + rec.URL + " on GitHub",
+ 	})
+ }
+ 
+@@ -56,10 +56,10 @@ func (c *loomCLI) prContinueCmd() *cobra.Command {
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceRole},
+ 		Long: `pr-continue sets the run's continue flag in its pull request record. The
+ PR-Review agent runs it in its task worktree when the operator asks it to
+-continue. The PR-Review row then closes the pull request without merging it, and
+-the run goes on through Finalize, which lands it locally under its own gate. It
+-takes no arguments, and is refused until the PR-Review row has opened the pull
+-request.
++continue. The PR-Review row then ends the review and leaves the pull request
++open, and the run goes on through Finalize, which merges it on GitHub under its
++own gate. It takes no arguments, and is refused until the PR-Review row has
++opened the pull request.
+ 
+ Example:
+   lym loom pr-continue`,
+diff --git a/internal/pairteardown/teardown_test.go b/internal/pairteardown/teardown_test.go
+index c6fd7335..8f8bc1f2 100644
+--- a/internal/pairteardown/teardown_test.go
++++ b/internal/pairteardown/teardown_test.go
+@@ -1203,6 +1203,14 @@ func (a *closeRecordingAPI) Merge(context.Context, int, string, bool, string, st
+ 	panic("closeOpenPullRequest called Merge")
+ }
+ 
++func (a *closeRecordingAPI) Reopen(context.Context, int) error {
++	panic("closeOpenPullRequest called Reopen")
++}
++
++func (a *closeRecordingAPI) RequiresPullRequest(context.Context, string) (bool, error) {
++	panic("closeOpenPullRequest called RequiresPullRequest")
++}
++
+ // TestCloseOpenPullRequest asserts a torn-down pair's open pull request is closed with the comment, a merged or closed one and an absent record are left alone, and every failure warns and returns.
+ // It captures the process-global logger, so it is not parallel.
+ func TestCloseOpenPullRequest(t *testing.T) {
+diff --git a/internal/pullrequest/client.go b/internal/pullrequest/client.go
+index 994a19bf..7bb0446a 100644
+--- a/internal/pullrequest/client.go
++++ b/internal/pullrequest/client.go
+@@ -83,9 +83,13 @@ type API interface {
+ 	Status(ctx context.Context, number int) (Status, error)
+ 	// Close comments on a pull request, then closes it without merging.
+ 	Close(ctx context.Context, number int, comment string) error
++	// Reopen reopens a pull request closed without merging, so it can be merged.
++	Reopen(ctx context.Context, number int) error
+ 	// Merge merges a pull request whose head is expectedHead, squashing when squash is set.
+ 	// A merge GitHub refuses returns a *MergeRefusal.
+ 	Merge(ctx context.Context, number int, expectedHead string, squash bool, title, message string) error
++	// RequiresPullRequest reports whether a repository rule active on branch requires a pull request, so GitHub refuses a direct push to it.
++	RequiresPullRequest(ctx context.Context, branch string) (bool, error)
+ }
+ 
+ // Client is the pull requests of one GitHub repository, reached through an authenticated client.
+@@ -202,6 +206,33 @@ func (c *Client) Close(ctx context.Context, number int, comment string) error {
+ 	return nil
+ }
+ 
++// Reopen sets a closed pull request's state back to open.
++func (c *Client) Reopen(ctx context.Context, number int) error {
++	open := "open"
++	if _, _, err := c.gh.PullRequests.Edit(ctx, c.owner, c.repo, number, &github.PullRequest{State: &open}); err != nil {
++		return fmt.Errorf("pullrequest: reopen pull request #%d: %w", number, err)
++	}
++	return nil
++}
++
++// RequiresPullRequest reads every page of the repository rules active on branch and reports whether any of them is a pull_request rule.
++func (c *Client) RequiresPullRequest(ctx context.Context, branch string) (bool, error) {
++	opts := &github.ListOptions{PerPage: listPageSize}
++	for {
++		rules, resp, err := c.gh.Repositories.GetRulesForBranch(ctx, c.owner, c.repo, branch, opts)
++		if err != nil {
++			return false, fmt.Errorf("pullrequest: read the rules active on branch %s: %w", branch, err)
++		}
++		if rules != nil && len(rules.PullRequest) > 0 {
++			return true, nil
++		}
++		if resp.NextPage == 0 {
++			return false, nil
++		}
++		opts.Page = resp.NextPage
++	}
++}
++
+ // Merge merges a pull request whose head must equal expectedHead, squashing when squash is set, with the told commit title and message.
+ // Only HTTP 405 and 409 are read as a refusal; any other failure is returned wrapped so githubclient.IsTransient still judges it.
+ func (c *Client) Merge(ctx context.Context, number int, expectedHead string, squash bool, title, message string) error {
+diff --git a/internal/pullrequest/client_test.go b/internal/pullrequest/client_test.go
+index 2673e5be..a1895dfd 100644
+--- a/internal/pullrequest/client_test.go
++++ b/internal/pullrequest/client_test.go
+@@ -21,7 +21,10 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-const pullsPath = "/repos/owner/repo/pulls"
++const (
++	pullsPath = "/repos/owner/repo/pulls"
++	rulesPath = "/repos/owner/repo/rules/branches"
++)
+ 
+ // capturedRequest is one request the scripted server received.
+ type capturedRequest struct {
+@@ -99,6 +102,17 @@ func (s *scriptedServer) handle(w http.ResponseWriter, r *http.Request) {
+ 		reply(409, `{"message": "At least 1 approving review is required by reviewers with write access."}`)
+ 	case "PUT " + pullsPath + "/14/merge":
+ 		reply(200, `{"merged": true, "sha": "m"}`)
++	case "GET " + rulesPath + "/guarded":
++		if r.URL.Query().Get("page") == "2" {
++			reply(200, `[{"type": "pull_request", "ruleset_source_type": "Repository", "ruleset_source": "owner/repo", "ruleset_id": 1, "parameters": {"required_approving_review_count": 0}}]`)
++			return
++		}
++		w.Header().Set("Link", fmt.Sprintf(`<%s%s/guarded?page=2>; rel="next"`, s.URL, rulesPath))
++		reply(200, `[{"type": "required_linear_history", "ruleset_source_type": "Repository", "ruleset_source": "owner/repo", "ruleset_id": 1}]`)
++	case "GET " + rulesPath + "/linear":
++		reply(200, `[{"type": "required_linear_history", "ruleset_source_type": "Repository", "ruleset_source": "owner/repo", "ruleset_id": 1}]`)
++	case "GET " + rulesPath + "/bare":
++		reply(200, `[]`)
+ 	default:
+ 		reply(404, `{"message": "Not Found"}`)
+ 	}
+@@ -184,6 +198,39 @@ func TestClient_Calls(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("ReopenSetsTheStateOpen", func(t *testing.T) {
++		if err := client.Reopen(ctx, 5); err != nil {
++			t.Fatalf("Reopen() error: %v", err)
++		}
++		sent := server.last(t)
++		want := map[string]any{"state": "open"}
++		if sent.method != "PATCH" || sent.path != pullsPath+"/5" || !reflect.DeepEqual(sent.body, want) {
++			t.Errorf("Reopen sent %s %s %v; want PATCH %s/5 %v", sent.method, sent.path, sent.body, pullsPath, want)
++		}
++		if err := client.Reopen(ctx, 99); err == nil {
++			t.Error("Reopen(99) error = nil; want the failure GitHub answered")
++		}
++	})
++
++	t.Run("RequiresPullRequest", func(t *testing.T) {
++		tests := []struct {
++			branch  string
++			want    bool
++			wantErr bool
++		}{
++			{branch: "guarded", want: true},
++			{branch: "linear", want: false},
++			{branch: "bare", want: false},
++			{branch: "unknown", wantErr: true},
++		}
++		for _, tt := range tests {
++			got, err := client.RequiresPullRequest(ctx, tt.branch)
++			if got != tt.want || (err != nil) != tt.wantErr {
++				t.Errorf("RequiresPullRequest(%s) = %v, %v; want %v, error %v", tt.branch, got, err, tt.want, tt.wantErr)
++			}
++		}
++	})
++
+ 	t.Run("Status", func(t *testing.T) {
+ 		tests := []struct {
+ 			number int
+diff --git a/internal/pullrequest/doc.go b/internal/pullrequest/doc.go
+index fc356760..2bb7d522 100644
+--- a/internal/pullrequest/doc.go
++++ b/internal/pullrequest/doc.go
+@@ -1,14 +1,15 @@
+ // Package pullrequest holds a run's pull request: its record on disk and the GitHub calls on it, for PR-Review, Finalize and pair teardown.
+ //
+ // Record is the run's one JSON file about its pull request, in the run's scratch directory so it is never tracked and goes with the pair.
+-// It holds the pull request's number, URL, base and head branches, the head the PR-Review row last gated and pushed, the head whose gate failure was mailed, the interactive session's strand and session identity and engine, the operator's continue flag, and whether the row closed the pull request on that flag.
++// It holds the pull request's number, URL, base and head branches, the head the PR-Review row last gated and pushed, the head whose gate failure was mailed, the interactive session's strand and session identity and engine, the operator's continue flag, and whether the row ended the review on that flag.
+ // ReadRecord, WriteRecord, UpdateRecord and RemoveRecord go through internal/state, so a key a newer binary wrote survives a rewrite;
+ // an absent file reads as not found, UpdateRecord on an absent record returns ErrNoRecord and writes nothing, and RemoveRecord of an absent file is no error.
+ //
+ // A Client is bound to one repository.
+ // Open authenticates only through githubclient and calls go-github directly, never the gh command; NewWithClient binds a told client, which tests point at an httptest server.
+ // The API interface lists the calls a caller makes, so a test of the caller fakes GitHub behind it:
+-// FindOpen, Create, Edit, Status, Close and Merge, each taking the caller's context, with githubclient's own 30-second bound applying per request.
++// FindOpen, Create, Edit, Status, Close, Reopen, Merge and RequiresPullRequest, each taking the caller's context, with githubclient's own 30-second bound applying per request.
++// RequiresPullRequest reads the repository rules active on a branch, `GET repos/{owner}/{repo}/rules/branches/{branch}`, and reports whether one is a pull_request rule, under which GitHub refuses a direct push.
+ // Status reads the state (merged wins over closed), the head SHA, and whether a standing review approves that head or requests changes;
+ // a reviewer's standing review is the latest of their approvals, change requests and dismissals, so a later comment changes nothing.
+ // A merge GitHub refuses with HTTP 405 or 409 returns a MergeRefusal of kind RefusalMethod when the merge method is not allowed, RefusalPending when the base branch was modified or mergeability is still being computed, and RefusalOther for any other refusal;
+diff --git a/internal/pullrequest/record.go b/internal/pullrequest/record.go
+index a327eea7..1c87a6cf 100644
+--- a/internal/pullrequest/record.go
++++ b/internal/pullrequest/record.go
+@@ -32,8 +32,9 @@ type Record struct {
+ 	Engine     string `json:"engine,omitempty"`
+ 	// Continue is the operator's continue flag, set by `lym loom pr-continue`.
+ 	Continue bool `json:"continue,omitempty"`
+-	// ClosedForContinue records that the row closed the pull request on the continue flag.
+-	ClosedForContinue bool `json:"closed_for_continue,omitempty"`
++	// ReviewEnded records that the row ended the review on the continue flag, leaving the pull request for Finalize to merge.
++	// Its key keeps the name of the older mark, set when the row closed the pull request on the flag, so a record an older build wrote reads the same.
++	ReviewEnded bool `json:"closed_for_continue,omitempty"`
+ }
+ 
+ // ErrNoRecord is returned by UpdateRecord when the record's file does not exist.
