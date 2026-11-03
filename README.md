@@ -50,7 +50,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Merge main into the codex-engine beam and resolve every conflict**<br>• Bring main into the beam before it lands, so its landing merges cleanly | [`codex-engine-merge-main`](design-codex-engine-merge-main.md) | darn | Record-Write | neve | 0m<br>0m | codex, shuttle |
+| T3 | **Merge main into the codex-engine beam and resolve every conflict**<br>• Bring main into the beam before it lands, so its landing merges cleanly | [`codex-engine-merge-main`](design-codex-engine-merge-main.md) | darn | Drift-Baseline | neve | 0m<br>0m | codex, shuttle |
 
 #### Ready (0)
 
