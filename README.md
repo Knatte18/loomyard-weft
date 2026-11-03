@@ -53,7 +53,7 @@ Held by a run; its scope is locked until the run ends.
 | T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Discussion-Burler-Review | neve | 11h<br>37m | batten, fabric |
 | T4 | **Claude Code autocompact picker in a shuttle session stalls a gate re-prompt forever** | [`shuttle-autocompact-picker-stall`](design-shuttle-autocompact-picker-stall.md) | darn | Code-Burler-Fix | neve | 11h<br>37m | shuttle, loom |
 | T6 | **Ending the PR review closes the pull request and lands by direct push, which a PR-only branch refuses** | [`pr-review-end-direct-push`](design-pr-review-end-direct-push.md) | darn · solid | Darn-Write | neve | 25m<br>23m | landing, git |
-| T9 | **A glossary of weaving terms in English, Norwegian and other languages, marking those lym already uses** | [`weaving-glossary`](design-weaving-glossary.md) | darn · docs | Drift-Verify | neve | 6m<br>6m | docs |
+| T9 | **A glossary of weaving terms in English, Norwegian and other languages, marking those lym already uses** | [`weaving-glossary`](design-weaving-glossary.md) | darn · docs | Finalize | neve | 6m<br>6m | docs |
 
 #### Ready (0)
 
