@@ -1,10 +1,10 @@
 <!-- This is the landing Describe session's entire instruction set. It is shipped as an embedded
      default in the top-level stencils package (stencils/stencils.go), seeded to
-     <hub>/_board/_lym/stencils/landing/, and read from there at call time by internal/seatengine,
+     the Bolt checkout's `_lym/stencils/landing/`, and read from there at call time by internal/seatengine,
      which fills it from the lead's value map that landingshed's DescribeTable builds, then hands it to shuttle as the describing agent's whole
      prompt. Every marker below is a top-level {{.X}} substitution; stencil.FillWith requires every
      marker non-empty, parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective) included, and there are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=cca749c0e48d1f578c535d4666a8ebddb765d7deef572dbbc02273174158010c build=f666ba87df1cd198e399cb9f727bb59e08155b77 time=2026-10-31T18:44:38Z -->
+lym-stencil: sha256=b6091be504b1e7e70695de2cf490c45645b33401e7eadf264b5835bd99b57d08 build=58a85abf84fdc42b17b224e854ea7f4baef53f76 time=2026-11-03T17:52:02Z -->
 
 # Change description — write the one description this task lands under
 
@@ -32,6 +32,14 @@ Read only these sources, and use read-only git for the diff:
   When a record carries an `## Integration suite failed` section, carry that failure into your description as an item for the reviewer to check.
   When a record carries an `## Integration suite triage` section, carry it into your description as an item for the reviewer to check too, naming the flaky and pre-existing identities it lists.
   When a record carries an `## Integration suite fix` section, carry it into your description as an item for the reviewer to check, naming the fix commits and the identities they cleared.
+
+## The regression check
+
+The regression check below has already run.
+lym appends it after your description in the pull request and the landing commit, so write no regression section of your own.
+Never list as an item to check or run by hand a regression compare this check settled: drop such an item that an earlier description or a run record names, or rewrite it from the check when it asks for more than the check did.
+
+{{.drift_verdict}}
 
 ## What to write
 
