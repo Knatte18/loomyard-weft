@@ -15,6 +15,7 @@ Several notes circled the same question (where the decision record lives, how a 
 - Changing one's mind loses nothing: the run is cancelled, the record stays on the board, and it can be split into discussed tasks or made a project.
 - lym itself writes the record field, at Discussion's approval and at each `lym loom decision add`, so the field is exempt from the lock on a claimed entry.
   That lock exists only so the orch does not change a task's text after its agents have read it; a record written by lym is not that.
+- Split out (2026-11-03): storing the record and the flag is task `decision-record-on-board`; the block and `cartoon` are task `shed-sub-run-block`; skipping Discussion for a discussed entry is a gate check on that block, a follow-up waiting on both.
 
 ## Discussion as a run of its own (operator, 2026-11-03)
 
