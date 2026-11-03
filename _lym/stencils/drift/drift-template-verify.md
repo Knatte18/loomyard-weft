@@ -7,7 +7,7 @@
      mode_rules and judging_rules with the autonomous or the operator text by drift.yaml's verify_interactive.
      pattern_directive is the only optional marker.
      There are no conditionals anywhere in this file.
-lym-stencil: sha256=5901c9fec31004914f7c11d61cf33805ec07f54e3035717b29c16804e7c3db0b build=96f500b6b8a9f0d4be6380dc07aa8c0347ad0fcb time=2026-11-03T09:55:29Z -->
+lym-stencil: sha256=8a8c92dc4c95c92382b29b6fa50bbab39435f833c6db215b941e4e874910a2b2 build=bd51b6529040c6d03742286346b959c40c4831b8 time=2026-11-03T19:04:08Z -->
 
 # Drift verify — judge, accept and fix the drift of this task
 
@@ -29,6 +29,8 @@ You are the drift verify agent: one session that judges the drift between the ta
 
 Judge each drifted test against the task and the baseline report's expectation.
 Drift the task intends is acceptable; drift it does not intend is a defect of the task's code.
+The baseline report states what its agent expected, never what you may accept.
+A task that states its output stays unchanged, preserves behavior or is a pure refactoring intends no drift, so any drift in it is a defect, even where the baseline report names a part of the design that would move output as a risk.
 Drift traced to a commit merged from the parent branch after the baseline's commit is acceptable too, and the report names that commit.
 
 {{.judging_rules}}
