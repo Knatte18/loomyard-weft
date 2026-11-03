@@ -1,0 +1,231 @@
+{
+  "runGuid": "9a178544cd6e95143dc8b24bf6d1be32",
+  "planFingerprint": "257006f8005117ea570b5bd9f4979e7536772991c64b2594839faab76f124abf",
+  "planFileHashes": {
+    "00-overview.md": "6d71d8b1ccc7fb91915d90fde1e7b49d27b19466fdea46eeae26435c6880cfa8",
+    "01-board-decision-record.md": "ad65afc856a48147ac8dae9cdac5956430fe777253009401a9ea126e4d109f9c",
+    "02-record-follows-entry.md": "1e79f230c7e163b643d4fdf1b5a1a048d4706faed8c255c77fd5343c27ba3a42",
+    "03-design-prefix-refusal.md": "ecae87db709539f6623a5d9727bed11ea12c06f1c3d7f22f75ae94cca2decd11",
+    "04-replay-carries-record.md": "8c8650cd95c581fd6c2ea64adf3ebb0993eb262ccb308abf912acc1a1c8ce7c2",
+    "05-board-get-record.md": "81814d71eb81251b6e09b4817e0f6ceb1636585e39859ad49acfae421d5d0e43",
+    "06-discussion-approval-row.md": "fe58fed6e239b2a77e5fbd0ad3e33fc5458f0d93bc5372cf8852323c93a72d70",
+    "07-discussion-approve-seam.md": "393844096e04d2564e7034211b222ec987fdd655a6d4e6e6bba26ca64379714e",
+    "08-decision-add-copies.md": "a6178d9eea7f20732181c157a92479d9829dc18c633b3a5ad22e1cfc7604c582",
+    "09-decision-store-verb.md": "86bc92d59cd3423540961ad20ae21fd654b953c9cc3c94aa55b9f70d098ce071"
+  },
+  "planOverviewFrameHash": "c94222061584a6a00b4e78bd9cd07d87ba5c5594c95cd7552ac45e9285948fae",
+  "partition": [
+    {
+      "cards": [
+        "01-board-decision-record",
+        "02-record-follows-entry",
+        "03-design-prefix-refusal",
+        "04-replay-carries-record",
+        "05-board-get-record",
+        "06-discussion-approval-row"
+      ],
+      "profile": "wide",
+      "estimate": 271074,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 53980,
+        "read_union": 52532,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 1176,
+            "reads": {
+              "file:internal/boardengine/doc.go": 4272,
+              "package:internal/boardcli": 2000,
+              "package:internal/boardengine": 2000,
+              "tests:internal/boardcli": 2000,
+              "tests:internal/boardengine": 2000
+            },
+            "messages": 133.5,
+            "written": 41226
+          },
+          {
+            "card": 2,
+            "card_text": 756,
+            "reads": {
+              "file:internal/boardengine/doc.go": 4272,
+              "package:internal/boardengine": 2000,
+              "tests:internal/boardengine": 2000
+            },
+            "messages": 60.5,
+            "written": 18906
+          },
+          {
+            "card": 3,
+            "card_text": 360,
+            "reads": {
+              "file:internal/boardengine/doc.go": 4272,
+              "package:internal/boardengine": 2000,
+              "tests:internal/boardengine": 2000
+            },
+            "messages": 42.5,
+            "written": 13110
+          },
+          {
+            "card": 4,
+            "card_text": 768,
+            "reads": {
+              "file:internal/boardengine/doc.go": 4272,
+              "file:internal/fabricengine/doc.go": 20100,
+              "package:internal/boardengine": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 197.5,
+            "written": 60018
+          },
+          {
+            "card": 5,
+            "card_text": 600,
+            "reads": {
+              "file:internal/boardcli/doc.go": 1200,
+              "file:plugins/ly/skills/board/SKILL.md": 2076,
+              "package:internal/boardcli": 2000,
+              "package:plugins/ly/skills/board": 2000,
+              "tests:internal/boardcli": 2000,
+              "tests:plugins/ly/skills/board": 2000
+            },
+            "messages": 49,
+            "written": 15300
+          },
+          {
+            "card": 6,
+            "card_text": 552,
+            "reads": {
+              "file:internal/loomrecipe/doc.go": 672,
+              "package:internal/loomrecipe": 2000,
+              "tests:internal/loomrecipe": 2000
+            },
+            "messages": 51.5,
+            "written": 16002
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-discussion-approve-seam",
+        "08-decision-add-copies",
+        "09-decision-store-verb"
+      ],
+      "profile": "wide",
+      "estimate": 256232,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 60980,
+        "read_union": 43908,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 1200,
+            "reads": {
+              "file:contracts/recipes/tapestry-recipe.yaml": 7308,
+              "file:internal/loomcli/doc.go": 4368,
+              "file:internal/loomrecipe/doc.go": 672,
+              "file:internal/shedrecipe/doc.go": 1572,
+              "file:internal/shedrecipe/entries_gate.go": 2844,
+              "package:contracts/recipes": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 255,
+            "written": 77700
+          },
+          {
+            "card": 8,
+            "card_text": 948,
+            "reads": {
+              "file:internal/loomcli/doc.go": 4368,
+              "package:internal/loomcli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 133.5,
+            "written": 40998
+          },
+          {
+            "card": 9,
+            "card_text": 996,
+            "reads": {
+              "file:internal/loomcli/doc.go": 4368,
+              "package:internal/loomcli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 105.5,
+            "written": 32646
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "6d919c856635b3768479868a0eec7c99",
+  "masterSessionId": "e5be960e-154e-4d80-b935-300e5c250911",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "board-decision-record",
+      "cards": [
+        "01-board-decision-record",
+        "02-record-follows-entry",
+        "03-design-prefix-refusal",
+        "04-replay-carries-record",
+        "05-board-get-record",
+        "06-discussion-approval-row"
+      ],
+      "cardHashes": {
+        "01-board-decision-record": "ad65afc856a48147ac8dae9cdac5956430fe777253009401a9ea126e4d109f9c",
+        "02-record-follows-entry": "1e79f230c7e163b643d4fdf1b5a1a048d4706faed8c255c77fd5343c27ba3a42",
+        "03-design-prefix-refusal": "ecae87db709539f6623a5d9727bed11ea12c06f1c3d7f22f75ae94cca2decd11",
+        "04-replay-carries-record": "8c8650cd95c581fd6c2ea64adf3ebb0993eb262ccb308abf912acc1a1c8ce7c2",
+        "05-board-get-record": "81814d71eb81251b6e09b4817e0f6ceb1636585e39859ad49acfae421d5d0e43",
+        "06-discussion-approval-row": "fe58fed6e239b2a77e5fbd0ad3e33fc5458f0d93bc5372cf8852323c93a72d70"
+      },
+      "startSha": "1fbac34f114268cfd6d87f9d42e63b27937acae4",
+      "kind": "fork",
+      "spawnedAt": "2026-11-03T08:25:05Z",
+      "sessionId": "e5be960e-154e-4d80-b935-300e5c250911",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
