@@ -730,36 +730,12 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "drift-baseline-skips-intended"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "The capture failure names neither the skips nor the scope change that would fix it, so the tackler re-launches blind",
       "body": "A partial Drift scope that skips every test is accepted, and its capture then fails as `exit 0 but wrote no file`, a reason that names neither the skips nor a way out.\n\n## Seen\n\nOn the `cs` hub (2026-11-03), the Drift-Baseline agent of `report-significant-digits` recorded `lym drift scope --scope partial` with all six regression cases as `--skip`, so `.lym/drift/skip.txt` held every case `RegressionCases.All` runs.\n\n- The capture ran on the branch point `9017f2d`, exited 0 after 3 s with empty logs, and wrote nothing; the run blocked at Drift-Await:\n  `drift: the baseline capture ended failed (exit 0 but wrote no file to …/.lym/drift/baseline), …; way forward: lym drift capture followed by lym loom resume, … or lym drift defer …`\n- The tackler, reading that, could not find the cause (\"Its capture log and capture-child log are both empty, so the cause is not named from what I read\"), chose a plain re-launch, and the same capture failed the same way; its second attempt escalated with the cause still unnamed.\n- Neither way forward can succeed: `lym drift capture` repeats the scope, and `lym drift defer` drops the regression the run was meant to have.\n\n## Expected\n\n- A capture that writes nothing while the scope skips tests says so: the failure reason names the scope, the count of skipped tests, and that every test the harness ran may have been skipped.\n- Its way forward names the parent's `lym drift scope --scope full|off` (or a shorter `--skip` list) before `lym drift capture` and `lym loom resume`, besides `lym drift defer`.\n- A tackler reading the stop learns the cause from the stop alone.\n",
       "status": "running · Darn-Write",
       "created": "2026-11-03T16:33:31Z",
-      "revised": "2026-11-03T16:39:27Z",
-      "profile": "light"
-    },
-    {
-      "id": 1058,
-      "handle": "T3",
-      "slug": "drift-baseline-skips-intended",
-      "title": "The Drift-Baseline stencil skips the tests an intended change drifts",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "drift",
-        "stencil"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Intended drift is skipped instead of compared and accepted with a reason, which hides regressions in the same tests",
-      "body": "The Drift-Baseline stencil tells the agent to skip, or scope off, every test an intended change drifts, so an intended change is never compared, never accepted with a reason, and hides any regression in the same tests.\n\n## Seen\n\nOn the `cs` hub (2026-11-03), `report-significant-digits` changes the pipe flow report to 4 significant digits on purpose; every regression case renders that report on one line among a dozen raw lines that must not change.\n\n- `contracts/stencils/drift/drift-template-baseline.md` says: \"`off` for … one that changes the model's behavior on purpose, so a comparison against the old behavior would only report the intended change\", and \"`partial` for a task that changes some behavior on purpose; name each test that will drift totally with `--skip \u003ctest\u003e`\".\n- The agent followed it: scope `partial`, all six cases skipped.\n  Its own `baseline.md` names the cost: \"A later compare that shows drift in any raw line of these cases would be a regression, but the skip hides it, so the formatter's own tests and a manual look at the raw lines have to cover that.\"\n- With every case skipped the capture wrote nothing and the run blocked (see the note on a scope that skips every test).\n\nDrift already has the path for intended drift: the compare reports it, and the Drift-Verify agent runs `lym drift accept \u003ctest\u003e` with a reason, which the parent rules on under scope `full`.\nIn the same trial, `churchill-friction` took that path for a new case and it worked.\n\n## Expected\n\n- The stencil keeps `full` for a task whose intended change the suite reaches, and has the agent name in `baseline.md` the tests and lines it expects to drift, so Drift-Verify accepts each with a reason and catches any other line that moves.\n- `--skip` stays for a test the task makes meaningless or nondeterministic, and `off` for a task the suite cannot reach.\n",
-      "status": "done",
-      "created": "2026-11-03T16:33:32Z",
       "revised": "2026-11-03T16:39:27Z",
       "profile": "light"
     },

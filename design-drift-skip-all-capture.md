@@ -2,8 +2,6 @@
 
 `drift-skip-all-capture` · Task · bug, drift · running · Darn-Write
 
-Depends on: [`drift-baseline-skips-intended`](design-drift-baseline-skips-intended.md)
-
 A partial Drift scope that skips every test is accepted, and its capture then fails as `exit 0 but wrote no file`, a reason that names neither the skips nor a way out.
 
 ## Seen
