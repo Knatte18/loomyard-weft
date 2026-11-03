@@ -10,8 +10,6 @@ The time it saves is small: in the sandbox hub `lym fabric add` took about 1.1 s
 
 ## Decisions (operator, 2026-10-18)
 
-- The local-only pair mode stays for now, only as an explicit `fabric add --local` choice, since local work that needs no remote (experiments, local testing) may use it; no lym flow creates local pairs, batch pairs included.
-  Remove it (`--local`, the local-only branch mark and its push refusal, the skipped-local reporting in pushes, the local modes of remove and cleanup, and the local-mark check in the status push) if no use turns up.
 - Every operation against a remote runs async, so no lym command waits on the network.
   This includes `fabric remove`'s 6 to 7 s of network at teardown (force-with-lease push, archive-tag push, weft branch delete).
 - One exception may stay synchronous: the check whether a pair's branches already exist on origin, since a branch found there is fetched and the work continued on, and that is worth waiting for.
@@ -23,8 +21,12 @@ The time it saves is small: in the sandbox hub `lym fabric add` took about 1.1 s
 `Add` and the task-branch discard take a per-slug teardown lock exclusive, and every pair push takes it shared, so a hand `lym fabric add` that meets a running removal is refused.
 So a removal waits on one more network push than before, and an async version must keep this order: weft tip, then archive tag, then the leased delete, all under the teardown lock (`PATTERN-slug-remote-order`).
 
-## Open
+## Decisions (operator, 2026-11-03)
 
-- Which remote operations are synchronous today besides `fabric remove`'s (force-with-lease push, archive-tag push, weft branch delete); an audit of the call sites belongs to the task that builds this.
-- How an async remote failure reaches the operator or the orch.
-- How an async removal keeps the teardown lock, and so the order above, while `fabric remove` returns before it ends.
+- The async remote work follows the detached-child pattern the pair push already uses (`DetachedPush` in `internal/fabricengine/teardownlock.go`).
+- The task starts with an audit of every remote call site, and makes each one async except the origin-branch probe above.
+  A call site that does not fit the detached-child pattern is a stop for the parent, not a redesign inside this run.
+- An async remote failure is written to the fabric log and sent to the run's orch as one creel notice line naming the slug, the operation and the way forward.
+- An async removal hands the teardown lock to its detached child, which holds it exclusive until the last remote step ends, so the order above holds while `fabric remove` returns at once.
+- The local-only pair mode goes now: no flow uses it.
+  Remove `fabric add --local`, the local-only branch mark and its push refusal, the skipped-local reporting in pushes, the local modes of `fabric remove` and `fabric cleanup`, and the local-mark check in the status push, with their tests and docs.
