@@ -22,8 +22,8 @@
 **Uses:**
 - `plan:internal/loomcli#storeDecisionRecord`
 - `internal/loomcli#newDecisionFake`
-- `plan:internal/loomrecipe#PastDiscussionApproval`
-- `plan:internal/boardengine#ErrRecordEntryDone`
+- `internal/loomrecipe#PastDiscussionApproval`
+- `internal/boardengine#ErrRecordEntryDone`
 
 **Intent:**
 Make `lym loom decision add` refresh the board copy of the record (D8).

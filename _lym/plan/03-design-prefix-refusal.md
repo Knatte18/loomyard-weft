@@ -1,15 +1,15 @@
 # Card 3 — design-prefix-refusal
 
 **Create:**
-- `plan:internal/boardengine#checkDesignPrefix` -> `func checkDesignPrefix(prefix string) error`
-- `plan:internal/boardengine_test#TestLoadConfig_DesignPrefixRefused` -> `func TestLoadConfig_DesignPrefixRefused(t *testing.T)`
+- `internal/boardengine#checkDesignPrefix`
+- `internal/boardengine_test#TestLoadConfig_DesignPrefixRefused`
 
 **Edit:**
 - `internal/boardengine#LoadConfig`
 - `internal/boardengine/doc.go`
 
 **Uses:**
-- `plan:internal/boardengine#decisionFilePrefix`
+- `internal/boardengine#decisionFilePrefix`
 - `internal/boardengine_test#writeBoardConfig`
 
 **Intent:**

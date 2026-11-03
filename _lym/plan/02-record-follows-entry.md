@@ -1,8 +1,8 @@
 # Card 2 — record-follows-entry
 
 **Create:**
-- `plan:internal/boardengine#followDecisionRecords` -> `func followDecisionRecords(boardPath string, loaded, after []Task, renamedFrom, renamedTo string) error`
-- `plan:internal/boardengine_test#TestDecisionRecordFollowsEntry` -> `func TestDecisionRecordFollowsEntry(t *testing.T)`
+- `internal/boardengine#followDecisionRecords`
+- `internal/boardengine_test#TestDecisionRecordFollowsEntry`
 
 **Edit:**
 - `internal/boardengine#Board.boardCriticalSection`
@@ -10,9 +10,9 @@
 - `internal/boardengine/doc.go`
 
 **Uses:**
-- `plan:internal/boardengine#decisionFileName`
-- `plan:internal/boardengine#Board.StoreDecisionRecord`
-- `plan:internal/boardengine#Board.DecisionRecord`
+- `internal/boardengine#decisionFileName`
+- `internal/boardengine#Board.StoreDecisionRecord`
+- `internal/boardengine#Board.DecisionRecord`
 - `internal/logger#`
 - `internal/boardengine#Board.RemoveTask`
 - `internal/boardengine#Board.Prune`

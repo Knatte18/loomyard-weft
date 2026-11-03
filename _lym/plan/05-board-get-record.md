@@ -11,8 +11,8 @@
 - `plugins/ly/skills/board/SKILL.md`
 
 **Uses:**
-- `plan:internal/boardengine#Board.DecisionRecord`
-- `plan:internal/boardengine#Board.StoreDecisionRecord`
+- `internal/boardengine#Board.DecisionRecord`
+- `internal/boardengine#Board.StoreDecisionRecord`
 - `internal/boardcli_test#runCLI`
 - `internal/boardcli_test#runJSON`
 

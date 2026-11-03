@@ -25,10 +25,10 @@
 
 **Uses:**
 - `internal/shedrecipe/doc.go`
-- `plan:internal/boardengine#Board.StoreDecisionRecord`
-- `plan:internal/boardengine#Board.DecisionRecord`
-- `plan:internal/boardengine#ErrRecordEntryDone`
-- `plan:internal/loomrecipe#discussionApprovalRow`
+- `internal/boardengine#Board.StoreDecisionRecord`
+- `internal/boardengine#Board.DecisionRecord`
+- `internal/boardengine#ErrRecordEntryDone`
+- `internal/loomrecipe#discussionApprovalRow`
 - `internal/loomrecipe#approveSeamFixture`
 - `internal/loomrecipe#buildSequenceFixture`
 - `internal/loomrecipe/doc.go`

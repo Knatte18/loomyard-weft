@@ -1,17 +1,17 @@
 {
   "runGuid": "9a178544cd6e95143dc8b24bf6d1be32",
-  "planFingerprint": "257006f8005117ea570b5bd9f4979e7536772991c64b2594839faab76f124abf",
+  "planFingerprint": "f1c86e6488cd6b813cd65bcdd4913c02152468f7f87c202e85f3a3da5bb4a60d",
   "planFileHashes": {
     "00-overview.md": "6d71d8b1ccc7fb91915d90fde1e7b49d27b19466fdea46eeae26435c6880cfa8",
-    "01-board-decision-record.md": "ad65afc856a48147ac8dae9cdac5956430fe777253009401a9ea126e4d109f9c",
-    "02-record-follows-entry.md": "1e79f230c7e163b643d4fdf1b5a1a048d4706faed8c255c77fd5343c27ba3a42",
-    "03-design-prefix-refusal.md": "ecae87db709539f6623a5d9727bed11ea12c06f1c3d7f22f75ae94cca2decd11",
-    "04-replay-carries-record.md": "8c8650cd95c581fd6c2ea64adf3ebb0993eb262ccb308abf912acc1a1c8ce7c2",
-    "05-board-get-record.md": "81814d71eb81251b6e09b4817e0f6ceb1636585e39859ad49acfae421d5d0e43",
-    "06-discussion-approval-row.md": "fe58fed6e239b2a77e5fbd0ad3e33fc5458f0d93bc5372cf8852323c93a72d70",
-    "07-discussion-approve-seam.md": "393844096e04d2564e7034211b222ec987fdd655a6d4e6e6bba26ca64379714e",
-    "08-decision-add-copies.md": "a6178d9eea7f20732181c157a92479d9829dc18c633b3a5ad22e1cfc7604c582",
-    "09-decision-store-verb.md": "86bc92d59cd3423540961ad20ae21fd654b953c9cc3c94aa55b9f70d098ce071"
+    "01-board-decision-record.md": "baefe413668bb113a81fcd1f4efc43cfd54859299b5c71ef1baf3c4e8afa7dce",
+    "02-record-follows-entry.md": "f78937c97cf4057d61d9b5c636f3ed302e27f23aed8ae728a65216748c743311",
+    "03-design-prefix-refusal.md": "8df113851ee0ce54b0fd025cd13da4e663ef5b4d328a8fbdfbe738252d1a67b0",
+    "04-replay-carries-record.md": "9138f5ffc61cc76998a754e8038cd39dd9116296ee199370e283dd998e14dd9b",
+    "05-board-get-record.md": "2835081b23bcc53207fe8830fa1453004754b6e5b69e7cdf75e5ea0245da2e51",
+    "06-discussion-approval-row.md": "4e9fdcb66cbbcc132e9490f8a8eec87a8f1a267a8e9303efb1f5cbb6817efa3e",
+    "07-discussion-approve-seam.md": "fdbb64728b9574521f3e7e0ec6a44d60bdf146898280ab717fbc9e86c7550f8e",
+    "08-decision-add-copies.md": "4cfb8530127f2a09ae92513e7de74b50075527c782fabfec988be931954559a1",
+    "09-decision-store-verb.md": "f01203d226e42d8582fa63e856a60673d0f060fb374d8aba98c7a2a8d1a622ef"
   },
   "planOverviewFrameHash": "c94222061584a6a00b4e78bd9cd07d87ba5c5594c95cd7552ac45e9285948fae",
   "partition": [
@@ -196,7 +196,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "6d919c856635b3768479868a0eec7c99",
   "masterSessionId": "e5be960e-154e-4d80-b935-300e5c250911",
   "masterEngine": "claude",
@@ -212,20 +212,44 @@
         "06-discussion-approval-row"
       ],
       "cardHashes": {
-        "01-board-decision-record": "ad65afc856a48147ac8dae9cdac5956430fe777253009401a9ea126e4d109f9c",
-        "02-record-follows-entry": "1e79f230c7e163b643d4fdf1b5a1a048d4706faed8c255c77fd5343c27ba3a42",
-        "03-design-prefix-refusal": "ecae87db709539f6623a5d9727bed11ea12c06f1c3d7f22f75ae94cca2decd11",
-        "04-replay-carries-record": "8c8650cd95c581fd6c2ea64adf3ebb0993eb262ccb308abf912acc1a1c8ce7c2",
-        "05-board-get-record": "81814d71eb81251b6e09b4817e0f6ceb1636585e39859ad49acfae421d5d0e43",
-        "06-discussion-approval-row": "fe58fed6e239b2a77e5fbd0ad3e33fc5458f0d93bc5372cf8852323c93a72d70"
+        "01-board-decision-record": "baefe413668bb113a81fcd1f4efc43cfd54859299b5c71ef1baf3c4e8afa7dce",
+        "02-record-follows-entry": "f78937c97cf4057d61d9b5c636f3ed302e27f23aed8ae728a65216748c743311",
+        "03-design-prefix-refusal": "8df113851ee0ce54b0fd025cd13da4e663ef5b4d328a8fbdfbe738252d1a67b0",
+        "04-replay-carries-record": "9138f5ffc61cc76998a754e8038cd39dd9116296ee199370e283dd998e14dd9b",
+        "05-board-get-record": "2835081b23bcc53207fe8830fa1453004754b6e5b69e7cdf75e5ea0245da2e51",
+        "06-discussion-approval-row": "4e9fdcb66cbbcc132e9490f8a8eec87a8f1a267a8e9303efb1f5cbb6817efa3e"
       },
       "startSha": "1fbac34f114268cfd6d87f9d42e63b27937acae4",
       "kind": "fork",
       "spawnedAt": "2026-11-03T08:25:05Z",
       "sessionId": "e5be960e-154e-4d80-b935-300e5c250911",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-board-decision-record",
+        "status": "done",
+        "head_sha": "689221ed5980bba8461238780ddde45d1702580d",
+        "deviations": [
+          "internal/boardcli/verbs_test.go",
+          "internal/boardengine/decision_test.go",
+          "internal/boardengine/replay.go",
+          "internal/boardengine/replay_test.go",
+          "internal/loomrecipe/discussionapproval.go"
+        ]
+      },
+      "cardShas": [
+        "689221ed5980bba8461238780ddde45d1702580d"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-decision-record-on-board/e5be960e-154e-4d80-b935-300e5c250911/subagents/agent-a5f389e66723d2324.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-decision-record-on-board/e5be960e-154e-4d80-b935-300e5c250911/subagents/agent-a5f389e66723d2324.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-decision-record-on-board/e5be960e-154e-4d80-b935-300e5c250911/subagents/agent-a5f389e66723d2324.jsonl"
+  ]
 }

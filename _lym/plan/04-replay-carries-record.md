@@ -1,7 +1,7 @@
 # Card 4 — replay-carries-record
 
 **Create:**
-- `plan:internal/boardengine#boardRecordSlug` -> `func boardRecordSlug(path string) (string, bool)`
+- `internal/boardengine#boardRecordSlug`
 
 **Edit:**
 - `internal/boardengine#FabricReplay.Claims`
@@ -16,8 +16,8 @@
 
 **Uses:**
 - `internal/fabricengine/doc.go`
-- `plan:internal/boardengine#decisionFilePrefix`
-- `plan:internal/boardengine#decisionFileSuffix`
+- `internal/boardengine#decisionFilePrefix`
+- `internal/boardengine#decisionFileSuffix`
 - `internal/boardengine#boardDesignSlug`
 - `internal/boardengine#hubWithBoardConfig`
 - `internal/boardengine#boardJSON`

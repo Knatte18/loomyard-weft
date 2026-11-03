@@ -1,15 +1,15 @@
 # Card 1 — board-decision-record
 
 **Create:**
-- `plan:internal/boardengine#decisionFilePrefix` -> `const decisionFilePrefix = "decision-"`
-- `plan:internal/boardengine#decisionFileSuffix` -> `const decisionFileSuffix = ".md"`
-- `plan:internal/boardengine#decisionFileName` -> `func decisionFileName(slug string) string`
-- `plan:internal/boardengine#ErrRecordEntryDone` -> `var ErrRecordEntryDone = errors.New("a landed entry keeps the decision record it last stored")`
-- `plan:internal/boardengine#Board.StoreDecisionRecord` -> `func (b *Board) StoreDecisionRecord(slug string, record []byte) error`
-- `plan:internal/boardengine#Board.DecisionRecord` -> `func (b *Board) DecisionRecord(selector any) ([]byte, bool, error)`
-- `plan:internal/boardengine#checkDiscussedPayload` -> `func checkDiscussedPayload(s *Store, fields map[string]any) error`
-- `plan:internal/boardengine_test#TestStoreDecisionRecord` -> `func TestStoreDecisionRecord(t *testing.T)`
-- `plan:internal/boardengine_test#TestDiscussedPayload` -> `func TestDiscussedPayload(t *testing.T)`
+- `internal/boardengine#decisionFilePrefix`
+- `internal/boardengine#decisionFileSuffix`
+- `internal/boardengine#decisionFileName`
+- `internal/boardengine#ErrRecordEntryDone`
+- `internal/boardengine#Board.StoreDecisionRecord`
+- `internal/boardengine#Board.DecisionRecord`
+- `internal/boardengine#checkDiscussedPayload`
+- `internal/boardengine_test#TestStoreDecisionRecord`
+- `internal/boardengine_test#TestDiscussedPayload`
 
 **Edit:**
 - `internal/boardengine#Task`

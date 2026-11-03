@@ -1,10 +1,10 @@
 # Card 6 — discussion-approval-row
 
 **Create:**
-- `plan:internal/loomrecipe#DiscussionApprovalRow` -> `func DiscussionApprovalRow(recipe string) (string, bool, error)`
-- `plan:internal/loomrecipe#PastDiscussionApproval` -> `func PastDiscussionApproval(recipe, currentRow string) (past, hasRow bool, err error)`
-- `plan:internal/loomrecipe#discussionApprovalRow` -> `func discussionApprovalRow(parsed shedbuild.Recipe) (string, bool)`
-- `plan:internal/loomrecipe#TestPastDiscussionApproval` -> `func TestPastDiscussionApproval(t *testing.T)`
+- `internal/loomrecipe#DiscussionApprovalRow`
+- `internal/loomrecipe#PastDiscussionApproval`
+- `internal/loomrecipe#discussionApprovalRow`
+- `internal/loomrecipe#TestPastDiscussionApproval`
 
 **Extends:**
 - `internal/loomrecipe/doc.go`

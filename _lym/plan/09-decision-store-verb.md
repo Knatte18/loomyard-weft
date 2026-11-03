@@ -15,11 +15,11 @@
 - `internal/loomcli/doc.go`
 
 **Uses:**
-- `plan:internal/loomrecipe#DiscussionApprovalRow`
+- `internal/loomrecipe#DiscussionApprovalRow`
 - `internal/loomcli#newDecisionFake`
 - `internal/loomcli#newDarnDecisionFake`
-- `plan:internal/loomrecipe#PastDiscussionApproval`
-- `plan:internal/boardengine#ErrRecordEntryDone`
+- `internal/loomrecipe#PastDiscussionApproval`
+- `internal/boardengine#ErrRecordEntryDone`
 
 **Intent:**
 Add `lym loom decision store [<slug>]`, the one idempotent way to re-copy a run's committed record onto its board entry (D9).
