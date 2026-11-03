@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (7)
+## Tasks (9)
 
 Concrete and claimable; only a task can run.
 
@@ -24,11 +24,14 @@ Held by a run; its scope is locked until the run ends.
 | T4 | **Claude Code autocompact picker in a shuttle session stalls a gate re-prompt forever** | [`shuttle-autocompact-picker-stall`](design-shuttle-autocompact-picker-stall.md) | darn | Code-Burler-Fix | neve | 11h<br>44m | shuttle, loom |
 | T6 | **Ending the PR review closes the pull request and lands by direct push, which a PR-only branch refuses** | [`pr-review-end-direct-push`](design-pr-review-end-direct-push.md) | darn · solid | Darn-Write | neve | 32m<br>30m | landing, git |
 
-### Ready (0)
+### Ready (2)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T5 | **Drift runs in an anchored hub, can be skipped for one run, and its baseline agent picks scope off when the suite cannot reach the change** | [`drift-anchor-and-skip`](design-drift-anchor-and-skip.md) | darn · solid |  | 0m<br>0m | drift, stencil |
+| T9 | **New task worktrees in a beam inherit the beam's committed loom-halt.md and block at Preflight** | [`inherited-halt-blocks-preflight`](design-inherited-halt-blocks-preflight.md) | darn · solid |  | 0m<br>0m | loom, friction, pawl |
 
 ### Layer A (2)
 
@@ -39,7 +42,7 @@ Waits only on Running, Ready or Draft entries.
 | T7 | **fabric remove deletes the whole worktree directory, ignored files included** | [`fabric-remove-ignored-files`](design-fabric-remove-ignored-files.md) | darn · solid | T3 | 25m<br>12m | fabric |
 | T8 | **Batten treats a stray non-worktree directory as a gone pair, and a beam landing accepts its own beam mark** | [`batten-stray-dir-and-beam-mark`](design-batten-stray-dir-and-beam-mark.md) | darn · solid | T3 | 23m<br>23m | batten, pawl |
 
-## Notes (42)
+## Notes (40)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -49,14 +52,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 11d<br>31m | loom, stencil |
 
-### Bugs (8)
+### Bugs (6)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Drift runs in an anchored hub, can be skipped for one run, and its baseline agent picks scope off when the suite cannot reach the change** | [`drift-anchor-and-skip`](design-drift-anchor-and-skip.md) | 0m<br>0m | drift, stencil |
 | B2 |  | **A paused run whose work already landed is never finished and keeps its worktree and terminal** | [`landed-run-left-paused`](design-landed-run-left-paused.md) | 11h<br>11h | dobby, batten |
 | B3 |  | **Darn-Write seat halts: stencil darn-template-write has unfilled marker subagent_model** | [`seat-stencil-marker-unfilled`](design-seat-stencil-marker-unfilled.md) | 11h<br>39m | stencil, shed |
-| B4 |  | **New task worktrees in a beam inherit the beam's committed loom-halt.md and block at Preflight** | [`inherited-halt-blocks-preflight`](design-inherited-halt-blocks-preflight.md) | 0m<br>0m | loom, friction, pawl |
 | B5 |  | **validate-plan edit-test-file rule cannot target a test file with no glyphs** | [`edit-test-file-no-glyphs`](design-edit-test-file-no-glyphs.md) | 11h<br>11h | loom, quarry |
 | B6 |  | **insert-card renumbers only <N>-<slug> ids, leaving bare 'card N' mentions stale** | [`insert-card-bare-mentions`](design-insert-card-bare-mentions.md) | 11h<br>11h | loom |
 | B8 |  | **Run ends with a background shell outstanding: its commit and gate result are lost** | [`run-done-with-background-shell`](design-run-done-with-background-shell.md) | 11h<br>11h | shuttle, webster, gate |
