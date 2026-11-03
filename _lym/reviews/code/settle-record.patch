@@ -1,0 +1,751 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 88c60803..fa77d6a8 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -455,6 +455,8 @@ User-facing modules each get one `lym <module>` namespace:
+   ✅ Implemented. See the `internal/adoptcli` package documentation.
+ - **beam** — the making, landing, starting and stopping of a beam, a long-lived pair that groups board work, and dobby, the daemon every beam and the prime run (`internal/beamcli` + `internal/dobbyengine`; `lym beam create <slug>`, `lym beam ready <slug>`, which flags the beam ready to merge so its dobby writes the land request once nothing works under it, `lym beam land <slug>`, which writes the land request the beam's pawl run consumes at Beam-Await and refuses a beam not flagged ready, `lym beam start [slug] [--all]`, `lym beam stop [slug]` and `lym beam status`, from the prime and from any beam, and the hidden `lym beam dobby`).
+   Create runs from the beam's parent worktree, claims the root when none is recorded, records this machine as a board project's owner with the beam flag and the pawl recipe, and starts the beam's pawl run as a detached first pass, whose Worktree-Create makes the pair, forked from the parent beam of a nested beam, whose Record-Write writes the project record from the project entry's body under `_lym/project/<slug>/`, and whose Beam-Up marks it.
++  Before it starts that run, create removes a done batten run under the same slug whose pair is gone and whose child ran motif, reporting `motif_run_cleared`;
++  any other done run is still refused, naming `lym batten cleanup --apply`.
+   The project record binds every member: a member's Discussion-Write lead and darn writer read each enclosing beam's record from that beam's worktree, the board refuses an edit of the project's body once the record exists, and `lym loom decision add <beam-slug>`, run by the beam's orch, is the one way its scope changes, its notice reaching every live member run under the beam.
+   The pawl recipe is a loom recipe with Beam-Await as its build row and no review round of its own, and its Beam-Describe carries the record's added entries into the beam's change description.
+   Land starts a short batten run over the `beam` recipe, after a refusal that stops it while members or forked pairs remain under the beam.
+@@ -689,7 +691,7 @@ User-facing modules each get one `lym <module>` namespace:
+   The stage cell carries the stage's entry number (`7. Land`, `6.5 Plan-Write` for a child stage under Run-Shed), and a run a live pause covers shows `paused <minutes>` in its state cell.
+   Below the dobby come the orch lines of the worktree's own orch and of every beam below it, every orch in the prime's window.
+   It reads files, taking the dobby's and each driver's lock for an instant to learn whether it is held.
+-  `lym batten cleanup` is a dry run unless given `--apply`: it removes each done run's records run directory with a records commit and a spawned push, and empties that run's scratch beside its lock files and any orphan scratch older than a day.
++  `lym batten cleanup` is a dry run unless given `--apply`: it removes each done run's records run directory with a records commit and a spawned push, and empties that run's scratch beside its lock files and any orphan scratch older than a day; a done motif run is also cleared by `lym beam create`.
+   A run is one pass after another: `lym batten run <slug>` runs one pass and exits, started by the run's parent worktree's dobby or by hand, and a hand pass makes sure that dobby is live once it is over.
+   The adopt check's green end starts a run's first pass detached with the prime as its working directory, and `lym beam land <slug>` starts none: it writes a land request into the beam worktree's `.lym/beam/` directory, which the beam's pawl run consumes at Beam-Await, from anywhere in the hub.
+   `Worktree-Create` forks a task's pair from its beam, the nearest open beam up its board project chain, whichever worktree started the run, and from the prime for a task outside any beam.
+diff --git a/internal/battencli/cleanup.go b/internal/battencli/cleanup.go
+index a4a0a31e..71e36aa5 100644
+--- a/internal/battencli/cleanup.go
++++ b/internal/battencli/cleanup.go
+@@ -1,4 +1,5 @@
+-// cleanup.go implements "lym batten cleanup": the dry-run-by-default removal of finished runs' records and scratch from the hub's prime worktree.
++// cleanup.go implements "lym batten cleanup", the dry-run-by-default removal of finished runs' records and scratch from the hub's prime worktree.
++// It also holds ClearMotifRun, the removal of one slug's done motif run that "lym beam create" makes before the project's own run.
+ //
+ // Cleanup is the one function the verb and "lym cleanup" both call; every refusal and skip lives in cleanup, so neither caller can remove more than cleanup decides.
+ // It deletes only a done slug's records run directory and the scratch contents beside its lock files, or an aged orphan's scratch contents.
+@@ -21,6 +22,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/fsx"
+ 	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+@@ -100,6 +102,92 @@ func Cleanup(location *lymcwd.Location, apply bool) (CleanupReport, error) {
+ 	return cleanup(prime, apply, fabricCleanupDeps(prime))
+ }
+ 
++// ClearMotifRun removes the records run directory and scratch contents of slug's batten run when that run is done and its task worktree ran the motif recipe, and reports whether it removed them.
++// A motif run is the planned first step of a project split, so its done record must not block the project's own run under the same slug.
++// It runs from the prime worktree and from a beam, acting on the prime's location, and refuses elsewhere.
++// A run whose run lock is held, that is not done, or whose child-recipe record names another recipe or none, is left alone with cleared false.
++// A removal that fails before its records commit lands is returned after the run's status and child-recipe records are written back, so a re-run finds the run again.
++// A failed push spawn or scratch emptying only warns, since the done record is gone either way.
++func ClearMotifRun(location *lymcwd.Location, slug string) (cleared bool, err error) {
++	prime, err := ResolveBattenPrime(location)
++	if err != nil {
++		return false, err
++	}
++	return clearMotifRun(prime, slug, fabricCleanupDeps(prime))
++}
++
++// clearMotifRun is ClearMotifRun over injected deps.
++// It judges and removes while holding the slug's run lock and status lock, so a run started meanwhile is never removed.
++func clearMotifRun(location *lymcwd.Location, slug string, deps cleanupDeps) (cleared bool, err error) {
++	scratchDir := shedrun.ScratchDir(location, slug)
++	if err := os.MkdirAll(scratchDir, 0o755); err != nil {
++		return false, fmt.Errorf("battencli: create the scratch directory of %s: %w", slug, err)
++	}
++	runLock, free, err := lock.TryAcquireWriteLock(shedrun.RunLock(location, slug))
++	if err != nil {
++		return false, fmt.Errorf("battencli: take the run lock of %s: %w", slug, err)
++	}
++	if !free {
++		return false, nil
++	}
++	defer releaseLock(runLock)
++	statusLock, err := lock.AcquireWriteLock(shedrun.StatusLock(location, slug))
++	if err != nil {
++		return false, fmt.Errorf("battencli: take the status lock of %s: %w", slug, err)
++	}
++	defer releaseLock(statusLock)
++
++	data, err := os.ReadFile(shedrun.StatusFile(location, slug))
++	if errors.Is(err, fs.ErrNotExist) {
++		return false, nil
++	}
++	if err != nil {
++		return false, fmt.Errorf("battencli: read the status of %s: %w", slug, err)
++	}
++	if done, _, _ := judgeStatus(data, "", slug); !done {
++		return false, nil
++	}
++	recipe, err := shedrun.ReadChildRecipe(location, slug)
++	if err != nil {
++		return false, fmt.Errorf("battencli: read the child recipe of %s: %w", slug, err)
++	}
++	if recipe != shedrun.RecipeMotif {
++		return false, nil
++	}
++
++	committed, err := removeRunRecords(location, slug, "beam create: remove the done motif run of "+slug, deps)
++	var emptyErr scratchEmptyError
++	switch {
++	case errors.As(err, &emptyErr):
++		logger.Warn("battencli: the done motif run's records are removed but its scratch is not emptied", "slug", slug, "error", err.Error())
++	case err != nil:
++		return false, errors.Join(err, restoreMotifRunRecords(location, slug, data, recipe))
++	}
++	if committed {
++		if err := deps.Spawn(); err != nil {
++			logger.Warn("battencli: the push of the motif run's removal did not spawn; the next records sync carries it", "slug", slug, "error", err.Error())
++		}
++	}
++	return true, nil
++}
++
++// restoreMotifRunRecords writes back the status and child-recipe records of slug's run after a removal that failed before its records commit,
++// so the run reads as a done motif run again and a re-run of the removal finishes it.
++// The caller holds the slug's status lock.
++func restoreMotifRunRecords(location *lymcwd.Location, slug string, status []byte, recipe string) error {
++	statusFile := shedrun.StatusFile(location, slug)
++	if err := os.MkdirAll(filepath.Dir(statusFile), 0o755); err != nil {
++		return fmt.Errorf("battencli: restore the status of %s: %w", slug, err)
++	}
++	if err := os.WriteFile(statusFile, status, 0o644); err != nil {
++		return fmt.Errorf("battencli: restore the status of %s: %w", slug, err)
++	}
++	if err := shedrun.WriteChildRecipe(location, slug, recipe); err != nil {
++		return fmt.Errorf("battencli: restore the child recipe of %s: %w", slug, err)
++	}
++	return nil
++}
++
+ // cleanup is Cleanup over injected deps.
+ // Each slug is judged under its run lock and status lock, so a run started meanwhile blocks or is skipped rather than racing the removal.
+ func cleanup(location *lymcwd.Location, apply bool, deps cleanupDeps) (CleanupReport, error) {
+@@ -433,7 +521,7 @@ on the records side, empties that run's scratch beside its lock files, empties t
+ any orphan (a scratch directory with no records run directory, untouched for a day), and then
+ spawns the push of the records. A run that is running, paused, blocked, awaiting or failed, or whose run
+ lock is held, is skipped and reported with its reason. It never touches a pair, a branch, a
+-lock file or another run.
++lock file or another run. A done motif run is also cleared by "lym beam create".
+ 
+ Output: {"applied", "removed", "emptied", "skipped", "push_spawned", "push_error"}.
+ push_spawned says the push was started, not that origin took it; "lym fabric status" lists a push origin refused under failed_pushes.
+diff --git a/internal/battencli/cleanup_test.go b/internal/battencli/cleanup_test.go
+index 674b971d..5a31a8da 100644
+--- a/internal/battencli/cleanup_test.go
++++ b/internal/battencli/cleanup_test.go
+@@ -43,11 +43,13 @@ type cleanupStubs struct {
+ 	committed map[string][]byte
+ 	// committedErr, when set, is what the Committed stub returns.
+ 	committedErr error
+-	commits      [][]string
+-	messages     []string
+-	spawns       int
+-	spawnErr     error
+-	commitHook   func()
++	// commitErr, when set, is what the Commit stub fails with, recording no commit.
++	commitErr  error
++	commits    [][]string
++	messages   []string
++	spawns     int
++	spawnErr   error
++	commitHook func()
+ }
+ 
+ func newCleanupStubs() *cleanupStubs {
+@@ -64,6 +66,9 @@ func (s *cleanupStubs) deps() cleanupDeps {
+ 			if s.commitHook != nil {
+ 				s.commitHook()
+ 			}
++			if s.commitErr != nil {
++				return false, s.commitErr
++			}
+ 			s.commits = append(s.commits, relPaths)
+ 			s.messages = append(s.messages, msg)
+ 			return true, nil
+@@ -538,3 +543,139 @@ func TestCleanup_HoldsTheStatusLockUntilTheCommitAndLeavesTheSlugRunnable(t *tes
+ 		t.Errorf("checkRunStatus = (%v, %v), want (false, nil) so the slug can run again", found, err)
+ 	}
+ }
++
++func TestClearMotifRun_RemovesOnlyADoneMotifRun(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// runState is the state of the slug's status; empty means no status file.
++		runState string
++		// childRecipe is the child-recipe record; empty means none.
++		childRecipe string
++		holdRunLock bool
++		// commitErr is what the records commit fails with; the run then stays and the error is returned.
++		commitErr error
++		// spawnErr is what the push spawn fails with; the run is still removed.
++		spawnErr error
++		// blockScratch makes a directory under the run's scratch unreadable, so emptying the scratch fails after the commit.
++		blockScratch bool
++		// untracked leaves the run out of the records HEAD, so its removal makes no commit.
++		untracked   bool
++		wantCleared bool
++	}{
++		{name: "DoneMotifRunIsRemovedCommittedAndPushed", runState: "done", childRecipe: shedrun.RecipeMotif, wantCleared: true},
++		{name: "RecordsCommitFailureReturnsTheErrorAndKeepsTheRun", runState: "done", childRecipe: shedrun.RecipeMotif, commitErr: errors.New("records commit refused")},
++		{name: "PushSpawnFailureStillClearsTheRun", runState: "done", childRecipe: shedrun.RecipeMotif, spawnErr: errors.New("remote refused"), wantCleared: true},
++		{name: "ScratchEmptyFailureStillClearsTheRun", runState: "done", childRecipe: shedrun.RecipeMotif, blockScratch: true, wantCleared: true},
++		{name: "DoneMotifRunTheRecordsHeadDoesNotTrackIsRemovedWithNoCommit", runState: "done", childRecipe: shedrun.RecipeMotif, untracked: true, wantCleared: true},
++		{name: "DoneDarnRunStays", runState: "done", childRecipe: shedrun.RecipeDarn},
++		{name: "DoneRunWithNoChildRecipeRecordStays", runState: "done"},
++		{name: "RunningMotifRunStays", runState: "running", childRecipe: shedrun.RecipeMotif},
++		{name: "SlugWithNoStatusStays"},
++		{name: "DoneMotifRunWhoseRunLockIsHeldStays", runState: "done", childRecipe: shedrun.RecipeMotif, holdRunLock: true},
++	}
++	for _, tt := range tests {
++		// Windows does not enforce directory permissions, so it generates no subtest for a blocking row.
++		if tt.blockScratch && runtime.GOOS == "windows" {
++			continue
++		}
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if tt.blockScratch && os.Geteuid() == 0 {
++				t.Skip("directory permissions are not enforced for root")
++			}
++			location := newCleanupLocation(t)
++			stubs := newCleanupStubs()
++			stubs.commitErr = tt.commitErr
++			stubs.spawnErr = tt.spawnErr
++			const slug = "codex-engine"
++			if tt.runState != "" {
++				writeCleanupFile(t, shedrun.StatusFile(location, slug), statusJSON(t, tt.runState))
++				if !tt.untracked {
++					stubs.committed[shedrun.StatusRel(location, slug)] = statusJSON(t, tt.runState)
++				}
++			}
++			if tt.blockScratch {
++				blocked := filepath.Join(shedrun.ScratchDir(location, slug), "steps")
++				writeCleanupFile(t, filepath.Join(blocked, "record.json"), []byte("x"))
++				if err := os.Chmod(blocked, 0o000); err != nil {
++					t.Fatalf("chmod: %v", err)
++				}
++				t.Cleanup(func() { _ = os.Chmod(blocked, 0o755) })
++			}
++			if tt.childRecipe != "" {
++				if err := shedrun.WriteChildRecipe(location, slug, tt.childRecipe); err != nil {
++					t.Fatalf("write child recipe: %v", err)
++				}
++			}
++			if tt.holdRunLock {
++				writeCleanupFile(t, shedrun.RunLock(location, slug), nil)
++				held, err := lock.AcquireWriteLock(shedrun.RunLock(location, slug))
++				if err != nil {
++					t.Fatalf("hold run lock: %v", err)
++				}
++				t.Cleanup(func() { _ = held.Release() })
++			}
++
++			cleared, err := clearMotifRun(location, slug, stubs.deps())
++			if !errors.Is(err, tt.commitErr) {
++				t.Fatalf("clearMotifRun() error = %v; want it to wrap %v", err, tt.commitErr)
++			}
++			if cleared != tt.wantCleared {
++				t.Errorf("clearMotifRun() cleared = %v; want %v", cleared, tt.wantCleared)
++			}
++			wantCommits, wantSpawns := 0, 0
++			if tt.wantCleared && !tt.untracked {
++				wantCommits, wantSpawns = 1, 1
++			}
++			if len(stubs.commits) != wantCommits {
++				t.Fatalf("commits = %v; want %d", stubs.commits, wantCommits)
++			}
++			if wantCommits == 1 && !slices.Equal(stubs.commits[0], []string{shedrun.RunDirRel(location, slug)}) {
++				t.Errorf("commit paths = %v; want the run directory %q", stubs.commits[0], shedrun.RunDirRel(location, slug))
++			}
++			if stubs.spawns != wantSpawns {
++				t.Errorf("spawns = %d; want %d", stubs.spawns, wantSpawns)
++			}
++			if tt.runState != "" {
++				if gone := !entryExists(shedrun.RunDir(location, slug)); gone != tt.wantCleared {
++					t.Errorf("run directory removed = %v; want %v", gone, tt.wantCleared)
++				}
++			}
++		})
++	}
++}
++
++func TestClearMotifRun_FinishesTheRemovalOfARunWhoseRecordsCommitFailed(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	location := newCleanupLocation(t)
++	stubs := newCleanupStubs()
++	const slug = "codex-engine"
++	writeCleanupFile(t, shedrun.StatusFile(location, slug), statusJSON(t, "done"))
++	stubs.committed[shedrun.StatusRel(location, slug)] = statusJSON(t, "done")
++	if err := shedrun.WriteChildRecipe(location, slug, shedrun.RecipeMotif); err != nil {
++		t.Fatalf("write child recipe: %v", err)
++	}
++
++	stubs.commitErr = errors.New("records commit refused")
++	cleared, err := clearMotifRun(location, slug, stubs.deps())
++	if !errors.Is(err, stubs.commitErr) || cleared {
++		t.Fatalf("clearMotifRun() with a failing commit = (%v, %v); want false and an error wrapping %v", cleared, err, stubs.commitErr)
++	}
++
++	stubs.commitErr = nil
++	cleared, err = clearMotifRun(location, slug, stubs.deps())
++	if err != nil || !cleared {
++		t.Fatalf("clearMotifRun() on the re-run = (%v, %v); want true and nil", cleared, err)
++	}
++	if len(stubs.commits) != 1 {
++		t.Errorf("commits = %v; want the re-run's one removal commit", stubs.commits)
++	}
++	if entryExists(shedrun.RunDir(location, slug)) {
++		t.Errorf("run directory %s still exists after the re-run; want it removed", shedrun.RunDir(location, slug))
++	}
++}
+diff --git a/internal/battencli/cli.go b/internal/battencli/cli.go
+index 717d0a66..0f3b5bde 100644
+--- a/internal/battencli/cli.go
++++ b/internal/battencli/cli.go
+@@ -9,6 +9,7 @@
+ // and "the hub's prime worktree" instead.
+ //
+ // "lym batten cleanup [--apply]" (cleanup.go) removes done runs' records and scratch and aged orphan scratch, as a dry run unless given --apply.
++// `ClearMotifRun` (cleanup.go) removes one slug's records the same way, only when its run is done and the child-recipe record that Seed-Child writes in batten's run directory names motif.
+ //
+ // "lym batten cancel <slug> [--remove]" (cancel.go, cancelcmd.go) ends a run for good from the prime, whatever its state.
+ // It refuses first, with nothing ended: a hub pause, work that reached the parent, an owner on another machine, a stopped origin entry, a cancel already under way and a slug with nothing left.
+diff --git a/internal/battencli/commitstatus.go b/internal/battencli/commitstatus.go
+index e994ffd6..a7284a00 100644
+--- a/internal/battencli/commitstatus.go
++++ b/internal/battencli/commitstatus.go
+@@ -53,7 +53,7 @@ type commitStatusDeps struct {
+ var spawnStatusPush = fabricengine.SpawnStatusPush
+ 
+ // battenRunCommitPaths returns the anchor-relative paths a status transition commits: the run's
+-// status file, and its seed, dobby's run notice marker and the settle records whenever each is on disk.
++// status file, and its seed, dobby's run notice marker, the settle records and the child-recipe record whenever each is on disk.
+ //
+ // Both belong on the pair because a run directory is durable, fabric-synced state -- a status
+ // committed without its seed leaves a resumed machine able to read how far the run came but not
+@@ -76,6 +76,9 @@ func battenRunCommitPaths(location *lymcwd.Location, runID string) []string {
+ 	if _, err := os.Stat(shedrun.SettleRecords(location, runID)); err == nil {
+ 		paths = append(paths, shedrun.SettleRecordsRel(location, runID))
+ 	}
++	if _, err := os.Stat(shedrun.ChildRecipeFile(location, runID)); err == nil {
++		paths = append(paths, shedrun.ChildRecipeRel(location, runID))
++	}
+ 	return paths
+ }
+ 
+diff --git a/internal/battencli/commitstatus_test.go b/internal/battencli/commitstatus_test.go
+index 19c57d79..e8a2ff53 100644
+--- a/internal/battencli/commitstatus_test.go
++++ b/internal/battencli/commitstatus_test.go
+@@ -133,7 +133,7 @@ func TestStatusPushSpawns_TellTheirLocationAndGateSlug(t *testing.T) {
+ 	}
+ }
+ 
+-// TestBattenRunCommitPaths asserts a status transition commits the run's seed and dobby's run notice marker alongside its status once each exists, and commits the status alone while neither does.
++// TestBattenRunCommitPaths asserts a status transition commits the run's seed, dobby's run notice marker, the settle records and the child-recipe record alongside its status once each exists, and commits the status alone while none does.
+ // A run directory is durable, fabric-synced state: a status committed without its seed leaves a resumed machine able to read how far the run came but not what it is running.
+ //
+ //testtiming:keep pins the seed-alongside-status commit paths, which the end-to-end rows never assert
+@@ -176,4 +176,12 @@ func TestBattenRunCommitPaths(t *testing.T) {
+ 	if want = append(want, shedrun.SettleRecordsRel(loc, runID)); !reflect.DeepEqual(got, want) {
+ 		t.Errorf("battenRunCommitPaths with settle records on disk = %v; want %v", got, want)
+ 	}
++
++	if err := shedrun.WriteChildRecipe(loc, runID, shedrun.RecipeMotif); err != nil {
++		t.Fatalf("write child recipe: %v", err)
++	}
++	got = battenRunCommitPaths(loc, runID)
++	if want = append(want, shedrun.ChildRecipeRel(loc, runID)); !reflect.DeepEqual(got, want) {
++		t.Errorf("battenRunCommitPaths with a child-recipe record on disk = %v; want %v", got, want)
++	}
+ }
+diff --git a/internal/battencli/lifecycle_integration_test.go b/internal/battencli/lifecycle_integration_test.go
+index 68a04f57..0cc58643 100644
+--- a/internal/battencli/lifecycle_integration_test.go
++++ b/internal/battencli/lifecycle_integration_test.go
+@@ -398,6 +398,10 @@ func stepSeedChild_WritesASeedTheChildBootstrapAgreesWith(t *testing.T, h *hubfo
+ 	if !seedFound {
+ 		t.Fatalf("Seed-Child wrote no child seed")
+ 	}
++	// Batten's own run directory keeps the recipe the child was seeded with, which a done run needs once the pair is gone.
++	if got, err := shedrun.ReadChildRecipe(h.Location, slug); err != nil || got != seed.Recipe {
++		t.Errorf("batten's child-recipe record = %q, %v; want the child seed's recipe %q and nil", got, err, seed.Recipe)
++	}
+ 	if origin.ParentWorktree != h.Location.WorktreeName {
+ 		t.Errorf("child origin ParentWorktree = %q; want the prime %q", origin.ParentWorktree, h.Location.WorktreeName)
+ 	}
+@@ -443,6 +447,9 @@ func stepSeedChild_WriteSeedRewrapsARealDisagreeingChildSeed(t *testing.T, h *hu
+ 	if !errors.Is(err, battenshed.ErrDisagreeingChildSeed) {
+ 		t.Fatalf("WriteSeed() error = %v; want it to wrap battenshed.ErrDisagreeingChildSeed", err)
+ 	}
++	if got, err := shedrun.ReadChildRecipe(h.Location, slug); err != nil || got != "" {
++		t.Errorf("batten's child-recipe record = %q, %v after a refused seed; want none and nil", got, err)
++	}
+ }
+ 
+ // stepRealReadStatus_OnAFreshPairReportsAbsentRatherThanErroring drives the two InnerRun seams every other test in this file replaces -- the real Env.InnerRun.ResolveStatus and Env.InnerRun.ReadStatus -- against a freshly created pair that has never run.
+diff --git a/internal/battencli/wire.go b/internal/battencli/wire.go
+index a95be32a..6a031e56 100644
+--- a/internal/battencli/wire.go
++++ b/internal/battencli/wire.go
+@@ -1413,7 +1413,8 @@ func (c *battenCLI) wire(location *lymcwd.Location, slug string) error {
+ 					}
+ 					return err
+ 				}
+-				return nil
++				// Batten's own run directory keeps the child's recipe, which the next status commit carries, so a done run still tells a motif child once the pair is gone.
++				return shedrun.WriteChildRecipe(location, slug, recipe)
+ 			},
+ 			// CommitSeed commits the child's own seed onto the child's own fabric pair -- a
+ 			// one-off write, distinct from CommitStatus below, which commits prime's own batten
+diff --git a/internal/beamcli/cli.go b/internal/beamcli/cli.go
+index 07a52c79..bbbfd559 100644
+--- a/internal/beamcli/cli.go
++++ b/internal/beamcli/cli.go
+@@ -493,6 +493,10 @@ finishes a stopped create:
+      drives on: its Worktree-Create makes the pair, and its Beam-Up marks it and
+      starts the beam's dobby and orch
+ 
++Before step 3 it removes a done batten run under the same slug whose pair is gone and
++whose child ran motif, and the envelope reports it as "motif_run_cleared". Any other done
++run is still refused, naming "lym batten cleanup --apply".
++
+ A pawl run in flight is reported live and starts nothing. A first pass a covering
+ pause refused leaves no run, and the same "lym beam create <slug> [--anchor <dir>]"
+ after the lift starts it. A flagged beam left by a first pass that died takes the same
+diff --git a/internal/beamcli/create.go b/internal/beamcli/create.go
+index 3e15d235..7799a0ec 100644
+--- a/internal/beamcli/create.go
++++ b/internal/beamcli/create.go
+@@ -17,6 +17,7 @@ import (
+ // PairPresent reports whether this machine holds the slug's pair worktree.
+ // BranchOnOrigin reports whether the slug's task branch is on origin.
+ // RunStatus reads the state of the slug's batten run, found false when it has no status file.
++// ClearMotifRun removes the slug's batten run records when that run is done and ran the motif recipe, and reports whether it did.
+ // StartRun starts the slug's batten run as a detached first pass recording anchor, and returns the envelope of that start.
+ type createDeps struct {
+ 	Acting         string
+@@ -29,20 +30,23 @@ type createDeps struct {
+ 	BranchOnOrigin func(slug string) (bool, error)
+ 	SetOwners      func(req boardengine.OwnerRequest) (boardengine.OwnerWrite, error)
+ 	RunStatus      func(slug string) (state shedengine.State, found bool, err error)
++	ClearMotifRun  func(slug string) (cleared bool, err error)
+ 	StartRun       func(slug, anchor string) (map[string]any, error)
+ 	WorktreePath   func(slug string) string
+ }
+ 
+ // createResult is the verb's envelope: what each step did, the beam's worktree, the first pass's envelope and the next step.
+ type createResult struct {
+-	Slug          string         `json:"slug"`
+-	Worktree      string         `json:"worktree"`
+-	RootClaimed   bool           `json:"root_claimed,omitempty"`
+-	OwnerRecorded bool           `json:"owner_recorded,omitempty"`
+-	RunStarted    bool           `json:"run_started,omitempty"`
+-	RunLive       bool           `json:"run_live,omitempty"`
+-	FirstPass     map[string]any `json:"first_pass,omitempty"`
+-	WayForward    string         `json:"way_forward,omitempty"`
++	Slug          string `json:"slug"`
++	Worktree      string `json:"worktree"`
++	RootClaimed   bool   `json:"root_claimed,omitempty"`
++	OwnerRecorded bool   `json:"owner_recorded,omitempty"`
++	// MotifRunCleared reports that the slug's done motif run was removed before the pawl run started.
++	MotifRunCleared bool           `json:"motif_run_cleared,omitempty"`
++	RunStarted      bool           `json:"run_started,omitempty"`
++	RunLive         bool           `json:"run_live,omitempty"`
++	FirstPass       map[string]any `json:"first_pass,omitempty"`
++	WayForward      string         `json:"way_forward,omitempty"`
+ }
+ 
+ // create makes the project entry slug a beam on this machine and starts its pawl run, and returns what each step did.
+@@ -139,6 +143,8 @@ func judgeParentOwner(deps createDeps, owners boardengine.Owners, here, slug str
+ // The owner step records this machine as the beam's owner with the beam flag and the pawl recipe in one write, and a colour for the beam's VS Code windows when it has none;
+ // a beam recorded here with no colour runs the step again to get one.
+ // The run is the last step, so a beam's pair is made by the run's own Worktree-Create and marked by its Beam-Up.
++// A done run whose pair is gone is first offered to ClearMotifRun, since a motif run that wrote the project's decision record leaves a done record under the same slug;
++// any other done run stays, and the start refuses it.
+ func createSteps(deps createDeps, owners boardengine.Owners, here, slug, anchor string, result *createResult) error {
+ 	rerun := "run `lym beam create " + slug + "` again"
+ 
+@@ -175,6 +181,13 @@ func createSteps(deps createDeps, owners boardengine.Owners, here, slug, anchor
+ 	if err != nil {
+ 		return fmt.Errorf("lym beam create: read the pawl run of %s: %w; way forward: fix the cause it names, then %s", slug, err, rerun)
+ 	}
++	if found && state == shedengine.StateDone && !deps.PairPresent(slug) {
++		cleared, err := deps.ClearMotifRun(slug)
++		if err != nil {
++			return fmt.Errorf("lym beam create: remove the done motif run of %s: %w; way forward: fix the cause it names, then %s", slug, err, rerun)
++		}
++		result.MotifRunCleared = cleared
++	}
+ 	if found && state != shedengine.StateDone {
+ 		result.RunLive = true
+ 	} else {
+diff --git a/internal/beamcli/create_test.go b/internal/beamcli/create_test.go
+index b0b016e4..330adf8b 100644
+--- a/internal/beamcli/create_test.go
++++ b/internal/beamcli/create_test.go
+@@ -32,6 +32,8 @@ type createWorld struct {
+ 	acting      string
+ 	// runs holds the state of each slug's batten run; a slug with no entry has no status file.
+ 	runs map[string]shedengine.State
++	// motifRuns holds each slug whose done batten run ran the motif recipe.
++	motifRuns map[string]bool
+ 	// envelope is what the first pass answers, and startErr what its start fails with.
+ 	envelope map[string]any
+ 	startErr error
+@@ -51,13 +53,14 @@ func newCreateWorld() *createWorld {
+ 			"note1":  {},
+ 			"old":    {IsProject: true, Done: true},
+ 		}},
+-		beams:    map[string]string{},
+-		parents:  map[string]string{},
+-		pairs:    map[string]bool{},
+-		onOrigin: map[string]bool{},
+-		runs:     map[string]shedengine.State{},
+-		acting:   primeName,
+-		envelope: map[string]any{"ok": true, "pid": float64(4242)},
++		beams:     map[string]string{},
++		parents:   map[string]string{},
++		pairs:     map[string]bool{},
++		onOrigin:  map[string]bool{},
++		runs:      map[string]shedengine.State{},
++		motifRuns: map[string]bool{},
++		acting:    primeName,
++		envelope:  map[string]any{"ok": true, "pid": float64(4242)},
+ 	}
+ }
+ 
+@@ -103,6 +106,14 @@ func (w *createWorld) deps() createDeps {
+ 			state, found := w.runs[slug]
+ 			return state, found, nil
+ 		},
++		ClearMotifRun: func(slug string) (bool, error) {
++			w.calls = append(w.calls, "clear")
++			if !w.motifRuns[slug] {
++				return false, nil
++			}
++			delete(w.runs, slug)
++			return true, nil
++		},
+ 		StartRun: func(slug, anchor string) (map[string]any, error) {
+ 			w.calls = append(w.calls, "start")
+ 			w.startAnchors = append(w.startAnchors, anchor)
+@@ -286,6 +297,51 @@ func TestCreate(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name: "DoneMotifRunWithItsPairGoneIsClearedBeforeThePawlRunStarts",
++			slug: "group",
++			setup: func(w *createWorld) {
++				w.runs["group"] = shedengine.StateDone
++				w.motifRuns["group"] = true
++			},
++			wantCalls:   []string{"owner", "clear", "start"},
++			wantAnchors: []string{""},
++			check: func(t *testing.T, got createResult) {
++				if !got.MotifRunCleared || !got.RunStarted {
++					t.Errorf("create envelope = %+v; want the motif run cleared and the pawl run started", got)
++				}
++			},
++		},
++		{
++			name: "DoneRunOfAnotherRecipeIsLeftForTheStartToRefuse",
++			slug: "group",
++			setup: func(w *createWorld) {
++				w.runs["group"] = shedengine.StateDone
++			},
++			wantCalls:   []string{"owner", "clear", "start"},
++			wantAnchors: []string{""},
++			check: func(t *testing.T, got createResult) {
++				if got.MotifRunCleared {
++					t.Errorf("create envelope = %+v; want no run cleared", got)
++				}
++			},
++		},
++		{
++			name: "DoneRunWhosePairIsStillHereIsNotOfferedForClearing",
++			slug: "group",
++			setup: func(w *createWorld) {
++				w.runs["group"] = shedengine.StateDone
++				w.motifRuns["group"] = true
++				w.pairs["group"] = true
++			},
++			wantCalls:   []string{"owner", "start"},
++			wantAnchors: []string{""},
++			check: func(t *testing.T, got createResult) {
++				if got.MotifRunCleared {
++					t.Errorf("create envelope = %+v; want no run cleared while the pair stands", got)
++				}
++			},
++		},
+ 		{
+ 			name: "RefusedFirstPassIsTheVerbsErrorCarryingTheEnvelopesError",
+ 			slug: "group",
+@@ -368,6 +424,15 @@ func TestCreate_StepFailureNamesTheRerun(t *testing.T) {
+ 			want:      "arm failed",
+ 			wantOwner: true,
+ 		},
++		{
++			name: "MotifRunClearFailure",
++			fail: func(deps *createDeps) {
++				deps.RunStatus = func(string) (shedengine.State, bool, error) { return shedengine.StateDone, true, nil }
++				deps.ClearMotifRun = func(string) (bool, error) { return false, errors.New("records commit refused") }
++			},
++			want:      "records commit refused",
++			wantOwner: true,
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/beamcli/deps.go b/internal/beamcli/deps.go
+index 68e8126f..70d15791 100644
+--- a/internal/beamcli/deps.go
++++ b/internal/beamcli/deps.go
+@@ -60,6 +60,9 @@ func hubCreateDeps(prime *lymcwd.Location) (createDeps, error) {
+ 			}
+ 			return status.State, found, err
+ 		},
++		ClearMotifRun: func(slug string) (bool, error) {
++			return battencli.ClearMotifRun(prime, slug)
++		},
+ 		StartRun: func(slug, anchor string) (map[string]any, error) {
+ 			return battencli.StartFirstPass(prime, slug, battencli.FirstPassOptions{Anchor: anchor})
+ 		},
+diff --git a/internal/beamcli/doc.go b/internal/beamcli/doc.go
+index 9ec6a2ed..92b2455a 100644
+--- a/internal/beamcli/doc.go
++++ b/internal/beamcli/doc.go
+@@ -23,6 +23,8 @@
+ //     A beam recorded here with no colour runs the step again.
+ //  3. `battencli.StartFirstPass` starts the beam's batten run as a detached first pass recording the anchor, driven on by the parent's dobby.
+ //     A run in flight, a batten status file not done, is reported live and starts nothing; a flagged beam with no run status, or a legacy beam with a marked pair and no pawl run, gets its pawl run.
++//     A done run whose pair is gone is first passed to `battencli.ClearMotifRun`, which removes it when its child ran the motif recipe, so a project split after its motif run starts its pawl run under the same slug; the envelope says so with `motif_run_cleared`.
++//     Any other done run stays, and the first pass refuses it naming `lym batten cleanup --apply`.
+ //     A first pass whose envelope is not ok, such as one a covering pause refused, is the verb's error carrying the envelope's error and leaves no run.
+ //
+ // The verb makes, marks and pushes no pair itself: the run's Worktree-Create makes the pair from the parent beam, unmarked, at the anchor the run's seed records, its Record-Write writes the project record from the entry's body, and its Beam-Up marks the pair and starts the beam's dobby and orch.
+diff --git a/internal/shedrun/childrecipe.go b/internal/shedrun/childrecipe.go
+new file mode 100644
+index 00000000..13deac51
+--- /dev/null
++++ b/internal/shedrun/childrecipe.go
+@@ -0,0 +1,48 @@
++// childrecipe.go declares the child-recipe record: the recipe a batten run seeded its task worktree's run with, kept in batten's own durable run directory so it outlives the task worktree.
++
++package shedrun
++
++import (
++	"errors"
++	"io/fs"
++	"os"
++	"path/filepath"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/lymdirs"
++)
++
++// childRecipeFileName is the filename of the child-recipe record, whose path ChildRecipeFile returns.
++const childRecipeFileName = "child-recipe"
++
++// ChildRecipeFile returns the path of the durable child-recipe record of runID, under RunDir(l, runID).
++func ChildRecipeFile(l *lymcwd.Location, runID string) string {
++	return filepath.Join(RunDir(l, runID), childRecipeFileName)
++}
++
++// ChildRecipeRel returns the worktree-anchor-relative form of ChildRecipeFile's path, for a records commit's pathspec.
++func ChildRecipeRel(l *lymcwd.Location, runID string) string {
++	return filepath.Join(lymdirs.LymDirName, shedDirName, runSegment(l, runID), childRecipeFileName)
++}
++
++// WriteChildRecipe records recipe as the recipe runID seeded its task worktree's run with, replacing any recorded before.
++func WriteChildRecipe(l *lymcwd.Location, runID, recipe string) error {
++	path := ChildRecipeFile(l, runID)
++	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++		return err
++	}
++	return os.WriteFile(path, []byte(recipe+"\n"), 0o644)
++}
++
++// ReadChildRecipe returns the recipe recorded for runID's task worktree run, empty when none is recorded.
++func ReadChildRecipe(l *lymcwd.Location, runID string) (string, error) {
++	data, err := os.ReadFile(ChildRecipeFile(l, runID))
++	if errors.Is(err, fs.ErrNotExist) {
++		return "", nil
++	}
++	if err != nil {
++		return "", err
++	}
++	return strings.TrimSpace(string(data)), nil
++}
+diff --git a/internal/shedrun/childrecipe_test.go b/internal/shedrun/childrecipe_test.go
+new file mode 100644
+index 00000000..afd782b6
+--- /dev/null
++++ b/internal/shedrun/childrecipe_test.go
+@@ -0,0 +1,35 @@
++// childrecipe_test.go pins the child-recipe record's place, its relative form and its round trip.
++
++package shedrun
++
++import (
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/lymdirs"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestChildRecipe(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	l := syntheticLocation(t)
++
++	if want := filepath.Join(l.AnchorPath(), lymdirs.LymDirName, "shed", "slug", "child-recipe"); ChildRecipeFile(l, "slug") != want {
++		t.Errorf("ChildRecipeFile() = %q; want %q", ChildRecipeFile(l, "slug"), want)
++	}
++	if want := filepath.Join(lymdirs.LymDirName, "shed", "slug", "child-recipe"); ChildRecipeRel(l, "slug") != want {
++		t.Errorf("ChildRecipeRel() = %q; want %q", ChildRecipeRel(l, "slug"), want)
++	}
++	if got, err := ReadChildRecipe(l, "slug"); err != nil || got != "" {
++		t.Errorf("ReadChildRecipe() before a write = %q, %v; want empty and nil", got, err)
++	}
++	for _, recipe := range []string{RecipeMotif, RecipeDarn} {
++		if err := WriteChildRecipe(l, "slug", recipe); err != nil {
++			t.Fatalf("WriteChildRecipe(%q) = %v; want nil", recipe, err)
++		}
++		if got, err := ReadChildRecipe(l, "slug"); err != nil || got != recipe {
++			t.Errorf("ReadChildRecipe() = %q, %v; want %q and nil", got, err, recipe)
++		}
++	}
++}
+diff --git a/internal/shedrun/doc.go b/internal/shedrun/doc.go
+index e6671379..192493c7 100644
+--- a/internal/shedrun/doc.go
++++ b/internal/shedrun/doc.go
+@@ -33,6 +33,8 @@
+ // DriverLock is the ephemeral Go-driver lock under ScratchDir, distinct from the run lock and the status lock.
+ // TacklerDir is the durable directory of a run's tackler attempts, TacklerRel its anchor-relative form and TacklerAttemptDir one attempt's directory (attempt-<N>, 1-based).
+ // TacklerMarker is the ephemeral in-flight marker under ScratchDir.
++// ChildRecipeFile is the durable record under RunDir of the recipe a batten run seeded its task worktree's run with, which WriteChildRecipe writes and ReadChildRecipe reads, empty when none is recorded;
++// it outlives the task worktree's own seed, so a done run still tells which recipe its child ran.
+ // LandedCommitFile is the ephemeral file under ScratchDir holding the commit a run's landing put on its parent branch, which WriteLandedCommit writes and ReadLandedCommit reads, empty when none is recorded.
+ // CancelMarker is the ephemeral marker `lym batten cancel` writes, and CancelMarkerLock the lock whose holder is its live writer.
+ // Both sit directly under ScratchRoot beside the per-slug scratch directories, never inside RunDir or ScratchDir, so a slug's records removal leaves them.
