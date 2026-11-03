@@ -1,0 +1,993 @@
+diff --git a/contracts/orchrole/orch-role.md b/contracts/orchrole/orch-role.md
+index e288ad0e..74a397b5 100644
+--- a/contracts/orchrole/orch-role.md
++++ b/contracts/orchrole/orch-role.md
+@@ -132,7 +132,7 @@ Only a design question goes to the operator: what to build, a change of a task's
+   A joint design question goes to the operator as one question, and a peer's hand-on escalation that arrives while it is with the operator joins it.
+ 
+ A review escalation without the arbiter agent's own hand-on is a fault, handled under Investigating a stop and never decided by you as a design call.
+-The cases are: cause `budget`; an arbiter refusal, which leaves no envelope; a `hand-on` carrying a `cause` (`timeout`, `died`, `missing`, `unparseable`, `precondition`); a job exit without an envelope; a failed re-launch after a `resume` verdict; and the arbiter switched off or out of spawns.
++The cases are: cause `budget`; an arbiter refusal, which leaves no envelope; a `hand-on` carrying a `cause` (`timeout`, `died`, `missing`, `unparseable`, `precondition`, `api-error`); a job exit without an envelope; a failed re-launch after a `resume` verdict; and the arbiter switched off or out of spawns.
+ When the fault is diagnosed and acted on and a question still stands, you settle it as a run-level call, or bring it to the operator when it is a design question.
+ 
+ ## Investigating a stop
+diff --git a/docs/overview.md b/docs/overview.md
+index 094d6896..3b2d0210 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -421,7 +421,7 @@ User-facing modules each get one `lym <module>` namespace:
+   defaults to `bug`.
+   Callable from any sandbox agent context with no config. ✅ Implemented.
+ - **reed** — **the window to the world**: tmux overlay + **strand** bookkeeping + render (`internal/reedcli` + `internal/reedengine` + `internal/reedengine/render`). Hosts every managed process as a strand in a window of its own or its group's, persists to `.lym/reed.json` (`lym reed up|add|remove|status|list|attach|switch|resume|watchdog|down`); `lym reed add` places a strand `--anchor own-window` by default. Every strand carries a hierarchical full name (see the `internal/agentname` package documentation), mirrored into its pane title and Claude session name and exported to its process as `LYM_STRAND_NAME` and `LYM_PARENT`, with the watchdog repairing drift; `list` is the hub-wide name directory. Built on what its proof-of-concept, `muxpoc`, proved first (env hygiene, native `--resume`); `muxpoc` has since been deleted, its job done. `reed attach` and `reed watchdog` are this module's two registered interactive-handoff exceptions ([PATTERN-cli-cobra](../pattern/PATTERN-cli-cobra.md)): `attach` hands the operator's stdio to a `tmux attach-session` child in place, pre-flighting through checking tmux's floor version, booting the session if cold and checking server/session liveness, and `watchdog` is the detached per-hub name-repair and reap daemon that blocks for its process lifetime — in both cases every fallible step runs pre-flight, on the envelope, and only the terminal-handover/daemon tail itself is exempt from emitting JSON. `add` and `attach` boot this worktree's session when none is up, with `up`'s own semantics — a bare substrate, with no persisted strand relaunched — instead of refusing; every other reed verb still refuses on a cold worktree. ✅ Implemented. See the `internal/reedengine` package documentation.
+-- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await|await-forks`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository; its cap defaults to the caller role's keep-warm cap from `claude.yaml`. `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine: a reviewer, fixer or writer that waits inside it takes every fork's result in one turn instead of waking once per fork. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into three outcomes — `done`/`died`/`timeout`. A turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run holds at once with an output file missing, a gated run with every output file present counts done once they pass the shell wait bound after telling the agent to read them, and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane; the exception is a handle whose own `Stop` removed the strand, which ends `died` and is recorded as stopped unless the files show the run done. No guardrail denies the in-process `Agent` tool: a subagent or fork shows in the session's own pane and lym reads its transcript under the session's `subagents` directory. A `PreToolUse` guardrail denies `AskUserQuestion` when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode, a version check included (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and to a package-scoped compile check the hub's `refuse_raw` does not refuse, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write, and a fifth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a headless `claude` launch with `-p` or `--print`, whose work shows in no pane, steering the session to a subagent through the `Agent` tool; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one and follows `[creel]` mail from its hooks. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). `claude.yaml`'s `keep_warm_cap` (template 250s) and `keep_warm_cap_roles` set the per-role keep-warm cap beside them. While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups, a sliced read of a short or already-read file, or a chain of edit-only messages; it never denies a call, and the block's switches and thresholds are config. The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, Claude being the one registered engine. Per-run `Model`/`Effort` knobs (`lym shuttle run --model`/`--effort`; effort values `low|medium|high|xhigh|max`, empty = provider default) are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
++- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await|await-forks`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository; its cap defaults to the caller role's keep-warm cap from `claude.yaml`. `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine: a reviewer, fixer or writer that waits inside it takes every fork's result in one turn instead of waking once per fork. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into the outcomes `done`/`died`/`timeout` and `api-error`. A spec with `APIErrorRetries` re-sends a turn the provider's API ended on an error that many times, then ends the run `api-error`. Any other turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run holds at once with an output file missing, a gated run with every output file present counts done once they pass the shell wait bound after telling the agent to read them, and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane; the exception is a handle whose own `Stop` removed the strand, which ends `died` and is recorded as stopped unless the files show the run done. No guardrail denies the in-process `Agent` tool: a subagent or fork shows in the session's own pane and lym reads its transcript under the session's `subagents` directory. A `PreToolUse` guardrail denies `AskUserQuestion` when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode, a version check included (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and to a package-scoped compile check the hub's `refuse_raw` does not refuse, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write, and a fifth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a headless `claude` launch with `-p` or `--print`, whose work shows in no pane, steering the session to a subagent through the `Agent` tool; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one and follows `[creel]` mail from its hooks. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). `claude.yaml`'s `keep_warm_cap` (template 250s) and `keep_warm_cap_roles` set the per-role keep-warm cap beside them. While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups, a sliced read of a short or already-read file, or a chain of edit-only messages; it never denies a call, and the block's switches and thresholds are config. The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, Claude being the one registered engine. Per-run `Model`/`Effort` knobs (`lym shuttle run --model`/`--effort`; effort values `low|medium|high|xhigh|max`, empty = provider default) are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
+ - **orch** — the hub orchestrator hosted as an interactive Claude session in a reed strand of the prime worktree or of a beam, cycled before its context fills (`internal/orchcli` + `internal/orchengine`; `lym orch stop|status|refresh|distill|withdraw|rules`, in the prime and in any beam). `lym beam start` first ensures the worktree's `runs` strand, which runs `lym batten overview` as the beam's window, named `beam: prime` or `beam: <slug>` opened with the beam's board handle as in `P1: beam: <slug>`, and `stop` leaves it; ensuring it adds the runs strand beside a `loom-status` strand a pawl run's `lym loom start` put in an overview window first, as the session's first overview window, and a failure to add, replace or record it is a warning on the bring-up report naming `lym beam start`, never a stop; the orchestrator has a window of its own, and the session's windows run the beam window, agents, shell. A detached watcher has the session write a note, then clears it and resumes it from that note (`refresh`) or compacts it in place (`distill`), never clearing or compacting without one. ✅ Implemented. See the `internal/orchengine` package documentation.- **webster** — the implementer module: one long-lived Master session that reads the plan and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool), each fork reading its cards' code itself, instead of spawning a fresh reed/tmux strand per batch;
+   bracket verbs (`begin-batch`/`record-batch`) drive each in-session fork (Master ends its turn while a backgrounded fork works and records the batch on the fork's completion notification, shuttle reading that turn end as waiting rather than done), and a genuine model escalation (recovery after a stuck/report-less fork) spawns a cold strand.
+   Consumes the flat card-list plan (pinned in the plan-format blocks `contracts/stencils/loom/loom-block-plan-*.md`, which `contracts/stencils/loom/loom-template-plan.md`, the Plan producer's own stencil, includes) via its own sole parser, `internal/planparser`, groups cards into execution batches via `internal/batcher`, a separate config-selected registry module webster consumes (profiles in `batcher.yaml`, the `wide` cost profile by default), then runs those batches in card order, refusing a backward dependency derived from the cards' own `Targets`/`Uses` refs, records the partition in `state.json` at first init, and carries the plan's `## verify:` command as a must-pass gate on Merriam's strand: a failure is rerun once (a pass on the rerun records the identities as flaky;
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 27225d5a..95387a73 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -305,7 +305,7 @@
+ // The tackler's verdict is `resume`, `hand-back` or `escalate`.
+ // A `resume` names a goto only to the run's current row or to the row the halting entry was routed from, and a blocked stop needs one;
+ // a `hand-back` needs a question for the run's parent, and an `escalate` needs a non-empty case brief.
+-// A verdict that is missing, unparseable, unsound or late reads as a hand-back whose cause is `missing`, `unparseable`, `precondition`, `timeout`, `died`, `question` or `case-brief`.
++// A verdict that is missing, unparseable, unsound or late reads as a hand-back whose cause is `missing`, `unparseable`, `precondition`, `timeout`, `died`, `api-error`, `question` or `case-brief`.
+ // A deadline that ran out while the hub's pause covered the run moves out by the paused time instead.
+ //
+ // A re-run for a stop key an attempt already judged spawns nothing: it returns that attempt's verdict or waits on its live tackler, unless a hand-back record for the key closed it.
+diff --git a/internal/shedarbiter/call.go b/internal/shedarbiter/call.go
+index 730c70c2..20e4c1de 100644
+--- a/internal/shedarbiter/call.go
++++ b/internal/shedarbiter/call.go
+@@ -265,6 +265,8 @@ func (c *Call) concludeWait(attempt loomengine.ArbiterAttempt, result shuttleeng
+ 		return c.stopRunAndHandOn(attempt, stop, guid, sheddriver.CauseDied, fmt.Sprintf("waiting on the arbiter failed: %v", waitErr))
+ 	case result.Outcome == shuttleengine.OutcomeTimeout:
+ 		return c.stopRunAndHandOn(attempt, stop, guid, sheddriver.CauseTimeout, "the arbiter ran past its deadline")
++	case result.Outcome == shuttleengine.OutcomeAPIError:
++		return c.stopRunAndHandOn(attempt, stop, guid, sheddriver.CauseAPIError, fmt.Sprintf("the arbiter's session failed on an API error its %d re-sends did not clear: %s", sheddriver.SettlerAPIErrorRetries, result.APIError))
+ 	case result.Outcome != shuttleengine.OutcomeDone:
+ 		return c.stopRunAndHandOn(attempt, stop, guid, sheddriver.CauseDied, fmt.Sprintf("the arbiter ended %s without a verdict", result.Outcome))
+ 	}
+@@ -349,12 +351,12 @@ func (c *Call) resumePrecondition(verdict loomengine.ArbiterVerdict) string {
+ 	return ""
+ }
+ 
+-// handOn finishes the call with a hand-on the call made itself, naming cause.
++// handOn finishes the call with a hand-on the call made itself, naming cause, and for an API error the error itself, in the question.
+ func (c *Call) handOn(attempt loomengine.ArbiterAttempt, cause, detail string) (loomengine.ArbiterEnvelope, error) {
+ 	return c.finish(loomengine.ArbiterEnvelope{
+ 		Verdict:     loomengine.ArbiterVerdictHandOn,
+ 		Reason:      detail,
+-		Question:    fmt.Sprintf("The arbiter could not settle this stop (%s); decide it yourself and report the choice in the stop report.", cause),
++		Question:    fmt.Sprintf("The arbiter could not settle this stop (%s); decide it yourself and report the choice in the stop report.", sheddriver.HandBackQuestionCause(cause, detail)),
+ 		Cause:       cause,
+ 		Attempt:     attempt.Number,
+ 		AttemptDir:  attempt.Dir,
+diff --git a/internal/shedarbiter/call_test.go b/internal/shedarbiter/call_test.go
+index 626d3179..288dcddb 100644
+--- a/internal/shedarbiter/call_test.go
++++ b/internal/shedarbiter/call_test.go
+@@ -719,8 +719,9 @@ func TestCall_VerdictOutcomes(t *testing.T) {
+ 		wantGoto     string
+ 		wantRelaunch string
+ 		wantRunStops int
+-		// wantReason is a substring of the settled reason, asserted when non-empty.
+-		wantReason string
++		// wantReason is a substring of the settled reason, and wantQuestion of its question, each asserted when non-empty.
++		wantReason   string
++		wantQuestion string
+ 		// wantError is set for a run the call refuses after the arbiter started.
+ 		wantError bool
+ 	}{
+@@ -800,6 +801,12 @@ func TestCall_VerdictOutcomes(t *testing.T) {
+ 			waitResult:  shuttleengine.Result{Outcome: shuttleengine.OutcomeDied},
+ 			wantVerdict: loomengine.ArbiterVerdictHandOn, wantCause: sheddriver.CauseDied, wantRunStops: 1,
+ 		},
++		{
++			name: "a run ended on an API error stops and reads hand-on naming the error", producer: "Plan-Write", state: shedengine.StateBlocked,
++			waitResult:  shuttleengine.Result{Outcome: shuttleengine.OutcomeAPIError, APIError: "server_error"},
++			wantVerdict: loomengine.ArbiterVerdictHandOn, wantCause: sheddriver.CauseAPIError, wantRunStops: 1,
++			wantReason: "server_error", wantQuestion: "server_error",
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -835,6 +842,9 @@ func TestCall_VerdictOutcomes(t *testing.T) {
+ 			if !strings.Contains(envelope.Reason, tt.wantReason) {
+ 				t.Errorf("reason = %q; want it to contain %q", envelope.Reason, tt.wantReason)
+ 			}
++			if !strings.Contains(envelope.Question, tt.wantQuestion) {
++				t.Errorf("question = %q; want it to contain %q", envelope.Question, tt.wantQuestion)
++			}
+ 			if envelope.Relaunch != tt.wantRelaunch {
+ 				t.Errorf("relaunch = %q; want %q", envelope.Relaunch, tt.wantRelaunch)
+ 			}
+diff --git a/internal/shedarbiter/doc.go b/internal/shedarbiter/doc.go
+index a8341e31..de257975 100644
+--- a/internal/shedarbiter/doc.go
++++ b/internal/shedarbiter/doc.go
+@@ -12,6 +12,7 @@
+ // A call spawns at most Settings.MaxSpawns agents per run, counted from the attempt records on disk, so no restart resets the count, and it moves no run itself.
+ // A call for a stop an earlier attempt already arbitrated spawns nothing: it returns that attempt's verdict, or waits on the attempt's live arbiter.
+ // A verdict file that does not read, a run that timed out or died, and a resume whose precondition fails each end as a hand-on naming a cause.
++// The arbiter's spec has shuttle re-send a turn the provider's API ended on an error, and a run whose re-sends did not clear it ends as a hand-on with cause `api-error` whose question names the error, so the stop reaches the run's parent at once rather than at the deadline.
+ // Every refusal ends with Deps.HandBackWayForward, which names the verb that shows the stop.
+ //
+ // # The prompt
+diff --git a/internal/shedarbiter/prompt.go b/internal/shedarbiter/prompt.go
+index d4d8257a..cc6aaa75 100644
+--- a/internal/shedarbiter/prompt.go
++++ b/internal/shedarbiter/prompt.go
+@@ -106,18 +106,20 @@ func pathOrNone(path string) string {
+ // Interactive is false, shuttle's autonomous posture, which adds the operator-prompt deny an unattended session needs.
+ // ForkSubagents is false and Parent is empty: the arbiter spawns nothing and has no session to message.
+ // Display is left at its zero value.
++// APIErrorRetries is sheddriver.SettlerAPIErrorRetries, so a turn the provider's API ended is re-sent and, past the re-sends, the run ends and the stop is handed on.
+ func Spec(prompt, verdictPath string, settings sheddriver.ArbiterSettings) shuttleengine.Spec {
+ 	return shuttleengine.Spec{
+-		Prompt:        prompt,
+-		Skills:        skills,
+-		OutputFiles:   []string{verdictPath},
+-		ModelChoice:   settings.ModelChoice,
+-		Timeout:       settings.Timeout,
+-		Role:          loomengine.ArbiterRole,
+-		Segment:       segmentcolor.Coordinator,
+-		Interactive:   false,
+-		ForkSubagents: false,
+-		Parent:        "",
++		Prompt:          prompt,
++		Skills:          skills,
++		OutputFiles:     []string{verdictPath},
++		ModelChoice:     settings.ModelChoice,
++		Timeout:         settings.Timeout,
++		Role:            loomengine.ArbiterRole,
++		Segment:         segmentcolor.Coordinator,
++		Interactive:     false,
++		ForkSubagents:   false,
++		Parent:          "",
++		APIErrorRetries: sheddriver.SettlerAPIErrorRetries,
+ 	}
+ }
+ 
+diff --git a/internal/shedarbiter/prompt_test.go b/internal/shedarbiter/prompt_test.go
+index 6a669b0c..bd10185c 100644
+--- a/internal/shedarbiter/prompt_test.go
++++ b/internal/shedarbiter/prompt_test.go
+@@ -157,6 +157,9 @@ func TestSpec(t *testing.T) {
+ 	if len(got.Requires) != 0 {
+ 		t.Errorf("Spec().Requires = %v; want none", got.Requires)
+ 	}
++	if got.APIErrorRetries != sheddriver.SettlerAPIErrorRetries {
++		t.Errorf("Spec().APIErrorRetries = %d; want %d", got.APIErrorRetries, sheddriver.SettlerAPIErrorRetries)
++	}
+ 	if got.Interactive || got.ForkSubagents || got.Parent != "" {
+ 		t.Errorf("Spec() interactive, fork subagents, parent = %v, %v, %q; want false, false, empty", got.Interactive, got.ForkSubagents, got.Parent)
+ 	}
+diff --git a/internal/sheddriver/agentshuttle.go b/internal/sheddriver/agentshuttle.go
+index ec9d95cb..79818438 100644
+--- a/internal/sheddriver/agentshuttle.go
++++ b/internal/sheddriver/agentshuttle.go
+@@ -14,8 +14,23 @@ const (
+ 	CauseMissing      = "missing"
+ 	CauseUnparseable  = "unparseable"
+ 	CausePrecondition = "precondition"
++	CauseAPIError     = "api-error"
+ )
+ 
++// SettlerAPIErrorRetries is how many times a judge agent's turn the provider's API ended on an error is re-sent before the judge hands its stop on.
++// A judge holds its stop alone, so a session left idle by an API error would hold the stop silently until its deadline.
++// Only judges opt in, since each hands its stop on to a parent that can act on the api-error cause.
++// Any other role's caller reads every outcome but done as one more failure, so a re-send there would only delay it.
++const SettlerAPIErrorRetries = 3
++
++// HandBackQuestionCause returns the cause a judge call's own hand-back question names: cause itself, and for CauseAPIError the error detail after it.
++func HandBackQuestionCause(cause, detail string) string {
++	if cause != CauseAPIError {
++		return cause
++	}
++	return cause + ": " + detail
++}
++
+ // HandBackWayForward is the way-forward clause every refusal of a judge call ends with: the hand-back to the run's parent.
+ const HandBackWayForward = "way forward: report the stop to the run's parent in the stop report"
+ 
+diff --git a/internal/sheddriver/doc.go b/internal/sheddriver/doc.go
+index 49b75f90..5b05aafc 100644
+--- a/internal/sheddriver/doc.go
++++ b/internal/sheddriver/doc.go
+@@ -88,6 +88,7 @@
+ // A call first reuses the newest attempt for the stop key that was not yet handed to the parent: it waits on a live agent up to the attempt's deadline, and concludes from a verdict already written.
+ // The verdict is `resume`, `hand-back` or `escalate`.
+ // A resume is checked against the status and the goto rules before it is applied, and an agent that timed out, died, left no verdict or an unreadable one, or named a precondition the run does not meet, is a hand-back with that cause.
++// A turn the provider's API ends on an error is re-sent `SettlerAPIErrorRetries` times by shuttle, and the error past them is a hand-back with cause `api-error` whose question names the error, so the parent hears of the stop at once rather than at the deadline.
+ // A tackler switched off, or a spawn budget spent, hands the stop back without a spawn.
+ // `TacklerDeps.Snapshot` is optional: a recipe that sets it has the driver compare the worktree with the snapshot taken at spawn and refuse a verdict over a tampered tree.
+ //
+diff --git a/internal/sheddriver/tackler.go b/internal/sheddriver/tackler.go
+index 38477df3..a54a90fb 100644
+--- a/internal/sheddriver/tackler.go
++++ b/internal/sheddriver/tackler.go
+@@ -270,6 +270,7 @@ func (c *TacklerCall) recordStartedTackler(attempt TacklerAttempt) error {
+ // concludeWait concludes attempt after a wait ended with result and waitErr.
+ // A verdict on disk wins whatever the wait reported.
+ // A timeout that ended while the hub's pause record covered part of the run moves the deadline out by the paused time and attaches again for the remainder.
++// A run that ended on an API error its re-sends did not clear is stopped and reads as a hand-back naming the error.
+ // Any other run that did not finish is stopped through stop and reads as a hand-back.
+ func (c *TacklerCall) concludeWait(attempt TacklerAttempt, result shuttleengine.Result, waitErr error, stop func() error, guid string) (TacklerEnvelope, error) {
+ 	for {
+@@ -296,6 +297,8 @@ func (c *TacklerCall) concludeWait(attempt TacklerAttempt, result shuttleengine.
+ 				guid = result.StrandGUID
+ 			}
+ 			stop = func() error { return c.deps.Shuttle.StopStrand(guid) }
++		case result.Outcome == shuttleengine.OutcomeAPIError:
++			return c.stopRunAndHandBack(attempt, stop, guid, CauseAPIError, fmt.Sprintf("the tackler's session failed on an API error its %d re-sends did not clear: %s", SettlerAPIErrorRetries, result.APIError))
+ 		case result.Outcome != shuttleengine.OutcomeDone:
+ 			return c.stopRunAndHandBack(attempt, stop, guid, CauseDied, fmt.Sprintf("the tackler ended %s without a verdict", result.Outcome))
+ 		default:
+@@ -429,12 +432,12 @@ func formatGotoRows(rows []string) string {
+ 	return strings.Join(quoted, " or ")
+ }
+ 
+-// handBack finishes the call with a hand-back the call made itself, naming cause.
++// handBack finishes the call with a hand-back the call made itself, naming cause, and for an API error the error itself, in the question.
+ func (c *TacklerCall) handBack(attempt TacklerAttempt, cause, detail string) (TacklerEnvelope, error) {
+ 	return c.finish(TacklerEnvelope{
+ 		Verdict:     TacklerVerdictHandBack,
+ 		Reason:      detail,
+-		Question:    fmt.Sprintf("The tackler could not settle this stop (%s); decide it yourself and report the choice in the stop report.", cause),
++		Question:    fmt.Sprintf("The tackler could not settle this stop (%s); decide it yourself and report the choice in the stop report.", HandBackQuestionCause(cause, detail)),
+ 		Cause:       cause,
+ 		Attempt:     attempt.Number,
+ 		AttemptDir:  attempt.Dir,
+diff --git a/internal/sheddriver/tackler_test.go b/internal/sheddriver/tackler_test.go
+index 56602c89..a81db8a9 100644
+--- a/internal/sheddriver/tackler_test.go
++++ b/internal/sheddriver/tackler_test.go
+@@ -236,9 +236,11 @@ func TestTacklerCall_SpawnPath(t *testing.T) {
+ 		wantErrText string
+ 		wantCause   string
+ 		wantVerdict string
+-		wantStarts  int
+-		wantStops   int
+-		wantAttach  int
++		// wantQuestion is a text the envelope's question holds.
++		wantQuestion string
++		wantStarts   int
++		wantStops    int
++		wantAttach   int
+ 		// keepsTacklerDir is set for the row that seeds the attempt records it is refused over.
+ 		keepsTacklerDir bool
+ 	}{
+@@ -280,6 +282,13 @@ func TestTacklerCall_SpawnPath(t *testing.T) {
+ 			},
+ 			wantCause: CauseTimeout, wantVerdict: TacklerVerdictHandBack, wantStarts: 1, wantStops: 1,
+ 		},
++		{
++			name: "a run ended on an API error stops the strand and reads hand-back",
++			setup: func(f *tacklerFixture) {
++				f.fake.waitResult = shuttleengine.Result{Outcome: shuttleengine.OutcomeAPIError, APIError: "server_error"}
++			},
++			wantCause: CauseAPIError, wantVerdict: TacklerVerdictHandBack, wantQuestion: "server_error", wantStarts: 1, wantStops: 1,
++		},
+ 		{
+ 			name: "timeout over a paused window re-attaches with the deadline moved out",
+ 			setup: func(f *tacklerFixture) {
+@@ -340,6 +349,9 @@ func TestTacklerCall_SpawnPath(t *testing.T) {
+ 			if envelope.Verdict != tt.wantVerdict || envelope.Cause != tt.wantCause {
+ 				t.Errorf("envelope verdict, cause = %q, %q; want %q, %q", envelope.Verdict, envelope.Cause, tt.wantVerdict, tt.wantCause)
+ 			}
++			if !strings.Contains(envelope.Question, tt.wantQuestion) {
++				t.Errorf("envelope question = %q; want it to hold %q", envelope.Question, tt.wantQuestion)
++			}
+ 			if len(f.fake.starts) != tt.wantStarts || f.fake.runStops != tt.wantStops || len(f.fake.attaches) != tt.wantAttach {
+ 				t.Errorf("starts, run stops, attaches = %d, %d, %d; want %d, %d, %d", len(f.fake.starts), f.fake.runStops, len(f.fake.attaches), tt.wantStarts, tt.wantStops, tt.wantAttach)
+ 			}
+diff --git a/internal/sheddriver/tacklerprompt.go b/internal/sheddriver/tacklerprompt.go
+index 5c6725ab..b033f574 100644
+--- a/internal/sheddriver/tacklerprompt.go
++++ b/internal/sheddriver/tacklerprompt.go
+@@ -106,17 +106,19 @@ func pathOrNone(path string) string {
+ // Segment is the coordinator, the driver's, because the tackler acts for the driver.
+ // Interactive is false, shuttle's autonomous posture, which adds the operator-prompt deny an unattended session needs.
+ // ForkSubagents is false and Parent is empty: the tackler spawns nothing and has no session to message.
++// APIErrorRetries is SettlerAPIErrorRetries, so a turn the provider's API ended is re-sent and, past the re-sends, the run ends and the stop is handed back.
+ func tacklerSpec(prompt, verdictPath, caseBriefPath string, settings TacklerSettings) shuttleengine.Spec {
+ 	return shuttleengine.Spec{
+-		Prompt:        prompt,
+-		Skills:        tacklerSkills,
+-		OutputFiles:   []string{verdictPath},
+-		ModelChoice:   settings.ModelChoice,
+-		Timeout:       settings.Timeout,
+-		Role:          TacklerRole,
+-		Segment:       segmentcolor.Coordinator,
+-		Interactive:   false,
+-		ForkSubagents: false,
+-		Parent:        "",
++		Prompt:          prompt,
++		Skills:          tacklerSkills,
++		OutputFiles:     []string{verdictPath},
++		ModelChoice:     settings.ModelChoice,
++		Timeout:         settings.Timeout,
++		Role:            TacklerRole,
++		Segment:         segmentcolor.Coordinator,
++		Interactive:     false,
++		ForkSubagents:   false,
++		Parent:          "",
++		APIErrorRetries: SettlerAPIErrorRetries,
+ 	}
+ }
+diff --git a/internal/sheddriver/tacklerprompt_test.go b/internal/sheddriver/tacklerprompt_test.go
+index 9d77f4e5..81dcfc61 100644
+--- a/internal/sheddriver/tacklerprompt_test.go
++++ b/internal/sheddriver/tacklerprompt_test.go
+@@ -165,6 +165,9 @@ func TestTacklerSpec(t *testing.T) {
+ 	if len(got.Requires) != 0 {
+ 		t.Errorf("tacklerSpec().Requires = %v; want none", got.Requires)
+ 	}
++	if got.APIErrorRetries != SettlerAPIErrorRetries {
++		t.Errorf("tacklerSpec().APIErrorRetries = %d; want %d", got.APIErrorRetries, SettlerAPIErrorRetries)
++	}
+ 	if got.Interactive || got.ForkSubagents || got.Parent != "" {
+ 		t.Errorf("tacklerSpec() interactive, fork subagents, parent = %v, %v, %q; want false, false, empty", got.Interactive, got.ForkSubagents, got.Parent)
+ 	}
+diff --git a/internal/shuttleengine/apierrorretry.go b/internal/shuttleengine/apierrorretry.go
+new file mode 100644
+index 00000000..1875c05b
+--- /dev/null
++++ b/internal/shuttleengine/apierrorretry.go
+@@ -0,0 +1,100 @@
++// apierrorretry.go re-sends the turn of a run whose provider's API ended a turn on an error, for a spec that sets APIErrorRetries, and ends the run OutcomeAPIError once the re-sends are spent.
++// It reads the session signals itself, since an API-error turn end is no event the run loop classifies.
++
++package shuttleengine
++
++import (
++	"cmp"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// apiErrorRetryBackoff is how long after the first API-error turn end is read its turn is re-sent; the wait doubles with each later API-error turn end.
++// It is long enough for a provider's passing server error to clear and short enough to leave a settler most of its deadline.
++const apiErrorRetryBackoff = 30 * time.Second
++
++// apiErrorRetryLine is the one line a run whose turn ended on an API error is given to carry on.
++const apiErrorRetryLine = "[lym] Your last turn ended on an API error. Carry on with your task where you stopped."
++
++// apiErrorUnknownText is the error text a run ends on when the API-error turn end read carried none.
++const apiErrorUnknownText = "unknown error"
++
++// apiErrorWatch is what one Wait keeps to re-send a turn the provider's API ended.
++type apiErrorWatch struct {
++	// cursor is the events-file offset the next signal read starts from; it starts at the prompt offset, so an attach counts the run's earlier API errors.
++	cursor int64
++	// errors counts the API-error turn ends read past the prompt offset.
++	errors int
++	// pending is true while the newest turn signal read is an API-error turn end.
++	pending bool
++	// text is the pending turn end's error text, and readAt when Wait read it.
++	text   string
++	readAt time.Time
++}
++
++// retryAPIError acts on an API-error turn end of a run whose spec sets APIErrorRetries, and reports whether Wait finishes with the returned Result and error.
++// A turn end on an API error stays pending until a turn start, a turn end or a session start is read after it.
++// While one is pending and no pause covers the run, the n-th such turn end of the run is re-sent with apiErrorRetryLine once apiErrorRetryBackoff times 2^(n-1) has passed since it was read.
++// The turn end past the last re-send, or one that leaves every output file on disk, ends the run through classifyDeadlineExpiry: done when the files exist, else OutcomeAPIError with Result.APIError naming the error.
++// A send that fails is logged once per episode and tried again on a later tick, bounded by the run deadline.
++// A session the provider's usage limit stopped is re-sent and handed on like any other API error.
++// An engine without SessionSignalParser and an unreadable events file change nothing.
++func (run *Run) retryAPIError() (Result, bool, error) {
++	if run.spec.APIErrorRetries <= 0 {
++		return Result{}, false, nil
++	}
++	parser, ok := run.engine.(SessionSignalParser)
++	if !ok {
++		return Result{}, false, nil
++	}
++	watch := &run.apiErrors
++	data, _, err := readEventsFrom(run.state.EventsPath, watch.cursor)
++	if err != nil {
++		return Result{}, false, nil
++	}
++	if len(data) > 0 {
++		signals, consumed := parser.ParseSessionSignals(data)
++		watch.cursor += int64(consumed)
++		for _, signal := range signals {
++			switch signal.Kind {
++			case SessionSignalAPIErrorTurnEnd:
++				watch.errors++
++				watch.pending, watch.text, watch.readAt = true, signal.ErrorText, run.clock.Now()
++			case SessionSignalTurnStart, SessionSignalTurnEnd, SessionSignalSessionStart:
++				watch.pending = false
++			}
++		}
++	}
++	if !watch.pending || run.covered {
++		return Result{}, false, nil
++	}
++	outcome := run.classifyDeadlineExpiry(OutcomeAPIError)
++	if watch.errors > run.spec.APIErrorRetries || outcome == OutcomeDone {
++		return run.endOnAPIError(outcome)
++	}
++	if run.clock.Now().Sub(watch.readAt) < apiErrorRetryBackoff<<(watch.errors-1) {
++		return Result{}, false, nil
++	}
++	if err := run.sendWithin(apiErrorRetryLine); err != nil {
++		run.failures.Fail("api-error re-send", "shuttle: re-send after an API error not delivered, retrying on a later tick", "strandGUID", run.state.StrandGUID, "apiErrors", watch.errors, "error", err)
++		return Result{}, false, nil
++	}
++	run.failures.Recover("api-error re-send", "shuttle: re-send after an API error delivered again", "strandGUID", run.state.StrandGUID)
++	watch.pending = false
++	logger.Info("shuttle: re-sent a turn the provider's API ended on an error", "strandGUID", run.state.StrandGUID, "apiErrors", watch.errors, "retries", run.spec.APIErrorRetries, "error", watch.text)
++	return Result{}, false, nil
++}
++
++// endOnAPIError finalizes the run with outcome and, for OutcomeAPIError, names the pending error on the Result, or apiErrorUnknownText when the turn end carried none.
++func (run *Run) endOnAPIError(outcome Outcome) (Result, bool, error) {
++	text := cmp.Or(run.apiErrors.text, apiErrorUnknownText)
++	if outcome == OutcomeAPIError {
++		logger.Warn("shuttle: run ended on API errors its re-sends did not clear", "strandGUID", run.state.StrandGUID, "apiErrors", run.apiErrors.errors, "error", text)
++	}
++	result, err := run.finalize(outcome)
++	if result.Outcome == OutcomeAPIError {
++		result.APIError = text
++	}
++	return result, true, err
++}
+diff --git a/internal/shuttleengine/apierrorretry_test.go b/internal/shuttleengine/apierrorretry_test.go
+new file mode 100644
+index 00000000..1f39e9f8
+--- /dev/null
++++ b/internal/shuttleengine/apierrorretry_test.go
+@@ -0,0 +1,186 @@
++// apierrorretry_test.go covers how Wait re-sends a turn the provider's API ended on an error, and how the run ends once the re-sends are spent.
++
++package shuttleengine
++
++import (
++	"cmp"
++	"errors"
++	"os"
++	"path/filepath"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// reactingReed is an echoReed that runs react after each line typed into its pane, as the agent's answer to it.
++// Its first failSends sends fail before any line is typed.
++type reactingReed struct {
++	*echoReed
++
++	react     func()
++	failSends int
++}
++
++func (r *reactingReed) SendText(guid, text string, submit bool) error {
++	if r.failSends > 0 {
++		r.failSends--
++		return errors.New("pane busy")
++	}
++	if err := r.echoReed.SendText(guid, text, submit); err != nil {
++		return err
++	}
++	r.react()
++	return nil
++}
++
++func TestWait_APIErrorRetry(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const defaultEvents = "START\nAPIERR:server_error\n"
++	tests := []struct {
++		name    string
++		retries int
++		// events is the events file the run starts over, defaultEvents when empty.
++		events string
++		// react is what the agent appends to its events file after each line typed into its pane, and writeOutput makes it write the output file first.
++		react       []string
++		writeOutput bool
++		// outputFirst writes the output file before Wait starts.
++		outputFirst bool
++		// covered has a pause cover the run until the first tick has passed.
++		covered bool
++		// failSends is how many sends fail before one is delivered.
++		failSends int
++		// promptOffset is the run's prompt offset: the API errors before it are not the run's.
++		promptOffset int64
++		timeout      time.Duration
++		wantOutcome  Outcome
++		// wantGaps is the least run-clock time before each send, from the API-error turn end it re-sends.
++		wantGaps     []time.Duration
++		wantAPIError string
++	}{
++		{
++			name: "a re-send after the back-off lets the agent finish", retries: 2,
++			react: []string{"START", "STOP:done"}, writeOutput: true,
++			wantOutcome: OutcomeDone, wantGaps: []time.Duration{apiErrorRetryBackoff},
++		},
++		{
++			name: "an API error past the re-sends ends the run naming the error", retries: 2,
++			react:       []string{"START", "APIERR:server_error"},
++			wantOutcome: OutcomeAPIError, wantGaps: []time.Duration{apiErrorRetryBackoff, 2 * apiErrorRetryBackoff}, wantAPIError: "server_error",
++		},
++		{
++			name: "an API error with no text ends the run naming an unknown error", retries: 1, events: "START\nAPIERR\n",
++			react:       []string{"START", "APIERR"},
++			wantOutcome: OutcomeAPIError, wantGaps: []time.Duration{apiErrorRetryBackoff}, wantAPIError: apiErrorUnknownText,
++		},
++		{
++			name: "a run with no retries re-sends nothing and waits out its deadline", retries: 0, timeout: 2 * time.Minute,
++			wantOutcome: OutcomeTimeout,
++		},
++		{
++			name: "an API error with every output file on disk ends the run done with no re-send", retries: 2, outputFirst: true,
++			wantOutcome: OutcomeDone,
++		},
++		{
++			name: "a later turn start and turn end clear the API error, so nothing is re-sent", retries: 2, timeout: 2 * time.Minute,
++			events:      "START\nAPIERR:server_error\nSTART\nSTOP:recovered\n",
++			wantOutcome: OutcomeTimeout,
++		},
++		{
++			name: "a pause covering the run holds the end until it lifts", retries: 1, covered: true,
++			events:      "START\nAPIERR:first\nAPIERR:second\n",
++			wantOutcome: OutcomeAPIError, wantAPIError: "second",
++		},
++		{
++			name: "a send that fails is tried again on a later tick", retries: 2, failSends: 1,
++			react: []string{"START", "STOP:done"}, writeOutput: true,
++			wantOutcome: OutcomeDone, wantGaps: []time.Duration{apiErrorRetryBackoff},
++		},
++		{
++			name: "an API error before the prompt offset is not counted against the re-sends", retries: 1,
++			events: "START\nAPIERR:old\nSTART\nAPIERR:new\n", promptOffset: int64(len("START\nAPIERR:old\n")),
++			react: []string{"START", "STOP:done"}, writeOutput: true,
++			wantOutcome: OutcomeDone, wantGaps: []time.Duration{apiErrorRetryBackoff},
++		},
++		{
++			name: "earlier API errors in the events file count against the re-sends", retries: 2,
++			events:      "START\nAPIERR:first\nAPIERR:second\nAPIERR:third\n",
++			wantOutcome: OutcomeAPIError, wantAPIError: "third",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			engine := &sessionFakeEngine{waitingEngine: waitingEngine{fakeEngine: fakeEngine{StartupScript: []StartupState{StartupReady}}}, liveness: LivenessAlive}
++			fc := newFakeClock(time.Now())
++			start := fc.Now()
++			output := filepath.Join(t.TempDir(), "out.md")
++			pane := &reactingReed{echoReed: &echoReed{fakeReed: &fakeReed{StatusQueue: liveStrandStatus(true)}, pane: "❯ "}, failSends: tt.failSends}
++			fx := newFixture(t, pane, engine, withConfig(gateConfig))
++			var clk Clock = fc
++			lifted := false
++			if tt.covered {
++				geometry, resume := coverHub(t, fc.Now())
++				fx.Runner.SetPause(geometry)
++				clk = &multiStepClock{fakeClock: fc, steps: []func(){func() {
++					resume(fc.Now())
++					lifted = true
++				}}}
++			}
++			timeout := cmp.Or(tt.timeout, time.Hour)
++			run := fx.newRun(Spec{OutputFiles: []string{output}, Timeout: timeout, APIErrorRetries: tt.retries},
++				withRunState(RunState{StrandGUID: "strand-1", SessionID: "session-1", PromptOffset: tt.promptOffset}),
++				withRunEvents(cmp.Or(tt.events, defaultEvents)),
++				withRunOffset(tt.promptOffset),
++				withRunClock(clk, start.Add(timeout)),
++			)
++			var sentAt []time.Time
++			pane.react = func() {
++				sentAt = append(sentAt, fc.Now())
++				if tt.writeOutput {
++					if err := os.WriteFile(output, []byte("done"), 0o644); err != nil {
++						t.Fatal(err)
++					}
++				}
++				for _, line := range tt.react {
++					appendEventsLine(t, run.state.EventsPath, line)
++				}
++			}
++			if tt.outputFirst {
++				if err := os.WriteFile(output, []byte("done"), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++
++			result, err := run.Wait()
++
++			if err != nil {
++				t.Fatalf("Wait() error: %v", err)
++			}
++			if result.Outcome != tt.wantOutcome || result.APIError != tt.wantAPIError {
++				t.Errorf("Wait() outcome, API error = %q, %q; want %q, %q", result.Outcome, result.APIError, tt.wantOutcome, tt.wantAPIError)
++			}
++			if pane.failSends != 0 {
++				t.Errorf("failSends left = %d; want 0, every failing send attempted", pane.failSends)
++			}
++			if tt.covered && !lifted {
++				t.Error("Wait() ended the run while a pause covered it; want it held until the pause lifted")
++			}
++			if len(pane.typed) != len(tt.wantGaps) {
++				t.Fatalf("typed = %q; want %d re-sends", pane.typed, len(tt.wantGaps))
++			}
++			errorAt := start
++			for i, text := range pane.typed {
++				if text != apiErrorRetryLine {
++					t.Errorf("typed[%d] = %q; want %q", i, text, apiErrorRetryLine)
++				}
++				if gap := sentAt[i].Sub(errorAt); gap < tt.wantGaps[i] || gap > tt.wantGaps[i]+10*time.Second {
++					t.Errorf("re-send %d came %v after its API error; want the back-off %v, within a few ticks", i+1, gap, tt.wantGaps[i])
++				}
++				errorAt = sentAt[i]
++			}
++		})
++	}
++}
+diff --git a/internal/shuttleengine/attach.go b/internal/shuttleengine/attach.go
+index 87274dbc..6dc94079 100644
+--- a/internal/shuttleengine/attach.go
++++ b/internal/shuttleengine/attach.go
+@@ -608,11 +608,11 @@ func leftoverThenAgeVerdict(c attachCandidate, spec Spec, minAge time.Duration,
+ // Nothing writes it now, and Attach reads it only to attach a record whose strand is live.
+ const legacyAskingOutcome = "asking"
+ 
+-// isTerminalOutcome reports whether outcome is a terminal value a run record holds: done, died, timeout, stopped, or the legacy asking.
++// isTerminalOutcome reports whether outcome is a terminal value a run record holds: done, died, timeout, api-error, stopped, or the legacy asking.
+ // It is false for the empty string (a legacy pre-Outcome-field record, or a run.json Start has not yet finalized), for runOutcomeRunning, and for any value this package does not recognize.
+ func isTerminalOutcome(outcome string) bool {
+ 	switch outcome {
+-	case string(OutcomeDone), legacyAskingOutcome, string(OutcomeDied), string(OutcomeTimeout), runOutcomeStopped:
++	case string(OutcomeDone), legacyAskingOutcome, string(OutcomeDied), string(OutcomeTimeout), string(OutcomeAPIError), runOutcomeStopped:
+ 		return true
+ 	default:
+ 		return false
+diff --git a/internal/shuttleengine/attach_test.go b/internal/shuttleengine/attach_test.go
+index 6fc6a86b..f6209d7f 100644
+--- a/internal/shuttleengine/attach_test.go
++++ b/internal/shuttleengine/attach_test.go
+@@ -456,7 +456,7 @@ func TestAttach_OutputFilesMismatch(t *testing.T) {
+ func TestAttach_UntrackedTerminalRecord_RespawnEligibleRegardlessOfAge(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Run("Untracked", func(t *testing.T) {
+-		for _, outcome := range []string{"done", "asking", "died", "timeout", runOutcomeStopped} {
++		for _, outcome := range []string{"done", "asking", "died", "timeout", "api-error", runOutcomeStopped} {
+ 			t.Run(outcome, func(t *testing.T) {
+ 				reed := &fakeReed{StatusQueue: []reedengine.StatusResult{{Strands: nil}}}
+ 				fx := newFixture(t, reed, &fakeEngine{}, withSeparateRunDir())
+@@ -481,7 +481,7 @@ func TestAttach_UntrackedTerminalRecord_RespawnEligibleRegardlessOfAge(t *testin
+ 	})
+ 
+ 	t.Run("BindingCleared", func(t *testing.T) {
+-		for _, outcome := range []string{"done", "asking", "died", "timeout", runOutcomeStopped} {
++		for _, outcome := range []string{"done", "asking", "died", "timeout", "api-error", runOutcomeStopped} {
+ 			t.Run(outcome, func(t *testing.T) {
+ 				reed := &fakeReed{StatusQueue: []reedengine.StatusResult{deadStatus("strand-1", "")}}
+ 				fx := newFixture(t, reed, &fakeEngine{}, withSeparateRunDir())
+diff --git a/internal/shuttleengine/carryover.go b/internal/shuttleengine/carryover.go
+index 7691f769..c0b6c3ac 100644
+--- a/internal/shuttleengine/carryover.go
++++ b/internal/shuttleengine/carryover.go
+@@ -114,10 +114,10 @@ func roleKey(spec Spec) string {
+ 	return spec.Role
+ }
+ 
+-// unfinished reports whether rs is a run that ended without finishing: stopped, died or timed out, or reading running with its waiter gone.
++// unfinished reports whether rs is a run that ended without finishing: stopped, died, timed out or ended on API errors, or reading running with its waiter gone.
+ func unfinished(rs RunState) bool {
+ 	switch rs.Outcome {
+-	case runOutcomeStopped, string(OutcomeDied), string(OutcomeTimeout):
++	case runOutcomeStopped, string(OutcomeDied), string(OutcomeTimeout), string(OutcomeAPIError):
+ 		return true
+ 	case runOutcomeRunning:
+ 		return !runIsLive(rs)
+diff --git a/internal/shuttleengine/carryover_test.go b/internal/shuttleengine/carryover_test.go
+index 8f210cba..b3a0e902 100644
+--- a/internal/shuttleengine/carryover_test.go
++++ b/internal/shuttleengine/carryover_test.go
+@@ -88,6 +88,12 @@ func TestStart_CarriesOverOperatorInstructions(t *testing.T) {
+ 			role:         "darn",
+ 			want:         []string{"also fix the README"},
+ 		},
++		{
++			name:         "a run ended on API errors counts as unfinished",
++			predecessors: []RunState{{RunID: "run-old", CreatedAt: earlier, Outcome: string(OutcomeAPIError), RoleKey: "darn"}},
++			role:         "darn",
++			want:         []string{"also fix the README"},
++		},
+ 		{
+ 			name:         "a running run whose waiter is gone counts as unfinished",
+ 			predecessors: []RunState{{RunID: "run-old", CreatedAt: earlier, Outcome: runOutcomeRunning, PID: -1, RoleKey: "darn"}},
+diff --git a/internal/shuttleengine/completionsignal_enforcement_test.go b/internal/shuttleengine/completionsignal_enforcement_test.go
+index f521e68b..53e60f32 100644
+--- a/internal/shuttleengine/completionsignal_enforcement_test.go
++++ b/internal/shuttleengine/completionsignal_enforcement_test.go
+@@ -44,7 +44,7 @@ import (
+ // wait.go finalizes a live run's outcome, attach.go decides whether a persisted one is reconstructed
+ // or respawned over, and stop.go records a stop over a run that has not finished. A future file that grows a third kind of verdict belongs in this list, and the
+ // failure message says so.
+-var completionSignalScannedFiles = []string{"wait.go", "attach.go", "stop.go"}
++var completionSignalScannedFiles = []string{"wait.go", "attach.go", "stop.go", "apierrorretry.go"}
+ 
+ // negativeVerdictMarkers are the identifiers whose appearance anywhere in a return statement's
+ // results makes that return a NEGATIVE answer to "did this run finish".
+@@ -60,6 +60,7 @@ var completionSignalScannedFiles = []string{"wait.go", "attach.go", "stop.go"}
+ var negativeVerdictMarkers = map[string]bool{
+ 	"OutcomeDied":                 true,
+ 	"OutcomeTimeout":              true,
++	"OutcomeAPIError":             true,
+ 	"verdictRespawnEligible":      true,
+ 	"verdictError":                true,
+ 	"runOutcomeStopped":           true,
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index b77fd3f7..50671c9e 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -72,7 +72,7 @@
+ //
+ // A turn end without every output file never ends a run: Wait holds it, logs it at Info and keeps polling the same agent,
+ // whether the turn end is a Stop or a live ask.
+-// A run ends only as done (every output file present at a turn end, or at the deadline or a pane's death), died, timeout or a mechanism failure.
++// A run ends only as done (every output file present at a turn end, or at the deadline or a pane's death), died, timeout, api-error (a spec with APIErrorRetries only) or a mechanism failure.
+ // A died run whose strand is own-window keeps its last pane capture in `died-capture.txt` in the run directory and loses its strand;
+ // a timed-out run keeps its strand, since its agent may still be live.
+ // A run's strand lands in a window of its own unless its spec names an anchor.
+@@ -117,6 +117,9 @@
+ // no pause covers the run, the session state names the newest turn end an API error, and the sleep lies after the latest turn start Wait read.
+ // RunState.APIContinued is persisted before typing and cleared by the next held turn end that is not an API error, so a turn gets at most one continue.
+ // A send that fails, the guard's ErrSessionBusy included, types nothing more and the stall is held and notified as any other.
++// A turn end on an API error that is not also an event, such as Claude's StopFailure, holds nothing and sends no notice.
++// A run whose Spec.APIErrorRetries is set re-sends such a turn with one line after a back-off that doubles with each API-error turn end of the run, and the one past the last re-send ends the run OutcomeAPIError, Result.APIError naming the error, unless every output file exists, which ends it done.
++// A run with no retries waits such a turn end out to its deadline.
+ // RunState.NotifiedOffset, the events-file offset past the last notified one, is persisted before the notifier is called,
+ // and a held turn end at or below it is never notified again, including when an Attach replays it.
+ // A batch of several new events is classified by its last event, so only its last held turn end is notified.
+@@ -479,7 +482,7 @@
+ // A run's operator instructions are the SessionSignal.Instruction texts of its turn starts past its prompt offset, without the turn start of the run's prompt, and without any text the sent-texts file holds.
+ // RunState records a role key, the spec's NameOverride else its Role, and the instructions the run carried over.
+ // Before its orphan sweep, a start finds the newest run under the root with the same role key;
+-// when that run is unfinished, its record reading stopped, died or timeout or reading running with its waiter gone, its carried and operator instructions, without repeats, are appended to the new prompt as one block, recorded as the new run's carried instructions and named in one Warn log line and one notifier line.
++// when that run is unfinished, its record reading stopped, died, timeout or api-error or reading running with its waiter gone, its carried and operator instructions, without repeats, are appended to the new prompt as one block, recorded as the new run's carried instructions and named in one Warn log line and one notifier line.
+ // A done or live predecessor, an empty role key and a predecessor directory already swept carry nothing.
+ //
+ // Session state has two consumers: Runner.SessionIdle and the verified send's idle wait, which gate on the readiness reading built from it.
+diff --git a/internal/shuttleengine/engine.go b/internal/shuttleengine/engine.go
+index 34b52e7f..931bedf6 100644
+--- a/internal/shuttleengine/engine.go
++++ b/internal/shuttleengine/engine.go
+@@ -31,6 +31,8 @@ const (
+ 	// OutcomeTimeout: wall-clock Timeout elapsed before output files written.
+ 	// A provider crash behind a still-live pane shell that nothing proves, such as an engine without liveness probing, also ends here.
+ 	OutcomeTimeout Outcome = "timeout"
++	// OutcomeAPIError: the provider's API ended the agent's turn on an error past the re-sends Spec.APIErrorRetries allows, before output files were written.
++	OutcomeAPIError Outcome = "api-error"
+ )
+ 
+ // Launch carries the opaque, provider-specific command strings an Engine's Prepare produces.
+diff --git a/internal/shuttleengine/fakes_test.go b/internal/shuttleengine/fakes_test.go
+index 471da49c..b814d031 100644
+--- a/internal/shuttleengine/fakes_test.go
++++ b/internal/shuttleengine/fakes_test.go
+@@ -799,7 +799,7 @@ func (r *skillReed) CapturePane(guid string) (string, error) {
+ var _ ReedOps = (*skillReed)(nil)
+ 
+ // sessionFakeEngine is waitingEngine plus the opt-in SessionSignalParser, SessionProber and ActivityReader capabilities.
+-// ParseSessionSignals reads "START" as a turn start, "START:<text>" as a turn start carrying <text> as its typed instruction, "STOP:<message>" as a turn end, "WAIT:<message>" as a turn end carrying outstanding, "ASK" as an ask, "SESSIONSTART" or "SESSIONSTART:<source>" as a session start with that source and "SESSIONEND:<reason>" as a session end that ends the process unless its reason is "clear".
++// ParseSessionSignals reads "START" as a turn start, "START:<text>" as a turn start carrying <text> as its typed instruction, "APIERR" and "APIERR:<text>" as an API-error turn end carrying <text> as its error, "STOP:<message>" as a turn end, "WAIT:<message>" as a turn end carrying outstanding, "ASK" as an ask, "SESSIONSTART" or "SESSIONSTART:<source>" as a session start with that source and "SESSIONEND:<reason>" as a session end that ends the process unless its reason is "clear".
+ // Every signal names session-1, and the read consumes through the last complete line.
+ // ProcessLiveness answers liveness for any session id, and TurnStartInterrupt answers interrupted and interruptAt for any turn start.
+ // TurnEndActivity marks a turn end as an API error when its line is apiErrorLine.
+@@ -861,6 +861,9 @@ func (e *sessionFakeEngine) ParseSessionSignals(data []byte) ([]SessionSignal, i
+ 			signal.Instruction = strings.TrimPrefix(trimmed, "START:")
+ 		case trimmed == "APIERR":
+ 			signal.Kind = SessionSignalAPIErrorTurnEnd
++		case strings.HasPrefix(trimmed, "APIERR:"):
++			signal.Kind = SessionSignalAPIErrorTurnEnd
++			signal.ErrorText = strings.TrimPrefix(trimmed, "APIERR:")
+ 		case trimmed == "ASK":
+ 			signal.Kind = SessionSignalAsk
+ 		case strings.HasPrefix(trimmed, "SESSIONSTART"):
+diff --git a/internal/shuttleengine/run.go b/internal/shuttleengine/run.go
+index 9940b260..45df8f63 100644
+--- a/internal/shuttleengine/run.go
++++ b/internal/shuttleengine/run.go
+@@ -283,6 +283,8 @@ type Result struct {
+ 	// StartError is the text of the error start returned on RunGated's not-started branch, which names the cause and ends with the pane's last lines;
+ 	// it is empty on every other return.
+ 	StartError string
++	// APIError is the provider's error text of the turn end that ended an OutcomeAPIError run; empty on every other outcome.
++	APIError string
+ 	// EndedShells holds each background shell outstanding when the run ended, whatever ended it, in the order its turn end listed them.
+ 	EndedShells []EndedShell
+ 	// StartedAt is the run's creation time from its state, zero when the record's time does not parse.
+@@ -405,6 +407,8 @@ type Run struct {
+ 	promptTurnStarted bool
+ 	// shadow is the session-state logging Wait keeps beside its classification, display only.
+ 	shadow sessionShadow
++	// apiErrors is the API-error re-send watch of one Wait, in memory.
++	apiErrors apiErrorWatch
+ 	// dialog is the pending-dialog latch of one Wait, in memory.
+ 	dialog dialogLatch
+ 
+diff --git a/internal/shuttleengine/rundir.go b/internal/shuttleengine/rundir.go
+index fcac542f..2daff559 100644
+--- a/internal/shuttleengine/rundir.go
++++ b/internal/shuttleengine/rundir.go
+@@ -92,7 +92,7 @@ type RunState struct {
+ 	CreatedAt    string   `json:"createdAt"`
+ 	// Outcome has three writable states. Start writes the sentinel
+ 	// runOutcomeRunning ("running") when it first persists this record.
+-	// Run.finalize overwrites it with the classification string (done/died/timeout) for EVERY terminal outcome, not only OutcomeDone.
++	// Run.finalize overwrites it with the classification string (done/died/timeout/api-error) for EVERY terminal outcome, not only OutcomeDone.
+ 	// The legacy value "asking" is one only an older binary wrote.
+ 	// Any other value, INCLUDING THE EMPTY STRING, means the
+ 	// record was written by a binary that did not know about this field and
+diff --git a/internal/shuttleengine/spec.go b/internal/shuttleengine/spec.go
+index f57c79db..212e2e43 100644
+--- a/internal/shuttleengine/spec.go
++++ b/internal/shuttleengine/spec.go
+@@ -73,6 +73,12 @@ type Spec struct {
+ 	// QuietHold skips the held-turn parent notice alone.
+ 	// The hold itself, the wait mark, the deadline and attach behaviour are unchanged.
+ 	QuietHold bool
++	// APIErrorRetries is how many times the run re-sends a turn the provider's API ended on an error while an output file is missing.
++	// Each re-send waits a back-off that doubles with each API-error turn end of the run,
++	// and the API-error turn end past the last re-send ends the run OutcomeAPIError, whose Result names the error.
++	// Zero re-sends nothing, and such a turn end then waits out the run's deadline.
++	// validate does not inspect it.
++	APIErrorRetries int
+ 	// HoldDeferral, when set, reports whether outstanding work elsewhere defers this run's held-turn parent notice.
+ 	// A held turn end is then noticed only after holdNoticeSettle has passed and the predicate reports false, or after holdNoticeMaxDeferral whatever it reports.
+ 	// A new event or turn start drops the pending notice.
+diff --git a/internal/shuttleengine/wait.go b/internal/shuttleengine/wait.go
+index b0d15f1d..91a7ffba 100644
+--- a/internal/shuttleengine/wait.go
++++ b/internal/shuttleengine/wait.go
+@@ -1,11 +1,11 @@
+-// wait.go implements Run.Wait: the poll loop that reads a run's events.jsonl, classifies its terminal outcome (done/died/timeout), probes the startup window for a trust-dialog dismissal or a fast-failing dead pane, and runs the done-outcome cleanup (strand removal + run dir deletion).
++// wait.go implements Run.Wait: the poll loop that reads a run's events.jsonl, classifies its terminal outcome (done/died/timeout/api-error), probes the startup window for a trust-dialog dismissal or a fast-failing dead pane, and runs the done-outcome cleanup (strand removal + run dir deletion).
+ // It also hosts awaitStartup, the startup probe run.go's own start method calls before issuing a run handle at all, and abandonStartup, start's teardown for a provider that never became ready or never took its first input.
+ // Wait and awaitStartup are the only two places in the run loop that sleep — both through the clock seam defined here, which lets tests replay a whole poll sequence instantly.
+ // A pane that goes not-live (crashed, killed, or exited) is classified done rather than died when every output file already exists — the file contract can be satisfied an instant before the process disappears, racing ahead of its own Stop hook.
+ // died is reserved for a strand reed STILL TRACKS AND STILL HOLDS A PANE FOR, whose pane is not alive;
+ // the two ways reed's own bookkeeping can go away instead — a strand it no longer tracks (errStrandNotTracked) and a strand whose pane binding it cleared (errStrandPaneBindingCleared) — are mechanism failures, not classifications.
+ // The exception is a handle whose own Stop removed the strand: its Wait ends OutcomeDied, which finalize records as stopped unless the files show the run done.
+-// A turn end without every output file never ends the run: Wait logs the hold and keeps polling the same agent, so every other exit (OutcomeDone, OutcomeDied, a liveness mechanism failure, OutcomeTimeout) is the only way out.
++// A turn end without every output file never ends the run: Wait logs the hold and keeps polling the same agent, so every other exit (OutcomeDone, OutcomeDied, a liveness mechanism failure, OutcomeTimeout, and OutcomeAPIError for a spec with APIErrorRetries) is the only way out.
+ // That observation is logged at Info, so it reaches internal/logger's DURABLE trace sink (.lym/logs/trace-<stamp>-<trace>-<pid>.log, unconditionally enabled at Info) and not the detached driver's own log, which captures stderr and therefore only Warn and above.
+ // An operator asking "is this interview waiting for me, or is it wedged?"
+ // reads the trace sink.
+@@ -44,7 +44,7 @@
+ // # Completion Signal Invariant
+ //
+ // Any code path in this package that finalizes a NEGATIVE answer to "did this run finish" -- an
+-// OutcomeDied, an OutcomeTimeout, a runOutcomeStopped record, a mechanism-failure error, or a verdictRespawnEligible -- must
++// OutcomeDied, an OutcomeTimeout, an OutcomeAPIError, a runOutcomeStopped record, a mechanism-failure error, or a verdictRespawnEligible -- must
+ // first consult allOutputFilesExist over the run's OutputFiles, directly or through one of the three
+ // helpers that own the check: classifyDeadlineExpiry, finishedDespiteMechanismFailure (both here),
+ // or soleFinishedCandidate (attach.go). The startup step (awaitStartup, abandonStartup) honours the
+@@ -217,7 +217,8 @@ var ErrAgentDied = errors.New("shuttle: the agent died before it wrote its outpu
+ // Wait blocks until run reaches a terminal outcome.
+ // Error is reserved for mechanism failures that leave no classifiable outcome.
+ // A turn end without every output file is held, never terminal: Wait logs the hold and keeps polling,
+-// so it terminates only on OutcomeDone, OutcomeDied, a liveness mechanism failure, or OutcomeTimeout.
++// so it terminates only on OutcomeDone, OutcomeDied, a liveness mechanism failure or OutcomeTimeout.
++// It also terminates on OutcomeAPIError, once a spec's APIErrorRetries re-sends of API-error turn ends are spent.
+ //
+ // An error result still carries the run's IDENTITY — SessionID, StrandGUID, and RunDir — with an
+ // empty Outcome, because a mechanism failure is precisely when a caller needs them: no cleanup ran,
+@@ -289,6 +290,7 @@ func (run *Run) Wait() (Result, error) {
+ 
+ 	// The dialog latch reads asks from the larger of the prompt offset and the last dialog-notified offset, so a reattach never re-notifies a dialog it already did.
+ 	run.dialog = dialogLatch{cursor: max(run.state.PromptOffset, run.state.DialogNotifiedOffset)}
++	run.apiErrors = apiErrorWatch{cursor: run.state.PromptOffset}
+ 
+ 	run.turnSince = run.clock.Now()
+ 	for tick := 1; ; tick++ {
+@@ -391,6 +393,9 @@ func (run *Run) Wait() (Result, error) {
+ 			}
+ 		}
+ 
++		if result, finished, ferr := run.retryAPIError(); finished {
++			return result, ferr
++		}
+ 		run.sendShellNudge()
+ 		run.settleDeferredHold()
+ 		run.watchDialog()
+diff --git a/internal/shuttleengine/waitshadow.go b/internal/shuttleengine/waitshadow.go
+index ed7207de..07f104c7 100644
+--- a/internal/shuttleengine/waitshadow.go
++++ b/internal/shuttleengine/waitshadow.go
+@@ -22,6 +22,8 @@ const (
+ 	loopDone = "done"
+ 	// loopDied: the run finalizes died.
+ 	loopDied = "died"
++	// loopAPIError: the run finalizes api-error.
++	loopAPIError = "api-error"
+ )
+ 
+ // shadowPair is one pairing of the loop's classification with a session state, the unit a disagreement is logged once for.
+@@ -66,6 +68,8 @@ func (run *Run) loopClassification(outcome Outcome) string {
+ 		return loopDone
+ 	case outcome == OutcomeDied:
+ 		return loopDied
++	case outcome == OutcomeAPIError:
++		return loopAPIError
+ 	case !run.wait.heldStart.IsZero():
+ 		return loopHeld
+ 	case len(run.waitingTasks) > 0 || run.gatePending:
+@@ -75,7 +79,7 @@ func (run *Run) loopClassification(outcome Outcome) string {
+ }
+ 
+ // loopAgreesWithState reports whether the loop classification and the session state are a pairing the fixed mapping allows:
+-// waiting and running read busy, held reads idle-stalled, idle-fresh or asking, done reads idle-done, died reads dead.
++// waiting and running read busy, held reads idle-stalled, idle-fresh or asking, done reads idle-done, died reads dead, api-error reads idle-stalled.
+ // Two further pairings are expected: a pending gate entry waiting beside idle-done once every output exists,
+ // and a done run beside busy on background work, since a turn end counted at once leaves the session running tasks the loop no longer waits on.
+ func loopAgreesWithState(loop string, state SessionState, gatePending bool) bool {
+@@ -91,6 +95,8 @@ func loopAgreesWithState(loop string, state SessionState, gatePending bool) bool
+ 		return state.Name == SessionIdleDone || busyOnBackground
+ 	case loopDied:
+ 		return state.Name == SessionDead
++	case loopAPIError:
++		return state.Name == SessionIdleStalled
+ 	}
+ 	return false
+ }
+diff --git a/internal/shuttleengine/waitshadow_test.go b/internal/shuttleengine/waitshadow_test.go
+index fd2d9bfb..afde953f 100644
+--- a/internal/shuttleengine/waitshadow_test.go
++++ b/internal/shuttleengine/waitshadow_test.go
+@@ -35,6 +35,30 @@ func stateChanges(log string) []string {
+ 	return changes
+ }
+ 
++// TestLoopAgreesWithState_APIError pins the pairing the fixed mapping allows for the api-error loop classification.
++// The drive of TestWait_LogsSessionStateBesideItsClassification cannot hold it, since an engine without the parser never ends a run api-error.
++func TestLoopAgreesWithState_APIError(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name  string
++		state SessionStateName
++		want  bool
++	}{
++		{"IdleStalled", SessionIdleStalled, true},
++		{"Busy", SessionBusy, false},
++		{"IdleDone", SessionIdleDone, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := loopAgreesWithState(loopAPIError, SessionState{Name: tt.state}, false); got != tt.want {
++				t.Errorf("loopAgreesWithState(api-error, %s) = %v; want %v", tt.state, got, tt.want)
++			}
++		})
++	}
++}
++
+ // TestWait_LogsSessionStateBesideItsClassification drives Wait over scripted events with an engine that parses session signals,
+ // and again over the same events with an engine that cannot:
+ // the state changes and disagreements are logged by the first run only, and both runs return the same Result and notify the same lines.
+diff --git a/pattern/PATTERN-shuttle-provider-seam.md b/pattern/PATTERN-shuttle-provider-seam.md
+index 1981ef34..70794b0a 100644
+--- a/pattern/PATTERN-shuttle-provider-seam.md
++++ b/pattern/PATTERN-shuttle-provider-seam.md
+@@ -51,9 +51,10 @@ Removing the strand any other way leaves the record saying the run is live, and
+ 
+ Every code path in `internal/shuttleengine` that finalizes a NEGATIVE answer to "did this run finish" consults `allOutputFilesExist` over the run's `OutputFiles` first.
+ 
+-- The negative answers are `OutcomeDied`, `OutcomeTimeout`, `runOutcomeStopped`, a mechanism-failure `error`, and `verdictRespawnEligible`.
++- The negative answers are `OutcomeDied`, `OutcomeTimeout`, `OutcomeAPIError`, `runOutcomeStopped`, a mechanism-failure `error`, and `verdictRespawnEligible`.
+   `stopOutcome` in `stop.go` is the one site that chooses `runOutcomeStopped`, and it consults `allOutputFilesExist` first.
+ - The check is reached directly or through the three helpers that own it: `classifyDeadlineExpiry` and `finishedDespiteMechanismFailure` (`wait.go`), and `soleFinishedCandidate` (`attach.go`).
++  `retryAPIError` (`apierrorretry.go`) reaches it through `classifyDeadlineExpiry`.
+ - A clock expiring, `reed` losing a strand, `reed.Status` erroring, the events file staying unreadable, `reed.json` being absent or undecodable each answer "has something gone wrong", never "did this run finish".
+   The run's output files are its return value.
+ - Stated at length in `wait.go`'s own file doc comment, under the same heading.
