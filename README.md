@@ -50,7 +50,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T13 | **Merge main into the codex-engine beam again and resolve every conflict**<br>• Bring main into the beam before it lands, so its landing merges cleanly | [`codex-engine-merge-main-2`](design-codex-engine-merge-main-2.md) | darn | Describe | neve | 19m<br>19m | codex, shuttle |
+| T13 | **Merge main into the codex-engine beam again and resolve every conflict**<br>• Bring main into the beam before it lands, so its landing merges cleanly | [`codex-engine-merge-main-2`](design-codex-engine-merge-main-2.md) | darn | PR-Review | neve | 19m<br>19m | codex, shuttle |
 
 #### Ready (0)
 
@@ -78,10 +78,10 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Drift-Verify's verdict never reaches the summary or the pull request**<br>• A clean compare leaves the PR asking the operator to run the regression compare by hand | [`drift-verdict-in-pr`](design-drift-verdict-in-pr.md) | darn · light | Drift-Verify | neve | 2h<br>35m | drift, loom, landing |
 | T2 | **Every remote operation runs async, and local-only fabric pairs go**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | darn · solid | Code-Burler-Fix | neve | 2w<br>1h | fabric, batten |
-| T5 | **depends_on accepts a project or any entry that lands, and dobby holds the task until it does** | [`depends-on-any-entry`](design-depends-on-any-entry.md) | darn · light | Finalize | neve | 55m<br>52m | board, dobby |
+| T5 | **depends_on accepts a project or any entry that lands, and dobby holds the task until it does** | [`depends-on-any-entry`](design-depends-on-any-entry.md) | darn · light | Finalize | neve | 55m<br>53m | board, dobby |
 | T6 | **A partial scope that skips every test ends in a capture that wrote no file, with no cause named**<br>• The capture failure names neither the skips nor the scope change that would fix it, so the tackler re-launches blind | [`drift-skip-all-capture`](design-drift-skip-all-capture.md) | darn · light | Darn-Write | neve | 41m<br>35m | drift |
 | T7 | **An arbiter whose turn ends on an API error holds the stop silently until its deadline**<br>• A StopFailure leaves the settler idle, the parent's resume is refused as driver_not_parked, and no one is told | [`arbiter-api-error-stall`](design-arbiter-api-error-stall.md) | darn · light | Code-Burler-Fix | neve | 38m<br>35m | arbiter, shuttle, claude |
-| T11 | **Webster plan validation refuses a card path with a trailing '#' anchor that Plan-Bouncer accepted** | [`card-path-empty-anchor`](design-card-path-empty-anchor.md) | darn · light | Code-Bouncer | neve | 30m<br>18m | webster, parsers |
+| T11 | **Webster plan validation refuses a card path with a trailing '#' anchor that Plan-Bouncer accepted** | [`card-path-empty-anchor`](design-card-path-empty-anchor.md) | darn · light | Code-Bouncer | neve | 30m<br>19m | webster, parsers |
 | T12 | **Preflight worktree-clean halts on lym's own _lym state files** | [`preflight-own-state-dirty`](design-preflight-own-state-dirty.md) | darn · light | Finalize | neve | 30m<br>22m | preflight, loom |
 
 #### Ready (0)
@@ -162,6 +162,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F12 |  | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md) | 1d<br>7h | claude, shuttle, config |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 3w<br>1d | webster |
 | F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 12d<br>1h | loom, board, batten, workspaces |
-| F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 9h<br>43m | shuttle, codex, loom |
+| F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 9h<br>44m | shuttle, codex, loom |
 | F16 |  | **Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | 7h<br>7h | drift, shed |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>1d | burler, shed, orch, quarry, report |
