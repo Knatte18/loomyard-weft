@@ -89,9 +89,9 @@ It does not stand in for the Claude Code-Review fan as it ran there.
 `docs/research/codex-review-yardstick-2026-10-28/report.md` (landed as `codex-review-yardstick`) adds one prompt bullet naming the decision record's decisions and acceptance criteria as a yardstick beside the board snapshot, and ran the fan once per input: all 5 of the fan's findings on the first input (2 of 5 before) and the same 3 of 6 on the second, with no new false finding.
 The record-divergence miss above is therefore a prompt gap, not a limit of the fan; one run per input, one grader.
 
-## Goal (operator, 2026-10-27)
+## Goal (operator, 2026-11-03; replaces the goal of 2026-10-27)
 
-Codex is to take review load off Claude: the work is to tune Codex reviews until a Codex fan can stand in for a Claude fan, not to add Codex as an extra reviewer beside it.
+Codex is a supporting reviewer beside Claude, for another angle: the Claude review runs as it always has, and a Codex reviewer is spawned beside it as an extra seat, an assistant. When the Claude reviewer consolidates its fan's reports, the Codex report comes in as one more; Claude keeps the verdict, so Codex never gates a run alone. The benches back this: every Astra run found real defects the Claude fan lacked, with almost no false finding. Quota relief comes first from two Claude accounts (`claude-account-weights`); the goal of 2026-10-27, tuning Codex until a Codex fan stands in for the Claude fan, is set aside. A Codex reviewer that only writes a report file can run as `codex exec`, as the benches did, so this first role needs no full interactive `codexengine`.
 
 ## First candidate roles
 
