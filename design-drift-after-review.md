@@ -1,6 +1,6 @@
 # Code changed after Drift-Verify lands with no compare
 
-`drift-after-review` · Note · bug, drift, loom
+`drift-after-review` · Task · bug, drift, loom · draft
 
 Code the review rows change after Drift-Verify lands with no compare, and once the run has passed Drift-Verify no Drift verb can compare it again.
 
