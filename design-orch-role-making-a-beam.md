@@ -1,6 +1,6 @@
 # The orch role explains how to make a project into a beam
 
-`orch-role-making-a-beam` · Task · enhancement, orch, pawl · running · Code-Burler-Fix
+`orch-role-making-a-beam` · Task · enhancement, orch, pawl · running · Code-Bouncer
 
 Seen in the Models hub: its prime orch could not make project P1 into a beam, because the orch role it follows never says how.
 
