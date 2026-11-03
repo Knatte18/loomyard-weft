@@ -1,6 +1,6 @@
 # A project page shows the project body under its brief
 
-`project-body-in-render` · Task · enhancement, board · running · Drift-Recheck
+`project-body-in-render` · Task · enhancement, board · running · Describe
 
 ## Seen (operator, 2026-11-03)
 
