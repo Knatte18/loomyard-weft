@@ -40,16 +40,19 @@ Its not-live answer is `*ErrNotLive` with fields `Branch` and `Records bool` (tr
 - Right after the weft probe, a weft that is not live (`weftOld.live` false: absent locally and on origin, or origin's tip covered by an `archive/<slug>/*` tag) returns `*ErrNotLive` naming the weft branch, before any mutation.
 - After the warp probe, a task branch neither local nor on origin returns `*ErrNotLive` naming the task branch, before any mutation.
 - The warp probe runs for an adopted local warp branch too (it is skipped there without `AdoptOnly`); its `onOrigin` answer serves only card 3's tracking-ref drop, and the adopted local branch is never fetched or replaced from origin.
+  Under `AdoptOnly` the warp-side drop of card 3 in `Topology.add` also covers an adopted local warp branch whose probe answered `onOrigin` false, so `refs/remotes/origin/<warp>` and its upstream config are dropped, and the probe's adopt tip stays unset so nothing is fetched.
 - It skips every check that guards only a fork it never makes: the source-dirt check (`ErrSourceDirty`), the read of the acting worktree's HEAD with its detached-or-unborn refusal, and the fork point's `refuseEmptyOwnMarker` and `moveRecordStop`; it resolves no parent, since the adopted weft's origin record names it, so a parent pair removed since cannot refuse it.
   An adopted weft with no origin record is written none under `AdoptOnly` (the record is never invented), and the add goes on.
 - `ErrRemoteLeftover` under `AdoptOnly` can only be a local weft branch diverging from origin's, since the warp leftover refusal is reached only for a pair that is not live.
 - When `RecordsWorktreePath(l, slug)` stands and `List(RecordsRepoRoot)` shows it registered, not prunable, on the pair's weft branch, `Add` reuses it: it skips the `weft worktree directory already exists` refusal and the weft `containedWorktreeAdd`, takes the anchor that worktree records through `recordAdoptedWeftAnchor`, makes only the task worktree over the local or origin task branch and wires the pair as its adopt path does.
   `refuseAdoptLocalCheckedOut` gains `reusedWeft`, the reused worktree's path or empty, and does not count that worktree as another records worktree holding the branch.
+  When `weftOld.fastForwardTo` is set and the records worktree is reused, `Add` fetches origin's tip by SHA (`FetchWithArgs(origin, tip)`) and advances the branch with `git merge --ff-only <origin tip>` run inside the reused worktree, in place of today's fetch into `refs/heads/<weft>` (`add.go`'s fast-forward step), which git refuses for a branch a worktree has checked out.
   `rollbackAdd` gains `weftReused` and, when set, leaves that worktree and its branch in place, as it leaves an adopted branch; every one of its callers is inside `Topology.add`.
 - A records worktree directory that stands without being such a registered worktree returns `*ErrRecordsWorktreeNotPair` (fields `Path`), replacing today's plain `weft worktree directory already exists` error for every caller, text unchanged.
 
 Typed errors replacing today's plain ones, texts unchanged, so a caller can test D2's closed set with `errors.As`:
 - `refuseAdoptLocalCheckedOut`'s two refusals become `*ErrAdoptLocalCheckedOut` with fields `Branch`, `Path` and `Records bool`.
+- Under `AdoptOnly`, `Topology.add` calls `refuseAdoptLocalCheckedOut` whenever `opts.AdoptLocal` is set and the weft branch exists locally, not only when `warpAdopted` (today's `opts.AdoptLocal && warpAdopted` guard), so a records branch checked out in another records worktree returns `*ErrAdoptLocalCheckedOut` with `Records` true even when the task branch comes from origin, rather than a plain worktree-add failure card 12 would read as transient.
 - The `worktree directory %q already exists` refusal at the task worktree's location becomes `*ErrTaskPathTaken` with field `Path`.
 
 `PruneRegistrations` runs `git worktree prune` in the code repository (the acting worktree) and in the records repository (`RecordsRepoRoot`), dropping every stale registration, as `removeSibling` already prunes before a branch deletion; it is batten's D1 step 2, a general fabric verb any caller may take.
@@ -73,6 +76,8 @@ Test `TestAdd_AdoptOnly`, `tier1`, one hub per row, every row passing `AdoptLoca
 - A plain directory at the records worktree path: `*ErrRecordsWorktreeNotPair`.
 - A file at the task worktree path: `*ErrTaskPathTaken`.
 - The task branch checked out in another worktree: `*ErrAdoptLocalCheckedOut` with `Records` false.
+- Task branch only on origin, the local weft branch checked out in another records worktree: `errors.As` reads `*ErrAdoptLocalCheckedOut` with `Records` true, `requireNothingCreated`.
+- Records worktree standing on a weft branch one commit behind origin, task worktree deleted: the pair is re-made and the weft branch sits at origin's tip.
 - An adopted local warp branch origin lacks, under a stale `refs/remotes/origin/<branch>`: the ref is gone after `Add`.
 
 **ImpactSummary:** One new option and three typed errors on `Add`, whose existing callers (fabriccli add, batten's Worktree-Create row, reconcile) set no `AdoptOnly` and see the same texts; `refuseAdoptLocalCheckedOut` and `rollbackAdd` are re-signed with every caller inside `Topology.add`.

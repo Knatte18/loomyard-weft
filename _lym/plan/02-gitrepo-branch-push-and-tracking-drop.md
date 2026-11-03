@@ -27,7 +27,7 @@
 - `DropRemoteTracking` deletes `refs/remotes/<remote>/<branch>` and, only when the branch has `branch.<branch>.remote` or `branch.<branch>.merge` configured, unsets both, in one hold of the remote-refs lock.
   An absent tracking ref and an absent upstream config are no error, so the call is idempotent; any other git failure is returned.
 
-Add both to `internal/gitrepo/doc.go`'s list of operations that take the remote-refs lock.
+Add both to `internal/gitrepo/doc.go`'s list of operations that take the remote-refs lock, and to the `push.go` file header's list of the push surface, whose "push-shaped remote calls" sentence also names the tracking-ref drop.
 
 Tests, `tier1`, over a hermetic repository with a bare origin (the existing `gitrepo_test` push fixtures):
 - `TestPushBranch`: a branch not checked out, ahead of origin, lands at its local tip and its tracking ref moves there; a branch origin has diverged from returns an error matching `ErrPushRejected` and leaves origin's tip; a marked branch returns `ErrLocalBranch` and origin is untouched.

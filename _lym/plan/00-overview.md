@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -11,7 +11,7 @@ The plan builds the gitrepo primitives first, then fabric's `Add` (tracking-ref 
 
 ## Card Index
 
-1 — gitrepo-lease-and-retry — retry "missing necessary objects" and return ErrLeaseRejected from a leased delete
+1 — gitrepo-lease-and-retry — retry caller-named refusal reasons and return ErrLeaseRejected from a leased delete
 2 — gitrepo-branch-push-and-tracking-drop — push a named branch and drop its tracking ref under the remote-refs lock
 3 — add-drops-stale-tracking — Add drops a former pair's tracking ref and upstream for a branch origin lacks (D8)
 4 — add-adopt-only — Add re-adopts a live pair under an adopt-only option and types its permanent refusals (D1, D2)
@@ -36,7 +36,10 @@ The plan builds the gitrepo primitives first, then fabric's `Add` (tracking-ref 
 
 ### Decision: d3-sites-outside-fabric
 
-- **Decision:** D3's follow-up is carried where the batten record can be read: `lym fabric remove`'s result warning (card 13, through `internal/pairteardown`, which already reads batten's record) and the owned-elsewhere ender's refusal in `internal/tendercli`. Finalize's adopter-first stop keeps its text, as D3 requires.
+- **Decision:** D3's follow-up is carried where the batten record can be read: `lym fabric remove`'s result warning (card 13, through `internal/pairteardown`, which already reads batten's record), the owned-elsewhere ender's refusal in `internal/tendercli`, batten's own resume refusal in `internal/battencli`'s `preflightRunOwner` and its cancel refusal in `judgeOrigin` when either quotes a fabric way forward naming `lym fabric remove`, and landingshed's stopped reason (`stoppedReason`, from Parent-Align and Finalize), which takes the follow-up as a value loomcli's `landingDeps` passes in. Finalize's adopter-first stop keeps its text, as D3 requires.
+  Finalize's stop on the path where the parent already holds the task's work passes no follow-up either, since the work has landed while the record still reads before Land, so a cancel would release a landed entry.
+  `internal/adoptcli/adopt.go` and `internal/cleanupcli/reconcile.go` refuse their verb with `sharedStopText`, which keeps only the branches every pair shares (Bolt and the prime's records branch); the prime carries no batten run record, so the follow-up there is always empty, and adopt's per-branch warning line is a report the verb goes on past.
+  `internal/hibernateengine/wake.go`'s `runStep` words the wake report's step for each held run while the wake goes on, and names `lym cleanup --apply` after a gone pair's way forward; it is a report, not a stop or refusal, so it carries no follow-up.
   The way forwards worded inside `internal/fabricengine` (the failed-push record's gone-branch text in `FailedPushWayForward`, `lockPairTeardown`'s re-run, the destructive gate's local-only refusal) stay as they are; `lym fabric remove`'s own refusals that name re-running itself, and the Worktree-Create row's `incompletePairRemedy`, whose way forward is the resume of the same run that re-creates the pair, are not ways forward that leave a record behind.
 - **Rationale:** `PATTERN-fabric-isolation`: fabric learns nothing of the board's or batten's records, so it cannot read a batten run record or name a batten verb, and a hook letting batten append to fabric's way forwards would be a seam shaped for one module, which the same entry forbids; this departs from D3's "every stop or refusal" for those fabric texts, and the `lym fabric remove` warning reaches the operator after any such removal.
 - **Applies to:** card 13

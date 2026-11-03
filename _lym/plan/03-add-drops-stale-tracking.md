@@ -34,7 +34,7 @@
 Test `TestAdd_DropsStaleTrackingRef`, `tier1`, one hub per row (the `add_remoteleftover_integration_test.go` fixtures):
 - Run A's pair is pushed (`pushNewPair`) and removed so its weft branch is deleted on origin while the records repository keeps the weft branch's remote-tracking ref and its upstream merge config (the test's fixture re-creates both after the removal when the removal dropped them), then `Add` of the same slug forks a new pair: the records repository has no tracking ref and no upstream config for the weft branch, and a `ReconcileOrigin` run scope with `JudgeOnly` before any push of the new pair reports no `BranchGone` outcome for the pair's branches.
 - The same with a stale warp remote-tracking ref and upstream merge config: both are gone after `Add`.
-- A `config.lock` file planted in the records repository's git dir before `Add`, with a stale weft tracking ref standing: `Add` returns an error naming the weft branch, and `requireNothingCreated` holds.
+- A `config.lock` file planted in the records repository's git dir before `Add`, with a stale weft tracking ref standing and `branch.<weft>.remote` and `branch.<weft>.merge` set on the records repository's weft branch before the lock is planted, so the drop's config write fails: `Add` returns an error naming the weft branch, and `requireNothingCreated` holds.
 
 **ImpactSummary:** Touches only `Add`'s pre-flight, its doc and its two probe helpers, whose sole caller is `Topology.add`; every caller of `Add` sees one more pre-mutation step and no change to an existing refusal text.
 
