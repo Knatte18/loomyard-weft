@@ -1,6 +1,6 @@
 # Every remote operation runs async, and local-only fabric pairs go
 
-`fabric-remote-async` · Task · enhancement, fabric, batten
+`fabric-remote-async` · Task · enhancement, fabric, batten · running · Worktree-Create
 
 Depends on: [`remote-moved-before-push`](design-remote-moved-before-push.md)
 
