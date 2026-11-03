@@ -24,6 +24,12 @@ Runs as darn with profile `docs`, before bench `fixers-on-sonnet`, which takes i
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-03): Audit before any review run
+
+Decision: Take option (b): run no review bench first. Audit the Plan and Discussion review findings on the weft's recent runs for the share whose fix key names both place and change, and report it with the stencil's existing rule (burler-review-format.md since add9f93d). Run option (a), a stricter rule on top, as the eight solo-reviewer runs, only if the audit shows real non-compliance; otherwise the report says so and keeps a set of compliant findings from the two chosen rounds for bench fixers-on-sonnet to use.
+
+Rationale: The premise is overtaken: the stencil already demands concrete fix keys, so the bench as written would mostly compare noise at a real run cost.
+
 ## Constraints
 
 ## Auto-mode assumptions
