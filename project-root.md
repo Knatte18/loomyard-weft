@@ -8,35 +8,35 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (8)
+## Tasks (7)
 
 Concrete and claimable; only a task can run.
 
-### Running (5)
+### Running (4)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **A status-bar button asks for a value, so an agent opened from it gets a name**<br>• Button entries take ask, filling {answer}; the agent button asks for the strand name, and term becomes terminal | [`button-ask-name`](design-button-ask-name.md) | darn · light | Darn-Write | neve | 2d<br>7m | reed, config |
-| T2 | **Bench reviewers that name the place and the change in every finding**<br>• Eight review runs: the current review stencil against one that demands concrete findings | [`concrete-review-findings`](design-concrete-review-findings.md) | darn · docs | Finalize | neve | 7m<br>7m | burler, stencil |
 | T3 | **Per-machine environment variables, exported to every process lym starts for the hub** | [`machine-env-vars`](design-machine-env-vars.md) | darn · light | Code-Burler-Fix | neve | 11h<br>1h | config, gate, drift, shuttle |
 | T8 | **batten cancel --remove leaves a non-git directory that blocks Worktree-Create** | [`cancel-remove-leftover-dir`](design-cancel-remove-leftover-dir.md) | darn · light | Darn-Write | neve | 1h<br>1h | batten, fabric |
 | T10 | **Code changed after Drift-Verify lands with no compare**<br>• A review fixer rewrote the formatter after Drift-Verify; nothing compares again and lym drift compare refuses past Drift-Verify | [`drift-after-review`](design-drift-after-review.md) | darn · light | Code-Burler-Fix | neve | 1h<br>1h | drift, loom |
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T5 | **Bench Plan and Discussion fixers on Sonnet against Opus**<br>• Twelve fixer runs: Opus against Sonnet, and Sonnet on concrete findings | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | darn · docs |  | 12d<br>7m | burler, claude |
 
-### Layer A (2)
+### Layer A (1)
 
 Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Bench Plan and Discussion fixers on Sonnet against Opus**<br>• Twelve fixer runs: Opus against Sonnet, and Sonnet on concrete findings | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | darn · docs | T2 | 12d<br>7m | burler, claude |
 | T9 | **lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human** | [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md) | darn · light | T8 | 1h<br>1h | fabric, landing |
 
 ### Layer B (1)
@@ -95,3 +95,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 10h<br>1h | shuttle, codex, loom |
 | F16 |  | **Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | 9h<br>9h | drift, shed |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>1d | burler, shed, orch, quarry, report |
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T2 | **Bench reviewers that name the place and the change in every finding**<br>• Eight review runs: the current review stencil against one that demands concrete findings | [`concrete-review-findings`](design-concrete-review-findings.md) | 8m<br>7m | burler, stencil |
