@@ -1,7 +1,7 @@
 # Card 3 — runs-strand-beside-status
 
 **Create:**
-- `plan:internal/orchcli#RunsStrandOrder` -> `const RunsStrandOrder = 0`
+- `internal/orchcli#RunsStrandOrder`
 
 **Edit:**
 - `internal/orchcli#RunsStrandName`

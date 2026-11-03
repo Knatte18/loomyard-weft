@@ -1,7 +1,7 @@
 # Card 1 — reed-overview-order-key
 
 **Create:**
-- `plan:internal/reedengine#overviewWindowKeys` -> `func overviewWindowKeys(strands []Strand, windowByPane map[string]string) map[string]int`
+- `internal/reedengine#overviewWindowKeys`
 
 **Edit:**
 - `internal/reedengine/render#Display`

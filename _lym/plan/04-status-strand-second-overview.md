@@ -1,7 +1,7 @@
 # Card 4 — status-strand-second-overview
 
 **Create:**
-- `plan:internal/loomcli#statusStrandOrder` -> `const statusStrandOrder = orchcli.RunsStrandOrder + 1`
+- `internal/loomcli#statusStrandOrder`
 
 **Edit:**
 - `internal/loomcli#statusStrandAddSpec` -> `func statusStrandAddSpec(cmd, recipe string) reedengine.AddSpec`
@@ -19,7 +19,7 @@
 - `internal/loomcli#seedLLMDriver`
 - `internal/loomcli#tmuxBinaryPath`
 - `internal/loomcli#statusSidecarPath`
-- `plan:internal/orchcli#RunsStrandOrder`
+- `internal/orchcli#RunsStrandOrder`
 
 **Intent:**
 D3 and D5: the loom status strand always takes the overview anchor, one place after the runs strand, named for its recipe.
