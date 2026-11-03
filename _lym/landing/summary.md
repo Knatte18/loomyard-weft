@@ -1,18 +1,33 @@
-# The orch role explains how to make a project into a beam
+# Orch role: how to make a project into a beam
 
-The orch role listed `lym beam create <slug>` and called a beam "a project entry made a beam", but held no procedure.
-In the Models hub this let the prime orch start project P1 as an ordinary task run, read the missing worktree as the fault, patch it with `lym fabric add` and then try to delete the worktree directory by hand.
+The orch role in `contracts/orchrole/orch-role.md` listed `lym beam create <slug>` but held no procedure for making a beam.
+In the Models hub the prime orch started project P1 as an ordinary task run, read a missing worktree as the fault, patched it with `lym fabric add`, and then tried to `rm` the directory when lym refused.
+A beam never came of it.
 
-`contracts/orchrole/orch-role.md` gains a "Making a beam" section after the run loop. It states:
+This change adds a "Making a beam" section to the role.
 
-- the two steps, `lym board upsert` with `"kind":"project"` and then `lym beam create <slug>`, run from the prime or the parent beam and never from a task worktree, with `--anchor <dir>` for a beam's own anchor;
-- that only `lym beam create` starts a beam's run, since dobby starts no project entry;
-- the run's shape: the batten run's Worktree-Create makes the worktree unmarked, Seed-Child seeds the pawl run, and the pawl run's Beam-Up marks the beam and starts its dobby and orch, so the beam's orch appears after Beam-Up; a task run has the same batten rows but no Beam-Up;
-- that `lym beam start <slug>` brings an existing beam back up, refuses a task worktree and never makes a beam;
-- how to tell a project running as a task run from a beam through `lym batten status <slug>`'s current producer, and the way forward, `lym batten cancel <slug> --remove` on the operator's word and then `lym beam create <slug>`;
-- never `lym fabric add` and never a hand deletion of a worktree directory to repair a run: on a refusal, stop and tell the operator.
+- A beam is made on the operator's go-ahead in two steps, run from the prime or a parent beam, never from a task worktree: `lym board upsert` with `"kind":"project"`, then `lym beam create <slug>`.
+- `--anchor <dir>` gives the beam its own anchor; without it the beam inherits its parent's.
+- The section explains the run the verb starts: Worktree-Create makes the worktree unmarked, Seed-Child seeds the pawl run in it, and that run's Beam-Up row marks the worktree a beam and starts its dobby and orch.
+  The beam's orch therefore appears only after Beam-Up.
+- A task run has the same batten rows but an inner tapestry, arras, darn or sampler run with no Beam-Up, so it never becomes a beam.
+- `lym beam start <slug>` brings an existing beam back up; it refuses a task worktree and never makes a beam.
+- A project that ran as a task run is not repaired.
+  The way forward is `lym batten cancel <slug> --remove` on the operator's word, then `lym beam create <slug>`.
+- The role forbids `lym fabric add` and deleting a worktree directory by hand as repairs; when lym refuses a step, the orch stops and tells the operator.
+
+Only the role text changes; no code does.
 
 ## Design decisions
 
-- The way forward names `lym batten cancel <slug> --remove`, where the board entry names the cancel without the flag: a cancel that keeps the pair needs `--remove` before the slug runs again, so the bare cancel would leave the operator one refusal short of `lym beam create`.
-- The weakness behind issue #9, a batten pass that fails forever when the worktree is gone, is left out as the entry asks: the board entry `batten-remote-order` already covers it, so no new note is filed.
+- `lym batten status <slug>` reports the batten run's rows, which are the same for a task run and a beam, so the role says it cannot tell them apart.
+  The role points to the entry's `kind` (`lym board get <slug>`) and to the inner run's current producer (`lym loom status` in the worktree).
+  This departs from the board entry's draft, which sent the orch to `batten status` for the distinction.
+- The weakness behind issue #9 (a batten pass that fails forever when the worktree is gone) is not folded into this change.
+  In the Models case the cause was the wrong run kind, not the missing worktree, so it stays a separate finding.
+
+## To check by hand
+
+- `status-read-cannot-tell-task-run-from-beam`: confirm that the "Making a beam" section's claim that `lym batten status` cannot separate a task run from a beam, and its use of the entry `kind` and `lym loom status` instead, matches how those commands behave.
+- Confirm that `lym batten cancel <slug> --remove` is the right form for clearing a task run before `lym beam create`, and that the list of task inner runs (tapestry, arras, darn, sampler) is complete.
+- No command from the new section was run; the change is documentation only.
