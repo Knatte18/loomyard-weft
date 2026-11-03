@@ -35,6 +35,12 @@ So a removal waits on one more network push than before, and an async version mu
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-03): Async scope: teardown remote steps only; every read-before-continue stays sync
+
+Decision: Made async in this run: fabric remove's remote steps (weft-tip push, archive-tag pushes, leased weft delete, and the origin task-branch delete with --remote) in a detached child that takes over the teardown lock exclusive and keeps that order; the same steps in DiscardTaskBranch and in fabric cleanup's per-orphan archive and delete. fabric add's ls-remote probes run in parallel and stay sync. Stay sync: every remote call whose result the command reads before it goes on (origin reconcile, pull/merge/checkout/reconcile fetches, landing's pushes, ReadParentTips and GitHub PR calls, sync fabric push, clone, ResetPairCode, cleanup --remote-warp enumeration, add's leftover handling), and the Bolt push.
+
+Rationale: The operator's goal is that no command waits on network it does not need; a call whose result drives the next step needs the wait. The Bolt push would need a new side in the push child and is not teardown; it stays out of this run.
+
 ## Constraints
 
 ## Auto-mode assumptions
