@@ -1,0 +1,332 @@
+diff --git a/internal/gatecli/build.go b/internal/gatecli/build.go
+index fb431f01..f6a22fd6 100644
+--- a/internal/gatecli/build.go
++++ b/internal/gatecli/build.go
+@@ -44,7 +44,7 @@ func (e *execution) runBuild(run tierRun, env []string) (result tierResult, ok b
+ 	cmd.Stdout = io.MultiWriter(e.out, &logBuffer)
+ 	cmd.Stderr = io.MultiWriter(e.out, &logBuffer)
+ 	logger.Info("gate test: spawning the build", "before", tierName(run.number), "dir", dir, "command", step.Command)
+-	runErr := runTiedChild(cmd, nil)
++	runErr := runTiedChild(cmd, e.request.pipeWaitDelay, nil)
+ 	exit := exitCodeOf(runErr)
+ 	logger.Info("gate test: the build ended", "before", tierName(run.number), "exit", exit, "error", runErr)
+ 	if cmd.Process == nil && e.ctx.Err() == nil {
+diff --git a/internal/gatecli/child.go b/internal/gatecli/child.go
+index 28b25808..8df9d5c0 100644
+--- a/internal/gatecli/child.go
++++ b/internal/gatecli/child.go
+@@ -1,25 +1,34 @@
+-// child.go runs go test as a child tied to this process and names the signals that end the verb early.
++// child.go runs a tier's or the build's shell as a child tied to this process, ends what the shell leaves behind, and names the signals that end the verb early.
+ 
+ package gatecli
+ 
+ import (
++	"errors"
+ 	"os"
+ 	"os/exec"
+ 	"sync/atomic"
+ 	"syscall"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ )
+ 
++// defaultPipeWaitDelay is how long a tier's or the build's output is still read after its shell exits.
++const defaultPipeWaitDelay = 10 * time.Second
++
+ // terminatingSignalSet are the signals `lym gate test` catches to kill the child's tree and release its slot before it exits.
+ // Windows delivers only the interrupt and ignores the rest.
+ var terminatingSignalSet = []os.Signal{syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP}
+ 
+ // runTiedChild starts cmd tied to this process's life, waits for it and returns Wait's error.
+ // A cancelled context kills the child's whole tree, logging the kill.
++// Once the child exits, its output is read for at most pipeWaitDelay, so a process it left behind holding the output pipe cannot hang the call;
++// a zero exit cut short that way returns nil, and a failing exit keeps its own error.
++// What is left of the child's process group is then killed, on Windows through the child's kill-on-close job.
+ // A non-nil started is called with the child's pid once it is running, before the wait.
+-func runTiedChild(cmd *exec.Cmd, started func(pid int)) error {
++func runTiedChild(cmd *exec.Cmd, pipeWaitDelay time.Duration, started func(pid int)) error {
++	cmd.WaitDelay = pipeWaitDelay
+ 	var tied atomic.Pointer[proc.Tied]
+ 	cmd.Cancel = func() error {
+ 		pid := cmd.Process.Pid
+@@ -43,5 +52,24 @@ func runTiedChild(cmd *exec.Cmd, started func(pid int)) error {
+ 	if started != nil {
+ 		started(cmd.Process.Pid)
+ 	}
+-	return handle.Wait()
++	waitErr := handle.Wait()
++	killLeftovers(handle.Record())
++	if errors.Is(waitErr, exec.ErrWaitDelay) && cmd.ProcessState != nil {
++		// Wait reports the delay only after a zero exit: a failing exit's own error wins over it.
++		logger.Warn("gate test: a process the shell left behind held its output past the wait delay", "pid", cmd.Process.Pid, "delay", pipeWaitDelay)
++		return nil
++	}
++	return waitErr
++}
++
++// killLeftovers kills what a tied child's shell left in its process group, so no leftover goes on holding the output pipe or running inside the slots.
++// The kill reaches nothing on Windows, where closing the child's job has already ended its tree.
++func killLeftovers(record proc.TreeRecord) {
++	killed, err := proc.KillTree(record)
++	switch {
++	case err != nil:
++		logger.Warn("gate test: could not kill what the shell left in its process group", "pid", record.PID, "cause", err)
++	case killed:
++		logger.Info("gate test: killed what the shell left in its process group", "pid", record.PID)
++	}
+ }
+diff --git a/internal/gatecli/cli.go b/internal/gatecli/cli.go
+index 9dc37759..4cd79f2a 100644
+--- a/internal/gatecli/cli.go
++++ b/internal/gatecli/cli.go
+@@ -32,11 +32,11 @@ const defaultShortageRetryDelay = 10 * time.Second
+ 
+ // Command builds the cobra command tree for the gate module.
+ func Command() *cobra.Command {
+-	return newCommand(defaultGoBinary, defaultSamplePeriod, defaultPreTierCeiling, time.Minute, defaultShortageRetryDelay, defaultDetachSeams())
++	return newCommand(defaultGoBinary, defaultSamplePeriod, defaultPreTierCeiling, time.Minute, defaultShortageRetryDelay, defaultPipeWaitDelay, defaultDetachSeams())
+ }
+ 
+-// newCommand builds the gate command tree over goBinary, the go command a prebuilding tier builds `lym` with, samplePeriod, how often the CPU watchdog samples a tier's process tree, preTierCeiling, the bound on the work before the first tier, timeoutUnit, the length of one `timeout_min` minute, shortageRetryDelay, how long a tier that failed on a resource shortage waits before its one rerun, and seams, the bounds and launcher of a capped call's front.
+-func newCommand(goBinary string, samplePeriod, preTierCeiling, timeoutUnit, shortageRetryDelay time.Duration, seams detachSeams) *cobra.Command {
++// newCommand builds the gate command tree over goBinary, the go command a prebuilding tier builds `lym` with, samplePeriod, how often the CPU watchdog samples a tier's process tree, preTierCeiling, the bound on the work before the first tier, timeoutUnit, the length of one `timeout_min` minute, shortageRetryDelay, how long a tier that failed on a resource shortage waits before its one rerun, pipeWaitDelay, how long a tier's or the build's output is still read after its shell exits, and seams, the bounds and launcher of a capped call's front.
++func newCommand(goBinary string, samplePeriod, preTierCeiling, timeoutUnit, shortageRetryDelay, pipeWaitDelay time.Duration, seams detachSeams) *cobra.Command {
+ 	cmd := &cobra.Command{
+ 		Use:   "gate",
+ 		Short: "run the hub's test tiers inside the hub's gate-slot pool",
+@@ -87,7 +87,7 @@ Examples:
+ 				return nil
+ 			}
+ 			request := testRequest{
+-				goBinary: goBinary, samplePeriod: samplePeriod, preTierCeiling: preTierCeiling, timeoutUnit: timeoutUnit, shortageRetryDelay: shortageRetryDelay,
++				goBinary: goBinary, samplePeriod: samplePeriod, preTierCeiling: preTierCeiling, timeoutUnit: timeoutUnit, shortageRetryDelay: shortageRetryDelay, pipeWaitDelay: pipeWaitDelay,
+ 				stderr: cmd.ErrOrStderr(), dir: dir, tags: tags, gate: gate, tiers: tiers, cards: cards, base: base, all: all, guards: guards, targets: args,
+ 				upto: upto, uptoGiven: cmd.Flags().Changed("upto"),
+ 				phase: phaseFrom(cmd.Context()),
+@@ -118,7 +118,7 @@ Examples:
+ 	cmd.AddCommand(reportCmd())
+ 	cmd.AddCommand(cardVerifyCmd(seams))
+ 	cmd.AddCommand(runnerCmd(func() *cobra.Command {
+-		return newCommand(goBinary, samplePeriod, preTierCeiling, timeoutUnit, shortageRetryDelay, seams)
++		return newCommand(goBinary, samplePeriod, preTierCeiling, timeoutUnit, shortageRetryDelay, pipeWaitDelay, seams)
+ 	}, seams))
+ 
+ 	return cmd
+@@ -150,6 +150,8 @@ type testRequest struct {
+ 	timeoutUnit time.Duration
+ 	// shortageRetryDelay is how long a tier that failed on a resource shortage waits before its one rerun.
+ 	shortageRetryDelay time.Duration
++	// pipeWaitDelay is how long a tier's or the build's output is still read after its shell exits.
++	pipeWaitDelay time.Duration
+ 	// stderr receives the lines the verb prints beside its output: the CPU watchdog's quit, a tier's timeout and each tier's summary.
+ 	stderr io.Writer
+ 	// dir is the -C value as typed; empty means the tier's own dir.
+diff --git a/internal/gatecli/detachrun_test.go b/internal/gatecli/detachrun_test.go
+index 68afac6f..784533cd 100644
+--- a/internal/gatecli/detachrun_test.go
++++ b/internal/gatecli/detachrun_test.go
+@@ -64,7 +64,7 @@ func TestGateRunner_Refusals(t *testing.T) {
+ 			tt.prepare(t, detachRun{dir: dir})
+ 
+ 			var out bytes.Buffer
+-			command := newCommand(defaultGoBinary, defaultSamplePeriod, defaultPreTierCeiling, time.Minute, defaultShortageRetryDelay, seams)
++			command := newCommand(defaultGoBinary, defaultSamplePeriod, defaultPreTierCeiling, time.Minute, defaultShortageRetryDelay, defaultPipeWaitDelay, seams)
+ 			if code := clihelp.ExecuteIn(command, dir, &out, []string{"run-detached", dir}); code != 1 {
+ 				t.Errorf("run-detached exit = %d, stdout %q; want 1", code, out.String())
+ 			}
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 1ccc6f7d..8e0afa91 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -212,7 +212,7 @@
+ // The tier's `timeout_min`, counted once its slots are held, bounds the prebuild and every invocation of the tier's command.
+ // A tier that outlives it has its process tree killed through the tied child's context and fails with exit code 1 and `gateslot.TierTimeoutLine` on stderr and in its log.
+ // The work before the first tier is bounded by a ceiling, 10 minutes in production, and fails naming the step and the way forward to run the same command again, which a transient hang such as a stalled `go list` passes.
+-// The length of a `timeout_min` minute and the ceiling are parameters of `newCommand`, so a test shortens them.
++// The length of a `timeout_min` minute, the ceiling and the pipe wait delay the Child lifetime section names are parameters of `newCommand`, so a test shortens them.
+ //
+ // # Counters, record and log
+ //
+@@ -261,6 +261,10 @@
+ // On a terminating signal, including one sent to the verb's own group, the verb kills that tree, releases its slots and exits with 128 plus the signal number.
+ // Bound: the parent-death signal reaches the shell alone, so a command the shell forks rather than replaces outlives a hard kill of the verb; a tier command that must die with it starts with `exec`.
+ //
++// A tier's or the build's shell that exits ends its run with its own exit code, even while a process it started still holds its output pipe, such as an MSBuild worker node a crashed `dotnet` left.
++// The verb reads the output for at most the pipe wait delay after the exit, 10 seconds in production, and then kills what is left of the shell's process group, on Windows by closing the child's kill-on-close job, so no leftover holds the pipe or runs on inside the slots.
++// Bound: a leftover that left the shell's process group, such as one that started a session of its own, is not killed, and only the delay bounds its hold on the pipe.
++//
+ // # CPU watchdog
+ //
+ // While a tier's command runs, the verb samples its child tree once per period, 5 seconds in production, through `proc.TreeCPU`.
+diff --git a/internal/gatecli/rungate.go b/internal/gatecli/rungate.go
+index d0bcb506..25d552ea 100644
+--- a/internal/gatecli/rungate.go
++++ b/internal/gatecli/rungate.go
+@@ -25,7 +25,7 @@ type TierObserver struct {
+ // The envelope goes to out and the summary lines to stderr.
+ func RunGate(ctx context.Context, dir, gate string, out, stderr io.Writer, observer TierObserver) int {
+ 	request := testRequest{
+-		goBinary: defaultGoBinary, samplePeriod: defaultSamplePeriod, preTierCeiling: defaultPreTierCeiling, timeoutUnit: time.Minute, shortageRetryDelay: defaultShortageRetryDelay,
++		goBinary: defaultGoBinary, samplePeriod: defaultSamplePeriod, preTierCeiling: defaultPreTierCeiling, timeoutUnit: time.Minute, shortageRetryDelay: defaultShortageRetryDelay, pipeWaitDelay: defaultPipeWaitDelay,
+ 		stderr: stderr, gate: gate, observer: observer,
+ 	}
+ 	return runTest(lymcwd.WithCwd(ctx, dir), out, request)
+diff --git a/internal/gatecli/test_integration_test.go b/internal/gatecli/test_integration_test.go
+index 3185ee92..e71d4b7d 100644
+--- a/internal/gatecli/test_integration_test.go
++++ b/internal/gatecli/test_integration_test.go
+@@ -1,5 +1,5 @@
+ // test_integration_test.go drives `lym gate test` over one hubforge hub and a stand-in tier command, each run in a process of its own so a test can signal the gate it started:
+-// the tier run, its slots, the slot wait, inheritance, hub resolution from -C, the unslotted run outside every hub, the child's lifetime under a catchable signal, a SIGKILL and a timeout, the prebuild, the run record, and the refusals that need a hub.
++// the tier run, its slots, the slot wait, inheritance, hub resolution from -C, the unslotted run outside every hub, the child's lifetime under a catchable signal, a SIGKILL, a timeout and an orphan holding its output, the prebuild, the run record, and the refusals that need a hub.
+ // It is Tier 2: it builds a real hub and spawns git, the stand-in and a few real go test runs, so it needs the integration build tag.
+ 
+ package gatecli
+@@ -46,6 +46,7 @@ const (
+ 	helperRoleGate = "gate"
+ 	// helperRoleStandIn records how it was invoked, then exits with helperExitEnv or, under helperHoldEnv, sleeps until killed with a sleeper child.
+ 	// Under helperShortageEnv a tier invocation prints a resource-shortage error and exits 1 instead.
++	// Under helperOrphanEnv, set to helperOrphanTier for a tier invocation or helperOrphanBuild for the shared build invocation, that invocation first starts a sleeper child that holds its stdout and exits without waiting for it.
+ 	// A build invocation instead writes helperBuildContentEnv to its `-o` file when it succeeds and exits with helperBuildExitEnv.
+ 	// The hub's shared build step is such an invocation too, with `sharedbuild` as its first argument, and holds under helperHoldEnv like a tier does;
+ 	// when it exits non-zero it first prints helperBuildFailureLine.
+@@ -64,11 +65,16 @@ const (
+ 	// helperBuildFailureLine is the line the shared build step prints before it exits non-zero.
+ 	helperBuildFailureLine = "sharedbuild: compile failed"
+ 	helperHoldEnv          = "GATECLI_TEST_HOLD"
++	helperOrphanEnv        = "GATECLI_TEST_ORPHAN"
++	// helperOrphanTier and helperOrphanBuild are the values of helperOrphanEnv that name the invocation that leaves the orphan.
++	helperOrphanTier  = "tier"
++	helperOrphanBuild = "build"
+ 	// helperShortageEnv makes a tier invocation print a resource-shortage error and exit 1, on its first run when the value is `once` and on every run when it is `always`.
+ 	helperShortageEnv = "GATECLI_TEST_SHORTAGE"
+-	// helperCeilingEnv and helperUnitEnv are durations the gate helper passes to newCommand in place of its defaults, and the helper always passes a shortage-rerun delay of 0.
+-	helperCeilingEnv = "GATECLI_TEST_CEILING"
+-	helperUnitEnv    = "GATECLI_TEST_UNIT"
++	// helperCeilingEnv, helperUnitEnv and helperPipeDelayEnv are durations the gate helper passes to newCommand in place of its defaults, and the helper always passes a shortage-rerun delay of 0.
++	helperCeilingEnv   = "GATECLI_TEST_CEILING"
++	helperUnitEnv      = "GATECLI_TEST_UNIT"
++	helperPipeDelayEnv = "GATECLI_TEST_PIPE_DELAY"
+ 	// helperDelayEnv is how long a tier invocation sleeps, after printing a line, before it exits with its code.
+ 	helperDelayEnv = "GATECLI_TEST_DELAY"
+ 	// helperCapEnv is the keep-warm cap the gate helper's resolver answers: a duration, `0` for a zero cap, or `fallback` for DefaultAwaitCap with a fallback cause, as the real resolver answers over an unloadable claude.yaml.
+@@ -136,7 +142,7 @@ func runGateHelper() int {
+ 	if standIn := os.Getenv(helperGoEnv); standIn != "" {
+ 		goBinary = standIn
+ 	}
+-	durations := map[string]time.Duration{helperCeilingEnv: 2 * time.Minute, helperUnitEnv: time.Minute}
++	durations := map[string]time.Duration{helperCeilingEnv: 2 * time.Minute, helperUnitEnv: time.Minute, helperPipeDelayEnv: defaultPipeWaitDelay}
+ 	for name := range durations {
+ 		if value := os.Getenv(name); value != "" {
+ 			parsed, err := time.ParseDuration(value)
+@@ -150,7 +156,7 @@ func runGateHelper() int {
+ 	if !ok {
+ 		return 1
+ 	}
+-	code := clihelp.ExecuteIn(newCommand(goBinary, time.Second, durations[helperCeilingEnv], durations[helperUnitEnv], 0, seams), os.Getenv(helperCwdEnv), os.Stdout, os.Args[1:])
++	code := clihelp.ExecuteIn(newCommand(goBinary, time.Second, durations[helperCeilingEnv], durations[helperUnitEnv], 0, durations[helperPipeDelayEnv], seams), os.Getenv(helperCwdEnv), os.Stdout, os.Args[1:])
+ 	// The helper stands for `lym`'s main, which removes the process run directory on exit.
+ 	_ = lymtemp.Remove()
+ 	return code
+@@ -269,9 +275,15 @@ func runStandIn() int {
+ 	record := standInRecord{Args: os.Args[1:], Build: isBuild, Cwd: cwd, GoFlags: os.Getenv("GOFLAGS"), BuildMark: os.Getenv("BUILD_MARK"), Slot: os.Getenv(gateslot.InheritEnv), Strand: os.Getenv(agentname.StrandNameEnv), Prebuilt: os.Getenv(gateslot.PrebuiltLymEnv), Enclosing: os.Getenv(enclosingGateEnv), Trace: os.Getenv(logger.TraceIDEnv), NodeReuse: os.Getenv("MSBUILDDISABLENODEREUSE"), MSBuildServer: os.Getenv("DOTNET_CLI_USE_MSBUILD_SERVER"), PID: os.Getpid()}
+ 	// A prebuild invocation only records itself and exits with its own code; the hold belongs to the tier's invocation and the shared build's.
+ 	hold := (!isBuild || sharedBuild) && os.Getenv(helperHoldEnv) != ""
+-	if hold {
++	orphanTarget := os.Getenv(helperOrphanEnv)
++	orphan := (!isBuild && orphanTarget == helperOrphanTier) || (sharedBuild && orphanTarget == helperOrphanBuild)
++	if hold || orphan {
+ 		sleeper := exec.Command(os.Args[0])
+ 		sleeper.Env = append(os.Environ(), helperEnv+"="+helperRoleSleeper)
++		if orphan {
++			// The sleeper keeps the tier's output pipe open past the stand-in's exit, as an MSBuild node outlives a crashed dotnet.
++			sleeper.Stdout = os.Stdout
++		}
+ 		if err := sleeper.Start(); err != nil {
+ 			return 1
+ 		}
+@@ -1539,6 +1551,55 @@ func TestGateTest_Scenario(t *testing.T) {
+ 		requireFree(t)
+ 	})
+ 
++	t.Run("a tier whose shell exits while an orphan holds its output ends with the shell's code and kills the orphan", func(t *testing.T) {
++		tests := []struct {
++			name        string
++			shellExit   int
++			wantOutcome string
++		}{
++			{"FailingExit", 134, "failed"},
++			{"ZeroExit", 0, "passed"},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				g := startGate(t, gateRun{cwd: prime, args: []string{"test", "./pkg"}, env: []string{helperOrphanEnv + "=" + helperOrphanTier, helperExitEnv + "=" + strconv.Itoa(tt.shellExit), helperPipeDelayEnv + "=100ms"}})
++				code := g.wait(t)
++				record := g.standIn(t)
++				t.Cleanup(func() { _ = (&os.Process{Pid: record.Grandchild}).Kill() })
++				if code != tt.shellExit {
++					t.Errorf("exit code = %d, stdout %q; want the shell's %d", code, g.stdout.String(), tt.shellExit)
++				}
++				eventually(t, "the orphan holding the tier's output to end", func() bool { return processGone(record.Grandchild) })
++				if run, _ := runRecordOf(t, g.stdout.String(), 0); run.ExitCode != tt.shellExit || run.Outcome != tt.wantOutcome || run.TimedOut {
++					t.Errorf("run record = %+v; want a %s run with the shell's exit code %d and no timeout", run, tt.wantOutcome, tt.shellExit)
++				}
++				requireFree(t)
++			})
++		}
++	})
++
++	t.Run("a shared build whose shell exits while an orphan holds its output ends with the shell's code and kills the orphan", func(t *testing.T) {
++		writeConfig(t, scenarioConfig(t, withSharedBuild("sub")))
++		defer writeConfig(t, gateConfig)
++
++		g := startGate(t, gateRun{cwd: prime, args: []string{"test", "--tier", "0", "./pkg"}, env: []string{helperOrphanEnv + "=" + helperOrphanBuild, helperBuildExitEnv + "=1", helperPipeDelayEnv + "=100ms"}})
++		code := g.wait(t)
++		builds := buildRecords(t, g)
++		if len(builds) != 1 {
++			t.Fatalf("build invocations = %+v; want the build once", builds)
++		}
++		orphan := builds[0].Grandchild
++		t.Cleanup(func() { _ = (&os.Process{Pid: orphan}).Kill() })
++		if code != 1 {
++			t.Errorf("exit code = %d, stdout %q; want the build's 1", code, g.stdout.String())
++		}
++		eventually(t, "the orphan holding the build's output to end", func() bool { return processGone(orphan) })
++		if build, _ := buildRunRecordOf(t, g.stdout.String(), 0); build.ExitCode != 1 || build.Outcome != "failed" || build.TimedOut {
++			t.Errorf("build run record = %+v; want a failed run with the build's exit code 1 and no timeout", build)
++		}
++		requireFree(t)
++	})
++
+ 	if runtime.GOOS != "windows" {
+ 		t.Run("a catchable signal kills the tier's whole group and frees the slot", func(t *testing.T) {
+ 			g := startGate(t, gateRun{cwd: prime, args: []string{"test", "./held"}, env: []string{helperHoldEnv + "=1"}})
+diff --git a/internal/gatecli/tierrun.go b/internal/gatecli/tierrun.go
+index 0c4fe472..a64f04a4 100644
+--- a/internal/gatecli/tierrun.go
++++ b/internal/gatecli/tierrun.go
+@@ -225,7 +225,7 @@ func runInvocations(ctx context.Context, run tierRun, counter counter, env []str
+ 		logger.Info("gate test: spawning tier command", "tier", tierName(run.number), "dir", dir, "command", command)
+ 		watchCtx, stopWatching := context.WithCancel(ctx)
+ 		var watchdogDone sync.WaitGroup
+-		runErr := runTiedChild(cmd, func(pid int) {
++		runErr := runTiedChild(cmd, request.pipeWaitDelay, func(pid int) {
+ 			if !request.watching {
+ 				return
+ 			}
+diff --git a/internal/proc/tied.go b/internal/proc/tied.go
+index ee77bae3..db930faf 100644
+--- a/internal/proc/tied.go
++++ b/internal/proc/tied.go
+@@ -82,7 +82,7 @@ func (t *Tied) Kill() error {
+ }
+ 
+ // KillTree kills the process tree a record names and reports whether it killed anything.
+-// On Linux it kills the process group only while a live process still reports the recorded group id with a start time at or after the recorded one, so a reused group id is left alone.
++// On Linux it kills the process group only while a live process still reports the recorded group id with a start time at or after the recorded one, so a group that has emptied is left alone.
+ // On Windows it kills nothing and reports false; the tree dies through TerminateNamedJob on its loop's job.
+ func KillTree(rec TreeRecord) (bool, error) {
+ 	return killTreePlatform(rec)
