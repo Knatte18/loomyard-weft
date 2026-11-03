@@ -34,23 +34,15 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R2 |  | **Plan and Discussion writers explore through parallel Sonnet agents that return only what is relevant**<br>• Bench the guidance that sends Plan and Discussion writers' lookups to parallel Sonnet subagents against a writer given none | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 1d<br>1d | loom |
 | R3 |  | **Measure the effect of the batching breach hook**<br>• After the batching breach hook lands, compare breach turns and context tokens against the 28-session baseline and tune its thresholds | [`batching-hook-effect`](design-batching-hook-effect.md) | 1d<br>1d | claude, shuttle, tools |
 
-## [P2 Codex CLI as a second shuttle engine: codexengine](project-codex-engine.md) (1)
+## [P2 Codex CLI as a second shuttle engine: codexengine](project-codex-engine.md) (0)
 
 [`codex-engine`](design-codex-engine.md) · Age 4w · Owner `neve`
 
 codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs
 
-### Tasks (1)
+### Tasks (0)
 
 Concrete and claimable; only a task can run.
-
-#### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **The assistant seat and the Burler review round with a Codex assistant** | [`codex-assist-seat`](design-codex-assist-seat.md) | darn · solid | Finalize | neve | 3h<br>3h | burler, shuttle, codex |
 
 #### Ready (0)
 
@@ -61,6 +53,14 @@ _None._
 ### Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T5 | **The assistant seat and the Burler review round with a Codex assistant** | [`codex-assist-seat`](design-codex-assist-seat.md) | 3h<br>3h | burler, shuttle, codex |
 
 ## [P0 Root: entries under no project](project-root.md) (32)
 
@@ -77,7 +77,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **One base for a command dir; a missing Drift dir fails by name**<br>• gate.yaml and drift.yaml resolve a relative dir against the same base, and a Drift step whose dir is missing fails naming the path and the config key | [`drift-dir-base`](design-drift-dir-base.md) | darn · solid | Darn-Write | neve | 1h<br>1h | drift, gate, config |
-| T8 | **A run checks what moved on origin and its owners before it pushes or lands** | [`remote-moved-before-push`](design-remote-moved-before-push.md) | darn · solid | Code-Burler-Fix | neve | 57m<br>54m | fabric, batten |
+| T8 | **A run checks what moved on origin and its owners before it pushes or lands** | [`remote-moved-before-push`](design-remote-moved-before-push.md) | darn · solid | Code-Burler-Fix | neve | 58m<br>55m | fabric, batten |
 | T9 | **The hibernate request is carried by dobby, not a daemon of its own**<br>• Move lym hibernate request into dobby; the past-Land test is already shared | [`hibernate-in-dobby`](design-hibernate-in-dobby.md) | darn · solid | Darn-Write | neve | 3d<br>36m | dobby |
 
 #### Ready (0)
