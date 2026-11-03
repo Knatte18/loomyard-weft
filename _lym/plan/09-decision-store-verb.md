@@ -1,8 +1,8 @@
 # Card 9 — decision-store-verb
 
 **Create:**
-- `plan:internal/loomcli#decisionStoreVerb` -> `func decisionStoreVerb(out io.Writer, slug string, deps decisionDeps) int`
-- `plan:internal/loomcli#TestDecisionStoreVerb` -> `func TestDecisionStoreVerb(t *testing.T)`
+- `internal/loomcli#decisionStoreVerb`
+- `internal/loomcli#TestDecisionStoreVerb`
 
 **Edit:**
 - `internal/loomcli#loomCLI.decisionCmd`

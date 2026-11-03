@@ -1,11 +1,11 @@
 # Card 7 — discussion-approve-seam
 
 **Create:**
-- `plan:internal/loomcli#storeDecisionRecord` -> `func storeDecisionRecord(location *lymcwd.Location, slug string, record []byte) error`
-- `plan:internal/loomcli#approveDiscussion` -> `func approveDiscussion(location *lymcwd.Location, runID string) error`
-- `plan:internal/loomcli#TestApproveDiscussion_Real` -> `func TestApproveDiscussion_Real(t *testing.T)`
-- `plan:internal/loomrecipe#discussionApproveSeamFault` -> `func discussionApproveSeamFault(parsed shedbuild.Recipe) string`
-- `plan:internal/loomrecipe#TestDiscussionApprovalRowsCarryApproveSeam` -> `func TestDiscussionApprovalRowsCarryApproveSeam(t *testing.T)`
+- `internal/loomcli#storeDecisionRecord`
+- `internal/loomcli#approveDiscussion`
+- `internal/loomcli#TestApproveDiscussion_Real`
+- `internal/loomrecipe#discussionApproveSeamFault`
+- `internal/loomrecipe#TestDiscussionApprovalRowsCarryApproveSeam`
 
 **Edit:**
 - `contracts/recipes/tapestry-recipe.yaml`

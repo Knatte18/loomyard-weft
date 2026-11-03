@@ -1,9 +1,9 @@
 # Card 8 — decision-add-copies
 
 **Create:**
-- `plan:internal/loomcli#decisionWayStore` -> `const decisionWayStore = "way forward: once the cause above is cleared, run \"lym loom decision store\" to copy the committed record onto the board entry"`
-- `plan:internal/loomcli#copyRecordToBoard` -> `func copyRecordToBoard(deps decisionDeps, currentRow string) string`
-- `plan:internal/loomcli#TestDecisionVerb_CopiesRecordToBoard` -> `func TestDecisionVerb_CopiesRecordToBoard(t *testing.T)`
+- `internal/loomcli#decisionWayStore`
+- `internal/loomcli#copyRecordToBoard`
+- `internal/loomcli#TestDecisionVerb_CopiesRecordToBoard`
 
 **Edit:**
 - `internal/loomcli#decisionDeps`
@@ -20,7 +20,7 @@
 - `internal/loomcli/doc.go`
 
 **Uses:**
-- `plan:internal/loomcli#storeDecisionRecord`
+- `internal/loomcli#storeDecisionRecord`
 - `internal/loomcli#newDecisionFake`
 - `internal/loomrecipe#PastDiscussionApproval`
 - `internal/boardengine#ErrRecordEntryDone`

@@ -1,6 +1,6 @@
 {
   "runGuid": "9a178544cd6e95143dc8b24bf6d1be32",
-  "planFingerprint": "f1c86e6488cd6b813cd65bcdd4913c02152468f7f87c202e85f3a3da5bb4a60d",
+  "planFingerprint": "cf93cda8e6711ad70eee70456dab4917f7364dcfad429217c70f106af17092c6",
   "planFileHashes": {
     "00-overview.md": "6d71d8b1ccc7fb91915d90fde1e7b49d27b19466fdea46eeae26435c6880cfa8",
     "01-board-decision-record.md": "baefe413668bb113a81fcd1f4efc43cfd54859299b5c71ef1baf3c4e8afa7dce",
@@ -9,9 +9,9 @@
     "04-replay-carries-record.md": "9138f5ffc61cc76998a754e8038cd39dd9116296ee199370e283dd998e14dd9b",
     "05-board-get-record.md": "2835081b23bcc53207fe8830fa1453004754b6e5b69e7cdf75e5ea0245da2e51",
     "06-discussion-approval-row.md": "4e9fdcb66cbbcc132e9490f8a8eec87a8f1a267a8e9303efb1f5cbb6817efa3e",
-    "07-discussion-approve-seam.md": "fdbb64728b9574521f3e7e0ec6a44d60bdf146898280ab717fbc9e86c7550f8e",
-    "08-decision-add-copies.md": "4cfb8530127f2a09ae92513e7de74b50075527c782fabfec988be931954559a1",
-    "09-decision-store-verb.md": "f01203d226e42d8582fa63e856a60673d0f060fb374d8aba98c7a2a8d1a622ef"
+    "07-discussion-approve-seam.md": "5f499bf9dbaa21be2c26b3806a27b217d1f31d61b0513ffcec66241aae966268",
+    "08-decision-add-copies.md": "90a1c73bce66abe1a5c3a1602b486ce4e170faf78bf657488d26caca432026bc",
+    "09-decision-store-verb.md": "3c2eb0f7d344d20a4c455c54dd6dcc20ae2635145c048d4bc643a94fff04ce54"
   },
   "planOverviewFrameHash": "c94222061584a6a00b4e78bd9cd07d87ba5c5594c95cd7552ac45e9285948fae",
   "partition": [
@@ -196,7 +196,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "6d919c856635b3768479868a0eec7c99",
   "masterSessionId": "e5be960e-154e-4d80-b935-300e5c250911",
   "masterEngine": "claude",
@@ -256,20 +256,39 @@
         "09-decision-store-verb"
       ],
       "cardHashes": {
-        "07-discussion-approve-seam": "fdbb64728b9574521f3e7e0ec6a44d60bdf146898280ab717fbc9e86c7550f8e",
-        "08-decision-add-copies": "4cfb8530127f2a09ae92513e7de74b50075527c782fabfec988be931954559a1",
-        "09-decision-store-verb": "f01203d226e42d8582fa63e856a60673d0f060fb374d8aba98c7a2a8d1a622ef"
+        "07-discussion-approve-seam": "5f499bf9dbaa21be2c26b3806a27b217d1f31d61b0513ffcec66241aae966268",
+        "08-decision-add-copies": "90a1c73bce66abe1a5c3a1602b486ce4e170faf78bf657488d26caca432026bc",
+        "09-decision-store-verb": "3c2eb0f7d344d20a4c455c54dd6dcc20ae2635145c048d4bc643a94fff04ce54"
       },
       "startSha": "689221ed5980bba8461238780ddde45d1702580d",
       "kind": "fork",
       "spawnedAt": "2026-11-03T08:41:36Z",
       "sessionId": "e5be960e-154e-4d80-b935-300e5c250911",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-discussion-approve-seam",
+        "status": "done",
+        "head_sha": "24eb0f68c6b3caaedaf088f7114bf41966b9e8ca",
+        "deviations": [
+          "internal/loomcli/decision.go",
+          "internal/loomcli/decision_test.go"
+        ]
+      },
+      "cardShas": [
+        "24eb0f68c6b3caaedaf088f7114bf41966b9e8ca"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-decision-record-on-board/e5be960e-154e-4d80-b935-300e5c250911/subagents/agent-ad539af83a47531ff.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-decision-record-on-board/e5be960e-154e-4d80-b935-300e5c250911/subagents/agent-ad539af83a47531ff.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-decision-record-on-board/e5be960e-154e-4d80-b935-300e5c250911/subagents/agent-a5f389e66723d2324.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-decision-record-on-board/e5be960e-154e-4d80-b935-300e5c250911/subagents/agent-a5f389e66723d2324.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-decision-record-on-board/e5be960e-154e-4d80-b935-300e5c250911/subagents/agent-ad539af83a47531ff.jsonl"
   ]
 }
