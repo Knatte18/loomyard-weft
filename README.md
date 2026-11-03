@@ -83,7 +83,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B10 |  | **heddle render leaves the old CLAUDE.local.md at the worktree root after the anchor fix** | [`heddle-stale-root-claude-file`](design-heddle-stale-root-claude-file.md) | 10h<br>10h | heddle |
 | B11 |  | **Worktree-Teardown archive tag push races the weft branch push and fails with missing necessary objects** | [`archive-tag-push-race`](design-archive-tag-push-race.md) | 10h<br>10h | batten, fabric |
 | B12 |  | **lym config drift refuses the whole-map capture and compare form its own key description prescribes** | [`drift-config-whole-map-set`](design-drift-config-whole-map-set.md) | 7m<br>7m | drift, config |
-| B13 |  | **The background push of a cancel deletes the weft branch of a new run of the same slug** | [`cancel-push-deletes-new-weft`](design-cancel-push-deletes-new-weft.md) | 1m<br>1m | batten, fabric |
+| B13 |  | **The background push of a cancel deletes the weft branch of a new run of the same slug** | [`cancel-push-deletes-new-weft`](design-cancel-push-deletes-new-weft.md) | 1m<br>0m | batten, fabric |
 
 #### Enhancements (16)
 
