@@ -34,11 +34,31 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R2 |  | **Plan and Discussion writers explore through parallel Sonnet agents that return only what is relevant**<br>• Bench the guidance that sends Plan and Discussion writers' lookups to parallel Sonnet subagents against a writer given none | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 1d<br>23h | loom |
 | R3 |  | **Measure the effect of the batching breach hook**<br>• After the batching breach hook lands, compare breach turns and context tokens against the 28-session baseline and tune its thresholds | [`batching-hook-effect`](design-batching-hook-effect.md) | 1d<br>23h | claude, shuttle, tools |
 
-## [P0 Root: entries under no project](project-root.md) (35)
+## [P2 Codex CLI as a second shuttle engine: codexengine](project-codex-engine.md) (0)
+
+[`codex-engine`](design-codex-engine.md) · Age 4w · Owner `neve`
+
+codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs
+
+### Tasks (0)
+
+Concrete and claimable; only a task can run.
+
+#### Ready (0)
+
+Waits on nothing open; can start now.
+
+_None._
+
+### Notes (0)
+
+Not tasks: ideas and observations, merged into a task when one is promoted.
+
+## [P0 Root: entries under no project](project-root.md) (34)
 
 Owner `neve`
 
-### Tasks (4)
+### Tasks (3)
 
 Concrete and claimable; only a task can run.
 
@@ -64,14 +84,6 @@ Waits only on Running, Ready or Draft entries.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **A paused run whose work already landed is never finished and keeps its worktree and terminal** | [`landed-run-left-paused`](design-landed-run-left-paused.md) | darn · light | T8 | 16h<br>11m | dobby, batten |
-
-#### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md)<br>[Sketch](decision-codex-engine.md) | motif · solid |  | 4w<br>1h | shuttle, codex |
 
 ### Notes (31)
 
