@@ -985,7 +985,7 @@
       "isolated": false,
       "brief": "Let edit-test-file target a test file with no toc symbols, and make insert-card rewrite or report bare card N mentions",
       "body": "Two faults in the loom plan verbs, from [issue #4](https://github.com/Knatte18/loomyard/issues/4) and [issue #5](https://github.com/Knatte18/loomyard/issues/5), both seen in task `warp-visibility`.\n\n## 1. `validate-plan` cannot target a test file with no glyphs (#4)\n\nA plan card needed to edit a Go test file that pins symbols only through blank-identifier package-level vars.\n`lym quarry toc` reports no symbols for such a file, and `validate-plan`'s `edit-test-file` rule refuses it as an Edit target and asks for member glyphs the file does not have.\nThe card could not plan the edit, and the plan-review finding asking for it had to be deferred.\n\nExpected: `edit-test-file` accepts a file with no toc symbols, for example by targeting the file or a line range, or `lym quarry toc` surfaces blank-identifier vars as targetable members.\n\n## 2. `insert-card` leaves bare \"card N\" mentions stale (#5)\n\nInserting a card renumbered every following card, but `insert-card` rewrote only the `\u003cN\u003e-\u003cslug\u003e` ids.\nAbout twenty bare \"card N\" mentions in plan prose stayed at the old numbers and had to be renumbered by hand, with no warning from the verb.\n\nExpected: `insert-card` also rewrites bare \"card N\" references, or reports each one it leaves unrewritten so the planner can fix them.\n",
-      "status": "running · Darn-Write",
+      "status": "running · Drift-Verify",
       "created": "2026-11-02T20:34:15Z",
       "revised": "2026-11-03T09:53:25Z",
       "profile": "solid"
