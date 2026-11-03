@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-03 15:12 UTC; every age below is as of then.
+Rendered 2026-11-03 15:13 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -76,12 +76,12 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **A beam cannot be made from a project whose slug already ran a motif run** | [`beam-after-motif`](design-beam-after-motif.md) | darn · light | Code-Burler-Review | neve | 2h<br>24m | batten, pawl |
-| T3 | **A gate tier whose shell exits while a grandchild holds its pipe hangs forever**<br>• No WaitDelay on tier and build children: an orphaned MSBuild node keeps lym gate test, and the adopt check, running past every timeout | [`gate-orphan-pipe-hang`](design-gate-orphan-pipe-hang.md) | darn · light | Code-Burler-Fix | neve | 46m<br>24m | gate, process |
-| T4 | **Way-forward texts name lym board remove <slug>, which the verb refuses**<br>• adoptcli, fronttask and boardengine tell the reader to run lym board remove with a bare slug; the verb takes JSON or a bare handle | [`board-remove-slug-form`](design-board-remove-slug-form.md) | darn · light | Code-Burler-Fix | neve | 45m<br>24m | board |
-| T6 | **loom status --watch prints every poll while a verify runs**<br>• The verify wait text carries its elapsed seconds, so the watch sees a change on every poll | [`watch-elapsed-churn`](design-watch-elapsed-churn.md) | darn · light | Darn-Write | neve | 41m<br>24m | loom, cli |
+| T2 | **A beam cannot be made from a project whose slug already ran a motif run** | [`beam-after-motif`](design-beam-after-motif.md) | darn · light | Code-Burler-Review | neve | 2h<br>25m | batten, pawl |
+| T3 | **A gate tier whose shell exits while a grandchild holds its pipe hangs forever**<br>• No WaitDelay on tier and build children: an orphaned MSBuild node keeps lym gate test, and the adopt check, running past every timeout | [`gate-orphan-pipe-hang`](design-gate-orphan-pipe-hang.md) | darn · light | Code-Burler-Fix | neve | 47m<br>25m | gate, process |
+| T4 | **Way-forward texts name lym board remove <slug>, which the verb refuses**<br>• adoptcli, fronttask and boardengine tell the reader to run lym board remove with a bare slug; the verb takes JSON or a bare handle | [`board-remove-slug-form`](design-board-remove-slug-form.md) | darn · light | Code-Bouncer | neve | 46m<br>25m | board |
+| T6 | **loom status --watch prints every poll while a verify runs**<br>• The verify wait text carries its elapsed seconds, so the watch sees a change on every poll | [`watch-elapsed-churn`](design-watch-elapsed-churn.md) | darn · light | Darn-Write | neve | 42m<br>25m | loom, cli |
 | T7 | **A wake from a lym hibernate lifts the pause only when a switch allows it** | [`hibernate-wake-resume-switch`](design-hibernate-wake-resume-switch.md) | darn · light | Darn-Write | neve | 19h<br>17m | hibernate, tender |
-| T8 | **A run checks what moved on origin and its owners before it pushes or lands** | [`remote-moved-before-push`](design-remote-moved-before-push.md) | darn · solid | Darn-Write | neve | 19m<br>17m | fabric, batten |
+| T8 | **A run checks what moved on origin and its owners before it pushes or lands** | [`remote-moved-before-push`](design-remote-moved-before-push.md) | darn · solid | Darn-Write | neve | 20m<br>17m | fabric, batten |
 
 #### Ready (0)
 
@@ -95,7 +95,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **One base for a command dir; a missing Drift dir fails by name**<br>• gate.yaml and drift.yaml resolve a relative dir against the same base, and a Drift step whose dir is missing fails naming the path and the config key | [`drift-dir-base`](design-drift-dir-base.md) | darn · solid | T3 | 42m<br>24m | drift, gate, config |
+| T1 | **One base for a command dir; a missing Drift dir fails by name**<br>• gate.yaml and drift.yaml resolve a relative dir against the same base, and a Drift step whose dir is missing fails naming the path and the config key | [`drift-dir-base`](design-drift-dir-base.md) | darn · solid | T3 | 43m<br>25m | drift, gate, config |
 
 #### Draft (1)
 
@@ -119,7 +119,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Drift-Verify's verdict never reaches the summary or the pull request**<br>• A clean compare leaves the PR asking the operator to run the regression compare by hand | [`drift-verdict-in-pr`](design-drift-verdict-in-pr.md) | 13m<br>13m | drift, loom, landing |
+| B1 |  | **Drift-Verify's verdict never reaches the summary or the pull request**<br>• A clean compare leaves the PR asking the operator to run the regression compare by hand | [`drift-verdict-in-pr`](design-drift-verdict-in-pr.md) | 14m<br>14m | drift, loom, landing |
 
 #### Enhancements (10)
 
