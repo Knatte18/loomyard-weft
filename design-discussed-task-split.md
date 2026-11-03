@@ -42,17 +42,22 @@ How a task is best cut into smaller tasks is known only once its Discussion is d
 - A discussed entry then goes one of two ways, chosen after its Discussion:
   1. Tapestry from Plan, skipping Discussion-Write: Plan-Write and Webster as today. Built, see above.
   2. The part split: the record's scope is cut into darn tasks with contracts and `depends_on`, which run independently, each a task of its own.
-- Open: whether Discussion-Write also writes the part split, since it has the overview, or a separate step does it only when way 2 is chosen, so a task going way 1 pays nothing for it.
-  The orch's recommendation: Discussion-Write only judges in a line or two whether the scope has clear seams, and the split itself is a separate step on the discussed entry, much as `Parts-Write` is today.
+
+## The split is a cold agent of its own (operator, 2026-11-03)
+
+- The Sketch stays as it is: Discussion-Write writes no split and judges no seams, so a task going way 1 pays nothing for the split.
+- A separate cold agent splits a discussed entry when way 2 is chosen: it reads the stored Sketch and the code the Sketch names, and proposes the parts.
+- The proposal holds, per part: the Sketch decisions it builds, the packages it changes, its contract (what it takes in, delivers and exports), its `depends_on`, the Open risks and Acceptance criteria it carries, and a recipe and profile.
+  It checks that no two parallel parts change the same package.
+- The agent is a role of its own so it can be tuned hard: its prompt, model and effort are set apart from Discussion-Write's.
+- Its proposal goes to the operator, who approves it before the entry becomes a project and its parts become tasks.
+- Seen (2026-11-03): the first split, F18 `codex-engine` into project P2, was done by the orch from the Sketch's headings in a few calls, without checking packages, contracts or criteria per part; that shallow split is what this agent replaces.
 
 ## Ways to split, simplest first
 
 1. The operator, or the board agent of note `board-agent-button`, splits a discussed entry into tasks with `depends_on`, each with its part of the record and flagged discussed.
    The same agent can split an undiscussed entry before it runs, but then each part runs its own Discussion and rereads much of the same code; a tapestry part carries about $23 of fixed cost, so this pays best when the parts are darn-sized.
-2. Discussion finds the task too large or proposes a split: it writes its findings and the proposed parts into the record, tells its parent and ends its turn.
-   It files no task or project and starts nothing; the operator decides, and the parts become plain tasks in the prime or, for a large one, a project and beam spawned from the parent, never from the old task's worktree.
-   Its prompt must hold back: one part is the default, a split only where the seams are clear and each part pays for its own Plan and review, and small parts go to darn.
-3. `stitch`: a stand-alone loom recipe for a large task's whole course, chosen before the run starts.
+2. `stitch`: a stand-alone loom recipe for a large task's whole course, chosen before the run starts.
    Preflight, Discussion, a Pre-Plan producer that splits the decided scope into parts with contracts (what each takes in, delivers and exports, and which parts it depends on), a row with no agent that turns the entry into a project and files each part as a darn task, then an inner pawl run through `battenshed.NewInnerRun` that brings up the beam, waits until every part has landed and lands the beam.
    Parts run with review off; one review covers the whole diff after the last lands.
    It is tried first as a hand-run test project with the projects and beams that exist, measured against tapestry runs of the same size (`docs/research/token-audit-2026-10-22`), and built only if it saves tokens.
