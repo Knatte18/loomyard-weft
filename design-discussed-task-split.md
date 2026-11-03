@@ -20,7 +20,7 @@ Several notes circled the same question (where the decision record lives, how a 
 
 How a task is best cut into smaller tasks is known only once its Discussion is done, so the split comes after Discussion, not before.
 
-- A Discussion-only run, interactive or not, runs Discussion-Write and its review and nothing else, then stores the record and flags the entry discussed, as the core above says.
+- A Discussion-only run, the recipe `cartoon` (operator, 2026-11-03: a tapestry cartoon is the full-size design drawn before the weaving, which the weaver follows), interactive or not, runs Discussion-Write and its review and nothing else, then stores the record and flags the entry discussed, as the core above says.
 - It runs beside today's courses as an experiment; tapestry without it is unchanged.
 - A discussed entry then goes one of two ways, chosen after its Discussion:
   1. Tapestry from Plan, skipping Discussion-Write: Plan-Write and Webster as today.
