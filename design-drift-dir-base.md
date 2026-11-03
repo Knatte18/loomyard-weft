@@ -1,6 +1,6 @@
 # One base for a command dir; a missing Drift dir fails by name
 
-`drift-dir-base` · Task · bug, drift, gate, config · running · Code-Bouncer
+`drift-dir-base` · Task · bug, drift, gate, config · running · Describe
 
 # One base for a command's dir
 
