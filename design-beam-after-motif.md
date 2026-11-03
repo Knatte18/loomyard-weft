@@ -1,6 +1,6 @@
 # A beam cannot be made from a project whose slug already ran a motif run
 
-`beam-after-motif` · Task · bug, batten, pawl · running · Code-Burler-Review
+`beam-after-motif` · Task · bug, batten, pawl · running · Code-Burler-Fix
 
 ## Seen (2026-11-03)
 
