@@ -2,8 +2,6 @@
 
 `landed-run-left-paused` · Task · bug, dobby, batten · running · Darn-Write
 
-Depends on: [`batten-stray-dir-and-beam-mark`](design-batten-stray-dir-and-beam-mark.md)
-
 ## Seen (2026-11-02)
 
 Run `cold-gate-fixer` ran on osl-1046 and its work reached `main` (`a9536680`), but its batten run never finished Land and Worktree-Teardown there.
