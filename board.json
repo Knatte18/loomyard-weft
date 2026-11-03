@@ -852,7 +852,8 @@
       "status": "running · Discussion-Bouncer",
       "created": "2026-11-03T07:30:22Z",
       "revised": "2026-11-03T09:46:17Z",
-      "profile": "light"
+      "profile": "light",
+      "discussed": true
     },
     {
       "id": 1032,
