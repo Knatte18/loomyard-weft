@@ -4,6 +4,9 @@
 - `plan:internal/shedbuild#Expand` -> `func Expand(r Recipe, resolve func(name string) ([]byte, error)) (Recipe, error)`
 - `plan:internal/shedbuild#TestExpand` -> `func TestExpand(t *testing.T)`
 
+**Edit:**
+- `contracts/specs/shed-recipe-spec.md`
+
 **Extends:**
 - `internal/shedbuild/doc.go`
 
@@ -36,6 +39,8 @@ Refusals, each prefixed `shedbuild: block %q:` with the block row's name, then t
 Bound: the same recipe in two blocks of one parent is refused by the row-name check.
 
 `doc.go` gains a `# Blocks` section stating the above.
+`shed-recipe-spec.md` gains an expansion paragraph naming `Expand`, the told resolver, the block exit and the block path.
+Its exported-function paragraph names `Expand` beside `Parse`, `Load`, `Build` and `Check`, its heading no longer counting them, and its Validation split paragraph names `Expand`'s block refusals (a block recipe including itself, an inlined edge naming no row of its recipe, a segment shared across a block's edge) as the one exception to the package running no routing analysis of its own.
 
 Tests, tier0: `TestExpand` (new), a table over a map resolver of YAML sources built with `Stub` rows:
 - a parent with one block yields the block row with engine `Block`, `OnDone` the sub-recipe's entry and `SkipTo` the block's `on_done`, then the sub-recipe's rows under their own names with `BlockPath` the block's name and every empty `on_done` rewritten to the exit;

@@ -5,6 +5,7 @@
 - `internal/shedbuild#Recipe`
 - `internal/shedbuild#checkRowShape`
 - `internal/shedbuild/doc.go`
+- `contracts/specs/shed-recipe-spec.md`
 - `internal/shedbuild#TestParse_ValueAndErrorCases`
 
 **Uses:**
@@ -27,6 +28,7 @@ The empty-engine refusal applies to every row that is not a block row.
 A block row's `on_done` may be empty here; `Expand` judges it (card 4).
 
 `doc.go` describes the block row's keys and refusals and the `profile_recipe` key.
+`shed-recipe-spec.md`'s Document shape paragraph gains the top-level `profile_recipe` key and the block row, which carries only `name`, `block`, `block_gate` and `on_done` and no engine, and its row-key sentence is rewritten to name engine rows and block rows.
 
 Tests, tier0: `TestParse_ValueAndErrorCases` gains rows for a well-formed block row decoding into `Block` and `BlockGate` with an empty `on_done`, for `profile_recipe` decoding into `ProfileRecipe`, for each refused key on a block row (one row per key), for a missing `block` and a missing `block_gate`, for a hand-written `engine: Block`, and for `block_path` written in a file refused as an unknown field.
 

@@ -12,7 +12,7 @@ Duplicates across lenses are merged onto the first line naming them.
 - coverage 7, LOW — fixed as proposed: the overview's Shared Decisions record why loomrecipe tells its one resolver to every embedded recipe, pawl included.
 - coverage 8, LOW — fixed as proposed: `TestExpand` gains a row whose sub-recipe's `terminals` name a foreign row, keeping the parent's.
 - coverage 9, LOW — fixed as proposed: `TestBlockRecipes` asserts the built arras Discussion ring's `OnStuck` chain, equal `Segment` and `MaxBounces`, and `Block`.
-- way-forward 1 + guard-reach 2, MEDIUM — fixed as proposed: card 8's `prepareRunSettings` keeps the task's recipe when `ProfileRecipe` refuses, so the seed write's `unsupportedChildRecipeRefusal` stays the refusal an unknown recipe meets; the planned refusal row became a no-refusal row.
+- way-forward 1 + guard-reach 2, MEDIUM — fixed as proposed: card 8's `prepareRunSettings` keeps the task's recipe when `ProfileRecipe` refuses, so an unknown recipe with no profile named still meets the seed write's `shedrun.ValidateRecipe` refusal, wrapped in `battenshed.ErrUnknownRecipe`; the planned refusal row became a no-refusal row.
 - way-forward 2, LOW — fixed as proposed: card 5's not-expanded check runs ahead of the loom contract check, and its `TestBuild_Errors` row builds with `Contract: "loom"`.
 - way-forward 3, LOW — fixed as proposed: card 4 states each `Expand` refusal's text and way forward, and its rows assert them.
 - way-forward 4, LOW — fixed as proposed: card 1 states the `SkipTo` validate rule is a fail-loud wiring guard like validate's other rules.

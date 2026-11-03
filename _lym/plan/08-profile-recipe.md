@@ -15,7 +15,10 @@
 
 `loomrecipe.ProfileRecipe` is the one accessor every reader of a task's profile block resolves the recipe name through: it returns the named recipe's `profile_recipe`, or the recipe's own name when the key is empty; an empty name reads as tapestry, and a name that selects no embedded recipe is refused as `parseEmbeddedRecipe` refuses it.
 `prepareRunSettings`, the one production reader of a profile block by recipe, resolves `settings.Recipe` through it before `profiles.Default` and `profiles.Settings`.
-When `ProfileRecipe` refuses, `prepareRunSettings` keeps `settings.Recipe` as the task named it, so a task whose recipe names no embedded recipe reaches Seed-Child's seed write, whose `unsupportedChildRecipeRefusal` names the admitted recipes, as it does today, rather than a run-settings refusal pointing at the profile.
+When `ProfileRecipe` refuses, `prepareRunSettings` keeps `settings.Recipe` as the task named it.
+A task whose recipe names no embedded recipe and that names no profile therefore passes `prepareRunSettings` with its settings alone,
+and Seed-Child's `WriteSeed` seam then refuses it through `shedrun.ValidateRecipe`, wrapped in `battenshed.ErrUnknownRecipe`, naming the available recipes, as it does today.
+A task that also names a profile is still refused by `profiles.Settings`, as it is today, because the profile holds no block for that name.
 Bound: `profile_recipe` only chooses which recipe's profile block and default profile a task's settings come from; it changes no row or config module, and only a recipe's top-level key sets it.
 
 `doc.go` gains a sentence on `ProfileRecipe`.

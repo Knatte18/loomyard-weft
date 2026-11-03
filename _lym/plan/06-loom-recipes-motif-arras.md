@@ -31,6 +31,8 @@
 - `internal/loomrecipe#TestRecipe_StructuralCheckHasNoFindings`
 - `internal/loomrecipe#TestReviewBudget_AppliedByNewAndRouting`
 - `internal/loomrecipe#TestRecipeKeys`
+- `internal/loomrecipe#TestInterruptPolicies_MatchAssembledRows`
+- `internal/loomshed#InterruptPolicies`
 - `internal/shedrecipe_test#coverageGuardAllowedUnreachableEngines`
 
 **Uses:**
@@ -64,13 +66,14 @@ loomrecipe:
 
 The coverage guard's allowlist drops `Block`, which `RecipeEngines` now reaches.
 
+`loomshed.InterruptPolicies` gains `NameMotif` mapped to `shedverbs.InterruptPolicyReinvoke`, since the Motif producer returns Done at once and re-invoking it repeats nothing.
+
 Tests, all tier0:
 - `TestBlockRecipes` (new):
   - motif's rows equal tapestry's four Discussion rows by `reflect.DeepEqual` on the parsed `shedbuild.Row`s, bar Discussion-Bouncer's empty `on_done`;
   - arras's expanded rows equal tapestry's rows plus the `Motif` row, config included, bar Preflight's `on_done` (`Motif`), the inlined rows' `BlockPath` (`Motif`), and `Motif`'s own fields (engine `Block`, `OnDone` Discussion-Write, `SkipTo` Drift-Baseline);
   - arras's top-level keys equal tapestry's, `ProfileRecipe` aside;
-  - `New(shedrun.RecipeArras, …)` over `testEnv` builds, so arras passes the loom contract check on its expanded rows, and its built Discussion ring holds the shape `TestNew_ShapeMatchesRecipe` asserts for tapestry: Discussion-Bouncer's `OnStuck` names Discussion-Burler-Review, whose `OnStuck` names Discussion-Burler-Fix, whose `OnStuck` names Discussion-Bouncer, with equal `Segment` and `MaxBounces`, and `Block` `Motif` on each;
-  - `New`'s built rows and `Routing(shedrun.RecipeArras, …)`'s projected rows agree row for row on `Name`, `OnDone`, `OnStuck`, `SkipTo` and `Block`.
+  - `New(shedrun.RecipeArras, …)` over `testEnv` builds, so arras passes the loom contract check on its expanded rows.
 - `TestRowNames_FollowEachRecipesRowOrder` compares each recipe's rows with its expanded recipe and gains arras and motif rows, asserting the new `RecipeRow` fields.
 - `TestEntryNumbers` gains arras: Preflight 1, Motif 2, Discussion-Write 3, the Discussion-Review rows 4, Drift-Baseline 5, on to Friction-Reflect 18.
 - `TestRouting_ProgressAt` gains an arras subtest: steps read Preflight, Motif, Discussion-Write, Discussion-Review, then tapestry's later steps, and `ProgressAt("Drift-Baseline")` is step 5, the step a pass-over moves to from Motif's step 2.
@@ -78,5 +81,6 @@ Tests, all tier0:
 - `TestRecipe_StructuralCheckHasNoFindings` gains arras, expanded before `shedbuild.Build`.
 - `TestReviewBudget_AppliedByNewAndRouting` gains arras: the Discussion-Review rows carry the `Discussion-Review` budget in `New` and `Routing`.
 - `TestRecipeKeys` gains rows: `IsLoom` is true for arras and false for motif; `HasEngine(arras, "DiscussionWrite")` is true and `EngineRow(arras, "DiscussionWrite")` is `Discussion-Write`.
+- `TestInterruptPolicies_MatchAssembledRows` adds `shedrun.RecipeArras` to the recipes it builds, and its doc comment and reverse-direction error message name arras beside tapestry, darn and sampler.
 
-**ImpactSummary:** Two new embedded recipes and one name table in loomrecipe; every accessor now expands, which leaves the five existing recipes' rows as they were, so their callers in loomcli, battencli, reportengine and shedverbs see no change.
+**ImpactSummary:** Two new embedded recipes, one name table in loomrecipe and one `loomshed.InterruptPolicies` entry for the Motif row, which `shedverbs`' envelopes read; every accessor now expands, which leaves the five existing recipes' rows as they were, so their callers in loomcli, battencli, reportengine and shedverbs see no change.
