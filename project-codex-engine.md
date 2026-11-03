@@ -1,6 +1,6 @@
 # P2 Codex CLI as a second shuttle engine: codexengine
 
-Rendered 2026-11-03 14:33 UTC; every age below is as of then.
+Rendered 2026-11-03 14:34 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`codex-engine`](design-codex-engine.md) · Age 4w · Owner `neve`
@@ -16,13 +16,19 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (1)
+### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T5 | **The assistant seat and the Burler review round with a Codex assistant** | [`codex-assist-seat`](design-codex-assist-seat.md) | darn · solid | Worktree-Create | neve | 1h<br>1h | burler, shuttle, codex |
+
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T5 | **The assistant seat and the Burler review round with a Codex assistant** | [`codex-assist-seat`](design-codex-assist-seat.md) | darn · solid |  | 1h<br>1h | burler, shuttle, codex |
+_None._
 
 ## Notes (0)
 
