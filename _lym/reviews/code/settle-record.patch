@@ -1,0 +1,72 @@
+diff --git a/internal/heddleengine/doc.go b/internal/heddleengine/doc.go
+index d4e17228..a0e02249 100644
+--- a/internal/heddleengine/doc.go
++++ b/internal/heddleengine/doc.go
+@@ -2,7 +2,8 @@
+ // Two layers hold entries of instruction text, each aimed at targets of a table that is this package's code.
+ // The shipped layer is lym's own: shipped.json, embedded in the binary, read-only and changed only by a lym release.
+ // The repository layer is heddle.json at the Bolt checkout's root, which the `lym heddle` verbs write.
+-// A file target is rendered into a git-excluded file at a worktree's anchor, beside the repository's own CLAUDE and AGENTS files, the shipped entries first under a heading of their own and the repository's after under theirs;
++// A file target is rendered into a git-excluded file at a worktree's anchor, beside the repository's own CLAUDE and AGENTS files, the shipped entries first under a level-one heading of their own and the repository's after under theirs;
++// each shipped entry opens with a level-two heading, so the file skips no heading level;
+ // a prompt target is read as passages appended to a session's system prompt, the shipped ones first.
+ // A prompt target reaches the sessions its row names by engine, by strand role, or both: `claude-prompt` reaches every Claude session and `orch-prompt` every orch session, and an engine whose launch appends no passages delivers neither.
+ // A hub whose heddle.yaml sets lym_override renders a shipped entry with the text of its override in heddle-lym-override.json beside heddle.json, so lym's own text is tuned there with no build;
+diff --git a/internal/heddleengine/shipped.json b/internal/heddleengine/shipped.json
+index 481f2f5f..e59b81ed 100644
+--- a/internal/heddleengine/shipped.json
++++ b/internal/heddleengine/shipped.json
+@@ -2,7 +2,7 @@
+   "entries": [
+     {
+       "slug": "lym-batching",
+-      "text": "Request every call whose arguments you already know in one message. Before you look anything up, list every question the step raises, then send every grep and read for all of them in one message; wait for a result only to choose the next call, then send every call it unlocks and every call you know in one message. Read what you need before you edit: a file whole, or every span you need from it, in one message. This overrides the Read tool's own advice to read only the part you need: never grep for a line number and then read a slice around it, and never read one file in slices over several turns. Keep a file you have read in mind rather than reading it again unless something other than your own edit has changed it; after a command rewrites files, such as a formatter, a generator or a script, read every file it changed again in one message before you edit any of them.",
++      "text": "## Batch your calls\n\n- Request every call whose arguments you already know in one message.\n- Before you look anything up, list every question the step raises.\n- Send every grep and read for all of those questions in one message.\n- Wait for a result only to choose the next call.\n- When a result arrives, send every call it unlocks and every call you already know in one message.\n- Read what you need before you edit: a file whole, or every span you need from it, in one message.\n- Read a file whole, or every span you need from it, even though the Read tool advises reading only the part you need.\n- Never grep for a line number and then read a slice around it.\n- Never read one file in slices over several turns.\n- Keep a file you have read in mind; read it again only when something other than your own edit has changed it.\n- After a command rewrites files, such as a formatter, a generator or a script, read every file it changed again in one message before you edit any of them.",
+       "order": 10,
+       "targets": [
+         "claude-file"
+@@ -10,7 +10,7 @@
+     },
+     {
+       "slug": "lym-plan-edits-before-gate",
+-      "text": "Make every round of edits in this order, and do not deviate from it. A round is any set of edits, whatever starts it: a card, a task, a plan, a review's findings, a fixer's report or a failed gate.\n\n1. Read everything the round needs in one message: every Read and grep call together, a file whole when it fits and every span of it you need otherwise. Make a second round of reads only for files the first round named.\n2. Decide every edit across every file the round touches before you make any of them.\n3. Make all of those edits in one message, every Edit and Write call together in one turn.\n4. Run the round's gate once, or its validator when it has no gate. Fix everything its report shows the same way: read what the fixes need in one message, decide every fix, make all of them in one message, then run it again.\n\nNever read one file per turn. Never read one file in slices over several turns. Never spread an edit, a read and another edit over turns. Never run the gate between the edits of one round.",
++      "text": "## Make every round of edits in this order\n\n- Follow the steps below in order every round, and never deviate from them.\n- Count as a round any set of edits, whatever starts it: a card, a task, a plan, a review's findings, a fixer's report or a failed gate.\n\n1. Read everything the round needs in one message: every Read and grep call together, a file whole when it fits and every span of it you need otherwise.\n   - Make a second round of reads only for files the first round named.\n2. Decide every edit across every file the round touches before you make any of them.\n3. Make all of those edits in one message, every Edit and Write call together in one turn.\n4. Run the round's gate once, or its validator when it has no gate, and fix everything its report shows the same way:\n   1. Read what the fixes need in one message.\n   2. Decide every fix.\n   3. Make all of them in one message.\n   4. Run the gate or validator again.\n\n- Never read one file per turn.\n- Never spread an edit, a read and another edit over turns.\n- Never run the gate between the edits of one round.",
+       "order": 20,
+       "targets": [
+         "claude-file"
+diff --git a/internal/heddleengine/store_test.go b/internal/heddleengine/store_test.go
+index 8905e14f..f4bf4d91 100644
+--- a/internal/heddleengine/store_test.go
++++ b/internal/heddleengine/store_test.go
+@@ -169,14 +169,14 @@ func TestStore(t *testing.T) {
+ 
+ 	t.Run("ShippedEntriesArePinned", func(t *testing.T) {
+ 		t.Parallel()
+-		const batchingSentence = "Request every call whose arguments you already know in one message. Before you look anything up, list every question the step raises, then send every grep and read for all of them in one message; wait for a result only to choose the next call, then send every call it unlocks and every call you know in one message. Read what you need before you edit: a file whole, or every span you need from it, in one message. This overrides the Read tool's own advice to read only the part you need: never grep for a line number and then read a slice around it, and never read one file in slices over several turns. Keep a file you have read in mind rather than reading it again unless something other than your own edit has changed it; after a command rewrites files, such as a formatter, a generator or a script, read every file it changed again in one message before you edit any of them."
+-		// The rows are the shipped layer in render order; wantText is empty for an entry whose text is not pinned.
++		// The rows are the shipped layer in render order.
++		// wantHeading is the entry's first line: a level-two heading of its own, so the rendered file steps from the shipped section's level-one heading with no skip.
+ 		tests := []struct {
+-			slug     string
+-			wantText string
++			slug        string
++			wantHeading string
+ 		}{
+-			{"lym-batching", batchingSentence},
+-			{"lym-plan-edits-before-gate", ""},
++			{"lym-batching", "## Batch your calls"},
++			{"lym-plan-edits-before-gate", "## Make every round of edits in this order"},
+ 		}
+ 		ordered := shippedStore.Ordered()
+ 		if len(ordered) != len(tests) {
+@@ -187,8 +187,8 @@ func TestStore(t *testing.T) {
+ 			if got.Slug != tt.slug || len(got.Targets) != 1 || got.Targets[0] != "claude-file" {
+ 				t.Errorf("shipped entry %d = %+v; want slug %s aimed at claude-file alone", i, got, tt.slug)
+ 			}
+-			if tt.wantText != "" && got.Text != tt.wantText {
+-				t.Errorf("shipped entry %s text = %q; want %q", tt.slug, got.Text, tt.wantText)
++			if heading, _, _ := strings.Cut(got.Text, "\n"); heading != tt.wantHeading {
++				t.Errorf("shipped entry %s opens with %q; want %q", tt.slug, heading, tt.wantHeading)
+ 			}
+ 		}
+ 	})
