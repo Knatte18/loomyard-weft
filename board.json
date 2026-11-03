@@ -992,7 +992,8 @@
       "status": "running · Darn-Write",
       "created": "2026-11-03T10:18:25Z",
       "revised": "2026-11-03T10:18:29Z",
-      "profile": "solid"
+      "profile": "solid",
+      "notify_on_land": true
     }
   ],
   "prime_owner": "neve",
