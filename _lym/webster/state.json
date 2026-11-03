@@ -1,6 +1,6 @@
 {
   "runGuid": "9280df8cdbfd5778a93dca9b9e59bd44",
-  "planFingerprint": "48212aa7d004f3666f567846766f6843f12baf5fb46a5fd37e2dafc8ba345359",
+  "planFingerprint": "04d69f847650554464a200fafa54ed4dd41c62cab2f6088d992df36c393c731c",
   "planFileHashes": {
     "00-overview.md": "ed05f10a913442cf79425c86cea2496e21115ee0814f3fa1ccd1121d409a9122",
     "01-gitrepo-lease-and-retry.md": "7c9de31d7bf9209d24a20a50de76fac73f43b657d1f7fca28fa66dd753c0dd60",
@@ -15,7 +15,7 @@
     "10-batten-resume-readopt.md": "bd993be5b709a22c49f68be492d98037d84ac6fd1f1c095a0ef1e51c3088a27f",
     "11-records-tag-reads.md": "a7ba8123b4de173baa45b35d7b8a853b92fff08dc8cee76342b2985ff9a75edd",
     "12-readopt-failed-stop.md": "12b91cbc0cf701e9f3b2475e05e4c18164cfe929185d803a32b4c5fbab4b38dc",
-    "13-remove-follow-up.md": "eb3adb6e769e485908d590ecb0b397e0f22dc09c9ca5faa7c845b73fb1cc0280",
+    "13-remove-follow-up.md": "adc38b03609a393f8310b806c52086cc7fb2a0474eedf55ca5742471cb79f57e",
     "14-tackler-remote-check.md": "2280d314d8cb21bd5ad50a1510aacbb433a8fdef54e3d64895072e73a66cf097"
   },
   "planOverviewFrameHash": "f8846df119127294e4423a1541cb325de4a6c8dec35544b17b04f8d192b09080",
@@ -355,7 +355,7 @@
       }
     }
   ],
-  "currentBatch": 13,
+  "currentBatch": 0,
   "masterStrand": "8c367ba1767cd7b167f0db07436c37c8",
   "masterSessionId": "87115963-d0b5-4d72-bf90-38335a1927d4",
   "masterEngine": "claude",
@@ -454,7 +454,7 @@
         "14-tackler-remote-check"
       ],
       "cardHashes": {
-        "13-remove-follow-up": "eb3adb6e769e485908d590ecb0b397e0f22dc09c9ca5faa7c845b73fb1cc0280",
+        "13-remove-follow-up": "adc38b03609a393f8310b806c52086cc7fb2a0474eedf55ca5742471cb79f57e",
         "14-tackler-remote-check": "2280d314d8cb21bd5ad50a1510aacbb433a8fdef54e3d64895072e73a66cf097"
       },
       "startSha": "f930e4a70d0451fbb90f7250bd54ca48a745a220",
@@ -462,8 +462,32 @@
       "spawnedAt": "2026-11-03T11:34:30Z",
       "sessionId": "87115963-d0b5-4d72-bf90-38335a1927d4",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "13-remove-follow-up",
+        "status": "done",
+        "head_sha": "c04178171b4e888ee3805f2c4ea9c21d0ded2472",
+        "deviations": [
+          "internal/battencli/cancel.go",
+          "internal/battencli/cancel_test.go",
+          "internal/battencli/resumereconcile.go",
+          "internal/landingshed/stuck.go",
+          "internal/pairteardown/followup.go",
+          "internal/pairteardown/followup_test.go",
+          "internal/pairteardown/teardown_test.go",
+          "internal/tendercli/deps.go"
+        ]
+      },
+      "cardShas": [
+        "c04178171b4e888ee3805f2c4ea9c21d0ded2472"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-batten-remote-order/87115963-d0b5-4d72-bf90-38335a1927d4/subagents/agent-a563283c1d0574679.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-batten-remote-order/87115963-d0b5-4d72-bf90-38335a1927d4/subagents/agent-a563283c1d0574679.jsonl"
+      ]
     },
     "5": {
       "slug": "teardown-lock-add-discard-push",
@@ -546,6 +570,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-batten-remote-order/87115963-d0b5-4d72-bf90-38335a1927d4/subagents/agent-ad0bcb92cf8ad6c29.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-batten-remote-order/87115963-d0b5-4d72-bf90-38335a1927d4/subagents/agent-a2b5bec2de69f2f56.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-batten-remote-order/87115963-d0b5-4d72-bf90-38335a1927d4/subagents/agent-a620465628d6a503c.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-batten-remote-order/87115963-d0b5-4d72-bf90-38335a1927d4/subagents/agent-a56eda91227d880e7.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-batten-remote-order/87115963-d0b5-4d72-bf90-38335a1927d4/subagents/agent-a56eda91227d880e7.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-batten-remote-order/87115963-d0b5-4d72-bf90-38335a1927d4/subagents/agent-a563283c1d0574679.jsonl"
   ]
 }

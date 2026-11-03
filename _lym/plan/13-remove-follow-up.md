@@ -1,9 +1,9 @@
 # Card 13 — remove-follow-up
 
 **Create:**
-- `plan:internal/pairteardown#BattenFollowUp` -> `func BattenFollowUp(slug string, record shedengine.Status, found, ownerHeld bool) string`
-- `plan:internal/pairteardown#TestBattenFollowUp` -> `func TestBattenFollowUp(t *testing.T)`
-- `plan:internal/battencli#TestPreflightRunOwner_RemoveFollowUp` -> `func TestPreflightRunOwner_RemoveFollowUp(t *testing.T)`
+- `internal/pairteardown#BattenFollowUp`
+- `internal/pairteardown_test#TestBattenFollowUp`
+- `internal/battencli#TestPreflightRunOwner_RemoveFollowUp`
 
 **Edit:**
 - `internal/pairteardown#Result`
