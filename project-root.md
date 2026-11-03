@@ -28,7 +28,7 @@ Waits on nothing open; can start now.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **A shed block runs a whole sub-recipe inline as one producer, so recipes reuse one another** | [`shed-sub-run-block`](design-shed-sub-run-block.md) | tapestry |  | 50m<br>12m | shed, loom |
 
-## Notes (44)
+## Notes (45)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -38,7 +38,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 11d<br>11h | loom, stencil |
 
-### Bugs (12)
+### Bugs (13)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -54,6 +54,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B10 |  | **heddle render leaves the old CLAUDE.local.md at the worktree root after the anchor fix** | [`heddle-stale-root-claude-file`](design-heddle-stale-root-claude-file.md) | 10h<br>10h | heddle |
 | B11 |  | **Worktree-Teardown archive tag push races the weft branch push and fails with missing necessary objects** | [`archive-tag-push-race`](design-archive-tag-push-race.md) | 10h<br>10h | batten, fabric |
 | B12 |  | **lym config drift refuses the whole-map capture and compare form its own key description prescribes** | [`drift-config-whole-map-set`](design-drift-config-whole-map-set.md) | 5m<br>5m | drift, config |
+| B13 |  | **The background push of a cancel deletes the weft branch of a new run of the same slug** | [`cancel-push-deletes-new-weft`](design-cancel-push-deletes-new-weft.md) | 0m<br>0m | batten, fabric |
 
 ### Enhancements (16)
 

@@ -1001,6 +1001,25 @@
       "body": "From [issue #19](https://github.com/Knatte18/loomyard/issues/19).\n\n## Seen\n\n`lym config drift --set 'capture={command: \"...\", dir: \"...\", timeout_min: 30}'` is refused with \"unknown config key(s): capture, compare\", although the key's own description in `--resolved` prescribes that whole-map form.\nSetting `capture.command`, `capture.dir` and `capture.timeout_min` one by one works.\n\n## Expected\n\nA whole-map `--set` of `capture` or `compare` is accepted as the key description says, or the description names the per-key form instead.\n",
       "created": "2026-11-03T07:13:38Z",
       "revised": "2026-11-03T07:13:38Z"
+    },
+    {
+      "id": 1030,
+      "handle": "B13",
+      "slug": "cancel-push-deletes-new-weft",
+      "title": "The background push of a cancel deletes the weft branch of a new run of the same slug",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "batten",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (2026-11-03)\n\n`lym batten cancel shed-sub-run-block --remove` reported `push_spawned: true`, and the task was released again within a minute.\nDobby started a new run of the same slug, which made a new pair and pushed its weft branch.\nAt Seed-Child the new run failed at bootstrap: origin no longer had branch `shed-sub-run-block-weft`, so the cancel's background push most likely deleted the remote branch after the new run had pushed it.\nThe tackler handed the stop back; the orch removed the pair with `lym fabric remove` and released the task again.\n\n## Expected\n\nA cancel's background remote work never removes a branch that a later run of the same slug owns: the new run waits until the cancel's push has finished, or the push deletes the remote branch only when it still points at the commit the cancelled run left.\n",
+      "created": "2026-11-03T07:19:35Z",
+      "revised": "2026-11-03T07:19:35Z"
     }
   ],
   "prime_owner": "neve",
