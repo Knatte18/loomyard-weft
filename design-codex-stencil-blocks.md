@@ -1,6 +1,6 @@
 # Engine-keyed stencil blocks and heddle's codex-file fallback
 
-`codex-stencil-blocks` · Task · feature, stencil, heddle, codex · running · PR-Review
+`codex-stencil-blocks` · Task · feature, stencil, heddle, codex · running · Finalize
 
 Part 3 of project `codex-engine`.
 Its Sketch is the project's stored decision record: read it with `lym board get P2 --record`.

@@ -23,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **codexengine: the Codex CLI shuttle engine, its home and its launch** | [`codex-engine-core`](design-codex-engine-core.md) | darn · solid | Darn-Write | neve | 48m<br>48m | shuttle, codex |
-| T4 | **Engine-keyed stencil blocks and heddle's codex-file fallback** | [`codex-stencil-blocks`](design-codex-stencil-blocks.md) | darn · light | PR-Review | neve | 48m<br>48m | stencil, heddle, codex |
+| T4 | **Engine-keyed stencil blocks and heddle's codex-file fallback** | [`codex-stencil-blocks`](design-codex-stencil-blocks.md) | darn · light | Finalize | neve | 48m<br>48m | stencil, heddle, codex |
 
 ### Ready (0)
 
