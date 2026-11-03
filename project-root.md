@@ -27,7 +27,7 @@ Not released; nothing starts it until its status is cleared.
 | T1 | `draft` **A shed block runs a whole sub-recipe inline as one producer, so recipes reuse one another** | [`shed-sub-run-block`](design-shed-sub-run-block.md) | tapestry |  | 44m<br>6m | shed, loom |
 | T2 | `draft` **An approved Discussion stores its decision record on the board entry and flags it discussed** | [`decision-record-on-board`](design-decision-record-on-board.md) | tapestry |  | 0m<br>0m | board, loom |
 
-## Notes (43)
+## Notes (44)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -37,7 +37,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 11d<br>11h | loom, stencil |
 
-### Bugs (11)
+### Bugs (12)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -52,6 +52,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B9 |  | **batten pass fails forever when a run's task worktree is gone** | [`batten-pass-pair-gone`](design-batten-pass-pair-gone.md) | 10h<br>10h | batten, fabric |
 | B10 |  | **heddle render leaves the old CLAUDE.local.md at the worktree root after the anchor fix** | [`heddle-stale-root-claude-file`](design-heddle-stale-root-claude-file.md) | 10h<br>10h | heddle |
 | B11 |  | **Worktree-Teardown archive tag push races the weft branch push and fails with missing necessary objects** | [`archive-tag-push-race`](design-archive-tag-push-race.md) | 10h<br>10h | batten, fabric |
+| B12 |  | **lym config drift refuses the whole-map capture and compare form its own key description prescribes** | [`drift-config-whole-map-set`](design-drift-config-whole-map-set.md) | 0m<br>0m | drift, config |
 
 ### Enhancements (16)
 
