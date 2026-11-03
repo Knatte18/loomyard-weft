@@ -1,6 +1,6 @@
 # The assistant seat and the Burler review round with a Codex assistant
 
-`codex-assist-seat` · Task · feature, burler, shuttle, codex · running · Record-Write
+`codex-assist-seat` · Task · feature, burler, shuttle, codex · running · Darn-Write
 
 Depends on: [`codex-skills-guards`](design-codex-skills-guards.md)
 
