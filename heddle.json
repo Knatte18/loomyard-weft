@@ -7,6 +7,14 @@
       "targets": [
         "orch-prompt"
       ]
+    },
+    {
+      "slug": "nicknames",
+      "text": "# Nicknames\n\nThe operator uses two nicknames for lym parts; read them as the part they name, and use them freely when talking to the operator.\nCode, files, verbs and specs keep the formal names.\n\n- **Sketch**, with a capital S: the decision record, the approved record a Discussion writes, stored on the board for a discussed entry.\n- **Merriam**: webster's long-lived master session, the one that forks one implementer per batch.\n",
+      "order": 900,
+      "targets": [
+        "claude-prompt"
+      ]
     }
   ]
 }
