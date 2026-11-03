@@ -1,11 +1,11 @@
 {
-  "current_producer": "Beam-Await",
+  "current_producer": "Parent-Align",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Beam-Await",
-    "last": "Beam-Up → done",
+    "now": "Parent-Align",
+    "last": "Beam-Await → done",
     "wait": ""
   },
   "history": [
@@ -26,6 +26,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-11-03T12:45:17Z"
+    },
+    {
+      "producer": "Beam-Await",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-03T17:19:47Z"
     }
   ],
   "product": {
