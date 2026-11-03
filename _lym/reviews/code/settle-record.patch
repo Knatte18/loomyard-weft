@@ -1,0 +1,1164 @@
+diff --git a/contracts/specs/loom-plan-checks-spec.md b/contracts/specs/loom-plan-checks-spec.md
+index e35f166f..9732b93f 100644
+--- a/contracts/specs/loom-plan-checks-spec.md
++++ b/contracts/specs/loom-plan-checks-spec.md
+@@ -153,7 +153,7 @@ The other PATTERN checks are *loomshed*'s, and run only in a worktree with a `PA
+ 
+ ## Tests, docs and names
+ 
+-- `edit-test-file` — a `_test.go` file self glyph under `Edit` or `Extends`; a path holding a segment the go tool ignores is exempt.
++- `edit-test-file` — a `_test.go` file self glyph under `Edit` or `Extends`; a path holding a segment the go tool ignores is exempt, and so is a file `lym quarry toc` lists with no symbol, such as one holding only blank-identifier vars, since no member glyph can name the edit.
+   Way forward: name each test function, fake or helper the card changes as a member glyph under `**Edit:**`, declare each new one as a `**Create:**` handle on the package directory or `<dir>_test`, keep a new test file a `**Create:**` path, and for a header-only change such as a build constraint, name every member of the file.
+ - `test-tier-unstated` *(loomshed)* — under `go`, a `**Create:**` `_test.go` file whose Intent lines name no valid tier.
+   The tiers are the hub's `gate.yaml` tier keys, read as whole words on the Intent lines that name the file by path or base name; a line naming another test file counts toward that file too.
+diff --git a/contracts/specs/loom-plan-spec.md b/contracts/specs/loom-plan-spec.md
+index d5ffe981..d83c734a 100644
+--- a/contracts/specs/loom-plan-spec.md
++++ b/contracts/specs/loom-plan-spec.md
+@@ -222,8 +222,9 @@ Cards are numbered flat across the plan, from the overview's `first_card:` (defa
+ The file prefix `NN` (zero-padded) equals the heading `N`.
+ 
+ A card is inserted or removed with `lym loom insert-card` or `lym loom remove-card`, which move every later card by one in file prefix, heading, explicit `Commit:` prefix and Card Index number.
+-They rewrite every card id naming a moved card, `<N>-<slug>` or `<NN>-<slug>`, so a card refers to another card by its card id.
+-They report, and never rewrite, lines that name a moved number bare in prose.
++They rewrite every card id naming a moved card, `<N>-<slug>` or `<NN>-<slug>`, and every bare reference naming one, such as `card N` or `cards N–M`, each read against the numbering before the call.
++A bare reference naming the removed card, or a range the inserted or removed card falls inside, has no faithful rewrite, so the verbs leave it as it is and report its line.
++A card id naming a moved card is rewritten and listed under `rewritten_refs`; one naming the removed card is left as it is and is not listed under `prose_mentions`, which holds bare references only.
+ 
+ The default commit subject is `N: <name>`, from the heading.
+ An explicit `**Commit:**` must start with the card's `N: ` (`commit-subject-mismatch`), since the `N:` subjects are the resume trail: a fresh session reads from `git log` which card the last one reached, and a half-done card restarts from a clean tree.
+diff --git a/contracts/stencils/loom/loom-block-plan-cards.md b/contracts/stencils/loom/loom-block-plan-cards.md
+index e4bc08c1..e4786ede 100644
+--- a/contracts/stencils/loom/loom-block-plan-cards.md
++++ b/contracts/stencils/loom/loom-block-plan-cards.md
+@@ -17,8 +17,8 @@ optionally `**Commit:**` (must start `N: `) and `**Verify:**`.
+ An implementation card lists the implementation's member glyphs under `**Edit:**`, beside the test members it changes or the `**Create:**` handles of the tests it adds.
+ A new test file is a `**Create:**` path, written only for a surface no existing test file covers.
+ 
+-`**Edit:**` lists the member glyphs the card changes, and a file path only for a file with no symbol to name: a non-Go file, or a whole file the card creates or deletes.
+-A `_test.go` path under `**Edit:**` is refused by `edit-test-file` in `{{.specs_dir}}/loom/loom-plan-checks-spec.md`, which holds the way forward.
++`**Edit:**` lists the member glyphs the card changes, and a file path only for a file with no symbol to name: a non-Go file, a file `lym quarry toc` lists with no symbol, or a whole file the card creates or deletes.
++A `_test.go` path with a symbol to name under `**Edit:**` is refused by `edit-test-file` in `{{.specs_dir}}/loom/loom-plan-checks-spec.md`, which holds the way forward.
+ A card names an existing test function, fake or helper it changes as a member glyph, for example `internal/x#TestFoo` or `internal/x#fakeClock`.
+ A new test function is a `**Create:**` declaration with a `plan:` handle whose unit is the package directory, or `<dir>_test` for an external test package, never a file, so the plan does not pin the file a new test goes in.
+ A card whose new tests reuse an existing test's setup, or call existing test helpers or fakes, names those members as glyphs under `**Uses:**`.
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index ed681cdf..b49fedc1 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -123,9 +123,11 @@
+ // `lym loom insert-card <position> <slug> --intent <intent>`, `lym loom remove-card <position>` and `lym loom restore-renumber` are the sanctioned way to add or drop one card of the plan and renumber the cards after it.
+ // A renumber moves each later card's file name prefix, heading number, explicit `Commit:` prefix and Card Index number, and writes a heading-only stub for an inserted card, which the agent fills with Edit or Write.
+ // A card id naming a moved card, `<N>-<slug>` or its zero-padded file form `<NN>-<slug>`, is rewritten to the card's new number in the overview and every card file, since the slug pins which card it means.
++// A bare card reference, `card <N>`, a list such as `cards <N>, <M> and <K>` or a range `cards <N>–<M>`, is read against the numbering before the call and rewritten the same way.
++// A bare reference naming the removed card, or a range the inserted or removed card falls inside, has no faithful rewrite and is left as is.
+ // The success envelope carries `plan_dir`, `moved`, `created` or `removed`, `rewritten_refs` and `prose_mentions`.
+-// `rewritten_refs` holds one `file`, `line`, `from` and `to` per rewritten card id.
+-// `prose_mentions` holds the lines that name a moved card by its bare old number; they are never rewritten, since a bare number may already mean the new numbering, so the agent checks each by hand.
++// `rewritten_refs` holds one `file`, `line`, `from` and `to` per rewritten card id or bare reference.
++// `prose_mentions` holds the lines left holding a bare reference with no faithful rewrite, which the agent fixes by hand.
+ // `restore-renumber` reports `plan_dir`, `journal`, `restored` and `removed`.
+ //
+ // Each verb takes webster's state-mutation lease first and releases it before it prints, so no begin-batch records a batch between the bound check and the renumber.
+diff --git a/internal/loomcli/renumber.go b/internal/loomcli/renumber.go
+index de63fa36..d406368e 100644
+--- a/internal/loomcli/renumber.go
++++ b/internal/loomcli/renumber.go
+@@ -179,8 +179,8 @@ func renumberRefusal(verb string, err error) string {
+ }
+ 
+ // renumberEnvelope is the success envelope of insert-card and remove-card.
+-// The rewritten refs are the card ids the renumber moved to their new numbers;
+-// the prose mentions are lines naming a moved card by its bare old number, which the agent checks by hand.
++// The rewritten refs are the card ids and bare card references the renumber moved to their new numbers;
++// the prose mentions are lines left holding a bare reference with no faithful rewrite, which the agent fixes by hand.
+ func renumberEnvelope(planDir string, res *planparser.RenumberResult) map[string]any {
+ 	moved := make([]map[string]any, 0, len(res.Moved))
+ 	for _, m := range res.Moved {
+@@ -226,10 +226,12 @@ func (c *loomCLI) insertCardCmd() *cobra.Command {
+ its file name prefix, its heading number, its explicit Commit: prefix and its
+ Card Index number. The new card is a heading-only stub the agent fills with
+ Edit or Write, and its Card Index line carries --intent. A card id naming a
+-moved card, <N>-<slug> or its zero-padded file form, is rewritten to the new
+-number in the overview and every card file and reported under rewritten_refs.
+-Lines that name a moved card by its bare old number are reported under
+-prose_mentions and never rewritten, so check each by hand.
++moved card, <N>-<slug> or its zero-padded file form, and a bare reference
++naming one, such as "card 4" or "cards 4-6", are rewritten to the new number
++in the overview and every card file and reported under rewritten_refs. Every
++reference is read as the numbering before the call. A bare range the new card
++falls inside is left as is and its line reported under prose_mentions, so fix
++each by hand.
+ 
+ N runs from first_card to one past the last card, and must come after the last
+ card webster has begun. The call is journaled, and an interrupted one is
+@@ -260,10 +262,11 @@ func (c *loomCLI) removeCardCmd() *cobra.Command {
+ 		Long: `remove-card deletes card N and moves every later card down by one: its file
+ name prefix, its heading number, its explicit Commit: prefix and its Card Index
+ number. A card id naming a moved card, <N>-<slug> or its zero-padded file
+-form, is rewritten to the new number in the overview and every card file and
+-reported under rewritten_refs. Lines that name a moved card by its bare old
+-number are reported under prose_mentions and never rewritten, so check each
+-by hand.
++form, and a bare reference naming one, such as "card 5" or "cards 5-7", are
++rewritten to the new number in the overview and every card file and reported
++under rewritten_refs. Every reference is read as the numbering before the
++call. A bare reference naming card N, or a range card N falls inside, is left
++as is and its line reported under prose_mentions, so fix each by hand.
+ 
+ N runs from first_card to the last card, must come after the last card webster
+ has begun, and cannot be the plan's only card. The call is journaled, and an
+diff --git a/internal/loomcli/renumber_test.go b/internal/loomcli/renumber_test.go
+index 0f6683d0..cb664760 100644
+--- a/internal/loomcli/renumber_test.go
++++ b/internal/loomcli/renumber_test.go
+@@ -208,7 +208,7 @@ func TestRenumberVerbs(t *testing.T) {
+ 		check   func(t *testing.T, envelope map[string]any)
+ 	}{
+ 		{
+-			name: "insert reports moves, the new file and prose mentions",
++			name: "insert reports moves, the new file and rewritten references",
+ 			run:  runInsert("2"),
+ 			check: func(t *testing.T, e map[string]any) {
+ 				if e["created"] != "02-new.md" {
+@@ -218,22 +218,23 @@ func TestRenumberVerbs(t *testing.T) {
+ 				if len(moved) != 2 || moved[0].(map[string]any)["old_file"] != "03-gamma.md" || moved[0].(map[string]any)["new_file"] != "04-gamma.md" || moved[0].(map[string]any)["old_number"] != float64(3) || moved[0].(map[string]any)["new_number"] != float64(4) {
+ 					t.Errorf("moved = %v; want gamma and beta moved up by one, gamma first", e["moved"])
+ 				}
+-				mentions, _ := e["prose_mentions"].([]any)
+-				if len(mentions) != 1 || mentions[0].(map[string]any)["file"] != "01-alpha.md" || mentions[0].(map[string]any)["text"] != "**Intent:** Stands apart; see card 2. Feeds 4-gamma." {
+-					t.Errorf("prose_mentions = %v; want alpha's line naming card 2", e["prose_mentions"])
++				if mentions, _ := e["prose_mentions"].([]any); len(mentions) != 0 {
++					t.Errorf("prose_mentions = %v; want none", e["prose_mentions"])
+ 				}
+ 				refs, _ := e["rewritten_refs"].([]any)
+-				if len(refs) != 1 {
+-					t.Fatalf("rewritten_refs = %v; want one entry", e["rewritten_refs"])
++				if len(refs) != 2 {
++					t.Fatalf("rewritten_refs = %v; want two entries", e["rewritten_refs"])
+ 				}
+-				ref, _ := refs[0].(map[string]any)
+-				if ref["file"] != "01-alpha.md" || ref["from"] != "3-gamma" || ref["to"] != "4-gamma" || ref["line"] == nil {
+-					t.Errorf("rewritten_refs[0] = %v; want alpha's 3-gamma rewritten to 4-gamma", ref)
++				for i, want := range [][2]string{{"card 2", "card 3"}, {"3-gamma", "4-gamma"}} {
++					ref, _ := refs[i].(map[string]any)
++					if ref["file"] != "01-alpha.md" || ref["from"] != want[0] || ref["to"] != want[1] || ref["line"] == nil {
++						t.Errorf("rewritten_refs[%d] = %v; want alpha's %s rewritten to %s", i, ref, want[0], want[1])
++					}
+ 				}
+ 			},
+ 		},
+ 		{
+-			name: "remove reports the removed file",
++			name: "remove reports the removed file and the line naming it",
+ 			run:  runRemove("2"),
+ 			check: func(t *testing.T, e map[string]any) {
+ 				if e["removed"] != "02-beta.md" {
+@@ -242,6 +243,10 @@ func TestRenumberVerbs(t *testing.T) {
+ 				if moved, _ := e["moved"].([]any); len(moved) != 1 {
+ 					t.Errorf("moved = %v; want gamma moved down by one", e["moved"])
+ 				}
++				mentions, _ := e["prose_mentions"].([]any)
++				if len(mentions) != 1 || mentions[0].(map[string]any)["file"] != "01-alpha.md" || mentions[0].(map[string]any)["text"] != "**Intent:** Stands apart; see card 2. Feeds 2-gamma." {
++					t.Errorf("prose_mentions = %v; want alpha's line naming the removed card 2", e["prose_mentions"])
++				}
+ 			},
+ 		},
+ 		{
+diff --git a/internal/planglyph/doc.go b/internal/planglyph/doc.go
+index 1a24e922..c71e99f8 100644
+--- a/internal/planglyph/doc.go
++++ b/internal/planglyph/doc.go
+@@ -26,6 +26,7 @@
+ // The index's format, rework and dispatch validation append fabric-vocabulary-name (planparser.CheckFabricVocabularyName), a declared name the fabric-vocabulary scan would refuse.
+ // Dispatch drops its findings against completed cards.
+ // The index's format and rework validation also append card-fabric-reference and edit-test-file (planparser.CheckEditTestFile), which dispatch does not run.
++// edit-test-file admits a test file quarry's toc lists with no symbol, since no member glyph can name the edit there.
+ // NewIndex returns the real planindex.Index, which a package that calls the code index receives from the CLI layer instead of importing planglyph (index.go).
+ //
+ // Every resolve-backed Finding.Check ID this package can raise, the canonical list a caller checks a claim against without reading Go source,
+diff --git a/internal/planglyph/index.go b/internal/planglyph/index.go
+index d0b6dfaf..ada6de71 100644
+--- a/internal/planglyph/index.go
++++ b/internal/planglyph/index.go
+@@ -4,6 +4,7 @@ package planglyph
+ 
+ import (
+ 	"errors"
++	"path"
+ 
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/planindex"
+@@ -44,21 +45,38 @@ func (i index) Validate(plan *planparser.Plan, worktreeRoot string) ([]Finding,
+ }
+ 
+ // ValidateFormat is the package's ValidateFormatAfter plus the card-fabric-reference, fabric-vocabulary-name and edit-test-file findings, which sit outside planparser's entry points.
+-// edit-test-file skips the done cards.
++// edit-test-file skips the done cards, and admits a test file quarry lists with no symbol.
+ func (i index) ValidateFormat(plan *planparser.Plan, worktreeRoot string, done []planparser.Card) ([]Finding, error) {
+ 	findings, err := validateFormatAfter(plan, worktreeRoot, done, i.loader)
+ 	findings = append(findings, convertAll(planparser.CheckCardFabricReference(plan, i.matcher))...)
+ 	findings = append(findings, convertAll(planparser.CheckFabricVocabularyName(plan))...)
+-	return append(findings, convertAll(planparser.CheckEditTestFile(plan, done))...), err
++	return append(findings, convertAll(planparser.CheckEditTestFile(plan, done, glyphlessFile(worktreeRoot)))...), err
+ }
+ 
+ // ValidateRework is the package's ValidateRework plus the card-fabric-reference, fabric-vocabulary-name and edit-test-file findings.
+-// A rework generation is a fresh plan whose prior cards are archived, so edit-test-file skips no card.
++// A rework generation is a fresh plan whose prior cards are archived, so edit-test-file skips no card; it admits a test file quarry lists with no symbol.
+ func (i index) ValidateRework(plan *planparser.Plan, worktreeRoot string, told int) ([]Finding, error) {
+ 	findings, err := validateRework(plan, worktreeRoot, told, i.loader)
+ 	findings = append(findings, convertAll(planparser.CheckCardFabricReference(plan, i.matcher))...)
+ 	findings = append(findings, convertAll(planparser.CheckFabricVocabularyName(plan))...)
+-	return append(findings, convertAll(planparser.CheckEditTestFile(plan, nil))...), err
++	return append(findings, convertAll(planparser.CheckEditTestFile(plan, nil, glyphlessFile(worktreeRoot)))...), err
++}
++
++// glyphlessFile returns a test reporting whether quarry's toc of worktreeRoot lists the file at a repository-relative path, read whole, with no symbol, so a card has no member glyph to name in it.
++// A file quarry cannot list or read whole, the case for one that does not exist, is not glyphless.
++func glyphlessFile(worktreeRoot string) func(file string) bool {
++	return func(file string) bool {
++		answer, err := TOC(worktreeRoot, file)
++		if err != nil {
++			return false
++		}
++		for _, entry := range answer.Files {
++			if entry.Name == path.Base(file) {
++				return entry.Error == "" && !entry.Lossy && entry.Symbols != nil && len(*entry.Symbols) == 0
++			}
++		}
++		return false
++	}
+ }
+ 
+ // ValidateDispatch is the package's ValidateDispatch plus the fabric-vocabulary-name findings of the forthcoming cards.
+diff --git a/internal/planglyph/index_test.go b/internal/planglyph/index_test.go
+index b74a408d..3626c2cd 100644
+--- a/internal/planglyph/index_test.go
++++ b/internal/planglyph/index_test.go
+@@ -22,6 +22,7 @@ func (noFabricReference) MatchSpelling(string) (string, bool) { return "", false
+ 
+ // TestIndex_AppendsPlanChecks asserts the index reports a declared host-geometry name (fabric-vocabulary-name) and a test file under Edit (edit-test-file) through its format, rework and dispatch validations.
+ // A completed card is dropped at dispatch for the first check, and at format validation for the second, which dispatch never runs.
++// A test file the repository holds with no symbol is admitted; one with a member, one the repository lacks and one quarry cannot parse are not.
+ func TestIndex_AppendsPlanChecks(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -54,8 +55,10 @@ func TestIndex_AppendsPlanChecks(t *testing.T) {
+ 	idx := NewIndex(noFabricReference{})
+ 
+ 	tests := []struct {
+-		name     string
+-		run      func(plan *planparser.Plan) ([]Finding, error)
++		name string
++		// files, when set, makes the worktree root a repository holding them; it is an empty directory otherwise.
++		files    map[string]string
++		run      func(plan *planparser.Plan, root string) ([]Finding, error)
+ 		check    string
+ 		language string
+ 		card     planparser.Card
+@@ -63,8 +66,8 @@ func TestIndex_AppendsPlanChecks(t *testing.T) {
+ 	}{
+ 		{
+ 			name: "format with no done card",
+-			run: func(plan *planparser.Plan) ([]Finding, error) {
+-				return idx.ValidateFormat(plan, t.TempDir(), nil)
++			run: func(plan *planparser.Plan, root string) ([]Finding, error) {
++				return idx.ValidateFormat(plan, root, nil)
+ 			},
+ 			check:    "fabric-vocabulary-name",
+ 			language: "none",
+@@ -73,8 +76,8 @@ func TestIndex_AppendsPlanChecks(t *testing.T) {
+ 		},
+ 		{
+ 			name: "rework told the plan's first card",
+-			run: func(plan *planparser.Plan) ([]Finding, error) {
+-				return idx.ValidateRework(plan, t.TempDir(), plan.FirstCard)
++			run: func(plan *planparser.Plan, root string) ([]Finding, error) {
++				return idx.ValidateRework(plan, root, plan.FirstCard)
+ 			},
+ 			check:    "fabric-vocabulary-name",
+ 			language: "none",
+@@ -83,8 +86,8 @@ func TestIndex_AppendsPlanChecks(t *testing.T) {
+ 		},
+ 		{
+ 			name: "dispatch with the card forthcoming",
+-			run: func(plan *planparser.Plan) ([]Finding, error) {
+-				return idx.ValidateDispatch(plan, t.TempDir(), nil, plan.Cards)
++			run: func(plan *planparser.Plan, root string) ([]Finding, error) {
++				return idx.ValidateDispatch(plan, root, nil, plan.Cards)
+ 			},
+ 			check:    "fabric-vocabulary-name",
+ 			language: "none",
+@@ -93,8 +96,8 @@ func TestIndex_AppendsPlanChecks(t *testing.T) {
+ 		},
+ 		{
+ 			name: "dispatch with the card completed",
+-			run: func(plan *planparser.Plan) ([]Finding, error) {
+-				return idx.ValidateDispatch(plan, t.TempDir(), plan.Cards, nil)
++			run: func(plan *planparser.Plan, root string) ([]Finding, error) {
++				return idx.ValidateDispatch(plan, root, plan.Cards, nil)
+ 			},
+ 			check:    "fabric-vocabulary-name",
+ 			language: "none",
+@@ -103,8 +106,8 @@ func TestIndex_AppendsPlanChecks(t *testing.T) {
+ 		},
+ 		{
+ 			name: "format over a plain name",
+-			run: func(plan *planparser.Plan) ([]Finding, error) {
+-				return idx.ValidateFormat(plan, t.TempDir(), nil)
++			run: func(plan *planparser.Plan, root string) ([]Finding, error) {
++				return idx.ValidateFormat(plan, root, nil)
+ 			},
+ 			check:    "fabric-vocabulary-name",
+ 			language: "none",
+@@ -113,8 +116,8 @@ func TestIndex_AppendsPlanChecks(t *testing.T) {
+ 		},
+ 		{
+ 			name: "format over a test file under Edit",
+-			run: func(plan *planparser.Plan) ([]Finding, error) {
+-				return idx.ValidateFormat(plan, t.TempDir(), nil)
++			run: func(plan *planparser.Plan, root string) ([]Finding, error) {
++				return idx.ValidateFormat(plan, root, nil)
+ 			},
+ 			check:    "edit-test-file",
+ 			language: "go",
+@@ -123,8 +126,63 @@ func TestIndex_AppendsPlanChecks(t *testing.T) {
+ 		},
+ 		{
+ 			name: "rework over a test file under Edit",
+-			run: func(plan *planparser.Plan) ([]Finding, error) {
+-				return idx.ValidateRework(plan, t.TempDir(), plan.FirstCard)
++			run: func(plan *planparser.Plan, root string) ([]Finding, error) {
++				return idx.ValidateRework(plan, root, plan.FirstCard)
++			},
++			check:    "edit-test-file",
++			language: "go",
++			card:     editingTestFile,
++			want:     1,
++		},
++		{
++			name:  "format over a test file with no symbol",
++			files: map[string]string{"internal/x/x_test.go": "package x\n\nvar _ = 1\n"},
++			run: func(plan *planparser.Plan, root string) ([]Finding, error) {
++				return idx.ValidateFormat(plan, root, nil)
++			},
++			check:    "edit-test-file",
++			language: "go",
++			card:     editingTestFile,
++			want:     0,
++		},
++		{
++			name:  "rework over a test file with no symbol",
++			files: map[string]string{"internal/x/x_test.go": "package x\n\nvar _ = 1\n"},
++			run: func(plan *planparser.Plan, root string) ([]Finding, error) {
++				return idx.ValidateRework(plan, root, plan.FirstCard)
++			},
++			check:    "edit-test-file",
++			language: "go",
++			card:     editingTestFile,
++			want:     0,
++		},
++		{
++			name:  "format over a test file with a member",
++			files: map[string]string{"internal/x/x_test.go": "package x\n\nimport \"testing\"\n\nfunc TestX(t *testing.T) {}\n"},
++			run: func(plan *planparser.Plan, root string) ([]Finding, error) {
++				return idx.ValidateFormat(plan, root, nil)
++			},
++			check:    "edit-test-file",
++			language: "go",
++			card:     editingTestFile,
++			want:     1,
++		},
++		{
++			name:  "format over a test file the repository lacks",
++			files: map[string]string{"internal/x/other.go": "package x\n"},
++			run: func(plan *planparser.Plan, root string) ([]Finding, error) {
++				return idx.ValidateFormat(plan, root, nil)
++			},
++			check:    "edit-test-file",
++			language: "go",
++			card:     editingTestFile,
++			want:     1,
++		},
++		{
++			name:  "format over a test file with a syntax error",
++			files: map[string]string{"internal/x/x_test.go": "package x\n\nfunc (\n"},
++			run: func(plan *planparser.Plan, root string) ([]Finding, error) {
++				return idx.ValidateFormat(plan, root, nil)
+ 			},
+ 			check:    "edit-test-file",
+ 			language: "go",
+@@ -133,8 +191,8 @@ func TestIndex_AppendsPlanChecks(t *testing.T) {
+ 		},
+ 		{
+ 			name: "dispatch over a test file under Edit",
+-			run: func(plan *planparser.Plan) ([]Finding, error) {
+-				return idx.ValidateDispatch(plan, t.TempDir(), nil, plan.Cards)
++			run: func(plan *planparser.Plan, root string) ([]Finding, error) {
++				return idx.ValidateDispatch(plan, root, nil, plan.Cards)
+ 			},
+ 			check:    "edit-test-file",
+ 			language: "go",
+@@ -143,8 +201,8 @@ func TestIndex_AppendsPlanChecks(t *testing.T) {
+ 		},
+ 		{
+ 			name: "format with the test-file card done",
+-			run: func(plan *planparser.Plan) ([]Finding, error) {
+-				return idx.ValidateFormat(plan, t.TempDir(), plan.Cards)
++			run: func(plan *planparser.Plan, root string) ([]Finding, error) {
++				return idx.ValidateFormat(plan, root, plan.Cards)
+ 			},
+ 			check:    "edit-test-file",
+ 			language: "go",
+@@ -159,8 +217,12 @@ func TestIndex_AppendsPlanChecks(t *testing.T) {
+ 			plan.Language = tc.language
+ 			plan.FirstCard = 1
+ 			plan.Cards = []planparser.Card{tc.card}
++			root := t.TempDir()
++			if tc.files != nil {
++				root = writeFixtureRepo(t, tc.files)
++			}
+ 
+-			findings, _ := tc.run(plan)
++			findings, _ := tc.run(plan, root)
+ 
+ 			if got := countFindings(t, findings, tc.check); got != tc.want {
+ 				t.Errorf("%s findings = %d, want %d (all: %v)", tc.check, got, tc.want, findings)
+diff --git a/internal/planparser/doc.go b/internal/planparser/doc.go
+index 018d5514..56a5ed9d 100644
+--- a/internal/planparser/doc.go
++++ b/internal/planparser/doc.go
+@@ -143,6 +143,7 @@
+ // Only a caller holding the rework round's first card number, or a matcher for the fabric-reference rule, can run the first two.
+ // CheckFabricVocabularyName needs no told input, but the plan index appends it beside CheckCardFabricReference.
+ // CheckEditTestFile is appended by the plan index at format and rework validation, and takes the done set so format validation skips a completed card.
++// It also takes a test naming the files that declare no member glyph, which it admits, since only the index can read the tree.
+ // CheckCardFabricReference scans the raw text the parse step records in Plan.OverviewText and Card.Text, so it reads no file and planparser stays the sole parser.
+ // It also runs the path rule over each card id, since an id ending in the fabric suffix would turn every command naming the card, except a `lym gate` invocation, into a fabric reference to the implementer audit.
+ //
+diff --git a/internal/planparser/edittestfile.go b/internal/planparser/edittestfile.go
+index b38f47dc..41971457 100644
+--- a/internal/planparser/edittestfile.go
++++ b/internal/planparser/edittestfile.go
+@@ -12,13 +12,14 @@ const editTestFileCheck = "edit-test-file"
+ 
+ // CheckEditTestFile reports one edit-test-file finding per file self glyph under an Edit or Extends group of a card not in done whose path ends in `_test.go`.
+ // A path with a segment the go tool ignores (`testdata`, `vendor`, or a name starting with `.` or `_`) is exempt, since no test there is compiled.
++// A path glyphless reports true for is exempt too: the file declares no member a card could name instead, such as one holding only blank-identifier vars, so the file is the only target the edit has.
+ // A member glyph, a plan: handle and a path are skipped, as are the Create, Delete, Rename, Move, Prosa and Custom groups and Uses.
+ // A plan whose language has no glyph alphabet is never checked.
+ // The way forward names each changed test function, fake or helper as a member glyph, and declares each new one as a Create handle.
+ // It sits outside ValidateFormat and Validate because the plan index appends it.
+ // It takes the done set where CheckCardFabricReference filters nothing, because a completed card's file has already landed and no writer can fix it.
+-// It reads plan text only, so it fires whether or not the file exists, and only refuses.
+-func CheckEditTestFile(plan *Plan, done []Card) []ValidationError {
++// It reads plan text and asks glyphless only about a path it would otherwise refuse, and it only refuses.
++func CheckEditTestFile(plan *Plan, done []Card, glyphless func(path string) bool) []ValidationError {
+ 	if _, ok := planLanguage(plan); !ok {
+ 		return nil
+ 	}
+@@ -45,7 +46,7 @@ func CheckEditTestFile(plan *Plan, done []Card) []ValidationError {
+ 					continue
+ 				}
+ 				path, _ := parsed.UnitPath()
+-				if !strings.HasSuffix(path, "_test.go") || hasIgnoredSegment(path) {
++				if !strings.HasSuffix(path, "_test.go") || hasIgnoredSegment(path) || glyphless(path) {
+ 					continue
+ 				}
+ 				findings = append(findings, ValidationError{
+diff --git a/internal/planparser/edittestfile_test.go b/internal/planparser/edittestfile_test.go
+index fbba2b55..665e59ed 100644
+--- a/internal/planparser/edittestfile_test.go
++++ b/internal/planparser/edittestfile_test.go
+@@ -4,13 +4,14 @@ package planparser_test
+ 
+ import (
+ 	"fmt"
++	"slices"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestCheckEditTestFile covers the refs under Edit that the check refuses and the ones it admits: groups other than Edit, member glyphs, handles, paths the go tool ignores, other languages and done cards.
++// TestCheckEditTestFile covers the refs under Edit that the check refuses and the ones it admits: groups other than Edit, member glyphs, handles, paths the go tool ignores, files with no member glyph, other languages and done cards.
+ func TestCheckEditTestFile(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -41,9 +42,13 @@ func TestCheckEditTestFile(t *testing.T) {
+ 		cards    []planparser.Card
+ 		language string
+ 		done     []planparser.Card
+-		want     []planparser.ValidationError
++		// glyphless lists the paths the check is told declare no member glyph.
++		glyphless []string
++		want      []planparser.ValidationError
+ 	}{
+ 		{name: "test file self glyph under Edit", cards: []planparser.Card{underEdit(testFile)}, want: []planparser.ValidationError{finding("1-one", testFile)}},
++		{name: "test file with no member glyph under Edit", cards: []planparser.Card{underEdit(testFile)}, glyphless: []string{"internal/x/foo_test.go"}},
++		{name: "another test file with no member glyph", cards: []planparser.Card{underEdit(testFile)}, glyphless: []string{"internal/x/bar_test.go"}, want: []planparser.ValidationError{finding("1-one", testFile)}},
+ 		{name: "test file self glyph under Extends", cards: []planparser.Card{underGroup(planparser.CardTypeExtends, testFile)}, want: []planparser.ValidationError{finding("1-one", testFile)}},
+ 		{name: "test file self glyph under Create", cards: []planparser.Card{underGroup(planparser.CardTypeCreate, testFile)}},
+ 		{name: "test file self glyph under Delete", cards: []planparser.Card{underGroup(planparser.CardTypeDelete, testFile)}},
+@@ -73,7 +78,7 @@ func TestCheckEditTestFile(t *testing.T) {
+ 			t.Parallel()
+ 			plan := &planparser.Plan{Language: tt.language, Cards: tt.cards}
+ 
+-			got := planparser.CheckEditTestFile(plan, tt.done)
++			got := planparser.CheckEditTestFile(plan, tt.done, func(path string) bool { return slices.Contains(tt.glyphless, path) })
+ 
+ 			if len(got) != len(tt.want) {
+ 				t.Fatalf("CheckEditTestFile() = %v; want %v", got, tt.want)
+diff --git a/internal/planparser/renumber.go b/internal/planparser/renumber.go
+index db861f55..c8f718dc 100644
+--- a/internal/planparser/renumber.go
++++ b/internal/planparser/renumber.go
+@@ -1,4 +1,4 @@
+-// renumber.go implements InsertCard and RemoveCard, the plan's write paths that add or drop one card, renumber the cards after it and rewrite the card ids naming them.
++// renumber.go implements InsertCard and RemoveCard, the plan's write paths that add or drop one card, renumber the cards after it and rewrite the card ids and bare card references naming them.
+ // It also holds the plan scratch paths and the journal that makes an interrupted call restorable.
+ 
+ package planparser
+@@ -64,14 +64,15 @@ type MovedCard struct {
+ 	NewFile   string
+ }
+ 
+-// ProseMention is one line that refers to a card by an old number of a moved card and was left unchanged.
++// ProseMention is one line left holding a bare card reference a renumber has no faithful rewrite for: one naming the removed card, or a range the inserted or removed card falls inside.
++// Text is the line as the renumber leaves it.
+ type ProseMention struct {
+ 	File string
+ 	Line int
+ 	Text string
+ }
+ 
+-// RewrittenRef is one card-id reference to a moved card that a renumber rewrote to the card's new number.
++// RewrittenRef is one reference to a moved card that a renumber rewrote to the card's new number: a card id, or a bare reference such as `card 3` or `cards 3–5`.
+ // File is the plan file as the renumber leaves it, and From and To are the reference before and after.
+ type RewrittenRef struct {
+ 	File string
+@@ -82,7 +83,7 @@ type RewrittenRef struct {
+ 
+ // RenumberResult is what InsertCard and RemoveCard changed.
+ // Created holds the inserted card's file name, and Removed the removed card's.
+-// RewrittenRefs holds the card-id references rewritten to a moved card's new number, and ProseMentions the lines that refer to a moved card by its bare old number.
++// RewrittenRefs holds the references rewritten to a moved card's new number, and ProseMentions the lines left holding a bare reference with no faithful rewrite.
+ type RenumberResult struct {
+ 	Moved         []MovedCard
+ 	Created       []string
+@@ -149,12 +150,11 @@ func InsertCard(ops RenumberIO, planDir, journalPath string, number int, slug, i
+ 	sort.Slice(moved, func(i, j int) bool { return moved[i].OldNumber > moved[j].OldNumber })
+ 
+ 	return applyRenumber(ops, planDir, journalPath, plan, renumberEdit{
+-		moved:       moved,
+-		created:     cardFileName(number, slug),
+-		createdSlug: slug,
+-		createdNew:  fmt.Sprintf("# Card %d — %s\n", number, slug),
+-		indexLine:   fmt.Sprintf("%d — %s — %s", number, slug, intent),
+-		position:    number,
++		moved:      moved,
++		created:    cardFileName(number, slug),
++		createdNew: fmt.Sprintf("# Card %d — %s\n", number, slug),
++		indexLine:  fmt.Sprintf("%d — %s — %s", number, slug, intent),
++		position:   number,
+ 	})
+ }
+ 
+@@ -196,13 +196,12 @@ func RemoveCard(ops RenumberIO, planDir, journalPath string, number int) (*Renum
+ // renumberEdit is one renumber computed from the plan before any file is touched.
+ // A non-empty removed drops that card's file and its Card Index line at position; a non-empty created adds the file with createdNew's bytes and indexLine at position.
+ type renumberEdit struct {
+-	moved       []MovedCard
+-	removed     string
+-	created     string
+-	createdSlug string
+-	createdNew  string
+-	indexLine   string
+-	position    int
++	moved      []MovedCard
++	removed    string
++	created    string
++	createdNew string
++	indexLine  string
++	position   int
+ }
+ 
+ // cardRange returns the lowest and highest card number of a consistent plan.
+@@ -256,8 +255,19 @@ func applyRenumber(ops RenumberIO, planDir, journalPath string, plan *Plan, edit
+ 		return data, nil
+ 	}
+ 
+-	moves := movedSlugs(plan, edit.moved)
++	refEdit := referenceEdit{
++		moves:    movedSlugs(plan, edit.moved),
++		slugs:    make(map[int]string, len(plan.Cards)),
++		position: edit.position,
++		removing: edit.removed != "",
++	}
++	for _, c := range plan.Cards {
++		refEdit.slugs[c.Number] = c.Slug
++	}
++	headingLine := func(i int, _ string) bool { return i == 0 }
++
+ 	var rewritten []RewrittenRef
++	var kept []ProseMention
+ 	journal := renumberJournal{Files: map[string][]byte{}}
+ 	newBytes := make(map[string][]byte, len(edit.moved))
+ 	for _, m := range edit.moved {
+@@ -266,9 +276,10 @@ func applyRenumber(ops RenumberIO, planDir, journalPath string, plan *Plan, edit
+ 			return nil, err
+ 		}
+ 		journal.Files[m.OldFile] = data
+-		moved, refs := rewriteCardIDs(string(moveCardBytes(data, m.OldNumber, m.NewNumber)), m.NewFile, moves)
++		moved, refs, left := renumberReferences(string(moveCardBytes(data, m.OldNumber, m.NewNumber)), m.NewFile, refEdit, headingLine)
+ 		newBytes[m.NewFile] = []byte(moved)
+ 		rewritten = append(rewritten, refs...)
++		kept = append(kept, left...)
+ 		journal.Created = append(journal.Created, m.NewFile)
+ 	}
+ 
+@@ -276,14 +287,15 @@ func applyRenumber(ops RenumberIO, planDir, journalPath string, plan *Plan, edit
+ 	var stayed []string
+ 	for _, c := range sortedCards(plan) {
+ 		name := cardFileName(c.Number, c.Slug)
+-		if _, moving := moves[c.Number]; moving || name == edit.removed {
++		if _, moving := refEdit.moves[c.Number]; moving || name == edit.removed {
+ 			continue
+ 		}
+ 		data, err := read(name)
+ 		if err != nil {
+ 			return nil, err
+ 		}
+-		after, refs := rewriteCardIDs(string(data), name, moves)
++		after, refs, left := renumberReferences(string(data), name, refEdit, headingLine)
++		kept = append(kept, left...)
+ 		if len(refs) == 0 {
+ 			continue
+ 		}
+@@ -312,20 +324,27 @@ func applyRenumber(ops RenumberIO, planDir, journalPath string, plan *Plan, edit
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	newOverview, overviewRefs := rewriteCardIDs(newOverview, overviewFileName, moves)
++	newOverview, overviewRefs, overviewLeft := renumberReferences(newOverview, overviewFileName, refEdit, cardIndexLines(newOverview))
+ 	rewritten = append(rewritten, overviewRefs...)
++	kept = append(kept, overviewLeft...)
+ 	sort.SliceStable(rewritten, func(i, j int) bool {
+ 		if rewritten[i].File != rewritten[j].File {
+ 			return rewritten[i].File < rewritten[j].File
+ 		}
+ 		return rewritten[i].Line < rewritten[j].Line
+ 	})
++	sort.SliceStable(kept, func(i, j int) bool {
++		if kept[i].File != kept[j].File {
++			return kept[i].File < kept[j].File
++		}
++		return kept[i].Line < kept[j].Line
++	})
+ 
+ 	if err := writeRenumberJournal(ops, journalPath, journal); err != nil {
+ 		return nil, err
+ 	}
+ 
+-	result := &RenumberResult{Moved: edit.moved, RewrittenRefs: rewritten}
++	result := &RenumberResult{Moved: edit.moved, RewrittenRefs: rewritten, ProseMentions: kept}
+ 	var steps []func() error
+ 	if edit.removed != "" {
+ 		steps = append(steps, func() error { return ops.Remove(filepath.Join(planDir, edit.removed)) })
+@@ -348,11 +367,6 @@ func applyRenumber(ops RenumberIO, planDir, journalPath string, plan *Plan, edit
+ 	}
+ 	steps = append(steps,
+ 		func() error { return ops.WriteFile(overviewPath, []byte(newOverview), 0o644) },
+-		func() error {
+-			mentions, err := proseMentions(ops, planDir, planAfterRenumber(plan, edit), movedOldNumbers(edit.moved))
+-			result.ProseMentions = mentions
+-			return err
+-		},
+ 		func() error { return ops.Remove(journalPath) },
+ 	)
+ 
+@@ -471,38 +485,6 @@ func rewriteCardIDs(text, file string, moves map[int]cardIDMove) (string, []Rewr
+ 	return strings.Join(lines, "\n"), refs
+ }
+ 
+-// movedOldNumbers returns the old number of every moved card.
+-func movedOldNumbers(moved []MovedCard) []int {
+-	numbers := make([]int, len(moved))
+-	for i, m := range moved {
+-		numbers[i] = m.OldNumber
+-	}
+-	return numbers
+-}
+-
+-// planAfterRenumber returns the plan's card list as the edit leaves it, which is the file set the prose scan reads.
+-func planAfterRenumber(plan *Plan, edit renumberEdit) *Plan {
+-	newNumbers := make(map[int]int, len(edit.moved))
+-	for _, m := range edit.moved {
+-		newNumbers[m.OldNumber] = m.NewNumber
+-	}
+-
+-	after := &Plan{Dir: plan.Dir}
+-	for _, c := range plan.Cards {
+-		if edit.removed != "" && c.Number == edit.position {
+-			continue
+-		}
+-		if to, ok := newNumbers[c.Number]; ok {
+-			c.Number = to
+-		}
+-		after.Cards = append(after.Cards, c)
+-	}
+-	if edit.created != "" {
+-		after.Cards = append(after.Cards, Card{Number: edit.position, Slug: edit.createdSlug})
+-	}
+-	return after
+-}
+-
+ // writeRenumberJournal encodes j and puts it at journalPath through a temporary file, so a journal on disk is always complete.
+ // A failure removes the temporary file and leaves the plan directory untouched.
+ func writeRenumberJournal(ops RenumberIO, journalPath string, j renumberJournal) error {
+@@ -645,55 +627,127 @@ var cardMentionRe = regexp.MustCompile(`\b[Cc]ards?\s+\d+(?:(?:\s*,\s*(?:and\s+)
+ // mentionNumberRe splits a card reference into its numbers and range dashes.
+ var mentionNumberRe = regexp.MustCompile(`\d+|[–—-]`)
+ 
+-// proseMentions scans the overview and every card file of plan for a card reference that names one of oldNumbers, a range's interior included.
+-// A card's heading line, the Card Index lines and every card id of plan are skipped, and no line is rewritten.
+-func proseMentions(ops RenumberIO, planDir string, plan *Plan, oldNumbers []int) ([]ProseMention, error) {
+-	old := make(map[int]bool, len(oldNumbers))
+-	for _, n := range oldNumbers {
+-		old[n] = true
+-	}
++// referenceEdit is what a renumber does to the references plan text makes to cards, each read against the numbering before the renumber.
++type referenceEdit struct {
++	// moves holds each moved card's slug and new number by its old number.
++	moves map[int]cardIDMove
++	// slugs holds every card's slug by its number before the renumber, so a card id is never read as a bare reference.
++	slugs map[int]string
++	// position is the number a card is inserted at, or removed from when removing is set.
++	position int
++	removing bool
++}
+ 
+-	names := []string{overviewFileName}
+-	slugs := make(map[int]string, len(plan.Cards))
+-	for _, c := range sortedCards(plan) {
+-		names = append(names, cardFileName(c.Number, c.Slug))
+-		slugs[c.Number] = c.Slug
+-	}
++// renumberReferences rewrites every bare card reference in text, then every card id, that names a moved card by its old number to the card's new number.
++// skip reports the lines that hold no prose, such as a card's heading or a Card Index line, whose bare references are left alone.
++// It returns the rewritten text, one RewrittenRef per rewritten reference, and one ProseMention per line left holding a bare reference with no faithful rewrite, each located in file.
++func renumberReferences(text, file string, edit referenceEdit, skip func(i int, line string) bool) (string, []RewrittenRef, []ProseMention) {
+ 	slugOf := func(number int) (string, bool) {
+-		slug, ok := slugs[number]
++		slug, ok := edit.slugs[number]
+ 		return slug, ok
+ 	}
+-
+-	var mentions []ProseMention
+-	for _, name := range names {
+-		data, err := ops.ReadFile(filepath.Join(planDir, name))
+-		if err != nil {
+-			return nil, fmt.Errorf("read %s: %w", name, err)
++	lines := strings.Split(text, "\n")
++	var refs []RewrittenRef
++	var keptAt []int
++	for i, line := range lines {
++		if skip(i, line) {
++			continue
++		}
++		rewritten, pairs, kept := rewriteCardMentions(line, maskCardIDs(line, slugOf), edit)
++		lines[i] = rewritten
++		for _, pair := range pairs {
++			refs = append(refs, RewrittenRef{File: file, Line: i + 1, From: pair[0], To: pair[1]})
+ 		}
+-		lines := strings.Split(string(data), "\n")
++		if kept {
++			keptAt = append(keptAt, i)
++		}
++	}
+ 
+-		skipFrom, skipTo := 0, 0
+-		if name == overviewFileName {
+-			_, body, _, _ := splitFrontmatter(string(data))
+-			if headingIdx, end, err := cardIndexBounds(strings.Split(body, "\n")); err == nil {
+-				shift := len(lines) - len(strings.Split(body, "\n"))
+-				skipFrom, skipTo = shift+headingIdx+1, shift+end
+-			}
++	after, idRefs := rewriteCardIDs(strings.Join(lines, "\n"), file, edit.moves)
++	afterLines := strings.Split(after, "\n")
++	mentions := make([]ProseMention, 0, len(keptAt))
++	for _, i := range keptAt {
++		mentions = append(mentions, ProseMention{File: file, Line: i + 1, Text: strings.TrimSpace(afterLines[i])})
++	}
++	return after, append(refs, idRefs...), mentions
++}
++
++// rewriteCardMentions rewrites every bare card reference of line so each number naming a moved card names its new number.
++// masked is line with its card ids blanked to the same length, and is where the references are found.
++// A reference with no faithful rewrite is kept whole, and kept reports whether line holds one.
++// A match glued to a preceding hyphen is part of a word such as `insert-card 3`, not a reference, and is left alone.
++// It returns the rewritten line and each rewritten reference as its text before and after.
++func rewriteCardMentions(line, masked string, edit referenceEdit) (rewritten string, pairs [][2]string, kept bool) {
++	var b strings.Builder
++	last := 0
++	for _, span := range cardMentionRe.FindAllStringIndex(masked, -1) {
++		if span[0] > 0 && masked[span[0]-1] == '-' {
++			continue
++		}
++		ref := line[span[0]:span[1]]
++		tokens := mentionNumberRe.FindAllStringIndex(ref, -1)
++		if !edit.mapsFaithfully(ref, tokens) {
++			kept = true
++			continue
+ 		}
+ 
+-		for i, line := range lines {
+-			if name != overviewFileName && i == 0 {
+-				continue
+-			}
+-			if i >= skipFrom && i < skipTo && cardIndexLineRe.MatchString(strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(line), "- "))) {
++		var to strings.Builder
++		at := 0
++		for _, tok := range tokens {
++			number, err := strconv.Atoi(ref[tok[0]:tok[1]])
++			if err != nil {
+ 				continue
+ 			}
+-			if namesOldNumber(maskCardIDs(line, slugOf), old) {
+-				mentions = append(mentions, ProseMention{File: name, Line: i + 1, Text: strings.TrimSpace(line)})
++			if m, ok := edit.moves[number]; ok {
++				to.WriteString(ref[at:tok[0]])
++				to.WriteString(strconv.Itoa(m.to))
++				at = tok[1]
+ 			}
+ 		}
++		to.WriteString(ref[at:])
++		if to.String() == ref {
++			continue
++		}
++		b.WriteString(line[last:span[0]])
++		b.WriteString(to.String())
++		last = span[1]
++		pairs = append(pairs, [2]string{ref, to.String()})
++	}
++	b.WriteString(line[last:])
++	return b.String(), pairs, kept
++}
++
++// mapsFaithfully reports whether ref, a bare card reference split into its number and dash tokens, keeps its meaning once each moved number becomes its new one.
++// It does not when it names the removed card, or when one of its ranges takes in the position a card is inserted at or removed from, since the range would then gain or lose a card.
++func (e referenceEdit) mapsFaithfully(ref string, tokens [][]int) bool {
++	previous, inRange := 0, false
++	for _, tok := range tokens {
++		number, err := strconv.Atoi(ref[tok[0]:tok[1]])
++		if err != nil {
++			inRange = true
++			continue
++		}
++		if e.removing && number == e.position {
++			return false
++		}
++		if inRange && previous < e.position && e.position <= number {
++			return false
++		}
++		previous, inRange = number, false
++	}
++	return true
++}
++
++// cardIndexLines returns a skip test for renumberReferences over overview that holds for each Card Index line.
++// overview has already been through renumberCardIndex, so its Card Index section is known to be present.
++func cardIndexLines(overview string) func(i int, line string) bool {
++	_, body, _, _ := splitFrontmatter(overview)
++	bodyLines := strings.Split(body, "\n")
++	headingIdx, end, _ := cardIndexBounds(bodyLines)
++	shift := len(strings.Split(overview, "\n")) - len(bodyLines)
++	return func(i int, line string) bool {
++		return i > shift+headingIdx && i < shift+end && cardIndexLineRe.MatchString(strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(line), "- ")))
+ 	}
+-	return mentions, nil
+ }
+ 
+ // maskCardIDs blanks every card-id token of line for a card slugOf knows, so a card id is never read as a bare card number.
+@@ -710,30 +764,3 @@ func maskCardIDs(line string, slugOf func(number int) (string, bool)) string {
+ 	}
+ 	return string(masked)
+ }
+-
+-// namesOldNumber reports whether line holds a card reference naming a number in old.
+-func namesOldNumber(line string, old map[int]bool) bool {
+-	for _, ref := range cardMentionRe.FindAllString(line, -1) {
+-		previous, inRange := 0, false
+-		for _, token := range mentionNumberRe.FindAllString(ref, -1) {
+-			n, err := strconv.Atoi(token)
+-			if err != nil {
+-				inRange = true
+-				continue
+-			}
+-			if old[n] {
+-				return true
+-			}
+-			if inRange {
+-				for k := previous + 1; k < n; k++ {
+-					if old[k] {
+-						return true
+-					}
+-				}
+-				inRange = false
+-			}
+-			previous = n
+-		}
+-	}
+-	return false
+-}
+diff --git a/internal/planparser/renumber_test.go b/internal/planparser/renumber_test.go
+index 36f77429..5c42c1c8 100644
+--- a/internal/planparser/renumber_test.go
++++ b/internal/planparser/renumber_test.go
+@@ -32,7 +32,7 @@ type renumberFixture struct {
+ 	first       int
+ }
+ 
+-// newRenumberFixture writes cards alpha, beta, gamma and delta numbered from first, with card references in the framing, a plan section and gamma's intent.
++// newRenumberFixture writes cards alpha, beta, gamma and delta numbered from first, with card references in the framing, a command example in the framing that no renumber may change, a plan section (a list and two ranges) and gamma's intent, and a bare reference in delta's Card Index line.
+ func newRenumberFixture(t *testing.T, first int) renumberFixture {
+ 	t.Helper()
+ 	return newRenumberFixtureWithBeta(t, first, "beta")
+@@ -45,15 +45,16 @@ func newRenumberFixtureWithBeta(t *testing.T, first int, betaSlug string) renumb
+ 	planDir := filepath.Join(root, "plan")
+ 
+ 	plan := plankit.Plan{
+-		Framing: fmt.Sprintf("Covers cards %d–%d.", first+1, first+2),
++		Framing: fmt.Sprintf("Covers cards %d–%d.\n\nRun `lym loom insert-card %d slug` to add one.", first+1, first+2, first+2),
+ 		Sections: []plankit.Section{
+-			{Heading: "Shared Decisions", Body: fmt.Sprintf("- **Applies to:** cards %d, %d", first+1, first+2)},
++			{Heading: "Shared Decisions", Body: fmt.Sprintf("- **Applies to:** cards %d, %d\n- **Spans:** cards %d–%d\n- **Pair:** cards %d–%d", first+1, first+2, first, first+2, first, first+1)},
+ 		},
+ 		Cards: []plankit.Card{
+ 			{Number: first, Slug: "alpha", Summary: "intent of alpha", Intent: fmt.Sprintf("Stands alone; see card %d.", first)},
+ 			{Number: first + 1, Slug: betaSlug, Summary: "intent of beta", Commit: fmt.Sprintf("%d: beta", first+1)},
+ 			{Number: first + 2, Slug: "gamma", Summary: "intent of gamma", Intent: gammaIntent(first)},
+-			{Number: first + 3, Slug: "delta", Summary: "intent of delta"},
++			// delta's Card Index line holds a bare reference to a card that moves, which the scan leaves alone.
++			{Number: first + 3, Slug: "delta", Summary: fmt.Sprintf("intent of delta after card %d", first+2), Intent: "intent of delta"},
+ 		},
+ 	}
+ 	if first != 1 {
+@@ -74,6 +75,60 @@ func gammaIntent(first int) string {
+ 	return fmt.Sprintf("Builds on card %d and wraps cards %d, %d.", first+1, first+2, first+3)
+ }
+ 
++// insertSecondProse maps each prose line of the fixture to its text once a card is inserted second: every bare reference moves up by one.
++func insertSecondProse(first int) map[string]string {
++	return map[string]string{
++		fmt.Sprintf("Covers cards %d–%d.", first+1, first+2):            fmt.Sprintf("Covers cards %d–%d.", first+2, first+3),
++		fmt.Sprintf("- **Applies to:** cards %d, %d", first+1, first+2): fmt.Sprintf("- **Applies to:** cards %d, %d", first+2, first+3),
++		gammaIntent(first): fmt.Sprintf("Builds on card %d and wraps cards %d, %d.", first+2, first+3, first+4),
++	}
++}
++
++// insertSecondMentions are the lines left holding a range the card inserted second falls inside or ends at.
++func insertSecondMentions(first int) []string {
++	return []string{
++		renumberOverview + ": " + fmt.Sprintf("- **Spans:** cards %d–%d", first, first+2),
++		renumberOverview + ": " + fmt.Sprintf("- **Pair:** cards %d–%d", first, first+1),
++	}
++}
++
++// insertThirdProse maps each prose line of the fixture that changes once a card is inserted third: a reference to the second card stays, and later ones move up by one.
++func insertThirdProse(first int) map[string]string {
++	return map[string]string{
++		fmt.Sprintf("- **Applies to:** cards %d, %d", first+1, first+2): fmt.Sprintf("- **Applies to:** cards %d, %d", first+1, first+3),
++		gammaIntent(first): fmt.Sprintf("Builds on card %d and wraps cards %d, %d.", first+1, first+3, first+4),
++	}
++}
++
++// insertThirdMentions are the lines left holding a range the card inserted third ends at; the range ending before it stays unlisted.
++func insertThirdMentions(first int) []string {
++	return []string{
++		renumberOverview + ": " + fmt.Sprintf("Covers cards %d–%d.", first+1, first+2),
++		renumberOverview + ": " + fmt.Sprintf("- **Spans:** cards %d–%d", first, first+2),
++	}
++}
++
++// removeSecondProse maps gamma's intent to its text once the second card is removed: the reference naming the removed card stays, and the later one moves down by one.
++func removeSecondProse(first int) map[string]string {
++	return map[string]string{gammaIntent(first): fmt.Sprintf("Builds on card %d and wraps cards %d, %d.", first+1, first+1, first+2)}
++}
++
++// removeSecondMentions are the lines left naming the removed second card, the framing's range among them.
++func removeSecondMentions(first int) []string {
++	return []string{
++		renumberOverview + ": " + fmt.Sprintf("Covers cards %d–%d.", first+1, first+2),
++		renumberOverview + ": " + fmt.Sprintf("- **Applies to:** cards %d, %d", first+1, first+2),
++		renumberOverview + ": " + fmt.Sprintf("- **Spans:** cards %d–%d", first, first+2),
++		renumberOverview + ": " + fmt.Sprintf("- **Pair:** cards %d–%d", first, first+1),
++		fmt.Sprintf("%02d-gamma.md: **Intent:** ", first+1) + fmt.Sprintf("Builds on card %d and wraps cards %d, %d.", first+1, first+1, first+2),
++	}
++}
++
++// removeLastMentions are the lines left naming the removed last card: gamma's intent alone.
++func removeLastMentions(first int) []string {
++	return []string{fmt.Sprintf("%02d-gamma.md: **Intent:** ", first+2) + gammaIntent(first)}
++}
++
+ // snapshot returns the content of every file under root, keyed by slash-separated relative path.
+ func snapshot(t *testing.T, root string) map[string]string {
+ 	t.Helper()
+@@ -202,16 +257,19 @@ func TestRenumber(t *testing.T) {
+ 		wantSlugs []string
+ 		// wantMoved is each move's old and new offset from the first card, in apply order.
+ 		wantMoved [][2]int
+-		// wantMentions reports whether the framing, the plan section and gamma's intent name a moved card by its old number.
+-		wantMentions bool
++		// wantProse maps each prose line the call rewrites, by its text before the call, to its text after it; nil when none is.
++		wantProse func(first int) map[string]string
++		// wantMentions lists the lines left holding a bare reference the call cannot rewrite, as "file: text"; nil when none is.
++		wantMentions func(first int) []string
+ 	}{
+-		{name: "insert at a middle position", first: 1, call: insertAt, offset: 1, wantSlugs: []string{"alpha", "new", "beta", "gamma", "delta"}, wantMoved: [][2]int{{3, 4}, {2, 3}, {1, 2}}, wantMentions: true},
++		{name: "insert at a middle position", first: 1, call: insertAt, offset: 1, wantSlugs: []string{"alpha", "new", "beta", "gamma", "delta"}, wantMoved: [][2]int{{3, 4}, {2, 3}, {1, 2}}, wantProse: insertSecondProse, wantMentions: insertSecondMentions},
++		{name: "insert at the third position", first: 1, call: insertAt, offset: 2, wantSlugs: []string{"alpha", "beta", "new", "gamma", "delta"}, wantMoved: [][2]int{{3, 4}, {2, 3}}, wantProse: insertThirdProse, wantMentions: insertThirdMentions},
+ 		{name: "insert one past the last card", first: 1, call: insertAt, offset: 4, wantSlugs: []string{"alpha", "beta", "gamma", "delta", "new"}},
+ 		{name: "insert ignores a stray temporary journal", first: 1, strayTemp: true, call: insertAt, offset: 4, wantSlugs: []string{"alpha", "beta", "gamma", "delta", "new"}},
+-		{name: "remove at a middle position", first: 1, call: removeAt, offset: 1, wantSlugs: []string{"alpha", "gamma", "delta"}, wantMoved: [][2]int{{2, 1}, {3, 2}}, wantMentions: true},
+-		{name: "remove the last card", first: 1, call: removeAt, offset: 3, wantSlugs: []string{"alpha", "beta", "gamma"}},
+-		{name: "insert on a plan starting above 1", first: 5, call: insertAt, offset: 1, wantSlugs: []string{"alpha", "new", "beta", "gamma", "delta"}, wantMoved: [][2]int{{3, 4}, {2, 3}, {1, 2}}, wantMentions: true},
+-		{name: "remove on a plan starting above 1", first: 5, call: removeAt, offset: 1, wantSlugs: []string{"alpha", "gamma", "delta"}, wantMoved: [][2]int{{2, 1}, {3, 2}}, wantMentions: true},
++		{name: "remove at a middle position", first: 1, call: removeAt, offset: 1, wantSlugs: []string{"alpha", "gamma", "delta"}, wantMoved: [][2]int{{2, 1}, {3, 2}}, wantProse: removeSecondProse, wantMentions: removeSecondMentions},
++		{name: "remove the last card", first: 1, call: removeAt, offset: 3, wantSlugs: []string{"alpha", "beta", "gamma"}, wantMentions: removeLastMentions},
++		{name: "insert on a plan starting above 1", first: 5, call: insertAt, offset: 1, wantSlugs: []string{"alpha", "new", "beta", "gamma", "delta"}, wantMoved: [][2]int{{3, 4}, {2, 3}, {1, 2}}, wantProse: insertSecondProse, wantMentions: insertSecondMentions},
++		{name: "remove on a plan starting above 1", first: 5, call: removeAt, offset: 1, wantSlugs: []string{"alpha", "gamma", "delta"}, wantMoved: [][2]int{{2, 1}, {3, 2}}, wantProse: removeSecondProse, wantMentions: removeSecondMentions},
+ 	}
+ 	for _, tc := range tests {
+ 		t.Run(tc.name, func(t *testing.T) {
+@@ -262,12 +320,20 @@ func TestRenumber(t *testing.T) {
+ 				}
+ 			}
+ 
++			var prosePairs []string
++			if tc.wantProse != nil {
++				for from, to := range tc.wantProse(tc.first) {
++					prosePairs = append(prosePairs, from, to)
++				}
++			}
++			prose := strings.NewReplacer(prosePairs...)
++
+ 			var gotMoved [][2]int
+ 			for _, m := range result.Moved {
+ 				gotMoved = append(gotMoved, [2]int{m.OldNumber - tc.first, m.NewNumber - tc.first})
+ 				oldContent := before["plan/"+m.OldFile]
+ 				oldNumber, newNumber := fmt.Sprint(m.OldNumber), fmt.Sprint(m.NewNumber)
+-				want := strings.NewReplacer("# Card "+oldNumber+" —", "# Card "+newNumber+" —", "`"+oldNumber+": ", "`"+newNumber+": ").Replace(oldContent)
++				want := prose.Replace(strings.NewReplacer("# Card "+oldNumber+" —", "# Card "+newNumber+" —", "`"+oldNumber+": ", "`"+newNumber+": ").Replace(oldContent))
+ 				if after["plan/"+m.NewFile] != want {
+ 					t.Errorf("moved card %s = %q; want %q", m.NewFile, after["plan/"+m.NewFile], want)
+ 				}
+@@ -294,8 +360,8 @@ func TestRenumber(t *testing.T) {
+ 			if err != nil {
+ 				t.Fatal(err)
+ 			}
+-			if string(framedBefore) != string(framedAfter) {
+-				t.Errorf("overview changed outside the Card Index")
++			if want := prose.Replace(string(framedBefore)); string(framedAfter) != want {
++				t.Errorf("overview outside the Card Index = %q; want %q", framedAfter, want)
+ 			}
+ 
+ 			if _, ok := after["scratch/sub/"+renumberJournalName]; ok {
+@@ -313,13 +379,8 @@ func TestRenumber(t *testing.T) {
+ 			}
+ 
+ 			var wantMentions []string
+-			if tc.wantMentions {
+-				gammaFile := fmt.Sprintf("%02d-gamma.md", tc.first+slices.Index(tc.wantSlugs, "gamma"))
+-				wantMentions = []string{
+-					renumberOverview + ": " + fmt.Sprintf("Covers cards %d–%d.", tc.first+1, tc.first+2),
+-					renumberOverview + ": " + fmt.Sprintf("- **Applies to:** cards %d, %d", tc.first+1, tc.first+2),
+-					gammaFile + ": **Intent:** " + gammaIntent(tc.first),
+-				}
++			if tc.wantMentions != nil {
++				wantMentions = tc.wantMentions(tc.first)
+ 			}
+ 			var gotMentions []string
+ 			for _, p := range result.ProseMentions {
+@@ -356,7 +417,7 @@ func newCardIDFixture(t *testing.T) renumberFixture {
+ }
+ 
+ // TestRenumber_RewritesCardIDs covers the card-id rewrite of a renumber: every `<N>-<slug>` and zero-padded file form naming a moved card moves to the new number, in a moved card, a card that keeps its number and the overview.
+-// A token that runs on into a longer slug or word, a removed card's id and a bare number stay, and a rewritten id is not reported again as a prose mention.
++// A token that runs on into a longer slug or word and a removed card's id stay, a card id is never read as a bare reference, and a bare reference moves with its card unless it names the removed one, which is reported.
+ func TestRenumber_RewritesCardIDs(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -375,11 +436,12 @@ func TestRenumber_RewritesCardIDs(t *testing.T) {
+ 			name: "Insert",
+ 			call: insertAt(1),
+ 			wantLines: map[string]string{
+-				renumberOverview: "Order: 10-beta then 11-gamma; card 9 is bare.",
++				renumberOverview: "Order: 10-beta then 11-gamma; card 10 is bare.",
+ 				"08-alpha.md":    "**Intent:** Feeds `11-gamma` and `10-beta.md`; see 10-beta, not 9-betamax, 9-beta-two or x10-gamma.",
+ 				"12-delta.md":    "**Intent:** Follows 11-gamma, run with `--card 10-beta`.",
+ 			},
+ 			wantRewritten: []string{
++				renumberOverview + ": card 9 -> card 10",
+ 				renumberOverview + ": 9-beta -> 10-beta",
+ 				renumberOverview + ": 10-gamma -> 11-gamma",
+ 				"08-alpha.md: 10-gamma -> 11-gamma",
+@@ -388,7 +450,6 @@ func TestRenumber_RewritesCardIDs(t *testing.T) {
+ 				"12-delta.md: 10-gamma -> 11-gamma",
+ 				"12-delta.md: 9-beta -> 10-beta",
+ 			},
+-			wantMentions: []string{renumberOverview + ": Order: 10-beta then 11-gamma; card 9 is bare."},
+ 		},
+ 		{
+ 			name: "Remove",
+@@ -403,6 +464,7 @@ func TestRenumber_RewritesCardIDs(t *testing.T) {
+ 				"08-alpha.md: 10-gamma -> 9-gamma",
+ 				"10-delta.md: 10-gamma -> 9-gamma",
+ 			},
++			wantMentions: []string{renumberOverview + ": Order: 9-beta then 9-gamma; card 9 is bare."},
+ 		},
+ 	}
+ 	for _, tt := range tests {
+@@ -559,6 +621,12 @@ func TestRenumber_Refusals(t *testing.T) {
+ 	}
+ }
+ 
++// referenceCardFour rewrites the first card so it keeps its number under an insert at the second position and changes only by its bare reference to card 4.
++func referenceCardFour(t *testing.T, fx renumberFixture) {
++	t.Helper()
++	plankit.WriteTree(t, fx.planDir, map[string]string{"01-alpha.md": "# Card 1 — alpha\n\n**Intent:** Waits for card 4.\n"})
++}
++
+ func TestRenumber_IOFailureReversed(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -567,6 +635,8 @@ func TestRenumber_IOFailureReversed(t *testing.T) {
+ 		name  string
+ 		call  renumberCall
+ 		fault fault
++		// prepare, when set, changes the fixture before the call.
++		prepare func(t *testing.T, fx renumberFixture)
+ 		// want is the sentinel the failure ends in; a ErrRenumberReversalFailed row keeps the journal.
+ 		want error
+ 	}{
+@@ -579,6 +649,7 @@ func TestRenumber_IOFailureReversed(t *testing.T) {
+ 		{name: "insert: new card write", call: insertAt(1), fault: fault{op: "WriteFile", base: "02-new.md", times: 1}},
+ 		{name: "insert: Card Index rewrite", call: insertAt(1), fault: fault{op: "WriteFile", base: renumberOverview, times: 1}},
+ 		{name: "insert: journal removal", call: insertAt(1), fault: fault{op: "Remove", base: renumberJournalName, times: 1}},
++		{name: "insert: Card Index rewrite after a card changed only by a bare reference", call: insertAt(1), prepare: referenceCardFour, fault: fault{op: "WriteFile", base: renumberOverview, times: 1}},
+ 		{name: "remove: journal directory creation", call: removeAt(1), fault: fault{op: "MkdirAll", base: "sub", times: 1}},
+ 		{name: "remove: temporary journal write", call: removeAt(1), fault: fault{op: "WriteFile", base: renumberJournalName + ".tmp", times: 1}},
+ 		{name: "remove: journal rename", call: removeAt(1), fault: fault{op: "Rename", base: renumberJournalName + ".tmp", times: 1}},
+@@ -594,6 +665,9 @@ func TestRenumber_IOFailureReversed(t *testing.T) {
+ 		t.Run(tc.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			fx := newRenumberFixture(t, 1)
++			if tc.prepare != nil {
++				tc.prepare(t, fx)
++			}
+ 			before := snapshot(t, fx.root)
+ 			injected := tc.fault
+ 
