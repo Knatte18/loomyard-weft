@@ -1,0 +1,1528 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 6db67832..88a957ca 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -420,7 +420,7 @@ User-facing modules each get one `lym <module>` namespace:
+   defaults to `bug`.
+   Callable from any sandbox agent context with no config. ✅ Implemented.
+ - **reed** — **the window to the world**: tmux overlay + **strand** bookkeeping + render (`internal/reedcli` + `internal/reedengine` + `internal/reedengine/render`). Hosts every managed process as a strand in a window of its own or its group's, persists to `.lym/reed.json` (`lym reed up|add|remove|status|list|attach|switch|resume|watchdog|down`); `lym reed add` places a strand `--anchor own-window` by default. Every strand carries a hierarchical full name (see the `internal/agentname` package documentation), mirrored into its pane title and Claude session name and exported to its process as `LYM_STRAND_NAME` and `LYM_PARENT`, with the watchdog repairing drift; `list` is the hub-wide name directory. Built on what its proof-of-concept, `muxpoc`, proved first (env hygiene, native `--resume`); `muxpoc` has since been deleted, its job done. `reed attach` and `reed watchdog` are this module's two registered interactive-handoff exceptions ([PATTERN-cli-cobra](../pattern/PATTERN-cli-cobra.md)): `attach` hands the operator's stdio to a `tmux attach-session` child in place, pre-flighting through checking tmux's floor version, booting the session if cold and checking server/session liveness, and `watchdog` is the detached per-hub name-repair and reap daemon that blocks for its process lifetime — in both cases every fallible step runs pre-flight, on the envelope, and only the terminal-handover/daemon tail itself is exempt from emitting JSON. `add` and `attach` boot this worktree's session when none is up, with `up`'s own semantics — a bare substrate, with no persisted strand relaunched — instead of refusing; every other reed verb still refuses on a cold worktree. ✅ Implemented. See the `internal/reedengine` package documentation.
+-- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengine/codexengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await|await-forks`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository; its cap defaults to the caller role's keep-warm cap from `claude.yaml`. `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine: a reviewer, fixer or writer that waits inside it takes every fork's result in one turn instead of waking once per fork. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into three outcomes — `done`/`died`/`timeout`. A turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run holds at once with an output file missing, a gated run with every output file present counts done once they pass the shell wait bound after telling the agent to read them, and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane; the exception is a handle whose own `Stop` removed the strand, which ends `died` and is recorded as stopped unless the files show the run done. No guardrail denies the in-process `Agent` tool: a subagent or fork shows in the session's own pane and lym reads its transcript under the session's `subagents` directory. A `PreToolUse` guardrail denies `AskUserQuestion` when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode, a version check included (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and to a package-scoped compile check the hub's `refuse_raw` does not refuse, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write, and a fifth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a headless `claude` launch with `-p` or `--print`, whose work shows in no pane, steering the session to a subagent through the `Agent` tool; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one and follows `[creel]` mail from its hooks. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). `claude.yaml`'s `keep_warm_cap` (template 250s) and `keep_warm_cap_roles` set the per-role keep-warm cap beside them. While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups, a sliced read of a short or already-read file, or a chain of edit-only messages; it never denies a call, and the block's switches and thresholds are config. The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, or per run by a model-spec naming it. Two engines are registered: `claude`, and `codex`, which drives the Codex CLI's TUI under one shared lym Codex home (`codex.yaml`'s `home`, linked to the operator's own login and sessions, its folder trust rendered by lym), with `-a never -s workspace-write` and the records checkout it is told through its config dirs as a writable root, none outside a hub; it has no skill loading, shell guards, fork audit or creel hooks yet, and the model registry's `sol`, `astra` and `luna` aliases name it. Per-run `Model`/`Effort` knobs (`lym shuttle run --model`/`--effort`; effort values `low|medium|high|xhigh|max`, empty = provider default) are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
++- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengine/codexengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await|await-forks`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository; its cap defaults to the caller role's keep-warm cap from `claude.yaml`. `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine: a reviewer, fixer or writer that waits inside it takes every fork's result in one turn instead of waking once per fork. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into three outcomes — `done`/`died`/`timeout`. A turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run holds at once with an output file missing, a gated run with every output file present counts done once they pass the shell wait bound after telling the agent to read them, and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane; the exception is a handle whose own `Stop` removed the strand, which ends `died` and is recorded as stopped unless the files show the run done. No guardrail denies the in-process `Agent` tool: a subagent or fork shows in the session's own pane and lym reads its transcript under the session's `subagents` directory. A `PreToolUse` guardrail denies `AskUserQuestion` when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode, a version check included (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and to a package-scoped compile check the hub's `refuse_raw` does not refuse, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write, and a fifth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a headless `claude` launch with `-p` or `--print`, whose work shows in no pane, steering the session to a subagent through the `Agent` tool; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one and follows `[creel]` mail from its hooks. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). `claude.yaml`'s `keep_warm_cap` (template 250s) and `keep_warm_cap_roles` set the per-role keep-warm cap beside them. While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups, a sliced read of a short or already-read file, or a chain of edit-only messages; it never denies a call, and the block's switches and thresholds are config. The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, or per run by a model-spec naming it. Two engines are registered: `claude`, and `codex`, which drives the Codex CLI's TUI under one shared lym Codex home (`codex.yaml`'s `home`, linked to the operator's own login and sessions, its folder trust rendered by lym), with `-a never -s workspace-write` and the records checkout it is told through its config dirs as a writable root, none outside a hub; it loads skills as SKILL.md files the model reads by absolute path under `codex.yaml`'s `skill_roots`, and installs the shell guard rows of the `shellguard` table as `PreToolUse` hooks matching `Bash` with Codex's own steer and notice texts (`apply_patch` in place of Read, Edit and Write), the python and publish rows following their switches and the refuse-raw row a non-empty `refuse_raw` list, but has no fork audit or creel hooks yet, and the model registry's `sol`, `astra` and `luna` aliases name it. Per-run `Model`/`Effort` knobs (`lym shuttle run --model`/`--effort`; effort values `low|medium|high|xhigh|max`, empty = provider default) are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
+ - **orch** — the hub orchestrator hosted as an interactive Claude session in a reed strand of the prime worktree or of a beam, cycled before its context fills (`internal/orchcli` + `internal/orchengine`; `lym orch stop|status|refresh|distill|withdraw|rules`, in the prime and in any beam). `lym beam start` first ensures the worktree's `runs` strand, which runs `lym batten overview` as the beam's window, named `beam: prime` or `beam: <slug>` opened with the beam's board handle as in `P1: beam: <slug>`, and `stop` leaves it; ensuring it adds the runs strand beside a `loom-status` strand a pawl run's `lym loom start` put in an overview window first, as the session's first overview window, and a failure to add, replace or record it is a warning on the bring-up report naming `lym beam start`, never a stop; the orchestrator has a window of its own, and the session's windows run the beam window, agents, shell. A detached watcher has the session write a note, then clears it and resumes it from that note (`refresh`) or compacts it in place (`distill`), never clearing or compacting without one. ✅ Implemented. See the `internal/orchengine` package documentation.- **webster** — the implementer module: one long-lived Master session that reads the plan and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool), each fork reading its cards' code itself, instead of spawning a fresh reed/tmux strand per batch;
+   bracket verbs (`begin-batch`/`record-batch`) drive each in-session fork (Master ends its turn while a backgrounded fork works and records the batch on the fork's completion notification, shuttle reading that turn end as waiting rather than done), and a genuine model escalation (recovery after a stuck/report-less fork) spawns a cold strand.
+   Consumes the flat card-list plan (pinned in the plan-format blocks `contracts/stencils/loom/loom-block-plan-*.md`, which `contracts/stencils/loom/loom-template-plan.md`, the Plan producer's own stencil, includes) via its own sole parser, `internal/planparser`, groups cards into execution batches via `internal/batcher`, a separate config-selected registry module webster consumes (profiles in `batcher.yaml`, the `wide` cost profile by default), then runs those batches in card order, refusing a backward dependency derived from the cards' own `Targets`/`Uses` refs, records the partition in `state.json` at first init, and carries the plan's `## verify:` command as a must-pass gate on Merriam's strand: a failure is rerun once (a pass on the rerun records the identities as flaky;
+diff --git a/internal/shellguard/doc.go b/internal/shellguard/doc.go
+index ef32dc4d..f83af845 100644
+--- a/internal/shellguard/doc.go
++++ b/internal/shellguard/doc.go
+@@ -3,7 +3,7 @@
+ // A row carries what the guard matches, the deny reason shown to the agent, the sentence announcing it in the session's system prompt, and the config switch it hangs on.
+ //
+ // The payload contract is part of the table's interface:
+-// every pattern is a grep -E pattern matched against a JSON payload whose shell command is a JSON string value under a "command" key, as Claude's PreToolUse payload is.
++// every pattern is a grep -E pattern matched against a JSON payload whose shell command is a JSON string value under a "command" key, as the PreToolUse payloads of Claude and Codex are.
+ // An engine renders the rows against a payload of that shape, or the task that adds the engine changes the table and this contract.
+ // A pattern may hold a single quote, so an engine quotes each pattern for its shell rather than wrapping it in bare single quotes.
+ //
+@@ -21,6 +21,10 @@
+ // The python row's notice names a version check as refused, since agents otherwise probe for Python before choosing how to edit or parse.
+ // The headless claude row's steer and notice name a subagent through the Agent tool as the way to hand work off, since a subagent's work shows in the session's own pane and a headless session's shows in none.
+ //
++// The plain steer and notice name Claude's tools.
++// A row whose text names a tool another engine lacks carries that engine's own text in EngineTexts, keyed by the engine's registry name, and SteerFor and NoticeFor return it, or the plain text for an engine without one.
++// The Codex texts name Codex's apply_patch tool for the edit rule and Codex's own subagents for the headless claude row.
++//
+ // A row hangs on a Switch.
+ // A SwitchNone row is installed for every run, and SwitchDenyPython follows the shuttle config's python key.
+ // SwitchDenyPublish, which the publish row hangs on, is turned on only by a launch spec, so only the session that sets it cannot run git push or gh.
+diff --git a/internal/shellguard/rows.go b/internal/shellguard/rows.go
+index 648706f1..07efc9a3 100644
+--- a/internal/shellguard/rows.go
++++ b/internal/shellguard/rows.go
+@@ -4,6 +4,7 @@ package shellguard
+ 
+ import (
+ 	"fmt"
++	"maps"
+ 	"slices"
+ 	"strings"
+ 
+@@ -37,26 +38,69 @@ type Row struct {
+ 	Switch Switch
+ 	// Forms are the literal command forms the row denies, each a whole token sequence, for the no-denied-recovery scan; empty for a pattern-shaped row.
+ 	Forms [][]string
++	// EngineTexts are the row's own steer and notice for an engine whose tools the plain text names wrongly, keyed by the engine's registry name.
++	EngineTexts map[string]EngineText
+ }
+ 
++// EngineText is one engine's steer and notice for a row; an empty field takes the row's plain text.
++type EngineText struct {
++	Steer  string
++	Notice string
++}
++
++// SteerFor returns the deny reason shown to an agent on the named engine: the engine's own steer when the row carries one, otherwise the plain steer.
++func (row Row) SteerFor(engine string) string {
++	if text := row.EngineTexts[engine].Steer; text != "" {
++		return text
++	}
++	return row.Steer
++}
++
++// NoticeFor returns the system-prompt sentence announcing the row to an agent on the named engine: the engine's own notice when the row carries one, otherwise the plain notice.
++func (row Row) NoticeFor(engine string) string {
++	if text := row.EngineTexts[engine].Notice; text != "" {
++		return text
++	}
++	return row.Notice
++}
++
++// engineCodex is the registry name of the Codex engine, which the rows' Codex texts are keyed by.
++const engineCodex = "codex"
++
+ // editToolsRule is the way an agent changes and reads files, which the steers of the python and shell-edit rows carry and only the shell-edit row's notice states, so the system prompt states it once.
+ const editToolsRule = "change a file by reading it with Read, whole or a span through offset and limit, and then editing it with Edit, all edits of one file in one message, or write a whole file with Write; search files with grep"
+ 
++// codexEditToolsRule is the way an agent on Codex changes and reads files: Codex has no Read, Edit or Write tool and changes a file through its apply_patch tool.
++// The Codex steers and notice carry it where the plain ones carry editToolsRule.
++const codexEditToolsRule = "change a file with the apply_patch tool, and read or search files with cat, sed -n, rg or grep"
++
+ // pythonRefusal states the python deny and names the version check, which agents otherwise run as a probe before choosing how to edit or parse.
+ const pythonRefusal = "python and python3 are refused in every lym session, a version check included, so never probe for Python"
+ 
++// pythonRoutes opens every python steer: the refusal and the parse routes in Python's place.
++const pythonRoutes = pythonRefusal + "; parse JSON with jq and text with grep or awk; "
++
+ // steerPythonDeny refuses a Bash python invocation and names the parse and edit routes in its place; it must contain no single/double quote or backslash (checked at init).
+-const steerPythonDeny = pythonRefusal + "; parse JSON with jq and text with grep or awk; " + editToolsRule
++const steerPythonDeny = pythonRoutes + editToolsRule
++
++// codexSteerPythonDeny is steerPythonDeny with the Codex edit route.
++const codexSteerPythonDeny = pythonRoutes + codexEditToolsRule
+ 
+ // noticePythonDeny announces the python deny; the edit rule its steer carries is announced by the shell-edit row's notice.
+ const noticePythonDeny = pythonRefusal + "."
+ 
++// shellEditRefusal opens every shell-edit steer: the commands the row refuses.
++const shellEditRefusal = "sed -i, perl -i, and a heredoc, redirect or tee into a source file are refused here; "
++
+ // steerShellEditDeny refuses a Bash edit of a file; it must contain no single/double quote or backslash (checked at init).
+-const steerShellEditDeny = "sed -i, perl -i, and a heredoc, redirect or tee into a source file are refused here; " + editToolsRule
++const steerShellEditDeny = shellEditRefusal + editToolsRule
+ 
+ // noticeShellEditDeny announces the shell-edit deny in the same wording as its steer.
+ const noticeShellEditDeny = steerShellEditDeny + "."
+ 
++// codexSteerShellEditDeny is steerShellEditDeny with the Codex edit route.
++const codexSteerShellEditDeny = shellEditRefusal + codexEditToolsRule
++
+ // commandFieldPattern is the grep -E pattern matching the opening of the "command" key's string value in the raw PreToolUse payload JSON.
+ const commandFieldPattern = `"command"[[:space:]]*:[[:space:]]*"`
+ 
+@@ -133,12 +177,18 @@ const noticeSleepDeny = steerSleepDeny + "."
+ // A word that is not a flag ends the match, so systemctl status and every other verb pass.
+ const sleepCommandPattern = commandPositionPattern + `systemctl([[:space:]]+-` + goWordPattern + `)*[[:space:]]+(sleep|hibernate|suspend|hybrid-sleep|suspend-then-hibernate)([^A-Za-z0-9_.-]|$)`
+ 
++// headlessClaudeRefusal opens every headless claude steer: the refusal and its reason.
++const headlessClaudeRefusal = "a headless claude launch, in print mode, is refused here because its work shows in no pane; "
++
+ // steerHeadlessClaudeDeny refuses a Bash launch of a headless claude and names the subagent route in its place; it must contain no single/double quote or backslash (checked at init).
+-const steerHeadlessClaudeDeny = "a headless claude launch, in print mode, is refused here because its work shows in no pane; hand the work to a subagent through the Agent tool instead, which runs inside this session and shows in its pane"
++const steerHeadlessClaudeDeny = headlessClaudeRefusal + "hand the work to a subagent through the Agent tool instead, which runs inside this session and shows in its pane"
+ 
+ // noticeHeadlessClaudeDeny announces the headless claude deny in the same wording as its steer.
+ const noticeHeadlessClaudeDeny = steerHeadlessClaudeDeny + "."
+ 
++// codexSteerHeadlessClaudeDeny names Codex's own subagents as the route, since Codex has no Agent tool.
++const codexSteerHeadlessClaudeDeny = headlessClaudeRefusal + "hand the work to a subagent of your own instead, which runs inside this session"
++
+ // headlessClaudeCommandPattern is the grep -E pattern the headless claude deny matches against the raw PreToolUse payload JSON.
+ // It matches claude or claude.exe in command position, optionally path-prefixed, followed by any argument words and then the long print flag, or a single-dash flag word holding p such as -p or -pc, as a whole word, the long flag with an = value included.
+ // A word that crosses a separator ends the match, so a print flag of a later command passes.
+@@ -273,12 +323,13 @@ func rowsBeforeRefuseRaw(rawGoSteer string) []Row {
+ 			// A guardrail, not a barrier.
+ 			// The pattern lets through python as an argument, behind bash -c, sh -c or eval, after a prefix it does not list (env FOO=1, nohup, command, timeout), and through a launcher such as py or uv run.
+ 			// It falsely denies python after a separator inside a quote commandPositionPattern misreads.
+-			Name:     "python",
+-			Patterns: []string{pythonCommandPattern},
+-			Steer:    steerPythonDeny,
+-			Notice:   noticePythonDeny,
+-			Switch:   SwitchDenyPython,
+-			Forms:    [][]string{{"python"}, {"python3"}},
++			Name:        "python",
++			Patterns:    []string{pythonCommandPattern},
++			Steer:       steerPythonDeny,
++			Notice:      noticePythonDeny,
++			Switch:      SwitchDenyPython,
++			Forms:       [][]string{{"python"}, {"python3"}},
++			EngineTexts: map[string]EngineText{engineCodex: {Steer: codexSteerPythonDeny}},
+ 		},
+ 		{
+ 			// Installed for every run, the orch included, so no session reaches the gate slots around lym gate test.
+@@ -299,12 +350,13 @@ func rowsAfterRawGo() []Row {
+ 			// Installed for every run, the orch included, with no config key, so every session edits through the Edit tool, which takes only a file read with Read.
+ 			// A guardrail, not a barrier: an edit behind bash -c, a script, awk, cp or mv, a sed -i after do or then, behind find -exec or behind xargs with a flag, a redirect into a quoted target or into a file whose extension sourceFilePattern does not name, and anything after a heredoc operator's line pass.
+ 			// It falsely denies a matching spelling after a separator inside a quote commandPositionPattern misreads.
+-			Name:     "shell-edit",
+-			Patterns: []string{shellEditPattern},
+-			Steer:    steerShellEditDeny,
+-			Notice:   noticeShellEditDeny,
+-			Switch:   SwitchNone,
+-			Forms:    [][]string{{"sed", "-i"}, {"perl", "-i"}, {"perl", "-pi"}},
++			Name:        "shell-edit",
++			Patterns:    []string{shellEditPattern},
++			Steer:       steerShellEditDeny,
++			Notice:      noticeShellEditDeny,
++			Switch:      SwitchNone,
++			Forms:       [][]string{{"sed", "-i"}, {"perl", "-i"}, {"perl", "-pi"}},
++			EngineTexts: map[string]EngineText{engineCodex: {Steer: codexSteerShellEditDeny, Notice: codexSteerShellEditDeny + "."}},
+ 		},
+ 		{
+ 			// Refuses before Claude Code raises its statically-unresolvable-target dialog, which shows even in bypass mode and stalls an unwatched run.
+@@ -339,12 +391,13 @@ func rowsAfterRawGo() []Row {
+ 			// A guardrail, not a barrier: a launch behind bash -c, a script, an assignment prefix such as X=1 claude or env with an assignment passes.
+ 			// A claude subcommand, or a command launched through one, taking a single-dash flag word holding p of its own is falsely denied.
+ 			// So is a matching spelling after a separator inside a quote commandPositionPattern misreads.
+-			Name:     "headless-claude",
+-			Patterns: []string{headlessClaudeCommandPattern},
+-			Steer:    steerHeadlessClaudeDeny,
+-			Notice:   noticeHeadlessClaudeDeny,
+-			Switch:   SwitchNone,
+-			Forms:    [][]string{{"claude", "-p"}, {"claude", "--print"}},
++			Name:        "headless-claude",
++			Patterns:    []string{headlessClaudeCommandPattern},
++			Steer:       steerHeadlessClaudeDeny,
++			Notice:      noticeHeadlessClaudeDeny,
++			Switch:      SwitchNone,
++			Forms:       [][]string{{"claude", "-p"}, {"claude", "--print"}},
++			EngineTexts: map[string]EngineText{engineCodex: {Steer: codexSteerHeadlessClaudeDeny, Notice: codexSteerHeadlessClaudeDeny + "."}},
+ 		},
+ 		{
+ 			// Installed only for a launch spec that sets DenyPublish, the PR-Review session.
+@@ -359,14 +412,20 @@ func rowsAfterRawGo() []Row {
+ 	}
+ }
+ 
+-// checkTexts returns an error naming the first row whose steer holds a character the JSON payload or the quoted hook command cannot carry, or whose notice holds one the one-line launch argument cannot.
++// checkTexts returns an error naming the first row whose steer, plain or an engine's, holds a character the JSON payload or the quoted hook command cannot carry, or whose notice holds one the one-line launch argument cannot.
+ func checkTexts(rows []Row) error {
+ 	for _, row := range rows {
+-		if strings.ContainsAny(row.Steer, forbiddenSteerChars) {
+-			return fmt.Errorf("shellguard: row %q: steer text contains a forbidden character (one of %q), which would break the JSON payload or the echo hook command: %q", row.Name, forbiddenSteerChars, row.Steer)
++		texts := []EngineText{{Steer: row.Steer, Notice: row.Notice}}
++		for _, engine := range slices.Sorted(maps.Keys(row.EngineTexts)) {
++			texts = append(texts, row.EngineTexts[engine])
+ 		}
+-		if strings.ContainsAny(row.Notice, forbiddenNoticeChars) {
+-			return fmt.Errorf("shellguard: row %q: notice text contains a forbidden character (one of %q), which would break the one-line launch argument: %q", row.Name, forbiddenNoticeChars, row.Notice)
++		for _, text := range texts {
++			if strings.ContainsAny(text.Steer, forbiddenSteerChars) {
++				return fmt.Errorf("shellguard: row %q: steer text contains a forbidden character (one of %q), which would break the JSON payload or the echo hook command: %q", row.Name, forbiddenSteerChars, text.Steer)
++			}
++			if strings.ContainsAny(text.Notice, forbiddenNoticeChars) {
++				return fmt.Errorf("shellguard: row %q: notice text contains a forbidden character (one of %q), which would break the one-line launch argument: %q", row.Name, forbiddenNoticeChars, text.Notice)
++			}
+ 		}
+ 	}
+ 	return nil
+diff --git a/internal/shellguard/rows_test.go b/internal/shellguard/rows_test.go
+index a64cac34..c6645022 100644
+--- a/internal/shellguard/rows_test.go
++++ b/internal/shellguard/rows_test.go
+@@ -77,22 +77,25 @@ func TestCheckTexts(t *testing.T) {
+ 		}
+ 	})
+ 	tests := []struct {
+-		name   string
+-		steer  string
+-		notice string
++		name string
++		row  Row
+ 	}{
+-		{"SteerSingleQuote", "it's", ""},
+-		{"SteerDoubleQuote", `say "x"`, ""},
+-		{"SteerBackslash", `a\b`, ""},
+-		{"NoticeSingleQuote", "", "it's"},
+-		{"NoticeDoubleQuote", "", `say "x"`},
+-		{"NoticeBackslash", "", `a\b`},
+-		{"NoticeLineBreak", "", "one\ntwo"},
++		{"SteerSingleQuote", Row{Steer: "it's"}},
++		{"SteerDoubleQuote", Row{Steer: `say "x"`}},
++		{"SteerBackslash", Row{Steer: `a\b`}},
++		{"NoticeSingleQuote", Row{Notice: "it's"}},
++		{"NoticeDoubleQuote", Row{Notice: `say "x"`}},
++		{"NoticeBackslash", Row{Notice: `a\b`}},
++		{"NoticeLineBreak", Row{Notice: "one\ntwo"}},
++		{"EngineSteerSingleQuote", Row{EngineTexts: map[string]EngineText{engineCodex: {Steer: "it's"}}}},
++		{"EngineNoticeLineBreak", Row{EngineTexts: map[string]EngineText{engineCodex: {Notice: "one\ntwo"}}}},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			err := checkTexts([]Row{{Name: "planted", Steer: tt.steer, Notice: tt.notice}})
++			row := tt.row
++			row.Name = "planted"
++			err := checkTexts([]Row{row})
+ 			if err == nil || !strings.Contains(err.Error(), `"planted"`) {
+ 				t.Errorf("checkTexts() = %v; want an error naming the row", err)
+ 			}
+@@ -100,6 +103,39 @@ func TestCheckTexts(t *testing.T) {
+ 	}
+ }
+ 
++// TestRows_EngineTexts pins the per-engine texts.
++// On Codex no row's steer or notice names a Claude tool, the python and shell-edit steers carry the Codex edit rule, and one notice states it.
++// An engine without its own text, Claude's included, gets the plain steer and notice.
++func TestRows_EngineTexts(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	codexEditRuleNotices := 0
++	for _, row := range Rows("with a long timeout", []string{"go test"}) {
++		steer, notice := row.SteerFor(engineCodex), row.NoticeFor(engineCodex)
++		for _, claudeTool := range []string{"Read", "Edit", "Write", "Agent tool"} {
++			if strings.Contains(steer, claudeTool) || strings.Contains(notice, claudeTool) {
++				t.Errorf("%s Codex steer %q or notice %q names the Claude tool %q", row.Name, steer, notice, claudeTool)
++			}
++		}
++		if (row.Name == "python" || row.Name == "shell-edit") && !strings.Contains(steer, codexEditToolsRule) {
++			t.Errorf("%s Codex steer %q: want it to carry the Codex edit rule %q", row.Name, steer, codexEditToolsRule)
++		}
++		if strings.Contains(notice, codexEditToolsRule) {
++			codexEditRuleNotices++
++		}
++		if got := row.SteerFor("claude"); got != row.Steer {
++			t.Errorf("%s SteerFor(claude) = %q; want the plain steer %q", row.Name, got, row.Steer)
++		}
++		if got := row.NoticeFor("claude"); got != row.Notice {
++			t.Errorf("%s NoticeFor(claude) = %q; want the plain notice %q", row.Name, got, row.Notice)
++		}
++	}
++	if codexEditRuleNotices != 1 {
++		t.Errorf("Codex notices state the Codex edit rule %d times; want once", codexEditRuleNotices)
++	}
++}
++
+ // TestRows_RawGoSteerNamesOnlyUnrefusedCompileChecks asserts the raw go row's steer and notice offer each package-scoped compile check only while no refuse-raw prefix refuses it.
+ func TestRows_RawGoSteerNamesOnlyUnrefusedCompileChecks(t *testing.T) {
+ 	tiergate.Require(t, 0)
+diff --git a/internal/shuttleengine/codexengine/codexengine.go b/internal/shuttleengine/codexengine/codexengine.go
+index dbd2d6ae..60863028 100644
+--- a/internal/shuttleengine/codexengine/codexengine.go
++++ b/internal/shuttleengine/codexengine/codexengine.go
+@@ -3,14 +3,15 @@
+ package codexengine
+ 
+ import (
++	"errors"
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
+-	"slices"
+ 	"strings"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/shell"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+@@ -52,7 +53,7 @@ func NewFromConfig(cfg shuttleengine.Config, dirs configengine.Dirs) *Codex {
+ // Legal Spec.PermissionMode values: empty and bypass, the mode every launch runs in.
+ const permissionModeBypass = "bypass"
+ 
+-// validateSpec refuses what a Codex launch cannot realize, before anything is written: a version pin, a permission mode other than bypass, a resumed session, the publish guard, and an effort codex.yaml does not list.
++// validateSpec refuses what a Codex launch cannot realize, before anything is written: a version pin, a permission mode other than bypass, a resumed session, and an effort codex.yaml does not list.
+ func validateSpec(spec shuttleengine.Spec, codex Config) error {
+ 	if spec.Version != "" {
+ 		return fmt.Errorf("codexengine: version %q given, but Codex takes a model slug and no version pin; way forward: name the slug as the model-spec's model", spec.Version)
+@@ -63,17 +64,17 @@ func validateSpec(spec shuttleengine.Spec, codex Config) error {
+ 	if spec.ResumeSessionID != "" {
+ 		return fmt.Errorf("codexengine: Codex sessions cannot be resumed by a new run; way forward: start a fresh session")
+ 	}
+-	if spec.DenyPublish {
+-		return fmt.Errorf("codexengine: the publish guard is not installed on Codex yet; way forward: run the role on the claude engine")
+-	}
+ 	return validateEffort(spec.Effort, codex)
+ }
+ 
+ // Prepare readies a Codex launch and returns its lines.
+-// It validates the spec, reads the checkout the anchor sits in and refuses under committed Codex rules before anything is written;
+-// it then readies the lym home, trusting the worktree root and a linked worktree's main checkout root, and writes prompt.md into runDir.
+-// The prompt file opens with the standing passages heddle holds for engine codex and the spec's role, then the spec's prompt.
+-// The launch line's writable root is the records checkout the engine is told through its Dirs, symlink-resolved and kept as told with a Warn when it cannot be resolved, so the session writes its report through the anchor's `.lym` and `_lym` links; outside a hub it is empty and the line adds none.
++// It validates the spec and loads the hub's gate config, whose refuse_raw list the shell guard installs.
++// A gate config that fails to load refuses the launch.
++// It reads the checkout the anchor sits in and refuses under committed Codex rules, all before anything is written.
++// It then readies the lym home, trusting the worktree root and a linked worktree's main checkout root, and writes prompt.md into runDir.
++// The prompt file opens with the deny notice announcing each installed shell guard row and the standing passages heddle holds for engine codex and the spec's role, then the spec's prompt.
++// The launch line carries a PreToolUse hook per installed row, and its writable root is the records checkout the engine is told through its Dirs, symlink-resolved and kept as told with a Warn when it cannot be resolved, so the session writes its report through the anchor's `.lym` and `_lym` links; outside a hub it is empty and the line adds none.
++// A spec that names skills launches with the skill-load line as its first turn and returns the prompt pointer as Launch.PromptLine, for shuttle to send after the skills load.
+ // The launch records session starts, carries no creel hooks and names no session id, since Codex mints its own at the first turn.
+ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengine.Config) (shuttleengine.Launch, error) {
+ 	codex, err := loadConfigOrRefuse(c.dirs)
+@@ -83,6 +84,12 @@ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengin
+ 	if err := validateSpec(spec, codex); err != nil {
+ 		return shuttleengine.Launch{}, err
+ 	}
++	// The refuse list lives in the hub's gate config; an absent file means the hub refuses nothing.
++	gate, err := gateslot.LoadConfig(c.dirs)
++	if err != nil && !errors.Is(err, gateslot.ErrConfigAbsent) {
++		return shuttleengine.Launch{}, fmt.Errorf("codexengine: %w", err)
++	}
++	guards := installedGuards(gate.RefuseRaw, guardInputs{denyPython: cfg.DenyPython, denyPublish: spec.DenyPublish})
+ 	homes, err := resolveHomes(codex)
+ 	if err != nil {
+ 		return shuttleengine.Launch{}, err
+@@ -109,9 +116,14 @@ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengin
+ 	promptPath := filepath.Join(absRunDir, "prompt.md")
+ 	// The told Board dir is the hub's Bolt checkout, empty outside a hub.
+ 	passages := shuttleengine.StandingPassages(c.dirs.Board, engineName, spec.Role)
+-	if err := os.WriteFile(promptPath, []byte(promptText(passages, spec.Prompt)), 0o644); err != nil {
++	if err := os.WriteFile(promptPath, []byte(promptText(denyNotice(guards), passages, spec.Prompt)), 0o644); err != nil {
+ 		return shuttleengine.Launch{}, fmt.Errorf("codexengine: write prompt: %w", err)
+ 	}
++	firstTurn, promptLine := launchPointer(promptPath), ""
++	if len(spec.Skills) > 0 {
++		// The roots come from the codex.yaml this launch already loaded, so one load serves the whole launch.
++		firstTurn, promptLine = skillLoadOver(spec.Skills, c.expandSkillRoots(codex)), firstTurn
++	}
+ 
+ 	var writableRoots []string
+ 	if c.dirs.Records != "" {
+@@ -131,17 +143,22 @@ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengin
+ 			writableRoots: writableRoots,
+ 			model:         spec.Model,
+ 			effort:        spec.Effort,
+-			hooks:         hookSettings(filepath.Join(absRunDir, "events.jsonl")),
+-			firstTurn:     launchPointer(promptPath),
++			hooks:         hookSettings(filepath.Join(absRunDir, "events.jsonl"), guards),
++			firstTurn:     firstTurn,
+ 		}),
+ 		ResumeCmd:            buildResumeCmd(sh),
++		PromptLine:           promptLine,
+ 		RecordsSessionStarts: true,
+ 	}, nil
+ }
+ 
+-// promptText returns the prompt file's text: each passage, then prompt, separated by blank lines.
+-func promptText(passages []string, prompt string) string {
+-	return strings.Join(append(slices.Clone(passages), prompt), "\n\n")
++// promptText returns the prompt file's text: the deny notice, each passage, then prompt, separated by blank lines, with an empty notice left out.
++func promptText(notice string, passages []string, prompt string) string {
++	var parts []string
++	if notice != "" {
++		parts = append(parts, notice)
++	}
++	return strings.Join(append(append(parts, passages...), prompt), "\n\n")
+ }
+ 
+ // PromptCacheLifetime returns zero: Codex states no warm lifetime for its prompt cache, so a caller keeps nothing warm.
+diff --git a/internal/shuttleengine/codexengine/command.go b/internal/shuttleengine/codexengine/command.go
+index 6dff171a..1214eced 100644
+--- a/internal/shuttleengine/codexengine/command.go
++++ b/internal/shuttleengine/codexengine/command.go
+@@ -1,7 +1,7 @@
+ // command.go composes the pane-shell lines Prepare hands back as a Launch, and the `-c` hook settings the launch line carries.
+ // The launch line starts the Codex TUI under the lym home with its first turn as the positional argument, then exits the pane's shell, so a Codex exit leaves a dead pane.
+ // The resume line exits the pane's shell alone and starts no Codex.
+-// Every hook is a plain POSIX sh command that appends a stamp line and its payload to the run's events file, or touches the run's activity stamp.
++// Every hook is a plain POSIX sh command that appends a stamp line and its payload to the run's events file, touches the run's activity stamp, or guards a shell command.
+ // Argument quoting and statement chaining are pane-shell mechanics owned by internal/shell.
+ 
+ package codexengine
+@@ -11,6 +11,7 @@ import (
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/shell"
++	"github.com/Knatte18/loomyard/internal/shellguard"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ )
+ 
+@@ -86,6 +87,7 @@ const (
+ 	hookEventUserPromptSubmit  = "UserPromptSubmit"
+ 	hookEventStop              = "Stop"
+ 	hookEventPermissionRequest = "PermissionRequest"
++	hookEventPreToolUse        = "PreToolUse"
+ 	hookEventPostToolUse       = "PostToolUse"
+ )
+ 
+@@ -114,23 +116,32 @@ func activityCommand(eventsPath string) string {
+ // toolMatcherAll is the matcher a tool hook takes to run on every tool.
+ const toolMatcherAll = "*"
+ 
+-// hookSettings returns the `-c` hook settings of a run whose events file is eventsPath: a recording hook per recorded event, then the activity hook after every tool call.
+-func hookSettings(eventsPath string) []string {
+-	settings := make([]string, 0, len(recordedHookEvents)+1)
++// hookSettings returns the `-c` hook settings of a run whose events file is eventsPath:
++// a recording hook per recorded event, one PreToolUse setting holding an entry per guard row when guards is non-empty, then the activity hook after every tool call.
++// The guard entries share one setting, since a second `-c` of the same key replaces the first.
++func hookSettings(eventsPath string, guards []shellguard.Row) []string {
++	settings := make([]string, 0, len(recordedHookEvents)+2)
+ 	for _, event := range recordedHookEvents {
+-		settings = append(settings, hookSetting(event, "", recordingCommand(event, eventsPath)))
++		settings = append(settings, hookSetting(event, hookEntry("", recordingCommand(event, eventsPath))))
+ 	}
+-	return append(settings, hookSetting(hookEventPostToolUse, toolMatcherAll, activityCommand(eventsPath)))
++	if len(guards) > 0 {
++		settings = append(settings, hookSetting(hookEventPreToolUse, guardEntries(guards)...))
++	}
++	return append(settings, hookSetting(hookEventPostToolUse, hookEntry(toolMatcherAll, activityCommand(eventsPath))))
+ }
+ 
+-// hookSetting returns one `hooks.<event>=[…]` setting running command, with matcher when non-empty.
+-func hookSetting(event, matcher, command string) string {
++// hookEntry returns one `{matcher=…,hooks=[…]}` hook entry running command, with matcher when non-empty.
++func hookEntry(matcher, command string) string {
+ 	entry := "{"
+ 	if matcher != "" {
+ 		entry += "matcher=" + tomlString(matcher) + ","
+ 	}
+-	entry += `hooks=[{type="command",command=` + tomlString(command) + "}]}"
+-	return "hooks." + event + "=[" + entry + "]"
++	return entry + `hooks=[{type="command",command=` + tomlString(command) + "}]}"
++}
++
++// hookSetting returns one `hooks.<event>=[…]` setting holding entries.
++func hookSetting(event string, entries ...string) string {
++	return "hooks." + event + "=[" + strings.Join(entries, ",") + "]"
+ }
+ 
+ // tomlString returns s as a TOML basic string.
+diff --git a/internal/shuttleengine/codexengine/command_test.go b/internal/shuttleengine/codexengine/command_test.go
+index a51b1b4f..4223bcd7 100644
+--- a/internal/shuttleengine/codexengine/command_test.go
++++ b/internal/shuttleengine/codexengine/command_test.go
+@@ -6,6 +6,7 @@ import (
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/shell"
++	"github.com/Knatte18/loomyard/internal/shellguard"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -43,31 +44,48 @@ func TestBuildLaunchCmd(t *testing.T) {
+ 	}
+ }
+ 
+-// TestHookSettings pins one setting per recorded hook in order, then the activity hook on every tool, each running the command for the run's events file.
++// TestHookSettings pins one setting per recorded hook in order, then one PreToolUse setting holding every guard entry when guards are given, then the activity hook on every tool, each running the command for the run's events file.
+ func TestHookSettings(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+ 	events := "/run/events.jsonl"
+-	got := hookSettings(events)
+-	want := []string{
+-		hookSetting(hookEventSessionStart, "", recordingCommand(hookEventSessionStart, events)),
+-		hookSetting(hookEventUserPromptSubmit, "", recordingCommand(hookEventUserPromptSubmit, events)),
+-		hookSetting(hookEventStop, "", recordingCommand(hookEventStop, events)),
+-		hookSetting(hookEventPermissionRequest, "", recordingCommand(hookEventPermissionRequest, events)),
+-		hookSetting(hookEventPostToolUse, "*", activityCommand(events)),
++	recorded := []string{
++		hookSetting(hookEventSessionStart, hookEntry("", recordingCommand(hookEventSessionStart, events))),
++		hookSetting(hookEventUserPromptSubmit, hookEntry("", recordingCommand(hookEventUserPromptSubmit, events))),
++		hookSetting(hookEventStop, hookEntry("", recordingCommand(hookEventStop, events))),
++		hookSetting(hookEventPermissionRequest, hookEntry("", recordingCommand(hookEventPermissionRequest, events))),
+ 	}
+-	if len(got) != len(want) {
+-		t.Fatalf("hookSettings() = %d settings; want %d", len(got), len(want))
++	activity := hookSetting(hookEventPostToolUse, hookEntry("*", activityCommand(events)))
++	guards := installedGuards(nil, guardInputs{})
++	tests := []struct {
++		name   string
++		guards []shellguard.Row
++		want   []string
++	}{
++		{"NoGuards", nil, append(append([]string{}, recorded...), activity)},
++		{"Guards", guards, append(append([]string{}, recorded...), hookSetting(hookEventPreToolUse, guardEntries(guards)...), activity)},
+ 	}
+-	for i := range want {
+-		if got[i] != want[i] {
+-			t.Errorf("hookSettings()[%d] = %s; want %s", i, got[i], want[i])
+-		}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got := hookSettings(events, tt.guards)
++			if len(got) != len(tt.want) {
++				t.Fatalf("hookSettings() = %d settings; want %d", len(got), len(tt.want))
++			}
++			for i := range tt.want {
++				if got[i] != tt.want[i] {
++					t.Errorf("hookSettings()[%d] = %s; want %s", i, got[i], tt.want[i])
++				}
++			}
++		})
+ 	}
+-	if got, want := hookSetting("PostToolUse", "*", `touch '/a'; printf '{}\n'`), `hooks.PostToolUse=[{matcher="*",hooks=[{type="command",command="touch '/a'; printf '{}\\n'"}]}]`; got != want {
++	if got, want := hookSetting("PostToolUse", hookEntry("*", `touch '/a'; printf '{}\n'`)), `hooks.PostToolUse=[{matcher="*",hooks=[{type="command",command="touch '/a'; printf '{}\\n'"}]}]`; got != want {
+ 		t.Errorf("hookSetting() = %s; want %s", got, want)
+ 	}
++	if got, want := hookSetting("PreToolUse", hookEntry("Bash", "a"), hookEntry("Bash", "b")), `hooks.PreToolUse=[{matcher="Bash",hooks=[{type="command",command="a"}]},{matcher="Bash",hooks=[{type="command",command="b"}]}]`; got != want {
++		t.Errorf("hookSetting() with two entries = %s; want %s", got, want)
++	}
+ 	if got, want := activityCommand(events), `touch '/run/activity-stamp'; printf '{}\n'`; got != want {
+ 		t.Errorf("activityCommand() = %s; want %s", got, want)
+ 	}
+diff --git a/internal/shuttleengine/codexengine/doc.go b/internal/shuttleengine/codexengine/doc.go
+index 92fd6ec1..b501ae27 100644
+--- a/internal/shuttleengine/codexengine/doc.go
++++ b/internal/shuttleengine/codexengine/doc.go
+@@ -22,5 +22,11 @@
+ // The pane readings follow the spike's table: the `›` composer, the `Working (… esc to interrupt)` busy line and the folder-trust prompt, whose accept presses nothing unless the option sits by the caret.
+ // A send pastes the text and leaves the Enter to shuttle's guarded send, since Codex drops an Enter typed inside a burst of characters.
+ //
+-// The engine has no skill loading, no shell guard, no fork audit, no transcript reading and no creel hooks, and refuses a spec that needs the publish guard.
++// Every installed row of the shell guard table rides the launch line as a PreToolUse hook matching Bash, which prints Codex's deny decision with the row's Codex steer,
++// and the prompt file opens with the rows' Codex notices; a hook that fails to run fails open in Codex, so a guard is a guardrail and not a barrier.
++//
++// A skill `<plugin>:<name>` is a file the model reads: the load line names the newest version's skills/<name>/SKILL.md under codex.yaml's skill_roots by absolute path,
++// and a tool call of the load turn naming that tail in the rollout reads the skill loaded; a skill under no root is reported unknown.
++//
++// The engine has no fork audit, no transcript reading and no creel hooks.
+ package codexengine
+diff --git a/internal/shuttleengine/codexengine/guards.go b/internal/shuttleengine/codexengine/guards.go
+new file mode 100644
+index 00000000..7751cb8e
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/guards.go
+@@ -0,0 +1,86 @@
++// guards.go renders the shell guard table as the PreToolUse hooks a Codex launch carries and as the deny notice its prompt file opens with.
++// Each installed row is one Bash entry whose command greps the payload for the row's patterns and prints Codex's deny decision when all of them match.
++
++package codexengine
++
++import (
++	"fmt"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/shell"
++	"github.com/Knatte18/loomyard/internal/shellguard"
++)
++
++// foregroundPhrase is Codex's phrase for running a long command in the foreground, which the gate rule of the raw go and refuse-raw rows carries.
++const foregroundPhrase = "with the shell command timeout set to 3600000 milliseconds"
++
++// toolMatcherBash is the tool name Codex's PreToolUse payload carries for a shell command, which every guard entry matches.
++const toolMatcherBash = "Bash"
++
++// guardInputs are the launch inputs that decide which shell guard rows a launch installs.
++type guardInputs struct {
++	// denyPython follows the shuttle config's python switch.
++	denyPython bool
++	// denyPublish follows the launch spec's publish guard.
++	denyPublish bool
++}
++
++// switchInstalled maps each shellguard.Switch to whether a launch with the given inputs installs the rows hanging on it.
++var switchInstalled = map[shellguard.Switch]func(guardInputs) bool{
++	shellguard.SwitchNone:        func(guardInputs) bool { return true },
++	shellguard.SwitchDenyPython:  func(in guardInputs) bool { return in.denyPython },
++	shellguard.SwitchDenyPublish: func(in guardInputs) bool { return in.denyPublish },
++}
++
++// installedGuards returns the shell guard rows a launch with in installs over the hub's refuse list, in table order.
++// It panics on a row hanging on a switch the engine does not know, which would otherwise stay uninstalled unseen.
++func installedGuards(refuseRaw []string, in guardInputs) []shellguard.Row {
++	var rows []shellguard.Row
++	for _, row := range shellguard.Rows(foregroundPhrase, refuseRaw) {
++		installed, known := switchInstalled[row.Switch]
++		if !known {
++			panic(fmt.Sprintf("codexengine: shellguard row %q hangs on switch %q, which the engine does not know, so the row would stay uninstalled", row.Name, row.Switch))
++		}
++		if installed(in) {
++			rows = append(rows, row)
++		}
++	}
++	return rows
++}
++
++// denyDecision returns the PreToolUse output that blocks a command with steer as the reason, the shape the spike saw Codex honour.
++// steer holds no quote or backslash, which shellguard checks at init.
++func denyDecision(steer string) string {
++	return `{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"` + steer + `"}}`
++}
++
++// guardCommand returns the hook command of row.
++// It reads the payload once and greps it for every pattern.
++// It prints the row's Codex deny when all match and the empty hook output otherwise, exiting 0 either way.
++// Each pattern is shell-quoted, since a pattern may hold a single quote.
++func guardCommand(row shellguard.Row) string {
++	posix := shell.Posix()
++	greps := make([]string, len(row.Patterns))
++	for i, pattern := range row.Patterns {
++		greps[i] = `{ printf '%s' "$in" | grep -Eq ` + posix.Quote(pattern) + `; }`
++	}
++	return `in=$(cat); ` + strings.Join(greps, " && ") + " && echo " + posix.Quote(denyDecision(row.SteerFor(engineName))) + " || " + emptyHookOutput
++}
++
++// guardEntries returns one Bash PreToolUse entry per row, in order.
++func guardEntries(rows []shellguard.Row) []string {
++	entries := make([]string, len(rows))
++	for i, row := range rows {
++		entries[i] = hookEntry(toolMatcherBash, guardCommand(row))
++	}
++	return entries
++}
++
++// denyNotice returns the sentences announcing each of rows to a Codex session, space-separated, or "" for no rows.
++func denyNotice(rows []shellguard.Row) string {
++	notices := make([]string, len(rows))
++	for i, row := range rows {
++		notices[i] = row.NoticeFor(engineName)
++	}
++	return strings.Join(notices, " ")
++}
+diff --git a/internal/shuttleengine/codexengine/guards_run_test.go b/internal/shuttleengine/codexengine/guards_run_test.go
+new file mode 100644
+index 00000000..53fa6616
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/guards_run_test.go
+@@ -0,0 +1,59 @@
++// guards_run_test.go pins the behavior of the hook commands a Codex launch renders, by running them under sh against Codex PreToolUse payloads.
++
++package codexengine
++
++import (
++	"bytes"
++	"encoding/json"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/shellguard"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestGuardCommand_DeniesAMatchingCommand runs rendered guard commands under sh against Codex PreToolUse payloads shaped as the spike recorded them.
++// A matching command prints the row's Codex deny, and any other prints the empty hook output.
++// A row of several patterns denies only when all match, and a pattern holding a single quote greps as written.
++func TestGuardCommand_DeniesAMatchingCommand(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	rows := map[string]shellguard.Row{}
++	for _, row := range installedGuards(sampleRefuseRaw, guardInputs{denyPython: true, denyPublish: true}) {
++		rows[row.Name] = row
++	}
++	tests := []struct {
++		row     string
++		command string
++		denied  bool
++	}{
++		{"machine-sleep", "systemctl hibernate", true},
++		{"machine-sleep", "systemctl status", false},
++		{"machine-sleep", "grep 'x; systemctl hibernate' f", false},
++		{"shell-edit", "sed -i s/a/b/ f.go", true},
++		{"shell-edit", "sed -n 1p f.go", false},
++		{"computed-rm", "rm $DIR/f", true},
++		{"computed-rm", "rm .scratch/a", false},
++		{"refuse-raw", "go test ./internal/x", true},
++		{"publish", "git push origin main", true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.row+"_"+tt.command, func(t *testing.T) {
++			t.Parallel()
++			var payload bytes.Buffer
++			encoder := json.NewEncoder(&payload)
++			encoder.SetEscapeHTML(false)
++			if err := encoder.Encode(map[string]any{"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": map[string]any{"command": tt.command}}); err != nil {
++				t.Fatal(err)
++			}
++			row := rows[tt.row]
++			want := "{}\n"
++			if tt.denied {
++				want = denyDecision(row.SteerFor(engineName)) + "\n"
++			}
++			if got := runHook(t, guardCommand(row), payload.String()); got != want {
++				t.Errorf("%s hook on %q printed %q; want %q", tt.row, tt.command, got, want)
++			}
++		})
++	}
++}
+diff --git a/internal/shuttleengine/codexengine/guards_test.go b/internal/shuttleengine/codexengine/guards_test.go
+new file mode 100644
+index 00000000..bc0e9ea6
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/guards_test.go
+@@ -0,0 +1,90 @@
++// guards_test.go pins the shell guard rows a Codex launch installs, the hook entries it renders for them and the deny notice announcing them.
++
++package codexengine
++
++import (
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/shellguard"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// sampleRefuseRaw is the non-empty refuse list the guard tests render the rows with.
++var sampleRefuseRaw = []string{"go test", "dotnet test"}
++
++// rowNames returns the names of rows, in order.
++func rowNames(rows []shellguard.Row) []string {
++	names := make([]string, len(rows))
++	for i, row := range rows {
++		names[i] = row.Name
++	}
++	return names
++}
++
++// TestInstalledGuards_CoverEveryRow pins that a launch with every switch on installs every row of the table in table order, the refuse-raw row of a non-empty list included,
++// and that the python and publish rows follow their switches.
++func TestInstalledGuards_CoverEveryRow(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	every := rowNames(shellguard.Rows(foregroundPhrase, sampleRefuseRaw))
++	tests := []struct {
++		name      string
++		refuseRaw []string
++		in        guardInputs
++		want      []string
++	}{
++		{"EverySwitchOn", sampleRefuseRaw, guardInputs{denyPython: true, denyPublish: true}, every},
++		{"SwitchesOff", sampleRefuseRaw, guardInputs{}, slices.DeleteFunc(slices.Clone(every), func(name string) bool { return name == "python" || name == "publish" })},
++		{"NoRefuseList", nil, guardInputs{denyPython: true, denyPublish: true}, slices.DeleteFunc(slices.Clone(every), func(name string) bool { return name == "refuse-raw" })},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := rowNames(installedGuards(tt.refuseRaw, tt.in)); !slices.Equal(got, tt.want) {
++				t.Errorf("installedGuards() = %v; want %v", got, tt.want)
++			}
++		})
++	}
++}
++
++// TestGuardEntries_RenderEveryRowWithItsCodexText pins the literal deny output Codex honours.
++// It pins one entry per row, each opening with the literal Bash matcher and carrying the row's Codex steer in its deny.
++// It also pins a deny notice of the rows' Codex notices in order.
++func TestGuardEntries_RenderEveryRowWithItsCodexText(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	if got, want := denyDecision("x"), `{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"x"}}`; got != want {
++		t.Errorf("denyDecision(x) = %s; want %s", got, want)
++	}
++	rows := installedGuards(sampleRefuseRaw, guardInputs{denyPython: true, denyPublish: true})
++	entries := guardEntries(rows)
++	if len(entries) != len(rows) {
++		t.Fatalf("guardEntries() = %d entries; want one per row, %d", len(entries), len(rows))
++	}
++	var notices []string
++	for i, row := range rows {
++		if !strings.HasPrefix(entries[i], `{matcher="Bash",hooks=[`) {
++			t.Errorf("entry %d = %s; want the %s row's entry to open with the literal Bash matcher", i, entries[i], row.Name)
++		}
++		if !strings.Contains(entries[i], tomlString(guardCommand(row))) {
++			t.Errorf("entry %d = %s; want it to run the %s row's own command", i, entries[i], row.Name)
++		}
++		if !strings.Contains(guardCommand(row), denyDecision(row.SteerFor(engineName))) {
++			t.Errorf("%s command = %s; want it to carry the row's Codex deny", row.Name, guardCommand(row))
++		}
++		notices = append(notices, row.NoticeFor(engineName))
++	}
++	if got, want := denyNotice(rows), strings.Join(notices, " "); got != want {
++		t.Errorf("denyNotice() = %q; want %q", got, want)
++	}
++	if got := denyNotice(rows); strings.Contains(got, "with Read") || !strings.Contains(got, "apply_patch") {
++		t.Errorf("denyNotice() = %q; want the Codex edit rule in place of the Claude one", got)
++	}
++	if got := denyNotice(nil); got != "" {
++		t.Errorf("denyNotice(nil) = %q; want empty", got)
++	}
++}
+diff --git a/internal/shuttleengine/codexengine/prepare_test.go b/internal/shuttleengine/codexengine/prepare_test.go
+index 5a3e1f6d..18af8698 100644
+--- a/internal/shuttleengine/codexengine/prepare_test.go
++++ b/internal/shuttleengine/codexengine/prepare_test.go
+@@ -35,8 +35,11 @@ func readRecord(t *testing.T, home string) trustRecord {
+ 	return record
+ }
+ 
+-// TestPrepare_Launch pins the launch a valid spec gets: the line built from the lym home, the told records writable root (none when the engine is told none), the model and effort, the run's hooks and the prompt pointer;
+-// the resume line that exits; recorded session starts, no creel hooks and no session id; and the prompt file holding the spec's prompt.
++// TestPrepare_Launch pins the launch a valid spec gets.
++// The line is built from the lym home, the told records writable root (none when the engine is told none), and the model and effort.
++// It carries the run's hooks with a guard per row the python switch and the publish guard install, and the prompt pointer.
++// It also pins the resume line that exits, recorded session starts, no creel hooks and no session id.
++// The prompt file holds the deny notice and the spec's prompt.
+ func TestPrepare_Launch(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -72,12 +75,13 @@ func TestPrepare_Launch(t *testing.T) {
+ 			}
+ 			runDir := t.TempDir()
+ 
+-			launch, err := engine.Prepare(runDir, shuttleengine.Spec{Prompt: "review the plan", ModelChoice: shuttleengine.ModelChoice{Engine: "codex", Model: "gpt-6-astra", Effort: "medium"}}, shuttleengine.Config{})
++			launch, err := engine.Prepare(runDir, shuttleengine.Spec{Prompt: "review the plan", DenyPublish: true, ModelChoice: shuttleengine.ModelChoice{Engine: "codex", Model: "gpt-6-astra", Effort: "medium"}}, shuttleengine.Config{DenyPython: true})
+ 			if err != nil {
+ 				t.Fatalf("Prepare() error: %v", err)
+ 			}
+ 
+ 			promptPath := filepath.Join(runDir, "prompt.md")
++			guards := installedGuards(nil, guardInputs{denyPython: true, denyPublish: true})
+ 			sh := shell.ForGOOS()
+ 			want := shuttleengine.Launch{
+ 				Cmd: buildLaunchCmd(sh, launchLine{
+@@ -86,7 +90,7 @@ func TestPrepare_Launch(t *testing.T) {
+ 					writableRoots: wantRoots,
+ 					model:         "gpt-6-astra",
+ 					effort:        "medium",
+-					hooks:         hookSettings(filepath.Join(runDir, "events.jsonl")),
++					hooks:         hookSettings(filepath.Join(runDir, "events.jsonl"), guards),
+ 					firstTurn:     launchPointer(promptPath),
+ 				}),
+ 				ResumeCmd:            sh.Exit(),
+@@ -98,8 +102,8 @@ func TestPrepare_Launch(t *testing.T) {
+ 			if tt.toldRecords != strings.Contains(launch.Cmd, "sandbox_workspace_write.writable_roots") {
+ 				t.Errorf("Prepare() launch line = %q; want the writable-roots setting only when the records checkout is told", launch.Cmd)
+ 			}
+-			if got, err := os.ReadFile(promptPath); err != nil || string(got) != "review the plan" {
+-				t.Errorf("prompt.md = %q, %v; want the spec's prompt", got, err)
++			if got, err := os.ReadFile(promptPath); err != nil || string(got) != denyNotice(guards)+"\n\nreview the plan" {
++				t.Errorf("prompt.md = %q, %v; want the deny notice and the spec's prompt", got, err)
+ 			}
+ 			if warnings.String() != "" {
+ 				t.Errorf("warnings = %q; want none", warnings)
+@@ -108,7 +112,73 @@ func TestPrepare_Launch(t *testing.T) {
+ 	}
+ }
+ 
+-// TestPrepare_AppendsStandingPassages pins that the prompt file opens with the passages the reader finds for engine codex and the spec's role, each before a blank line.
++// TestPrepare_InstallsGuardsFromItsInputs pins which inputs reach the installed guard rows.
++// The python switch and the publish guard each install their own row alone, a seeded refuse_raw list of the hub's gate config reaches the hook and the prompt file's deny notice,
++// and a gate config that is present but does not load refuses the launch before the prompt file is written.
++func TestPrepare_InstallsGuardsFromItsInputs(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// gate is the gate.yaml text written for the worktree; empty writes no file.
++		gate        string
++		denyPython  bool
++		denyPublish bool
++		wantRefuse  []string
++		wantInputs  guardInputs
++		wantErr     bool
++	}{
++		{name: "PythonSwitchAlone", denyPython: true, wantInputs: guardInputs{denyPython: true}},
++		{name: "PublishGuardAlone", denyPublish: true, wantInputs: guardInputs{denyPublish: true}},
++		{name: "SeededRefuseRaw", gate: "slots: 2\nrefuse_raw: [\"go test\", \"dotnet test\"]\n", wantRefuse: []string{"go test", "dotnet test"}},
++		{name: "GateConfigThatDoesNotLoad", gate: "slots: [\n", wantErr: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			repo := newRepoFixture(t)
++			anchor, _ := repo.addWorktree(t, "wt")
++			if tt.gate != "" {
++				gateFile := configengine.ConfigFile(anchor, "gate")
++				mkdirAll(t, filepath.Dir(gateFile))
++				writeFile(t, gateFile, tt.gate)
++			}
++			engine, _ := newEngine(anchor)
++			runDir := t.TempDir()
++
++			launch, err := engine.Prepare(runDir, shuttleengine.Spec{Prompt: "p", DenyPublish: tt.denyPublish}, shuttleengine.Config{DenyPython: tt.denyPython})
++			promptPath := filepath.Join(runDir, "prompt.md")
++			if tt.wantErr {
++				if err == nil || !strings.HasPrefix(err.Error(), "codexengine:") {
++					t.Errorf("Prepare() error = %v; want a refusal beginning codexengine:", err)
++				}
++				if _, statErr := os.Stat(promptPath); !errors.Is(statErr, os.ErrNotExist) {
++					t.Errorf("prompt.md stat error = %v; want no prompt file", statErr)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("Prepare() error: %v", err)
++			}
++			guards := installedGuards(tt.wantRefuse, tt.wantInputs)
++			wantCmd := buildLaunchCmd(shell.ForGOOS(), launchLine{
++				bin:       "codex",
++				home:      repo.lymHome,
++				hooks:     hookSettings(filepath.Join(runDir, "events.jsonl"), guards),
++				firstTurn: launchPointer(promptPath),
++			})
++			if launch.Cmd != wantCmd {
++				t.Errorf("Prepare() launch line = %q; want %q", launch.Cmd, wantCmd)
++			}
++			if got, err := os.ReadFile(promptPath); err != nil || string(got) != denyNotice(guards)+"\n\np" {
++				t.Errorf("prompt.md = %q, %v; want the deny notice of the installed rows and the prompt", got, err)
++			}
++		})
++	}
++}
++
++// TestPrepare_AppendsStandingPassages pins that the prompt file opens with the deny notice and the passages the reader finds for engine codex and the spec's role, each before a blank line.
+ // It installs the process-wide passage reader, so it does not run in parallel.
+ func TestPrepare_AppendsStandingPassages(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -129,7 +199,7 @@ func TestPrepare_AppendsStandingPassages(t *testing.T) {
+ 		t.Fatalf("Prepare() error: %v", err)
+ 	}
+ 	got, err := os.ReadFile(filepath.Join(runDir, "prompt.md"))
+-	if want := "first passage\n\nsecond passage\n\nthe prompt"; err != nil || string(got) != want {
++	if want := denyNotice(installedGuards(nil, guardInputs{})) + "\n\nfirst passage\n\nsecond passage\n\nthe prompt"; err != nil || string(got) != want {
+ 		t.Errorf("prompt.md = %q, %v; want %q", got, err, want)
+ 	}
+ 	if want := []string{"codex", "code-review-assist"}; !reflect.DeepEqual(asked, want) {
+@@ -274,7 +344,6 @@ func TestPrepare_RefusesBeforeWriting(t *testing.T) {
+ 		{name: "VersionPin", spec: shuttleengine.Spec{ModelChoice: shuttleengine.ModelChoice{Model: "astra", Version: "6"}}, wantErr: []string{`version "6"`, "way forward"}},
+ 		{name: "PromptPermissionMode", spec: shuttleengine.Spec{PermissionMode: "prompt"}, wantErr: []string{`permission mode "prompt"`, "way forward"}},
+ 		{name: "ResumedSession", spec: shuttleengine.Spec{ResumeSessionID: "abc"}, wantErr: []string{"cannot be resumed", "way forward"}},
+-		{name: "PublishGuard", spec: shuttleengine.Spec{DenyPublish: true}, wantErr: []string{"publish guard", "way forward"}},
+ 		{name: "EffortOutsideEfforts", spec: shuttleengine.Spec{ModelChoice: shuttleengine.ModelChoice{Effort: "xhigh"}}, wantErr: []string{`effort "xhigh"`, "codex.yaml's efforts", "way forward"}},
+ 		{
+ 			name: "CommittedRules",
+diff --git a/internal/shuttleengine/codexengine/skillload.go b/internal/shuttleengine/codexengine/skillload.go
+new file mode 100644
+index 00000000..81a5e4a3
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/skillload.go
+@@ -0,0 +1,277 @@
++// skillload.go implements Codex's one-turn skill load: one line asks the model to read each named skill's SKILL.md by absolute path and follow it,
++// and the rollout the turn end names says which of those files a tool call of that turn named.
++// A skill is a file the model reads, since Codex's own skill discovery outside a repository is untested and a typed `$` opens a popup that takes the next Enter.
++
++package codexengine
++
++import (
++	"cmp"
++	"encoding/json"
++	"os"
++	"path"
++	"path/filepath"
++	"slices"
++	"strconv"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++)
++
++var _ shuttleengine.SkillLoader = (*Codex)(nil)
++
++// defaultSkillLoadTimeout bounds one load turn of the whole skill list: a load turn is one short model turn.
++const defaultSkillLoadTimeout = 2 * time.Minute
++
++// The folder and file names of a skill in the Claude plugin cache's layout.
++const (
++	skillsDirName = "skills"
++	skillFileName = "SKILL.md"
++)
++
++// DefaultSkillLoadTimeout returns the bound on one load turn of the whole skill list.
++func (c *Codex) DefaultSkillLoadTimeout() time.Duration {
++	return defaultSkillLoadTimeout
++}
++
++// SkillLoadMessage returns the one line that asks the model to read, in this one turn and in order, the SKILL.md of each of skills found under codex.yaml's skill roots, by absolute path, and follow it.
++// A skill found under no root is left out of the line, and ClassifySkillLoad reports it unknown.
++func (c *Codex) SkillLoadMessage(skills []string) string {
++	return skillLoadOver(skills, c.skillRoots())
++}
++
++// skillLoadOver returns the load line over the SKILL.md files skills have under the already expanded roots.
++func skillLoadOver(skills, roots []string) string {
++	return skillLoadLine(resolvedSkillPaths(skills, roots))
++}
++
++// ClassifySkillLoad classifies the load of skills SkillLoadMessage asked from the rollout turnEnd's transcript_path names.
++// The latest user message that is a load message starts the turn, and only the tool calls after it count;
++// a load message is recognised by its fixed text, not by the paths it names, so a skill file that appeared after the launch does not hide it.
++// A skill is unknown when no skill root holds it, loaded when a call names its skills/<name>/SKILL.md tail, and missing otherwise.
++// The report is unverified when the rollout cannot be read or holds no load message.
++func (c *Codex) ClassifySkillLoad(turnEnd shuttleengine.Event, skills []string) shuttleengine.SkillLoadReport {
++	data, err := os.ReadFile(payloadField(turnEnd.Raw, payloadTranscriptPath))
++	if err != nil {
++		return shuttleengine.SkillLoadReport{}
++	}
++	roots := c.skillRoots()
++	calls, found := loadTurnCalls(data)
++	if !found {
++		return shuttleengine.SkillLoadReport{}
++	}
++	report := shuttleengine.SkillLoadReport{Verified: true}
++	for _, skill := range skills {
++		tail := skillFileTail(skill)
++		switch {
++		case skillPath(skill, roots) == "":
++			report.Unknown = append(report.Unknown, skill)
++		case slices.ContainsFunc(calls, func(call string) bool { return strings.Contains(call, tail) }):
++			report.Loaded = append(report.Loaded, skill)
++		default:
++			report.Missing = append(report.Missing, skill)
++		}
++	}
++	return report
++}
++
++// The fixed texts of the load message: the whole line when no skill file was found, and the opening before the paths otherwise.
++const (
++	skillLoadNone    = "No skill file is to be read now. Do nothing else, and reply only `ok`."
++	skillLoadOpening = "Read each of these skill files in full now, all in this one turn, in this order, and follow each as standing instructions for the rest of this session: "
++)
++
++// skillLoadLine returns the load message over the SKILL.md files at paths.
++func skillLoadLine(paths []string) string {
++	if len(paths) == 0 {
++		return skillLoadNone
++	}
++	return skillLoadOpening +
++		strings.Join(paths, ", ") +
++		". Do nothing else, and reply only `ok` followed by the skill names in order."
++}
++
++// isSkillLoadMessage reports whether text is a load message, whatever skill files it names.
++func isSkillLoadMessage(text string) bool {
++	return text == skillLoadNone || strings.HasPrefix(text, skillLoadOpening)
++}
++
++// skillRoots returns codex.yaml's skill roots with a leading ~/ expanded.
++// A root that resolves to no absolute path is left out with a Warn, and a codex.yaml that does not load leaves none, with a Warn.
++func (c *Codex) skillRoots() []string {
++	codex, err := LoadConfig(c.dirs)
++	if err != nil {
++		c.warn("codexengine: codex.yaml did not load, so no skill resolves", "error", err)
++		return nil
++	}
++	return c.expandSkillRoots(codex)
++}
++
++// expandSkillRoots returns codex's skill roots with a leading ~/ expanded, leaving out with a Warn a root that resolves to no absolute path.
++func (c *Codex) expandSkillRoots(codex Config) []string {
++	var roots []string
++	for _, root := range codex.SkillRoots {
++		expanded, err := expandHomePath("skill_roots", root)
++		if err != nil {
++			c.warn("codexengine: skill root left out", "error", err)
++			continue
++		}
++		roots = append(roots, expanded)
++	}
++	return roots
++}
++
++// resolvedSkillPaths returns the SKILL.md path of each of skills that roots hold, in order.
++func resolvedSkillPaths(skills, roots []string) []string {
++	var paths []string
++	for _, skill := range skills {
++		if found := skillPath(skill, roots); found != "" {
++			paths = append(paths, found)
++		}
++	}
++	return paths
++}
++
++// skillPath returns the SKILL.md path of skill, `<plugin>:<name>`, under the first of roots that holds it, in the Claude plugin cache's layout:
++// `<root>/<marketplace>/<plugin>/<version>/skills/<name>/SKILL.md`, the newest version's.
++// It returns "" for a skill that names no plugin or that no root holds.
++func skillPath(skill string, roots []string) string {
++	plugin, name, ok := strings.Cut(skill, ":")
++	if !ok || plugin == "" || name == "" {
++		return ""
++	}
++	for _, root := range roots {
++		matches := skillFiles(root, plugin, name)
++		if len(matches) == 0 {
++			continue
++		}
++		return slices.MaxFunc(matches, func(a, b string) int {
++			return compareVersions(skillVersion(a), skillVersion(b))
++		})
++	}
++	return ""
++}
++
++// skillFiles returns the SKILL.md of plugin's skill name in every marketplace and version folder under root, in folder order.
++// It lists folders rather than globbing, so a root holding a glob metacharacter resolves as written; an unreadable folder holds no skill.
++func skillFiles(root, plugin, name string) []string {
++	var files []string
++	marketplaces, _ := os.ReadDir(root)
++	for _, marketplace := range marketplaces {
++		pluginDir := filepath.Join(root, marketplace.Name(), plugin)
++		versions, _ := os.ReadDir(pluginDir)
++		for _, version := range versions {
++			file := filepath.Join(pluginDir, version.Name(), skillsDirName, name, skillFileName)
++			if info, err := os.Stat(file); err == nil && info.Mode().IsRegular() {
++				files = append(files, file)
++			}
++		}
++	}
++	return files
++}
++
++// skillVersion returns the version folder's name of a SKILL.md path in the plugin cache's layout.
++func skillVersion(skillFile string) string {
++	return filepath.Base(filepath.Dir(filepath.Dir(filepath.Dir(skillFile))))
++}
++
++// compareVersions orders two dotted versions field by field under one total order on fields:
++// two numeric fields compare as numbers, a numeric field orders above a text one, and two text fields compare as text.
++// A field with a numeric prefix and a suffix, such as a pre-release's 0-beta, is text, so a release orders above its pre-release.
++// A version that is a prefix of the other orders first.
++func compareVersions(a, b string) int {
++	aFields, bFields := strings.Split(a, "."), strings.Split(b, ".")
++	for i := 0; i < len(aFields) && i < len(bFields); i++ {
++		if order := compareVersionFields(aFields[i], bFields[i]); order != 0 {
++			return order
++		}
++	}
++	return cmp.Compare(len(aFields), len(bFields))
++}
++
++// compareVersionFields orders two version fields: numbers by value, any number above any text, and text by its bytes.
++func compareVersionFields(a, b string) int {
++	aNumber, aErr := strconv.ParseUint(a, 10, 64)
++	bNumber, bErr := strconv.ParseUint(b, 10, 64)
++	switch {
++	case aErr == nil && bErr == nil:
++		return cmp.Compare(aNumber, bNumber)
++	case aErr == nil:
++		return 1
++	case bErr == nil:
++		return -1
++	default:
++		return strings.Compare(a, b)
++	}
++}
++
++// skillFileTail returns the path tail a read of skill's SKILL.md names: skills/<name>/SKILL.md, <name> being what follows the plugin's colon.
++func skillFileTail(skill string) string {
++	_, name, _ := strings.Cut(skill, ":")
++	return path.Join(skillsDirName, name, skillFileName)
++}
++
++// Rollout line and payload types the skill load check reads.
++const (
++	rolloutResponseItem = "response_item"
++	payloadMessage      = "message"
++	payloadUserMessage  = "user_message"
++	roleUser            = "user"
++)
++
++// toolCallPayloads are the response item types that carry a tool call and its arguments.
++var toolCallPayloads = []string{"function_call", "custom_tool_call", "local_shell_call"}
++
++// loadTurnCalls returns the raw payload of every tool call after the latest load message in the rollout data, and whether such a message was found.
++// A user message is a response item of role user, its text blocks joined, or a user_message event.
++func loadTurnCalls(data []byte) ([]string, bool) {
++	var calls []string
++	found := false
++	for _, line := range strings.Split(string(data), "\n") {
++		var item struct {
++			Type    string          `json:"type"`
++			Payload json.RawMessage `json:"payload"`
++		}
++		if json.Unmarshal([]byte(strings.TrimSpace(line)), &item) != nil {
++			continue
++		}
++		var payload struct {
++			Type    string `json:"type"`
++			Role    string `json:"role"`
++			Message string `json:"message"`
++		}
++		if json.Unmarshal(item.Payload, &payload) != nil {
++			continue
++		}
++		switch {
++		case item.Type == rolloutEventMessage && payload.Type == payloadUserMessage:
++			if isSkillLoadMessage(strings.TrimSpace(payload.Message)) {
++				calls, found = nil, true
++			}
++		case item.Type == rolloutResponseItem && payload.Type == payloadMessage && payload.Role == roleUser:
++			if isSkillLoadMessage(strings.TrimSpace(messageText(item.Payload))) {
++				calls, found = nil, true
++			}
++		case item.Type == rolloutResponseItem && found && slices.Contains(toolCallPayloads, payload.Type):
++			calls = append(calls, string(item.Payload))
++		}
++	}
++	return calls, found
++}
++
++// messageText returns the joined text blocks of a message payload, or "" when its content is no list of blocks.
++func messageText(payload json.RawMessage) string {
++	var message struct {
++		Content []struct {
++			Text string `json:"text"`
++		} `json:"content"`
++	}
++	if json.Unmarshal(payload, &message) != nil {
++		return ""
++	}
++	var text strings.Builder
++	for _, block := range message.Content {
++		text.WriteString(block.Text)
++	}
++	return text.String()
++}
+diff --git a/internal/shuttleengine/codexengine/skillload_test.go b/internal/shuttleengine/codexengine/skillload_test.go
+new file mode 100644
+index 00000000..ae3b2b4d
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/skillload_test.go
+@@ -0,0 +1,257 @@
++// skillload_test.go pins the skill load: the lookup of a skill's SKILL.md under the skill roots, the load line, its classification from a rollout, and the launch that carries it as the first turn.
++
++package codexengine
++
++import (
++	"encoding/json"
++	"path/filepath"
++	"reflect"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// writeSkill writes the SKILL.md of plugin's skill name at version under the marketplace folder of root, and returns its path.
++func writeSkill(t *testing.T, root, marketplace, plugin, version, name string) string {
++	t.Helper()
++	file := filepath.Join(root, marketplace, plugin, version, skillsDirName, name, skillFileName)
++	mkdirAll(t, filepath.Dir(file))
++	writeFile(t, file, "# "+name)
++	return file
++}
++
++// skillEngine returns an engine whose codex.yaml names root as its one skill root.
++func skillEngine(t *testing.T, root string) *Codex {
++	t.Helper()
++	repo := newRepoFixture(t)
++	anchor, _ := repo.addWorktree(t, "wt")
++	repo.writeCodexLayer(t, anchor, "skill_roots: ["+root+"]\n")
++	engine, _ := newEngine(anchor)
++	return engine
++}
++
++// rolloutUserItem returns the rollout line of a user message response item holding text.
++func rolloutUserItem(text string) string {
++	data, _ := json.Marshal(map[string]any{"type": "response_item", "payload": map[string]any{"type": "message", "role": "user", "content": []map[string]string{{"type": "input_text", "text": text}}}})
++	return string(data)
++}
++
++// rolloutUserEvent returns the rollout line of a user_message event holding text.
++func rolloutUserEvent(text string) string {
++	data, _ := json.Marshal(map[string]any{"type": "event_msg", "payload": map[string]any{"type": "user_message", "message": text}})
++	return string(data)
++}
++
++// rolloutToolCall returns the rollout line of a tool call of payload type kind whose arguments hold command.
++func rolloutToolCall(kind, command string) string {
++	arguments, _ := json.Marshal(map[string]string{"cmd": command})
++	data, _ := json.Marshal(map[string]any{"type": "response_item", "payload": map[string]any{"type": kind, "name": "exec", "arguments": string(arguments)}})
++	return string(data)
++}
++
++// rolloutExecCall returns the rollout line of a function_call running command.
++func rolloutExecCall(command string) string {
++	return rolloutToolCall("function_call", command)
++}
++
++// TestSkillPath pins the lookup: the newest version under the first root that holds the skill, and none for a skill no root holds or one that names no plugin.
++// The newest is the highest number field by field; a number orders above text, so a release beats its pre-release and a hash-named folder,
++// and a set of versions that would cycle under a mixed comparison still yields one answer.
++// A root holding a glob metacharacter resolves as written.
++func TestSkillPath(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	first, second, third := t.TempDir(), t.TempDir(), filepath.Join(t.TempDir(), "root[1]")
++	writeSkill(t, first, "market", "scribe", "1.9.0", "prose")
++	newest := writeSkill(t, first, "market", "scribe", "1.10.0", "prose")
++	writeSkill(t, second, "market", "scribe", "2.0.0", "prose")
++	onlySecond := writeSkill(t, second, "market", "ly", "0.1", "board")
++	release := writeSkill(t, third, "market", "versions", "1.0.0", "prose")
++	writeSkill(t, third, "market", "versions", "1.0.0-beta", "prose")
++	writeSkill(t, third, "market", "versions", "abc123", "prose")
++	ten := writeSkill(t, third, "market", "cycle", "10", "prose")
++	writeSkill(t, third, "market", "cycle", "2", "prose")
++	writeSkill(t, third, "market", "cycle", "1a", "prose")
++	roots := []string{first, second, third}
++
++	tests := []struct {
++		skill string
++		want  string
++	}{
++		{"scribe:prose", newest},
++		{"ly:board", onlySecond},
++		{"versions:prose", release},
++		{"cycle:prose", ten},
++		{"scribe:absent", ""},
++		{"prose", ""},
++	}
++	for _, tt := range tests {
++		if got := skillPath(tt.skill, roots); got != tt.want {
++			t.Errorf("skillPath(%q) = %q; want %q", tt.skill, got, tt.want)
++		}
++	}
++}
++
++// TestSkillLoadMessage pins the load line: each found skill's path in order, an unfound one left out, and a line asking for no read when none is found.
++func TestSkillLoadMessage(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	root := t.TempDir()
++	prose := writeSkill(t, root, "market", "scribe", "1.0.0", "prose")
++	testingSkill := writeSkill(t, root, "market", "scribe", "1.0.0", "testing")
++	engine := skillEngine(t, root)
++
++	got := engine.SkillLoadMessage([]string{"scribe:testing", "scribe:absent", "scribe:prose"})
++	if !strings.Contains(got, ": "+testingSkill+", "+prose+". ") || strings.Contains(got, "absent") || strings.Contains(got, "\n") {
++		t.Errorf("SkillLoadMessage() = %q; want one line naming %s then %s and no absent skill", got, testingSkill, prose)
++	}
++	if got := engine.SkillLoadMessage([]string{"scribe:absent"}); strings.Contains(got, skillFileName) {
++		t.Errorf("SkillLoadMessage() of no found skill = %q; want a line naming no file", got)
++	}
++}
++
++// TestSkillLoadMessage_ExpandsAHomeRoot pins that a skill root starting with ~/ resolves under the user's home.
++// It sets the home environment, so it does not run in parallel.
++func TestSkillLoadMessage_ExpandsAHomeRoot(t *testing.T) {
++	tiergate.Require(t, 0)
++
++	home := t.TempDir()
++	t.Setenv("HOME", home)
++	t.Setenv("USERPROFILE", home)
++	prose := writeSkill(t, filepath.Join(home, "cache"), "market", "scribe", "1.0.0", "prose")
++	engine := skillEngine(t, "~/cache")
++
++	if got := engine.SkillLoadMessage([]string{"scribe:prose"}); !strings.Contains(got, ": "+prose+". ") {
++		t.Errorf("SkillLoadMessage() = %q; want it to name %s under the expanded root", got, prose)
++	}
++}
++
++// TestSkillLoadMessage_WarnsOnceWhenCodexYamlDoesNotLoad pins that a codex.yaml that does not load resolves no skill, with one Warn.
++func TestSkillLoadMessage_WarnsOnceWhenCodexYamlDoesNotLoad(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	repo := newRepoFixture(t)
++	anchor, _ := repo.addWorktree(t, "wt")
++	repo.writeCodexLayer(t, anchor, "skill_roots: [\n")
++	engine, warnings := newEngine(anchor)
++
++	if got := engine.SkillLoadMessage([]string{"scribe:prose"}); strings.Contains(got, skillFileName) {
++		t.Errorf("SkillLoadMessage() = %q; want a line naming no file", got)
++	}
++	if got := warnings.String(); strings.Count(got, "\n") != 0 || !strings.Contains(got, "did not load") {
++		t.Errorf("warnings = %q; want exactly one naming that codex.yaml did not load", got)
++	}
++}
++
++// TestClassifySkillLoad pins the classification from a rollout.
++// A tool call of any call payload type after the load message naming a skill's tail loads it, and a call before the message does not.
++// A repeated load message restarts the count, and a truncated line is skipped.
++// A skill no root holds is unknown, and an unreadable rollout or one without the load message is unverified.
++func TestClassifySkillLoad(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	root := t.TempDir()
++	prose := writeSkill(t, root, "market", "scribe", "1.0.0", "prose")
++	testingSkill := writeSkill(t, root, "market", "scribe", "1.0.0", "testing")
++	engine := skillEngine(t, root)
++	skills := []string{"scribe:prose", "scribe:testing", "scribe:absent"}
++	message := engine.SkillLoadMessage(skills)
++
++	tests := []struct {
++		name  string
++		lines []string
++		want  shuttleengine.SkillLoadReport
++	}{
++		{
++			name:  "ReadAfterTheMessage",
++			lines: []string{rolloutUserItem(message), rolloutExecCall("cat " + prose), rolloutExecCall("sed -n 1,200p " + testingSkill)},
++			want:  shuttleengine.SkillLoadReport{Verified: true, Loaded: []string{"scribe:prose", "scribe:testing"}, Unknown: []string{"scribe:absent"}},
++		},
++		{
++			name:  "ReadBeforeTheMessage",
++			lines: []string{rolloutExecCall("cat " + testingSkill), rolloutUserEvent(message), rolloutExecCall("cat " + prose)},
++			want:  shuttleengine.SkillLoadReport{Verified: true, Loaded: []string{"scribe:prose"}, Unknown: []string{"scribe:absent"}, Missing: []string{"scribe:testing"}},
++		},
++		{
++			name:  "CustomToolAndLocalShellCalls",
++			lines: []string{rolloutUserItem(message), rolloutToolCall("custom_tool_call", "cat "+prose), rolloutToolCall("local_shell_call", "cat "+testingSkill)},
++			want:  shuttleengine.SkillLoadReport{Verified: true, Loaded: []string{"scribe:prose", "scribe:testing"}, Unknown: []string{"scribe:absent"}},
++		},
++		{
++			name:  "RepeatedLoadMessageRestartsTheCount",
++			lines: []string{rolloutUserItem(message), rolloutExecCall("cat " + prose), rolloutUserEvent(message), rolloutExecCall("cat " + testingSkill)},
++			want:  shuttleengine.SkillLoadReport{Verified: true, Loaded: []string{"scribe:testing"}, Unknown: []string{"scribe:absent"}, Missing: []string{"scribe:prose"}},
++		},
++		{
++			name:  "TruncatedLineIsSkipped",
++			lines: []string{rolloutUserItem(message), `{"type":"response_item","payload":{"type":"function_c`, rolloutExecCall("cat " + prose)},
++			want:  shuttleengine.SkillLoadReport{Verified: true, Loaded: []string{"scribe:prose"}, Unknown: []string{"scribe:absent"}, Missing: []string{"scribe:testing"}},
++		},
++		{
++			name:  "NoLoadMessage",
++			lines: []string{rolloutUserItem("something else"), rolloutExecCall("cat " + prose)},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			rollout := writeRollout(t, tt.lines...)
++			got := engine.ClassifySkillLoad(shuttleengine.Event{Raw: []byte(`{"hook_event_name":"Stop","transcript_path":"` + rollout + `"}`)}, skills)
++			if !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("ClassifySkillLoad() = %+v; want %+v", got, tt.want)
++			}
++		})
++	}
++	if got := engine.ClassifySkillLoad(shuttleengine.Event{Raw: []byte(`{"transcript_path":"/absent/rollout.jsonl"}`)}, skills); got.Verified {
++		t.Errorf("ClassifySkillLoad() over an absent rollout = %+v; want unverified", got)
++	}
++}
++
++// TestClassifySkillLoad_NewerVersionAfterTheLine pins that a skill version that appears after the load line was sent leaves the report verified.
++// The line is recognised by its fixed text and not by the paths it named.
++func TestClassifySkillLoad_NewerVersionAfterTheLine(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	root := t.TempDir()
++	sent := writeSkill(t, root, "market", "scribe", "1.0.0", "prose")
++	engine := skillEngine(t, root)
++	message := engine.SkillLoadMessage([]string{"scribe:prose"})
++	writeSkill(t, root, "market", "scribe", "2.0.0", "prose")
++
++	rollout := writeRollout(t, rolloutUserItem(message), rolloutExecCall("cat "+sent))
++	got := engine.ClassifySkillLoad(shuttleengine.Event{Raw: []byte(`{"transcript_path":"` + rollout + `"}`)}, []string{"scribe:prose"})
++	if want := (shuttleengine.SkillLoadReport{Verified: true, Loaded: []string{"scribe:prose"}}); !reflect.DeepEqual(got, want) {
++		t.Errorf("ClassifySkillLoad() = %+v; want %+v", got, want)
++	}
++}
++
++// TestPrepare_SkillsLoadFirst pins that a spec naming skills launches with the load line as its first turn and returns the prompt pointer as the prompt line.
++func TestPrepare_SkillsLoadFirst(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	root := t.TempDir()
++	writeSkill(t, root, "market", "scribe", "1.0.0", "prose")
++	engine := skillEngine(t, root)
++	runDir := t.TempDir()
++
++	launch, err := engine.Prepare(runDir, shuttleengine.Spec{Prompt: "p", Skills: []string{"scribe:prose"}}, shuttleengine.Config{})
++	if err != nil {
++		t.Fatalf("Prepare() error: %v", err)
++	}
++	pointer := launchPointer(filepath.Join(runDir, "prompt.md"))
++	if launch.PromptLine != pointer {
++		t.Errorf("Launch.PromptLine = %q; want the pointer %q", launch.PromptLine, pointer)
++	}
++	loadLine := engine.SkillLoadMessage([]string{"scribe:prose"})
++	if !strings.HasSuffix(launch.Cmd, "--dangerously-bypass-hook-trust '"+loadLine+"'; exit") || strings.Contains(launch.Cmd, pointer) {
++		t.Errorf("Launch.Cmd = %q; want the load line %q as its first turn and no pointer", launch.Cmd, loadLine)
++	}
++}
