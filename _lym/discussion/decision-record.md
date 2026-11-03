@@ -32,4 +32,11 @@ Work that moved on another machine meanwhile is caught where it matters, when a 
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - submit-drops-owned-kept-pause (class design, severity MEDIUM, open in rounds 1)
+  - switch-failure-paths-unpinned (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
