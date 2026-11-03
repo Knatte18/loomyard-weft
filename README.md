@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-03 16:33 UTC; every age below is as of then.
+Rendered 2026-11-03 16:35 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -54,23 +54,22 @@ _None._
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-## [P0 Root: entries under no project](project-root.md) (33)
+## [P0 Root: entries under no project](project-root.md) (32)
 
 Owner `neve`
 
-### Tasks (4)
+### Tasks (3)
 
 Concrete and claimable; only a task can run.
 
-#### Running (3)
+#### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Every remote operation runs async, and local-only fabric pairs go**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | darn · solid | Darn-Write | neve | 2w<br>43m | fabric, batten |
-| T5 | **depends_on accepts a project or any entry that lands, and dobby holds the task until it does** | [`depends-on-any-entry`](design-depends-on-any-entry.md) | darn · light | Darn-Write | neve | 14m<br>11m | board, dobby |
-| T9 | **The hibernate request is carried by dobby, not a daemon of its own**<br>• Move lym hibernate request into dobby; the past-Land test is already shared | [`hibernate-in-dobby`](design-hibernate-in-dobby.md) | darn · solid | Finalize | neve | 3d<br>1h | dobby |
+| T2 | **Every remote operation runs async, and local-only fabric pairs go**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | darn · solid | Darn-Write | neve | 2w<br>44m | fabric, batten |
+| T5 | **depends_on accepts a project or any entry that lands, and dobby holds the task until it does** | [`depends-on-any-entry`](design-depends-on-any-entry.md) | darn · light | Darn-Write | neve | 16m<br>13m | board, dobby |
 
 #### Ready (0)
 
@@ -84,7 +83,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T2<br>T9 | 3d<br>17m | fabric |
+| T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T2 | 3d<br>19m | fabric |
 
 ### Notes (29)
 
@@ -101,8 +100,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Drift-Verify's verdict never reaches the summary or the pull request**<br>• A clean compare leaves the PR asking the operator to run the regression compare by hand | [`drift-verdict-in-pr`](design-drift-verdict-in-pr.md) | 1h<br>1h | drift, loom, landing |
-| B2 |  | **A partial scope that skips every test ends in a capture that wrote no file, with no cause named**<br>• The capture failure names neither the skips nor the scope change that would fix it, so the tackler re-launches blind | [`drift-skip-all-capture`](design-drift-skip-all-capture.md) | 0m<br>0m | drift |
-| B3 |  | **The Drift-Baseline stencil skips the tests an intended change drifts**<br>• Intended drift is skipped instead of compared and accepted with a reason, which hides regressions in the same tests | [`drift-baseline-skips-intended`](design-drift-baseline-skips-intended.md) | 0m<br>0m | drift, stencil |
+| B2 |  | **A partial scope that skips every test ends in a capture that wrote no file, with no cause named**<br>• The capture failure names neither the skips nor the scope change that would fix it, so the tackler re-launches blind | [`drift-skip-all-capture`](design-drift-skip-all-capture.md) | 1m<br>1m | drift |
+| B3 |  | **The Drift-Baseline stencil skips the tests an intended change drifts**<br>• Intended drift is skipped instead of compared and accepted with a reason, which hides regressions in the same tests | [`drift-baseline-skips-intended`](design-drift-baseline-skips-intended.md) | 1m<br>1m | drift, stencil |
 
 #### Enhancements (8)
 
@@ -111,7 +110,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 7d<br>2d | batten, stencil, config |
 | E5 |  | **A landing notice is not lost when set late, when dobby was down, or when the orch is absent**<br>• Close the known limits landing-watch left: a late notify_on_land, a Land passed while dobby was down, and a dropped line when no orch is live | [`landing-watch-limits`](design-landing-watch-limits.md) | 2d<br>2d | dobby, orch |
 | E7 |  | **Each part agent plans and builds its own part, instead of joining the parts into one plan** | [`parts-plan-and-build`](design-parts-plan-and-build.md) | 19h<br>19h | loom |
-| E9 |  | **An interactive agent idle for a set time gets its session compacted**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 3d<br>7m | shed, shuttle, batten |
+| E9 |  | **An interactive agent idle for a set time gets its session compacted**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 3d<br>9m | shed, shuttle, batten |
 | E11 |  | **Merge in from parent as a task of its own in a beam, before pawl lands it**<br>• A command on a beam files a merge-in-from-parent task, run as darn with its perch on | [`parent-merge-task`](design-parent-merge-task.md) | 3d<br>2d | pawl, workspaces, drift, landing |
 | E13 |  | **The sampler: code writer or read-only discussion role, and the skills that follow** | [`sampler-direction`](design-sampler-direction.md) | 21h<br>20h | loom, stencil |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 12d<br>6d | burler, claude |
@@ -134,7 +133,15 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 4w<br>4h | board, ide, orch |
 | F12 |  | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md) | 1d<br>7h | claude, shuttle, config |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 3w<br>1d | webster |
-| F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 11d<br>29m | loom, board, batten, workspaces |
-| F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 9h<br>2m | shuttle, codex, loom |
+| F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 11d<br>30m | loom, board, batten, workspaces |
+| F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 9h<br>4m | shuttle, codex, loom |
 | F16 |  | **Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | 7h<br>7h | drift, shed |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>1d | burler, shed, orch, quarry, report |
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T9 | **The hibernate request is carried by dobby, not a daemon of its own**<br>• Move lym hibernate request into dobby; the past-Land test is already shared | [`hibernate-in-dobby`](design-hibernate-in-dobby.md) | 3d<br>1h | dobby |
