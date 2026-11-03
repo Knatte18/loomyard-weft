@@ -1,6 +1,6 @@
-# Prove the dotnet scoper, shared build and Drift on the C# sandbox hub
+# Prove Drift, an anchor other than ".", the dotnet scoper and the shared build on the C# sandbox hub
 
-`sandbox-dotnet-gate` · Note · enhancement, dotnet, gate
+`sandbox-dotnet-gate` · Note · enhancement, dotnet, gate, drift
 
 ## Seen (operator and hub orch, 2026-10-29)
 
@@ -9,13 +9,24 @@ Its gate is the simple form: `tier0` runs `dotnet test` without `Category=Slow` 
 So the dotnet scoper, the shared build and Drift are not proved on a C# repository.
 The first `tier1` gate run on Neve died with "Internal CLR error (0x80131506)" after 900 s and passed on a rerun; the cause is unknown.
 
-## Idea
+## Seen (operator, 2026-11-03)
 
-Switch the sandbox gate to `scoper: dotnet`, a `build` step and `--no-build`, so the scoper and the shared build are proved there, then turn on `drift.enabled` there to prove Drift, before any C# hub that holds proprietary code relies on them.
-The hub's setup is in `docs/dotnet-hub.md`; the sandbox stays the place to reproduce a lym fault another C# hub shows.
+The agents and orchs that drive Drift hit many problems, because Drift was never tested for real.
+Drift's capture and compare start in the directory `.lym-anchor` names (`drift-anchor-and-skip`), but that was tested with fakes and integration tests only, never against a real hub whose anchor is not `.`.
 
-## Built since (drift-anchor-and-skip, 2026-11-03)
+## Goal
 
-Drift's capture and compare now start in the directory `.lym-anchor` names, which this hub anchors in a subdirectory.
-That landing was tested with fakes and integration tests, not against a real subdirectory-anchored hub, so this note's proof on the sandbox still stands.
-`drift.enabled = false` now also passes a Drift row the run has already entered.
+The `cs` sandbox hub is the proving ground for Drift and for an anchor other than `.`:
+
+- Drift: baseline capture, scope, compare and waive, end to end on real runs.
+- An anchor other than `.`: every row of a run, Drift's included, works from `lym-csharp/dotnet` and not from the repository root.
+- The dotnet scoper and the shared build.
+
+## Steps
+
+1. Switch the `cs` gate to `scoper: dotnet`, a `build` step and `--no-build`, and set `drift.enabled`; the setup is in `docs/dotnet-hub.md`.
+2. Run 3 darn tasks on `cs` that change code under the anchor, so each run captures a Drift baseline and compares against it.
+3. File each lym fault seen with `lym selfreport create`; each fix becomes a task in the loomyard hub.
+
+The trial runs are started by the `cs` hub's own orch.
+The sandbox stays the place to reproduce a lym fault another C# hub shows.
