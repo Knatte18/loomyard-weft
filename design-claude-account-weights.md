@@ -20,11 +20,20 @@ So a fixed weight alone is not enough: a Max account can hit its five-hour windo
 
 ## Seen (orch, 2026-11-02)
 
-Lym cannot do this today.
-`lym config claude` has no key for an account, a config directory or an environment, and a search of `internal/` found no use of `CLAUDE_CONFIG_DIR`, so every session runs under whichever account the machine is logged in to.
+Lym cannot pick an account per worktree today.
+`lym config claude` has no key for an account or a config directory, and a search of `internal/` found no use of `CLAUDE_CONFIG_DIR`, so every session runs under whichever account the machine is logged in to.
 
 Claude Code is believed to keep an account's login in a config directory that the `CLAUDE_CONFIG_DIR` environment variable selects.
 That is not verified: check it against the Claude Code documentation before anything is built.
+
+## Built since (landed 2026-11-03)
+
+`lym config env` (`0d155d1a`) holds per-machine environment variables that lym exports to every process it starts for the hub: gate tiers, Drift steps and agent session panes.
+A pane receives them through the `PaneEnv` closure on reed's geometry, exported ahead of the strand's launch command and read afresh at each launch.
+It refuses `PATH` and any `LYM_` name, and `CLAUDE_CONFIG_DIR` is allowed.
+
+So a machine-wide `CLAUDE_CONFIG_DIR` can be set today, which moves every session to one other account.
+It is one value for the whole hub: the per-worktree pick, the weights and the headroom check below are still unbuilt, and a per-worktree value needs a source beside this module's fixed map.
 
 ## Design questions for a Discussion
 
@@ -34,6 +43,7 @@ That is not verified: check it against the Claude Code documentation before anyt
   With headroom in the pick, a deterministic hash of the slug no longer suffices: a persisted weighted counter that skips an account short of headroom is the candidate.
 - Scope: the prime's orch and each beam's orch and dobby need a rule of their own, since they outlive a task run.
 - A session spawn sets the chosen account's environment in one place in the claude engine's launch, so no caller sets it.
+  The pane launch now already exports the `env` module's variables ahead of the launch command (`reedengine/panebin.go`); the account's variable would sit beside them, and its precedence over the module's is to be decided.
 - A usage limit on one account: whether lym moves a worktree to the other account when one is limited, or only reports it; the first needs the session's history to be readable under the other account, which it is not by default.
 - Cost and quota reports (`lym report`, `tokencount`) read transcripts per config directory, and would need to read both.
 
