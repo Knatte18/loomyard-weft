@@ -14,6 +14,8 @@ A general shed block that runs a whole sub-recipe as one producer of the parent 
 
 - The block names a recipe; it is Done when the sub-run ends done and Stuck when it stops.
 - Inline (operator, 2026-11-03): the sub-recipe's rows run inside the parent run, in the same process and status file, with their history entries marked with the block they belong to; no second run, driver or worktree, so nothing collides, and pause, goto and review budgets work as in any run.
-- A block may be passed over by a condition, such as tapestry passing over `cartoon` when its entry is already discussed (note `discussed-task-split`).
+- Each block has an entry gate (operator, 2026-11-03): a check with no agent, run before the block's first row, that either enters the block or passes over it whole, the block then counting as Done and the history recording it as passed over.
+  Tapestry's gate on `cartoon` passes over it when the entry is already discussed, after reading the record from Bolt into `_lym/discussion` (note `discussed-task-split`).
+  The recipe names the gate's check, from a set lym ships, so a gate is declared in the recipe file and not written as code per recipe.
 - First uses: `cartoon` inside tapestry; later a part split. A sub-run in another worktree stays `NewInnerRun`'s kind.
 - Open: how a goto, `lym loom status` and the progress count name a row inside a block; whether a block's review segments keep their own budgets; how recipe keys and profiles reach a block's rows.
