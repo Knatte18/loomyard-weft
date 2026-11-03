@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-03 10:23 UTC; every age below is as of then.
+Rendered 2026-11-03 10:24 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -24,7 +24,7 @@ Held by a run; its scope is locked until the run ends.
 | T4 | **Webster treats the anchor as the git worktree in a subpath-anchored hub**<br>• Webster opens git and resolves plan paths at the worktree root, not the anchor, so a subpath-anchored hub reaches code | [`webster-subpath-anchor`](design-webster-subpath-anchor.md) | darn · solid | Darn-Write | neve | 5m<br>5m | webster, cwd, parsers |
 | T5 | **Darn-Write seat halts: stencil darn-template-write has unfilled marker subagent_model** | [`seat-stencil-marker-unfilled`](design-seat-stencil-marker-unfilled.md) | darn · solid | Code-Burler-Fix | neve | 13h<br>30m | stencil, shed |
 | T9 | **Run ends with a background shell outstanding: its commit and gate result are lost** | [`run-done-with-background-shell`](design-run-done-with-background-shell.md) | darn · solid | Code-Burler-Fix | neve | 13h<br>30m | shuttle, webster, gate |
-| T10 | **lym config drift refuses the whole-map capture and compare form its own key description prescribes** | [`drift-config-whole-map-set`](design-drift-config-whole-map-set.md) | darn · light | Code-Burler-Fix | neve | 3h<br>30m | drift, config |
+| T10 | **lym config drift refuses the whole-map capture and compare form its own key description prescribes** | [`drift-config-whole-map-set`](design-drift-config-whole-map-set.md) | darn · light | Code-Bouncer | neve | 3h<br>30m | drift, config |
 | T11 | **Plan verbs: validate-plan cannot target a glyphless test file, insert-card leaves bare card N mentions stale**<br>• Let edit-test-file target a test file with no toc symbols, and make insert-card rewrite or report bare card N mentions | [`plan-verbs-glyphless-and-refs`](design-plan-verbs-glyphless-and-refs.md) | darn · solid | Code-Burler-Fix | neve | 13h<br>30m | loom, quarry |
 
 ### Ready (0)
