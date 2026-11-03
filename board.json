@@ -771,6 +771,29 @@
       "body": "## Seen (operator and hub orch, 2026-11-03)\n\nCreel's hook delivery works very well for Claude sessions.\n`codexengine` has none: its package doc says \"no creel hooks\", so every Codex strand is a pane-mail strand, and mail from another agent reaches it only as a `run lym creel read` reminder.\n\n## What the spike found\n\n`docs/research/codex-hook-delivery-2026-10-28/report.md` tested the channels by hand on Codex CLI 0.164.0:\n\n- A `Stop` hook answering `decision: block` with the message as `reason` is taken at once and acted on.\n- A `PostToolUse` block with the message is taken at the next step, but only when the session's instructions say `[creel]` lines are mail; without that sentence the model reads it as a failed tool call.\n- An async `Stop` hook cannot wake an idle session; `codex queue --thread \u003cid\u003e --message …` run from outside does, at once.\n\n## Idea\n\n`codexengine` carries creel's delivery the way `claudeengine` does: the tool-boundary claim through a `PostToolUse` block, the turn-end delivery through a `Stop` block, the idle wake through `codex queue` from the daemon, and the `[creel]` sentence in the prompt file; the launch is then marked `CreelHooks`.\n\nRelated: project `codex-engine-trial` tests what the engine does today.\n",
       "created": "2026-11-03T19:24:10Z",
       "revised": "2026-11-03T19:24:10Z"
+    },
+    {
+      "id": 1078,
+      "handle": "T3",
+      "slug": "codex-trial-home-sandbox",
+      "title": "Codex trial: home, trust, sandbox and refusals",
+      "kind": "task",
+      "labels": [
+        "research",
+        "codex",
+        "shuttle"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Seven cases on real Codex launches against the package doc",
+      "body": "## Goal\n\nTest parts 1 and 2 of project `codex-engine-trial` against real Codex sessions launched through `lym shuttle`: home and trust, sandbox and refusals, as `internal/shuttleengine/codexengine/doc.go` describes them.\n\n## Cases\n\nEach case runs once, on `luna[medium]`, in this task's worktree or in a throwaway directory the case makes under it.\n\n1. A launch in this worktree: `CODEX_HOME` is the lym Codex home; `auth.json` and `sessions` link to the operator's home; `config.toml` is rendered whole and trusts the worktree root and the main checkout root.\n2. Two launches started together: the file lock keeps `config.toml` whole and both roots trusted.\n3. A recorded root whose folder is removed is dropped at the next launch.\n4. A regular `auth.json` in the lym home is named in a Warn and left in place.\n5. The launch line carries `-a never -s workspace-write`; the session writes under the anchor's `.lym` and is refused a write outside its writable roots.\n6. A committed `.codex/rules` refuses the launch; a committed `.codex/config.toml` is named in a Warn.\n7. The folder-trust prompt, raised by a root removed from `config.toml` by hand before Codex reads it, is accepted by the engine's backstop.\n\n## Deliver\n\n- A report at `docs/research/codex-engine-trial-home-sandbox-2026-11-03.md`: per case, what was run, what was seen and whether it matches the package doc.\n- Each lym fault as a bug note on the board (`kind: note`, label `bug` and the module labels), one finding per note.\n- The operator's own `~/.codex` is never written: check its `config.toml` checksum before and after.\n",
+      "status": "draft",
+      "created": "2026-11-03T19:27:14Z",
+      "revised": "2026-11-03T19:27:14Z",
+      "profile": "docs",
+      "project": "codex-engine-trial"
     }
   ],
   "prime_owner": "neve",
