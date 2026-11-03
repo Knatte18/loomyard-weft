@@ -22,8 +22,8 @@ Held by a run; its scope is locked until the run ends.
 | T2 | **An approved Discussion stores its decision record on the board entry and flags it discussed** | [`decision-record-on-board`](design-decision-record-on-board.md) | tapestry · light | Webster | neve | 1h<br>1h | board, loom |
 | T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Plan-Write | neve | 11h<br>1h | batten, fabric |
 | T4 | **Claude Code autocompact picker in a shuttle session stalls a gate re-prompt forever** | [`shuttle-autocompact-picker-stall`](design-shuttle-autocompact-picker-stall.md) | darn | Finalize | neve | 12h<br>1h | shuttle, loom |
-| T5 | **Drift runs in an anchored hub, can be skipped for one run, and its baseline agent picks scope off when the suite cannot reach the change** | [`drift-anchor-and-skip`](design-drift-anchor-and-skip.md) | darn · solid | Code-Bouncer | neve | 17m<br>17m | drift, stencil |
-| T6 | **Ending the PR review closes the pull request and lands by direct push, which a PR-only branch refuses** | [`pr-review-end-direct-push`](design-pr-review-end-direct-push.md) | darn · solid | Finalize | neve | 50m<br>47m | landing, git |
+| T5 | **Drift runs in an anchored hub, can be skipped for one run, and its baseline agent picks scope off when the suite cannot reach the change** | [`drift-anchor-and-skip`](design-drift-anchor-and-skip.md) | darn · solid | Code-Burler-Review | neve | 17m<br>17m | drift, stencil |
+| T6 | **Ending the PR review closes the pull request and lands by direct push, which a PR-only branch refuses** | [`pr-review-end-direct-push`](design-pr-review-end-direct-push.md) | darn · solid | Finalize | neve | 50m<br>48m | landing, git |
 | T9 | **New task worktrees in a beam inherit the beam's committed loom-halt.md and block at Preflight** | [`inherited-halt-blocks-preflight`](design-inherited-halt-blocks-preflight.md) | darn · solid | Darn-Write | neve | 17m<br>17m | loom, friction, pawl |
 
 ### Ready (0)
@@ -56,7 +56,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B2 |  | **A paused run whose work already landed is never finished and keeps its worktree and terminal** | [`landed-run-left-paused`](design-landed-run-left-paused.md) | 11h<br>11h | dobby, batten |
-| B3 |  | **Darn-Write seat halts: stencil darn-template-write has unfilled marker subagent_model** | [`seat-stencil-marker-unfilled`](design-seat-stencil-marker-unfilled.md) | 11h<br>56m | stencil, shed |
+| B3 |  | **Darn-Write seat halts: stencil darn-template-write has unfilled marker subagent_model** | [`seat-stencil-marker-unfilled`](design-seat-stencil-marker-unfilled.md) | 11h<br>57m | stencil, shed |
 | B5 |  | **validate-plan edit-test-file rule cannot target a test file with no glyphs** | [`edit-test-file-no-glyphs`](design-edit-test-file-no-glyphs.md) | 11h<br>11h | loom, quarry |
 | B6 |  | **insert-card renumbers only <N>-<slug> ids, leaving bare 'card N' mentions stale** | [`insert-card-bare-mentions`](design-insert-card-bare-mentions.md) | 11h<br>11h | loom |
 | B8 |  | **Run ends with a background shell outstanding: its commit and gate result are lost** | [`run-done-with-background-shell`](design-run-done-with-background-shell.md) | 11h<br>11h | shuttle, webster, gate |
@@ -102,5 +102,5 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F12 |  | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory and a weight; a worktree picks one when its first session starts, so account A can carry twice the load of B | [`claude-account-weights`](design-claude-account-weights.md) | 19h<br>19h | claude, shuttle, config |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 3w<br>1d | webster |
 | F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 11d<br>36m | loom, board, batten, workspaces |
-| F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 56m<br>56m | shuttle, codex, loom |
+| F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 57m<br>57m | shuttle, codex, loom |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>23h | burler, shed, orch, quarry, report |
