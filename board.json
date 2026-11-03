@@ -1004,13 +1004,15 @@
       "issues": [
         20
       ],
+      "recipe": "tapestry",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #20](https://github.com/Knatte18/loomyard/issues/20).\n\n## What happened\n\nHub NORCE-DrillingAndWells/Models, beam `loomyard-setup` landing into `main`, prime beam.yaml `pull_request: \"on\"`.\nPR-Review opened PR #254 (loomyard-setup -\u003e main).\nThe review was ended through the PR-Review agent.\nlym then closed #254 with the comment \"the operator ended the review through the PR-Review agent; lym closes this pull request and the run lands through Finalize\", and Finalize squash-merged locally into `main` and pushed directly.\n\n`main` carries a GitHub ruleset requiring a pull request (squash only) and linear history, so origin refused the push:\n\n```\npush rejected: ! [remote rejected] main -\u003e main (push declined due to repository rule violations)\n```\n\nThe run blocked at Finalize with local `main` one commit ahead of origin and no lym way forward: retrying the push fails on the same rule.\n\n## Expected\n\nWith `pull_request` on, ending the review should let Finalize merge the open pull request on GitHub (squash), as it does for an open PR, not close it and land by direct push.\nAt minimum, lym should read the target branch's rules (`GET repos/{owner}/{repo}/rules/branches/{branch}`) and never choose a direct push to a branch that requires a pull request; a pull_request mode `required` on the prime would then be implied by the remote.\n\n## Workaround used\n\nReopen the PR, squash-merge it on GitHub by hand, reset local main to origin/main, cancel the run.",
       "status": "draft",
       "created": "2026-11-03T07:39:27Z",
-      "revised": "2026-11-03T07:39:27Z"
+      "revised": "2026-11-03T07:39:40Z",
+      "profile": "light"
     }
   ],
   "prime_owner": "neve",
