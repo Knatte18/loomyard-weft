@@ -387,28 +387,6 @@
       "revised": "2026-11-01T12:52:43Z"
     },
     {
-      "id": 976,
-      "handle": "T1",
-      "slug": "button-ask-name",
-      "title": "A status-bar button asks for a value, so an agent opened from it gets a name",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "reed",
-        "config"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Button entries take ask, filling {answer}; the agent button asks for the strand name, and term becomes terminal",
-      "body": "## Seen (operator, 2026-11-01)\n\nThe reed status bar's shipped `agent` button runs `lym shuttle open --role agent --model 'opus[high]'`, so every agent opened from it gets the strand name `agent`, and a second one only reed's number, `agent-2`.\nWith several agents each looking at its own thing, nothing in the strand name says which is which.\n\n## Design (operator and orch, 2026-11-01)\n\n- A button entry in `reed.yaml` (and `desktop.yaml`'s machine buttons) takes an optional `ask`, a prompt text beside `confirm`.\n- A click on an entry with `ask` raises tmux's `command-prompt` on the clicking client with that text; the answer fills the placeholder `{answer}` in the entry's `run`, shell-quoted like the other placeholders, and the entry then runs as today, through `confirm` when it has one.\n- An empty answer fills `{answer}` with the entry's `ask_default`, so a button still runs when the operator just presses Enter; an Escape cancels the click.\n- `{answer}` is valid only in an entry with `ask`, checked where the other button rules are checked.\n- The shipped `agent` buttons, in the POSIX and Windows templates, become `ask: \"Agent name:\"`, `ask_default: agent` and `run` with `--role {answer}`.\n- The shipped `term` buttons are labelled `terminal` (operator, 2026-11-01).\n",
-      "status": "done",
-      "created": "2026-11-01T14:52:54Z",
-      "revised": "2026-11-03T18:21:31Z",
-      "profile": "light"
-    },
-    {
       "id": 977,
       "handle": "R1",
       "slug": "agent-turns-effect",
