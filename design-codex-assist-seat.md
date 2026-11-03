@@ -1,6 +1,6 @@
 # The assistant seat and the Burler review round with a Codex assistant
 
-`codex-assist-seat` · Task · feature, burler, shuttle, codex · draft
+`codex-assist-seat` · Task · feature, burler, shuttle, codex
 
 Depends on: [`codex-engine-core`](design-codex-engine-core.md), [`codex-skills-guards`](design-codex-skills-guards.md), [`codex-stencil-blocks`](design-codex-stencil-blocks.md)
 
