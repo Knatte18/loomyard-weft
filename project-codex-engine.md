@@ -1,6 +1,6 @@
 # P2 Codex CLI as a second shuttle engine: codexengine
 
-Rendered 2026-11-03 16:26 UTC; every age below is as of then.
+Rendered 2026-11-03 16:27 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`codex-engine`](design-codex-engine.md) · Age 4w · Owner `neve`
@@ -22,7 +22,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Merge main into the codex-engine beam and resolve every conflict**<br>• Bring main into the beam before it lands, so its landing merges cleanly | [`codex-engine-merge-main`](design-codex-engine-merge-main.md) | darn | Code-Burler-Fix | neve | 12m<br>12m | codex, shuttle |
+| T3 | **Merge main into the codex-engine beam and resolve every conflict**<br>• Bring main into the beam before it lands, so its landing merges cleanly | [`codex-engine-merge-main`](design-codex-engine-merge-main.md) | darn | Code-Bouncer | neve | 13m<br>13m | codex, shuttle |
 
 ### Ready (0)
 
