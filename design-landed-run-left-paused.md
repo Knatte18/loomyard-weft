@@ -1,6 +1,6 @@
 # A paused run whose work already landed is never finished and keeps its worktree and terminal
 
-`landed-run-left-paused` · Task · bug, dobby, batten · running · Code-Bouncer
+`landed-run-left-paused` · Task · bug, dobby, batten · running · Describe
 
 ## Seen (2026-11-02)
 
