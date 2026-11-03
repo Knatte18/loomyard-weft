@@ -1,6 +1,6 @@
 # P2 Codex CLI as a second shuttle engine: codexengine
 
-Rendered 2026-11-03 14:20 UTC; every age below is as of then.
+Rendered 2026-11-03 14:24 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`codex-engine`](design-codex-engine.md) · Age 4w · Owner `neve`
@@ -22,7 +22,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Skills and every shell guard row on Codex** | [`codex-skills-guards`](design-codex-skills-guards.md) | darn · light | Code-Burler-Review | neve | 1h<br>1h | shuttle, codex |
+| T3 | **Skills and every shell guard row on Codex** | [`codex-skills-guards`](design-codex-skills-guards.md) | darn · light | Code-Burler-Fix | neve | 1h<br>1h | shuttle, codex |
 
 ### Ready (0)
 
