@@ -1,0 +1,49 @@
+attempt: 1
+cap: 2
+failures:
+    - id: github.com/Knatte18/loomyard/cmd/lym
+      kind: package
+      package: github.com/Knatte18/loomyard/cmd/lym
+      tail: |-
+        --- PASS: TestReadCachedToken_MalformedFileIsMiss/missing_token (0.00s)
+        === RUN   TestReadCachedToken_MalformedFileIsMiss/extra_unexpected_field
+        --- PASS: TestReadCachedToken_MalformedFileIsMiss/extra_unexpected_field (0.00s)
+        === RUN   TestReadCachedToken_MalformedFileIsMiss/unparseable_timestamp
+        --- PASS: TestReadCachedToken_MalformedFileIsMiss/unparseable_timestamp (0.00s)
+        --- PASS: TestReadCachedToken_MalformedFileIsMiss (0.00s)
+        === RUN   TestWriteCachedToken_UnwritableDirDegradesToInProcessResolution
+        --- PASS: TestWriteCachedToken_UnwritableDirDegradesToInProcessResolution (0.00s)
+        === RUN   TestCache_ConcurrentWriters
+        --- PASS: TestCache_ConcurrentWriters (0.00s)
+        === RUN   TestAuthRT_401Handling
+        === RUN   TestAuthRT_401Handling/401_then_success_replays_once_with_a_fresh_token_and_an_identical_body
+        --- PASS: TestAuthRT_401Handling/401_then_success_replays_once_with_a_fresh_token_and_an_identical_body (0.00s)
+        === RUN   TestAuthRT_401Handling/second_consecutive_401_propagates_without_a_further_retry
+        --- PASS: TestAuthRT_401Handling/second_consecutive_401_propagates_without_a_further_retry (0.00s)
+        === RUN   TestAuthRT_401Handling/env-sourced_token_is_never_replayed
+        --- PASS: TestAuthRT_401Handling/env-sourced_token_is_never_replayed (0.00s)
+        --- PASS: TestAuthRT_401Handling (0.00s)
+        === RUN   TestRunGHAuthTokenSeam_HonoursGhAuthTokenTimeout
+        --- PASS: TestRunGHAuthTokenSeam_HonoursGhAuthTokenTimeout (0.01s)
+        === RUN   TestAuthRT_WaitsWhileAPauseCoversTheProcess
+        --- PASS: TestAuthRT_WaitsWhileAPauseCoversTheProcess (0.02s)
+        === RUN   TestAuthRT_HeldCallGetsItsFullDeadlineAfterRelease
+        === RUN   TestAuthRT_HeldCallGetsItsFullDeadlineAfterRelease/a_held_call_succeeds_after_release
+        === RUN   TestCopyRepoCallerSet_LymcwdOnly
+        --- PASS: TestAuthRT_HeldCallGetsItsFullDeadlineAfterRelease/a_held_call_succeeds_after_release (0.15s)
+        === RUN   TestAuthRT_HeldCallGetsItsFullDeadlineAfterRelease/an_unheld_call_keeps_its_deadline
+        --- PASS: TestAuthRT_HeldCallGetsItsFullDeadlineAfterRelease/an_unheld_call_keeps_its_deadline (0.15s)
+        === RUN   TestAuthRT_HeldCallGetsItsFullDeadlineAfterRelease/a_call_admitted_before_the_pause_is_neither_held_nor_extended
+        === CONT  TestGofmt_ModuleFilesAreFormatted/unformatted_source_names_file,_line,_current_and_formatted_text
+        === CONT  TestGofmt_ModuleFilesAreFormatted/import_order_alone_still_fails_with_that_line
+        === CONT  TestGofmt_ModuleFilesAreFormatted/unparseable_source_names_the_file
+        === CONT  TestGofmt_ModuleFilesAreFormatted/formatted_source_passes
+        --- PASS: TestGofmt_ModuleFilesAreFormatted/unformatted_source_names_file,_line,_current_and_formatted_text (0.00s)
+        --- PASS: TestGofmt_ModuleFilesAreFormatted/unparseable_source_names_the_file (0.00s)
+        --- PASS: TestGofmt_ModuleFilesAreFormatted/formatted_source_passes (0.00s)
+        --- PASS: TestGofmt_ModuleFilesAreFormatted/import_order_alone_still_fails_with_that_line (0.00s)
+        --- PASS: TestGofmt_ModuleFilesAreFormatted (3.02s)
+        FAIL
+        FAIL	github.com/Knatte18/loomyard/cmd/lym	8.162s
+log_path: /home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/.lym/verify/verify-2.log
+fixer: fork
