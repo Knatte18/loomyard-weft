@@ -12,21 +12,21 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (1)
+### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | motif · solid | Discussion-Burler-Fix | neve | 4w<br>55m | shuttle, codex |
+| T1 | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | motif · solid | Discussion-Burler-Fix | neve | 4w<br>56m | shuttle, codex |
+| T7 | **fabric remove deletes the whole worktree directory, ignored files included** | [`fabric-remove-ignored-files`](design-fabric-remove-ignored-files.md) | darn · solid | Worktree-Create | neve | 4h<br>4h | fabric |
 
-### Ready (2)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **fabric remove deletes the whole worktree directory, ignored files included** | [`fabric-remove-ignored-files`](design-fabric-remove-ignored-files.md) | darn · solid |  | 4h<br>4h | fabric |
 | T8 | **Batten treats a stray non-worktree directory as a gone pair, and a beam landing accepts its own beam mark** | [`batten-stray-dir-and-beam-mark`](design-batten-stray-dir-and-beam-mark.md) | darn · light |  | 4h<br>4h | batten, pawl |
 
 ## Notes (32)

@@ -1,6 +1,6 @@
 # fabric remove deletes the whole worktree directory, ignored files included
 
-`fabric-remove-ignored-files` · Task · bug, fabric
+`fabric-remove-ignored-files` · Task · bug, fabric · running · Worktree-Create
 
 Depends on: [`batten-remote-order`](design-batten-remote-order.md)
 
