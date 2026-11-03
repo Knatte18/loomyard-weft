@@ -53,29 +53,23 @@ Held by a run; its scope is locked until the run ends.
 | T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Plan-Burler-Review | neve | 12h<br>1h | batten, fabric |
 | T9 | **New task worktrees in a beam inherit the beam's committed loom-halt.md and block at Preflight** | [`inherited-halt-blocks-preflight`](design-inherited-halt-blocks-preflight.md) | darn · solid | Finalize | neve | 49m<br>49m | loom, friction, pawl |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T4 | **Drift-Baseline halt shows the capture child error**<br>• Carry the capture child log error into the halt, and drop resume as a way forward when it cannot help | [`drift-child-error-in-halt`](design-drift-child-error-in-halt.md) | darn · solid |  | 0m<br>0m | drift |
 
-#### Layer A (2)
+#### Layer A (3)
 
 Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
+| T5 | **Preflight refuses lym own state files under _lym**<br>• Commit or exempt every file lym writes under _lym on a stop path, such as go-settle.jsonl | [`preflight-clean-skips-lym-state`](design-preflight-clean-skips-lym-state.md) | darn · solid | T9 | 0m<br>0m | preflight, shed |
 | T7 | **fabric remove deletes the whole worktree directory, ignored files included** | [`fabric-remove-ignored-files`](design-fabric-remove-ignored-files.md) | darn · solid | T3 | 1h<br>1h | fabric |
 | T8 | **Batten treats a stray non-worktree directory as a gone pair, and a beam landing accepts its own beam mark** | [`batten-stray-dir-and-beam-mark`](design-batten-stray-dir-and-beam-mark.md) | darn · solid | T3 | 1h<br>1h | batten, pawl |
-
-#### Draft (2)
-
-Not released; nothing starts it until its status is cleared.
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Drift-Baseline halt shows the capture child error**<br>• Carry the capture child log error into the halt, and drop resume as a way forward when it cannot help | [`drift-child-error-in-halt`](design-drift-child-error-in-halt.md) | darn · solid |  | 0m<br>0m | drift |
-| T5 | `draft` **Preflight refuses lym own state files under _lym**<br>• Commit or exempt every file lym writes under _lym on a stop path, such as go-settle.jsonl | [`preflight-clean-skips-lym-state`](design-preflight-clean-skips-lym-state.md) | darn · solid | T9 | 0m<br>0m | preflight, shed |
 
 ### Notes (40)
 
