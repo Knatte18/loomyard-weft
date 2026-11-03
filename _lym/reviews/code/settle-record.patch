@@ -1,0 +1,707 @@
+diff --git a/contracts/specs/loom-status-spec.md b/contracts/specs/loom-status-spec.md
+index 66254558..c6d5877b 100644
+--- a/contracts/specs/loom-status-spec.md
++++ b/contracts/specs/loom-status-spec.md
+@@ -128,6 +128,8 @@ A holders clause is dropped when no slot is held or the holders cannot be read.
+ `<elapsed>` is whole seconds under a minute, whole minutes under an hour and hours with minutes beyond (`45s`, `6m`, `1h12m`),
+ and the attempt clause of a verify is dropped when no attempt counter applies.
+ The key is absent when none of the waits applies, or when the run is in any state other than `running`.
++`lym loom status --watch` appends the same note to its line, but decides whether a poll prints by the note with every `<elapsed>` left out,
++so a wait whose elapsed time alone grows prints no new line.
+ It is read from the markers, the wait records, the parent lock wait record and the round store, never from the status file,
+ so the file's schema above is unchanged.
+ It is display only: no Go decision reads it.
+diff --git a/docs/overview.md b/docs/overview.md
+index 88c60803..f2732daf 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -554,7 +554,7 @@ User-facing modules each get one `lym <module>` namespace:
+   `step` bootstraps idempotently, exactly as `start` does, and drives exactly one producer through `shedengine.Shed`'s own `Step`, emitting a JSON envelope; it spawns no detached driver, making it the single-producer primitive an external supervisor drives.
+   `step --until-stop` runs one child step after another in a loop and returns the one envelope of the first stop, with a `loop` object beside the stop step's envelope.
+   A step at a row waiting on the operator (Beam-Await, PR-Review, Sampler-Session) reads as active to the loop's watchdog and as a live wait to dobby.
+-  `status` reports the current phase as a single JSON envelope and, with `--watch`, tails it, printing a line only when the composed activity changes rather than once per poll.
++  `status` reports the current phase as a single JSON envelope and, with `--watch`, tails it, printing a line only when the composed activity changes rather than once per poll; a wait's growing elapsed time alone is no change.
+   On a terminal `status` renders a human view instead, and `--json` forces the envelope there; `--watch --json` is refused.
+   While a run waits on a verify or a shuttle wait, `status` also carries a waiting note naming the producer, what it waits on and for how long.
+   The envelope carries `run_id`, `progress` (the main-line position and bounce count over the recipe's producer graph) and `last_step` (the record `lym shed step` keeps under `.lym`).
+diff --git a/internal/loomcli/checklist.go b/internal/loomcli/checklist.go
+index 95815445..1749fe2d 100644
+--- a/internal/loomcli/checklist.go
++++ b/internal/loomcli/checklist.go
+@@ -124,7 +124,7 @@ lines in view. The loom-status strand runs it. It reads files only.`,
+ 				Size:    statuspane.TerminalSize(os.Stdout),
+ 				Resized: statuspane.NotifyResize(cmd.Context()),
+ 			}
+-			pane.Run(cmd.Context(), c.checklistPoll(location))
++			pane.Run(cmd.Context(), c.checklistPoll(location, reviewWaitingFor(location)))
+ 			return nil
+ 		},
+ 	}
+@@ -133,9 +133,8 @@ lines in view. The loom-status strand runs it. It reads files only.`,
+ // checklistPoll returns the pane's poll for the worktree at location.
+ // The self run's seed is read until one read succeeds, and its recipe's rows once after that.
+ // The run's arbiter attempts and the pause record's coverage of the pair are read from disk on every frame.
+-// While the run is running, the state line carries the note the worktree's Waiting hook reports.
+-func (c *loomCLI) checklistPoll(location *lymcwd.Location) func() statuspane.Frame {
+-	waiting := reviewWaitingFor(location)
++// While the run is running, the wait line carries the full text of the note waiting reports, elapsed time included; a nil waiting reports none.
++func (c *loomCLI) checklistPoll(location *lymcwd.Location, waiting func(st shedengine.Status) (shedverbs.WaitNote, error)) func() statuspane.Frame {
+ 	var (
+ 		seedRead  bool
+ 		rows      []loomrecipe.RecipeRow
+@@ -166,7 +165,7 @@ func (c *loomCLI) checklistPoll(location *lymcwd.Location) func() statuspane.Fra
+ 		// A hook error drops the note rather than the frame; a settled run waits on nothing.
+ 		if waiting != nil && poll.Found && poll.Status.State == shedengine.StateRunning {
+ 			if note, err := waiting(poll.Status); err == nil {
+-				waitNote = note
++				waitNote = note.Text
+ 			}
+ 		}
+ 		now := time.Now()
+diff --git a/internal/loomcli/checklist_test.go b/internal/loomcli/checklist_test.go
+index cdf75084..5a50bce0 100644
+--- a/internal/loomcli/checklist_test.go
++++ b/internal/loomcli/checklist_test.go
+@@ -17,10 +17,13 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/loomrecipe"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/sheddriver"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/shedverbs"
++	"github.com/Knatte18/loomyard/internal/state"
+ 	"github.com/Knatte18/loomyard/internal/statuspane"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+@@ -1252,6 +1255,43 @@ func TestRenderChecklist(t *testing.T) {
+ 	})
+ }
+ 
++// TestChecklistPoll_WaitLineKeepsTheNoteText asserts the pane's wait line carries the Waiting hook's text, elapsed time included, never its steady form, and that a settled run waits on nothing.
++func TestChecklistPoll_WaitLineKeepsTheNoteText(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name  string
++		state shedengine.State
++		want  string
++	}{
++		{"Running", shedengine.StateRunning, "waiting Build: verify running 6m"},
++		{"Done", shedengine.StateDone, "waiting on nothing"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			location := &lymcwd.Location{HubPath: t.TempDir(), WorktreeName: "wt", AnchorRel: "."}
++			statusFile := shedrun.StatusFile(location, shedrun.SelfRunID)
++			if err := os.MkdirAll(filepath.Dir(statusFile), 0o755); err != nil {
++				t.Fatalf("mkdir run dir: %v", err)
++			}
++			status := shedengine.Status{State: tt.state, CurrentProducer: "Build", Activity: shedengine.Activity{Now: "Build"}}
++			if err := state.WriteJSON(statusFile, filepath.Join(filepath.Dir(statusFile), "status.lock"), status); err != nil {
++				t.Fatalf("write status: %v", err)
++			}
++			waiting := func(shedengine.Status) (shedverbs.WaitNote, error) {
++				return shedverbs.WaitNote{Text: "Build: verify running 6m", Steady: "Build: verify running <elapsed>"}, nil
++			}
++
++			frame := (&loomCLI{}).checklistPoll(location, waiting)()
++			if got := frame.Lines[len(frame.Lines)-1]; got != tt.want {
++				t.Errorf("wait line = %q; want %q", got, tt.want)
++			}
++		})
++	}
++}
++
+ func TestChecklistCmd_ReportsAResolutionFailureOnTheEnvelope(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/loomcli/cli.go b/internal/loomcli/cli.go
+index c04140d1..fc0b6ccf 100644
+--- a/internal/loomcli/cli.go
++++ b/internal/loomcli/cli.go
+@@ -384,7 +384,8 @@ and "paused_by" (the pause's scope); a run no pause covers carries neither.
+ 
+ With --watch, it performs the same read once as a pre-flight, then tails
+ the file and never exits, printing a line only when the composed activity
+-actually CHANGES rather than once per poll -- so a quiet pane means the
++actually CHANGES rather than once per poll: the row, the state, or a wait's
++kind or detail, never a wait's elapsed time alone. A quiet pane thus means the
+ current producer is still working, not that the tail has stopped. This is
+ the one documented interactive-handoff exception on this verb, taken
+ narrowly on the tail only, after every fallible step has already run
+diff --git a/internal/loomcli/reviewstatus.go b/internal/loomcli/reviewstatus.go
+index 3c787f6a..5a1ee27e 100644
+--- a/internal/loomcli/reviewstatus.go
++++ b/internal/loomcli/reviewstatus.go
+@@ -15,10 +15,14 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/parentlock"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shedverbs"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/verifytree"
+ )
+ 
++// elapsedPlaceholder stands in for every elapsed time in a wait note's steady form, so that form changes only when what the run waits on changes.
++const elapsedPlaceholder = "<elapsed>"
++
+ // formatElapsed renders d as whole seconds under a minute, whole minutes under an hour and hours with minutes beyond: `45s`, `6m`, `1h12m`.
+ func formatElapsed(d time.Duration) string {
+ 	switch {
+@@ -31,13 +35,21 @@ func formatElapsed(d time.Duration) string {
+ 	}
+ }
+ 
++// timedNote builds a wait note whose one time-varying part is elapsed:
++// render receives elapsed formatted for the note's text and elapsedPlaceholder for its steady form.
++func timedNote(render func(elapsed string) string, elapsed time.Duration) shedverbs.WaitNote {
++	return shedverbs.WaitNote{Text: render(formatElapsed(elapsed)), Steady: render(elapsedPlaceholder)}
++}
++
+ // formatWaitNote renders one wait as `<producer>: <what> running <elapsed> (<detail>)`, dropping the parenthesis when detail is empty.
+-func formatWaitNote(producer, what string, elapsed time.Duration, detail string) string {
+-	note := fmt.Sprintf("%s: %s running %s", producer, what, formatElapsed(elapsed))
+-	if detail == "" {
+-		return note
+-	}
+-	return note + " (" + detail + ")"
++func formatWaitNote(producer, what string, elapsed time.Duration, detail string) shedverbs.WaitNote {
++	return timedNote(func(shown string) string {
++		note := fmt.Sprintf("%s: %s running %s", producer, what, shown)
++		if detail == "" {
++			return note
++		}
++		return note + " (" + detail + ")"
++	}, elapsed)
+ }
+ 
+ // formatHolders renders the gate-slot holders as `<worktree> <site>, <worktree> <site>`.
+@@ -62,30 +74,36 @@ func readHolders(holders func() ([]gateslot.Holder, error)) string {
+ // Each record renders as `<producer>: <site> waiting for a gate slot <elapsed>`, oldest first and joined with `; `, followed once by `(holders: <worktree> <site>, ...)` when holders names any.
+ // With no live record the note is next's; with one or more, next's non-empty note follows after `; `.
+ // A record whose process is dead reads as absent, so a crashed wait never sticks in the status line.
+-func gateWaiting(waitDir string, holders func() ([]gateslot.Holder, error), now func() time.Time, next func(st shedengine.Status) (string, error)) func(st shedengine.Status) (string, error) {
+-	return func(st shedengine.Status) (string, error) {
++func gateWaiting(waitDir string, holders func() ([]gateslot.Holder, error), now func() time.Time, next func(st shedengine.Status) (shedverbs.WaitNote, error)) func(st shedengine.Status) (shedverbs.WaitNote, error) {
++	return func(st shedengine.Status) (shedverbs.WaitNote, error) {
+ 		waits, err := gateslot.ReadWaits(waitDir)
+ 		if err != nil {
+-			return "", err
++			return shedverbs.WaitNote{}, err
+ 		}
+ 		if len(waits) == 0 {
+ 			return next(st)
+ 		}
+ 		sort.SliceStable(waits, func(i, j int) bool { return waits[i].Started.Before(waits[j].Started) })
+-		clauses := make([]string, len(waits))
++		texts := make([]string, len(waits))
++		steadies := make([]string, len(waits))
+ 		for i, wait := range waits {
+-			clauses[i] = fmt.Sprintf("%s: %s waiting for a gate slot %s", st.CurrentProducer, wait.Site, formatElapsed(now().Sub(wait.Started)))
++			clause := timedNote(func(shown string) string {
++				return fmt.Sprintf("%s: %s waiting for a gate slot %s", st.CurrentProducer, wait.Site, shown)
++			}, now().Sub(wait.Started))
++			texts[i], steadies[i] = clause.Text, clause.Steady
+ 		}
+-		note := strings.Join(clauses, "; ")
++		note := shedverbs.WaitNote{Text: strings.Join(texts, "; "), Steady: strings.Join(steadies, "; ")}
+ 		if named := readHolders(holders); named != "" {
+-			note += " (holders: " + named + ")"
++			note.Text += " (holders: " + named + ")"
++			note.Steady += " (holders: " + named + ")"
+ 		}
+ 		rest, err := next(st)
+ 		if err != nil {
+-			return "", err
++			return shedverbs.WaitNote{}, err
+ 		}
+-		if rest != "" {
+-			note += "; " + rest
++		if rest.Text != "" {
++			note.Text += "; " + rest.Text
++			note.Steady += "; " + rest.Steady
+ 		}
+ 		return note, nil
+ 	}
+@@ -97,24 +115,28 @@ func gateWaiting(waitDir string, holders func() ([]gateslot.Holder, error), now
+ // The holders clause is dropped when holders names none or fails.
+ // The note names the run's current producer and measures elapsed time from now.
+ // A marker whose pid is dead reads as absent, so a crashed verify never sticks in the status line.
+-func verifyWaiting(markerPath string, holders func() ([]gateslot.Holder, error), now func() time.Time, next func(st shedengine.Status) (string, error)) func(st shedengine.Status) (string, error) {
+-	return func(st shedengine.Status) (string, error) {
++func verifyWaiting(markerPath string, holders func() ([]gateslot.Holder, error), now func() time.Time, next func(st shedengine.Status) (shedverbs.WaitNote, error)) func(st shedengine.Status) (shedverbs.WaitNote, error) {
++	return func(st shedengine.Status) (shedverbs.WaitNote, error) {
+ 		m, live, err := verifytree.ReadMarker(markerPath)
+ 		if err != nil {
+-			return "", err
++			return shedverbs.WaitNote{}, err
+ 		}
+ 		if !live {
+ 			return next(st)
+ 		}
+ 		if m.State == verifytree.MarkerStatePaused {
+-			return fmt.Sprintf("%s: verify held by a pause %s (%s)", st.CurrentProducer, formatElapsed(now().Sub(m.WaitStarted)), m.Site), nil
++			return timedNote(func(shown string) string {
++				return fmt.Sprintf("%s: verify held by a pause %s (%s)", st.CurrentProducer, shown, m.Site)
++			}, now().Sub(m.WaitStarted)), nil
+ 		}
+ 		if m.State == verifytree.MarkerStateWaiting {
+ 			detail := m.Site
+ 			if named := readHolders(holders); named != "" {
+ 				detail += "; holders: " + named
+ 			}
+-			return fmt.Sprintf("%s: verify waiting for a gate slot %s (%s)", st.CurrentProducer, formatElapsed(now().Sub(m.WaitStarted)), detail), nil
++			return timedNote(func(shown string) string {
++				return fmt.Sprintf("%s: verify waiting for a gate slot %s (%s)", st.CurrentProducer, shown, detail)
++			}, now().Sub(m.WaitStarted)), nil
+ 		}
+ 		var detail []string
+ 		if m.Attempt > 0 {
+@@ -129,11 +151,11 @@ func verifyWaiting(markerPath string, holders func() ([]gateslot.Holder, error),
+ // The note names the run's current producer and the wait's kind, with no detail clause.
+ // readMarker returns false for a marker whose pid is dead,
+ // so a crashed wait never sticks in the status line.
+-func shuttleWaiting(readMarker func() (shuttleengine.WaitMarker, bool, error), now func() time.Time, next func(st shedengine.Status) (string, error)) func(st shedengine.Status) (string, error) {
+-	return func(st shedengine.Status) (string, error) {
++func shuttleWaiting(readMarker func() (shuttleengine.WaitMarker, bool, error), now func() time.Time, next func(st shedengine.Status) (shedverbs.WaitNote, error)) func(st shedengine.Status) (shedverbs.WaitNote, error) {
++	return func(st shedengine.Status) (shedverbs.WaitNote, error) {
+ 		marker, live, err := readMarker()
+ 		if err != nil {
+-			return "", err
++			return shedverbs.WaitNote{}, err
+ 		}
+ 		if !live {
+ 			return next(st)
+@@ -145,26 +167,28 @@ func shuttleWaiting(readMarker func() (shuttleengine.WaitMarker, bool, error), n
+ // parentLockWaiting returns the Waiting hook that reports a live parent lock wait from the record at waitPath, and falls through to next otherwise.
+ // The note reads `<producer>: waiting for the parent lock on <branch> held by <slug> <elapsed>`, elapsed measured from the record's start.
+ // A record whose writer is dead under alive reads as absent, so a wait left by a dead step is ignored.
+-func parentLockWaiting(waitPath string, alive func(pid int, startTime string) bool, now func() time.Time, next func(st shedengine.Status) (string, error)) func(st shedengine.Status) (string, error) {
+-	return func(st shedengine.Status) (string, error) {
++func parentLockWaiting(waitPath string, alive func(pid int, startTime string) bool, now func() time.Time, next func(st shedengine.Status) (shedverbs.WaitNote, error)) func(st shedengine.Status) (shedverbs.WaitNote, error) {
++	return func(st shedengine.Status) (shedverbs.WaitNote, error) {
+ 		wait, found, err := parentlock.ReadWait(waitPath, alive)
+ 		if err != nil {
+-			return "", err
++			return shedverbs.WaitNote{}, err
+ 		}
+ 		if !found {
+ 			return next(st)
+ 		}
+-		return fmt.Sprintf("%s: waiting for the parent lock on %s held by %s %s", st.CurrentProducer, wait.Branch, wait.Holder, formatElapsed(now().Sub(wait.Started))), nil
++		return timedNote(func(shown string) string {
++			return fmt.Sprintf("%s: waiting for the parent lock on %s held by %s %s", st.CurrentProducer, wait.Branch, wait.Holder, shown)
++		}, now().Sub(wait.Started)), nil
+ 	}
+ }
+ 
+ // reviewWaitingFor builds the Waiting hook for loc's worktree, or nil when no location is wired.
+ // A gate wait is reported first and never hides the rest; after it come a parent lock wait, a verify and a shuttle wait, of which the first live one wins.
+-func reviewWaitingFor(loc *lymcwd.Location) func(st shedengine.Status) (string, error) {
++func reviewWaitingFor(loc *lymcwd.Location) func(st shedengine.Status) (shedverbs.WaitNote, error) {
+ 	if loc == nil {
+ 		return nil
+ 	}
+-	noWait := func(shedengine.Status) (string, error) { return "", nil }
++	noWait := func(shedengine.Status) (shedverbs.WaitNote, error) { return shedverbs.WaitNote{}, nil }
+ 	readShuttleMarker := func() (shuttleengine.WaitMarker, bool, error) {
+ 		cfg, err := shuttleengine.LoadConfig(fabricengine.ConfigDirs(loc), "shuttle")
+ 		if err != nil {
+diff --git a/internal/loomcli/reviewstatus_test.go b/internal/loomcli/reviewstatus_test.go
+index b4bba602..5ceff762 100644
+--- a/internal/loomcli/reviewstatus_test.go
++++ b/internal/loomcli/reviewstatus_test.go
+@@ -6,6 +6,7 @@ import (
+ 	"path/filepath"
+ 	"reflect"
+ 	"strconv"
++	"strings"
+ 	"testing"
+ 	"time"
+ 
+@@ -26,8 +27,18 @@ import (
+ // fallthroughNote is the fixed note the fake next step returns, so a row can tell a fall-through from a reported wait.
+ const fallthroughNote = "next step note"
+ 
+-// fixedNextStep is the hook chain's next step in place of a real wait: it always returns fallthroughNote.
+-func fixedNextStep(shedengine.Status) (string, error) { return fallthroughNote, nil }
++// fixedNextStep is the hook chain's next step in place of a real wait: it always returns fallthroughNote as both text and steady form.
++func fixedNextStep(shedengine.Status) (shedverbs.WaitNote, error) {
++	return shedverbs.WaitNote{Text: fallthroughNote, Steady: fallthroughNote}, nil
++}
++
++// steadyOf returns text with each of the told elapsed renderings replaced by elapsedPlaceholder, the steady form a note of that text must carry.
++func steadyOf(text string, elapsed ...string) string {
++	for _, shown := range elapsed {
++		text = strings.ReplaceAll(text, shown, elapsedPlaceholder)
++	}
++	return text
++}
+ 
+ // writeShuttleMarker writes a wait marker of the given kind held by pid into a run directory under runRoot.
+ func writeShuttleMarker(t *testing.T, runRoot, kind string, pid int) {
+@@ -78,6 +89,7 @@ func TestLiveRunStrands_SkipsRunWithGoneWaiter(t *testing.T) {
+ // TestShuttleWaiting asserts the hook chain's order.
+ // Gate wait records are reported ahead of a live verify marker, and a live verify marker ahead of a live shuttle marker.
+ // A dead shuttle marker falls through to the next step.
++// Every note's steady form is its text with each elapsed time replaced by the placeholder.
+ func TestShuttleWaiting(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -173,8 +185,11 @@ func TestShuttleWaiting(t *testing.T) {
+ 			if err != nil {
+ 				t.Fatal(err)
+ 			}
+-			if note != tt.want {
+-				t.Errorf("note = %q; want %q", note, tt.want)
++			if note.Text != tt.want {
++				t.Errorf("note = %q; want %q", note.Text, tt.want)
++			}
++			if want := steadyOf(tt.want, "6m", "3m"); note.Steady != want {
++				t.Errorf("steady = %q; want %q", note.Steady, want)
+ 			}
+ 		})
+ 	}
+@@ -203,6 +218,7 @@ func writeWaitingVerifyMarker(t *testing.T, pid int) string {
+ }
+ 
+ // TestVerifyWaiting asserts a live verify marker is reported ahead of the next step, and a dead or absent marker falls through to it.
++// Every note's steady form is its text with the elapsed time replaced by the placeholder.
+ func TestVerifyWaiting(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	tests := []struct {
+@@ -300,7 +316,10 @@ func TestVerifyWaiting(t *testing.T) {
+ 			if err != nil {
+ 				t.Fatal(err)
+ 			}
+-			tt.check(t, note)
++			tt.check(t, note.Text)
++			if want := steadyOf(note.Text, "6m"); note.Steady != want {
++				t.Errorf("steady = %q; want %q", note.Steady, want)
++			}
+ 		})
+ 	}
+ }
+@@ -334,7 +353,9 @@ func TestParentLockWaiting(t *testing.T) {
+ 	t.Parallel()
+ 	started := time.Date(2026, 10, 3, 9, 0, 0, 0, time.UTC)
+ 	now := func() time.Time { return started.Add(6 * time.Minute) }
+-	next := func(shedengine.Status) (string, error) { return "next note", nil }
++	next := func(shedengine.Status) (shedverbs.WaitNote, error) {
++		return shedverbs.WaitNote{Text: "next note", Steady: "next note"}, nil
++	}
+ 	alive := func(int, string) bool { return true }
+ 	dead := func(int, string) bool { return false }
+ 	writeWait := func(t *testing.T, path string) {
+@@ -368,8 +389,11 @@ func TestParentLockWaiting(t *testing.T) {
+ 
+ 			got, err := parentLockWaiting(path, tt.alive, now, next)(shedengine.Status{CurrentProducer: "Parent-Align"})
+ 
+-			if (err != nil) != tt.wantErr || got != tt.want {
+-				t.Errorf("note, err = %q, %v; want %q, error %v", got, err, tt.want, tt.wantErr)
++			if (err != nil) != tt.wantErr || got.Text != tt.want {
++				t.Errorf("note, err = %q, %v; want %q, error %v", got.Text, err, tt.want, tt.wantErr)
++			}
++			if want := steadyOf(tt.want, "6m"); got.Steady != want {
++				t.Errorf("steady = %q; want %q", got.Steady, want)
+ 			}
+ 		})
+ 	}
+diff --git a/internal/shedverbs/spec.go b/internal/shedverbs/spec.go
+index e725259a..970df71f 100644
+--- a/internal/shedverbs/spec.go
++++ b/internal/shedverbs/spec.go
+@@ -36,6 +36,16 @@ const (
+ 	InterruptPolicyHandback = "handback"
+ )
+ 
++// WaitNote names, in one line, what a running run is waiting on.
++// The zero WaitNote means the run waits on nothing.
++type WaitNote struct {
++	// Text is the note status shows, elapsed times included.
++	Text string
++	// Steady is the same note with every elapsed time held fixed, so it changes only when what the run waits on changes;
++	// the --watch tail compares it, never Text, to decide whether a poll prints a line.
++	Steady string
++}
++
+ // Hooks carries the module-specific extension points the generic verb bodies call at fixed
+ // points in their own sequence. Every field is nil-by-default and skipped when nil, so a module
+ // that needs none of them may leave the whole struct at its zero value.
+@@ -92,15 +102,15 @@ type Hooks struct {
+ 	// PreGoto runs in goto's RunE after the --to check and before shedengine.Goto.
+ 	// A non-nil error is reported verbatim on the error envelope and the status file is not touched.
+ 	PreGoto func(ctx context.Context, target string) error
+-	// Waiting names, in one line, what a running run is waiting on; empty means it waits on nothing.
++	// Waiting names what a running run is waiting on; an empty Text means it waits on nothing.
+ 	// It receives the status file's content,
+ 	// so a product can name the current producer.
+ 	// status calls it only when the status file's state is running,
+-	// and a non-empty note adds a waiting key to the envelope, replaces the plain running state in the human header and extends the --watch line.
++	// and a non-empty Text adds a waiting key to the envelope, replaces the plain running state in the human header and extends the --watch line.
+ 	// A non-nil error is reported verbatim on the error envelope, like StatusExtras;
+ 	// the --watch line drops the note on an error rather than ending the tail.
+ 	// The hook closes over whatever location the arming module was told, so shedverbs stays path-free.
+-	Waiting func(st shedengine.Status) (string, error)
++	Waiting func(st shedengine.Status) (WaitNote, error)
+ 	// AfterInterrupt runs when the loop stops on a child step that ended without an envelope, after the failed stop is written and before its envelope is written, so it reads the status the stop leaves.
+ 	// It receives the stop row, the one the status file names once the child exited, the cause and the first trace file of the child, or its captured stderr when it left no trace.
+ 	// Its return is the envelope's friction key, like AfterStep's.
+diff --git a/internal/shedverbs/status.go b/internal/shedverbs/status.go
+index 80c5eae9..28882220 100644
+--- a/internal/shedverbs/status.go
++++ b/internal/shedverbs/status.go
+@@ -1,6 +1,6 @@
+ // status.go implements the generic `status` verb body: a one-shot JSON envelope of the current
+ // phase, and (from the status --watch tail, added onto this same file) a --watch mode that tails
+-// the same status file, printing a line only when the composed activity actually changes.
++// the same status file, printing a line only when the composed activity changes, a growing elapsed time aside.
+ 
+ package shedverbs
+ 
+@@ -64,31 +64,32 @@ func RenderStatusLine(label string, st shedengine.Status) string {
+ 	return line
+ }
+ 
+-// UnavailableLine composes the line the watch tail prints when a poll cannot read the status file,
+-// for the told label. It must be computed once outside the poll loop rather than per poll: the tail
+-// dedupes on printed text, so a line recomposed per poll that ever differed by a byte would turn a
+-// transient fault into its own flood, which is the whole thing the dedupe exists to prevent.
++// UnavailableLine composes the line the watch tail prints for the told label when a poll cannot read the status file.
++// The line is also its own change key.
++// It must be computed once outside the poll loop rather than per poll, since the tail dedupes on that key.
++// A line recomposed per poll that ever differed by a byte would turn a transient fault into its own flood, which is the whole thing the dedupe exists to prevent.
+ func UnavailableLine(label string) string {
+ 	return label + " status unavailable (status file transiently unreadable)"
+ }
+ 
+-// PrintStatusLinesOnChange runs the watch tail: it polls, prints the polled line into out only when
+-// that line differs from the one it last printed, and sleeps between polls.
++// PrintStatusLinesOnChange runs the watch tail:
++// it polls a line and its change key, prints the line into out only when the key differs from the one of the line it last printed, and sleeps between polls.
+ //
+-// Suppressing an unchanged line is the whole point. A producer call lasts minutes while the tail
+-// polls every second, so printing unconditionally fills tmux's scrollback and buries the one line an
+-// operator actually needs -- the moment the activity changes -- among the identical ones around it.
++// Suppressing an unchanged line is the whole point.
++// A producer call lasts minutes while the tail polls every second.
++// Printing every poll fills tmux's scrollback and buries the one line an operator needs, the moment the activity changes, among identical ones.
++// The key leaves out what changes on every poll, such as a wait's elapsed time, which the line still shows.
+ //
+-// polls bounds the loop so a test can drive a finite sequence with no wall-clock wait; a
+-// non-positive polls means poll forever, which is what the production call passes.
+-func PrintStatusLinesOnChange(out io.Writer, poll func() string, sleep func(), polls int) {
+-	lastPrinted := ""
++// polls bounds the loop so a test can drive a finite sequence with no wall-clock wait;
++// a non-positive polls means poll forever, which is what the production call passes.
++func PrintStatusLinesOnChange(out io.Writer, poll func() (line, key string), sleep func(), polls int) {
++	lastKey := ""
+ 	printedAny := false
+ 	for i := 0; polls <= 0 || i < polls; i++ {
+-		line := poll()
+-		if !printedAny || line != lastPrinted {
++		line, key := poll()
++		if !printedAny || key != lastKey {
+ 			fmt.Fprintln(out, line)
+-			lastPrinted = line
++			lastKey = key
+ 			printedAny = true
+ 		}
+ 		sleep()
+@@ -96,10 +97,10 @@ func PrintStatusLinesOnChange(out io.Writer, poll func() string, sleep func(), p
+ }
+ 
+ // waitingNote asks spec.Hooks.Waiting what a running run waits on.
+-// It returns the empty note when the hook is nil or the state is not running, so the hook never runs against a settled run.
+-func waitingNote(spec *Spec, st shedengine.Status) (string, error) {
++// It returns the zero note when the hook is nil or the state is not running, so the hook never runs against a settled run.
++func waitingNote(spec *Spec, st shedengine.Status) (WaitNote, error) {
+ 	if spec.Hooks.Waiting == nil || st.State != shedengine.StateRunning {
+-		return "", nil
++		return WaitNote{}, nil
+ 	}
+ 	return spec.Hooks.Waiting(st)
+ }
+@@ -109,22 +110,27 @@ func waitingNote(spec *Spec, st shedengine.Status) (string, error) {
+ // A read failure or a !found inside the poll renders the unavailable line, never terminates the tail, and never writes an envelope:
+ // the pane is expected to survive the driver rewriting the file underneath it.
+ func runStatusWatch(out io.Writer, spec *Spec, interval time.Duration) {
+-	poll := func() string { return statusWatchLine(spec) }
++	poll := func() (string, string) { return statusWatchLine(spec) }
+ 	PrintStatusLinesOnChange(out, poll, func() { time.Sleep(interval) }, 0)
+ }
+ 
+-// statusWatchLine renders one poll of the --watch tail: the status line, with " | waiting <note>" appended while the Waiting hook reports a note.
++// statusWatchLine renders one poll of the --watch tail as a line and its change key.
++// The line is the status line with " | waiting <note>" appended while the Waiting hook reports a note.
++// The key carries the note's steady form in place of its text.
+ // A hook error drops the note rather than ending the tail.
+-func statusWatchLine(spec *Spec) string {
++func statusWatchLine(spec *Spec) (line, key string) {
+ 	polled, found, err := state.ReadJSON[shedengine.Status](spec.StatusPath, spec.StatusLockPath)
+ 	if err != nil || !found {
+-		return UnavailableLine(spec.StatusLabel)
++		unavailable := UnavailableLine(spec.StatusLabel)
++		return unavailable, unavailable
+ 	}
+-	line := RenderStatusLine(spec.StatusLabel, polled)
+-	if note, noteErr := waitingNote(spec, polled); noteErr == nil && note != "" {
+-		line += " | waiting " + note
++	line = RenderStatusLine(spec.StatusLabel, polled)
++	key = line
++	if note, noteErr := waitingNote(spec, polled); noteErr == nil && note.Text != "" {
++		line += " | waiting " + note.Text
++		key += " | waiting " + note.Steady
+ 	}
+-	return line
++	return line, key
+ }
+ 
+ // statusCmd builds the generic `status` subcommand, registering the two flags -- --watch and
+@@ -212,11 +218,11 @@ func statusCmd(texts VerbTexts, spec *Spec) *cobra.Command {
+ 				clihelp.SetExit(ctx, output.ErrFields(out, err.Error(), map[string]any{"trace_dir": traceDir}))
+ 				return nil
+ 			}
+-			if waiting != "" {
+-				core["waiting"] = waiting
++			if waiting.Text != "" {
++				core["waiting"] = waiting.Text
+ 			}
+ 			if !asJSON && writerIsTerminal(out) {
+-				fmt.Fprint(out, RenderStatusHuman(spec.StatusLabel, spec.RunID, st, spec.Routing, waiting))
++				fmt.Fprint(out, RenderStatusHuman(spec.StatusLabel, spec.RunID, st, spec.Routing, waiting.Text))
+ 				return nil
+ 			}
+ 			clihelp.SetExit(ctx, output.Ok(out, core))
+@@ -225,7 +231,7 @@ func statusCmd(texts VerbTexts, spec *Spec) *cobra.Command {
+ 	}
+ 
+ 	cmd.Flags().BoolVar(&asJSON, "json", false, "print the JSON envelope even on a terminal, where the one-shot status otherwise prints a human view; refused with --watch")
+-	cmd.Flags().BoolVar(&watch, "watch", false, "tail the status file, printing a line only when the activity changes, instead of emitting a single JSON envelope")
++	cmd.Flags().BoolVar(&watch, "watch", false, "tail the status file, printing a line only when the activity changes, a growing elapsed time aside, instead of emitting a single JSON envelope")
+ 	cmd.Flags().DurationVar(&interval, "interval", time.Second, "poll interval for --watch; exists so a test can drive the poll fast without a real wall-clock wait")
+ 
+ 	return cmd
+diff --git a/internal/shedverbs/status_test.go b/internal/shedverbs/status_test.go
+index cb806099..0caf552e 100644
+--- a/internal/shedverbs/status_test.go
++++ b/internal/shedverbs/status_test.go
+@@ -313,14 +313,22 @@ func TestUnavailableLine_DedupesAcrossPolls(t *testing.T) {
+ 	}
+ }
+ 
+-// TestPrintStatusLinesOnChange_LineSequences drives PrintStatusLinesOnChange through a finite polls count with an injected sleep and no wall-clock wait, covering the dedupe rule: only changes print, a repeated unavailable line prints once, a line reprints after the tail returned to an earlier line, and the first line always prints.
++// TestPrintStatusLinesOnChange_LineSequences drives PrintStatusLinesOnChange through a finite polls count with an injected sleep and no wall-clock wait, covering the dedupe rule: only changes print, a repeated unavailable line prints once, a line reprints after the tail returned to an earlier line, the first line always prints, and a line whose key is unchanged is suppressed though its text changed.
+ func TestPrintStatusLinesOnChange_LineSequences(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	tests := []struct {
+ 		name  string
+ 		polls []string
+-		want  []string
++		// keys are the polls' change keys; nil makes each polled line its own key.
++		keys []string
++		want []string
+ 	}{
++		{
++			name:  "ElapsedOnlyChangeIsSuppressed",
++			polls: []string{"loom running | waiting verify running 0s", "loom running | waiting verify running 1s", "loom running | waiting verify running 2s (attempt 2)"},
++			keys:  []string{"loom running | waiting verify running <elapsed>", "loom running | waiting verify running <elapsed>", "loom running | waiting verify running <elapsed> (attempt 2)"},
++			want:  []string{"loom running | waiting verify running 0s", "loom running | waiting verify running 2s (attempt 2)"},
++		},
+ 		{
+ 			name:  "ChangeOnlyPrinting",
+ 			polls: []string{"a", "a", "b", "b", "b", "c"},
+@@ -346,10 +354,13 @@ func TestPrintStatusLinesOnChange_LineSequences(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			next := 0
+-			poll := func() string {
+-				line := tt.polls[next]
++			poll := func() (string, string) {
++				line, key := tt.polls[next], tt.polls[next]
++				if tt.keys != nil {
++					key = tt.keys[next]
++				}
+ 				next++
+-				return line
++				return line, key
+ 			}
+ 			sleeps := 0
+ 
+@@ -685,10 +696,10 @@ func TestStatusCmd_WaitingNote_RunningOnly(t *testing.T) {
+ 	calls := 0
+ 	gotProducer := ""
+ 	note := "the parent's review"
+-	hook := func(st shedengine.Status) (string, error) {
++	hook := func(st shedengine.Status) (WaitNote, error) {
+ 		calls++
+ 		gotProducer = st.CurrentProducer
+-		return note, nil
++		return WaitNote{Text: note, Steady: "steady form of " + note}, nil
+ 	}
+ 
+ 	t.Run("running with a note", func(t *testing.T) {
+@@ -742,33 +753,45 @@ func TestStatusCmd_WaitingNote_RunningOnly(t *testing.T) {
+ func TestStatusCmd_WaitingErrorVerbatim(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	wantErr := errors.New("waiting exploded")
+-	spec := seededStatusSpec(t, Hooks{Waiting: func(shedengine.Status) (string, error) { return "", wantErr }})
++	spec := seededStatusSpec(t, Hooks{Waiting: func(shedengine.Status) (WaitNote, error) { return WaitNote{}, wantErr }})
+ 	env, code := execEnvelope(t, statusCmd(statusTexts(), spec), nil)
+ 	if code != 1 || env["error"] != wantErr.Error() {
+ 		t.Errorf("error = %v (exit %d); want verbatim %q", env["error"], code, wantErr.Error())
+ 	}
+ }
+ 
+-// TestStatusWatchLine_AppendsWaitingNote asserts the polled watch line gains the note while it is non-empty, so the line changes when the wait starts or ends,
+-// and survives a hook error.
++// TestStatusWatchLine_AppendsWaitingNote asserts the polled watch line gains the note's text while it is non-empty, so the line changes when the wait starts or ends.
++// It also asserts the line's change key carries the note's steady form in its place, and that both survive a hook error.
+ func TestStatusWatchLine_AppendsWaitingNote(t *testing.T) {
+ 	tiergate.Require(t, 0)
+-	note := "the parent's review"
++	note := WaitNote{Text: "verify running 6s", Steady: "verify running <elapsed>"}
+ 	var hookErr error
+-	spec := seededStatusSpec(t, Hooks{Waiting: func(shedengine.Status) (string, error) { return note, hookErr }})
++	spec := seededStatusSpec(t, Hooks{Waiting: func(shedengine.Status) (WaitNote, error) { return note, hookErr }})
+ 	spec.StatusLabel = "loom"
+ 
+-	with := statusWatchLine(spec)
+-	if !strings.HasSuffix(with, " | waiting "+note) {
+-		t.Errorf("line = %q; want a trailing waiting note", with)
++	with, withKey := statusWatchLine(spec)
++	if !strings.HasSuffix(with, " | waiting "+note.Text) {
++		t.Errorf("line = %q; want a trailing waiting note %q", with, note.Text)
+ 	}
+-	note = ""
+-	without := statusWatchLine(spec)
++	if want := strings.TrimSuffix(with, note.Text) + note.Steady; withKey != want {
++		t.Errorf("key = %q; want %q", withKey, want)
++	}
++	note = WaitNote{}
++	without, withoutKey := statusWatchLine(spec)
+ 	if strings.Contains(without, "waiting") || !strings.HasPrefix(without, "loom running") || with == without {
+ 		t.Errorf("line without a note = %q (with: %q)", without, with)
+ 	}
+-	note, hookErr = "x", errors.New("boom")
+-	if got := statusWatchLine(spec); got != without {
+-		t.Errorf("line on hook error = %q; want %q", got, without)
++	if withoutKey != without {
++		t.Errorf("key without a note = %q; want the line %q", withoutKey, without)
++	}
++	note, hookErr = WaitNote{Text: "x", Steady: "x"}, errors.New("boom")
++	if got, gotKey := statusWatchLine(spec); got != without || gotKey != without {
++		t.Errorf("line, key on hook error = %q, %q; want %q for both", got, gotKey, without)
++	}
++
++	absentDir := t.TempDir()
++	unreadable := &Spec{StatusPath: filepath.Join(absentDir, "absent.json"), StatusLockPath: filepath.Join(absentDir, "status.lock"), StatusLabel: "loom"}
++	if got, gotKey := statusWatchLine(unreadable); got != UnavailableLine("loom") || gotKey != got {
++		t.Errorf("line, key for an unreadable status file = %q, %q; want %q for both", got, gotKey, UnavailableLine("loom"))
+ 	}
+ }
