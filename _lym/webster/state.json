@@ -326,7 +326,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "e72ba4dee163127ae0ab79eb29b70a06",
   "masterSessionId": "8965312c-1965-41e5-bab9-4e7de716ebbb",
   "masterEngine": "claude",
@@ -425,12 +425,33 @@
       "spawnedAt": "2026-11-03T08:49:15Z",
       "sessionId": "8965312c-1965-41e5-bab9-4e7de716ebbb",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-arras-seedable",
+        "status": "done",
+        "head_sha": "566b309285ef6c844bfcb89b7474da34696cdc81",
+        "deviations": [
+          "internal/boardengine/task_test.go",
+          "internal/loomcli/arbiterprompt.go",
+          "internal/reportengine/timingspans.go",
+          "tools/tokencount/time_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "566b309285ef6c844bfcb89b7474da34696cdc81"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-shed-sub-run-block/8965312c-1965-41e5-bab9-4e7de716ebbb/subagents/agent-ac72ed2ecd848e522.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-shed-sub-run-block/8965312c-1965-41e5-bab9-4e7de716ebbb/subagents/agent-ac72ed2ecd848e522.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-shed-sub-run-block/8965312c-1965-41e5-bab9-4e7de716ebbb/subagents/agent-a8af52b2352667b10.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-shed-sub-run-block/8965312c-1965-41e5-bab9-4e7de716ebbb/subagents/agent-ac5e3542af19b37ab.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-shed-sub-run-block/8965312c-1965-41e5-bab9-4e7de716ebbb/subagents/agent-ac5e3542af19b37ab.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-shed-sub-run-block/8965312c-1965-41e5-bab9-4e7de716ebbb/subagents/agent-ac72ed2ecd848e522.jsonl"
   ]
 }
