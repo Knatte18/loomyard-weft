@@ -143,6 +143,12 @@ Decision: This task judges the discussion approval row only from a recipe's own 
 
 Rationale: Blocks do not exist until shed-sub-run-block lands, so this task cannot test against them; the record of a run of the new recipe is needed only by the discussed-entry gate, which is that follow-up's scope. No scope moves into either running task.
 
+### Added after Discussion (parent, 2026-11-03): Store failures at approval: only a done entry warns
+
+Decision: D6 stands with one departure: at Discussion approval, a store refused because the board entry is done is logged at Warn and the settle goes on, as D8 already reports a done entry without failing. Every other store failure, an absent entry and a board that cannot be opened included, fails the settle and halts the run at Discussion-Bouncer as D6 says, so a resume stores again. Card 7's wiring and its TestApproveDiscussion_Real rows match this: a done-entry row asserts the settle passes with a warning, and an absent-entry row asserts the settle fails.
+
+Rationale: A done entry keeps the record it last stored and nothing a resume does can change that, so halting there helps no one; an absent entry or an unopenable board is a fault a resume can fix, so halting there keeps the record from being lost.
+
 ## Constraints
 
 - `PATTERN-tolerant-records`: `discussed` is a declared `Task` field; an older binary keeps it as an unknown key and keeps writing it back.
