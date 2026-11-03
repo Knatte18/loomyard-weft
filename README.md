@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-03 16:53 UTC; every age below is as of then.
+Rendered 2026-11-03 16:54 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -70,11 +70,11 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Drift-Verify's verdict never reaches the summary or the pull request**<br>• A clean compare leaves the PR asking the operator to run the regression compare by hand | [`drift-verdict-in-pr`](design-drift-verdict-in-pr.md) | darn · light | Darn-Write | neve | 1h<br>14m | drift, loom, landing |
 | T2 | **Every remote operation runs async, and local-only fabric pairs go**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | darn · solid | Code-Burler-Fix | neve | 2w<br>1h | fabric, batten |
-| T3 | **The Drift-Baseline stencil skips the tests an intended change drifts**<br>• Intended drift is skipped instead of compared and accepted with a reason, which hides regressions in the same tests | [`drift-baseline-skips-intended`](design-drift-baseline-skips-intended.md) | darn · light | PR-Review | neve | 20m<br>14m | drift, stencil |
+| T3 | **The Drift-Baseline stencil skips the tests an intended change drifts**<br>• Intended drift is skipped instead of compared and accepted with a reason, which hides regressions in the same tests | [`drift-baseline-skips-intended`](design-drift-baseline-skips-intended.md) | darn · light | Finalize | neve | 20m<br>14m | drift, stencil |
 | T5 | **depends_on accepts a project or any entry that lands, and dobby holds the task until it does** | [`depends-on-any-entry`](design-depends-on-any-entry.md) | darn · light | Code-Burler-Fix | neve | 35m<br>32m | board, dobby |
-| T7 | **An arbiter whose turn ends on an API error holds the stop silently until its deadline**<br>• A StopFailure leaves the settler idle, the parent's resume is refused as driver_not_parked, and no one is told | [`arbiter-api-error-stall`](design-arbiter-api-error-stall.md) | darn · light | Darn-Write | neve | 17m<br>14m | arbiter, shuttle, claude |
-| T10 | **lym webster begin-batch fails: go-git cannot open a worktree root that is a subdirectory of the repository** | [`webster-subdir-gitopen`](design-webster-subdir-gitopen.md) | darn · light | Darn-Write | neve | 9m<br>1m | webster, git |
-| T12 | **Preflight worktree-clean halts on lym's own _lym state files** | [`preflight-own-state-dirty`](design-preflight-own-state-dirty.md) | darn · light | Drift-Await | neve | 9m<br>1m | preflight, loom |
+| T7 | **An arbiter whose turn ends on an API error holds the stop silently until its deadline**<br>• A StopFailure leaves the settler idle, the parent's resume is refused as driver_not_parked, and no one is told | [`arbiter-api-error-stall`](design-arbiter-api-error-stall.md) | darn · light | Darn-Write | neve | 18m<br>14m | arbiter, shuttle, claude |
+| T10 | **lym webster begin-batch fails: go-git cannot open a worktree root that is a subdirectory of the repository** | [`webster-subdir-gitopen`](design-webster-subdir-gitopen.md) | darn · light | Darn-Write | neve | 9m<br>2m | webster, git |
+| T12 | **Preflight worktree-clean halts on lym's own _lym state files** | [`preflight-own-state-dirty`](design-preflight-own-state-dirty.md) | darn · light | Drift-Await | neve | 9m<br>2m | preflight, loom |
 
 #### Ready (0)
 
@@ -89,8 +89,8 @@ Waits only on Running, Ready or Draft entries.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **A partial scope that skips every test ends in a capture that wrote no file, with no cause named**<br>• The capture failure names neither the skips nor the scope change that would fix it, so the tackler re-launches blind | [`drift-skip-all-capture`](design-drift-skip-all-capture.md) | darn · light | T3 | 20m<br>14m | drift |
-| T8 | **batten cancel --remove leaves a non-git directory that blocks Worktree-Create** | [`cancel-remove-leftover-dir`](design-cancel-remove-leftover-dir.md) | darn · light | T2 | 9m<br>1m | batten, fabric |
-| T11 | **Webster plan validation refuses a card path with a trailing '#' anchor that Plan-Bouncer accepted** | [`card-path-empty-anchor`](design-card-path-empty-anchor.md) | darn · light | T10 | 9m<br>1m | webster, parsers |
+| T8 | **batten cancel --remove leaves a non-git directory that blocks Worktree-Create** | [`cancel-remove-leftover-dir`](design-cancel-remove-leftover-dir.md) | darn · light | T2 | 9m<br>2m | batten, fabric |
+| T11 | **Webster plan validation refuses a card path with a trailing '#' anchor that Plan-Bouncer accepted** | [`card-path-empty-anchor`](design-card-path-empty-anchor.md) | darn · light | T10 | 9m<br>2m | webster, parsers |
 
 #### Layer B (1)
 
@@ -98,7 +98,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human** | [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md) | darn · light | T2<br>T8 | 9m<br>1m | fabric, landing |
+| T9 | **lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human** | [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md) | darn · light | T2<br>T8 | 9m<br>2m | fabric, landing |
 
 #### Draft (1)
 
@@ -122,7 +122,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B5 |  | **Moving Drift's dir base reinterpreted existing drift.yaml files with no migration**<br>• cs drift.yaml dir . moved from the anchor to the worktree root at deploy and the capture failed exit 1 | [`drift-dir-base-migration`](design-drift-dir-base-migration.md) | 17m<br>17m | drift, reconcile |
+| B5 |  | **Moving Drift's dir base reinterpreted existing drift.yaml files with no migration**<br>• cs drift.yaml dir . moved from the anchor to the worktree root at deploy and the capture failed exit 1 | [`drift-dir-base-migration`](design-drift-dir-base-migration.md) | 18m<br>18m | drift, reconcile |
 
 #### Enhancements (8)
 
@@ -131,7 +131,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 7d<br>2d | batten, stencil, config |
 | E5 |  | **A landing notice is not lost when set late, when dobby was down, or when the orch is absent**<br>• Close the known limits landing-watch left: a late notify_on_land, a Land passed while dobby was down, and a dropped line when no orch is live | [`landing-watch-limits`](design-landing-watch-limits.md) | 2d<br>2d | dobby, orch |
 | E7 |  | **Each part agent plans and builds its own part, instead of joining the parts into one plan** | [`parts-plan-and-build`](design-parts-plan-and-build.md) | 20h<br>19h | loom |
-| E9 |  | **An interactive agent idle for a set time gets its session compacted**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 3d<br>27m | shed, shuttle, batten |
+| E9 |  | **An interactive agent idle for a set time gets its session compacted**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 3d<br>28m | shed, shuttle, batten |
 | E11 |  | **Merge in from parent as a task of its own in a beam, before pawl lands it**<br>• A command on a beam files a merge-in-from-parent task, run as darn with its perch on | [`parent-merge-task`](design-parent-merge-task.md) | 3d<br>2d | pawl, workspaces, drift, landing |
 | E13 |  | **The sampler: code writer or read-only discussion role, and the skills that follow** | [`sampler-direction`](design-sampler-direction.md) | 21h<br>20h | loom, stencil |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 12d<br>6d | burler, claude |
