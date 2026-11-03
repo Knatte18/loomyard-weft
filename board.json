@@ -721,6 +721,25 @@
       "created": "2026-11-03T17:05:10Z",
       "revised": "2026-11-03T17:09:46Z",
       "profile": "light"
+    },
+    {
+      "id": 1068,
+      "handle": "F5",
+      "slug": "protected-parent-landing",
+      "title": "A run lands on a parent the hub may not push to by merging on the remote",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "landing",
+        "git"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Branch protection refuses a direct push to main, so no task or beam can land on such a repository",
+      "body": "## Seen (operator, 2026-11-03)\n\nOn the NORCE Models repository, on machine OSL-1046, a direct push to `main` is refused by branch protection: every merge into `main` has to happen on the remote.\nThat is intended and stays so.\nlym lands every run by merging locally and pushing the parent: a task's Finalize squashes onto the parent and pushes it, and a beam's pawl run lands the beam the same way.\nSo on such a repository no task and no beam can land.\n\n## Idea\n\nA hub, or a parent branch, can be marked as landed through the remote:\n\n- Finalize pushes the task or beam branch, opens a pull request into the parent and merges it on the remote, then pulls the parent, in place of the local squash and push.\n- The parent lock, the gate of the merged tree and the board's done mark stay as today.\n- A refused push to a protected branch names this setting as the way forward, instead of a bare push failure.\n\n## Open\n\n- What the protection demands beside no direct push: required approvals, required status checks or a merge queue, which decide whether lym can merge at once or must wait.\n- Squash, merge commit or rebase on the remote, as the repository allows.\n",
+      "created": "2026-11-03T18:07:32Z",
+      "revised": "2026-11-03T18:07:32Z"
     }
   ],
   "prime_owner": "neve",
