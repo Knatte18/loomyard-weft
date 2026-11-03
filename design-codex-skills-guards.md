@@ -1,6 +1,6 @@
 # Skills and every shell guard row on Codex
 
-`codex-skills-guards` · Task · feature, shuttle, codex
+`codex-skills-guards` · Task · feature, shuttle, codex · running · Worktree-Create
 
 Depends on: [`codex-engine-core`](design-codex-engine-core.md)
 

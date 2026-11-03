@@ -16,13 +16,19 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (1)
+### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T3 | **Skills and every shell guard row on Codex** | [`codex-skills-guards`](design-codex-skills-guards.md) | darn · light | Worktree-Create | neve | 1h<br>1h | shuttle, codex |
+
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Skills and every shell guard row on Codex** | [`codex-skills-guards`](design-codex-skills-guards.md) | darn · light |  | 1h<br>1h | shuttle, codex |
+_None._
 
 ### Layer A (1)
 
