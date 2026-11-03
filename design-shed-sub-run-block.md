@@ -1,0 +1,19 @@
+# A shed block runs a whole sub-recipe inline as one producer, so recipes reuse one another
+
+`shed-sub-run-block` · Note · enhancement, shed, loom
+
+## Seen
+
+A shed run starts at its first row, moves on by each row's outcome (`OnDone`, `OnStuck`) and ends done or stopped; a producer returns the same kind of outcome.
+`battenshed.NewInnerRun` already treats a whole shed run as one producer: batten's Run-Shed row runs the task's loom run in the worktree batten made and goes on when it ends, and pawl does the same for a beam.
+That block is batten-specific (a separate run with its own status file, driver, parent lock, owner check, notices, revive and binary re-step), and recipes cannot otherwise reuse one another: each is its own embedded YAML file in `loomrecipe`, and only the row entries in `shedrecipe` are shared.
+
+## Idea (operator, 2026-11-03)
+
+A general shed block that runs a whole sub-recipe as one producer of the parent run, so recipes are built from blocks instead of repeating rows.
+
+- The block names a recipe; it is Done when the sub-run ends done and Stuck when it stops.
+- Inline (operator, 2026-11-03): the sub-recipe's rows run inside the parent run, in the same process and status file, with their history entries marked with the block they belong to; no second run, driver or worktree, so nothing collides, and pause, goto and review budgets work as in any run.
+- A block may be passed over by a condition, such as tapestry passing over `cartoon` when its entry is already discussed (note `discussed-task-split`).
+- First uses: `cartoon` inside tapestry; later a part split. A sub-run in another worktree stays `NewInnerRun`'s kind.
+- Open: how a goto, `lym loom status` and the progress count name a row inside a block; whether a block's review segments keep their own budgets; how recipe keys and profiles reach a block's rows.

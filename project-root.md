@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-03 06:15 UTC; every age below is as of then.
+Rendered 2026-11-03 06:29 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,7 +18,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (42)
+## Notes (43)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -26,13 +26,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 11d<br>10h | loom, stencil |
+| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 11d<br>11h | loom, stencil |
 
 ### Bugs (11)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Claude Code autocompact picker in a shuttle session stalls a gate re-prompt forever** | [`shuttle-autocompact-picker-stall`](design-shuttle-autocompact-picker-stall.md) | 9h<br>9h | shuttle, loom |
+| B1 |  | **Claude Code autocompact picker in a shuttle session stalls a gate re-prompt forever** | [`shuttle-autocompact-picker-stall`](design-shuttle-autocompact-picker-stall.md) | 10h<br>9h | shuttle, loom |
 | B2 |  | **A paused run whose work already landed is never finished and keeps its worktree and terminal** | [`landed-run-left-paused`](design-landed-run-left-paused.md) | 9h<br>9h | dobby, batten |
 | B3 |  | **Darn-Write seat halts: stencil darn-template-write has unfilled marker subagent_model** | [`seat-stencil-marker-unfilled`](design-seat-stencil-marker-unfilled.md) | 9h<br>9h | stencil, shed |
 | B4 |  | **Hub-wide config reconcile by an older lym binary strips keys a newer binary wrote** | [`reconcile-strips-newer-keys`](design-reconcile-strips-newer-keys.md) | 9h<br>9h | reconcile, config |
@@ -44,11 +44,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B10 |  | **heddle render leaves the old CLAUDE.local.md at the worktree root after the anchor fix** | [`heddle-stale-root-claude-file`](design-heddle-stale-root-claude-file.md) | 9h<br>9h | heddle |
 | B11 |  | **Worktree-Teardown archive tag push races the weft branch push and fails with missing necessary objects** | [`archive-tag-push-race`](design-archive-tag-push-race.md) | 9h<br>9h | batten, fabric |
 
-### Enhancements (16)
+### Enhancements (17)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **A wake from hibernate checks what moved on origin and lets runs go on only when nothing did and a switch allows it** | [`hibernate-wake-resume-switch`](design-hibernate-wake-resume-switch.md) | 10h<br>10h | hibernate, tender, fabric |
+| E1 |  | **A wake from hibernate checks what moved on origin and lets runs go on only when nothing did and a switch allows it** | [`hibernate-wake-resume-switch`](design-hibernate-wake-resume-switch.md) | 11h<br>10h | hibernate, tender, fabric |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 4w<br>1d | shuttle, codex |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 6d<br>1d | batten, stencil, config |
 | E4 |  | **Prove the dotnet scoper, shared build and Drift on the C# sandbox hub**<br>• Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there | [`sandbox-dotnet-gate`](design-sandbox-dotnet-gate.md) | 4d<br>4d | dotnet, gate |
@@ -61,6 +61,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E11 |  | **Merge in from parent as a task of its own in a beam, before pawl lands it**<br>• A command on a beam files a merge-in-from-parent task, run as darn with its perch on | [`parent-merge-task`](design-parent-merge-task.md) | 2d<br>1d | pawl, workspaces, drift, landing |
 | E12 |  | **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | 2d<br>1d | fabric |
 | E13 |  | **The sampler: code writer or read-only discussion role, and the skills that follow** | [`sampler-direction`](design-sampler-direction.md) | 11h<br>10h | loom, stencil |
+| E14 |  | **A shed block runs a whole sub-recipe inline as one producer, so recipes reuse one another** | [`shed-sub-run-block`](design-shed-sub-run-block.md) | 0m<br>0m | shed, loom |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 2w<br>6d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 11d<br>5d | burler, claude |
 | E24 |  | **A status-bar button asks for a value, so an agent opened from it gets a name**<br>• Button entries take ask, filling {answer}; the agent button asks for the strand name, and term becomes terminal | [`button-ask-name`](design-button-ask-name.md) | 1d<br>1d | reed, config |
@@ -81,5 +82,5 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 4w<br>1d | board, ide, orch |
 | F12 |  | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory and a weight; a worktree picks one when its first session starts, so account A can carry twice the load of B | [`claude-account-weights`](design-claude-account-weights.md) | 17h<br>17h | claude, shuttle, config |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 3w<br>1d | webster |
-| F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 11d<br>0m | loom, board, batten, workspaces |
+| F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 11d<br>14m | loom, board, batten, workspaces |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>21h | burler, shed, orch, quarry, report |
