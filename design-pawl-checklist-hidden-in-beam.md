@@ -19,3 +19,10 @@ While a pawl run lives, the beam's session always shows its checklist in a windo
 
 - When the runs strand takes the overview window from the loom status strand, the checklist is added again in its own window, or the beam start brings the runs strand up before the pawl run's loom start so the checklist never takes the overview window.
 - The beam overview may also carry one line with pawl's current row, pointing at that window.
+
+## Two overview windows (operator, 2026-11-03)
+
+The operator asks whether a session can show two overview windows.
+reed's overview anchor today places one strand per session, alone in a window at the lowest index, and `AddStrand` refuses a second (`internal/reedengine/doc.go`, "Overview anchor").
+The orch's recommendation: let the anchor hold a second strand in a beam's session, so the beam overview opens first and the pawl checklist second, both with the overview window's plain style and focus rules, and neither replaces the other.
+A split of the one overview window into two panes was weighed and passed over, since both panes get narrow on a phone.
