@@ -1,0 +1,549 @@
+diff --git a/contracts/orchrole/orch-role.md b/contracts/orchrole/orch-role.md
+index 884caaea..4a4a0041 100644
+--- a/contracts/orchrole/orch-role.md
++++ b/contracts/orchrole/orch-role.md
+@@ -218,6 +218,8 @@ The mechanics of reading and writing the board are in the `ly:board` skill; this
+ - A task that needs other review rounds than its recipe's default profile names a profile of the ladder, `speed`, `light`, `solid` or `wide`, in its board entry's `profile` field through `lym board upsert`, before its batten run starts;
+   it gets hand-written `run_settings` for its review bounds only when no profile fits.
+   `lym board profiles` lists the hub's profiles and each recipe's default.
++- A task's regression scope that the operator decides while discussing it goes in its board entry's `run_settings`, as `{"drift": {"scope": "full"}}`, `{"drift": {"scope": "off"}}` or `{"drift": {"scope": "partial", "skip": ["<test>", ...]}}`, before its batten run starts;
++  Drift-Baseline then records it and spawns no agent, which otherwise decides the scope.
+ 
+ ## Where a finding goes
+ 
+diff --git a/contracts/stencils/drift/drift-template-verify.md b/contracts/stencils/drift/drift-template-verify.md
+index 27c0e4a3..84a8a98e 100644
+--- a/contracts/stencils/drift/drift-template-verify.md
++++ b/contracts/stencils/drift/drift-template-verify.md
+@@ -20,7 +20,7 @@ You are the drift verify agent: one session that judges the drift between the ta
+ 
+ - The compare's log, which lists the drifted tests: `{{.compare_log}}`.
+ - The scope record: `{{.scope_path}}`.
+-- The baseline agent's report with the drift it expected: `{{.baseline_path}}`.
++- The baseline agent's report with the drift it expected: `{{.baseline_path}}`. When the report says no baseline agent ran, it names only the scope and its skipped tests, so no per-test drift is expected from it.
+ - The task's subject: {{.subject_reading}}.
+ - The baseline's commit: `{{.baseline_head}}`.
+ 
+diff --git a/docs/overview.md b/docs/overview.md
+index 05043010..baeeb178 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -604,6 +604,7 @@ User-facing modules each get one `lym <module>` namespace:
+   A tapestry run's tail is `Webster → Parent-Align → Drift-Verify → Code-Review → Describe → PR-Review → Finalize`, where `Code-Review` is the Code-Perch of `Code-Bouncer`, `Code-Burler-Review` and `Code-Burler-Fix`;
+   a darn run's tail is `Darn-Write → Drift-Verify → Code-Review → Describe → PR-Review → Finalize`, with no `Parent-Align`.
+   The three regression rows, `Drift-Baseline` before `Parts-Write` in loom and before `Drift-Await` in darn, `Drift-Await` before `Webster` in loom and before `Darn-Write` in darn, and `Drift-Verify` as above, each carry the entry gate `drift.enabled` of the hub-wide `drift.yaml`, so a hub that leaves it off records each of them skipped and spawns or runs nothing for them.
++  `Drift-Baseline` records a scope that `drift.scope` sets, such as one in a task's `run_settings`, with no agent, and spawns its agent to decide the scope only when the key is empty.
+   Each Drift producer also reads `drift.enabled` at every pass, so switching it off, in the hub or in one task's local layer, lets a resume pass a Drift row the run already entered.
+   `Parent-Align` merges the parent's upstream tip into the task with no parent lock, verifies the merged tree through the `parent-align` gate key and runs the merge fixer in parent-align mode, which settles a conflict or a failing tree and aligns the task to what the parent brought in; it writes the merge record with the aligned tip, and the Code-Perch then reviews the task's code against that.
+   `PR-Review` lands the task through a GitHub pull request when the resolver says so, from the parent's `beam.yaml`, the entry and GitHub's rules for the parent branch: it pushes the task branch, opens or finds the pull request, sets its title and body from the change description, records it and waits on it, and otherwise passes.
+diff --git a/internal/configreg/configreg_test.go b/internal/configreg/configreg_test.go
+index 2e30b111..f627773e 100644
+--- a/internal/configreg/configreg_test.go
++++ b/internal/configreg/configreg_test.go
+@@ -77,7 +77,7 @@ func TestModules_EveryTemplateKeyClassified(t *testing.T) {
+ 	t.Parallel()
+ 	wantLocalKeys := map[string][]string{
+ 		"darn":    {"gate_fixer", "verify_attempts", "writer", "writer_timeout_min"},
+-		"drift":   {"baseline_model", "enabled", "verify_interactive", "verify_max_runs", "verify_model"},
++		"drift":   {"baseline_model", "enabled", "scope", "skip", "verify_interactive", "verify_max_runs", "verify_model"},
+ 		"landing": {"conflict", "conflict_timeout_min", "describe", "describe_timeout_min", "fixer", "fixer_timeout_min", "pr_reviewer"},
+ 		"sampler": {"agent", "code_review"},
+ 	}
+diff --git a/internal/driftcli/cli.go b/internal/driftcli/cli.go
+index d7d7eb3f..ada6dfd8 100644
+--- a/internal/driftcli/cli.go
++++ b/internal/driftcli/cli.go
+@@ -38,8 +38,9 @@ func Command() *cobra.Command {
+ 	drift := &cobra.Command{
+ 		Use:   "drift",
+ 		Short: "record a task's regression scope, capture its baseline and compare its code against it",
+-		Long: `drift runs regression around a task: the Drift-Baseline agent records the
+-task's scope, a capture takes the suite's profile on the task's branch point,
++		Long: `drift runs regression around a task: Drift-Baseline records the task's
++scope, from drift.scope when the task's run_settings or the hub set it and
++through its agent otherwise, a capture takes the suite's profile on the task's branch point,
+ and Drift-Verify compares the task's code against it. The verbs run inside a
+ tapestry or darn run's worktree and judge the run's status, so each refusal names
+ its way forward. See lym config drift for the capture and compare commands.`,
+@@ -82,7 +83,8 @@ func scopeCmd() *cobra.Command {
+ nothing, full checks everything, and partial checks all but the tests --skip
+ names, which it requires. The baseline agent runs it once, at a running
+ Drift-Baseline; its second call is refused, and it then writes baseline.md
+-alone and ends its turn. The run's parent records or replaces the scope at a
++alone and ends its turn. When drift.scope is set, Drift-Baseline records it
++and spawns no agent. The run's parent records or replaces the scope at a
+ blocked Drift-Baseline or Drift-Await, while no capture runs and before the
+ baseline wait is settled; a replacement that compares a test the capture
+ skipped drops that capture. Run lym loom resume after it.
+diff --git a/internal/driftengine/baseline.go b/internal/driftengine/baseline.go
+index 162e5bd6..c6743d14 100644
+--- a/internal/driftengine/baseline.go
++++ b/internal/driftengine/baseline.go
+@@ -9,6 +9,8 @@ import (
+ 	"os"
+ 	"path"
+ 	"path/filepath"
++	"strings"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/seatengine"
+ 	"github.com/Knatte18/loomyard/internal/shedadapters"
+@@ -30,7 +32,9 @@ func NewDriftBaseline(name string, row Row, deps Deps) *DriftBaseline {
+ }
+ 
+ // Call runs one Drift-Baseline pass and commits the drift records on every way out but one: with drift switched off it is Done at once, spawning, starting and committing nothing.
+-// It has the baseline agent record the scope and write baseline.md when either is missing, then, by the recorded scope, takes the baseline capture:
++// When the drift config sets scope, it records that scope when none is recorded and writes baseline.md itself when missing, spawning no agent;
++// otherwise it has the baseline agent record the scope and write baseline.md when either is missing.
++// Then, by the recorded scope, it takes the baseline capture:
+ // scope off, a set awaited_at and a passed capture take none, and a capture that holds the lock is left running.
+ // Otherwise the capture is a detached child and the pass returns once the child's record exists;
+ // when a detached start is refused breakaway, the capture runs in this process.
+@@ -77,6 +81,16 @@ func (p *DriftBaseline) drive(ctx context.Context, commitAll *bool) (shedengine.
+ 	d := p.deps
+ 	done := shedengine.OutputPointer{Path: d.Paths.BaselineReport}
+ 
++	cfg, err := d.Config()
++	if err != nil {
++		return shedengine.Stuck, shedengine.OutputPointer{Reason: fmt.Sprintf("%v; then lym loom resume", err)}, nil
++	}
++	if cfg.Scope != "" {
++		if err := settleConfiguredScope(d.Paths, cfg); err != nil {
++			return "", shedengine.OutputPointer{}, err
++		}
++	}
++
+ 	scope, found, err := ReadScope(d.Paths)
+ 	if err != nil {
+ 		return "", shedengine.OutputPointer{}, err
+@@ -121,6 +135,46 @@ func (p *DriftBaseline) drive(ctx context.Context, commitAll *bool) (shedengine.
+ 	return p.captureAgain(ctx, commitAll)
+ }
+ 
++// settleConfiguredScope records the scope cfg sets when no scope is recorded, and writes baseline.md from the recorded scope when it is missing, so the pass spawns no baseline agent.
++// A scope already recorded, by an earlier pass or the run's parent, is kept.
++func settleConfiguredScope(p Paths, cfg Config) error {
++	err := UpdateScope(p, func(cur ScopeRecord, found bool) (ScopeRecord, error) {
++		if found {
++			return cur, errNoRecord
++		}
++		return ScopeRecord{Scope: cfg.Scope, Skip: cfg.Skip, RecordedAt: stamp(time.Now())}, nil
++	})
++	if err != nil && !errors.Is(err, errNoRecord) {
++		return err
++	}
++	if _, err := os.Stat(p.BaselineReport); err == nil {
++		return nil
++	} else if !errors.Is(err, os.ErrNotExist) {
++		return fmt.Errorf("drift: read %s: %w", p.BaselineReport, err)
++	}
++	scope, _, err := ReadScope(p)
++	if err != nil {
++		return err
++	}
++	if err := os.MkdirAll(filepath.Dir(p.BaselineReport), 0o755); err != nil {
++		return fmt.Errorf("drift: create %s: %w", filepath.Dir(p.BaselineReport), err)
++	}
++	if err := os.WriteFile(p.BaselineReport, []byte(configuredBaselineReport(scope)), 0o644); err != nil {
++		return fmt.Errorf("drift: write %s: %w", p.BaselineReport, err)
++	}
++	return nil
++}
++
++// configuredBaselineReport renders a baseline.md written without a baseline agent, which names the scope and its skipped tests and predicts no drift per test.
++func configuredBaselineReport(scope ScopeRecord) string {
++	var b strings.Builder
++	fmt.Fprintf(&b, "# Drift baseline\n\nThis report was generated, so no baseline agent ran and it expects no particular drift per test.\n\nScope: %s\n", scope.Scope)
++	if len(scope.Skip) > 0 {
++		fmt.Fprintf(&b, "Skipped tests: %s\n", strings.Join(scope.Skip, ", "))
++	}
++	return b.String()
++}
++
+ // captureAgain checks the capture's precondition and takes the capture, detached or in this process.
+ func (p *DriftBaseline) captureAgain(ctx context.Context, commitAll *bool) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	d := p.deps
+diff --git a/internal/driftengine/baseline_test.go b/internal/driftengine/baseline_test.go
+index 31120ea4..25ddc4a3 100644
+--- a/internal/driftengine/baseline_test.go
++++ b/internal/driftengine/baseline_test.go
+@@ -38,6 +38,9 @@ type baselineFixture struct {
+ 	// disabled switches drift off, and configErr fails the config load.
+ 	disabled  bool
+ 	configErr error
++	// configScope and configSkip are the drift config's scope and skip keys.
++	configScope string
++	configSkip  []string
+ 	// startErr is what StartCapture answers, and runRecord what RunCapture answers.
+ 	startErr  error
+ 	runRecord CaptureRecord
+@@ -81,7 +84,7 @@ func newBaselineFixture(t *testing.T) *baselineFixture {
+ 			if f.configErr != nil {
+ 				return Config{}, f.configErr
+ 			}
+-			cfg := Config{Enabled: !f.disabled}
++			cfg := Config{Enabled: !f.disabled, Scope: f.configScope, Skip: f.configSkip}
+ 			if f.declared {
+ 				cfg.Capture = CommandStep{Command: "capture {baseline_dir}", Dir: ".", TimeoutMin: 1}
+ 			}
+@@ -163,7 +166,25 @@ func (f *baselineFixture) holdCaptureLock() (release func()) {
+ 	return release
+ }
+ 
+-// TestDriftBaseline covers the producer's way through each scope, capture start and refusal, the pass with drift switched off, and the paths it commits on every way out.
++// checkRecordedScope fails t unless the scope record holds scope and skip and baseline.md holds each of report.
++func checkRecordedScope(t *testing.T, f *baselineFixture, scope string, skip []string, report ...string) {
++	t.Helper()
++	rec, found, err := ReadScope(f.paths)
++	if err != nil || !found || rec.Scope != scope || !slices.Equal(rec.Skip, skip) {
++		t.Errorf("ReadScope() = %+v, %v, %v; want scope %q skipping %q", rec, found, err, scope, skip)
++	}
++	data, err := os.ReadFile(f.paths.BaselineReport)
++	if err != nil {
++		t.Fatalf("read baseline.md: %v", err)
++	}
++	for _, want := range report {
++		if !strings.Contains(string(data), want) {
++			t.Errorf("baseline.md = %q; want it to hold %q", data, want)
++		}
++	}
++}
++
++// TestDriftBaseline covers the producer's way through each scope, a scope the drift config sets, capture start and refusal, the pass with drift switched off, and the paths it commits on every way out.
+ func TestDriftBaseline(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -204,6 +225,64 @@ func TestDriftBaseline(t *testing.T) {
+ 			wantStarts: 1,
+ 			wantCommit: scopeAndReport,
+ 		},
++		{
++			name:       "a configured scope full is recorded and captured with no agent",
++			setup:      func(f *baselineFixture) { f.configScope = ScopeFull },
++			want:       shedengine.Done,
++			wantStarts: 1,
++			wantCommit: scopeAndReport,
++			check: func(t *testing.T, f *baselineFixture) {
++				checkRecordedScope(t, f, ScopeFull, nil, "no baseline agent ran", "Scope: full")
++			},
++		},
++		{
++			name:       "a configured scope off is recorded with no agent or capture",
++			setup:      func(f *baselineFixture) { f.configScope = ScopeOff },
++			want:       shedengine.Done,
++			wantCommit: scopeAndReport,
++			check: func(t *testing.T, f *baselineFixture) {
++				checkRecordedScope(t, f, ScopeOff, nil, "Scope: off")
++			},
++		},
++		{
++			name:       "a configured scope partial records its skipped tests",
++			setup:      func(f *baselineFixture) { f.configScope, f.configSkip = ScopePartial, []string{"slow", "flaky"} },
++			want:       shedengine.Done,
++			wantStarts: 1,
++			wantCommit: scopeAndReport,
++			check: func(t *testing.T, f *baselineFixture) {
++				checkRecordedScope(t, f, ScopePartial, []string{"slow", "flaky"}, "Scope: partial", "Skipped tests: slow, flaky")
++			},
++		},
++		{
++			name: "a recorded scope wins over the configured one, and baseline.md names it with no agent",
++			setup: func(f *baselineFixture) {
++				f.seedScopeRecord(ScopeRecord{Scope: ScopePartial, Skip: []string{"slow"}}, false)
++				f.configScope = ScopeFull
++			},
++			want:       shedengine.Done,
++			wantStarts: 1,
++			wantCommit: scopeAndReport,
++			check: func(t *testing.T, f *baselineFixture) {
++				checkRecordedScope(t, f, ScopePartial, []string{"slow"}, "Scope: partial", "Skipped tests: slow")
++			},
++		},
++		{
++			name: "an existing baseline.md is kept under a configured scope, with no agent",
++			setup: func(f *baselineFixture) {
++				f.seedScopeRecord(ScopeRecord{Scope: ScopeFull}, true)
++				f.configScope = ScopeFull
++			},
++			want:       shedengine.Done,
++			wantStarts: 1,
++			wantCommit: scopeAndReport,
++			check: func(t *testing.T, f *baselineFixture) {
++				data, err := os.ReadFile(f.paths.BaselineReport)
++				if err != nil || string(data) != "expected drift" {
++					t.Errorf("baseline.md = %q, %v; want the seeded report untouched", data, err)
++				}
++			},
++		},
+ 		{
+ 			name: "a scope record without baseline.md spawns the agent with the scope note",
+ 			setup: func(f *baselineFixture) {
+diff --git a/internal/driftengine/config.go b/internal/driftengine/config.go
+index f42fe3e0..466e85c8 100644
+--- a/internal/driftengine/config.go
++++ b/internal/driftengine/config.go
+@@ -65,6 +65,11 @@ type Config struct {
+ 	VerifyInteractive bool
+ 	// VerifyMaxRuns is how many compare or side-capture runs one Drift-Verify agent session may take.
+ 	VerifyMaxRuns int
++	// Scope is the task's regression scope, ScopeOff, ScopePartial or ScopeFull, which Drift-Baseline records with no agent;
++	// empty leaves the choice to the Drift-Baseline agent.
++	Scope string
++	// Skip is the tests scope partial leaves out, and nil under any other scope.
++	Skip []string
+ }
+ 
+ // configFile is drift.yaml as it is spelled, before defaults and validation.
+@@ -76,6 +81,8 @@ type configFile struct {
+ 	VerifyModel       string   `yaml:"verify_model"`
+ 	VerifyInteractive bool     `yaml:"verify_interactive"`
+ 	VerifyMaxRuns     int      `yaml:"verify_max_runs"`
++	Scope             string   `yaml:"scope"`
++	Skip              []string `yaml:"skip"`
+ }
+ 
+ // stepFile is a command step as drift.yaml spells it; TimeoutMin is a pointer so a missing key reads apart from a zero.
+@@ -112,6 +119,8 @@ func ConfigSpec() configengine.Spec {
+ 			"verify_model":       configengine.CategoryNone,
+ 			"verify_interactive": configengine.CategoryNone,
+ 			"verify_max_runs":    configengine.CategoryNone,
++			"scope":              configengine.CategoryNone,
++			"skip":               configengine.CategoryNone,
+ 		},
+ 	}
+ }
+@@ -119,6 +128,7 @@ func ConfigSpec() configengine.Spec {
+ // LoadConfig loads and validates the drift module's configuration strictly through the hub-wide layer stack under dirs.
+ // A declared step needs a command holding {baseline_dir} and a timeout_min of at least 1, and its dir defaults to ".";
+ // an all-empty step is undeclared and loads as the zero CommandStep.
++// A scope must be empty, off, partial or full, and skip names tests under scope partial only, where it is required.
+ // Every refusal names the key and lym config drift as the way forward.
+ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+ 	resolved, err := configengine.Load(dirs, ConfigSpec())
+@@ -150,7 +160,16 @@ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+ 			return Config{}, refuseKey(key, err.Error())
+ 		}
+ 	}
++	if err := checkScope(file.Scope, file.Skip); err != nil {
++		return Config{}, err
++	}
++	var skip []string
++	if file.Scope == ScopePartial {
++		skip = file.Skip
++	}
+ 	return Config{
++		Scope:             file.Scope,
++		Skip:              skip,
+ 		Enabled:           file.Enabled,
+ 		Capture:           capture,
+ 		Compare:           compare,
+@@ -166,6 +185,23 @@ func refuseKey(key, want string) error {
+ 	return fmt.Errorf("drift config key %q: %s; way forward: fix it with lym config drift", key, want)
+ }
+ 
++// checkScope refuses a scope other than empty, off, partial or full, a partial scope with no skipped test and a skipped test under any other scope.
++// Each refusal names the key and its ways forward, the task's run_settings among them, since a task sets its scope there.
++func checkScope(scope string, skip []string) error {
++	var key, want string
++	switch {
++	case scope != "" && scope != ScopeOff && scope != ScopePartial && scope != ScopeFull:
++		key, want = "scope", fmt.Sprintf("%q; want %s, %s, %s, or empty to let the Drift-Baseline agent decide", scope, ScopeOff, ScopePartial, ScopeFull)
++	case scope == ScopePartial && len(skip) == 0:
++		key, want = "skip", "empty under scope partial; want each test the scope leaves out"
++	case scope != ScopePartial && len(skip) > 0:
++		key, want = "skip", fmt.Sprintf("set under scope %q; want skip only with scope partial", scope)
++	default:
++		return nil
++	}
++	return fmt.Errorf("drift config key %q: %s; way forward: fix it in the board entry's run_settings, or with lym config drift", key, want)
++}
++
+ // decodeStep validates one declared command step and fills its defaults; a step with no key set is undeclared and decodes to the zero CommandStep.
+ func decodeStep(name string, file stepFile) (CommandStep, error) {
+ 	if file.Command == "" && file.Dir == "" && len(file.Env) == 0 && file.TimeoutMin == nil {
+diff --git a/internal/driftengine/config_test.go b/internal/driftengine/config_test.go
+index 6c9fa2d7..3ca24039 100644
+--- a/internal/driftengine/config_test.go
++++ b/internal/driftengine/config_test.go
+@@ -75,23 +75,49 @@ func seedDriftConfig(t *testing.T, baseDir, contents string) {
+ 
+ // withKey returns the template with the line of key replaced by line.
+ func withKey(t *testing.T, key, line string) string {
++	t.Helper()
++	return withKeys(t, map[string]string{key: line})
++}
++
++// withKeys returns the template with the line of each key of lines replaced by its line.
++func withKeys(t *testing.T, lines map[string]string) string {
+ 	t.Helper()
+ 	var out []string
+-	replaced := false
++	replaced := map[string]bool{}
+ 	for _, templateLine := range strings.Split(ConfigTemplate(), "\n") {
+-		if strings.HasPrefix(templateLine, key+":") {
++		key, _, _ := strings.Cut(templateLine, ":")
++		if line, ok := lines[key]; ok {
+ 			out = append(out, line)
+-			replaced = true
++			replaced[key] = true
+ 			continue
+ 		}
+ 		out = append(out, templateLine)
+ 	}
+-	if !replaced {
+-		t.Fatalf("template holds no key %q", key)
++	for key := range lines {
++		if !replaced[key] {
++			t.Fatalf("template holds no key %q", key)
++		}
+ 	}
+ 	return strings.Join(out, "\n")
+ }
+ 
++// seedLocalDrift seeds a board holding the template and an anchor whose local drift layer holds local, and returns their Dirs.
++func seedLocalDrift(t *testing.T, local string) configengine.Dirs {
++	t.Helper()
++	board, anchor := t.TempDir(), t.TempDir()
++	seedDriftConfig(t, board, ConfigTemplate())
++	for _, dir := range []string{configengine.ConfigDir(anchor), configengine.ScratchDir(anchor)} {
++		if err := os.MkdirAll(dir, 0o755); err != nil {
++			t.Fatalf("MkdirAll(%q) = %v; want nil", dir, err)
++		}
++	}
++	localPath := configengine.LocalFile(anchor, "drift")
++	if err := os.WriteFile(localPath, []byte(local), 0o644); err != nil {
++		t.Fatalf("WriteFile(%q) = %v; want nil", localPath, err)
++	}
++	return configengine.Dirs{Anchor: anchor, Board: board}
++}
++
+ // templateConfig returns the Config the embedded template loads as, changed by mutate.
+ func templateConfig(mutate func(*Config)) Config {
+ 	cfg := Config{BaselineModel: "sonnet[medium]", VerifyModel: "opus[high]", VerifyMaxRuns: 8}
+@@ -137,6 +163,31 @@ func TestLoadConfig(t *testing.T) {
+ 			contents: withKey(t, "verify_interactive", "verify_interactive: true"),
+ 			want:     templateConfig(func(c *Config) { c.VerifyInteractive = true }),
+ 		},
++		{
++			name: "scope full loads", seed: true,
++			contents: withKey(t, "scope", "scope: full"),
++			want:     templateConfig(func(c *Config) { c.Scope = ScopeFull }),
++		},
++		{
++			name: "scope partial loads with its skipped tests", seed: true,
++			contents: withKeys(t, map[string]string{"scope": "scope: partial", "skip": "skip: [slow, flaky]"}),
++			want:     templateConfig(func(c *Config) { c.Scope, c.Skip = ScopePartial, []string{"slow", "flaky"} }),
++		},
++		{
++			name: "an unknown scope", seed: true,
++			contents: withKey(t, "scope", "scope: some"),
++			wantErr:  []string{`"scope"`, "run_settings", "lym config drift"},
++		},
++		{
++			name: "scope partial with no skipped test", seed: true,
++			contents: withKey(t, "scope", "scope: partial"),
++			wantErr:  []string{`"skip"`, "run_settings", "lym config drift"},
++		},
++		{
++			name: "a skipped test under scope full", seed: true,
++			contents: withKeys(t, map[string]string{"scope": "scope: full", "skip": "skip: [slow]"}),
++			wantErr:  []string{`"skip"`, "run_settings", "lym config drift"},
++		},
+ 		{
+ 			name: "a capture without the baseline placeholder", seed: true,
+ 			contents: withKey(t, "capture", "capture: {command: profile, timeout_min: 30}"),
+@@ -209,25 +260,24 @@ func TestLoadConfig(t *testing.T) {
+ 	} {
+ 		t.Run("a local "+key+" is refused naming the key", func(t *testing.T) {
+ 			t.Parallel()
+-			board, anchor := t.TempDir(), t.TempDir()
+-			seedDriftConfig(t, board, ConfigTemplate())
+-			for _, dir := range []string{configengine.ConfigDir(anchor), configengine.ScratchDir(anchor)} {
+-				if err := os.MkdirAll(dir, 0o755); err != nil {
+-					t.Fatalf("MkdirAll(%q) = %v; want nil", dir, err)
+-				}
+-			}
+-			localPath := configengine.LocalFile(anchor, "drift")
+-			if err := os.WriteFile(localPath, []byte(local), 0o644); err != nil {
+-				t.Fatalf("WriteFile(%q) = %v; want nil", localPath, err)
+-			}
+-
+-			_, err := LoadConfig(configengine.Dirs{Anchor: anchor, Board: board})
++			_, err := LoadConfig(seedLocalDrift(t, local))
+ 			if !errors.Is(err, configengine.ErrInvalid) || !strings.Contains(err.Error(), key) {
+ 				t.Errorf("LoadConfig() error = %v; want ErrInvalid naming %q", err, key)
+ 			}
+ 		})
+ 	}
+ 
++	t.Run("a local scope with its skipped tests loads over the board's", func(t *testing.T) {
++		t.Parallel()
++		got, err := LoadConfig(seedLocalDrift(t, "scope: partial\nskip: [slow]\n"))
++		if err != nil {
++			t.Fatalf("LoadConfig() = _, %v; want nil error", err)
++		}
++		if got.Scope != ScopePartial || !reflect.DeepEqual(got.Skip, []string{"slow"}) {
++			t.Errorf("LoadConfig() scope, skip = %q, %q; want %q, [slow]", got.Scope, got.Skip, ScopePartial)
++		}
++	})
++
+ 	t.Run("Step returns a declared step and refuses an undeclared one", func(t *testing.T) {
+ 		t.Parallel()
+ 		cfg := templateConfig(func(c *Config) { c.Capture = CommandStep{Command: "p {baseline_dir}", Dir: ".", TimeoutMin: 3} })
+diff --git a/internal/driftengine/doc.go b/internal/driftengine/doc.go
+index 9e2a574f..e3ee754c 100644
+--- a/internal/driftengine/doc.go
++++ b/internal/driftengine/doc.go
+@@ -1,7 +1,9 @@
+ // Package driftengine owns regression around a task: the hub-wide `drift` config module, the drift paths, and the records and runs the Drift rows read and write.
+ // Regression is no test tier: it records a profile of the suite's behavior on the task's branch point and compares the task's code against it, and `lym gate test` never runs it.
+ //
+-// `drift.yaml` is a hub-wide config module with these keys: `enabled`, which switches the Drift rows on through their entry gate; `capture` and `compare`, each a command step written whole as `{command, dir, env, timeout_min}`; `baseline_model` and `verify_model`, the model-specs of the two agents; `verify_interactive`, which makes the Drift-Verify agent a session with the operator in its pane; and `verify_max_runs`, the run budget of one Drift-Verify agent session.
++// `drift.yaml` is a hub-wide config module with these keys: `enabled`, which switches the Drift rows on through their entry gate; `capture` and `compare`, each a command step written whole as `{command, dir, env, timeout_min}`; `baseline_model` and `verify_model`, the model-specs of the two agents; `verify_interactive`, which makes the Drift-Verify agent a session with the operator in its pane; `verify_max_runs`, the run budget of one Drift-Verify agent session;
++// and `scope` and `skip`, a task's regression scope and the tests scope partial leaves out, which a task sets in its board entry's `run_settings`.
++// LoadConfig refuses a scope other than empty, `off`, `partial` or `full`, a partial scope with no skipped test and a skipped test under any other scope.
+ // A declared command holds the placeholder `{baseline_dir}`, the directory the capture writes its profile files to and the compare reads them from, and may hold `{skip_file}`, a file naming one skipped test per line.
+ // A step's relative `dir` is joined onto the worktree's anchored directory, the one every drift run is told.
+ // `capture` and `compare` are executable keys, so only the template and the hub's board default layer set them, with `lym config drift --set 'capture={command: ..., timeout_min: N}'`.
+@@ -49,7 +51,7 @@
+ // The agent session is a running status at Drift-Verify with the mark open; a caller at a halt is a blocked status, and a decision halt is one whose error opens with shedadapters.DecisionHaltPrefix.
+ // A verb run at a row it does not admit refuses naming that row and `lym loom status`, and a refused verb writes nothing.
+ // RecordScope refuses a skip list outside scope partial and a partial scope without one.
+-// The baseline agent writes the record once, at a running Drift-Baseline; the run's parent writes or replaces it at a blocked Drift-Baseline or Drift-Await, while the capture lock is free and before awaited_at is set.
++// The baseline agent writes the record once, at a running Drift-Baseline, and Drift-Baseline writes it itself from a configured `scope`; the run's parent writes or replaces it at a blocked Drift-Baseline or Drift-Await, while the capture lock is free and before awaited_at is set.
+ // A replacement keeps the record's other fields and removes the capture record when the new scope compares a test the capture skipped, before it writes the scope.
+ // Accept admits the agent session and a caller at a halt; a running status with the mark closed is the row's own work and refuses, and any other state refuses naming `lym loom resume`.
+ // Under scope full the agent's acceptances are unruled and a caller's are ruled; a withdrawn test, and under scope full any test, is accepted by a caller only at a decision halt, and never by an autonomous agent session.
+@@ -77,7 +79,8 @@
+ // Row holds a row's portable config: the subject its agent reads the task from.
+ // Each of the three producers reads `drift.enabled` at every pass and is Done at once, committing nothing, when it is off: the entry gate reads the switch only when the run first enters a row, so this lets a resume pass a row already entered once the switch goes off, in the hub or in the task's local layer.
+ // A drift config that fails to load there is a Stuck naming `lym loom resume`.
+-// DriftBaseline has the baseline agent record the scope and write baseline.md when either is missing, the agent spawned with a note that the scope is already recorded when it is, and a Done agent with no scope record is a Stuck.
++// When the drift config sets `scope`, DriftBaseline records it with its `skip` list when no scope is recorded, keeping one already recorded, and writes baseline.md naming the scope when it is missing, so it spawns no agent.
++// Otherwise it has the baseline agent record the scope and write baseline.md when either is missing, the agent spawned with a note that the scope is already recorded when it is, and a Done agent with no scope record is a Stuck.
+ // Scope off, a set awaited_at and a passed capture take no capture; a capture holding the lock is left running.
+ // Otherwise it captures again: an undeclared capture command is a Stuck naming `lym config drift`, and a refusal of the capture's precondition is a Stuck whose reason opens with CaptureHaltPrefix and names `lym drift defer` with `lym loom resume`, and on a dirty tree restoring or stashing the listed paths.
+ // The capture is the detached child: the pass returns Done once the child's record exists, and the recipe's Drift-Await row waits for the capture to end;
+diff --git a/internal/driftengine/paths.go b/internal/driftengine/paths.go
+index c5768307..521044cc 100644
+--- a/internal/driftengine/paths.go
++++ b/internal/driftengine/paths.go
+@@ -17,7 +17,7 @@ const driftDirName = "drift"
+ type Paths struct {
+ 	// Scope is the durable scope record.
+ 	Scope string
+-	// BaselineReport is the Drift-Baseline agent's report.
++	// BaselineReport is the Drift-Baseline agent's report, or a generated one that names only the scope when the drift config sets it.
+ 	BaselineReport string
+ 	// VerifyReport is the Drift-Verify agent's report.
+ 	VerifyReport string
+diff --git a/internal/driftengine/template.yaml b/internal/driftengine/template.yaml
+index dc893303..df0340da 100644
+--- a/internal/driftengine/template.yaml
++++ b/internal/driftengine/template.yaml
+@@ -5,3 +5,5 @@ baseline_model: sonnet[medium]  # model-spec for the Drift-Baseline agent, which
+ verify_model: opus[high]  # model-spec for the Drift-Verify agent, which judges, accepts and fixes drift (see contracts/specs/llm-model-spec.md)
+ verify_interactive: false  # true runs the Drift-Verify agent as a session with the operator in its pane: it presents the drift per test and per quantity with the baseline agent's expectation, and records each acceptance or fix the operator decides, so an operator must be present; false, the default, runs it autonomously, judging and accepting drift itself
+ verify_max_runs: 8  # how many compare or side-capture runs one Drift-Verify agent session may take before it must report
++scope: ""  # the task's regression scope, off, partial or full, which Drift-Baseline records as given, spawning no agent; "" lets the Drift-Baseline agent decide it; set it per task in the board entry's run_settings, as {"drift": {"scope": "full"}}
++skip: []  # the tests scope partial leaves out, one name each, required under scope partial and refused under any other, as {"drift": {"scope": "partial", "skip": ["<test>"]}}
