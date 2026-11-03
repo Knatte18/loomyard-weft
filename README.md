@@ -34,24 +34,23 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R2 |  | **Plan and Discussion writers explore through parallel Sonnet agents that return only what is relevant**<br>• Bench the guidance that sends Plan and Discussion writers' lookups to parallel Sonnet subagents against a writer given none | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 1d<br>23h | loom |
 | R3 |  | **Measure the effect of the batching breach hook**<br>• After the batching breach hook lands, compare breach turns and context tokens against the 28-session baseline and tune its thresholds | [`batching-hook-effect`](design-batching-hook-effect.md) | 1d<br>23h | claude, shuttle, tools |
 
-## [P0 Root: entries under no project](project-root.md) (38)
+## [P0 Root: entries under no project](project-root.md) (37)
 
 Owner `neve`
 
-### Tasks (6)
+### Tasks (5)
 
 Concrete and claimable; only a task can run.
 
-#### Running (4)
+#### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | motif · solid | Discussion-Burler-Fix | neve | 4w<br>41m | shuttle, codex |
+| T1 | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | motif · solid | Discussion-Burler-Fix | neve | 4w<br>42m | shuttle, codex |
 | T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Code-Burler-Fix | neve | 15h<br>4h | batten, fabric |
-| T4 | **Board README marks a discussed entry and links its Sketch**<br>• Each entry flagged discussed shows a mark linking decision-<slug>.md in the README | [`readme-shows-discussed`](design-readme-shows-discussed.md) | darn · light | Finalize | neve | 20m<br>20m | board |
-| T5 | **Plan rubric's test-economy rule conflicts with decision-record acceptance criteria phrased as rendered-output checks**<br>• A wording criterion is checked by review, never by a prose test; rubric, Discussion prompt and spec say so | [`rubric-test-economy-vs-criteria`](design-rubric-test-economy-vs-criteria.md) | darn · light | Describe | neve | 15h<br>9m | burler, loom, stencil |
+| T5 | **Plan rubric's test-economy rule conflicts with decision-record acceptance criteria phrased as rendered-output checks**<br>• A wording criterion is checked by review, never by a prose test; rubric, Discussion prompt and spec say so | [`rubric-test-economy-vs-criteria`](design-rubric-test-economy-vs-criteria.md) | darn · light | Describe | neve | 15h<br>10m | burler, loom, stencil |
 
 #### Ready (0)
 
@@ -123,3 +122,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 4h<br>4h | shuttle, codex, loom |
 | F16 |  | **Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | 2h<br>2h | drift, shed |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>1d | burler, shed, orch, quarry, report |
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T4 | **Board README marks a discussed entry and links its Sketch**<br>• Each entry flagged discussed shows a mark linking decision-<slug>.md in the README | [`readme-shows-discussed`](design-readme-shows-discussed.md) | 20m<br>20m | board |
