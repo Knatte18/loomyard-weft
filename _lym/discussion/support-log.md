@@ -62,6 +62,6 @@ _No rounds yet._
 - Q2 (resolved, auto-pick): how does reed order several overview windows? An integer order key on the display, zero value first, ties in opening order (D1).
 - Q3 (resolved, auto-pick): does reed still cap overview strands? No; each spawner's explicit role prevents duplicates (D1 bound).
 - Q4 (resolved, auto-pick): which overview does a focus fallback pick? The lowest-index one (D2).
-- Q5 (resolved, auto-pick): what is the checklist window named? The run's recipe name, in every session; open risk recorded for task sessions (D3).
+- Q5 (resolved, auto-pick): what is the checklist window named? The run's recipe name, in every session; the task-session rename recorded as an auto-mode assumption (D3).
 - Q6 (resolved, auto-pick): the pawl row line in the beam overview? Left out (Scope).
 - Q7 (resolved, auto-pick): migrate existing beam sessions? No; the next loom start heals them (D5).
