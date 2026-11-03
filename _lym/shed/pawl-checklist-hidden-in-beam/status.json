@@ -1,14 +1,21 @@
 {
-  "current_producer": "",
+  "current_producer": "Motif",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "",
-    "last": "",
+    "now": "Motif",
+    "last": "Preflight → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Preflight",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-03T09:46:42Z"
+    }
+  ],
   "product": {
     "slug": "pawl-checklist-hidden-in-beam",
     "parent": "main",
