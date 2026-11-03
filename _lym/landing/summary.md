@@ -1,25 +1,25 @@
-# Board README marks a discussed entry and links its Sketch
+# Board README links a discussed entry's Sketch under its slug
 
-The board files did not show which entries carry an approved decision record, so a finished Discussion was invisible from the README.
-
-## What changes
-
-- A board table's Slug cell now stacks a `[Sketch](decision-<slug>.md)` link under the slug, with `<br>`, when the entry carries the `discussed` flag.
-  The link sits in the cell that already links the design doc, so the row gains no column and no width beyond the word `Sketch`.
-- Every table renders its Slug cell through the one new `slugColumnCell` in `internal/boardengine/render.go`, so the mark shows in every table and board file that lists the entry: README.md, the project files, the open-task tables, Notes and Done.
-- An entry without the flag renders exactly as before.
-- A project's facts line keeps the plain `slugCell`, since a project runs no Discussion and the facts line is a paragraph, not a table cell.
-- The link target is the record file `DecisionFileName` names, beside board.json and the rendered files, so the relative link resolves.
+The board README gave no sign of which entries carry an approved decision record, so the operator could not tell that a `motif` run had finished an entry's Discussion.
+A row for an entry flagged `discussed` now shows a `Sketch` link to `decision-<slug>.md` under its slug, in every table of every board file that lists it, Done included.
+An entry not flagged discussed renders as before.
 
 ## Design decisions
 
-- The mark goes under the slug rather than as a bullet in the title cell or beside the recipe.
-  The Recipe column is missing from the Notes and Done tables, and the title cell already stacks the brief and run settings, while the Slug cell is in every table and already holds the link to the entry's design file.
-
-## Docs
-
-The `boardengine` package doc's README section describes the Sketch link in the Slug cell, and its Decision record section says the render links the record file while still never writing or deleting it.
+- The link sits in the Slug cell, stacked under the slug with `<br>`, so the mark adds no column and the row stays as narrow as before.
+  The slug link to `design-<slug>.md` is unchanged.
+- `slugColumnCell` in `internal/boardengine/render.go` wraps `slugCell` and is the only change to row building; `table` calls it for every row.
+- The link target is `DecisionFileName(slug)`, relative to the rendered file, like the design-doc link.
+  The decision record is still no render output, so the manifest never holds it and a render never deletes it.
+- A Done entry keeps its link, since a landed entry keeps the record it last stored.
+- `docs/overview.md` and the `internal/boardengine` package docs (`doc.go`, `render.go`) describe the new cell.
 
 ## Tests
 
-`TestRenderSlugCellLinksTheDecisionRecord` in `internal/boardengine/render_test.go` pins a discussed task in the Ready table and a discussed done task in the Done table carrying the Sketch link, and an unflagged task rendering its slug alone, in both README.md and project-root.md.
+`TestRenderSlugCellLinksTheDecisionRecord` pins both renderings in `README.md` and `project-root.md`: a discussed open entry, an entry not flagged, and a discussed Done entry.
+
+## To check by hand
+
+- The tests were not run in this step.
+  Run `lym gate test ./internal/boardengine`.
+- Open a rendered README and confirm the `Sketch` link resolves to `decision-<slug>.md` beside `board.json`.
