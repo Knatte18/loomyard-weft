@@ -291,7 +291,7 @@
       "id": 932,
       "handle": "E9",
       "slug": "interactive-idle-park",
-      "title": "An idle interactive run saves its work and pauses, to go on another time",
+      "title": "An interactive agent idle for a set time gets its session compacted",
       "kind": "note",
       "labels": [
         "enhancement",
@@ -300,13 +300,12 @@
         "batten"
       ],
       "issues": [],
-      "priority": "low",
       "depends_on": [],
       "isolated": false,
       "brief": "lym asks an idle interactive agent to commit what it has and end, and the run resumes later",
-      "body": "## Seen (operator, 2026-10-31)\n\nAn interactive run (the `sampler` recipe, landed by task `interactive-recipe`) waits for the operator in its pane at the `Sampler-Session` row, and has dobby's quiet notice and the step watchdog off while it does.\nThe row waits with no timeout until the agent runs `lym loom sampler-done` at the operator's word.\nSince lym runs the agent, it can watch how long the agent has waited.\n\n## Idea\n\nWhen the agent has been idle for a set time, lym asks it to write down what it has, commit it, and end its session; the run pauses, and the operator picks it up another time with the agent resumed from that state.\n",
+      "body": "## Seen (operator, 2026-10-31)\n\nAn interactive run (the `sampler` recipe, landed by task `interactive-recipe`) waits for the operator in its pane at the `Sampler-Session` row, and has dobby's quiet notice and the step watchdog off while it does.\nThe row waits with no timeout until the agent runs `lym loom sampler-done` at the operator's word.\nSince lym runs the agent, it can watch how long the agent has waited.\n\n## Idea (operator, 2026-11-03)\n\nAn auto-compact mode, in place of the earlier idea of parking the run:\n\n- When an interactive agent has been idle for a set time, lym compacts its session, the way `lym orch distill` compacts the orch, and the agent stays in its pane with the run still at its row.\n- The operator comes back to the same session with a small context, so nothing is ended, committed or resumed by hand.\n- The idle time is a config key; off means never.\n\nThe earlier idea, writing down the state, committing it, ending the session and pausing the run, is dropped: it is too specific to be worth its cost.\n",
       "created": "2026-10-31T14:33:35Z",
-      "revised": "2026-11-03T16:21:40Z"
+      "revised": "2026-11-03T16:26:05Z"
     },
     {
       "id": 933,
