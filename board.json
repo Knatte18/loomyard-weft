@@ -718,7 +718,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-11-03)\n\nTask `comment-cleanup` must start only after project `codex-engine`, a beam, has landed in `main`.\n`depends_on` refuses a project (\"nothing depends on a project: depend on its members instead\"), and a member landing into the beam is not the beam landing into `main`.\nSo the task was set back to draft and the hub orch watches the project by hand, a watch that dies with its session.\n\n## Idea\n\nDobby already holds a task until every slug in its `depends_on` has landed; let that hold work for every kind of entry that lands.\n\n- `depends_on` accepts a project's slug, and the dependency is met when the project is done: a beam when it has landed into its parent, a plain project when every member has.\n- Any other slug that ends in a landing counts the same way, so the rule reads \"a dependency is met when that entry is done\", whatever its kind.\n- The README's After column and Ready subsection show a project dependency like a task one.\n- `set-deps`' overlap notice and its cycle check cover project dependencies too, a project counting as the union of its members.\n",
-      "status": "running · Finalize",
+      "status": "done",
       "created": "2026-11-03T16:18:43Z",
       "revised": "2026-11-03T16:21:38Z",
       "profile": "light"
