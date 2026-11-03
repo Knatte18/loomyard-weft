@@ -1,6 +1,8 @@
 # Code changed after Drift-Verify lands with no compare
 
-`drift-after-review` · Task · bug, drift, loom · draft
+`drift-after-review` · Task · bug, drift, loom
+
+Depends on: [`drift-verdict-in-pr`](design-drift-verdict-in-pr.md), [`drift-skip-all-capture`](design-drift-skip-all-capture.md)
 
 Code the review rows change after Drift-Verify lands with no compare, and once the run has passed Drift-Verify no Drift verb can compare it again.
 
