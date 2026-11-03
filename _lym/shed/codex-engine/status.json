@@ -1,11 +1,11 @@
 {
-  "current_producer": "Beam-Up",
+  "current_producer": "Beam-Await",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Beam-Up",
-    "last": "Record-Write → done",
+    "now": "Beam-Await",
+    "last": "Beam-Up → done",
     "wait": ""
   },
   "history": [
@@ -20,6 +20,12 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYMHUB/codex-engine/_lym/project/codex-engine/decision-record.md",
       "at": "2026-11-03T12:45:12Z"
+    },
+    {
+      "producer": "Beam-Up",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-03T12:45:17Z"
     }
   ],
   "product": {
