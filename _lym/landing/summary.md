@@ -1,34 +1,36 @@
 # Config --set replaces a whole open map from a flow mapping
 
-From [issue #19](https://github.com/Knatte18/loomyard/issues/19).
+`lym config drift --set 'capture={command: "...", dir: "...", timeout_min: 30}'` was refused with "unknown config key(s): capture, compare", although the key description in `--resolved` prescribes that form.
+Only the per-key form (`capture.command`, `capture.dir`, `capture.timeout_min`) worked.
+A declared open map that holds a mapping now takes a YAML flow mapping that replaces it whole, so the prescribed form is accepted for `capture` and `compare`, and for every other module's open map of the same kind.
 
-`lym config drift --set 'capture={command: "...", dir: "...", timeout_min: 30}'` was refused with `unknown config key(s): capture, compare`, although the key description in drift's template prescribes that whole-map form.
-Only the per-key form `capture.timeout_min=45` worked.
+Closes #19
 
-## Cause
+## Behavior
 
-`capture` and `compare` are open maps with a declared shape.
-yamlengine's `SetValues` and `SetSparse` knew a key `P.<name>` under an open map `P`, and `P` itself only when the template holds a scalar or a list there.
-A mapping-valued `P`, such as drift's `capture: {}`, was never a known key itself.
+- `--set <map>={...}` replaces the map whole, `{}` included, so it also empties one.
+  Missing parent mappings on the way are created, and the line comment the template carries on the map is kept.
+- A value that is not one flow mapping is refused naming the key and the per-key form `<map>.<key>`.
+- Under a declared shape (drift's `capture` and `compare`, gate's `tiers`), a key inside the value that the shape lacks is refused naming it, as in `capture holds no key timeoutt`.
+  So is a mapping or list where the shape takes a string.
+  Nothing is written on a refusal.
+- Scalar tags follow the shape, so `timeout_min: 30` stays a number and a string field stays a string.
 
-## Change
+## Design
 
-- `internal/yamlengine`: every declared open map `P` is now a known key and is listed in `Known`.
-  A pair at a mapping-valued `P` replaces it whole with the YAML flow mapping its value spells, `{}` included, on both the scaffolded and the sparse write path (`setWholeOpenMap`).
-  A value that is not one flow mapping is refused, and the refusal names `P` and the per-key form `P.<key>`.
-  Under a declared shape, every key inside the mapping is checked against the shape (`mappingShapeError`), so `capture={command: ..., timeoutt: 1}` is refused with `capture holds no key timeoutt`, the same wording the per-key form gives.
-  A single-value field takes whatever it holds.
-  Scalar-or-list open maps keep their behavior.
-- Docs: the yamlengine package doc, `SetValues`/`SetSparse` doc comments, configengine's and configcli's package docs and drift's `ConfigSpec` comment describe the whole-map form.
-  drift's template description already prescribed this form, so it stays as it is.
-
-## Design decisions
-
-- The whole-map form applies to every module's mapping-valued open maps, not only drift's, so `lym config gate --set 'tiers={...}'` also replaces the tier map whole.
-  This is the generic reading of "a mapping whose keys the user owns", and the key already accepted `P.<name>` flow mappings for entries.
-- The `lym config` cobra `Long` help is left unchanged: any added line exceeds its 2000-byte cap (`TestCLIForm_EveryCommand`), and the configcli package doc carries the new form with a drift example.
+- `yamlengine.SetValues` and `SetSparse` share one helper, `setWholeOpenMap`, so the default layer and the sparse local layer behave the same.
+- The open map itself is now a known key: `knownKeys` lists `P` beside `P.<name>`, and `unknownKeys` accepts `P`.
+  The duplicate this creates for a key that is both a scalar leaf and an open map (such as `rounds` in the test template) is removed with `slices.Compact`.
+- In `SetSparse` the scalar-or-list branch and the whole-map branch run before the shaped-entry branch, and the parent-mapping lookup moved into `parentMappingOf`.
+  A key declared both ways keeps its previous scalar-or-list handling.
+- The line-comment move in `setWholeOpenMap` exists because a value's line comment is dropped when a block mapping marshals.
+- Docs updated in `yamlengine`, `configengine`, `configcli` and `driftengine.ConfigSpec`.
 
 ## Tests
 
-- `TestSetSparse` and `TestSetValues` gain rows for a whole open map replaced or emptied, a whole shaped map written with its scalar tags, and refusals for a key the shape lacks and a value that is no flow mapping; `TestSetValues_UnknownKeys` pins `P` in `Known`.
-- `TestConfigSpec_SetWholeSteps` in driftengine sets `capture` and `compare` whole through `configengine.Set`, loads them back as declared steps, and pins that a misspelled key inside a whole step is refused with the file left unchanged.
+New cases cover `yamlengine` set and sparse set (whole replace, empty, shaped tags, shape refusals, non-mapping refusal, dotted parent creation, comment kept, known-key listing without duplicates) and `driftengine.TestConfigSpec_SetWholeSteps`, which sets both steps whole and loads the file.
+
+## To check by hand
+
+- Not run: `lym config drift --set 'capture={command: "...", dir: "...", timeout_min: 30}'` against a real project, including `--local` refusal of the executable keys.
+- Check that no other module declares an open map whose callers relied on `P` being refused as unknown.
