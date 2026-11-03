@@ -5,27 +5,21 @@
 ## Seen
 
 `docs/research/token-audit-2026-10-22`: Opus and Sonnet read cache at the same price, so a swap saves about half a role's non-cache-read cost.
-Over the audit window the Plan and Discussion fixers cost about $162 on Opus, the darn writer $45, alignment $40.
-The Webster and Merge fixers already run on Sonnet: the template sets `webster_fixer_model` and `merge_fixer_model` to `sonnet[medium]` since `c2d13e5ae` (2026-10-21), so the audit's $37 Opus Webster fixer spend predates that.
+Over the audit window the Plan and Discussion fixers cost about $162 on Opus.
+The Webster and Merge fixers already run on Sonnet (`webster_fixer_model` and `merge_fixer_model` set to `sonnet[medium]`).
 `discussion_fixer_model` and `plan_fixer_model` are empty and fall back to `fixer_model`, `opus[medium]`.
+A Sonnet fixer needs findings concrete enough to carry out: each names the place and the change, not only the problem (operator, 2026-10-22).
+`docs/research/review-setup-audit-2026-10-28/report.md` found the late Plan-round defects to be the writer's misses rather than a sloppy fixer's, and `validator-checks` now catches the recurring machine-visible ones; fixer quality on a swap is still unmeasured.
 
-## Operator view, not a decision (2026-10-22)
+## Bench (operator, 2026-11-03)
 
-A Sonnet fixer needs findings concrete enough for Sonnet to carry out.
-For the Webster perch Sonnet is the natural fit, since Webster's own forks are Sonnet.
+Runs as darn with profile `docs`, after bench `concrete-review-findings` has landed, since its third arm takes that bench's concrete findings as input.
 
-## Idea (orch, not decided)
-
-Before the Plan and Discussion fixers move to Sonnet, check that their findings are concrete: each names the place and the change, not only the problem.
-A3 (`review-setup-audit`) notes a sloppy fixer causes many late-round defects, and `docs/research/model-downgrade-results.md` holds earlier downgrade results; bench before switching.
-
-## Review-setup audit (landed 2026-10-28)
-
-`docs/research/review-setup-audit-2026-10-28/report.md` is the A3 audit named above.
-It does not measure fixer quality or a model swap.
-Its finding that bears here: in Plan round 3, 14 of 23 findings point at cards the round-2 fixer left alone, so those late defects are the writer's repository-invariant misses and not a sloppy fixer's; the audit recommends `validate-plan` checks for them.
-
-## Machine checks landed (task `validator-checks`, 2026-10-28)
-
-`lym loom validate-discussion` and `validate-plan`, and the gates that call them, now refuse the recurring findings a machine can see: decision ids and acceptance coverage, missing cited paths and symbols, and in plans `seam-test-unlisted`, `test-tier-unstated` and `doc-go-unlisted`.
-That is the audit's recommended `validate-plan` step, so the writer's repository-invariant misses are caught before a review round; the fixer-quality question here is unchanged and still needs a bench.
+- Inputs: two review rounds from past runs with their findings, one Plan round and one Discussion round.
+- Arms, each on both inputs:
+  1. `opus[medium]` fixer on the findings as written today, the baseline.
+  2. `sonnet[medium]` fixer on the findings as written today.
+  3. `sonnet[medium]` fixer on the same rounds' findings written in the concrete form.
+- Repeats: two per arm and input, so twelve fixer runs.
+- Scoring: a fresh review round of each fixed artifact counts the findings fixed correctly, left open and newly made; the cost of each fixer run is recorded.
+- Report under `docs/research/`, with a recommendation for `plan_fixer_model` and `discussion_fixer_model`.

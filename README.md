@@ -82,7 +82,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R4 |  | **Bench Plan and Discussion fixers on Sonnet against Opus**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 12d<br>2m | burler, claude |
+| R4 |  | **Bench Plan and Discussion fixers on Sonnet against Opus**<br>• Twelve fixer runs: Opus against Sonnet, and Sonnet on concrete findings | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 12d<br>0m | burler, claude |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 12d<br>10h | loom, stencil |
 
 #### Bugs (1)
