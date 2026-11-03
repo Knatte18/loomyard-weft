@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -34,6 +34,51 @@
       "output": "",
       "at": "2026-11-03T14:34:26Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/codex-assist-seat/_lym/landing/summary.md",
+      "at": "2026-11-03T15:17:56Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-03T14:51:25.492519617Z",
+          "end": "2026-11-03T14:51:25.505448087Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-03T15:10:27.728016112Z",
+          "end": "2026-11-03T15:10:27.743571875Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-03T14:51:25.585555698Z",
+          "end": "2026-11-03T15:10:03.871912787Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-03T15:10:04.516577471Z",
+          "end": "2026-11-03T15:10:27.670799894Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-03T15:10:27.852854962Z",
+          "end": "2026-11-03T15:17:16.568374239Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-03T15:17:16.666180862Z",
+          "end": "2026-11-03T15:17:16.666680667Z"
+        }
+      ]
     }
   ],
   "product": {
