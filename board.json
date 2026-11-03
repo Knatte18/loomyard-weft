@@ -604,7 +604,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #37](https://github.com/Knatte18/loomyard/issues/37).\n\nWhat happened: the PR-Review row halted the loom run as blocked with 'pushing the task branch failed: fabricengine: push lock busy: \u003cweft\u003e/.weft/fabric.push.lock still held after 30s; neither side was pushed'. The way forward named was to run lym fabric push in the task worktree, then lym loom resume. The run had been through 17 history entries and had just finished Describe.\n\nWhy it is abnormal: the push lock sits in a weft directory shared across worktrees, so another session's push or a stale lock holder can stall a push; a 30s wait then ends the whole run as an escalation to a human, though contention is transient and a push is idempotent. Nothing in the note says which process held the lock, or whether it was stale.\n\nWhat to do: retry the push with backoff for longer, or re-step the row automatically before blocking; when the lock is still busy, report the holder (pid, age) and clear a lock whose holder is dead.\n\nProvenance: task pinned-solvers-everywhere; notes loom-halt-2.md",
-      "status": "running · Drift-Recheck",
+      "status": "running · Describe",
       "created": "2026-11-03T16:44:20Z",
       "revised": "2026-11-03T16:51:56Z",
       "profile": "light"
@@ -789,6 +789,57 @@
       "isolated": false,
       "brief": "Seven cases on real Codex launches against the package doc",
       "body": "## Goal\n\nTest parts 1 and 2 of project `codex-engine-trial` against real Codex sessions launched through `lym shuttle`: home and trust, sandbox and refusals, as `internal/shuttleengine/codexengine/doc.go` describes them.\n\n## Cases\n\nEach case runs once, on `luna[medium]`, in this task's worktree or in a throwaway directory the case makes under it.\n\n1. A launch in this worktree: `CODEX_HOME` is the lym Codex home; `auth.json` and `sessions` link to the operator's home; `config.toml` is rendered whole and trusts the worktree root and the main checkout root.\n2. Two launches started together: the file lock keeps `config.toml` whole and both roots trusted.\n3. A recorded root whose folder is removed is dropped at the next launch.\n4. A regular `auth.json` in the lym home is named in a Warn and left in place.\n5. The launch line carries `-a never -s workspace-write`; the session writes under the anchor's `.lym` and is refused a write outside its writable roots.\n6. A committed `.codex/rules` refuses the launch; a committed `.codex/config.toml` is named in a Warn.\n7. The folder-trust prompt, raised by a root removed from `config.toml` by hand before Codex reads it, is accepted by the engine's backstop.\n\n## Deliver\n\n- A report at `docs/research/codex-engine-trial-home-sandbox-2026-11-03.md`: per case, what was run, what was seen and whether it matches the package doc.\n- Each lym fault as a bug note on the board (`kind: note`, label `bug` and the module labels), one finding per note.\n- The operator's own `~/.codex` is never written: check its `config.toml` checksum before and after.\n",
+      "status": "draft",
+      "created": "2026-11-03T19:27:14Z",
+      "revised": "2026-11-03T19:27:14Z",
+      "profile": "docs",
+      "project": "codex-engine-trial"
+    },
+    {
+      "id": 1079,
+      "handle": "T5",
+      "slug": "codex-trial-hooks-guards-skills",
+      "title": "Codex trial: hooks, shell guards and skills",
+      "kind": "task",
+      "labels": [
+        "research",
+        "codex",
+        "shuttle"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "codex-trial-home-sandbox"
+      ],
+      "isolated": false,
+      "brief": "Seven cases on real Codex launches against the package doc",
+      "body": "## Goal\n\nTest parts 3, 4 and 6 of project `codex-engine-trial` against real Codex sessions launched through `lym shuttle`: hooks, shell guards and skills, as `internal/shuttleengine/codexengine/doc.go` describes them.\n\n## Cases\n\nEach case runs once, on `luna[medium]`, in this task's worktree, unless it names two repeats.\n\n1. Hooks: one `lym shuttle run` turn and one `lym shuttle open` session; SessionStart, UserPromptSubmit, Stop with the reply, and PostToolUse each reach the run's events file or activity stamp, with the payloads named.\n2. PermissionRequest: a turn that asks for an approval reaches the events file, or the report shows why `-a never` never raises one.\n3. Interrupt: a turn interrupted mid-tool-call reads as interrupted through the rollout's newest `turn_aborted`; two repeats.\n4. Context size: the reading from the rollout's newest `token_count` matches the rollout after three turns.\n5. Shell guards: every installed row of the shell guard table, one command each that it must deny; each is denied through the PreToolUse hook with its Codex steer, and the prompt file opens with the rows' notices.\n6. A guard hook that fails to run, by a hook command made to exit non-zero in a throwaway copy, is seen failing open, and the report says how that shows.\n7. Skills: a load of one `\u003cplugin\u003e:\u003cname\u003e` skill under `skill_roots` reads the newest version's `SKILL.md` and is seen loaded in the rollout; a load of a skill under no root is reported unknown.\n\n## Deliver\n\n- A report at `docs/research/codex-engine-trial-hooks-guards-skills-2026-11-03.md`: per case, what was run, what was seen and whether it matches the package doc.\n- Each lym fault as a bug note on the board (`kind: note`, label `bug` and the module labels), one finding per note.\n",
+      "status": "draft",
+      "created": "2026-11-03T19:27:14Z",
+      "revised": "2026-11-03T19:27:14Z",
+      "profile": "docs",
+      "project": "codex-engine-trial"
+    },
+    {
+      "id": 1080,
+      "handle": "T6",
+      "slug": "codex-trial-pane-load",
+      "title": "Codex trial: pane, sends, creel by the pane path, and load",
+      "kind": "task",
+      "labels": [
+        "research",
+        "codex",
+        "shuttle",
+        "creel"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "codex-trial-hooks-guards-skills"
+      ],
+      "isolated": false,
+      "brief": "Six cases, three sessions at once and one darn run with a Codex reviewer seat",
+      "body": "## Goal\n\nTest parts 5 and 7 of project `codex-engine-trial` against real Codex sessions launched through `lym shuttle`: the pane, sends, creel by the pane path, and load, as `internal/shuttleengine/codexengine/doc.go` and `internal/creelengine/doc.go` describe them.\n\n## Cases\n\nSessions run on `luna[medium]`, in this task's worktree.\n\n1. Pane readings: the composer, the busy line and the folder-trust prompt read right through `lym shuttle state`, once each.\n2. Sends: a 4,000-character send and a 40-line send through the guarded paste-then-Enter land whole; five sends each.\n3. Exit: a Codex exit reads as a dead pane.\n4. Creel by the pane path, in one opened session:\n   - a program's notice is typed in full while the session is idle;\n   - a post from an agent strand arrives as a `run lym creel read` reminder;\n   - the session runs `lym creel read` and `lym creel post --reply \u003cid\u003e` from inside its `workspace-write` sandbox and reaches the creel daemon.\n5. Load: three Codex sessions at once, each through ten turns, with one interrupt and one send during a busy turn in each; every turn end, interrupt and send reads right.\n6. End to end: one darn run of a small change in a throwaway sandbox hub, with `code_assist_reviewer_model` set to `luna[medium]` for that run's `run_settings` only, followed to Code-Review's end.\n\n## Deliver\n\n- A report at `docs/research/codex-engine-trial-pane-load-2026-11-03.md`: per case, what was run, what was seen and whether it matches the docs.\n- Each lym fault as a bug note on the board (`kind: note`, label `bug` and the module labels), one finding per note.\n- No config of this hub changes; case 6 sets its model in its own run's settings only.\n",
       "status": "draft",
       "created": "2026-11-03T19:27:14Z",
       "revised": "2026-11-03T19:27:14Z",

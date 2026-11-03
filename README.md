@@ -34,13 +34,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R2 |  | **Plan and Discussion writers explore through parallel Sonnet agents that return only what is relevant**<br>• Bench the guidance that sends Plan and Discussion writers' lookups to parallel Sonnet subagents against a writer given none | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 2d<br>1d | loom |
 | R3 |  | **Measure the effect of the batching breach hook**<br>• After the batching breach hook lands, compare breach turns and context tokens against the 28-session baseline and tune its thresholds | [`batching-hook-effect`](design-batching-hook-effect.md) | 1d<br>1d | claude, shuttle, tools |
 
-## [P2 Stress test of codexengine: every designed capability, hooks above all](project-codex-engine-trial.md) (1)
+## [P2 Stress test of codexengine: every designed capability, hooks above all](project-codex-engine-trial.md) (3)
 
 [`codex-engine-trial`](design-codex-engine-trial.md) · Age 16m · Owner `neve`
 
 Real Codex launches through lym shuttle check home, sandbox, hooks, guards, pane, skills and load
 
-### Tasks (1)
+### Tasks (3)
 
 Concrete and claimable; only a task can run.
 
@@ -50,13 +50,15 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (1)
+#### Draft (3)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | `draft` **Codex trial: home, trust, sandbox and refusals**<br>• Seven cases on real Codex launches against the package doc | [`codex-trial-home-sandbox`](design-codex-trial-home-sandbox.md) | darn · docs |  | 0m<br>0m | codex, shuttle |
+| T5 | `draft` **Codex trial: hooks, shell guards and skills**<br>• Seven cases on real Codex launches against the package doc | [`codex-trial-hooks-guards-skills`](design-codex-trial-hooks-guards-skills.md) | darn · docs | T3 | 0m<br>0m | codex, shuttle |
+| T6 | `draft` **Codex trial: pane, sends, creel by the pane path, and load**<br>• Six cases, three sessions at once and one darn run with a Codex reviewer seat | [`codex-trial-pane-load`](design-codex-trial-pane-load.md) | darn · docs | T5 | 0m<br>0m | codex, shuttle, creel |
 
 ### Notes (0)
 
@@ -77,7 +79,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **A project page shows the project body under its brief**<br>• The project page links the body only through the slug; render it in the page itself | [`project-body-in-render`](design-project-body-in-render.md) | darn · speed | Code-Bouncer | neve | 14m<br>14m | board |
-| T9 | **lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human** | [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md) | darn · light | Drift-Recheck | neve | 2h<br>2h | fabric, landing |
+| T9 | **lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human** | [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md) | darn · light | Describe | neve | 2h<br>2h | fabric, landing |
 
 #### Ready (0)
 
