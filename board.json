@@ -659,10 +659,10 @@
     },
     {
       "id": 1017,
-      "handle": "E6",
+      "handle": "T5",
       "slug": "rubric-test-economy-vs-criteria",
       "title": "Plan rubric's test-economy rule conflicts with decision-record acceptance criteria phrased as rendered-output checks",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "burler",
@@ -676,6 +676,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #3](https://github.com/Knatte18/loomyard/issues/3).\n\n## What happened\n\nDuring a plan review round, a finding asked to cut a test's static-prose assertions under the rubric's test-economy rule.\n`_lym/plan/lens-review.md` already recorded the Plan-Write lens pass disputing the same cut, because the decision record's acceptance criteria call for those checks (\"the rendered stencil names X\").\nThe review's claim that the stencil-wide scans cover the wording was false for all but one item; two self-check lenses caught it.\nThe fixing agent resolved it by stating in the card that the criteria are met by review of the stencil text.\n\n## Why it is abnormal\n\nThe rubric and the decision-record acceptance criteria pull in opposite directions.\nA criterion phrased as \"the rendered stencil names X\" can be planned either as a test or as a review check, and nothing in lym says which.\nThe same dispute is re-litigated each review round, and the review's coverage claim can be wrong without any check noticing.\n\n## What to do\n\nSettle once, in the plan rubric or the decision-record template, whether a criterion phrased as \"the rendered text names X\" is planned as a test or as a review check.\nHave the review verify claims that stencil-wide scans cover a given wording before it relies on them.\n\nProvenance: task `interactive-recipe`; note `burler-plan-r1.md`.\n\n\n\n_Moved from #908 in the repository before it was recreated._\n",
+      "status": "draft",
       "created": "2026-11-02T20:34:12Z",
       "revised": "2026-11-02T20:34:12Z"
     },

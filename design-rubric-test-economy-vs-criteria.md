@@ -1,6 +1,6 @@
 # Plan rubric's test-economy rule conflicts with decision-record acceptance criteria phrased as rendered-output checks
 
-`rubric-test-economy-vs-criteria` · Note · enhancement, burler, loom, stencil
+`rubric-test-economy-vs-criteria` · Task · enhancement, burler, loom, stencil · draft
 
 Imported from [issue #3](https://github.com/Knatte18/loomyard/issues/3).
 
