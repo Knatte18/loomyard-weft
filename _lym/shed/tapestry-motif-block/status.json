@@ -3,6 +3,7 @@
   "state": "paused",
   "error": "",
   "pause_requested": false,
+  "pause_before": "Finalize",
   "pause_reason": "paused after Darn-Write, as requested",
   "activity": {
     "now": "Drift-Verify",
