@@ -22,18 +22,23 @@ Code still says "decision record": nothing in code is renamed to Sketch.
   That lock exists only so the orch does not change a task's text after its agents have read it; a record written by lym is not that.
 - Built (2026-11-03): task `decision-record-on-board` stores the record and the flag.
   The record is the file `decision-<slug>.md` at the Bolt root beside `board.json`, which carries only a `discussed` boolean; `lym board get` shows the flag and `--record` prints the record; `lym loom decision store` re-copies it by hand.
-  Runs already past Discussion are not backfilled, and approval inside a sub-run block stores no record until the gate follow-up.
-- Built (2026-11-03): task `shed-sub-run-block` adds the block row, the recipe `motif` (tapestry's Discussion rows) and a trial recipe `arras` (`motif` through a block, then tapestry's rows from Drift-Baseline on).
-- Still open: skipping Discussion for a discussed entry, the gate check on that block, now the running task `tapestry-motif-block`.
+  Runs already past Discussion are not backfilled.
+- Built (2026-11-03): task `shed-sub-run-block` adds the block row and the recipe `motif` (tapestry's Discussion rows).
+- Built (2026-11-03): task `tapestry-motif-block`.
+  Tapestry defines Discussion once, in `motif-recipe.yaml`, and runs it through a block row named `Motif`.
+  The block's gate `undiscussed` passes the block over when the entry is flagged discussed: the stored record is seeded as the run's decision record and the run goes on at Drift-Baseline, so Plan-Write and the reviews read it as they read an approved one.
+  Approval inside the block stores the record.
+  The trial recipe `arras` is removed.
+- Still open: darn taking the stored record as final for a discussed entry.
 
 ## Discussion as a run of its own (operator, 2026-11-03)
 
 How a task is best cut into smaller tasks is known only once its Discussion is done, so the split comes after Discussion, not before.
 
 - A Discussion-only run, the recipe `motif` (operator, 2026-11-03: the motif is the design decided before the weaving; `cartoon`, the drawing the weaver follows, is kept for a later Plan block), interactive or not, runs Discussion-Write and its review and nothing else, then stores the record and flags the entry discussed, as the core above says.
-  The recipe exists; the running task `tapestry-motif-block` has tapestry run it as a block, removes `arras`, and leaves `motif` runnable alone.
+  Built (2026-11-03): a `motif` task runs alone, lands no code and returns the entry to `draft`; landing only prunes the board.
 - A discussed entry then goes one of two ways, chosen after its Discussion:
-  1. Tapestry from Plan, skipping Discussion-Write: Plan-Write and Webster as today.
+  1. Tapestry from Plan, skipping Discussion-Write: Plan-Write and Webster as today. Built, see above.
   2. The part split: the record's scope is cut into darn tasks with contracts and `depends_on`, which run independently, each a task of its own.
 - Open: whether Discussion-Write also writes the part split, since it has the overview, or a separate step does it only when way 2 is chosen, so a task going way 1 pays nothing for it.
   The orch's recommendation: Discussion-Write only judges in a line or two whether the scope has clear seams, and the split itself is a separate step on the discussed entry, much as `Parts-Write` is today.
