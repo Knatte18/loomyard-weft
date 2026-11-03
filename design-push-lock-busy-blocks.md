@@ -2,7 +2,7 @@
 
 `push-lock-busy-blocks` · Task · bug, fabric, landing
 
-Depends on: [`fabric-remote-async`](design-fabric-remote-async.md), [`cancel-remove-leftover-dir`](design-cancel-remove-leftover-dir.md)
+Depends on: [`cancel-remove-leftover-dir`](design-cancel-remove-leftover-dir.md)
 
 Imported from [issue #37](https://github.com/Knatte18/loomyard/issues/37).
 
