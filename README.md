@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-03 17:40 UTC; every age below is as of then.
+Rendered 2026-11-03 17:41 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -69,7 +69,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Drift-Verify's verdict never reaches the summary or the pull request**<br>• A clean compare leaves the PR asking the operator to run the regression compare by hand | [`drift-verdict-in-pr`](design-drift-verdict-in-pr.md) | darn · light | Finalize | neve | 2h<br>1h | drift, loom, landing |
-| T2 | **Every remote operation runs async, and local-only fabric pairs go**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | darn · solid | Code-Burler-Review | neve | 2w<br>1h | fabric, batten |
+| T2 | **Every remote operation runs async, and local-only fabric pairs go**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | darn · solid | Code-Burler-Fix | neve | 2w<br>1h | fabric, batten |
 | T6 | **A partial scope that skips every test ends in a capture that wrote no file, with no cause named**<br>• The capture failure names neither the skips nor the scope change that would fix it, so the tackler re-launches blind | [`drift-skip-all-capture`](design-drift-skip-all-capture.md) | darn · light | Finalize | neve | 1h<br>1h | drift |
 
 #### Ready (0)
@@ -84,9 +84,9 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Per-machine environment variables, exported to every process lym starts for the hub** | [`machine-env-vars`](design-machine-env-vars.md) | darn · light | T6 | 10h<br>24m | config, gate, drift, shuttle |
-| T8 | **batten cancel --remove leaves a non-git directory that blocks Worktree-Create** | [`cancel-remove-leftover-dir`](design-cancel-remove-leftover-dir.md) | darn · light | T2 | 56m<br>48m | batten, fabric |
-| T10 | **Code changed after Drift-Verify lands with no compare**<br>• A review fixer rewrote the formatter after Drift-Verify; nothing compares again and lym drift compare refuses past Drift-Verify | [`drift-after-review`](design-drift-after-review.md) | darn · light | T1<br>T6 | 35m<br>30m | drift, loom |
+| T3 | **Per-machine environment variables, exported to every process lym starts for the hub** | [`machine-env-vars`](design-machine-env-vars.md) | darn · light | T6 | 10h<br>25m | config, gate, drift, shuttle |
+| T8 | **batten cancel --remove leaves a non-git directory that blocks Worktree-Create** | [`cancel-remove-leftover-dir`](design-cancel-remove-leftover-dir.md) | darn · light | T2 | 57m<br>49m | batten, fabric |
+| T10 | **Code changed after Drift-Verify lands with no compare**<br>• A review fixer rewrote the formatter after Drift-Verify; nothing compares again and lym drift compare refuses past Drift-Verify | [`drift-after-review`](design-drift-after-review.md) | darn · light | T1<br>T6 | 36m<br>32m | drift, loom |
 
 #### Layer B (1)
 
@@ -94,7 +94,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human** | [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md) | darn · light | T2<br>T8 | 56m<br>48m | fabric, landing |
+| T9 | **lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human** | [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md) | darn · light | T2<br>T8 | 57m<br>49m | fabric, landing |
 
 #### Layer C (1)
 
@@ -102,7 +102,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | P2<br>T1<br>T2<br>T6<br>T8<br>T9<br>T10<br>T3 | 3d<br>0m | fabric |
+| T4 | **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | P2<br>T1<br>T2<br>T6<br>T8<br>T9<br>T10<br>T3 | 3d<br>1m | fabric |
 
 ### Notes (26)
 
