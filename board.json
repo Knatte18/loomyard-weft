@@ -1022,7 +1022,7 @@
       "id": 1038,
       "handle": "E15",
       "slug": "drift-child-error-in-halt",
-      "title": "drift capture child rejects its cwd when the fabric anchor is a repo subdirectory",
+      "title": "Drift-Baseline halt shows the capture child error",
       "kind": "note",
       "labels": [
         "enhancement",
@@ -1033,10 +1033,10 @@
       ],
       "depends_on": [],
       "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #26](https://github.com/Knatte18/loomyard/issues/26).\n\n## What happened\n\n`lym loom` halted as `failed` at the `Drift-Baseline` producer (anomaly `producer-hard-failure`) four times in one task, on each entry and each `lym loom resume`.\nEvery halt carried the message \"drift: the capture child ended before it recorded its start\".\nThe capture child logs under `_lym/drift/logs/` each hold the same single line, an error of the form:\n\n`cwd is outside the recorded fabric anchor subtree: cwd \u003cworktree root\u003e does not equal the anchored directory \u003cworktree root\u003e/src/csharp/NORCE.Models (recorded by .lym-anchor)`\n\nThe fabric anchor (`.lym-anchor`) records a subdirectory of the worktree, but the capture child was started with the worktree root as its cwd, so its anchor check rejected it.\nThe driver's resume advice, \"read the log, then `lym loom resume`, whose entry captures again\", cannot succeed because the cwd does not change between attempts.\nThe run only got past the producer once it was skipped (`Drift-Baseline / skipped` in the history).\n\n## Why it is abnormal\n\nThe anchor is lym's own record, and the capture child is lym's own process.\nThey disagree about the working directory, so a task whose anchor is not the worktree root can never capture a drift baseline.\nThe halt message also points at a log whose one line is the real cause, so the operator learns it only after opening the log.\n\n## What to do\n\n- Start the capture child with its cwd set to the anchored directory, or have the anchor check accept the worktree root when the anchor lies beneath it.\n- Surface the child's error text in the halt message instead of only naming the log.\n- Fail the producer once with a non-retry hint when the child's cwd error repeats, rather than advising a resume that cannot change the outcome.\n\nProvenance: task `testsupport-rule-and-helpers`; notes `loom-halt.md`, `loom-halt-2.md`, `loom-halt-3.md`, `loom-halt-4.md`.\n",
+      "brief": "Carry the capture child log error into the halt, and drop resume as a way forward when it cannot help",
+      "body": "From [issue #26](https://github.com/Knatte18/loomyard/issues/26).\n\n## Seen\n\nDrift-Baseline halted four times in one task with \"drift: the capture child ended before it recorded its start\".\nThe real cause, a cwd refused by the anchor check, sat only as one line in the capture child's log under `_lym/drift/logs/`, so the parent learned it only after opening the log.\nThe halt advised `lym loom resume`, which could not change the outcome, since the same error recurred on every entry.\n\nThe cwd fault itself landed in `93eaaa45` (capture and compare start in the anchored directory, and the halt names `lym drift defer`).\nThis task keeps the two halt-message parts that landing did not build.\n\n## Expected\n\n- When a capture child ends before recording its start, the halt carries the child log's error text (its last error line, bounded in length), not only the log's path; `startFailure` in `internal/driftengine/spawn.go` is where the message is built.\n- When the child's error is one a resume cannot change, such as the cwd and anchor check, the halt says so and drops `lym loom resume` as a way forward, naming only `lym drift defer` and the fix of the cause.\n",
       "created": "2026-11-03T09:00:51Z",
-      "revised": "2026-11-03T09:00:51Z"
+      "revised": "2026-11-03T09:01:16Z"
     },
     {
       "id": 1039,
