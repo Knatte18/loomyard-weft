@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Land",
+    "history_length": 8,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "",
+    "branch": "",
+    "dirty": null
+  },
+  "spawned_at": "2026-11-03T18:09:21.061189724+01:00",
+  "deadline": "2026-11-03T18:19:21.061189724+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/drift-baseline-skips-intended/drive-reports/drive-envelope-20261103-180921-a80e.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/drift-baseline-skips-intended/drive-reports/drive-report-20261103-180921-18e6.md",
+  "strand_guid": "7ec91e6ac8a3d208cb3914dfdcf979e1"
+}
