@@ -3,6 +3,7 @@
   "state": "awaiting",
   "error": "bouncer Discussion-Bouncer: round 1 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/reviews/discussion/round-1-escalation.md; record the answer with `lym loom decision add shed-sub-run-block`, then decide with `lym loom circling accept shed-sub-run-block` or `lym loom circling continue shed-sub-run-block`, then run `lym loom resume` in the task worktree to resume",
   "parent_notice": "Review segment of task `shed-sub-run-block` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/reviews/discussion/round-1-escalation.md` with a one-shot fork.",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
