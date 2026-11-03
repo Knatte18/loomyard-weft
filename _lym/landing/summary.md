@@ -1,32 +1,27 @@
-# loom status --watch ignores a wait's growing elapsed time
+# loom status --watch: stop printing a line per poll while a wait runs
 
-`lym loom status --watch` printed a new line on every poll while a verify, gate wait, shuttle wait or parent lock wait ran.
-The waiting note carries the wait's elapsed time (`verify running 6s (...)`), and the watch deduped on the printed line, so the growing counter read as a change each second.
-An agent or Monitor watching a run got one event per second for the length of each gate.
+`lym loom status --watch` printed a new line every poll while a verify ran.
+The composed activity carried the wait's elapsed seconds (`verify running 0s`, `1s`, `2s`, ...), so the change test saw a new activity on every poll.
+That contradicted the verb's own help ("a line only when the composed activity actually CHANGES"), and flooded any agent or Monitor watching a run with one event per second for the length of each gate.
 
-## What changes
+Now the watch prints a line only when the row, the state, or a wait's kind or detail changes.
+A wait whose elapsed time alone grows prints nothing new.
+The one-shot `status` and the checklist pane still show the elapsed time.
 
-- `shedverbs.Hooks.Waiting` now returns a `shedverbs.WaitNote` instead of a string.
-  `Text` is the note status shows, elapsed times included; `Steady` is the same note with every elapsed time held fixed.
-- The watch tail dedupes on a change key instead of the printed line.
-  `statusWatchLine` returns the line and its key, where the key carries the note's `Steady` form in place of its text;
-  `PrintStatusLinesOnChange` prints a polled line only when its key differs from that of the line it last printed.
-  A row, state, wait kind or wait detail change still prints, and the printed line still shows the elapsed time at that moment.
-- loom's hook chain in `internal/loomcli/reviewstatus.go` builds both forms through `timedNote`, which renders each note once with the formatted elapsed time and once with the `<elapsed>` placeholder.
-  The gate-wait clauses, holders clause and the chained next note are joined the same way into both forms.
-- The one-shot envelope, the human status view and the checklist pane keep using `Text`, so they keep showing the elapsed time.
+## Design
 
-## Design decisions
+- The `Waiting` hook in `internal/shedverbs` now returns a `shedverbs.WaitNote` instead of a string.
+  `Text` is the note as shown, elapsed time included.
+  `Steady` is the same note with every elapsed time replaced by the placeholder `<elapsed>`.
+- The wait builders in `internal/loomcli/reviewstatus.go` (gate-slot wait, verify, pause hold, shuttle wait, parent-lock wait) produce both forms from one render function, so the two cannot drift apart.
+  Composed notes (gate waits joined with the next hook's note) join both forms in parallel.
+- `PrintStatusLinesOnChange` polls a line and a change key, and prints when the key changes.
+  `statusWatchLine` builds the key from the status line plus the note's `Steady` form.
+  The unavailable line is its own key, as before.
+- The one-shot envelope's `waiting` key, the human status view and the checklist pane (`internal/loomcli/checklist.go`) use `Text`, so their output is unchanged.
+  `checklistPoll` now takes the waiting hook as a parameter, which lets a test pin that the pane's wait line keeps the elapsed time.
+- Updated the `--watch` help text and flag description, `contracts/specs/loom-status-spec.md` and `docs/overview.md` to say the watch ignores elapsed time.
 
-- The steady form is a second rendering, not a regex strip of the text: each formatting site knows where its elapsed time sits, so no parser has to guess which tokens are times.
-- A holders clause is part of the steady form, so a change of who holds a gate slot prints a line; it is the wait's detail.
+## Check by hand
 
-## Docs
-
-- The `lym loom status` help, the `--watch` flag text, `contracts/specs/loom-status-spec.md` and `docs/overview.md` state that a growing elapsed time alone is no change.
-
-## Tests
-
-- `TestPrintStatusLinesOnChange_LineSequences` gains a row where only the elapsed time changes between polls and no line prints for it.
-- `TestStatusWatchLine_AppendsWaitingNote` asserts the key carries the steady form while the line carries the text.
-- `TestShuttleWaiting`, `TestVerifyWaiting` and `TestParentLockWaiting` assert each note's steady form is its text with the elapsed time replaced by the placeholder.
+Not run against a live run: start a verify that lasts several polls, tail it with `lym loom status --watch`, and confirm one line appears when the wait starts, none while the elapsed time grows, and a new line when the wait's kind or detail changes (for example, from waiting for a gate slot to running).
