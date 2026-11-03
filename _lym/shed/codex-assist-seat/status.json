@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Code-Bouncer → done",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -234,6 +234,21 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYMHUB/codex-assist-seat/_lym/reviews/code/round-2-bouncer-ledger.md",
       "at": "2026-11-03T15:48:20Z"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/codex-assist-seat/_lym/landing/summary.md",
+      "at": "2026-11-03T15:49:00Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-03T15:49:00.179022777Z",
+          "end": "2026-11-03T15:49:00.179079803Z"
+        }
+      ]
     }
   ],
   "product": {
