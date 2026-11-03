@@ -1011,6 +1011,27 @@
       "body": "## Idea (operator, 2026-11-03)\n\nThe Plan, Discussion-Write and darn writers hand lookups to fresh subagents, and `loom.yaml`'s `subagent_model` names their model so it is never hardcoded.\nToday the value is a bare model name the Claude Code Agent tool takes, so a lookup agent is always a Claude subagent inside the writer's own session.\nThe value should also be able to name another engine, such as Codex (note `codex-engine`): such a lookup agent cannot run through the Agent tool, so lym spawns it through shuttle, and it shows in reed as a window of its own, like any other agent.\n\n## Open\n\n- How the writer asks for a shuttle-spawned lookup and gets its answer back: a `lym` verb that spawns the agent and waits for its reply, much as a fork returns only what is relevant (note `planner-fork-lookups`).\n- Whether one config value selects both the engine and the model, in model-spec form such as `codex[high]`, while a bare Claude name keeps today's Agent tool path.\n- Several lookups at once: each its own strand, and how many reed windows that makes.\n",
       "created": "2026-11-03T07:32:37Z",
       "revised": "2026-11-03T07:32:37Z"
+    },
+    {
+      "id": 1033,
+      "handle": "B1",
+      "slug": "pr-review-end-direct-push",
+      "title": "Ending the PR review closes the pull request and lands by direct push, which a PR-only branch refuses",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "landing",
+        "git"
+      ],
+      "issues": [
+        20
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #20](https://github.com/Knatte18/loomyard/issues/20).\n\n## What happened\n\nHub NORCE-DrillingAndWells/Models, beam `loomyard-setup` landing into `main`, prime beam.yaml `pull_request: \"on\"`.\nPR-Review opened PR #254 (loomyard-setup -\u003e main).\nThe review was ended through the PR-Review agent.\nlym then closed #254 with the comment \"the operator ended the review through the PR-Review agent; lym closes this pull request and the run lands through Finalize\", and Finalize squash-merged locally into `main` and pushed directly.\n\n`main` carries a GitHub ruleset requiring a pull request (squash only) and linear history, so origin refused the push:\n\n```\npush rejected: ! [remote rejected] main -\u003e main (push declined due to repository rule violations)\n```\n\nThe run blocked at Finalize with local `main` one commit ahead of origin and no lym way forward: retrying the push fails on the same rule.\n\n## Expected\n\nWith `pull_request` on, ending the review should let Finalize merge the open pull request on GitHub (squash), as it does for an open PR, not close it and land by direct push.\nAt minimum, lym should read the target branch's rules (`GET repos/{owner}/{repo}/rules/branches/{branch}`) and never choose a direct push to a branch that requires a pull request; a pull_request mode `required` on the prime would then be implied by the remote.\n\n## Workaround used\n\nReopen the PR, squash-merge it on GitHub by hand, reset local main to origin/main, cancel the run.",
+      "created": "2026-11-03T07:39:27Z",
+      "revised": "2026-11-03T07:39:27Z"
     }
   ],
   "prime_owner": "neve",
