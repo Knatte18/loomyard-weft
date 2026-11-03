@@ -16,6 +16,18 @@ Several notes circled the same question (where the decision record lives, how a 
 - lym itself writes the record field, at Discussion's approval and at each `lym loom decision add`, so the field is exempt from the lock on a claimed entry.
   That lock exists only so the orch does not change a task's text after its agents have read it; a record written by lym is not that.
 
+## Discussion as a run of its own (operator, 2026-11-03)
+
+How a task is best cut into smaller tasks is known only once its Discussion is done, so the split comes after Discussion, not before.
+
+- A Discussion-only run, interactive or not, runs Discussion-Write and its review and nothing else, then stores the record and flags the entry discussed, as the core above says.
+- It runs beside today's courses as an experiment; tapestry without it is unchanged.
+- A discussed entry then goes one of two ways, chosen after its Discussion:
+  1. Tapestry from Plan, skipping Discussion-Write: Plan-Write and Webster as today.
+  2. The part split: the record's scope is cut into darn tasks with contracts and `depends_on`, which run independently, each a task of its own.
+- Open: whether Discussion-Write also writes the part split, since it has the overview, or a separate step does it only when way 2 is chosen, so a task going way 1 pays nothing for it.
+  The orch's recommendation: Discussion-Write only judges in a line or two whether the scope has clear seams, and the split itself is a separate step on the discussed entry, much as `Parts-Write` is today.
+
 ## Ways to split, simplest first
 
 1. The operator, or the board agent of note `board-agent-button`, splits a discussed entry into tasks with `depends_on`, each with its part of the record and flagged discussed.
