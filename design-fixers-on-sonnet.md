@@ -2,8 +2,6 @@
 
 `fixers-on-sonnet` · Task · research, burler, claude · running · Darn-Write
 
-Depends on: [`concrete-review-findings`](design-concrete-review-findings.md)
-
 ## Seen
 
 `docs/research/token-audit-2026-10-22`: Opus and Sonnet read cache at the same price, so a swap saves about half a role's non-cache-read cost.

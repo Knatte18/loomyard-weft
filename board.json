@@ -147,9 +147,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "concrete-review-findings"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Twelve fixer runs: Opus against Sonnet, and Sonnet on concrete findings",
       "body": "## Seen\n\n`docs/research/token-audit-2026-10-22`: Opus and Sonnet read cache at the same price, so a swap saves about half a role's non-cache-read cost.\nOver the audit window the Plan and Discussion fixers cost about $162 on Opus.\nThe Webster and Merge fixers already run on Sonnet (`webster_fixer_model` and `merge_fixer_model` set to `sonnet[medium]`).\n`discussion_fixer_model` and `plan_fixer_model` are empty and fall back to `fixer_model`, `opus[medium]`.\nA Sonnet fixer needs findings concrete enough to carry out: each names the place and the change, not only the problem (operator, 2026-10-22).\n`docs/research/review-setup-audit-2026-10-28/report.md` found the late Plan-round defects to be the writer's misses rather than a sloppy fixer's, and `validator-checks` now catches the recurring machine-visible ones; fixer quality on a swap is still unmeasured.\n\n## Bench (operator, 2026-11-03)\n\nRuns as darn with profile `docs`, after bench `concrete-review-findings` has landed, since its third arm takes that bench's concrete findings as input.\n\n- Inputs: two review rounds from past runs with their findings, one Plan round and one Discussion round.\n- Arms, each on both inputs:\n  1. `opus[medium]` fixer on the findings as written today, the baseline.\n  2. `sonnet[medium]` fixer on the findings as written today.\n  3. `sonnet[medium]` fixer on the same rounds' findings written in the concrete form.\n- Repeats: two per arm and input, so twelve fixer runs.\n- Scoring: a fresh review round of each fixed artifact counts the findings fixed correctly, left open and newly made; the cost of each fixer run is recorded.\n- Report under `docs/research/`, with a recommendation for `plan_fixer_model` and `discussion_fixer_model`.\n",
@@ -748,28 +746,6 @@
       "body": "## Seen (operator, 2026-11-03)\n\nOn the NORCE Models repository, on machine OSL-1046, a direct commit or push to `main` is refused by branch protection: every change reaches `main` as a merge from a branch, on the remote.\nThat is intended and stays so.\nlym lands every run by merging locally and pushing the parent: a task's Finalize squashes onto the parent and pushes it, and a beam's pawl run lands the beam the same way.\nSo on such a repository no task and no beam can land.\n\n## Design (operator, 2026-11-03)\n\nA hub, or a parent branch, can be marked as landed through the remote:\n\n- Finalize pushes the task or beam branch, opens a pull request into the parent and squash-merges it on the remote at once, then pulls the parent, in place of the local squash and push.\n- A pull request is always opened, by the hub's own rule, though the protection demands no approval and no status check: lym merges it without waiting for a review.\n- The merge is always a squash.\n- The parent lock, the gate of the merged tree and the board's done mark stay as today.\n- A refused push to a protected branch names this setting as the way forward, instead of a bare push failure.\n",
       "created": "2026-11-03T18:07:32Z",
       "revised": "2026-11-03T18:14:12Z"
-    },
-    {
-      "id": 1069,
-      "handle": "T2",
-      "slug": "concrete-review-findings",
-      "title": "Bench reviewers that name the place and the change in every finding",
-      "kind": "task",
-      "labels": [
-        "research",
-        "burler",
-        "stencil"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Eight review runs: the current review stencil against one that demands concrete findings",
-      "body": "## Seen\n\nA cheaper fixer model needs findings concrete enough to carry out: each names the place and the change, not only the problem (operator, 2026-10-22).\nPlan and Discussion reviewers do not write findings that way today.\nAsking them to costs the reviewer more output and may change what it finds.\n\n## Bench (operator, 2026-11-03)\n\nRuns as darn with profile `docs`, before bench `fixers-on-sonnet`, which takes its concrete findings as input.\n\n- Inputs: the same two artifacts `fixers-on-sonnet` uses, one plan and one discussion from past runs, each at the state its review round saw.\n- Arms, each on both inputs, with the reviewer model the hub uses today:\n  1. The review stencil as it is, the baseline.\n  2. The review stencil with a rule that every finding names its place and the change to make.\n- Repeats: two per arm and input, so eight review runs.\n- Scoring: findings per run, the share that name place and change, the findings one arm raises that the other misses, and the cost of each run.\n- Report under `docs/research/`, keeping the arm-2 findings as `fixers-on-sonnet`'s input, with a recommendation on whether the rule goes into the stencils.\n",
-      "status": "done",
-      "created": "2026-11-03T18:21:21Z",
-      "revised": "2026-11-03T18:21:53Z",
-      "profile": "docs"
     }
   ],
   "prime_owner": "neve",
