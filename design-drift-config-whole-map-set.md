@@ -1,6 +1,6 @@
 # lym config drift refuses the whole-map capture and compare form its own key description prescribes
 
-`drift-config-whole-map-set` · Task · bug, drift, config · running · Darn-Write
+`drift-config-whole-map-set` · Task · bug, drift, config · running · Drift-Verify
 
 From [issue #19](https://github.com/Knatte18/loomyard/issues/19).
 
