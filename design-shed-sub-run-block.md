@@ -22,6 +22,7 @@ A general shed block that runs a whole sub-recipe as one producer of the parent 
 
 ## Scope of this task (orch, 2026-11-03)
 
-- In: the block and its entry gate in the shed engine and the recipe format, the set of gate checks lym ships with at least one that always enters, and `cartoon` as a recipe of its own holding tapestry's Discussion rows, with tapestry itself unchanged.
-- Out, as follow-up tasks: the gate check that reads a discussed entry's record from Bolt, which needs the record on the board from the core of note `discussed-task-split`; the new recipe beside tapestry that runs `cartoon` through the block; and its bench against tapestry.
+- In: the block and its entry gate in the shed engine and the recipe format, the set of gate checks lym ships with at least one that always enters, `cartoon` as a recipe of its own holding tapestry's Discussion rows, and a new recipe beside tapestry that runs `cartoon` through the block and then tapestry's Plan and build rows, so the block is proven on a real recipe; tapestry itself stays unchanged.
+  Discussion proposes the new recipe's name, and the operator approves it.
+- Out, as follow-up tasks: the gate check that reads a discussed entry's record from Bolt, which needs the record on the board from the core of note `discussed-task-split`; and the bench of the new recipe against tapestry.
 - Open, for the run's Discussion to settle: how a goto, `lym loom status` and the progress count name a row inside a block; whether a block's review segments keep their own budgets; how recipe keys and profiles reach a block's rows.
