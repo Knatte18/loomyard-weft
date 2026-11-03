@@ -1,6 +1,6 @@
 # New task worktrees in a beam inherit the beam's committed loom-halt.md and block at Preflight
 
-`inherited-halt-blocks-preflight` · Task · bug, loom, friction, pawl · running · Describe
+`inherited-halt-blocks-preflight` · Task · bug, loom, friction, pawl · running · PR-Review
 
 Imported from [issue #22](https://github.com/Knatte18/loomyard/issues/22).
 
