@@ -35,7 +35,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T2 | 3d<br>20m | fabric |
 
-## Notes (30)
+## Notes (31)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -45,7 +45,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 12d<br>8h | loom, stencil |
 
-### Bugs (4)
+### Bugs (5)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -53,6 +53,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B2 |  | **A partial scope that skips every test ends in a capture that wrote no file, with no cause named**<br>• The capture failure names neither the skips nor the scope change that would fix it, so the tackler re-launches blind | [`drift-skip-all-capture`](design-drift-skip-all-capture.md) | 2m<br>2m | drift |
 | B3 |  | **The Drift-Baseline stencil skips the tests an intended change drifts**<br>• Intended drift is skipped instead of compared and accepted with a reason, which hides regressions in the same tests | [`drift-baseline-skips-intended`](design-drift-baseline-skips-intended.md) | 2m<br>2m | drift, stencil |
 | B4 |  | **An arbiter whose turn ends on an API error holds the stop silently until its deadline**<br>• A StopFailure leaves the settler idle, the parent's resume is refused as driver_not_parked, and no one is told | [`arbiter-api-error-stall`](design-arbiter-api-error-stall.md) | 0m<br>0m | arbiter, shuttle, claude |
+| B5 |  | **Moving Drift's dir base reinterpreted existing drift.yaml files with no migration**<br>• cs drift.yaml dir . moved from the anchor to the worktree root at deploy and the capture failed exit 1 | [`drift-dir-base-migration`](design-drift-dir-base-migration.md) | 0m<br>0m | drift, reconcile |
 
 ### Enhancements (8)
 

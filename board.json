@@ -771,6 +771,25 @@
       "body": "An arbiter session whose turn ends on an API error sits idle until its deadline, so the stop it holds reaches no one for half an hour.\n\n## Seen\n\nOn the `cs` hub (2026-11-03), `report-significant-digits` blocked at Drift-Await; the tackler's second attempt escalated at 17:06:03 and the arbiter was spawned (`_lym/shed/report-significant-digits/arbiter/attempt-1/attempt.json`, deadline 17:36:03).\n\n- Three seconds later the session's turn ended on `API Error: 500 Internal server error`: its `events.jsonl` holds `StopFailure` at 16:06:06Z with `\"error\":\"server_error\"`, then `idle_prompt` at 16:07:06Z.\n- No verdict was written and nothing was posted to `cs:orch`: the hub's creel log holds no post about the stop between the block and 17:33.\n- `cs:orch`, told of the stop by another session, repaired it and ran `lym loom resume` five times between 17:32:28 and 17:33:53; each was refused with `\"kind\":\"driver_not_parked\"`, \"the run's Go driver still holds its driver lock and is settling the stop; run \\\"lym loom resume\\\" again in a few seconds\", while the dead arbiter had held the stop for 26 minutes.\n- At 17:34:41 a fresh arbiter was spawned in the same `attempt-1` (`go-settle.jsonl`: `\"settler\":\"arbiter\",\"action\":\"spawn\"`); it found the repair and resumed the run in ten seconds.\n\n## Expected\n\n- lym reads a `StopFailure` hook event of a settler's session (arbiter, tackler, and any other role run under a deadline) as the end of that turn: it re-sends the turn after a short back-off a bounded number of times, then hands the stop on to the parent with the error named.\n- A stop held by a settler whose session has failed is never silent: the parent orch gets a notice naming the stop and the failed settler.\n",
       "created": "2026-11-03T16:36:11Z",
       "revised": "2026-11-03T16:36:11Z"
+    },
+    {
+      "id": 1060,
+      "handle": "B5",
+      "slug": "drift-dir-base-migration",
+      "title": "Moving Drift's dir base reinterpreted existing drift.yaml files with no migration",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "drift",
+        "reconcile"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "cs drift.yaml dir . moved from the anchor to the worktree root at deploy and the capture failed exit 1",
+      "body": "The binary that moved Drift's `dir` base to the worktree root changed what an existing `drift.yaml` means and carried no migration, so a hub's capture silently moved to another directory.\n\n## Seen\n\n`c896481c` (\"One base for a command's dir; a missing Drift dir fails by name\") was deployed at 17:23 on 2026-11-03, while the Drift trial ran on the `cs` hub (anchor `lym-csharp/dotnet`).\nIts message says: \"A `drift.yaml` `dir` written relative to the anchor must be rewritten relative to the worktree root. For the `cs` hub, … `dir: .` now means the worktree root\".\n\n- `cs`'s `drift.yaml` held `capture.dir: .` and `compare.dir: .`, set an hour before for the anchor base; nothing rewrote it, warned of it, or told `cs:orch`.\n- At 17:32:25 a capture of `report-significant-digits`, run from the task worktree's `dotnet/`, ran `dotnet run --project src/LymCsharp.Regression …` in the worktree root and failed `exit 1`: \"The provided file path does not exist: src/LymCsharp.Regression.\"\n  The run dir existed, so the new pre-spawn check did not fire, and the reason read only `exit 1`.\n- `cs:orch` found the cause by hand and set both dirs to `dotnet`.\n\n## Expected\n\n- A binary that changes the meaning of a config value carries its migration: `hubreconcile` rewrites, or flags with a way forward, each hub file whose value it reinterprets (here a relative Drift `dir` on an anchored hub) before the new binary runs a command from it.\n- A hub's orch is told when such a reconcile changes or flags one of its files.\n",
+      "created": "2026-11-03T16:36:11Z",
+      "revised": "2026-11-03T16:36:11Z"
     }
   ],
   "prime_owner": "neve",
