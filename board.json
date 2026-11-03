@@ -803,6 +803,27 @@
       "body": "The binary that moved Drift's `dir` base to the worktree root changed what an existing `drift.yaml` means and carried no migration, so a hub's capture silently moved to another directory.\n\n## Seen\n\n`c896481c` (\"One base for a command's dir; a missing Drift dir fails by name\") was deployed at 17:23 on 2026-11-03, while the Drift trial ran on the `cs` hub (anchor `lym-csharp/dotnet`).\nIts message says: \"A `drift.yaml` `dir` written relative to the anchor must be rewritten relative to the worktree root. For the `cs` hub, … `dir: .` now means the worktree root\".\n\n- `cs`'s `drift.yaml` held `capture.dir: .` and `compare.dir: .`, set an hour before for the anchor base; nothing rewrote it, warned of it, or told `cs:orch`.\n- At 17:32:25 a capture of `report-significant-digits`, run from the task worktree's `dotnet/`, ran `dotnet run --project src/LymCsharp.Regression …` in the worktree root and failed `exit 1`: \"The provided file path does not exist: src/LymCsharp.Regression.\"\n  The run dir existed, so the new pre-spawn check did not fire, and the reason read only `exit 1`.\n- `cs:orch` found the cause by hand and set both dirs to `dotnet`.\n\n## Expected\n\n- A binary that changes the meaning of a config value carries its migration: `hubreconcile` rewrites, or flags with a way forward, each hub file whose value it reinterprets (here a relative Drift `dir` on an anchored hub) before the new binary runs a command from it.\n- A hub's orch is told when such a reconcile changes or flags one of its files.\n",
       "created": "2026-11-03T16:36:11Z",
       "revised": "2026-11-03T16:36:11Z"
+    },
+    {
+      "id": 1061,
+      "handle": "B1",
+      "slug": "cancel-remove-leftover-dir",
+      "title": "batten cancel --remove leaves a non-git directory that blocks Worktree-Create",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "batten",
+        "fabric"
+      ],
+      "issues": [
+        39
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #39](https://github.com/Knatte18/loomyard/issues/39).\n\n## What happened\n\nIn the Models hub (anchor `src/csharp/NORCE.Models`), `lym batten cancel production-model-duplicates --remove` stopped a tapestry run in Discussion-Write and answered `pair_removed: true`.\nThe task worktree directory `\u003chub\u003e/production-model-duplicates/` stayed behind, no longer a git worktree, holding only `src/csharp/NORCE.Models/*/obj/` build output and `.lym/reed.lock` (52 files, all timestamped at the cancel).\nA later `lym batten run production-model-duplicates` failed at Worktree-Create with `{\"error\":\"not a git repository\"}`, and the drive report handed back as an interrupted step.\n`lym fabric prune` listed nothing, since the directory is not a worktree.\nRemoving the directory by hand let the run start.\n\n`lym board rename` of the same slug after the cancel also refused with \"has a pair, and its slug names that pair: end the pair first with `lym batten cancel ... --remove`\", although that cancel had already run.\n\n## Expected\n\n- `batten cancel --remove` leaves no directory at the pair's path, or waits for the processes it ends (a dotnet build server or the reed session likely wrote `obj/` and `reed.lock` after the removal) before removing it.\n- Worktree-Create meets a leftover non-git directory at its path with a clear refusal naming the path and the way forward, or clears one holding only ignored build output.\n- `fabric prune` reports such an orphan directory.\n- `board rename` does not see a pair once cancel has removed it.\n",
+      "created": "2026-11-03T16:44:17Z",
+      "revised": "2026-11-03T16:44:17Z"
     }
   ],
   "prime_owner": "neve",
