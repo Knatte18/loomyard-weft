@@ -163,6 +163,15 @@ Rationale: Blocks do not exist until shed-sub-run-block lands, so this task cann
 
 - Task `shed-sub-run-block` keeps tapestry unchanged while it builds `cartoon` from tapestry's Discussion rows, and this task adds `approve_seam: discussion` to tapestry's Discussion-Bouncer: the parent should confirm that D7's guard, rather than a hand merge or a different owner of the row, is the agreed coordination.
 
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-1-review.md; fixer report: _lym/reviews/discussion/round-1-fixer-report.md.
+  - F3 (class decision, severity MEDIUM, open in rounds 1; answered since by: Approval inside a sub-run block is a follow-up)
+  - design-prefix-refusal-too-narrow (class design, severity MEDIUM, open in rounds 1)
+  - open-risk-names-settled-coordination (class decision, severity MEDIUM, open in rounds 1)
+  - rename-move-point-in-write (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - D1: a stored record lands in `decision-<slug>.md` at the board root, byte for byte, `board.json` holds `discussed: true` and no record text, and a later render leaves the file in place; a `design_prefix` equal to the record prefix, an empty one, a proper prefix of it such as `dec` and one starting with `decision-` are each refused with the way forward.
