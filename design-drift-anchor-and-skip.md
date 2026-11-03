@@ -17,3 +17,11 @@ Imported from [issue #24](https://github.com/Knatte18/loomyard/issues/24).
 Hub NORCE-DrillingAndWells/Models, darn run testsupport-rule-and-helpers, halted at Drift-Baseline by Knatte18/loomyard#23. To skip drift for this one run, the parent ran lym config drift --layer local --set enabled=false in the task worktree; lym config --resolved drift shows enabled: false # local. lym loom resume then ran Drift-Baseline again and spawned the capture child anyway, failing the same way. lym drift defer is refused at a failed or paused Drift-Baseline, and goto cannot move past it, so there is no way to take one run past drift.
 
 Expected: either the local layer's enabled=false makes Drift-Baseline and Drift-Verify pass through on the next resume, or lym drift defer is admitted at a failed Drift-Baseline, as its halt's way forward.
+
+## From issue #25
+
+Imported from [issue #25](https://github.com/Knatte18/loomyard/issues/25).
+
+Hub NORCE-DrillingAndWells/Models, darn run testsupport-rule-and-helpers. The task adds a PATTERN.md entry and moves three test helpers between test projects. The agent's own baseline.md says it touches no production code and expects no drift, yet it recorded scope full. The capture suite, NORCE.Models.NumericalBaseline, references only NORCE.Models.WellboreSimulation, so nothing the task changes can reach it; scope off was the right call, and would have spared the run the capture (which then failed on Knatte18/loomyard#23).
+
+Expected: the Drift-Baseline stencil tells the agent to check whether the capture command's projects can reach the changed files, through their project references, and to record scope off when they cannot or when the change touches no code the suite runs. A scope recorded wrongly cannot be re-recorded today (a second lym drift scope is refused), so a way for the parent to reset it would help too.
