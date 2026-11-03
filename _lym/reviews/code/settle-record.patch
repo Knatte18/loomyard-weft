@@ -1,0 +1,391 @@
+diff --git a/internal/battencli/commitstatus.go b/internal/battencli/commitstatus.go
+index 38e15d00..e994ffd6 100644
+--- a/internal/battencli/commitstatus.go
++++ b/internal/battencli/commitstatus.go
+@@ -53,7 +53,7 @@ type commitStatusDeps struct {
+ var spawnStatusPush = fabricengine.SpawnStatusPush
+ 
+ // battenRunCommitPaths returns the anchor-relative paths a status transition commits: the run's
+-// status file, and its seed and dobby's run notice marker whenever each is on disk.
++// status file, and its seed, dobby's run notice marker and the settle records whenever each is on disk.
+ //
+ // Both belong on the pair because a run directory is durable, fabric-synced state -- a status
+ // committed without its seed leaves a resumed machine able to read how far the run came but not
+@@ -73,6 +73,9 @@ func battenRunCommitPaths(location *lymcwd.Location, runID string) []string {
+ 	if _, err := os.Stat(shedrun.NoticeEpisodeFile(location, runID)); err == nil {
+ 		paths = append(paths, shedrun.NoticeEpisodeRel(location, runID))
+ 	}
++	if _, err := os.Stat(shedrun.SettleRecords(location, runID)); err == nil {
++		paths = append(paths, shedrun.SettleRecordsRel(location, runID))
++	}
+ 	return paths
+ }
+ 
+diff --git a/internal/battencli/commitstatus_test.go b/internal/battencli/commitstatus_test.go
+index b634558b..19c57d79 100644
+--- a/internal/battencli/commitstatus_test.go
++++ b/internal/battencli/commitstatus_test.go
+@@ -168,4 +168,12 @@ func TestBattenRunCommitPaths(t *testing.T) {
+ 	if want = append(want, shedrun.NoticeEpisodeRel(loc, runID)); !reflect.DeepEqual(got, want) {
+ 		t.Errorf("battenRunCommitPaths with a notice marker on disk = %v; want %v", got, want)
+ 	}
++
++	if err := os.WriteFile(shedrun.SettleRecords(loc, runID), []byte("{}\n"), 0o644); err != nil {
++		t.Fatalf("write settle records: %v", err)
++	}
++	got = battenRunCommitPaths(loc, runID)
++	if want = append(want, shedrun.SettleRecordsRel(loc, runID)); !reflect.DeepEqual(got, want) {
++		t.Errorf("battenRunCommitPaths with settle records on disk = %v; want %v", got, want)
++	}
+ }
+diff --git a/internal/fabricengine/dirtiness.go b/internal/fabricengine/dirtiness.go
+index 0ad4742a..b34c18f0 100644
+--- a/internal/fabricengine/dirtiness.go
++++ b/internal/fabricengine/dirtiness.go
+@@ -54,11 +54,16 @@ const (
+ // detail is the trimmed stdout — the porcelain listing itself — returned even when err is nil, for
+ // the one caller (warpclean.go's dirtyReason) that surfaces it to its own caller; every other site
+ // ignores it.
+-func worktreeDirty(scope dirtyScope, dir string) (dirty bool, detail string, err error) {
++//
++// pathspec, when given, limits the probe to the paths it matches, relative to dir.
++func worktreeDirty(scope dirtyScope, dir string, pathspec ...string) (dirty bool, detail string, err error) {
+ 	args := []string{"status", "--porcelain"}
+ 	if scope == scopeTracked {
+ 		args = append(args, "--untracked-files=no")
+ 	}
++	if len(pathspec) > 0 {
++		args = append(append(args, "--"), pathspec...)
++	}
+ 
+ 	stdout, runErr := gitexec.Run(args, dir)
+ 	if runErr != nil {
+diff --git a/internal/fabricengine/warpclean.go b/internal/fabricengine/warpclean.go
+index bc8c54e7..1f73a4e5 100644
+--- a/internal/fabricengine/warpclean.go
++++ b/internal/fabricengine/warpclean.go
+@@ -7,6 +7,7 @@ package fabricengine
+ import (
+ 	"fmt"
+ 	"os"
++	"path/filepath"
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+@@ -16,8 +17,9 @@ import (
+ // files.
+ // It is package-level for use by preflight.CheckResolved.
+ // The weft-side check is skipped when the weft worktree does not exist.
++// weftExempt names anchor-relative weft paths whose dirty content the weft-side check ignores, everything beneath each included.
+ // Returns (false, reason, nil) when dirty or (false, "", err) for system errors.
+-func Clean(l *lymcwd.Location) (clean bool, reason string, err error) {
++func Clean(l *lymcwd.Location, weftExempt ...string) (clean bool, reason string, err error) {
+ 	warpReason, err := dirtyReason("git status --porcelain", l.WorktreePath())
+ 	if err != nil {
+ 		return false, "", err
+@@ -25,7 +27,7 @@ func Clean(l *lymcwd.Location) (clean bool, reason string, err error) {
+ 
+ 	var weftReason string
+ 	if _, statErr := os.Stat(RecordsWorktree(l)); statErr == nil {
+-		weftReason, err = dirtyReason("git status --porcelain", RecordsWorktree(l))
++		weftReason, err = dirtyReason("git status --porcelain", RecordsWorktree(l), exemptPathspec(l.AnchorRel, weftExempt)...)
+ 		if err != nil {
+ 			return false, "", err
+ 		}
+@@ -46,11 +48,24 @@ func Clean(l *lymcwd.Location) (clean bool, reason string, err error) {
+ 	return false, strings.Join(reasons, "; "), nil
+ }
+ 
+-// dirtyReason runs `git status --porcelain` at dir and returns its trimmed
+-// output — empty when clean, non-empty when dirty. label names the command
+-// in wrapped errors so a warp-vs-weft spawn failure is distinguishable.
+-func dirtyReason(label, dir string) (string, error) {
+-	_, detail, err := worktreeDirty(scopeAll, dir)
++// exemptPathspec returns the status pathspec that matches the whole worktree but each of the anchor-relative exempt paths, scoped under anchorRel.
++// It returns nil when exempt is empty, so the probe runs unscoped.
++func exemptPathspec(anchorRel string, exempt []string) []string {
++	if len(exempt) == 0 {
++		return nil
++	}
++	pathspec := []string{"."}
++	for _, path := range weftCommitPathspec(anchorRel, exempt) {
++		pathspec = append(pathspec, ":(exclude)"+filepath.ToSlash(path))
++	}
++	return pathspec
++}
++
++// dirtyReason runs `git status --porcelain` at dir, limited to pathspec when given, and returns its trimmed output.
++// The output is empty when clean and non-empty when dirty.
++// label names the command in wrapped errors so a warp-vs-weft spawn failure is distinguishable.
++func dirtyReason(label, dir string, pathspec ...string) (string, error) {
++	_, detail, err := worktreeDirty(scopeAll, dir, pathspec...)
+ 	if err != nil {
+ 		return "", fmt.Errorf("%s: %w", label, err)
+ 	}
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index 9ab17689..c5dd30c9 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -82,7 +82,7 @@ type commitStatusDeps struct {
+ 	SetBoardStatus func(status string) error
+ }
+ 
+-// statusCommitPathspec returns the fabric-sibling pathspec one status commit stages: shedrun.StatusRel(location, runID), plus each of loomengine.LoomReviewsDirRel(), loomengine.LoomDurableDirRel(), shedrun.DriveReportsRel(location, runID), shedrun.ArbiterRel(location, runID) and shedrun.TacklerRel(location, runID) when its directory holds at least one non-directory entry anywhere beneath it.
++// statusCommitPathspec returns the fabric-sibling pathspec one status commit stages: shedrun.StatusRel(location, runID), plus each of loomengine.LoomReviewsDirRel(), loomengine.LoomDurableDirRel(), shedrun.DriveReportsRel(location, runID), shedrun.ArbiterRel(location, runID) and shedrun.TacklerRel(location, runID) when its directory holds at least one non-directory entry anywhere beneath it, plus shedrun.SettleRecordsRel(location, runID) when the settle-records file exists.
+ // The arbiter directory carries each attempt's record, prompt, verdict and envelope, so they are committed with the run records.
+ // The tackler directory, staged under the same rule, carries each tackler attempt's record, prompt, verdict and envelope.
+ // The loom durable directory is staged whole rather than its friction directory alone:
+@@ -113,6 +113,9 @@ func statusCommitPathspec(location *lymcwd.Location, runID string) []string {
+ 	if holdsFile(shedrun.TacklerDir(location, runID)) {
+ 		paths = append(paths, shedrun.TacklerRel(location, runID))
+ 	}
++	if _, err := os.Stat(shedrun.SettleRecords(location, runID)); err == nil {
++		paths = append(paths, shedrun.SettleRecordsRel(location, runID))
++	}
+ 	return paths
+ }
+ 
+@@ -191,7 +194,7 @@ func holdsFile(dir string) bool {
+ 	return found
+ }
+ 
+-// loomCommitStatusDeps builds a commitStatusDeps over location and runID, filling each field from fabric: MergeActive from fabricengine.MergeStateActive, Commit from fabricengine.CommitAnchoredPaths scoped to statusCommitPathspec (the status file, plus the review round record, the loom durable directory and the drive reports when each holds a file), Spawn from spawnStatusPush, which pushes the run records and, in a task pair, the task branch, and Push from fabricengine.PushPairAnchored, the same push run synchronously.
++// loomCommitStatusDeps builds a commitStatusDeps over location and runID, filling each field from fabric: MergeActive from fabricengine.MergeStateActive, Commit from fabricengine.CommitAnchoredPaths scoped to statusCommitPathspec, Spawn from spawnStatusPush, which pushes the run records and, in a task pair, the task branch, and Push from fabricengine.PushPairAnchored, the same push run synchronously.
+ func loomCommitStatusDeps(location *lymcwd.Location, runID string) commitStatusDeps {
+ 	return commitStatusDeps{
+ 		MergeActive: func() (bool, error) {
+diff --git a/internal/loomcli/wiring_commitstatus_test.go b/internal/loomcli/wiring_commitstatus_test.go
+index 618e5d94..651affef 100644
+--- a/internal/loomcli/wiring_commitstatus_test.go
++++ b/internal/loomcli/wiring_commitstatus_test.go
+@@ -156,7 +156,15 @@ func TestStatusCommitPathspec(t *testing.T) {
+ 		wantDrive   bool
+ 		wantArbiter bool
+ 		wantTackler bool
++		wantSettle  bool
+ 	}{
++		{
++			name: "settle records",
++			setup: func(t *testing.T, loc *lymcwd.Location) {
++				writeFile(t, shedrun.SettleRecords(loc, shedrun.SelfRunID), "{}\n")
++			},
++			wantSettle: true,
++		},
+ 		{
+ 			name: "arbiter directory holding only an empty attempt directory",
+ 			setup: func(t *testing.T, loc *lymcwd.Location) {
+@@ -288,6 +296,9 @@ func TestStatusCommitPathspec(t *testing.T) {
+ 			if tt.wantTackler {
+ 				want = append(want, shedrun.TacklerRel(location, shedrun.SelfRunID))
+ 			}
++			if tt.wantSettle {
++				want = append(want, shedrun.SettleRecordsRel(location, shedrun.SelfRunID))
++			}
+ 			got := statusCommitPathspec(location, shedrun.SelfRunID)
+ 			if !reflect.DeepEqual(got, want) {
+ 				t.Errorf("statusCommitPathspec() = %v; want %v", got, want)
+diff --git a/internal/preflight/doc.go b/internal/preflight/doc.go
+index 21446d6a..e90f56b2 100644
+--- a/internal/preflight/doc.go
++++ b/internal/preflight/doc.go
+@@ -22,6 +22,12 @@
+ // Check's non-lymcwd.ErrNotAGitRepo branch is NOT reachable through a git-subprocess spawn failure — that case is folded into ErrNotAGitRepo already.
+ // It is reachable only through lymcwd's anchor-resolution path: ErrCwdOutsideAnchor from the cwd gate, ErrStaleAnchorMarker from a board carrying only the pre-rename marker, and an ErrInvalidAnchor-wrapping failure when a recorded anchor exists but fails validation are examples of routes into that branch, not a closed set of them.
+ //
++// The worktree-clean check skips the run-records root under `_lym` on the state side.
++// lym writes its own run records there while it handles a stop.
++// The status commits stage the settle records, while the other run-record files, the stop and condition-stop markers among them, stay uncommitted until a later records commit or the run's removal.
++// Counting them made a run refuse its own bookkeeping on every re-step.
++// Everything else under `_lym` still counts.
++//
+ // A composing orchestrator reads this doc rather than duplicating the contract in its own package
+ // doc: the shared types and checks live here, so the shared contract does too.
+ //
+diff --git a/internal/preflight/preflight.go b/internal/preflight/preflight.go
+index 2477f10a..79d3819b 100644
+--- a/internal/preflight/preflight.go
++++ b/internal/preflight/preflight.go
+@@ -11,8 +11,18 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/shedrun"
+ )
+ 
++// runStateExemptRels returns the anchor-relative directories under `_lym` whose uncommitted content the worktree-clean check ignores: the run-records root, which holds only lym's own run records.
++// lym writes there while a run handles a stop, such as settle records, tackler and arbiter attempts and stop markers.
++// The status commits stage the settle records, while the other run-record files, the stop and condition-stop markers among them, stay uncommitted until a later records commit or the run's removal.
++// The check ignores them because they are lym's own bookkeeping in flight, never work a run could lose.
++// It is the one place that decides which lym state the check skips.
++func runStateExemptRels() []string {
++	return []string{shedrun.RunsRootRel()}
++}
++
+ // Check resolves cwd into a *lymcwd.Location and validates the tier-1/tier-2 preconditions against
+ // it.
+ //
+@@ -67,7 +77,7 @@ func CheckResolved(l *lymcwd.Location) (Report, error) {
+ 
+ 	// Check 2: worktree pair cleanliness. Collected, not short-circuited — a
+ 	// dirty side does not prevent the remaining checks from also reporting.
+-	clean, reason, err := fabricengine.Clean(l)
++	clean, reason, err := fabricengine.Clean(l, runStateExemptRels()...)
+ 	if err != nil {
+ 		return Report{}, err
+ 	}
+diff --git a/internal/preflight/preflight_integration_test.go b/internal/preflight/preflight_integration_test.go
+index 5e273db7..0bbc0093 100644
+--- a/internal/preflight/preflight_integration_test.go
++++ b/internal/preflight/preflight_integration_test.go
+@@ -26,6 +26,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/preflight"
++	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -33,8 +34,14 @@ import (
+ // and the slug for WireJunctions.
+ func setupFixture(t *testing.T) (*hubforge.Hub, string) {
+ 	t.Helper()
++	return setupAnchoredFixture(t, ".")
++}
++
++// setupAnchoredFixture is setupFixture for a hub anchored at anchor.
++func setupAnchoredFixture(t *testing.T, anchor string) (*hubforge.Hub, string) {
++	t.Helper()
+ 
+-	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: anchor})
+ 	slug := filepath.Base(h.Location.WorktreePath())
+ 
+ 	hubforge.SeedFabricConfig(t, h, "branch_prefix: \"\"\npathspec: _extra\n")
+@@ -404,6 +411,67 @@ func TestCheckResolved_Failures(t *testing.T) {
+ 	}
+ }
+ 
++// TestCheckResolved_RunStateUnderLymIsExempt writes, untracked, every file lym's stop and settle paths write into a run's directory under `_lym`, and asserts the worktree-clean check passes over them.
++// Fabric's own unscoped Clean must see the files first, so the pass is never a gitignore's doing.
++// A file under `_lym` outside the run-records root then still refuses.
++// Each anchor builds its own hub, since a subpath anchor moves `_lym` below the worktree's root.
++func TestCheckResolved_RunStateUnderLymIsExempt(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	for _, anchor := range []string{".", "backend"} {
++		t.Run("Anchor_"+anchor, func(t *testing.T) {
++			t.Parallel()
++
++			h, _ := setupAnchoredFixture(t, anchor)
++			l := h.Location
++			runID := shedrun.SelfRunID
++			runState := []string{
++				shedrun.SettleRecords(l, runID),
++				filepath.Join(shedrun.TacklerAttemptDir(l, runID, 1), "verdict.md"),
++				filepath.Join(shedrun.ArbiterAttemptDir(l, runID, 1), "verdict.md"),
++				filepath.Join(shedrun.DriveReportsDir(l, runID), "report.md"),
++				shedrun.StopMarker(l, runID),
++				shedrun.ConditionStopMarker(l, runID),
++				shedrun.NoticeEpisodeFile(l, runID),
++				shedrun.StatusFile(l, runID),
++				shedrun.SeedFile(l, runID),
++			}
++			for _, path := range runState {
++				writeFile(t, path)
++			}
++
++			if clean, _, err := fabricengine.Clean(l); err != nil || clean {
++				t.Fatalf("fabricengine.Clean() = (%v, %v); want (false, nil) with the run state written", clean, err)
++			}
++
++			report, err := preflight.CheckResolved(l)
++			if err != nil {
++				t.Fatalf("CheckResolved: %v", err)
++			}
++			assertCheckSet(t, report)
++
++			writeFile(t, filepath.Join(l.AnchorPath(), lymdirs.LymDirName, "plan", "plan.md"))
++			report, err = preflight.CheckResolved(l)
++			if err != nil {
++				t.Fatalf("CheckResolved: %v", err)
++			}
++			assertCheckSet(t, report, preflight.CheckWorktreeClean)
++		})
++	}
++}
++
++// writeFile writes a file at path, creating its directory.
++func writeFile(t *testing.T, path string) {
++	t.Helper()
++	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++		t.Fatalf("create directory of %s: %v", path, err)
++	}
++	if err := os.WriteFile(path, []byte("{}\n"), 0o644); err != nil {
++		t.Fatalf("write %s: %v", path, err)
++	}
++}
++
+ // TestCheckResolved_MissingOptionalJunctionIsAJunctionFault covers a worktree whose optional
+ // junction was never wired at all: _lym is fully healthy, but the second, non-_lym junction is
+ // entirely absent (simulated here by removing it from an otherwise-healthy fixture, rather than
+diff --git a/internal/shedrun/doc.go b/internal/shedrun/doc.go
+index 1b2d3d0f..95b6fad6 100644
+--- a/internal/shedrun/doc.go
++++ b/internal/shedrun/doc.go
+@@ -42,7 +42,7 @@
+ // BattenWatchedContent renders the pid on the first line and, when known, the prime's batten scratch directory and the Run-Shed row's name on the next two.
+ // ParseBattenWatched reads it back, and a one-line marker parses with an empty scratch directory and row.
+ //
+-// RunsRootRel names the anchor-relative run-records root, because fabricengine's Add drops everything under it from a freshly forked pair.
++// RunsRootRel names the anchor-relative run-records root, so a caller that needs the whole run-records tree need not name the shed segment itself.
+ // RunsRoot and ScratchRoot are its absolute durable and ephemeral forms, the directories every run directory and scratch directory sit under.
+ // RunDirRel is a run directory's anchor-relative form, the pathspec of a records commit that deletes the whole directory.
+ //
+diff --git a/internal/shedrun/paths.go b/internal/shedrun/paths.go
+index 61fc426e..961a0527 100644
+--- a/internal/shedrun/paths.go
++++ b/internal/shedrun/paths.go
+@@ -241,6 +241,12 @@ func StatusRel(l *lymcwd.Location, runID string) string {
+ 	return filepath.Join(lymdirs.LymDirName, shedDirName, runSegment(l, runID), "status.json")
+ }
+ 
++// SettleRecordsRel returns the worktree-anchor-relative form of SettleRecords' path: the join of lymdirs.LymDirName, shedDirName, the run's directory segment under l, and settleRecordsFileName.
++// It exists so a caller building a fabric commit pathspec never has to name a segment shedrun owns.
++func SettleRecordsRel(l *lymcwd.Location, runID string) string {
++	return filepath.Join(lymdirs.LymDirName, shedDirName, runSegment(l, runID), settleRecordsFileName)
++}
++
+ // noticeEpisodeFileName is the file in a run's durable directory holding the episode keys of the run notices dobby sent for it, one per line.
+ const noticeEpisodeFileName = "notice-episode"
+ 
+@@ -335,14 +341,14 @@ func CancelMarkerLock(l *lymcwd.Location, runID string) string {
+ }
+ 
+ // SettleRecords returns the path to the Go driver's settle records, settleRecordsFileName under RunDir(l, runID).
+-// It sits beside the drive reports, so a run's records commit stages it with the run directory and a dirty-path check counts it as run state.
++// It sits beside the drive reports, and a status commit stages it through SettleRecordsRel.
+ func SettleRecords(l *lymcwd.Location, runID string) string {
+ 	return filepath.Join(RunDir(l, runID), settleRecordsFileName)
+ }
+ 
+ // RunsRootRel returns the worktree-anchor-relative path of the run-records root: the join of lymdirs.LymDirName and shedDirName, the directory every run's RunDir sits under.
+ // It takes no *lymcwd.Location, because the root carries no run-id and so needs none of runSegment's alias resolution.
+-// It exists so fabricengine's Add can drop the whole run-records tree from a freshly forked pair without naming the shed segment itself.
++// A caller that needs the whole run-records tree uses it, so none of them names the shed segment itself.
+ // The path is anchor-relative, the same shape SeedRel and StatusRel return, suitable as a fabricengine commit's relPaths.
+ func RunsRootRel() string {
+ 	return filepath.Join(lymdirs.LymDirName, shedDirName)
+diff --git a/internal/shedrun/paths_test.go b/internal/shedrun/paths_test.go
+index 8eadcfb6..4cf1c07a 100644
+--- a/internal/shedrun/paths_test.go
++++ b/internal/shedrun/paths_test.go
+@@ -126,6 +126,8 @@ func TestPathConstructors(t *testing.T) {
+ 			func(l *lymcwd.Location) string { return filepath.Join(l.AnchorPath(), ".lym", "shed", "land.lock") }},
+ 		{"SeedRel", func(l *lymcwd.Location) string { return SeedRel(l, "self") },
+ 			func(l *lymcwd.Location) string { return filepath.Join("_lym", "shed", worktreeName, "seed.json") }},
++		{"SettleRecordsRel", func(l *lymcwd.Location) string { return SettleRecordsRel(l, "self") },
++			func(l *lymcwd.Location) string { return filepath.Join("_lym", "shed", worktreeName, "go-settle.jsonl") }},
+ 		{"StatusRel", func(l *lymcwd.Location) string { return StatusRel(l, "self") },
+ 			func(l *lymcwd.Location) string { return filepath.Join("_lym", "shed", worktreeName, "status.json") }},
+ 	}
