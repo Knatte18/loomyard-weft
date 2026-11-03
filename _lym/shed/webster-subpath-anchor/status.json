@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -34,6 +34,51 @@
       "output": "",
       "at": "2026-11-03T10:19:08Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/webster-subpath-anchor/_lym/landing/summary.md",
+      "at": "2026-11-03T10:58:29Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-03T10:36:02.798021811Z",
+          "end": "2026-11-03T10:36:02.806676933Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-03T10:50:36.755616055Z",
+          "end": "2026-11-03T10:50:36.782347984Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-03T10:36:02.861741901Z",
+          "end": "2026-11-03T10:42:52.764149776Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-03T10:42:53.487688249Z",
+          "end": "2026-11-03T10:50:36.714523605Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-03T10:50:36.868213599Z",
+          "end": "2026-11-03T10:57:40.994395832Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-03T10:57:41.069863177Z",
+          "end": "2026-11-03T10:57:41.070237307Z"
+        }
+      ]
     }
   ],
   "product": {
