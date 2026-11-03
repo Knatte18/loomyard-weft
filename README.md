@@ -51,8 +51,8 @@ Held by a run; its scope is locked until the run ends.
 | T1 | **A shed block runs a whole sub-recipe inline as one producer, so recipes reuse one another** | [`shed-sub-run-block`](design-shed-sub-run-block.md) | tapestry | Webster | neve | 2h<br>1h | shed, loom |
 | T2 | **An approved Discussion stores its decision record on the board entry and flags it discussed** | [`decision-record-on-board`](design-decision-record-on-board.md) | tapestry · light | Webster | neve | 1h<br>1h | board, loom |
 | T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Plan-Write | neve | 12h<br>1h | batten, fabric |
-| T5 | **Drift runs in an anchored hub, can be skipped for one run, and its baseline agent picks scope off when the suite cannot reach the change** | [`drift-anchor-and-skip`](design-drift-anchor-and-skip.md) | darn · solid | Code-Burler-Review | neve | 31m<br>31m | drift, stencil |
-| T9 | **New task worktrees in a beam inherit the beam's committed loom-halt.md and block at Preflight** | [`inherited-halt-blocks-preflight`](design-inherited-halt-blocks-preflight.md) | darn · solid | Code-Bouncer | neve | 31m<br>31m | loom, friction, pawl |
+| T5 | **Drift runs in an anchored hub, can be skipped for one run, and its baseline agent picks scope off when the suite cannot reach the change** | [`drift-anchor-and-skip`](design-drift-anchor-and-skip.md) | darn · solid | Code-Burler-Review | neve | 32m<br>31m | drift, stencil |
+| T9 | **New task worktrees in a beam inherit the beam's committed loom-halt.md and block at Preflight** | [`inherited-halt-blocks-preflight`](design-inherited-halt-blocks-preflight.md) | darn · solid | Code-Burler-Review | neve | 31m<br>31m | loom, friction, pawl |
 
 #### Ready (0)
 
@@ -67,7 +67,7 @@ Waits only on Running, Ready or Draft entries.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T7 | **fabric remove deletes the whole worktree directory, ignored files included** | [`fabric-remove-ignored-files`](design-fabric-remove-ignored-files.md) | darn · solid | T3 | 56m<br>43m | fabric |
-| T8 | **Batten treats a stray non-worktree directory as a gone pair, and a beam landing accepts its own beam mark** | [`batten-stray-dir-and-beam-mark`](design-batten-stray-dir-and-beam-mark.md) | darn · solid | T3 | 54m<br>54m | batten, pawl |
+| T8 | **Batten treats a stray non-worktree directory as a gone pair, and a beam landing accepts its own beam mark** | [`batten-stray-dir-and-beam-mark`](design-batten-stray-dir-and-beam-mark.md) | darn · solid | T3 | 55m<br>55m | batten, pawl |
 
 ### Notes (40)
 
