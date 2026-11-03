@@ -1,4 +1,4 @@
-# Support per-machine environment variables, possibly as a module of their own
+# Per-machine environment variables, exported to every process lym starts for the hub
 
 `machine-env-vars` · Note · feature, config, gate, drift
 
@@ -20,9 +20,7 @@ So a per-machine value has to be committed into the hub-wide config, where it is
 ## Proposal
 
 Support environment variables as configuration in their own right, possibly as a module of their own (e.g. `lym config env`), with a machine layer that is never tracked, so each machine sets its own values.
-lym would export them to every process it starts for the hub: gate tiers, drift capture/compare, sessions.
-An env value is data, not an executable key, so the machine-override restriction on `tiers" need not apply to it.
+lym would export them to every process it starts for the hub: gate tiers, drift capture and compare, sessions.
+An env value is data, not an executable key, so the machine-override restriction on `tiers` need not apply to it.
 
-## Also found
-
-`lym config drift --set 'capture={command: "...", dir: "...", timeout_min: 30}'` is refused with "unknown config key(s): capture, compare", although the key's own description in `--resolved` prescribes exactly that whole-map form. Setting `capture.command`, `capture.dir` and `capture.timeout_min` one by one works.
+The issue also reported a `lym config drift` whole-map refusal, filed as note `drift-config-whole-map-set`.
