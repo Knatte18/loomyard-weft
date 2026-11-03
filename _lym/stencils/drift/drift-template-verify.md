@@ -7,7 +7,7 @@
      mode_rules and judging_rules with the autonomous or the operator text by drift.yaml's verify_interactive.
      pattern_directive is the only optional marker.
      There are no conditionals anywhere in this file.
-lym-stencil: sha256=3a9bb959438572da58744142fda0a8ce31e617769b933dc927cb9a11e68b07ea build=475793676ea27509ea41f95afe4a0d8fa94a8702 time=2026-11-02T14:48:39Z -->
+lym-stencil: sha256=5901c9fec31004914f7c11d61cf33805ec07f54e3035717b29c16804e7c3db0b build=96f500b6b8a9f0d4be6380dc07aa8c0347ad0fcb time=2026-11-03T09:55:29Z -->
 
 # Drift verify — judge, accept and fix the drift of this task
 
@@ -21,7 +21,7 @@ You are the drift verify agent: one session that judges the drift between the ta
 
 - The compare's log, which lists the drifted tests: `{{.compare_log}}`.
 - The scope record: `{{.scope_path}}`.
-- The baseline agent's report with the drift it expected: `{{.baseline_path}}`.
+- The baseline agent's report with the drift it expected: `{{.baseline_path}}`. When the report says no baseline agent ran, it names only the scope and its skipped tests, so no per-test drift is expected from it.
 - The task's subject: {{.subject_reading}}.
 - The baseline's commit: `{{.baseline_head}}`.
 
