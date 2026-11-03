@@ -27,7 +27,7 @@
 - `contracts/specs/loom-status-spec.md`
 
 **Create:**
-- `plan:internal/shedengine#ProducerDef.skipTarget` -> `func (d ProducerDef) skipTarget() string`
+- `internal/shedengine#ProducerDef.skipTarget`
 
 **Uses:**
 - `internal/shedengine#newTestShed`

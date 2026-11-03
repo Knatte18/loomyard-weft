@@ -9,7 +9,7 @@
 - `internal/shedbuild#TestParse_ValueAndErrorCases`
 
 **Uses:**
-- `plan:internal/shedrecipe#EngineBlock`
+- `internal/shedrecipe#EngineBlock`
 
 **Intent:** Add the block row and `profile_recipe` to the recipe format, parsed only by `Parse` (D1, D8, PATTERN-sole-parsers).
 

@@ -17,10 +17,10 @@
 - `plan:internal/shedbuild#RoutingFrom` -> `func RoutingFrom(r Recipe) shedengine.Routing`
 
 **Uses:**
-- `plan:internal/shedrecipe#LookupBlockGate`
-- `plan:internal/shedrecipe#BlockGateNames`
-- `plan:internal/shedrecipe#EngineBlock`
-- `plan:internal/shedbuild#Expand`
+- `internal/shedrecipe#LookupBlockGate`
+- `internal/shedrecipe#BlockGateNames`
+- `internal/shedrecipe#EngineBlock`
+- `internal/shedbuild#Expand`
 
 **Intent:** Build an expanded recipe's block rows and project their routing (D3, D5, D11).
 

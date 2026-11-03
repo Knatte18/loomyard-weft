@@ -36,7 +36,7 @@
 - `internal/shedrecipe_test#coverageGuardAllowedUnreachableEngines`
 
 **Uses:**
-- `plan:internal/shedbuild#Expand`
+- `internal/shedbuild#Expand`
 - `plan:internal/shedbuild#RoutingFrom`
 - `internal/loomrecipe#testEnv`
 - `internal/loomshed/doc.go`

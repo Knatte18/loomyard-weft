@@ -1,17 +1,17 @@
 # Card 2 — shedrecipe-block-registry
 
 **Create:**
-- `plan:internal/shedrecipe#EngineBlock` -> `const EngineBlock = "Block"`
-- `plan:internal/shedrecipe#blockEntry` -> `func blockEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/shedrecipe#blockProducer` -> `type blockProducer struct`
-- `plan:internal/shedrecipe#blockProducer.Call` -> `func (blockProducer) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/shedrecipe#BlockGate` -> `type BlockGate func(env Env) (shedengine.EntryGate, error)`
-- `plan:internal/shedrecipe#BlockGates` -> `type BlockGates map[string]BlockGate`
-- `plan:internal/shedrecipe#BlockGateAlways` -> `const BlockGateAlways = "always"`
-- `plan:internal/shedrecipe#blockGates` -> `var blockGates BlockGates`
-- `plan:internal/shedrecipe#LookupBlockGate` -> `func LookupBlockGate(name string) (BlockGate, error)`
-- `plan:internal/shedrecipe#BlockGateNames` -> `func BlockGateNames() []string`
-- `plan:internal/shedrecipe#TestBlockGates` -> `func TestBlockGates(t *testing.T)`
+- `internal/shedrecipe#EngineBlock`
+- `internal/shedrecipe#blockEntry`
+- `internal/shedrecipe#blockProducer`
+- `internal/shedrecipe#blockProducer.Call`
+- `internal/shedrecipe#BlockGate`
+- `internal/shedrecipe#BlockGates`
+- `internal/shedrecipe#BlockGateAlways`
+- `internal/shedrecipe#blockGates`
+- `internal/shedrecipe#LookupBlockGate`
+- `internal/shedrecipe#BlockGateNames`
+- `internal/shedrecipe#TestBlockGates`
 
 **Edit:**
 - `internal/shedrecipe#registry`

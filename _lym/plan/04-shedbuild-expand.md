@@ -1,8 +1,8 @@
 # Card 4 — shedbuild-expand
 
 **Create:**
-- `plan:internal/shedbuild#Expand` -> `func Expand(r Recipe, resolve func(name string) ([]byte, error)) (Recipe, error)`
-- `plan:internal/shedbuild#TestExpand` -> `func TestExpand(t *testing.T)`
+- `internal/shedbuild#Expand`
+- `internal/shedbuild#TestExpand`
 
 **Edit:**
 - `contracts/specs/shed-recipe-spec.md`
@@ -11,7 +11,7 @@
 - `internal/shedbuild/doc.go`
 
 **Uses:**
-- `plan:internal/shedrecipe#EngineBlock`
+- `internal/shedrecipe#EngineBlock`
 
 **Intent:** Inline each block's sub-recipe into its parent at build time (D2), in a new file `internal/shedbuild/expand.go`, beside `Parse`.
 `Expand` takes a parsed recipe and a told resolver from a recipe name to its bytes, parses each sub-recipe through `Parse` and returns a new `Recipe`; it never mutates its argument.

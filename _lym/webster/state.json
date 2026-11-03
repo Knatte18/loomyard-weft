@@ -1,14 +1,14 @@
 {
   "runGuid": "bfe7c641c821482c9c91b52ee816b27f",
-  "planFingerprint": "8ef92e52f711730d4419cd1b6cd3691639f718afa19900c57fc4bcd3dea3d2af",
+  "planFingerprint": "098cb9ccd5364a69b3a38667d042355e8b82ce78393f373a702aff1a5f06e516",
   "planFileHashes": {
     "00-overview.md": "29f5786077f9682da5f7bba077ce534a47b466e5801dd72ab7da559ae4dad29b",
-    "01-shedengine-block-routing.md": "1d16b9a2444c88d3df81b7ad0a3b98fa4bae85b1effcac5a696a471323ff710d",
-    "02-shedrecipe-block-registry.md": "54587e855ccfbfd1e8dfc6d0bc2f36649142c4b6e8c4d8d11083b1e4e074d411",
-    "03-shedbuild-block-row-parse.md": "2e90b053819b3fc6d9bd8e4452414bcac184bac8792e2e1774cbefaecef03f07",
-    "04-shedbuild-expand.md": "f16bac89cd82e0923f44bc3f918edec59dce20019dcea05e621a84f5b05ca06a",
-    "05-shedbuild-block-build.md": "f0fa973fdf663a1bb5cf1596736b247f6224020463eff6a6b0ca237e8dd15d4a",
-    "06-loom-recipes-motif-arras.md": "0743e01f2200134c9e33683a6715e0f7c16d88ba1412186f0a524a9984f8fe95",
+    "01-shedengine-block-routing.md": "c3ca99ee68422156ee2612ba68aac2e7140e9680c4e58c4a27f40175749e61fd",
+    "02-shedrecipe-block-registry.md": "39e2858ad47adaa7f4f6be399482548e34859f55428b6ea5aef112ff1abf283c",
+    "03-shedbuild-block-row-parse.md": "229ebdf68ceef99ca6cb354a6986dd0ffe87ccfe1feaa58d63f868bd04127d4b",
+    "04-shedbuild-expand.md": "6389e6410e4322a203fe8bf62537b2cecadf9ebe6a24618592035b0ff6f4af25",
+    "05-shedbuild-block-build.md": "b254e2456867c37ecb5ee4ae658052c85c5819d99ab1ff62dd8666b4537a2909",
+    "06-loom-recipes-motif-arras.md": "380232c4fea86a8ee733339c2b2d49a0cf515eb1dcdde2a23bba92d39e83a4fe",
     "07-arras-seedable.md": "705a0932472c707762a10b645452f7cdbc59ff7ad871f2bcda1b95404fb9e266",
     "08-profile-recipe.md": "54a360f5c245a071d07db78769b736093da74c521708a6fab35f73f144f5eb90",
     "09-checklist-block-marks.md": "4eea8f7cf13277b9fddf2742696a9889482db680cd927f0c0fc138e3b80a65d0"
@@ -326,7 +326,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "e72ba4dee163127ae0ab79eb29b70a06",
   "masterSessionId": "8965312c-1965-41e5-bab9-4e7de716ebbb",
   "masterEngine": "claude",
@@ -340,18 +340,44 @@
         "04-shedbuild-expand"
       ],
       "cardHashes": {
-        "01-shedengine-block-routing": "1d16b9a2444c88d3df81b7ad0a3b98fa4bae85b1effcac5a696a471323ff710d",
-        "02-shedrecipe-block-registry": "54587e855ccfbfd1e8dfc6d0bc2f36649142c4b6e8c4d8d11083b1e4e074d411",
-        "03-shedbuild-block-row-parse": "2e90b053819b3fc6d9bd8e4452414bcac184bac8792e2e1774cbefaecef03f07",
-        "04-shedbuild-expand": "f16bac89cd82e0923f44bc3f918edec59dce20019dcea05e621a84f5b05ca06a"
+        "01-shedengine-block-routing": "c3ca99ee68422156ee2612ba68aac2e7140e9680c4e58c4a27f40175749e61fd",
+        "02-shedrecipe-block-registry": "39e2858ad47adaa7f4f6be399482548e34859f55428b6ea5aef112ff1abf283c",
+        "03-shedbuild-block-row-parse": "229ebdf68ceef99ca6cb354a6986dd0ffe87ccfe1feaa58d63f868bd04127d4b",
+        "04-shedbuild-expand": "6389e6410e4322a203fe8bf62537b2cecadf9ebe6a24618592035b0ff6f4af25"
       },
       "startSha": "1fbac34f114268cfd6d87f9d42e63b27937acae4",
       "kind": "fork",
       "spawnedAt": "2026-11-03T08:29:55Z",
       "sessionId": "8965312c-1965-41e5-bab9-4e7de716ebbb",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-shedengine-block-routing",
+        "status": "done",
+        "head_sha": "38ce2996eb98830efab5a016c9ff21523e38f0e7",
+        "deviations": [
+          "internal/shedbuild/expand.go",
+          "internal/shedbuild/expand_test.go",
+          "internal/shedbuild/parse.go",
+          "internal/shedbuild/parse_test.go",
+          "internal/shedengine/entry_test.go",
+          "internal/shedrecipe/entries_block.go",
+          "internal/shedrecipe/entries_simple_test.go"
+        ]
+      },
+      "cardShas": [
+        "38ce2996eb98830efab5a016c9ff21523e38f0e7"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-shed-sub-run-block/8965312c-1965-41e5-bab9-4e7de716ebbb/subagents/agent-a8af52b2352667b10.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-shed-sub-run-block/8965312c-1965-41e5-bab9-4e7de716ebbb/subagents/agent-a8af52b2352667b10.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-shed-sub-run-block/8965312c-1965-41e5-bab9-4e7de716ebbb/subagents/agent-a8af52b2352667b10.jsonl"
+  ]
 }
