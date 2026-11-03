@@ -22,7 +22,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Merge main into the codex-engine beam and resolve every conflict**<br>• Bring main into the beam before it lands, so its landing merges cleanly | [`codex-engine-merge-main`](design-codex-engine-merge-main.md) | darn | Code-Bouncer | neve | 13m<br>13m | codex, shuttle |
+| T3 | **Merge main into the codex-engine beam and resolve every conflict**<br>• Bring main into the beam before it lands, so its landing merges cleanly | [`codex-engine-merge-main`](design-codex-engine-merge-main.md) | darn | Code-Bouncer | neve | 14m<br>14m | codex, shuttle |
 
 ### Ready (0)
 

@@ -1,6 +1,6 @@
 # The hibernate request is carried by dobby, not a daemon of its own
 
-`hibernate-in-dobby` · Task · enhancement, dobby · running · Code-Burler-Fix
+`hibernate-in-dobby` · Task · enhancement, dobby · running · Code-Bouncer
 
 ## Seen (operator, 2026-10-31)
 
