@@ -177,6 +177,12 @@ Decision: The assistant writes its report inside a tree the Codex workspace-writ
 
 Rationale: Round 1 finding F1: the anchor's .lym and _lym resolve outside the warp worktree, so Codex could never write its report there (spike report).
 
+### Added after Discussion (parent, 2026-11-03): Weft checkout as a Codex writable root (replaces: Assistant report path inside the sandbox)
+
+Decision: codexengine adds the worktree's weft checkout, the target of its .lym and _lym links, to the Codex session's sandbox writable roots at every launch, so the assistant writes its report under the anchor's .lym as a Claude seat does. This replaces the earlier entry that moved the report into the warp tree or TMPDIR. The spike did not test writable_roots: the record marks it as to be proven in the build, and Constraints states that .lym and _lym resolve outside the warp worktree.
+
+Rationale: Operator, 2026-11-03: Codex must be able to write to the weft; a report path apart from Claude's would split the review layout.
+
 ## Constraints
 
 - Codex CLI 0.164.0 is the version every fact below was tested on (`docs/research/codex-spike-2026-10-24/report.md`, `docs/research/codex-hook-delivery-2026-10-28/report.md`).
