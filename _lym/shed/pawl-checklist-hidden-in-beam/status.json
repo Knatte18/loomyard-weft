@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Write",
+  "current_producer": "Discussion-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Write",
-    "last": "Motif → done",
+    "now": "Discussion-Bouncer",
+    "last": "Discussion-Write → done",
     "wait": ""
   },
   "history": [
@@ -20,6 +20,22 @@
       "outcome": "done",
       "output": "",
       "at": "2026-11-03T09:46:43Z"
+    },
+    {
+      "producer": "Discussion-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/pawl-checklist-hidden-in-beam/_lym/discussion/decision-record.md",
+      "at": "2026-11-03T09:53:48Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-11-03T09:53:21.380474943Z",
+          "end": "2026-11-03T09:53:47.449790146Z"
+        }
+      ],
+      "block": "Motif"
     }
   ],
   "product": {
