@@ -801,7 +801,7 @@
       "isolated": false,
       "brief": "",
       "body": "From [issue #19](https://github.com/Knatte18/loomyard/issues/19).\n\n## Seen\n\n`lym config drift --set 'capture={command: \"...\", dir: \"...\", timeout_min: 30}'` is refused with \"unknown config key(s): capture, compare\", although the key's own description in `--resolved` prescribes that whole-map form.\nSetting `capture.command`, `capture.dir` and `capture.timeout_min` one by one works.\n\n## Expected\n\nA whole-map `--set` of `capture` or `compare` is accepted as the key description says, or the description names the per-key form instead.\n",
-      "status": "running · Record-Write",
+      "status": "running · Darn-Write",
       "created": "2026-11-03T07:13:38Z",
       "revised": "2026-11-03T09:53:14Z",
       "profile": "light"
