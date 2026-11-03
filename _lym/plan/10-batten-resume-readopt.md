@@ -1,13 +1,13 @@
 # Card 10 — batten-resume-readopt
 
 **Create:**
-- `plan:internal/battencli#readoptSeams` -> `type readoptSeams struct`
-- `plan:internal/battencli#hubReadoptSeams` -> `func hubReadoptSeams(location *lymcwd.Location) readoptSeams`
-- `plan:internal/battencli#reconcileGoneRun` -> `func reconcileGoneRun(location *lymcwd.Location, slug string) (fabricengine.OriginReport, error)`
-- `plan:internal/battencli#taskWorktreeGone` -> `func taskWorktreeGone(prime *lymcwd.Location, slug string) (bool, error)`
-- `plan:internal/battencli#battenCLI.readoptGonePair` -> `func (c *battenCLI) readoptGonePair() error`
-- `plan:internal/battencli#TestOwnerPreflight_GoneTaskWorktree` -> `func TestOwnerPreflight_GoneTaskWorktree(t *testing.T)`
-- `plan:internal/battencli#TestBattenIntegration_GoneTaskWorktree` -> `func TestBattenIntegration_GoneTaskWorktree(t *testing.T)`
+- `internal/battencli#readoptSeams`
+- `internal/battencli#hubReadoptSeams`
+- `internal/battencli#reconcileGoneRun`
+- `internal/battencli#taskWorktreeGone`
+- `internal/battencli#battenCLI.readoptGonePair`
+- `internal/battencli#TestOwnerPreflight_GoneTaskWorktree`
+- `internal/battencli#TestBattenIntegration_GoneTaskWorktree`
 
 **Edit:**
 - `internal/battencli#battenCLI`

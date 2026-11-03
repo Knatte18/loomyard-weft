@@ -1,17 +1,17 @@
 # Card 12 — readopt-failed-stop
 
 **Create:**
-- `plan:internal/battencli#readoptPermanent` -> `func readoptPermanent(err error) bool`
-- `plan:internal/battencli#readoptWayForward` -> `func readoptWayForward(c *battenCLI, producer string, addErr error) (string, error)`
-- `plan:internal/battencli#landRestoreWayForward` -> `func landRestoreWayForward(c *battenCLI, notLive *fabricengine.ErrNotLive) (string, error)`
-- `plan:internal/battencli#battenCLI.failReadopt` -> `func (c *battenCLI) failReadopt(status shedengine.Status, addErr error) error`
+- `internal/battencli#readoptPermanent`
+- `internal/battencli#readoptWayForward`
+- `internal/battencli#landRestoreWayForward`
+- `internal/battencli#battenCLI.failReadopt`
 
 **Edit:**
-- `plan:internal/battencli#readoptSeams`
-- `plan:internal/battencli#hubReadoptSeams`
-- `plan:internal/battencli#battenCLI.readoptGonePair`
-- `plan:internal/battencli#TestOwnerPreflight_GoneTaskWorktree`
-- `plan:internal/battencli#TestBattenIntegration_GoneTaskWorktree`
+- `internal/battencli#readoptSeams`
+- `internal/battencli#hubReadoptSeams`
+- `internal/battencli#battenCLI.readoptGonePair`
+- `internal/battencli#TestOwnerPreflight_GoneTaskWorktree`
+- `internal/battencli#TestBattenIntegration_GoneTaskWorktree`
 - `internal/dobbyengine#TestPlanPass`
 
 **Uses:**
@@ -21,9 +21,9 @@
 - `internal/fabricengine#ErrAdoptLocalCheckedOut`
 - `internal/fabricengine#ErrTaskPathTaken`
 - `internal/fabricengine#ErrRemoteLeftover`
-- `plan:internal/fabricengine#SlugRecordsTags`
-- `plan:internal/fabricengine#RecordsBranchFile`
-- `plan:internal/fabricengine#RecordsBranchHasUpstream`
+- `internal/fabricengine#SlugRecordsTags`
+- `internal/fabricengine#RecordsBranchFile`
+- `internal/fabricengine#RecordsBranchHasUpstream`
 - `internal/fabricengine#OriginRecordRel`
 - `internal/fabricengine#RecordsRepoRoot`
 - `internal/battenrecipe#NameLand`

@@ -1,11 +1,11 @@
 # Card 11 — records-tag-reads
 
 **Create:**
-- `plan:internal/fabricengine#RecordsTag` -> `type RecordsTag struct`
-- `plan:internal/fabricengine#SlugRecordsTags` -> `func SlugRecordsTags(l *lymcwd.Location, slug string, anchoredRels []string) ([]RecordsTag, error)`
-- `plan:internal/fabricengine#RecordsBranchFile` -> `func RecordsBranchFile(l *lymcwd.Location, branch, anchoredRel string) (content []byte, found bool, err error)`
-- `plan:internal/fabricengine#RecordsBranchHasUpstream` -> `func RecordsBranchHasUpstream(l *lymcwd.Location, branch string) (bool, error)`
-- `plan:internal/fabricengine_test#TestSlugRecordsTags` -> `func TestSlugRecordsTags(t *testing.T)`
+- `internal/fabricengine#RecordsTag`
+- `internal/fabricengine#SlugRecordsTags`
+- `internal/fabricengine#RecordsBranchFile`
+- `internal/fabricengine#RecordsBranchHasUpstream`
+- `internal/fabricengine_test#TestSlugRecordsTags`
 
 **Extends:**
 - `internal/fabricengine/doc.go`
