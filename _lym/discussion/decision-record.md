@@ -171,6 +171,12 @@ Decision: D2 and D3 keep the assistant's own fan key: an operator may turn on a 
 
 Rationale: The board entry records the operator's chosen setup as 'The forked Astra fan at medium effort with block v2 is the setup' (operator, 2026-10-27); Step 4 defers lym's fork machinery, not Codex's in-turn subagents, and the fan is off until the operator sets it.
 
+### Added after Discussion (parent, 2026-11-03): Assistant report path inside the sandbox
+
+Decision: The assistant writes its report inside a tree the Codex workspace-write sandbox covers (the warp worktree's real tree, or a lym-owned per-round directory under TMPDIR), never under the anchor's .lym or _lym, which link into the weft checkout; Constraints states that fact.
+
+Rationale: Round 1 finding F1: the anchor's .lym and _lym resolve outside the warp worktree, so Codex could never write its report there (spike report).
+
 ## Constraints
 
 - Codex CLI 0.164.0 is the version every fact below was tested on (`docs/research/codex-spike-2026-10-24/report.md`, `docs/research/codex-hook-delivery-2026-10-28/report.md`).
