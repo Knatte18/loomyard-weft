@@ -1,0 +1,8 @@
+{
+  "recipe": "motif",
+  "driver": "go",
+  "params": {
+    "parent": "main"
+  },
+  "started_at": "2026-11-03T11:30:24Z"
+}
