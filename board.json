@@ -705,6 +705,26 @@
       "created": "2026-11-03T19:12:45Z",
       "revised": "2026-11-03T19:12:45Z",
       "profile": "speed"
+    },
+    {
+      "id": 1075,
+      "handle": "B1",
+      "slug": "pr-review-wait-silent",
+      "title": "A PR-Review waiting on the operator shows nowhere",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "landing",
+        "loom",
+        "batten"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "No waiting line in loom or batten status and no notice while PR-Review waits for a human review",
+      "body": "## Seen\n\nOn the `cs` hub, task `cached-friction-factor` (Drift trial 2, 2026-11-03) reached PR-Review at 18:53:02Z and opened PR #4.\nIts PR-Review session then waited for the operator for 21 minutes, until `cs:orch` told it at 19:14:26Z that the operator had turned PR review off (creel 35); the row ended done at 19:14:35Z.\n\nThrough those 21 minutes nothing surfaced that the run waited for a human:\n\n- `lym loom status --watch` in the task worktree printed `now PR-Review | last Describe → done` once and no `waiting` line after it.\n- `lym batten status cached-friction-factor --watch` showed `running | now Run-Shed` throughout.\n- The `cs` creel journal holds no post between Drift-Recheck and creel 35: no batten notice, no notice to `cs:orch` and none to the loomyard hub.\n\nA watcher reading the documented status surfaces could not tell a PR waiting on the operator from a row at work.\nThe first trial (`docs/research/drift-csharp-trial-2026-11-03.md`) saw the same: \"PR-Review waited 32 minutes for the operator\".\n\n## Expected\n\n- While PR-Review waits for the operator, `lym loom status` shows a `waiting` line naming the pull request and that it waits for a human review, as other rows show their waits.\n- The hub's orch gets one notice when a PR-Review starts waiting on the operator, naming the PR, so the wait reaches someone who can act.\n",
+      "created": "2026-11-03T19:15:38Z",
+      "revised": "2026-11-03T19:15:38Z"
     }
   ],
   "prime_owner": "neve",
