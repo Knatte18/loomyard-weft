@@ -1017,6 +1017,26 @@
       "created": "2026-11-03T08:12:01Z",
       "revised": "2026-11-03T08:12:16Z",
       "profile": "solid"
+    },
+    {
+      "id": 1038,
+      "handle": "E15",
+      "slug": "drift-child-error-in-halt",
+      "title": "drift capture child rejects its cwd when the fabric anchor is a repo subdirectory",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "drift"
+      ],
+      "issues": [
+        26
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #26](https://github.com/Knatte18/loomyard/issues/26).\n\n## What happened\n\n`lym loom` halted as `failed` at the `Drift-Baseline` producer (anomaly `producer-hard-failure`) four times in one task, on each entry and each `lym loom resume`.\nEvery halt carried the message \"drift: the capture child ended before it recorded its start\".\nThe capture child logs under `_lym/drift/logs/` each hold the same single line, an error of the form:\n\n`cwd is outside the recorded fabric anchor subtree: cwd \u003cworktree root\u003e does not equal the anchored directory \u003cworktree root\u003e/src/csharp/NORCE.Models (recorded by .lym-anchor)`\n\nThe fabric anchor (`.lym-anchor`) records a subdirectory of the worktree, but the capture child was started with the worktree root as its cwd, so its anchor check rejected it.\nThe driver's resume advice, \"read the log, then `lym loom resume`, whose entry captures again\", cannot succeed because the cwd does not change between attempts.\nThe run only got past the producer once it was skipped (`Drift-Baseline / skipped` in the history).\n\n## Why it is abnormal\n\nThe anchor is lym's own record, and the capture child is lym's own process.\nThey disagree about the working directory, so a task whose anchor is not the worktree root can never capture a drift baseline.\nThe halt message also points at a log whose one line is the real cause, so the operator learns it only after opening the log.\n\n## What to do\n\n- Start the capture child with its cwd set to the anchored directory, or have the anchor check accept the worktree root when the anchor lies beneath it.\n- Surface the child's error text in the halt message instead of only naming the log.\n- Fail the producer once with a non-retry hint when the child's cwd error repeats, rather than advising a resume that cannot change the outcome.\n\nProvenance: task `testsupport-rule-and-helpers`; notes `loom-halt.md`, `loom-halt-2.md`, `loom-halt-3.md`, `loom-halt-4.md`.\n",
+      "created": "2026-11-03T09:00:51Z",
+      "revised": "2026-11-03T09:00:51Z"
     }
   ],
   "prime_owner": "neve",
