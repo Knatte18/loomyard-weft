@@ -1,55 +1,38 @@
-# A gated run is not done while a background shell it never read runs
+# shuttle: don't count a gated run done over an unread background shell
 
-A gated shuttle run, such as webster's Master, could end `done` while a background shell it started was still running.
-The turn end listed the shell as outstanding, but because the label matched no awaited prefix and both output files existed, shuttle judged it as a plain turn end and finalized at once.
-In issue #7 the shell chained `git add`, `git commit`, `git log` and `lym gate test --wait`, so the run reported `done` with a commit that may never have landed and a gate verdict nobody read.
+A gated run whose turn ended with a background shell outstanding was counted Done at once when its output files existed.
+The shell could hold a `git commit` or a `lym gate test --wait` whose result the session never read, so `done` guaranteed neither a commit nor a gate verdict.
 
-## What changes
+Now `internal/shuttleengine` withholds Done in that case and tells the agent to read the shell first.
+A gated waiting turn end counts only when every outstanding task is a shell the session does not await, meaning no `Spec.AwaitedShellPrefixes` entry names it:
 
-At a gated turn end whose only outstanding work is shells the session does not await, with every output file present, shuttle no longer counts the run Done while such a shell runs:
+- With an output file missing, the turn end is held at once, as before.
+- With every output file present, the run keeps waiting and types one line into the pane naming each such shell.
+  The line tells the agent to wait for each shell, read its result and act on it before ending its turn.
+  The shell's completion starts the next turn, and a turn start cancels the recorded waiting turn end so no expiry counts a turn already under way.
+- Once every such shell has been outstanding for `background_shell_wait_min`, the turn end counts Done through the gate as at any turn end.
+  This bounds a shell that never finishes.
+- A fork or an awaited shell still keeps a gated turn end waiting without expiry, as before.
 
-- It types one line into the agent's pane naming each such shell, telling the agent to wait for each one, read its result and act on it before it ends its turn.
-  Each shell is named once per wait, so an agent that ends its turn again over the same shell is not told a second time.
-  If the send fails it is logged at Info and not retried, because the shell's completion starts the session's next turn anyway.
-- The turn end is no arrival for the gate.
-  The run goes on to its next turn end, which the shell's completion or the line starts, and that turn end is judged as usual.
-- If every such shell has been outstanding for `background_shell_wait_min`, the waiting turn end counts as Done through the gate, as before.
-  The shells then land in `Result.EndedShells`, and webster's warning and friction note record them as they do today.
-  This bound keeps a shell that never ends, such as a watch loop, from holding the run until its deadline.
-
-A gated run with an output file missing still holds the turn end at once, and forks and awaited shells keep a gated turn end waiting as they did before.
-
-The change is in `internal/shuttleengine/wait.go`.
-In `pollEventsTick`, the gated branch now queues the line and defers to `expiredTurnEnd`.
-`expiredTurnEnd` gained the gated expiry to Done, and both its expiries share the new `unawaitedShellsPastBound`.
-`queueShellNudge` and `sendShellNudge` build the line and send it from the wait loop through the gated send.
-The shuttle and webster package docs, the `BackgroundShellWaitMin` field comment and the `background_shell_wait_min` template comment now describe the gated expiry.
+Closes #7
 
 ## Design decisions
 
-- **Refuse Done instead of stopping the shell.**
-  The issue offered a second option: shuttle stops outstanding shells at run end and records their results.
-  Shuttle cannot do that reliably, because the provider reports no pid for a background shell.
-  Making the run wait, and telling the agent to read the result, means the commit and the gate verdict reach the agent before the run ends.
-- **Gated runs only.**
-  An ungated run with every output file present still finishes at a waiting turn end, whatever is outstanding.
-  Ungated runs have no gate verdict to lose, and some, like a driver's binary watch loop, hold shells that never end.
-  For those, a line telling the agent to wait for the shell would be wrong.
-- **A bounded wait, not an indefinite one.**
-  `background_shell_wait_min` is already the bound at which an unawaited shell counts as long-running.
-  Reusing it caps the extra wait without adding a new setting.
-- **Gate slots need no change.**
-  A `lym gate test --wait` cut off with its shell holds its slots through OS file locks, which the process's death releases.
-  `TestAcquire_HolderProcessDeathFreesSlot` in `internal/gateslot` already pins this.
+- I chose the issue's first option, refusing Done and telling the agent, over having lym stop the shell.
+  The provider reports no pid, so lym still kills no shell.
+  Strand removal ends only the shells inside the pane's process tree, and `Result.EndedShells` still records whatever is outstanding at run end.
+- Each shell is named once per `Wait`.
+  A shell counts as named only after the send succeeds, so a line dropped under a pause or lost to a failed send is queued again by the next waiting turn end over that shell.
+  A failed send is logged at Info and not retried in place.
+- A turn end that expires into Done is not nudged, because the line would claim the run is not done.
+- `background_shell_wait_min` now also bounds the gated Done, in addition to the ungated hold and the wait-marker threshold.
+  `Spec.AwaitedShellPrefixes` keeps a shell out of the nudge and the expiry too.
+- The code is in `wait.go` (`expiredTurnEnd`, `unawaitedShellsPastBound`, `queueShellNudge`, `sendShellNudge`), with new fields on `Run`.
+  Docs are updated in `shuttleengine`, `websterengine` and `docs/overview.md`, and `waiting_test.go` covers the nudge, the expiry and the turn-start clearing.
 
-## Tests
+## To check by hand
 
-In `internal/shuttleengine/waiting_test.go`:
-
-- The gated rows of `TestPollEventsTick_OutstandingBackgroundWork` now expect no Done inside the bound and Done at the bound.
-  A new staggered row pins that two shells finish only once the later one passes the bound.
-- The gated row of `TestWait_RecordsEndedShells` reaches Done only past the bound and records the shell's full time outstanding.
-- The new `TestWait_GatedShellNudgeNamesEachShellOnce` pins three things:
-  - the first waiting turn end sends exactly one line, naming the shell;
-  - a second waiting turn end over the same shell sends nothing;
-  - the next plain turn end finishes Done through the gate with no shell left over.
+- The issue's third item, that a gate run abandoned this way releases its slot, is not changed here.
+  The change makes abandonment rarer for gated runs by holding Done, but a run that ends at its deadline or by a stop still leaves the shell unread, and I did not check slot release for that path.
+- The nudge was exercised only through the engine's tests.
+  It was not run against a live Master session with a real `lym gate test --wait` shell.
