@@ -52,8 +52,8 @@ Held by a run; its scope is locked until the run ends.
 | T2 | **An approved Discussion stores its decision record on the board entry and flags it discussed** | [`decision-record-on-board`](design-decision-record-on-board.md) | tapestry · light | Discussion-Write | neve | 16m<br>11m | board, loom |
 | T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Discussion-Write | neve | 10h<br>1m | batten, fabric |
 | T4 | **Claude Code autocompact picker in a shuttle session stalls a gate re-prompt forever** | [`shuttle-autocompact-picker-stall`](design-shuttle-autocompact-picker-stall.md) | darn | Darn-Write | neve | 11h<br>1m | shuttle, loom |
-| T5 | **Hub-wide config reconcile by an older lym binary strips keys a newer binary wrote** | [`reconcile-strips-newer-keys`](design-reconcile-strips-newer-keys.md) | darn | Worktree-Create | neve | 10h<br>1m | reconcile, config |
-| T6 | **loom Parent-Align halts blocked when the fixer reports verdict fixed** | [`parent-align-fixed-reads-dirty`](design-parent-align-fixed-reads-dirty.md) | darn | Record-Write | neve | 10h<br>1m | landing |
+| T5 | **Hub-wide config reconcile by an older lym binary strips keys a newer binary wrote** | [`reconcile-strips-newer-keys`](design-reconcile-strips-newer-keys.md) | darn | Darn-Write | neve | 10h<br>1m | reconcile, config |
+| T6 | **loom Parent-Align halts blocked when the fixer reports verdict fixed** | [`parent-align-fixed-reads-dirty`](design-parent-align-fixed-reads-dirty.md) | darn | Darn-Write | neve | 10h<br>1m | landing |
 
 #### Ready (0)
 
