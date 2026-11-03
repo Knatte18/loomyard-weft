@@ -223,10 +223,10 @@
     },
     {
       "id": 910,
-      "handle": "E4",
+      "handle": "T1",
       "slug": "sandbox-dotnet-gate",
       "title": "Prove Drift, an anchor other than \".\", the dotnet scoper and the shared build on the C# sandbox hub",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "dotnet",
@@ -238,6 +238,7 @@
       "isolated": false,
       "brief": "Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there",
       "body": "## Seen (operator and hub orch, 2026-10-29)\n\nThe sandbox hub `lym-csharp-LYMHUB` (shortname `cs`, anchor `lym-csharp/dotnet`, over `Knatte18/lym-csharp`) ran its first darn run, `friction-colebrook`, end to end, and it landed as `7f50ffe`.\nIts gate is the simple form: `tier0` runs `dotnet test` without `Category=Slow` and `tier1` with it, with no `scoper`, no `build` step and no `--no-build`.\nSo the dotnet scoper, the shared build and Drift are not proved on a C# repository.\nThe first `tier1` gate run on Neve died with \"Internal CLR error (0x80131506)\" after 900 s and passed on a rerun; the cause is unknown.\n\n## Seen (operator, 2026-11-03)\n\nThe agents and orchs that drive Drift hit many problems, because Drift was never tested for real.\nDrift's capture and compare start in the directory `.lym-anchor` names (`drift-anchor-and-skip`), but that was tested with fakes and integration tests only, never against a real hub whose anchor is not `.`.\n\n## Goal\n\nThe `cs` sandbox hub is the proving ground for Drift and for an anchor other than `.`:\n\n- Drift: baseline capture, scope, compare and waive, end to end on real runs.\n- An anchor other than `.`: every row of a run, Drift's included, works from `lym-csharp/dotnet` and not from the repository root.\n- The dotnet scoper and the shared build.\n\n## Steps\n\n1. Switch the `cs` gate to `scoper: dotnet`, a `build` step and `--no-build`, and set `drift.enabled`; the setup is in `docs/dotnet-hub.md`.\n2. Run 3 darn tasks on `cs` that change code under the anchor, so each run captures a Drift baseline and compares against it.\n3. File each lym fault seen with `lym selfreport create`; each fix becomes a task in the loomyard hub.\n\nThe trial runs are started by the `cs` hub's own orch.\nThe sandbox stays the place to reproduce a lym fault another C# hub shows.\n",
+      "status": "draft",
       "created": "2026-10-29T13:53:36Z",
       "revised": "2026-11-03T13:14:11Z"
     },

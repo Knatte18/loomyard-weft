@@ -1,6 +1,6 @@
 # Prove Drift, an anchor other than ".", the dotnet scoper and the shared build on the C# sandbox hub
 
-`sandbox-dotnet-gate` · Note · enhancement, dotnet, gate, drift
+`sandbox-dotnet-gate` · Task · enhancement, dotnet, gate, drift · draft
 
 ## Seen (operator and hub orch, 2026-10-29)
 
