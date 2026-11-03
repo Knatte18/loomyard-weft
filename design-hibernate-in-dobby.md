@@ -2,6 +2,8 @@
 
 `hibernate-in-dobby` · Task · enhancement, dobby · draft
 
+Depends on: [`hibernate-wake-resume-switch`](design-hibernate-wake-resume-switch.md)
+
 ## Seen (operator, 2026-10-31)
 
 `lym hibernate request` runs a daemon of its own that waits for the runs to land and every session to pause before it hibernates the machine.
