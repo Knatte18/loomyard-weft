@@ -1,0 +1,469 @@
+diff --git a/contracts/stencils/darn/darn-fragment-make-change-gated.md b/contracts/stencils/darn/darn-fragment-make-change-gated.md
+new file mode 100644
+index 00000000..9c212af5
+--- /dev/null
++++ b/contracts/stencils/darn/darn-fragment-make-change-gated.md
+@@ -0,0 +1,19 @@
++<!-- This is the darn writer's Step 4 list for a run whose verify gate has a cold fixer: the writer and its subagents run no gate, and the writer acts only on what the fixer leaves.
++     internal/darnengine's DarnTable fills its one marker, {{.subagent_model}}, from loom.yaml's subagent_model, then fills the result whole into darn-template-write's make_change marker. -->
++
++1. Edit the repository to make the change.
++   Follow the existing patterns, and the PATTERN entries in this prompt.
++   Each commit is one change, with its own reads and edits.
++2. Hand work that needs no overview of the change to fresh subagents through the Agent tool, each with `subagent_type: "general-purpose"` and `model: "{{.subagent_model}}"`: a batch of lookups, and per-package work whose edits you have already decided, one subagent per package, each owning its own files.
++   Launch every subagent of a batch together in one message.
++   A fresh subagent sees none of this session, so each prompt names the files the subagent owns and the edits to make, and tells the subagent to run no `lym gate test`.
++   Keep in this session the work that needs the overview: the design, a change that spans packages, the commits and the change description.
++3. Run no `lym gate test` yourself.
++   Once you end your turn, the row's verify gate tests your committed tree, and a cold fixer clears its failures before you hear of them.
++   You are re-prompted only with what the fixer leaves: act on that alone.
++4. Update, in the same commits as the code, the docs the change makes stale: the package doc of each package whose behavior changes, `doc.go` for a Go package;
++   the repository's overview doc when a module table or execution stack it shows changes;
++   and, when the repository has a `PATTERN.md`, its entry for a cross-cutting invariant the change adds or changes.
++5. Apply each bullet of the record's `## PATTERN changes` section to `PATTERN.md` in your own commits.
++6. Commit on the task branch in small, coherent commits.
++   Never push: the landing steps that follow push the branch.
+diff --git a/contracts/stencils/darn/darn-fragment-make-change.md b/contracts/stencils/darn/darn-fragment-make-change.md
+new file mode 100644
+index 00000000..d7ffebe9
+--- /dev/null
++++ b/contracts/stencils/darn/darn-fragment-make-change.md
+@@ -0,0 +1,17 @@
++<!-- This is the darn writer's Step 4 list for a run whose verify gate has no cold fixer: the writer and its subagents run the gate themselves.
++     internal/darnengine's DarnTable fills its one marker, {{.subagent_model}}, from loom.yaml's subagent_model, then fills the result whole into darn-template-write's make_change marker. -->
++
++1. Edit the repository to make the change.
++   Follow the existing patterns, and the PATTERN entries in this prompt.
++   Each commit is one change, with its own reads, edits and gate run.
++2. Hand work that needs no overview of the change to fresh subagents through the Agent tool, each with `subagent_type: "general-purpose"` and `model: "{{.subagent_model}}"`: a batch of lookups, and per-package work whose edits you have already decided, one subagent per package, each owning its own files.
++   Launch every subagent of a batch together in one message.
++   A fresh subagent sees none of this session, so each prompt names the files the subagent owns, the edits to make, and the gate rule from your system prompt with its Bash tool timeout, for the subagent to run on its own package.
++   Keep in this session the work that needs the overview: the design, a change that spans packages, the commits and the change description.
++3. Test with `lym gate test` after the last edit of each commit; it computes its scope from your changes, and when it answers `done: false` with exit 75 the run goes on, so run the same command again; never run a raw test command or a module-wide run.
++4. Update, in the same commits as the code, the docs the change makes stale: the package doc of each package whose behavior changes, `doc.go` for a Go package;
++   the repository's overview doc when a module table or execution stack it shows changes;
++   and, when the repository has a `PATTERN.md`, its entry for a cross-cutting invariant the change adds or changes.
++5. Apply each bullet of the record's `## PATTERN changes` section to `PATTERN.md` in your own commits.
++6. Commit on the task branch in small, coherent commits, each leaving the tree green.
++   Never push: the landing steps that follow push the branch.
+diff --git a/contracts/stencils/darn/darn-template-write.md b/contracts/stencils/darn/darn-template-write.md
+index 4eb23644..695d0d32 100644
+--- a/contracts/stencils/darn/darn-template-write.md
++++ b/contracts/stencils/darn/darn-template-write.md
+@@ -9,7 +9,7 @@
+      condition_stop_marker_path is a required marker, naming the second file the writer creates when it stops on a condition the task's body names.
+      prior_work is never empty: DarnTable fills it with (none) when it has nothing to tell.
+      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
+-     subagent_model is a required marker, filled from loom.yaml's subagent_model. -->
++     make_change is a required marker holding Step 4's list: DarnTable fills it with darn-fragment-make-change, or with darn-fragment-make-change-gated when a cold fixer clears the row's verify gate. -->
+ 
+ # Darn — make the change a board entry asks for, in one session
+ 
+@@ -57,20 +57,7 @@ Check whether landed work, another board entry or another run overtook or contra
+ 
+ ## Step 4 — Make the change
+ 
+-1. Edit the repository to make the change.
+-   Follow the existing patterns, and the PATTERN entries in this prompt.
+-   Each commit is one change, with its own reads, edits and gate run.
+-2. Hand work that needs no overview of the change to fresh subagents through the Agent tool, each with `subagent_type: "general-purpose"` and `model: "{{.subagent_model}}"`: a batch of lookups, and per-package work whose edits you have already decided, one subagent per package, each owning its own files.
+-   Launch every subagent of a batch together in one message.
+-   A fresh subagent sees none of this session, so each prompt names the files the subagent owns, the edits to make, and the gate rule from your system prompt with its Bash tool timeout, for the subagent to run on its own package.
+-   Keep in this session the work that needs the overview: the design, a change that spans packages, the commits and the change description.
+-3. Test with `lym gate test` after the last edit of each commit; it computes its scope from your changes, and when it answers `done: false` with exit 75 the run goes on, so run the same command again; never run a raw test command or a module-wide run.
+-4. Update, in the same commits as the code, the docs the change makes stale: the package doc of each package whose behavior changes, `doc.go` for a Go package;
+-   the repository's overview doc when a module table or execution stack it shows changes;
+-   and, when the repository has a `PATTERN.md`, its entry for a cross-cutting invariant the change adds or changes.
+-5. Apply each bullet of the record's `## PATTERN changes` section to `PATTERN.md` in your own commits.
+-6. Commit on the task branch in small, coherent commits, each leaving the tree green.
+-   Never push: the landing steps that follow push the branch.
++{{.make_change}}
+ 
+ ## Step 5 — Write the change description
+ 
+diff --git a/contracts/stencils/markers_test.go b/contracts/stencils/markers_test.go
+index 747baeb5..93ac671b 100644
+--- a/contracts/stencils/markers_test.go
++++ b/contracts/stencils/markers_test.go
+@@ -53,6 +53,8 @@ func TestStencils_TopLevelMarkers(t *testing.T) {
+ 		{"loom-fragment-self-check-plan-gated", LoomFragmentSelfCheckPlanGated, nil},
+ 		{"loom-fragment-self-check-discussion", LoomFragmentSelfCheckDiscussion, nil},
+ 		{"loom-fragment-self-check-discussion-gated", LoomFragmentSelfCheckDiscussionGated, nil},
++		{"darn-fragment-make-change", DarnFragmentMakeChange, []string{"subagent_model"}},
++		{"darn-fragment-make-change-gated", DarnFragmentMakeChangeGated, []string{"subagent_model"}},
+ 		{"twill-judge-critical", TwillJudgeCritical, []string{"disposition_place", "dispute_evidence", "governing_input"}},
+ 		{"twill-judge-plain", TwillJudgePlain, []string{"disposition_place", "rejection_rule"}},
+ 		{"twill-writer-fork", TwillWriterFork, []string{"disposition_place", "explore_step", "files_dir", "format_step", "input_record", "last_file", "reviewed_files", "self_check_command", "self_check_step"}},
+@@ -131,6 +133,7 @@ func TestStencils_MarkerPositions(t *testing.T) {
+ 	}{
+ 		{"plan twill directive", "loom-template-plan", "## Step 2 — Explore the codebase", "{{.twill_directive}}"},
+ 		{"discussion twill directive", "loom-template-discussion", "## Step 4 — How to get answers", "{{.twill_directive}}"},
++		{"darn make change", "darn-template-write", "## Step 4 — Make the change", "{{.make_change}}"},
+ 		{"plan self check", "loom-template-plan", "## Step 5 — Self-check before ending your turn", "{{.self_check}}"},
+ 		{"discussion self check", "loom-template-discussion", "## Step 6 — Self-check before ending your turn", "{{.self_check}}"},
+ 		{"discussion decision record path", "loom-template-discussion", "## What you may write", "{{.decision_record_path}}"},
+diff --git a/contracts/stencils/stencils.go b/contracts/stencils/stencils.go
+index b0addcc2..e6838453 100644
+--- a/contracts/stencils/stencils.go
++++ b/contracts/stencils/stencils.go
+@@ -43,6 +43,16 @@ var LandingTemplatePRReview []byte
+ //go:embed darn/darn-template-write.md
+ var DarnTemplateWrite []byte
+ 
++// DarnFragmentMakeChange is the darn writer prompt's Step 4 list that has the writer and its subagents run the gate, filled in when the verify gate has no cold fixer.
++//
++//go:embed darn/darn-fragment-make-change.md
++var DarnFragmentMakeChange []byte
++
++// DarnFragmentMakeChangeGated is the darn writer prompt's Step 4 list that has the writer and its subagents run no gate, filled in when the verify gate has a cold fixer.
++//
++//go:embed darn/darn-fragment-make-change-gated.md
++var DarnFragmentMakeChangeGated []byte
++
+ // SamplerTemplateAgent is the sampler agent's shipped-default prompt: the whole instruction set of the interactive session the operator works a change out with.
+ //
+ //go:embed sampler/sampler-template-agent.md
+@@ -565,6 +575,8 @@ var entries = []registryEntry{
+ 	{"landing-template-fix-review", &LandingTemplateFixReview},
+ 	{"landing-template-pr-review", &LandingTemplatePRReview},
+ 	{"darn-template-write", &DarnTemplateWrite},
++	{"darn-fragment-make-change", &DarnFragmentMakeChange},
++	{"darn-fragment-make-change-gated", &DarnFragmentMakeChangeGated},
+ 	{"sampler-template-agent", &SamplerTemplateAgent},
+ 	{"drift-template-baseline", &DriftTemplateBaseline},
+ 	{"drift-template-verify", &DriftTemplateVerify},
+diff --git a/internal/darnengine/doc.go b/internal/darnengine/doc.go
+index 12f0f0e1..b759eddc 100644
+--- a/internal/darnengine/doc.go
++++ b/internal/darnengine/doc.go
+@@ -31,6 +31,8 @@
+ // the producer then halts the run with the report alone as the reason, since the report states its own way forward.
+ // It is non-interactive, carries the description as its one output file, and renders `(none)` for prior work the spawn has nothing to tell for.
+ // A spawn that continues earlier work is told so through that value, and its stencil continues from the commits already on the task branch.
++// When the caller tells it a cold fixer clears the row's verify gate, the prompt's Step 4 has the writer and its subagents run no gate, and the writer acts only on what the fixer leaves;
++// otherwise the step has them run the gate after each commit.
+ // The seat engine renders the parent and edit directives, so DarnTable reads no parent name.
+ // DarnTable refuses an empty required field by name and a writer model-spec the registry cannot resolve.
+ //
+diff --git a/internal/darnengine/spec.go b/internal/darnengine/spec.go
+index 1c75b478..5d27dced 100644
+--- a/internal/darnengine/spec.go
++++ b/internal/darnengine/spec.go
+@@ -6,6 +6,7 @@ package darnengine
+ 
+ import (
+ 	"fmt"
++	"strings"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/friction"
+@@ -16,11 +17,19 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/seatengine"
+ 	"github.com/Knatte18/loomyard/internal/segmentcolor"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/stencil"
++	"github.com/Knatte18/loomyard/internal/stencilstore"
+ )
+ 
+ // darnStencilName is the registered name of the darn writer's stencil.
+ const darnStencilName = "darn-template-write"
+ 
++// makeChangeStencil and makeChangeGatedStencil are the fragments that fill the writer stencil's Step 4 list, the first for a writer that runs the gate itself and the second for one whose verify gate has a cold fixer.
++const (
++	makeChangeStencil      = "darn-fragment-make-change"
++	makeChangeGatedStencil = "darn-fragment-make-change-gated"
++)
++
+ // darnRole is the agent-name role the darn writer's spawn carries.
+ const darnRole = "darn"
+ 
+@@ -56,6 +65,8 @@ type DarnInputs struct {
+ 	LanguageSkills []string
+ 	// SubagentModel is the model name the writer passes to the Agent tool for the fresh subagents it hands work to.
+ 	SubagentModel string
++	// GateFixed reports that a cold fixer clears the writer's verify gate, so the prompt has the writer and its subagents run no gate.
++	GateFixed bool
+ }
+ 
+ // DarnTable builds the seatengine.Table of one darn writer spawn: one lead that writes the change description.
+@@ -63,6 +74,7 @@ type DarnInputs struct {
+ // The lead is non-interactive, carries the change description as its one output file, and the table runs for cfg.WriterTimeoutMin minutes.
+ // The table's values are the stencil's markers, and the seat engine renders the parent and edit directives from its geometry.
+ // The table carries no gate; the producer entry sets it.
++// With in.GateFixed the prompt's Step 4 has the writer and its subagents run no gate and act only on what the verify gate's fixer leaves; without it the step has them run the gate after each commit.
+ // A friction directive that fails to render is logged and left empty, because the note is optional bookkeeping.
+ func DarnTable(in DarnInputs, cfg Config, reg modelspec.Registry) (seatengine.Table, error) {
+ 	required := []struct{ field, value string }{
+@@ -100,6 +112,10 @@ func DarnTable(in DarnInputs, cfg Config, reg modelspec.Registry) (seatengine.Ta
+ 		logger.Warn("darn: friction directive failed, continuing without one", "role", darnRole, "stencil", darnStencilName, "error", err)
+ 		frictionDirective = ""
+ 	}
++	makeChange, err := makeChangeList(in.StencilsDir, in.GateFixed, in.SubagentModel)
++	if err != nil {
++		return seatengine.Table{}, fmt.Errorf("darn: DarnTable: Step 4 list: %w", err)
++	}
+ 
+ 	return seatengine.Table{
+ 		RolePrefix: darnRole,
+@@ -113,7 +129,7 @@ func DarnTable(in DarnInputs, cfg Config, reg modelspec.Registry) (seatengine.Ta
+ 			"condition_stop_marker_path": in.ConditionStopMarkerPath,
+ 			"specs_dir":                  in.SpecsDir,
+ 			"prior_work":                 orNone(in.PriorWork),
+-			"subagent_model":             in.SubagentModel,
++			"make_change":                makeChange,
+ 			"pattern_directive":          patternDirective,
+ 			friction.MarkerName:          frictionDirective,
+ 		},
+@@ -127,6 +143,23 @@ func DarnTable(in DarnInputs, cfg Config, reg modelspec.Registry) (seatengine.Ta
+ 	}, nil
+ }
+ 
++// makeChangeList returns the writer prompt's Step 4 list, read at call time from stencilsDir and filled with subagentModel: the gated fragment when gateFixed, otherwise the ungated one.
++func makeChangeList(stencilsDir string, gateFixed bool, subagentModel string) (string, error) {
++	name := makeChangeStencil
++	if gateFixed {
++		name = makeChangeGatedStencil
++	}
++	content, err := stencilstore.Read(stencilsDir, name)
++	if err != nil {
++		return "", err
++	}
++	filled, err := stencil.Fill(content, map[string]string{"subagent_model": subagentModel})
++	if err != nil {
++		return "", fmt.Errorf("fill stencil %s: %w", name, err)
++	}
++	return strings.TrimSpace(string(filled)), nil
++}
++
+ // orNone returns value, or noneToken when value is empty.
+ func orNone(value string) string {
+ 	if value == "" {
+diff --git a/internal/darnengine/spec_test.go b/internal/darnengine/spec_test.go
+index efe5dde9..e4e28964 100644
+--- a/internal/darnengine/spec_test.go
++++ b/internal/darnengine/spec_test.go
+@@ -64,6 +64,13 @@ func leadPrompt(t *testing.T, in DarnInputs, parentName string, table seatengine
+ 	return prompts[""]
+ }
+ 
++// Lines of the prompt's Step 4 that tell the gate rule apart: the writer's and its subagents' gate runs with the verify gate's fixer off, and the no-gate step with it on.
++const (
++	ungatedTestStep     = "3. Test with `lym gate test` after the last edit of each commit"
++	ungatedSubagentGate = "the gate rule from your system prompt with its Bash tool timeout, for the subagent to run on its own package"
++	gatedNoGateStep     = "3. Run no `lym gate test` yourself."
++)
++
+ // TestDarnSpec covers the table's lead and settings, and the rendered tokens for a first spawn, where the optional prior-work token renders (none), and for a spawn that carries prior work, a parent and a friction directory.
+ func TestDarnSpec(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -71,23 +78,36 @@ func TestDarnSpec(t *testing.T) {
+ 
+ 	cfg := Config{Writer: "opus[effort=high]", WriterTimeoutMin: 45}
+ 	tests := []struct {
+-		name         string
+-		configure    func(in *DarnInputs)
+-		parentName   string
+-		wantInPrompt func(in DarnInputs) []string
+-		wantNone     int
+-		wantNoParent bool
+-		wantSkills   []string
++		name            string
++		configure       func(in *DarnInputs)
++		parentName      string
++		wantInPrompt    func(in DarnInputs) []string
++		wantNotInPrompt []string
++		wantNone        int
++		wantNoParent    bool
++		wantSkills      []string
+ 	}{
+ 		{
+ 			name:       "first spawn renders the prior-work token as none",
+ 			configure:  func(in *DarnInputs) {},
+ 			wantSkills: []string{"scribe:prose", "scribe:code-quality", "scribe:testing"},
+ 			wantInPrompt: func(in DarnInputs) []string {
+-				return []string{"fix-the-thing", in.DescriptionPath, filepath.ToSlash(in.SpecsDir), in.DecisionRecordPath, in.StopMarkerPath, in.ConditionStopMarkerPath, `model: "haiku"`}
++				return []string{"fix-the-thing", in.DescriptionPath, filepath.ToSlash(in.SpecsDir), in.DecisionRecordPath, in.StopMarkerPath, in.ConditionStopMarkerPath, `model: "haiku"`, ungatedTestStep, ungatedSubagentGate}
+ 			},
+-			wantNone:     1,
+-			wantNoParent: true,
++			wantNotInPrompt: []string{gatedNoGateStep},
++			wantNone:        1,
++			wantNoParent:    true,
++		},
++		{
++			name:       "a cold fixer on the verify gate has the writer and its subagents run no gate",
++			configure:  func(in *DarnInputs) { in.GateFixed = true },
++			wantSkills: []string{"scribe:prose", "scribe:code-quality", "scribe:testing"},
++			wantInPrompt: func(in DarnInputs) []string {
++				return []string{`model: "haiku"`, gatedNoGateStep}
++			},
++			wantNotInPrompt: []string{ungatedTestStep, ungatedSubagentGate},
++			wantNone:        1,
++			wantNoParent:    true,
+ 		},
+ 		{
+ 			name: "resumed spawn renders the prior work, the parent and the friction note path",
+@@ -167,6 +187,11 @@ func TestDarnSpec(t *testing.T) {
+ 					t.Errorf("lead prompt does not contain %q", want)
+ 				}
+ 			}
++			for _, unwanted := range tt.wantNotInPrompt {
++				if strings.Contains(prompt, unwanted) {
++					t.Errorf("lead prompt contains %q; want it absent", unwanted)
++				}
++			}
+ 			if got := strings.Count(prompt, "\n(none)\n"); got != tt.wantNone {
+ 				t.Errorf("lead prompt renders (none) on its own line %d times; want %d", got, tt.wantNone)
+ 			}
+@@ -178,7 +203,7 @@ func TestDarnSpec(t *testing.T) {
+ }
+ 
+ // TestDarnSpec_Refusals covers the refusal of each empty required field by name, an unusable writer spec, and a stencil missing from the stencils directory.
+-// A missing stencil is the seat engine's refusal: the table builder reads none, and Validate reads every seat's.
++// DarnTable reads the Step 4 fragment its gate rule picks, while the seat engine's Validate reads every seat's stencil.
+ func TestDarnSpec_Refusals(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -199,6 +224,13 @@ func TestDarnSpec_Refusals(t *testing.T) {
+ 		{"empty SubagentModel", func(t *testing.T, in *DarnInputs, cfg *Config) { in.SubagentModel = "" }, "SubagentModel"},
+ 		{"malformed writer spec", func(t *testing.T, in *DarnInputs, cfg *Config) { cfg.Writer = "opus[effort=high" }, "writer model-spec"},
+ 		{"missing stencil", func(t *testing.T, in *DarnInputs, cfg *Config) { stencilkit.Remove(t, in.StencilsDir, darnStencilName) }, darnStencilName},
++		{"missing Step 4 fragment", func(t *testing.T, in *DarnInputs, cfg *Config) {
++			stencilkit.Remove(t, in.StencilsDir, makeChangeStencil)
++		}, makeChangeStencil},
++		{"missing gated Step 4 fragment", func(t *testing.T, in *DarnInputs, cfg *Config) {
++			in.GateFixed = true
++			stencilkit.Remove(t, in.StencilsDir, makeChangeGatedStencil)
++		}, makeChangeGatedStencil},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/loomcli/darnwiring.go b/internal/loomcli/darnwiring.go
+index 94ea485c..753a0378 100644
+--- a/internal/loomcli/darnwiring.go
++++ b/internal/loomcli/darnwiring.go
+@@ -224,7 +224,8 @@ func (c *loomCLI) wireTreeScope(location *lymcwd.Location) error {
+ // It loads the hub-wide darn.yaml strictly, so start, run, step and resume refuse an absent or malformed file before any row builds.
+ // A malformed tree_scope key is refused with the editor way forward instead of the hub reconcile one, since --set cannot remove a key the hub file holds.
+ // subagentModel is loom.yaml's subagent_model, the model the writer's prompt names for the subagents it hands work to.
+-func (c *loomCLI) wireDarn(location *lymcwd.Location, stencilsDir, specsDir, frictionDir, subagentModel string, registry modelspec.Registry) error {
++// pairSlug is the worktree's pair slug, empty on the prime; with it, a verify gate whose fixer setting holds a model-spec has the writer's prompt drop its gate runs.
++func (c *loomCLI) wireDarn(location *lymcwd.Location, stencilsDir, specsDir, frictionDir, subagentModel, pairSlug string, registry modelspec.Registry) error {
+ 	dirs := fabricengine.ConfigDirs(location)
+ 	cfg, err := darnengine.LoadConfig(dirs, "darn")
+ 	if err != nil {
+@@ -236,6 +237,10 @@ func (c *loomCLI) wireDarn(location *lymcwd.Location, stencilsDir, specsDir, fri
+ 
+ 	c.env.Darn = darnDeps(location, c.runID, c.recipe)
+ 	c.env.DarnTable = func(told loomshed.DarnTold) (seatengine.Table, error) {
++		gateFixed, err := writerFixerOn(c.recipe, darnWriteEngine, darnGateEntry, c.env.Setting, pairSlug)
++		if err != nil {
++			return seatengine.Table{}, err
++		}
+ 		table, err := darnengine.DarnTable(darnengine.DarnInputs{
+ 			StencilsDir:        stencilsDir,
+ 			SpecsDir:           specsDir,
+@@ -248,6 +253,7 @@ func (c *loomCLI) wireDarn(location *lymcwd.Location, stencilsDir, specsDir, fri
+ 			PriorWork:          told.PriorWork,
+ 			LanguageSkills:     c.languageSkills,
+ 			SubagentModel:      subagentModel,
++			GateFixed:          gateFixed,
+ 
+ 			ConditionStopMarkerPath: shedrun.ConditionStopMarker(location, c.runID),
+ 		}, cfg, registry)
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index b49fedc1..cdce931c 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -22,6 +22,7 @@
+ //
+ // `wire` fills `Env.GateFixer` for every recipe through `gateFixerSeam`, which wraps the gate of a Darn-Write, Plan-Write or Discussion-Write row whose `fixer` element names a model-spec, so a failure at the writer's idle boundary goes to a cold fixer before the writer hears of it.
+ // The seam returns the spec unchanged on the prime and outside a hub, where no pair owns a fixer.
++// The same three rows' tables read that condition through `writerFixerOn`, so a writer whose gate has a fixer is told to run neither its validator nor, on Darn-Write, `lym gate test`.
+ // A fixer's records live in the run's scratch directory under `gatefix`, in a directory `rowVisitDir` keys by the row and the status history's length and newest repeat count, so a crash re-step finds the fixer it left and a goto or a fresh entry starts clean.
+ // `fixerSpec` renders the prompt from the shared cold frame and one body stencil per gate entry, `gatefix-body-darn`, `gatefix-body-plan` or `gatefix-body-discussion`.
+ //
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index ea9ad29a..e6f5636e 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -963,7 +963,7 @@ func (c *loomCLI) wire(location *lymcwd.Location, cwd string) error {
+ 		return err
+ 	}
+ 	if hasDarnWrite {
+-		if err := c.wireDarn(location, websterGeom.StencilsDir, websterGeom.SpecsDir, frictionDir, loomCfg.SubagentModel, registry); err != nil {
++		if err := c.wireDarn(location, websterGeom.StencilsDir, websterGeom.SpecsDir, frictionDir, loomCfg.SubagentModel, pairSlug, registry); err != nil {
+ 			return err
+ 		}
+ 	}
+diff --git a/internal/loomcli/wiring_darn_test.go b/internal/loomcli/wiring_darn_test.go
+index 17298b7c..9f7bf868 100644
+--- a/internal/loomcli/wiring_darn_test.go
++++ b/internal/loomcli/wiring_darn_test.go
+@@ -4,6 +4,7 @@
+ package loomcli
+ 
+ import (
++	"fmt"
+ 	"os"
+ 	"path/filepath"
+ 	"strings"
+@@ -171,6 +172,58 @@ func TestWire_DarnRecipe(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("the writer's prompt drops its gate runs only for a pair run whose gate_fixer holds a model-spec", func(t *testing.T) {
++		t.Parallel()
++
++		const (
++			gatedNoGateStep = "3. Run no `lym gate test` yourself."
++			ungatedTestStep = "3. Test with `lym gate test` after the last edit of each commit"
++		)
++		tests := []struct {
++			name      string
++			pair      bool
++			gateFixer string
++			wantGated bool
++		}{
++			{name: "pair slug and a fixer", pair: true, gateFixer: "sonnet[medium]", wantGated: true},
++			{name: "pair slug and an empty fixer", pair: true, gateFixer: ""},
++			{name: "no pair slug and a fixer", pair: false, gateFixer: "sonnet[medium]"},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				loc := hubLocation(t, "pair", ".")
++				seedDarnHubConfig(t, loc.HubPath, "3", "gate_fixer: sonnet[medium]", fmt.Sprintf("gate_fixer: %q", tt.gateFixer))
++				writeHubGateConfig(t, loc.HubPath, gateConfigWithTwoTiers())
++				if tt.pair {
++					recordPath := fabricengine.OriginRecordPath(loc)
++					if err := os.MkdirAll(filepath.Dir(recordPath), 0o755); err != nil {
++						t.Fatalf("MkdirAll(%q) = %v; want nil", filepath.Dir(recordPath), err)
++					}
++					if err := os.WriteFile(recordPath, []byte("{}"), 0o644); err != nil {
++						t.Fatalf("WriteFile(%q) = %v; want nil", recordPath, err)
++					}
++				}
++				c := &loomCLI{runID: shedrun.SelfRunID, recipe: shedrun.RecipeDarn}
++				if err := c.wire(loc, loc.AnchorPath()); err != nil {
++					t.Fatalf("wire() = %v; want nil", err)
++				}
++				table, err := c.env.DarnTable(loomshed.DarnTold{})
++				if err != nil {
++					t.Fatalf("c.env.DarnTable() = _, %v; want nil", err)
++				}
++				step := table.Values["make_change"]
++				wantStep, absentStep := ungatedTestStep, gatedNoGateStep
++				if tt.wantGated {
++					wantStep, absentStep = gatedNoGateStep, ungatedTestStep
++				}
++				if !strings.Contains(step, wantStep) || strings.Contains(step, absentStep) {
++					t.Errorf("Step 4 list = %q; want it to hold %q and not %q", step, wantStep, absentStep)
++				}
++			})
++		}
++	})
++
+ 	t.Run("a local loom override sets a darn run's perch budget and hard cap", func(t *testing.T) {
+ 		t.Parallel()
+ 		loc := hubLocation(t, "pair", ".")
