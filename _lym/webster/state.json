@@ -1,6 +1,6 @@
 {
   "runGuid": "bfe7c641c821482c9c91b52ee816b27f",
-  "planFingerprint": "129fba1696d0d82ee36d8c6b0cdf17db703f724ec1f90f956db7aeaad2c00541",
+  "planFingerprint": "c6669ae3977b9126a7d3b7f9e4b0c6afbea0e7f2e21c5cc9cc87ba11b4dc2065",
   "planFileHashes": {
     "00-overview.md": "29f5786077f9682da5f7bba077ce534a47b466e5801dd72ab7da559ae4dad29b",
     "01-shedengine-block-routing.md": "c3ca99ee68422156ee2612ba68aac2e7140e9680c4e58c4a27f40175749e61fd",
@@ -10,8 +10,8 @@
     "05-shedbuild-block-build.md": "1a38db180ab301c91e3d540217e7591baefa68e4d0082c9240aa43d49265079a",
     "06-loom-recipes-motif-arras.md": "0515ea0feec04e40b44194d830703f541cad090c176198030d0d48d9f2603b66",
     "07-arras-seedable.md": "3a8e1507206e61170b8db01604fe62e375b20a63d467d9441ac62797dc53a791",
-    "08-profile-recipe.md": "54a360f5c245a071d07db78769b736093da74c521708a6fab35f73f144f5eb90",
-    "09-checklist-block-marks.md": "4eea8f7cf13277b9fddf2742696a9889482db680cd927f0c0fc138e3b80a65d0"
+    "08-profile-recipe.md": "4d9dc6078194ce5eab44e826552a669c091180d00e5cde7ef0fec244a05fa7b8",
+    "09-checklist-block-marks.md": "2347c1a4acf77f8c8ad891c469a54ed403f0ecbcf497cb6375498b622663e03c"
   },
   "planOverviewFrameHash": "7a00436cdc8e4b1c437c2a2877c9f7c6d8b24363b04bb21c58dbdaeef625c5f1",
   "partition": [
@@ -326,7 +326,7 @@
       }
     }
   ],
-  "currentBatch": 8,
+  "currentBatch": 0,
   "masterStrand": "e72ba4dee163127ae0ab79eb29b70a06",
   "masterSessionId": "8965312c-1965-41e5-bab9-4e7de716ebbb",
   "masterEngine": "claude",
@@ -455,21 +455,42 @@
         "09-checklist-block-marks"
       ],
       "cardHashes": {
-        "08-profile-recipe": "54a360f5c245a071d07db78769b736093da74c521708a6fab35f73f144f5eb90",
-        "09-checklist-block-marks": "4eea8f7cf13277b9fddf2742696a9889482db680cd927f0c0fc138e3b80a65d0"
+        "08-profile-recipe": "4d9dc6078194ce5eab44e826552a669c091180d00e5cde7ef0fec244a05fa7b8",
+        "09-checklist-block-marks": "2347c1a4acf77f8c8ad891c469a54ed403f0ecbcf497cb6375498b622663e03c"
       },
       "startSha": "566b309285ef6c844bfcb89b7474da34696cdc81",
       "kind": "fork",
       "spawnedAt": "2026-11-03T08:57:16Z",
       "sessionId": "8965312c-1965-41e5-bab9-4e7de716ebbb",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "08-profile-recipe",
+        "status": "done",
+        "head_sha": "566b5e15d126fc40d0db58c672dde2529ebed010",
+        "deviations": [
+          "internal/loomcli/checklist_test.go",
+          "internal/loomrecipe/recipekeys_test.go",
+          "internal/shedverbs/human.go",
+          "internal/shedverbs/human_test.go"
+        ]
+      },
+      "cardShas": [
+        "566b5e15d126fc40d0db58c672dde2529ebed010"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-shed-sub-run-block/8965312c-1965-41e5-bab9-4e7de716ebbb/subagents/agent-a12bf991a2787fc97.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-shed-sub-run-block/8965312c-1965-41e5-bab9-4e7de716ebbb/subagents/agent-a12bf991a2787fc97.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-shed-sub-run-block/8965312c-1965-41e5-bab9-4e7de716ebbb/subagents/agent-a8af52b2352667b10.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-shed-sub-run-block/8965312c-1965-41e5-bab9-4e7de716ebbb/subagents/agent-ac5e3542af19b37ab.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-shed-sub-run-block/8965312c-1965-41e5-bab9-4e7de716ebbb/subagents/agent-ac72ed2ecd848e522.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-shed-sub-run-block/8965312c-1965-41e5-bab9-4e7de716ebbb/subagents/agent-ac72ed2ecd848e522.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-shed-sub-run-block/8965312c-1965-41e5-bab9-4e7de716ebbb/subagents/agent-a12bf991a2787fc97.jsonl"
   ]
 }

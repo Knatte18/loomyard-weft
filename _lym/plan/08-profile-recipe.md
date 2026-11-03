@@ -1,7 +1,7 @@
 # Card 8 — profile-recipe
 
 **Create:**
-- `plan:internal/loomrecipe#ProfileRecipe` -> `func ProfileRecipe(recipe string) (string, error)`
+- `internal/loomrecipe#ProfileRecipe`
 
 **Edit:**
 - `internal/battencli#prepareRunSettings`

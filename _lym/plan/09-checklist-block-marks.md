@@ -12,9 +12,9 @@
 - `internal/shedverbs#TestRenderStatusHuman`
 
 **Create:**
-- `plan:internal/loomcli#checklistEnteredWord` -> `const checklistEnteredWord = "entered"`
-- `plan:internal/loomcli#checklistBlockName` -> `func checklistBlockName(name, block string) string`
-- `plan:internal/shedverbs#blockAwareLast` -> `func blockAwareLast(st shedengine.Status, routing shedengine.Routing) string`
+- `internal/loomcli#checklistEnteredWord`
+- `internal/loomcli#checklistBlockName`
+- `internal/shedverbs#blockAwareLast`
 
 **Uses:**
 - `internal/loomrecipe#RecipeRow`
