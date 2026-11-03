@@ -1011,6 +1011,26 @@
       "body": "## Seen (operator, 2026-11-03)\n\nA beam's pawl run is a shed run with its own checklist, the loom status strand a normal loom run shows in its session's overview window.\nOnce the beam is up, its session shows the beam overview, its orch and the shell, and the pawl run's checklist is nowhere, so the operator cannot see where pawl stands; that matters once pawl is advanced by hand.\n\n## Cause, from the code\n\n- At `lym beam start`, the pawl run's `lym loom start` puts the loom status strand into the session's one overview window.\n- `ensureRunsStrand` (`internal/orchcli/runs.go`) then puts the beam's runs strand in that window by replacing the loom status strand, since reed refuses a second overview strand; the checklist strand is gone, not moved.\n- `statusStrandAddSpec` (`internal/loomcli/bootstrap.go`) does give the checklist a window of its own beside the runs strand, but only when a later loom start or resume adds it, and that window keeps the viewer, so it is easy to miss.\n\n## Expected\n\nWhile a pawl run lives, the beam's session always shows its checklist in a window of its own, named for pawl, beside the beam overview:\n\n- When the runs strand takes the overview window from the loom status strand, the checklist is added again in its own window, or the beam start brings the runs strand up before the pawl run's loom start so the checklist never takes the overview window.\n- The beam overview may also carry one line with pawl's current row, pointing at that window.\n",
       "created": "2026-11-03T07:30:22Z",
       "revised": "2026-11-03T07:30:22Z"
+    },
+    {
+      "id": 1032,
+      "handle": "F15",
+      "slug": "lookup-agents-through-shuttle",
+      "title": "Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "shuttle",
+        "codex",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Idea (operator, 2026-11-03)\n\nThe Plan, Discussion-Write and darn writers hand lookups to fresh subagents, and `loom.yaml`'s `subagent_model` names their model so it is never hardcoded.\nToday the value is a bare model name the Claude Code Agent tool takes, so a lookup agent is always a Claude subagent inside the writer's own session.\nThe value should also be able to name another engine, such as Codex (note `codex-engine`): such a lookup agent cannot run through the Agent tool, so lym spawns it through shuttle, and it shows in reed as a window of its own, like any other agent.\n\n## Open\n\n- How the writer asks for a shuttle-spawned lookup and gets its answer back: a `lym` verb that spawns the agent and waits for its reply, much as a fork returns only what is relevant (note `planner-fork-lookups`).\n- Whether one config value selects both the engine and the model, in model-spec form such as `codex[high]`, while a bare Claude name keeps today's Agent tool path.\n- Several lookups at once: each its own strand, and how many reed windows that makes.\n",
+      "created": "2026-11-03T07:32:37Z",
+      "revised": "2026-11-03T07:32:37Z"
     }
   ],
   "prime_owner": "neve",
