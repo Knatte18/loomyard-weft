@@ -16,19 +16,13 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T13 | `draft` **Merge main into the codex-engine beam again and resolve every conflict**<br>• Bring main into the beam before it lands, so its landing merges cleanly | [`codex-engine-merge-main-2`](design-codex-engine-merge-main-2.md) | darn |  | 0m<br>0m | codex, shuttle |
+| T13 | **Merge main into the codex-engine beam again and resolve every conflict**<br>• Bring main into the beam before it lands, so its landing merges cleanly | [`codex-engine-merge-main-2`](design-codex-engine-merge-main-2.md) | darn |  | 0m<br>0m | codex, shuttle |
 
 ## Notes (0)
 

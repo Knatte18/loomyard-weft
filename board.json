@@ -874,7 +874,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #35](https://github.com/Knatte18/loomyard/issues/35).\n\nWhat happened: `lym webster begin-batch 1` was refused before any fork: `websterengine: head sha in \u003cworktree\u003e/\u003csubdir\u003e: gitrepo: open go-git handle at \u003cworktree\u003e/\u003csubdir\u003e: repository does not exist`. The loom run halted blocked (escalation-to-human) at Webster.\n\nWhy abnormal: the task's working directory is a subdirectory of the git worktree (the repository root is higher up), and the go-git open is called on that subdirectory without repository discovery, so HEAD sha lookup fails. Every earlier verb worked from the same directory.\n\nWhat to do: open the repository with detection of the enclosing `.git` (go-git `PlainOpenWithOptions` with `DetectDotGit`), or resolve the repository root before calling the head-sha lookup in `websterengine`.\n\nProvenance: task `commonlib-fluid-report-selection`; notes loom-halt-4.md, webster-refusal-begin-batch.md.\n",
-      "status": "running · Darn-Write",
+      "status": "draft",
       "created": "2026-11-03T16:44:22Z",
       "revised": "2026-11-03T16:51:55Z",
       "profile": "light"
@@ -945,7 +945,6 @@
       "isolated": false,
       "brief": "Bring main into the beam before it lands, so its landing merges cleanly",
       "body": "## Build\n\n- Merge `origin/main` into the `codex-engine` beam branch.\n- Resolve every conflict so that both main's changes and the beam's Codex work stand.\n- Fix whatever the merged tree breaks in the build and the gate, including code that main changed under the beam's new code.\n\n## Bounds\n\n- No new behaviour: the task only reconciles the two sides.\n- The project's Sketch (`lym board get P2 --record`) is the authority on what the beam's code must keep doing.",
-      "status": "draft",
       "created": "2026-11-03T16:55:32Z",
       "revised": "2026-11-03T16:55:32Z",
       "project": "codex-engine"

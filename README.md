@@ -44,19 +44,13 @@ codexengine for single-session roles, built from the 2026-10-24 spike report and
 
 Concrete and claimable; only a task can run.
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-#### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T13 | `draft` **Merge main into the codex-engine beam again and resolve every conflict**<br>• Bring main into the beam before it lands, so its landing merges cleanly | [`codex-engine-merge-main-2`](design-codex-engine-merge-main-2.md) | darn |  | 0m<br>0m | codex, shuttle |
+| T13 | **Merge main into the codex-engine beam again and resolve every conflict**<br>• Bring main into the beam before it lands, so its landing merges cleanly | [`codex-engine-merge-main-2`](design-codex-engine-merge-main-2.md) | darn |  | 0m<br>0m | codex, shuttle |
 
 ### Notes (0)
 
@@ -70,7 +64,7 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Running (7)
+#### Running (6)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -81,7 +75,6 @@ Held by a run; its scope is locked until the run ends.
 | T3 | **The Drift-Baseline stencil skips the tests an intended change drifts**<br>• Intended drift is skipped instead of compared and accepted with a reason, which hides regressions in the same tests | [`drift-baseline-skips-intended`](design-drift-baseline-skips-intended.md) | darn · light | Finalize | neve | 22m<br>16m | drift, stencil |
 | T5 | **depends_on accepts a project or any entry that lands, and dobby holds the task until it does** | [`depends-on-any-entry`](design-depends-on-any-entry.md) | darn · light | Code-Burler-Fix | neve | 36m<br>33m | board, dobby |
 | T7 | **An arbiter whose turn ends on an API error holds the stop silently until its deadline**<br>• A StopFailure leaves the settler idle, the parent's resume is refused as driver_not_parked, and no one is told | [`arbiter-api-error-stall`](design-arbiter-api-error-stall.md) | darn · light | Darn-Write | neve | 19m<br>16m | arbiter, shuttle, claude |
-| T10 | **lym webster begin-batch fails: go-git cannot open a worktree root that is a subdirectory of the repository** | [`webster-subdir-gitopen`](design-webster-subdir-gitopen.md) | darn · light | Darn-Write | neve | 11m<br>3m | webster, git |
 | T12 | **Preflight worktree-clean halts on lym's own _lym state files** | [`preflight-own-state-dirty`](design-preflight-own-state-dirty.md) | darn · light | Darn-Write | neve | 11m<br>3m | preflight, loom |
 
 #### Ready (0)
@@ -108,13 +101,14 @@ Starts when every entry it names under After is done.
 | --- | --- | --- | --- | --- | --- | --- |
 | T9 | **lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human** | [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md) | darn · light | T2<br>T8 | 11m<br>3m | fabric, landing |
 
-#### Draft (1)
+#### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T2 | 3d<br>39m | fabric |
+| T10 | `draft` **lym webster begin-batch fails: go-git cannot open a worktree root that is a subdirectory of the repository** | [`webster-subdir-gitopen`](design-webster-subdir-gitopen.md) | darn · light |  | 11m<br>3m | webster, git |
 
 ### Notes (27)
 
