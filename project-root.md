@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-03 11:21 UTC; every age below is as of then.
+Rendered 2026-11-03 11:22 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -21,9 +21,9 @@ Held by a run; its scope is locked until the run ends.
 | T1 | **Tapestry runs Discussion through a motif block and skips it for a discussed entry; motif runs alone; arras goes**<br>• Tapestry uses the motif block, skips it when the entry is flagged discussed, motif becomes a runnable recipe, and arras is removed | [`tapestry-motif-block`](design-tapestry-motif-block.md) | darn · solid | Finalize | neve | 1h<br>1h | shed, loom |
 | T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Webster | neve | 14h<br>3h | batten, fabric |
 | T4 | **Webster treats the anchor as the git worktree in a subpath-anchored hub**<br>• Webster opens git and resolves plan paths at the worktree root, not the anchor, so a subpath-anchored hub reaches code | [`webster-subpath-anchor`](design-webster-subpath-anchor.md) | darn · solid | Code-Burler-Fix | neve | 1h<br>1h | webster, cwd, parsers |
-| T5 | **Run windows show the board handle in their titles**<br>• Konsole window titled T4: <slug>, tmux overview window T4: overview, beam overview P1: beam: <slug> | [`window-titles-show-handle`](design-window-titles-show-handle.md) | darn · light | Darn-Write | neve | 15m<br>15m | reed, batten, termwindow |
-| T10 | **Darn-Write writer runs no gate itself when the cold fixer is on**<br>• The darn writer prompt still has the writer run and fix lym gate test; with the gate fixer on it should run none | [`darn-writer-runs-no-gate`](design-darn-writer-runs-no-gate.md) | darn · light | Code-Burler-Fix | neve | 23m<br>23m | darn, stencil, gate |
-| T11 | **Map where fabricengine test time goes and propose cuts**<br>• Docs-only survey: time, git processes and files per fixture on neve, what hubforge templates already cover, ranked proposals<br>• `darn: writer fable[high]` | [`fabric-test-speed-survey`](design-fabric-test-speed-survey.md) | darn · docs | Darn-Write | neve | 10m<br>10m | fabric, testkit, docs |
+| T5 | **Run windows show the board handle in their titles**<br>• Konsole window titled T4: <slug>, tmux overview window T4: overview, beam overview P1: beam: <slug> | [`window-titles-show-handle`](design-window-titles-show-handle.md) | darn · light | Darn-Write | neve | 16m<br>16m | reed, batten, termwindow |
+| T10 | **Darn-Write writer runs no gate itself when the cold fixer is on**<br>• The darn writer prompt still has the writer run and fix lym gate test; with the gate fixer on it should run none | [`darn-writer-runs-no-gate`](design-darn-writer-runs-no-gate.md) | darn · light | Code-Bouncer | neve | 24m<br>24m | darn, stencil, gate |
+| T11 | **Map where fabricengine test time goes and propose cuts**<br>• Docs-only survey: time, git processes and files per fixture on neve, what hubforge templates already cover, ranked proposals<br>• `darn: writer fable[high]` | [`fabric-test-speed-survey`](design-fabric-test-speed-survey.md) | darn · docs | Darn-Write | neve | 11m<br>11m | fabric, testkit, docs |
 
 ### Ready (0)
 
@@ -83,7 +83,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F2 |  | **A status-bar button opens a short-lived board agent, so board talks need no orch**<br>• An ordinary agent with a board-policy skill loaded, for discussing and filing notes and releasing tasks on go-ahead | [`board-agent-button`](design-board-agent-button.md) | 2d<br>1d | reed, board, shuttle, orch |
 | F3 | L | **A module overlap lets a task run Discussion at once and wait only before Plan**<br>• A second kind of dependency, plan_after: the task starts and discusses, then waits before Plan until the named tasks have landed | [`plan-after-dependency`](design-plan-after-dependency.md) | 1d<br>1d | board, batten, loom |
 | F4 |  | **The orch lies dormant and wakes only when a run needs help**<br>• Dobby takes the mechanics and a spawned agent the doubtful cases; one orch per beam lives on, dormant, woken when needed | [`dormant-orch`](design-dormant-orch.md) | 2d<br>2d | orch, dobby, arbiter |
-| F5 |  | **Per-machine environment variables, exported to every process lym starts for the hub** | [`machine-env-vars`](design-machine-env-vars.md) | 4h<br>15m | config, gate, drift |
+| F5 |  | **Per-machine environment variables, exported to every process lym starts for the hub** | [`machine-env-vars`](design-machine-env-vars.md) | 4h<br>16m | config, gate, drift |
 | F6 |  | **Talk to the orch through Slack**<br>• A Slack relay so the operator can reach the orch from a phone where Claude's own app is not allowed | [`reed-slack-relay`](design-reed-slack-relay.md) | 4w<br> | reed |
 | F7 |  | **Creel mail between hubs through an inbox folder, with a verified sender**<br>• A shared inbox folder takes mail from other hubs; each file names the sender hub and agent so a reply knows where to go | [`creel-cross-hub-mail`](design-creel-cross-hub-mail.md) | 4d<br>4d | creel, orch |
 | F8 |  | **fabric reset: reset warp to a SHA and re-anchor the weft trailers**<br>• The post-conclude undo the merge surface does not ship: reset to a warp SHA, resolve the paired weft SHA through the correspondence index, gate both sides | [`fabric-reset-to-sha`](design-fabric-reset-to-sha.md) | 4w<br>16h | fabric |
