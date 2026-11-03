@@ -324,10 +324,10 @@
       ],
       "isolated": false,
       "brief": "Move lym hibernate request into dobby; the past-Land test is already shared",
-      "body": "## Seen (operator, 2026-10-31)\n\n`lym hibernate request` runs a daemon of its own that waits for the runs to land and every session to pause before it hibernates the machine.\nDobby already drives every run of its worktree to its end, and `battenrecipe.PastLand` is the one past-Land test that dobby and the hibernate daemon share (built by `landing-watch`).\n\n## Idea\n\nThe hibernate request moves into dobby, so no daemon of its own waits on the runs.\n\n## Open\n\n- The shared test is built; moving the request is the open part.\n- A request spans every beam, since `--after-all` waits on all runs while a dobby sees only its own: which dobby carries it, or how the dobbies agree.\n- A hub pause must leave the dobby that waits outside it.\n",
+      "body": "## Seen (operator, 2026-10-31)\n\n`lym hibernate request` runs a daemon of its own that waits for the runs to land and every session to pause before it hibernates the machine.\nDobby already drives every run of its worktree to its end, and `battenrecipe.PastLand` is the one past-Land test that dobby and the hibernate daemon share (built by `landing-watch`).\n\n## Goal\n\nThe hibernate request moves into dobby, so no daemon of its own waits on the runs.\n\n## Decisions (operator, 2026-11-03)\n\n- The prime's dobby carries the request: it reads the runs of every beam, so a request with `--after-all` waits on all of them, and the request is watched and cancelled in one place.\n  No beam's dobby carries or votes on it.\n- The request is kept on disk: when the prime's dobby is not running or dies while it waits, it takes the request up again when it starts.\n- The wait for every session to pause moves over unchanged, the fork rule included; a change to how forks are handled is a task of its own, later.\n- A hub pause leaves the dobby that waits on the request outside it, so the pause the request adds never stops the wait.\n",
       "status": "draft",
       "created": "2026-10-31T14:39:51Z",
-      "revised": "2026-11-03T15:12:19Z",
+      "revised": "2026-11-03T15:13:31Z",
       "profile": "solid"
     },
     {
