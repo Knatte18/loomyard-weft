@@ -52,7 +52,15 @@ Six forks returned reports; none is missing.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+- F1, nested blocks: the edge refusal and the empty-`on_done` rewrite contradicted under nesting — fixed: innermost-first expansion, a block's exit resolved outward, the refusal reads each row's own recipe edges, a block row's `on_done` may be empty inside a block (D1, D2, acceptance).
+- F2, the block's Done meant two events — fixed: the block row's Done marks entering, the block ends at its exit, reached by a Done or a skip (Goal, D1, D3, D4, acceptance).
+- F3, the goto and re-launch bypass of the block gate — fixed: bounded in D3, re-launch evaluates the gate (acceptance).
+- F4, the name `arras` — sent to the parent.
+- F5, the goto admission reads a skipped route from `OnDone` — fixed (D3, plan-writer note).
+- F6, a block row's `on_done` into its own block — fixed: refused (D2, acceptance).
+- F7, D8's bound denied the budgets it carries — fixed (D8).
 
 ## Question ledger
 
