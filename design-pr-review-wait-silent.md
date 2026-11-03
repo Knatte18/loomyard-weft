@@ -1,6 +1,6 @@
 # A PR-Review waiting on the operator shows nowhere
 
-`pr-review-wait-silent` · Task · bug, landing, loom, batten
+`pr-review-wait-silent` · Task · bug, landing, loom, batten · draft
 
 Depends on: [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md)
 
