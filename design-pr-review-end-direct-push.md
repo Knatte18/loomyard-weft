@@ -1,6 +1,6 @@
 # Ending the PR review closes the pull request and lands by direct push, which a PR-only branch refuses
 
-`pr-review-end-direct-push` · Note · bug, landing, git
+`pr-review-end-direct-push` · Task · bug, landing, git · draft
 
 Imported from [issue #20](https://github.com/Knatte18/loomyard/issues/20).
 
