@@ -1,0 +1,1275 @@
+diff --git a/internal/reedcli/button.go b/internal/reedcli/button.go
+index 39745355..1a47ced4 100644
+--- a/internal/reedcli/button.go
++++ b/internal/reedcli/button.go
+@@ -1,5 +1,5 @@
+ // button.go implements the `button` reed verb: it runs one clicked status-bar button of a told session of a told tmux server.
+-// The status bar's click binding and a button's confirm prompt call it through run-shell; it prints nothing and exits 0 once its flags are valid, since a failed button is shown on the clicking client.
++// The status bar's click binding and a button's ask and confirm prompts call it through run-shell; it prints nothing and exits 0 once its flags are valid, since a failed button is shown on the clicking client.
+ // It carries clihelp.SkipStencilSeedAnnotation, since a button click must never run the root pre-run's stencil-seed pass.
+ 
+ package reedcli
+@@ -14,7 +14,7 @@ import (
+ 	"github.com/spf13/cobra"
+ )
+ 
+-// validateButtonFlags refuses a button call that lacks the socket, tmux path, session, range or client it is told, or a confirmed call that lacks its hash, naming the flag.
++// validateButtonFlags refuses a button call that lacks the socket, tmux path, session, range or client it is told, or a confirmed or answered call that lacks its hash, naming the flag.
+ func validateButtonFlags(req reedengine.ButtonRequest) error {
+ 	switch {
+ 	case req.SocketPath == "":
+@@ -29,6 +29,8 @@ func validateButtonFlags(req reedengine.ButtonRequest) error {
+ 		return errors.New("--client must be the clicking tmux client")
+ 	case req.Confirmed && req.Hash == "":
+ 		return errors.New("--confirmed needs --hash, the hash of the run text the prompt was raised for")
++	case req.Answered && req.Hash == "":
++		return errors.New("--answered needs --hash, the hash of the run text the prompt was raised for")
+ 	}
+ 	return nil
+ }
+@@ -52,12 +54,12 @@ func (c *reedCLI) buttonCmd() *cobra.Command {
+ 		Short: "run a clicked status-bar button of a tmux session",
+ 		Long: `button runs the status-bar button that the told range names in the told
+ session: it reads the session's rendered button spec, asks the entry's
+-confirm prompt when it has one, runs the entry's command in the current
+-anchor of the worktree holding the session's run directory, logs it and
+-shows a failure on the clicking client.
++ask prompt and then its confirm prompt when it has them, runs the entry's
++command in the current anchor of the worktree holding the session's run
++directory, logs it and shows a failure on the clicking client.
+ It reads no working directory, no config and no reed state, and prints
+-nothing: the status bar's click binding and a button's confirm prompt call
+-it through tmux's run-shell.
++nothing: the status bar's click binding and a button's prompts call it
++through tmux's run-shell.
+ 
+ Example:
+   lym reed button --socket /tmp/tmux-1000/default --tmux /usr/bin/tmux --session my-worktree --range lymbtn0 --client /dev/pts/3`,
+@@ -85,8 +87,10 @@ Example:
+ 	cmd.Flags().StringVar(&req.Range, "range", "", "status range that was clicked (required)")
+ 	cmd.Flags().StringVar(&req.Client, "client", "", "name of the clicking tmux client (required)")
+ 	cmd.Flags().BoolVar(&req.Confirmed, "confirmed", false, "the confirm prompt was answered yes; needs --hash")
++	cmd.Flags().BoolVar(&req.Answered, "answered", false, "the ask prompt was answered into the session's answer option; needs --hash")
+ 	cmd.Flags().StringVar(&req.Hash, "hash", "", "hash of the run text the prompt was raised for")
+ 	cmd.Flags().StringVar(&req.Strand, "strand", "", "strand name the prompt was raised for")
++	cmd.Flags().StringVar(&req.Answer, "answer", "", "answer to the entry's ask prompt, carried by the confirm prompt")
+ 
+ 	return cmd
+ }
+diff --git a/internal/reedcli/button_test.go b/internal/reedcli/button_test.go
+index 92cb00f7..3c8fcf72 100644
+--- a/internal/reedcli/button_test.go
++++ b/internal/reedcli/button_test.go
+@@ -1,4 +1,4 @@
+-// button_test.go pins the run directory the `button` verb hands a click: the anchor recorded now for the worktree holding the rendered directory.
++// button_test.go pins the `button` verb's flag checks and the run directory it hands a click: the anchor recorded now for the worktree holding the rendered directory.
+ 
+ package reedcli
+ 
+@@ -9,9 +9,44 @@ import (
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++// TestValidateButtonFlags pins that a prompt's re-entry call needs the hash it was raised for.
++func TestValidateButtonFlags(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	told := reedengine.ButtonRequest{TmuxPath: "/usr/bin/tmux", SocketPath: "/sock", Session: "s", Range: "lymbtn0", Client: "/dev/pts/1"}
++	confirmedNoHash, answeredNoHash, answeredWithHash := told, told, told
++	confirmedNoHash.Confirmed = true
++	answeredNoHash.Answered = true
++	answeredWithHash.Answered, answeredWithHash.Hash = true, "abc"
++	tests := []struct {
++		name    string
++		req     reedengine.ButtonRequest
++		wantErr string
++	}{
++		{"PlainClickPasses", told, ""},
++		{"ConfirmedWithoutHashIsRefused", confirmedNoHash, "--confirmed needs --hash, the hash of the run text the prompt was raised for"},
++		{"AnsweredWithoutHashIsRefused", answeredNoHash, "--answered needs --hash, the hash of the run text the prompt was raised for"},
++		{"AnsweredWithHashPasses", answeredWithHash, ""},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			err := validateButtonFlags(tt.req)
++			got := ""
++			if err != nil {
++				got = err.Error()
++			}
++			if got != tt.wantErr {
++				t.Errorf("validateButtonFlags(%+v) = %q; want %q", tt.req, got, tt.wantErr)
++			}
++		})
++	}
++}
++
+ // TestButtonRunDirectory renders a run directory, records an anchor marker after it, and asks where the click runs.
+ func TestButtonRunDirectory(t *testing.T) {
+ 	tiergate.Require(t, 0)
+diff --git a/internal/reedcli/cli_test.go b/internal/reedcli/cli_test.go
+index 3694c5ae..b61a94e1 100644
+--- a/internal/reedcli/cli_test.go
++++ b/internal/reedcli/cli_test.go
+@@ -72,7 +72,7 @@ func TestRunCLI_NotAGitRepo(t *testing.T) {
+ 	}
+ }
+ 
+-// TestRunCLI_Switch_RefusesBadFlagsAndNeedsNoRepository verifies that switch refuses a missing or doubled direction and a missing --client, follow refuses a missing --socket, --session or --tmux, and button refuses a missing --socket, --tmux, --session, --range or --client and a --confirmed without --hash, with a JSON error and a non-zero exit.
++// TestRunCLI_Switch_RefusesBadFlagsAndNeedsNoRepository verifies that switch refuses a missing or doubled direction and a missing --client, follow refuses a missing --socket, --session or --tmux, and button refuses a missing --socket, --tmux, --session, --range or --client and a --confirmed or --answered without --hash, with a JSON error and a non-zero exit.
+ // It also verifies that button with every flag and a socket that does not exist exits 0 with no output.
+ // It runs from a directory that is not a git repository, so a refusal naming the flag, not lymcwd.Resolve's not-a-git-repository error, proves the verb skips the root pre-run's resolution.
+ func TestRunCLI_Switch_RefusesBadFlagsAndNeedsNoRepository(t *testing.T) {
+@@ -96,6 +96,7 @@ func TestRunCLI_Switch_RefusesBadFlagsAndNeedsNoRepository(t *testing.T) {
+ 		{name: "button missing range", args: []string{"button", "--socket", "/tmp/s", "--tmux", "tmux", "--session", "s", "--client", "c"}, wantErr: "--range"},
+ 		{name: "button missing client", args: []string{"button", "--socket", "/tmp/s", "--tmux", "tmux", "--session", "s", "--range", "lymbtn0"}, wantErr: "--client"},
+ 		{name: "button confirmed without hash", args: []string{"button", "--socket", "/tmp/s", "--tmux", "tmux", "--session", "s", "--range", "lymbtn0", "--client", "c", "--confirmed"}, wantErr: "--hash"},
++		{name: "button answered without hash", args: []string{"button", "--socket", "/tmp/s", "--tmux", "tmux", "--session", "s", "--range", "lymbtn0", "--client", "c", "--answered"}, wantErr: "--hash"},
+ 		{name: "button with every flag needs no repository", args: []string{"button", "--socket", "/nonexistent/lym-socket", "--tmux", "/nonexistent/lym-tmux", "--session", "s", "--range", "lymbtn0", "--client", "c"}, wantOK: true},
+ 	}
+ 	for _, tt := range tests {
+diff --git a/internal/reedcli/doc.go b/internal/reedcli/doc.go
+index b9a5e879..7bfa8810 100644
+--- a/internal/reedcli/doc.go
++++ b/internal/reedcli/doc.go
+@@ -29,10 +29,10 @@
+ // A missing flag or a failed tmux call is an error envelope with a non-zero exit.
+ //
+ // `button` runs the status-bar button that `--range` names in the session told by `--session`, on the server told by `--socket` and `--tmux`, for the client `--client`.
+-// It reads no working directory, config or state, skips the root pre-run's stencil-seed pass and the reed pre-run's location and config resolution, and prints nothing: the click binding and a button's confirm prompt run it through run-shell.
++// It reads no working directory, config or state, skips the root pre-run's stencil-seed pass and the reed pre-run's location and config resolution, and prints nothing: the click binding and a button's ask and confirm prompts run it through run-shell.
+ // It runs the entry in the anchor recorded now for the worktree holding the session's rendered run directory, read through `lymcwd.ResolveWorktree` with no cwd gate, so an anchor marker changed after the render needs no reattach.
+-// A missing required flag, or `--confirmed` without `--hash`, is an error envelope with a non-zero exit; every other outcome, a failed button included, exits 0 and shows its message on the clicking client.
+-// `--confirmed`, `--hash` and `--strand` are passed by the confirm prompt's own line and are not meant for a hand call.
++// A missing required flag, or `--confirmed` or `--answered` without `--hash`, is an error envelope with a non-zero exit; every other outcome, a failed button included, exits 0 and shows its message on the clicking client.
++// `--confirmed`, `--answered`, `--hash`, `--strand` and `--answer` are passed by the prompts' own lines and are not meant for a hand call.
+ //
+ // Each watched session's engine drives the daemon's told tmux binary, whatever that worktree's config names.
+ //
+diff --git a/internal/reedengine/attachgeometry_integration_test.go b/internal/reedengine/attachgeometry_integration_test.go
+index 83561445..adde814a 100644
+--- a/internal/reedengine/attachgeometry_integration_test.go
++++ b/internal/reedengine/attachgeometry_integration_test.go
+@@ -16,6 +16,7 @@ import (
+ 	"os/exec"
+ 	"strconv"
+ 	"strings"
++	"sync"
+ 	"syscall"
+ 	"testing"
+ 	"time"
+@@ -32,6 +33,25 @@ import (
+ type attachGeometryPTY struct {
+ 	master *os.File
+ 	cmd    *exec.Cmd
++
++	// mu guards output, which the drain goroutine appends to.
++	mu sync.Mutex
++	// output is what the child wrote to the pty since the last forget.
++	output strings.Builder
++}
++
++// drew reports whether the child has written text to the pty since the last forget.
++func (p *attachGeometryPTY) drew(text string) bool {
++	p.mu.Lock()
++	defer p.mu.Unlock()
++	return strings.Contains(p.output.String(), text)
++}
++
++// forget discards what the child has written to the pty so far, so a later drew sees only newer output.
++func (p *attachGeometryPTY) forget() {
++	p.mu.Lock()
++	defer p.mu.Unlock()
++	p.output.Reset()
+ }
+ 
+ // startInPTY opens a fresh /dev/ptmx master sized to cols x rows and starts argv[0] with the pty
+@@ -97,16 +117,21 @@ func startInPTY(t *testing.T, argv []string, cols, rows int) *attachGeometryPTY
+ 		_ = master.Close()
+ 	})
+ 
++	pty := &attachGeometryPTY{master: master, cmd: cmd}
+ 	go func() {
+ 		buf := make([]byte, 4096)
+ 		for {
+-			if _, err := master.Read(buf); err != nil {
++			n, err := master.Read(buf)
++			if err != nil {
+ 				return
+ 			}
++			pty.mu.Lock()
++			pty.output.Write(buf[:n])
++			pty.mu.Unlock()
+ 		}
+ 	}()
+ 
+-	return &attachGeometryPTY{master: master, cmd: cmd}
++	return pty
+ }
+ 
+ // setupAttachGeometryFixture boots a fresh integration engine and adds two strands — a
+diff --git a/internal/reedengine/bar.go b/internal/reedengine/bar.go
+index 9120611b..cd658cdc 100644
+--- a/internal/reedengine/bar.go
++++ b/internal/reedengine/bar.go
+@@ -8,7 +8,7 @@
+ // Line 2 ends with the current session's check mark, the session user options @lym_check, @lym_check_state and @lym_check_start, before the clock.
+ // Line 3 is the follow button, then the action row read from the session user options @lym_buttons_plain and @lym_buttons_agent.
+ // Every option read here is display only but one: no Go decision reads @strand_color, @lym_unseen, @lym_prime_session, a check mark's options or the action row's options, while @lym_follow, which the follow button shows, is the follow state that followingLocked reads.
+-// The decision-bearing @lym_button_spec and @lym_button_dir are not read here; a button click reads them to decide what to run and where.
++// The decision-bearing @lym_button_spec, @lym_button_dir and @lym_button_answer are not read here; a button click reads them to decide what to run and where.
+ 
+ package reedengine
+ 
+diff --git a/internal/reedengine/buttonclick.go b/internal/reedengine/buttonclick.go
+index a0ed4a22..d4a4e247 100644
+--- a/internal/reedengine/buttonclick.go
++++ b/internal/reedengine/buttonclick.go
+@@ -1,5 +1,5 @@
+-// buttonclick.go implements the engine-less click of a status-bar button: it finds the clicked entry in the session's spec option, confirms when the entry asks, runs it, logs it and shows a failure on the clicking client.
+-// It reads no config and no reed state, only the session's @lym_button_spec, through the told anchor reader the current anchor of the worktree holding its run directory, and, for {strand}, the clicking client's active pane.
++// buttonclick.go implements the engine-less click of a status-bar button: it finds the clicked entry in the session's spec option, asks for its answer and confirms when the entry says so, runs it, logs it and shows a failure on the clicking client.
++// It reads no config and no reed state, only the session's @lym_button_spec, through the told anchor reader the current anchor of the worktree holding its run directory, for {strand} the clicking client's active pane, and for {answer} the session's @lym_button_answer.
+ 
+ package reedengine
+ 
+@@ -29,14 +29,22 @@ type ButtonRequest struct {
+ 	Range string
+ 	// Client is the clicking client, which prompts and messages go to.
+ 	Client string
+-	// Confirmed reports that the operator already answered the entry's prompt, so Hash and Strand are the confirmed line's values.
++	// Confirmed reports that the operator already answered the entry's confirm prompt yes, so Hash, Strand and Answer are the confirmed line's values.
+ 	Confirmed bool
+-	// Hash is the buttonRunHash of the run text the prompt was raised for; it is read only when Confirmed.
++	// Answered reports that the operator answered the entry's ask prompt, whose answer the session's buttonAnswerOption holds, so Hash and Strand are the answered line's values.
++	Answered bool
++	// Hash is the buttonRunHash of the run text the prompt was raised for; it is read only when Confirmed or Answered.
+ 	Hash string
+ 	// Strand is the strand name the prompt was raised for, set when the entry names {strand}.
+ 	Strand string
++	// Answer is the value that fills {answer}, carried by the confirmed line of an entry with an ask text.
++	Answer string
+ }
+ 
++// buttonAnswerOption is the session user option an ask prompt stores its answer in, which the answered click reads.
++// The answer travels through an option rather than the answered line because tmux can escape it for its own parser but not quote it for a shell.
++const buttonAnswerOption = "@lym_button_answer"
++
+ // buttonDeps are the process-level calls runButtonVia makes, replaceable by a test.
+ type buttonDeps struct {
+ 	// run starts shellPath with flag and script in dir, waits for it, and returns its combined output and exit code.
+@@ -45,7 +53,7 @@ type buttonDeps struct {
+ 	executablePath func() (string, error)
+ 	// anchorOf returns the anchored directory, as recorded now, of the worktree holding dir.
+ 	anchorOf func(dir string) (string, error)
+-	// sh is the dialect the run and confirm text and the confirmed line are quoted in.
++	// sh is the dialect the run text and the re-entry lines are quoted in.
+ 	sh shell.Shell
+ }
+ 
+@@ -64,8 +72,10 @@ func RunButton(req ButtonRequest, anchorOf func(dir string) (string, error)) {
+ }
+ 
+ // runButtonVia is RunButton's implementation over an already-built tmux command and its process-level calls, so a test can drive it through the execHook seam.
+-// A clicked range with no entry, an unrendered spec, a gone run directory, a run directory whose anchor does not resolve, an anchor directory that is gone and a failed run each show one message on the clicking client and run nothing further.
+-// An entry with a confirm text raises a prompt whose answer re-enters through a confirmed request, which runs the entry only when its run text still hashes to the prompt's hash.
++// A clicked range with no entry, an unrendered spec, a gone run directory, a run directory whose anchor does not resolve, an anchor directory that is gone, an ask text that holds a ',' after the placeholder fill and a failed run each show one message on the clicking client and run nothing further.
++// An entry with an ask text raises a prompt that stores its answer and re-enters through an answered request; Escape at that prompt runs nothing.
++// An entry with a confirm text then raises a prompt whose yes re-enters through a confirmed request carrying the answer.
++// An answered or confirmed request runs the entry only when its run text still hashes to the prompt's hash.
+ func runButtonVia(cmd TmuxCmd, req ButtonRequest, deps buttonDeps) {
+ 	say := func(text string) {
+ 		// display-message expands formats and strftime fields, so every # and % of the text is doubled to show literally.
+@@ -93,10 +103,19 @@ func runButtonVia(cmd TmuxCmd, req ButtonRequest, deps buttonDeps) {
+ 			say(problem)
+ 			return
+ 		}
+-		values["strand"] = strand
++		values[buttonStrandKey] = strand
++	}
++	if entry.Ask != "" && (req.Answered || req.Confirmed) {
++		answer, problem := buttonAnswer(cmd, req, entry)
++		if problem != "" {
++			say(problem)
++			return
++		}
++		values[buttonAnswerKey] = answer
+ 	}
+ 	run := fillRunPlaceholders(deps.sh, entry.Run, values)
+-	confirm := fillConfirmPlaceholders(entry.Confirm, values)
++	confirm := fillPromptPlaceholders(entry.Confirm, values)
++	ask := fillPromptPlaceholders(entry.Ask, values)
+ 
+ 	if info, err := os.Stat(spec.Dir); err != nil || !info.IsDir() {
+ 		say("lym: " + entry.Label + ": " + spec.Dir + " is gone; the row re-renders at the session's next attach")
+@@ -119,20 +138,35 @@ func runButtonVia(cmd TmuxCmd, req ButtonRequest, deps buttonDeps) {
+ 	}
+ 
+ 	hash := buttonRunHash(entry.Run)
+-	if req.Confirmed && req.Hash != hash {
++	if (req.Confirmed || req.Answered) && req.Hash != hash {
+ 		say("lym: the buttons changed since " + entry.Label + " asked; click again")
+ 		return
+ 	}
+-	if entry.Confirm != "" && !req.Confirmed {
++	asking := entry.Ask != "" && !req.Answered && !req.Confirmed
++	if asking && strings.Contains(ask, ",") {
++		// A filled value can bring in the comma the static text may not hold, and tmux splits the prompt at it.
++		say("lym: " + entry.Label + ": the ask text holds a ','")
++		return
++	}
++	if asking || (entry.Confirm != "" && !req.Confirmed) {
+ 		exe, err := deps.executablePath()
+ 		if err != nil {
+ 			logger.Warn("reed: could not resolve this binary, raising no button prompt", "label", entry.Label, "err", err)
+ 			say("lym: " + entry.Label + " could not raise its prompt; see the lym log in " + runDir + "/.lym/logs")
+ 			return
+ 		}
+-		line := composeConfirmedButtonLine(deps.sh, exe, req, runDir, hash, values["strand"])
+-		if err := cmd.run("confirm-before", "-t", req.Client, "-p", confirm+" (y/n)", "run-shell -b "+tmuxQuote(line)); err != nil {
+-			logger.Warn("reed: could not raise a button prompt", "label", entry.Label, "client", req.Client, "err", err)
++		var argv []string
++		if asking {
++			// %%% is the first %% of the template, so tmux puts the answer there with its quotes, backslashes, dollars, semicolons and tildes escaped for the double-quoted string.
++			line := composeButtonReentryLine(deps.sh, exe, req, runDir, buttonStageAnswered, hash, values)
++			template := "set-option -t " + tmuxString(exactSessionWindowTarget(req.Session)) + " " + buttonAnswerOption + ` "%%%" ; run-shell -b ` + tmuxQuote(line)
++			argv = []string{"command-prompt", "-t", req.Client, "-p", ask + " ", template}
++		} else {
++			line := composeButtonReentryLine(deps.sh, exe, req, runDir, buttonStageConfirmed, hash, values)
++			argv = []string{"confirm-before", "-t", req.Client, "-p", confirm + " (y/n)", "run-shell -b " + tmuxQuote(line)}
++		}
++		if err := cmd.run(argv...); err != nil {
++			logger.Warn("reed: could not raise a button prompt", "label", entry.Label, "client", req.Client, "prompt", argv[0], "err", err)
+ 		}
+ 		return
+ 	}
+@@ -191,7 +225,7 @@ func findButtonEntry(spec buttonSpec, rangeName string) (buttonSpecEntry, bool)
+ // A confirmed click carries the name the prompt was raised for, which must parse as a strand name.
+ // Any other click reads it from the clicking client's active pane.
+ func buttonStrand(cmd TmuxCmd, req ButtonRequest, entry buttonSpecEntry) (strand, problem string) {
+-	if req.Confirmed {
++	if req.Confirmed || req.Answered {
+ 		if _, err := agentname.Parse(req.Strand); err != nil {
+ 			return "", "lym: " + entry.Label + ": the strand name " + req.Strand + " is not a strand name; click the button again from the agent pane"
+ 		}
+@@ -205,6 +239,25 @@ func buttonStrand(cmd TmuxCmd, req ButtonRequest, entry buttonSpecEntry) (strand
+ 	return name, ""
+ }
+ 
++// buttonAnswer returns the value that fills {answer} for an answered or confirmed click, or the message to show instead.
++// A confirmed click carries the value.
++// An answered click reads the session's buttonAnswerOption, trimmed of surrounding space, and an empty answer takes the entry's ask default.
++func buttonAnswer(cmd TmuxCmd, req ButtonRequest, entry buttonSpecEntry) (answer, problem string) {
++	if req.Confirmed {
++		return req.Answer, ""
++	}
++	raw, err := cmd.output("show-options", "-qv", "-t", exactSessionWindowTarget(req.Session), buttonAnswerOption)
++	if err != nil {
++		logger.Warn("reed: could not read a button's answer", "label", entry.Label, "session", req.Session, "err", err)
++		return "", "lym: " + entry.Label + " could not read its answer; click again"
++	}
++	answer = strings.TrimSpace(raw)
++	if answer == "" {
++		answer = entry.AskDefault
++	}
++	return answer, ""
++}
++
+ // runButtonScript starts shellPath with flag and script in dir, waits for it with no timeout, and returns its combined output and exit code.
+ // The spawn and the end, with the exit code and the output, are logged at Info.
+ // A process that ran and exited non-zero is no error; an error means it could not be started, with exit code -1.
+@@ -233,7 +286,12 @@ func buttonRunHash(run string) string {
+ 	return hex.EncodeToString(sum[:])
+ }
+ 
+-// tmuxQuote wraps s in double quotes for tmux's command parser, escaping backslash, double quote and dollar sign with a backslash and doubling every #, since run-shell format-expands its command.
++// tmuxQuote wraps s in double quotes for tmux's command parser and doubles every #, since run-shell format-expands its command.
+ func tmuxQuote(s string) string {
+-	return `"` + strings.NewReplacer(`\`, `\\`, `"`, `\"`, `$`, `\$`, `#`, `##`).Replace(s) + `"`
++	return tmuxString(strings.ReplaceAll(s, "#", "##"))
++}
++
++// tmuxString wraps s in double quotes for tmux's command parser, escaping backslash, double quote and dollar sign with a backslash, for an argument tmux does not format-expand.
++func tmuxString(s string) string {
++	return `"` + strings.NewReplacer(`\`, `\\`, `"`, `\"`, `$`, `\$`).Replace(s) + `"`
+ }
+diff --git a/internal/reedengine/buttonclick_integration_test.go b/internal/reedengine/buttonclick_integration_test.go
+index 0d484702..540fcd02 100644
+--- a/internal/reedengine/buttonclick_integration_test.go
++++ b/internal/reedengine/buttonclick_integration_test.go
+@@ -17,7 +17,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestRunButton_RealTmux runs each kind of spec entry through a real server: a plain one in the run directory, one that exits non-zero, one behind a confirm prompt answered in the client's terminal, and one naming {strand}.
++// TestRunButton_RealTmux runs each kind of spec entry through a real server: a plain one in the run directory, one that exits non-zero, one behind a confirm prompt answered in the client's terminal, one naming {strand}, and one behind an ask prompt typed in the client's terminal.
+ // It reads the logger's output through logcapture, which is process-global, so it does not call t.Parallel.
+ func TestRunButton_RealTmux(t *testing.T) {
+ 	tiergate.Require(t, 2)
+@@ -45,6 +45,7 @@ func TestRunButton_RealTmux(t *testing.T) {
+ 		{Index: 1, Label: "fail", Run: "echo first; exit 3"},
+ 		{Index: 2, Label: "ask", Run: "touch confirmed", Confirm: "go?"},
+ 		{Index: 3, Label: "name", Run: "printf %s {strand} > strand", Strand: true},
++		{Index: 4, Label: "say", Run: "printf %s {answer} > answer", Ask: "Say what:", AskDefault: "dflt"},
+ 	}}
+ 	specJSON, err := json.Marshal(spec)
+ 	if err != nil {
+@@ -129,4 +130,77 @@ func TestRunButton_RealTmux(t *testing.T) {
+ 	if string(gotStrand) != strandName {
+ 		t.Errorf("the strand entry wrote %q, want the clicking pane's name %q", gotStrand, strandName)
+ 	}
++
++	// The rows share one client and one session option, so they run in order: the Escape row comes before the empty row, which proves the empty one reads a fresh answer and not the first row's.
++	const askRun = "printf %s {answer} > answer"
++	answerPath := filepath.Join(runDir, "answer")
++	asks := []struct {
++		name  string
++		typed string
++		// want is the file's content; wantNoFile says the click must leave no file and run no re-entry line.
++		want       string
++		wantNoFile bool
++	}{
++		{name: "AnswerWithEveryMetacharacterReachesTheFileIntact", typed: "it's \"q\" \\ $HOME ; ~ #{session_name} a  b\r", want: "it's \"q\" \\ $HOME ; ~ #{session_name} a  b"},
++		{name: "EscapeRunsNothing", typed: "\x1b", wantNoFile: true},
++		{name: "EmptyEnterTakesTheAskDefault", typed: "\r", want: "dflt"},
++	}
++	for _, tt := range asks {
++		t.Run(tt.name, func(t *testing.T) {
++			for _, path := range []string{answerPath, recordPath} {
++				if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
++					t.Fatalf("clear %s: %v", path, err)
++				}
++			}
++			answerTarget := exactSessionWindowTarget(e.SessionName())
++			if tt.wantNoFile {
++				// A template wrongly run by Escape would overwrite this value before its run-shell starts.
++				if err := e.tmux.run("set-option", "-t", answerTarget, buttonAnswerOption, "stale"); err != nil {
++					t.Fatalf("seed the answer option: %v", err)
++				}
++			}
++			pty.forget()
++			returned := make(chan struct{})
++			go func() {
++				defer close(returned)
++				runButtonVia(e.tmux, request("lymbtn4"), deps)
++			}()
++			waitUntil(t, 10*time.Second, "the ask prompt never drew", func() bool { return pty.drew("Say what:") })
++			if _, err := pty.master.WriteString(tt.typed); err != nil {
++				t.Fatalf("type the answer: %v", err)
++			}
++			waitUntil(t, 10*time.Second, "the click never returned after the answer was typed", func() bool {
++				select {
++				case <-returned:
++					return true
++				default:
++					return false
++				}
++			})
++
++			if tt.wantNoFile {
++				if _, err := os.Stat(recordPath); err == nil {
++					t.Errorf("an answered line ran after Escape, want no re-entry")
++				}
++				if got := strings.TrimSpace(mustTmuxOutput(t, e, "show-options", "-qv", "-t", answerTarget, buttonAnswerOption)); got != "stale" {
++					t.Errorf("the answer option = %q after Escape, want it left at %q", got, "stale")
++				}
++				return
++			}
++			waitUntil(t, 10*time.Second, "the answered line never ran the recorder", func() bool {
++				_, err := os.Stat(recordPath)
++				return err == nil
++			})
++			answered := request("lymbtn4")
++			answered.Answered, answered.Hash = true, buttonRunHash(askRun)
++			runButtonVia(e.tmux, answered, deps)
++			got, err := os.ReadFile(answerPath)
++			if err != nil {
++				t.Fatalf("read answer: %v", err)
++			}
++			if string(got) != tt.want {
++				t.Errorf("the ask entry wrote %q, want %q", got, tt.want)
++			}
++		})
++	}
+ }
+diff --git a/internal/reedengine/buttonclick_test.go b/internal/reedengine/buttonclick_test.go
+index fa6e2fd9..4b6f05ae 100644
+--- a/internal/reedengine/buttonclick_test.go
++++ b/internal/reedengine/buttonclick_test.go
+@@ -1,4 +1,4 @@
+-// buttonclick_test.go covers buttonclick.go's click of a status-bar button and the confirmed line it composes.
++// buttonclick_test.go covers buttonclick.go's click of a status-bar button and the re-entry lines its prompts run.
+ // The click is driven through TmuxCmd's execHook seam with a stub process runner, so nothing is spawned.
+ 
+ package reedengine
+@@ -33,16 +33,30 @@ func TestRunButtonVia(t *testing.T) {
+ 	confirming := buttonSpecEntry{Index: 0, Label: "go", Run: "rm x", Confirm: "drop it?"}
+ 	stranded := buttonSpecEntry{Index: 0, Label: "go", Run: "printf %s {strand}", Strand: true}
+ 	strandedConfirming := buttonSpecEntry{Index: 0, Label: "go", Run: "kill {strand}", Confirm: "kill {strand}?", Strand: true}
++	asking := buttonSpecEntry{Index: 0, Label: "go", Run: "open {answer}", Ask: "Name:", AskDefault: "dflt"}
++	askingConfirming := buttonSpecEntry{Index: 0, Label: "go", Run: "open {answer}", Confirm: "open {answer}?", Ask: "Name:", AskDefault: "dflt"}
++	strandedAsking := buttonSpecEntry{Index: 0, Label: "go", Run: "tell {strand} {answer}", Ask: "Say:", Strand: true}
++	strandNamingAsk := buttonSpecEntry{Index: 0, Label: "go", Run: "tell {strand} {answer}", Ask: "Say to {strand}:", Strand: true}
+ 
+-	// promptFor is the confirm-before argv a click on entry raises for the given strand, with the run directory dir.
+-	promptFor := func(entry buttonSpecEntry, prompt, strand string) func(dir string) []string {
++	// promptRequest is the request every prompt's re-entry line is composed from.
++	promptRequest := ButtonRequest{TmuxPath: "tmux", SocketPath: "/sock", Session: "sess", Range: "lymbtn0", Client: "c1"}
++
++	// promptFor is the confirm-before argv a click on entry raises carrying values, with the run directory dir.
++	promptFor := func(entry buttonSpecEntry, prompt string, values map[string]string) func(dir string) []string {
+ 		return func(dir string) []string {
+-			req := ButtonRequest{TmuxPath: "tmux", SocketPath: "/sock", Session: "sess", Range: "lymbtn0", Client: "c1"}
+-			line := composeConfirmedButtonLine(posix, exe, req, dir, buttonRunHash(entry.Run), strand)
++			line := composeButtonReentryLine(posix, exe, promptRequest, dir, buttonStageConfirmed, buttonRunHash(entry.Run), values)
+ 			return []string{"confirm-before", "-t", "c1", "-p", prompt, "run-shell -b " + tmuxQuote(line)}
+ 		}
+ 	}
+ 
++	// askFor is the command-prompt argv a click on entry raises carrying values, with the run directory dir.
++	askFor := func(entry buttonSpecEntry, prompt string, values map[string]string) func(dir string) []string {
++		return func(dir string) []string {
++			line := composeButtonReentryLine(posix, exe, promptRequest, dir, buttonStageAnswered, buttonRunHash(entry.Run), values)
++			return []string{"command-prompt", "-t", "c1", "-p", prompt, `set-option -t "=sess:" @lym_button_answer "%%%" ; run-shell -b ` + tmuxQuote(line)}
++		}
++	}
++
+ 	tests := []struct {
+ 		name        string
+ 		entry       buttonSpecEntry
+@@ -50,10 +64,14 @@ func TestRunButtonVia(t *testing.T) {
+ 		specErr     error
+ 		rangeName   string
+ 		confirmed   bool
++		answered    bool
+ 		hash        string
+ 		strand      string
++		answer      string
+ 		strandRead  string
+ 		strandErr   error
++		answerRead  string
++		answerErr   error
+ 		exeErr      error
+ 		runOut      string
+ 		runCode     int
+@@ -66,7 +84,7 @@ func TestRunButtonVia(t *testing.T) {
+ 		wantRun     bool
+ 		wantRunText string
+ 		wantMessage string
+-		wantConfirm func(dir string) []string
++		wantPrompt  func(dir string) []string
+ 	}{
+ 		{name: "PlainEntryRunsWithTheSpecsShellFlagAndDirectory", entry: plain, wantRun: true, wantRunText: "echo hi"},
+ 		{name: "RangeWithNoEntryAtItsIndexShowsTheChangedMessage", entry: plain, rangeName: "lymbtn7", wantMessage: "lym: the buttons changed; click again"},
+@@ -77,17 +95,28 @@ func TestRunButtonVia(t *testing.T) {
+ 		{name: "StrandEntryRunsWithTheClickedPanesNameQuoted", entry: stranded, strandRead: strandName, wantRun: true, wantRunText: "printf %s " + posix.Quote(strandName)},
+ 		{name: "StrandEntryWithAnEmptyReadRunsNothing", entry: stranded, wantMessage: "lym: go needs the agent's name, which this pane lacks; reattach the session with lym reed attach and click again"},
+ 		{name: "StrandEntryWithAFailedReadRunsNothing", entry: stranded, strandErr: errors.New("no client"), wantMessage: "lym: go needs the agent's name, which this pane lacks; reattach the session with lym reed attach and click again"},
+-		{name: "ConfirmEntryRaisesThePromptAndRunsNothing", entry: confirming, wantConfirm: promptFor(confirming, "drop it? (y/n)", "")},
++		{name: "ConfirmEntryRaisesThePromptAndRunsNothing", entry: confirming, wantPrompt: promptFor(confirming, "drop it? (y/n)", nil)},
+ 		{name: "ConfirmEntryWithAnUnresolvableExecutableRaisesNothing", entry: confirming, exeErr: errors.New("no exe"), anchorMoved: true, wantMessage: "lym: go could not raise its prompt; see the lym log in ANCHOR/.lym/logs"},
+ 		{name: "ConfirmedCallWithTheMatchingHashRuns", entry: confirming, confirmed: true, hash: buttonRunHash(confirming.Run), wantRun: true, wantRunText: "rm x"},
+ 		{name: "ConfirmedCallWithAnotherHashRunsNothing", entry: confirming, confirmed: true, hash: "other", wantMessage: "lym: the buttons changed since go asked; click again"},
+ 		{name: "ConfirmedStrandThatIsNoNameRunsNothing", entry: strandedConfirming, confirmed: true, hash: buttonRunHash(strandedConfirming.Run), strand: "not a name", wantMessage: "lym: go: the strand name not a name is not a strand name; click the button again from the agent pane"},
+ 		{name: "ConfirmedStrandRunsWithTheCarriedName", entry: strandedConfirming, confirmed: true, hash: buttonRunHash(strandedConfirming.Run), strand: strandName, wantRun: true, wantRunText: "kill " + posix.Quote(strandName)},
+-		{name: "PromptDoublesHashAndPercentOfAStrandValue", entry: strandedConfirming, strandRead: "a#b%c", wantConfirm: promptFor(strandedConfirming, "kill a##b%%c? (y/n)", "a#b%c")},
++		{name: "PromptDoublesHashAndPercentOfAStrandValue", entry: strandedConfirming, strandRead: "a#b%c", wantPrompt: promptFor(strandedConfirming, "kill a##b%%c? (y/n)", map[string]string{"strand": "a#b%c"})},
++		{name: "AskEntryRaisesTheAnswerPromptAndRunsNothing", entry: asking, wantPrompt: askFor(asking, "Name: ", nil)},
++		{name: "AskEntryNamingStrandCarriesTheStrandInTheAnsweredLine", entry: strandedAsking, strandRead: strandName, wantPrompt: askFor(strandedAsking, "Say: ", map[string]string{"strand": strandName})},
++		{name: "AskAndConfirmEntryRaisesTheAnswerPromptFirst", entry: askingConfirming, wantPrompt: askFor(askingConfirming, "Name: ", nil)},
++		{name: "AskTextHoldingACommaFromAStrandValueRaisesNoPrompt", entry: strandNamingAsk, strandRead: "a,b", wantMessage: "lym: go: the ask text holds a ','"},
++		{name: "AnsweredCallRunsWithTheStoredAnswerTrimmedAndQuoted", entry: asking, answered: true, hash: buttonRunHash(asking.Run), answerRead: " a b\n", wantRun: true, wantRunText: "open " + posix.Quote("a b")},
++		{name: "AnsweredCallWithAnEmptyAnswerTakesTheAskDefault", entry: asking, answered: true, hash: buttonRunHash(asking.Run), answerRead: "\n", wantRun: true, wantRunText: "open " + posix.Quote("dflt")},
++		{name: "AnsweredCallWithAFailedAnswerReadRunsNothing", entry: asking, answered: true, hash: buttonRunHash(asking.Run), answerErr: errors.New("no server"), wantMessage: "lym: go could not read its answer; click again"},
++		{name: "AnsweredCallWithAnotherHashRunsNothing", entry: asking, answered: true, hash: "other", answerRead: "a", wantMessage: "lym: the buttons changed since go asked; click again"},
++		{name: "AnsweredStrandEntryRunsWithTheCarriedNameNotThePanes", entry: strandedAsking, answered: true, hash: buttonRunHash(strandedAsking.Run), strand: strandName, answerRead: "hi", wantRun: true, wantRunText: "tell " + posix.Quote(strandName) + " " + posix.Quote("hi")},
++		{name: "AnsweredConfirmEntryRaisesTheConfirmPromptCarryingTheAnswer", entry: askingConfirming, answered: true, hash: buttonRunHash(askingConfirming.Run), answerRead: "n#1", wantPrompt: promptFor(askingConfirming, "open n##1? (y/n)", map[string]string{"answer": "n#1"})},
++		{name: "ConfirmedAskEntryRunsWithTheCarriedAnswerAndReadsNoOption", entry: askingConfirming, confirmed: true, hash: buttonRunHash(askingConfirming.Run), answer: "n m", answerErr: errors.New("must not be read"), wantRun: true, wantRunText: "open " + posix.Quote("n m")},
+ 		{name: "RemovedDirectoryOfAPlainEntryRunsNothing", entry: plain, removeDir: true, wantMessage: "lym: go: DIR is gone; the row re-renders at the session's next attach"},
+ 		{name: "RemovedDirectoryOfAConfirmEntryRaisesNoPrompt", entry: confirming, removeDir: true, wantMessage: "lym: go: DIR is gone; the row re-renders at the session's next attach"},
+ 		{name: "AnchorMovedAfterTheRenderRunsInTheCurrentAnchor", entry: plain, anchorMoved: true, wantRun: true, wantRunText: "echo hi"},
+-		{name: "AnchorMovedAfterTheRenderPromptsWithALineOpeningInTheCurrentAnchor", entry: confirming, anchorMoved: true, wantConfirm: promptFor(confirming, "drop it? (y/n)", "")},
++		{name: "AnchorMovedAfterTheRenderPromptsWithALineOpeningInTheCurrentAnchor", entry: confirming, anchorMoved: true, wantPrompt: promptFor(confirming, "drop it? (y/n)", nil)},
+ 		{name: "AnchorDirectoryThatIsGoneRunsNothingAndRaisesNoPrompt", entry: confirming, anchorGone: true, wantMessage: "lym: go: the anchor directory ANCHOR is gone; point the worktree's anchor at an existing directory"},
+ 		{name: "UnresolvableAnchorRunsNothing", entry: plain, anchorErr: errors.New("no repository"), wantMessage: "lym: go: the anchor of DIR does not resolve: no repository"},
+ 		{name: "NonZeroExitShowsTheFirstOutputLine", entry: plain, runOut: "first\nsecond", runCode: 3, wantRun: true, wantRunText: "echo hi", wantMessage: "lym: go failed (exit 3): first"},
+@@ -122,7 +151,12 @@ func TestRunButtonVia(t *testing.T) {
+ 
+ 			cmd := newTmuxCmdForSocketPath("tmux", "/sock")
+ 			fake := installFakeTmuxOn(t, &cmd)
+-			fake.answer("show-options", specText, tt.specErr)
++			fake.answerFunc("show-options", func(args []string) (string, error) {
++				if slices.Contains(args, buttonAnswerOption) {
++					return tt.answerRead, tt.answerErr
++				}
++				return specText, tt.specErr
++			})
+ 			fake.answerFunc("display-message", func(args []string) (string, error) {
+ 				if slices.Contains(args, "-p") {
+ 					return tt.strandRead, tt.strandErr
+@@ -155,7 +189,7 @@ func TestRunButtonVia(t *testing.T) {
+ 			}
+ 			req := ButtonRequest{
+ 				TmuxPath: "tmux", SocketPath: "/sock", Session: "sess", Range: rangeName, Client: "c1",
+-				Confirmed: tt.confirmed, Hash: tt.hash, Strand: tt.strand,
++				Confirmed: tt.confirmed, Answered: tt.answered, Hash: tt.hash, Strand: tt.strand, Answer: tt.answer,
+ 			}
+ 
+ 			runButtonVia(cmd, req, deps)
+@@ -185,18 +219,18 @@ func TestRunButtonVia(t *testing.T) {
+ 				t.Errorf("messages shown = %q, want %q", messages, wantMessages)
+ 			}
+ 
+-			confirms := fake.ArgvFor("confirm-before")
+-			if tt.wantConfirm == nil {
+-				if len(confirms) != 0 {
+-					t.Errorf("confirm-before calls = %v, want none", confirms)
++			prompts := append(fake.ArgvFor("confirm-before"), fake.ArgvFor("command-prompt")...)
++			if tt.wantPrompt == nil {
++				if len(prompts) != 0 {
++					t.Errorf("prompt calls = %v, want none", prompts)
+ 				}
+ 			} else {
+-				want := tt.wantConfirm(runDir)
+-				if len(confirms) != 1 || !slices.Equal(confirms[0], want) {
+-					t.Errorf("confirm-before calls = %q, want exactly %q", confirms, want)
++				want := tt.wantPrompt(runDir)
++				if len(prompts) != 1 || !slices.Equal(prompts[0], want) {
++					t.Errorf("prompt calls = %q, want exactly %q", prompts, want)
+ 				}
+-				if line := want[len(want)-1]; !strings.HasPrefix(line, `run-shell -b "cd `) {
+-					t.Errorf("confirmed line command = %q, want it to open with the change to the run directory", line)
++				if line := want[len(want)-1]; !strings.Contains(line, `run-shell -b "cd `) {
++					t.Errorf("prompt command = %q, want its re-entry line to open with the change to the run directory", line)
+ 				}
+ 			}
+ 
+@@ -206,43 +240,63 @@ func TestRunButtonVia(t *testing.T) {
+ 		})
+ 	}
+ 
+-	t.Run("ConfirmedLineAndTmuxQuoteForBothDialects", func(t *testing.T) {
++	t.Run("ReentryLineAndTmuxQuoteForBothDialects", func(t *testing.T) {
+ 		req := ButtonRequest{TmuxPath: "/t'mux", SocketPath: "/s ock", Session: "se ss", Range: "lymbtn0", Client: "/dev/pts/1"}
+ 		const dir = "/d i#r"
++		strandOnly := map[string]string{"strand": "tst:s:a"}
+ 		tests := []struct {
+-			name         string
+-			sh           shell.Shell
+-			strand       string
+-			wantLine     string
+-			wantQuoted   string
+-			wantQuoteArg string
++			name       string
++			sh         shell.Shell
++			stage      string
++			values     map[string]string
++			wantLine   string
++			wantQuoted string
+ 		}{
+ 			{
+-				name:       "PosixWithStrand",
++				name:       "PosixConfirmedWithStrand",
+ 				sh:         shell.Posix(),
+-				strand:     "tst:s:a",
++				stage:      buttonStageConfirmed,
++				values:     strandOnly,
+ 				wantLine:   `cd '/d i#r' >/dev/null 2>&1; '/o pt/lym' reed button --socket '/s ock' --tmux '/t'\''mux' --session 'se ss' --range 'lymbtn0' --client '/dev/pts/1' --confirmed --hash 'abc' --strand 'tst:s:a' >/dev/null 2>&1; exit 0`,
+ 				wantQuoted: `"cd '/d i##r' >/dev/null 2>&1; '/o pt/lym' reed button --socket '/s ock' --tmux '/t'\\''mux' --session 'se ss' --range 'lymbtn0' --client '/dev/pts/1' --confirmed --hash 'abc' --strand 'tst:s:a' >/dev/null 2>&1; exit 0"`,
+ 			},
+ 			{
+-				name:       "PosixWithoutStrand",
++				name:       "PosixConfirmedWithoutValues",
+ 				sh:         shell.Posix(),
++				stage:      buttonStageConfirmed,
+ 				wantLine:   `cd '/d i#r' >/dev/null 2>&1; '/o pt/lym' reed button --socket '/s ock' --tmux '/t'\''mux' --session 'se ss' --range 'lymbtn0' --client '/dev/pts/1' --confirmed --hash 'abc' >/dev/null 2>&1; exit 0`,
+ 				wantQuoted: `"cd '/d i##r' >/dev/null 2>&1; '/o pt/lym' reed button --socket '/s ock' --tmux '/t'\\''mux' --session 'se ss' --range 'lymbtn0' --client '/dev/pts/1' --confirmed --hash 'abc' >/dev/null 2>&1; exit 0"`,
+ 			},
+ 			{
+-				name:       "Pwsh",
++				name:       "PosixConfirmedWithStrandAndAnswer",
++				sh:         shell.Posix(),
++				stage:      buttonStageConfirmed,
++				values:     map[string]string{"answer": "n'm", "strand": "tst:s:a"},
++				wantLine:   `cd '/d i#r' >/dev/null 2>&1; '/o pt/lym' reed button --socket '/s ock' --tmux '/t'\''mux' --session 'se ss' --range 'lymbtn0' --client '/dev/pts/1' --confirmed --hash 'abc' --strand 'tst:s:a' --answer 'n'\''m' >/dev/null 2>&1; exit 0`,
++				wantQuoted: `"cd '/d i##r' >/dev/null 2>&1; '/o pt/lym' reed button --socket '/s ock' --tmux '/t'\\''mux' --session 'se ss' --range 'lymbtn0' --client '/dev/pts/1' --confirmed --hash 'abc' --strand 'tst:s:a' --answer 'n'\\''m' >/dev/null 2>&1; exit 0"`,
++			},
++			{
++				name:       "PosixAnsweredWithStrand",
++				sh:         shell.Posix(),
++				stage:      buttonStageAnswered,
++				values:     strandOnly,
++				wantLine:   `cd '/d i#r' >/dev/null 2>&1; '/o pt/lym' reed button --socket '/s ock' --tmux '/t'\''mux' --session 'se ss' --range 'lymbtn0' --client '/dev/pts/1' --answered --hash 'abc' --strand 'tst:s:a' >/dev/null 2>&1; exit 0`,
++				wantQuoted: `"cd '/d i##r' >/dev/null 2>&1; '/o pt/lym' reed button --socket '/s ock' --tmux '/t'\\''mux' --session 'se ss' --range 'lymbtn0' --client '/dev/pts/1' --answered --hash 'abc' --strand 'tst:s:a' >/dev/null 2>&1; exit 0"`,
++			},
++			{
++				name:       "PwshConfirmedWithStrand",
+ 				sh:         shell.Pwsh(),
+-				strand:     "tst:s:a",
++				stage:      buttonStageConfirmed,
++				values:     strandOnly,
+ 				wantLine:   `Set-Location -LiteralPath '/d i#r' *> $null; & '/o pt/lym' reed button --socket '/s ock' --tmux '/t''mux' --session 'se ss' --range 'lymbtn0' --client '/dev/pts/1' --confirmed --hash 'abc' --strand 'tst:s:a' *> $null; exit 0`,
+ 				wantQuoted: `"Set-Location -LiteralPath '/d i##r' *> \$null; & '/o pt/lym' reed button --socket '/s ock' --tmux '/t''mux' --session 'se ss' --range 'lymbtn0' --client '/dev/pts/1' --confirmed --hash 'abc' --strand 'tst:s:a' *> \$null; exit 0"`,
+ 			},
+ 		}
+ 		for _, tt := range tests {
+ 			t.Run(tt.name, func(t *testing.T) {
+-				line := composeConfirmedButtonLine(tt.sh, "/o pt/lym", req, dir, "abc", tt.strand)
++				line := composeButtonReentryLine(tt.sh, "/o pt/lym", req, dir, tt.stage, "abc", tt.values)
+ 				if line != tt.wantLine {
+-					t.Errorf("composeConfirmedButtonLine = %q, want %q", line, tt.wantLine)
++					t.Errorf("composeButtonReentryLine = %q, want %q", line, tt.wantLine)
+ 				}
+ 				if got := tmuxQuote(line); got != tt.wantQuoted {
+ 					t.Errorf("tmuxQuote(line) = %q, want %q", got, tt.wantQuoted)
+@@ -253,6 +307,9 @@ func TestRunButtonVia(t *testing.T) {
+ 		if got, want := tmuxQuote(`a"b$c\d#e`), `"a\"b\$c\\d##e"`; got != want {
+ 			t.Errorf("tmuxQuote with every special character = %q, want %q", got, want)
+ 		}
++		if got, want := tmuxString(`a"b$c\d#e`), `"a\"b\$c\\d#e"`; got != want {
++			t.Errorf("tmuxString with every special character = %q, want %q", got, want)
++		}
+ 	})
+ }
+ 
+diff --git a/internal/reedengine/buttonrow.go b/internal/reedengine/buttonrow.go
+index b2678534..58ed63c9 100644
+--- a/internal/reedengine/buttonrow.go
++++ b/internal/reedengine/buttonrow.go
+@@ -47,7 +47,11 @@ type buttonSpecEntry struct {
+ 	Run string `json:"run"`
+ 	// Confirm is the prompt asked before Run, with the static placeholders filled; empty asks nothing.
+ 	Confirm string `json:"confirm"`
+-	// Strand reports that Run or Confirm still holds {strand} after the static fill.
++	// Ask is the prompt whose answer fills {answer}, asked before Confirm, with the static placeholders filled; empty asks nothing.
++	Ask string `json:"ask"`
++	// AskDefault fills {answer} when the answer to Ask is empty.
++	AskDefault string `json:"ask_default"`
++	// Strand reports that Run, Confirm or Ask still holds {strand} after the static fill.
+ 	Strand bool `json:"strand"`
+ }
+ 
+@@ -60,6 +64,7 @@ func buttonRangeFormat(index int, label string) string {
+ // A standalone geometry, a failed button context, an unresolvable shell and a failed beam lookup each give empty rows and a zero spec, so line 3 shows follow alone.
+ // Reed's entries come before the machine's, each valid entry numbered in that order.
+ // An entry using {beam} is left out, with a Warn, when the beam's directory is absent on this machine.
++// An entry whose filled ask text holds a ',' is left out, with a Warn, since tmux splits a prompt at its commas.
+ func (e *Engine) composeButtonRowLocked() (plain, agent string, spec buttonSpec) {
+ 	if e.geom.Buttons == nil {
+ 		return "", "", buttonSpec{}
+@@ -104,20 +109,26 @@ func (e *Engine) composeButtonRowLocked() (plain, agent string, spec buttonSpec)
+ 	sh := shell.ForGOOS()
+ 	spec = buttonSpec{Shell: shellPath, Flag: sh.CommandFlag(), Dir: dir}
+ 	for _, entry := range entries {
+-		if beam.Anchor == "" && (strings.Contains(entry.Run, "{beam}") || strings.Contains(entry.Confirm, "{beam}")) {
++		if beam.Anchor == "" && entry.names("beam") {
+ 			logger.Warn("reed: left out a button whose beam is not on this machine; take the beam onto this machine with lym adopt <beam>, and the row re-renders at the session's next attach",
+ 				"socket", e.Socket(), "session", e.SessionName(), "label", entry.Label, "beam", beam.Name)
+ 			continue
+ 		}
+-		run := fillRunPlaceholders(sh, entry.Run, values)
+-		confirm := fillConfirmPlaceholders(entry.Confirm, values)
++		ask := fillPromptPlaceholders(entry.Ask, values)
++		if strings.Contains(ask, ",") {
++			logger.Warn("reed: left out a button whose ask text holds a ',' after its placeholders were filled, which tmux would split into several prompts",
++				"socket", e.Socket(), "session", e.SessionName(), "label", entry.Label, "ask", ask)
++			continue
++		}
+ 		index := len(spec.Entries)
+ 		spec.Entries = append(spec.Entries, buttonSpecEntry{
+-			Index:   index,
+-			Label:   entry.Label,
+-			Run:     run,
+-			Confirm: confirm,
+-			Strand:  strings.Contains(run, "{strand}") || strings.Contains(confirm, "{strand}"),
++			Index:      index,
++			Label:      entry.Label,
++			Run:        fillRunPlaceholders(sh, entry.Run, values),
++			Confirm:    fillPromptPlaceholders(entry.Confirm, values),
++			Ask:        ask,
++			AskDefault: entry.AskDefault,
++			Strand:     entry.names(buttonStrandKey),
+ 		})
+ 		fragment := buttonRangeFormat(index, entry.Label)
+ 		agent += fragment
+@@ -131,10 +142,10 @@ func (e *Engine) composeButtonRowLocked() (plain, agent string, spec buttonSpec)
+ 	return plain, agent, spec
+ }
+ 
+-// usesBeamPlaceholder reports whether any entry's run or confirm text names {beam}.
++// usesBeamPlaceholder reports whether any entry's run, confirm or ask text names {beam}.
+ func usesBeamPlaceholder(entries []buttonEntry) bool {
+ 	for _, entry := range entries {
+-		if strings.Contains(entry.Run, "{beam}") || strings.Contains(entry.Confirm, "{beam}") {
++		if entry.names("beam") {
+ 			return true
+ 		}
+ 	}
+diff --git a/internal/reedengine/buttonrow_test.go b/internal/reedengine/buttonrow_test.go
+index dbc96ede..92a5a27d 100644
+--- a/internal/reedengine/buttonrow_test.go
++++ b/internal/reedengine/buttonrow_test.go
+@@ -169,6 +169,58 @@ func TestPinButtonRowLocked(t *testing.T) {
+ 			wantEntries: []buttonSpecEntry{{Index: 0, Label: "D", Run: "d", Confirm: "drop a##b?"}},
+ 			wantDir:     "ANCHOR",
+ 		},
++		{
++			name:        "AskEntryCarriesItsFilledAskAndDefaultAndLeavesAnswerForTheClick",
++			place:       ButtonPlaceBeam,
++			buttons:     "buttons:\n  beam: [{label: N, run: 'open {answer}', ask: 'Name for {slug}:', ask_default: x}]\n",
++			wantPlain:   rowFragment(0, "N"),
++			wantAgent:   rowFragment(0, "N"),
++			wantEntries: []buttonSpecEntry{{Index: 0, Label: "N", Run: "open {answer}", Ask: "Name for a##b:", AskDefault: "x"}},
++			wantDir:     "ANCHOR",
++		},
++		{
++			name:        "AskNamingStrandFlagsStrandForTheClick",
++			place:       ButtonPlaceBeam,
++			buttons:     "buttons:\n  beam: [{label: S, run: 'echo hi', ask: 'For {strand}:', window: agents}]\n",
++			wantAgent:   rowFragment(0, "S"),
++			wantEntries: []buttonSpecEntry{{Index: 0, Label: "S", Run: "echo hi", Ask: "For {strand}:", Strand: true}},
++			wantDir:     "ANCHOR",
++		},
++		{
++			name:          "AskNamingAnAbsentBeamIsLeftOutWithTheBeamWarn",
++			place:         ButtonPlaceTask,
++			buttons:       "buttons:\n  task: [{label: B, run: b, ask: 'On {beam}:'}, {label: C, run: pwd}]\n",
++			beam:          ButtonBeam{Name: "bn", PrimeAnchor: "/prime"},
++			wantBeamCalls: 1,
++			wantPlain:     rowFragment(0, "C"),
++			wantAgent:     rowFragment(0, "C"),
++			wantEntries:   []buttonSpecEntry{{Index: 0, Label: "C", Run: "pwd"}},
++			wantDir:       "/prime",
++			wantWarns:     []string{"lym adopt", "bn"},
++		},
++		{
++			name:          "AskNamingAPresentBeamIsKeptWithTheBeamFilled",
++			place:         ButtonPlacePrime,
++			buttons:       "buttons:\n  beam: [{label: B, run: b, ask: 'On {beam}:'}]\n",
++			beam:          ButtonBeam{Anchor: "/beam", Name: "bn", PrimeAnchor: "/prime"},
++			wantBeamCalls: 1,
++			wantPlain:     rowFragment(0, "B"),
++			wantAgent:     rowFragment(0, "B"),
++			wantEntries:   []buttonSpecEntry{{Index: 0, Label: "B", Run: "b", Ask: "On /beam:"}},
++			wantDir:       "ANCHOR",
++		},
++		{
++			name:          "AskHoldingACommaFromAPlaceholderValueIsLeftOutWithAWarn",
++			place:         ButtonPlacePrime,
++			buttons:       "buttons:\n  beam: [{label: B, run: b, ask: 'On {beam}:'}, {label: C, run: pwd}]\n",
++			beam:          ButtonBeam{Anchor: "/b,eam", Name: "bn", PrimeAnchor: "/prime"},
++			wantBeamCalls: 1,
++			wantPlain:     rowFragment(0, "C"),
++			wantAgent:     rowFragment(0, "C"),
++			wantEntries:   []buttonSpecEntry{{Index: 0, Label: "C", Run: "pwd"}},
++			wantDir:       "ANCHOR",
++			wantWarns:     []string{"holds a ','", "/b,eam"},
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/reedengine/buttons.go b/internal/reedengine/buttons.go
+index 9b1f8d63..d67136a9 100644
+--- a/internal/reedengine/buttons.go
++++ b/internal/reedengine/buttons.go
+@@ -1,4 +1,4 @@
+-// buttons.go decodes, validates and fills the status-bar button entries of reed.yaml's and desktop.yaml's buttons blocks.
++// buttons.go decodes, validates and fills the status-bar button entries of reed.yaml's and desktop.yaml's buttons blocks, and names the placeholders a click fills.
+ // The render and the click verb call these pure functions; none reads a file or runs a command.
+ 
+ package reedengine
+@@ -24,9 +24,22 @@ const (
+ 	ButtonPlacePrime ButtonPlace = "prime"
+ )
+ 
+-// buttonWindowAgents is the window value that limits a button to a strand pane's window and lets its run and confirm text name {strand}.
++// buttonWindowAgents is the window value that limits a button to a strand pane's window and lets its run, confirm and ask text name {strand}.
+ const buttonWindowAgents = "agents"
+ 
++// Placeholder names a click fills rather than the render.
++const (
++	// buttonStrandKey names the clicked agent pane's strand, valid only in an entry with window: agents.
++	buttonStrandKey = "strand"
++	// buttonAnswerKey names the answer to the entry's ask prompt, valid only in an entry with an ask text.
++	buttonAnswerKey = "answer"
++)
++
++// placeholder returns the {name} text that name fills in a button's run, confirm and ask text.
++func placeholder(name string) string {
++	return "{" + name + "}"
++}
++
+ // buttonEntry is one decoded status-bar button.
+ type buttonEntry struct {
+ 	// Label is the text drawn on the button.
+@@ -35,6 +48,10 @@ type buttonEntry struct {
+ 	Run string `yaml:"run"`
+ 	// Confirm is the prompt asked before Run; empty asks nothing.
+ 	Confirm string `yaml:"confirm"`
++	// Ask is the prompt whose answer fills {answer} in Run and Confirm, asked before Confirm; empty asks nothing.
++	Ask string `yaml:"ask"`
++	// AskDefault fills {answer} when the answer to Ask is empty.
++	AskDefault string `yaml:"ask_default"`
+ 	// Window is empty for a button on every window, or buttonWindowAgents for a button on a strand pane's window alone.
+ 	Window string `yaml:"window"`
+ 	// Index is the entry's position within its group.
+@@ -100,8 +117,15 @@ func groupNode(groups yaml.Node, key string) *yaml.Node {
+ 	return nil
+ }
+ 
++// names reports whether the entry's run, confirm or ask text holds the placeholder {name}.
++func (entry buttonEntry) names(name string) bool {
++	text := placeholder(name)
++	return strings.Contains(entry.Run, text) || strings.Contains(entry.Confirm, text) || strings.Contains(entry.Ask, text)
++}
++
+ // buttonEntryProblem returns the empty string for a valid entry, else one sentence naming its first problem.
+-// The label and the confirm text are drawn inside a tmux format, so neither may hold a status sequence start, a strftime field or a control character.
++// The label, the confirm text and the ask text are drawn inside a tmux format, so none may hold a status sequence start, a strftime field or a control character.
++// The ask text may hold no comma either, since tmux splits a prompt at its commas.
+ func buttonEntryProblem(entry buttonEntry) string {
+ 	if entry.Label == "" {
+ 		return "the label is empty"
+@@ -109,16 +133,25 @@ func buttonEntryProblem(entry buttonEntry) string {
+ 	if entry.Run == "" {
+ 		return "the run text is empty"
+ 	}
+-	for _, field := range []struct{ name, text string }{{"label", entry.Label}, {"confirm", entry.Confirm}} {
++	for _, field := range []struct{ name, text string }{{"label", entry.Label}, {"confirm", entry.Confirm}, {"ask", entry.Ask}} {
+ 		if strings.ContainsAny(field.text, "#%") || strings.IndexFunc(field.text, unicode.IsControl) >= 0 {
+ 			return "the " + field.name + " holds a '#', a '%' or a control character"
+ 		}
+ 	}
++	if strings.Contains(entry.Ask, ",") {
++		return "the ask holds a ','"
++	}
+ 	if entry.Window != "" && entry.Window != buttonWindowAgents {
+ 		return "the window is neither empty nor " + buttonWindowAgents
+ 	}
+-	if entry.Window != buttonWindowAgents && (strings.Contains(entry.Run, "{strand}") || strings.Contains(entry.Confirm, "{strand}")) {
+-		return "{strand} needs window: " + buttonWindowAgents
++	if entry.Window != buttonWindowAgents && entry.names(buttonStrandKey) {
++		return placeholder(buttonStrandKey) + " needs window: " + buttonWindowAgents
++	}
++	if entry.Ask == "" && entry.AskDefault != "" {
++		return "the ask_default needs an ask"
++	}
++	if entry.Ask == "" && entry.names(buttonAnswerKey) {
++		return placeholder(buttonAnswerKey) + " needs an ask"
+ 	}
+ 	return ""
+ }
+@@ -129,18 +162,18 @@ func fillRunPlaceholders(sh shell.Shell, run string, values map[string]string) s
+ 	return placeholderReplacer(values, sh.Quote).Replace(run)
+ }
+ 
+-// fillConfirmPlaceholders replaces each {name} whose name is a key of values with the value, its '#' and '%' doubled so it cannot inject a status sequence or a strftime field into the confirm prompt.
++// fillPromptPlaceholders replaces each {name} whose name is a key of values with the value, its '#' and '%' doubled so it cannot inject a status sequence or a strftime field into a confirm or ask prompt.
+ // Brace text naming no key of values stays literal.
+-func fillConfirmPlaceholders(confirm string, values map[string]string) string {
++func fillPromptPlaceholders(prompt string, values map[string]string) string {
+ 	doubled := strings.NewReplacer("#", "##", "%", "%%")
+-	return placeholderReplacer(values, doubled.Replace).Replace(confirm)
++	return placeholderReplacer(values, doubled.Replace).Replace(prompt)
+ }
+ 
+ // placeholderReplacer builds one single-pass replacer from {name} to transform(value), so a substituted value is never scanned for placeholders again.
+ func placeholderReplacer(values map[string]string, transform func(string) string) *strings.Replacer {
+ 	oldNew := make([]string, 0, 2*len(values))
+ 	for name, value := range values {
+-		oldNew = append(oldNew, "{"+name+"}", transform(value))
++		oldNew = append(oldNew, placeholder(name), transform(value))
+ 	}
+ 	return strings.NewReplacer(oldNew...)
+ }
+diff --git a/internal/reedengine/buttons_test.go b/internal/reedengine/buttons_test.go
+index d7e6a599..1ca8d147 100644
+--- a/internal/reedengine/buttons_test.go
++++ b/internal/reedengine/buttons_test.go
+@@ -1,4 +1,4 @@
+-// buttons_test.go pins the decoding and validation of button entries and the placeholder filling of their run and confirm text.
++// buttons_test.go pins the decoding and validation of button entries and the placeholder filling of their run, confirm and ask text.
+ 
+ package reedengine
+ 
+@@ -41,7 +41,7 @@ func TestPlaceButtons(t *testing.T) {
+ 		// wantWarn holds substrings of the captured log; empty means nothing is logged.
+ 		wantWarn []string
+ 	}{
+-		{name: "TemplateTaskGroupComesBackWhole", buttons: templateButtons, place: ButtonPlaceTask, wantLabels: []string{"HALT", "CANCEL", "code", "term", "agent"}},
++		{name: "TemplateTaskGroupComesBackWhole", buttons: templateButtons, place: ButtonPlaceTask, wantLabels: []string{"HALT", "CANCEL", "code", "terminal", "agent"}},
+ 		{name: "EmptyPrimeTakesBeam", buttons: buttonsNode(t, "buttons: {beam: [{label: b, run: r}], prime: []}"), place: ButtonPlacePrime, wantLabels: []string{"b"}},
+ 		{name: "NonEmptyPrimeTakesOnlyPrime", buttons: buttonsNode(t, "buttons: {beam: [{label: b, run: r}], prime: [{label: p, run: r}]}"), place: ButtonPlacePrime, wantLabels: []string{"p"}},
+ 		{name: "PrimeAsMappingFallsBackToBeam", buttons: buttonsNode(t, "buttons: {beam: [{label: b, run: r}], prime: {label: p}}"), place: ButtonPlacePrime, wantLabels: []string{"b"}, wantWarn: []string{source, "prime"}},
+@@ -51,6 +51,7 @@ func TestPlaceButtons(t *testing.T) {
+ 		{name: "ScalarEntryIsSkipped", buttons: buttonsNode(t, "buttons: {task: [oops, {label: ok, run: r}]}"), place: ButtonPlaceTask, wantLabels: []string{"ok"}, wantWarn: []string{source, "task", "index=0"}},
+ 		{name: "LabelAsListIsSkipped", buttons: buttonsNode(t, "buttons: {task: [{label: [a], run: r}, {label: ok, run: r}]}"), place: ButtonPlaceTask, wantLabels: []string{"ok"}, wantWarn: []string{source, "task", "index=0"}},
+ 		{name: "WindowAgentsWithStrandIsKept", buttons: buttonsNode(t, "buttons: {task: [{label: k, run: 'x {strand}', confirm: 'y {strand}', window: agents}]}"), place: ButtonPlaceTask, wantLabels: []string{"k"}},
++		{name: "AskWithAnswerAndDefaultIsKept", buttons: buttonsNode(t, "buttons: {task: [{label: k, run: 'x {answer}', confirm: 'y {answer}?', ask: 'Name:', ask_default: d}]}"), place: ButtonPlaceTask, wantLabels: []string{"k"}},
+ 	}
+ 	invalid := []struct{ name, entry string }{
+ 		{"EmptyLabel", "{label: '', run: r}"},
+@@ -64,6 +65,14 @@ func TestPlaceButtons(t *testing.T) {
+ 		{"WindowAll", "{label: l, run: r, window: all}"},
+ 		{"StrandInRunWithoutAgents", "{label: l, run: 'x {strand}'}"},
+ 		{"StrandInConfirmWithoutAgents", "{label: l, run: r, confirm: 'x {strand}'}"},
++		{"StrandInAskWithoutAgents", "{label: l, run: r, ask: 'x {strand}'}"},
++		{"HashInAsk", "{label: l, run: r, ask: 'a#b'}"},
++		{"PercentInAsk", "{label: l, run: r, ask: 'a%b'}"},
++		{"TabInAsk", `{label: l, run: r, ask: "a\tb"}`},
++		{"CommaInAsk", "{label: l, run: r, ask: 'a,b'}"},
++		{"AnswerInRunWithoutAsk", "{label: l, run: 'x {answer}'}"},
++		{"AnswerInConfirmWithoutAsk", "{label: l, run: r, confirm: 'x {answer}'}"},
++		{"AskDefaultWithoutAsk", "{label: l, run: r, ask_default: d}"},
+ 	}
+ 	for _, bad := range invalid {
+ 		tests = append(tests, struct {
+@@ -103,7 +112,7 @@ func TestPlaceButtons(t *testing.T) {
+ 	}
+ }
+ 
+-// TestFillButtonPlaceholders pins the quoting of run values, the literal brace text, and the doubling of confirm values, in both dialects.
++// TestFillButtonPlaceholders pins the quoting of run values, the literal brace text, and the doubling of prompt values, in both dialects.
+ func TestFillButtonPlaceholders(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -125,8 +134,8 @@ func TestFillButtonPlaceholders(t *testing.T) {
+ 					t.Errorf("%s fillRunPlaceholders(%q) = %q; want %q", tt.name, tt.run, got, tt.want)
+ 				}
+ 			}
+-			if got := fillConfirmPlaceholders("Cancel {slug}?", map[string]string{"slug": "a#b%c"}); got != "Cancel a##b%%c?" {
+-				t.Errorf("fillConfirmPlaceholders = %q; want %q", got, "Cancel a##b%%c?")
++			if got := fillPromptPlaceholders("Cancel {slug}?", map[string]string{"slug": "a#b%c"}); got != "Cancel a##b%%c?" {
++				t.Errorf("fillPromptPlaceholders = %q; want %q", got, "Cancel a##b%%c?")
+ 			}
+ 		})
+ 	}
+diff --git a/internal/reedengine/config_test.go b/internal/reedengine/config_test.go
+index 96bb29dd..0ae44ca8 100644
+--- a/internal/reedengine/config_test.go
++++ b/internal/reedengine/config_test.go
+@@ -96,13 +96,13 @@ func TestLoadConfig_TemplateDefaultsResolve(t *testing.T) {
+ 		{Label: "HALT", Run: "lym tender pause {slug}"},
+ 		{Label: "CANCEL", Run: "lym batten cancel {slug}", Confirm: "Cancel {slug}?"},
+ 		{Label: "code", Run: "lym ide spawn {slug}"},
+-		{Label: "term", Run: "lym reed window {worktree} --title {slug}"},
+-		{Label: "agent", Run: "cd {worktree} && lym shuttle open --role agent --model 'opus[high]'"},
++		{Label: "terminal", Run: "lym reed window {worktree} --title {slug}"},
++		{Label: "agent", Run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]'", Ask: "Agent name:", AskDefault: "agent"},
+ 	}
+ 	wantBeamButtons := []buttonWant{
+ 		{Label: "code", Run: "lym ide spawn {slug}"},
+-		{Label: "term", Run: "lym reed window {worktree} --title {slug}"},
+-		{Label: "agent", Run: "cd {worktree} && lym shuttle open --role agent --model 'opus[high]'"},
++		{Label: "terminal", Run: "lym reed window {worktree} --title {slug}"},
++		{Label: "agent", Run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]'", Ask: "Agent name:", AskDefault: "agent"},
+ 		{Label: "distill", Run: "lym orch distill", Confirm: "Distill the orch?"},
+ 		{Label: "refresh", Run: "lym orch refresh", Confirm: "Refresh the orch?"},
+ 	}
+@@ -382,9 +382,11 @@ func TestLoadConfig_UnknownKeysFromAnOlderConfigAreIgnored(t *testing.T) {
+ 
+ // buttonWant is one button entry as the shipped default set spells it.
+ type buttonWant struct {
+-	Label   string `yaml:"label"`
+-	Run     string `yaml:"run"`
+-	Confirm string `yaml:"confirm"`
++	Label      string `yaml:"label"`
++	Run        string `yaml:"run"`
++	Confirm    string `yaml:"confirm"`
++	Ask        string `yaml:"ask"`
++	AskDefault string `yaml:"ask_default"`
+ }
+ 
+ // shippedButtons is the buttons mapping decoded into its three groups.
+diff --git a/internal/reedengine/doc.go b/internal/reedengine/doc.go
+index b769ecde..5a943f10 100644
+--- a/internal/reedengine/doc.go
++++ b/internal/reedengine/doc.go
+@@ -64,12 +64,13 @@
+ // Segment colors are read from reed.yaml's segment_colors block, resolved only through Engine.segmentColor, and refused only at boot.
+ // The buttons block of reed.yaml is carried as an uninterpreted node and decoded only at render.
+ // The geometry tells the button context through Geometry.Buttons, nil in standalone mode.
+-// buttons.go is the one decoder of button entries and applies the validity rules: a non-empty label and run, no '#', '%' or control character in a label or confirm text, a window of agents or none, and {strand} only with window: agents.
++// buttons.go is the one decoder of button entries and applies the validity rules: a non-empty label and run, no '#', '%' or control character in a label, confirm text or ask text, no ',' in an ask text, ask_default and {answer} only with an ask, a window of agents or none, and {strand} only with window: agents.
+ //
+ // The action row (buttonrow.go) is rendered by pinGeometryOptionsLocked, so at boot and at every attach pre-flight, in one tmux invocation of four set-option commands on the session.
+ // composeButtonRowLocked takes reed's entries for the session's place first and the machine's after them, numbers the valid ones in that order, and draws entry N as the user range lymbtnN.
+ // @lym_buttons_plain holds the entries without window: agents and @lym_buttons_agent every entry, so a window whose active pane carries @strand draws the second.
+-// @lym_button_spec holds the JSON buttonSpec a click reads: the configured shell and its command flag, the run directory, and per entry its label, its run and confirm text with the static placeholders filled and whether {strand} is left for the click.
++// @lym_button_spec holds the JSON buttonSpec a click reads: the configured shell and its command flag, the run directory, and per entry its label, its run, confirm and ask text with the static placeholders filled, its ask_default, and whether {strand} is left for the click.
++// An entry whose filled ask text holds a ',' is left out of the spec, and a click whose ask text holds one after the {strand} fill raises no prompt.
+ // @lym_button_dir holds the run directory as one word quoted in reed's shell dialect.
+ // The run directory is the beam's anchor for a task, else the prime's anchor when the beam is absent from this machine, and the session's own anchor for the prime and a beam.
+ // A standalone geometry, a failed context, an unresolvable shell and a failed beam lookup render empty options, so line 3 shows follow alone.
+@@ -84,12 +85,16 @@
+ //
+ // RunButton (buttonclick.go) is the engine-less function behind `lym reed button`: it addresses a told session of a told server by socket path, reads the session's @lym_button_spec and runs the entry the clicked range `lymbtnN` names.
+ // It reads no config and no reed state, and returns nothing: a failure is shown on the clicking client with display-message, and is logged.
+-// The checks come in order: a spec that is missing, empty or not JSON, a range with no entry, a `{strand}` entry whose name cannot be read, a run directory that is gone, a run directory whose worktree's anchor does not resolve.
++// The checks come in order: a spec that is missing, empty or not JSON, a range with no entry, a `{strand}` entry whose name cannot be read, an answered `ask` entry whose answer cannot be read, a run directory that is gone, a run directory whose worktree's anchor does not resolve, an `ask` entry whose ask text holds a ',' after the `{strand}` fill.
+ // A `{strand}` entry reads the clicking client's active pane for @lym_strand_name.
+ // The entry runs in the current anchor of the worktree holding the rendered run directory, read at the click through the anchor reader RunButton is told:
+ // the render is frozen until the next attach while an anchor marker can change after it, and a lym verb refuses anywhere but its worktree's anchor.
+-// An entry with a confirm text raises `confirm-before` on the clicking client, whose command is a line (composeConfirmedButtonLine) that opens in that anchor and calls the verb again with `--confirmed`, the hash of the entry's run text and the strand name, discarding the output of the directory change and of the verb and ending with status zero.
+-// A confirmed call runs the entry only when its hash still matches, so no run text crosses tmux's parsing.
++// An entry with an ask text raises `command-prompt` on the clicking client; its template stores the answer, escaped by tmux's `%%%`, in the session option @lym_button_answer and runs a line (composeButtonReentryLine) that opens in that anchor and calls the verb again with `--answered`, the hash of the entry's run text and the strand name.
++// The answered call reads the option, takes the entry's ask_default for an empty answer and fills `{answer}` with it, shell-quoted in the run text; an Escape at the prompt runs no template, so the click ends there.
++// An entry with a confirm text then raises `confirm-before`, whose line calls the verb again with `--confirmed`, the hash, the strand name and the answer.
++// Both lines discard the output of the directory change and of the verb and end with status zero.
++// An answered or confirmed call runs the entry only when its hash still matches, so no run text crosses tmux's parsing.
++// @lym_button_answer is decision-bearing: it is what the answered call fills `{answer}` with.
+ // The entry runs as `<shell> <flag> <run>` in that anchor (runButtonScript), waits with no timeout, and logs its spawn and end at Info with its exit code and combined output; it sets no caller identity and is registered in no process table.
+ // A non-zero exit or a failed start shows `lym: <label> failed (exit <code>): <first output line>`.
+ // The verb runs only what the session's spec holds at the clicked index; anything that can run it against the socket can run an entry as itself, adding nothing over running the command directly.
+@@ -100,7 +105,7 @@
+ // The Selvage pane carries the user option @lym_console (consolePaneOption), set when it is split and re-asserted by every attach pre-flight.
+ // The options are display only but @lym_strand_name: the status bar and the key bindings read them, no Go decision does, and Selvage never gets @strand or @strand_color.
+ // @lym_strand_name is the one pane option a Go decision reads: a button click fills {strand} from it.
+-// The session options @lym_follow, @lym_button_spec and @lym_button_dir are the decision-bearing session options; @strand, @strand_color, @lym_unseen, the wait marks and the two action row options stay display only.
++// The session options @lym_follow, @lym_button_spec, @lym_button_dir and @lym_button_answer are the decision-bearing session options; @strand, @strand_color, @lym_unseen, the wait marks and the two action row options stay display only.
+ // A strand's Segment is an opaque field its spawner names through AddSpec.Segment; reed reads it only to look up the segment's color, which the strand an add or replace returns and Status carry as Color.
+ // An own window gets a status-bar button on line 1 in its segment's color, read from the window options @lym_own and @strand_color, labelled with the window name and carrying its panes' wait marks.
+ // The button is lit while the window is current, and otherwise that color on dark grey, underscored while the window carries @lym_unseen.
+@@ -408,7 +413,7 @@
+ // Focus rules: an agent window is a window holding a pane bound to an own-window strand; the overview, the shell and hidden windows are not agent windows.
+ // The follow state is the session option @lym_follow (followSessionOption): boot sets it on off Windows, and it is off only while it reads off, so an unset option, as on Windows or in a session booted by an older lym, reads on.
+ // followingLocked reads it, and a failed read counts as off for that one decision and is logged at Warn, so a broken read never moves a viewer.
+-// Only @lym_follow, @lym_button_spec and @lym_button_dir are decision-bearing session options.
++// Only @lym_follow, @lym_button_spec, @lym_button_dir and @lym_button_answer are decision-bearing session options.
+ // An automatic window switch happens only at three points, each deciding from reed state, window ids, strand roles, pane liveness and the follow state alone, never from @lym_unseen, @lym_hidden or a wait mark.
+ // relevantWindow is the target of two of them: among the listed windows not about to end, the highest-index agent window holding a pane that is not dead, else the lowest-index overview window, else none.
+ // Attach (attachWindowSelectionLocked, resolved by AttachArgv right after the shell check) appends `; select-window -t <relevant window>` to every argv it returns, and appends nothing when a listing fails or no window is relevant.
+diff --git a/internal/reedengine/follow.go b/internal/reedengine/follow.go
+index de71d057..7061e315 100644
+--- a/internal/reedengine/follow.go
++++ b/internal/reedengine/follow.go
+@@ -1,5 +1,5 @@
+ // follow.go holds the per-session follow state: the session option @lym_follow and the read that turns it into a decision.
+-// The option is a decision-bearing session option reed reads, with @lym_button_spec and @lym_button_dir, which a button click reads, unlike @strand, @strand_color, @lym_unseen and the wait marks, which stay display only.
++// The option is a decision-bearing session option reed reads, with @lym_button_spec, @lym_button_dir and @lym_button_answer, which a button click reads, unlike @strand, @strand_color, @lym_unseen and the wait marks, which stay display only.
+ 
+ package reedengine
+ 
+diff --git a/internal/reedengine/panebin.go b/internal/reedengine/panebin.go
+index 25d5e830..956133f9 100644
+--- a/internal/reedengine/panebin.go
++++ b/internal/reedengine/panebin.go
+@@ -160,11 +160,17 @@ func composeButtonCommand(sh shell.Shell, executablePath func() (string, error),
+ 	return sh.Chain(sh.DiscardOutput(sh.ChangeDirToWord("#{"+buttonDirOption+"}")), sh.DiscardOutput(strings.Join(words, " ")), sh.ExitSuccess()), true
+ }
+ 
+-// composeConfirmedButtonLine returns the shell line a button's confirm prompt runs once answered yes: a change into dir, then exe invoked as `reed button` with req's values and `--confirmed --hash <hash>`, then `--strand <strand>` when strand is non-empty, on sh's dialect.
++// The flags a button's prompt re-enters the click verb with: buttonStageAnswered after the ask prompt, buttonStageConfirmed after a yes to the confirm prompt.
++const (
++	buttonStageAnswered  = "--answered"
++	buttonStageConfirmed = "--confirmed"
++)
++
++// composeButtonReentryLine returns the shell line a button's prompt runs once answered: a change into dir, then exe invoked as `reed button` with req's values, stage and `--hash <hash>`, then `--strand` and `--answer` with their values when values holds them, on sh's dialect.
+ // Every value is quoted as one word.
+-// The line opens with the directory change because run-shell does not format-expand its start directory, so the confirmed verb starts in the run directory.
++// The line opens with the directory change because run-shell does not format-expand its start directory, so the re-entered verb starts in the run directory.
+ // The output of the directory change and of the verb is discarded and the line ends with status zero, so tmux opens no view mode on the target pane whatever either does.
+-func composeConfirmedButtonLine(sh shell.Shell, exe string, req ButtonRequest, dir, hash, strand string) string {
++func composeButtonReentryLine(sh shell.Shell, exe string, req ButtonRequest, dir, stage, hash string, values map[string]string) string {
+ 	words := []string{
+ 		sh.Invoke(exe), "reed", "button",
+ 		"--socket", sh.Quote(req.SocketPath),
+@@ -172,10 +178,12 @@ func composeConfirmedButtonLine(sh shell.Shell, exe string, req ButtonRequest, d
+ 		"--session", sh.Quote(req.Session),
+ 		"--range", sh.Quote(req.Range),
+ 		"--client", sh.Quote(req.Client),
+-		"--confirmed", "--hash", sh.Quote(hash),
++		stage, "--hash", sh.Quote(hash),
+ 	}
+-	if strand != "" {
+-		words = append(words, "--strand", sh.Quote(strand))
++	for _, name := range []string{buttonStrandKey, buttonAnswerKey} {
++		if value, ok := values[name]; ok {
++			words = append(words, "--"+name, sh.Quote(value))
++		}
+ 	}
+ 	return sh.Chain(sh.DiscardOutput(sh.ChangeDir(dir)), sh.DiscardOutput(strings.Join(words, " ")), sh.ExitSuccess())
+ }
+diff --git a/internal/reedengine/template_posix.yaml b/internal/reedengine/template_posix.yaml
+index 68fa2505..1e6d59f6 100644
+--- a/internal/reedengine/template_posix.yaml
++++ b/internal/reedengine/template_posix.yaml
+@@ -19,7 +19,7 @@ segment_colors:  # tmux color per loom segment; each value must be a palette col
+   landing: pink
+   darn: red
+   merge: red
+-buttons:  # status-bar buttons in the groups task, beam and prime; an entry has label, run, optional confirm (a prompt asked before run) and optional window: agents (the button shows only in a strand pane's window); run and confirm take the placeholders {slug}, {worktree}, {beam}, {session} and {strand}; the prime uses its own group when that is non-empty and otherwise falls back to beam; a group written in a layer replaces the default whole; an edit reaches a live session at its next attach or boot
++buttons:  # status-bar buttons in the groups task, beam and prime; an entry has label, run, optional confirm (a prompt asked before run), optional ask (a prompt asked before confirm, holding no comma, whose answer fills {answer}; an empty answer takes the optional ask_default, and Escape cancels the click) and optional window: agents (the button shows only in a strand pane's window); run, confirm and ask take the placeholders {slug}, {worktree}, {beam}, {session} and {strand}, and run and confirm also {answer}, valid only in an entry with ask; the prime uses its own group when that is non-empty and otherwise falls back to beam; a group written in a layer replaces the default whole; an edit reaches a live session at its next attach or boot
+   task:
+     - label: HALT
+       run: lym tender pause {slug}
+@@ -28,17 +28,21 @@ buttons:  # status-bar buttons in the groups task, beam and prime; an entry has
+       confirm: Cancel {slug}?
+     - label: code
+       run: lym ide spawn {slug}
+-    - label: term
++    - label: terminal
+       run: lym reed window {worktree} --title {slug}
+     - label: agent
+-      run: "cd {worktree} && lym shuttle open --role agent --model 'opus[high]'"
++      ask: "Agent name:"
++      ask_default: agent
++      run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]'"
+   beam:
+     - label: code
+       run: lym ide spawn {slug}
+-    - label: term
++    - label: terminal
+       run: lym reed window {worktree} --title {slug}
+     - label: agent
+-      run: "cd {worktree} && lym shuttle open --role agent --model 'opus[high]'"
++      ask: "Agent name:"
++      ask_default: agent
++      run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]'"
+     - label: distill
+       run: lym orch distill
+       confirm: Distill the orch?
+diff --git a/internal/reedengine/template_windows.yaml b/internal/reedengine/template_windows.yaml
+index e36497fa..c509d91f 100644
+--- a/internal/reedengine/template_windows.yaml
++++ b/internal/reedengine/template_windows.yaml
+@@ -19,7 +19,7 @@ segment_colors:  # tmux color per loom segment; each value must be a palette col
+   landing: pink
+   darn: red
+   merge: red
+-buttons:  # status-bar buttons in the groups task, beam and prime; an entry has label, run, optional confirm (a prompt asked before run) and optional window: agents (the button shows only in a strand pane's window); run and confirm take the placeholders {slug}, {worktree}, {beam}, {session} and {strand}; the prime uses its own group when that is non-empty and otherwise falls back to beam; a group written in a layer replaces the default whole; an edit reaches a live session at its next attach or boot
++buttons:  # status-bar buttons in the groups task, beam and prime; an entry has label, run, optional confirm (a prompt asked before run), optional ask (a prompt asked before confirm, holding no comma, whose answer fills {answer}; an empty answer takes the optional ask_default, and Escape cancels the click) and optional window: agents (the button shows only in a strand pane's window); run, confirm and ask take the placeholders {slug}, {worktree}, {beam}, {session} and {strand}, and run and confirm also {answer}, valid only in an entry with ask; the prime uses its own group when that is non-empty and otherwise falls back to beam; a group written in a layer replaces the default whole; an edit reaches a live session at its next attach or boot
+   task:
+     - label: HALT
+       run: lym tender pause {slug}
+@@ -28,17 +28,21 @@ buttons:  # status-bar buttons in the groups task, beam and prime; an entry has
+       confirm: Cancel {slug}?
+     - label: code
+       run: lym ide spawn {slug}
+-    - label: term
++    - label: terminal
+       run: lym reed window {worktree} --title {slug}
+     - label: agent
+-      run: "cd {worktree} && lym shuttle open --role agent --model 'opus[high]'"
++      ask: "Agent name:"
++      ask_default: agent
++      run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]'"
+   beam:
+     - label: code
+       run: lym ide spawn {slug}
+-    - label: term
++    - label: terminal
+       run: lym reed window {worktree} --title {slug}
+     - label: agent
+-      run: "cd {worktree} && lym shuttle open --role agent --model 'opus[high]'"
++      ask: "Agent name:"
++      ask_default: agent
++      run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]'"
+     - label: distill
+       run: lym orch distill
+       confirm: Distill the orch?
