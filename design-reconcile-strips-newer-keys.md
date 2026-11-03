@@ -1,6 +1,6 @@
 # Hub-wide config reconcile by an older lym binary strips keys a newer binary wrote
 
-`reconcile-strips-newer-keys` · Task · bug, reconcile, config · running · Darn-Write
+`reconcile-strips-newer-keys` · Task · bug, reconcile, config · running · Drift-Verify
 
 Imported from [issue #2](https://github.com/Knatte18/loomyard/issues/2).
 
