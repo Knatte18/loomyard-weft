@@ -50,7 +50,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **A status-bar button asks for a value, so an agent opened from it gets a name**<br>• Button entries take ask, filling {answer}; the agent button asks for the strand name, and term becomes terminal | [`button-ask-name`](design-button-ask-name.md) | darn · light | Darn-Write | neve | 2d<br>9m | reed, config |
 | T3 | **Per-machine environment variables, exported to every process lym starts for the hub** | [`machine-env-vars`](design-machine-env-vars.md) | darn · light | Code-Bouncer | neve | 11h<br>1h | config, gate, drift, shuttle |
-| T5 | **Bench Plan and Discussion fixers on Sonnet against Opus**<br>• Twelve fixer runs: Opus against Sonnet, and Sonnet on concrete findings | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | darn · docs | Drift-Baseline | neve | 12d<br>8m | burler, claude |
+| T5 | **Bench Plan and Discussion fixers on Sonnet against Opus**<br>• Twelve fixer runs: Opus against Sonnet, and Sonnet on concrete findings | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | darn · docs | Drift-Await | neve | 12d<br>9m | burler, claude |
 | T8 | **batten cancel --remove leaves a non-git directory that blocks Worktree-Create** | [`cancel-remove-leftover-dir`](design-cancel-remove-leftover-dir.md) | darn · light | Darn-Write | neve | 1h<br>1h | batten, fabric |
 | T10 | **Code changed after Drift-Verify lands with no compare**<br>• A review fixer rewrote the formatter after Drift-Verify; nothing compares again and lym drift compare refuses past Drift-Verify | [`drift-after-review`](design-drift-after-review.md) | darn · light | Describe | neve | 1h<br>1h | drift, loom |
 
@@ -131,4 +131,4 @@ Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T2 | **Bench reviewers that name the place and the change in every finding**<br>• Eight review runs: the current review stencil against one that demands concrete findings | [`concrete-review-findings`](design-concrete-review-findings.md) | 9m<br>8m | burler, stencil |
+| T2 | **Bench reviewers that name the place and the change in every finding**<br>• Eight review runs: the current review stencil against one that demands concrete findings | [`concrete-review-findings`](design-concrete-review-findings.md) | 9m<br>9m | burler, stencil |
