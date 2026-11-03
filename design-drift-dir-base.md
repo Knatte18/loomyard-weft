@@ -2,8 +2,6 @@
 
 `drift-dir-base` · Task · bug, drift, gate, config · running · Darn-Write
 
-Depends on: [`gate-orphan-pipe-hang`](design-gate-orphan-pipe-hang.md)
-
 # One base for a command's dir
 
 A command's `dir` means a different base in `drift.yaml` than in `gate.yaml`, so the same value works in one file and breaks the other on a hub anchored at a subdirectory.

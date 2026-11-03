@@ -759,28 +759,6 @@
       "profile": "light"
     },
     {
-      "id": 1047,
-      "handle": "T3",
-      "slug": "gate-orphan-pipe-hang",
-      "title": "A gate tier whose shell exits while a grandchild holds its pipe hangs forever",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "gate",
-        "process"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "No WaitDelay on tier and build children: an orphaned MSBuild node keeps lym gate test, and the adopt check, running past every timeout",
-      "body": "A gate tier or build step whose shell exits while a grandchild still holds its stdout pipe never returns: `lym gate test` hangs forever, and neither `timeout_min` nor the tied group kill can end it.\n\n## Seen\n\nOn the `cs` hub (`lym-csharp-LYMHUB`, Neve, 2026-11-03), the adopt check of `root` started 15:15:31 and ran tier0, `dotnet test LymCsharp.sln --filter \"Category!=Slow\"` in `lym-csharp/dotnet`.\n\n- At 15:15:32 the `dotnet` process (pid 3374099) aborted, `Internal CLR error. (0x80131506)`, core dumped (`coredumpctl info 3374099`); `suite.log` holds only those three lines.\n- The tier's shell (pid and pgid 3374098) exited and was reaped, but the six MSBuild worker nodes `dotnet test` had started (`MSBuild.dll /nodemode:1 /nodeReuse:false`, pgid 3374098, reparented to `systemd --user`) stayed alive and idle, each holding the write end of the tier's stdout pipe (`pipe:[435404635]` on fds 1, 2, 6, 7, 45).\n- The check, `lym adopt check root` (pid 3373920), holds the read end on fd 10 and still reports `tier0 running; no tier done` well past the tier's `timeout_min: 10`.\n  `slot-1.yaml` stays held for `lym gate test tier0`.\n\n## Cause\n\n`internal/gatecli/tierrun.go` and `internal/gatecli/build.go` set `cmd.Stdout`/`cmd.Stderr` to an `io.Writer` that is no `*os.File`, so `exec.Cmd.Wait` copies through a pipe and waits for EOF, and neither sets `cmd.WaitDelay`.\nOnce `Process.Wait` returns, Go's `watchCtx` stops watching the context, so the tier's or build's timeout no longer calls `cmd.Cancel`, the group kill in `runTiedChild` never runs, and `awaitGoroutines(nil)` blocks for as long as any holder of the pipe lives.\n`internal/treadleengine/gate.go`, `internal/verifyrun/run.go`, `internal/gitexec/gitexec.go` and `internal/desktophook/window.go` already bound this read with `WaitDelay`; the gate's own tier and build children do not.\nAn MSBuild node outlives a crashed `dotnet` parent routinely, so any .NET hub can hit this.\n\n## Expected\n\n- A tier or build child whose shell has exited ends the run within a bounded delay, even while a grandchild holds the pipe: set `WaitDelay` on both commands and treat `exec.ErrWaitDelay` after an exit as that exit.\n- After the shell exits, lym kills what is left of its process group, so orphaned workers do not hold the pipe or a gate slot.\n- The tier records the shell's exit code (134 here) and fails, so the adopt check ends red and its fix loop runs, instead of reporting `running` with no end.\n",
-      "status": "done",
-      "created": "2026-11-03T14:25:43Z",
-      "revised": "2026-11-03T14:47:33Z",
-      "profile": "light"
-    },
-    {
       "id": 1052,
       "handle": "T1",
       "slug": "drift-dir-base",
@@ -794,9 +772,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "gate-orphan-pipe-hang"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "gate.yaml and drift.yaml resolve a relative dir against the same base, and a Drift step whose dir is missing fails naming the path and the config key",
       "body": "# One base for a command's dir\n\nA command's `dir` means a different base in `drift.yaml` than in `gate.yaml`, so the same value works in one file and breaks the other on a hub anchored at a subdirectory.\n\n## Seen\n\nOn the `cs` hub (anchor `lym-csharp/dotnet`, 2026-11-03), `gate.yaml` and `drift.yaml` both set `dir: dotnet`.\n\n- The gate ran its build and tiers in `lym-csharp/dotnet`: `internal/gatecli/tierrun.go` `resolveRunDir` joins `dir` onto the worktree root, as `internal/gatecli/doc.go` states (\"The tier's `dir`, relative to the worktree root\").\n- Drift ran the baseline capture of `pipeflow-reynolds-helper` in `pipeflow-reynolds-helper/dotnet/dotnet`, which does not exist: `internal/driftengine/steprun.go` joins `dir` onto `run.AnchorDir`, as `internal/driftengine/doc.go` states (\"A step's relative `dir` is joined onto the worktree's anchored directory\").\n- The run blocked at Drift-Await; its agent asked whether to set the dir to `dotnet/`, which is the value that broke it.\n\n`lym config drift --set capture.dir=dotnet` accepted the value with no sign of which base it resolves against.\n\n## Expected\n\n- One base for `dir` across the hub's command configs: `gate.yaml`'s tiers and `build`, and `drift.yaml`'s `capture` and `compare` resolve a relative `dir` against the same directory.\n- Each module's config template says which base that is, next to the `dir` key.\n- `lym config \u003cmodule\u003e --set` and the config loader refuse a `dir` that does not exist in the prime, naming the resolved path.\n- Existing hub configs keep working: the `cs` hub's `drift.yaml` now sets `dir: .` against the anchor; whichever base is chosen, the change says how such a value carries over.\n\n# A missing Drift dir fails by name\n\nA Drift capture whose `dir` does not exist fails as `fork/exec /usr/bin/sh: no such file or directory`, and its way forward repeats the same failure.\n\n## Seen\n\nOn the `cs` hub (2026-11-03), the baseline capture of `pipeflow-reynolds-helper` ran with a `dir` that resolved to a missing directory.\nThe capture record and the Drift-Await stop read:\n\n```\ndrift: the baseline capture ended failed (drift: start the drift capture command in /home/knatte/Code/lym-csharp-LYMHUB/pipeflow-reynolds-helper/dotnet/dotnet: fork/exec /usr/bin/sh: no such file or directory), log …/capture-20261103T142802.258Z.log; way forward: lym drift capture followed by lym loom resume, … or lym drift defer followed by lym loom resume\n```\n\n- The text blames `/usr/bin/sh`, which exists; Go reports a failed `chdir` in the child as a failed exec of the shell.\n- `lym drift capture` again runs the same config and fails the same way; the way forward names neither the config nor where it lives.\n  The capture log is empty.\n- The batten notice to the orch shortened the directory to `in dotnet`, hiding the doubled path.\n- The run's agent asked the orch where the capture directory is configured, \"since I could not find it in the repo\": `drift.yaml` sits in the hub's `_bolt/_lym/config`, outside the task worktree.\n\n`internal/gatecli` refuses the same case by name: \"could not start the shell for … in \u003cdir\u003e …; way forward: make the tier's dir an existing directory\".\n\n## Expected\n\n- Before it spawns, Drift checks that the step's resolved `dir` exists, and a missing one fails with the resolved path, the `drift.yaml` key that set it, and the way forward `lym config drift --set \u003cstep\u003e.dir=\u003cdir\u003e` from the prime, then `lym drift capture` and `lym loom resume`.\n- The batten notice keeps the full resolved path.\n",
