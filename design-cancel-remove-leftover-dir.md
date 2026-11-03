@@ -1,6 +1,6 @@
 # batten cancel --remove leaves a non-git directory that blocks Worktree-Create
 
-`cancel-remove-leftover-dir` · Note · bug, batten, fabric
+`cancel-remove-leftover-dir` · Task · bug, batten, fabric · draft
 
 Imported from [issue #39](https://github.com/Knatte18/loomyard/issues/39).
 
