@@ -1,6 +1,6 @@
 # Bench Plan and Discussion fixers on Sonnet against Opus
 
-`fixers-on-sonnet` · Task · research, burler, claude · running · Worktree-Create
+`fixers-on-sonnet` · Task · research, burler, claude · running · Record-Write
 
 Depends on: [`concrete-review-findings`](design-concrete-review-findings.md)
 
