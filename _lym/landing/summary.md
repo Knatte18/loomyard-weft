@@ -1,25 +1,28 @@
-# Wording criteria are checked by review, never by a prose test
+# Check wording criteria by review, never by a prose test
 
-The plan rubric's test-economy rule and a decision record's acceptance criteria pulled opposite ways when a criterion was phrased as a rendered-text check ("the rendered stencil names X").
-The planner planned a test for it, the plan review asked to cut that test, and the dispute repeated every round ([issue #3](https://github.com/Knatte18/loomyard/issues/3)).
-The operator settled it for test economy: a criterion about wording is checked by the code review reading the text, never by a test that asserts the prose.
+The plan review's test-economy rule and a decision record's acceptance criteria pulled opposite ways.
+A criterion phrased as a rendered-text check ("the rendered stencil names X") made the planner plan a test, the plan review then asked to cut it, and the dispute repeated every round.
+Test economy now wins: a criterion about wording in a stencil, spec, doc or other prose is checked by the code review reading the text, and no test asserts that prose.
 
-## Changes
+Closes #3
 
-- `contracts/specs/loom-discussion-spec.md`: a new compaction rule says a criterion is behavior a test can check, or a review check.
-  A criterion that a stencil, spec, doc or other prose names, says or contains a wording opens its bullet with `Review:`; the code review checks it by reading the text, and no test asserts that prose.
-- `contracts/stencils/loom/loom-template-discussion.md`: the interview's Testing item tells the writer to phrase each criterion as testable behavior and to mark a wording criterion as a review check, pointing at the spec's rule rather than restating it.
-- `contracts/stencils/loom/loom-rubric-plan-review.md`: the Test economy bullet widens the prose-test finding from stencils to any spec, doc or other text.
-  A wording criterion, marked or not, is met by review: a card plans no test for it, a card that does is a finding whose fix cuts the test, and the criterion's missing test is never a finding.
-  Before relying on a claim that an existing scan or test already covers a wording to cut a test, the reviewer reads that scan or test in the code and confirms it; an unconfirmed claim grounds no such finding.
-- `contracts/stencils/loom/loom-rubric-code-review.md`: a new Wording criteria bullet checks each wording criterion by reading the text the diff leaves.
-  With a plan the criteria are the record's `## Acceptance criteria`; with a decision record alone they are what the amended board entry expects.
-  A wording the criterion asks for that the text lacks is a finding, and a prose test never stands in for the check.
+## What changes
+
+- `loom-discussion-spec.md`: the acceptance-criteria rules gain one bullet.
+  A criterion is behavior a test can check, or a review check; a wording criterion opens its bullet with `Review:`.
+- `loom-template-discussion.md`: the Testing prompt tells the Discussion writer to phrase each criterion as testable behavior and to mark a wording criterion as a review check.
+- `loom-rubric-plan-review.md`: a card that plans a test of static prose in a stencil, spec, doc or other text is a finding whose fix cuts the test.
+  A wording criterion with no planned test is never a finding.
+  Before a finding relies on a claim that an existing scan or test already covers a wording, the reviewer reads that scan or test and confirms it checks that wording; an unconfirmed claim grounds no finding that cuts a test.
+- `loom-rubric-code-review.md`: a new "Wording criteria" bullet has the reviewer read each wording criterion against the text the diff leaves.
+  The test-economy bullets widen from a stencil's static prose to the static prose of a stencil, spec, doc or other text.
 
 ## Design decisions
 
-- The mark is a `Review:` prefix on the criterion's bullet. The decision-id check still finds `D<n>` anywhere in the bullet, so the prefix needs no parser change.
-- Both rubrics apply the rule to an unmarked wording criterion too, so records written before this change and darn records, which carry no criteria of their own, get the same treatment.
-- The plan review's verify-before-cutting rule lives in the plan rubric, which is the plan review's prompt content; the generic burler reviewer prompt is shared by every perch and stays unchanged.
+- The rules apply to a wording criterion whether or not its bullet opens with `Review:`, so a record that omits the marker does not bring the dispute back.
+- With a decision record alone and no plan, the wording criteria are what the amended board entry expects.
 
-No Go code changes, so no test is added; the change is wording the code review checks by reading it.
+## To check by hand
+
+Only stencil and spec prose changed, so no test was added or run.
+Read the four edited files for consistency of the `Review:` marker rule across them.
