@@ -899,7 +899,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #33](https://github.com/Knatte18/loomyard/issues/33).\n\nWhat happened: `lym loom` halted twice as `blocked` at Preflight with `worktree-clean: uncommitted state changes under _lym`. The dirty paths were lym's own: a deleted `_lym/loom/friction/loom-halt.md` (the note of the previous halt, consumed by reflection) and an untracked `_lym/shed/\u003cslug\u003e/go-settle.jsonl`. No task code was dirty.\n\nWhy abnormal: the precondition is tripped by files lym itself wrote or removed between steps, so each halt note or settle log can cause the next halt. The run needs an orch or operator `lym fabric commit` before it can continue (escalation-to-human anomaly).\n\nWhat to do: have the worktree-clean check ignore, or auto-commit, lym-owned artifacts (friction notes, `_lym/shed` settle logs), or have the step that removes or writes them commit the change.\n\nProvenance: task `commonlib-fluid-report-selection`; notes loom-halt.md, loom-halt-2.md.\n",
-      "status": "running · Drift-Verify",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-03T16:44:27Z",
       "revised": "2026-11-03T16:51:56Z",
       "profile": "light"
@@ -921,7 +921,7 @@
       "isolated": false,
       "brief": "Bring main into the beam before it lands, so its landing merges cleanly",
       "body": "## Build\n\n- Merge `origin/main` into the `codex-engine` beam branch.\n- Resolve every conflict so that both main's changes and the beam's Codex work stand.\n- Fix whatever the merged tree breaks in the build and the gate, including code that main changed under the beam's new code.\n\n## Bounds\n\n- No new behaviour: the task only reconciles the two sides.\n- The project's Sketch (`lym board get P2 --record`) is the authority on what the beam's code must keep doing.",
-      "status": "running · Drift-Verify",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-03T16:55:32Z",
       "revised": "2026-11-03T16:55:32Z",
       "project": "codex-engine"
