@@ -1,6 +1,6 @@
 # Every remote operation runs async, and local-only fabric pairs go
 
-`fabric-remote-async` · Task · enhancement, fabric, batten · running · Record-Write
+`fabric-remote-async` · Task · enhancement, fabric, batten · running · Darn-Write
 
 Depends on: [`remote-moved-before-push`](design-remote-moved-before-push.md)
 
