@@ -1,36 +1,39 @@
-# depends_on accepts a project, and dobby holds the task until it is done
+# depends_on accepts a project or any entry that lands
 
-A task can now depend on a project as it depends on a task.
-Before, the board refused any `depends_on` naming a project, so a task that had to wait for a beam to land in `main` was parked as a draft and watched by hand.
+A task can now name a project in `depends_on`, and dobby holds the task until that project is done.
+Before, `depends_on` refused a project, and a member landing into a beam is not the beam landing into `main`.
+A task that had to wait for a beam to reach `main` could not say so, and the hub orch watched the beam by hand.
 
 ## What changes
 
-- **The rule.** A dependency is met once its entry is done, whatever its kind.
-  A task, or a beam, is done when its status is `done`; `lym beam land` sets that once the beam lands into its parent, so a member landing into the beam does not release the dependent task.
-  A plain project is done when it is marked `done`, or when it has at least one landing member and every landing member is done.
-  A landing member is a task or project under the project. A note never lands, so a note member never holds a project open.
-  A slug no longer on the board still counts as pruned and done.
-- **One judge.** The new `boardengine.Dependencies` (`internal/boardengine/dependency.go`) is where that rule lives.
-  Dobby's start hold (`battencli.DobbyTasks`), the layers (`ComputeLayers`), the README's After column, the write's cycle check and the siblings notice all read it.
-- **The write check.** The project refusal in `project.go` is gone.
-  `validateWrite`'s cycle check now follows a project to its landing members.
-  A member that depends on its own project is refused as a cycle, and so is a member that waits on a task that waits on the member's own project.
-- **README.** A dependency on a project that is not done keeps the task out of Ready and shows in its After column by the project's handle.
-  It weighs as a dependency on the project's deepest open member, so the task sits one layer below that member.
-  It lands in Layer A when the project's open members are all running, ready or draft, or when it has no open member.
-- **Siblings notice.** A dependency on a project counts as the project plus each landing member not yet done.
-  So a task newly waiting on a project and a task waiting on one of its members are reported as siblings, and the other way round too.
+- `depends_on` accepts the slug of any entry that lands, a project included.
+  The write that used to refuse a dependency on a project (`dependsOnProjectError` in `internal/boardengine/project.go`) is gone.
+- A dependency is met when its entry is done, whatever its kind:
+  - a task, or a beam, when its status is done, which a beam's landing into its parent sets;
+  - a plain project when its status is done, or when it has a landing member and every landing member is done;
+  - a slug no longer on the board, as before, was pruned as done.
+- A landing member is a task or a project whose project key names the project.
+  A note never lands, so it holds no project open.
+- The README's After column and the Ready subsection treat a project dependency like a task one: a project not yet done is listed by its handle.
+- `lym board set-deps` covers project dependencies in both checks.
+  The cycle check follows a project to its landing members, so a member cannot wait on a task that waits on its own project.
+  The overlap notice treats a project as the union of its landing members: a task waiting on a project and one waiting on a member of it wait on the same entry.
+- Layers: a dependency on a project not yet done weighs as one on its deepest open landing member.
+  A task waiting on a project therefore sits one layer below that member, and in Layer A when the project's open members are all running, ready or draft, or it has none.
 
-## Design decisions
+## Design
 
-- A beam is met only by its own `done` status, never by its members, because the operator's case is the beam landing into `main`.
-- A plain project with no landing member is not met until it is marked done.
-  Otherwise a project created empty would release its dependents at once.
-- An abandoned member is not done and keeps a plain project open. The operator closes such a project by marking it done.
-- The siblings notice ignores a sibling's dependency that is already met, so a done member does not link two tasks.
+- `internal/boardengine/dependency.go` holds the rule once, as `Dependencies`: `Pending`, `met`, `waitsOn`, `standsFor` and `overlap`.
+  `internal/battencli/dobbyreads.go` (`DobbyTasks`), `ComputeLayers`, the README `afterCell`, the siblings check and the write-time cycle check all read it, so none keeps its own idea of done.
+- The write-time cycle check in `store.go` now runs over `waitsOn`, with the depth-first walk extracted as `findCycle`.
+  A cycle made of project membership alone is left to `checkProjectRules`, whose refusal names the project field to correct, instead of being reported as a dependency cycle.
+- A membership loop stored by hand edit reads as not met, and `standsFor` stops on it, so neither recurses without end.
+- `doc.go` in `internal/boardengine` describes the new rule in the dependency, Ready, After and Siblings passages.
 
-## Tests
+## To check by hand
 
-- `TestDependenciesPending` covers the rule for each kind: an open or done task, a pruned slug, a beam whose members are done but which has not landed, a landed beam, and the plain-project cases (all members done, one open member, no members, marked done, holding an unlanded beam).
-- `TestProjectDependencies` replaces the old refusal test. It checks that upsert, set-deps and batch accept a project dependency, and it covers the two cycle refusals.
-- `TestComputeLayers`, `TestWriteSiblings` and `TestDobbyTasks_ReadsDependenciesParentAndNotifyOnLand` gain rows for project dependencies.
+- A project that depends on an entry is still refused by the project rules; this change only lets a task depend on a project.
+- The After-cell rendering of a project dependency in a README row, since a project dependency is judged by its landing members and not by its own status alone (`render.go`, `afterCell`, pinned in `render_test.go`).
+- Recursion over project membership in `Dependencies.met` and `standsFor` when a stored membership loop exists (`dependency.go`, pinned in `dependency_test.go`).
+- On a real hub: set a task's `depends_on` to a beam, run `lym board set-deps`, and confirm dobby holds the task until the beam lands into its parent.
+  This end-to-end path was not run.
