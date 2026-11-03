@@ -674,7 +674,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #37](https://github.com/Knatte18/loomyard/issues/37).\n\nWhat happened: the PR-Review row halted the loom run as blocked with 'pushing the task branch failed: fabricengine: push lock busy: \u003cweft\u003e/.weft/fabric.push.lock still held after 30s; neither side was pushed'. The way forward named was to run lym fabric push in the task worktree, then lym loom resume. The run had been through 17 history entries and had just finished Describe.\n\nWhy it is abnormal: the push lock sits in a weft directory shared across worktrees, so another session's push or a stale lock holder can stall a push; a 30s wait then ends the whole run as an escalation to a human, though contention is transient and a push is idempotent. Nothing in the note says which process held the lock, or whether it was stale.\n\nWhat to do: retry the push with backoff for longer, or re-step the row automatically before blocking; when the lock is still busy, report the holder (pid, age) and clear a lock whose holder is dead.\n\nProvenance: task pinned-solvers-everywhere; notes loom-halt-2.md",
-      "status": "running · Drift-Baseline",
+      "status": "running · Drift-Await",
       "created": "2026-11-03T16:44:20Z",
       "revised": "2026-11-03T16:51:56Z",
       "profile": "light"
