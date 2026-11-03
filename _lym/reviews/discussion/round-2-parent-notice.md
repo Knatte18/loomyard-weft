@@ -1,0 +1,1 @@
+Review segment of task `batten-remote-order` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/reviews/discussion/round-2-escalation.md` with a one-shot fork.
