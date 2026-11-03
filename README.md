@@ -55,11 +55,13 @@ Held by a run; its scope is locked until the run ends.
 | T6 | **The orch role explains how to make a project into a beam**<br>• The prime orch in the Models hub did not know beam create is the only way, and patched a plain task run by hand. | [`orch-role-making-a-beam`](design-orch-role-making-a-beam.md) | darn · light | Finalize | neve | 1d<br>25m | orch, pawl |
 | T10 | **Darn-Write writer runs no gate itself when the cold fixer is on**<br>• The darn writer prompt still has the writer run and fix lym gate test; with the gate fixer on it should run none | [`darn-writer-runs-no-gate`](design-darn-writer-runs-no-gate.md) | darn · light | Darn-Write | neve | 12m<br>12m | darn, stencil, gate |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T11 | **Map where fabricengine test time goes and propose cuts**<br>• Docs-only survey: time, git processes and files per fixture on neve, what hubforge templates already cover, ranked proposals<br>• `darn: writer fable[high]` | [`fabric-test-speed-survey`](design-fabric-test-speed-survey.md) | darn · docs |  | 0m<br>0m | fabric, testkit, docs |
 
 #### Layer A (3)
 
@@ -70,14 +72,6 @@ Waits only on Running, Ready or Draft entries.
 | T5 | **Run windows show the board handle in their titles**<br>• Konsole window titled T4: <slug>, tmux overview window T4: overview, beam overview P1: beam: <slug> | [`window-titles-show-handle`](design-window-titles-show-handle.md) | darn · light | T2 | 4m<br>4m | reed, batten, termwindow |
 | T7 | **fabric remove deletes the whole worktree directory, ignored files included** | [`fabric-remove-ignored-files`](design-fabric-remove-ignored-files.md) | darn · solid | T3 | 3h<br>3h | fabric |
 | T8 | **Batten treats a stray non-worktree directory as a gone pair, and a beam landing accepts its own beam mark** | [`batten-stray-dir-and-beam-mark`](design-batten-stray-dir-and-beam-mark.md) | darn · light | T3 | 3h<br>3h | batten, pawl |
-
-#### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T11 | `draft` **Map where fabricengine test time goes and propose cuts**<br>• Docs-only survey: time, git processes and files per fixture on neve, what hubforge templates already cover, ranked proposals<br>• `darn: writer fable[high]` | [`fabric-test-speed-survey`](design-fabric-test-speed-survey.md) | darn · docs |  | 0m<br>0m | fabric, testkit, docs |
 
 ### Notes (34)
 
