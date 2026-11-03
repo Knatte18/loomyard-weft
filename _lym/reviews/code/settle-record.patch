@@ -1,0 +1,1354 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index 636f388b..6644e36b 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -32,7 +32,7 @@
+ - `PATTERN-slug-remote-order` — Touching a slug's pair or its origin branches: under fabricengine's per-slug teardown lock, shared for each pair push outside a removal, exclusive for Add, Remove, task-branch discard and cleanup sweep; a weft branch delete on origin is leased on the origin tip read.
+ - `PATTERN-pair-teardown` — Tearing down a pair: only via `internal/pairteardown`; a producer creating or destroying a task worktree never runs inside it. (test) — [background](pattern/PATTERN-pair-teardown.md)
+ - `PATTERN-parent-lock` — Moving, merging into or landing on a local parent branch, or merging a run's pull request: only in a run's Finalize, under `internal/parentlock`'s lock for that parent.
+-- `PATTERN-owner-machine` — Starting, resuming or landing a run: only where its entry is not owned elsewhere; owners only on root and beam projects, set only by `boardengine`'s owner setter; any other entry reads its `hubgeom.ParentOf` owner; a dobby continue pass is no resume. — [background](pattern/PATTERN-owner-machine.md)
++- `PATTERN-owner-machine` — Starting, resuming, pushing or landing a run: only where its entry is not owned elsewhere; a loom run's push passes a run-scope origin reconcile first; owners only on root and beam projects, set only by `boardengine`'s owner setter; any other entry reads its `hubgeom.ParentOf` owner; a dobby continue pass is no resume. — [background](pattern/PATTERN-owner-machine.md)
+ - `PATTERN-pair-parent` — Picking a new pair's parent for a board entry or reading an entry's owner through its parent: only `ParentBeam` and hubgeom's one `ParentOf`, never the acting worktree.
+ - `PATTERN-github-auth` — Calling GitHub: auth only via internal/githubclient; no other production package runs gh; only lym selfreport create files an issue; only PR-Review, Finalize and pair teardown open, reopen, merge or close a pull request. (test)
+ - `PATTERN-fabric-isolation` — Changing fabric: it learns nothing of IDEs, shuttle, the board or heddle; a module reaches fabric through a general seam, never one tailored to it. — [background](pattern/PATTERN-fabric-isolation.md)
+diff --git a/internal/battenshed/doc.go b/internal/battenshed/doc.go
+index 6c0de74b..c6387076 100644
+--- a/internal/battenshed/doc.go
++++ b/internal/battenshed/doc.go
+@@ -163,7 +163,7 @@
+ // A pause held for an owner releases the record the same way on a probe check, with no check of its own.
+ // Every spawn on an existing run reads a ChildOwnedElsewhereError as that verdict: the respawn of an unconfirmed running child returns a budget-exempt Stuck naming the owner, and the awaiting resume, and the binary re-step pause, write no marker and keep waiting.
+ // While an owner stands every spawn waits, and the spawn hold re-runs the owner check once per probe until it reads the run as owned here, so a failed owner pause never makes the wait spawn and re-reconcile in a loop.
+-// Bound: the child can act until the full pass the dobby owes after a wake runs the check, and for as long as origin stays unreachable.
++// Bound: the child can act until the full pass the dobby owes after a wake runs the check, and for as long as origin stays unreachable; a loom child judges its owner again before each of its pushes, so it pushes nothing meanwhile once origin answers.
+ // A Finalize past its parent-side merge finishes its landing here, and once it is done its batten waits under the owner pause until "lym tender resume <slug>" lifts it, then goes on to Land.
+ //
+ // Its counterpart is equally by design: a driver that finishes NORMALLY leaves its strand and its
+diff --git a/internal/fabricengine/failedpush.go b/internal/fabricengine/failedpush.go
+index ca4ad059..2592fc76 100644
+--- a/internal/fabricengine/failedpush.go
++++ b/internal/fabricengine/failedpush.go
+@@ -43,6 +43,16 @@ const (
+ 	failedPushSideBolt    = "bolt"
+ )
+ 
++// The repository sides a branch outcome or failed-push record names in its Repo field.
++const (
++	// RepoCode is the Repo of a branch of a pair's code repository.
++	RepoCode = failedPushSideCode
++	// RepoRecords is the Repo of a branch of a pair's records repository.
++	RepoRecords = failedPushSideRecords
++	// RepoBolt is the Repo of a branch of the records repository's board branch.
++	RepoBolt = failedPushSideBolt
++)
++
+ // FailedPush is the record of a push origin refused, one per repository side and branch.
+ // Repo is "code", "records" or "bolt", the last being the records repository's board branch.
+ // CodeWorktree is set for a records record only: the pair's code worktree, where every fabric verb runs.
+diff --git a/internal/fabricengine/originreconcile.go b/internal/fabricengine/originreconcile.go
+index acbc818d..132bb945 100644
+--- a/internal/fabricengine/originreconcile.go
++++ b/internal/fabricengine/originreconcile.go
+@@ -152,8 +152,8 @@ const (
+ 	BranchAnchorStopped BranchState = "anchor_stopped"
+ )
+ 
+-// stops reports whether a branch in this state stops its entry or the scope.
+-func (s BranchState) stops() bool {
++// Stops reports whether a branch in this state stops its entry or the scope.
++func (s BranchState) Stops() bool {
+ 	switch s {
+ 	case BranchRewound, BranchRewritten, BranchDiverged, BranchGone, BranchDirty, BranchBusy, BranchLive, BranchAnchorStopped:
+ 		return true
+@@ -273,7 +273,7 @@ func (r OriginReport) Summary() string {
+ 	}
+ 
+ 	for _, branch := range r.Branches {
+-		if !branch.State.stops() {
++		if !branch.State.Stops() {
+ 			continue
+ 		}
+ 		line := fmt.Sprintf("stopped: %s (%s): %s", branch.Branch, branch.State, branch.WayForward)
+@@ -413,7 +413,7 @@ func classifyEntry(f entryFacts) EntryState {
+ 	if f.OwnedElsewhere {
+ 		return EntryOwnedElsewhere
+ 	}
+-	if f.D3Stop || slices.ContainsFunc(f.Branches, BranchState.stops) {
++	if f.D3Stop || slices.ContainsFunc(f.Branches, BranchState.Stops) {
+ 		return EntryStopped
+ 	}
+ 	return EntryActive
+@@ -849,7 +849,7 @@ func classifyEntries(scope ReconcileScope, recorded []string, branches []BranchO
+ 	d3WayForward := ""
+ 	for _, branch := range branches {
+ 		shared := branch.Repo == failedPushSideBolt || (branch.Repo == failedPushSideRecords && branch.Prime)
+-		if shared && branch.State.stops() && branch.State != BranchBusy && !d3Stop {
++		if shared && branch.State.Stops() && branch.State != BranchBusy && !d3Stop {
+ 			d3Stop = true
+ 			d3WayForward = branch.WayForward
+ 		}
+@@ -865,7 +865,7 @@ func classifyEntries(scope ReconcileScope, recorded []string, branches []BranchO
+ 				continue
+ 			}
+ 			facts.Branches = append(facts.Branches, branch.State)
+-			if wayForward == "" && branch.State.stops() {
++			if wayForward == "" && branch.State.Stops() {
+ 				wayForward = branch.WayForward
+ 			}
+ 		}
+diff --git a/internal/loomcli/commitrecords.go b/internal/loomcli/commitrecords.go
+index b6e74039..8dc2ee81 100644
+--- a/internal/loomcli/commitrecords.go
++++ b/internal/loomcli/commitrecords.go
+@@ -27,6 +27,8 @@ const commitRecordsMessage = "loom: commit run records"
+ // A mid-merge sibling is skipped exactly as the status seam skips it, as a success with committed false;
+ // a probe error, a commit error and a push error are each an error envelope.
+ // A push skipped because a removal, an Add or a discard of the pair holds its teardown lock exclusive is no error: the envelope is ok with committed true and push_skipped carrying the reason, and the commit stays local for the pair's next push.
++// A commit or push the run's pre-push check stopped is no error either: the envelope is ok with push_stopped carrying the check's reason, the run is paused and the orch noticed;
++// committed is false when the check stopped the commit, which then pushes nothing, and true when it stopped the push after a commit.
+ // A clean tree is not an error: committing an already-clean pathspec is a no-op.
+ func commitRecordsVerb(out io.Writer, d commitStatusDeps) int {
+ 	active, err := d.MergeActive()
+@@ -40,6 +42,9 @@ func commitRecordsVerb(out io.Writer, d commitStatusDeps) int {
+ 		})
+ 	}
+ 	if _, err := d.Commit(commitRecordsMessage); err != nil {
++		if errors.Is(err, errPushStopped) {
++			return output.Ok(out, map[string]any{"committed": false, "push_stopped": err.Error()})
++		}
+ 		return output.Err(out, "loom: commit-records: commit failed: "+err.Error()+"; way forward: transient, re-run lym loom commit-records")
+ 	}
+ 	if err := d.Push(); err != nil {
+@@ -47,6 +52,9 @@ func commitRecordsVerb(out io.Writer, d commitStatusDeps) int {
+ 			logger.Warn("loom: commit-records: the push was skipped; the commit stays local for the pair's next push", "error", err)
+ 			return output.Ok(out, map[string]any{"committed": true, "push_skipped": err.Error()})
+ 		}
++		if errors.Is(err, errPushStopped) {
++			return output.Ok(out, map[string]any{"committed": true, "push_stopped": err.Error()})
++		}
+ 		message := "loom: commit-records: the commit landed locally but the push failed: " + err.Error()
+ 		// A classified push failure's text already ends in its class's way forward.
+ 		if fabricengine.HasUnclassifiedFailure(err) {
+diff --git a/internal/loomcli/commitrecords_test.go b/internal/loomcli/commitrecords_test.go
+index f12eafa7..5dc7be60 100644
+--- a/internal/loomcli/commitrecords_test.go
++++ b/internal/loomcli/commitrecords_test.go
+@@ -41,6 +41,7 @@ func TestCommitRecordsVerb_Success(t *testing.T) {
+ 		{"ordinary path commits then pushes", false, 1, 1, nil, nil},
+ 		{"mid-merge skips", true, 0, 0, []string{`"committed":false`, "mid-merge"}, nil},
+ 		{"push skipped under the teardown lock", false, 1, 1, []string{`"committed":true`, `"push_skipped"`}, fmt.Errorf("push: %w", fabricengine.ErrPairPushRunning)},
++		{"push stopped by the pre-push check", false, 1, 1, []string{`"committed":true`, `"push_stopped"`, "owned by machine"}, fmt.Errorf("%w: the run is owned by machine neve", errPushStopped)},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -61,6 +62,49 @@ func TestCommitRecordsVerb_Success(t *testing.T) {
+ 	}
+ }
+ 
++// TestCommitRecordsVerb_StoppedCommitPushesNothing asserts a commit the pre-push check stopped is an ok envelope with committed false and push_stopped, and that no push follows it.
++func TestCommitRecordsVerb_StoppedCommitPushesNothing(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	deps, commits, pushes := stubRecordsDeps(false, nil, fmt.Errorf("%w: the run is owned by machine neve", errPushStopped), nil)
++	var out bytes.Buffer
++
++	code := commitRecordsVerb(&out, deps)
++
++	if code != 0 {
++		t.Fatalf("exit = %d; want 0; output %s", code, out.String())
++	}
++	for _, want := range []string{`"committed":false`, `"push_stopped"`, "owned by machine neve"} {
++		if !strings.Contains(out.String(), want) {
++			t.Errorf("output = %s; want it to contain %q", out.String(), want)
++		}
++	}
++	if *commits != 1 || *pushes != 0 {
++		t.Errorf("Commit/Push calls = %d/%d; want 1/0", *commits, *pushes)
++	}
++}
++
++// TestNewCommitStatusSeam_StoppedCommitStartsNoPush asserts a commit the pre-push check stopped is no hard error of the status transition and starts no push.
++func TestNewCommitStatusSeam_StoppedCommitStartsNoPush(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	spawns := 0
++	seam := newCommitStatusSeam(commitStatusDeps{
++		MergeActive: func() (bool, error) { return false, nil },
++		Commit: func(string) (bool, error) {
++			return false, fmt.Errorf("%w: the run is owned by machine neve", errPushStopped)
++		},
++		Spawn: func() error { spawns++; return nil },
++	})
++
++	if err := seam("Code-Review", "running"); err != nil {
++		t.Errorf("seam() = %v; want nil", err)
++	}
++	if spawns != 0 {
++		t.Errorf("Spawn calls = %d; want 0", spawns)
++	}
++}
++
+ func TestCommitRecordsVerb_ErrorEnvelopes(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	boom := errors.New("boom")
+@@ -72,15 +116,15 @@ func TestCommitRecordsVerb_ErrorEnvelopes(t *testing.T) {
+ 		pushFailedPrefix    = "the commit landed locally but the push failed: "
+ 	)
+ 	gone := &fabricengine.PushFailedError{
+-		Record: fabricengine.FailedPush{Repo: "records", RepoPath: "/hub/t-records", CodeWorktree: "/hub/t", Branch: "t-records", Class: fabricengine.PushFailureGone},
++		Record: fabricengine.FailedPush{Repo: fabricengine.RepoRecords, RepoPath: "/hub/t-records", CodeWorktree: "/hub/t", Branch: "t-records", Class: fabricengine.PushFailureGone},
+ 		Err:    fabricengine.ErrBranchGone,
+ 	}
+ 	rewound := &fabricengine.PushFailedError{
+-		Record: fabricengine.FailedPush{Repo: "code", RepoPath: "/hub/t", Branch: "t", Class: fabricengine.PushFailureRewound, OriginHead: "abc123", Commits: []string{"def456"}},
++		Record: fabricengine.FailedPush{Repo: fabricengine.RepoCode, RepoPath: "/hub/t", Branch: "t", Class: fabricengine.PushFailureRewound, OriginHead: "abc123", Commits: []string{"def456"}},
+ 		Err:    errors.New("push held back"),
+ 	}
+ 	auth := &fabricengine.PushFailedError{
+-		Record: fabricengine.FailedPush{Repo: "records", RepoPath: "/hub/t-records", CodeWorktree: "/hub/t", Branch: "t-records", Class: fabricengine.PushFailureAuth},
++		Record: fabricengine.FailedPush{Repo: fabricengine.RepoRecords, RepoPath: "/hub/t-records", CodeWorktree: "/hub/t", Branch: "t-records", Class: fabricengine.PushFailureAuth},
+ 		Err:    gitrepo.ErrPushAuthRefused,
+ 	}
+ 	goneLine := "way forward: " + fabricengine.FailedPushWayForward(gone.Record)
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index e8becca9..27225d5a 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -277,6 +277,17 @@
+ // A done run commits its records, and one that finished with `friction: failed` also gets a report and a notice without being parked.
+ // `lym loom commit-records` pushes the pair's records with its task branch; a push skipped while the slug's teardown lock is held exclusive is an ok envelope with `push_skipped`, its commit left local for the pair's next push.
+ //
++// Every commit and push of a loom run's pair passes the pre-push check first: the per-transition status commit and push, `commit-records` and PR-Review's push of the task branch.
++// The check runs the run-scope origin reconcile from the prime, the one the landing rows run, which fetches what origin moved and fast-forwards or replays the run's own branches where it can.
++// It is skipped when pushes are off, in the prime, while a pause covers the run, whose network gate holds the push, and while the run stands at Finalize, which judges origin and its owners itself.
++// An unreachable origin, a failed check and a failed read of whether the parent holds the run's work let the push go, so the push's own failure is recorded.
++// A run another machine owns is paused under the owner, naming `lym adopt <subject>`;
++// a run a branch stops is paused naming each of its branches, and its parent branch, that stopped, the way forward and `lym tender resume <slug>`;
++// and a run origin ended is paused naming `lym cleanup --apply`, unless its parent already holds its work.
++// Each stop posts one notice line to the nearest live orch, and an active run whose own branches the reconcile moved posts one line naming them, and one whose parent branch origin moved past this machine's tip another.
++// A stopped status transition commits and pushes nothing, `commit-records` answers an ok envelope with `push_stopped` and pushes nothing after a stopped commit, and PR-Review halts on the stop as on any push refusal.
++// Bound: the check reads origin once per commit and push, so a move that lands between the check and the push is caught only by the push's own refusal.
++//
+ // A hand-over runs only at a binary-eligible stop, once per stop key and build, over a clean tree outside the run's records and never under a pause.
+ // It records the hand-over, leaves the stop report and the park marker, releases the driver lock and spawns a fresh `lym loom drive` of the on-disk build, which re-steps;
+ // a driver starting at a blocked Finalize stop first runs the Finalize arm and hands back, stepping nothing, while the parent's code checkout is dirty.
+diff --git a/internal/loomcli/landingdeps.go b/internal/loomcli/landingdeps.go
+index f2b85aa2..afd1b738 100644
+--- a/internal/loomcli/landingdeps.go
++++ b/internal/loomcli/landingdeps.go
+@@ -294,6 +294,11 @@ func landingDeps(
+ // Each seam reads at call time, so a beam.yaml, board entry or origin changed after bootstrap is read as it stands.
+ // SessionLive and RegisterSession read reed's strand table, which only wireLanding holds, so it fills them.
+ func pullRequestDeps(l *lymcwd.Location, parentBranch string, pushSkipped bool, runner *shuttleengine.Runner) landingshed.PullRequestDeps {
++	return pullRequestDepsGuardedBy(newPrePushCheck(l, shedrun.SelfRunID), l, parentBranch, pushSkipped, runner)
++}
++
++// pullRequestDepsGuardedBy is pullRequestDeps with the pre-push check injected as check.
++func pullRequestDepsGuardedBy(check prePushCheck, l *lymcwd.Location, parentBranch string, pushSkipped bool, runner *shuttleengine.Runner) landingshed.PullRequestDeps {
+ 	slug := seedSlug(l.WorktreeName)
+ 	return landingshed.PullRequestDeps{
+ 		RecordPath:     shedrun.PullRequestRecord(l, shedrun.SelfRunID),
+@@ -334,10 +339,11 @@ func pullRequestDeps(l *lymcwd.Location, parentBranch string, pushSkipped bool,
+ 			}
+ 			return client, nil
+ 		},
+-		PushTask: func() error {
++		// PushTask passes the run's pre-push check first, whose stop is returned as the push's error.
++		PushTask: check.guardedPush(func() error {
+ 			_, err := fabricengine.PushPairAnchored(l, fabricengine.EnvSyncOptions(), fabricengine.StatusPushLockWait)
+ 			return err
+-		},
++		}),
+ 		// CommitsMissing reads over the task pair, whose repository holds the merged head once the pair has fetched it.
+ 		CommitsMissing: func(merged, task string) ([]string, error) {
+ 			f, err := fabricengine.Open(l)
+diff --git a/internal/loomcli/prepush.go b/internal/loomcli/prepush.go
+new file mode 100644
+index 00000000..af242716
+--- /dev/null
++++ b/internal/loomcli/prepush.go
+@@ -0,0 +1,318 @@
++// prepush.go judges a loom run against origin and its owners right before the run commits or pushes its work, and stops one whose owner or branches moved since the run last looked.
++
++package loomcli
++
++import (
++	"errors"
++	"fmt"
++	"io/fs"
++	"os"
++	"path/filepath"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/loomshed"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/orchcli"
++	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/state"
++	"github.com/Knatte18/loomyard/internal/tendercli"
++)
++
++// errPushStopped marks a push the pre-push check stopped: the run is paused and the orch was noticed.
++var errPushStopped = errors.New("loomcli: the push was stopped before it ran")
++
++// prePushCheck is the check a loom run's commits and pushes pass first, its seams injected so a test drives it from stubs.
++type prePushCheck struct {
++	// slug names the run in its notices.
++	slug string
++	// skip reports whether the push needs no check: pushes are off, the pair is the prime, a pause covers the run, whose network gate holds the push, or the run stands at Finalize, which judges origin and its owners itself.
++	skip func() (bool, error)
++	// reconcile runs the run-scope origin reconcile, which takes in each tip of the run's own branches origin moved where a fast-forward or replay can, and returns the report narrowed to the run's own entry.
++	reconcile func() (fabricengine.OriginReport, error)
++	// parentBranch names the branch the run lands on, which the run-scope reconcile judges beside the run's own branches.
++	parentBranch func() (string, error)
++	// parentNoticed records key as the parent-branch notice posted and reports whether it already was, so a parent that stays behind origin is announced once per origin tip.
++	parentNoticed func(key string) bool
++	// landed reports whether the run's parent already holds the run's work.
++	landed func() (bool, error)
++	// pauseOwned pauses the run under the owner caller.
++	pauseOwned func() error
++	// pause pauses the run with a plain pair entry.
++	pause func() error
++	// notify posts one line to the nearest live orch.
++	notify func(line string) error
++}
++
++// newPrePushCheck builds the pre-push check of the run runID in the pair at location over the hub's own seams.
++// It performs no I/O: every seam reads at call time.
++func newPrePushCheck(location *lymcwd.Location, runID string) prePushCheck {
++	slug := seedSlug(location.WorktreeName)
++	return prePushCheck{
++		slug: slug,
++		skip: func() (bool, error) {
++			return skipsCheck(
++				fabricengine.EnvSyncOptions(),
++				func() (bool, error) { return fabricengine.IsPrimeWorktree(location) },
++				func() bool { return pauseCovered(location)(slug) },
++				func() (string, error) {
++					status, _, err := state.ReadJSON[shedengine.Status](shedrun.StatusFile(location, runID), shedrun.StatusLock(location, runID))
++					return status.CurrentProducer, err
++				},
++			)
++		},
++		reconcile:    runReconciler(location, slug),
++		parentBranch: func() (string, error) { return readRecordedParentBranch(location) },
++		parentNoticed: func(key string) bool {
++			return announcedBefore(shedrun.ParentNoticeFile(location, runID), key)
++		},
++		landed: func() (bool, error) {
++			prime, err := primeOfHub(location)
++			if err != nil {
++				return false, err
++			}
++			return fabricengine.ParentHoldsTaskWork(prime, location, slug)
++		},
++		pauseOwned: func() error { return tendercli.PauseOwnedElsewhere(location, slug) },
++		pause:      func() error { return tendercli.PausePair(location, slug) },
++		notify: func(line string) error {
++			_, err := orchcli.NotifyParent(location, loomProgram, line)
++			return err
++		},
++	}
++}
++
++// skipsCheck reports whether a run's commit or push needs no pre-push check.
++// It does not when pushes or git are off, the pair is the prime, a pause covers the run, or the run stands at Finalize.
++// Each read runs only when the ones before it left the answer open, and a failed read is returned with false.
++// isPrime reads whether the pair is the prime, pauseCovers whether a pause covers the run, and currentProducer the producer the run's status file names, empty when it has no status.
++func skipsCheck(opts fabricengine.SyncOptions, isPrime func() (bool, error), pauseCovers func() bool, currentProducer func() (string, error)) (bool, error) {
++	if opts.SkipGit || opts.SkipPush {
++		return true, nil
++	}
++	prime, err := isPrime()
++	if err != nil || prime {
++		return prime, err
++	}
++	if pauseCovers() {
++		return true, nil
++	}
++	producer, err := currentProducer()
++	if err != nil {
++		return false, err
++	}
++	return producer == loomshed.NameFinalize, nil
++}
++
++// guard runs the check and returns nil when the work may go, and an error wrapping errPushStopped, naming why, when it stopped it.
++// The work goes when the check is skipped, when origin is unreachable or the check fails, since the push's own failure is then recorded, when a read of whether the parent holds the run's work fails, and when the run's entry reads active;
++// an active entry whose own branches the reconcile moved posts one notice naming them, and one whose parent branch origin moved past this machine's tip posts another naming it, once per origin tip.
++// An entry another machine owns pauses the run under the owner and names `lym adopt` with the verdict's subject, the slug when it brought none.
++// An entry origin ended pauses the run unless its parent already holds the run's work, as after its own landing.
++// An entry a branch stops pauses the run and names each of the run's branches, and its parent branch, that stopped, with its state, or a branch every run shares when none did, then the way forward and `lym tender resume`.
++// Every stop posts one notice, which names a failed pause.
++func (c prePushCheck) guard() error {
++	skip, err := c.skip()
++	if err != nil {
++		logger.Warn("loomcli: the pre-push check could not tell whether it applies; pushing unchecked", "slug", c.slug, "error", err)
++		return nil
++	}
++	if skip {
++		return nil
++	}
++	report, err := c.reconcile()
++	if err != nil {
++		logger.Warn("loomcli: the pre-push origin reconcile failed; pushing unchecked", "slug", c.slug, "error", err)
++		return nil
++	}
++	if report.Unreachable {
++		logger.Warn("loomcli: origin is unreachable before a push; pushing unchecked, so the push's own failure is recorded", "slug", c.slug)
++		return nil
++	}
++
++	reason, owned := c.stopReason(report)
++	if reason == "" {
++		if moved := c.movedBranches(report); len(moved) > 0 {
++			c.post(fmt.Sprintf("%s: origin moved %s; the run took the new tips before its push", c.slug, strings.Join(moved, ", ")))
++		}
++		parent, found := c.parentOutcome(report)
++		if found && (parent.State == fabricengine.BranchFastForward || parent.State == fabricengine.BranchDiverged) &&
++			!c.parentNoticed(fmt.Sprintf("%s %s %s", parent.Branch, parent.State, parent.OriginHead)) {
++			c.post(fmt.Sprintf("%s: origin moved the parent branch %s (%s) past this machine's tip", c.slug, parent.Branch, parent.State))
++		}
++		return nil
++	}
++
++	pause := c.pause
++	if owned {
++		pause = c.pauseOwned
++	}
++	line := fmt.Sprintf("%s: paused before its push: %s", c.slug, reason)
++	if err := pause(); err != nil {
++		line += fmt.Sprintf("; the pause failed (%v), so the run's next push stops again", err)
++	}
++	c.post(line)
++	return fmt.Errorf("%w: %s", errPushStopped, reason)
++}
++
++// guardedCommit returns commit behind the check: a commit the check stops runs nothing and returns the check's error, which wraps errPushStopped, so the records origin has moved stay as they are.
++// A caller that pushes after its commit reads that error as the stop of the push too.
++func (c prePushCheck) guardedCommit(commit func(msg string) (bool, error)) func(msg string) (bool, error) {
++	return func(msg string) (bool, error) {
++		if err := c.guard(); err != nil {
++			return false, err
++		}
++		return commit(msg)
++	}
++}
++
++// guardedSpawn returns spawn behind the check: a push the check stops is not started, returns nil and leaves its commits local.
++func (c prePushCheck) guardedSpawn(spawn func() error) func() error {
++	return func() error {
++		if err := c.guard(); err != nil {
++			logger.Info("loomcli: the status push was stopped; its commits stay local", "error", err)
++			return nil
++		}
++		return spawn()
++	}
++}
++
++// guardedPush returns push behind the check: a push the check stops runs nothing and returns the check's error, which wraps errPushStopped.
++func (c prePushCheck) guardedPush(push func() error) func() error {
++	return func() error {
++		if err := c.guard(); err != nil {
++			return err
++		}
++		return push()
++	}
++}
++
++// stopReason returns why the run's entry stops its push, empty when it does not, and whether the stop is another machine's ownership.
++// A failed read of whether the parent holds the run's work stops nothing, so the push goes and its own failure is recorded.
++func (c prePushCheck) stopReason(report fabricengine.OriginReport) (reason string, owned bool) {
++	for _, entry := range report.Entries {
++		if entry.Slug != c.slug {
++			continue
++		}
++		switch entry.State {
++		case fabricengine.EntryOwnedElsewhere:
++			subject := entry.AdoptSubject
++			if subject == "" {
++				subject = c.slug
++			}
++			return fmt.Sprintf("the run is owned by machine %q; take it over with `lym adopt %s` from this machine's prime", entry.Owner, subject), true
++		case fabricengine.EntryEnded:
++			landed, err := c.landed()
++			if err != nil {
++				logger.Warn("loomcli: could not tell whether the parent holds the run's work; pushing unchecked, so the push's own failure is recorded", "slug", c.slug, "error", err)
++				return "", false
++			}
++			if landed {
++				return "", false
++			}
++			return fmt.Sprintf("origin shows the run %s; `lym cleanup --apply` from the prime removes its pair", entry.How), false
++		case fabricengine.EntryStopped:
++			what := "a branch every run shares"
++			if stopped := c.stoppedBranches(report); len(stopped) > 0 {
++				what = strings.Join(stopped, ", ")
++			}
++			return fmt.Sprintf("origin moved %s: %s; then `lym tender resume %s`", what, entry.WayForward, c.slug), false
++		}
++	}
++	return "", false
++}
++
++// stoppedBranches returns each of the run's own branches whose state stops its entry, and its parent branch when origin's move of it stops it, as the branch name with its state.
++// A parent branch held back by this machine's own live pair, dirty path or lock is not named, since origin moved nothing there.
++// The run's own busy records branch is not named either, since the run's own driver holds it and the reconcile reads it as no stop.
++func (c prePushCheck) stoppedBranches(report fabricengine.OriginReport) []string {
++	var stopped []string
++	for _, branch := range c.ownBranches(report) {
++		if branch.Repo == fabricengine.RepoRecords && branch.State == fabricengine.BranchBusy {
++			continue
++		}
++		if branch.State.Stops() {
++			stopped = append(stopped, fmt.Sprintf("%s (%s)", branch.Branch, branch.State))
++		}
++	}
++	if parent, found := c.parentOutcome(report); found && stoppedByOrigin(parent.State) {
++		stopped = append(stopped, fmt.Sprintf("%s (%s)", parent.Branch, parent.State))
++	}
++	return stopped
++}
++
++// stoppedByOrigin reports whether a branch in state stops its entry because of what origin did to the branch.
++func stoppedByOrigin(state fabricengine.BranchState) bool {
++	switch state {
++	case fabricengine.BranchRewound, fabricengine.BranchRewritten, fabricengine.BranchDiverged, fabricengine.BranchGone:
++		return true
++	}
++	return false
++}
++
++// announcedBefore reports whether the file at path already holds key, and records key there when it does not.
++// A file that cannot be read or written reads as not announced, so a notice is repeated rather than lost.
++func announcedBefore(path, key string) bool {
++	held, err := os.ReadFile(path)
++	if err == nil && string(held) == key {
++		return true
++	}
++	if err != nil && !errors.Is(err, fs.ErrNotExist) {
++		logger.Warn("loomcli: the pre-push notice record is unreadable, so its notice is posted again", "path", path, "error", err)
++	}
++	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++		logger.Warn("loomcli: the pre-push notice record cannot be written, so its notice may repeat", "path", path, "error", err)
++		return false
++	}
++	if err := os.WriteFile(path, []byte(key), 0o644); err != nil {
++		logger.Warn("loomcli: the pre-push notice record cannot be written, so its notice may repeat", "path", path, "error", err)
++	}
++	return false
++}
++
++// movedBranches returns the name of each of the run's own branches the reconcile moved.
++func (c prePushCheck) movedBranches(report fabricengine.OriginReport) []string {
++	var names []string
++	for _, branch := range c.ownBranches(report) {
++		if branch.Moved {
++			names = append(names, branch.Branch)
++		}
++	}
++	return names
++}
++
++// ownBranches returns the verdicts on the run's own branches.
++func (c prePushCheck) ownBranches(report fabricengine.OriginReport) []fabricengine.BranchOutcome {
++	var own []fabricengine.BranchOutcome
++	for _, branch := range report.Branches {
++		if branch.Slug == c.slug {
++			own = append(own, branch)
++		}
++	}
++	return own
++}
++
++// parentOutcome returns the verdict on the run's parent branch, with found false when the reconcile judged none or the parent branch cannot be read.
++// Only a branch of the code repository counts, since the hub's board branch may carry the same name.
++func (c prePushCheck) parentOutcome(report fabricengine.OriginReport) (fabricengine.BranchOutcome, bool) {
++	name, err := c.parentBranch()
++	if err != nil {
++		logger.Warn("loomcli: the run's parent branch is unreadable, so the pre-push check judges none", "slug", c.slug, "error", err)
++		return fabricengine.BranchOutcome{}, false
++	}
++	for _, branch := range report.Branches {
++		if branch.Repo == fabricengine.RepoCode && branch.Branch == name {
++			return branch, true
++		}
++	}
++	return fabricengine.BranchOutcome{}, false
++}
++
++// post sends line to the orch, and a failed post only warns.
++func (c prePushCheck) post(line string) {
++	if err := c.notify(line); err != nil {
++		logger.Warn("loomcli: the pre-push notice was not posted", "slug", c.slug, "line", line, "error", err)
++	}
++}
+diff --git a/internal/loomcli/prepush_skip_integration_test.go b/internal/loomcli/prepush_skip_integration_test.go
+new file mode 100644
+index 00000000..dd816485
+--- /dev/null
++++ b/internal/loomcli/prepush_skip_integration_test.go
+@@ -0,0 +1,60 @@
++// prepush_skip_integration_test.go drives the skip closure newPrePushCheck builds against real hub pairs, which prepush_test.go's stub seams cannot reach.
++
++package loomcli
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/loomshed"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestNewPrePushCheckSkip asserts the skip closure newPrePushCheck builds reads its environment and location as skipsCheck expects:
++// pushes off skip the check, the hub's prime skips it, a pair at Finalize skips it, and a pair with no pause and no status does not.
++//
++// It is serial because it sets environment variables.
++func TestNewPrePushCheckSkip(t *testing.T) {
++	tiergate.Require(t, 1)
++	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPair(t, hub, "task")
++	prime, err := lymcwd.ResolveWorktree(hub.PrimeWorktree())
++	if err != nil {
++		t.Fatalf("ResolveWorktree(prime) error = %v; want nil", err)
++	}
++	pair, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree("task"))
++	if err != nil {
++		t.Fatalf("ResolveWorktree(pair) error = %v; want nil", err)
++	}
++	hubforge.AddPair(t, hub, "finalizing")
++	finalizing, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree("finalizing"))
++	if err != nil {
++		t.Fatalf("ResolveWorktree(finalizing) error = %v; want nil", err)
++	}
++	writeStatusFile(t, finalizing, `{"current_producer":"`+loomshed.NameFinalize+`","state":"running"}`)
++	tests := []struct {
++		name     string
++		skipPush string
++		location *lymcwd.Location
++		want     bool
++	}{
++		{name: "PushesOff", skipPush: "1", location: pair, want: true},
++		{name: "Prime", location: prime, want: true},
++		{name: "PairWithNoPauseAndNoStatus", location: pair},
++		{name: "PairAtFinalize", location: finalizing, want: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Setenv("FABRIC_SKIP_GIT", "")
++			t.Setenv("FABRIC_SKIP_PUSH", tt.skipPush)
++
++			got, err := newPrePushCheck(tt.location, shedrun.SelfRunID).skip()
++
++			if err != nil || got != tt.want {
++				t.Errorf("skip() = %t, %v; want %t, nil", got, err, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/loomcli/prepush_test.go b/internal/loomcli/prepush_test.go
+new file mode 100644
+index 00000000..b815a72b
+--- /dev/null
++++ b/internal/loomcli/prepush_test.go
+@@ -0,0 +1,469 @@
++// prepush_test.go pins the pre-push check's verdicts over stub seams: when a push goes, when it stops, which pause it takes and the notices it posts, the skip condition, and how a stop reaches the seams it guards.
++
++package loomcli
++
++import (
++	"errors"
++	"path/filepath"
++	"reflect"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/loomshed"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestPrePushCheckGuard asserts each origin verdict maps to a push or a stop, with the right pause and notice.
++func TestPrePushCheckGuard(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const slug = "task"
++	ownNamed := func(name string, state fabricengine.BranchState, moved bool) fabricengine.BranchOutcome {
++		return fabricengine.BranchOutcome{Branch: name, Repo: fabricengine.RepoCode, Slug: slug, State: state, Moved: moved}
++	}
++	own := func(state fabricengine.BranchState, moved bool) fabricengine.BranchOutcome {
++		return ownNamed(slug, state, moved)
++	}
++	parent := func(state fabricengine.BranchState) fabricengine.BranchOutcome {
++		return fabricengine.BranchOutcome{Branch: "main", Repo: fabricengine.RepoCode, Prime: true, State: state}
++	}
++	boltMain := fabricengine.BranchOutcome{Branch: "main", Repo: fabricengine.RepoBolt, State: fabricengine.BranchFastForward, Moved: true}
++	entry := func(state fabricengine.EntryState) fabricengine.EntryOutcome {
++		return fabricengine.EntryOutcome{Slug: slug, State: state}
++	}
++	tests := []struct {
++		name         string
++		skip         bool
++		skipErr      error
++		report       fabricengine.OriginReport
++		reconcileErr error
++		parentErr    error
++		landed       bool
++		landedErr    error
++		pauseErr     error
++		notifyErr    error
++		repeat       bool
++		wantStop     bool
++		wantCalls    []string
++		wantNotices  []string
++	}{
++		{name: "Skipped", skip: true},
++		{name: "SkipUnreadable", skipErr: errors.New("status locked")},
++		{name: "ReconcileFails", reconcileErr: errors.New("ls-remote refused"), wantCalls: []string{"reconcile"}},
++		{name: "Unreachable", report: fabricengine.OriginReport{Unreachable: true}, wantCalls: []string{"reconcile"}},
++		{
++			name:      "ActiveNothingMoved",
++			report:    fabricengine.OriginReport{Branches: []fabricengine.BranchOutcome{own(fabricengine.BranchAhead, false)}, Entries: []fabricengine.EntryOutcome{entry(fabricengine.EntryActive)}},
++			wantCalls: []string{"reconcile"},
++		},
++		{
++			name: "ActiveOwnBranchMoved",
++			report: fabricengine.OriginReport{
++				Branches: []fabricengine.BranchOutcome{own(fabricengine.BranchLevel, true), boltMain},
++				Entries:  []fabricengine.EntryOutcome{entry(fabricengine.EntryActive)},
++			},
++			wantCalls:   []string{"reconcile"},
++			wantNotices: []string{"task: origin moved task; the run took the new tips before its push"},
++		},
++		{
++			name: "ActiveSeveralOwnBranchesMoved",
++			report: fabricengine.OriginReport{
++				Branches: []fabricengine.BranchOutcome{own(fabricengine.BranchLevel, true), ownNamed("task-records", fabricengine.BranchAhead, true)},
++				Entries:  []fabricengine.EntryOutcome{entry(fabricengine.EntryActive)},
++			},
++			wantCalls:   []string{"reconcile"},
++			wantNotices: []string{"task: origin moved task, task-records; the run took the new tips before its push"},
++		},
++		{
++			name: "ActiveParentBranchFastForward",
++			report: fabricengine.OriginReport{
++				Branches: []fabricengine.BranchOutcome{parent(fabricengine.BranchFastForward)},
++				Entries:  []fabricengine.EntryOutcome{entry(fabricengine.EntryActive)},
++			},
++			wantCalls:   []string{"reconcile"},
++			wantNotices: []string{"task: origin moved the parent branch main (fast_forward) past this machine's tip"},
++		},
++		{
++			name: "ActiveParentBranchDiverged",
++			report: fabricengine.OriginReport{
++				Branches: []fabricengine.BranchOutcome{parent(fabricengine.BranchDiverged)},
++				Entries:  []fabricengine.EntryOutcome{entry(fabricengine.EntryActive)},
++			},
++			wantCalls:   []string{"reconcile"},
++			wantNotices: []string{"task: origin moved the parent branch main (diverged) past this machine's tip"},
++		},
++		{
++			name: "ActiveParentBranchLevelAndBoltBranchOfTheSameNameMoved",
++			report: fabricengine.OriginReport{
++				Branches: []fabricengine.BranchOutcome{parent(fabricengine.BranchLevel), boltMain},
++				Entries:  []fabricengine.EntryOutcome{entry(fabricengine.EntryActive)},
++			},
++			wantCalls: []string{"reconcile"},
++		},
++		{
++			name: "ActiveParentBranchUnreadable",
++			report: fabricengine.OriginReport{
++				Branches: []fabricengine.BranchOutcome{parent(fabricengine.BranchFastForward)},
++				Entries:  []fabricengine.EntryOutcome{entry(fabricengine.EntryActive)},
++			},
++			parentErr: errors.New("no origin record"),
++			wantCalls: []string{"reconcile"},
++		},
++		{
++			name: "ActiveParentBranchNoticePostedOncePerTip",
++			report: fabricengine.OriginReport{
++				Branches: []fabricengine.BranchOutcome{parent(fabricengine.BranchFastForward)},
++				Entries:  []fabricengine.EntryOutcome{entry(fabricengine.EntryActive)},
++			},
++			repeat:      true,
++			wantCalls:   []string{"reconcile", "reconcile"},
++			wantNotices: []string{"task: origin moved the parent branch main (fast_forward) past this machine's tip"},
++		},
++		{
++			name: "StoppedLeavesOutAParentBranchOriginDidNotMove",
++			report: fabricengine.OriginReport{
++				Branches: []fabricengine.BranchOutcome{own(fabricengine.BranchDiverged, false), parent(fabricengine.BranchLive)},
++				Entries:  []fabricengine.EntryOutcome{{Slug: slug, State: fabricengine.EntryStopped, WayForward: "merge origin's task"}},
++			},
++			wantStop:    true,
++			wantCalls:   []string{"reconcile", "pause"},
++			wantNotices: []string{"task: paused before its push: origin moved task (diverged): merge origin's task; then `lym tender resume task`"},
++		},
++		{
++			name:        "NoticePostFails",
++			report:      fabricengine.OriginReport{Entries: []fabricengine.EntryOutcome{{Slug: slug, State: fabricengine.EntryOwnedElsewhere, Owner: "neve"}}},
++			notifyErr:   errors.New("no orch"),
++			wantStop:    true,
++			wantCalls:   []string{"reconcile", "pauseOwned"},
++			wantNotices: []string{"task: paused before its push: the run is owned by machine \"neve\"; take it over with `lym adopt task` from this machine's prime"},
++		},
++		{
++			name:      "EntryOfAnotherSlug",
++			report:    fabricengine.OriginReport{Entries: []fabricengine.EntryOutcome{{Slug: "other", State: fabricengine.EntryStopped, WayForward: "lym fabric pull"}}},
++			wantCalls: []string{"reconcile"},
++		},
++		{
++			name:        "OwnedElsewhere",
++			report:      fabricengine.OriginReport{Entries: []fabricengine.EntryOutcome{{Slug: slug, State: fabricengine.EntryOwnedElsewhere, Owner: "neve", AdoptSubject: "beam"}}},
++			wantStop:    true,
++			wantCalls:   []string{"reconcile", "pauseOwned"},
++			wantNotices: []string{"task: paused before its push: the run is owned by machine \"neve\"; take it over with `lym adopt beam` from this machine's prime"},
++		},
++		{
++			name:        "OwnedElsewhereNoSubject",
++			report:      fabricengine.OriginReport{Entries: []fabricengine.EntryOutcome{{Slug: slug, State: fabricengine.EntryOwnedElsewhere, Owner: "neve"}}},
++			wantStop:    true,
++			wantCalls:   []string{"reconcile", "pauseOwned"},
++			wantNotices: []string{"task: paused before its push: the run is owned by machine \"neve\"; take it over with `lym adopt task` from this machine's prime"},
++		},
++		{
++			name: "StoppedOwnBranch",
++			report: fabricengine.OriginReport{
++				Branches: []fabricengine.BranchOutcome{own(fabricengine.BranchDiverged, false)},
++				Entries:  []fabricengine.EntryOutcome{{Slug: slug, State: fabricengine.EntryStopped, WayForward: "merge origin's task"}},
++			},
++			wantStop:    true,
++			wantCalls:   []string{"reconcile", "pause"},
++			wantNotices: []string{"task: paused before its push: origin moved task (diverged): merge origin's task; then `lym tender resume task`"},
++		},
++		{
++			name: "StoppedNamesOnlyTheStoppingOwnBranch",
++			report: fabricengine.OriginReport{
++				Branches: []fabricengine.BranchOutcome{
++					ownNamed("task-level", fabricengine.BranchLevel, false),
++					own(fabricengine.BranchDiverged, false),
++					ownNamed("task-ahead", fabricengine.BranchAhead, false),
++				},
++				Entries: []fabricengine.EntryOutcome{{Slug: slug, State: fabricengine.EntryStopped, WayForward: "merge origin's task"}},
++			},
++			wantStop:    true,
++			wantCalls:   []string{"reconcile", "pause"},
++			wantNotices: []string{"task: paused before its push: origin moved task (diverged): merge origin's task; then `lym tender resume task`"},
++		},
++		{
++			name: "StoppedNamesTheParentBranch",
++			report: fabricengine.OriginReport{
++				Branches: []fabricengine.BranchOutcome{own(fabricengine.BranchLevel, false), parent(fabricengine.BranchDiverged)},
++				Entries:  []fabricengine.EntryOutcome{{Slug: slug, State: fabricengine.EntryStopped, WayForward: "merge origin's main"}},
++			},
++			wantStop:    true,
++			wantCalls:   []string{"reconcile", "pause"},
++			wantNotices: []string{"task: paused before its push: origin moved main (diverged): merge origin's main; then `lym tender resume task`"},
++		},
++		{
++			name:        "StoppedSharedBranch",
++			report:      fabricengine.OriginReport{Entries: []fabricengine.EntryOutcome{{Slug: slug, State: fabricengine.EntryStopped, WayForward: "lym fabric pull"}}},
++			wantStop:    true,
++			wantCalls:   []string{"reconcile", "pause"},
++			wantNotices: []string{"task: paused before its push: origin moved a branch every run shares: lym fabric pull; then `lym tender resume task`"},
++		},
++		{
++			name: "StoppedSharedBranchBesideOwnNeedsReplay",
++			report: fabricengine.OriginReport{
++				Branches: []fabricengine.BranchOutcome{ownNamed("task-records", fabricengine.BranchNeedsReplay, false)},
++				Entries:  []fabricengine.EntryOutcome{{Slug: slug, State: fabricengine.EntryStopped, WayForward: "lym fabric pull"}},
++			},
++			wantStop:    true,
++			wantCalls:   []string{"reconcile", "pause"},
++			wantNotices: []string{"task: paused before its push: origin moved a branch every run shares: lym fabric pull; then `lym tender resume task`"},
++		},
++		{
++			name: "StoppedSharedBranchBesideOwnBusyRecords",
++			report: fabricengine.OriginReport{
++				Branches: []fabricengine.BranchOutcome{{Branch: "task-records", Repo: fabricengine.RepoRecords, Slug: slug, State: fabricengine.BranchBusy}},
++				Entries:  []fabricengine.EntryOutcome{{Slug: slug, State: fabricengine.EntryStopped, WayForward: "lym fabric pull"}},
++			},
++			wantStop:    true,
++			wantCalls:   []string{"reconcile", "pause"},
++			wantNotices: []string{"task: paused before its push: origin moved a branch every run shares: lym fabric pull; then `lym tender resume task`"},
++		},
++		{
++			name:      "EndedAfterOwnLanding",
++			report:    fabricengine.OriginReport{Entries: []fabricengine.EntryOutcome{{Slug: slug, State: fabricengine.EntryEnded, How: "done"}}},
++			landed:    true,
++			wantCalls: []string{"reconcile", "landed"},
++		},
++		{
++			name:        "EndedElsewhere",
++			report:      fabricengine.OriginReport{Entries: []fabricengine.EntryOutcome{{Slug: slug, State: fabricengine.EntryEnded, How: "removed"}}},
++			wantStop:    true,
++			wantCalls:   []string{"reconcile", "landed", "pause"},
++			wantNotices: []string{"task: paused before its push: origin shows the run removed; `lym cleanup --apply` from the prime removes its pair"},
++		},
++		{
++			name:      "EndedWithUnreadableLanding",
++			report:    fabricengine.OriginReport{Entries: []fabricengine.EntryOutcome{{Slug: slug, State: fabricengine.EntryEnded, How: "removed"}}},
++			landedErr: errors.New("prime unreadable"),
++			wantCalls: []string{"reconcile", "landed"},
++		},
++		{
++			name:        "PauseFails",
++			report:      fabricengine.OriginReport{Entries: []fabricengine.EntryOutcome{{Slug: slug, State: fabricengine.EntryOwnedElsewhere, Owner: "neve"}}},
++			pauseErr:    errors.New("record locked"),
++			wantStop:    true,
++			wantCalls:   []string{"reconcile", "pauseOwned"},
++			wantNotices: []string{"task: paused before its push: the run is owned by machine \"neve\"; take it over with `lym adopt task` from this machine's prime; the pause failed (record locked), so the run's next push stops again"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			var calls, notices []string
++			announced := map[string]bool{}
++			check := prePushCheck{
++				slug: slug,
++				skip: func() (bool, error) { return tt.skip, tt.skipErr },
++				reconcile: func() (fabricengine.OriginReport, error) {
++					calls = append(calls, "reconcile")
++					return tt.report, tt.reconcileErr
++				},
++				parentBranch: func() (string, error) { return "main", tt.parentErr },
++				parentNoticed: func(key string) bool {
++					seen := announced[key]
++					announced[key] = true
++					return seen
++				},
++				landed: func() (bool, error) {
++					calls = append(calls, "landed")
++					return tt.landed, tt.landedErr
++				},
++				pauseOwned: func() error {
++					calls = append(calls, "pauseOwned")
++					return tt.pauseErr
++				},
++				pause: func() error {
++					calls = append(calls, "pause")
++					return tt.pauseErr
++				},
++				notify: func(line string) error {
++					notices = append(notices, line)
++					return tt.notifyErr
++				},
++			}
++
++			err := check.guard()
++			if tt.repeat {
++				err = check.guard()
++			}
++
++			if got := errors.Is(err, errPushStopped); got != tt.wantStop {
++				t.Errorf("guard() = %v; want stopped %t", err, tt.wantStop)
++			}
++			if !reflect.DeepEqual(calls, tt.wantCalls) {
++				t.Errorf("calls = %q; want %q", calls, tt.wantCalls)
++			}
++			if !reflect.DeepEqual(notices, tt.wantNotices) {
++				t.Errorf("notices = %q; want %q", notices, tt.wantNotices)
++			}
++		})
++	}
++}
++
++// TestAnnouncedBefore asserts a key is announced once: the first call records it and reads as new, a repeat reads as announced, and a different key reads as new again.
++func TestAnnouncedBefore(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	path := filepath.Join(t.TempDir(), "scratch", "parent-notice")
++	steps := []struct {
++		key  string
++		want bool
++	}{
++		{"main fast_forward abc", false},
++		{"main fast_forward abc", true},
++		{"main fast_forward def", false},
++		{"main fast_forward def", true},
++	}
++
++	for _, step := range steps {
++		if got := announcedBefore(path, step.key); got != step.want {
++			t.Errorf("announcedBefore(%q) = %t; want %t", step.key, got, step.want)
++		}
++	}
++}
++
++// TestSkipsCheck asserts which runs keep the pre-push check off: pushes or git off, the prime, a run a pause covers and a run at Finalize, and which do not.
++func TestSkipsCheck(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name             string
++		opts             fabricengine.SyncOptions
++		prime            bool
++		primeErr         error
++		paused           bool
++		producer         string
++		producerErr      error
++		want             bool
++		wantErr          bool
++		wantProducerRead bool
++	}{
++		{name: "PushesOff", opts: fabricengine.SyncOptions{SkipPush: true}, want: true},
++		{name: "GitOff", opts: fabricengine.SyncOptions{SkipGit: true}, want: true},
++		{name: "Prime", prime: true, want: true},
++		{name: "PrimeUnreadable", primeErr: errors.New("no hub"), wantErr: true},
++		{name: "PauseCoversTheRun", paused: true, want: true},
++		{name: "AtFinalize", producer: loomshed.NameFinalize, want: true, wantProducerRead: true},
++		{name: "AtAnotherProducer", producer: "Code-Review", wantProducerRead: true},
++		{name: "NoStatusFile", wantProducerRead: true},
++		{name: "StatusUnreadable", producerErr: errors.New("status locked"), wantErr: true, wantProducerRead: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			producerRead := false
++
++			got, err := skipsCheck(
++				tt.opts,
++				func() (bool, error) { return tt.prime, tt.primeErr },
++				func() bool { return tt.paused },
++				func() (string, error) {
++					producerRead = true
++					return tt.producer, tt.producerErr
++				},
++			)
++
++			if got != tt.want || (err != nil) != tt.wantErr {
++				t.Errorf("skipsCheck() = %t, %v; want %t, error %t", got, err, tt.want, tt.wantErr)
++			}
++			if producerRead != tt.wantProducerRead {
++				t.Errorf("the status was read = %t; want %t", producerRead, tt.wantProducerRead)
++			}
++		})
++	}
++}
++
++// stoppingPrePushCheck returns a check that stops every push: its run's entry is owned by another machine.
++func stoppingPrePushCheck() prePushCheck {
++	return prePushCheck{
++		slug: "task",
++		skip: func() (bool, error) { return false, nil },
++		reconcile: func() (fabricengine.OriginReport, error) {
++			return fabricengine.OriginReport{Entries: []fabricengine.EntryOutcome{{Slug: "task", State: fabricengine.EntryOwnedElsewhere, Owner: "neve"}}}, nil
++		},
++		pauseOwned: func() error { return nil },
++		notify:     func(string) error { return nil },
++	}
++}
++
++// TestPrePushCheckWiredIntoDeps asserts the status deps' Commit, Spawn and Push and the PR-Review row's PushTask each run behind the check they are built with:
++// a stopping check stops Commit, Push and PushTask with its error and leaves Spawn a nil no-op, and none of them reaches git.
++func TestPrePushCheckWiredIntoDeps(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	location := &lymcwd.Location{RepoName: "repo", HubPath: t.TempDir(), WorktreeName: "task", AnchorRel: "."}
++
++	statusDeps := commitStatusDepsGuardedBy(stoppingPrePushCheck(), location, shedrun.SelfRunID)
++	if _, err := statusDeps.Commit("message"); !errors.Is(err, errPushStopped) {
++		t.Errorf("Commit() error = %v; want it to wrap errPushStopped", err)
++	}
++	if err := statusDeps.Spawn(); err != nil {
++		t.Errorf("Spawn() error = %v; want nil, the stopped push left its commits local", err)
++	}
++	if err := statusDeps.Push(); !errors.Is(err, errPushStopped) {
++		t.Errorf("Push() error = %v; want it to wrap errPushStopped", err)
++	}
++
++	pullRequest := pullRequestDepsGuardedBy(stoppingPrePushCheck(), location, "main", false, &shuttleengine.Runner{})
++	if err := pullRequest.PushTask(); !errors.Is(err, errPushStopped) {
++		t.Errorf("PushTask() error = %v; want it to wrap errPushStopped", err)
++	}
++}
++
++// TestPrePushCheckGuardedSeams asserts a stop of the check reaches the commit, spawn and push seams it guards as each is documented, and a passing check runs the seam and returns its result.
++func TestPrePushCheckGuardedSeams(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	passing := prePushCheck{slug: "task", skip: func() (bool, error) { return true, nil }}
++	stopping := stoppingPrePushCheck()
++	boom := errors.New("boom")
++	seams := map[string]func(check prePushCheck, call func() error) error{
++		"Commit": func(check prePushCheck, call func() error) error {
++			_, err := check.guardedCommit(func(string) (bool, error) { return true, call() })("message")
++			return err
++		},
++		"Spawn": func(check prePushCheck, call func() error) error { return check.guardedSpawn(call)() },
++		"Push":  func(check prePushCheck, call func() error) error { return check.guardedPush(call)() },
++	}
++	tests := []struct {
++		seam        string
++		wantStopErr bool
++	}{
++		{seam: "Commit", wantStopErr: true},
++		{seam: "Spawn"},
++		{seam: "Push", wantStopErr: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.seam+"_StoppedCheck", func(t *testing.T) {
++			t.Parallel()
++			calls := 0
++
++			err := seams[tt.seam](stopping, func() error { calls++; return boom })
++
++			if got := errors.Is(err, errPushStopped); got != tt.wantStopErr || (!tt.wantStopErr && err != nil) {
++				t.Errorf("%s with a stopped check = %v; want stop error %t", tt.seam, err, tt.wantStopErr)
++			}
++			if calls != 0 {
++				t.Errorf("%s ran its work %d times after a stop; want 0", tt.seam, calls)
++			}
++		})
++		t.Run(tt.seam+"_PassingCheck", func(t *testing.T) {
++			t.Parallel()
++			calls := 0
++
++			err := seams[tt.seam](passing, func() error { calls++; return boom })
++
++			if !errors.Is(err, boom) {
++				t.Errorf("%s with a passing check = %v; want the work's error", tt.seam, err)
++			}
++			if calls != 1 {
++				t.Errorf("%s ran its work %d times; want 1", tt.seam, calls)
++			}
++		})
++	}
++}
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index 5e1af32a..388d8b60 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -197,28 +197,34 @@ func holdsFile(dir string) bool {
+ }
+ 
+ // loomCommitStatusDeps builds a commitStatusDeps over location and runID, filling each field from fabric: MergeActive from fabricengine.MergeStateActive, Commit from fabricengine.CommitAnchoredPaths scoped to statusCommitPathspec, Spawn from spawnStatusPush, which pushes the run records and, in a task pair, the task branch, and Push from fabricengine.PushPairAnchored, the same push run synchronously.
++// Commit, Spawn and Push each pass the run's pre-push check first: a Commit it stops commits nothing and returns the check's error, which the status seam reads as no commit made, a Spawn it stops starts no push and returns nil, its commits staying local, and a Push it stops returns the check's error.
+ func loomCommitStatusDeps(location *lymcwd.Location, runID string) commitStatusDeps {
++	return commitStatusDepsGuardedBy(newPrePushCheck(location, runID), location, runID)
++}
++
++// commitStatusDepsGuardedBy is loomCommitStatusDeps with the pre-push check injected as check.
++func commitStatusDepsGuardedBy(check prePushCheck, location *lymcwd.Location, runID string) commitStatusDeps {
+ 	return commitStatusDeps{
+ 		MergeActive: func() (bool, error) {
+ 			return fabricengine.MergeStateActive(location)
+ 		},
+ 		// A second Commit over an already-clean tracked path is a no-op that reports committed false, not a failure.
+ 		// The status seam spawns nothing for it.
+-		Commit: func(msg string) (bool, error) {
++		Commit: check.guardedCommit(func(msg string) (bool, error) {
+ 			_, committed, err := fabricengine.CommitAnchoredPaths(fabricengine.NewMutations(""), location, statusCommitPathspec(location, runID), msg, fabricengine.EnvSyncOptions())
+ 			return committed, err
+-		},
+-		Spawn: func() error {
++		}),
++		Spawn: check.guardedSpawn(func() error {
+ 			res, err := spawnStatusPush(location, "")
+ 			if len(res.LocalSkipped) > 0 {
+ 				logger.Info("loomcli: status push left out local-only branches", "branches", res.LocalSkipped)
+ 			}
+ 			return err
+-		},
+-		Push: func() error {
++		}),
++		Push: check.guardedPush(func() error {
+ 			_, err := fabricengine.PushPairAnchored(location, fabricengine.EnvSyncOptions(), fabricengine.StatusPushLockWait)
+ 			return err
+-		},
++		}),
+ 		SetBoardStatus: func(status string) error {
+ 			board, err := boardengine.OpenHub(location.HubPath)
+ 			if err != nil {
+@@ -259,11 +265,19 @@ func (c *loomCLI) commitStatusDeps(location *lymcwd.Location) commitStatusDeps {
+ // It first writes the run's board status when that status changed, and a failed board write only warns:
+ // the board is the hub's overview, never the run's own bookkeeping.
+ // It then calls the shared statuscommit core, which owns the skip-while-mid-merge, commit-hard-errors and spawn-warns dispositions, with loom's own commit and log prefixes and no after-commit callback.
++// A commit the pre-push check stopped reads as no commit made, so the core starts no push and the transition goes on.
+ func newCommitStatusSeam(deps commitStatusDeps) func(producer, state string) error {
+ 	core := statuscommit.New(statuscommit.Deps{
+ 		MergeActive: deps.MergeActive,
+-		Commit:      deps.Commit,
+-		Spawn:       deps.Spawn,
++		Commit: func(msg string) (bool, error) {
++			committed, err := deps.Commit(msg)
++			if errors.Is(err, errPushStopped) {
++				logger.Info("loomcli: the run's commit was stopped; the records stay as they are", "error", err)
++				return false, nil
++			}
++			return committed, err
++		},
++		Spawn: deps.Spawn,
+ 	}, "loom", "loomcli", nil)
+ 	lastBoardStatus := ""
+ 	return func(producer, state string) error {
+diff --git a/internal/shedrun/doc.go b/internal/shedrun/doc.go
+index e6671379..a7e5a811 100644
+--- a/internal/shedrun/doc.go
++++ b/internal/shedrun/doc.go
+@@ -34,6 +34,7 @@
+ // TacklerDir is the durable directory of a run's tackler attempts, TacklerRel its anchor-relative form and TacklerAttemptDir one attempt's directory (attempt-<N>, 1-based).
+ // TacklerMarker is the ephemeral in-flight marker under ScratchDir.
+ // LandedCommitFile is the ephemeral file under ScratchDir holding the commit a run's landing put on its parent branch, which WriteLandedCommit writes and ReadLandedCommit reads, empty when none is recorded.
++// ParentNoticeFile is the ephemeral file under ScratchDir holding the key of the parent-branch notice a run's pre-push check last posted.
+ // CancelMarker is the ephemeral marker `lym batten cancel` writes, and CancelMarkerLock the lock whose holder is its live writer.
+ // Both sit directly under ScratchRoot beside the per-slug scratch directories, never inside RunDir or ScratchDir, so a slug's records removal leaves them.
+ // Batten's verbs read the marker.
+diff --git a/internal/shedrun/paths.go b/internal/shedrun/paths.go
+index 961a0527..a7b14a26 100644
+--- a/internal/shedrun/paths.go
++++ b/internal/shedrun/paths.go
+@@ -187,6 +187,11 @@ func PullRequestRecordLock(l *lymcwd.Location, runID string) string {
+ 	return filepath.Join(ScratchDir(l, runID), "pull-request.json.lock")
+ }
+ 
++// ParentNoticeFile returns the path to the ephemeral file holding the key of the parent-branch notice a run's pre-push check last posted, pre-push-parent-notice under ScratchDir(l, runID).
++func ParentNoticeFile(l *lymcwd.Location, runID string) string {
++	return filepath.Join(ScratchDir(l, runID), "pre-push-parent-notice")
++}
++
+ // SamplerRecord returns the path to the ephemeral, never-tracked record of the run's Sampler-Session row, sampler.json under ScratchDir(l, runID).
+ func SamplerRecord(l *lymcwd.Location, runID string) string {
+ 	return filepath.Join(ScratchDir(l, runID), "sampler.json")
+diff --git a/internal/shedrun/paths_test.go b/internal/shedrun/paths_test.go
+index 4cf1c07a..98a64045 100644
+--- a/internal/shedrun/paths_test.go
++++ b/internal/shedrun/paths_test.go
+@@ -76,6 +76,8 @@ func TestPathConstructors(t *testing.T) {
+ 			func(l *lymcwd.Location) string { return filepath.Join(ScratchDir(l, "self"), "pull-request.json") }},
+ 		{"PullRequestRecordLock", func(l *lymcwd.Location) string { return PullRequestRecordLock(l, "self") },
+ 			func(l *lymcwd.Location) string { return filepath.Join(ScratchDir(l, "self"), "pull-request.json.lock") }},
++		{"ParentNoticeFile", func(l *lymcwd.Location) string { return ParentNoticeFile(l, "self") },
++			func(l *lymcwd.Location) string { return filepath.Join(ScratchDir(l, "self"), "pre-push-parent-notice") }},
+ 		{"SamplerRecord", func(l *lymcwd.Location) string { return SamplerRecord(l, "self") },
+ 			func(l *lymcwd.Location) string { return filepath.Join(ScratchDir(l, "self"), "sampler.json") }},
+ 		{"SamplerRecordLock", func(l *lymcwd.Location) string { return SamplerRecordLock(l, "self") },
+diff --git a/internal/tendercli/cli_test.go b/internal/tendercli/cli_test.go
+index b09bfd9b..d19b4eb5 100644
+--- a/internal/tendercli/cli_test.go
++++ b/internal/tendercli/cli_test.go
+@@ -251,6 +251,23 @@ func TestPauseOwnedElsewhere_PausesTheSlugOnceUnderTheOwnerCaller(t *testing.T)
+ 	}
+ }
+ 
++func TestPausePair_PausesTheSlugOnceUnderTheDefaultCaller(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Setenv(agentname.StrandNameEnv, "")
++	h := newHub(t)
++
++	for range 2 {
++		if err := PausePair(h.Location, pairSlug); err != nil {
++			t.Fatalf("PausePair() error = %v", err)
++		}
++	}
++
++	live, _ := liveEntries(t, h)
++	if len(live) != 1 || live[0].Scope != pairSlug || live[0].Caller == pauserecord.OwnerCaller {
++		t.Errorf("live entries = %+v; want one entry of the pair, not under the owner caller", live)
++	}
++}
++
+ func TestPauseAndResume_ApplyTheCallerRules(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	h := newHub(t)
+diff --git a/internal/tendercli/deps.go b/internal/tendercli/deps.go
+index d8efb054..fe0dce71 100644
+--- a/internal/tendercli/deps.go
++++ b/internal/tendercli/deps.go
+@@ -207,8 +207,19 @@ func syncBoardIfOwed(ahead, uncommitted func() (bool, error), spawn func() error
+ 	return nil
+ }
+ 
+-// ownerPauseGrace is how long the running turns of a run owned by another machine get to finish before the Esc.
+-const ownerPauseGrace = 10 * time.Second
++// pauseGrace is how long the running turns of a pair lym pauses on its own judgment get to finish before the Esc.
++const pauseGrace = 10 * time.Second
++
++// PausePair pauses the pair of slug in the hub location belongs to with a plain pair entry, for a run lym stopped because origin moved what it works on.
++// A slug whose entry already stands adds none, and the pair's running turns are interrupted after the grace.
++func PausePair(location *lymcwd.Location, slug string) error {
++	deps, _, err := HubDeps(location, os.Getenv(agentname.StrandNameEnv))
++	if err != nil {
++		return err
++	}
++	_, err = tenderengine.Pause(deps, tenderengine.PauseRequest{Slug: slug, Grace: pauseGrace})
++	return err
++}
+ 
+ // PauseOwnedElsewhere pauses the pair of slug in the hub location belongs to, because another machine owns its run.
+ // The entry carries pauserecord.OwnerCaller, and the pair's running turns are interrupted after the grace.
+@@ -220,7 +231,7 @@ func PauseOwnedElsewhere(location *lymcwd.Location, slug string) error {
+ 	if err != nil {
+ 		return err
+ 	}
+-	if _, err = tenderengine.Pause(deps, tenderengine.PauseRequest{Slug: slug, Grace: ownerPauseGrace, Caller: pauserecord.OwnerCaller}); err != nil {
++	if _, err = tenderengine.Pause(deps, tenderengine.PauseRequest{Slug: slug, Grace: pauseGrace, Caller: pauserecord.OwnerCaller}); err != nil {
+ 		return err
+ 	}
+ 	ended, err := endOwnedElsewhere(location, slug)
+diff --git a/internal/tendercli/doc.go b/internal/tendercli/doc.go
+index 0fe3511d..0e6cb322 100644
+--- a/internal/tendercli/doc.go
++++ b/internal/tendercli/doc.go
+@@ -32,6 +32,7 @@
+ // A failed end also ends in the step that settles the run's batten record when `pairteardown.BattenFollowUp` words one, which the removal would otherwise leave standing.
+ // A run whose Finalize is past its parent-side merge keeps its processes, since it finishes its landing on either machine; its pair's removal ends them.
+ // A task worktree with no status file, or none at all, is ended by slug, since no Finalize can be running there.
++// `PausePair` pauses a run with a plain pair entry, for a run lym stopped because origin moved what it works on; it ends nothing.
+ // The end spares the calling process and its ancestors, so inside `lym batten run` batten survives its own probe's end, keeping its owner hold and probe, and the pair's removal ends it.
+ // The hibernate wake fills its own end seam with `EndOwnedElsewhere`.
+ //
+diff --git a/pattern/PATTERN-owner-machine.md b/pattern/PATTERN-owner-machine.md
+index 8c615842..1d709ae9 100644
+--- a/pattern/PATTERN-owner-machine.md
++++ b/pattern/PATTERN-owner-machine.md
+@@ -1,8 +1,12 @@
+ # PATTERN-owner-machine
+ 
+-Starting, resuming or landing a run, bar the rest of a Finalize already past its parent-side merge, or acting on an entry after a wake: only on a machine that does not read the entry as owned by another, where owners sit only on the root project and on beam projects, a beam project with no owner recorded reads as owned by its parent's owner, every other entry reads as owned by its parent's owner, and the root of a hub with no prime owner recorded reads as owned by no other machine; its owner written only by `boardengine`'s owner setter; the owner verdict that gates a resume, a wake or a landing judged against origin inside `ReconcileOrigin`, a start's read from the Bolt it just pulled, the re-read after an owner write's push from the Bolt it just pushed, the landing's parent-owner read from the Bolt its reconcile left, and a resume with origin unreachable reading the local Bolt; this machine's name only from `internal/machinename`.
++Starting, resuming, pushing or landing a run, bar the rest of a Finalize already past its parent-side merge, or acting on an entry after a wake: only on a machine that does not read the entry as owned by another, where owners sit only on the root project and on beam projects, a beam project with no owner recorded reads as owned by its parent's owner, every other entry reads as owned by its parent's owner, and the root of a hub with no prime owner recorded reads as owned by no other machine; its owner written only by `boardengine`'s owner setter; the owner verdict that gates a resume, a wake, a push or a landing judged against origin inside `ReconcileOrigin`, a start's read from the Bolt it just pulled, the re-read after an owner write's push from the Bolt it just pushed, the landing's parent-owner read from the Bolt its reconcile left, and a resume with origin unreachable reading the local Bolt; this machine's name only from `internal/machinename`.
+ 
+ - A start, a resume, a claim and a landing proceed only when the entry does not read as owned by another machine.
++- A loom run's commit and push of its pair proceed only after a run-scope origin reconcile reads its entry as active, bar those with git or pushes off, in the prime, at Finalize, which judges itself, and under a pause.
++  The reconcile judges, and the push also goes when the check itself fails: an unreachable origin, a failed reconcile, a failed read of whether the check applies, or a failed read of whether the parent holds the run's work.
++  An ended entry whose parent already holds the run's work goes on too, as after its own landing.
++  An entry owned elsewhere is paused under the owner naming `lym adopt`; one a branch stops, or origin ended while the parent lacks its work, is paused naming what moved.
+ - The rest of a Finalize already past its parent-side merge finishes on either machine, so a landing in flight is never stranded.
+ - An owner is recorded for a beam project as `owner_machine` and for the root as `prime_owner`; both are written only by `boardengine`'s owner setter, which takes a project another machine owns only when `lym adopt` asks for it.
+   A task and a grouping project record none, and a load drops the key an older machine recorded on one.
+@@ -10,7 +14,7 @@ Starting, resuming or landing a run, bar the rest of a Finalize already past its
+   A run status on an entry does not change whose owner it reads.
+   The parent comes through `hubgeom.ParentOf` alone, the one resolver every owner reader is handed, which reads the entry's origin record and, with none, the local board's beam chain.
+ - Adopting a beam moves the beam only: a member reads its beam's owner through that one resolver.
+-- The verdict that gates a resume, a wake or a landing is judged against origin inside `ReconcileOrigin`.
++- The verdict that gates a resume, a wake, a push or a landing is judged against origin inside `ReconcileOrigin`.
+   A start reads it from the Bolt it just pulled, the re-read after an owner write's push reads the Bolt it just pushed, and the landing's parent-owner read uses the Bolt its reconcile left.
+   A resume with origin unreachable reads the local Bolt.
+ - This machine's name comes only from `internal/machinename`.
+@@ -18,6 +22,7 @@ Starting, resuming or landing a run, bar the rest of a Finalize already past its
+ ## Origin reconcile first
+ 
+ Acting on a run or a hub after an absence starts with `fabricengine`'s origin reconcile, so every verdict above reads the state origin holds.
++A loom run's commit and push of its pair start with the run-scope origin reconcile too.
+ The one exception is a resume at Worktree-Teardown whose task worktree is gone: it runs no origin reconcile, judges the owner on the local board alone and writes no origin-owed marker, since the teardown only finishes what is left of the pair.
+ 
+ ## Passes
+@@ -33,5 +38,5 @@ A run is driven in passes, one `lym batten run` each, and a pass is either full
+ ## Enforcement
+ 
+ - `internal/machinename`'s sole-source scan fails on a production file outside the package that reads the hostname.
+-- The reconcile, batten, loom, `InnerRun` and Finalize tests reach each check: `ReconcileOrigin`'s owned-elsewhere outcome, batten's start, resume and claim refusals, loom's `owned_elsewhere` start refusal, `InnerRun`'s owner pause and Finalize's `owner check:` halts.
++- The reconcile, batten, loom, `InnerRun` and Finalize tests reach each check: `ReconcileOrigin`'s owned-elsewhere outcome, batten's start, resume and claim refusals, loom's `owned_elsewhere` start refusal, `InnerRun`'s owner pause, Finalize's `owner check:` halts and loom's pre-push stops.
+ - Review covers the rest: who writes an owner, and which Bolt each verdict reads.
