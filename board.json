@@ -845,6 +845,27 @@
       "body": "Imported from [issue #37](https://github.com/Knatte18/loomyard/issues/37).\n\nWhat happened: the PR-Review row halted the loom run as blocked with 'pushing the task branch failed: fabricengine: push lock busy: \u003cweft\u003e/.weft/fabric.push.lock still held after 30s; neither side was pushed'. The way forward named was to run lym fabric push in the task worktree, then lym loom resume. The run had been through 17 history entries and had just finished Describe.\n\nWhy it is abnormal: the push lock sits in a weft directory shared across worktrees, so another session's push or a stale lock holder can stall a push; a 30s wait then ends the whole run as an escalation to a human, though contention is transient and a push is idempotent. Nothing in the note says which process held the lock, or whether it was stale.\n\nWhat to do: retry the push with backoff for longer, or re-step the row automatically before blocking; when the lock is still busy, report the holder (pid, age) and clear a lock whose holder is dead.\n\nProvenance: task pinned-solvers-everywhere; notes loom-halt-2.md",
       "created": "2026-11-03T16:44:20Z",
       "revised": "2026-11-03T16:44:20Z"
+    },
+    {
+      "id": 1063,
+      "handle": "B3",
+      "slug": "webster-subdir-gitopen",
+      "title": "lym webster begin-batch fails: go-git cannot open a worktree root that is a subdirectory of the repository",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster",
+        "git"
+      ],
+      "issues": [
+        35
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #35](https://github.com/Knatte18/loomyard/issues/35).\n\nWhat happened: `lym webster begin-batch 1` was refused before any fork: `websterengine: head sha in \u003cworktree\u003e/\u003csubdir\u003e: gitrepo: open go-git handle at \u003cworktree\u003e/\u003csubdir\u003e: repository does not exist`. The loom run halted blocked (escalation-to-human) at Webster.\n\nWhy abnormal: the task's working directory is a subdirectory of the git worktree (the repository root is higher up), and the go-git open is called on that subdirectory without repository discovery, so HEAD sha lookup fails. Every earlier verb worked from the same directory.\n\nWhat to do: open the repository with detection of the enclosing `.git` (go-git `PlainOpenWithOptions` with `DetectDotGit`), or resolve the repository root before calling the head-sha lookup in `websterengine`.\n\nProvenance: task `commonlib-fluid-report-selection`; notes loom-halt-4.md, webster-refusal-begin-batch.md.\n",
+      "created": "2026-11-03T16:44:22Z",
+      "revised": "2026-11-03T16:44:22Z"
     }
   ],
   "prime_owner": "neve",
