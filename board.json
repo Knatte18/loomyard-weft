@@ -253,9 +253,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "push-lock-busy-blocks"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics",
       "body": "## Seen (operator and hub orch, 2026-10-31)\n\nComments in the Go source go stale as the code moves on.\nTwo found today: `internal/fabricengine/weftwiring.go` still speaks of a future `_lym/raddle/` squash-merge-back, though raddle will never be built; and many comments spelled the `_board` path instead of naming its constant (the rename to `_bolt` in `bolt-dir-rename` has since replaced the spelling itself).\nThere are surely more, in every package, against `scribe:prose`'s rule never to pin a perishable specific.\n\n## Goal\n\nA comment-cleanup campaign over the whole repository.\n\n- A worker fixes each comment or text that no longer matches the code, names something gone or planned and dropped, or pins a perishable specific: a count, a list of current callers, a path or name spelled where a constant or identifier should be named.\n- Workers change comments and text only, never code.\n\n## Design (operator, 2026-10-31)\n\n- One darn run, whose agent orchestrates the whole campaign: it splits the work and spawns the workers, many in parallel; not one darn per package, which would be far too many runs.\n- Scope: Go comments and docstrings, each package's `doc.go`, the stencils and the docs.\n- Models by scope: Haiku 5.5 takes the comments and docstrings of code files, being fast and cheap while its context stays under about 100k, which one package's read fits; `doc.go`, stencils and docs need a stronger model, Sonnet 5.5, as the `docs` profile's writer is.\n- No review step of its own: most comments are assumed sound, and this run is itself the check on them; the darn's usual Code-Review is enough.\n- The run starts once every other running entry has landed, the `codex-engine` beam included, so it reads settled code (operator, 2026-11-03).\n\n## Workers (hub orch, 2026-11-03)\n\nThe writer spawns its workers as subagents through its own Agent tool, with the tool's model override set to `haiku` or `sonnet` by the scope above; no lym verb is needed.\nEach worker gets one package or one docs group, edits only comments and text in it, and reports what it changed; the writer commits.\n\nRelated: note `hardener` is another autonomous campaign run by an orchestrating agent.\n",
@@ -586,30 +584,6 @@
       "revised": "2026-11-03T16:36:11Z"
     },
     {
-      "id": 1062,
-      "handle": "T9",
-      "slug": "push-lock-busy-blocks",
-      "title": "lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "fabric",
-        "landing"
-      ],
-      "issues": [
-        37
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #37](https://github.com/Knatte18/loomyard/issues/37).\n\nWhat happened: the PR-Review row halted the loom run as blocked with 'pushing the task branch failed: fabricengine: push lock busy: \u003cweft\u003e/.weft/fabric.push.lock still held after 30s; neither side was pushed'. The way forward named was to run lym fabric push in the task worktree, then lym loom resume. The run had been through 17 history entries and had just finished Describe.\n\nWhy it is abnormal: the push lock sits in a weft directory shared across worktrees, so another session's push or a stale lock holder can stall a push; a 30s wait then ends the whole run as an escalation to a human, though contention is transient and a push is idempotent. Nothing in the note says which process held the lock, or whether it was stale.\n\nWhat to do: retry the push with backoff for longer, or re-step the row automatically before blocking; when the lock is still busy, report the holder (pid, age) and clear a lock whose holder is dead.\n\nProvenance: task pinned-solvers-everywhere; notes loom-halt-2.md",
-      "status": "done",
-      "created": "2026-11-03T16:44:20Z",
-      "revised": "2026-11-03T16:51:56Z",
-      "profile": "light"
-    },
-    {
       "id": 1068,
       "handle": "F5",
       "slug": "protected-parent-landing",
@@ -700,9 +674,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "push-lock-busy-blocks"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "No waiting line in loom or batten status and no notice while PR-Review waits for a human review",
       "body": "## Seen\n\nOn the `cs` hub, task `cached-friction-factor` (Drift trial 2, 2026-11-03) reached PR-Review at 18:53:02Z and opened PR #4.\nIts PR-Review session then waited for the operator for 21 minutes, until `cs:orch` told it at 19:14:26Z that the operator had turned PR review off (creel 35); the row ended done at 19:14:35Z.\n\nThrough those 21 minutes nothing surfaced that the run waited for a human:\n\n- `lym loom status --watch` in the task worktree printed `now PR-Review | last Describe → done` once and no `waiting` line after it.\n- `lym batten status cached-friction-factor --watch` showed `running | now Run-Shed` throughout.\n- The `cs` creel journal holds no post between Drift-Recheck and creel 35: no batten notice, no notice to `cs:orch` and none to the loomyard hub.\n\nA watcher reading the documented status surfaces could not tell a PR waiting on the operator from a row at work.\nThe first trial (`docs/research/drift-csharp-trial-2026-11-03.md`) saw the same: \"PR-Review waited 32 minutes for the operator\".\n\n## Expected\n\n- While PR-Review waits for the operator, `lym loom status` shows a `waiting` line naming the pull request and that it waits for a human review, as other rows show their waits.\n- The hub's orch gets one notice when a PR-Review starts waiting on the operator, naming the PR, so the wait reaches someone who can act.\n",

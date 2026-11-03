@@ -2,8 +2,6 @@
 
 `pr-review-wait-silent` · Task · bug, landing, loom, batten · draft
 
-Depends on: [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md)
-
 ## Seen
 
 On the `cs` hub, task `cached-friction-factor` (Drift trial 2, 2026-11-03) reached PR-Review at 18:53:02Z and opened PR #4.
