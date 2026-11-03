@@ -15,11 +15,11 @@
 - `internal/dobbyengine#TestPlanPass`
 
 **Uses:**
-- `plan:internal/fabricengine#ErrPairNotLive`
-- `plan:internal/fabricengine#ErrNotLive`
-- `plan:internal/fabricengine#ErrRecordsWorktreeNotPair`
-- `plan:internal/fabricengine#ErrAdoptLocalCheckedOut`
-- `plan:internal/fabricengine#ErrTaskPathTaken`
+- `internal/fabricengine#ErrPairNotLive`
+- `internal/fabricengine#ErrNotLive`
+- `internal/fabricengine#ErrRecordsWorktreeNotPair`
+- `internal/fabricengine#ErrAdoptLocalCheckedOut`
+- `internal/fabricengine#ErrTaskPathTaken`
 - `internal/fabricengine#ErrRemoteLeftover`
 - `plan:internal/fabricengine#SlugRecordsTags`
 - `plan:internal/fabricengine#RecordsBranchFile`

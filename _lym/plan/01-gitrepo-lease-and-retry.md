@@ -1,7 +1,7 @@
 # Card 1 — gitrepo-lease-and-retry
 
 **Create:**
-- `plan:internal/gitrepo#PushWithRetryReasons` -> `func PushWithRetryReasons(push func() error, ref string, delays []time.Duration, sleep func(time.Duration), extraReasons []string) error`
+- `internal/gitrepo#PushWithRetryReasons`
 
 **Edit:**
 - `internal/gitrepo#retryablePushRefusal` -> `func retryablePushRefusal(err error, ref string, extraReasons []string) (line string, retryable bool)`

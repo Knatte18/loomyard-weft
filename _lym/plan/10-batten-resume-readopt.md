@@ -26,8 +26,8 @@
 - `internal/battencli#spawnPairPush`
 - `internal/battencli#newFakeReceiver`
 - `internal/battencli#fakeOwners`
-- `plan:internal/fabricengine#PruneRegistrations`
-- `plan:internal/fabricengine#ErrPairNotLive`
+- `internal/fabricengine#PruneRegistrations`
+- `internal/fabricengine#ErrPairNotLive`
 - `internal/fabricengine#NewTopology`
 
 **Intent:** Decision record D1, batten's side: a `lym batten run` resume whose task worktree is gone judges origin, then re-adopts a live pair.

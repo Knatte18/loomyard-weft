@@ -1,18 +1,18 @@
 # Card 4 — add-adopt-only
 
 **Create:**
-- `plan:internal/fabricengine#ErrPairNotLive` -> `var ErrPairNotLive error`
-- `plan:internal/fabricengine#ErrNotLive` -> `type ErrNotLive struct`
-- `plan:internal/fabricengine#ErrNotLive.Error` -> `func (e *ErrNotLive) Error() string`
-- `plan:internal/fabricengine#ErrNotLive.Is` -> `func (e *ErrNotLive) Is(target error) bool`
-- `plan:internal/fabricengine#ErrRecordsWorktreeNotPair` -> `type ErrRecordsWorktreeNotPair struct`
-- `plan:internal/fabricengine#ErrRecordsWorktreeNotPair.Error` -> `func (e *ErrRecordsWorktreeNotPair) Error() string`
-- `plan:internal/fabricengine#ErrAdoptLocalCheckedOut` -> `type ErrAdoptLocalCheckedOut struct`
-- `plan:internal/fabricengine#ErrAdoptLocalCheckedOut.Error` -> `func (e *ErrAdoptLocalCheckedOut) Error() string`
-- `plan:internal/fabricengine#ErrTaskPathTaken` -> `type ErrTaskPathTaken struct`
-- `plan:internal/fabricengine#ErrTaskPathTaken.Error` -> `func (e *ErrTaskPathTaken) Error() string`
-- `plan:internal/fabricengine#PruneRegistrations` -> `func PruneRegistrations(l *lymcwd.Location) error`
-- `plan:internal/fabricengine_test#TestAdd_AdoptOnly` -> `func TestAdd_AdoptOnly(t *testing.T)`
+- `internal/fabricengine#ErrPairNotLive`
+- `internal/fabricengine#ErrNotLive`
+- `internal/fabricengine#ErrNotLive.Error`
+- `internal/fabricengine#ErrNotLive.Is`
+- `internal/fabricengine#ErrRecordsWorktreeNotPair`
+- `internal/fabricengine#ErrRecordsWorktreeNotPair.Error`
+- `internal/fabricengine#ErrAdoptLocalCheckedOut`
+- `internal/fabricengine#ErrAdoptLocalCheckedOut.Error`
+- `internal/fabricengine#ErrTaskPathTaken`
+- `internal/fabricengine#ErrTaskPathTaken.Error`
+- `internal/fabricengine#PruneRegistrations`
+- `internal/fabricengine_test#TestAdd_AdoptOnly`
 
 **Edit:**
 - `internal/fabricengine#AddOptions`
@@ -28,7 +28,7 @@
 - `internal/fabricengine#probeWarpLeftover`
 - `internal/fabricengine#recordAdoptedWeftAnchor`
 - `internal/fabricengine#List`
-- `plan:internal/gitrepo#Repo.DropRemoteTracking`
+- `internal/gitrepo#Repo.DropRemoteTracking`
 - `internal/fabricengine_test#requireNothingCreated`
 - `internal/fabricengine_test#removedPair`
 - `internal/fabricengine_test#pushNewPair`

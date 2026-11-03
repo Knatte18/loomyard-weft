@@ -1,20 +1,20 @@
 {
   "runGuid": "9280df8cdbfd5778a93dca9b9e59bd44",
-  "planFingerprint": "38d5063aeccca4f343d32e3f201deecc3d7c0b981d04a5b8a6384c7e89af855e",
+  "planFingerprint": "79b74a100b418cd3468cba45afbfe90aca035aa2d82aa511e0b53d423a3c79da",
   "planFileHashes": {
     "00-overview.md": "ed05f10a913442cf79425c86cea2496e21115ee0814f3fa1ccd1121d409a9122",
-    "01-gitrepo-lease-and-retry.md": "1dc08150e36f1f7f17951d5d1ad3980a259df3d3b4e626804a61ad715a86e11d",
-    "02-gitrepo-branch-push-and-tracking-drop.md": "439b255239d949d74bdbed65c096163cbaddebe63b0bbfc656c99717ee261389",
-    "03-add-drops-stale-tracking.md": "0e859dde21784f7cbf4555bf221b11ab14632ddcad334a83c10ab9ee3edbc1a2",
-    "04-add-adopt-only.md": "0c32403e1e04c16515e007a35ef07721084cc5840065c698d6b99e6af6d26a89",
+    "01-gitrepo-lease-and-retry.md": "7c9de31d7bf9209d24a20a50de76fac73f43b657d1f7fca28fa66dd753c0dd60",
+    "02-gitrepo-branch-push-and-tracking-drop.md": "85f8b4d19bf489f94ae9c970836d5ea5ea85dc87d29a8df5dfe584af4b48cfb6",
+    "03-add-drops-stale-tracking.md": "8c4742673e1f09c6f1c864eadc842fd8080d55edbbe49a0a2f45c935cf59a4f5",
+    "04-add-adopt-only.md": "2c600fa4c43e8fe6c893099419b6f5003584ed655148ce5930bbf4d0365ab7c0",
     "05-teardown-lock-add-discard-push.md": "0a32433042068d94edfa4b76ea1026cba70bcfa4559aa71d7e60b42e3fc2e210",
-    "06-remove-archive-order.md": "d1a7650345ad584a5e2ca31a2c8b3752bfc2e4383c6e8f1bd57089b6e47f9cc3",
+    "06-remove-archive-order.md": "94e70965ac69ac015c47d9f31a1864ec55e3f5a2b0f2600e72aac33012ca2c3b",
     "07-leased-weft-delete.md": "8ebe9b20ed85b66b5734a5fa4ba88695a4faba9c1d2e80036ee528982bcb3654",
     "08-cleanup-teardown-lock.md": "21a60bf445f1d15fb8f6495e839afcec3ec0dae24a52507b51092eb6a84a2620",
     "09-reconcile-absent-pair.md": "b5073d0e7f94bf857e19d38b3c496a6ae8cd224d934e346ad0b60d1a9a536cda",
-    "10-batten-resume-readopt.md": "02c1a1a03b41dadd6f14cf4655d443d7853b95a7daaae7491bafb699fc6f902b",
+    "10-batten-resume-readopt.md": "9d49d20b29a7b44c3955c93c75f831f15fd5ba9e9b594a9055c42c4db4079058",
     "11-records-tag-reads.md": "976962ee0967415f747b20ccbd915ef3389bac53acf3ba4291fad438d58b1178",
-    "12-readopt-failed-stop.md": "3dbc9a2d2157fe3d6d8e6142f6e8e21e4d6fd848be2a8f4012d6f04da8052028",
+    "12-readopt-failed-stop.md": "494df31accc7a993ae59cc500b9a8b085c60c7eebfa104d6babbdf7f8002ae3f",
     "13-remove-follow-up.md": "eb3adb6e769e485908d590ecb0b397e0f22dc09c9ca5faa7c845b73fb1cc0280",
     "14-tackler-remote-check.md": "2280d314d8cb21bd5ad50a1510aacbb433a8fdef54e3d64895072e73a66cf097"
   },
@@ -355,7 +355,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "8c367ba1767cd7b167f0db07436c37c8",
   "masterSessionId": "87115963-d0b5-4d72-bf90-38335a1927d4",
   "masterEngine": "claude",
@@ -369,18 +369,44 @@
         "04-add-adopt-only"
       ],
       "cardHashes": {
-        "01-gitrepo-lease-and-retry": "1dc08150e36f1f7f17951d5d1ad3980a259df3d3b4e626804a61ad715a86e11d",
-        "02-gitrepo-branch-push-and-tracking-drop": "439b255239d949d74bdbed65c096163cbaddebe63b0bbfc656c99717ee261389",
-        "03-add-drops-stale-tracking": "0e859dde21784f7cbf4555bf221b11ab14632ddcad334a83c10ab9ee3edbc1a2",
-        "04-add-adopt-only": "0c32403e1e04c16515e007a35ef07721084cc5840065c698d6b99e6af6d26a89"
+        "01-gitrepo-lease-and-retry": "7c9de31d7bf9209d24a20a50de76fac73f43b657d1f7fca28fa66dd753c0dd60",
+        "02-gitrepo-branch-push-and-tracking-drop": "85f8b4d19bf489f94ae9c970836d5ea5ea85dc87d29a8df5dfe584af4b48cfb6",
+        "03-add-drops-stale-tracking": "8c4742673e1f09c6f1c864eadc842fd8080d55edbbe49a0a2f45c935cf59a4f5",
+        "04-add-adopt-only": "2c600fa4c43e8fe6c893099419b6f5003584ed655148ce5930bbf4d0365ab7c0"
       },
       "startSha": "1fbac34f114268cfd6d87f9d42e63b27937acae4",
       "kind": "fork",
       "spawnedAt": "2026-11-03T09:53:33Z",
       "sessionId": "87115963-d0b5-4d72-bf90-38335a1927d4",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-gitrepo-lease-and-retry",
+        "status": "done",
+        "head_sha": "05c069ac7d6aae192af20b3c1561eb342d8d9cae",
+        "deviations": [
+          "cmd/lym/gitrepoboundary_test.go",
+          "internal/fabricengine/add_adoptonly_integration_test.go",
+          "internal/fabricengine/add_remoteleftover_integration_test.go",
+          "internal/fabricengine/addadoptonly.go",
+          "internal/fabricengine/remoteleftover.go",
+          "internal/gitrepo/push.go",
+          "internal/gitrepo/pushbranch_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "05c069ac7d6aae192af20b3c1561eb342d8d9cae"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-batten-remote-order/87115963-d0b5-4d72-bf90-38335a1927d4/subagents/agent-ad0bcb92cf8ad6c29.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-batten-remote-order/87115963-d0b5-4d72-bf90-38335a1927d4/subagents/agent-ad0bcb92cf8ad6c29.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-batten-remote-order/87115963-d0b5-4d72-bf90-38335a1927d4/subagents/agent-ad0bcb92cf8ad6c29.jsonl"
+  ]
 }

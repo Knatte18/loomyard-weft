@@ -8,13 +8,13 @@
 - `internal/fabricengine#probeWarpLeftover` -> `func probeWarpLeftover(l *lymcwd.Location, slug, warpBranch string, live bool) (adoptTip string, onOrigin bool, err error)`
 
 **Create:**
-- `plan:internal/fabricengine_test#TestAdd_DropsStaleTrackingRef` -> `func TestAdd_DropsStaleTrackingRef(t *testing.T)`
+- `internal/fabricengine_test#TestAdd_DropsStaleTrackingRef`
 
 **Extends:**
 - `internal/fabricengine/doc.go`
 
 **Uses:**
-- `plan:internal/gitrepo#Repo.DropRemoteTracking`
+- `internal/gitrepo#Repo.DropRemoteTracking`
 - `internal/fabricengine_test#removedPair`
 - `internal/fabricengine_test#pushNewPair`
 - `internal/fabricengine_test#requireNothingCreated`

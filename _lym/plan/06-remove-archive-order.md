@@ -36,8 +36,8 @@
 - `internal/fabriccli/doc.go`
 
 **Uses:**
-- `plan:internal/gitrepo#Repo.PushBranch`
-- `plan:internal/gitrepo#PushWithRetryReasons`
+- `internal/gitrepo#Repo.PushBranch`
+- `internal/gitrepo#PushWithRetryReasons`
 - `internal/fabricengine#resolveArchiveTip`
 
 **Intent:** Decision record D4, and the archive half of D6's cleanup-sweep rule: a teardown pushes the weft tip before the archive tag that names it, and archives a diverged origin tip too.

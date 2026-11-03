@@ -1,10 +1,10 @@
 # Card 2 — gitrepo-branch-push-and-tracking-drop
 
 **Create:**
-- `plan:internal/gitrepo#Repo.PushBranch` -> `func (r *Repo) PushBranch(remote, branch string) error`
-- `plan:internal/gitrepo#Repo.DropRemoteTracking` -> `func (r *Repo) DropRemoteTracking(remote, branch string) error`
-- `plan:internal/gitrepo_test#TestPushBranch` -> `func TestPushBranch(t *testing.T)`
-- `plan:internal/gitrepo_test#TestDropRemoteTracking` -> `func TestDropRemoteTracking(t *testing.T)`
+- `internal/gitrepo#Repo.PushBranch`
+- `internal/gitrepo#Repo.DropRemoteTracking`
+- `internal/gitrepo_test#TestPushBranch`
+- `internal/gitrepo_test#TestDropRemoteTracking`
 
 **Edit:**
 - `internal/gitrepo#Repo.pushPlainWithRetry` -> `func (r *Repo) pushPlainWithRetry(remote, branch string) error`
