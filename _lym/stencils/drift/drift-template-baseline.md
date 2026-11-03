@@ -1,12 +1,12 @@
 <!-- This is the drift baseline agent's entire instruction set. It is shipped as an embedded default in the
-     top-level stencils package (stencils/stencils.go), seeded to <hub>/_board/_lym/stencils/drift/
+     top-level stencils package (stencils/stencils.go), seeded to the Bolt checkout's `_lym/stencils/drift/`
      and read from there at call time by internal/seatengine, which fills it from the lead's value map that driftengine's BaselineTable builds, then hands it to
      shuttle as the agent's whole prompt.
      Every marker below is a top-level substitution;
      the engine fills the parent and edit directives, and BaselineTable fills the rest.
      scope_note is the only optional marker: it is empty until a scope is recorded, and then says so.
      There are no conditionals anywhere in this file.
-lym-stencil: sha256=7e82455c271b442fedb697c80db6cd0fce2fd666f41ce50a56d5d2c92d81d8f3 build=c15d6390d28286d8e0b70fcac8ec021f9ef46d59 time=2026-10-29T14:15:15Z -->
+lym-stencil: sha256=4d8b3205355ff23f82e0897aeaf8679f7adcc0ce710c6895cb8f8c9a676e870d build=93eaaa45e651200ba26b1c4e7ff552726aa3bff2 time=2026-11-03T08:50:13Z -->
 
 # Drift baseline — scope the regression of this task
 
@@ -25,9 +25,15 @@ Also read the repository's README and its test setup, which name how the reposit
 ## Step 2 — Decide the scope
 
 The regression suite records a profile of the code's behavior on the task's branch point, and a later compare checks the task's code against it.
-Choose the scope that fits what the task changes:
 
-- `off` for a task that changes the model's behavior on purpose, so a comparison against the old behavior would only report the intended change.
+First check whether the suite can see the change at all.
+The capture command is {{.capture_command}}.
+Find the projects or packages that command builds and runs, follow their project references, imports or build dependencies, and check whether any of them reaches a file the task changes.
+When none does, or the task touches no code the suite runs, such as documentation, rule files or test code outside the suite, the scope is `off`: a capture would spend its time on a suite the change cannot move.
+
+Otherwise choose the scope that fits what the task changes:
+
+- `off` for a task the suite cannot reach, as above, or one that changes the model's behavior on purpose, so a comparison against the old behavior would only report the intended change.
 - `partial` for a task that changes some behavior on purpose; name each test that will drift totally with `--skip <test>`, and leave the rest in the compare.
 - `full` for a pure refactoring, where nothing may drift.
 
