@@ -66,7 +66,10 @@ An overview display with no order key, written by an older lym, reads as key zer
 
 Bound: until that start, such a session keeps the old placement, and an old status strand counts as an agent window for the focus rules.
 An old-key status strand ties with the runs strand at key zero, so the two sit in the order they last opened, on add, replace and relaunch alike.
-An older lym process still doing reed ops refuses a second overview add of its own, and one that rewrites reed.json drops the order key, which then reads as zero with the same tie.
+While the status strand opened first, the focus fallback of D2 lands on its window rather than the beam overview, until the healing loom start replaces it.
+An older lym process that rewrites reed.json drops the order key, which then reads as zero with the same tie.
+A pawl driver started by the old build calls `orchcli.BeamUp` in-process at its Beam-Up row, so while it lives it runs the old `ensureRunsStrand`: it can drop the runs strand, since the old `ReplaceStrand` removes it before the old add refuses a second overview strand, or replace the status strand with the runs strand.
+A hand `lym loom start` keeps that driver; a dropped runs strand comes back at the next `lym beam start` under the new build (D4), and a replaced status strand at the next loom start (D3).
 
 Rationale: the status strand's own keep, replace or add already runs at every loom start; a separate migration adds a code path for a state that heals itself.
 
@@ -95,6 +98,7 @@ None.
 - D1: two overview strands with equal keys sit in the order they last opened.
 - D1: an update that changes an overview strand's order key is refused, naming remove and add.
 - D2: with two overview windows and no live agent, the relevant window and the follow target are the lower-index overview window; with a live agent, they are the agent's window.
+- D2: with two overview windows and no live agent, a viewer on the lower-index overview window that ends by its strand's removal or its pane's exit moves to the other overview window, never the shell.
 - D3: the status strand's add spec is an overview display with the order key after the runs strand's and the run's recipe name as its Title, whether or not the session holds a runs strand.
 - D4: `lym beam start` in a session whose loom status strand holds an overview window adds the runs strand beside it and leaves the status strand, its pane and its window untouched.
 - D5: a status strand recorded in an own window is replaced into an overview window at the next loom start whose sidecar names another build; an overview display recorded with no order key loads as key zero.
