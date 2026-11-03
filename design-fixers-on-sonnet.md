@@ -1,6 +1,6 @@
-# Plan and Discussion fixers on Sonnet, once findings are concrete enough
+# Bench Plan and Discussion fixers on Sonnet against Opus
 
-`fixers-on-sonnet` · Note · enhancement, burler, claude
+`fixers-on-sonnet` · Note · research, burler, claude
 
 ## Seen
 
