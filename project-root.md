@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **A beam cannot be made from a project whose slug already ran a motif run** | [`beam-after-motif`](design-beam-after-motif.md) | darn · light | PR-Review | neve | 2h<br>39m | batten, pawl |
+| T2 | **A beam cannot be made from a project whose slug already ran a motif run** | [`beam-after-motif`](design-beam-after-motif.md) | darn · light | Finalize | neve | 2h<br>39m | batten, pawl |
 | T3 | **A gate tier whose shell exits while a grandchild holds its pipe hangs forever**<br>• No WaitDelay on tier and build children: an orphaned MSBuild node keeps lym gate test, and the adopt check, running past every timeout | [`gate-orphan-pipe-hang`](design-gate-orphan-pipe-hang.md) | darn · light | Finalize | neve | 1h<br>39m | gate, process |
 | T6 | **loom status --watch prints every poll while a verify runs**<br>• The verify wait text carries its elapsed seconds, so the watch sees a change on every poll | [`watch-elapsed-churn`](design-watch-elapsed-churn.md) | darn · light | Finalize | neve | 56m<br>39m | loom, cli |
 | T7 | **A wake from a lym hibernate lifts the pause only when a switch allows it** | [`hibernate-wake-resume-switch`](design-hibernate-wake-resume-switch.md) | darn · light | Code-Burler-Review | neve | 20h<br>31m | hibernate, tender |
