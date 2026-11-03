@@ -1,6 +1,6 @@
 # lym ide spawn on a beam opens the beam workspace
 
-`beam-code-opens-workspace` · Task · enhancement, ide · running · Describe
+`beam-code-opens-workspace` · Task · enhancement, ide · running · PR-Review
 
 ## Seen (operator, 2026-11-03)
 
