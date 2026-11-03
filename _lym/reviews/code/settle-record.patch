@@ -1,0 +1,1380 @@
+diff --git a/cmd/lym/configstrictness_test.go b/cmd/lym/configstrictness_test.go
+index 9b264f2a..c8a70ce8 100644
+--- a/cmd/lym/configstrictness_test.go
++++ b/cmd/lym/configstrictness_test.go
+@@ -59,6 +59,7 @@ var configStrictnessDegradingSet = map[string]bool{
+ 	"internal/desktophook":                true,
+ 	"internal/heddleengine":               true,
+ 	"internal/hibernateconfig":            true,
++	"internal/envconfig":                  true,
+ }
+ 
+ // configStrictnessStrictSet is the pinned set of module-relative, slash-separated package directories that call configengine.Load -- the strict loading policy, where an absent _lym/ directory or absent config file is an error.
+diff --git a/docs/overview.md b/docs/overview.md
+index 7efb5838..49340a98 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -276,6 +276,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/heddleengine/        heddle's instruction layers, the one lym ships in its binary and the repository's `heddle.json`, their rendering into a worktree's CLAUDE and AGENTS files and a session's system prompt, and the hub-wide `heddle.yaml` that turns the hub's overrides of shipped entries on
+ ├── internal/driftengine/         regression around a task: the hub-wide `drift.yaml` config, the drift paths and records, the capture and compare runs and the Drift rows' producers
+ ├── internal/driftcli/            the `lym drift` commands (`scope`, `accept`, `withdraw`, `compare`, `capture`, `defer`, `waive`, `status` and the hidden `capture-child`) and their worktree wiring over `internal/driftengine`
++├── internal/envconfig/           the hub-wide `env.yaml` config: the environment variables lym exports to gate tiers and the shared build, Drift capture and compare, and agent sessions, with a machine layer that wins name by name
+ ├── internal/languageconfig/      the hub-wide `language.yaml` config: the skills every code role loads after its own, the verify tiers the plan, review and implementer prompts render, and the hub's structure-aware rename tools the Webster implementer prompt renders
+ ├── internal/lenses/              the `lenses.yaml` config: the lens and fan library burler, tapestry and darn read, holding only the names a repo tuned while the template, with the language layer a hub picks laid over it, supplies the rest, and the fan key grammar tapestry and darn share
+ ├── internal/mergeresolve/        the merge-in + LLM conflict-resolution engine internal/landingshed's two producers each call
+diff --git a/internal/configengine/doc.go b/internal/configengine/doc.go
+index 058ca60f..5e639693 100644
+--- a/internal/configengine/doc.go
++++ b/internal/configengine/doc.go
+@@ -83,7 +83,7 @@
+ //
+ // # The machine rule
+ //
+-// The machine layer holds only keys classified [CategoryMachine], a key whose value is a property of the machine: a bound on a resource every worktree of the hub on that machine shares, or a fact of the machine's desktop.
++// The machine layer holds only keys classified [CategoryMachine], a key whose value is a property of the machine: a bound on a resource every worktree of the hub on that machine shares, or a fact of the machine, such as its desktop or a path on its disk.
+ // [MachineKeys] lists them, and the local layer keeps refusing them, since [CategoryMachine] is not [CategoryNone].
+ // [ValidateMachine] checks a machine document with the units, template-existence and shape checks of [ValidateLocal], and admits a unit only when the longest covering `Categories` entry, or the covering retired key, is [CategoryMachine].
+ // Every refusal is an [ErrInvalid] error naming the key and a way forward, and [Layers] wraps it with the machine file's path.
+@@ -127,5 +127,6 @@
+ // It also knows `P.<name>.<key>` where the map's entries are mappings and some template entry holds the key.
+ // The layer merge and the template fill need no declaration: a layer's names add to or override the template's by name, and a mapping entry merges key by key.
+ // The load's log of filled keys leaves out a name under a per-name map, since a base file holds only the names it tuned.
+-// The local and machine layers judge a path under a per-name map against the template entry holding the rest of it, whatever the name.
++// The local and machine layers judge a path under a per-name map against the template entry holding the rest of it, whatever the name,
++// and a name under a per-name map holding no template entry as a scalar, the shape a set writes there.
+ package configengine
+diff --git a/internal/configengine/layers.go b/internal/configengine/layers.go
+index 5d56777e..bca13fd6 100644
+--- a/internal/configengine/layers.go
++++ b/internal/configengine/layers.go
+@@ -61,7 +61,7 @@ const (
+ 	CategoryCrossPair Category = "cross-pair"
+ 	// CategoryGuard is a key that switches off or hollows a guard, a review or an approval gate.
+ 	CategoryGuard Category = "guard"
+-	// CategoryMachine is a key whose value is a property of the machine: a bound on a resource every worktree of the hub on that machine shares, or a fact of the machine's desktop.
++	// CategoryMachine is a key whose value is a property of the machine: a bound on a resource every worktree of the hub on that machine shares, or a fact of the machine, such as its desktop or a path on its disk.
+ 	// The machine layer holds it and the local layer refuses it.
+ 	CategoryMachine Category = "machine"
+ )
+@@ -267,7 +267,7 @@ func removeKey(node *yaml.Node, path []string) bool {
+ // ValidateLocal checks a local override document against the spec.
+ // A unit a retired key covers is judged by that key's category alone: CategoryNone admits it with no shape check, any other category refuses it.
+ // Every other unit path must exist in the template, or be a top-level key when the spec holds whole entries;
+-// a path under a per-name map exists when the template holds it or, whatever the name, some template entry of that map holds the rest of it, and is judged against that entry;
++// a path under a per-name map exists when the template holds it or, whatever the name, some template entry of that map holds the rest of it, and is judged against that entry, a name under a map holding no template entry being judged as a scalar;
+ // its shape, mapping or not, must match the template's where the template holds the path;
+ // and the longest category entry covering it must be CategoryNone, a hub-wide module also refusing a path no entry covers.
+ // A failure is marked [ErrInvalid] and names the key; an empty or comment-only document passes.
+@@ -325,7 +325,7 @@ const machineRemoval = "; way forward: remove it from the machine override"
+ // ValidateMachine checks a machine override document against the spec.
+ // A unit a retired key covers is admitted only when that key's category is CategoryMachine, and its value shape is never checked.
+ // Every other unit path must exist in the template and match its shape, and the longest category entry covering it must be CategoryMachine;
+-// a path under a per-name map exists when the template holds it or, whatever the name, some template entry of that map holds the rest of it, and is judged against that entry.
++// a path under a per-name map exists when the template holds it or, whatever the name, some template entry of that map holds the rest of it, and is judged against that entry, a name under a map holding no template entry being judged as a scalar.
+ // A failure is marked [ErrInvalid], names the key and a way forward; an empty or comment-only document passes.
+ func ValidateMachine(spec Spec, doc []byte) error {
+ 	paths, err := yamlengine.LeafPaths(doc, spec.OpenMaps, spec.WholeEntries)
+@@ -371,8 +371,12 @@ func ValidateMachine(spec Spec, doc []byte) error {
+ 	return nil
+ }
+ 
++// scalarEntry is the node a name under a per-name map with no template entry is judged against: such a map holds scalars, as a set writes them.
++var scalarEntry = &yaml.Node{Kind: yaml.ScalarNode}
++
+ // templateValueAt returns the template node a unit path is judged against, which is the node at path when the template holds it.
+-// For a path the template lacks under a per-name map P, P.<name> or P.<name>.<rest>, it is the first template entry at P, or the node at rest in the first entry holding it.
++// For a path the template lacks under a per-name map P, P.<name> or P.<name>.<rest>, it is the first template entry at P, or the node at rest in the first entry holding it;
++// P.<name> under a P holding no template entry is judged as a scalar.
+ // It returns nil when neither holds the path.
+ func templateValueAt(spec Spec, template *yaml.Node, path string) *yaml.Node {
+ 	if node := nodeAt(template, path); node != nil {
+@@ -388,6 +392,9 @@ func templateValueAt(spec Spec, template *yaml.Node, path string) *yaml.Node {
+ 			continue
+ 		}
+ 		_, rest, _ := strings.Cut(under, ".")
++		if rest == "" && len(entries.Content) == 0 {
++			return scalarEntry
++		}
+ 		for i := 1; i < len(entries.Content); i += 2 {
+ 			if rest == "" {
+ 				return entries.Content[i]
+diff --git a/internal/configreg/configreg.go b/internal/configreg/configreg.go
+index 988f3d44..33056730 100644
+--- a/internal/configreg/configreg.go
++++ b/internal/configreg/configreg.go
+@@ -23,6 +23,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/desktophook"
+ 	"github.com/Knatte18/loomyard/internal/dobbyengine"
+ 	"github.com/Knatte18/loomyard/internal/driftengine"
++	"github.com/Knatte18/loomyard/internal/envconfig"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/heddleengine"
+@@ -136,6 +137,7 @@ func Modules() []Module {
+ 		{Name: "darn", Template: darnengine.ConfigTemplate, OpenMaps: darnengine.ConfigOpenMaps(), HubWide: true, Migrate: darnengine.MigrateConfig, CheckLoad: checkLoadNamed(darnengine.LoadConfig, "darn"), Spec: darnengine.ConfigSpec},
+ 		{Name: "desktop", Template: desktophook.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(desktophook.LoadConfig), Spec: desktophook.ConfigSpec},
+ 		{Name: "drift", Template: driftengine.ConfigTemplate, OpenMaps: driftengine.ConfigOpenMaps(), HubWide: true, CheckLoad: checkLoad(driftengine.LoadConfig), CheckDirs: driftengine.CheckDirs, Spec: driftengine.ConfigSpec},
++		{Name: "env", Template: envconfig.ConfigTemplate, PerNameMaps: envconfig.ConfigPerNameMaps(), HubWide: true, CheckLoad: checkLoad(envconfig.LoadConfig), Spec: envconfig.ConfigSpec},
+ 		{Name: "fabric", Template: fabricengine.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(fabricengine.LoadConfig), Spec: fabricengine.ConfigSpec},
+ 		{Name: "gate", Template: gateslot.ConfigTemplate, OpenMaps: gateslot.ConfigOpenMaps(), PerNameMaps: gateslot.ConfigPerNameMaps(), HubWide: true, Migrate: gateslot.MigrateConfig, MigrateHubBase: gateslot.SeedAdoptGate, CheckLoad: checkLoad(gateslot.LoadConfig), CheckDirs: gateslot.CheckDirs, Spec: gateslot.ConfigSpec},
+ 		{Name: "heddle", Template: heddleengine.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(heddleengine.LoadConfig), Spec: heddleengine.ConfigSpec},
+diff --git a/internal/configreg/configreg_test.go b/internal/configreg/configreg_test.go
+index 9915c209..ccf009a1 100644
+--- a/internal/configreg/configreg_test.go
++++ b/internal/configreg/configreg_test.go
+@@ -44,7 +44,7 @@ func TestNames(t *testing.T) {
+ 	}
+ }
+ 
+-// TestModules_SeedOnlyAndHubWideFlags pins the two flags: "models" and "profiles" carry an open-ended, operator-owned key set (model aliases and run profiles respectively), so they are the only entries with SeedOnly == true, "fabric", "board", "gate", "heddle", "hibernate", "landing", "darn", "desktop", "drift", "language", "sampler" and "profiles" describe hub-level facts, so they are the only entries with HubWide == true, and "landing", whose per-worktree copy was in effect before it moved hub-wide, is the only entry with SeedsFromPrime == true.
++// TestModules_SeedOnlyAndHubWideFlags pins the two flags: "models" and "profiles" carry an open-ended, operator-owned key set (model aliases and run profiles respectively), so they are the only entries with SeedOnly == true, "fabric", "board", "gate", "heddle", "hibernate", "landing", "darn", "desktop", "drift", "env", "language", "sampler" and "profiles" describe hub-level facts, so they are the only entries with HubWide == true, and "landing", whose per-worktree copy was in effect before it moved hub-wide, is the only entry with SeedsFromPrime == true.
+ //
+ //testtiming:keep pins which modules carry the SeedOnly and HubWide flags, which the covering TestFill never asserts
+ func TestModules_SeedOnlyAndHubWideFlags(t *testing.T) {
+@@ -55,7 +55,7 @@ func TestModules_SeedOnlyAndHubWideFlags(t *testing.T) {
+ 		if m.SeedOnly != wantSeedOnly {
+ 			t.Errorf("Modules(): module %q SeedOnly = %v; want %v", m.Name, m.SeedOnly, wantSeedOnly)
+ 		}
+-		wantHubWide := m.Name == "fabric" || m.Name == "board" || m.Name == "gate" || m.Name == "heddle" || m.Name == "hibernate" || m.Name == "landing" || m.Name == "darn" || m.Name == "desktop" || m.Name == "drift" || m.Name == "language" || m.Name == "profiles" || m.Name == "sampler"
++		wantHubWide := m.Name == "fabric" || m.Name == "board" || m.Name == "gate" || m.Name == "heddle" || m.Name == "hibernate" || m.Name == "landing" || m.Name == "darn" || m.Name == "desktop" || m.Name == "drift" || m.Name == "env" || m.Name == "language" || m.Name == "profiles" || m.Name == "sampler"
+ 		if m.HubWide != wantHubWide {
+ 			t.Errorf("Modules(): module %q HubWide = %v; want %v", m.Name, m.HubWide, wantHubWide)
+ 		}
+@@ -129,6 +129,9 @@ func TestModules_EveryTemplateKeyClassified(t *testing.T) {
+ 			if m.Name == "desktop" {
+ 				wantMachineKeys = []string{"buttons", "window_command", "window_wait_ms"}
+ 			}
++			if m.Name == "env" {
++				wantMachineKeys = []string{"vars"}
++			}
+ 			if got := configengine.MachineKeys(spec); !slices.Equal(got, wantMachineKeys) {
+ 				t.Errorf("%s MachineKeys = %v; want %v, so no stray machine file is read by a registered loader", m.Name, got, wantMachineKeys)
+ 			}
+diff --git a/internal/driftcli/anchor_integration_test.go b/internal/driftcli/anchor_integration_test.go
+index 20e587da..194362ab 100644
+--- a/internal/driftcli/anchor_integration_test.go
++++ b/internal/driftcli/anchor_integration_test.go
+@@ -42,16 +42,22 @@ func TestDrift_RunsInTheAnchoredDirectory(t *testing.T) {
+ 	}
+ 
+ 	cwds := filepath.Join(t.TempDir(), "cwds")
++	envs := filepath.Join(filepath.Dir(cwds), "envs")
+ 	driftYAML := fmt.Sprintf(`capture:
+   command: |
+     pwd >> %q
++    echo "$DRIFT_MODULE $DRIFT_OWN" >> %q
+     mkdir -p {baseline_dir} && echo ok > {baseline_dir}/profile.txt
++  env:
++    DRIFT_OWN: from-step
+   timeout_min: 1
+ compare:
+-  command: 'pwd >> %q; : {baseline_dir}'
++  command: 'pwd >> %q; echo "$DRIFT_MODULE $DRIFT_OWN" >> %q; : {baseline_dir}'
++  env:
++    DRIFT_OWN: from-step
+   timeout_min: 1
+ verify_max_runs: 3
+-`, cwds, cwds)
++`, cwds, envs, cwds, envs)
+ 	driftFile := configengine.ConfigFile(h.BoardDir(), "drift")
+ 	if err := os.MkdirAll(filepath.Dir(driftFile), 0o755); err != nil {
+ 		t.Fatal(err)
+@@ -59,6 +65,9 @@ verify_max_runs: 3
+ 	if err := os.WriteFile(driftFile, []byte(driftYAML), 0o644); err != nil {
+ 		t.Fatal(err)
+ 	}
++	if err := os.WriteFile(configengine.ConfigFile(h.BoardDir(), "env"), []byte("vars:\n  DRIFT_MODULE: from-env-module\n  DRIFT_OWN: from-env-module\n"), 0o644); err != nil {
++		t.Fatal(err)
++	}
+ 	if err := shedrun.WriteSeed(loc, shedrun.SelfRunID, shedrun.Seed{Recipe: shedrun.RecipeTapestry, Driver: shedrun.DriverGo}); err != nil {
+ 		t.Fatal(err)
+ 	}
+@@ -106,4 +115,18 @@ verify_max_runs: 3
+ 			t.Errorf("command %d ran in %q; want the anchored directory %q", i, dir, want)
+ 		}
+ 	}
++
++	envData, err := os.ReadFile(envs)
++	if err != nil {
++		t.Fatal(err)
++	}
++	gotEnvs := strings.Split(strings.TrimSpace(string(envData)), "\n")
++	if len(gotEnvs) != 3 {
++		t.Fatalf("recorded environments = %q; want one each from the main capture, the compare and the side capture", gotEnvs)
++	}
++	for i, line := range gotEnvs {
++		if line != "from-env-module from-step" {
++			t.Errorf("command %d ran with DRIFT_MODULE and DRIFT_OWN %q; want the env module's DRIFT_MODULE and the step's own DRIFT_OWN", i, line)
++		}
++	}
+ }
+diff --git a/internal/driftcli/cli.go b/internal/driftcli/cli.go
+index 2963ec73..774529a1 100644
+--- a/internal/driftcli/cli.go
++++ b/internal/driftcli/cli.go
+@@ -201,7 +201,7 @@ func takeRun(w *worktree, verb, stepName string) (driftengine.CommandStep, error
+ 	if err != nil {
+ 		return driftengine.CommandStep{}, err
+ 	}
+-	step, err := cfg.Step(stepName)
++	step, err := cfg.StepWithHubEnv(stepName, w.configDirs())
+ 	if err != nil {
+ 		return driftengine.CommandStep{}, err
+ 	}
+@@ -388,7 +388,7 @@ func runCaptureChild(cmd *cobra.Command) {
+ 		fail(err)
+ 		return
+ 	}
+-	step, err := cfg.Step("capture")
++	step, err := cfg.StepWithHubEnv("capture", w.configDirs())
+ 	if err != nil {
+ 		fail(err)
+ 		return
+diff --git a/internal/driftcli/wiring.go b/internal/driftcli/wiring.go
+index ad486045..f782bb2f 100644
+--- a/internal/driftcli/wiring.go
++++ b/internal/driftcli/wiring.go
+@@ -10,6 +10,7 @@ import (
+ 
+ 	"github.com/spf13/cobra"
+ 
++	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/driftengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+@@ -49,9 +50,14 @@ func (w *worktree) anchor() string {
+ 	return w.location.AnchorPath()
+ }
+ 
++// configDirs returns the directories the hub's config modules load under, with this machine's override.
++func (w *worktree) configDirs() configengine.Dirs {
++	return fabricengine.ConfigDirs(w.location)
++}
++
+ // config loads the hub's drift config strictly.
+ func (w *worktree) config() (driftengine.Config, error) {
+-	return driftengine.LoadConfig(fabricengine.ConfigDirs(w.location))
++	return driftengine.LoadConfig(w.configDirs())
+ }
+ 
+ // verbStatus reads the run status under its lock, the capture lock, the agent-session mark and whether the session is the operator's.
+diff --git a/internal/driftengine/config.go b/internal/driftengine/config.go
+index 283d31c0..59e58815 100644
+--- a/internal/driftengine/config.go
++++ b/internal/driftengine/config.go
+@@ -11,6 +11,7 @@ import (
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/envconfig"
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
+ 	"github.com/Knatte18/loomyard/internal/yamlengine"
+@@ -262,3 +263,19 @@ func (c Config) Step(name string) (CommandStep, error) {
+ 	}
+ 	return step, nil
+ }
++
++// StepWithHubEnv returns the declared step as Step does, with the env config module's variables loaded under dirs laid beneath the step's own env,
++// so the command runs with both and the step's value wins a name both hold.
++// A refused step and an env config that fails to load are errors.
++func (c Config) StepWithHubEnv(name string, dirs configengine.Dirs) (CommandStep, error) {
++	step, err := c.Step(name)
++	if err != nil {
++		return CommandStep{}, err
++	}
++	hubEnv, err := envconfig.LoadConfig(dirs)
++	if err != nil {
++		return CommandStep{}, err
++	}
++	step.Env = hubEnv.Beneath(step.Env)
++	return step, nil
++}
+diff --git a/internal/driftengine/config_test.go b/internal/driftengine/config_test.go
+index f2554ef6..3caa67d8 100644
+--- a/internal/driftengine/config_test.go
++++ b/internal/driftengine/config_test.go
+@@ -392,6 +392,47 @@ func TestLoadConfig(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("StepWithHubEnv lays the env module's variables beneath the step's own env", func(t *testing.T) {
++		t.Parallel()
++		board := t.TempDir()
++		envFile := configengine.ConfigFile(board, "env")
++		if err := os.MkdirAll(filepath.Dir(envFile), 0o755); err != nil {
++			t.Fatal(err)
++		}
++		if err := os.WriteFile(envFile, []byte("vars:\n  COMMONLIB_REPO: /hub/commonlib\n  MODE: hub\n"), 0o644); err != nil {
++			t.Fatal(err)
++		}
++		cfg := templateConfig(func(c *Config) {
++			c.Capture = CommandStep{Command: "p {baseline_dir}", Env: map[string]string{"MODE": "step"}, TimeoutMin: 3}
++		})
++
++		got, err := cfg.StepWithHubEnv("capture", configengine.Dirs{Board: board})
++		if err != nil {
++			t.Fatalf("StepWithHubEnv(capture) error = %v; want nil", err)
++		}
++		if want := map[string]string{"COMMONLIB_REPO": "/hub/commonlib", "MODE": "step"}; !reflect.DeepEqual(got.Env, want) {
++			t.Errorf("StepWithHubEnv(capture).Env = %v; want %v", got.Env, want)
++		}
++		if cfg.Capture.Env["COMMONLIB_REPO"] != "" {
++			t.Errorf("StepWithHubEnv changed the config's own step env to %v", cfg.Capture.Env)
++		}
++		if _, err := cfg.StepWithHubEnv("compare", configengine.Dirs{Board: board}); err == nil {
++			t.Error("StepWithHubEnv(compare) error = nil; want the undeclared step refused")
++		}
++
++		brokenBoard := t.TempDir()
++		brokenFile := configengine.ConfigFile(brokenBoard, "env")
++		if err := os.MkdirAll(filepath.Dir(brokenFile), 0o755); err != nil {
++			t.Fatal(err)
++		}
++		if err := os.WriteFile(brokenFile, []byte("vars:\n  BAD-NAME: x\n"), 0o644); err != nil {
++			t.Fatal(err)
++		}
++		if step, err := cfg.StepWithHubEnv("capture", configengine.Dirs{Board: brokenBoard}); err == nil || !strings.Contains(err.Error(), "vars.BAD-NAME") || !reflect.DeepEqual(step, CommandStep{}) {
++			t.Errorf("StepWithHubEnv(capture) over a broken env config = %+v, %v; want an error naming vars.BAD-NAME and no step", step, err)
++		}
++	})
++
+ 	t.Run("the durable paths lie under DirRel", func(t *testing.T) {
+ 		t.Parallel()
+ 		root := t.TempDir()
+diff --git a/internal/driftengine/doc.go b/internal/driftengine/doc.go
+index 4c490a35..77cd6862 100644
+--- a/internal/driftengine/doc.go
++++ b/internal/driftengine/doc.go
+@@ -13,6 +13,7 @@
+ // a step left with keys but no command fails the load check, so a first declaration sets `command` and `timeout_min` together.
+ // LoadConfig loads the file strictly and refuses a declared step without `{baseline_dir}` or with a `timeout_min` below 1, a `verify_max_runs` below 1 and a model-spec that fails its grammar, each naming the key.
+ // Config.Step returns a declared step and refuses an undeclared one, so every row and verb that runs a command goes through it.
++// Config.StepWithHubEnv, which every row and verb that runs a command calls, adds the env config module's variables beneath the step's own `env`, so a command runs with the inherited environment, then the hub's and this machine's variables, then the step's, each replacing the one before.
+ //
+ // Paths is the one declarer of every drift path.
+ // The durable directory `_lym/drift/` holds the scope record, the two agents' reports and the logs of every run; the ephemeral directory `.lym/drift/` holds the capture record, the capture lock, the compare marker, the baseline and side-capture directories, the skip file and the run counter.
+diff --git a/internal/envconfig/config.go b/internal/envconfig/config.go
+new file mode 100644
+index 00000000..84aef555
+--- /dev/null
++++ b/internal/envconfig/config.go
+@@ -0,0 +1,110 @@
++// config.go defines env.yaml: the Config type, the template and spec accessors, LoadConfig and the forms a process start takes the variables in.
++
++package envconfig
++
++import (
++	_ "embed"
++	"fmt"
++	"maps"
++	"regexp"
++	"slices"
++	"strings"
++
++	"gopkg.in/yaml.v3"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++)
++
++//go:embed template.yaml
++var configTemplate string
++
++// ConfigTemplate returns the default YAML template for the env config module.
++func ConfigTemplate() string {
++	return configTemplate
++}
++
++// configModule is the config module name env.yaml is loaded under.
++const configModule = "env"
++
++// varsKey is the per-name map of variable name to value.
++const varsKey = "vars"
++
++// reservedPrefix starts the names of lym's own variables, which the module may not set.
++const reservedPrefix = "LYM_"
++
++// reservedPath is the search path variable, which the module may not set.
++// A strand pane's prelude prepends the spawning lym directory to it, and a module value would replace that entry.
++const reservedPath = "PATH"
++
++// namePattern is the grammar of an environment variable name a shell can export.
++var namePattern = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
++
++// Config is the resolved env.yaml: the variables lym exports to the processes it starts for the hub.
++type Config struct {
++	// Vars maps a variable name to its value; it is never nil.
++	Vars map[string]string `yaml:"vars"`
++}
++
++// ConfigPerNameMaps returns the env.yaml keys whose entries are named by the operator and merged name by name, so a machine value overrides one hub value and keeps the rest.
++func ConfigPerNameMaps() []string {
++	return []string{varsKey}
++}
++
++// ConfigSpec returns the env module's layered-load spec.
++// The module is hub-wide and `vars` is a machine key, so the machine layer may set a variable and the local layer may not.
++func ConfigSpec() configengine.Spec {
++	return configengine.Spec{
++		Name:        configModule,
++		Template:    []byte(ConfigTemplate()),
++		PerNameMaps: ConfigPerNameMaps(),
++		HubWide:     true,
++		Categories: map[string]configengine.Category{
++			varsKey: configengine.CategoryMachine,
++		},
++	}
++}
++
++// LoadConfig loads and unmarshals the env module's configuration through the hub-wide layer stack under dirs.
++// A hub whose base file is absent resolves the template, which sets no variable.
++// A name that is no environment variable name, is PATH or starts with LYM_, in any letter case, is an error marked configengine.ErrInvalid naming the key.
++func LoadConfig(dirs configengine.Dirs) (Config, error) {
++	resolved, err := configengine.LoadOrTemplate(dirs, ConfigSpec())
++	if err != nil {
++		return Config{}, err
++	}
++	var cfg Config
++	if err := yaml.Unmarshal(resolved, &cfg); err != nil {
++		return Config{}, configengine.MarkInvalid(fmt.Errorf("unmarshal env config: %w", err))
++	}
++	for _, name := range slices.Sorted(maps.Keys(cfg.Vars)) {
++		upper := strings.ToUpper(name)
++		if !namePattern.MatchString(name) || upper == reservedPath || strings.HasPrefix(upper, reservedPrefix) {
++			return Config{}, configengine.MarkInvalid(fmt.Errorf("env config: key %q is no variable lym may export: a name is letters, digits and underscores, starts with no digit, is not %s and never starts with %s, in any letter case; way forward: remove it with lym config env, from the prime for the hub file or with --layer machine for this machine's file", varsKey+"."+name, reservedPath, reservedPrefix))
++		}
++	}
++	if cfg.Vars == nil {
++		cfg.Vars = map[string]string{}
++	}
++	return cfg, nil
++}
++
++// Entries returns the variables as NAME=value entries in name order, the form a process environment takes.
++// Appended after the inherited environment, they replace an inherited value of the same name.
++func (c Config) Entries() []string {
++	entries := make([]string, 0, len(c.Vars))
++	for _, name := range slices.Sorted(maps.Keys(c.Vars)) {
++		entries = append(entries, name+"="+c.Vars[name])
++	}
++	return entries
++}
++
++// Beneath returns the variables with own laid over them, so a name own holds keeps own's value.
++// Neither map is changed.
++func (c Config) Beneath(own map[string]string) map[string]string {
++	merged := maps.Clone(c.Vars)
++	if merged == nil {
++		merged = map[string]string{}
++	}
++	maps.Copy(merged, own)
++	return merged
++}
+diff --git a/internal/envconfig/config_test.go b/internal/envconfig/config_test.go
+new file mode 100644
+index 00000000..63365db9
+--- /dev/null
++++ b/internal/envconfig/config_test.go
+@@ -0,0 +1,199 @@
++// config_test.go verifies env.yaml's layer stack, its name refusals, the machine-layer write and the two forms the variables are handed on in, seeded with plain file writes under t.TempDir() so the test stays spawn-free.
++
++package envconfig_test
++
++import (
++	"errors"
++	"os"
++	"path/filepath"
++	"reflect"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/envconfig"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++	"github.com/Knatte18/loomyard/internal/yamlengine"
++)
++
++func writeFile(t *testing.T, path, content string) {
++	t.Helper()
++	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++		t.Fatalf("mkdir %s: %v", filepath.Dir(path), err)
++	}
++	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
++		t.Fatalf("write %s: %v", path, err)
++	}
++}
++
++// hubDirs returns the told directories of a hub whose board dir and anchor both sit under a fresh temp dir.
++// The anchor holds a _lym/, since an anchor without one has no local layer.
++func hubDirs(t *testing.T) configengine.Dirs {
++	t.Helper()
++	root := t.TempDir()
++	dirs := configengine.Dirs{Board: filepath.Join(root, "board"), Anchor: filepath.Join(root, "anchor")}
++	if err := os.MkdirAll(configengine.ConfigDir(dirs.Anchor), 0o755); err != nil {
++		t.Fatal(err)
++	}
++	return dirs
++}
++
++func TestLoadConfig_StacksHubAndMachineName(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name string
++		// hub, machine and local are the layer files' content; empty writes no file.
++		hub, machine, local string
++		want                map[string]string
++		wantInvalid         string
++	}{
++		{
++			name: "NoFileSetsNothing",
++			want: map[string]string{},
++		},
++		{
++			name: "HubFileAlone",
++			hub:  "vars:\n  COMMONLIB_REPO: /hub/commonlib\n  MODE: ci\n",
++			want: map[string]string{"COMMONLIB_REPO": "/hub/commonlib", "MODE": "ci"},
++		},
++		{
++			name:    "MachineValueWinsByNameAndKeepsTheRest",
++			hub:     "vars:\n  COMMONLIB_REPO: /hub/commonlib\n  MODE: ci\n",
++			machine: "vars:\n  COMMONLIB_REPO: /home/me/commonlib\n  EXTRA: \"1\"\n",
++			want:    map[string]string{"COMMONLIB_REPO": "/home/me/commonlib", "MODE": "ci", "EXTRA": "1"},
++		},
++		{
++			name: "NumberValueReadsAsText",
++			hub:  "vars:\n  PORT: 8080\n",
++			want: map[string]string{"PORT": "8080"},
++		},
++		{
++			name:        "NameWithADashIsRefused",
++			machine:     "vars:\n  BAD-NAME: x\n",
++			wantInvalid: `"vars.BAD-NAME"`,
++		},
++		{
++			name:        "NameStartingWithADigitIsRefused",
++			hub:         "vars:\n  1ST: x\n",
++			wantInvalid: `"vars.1ST"`,
++		},
++		{
++			name:        "LymOwnNameIsRefused",
++			hub:         "vars:\n  LYM_STRAND_NAME: x\n",
++			wantInvalid: `"vars.LYM_STRAND_NAME"`,
++		},
++		{
++			name:        "LowercaseLymNameIsRefused",
++			hub:         "vars:\n  lym_parent: x\n",
++			wantInvalid: `"vars.lym_parent"`,
++		},
++		{
++			name:        "PathIsRefused",
++			machine:     "vars:\n  PATH: /x\n",
++			wantInvalid: `"vars.PATH"`,
++		},
++		{
++			name:        "PathInAnotherCaseIsRefused",
++			hub:         "vars:\n  Path: /x\n",
++			wantInvalid: `"vars.Path"`,
++		},
++		{
++			name:        "LocalLayerIsRefused",
++			local:       "vars:\n  COMMONLIB_REPO: /x\n",
++			wantInvalid: "machine and cannot be set in a local override",
++		},
++		{
++			name:        "MachineValueThatIsAMappingIsRefused",
++			machine:     "vars:\n  NESTED:\n    a: b\n",
++			wantInvalid: `"vars.NESTED.a" is not in the env template`,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dirs := hubDirs(t)
++			if err := os.MkdirAll(dirs.Anchor, 0o755); err != nil {
++				t.Fatal(err)
++			}
++			if tt.hub != "" {
++				writeFile(t, configengine.ConfigFile(dirs.Board, "env"), tt.hub)
++			}
++			if tt.machine != "" {
++				writeFile(t, configengine.MachineFile(dirs.Board, "env"), tt.machine)
++			}
++			if tt.local != "" {
++				writeFile(t, configengine.LocalFile(dirs.Anchor, "env"), tt.local)
++			}
++
++			got, err := envconfig.LoadConfig(dirs)
++
++			if tt.wantInvalid != "" {
++				if !errors.Is(err, configengine.ErrInvalid) || !strings.Contains(err.Error(), tt.wantInvalid) {
++					t.Fatalf("LoadConfig() error = %v; want an ErrInvalid error holding %s", err, tt.wantInvalid)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("LoadConfig() error = %v; want nil", err)
++			}
++			if !reflect.DeepEqual(got.Vars, tt.want) {
++				t.Errorf("LoadConfig().Vars = %v; want %v", got.Vars, tt.want)
++			}
++		})
++	}
++}
++
++// TestSet_MachineLayerTakesAVariable pins the write the issue found refused: a per-machine value set through the machine layer, and the local layer still refusing it.
++func TestSet_MachineLayerTakesAVariable(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	dirs := hubDirs(t)
++	if err := os.MkdirAll(dirs.Anchor, 0o755); err != nil {
++		t.Fatal(err)
++	}
++	writeFile(t, configengine.ConfigFile(dirs.Board, "env"), "vars:\n  MODE: ci\n")
++	pair := []yamlengine.KV{{Key: "vars.COMMONLIB_REPO", Value: "/home/me/commonlib"}}
++
++	if _, err := configengine.Set(dirs, envconfig.ConfigSpec(), configengine.LayerMachine, pair); err != nil {
++		t.Fatalf("Set(machine, vars.COMMONLIB_REPO) error = %v; want nil", err)
++	}
++	if _, err := configengine.Set(dirs, envconfig.ConfigSpec(), configengine.LayerLocal, pair); !errors.Is(err, configengine.ErrInvalid) {
++		t.Errorf("Set(local, vars.COMMONLIB_REPO) error = %v; want an ErrInvalid refusal", err)
++	}
++	if _, err := os.Stat(configengine.LocalFile(dirs.Anchor, "env")); !os.IsNotExist(err) {
++		t.Errorf("Stat(local file) error = %v; want the refused write to leave no file", err)
++	}
++
++	got, err := envconfig.LoadConfig(dirs)
++	if err != nil {
++		t.Fatalf("LoadConfig() error = %v; want nil", err)
++	}
++	want := map[string]string{"COMMONLIB_REPO": "/home/me/commonlib", "MODE": "ci"}
++	if !reflect.DeepEqual(got.Vars, want) {
++		t.Errorf("LoadConfig().Vars = %v; want %v", got.Vars, want)
++	}
++}
++
++func TestConfig_EntriesAndBeneath(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	cfg := envconfig.Config{Vars: map[string]string{"B": "hub-b", "A": "hub-a"}}
++
++	if got, want := cfg.Entries(), []string{"A=hub-a", "B=hub-b"}; !reflect.DeepEqual(got, want) {
++		t.Errorf("Entries() = %v; want %v", got, want)
++	}
++
++	own := map[string]string{"B": "own-b", "C": "own-c"}
++	got := cfg.Beneath(own)
++	want := map[string]string{"A": "hub-a", "B": "own-b", "C": "own-c"}
++	if !reflect.DeepEqual(got, want) {
++		t.Errorf("Beneath(%v) = %v; want %v", own, got, want)
++	}
++	if len(cfg.Vars) != 2 || cfg.Vars["B"] != "hub-b" || len(own) != 2 {
++		t.Errorf("Beneath changed an input: Vars = %v, own = %v", cfg.Vars, own)
++	}
++	if got := (envconfig.Config{}).Beneath(nil); got == nil || len(got) != 0 {
++		t.Errorf("Config{}.Beneath(nil) = %#v; want an empty non-nil map", got)
++	}
++}
+diff --git a/internal/envconfig/doc.go b/internal/envconfig/doc.go
+new file mode 100644
+index 00000000..85875bca
+--- /dev/null
++++ b/internal/envconfig/doc.go
+@@ -0,0 +1,18 @@
++// Package envconfig owns the hub-wide env.yaml: the environment variables lym exports to every process it starts for the hub.
++//
++// The module's one key, `vars`, maps a variable name to its value.
++// It is a per-name map classified machine.
++// The hub file in the board dir holds the values every machine shares.
++// The never-tracked machine file `<BoltDir>/.lym/config/env.machine.yaml` holds this machine's own.
++// The machine value wins name by name.
++// The local layer refuses it.
++//
++// The gate's tiers and shared build, the Drift capture and compare commands, and every agent session's pane get the variables.
++// Precedence, most specific first: a gate tier's or build's own `env`, or a Drift step's, then this module, then the environment lym inherits.
++// The .NET build-server switches lym forces, `proc.BuildServerOffEnv`, stay lym's own in gate runs and strand panes, and a module variable of such a name is dropped there.
++//
++// LoadConfig degrades to the template when the hub holds no env.yaml, so a hub not yet reconciled exports nothing.
++// It refuses a name that is no environment variable name, `PATH` and a name starting `LYM_`, in any letter case.
++// The prefix names lym's own variables, and `PATH` carries the directory a strand pane's prelude puts first so that `lym` resolves to its spawning binary.
++// LoadConfig never resolves cwd itself: the caller hands it the directories (see PATTERN-cwd-resolution).
++package envconfig
+diff --git a/internal/envconfig/template.yaml b/internal/envconfig/template.yaml
+new file mode 100644
+index 00000000..59a96798
+--- /dev/null
++++ b/internal/envconfig/template.yaml
+@@ -0,0 +1,5 @@
++# Environment variables lym exports to every process it starts for the hub: gate tiers and the shared build, Drift capture and compare, and agent sessions.
++# Variable name to value, such as a path to a sibling checkout; a name is letters, digits and underscores, starts with no digit, is not PATH and never starts with LYM_, in any letter case.
++# A tier's or build's own env beats a name here, and a name here beats the environment lym inherits.
++# Set a hub-wide value from the prime with lym config env --set vars.NAME=value, and this machine's own with lym config env --layer machine --set vars.NAME=value; the machine value wins name by name.
++vars: {}
+diff --git a/internal/envconfig/testmain_test.go b/internal/envconfig/testmain_test.go
+new file mode 100644
+index 00000000..bf4861a1
+--- /dev/null
++++ b/internal/envconfig/testmain_test.go
+@@ -0,0 +1,14 @@
++// testmain_test.go runs the package's tests under tmuxkit.Main, so their temp files live in the process run directory and go with it.
++
++package envconfig_test
++
++import (
++	"os"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
++)
++
++func TestMain(m *testing.M) {
++	os.Exit(tmuxkit.Main(m))
++}
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 8e0afa91..8801c632 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -37,7 +37,7 @@
+ // Terms that push the expression past `greenCommandBudget` are dropped and the tier's `filter` stands alone, so that project runs whole within itself, and an Info log names the tier.
+ // A command without `{filter}` renders no filter whatever terms it is given.
+ // A tier's `filter` applies at whole scope too, landing gates included, bounded by the executable, hub-file-only `tiers` key.
+-// The command runs through the shell `verifyrun.ShellFor` names, as a tied child in the run directory, with this process's environment less the strand-name and trace-id variables, less an inherited `gateslot.PrebuiltLymEnv`, plus `proc.BuildServerOffEnv`, replacing an inherited value, plus the tier's `env` with `{parallel}` filled, plus the lease's `gateslot.InheritEnv` and the enclosing-gate pid.
++// The command runs through the shell `verifyrun.ShellFor` names, as a tied child in the run directory, with this process's environment less the strand-name and trace-id variables, less an inherited `gateslot.PrebuiltLymEnv`, plus the variables of the `env` config module (`internal/envconfig`), the hub's with this machine's override inside a hub and the worktree's own outside every hub, replacing an inherited value, plus `proc.BuildServerOffEnv`, replacing an inherited or env module value, so the module never undoes a build-server switch, plus the tier's `env` with `{parallel}` filled, replacing an env module value, plus the lease's `gateslot.InheritEnv` and the enclosing-gate pid.
+ // The tier's `dir`, relative to the worktree root, is the run directory, and a tier that sets no `dir` runs in the worktree's anchor, filled by `gateslot.Config.WithDefaultDir` once the config is loaded, so a hub anchored at a subdirectory need not spell it per tier.
+ // A tier with `prebuilt_lym` first builds `lym` at the tier's `parallel`, inside its slots and timeout, only where the worktree root holds `cmd/lym`, and exports `gateslot.PrebuiltLymEnv`.
+ // Inside a hub the binary is copied into the pool's store (`gateslot.Pool.PrebuiltDir`) as `lym-` and the first 16 hex digits of its SHA-256, the build directory is removed, and the variable names the stored copy;
+@@ -107,7 +107,7 @@
+ // The first such tier in plan order whose run takes slots, one with invocations left after the green record's subtraction or one with only a build to run, runs `runBuild` inside its slots, before its own command, and no later tier runs it again.
+ // A call whose opted-in tiers are all carried, or whose shares are empty, such as an inert-only, all-inert-card or empty diff, runs no build, bar a `carry: false` tier, which runs whole and so runs the build before its command.
+ // A `shared_build` tier whose share selected no test class has no invocation and takes its slots only to run the build, so a compile break still fails the gate; it then passes with nothing discovered.
+-// The command runs through the platform shell as a tied child in the build's `dir`, with the call's environment, the slot's inherited variable and the build's `env`; the words after `--` never reach it, and lym adds no switch to the command.
++// The command runs through the platform shell as a tied child in the build's `dir`, with the call's environment, the env config module's variables included, the slot's inherited variable and the build's `env`, which replaces an env module value; the words after `--` never reach it, and lym adds no switch to the command.
+ // A build that sets no `dir` runs in the anchor, as a tier does.
+ // Its output passes to stdout and into its log, and it is bounded by its own `timeout_min` counted from the hold, so the tier's `timeout_min` starts after it.
+ // A timeout kills the tree, exits 1 and prints and logs `gateslot.BuildTimeoutLine`.
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index 333cc70f..b65d008f 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -19,6 +19,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/envconfig"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+@@ -58,6 +59,10 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 	if refusal != "" {
+ 		return output.Err(out, refusal)
+ 	}
++	hubEnv, err := envconfig.LoadConfig(configDirs(location, inHub))
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("gate test: cannot read the env config: %v; way forward: take the step it names, then re-run the same command", err))
++	}
+ 	if refusal := preTierExpiry(preCtx, runCtx, request, "loading the gate config"); refusal != "" {
+ 		return output.Err(out, refusal)
+ 	}
+@@ -128,6 +133,9 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 		return strings.HasPrefix(entry, agentname.StrandNameEnv+"=") || strings.HasPrefix(entry, logger.TraceIDEnv+"=")
+ 	})
+ 	env = gateslot.StripPrebuilt(env)
++	// The env module's variables replace inherited ones of the same name, and a tier's or the build's own env, appended later, replaces them.
++	env = append(env, hubEnv.Entries()...)
++	// The build-server switches come after the module's entries, so a variable of the module never undoes them.
+ 	env = withBuildServerOff(env)
+ 	watching, reason := watchdogApplies(request.busyQuit, request.args, os.Getenv(enclosingGateEnv), proc.IsAncestor)
+ 	logger.Info("gate test: CPU watchdog decision", "applies", watching, "reason", reason)
+@@ -307,6 +315,14 @@ func gateKeyRefusal(cfg gateslot.Config, request testRequest) string {
+ 	return ""
+ }
+ 
++// configDirs returns the directories a hub-wide module loads under for location: the hub's, with this machine's override, inside a hub, and the worktree's own outside every hub.
++func configDirs(location *lymcwd.Location, inHub bool) configengine.Dirs {
++	if inHub {
++		return fabricengine.ConfigDirs(location)
++	}
++	return configengine.Dirs{Anchor: location.AnchorPath()}
++}
++
+ // loadGate resolves the worktree that contains dir and loads its gate config:
+ // the hub's, with this machine's override, inside a hub, and the worktree's own outside every hub.
+ // A refusal is returned as its message, with the other results unset.
+@@ -323,13 +339,13 @@ func loadGate(dir string) (location *lymcwd.Location, inHub bool, cfg gateslot.C
+ 		if err != nil {
+ 			return nil, false, gateslot.Config{}, fmt.Sprintf("gate test: resolve the worktree of %s: %v; way forward: re-run the same command", dir, err)
+ 		}
+-		cfg, err = gateslot.LoadConfig(configengine.Dirs{Anchor: location.AnchorPath()})
++		cfg, err = gateslot.LoadConfig(configDirs(location, false))
+ 		if err != nil {
+ 			return nil, false, gateslot.Config{}, fmt.Sprintf("gate test: cannot read the worktree's gate config: %v; way forward: take the step it names, then re-run the same command", err)
+ 		}
+ 		return location, false, cfg, ""
+ 	}
+-	cfg, err = gateslot.LoadConfig(fabricengine.ConfigDirs(location))
++	cfg, err = gateslot.LoadConfig(configDirs(location, true))
+ 	if errors.Is(err, gateslot.ErrConfigAbsent) {
+ 		return nil, false, gateslot.Config{}, fmt.Sprintf("gate test: the hub has no gate config: %v; way forward: run \"lym fabric reconcile\", then re-run the same command; a session lym refuses the verb from reports status: FAILED and the orch runs it", err)
+ 	}
+diff --git a/internal/gatecli/test_integration_test.go b/internal/gatecli/test_integration_test.go
+index e71d4b7d..da84fa53 100644
+--- a/internal/gatecli/test_integration_test.go
++++ b/internal/gatecli/test_integration_test.go
+@@ -797,6 +797,59 @@ func TestGateTest_Scenario(t *testing.T) {
+ 		requireFree(t)
+ 	})
+ 
++	// writeEnvFile writes the env module's file at path and removes it when the row ends, so no later row over the shared hub loads it.
++	writeEnvFile := func(t *testing.T, path, content string) {
++		t.Helper()
++		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++			t.Fatal(err)
++		}
++		if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
++			t.Fatal(err)
++		}
++		t.Cleanup(func() { _ = os.Remove(path) })
++	}
++
++	t.Run("the shared build runs with the env module's variables over the inherited ones and under its own env, and its build-server switches stay lym's", func(t *testing.T) {
++		writeConfig(t, scenarioConfig(t, withSharedBuild("sub")))
++		defer writeConfig(t, gateConfig)
++		writeEnvFile(t, configengine.ConfigFile(h.BoardDir(), "env"), "vars:\n  BUILD_MARK: from-env-module\n  GOFLAGS: -from-env-module\n  MSBUILDDISABLENODEREUSE: \"0\"\n")
++
++		g := startGate(t, gateRun{cwd: prime, args: []string{"test", "--tier", "6", "./pkg"}, env: []string{"GOFLAGS=-inherited"}})
++		if code := g.wait(t); code != 0 {
++			t.Fatalf("exit code = %d, stdout %q; want 0", code, g.stdout.String())
++		}
++		builds, tiers := buildRecords(t, g), g.tierRecords(t)
++		if len(builds) != 1 || len(tiers) != 1 {
++			t.Fatalf("build records %+v, tier records %+v; want one each", builds, tiers)
++		}
++		if build := builds[0]; build.BuildMark != "1" || build.GoFlags != "-from-env-module" || build.NodeReuse != "1" {
++			t.Errorf("build BUILD_MARK %q, GOFLAGS %q, MSBUILDDISABLENODEREUSE %q; want its own BUILD_MARK 1 over the env module's, the env module's GOFLAGS over the inherited one and the build-server switch 1 over the env module's", build.BuildMark, build.GoFlags, build.NodeReuse)
++		}
++		if tier := tiers[0]; tier.BuildMark != "from-env-module" {
++			t.Errorf("tier BUILD_MARK %q; want the env module's, not the build's own", tier.BuildMark)
++		}
++	})
++
++	t.Run("inside a hub the env module loads the hub file with this machine's file winning name by name", func(t *testing.T) {
++		writeEnvFile(t, configengine.ConfigFile(h.BoardDir(), "env"), "vars:\n  BUILD_MARK: from-hub-file\n")
++		hubOnly := startGate(t, gateRun{cwd: prime, args: []string{"test", "--tier", "0", "./pkg"}})
++		if code := hubOnly.wait(t); code != 0 {
++			t.Fatalf("exit code = %d, stdout %q; want 0", code, hubOnly.stdout.String())
++		}
++		if got := hubOnly.standIn(t).BuildMark; got != "from-hub-file" {
++			t.Errorf("tier BUILD_MARK with only the hub file = %q; want from-hub-file", got)
++		}
++
++		writeEnvFile(t, configengine.MachineFile(h.BoardDir(), "env"), "vars:\n  BUILD_MARK: from-machine-file\n")
++		withMachine := startGate(t, gateRun{cwd: prime, args: []string{"test", "--tier", "0", "./pkg"}})
++		if code := withMachine.wait(t); code != 0 {
++			t.Fatalf("exit code = %d, stdout %q; want 0", code, withMachine.stdout.String())
++		}
++		if got := withMachine.standIn(t).BuildMark; got != "from-machine-file" {
++			t.Errorf("tier BUILD_MARK with the machine file = %q; want from-machine-file", got)
++		}
++	})
++
+ 	t.Run("a failing build blocks every opted-in tier, names the build first in the closing line and still runs a tier that did not opt in", func(t *testing.T) {
+ 		writeConfig(t, scenarioConfig(t, withSharedBuild("sub")))
+ 		defer writeConfig(t, gateConfig)
+@@ -1709,6 +1762,35 @@ func TestGateTest_Scenario(t *testing.T) {
+ 	})
+ 
+ 	standalone := standaloneWorktree
++	t.Run("a tier runs with the env module's variables beneath its own env", func(t *testing.T) {
++		worktree := standalone(t, true)
++		envFile := configengine.ConfigFile(worktree, "env")
++		if err := os.WriteFile(envFile, []byte("vars:\n  BUILD_MARK: from-env-module\n  GOFLAGS: -from-env-module\n"), 0o644); err != nil {
++			t.Fatal(err)
++		}
++		g := startGate(t, gateRun{cwd: worktree, args: []string{"test", "./pkg"}, env: []string{strandEnvEntry, helperCapEnv + "=0", "BUILD_MARK=inherited"}})
++		if code := g.wait(t); code != 0 {
++			t.Fatalf("exit code = %d, stdout %q; want 0", code, g.stdout.String())
++		}
++		record := g.standIn(t)
++		if record.BuildMark != "from-env-module" || record.GoFlags != "-trimpath -p=3" {
++			t.Errorf("tier BUILD_MARK %q, GOFLAGS %q; want the env module's BUILD_MARK over the inherited one and the tier's own GOFLAGS over the env module's", record.BuildMark, record.GoFlags)
++		}
++	})
++	t.Run("a broken env config refuses the call before any tier, naming the config and its way forward", func(t *testing.T) {
++		worktree := standalone(t, true)
++		if err := os.WriteFile(configengine.ConfigFile(worktree, "env"), []byte("vars:\n  BAD-NAME: x\n"), 0o644); err != nil {
++			t.Fatal(err)
++		}
++		g := startGate(t, gateRun{cwd: worktree, args: []string{"test", "./pkg"}, env: []string{strandEnvEntry, helperCapEnv + "=0"}})
++		code, output := g.wait(t), g.stdout.String()
++		if code != 1 || !strings.Contains(output, "cannot read the env config") || !strings.Contains(output, "vars.BAD-NAME") || !strings.Contains(output, "way forward") {
++			t.Errorf("exit code = %d, stdout %q; want 1 and a refusal naming the env config, vars.BAD-NAME and a way forward", code, output)
++		}
++		if invocations := g.tierArgs(t); len(invocations) != 0 {
++			t.Errorf("tier invocations = %q; want none after the refusal", invocations)
++		}
++	})
+ 	t.Run("a worktree outside every hub runs unslotted under its own gate.yaml and records under its own .lym", func(t *testing.T) {
+ 		worktree := standalone(t, true)
+ 		g := startGate(t, gateRun{cwd: worktree, args: []string{"test", "./pkg"}, env: []string{strandEnvEntry, helperCapEnv + "=0"}})
+diff --git a/internal/hubgeom/geometry_integration_test.go b/internal/hubgeom/geometry_integration_test.go
+index f8150fbe..8f4050c3 100644
+--- a/internal/hubgeom/geometry_integration_test.go
++++ b/internal/hubgeom/geometry_integration_test.go
+@@ -8,9 +8,11 @@ import (
+ 	"encoding/json"
+ 	"os"
+ 	"path/filepath"
++	"reflect"
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/fabriccli"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+@@ -259,6 +261,35 @@ func TestGeometryOverRealHub(t *testing.T) {
+ 		return
+ 	}
+ 
++	if !t.Run("reed geometry tells the hub's env variables with this machine's value winning by name", func(t *testing.T) {
++		for path, content := range map[string]string{
++			configengine.ConfigFile(h.BoardDir(), "env"):  "vars:\n  COMMONLIB_REPO: /hub/commonlib\n  MODE: ci\n",
++			configengine.MachineFile(h.BoardDir(), "env"): "vars:\n  COMMONLIB_REPO: /home/me/commonlib\n",
++		} {
++			if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++				t.Fatal(err)
++			}
++			if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
++				t.Fatal(err)
++			}
++			t.Cleanup(func() { _ = os.Remove(path) })
++		}
++
++		geom, err := hubgeom.ReedGeometry(h.Location)
++		if err != nil {
++			t.Fatalf("ReedGeometry(prime): %v", err)
++		}
++		if geom.PaneEnv == nil {
++			t.Fatal("PaneEnv = nil; want the hub's env teller")
++		}
++		got, err := geom.PaneEnv()
++		if want := map[string]string{"COMMONLIB_REPO": "/home/me/commonlib", "MODE": "ci"}; err != nil || !reflect.DeepEqual(got, want) {
++			t.Errorf("PaneEnv() = %v, %v; want %v", got, err, want)
++		}
++	}) {
++		return
++	}
++
+ 	// This step removes the shortname record every earlier step read, so it runs last.
+ 	t.Run("hub with no shortname yields an empty shortname", func(t *testing.T) {
+ 		if err := os.Remove(filepath.Join(h.BoardDir(), fabricengine.ShortnameFileName)); err != nil {
+diff --git a/internal/hubgeom/hubgeom.go b/internal/hubgeom/hubgeom.go
+index 8ceea2c2..c1b3bbb9 100644
+--- a/internal/hubgeom/hubgeom.go
++++ b/internal/hubgeom/hubgeom.go
+@@ -10,6 +10,7 @@ import (
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/burlerengine"
++	"github.com/Knatte18/loomyard/internal/envconfig"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/hubreconcile"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+@@ -35,6 +36,7 @@ func ReconcileGeometry(l *lymcwd.Location) (hubreconcile.Geometry, bool) {
+ // a task worktree sets NameSlug to its raw worktree name and ParentName to what ResolveParent returns, the orch name of the worktree the pair was created from.
+ // An unresolvable parent logs a warning and leaves ParentName empty, since the parent is an optional escalation channel.
+ // SpawnOrder is told as a lazy closure over l (spawnorder.go), so building the geometry reads and spawns nothing.
++// PaneEnv is likewise a lazy closure: it loads the hub's env config module, with this machine's override, at each strand launch.
+ // Failing to tell the prime from a task worktree is the one error:
+ // telling a task worktree a prime's geometry would give its strands the prime's names for life.
+ func ReedGeometry(l *lymcwd.Location) (reedengine.Geometry, error) {
+@@ -85,6 +87,7 @@ func reedGeometry(l *lymcwd.Location, prime bool) reedengine.Geometry {
+ 	return reedengine.Geometry{
+ 		SpawnOrder:         spawnOrder(l),
+ 		Buttons:            buttonContext(l, prime),
++		PaneEnv:            paneEnv(l),
+ 		SocketKey:          reedengine.ServerName(l.HubPath),
+ 		SessionName:        reedengine.SessionName(l.WorktreePath()),
+ 		AnchorPath:         l.AnchorPath(),
+@@ -101,6 +104,14 @@ func reedGeometry(l *lymcwd.Location, prime bool) reedengine.Geometry {
+ 	}
+ }
+ 
++// paneEnv returns the closure that loads the variables of the hub's env config module, with this machine's override, for a strand pane in l's worktree.
++func paneEnv(l *lymcwd.Location) func() (map[string]string, error) {
++	return func() (map[string]string, error) {
++		cfg, err := envconfig.LoadConfig(fabricengine.ConfigDirs(l))
++		return cfg.Vars, err
++	}
++}
++
+ // BurlerGeometry builds a burlerengine.Geometry for l: the resolved Location's paths, read off its accessors and passed through untouched.
+ // It performs no os.Getwd, no git discovery, and no path resolution of its own — internal/lymcwd stays the sole owner of cwd resolution (the Cwd Resolution Invariant), and BurlerGeometry only reads what l's caller already resolved.
+ // WorktreeRoot is l.AnchorPath(), NOT l.WorktreePath(): a review segment's _lym content is anchor-anchored, matching the commit seam that commits it, so telling burler the anchor path as its profile root is what keeps the two aligned.
+diff --git a/internal/loomcli/driftwiring.go b/internal/loomcli/driftwiring.go
+index e092c53b..a84c9efa 100644
+--- a/internal/loomcli/driftwiring.go
++++ b/internal/loomcli/driftwiring.go
+@@ -103,7 +103,7 @@ func driftDeps(location *lymcwd.Location, statusPath, statusLockPath string, tab
+ 		if err != nil {
+ 			return driftengine.CommandStep{}, err
+ 		}
+-		return cfg.Step(name)
++		return cfg.StepWithHubEnv(name, fabricengine.ConfigDirs(location))
+ 	}
+ 
+ 	return driftengine.Deps{
+diff --git a/internal/loomcli/driftwiring_integration_test.go b/internal/loomcli/driftwiring_integration_test.go
+index cb42190c..13fa6a05 100644
+--- a/internal/loomcli/driftwiring_integration_test.go
++++ b/internal/loomcli/driftwiring_integration_test.go
+@@ -51,15 +51,21 @@ func TestDriftDeps_RunWhereTheStepsDirResolves(t *testing.T) {
+ 			}
+ 
+ 			cwds := filepath.Join(t.TempDir(), "cwds")
++			envs := filepath.Join(filepath.Dir(cwds), "envs")
+ 			driftYAML := fmt.Sprintf(`capture:
+   command: |
+     pwd >> %q
++    echo "$DRIFT_MODULE $DRIFT_OWN" >> %q
+     mkdir -p {baseline_dir} && echo ok > {baseline_dir}/profile.txt
++  env:
++    DRIFT_OWN: from-step
+ %s  timeout_min: 1
+ compare:
+-  command: 'pwd >> %q; : {baseline_dir}'
++  command: 'pwd >> %q; echo "$DRIFT_MODULE $DRIFT_OWN" >> %q; : {baseline_dir}'
++  env:
++    DRIFT_OWN: from-step
+ %s  timeout_min: 1
+-`, cwds, tt.dirLine, cwds, tt.dirLine)
++`, cwds, envs, tt.dirLine, cwds, envs, tt.dirLine)
+ 			driftFile := configengine.ConfigFile(h.BoardDir(), "drift")
+ 			if err := os.MkdirAll(filepath.Dir(driftFile), 0o755); err != nil {
+ 				t.Fatal(err)
+@@ -67,6 +73,9 @@ compare:
+ 			if err := os.WriteFile(driftFile, []byte(driftYAML), 0o644); err != nil {
+ 				t.Fatal(err)
+ 			}
++			if err := os.WriteFile(configengine.ConfigFile(h.BoardDir(), "env"), []byte("vars:\n  DRIFT_MODULE: from-env-module\n  DRIFT_OWN: from-env-module\n"), 0o644); err != nil {
++				t.Fatal(err)
++			}
+ 
+ 			statusPath, statusLockPath := shedrun.StatusFile(loc, shedrun.SelfRunID), shedrun.StatusLock(loc, shedrun.SelfRunID)
+ 			if err := os.MkdirAll(filepath.Dir(statusLockPath), 0o755); err != nil {
+@@ -104,6 +113,20 @@ compare:
+ 					t.Errorf("command %d ran in %q; want the anchored directory %q", i, dir, want)
+ 				}
+ 			}
++
++			envData, err := os.ReadFile(envs)
++			if err != nil {
++				t.Fatal(err)
++			}
++			gotEnvs := strings.Split(strings.TrimSpace(string(envData)), "\n")
++			if len(gotEnvs) != 2 {
++				t.Fatalf("recorded environments = %q; want one each from the capture and the compare", gotEnvs)
++			}
++			for i, line := range gotEnvs {
++				if line != "from-env-module from-step" {
++					t.Errorf("command %d ran with DRIFT_MODULE and DRIFT_OWN %q; want the env module's DRIFT_MODULE and the step's own DRIFT_OWN", i, line)
++				}
++			}
+ 		})
+ 	}
+ }
+diff --git a/internal/reedengine/doc.go b/internal/reedengine/doc.go
+index b769ecde..7b8492b9 100644
+--- a/internal/reedengine/doc.go
++++ b/internal/reedengine/doc.go
+@@ -211,6 +211,8 @@
+ // Every strand pane reed creates resolves `lym` to the binary that spawned it, because launchStrandLocked prepends that binary's directory to the pane's PATH and exports LYM_BIN to its absolute path as shell statements.
+ // A fresh shell a strand's command starts re-runs its rc and can reorder PATH, so LYM_BIN names the spawning binary there, and a shuttle engine re-asserts LYM_BIN's directory in its agent's tool shell.
+ // After the prelude the line exports `proc.BuildServerOffEnv`, so no .NET build an agent runs leaves MSBuild reuse nodes or the MSBuild server holding threads after it exits; these exports stay when the prelude is dropped.
++// The launch command is preceded by the exports of the variables the geometry's `PaneEnv` tells, in name order, read afresh at every launch and relaunch, so an agent running a test by hand sees the values lym's own runs get, bar a variable named by `proc.BuildServerOffEnv`, which the line has already exported and the hub's value never undoes;
++// a failed read logs a named logger.Warn and exports none, never failing the launch.
+ // The composed line, prelude and launch command together, is written to the strand's launch script, and the typed send-keys line sources it in the pane shell's own scope, so the prelude still runs after the pane shell's profile.
+ // The shell dialect's discard-line key (`C-u` on POSIX, none on PowerShell) is sent ahead of that line, so input that reached the booting pane first, such as a viewer's keystrokes or a terminal reply after a window switch, never prefixes it.
+ // The strand records that absolute path as `Strand.LymBin` at every launch and relaunch, and reed's status reports it.
+diff --git a/internal/reedengine/geometry.go b/internal/reedengine/geometry.go
+index d4a0ebda..c30222d7 100644
+--- a/internal/reedengine/geometry.go
++++ b/internal/reedengine/geometry.go
+@@ -67,6 +67,9 @@ type Geometry struct {
+ 	// Buttons tells the session's status-bar button context.
+ 	// It is nil in standalone mode, where the row shows follow alone, and is called by the status pins only, at boot and attach.
+ 	Buttons func() (ButtonContext, error)
++	// PaneEnv tells the environment variables every strand pane exports before its launch command, name to value: the hub's env config module with this machine's override.
++	// It is nil in standalone mode, where a pane exports none, and is called at every strand launch, so a changed value reaches the next launch or relaunch.
++	PaneEnv func() (map[string]string, error)
+ }
+ 
+ // ReviveEntry is one worktree of a Geometry.SpawnOrder list.
+diff --git a/internal/reedengine/panebin.go b/internal/reedengine/panebin.go
+index 25d5e830..b6506e04 100644
+--- a/internal/reedengine/panebin.go
++++ b/internal/reedengine/panebin.go
+@@ -2,15 +2,18 @@
+ // The composition lives in this one file, reached from two chokepoints, launchStrandLocked in spawn.go for strand panes and OpenWindow in window.go for detached windows,
+ // so the property "every pane reed creates for a `lym` command resolves lym to its spawning binary" holds by construction rather than by every pane-creating call site remembering to apply it.
+ // It also composes the session-switch command the Alt-key bindings run, from the same executable-path lookup, which the engine passes in.
+-// The same composition exports LYM_STRAND_NAME (the strand's full name), LYM_PARENT (the worktree's parent, when told) and the .NET build-server switches beside LYM_BIN.
++// The same composition exports LYM_STRAND_NAME (the strand's full name), LYM_PARENT (the worktree's parent, when told) and the .NET build-server switches beside LYM_BIN,
++// and the file composes the exports of the variables the geometry's PaneEnv tells, which the launch puts ahead of the strand's command.
+ // The file also owns the per-strand launch script the composed line is written to,
+ // so the pane types a short source statement instead of the full line.
+ 
+ package reedengine
+ 
+ import (
++	"maps"
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentname"
+@@ -42,6 +45,34 @@ func nameExports(sh shell.Shell, name, parent string) string {
+ 	return sh.Chain(parts...)
+ }
+ 
++// envExports returns the statements exporting vars in name order on sh's dialect, empty when vars holds none.
++func envExports(sh shell.Shell, vars map[string]string) string {
++	parts := make([]string, 0, len(vars))
++	for _, name := range slices.Sorted(maps.Keys(vars)) {
++		parts = append(parts, sh.ExportEnv(name, vars[name]))
++	}
++	return sh.Chain(parts...)
++}
++
++// paneEnvExports returns the statements exporting the variables the geometry's PaneEnv tells, on sh's dialect, empty when the geometry tells none.
++// A failed read logs a named logger.Warn and exports nothing, so the strand still launches.
++// A variable named by proc.BuildServerOffEnv is left out, since the launch line exports those switches itself and a hub value must not undo them.
++func (e *Engine) paneEnvExports(sh shell.Shell, strandGUID string) string {
++	if e.geom.PaneEnv == nil {
++		return ""
++	}
++	vars, err := e.geom.PaneEnv()
++	if err != nil {
++		logger.Warn("reed: could not read the hub's env variables, launching strand pane without them", "strand", strandGUID, "err", err)
++		return ""
++	}
++	vars = maps.Clone(vars)
++	for _, v := range proc.BuildServerOffEnv {
++		delete(vars, v.Name)
++	}
++	return envExports(sh, vars)
++}
++
+ // buildServerExports returns the statements exporting proc.BuildServerOffEnv on sh's dialect, so no .NET build the strand's process runs leaves MSBuild servers behind.
+ func buildServerExports(sh shell.Shell) string {
+ 	parts := make([]string, 0, len(proc.BuildServerOffEnv))
+diff --git a/internal/reedengine/panebin_test.go b/internal/reedengine/panebin_test.go
+index f6cdf9ed..ebfd36ae 100644
+--- a/internal/reedengine/panebin_test.go
++++ b/internal/reedengine/panebin_test.go
+@@ -13,6 +13,7 @@ import (
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/shell"
+ 	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -201,6 +202,70 @@ func TestComposePaneLaunchLine(t *testing.T) {
+ 	}
+ }
+ 
++// TestPaneEnvExports pins per dialect that a strand pane exports the variables the geometry's PaneEnv tells in name order.
++// It also pins that no PaneEnv, an empty answer and a failed read each export nothing, the failure logged naming the strand.
++// It is not parallel, since it captures the process-global logger.
++func TestPaneEnvExports(t *testing.T) {
++	tiergate.Require(t, 0)
++	const guid = "strand-guid-env"
++	readFailed := errors.New("env.yaml unreadable")
++	tests := []struct {
++		name    string
++		paneEnv func() (map[string]string, error)
++		want    func(sh shell.Shell) string
++		wantLog bool
++	}{
++		{
++			name: "NoPaneEnvExportsNothing",
++			want: func(shell.Shell) string { return "" },
++		},
++		{
++			name:    "EmptyAnswerExportsNothing",
++			paneEnv: func() (map[string]string, error) { return map[string]string{}, nil },
++			want:    func(shell.Shell) string { return "" },
++		},
++		{
++			name: "VariablesExportInNameOrder",
++			paneEnv: func() (map[string]string, error) {
++				return map[string]string{"MODE": "ci", "COMMONLIB_REPO": "/home/me/common lib"}, nil
++			},
++			want: func(sh shell.Shell) string {
++				return sh.Chain(sh.ExportEnv("COMMONLIB_REPO", "/home/me/common lib"), sh.ExportEnv("MODE", "ci"))
++			},
++		},
++		{
++			name: "BuildServerSwitchesAreLeftOut",
++			paneEnv: func() (map[string]string, error) {
++				return map[string]string{"MODE": "ci", proc.BuildServerOffEnv[0].Name: "not-lyms-value"}, nil
++			},
++			want: func(sh shell.Shell) string { return sh.ExportEnv("MODE", "ci") },
++		},
++		{
++			name:    "FailedReadExportsNothing",
++			paneEnv: func() (map[string]string, error) { return nil, readFailed },
++			want:    func(shell.Shell) string { return "" },
++			wantLog: true,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			e := &Engine{geom: Geometry{PaneEnv: tt.paneEnv}}
++			for _, sh := range launchScriptDialects() {
++				buf := logcapture.CaptureVerbose(t)
++
++				got := e.paneEnvExports(sh, guid)
++
++				if want := tt.want(sh); got != want {
++					t.Errorf("paneEnvExports(...) = %q, want %q", got, want)
++				}
++				if logged := strings.Contains(buf.String(), guid); logged != tt.wantLog {
++					t.Errorf("captured log output = %q; want it to name the strand %q: %v", buf.String(), guid, tt.wantLog)
++				}
++			}
++		})
++	}
++}
++
+ // launchScriptDialects lists both dialects for the composePaneLaunchLine and stageLaunchScript cases.
+ func launchScriptDialects() []shell.Shell {
+ 	return []shell.Shell{shell.Posix(), shell.Pwsh()}
+diff --git a/internal/reedengine/spawn.go b/internal/reedengine/spawn.go
+index 5b47bb01..31bcf1ed 100644
+--- a/internal/reedengine/spawn.go
++++ b/internal/reedengine/spawn.go
+@@ -72,6 +72,7 @@ func sendKeysLiteralArg(text string) string {
+ //
+ // The prelude that resolves this strand pane's `lym` to the binary that spawned it is owned by panebin.go and composed here, at the one launch every strand-realizing path funnels through — see composePaneLaunchLine.
+ // The same composition exports LYM_STRAND_NAME and LYM_PARENT beside LYM_BIN: the name is the strand's stored birth attribute and the parent is re-told from the geometry, so every launch and resume path sees the same values.
++// The variables the geometry's PaneEnv tells are exported ahead of launchCmd, read afresh at each launch.
+ // The window created below still carries no trailing shell-command argument,
+ // so the pane remains tmux's own default-shell started as a login shell (pane-start-mode-is-untouched Shared Decision).
+ // The prelude and launchCmd reach that shell afterward through the strand's launch script, which the send-keys line typed into the pane sources in the shell's own scope, rather than by changing how the pane's shell itself starts;
+@@ -115,6 +116,7 @@ func (e *Engine) launchStrandLocked(st *ReedState, s *Strand, launchCmd string)
+ 	// A separate Enter then submits it.
+ 	// The dialect's discard-line key goes first: input routed to the booting pane before the payload, a viewer's keystrokes or a terminal reply while a window switch lands on it, would otherwise prefix the launch line and break it.
+ 	sh := shell.ForGOOS()
++	launchCmd = sh.Chain(e.paneEnvExports(sh, s.GUID), launchCmd)
+ 	composedLine, exe := composePaneLaunchLine(sh, e.executablePath, launchCmd, s.GUID, s.Name, e.geom.ParentName)
+ 	s.LymBin = exe
+ 	payload := stageLaunchScript(sh, e.stateDir(), s.GUID, composedLine)
+diff --git a/internal/reedengine/spawn_test.go b/internal/reedengine/spawn_test.go
+index 199e5ea5..9ae529fa 100644
+--- a/internal/reedengine/spawn_test.go
++++ b/internal/reedengine/spawn_test.go
+@@ -438,6 +438,7 @@ func breakSaveState(t *testing.T, e *Engine) {
+ // each launch sends the dialect's discard-line key, when it has one, then types the source statement for the script (a single line) and then Enter, each a separate send-keys call,
+ // and the script holds the composed pane-binary prelude joined onto the strand's command, not the bare command.
+ // A relaunch regenerates the script, an unresolvable executable path leaves the command alone in it, and an empty command writes the prelude alone.
++// The variables the geometry's PaneEnv tells are exported ahead of the strand's command, on the host's dialect, the one a launch types into.
+ //
+ //testtiming:keep pins what a launch types and writes: any discard-line key, the source statement then a separate Enter, and a launch script holding the prelude joined onto the command, regenerated on relaunch, the bare command when the executable is unresolvable and the prelude alone for an empty command; its covering tests run this code without asserting it
+ func TestLaunchStrandLocked_LaunchScript(t *testing.T) {
+@@ -448,7 +449,9 @@ func TestLaunchStrandLocked_LaunchScript(t *testing.T) {
+ 		name       string
+ 		executable error
+ 		cmds       []string
+-		want       func(sh shell.Shell, s Strand, e *Engine) string
++		// paneEnv is the geometry's PaneEnv; nil tells none.
++		paneEnv func() (map[string]string, error)
++		want    func(sh shell.Shell, s Strand, e *Engine) string
+ 	}{
+ 		{
+ 			name: "PreludeAheadOfTheStrandCommand",
+@@ -458,6 +461,15 @@ func TestLaunchStrandLocked_LaunchScript(t *testing.T) {
+ 				return line + "\n"
+ 			},
+ 		},
++		{
++			name:    "PaneEnvExportsPrecedeTheStrandCommand",
++			cmds:    []string{"claude --continue"},
++			paneEnv: func() (map[string]string, error) { return map[string]string{"MODE": "ci"}, nil },
++			want: func(sh shell.Shell, s Strand, e *Engine) string {
++				line, _ := composePaneLaunchLine(sh, e.executablePath, sh.Chain(sh.ExportEnv("MODE", "ci"), "claude --continue"), s.GUID, s.Name, e.geom.ParentName)
++				return line + "\n"
++			},
++		},
+ 		{
+ 			name: "RelaunchRegeneratesTheScript",
+ 			cmds: []string{"first cmd", "second cmd"},
+@@ -486,6 +498,7 @@ func TestLaunchStrandLocked_LaunchScript(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			e := newTestEngine(t)
++			e.geom.PaneEnv = tt.paneEnv
+ 			e.executablePath = func() (string, error) {
+ 				if tt.executable != nil {
+ 					return "", tt.executable
+diff --git a/internal/yamlengine/layers.go b/internal/yamlengine/layers.go
+index beb5d003..94f36f2e 100644
+--- a/internal/yamlengine/layers.go
++++ b/internal/yamlengine/layers.go
+@@ -91,7 +91,8 @@ func (rule unitRule) mergeMapping(lower, upper *yaml.Node, path string, topLevel
+ // Units follow the same rule as in Merge: a key at a declared openMaps path and, when wholeEntries is true, every top-level key is compared whole.
+ // Equality is over the unexpanded nodes: same kind, same scalar tag and value, same children, comments ignored;
+ // so a ${env:...} marker equals only the same marker text, in either direction.
+-// A mapping left empty by the strip is removed with its key, and an upper left with nothing returns empty bytes.
++// A mapping left empty by the strip is removed with its key, and an empty mapping where lower holds an empty mapping is a removed unit;
++// an upper left with nothing returns empty bytes.
+ // When nothing is removed, upper is returned byte for byte.
+ func Strip(lower, upper []byte, openMaps []string, wholeEntries bool) ([]byte, []string, error) {
+ 	_, lowerRoot, err := parseMappingRoot(lower, "lower")
+@@ -132,6 +133,10 @@ func (rule unitRule) stripMapping(lower, upper *yaml.Node, path string, topLevel
+ 		if at := mappingIndex(lower, key.Value); at >= 0 {
+ 			lowerValue := lower.Content[at+1]
+ 			if rule.descends(value, keyPath, topLevel) && lowerValue.Kind == yaml.MappingNode {
++				if len(value.Content) == 0 && len(lowerValue.Content) == 0 {
++					*removed = append(*removed, keyPath)
++					continue
++				}
+ 				rule.stripMapping(lowerValue, value, keyPath, false, removed)
+ 				if len(value.Content) == 0 {
+ 					continue
+diff --git a/internal/yamlengine/layers_test.go b/internal/yamlengine/layers_test.go
+index fcda8322..23adcdfe 100644
+--- a/internal/yamlengine/layers_test.go
++++ b/internal/yamlengine/layers_test.go
+@@ -68,6 +68,7 @@ func TestStrip(t *testing.T) {
+ 		{name: "equal list removed and shorter list kept", lower: "a: [x, y]\nb: [x, y]\n", upper: "a: [x, y]\nb: [x]\n", want: "b: [x]\n", wantRemoved: []string{"a"}},
+ 		{name: "open map equal except one entry is kept whole", lower: "labels:\n    a: x\n    b: y\n", upper: "labels:\n    a: x\n    b: z\n", openMaps: []string{"labels"}, want: "labels:\n    a: x\n    b: z\n", wantRemoved: []string{}},
+ 		{name: "equal open map removed", lower: "labels:\n    a: x\n", upper: "labels:\n    a: x\n", openMaps: []string{"labels"}, want: "", wantRemoved: []string{"labels"}},
++		{name: "empty mapping equal to an empty lower removed", lower: "vars: {}\nk: 2\n", upper: "vars: {}\n", want: "", wantRemoved: []string{"vars"}},
+ 		{name: "emptied nested mapping removed", lower: "a:\n    b:\n        c: 1\nk: 2\n", upper: "a:\n    b:\n        c: 1\nk: 3\n", want: "k: 3\n", wantRemoved: []string{"a.b.c"}},
+ 		{name: "partly equal mapping keeps the rest", lower: "a:\n    x: 1\n    y: 2\n", upper: "a:\n    x: 1\n    y: 9\n", want: "a:\n    y: 9\n", wantRemoved: []string{"a.x"}},
+ 		{name: "all stripped yields empty", lower: "a: 1\nb:\n    c: 2\n", upper: "b:\n    c: 2\na: 1\n", want: "", wantRemoved: []string{"a", "b.c"}},
+diff --git a/pattern/PATTERN-config-layers.md b/pattern/PATTERN-config-layers.md
+index 449c359f..87222728 100644
+--- a/pattern/PATTERN-config-layers.md
++++ b/pattern/PATTERN-config-layers.md
+@@ -11,7 +11,7 @@ Machine alone opens a key to the machine layer.
+ - **Cross-pair**: the key reaches across pairs, including a shared process's boot option or what lands on the parent branch.
+ - **Guard**: the key switches off or hollows a guard, including a review or an approval gate, a timeout whose expiry lets that gate pass, and the prose or lens set a reviewer is given.
+   `loom.code_reviewer_fan` is the one reviewer fan key open to the local layer: its value names only a fan the guarded `lenses.yaml` defines, or `""` for a solo round, and the perch's rounds, rubric and whole-diff read are unchanged.
+-- **Machine**: the key's value is a property of the machine: a bound on a resource every worktree of the hub on that machine shares, or a fact of the machine's desktop, such as the command run after lym opens a window.
++- **Machine**: the key's value is a property of the machine: a bound on a resource every worktree of the hub on that machine shares, or a fact of the machine, such as the command run after lym opens a window or an `env.yaml` variable naming a path on its disk.
+   It opens the key to the machine layer and keeps it closed to the local layer.
+ 
+ The test asks what a key's value can do to a guard, not what kind of key it is.
+@@ -56,7 +56,7 @@ A local override file is pruned of every such key on any reconcile, since its lo
+ 
+ `internal/configengine` offers `Load` (strict) and `LoadOrTemplate` (degrades to the embedded template); a caller adopts exactly one, except `runprofile`.
+ 
+-- Degrading callers: `{shuttleengine, claudeengine, reedengine, websterengine, batcher, orchengine, loggerconfig, battenshed, languageconfig, lenses, desktophook, heddleengine, hibernateconfig}`.
++- Degrading callers: `{shuttleengine, claudeengine, reedengine, websterengine, batcher, orchengine, loggerconfig, battenshed, languageconfig, lenses, desktophook, heddleengine, hibernateconfig, envconfig}`.
+ - Strict callers: `{fabricengine, boardengine, loomengine, landingshed, gateslot, configcli, configreg}`.
+   `configcli` loads strictly only to validate a hub-wide module's file before committing it.
+   `configreg` loads strictly only to answer a recipe row's setting.
