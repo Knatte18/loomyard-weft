@@ -1,6 +1,6 @@
 # A run checks what moved on origin and its owners before it pushes or lands
 
-`remote-moved-before-push` · Task · enhancement, fabric, batten · running · Drift-Verify
+`remote-moved-before-push` · Task · enhancement, fabric, batten · running · Code-Bouncer
 
 ## Seen (operator, 2026-11-03)
 
