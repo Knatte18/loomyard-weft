@@ -1,0 +1,964 @@
+diff --git a/cmd/lym/configstrictness_test.go b/cmd/lym/configstrictness_test.go
+index b72ef5f4..ccae606b 100644
+--- a/cmd/lym/configstrictness_test.go
++++ b/cmd/lym/configstrictness_test.go
+@@ -57,6 +57,7 @@ var configStrictnessDegradingSet = map[string]bool{
+ 	"internal/lenses":                     true,
+ 	"internal/desktophook":                true,
+ 	"internal/heddleengine":               true,
++	"internal/hibernateconfig":            true,
+ }
+ 
+ // configStrictnessStrictSet is the pinned set of module-relative, slash-separated package directories that call configengine.Load -- the strict loading policy, where an absent _lym/ directory or absent config file is an error.
+diff --git a/contracts/orchrole/orch-role.md b/contracts/orchrole/orch-role.md
+index de401bbc..e288ad0e 100644
+--- a/contracts/orchrole/orch-role.md
++++ b/contracts/orchrole/orch-role.md
+@@ -288,7 +288,9 @@ Act and fix without asking: release the tasks the operator approved, settle ever
+ Ask the operator only design questions: what to build, a task's scope and a choice between designs, besides the go-ahead for each step that starts work.
+ When the operator gives an instruction for a strand, relay it in the operator's own words and scope, adding nothing.
+ When the operator asks to hibernate the machine, run `lym hibernate request`, with `--after <slug>` when they name a task to land first or `--after-all` when they name the runs in flight, then end the turn.
+-lym itself pauses the hub, confirms every session paused, hibernates the machine and lifts its pause on wake, and mails you a notice when it is done or failed.
++Add `--resume-on-wake` when they ask for the runs to go on by themselves after the wake, and `--resume-on-wake=false` when they ask for the hub to stay paused.
++lym itself pauses the hub, confirms every session paused, hibernates the machine and mails you a notice when it is done or failed.
++The wake lifts that pause only when the request resumes on wake, by its flag or else the hub's `hibernate.yaml`; otherwise the notice says the hub stays paused, and `lym tender resume` lifts it when the operator says so.
+ `lym hibernate status` shows the request and `lym hibernate cancel` withdraws it.
+ 
+ ## Status reports
+diff --git a/docs/overview.md b/docs/overview.md
+index 88c60803..09619f55 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -313,6 +313,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/tenderengine/        the pause, resume, revive and status sequences over seams: the entry, the grace, the Esc, the resume line and the revive line
+ ├── internal/hibernatecli/        the `lym hibernate` commands (`request`, `cancel`, `status` and the hidden `watch`), their hub wiring and the daemon and `systemctl` spawns
+ ├── internal/hibernateengine/     the hibernate request file and the submit, cancel, status and daemon sequences over seams
++├── internal/hibernateconfig/     the hub-wide `hibernate.yaml` config: whether the wake from a `lym hibernate request` lifts the hub pause that request added
+ ├── internal/creelcli/            the `lym creel` commands (`post`, `inject`, `interrupt`, `forward`, `read`, `inbox`, `log`, `hold`, `release` and the hidden `daemon`, `hook-read` and `hook-wait`), their hub wiring and the delivery adapter over reed and shuttle
+ ├── internal/creelengine/         the per-hub message daemon: the journal-folded pool of mail and queued injects, sender identity, reminders for a strand without hook delivery, the per-strand mail flags, the tool-boundary and Stop claim, the idle waiter and bell, injects, holds, the removed-holder sweep and the socket protocol, over a delivery seam
+ ├── internal/output/              shared JSON output
+@@ -482,9 +483,10 @@ User-facing modules each get one `lym <module>` namespace:
+   An agent may pause, resume or revive only its own pair; the orchestrator and an external caller may do each for the hub or any pair.
+   Every lym process in a hub runs its network git and GitHub calls under a gate that waits while a pause covers it, and every reader that reacts to an unexpected stop or to idle time consults the record (`internal/pauserecord`).
+   ✅ Implemented. See the `internal/tenderengine` and `internal/tendercli` package documentation.
+-- **hibernate** — a queued hibernate of the machine that lym's own Go code carries out once every session in the hub is safely paused, so no LLM session runs it (`internal/hibernatecli` + `internal/hibernateengine`; `lym hibernate request [--after <slug>] [--after-all]`, `lym hibernate cancel` and `lym hibernate status`, from any worktree of the hub; Linux only).
++- **hibernate** — a queued hibernate of the machine that lym's own Go code carries out once every session in the hub is safely paused, so no LLM session runs it (`internal/hibernatecli` + `internal/hibernateengine` + `internal/hibernateconfig`; `lym hibernate request [--after <slug>] [--after-all] [--resume-on-wake]`, `lym hibernate cancel` and `lym hibernate status`, from any worktree of the hub; Linux only).
+   `request` records the hub's one request and spawns a detached daemon, the hidden `lym hibernate watch`, then returns; the trigger is at once, the end of one batten run's Land row, or no batten run in flight.
+-  The daemon waits for its trigger, pauses the hub through tender's engine, confirms every session paused, hibernates the machine, detects the wake and lifts its own pause entry by identity, then posts creel mail to the orch when it is done or failed.
++  The daemon waits for its trigger, pauses the hub through tender's engine, confirms every session paused, hibernates the machine, detects the wake and reconciles the hub with origin, then posts creel mail to the orch when it is done or failed.
++  The wake lifts the daemon's own pause entry by identity only when the request resumes on wake, chosen by `--resume-on-wake` or else the hub-wide `hibernate.yaml`'s `resume_on_wake`, off by default; otherwise the hub stays paused until `lym tender resume` or `lym hibernate cancel` lifts it, and a new request is refused meanwhile.
+   `cancel` ends the request, stops the daemon and lifts the entry, and is refused while the machine is going into hibernation; `status` changes nothing and any caller may run it.
+   Only the orch or an external caller may request or cancel; an agent asks its parent session.
+   Bounds: the daemon waits a fixed window for the pause to confirm and for the wake, and fails the request, leaving its reason in the file, when either runs out.
+diff --git a/internal/configcli/configcli.go b/internal/configcli/configcli.go
+index 4790a2b2..f0558998 100644
+--- a/internal/configcli/configcli.go
++++ b/internal/configcli/configcli.go
+@@ -468,7 +468,7 @@ func buildConfigLong() string {
+ 		"hub's board dir and committed in " + fabricengine.BoltDirName + ". With no argument it lists the known\n" +
+ 		"modules and verbs; with a module\n" +
+ 		"name it edits that module directly; `lym config menu` is the interactive\n" +
+-		"picker, which lists the modules and edits the one you choose. The editor is\n" +
++		"picker. The editor is\n" +
+ 		"resolved from $VISUAL or $EDITOR;\n" +
+ 		"with neither set it uses `code --wait` when code is on PATH, else\n" +
+ 		"notepad on Windows, or nano and then vi elsewhere.\n\n" +
+diff --git a/internal/configreg/configreg.go b/internal/configreg/configreg.go
+index e661b7d5..a7d3ea98 100644
+--- a/internal/configreg/configreg.go
++++ b/internal/configreg/configreg.go
+@@ -26,6 +26,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/heddleengine"
++	"github.com/Knatte18/loomyard/internal/hibernateconfig"
+ 	"github.com/Knatte18/loomyard/internal/landingshed"
+ 	"github.com/Knatte18/loomyard/internal/languageconfig"
+ 	"github.com/Knatte18/loomyard/internal/lenses"
+@@ -135,6 +136,7 @@ func Modules() []Module {
+ 		{Name: "fabric", Template: fabricengine.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(fabricengine.LoadConfig), Spec: fabricengine.ConfigSpec},
+ 		{Name: "gate", Template: gateslot.ConfigTemplate, OpenMaps: gateslot.ConfigOpenMaps(), PerNameMaps: gateslot.ConfigPerNameMaps(), HubWide: true, Migrate: gateslot.MigrateConfig, MigrateHubBase: gateslot.SeedAdoptGate, CheckLoad: checkLoad(gateslot.LoadConfig), Spec: gateslot.ConfigSpec},
+ 		{Name: "heddle", Template: heddleengine.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(heddleengine.LoadConfig), Spec: heddleengine.ConfigSpec},
++		{Name: "hibernate", Template: hibernateconfig.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(hibernateconfig.LoadConfig), Spec: hibernateconfig.ConfigSpec},
+ 		{Name: "landing", Template: landingshed.ConfigTemplate, OpenMaps: landingshed.ConfigOpenMaps(), HubWide: true, SeedsFromPrime: true, Migrate: landingshed.MigrateConfig, CheckLoad: checkLoadNamed(landingshed.LoadConfig, "landing"), Spec: landingshed.ConfigSpec},
+ 		{Name: "language", Template: languageconfig.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(languageconfig.Load), Spec: languageconfig.ConfigSpec},
+ 		{Name: "lenses", Template: lenses.ConfigTemplate, PerNameMaps: lenses.ConfigPerNameMaps(), CheckLoad: lenses.CheckLoad, Spec: lenses.ConfigSpec},
+diff --git a/internal/configreg/configreg_test.go b/internal/configreg/configreg_test.go
+index f627773e..eb949615 100644
+--- a/internal/configreg/configreg_test.go
++++ b/internal/configreg/configreg_test.go
+@@ -44,7 +44,7 @@ func TestNames(t *testing.T) {
+ 	}
+ }
+ 
+-// TestModules_SeedOnlyAndHubWideFlags pins the two flags: "models" and "profiles" carry an open-ended, operator-owned key set (model aliases and run profiles respectively), so they are the only entries with SeedOnly == true, "fabric", "board", "gate", "heddle", "landing", "darn", "desktop", "drift", "language", "sampler" and "profiles" describe hub-level facts, so they are the only entries with HubWide == true, and "landing", whose per-worktree copy was in effect before it moved hub-wide, is the only entry with SeedsFromPrime == true.
++// TestModules_SeedOnlyAndHubWideFlags pins the two flags: "models" and "profiles" carry an open-ended, operator-owned key set (model aliases and run profiles respectively), so they are the only entries with SeedOnly == true, "fabric", "board", "gate", "heddle", "hibernate", "landing", "darn", "desktop", "drift", "language", "sampler" and "profiles" describe hub-level facts, so they are the only entries with HubWide == true, and "landing", whose per-worktree copy was in effect before it moved hub-wide, is the only entry with SeedsFromPrime == true.
+ //
+ //testtiming:keep pins which modules carry the SeedOnly and HubWide flags, which the covering TestFill never asserts
+ func TestModules_SeedOnlyAndHubWideFlags(t *testing.T) {
+@@ -55,7 +55,7 @@ func TestModules_SeedOnlyAndHubWideFlags(t *testing.T) {
+ 		if m.SeedOnly != wantSeedOnly {
+ 			t.Errorf("Modules(): module %q SeedOnly = %v; want %v", m.Name, m.SeedOnly, wantSeedOnly)
+ 		}
+-		wantHubWide := m.Name == "fabric" || m.Name == "board" || m.Name == "gate" || m.Name == "heddle" || m.Name == "landing" || m.Name == "darn" || m.Name == "desktop" || m.Name == "drift" || m.Name == "language" || m.Name == "profiles" || m.Name == "sampler"
++		wantHubWide := m.Name == "fabric" || m.Name == "board" || m.Name == "gate" || m.Name == "heddle" || m.Name == "hibernate" || m.Name == "landing" || m.Name == "darn" || m.Name == "desktop" || m.Name == "drift" || m.Name == "language" || m.Name == "profiles" || m.Name == "sampler"
+ 		if m.HubWide != wantHubWide {
+ 			t.Errorf("Modules(): module %q HubWide = %v; want %v", m.Name, m.HubWide, wantHubWide)
+ 		}
+diff --git a/internal/hibernatecli/cli.go b/internal/hibernatecli/cli.go
+index 0dd40154..971de519 100644
+--- a/internal/hibernatecli/cli.go
++++ b/internal/hibernatecli/cli.go
+@@ -8,11 +8,17 @@ import (
+ 	"github.com/spf13/cobra"
+ 
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hibernateconfig"
+ 	"github.com/Knatte18/loomyard/internal/hibernateengine"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ )
+ 
++// resumeOnWakeFlag is the `hibernate request` flag that chooses, for one request, whether its wake lifts the hub pause.
++const resumeOnWakeFlag = "resume-on-wake"
++
+ // Command returns the cobra command for `lym hibernate`: the bare group and its request, cancel, status and watch verbs.
+ func Command() *cobra.Command {
+ 	hibernate := &cobra.Command{
+@@ -29,7 +35,7 @@ withdraws it and status shows it. Linux only.`,
+ }
+ 
+ // runVerb resolves the hub from the command's cwd, fills the engine's Deps for it and prints what run returns under key in the standard envelope, or a refusal through output.Err.
+-func runVerb(cmd *cobra.Command, key string, run func(hibernateengine.Deps) (any, error)) error {
++func runVerb(cmd *cobra.Command, key string, run func(*lymcwd.Location, hibernateengine.Deps) (any, error)) error {
+ 	if clihelp.ShouldAbort(cmd.Context()) {
+ 		return nil
+ 	}
+@@ -51,7 +57,7 @@ func runVerb(cmd *cobra.Command, key string, run func(hibernateengine.Deps) (any
+ 	if err != nil {
+ 		return fail(err)
+ 	}
+-	result, err := run(deps)
++	result, err := run(location, deps)
+ 	if err != nil {
+ 		return fail(err)
+ 	}
+@@ -64,6 +70,7 @@ func requestCmd() *cobra.Command {
+ 	var (
+ 		after    string
+ 		afterAll bool
++		resume   bool
+ 	)
+ 	cmd := &cobra.Command{
+ 		Use:         "request",
+@@ -71,29 +78,52 @@ func requestCmd() *cobra.Command {
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `request records the hub's one hibernate request and spawns a detached daemon,
+ then returns. The daemon waits for the trigger, pauses the hub, confirms every
+-session paused, hibernates the machine, and on wake lifts its own pause. It
+-posts creel mail to the orch when it is done or failed.
++session paused, hibernates the machine, and on wake reconciles the hub with
++origin. It posts creel mail to the orch when it is done or failed.
++
++The wake lifts the daemon's pause only when hibernate.yaml's resume_on_wake is
++on or --resume-on-wake is given; --resume-on-wake=false keeps the pause for this
++request whatever the config holds. A kept pause stands until "lym tender resume"
++or "lym hibernate cancel" lifts it, and a new request is refused meanwhile.
+ 
+-With no flag the trigger holds at once. --after <slug> waits until that batten
+-run has finished its Land row; --after-all waits until no batten run is in
+-flight. The two are exclusive. Only the orch or an external caller may request;
+-an agent asks its parent session.
++With no trigger flag the trigger holds at once. --after <slug> waits until that
++batten run has finished its Land row; --after-all waits until no batten run is
++in flight. The two are exclusive. Only the orch or an external caller may
++request; an agent asks its parent session.
+ 
+ Example:
+   lym hibernate request
+-  lym hibernate request --after my-task`,
++  lym hibernate request --after my-task
++  lym hibernate request --resume-on-wake`,
+ 		Args: cobra.NoArgs,
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+-			return runVerb(cmd, "request", func(deps hibernateengine.Deps) (any, error) {
+-				return hibernateengine.Submit(deps, hibernateengine.SubmitRequest{After: after, AfterAll: afterAll})
++			return runVerb(cmd, "request", func(location *lymcwd.Location, deps hibernateengine.Deps) (any, error) {
++				resumeOnWake, err := chooseResumeOnWake(cmd.Flags().Changed(resumeOnWakeFlag), resume, fabricengine.ConfigDirs(location))
++				if err != nil {
++					return nil, err
++				}
++				return hibernateengine.Submit(deps, hibernateengine.SubmitRequest{After: after, AfterAll: afterAll, ResumeOnWake: resumeOnWake})
+ 			})
+ 		},
+ 	}
+ 	cmd.Flags().StringVar(&after, "after", "", "hibernate once the batten run of this slug has finished its Land row")
+ 	cmd.Flags().BoolVar(&afterAll, "after-all", false, "hibernate once no batten run is in flight")
++	cmd.Flags().BoolVar(&resume, resumeOnWakeFlag, false, "lift the hub pause on the wake, so paused runs go on by themselves; overrides hibernate.yaml's resume_on_wake for this request")
+ 	return cmd
+ }
+ 
++// chooseResumeOnWake is a request's choice of whether its wake lifts the hub pause: the flag's value when the flag was given, else hibernate.yaml's resume_on_wake under dirs.
++func chooseResumeOnWake(flagGiven, flag bool, dirs configengine.Dirs) (bool, error) {
++	if flagGiven {
++		return flag, nil
++	}
++	cfg, err := hibernateconfig.LoadConfig(dirs)
++	if err != nil {
++		return false, err
++	}
++	return cfg.ResumeOnWake, nil
++}
++
+ // cancelCmd returns the `hibernate cancel` verb.
+ func cancelCmd() *cobra.Command {
+ 	return &cobra.Command{
+@@ -103,15 +133,15 @@ func cancelCmd() *cobra.Command {
+ 		Long: `cancel ends the pending request, stops its daemon and lifts the pause entry the
+ request added. No request, and one that has ended, succeed with nothing
+ cancelled, and one that has ended still has the pause entry it added lifted
+-when its daemon left that entry live. Once the machine is going into hibernation cancel is refused: the
+-daemon lifts its own pause on wake. Only the orch or an external caller may
+-cancel.
++when its daemon left that entry live or its wake kept it. Once the machine is
++going into hibernation cancel is refused until the wake. Only the orch or an
++external caller may cancel.
+ 
+ Example:
+   lym hibernate cancel`,
+ 		Args: cobra.NoArgs,
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+-			return runVerb(cmd, "cancel", func(deps hibernateengine.Deps) (any, error) {
++			return runVerb(cmd, "cancel", func(_ *lymcwd.Location, deps hibernateengine.Deps) (any, error) {
+ 				return hibernateengine.Cancel(deps)
+ 			})
+ 		},
+@@ -131,7 +161,7 @@ Example:
+   lym hibernate status`,
+ 		Args: cobra.NoArgs,
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+-			return runVerb(cmd, "status", func(deps hibernateengine.Deps) (any, error) {
++			return runVerb(cmd, "status", func(_ *lymcwd.Location, deps hibernateengine.Deps) (any, error) {
+ 				return hibernateengine.Status(deps)
+ 			})
+ 		},
+@@ -149,7 +179,7 @@ and is what "lym hibernate request" spawns. Run by hand with no request, or
+ beside a live daemon, it returns at once and does nothing.`,
+ 		Args: cobra.NoArgs,
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+-			return runVerb(cmd, "watch", func(deps hibernateengine.Deps) (any, error) {
++			return runVerb(cmd, "watch", func(_ *lymcwd.Location, deps hibernateengine.Deps) (any, error) {
+ 				return hibernateengine.Watch(deps)
+ 			})
+ 		},
+diff --git a/internal/hibernatecli/cli_test.go b/internal/hibernatecli/cli_test.go
+new file mode 100644
+index 00000000..ae0fda00
+--- /dev/null
++++ b/internal/hibernatecli/cli_test.go
+@@ -0,0 +1,53 @@
++// cli_test.go pins how `hibernate request` chooses whether its wake lifts the hub pause, from its flag and the hub's hibernate.yaml.
++
++package hibernatecli
++
++import (
++	"os"
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestChooseResumeOnWake(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name      string
++		hubFile   string
++		flagGiven bool
++		flag      bool
++		want      bool
++		wantErr   bool
++	}{
++		{"no flag and no hub file read the template's off", "", false, false, false, false},
++		{"no flag reads the hub file", "resume_on_wake: true\n", false, false, true, false},
++		{"the flag on overrides a hub file that is off", "resume_on_wake: false\n", true, true, true, false},
++		{"the flag off overrides a hub file that is on", "resume_on_wake: true\n", true, false, false, false},
++		{"no flag and an unparsable hub file refuse", "resume_on_wake: [\n", false, false, false, true},
++		{"the flag given wins over an unparsable hub file without reading it", "resume_on_wake: [\n", true, true, true, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			board := t.TempDir()
++			if tt.hubFile != "" {
++				path := configengine.ConfigFile(board, "hibernate")
++				if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++					t.Fatal(err)
++				}
++				if err := os.WriteFile(path, []byte(tt.hubFile), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++
++			got, err := chooseResumeOnWake(tt.flagGiven, tt.flag, configengine.Dirs{Board: board})
++
++			if (err != nil) != tt.wantErr || got != tt.want {
++				t.Errorf("chooseResumeOnWake(%v, %v) over %q = %v, %v; want %v, error %v", tt.flagGiven, tt.flag, tt.hubFile, got, err, tt.want, tt.wantErr)
++			}
++		})
++	}
++}
+diff --git a/internal/hibernatecli/doc.go b/internal/hibernatecli/doc.go
+index 40fadb10..5068036c 100644
+--- a/internal/hibernatecli/doc.go
++++ b/internal/hibernatecli/doc.go
+@@ -1,4 +1,4 @@
+-// Package hibernatecli builds the `lym hibernate` group with `lym hibernate request [--after <slug>] [--after-all]`, `lym hibernate cancel`, `lym hibernate status` and the hidden `lym hibernate watch` over internal/hibernateengine.
++// Package hibernatecli builds the `lym hibernate` group with `lym hibernate request [--after <slug>] [--after-all] [--resume-on-wake]`, `lym hibernate cancel`, `lym hibernate status` and the hidden `lym hibernate watch` over internal/hibernateengine.
+ // The engine's sequence, the request file and the callers it refuses are documented there; this package wires it to the hub.
+ //
+ // Every verb runs from any worktree of the hub and resolves it with lymcwd.Resolve.
+@@ -13,6 +13,7 @@
+ // The pause, tender status and lift seams each build tendercli.HubDeps at the call, so every reading sees the hub's current pairs, and the daemon's pause entry carries the caller label the engine names.
+ // `status` builds no tender wiring, since those seams run only when called.
+ // The daemon's notice is creel mail to the orch signed as `HIBERNATE`, never keys typed into the orch's pane.
++// `request` hands the engine whether the wake lifts the pause: `--resume-on-wake` when the flag is given, either way, and otherwise the hub's hibernate.yaml read through internal/hibernateconfig, off when the hub holds no such file.
+ //
+ // # Spawns
+ //
+diff --git a/internal/hibernateconfig/config.go b/internal/hibernateconfig/config.go
+new file mode 100644
+index 00000000..28d133c9
+--- /dev/null
++++ b/internal/hibernateconfig/config.go
+@@ -0,0 +1,58 @@
++// config.go defines hibernate.yaml: the Config type, the template and spec accessors, and LoadConfig.
++
++package hibernateconfig
++
++import (
++	_ "embed"
++	"fmt"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"gopkg.in/yaml.v3"
++)
++
++//go:embed template.yaml
++var configTemplate string
++
++// ConfigTemplate returns the default YAML template for the hibernate config module.
++func ConfigTemplate() string {
++	return configTemplate
++}
++
++// configModule is the config module name hibernate.yaml is loaded under.
++const configModule = "hibernate"
++
++// resumeOnWakeKey is the key that makes the wake lift the request's hub pause.
++const resumeOnWakeKey = "resume_on_wake"
++
++// Config represents the resolved hibernate.yaml configuration.
++type Config struct {
++	// ResumeOnWake reports whether the wake from a hibernate request lifts the hub pause the request added, for a request that does not choose for itself.
++	ResumeOnWake bool `yaml:"resume_on_wake"`
++}
++
++// ConfigSpec returns the hibernate module's layered-load spec.
++// The module is hub-wide, and its one key decides whether every pair's run goes on after a wake, so the local layer refuses it.
++func ConfigSpec() configengine.Spec {
++	return configengine.Spec{
++		Name:     configModule,
++		Template: []byte(ConfigTemplate()),
++		HubWide:  true,
++		Categories: map[string]configengine.Category{
++			resumeOnWakeKey: configengine.CategoryCrossPair,
++		},
++	}
++}
++
++// LoadConfig loads and unmarshals the hibernate module's configuration through the hub-wide layer stack under dirs.
++// A hub whose base file is absent resolves the template, so a hibernate request never fails on a hub not yet reconciled.
++func LoadConfig(dirs configengine.Dirs) (Config, error) {
++	resolved, err := configengine.LoadOrTemplate(dirs, ConfigSpec())
++	if err != nil {
++		return Config{}, err
++	}
++	var cfg Config
++	if err := yaml.Unmarshal(resolved, &cfg); err != nil {
++		return Config{}, configengine.MarkInvalid(fmt.Errorf("unmarshal hibernate config: %w", err))
++	}
++	return cfg, nil
++}
+diff --git a/internal/hibernateconfig/doc.go b/internal/hibernateconfig/doc.go
+new file mode 100644
+index 00000000..7eb1e5e5
+--- /dev/null
++++ b/internal/hibernateconfig/doc.go
+@@ -0,0 +1,12 @@
++// doc.go carries the package godoc for hibernateconfig.
++
++// Package hibernateconfig owns the hub-wide hibernate.yaml: whether the wake from a `lym hibernate request` lifts the hub pause that request added.
++//
++// The module's one key, resume_on_wake, is off in the template, since the operator often works on another machine while this one sleeps and does not want runs to go on by themselves after the wake.
++// `lym hibernate request --resume-on-wake` and `--resume-on-wake=false` override it for one request.
++// The key is classified cross-pair, since lifting a hub pause lets every pair's run go on, so a worktree's local override cannot set it.
++//
++// LoadConfig degrades to the template when the hub holds no hibernate.yaml, so a request never fails on a hub not yet reconciled.
++// The module sits apart from the hibernate engine because configreg registers its template, and the engine already reaches configreg through its own imports.
++// LoadConfig never resolves cwd itself: the caller hands it the directories (see PATTERN-cwd-resolution).
++package hibernateconfig
+diff --git a/internal/hibernateconfig/template.yaml b/internal/hibernateconfig/template.yaml
+new file mode 100644
+index 00000000..76ded15a
+--- /dev/null
++++ b/internal/hibernateconfig/template.yaml
+@@ -0,0 +1 @@
++resume_on_wake: false  # whether the wake from a `lym hibernate request` lifts the hub pause that request added, so paused runs go on by themselves; off keeps the hub paused after the wake until `lym tender resume` or `lym hibernate cancel` lifts it; `lym hibernate request --resume-on-wake` or `--resume-on-wake=false` overrides it for one request
+diff --git a/internal/hibernateengine/doc.go b/internal/hibernateengine/doc.go
+index e047f93a..a4dda6f3 100644
+--- a/internal/hibernateengine/doc.go
++++ b/internal/hibernateengine/doc.go
+@@ -8,7 +8,7 @@
+ // # The request file
+ //
+ // The hub holds one request, a JSON file at `Deps.RequestPath` with its lock at the same path plus `.lock`.
+-// It records the trigger (`now`, `after` with a slug, or `after-all`), the requester, the daemon's pid and start time, the pause entry the daemon owns once it has added one, the phase and the last reason.
++// It records the trigger (`now`, `after` with a slug, or `after-all`), whether the wake lifts the request's pause, the requester, the daemon's pid and start time, the pause entry the daemon owns once it has added one, the phase and the last reason.
+ // The phases are waiting, pausing, confirming, hibernating, resuming, done, failed and cancelled; the last three are terminal.
+ // Every write holds the request lock across its read and write and keeps keys a newer binary added; a read takes no lock and a missing file reads as no request.
+ // A daemon is live when its pid is running with the recorded start time, so a recycled pid is not taken for it.
+@@ -24,19 +24,20 @@
+ //
+ // Submit checks the caller, the platform, `systemctl` on PATH, that `--after` and `--after-all` are not both given, and that an `--after` slug has a batten status; each refusal writes nothing and spawns nothing.
+ // In one hold of the request lock it then refuses a pending request whose daemon is live, lifts the pause entry a pending request with a dead daemon owns, spawns the daemon and writes a waiting request with its pid and start time.
+-// A terminal request and no request are replaced the same way.
++// A terminal request and no request are replaced the same way, except that a terminal request whose owned pause entry is still live is refused, naming "lym hibernate cancel" and "lym tender resume", so a pause its wake kept is not forgotten.
+ // Because the check, the spawn and the write share one hold, two racing submits spawn one daemon.
+ // Submit returns once the daemon is spawned; the daemon decides when the trigger holds.
++// The request records the caller's `ResumeOnWake` as told, since the engine reads no config.
+ //
+ // # Cancel
+ //
+ // Cancel ends the pending request: no request and a terminal one succeed with nothing cancelled.
+-// A live daemon in the hibernating phase is refused, since the machine is going down and the daemon lifts its own pause on wake.
++// A live daemon in the hibernating phase is refused, since the machine is going down; once the wake has ended the request, a cancel lifts a pause the wake kept.
+ // A dead daemon's request is cancelled in any phase, which is the way out after a crash or a cold boot left the hub paused.
+ // Otherwise the request is written cancelled with the requester as the reason, a live daemon is killed, and the pause entry the request owns is lifted by identity, resume lines included.
+ // The request is read again after the kill, since the daemon may have recorded its entry between the hold and the kill.
+ // A request that owns no entry lifts nothing, so a hub pause that stood before the request stays.
+-// A terminal request is not cancelled, but the pause entry it owns is still lifted by identity, which is the way out when its daemon left that entry live.
++// A terminal request is not cancelled, but the pause entry it owns is still lifted by identity, which is the way out when its daemon left that entry live or its wake kept it as the request asked.
+ // Bound: a daemon killed between its pause's record write and the write of its owned entry leaves that entry live and unowned, which `lym tender resume` lifts; the window is one file write.
+ //
+ // # Status
+@@ -77,23 +78,26 @@
+ //
+ // Right before the hibernate the daemon reads the hub once more, needs a live hub entry, and moves the request to hibernating only if it is still this daemon's.
+ // The wake is a sleep the clock gap watch records ending after the hibernate call, seen within five minutes of awake time; a hibernate error or no wake fails the request with the owned entry lifted and one notice.
+-// After the wake the daemon lifts its owned entry on every path: a failed write of the resuming or done phase, a reconcile that stops and a notice that is never delivered all leave the entry lifted, and only a lift error leaves it, failing the request.
++// What the wake does with the owned entry is the request's `ResumeOnWake`.
++// When it is set the daemon lifts its owned entry on every path after the wake: a failed write of the resuming or done phase, a reconcile that stops and a notice that is never delivered all leave the entry lifted, and only a lift error leaves it, failing the request.
++// When it is not set the daemon keeps its owned entry live on every path after the wake, a failure included, and the request ends with the entry still recorded as owned, written back when the request had lost its record, so the hub stays paused until `lym tender resume` or `lym hibernate cancel` lifts it.
++// The reconcile, the pair pause entries and the notice run either way.
+ // After the move to resuming the daemon reconciles the hub with origin, through the `Reconcile` seam, before it lifts anything.
+ // The engine imports no fabric package: `WakeReconcile` is its own view of the report, with whether origin was unreachable, the stop on a branch every pair shares, one `WakeRun` per stopped, ended or owned-elsewhere entry and one rendered line per mutation.
+-// A hub entry the request does not own that is live skips the reconcile and the exemption, only an owned entry is lifted, and the notice names the standing entry, `lym tender resume`, and that `lym beam start` or `lym cleanup --apply` runs the reconcile after that lift.
++// A hub entry the request does not own that is live skips the reconcile and the exemption, only an owned entry is lifted or kept, and the notice names the standing entry, `lym tender resume`, and that `lym beam start` or `lym cleanup --apply` runs the reconcile after that lift.
+ // Otherwise the owned entry, when live, is exempted from the network gate through `ExemptNetwork` until the reconcile returns, so only the reconcile's own network calls pass and every other process and entry stays held; with no hub entry live the reconcile runs with nothing to exempt.
+ // The daemon has no envelope, so each mutation line is logged at Info and never enters the notice.
+-// Unreachable through the retry bound, or a reconcile error, moves nothing further: the owned entry is lifted and the notice names the cause and `lym cleanup --apply`.
+-// Otherwise each stopped run, and each ended run still busy, gets a plain pair pause entry through `Pause`, not recorded as owned so it outlives the request; the owned entry is then lifted.
+-// A stop on a shared branch is no exception: its stopped runs are held the same way, the hub entry is lifted, and the notice names the stop before the runs.
++// Unreachable through the retry bound, or a reconcile error, moves nothing further, and the notice names the cause and `lym cleanup --apply`.
++// Otherwise each stopped run, and each ended run still busy, gets a plain pair pause entry through `Pause`, not recorded as owned so it outlives the request, before the owned entry is lifted or kept.
++// A stop on a shared branch is no exception: its stopped runs are held the same way, and the notice names the stop before the runs.
+ // A pair whose pause fails is left unheld and named with `lym tender pause <slug>`.
+ // A run whose `WakeRun.Owner` is set is owned by another machine: its pair pause carries the owner caller, so a slug entry already standing adds none, and the notice names the owner and `lym adopt <subject>` from this machine's prime, the subject being `WakeRun.AdoptSubject`, the beam or `root`, and the slug when it is empty.
+ // Once an owner pause is added, `Deps.EndOwned` ends the run's owned processes on this machine; the hub's wiring fills it with `tendercli.EndOwnedElsewhere`, which spares a Finalize past its parent-side merge and the calling process and its ancestors.
+ // An end error is logged and leaves the notice as it was, and a nil `EndOwned` skips the end.
+ // A failed owner pause is named with "the next wake or `lym beam start` pauses it again", never with `lym tender pause`, whose entry would carry no owner label.
+ // The notice names per stopped run its way forward then `lym tender resume <slug>`, only `lym tender resume <slug>` for a pair busy on a parked push, and `lym cleanup --apply` in place of the resume for a pair stopped as gone; a busy ended run is named with its landing or removal and `lym cleanup --apply`, and the other ended runs are listed.
+-// A `TenderStatus` error before the reconcile fails the request with the owned entry lifted.
+-// Otherwise the owned entry is lifted by identity, so an entry already resumed, with another hub entry added meanwhile, lifts nothing, and the request ends done with one notice saying what became of the pause.
++// A `TenderStatus` error before the reconcile fails the request.
++// Otherwise the owned entry of a request that resumes on wake is lifted by identity, so an entry already resumed, with another hub entry added meanwhile, lifts nothing, and the request ends done with one notice saying what became of the pause.
+ //
+ // # Notices
+ //
+diff --git a/internal/hibernateengine/request.go b/internal/hibernateengine/request.go
+index 064cd086..e422ded0 100644
+--- a/internal/hibernateengine/request.go
++++ b/internal/hibernateengine/request.go
+@@ -59,7 +59,9 @@ type Request struct {
+ 	DaemonStart string `json:"daemon_start"`
+ 	// Owned names the pause entry the daemon added, nil until it adds one.
+ 	Owned *tenderengine.EntryRef `json:"owned,omitempty"`
+-	Phase Phase                  `json:"phase"`
++	// ResumeOnWake reports whether the wake lifts the owned entry; false keeps it live once the request has ended.
++	ResumeOnWake bool  `json:"resume_on_wake"`
++	Phase        Phase `json:"phase"`
+ 	// Reason is the last reason, empty when none.
+ 	Reason string `json:"reason"`
+ }
+diff --git a/internal/hibernateengine/verbs.go b/internal/hibernateengine/verbs.go
+index 98799c07..6d2cdf51 100644
+--- a/internal/hibernateengine/verbs.go
++++ b/internal/hibernateengine/verbs.go
+@@ -57,11 +57,32 @@ type SubmitRequest struct {
+ 	After string
+ 	// AfterAll waits for every batten run to be out of flight.
+ 	AfterAll bool
++	// ResumeOnWake makes the wake lift the request's pause, so paused runs go on by themselves.
++	ResumeOnWake bool
++}
++
++// refuseKeptPause refuses over a terminal request whose owned pause entry is still live, since replacing the request would lose the only record that lets "lym hibernate cancel" lift it.
++// A request that owns no entry, and one whose entry is already lifted, pass.
++func refuseKeptPause(deps Deps, r Request) error {
++	if r.Owned == nil {
++		return nil
++	}
++	status, err := deps.TenderStatus()
++	if err != nil {
++		return fmt.Errorf(`hibernate: read the hub to check the previous request's pause: %w; way forward: fix what breaks the hub reading, as "lym tender status" shows, then request again`, err)
++	}
++	for _, entry := range status.Live {
++		if entry.Scope == r.Owned.Scope && entry.Caller == r.Owned.Caller && entry.PausedAt.Equal(r.Owned.PausedAt) {
++			return fmt.Errorf(`hibernate: the previous request ended %s and its pause entry is still live; way forward: run "lym hibernate cancel" or "lym tender resume" to lift it, then request again`, r.Phase)
++		}
++	}
++	return nil
+ }
+ 
+ // Submit records the hub's hibernate request and spawns the daemon that carries it out, returning once the daemon is spawned.
+ // The pending-request check, the spawn and the write share one hold of the request lock, so two racing submits spawn one daemon.
+ // A pending request whose daemon is dead is replaced after its owned pause entry is lifted.
++// A terminal request whose owned pause entry is still live is refused, so the entry a wake kept is not forgotten.
+ func Submit(deps Deps, req SubmitRequest) (Request, error) {
+ 	if err := refuseCaller(deps.Caller); err != nil {
+ 		return Request{}, err
+@@ -96,18 +117,24 @@ func Submit(deps Deps, req SubmitRequest) (Request, error) {
+ 				return Request{}, err
+ 			}
+ 		}
++		if found && cur.Terminal() {
++			if err := refuseKeptPause(deps, cur); err != nil {
++				return Request{}, err
++			}
++		}
+ 		pid, start, err := deps.Spawn()
+ 		if err != nil {
+ 			return Request{}, fmt.Errorf("hibernate: spawn the daemon: %w", err)
+ 		}
+ 		submitted = Request{
+-			Trigger:     trigger,
+-			Slug:        req.After,
+-			Requester:   requesterLabel(deps),
+-			RequestedAt: deps.Now(),
+-			DaemonPID:   pid,
+-			DaemonStart: start,
+-			Phase:       PhaseWaiting,
++			Trigger:      trigger,
++			Slug:         req.After,
++			Requester:    requesterLabel(deps),
++			RequestedAt:  deps.Now(),
++			DaemonPID:    pid,
++			DaemonStart:  start,
++			ResumeOnWake: req.ResumeOnWake,
++			Phase:        PhaseWaiting,
+ 		}
+ 		return submitted, nil
+ 	})
+@@ -169,7 +196,7 @@ func Cancel(deps Deps) (CancelReport, error) {
+ 		}
+ 		live := daemonLive(deps, cur)
+ 		if live && cur.Phase == PhaseHibernating {
+-			return Request{}, errors.New(`hibernate: the machine is going into hibernation; way forward: none until it wakes, when the daemon lifts its own pause; run "lym hibernate status" to follow it`)
++			return Request{}, errors.New(`hibernate: the machine is going into hibernation; way forward: none until it wakes; run "lym hibernate status" to follow it, and once the request has ended "lym hibernate cancel" lifts a pause the wake kept`)
+ 		}
+ 		report.Cancelled, report.Phase = true, cur.Phase
+ 		if live {
+diff --git a/internal/hibernateengine/verbs_test.go b/internal/hibernateengine/verbs_test.go
+index 396835ea..25b64b8d 100644
+--- a/internal/hibernateengine/verbs_test.go
++++ b/internal/hibernateengine/verbs_test.go
+@@ -120,6 +120,17 @@ func TestSubmit(t *testing.T) {
+ 				}
+ 			}
+ 		}},
++		{"the resume-on-wake choice is written into the request", func(t *testing.T) {
++			for _, resume := range []bool{true, false} {
++				w := newFakeWorld(t)
++
++				got, err := Submit(w.deps(), SubmitRequest{ResumeOnWake: resume})
++
++				if err != nil || got.ResumeOnWake != resume || w.request().ResumeOnWake != resume {
++					t.Errorf("Submit(ResumeOnWake %v) = %+v, %v, written %+v; want the choice returned and written", resume, got, err, w.request())
++				}
++			}
++		}},
+ 		{"an agent caller is refused naming the parent session, the prime's orch, a beam's orch and an external caller are not", func(t *testing.T) {
+ 			for _, tc := range []struct {
+ 				caller  string
+@@ -206,6 +217,44 @@ func TestSubmit(t *testing.T) {
+ 				}
+ 			}
+ 		}},
++		{"a terminal request whose owned entry is still live is refused and left as it was, and one whose entry was lifted is replaced", func(t *testing.T) {
++			for _, phase := range []Phase{PhaseDone, PhaseFailed} {
++				w := newFakeWorld(t)
++				entry := w.addHubEntry(PauseCaller)
++				w.seed(Request{Trigger: TriggerNow, DaemonPID: 7, DaemonStart: "s7", Phase: phase, Owned: refOf(entry)})
++				before := readBytes(t, w.requestPath)
++
++				_, err := Submit(w.deps(), SubmitRequest{})
++
++				requireRefusal(t, err, "lym hibernate cancel", "lym tender resume", string(phase))
++				if string(readBytes(t, w.requestPath)) != string(before) || len(w.spawned) != 0 || len(w.liveEntries()) != 1 {
++					t.Errorf("%s: request changed, a daemon spawned (%v) or the entry lifted; want none of them", phase, w.spawned)
++				}
++
++				if _, err := w.lift(*refOf(entry)); err != nil {
++					t.Fatal(err)
++				}
++				got, err := Submit(w.deps(), SubmitRequest{})
++
++				if err != nil || got.Phase != PhaseWaiting || len(w.spawned) != 1 {
++					t.Errorf("%s with the entry lifted: got %+v, %v, spawned %v; want a fresh waiting request", phase, got, err, w.spawned)
++				}
++			}
++		}},
++		{"a terminal request that owns an entry is refused with a way forward when the hub cannot be read", func(t *testing.T) {
++			w := newFakeWorld(t)
++			entry := w.addHubEntry(PauseCaller)
++			w.seed(Request{Trigger: TriggerNow, DaemonPID: 7, DaemonStart: "s7", Phase: PhaseDone, Owned: refOf(entry)})
++			before := readBytes(t, w.requestPath)
++			w.readings = []statusReading{{err: errors.New("pane read failed")}}
++
++			_, err := Submit(w.deps(), SubmitRequest{})
++
++			requireRefusal(t, err, "pane read failed", "way forward", "lym tender status")
++			if string(readBytes(t, w.requestPath)) != string(before) || len(w.spawned) != 0 {
++				t.Errorf("request changed or a daemon spawned (%v); want neither", w.spawned)
++			}
++		}},
+ 		{"two submits in parallel spawn one daemon and refuse the other", func(t *testing.T) {
+ 			w := newFakeWorld(t)
+ 			errs := make([]error, 2)
+diff --git a/internal/hibernateengine/watch.go b/internal/hibernateengine/watch.go
+index 24f5718d..c6dd31c0 100644
+--- a/internal/hibernateengine/watch.go
++++ b/internal/hibernateengine/watch.go
+@@ -1,4 +1,4 @@
+-// watch.go implements the daemon's sequence: wait for the trigger, pause the hub, confirm the pause, hibernate the machine, detect the wake and lift the daemon's own pause entry.
++// watch.go implements the daemon's sequence: wait for the trigger, pause the hub, confirm the pause, hibernate the machine, detect the wake and lift or keep the daemon's own pause entry.
+ 
+ package hibernateengine
+ 
+@@ -47,6 +47,9 @@ const (
+ 	noticeRetryWindow = 10 * time.Minute
+ )
+ 
++// keptPauseOutcome is the tail of a notice whose request kept its owned pause entry live after the wake.
++const keptPauseOutcome = "it kept its pause, as the request asked, so the hub stays paused; `lym tender resume` lifts it."
++
+ // runGoneError means the batten status an after trigger waits for no longer exists.
+ type runGoneError struct{ slug string }
+ 
+@@ -56,7 +59,9 @@ func (e runGoneError) Error() string {
+ 
+ // Watch runs the daemon's sequence for the request whose daemon is the running process, and returns the request as it ended.
+ // It acts only for a non-terminal request carrying the process's own pid and start time; with no request, a terminal one or another daemon's it returns at once and writes nothing.
+-// After the wake it reconciles the hub with origin and then lifts its own pause entry whatever the reconcile found, and a failed write of the request or a refused notice never keeps that entry live.
++// After the wake it reconciles the hub with origin.
++// A request that resumes on wake then has its own pause entry lifted whatever the reconcile found, and a failed write of the request or a refused notice never keeps that entry live.
++// A request that does not keeps the entry live on every path after the wake, a failure included, so the hub stays paused until the operator lifts it.
+ // A request cancelled meanwhile ends the sequence quietly, since the cancel lifts the owned pause entry.
+ // The daemon sends no key and no text of its own: every interrupt and resume line is tender's.
+ func Watch(deps Deps) (Request, error) {
+@@ -133,7 +138,7 @@ func Watch(deps Deps) (Request, error) {
+ 
+ 	resuming, ok, err := advance(deps, PhaseResuming, "")
+ 	if err != nil {
+-		return fail(deps, r, kept, err.Error())
++		return failAtWake(deps, r, kept, err.Error())
+ 	}
+ 	if !ok {
+ 		return r, nil
+@@ -146,19 +151,28 @@ func Watch(deps Deps) (Request, error) {
+ 	}
+ 	detail, err := reconcileAtWake(deps, target)
+ 	if err != nil {
+-		return fail(deps, r, kept, err.Error())
++		return failAtWake(deps, r, kept, err.Error())
+ 	}
+-	lifted, err := liftOwned(deps, target)
+-	if err != nil {
+-		return fail(deps, r, kept, err.Error())
++	outcome := keptOutcome(target)
++	var recordErr error
++	switch {
++	case r.ResumeOnWake:
++		lifted, err := liftOwned(deps, target)
++		if err != nil {
++			return fail(deps, r, kept, err.Error())
++		}
++		outcome = wakeOutcome(lifted)
++	case r.Owned == nil && kept != nil:
++		// The kept entry stays live, and recording it lets the finished request name it to a cancel.
++		recordErr = recordOwned(deps, *kept)
+ 	}
+ 	r, writeErr := finish(deps, r, PhaseDone, "")
+-	headline := "[lym hibernate] The machine woke from hibernation; " + wakeOutcome(lifted)
++	headline := "[lym hibernate] The machine woke from hibernation; " + outcome
+ 	line := headline
+ 	if detail != "" {
+ 		line += " " + detail
+ 	}
+-	return r, errors.Join(writeErr, sendNotice(deps, line, headline))
++	return r, errors.Join(recordErr, writeErr, sendNotice(deps, line, headline))
+ }
+ 
+ // sendNotice queues line for the orch, queueing it again after a doubling wait while it is refused, until the waits add up to noticeRetryWindow, since right after a wake the orch's session may not be listed yet.
+@@ -206,6 +220,14 @@ func wakeOutcome(lifted *tenderengine.ResumeReport) string {
+ 	return "its pause was lifted."
+ }
+ 
++// keptOutcome says what became of the pause entry of r, a request that keeps it after the wake, as the tail of the wake notice.
++func keptOutcome(r Request) string {
++	if r.Owned == nil {
++		return wakeOutcome(nil)
++	}
++	return keptPauseOutcome
++}
++
+ // ours reports whether r is the request of the running daemon.
+ func ours(deps Deps, r Request) bool {
+ 	return r.DaemonPID == deps.SelfPID && r.DaemonStart == deps.SelfStart
+@@ -276,9 +298,19 @@ func finish(deps Deps, r Request, phase Phase, reason string) (Request, error) {
+ }
+ 
+ // fail ends the request failed with reason, lifts the entry it owns and queues one notice.
+-// When the request records no owned entry the entry kept from the pause is lifted instead.
+-// The lift and the notice run even when the failed write itself fails, and the write's error is returned.
+ func fail(deps Deps, r Request, kept *tenderengine.EntryRef, reason string) (Request, error) {
++	return failRequest(deps, r, kept, reason, true)
++}
++
++// failAtWake ends the request failed with reason after the wake, lifts the entry it owns only when r resumes on wake, and queues one notice.
++func failAtWake(deps Deps, r Request, kept *tenderengine.EntryRef, reason string) (Request, error) {
++	return failRequest(deps, r, kept, reason, r.ResumeOnWake)
++}
++
++// failRequest ends the request failed with reason, lifts the entry it owns when lift is set, and queues one notice naming what became of that entry.
++// When the request records no owned entry the entry kept from the pause stands in for it.
++// The lift and the notice run even when the failed write itself fails, and the write's error is returned.
++func failRequest(deps Deps, r Request, kept *tenderengine.EntryRef, reason string, lift bool) (Request, error) {
+ 	r, writeErr := finish(deps, r, PhaseFailed, reason)
+ 	target := r.Owned
+ 	if current, found, err := readRequest(deps.RequestPath); err == nil && found && current.Owned != nil {
+@@ -289,7 +321,11 @@ func fail(deps Deps, r Request, kept *tenderengine.EntryRef, reason string) (Req
+ 	}
+ 	var liftErr error
+ 	outcome := "it owned no pause to lift."
+-	if target != nil {
++	switch {
++	case target == nil:
++	case !lift:
++		outcome = keptPauseOutcome
++	default:
+ 		if _, liftErr = deps.Lift(*target); liftErr == nil {
+ 			outcome = "its pause was lifted."
+ 		} else {
+diff --git a/internal/hibernateengine/watch_test.go b/internal/hibernateengine/watch_test.go
+index 4d9c1cd6..c066e84c 100644
+--- a/internal/hibernateengine/watch_test.go
++++ b/internal/hibernateengine/watch_test.go
+@@ -37,6 +37,15 @@ func watchNow(t *testing.T, w *fakeWorld) (Request, error) {
+ 	return Watch(w.deps())
+ }
+ 
++// watchKeeping seeds a now request owned by the world's own daemon that keeps its pause after the wake, and runs Watch over it.
++func watchKeeping(t *testing.T, w *fakeWorld) (Request, error) {
++	t.Helper()
++	request := w.ownRequest(TriggerNow, "")
++	request.ResumeOnWake = false
++	w.seed(request)
++	return Watch(w.deps())
++}
++
+ // resumeLive lifts the live hub entry that caller added.
+ func resumeLive(t *testing.T, w *fakeWorld, caller string) {
+ 	t.Helper()
+@@ -558,6 +567,134 @@ func TestWatch(t *testing.T) {
+ 			}
+ 			requireNotice(t, w, "its pause was lifted.")
+ 		}},
++		{"a request that keeps its pause still reconciles and holds runs, ends done with its hub entry live and owned, and names the resume", func(t *testing.T) {
++			w := newFakeWorld(t)
++			w.reconcileResult = WakeReconcile{Runs: []WakeRun{{Slug: "p1", WayForward: "fix p1"}}}
++
++			got, err := watchKeeping(t, w)
++
++			final := w.request()
++			var scopes []string
++			for _, entry := range w.liveEntries() {
++				scopes = append(scopes, entry.Scope)
++			}
++			slices.Sort(scopes)
++			if err != nil || got.Phase != PhaseDone || final.Phase != PhaseDone || final.Owned == nil || final.Owned.Scope != pauserecord.ScopeHub || w.reconcileCalls != 1 {
++				t.Errorf("got %+v, %v, final %+v, reconciles %d; want done after one reconcile with the hub entry still owned", got, err, final, w.reconcileCalls)
++			}
++			if want := []string{pauserecord.ScopeHub, "p1"}; !slices.Equal(scopes, want) {
++				t.Errorf("live scopes = %v; want %v, the hub entry kept beside the pair entry", scopes, want)
++			}
++			requireNotice(t, w, "woke from hibernation; "+keptPauseOutcome, "fix p1; then `lym tender resume p1`")
++		}},
++		{"a failure at the wake of a request that keeps its pause leaves the entry live and the notice says so", func(t *testing.T) {
++			w := newFakeWorld(t)
++			// Calls 0 and 1 are the confirmation and the check before the hibernate, call 2 the wake's read.
++			w.readings = []statusReading{{}, {}, {err: errors.New("status broke")}}
++
++			got, err := watchKeeping(t, w)
++
++			live := w.liveEntries()
++			if err != nil || got.Phase != PhaseFailed || len(live) != 1 || live[0].Scope != pauserecord.ScopeHub || live[0].Caller != PauseCaller {
++				t.Errorf("got %+v, %v, live %+v; want failed with the owned hub entry live", got, err, live)
++			}
++			requireNotice(t, w, "The hibernate request failed: read the hub at the wake: status broke; "+keptPauseOutcome)
++		}},
++		{"a failure before the hibernate lifts the entry of a request that keeps its pause after the wake", func(t *testing.T) {
++			for _, tc := range []struct {
++				name  string
++				setup func(w *fakeWorld)
++			}{
++				{"a pause error", func(w *fakeWorld) { w.pauseErr = errors.New("tender down") }},
++				{"a hibernate error", func(w *fakeWorld) { w.hibernateErr = errors.New("job refused") }},
++			} {
++				w := newFakeWorld(t)
++				tc.setup(w)
++
++				got, err := watchKeeping(t, w)
++
++				if err != nil || got.Phase != PhaseFailed || len(w.liveEntries()) != 0 {
++					t.Errorf("%s: got %+v, %v, live %+v; want failed with the entry lifted", tc.name, got, err, w.liveEntries())
++				}
++				requireNotice(t, w, "The hibernate request failed", "its pause was lifted.")
++			}
++		}},
++		{"a request that keeps its pause and cannot write the resuming phase leaves the entry live and the notice says so", func(t *testing.T) {
++			w := newFakeWorld(t)
++			broken := false
++			w.onSleep = func() {
++				if broken || w.hibernates() == 0 {
++					return
++				}
++				broken = true
++				if err := os.Remove(w.requestPath); err != nil {
++					t.Error(err)
++				}
++				if err := os.Mkdir(w.requestPath, 0o755); err != nil {
++					t.Error(err)
++				}
++			}
++
++			_, err := watchKeeping(t, w)
++
++			live := w.liveEntries()
++			if err == nil || len(live) != 1 || live[0].Scope != pauserecord.ScopeHub || live[0].Caller != PauseCaller {
++				t.Errorf("err %v, live %+v; want the write's error and the owned hub entry live", err, live)
++			}
++			requireNotice(t, w, "The hibernate request failed", keptPauseOutcome)
++		}},
++		{"a request that keeps its pause and lost its owned record at the wake ends done with the kept entry recorded as owned", func(t *testing.T) {
++			w := newFakeWorld(t)
++			cleared := false
++			w.onSleep = func() {
++				if cleared || w.hibernates() == 0 {
++					return
++				}
++				cleared = true
++				err := updateRequest(w.requestPath, func(cur Request, found bool) (Request, error) {
++					cur.Owned = nil
++					return cur, nil
++				})
++				if err != nil {
++					t.Error(err)
++				}
++			}
++
++			got, err := watchKeeping(t, w)
++
++			final, live := w.request(), w.liveEntries()
++			if err != nil || got.Phase != PhaseDone || final.Owned == nil || final.Owned.Scope != pauserecord.ScopeHub || final.Owned.Caller != PauseCaller || len(live) != 1 {
++				t.Errorf("got %+v, %v, final %+v, live %+v; want done with the hub entry live and recorded as owned", got, err, final, live)
++			}
++			requireNotice(t, w, "woke from hibernation; "+keptPauseOutcome)
++		}},
++		{"a request that keeps its pause and owns none ends done with a notice saying it owned no pause", func(t *testing.T) {
++			w := newFakeWorld(t)
++			w.addHubEntry("EXTERNAL")
++
++			got, err := watchKeeping(t, w)
++
++			if err != nil || got.Phase != PhaseDone || got.Owned != nil || w.request().Owned != nil || len(w.liveEntries()) != 1 {
++				t.Errorf("got %+v, %v, live %+v; want done, nothing owned and the entry live", got, err, w.liveEntries())
++			}
++			requireNotice(t, w, "it owned no pause, so the hub pause that stood before the request still stands.")
++			if strings.Contains(w.noticeList()[0], keptPauseOutcome) {
++				t.Errorf("notice = %q; want no claim that a pause was kept", w.noticeList()[0])
++			}
++		}},
++		{"a failure at the wake of a request that keeps its pause and owns none says it owned no pause to lift", func(t *testing.T) {
++			w := newFakeWorld(t)
++			w.addHubEntry("EXTERNAL")
++			// Calls 0 and 1 are the confirmation and the check before the hibernate, call 2 the wake's read.
++			w.readings = []statusReading{{}, {}, {err: errors.New("status broke")}}
++
++			got, err := watchKeeping(t, w)
++
++			if err != nil || got.Phase != PhaseFailed || len(w.liveEntries()) != 1 {
++				t.Errorf("got %+v, %v, live %+v; want failed with the other entry live", got, err, w.liveEntries())
++			}
++			requireNotice(t, w, "The hibernate request failed: read the hub at the wake: status broke; it owned no pause to lift.")
++		}},
+ 		{"a wake under an operator's hub pause skips the reconcile, exempts nothing, leaves that entry live and names it and the resume", func(t *testing.T) {
+ 			w := newFakeWorld(t)
+ 			w.addHubEntry("EXTERNAL")
+diff --git a/internal/hibernateengine/world_test.go b/internal/hibernateengine/world_test.go
+index 684dbf72..cc5434a5 100644
+--- a/internal/hibernateengine/world_test.go
++++ b/internal/hibernateengine/world_test.go
+@@ -466,12 +466,13 @@ func (w *fakeWorld) deps() Deps {
+ }
+ 
+ // ownRequest is a waiting request whose daemon is the world's own process.
++// It resumes on wake, so the wake rows pin the lift; the rows that keep the pause clear it.
+ func (w *fakeWorld) ownRequest(trigger Trigger, slug string) Request {
+ 	requester := w.requester
+ 	if requester == "" {
+ 		requester = requesterExternal
+ 	}
+-	return Request{Trigger: trigger, Slug: slug, Requester: requester, RequestedAt: w.now(), DaemonPID: w.selfPID, DaemonStart: w.selfStart, Phase: PhaseWaiting}
++	return Request{Trigger: trigger, Slug: slug, Requester: requester, RequestedAt: w.now(), DaemonPID: w.selfPID, DaemonStart: w.selfStart, ResumeOnWake: true, Phase: PhaseWaiting}
+ }
+ 
+ // seed writes r as the request file.
+diff --git a/pattern/PATTERN-config-layers.md b/pattern/PATTERN-config-layers.md
+index a84fba81..449c359f 100644
+--- a/pattern/PATTERN-config-layers.md
++++ b/pattern/PATTERN-config-layers.md
+@@ -56,7 +56,7 @@ A local override file is pruned of every such key on any reconcile, since its lo
+ 
+ `internal/configengine` offers `Load` (strict) and `LoadOrTemplate` (degrades to the embedded template); a caller adopts exactly one, except `runprofile`.
+ 
+-- Degrading callers: `{shuttleengine, claudeengine, reedengine, websterengine, batcher, orchengine, loggerconfig, battenshed, languageconfig, lenses, desktophook, heddleengine}`.
++- Degrading callers: `{shuttleengine, claudeengine, reedengine, websterengine, batcher, orchengine, loggerconfig, battenshed, languageconfig, lenses, desktophook, heddleengine, hibernateconfig}`.
+ - Strict callers: `{fabricengine, boardengine, loomengine, landingshed, gateslot, configcli, configreg}`.
+   `configcli` loads strictly only to validate a hub-wide module's file before committing it.
+   `configreg` loads strictly only to answer a recipe row's setting.
