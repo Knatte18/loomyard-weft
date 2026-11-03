@@ -50,7 +50,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **A status-bar button asks for a value, so an agent opened from it gets a name**<br>• Button entries take ask, filling {answer}; the agent button asks for the strand name, and term becomes terminal | [`button-ask-name`](design-button-ask-name.md) | darn · light | Code-Burler-Fix | neve | 2d<br>24m | reed, config |
 | T5 | **Bench Plan and Discussion fixers on Sonnet against Opus**<br>• Twelve fixer runs: Opus against Sonnet, and Sonnet on concrete findings | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | darn · docs | Drift-Verify | neve | 12d<br>24m | burler, claude |
-| T8 | **batten cancel --remove leaves a non-git directory that blocks Worktree-Create** | [`cancel-remove-leftover-dir`](design-cancel-remove-leftover-dir.md) | darn · light | Drift-Recheck | neve | 2h<br>1h | batten, fabric |
+| T8 | **batten cancel --remove leaves a non-git directory that blocks Worktree-Create** | [`cancel-remove-leftover-dir`](design-cancel-remove-leftover-dir.md) | darn · light | Describe | neve | 2h<br>1h | batten, fabric |
 
 #### Ready (0)
 
