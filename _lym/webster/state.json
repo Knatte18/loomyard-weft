@@ -355,7 +355,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "8c367ba1767cd7b167f0db07436c37c8",
   "masterSessionId": "87115963-d0b5-4d72-bf90-38335a1927d4",
   "masterEngine": "claude",
@@ -441,6 +441,26 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-batten-remote-order/87115963-d0b5-4d72-bf90-38335a1927d4/subagents/agent-a2b5bec2de69f2f56.jsonl"
       ]
+    },
+    "7": {
+      "slug": "leased-weft-delete",
+      "cards": [
+        "07-leased-weft-delete",
+        "08-cleanup-teardown-lock",
+        "09-reconcile-absent-pair"
+      ],
+      "cardHashes": {
+        "07-leased-weft-delete": "8ebe9b20ed85b66b5734a5fa4ba88695a4faba9c1d2e80036ee528982bcb3654",
+        "08-cleanup-teardown-lock": "21a60bf445f1d15fb8f6495e839afcec3ec0dae24a52507b51092eb6a84a2620",
+        "09-reconcile-absent-pair": "b5073d0e7f94bf857e19d38b3c496a6ae8cd224d934e346ad0b60d1a9a536cda"
+      },
+      "startSha": "4a3948498a570e59f272055450ff54ac26178bf8",
+      "kind": "fork",
+      "spawnedAt": "2026-11-03T10:35:14Z",
+      "sessionId": "87115963-d0b5-4d72-bf90-38335a1927d4",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
