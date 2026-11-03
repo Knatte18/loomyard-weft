@@ -1,6 +1,6 @@
 # Darn-Write writer runs no gate itself when the cold fixer is on
 
-`darn-writer-runs-no-gate` · Task · bug, darn, stencil, gate · running · Describe
+`darn-writer-runs-no-gate` · Task · bug, darn, stencil, gate · running · PR-Review
 
 The Darn-Write writer still runs `lym gate test` and fixes its failures in its own session, at full context, though the cold gate fixer was meant to take that work off it.
 
