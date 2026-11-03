@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (3)
+### Running (4)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -20,15 +20,15 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **A shed block runs a whole sub-recipe inline as one producer, so recipes reuse one another** | [`shed-sub-run-block`](design-shed-sub-run-block.md) | tapestry | Discussion-Write | neve | 58m<br>21m | shed, loom |
 | T2 | **An approved Discussion stores its decision record on the board entry and flags it discussed** | [`decision-record-on-board`](design-decision-record-on-board.md) | tapestry · light | Discussion-Write | neve | 15m<br>9m | board, loom |
+| T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Worktree-Create | neve | 10h<br>0m | batten, fabric |
 | T4 | **Claude Code autocompact picker in a shuttle session stalls a gate re-prompt forever** | [`shuttle-autocompact-picker-stall`](design-shuttle-autocompact-picker-stall.md) | darn | Worktree-Create | neve | 11h<br>0m | shuttle, loom |
 
-### Ready (3)
+### Ready (2)
 
 Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light |  | 10h<br>0m | batten, fabric |
 | T5 | **Hub-wide config reconcile by an older lym binary strips keys a newer binary wrote** | [`reconcile-strips-newer-keys`](design-reconcile-strips-newer-keys.md) | darn |  | 10h<br>0m | reconcile, config |
 | T6 | **loom Parent-Align halts blocked when the fixer reports verdict fixed** | [`parent-align-fixed-reads-dirty`](design-parent-align-fixed-reads-dirty.md) | darn |  | 10h<br>0m | landing |
 
