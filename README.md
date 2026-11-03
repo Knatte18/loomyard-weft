@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-03 17:34 UTC; every age below is as of then.
+Rendered 2026-11-03 17:35 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -86,8 +86,8 @@ Waits only on Running, Ready or Draft entries.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Per-machine environment variables, exported to every process lym starts for the hub** | [`machine-env-vars`](design-machine-env-vars.md) | darn · light | T6 | 10h<br>18m | config, gate, drift, shuttle |
-| T8 | **batten cancel --remove leaves a non-git directory that blocks Worktree-Create** | [`cancel-remove-leftover-dir`](design-cancel-remove-leftover-dir.md) | darn · light | T2 | 50m<br>42m | batten, fabric |
-| T10 | **Code changed after Drift-Verify lands with no compare**<br>• A review fixer rewrote the formatter after Drift-Verify; nothing compares again and lym drift compare refuses past Drift-Verify | [`drift-after-review`](design-drift-after-review.md) | darn · light | T1<br>T6 | 29m<br>24m | drift, loom |
+| T8 | **batten cancel --remove leaves a non-git directory that blocks Worktree-Create** | [`cancel-remove-leftover-dir`](design-cancel-remove-leftover-dir.md) | darn · light | T2 | 50m<br>43m | batten, fabric |
+| T10 | **Code changed after Drift-Verify lands with no compare**<br>• A review fixer rewrote the formatter after Drift-Verify; nothing compares again and lym drift compare refuses past Drift-Verify | [`drift-after-review`](design-drift-after-review.md) | darn · light | T1<br>T6 | 30m<br>25m | drift, loom |
 
 #### Layer B (1)
 
@@ -95,7 +95,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human** | [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md) | darn · light | T2<br>T8 | 50m<br>42m | fabric, landing |
+| T9 | **lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human** | [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md) | darn · light | T2<br>T8 | 50m<br>43m | fabric, landing |
 
 #### Draft (1)
 
@@ -119,7 +119,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B5 |  | **Moving Drift's dir base reinterpreted existing drift.yaml files with no migration**<br>• cs drift.yaml dir . moved from the anchor to the worktree root at deploy and the capture failed exit 1 | [`drift-dir-base-migration`](design-drift-dir-base-migration.md) | 58m<br>58m | drift, reconcile |
+| B5 |  | **Moving Drift's dir base reinterpreted existing drift.yaml files with no migration**<br>• cs drift.yaml dir . moved from the anchor to the worktree root at deploy and the capture failed exit 1 | [`drift-dir-base-migration`](design-drift-dir-base-migration.md) | 59m<br>59m | drift, reconcile |
 
 #### Enhancements (8)
 
@@ -154,11 +154,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 10h<br>1h | shuttle, codex, loom |
 | F16 |  | **Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | 8h<br>8h | drift, shed |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>1d | burler, shed, orch, quarry, report |
-
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T7 | **An arbiter whose turn ends on an API error holds the stop silently until its deadline**<br>• A StopFailure leaves the settler idle, the parent's resume is refused as driver_not_parked, and no one is told | [`arbiter-api-error-stall`](design-arbiter-api-error-stall.md) | 58m<br>55m | arbiter, shuttle, claude |
