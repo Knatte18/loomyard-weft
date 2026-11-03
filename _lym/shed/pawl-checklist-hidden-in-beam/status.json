@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Bouncer",
+  "current_producer": "Drift-Baseline",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler-Fix → bounced to Discussion-Bouncer",
+    "now": "Drift-Baseline",
+    "last": "Discussion-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -79,6 +79,13 @@
       ],
       "budget_exempt": true,
       "routed_to": "Discussion-Bouncer",
+      "block": "Motif"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/pawl-checklist-hidden-in-beam/_lym/reviews/discussion/round-1-bouncer-ledger.md",
+      "at": "2026-11-03T10:03:37Z",
       "block": "Motif"
     }
   ],
