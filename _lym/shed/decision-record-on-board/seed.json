@@ -1,0 +1,8 @@
+{
+  "recipe": "tapestry",
+  "driver": "go",
+  "params": {
+    "parent": "main"
+  },
+  "started_at": "2026-11-03T07:15:09Z"
+}
