@@ -762,7 +762,7 @@
       "isolated": false,
       "brief": "",
       "body": "From [issue #21](https://github.com/Knatte18/loomyard/issues/21), first of its three faults; the batten half is task `batten-stray-dir-and-beam-mark`.\n\n## What happened\n\nHub NORCE-DrillingAndWells/Models (C#), beam `loomyard-setup` after its landing.\n`lym fabric remove loomyard-setup` succeeded (worktrees, branches, launchers, session), but left the worktree directory in place holding git-ignored build output: `src/csharp/NORCE.Models/\u003cproject\u003e/obj/` under three projects.\nWith that directory present but no longer a git repository, every batten verb on the run then failed with \"not a git repository\".\n\n## Expected\n\n`fabric remove` deletes the whole worktree directory, ignored files (`obj/`, `bin/`, caches) included, once git has removed the worktree; the same holds for the weft sibling.\n",
-      "status": "running · Record-Write",
+      "status": "running · Darn-Write",
       "created": "2026-11-03T07:47:15Z",
       "revised": "2026-11-03T08:00:01Z",
       "profile": "solid"
