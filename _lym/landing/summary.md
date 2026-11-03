@@ -1,54 +1,38 @@
-# Reconcile renames former recipe blocks in profiles, lists missing ones
+# Reconcile migrates profiles.yaml for renamed and missing recipes
 
-A hub whose `profiles.yaml` was seeded before the `loom` → `tapestry` recipe rename kept `loom` recipe blocks and a `defaults.loom` entry.
-No run reads those, so every tapestry run on such a profile stopped at Seed-Child.
-`lym config reconcile --layer default --apply` changed nothing, because `profiles` is seed-only and reconcile never touched a present seed-only file.
+A hub whose `profiles.yaml` was seeded before the `loom` to `tapestry` recipe rename stopped every tapestry run at Seed-Child.
+`lym config reconcile` left the file alone, because `profiles` is a seed-only module that reconcile never rewrites, so only hand-editing each profile with `lym config profiles --set` fixed it.
 
-## What changes
+Reconcile now runs two hooks over a present `profiles.yaml` and still never fills or prunes it.
 
-- **Rename on reconcile.**
-  `runprofile.MigrateConfig` renames, in every profile and under `defaults`, a recipe block or entry keyed by a recipe's former name to its current name, keeping the operator's values and comments.
-  If a profile already holds the current name, it keeps that block and drops the former one.
-  Each rewrite is one line, such as `light.loom: renamed to light.tapestry`.
-  The former names live in one table, `recipeRenames`, holding `loom` → `shedrun.RecipeTapestry`.
-- **Missing blocks reported, never added.**
-  `runprofile.LackingTemplateBlocks` lists each recipe block or `defaults` entry that a template profile holds and the hub's profile of the same name lacks, such as `light.sampler`.
-  A profile the template lacks, or one the operator removed whole, lists nothing.
-- **Seed-only files are migrated.**
-  `configreg.Module` gains a `Lacking` hook, and the `profiles` row sets both `Migrate` and `Lacking`.
-  `configsync.ReconcileHubWideAt` now runs a seed-only module's `Migrate` hook over a present file, or over the prime's copy that seeds an absent default.
-  It writes the file only when the hook rewrote something.
-  The `Lacking` report goes in the new `Result.Lacking` field.
-  A seed-only file is still never filled or pruned.
-- **Reporting.**
-  `lym config reconcile --layer default` shows the rewrites under `migrated` and the report under `lacking`.
-  The hub reconcile walk, which a start verb runs after a binary change, logs one Warn per module whose file lacks template units, with `lym config <module>` as the way forward.
-- **Seed-Child way forward.**
-  `Profiles.Settings` refuses a profile that holds the task's recipe only under its former name.
-  `Profiles.Default` now returns an error too, and refuses a `defaults` entry held only under the former name, which would otherwise let the task run silently on the hub's own config.
-  Both refusals name `lym config reconcile --layer default --apply` from the prime worktree as the way forward.
-  Seed-Child routes them to Stuck through `ErrInvalidRunSettings`.
-- Docs follow: the `runprofile`, `configcli`, `hubreconcile` and `configengine` package docs, the `configreg.Module` field docs, and the `profiles.yaml` template header no longer say a seed-only file is never rewritten.
+- `runprofile.MigrateConfig` renames a recipe block, in each profile and under `defaults`, held under a recipe's former name to the current name, keeping the operator's value and the file's comments.
+  A table in `internal/runprofile/migrate.go` (`recipeRenames`) lists the renames; it holds `loom` to `tapestry` today.
+- `runprofile.LackingTemplateBlocks` lists each recipe block (such as `sampler`) that the template holds for a profile and the hub's profile of that name lacks.
+  Reconcile reports it under a new `lacking` field of the envelope and logs one Warn per module in the hub reconcile walk, with `lym config profiles` as the way forward.
+  Nothing is added, since the file is the operator's.
+
+Seed-Child now refuses a profile, or a `defaults` entry, that holds a recipe only under its former name, and names `lym config reconcile --layer default --apply` as the way forward.
+`Profiles.Default` now returns an error for that case, and `prepareRunSettings` in `battencli` wraps it in `ErrInvalidRunSettings`.
+Before, a task whose default sat under the former name quietly ran on the hub's own config.
+
+Closes #29
 
 ## Design decisions
 
-- **Report the missing `sampler` blocks rather than add them.**
-  The file is operator-owned, and reconcile cannot tell a block the operator removed on purpose from one that was never seeded.
-  Adding blocks from the template would undo a deliberate removal on every binary change.
-- **A new `Lacking` hook instead of reusing `Migrate`.**
-  `Migrate` lines mean a rewrite, and a non-empty set causes a write.
-  A report that never changes the file needs its own channel, or the file would be rewritten on every pass.
-- **The per-worktree path is unchanged.**
-  `reconcileBaseWorktreeFile` (a standalone worktree with no board) and the sparse layers still leave a seed-only file untouched.
-  `profiles` is hub-wide, and the bug lives at the board dir.
-- The `!m.HubWide && presentSeedOnly` early return in `ReconcileHubWideAt` is gone, so a present per-worktree seed-only default (`models`) takes the same seed-only branch.
-  `models` has no hooks, so its result is unchanged.
-
-Closes #29.
+- `configreg.Module` gains a `Lacking` hook, and the `SeedOnly` contract changes from "never rewritten" to "never filled or pruned".
+  `configsync.ReconcileHubWideAt` runs `Migrate` and `Lacking` over a present seed-only file, or over the prime's copy that seeds an absent default, and writes only when `Migrate` rewrote something.
+  An absent seed-only file with no prime copy is still seeded whole from the template.
+  This also drops the `Seed: hub` marker that the reconcile envelope gave a present seed-only per-worktree module, since such a file now goes through the same path.
+- When a profile holds both a former block and the current one, the former block is deleted only when it equals the current block.
+  A differing pair is left untouched and reported as `<entry>.<from>: differs from <entry>.<to>` under `lacking`, so the operator settles it by hand.
+  This keeps the migration from ever dropping an operator value silently.
+- The migration edits the yaml node tree, so comments and unrelated keys survive.
+  A document that does not parse, or whose root is not a mapping, fails with `configengine.ErrInvalid`.
+- The `SeedOnly` doc comments, `profiles` template header and the docs of `runprofile`, `configcli`, `configengine` and `hubreconcile` are updated to the new contract.
 
 ## To check by hand
 
-- On a copy of a pre-rename hub's `profiles.yaml` (`loom` blocks, `defaults.loom`, no `sampler`):
-  - `lym config reconcile --layer default` lists `migrated` lines for each renamed block and `lacking` entries for each `<profile>.sampler`.
-  - `--apply` rewrites the file with `tapestry` blocks holding the same values.
-- A tapestry task naming a profile that still holds a `loom` block stops at Seed-Child with the reconcile command as its way forward.
+- Run `lym config reconcile --layer default` (dry run, then `--apply`) from the prime of a hub whose `profiles.yaml` still holds `loom` blocks and `defaults.loom`.
+  The blocks should be renamed with their values and comments kept, and `lacking` should list the missing `sampler` blocks.
+- On such a hub before reconcile, start a tapestry task and confirm Seed-Child names the reconcile as its way forward.
+  This path is covered by unit tests only.
