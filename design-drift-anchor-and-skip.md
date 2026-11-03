@@ -1,6 +1,6 @@
 # Drift runs in an anchored hub, can be skipped for one run, and its baseline agent picks scope off when the suite cannot reach the change
 
-`drift-anchor-and-skip` · Task · bug, drift, stencil · running · PR-Review
+`drift-anchor-and-skip` · Task · bug, drift, stencil · running · Finalize
 
 Three drift faults from one darn run (`testsupport-rule-and-helpers`) in hub NORCE-DrillingAndWells/Models, whose fabric is anchored at `src/csharp/NORCE.Models` by `.lym-anchor`; issues #23, #24 and #25.
 
