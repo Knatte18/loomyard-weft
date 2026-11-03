@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-03 14:30 UTC; every age below is as of then.
+Rendered 2026-11-03 14:31 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -50,7 +50,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Skills and every shell guard row on Codex** | [`codex-skills-guards`](design-codex-skills-guards.md) | darn · light | Code-Burler-Fix | neve | 1h<br>1h | shuttle, codex |
+| T3 | **Skills and every shell guard row on Codex** | [`codex-skills-guards`](design-codex-skills-guards.md) | darn · light | Code-Bouncer | neve | 1h<br>1h | shuttle, codex |
 
 #### Ready (0)
 
@@ -90,7 +90,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Drive the C# sandbox hub through a Drift and subdirectory-anchor trial and report what breaks**<br>• Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there | [`sandbox-dotnet-gate`](design-sandbox-dotnet-gate.md) | darn · docs |  | 5d<br>9m | dotnet, gate, drift |
+| T1 | `draft` **Drive the C# sandbox hub through a Drift and subdirectory-anchor trial and report what breaks**<br>• Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there | [`sandbox-dotnet-gate`](design-sandbox-dotnet-gate.md) | darn · docs |  | 5d<br>11m | dotnet, gate, drift |
 
 ### Notes (36)
 
@@ -107,11 +107,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **A beam cannot be made from a project whose slug already ran a motif run** | [`beam-after-motif`](design-beam-after-motif.md) | 1h<br>1h | batten, pawl |
-| B2 |  | **A gate tier whose shell exits while a grandchild holds its pipe hangs forever**<br>• No WaitDelay on tier and build children: an orphaned MSBuild node keeps lym gate test, and the adopt check, running past every timeout | [`gate-orphan-pipe-hang`](design-gate-orphan-pipe-hang.md) | 4m<br>4m | gate, process |
-| B3 |  | **Way-forward texts name lym board remove <slug>, which the verb refuses**<br>• adoptcli, fronttask and boardengine tell the reader to run lym board remove with a bare slug; the verb takes JSON or a bare handle | [`board-remove-slug-form`](design-board-remove-slug-form.md) | 3m<br>3m | board |
-| B4 |  | **drift.yaml joins dir onto the anchor, gate.yaml onto the worktree root**<br>• The same dir: dotnet runs the gate in dotnet/ and the Drift capture in dotnet/dotnet on a hub anchored at dotnet | [`drift-dir-base`](design-drift-dir-base.md) | 1m<br>1m | drift, gate, config |
-| B5 |  | **A Drift step in a missing dir fails as fork/exec /usr/bin/sh, with a way forward that repeats it**<br>• Drift spawns without checking its dir, blames the shell, and names no config key or location | [`drift-missing-dir-error`](design-drift-missing-dir-error.md) | 1m<br>1m | drift |
-| B6 | L | **loom status --watch prints every poll while a verify runs**<br>• The verify wait text carries its elapsed seconds, so the watch sees a change on every poll | [`watch-elapsed-churn`](design-watch-elapsed-churn.md) | 0m<br>0m | loom, cli |
+| B2 |  | **A gate tier whose shell exits while a grandchild holds its pipe hangs forever**<br>• No WaitDelay on tier and build children: an orphaned MSBuild node keeps lym gate test, and the adopt check, running past every timeout | [`gate-orphan-pipe-hang`](design-gate-orphan-pipe-hang.md) | 6m<br>6m | gate, process |
+| B3 |  | **Way-forward texts name lym board remove <slug>, which the verb refuses**<br>• adoptcli, fronttask and boardengine tell the reader to run lym board remove with a bare slug; the verb takes JSON or a bare handle | [`board-remove-slug-form`](design-board-remove-slug-form.md) | 4m<br>4m | board |
+| B4 |  | **drift.yaml joins dir onto the anchor, gate.yaml onto the worktree root**<br>• The same dir: dotnet runs the gate in dotnet/ and the Drift capture in dotnet/dotnet on a hub anchored at dotnet | [`drift-dir-base`](design-drift-dir-base.md) | 2m<br>2m | drift, gate, config |
+| B5 |  | **A Drift step in a missing dir fails as fork/exec /usr/bin/sh, with a way forward that repeats it**<br>• Drift spawns without checking its dir, blames the shell, and names no config key or location | [`drift-missing-dir-error`](design-drift-missing-dir-error.md) | 2m<br>2m | drift |
+| B6 | L | **loom status --watch prints every poll while a verify runs**<br>• The verify wait text carries its elapsed seconds, so the watch sees a change on every poll | [`watch-elapsed-churn`](design-watch-elapsed-churn.md) | 1m<br>1m | loom, cli |
 
 #### Enhancements (12)
 
