@@ -1,28 +1,32 @@
-# An empty capture under skipped tests names the skips and a scope change
+# Name the skips and the scope change when a capture writes no file
 
-A partial Drift scope whose `--skip` list covers every test the capture command runs ends in a capture that exits 0 and writes no file.
-The failure reason said only `exit 0 but wrote no file to <dir>`, and the Stuck offered `lym drift capture` with `lym loom resume`, which repeats the same scope and fails the same way.
-A tackler reading that stop could not find the cause and re-launched blind.
+A partial Drift scope whose `--skip` list covers every test the capture command runs leaves the harness nothing to profile.
+The capture then exits 0, writes no file, and fails as `exit 0 but wrote no file to …`, a reason that names neither the skips nor a way out.
+Both ways forward it offered fail: `lym drift capture` repeats the scope, and `lym drift defer` drops the regression the run was meant to have.
+A tackler reading the stop could not find the cause and re-launched the same capture.
 
 ## What changes
 
-- `RunCapture` marks such a record with the new `wrote_no_file` key.
-  Under skipped tests its reason now names scope partial, the count of skipped tests, and that every test the capture command ran may have been skipped.
-  A capture with no skipped tests keeps the old reason.
-- A Stuck over such a record, at Drift-Await or at Drift-Baseline's foreground capture, replaces the plain capture way forward with:
-  - `lym drift scope --scope full` (or `--scope partial` with a shorter `--skip` list) followed by `lym drift capture` and `lym loom resume`, offered only while HEAD is the branch point;
-  - `lym drift scope --scope off` followed by `lym loom resume`;
-  - `lym drift defer` followed by `lym loom resume`, as before.
-- The stop's reason carries the capture record's reason, so a tackler learns the cause from the stop alone.
+- `RunCapture` marks a capture that exited 0 with no file as `wrote_no_file` in `capture.json` (new `CaptureRecord.WroteNoFile`).
+- Under skipped tests, its reason now reads `… while scope partial skipped N tests, so every test the capture command ran may have been skipped`.
+  N counts distinct skipped tests, and the wording is singular for one.
+- A Drift-Baseline or Drift-Await Stuck over such a record no longer offers a plain `lym drift capture`.
+  It names, in order:
+  - `lym drift scope --scope full` (or `--scope partial` with a shorter `--skip` list), then `lym drift capture` and `lym loom resume`;
+  - `lym drift scope --scope off`, then `lym loom resume`;
+  - `lym drift defer`, then `lym loom resume`.
+- Once HEAD has left the branch point no capture may run, so the Stuck drops the first way and offers only `--scope off` and `defer`.
+- A capture that failed for another reason, or wrote nothing with no skipped tests, keeps its previous ways forward.
+
+`doc.go` and the `CaptureRecord` field comment describe the new field and wording.
 
 ## Design decisions
 
-- The ways forward key on the record's `wrote_no_file` flag and its skip list, not on parsing the reason text.
-- `lym drift scope` is the parent's verb at a blocked Drift-Baseline or Drift-Await, which is where both Stucks halt; replacing the scope with one that compares a skipped test already drops the stale capture record.
-- The capture cannot know that every test was skipped, since it does not read the harness's test list, so the reason says "may have been skipped".
+- The scope-change ways are keyed on the recorded `wrote_no_file` flag plus a non-empty `Skip`, not on matching the reason text, so a reworded reason cannot silently disable them.
+- The new field is a JSON addition through `internal/state`, so an older `capture.json` reads as `false` and keeps the plain ways forward.
+- The reason cannot prove every test was skipped, since the harness's test set is not known to the engine, so it says "may have been skipped".
 
-## Tests
+## Checks
 
-- `TestRunCapture` adds a row for exit 0 with no file under skipped tests, checking the scope, count and `wrote_no_file`, and checks the flag and the absence of skip text on the existing rows.
-- `TestDriftAwait` adds rows for such a record on and off the branch point.
-- `TestDriftBaseline` adds a row for the foreground fallback capture.
+Tests cover the reason wording (plural, singular, repeated skip), the Await and Baseline Stuck ways forward, and the unchanged cases.
+No integration suite or run on the `cs` hub was done; the original failing scope (all six regression cases skipped) was not reproduced end to end.
