@@ -1,6 +1,6 @@
 # Comment cleanup: parallel agents fix stale comments across the repository
 
-`comment-cleanup` · Task · enhancement, fabric
+`comment-cleanup` · Task · enhancement, fabric · draft
 
 Depends on: [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md)
 
