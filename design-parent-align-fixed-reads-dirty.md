@@ -1,6 +1,6 @@
 # loom Parent-Align halts blocked when the fixer reports verdict fixed
 
-`parent-align-fixed-reads-dirty` · Note · bug, landing
+`parent-align-fixed-reads-dirty` · Task · bug, landing · draft
 
 Imported from [issue #6](https://github.com/Knatte18/loomyard/issues/6).
 
