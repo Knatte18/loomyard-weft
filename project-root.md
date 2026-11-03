@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-03 19:26 UTC; every age below is as of then.
+Rendered 2026-11-03 19:27 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **A project page shows the project body under its brief**<br>• The project page links the body only through the slug; render it in the page itself | [`project-body-in-render`](design-project-body-in-render.md) | darn · speed | Drift-Verify | neve | 14m<br>14m | board |
-| T9 | **lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human** | [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md) | darn · light | Code-Bouncer | neve | 2h<br>2h | fabric, landing |
+| T9 | **lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human** | [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md) | darn · light | Drift-Recheck | neve | 2h<br>2h | fabric, landing |
 
 ### Ready (0)
 
@@ -51,7 +51,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **A lym shuttle open session gets creel hook delivery like a run session**<br>• Opened sessions are pane-mail strands, so agent mail reaches them only as a run-lym-creel-read reminder | [`open-session-creel-hooks`](design-open-session-creel-hooks.md) | 3m<br>3m | shuttle, creel, claude |
+| B1 |  | **A lym shuttle open session gets creel hook delivery like a run session**<br>• Opened sessions are pane-mail strands, so agent mail reaches them only as a run-lym-creel-read reminder | [`open-session-creel-hooks`](design-open-session-creel-hooks.md) | 4m<br>4m | shuttle, creel, claude |
 | B5 |  | **Moving Drift's dir base reinterpreted existing drift.yaml files with no migration**<br>• cs drift.yaml dir . moved from the anchor to the worktree root at deploy and the capture failed exit 1 | [`drift-dir-base-migration`](design-drift-dir-base-migration.md) | 2h<br>2h | drift, reconcile |
 
 ### Enhancements (7)
