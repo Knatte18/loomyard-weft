@@ -3,6 +3,7 @@
   "state": "awaiting",
   "error": "bouncer Discussion-Bouncer: round 1 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/codex-engine/_lym/reviews/discussion/round-1-escalation.md; record the answer with `lym loom decision add codex-engine`, then decide with `lym loom circling accept codex-engine` or `lym loom circling continue codex-engine`, then run `lym loom resume` in the task worktree to resume",
   "parent_notice": "Review segment of task `codex-engine` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/codex-engine/_lym/reviews/discussion/round-1-escalation.md` with a one-shot fork.",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
