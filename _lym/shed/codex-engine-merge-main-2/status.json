@@ -1,14 +1,21 @@
 {
-  "current_producer": "",
+  "current_producer": "Record-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "",
-    "last": "",
+    "now": "Record-Write",
+    "last": "Preflight → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Preflight",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-03T16:56:23Z"
+    }
+  ],
   "product": {
     "slug": "codex-engine-merge-main-2",
     "parent": "codex-engine",
