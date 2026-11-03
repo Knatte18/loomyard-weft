@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-03 09:49 UTC; every age below is as of then.
+Rendered 2026-11-03 09:50 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 | T1 | **Tapestry runs Discussion through a motif block and skips it for a discussed entry; motif runs alone; arras goes**<br>• Tapestry uses the motif block, skips it when the entry is flagged discussed, motif becomes a runnable recipe, and arras is removed | [`tapestry-motif-block`](design-tapestry-motif-block.md) | darn · solid | Darn-Write | neve | 7m<br>7m | shed, loom |
 | T2 | **A beam session shows the pawl run checklist in a second overview window beside the beam overview** | [`pawl-checklist-hidden-in-beam`](design-pawl-checklist-hidden-in-beam.md) | arras · light | Discussion-Write | neve | 2h<br>3m | pawl, orch, reed |
 | T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Plan-Burler-Fix | neve | 13h<br>2h | batten, fabric |
-| T4 | **Drift scope settable in a task's run_settings; Drift-Baseline agent only when unset** | [`drift-scope-in-run-settings`](design-drift-scope-in-run-settings.md) | darn · solid | Code-Bouncer | neve | 20m<br>20m | drift, config |
+| T4 | **Drift scope settable in a task's run_settings; Drift-Baseline agent only when unset** | [`drift-scope-in-run-settings`](design-drift-scope-in-run-settings.md) | darn · solid | Describe | neve | 21m<br>21m | drift, config |
 | T6 | **config reconcile never migrates profiles.yaml, so a hub seeded before the loom-to-tapestry rename stops tapestry runs at Seed-Child** | [`reconcile-migrates-profiles`](design-reconcile-migrates-profiles.md) | darn · solid | Code-Burler-Fix | neve | 33m<br>33m | reconcile, profiles, config |
 
 ### Ready (0)
@@ -95,7 +95,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 4d<br>4d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 | F10 |  | **The arbiter settles review escalations and records their decisions, so they never reach the orch**<br>• Decision escalations become eligible for the arbiter, and the arbiter may record decisions and accept or continue a review | [`arbiter-settles-escalations`](design-arbiter-settles-escalations.md) | 1d<br>1d | burler, arbiter, dobby, orch |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 4w<br>1d | board, ide, orch |
-| F12 |  | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md) | 21h<br>23m | claude, shuttle, config |
+| F12 |  | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md) | 21h<br>24m | claude, shuttle, config |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 3w<br>1d | webster |
 | F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 11d<br>1h | loom, board, batten, workspaces |
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 2h<br>2h | shuttle, codex, loom |

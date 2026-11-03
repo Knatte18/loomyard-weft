@@ -1018,7 +1018,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #30](https://github.com/Knatte18/loomyard/issues/30).\n\n## Wanted\n\nLet a task fix its drift scope in its board entry, through `run_settings`, so the operator decides it when the task is discussed:\n\n```\n\"run_settings\": {\"drift\": {\"scope\": \"full\"}}\n\"run_settings\": {\"drift\": {\"scope\": \"partial\", \"skip\": [\"\u003cfixture\u003e\", \"...\"]}}\n\"run_settings\": {\"drift\": {\"scope\": \"off\"}}\n```\n\n- When `drift.scope` is set, Drift-Baseline records it as given and spawns no agent.\n- When it is not set, the Drift-Baseline agent decides as today.\n\n## Why\n\nThe scope choice is a judgement the operator often makes already, while discussing the task, with knowledge the agent lacks.\nIn the Models hub the agent picked scope full for a change confined to test projects the suite cannot reach (#25).\nIt predicts drift from the README and test setup, which do not say what each baseline fixture runs; a trial showed that a 1% change in steel heat capacity drifts only the temperature fixtures and not the quasi-steady-state one, which the agent cannot know.\nToday the only way to correct a wrong choice is to pause after Drift-Baseline, edit `_lym/drift/scope.json` in the task worktree, `lym fabric commit`, and resume, since `lym drift scope` refuses a second call.\n\nThe drift config has no scope key now (`lym config drift --resolved` shows `enabled`, the commands, the models and `verify_max_runs`), so `run_settings` cannot carry it.",
-      "status": "running · Code-Bouncer",
+      "status": "running · Describe",
       "created": "2026-11-03T09:29:00Z",
       "revised": "2026-11-03T09:29:02Z",
       "profile": "solid"
