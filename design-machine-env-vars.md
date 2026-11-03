@@ -23,4 +23,4 @@ Support environment variables as configuration in their own right, possibly as a
 lym would export them to every process it starts for the hub: gate tiers, drift capture and compare, sessions.
 An env value is data, not an executable key, so the machine-override restriction on `tiers` need not apply to it.
 
-The issue also reported a `lym config drift` whole-map refusal, filed as note `drift-config-whole-map-set`.
+The issue also reported a `lym config drift` whole-map refusal, which landed as task `drift-config-whole-map-set`: `--set capture={...}` now replaces the map whole.
