@@ -29,7 +29,7 @@ This is one large note and is split into tasks, or a project, only when the oper
 - The hub is bound read-write at its own path, since the tmux server name, the creel socket name, git's worktree links and Claude Code's transcript directory all derive from absolute paths; `/usr`, `/etc` and `/opt` are read-only, `$HOME` a tmpfs with read-only binds of the Go toolchain, the Claude Code binary and the installed `lym`.
 - The area has its own Claude config directory and Go caches bound at the usual paths, with the host's plugin cache read-only on top, so the host's `settings.json` hooks never run in it.
 - One host directory holds the tmux socket directory, so `lym reed attach` from outside drives the server inside; tried on OSL-1046 with a tmux server inside `bwrap`.
-- `.git/hooks` is read-only; `.git/config` stays writable, since `internal/gitrepo/branchmark.go` writes `branch.<b>.lymLocal` into it.
+- `.git/hooks` is read-only; `.git/config` was to stay writable for `branch.<b>.lymLocal`, but `fabric-remote-async` removed that mark and `internal/gitrepo/branchmark.go`, so the reason is gone; whether git itself or another lym writer still needs `.git/config` writable is unchecked.
 - Network stays open and there is no broker, so the landing deploy, `lym reed window`, `lym ide` and `lym hibernate request` do not work from inside; the operator does them by hand, from outside.
 - A config module `area` with `required`, off by default; `lym area start` refuses on any failure and never falls back to an unsandboxed start.
 - Ubuntu 24.04 needs a one-time AppArmor profile for `/usr/bin/bwrap`, loaded by root; the report names the profile, and Ubuntu 25.04 and later ship it, which is not verified on Neve.
