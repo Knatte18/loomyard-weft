@@ -2,7 +2,7 @@
 
 `comment-cleanup` · Task · enhancement, fabric · draft
 
-Depends on: [`fabric-remote-async`](design-fabric-remote-async.md), [`hibernate-in-dobby`](design-hibernate-in-dobby.md), [`codex-engine-merge-main`](design-codex-engine-merge-main.md)
+Depends on: [`fabric-remote-async`](design-fabric-remote-async.md), [`hibernate-in-dobby`](design-hibernate-in-dobby.md)
 
 ## Seen (operator and hub orch, 2026-10-31)
 

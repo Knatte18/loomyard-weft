@@ -342,8 +342,7 @@
       "recipe": "darn",
       "depends_on": [
         "fabric-remote-async",
-        "hibernate-in-dobby",
-        "codex-engine-merge-main"
+        "hibernate-in-dobby"
       ],
       "isolated": false,
       "brief": "An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics",
@@ -715,28 +714,6 @@
       "body": "Drift-Verify's verdict reaches neither the change summary nor the pull request, so the PR asks the operator to run by hand the compare Drift already ran.\n\n## Seen\n\nOn the `cs` hub (2026-11-03), `pipeflow-reynolds-helper` (darn, light) ran Drift-Verify at 15:30:06: the compare ran in the anchor against the baseline captured on the branch point, exited 0 and printed no `drift:` line, and the row ended `done`.\n\n- Darn-Write wrote `_lym/landing/summary.md` before Drift-Verify ran; the summary as rewritten at 15:33, after Drift-Verify, and published by Describe at 15:33:54 still ends:\n  \"To check by hand: Run the regression harness compare against the baseline captured before this change, and confirm it reports no drift. It was not run as part of writing this description.\"\n- Pull request Knatte18/lym-csharp#1 carries that text as its body.\n- The PR-Review agent told the operator: \"the summary says the regression harness compare has not been run yet. Its job is to confirm no result changed.\"\n  Its prompt (`.lym/shuttle/\u003crun\u003e/prompt.md`) holds no word of Drift.\n\n## Expected\n\n- Describe adds Drift's outcome to the summary and so to the pull request: the scope (`full` or the skips), the baseline's branch point, the compare's result, and each drifted test with its accept reason or the waive reason.\n- The PR-Review prompt names that outcome, so the reviewer does not ask the operator to repeat it.\n- A summary line that asks for a check Drift has made is dropped or rewritten from the verdict.\n",
       "created": "2026-11-03T14:58:30Z",
       "revised": "2026-11-03T14:58:30Z"
-    },
-    {
-      "id": 1055,
-      "handle": "T3",
-      "slug": "codex-engine-merge-main",
-      "title": "Merge main into the codex-engine beam and resolve every conflict",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "codex",
-        "shuttle"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Bring main into the beam before it lands, so its landing merges cleanly",
-      "body": "## Build\n\n- Merge `origin/main` into the `codex-engine` beam branch.\n- Resolve every conflict so that both main's changes and the beam's Codex work stand.\n- Fix whatever the merged tree breaks in the build and the gate, including code that main changed under the beam's new code.\n\n## Bounds\n\n- No new behaviour: the task only reconciles the two sides.\n- The project's Sketch (`lym board get P2 --record`) is the authority on what the beam's code must keep doing.",
-      "status": "done",
-      "created": "2026-11-03T16:13:25Z",
-      "revised": "2026-11-03T16:13:25Z",
-      "project": "codex-engine"
     },
     {
       "id": 1056,
