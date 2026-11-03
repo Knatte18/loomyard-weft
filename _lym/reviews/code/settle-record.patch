@@ -1,0 +1,1132 @@
+diff --git a/internal/loomcli/cli.go b/internal/loomcli/cli.go
+index b90e90e2..c04140d1 100644
+--- a/internal/loomcli/cli.go
++++ b/internal/loomcli/cli.go
+@@ -37,9 +37,10 @@ type loomCLI struct {
+ 	// location is the resolved *lymcwd.Location for this invocation. wire reads it to anchor every
+ 	// config load and to build the reed/webster geometries; no verb needs it directly.
+ 	location *lymcwd.Location
+-	// cwd is the resolved cwd string the pre-run read via lymcwd.CwdFrom. It travels to
+-	// preflightEntry as Env.Cwd, and that entry makes the same preflightshed.NewPreflight(name,
+-	// env.Cwd) call over this exact cwd -- Preflight is the one row that spawns git.
++	// cwd is the resolved cwd string the pre-run read via lymcwd.CwdFrom.
++	// It travels to preflightEntry as Env.Cwd,
++	// and that entry makes the same preflightshed.NewPreflightWithChecks(name, env.Cwd, checks) call over this exact cwd.
++	// Preflight is the one row that spawns git.
+ 	cwd string
+ 	// cfg is the loaded loom.yaml config. Batch 5's start/bootstrap verb reads its Discussion/Plan
+ 	// role model-specs and timeout knobs.
+diff --git a/internal/loomcli/darnwiring.go b/internal/loomcli/darnwiring.go
+index 94ea485c..0f11eaf1 100644
+--- a/internal/loomcli/darnwiring.go
++++ b/internal/loomcli/darnwiring.go
+@@ -220,7 +220,8 @@ func (c *loomCLI) wireTreeScope(location *lymcwd.Location) error {
+ 	return nil
+ }
+ 
+-// wireDarn fills the Env fields a recipe with a Darn-Write row reads beyond the ones wire and wireTreeScope fill: the writer's seams and its table.
++// wireDarn fills the Env fields a recipe with a Darn-Write row reads beyond the ones wire and wireTreeScope fill: the writer's seams, its table and Preflight's stencils check.
++// The check builds the table a first spawn reads and refuses a marker of its stencils no value fills, so a stencil newer than the running binary, or a blank value, halts the run at Preflight, before any agent row.
+ // It loads the hub-wide darn.yaml strictly, so start, run, step and resume refuse an absent or malformed file before any row builds.
+ // A malformed tree_scope key is refused with the editor way forward instead of the hub reconcile one, since --set cannot remove a key the hub file holds.
+ // subagentModel is loom.yaml's subagent_model, the model the writer's prompt names for the subagents it hands work to.
+@@ -235,7 +236,7 @@ func (c *loomCLI) wireDarn(location *lymcwd.Location, stencilsDir, specsDir, fri
+ 	}
+ 
+ 	c.env.Darn = darnDeps(location, c.runID, c.recipe)
+-	c.env.DarnTable = func(told loomshed.DarnTold) (seatengine.Table, error) {
++	darnTable := func(told loomshed.DarnTold) (seatengine.Table, error) {
+ 		table, err := darnengine.DarnTable(darnengine.DarnInputs{
+ 			StencilsDir:        stencilsDir,
+ 			SpecsDir:           specsDir,
+@@ -256,6 +257,14 @@ func (c *loomCLI) wireDarn(location *lymcwd.Location, stencilsDir, specsDir, fri
+ 		}
+ 		return withProjectDirective(table, location, stencilsDir)
+ 	}
++	c.env.DarnTable = darnTable
++	c.env.PreflightStencils = func() error {
++		table, err := darnTable(loomshed.DarnTold{})
++		if err != nil {
++			return fmt.Errorf("build the darn writer table: %w; way forward: fix the config or model spec it names, then re-step", err)
++		}
++		return table.CheckMarkers(stencilsDir)
++	}
+ 
+ 	return nil
+ }
+diff --git a/internal/loomcli/wiring_darn_test.go b/internal/loomcli/wiring_darn_test.go
+index 17298b7c..35f883a0 100644
+--- a/internal/loomcli/wiring_darn_test.go
++++ b/internal/loomcli/wiring_darn_test.go
+@@ -21,6 +21,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/state"
++	"github.com/Knatte18/loomyard/internal/stencilstore"
+ 	"github.com/Knatte18/loomyard/internal/testkit/envkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+@@ -113,6 +114,11 @@ func TestWire_DarnRecipe(t *testing.T) {
+ 		if c.env.PreflightBatcher != nil {
+ 			t.Error("c.env.PreflightBatcher is set after wire() of a darn seed; want nil, so a broken batcher.yaml fails no darn Preflight")
+ 		}
++		if c.env.PreflightStencils == nil {
++			t.Error("c.env.PreflightStencils is nil after wire() of a darn seed; want the writer's stencils check")
++		} else if err := c.env.PreflightStencils(); err != nil {
++			t.Errorf("c.env.PreflightStencils() = %v; want nil, since a value fills every marker of the shipped writer stencils", err)
++		}
+ 		if got, want := c.env.RecordWrite.RecordPath, loomengine.DiscussionDecisionRecord(loc); got != want {
+ 			t.Errorf("c.env.RecordWrite.RecordPath = %q; want %q", got, want)
+ 		}
+@@ -157,6 +163,63 @@ func TestWire_DarnRecipe(t *testing.T) {
+ 		}
+ 	})
+ 
++	wireDarnHub := func(t *testing.T) *loomCLI {
++		t.Helper()
++		loc := hubLocation(t, "pair", ".")
++		seedDarnHubConfig(t, loc.HubPath, "3")
++		writeHubGateConfig(t, loc.HubPath, gateConfigWithTwoTiers())
++		c := &loomCLI{runID: shedrun.SelfRunID, recipe: shedrun.RecipeDarn}
++		if err := c.wire(loc, loc.AnchorPath()); err != nil {
++			t.Fatalf("wire() = %v; want nil", err)
++		}
++		return c
++	}
++
++	t.Run("the wired stencils check refuses a marker of the writer stencil no value fills", func(t *testing.T) {
++		t.Parallel()
++		c := wireDarnHub(t)
++		stencilsDir := c.runDeps.Geom.StencilsDir
++		body, err := stencilstore.Read(stencilsDir, "darn-template-write")
++		if err != nil {
++			t.Fatalf("stencilstore.Read() = %v; want nil", err)
++		}
++		path := stencilstore.Path(stencilsDir, "darn-template-write")
++		if err := os.WriteFile(path, append(body, []byte("\n{{.unfilled_marker}}\n")...), 0o644); err != nil {
++			t.Fatalf("WriteFile(%q) = %v; want nil", path, err)
++		}
++
++		err = c.env.PreflightStencils()
++		if err == nil {
++			t.Fatal("c.env.PreflightStencils() = nil; want a refusal of the unfilled marker")
++		}
++		for _, want := range []string{`seat "darn"`, `"darn-template-write"`, "unfilled_marker"} {
++			if !strings.Contains(err.Error(), want) {
++				t.Errorf("c.env.PreflightStencils() = %q; want it to contain %q", err.Error(), want)
++			}
++		}
++	})
++
++	t.Run("the wired stencils check names the table build when the table cannot be built", func(t *testing.T) {
++		t.Parallel()
++		loc := hubLocation(t, "pair", ".")
++		seedDarnHubConfig(t, loc.HubPath, "3", "writer: opus[medium]", "writer: nosuchalias[medium]")
++		writeHubGateConfig(t, loc.HubPath, gateConfigWithTwoTiers())
++		c := &loomCLI{runID: shedrun.SelfRunID, recipe: shedrun.RecipeDarn}
++		if err := c.wire(loc, loc.AnchorPath()); err != nil {
++			t.Fatalf("wire() = %v; want nil", err)
++		}
++
++		err := c.env.PreflightStencils()
++		if err == nil {
++			t.Fatal("c.env.PreflightStencils() = nil; want a refusal of the unresolvable writer model-spec")
++		}
++		for _, want := range []string{"build the darn writer table", "way forward"} {
++			if !strings.Contains(err.Error(), want) {
++				t.Errorf("c.env.PreflightStencils() = %q; want it to contain %q", err.Error(), want)
++			}
++		}
++	})
++
+ 	t.Run("with a tree listed the verify gate's told command stays the row key's whole call", func(t *testing.T) {
+ 		t.Parallel()
+ 		loc := hubLocation(t, "pair", ".")
+diff --git a/internal/loomcli/wiring_test.go b/internal/loomcli/wiring_test.go
+index 79bb9111..75bcb1ca 100644
+--- a/internal/loomcli/wiring_test.go
++++ b/internal/loomcli/wiring_test.go
+@@ -179,7 +179,10 @@ func TestWire_DefaultConfig(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("a tapestry seed tells Preflight the batcher load", func(t *testing.T) {
++	t.Run("a tapestry seed tells Preflight the batcher load and no stencils check", func(t *testing.T) {
++		if c.env.PreflightStencils != nil {
++			t.Error("c.env.PreflightStencils is set; want nil for a recipe with no Darn-Write row")
++		}
+ 		if c.env.PreflightBatcher == nil {
+ 			t.Fatal("c.env.PreflightBatcher = nil; want the batcher.yaml load for a recipe with an Implementer row")
+ 		}
+diff --git a/internal/preflightshed/doc.go b/internal/preflightshed/doc.go
+index bfe3556c..66d79562 100644
+--- a/internal/preflightshed/doc.go
++++ b/internal/preflightshed/doc.go
+@@ -12,9 +12,12 @@
+ // A failure, a hub reconcile lock still held when the wait runs out included, is logged at Warn with its way forward and the row goes on to the check, no longer Stuck.
+ // The config is left as it was and the stamp stays stale, so the next start verb or Preflight row retries the reconcile.
+ //
+-// A recipe row that holds an Implementer row tells NewPreflightWithBatcher a batcher check, which loads `batcher.yaml` after the reconcile and before the check, so a stale file in any layer stops the run before any agent row.
++// The wiring tells NewPreflightWithChecks optional checks, which run after the reconcile and before the check, so a fault they find stops the run before any agent row.
++// A recipe that holds an Implementer row gets a batcher check, which loads `batcher.yaml`, so a stale file in any layer stops the run.
+ // A retired key names the way forward its layer file calls for, `lym config reconcile --apply` for a worktree or local file and `lym fabric reconcile` for the repo default, which a session lym refuses the verb from reports status: FAILED and the orch runs;
+ // any other load fault names the fix-and-re-step one.
++// A recipe whose writer row runs a seat table gets a stencils check, which composes the writer's table and refuses a stencil marker no value fills, as after a version skew where a newer binary refreshed the stencils mid-run, or when a value is blank;
++// the reason carries the check's own way forward, a re-step with a binary that fills them or text for the blank value.
+ //
+ // It declares its own unexported entryErr/cancelErr helpers (ctx.go) for the same
+ // deliberate-duplication reason internal/loomshed/doc.go and internal/landingshed/ctx.go already
+diff --git a/internal/preflightshed/preflight.go b/internal/preflightshed/preflight.go
+index 4fe25545..a9974baa 100644
+--- a/internal/preflightshed/preflight.go
++++ b/internal/preflightshed/preflight.go
+@@ -1,4 +1,4 @@
+-// preflight.go implements NewPreflight and NewPreflightWithBatcher, the general Preflight producer: a content-free
++// preflight.go implements NewPreflight and NewPreflightWithChecks, the general Preflight producer with its optional checks: a content-free
+ // shedengine.ShedProducer wrapping internal/preflight.Check, constructed with a told name and cwd.
+ 
+ package preflightshed
+@@ -60,13 +60,21 @@ func wayForward(report preflight.Report) string {
+ 	return "; way forward: " + strings.Join(steps, "; ") + "; a session lym refuses the verb from reports status: FAILED and the orch runs it"
+ }
+ 
++// Checks are the optional checks the Preflight row runs after the hub reconcile and before preflight.Check, in field order; a nil field runs no check.
++type Checks struct {
++	// Batcher loads batcher.yaml; its failure is Stuck with the batchifier reason and the way forward its error calls for.
++	Batcher func() error
++	// Stencils composes the recipe's seat tables and refuses a stencil marker no value fills, or a table that cannot be built; its failure is Stuck with the stencils reason and the way forward its error carries.
++	Stencils func() error
++}
++
+ // preflightProducer is the general Preflight producer: it wraps preflight.Check, mapping its
+ // determined Report onto shedengine's contract.
+ type preflightProducer struct {
+-	name    string
+-	cwd     string
+-	opts    hubreconcile.Options
+-	batcher func() error
++	name   string
++	cwd    string
++	opts   hubreconcile.Options
++	checks Checks
+ }
+ 
+ var _ shedengine.ShedProducer = (*preflightProducer)(nil)
+@@ -80,21 +88,22 @@ const batchifierWayForward = "; way forward: fix batcher.yaml (its active: key o
+ // retiredKeyWayForward completes the way forward a retired-key error already ends with, running either lym config reconcile --apply, which migrates a worktree or local file, or lym fabric reconcile for the repo default.
+ const retiredKeyWayForward = ", then re-step"
+ 
++// stencilsReasonPrefix leads the Stuck reason of a failed stencils check; the error text, which carries its own way forward, follows.
++const stencilsReasonPrefix = "seat stencils check failed: "
++
+ // NewPreflight returns a shedengine.ShedProducer that validates cwd via preflight.Check.
+ //
+ // name is told rather than hardcoded because a second product names this row independently.
+ // Per internal/shedadapters' own package doc, the name is used only as a log field and in error
+ // text -- never compared, parsed, or used for control flow.
+ func NewPreflight(name, cwd string) shedengine.ShedProducer {
+-	return NewPreflightWithBatcher(name, cwd, nil)
++	return NewPreflightWithChecks(name, cwd, Checks{})
+ }
+ 
+-// NewPreflightWithBatcher returns the Preflight producer with an optional batcher check.
+-// A non-nil batcher runs after the hub reconcile and before preflight.Check, so a broken batcher.yaml stops the run before any agent spends tokens;
+-// its error maps to Stuck with the batchifier reason and its way forward.
+-// A nil batcher runs no check.
+-func NewPreflightWithBatcher(name, cwd string, batcher func() error) shedengine.ShedProducer {
+-	return &preflightProducer{name: name, cwd: cwd, batcher: batcher}
++// NewPreflightWithChecks returns the Preflight producer with the optional checks.
++// They run after the hub reconcile and before preflight.Check, so a broken batcher.yaml or a stencil the running binary cannot fill stops the run before any agent spends tokens.
++func NewPreflightWithChecks(name, cwd string, checks Checks) shedengine.ShedProducer {
++	return &preflightProducer{name: name, cwd: cwd, checks: checks}
+ }
+ 
+ // newPreflightWith is NewPreflight with told options for the hub config reconcile that runs ahead of the check.
+@@ -106,10 +115,10 @@ func newPreflightWith(name, cwd string, opts hubreconcile.Options) shedengine.Sh
+ // A retired-key error closes with the reconcile way forward its own text already carries, any other with the fix-batcher.yaml one.
+ // A cancelled context wins over the failure and comes back as the error.
+ func (p *preflightProducer) batcherFailure(ctx context.Context) (string, error) {
+-	if p.batcher == nil {
++	if p.checks.Batcher == nil {
+ 		return "", nil
+ 	}
+-	berr := p.batcher()
++	berr := p.checks.Batcher()
+ 	if berr == nil {
+ 		return "", nil
+ 	}
+@@ -124,6 +133,23 @@ func (p *preflightProducer) batcherFailure(ctx context.Context) (string, error)
+ 	return batchifierReasonPrefix + berr.Error() + wayForward, nil
+ }
+ 
++// stencilsFailure runs the told stencils check and returns the Stuck reason for its failure, or "" when it passed or none is told.
++// A cancelled context wins over the failure and comes back as the error.
++func (p *preflightProducer) stencilsFailure(ctx context.Context) (string, error) {
++	if p.checks.Stencils == nil {
++		return "", nil
++	}
++	serr := p.checks.Stencils()
++	if serr == nil {
++		return "", nil
++	}
++	if cerr := cancelErr(ctx, p.name); cerr != nil {
++		return "", cerr
++	}
++	logger.Warn("preflightshed: seat stencils check failed", "producer", p.name, "cwd", p.cwd, "cause", serr)
++	return stencilsReasonPrefix + serr.Error(), nil
++}
++
+ // reconcileHub reconciles the hub's config when the build stamp is stale, and does nothing for a repository outside a hub.
+ // A failed reconcile is warned about and the row goes on.
+ func (p *preflightProducer) reconcileHub() {
+@@ -156,12 +182,14 @@ func (p *preflightProducer) Call(ctx context.Context) (shedengine.Outcome, shede
+ 		return "", shedengine.OutputPointer{}, cerr
+ 	}
+ 
+-	reason, err := p.batcherFailure(ctx)
+-	if err != nil {
+-		return "", shedengine.OutputPointer{}, err
+-	}
+-	if reason != "" {
+-		return shedengine.Stuck, shedengine.OutputPointer{Reason: reason}, nil
++	for _, check := range []func(context.Context) (string, error){p.batcherFailure, p.stencilsFailure} {
++		reason, err := check(ctx)
++		if err != nil {
++			return "", shedengine.OutputPointer{}, err
++		}
++		if reason != "" {
++			return shedengine.Stuck, shedengine.OutputPointer{Reason: reason}, nil
++		}
+ 	}
+ 
+ 	report, _, err := preflight.Check(p.cwd)
+diff --git a/internal/preflightshed/preflight_test.go b/internal/preflightshed/preflight_test.go
+index 02d1b2bc..876a527e 100644
+--- a/internal/preflightshed/preflight_test.go
++++ b/internal/preflightshed/preflight_test.go
+@@ -57,7 +57,7 @@ func TestCall_CancelledAtEntryReturnsErrorNotStuck(t *testing.T) {
+ 	}
+ }
+ 
+-// TestPreflight_BatcherCheck covers the optional batcher check of NewPreflightWithBatcher over a temporary non-repository cwd.
++// TestPreflight_BatcherCheck covers the optional batcher check of NewPreflightWithChecks over a temporary non-repository cwd.
+ // A failing check is Stuck with the batchifier reason and its way forward, and is logged with the row's name and the error.
+ // A retired-key error closes with the reconcile hand-off instead.
+ // A check that cancels the context before failing yields the cancellation error and no verdict.
+@@ -116,7 +116,7 @@ func TestPreflight_BatcherCheck(t *testing.T) {
+ 			ctx, cancel := context.WithCancel(context.Background())
+ 			defer cancel()
+ 			buf := logcapture.Capture(t)
+-			p := NewPreflightWithBatcher("Pre-Row", t.TempDir(), tt.check(cancel))
++			p := NewPreflightWithChecks("Pre-Row", t.TempDir(), Checks{Batcher: tt.check(cancel)})
+ 
+ 			outcome, pointer, err := p.Call(ctx)
+ 
+@@ -149,3 +149,93 @@ func TestPreflight_BatcherCheck(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestPreflight_StencilsCheck covers the optional stencils check of NewPreflightWithChecks over a temporary non-repository cwd.
++// A failing check is Stuck with the stencils reason followed by the error's own text, and is logged with the row's name and the error.
++// A failing batcher check runs first and wins over a failing stencils check.
++// A check that cancels the context before failing yields the cancellation error and no verdict.
++// A passing check never yields the stencils reason.
++// It does not call t.Parallel, because logcapture.Capture redirects the process-global logger output.
++func TestPreflight_StencilsCheck(t *testing.T) {
++	tiergate.Require(t, 0)
++	stencilsErr := errors.New("stencil darn-template-write has marker(s) subagent_model that no value fills")
++	batcherErr := errors.New("unknown batchifier bogus")
++	failWith := func(err error) func() error { return func() error { return err } }
++
++	tests := []struct {
++		name string
++		// checks builds the checks under test; cancel lets a check cancel the call's context.
++		checks     func(cancel context.CancelFunc) Checks
++		failure    error
++		wantReason string
++		wantCancel bool
++		wantNone   bool
++	}{
++		{
++			name:       "FailingCheckIsStuckWithTheStencilsReason",
++			checks:     func(context.CancelFunc) Checks { return Checks{Stencils: failWith(stencilsErr)} },
++			failure:    stencilsErr,
++			wantReason: stencilsReasonPrefix + stencilsErr.Error(),
++		},
++		{
++			name: "FailingBatcherCheckWinsOverTheStencilsCheck",
++			checks: func(context.CancelFunc) Checks {
++				return Checks{Batcher: failWith(batcherErr), Stencils: failWith(stencilsErr)}
++			},
++			failure:    batcherErr,
++			wantReason: batchifierReasonPrefix + batcherErr.Error() + batchifierWayForward,
++		},
++		{
++			name: "CancelledContextWinsOverTheFailure",
++			checks: func(cancel context.CancelFunc) Checks {
++				return Checks{Stencils: func() error {
++					cancel()
++					return stencilsErr
++				}}
++			},
++			wantCancel: true,
++		},
++		{
++			name:     "PassingCheckYieldsNoStencilsReason",
++			checks:   func(context.CancelFunc) Checks { return Checks{Stencils: failWith(nil)} },
++			wantNone: true,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			ctx, cancel := context.WithCancel(context.Background())
++			defer cancel()
++			buf := logcapture.Capture(t)
++			p := NewPreflightWithChecks("Pre-Row", t.TempDir(), tt.checks(cancel))
++
++			outcome, pointer, err := p.Call(ctx)
++
++			switch {
++			case tt.wantCancel:
++				if !errors.Is(err, context.Canceled) {
++					t.Errorf("Call() error = %v; want the cancellation error", err)
++				}
++				if outcome == shedengine.Stuck || outcome == shedengine.Done {
++					t.Errorf("Call() outcome = %q; want no verdict alongside a cancellation error", outcome)
++				}
++			case tt.wantNone:
++				if strings.Contains(pointer.Reason, stencilsReasonPrefix) {
++					t.Errorf("Call() reason = %q; want no stencils reason", pointer.Reason)
++				}
++			default:
++				if err != nil {
++					t.Fatalf("Call() error = %v; want nil", err)
++				}
++				if outcome != shedengine.Stuck || pointer.Reason != tt.wantReason {
++					t.Errorf("Call() = (%q, %q); want (%q, %q)", outcome, pointer.Reason, shedengine.Stuck, tt.wantReason)
++				}
++				logged := buf.String()
++				for _, want := range []string{"Pre-Row", tt.failure.Error()} {
++					if !strings.Contains(logged, want) {
++						t.Errorf("log = %q; want it to contain %q", logged, want)
++					}
++				}
++			}
++		})
++	}
++}
+diff --git a/internal/seatengine/doc.go b/internal/seatengine/doc.go
+index b90e6ff5..284388f5 100644
+--- a/internal/seatengine/doc.go
++++ b/internal/seatengine/doc.go
+@@ -21,6 +21,7 @@
+ // # The table rules
+ //
+ // Table.Validate applies every rule as a loud error naming the seat.
++// An error names a seat by its strand role, so the lead, which carries no name, reads as the role prefix.
+ // The table has at least one seat, its first seat is the unnamed lead, and every later seat is an advisor or a writer, never both in one table, with a unique valid name.
+ // A table may hold no advisors: the lead then runs alone, and seat-directive-chair tells it to decide each question itself.
+ // The lead's stencil of an advisor table of more than one seat includes seat-directive-chair, and a writer table's lead includes seat-directive-writer-chair in its place; a lone lead needs no such include.
+@@ -31,6 +32,8 @@
+ // A table or seat value neither collides with a name in ReservedMarkers nor is empty or whitespace-only.
+ // A table value named in Table.Optional may be empty and then renders as nothing in the stencil and in every block it includes; an Optional name may not be a reserved marker, and a seat value is never exempt.
+ // Prompts composes every seat's prompt from a table without starting anything, so a table builder can test what its seats will read.
++// Table.CheckMarkers refuses a seat whose stencil, or a block it includes, holds a top-level marker no value fills, so a caller stops a stencil newer than the running binary, or a blank value, before any seat starts.
++// Validate leaves that check out, since a resumed seat keeps the prompt it started with and never fills its stencil again.
+ // The list ReservedMarkers returns is declared once in this package; the table's collision check and the seats' value maps read that declaration, and a caller that builds a table reaches it through Table.Validate.
+ //
+ // # Told geometry
+diff --git a/internal/seatengine/engine.go b/internal/seatengine/engine.go
+index 6485a622..fd730cbe 100644
+--- a/internal/seatengine/engine.go
++++ b/internal/seatengine/engine.go
+@@ -290,7 +290,7 @@ func (e *Engine) startSeat(table Table, seat Seat, names map[string]string, work
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	prompt, err := composeSeatPrompt(e.geom.StencilsDir, seat, values, table.Optional)
++	prompt, err := composeSeatPrompt(e.geom.StencilsDir, table, seat, values)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -300,7 +300,7 @@ func (e *Engine) startSeat(table Table, seat Seat, names map[string]string, work
+ 	}
+ 	handle, err := e.shuttle.StartGated(spec, seatGate(table, seat))
+ 	if err != nil {
+-		return nil, fmt.Errorf("seatengine: seat %q: start: %w", seat.Name, seat.ModelKey.Wrap(err))
++		return nil, fmt.Errorf("seatengine: seat %q: start: %w", table.seatLabel(seat), seat.ModelKey.Wrap(err))
+ 	}
+ 	if err := checkName(handle, names[seat.Name]); err != nil {
+ 		if stopErr := stopSeat(handle); stopErr != nil {
+diff --git a/internal/seatengine/prompt.go b/internal/seatengine/prompt.go
+index dfba0b44..1018d42c 100644
+--- a/internal/seatengine/prompt.go
++++ b/internal/seatengine/prompt.go
+@@ -14,7 +14,6 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/reedengine/render"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/stencil"
+-	"github.com/Knatte18/loomyard/internal/stencilstore"
+ )
+ 
+ // noneValue is what a list marker renders when its list is empty.
+@@ -27,7 +26,7 @@ func strandNames(geom Geometry, table Table) (map[string]string, error) {
+ 	for _, seat := range table.Seats {
+ 		name, err := agentname.Format(geom.Shortname, geom.Slug, SeatRole(table.RolePrefix, seat.Name))
+ 		if err != nil {
+-			return nil, fmt.Errorf("seatengine: seat %q: %w", seat.Name, err)
++			return nil, fmt.Errorf("seatengine: seat %q: %w", table.seatLabel(seat), err)
+ 		}
+ 		names[seat.Name] = name
+ 	}
+@@ -54,13 +53,14 @@ func seatValues(geom Geometry, table Table, seat Seat, names map[string]string)
+ 	if seat.Name == leadName {
+ 		parentName, interactive = geom.ParentName, table.Interactive
+ 	}
++	label := table.seatLabel(seat)
+ 	parent, err := parentdirective.Directive(geom.StencilsDir, parentName, interactive)
+ 	if err != nil {
+-		return nil, fmt.Errorf("seatengine: seat %q: %w", seat.Name, err)
++		return nil, fmt.Errorf("seatengine: seat %q: %w", label, err)
+ 	}
+ 	edit, err := editdirective.Directive(geom.StencilsDir)
+ 	if err != nil {
+-		return nil, fmt.Errorf("seatengine: seat %q: %w", seat.Name, err)
++		return nil, fmt.Errorf("seatengine: seat %q: %w", label, err)
+ 	}
+ 
+ 	var advisors []string
+@@ -84,7 +84,7 @@ func seatValues(geom Geometry, table Table, seat Seat, names map[string]string)
+ 
+ 	for _, name := range reservedMarkers {
+ 		if _, filled := values[name]; !filled {
+-			return nil, fmt.Errorf("seatengine: seat %q: reserved marker %q has no value", seat.Name, name)
++			return nil, fmt.Errorf("seatengine: seat %q: reserved marker %q has no value", label, name)
+ 		}
+ 	}
+ 	return values, nil
+@@ -107,7 +107,7 @@ func Prompts(geom Geometry, table Table) (map[string]string, error) {
+ 		if err != nil {
+ 			return nil, err
+ 		}
+-		prompt, err := composeSeatPrompt(geom.StencilsDir, seat, values, table.Optional)
++		prompt, err := composeSeatPrompt(geom.StencilsDir, table, seat, values)
+ 		if err != nil {
+ 			return nil, err
+ 		}
+@@ -116,6 +116,51 @@ func Prompts(geom Geometry, table Table) (map[string]string, error) {
+ 	return prompts, nil
+ }
+ 
++// CheckMarkers checks that a value fills every top-level marker of every seat's stencil and of every block it includes, read from stencilsDir.
++// A non-blank table or seat value, a name in Optional or a marker the engine fills itself fills a marker, so a table that passes composes no prompt with an unfilled marker.
++// The first seat with an unfilled marker is refused naming its strand role, its stencil and every unfilled marker.
++// Such a marker means either the stencils are newer than the running binary, as after a version skew where a newer binary refreshed them, or a value is blank.
++// The refusal names both causes and a way forward for each: a binary that fills the marker, or text for the blank value.
++// It applies none of Validate's rules, and starts nothing.
++func (t Table) CheckMarkers(stencilsDir string) error {
++	for _, seat := range t.Seats {
++		label := t.seatLabel(seat)
++		body, blocks, err := readStencilSet(stencilsDir, label, seat.Stencil)
++		if err != nil {
++			return err
++		}
++		var unfilled []string
++		for _, source := range append([][]byte{body}, slices.Collect(maps.Values(blocks))...) {
++			markers, err := stencil.TopLevelMarkers(source)
++			if err != nil {
++				return fmt.Errorf("seatengine: seat %q: stencil %q: %w", label, seat.Stencil, err)
++			}
++			for _, marker := range markers {
++				if !t.fills(seat, marker) && !slices.Contains(unfilled, marker) {
++					unfilled = append(unfilled, marker)
++				}
++			}
++		}
++		if len(unfilled) > 0 {
++			slices.Sort(unfilled)
++			return fmt.Errorf("seatengine: seat %q: stencil %q has marker(s) %s that no value fills, because the stencils in %s are newer than this lym binary or a value is blank; way forward: re-step with a lym binary that fills them, or give the blank value text", label, seat.Stencil, strings.Join(unfilled, ", "), stencilsDir)
++		}
++	}
++	return nil
++}
++
++// fills reports whether a value fills marker in seat's stencil: Optional names it, the engine fills it itself, or the seat's value, else the table's, is not blank.
++func (t Table) fills(seat Seat, marker string) bool {
++	if slices.Contains(t.Optional, marker) || slices.Contains(reservedMarkers, marker) {
++		return true
++	}
++	value, inSeat := seat.Values[marker]
++	if !inSeat {
++		value = t.Values[marker]
++	}
++	return strings.TrimSpace(value) != ""
++}
++
+ // amendLeadPrompt returns prompt followed by the table's Amendment when seat is the lead, and prompt unchanged for any other seat.
+ func amendLeadPrompt(table Table, seat Seat, prompt string) string {
+ 	if seat.Name != leadName {
+@@ -124,33 +169,17 @@ func amendLeadPrompt(table Table, seat Seat, prompt string) string {
+ 	return prompt + table.Amendment
+ }
+ 
+-// composePrompt reads seat's stencil and every block it includes from stencilsDir and fills them from values, with no marker optional.
+-func composePrompt(stencilsDir string, seat Seat, values map[string]string) (string, error) {
+-	return composeSeatPrompt(stencilsDir, seat, values, nil)
+-}
+-
+ // composeSeatPrompt reads seat's stencil and every block it includes from stencilsDir and fills them from values.
+-// A marker named in optional renders as nothing when its value is empty, in the stencil and in every block.
+-func composeSeatPrompt(stencilsDir string, seat Seat, values map[string]string, optional []string) (string, error) {
+-	body, err := stencilstore.Read(stencilsDir, seat.Stencil)
++// A marker named in table's Optional renders as nothing when its value is empty, in the stencil and in every block.
++func composeSeatPrompt(stencilsDir string, table Table, seat Seat, values map[string]string) (string, error) {
++	label := table.seatLabel(seat)
++	body, blocks, err := readStencilSet(stencilsDir, label, seat.Stencil)
+ 	if err != nil {
+-		return "", fmt.Errorf("seatengine: seat %q: %w", seat.Name, err)
+-	}
+-	blockNames, err := stencil.IncludeNames(body)
+-	if err != nil {
+-		return "", fmt.Errorf("seatengine: seat %q: stencil %q: %w", seat.Name, seat.Stencil, err)
+-	}
+-	blocks := make(map[string][]byte, len(blockNames))
+-	for _, name := range blockNames {
+-		block, err := stencilstore.Read(stencilsDir, name)
+-		if err != nil {
+-			return "", fmt.Errorf("seatengine: seat %q: %w", seat.Name, err)
+-		}
+-		blocks[name] = block
++		return "", err
+ 	}
+-	filled, err := stencil.FillWith(body, blocks, values, optional)
++	filled, err := stencil.FillWith(body, blocks, values, table.Optional)
+ 	if err != nil {
+-		return "", fmt.Errorf("seatengine: seat %q: fill stencil %q: %w", seat.Name, seat.Stencil, err)
++		return "", fmt.Errorf("seatengine: seat %q: fill stencil %q: %w", label, seat.Stencil, err)
+ 	}
+ 	return string(filled), nil
+ }
+diff --git a/internal/seatengine/prompt_test.go b/internal/seatengine/prompt_test.go
+index 9c16e78f..31fa99bc 100644
+--- a/internal/seatengine/prompt_test.go
++++ b/internal/seatengine/prompt_test.go
+@@ -114,18 +114,18 @@ func TestSeatPrompts_ValuesPromptsAndSpecs(t *testing.T) {
+ 		t.Errorf("advisor parent_directive = %q, want the chair as parent and the operator ban", advisorValues["parent_directive"])
+ 	}
+ 
+-	chairPrompt, err := composePrompt(geom.StencilsDir, table.Seats[0], chairValues)
++	chairPrompt, err := composeSeatPrompt(geom.StencilsDir, table, table.Seats[0], chairValues)
+ 	if err != nil {
+-		t.Fatalf("composePrompt(chair) = %v", err)
++		t.Fatalf("composeSeatPrompt(chair) = %v", err)
+ 	}
+ 	for _, want := range []string{"Chair of ly:task:multi.", "You are the chair of this step", "ly:task:multi-advisor-1\nly:task:multi-advisor-2", "/w/out.md"} {
+ 		if !strings.Contains(chairPrompt, want) {
+ 			t.Errorf("chair prompt lacks %q:\n%s", want, chairPrompt)
+ 		}
+ 	}
+-	advisorPrompt, err := composePrompt(geom.StencilsDir, table.Seats[1], advisorValues)
++	advisorPrompt, err := composeSeatPrompt(geom.StencilsDir, table, table.Seats[1], advisorValues)
+ 	if err != nil {
+-		t.Fatalf("composePrompt(advisor) = %v", err)
++		t.Fatalf("composeSeatPrompt(advisor) = %v", err)
+ 	}
+ 	for _, want := range []string{"Advisor ly:task:multi-advisor-1.", "You are an advisor in this step", "ly:task:multi\n", "/w/a1.md"} {
+ 		if !strings.Contains(advisorPrompt, want) {
+@@ -265,12 +265,12 @@ func TestSeatPrompts_ValuesPromptsAndSpecs(t *testing.T) {
+ 		if err != nil {
+ 			t.Fatalf("seatValues(advisor) = %v", err)
+ 		}
+-		wantAdvisor, err := composePrompt(geom.StencilsDir, table.Seats[1], advisorNone)
++		wantAdvisor, err := composeSeatPrompt(geom.StencilsDir, table, table.Seats[1], advisorNone)
+ 		if err != nil {
+-			t.Fatalf("composePrompt(advisor) = %v", err)
++			t.Fatalf("composeSeatPrompt(advisor) = %v", err)
+ 		}
+ 		if plain[advisorName(1)] != wantAdvisor {
+-			t.Errorf("Prompts()[advisor-1] = %q, want composePrompt's %q", plain[advisorName(1)], wantAdvisor)
++			t.Errorf("Prompts()[advisor-1] = %q, want composeSeatPrompt's %q", plain[advisorName(1)], wantAdvisor)
+ 		}
+ 
+ 		noted.Optional = nil
+@@ -280,25 +280,41 @@ func TestSeatPrompts_ValuesPromptsAndSpecs(t *testing.T) {
+ 	})
+ }
+ 
+-func TestComposePrompt_RefusesAMarkerAbsentFromTheValueMap(t *testing.T) {
++func TestComposeSeatPrompt_RefusesAMarkerAbsentFromTheValueMapNamingTheSeatRole(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 	geom := promptGeometry(t)
+ 	writeStencil(t, geom.StencilsDir, "seat-test-undeclared", "Needs {{.undeclared_marker}}.\n{{template \"seat-directive-advisor\"}}\n")
++	writeStencil(t, geom.StencilsDir, "seat-test-undeclared-chair", "Needs {{.undeclared_marker}}.\n{{template \"seat-directive-chair\"}}\n")
+ 	table := promptTable()
+ 	names, err := strandNames(geom, table)
+ 	if err != nil {
+ 		t.Fatalf("strandNames() = %v", err)
+ 	}
+-	seat := table.Seats[1]
+-	seat.Stencil = "seat-test-undeclared"
+-	values, err := seatValues(geom, table, seat, names)
+-	if err != nil {
+-		t.Fatalf("seatValues() = %v", err)
+-	}
+ 
+-	_, err = composePrompt(geom.StencilsDir, seat, values)
+-	if err == nil || !strings.Contains(err.Error(), "undeclared_marker") {
+-		t.Fatalf("composePrompt() = %v, want an error naming undeclared_marker", err)
++	tests := []struct {
++		name      string
++		seatIndex int
++		stencil   string
++		want      string
++	}{
++		{"Advisor", 1, "seat-test-undeclared", `seatengine: seat "multi-advisor-1": fill stencil "seat-test-undeclared": stencil: unfilled top-level marker(s): undeclared_marker`},
++		{"Lead", 0, "seat-test-undeclared-chair", `seatengine: seat "multi": fill stencil "seat-test-undeclared-chair": stencil: unfilled top-level marker(s): undeclared_marker`},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			seat := table.Seats[tt.seatIndex]
++			seat.Stencil = tt.stencil
++			values, err := seatValues(geom, table, seat, names)
++			if err != nil {
++				t.Fatalf("seatValues() = %v", err)
++			}
++
++			_, err = composeSeatPrompt(geom.StencilsDir, table, seat, values)
++			if err == nil || err.Error() != tt.want {
++				t.Fatalf("composeSeatPrompt() = %v, want %q", err, tt.want)
++			}
++		})
+ 	}
+ }
+diff --git a/internal/seatengine/resume.go b/internal/seatengine/resume.go
+index 9b4f8205..857c91cf 100644
+--- a/internal/seatengine/resume.go
++++ b/internal/seatengine/resume.go
+@@ -69,7 +69,7 @@ func (e *Engine) probeSeat(table Table, seat Seat, holdDeferral func() bool) (Ha
+ 	spec.HoldDeferral = holdDeferral
+ 	handle, found, err := e.shuttle.ProbeGated(spec, seatGate(table, seat))
+ 	if err != nil {
+-		return nil, false, fmt.Errorf("seatengine: probe seat %q: %w", seat.Name, err)
++		return nil, false, fmt.Errorf("seatengine: probe seat %q: %w", table.seatLabel(seat), err)
+ 	}
+ 	return handle, found, nil
+ }
+diff --git a/internal/seatengine/table.go b/internal/seatengine/table.go
+index 12528720..1352e079 100644
+--- a/internal/seatengine/table.go
++++ b/internal/seatengine/table.go
+@@ -188,13 +188,14 @@ func (t Table) Validate(stencilsDir string) error {
+ 		}
+ 	}
+ 	for index, seat := range t.Seats {
+-		if err := validateSeatRoles(seat); err != nil {
++		label := t.seatLabel(seat)
++		if err := validateSeatRoles(label, seat); err != nil {
+ 			return err
+ 		}
+-		if err := validateValues(fmt.Sprintf("seat %q", seat.Name), seat.Values); err != nil {
++		if err := validateValues(fmt.Sprintf("seat %q", label), seat.Values); err != nil {
+ 			return err
+ 		}
+-		blocks, err := validateStencil(stencilsDir, seat)
++		blocks, err := validateStencil(stencilsDir, label, seat.Stencil)
+ 		if err != nil {
+ 			return err
+ 		}
+@@ -208,14 +209,20 @@ func (t Table) Validate(stencilsDir string) error {
+ 			}
+ 		}
+ 		if seat.Writer && !slices.Contains(blocks, writerDirectiveBlock) {
+-			return fmt.Errorf("seatengine: seat %q: the stencil %q does not include %s, which a writer needs; include %s in the writer's stencil", seat.Name, seat.Stencil, writerDirectiveBlock, writerDirectiveBlock)
++			return fmt.Errorf("seatengine: seat %q: the stencil %q does not include %s, which a writer needs; include %s in the writer's stencil", label, seat.Stencil, writerDirectiveBlock, writerDirectiveBlock)
+ 		}
+ 	}
+ 	return nil
+ }
+ 
++// seatLabel returns the name an error gives seat: its strand role, so the lead, which carries no name, reads as the role prefix.
++func (t Table) seatLabel(seat Seat) string {
++	return SeatRole(t.RolePrefix, seat.Name)
++}
++
+ // validateSeatRoles checks the fields only some seats may carry: no gate, Required, Writer or Accept on the lead, and Accept only on a seat that ends the step.
+-func validateSeatRoles(seat Seat) error {
++// label is the name an error gives the seat.
++func validateSeatRoles(label string, seat Seat) error {
+ 	if seat.Name == leadName {
+ 		switch {
+ 		case len(seat.Gate) > 0:
+@@ -230,7 +237,7 @@ func validateSeatRoles(seat Seat) error {
+ 		return nil
+ 	}
+ 	if seat.Accept != nil && !seat.endsStep() {
+-		return fmt.Errorf("seatengine: seat %q: carries an accept hook but is neither required nor a writer", seat.Name)
++		return fmt.Errorf("seatengine: seat %q: carries an accept hook but is neither required nor a writer", label)
+ 	}
+ 	return nil
+ }
+@@ -242,7 +249,7 @@ func (t Table) validateWriterKinds() error {
+ 	}
+ 	for _, seat := range t.Seats[1:] {
+ 		if !seat.Writer {
+-			return fmt.Errorf("seatengine: seat %q: the table holds writers, but this seat is not one; a table holds advisors only or writers only, so mark the seat a writer or drop it", seat.Name)
++			return fmt.Errorf("seatengine: seat %q: the table holds writers, but this seat is not one; a table holds advisors only or writers only, so mark the seat a writer or drop it", t.seatLabel(seat))
+ 		}
+ 	}
+ 	return nil
+@@ -285,16 +292,17 @@ func (t Table) validateOutputs() error {
+ 	leadInputs := t.Chair().Inputs
+ 	owners := make(map[string]string)
+ 	for _, seat := range t.Seats {
++		label := t.seatLabel(seat)
+ 		if len(seat.Outputs) == 0 {
+-			return fmt.Errorf("seatengine: seat %q: has no output", seat.Name)
++			return fmt.Errorf("seatengine: seat %q: has no output", label)
+ 		}
+ 		for _, output := range seat.Outputs {
+ 			if owner, shared := owners[output]; shared {
+-				return fmt.Errorf("seatengine: seat %q: output %q is also seat %q's output", seat.Name, output, owner)
++				return fmt.Errorf("seatengine: seat %q: output %q is also seat %q's output", label, output, owner)
+ 			}
+-			owners[output] = seat.Name
++			owners[output] = label
+ 			if seat.Name != leadName && !slices.Contains(leadInputs, output) {
+-				return fmt.Errorf("seatengine: seat %q: output %q is not among the lead's inputs", seat.Name, output)
++				return fmt.Errorf("seatengine: seat %q: output %q is not among the lead's inputs", label, output)
+ 			}
+ 		}
+ 	}
+@@ -304,8 +312,9 @@ func (t Table) validateOutputs() error {
+ // validateRoles checks every seat's formed strand role passes the agent-name role grammar.
+ func (t Table) validateRoles() error {
+ 	for _, seat := range t.Seats {
+-		if err := agentname.ValidateRole(SeatRole(t.RolePrefix, seat.Name)); err != nil {
+-			return fmt.Errorf("seatengine: seat %q: %w", seat.Name, err)
++		label := t.seatLabel(seat)
++		if err := agentname.ValidateRole(label); err != nil {
++			return fmt.Errorf("seatengine: seat %q: %w", label, err)
+ 		}
+ 	}
+ 	return nil
+@@ -325,29 +334,44 @@ func validateValues(owner string, values map[string]string) error {
+ 	return nil
+ }
+ 
+-// validateStencil checks seat's stencil and every block it includes are readable from stencilsDir, and that no block includes another.
+-// It returns the names of the blocks the stencil includes.
+-func validateStencil(stencilsDir string, seat Seat) ([]string, error) {
+-	body, err := stencilstore.Read(stencilsDir, seat.Stencil)
+-	if err != nil {
+-		return nil, fmt.Errorf("seatengine: seat %q: %w", seat.Name, err)
+-	}
+-	blocks, err := stencil.IncludeNames(body)
++// validateStencil checks the stencil named stencilName and every block it includes are readable from stencilsDir, and that no block includes another.
++// It returns the sorted names of the blocks the stencil includes; label is the name an error gives the seat the stencil opens.
++func validateStencil(stencilsDir, label, stencilName string) ([]string, error) {
++	_, blocks, err := readStencilSet(stencilsDir, label, stencilName)
+ 	if err != nil {
+-		return nil, fmt.Errorf("seatengine: seat %q: stencil %q: %w", seat.Name, seat.Stencil, err)
++		return nil, err
+ 	}
+-	for _, block := range blocks {
+-		blockBody, err := stencilstore.Read(stencilsDir, block)
++	names := slices.Sorted(maps.Keys(blocks))
++	for _, name := range names {
++		nested, err := stencil.IncludeNames(blocks[name])
+ 		if err != nil {
+-			return nil, fmt.Errorf("seatengine: seat %q: %w", seat.Name, err)
+-		}
+-		nested, err := stencil.IncludeNames(blockBody)
+-		if err != nil {
+-			return nil, fmt.Errorf("seatengine: seat %q: include %q: %w", seat.Name, block, err)
++			return nil, fmt.Errorf("seatengine: seat %q: include %q: %w", label, name, err)
+ 		}
+ 		if len(nested) > 0 {
+-			return nil, fmt.Errorf("seatengine: seat %q: include %q declares an include of its own; includes resolve one level deep", seat.Name, block)
++			return nil, fmt.Errorf("seatengine: seat %q: include %q declares an include of its own; includes resolve one level deep", label, name)
++		}
++	}
++	return names, nil
++}
++
++// readStencilSet reads the stencil named stencilName from stencilsDir, with every block it includes keyed by block name.
++// label is the name an error gives the seat the stencil opens.
++func readStencilSet(stencilsDir, label, stencilName string) ([]byte, map[string][]byte, error) {
++	body, err := stencilstore.Read(stencilsDir, stencilName)
++	if err != nil {
++		return nil, nil, fmt.Errorf("seatengine: seat %q: %w", label, err)
++	}
++	names, err := stencil.IncludeNames(body)
++	if err != nil {
++		return nil, nil, fmt.Errorf("seatengine: seat %q: stencil %q: %w", label, stencilName, err)
++	}
++	blocks := make(map[string][]byte, len(names))
++	for _, name := range names {
++		block, err := stencilstore.Read(stencilsDir, name)
++		if err != nil {
++			return nil, nil, fmt.Errorf("seatengine: seat %q: %w", label, err)
+ 		}
++		blocks[name] = block
+ 	}
+-	return blocks, nil
++	return body, blocks, nil
+ }
+diff --git a/internal/seatengine/table_test.go b/internal/seatengine/table_test.go
+index 9ae8a170..752c41a7 100644
+--- a/internal/seatengine/table_test.go
++++ b/internal/seatengine/table_test.go
+@@ -1,4 +1,4 @@
+-// table_test.go covers Table.Validate against a seeded stencils directory, and the table's name, accessor and reserved-marker helpers.
++// table_test.go covers Table.Validate and Table.CheckMarkers against a seeded stencils directory, and the table's name, accessor and reserved-marker helpers.
+ 
+ package seatengine
+ 
+@@ -87,7 +87,7 @@ func TestTable_Validate(t *testing.T) {
+ 		{name: "a gate on the lead", mutate: func(tb *Table) { tb.Seats[0].Gate = shuttleengine.GateSpec{{Name: "g", Attempts: 1}} }, wantErr: `the lead carries a gate`},
+ 		{name: "a required lead", mutate: func(tb *Table) { tb.Seats[0].Required = true }, wantErr: `the lead is marked required`},
+ 		{name: "an accept hook on the lead", mutate: func(tb *Table) { tb.Seats[0].Accept = func(shuttleengine.Result) error { return nil } }, wantErr: `the lead carries an accept hook`},
+-		{name: "an accept hook on an advisor that is not required", mutate: func(tb *Table) { tb.Seats[1].Accept = func(shuttleengine.Result) error { return nil } }, wantErr: `seat "advisor-1": carries an accept hook but is neither required nor a writer`},
++		{name: "an accept hook on an advisor that is not required", mutate: func(tb *Table) { tb.Seats[1].Accept = func(shuttleengine.Result) error { return nil } }, wantErr: `seat "multi-advisor-1": carries an accept hook but is neither required nor a writer`},
+ 		{name: "a required advisor with an accept hook", mutate: func(tb *Table) {
+ 			tb.Seats[1].Required = true
+ 			tb.Seats[1].Accept = func(shuttleengine.Result) error { return nil }
+@@ -105,7 +105,7 @@ func TestTable_Validate(t *testing.T) {
+ 		{name: "a table of writers and an advisor", mutate: func(tb *Table) {
+ 			asWriters(tb)
+ 			tb.Seats[2].Writer, tb.Seats[2].Stencil = false, "seat-test-advisor"
+-		}, wantErr: `seat "advisor-2": the table holds writers, but this seat is not one; a table holds advisors only or writers only`},
++		}, wantErr: `seat "multi-advisor-2": the table holds writers, but this seat is not one; a table holds advisors only or writers only`},
+ 		{name: "a writer table whose lead includes only the advisor chair directive", mutate: func(tb *Table) {
+ 			asWriters(tb)
+ 			tb.Seats[0].Stencil = "seat-test-chair"
+@@ -113,7 +113,7 @@ func TestTable_Validate(t *testing.T) {
+ 		{name: "a writer whose stencil lacks the writer directive", mutate: func(tb *Table) {
+ 			asWriters(tb)
+ 			tb.Seats[2].Stencil = "seat-test-advisor"
+-		}, wantErr: `seat "advisor-2": the stencil "seat-test-advisor" does not include seat-directive-writer`},
++		}, wantErr: `seat "multi-advisor-2": the stencil "seat-test-advisor" does not include seat-directive-writer`},
+ 		{name: "a writer lead", mutate: func(tb *Table) { tb.Seats[0].Writer = true }, wantErr: `the lead is marked a writer, but only a seat after the lead can be`},
+ 		{name: "a lone lead is accepted", mutate: func(tb *Table) { tb.Seats = tb.Seats[:1] }},
+ 		{name: "a lone lead needs no chair directive", mutate: func(tb *Table) {
+@@ -127,18 +127,18 @@ func TestTable_Validate(t *testing.T) {
+ 		{name: "a numeric later name", mutate: func(tb *Table) { tb.Seats[1].Name = "2" }, wantErr: `seat "2": `},
+ 		{name: "a later name with an upper-case letter", mutate: func(tb *Table) { tb.Seats[1].Name = "Critic" }, wantErr: `seat "Critic": `},
+ 		{name: "a lead stencil without the chair directive beside advisors", mutate: func(tb *Table) { tb.Seats[0].Stencil = "seat-test-bare" }, wantErr: `include seat-directive-chair in the lead's stencil`},
+-		{name: "a seat with no output", mutate: func(tb *Table) { tb.Seats[0].Outputs = nil }, wantErr: `seat "": has no output`},
+-		{name: "two seats sharing an output", mutate: func(tb *Table) { tb.Seats[2].Outputs = []string{"/w/a1.md"} }, wantErr: `seat "advisor-2": output "/w/a1.md" is also seat "advisor-1"'s output`},
+-		{name: "an advisor output the lead does not read", mutate: func(tb *Table) { tb.Seats[0].Inputs = []string{"/w/a1.md"} }, wantErr: `seat "advisor-2": output "/w/a2.md" is not among the lead's inputs`},
++		{name: "a seat with no output", mutate: func(tb *Table) { tb.Seats[0].Outputs = nil }, wantErr: `seat "multi": has no output`},
++		{name: "two seats sharing an output", mutate: func(tb *Table) { tb.Seats[2].Outputs = []string{"/w/a1.md"} }, wantErr: `seat "multi-advisor-2": output "/w/a1.md" is also seat "multi-advisor-1"'s output`},
++		{name: "an advisor output the lead does not read", mutate: func(tb *Table) { tb.Seats[0].Inputs = []string{"/w/a1.md"} }, wantErr: `seat "multi-advisor-2": output "/w/a2.md" is not among the lead's inputs`},
+ 		{name: "an invalid role prefix", mutate: func(tb *Table) { tb.RolePrefix = "Multi" }, wantErr: "role prefix"},
+ 		{name: "an empty role prefix", mutate: func(tb *Table) { tb.RolePrefix = "" }, wantErr: "role prefix"},
+-		{name: "an unreadable seat stencil", mutate: func(tb *Table) { tb.Seats[1].Stencil = "seat-test-absent" }, wantErr: `seat "advisor-1": stencilstore: read stencil "seat-test-absent"`},
+-		{name: "an unreadable included block", mutate: func(tb *Table) { tb.Seats[0].Stencil = "seat-test-broken" }, wantErr: `seat "": stencilstore: read stencil "seat-test-absent"`},
+-		{name: "an included block that includes", mutate: func(tb *Table) { tb.Seats[0].Stencil = "seat-test-nested" }, wantErr: `seat "": include "seat-test-includer" declares an include of its own`},
++		{name: "an unreadable seat stencil", mutate: func(tb *Table) { tb.Seats[1].Stencil = "seat-test-absent" }, wantErr: `seat "multi-advisor-1": stencilstore: read stencil "seat-test-absent"`},
++		{name: "an unreadable included block", mutate: func(tb *Table) { tb.Seats[0].Stencil = "seat-test-broken" }, wantErr: `seat "multi": stencilstore: read stencil "seat-test-absent"`},
++		{name: "an included block that includes", mutate: func(tb *Table) { tb.Seats[0].Stencil = "seat-test-nested" }, wantErr: `seat "multi": include "seat-test-includer" declares an include of its own`},
+ 		{name: "a table value naming a reserved marker", mutate: func(tb *Table) { tb.Values = map[string]string{"inputs": "x"} }, wantErr: `table: value "inputs" collides with a reserved marker`},
+-		{name: "a seat value naming a reserved marker", mutate: func(tb *Table) { tb.Seats[1].Values = map[string]string{"seat_name": "x"} }, wantErr: `seat "advisor-1": value "seat_name" collides with a reserved marker`},
++		{name: "a seat value naming a reserved marker", mutate: func(tb *Table) { tb.Seats[1].Values = map[string]string{"seat_name": "x"} }, wantErr: `seat "multi-advisor-1": value "seat_name" collides with a reserved marker`},
+ 		{name: "a whitespace-only table value", mutate: func(tb *Table) { tb.Values = map[string]string{"topic": " \n"} }, wantErr: `table: value "topic" is empty`},
+-		{name: "an empty seat value", mutate: func(tb *Table) { tb.Seats[0].Values = map[string]string{"topic": ""} }, wantErr: `seat "": value "topic" is empty`},
++		{name: "an empty seat value", mutate: func(tb *Table) { tb.Seats[0].Values = map[string]string{"topic": ""} }, wantErr: `seat "multi": value "topic" is empty`},
+ 		{name: "a blank table value named optional", mutate: func(tb *Table) {
+ 			tb.Values = map[string]string{"topic": " "}
+ 			tb.Optional = []string{"topic"}
+@@ -151,7 +151,7 @@ func TestTable_Validate(t *testing.T) {
+ 		{name: "a blank seat value whose name is optional", mutate: func(tb *Table) {
+ 			tb.Seats[0].Values = map[string]string{"topic": ""}
+ 			tb.Optional = []string{"topic"}
+-		}, wantErr: `seat "": value "topic" is empty`},
++		}, wantErr: `seat "multi": value "topic" is empty`},
+ 		{name: "unreserved non-blank values", mutate: func(tb *Table) {
+ 			tb.Values = map[string]string{"topic": "x"}
+ 			tb.Seats[0].Values = map[string]string{"focus": "y"}
+@@ -178,6 +178,99 @@ func TestTable_Validate(t *testing.T) {
+ 	}
+ }
+ 
++func TestTable_CheckMarkers(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	dir := seatedStencils(t)
++	writeStencil(t, dir, "seat-test-marked-block", "Block [{{.focus}}].\n")
++	writeStencil(t, dir, "seat-test-marked", "Lead [{{.topic}}] {{.seat_name}}.\n{{template \"seat-test-marked-block\"}}\n{{template \"seat-directive-chair\"}}\n")
++	writeStencil(t, dir, "seat-test-marked-advisor", "Advisor [{{.angle}}].\n{{template \"seat-directive-advisor\"}}\n")
++	writeStencil(t, dir, "seat-test-malformed-block", "Block [{{if}}].\n")
++	writeStencil(t, dir, "seat-test-malformed", "Lead.\n{{template \"seat-test-malformed-block\"}}\n")
++	writeStencil(t, dir, "seat-test-twice-block", "Block [{{.topic}}].\n")
++	writeStencil(t, dir, "seat-test-twice", "Lead [{{.topic}}].\n{{template \"seat-test-twice-block\"}}\n{{template \"seat-directive-chair\"}}\n")
++
++	tests := []struct {
++		name   string
++		mutate func(*Table)
++		// wantErrs are substrings the refusal holds; none means the table is accepted.
++		wantErrs []string
++		// wantAbsent are substrings the refusal must not hold.
++		wantAbsent []string
++	}{
++		{name: "every marker filled by a table value, a seat value or the engine", mutate: func(tb *Table) {
++			tb.Values = map[string]string{"topic": "x"}
++			tb.Seats[0].Values = map[string]string{"focus": "y"}
++		}},
++		{name: "an optional name with no value", mutate: func(tb *Table) {
++			tb.Values = map[string]string{"topic": "x"}
++			tb.Optional = []string{"focus"}
++		}},
++		{name: "a stencil marker and a block marker with no value", wantErrs: []string{
++			`seatengine: seat "multi": stencil "seat-test-marked" has marker(s) focus, topic that no value fills, because the stencils in ` + dir + ` are newer than this lym binary or a value is blank`,
++			"way forward: re-step with a lym binary that fills them, or give the blank value text",
++		}},
++		{name: "a value on another seat", mutate: func(tb *Table) {
++			tb.Values = map[string]string{"topic": "x"}
++			tb.Seats[1].Values = map[string]string{"focus": "y"}
++		}, wantErrs: []string{`seat "multi": stencil "seat-test-marked" has marker(s) focus that no value fills`}},
++		{name: "an advisor stencil marker with no value", mutate: func(tb *Table) {
++			tb.Values = map[string]string{"topic": "x", "focus": "y"}
++			tb.Seats[2].Stencil = "seat-test-marked-advisor"
++		}, wantErrs: []string{`seat "multi-advisor-2": stencil "seat-test-marked-advisor" has marker(s) angle that no value fills`}},
++		{name: "an unreadable stencil", mutate: func(tb *Table) {
++			tb.Values = map[string]string{"topic": "x", "focus": "y"}
++			tb.Seats[1].Stencil = "seat-test-absent"
++		}, wantErrs: []string{`seat "multi-advisor-1": stencilstore: read stencil "seat-test-absent"`}},
++		{name: "a blank table value for a non-optional marker", mutate: func(tb *Table) {
++			tb.Values = map[string]string{"topic": " \n", "focus": "y"}
++		}, wantErrs: []string{`seat "multi": stencil "seat-test-marked" has marker(s) topic that no value fills`}},
++		{name: "a blank seat value over a filled table value", mutate: func(tb *Table) {
++			tb.Values = map[string]string{"topic": "x", "focus": "y"}
++			tb.Seats[0].Values = map[string]string{"topic": ""}
++		}, wantErrs: []string{`has marker(s) topic that no value fills`}},
++		{name: "an included block that does not parse", mutate: func(tb *Table) {
++			tb.Seats[0].Stencil = "seat-test-malformed"
++		}, wantErrs: []string{`seatengine: seat "multi": stencil "seat-test-malformed": parse template`}},
++		{name: "a marker in the stencil and in its block", mutate: func(tb *Table) {
++			tb.Seats[0].Stencil = "seat-test-twice"
++		}, wantErrs: []string{`has marker(s) topic that no value fills`}},
++		{name: "two unfilled seats name only the lead", mutate: func(tb *Table) {
++			tb.Seats[2].Stencil = "seat-test-marked-advisor"
++		}, wantErrs: []string{`seat "multi": stencil "seat-test-marked"`}, wantAbsent: []string{"multi-advisor-2", "angle"}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			table := validTable()
++			table.Seats[0].Stencil = "seat-test-marked"
++			if tt.mutate != nil {
++				tt.mutate(&table)
++			}
++			err := table.CheckMarkers(dir)
++			if len(tt.wantErrs) == 0 {
++				if err != nil {
++					t.Fatalf("CheckMarkers() = %v, want nil", err)
++				}
++				return
++			}
++			if err == nil {
++				t.Fatalf("CheckMarkers() = nil, want an error containing %q", tt.wantErrs)
++			}
++			for _, want := range tt.wantErrs {
++				if !strings.Contains(err.Error(), want) {
++					t.Errorf("CheckMarkers() = %v, want an error containing %q", err, want)
++				}
++			}
++			for _, absent := range tt.wantAbsent {
++				if strings.Contains(err.Error(), absent) {
++					t.Errorf("CheckMarkers() = %v, want an error without %q", err, absent)
++				}
++			}
++		})
++	}
++}
++
+ func TestTable_NamesAccessorsAndReservedMarkers(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/shedrecipe/entries_simple.go b/internal/shedrecipe/entries_simple.go
+index 452dfa34..28a3474e 100644
+--- a/internal/shedrecipe/entries_simple.go
++++ b/internal/shedrecipe/entries_simple.go
+@@ -14,7 +14,7 @@ import (
+ )
+ 
+ // preflightEntry is the Constructor for the "Preflight" registry row: it validates Env.Cwd and
+-// returns preflightshed.NewPreflightWithBatcher(name, env.Cwd, env.PreflightBatcher).
++// returns preflightshed.NewPreflightWithChecks(name, env.Cwd, checks), the checks being env.PreflightBatcher and env.PreflightStencils.
+ func preflightEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error) {
+ 	if err := configRejectUnknown(cfg); err != nil {
+ 		return nil, err
+@@ -22,7 +22,7 @@ func preflightEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProduc
+ 	if err := requireAbsRoot("Preflight", "Cwd", env.Cwd); err != nil {
+ 		return nil, err
+ 	}
+-	return preflightshed.NewPreflightWithBatcher(row.Name, env.Cwd, env.PreflightBatcher), nil
++	return preflightshed.NewPreflightWithChecks(row.Name, env.Cwd, preflightshed.Checks{Batcher: env.PreflightBatcher, Stencils: env.PreflightStencils}), nil
+ }
+ 
+ // landingRowDeps returns a copy of env.Landing whose GateKey is the key the row's optional "gate_key" string names, else the row name in lower case.
+diff --git a/internal/shedrecipe/entries_simple_test.go b/internal/shedrecipe/entries_simple_test.go
+index 5e3de8d3..d444cc44 100644
+--- a/internal/shedrecipe/entries_simple_test.go
++++ b/internal/shedrecipe/entries_simple_test.go
+@@ -4,6 +4,7 @@ package shedrecipe
+ 
+ import (
+ 	"context"
++	"errors"
+ 	"fmt"
+ 	"path/filepath"
+ 	"reflect"
+@@ -263,6 +264,20 @@ func TestSimpleEntries_HappyPath(t *testing.T) {
+ 		}
+ 	})
+ 
++	// The Preflight row hands Env.PreflightStencils to its producer, so a failing check halts the row.
++	t.Run("Preflight forwards the stencils check", func(t *testing.T) {
++		env := newTestEnv(t)
++		env.PreflightStencils = func() error { return errors.New("marker x that no value fills") }
++		producer, err := preflightEntry(RowIdentity{Name: "Preflight"}, Config{}, env)
++		if err != nil {
++			t.Fatalf("preflightEntry() error = %v; want nil", err)
++		}
++		outcome, pointer, err := producer.Call(context.Background())
++		if err != nil || outcome != shedengine.Stuck || !strings.Contains(pointer.Reason, "seat stencils check failed: marker x that no value fills") {
++			t.Errorf("Call() = %q, %q, %v; want stuck with the stencils reason, nil", outcome, pointer.Reason, err)
++		}
++	})
++
+ 	// The landing rows run the gate key their config or row name picks, read from the producer's told Deps.
+ 	landingRows := []struct {
+ 		name    string
+diff --git a/internal/shedrecipe/recipe.go b/internal/shedrecipe/recipe.go
+index 336a28f8..278d22bc 100644
+--- a/internal/shedrecipe/recipe.go
++++ b/internal/shedrecipe/recipe.go
+@@ -82,6 +82,9 @@ type Env struct {
+ 	Cwd string
+ 	// PreflightBatcher is the batcher.yaml load Preflight runs, set by the wiring for a recipe with an Implementer row, nil otherwise.
+ 	PreflightBatcher func() error
++	// PreflightStencils is the seat stencils check Preflight runs, set by the wiring for a recipe with a Darn-Write row, nil otherwise.
++	// It checks only the Darn-Write writer table, since the other seat tables are built from call-time values Preflight does not have.
++	PreflightStencils func() error
+ 	// AnchorPath is the told anchor path, read by Webster, Bouncer and the gate resolver's "plan" gate.
+ 	AnchorPath string
+ 	// ConfigDirs is the told geometry of a layered config load, read by Webster, which loads batcher through it.
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index c7db19db..ac36f425 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -54,6 +54,7 @@ var nilLegal = map[string]bool{
+ 	"GateFixer":                        true,
+ 	"WebsterRecord":                    true,
+ 	"PreflightBatcher":                 true,
++	"PreflightStencils":                true,
+ 	"Pawl.Watch":                       true,
+ 	"Sampler.Watch":                    true,
+ 	"NotifyParent":                     true,
