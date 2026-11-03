@@ -897,7 +897,7 @@
       "isolated": false,
       "brief": "Each entry flagged discussed shows a mark linking decision-\u003cslug\u003e.md in the README",
       "body": "The board README does not show which entries carry an approved decision record (their Sketch), so the operator cannot see that a `motif` run has finished an entry's Discussion (operator, 2026-11-03).\n\n## Expected\n\n- The README marks every entry flagged `discussed` in its row, in every table that lists it, and links the mark to the stored record `decision-\u003cslug\u003e.md` beside `board.json`, as the slug cell links the body `design-\u003cslug\u003e.md` today.\n- An entry not flagged discussed renders as today.\n- The mark is short, for example a `Sketch` link in the title cell's bullet lines or beside the recipe; the writer picks the place that keeps the row narrow and states the choice.\n- A test pins both renderings.\n",
-      "status": "running · Code-Burler-Review",
+      "status": "running · Code-Burler-Fix",
       "created": "2026-11-03T11:49:30Z",
       "revised": "2026-11-03T11:49:30Z",
       "profile": "light"
