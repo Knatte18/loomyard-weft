@@ -1,0 +1,310 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index d73cfe7e..b34668d0 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -597,6 +597,8 @@ User-facing modules each get one `lym <module>` namespace:
+   The `Webster` row commits the plan directory alongside its run record.
+   `commit-records` commits and pushes the run's records through fabric, pushing the task branch along with them — the status file, the review round record, friction notes and drive reports — and is what the loom driver's end-of-session command runs after the driver writes its stop report, and what a loom-launched driver runs at a hand-back before it parks until `lym loom start` resumes it; a tree with nothing to commit succeeds without a commit.
+   Friction notes live under `_lym/loom/friction/` and drive reports under `_lym/shed/<slug>/drive-reports/`, both committed with the run.
++  Every `lym loom start` or `step` commits whatever the friction directory holds along with the seed.
++  A task's first one clears the directory first, so notes inherited from the fabric it branched from never reach its reflection or dirty its Preflight.
+   Besides the agents' notes, the friction directory holds the Go-written halt notes, which name their anomaly kind, the crash-resume notes written at a `run` or `step` entry and `lym webster` refusal notes, and the driver's repair records.
+   `lym loom start` writes a handoff voucher right before it spawns a driver, so a deliberate resume never reads as a crash.
+   A tapestry run's tail is `Webster → Parent-Align → Drift-Verify → Code-Review → Describe → PR-Review → Finalize`, where `Code-Review` is the Code-Perch of `Code-Bouncer`, `Code-Burler-Review` and `Code-Burler-Fix`;
+diff --git a/internal/fabricengine/anchoredpathhascontent_test.go b/internal/fabricengine/anchoredpathhascontent_test.go
+new file mode 100644
+index 00000000..6dbd8a03
+--- /dev/null
++++ b/internal/fabricengine/anchoredpathhascontent_test.go
+@@ -0,0 +1,78 @@
++// anchoredpathhascontent_test.go covers AnchoredPathHasContent over a real records worktree:
++// which directory states make git accept the path as a commit pathspec.
++
++package fabricengine_test
++
++import (
++	"os"
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestAnchoredPathHasContent asserts the probe is true only for a directory that git would accept as a commit pathspec:
++// one holding a tracked file, even when deleted on disk, or an untracked file that is not ignored.
++func TestAnchoredPathHasContent(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	tests := []struct {
++		name  string
++		setup func(t *testing.T, weft string)
++		want  bool
++	}{
++		{"TrackedFileDeletedOnDisk", func(t *testing.T, weft string) {
++			gitkit.CommitFile(t, weft, "notes/halt.md", "halt\n", "track a note")
++			if err := os.Remove(filepath.Join(weft, "notes", "halt.md")); err != nil {
++				t.Fatalf("delete the tracked note: %v", err)
++			}
++		}, true},
++		{"UntrackedFile", func(t *testing.T, weft string) {
++			writeProbeFile(t, filepath.Join(weft, "notes", "new.md"))
++		}, true},
++		{"IgnoredOnlyDirectory", func(t *testing.T, weft string) {
++			gitkit.CommitFile(t, weft, ".gitignore", "notes/\n", "ignore the notes directory")
++			writeProbeFile(t, filepath.Join(weft, "notes", "ignored.md"))
++		}, false},
++		{"EmptyDirectory", func(t *testing.T, weft string) {
++			if err := os.MkdirAll(filepath.Join(weft, "notes"), 0o755); err != nil {
++				t.Fatalf("create the empty directory: %v", err)
++			}
++		}, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			loc := &lymcwd.Location{HubPath: t.TempDir(), WorktreeName: "task-slug", AnchorRel: "."}
++			weft := fabricengine.RecordsWorktree(loc)
++			if err := os.MkdirAll(weft, 0o755); err != nil {
++				t.Fatalf("create the records worktree: %v", err)
++			}
++			gitkit.MustRun(t, weft, "git", "init")
++			gitkit.CommitFile(t, weft, "README", "records\n", "seed the records worktree")
++			tt.setup(t, weft)
++
++			got, err := fabricengine.AnchoredPathHasContent(loc, "notes")
++			if err != nil {
++				t.Fatalf("AnchoredPathHasContent(loc, %q) error = %v; want nil", "notes", err)
++			}
++			if got != tt.want {
++				t.Errorf("AnchoredPathHasContent(loc, %q) = %v; want %v", "notes", got, tt.want)
++			}
++		})
++	}
++}
++
++// writeProbeFile writes a small file at path, creating its parent directories.
++func writeProbeFile(t *testing.T, path string) {
++	t.Helper()
++	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++		t.Fatalf("create %s: %v", filepath.Dir(path), err)
++	}
++	if err := os.WriteFile(path, []byte("note\n"), 0o644); err != nil {
++		t.Fatalf("write %s: %v", path, err)
++	}
++}
+diff --git a/internal/fabricengine/commitweftpaths.go b/internal/fabricengine/commitweftpaths.go
+index f87b5c4e..05da0250 100644
+--- a/internal/fabricengine/commitweftpaths.go
++++ b/internal/fabricengine/commitweftpaths.go
+@@ -100,3 +100,10 @@ func commitRecordsPathsHeld(rec *Mutations, weftPath, anchorRel string, relPaths
+ func CommitAnchoredPaths(rec *Mutations, l *lymcwd.Location, relPaths []string, msg string, opts SyncOptions) (sha string, committed bool, err error) {
+ 	return CommitRecordsPaths(rec, RecordsWorktree(l), l.AnchorRel, relPaths, msg, opts)
+ }
++
++// AnchoredPathHasContent reports whether the anchor-relative relPath matches a path the run-records worktree's index tracks or an untracked, non-ignored file on disk.
++// Git refuses a commit pathspec that matches nothing, so a caller asks it before handing CommitAnchoredPaths a directory that may be empty and untracked.
++// A tracked file deleted from disk still matches, so its deletion can be committed.
++func AnchoredPathHasContent(l *lymcwd.Location, relPath string) (bool, error) {
++	return entryMatchesWeft(RecordsWorktree(l), weftCommitPathspec(l.AnchorRel, []string{relPath})[0])
++}
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 26cb8c39..5d041a37 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -51,6 +51,8 @@
+ //
+ // `lym loom start` works in order.
+ // It resolves the recorded parent branch, seeds the status file when absent and commits the seed into the fabric before anything else touches it.
++// Every start or step commits whatever the friction directory holds along with the seed.
++// A first seed clears the friction directory first, so the clear is committed with the seed and notes the fabric carried in, such as a beam pawl run's halt note, neither reach the task's reflection nor leave Preflight a dirty worktree.
+ // An unseeded run is seeded with the driver `shed.yaml`'s `driver_kind` and its layers resolve to, `llm` by default;
+ // a seeded run keeps its recorded driver whatever the key says later.
+ // It brings up the worktree's tmux session;
+diff --git a/internal/loomcli/sharedbootstrap.go b/internal/loomcli/sharedbootstrap.go
+index eb26fa98..282310f6 100644
+--- a/internal/loomcli/sharedbootstrap.go
++++ b/internal/loomcli/sharedbootstrap.go
+@@ -55,10 +55,10 @@ const (
+ 	bootstrapStageCommit
+ )
+ 
+-// seedAndCommitBootstrap resolves the parent branch, writes loom's own shedrun.Seed, seeds the
+-// status file when absent, verifies seed ownership, and commits the seed, the status file, and the
+-// origin record into the fabric -- today's steps 1 through 3 from start.go's RunE, held here
+-// verbatim and in today's order so `step` can call the exact same sequence.
++// seedAndCommitBootstrap resolves the parent branch and writes loom's own shedrun.Seed.
++// It seeds the status file when absent and verifies seed ownership.
++// It then commits the seed, the status file, the origin record, and the friction directory when it holds tracked or untracked content into the fabric.
++// It holds today's steps 1 through 3 from start.go's RunE verbatim and in today's order, so `step` can call the exact same sequence.
+ //
+ // On success it returns the resolved parent branch, the run's effective driver, bootstrapStageNone,
+ // and a nil error. On failure it returns two empty strings, the stage that failed, and the error
+@@ -157,10 +157,24 @@ func (c *loomCLI) seedAndCommitBootstrap(slug, parentFlag string) (string, strin
+ 	// record's own comment already gives: WriteSeed above is idempotent, so a prior invocation that
+ 	// wrote the seed to disk but crashed before this step committed it self-heals on the very next
+ 	// call.
+-	commitPaths := bootstrapCommitPaths(c.location)
++	// The friction directory is committed too whenever it holds tracked or untracked content.
++	// A task worktree branches from a fabric that may carry committed notes, such as a beam pawl run's own halt note.
++	// Step 2b's first-seed clear deletes them, and that deletion left uncommitted would fail the same precondition row.
++	// Probing on every invocation self-heals a clear whose commit crashed.
++	// A resume's notes stay on disk and are committed here too.
++	// The probe is skipped under SkipGit, where the commit is a no-op and the fabric's git may be unusable.
++	syncOptions := fabricengine.EnvSyncOptions()
++	withFriction := false
++	if c.frictionDir != "" && !syncOptions.SkipGit {
++		withFriction, err = fabricengine.AnchoredPathHasContent(c.location, loomengine.LoomFrictionDirRel())
++		if err != nil {
++			return "", "", bootstrapStageCommit, err
++		}
++	}
++	commitPaths := bootstrapCommitPaths(c.location, withFriction)
+ 	commitRec := fabricengine.NewMutations("")
+ 	commitMsg := fmt.Sprintf("loom: seed session bootstrap for %s", slug)
+-	if _, _, err := fabricengine.CommitAnchoredPaths(commitRec, c.location, commitPaths, commitMsg, fabricengine.EnvSyncOptions()); err != nil {
++	if _, _, err := fabricengine.CommitAnchoredPaths(commitRec, c.location, commitPaths, commitMsg, syncOptions); err != nil {
+ 		return "", "", bootstrapStageCommit, err
+ 	}
+ 
+@@ -213,19 +227,26 @@ func loomSeedFor(recipe, parent, driver string) shedrun.Seed {
+ 	}
+ }
+ 
+-// bootstrapCommitPaths returns the three anchor-relative paths seedAndCommitBootstrap's step 3
+-// commits unconditionally: the status file, the seed, and the origin record. It is a pure
+-// function, factored out for the same reason loomSeedFor is -- so a Tier 1 test can pin the
+-// pathspec's exact shape without a real fabric behind it.
+-func bootstrapCommitPaths(location *lymcwd.Location) []string {
+-	return []string{shedrun.StatusRel(location, shedrun.SelfRunID), shedrun.SeedRel(location, shedrun.SelfRunID), fabricengine.OriginRecordRel()}
++// bootstrapCommitPaths returns the anchor-relative paths seedAndCommitBootstrap's step 3 commits:
++// the status file, the seed and the origin record always,
++// and the friction directory when withFriction is set, so a first seed's clear of notes the fabric already tracked is committed with the seed.
++// Git refuses a commit pathspec that matches nothing, so withFriction must be set only when the directory matches tracked or untracked content.
++// It is a pure function, factored out for the same reason loomSeedFor is -- so a Tier 1 test can pin the pathspec's exact shape without a real fabric behind it.
++func bootstrapCommitPaths(location *lymcwd.Location, withFriction bool) []string {
++	paths := []string{shedrun.StatusRel(location, shedrun.SelfRunID), shedrun.SeedRel(location, shedrun.SelfRunID), fabricengine.OriginRecordRel()}
++	if withFriction {
++		paths = append(paths, loomengine.LoomFrictionDirRel())
++	}
++	return paths
+ }
+ 
+ // ensureFrictionDirAfterSeed performs the once-per-task clear-and-create split immediately after
+ // loomshed.Seed: on a genuine first seed (seedErr is nil), the friction directory is cleared before
+ // being recreated, since a fresh task has no notes worth preserving; on an ErrSeedExists re-entry
+ // (any other seedErr value), the directory is left untouched and only ensured to exist, since a
+-// resume's notes are exactly the ones most worth reading. Both operations are skipped entirely when
++// resume's notes are exactly the ones most worth reading.
++// They stay on disk, and the bootstrap's commit step still commits whatever the directory holds.
++// Both operations are skipped entirely when
+ // frictionDir is empty, which is how Tier 2's off state travels. A failed os.RemoveAll logs at Warn
+ // and never fails this call; a failed friction.EnsureDir is handled entirely inside that function,
+ // which never returns an error either.
+diff --git a/internal/loomcli/sharedbootstrap_test.go b/internal/loomcli/sharedbootstrap_test.go
+index e610565a..2d10af46 100644
+--- a/internal/loomcli/sharedbootstrap_test.go
++++ b/internal/loomcli/sharedbootstrap_test.go
+@@ -20,6 +20,7 @@ import (
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/shedbuild"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+@@ -181,21 +182,32 @@ func TestResolveSeedRecipe(t *testing.T) {
+ 	}
+ }
+ 
+-// TestBootstrapCommitPaths_IncludesSeedRel asserts bootstrapCommitPaths -- the pathspec
+-// seedAndCommitBootstrap's step 3 commits unconditionally -- includes shedrun.SeedRel(shedrun.
+-// SelfRunID) alongside the status file and origin record, so a crashed-and-resumed bootstrap's
+-// seed self-heals into the fabric exactly as the status file and origin record already do.
+-func TestBootstrapCommitPaths_IncludesSeedRel(t *testing.T) {
++// TestBootstrapCommitPaths asserts the pathspec seedAndCommitBootstrap's step 3 commits:
++// the status file, the seed and the origin record always,
++// so a crashed-and-resumed bootstrap's seed self-heals into the fabric, and the friction directory only when it holds tracked or untracked content.
++func TestBootstrapCommitPaths(t *testing.T) {
+ 	tiergate.Require(t, 0)
++	t.Parallel()
+ 	loc := &lymcwd.Location{HubPath: t.TempDir(), WorktreeName: "task-slug", AnchorRel: "."}
+-	got := bootstrapCommitPaths(loc)
+-
+-	want := []string{
++	base := []string{
+ 		shedrun.StatusRel(loc, shedrun.SelfRunID),
+ 		shedrun.SeedRel(loc, shedrun.SelfRunID),
+ 		fabricengine.OriginRecordRel(),
+ 	}
+-	if !reflect.DeepEqual(got, want) {
+-		t.Errorf("bootstrapCommitPaths(loc) = %v; want %v", got, want)
++	tests := []struct {
++		name         string
++		withFriction bool
++		want         []string
++	}{
++		{"NoFrictionDirectory", false, base},
++		{"FrictionDirectoryHasContent", true, append(append([]string{}, base...), loomengine.LoomFrictionDirRel())},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := bootstrapCommitPaths(loc, tt.withFriction); !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("bootstrapCommitPaths(loc, %v) = %v; want %v", tt.withFriction, got, tt.want)
++			}
++		})
+ 	}
+ }
+diff --git a/internal/loomcli/smoke_bootstrapwiring_test.go b/internal/loomcli/smoke_bootstrapwiring_test.go
+index 5d5f7266..edd57fb0 100644
+--- a/internal/loomcli/smoke_bootstrapwiring_test.go
++++ b/internal/loomcli/smoke_bootstrapwiring_test.go
+@@ -18,6 +18,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+@@ -56,7 +57,12 @@ func TestSmokeStepBootstrapWiring(t *testing.T) {
+ 	registerBootstrapTeardown(t, loc, worktree)
+ 	seedGoDriverRun(t, loc)
+ 
++	// The stale note is committed, as a beam pawl run's halt note is in the fabric its task runs branch from,
++	// so the first seed's clear must commit its deletion or Preflight refuses the dirty worktree.
+ 	stalePath := plantFrictionNote(t, loc, "left-over-from-an-earlier-task.md")
++	if _, _, err := fabricengine.CommitAnchoredPaths(fabricengine.NewMutations(""), loc, []string{loomengine.LoomFrictionDirRel()}, "test: commit an inherited friction note", fabricengine.SyncOptions{}); err != nil {
++		t.Fatalf("commit the inherited friction note: %v", err)
++	}
+ 
+ 	// The regression guard for the once-per-task friction clear that never shipped.
+ 	//
+@@ -87,6 +93,13 @@ func TestSmokeStepBootstrapWiring(t *testing.T) {
+ 		if info, statErr := os.Stat(frictionDir); statErr != nil || !info.IsDir() {
+ 			t.Errorf("friction directory %q after first seed: stat err=%v; want it recreated as a directory", frictionDir, statErr)
+ 		}
++		persisted, found, err := state.ReadJSON[shedengine.Status](shedrun.StatusFile(loc, shedrun.SelfRunID), shedrun.StatusLock(loc, shedrun.SelfRunID))
++		if err != nil || !found {
++			t.Fatalf("read persisted status after step: found=%v err=%v", found, err)
++		}
++		if persisted.State == shedengine.StateBlocked || persisted.State == shedengine.StateFailed {
++			t.Errorf("status after the first step = %s (error %q, history %+v); want Preflight to pass over the committed clear of an inherited note", persisted.State, persisted.Error, persisted.History)
++		}
+ 	})
+ 
+ 	// The wiring guard for the handoff voucher (crucible round 2, R2-F1): recordHandoffVoucher and its
+@@ -131,6 +144,10 @@ func TestSmokeStepBootstrapWiring(t *testing.T) {
+ 		if _, statErr := os.Stat(resumePath); statErr != nil {
+ 			t.Errorf("friction note written during this task is gone after a re-entry (stat err=%v); want it kept -- only a genuine first seed clears", statErr)
+ 		}
++		resumeSpec := filepath.Join(loc.AnchorRel, loomengine.LoomFrictionDirRel(), filepath.Base(resumePath))
++		if tracked := gitkit.LsFiles(t, fabricengine.RecordsWorktree(loc), "--", resumeSpec); len(tracked) != 1 {
++			t.Errorf("tracked entries for the resume note %s after a re-entry = %v; want it committed by the bootstrap's commit step", resumeSpec, tracked)
++		}
+ 	})
+ 
+ 	// The way forward the disagreeing-seed refusal names must lead to a driven producer: a go seed with a wrong parent refuses `step`, and removing it and re-seeding with the recorded parent lets `step` dispatch Preflight.
