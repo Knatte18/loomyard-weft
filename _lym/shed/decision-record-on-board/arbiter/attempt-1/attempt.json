@@ -1,0 +1,15 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Plan-Bouncer",
+    "history_length": 18,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-03T09:23:36.265009738+01:00",
+  "deadline": "2026-11-03T09:53:36.265009738+01:00",
+  "strand_guid": "ed71eb67e1a6d38caeea6d743dbc972d",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/shed/decision-record-on-board/drive-reports/drive-envelope-20261103-092336-e9c2.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/shed/decision-record-on-board/drive-reports/drive-report-20261103-092336-f6b5.md"
+}

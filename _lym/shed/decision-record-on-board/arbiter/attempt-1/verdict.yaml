@@ -1,0 +1,10 @@
+verdict: resume
+reason: |-
+  Hard-cap escalation at Plan-Bouncer round 2. Each open design-wrong finding is answered by the fix in place, checked against the plan cards and the code.
+  pastapproval-error-branches-unreachable (F2): resolveReviewTarget (internal/loomcli/review.go) refuses every recipe IsLoom cannot read as recipeUnknown before decisionState.preRun builds any dep, so the accessors' error is unreachable; card 8 now makes pastApproval a func(currentRow string) bool and card 9 makes approvalRow a func() bool, each dropping the error under one comment naming that refusal, and card 9's approvalErr row is gone, as the finding proposed.
+  card2-post-save-removal-error (F3): the finding asked the parent to record the orphan-at-target removal and its post-save error; the decision record now holds "A rename onto an orphan record removes it", which matches card 2 as written and rests on D4's own rationale, so no scope is added.
+  card7-store-failure-departs-from-d6 (F5): the decision record now holds "A resume after an accepted round does not store again", and card 7's Intent cites it and adds that lym loom decision store refuses such a run until the next approval. bouncer.go's settleUnconverged confirms an accept settles its record before Approve runs, so the card describes the code's behaviour.
+  The mechanical findings are fixed too: cards 1 and 5 target internal/boardcli#storeVerbs, card 1 updates the upsert Use token and uses TestPayloadUse_MatchesDeclaredKeys, and card 2 no longer names rename.go's file header.
+verbs:
+  - |-
+    lym loom circling accept decision-record-on-board
