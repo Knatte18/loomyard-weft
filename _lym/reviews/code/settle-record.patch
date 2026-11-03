@@ -1,0 +1,2921 @@
+diff --git a/contracts/recipes/tapestry-recipe.yaml b/contracts/recipes/tapestry-recipe.yaml
+index 855e2b1f..e5ecdcab 100644
+--- a/contracts/recipes/tapestry-recipe.yaml
++++ b/contracts/recipes/tapestry-recipe.yaml
+@@ -145,6 +145,10 @@ producers:
+       # and an overlay round runs no git at all, and nothing else in this segment commits, so without
+       # the seam every approved fix would stay uncommitted in fabric's records working tree.
+       commit_seam: discussion
++      # approve_seam: discussion copies the approved decision record onto the run's board entry. The
++      # approved settle runs it before commit_seam fires, and a test pins the key on the row that
++      # approves the discussion and on no other.
++      approve_seam: discussion
+       # carry_over names this row's own segment: the Bouncer files the round's still-open findings
+       # under it in the decision record's Open risks section, and a test pins it equal to segment.
+       carry_over: Discussion-Review
+@@ -300,9 +304,9 @@ producers:
+       # approve_seam: plan is set on this row and no other -- it is the only row in the whole list
+       # that knows the plan passed review. The approved settle writes the approval flag through
+       # this seam immediately before commit_seam fires, so the flag lands inside the commit rather
+-      # than as working-tree dirt afterwards. Neither Discussion-Bouncer nor Code-Bouncer gets
+-      # this key: neither of their artifacts carries an approval flag, and an absent key leaves the
+-      # seam nil exactly as an omitted commit_seam already does.
++      # than as working-tree dirt afterwards. Discussion-Bouncer carries approve_seam: discussion
++      # instead, and Code-Bouncer gets no approve_seam: its artifact carries no approval flag, and an
++      # absent key leaves the seam nil exactly as an omitted commit_seam already does.
+       approve_seam: plan
+       # skip_seam: rework-exempt lets a rework generation whose cards are all exempt pass without a
+       # judge. Its inputs are agent-written -- the overview's first_card and a swept record.json --
+diff --git a/internal/battencli/wire_seams_test.go b/internal/battencli/wire_seams_test.go
+index 64460843..76834d85 100644
+--- a/internal/battencli/wire_seams_test.go
++++ b/internal/battencli/wire_seams_test.go
+@@ -69,6 +69,7 @@ var intentionallyNil = map[string]string{
+ 	"WebsterDeps.Geom.VerifyHold":         "loom-only seam, batten runs no webster",
+ 	"PlanIndex":                           "loom-only seam, batten has no plan segment",
+ 	"CommitWebster":                       "loom-only seam, batten runs no webster",
++	"ApproveDiscussion":                   "loom-only seam, batten has no discussion segment",
+ 	"Landing.BaseCommand":                 "loom-only seam, batten lands no branch",
+ 	"Landing.VerifyHold":                  "loom-only seam, batten lands no branch",
+ 	"Landing.GateTiers":                   "loom-only seam, batten lands no branch",
+diff --git a/internal/boardcli/cli.go b/internal/boardcli/cli.go
+index b4be90fe..c61f9469 100644
+--- a/internal/boardcli/cli.go
++++ b/internal/boardcli/cli.go
+@@ -15,6 +15,7 @@ package boardcli
+ 
+ import (
+ 	"encoding/json"
++	"errors"
+ 	"fmt"
+ 	"io"
+ 	"math"
+@@ -208,6 +209,11 @@ Refused, with nothing written, for an absent entry, an entry held by a run, and
+ empty, too long or already an entry's slug.
+ Body and brief text is never rewritten: "mentions" lists the entries whose body or brief still name
+ the old slug as a whole word, the renamed entry included, and is [] when none does.
++A discussed entry's decision record file moves with it. When that step fails after the write, the entry
++is renamed and the verb reports the error beside "task" and "mentions": "rename moved the entry but not its decision record" names the
++record file left at the old slug's name, which the entry's next Discussion approval stores again under the
++new slug; "rename saved the entry, but the orphaned decision record ... could not be removed" names the file
++at the new slug's name, to remove by hand.
+ 
+ Fields:
+   "slug"   string  — current slug (one of slug, id or handle)
+@@ -233,6 +239,10 @@ Example:
+ 				return outputError(out, "to must be a string")
+ 			}
+ 			result, err := b.Rename(selector, to)
++			var recordErr *boardengine.DecisionRecordError
++			if errors.As(err, &recordErr) {
++				return output.ErrFields(out, err.Error(), map[string]any{"task": result.Task, "mentions": result.Mentions})
++			}
+ 			if err != nil {
+ 				return outputError(out, err.Error())
+ 			}
+@@ -476,7 +486,7 @@ func storeVerbs(board func() *boardengine.Board, profiles func() (runprofile.Pro
+ 	// upsert subcommand: create or update a single task.
+ 	var bodyFile string
+ 	upsertCmd := &cobra.Command{
+-		Use:         "upsert {slug, title?, brief?, body?, depends_on?, isolated?, status?, kind?, labels?, recipe?, priority?, short_name?, issues?, created?, revised?, run_settings?, profile?, pull_request?, notify_on_land?, owner_machine?, project?, order?, beam?, front?, on_land?}",
++		Use:         "upsert {slug, title?, brief?, body?, depends_on?, isolated?, status?, kind?, labels?, recipe?, priority?, short_name?, issues?, created?, revised?, run_settings?, profile?, pull_request?, notify_on_land?, owner_machine?, project?, order?, beam?, front?, on_land?, discussed?}",
+ 		Short:       "create or update a single task",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `Create or update a task identified by its slug.
+@@ -508,11 +518,10 @@ Optional fields:
+   "project"    string — slug of the open project holding the entry; "" leaves none
+   "order"      array  — a project's member slugs, in order
+   "beam"       bool   — a project's beam flag; only the "lym beam" verbs set it
+-  "front", "on_land" — a front task's mark and land action; only lym writes them
++  "front", "on_land", "discussed" — marks only lym writes: a front task, its land action, an approved Discussion
+ 
+ Flag:
+-  --body-file <path>  read "body" from the file, or from stdin for "-";
+-                      refused when the payload also carries "body".
++  --body-file <path>  read "body" from the file, or "-" for stdin; not with "body".
+ 
+ Example:
+   lym board upsert '{"slug":"my-task","title":"My Task","brief":"Short summary","kind":"task","labels":["enhancement"]}'` + slugLimitNote(),
+@@ -696,16 +705,19 @@ Examples:
+ 
+ 	// get subcommand: fetch a single task by slug or numeric id; returns task:null
+ 	// for a valid-but-absent target (not an error). Malformed payloads error.
+-	var getBody bool
++	var getBody, getRecord bool
+ 	getCmd := &cobra.Command{
+ 		Use:         "get {slug|id|handle}",
+-		Short:       "fetch a single task, or its body alone",
++		Short:       "fetch a single task, or its body or decision record alone",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `Fetch a single task by slug, numeric ID or handle. Returns {"task":null} if not found (not an error).
+ The result is the envelope {"task": {...}}, which the discussion stencil reads.
+ A task's "owner_machine" is the machine that owns it: the owner it reads as through its beam, or through root.
+ --body writes the entry's body alone, verbatim, with no envelope; an empty body writes nothing.
+ With --body a target that does not exist is an error, since there is no task:null to print.
++A task whose run's Discussion was approved carries "discussed": true, and --record writes its stored
++decision record alone, verbatim, with no envelope. --record is an error for an absent entry, an entry
++that is not discussed, a discussed entry whose record file is missing, and beside --body.
+ Editing a body as a file: lym board get ... --body > body.md, edit it, then feed it back with
+ upsert --body-file body.md (merge --body-file takes the same file for a merged entry).
+ 
+@@ -717,12 +729,16 @@ Fields:
+ Examples:
+   lym board get '{"id":96}'
+   lym board get B4
+-  lym board get '{"slug":"my-task"}' --body` + slugLimitNote(),
++  lym board get '{"slug":"my-task"}' --body
++  lym board get '{"slug":"my-task"}' --record` + slugLimitNote(),
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			return clihelp.WrapRun(func(out io.Writer, args []string) int {
+ 				if len(args) == 0 {
+ 					return outputError(out, "json payload required")
+ 				}
++				if getBody && getRecord {
++					return outputError(out, "--body and --record each print one field: pass one of them")
++				}
+ 				selector, _, err := resolveLookup([]byte(args[0]), lookupPayload)
+ 				if err != nil {
+ 					return outputError(out, err.Error())
+@@ -740,6 +756,25 @@ Examples:
+ 					}
+ 					return 0
+ 				}
++				if getRecord {
++					if !found {
++						return outputError(out, fmt.Sprintf("no entry %v: check the slug, id or handle with lym board list", selector))
++					}
++					if !task.Discussed {
++						return outputError(out, fmt.Sprintf("entry %q has no decision record: lym stores one when its run's Discussion is approved, or with `lym loom decision store` on a run past that approval", task.Slug))
++					}
++					record, held, err := board().DecisionRecord(task.Slug)
++					if err != nil {
++						return outputError(out, err.Error())
++					}
++					if !held {
++						return outputError(out, fmt.Sprintf("entry %q is flagged discussed but has no %s: after a rename the record may remain at the old slug's %s, and the entry's next Discussion approval stores it again", task.Slug, boardengine.DecisionFileName(task.Slug), boardengine.DecisionFileName("<slug>")))
++					}
++					if _, err := out.Write(record); err != nil {
++						return outputError(out, err.Error())
++					}
++					return 0
++				}
+ 				if found {
+ 					if task.OwnerMachine == "" && (task.Kind == boardengine.KindTask || task.Kind == boardengine.KindProject) {
+ 						if task.OwnerMachine, err = board().EffectiveOwner(task.Slug); err != nil {
+@@ -757,6 +792,7 @@ Examples:
+ 		},
+ 	}
+ 	getCmd.Flags().BoolVar(&getBody, "body", false, "write the entry's body alone, verbatim, instead of the JSON envelope")
++	getCmd.Flags().BoolVar(&getRecord, "record", false, "write the entry's stored decision record alone, verbatim, instead of the JSON envelope")
+ 
+ 	// list subcommand: list all tasks with computed fields (layer, has_proposal).
+ 	var listText bool
+@@ -1206,6 +1242,7 @@ func outputSuccessWithTask(out io.Writer, task boardengine.Task, notice string)
+ 
+ // outputGetTask writes {"ok":true,"task":{...},"parent_beam":"..."} with task as pointer (nil → null, and no parent_beam).
+ // parentBeam is the slug of the beam the entry belongs to, empty when the prime is its parent.
++// The task carries "discussed": true when its run's Discussion was approved, and no discussed key otherwise.
+ func outputGetTask(out io.Writer, task *boardengine.Task, parentBeam string) int {
+ 	envelope := map[string]any{"task": task}
+ 	if task != nil {
+diff --git a/internal/boardcli/cli_test.go b/internal/boardcli/cli_test.go
+index f0d41379..b14362dc 100644
+--- a/internal/boardcli/cli_test.go
++++ b/internal/boardcli/cli_test.go
+@@ -126,6 +126,7 @@ func TestCLI(t *testing.T) {
+ 		{"MergeBodyFile", stepMergeBodyFile},
+ 		{"GetBody", stepGetBody},
+ 		{"GetBodyRoundTrip", stepGetBodyRoundTrip},
++		{"GetRecord", stepGetRecord},
+ 		{"LabelsMapShapedPrintsFileOrderWithDescriptions", stepLabelsMapShapedPrintsFileOrderWithDescriptions},
+ 		{"LabelsListShapedPrintsNamesWithEmptyDescriptions", stepLabelsListShapedPrintsNamesWithEmptyDescriptions},
+ 		{"RunSettings", stepRunSettings},
+diff --git a/internal/boardcli/doc.go b/internal/boardcli/doc.go
+index 2c0f7379..fd41d1d7 100644
+--- a/internal/boardcli/doc.go
++++ b/internal/boardcli/doc.go
+@@ -26,7 +26,7 @@
+ // `PairExists` reports whether a directory stands at the slug's pair worktree path, for the refusal of a project change or rename on an entry with a pair;
+ // `ParentOf` is `hubgeom.ParentOf`, the one parent resolver.
+ // `get` emits a beam's `beam_color`, which only the owner setter writes, so `upsert` refuses a payload naming it as an unknown field.
+-// `upsert` takes `front` and `on_land` only as the entry's stored values, since only lym writes them.
++// `upsert` takes `front`, `on_land` and `discussed` only as the entry's stored values, since only lym writes them.
+ // `get` carries the entry's `parent_beam` beside `task` in its envelope, the slug of the beam above it and empty when the prime is its parent, and gives a project its effective owner as it gives a task's; `list` carries `parent_beam` on each entry that has one.
+ //
+ // A payload argument that is a bare handle, in either letter case, reads as `{"handle":…}`, so `lym board get B4` works and a verb that needs further keys refuses it as missing them.
+@@ -82,6 +82,9 @@
+ // an empty body writes nothing,
+ // and an absent target is an error.
+ // Editing a body is a file round trip: `get --body > body.md`, edit the file, then `upsert --body-file body.md`.
++// A task whose run's Discussion was approved carries `"discussed": true` in `get`'s envelope, and `get --record` writes its stored decision record alone, verbatim.
++// `--record` refuses an absent entry, an entry that is not discussed, a discussed entry whose record file is missing, and `--body` beside it, each naming its way forward.
++// A saved `rename` can still report an error when the entry's decision record file could not follow it; the entry is renamed, and the error names the file to deal with.
+ // `get`, `list-full` and the task envelope of `upsert`, `promote` and `merge` print an entry's kept keys, the board.json keys this binary does not know, while `list` and the README use known fields only.
+ //
+ // The intake verbs work on the hub's own GitHub repository, read through `internal/hubissues`: the repository `fabricengine.HubRepoURL` returns, the hub's recorded binding or else its origin remote, never selfreport's repository.
+diff --git a/internal/boardcli/verbs_test.go b/internal/boardcli/verbs_test.go
+index a27dca4f..a420e87c 100644
+--- a/internal/boardcli/verbs_test.go
++++ b/internal/boardcli/verbs_test.go
+@@ -14,6 +14,7 @@ import (
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ )
+@@ -619,6 +620,52 @@ func stepGetBodyRoundTrip(t *testing.T, f *cliFixture) {
+ 	}
+ }
+ 
++// stepGetRecord shows the discussed flag in the envelope, prints the stored record byte for byte, and refuses each case that has no record to print.
++// The record is stored through the board engine on the fixture's hub board, which honours the BOARD_SKIP_GIT the test sets and spawns no sync.
++func stepGetRecord(t *testing.T, f *cliFixture) {
++	hub := filepath.Dir(f.cwd)
++	mustUpsert(t, `{"slug":"talked","title":"T","labels":["bug"]}`)
++	mustUpsert(t, `{"slug":"plain","title":"P","labels":["bug"]}`)
++	board, err := boardengine.OpenHub(hub)
++	if err != nil {
++		t.Fatalf("OpenHub: %v", err)
++	}
++	record := "# Decision record\n\nno trailing newline"
++	if err := board.StoreDecisionRecord("talked", []byte(record)); err != nil {
++		t.Fatalf("StoreDecisionRecord: %v", err)
++	}
++
++	if task := runJSON(t, 0, "get", `{"slug":"talked"}`)["task"].(map[string]any); task["discussed"] != true {
++		t.Errorf("get of a discussed entry: discussed = %v; want true", task["discussed"])
++	}
++	if task := runJSON(t, 0, "get", `{"slug":"plain"}`)["task"].(map[string]any); task["discussed"] != nil {
++		t.Errorf("get of an undiscussed entry: discussed = %v; want no key", task["discussed"])
++	}
++	if exitCode, stdout := runCLI(t, "get", `{"slug":"talked"}`, "--record"); exitCode != 0 || stdout != record {
++		t.Fatalf("get --record: exit %d, stdout %q; want 0 and %q", exitCode, stdout, record)
++	}
++
++	if err := os.Remove(filepath.Join(fabricengine.BoardDir(hub), "decision-talked.md")); err != nil {
++		t.Fatalf("remove decision-talked.md: %v", err)
++	}
++	refusals := []struct {
++		name    string
++		args    []string
++		wantErr string
++	}{
++		{"UndiscussedEntry", []string{"get", `{"slug":"plain"}`, "--record"}, "lym loom decision store"},
++		{"AbsentEntry", []string{"get", `{"slug":"absent"}`, "--record"}, "check the slug, id or handle with lym board list"},
++		{"FlaggedEntryWhoseFileWasDeleted", []string{"get", `{"slug":"talked"}`, "--record"}, "has no decision-talked.md"},
++		{"BesideBody", []string{"get", `{"slug":"talked"}`, "--record", "--body"}, "pass one of them"},
++	}
++	for _, tt := range refusals {
++		result := runJSON(t, 1, tt.args...)
++		if msg, _ := result["error"].(string); !strings.Contains(msg, tt.wantErr) {
++			t.Errorf("%s: error = %q; want one containing %q", tt.name, msg, tt.wantErr)
++		}
++	}
++}
++
+ // pipeStdin replaces os.Stdin with a file holding content until the test ends.
+ func pipeStdin(t *testing.T, content string) {
+ 	t.Helper()
+diff --git a/internal/boardengine/board.go b/internal/boardengine/board.go
+index a4ea20a0..8f1899a1 100644
+--- a/internal/boardengine/board.go
++++ b/internal/boardengine/board.go
+@@ -64,9 +64,10 @@ type noWrite struct{ result any }
+ type promoted struct{ task Task }
+ 
+ // boardCriticalSection runs the locked write scaffolding shared by every mutating Board method:
+-// it acquires the lock, loads the store, migrates a board that has not been marked draft, calls fn to mutate it, gives a new task the draft status, stamps the entry dates, assigns the handles the mutation left missing or of another letter, refuses a net change to a run-held entry's scope and a run agent's new task, saves board.json, runs afterSave when non-nil, renders outputs, and spawns a detached sync.
++// it acquires the lock, loads the store, migrates a board that has not been marked draft, calls fn to mutate it, gives a new task the draft status, stamps the entry dates, assigns the handles the mutation left missing or of another letter, refuses a net change to a run-held entry's scope and a run agent's new task, saves board.json, runs afterSave when non-nil, moves or removes the decision record files of the entries the write renamed or removed, renders outputs, and spawns a detached sync.
+ // fn returning a RenameResult judges the dates and the run lock against the loaded entries with that rename applied.
+ // afterSave runs under the lock after the save and before the render.
++// The record step's error, a *DecisionRecordError, does not stop the render or the sync; it is returned last, with the write saved and the mutation's result.
+ // fn returning a noWrite skips every step after the mutation.
+ func (b *Board) boardCriticalSection(fn func(store *Store) (any, error), afterSave func() error) (any, error) {
+ 	// Guard before any disk mutation: a Board built without output filenames
+@@ -115,10 +116,10 @@ func (b *Board) boardCriticalSection(fn func(store *Store) (any, error), afterSa
+ 		result = p.task
+ 	}
+ 	// A renamed slug is the same entry, so the loaded entries are judged under the new slug.
+-	renamedTo := ""
++	renamedFrom, renamedTo := "", ""
+ 	if r, ok := result.(RenameResult); ok {
+ 		renameSlug(loaded, r.From, r.Task.Slug)
+-		renamedTo = r.Task.Slug
++		renamedFrom, renamedTo = r.From, r.Task.Slug
+ 	}
+ 	applyDraftRule(loaded, store.tasks)
+ 	stampDates(loaded, store.tasks, now, promotedSlug)
+@@ -159,6 +160,8 @@ func (b *Board) boardCriticalSection(fn func(store *Store) (any, error), afterSa
+ 		}
+ 	}
+ 
++	recordErr := followDecisionRecords(b.boardPath, loaded, store.Tasks(), renamedFrom, renamedTo)
++
+ 	if err := RenderToDisk(b.boardPath, store.Tasks(), store.primeOwner, b.out, now); err != nil {
+ 		return nil, fmt.Errorf("render: %w", err)
+ 	}
+@@ -167,7 +170,7 @@ func (b *Board) boardCriticalSection(fn func(store *Store) (any, error), afterSa
+ 		_ = spawnSync(b.boardPath)
+ 	}
+ 
+-	return result, nil
++	return result, recordErr
+ }
+ 
+ // UpsertTask creates or updates the task identified by fields["slug"] under the write lock;
+diff --git a/internal/boardengine/config.go b/internal/boardengine/config.go
+index 0cd13c1b..adb6a1f2 100644
+--- a/internal/boardengine/config.go
++++ b/internal/boardengine/config.go
+@@ -13,6 +13,7 @@ import (
+ 	"io/fs"
+ 	"os"
+ 	"slices"
++	"strings"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+@@ -189,10 +190,22 @@ func LoadConfig(dirs configengine.Dirs, module string) (Config, error) {
+ 	if err := validateTypeLetters(cfg.Types); err != nil {
+ 		return Config{}, err
+ 	}
++	if err := checkDesignPrefix(cfg.DesignPrefix); err != nil {
++		return Config{}, err
++	}
+ 
+ 	return cfg, nil
+ }
+ 
++// checkDesignPrefix refuses a design_prefix that would render a design file onto a decision record's name, decision-<slug>.md:
++// a prefix that is a prefix of "decision-", the empty one included, and one that starts with it.
++func checkDesignPrefix(prefix string) error {
++	if strings.HasPrefix(decisionFilePrefix, prefix) || strings.HasPrefix(prefix, decisionFilePrefix) {
++		return fmt.Errorf("board.yaml: design_prefix %q would name a design file %s<slug>%s, the name of an entry's decision record: set design_prefix in board.yaml to another value, such as \"design-\", with \"lym config board --set design_prefix=design-\"", prefix, decisionFilePrefix, decisionFileSuffix)
++	}
++	return nil
++}
++
+ // decodeLabels reads one board.yaml key into labels in file order.
+ // A mapping gives each name its scalar description, where an empty or null one is the empty string;
+ // a sequence of names is the older shape, read with empty descriptions.
+diff --git a/internal/boardengine/config_test.go b/internal/boardengine/config_test.go
+index 4fb0e0f2..dad4f4f9 100644
+--- a/internal/boardengine/config_test.go
++++ b/internal/boardengine/config_test.go
+@@ -149,6 +149,39 @@ func TestLoadConfig_DefaultRecipe(t *testing.T) {
+ 	}
+ }
+ 
++// TestLoadConfig_DesignPrefixRefused asserts a design_prefix that would name a design file decision-<slug>.md is refused with its way forward, and an ordinary prefix loads.
++func TestLoadConfig_DesignPrefixRefused(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name    string
++		prefix  string
++		wantErr bool
++	}{
++		{"Decision", `"decision-"`, true},
++		{"Empty", `""`, true},
++		{"PrefixOfDecision", `"dec"`, true},
++		{"StartsWithDecision", `"decision-x-"`, true},
++		{"Design", `"design-"`, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := writeBoardConfig(t, "readme: Home.md\ndesign_prefix: "+tt.prefix+"\n")
++			_, err := boardengine.LoadConfig(configengine.Dirs{Board: dir}, "board")
++			if !tt.wantErr {
++				if err != nil {
++					t.Fatalf("LoadConfig(design_prefix %s): %v", tt.prefix, err)
++				}
++				return
++			}
++			if err == nil || !strings.Contains(err.Error(), "design_prefix") || !strings.Contains(err.Error(), "set design_prefix in board.yaml") {
++				t.Errorf("LoadConfig(design_prefix %s) error = %v; want a refusal naming design_prefix and its way forward", tt.prefix, err)
++			}
++		})
++	}
++}
++
+ // TestLoadConfig_LabelMaps asserts both label maps resolve in file order with their descriptions.
+ func TestLoadConfig_LabelMaps(t *testing.T) {
+ 	tiergate.Require(t, 0)
+diff --git a/internal/boardengine/decision.go b/internal/boardengine/decision.go
+new file mode 100644
+index 00000000..aa97cda0
+--- /dev/null
++++ b/internal/boardengine/decision.go
+@@ -0,0 +1,138 @@
++// decision.go — the decision record of a board entry: the record file's name, the store and read of it, and the payload rule for the discussed flag.
++//
++// The record is the file decision-<slug>.md beside board.json, and the entry's Discussed flag says lym stored it.
++
++package boardengine
++
++import (
++	"bytes"
++	"errors"
++	"fmt"
++	"io/fs"
++	"os"
++	"path/filepath"
++
++	"github.com/Knatte18/loomyard/internal/fsx"
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// ErrRecordEntryDone is the error StoreDecisionRecord wraps when the entry is done.
++var ErrRecordEntryDone = errors.New("a landed entry keeps the decision record it last stored")
++
++// DecisionRecordError is the error a rename returns when the entry is saved under its new slug and only moving or clearing its decision record file failed.
++type DecisionRecordError struct {
++	Err error
++}
++
++// Error returns the message of the failed record step.
++func (e *DecisionRecordError) Error() string { return e.Err.Error() }
++
++// Unwrap returns the failed record step's error.
++func (e *DecisionRecordError) Unwrap() error { return e.Err }
++
++// DecisionFileName returns the name of the decision record file of the entry slug, the one place the name is formed.
++func DecisionFileName(slug string) string {
++	return decisionFilePrefix + slug + decisionFileSuffix
++}
++
++// StoreDecisionRecord writes record as the entry slug's decision record and flags the entry discussed, under the write lock.
++// The file is written before board.json is saved, so a crash leaves a file with no flag and never a flag with no file.
++// It writes nothing when the entry is already flagged and the file already holds exactly record.
++// It bypasses the run lock for the flag and the file only; every other field of a held entry stays locked.
++// It refuses an absent entry, and a done entry with an error that matches ErrRecordEntryDone.
++func (b *Board) StoreDecisionRecord(slug string, record []byte) error {
++	_, err := b.boardCriticalSection(func(store *Store) (any, error) {
++		i, found := store.index(slug)
++		if !found {
++			return nil, fmt.Errorf("no board entry %q to store the decision record on: restore the entry with `lym board upsert`, then re-run the step that stored", slug)
++		}
++		if isDone(store.tasks[i]) {
++			return nil, fmt.Errorf("entry %q: %w: the run ledger sets aside a board commit whose entries have all ended, so a record stored now would not reach origin", slug, ErrRecordEntryDone)
++		}
++		name := DecisionFileName(slug)
++		if current, err := os.ReadFile(filepath.Join(b.boardPath, name)); err == nil && store.tasks[i].Discussed && bytes.Equal(current, record) {
++			return noWrite{}, nil
++		}
++		if err := fsx.AtomicWrite(b.boardPath, name, string(record)); err != nil {
++			return nil, fmt.Errorf("write decision record %s: %w", name, err)
++		}
++		store.tasks[i].Discussed = true
++		return nil, nil
++	}, nil)
++	return err
++}
++
++// DecisionRecord returns the decision record of the entry selector names, a slug string, a numeric id or a Handle, reading without the lock.
++// found is true only when the entry exists, carries the discussed flag and its record file exists;
++// an absent entry, an unflagged one and a flagged one with no file each answer false.
++// A read error other than a missing file is returned.
++func (b *Board) DecisionRecord(selector any) ([]byte, bool, error) {
++	task, found, err := b.GetTask(selector)
++	if err != nil || !found || !task.Discussed {
++		return nil, false, err
++	}
++	record, err := os.ReadFile(filepath.Join(b.boardPath, DecisionFileName(task.Slug)))
++	if errors.Is(err, fs.ErrNotExist) {
++		return nil, false, nil
++	}
++	if err != nil {
++		return nil, false, fmt.Errorf("read decision record: %w", err)
++	}
++	return record, true, nil
++}
++
++// followDecisionRecords makes the record files follow the entries a saved write changed.
++// loaded and after are the entries before and after the write, loaded with a rename already applied; renamedFrom is the renamed entry's old slug and empty for any other write.
++// A rename moves the old slug's record file to the new slug's name; when the old file is absent, it removes a file at the new slug's name, flagged entry or not, since a file at a fresh slug's name is always an orphan the renamed entry must not adopt.
++// Only a rename's failure is returned, as a *DecisionRecordError.
++// Each slug of loaded that after lacks loses its record file, and a failed removal is logged and returns no error, since an orphaned file is unread while its slug carries no flag.
++func followDecisionRecords(boardPath string, loaded, after []Task, renamedFrom, renamedTo string) error {
++	var renameErr error
++	if renamedFrom != "" {
++		oldPath := filepath.Join(boardPath, DecisionFileName(renamedFrom))
++		newPath := filepath.Join(boardPath, DecisionFileName(renamedTo))
++		err := os.Rename(oldPath, newPath)
++		switch {
++		case errors.Is(err, fs.ErrNotExist):
++			if err := os.Remove(newPath); err != nil && !errors.Is(err, fs.ErrNotExist) {
++				renameErr = fmt.Errorf("rename saved the entry, but the orphaned decision record %s at the new slug's name could not be removed: %w: remove the file by hand, or the entry reads it as its own record", newPath, err)
++			}
++		case err != nil:
++			renameErr = fmt.Errorf("rename moved the entry but not its decision record: %w: the record stays at %s until the entry's next Discussion approval stores it under the new slug", err, oldPath)
++		}
++	}
++
++	kept := make(map[string]bool, len(after))
++	for _, task := range after {
++		kept[task.Slug] = true
++	}
++	for _, task := range loaded {
++		if kept[task.Slug] {
++			continue
++		}
++		path := filepath.Join(boardPath, DecisionFileName(task.Slug))
++		if err := os.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
++			logger.Warn("boardengine: a removed entry's decision record could not be removed", "slug", task.Slug, "path", path, "error", err)
++		}
++	}
++	if renameErr != nil {
++		return &DecisionRecordError{Err: renameErr}
++	}
++	return nil
++}
++
++// checkDiscussedPayload judges the discussed key of an upsert payload against the entry fields["slug"] names, the entry being new when the store holds none.
++// A bool equal to the stored value, false for a new entry, is dropped from fields; any other value is refused.
++func checkDiscussedPayload(s *Store, fields map[string]any) error {
++	value, carried := fields["discussed"]
++	if !carried {
++		return nil
++	}
++	slug, _ := fields["slug"].(string)
++	stored, _ := s.GetTask(slug)
++	if proposed, isBool := value.(bool); !isBool || proposed != stored.Discussed {
++		return fmt.Errorf("entry %q: the discussed flag is never set by hand: lym sets it when a Discussion is approved, and `lym loom decision store` re-copies the record of a run past its approval; drop the discussed key from the payload", slug)
++	}
++	delete(fields, "discussed")
++	return nil
++}
+diff --git a/internal/boardengine/decision_test.go b/internal/boardengine/decision_test.go
+new file mode 100644
+index 00000000..b7836704
+--- /dev/null
++++ b/internal/boardengine/decision_test.go
+@@ -0,0 +1,403 @@
++// decision_test.go — tests for an entry's decision record: the store and read of it, and the payload rule for the discussed flag.
++
++package boardengine_test
++
++import (
++	"errors"
++	"os"
++	"path/filepath"
++	"reflect"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// readmeFile is the rendered overview file newRenameBoard's config names.
++const readmeFile = "Home.md"
++
++// TestStoreDecisionRecord pins what StoreDecisionRecord writes, when it writes nothing, what it refuses, and what DecisionRecord answers found.
++func TestStoreDecisionRecord(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	record := []byte("# Decision record\n\nA\r\nbyte-exact body.\n")
++	tests := []struct {
++		name string
++		run  func(t *testing.T, b *boardengine.Board, boardPath string, now *time.Time)
++	}{
++		{"StoresBytesAndFlag", func(t *testing.T, b *boardengine.Board, boardPath string, now *time.Time) {
++			if err := b.StoreDecisionRecord("old", record); err != nil {
++				t.Fatalf("StoreDecisionRecord: %v", err)
++			}
++			if got, err := os.ReadFile(filepath.Join(boardPath, "decision-old.md")); err != nil || string(got) != string(record) {
++				t.Errorf("decision-old.md = %q, %v; want %q", got, err, record)
++			}
++			if task, _, _ := b.GetTask("old"); !task.Discussed {
++				t.Errorf("GetTask(old).Discussed = false; want true")
++			}
++			boardJSON, err := os.ReadFile(filepath.Join(boardPath, "board.json"))
++			if err != nil {
++				t.Fatalf("read board.json: %v", err)
++			}
++			if !strings.Contains(string(boardJSON), `"discussed": true`) || strings.Contains(string(boardJSON), "byte-exact") {
++				t.Errorf("board.json must hold the flag and no record text:\n%s", boardJSON)
++			}
++			if err := b.Rerender(); err != nil {
++				t.Fatalf("Rerender: %v", err)
++			}
++			if got, err := os.ReadFile(filepath.Join(boardPath, "decision-old.md")); err != nil || string(got) != string(record) {
++				t.Errorf("decision-old.md after Rerender = %q, %v; want it kept", got, err)
++			}
++		}},
++		{"RunHeldEntryTakesTheStore", func(t *testing.T, b *boardengine.Board, boardPath string, now *time.Time) {
++			before, _, _ := b.GetTask("waiter")
++			*now = now.Add(time.Hour)
++			if err := b.StoreDecisionRecord("waiter", record); err != nil {
++				t.Fatalf("StoreDecisionRecord on a run-held entry: %v", err)
++			}
++			after, _, _ := b.GetTask("waiter")
++			want := before
++			want.Discussed = true
++			if !reflect.DeepEqual(after, want) {
++				t.Errorf("run-held entry after the store = %+v; want only Discussed changed: %+v", after, want)
++			}
++		}},
++		{"RepeatWithSameBytesWritesNothing", func(t *testing.T, b *boardengine.Board, boardPath string, now *time.Time) {
++			if err := b.StoreDecisionRecord("old", record); err != nil {
++				t.Fatalf("StoreDecisionRecord: %v", err)
++			}
++			if err := os.Remove(filepath.Join(boardPath, readmeFile)); err != nil {
++				t.Fatalf("remove %s: %v", readmeFile, err)
++			}
++			if err := b.StoreDecisionRecord("old", record); err != nil {
++				t.Fatalf("repeat StoreDecisionRecord: %v", err)
++			}
++			if _, err := os.Stat(filepath.Join(boardPath, readmeFile)); !os.IsNotExist(err) {
++				t.Errorf("a repeat store with the same bytes rendered %s; stat err = %v", readmeFile, err)
++			}
++		}},
++		{"HandWrittenSameBytesStillFlags", func(t *testing.T, b *boardengine.Board, boardPath string, now *time.Time) {
++			if err := os.WriteFile(filepath.Join(boardPath, "decision-old.md"), record, 0o644); err != nil {
++				t.Fatalf("write decision-old.md: %v", err)
++			}
++			if err := b.StoreDecisionRecord("old", record); err != nil {
++				t.Fatalf("StoreDecisionRecord: %v", err)
++			}
++			if task, _, _ := b.GetTask("old"); !task.Discussed {
++				t.Errorf("GetTask(old).Discussed = false; want true after a store onto an identical hand-written file")
++			}
++		}},
++		{"RepeatWithNewBytesOverwrites", func(t *testing.T, b *boardengine.Board, boardPath string, now *time.Time) {
++			if err := b.StoreDecisionRecord("old", record); err != nil {
++				t.Fatalf("StoreDecisionRecord: %v", err)
++			}
++			if err := b.StoreDecisionRecord("old", []byte("second\n")); err != nil {
++				t.Fatalf("repeat StoreDecisionRecord: %v", err)
++			}
++			if got, _ := os.ReadFile(filepath.Join(boardPath, "decision-old.md")); string(got) != "second\n" {
++				t.Errorf("decision-old.md = %q; want %q", got, "second\n")
++			}
++		}},
++		{"AbsentSlugRefused", func(t *testing.T, b *boardengine.Board, boardPath string, now *time.Time) {
++			err := b.StoreDecisionRecord("ghost", record)
++			if err == nil || !strings.Contains(err.Error(), "lym board upsert") {
++				t.Errorf("StoreDecisionRecord(ghost) error = %v; want one naming lym board upsert", err)
++			}
++		}},
++		{"DoneEntryRefused", func(t *testing.T, b *boardengine.Board, boardPath string, now *time.Time) {
++			done := "done"
++			if err := b.SetStatus("other", &done); err != nil {
++				t.Fatalf("SetStatus: %v", err)
++			}
++			err := b.StoreDecisionRecord("other", record)
++			if !errors.Is(err, boardengine.ErrRecordEntryDone) {
++				t.Errorf("StoreDecisionRecord(done entry) error = %v; want ErrRecordEntryDone", err)
++			}
++			if _, statErr := os.Stat(filepath.Join(boardPath, "decision-other.md")); !os.IsNotExist(statErr) {
++				t.Errorf("a refused store wrote decision-other.md; stat err = %v", statErr)
++			}
++		}},
++		{"RecordNotFoundOnUnflaggedEntry", func(t *testing.T, b *boardengine.Board, boardPath string, now *time.Time) {
++			if err := os.WriteFile(filepath.Join(boardPath, "decision-old.md"), record, 0o644); err != nil {
++				t.Fatalf("write decision-old.md: %v", err)
++			}
++			if _, found, err := b.DecisionRecord("old"); found || err != nil {
++				t.Errorf("DecisionRecord(unflagged) = found %v, err %v; want not found", found, err)
++			}
++			if _, found, err := b.DecisionRecord("ghost"); found || err != nil {
++				t.Errorf("DecisionRecord(absent) = found %v, err %v; want not found", found, err)
++			}
++		}},
++		{"RecordReadBackAndNotFoundWhenFileDeleted", func(t *testing.T, b *boardengine.Board, boardPath string, now *time.Time) {
++			if err := b.StoreDecisionRecord("old", record); err != nil {
++				t.Fatalf("StoreDecisionRecord: %v", err)
++			}
++			if got, found, err := b.DecisionRecord("old"); !found || err != nil || string(got) != string(record) {
++				t.Errorf("DecisionRecord(old) = %q, %v, %v; want the stored bytes", got, found, err)
++			}
++			if err := os.Remove(filepath.Join(boardPath, "decision-old.md")); err != nil {
++				t.Fatalf("remove decision-old.md: %v", err)
++			}
++			if _, found, err := b.DecisionRecord("old"); found || err != nil {
++				t.Errorf("DecisionRecord(flagged, file deleted) = found %v, err %v; want not found", found, err)
++			}
++		}},
++		{"RecordReadErrorReturned", func(t *testing.T, b *boardengine.Board, boardPath string, now *time.Time) {
++			if err := b.StoreDecisionRecord("old", record); err != nil {
++				t.Fatalf("StoreDecisionRecord: %v", err)
++			}
++			path := filepath.Join(boardPath, "decision-old.md")
++			if err := os.Remove(path); err != nil {
++				t.Fatalf("remove decision-old.md: %v", err)
++			}
++			if err := os.Mkdir(path, 0o755); err != nil {
++				t.Fatalf("mkdir decision-old.md: %v", err)
++			}
++			if _, found, err := b.DecisionRecord("old"); found || err == nil {
++				t.Errorf("DecisionRecord(file is a directory) = found %v, err %v; want a read error", found, err)
++			}
++		}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			now := time.Date(2026, 10, 1, 8, 0, 0, 0, time.UTC)
++			b, boardPath := newRenameBoard(t, &now)
++			tt.run(t, b, boardPath, &now)
++		})
++	}
++}
++
++// TestDiscussedPayload pins the discussed payload rule on the upsert, batch and merge paths over an entry StoreDecisionRecord flagged.
++func TestDiscussedPayload(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const refusal = "lym loom decision store"
++	apply := map[string]func(b *boardengine.Board, fields map[string]any) error{
++		"Upsert": func(b *boardengine.Board, fields map[string]any) error {
++			_, err := b.UpsertTask(fields)
++			return err
++		},
++		"Batch": func(b *boardengine.Board, fields map[string]any) error {
++			_, err := b.UpsertTasksBatch([]map[string]any{fields})
++			return err
++		},
++		"Merge": func(b *boardengine.Board, fields map[string]any) error {
++			_, _, err := b.MergeTasks([]string{"near"}, fields, nil)
++			return err
++		},
++	}
++	tests := []struct {
++		name    string
++		fields  map[string]any
++		wantErr string
++	}{
++		{"FalseOnFlaggedEntryRefused", map[string]any{"slug": "old", "discussed": false}, refusal},
++		{"TrueOnNewEntryRefused", map[string]any{"slug": "fresh", "title": "Fresh", "labels": bugLabels, "discussed": true}, refusal},
++		{"NonBoolRefused", map[string]any{"slug": "old", "discussed": "yes"}, refusal},
++		{"StoredValuePasses", map[string]any{"slug": "old", "discussed": true}, ""},
++	}
++	for path, write := range apply {
++		for _, tt := range tests {
++			t.Run(path+"/"+tt.name, func(t *testing.T) {
++				t.Parallel()
++				now := time.Date(2026, 10, 1, 8, 0, 0, 0, time.UTC)
++				b, _ := newRenameBoard(t, &now)
++				if err := b.StoreDecisionRecord("old", []byte("record\n")); err != nil {
++					t.Fatalf("StoreDecisionRecord: %v", err)
++				}
++				err := write(b, tt.fields)
++				switch {
++				case tt.wantErr == "" && err != nil:
++					t.Fatalf("%s(%v) error = %v; want none", path, tt.fields, err)
++				case tt.wantErr != "" && (err == nil || !strings.Contains(err.Error(), tt.wantErr)):
++					t.Fatalf("%s(%v) error = %v; want one containing %q", path, tt.fields, err, tt.wantErr)
++				}
++				if task, _, _ := b.GetTask("old"); !task.Discussed {
++					t.Errorf("GetTask(old).Discussed = false; want the flag as stored")
++				}
++			})
++		}
++	}
++
++	t.Run("MergeRemovingAndUpsertingTheFlaggedSlugKeepsTheFlag", func(t *testing.T) {
++		t.Parallel()
++		now := time.Date(2026, 10, 1, 8, 0, 0, 0, time.UTC)
++		b, _ := newRenameBoard(t, &now)
++		if err := b.StoreDecisionRecord("old", []byte("record\n")); err != nil {
++			t.Fatalf("StoreDecisionRecord: %v", err)
++		}
++		fields := map[string]any{"slug": "old", "title": "Old again", "kind": boardengine.KindTask, "labels": bugLabels, "discussed": true}
++		if _, _, err := b.MergeTasks([]string{"old"}, fields, nil); err != nil {
++			t.Fatalf("MergeTasks: %v", err)
++		}
++		if task, _, _ := b.GetTask("old"); !task.Discussed || task.Title != "Old again" {
++			t.Errorf("rebuilt entry = %+v; want Discussed kept on the rebuilt entry", task)
++		}
++	})
++}
++
++// TestDecisionRecordFollowsEntry pins that the record file moves with a renamed entry and is removed with a removed one, and which writes keep it.
++func TestDecisionRecordFollowsEntry(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	record := []byte("the record\n")
++	// store flags slug with record, failing the test when the store is refused.
++	store := func(t *testing.T, b *boardengine.Board, slug string) {
++		t.Helper()
++		if err := b.StoreDecisionRecord(slug, record); err != nil {
++			t.Fatalf("StoreDecisionRecord(%s): %v", slug, err)
++		}
++	}
++	// wantFile asserts that name in boardPath holds record when present is true and is absent otherwise.
++	wantFile := func(t *testing.T, boardPath, name string, present bool) {
++		t.Helper()
++		got, err := os.ReadFile(filepath.Join(boardPath, name))
++		switch {
++		case present && (err != nil || string(got) != string(record)):
++			t.Errorf("%s = %q, %v; want the record", name, got, err)
++		case !present && !os.IsNotExist(err):
++			t.Errorf("%s read err = %v; want the file absent", name, err)
++		}
++	}
++	tests := []struct {
++		name string
++		run  func(t *testing.T, b *boardengine.Board, boardPath string)
++	}{
++		{"RenameMovesTheFile", func(t *testing.T, b *boardengine.Board, boardPath string) {
++			store(t, b, "old")
++			if _, err := b.Rename("old", "new"); err != nil {
++				t.Fatalf("Rename: %v", err)
++			}
++			wantFile(t, boardPath, "decision-new.md", true)
++			wantFile(t, boardPath, "decision-old.md", false)
++			if got, found, err := b.DecisionRecord("new"); !found || err != nil || string(got) != string(record) {
++				t.Errorf("DecisionRecord(new) = %q, %v, %v; want the record", got, found, err)
++			}
++		}},
++		{"RenameRefusedBySeamLeavesTheFile", func(t *testing.T, _ *boardengine.Board, _ string) {
++			boardPath := t.TempDir()
++			b := boardengine.New(boardengine.Config{Path: boardPath, Readme: readmeFile, DesignPrefix: "proposal-", Types: testTypes, Labels: testLabels, SkipGit: true,
++				ValidateSlug: func(slug string) error {
++					if slug == "blocked" {
++						return errors.New("slug refused by the seam")
++					}
++					return nil
++				}})
++			if _, err := b.UpsertTask(map[string]any{"slug": "old", "title": "Old", "kind": boardengine.KindTask, "labels": bugLabels}); err != nil {
++				t.Fatalf("UpsertTask: %v", err)
++			}
++			store(t, b, "old")
++			if _, err := b.Rename("old", "blocked"); err == nil {
++				t.Fatalf("Rename onto a slug the seam refuses succeeded; want a refusal")
++			}
++			wantFile(t, boardPath, "decision-old.md", true)
++			wantFile(t, boardPath, "decision-blocked.md", false)
++		}},
++		{"RenameOntoDirectoryReportsTheMoveAfterTheSave", func(t *testing.T, b *boardengine.Board, boardPath string) {
++			store(t, b, "old")
++			if err := os.Mkdir(filepath.Join(boardPath, "decision-new.md"), 0o755); err != nil {
++				t.Fatalf("mkdir decision-new.md: %v", err)
++			}
++			result, err := b.Rename("old", "new")
++			var recordErr *boardengine.DecisionRecordError
++			if !errors.As(err, &recordErr) || !strings.Contains(err.Error(), "rename moved the entry but not its decision record") || !strings.Contains(err.Error(), "decision-old.md") {
++				t.Fatalf("Rename error = %v; want a *DecisionRecordError naming decision-old.md", err)
++			}
++			if result.From != "old" || result.Task.Slug != "new" || result.Mentions == nil {
++				t.Errorf("Rename result = %+v; want the saved rename's result beside the record error", result)
++			}
++			wantFile(t, boardPath, "decision-old.md", true)
++			if _, found, _ := b.GetTask("new"); !found {
++				t.Errorf("the entry must be saved under the new slug despite the move error")
++			}
++			if _, statErr := os.Stat(filepath.Join(boardPath, "proposal-new.md")); statErr != nil {
++				t.Errorf("proposal-new.md missing, the render must still run: %v", statErr)
++			}
++			if _, statErr := os.Stat(filepath.Join(boardPath, "proposal-old.md")); !os.IsNotExist(statErr) {
++				t.Errorf("proposal-old.md must be gone; stat err = %v", statErr)
++			}
++		}},
++		{"RenameOfFlaggedEntryWithoutFileSucceeds", func(t *testing.T, b *boardengine.Board, boardPath string) {
++			store(t, b, "old")
++			if err := os.Remove(filepath.Join(boardPath, "decision-old.md")); err != nil {
++				t.Fatalf("remove decision-old.md: %v", err)
++			}
++			if _, err := b.Rename("old", "new"); err != nil {
++				t.Fatalf("Rename: %v", err)
++			}
++		}},
++		{"RenameOfFlaggedEntryWithoutFileRemovesAnOrphanAtTheTarget", func(t *testing.T, b *boardengine.Board, boardPath string) {
++			store(t, b, "old")
++			if err := os.Remove(filepath.Join(boardPath, "decision-old.md")); err != nil {
++				t.Fatalf("remove decision-old.md: %v", err)
++			}
++			if err := os.WriteFile(filepath.Join(boardPath, "decision-new.md"), []byte("orphan\n"), 0o644); err != nil {
++				t.Fatalf("write decision-new.md: %v", err)
++			}
++			if _, err := b.Rename("old", "new"); err != nil {
++				t.Fatalf("Rename: %v", err)
++			}
++			wantFile(t, boardPath, "decision-new.md", false)
++			if _, found, err := b.DecisionRecord("new"); found || err != nil {
++				t.Errorf("DecisionRecord(new) = found %v, err %v; want not found", found, err)
++			}
++		}},
++		{"RemoveDeletesTheFile", func(t *testing.T, b *boardengine.Board, boardPath string) {
++			store(t, b, "near")
++			if err := b.RemoveTask("near"); err != nil {
++				t.Fatalf("RemoveTask: %v", err)
++			}
++			wantFile(t, boardPath, "decision-near.md", false)
++		}},
++		{"PruneOfDoneEntryDeletesTheFile", func(t *testing.T, b *boardengine.Board, boardPath string) {
++			store(t, b, "near")
++			done := "done"
++			if err := b.SetStatus("near", &done); err != nil {
++				t.Fatalf("SetStatus: %v", err)
++			}
++			wantFile(t, boardPath, "decision-near.md", true)
++			if _, err := b.Prune(true); err != nil {
++				t.Fatalf("Prune: %v", err)
++			}
++			wantFile(t, boardPath, "decision-near.md", false)
++		}},
++		{"MergeRemovingTheSlugDeletesTheFile", func(t *testing.T, b *boardengine.Board, boardPath string) {
++			store(t, b, "near")
++			if _, _, err := b.MergeTasks([]string{"near"}, map[string]any{"slug": "merged", "title": "Merged", "labels": bugLabels}, nil); err != nil {
++				t.Fatalf("MergeTasks: %v", err)
++			}
++			wantFile(t, boardPath, "decision-near.md", false)
++		}},
++		{"MergeUpsertingTheRemovedSlugAgainKeepsFileAndFlag", func(t *testing.T, b *boardengine.Board, boardPath string) {
++			store(t, b, "near")
++			if _, _, err := b.MergeTasks([]string{"near"}, map[string]any{"slug": "near", "title": "Near again", "labels": bugLabels}, nil); err != nil {
++				t.Fatalf("MergeTasks: %v", err)
++			}
++			wantFile(t, boardPath, "decision-near.md", true)
++			if task, _, _ := b.GetTask("near"); !task.Discussed {
++				t.Errorf("GetTask(near).Discussed = false; want the flag kept")
++			}
++		}},
++		{"ClearingTheStatusKeepsFileAndFlag", func(t *testing.T, b *boardengine.Board, boardPath string) {
++			store(t, b, "old")
++			if err := b.SetStatus("old", nil); err != nil {
++				t.Fatalf("SetStatus: %v", err)
++			}
++			wantFile(t, boardPath, "decision-old.md", true)
++			if task, _, _ := b.GetTask("old"); !task.Discussed {
++				t.Errorf("GetTask(old).Discussed = false; want the flag kept")
++			}
++		}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			now := time.Date(2026, 10, 1, 8, 0, 0, 0, time.UTC)
++			b, boardPath := newRenameBoard(t, &now)
++			tt.run(t, b, boardPath)
++		})
++	}
++}
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index c32281b3..271d674a 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -238,6 +238,7 @@
+ // The net change runs from the entries as loaded under the board file lock to the entries after the whole mutation,
+ // so a batch or merge that clears the status early and then edits the entry is still refused, and nothing reaches disk.
+ // A status-only net change passes: set-status, a merge's set_status and an upsert that differs only in status.
++// The discussed flag is no scope either, so a held entry takes it, and only StoreDecisionRecord writes it.
+ // set-status is itself unguarded, so a live run's status can be cleared by hand.
+ // Prune passes, since a held entry's dependency on a done entry that the same write removes is not a change; every other depends_on change is refused.
+ // The refusal is a *RunLockedError that matches ErrRunLocked through errors.Is.
+@@ -283,7 +284,19 @@
+ // A beam is refused, since its slug stays fixed while it lives and its title is changed with `lym board upsert`, and so is an entry whose pair exists on this machine, naming `lym batten cancel <slug> --remove`.
+ // A target that is empty, longer than MaxSlugLength or already an entry's slug is refused too.
+ // Body and brief text is never rewritten; the result names every entry whose body or brief still holds the old slug with no letter, digit, '-' or '_' beside it.
+-// The render after the write drops the old slug's design doc and writes the new one.
++// The render after the write drops the old slug's design doc and writes the new one, and the entry's decision record file moves with it to the new slug's name.
++// A failed move is returned as the rename's *DecisionRecordError after the entry is saved, naming the file left at the old name, and Board.Rename returns its result beside that error; a flagged entry with no file removes a file at the new slug's name, so it never reads an orphan as its own record.
++//
++// # Decision record
++//
++// An entry whose run's Discussion was approved carries the discussed flag, and its decision record is the file `decision-<slug>.md` beside board.json, at the Bolt root; the file follows its entry through a rename, and a remove, a prune or a merge that drops the slug removes it.
++// No render output names that file, so RenderToDisk's manifest never holds it and a render never deletes it.
++// Only lym writes the flag and the file: Board.StoreDecisionRecord is the one writer, and a payload may carry discussed only as the entry's stored value, false for a new entry, which is dropped as a no-op; any other value is refused.
++// StoreDecisionRecord writes the file before it saves board.json, so a crash leaves a file with no flag and never a flag with no file, and it writes nothing when the entry is flagged and the file already holds the bytes.
++// It bypasses the run lock for the flag and the file alone, so every other field of a held entry stays locked, and it refuses an absent entry and a done entry, the latter with an error that matches ErrRecordEntryDone, since a landed entry keeps the record it last stored.
++// Board.DecisionRecord reads without the lock and answers found only when the entry exists, carries the flag and the file exists; an absent entry, an unflagged one and a flagged one with no file each answer not found.
++// A merge that removes a flagged slug and upserts it again keeps the flag.
++// LoadConfig refuses a design_prefix that would render a design file onto a record file's name, a prefix of `decision-` or one starting with it, the empty prefix included.
+ //
+ // # Siblings
+ //
+@@ -297,7 +310,7 @@
+ //
+ // # Concurrency and sync
+ //
+-// Board sequences all mutating operations with a file lock: lock → load → mutate → save board.json → render → write files.
++// Board sequences all mutating operations with a file lock: lock → load → mutate → save board.json → move or remove decision record files → render → write files.
+ // After each write, a detached background sync process (see sync.go) is launched to commit and push
+ // changes to the remote.
+ // The write returns immediately without waiting for the sync.
+@@ -337,9 +350,10 @@
+ // # Replay
+ //
+ // FabricReplay is the board's Bolt replayer, named `board`, and the run ledger fabricengine reads the ended set and the owners through; the lym root pre-run registers it with `fabricengine.RegisterBoltReplayer`.
+-// It claims `board.json`, `README.md`, the `project-<slug>.md` files, of which `project-root.md` is the root project's and not a project's, and the `design-<slug>.md` files at the Bolt root, and its ledger file is `board.json`: `Runs` decodes the entries with `Ended` set for a `done` one, and `CommitRuns` names the entries a commit changes.
+-// The by-entry merge of fields is `internal/entrymerge`'s.
+-// Apply re-applies a local board commit, read out of the files the request holds by path, onto the board checked out at origin's tip, one change at a time: each added or removed entry, each changed entry's fields as one change, and each design file the commit touches.
++// It claims `board.json`, `README.md`, the `project-<slug>.md` files, of which `project-root.md` is the root project's and not a project's, and the `design-<slug>.md` and `decision-<slug>.md` files at the Bolt root, and its ledger file is `board.json`: `Runs` decodes the entries with `Ended` set for a `done` one, and `CommitRuns` names the entries a commit changes.
++// The by-entry merge of fields is `internal/entrymerge`'s, and its fields include the `discussed` flag.
++// Apply re-applies a local board commit, read out of the files the request holds by path, onto the board checked out at origin's tip, one change at a time: each added or removed entry, each changed entry's fields as one change, and each design file and decision record the commit touches.
++// A decision record goes after the entry changes: one the commit writes for an entry origin does not hold is reported lost and not written, and every other record file, a removal included, lands by the design-file rule, so a replayed removal or rename leaves no old record file on origin.
+ // A change passes the board's own checks, the run lock included, against the board as the kept changes before it left it, and an added entry takes the next id of origin's board.json and a handle free there, never its local one.
+ // Where both sides changed the same field or design file since the merge base, or origin removed the entry, origin's side is kept and the local value is reported lost;
+ // a change a check refuses is reported refused, and so is a later change depending on an entry a refused change added.
+diff --git a/internal/boardengine/rename.go b/internal/boardengine/rename.go
+index b7bfa786..dfb317cf 100644
+--- a/internal/boardengine/rename.go
++++ b/internal/boardengine/rename.go
+@@ -5,6 +5,7 @@
+ package boardengine
+ 
+ import (
++	"errors"
+ 	"fmt"
+ 	"strings"
+ 	"unicode"
+@@ -23,14 +24,17 @@ type RenameResult struct {
+ // The entry keeps its id, handle, position and every other field, and no entry's dates are revised by the rename.
+ // It refuses an absent entry, an entry a run holds, and a target that is empty, longer than MaxSlugLength or already an entry's slug.
+ // Body and brief text is never rewritten; the result names the entries that still mention the old slug.
++// Every refusal still comes before the save, and the entry's decision record file follows it: a record that cannot be moved, or an orphan at the new slug's name that cannot be removed, is returned as a *DecisionRecordError after the entry is saved under the new slug, and the result accompanies that error.
++// Any other error returns an empty result.
+ func (b *Board) Rename(selector any, to string) (RenameResult, error) {
+ 	result, err := b.boardCriticalSection(func(store *Store) (any, error) {
+ 		return store.Rename(selector, to)
+ 	}, nil)
+-	if err != nil {
++	var recordErr *DecisionRecordError
++	if err != nil && !errors.As(err, &recordErr) {
+ 		return RenameResult{}, err
+ 	}
+-	return result.(RenameResult), nil
++	return result.(RenameResult), err
+ }
+ 
+ // Rename changes the slug of the entry selector names to to and rewrites every other entry's depends_on, project and order to match.
+diff --git a/internal/boardengine/replay.go b/internal/boardengine/replay.go
+index e7e994dd..64c6182a 100644
+--- a/internal/boardengine/replay.go
++++ b/internal/boardengine/replay.go
+@@ -26,9 +26,11 @@ import (
+ // The board's file names a replay recognises: the rendered overview and the per-entry design files.
+ // The per-project overview files take projectFilePrefix, and the entry store boardFile.
+ const (
+-	overviewFile     = "README.md"
+-	designFilePrefix = "design-"
+-	designFileSuffix = ".md"
++	overviewFile       = "README.md"
++	designFilePrefix   = "design-"
++	designFileSuffix   = ".md"
++	decisionFilePrefix = "decision-"
++	decisionFileSuffix = ".md"
+ )
+ 
+ // FabricReplay is the board's Bolt replayer, named board, and fabricengine's run ledger over this package's store.
+@@ -38,13 +40,16 @@ type FabricReplay struct{}
+ // Name returns the replayer's registry name.
+ func (FabricReplay) Name() string { return "board" }
+ 
+-// Claims reports whether path, a Bolt-root-relative slash path, is a file of the board: the entry store, a rendered overview file or a design file.
++// Claims reports whether path, a Bolt-root-relative slash path, is a file of the board: the entry store, a rendered overview file, a design file or a decision record.
+ func (FabricReplay) Claims(path string) bool {
+ 	if path == boardFile || isBoardOverview(path) {
+ 		return true
+ 	}
+-	_, design := boardDesignSlug(path)
+-	return design
++	if _, design := boardDesignSlug(path); design {
++		return true
++	}
++	_, record := boardRecordSlug(path)
++	return record
+ }
+ 
+ // File returns the Bolt file holding the board's entries, the run ledger's file.
+@@ -61,6 +66,17 @@ func boardDesignSlug(path string) (string, bool) {
+ 	return slug, found && slug != ""
+ }
+ 
++// boardRecordSlug returns the slug of the entry a decision record belongs to, and reports whether path is a decision record:
++// `decision-<slug>.md` at the Bolt root.
++func boardRecordSlug(path string) (string, bool) {
++	name, found := strings.CutPrefix(path, decisionFilePrefix)
++	if !found || strings.Contains(path, "/") {
++		return "", false
++	}
++	slug, found := strings.CutSuffix(name, decisionFileSuffix)
++	return slug, found && slug != ""
++}
++
+ // isBoardOverview reports whether path is a rendered overview file at the Bolt root: `README.md` or a project's `project-<slug>.md`.
+ // The board re-renders every overview after a replay, so none names an entry change.
+ func isBoardOverview(path string) bool {
+@@ -103,7 +119,7 @@ func entriesBySlug(data []byte) (map[string]string, error) {
+ }
+ 
+ // CommitRuns returns the slugs of the entries a commit of paths changes, sorted:
+-// each entry of `board.json` that differs between before and after, and each design file's entry.
++// each entry of `board.json` that differs between before and after, and each design file's and decision record's entry.
+ // before and after are the entry store as the commit's parent and the commit hold it, read only when paths names the entry store.
+ // An overview file names no entry.
+ func (FabricReplay) CommitRuns(before, after []byte, paths []string) ([]string, error) {
+@@ -112,6 +128,9 @@ func (FabricReplay) CommitRuns(before, after []byte, paths []string) ([]string,
+ 		if slug, design := boardDesignSlug(path); design {
+ 			slugs[slug] = true
+ 		}
++		if slug, record := boardRecordSlug(path); record {
++			slugs[slug] = true
++		}
+ 	}
+ 	if slices.Contains(paths, boardFile) {
+ 		beforeEntries, err := entriesBySlug(before)
+@@ -168,6 +187,7 @@ var replayFields = entrymerge.Table[Task]{
+ 		{Name: "beam", Get: func(t Task) any { return t.Beam }, Set: func(dst *Task, src Task) { dst.Beam = src.Beam }},
+ 		{Name: "front", Get: func(t Task) any { return t.Front }, Set: func(dst *Task, src Task) { dst.Front = src.Front }},
+ 		{Name: "on_land", Get: func(t Task) any { return t.OnLand }, Set: func(dst *Task, src Task) { dst.OnLand = src.OnLand }},
++		{Name: "discussed", Get: func(t Task) any { return t.Discussed }, Set: func(dst *Task, src Task) { dst.Discussed = src.Discussed }},
+ 		{Name: "beam_color", Get: func(t Task) any { return t.BeamColor }, Set: func(dst *Task, src Task) { dst.BeamColor = src.BeamColor }},
+ 	},
+ }
+@@ -265,7 +285,8 @@ type replayRun struct {
+ 	applied     bool
+ }
+ 
+-// Apply re-applies the request's commit onto the board directory by entry and design file, reading the entry store and the design files out of its files by path, and reports what it kept and what it set aside.
++// Apply re-applies the request's commit onto the board directory by entry, design file and decision record, reading the entry store, the design files and the decision records out of its files by path, and reports what it kept and what it set aside.
++// A decision record the commit writes for an entry origin does not hold is reported lost and not written; every other record file lands by the design-file rule.
+ // It loads the board config from the request's directory and a store from origin's board.json there, and applies each change of the commit against its parent on its own, against the board as the kept changes before it left it.
+ // The hub's prime_owner record replays like an entry field, reported lost under the entry name prime.
+ // Where both sides changed the same field of an entry or the same design file since the merge base, or the change touches an entry origin removed, origin's side is kept for that change and it is reported lost.
+@@ -281,12 +302,14 @@ func (FabricReplay) Apply(req fabricengine.ReplayRequest) (fabricengine.ReplayRe
+ 	vocabulary := cfg.Vocabulary()
+ 
+ 	var baseJSON, parentJSON, commitJSON []byte
+-	var designFiles []fabricengine.ReplayFile
++	var designFiles, recordFiles []fabricengine.ReplayFile
+ 	for _, file := range req.Files {
+ 		if file.Path == boardFile {
+ 			baseJSON, parentJSON, commitJSON = file.Base, file.Before, file.After
+ 		} else if _, design := boardDesignSlug(file.Path); design {
+ 			designFiles = append(designFiles, file)
++		} else if _, record := boardRecordSlug(file.Path); record {
++			recordFiles = append(recordFiles, file)
+ 		}
+ 	}
+ 
+@@ -351,7 +374,20 @@ func (FabricReplay) Apply(req fabricengine.ReplayRequest) (fabricengine.ReplayRe
+ 
+ 	designsApplied := false
+ 	for _, file := range designFiles {
+-		applied, err := run.applyDesignFile(req.Dir, file)
++		applied, err := run.applyDesignFile(req.Dir, "design file", file)
++		if err != nil {
++			return fabricengine.ReplayResult{}, err
++		}
++		designsApplied = designsApplied || applied
++	}
++	// Record files go after the entry changes, so origin's store already reflects them.
++	for _, file := range recordFiles {
++		slug, _ := boardRecordSlug(file.Path)
++		if _, _, held := run.originEntry(slug); !held && file.After != nil {
++			run.lost(file.Path, "decision record", "origin does not hold the entry", "")
++			continue
++		}
++		applied, err := run.applyDesignFile(req.Dir, "decision record", file)
+ 		if err != nil {
+ 			return fabricengine.ReplayResult{}, err
+ 		}
+@@ -529,11 +565,12 @@ func (r *replayRun) removeEntry(before Task) {
+ 	r.applied = true
+ }
+ 
+-// applyDesignFile writes the commit's side of one design file into boardDir when origin's file is still as the merge base or the commit's parent had it, and reports whether it wrote.
++// applyDesignFile writes the commit's side of one design file or decision record into boardDir when origin's file is still as the merge base or the commit's parent had it, and reports whether it wrote.
++// It serves both kinds of file; label, "design file" or "decision record", is the kind a refusal, a loss or an error names.
+ // A file origin changed too stays as origin holds it and is reported lost.
+-func (r *replayRun) applyDesignFile(boardDir string, file fabricengine.ReplayFile) (bool, error) {
++func (r *replayRun) applyDesignFile(boardDir, label string, file fabricengine.ReplayFile) (bool, error) {
+ 	if file.Path == "" || file.Path != filepath.Base(file.Path) {
+-		r.refuse(file.Path, "design file", fmt.Errorf("design file name %q is not a plain file name", file.Path))
++		r.refuse(file.Path, label, fmt.Errorf("%s name %q is not a plain file name", label, file.Path))
+ 		return false, nil
+ 	}
+ 	path := filepath.Join(boardDir, file.Path)
+@@ -542,23 +579,23 @@ func (r *replayRun) applyDesignFile(boardDir string, file fabricengine.ReplayFil
+ 		current, err = nil, nil
+ 	}
+ 	if err != nil {
+-		return false, fmt.Errorf("read design file: %w", err)
++		return false, fmt.Errorf("read %s: %w", label, err)
+ 	}
+ 	if sameFile(current, file.After) {
+ 		return false, nil
+ 	}
+ 	if !sameFile(current, file.Base) && !sameFile(current, file.Before) {
+-		r.lost(file.Path, "design file", "origin changed the file too", "")
++		r.lost(file.Path, label, "origin changed the file too", "")
+ 		return false, nil
+ 	}
+ 	if file.After == nil {
+ 		if err := os.Remove(path); err != nil {
+-			return false, fmt.Errorf("remove design file: %w", err)
++			return false, fmt.Errorf("remove %s: %w", label, err)
+ 		}
+ 		return true, nil
+ 	}
+ 	if err := fsx.AtomicWrite(boardDir, file.Path, string(file.After)); err != nil {
+-		return false, fmt.Errorf("write design file: %w", err)
++		return false, fmt.Errorf("write %s: %w", label, err)
+ 	}
+ 	return true, nil
+ }
+diff --git a/internal/boardengine/replay_test.go b/internal/boardengine/replay_test.go
+index c7752248..653770f1 100644
+--- a/internal/boardengine/replay_test.go
++++ b/internal/boardengine/replay_test.go
+@@ -84,6 +84,22 @@ func asBeam(task *Task) { task.Beam = true }
+ 
+ func asNotifyOnLand(task *Task) { task.NotifyOnLand = true }
+ 
++func asDiscussed(task *Task) { task.Discussed = true }
++
++// wantOriginFile returns a row check asserting that name in origin's board directory holds want, or is absent when want is empty.
++func wantOriginFile(name, want string) func(t *testing.T, dir string, got map[string]Task) {
++	return func(t *testing.T, dir string, _ map[string]Task) {
++		t.Helper()
++		got, err := os.ReadFile(filepath.Join(dir, name))
++		switch {
++		case want == "" && !os.IsNotExist(err):
++			t.Errorf("%s = %q, %v; want it absent", name, got, err)
++		case want != "" && (err != nil || string(got) != want):
++			t.Errorf("%s = %q, %v; want %q", name, got, err, want)
++		}
++	}
++}
++
+ func withBeamColor(color string) func(*Task) {
+ 	return func(task *Task) { task.BeamColor = color }
+ }
+@@ -492,6 +508,100 @@ func TestFabricReplay(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name:    "RecordFileAddedLandsWhenOriginLacksIt",
++			base:    []Task{replayEntry("a")},
++			origin:  []Task{replayEntry("a")},
++			parent:  []Task{replayEntry("a")},
++			commit:  []Task{replayEntry("a")},
++			designs: []fabricengine.ReplayFile{{Path: "decision-a.md", After: []byte("record")}},
++			check:   wantOriginFile("decision-a.md", "record"),
++		},
++		{
++			name:        "RecordFileChangedLandsWhenOriginHoldsTheParentsFile",
++			base:        []Task{replayEntry("a")},
++			origin:      []Task{replayEntry("a")},
++			parent:      []Task{replayEntry("a")},
++			commit:      []Task{replayEntry("a")},
++			originFiles: map[string]string{"decision-a.md": "base"},
++			designs:     []fabricengine.ReplayFile{{Path: "decision-a.md", Base: []byte("base"), Before: []byte("base"), After: []byte("local")}},
++			check:       wantOriginFile("decision-a.md", "local"),
++		},
++		{
++			name:        "RecordFileRemovedLandsWhenOriginsFileIsUntouched",
++			base:        []Task{replayEntry("a")},
++			origin:      []Task{replayEntry("a")},
++			parent:      []Task{replayEntry("a")},
++			commit:      []Task{replayEntry("a")},
++			originFiles: map[string]string{"decision-a.md": "base"},
++			designs:     []fabricengine.ReplayFile{{Path: "decision-a.md", Base: []byte("base"), Before: []byte("base")}},
++			check:       wantOriginFile("decision-a.md", ""),
++		},
++		{
++			name:        "RecordFileChangedOnBothSidesKeepsOriginsFileAndReportsItLost",
++			base:        []Task{replayEntry("a")},
++			origin:      []Task{replayEntry("a")},
++			parent:      []Task{replayEntry("a")},
++			commit:      []Task{replayEntry("a")},
++			originFiles: map[string]string{"decision-a.md": "origin"},
++			designs:     []fabricengine.ReplayFile{{Path: "decision-a.md", Base: []byte("base"), Before: []byte("base"), After: []byte("local")}},
++			wantEmpty:   true,
++			wantLost:    []fabricengine.ReplayFinding{{Entry: "decision-a.md", Field: "decision record", Reason: "origin changed the file too"}},
++			check:       wantOriginFile("decision-a.md", "origin"),
++		},
++		{
++			name:        "RecordFileWrittenForAnEntryOriginLacksIsLostAndNotWritten",
++			base:        []Task{replayEntry("a", withTitle("A")), replayEntry("b")},
++			origin:      []Task{replayEntry("b")},
++			parent:      []Task{replayEntry("a", withTitle("A")), replayEntry("b")},
++			commit:      []Task{replayEntry("a", withTitle("A2")), replayEntry("b")},
++			designs:     []fabricengine.ReplayFile{{Path: "decision-a.md", After: []byte("record")}},
++			wantEmpty:   true,
++			wantLost:    []fabricengine.ReplayFinding{{Entry: "a", Reason: "origin removed the entry"}, {Entry: "decision-a.md", Field: "decision record", Reason: "origin does not hold the entry"}},
++			wantEntries: map[string]string{"a": "", "b": "b"},
++			check:       wantOriginFile("decision-a.md", ""),
++		},
++		{
++			name:        "RemovedEntryAndItsRecordFileLeaveNoRecordOnOrigin",
++			base:        []Task{replayEntry("a"), replayEntry("b")},
++			origin:      []Task{replayEntry("a"), replayEntry("b")},
++			parent:      []Task{replayEntry("a"), replayEntry("b")},
++			commit:      []Task{replayEntry("b")},
++			originFiles: map[string]string{"decision-a.md": "record"},
++			designs:     []fabricengine.ReplayFile{{Path: "decision-a.md", Base: []byte("record"), Before: []byte("record")}},
++			wantEntries: map[string]string{"a": "", "b": "b"},
++			check:       wantOriginFile("decision-a.md", ""),
++		},
++		{
++			name:        "RenameCommitLeavesNoOldRecordFileOnOrigin",
++			base:        []Task{replayEntry("a", asDiscussed)},
++			origin:      []Task{replayEntry("a", asDiscussed)},
++			parent:      []Task{replayEntry("a", asDiscussed)},
++			commit:      []Task{replayEntry("c", asDiscussed)},
++			originFiles: map[string]string{"decision-a.md": "record"},
++			designs: []fabricengine.ReplayFile{
++				{Path: "decision-a.md", Base: []byte("record"), Before: []byte("record")},
++				{Path: "decision-c.md", After: []byte("record")},
++			},
++			wantEntries: map[string]string{"a": "", "c": "c"},
++			check: func(t *testing.T, dir string, _ map[string]Task) {
++				wantOriginFile("decision-a.md", "")(t, dir, nil)
++				wantOriginFile("decision-c.md", "record")(t, dir, nil)
++			},
++		},
++		{
++			name:        "DiscussedFlagSetByTheCommitLandsOnOriginsEntry",
++			base:        []Task{replayEntry("a")},
++			origin:      []Task{replayEntry("a")},
++			parent:      []Task{replayEntry("a")},
++			commit:      []Task{replayEntry("a", asDiscussed)},
++			wantEntries: map[string]string{"a": "a"},
++			check: func(t *testing.T, _ string, got map[string]Task) {
++				if !got["a"].Discussed {
++					t.Errorf("a.discussed = false; want true")
++				}
++			},
++		},
+ 	}
+ 
+ 	for _, tt := range rows {
+@@ -644,6 +754,9 @@ func TestFabricReplay_Ledger(t *testing.T) {
+ 			{"NotMarkdown", "project-x.json", false},
+ 			{"EntryStore", "board.json", true},
+ 			{"DesignFile", "design-a.md", true},
++			{"RecordFile", "decision-x.md", true},
++			{"RecordFileInSubdirectory", "sub/decision-x.md", false},
++			{"RecordFileEmptySlug", "decision-.md", false},
+ 			{"NestedReadme", "dir/README.md", false},
+ 			{"SubdirectoryReadme", "sub/README.md", false},
+ 			{"OtherStore", "heddle.json", false},
+@@ -675,6 +788,7 @@ func TestFabricReplay_Ledger(t *testing.T) {
+ 			{"EntryRemoved", two, onlyA, []string{"board.json"}, []string{"b"}},
+ 			{"EntryStoreUnchanged", two, two, []string{"board.json"}, []string{}},
+ 			{"DesignFileNamesItsEntry", nil, nil, []string{"design-a.md"}, []string{"a"}},
++			{"RecordFileNamesItsEntry", nil, nil, []string{"decision-a.md"}, []string{"a"}},
+ 			{"OverviewFileNamesNone", nil, nil, []string{"README.md", "project-x.md"}, []string{}},
+ 			{"DesignFileAndEntryChange", two, retitled, []string{"board.json", "design-b.md"}, []string{"a", "b"}},
+ 		}
+diff --git a/internal/boardengine/runlock.go b/internal/boardengine/runlock.go
+index 547c8580..d9b11ac6 100644
+--- a/internal/boardengine/runlock.go
++++ b/internal/boardengine/runlock.go
+@@ -184,7 +184,7 @@ func removedDoneSlugs(loaded, after []Task) map[string]bool {
+ // Project, Order and Beam are compared, so a held entry takes no membership or beam change.
+ // PullRequest is compared too, so a held entry takes no change to its pull-request override.
+ // Front and OnLand are compared as Kind is: they never change after the filing, and a run-held entry takes no change to them.
+-// RunSettings, Profile, NotifyOnLand and OwnerMachine are never compared: a run settings, profile, landing-notice or owner change is not a scope change, so a run-held entry takes it.
++// RunSettings, Profile, NotifyOnLand, OwnerMachine and Discussed are never compared: a run settings, profile, landing-notice, owner or discussed-flag change is not a scope change, so a run-held entry takes it.
+ // Unknown is never compared either, since this binary cannot change a kept key.
+ func scopeChanged(before, now Task, removedDone map[string]bool) bool {
+ 	dependsOn := slices.DeleteFunc(slices.Clone(before.DependsOn), func(slug string) bool {
+diff --git a/internal/boardengine/store.go b/internal/boardengine/store.go
+index 5200b8ee..405322ac 100644
+--- a/internal/boardengine/store.go
++++ b/internal/boardengine/store.go
+@@ -455,9 +455,10 @@ type MergeStatusUpdate struct {
+ // "id" and "handle" are assigned by the board and never accepted; "phase" and "group" are retired.
+ // "owner_machine" is accepted only as the entry's effective owner, a no-op, and "beam" only as the entry's stored flag.
+ // "front" and "on_land" are accepted only as the entry's stored values, as "beam" is.
++// "discussed" is accepted only as the entry's stored value too.
+ // "beam_color" is output only: a beam carries it in what is read back, the owner setter records it, and an upsert naming it is refused as an unknown field.
+ func UpsertPayloadKeys() (required, optional []string) {
+-	return []string{"slug"}, []string{"title", "brief", "body", "depends_on", "isolated", "status", "kind", "labels", "recipe", "priority", "short_name", "issues", "created", "revised", "run_settings", "profile", "pull_request", "notify_on_land", "owner_machine", "project", "order", "beam", "front", "on_land"}
++	return []string{"slug"}, []string{"title", "brief", "body", "depends_on", "isolated", "status", "kind", "labels", "recipe", "priority", "short_name", "issues", "created", "revised", "run_settings", "profile", "pull_request", "notify_on_land", "owner_machine", "project", "order", "beam", "front", "on_land", "discussed"}
+ }
+ 
+ // upsertAllowedKeys is the set of field names every upsert path accepts, enforced at the store boundary.
+@@ -511,6 +512,9 @@ func (s *Store) UpsertTask(fields map[string]any) (Task, error) {
+ 	if err := checkFrontPayload(s, fields); err != nil {
+ 		return Task{}, err
+ 	}
++	if err := checkDiscussedPayload(s, fields); err != nil {
++		return Task{}, err
++	}
+ 
+ 	index := s.slugIndex()
+ 	slugVal, hasSlug := fields["slug"]
+@@ -849,6 +853,9 @@ func (s *Store) UpsertTasksBatch(tasks []map[string]any) error {
+ 		if err := checkFrontPayload(s, fields); err != nil {
+ 			return err
+ 		}
++		if err := checkDiscussedPayload(s, fields); err != nil {
++			return err
++		}
+ 	}
+ 
+ 	snapshot := make([]Task, len(s.tasks))
+@@ -1031,6 +1038,9 @@ func (s *Store) MergeTasks(removeSlugs []string, upsert map[string]any, setStatu
+ 	if err := checkFrontPayload(s, upsert); err != nil {
+ 		return Task{}, err
+ 	}
++	if err := checkDiscussedPayload(s, upsert); err != nil {
++		return Task{}, err
++	}
+ 
+ 	slugVal, hasSlug := upsert["slug"]
+ 	if !hasSlug {
+@@ -1083,6 +1093,10 @@ func (s *Store) MergeTasks(removeSlugs []string, upsert map[string]any, setStatu
+ 		return Task{}, err
+ 	}
+ 
++	// A removed entry the merge upserts again keeps its discussed flag, as it keeps its record file.
++	removedEntry, upsertedAgain := s.GetTask(slugStr)
++	keepDiscussed := upsertedAgain && removedEntry.Discussed && slices.Contains(removeSlugs, slugStr)
++
+ 	for _, slug := range removeSlugs {
+ 		s.RemoveTask(slug)
+ 	}
+@@ -1091,6 +1105,11 @@ func (s *Store) MergeTasks(removeSlugs []string, upsert map[string]any, setStatu
+ 	if err != nil {
+ 		return Task{}, err
+ 	}
++	if keepDiscussed {
++		i, _ := s.index(upserted.Slug)
++		s.tasks[i].Discussed = true
++		upserted.Discussed = true
++	}
+ 	s.mergeOrders(removeSlugs, upserted.Slug)
+ 
+ 	if setStatus != nil {
+diff --git a/internal/boardengine/task.go b/internal/boardengine/task.go
+index 4350b3cb..1e11b104 100644
+--- a/internal/boardengine/task.go
++++ b/internal/boardengine/task.go
+@@ -60,6 +60,8 @@ type Task struct {
+ 	Front bool `json:"front,omitempty"`
+ 	// OnLand is the key of the action the front-task package runs when the front task lands; empty for any other entry.
+ 	OnLand string `json:"on_land,omitempty"`
++	// Discussed marks an entry whose run's Discussion was approved and whose decision record lym stored as decision-<slug>.md; only StoreDecisionRecord sets it.
++	Discussed bool `json:"discussed,omitempty"`
+ 
+ 	// Unknown holds the decoded entry's keys this binary does not know, each with its raw JSON value, nil when there are none.
+ 	// Encoding writes them back after the known fields in key order, and no step decodes a value into a Go type.
+diff --git a/internal/fabricengine/junctionnames.go b/internal/fabricengine/junctionnames.go
+index b47cfb78..98d64e37 100644
+--- a/internal/fabricengine/junctionnames.go
++++ b/internal/fabricengine/junctionnames.go
+@@ -114,7 +114,7 @@ func BoltDir(hub string) string {
+ 	return filepath.Join(hub, BoltDirName)
+ }
+ 
+-// BoardDir returns the absolute path to the board's own data (board.json, its overview and design files) inside hub.
++// BoardDir returns the absolute path to the board's own data (board.json, its overview and design files, and its decision records) inside hub.
+ // Everything else the Bolt checkout holds lives under BoltDir.
+ func BoardDir(hub string) string {
+ 	return filepath.Join(hub, BoardDirName)
+diff --git a/internal/loomcli/decision.go b/internal/loomcli/decision.go
+index a4b4b160..e96aaa33 100644
+--- a/internal/loomcli/decision.go
++++ b/internal/loomcli/decision.go
+@@ -1,5 +1,5 @@
+-// decision.go implements the `decision` loom subtree: the one verb, `add`, through which a design call made after the Discussion ended is recorded in the decision record.
+-// The run's parent, or an operator, uses it to answer a question the record does not settle, so Plan-Write and a later reader see the call beside the decisions the Discussion made.
++// decision.go implements the `decision` loom subtree: the verb `add`, through which a design call made after the Discussion ended is recorded in the decision record, and the verb `store`, which re-copies the committed record onto the run's board entry.
++// The run's parent, or an operator, uses `add` to answer a question the record does not settle, so Plan-Write and a later reader see the call beside the decisions the Discussion made.
+ // The verb appends one entry, or the batch a `--from` JSON file holds, through `discussionparser.AppendDecisions`, which writes once, re-runs the discussion check and restores the record on a finding, and then commits the record once.
+ //
+ // The group carries its own PersistentPreRunE, and the loom parent's pre-run skips it, for the reason review.go gives.
+@@ -28,6 +28,14 @@
+ // A batch's notice names only the headings, bar Master's, which inlines every entry's text.
+ // With no live run nothing is sent: a later producer reads the record when it starts.
+ // A failed listing or post is reported on the success envelope and never fails the verb, since the entry is already committed.
++//
++// On a run past its Discussion approval, the verb also copies the committed record onto the run's board entry, after the commit and before the notices.
++// A copy that fails never fails the verb, since the entry is already committed; the success envelope reports it as `record_store_error`.
++// A call landing while Discussion-Bouncer is settling is not copied, because the run is not past the approval yet, and `lym loom decision store` closes that window by hand.
++// A run a `lym loom goto` moved past Discussion-Bouncer counts as past, so its record is copied unapproved, as the parent's goto decided.
++//
++// `store` is the one idempotent way to make that copy by hand.
++// It admits the operator's own unnamed shell, the run's own arbiter strand and the run's parent orch, refuses a recipe with no Discussion approval row and a run not yet past the approval, and changes nothing in the run: no commit, no routing and no notice.
+ 
+ package loomcli
+ 
+@@ -45,6 +53,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/creelcli"
+ 	"github.com/Knatte18/loomyard/internal/creelengine"
+@@ -100,6 +109,7 @@ const (
+ 	decisionWayFromTwice = `way forward: give each entry of the --from file its own title and its own PATTERN entry, or record the second in a later call`
+ 
+ 	decisionWayFabricCommit    = `way forward: run "lym fabric commit" to commit the record; a session lym refuses the verb from reports status: FAILED and the orch runs it`
++	decisionWayStore           = `way forward: once the cause above is cleared, run "lym loom decision store" to copy the committed record onto the board entry`
+ 	decisionWayAmendsPlanRetry = `way forward: the entry and the amendment record are restored and nothing landed; re-run "lym loom decision add ... --amends-plan"`
+ 	decisionWayPlanUnparsed    = `way forward: run "lym loom validate-plan" to show the plan's defect, and record the decision without --amends-plan until the plan parses`
+ 	decisionWayAmendsNoPlan    = `way forward: record the decision without --amends-plan; Plan-Write and Plan-Review read the decision record`
+@@ -290,6 +300,12 @@ type decisionDeps struct {
+ 	committedAmendment func() ([]byte, bool, error)
+ 	// commitAmendment commits the amendment record alone.
+ 	commitAmendment func() error
++	// pastApproval reports whether the run standing at currentRow, empty for a run with no status file, has passed its Discussion approval.
++	pastApproval func(currentRow string) bool
++	// storeRecord copies record onto the run's board entry.
++	storeRecord func(record []byte) error
++	// approvalRow reports whether the run's recipe has a Discussion approval row.
++	approvalRow func() bool
+ }
+ 
+ // decisionNoticeError is one notice the verb could not send, reported on its success envelope.
+@@ -480,6 +496,32 @@ func committedLacksEntry(deps decisionDeps, added []discussionparser.AddedDecisi
+ 	return "", nil
+ }
+ 
++// copyRecordToBoard copies the committed decision record onto the run's board entry when the run standing at currentRow is past its Discussion approval, and returns the text the success envelope reports as record_store_error.
++// It returns "" when the run is not past the approval or the copy succeeded.
++// A done entry's refusal reports that the entry keeps the record it last stored, with no pointer at the store verb; any other failure, a missing committed record included, reports the error and the way forward of decisionWayStore.
++// Every failure is logged at Warn, and none fails the verb, since the entry is already committed.
++func copyRecordToBoard(deps decisionDeps, currentRow string) string {
++	if !deps.pastApproval(currentRow) {
++		return ""
++	}
++	committed, found, err := deps.committed()
++	if err == nil && !found {
++		err = errors.New("HEAD holds no decision record")
++	}
++	if err == nil {
++		err = deps.storeRecord(committed)
++	}
++	switch {
++	case err == nil:
++		return ""
++	case errors.Is(err, boardengine.ErrRecordEntryDone):
++		logger.Warn("loom: decision add did not copy the record: the board entry has landed", "error", err)
++		return "the entry has landed and keeps the record it last stored"
++	}
++	logger.Warn("loom: decision add could not copy the record onto the board entry", "error", err)
++	return err.Error() + "; " + decisionWayStore
++}
++
+ // amendmentCall holds what a `--amends-plan` call must put back when its append or commit fails:
+ // both records' bytes before the call, whether each existed, and the amendment record's bytes the call wrote.
+ type amendmentCall struct {
+@@ -576,21 +618,22 @@ func (a *amendmentCall) rollBackAppend(deps decisionDeps, appendErrored bool, ca
+ // afterFailedCommit decides what a failed commit left at HEAD, which commitErr describes.
+ // It reports landed when HEAD holds both this call's amendment record and every entry, so the commit went through despite its error.
+ // Otherwise it returns the refusal text: both files are kept when HEAD holds the amendment record alone or cannot be read, and restored when HEAD differs.
+-func (a *amendmentCall) afterFailedCommit(deps decisionDeps, added []discussionparser.AddedDecision, commitErr error) (landed bool, refusal string) {
++// wayCommit is the way forward the refusals that keep the files end in.
++func (a *amendmentCall) afterFailedCommit(deps decisionDeps, added []discussionparser.AddedDecision, commitErr error, wayCommit string) (landed bool, refusal string) {
+ 	failed := fmt.Sprintf("the entry is appended but the commit failed: %s", commitErr)
+ 	committed, found, err := deps.committedAmendment()
+ 	if err != nil {
+-		return false, fmt.Sprintf("%s; the amendment record at HEAD could not be read: %s; %s", failed, err, decisionWayFabricCommit)
++		return false, fmt.Sprintf("%s; the amendment record at HEAD could not be read: %s; %s", failed, err, wayCommit)
+ 	}
+ 	if found && bytes.Equal(committed, a.written) {
+ 		lacking, err := committedLacksEntry(deps, added)
+ 		switch {
+ 		case err != nil:
+-			return false, fmt.Sprintf("%s; the decision record at HEAD could not be read: %s; %s", failed, err, decisionWayFabricCommit)
++			return false, fmt.Sprintf("%s; the decision record at HEAD could not be read: %s; %s", failed, err, wayCommit)
+ 		case lacking == "":
+ 			return true, ""
+ 		}
+-		return false, fmt.Sprintf("%s; a status commit landed the amendment record without the entry; %s", failed, decisionWayFabricCommit)
++		return false, fmt.Sprintf("%s; a status commit landed the amendment record without the entry; %s", failed, wayCommit)
+ 	}
+ 	if err := a.restoreDecision(deps); err != nil {
+ 		return false, fmt.Sprintf("%s; the decision record at %s could not be restored: %s; %s", failed, deps.recordPath, err, decisionWayRestoreRecords)
+@@ -684,6 +727,15 @@ func decisionVerb(out io.Writer, slug string, deps decisionDeps, input decisionI
+ 	if found && st.State == shedengine.StateRunning && st.CurrentProducer == loomshed.NameDiscussionWrite {
+ 		return refuse("%s is running and owns the decision record; %s", loomshed.NameDiscussionWrite, decisionWayWriter)
+ 	}
++	currentRow := ""
++	if found {
++		currentRow = st.CurrentProducer
++	}
++	// A run past its Discussion approval has a board copy of the record to refresh once the commit lands.
++	wayCommit := decisionWayFabricCommit
++	if deps.pastApproval(currentRow) {
++		wayCommit += `, then "lym loom decision store" once "lym fabric commit" has landed the record`
++	}
+ 
+ 	hasPlan, err := deps.hasPlan()
+ 	if err != nil {
+@@ -697,10 +749,6 @@ func decisionVerb(out io.Writer, slug string, deps decisionDeps, input decisionI
+ 		return refuse("read the run's recipe: %s; %s", err, decisionWayRetry)
+ 	}
+ 	if rowWritten {
+-		currentRow := ""
+-		if found {
+-			currentRow = st.CurrentProducer
+-		}
+ 		refusal, err := checkDarnRecord(deps, currentRow)
+ 		if err != nil {
+ 			return refuse("read the darn run's decision record: %s; %s", err, decisionWayRetry)
+@@ -781,10 +829,10 @@ func decisionVerb(out io.Writer, slug string, deps decisionDeps, input decisionI
+ 	}
+ 	commitErr := deps.commit()
+ 	if commitErr != nil && amendment == nil {
+-		return refuse("the entry is appended but the commit failed: %s; %s", commitErr, decisionWayFabricCommit)
++		return refuse("the entry is appended but the commit failed: %s; %s", commitErr, wayCommit)
+ 	}
+ 	if commitErr != nil {
+-		landed, refusal := amendment.afterFailedCommit(deps, added, commitErr)
++		landed, refusal := amendment.afterFailedCommit(deps, added, commitErr, wayCommit)
+ 		if !landed {
+ 			return refuse("%s", refusal)
+ 		}
+@@ -798,6 +846,7 @@ func decisionVerb(out io.Writer, slug string, deps decisionDeps, input decisionI
+ 			return refuse("the committed record holds no entry under %q; %s", lacking, decisionWayEntryLost)
+ 		}
+ 	}
++	recordStoreError := copyRecordToBoard(deps, currentRow)
+ 	notified, noticeErrors := notifyLiveRuns(deps, added)
+ 	result := map[string]any{
+ 		"slug":          slug,
+@@ -806,6 +855,9 @@ func decisionVerb(out io.Writer, slug string, deps decisionDeps, input decisionI
+ 		"notified":      notified,
+ 		"notice_errors": noticeErrors,
+ 	}
++	if recordStoreError != "" {
++		result["record_store_error"] = recordStoreError
++	}
+ 	if len(patternBullets) > 0 {
+ 		result["pattern_changes"] = patternBullets
+ 	}
+@@ -826,6 +878,61 @@ func addedDecisionHeading(d discussionparser.AddedDecision) string {
+ 	return fmt.Sprintf("Added after Discussion (%s, %s): %s", strings.TrimSpace(d.By), d.Date.UTC().Format("2006-01-02"), strings.TrimSpace(d.Title))
+ }
+ 
++// decisionStoreRetry is the way forward of a store refusal that clearing its cause fixes.
++const decisionStoreRetry = `way forward: re-run "lym loom decision store"`
++
++// decisionStoreVerb copies the committed decision record onto the run's board entry, or refuses with a way forward.
++// It admits the operator's own unnamed shell, the run's own arbiter strand and the run's parent orch, and refuses a run whose recipe has no Discussion approval row or that is not yet past the approval.
++// It changes nothing in the run: no commit, no routing and no notice.
++func decisionStoreVerb(out io.Writer, slug string, deps decisionDeps) int {
++	refuse := func(format string, args ...any) int {
++		return output.Err(out, fmt.Sprintf("loom: %s store: ", decisionGroup)+fmt.Sprintf(format, args...))
++	}
++
++	if deps.strandName != "" && !deps.arbiterStrand(deps.strandName) {
++		parent, err := deps.parent()
++		switch {
++		case err != nil:
++			return refuse("the caller %q is a named session; way forward: the run's parent could not be resolved (%s); the operator's own unnamed shell may still run the verb", deps.strandName, err)
++		case deps.strandName != parent.Name && parent.Name == "":
++			return refuse(`the caller %q is a task session; way forward: the operator's own unnamed shell may always run "lym loom decision store"`, deps.strandName)
++		case deps.strandName != parent.Name:
++			return refuse(`the caller %q is a task session; way forward: ask %s to run "lym loom decision store"; the operator's own unnamed shell may always run it`, deps.strandName, parent.Name)
++		}
++	}
++
++	st, found, err := deps.readStatus()
++	if err != nil {
++		return refuse("read the run status: %s; %s", err, decisionStoreRetry)
++	}
++	currentRow := ""
++	if found {
++		currentRow = st.CurrentProducer
++	}
++	if !deps.approvalRow() {
++		return refuse("the run's recipe has no Discussion approval, so its record is never stored on the board; way forward: read the record in the run's worktree at %s", deps.recordPath)
++	}
++	if !deps.pastApproval(currentRow) {
++		return refuse(`the run has not passed its Discussion approval, which stores the record itself; way forward: let the run settle Discussion-Review, by "lym loom resume" or, when it waits on an escalation, by answering it with the "lym loom circling" verb its escalation names, then re-run this verb if "lym loom status" shows it past Discussion-Bouncer without a stored record`)
++	}
++
++	committed, committedFound, err := deps.committed()
++	if err != nil {
++		return refuse("read the committed decision record: %s; %s", err, decisionStoreRetry)
++	}
++	if !committedFound {
++		return refuse(`the run has no committed decision record; way forward: run "lym fabric commit" to commit it, then re-run "lym loom decision store"; a session lym refuses "lym fabric commit" from reports status: FAILED and the orch runs it`)
++	}
++	err = deps.storeRecord(committed)
++	switch {
++	case errors.Is(err, boardengine.ErrRecordEntryDone):
++		return refuse("the entry has landed and keeps the record it last stored; nothing to store")
++	case err != nil:
++		return refuse("%s; %s", err, decisionStoreRetry)
++	}
++	return output.Ok(out, map[string]any{"slug": slug, "record": deps.recordPath, "stored": true})
++}
++
+ // decisionState carries what the decision group's pre-run resolved for its verb.
+ type decisionState struct {
+ 	deps  decisionDeps
+@@ -944,6 +1051,19 @@ func (s *decisionState) preRun(cmd *cobra.Command, args []string) error {
+ 			_, _, err := fabricengine.CommitAnchoredPaths(fabricengine.NewMutations(""), target, []string{loomengine.LoomAmendmentRecordRel()}, fmt.Sprintf("loom: plan amendment record for %s", seedSlug(target.WorktreeName)), fabricengine.EnvSyncOptions())
+ 			return err
+ 		},
++		// resolveReviewTarget's recipeUnknown refusal, which runs before any dep is built, has refused every recipe the accessor cannot parse, so its error is dropped here.
++		// A recipe with no approval row (darn, sampler) answers false, and so does pawl, whose record is the beam's project record: none of those runs is copied.
++		pastApproval: func(currentRow string) bool {
++			past, _, _ := loomrecipe.PastDiscussionApproval(recipe, currentRow)
++			return past
++		},
++		storeRecord: func(record []byte) error {
++			return storeDecisionRecord(target, seedSlug(target.WorktreeName), record)
++		},
++		approvalRow: func() bool {
++			_, hasRow, _ := loomrecipe.DiscussionApprovalRow(recipe)
++			return hasRow
++		},
+ 	}
+ 	return nil
+ }
+@@ -1096,7 +1216,8 @@ func (c *loomCLI) decisionCmd() *cobra.Command {
+ 		Use:   decisionGroup,
+ 		Short: "record a design call made after the Discussion",
+ 		Long: `decision holds the verb through which a design call made after the Discussion
+-ended is recorded in the decision record. "decision add" is the only verb.
++ended is recorded in the decision record. "decision add" records it, and
++"decision store" re-copies the committed record onto the run's board entry.
+ 
+ The verb takes an optional slug naming the task worktree. A task worktree
+ addresses itself; from the prime the slug is required. On a beam,
+@@ -1124,15 +1245,17 @@ Example:
+ 		Long: `add appends an entry under an "Added after Discussion" heading, carrying the
+ --by label and today's date, to the decision record's Decisions section,
+ re-runs the discussion check (restoring the record on a finding) and commits.
+-It resumes nothing and changes neither the support log nor the plan. It then
+-notifies the run's other live agents ("notified", "notice_errors").
++It changes neither the support log nor the plan. On a run
++past its Discussion approval it also copies the committed record onto the run's
++board entry; a failed copy never fails the verb and is reported as
++"record_store_error". It then notifies the run's other live agents
++("notified", "notice_errors").
+ 
+ --by is parent, operator or arbiter, the last only from the run's own arbiter
+ strand. --title, --decision and --rationale are required unless --from is
+ passed. A named session other than the run's parent orch, arbiter or, on a
+-sampler run, its sampler session (with --by operator, for a call the operator
+-settled in the pane) is refused. It is refused while Discussion-Write runs, and on a Record-Write
+-record until Record-Write has committed it.
++sampler run, its sampler session (--by operator only) is refused. It is refused while Discussion-Write runs, and, on a Record-Write recipe,
++until it has committed the record.
+ 
+ --amends-plan marks a decision that amends the approved plan: the call also
+ appends the title to the plan amendment record in the same commit. It is
+@@ -1145,15 +1268,13 @@ A decision on a PATTERN entry also passes --pattern-entry <PATTERN-id>,
+ <new entry text>, which writes its bullet to the "## PATTERN changes" section.
+ 
+ --from <file> records several decisions in place of the per-entry flags: a
+-JSON array of objects with the keys title, decision, rationale and optionally
+-pattern_entry, pattern_action and pattern_text. --by and --amends-plan apply
+-to every entry. All land in one write and one commit, or none does, and each
+-live agent gets one notice naming the headings ("headings"). Two entries may
+-not share a title or a PATTERN entry.
++JSON array of objects with the keys title, decision, rationale and optional
++pattern_entry, pattern_action, pattern_text. --by and --amends-plan apply to
++every entry. All land in one commit or none does, the notice names the
++headings, and two entries may not share a title or a PATTERN entry.
+ 
+ Example:
+-  lym loom decision add <slug> --by parent --title "Keep the cache" --decision "Keep the cache per run." --rationale "A shared cache races."
+-  lym loom decision add <slug> --by parent --from decisions.json`,
++  lym loom decision add <slug> --by parent --title "Keep the cache" --decision "Keep the cache per run." --rationale "A shared cache races."`,
+ 		Args: cobra.MaximumNArgs(1),
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+@@ -1173,6 +1294,33 @@ Example:
+ 	add.Flags().StringVar(&st.input.from, "from", "", "a JSON file of several decisions to record in one call, in place of the per-entry flags")
+ 	add.Flags().BoolVar(&st.input.amendsPlan, "amends-plan", false, "the decision amends the approved plan: also record it in the plan amendment record")
+ 
+-	group.AddCommand(add)
++	store := &cobra.Command{
++		Use:         "store [<slug>]",
++		Short:       "copy the committed decision record onto the run's board entry",
++		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
++		Long: `store copies the decision record as committed at HEAD onto the run's board
++entry, the same copy "decision add" makes after its commit. It is idempotent:
++a record the entry already holds is not written again. It takes no flags and
++changes nothing in the run: no commit, no routing and no notice.
++
++It works once the run is past its Discussion approval, and refuses a recipe
++with no Discussion approval, a run still inside Discussion-Review, a record
++HEAD does not hold and an entry that has landed, which keeps the record it
++last stored. The operator's own unnamed shell, the run's own arbiter strand
++and the run's parent orch may run it.
++
++Example:
++  lym loom decision store <slug>`,
++		Args: cobra.MaximumNArgs(1),
++		RunE: func(cmd *cobra.Command, args []string) error {
++			if clihelp.ShouldAbort(cmd.Context()) {
++				return nil
++			}
++			clihelp.SetExit(cmd.Context(), decisionStoreVerb(cmd.OutOrStdout(), st.slug, st.deps))
++			return nil
++		},
++	}
++
++	group.AddCommand(add, store)
+ 	return group
+ }
+diff --git a/internal/loomcli/decision_test.go b/internal/loomcli/decision_test.go
+index 856b3d0f..8dc71d2b 100644
+--- a/internal/loomcli/decision_test.go
++++ b/internal/loomcli/decision_test.go
+@@ -12,6 +12,7 @@ import (
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/creelengine"
+ 	"github.com/Knatte18/loomyard/internal/discussionparser"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+@@ -114,6 +115,15 @@ type decisionFake struct {
+ 	// amendCommitErr is what the amendment-only commit returns, and amendCommits counts its calls.
+ 	amendCommitErr error
+ 	amendCommits   int
++
++	// pastRows maps a run's current row to whether the run is past its Discussion approval there, and askedRows records every row the verb asked about.
++	pastRows  map[string]bool
++	askedRows []string
++	// storeErr is what the board copy returns, and stored records every record it was given.
++	storeErr error
++	stored   [][]byte
++	// hasApprovalRow is whether the fake's recipe has a Discussion approval row.
++	hasApprovalRow bool
+ }
+ 
+ // decisionPost is one notice the verb posted.
+@@ -266,9 +276,28 @@ func (f *decisionFake) deps() decisionDeps {
+ 			f.amendCommits++
+ 			return f.amendCommitErr
+ 		},
++		pastApproval: func(currentRow string) bool {
++			f.askedRows = append(f.askedRows, currentRow)
++			return f.pastRows[currentRow]
++		},
++		storeRecord: func(record []byte) error {
++			if f.storeErr != nil {
++				return f.storeErr
++			}
++			f.stored = append(f.stored, record)
++			return nil
++		},
++		approvalRow: func() bool { return f.hasApprovalRow },
+ 	}
+ }
+ 
++// atPastRow puts the fake's run at row, which the fake judges past the Discussion approval, and returns the fake.
++func (f *decisionFake) atPastRow(row string) *decisionFake {
++	f.status.CurrentProducer, f.found = row, true
++	f.pastRows = map[string]bool{row: true}
++	return f
++}
++
+ // decisionBatchJSON is a --from file of two entries, the second with a PATTERN change.
+ const decisionBatchJSON = `[
+ 	{"title": "Keep the cache", "decision": "Keep it per run.", "rationale": "A shared cache races."},
+@@ -1192,15 +1221,249 @@ func TestPostDecisionNotice_SignsByCaller(t *testing.T) {
+ 
+ func TestDecisionVerb_CommitFailureNamesWayForward(t *testing.T) {
+ 	tiergate.Require(t, 0)
+-	f := newDecisionFake(t)
+-	f.commitErr = errors.New("index locked")
+-	var out bytes.Buffer
+-	if code := decisionVerb(&out, "task-a", f.deps(), goodDecisionInput()); code == 0 {
+-		t.Fatalf("exit = 0; want a refusal when the commit fails")
++	t.Parallel()
++	const storeVerb = `"lym loom decision store"`
++	tests := []struct {
++		name string
++		past bool
++	}{
++		{"RowNotPast_NamesNoStoreVerb", false},
++		{"RowPast_NamesStoreAfterFabricCommit", true},
+ 	}
+-	msg := envelope.Decode(t, out.String()).Error
+-	if !strings.Contains(msg, "index locked") || !strings.Contains(msg, "way forward:") || !strings.Contains(msg, "a session lym refuses the verb from reports status: FAILED and the orch runs it") {
+-		t.Errorf("message %q; want the commit error and a way forward naming the orch", msg)
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			f := newDecisionFake(t)
++			if tt.past {
++				f.atPastRow("Drift-Baseline")
++			}
++			f.commitErr = errors.New("index locked")
++			var out bytes.Buffer
++			if code := decisionVerb(&out, "task-a", f.deps(), goodDecisionInput()); code == 0 {
++				t.Fatalf("exit = 0; want a refusal when the commit fails")
++			}
++			msg := envelope.Decode(t, out.String()).Error
++			if !strings.Contains(msg, "index locked") || !strings.Contains(msg, "way forward:") || !strings.Contains(msg, "a session lym refuses the verb from reports status: FAILED and the orch runs it") {
++				t.Errorf("message %q; want the commit error and a way forward naming the orch", msg)
++			}
++			store, fabric := strings.Index(msg, storeVerb), strings.Index(msg, `"lym fabric commit"`)
++			if tt.past && (fabric < 0 || store < fabric) || !tt.past && store >= 0 {
++				t.Errorf("message %q; want the store verb named after \"lym fabric commit\" = %t", msg, tt.past)
++			}
++		})
++	}
++}
++
++// TestDecisionStoreVerb asserts the store verb copies the committed record for the callers it admits past the approval, and refuses every other caller and run with a way forward.
++func TestDecisionStoreVerb(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const (
++		pastRow   = "Drift-Baseline"
++		storeVerb = `"lym loom decision store"`
++	)
++	// reachStore makes f a run past its approval whose HEAD holds the record with the new entry.
++	reachStore := func(f *decisionFake) *decisionFake {
++		f.hasApprovalRow = true
++		f.committedCopy, f.committedFound = []byte(decisionEntryRecord), true
++		return f.atPastRow(pastRow)
++	}
++	tests := []struct {
++		name  string
++		darn  bool
++		setup func(f *decisionFake)
++		// want lists the fragments of a refusal; empty means the verb stores the committed record and exits 0.
++		want    []string
++		notWant []string
++		// wantRecordPath is whether a refusal must name the fake's record path.
++		wantRecordPath bool
++	}{
++		{name: "PastApproval_UnnamedShellStoresCommittedRecord", setup: func(f *decisionFake) { reachStore(f) }},
++		{name: "DarnRun_RefusedNamingRecordPath", darn: true, want: []string{"no Discussion approval", "way forward:"}, wantRecordPath: true},
++		{
++			name: "InsideDiscussionReview_RefusedNamingResumeAndCircling",
++			setup: func(f *decisionFake) {
++				reachStore(f).status.CurrentProducer = "Discussion-Burler-Fix"
++			},
++			want: []string{"has not passed its Discussion approval", "way forward:", "lym loom resume", "lym loom circling"},
++		},
++		{
++			name: "DoneEntry_RefusedKeepingItsLastRecord",
++			setup: func(f *decisionFake) {
++				reachStore(f).storeErr = fmt.Errorf("entry: %w", boardengine.ErrRecordEntryDone)
++			},
++			want: []string{"keeps the record it last stored", "nothing to store"},
++		},
++		{
++			name:  "CommittedRecordMissing_RefusedNamingFabricCommit",
++			setup: func(f *decisionFake) { reachStore(f).committedFound = false },
++			want:  []string{"no committed decision record", "way forward:", "lym fabric commit", storeVerb},
++		},
++		{
++			name:  "StatusReadError_RefusedNamingRerun",
++			setup: func(f *decisionFake) { reachStore(f).statusErr = errors.New("status boom") },
++			want:  []string{"read the run status: status boom", "way forward:", storeVerb},
++		},
++		{
++			name:  "StoreFails_RefusedNamingRerun",
++			setup: func(f *decisionFake) { reachStore(f).storeErr = errors.New("board down") },
++			want:  []string{"board down", "way forward:", storeVerb},
++		},
++		{
++			name: "NamedTaskSession_RefusedNamingTheParent",
++			setup: func(f *decisionFake) {
++				reachStore(f).strandName, f.parent = "hub:task-a:darn", hubgeom.Parent{Name: "hub:orch"}
++			},
++			want: []string{`the caller "hub:task-a:darn" is a task session`, "ask hub:orch to run", storeVerb, "unnamed shell"},
++		},
++		{
++			name: "NamedTaskSessionWithEmptyParentName_NamesOnlyTheUnnamedShell",
++			setup: func(f *decisionFake) {
++				reachStore(f).strandName = "hub:task-a:darn"
++			},
++			want:    []string{"is a task session", "unnamed shell may always run", storeVerb},
++			notWant: []string{"way forward: ask"},
++		},
++		{
++			name: "NamedSessionWithParentError_RefusedNamingTheError",
++			setup: func(f *decisionFake) {
++				reachStore(f).strandName, f.parentErr = "hub:task-a:darn", errors.New("no orch")
++			},
++			want: []string{"is a named session", "could not be resolved (no orch)", "unnamed shell may still run the verb"},
++		},
++		{
++			name: "ArbiterStrand_Stores",
++			setup: func(f *decisionFake) {
++				reachStore(f).strandName, f.arbiterName = "hub:task-a:arbiter", "hub:task-a:arbiter"
++			},
++		},
++		{
++			name: "ParentOrch_Stores",
++			setup: func(f *decisionFake) {
++				reachStore(f).strandName, f.parent = "hub:orch", hubgeom.Parent{Name: "hub:orch"}
++			},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			f := newDecisionFake(t)
++			if tt.darn {
++				f = newDarnDecisionFake(t)
++			}
++			if tt.setup != nil {
++				tt.setup(f)
++			}
++
++			var out bytes.Buffer
++			code := decisionStoreVerb(&out, "task-a", f.deps())
++			if len(tt.want) == 0 {
++				if code != 0 {
++					t.Fatalf("exit = %d, out %s; want 0", code, out.String())
++				}
++				data := envelope.RequireOK(t, out.String()).Raw
++				if data["stored"] != true || data["slug"] != "task-a" || data["record"] != f.path {
++					t.Errorf("envelope = %v; want slug task-a, record %s and stored true", data, f.path)
++				}
++				if len(f.stored) != 1 || string(f.stored[0]) != decisionEntryRecord {
++					t.Errorf("stored = %q; want one copy of the committed record", f.stored)
++				}
++				return
++			}
++			if code == 0 {
++				t.Fatalf("exit = 0, out %s; want a refusal", out.String())
++			}
++			msg := envelope.Decode(t, out.String()).Error
++			for _, w := range tt.want {
++				if !strings.Contains(msg, w) {
++					t.Errorf("message %q lacks %q", msg, w)
++				}
++			}
++			for _, w := range tt.notWant {
++				if strings.Contains(msg, w) {
++					t.Errorf("message %q contains %q", msg, w)
++				}
++			}
++			if tt.wantRecordPath && !strings.Contains(msg, f.path) {
++				t.Errorf("message %q lacks the record path %q", msg, f.path)
++			}
++			if len(f.stored) != 0 {
++				t.Errorf("stored = %q; want nothing stored on a refusal", f.stored)
++			}
++		})
++	}
++}
++
++// TestDecisionVerb_CopiesRecordToBoard asserts the committed record is copied onto the board entry only at a row past the Discussion approval, and that a failed copy is reported on a successful envelope.
++func TestDecisionVerb_CopiesRecordToBoard(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const row = "Drift-Baseline"
++	tests := []struct {
++		name  string
++		setup func(f *decisionFake)
++		// wantStored is whether the committed record reaches the store.
++		wantStored bool
++		// wantError lists the fragments of record_store_error, empty when the envelope carries none; notWant lists fragments it must lack.
++		wantError []string
++		notWant   []string
++	}{
++		{name: "PastRow_StoresCommittedRecord", setup: func(f *decisionFake) { f.atPastRow(row) }, wantStored: true},
++		{name: "RowNotPast_StoresNothing", setup: func(f *decisionFake) { f.atPastRow(row).status.CurrentProducer = "Discussion-Burler-Fix" }},
++		{
++			name:      "StoreFails_ReportsErrorNamingStoreVerb",
++			setup:     func(f *decisionFake) { f.atPastRow(row).storeErr = errors.New("board down") },
++			wantError: []string{"board down", "way forward:", "lym loom decision store"},
++		},
++		{
++			name: "DoneEntry_ReportsLandedWithoutStoreVerb",
++			setup: func(f *decisionFake) {
++				f.atPastRow(row).storeErr = fmt.Errorf("entry: %w", boardengine.ErrRecordEntryDone)
++			},
++			wantError: []string{"has landed", "keeps the record it last stored"},
++			notWant:   []string{"lym loom decision store"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			f := newDecisionFake(t)
++			tt.setup(f)
++
++			var out bytes.Buffer
++			if code := decisionVerb(&out, "task-a", f.deps(), goodDecisionInput()); code != 0 {
++				t.Fatalf("exit = %d, out %s; want 0", code, out.String())
++			}
++			if tt.wantStored {
++				if len(f.stored) != 1 || string(f.stored[0]) != decisionEntryRecord {
++					t.Errorf("stored = %q; want one copy of the committed record %q", f.stored, decisionEntryRecord)
++				}
++			} else if len(f.stored) != 0 {
++				t.Errorf("stored = %q; want nothing stored", f.stored)
++			}
++			for _, asked := range f.askedRows {
++				if asked != f.status.CurrentProducer {
++					t.Errorf("pastApproval asked about row %q; want the run's row %q", asked, f.status.CurrentProducer)
++				}
++			}
++			if len(f.askedRows) == 0 {
++				t.Error("pastApproval was never asked; want it asked about the run's current row")
++			}
++			got, hasError := envelope.RequireOK(t, out.String()).Raw["record_store_error"].(string)
++			if hasError != (len(tt.wantError) > 0) {
++				t.Fatalf("record_store_error = %q (present %t); want present %t", got, hasError, len(tt.wantError) > 0)
++			}
++			for _, w := range tt.wantError {
++				if !strings.Contains(got, w) {
++					t.Errorf("record_store_error %q lacks %q", got, w)
++				}
++			}
++			for _, w := range tt.notWant {
++				if strings.Contains(got, w) {
++					t.Errorf("record_store_error %q contains %q", got, w)
++				}
++			}
++		})
+ 	}
+ }
+ 
+@@ -1257,6 +1520,8 @@ func TestDecisionVerb_AmendsPlan(t *testing.T) {
+ 		wantCommits      int
+ 		wantAmendCommits int
+ 		wantCommitError  bool
++		// wantStores is how many times the committed record is copied onto the board entry.
++		wantStores int
+ 	}{
+ 		{
+ 			name:       "ApprovedPlan_LandsEntryAndTitleInOneCommit",
+@@ -1393,6 +1658,27 @@ func TestDecisionVerb_AmendsPlan(t *testing.T) {
+ 			want:       []string{"index locked", "head boom", "way forward:", "lym fabric commit"},
+ 			wantTitles: []string{title}, entry: true, wantCommits: 1,
+ 		},
++		{
++			name: "CommitErrorWithHeadHoldingBothAtPastRow_StoresTheCommittedRecord",
++			setup: func(t *testing.T, f *decisionFake) {
++				f.atPastRow("Drift-Baseline")
++				f.commitErr = errors.New("index locked")
++				f.committedCopy, f.committedFound = []byte(decisionEntryRecord), true
++				f.amendCommittedCopy, f.amendCommittedFound = amendmentBytesAfterCall(t, f, title), true
++			},
++			wantTitles: []string{title}, entry: true, wantCommits: 1, wantCommitError: true, wantStores: 1,
++		},
++		{
++			name: "StatusCommitLandedAmendmentWithoutEntryAtPastRow_NamesStoreAfterFabricCommit",
++			setup: func(_ *testing.T, f *decisionFake) {
++				f.atPastRow("Drift-Baseline")
++				f.commitErr = errors.New("index locked")
++				f.statusCommitLanded = true
++				f.committedCopy, f.committedFound = []byte(decisionPriorRecord), true
++			},
++			want:       []string{"without the entry", "lym fabric commit", `then "lym loom decision store" once`},
++			wantTitles: []string{title}, entry: true, wantCommits: 1,
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -1461,6 +1747,9 @@ func TestDecisionVerb_AmendsPlan(t *testing.T) {
+ 			if f.commits != tt.wantCommits || f.amendCommits != tt.wantAmendCommits {
+ 				t.Errorf("record commits = %d, amendment commits = %d; want %d and %d", f.commits, f.amendCommits, tt.wantCommits, tt.wantAmendCommits)
+ 			}
++			if len(f.stored) != tt.wantStores || (tt.wantStores > 0 && string(f.stored[0]) != string(f.committedCopy)) {
++				t.Errorf("stored = %q; want %d copies of the committed record", f.stored, tt.wantStores)
++			}
+ 		})
+ 	}
+ 
+diff --git a/internal/loomcli/discussionrecord.go b/internal/loomcli/discussionrecord.go
+new file mode 100644
+index 00000000..dbdf3a80
+--- /dev/null
++++ b/internal/loomcli/discussionrecord.go
+@@ -0,0 +1,43 @@
++// discussionrecord.go copies a run's Discussion decision record onto its board entry: the one store call loomcli makes, and the Discussion approval seam that uses it.
++
++package loomcli
++
++import (
++	"errors"
++	"fmt"
++	"os"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/loomengine"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++)
++
++// storeDecisionRecord opens the hub board and stores record as the decision record of the entry slug.
++// It is the only place loom opens the board to store a record.
++// A done entry's refusal matches boardengine.ErrRecordEntryDone under errors.Is.
++func storeDecisionRecord(location *lymcwd.Location, slug string, record []byte) error {
++	board, err := boardengine.OpenHub(location.HubPath)
++	if err != nil {
++		return err
++	}
++	return board.StoreDecisionRecord(slug, record)
++}
++
++// approveDiscussion is the body of Discussion-Bouncer's approve seam: it stores the working copy of the discussion decision record, which the approval commit then lands, on the board entry of the run.
++// A read error, or a store error other than a done entry, is returned so the settle fails and a resume stores again.
++// A done entry keeps the record it last stored and nothing a resume does can change that, so its refusal is logged at Warn and the settle goes on.
++func approveDiscussion(location *lymcwd.Location, runID string) error {
++	record, err := os.ReadFile(loomengine.DiscussionDecisionRecord(location))
++	if err != nil {
++		return fmt.Errorf("read the decision record to store on the board entry: %w; way forward: restore the record at %s, then resume the run", err, loomengine.DiscussionDecisionRecordRel())
++	}
++	slug := shedrun.ResolveRunID(location, runID)
++	err = storeDecisionRecord(location, slug, record)
++	if errors.Is(err, boardengine.ErrRecordEntryDone) {
++		logger.Warn("loom: the board entry has landed, so its decision record was not stored", "slug", slug, "error", err)
++		return nil
++	}
++	return err
++}
+diff --git a/internal/loomcli/discussionrecord_integration_test.go b/internal/loomcli/discussionrecord_integration_test.go
+new file mode 100644
+index 00000000..3ce655e3
+--- /dev/null
++++ b/internal/loomcli/discussionrecord_integration_test.go
+@@ -0,0 +1,96 @@
++// discussionrecord_integration_test.go drives the Discussion approve seam against a real hub pair and its hub board.
++
++package loomcli
++
++import (
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/loomengine"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestApproveDiscussion_Real drives approveDiscussion over one real pair per row, each with its own board entry, and asserts what the seam stores and when it fails.
++// It is serial because it sets the board skip variable, which is process-global.
++func TestApproveDiscussion_Real(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Setenv("BOARD_SKIP_GIT", "1")
++	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++
++	const record = "# Decision record\n\nThe approved decisions.\n"
++	tests := []struct {
++		name         string
++		slug         string
++		withEntry    bool
++		markDone     bool
++		withRecord   bool
++		wantErr      string
++		wantStored   bool
++		wantFileKept bool
++	}{
++		{"StoresTheWorkingCopyAndFlagsTheEntry", "stores", true, false, true, "", true, true},
++		{"DoneEntryPassesWithoutStoring", "landed", true, true, true, "", false, false},
++		{"AbsentEntryFailsTheSettle", "noentry", false, false, true, "lym board upsert", false, false},
++		{"MissingWorkingCopyFailsTheSettle", "norecord", true, false, false, "read the decision record", false, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			hubforge.AddPair(t, hub, tt.slug)
++			location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(tt.slug))
++			if err != nil {
++				t.Fatalf("ResolveWorktree() error = %v; want nil", err)
++			}
++			board, err := boardengine.OpenHub(location.HubPath)
++			if err != nil {
++				t.Fatalf("OpenHub() error = %v; want nil", err)
++			}
++			if tt.withEntry {
++				if _, err := board.UpsertTask(map[string]any{"slug": tt.slug, "title": "Approve", "kind": "task", "labels": []string{"bug"}}); err != nil {
++					t.Fatalf("UpsertTask() error = %v; want nil", err)
++				}
++			}
++			if tt.markDone {
++				done := "done"
++				if err := board.SetStatus(tt.slug, &done); err != nil {
++					t.Fatalf("SetStatus(done) error = %v; want nil", err)
++				}
++			}
++			if tt.withRecord {
++				path := loomengine.DiscussionDecisionRecord(location)
++				if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++					t.Fatalf("MkdirAll() error = %v; want nil", err)
++				}
++				if err := os.WriteFile(path, []byte(record), 0o644); err != nil {
++					t.Fatalf("WriteFile() error = %v; want nil", err)
++				}
++			}
++
++			err = approveDiscussion(location, shedrun.SelfRunID)
++			if tt.wantErr == "" && err != nil {
++				t.Fatalf("approveDiscussion() error = %v; want nil", err)
++			}
++			if tt.wantErr != "" && (err == nil || !strings.Contains(err.Error(), tt.wantErr)) {
++				t.Fatalf("approveDiscussion() error = %v; want it to contain %q", err, tt.wantErr)
++			}
++
++			got, found, err := board.DecisionRecord(tt.slug)
++			if err != nil {
++				t.Fatalf("DecisionRecord() error = %v; want nil", err)
++			}
++			if found != tt.wantStored || (found && string(got) != record) {
++				t.Errorf("DecisionRecord() = %q, %v; want stored = %v with the working copy's bytes", got, found, tt.wantStored)
++			}
++			_, statErr := os.Stat(filepath.Join(fabricengine.BoardDir(location.HubPath), "decision-"+tt.slug+".md"))
++			if (statErr == nil) != tt.wantFileKept {
++				t.Errorf("record file present = %v; want %v", statErr == nil, tt.wantFileKept)
++			}
++		})
++	}
++}
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 5d041a37..7ad51fdc 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -17,6 +17,8 @@
+ // `wireLanding`, which both the `run` and `step` building paths pass through and `status` and `pause` never do, fills the session's start and stop, its liveness and its process registration as for PR-Review's session, and the watch on the row's record that wakes the wait.
+ // A run's decision record follows its recipe's rows through `runRecordOf`: a recipe with a Beam-Await row keeps the beam's project record under the beam's slug, and every other recipe the discussion record.
+ // A task run's review rows are told its record as the PATTERN declaration path, a beam's project record declares none, and a loom recipe holds a landing's escalate halt for the arbiter first.
++// Discussion-Bouncer's approve seam stores the approved decision record on the run's board entry through the one `storeDecisionRecord` helper, logging and passing a done entry and failing the settle on any other store failure.
++// `decision add` copies the committed record onto the board entry after its commit once the run is past that approval, reporting a failed copy as `record_store_error` and never failing the verb, and `decision store` makes the same copy by hand, admitting the unnamed shell, the run's arbiter and its parent orch.
+ //
+ // `wire` fills `Env.GateFixer` for every recipe through `gateFixerSeam`, which wraps the gate of a Darn-Write, Plan-Write or Discussion-Write row whose `fixer` element names a model-spec, so a failure at the writer's idle boundary goes to a cold fixer before the writer hears of it.
+ // The seam returns the spec unchanged on the prime and outside a hub, where no pair owns a fixer.
+@@ -310,6 +312,12 @@
+ // They resolve the location through `lymcwd` in the group's own pre-run, as the `review` and `decision` groups do; every loom verb is hub-only, so `internal/cliwire` does not apply.
+ // A bare `lym loom peers` outside a lym worktree lists the group's verbs instead of resolving.
+ //
++// # Decision add --from
++//
++// `lym loom decision add --from <file>` reads a JSON array of objects with the keys `title`, `decision`, `rationale` and optionally `pattern_entry`, `pattern_action` and `pattern_text`.
++// `--by` and `--amends-plan` apply to every entry, and all entries land in one write and one commit, or none does.
++// Each live agent gets one notice naming the headings (`headings`), and two entries may not share a title or a PATTERN entry.
++//
+ // # Decision amends-plan
+ //
+ // `lym loom decision add --amends-plan` records a decision that amends the approved plan:
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index 9ab17689..42ff21e6 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -856,6 +856,9 @@ func (c *loomCLI) wire(location *lymcwd.Location, cwd string) error {
+ 		ApprovePlan: func() error {
+ 			return planparser.SetApproved(planparser.PlanDir(location.AnchorPath()))
+ 		},
++		// ApproveDiscussion copies the discussion decision record onto the run's board entry on Discussion-Bouncer's approved settle, before its commit seam.
++		// Storing is idempotent, so the failed-settle resume path converges.
++		ApproveDiscussion: func() error { return approveDiscussion(location, c.runID) },
+ 		// CarryOver files each review segment's still-open findings in the decision record and commits that record alone, so no other dirty file rides along.
+ 		CarryOver: func(entry discussionparser.CarryOver) error { return writeCarryOver(location, entry) },
+ 		// The subject seams tell each Bouncer row what its segment judges, so a re-entry over an unchanged subject settles without a review.
+diff --git a/internal/loomrecipe/approveseam_test.go b/internal/loomrecipe/approveseam_test.go
+index 211e1b8d..210a9ee6 100644
+--- a/internal/loomrecipe/approveseam_test.go
++++ b/internal/loomrecipe/approveseam_test.go
+@@ -18,15 +18,18 @@
+ package loomrecipe
+ 
+ import (
++	"fmt"
++	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/contracts/recipes"
+ 	"github.com/Knatte18/loomyard/internal/loomshed"
+ 	"github.com/Knatte18/loomyard/internal/shedbuild"
++	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestShippedRecipe_SeamsWiredOnPlanBouncerOnly parses the real embedded recipes.TapestryRecipe and asserts each seam key's shipped shape: approve_seam: plan and skip_seam: rework-exempt sit on the Plan-Bouncer row, approve_seam: merge and skip_seam: merge-overlap sit on the Merge-Bouncer row, and no other row carries either key, and require_approved is present on no row at all -- the key is no longer recognized by any registry entry now that both rows sharing the old PlanValidate engine are deleted, and a row carrying it would fail construction outright rather than silently doing nothing.
++// TestShippedRecipe_SeamsWiredOnPlanBouncerOnly parses the real embedded recipes.TapestryRecipe and asserts each seam key's shipped shape: approve_seam: plan and skip_seam: rework-exempt sit on the Plan-Bouncer row, approve_seam: discussion sits on the Discussion-Bouncer row, and no other row carries either key, and require_approved is present on no row at all -- the key is no longer recognized by any registry entry now that both rows sharing the old PlanValidate engine are deleted, and a row carrying it would fail construction outright rather than silently doing nothing.
+ //
+ //testtiming:keep pins which shipped rows carry approve_seam and skip_seam, which TestApproveSeam_FailsToBuild never reads off the shipped recipe
+ func TestShippedRecipe_SeamsWiredOnPlanBouncerOnly(t *testing.T) {
+@@ -48,7 +51,7 @@ func TestShippedRecipe_SeamsWiredOnPlanBouncerOnly(t *testing.T) {
+ 		// want maps each row that carries the key to its shipped value.
+ 		want map[string]string
+ 	}{
+-		{"approve_seam", map[string]string{loomshed.NamePlanBouncer: "plan"}},
++		{"approve_seam", map[string]string{loomshed.NamePlanBouncer: "plan", loomshed.NameDiscussionBouncer: "discussion"}},
+ 		{"skip_seam", map[string]string{loomshed.NamePlanBouncer: "rework-exempt"}},
+ 	}
+ 	for _, seam := range seams {
+@@ -92,7 +95,7 @@ func approveSeamFixture(approveSeam string) string {
+ 		approveSeamLine
+ }
+ 
+-// TestApproveSeam_FailsToBuild parses a one-row recipe naming approve_seam on a Bouncer row and builds it, asserting Build fails for a nil Env.ApprovePlan under approve_seam: plan -- a present approve_seam key is guarded by requireSeam on env.ApprovePlan exactly as commit_seam is guarded on env.CommitPlan/env.CommitDiscussion, so a document naming the key against a nil seam must never silently build a Bouncer whose Approve closure is nil -- and for a value bouncerEntry does not recognize: approve_seam names env.ApprovePlan and nothing else, so any value other than "plan" is a build-time error, not a silently-ignored key.
++// TestApproveSeam_FailsToBuild parses a one-row recipe naming approve_seam on a Bouncer row and builds it, asserting Build fails for a nil Env.ApprovePlan under approve_seam: plan -- a present approve_seam key is guarded by requireSeam on env.ApprovePlan exactly as commit_seam is guarded on env.CommitPlan/env.CommitDiscussion, so a document naming the key against a nil seam must never silently build a Bouncer whose Approve closure is nil -- and for a value bouncerEntry does not recognize: approve_seam accepts "plan" and "discussion", so any other value is a build-time error, not a silently-ignored key.
+ func TestApproveSeam_FailsToBuild(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -102,7 +105,7 @@ func TestApproveSeam_FailsToBuild(t *testing.T) {
+ 		nilClosure  bool
+ 	}{
+ 		{"nil Env.ApprovePlan", "plan", true},
+-		{"unrecognized value", "discussion", false},
++		{"unrecognized value", "webster", false},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -123,3 +126,72 @@ func TestApproveSeam_FailsToBuild(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// discussionApproveSeamFault returns the first way parsed breaks the discussion approve-seam rule, or "" when it keeps it.
++// The rule: the row that approves the discussion carries approve_seam: discussion, and no other Bouncer row does.
++func discussionApproveSeamFault(parsed shedbuild.Recipe) string {
++	approvalRow, _ := discussionApprovalRow(parsed)
++	for _, row := range parsed.Producers {
++		if row.Engine != bouncerEngine {
++			continue
++		}
++		carries := row.Config["approve_seam"] == "discussion"
++		switch {
++		case row.Name == approvalRow && !carries:
++			return fmt.Sprintf("row %q approves the discussion but carries no approve_seam: discussion", row.Name)
++		case row.Name != approvalRow && carries:
++			return fmt.Sprintf("row %q carries approve_seam: discussion but does not approve the discussion", row.Name)
++		}
++	}
++	return ""
++}
++
++// TestDiscussionApprovalRowsCarryApproveSeam pins the rule discussionApproveSeamFault judges over every embedded loom recipe, and over two fixtures that break it.
++func TestDiscussionApprovalRowsCarryApproveSeam(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	for _, recipe := range []string{shedrun.RecipeTapestry, shedrun.RecipeDarn, shedrun.RecipePawl, shedrun.RecipeSampler} {
++		isLoom, err := IsLoom(recipe)
++		if err != nil || !isLoom {
++			continue
++		}
++		parsed, err := parseEmbeddedRecipe(recipe)
++		if err != nil {
++			t.Fatalf("parseEmbeddedRecipe(%q) error = %v; want nil", recipe, err)
++		}
++		if fault := discussionApproveSeamFault(parsed); fault != "" {
++			t.Errorf("recipe %q: %s; want the rule kept", recipe, fault)
++		}
++	}
++
++	faults := []struct {
++		name    string
++		recipe  string
++		wantHas string
++	}{
++		{"ApprovalRowWithoutTheKey", "version: 1\n" +
++			"entry: Fixture-Write\n" +
++			"terminals: [Fixture-Bouncer]\n" +
++			"producers:\n" +
++			"  - name: Fixture-Write\n" +
++			"    engine: DiscussionWrite\n" +
++			"    on_done: Fixture-Bouncer\n" +
++			"  - name: Fixture-Bouncer\n" +
++			"    engine: Bouncer\n" +
++			"    segment: Fixture-Review\n", "approves the discussion but carries no"},
++		{"CodeBouncerWithTheKey", approveSeamFixture("discussion"), "does not approve the discussion"},
++	}
++	for _, tt := range faults {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			parsed, err := shedbuild.Parse([]byte(tt.recipe))
++			if err != nil {
++				t.Fatalf("shedbuild.Parse() error = %v; want nil", err)
++			}
++			if fault := discussionApproveSeamFault(parsed); !strings.Contains(fault, tt.wantHas) {
++				t.Errorf("discussionApproveSeamFault() = %q; want it to contain %q", fault, tt.wantHas)
++			}
++		})
++	}
++}
+diff --git a/internal/loomrecipe/discussionapproval.go b/internal/loomrecipe/discussionapproval.go
+new file mode 100644
+index 00000000..68dfab6f
+--- /dev/null
++++ b/internal/loomrecipe/discussionapproval.go
+@@ -0,0 +1,75 @@
++// discussionapproval.go — a recipe's discussion approval row and the test of whether a run stands past it.
++//
++// Both answers are read from the recipe's own rows, never from its name.
++
++package loomrecipe
++
++import "github.com/Knatte18/loomyard/internal/shedbuild"
++
++// discussionWriteEngine is the engine of the row that writes a recipe's discussion.
++const discussionWriteEngine = "DiscussionWrite"
++
++// discussionApprovalRow returns the name of the row that approves parsed's discussion: the row its DiscussionWrite row's on_done names, when that row's engine is the Bouncer.
++// It reports false for a recipe with no DiscussionWrite row, and for one whose DiscussionWrite row hands to a row that is not a Bouncer.
++func discussionApprovalRow(parsed shedbuild.Recipe) (string, bool) {
++	for _, row := range parsed.Producers {
++		if row.Engine != discussionWriteEngine {
++			continue
++		}
++		for _, next := range parsed.Producers {
++			if next.Name == row.OnDone && next.Engine == bouncerEngine {
++				return next.Name, true
++			}
++		}
++		return "", false
++	}
++	return "", false
++}
++
++// DiscussionApprovalRow returns the name of the row that approves the named recipe's discussion, and reports whether the recipe has one.
++// An empty recipe name reads as the tapestry recipe, and a name that selects no embedded recipe is refused.
++func DiscussionApprovalRow(recipe string) (string, bool, error) {
++	parsed, err := parseEmbeddedRecipe(recipe)
++	if err != nil {
++		return "", false, err
++	}
++	row, hasRow := discussionApprovalRow(parsed)
++	return row, hasRow, nil
++}
++
++// PastDiscussionApproval reports whether a run of the named recipe standing at currentRow is past its discussion approval, and whether the recipe has an approval row at all.
++// hasRow is false, and past false, for a recipe with no approval row.
++// Otherwise a run is past when currentRow, mapped through RetiredRows, is a row of the recipe after every row of the approval row's segment.
++// An empty currentRow, a row before or inside that segment, and a row the recipe does not hold are not past.
++// Only the recipe's own rows are read, so a row inside another recipe's sub-run block is never reached.
++// An empty recipe name reads as the tapestry recipe, and a name that selects no embedded recipe is refused.
++func PastDiscussionApproval(recipe, currentRow string) (past, hasRow bool, err error) {
++	parsed, err := parseEmbeddedRecipe(recipe)
++	if err != nil {
++		return false, false, err
++	}
++	approvalRow, hasRow := discussionApprovalRow(parsed)
++	if !hasRow {
++		return false, false, nil
++	}
++
++	segment := ""
++	for _, row := range parsed.Producers {
++		if row.Name == approvalRow {
++			segment = row.Segment
++		}
++	}
++	lastApprovalIndex, currentIndex := -1, -1
++	if mapped, retired := RetiredRows(recipe)[currentRow]; retired {
++		currentRow = mapped
++	}
++	for i, row := range parsed.Producers {
++		if row.Name == approvalRow || (segment != "" && row.Segment == segment) {
++			lastApprovalIndex = i
++		}
++		if currentRow != "" && row.Name == currentRow {
++			currentIndex = i
++		}
++	}
++	return currentIndex > lastApprovalIndex, true, nil
++}
+diff --git a/internal/loomrecipe/discussionapproval_test.go b/internal/loomrecipe/discussionapproval_test.go
+new file mode 100644
+index 00000000..4310982a
+--- /dev/null
++++ b/internal/loomrecipe/discussionapproval_test.go
+@@ -0,0 +1,103 @@
++// discussionapproval_test.go — tests for a recipe's discussion approval row and the past-the-approval judgment.
++
++package loomrecipe
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/shedbuild"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestPastDiscussionApproval pins the approval row each recipe answers and which rows of a run count as past it.
++func TestPastDiscussionApproval(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	t.Run("ApprovalRow", func(t *testing.T) {
++		t.Parallel()
++		tests := []struct {
++			recipe  string
++			wantRow string
++			wantHas bool
++		}{
++			{shedrun.RecipeTapestry, "Discussion-Bouncer", true},
++			{"", "Discussion-Bouncer", true},
++			{shedrun.RecipeDarn, "", false},
++		}
++		for _, tt := range tests {
++			row, has, err := DiscussionApprovalRow(tt.recipe)
++			if err != nil || row != tt.wantRow || has != tt.wantHas {
++				t.Errorf("DiscussionApprovalRow(%q) = %q, %v, %v; want %q, %v, nil", tt.recipe, row, has, err, tt.wantRow, tt.wantHas)
++			}
++		}
++	})
++
++	t.Run("PastTheApproval", func(t *testing.T) {
++		t.Parallel()
++		tests := []struct {
++			name    string
++			recipe  string
++			row     string
++			want    bool
++			wantHas bool
++		}{
++			{"BeforeTheSegment_Preflight", shedrun.RecipeTapestry, "Preflight", false, true},
++			{"BeforeTheSegment_DiscussionWrite", shedrun.RecipeTapestry, "Discussion-Write", false, true},
++			{"TheApprovalRow", shedrun.RecipeTapestry, "Discussion-Bouncer", false, true},
++			{"InsideTheSegment_Review", shedrun.RecipeTapestry, "Discussion-Burler-Review", false, true},
++			{"InsideTheSegment_Fix", shedrun.RecipeTapestry, "Discussion-Burler-Fix", false, true},
++			{"NoStatusFile", shedrun.RecipeTapestry, "", false, true},
++			{"RowTheRecipeLacks", shedrun.RecipeTapestry, "No-Such-Row", false, true},
++			{"AfterTheSegment_DriftBaseline", shedrun.RecipeTapestry, "Drift-Baseline", true, true},
++			{"AfterTheSegment_PlanWrite", shedrun.RecipeTapestry, "Plan-Write", true, true},
++			{"AfterTheSegment_CodeBouncer", shedrun.RecipeTapestry, "Code-Bouncer", true, true},
++			{"RetiredRowMapsToItsReplacement", shedrun.RecipeTapestry, "Merge-In", true, true},
++			{"DarnHasNoApprovalRow", shedrun.RecipeDarn, "Darn-Write", false, false},
++			{"PawlHasNoApprovalRow", shedrun.RecipePawl, "Finalize", false, false},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				past, has, err := PastDiscussionApproval(tt.recipe, tt.row)
++				if err != nil || past != tt.want || has != tt.wantHas {
++					t.Errorf("PastDiscussionApproval(%q, %q) = %v, %v, %v; want %v, %v, nil", tt.recipe, tt.row, past, has, err, tt.want, tt.wantHas)
++				}
++			})
++		}
++	})
++
++	t.Run("UnknownRecipeRefused", func(t *testing.T) {
++		t.Parallel()
++		if _, _, err := PastDiscussionApproval("no-such-recipe", "Preflight"); err == nil {
++			t.Errorf("PastDiscussionApproval(unknown recipe) error = nil; want a refusal")
++		}
++		if _, _, err := DiscussionApprovalRow("no-such-recipe"); err == nil {
++			t.Errorf("DiscussionApprovalRow(unknown recipe) error = nil; want a refusal")
++		}
++	})
++
++	t.Run("RecipeWithoutAnApprovingBouncerAnswersNoRow", func(t *testing.T) {
++		t.Parallel()
++		tests := []struct {
++			name string
++			yaml string
++		}{
++			{"DiscussionWriteHandsToANonBouncer", "version: 1\nentry: Write\nterminals: [Next]\nproducers:\n" +
++				"  - name: Write\n    engine: DiscussionWrite\n    on_done: Next\n" +
++				"  - name: Next\n    engine: Preflight\n"},
++			{"NoDiscussionWriteRow", "version: 1\nentry: Only\nterminals: [Only]\nproducers:\n" +
++				"  - name: Only\n    engine: Preflight\n"},
++		}
++		for _, tt := range tests {
++			parsed, err := shedbuild.Parse([]byte(tt.yaml))
++			if err != nil {
++				t.Fatalf("%s: shedbuild.Parse: %v", tt.name, err)
++			}
++			if row, has := discussionApprovalRow(parsed); has {
++				t.Errorf("%s: discussionApprovalRow = %q, true; want false", tt.name, row)
++			}
++		}
++	})
++}
+diff --git a/internal/loomrecipe/doc.go b/internal/loomrecipe/doc.go
+index b76120b7..2cc4ba41 100644
+--- a/internal/loomrecipe/doc.go
++++ b/internal/loomrecipe/doc.go
+@@ -40,6 +40,10 @@
+ // IsLoom, HasEngine, RecordEngine, VerifySource and RetiredRows answer a recipe's contract, engines, record engine, verify source and retired rows by recipe name, so a consumer reads the recipe's rows and keys instead of comparing its name.
+ // An empty recipe name reads as the tapestry recipe, and a name that selects no embedded recipe is refused.
+ //
++// DiscussionApprovalRow answers the row that approves a recipe's discussion: the Bouncer row the DiscussionWrite row hands to, and none for a recipe without one.
++// PastDiscussionApproval answers whether a run standing at a row, mapped through RetiredRows, is past that approval: its row follows every row of the approval row's segment.
++// Both read the recipe's own rows and never its name, so darn, sampler and pawl answer no approval row; a row inside another task's sub-run block is not reached.
++//
+ // GateFixerSetting answers which setting a writer row's gate element names for its cold fixer's model-spec, so a caller reads whether a row's fixer is on from the recipe's own `fixer` key rather than from a row name.
+ //
+ // CodePerchGate answers the entry gate of a recipe's Code-Review Bouncer row, built over a told Env, and nil for a recipe whose perch carries none (tapestry, darn, pawl):
+diff --git a/internal/loomrecipe/sequence_test.go b/internal/loomrecipe/sequence_test.go
+index c7ec89c7..b5c533d9 100644
+--- a/internal/loomrecipe/sequence_test.go
++++ b/internal/loomrecipe/sequence_test.go
+@@ -94,7 +94,11 @@ func TestSequence_FullRunBlocksAtMergeIn(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	anchorPath, env, paths := buildSequenceFixture(t)
+ 
+-	var commitDiscussionCalls, commitPlanCalls int
++	var commitDiscussionCalls, commitPlanCalls, approveDiscussionCalls int
++	env.ApproveDiscussion = func() error {
++		approveDiscussionCalls++
++		return nil
++	}
+ 	env.CommitDiscussion = func() error {
+ 		commitDiscussionCalls++
+ 		return nil
+@@ -189,6 +193,10 @@ func TestSequence_FullRunBlocksAtMergeIn(t *testing.T) {
+ 		t.Errorf("loom shuttle ran %d discussion sessions; want none on the seat engine", spawns)
+ 	}
+ 
++	if approveDiscussionCalls != 1 {
++		t.Errorf("ApproveDiscussion calls = %d; want exactly 1 after a clean run (Discussion-Bouncer's approved settle)", approveDiscussionCalls)
++	}
++
+ 	// This is the scenario proof that the Plan-Bouncer commit_seam is genuinely reached through a
+ 	// real Shed run: both the Plan-Write row's own commit and the Plan-Bouncer row's approval commit
+ 	// invoke CommitPlan, so the count is 2, not 1.
+diff --git a/internal/shedrecipe/entries_bouncer.go b/internal/shedrecipe/entries_bouncer.go
+index 424d032a..1eb2cdf4 100644
+--- a/internal/shedrecipe/entries_bouncer.go
++++ b/internal/shedrecipe/entries_bouncer.go
+@@ -27,7 +27,7 @@ func rolePrefixKey(entry string, cfg Config) (string, error) {
+ 	return prefix, nil
+ }
+ 
+-// bouncerEntry is the Constructor for the "Bouncer" registry row: it validates cfg and env, joins and creates the run directory a segment's Bouncer, BurlerReview and BurlerFix rows share, resolves artifact_paths against env.AnchorPath, takes the row's seed and judge models from its segment's Bouncer pair and its hard cap from the segment's HardMaxBounces, resolves the optional commit_seam key to one of env.CommitPlan or env.CommitDiscussion, resolves the optional approve_seam key to env.ApprovePlan, resolves the optional skip_seam key to env.SkipPlanReview, reads the optional boolean zero_rounds key (default false; true makes the Bouncer settle approved at once over any skip_seam, and the recipe declares it on no row because loomrecipe stamps it), reads the optional boolean blocking_escalates key (default false), the optional boolean escalate_decisions key (default false; true makes a judged round whose review holds a decision-class finding escalate to the run's parent) and the optional color_segment and role_prefix keys, reads the optional carry_over key, the segment name that selects env.CarryOver, resolves the optional subject key ("document" or "code") to the Env subject seams it names and tells the Bouncer the segment's amendment allowance, reads the optional boolean cluster_excludes key (default false) telling the judge whether its partner BurlerReview row has a cluster fan, reads the optional reviewer_fan_setting key, a module.key setting reference whose list is the per-round fan list when it names a fan, reads the optional auto_accept_setting key, a module.key setting reference whose bool is the auto-accept flag (false for an absent key or a null), and returns shedadapters.NewBouncer(cfg).
++// bouncerEntry is the Constructor for the "Bouncer" registry row: it validates cfg and env, joins and creates the run directory a segment's Bouncer, BurlerReview and BurlerFix rows share, resolves artifact_paths against env.AnchorPath, takes the row's seed and judge models from its segment's Bouncer pair and its hard cap from the segment's HardMaxBounces, resolves the optional commit_seam key to one of env.CommitPlan or env.CommitDiscussion, resolves the optional approve_seam key to one of env.ApprovePlan or env.ApproveDiscussion, resolves the optional skip_seam key to env.SkipPlanReview, reads the optional boolean zero_rounds key (default false; true makes the Bouncer settle approved at once over any skip_seam, and the recipe declares it on no row because loomrecipe stamps it), reads the optional boolean blocking_escalates key (default false), the optional boolean escalate_decisions key (default false; true makes a judged round whose review holds a decision-class finding escalate to the run's parent) and the optional color_segment and role_prefix keys, reads the optional carry_over key, the segment name that selects env.CarryOver, resolves the optional subject key ("document" or "code") to the Env subject seams it names and tells the Bouncer the segment's amendment allowance, reads the optional boolean cluster_excludes key (default false) telling the judge whether its partner BurlerReview row has a cluster fan, reads the optional reviewer_fan_setting key, a module.key setting reference whose list is the per-round fan list when it names a fan, reads the optional auto_accept_setting key, a module.key setting reference whose bool is the auto-accept flag (false for an absent key or a null), and returns shedadapters.NewBouncer(cfg).
+ func bouncerEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error) {
+ 	runSubdir, err := configString(cfg, "run_subdir", true)
+ 	if err != nil {
+@@ -112,7 +112,7 @@ func bouncerEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer
+ 
+ 	// commit_seam and approve_seam are two independent optional config keys: commit_seam names
+ 	// which of Env's two commit closures fills BouncerConfig.Commit, and approve_seam (below)
+-	// resolves to env.ApprovePlan and nothing else, filling BouncerConfig.Approve. Absent
++	// resolves to one of env.ApprovePlan or env.ApproveDiscussion, filling BouncerConfig.Approve. Absent
+ 	// leaves the resolved closure nil -- "no seam configured" is a legitimate configuration and
+ 	// never an error, which is what keeps every existing Bouncer row valid unchanged. A present
+ 	// key is guarded by requireSeam on the named Env field rather than assigned directly: without
+@@ -136,12 +136,10 @@ func bouncerEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer
+ 		return nil, fmt.Errorf("shedrecipe: Bouncer: config key %q must be %q or %q, got %q", "commit_seam", "plan", "discussion", commitSeam)
+ 	}
+ 
+-	// approve_seam names env.ApprovePlan and nothing else -- there is no discussion-side or
+-	// webster-side approval flag, so a second accepted value would be a hypothetical. It mirrors
+-	// commit_seam's switch one-for-one: absent leaves the resolved closure nil, which keeps every
+-	// existing Bouncer row valid unchanged, and a present key is guarded by requireSeam for the
+-	// same reason commit_seam's guard exists -- without it a nil Env closure would silently assign
+-	// a nil Approve, reproducing the exact no-seam condition this key exists to eliminate.
++	// approve_seam names env.ApprovePlan or env.ApproveDiscussion -- there is no webster-side approval, so a third accepted value would be a hypothetical.
++	// It mirrors commit_seam's switch one-for-one: absent leaves the resolved closure nil, which keeps every existing Bouncer row valid unchanged.
++	// A present key is guarded by requireSeam for the same reason commit_seam's guard exists:
++	// without it a nil Env closure would silently assign a nil Approve, reproducing the exact no-seam condition this key exists to eliminate.
+ 	var approve func() error
+ 	switch approveSeam {
+ 	case "":
+@@ -151,8 +149,13 @@ func bouncerEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer
+ 			return nil, err
+ 		}
+ 		approve = env.ApprovePlan
++	case "discussion":
++		if err := requireSeam("Bouncer", "ApproveDiscussion", env.ApproveDiscussion); err != nil {
++			return nil, err
++		}
++		approve = env.ApproveDiscussion
+ 	default:
+-		return nil, fmt.Errorf("shedrecipe: Bouncer: config key %q must be %q, got %q", "approve_seam", "plan", approveSeam)
++		return nil, fmt.Errorf("shedrecipe: Bouncer: config key %q must be %q or %q, got %q", "approve_seam", "plan", "discussion", approveSeam)
+ 	}
+ 
+ 	// skip_seam names env.SkipPlanReview (rework-exempt) and mirrors approve_seam: absent leaves BouncerConfig.Skip nil,
+diff --git a/internal/shedrecipe/entries_bouncer_test.go b/internal/shedrecipe/entries_bouncer_test.go
+index 424867df..b7f6a7dd 100644
+--- a/internal/shedrecipe/entries_bouncer_test.go
++++ b/internal/shedrecipe/entries_bouncer_test.go
+@@ -911,6 +911,39 @@ func TestBouncerEntry_ApproveSeam(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("DiscussionResolvesToApproveDiscussion", func(t *testing.T) {
++		env := newTestEnv(t)
++		env.Shuttle = judgeSeamShuttle()
++		writeStencil(t, env.StencilsDir, "bouncer-template-judge", "judge template, no markers\n")
++		approvePlanCalls, approveDiscussionCalls := 0, 0
++		env.ApprovePlan = func() error { approvePlanCalls++; return nil }
++		env.ApproveDiscussion = func() error { approveDiscussionCalls++; return nil }
++		cfg := minimalBouncerConfig(t, env)
++		cfg["approve_seam"] = "discussion"
++		layoutBouncerRound1Report(t, env)
++
++		producer, err := bouncerEntry(reviewRow("review-bounce"), cfg, env)
++		if err != nil {
++			t.Fatalf("bouncerEntry() error = %v; want nil", err)
++		}
++		if _, _, err := producer.Call(context.Background()); err != nil {
++			t.Fatalf("Call() error = %v; want nil", err)
++		}
++		if approveDiscussionCalls != 1 || approvePlanCalls != 0 {
++			t.Errorf("ApproveDiscussion/ApprovePlan call counts = %d/%d; want 1/0", approveDiscussionCalls, approvePlanCalls)
++		}
++	})
++
++	t.Run("NilApproveDiscussionRefused", func(t *testing.T) {
++		env := newTestEnv(t)
++		env.ApproveDiscussion = nil
++		cfg := minimalBouncerConfig(t, env)
++		cfg["approve_seam"] = "discussion"
++
++		_, err := bouncerEntry(reviewRow("review-bounce"), cfg, env)
++		assertErrContains(t, err, "ApproveDiscussion")
++	})
++
+ 	t.Run("RetiredMergeIsAnUnknownValue", func(t *testing.T) {
+ 		env := newTestEnv(t)
+ 		cfg := minimalBouncerConfig(t, env)
+@@ -945,11 +978,12 @@ func TestBouncerEntry_ApproveSeam(t *testing.T) {
+ 	t.Run("UnrecognisedValueIsConstructionError", func(t *testing.T) {
+ 		env := newTestEnv(t)
+ 		cfg := minimalBouncerConfig(t, env)
+-		cfg["approve_seam"] = "discussion"
++		cfg["approve_seam"] = "webster"
+ 
+ 		_, err := bouncerEntry(reviewRow("review-bounce"), cfg, env)
+ 		assertErrContains(t, err, "approve_seam")
+ 		assertErrContains(t, err, "plan")
++		assertErrContains(t, err, "discussion")
+ 	})
+ 
+ 	t.Run("PresentButMissingEnvClosureIsConstructionError", func(t *testing.T) {
+diff --git a/internal/shedrecipe/entries_gate.go b/internal/shedrecipe/entries_gate.go
+index a3656aef..6392228e 100644
+--- a/internal/shedrecipe/entries_gate.go
++++ b/internal/shedrecipe/entries_gate.go
+@@ -1,6 +1,6 @@
+ // entries_gate.go implements resolveGateSpec, the shared resolver every gate-capable entry calls to turn its row's "gates" Config key into a shuttleengine.GateSpec.
+ //
+-// Each element selects a validator by a declared name resolved against Env, exactly as bouncerEntry already resolves "commit_seam"/"approve_seam" against Env.CommitPlan/Env.CommitDiscussion/Env.ApprovePlan.
++// Each element selects a validator by a declared name resolved against Env, exactly as bouncerEntry already resolves "commit_seam"/"approve_seam" against Env.CommitPlan/Env.CommitDiscussion/Env.ApprovePlan/Env.ApproveDiscussion.
+ // Selecting the validator by switching on the row's own Name was rejected: that would make row
+ // names load-bearing in a second place beyond resume identity, where a renamed row would silently
+ // lose its gate rather than failing to build.
+diff --git a/internal/shedrecipe/recipe.go b/internal/shedrecipe/recipe.go
+index ca9472e0..336a28f8 100644
+--- a/internal/shedrecipe/recipe.go
++++ b/internal/shedrecipe/recipe.go
+@@ -251,6 +251,9 @@ type Env struct {
+ 	// entry. It is invoked on the approved branch of that producer's settle, before the commit
+ 	// seam.
+ 	ApprovePlan func() error
++	// ApproveDiscussion is the injected closure that copies the run's decision record onto its board entry, read by the Bouncer entry's approve_seam: discussion.
++	// It is invoked on the approved branch of that producer's settle, before the commit seam.
++	ApproveDiscussion func() error
+ 	// SkipPlanReview is the injected closure answering whether the live plan generation skips its Plan-Review judge, read by the Bouncer entry's skip_seam key.
+ 	// An error makes the Bouncer review for real.
+ 	SkipPlanReview func() (bool, error)
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index d2fb3a84..c7db19db 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -420,11 +420,12 @@ func FullEnv(t testing.TB) shedrecipe.Env {
+ 				}},
+ 			}, nil
+ 		},
+-		CommitParts:     func() error { return nil },
+-		CommitPartsPlan: func() error { return nil },
+-		ApprovePlan:     func() error { return nil },
+-		SkipPlanReview:  func() (bool, error) { return false, nil },
+-		CarryOver:       func(discussionparser.CarryOver) error { return nil },
++		CommitParts:       func() error { return nil },
++		CommitPartsPlan:   func() error { return nil },
++		ApprovePlan:       func() error { return nil },
++		ApproveDiscussion: func() error { return nil },
++		SkipPlanReview:    func() (bool, error) { return false, nil },
++		CarryOver:         func(discussionparser.CarryOver) error { return nil },
+ 		DocumentSubject: func([]string) (shedadapters.Subject, bool, error) {
+ 			return shedadapters.Subject{Kind: shedadapters.SubjectDocument, Hash: "document-hash"}, true, nil
+ 		},
+diff --git a/plugins/ly/skills/board/SKILL.md b/plugins/ly/skills/board/SKILL.md
+index 76d0f808..cb541c06 100644
+--- a/plugins/ly/skills/board/SKILL.md
++++ b/plugins/ly/skills/board/SKILL.md
+@@ -102,6 +102,9 @@ lym board rename '{"slug":"old-name","to":"new-name"}'
+ 
+ Prose is never rewritten: `mentions` lists the entries whose body or brief still name the old slug, so fix those by hand.
+ A claimed entry cannot be renamed.
++A discussed entry's decision record file moves with it. When that step fails the entry is still renamed, and the verb reports one of two errors:
++`rename moved the entry but not its decision record` names the record file left at the old slug's name, which the entry's next Discussion approval stores again under the new slug;
++`rename saved the entry, but the orphaned decision record ... could not be removed` names the file at the new slug's name, to remove by hand.
+ 
+ Find entries whose slug, title, brief or body contains the text, done entries included; `--label` narrows to entries carrying every named label and repeats:
+ 
+@@ -120,6 +123,14 @@ lym board list --label bug --label enhancement
+ lym board get '{"slug":"my-task"}'
+ ```
+ 
++A task whose run's Discussion was approved shows `"discussed": true` in `get`, and `--record` prints its stored decision record alone, verbatim:
++
++```
++lym board get '{"slug":"my-task"}' --record
++```
++
++`--record` refuses an absent entry, an entry that is not discussed, a discussed entry whose record file is missing, and `--body` beside it.
++
+ Remove every done entry:
+ 
+ ```
