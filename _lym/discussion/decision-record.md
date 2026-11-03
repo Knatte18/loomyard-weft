@@ -149,6 +149,18 @@ Decision: D6 stands with one departure: at Discussion approval, a store refused 
 
 Rationale: A done entry keeps the record it last stored and nothing a resume does can change that, so halting there helps no one; an absent entry or an unopenable board is a fault a resume can fix, so halting there keeps the record from being lost.
 
+### Added after Discussion (parent, 2026-11-03): A rename onto an orphan record removes it
+
+Decision: When a flagged entry is renamed and no record file exists at the old slug's name, a record file at the new slug's name is removed. A failed removal is reported as the rename's error after the save.
+
+Rationale: D4's own rationale: an orphaned file would otherwise read as the record of a later entry reusing the slug, so a flagged entry renamed onto an orphan decision-<new>.md would serve that orphan as its record.
+
+### Added after Discussion (parent, 2026-11-03): A resume after an accepted round does not store again
+
+Decision: D6's resume sentence holds for a converged, skipped and zero-round settle only. On an accepted round the accept is settled before the seam runs, so a failed store is not retried by the resume: the run re-enters Discussion-Review and the record is stored at the segment's next approval. lym loom decision store refuses such a run until then.
+
+Rationale: The accept settles before the store seam, and the store row sits inside Discussion-Review, so the run is not past the approval as card 6 judges it.
+
 ## Constraints
 
 - `PATTERN-tolerant-records`: `discussed` is a declared `Task` field; an older binary keeps it as an unknown key and keeps writing it back.
