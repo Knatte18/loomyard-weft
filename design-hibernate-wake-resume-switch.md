@@ -1,6 +1,6 @@
 # A wake from a lym hibernate lifts the pause only when a switch allows it
 
-`hibernate-wake-resume-switch` · Task · enhancement, hibernate, tender
+`hibernate-wake-resume-switch` · Task · enhancement, hibernate, tender · running · Worktree-Create
 
 ## Seen (operator, 2026-11-02)
 
