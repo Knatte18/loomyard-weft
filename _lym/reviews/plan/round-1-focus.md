@@ -1,0 +1,17 @@
+---
+round: 1
+focus:
+  - "Fidelity, cards 6, 7 and 8: the decision record's Notes name `internal/loomrecipe/recipekeys.go`'s retired rows and `internal/battencli/runsettings.go`'s profile lookups as sites where `arras` must be accepted. Does some card carry the retired-rows site, and does D8's 'every reader of a task's profile block resolves through one accessor' hold when card 8 changes only `prepareRunSettings`?"
+  - "Reachability, card 4: each Expand refusal names a test input. For the inlined `on_done`, `on_stuck` and `on_reroute` naming no row of its recipe, and the block row whose `on_done` names itself, does `Parse`, `checkRowShape` or another check ahead of `Expand` already reject that input? If so, name that check."
+  - "Reachability, card 5: the unexpanded-block-row refusal ahead of the loom contract check, and the `RoutingOf` refusal. Do the named inputs reach them, or does `Parse` or `Build` reject the input earlier?"
+  - "Test economy, cards 6 and 7: `TestBlockRecipes` asserts the built Discussion ring shape and a `New`-versus-`Routing` row agreement, and card 6 adds arras rows to `TestReviewBudget_AppliedByNewAndRouting` while card 7 adds an arras budget pass to `TestWire_DefaultConfig`. Which existing test already covers each of these, and which new rows repeat another card's assertion?"
+  - "Granularity, card 6: it bundles two recipe files, three constants, one embedded table and the expansion of every loomrecipe accessor. Is it one independently reviewable unit, or do the public constants and the accessor rewiring belong to separate cards? Check the `Create` entries that name private symbols (`embeddedRecipes`) against the public-surface rule."
+  - "Card order: cards 2, 6 and 7 each touch `coverageGuardAllowedUnreachableEngines`, `TestRecipeKeys` (cards 6 and 8) or `RecipeNames`. Does any card depend on something a later card does, including card 7's `Uses` of `NameMotif` and card 9's `Uses` of `RecipeRow` fields?"
+  - "Re-sign arrow and member glyphs on `Edit` cards: for each Edit glyph whose Intent changes parameters, results or receiver (for example `parseEmbeddedRecipe`, `checklistVisitsOf`, `prepareRunSettings`, `arbiterRecipeDescription`, `recipeList`), is the arrow present, and do the Edit cards that list only `doc.go` files for symbol-level changes list the member glyphs?"
+  - "Attack surface, cards 2 and 4: `always` is a block gate that enters unconditionally, and a goto bypasses a block gate. Does the card that introduces each state in its Intent what it can skip or let through and what bounds it?"
+  - "Extends versus Edit: `Extends` targets in cards 1, 2 and 4 (`loom-status-spec.md`, `internal/shedrecipe/doc.go`, `pattern/PATTERN-shed-recipe-registry.md`, `internal/shedbuild/doc.go`). Does any of them rewrite or reorder content already in the ref, which belongs under `Edit`? Card 2's rewrite of the registry doc comment and file header is the case to check."
+  - "PATTERN fit, card 2: the rewritten `PATTERN-shed-recipe-registry` entry in `PATTERN.md` and the `Block` producer against the other `PATTERN-*` entries named in the decision record's Constraints (`PATTERN-sole-parsers`, `PATTERN-named-constants`, `PATTERN-tolerant-records`, `PATTERN-shed-driver`). Does any card break one of them?"
+---
+
+Seed focus for round 1, set from the decision record and the nine cards.
+Each entry names a place to look and a question to settle; none states a verdict.
