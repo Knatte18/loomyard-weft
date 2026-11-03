@@ -1,11 +1,11 @@
 {
-  "current_producer": "Parent-Align",
+  "current_producer": "Beam-Describe",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Parent-Align",
-    "last": "Beam-Await → done",
+    "now": "Beam-Describe",
+    "last": "Parent-Align → done",
     "wait": ""
   },
   "history": [
@@ -32,6 +32,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-11-03T17:19:47Z"
+    },
+    {
+      "producer": "Parent-Align",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-03T17:28:45Z"
     }
   ],
   "product": {
