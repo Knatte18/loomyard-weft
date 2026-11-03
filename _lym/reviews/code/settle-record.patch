@@ -1,0 +1,312 @@
+diff --git a/internal/driftengine/await.go b/internal/driftengine/await.go
+index 3003fb97..171ba834 100644
+--- a/internal/driftengine/await.go
++++ b/internal/driftengine/await.go
+@@ -5,6 +5,8 @@ package driftengine
+ import (
+ 	"context"
+ 	"fmt"
++	"slices"
++	"strings"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+@@ -73,8 +75,9 @@ func (p *DriftAwait) await(ctx context.Context) (shedengine.Outcome, shedengine.
+ 		return "", shedengine.OutputPointer{}, err
+ 	}
+ 
++	rescope := captureFound && emptyUnderSkips(capture)
+ 	stuck := func(what string) (shedengine.Outcome, shedengine.OutputPointer, error) {
+-		return shedengine.Stuck, shedengine.OutputPointer{Reason: fmt.Sprintf("drift: %s; way forward: %s", what, awaitWaysForward(head == branchPoint))}, nil
++		return shedengine.Stuck, shedengine.OutputPointer{Reason: fmt.Sprintf("drift: %s; way forward: %s", what, awaitWaysForward(head == branchPoint, rescope))}, nil
+ 	}
+ 	switch {
+ 	case !captureFound:
+@@ -101,14 +104,31 @@ func (p *DriftAwait) await(ctx context.Context) (shedengine.Outcome, shedengine.
+ 	return shedengine.Done, shedengine.OutputPointer{}, nil
+ }
+ 
++// deferWay is the way forward that goes on with regression deferred, offered by every capture Stuck.
++const deferWay = "lym drift defer followed by lym loom resume, which goes on with regression deferred"
++
+ // awaitWaysForward names the ways forward of a Drift-Await Stuck.
+-// A capture is one of them only while HEAD is on the branch point.
+-func awaitWaysForward(onBranchPoint bool) string {
+-	deferring := "lym drift defer followed by lym loom resume, which goes on with regression deferred"
+-	if !onBranchPoint {
+-		return deferring
++// A capture is one of them only while HEAD is on the branch point;
++// after a capture that wrote nothing under skipped tests, rescope is true and a scope change replaces the plain capture, which would fail the same way.
++func awaitWaysForward(onBranchPoint, rescope bool) string {
++	switch {
++	case rescope:
++		return rescopeWaysForward(onBranchPoint)
++	case onBranchPoint:
++		return "lym drift capture followed by lym loom resume, which captures again on the branch point and re-enters this row, or " + deferWay
++	default:
++		return deferWay
++	}
++}
++
++// rescopeWaysForward names the ways forward after a capture that wrote nothing under skipped tests.
++// A scope comparing more tests, then a capture, is one of them only while HEAD is on the branch point.
++func rescopeWaysForward(onBranchPoint bool) string {
++	ways := []string{"lym drift scope --scope off followed by lym loom resume, which goes on with no regression for this task", deferWay}
++	if onBranchPoint {
++		ways = slices.Insert(ways, 0, "lym drift scope --scope full (or --scope partial with a shorter --skip list) followed by lym drift capture and lym loom resume, which captures again under the new scope")
+ 	}
+-	return "lym drift capture followed by lym loom resume, which captures again on the branch point and re-enters this row, or " + deferring
++	return strings.Join(ways, ", or ")
+ }
+ 
+ // logClause returns ", log <path>", or nothing when log is empty.
+diff --git a/internal/driftengine/await_test.go b/internal/driftengine/await_test.go
+index 16d7beb9..9a495184 100644
+--- a/internal/driftengine/await_test.go
++++ b/internal/driftengine/await_test.go
+@@ -21,6 +21,12 @@ func TestDriftAwait(t *testing.T) {
+ 	passedAtHead := CaptureRecord{State: CapturePassed, Head: "aaa"}
+ 	capturePath := "lym drift capture followed by lym loom resume"
+ 	deferPath := "lym drift defer followed by lym loom resume"
++	rescopeCapturePath := "lym drift scope --scope full (or --scope partial with a shorter --skip list) followed by lym drift capture and lym loom resume"
++	scopeOffPath := "lym drift scope --scope off followed by lym loom resume"
++	skippedAllCapture := CaptureRecord{
++		State: CaptureFailed, Skip: []string{"a", "b"}, WroteNoFile: true, Log: "capture.log",
++		Reason: "exit 0 but wrote no file to baseline while scope partial skipped 2 tests, so every test the capture command ran may have been skipped",
++	}
+ 
+ 	tests := []struct {
+ 		name        string
+@@ -75,6 +81,47 @@ func TestDriftAwait(t *testing.T) {
+ 			want:       shedengine.Stuck,
+ 			wantReason: []string{"ended failed (exit 1)", "log capture.log", capturePath},
+ 		},
++		{
++			name: "a record that wrote nothing under skipped tests is Stuck naming the scope changes in place of a plain capture",
++			setup: func(f *baselineFixture) {
++				f.seedScopeRecord(ScopeRecord{Scope: ScopePartial, Skip: []string{"a", "b"}}, false)
++				f.writeCapture(skippedAllCapture)
++			},
++			want:       shedengine.Stuck,
++			wantReason: []string{"scope partial skipped 2 tests", "log capture.log", rescopeCapturePath, scopeOffPath, deferPath},
++			wantNoWays: []string{capturePath},
++		},
++		{
++			name: "a failed record under skipped tests that failed for another reason keeps the plain capture way",
++			setup: func(f *baselineFixture) {
++				f.seedScopeRecord(ScopeRecord{Scope: ScopePartial, Skip: []string{"a"}}, false)
++				f.writeCapture(CaptureRecord{State: CaptureFailed, Skip: []string{"a"}, Reason: "exit 3", Log: "capture.log"})
++			},
++			want:       shedengine.Stuck,
++			wantReason: []string{"exit 3", capturePath, deferPath},
++			wantNoWays: []string{"--scope"},
++		},
++		{
++			name: "a record that wrote nothing with no skipped tests keeps the plain capture way",
++			setup: func(f *baselineFixture) {
++				f.seedScopeRecord(ScopeRecord{Scope: ScopeFull}, false)
++				f.writeCapture(CaptureRecord{State: CaptureFailed, WroteNoFile: true, Reason: "exit 0 but wrote no file to baseline", Log: "capture.log"})
++			},
++			want:       shedengine.Stuck,
++			wantReason: []string{"wrote no file", capturePath, deferPath},
++			wantNoWays: []string{"--scope"},
++		},
++		{
++			name: "a record that wrote nothing under skipped tests with HEAD moved names scope off and defer only",
++			setup: func(f *baselineFixture) {
++				f.head = "bbb"
++				f.seedScopeRecord(ScopeRecord{Scope: ScopePartial, Skip: []string{"a", "b"}}, false)
++				f.writeCapture(skippedAllCapture)
++			},
++			want:       shedengine.Stuck,
++			wantReason: []string{scopeOffPath, deferPath},
++			wantNoWays: []string{"lym drift capture", "--scope full"},
++		},
+ 		{
+ 			name: "a timed-out record is Stuck naming the log",
+ 			setup: func(f *baselineFixture) {
+diff --git a/internal/driftengine/baseline.go b/internal/driftengine/baseline.go
+index c6743d14..df331166 100644
+--- a/internal/driftengine/baseline.go
++++ b/internal/driftengine/baseline.go
+@@ -218,7 +218,12 @@ func (p *DriftBaseline) captureAgain(ctx context.Context, commitAll *bool) (shed
+ 	if record.State == CapturePassed {
+ 		return shedengine.Done, done, nil
+ 	}
+-	reason := fmt.Sprintf("%sthe capture ended %s (%s), log %s; way forward: lym drift capture followed by lym loom resume to capture again, or lym drift defer followed by lym loom resume to go on with regression deferred", CaptureHaltPrefix, record.State, record.Reason, record.Log)
++	ways := "lym drift capture followed by lym loom resume to capture again, or lym drift defer followed by lym loom resume to go on with regression deferred"
++	if emptyUnderSkips(record) {
++		// The capture ran past its precondition, so HEAD is on the branch point.
++		ways = rescopeWaysForward(true)
++	}
++	reason := fmt.Sprintf("%sthe capture ended %s (%s), log %s; way forward: %s", CaptureHaltPrefix, record.State, record.Reason, record.Log, ways)
+ 	return shedengine.Stuck, shedengine.OutputPointer{Reason: reason}, nil
+ }
+ 
+diff --git a/internal/driftengine/baseline_test.go b/internal/driftengine/baseline_test.go
+index 25ddc4a3..abbcc947 100644
+--- a/internal/driftengine/baseline_test.go
++++ b/internal/driftengine/baseline_test.go
+@@ -402,6 +402,20 @@ func TestDriftBaseline(t *testing.T) {
+ 			wantRuns:   1,
+ 			wantCommit: whole,
+ 		},
++		{
++			name: "a foreground capture that wrote nothing under skipped tests names the scope changes in place of a plain capture",
++			setup: func(f *baselineFixture) {
++				f.startErr = ErrBreakawayRefused
++				f.runRecord = CaptureRecord{State: CaptureFailed, Reason: "exit 0 but wrote no file to baseline while scope partial skipped 1 test", Skip: []string{"slow"}, WroteNoFile: true, Log: "capture.log"}
++			},
++			want:         shedengine.Stuck,
++			wantReason:   []string{CaptureHaltPrefix, "skipped 1 test", "lym drift scope --scope full (or --scope partial with a shorter --skip list) followed by lym drift capture and lym loom resume", "lym drift scope --scope off followed by lym loom resume", "lym drift defer followed by lym loom resume"},
++			wantNoReason: []string{"lym drift capture followed by lym loom resume"},
++			wantAgents:   1,
++			wantStarts:   1,
++			wantRuns:     1,
++			wantCommit:   whole,
++		},
+ 		{
+ 			name: "a child that did not record its start is a capture halt naming the child's log, which lym drift defer settles",
+ 			setup: func(f *baselineFixture) {
+diff --git a/internal/driftengine/capture.go b/internal/driftengine/capture.go
+index 90f356b5..9829059e 100644
+--- a/internal/driftengine/capture.go
++++ b/internal/driftengine/capture.go
+@@ -11,6 +11,7 @@ import (
+ 	"io/fs"
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 	"strconv"
+ 	"time"
+ 
+@@ -130,12 +131,32 @@ func RunCapture(ctx context.Context, req CaptureRequest) (CaptureRecord, error)
+ 		if wrote {
+ 			rec.State = CapturePassed
+ 		} else {
+-			rec.State, rec.Reason = CaptureFailed, "exit 0 but wrote no file to "+p.BaselineDir
++			rec.State, rec.Reason, rec.WroteNoFile = CaptureFailed, noFileReason(p.BaselineDir, req.Skip), true
+ 		}
+ 	}
+ 	return rec, WriteCapture(p, rec)
+ }
+ 
++// noFileReason is the reason of a capture that exited 0 and wrote no file under baselineDir.
++// Under skipped tests it names the scope and the count, since a skip list covering every test the command runs leaves the harness nothing to profile.
++func noFileReason(baselineDir string, skip []string) string {
++	reason := "exit 0 but wrote no file to " + baselineDir
++	if len(skip) == 0 {
++		return reason
++	}
++	distinct := len(slices.Compact(slices.Sorted(slices.Values(skip))))
++	tests := "tests"
++	if distinct == 1 {
++		tests = "test"
++	}
++	return fmt.Sprintf("%s while scope %s skipped %d %s, so every test the capture command ran may have been skipped", reason, ScopePartial, distinct, tests)
++}
++
++// emptyUnderSkips reports whether capture exited 0 with no file written while it skipped tests, the failure a scope change settles and a plain capture repeats.
++func emptyUnderSkips(capture CaptureRecord) bool {
++	return capture.WroteNoFile && len(capture.Skip) > 0
++}
++
+ // failCapture records rec as failed because err stopped the capture, and returns both.
+ func failCapture(p Paths, rec CaptureRecord, now func() time.Time, cause error) (CaptureRecord, error) {
+ 	rec.State, rec.Reason, rec.EndedAt = CaptureFailed, cause.Error(), stamp(now())
+diff --git a/internal/driftengine/capture_test.go b/internal/driftengine/capture_test.go
+index aef2c453..e8854cd7 100644
+--- a/internal/driftengine/capture_test.go
++++ b/internal/driftengine/capture_test.go
+@@ -99,11 +99,29 @@ func TestRunCapture(t *testing.T) {
+ 		wantReason string
+ 		wantFile   string
+ 		wantText   string
++		// wantNamed lists text the reason holds past its opening.
++		wantNamed       []string
++		wantWroteNoFile bool
+ 	}{
+ 		{name: "a command writing a file passes", command: "echo profile > {baseline_dir}/p.json", wantState: CapturePassed, wantFile: "p.json", wantText: "profile\n"},
+ 		{name: "the command sees the skip file with one test per line", command: "cat {skip_file} > {baseline_dir}/seen", skip: []string{"TestA", "TestB"}, wantState: CapturePassed, wantFile: "seen", wantText: "TestA\nTestB\n"},
+ 		{name: "the command sees an empty skip file when nothing is skipped", command: "cat {skip_file} > {baseline_dir}/seen", wantState: CapturePassed, wantFile: "seen", wantText: ""},
+-		{name: "exit 0 with no file fails", command: "true", wantState: CaptureFailed, wantReason: "exit 0 but wrote no file to "},
++		{name: "exit 0 with no file fails", command: "true", wantState: CaptureFailed, wantReason: "exit 0 but wrote no file to ", wantWroteNoFile: true},
++		{
++			name:    "exit 0 with no file under skipped tests names the scope, the count and the skips",
++			command: "true", skip: []string{"TestA", "TestB"}, wantState: CaptureFailed, wantReason: "exit 0 but wrote no file to ", wantWroteNoFile: true,
++			wantNamed: []string{"scope partial skipped 2 tests", "every test the capture command ran may have been skipped"},
++		},
++		{
++			name:    "exit 0 with no file under one skipped test names the singular count",
++			command: "true", skip: []string{"TestA"}, wantState: CaptureFailed, wantReason: "exit 0 but wrote no file to ", wantWroteNoFile: true,
++			wantNamed: []string{"scope partial skipped 1 test,"},
++		},
++		{
++			name:    "exit 0 with no file counts a repeated skip once",
++			command: "true", skip: []string{"TestA", "TestA"}, wantState: CaptureFailed, wantReason: "exit 0 but wrote no file to ", wantWroteNoFile: true,
++			wantNamed: []string{"scope partial skipped 1 test,"},
++		},
+ 		{name: "a non-zero exit fails", command: "exit 3", wantState: CaptureFailed, wantReason: "exit 3"},
+ 	}
+ 	for _, tt := range outcomes {
+@@ -119,6 +137,17 @@ func TestRunCapture(t *testing.T) {
+ 			if rec.State != tt.wantState || !strings.HasPrefix(rec.Reason, tt.wantReason) {
+ 				t.Errorf("RunCapture() record = %+v; want state %q and a reason opening %q", rec, tt.wantState, tt.wantReason)
+ 			}
++			for _, want := range tt.wantNamed {
++				if !strings.Contains(rec.Reason, want) {
++					t.Errorf("RunCapture() reason = %q; want it to name %q", rec.Reason, want)
++				}
++			}
++			if len(tt.wantNamed) == 0 && strings.Contains(rec.Reason, "skipped") {
++				t.Errorf("RunCapture() reason = %q; want no skips named when none were skipped", rec.Reason)
++			}
++			if rec.WroteNoFile != tt.wantWroteNoFile {
++				t.Errorf("RunCapture() wrote_no_file = %v; want %v", rec.WroteNoFile, tt.wantWroteNoFile)
++			}
+ 			if tt.wantFile != "" {
+ 				if got := readFile(t, filepath.Join(f.req.Paths.BaselineDir, tt.wantFile)); got != tt.wantText {
+ 					t.Errorf("baseline file %s = %q; want %q", tt.wantFile, got, tt.wantText)
+diff --git a/internal/driftengine/doc.go b/internal/driftengine/doc.go
+index 04ba6797..4c490a35 100644
+--- a/internal/driftengine/doc.go
++++ b/internal/driftengine/doc.go
+@@ -19,7 +19,7 @@
+ //
+ // Every record is JSON written through `internal/state`, so an unknown key survives a rewrite.
+ // The scope record (`scope.json`) holds the recorded scope (`off`, `partial` or `full`) and its skipped tests, when the baseline was awaited or deferred, a waiver, the accepted and withdrawn tests, the unruled tests the last decision halt named and the time of the last gate halt.
+-// The capture record (`capture.json`) holds the state of the latest main capture (`running`, `passed` or `failed`) with its pid, HEAD, the tests it skipped, times, exit code, reason and log.
++// The capture record (`capture.json`) holds the state of the latest main capture (`running`, `passed` or `failed`) with its pid, HEAD, the tests it skipped, times, exit code, reason, whether it exited 0 with no file written, and log.
+ // CountedCapture decides whether a capture counts as the baseline: a passed record with an `awaited_at` in the scope record.
+ // The run counter (`runs.json`) holds how many compare or side-capture runs the current Drift-Verify agent session took, the commit its attempt started at, whether the agent-session mark is open and whether the session has the operator in its pane.
+ // TakeRun refuses once the budget is spent, ResetRuns starts a fresh attempt with the whole budget, and CloseAgentSession closes the mark while keeping the count and the attempt's head.
+@@ -31,6 +31,8 @@
+ // It moves a non-empty baseline directory to the first free numbered backup beside it, writes the skip file, waits for one gate slot as a non-tier holder with no deadline, and runs the declared command in its shell with `{baseline_dir}` and `{skip_file}` rendered as quoted paths and the command's stdout and stderr the open log file.
+ // A timeout, counted from the command's start, kills the command's whole tree.
+ // The record ends `passed` for exit 0 with at least one file under the baseline directory, else `failed` with the reason, and then the slot and the lock are released.
++// An exit 0 with no file marks the record `wrote_no_file`, and under skipped tests its reason names scope partial, the count of skipped tests and that every test the capture command ran may have been skipped.
++// A Stuck over such a record, at Drift-Baseline or Drift-Await, names in place of a plain capture, which would fail the same way, `lym drift scope --scope full` or a shorter `--skip` list followed by `lym drift capture` and `lym loom resume` while HEAD is the branch point, and `lym drift scope --scope off` followed by `lym loom resume`, besides `lym drift defer`.
+ // RunCapture holds no job object of its own, since it also runs in a row's step process; the detached child holds the capture's named job (CaptureJobName) around it.
+ // RunSideCapture takes no lock and writes no record: it runs the same command into the next free numbered directory under the side directory.
+ // CheckMainCapture is the main capture's precondition: the run is at Drift-Baseline, or blocked at Drift-Await, HEAD equals the branch point and the tracked tree is clean; each refusal names its way forward.
+@@ -100,6 +102,7 @@
+ // A missing record, a failed one, and a running one whose lock is free are Stuck, naming the log when there is one, as is a passed record taken at another commit than HEAD.
+ // While HEAD is the branch point a Stuck names `lym drift capture` followed by `lym loom resume`, which captures again and re-enters the row, and `lym drift defer` followed by `lym loom resume`;
+ // once HEAD moved it names only `lym drift defer` followed by `lym loom resume`, since no capture may run on changed code.
++// A failed capture that wrote nothing under skipped tests swaps those ways for the scope changes the Capture section names.
+ // No Stuck of the row carries the decision halt prefix, so the arbiter may settle one with the way forward it names.
+ // An adopting machine has no `.lym/drift/`, so before awaited_at the row halts on the missing record and `lym drift capture` captures there.
+ //
+diff --git a/internal/driftengine/records.go b/internal/driftengine/records.go
+index 60b47179..db4f8918 100644
+--- a/internal/driftengine/records.go
++++ b/internal/driftengine/records.go
+@@ -125,6 +125,8 @@ type CaptureRecord struct {
+ 	ExitCode int `json:"exit_code"`
+ 	// Reason is why a capture failed.
+ 	Reason string `json:"reason"`
++	// WroteNoFile is true for a failed capture whose command exited 0 and wrote no file under the baseline directory.
++	WroteNoFile bool `json:"wrote_no_file"`
+ 	// Log is the capture command's log file.
+ 	Log string `json:"log"`
+ }
