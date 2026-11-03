@@ -1,6 +1,6 @@
 # A status-bar button asks for a value, so an agent opened from it gets a name
 
-`button-ask-name` · Task · enhancement, reed, config · running · Worktree-Create
+`button-ask-name` · Task · enhancement, reed, config · running · Record-Write
 
 ## Seen (operator, 2026-11-01)
 
