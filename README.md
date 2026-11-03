@@ -50,7 +50,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **A status-bar button asks for a value, so an agent opened from it gets a name**<br>• Button entries take ask, filling {answer}; the agent button asks for the strand name, and term becomes terminal | [`button-ask-name`](design-button-ask-name.md) | darn · light | Finalize | neve | 2d<br>36m | reed, config |
 | T2 | **lym ide spawn on a beam opens the beam workspace**<br>• The beam code button opens the beam worktree folder; it should open the beam workspace file lym already writes | [`beam-code-opens-workspace`](design-beam-code-opens-workspace.md) | darn · light | Code-Burler-Fix | neve | 11m<br>10m | ide |
-| T3 | **Drift-Baseline pre-accepts drift that contradicts the task**<br>• A baseline report that writes acceptance policy for drift the task says must not happen, steering Drift-Verify to accept it | [`drift-baseline-preaccepts`](design-drift-baseline-preaccepts.md) | darn · light | PR-Review | neve | 9m<br>9m | drift, stencil |
+| T3 | **Drift-Baseline pre-accepts drift that contradicts the task**<br>• A baseline report that writes acceptance policy for drift the task says must not happen, steering Drift-Verify to accept it | [`drift-baseline-preaccepts`](design-drift-baseline-preaccepts.md) | darn · light | Finalize | neve | 9m<br>9m | drift, stencil |
 | T9 | **lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human** | [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md) | darn · light | Darn-Write | neve | 2h<br>2h | fabric, landing |
 
 #### Ready (0)
