@@ -1,6 +1,6 @@
 # A glossary of weaving terms in English, Norwegian and other languages, marking those lym already uses
 
-`weaving-glossary` · Task · research, docs · draft
+`weaving-glossary` · Task · research, docs
 
 ## Goal (operator, 2026-11-03)
 

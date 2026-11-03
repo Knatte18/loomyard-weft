@@ -24,13 +24,15 @@ Held by a run; its scope is locked until the run ends.
 | T4 | **Claude Code autocompact picker in a shuttle session stalls a gate re-prompt forever** | [`shuttle-autocompact-picker-stall`](design-shuttle-autocompact-picker-stall.md) | darn | Code-Burler-Fix | neve | 11h<br>31m | shuttle, loom |
 | T5 | **Hub-wide config reconcile by an older lym binary strips keys a newer binary wrote** | [`reconcile-strips-newer-keys`](design-reconcile-strips-newer-keys.md) | darn | Finalize | neve | 11h<br>31m | reconcile, config |
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T9 | **A glossary of weaving terms in English, Norwegian and other languages, marking those lym already uses** | [`weaving-glossary`](design-weaving-glossary.md) | darn · docs |  | 0m<br>0m | docs |
 
-### Draft (4)
+### Draft (3)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -39,7 +41,6 @@ Not released; nothing starts it until its status is cleared.
 | T6 | `draft` **Ending the PR review closes the pull request and lands by direct push, which a PR-only branch refuses** | [`pr-review-end-direct-push`](design-pr-review-end-direct-push.md) | darn · solid |  | 19m<br>17m | landing, git |
 | T7 | `draft` **fabric remove deletes the whole worktree directory, ignored files included** | [`fabric-remove-ignored-files`](design-fabric-remove-ignored-files.md) | darn · solid |  | 12m<br>10m | fabric |
 | T8 | `draft` **Batten treats a stray non-worktree directory as a gone pair, and a beam landing accepts its own beam mark** | [`batten-stray-dir-and-beam-mark`](design-batten-stray-dir-and-beam-mark.md) | darn · solid | T3 | 10m<br>10m | batten, pawl |
-| T9 | `draft` **A glossary of weaving terms in English, Norwegian and other languages, marking those lym already uses** | [`weaving-glossary`](design-weaving-glossary.md) | darn · docs |  | 0m<br>0m | docs |
 
 ## Notes (40)
 
