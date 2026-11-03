@@ -297,7 +297,6 @@
       "depends_on": [
         "drift-verdict-in-pr",
         "fabric-remote-async",
-        "drift-skip-all-capture",
         "cancel-remove-leftover-dir",
         "push-lock-busy-blocks",
         "drift-after-review",
@@ -607,9 +606,7 @@
         19
       ],
       "recipe": "darn",
-      "depends_on": [
-        "drift-skip-all-capture"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #19](https://github.com/Knatte18/loomyard/issues/19).\n\n## Problem\n\nA hub needs environment variables whose values differ per machine, such as a path to a sibling checkout (`COMMONLIB_REPO` in the NORCE Models hub, which CommonLib-reading tests need).\nToday the only place lym sets an environment variable for a run is `gate`'s `tiers.\u003cn\u003e.env`, and only in the shared hub file committed in _bolt.\nThe machine layer refuses it:\n\n```\nlym config gate --layer machine --set tiers.tier0.env.COMMONLIB_REPO=/path\nkey \"tiers\" is executable and cannot be set in a machine override\n```\n\nSo a per-machine value has to be committed into the hub-wide config, where it is wrong on every other machine.\n\n## Design (operator, 2026-11-03)\n\n- Environment variables are configuration in their own right: a config module of their own, `lym config env`, a map from variable name to value.\n- Layers: the hub layer, shared and committed in _bolt, and the machine layer, never tracked; the machine layer wins per variable.\n  An env value is data, not an executable key, so the machine-override restriction on `tiers` does not apply to it.\n- lym exports the variables to every process it starts for the hub: gate tiers and the shared build, Drift capture and compare, and agent sessions, so an agent running tests by hand sees the same values.\n- Precedence, most specific first: a gate tier's own `tiers.\u003cn\u003e.env`, then the `env` module, then the inherited environment.\n\nThe issue also reported a `lym config drift` whole-map refusal, which landed as task `drift-config-whole-map-set`: `--set capture={...}` now replaces the map whole.\n",
@@ -680,27 +677,6 @@
       "status": "running · Finalize",
       "created": "2026-11-03T14:58:30Z",
       "revised": "2026-11-03T16:39:26Z",
-      "profile": "light"
-    },
-    {
-      "id": 1057,
-      "handle": "T6",
-      "slug": "drift-skip-all-capture",
-      "title": "A partial scope that skips every test ends in a capture that wrote no file, with no cause named",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "drift"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The capture failure names neither the skips nor the scope change that would fix it, so the tackler re-launches blind",
-      "body": "A partial Drift scope that skips every test is accepted, and its capture then fails as `exit 0 but wrote no file`, a reason that names neither the skips nor a way out.\n\n## Seen\n\nOn the `cs` hub (2026-11-03), the Drift-Baseline agent of `report-significant-digits` recorded `lym drift scope --scope partial` with all six regression cases as `--skip`, so `.lym/drift/skip.txt` held every case `RegressionCases.All` runs.\n\n- The capture ran on the branch point `9017f2d`, exited 0 after 3 s with empty logs, and wrote nothing; the run blocked at Drift-Await:\n  `drift: the baseline capture ended failed (exit 0 but wrote no file to …/.lym/drift/baseline), …; way forward: lym drift capture followed by lym loom resume, … or lym drift defer …`\n- The tackler, reading that, could not find the cause (\"Its capture log and capture-child log are both empty, so the cause is not named from what I read\"), chose a plain re-launch, and the same capture failed the same way; its second attempt escalated with the cause still unnamed.\n- Neither way forward can succeed: `lym drift capture` repeats the scope, and `lym drift defer` drops the regression the run was meant to have.\n\n## Expected\n\n- A capture that writes nothing while the scope skips tests says so: the failure reason names the scope, the count of skipped tests, and that every test the harness ran may have been skipped.\n- Its way forward names the parent's `lym drift scope --scope full|off` (or a shorter `--skip` list) before `lym drift capture` and `lym loom resume`, besides `lym drift defer`.\n- A tackler reading the stop learns the cause from the stop alone.\n",
-      "status": "done",
-      "created": "2026-11-03T16:33:31Z",
-      "revised": "2026-11-03T16:39:27Z",
       "profile": "light"
     },
     {
@@ -787,8 +763,7 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "drift-verdict-in-pr",
-        "drift-skip-all-capture"
+        "drift-verdict-in-pr"
       ],
       "isolated": false,
       "brief": "A review fixer rewrote the formatter after Drift-Verify; nothing compares again and lym drift compare refuses past Drift-Verify",

@@ -2,8 +2,6 @@
 
 `machine-env-vars` · Task · feature, config, gate, drift, shuttle · running · Darn-Write
 
-Depends on: [`drift-skip-all-capture`](design-drift-skip-all-capture.md)
-
 Imported from [issue #19](https://github.com/Knatte18/loomyard/issues/19).
 
 ## Problem
