@@ -1037,6 +1037,27 @@
       "created": "2026-11-03T07:48:33Z",
       "revised": "2026-11-03T07:48:33Z",
       "profile": "solid"
+    },
+    {
+      "id": 1036,
+      "handle": "B1",
+      "slug": "drift-anchor-and-skip",
+      "title": "drift: capture child spawns at the worktree root, ignoring a subdirectory fabric anchor",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "drift",
+        "stencil"
+      ],
+      "issues": [
+        23
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #23](https://github.com/Knatte18/loomyard/issues/23).\n\nSeen in hub NORCE-DrillingAndWells/Models, whose fabric is anchored at src/csharp/NORCE.Models by .lym-anchor. A darn run (testsupport-rule-and-helpers) failed Drift-Baseline three times with 'the capture child ended before it recorded its start'. The capture-child log holds only: cwd is outside the recorded fabric anchor subtree: cwd \u003cworktree root\u003e does not equal the anchored directory \u003cworktree root\u003e/src/csharp/NORCE.Models (recorded by .lym-anchor). The drift producer starts its capture child with cwd at the worktree root whatever directory the run is resumed from, so every re-launch fails identically and drift cannot run in any hub with a subdirectory anchor.\n\nWorkaround: the parent runs lym drift defer and lym loom resume in the task worktree, then lym drift waive at Drift-Verify, so the run goes on with no baseline.\n\nExpected: the capture child (and the compare child) start in the anchored directory, the same directory every other lym verb requires.",
+      "created": "2026-11-03T08:11:54Z",
+      "revised": "2026-11-03T08:11:54Z"
     }
   ],
   "prime_owner": "neve",
