@@ -1,27 +1,34 @@
 # Name the dirty paths when a landing fixer halts on a dirty tree
 
-A Parent-Align or Finalize merge fixer that left the task worktree dirty after its last turn halted with `the fixer session of <row> ended without a usable turn (dirty)`.
-The reason named no path, so the operator could not tell whether the branch needed work.
-The halt reason now lists the uncommitted or untracked paths and says to commit or remove them before `lym loom resume`.
+When a landing fixer session ended with the task worktree dirty and its attempts spent, the halt reason said only "ended without a usable turn (dirty)".
+The operator could not tell which paths were left behind, or whether the branch needed work at all.
+That is what happened in Parent-Align: the fixer reported `verdict: fixed`, the gate had passed, and the run still halted as `blocked` with no hint of the cause.
 
-## What changes
+The halt reason for the dirty end now names the cause:
 
-- `fixerOutcome` in `internal/landingshed/fixerrun.go` carries the dirty paths the last turn left, set only for the dirty end.
-- `haltReason` gives the dirty end its own reason: the paths, capped by `listShown` like every other dirty-tree reason in the package, the session log and the report path, with the way forward `commit or remove them on the task branch, then lym loom resume`.
-  The timeout and no-report ends keep the old wording.
-- `TestFixerRun_Outcomes`'s dirty row asserts the path and the new way forward appear and the old generic wording does not.
-- The package doc's list of fixer halts names the dirty-tree halt and says its reason names the paths.
+```
+the fixer session of <row> left uncommitted or untracked paths in the task worktree after its last turn: <paths>; session log: ...; report: ...
+```
+
+Its way forward is "commit or remove them on the task branch, then `lym loom resume`", replacing the generic "fix or clean the task branch".
+The timeout and no-report ends keep the generic wording.
+
+Closes #6
 
 ## Design decisions
 
-- The issue's first bullet, to treat a passed gate plus a finished fixer turn as a clean end, is already handled on main by `b5e0ed26` (`Hold writer and fixer sessions until their worktree is clean`).
-  The incident logged `end=dirty spent=1 cap=2`: under that commit, a dirty tree with a turn left re-prompts the fixer with the paths on a charged turn, and only a dirty tree after the last turn halts, at `spent == cap`.
-  The incident predates that commit.
-- A dirty tree after the last turn stays a halt rather than counting as clean.
-  The landing gate's verify refuses a dirty tree, and Parent-Align and Finalize must never merge over or land uncommitted work, so the passed gate the issue cites cannot stand for a tree that changed after the gate.
+- The end-state classification is unchanged.
+  The dirty end is still reached only when the tree holds uncommitted or untracked paths after the last turn and the fixer attempts are spent.
+  A tree that is clean at that point is not classed dirty, so the paths in the new reason are the evidence for the halt.
+  The issue's first suggestion, treating a passed gate plus a finished turn as a clean end, is not implemented: a tree with leftover paths is not clean, and a resume would carry them into the landing.
+  The message change makes the real condition visible instead.
+- `fixerOutcome` gains a `dirty` field holding the paths, set in `judge` where the dirty end is halted, and `haltReason` formats it with `listShown`.
+- `internal/landingshed/doc.go` lists the dirty halt, with its named paths, among the halts that open with `LandingStopPrefix`.
 
 ## To check by hand
 
-- The incident's dirty paths are not recorded, so their source is unknown.
-  An untracked file the fixer did not make, such as the stale `CLAUDE.local.md` that board note `heddle-stale-root-claude-file` describes, would still use up the re-prompt turn and halt.
-  The new reason names such a path, which shows whether that note is the cause.
+- The cause of the original halt is not established here.
+  If the Parent-Align fixer's `verdict: fixed` run left a clean tree, a halt like the reported one would need a different explanation.
+  Reproduce with a fixer that leaves a file behind and confirm the halt names it.
+- `fixerrun_test.go` updates the dirty-end case to assert the paths and the new way forward, and switches an outcome comparison to `reflect.DeepEqual` because `fixerOutcome` now holds a slice.
+  The tests were not run in this session; run `lym gate test ./internal/landingshed`.
