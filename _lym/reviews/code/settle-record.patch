@@ -1,0 +1,126 @@
+diff --git a/internal/fabricengine/warpclean.go b/internal/fabricengine/warpclean.go
+index 1f73a4e5..911c6dbe 100644
+--- a/internal/fabricengine/warpclean.go
++++ b/internal/fabricengine/warpclean.go
+@@ -17,7 +17,7 @@ import (
+ // files.
+ // It is package-level for use by preflight.CheckResolved.
+ // The weft-side check is skipped when the weft worktree does not exist.
+-// weftExempt names anchor-relative weft paths whose dirty content the weft-side check ignores, everything beneath each included.
++// weftExempt names anchor-relative weft paths, or git pathspec globs, whose dirty content the weft-side check ignores, everything beneath each included.
+ // Returns (false, reason, nil) when dirty or (false, "", err) for system errors.
+ func Clean(l *lymcwd.Location, weftExempt ...string) (clean bool, reason string, err error) {
+ 	warpReason, err := dirtyReason("git status --porcelain", l.WorktreePath())
+diff --git a/internal/loomengine/config.go b/internal/loomengine/config.go
+index 893fbdae..5b0d4c21 100644
+--- a/internal/loomengine/config.go
++++ b/internal/loomengine/config.go
+@@ -358,6 +358,12 @@ func LoomFrictionDirRel() string {
+ 	return filepath.Join(LoomDurableDirRel(), frictionDirName)
+ }
+ 
++// LoomFrictionArchivesRelPattern returns a worktree-anchor-relative git pathspec glob matching every timestamped reflection-archive sibling of the friction directory and everything beneath it.
++// It suits a pathspec only, never a file path, since git's glob lets its `*` match across `/`.
++func LoomFrictionArchivesRelPattern() string {
++	return LoomFrictionDirRel() + "-*"
++}
++
+ // IsLoomFrictionArchive reports whether name, a directory name under LoomDurableDirRel, is a timestamped reflection-archive sibling of the friction directory.
+ // That is the friction segment followed by "-" and at least one more character; the friction directory itself is not an archive.
+ func IsLoomFrictionArchive(name string) bool {
+diff --git a/internal/preflight/doc.go b/internal/preflight/doc.go
+index e90f56b2..042fae2f 100644
+--- a/internal/preflight/doc.go
++++ b/internal/preflight/doc.go
+@@ -22,10 +22,10 @@
+ // Check's non-lymcwd.ErrNotAGitRepo branch is NOT reachable through a git-subprocess spawn failure — that case is folded into ErrNotAGitRepo already.
+ // It is reachable only through lymcwd's anchor-resolution path: ErrCwdOutsideAnchor from the cwd gate, ErrStaleAnchorMarker from a board carrying only the pre-rename marker, and an ErrInvalidAnchor-wrapping failure when a recorded anchor exists but fails validation are examples of routes into that branch, not a closed set of them.
+ //
+-// The worktree-clean check skips the run-records root under `_lym` on the state side.
+-// lym writes its own run records there while it handles a stop.
+-// The status commits stage the settle records, while the other run-record files, the stop and condition-stop markers among them, stay uncommitted until a later records commit or the run's removal.
+-// Counting them made a run refuse its own bookkeeping on every re-step.
++// The worktree-clean check skips lym's own state under `_lym` on the state side: the run-records root, the loom friction directory and the friction directory's reflection archives.
++// lym writes its run records while it handles a stop, writes a halt note into the friction directory, and a reflection moves covered notes into an archive.
++// The status commits stage the settle records, while the other files, and a note's deletion or move, stay uncommitted until a later records commit or the run's removal.
++// Counting them made a run refuse its own bookkeeping on every re-step, and one halt's note caused the next halt.
+ // Everything else under `_lym` still counts.
+ //
+ // A composing orchestrator reads this doc rather than duplicating the contract in its own package
+diff --git a/internal/preflight/preflight.go b/internal/preflight/preflight.go
+index 79d3819b..6bb1edbd 100644
+--- a/internal/preflight/preflight.go
++++ b/internal/preflight/preflight.go
+@@ -10,17 +10,19 @@ import (
+ 	"errors"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ )
+ 
+-// runStateExemptRels returns the anchor-relative directories under `_lym` whose uncommitted content the worktree-clean check ignores: the run-records root, which holds only lym's own run records.
+-// lym writes there while a run handles a stop, such as settle records, tackler and arbiter attempts and stop markers.
+-// The status commits stage the settle records, while the other run-record files, the stop and condition-stop markers among them, stay uncommitted until a later records commit or the run's removal.
+-// The check ignores them because they are lym's own bookkeeping in flight, never work a run could lose.
++// runStateExemptRels returns the anchor-relative pathspecs under `_lym` whose uncommitted content the worktree-clean check ignores, all of them lym's own state.
++// The run-records root holds what lym writes while a run handles a stop, such as settle records, tackler and arbiter attempts and stop markers.
++// The friction directory holds the halt and crash-resume notes lym writes and the notes agents write, and a reflection moves the notes it covered into a timestamped archive sibling.
++// Those writes, deletions and moves stay uncommitted until a later records commit or the run's removal.
++// The check ignores them because they are lym's own bookkeeping in flight, never work a run could lose, and counting them let one halt's note cause the next halt.
+ // It is the one place that decides which lym state the check skips.
+ func runStateExemptRels() []string {
+-	return []string{shedrun.RunsRootRel()}
++	return []string{shedrun.RunsRootRel(), loomengine.LoomFrictionDirRel(), loomengine.LoomFrictionArchivesRelPattern()}
+ }
+ 
+ // Check resolves cwd into a *lymcwd.Location and validates the tier-1/tier-2 preconditions against
+diff --git a/internal/preflight/preflight_integration_test.go b/internal/preflight/preflight_integration_test.go
+index 0bbc0093..10444bdf 100644
+--- a/internal/preflight/preflight_integration_test.go
++++ b/internal/preflight/preflight_integration_test.go
+@@ -23,6 +23,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/fslink"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/preflight"
+@@ -411,11 +412,12 @@ func TestCheckResolved_Failures(t *testing.T) {
+ 	}
+ }
+ 
+-// TestCheckResolved_RunStateUnderLymIsExempt writes, untracked, every file lym's stop and settle paths write into a run's directory under `_lym`, and asserts the worktree-clean check passes over them.
+-// Fabric's own unscoped Clean must see the files first, so the pass is never a gitignore's doing.
+-// A file under `_lym` outside the run-records root then still refuses.
++// TestCheckResolved_LymOwnStateIsExempt leaves lym's own state under `_lym` uncommitted and asserts the worktree-clean check passes over it.
++// The state is every file lym's stop and settle paths write into a run's directory, a new friction note, and a committed halt note a reflection moved into an archive.
++// Fabric's own unscoped Clean must see the changes first, so the pass is never a gitignore's doing.
++// A file under `_lym` outside the exempt state then still refuses.
+ // Each anchor builds its own hub, since a subpath anchor moves `_lym` below the worktree's root.
+-func TestCheckResolved_RunStateUnderLymIsExempt(t *testing.T) {
++func TestCheckResolved_LymOwnStateIsExempt(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+@@ -425,6 +427,18 @@ func TestCheckResolved_RunStateUnderLymIsExempt(t *testing.T) {
+ 
+ 			h, _ := setupAnchoredFixture(t, anchor)
+ 			l := h.Location
++
++			frictionDir := loomengine.LoomFrictionDir(l)
++			haltNote := filepath.Join(frictionDir, "loom-halt.md")
++			writeFile(t, haltNote)
++			gitkit.MustRun(t, h.PrimeRecords(), "git", "add", "-A")
++			gitkit.MustRun(t, h.PrimeRecords(), "git", "commit", "-m", "commit a halt note")
++			if err := os.Remove(haltNote); err != nil {
++				t.Fatalf("remove %s: %v", haltNote, err)
++			}
++			writeFile(t, filepath.Join(loomengine.LoomFrictionArchivePrefix(l)+"20261103-120000", "loom-halt.md"))
++			writeFile(t, filepath.Join(frictionDir, "Darn-Write.md"))
++
+ 			runID := shedrun.SelfRunID
+ 			runState := []string{
+ 				shedrun.SettleRecords(l, runID),
