@@ -23,8 +23,8 @@ Held by a run; its scope is locked until the run ends.
 | T3 | **The Drift-Baseline stencil skips the tests an intended change drifts**<br>• Intended drift is skipped instead of compared and accepted with a reason, which hides regressions in the same tests | [`drift-baseline-skips-intended`](design-drift-baseline-skips-intended.md) | darn · light | Code-Bouncer | neve | 19m<br>13m | drift, stencil |
 | T5 | **depends_on accepts a project or any entry that lands, and dobby holds the task until it does** | [`depends-on-any-entry`](design-depends-on-any-entry.md) | darn · light | Code-Burler-Fix | neve | 34m<br>31m | board, dobby |
 | T7 | **An arbiter whose turn ends on an API error holds the stop silently until its deadline**<br>• A StopFailure leaves the settler idle, the parent's resume is refused as driver_not_parked, and no one is told | [`arbiter-api-error-stall`](design-arbiter-api-error-stall.md) | darn · light | Darn-Write | neve | 16m<br>13m | arbiter, shuttle, claude |
-| T10 | **lym webster begin-batch fails: go-git cannot open a worktree root that is a subdirectory of the repository** | [`webster-subdir-gitopen`](design-webster-subdir-gitopen.md) | darn · light | Record-Write | neve | 8m<br>0m | webster, git |
-| T12 | **Preflight worktree-clean halts on lym's own _lym state files** | [`preflight-own-state-dirty`](design-preflight-own-state-dirty.md) | darn · light | Worktree-Create | neve | 8m<br>0m | preflight, loom |
+| T10 | **lym webster begin-batch fails: go-git cannot open a worktree root that is a subdirectory of the repository** | [`webster-subdir-gitopen`](design-webster-subdir-gitopen.md) | darn · light | Drift-Baseline | neve | 8m<br>1m | webster, git |
+| T12 | **Preflight worktree-clean halts on lym's own _lym state files** | [`preflight-own-state-dirty`](design-preflight-own-state-dirty.md) | darn · light | Worktree-Create | neve | 8m<br>1m | preflight, loom |
 
 ### Ready (0)
 
@@ -39,8 +39,8 @@ Waits only on Running, Ready or Draft entries.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **A partial scope that skips every test ends in a capture that wrote no file, with no cause named**<br>• The capture failure names neither the skips nor the scope change that would fix it, so the tackler re-launches blind | [`drift-skip-all-capture`](design-drift-skip-all-capture.md) | darn · light | T3 | 19m<br>13m | drift |
-| T8 | **batten cancel --remove leaves a non-git directory that blocks Worktree-Create** | [`cancel-remove-leftover-dir`](design-cancel-remove-leftover-dir.md) | darn · light | T2 | 8m<br>0m | batten, fabric |
-| T11 | **Webster plan validation refuses a card path with a trailing '#' anchor that Plan-Bouncer accepted** | [`card-path-empty-anchor`](design-card-path-empty-anchor.md) | darn · light | T10 | 8m<br>0m | webster, parsers |
+| T8 | **batten cancel --remove leaves a non-git directory that blocks Worktree-Create** | [`cancel-remove-leftover-dir`](design-cancel-remove-leftover-dir.md) | darn · light | T2 | 8m<br>1m | batten, fabric |
+| T11 | **Webster plan validation refuses a card path with a trailing '#' anchor that Plan-Bouncer accepted** | [`card-path-empty-anchor`](design-card-path-empty-anchor.md) | darn · light | T10 | 8m<br>1m | webster, parsers |
 
 ### Layer B (1)
 
@@ -48,7 +48,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human** | [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md) | darn · light | T2<br>T8 | 8m<br>0m | fabric, landing |
+| T9 | **lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human** | [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md) | darn · light | T2<br>T8 | 8m<br>1m | fabric, landing |
 
 ### Draft (1)
 
@@ -56,7 +56,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T2 | 3d<br>36m | fabric |
+| T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T2 | 3d<br>37m | fabric |
 
 ## Notes (27)
 
