@@ -2,8 +2,6 @@
 
 `drift-config-whole-map-set` · Task · bug, drift, config
 
-Depends on: [`drift-scope-in-run-settings`](design-drift-scope-in-run-settings.md)
-
 From [issue #19](https://github.com/Knatte18/loomyard/issues/19).
 
 ## Seen

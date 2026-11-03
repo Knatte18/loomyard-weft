@@ -797,9 +797,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "drift-scope-in-run-settings"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "From [issue #19](https://github.com/Knatte18/loomyard/issues/19).\n\n## Seen\n\n`lym config drift --set 'capture={command: \"...\", dir: \"...\", timeout_min: 30}'` is refused with \"unknown config key(s): capture, compare\", although the key's own description in `--resolved` prescribes that whole-map form.\nSetting `capture.command`, `capture.dir` and `capture.timeout_min` one by one works.\n\n## Expected\n\nA whole-map `--set` of `capture` or `compare` is accepted as the key description says, or the description names the per-key form instead.\n",
@@ -967,30 +965,6 @@
       "body": "Imported from [issue #28](https://github.com/Knatte18/loomyard/issues/28).\n\n## What happened\n\nA `sampler` run in the Models hub (`drift-numerical-baseline`) had one job: trial the drift flow with the operator before drift is trusted on real tasks.\nEvery `lym drift` verb refused in the sampler worktree, because each verb is gated on the run's stage and the sampler recipe has no drift rows:\n\n```\ndrift capture refused: the run is at Sampler-Session (running), and a main capture runs only at Drift-Baseline or at a Drift-Await halt\ncapture --side: the run is at Sampler-Session (running), and the verb runs only at Drift-Verify\ncompare: the run is at Sampler-Session (running), and the verb runs only at Drift-Verify\ndrift accept refused: the run is at Sampler-Session (running), and the verb runs only at Drift-Verify\nwithdraw: same as accept\n```\n\nThe sampler fell back to running the hub's capture and compare commands by hand, and mimicked accept and withdraw with the skip file.\nThat proved the repository's harness, but none of lym's own drift stages: the Drift-Baseline agent's scope choice, `accept` and `withdraw` taking effect in the drift records, and the interactive Drift-Verify session.\nThe first real test of those stages is now a production task with drift full.\n\n## Wanted\n\nA way to trial drift in a sampler, the recipe meant for trying things with the operator.\nFor example, either:\n\n- the drift verbs run in a sampler session, against a sampler-local drift record, so scope, capture, compare, accept and withdraw can be exercised end to end; or\n- a sampler variant (or option) that carries the Drift-Baseline, Drift-Await and Drift-Verify rows, so the interactive Drift-Verify session can be reached with a deliberate change.\n\nThe stage gates stay as they are for tapestry and darn, where they keep an agent from re-baselining mid-task.",
       "created": "2026-11-03T09:16:18Z",
       "revised": "2026-11-03T09:16:18Z"
-    },
-    {
-      "id": 1042,
-      "handle": "T4",
-      "slug": "drift-scope-in-run-settings",
-      "title": "Drift scope settable in a task's run_settings; Drift-Baseline agent only when unset",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "drift",
-        "config"
-      ],
-      "issues": [
-        30
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #30](https://github.com/Knatte18/loomyard/issues/30).\n\n## Wanted\n\nLet a task fix its drift scope in its board entry, through `run_settings`, so the operator decides it when the task is discussed:\n\n```\n\"run_settings\": {\"drift\": {\"scope\": \"full\"}}\n\"run_settings\": {\"drift\": {\"scope\": \"partial\", \"skip\": [\"\u003cfixture\u003e\", \"...\"]}}\n\"run_settings\": {\"drift\": {\"scope\": \"off\"}}\n```\n\n- When `drift.scope` is set, Drift-Baseline records it as given and spawns no agent.\n- When it is not set, the Drift-Baseline agent decides as today.\n\n## Why\n\nThe scope choice is a judgement the operator often makes already, while discussing the task, with knowledge the agent lacks.\nIn the Models hub the agent picked scope full for a change confined to test projects the suite cannot reach (#25).\nIt predicts drift from the README and test setup, which do not say what each baseline fixture runs; a trial showed that a 1% change in steel heat capacity drifts only the temperature fixtures and not the quasi-steady-state one, which the agent cannot know.\nToday the only way to correct a wrong choice is to pause after Drift-Baseline, edit `_lym/drift/scope.json` in the task worktree, `lym fabric commit`, and resume, since `lym drift scope` refuses a second call.\n\nThe drift config has no scope key now (`lym config drift --resolved` shows `enabled`, the commands, the models and `verify_max_runs`), so `run_settings` cannot carry it.",
-      "status": "done",
-      "created": "2026-11-03T09:29:00Z",
-      "revised": "2026-11-03T09:29:02Z",
-      "profile": "solid"
     },
     {
       "id": 1043,
