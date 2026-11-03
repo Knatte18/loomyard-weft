@@ -1,9 +1,9 @@
 {
   "current_producer": "Finalize",
-  "state": "running",
+  "state": "paused",
   "error": "",
   "pause_requested": false,
-  "pause_before": "Finalize",
+  "pause_reason": "paused before Finalize, as requested",
   "activity": {
     "now": "Finalize",
     "last": "PR-Review → done",
