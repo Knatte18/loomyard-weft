@@ -19,10 +19,16 @@ push rejected: ! [remote rejected] main -> main (push declined due to repository
 
 The run blocked at Finalize with local `main` one commit ahead of origin and no lym way forward: retrying the push fails on the same rule.
 
-## Expected
+## Expected (operator, 2026-11-03)
 
-With `pull_request` on, ending the review should let Finalize merge the open pull request on GitHub (squash), as it does for an open PR, not close it and land by direct push.
-At minimum, lym should read the target branch's rules (`GET repos/{owner}/{repo}/rules/branches/{branch}`) and never choose a direct push to a branch that requires a pull request; a pull_request mode `required` on the prime would then be implied by the remote.
+With `pull_request` on, the landing is always a squash merge on GitHub into the parent branch, never a local squash merge pushed to the parent.
+
+- Ending the review through the PR-Review agent may close the review, but Finalize still lands by squash-merging the pull request on GitHub, as it does for an open one.
+  GitHub squash-merges only through a pull request, so if lym closes the pull request at the end of the review, Finalize reopens it, or opens a new one, and merges that; keeping it open is the simpler way.
+- Finalize's parent side then takes the merged result from origin, as it does after any GitHub merge, so local and origin parent never diverge.
+- lym reads the target branch's rules (`GET repos/{owner}/{repo}/rules/branches/{branch}`) and never chooses a direct push to a branch that requires a pull request; such a branch then counts as `pull_request` on whatever beam.yaml says.
+
+Code: `internal/landingshed/prreview.go` closes the pull request with `continueComment`; `internal/landingshed/finalize_pr.go` holds Finalize's merge on GitHub and its decision about a closed pull request.
 
 ## Workaround used
 
