@@ -960,6 +960,28 @@
       "status": "draft",
       "created": "2026-11-03T07:13:12Z",
       "revised": "2026-11-03T07:13:12Z"
+    },
+    {
+      "id": 1028,
+      "handle": "F5",
+      "slug": "machine-env-vars",
+      "title": "Support per-machine environment variables, possibly as a module of their own",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "config",
+        "gate",
+        "drift"
+      ],
+      "issues": [
+        19
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #19](https://github.com/Knatte18/loomyard/issues/19).\n\n## Problem\n\nA hub needs environment variables whose values differ per machine, such as a path to a sibling checkout (`COMMONLIB_REPO` in the NORCE Models hub, which CommonLib-reading tests need).\nToday the only place lym sets an environment variable for a run is `gate`'s `tiers.\u003cn\u003e.env`, and only in the shared hub file committed in _bolt.\nThe machine layer refuses it:\n\n```\nlym config gate --layer machine --set tiers.tier0.env.COMMONLIB_REPO=/path\nkey \"tiers\" is executable and cannot be set in a machine override\n```\n\nSo a per-machine value has to be committed into the hub-wide config, where it is wrong on every other machine.\n\n## Proposal\n\nSupport environment variables as configuration in their own right, possibly as a module of their own (e.g. `lym config env`), with a machine layer that is never tracked, so each machine sets its own values.\nlym would export them to every process it starts for the hub: gate tiers, drift capture/compare, sessions.\nAn env value is data, not an executable key, so the machine-override restriction on `tiers\" need not apply to it.\n\n## Also found\n\n`lym config drift --set 'capture={command: \"...\", dir: \"...\", timeout_min: 30}'` is refused with \"unknown config key(s): capture, compare\", although the key's own description in `--resolved` prescribes exactly that whole-map form. Setting `capture.command`, `capture.dir` and `capture.timeout_min` one by one works.",
+      "created": "2026-11-03T07:13:24Z",
+      "revised": "2026-11-03T07:13:24Z"
     }
   ],
   "prime_owner": "neve",
