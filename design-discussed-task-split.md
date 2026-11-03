@@ -39,6 +39,9 @@ How a task is best cut into smaller tasks is known only once its Discussion is d
 
 - A Discussion-only run, the recipe `motif` (operator, 2026-11-03: the motif is the design decided before the weaving; `cartoon`, the drawing the weaver follows, is kept for a later Plan block), interactive or not, runs Discussion-Write and its review and nothing else, then stores the record and flags the entry discussed, as the core above says.
   Built (2026-11-03): a `motif` task runs alone, lands no code and returns the entry to `draft`; landing only prunes the board.
+  Built (2026-11-03): task `beam-after-motif` (`cfccb80a`).
+  When the entry is then made a project, `lym beam create` removes the slug's done motif run, once its pair is gone, instead of refusing with `already completed`; the envelope reports it as `motif_run_cleared`.
+  Seed-Child records the child recipe in batten's run directory, so a done run still tells it ran `motif`; a done motif run seeded before that has no record and still needs `lym batten cleanup --apply`.
 - A discussed entry then goes one of two ways, chosen after its Discussion:
   1. Tapestry from Plan, skipping Discussion-Write: Plan-Write and Webster as today. Built, see above.
   2. The part split: the record's scope is cut into darn tasks with contracts and `depends_on`, which run independently, each a task of its own.
