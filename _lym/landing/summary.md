@@ -1,71 +1,52 @@
-# codexengine: the Codex CLI shuttle engine, its home and its launch
+# codexengine: the Codex CLI as a shuttle engine, with its home and launch
 
-Adds `internal/shuttleengine/codexengine`, a second shuttle engine that drives the Codex CLI's interactive TUI in a reed pane, and registers it as `codex` beside `claude`.
-This is part 1 of project `codex-engine`: decisions D4, D5, D6, D7, D8 and D13 of the project's decision record, with the weft checkout as a Codex writable root (the parent's added decision).
-The assistant seat, skills, shell guards and engine-keyed stencil blocks belong to the project's other parts.
+Adds `internal/shuttleengine/codexengine`, a second shuttle engine beside `claudeengine` that drives the Codex CLI's interactive TUI in a reed pane.
+It registers in `internal/shuttleengines` as `codex`, with its own config module `codex.yaml`.
+No role runs on Codex yet; this lays the engine, its home and its launch for the later parts of the `codex-engine` project.
 
 ## What changes
 
-- **Registration and aliases (D4).**
-  `internal/shuttleengines` registers `codex` with its config module `codex.yaml` (`binary`, `home`, `operator_home`, `efforts`, `skill_roots`) and its scrub, the `CODEX_` prefix.
-  `tmuxkit.ServerEnviron` mirrors the new prefix, and the test that pins the two together covers it.
-  The model-spec engine set gains `codex`, and both the built-in fallback and `models.yaml`'s template gain `sol`, `astra` and `luna` (`gpt-6.1-sol`, `gpt-6-astra`, `gpt-6-luna`) at effort `medium`.
-  Prepare refuses an effort `codex.yaml`'s `efforts` does not list (`low`, `medium`, `high` by default), naming the key.
-- **The shared lym Codex home (D5).**
-  Every launch sets `CODEX_HOME` to `codex.yaml`'s `home` (`~/.lym/codex`); lym never writes the operator's `~/.codex`.
-  Prepare links the home's `auth.json` and `sessions` to the operator home's.
-  It keeps the trusted roots in `lym-trust.json` and renders `config.toml` whole from it under a file lock: the two `[tui]` settings, then one trusted project table per root.
-  It trusts the worktree root and, for a linked worktree, the main checkout root read from the `.git` entries through `internal/dotgit`, and drops recorded roots whose folder is gone.
-  A regular file, or a link elsewhere, in place of a home link is kept and named in a Warn with the way forward.
-  A committed `.codex/config.toml` in the worktree, and the main checkout's when the worktree holds a `.codex/` folder, get a Warn.
-  A committed `.codex/rules/` refuses the launch with a Warn.
-- **The launch line (D6).**
-  The line is the spike's: `--no-alt-screen -a never -s workspace-write`, the model and `model_reasoning_effort`, the `CLAUDE.md` fallback, the hooks and `--dangerously-bypass-hook-trust`.
-  It adds `sandbox_workspace_write.writable_roots` naming the weft checkout, takes the prompt pointer as the positional first turn, and ends with `exit`, so a Codex exit leaves a dead pane.
-  The resume line is `exit` alone.
-  `prompt.md` opens with the standing passages heddle holds for engine `codex` and the spec's role.
-- **Hook-fed events, completion and interrupt (D7).**
-  `-c` hooks append a stamp line and the payload of `SessionStart`, `UserPromptSubmit`, `Stop` and `PermissionRequest` to the run's events file, and `PostToolUse` touches the activity stamp.
-  `Stop` is the turn end and carries the reply; the session signals map the four hooks to a session start, a turn start, a turn end and an ask.
-  A newest `turn_aborted` in the rollout the payloads name marks a turn interrupted.
-  Liveness reads unproven, and the launch carries no creel hooks.
-- **Pane driving (D8).**
-  Startup classifies the spike's ready composer, the folder-trust prompt, and the hook-review prompt as still booting.
-  The trust accept moves the caret onto `Trust and continue` and presses Enter, and presses nothing when that option is not next to the caret.
-  The engine implements `InputBoxReader`, `InterruptGuard` (the `Working (… esc to interrupt)` line, Escape, a 2-second settle), `TextPaster` with `PasteSubmits` false and the `[Pasted Content N chars]` placeholder, and `SessionCycler`.
-  The context size comes from the rollout's newest `token_count`.
-- **A file link (D13).**
-  `internal/fslink` gains `CreateFileLink`: a symlink on Linux, a refusal naming its way forward on Windows before anything is touched.
-  `PATTERN-fs-links` names it.
-- **A check after startup.**
-  `shuttleengine` gains the optional `StartupChecker` capability, which the runner calls once a launch is past its startup gates.
-  codexengine uses it to read `config.toml` back and warn about a trust root Codex's own write dropped.
+- **Engine.** `codexengine` implements `shuttleengine.Engine`: launch, startup classification, send, idle and busy readings, completion, interrupt and context size.
+  The first turn is the positional prompt pointer, and the pane's shell exits after Codex, so a Codex exit reads as a dead pane.
+  Hooks given by `-c` write SessionStart, UserPromptSubmit, Stop and PermissionRequest payloads to the run's events file, and PostToolUse touches the activity stamp.
+  A Stop is the turn end.
+  An interrupt fires no Stop, so a newest `turn_aborted` in the rollout marks the turn interrupted.
+- **Shared lym Codex home.** Every launch runs under one home, `codex.yaml`'s `home`, set as `CODEX_HOME`; the operator's own Codex home is never written.
+  The lym home links `auth.json` and `sessions` to the operator home's, so one login serves both and rollouts land where the operator's tools read them.
+  lym keeps the trusted roots in its own record, `lym-trust.json`, and renders `config.toml` whole from it on each launch under a file lock.
+  Prepare trusts the worktree root and a linked worktree's main checkout root, and drops recorded roots whose folder is gone.
+- **Launch line.** `-a never -s workspace-write`, so no approval prompt shows.
+  The records checkout is added as a writable root, so the session writes under the anchor's `.lym` as a Claude seat does.
+  `configengine.Dirs` gains `Records`, filled by `fabricengine.ConfigDirs` with the weft checkout when it exists; no config layer reads it.
+  Outside a hub the engine is told none and adds none.
+- **Model aliases.** `sol`, `astra` and `luna` resolve to the codex engine in the built-in registry and in the `models.yaml` template, at `effort: medium`.
+  The built-ins carry that default so a Codex spec naming no effort never launches at the provider's own default.
+  A hub whose `models.yaml` predates the aliases still resolves them.
+  `contracts/specs/llm-model-spec.md` states this.
+- **File link.** `fslink.CreateFileLink` creates a file symlink on Linux and refuses on Windows before touching the filesystem.
+  `PATTERN-fs-links.md` and the package doc are updated.
+- **Startup check.** An optional `shuttleengine.StartupChecker` capability runs once a launch is past its startup gates.
+  Codex writes its own `config.toml` and ignores lym's lock, so the engine reads the file back and warns about a trusted root that was dropped.
+- **Env scrub.** `CODEX_*` variables join the engines' declared scrub, and `tmuxkit.ServerEnviron` strips them from a test server's environment.
 
 ## Design decisions
 
-- **The weft writable root comes from the anchor's links.**
-  Prepare is not told the weft checkout, so the engine takes the parent of the resolved target of the anchor's `.lym` and `_lym` links.
-  That is the path Codex keys a linked path by.
-  An anchor whose `.lym` and `_lym` are real directories, as outside a hub, gets no writable root, since they sit inside the workspace.
-- **The write through the links is proven.**
-  D6 required the build to prove it before D2 builds on it.
-  `codex sandbox` (Codex 0.164.0, no model call) refused a write through `.lym` with `Read-only file system` without the root, and let writes through both `.lym` and `_lym` with the root.
-- **Refusals before anything is written.**
-  Prepare refuses a version pin, a permission mode other than bypass, a resumed session and the publish guard.
-  It refuses the publish guard because no shell guard runs on Codex until the skills-and-guards part lands.
-- **No session id.**
-  Codex mints its own id at the first turn, so the launch names none.
-  For the same reason the engine implements no `UsageReader`; the context reading goes through the Stop payload's rollout path instead.
-- **Left for the other parts.**
-  The prompt file does not yet open with D10's deny notice, and `skill_roots` is declared as D4 lists it but nothing reads it until skill loading lands.
-  `config.toml`'s `model_availability_nux` table is rendered empty, since the twill spike recorded its name and not its content.
-  Clear, compact and plugin reload type nothing, since none has been tried on Codex.
+- The writable root is the weft checkout, the target of the `.lym` and `_lym` links, symlink-resolved as the trusted roots are.
+  When it cannot be resolved it is kept as told, with a Warn.
+  This replaces a writable root on the assistant report path.
+- Trust is a lym-owned record rendered into `config.toml` rather than a `-c` flag, because Codex keys folder trust on a git root and a `-c` flag cannot set it.
+- A committed `.codex/rules` folder in the worktree root or the anchor refuses the launch, since an allow rule there lifts the sandbox.
+  A committed `.codex/config.toml` is named in a Warn, since its hooks run unreviewed.
+- A login made inside the lym home leaves a regular `auth.json`; Prepare names it in a Warn and keeps it.
+- Codex keeps no session registry, so liveness reads unproven, and the resume line starts no Codex because Codex mints its session id at the first turn.
+- A send pastes the text and leaves the Enter to shuttle's guarded send, since Codex drops an Enter typed inside a burst of characters.
+- Out of this change: skill loading, shell guards, fork audit, transcript reading and creel hooks on Codex.
+  The engine refuses a spec that needs the publish guard.
 
-## Tests
+## To check by hand
 
-Tier-0 tests cover the launch and resume lines, the hook settings and TOML quoting, Prepare's launch, prompt file and passages, and the home's links, record and `config.toml`.
-They also cover concurrent launches into one home, each refusal leaving no artifact, each Warn, and the check after startup.
-Parsing is pinned against the spike's hook payloads, rollout fixtures and pane captures.
-A tier-1 test runs the recording and activity hooks under `sh` and reads what they write back through the parsers.
-The registry, model-spec, config-registry and config-sync tests are updated for the new engine, aliases and module.
-The one llm-tier smoke run the acceptance criteria name drives the assistant seat, which the project's last part builds.
+- Run a real Codex session in a hub and confirm the sandbox lets a write through the `.lym` and `_lym` links into the weft checkout.
+  The build proves the root reaches the launch line; the write through the links against a live Codex was not run here.
+- Run one real Codex launch against the pane readings (`›` composer, `Working (… esc to interrupt)` busy line, folder-trust prompt) and the hook events file; the suites use recorded fixtures.
+- Confirm on a machine with an existing `models.yaml` that `sol`, `astra` and `luna` resolve without re-seeding.
+- Confirm a Windows build refuses `CreateFileLink` and so refuses a Codex launch with a message naming the way forward.
