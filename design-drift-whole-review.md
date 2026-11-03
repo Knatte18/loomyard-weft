@@ -31,6 +31,14 @@ A skip list cannot carry an intended change: skipping the tests a change drifts 
 The review should map these stencil rules as they now stand.
 The change is wording alone: no code checks where a drift falls, and it ran against no live task.
 
+`drift-after-review` (`843a03f1`) added the mechanical row `Drift-Recheck` after the Code-Review perch, before Describe: it compares again when code was committed after Drift-Verify, against an accepted profile Drift-Verify captures when it accepts tests, and routes any drift back to Drift-Verify.
+The operator finds its behaviour sound (2026-11-03).
+Questions for the review:
+
+- Whether Drift-Recheck needs to be a row of its own, or whether sending the run back to Drift-Verify after new commits does the same.
+- Drift against the accepted profile lapses every acceptance, since the compare cannot tell which accepted test changed; whether it can lapse only the test that changed.
+- The wiring of the accepted-profile seams, `CaptureAccepted` and `CompareAccepted` in `internal/loomcli/driftwiring.go`, was flagged untested at landing.
+
 ## Starting point for the design (operator and hub orch, 2026-11-03)
 
 Judgment stays, but bounded, so an agent never decides freely whether a drift is fine:
