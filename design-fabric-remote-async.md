@@ -1,6 +1,8 @@
 # Every remote operation runs async, and local-only fabric pairs stay an explicit choice only
 
-`fabric-remote-async` · Note · enhancement, fabric, batten
+`fabric-remote-async` · Task · enhancement, fabric, batten
+
+Depends on: [`remote-moved-before-push`](design-remote-moved-before-push.md)
 
 ## Seen
 
