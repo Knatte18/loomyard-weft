@@ -1,6 +1,6 @@
 # Claude Code autocompact picker in a shuttle session stalls a gate re-prompt forever
 
-`shuttle-autocompact-picker-stall` · Note · bug, shuttle, loom
+`shuttle-autocompact-picker-stall` · Task · bug, shuttle, loom · draft
 
 ## Seen (2026-11-02)
 

@@ -656,10 +656,10 @@
     },
     {
       "id": 1013,
-      "handle": "B1",
+      "handle": "T4",
       "slug": "shuttle-autocompact-picker-stall",
       "title": "Claude Code autocompact picker in a shuttle session stalls a gate re-prompt forever",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "shuttle",
@@ -670,6 +670,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (2026-11-02)\n\nIn run `finalize-fix-outside-lock`, the Code-Burler-Fix fixer finished its turn.\nClaude Code then showed its \"We recommend compacting earlier / autocompact at 400k?\" picker in the shuttle session, where it replaced the input box.\nThe Code-Burler-Fix verify gate found one fixed-column comment wrap and tried to re-prompt the fixer.\nThe trace logged \"re-prompt not delivered, retrying on a later tick without spending an attempt … no input box is on screen; a menu or picker\" once a minute for over 30 minutes.\nThe re-prompt spends no attempt and never escalates, so the run waits forever; only dobby's quiet notice surfaced it.\n\n## Workaround\n\nA single Escape key in the fixer's pane closes the picker (\"esc not now\"); the gate's next tick then delivers the re-prompt.\n\n## Expected\n\n- Shuttle dismisses known mid-session pickers the way `claudeengine`'s startup dismisses the one-time trust gate: when readiness holds a pane with no input box, it matches the picker by its wording (here \"We recommend compacting earlier\" and \"esc not now\") and presses Escape, which keeps the current setting.\n  Today the trust gate is handled only at startup, and readiness only reports \"no input box is on screen; a menu or picker may be open\".\n- A picker shuttle does not recognise still ends the wait: the re-prompt escalates after a bounded number of ticks instead of retrying without end.\n- No Claude Code setting is documented to suppress this picker (operator, 2026-11-02: it is rare, so shuttle handles it rather than a settings change).\n",
+      "status": "draft",
       "created": "2026-11-02T20:18:06Z",
       "revised": "2026-11-02T20:40:13Z"
     },
