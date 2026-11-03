@@ -229,16 +229,16 @@
         "enhancement",
         "pawl",
         "workspaces",
-        "drift",
+        "reed",
         "landing"
       ],
       "issues": [],
       "depends_on": [],
       "isolated": false,
       "brief": "A command on a beam files a merge-in-from-parent task, run as darn with its perch on",
-      "body": "## Seen (operator, 2026-10-31)\n\nThe pawl recipe, a beam's run, had a Code-Review perch of its own; the operator did not want it, since the beam's members are already reviewed by their own runs.\nThe perch is gone: pawl became a loom recipe with no review round (`pawl-loom-recipe`), and Parent-Align brings the parent in before Finalize and Beam-Down land the beam.\nNothing now checks that a beam has reached its project's goal before it lands: Beam-Await ends on a land request.\n\n## Idea\n\nBringing the parent into a beam is a task of its own: a run with its own worktree inside the beam's project, \"merge in from parent\".\n- It runs as darn with its perch on, not with review off (operator, 2026-11-01).\n- A command on the beam, such as `lym beam merge-parent \u003cbeam\u003e`, files such a task in the beam's project with one call, at any time, not only at landing; dobby starts it as any member (operator, 2026-11-01).\n- The run merges the parent into the beam, settles conflicts and gate failures with the merge fixer, and can run Drift.\n- pawl lands the beam without a perch round of its own (built by `pawl-loom-recipe`).\n\n## Open\n\n- The command's name.\n- Whether its perch also reviews the beam against the project's decision record, so this is where the project's goal is checked before the beam lands.\n- Whether pawl starts such a run itself before it lands, or requires one to have landed since the parent last moved.\n",
+      "body": "## Seen (operator, 2026-10-31)\n\nThe pawl recipe, a beam's run, had a Code-Review perch of its own; the operator did not want it, since the beam's members are already reviewed by their own runs.\nThe perch is gone: pawl became a loom recipe with no review round (`pawl-loom-recipe`), and Parent-Align brings the parent in before Finalize and Beam-Down land the beam.\nNothing now checks that a beam has reached its project's goal before it lands: Beam-Await ends on a land request.\nBringing the parent into a beam is today done by writing a merge task by hand, as the `codex-engine` beam's two merge-main tasks were.\n\n## Design (operator, 2026-11-01 and 2026-11-03)\n\n- Bringing the parent into a beam is a task of its own: a darn run with its own worktree inside the beam's project, \"merge in from parent\", with its perch on.\n- `lym beam merge-parent \u003cbeam\u003e` files such a task in the beam's project with one call, at any time, not only at landing; dobby starts it as any member.\n- The run merges the parent into the beam, settles conflicts and gate failures with the merge fixer, and can run Drift.\n- Its perch reviews the merge alone; checking the project's goal before the beam lands is no part of it.\n- pawl neither starts such a run nor requires one before it lands: pawl lands the beam without a perch round of its own (built by `pawl-loom-recipe`), and its Parent-Align brings the parent in as today.\n- Two default buttons in reed's `beam` button group, each with a confirm prompt:\n  - `merge-in` runs `lym beam merge-parent {beam}`.\n  - `land` runs `lym beam land {beam}`.\n- The prime has no parent, so the default `prime` group gets the beam group's other buttons without these two, instead of falling back to the beam group.\n\nRelated: note `protected-parent-landing`, landing on a parent the hub may not push to.\n",
       "created": "2026-10-31T12:52:24Z",
-      "revised": "2026-11-01T10:46:10Z"
+      "revised": "2026-11-03T18:07:32Z"
     },
     {
       "id": 932,
