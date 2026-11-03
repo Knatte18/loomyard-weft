@@ -866,6 +866,27 @@
       "body": "Imported from [issue #35](https://github.com/Knatte18/loomyard/issues/35).\n\nWhat happened: `lym webster begin-batch 1` was refused before any fork: `websterengine: head sha in \u003cworktree\u003e/\u003csubdir\u003e: gitrepo: open go-git handle at \u003cworktree\u003e/\u003csubdir\u003e: repository does not exist`. The loom run halted blocked (escalation-to-human) at Webster.\n\nWhy abnormal: the task's working directory is a subdirectory of the git worktree (the repository root is higher up), and the go-git open is called on that subdirectory without repository discovery, so HEAD sha lookup fails. Every earlier verb worked from the same directory.\n\nWhat to do: open the repository with detection of the enclosing `.git` (go-git `PlainOpenWithOptions` with `DetectDotGit`), or resolve the repository root before calling the head-sha lookup in `websterengine`.\n\nProvenance: task `commonlib-fluid-report-selection`; notes loom-halt-4.md, webster-refusal-begin-batch.md.\n",
       "created": "2026-11-03T16:44:22Z",
       "revised": "2026-11-03T16:44:22Z"
+    },
+    {
+      "id": 1064,
+      "handle": "B4",
+      "slug": "card-path-empty-anchor",
+      "title": "Webster plan validation refuses a card path with a trailing '#' anchor that Plan-Bouncer accepted",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster",
+        "parsers"
+      ],
+      "issues": [
+        34
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #34](https://github.com/Knatte18/loomyard/issues/34).\n\nWhat happened: `lym webster run` failed the run (producer-hard-failure) with two blocking findings on one card: `path-missing` and `glyph-not-found`. The card path was a markdown file followed by a bare `#` (an empty heading anchor), e.g. `\u003cdir\u003e/README.md#`. The same refusal recurred in a later run, once with a repo-relative path and once with a path relative to the module directory.\n\nWhy abnormal: the plan passed Plan-Bouncer and Plan-Burler review, then died at Webster after the plan was already accepted. Either the plan check should reject the malformed path early, or the Webster path parser should split the `#anchor` suffix from the file path and treat an empty anchor as the whole file.\n\nWhat to do: share one path-with-anchor parser between the plan bouncer and `lym webster` validation, and make the bouncer reject what Webster rejects.\n\nProvenance: task `commonlib-fluid-report-selection`; notes loom-halt-3.md, loom-halt-5.md.\n",
+      "created": "2026-11-03T16:44:24Z",
+      "revised": "2026-11-03T16:44:24Z"
     }
   ],
   "prime_owner": "neve",
