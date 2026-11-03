@@ -792,7 +792,7 @@
       "isolated": false,
       "brief": "adoptcli, fronttask and boardengine tell the reader to run lym board remove with a bare slug; the verb takes JSON or a bare handle",
       "body": "Several way-forward texts tell the reader to run `lym board remove \u003cslug\u003e`, a form the verb refuses.\n\n## Seen\n\nOn the `cs` hub (2026-11-03), removing the adopt fix task `adopt-fix-root-t1` as the fix loop's notice names it:\n\n```\n$ lym board remove adopt-fix-root-t1\n{\"error\":\"invalid json: invalid character 'a' looking for beginning of value\",\"ok\":false}\n```\n\n`lym board remove '{\"slug\":\"adopt-fix-root-t1\"}'` worked.\n`lym board remove --help` takes a JSON object with `slug`, `id` or `handle`, or a bare handle such as `T4`, never a bare slug.\n\nThe bare-slug form is named in:\n\n- `internal/adoptcli/fixloop.go` (the fix loop's drop line) and `internal/adoptcli/green.go` (a failed fix-task removal)\n- `internal/fronttask/fronttask.go` (`RemoveError.HandRemoval` and the one-open-front-task refusal)\n- `internal/boardengine/front.go` (the fixed-front-task refusal)\n- `internal/adoptcli/doc.go`\n\n## Expected\n\nEvery way forward names a command the verb accepts: either `lym board remove` takes a bare slug as it takes a bare handle, or each text names `lym board remove '{\"slug\":\"\u003cslug\u003e\"}'`.\nA test pins that each way-forward command these packages render parses.\n",
-      "status": "running · Code-Burler-Review",
+      "status": "running · Code-Burler-Fix",
       "created": "2026-11-03T14:27:03Z",
       "revised": "2026-11-03T14:47:33Z",
       "profile": "light"
