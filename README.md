@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-03 14:24 UTC; every age below is as of then.
+Rendered 2026-11-03 14:25 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -70,7 +70,7 @@ Waits only on Running, Ready or Draft entries.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-## [P0 Root: entries under no project](project-root.md) (32)
+## [P0 Root: entries under no project](project-root.md) (33)
 
 Owner `neve`
 
@@ -90,9 +90,9 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Drive the C# sandbox hub through a Drift and subdirectory-anchor trial and report what breaks**<br>• Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there | [`sandbox-dotnet-gate`](design-sandbox-dotnet-gate.md) | darn · docs |  | 5d<br>3m | dotnet, gate, drift |
+| T1 | `draft` **Drive the C# sandbox hub through a Drift and subdirectory-anchor trial and report what breaks**<br>• Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there | [`sandbox-dotnet-gate`](design-sandbox-dotnet-gate.md) | darn · docs |  | 5d<br>5m | dotnet, gate, drift |
 
-### Notes (31)
+### Notes (32)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -102,11 +102,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 11d<br>6h | loom, stencil |
 
-#### Bugs (1)
+#### Bugs (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **A beam cannot be made from a project whose slug already ran a motif run** | [`beam-after-motif`](design-beam-after-motif.md) | 1h<br>1h | batten, pawl |
+| B2 |  | **A gate tier whose shell exits while a grandchild holds its pipe hangs forever**<br>• No WaitDelay on tier and build children: an orphaned MSBuild node keeps lym gate test, and the adopt check, running past every timeout | [`gate-orphan-pipe-hang`](design-gate-orphan-pipe-hang.md) | 0m<br>0m | gate, process |
 
 #### Enhancements (12)
 
