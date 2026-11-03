@@ -10,7 +10,7 @@
     },
     {
       "slug": "nicknames",
-      "text": "# Nicknames\n\nThe operator uses two nicknames for lym parts; read them as the part they name, and use them freely when talking to the operator.\nCode, files, verbs and specs keep the formal names.\n\n- **Sketch**, with a capital S: the decision record, the approved record a Discussion writes, stored on the board for a discussed entry.\n- **Merriam**: webster's long-lived master session, the one that forks one implementer per batch.\n",
+      "text": "## Nicknames\n\n- Read \"Sketch\" (capital S) as the decision record: the approved record a Discussion writes, stored on the board for a discussed entry.\n- Read \"Merriam\" as webster's long-lived master session, which forks one implementer per batch.\n- Use both nicknames freely with the operator.\n- Keep the formal names in code, files, verbs and specs.\n",
       "order": 900,
       "targets": [
         "claude-file"
