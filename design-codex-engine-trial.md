@@ -16,6 +16,7 @@ The package doc `internal/shuttleengine/codexengine/doc.go` is the spec; each pa
 3. Hooks: SessionStart, UserPromptSubmit, Stop with its reply, PermissionRequest and PostToolUse each reach the run's events file or activity stamp; an interrupt reads as interrupted through `turn_aborted`; the context size from `token_count`.
 4. Shell guards: every installed guard row denies its command through the PreToolUse hook with its Codex steer, the prompt file carries the notices, and a hook that fails to run is seen failing open.
 5. Pane and send: the composer, the busy line and the trust prompt read right; a long or multi-line send through the guarded paste-then-Enter lands whole; a dead pane after exit.
+   Creel by the pane path, the only one a Codex strand has: a program's notice typed in full into an idle session, an agent's mail reminded with `run lym creel read`, and the Codex session running `lym creel read` and `lym creel post --reply` from inside its `workspace-write` sandbox, which must reach the creel daemon.
 6. Skills: a `<plugin>:<name>` load reads the newest version's `SKILL.md` and the load is seen in the rollout; an unknown skill is reported unknown.
 7. Stress: several Codex sessions at once, long sessions, repeated interrupts and sends, and a darn run with a Codex seat end to end.
 
