@@ -2,6 +2,8 @@
 
 `fabric-remove-ignored-files` · Task · bug, fabric, batten, pawl · draft
 
+Depends on: [`batten-remote-order`](design-batten-remote-order.md)
+
 Imported from [issue #21](https://github.com/Knatte18/loomyard/issues/21).
 
 ## What happened
