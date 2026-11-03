@@ -1,6 +1,6 @@
 # Every remote operation runs async, and local-only fabric pairs go
 
-`fabric-remote-async` · Task · enhancement, fabric, batten · running · Darn-Write
+`fabric-remote-async` · Task · enhancement, fabric, batten · running · Drift-Verify
 
 ## Seen
 
