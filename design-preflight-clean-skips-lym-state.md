@@ -1,6 +1,6 @@
 # Preflight refuses lym own state files under _lym
 
-`preflight-clean-skips-lym-state` · Task · bug, preflight, shed · running · Code-Burler-Review
+`preflight-clean-skips-lym-state` · Task · bug, preflight, shed · running · Code-Burler-Fix
 
 From [issue #27](https://github.com/Knatte18/loomyard/issues/27).
 
