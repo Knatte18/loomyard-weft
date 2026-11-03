@@ -1,6 +1,8 @@
 # Bench Plan and Discussion fixers on Sonnet against Opus
 
-`fixers-on-sonnet` · Note · research, burler, claude
+`fixers-on-sonnet` · Task · research, burler, claude
+
+Depends on: [`concrete-review-findings`](design-concrete-review-findings.md)
 
 ## Seen
 
