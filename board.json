@@ -702,7 +702,7 @@
       "isolated": false,
       "brief": "The project page links the body only through the slug; render it in the page itself",
       "body": "## Seen (operator, 2026-11-03)\n\nThe Bolt page `project-\u003cslug\u003e.md` shows a project's title, brief and member lists; its body sits only in `design-\u003cslug\u003e.md`, linked from the slug, so the operator must click through to read the project's goal and design.\n\n## Expected\n\n- `project-\u003cslug\u003e.md` renders the project's body under its brief, before the task and note lists, with its headings demoted below the page's own so the page outline stays intact.\n- A project with no body renders as today.\n- `design-\u003cslug\u003e.md` and its link stay as they are.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Drift-Recheck",
       "created": "2026-11-03T19:12:45Z",
       "revised": "2026-11-03T19:12:45Z",
       "profile": "speed"
