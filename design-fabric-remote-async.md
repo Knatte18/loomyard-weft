@@ -2,8 +2,6 @@
 
 `fabric-remote-async` · Task · enhancement, fabric, batten · running · Darn-Write
 
-Depends on: [`remote-moved-before-push`](design-remote-moved-before-push.md)
-
 ## Seen
 
 `batten-start-speed` builds local-only fabric pairs (`fabric add --local`, a local-only branch mark in `gitrepo` with a push refusal, pushes that skip such branches, and local modes of `fabric remove` and `fabric cleanup`): about 630 lines of code, 1360 with tests, plus a local-mark check in the status-push spawn entry.
