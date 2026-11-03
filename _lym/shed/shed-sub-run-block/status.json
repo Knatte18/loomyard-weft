@@ -1,8 +1,9 @@
 {
   "current_producer": "Seed-Child",
-  "state": "running",
+  "state": "paused",
   "error": "",
-  "pause_requested": true,
+  "pause_requested": false,
+  "pause_reason": "pause requested",
   "activity": {
     "now": "Seed-Child",
     "last": "Worktree-Create → done",
