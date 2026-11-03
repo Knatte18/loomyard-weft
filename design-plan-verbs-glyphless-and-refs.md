@@ -1,6 +1,6 @@
 # Plan verbs: validate-plan cannot target a glyphless test file, insert-card leaves bare card N mentions stale
 
-`plan-verbs-glyphless-and-refs` · Task · bug, loom, quarry · running · Describe
+`plan-verbs-glyphless-and-refs` · Task · bug, loom, quarry · running · PR-Review
 
 Two faults in the loom plan verbs, from [issue #4](https://github.com/Knatte18/loomyard/issues/4) and [issue #5](https://github.com/Knatte18/loomyard/issues/5), both seen in task `warp-visibility`.
 
