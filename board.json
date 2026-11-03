@@ -1060,6 +1060,28 @@
       "body": "Imported from [issue #23](https://github.com/Knatte18/loomyard/issues/23).\n\nSeen in hub NORCE-DrillingAndWells/Models, whose fabric is anchored at src/csharp/NORCE.Models by .lym-anchor. A darn run (testsupport-rule-and-helpers) failed Drift-Baseline three times with 'the capture child ended before it recorded its start'. The capture-child log holds only: cwd is outside the recorded fabric anchor subtree: cwd \u003cworktree root\u003e does not equal the anchored directory \u003cworktree root\u003e/src/csharp/NORCE.Models (recorded by .lym-anchor). The drift producer starts its capture child with cwd at the worktree root whatever directory the run is resumed from, so every re-launch fails identically and drift cannot run in any hub with a subdirectory anchor.\n\nWorkaround: the parent runs lym drift defer and lym loom resume in the task worktree, then lym drift waive at Drift-Verify, so the run goes on with no baseline.\n\nExpected: the capture child (and the compare child) start in the anchored directory, the same directory every other lym verb requires.\n\n## From issue #24\n\nImported from [issue #24](https://github.com/Knatte18/loomyard/issues/24).\n\nHub NORCE-DrillingAndWells/Models, darn run testsupport-rule-and-helpers, halted at Drift-Baseline by Knatte18/loomyard#23. To skip drift for this one run, the parent ran lym config drift --layer local --set enabled=false in the task worktree; lym config --resolved drift shows enabled: false # local. lym loom resume then ran Drift-Baseline again and spawned the capture child anyway, failing the same way. lym drift defer is refused at a failed or paused Drift-Baseline, and goto cannot move past it, so there is no way to take one run past drift.\n\nExpected: either the local layer's enabled=false makes Drift-Baseline and Drift-Verify pass through on the next resume, or lym drift defer is admitted at a failed Drift-Baseline, as its halt's way forward.\n\n## From issue #25\n\nImported from [issue #25](https://github.com/Knatte18/loomyard/issues/25).\n\nHub NORCE-DrillingAndWells/Models, darn run testsupport-rule-and-helpers. The task adds a PATTERN.md entry and moves three test helpers between test projects. The agent's own baseline.md says it touches no production code and expects no drift, yet it recorded scope full. The capture suite, NORCE.Models.NumericalBaseline, references only NORCE.Models.WellboreSimulation, so nothing the task changes can reach it; scope off was the right call, and would have spared the run the capture (which then failed on Knatte18/loomyard#23).\n\nExpected: the Drift-Baseline stencil tells the agent to check whether the capture command's projects can reach the changed files, through their project references, and to record scope off when they cannot or when the change touches no code the suite runs. A scope recorded wrongly cannot be re-recorded today (a second lym drift scope is refused), so a way for the parent to reset it would help too.",
       "created": "2026-11-03T08:11:54Z",
       "revised": "2026-11-03T08:11:58Z"
+    },
+    {
+      "id": 1037,
+      "handle": "B4",
+      "slug": "inherited-halt-blocks-preflight",
+      "title": "New task worktrees in a beam inherit the beam's committed loom-halt.md and block at Preflight",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom",
+        "friction",
+        "pawl"
+      ],
+      "issues": [
+        22
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #22](https://github.com/Knatte18/loomyard/issues/22).\n\nSeen in hub mo, beam duplication-and-import-followups. The beam's weft has src/csharp/NORCE.Models/_lym/loom/friction/loom-halt.md committed (weft commit ed4ae57 'loom: commit run records'), holding the beam pawl run's own old halt (Beam-Await, loop-exited). Two task runs released in the beam, testsupport-rule-and-helpers and drift-numerical-baseline, branched from that weft. Loom's start deleted the inherited halt file, and Preflight's worktree-clean check then refused on that uncommitted deletion (D .../_lym/loom/friction/loom-halt.md); both runs halted blocked at Preflight and the tackler handed the stop back as a question.\n\nWorkaround: rm the halt file in each task worktree, lym fabric commit there, then lym batten run \u003cslug\u003e from the beam.\n\nExpected: a run's own friction halt marker is not committed into the weft a child branches from, or a child's start clears an inherited halt and commits that removal itself before Preflight checks the worktree.",
+      "created": "2026-11-03T08:12:01Z",
+      "revised": "2026-11-03T08:12:01Z"
     }
   ],
   "prime_owner": "neve",
