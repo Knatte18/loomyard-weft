@@ -794,7 +794,7 @@
       "isolated": false,
       "brief": "",
       "body": "Part 3 of project `codex-engine`.\nIts Sketch is the project's stored decision record: read it with `lym board get P2 --record`.\n\n## Build\n\n- Decisions D11 and D12 of the Sketch.\n\n## Bounds\n\n- The Sketch's Scope, Constraints, Open risks and Acceptance criteria bind this part as far as they concern these decisions.\n- The other decisions belong to the project's other parts: leave them out.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Describe",
       "created": "2026-11-03T12:38:40Z",
       "revised": "2026-11-03T12:38:40Z",
       "profile": "light",
