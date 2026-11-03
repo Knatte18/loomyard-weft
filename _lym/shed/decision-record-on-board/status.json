@@ -1,12 +1,13 @@
 {
   "current_producer": "Discussion-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Discussion-Bouncer: round 1 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/reviews/discussion/round-1-escalation.md; record the answer with `lym loom decision add decision-record-on-board`, then decide with `lym loom circling accept decision-record-on-board` or `lym loom circling continue decision-record-on-board`, then run `lym loom resume` in the task worktree to resume",
+  "parent_notice": "Review segment of task `decision-record-on-board` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/reviews/discussion/round-1-escalation.md` with a one-shot fork.",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler-Fix → bounced to Discussion-Bouncer",
-    "wait": ""
+    "last": "Discussion-Bouncer → awaiting",
+    "wait": "bouncer Discussion-Bouncer: round 1 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/reviews/discussion/round-1-escalation.md; record the answer with `lym loom decision add decision-record-on-board`, then decide with `lym loom circling accept decision-record-on-board` or `lym loom circling continue decision-record-on-board`, then run `lym loom resume` in the task worktree to resume"
   },
   "history": [
     {
@@ -70,6 +71,12 @@
       ],
       "budget_exempt": true,
       "routed_to": "Discussion-Bouncer"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/reviews/discussion/round-1-bouncer-ledger.md",
+      "at": "2026-11-03T07:41:36Z"
     }
   ],
   "product": {
