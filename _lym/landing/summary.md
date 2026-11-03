@@ -1,58 +1,47 @@
-# Plan verbs: glyphless test files plannable, bare card N refs renumbered
+# Plan verbs: glyphless test files, bare card N rewrites
 
-Two fixes to the loom plan verbs, from issues #4 and #5. Both were seen in task `warp-visibility`.
+Two faults in the loom plan verbs, both seen in task `warp-visibility`.
 
-## edit-test-file admits a test file with no symbol (#4)
+Closes #4
+Closes #5
 
-Some `_test.go` files pin symbols only through blank-identifier package-level vars, such as `cmd/lym/seamsignature_test.go`.
-`lym quarry toc` lists no symbols for such a file.
-`edit-test-file` refused it as an Edit target and asked for member glyphs that do not exist, so no card could plan an edit to it.
+## What changes
 
-`planparser.CheckEditTestFile` now takes a third argument, `glyphless func(path string) bool`, and admits any path that test reports true for.
-It calls the test only for a path it would otherwise refuse.
-The plan index (`internal/planglyph/index.go`) provides `glyphlessFile`, which runs quarry's toc on the file.
-It reports true only when the toc lists the file with an empty, requested symbol list and no read error or lossy parse.
-A file quarry cannot list, including one that does not exist yet, is still refused, so the check stays refuse-only.
-Format and rework validation both pass it in.
-Dispatch never runs the check, so it is unchanged.
+### `edit-test-file` admits a test file with no symbols (#4)
 
-The plan-checks spec, the plan-cards stencil block and both package docs now describe the exemption.
+A `_test.go` file that pins symbols only through blank-identifier package-level vars has no member glyph a card can name.
+`lym quarry toc` lists no symbol for it, and `edit-test-file` refused the file path as an `Edit` or `Extends` target anyway.
+The check now exempts a file the toc lists with no symbol, so a card can target the file itself.
 
-## insert-card and remove-card rewrite bare card references (#5)
+- `planparser.CheckEditTestFile` takes a `glyphless func(path string) bool` and asks it only about a path it would otherwise refuse.
+- `planglyph` supplies the test as `glyphlessFile`, which reads quarry's toc of the file whole.
+  A file counts as glyphless only when the toc entry has no error, is not lossy, and has an empty symbol list.
+  A file quarry cannot list or read, such as one that does not exist, is not glyphless and is still refused.
+- The `edit-test-file` entry in `loom-plan-checks-spec.md` and the `**Edit:**` text in the plan-cards stencil describe the exemption.
 
-Before this change, a renumber rewrote only `<N>-<slug>` card ids.
-Bare references such as `card 4` were listed under `prose_mentions` but never rewritten, so a planner had to fix about twenty of them by hand.
+### `insert-card` and `remove-card` rewrite bare card references (#5)
 
-`planparser.InsertCard` and `RemoveCard` now also rewrite each bare reference that `cardMentionRe` matches: `card N`, lists like `cards N, M and K`, and ranges like `cards N–M`.
-Each number naming a moved card becomes that card's new number, and each rewrite is reported under `rewritten_refs` with its `from` and `to` text.
-Every reference is read against the numbering before the call, the same assumption the card-id rewrite already makes.
-Card ids are masked before the bare scan, so `--card 9-beta` is never read as a bare `card 9`.
-Card headings and Card Index lines are skipped, as the old scan skipped them.
+The renumber used to rewrite only card ids (`<N>-<slug>`) and report bare mentions in `prose_mentions`, leaving the planner to renumber them by hand.
+It now rewrites a bare reference naming a moved card (`card N`, `cards N, M and K`, `cards N–M`) in the overview and every card file, and lists each rewrite under `rewritten_refs`.
 
-Some bare references cannot be rewritten without guessing:
+- Every reference is read against the numbering before the call, so a number that already means the new numbering is not shifted twice.
+- A reference with no faithful rewrite is left as is and its line is reported under `prose_mentions`, which now holds only those lines.
+  That covers a reference naming the removed card, and a range the inserted or removed card falls inside, since the range would gain or lose a card.
+- A card's heading line and the overview's Card Index lines are skipped.
+- A match glued to a preceding hyphen, as in `insert-card 3`, is a command word and is left alone.
+- A card id naming a moved card is still rewritten and listed under `rewritten_refs`; one naming the removed card is left as is and not listed under `prose_mentions`.
 
-- one that names the removed card;
-- a range that the inserted or removed card falls inside, which would gain or lose a card.
+The old `proseMentions` scan after the write is gone; the mentions are now collected during the rewrite, before any file is touched, so the journal and restore path are unchanged.
 
-These are left whole, and each line holding one is reported under `prose_mentions` with its text as the call leaves it.
-A remove now also reports a reference to the removed card when no card moves, for example when the last card is removed.
-The old scan missed that case.
-
-The post-write `proseMentions` file scan is gone.
-The new mentions come from the same in-memory pass that writes the files, so no file is read again after it is written.
-`planAfterRenumber`, `movedOldNumbers`, `namesOldNumber` and `renumberEdit.createdSlug` lost their only use and are removed.
-The `--help` text of both verbs, `internal/loomcli`'s package doc and the renumber section of `loom-plan-spec.md` now describe the new behavior.
+`loom-plan-spec.md`, the `loomcli` package doc and the `insert-card` and `remove-card` help text describe the new behaviour.
 
 ## Design decisions
 
-- **Rewrite rather than only report.** The record allowed either option. Reporting already existed (`prose_mentions`) and did not spare the planner the manual work, so the verbs now rewrite. The old package doc kept references as they were because "a bare number may already mean the new numbering". That case is rare, since an agent writes prose before it inserts a card, and every rewrite is listed under `rewritten_refs` for review.
-- **The exemption lives in the plan index, not in quarry.** The record also allowed making `lym quarry toc` show blank-identifier vars as targetable members. Quarry is an external module (`github.com/Knatte18/quarry`), and a blank identifier has no name a glyph could resolve. So the fix accepts the file target in lym, while `planparser` itself still reads no files.
+- The #4 fix exempts the file instead of making quarry report blank-identifier vars as members. Quarry's toc stays as it is, and the exemption holds for any glyphless test file, not only the blank-var case.
+- #5 rewrites instead of only reporting, the first option the issue names, and keeps the report for the cases a rewrite would change the meaning.
+- The rewrite of a bare range is all-or-nothing per reference: a range is either mapped on every moved number or left whole and reported.
 
-## Testing
+## To check by hand
 
-- `TestCheckEditTestFile`: new rows for a test file the test reports glyphless, admitted, and for one where it reports a different file, still refused.
-- `TestIndex_AppendsPlanChecks`: new rows in a real fixture repository. Format and rework validation admit a test file holding only `var _ = 1`, and format validation refuses one with a `TestX` member.
-- `TestRenumber`: now checks the rewritten prose for each insert and remove row, and the lines left reported, including the removed-last-card case.
-- `TestRenumber_RewritesCardIDs`: the insert rewrites the overview's bare `card 9` beside its card ids, and the remove reports the line naming the removed card 9.
-- `TestRenumberVerbs`: the insert envelope carries the rewritten bare reference and no prose mention, and the remove envelope reports the line naming the removed card.
-- `lym gate test` passed (tier0 computed and guard).
+- Run `lym loom insert-card` and `lym loom remove-card` on a real plan whose prose uses `card N`, `cards N, M and K` and `cards N–M`, and confirm the rewrites and the reported lines read right. Only the unit tests exercised this.
+- Run `lym loom validate-plan` on a plan whose card edits a test file holding only blank-identifier vars, with a live quarry toc, and confirm `edit-test-file` stays quiet. `TestIndex_AppendsPlanChecks` covers it only on a small temporary repository.
