@@ -75,7 +75,8 @@ Findings, duplicates merged:
 - A done line typed to the chair when the assistant finishes: the chair is busy inside its await, and ending its turn to wait risks a cold prompt cache.
 - The assistant as a required advisor: Codex would then gate the step, against the goal.
 - Codex reviewer as a replacement for the Claude fan: the goal of 2026-10-27, set aside by the operator on 2026-11-03.
-- Writing the assistant's report under `_lym` with Codex writable roots: rests on an untested `-c` setting; writing under `.lym` needs none.
+- Writing the assistant's report under `_lym` or `.lym` with Codex writable roots: rests on an untested `-c` setting; writing under `/tmp` needs none.
+- Writing the assistant's report inside the worktree's own tree: an untracked file there would reach the round's fixer commit (D6).
 - `developer_instructions` for the deny notice and passages: untested on Codex; the prompt file is proven.
 - Skills synced into `$CODEX_HOME/skills` or `~/.agents/skills` and named with `$`: discovery untested, and the `$` popup eats Enter.
 - Read-modify-write of Codex's `config.toml` with a TOML library: a new dependency for a file lym can own outright.
@@ -87,11 +88,18 @@ Findings, duplicates merged:
 - lym fork audit and `RequirementForks` for Codex subagents: board Step 4, deferred.
 - Creel hook delivery and `codex queue` wakes: no role in scope needs mail.
 - Codex `TranscriptReader` for `lym report` and `tokencount`: not in the entry's Steps 1 to 3.
-- A hard link or copy of `auth.json`: a token refresh rewrites the file and breaks either.
+- A hard link or copy of `auth.json`: a token refresh leaves a copy stale, and a logout and the next login, which create a new file, leave either stale.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+The review found the report path under `.lym` outside the Codex sandbox, since `.lym` links into the weft checkout as `_lym` does (BLOCKING): D2 moves the report under `/tmp` and keeps a copy beside the marker under `.lym` before a done marker.
+Marker and outputs now key on the attempt token as well as the review path, and stale files go before the chair starts (D1).
+`lym heddle list` showed no entry targeting `codex-file`; the shipped entries name Claude's tools, so D12 keeps them on `claude-file` and leaves the repository entry to the operator.
+Codex 0.164.0's source showed `auth.json` written in place, recorded in D13.
+D5 names the `[tui]` keys; D6 states the `.codex/` trust edge and corrects the dropped-prompt ending; D1 corrects its wait bound and the pane-mail channel; D2 names the assistant's no-parent directive; the skills-sync open risk moved into D9's rationale.
+The fan before Step 4 went to the parent.
 
 ## Question ledger
 
@@ -99,13 +107,13 @@ _No rounds yet._
 - Q2 How does the assistant reach the chair? Auto-pick: a new assistant seat kind with an ended marker and a file wait (D1); alternatives: advisor with creel, typed done line. Resolved.
 - Q3 Where is the assistant configured? Auto-pick: per-segment per-round keys, default empty, plus a timeout key (D3). Resolved.
 - Q4 Which fan does the assistant run? Auto-pick, revised at the lens review: a fan key of its own per segment and round, solo by default (D3); whether a fan may run before Step 4 is open for the parent. Open.
-- Q5 Where does the assistant write? Auto-pick, revised at the lens review: a stable per-round path under the anchor's `.lym`, copied beside the review by Go on a done marker (D2). Resolved.
+- Q5 Where does the assistant write? Auto-pick, revised at the lens review and round 1: under `/tmp` at a path keyed on the review path and attempt token, kept under the anchor's `.lym` before a done marker and copied beside the review by Go (D2). Resolved.
 - Q6 How does Codex get the deny notice and passages? Auto-pick: the run's prompt file (D6). Resolved.
-- Q7 How do skills load? Auto-pick: read by path from configured skill roots (D9); departs from the entry's Step 2 wording, raised under Open risks. Resolved.
+- Q7 How do skills load? Auto-pick: read by path from configured skill roots (D9); departs from the entry's Step 2 wording on tested grounds, stated in D9's rationale. Resolved.
 - Q8 How is the home's `config.toml` kept? Auto-pick: rendered whole from lym's trusted-roots record under a lock (D5). Resolved.
 - Q9 Shell guard text naming Claude tools? Auto-pick: a per-engine text beside the plain one in the row table (D10). Resolved.
 - Q10 How are engine-specific stencil passages chosen? Auto-pick: engine blocks resolved by stencilstore for the seat's engine (D11). Resolved.
-- Q11 Repository instructions for Codex? Auto-pick: heddle's codex-file falls back to `CLAUDE.md` (D12); heddle entry targets stay the operator's, raised under Open risks. Resolved.
+- Q11 Repository instructions for Codex? Auto-pick: heddle's codex-file falls back to `CLAUDE.md` (D12); shipped entries stay on `claude-file`, and adding `codex-file` to the repository entry is the operator's step, raised under Open risks. Resolved.
 - Q12 `auth.json` link and Windows? Auto-pick: `CreateFileLink` in fslink, refused on Windows (D13). Resolved.
 - Q13 Effort cap? Auto-pick: `efforts` list in `codex.yaml`, default low, medium, high (D4). Resolved.
 - Q14 Live testing? Auto-pick: one llm-tier smoke test on `luna[low]`, run by the operator, capped at one run. Resolved.
