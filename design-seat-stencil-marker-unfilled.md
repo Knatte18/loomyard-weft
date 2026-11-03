@@ -19,6 +19,13 @@ The seat engine filled the `darn-template-write` stencil without a value for the
 The seat name in the error is empty (`seat ""`), which suggests the seat's resolved config or recipe never supplied the marker.
 A missing model value should either come from a default or be reported before the run starts, not surface as a hard failure inside the seat.
 
+## The marker stays (operator, 2026-11-03)
+
+`subagent_model` is config on purpose: the writers' lookup subagents are not bound to one model, so the fix supplies the value and never drops the marker or hardcodes a model in the stencil.
+Today it is `loom.yaml`'s `subagent_model`, default `sonnet`, and an empty value is refused at config load (`internal/loomengine/config.go`), so the hard failure means the value never reached the Darn-Write seat's fill, not that it was unset.
+The run (`landing-fixer-base-skills`, landed `7cffa111`) ran on the day the marker came in (`2d319fe5`), so a binary or stencil change in the middle of the run is a likely cause; note `run-pins-its-version` covers that case.
+Note `lookup-agents-through-shuttle` holds where the value is heading: a lookup agent on another engine, such as Codex.
+
 ## What to do
 
 - Find where `subagent_model` is supplied to the `darn-template-write` stencil fill in `shedadapters` / `seatengine`, and why it was empty for `Darn-Write`.
