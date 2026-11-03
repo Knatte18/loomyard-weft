@@ -184,6 +184,16 @@ Rationale: The operator approved arras and asked for weaving names on recipes, a
 - The name `arras` awaits the operator's approval, which the task's scope requires; a rename touches only D9's and D10's names and constants.
 - Peer run `decision-record-on-board` adds `approve_seam: discussion` to tapestry's Discussion-Bouncer row; whichever task lands second carries the key into `cartoon`, which D9's config pin enforces.
 
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-1-review.md; fixer report: _lym/reviews/discussion/round-1-fixer-report.md.
+  - F4 (class decision, severity MEDIUM, open in rounds 1; answered since by: Recipe names: motif and arras (operator, 2026-11-03))
+  - block-done-two-events (class consistency, severity MEDIUM, open in rounds 1)
+  - goto-bypass-block-gate-unbounded (class design, severity MEDIUM, open in rounds 1)
+  - nested-block-rewrite-order (class design, severity MEDIUM, open in rounds 1)
+  - recipe-name-awaits-operator (class decision, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - A recipe whose block row sets an engine key, or lacks `block` or `block_gate`, and a hand-written row with engine `Block`, are refused at parse naming the row (D1).
