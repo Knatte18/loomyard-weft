@@ -1,43 +1,32 @@
-# Batten reads a stray directory as gone; a beam lands past its own mark
+# Batten reads a stray dir as a gone pair; a beam landing keeps its mark
 
-A landed beam's run no longer stalls at Worktree-Teardown.
-Batten verbs no longer fail on a task worktree path that is now a plain directory.
-This is the batten half of issue #21; the `lym fabric remove` half, which left the directory behind, is task `fabric-remove-ignored-files`.
+Closes #21
+
+Issue #21 reported a beam landing that stuck at Worktree-Teardown with no `lym` way forward.
+This change fixes the batten half; the `fabric remove` half is task `fabric-remove-ignored-files`.
 
 ## What changes
 
-- **A stray directory is a gone pair.**
-  `taskWorktreePresent` in `internal/battencli/wire.go` now reads a path that stands but does not resolve as a worktree as absent, as it reads a missing path.
-  Before, it returned the resolver's "not a git repository" error.
-  That error failed a resume at Worktree-Teardown, `lym batten cancel` and the dobby's child reads.
-  A teardown resume over such a directory now judges the owner on the local board and goes on, as it does when nothing stands at the path.
-  The landed `taskWorktreeGone` already read a stray path this way, so it is folded into `taskWorktreePresent` and the re-adoption's `Gone` seam negates it.
-  Batten now has one answer to whether a task worktree is there.
-- **The promote refusal is judged from the board and the run's progress.**
-  The start guard refused any run of a slug whose pair carries the beam mark unless the board held the slug as a project.
-  A beam's Land prunes its done project entry, so the beam's own landing run read as a stopped promote at Worktree-Teardown.
-  The guard's `Promoted` probe now answers true only while the board holds the slug as a task.
-  The refusal is also skipped when the run's work reached its parent.
-  A new `ReachedParent` seam decides that with the same probe `lym batten cancel` uses.
-  That probe is now `hubChildReachedParent` in `internal/battencli/cancelcmd.go`, shared by both.
-- **No refusal pair loops.**
-  The promote refusal names `lym batten cancel <slug> --remove`, and the cancel refuses a run whose work reached its parent, naming `lym batten run`.
-  The guard now names the cancel only where the cancel would go ahead, so the loop from issue #21 is gone.
-- The `battencli` package doc states both rules.
+- A task worktree path that exists but does not resolve as a worktree, such as a directory `lym fabric remove` left holding ignored build output, now reads as a gone pair.
+  `taskWorktreePresent` returns `false` for it instead of the resolver's error, so `lym batten run`, `cancel` and `cleanup` no longer fail with "not a git repository".
+  The re-adoption's gone check reads through the same function, which replaces the separate `taskWorktreeGone`.
+  The refusal that names an absent pair now also covers a stray directory.
+- The start guard no longer reads the beam mark as a promote leftover in two cases.
+  A slug the board no longer holds as a task passes, such as a beam project whose own Land pruned its entry.
+  A run whose work already reached its parent passes too, judged as `lym batten cancel` judges it.
+  A beam's own landing run therefore resumes Worktree-Teardown over the mark its Beam-Up wrote.
+- This breaks the loop where the promote refusal named `lym batten cancel --remove`, and cancel refused with "run `lym batten run`".
+  The refusal still names that cancel for a real leftover, where the work has not reached the parent, and cancel accepts it there.
 
-## Design decisions
+## Design notes
 
-- A path that does not resolve as a worktree reads as absent whatever the resolver's cause, as the landed re-adoption already did.
-  A real worktree whose anchor marker cannot be read therefore also reads as absent, and fabric's add then refuses the path by name.
-- The promote check keys on the board holding the slug as a task, not on the run's recipe.
-  An interrupted promote stops before its board write, so its slug is still a task; a landed beam's slug is gone from the board.
+- `hubChildReachedParent` is extracted from `hubCancelDeps` so cancel and the start guard share one reading of "reached its parent".
+- `startGuard` gains a `ReachedParent` seam; a nil seam reads every run as not reached.
+- `Promoted` now reads `false` unless the entry is a task, where it read `false` only for a project entry.
+- The overview and the beam-land member listing still only look for the directory, and do not read a stray one as gone.
+- `taskWorktreeLocator` no longer calls `presentTaskWorktreePath` on later calls; it only stats, so it spawns no git after the first success.
 
 ## To check by hand
 
-- Issue #21 also reports `lym batten cleanup` failing with "not a git repository".
-  Cleanup reads only the prime's records and scratch and never resolves a task worktree, so no change here reaches it.
-  If it still fails over a stray directory, the error comes from elsewhere, possibly a command run from inside the stray directory.
-- `taskWorktreePresent` now answers false for a stray path in every caller.
-  These include the beam fork precondition, which then names `lym beam create` or `lym adopt` for the beam, and `ReleaseRunParentLock`, which then releases nothing.
-  Check those wordings read right for a stray beam directory.
-- The integration tests and an end-to-end landing of a real beam were not run by hand.
+- Not run: the stuck case end to end on a real hub (a landed beam, the worktree directory left as a non-git directory with ignored files, then `lym batten run <slug>`).
+- Unit and integration tests cover the start guard and the re-adoption through the stray path.
