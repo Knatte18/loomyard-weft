@@ -1,6 +1,6 @@
 # A paused run whose work already landed is never finished and keeps its worktree and terminal
 
-`landed-run-left-paused` · Task · bug, dobby, batten · running · Code-Burler-Review
+`landed-run-left-paused` · Task · bug, dobby, batten · running · Code-Burler-Fix
 
 ## Seen (2026-11-02)
 
