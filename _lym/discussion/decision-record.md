@@ -28,6 +28,12 @@ Runs as darn with profile `docs`, after bench `concrete-review-findings` has lan
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-03): Drop arm 3; score with a solo reviewer
+
+Decision: Drop arm 3: run arms 1 (opus[medium]) and 2 (sonnet[medium]) on the two rounds in concrete-review-findings' data/fixers-input.tsv, two repeats each, eight fixer runs. Score each fixed artifact with an in-session solo reviewer, the same reviewer model and prompt for every run.
+
+Rationale: The reviewer bench found every finding already names place and change, so arm 3 has no input distinct from arm 2; a solo reviewer applied alike to every arm keeps the scoring fair though the hub's fork fan cannot be spawned here.
+
 ## Constraints
 
 ## Auto-mode assumptions
