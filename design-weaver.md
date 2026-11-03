@@ -170,8 +170,8 @@ For each batch:
 - After step 5, the batchifier runs again over the remaining cards, reading the report's deviations, and starts the next ready batches.
 - Parallel tests share the hub's gate slots, which caps how many batches verify at once.
 - A batch pair is an ordinary pair that pushes to origin like any other (operator, 2026-10-18): its commits are part of the implementation, and an agent continuing the work on another machine must see what a batch left half done.
-  An earlier orch recommendation here, that batch pairs stay local-only, was wrong; `batten-start-speed` built that local-only mode from it before the correction.
-  Teardown runs off the critical path, after the merge, so the next batch never waits for it.
+  An earlier orch recommendation here, that batch pairs stay local-only, was wrong; `batten-start-speed` built that local-only mode from it before the correction, and `fabric-remote-async` has since removed it (`lym fabric add --local` is gone).
+  Teardown runs off the critical path, after the merge, so the next batch never waits for it: `lym fabric remove` now returns after its local steps and a detached child pushes the archive tags and deletes the branches on origin.
   The operator saw 10 to 12 s for an add; where is unmeasured, and the loomyard repo's checkout (about 3,150 files) was not timed.
 
 ### Orch recommendation on the DAG batchifier
