@@ -1,6 +1,6 @@
 # fabric remove leaves ignored files behind, and the half-removed directory then blocks every batten verb
 
-`fabric-remove-ignored-files` · Note · bug, fabric, batten, pawl
+`fabric-remove-ignored-files` · Task · bug, fabric, batten, pawl · draft
 
 Imported from [issue #21](https://github.com/Knatte18/loomyard/issues/21).
 
