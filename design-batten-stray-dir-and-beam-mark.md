@@ -1,6 +1,6 @@
 # Batten treats a stray non-worktree directory as a gone pair, and a beam landing accepts its own beam mark
 
-`batten-stray-dir-and-beam-mark` · Task · bug, batten, pawl · running · Worktree-Create
+`batten-stray-dir-and-beam-mark` · Task · bug, batten, pawl · running · Record-Write
 
 Depends on: [`batten-remote-order`](design-batten-remote-order.md)
 
