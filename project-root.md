@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-03 10:48 UTC; every age below is as of then.
+Rendered 2026-11-03 10:49 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -21,10 +21,10 @@ Held by a run; its scope is locked until the run ends.
 | T1 | **Tapestry runs Discussion through a motif block and skips it for a discussed entry; motif runs alone; arras goes**<br>• Tapestry uses the motif block, skips it when the entry is flagged discussed, motif becomes a runnable recipe, and arras is removed | [`tapestry-motif-block`](design-tapestry-motif-block.md) | darn · solid | Code-Burler-Fix | neve | 1h<br>1h | shed, loom |
 | T2 | **A beam session shows the pawl run checklist in a second overview window beside the beam overview** | [`pawl-checklist-hidden-in-beam`](design-pawl-checklist-hidden-in-beam.md) | arras · light | Webster | neve | 3h<br>1h | pawl, orch, reed |
 | T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Webster | neve | 14h<br>3h | batten, fabric |
-| T4 | **Webster treats the anchor as the git worktree in a subpath-anchored hub**<br>• Webster opens git and resolves plan paths at the worktree root, not the anchor, so a subpath-anchored hub reaches code | [`webster-subpath-anchor`](design-webster-subpath-anchor.md) | darn · solid | Darn-Write | neve | 30m<br>30m | webster, cwd, parsers |
-| T5 | **Darn-Write seat halts: stencil darn-template-write has unfilled marker subagent_model** | [`seat-stencil-marker-unfilled`](design-seat-stencil-marker-unfilled.md) | darn · solid | Finalize | neve | 14h<br>55m | stencil, shed |
-| T6 | **The orch role explains how to make a project into a beam**<br>• The prime orch in the Models hub did not know beam create is the only way, and patched a plain task run by hand. | [`orch-role-making-a-beam`](design-orch-role-making-a-beam.md) | darn · light | Darn-Write | neve | 1d<br>3m | orch, pawl |
-| T9 | **Run ends with a background shell outstanding: its commit and gate result are lost** | [`run-done-with-background-shell`](design-run-done-with-background-shell.md) | darn · solid | Code-Burler-Fix | neve | 14h<br>55m | shuttle, webster, gate |
+| T4 | **Webster treats the anchor as the git worktree in a subpath-anchored hub**<br>• Webster opens git and resolves plan paths at the worktree root, not the anchor, so a subpath-anchored hub reaches code | [`webster-subpath-anchor`](design-webster-subpath-anchor.md) | darn · solid | Darn-Write | neve | 31m<br>30m | webster, cwd, parsers |
+| T5 | **Darn-Write seat halts: stencil darn-template-write has unfilled marker subagent_model** | [`seat-stencil-marker-unfilled`](design-seat-stencil-marker-unfilled.md) | darn · solid | Finalize | neve | 14h<br>56m | stencil, shed |
+| T6 | **The orch role explains how to make a project into a beam**<br>• The prime orch in the Models hub did not know beam create is the only way, and patched a plain task run by hand. | [`orch-role-making-a-beam`](design-orch-role-making-a-beam.md) | darn · light | Darn-Write | neve | 1d<br>4m | orch, pawl |
+| T9 | **Run ends with a background shell outstanding: its commit and gate result are lost** | [`run-done-with-background-shell`](design-run-done-with-background-shell.md) | darn · solid | Code-Burler-Fix | neve | 14h<br>56m | shuttle, webster, gate |
 
 ### Ready (0)
 
@@ -98,11 +98,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F16 |  | **Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | 1h<br>1h | drift, shed |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>1d | burler, shed, orch, quarry, report |
 | F18 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 4w<br>1h | shuttle, codex |
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T11 | **Plan verbs: validate-plan cannot target a glyphless test file, insert-card leaves bare card N mentions stale**<br>• Let edit-test-file target a test file with no toc symbols, and make insert-card rewrite or report bare card N mentions | [`plan-verbs-glyphless-and-refs`](design-plan-verbs-glyphless-and-refs.md) | 14h<br>55m | loom, quarry |
