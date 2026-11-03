@@ -1,0 +1,22 @@
+# Relevant files
+
+- `internal/boardengine/board.go` `Board.boardCriticalSection`, `Board.SetRunStatus`, `Board.ClearNotifyOnLand` — the locked write scaffold and the run-status precedent the store method follows
+- `internal/boardengine/runlock.go` `scopeChanged`, `checkRunLocks`, `RunHolds` — where `discussed` stays out of scope
+- `internal/boardengine/task.go` `Task` — the entry record the `discussed` field joins
+- `internal/boardengine/store.go` `UpsertPayloadKeys`, `Store.Save`, `Store.Prune`, `Store.MergeTasks` — payload keys and the removal paths that must drop the record file
+- `internal/boardengine/replay.go` `FabricReplay.Claims`, `FabricReplay.CommitRuns`, `FabricReplay.Apply`, `replayRun.applyDesignFile`, `boardDesignSlug` — the replay that must carry the record file and the field
+- `internal/boardengine/render.go` `RenderToDisk`, `renderDesigns` — the render manifest a record file must stay out of
+- `internal/boardengine/config.go` `OpenHub`, `Config.DesignPrefix` — the hub board opener and the `design_prefix` key D1 refuses equal to the record prefix
+- `internal/boardengine/rename.go` `Board.Rename` — the rename that must move the record file
+- `internal/boardengine/doc.go` — the package rules the flag, the file and the lock exemption are documented in
+- `internal/boardcli/cli.go` `getCmd`, `outputGetTask` — `lym board get` and its `--body` shape for `--record`
+- `internal/shedrecipe/entries_bouncer.go` `bouncerEntry` — the `approve_seam` switch that gains `discussion`
+- `internal/shedrecipe/recipe.go` `Env.ApprovePlan` — the Env closure precedent for `ApproveDiscussion`
+- `internal/shedadapters/bouncer.go` `Bouncer.approveAndCommit`, `Bouncer.settle` — every approving path calls the approve seam before the commit seam
+- `internal/loomcli/wiring.go` `loomCommitStatusDeps`, `newCommitStatusSeam` — the run status board write and the `ApprovePlan` wiring the new seam mirrors
+- `internal/loomcli/decision.go` `decisionVerb`, `decisionCmd`, `decisionState.preRun`, `checkDarnRecord`, `committedLacksEntry` — `decision add`, where the copy and the new `store` verb go
+- `internal/loomcli/projectrecord.go` `runRecordOf`, `commitRunRecord` — the project-record precedent, whose record is never copied
+- `internal/loomshed/recordwrite.go` `NewRecordWrite`, `BoardRecord` — the darn and pawl record written from the board body
+- `internal/loomrecipe/names.go` `Rows`, `RecipeRow` — row order and segments for judging a run past its approval
+- `internal/loomrecipe/recipekeys.go` `HasEngine`, `EngineRow` — recipe-row lookups the past-approval check sits beside
+- `contracts/recipes/tapestry-recipe.yaml` — the Discussion-Bouncer row that gains `approve_seam: discussion`
