@@ -86,13 +86,13 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (1)
+#### Layer A (1)
 
-Not released; nothing starts it until its status is cleared.
+Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T1<br>T2<br>T9<br>T3 | 2d<br>0m | fabric |
+| T4 | **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T1<br>T2<br>T9<br>T3 | 2d<br>0m | fabric |
 
 ### Notes (27)
 

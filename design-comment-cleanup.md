@@ -1,6 +1,6 @@
 # Comment cleanup: parallel agents fix stale comments across the repository
 
-`comment-cleanup` · Task · enhancement, fabric · draft
+`comment-cleanup` · Task · enhancement, fabric
 
 Depends on: [`drift-dir-base`](design-drift-dir-base.md), [`fabric-remote-async`](design-fabric-remote-async.md), [`hibernate-in-dobby`](design-hibernate-in-dobby.md), [`codex-engine-merge-main`](design-codex-engine-merge-main.md)
 
