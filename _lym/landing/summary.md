@@ -1,40 +1,33 @@
-# Drift's regression check reaches the pull request and the landing commit
+# Carry Drift's regression verdict into the PR and landing commit
 
-Drift-Verify ran the regression compare, but its result never reached the change description or the pull request.
-A description written before Drift-Verify could still ask the reviewer to "run the regression harness compare by hand", and the PR-Review agent repeated that request to the operator, though the compare had already passed.
+A clean Drift-Verify compare left the pull request asking the operator to run by hand the compare Drift had already run.
+The description was written before Drift-Verify ran, and neither it nor the PR-Review agent's prompt knew the outcome.
 
-## What changes
+Now `internal/driftengine` renders a `## Regression check` section from the task's Drift scope record, and the landing carries it into every place a reader looks.
 
-- **Drift-Verify records each compare.**
-  The scope record (`_lym/drift/scope.json`) gains `baseline_head`, `compared_head`, `compared_at` and `compare_passed`.
-  The row writes them after its own compare, whether it passed or showed drift, and again when the Drift-Verify agent ends Done, which happens only after its final compare passed.
-- **`driftengine.Verdict` renders the check.**
-  It renders the scope record as a `## Regression check` section: the scope (`full`, `partial` with its skipped tests, or `off`), the commit the baseline was captured at, the last compare's result or the waiver's reason, and each accepted drifted test with who accepted it and why.
-  It renders nothing when no scope record exists, and it checks for the file before reading it, so a recipe with no Drift rows gets no `.lym/drift/` directory.
-- **The landing appends the section.**
-  `landingshed.Deps` gains a `DriftVerdict` seam, which `loomcli`'s `landingDeps` fills from the task's scope record at call time.
-  PR-Review puts the section after the description's body and before the credit block when it opens or refreshes the pull request.
-  Finalize does the same in the landing commit message and the GitHub merge message.
-  A failed read is an error from the row, the same as a failed `EnginesRun` read.
-- **The prompts show the check.**
-  The Describe stencil (`landing-template-describe`) and the PR-Review stencil (`landing-template-pr-review`) take a new `drift_verdict` marker holding the section, or "No regression check ran for this task." when none did.
-  Describe is told that lym appends the section itself, and to drop or rewrite any item to check by hand that the check settles.
-  The PR-Review agent is told the check already ran and not to ask the operator to repeat it.
-- Docs: the package docs of `driftengine` and `landingshed`, and `loom-final-summary-spec.md`'s consumers section.
+- The section states the scope (`full`, `partial` with its skipped tests, or `off`), the commit the baseline was captured at, the last compare's result (passed, showed drift, not run, or waived with its reason), and each accepted drifted test with who accepted it and why.
+  An acceptance the run's parent has not yet ruled on is marked as such.
+- `PRReview` appends the section after the description body when it opens or refreshes the pull request, and `Finalize` appends it to the landing commit message, in both cases before the credit block.
+- The PR-Review session's prompt and the Describe prompt both show the section.
+  Describe is told the check has already run, to write no regression section of its own, and to drop or rewrite any hand-check item the check settled.
+- `Closes #N`: none; the task resolves no tracked issue.
 
 ## Design decisions
 
-- The record's Expected says Describe adds the outcome to the summary.
-  Here Go appends the section when the description is published and landed, and `summary.md` never holds it.
-  With the Code-Review perch off, Describe's entry gate skips the row and the writer's description, written before Drift-Verify, is what lands.
-  Appending in Go puts the check on the pull request in that case too, and no agent can drop or reword it.
-  Describe still sees the check, so it can drop a stale request for a manual compare.
-- With the perch off, a request for a manual compare in the writer's own description stays in place, and the appended section below it answers it.
-  The darn writer's stencil is unchanged, since the writer runs before Drift-Verify and cannot know its result.
-- A run already past Drift-Verify when this lands has no compare fields in its scope record.
-  Its section names the scope and acceptances and reads "Compare: not run."
+- The section is appended in Go, not written by Describe.
+  Code renders it exactly from the record, where an agent's prose can drift from it.
+  The summary artifact never holds the section, so it reaches the PR and the commit whichever producer wrote the artifact last.
+  `contracts/specs/loom-final-summary-spec.md` records this.
+- The verdict also goes into the landing commit message, beyond the PR, so it stays in main's history once the PR is gone.
+- Drift-Verify now records the compare in `ScopeRecord` (`BaselineHead`, `ComparedHead`, `ComparedAt`, `ComparePassed`), on both the deterministic pass and the agent's `Done` outcome.
+  `Verdict` returns `""` without touching the ephemeral drift directory when no scope record exists.
+- `landingshed.Deps.DriftVerdict` is a nil-is-absent seam, wired in `internal/loomcli` to read the record at call time, so it sees a compare recorded after bootstrap.
+  `internal/testkit/envkit` and both wiring seam tests list it as a legal nil seam.
 
 ## To check by hand
 
-- On a hub with Drift enabled, run a darn task with a regression scope through PR-Review.
-  Confirm the pull request's body ends with the `## Regression check` section before the credit block, and that the PR-Review agent's opening prompt shows the section.
+- `Landing.DriftVerdict` is exempt from the nil-seam guard in `internal/testkit/envkit/envkit.go`, `internal/battencli/wire_seams_test.go` and `internal/loomcli/wiring_seams_test.go`; confirm the exemptions are intended and `internal/loomcli` still fills the seam.
+- `Finalize`'s merge-commit message with the section (`internal/landingshed/finalize.go`) is covered by tests added late; confirm they pin the section's position before the credit block.
+- The section is appended only where a producer reads it, so a summary left from a run that skipped Describe can still carry a stale hand-check line.
+  The appended verdict sits next to it and contradicts it; confirm that is acceptable (`internal/landingshed/describe.go`, the Describe stencil).
+- Not run: an end-to-end landing on a real hub with a clean compare, to see the section in the opened PR and the PR-Review prompt.
