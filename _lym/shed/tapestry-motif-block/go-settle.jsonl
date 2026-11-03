@@ -1,1 +1,2 @@
 {"stop_key":{"current_producer":"Drift-Verify","history_length":5,"state":"paused"},"settler":"parent","action":"hand-back","outcome":"the run is paused: hold and hand back","at":"2026-11-03T11:16:16.343872306+01:00"}
+{"stop_key":{"current_producer":"Finalize","history_length":15,"state":"paused"},"settler":"parent","action":"hand-back","outcome":"the run is paused: hold and hand back","at":"2026-11-03T12:08:15.55972927+01:00"}
