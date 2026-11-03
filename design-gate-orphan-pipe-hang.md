@@ -1,6 +1,6 @@
 # A gate tier whose shell exits while a grandchild holds its pipe hangs forever
 
-`gate-orphan-pipe-hang` · Task · bug, gate, process · running · Describe
+`gate-orphan-pipe-hang` · Task · bug, gate, process · running · PR-Review
 
 A gate tier or build step whose shell exits while a grandchild still holds its stdout pipe never returns: `lym gate test` hangs forever, and neither `timeout_min` nor the tied group kill can end it.
 
