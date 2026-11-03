@@ -277,8 +277,7 @@
       "recipe": "darn",
       "depends_on": [
         "cancel-remove-leftover-dir",
-        "push-lock-busy-blocks",
-        "machine-env-vars"
+        "push-lock-busy-blocks"
       ],
       "isolated": false,
       "brief": "An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics",
@@ -569,32 +568,6 @@
       "body": "## Seen (plan-split benches, 2026-11-01 and 2026-11-02)\n\nThe plan-split writer (`Parts-Write` cuts the scope into parts with contracts, part writers plan each part, a chair joins them into one plan) was benched and replayed on two inputs (`docs/research/plan-split-tune-2026-11-02.md`).\n\n- Both inputs split into 6 parts; the joined plans had 36 and 37 cards against 20 in the solo plans that landed, for the same code locations.\n  About 85% of the extra cards were changes the solo plan had bundled into too-large cards; the rest were per-part overhead (PATTERN and doc cards per part, a card for one registry line), and about 9 cards were too small to be worth a card.\n- Planning cost and wall time were close to the solo planner's after the tuning ($18.69 against $14.93, 24 against 25 minutes; $29.36 against $28.03, 29 against 32 minutes), from one run each.\n- How well a task splits decides any gain: `warp-visibility` had a critical path of 8 of 36 cards and 15 cards on its widest level, while `run-verbs-shared` had a path of 20 of 37 cards and 119 dependencies, so its parts form one chain.\n- A joined plan of about 1.75 times the cards means about as many more implementer turns, each with its fixed cost of context, tests and commit.\n\n## Idea (operator, 2026-11-02)\n\nWhatever is built here sits beside today's tapestry, as a new recipe or a new plan format a task chooses, and leaves today's Plan-Write and Webster unchanged: what runs today works well.\nIt is benched against today's course on the same inputs before it is used for real work.\n\n- The same question can be asked of today's course: how coarse a plan Sonnet can still build from.\n  A coarser plan format, with larger cards that each state the boundary they keep, moves the code reading and the choice of code locations from the Opus planner to the Sonnet implementer, which is what a part agent does.\n\nIn the long run the parts are not joined into one plan: each part agent both plans and implements its own part, which is where time and tokens may be saved.\n\n- `Parts-Write` cuts the scope into parts with contracts, as today; then each part agent plans its part and builds it, reading only its own part and the contracts it depends on, so its context stays small; parts with no dependency between them run at the same time.\n- The aim is parts small and well bounded enough that a Sonnet `high` agent plans and writes each one; Opus stays on `Parts-Write`, whose contracts carry the design.\n- Whether a part agent can run on Sonnet is open: today `Parts-Write`, the part writers and the chair all run `opus[medium]` (`tapestry.yaml`), and a part writer on Sonnet was never tried.\n  A first bench: the same two inputs with only `part_writer: sonnet[medium]`, checking that the parts still join with no hand edit, and at what cost.\n- The split writer can answer that a task does not split, and the solo planner takes it; a task whose parts form one chain gains nothing.\n- Per-part overhead cards (PATTERN, docs) are folded into the part's code cards, and cards too small to be worth a turn are merged with a neighbour.\n- Open: where parts are built (one task worktree in turns, or a worktree per part), how a broken contract is caught before the parts meet, and one review of the whole diff against a review per part.\n",
       "created": "2026-11-02T20:51:17Z",
       "revised": "2026-11-02T20:54:19Z"
-    },
-    {
-      "id": 1028,
-      "handle": "T3",
-      "slug": "machine-env-vars",
-      "title": "Per-machine environment variables, exported to every process lym starts for the hub",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "config",
-        "gate",
-        "drift",
-        "shuttle"
-      ],
-      "issues": [
-        19
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #19](https://github.com/Knatte18/loomyard/issues/19).\n\n## Problem\n\nA hub needs environment variables whose values differ per machine, such as a path to a sibling checkout (`COMMONLIB_REPO` in the NORCE Models hub, which CommonLib-reading tests need).\nToday the only place lym sets an environment variable for a run is `gate`'s `tiers.\u003cn\u003e.env`, and only in the shared hub file committed in _bolt.\nThe machine layer refuses it:\n\n```\nlym config gate --layer machine --set tiers.tier0.env.COMMONLIB_REPO=/path\nkey \"tiers\" is executable and cannot be set in a machine override\n```\n\nSo a per-machine value has to be committed into the hub-wide config, where it is wrong on every other machine.\n\n## Design (operator, 2026-11-03)\n\n- Environment variables are configuration in their own right: a config module of their own, `lym config env`, a map from variable name to value.\n- Layers: the hub layer, shared and committed in _bolt, and the machine layer, never tracked; the machine layer wins per variable.\n  An env value is data, not an executable key, so the machine-override restriction on `tiers` does not apply to it.\n- lym exports the variables to every process it starts for the hub: gate tiers and the shared build, Drift capture and compare, and agent sessions, so an agent running tests by hand sees the same values.\n- Precedence, most specific first: a gate tier's own `tiers.\u003cn\u003e.env`, then the `env` module, then the inherited environment.\n\nThe issue also reported a `lym config drift` whole-map refusal, which landed as task `drift-config-whole-map-set`: `--set capture={...}` now replaces the map whole.\n",
-      "status": "done",
-      "created": "2026-11-03T07:13:24Z",
-      "revised": "2026-11-03T17:16:31Z",
-      "profile": "light"
     },
     {
       "id": 1032,
