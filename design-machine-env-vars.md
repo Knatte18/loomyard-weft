@@ -1,6 +1,6 @@
 # Per-machine environment variables, exported to every process lym starts for the hub
 
-`machine-env-vars` · Task · feature, config, gate, drift, shuttle · running · Record-Write
+`machine-env-vars` · Task · feature, config, gate, drift, shuttle · running · Drift-Baseline
 
 Depends on: [`drift-skip-all-capture`](design-drift-skip-all-capture.md)
 
