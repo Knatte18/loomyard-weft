@@ -1,52 +1,41 @@
-# Compare again before Describe when code changes after Drift-Verify
+# Add Drift-Recheck: compare again code committed after Drift-Verify
 
-Drift-Verify compared the writer's code once, before the Code-Review perch.
-A `Code-Burler-Fix` commit that rewrote code every regression case renders landed with no compare after it.
-The accepted tests' recorded values then described code the pull request no longer held.
+Code that a row after Drift-Verify commits, such as a Code-Review fix, used to land with no compare.
+`lym drift compare` refuses outside Drift-Verify and skips accepted tests, so nothing could check the new code or the accepted cases' new values.
+On the `cs` hub a Code-Review fix rewrote `ResultFormatter` after Drift-Verify had accepted five drifted cases, and the accepted values then described code the PR no longer held.
 
-Now a mechanical `Drift-Recheck` row follows the perch in both the darn and the tapestry recipe, and compares again any code committed since the last compare.
+A new mechanical row, `Drift-Recheck`, now follows the Code-Review perch in the darn and tapestry recipes, before Describe.
+It spawns no agent and carries the `drift.enabled` entry gate, so a hub with regression off records it Skipped.
 
-- Both recipes now run `… → Drift-Verify → Code-Review → Drift-Recheck → Describe → …`.
-  `Code-Bouncer`'s `on_done` names `Drift-Recheck`, which carries `entry_gate: drift.enabled`, `on_stuck: Drift-Verify` and `on_done: Describe`.
-- `Drift-Recheck` spawns nothing.
-  It is Done with no compare when no scope is recorded, the scope is off or waived, or HEAD is still the commit of the last compare.
-  Otherwise it compares HEAD and records the result in the scope record, so the PR's `## Regression check` names the commit actually compared.
-- With no test accepted, it compares against the baseline.
-  With tests accepted, it compares against the accepted profile, leaving out only the scope's skipped tests.
-  An accepted test whose output differs from the output its acceptance saw therefore shows as drift again.
-- Drift-Verify captures the accepted profile when it ends Done with tests accepted.
-  The capture runs the declared capture command into `.lym/drift/accepted/` at HEAD, and `scope.json` records HEAD as `accepted_profile_head`.
-  `lym drift accept` and `lym drift withdraw` clear that commit, so a profile counts only for the acceptances it was captured under.
-  A capture that does not pass halts Drift-Verify, naming `lym loom resume`.
-- When the recheck shows drift, finds a dirty tree or an undeclared compare, or finds no compare recorded, its Stuck routes the run to Drift-Verify.
-  Drift-Verify judges the drift as it does the writer's, and the perch reviews its fixes in turn.
-  Drift against the accepted profile, or no profile at the last compare's commit, first lapses every acceptance, so Drift-Verify compares those tests against the baseline again.
-- `Closes #N`: none; the task resolves no tracked issue.
+## Behavior
 
-## Design decisions
+- `Drift-Recheck` is Done with no compare when no scope is recorded, the scope is off, the scope is waived, or HEAD is still the commit of the last compare.
+- With no test accepted, it compares HEAD against the baseline.
+- With tests accepted, it compares HEAD against an accepted profile, so an accepted test whose output differs from what its acceptance saw counts as drift again.
+- A passing compare is recorded in the scope record and the row is Done.
+- Stuck cases: no compare recorded yet, a dirty tracked tree, an undeclared compare step, and drift.
+  The recipes route the Stuck to `Drift-Verify`, which judges the drift again, and the perch then reviews that row's fixes in turn, under the shed's bounce budget.
+- Drift against the accepted profile, or no profile captured at the last compare's commit, lapses every acceptance first, since the compare cannot tell which accepted test changed.
+  Under scope full the parent must rule on each lapsed acceptance again once Drift-Verify's agent accepts it anew.
 
-- A recheck row after the perch, not a second edge into Drift-Verify.
-  Routing `Code-Bouncer` back to Drift-Verify would re-run the perch after every pass.
-  The recheck costs nothing when the perch committed no code, and spends one compare when it did.
-- The accepted profile is captured from the code itself, not read from the acceptance's reason text.
-  An acceptance records only a free-text reason, and the compare command's output is opaque to lym.
-  A profile taken once the compare passed holds each accepted test's accepted output in the form the compare command reads.
-- Drift against the accepted profile lapses every acceptance, not only the changed ones.
-  The compare's result is an exit code and a log, so lym cannot tell which accepted test moved.
-  Under scope `full` this means the parent rules again on whatever the Drift-Verify agent re-accepts.
-- The recheck's Stuck is a route, not a halt: it hands every question it cannot settle to Drift-Verify, which owns the halts and the ways forward.
-  The shed's default bounce budget bounds the loop.
-- `lym drift compare` and the other verbs still run at Drift-Verify only.
-  The run now compares by itself after a late code change, and a routed-back run sits at Drift-Verify, where the verbs work.
+## Design
+
+- The accepted profile is a capture of the current code taken into a new `.lym/drift/accepted` directory (`Paths.AcceptedDir`).
+  `Drift-Verify` takes it when it ends Done with tests accepted, through `RunAcceptedCapture`; a capture that does not pass halts with `lym loom resume` as the way forward.
+- `ScopeRecord.AcceptedProfileHead` names the commit the profile was captured at.
+  `Accept`, `Withdraw` and a lapse clear it, so a profile never outlives the acceptances it holds.
+- `RunCompare` takes an optional `ProfileDir`, which `{baseline_dir}` renders to; empty keeps the baseline directory.
+  Drift-Recheck's accepted compare leaves out only the scope's skipped tests, so accepted tests are compared too.
+- `RunSideCapture` and `RunAcceptedCapture` share `captureInto`.
+- New seams `Deps.CaptureAccepted` and `Deps.CompareAccepted`, wired in `internal/loomcli/driftwiring.go`; `shedrecipe` registers the `DriftRecheck` engine and `loomshed.NameDriftRecheck` is its row name, with an interrupt policy of reinvoke and a report phase beside Drift-Verify.
+- `lym drift compare` still refuses outside Drift-Verify; the recheck is a row, not a new verb.
+
+## In-flight runs
+
+A tapestry run parked inside the Code-Review perch, whose recipe exited to Describe, now exits to `Drift-Recheck`.
+With no compare recorded it sends the run back to `Drift-Verify`.
 
 ## To check by hand
 
-- Not run: a darn or tapestry run on a real hub with `drift.enabled`, where a review fixer changes covered code after an acceptance.
-  Watch that `Drift-Recheck` routes back, that the lapsed tests show as drift, and that the PR's regression check names the final commit.
-- The accepted profile is ephemeral under `.lym/drift/`, but its commit is recorded in the durable `scope.json`.
-  On an adopting machine the directory is missing, so the recheck's compare reads an empty profile, shows drift and lapses the acceptances.
-  Confirm a fresh judgment at Drift-Verify is the right outcome there.
-- An in-flight run already inside the perch exits to `Drift-Recheck` instead of `Describe`.
-  A run past the perch keeps its position and is not rechecked.
-- Each recheck after a code change spends a whole compare run, and each Drift-Verify Done with acceptances a whole capture run.
-  Confirm the cost is acceptable for hubs whose capture command is slow.
+- The wiring of the accepted-profile seams, `CaptureAccepted` and `CompareAccepted` in `internal/loomcli/driftwiring.go`, was flagged as untested and the finding is still open: confirm the integration tests in `internal/loomcli/driftwiring_integration_test.go` exercise them against a real capture and compare.
+- No end-to-end run on a hub with a real capture and compare command was done: run a darn task with `drift.enabled` and an accepted test, change the code in a Code-Review fix, and confirm `Drift-Recheck` compares against the accepted profile.
