@@ -2,7 +2,7 @@
 
 `comment-cleanup` · Task · enhancement, fabric · draft
 
-Depends on: [`fabric-remote-async`](design-fabric-remote-async.md)
+Depends on: [`codex-engine`](design-codex-engine.md), [`drift-verdict-in-pr`](design-drift-verdict-in-pr.md), [`fabric-remote-async`](design-fabric-remote-async.md), [`drift-skip-all-capture`](design-drift-skip-all-capture.md), [`cancel-remove-leftover-dir`](design-cancel-remove-leftover-dir.md), [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md), [`drift-after-review`](design-drift-after-review.md), [`machine-env-vars`](design-machine-env-vars.md)
 
 ## Seen (operator and hub orch, 2026-10-31)
 
