@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=d4bbb62eb08a086e19a05a5c6c159b3b498c4b185345f120106b9ce9acff1240 build=4e11137aa9881ebe481b46931b19c25555e221fe time=2026-10-31T18:22:52Z -->
+<!-- lym-stencil: sha256=95a07a3bd25cee25e1f9cf5553b87a4499c6baa78f10f392db1d48232306773e build=fb1b33a44c8c9ab4490f983285088908a4de53ce time=2026-11-03T12:14:35Z -->
 
 # Discussion spec — the decision record, the support log and the relevant list
 
@@ -87,6 +87,9 @@ The Discussion-Write and Discussion-Burler-Fix gates halt on a quarry outage as 
 - **Must-cover test scenarios go under `## Acceptance criteria`.**
   There is no separate `## Testing` section.
   A scenario names a behavior to cover, not a test to write, and an existing test or a new table row may meet it.
+- **A criterion is behavior a test can check, or a review check.**
+  A criterion that a stencil, spec, doc or other prose names, says or contains a wording opens its bullet with `Review:`.
+  The code review checks it by reading the text the diff leaves, and no test asserts that prose.
 - **A Decision that adds an edge or weakens a guard states its bound.**
   When a Decision introduces a new verb, flag, escape hatch or routing edge, or removes, downgrades or makes bypassable a guard, state in that Decision what it can now skip or let through and what bounds it.
   The discussion review flags one left unbounded.
