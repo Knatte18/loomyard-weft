@@ -887,6 +887,27 @@
       "body": "Imported from [issue #34](https://github.com/Knatte18/loomyard/issues/34).\n\nWhat happened: `lym webster run` failed the run (producer-hard-failure) with two blocking findings on one card: `path-missing` and `glyph-not-found`. The card path was a markdown file followed by a bare `#` (an empty heading anchor), e.g. `\u003cdir\u003e/README.md#`. The same refusal recurred in a later run, once with a repo-relative path and once with a path relative to the module directory.\n\nWhy abnormal: the plan passed Plan-Bouncer and Plan-Burler review, then died at Webster after the plan was already accepted. Either the plan check should reject the malformed path early, or the Webster path parser should split the `#anchor` suffix from the file path and treat an empty anchor as the whole file.\n\nWhat to do: share one path-with-anchor parser between the plan bouncer and `lym webster` validation, and make the bouncer reject what Webster rejects.\n\nProvenance: task `commonlib-fluid-report-selection`; notes loom-halt-3.md, loom-halt-5.md.\n",
       "created": "2026-11-03T16:44:24Z",
       "revised": "2026-11-03T16:44:24Z"
+    },
+    {
+      "id": 1065,
+      "handle": "B6",
+      "slug": "preflight-own-state-dirty",
+      "title": "Preflight worktree-clean halts on lym's own _lym state files",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "preflight",
+        "loom"
+      ],
+      "issues": [
+        33
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #33](https://github.com/Knatte18/loomyard/issues/33).\n\nWhat happened: `lym loom` halted twice as `blocked` at Preflight with `worktree-clean: uncommitted state changes under _lym`. The dirty paths were lym's own: a deleted `_lym/loom/friction/loom-halt.md` (the note of the previous halt, consumed by reflection) and an untracked `_lym/shed/\u003cslug\u003e/go-settle.jsonl`. No task code was dirty.\n\nWhy abnormal: the precondition is tripped by files lym itself wrote or removed between steps, so each halt note or settle log can cause the next halt. The run needs an orch or operator `lym fabric commit` before it can continue (escalation-to-human anomaly).\n\nWhat to do: have the worktree-clean check ignore, or auto-commit, lym-owned artifacts (friction notes, `_lym/shed` settle logs), or have the step that removes or writes them commit the change.\n\nProvenance: task `commonlib-fluid-report-selection`; notes loom-halt.md, loom-halt-2.md.\n",
+      "created": "2026-11-03T16:44:27Z",
+      "revised": "2026-11-03T16:44:27Z"
     }
   ],
   "prime_owner": "neve",
