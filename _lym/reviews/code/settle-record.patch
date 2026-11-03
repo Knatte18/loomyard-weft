@@ -1,0 +1,1787 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index 636f388b..70e69d49 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -60,6 +60,7 @@
+ ## Agents and prompts
+ 
+ - `PATTERN-stencil-ownership` — Reading prompt or spec: at call time via `internal/stencilstore`, never embedded, bar the orch role, fixed for every repository in `contracts/orchrole` with no board copy; an instruction file points at another producer's format contract, never restating it. — [background](pattern/PATTERN-stencil-ownership.md)
++- `PATTERN-engine-blocks` — Writing engine-specific text into a stencil more than one engine renders: in an engine block, read for the seat's engine by `internal/stencilstore`'s one resolver.
+ - `PATTERN-parent-directive` — Writing a spawned role's stencil: it renders the parent and edit directives; its skills and color go on the launch spec, never asked of the agent. (test) — [background](pattern/PATTERN-parent-directive.md)
+ - `PATTERN-agent-messaging` — Messaging another session from an agent: only through creel, never an engine's own tool, bar a fork addressed in-session under ForkSubagents. (test)
+ - `PATTERN-shuttle-provider-seam` — Touching a provider or shuttle run: specifics only under `internal/shuttleengine/<engine>`, model-specs via `NewModelChoice`, a strand stopped via the stop verb, a negative finish after `allOutputFilesExist`. (test) — [background](pattern/PATTERN-shuttle-provider-seam.md)
+diff --git a/contracts/stencils/registry_test.go b/contracts/stencils/registry_test.go
+index 8f805ef4..0923ecd0 100644
+--- a/contracts/stencils/registry_test.go
++++ b/contracts/stencils/registry_test.go
+@@ -40,6 +40,7 @@ func shippedStencils(t *testing.T) map[string][]byte {
+ 
+ // stencilNamesOnDisk walks this package's own directory and returns the stencil name derived from
+ // each *.md file found in a family subfolder: the filename without its ".md" extension.
++// An engine block's file, under the engine blocks directory's per-engine subfolder, gives the name stencilstore.EngineBlockName forms.
+ func stencilNamesOnDisk(t *testing.T) []string {
+ 	t.Helper()
+ 
+@@ -64,6 +65,10 @@ func stencilNamesOnDisk(t *testing.T) []string {
+ 			t.Fatalf("os.ReadDir(%q) = _, %v; want nil error", familyDir, err)
+ 		}
+ 		for _, fileEntry := range familyFiles {
++			if fileEntry.IsDir() && familyEntry.Name() == stencilstore.EngineBlocksDir {
++				names = append(names, engineBlockNamesOnDisk(t, filepath.Join(familyDir, fileEntry.Name()), fileEntry.Name())...)
++				continue
++			}
+ 			if fileEntry.IsDir() || !strings.HasSuffix(fileEntry.Name(), ".md") {
+ 				continue
+ 			}
+@@ -73,6 +78,24 @@ func stencilNamesOnDisk(t *testing.T) []string {
+ 	return names
+ }
+ 
++// engineBlockNamesOnDisk returns the stencil name of each *.md file in engineDir, the engine blocks directory's subfolder for engine.
++func engineBlockNamesOnDisk(t *testing.T, engineDir, engine string) []string {
++	t.Helper()
++
++	blockFiles, err := os.ReadDir(engineDir)
++	if err != nil {
++		t.Fatalf("os.ReadDir(%q) = _, %v; want nil error", engineDir, err)
++	}
++	var names []string
++	for _, blockEntry := range blockFiles {
++		if blockEntry.IsDir() || !strings.HasSuffix(blockEntry.Name(), ".md") {
++			continue
++		}
++		names = append(names, stencilstore.EngineBlockName(engine, strings.TrimSuffix(blockEntry.Name(), ".md")))
++	}
++	return names
++}
++
+ // TestRegistry_MatchesOnDiskTree verifies the registry and the on-disk *.md tree name exactly the same stencils in both directions: a .md present but unregistered fails, and a registered name with no .md fails.
+ //
+ //testtiming:keep pins that the registry and the on-disk stencil tree name the same stencils in both directions, which no other test compares
+diff --git a/internal/burlercli/wiring.go b/internal/burlercli/wiring.go
+index bcfe14ec..047fed60 100644
+--- a/internal/burlercli/wiring.go
++++ b/internal/burlercli/wiring.go
+@@ -159,6 +159,7 @@ func (c *burlerCLI) wireHub(loc *lymcwd.Location, stencilsDirOverride, targetDir
+ 	if err != nil {
+ 		return err
+ 	}
++	burlerGeom.DefaultEngine = shuttleCfg.Engine
+ 	c.engine = burlerengine.New(seatengine.RunnerShuttle(runner), burlerGeom, lensesCfg, stencilsDir, "", languageSkills)
+ 	c.languageSkills = languageSkills
+ 	c.mode = "hub"
+@@ -229,7 +230,9 @@ func (c *burlerCLI) wireStandalone(cwd, stencilsDirOverride, targetDirFlag strin
+ 	}
+ 
+ 	// A `lym burler` run is not a tapestry run and has no friction directory in either mode.
+-	c.engine = burlerengine.New(seatengine.RunnerShuttle(runner), standalonegeom.BurlerGeometry(res.Target, res.StateDir, res.Hash8), lensesCfg, res.StencilsDir, "", c.languageSkills)
++	burlerGeom := standalonegeom.BurlerGeometry(res.Target, res.StateDir, res.Hash8)
++	burlerGeom.DefaultEngine = shuttleCfg.Engine
++	c.engine = burlerengine.New(seatengine.RunnerShuttle(runner), burlerGeom, lensesCfg, res.StencilsDir, "", c.languageSkills)
+ 	c.mode = "standalone"
+ 	c.stateDir = res.StateDir
+ 	c.stencilsDir = res.StencilsDir
+diff --git a/internal/burlerengine/doc.go b/internal/burlerengine/doc.go
+index bca90255..4bffdb76 100644
+--- a/internal/burlerengine/doc.go
++++ b/internal/burlerengine/doc.go
+@@ -40,6 +40,7 @@
+ // New builds that seat engine itself from the told Geometry and the stencils directory, over the seatengine.Shuttle it is given.
+ // Each seat's stencil markers ride the seat's values: the absolute instruction-file paths and the review path, and for the fix half the review format path.
+ // composeReviewPrompt and composeFixPrompt fill the instruction files and return those values; the seat stencils are filled by the seats engine.
++// Both read each instruction stencil through stencilstore.ReadSet for the half's engine, the one its model choice names, else Geometry.DefaultEngine, so an engine block an instruction stencil includes renders that engine's text.
+ // RunOpts.Review and RunOpts.Fix pick each half's engine, model, effort and version.
+ // RoundModels' per-round lists carry each entry's engine, so a later round can run on another engine than the first.
+ //
+diff --git a/internal/burlerengine/engine.go b/internal/burlerengine/engine.go
+index b2a1439f..48ace880 100644
+--- a/internal/burlerengine/engine.go
++++ b/internal/burlerengine/engine.go
+@@ -50,16 +50,25 @@ func (e *Engine) seatSkills(p *Profile) []string {
+ // languageSkills are the hub's language skills a code round's seats load after burlerSkills, empty for none.
+ func New(shuttle seatengine.Shuttle, geom Geometry, cfg lenses.Config, stencilsDir, frictionDir string, languageSkills []string) *Engine {
+ 	seats := seatengine.New(shuttle, seatengine.Geometry{
+-		WorktreeRoot: geom.WorktreeRoot,
+-		AnchorPath:   geom.AnchorPath,
+-		StencilsDir:  stencilsDir,
+-		ParentName:   geom.ParentName,
+-		Shortname:    geom.Shortname,
+-		Slug:         geom.Slug,
++		WorktreeRoot:  geom.WorktreeRoot,
++		AnchorPath:    geom.AnchorPath,
++		StencilsDir:   stencilsDir,
++		DefaultEngine: geom.DefaultEngine,
++		ParentName:    geom.ParentName,
++		Shortname:     geom.Shortname,
++		Slug:          geom.Slug,
+ 	})
+ 	return &Engine{seats: seats, geom: geom, cfg: cfg, stencilsDir: stencilsDir, frictionDir: frictionDir, languageSkills: languageSkills}
+ }
+ 
++// seatEngine returns the engine a half whose model choice is choice runs on, which its instruction files are rendered for: the engine choice names, else the geometry's DefaultEngine.
++func (e *Engine) seatEngine(choice shuttleengine.ModelChoice) string {
++	if choice.Engine != "" {
++		return choice.Engine
++	}
++	return e.geom.DefaultEngine
++}
++
+ // Half is one half of a round: the identities, last message and kept run directory a caller needs to act on a non-done outcome further.
+ type Half struct {
+ 	SessionID            string
+diff --git a/internal/burlerengine/engine_test.go b/internal/burlerengine/engine_test.go
+index 50e43731..a4ba699d 100644
+--- a/internal/burlerengine/engine_test.go
++++ b/internal/burlerengine/engine_test.go
+@@ -1,4 +1,5 @@
+ // engine_test.go holds the same-package fakeShuttle, a seatengine.Shuttle whose handles block until the test releases them or stops them, a stop ending the handle's Wait as died, and the profile and engine builders review_test.go and fix_test.go drive the real seats engine over it with.
++// It also holds the engine-block seeding helper and the test that pins each half's choice of engine, which drives Review and Fix together.
+ // Every Geometry built here points WorktreeRoot at a test temp dir, so materialization lands there
+ // rather than in the real package source tree.
+ 
+@@ -13,10 +14,13 @@ import (
+ 	"sync/atomic"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/contracts/stencils"
+ 	"github.com/Knatte18/loomyard/internal/lenses"
+ 	"github.com/Knatte18/loomyard/internal/seatengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/stencilstore"
+ 	"github.com/Knatte18/loomyard/internal/testkit/stencilkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+ // newTestStencilsDir seeds a hermetic stencils directory through stencilkit and returns its path.
+@@ -25,6 +29,88 @@ func newTestStencilsDir(t *testing.T) string {
+ 	return stencilkit.Seed(t)
+ }
+ 
++// seedEngineWords appends an include of the engine block test-words to each stencil of shipped, keyed by stencil name, under stencilsDir, and writes the block's claude and codex copies.
++func seedEngineWords(t *testing.T, stencilsDir string, shipped map[string][]byte) {
++	t.Helper()
++	for name, body := range shipped {
++		edited := append(append([]byte{}, body...), []byte("\n{{template \"engine-test-words\"}}\n")...)
++		if err := os.WriteFile(stencilstore.Path(stencilsDir, name), edited, 0o644); err != nil {
++			t.Fatalf("WriteFile(%s) = %v; want nil", name, err)
++		}
++	}
++	for engine, text := range map[string]string{"claude": "Claude words.\n", "codex": "Codex words.\n"} {
++		path := stencilstore.Path(stencilsDir, stencilstore.EngineBlockName(engine, "test-words"))
++		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++			t.Fatalf("MkdirAll(%s) = %v; want nil", path, err)
++		}
++		if err := os.WriteFile(path, []byte(text), 0o644); err != nil {
++			t.Fatalf("WriteFile(%s) = %v; want nil", path, err)
++		}
++	}
++}
++
++// TestEngine_HalvesRenderEngineBlocksForTheirOwnEngine proves each half renders its instruction files and seat prompt for the half's own engine:
++// the review half for the engine its model choice names, the fix half, whose choice names none, for the geometry's DefaultEngine.
++func TestEngine_HalvesRenderEngineBlocksForTheirOwnEngine(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	opts := RunOpts{Review: shuttleengine.ModelChoice{Engine: "claude"}}
++	newEngine := func(t *testing.T, root string, shuttle *fakeShuttle) *Engine {
++		t.Helper()
++		stencilsDir := newTestStencilsDir(t)
++		seedEngineWords(t, stencilsDir, map[string][]byte{
++			"burler-template-reviewer": stencils.BurlerTemplateReviewer,
++			"burler-template-fixer":    stencils.BurlerTemplateFixer,
++			"burler-step-review":       stencils.BurlerStepReview,
++			"burler-step-fix":          stencils.BurlerStepFix,
++		})
++		geom := Geometry{WorktreeRoot: root, AnchorPath: root, Shortname: "tst", Slug: "slug", DefaultEngine: "codex"}
++		return New(shuttle, geom, lenses.Config{}, stencilsDir, "", nil)
++	}
++	requireWords := func(t *testing.T, texts map[string]string, want, absent string) {
++		t.Helper()
++		for what, text := range texts {
++			if !strings.Contains(text, want) || strings.Contains(text, absent) {
++				t.Errorf("%s = %q; want it to hold %q and not %q", what, text, want, absent)
++			}
++		}
++	}
++
++	t.Run("Review", func(t *testing.T) {
++		t.Parallel()
++		root, p := newEngineTestProfile(t)
++		shuttle := doneReview(approvedReview)
++		if _, err := newEngine(t, root, shuttle).Review(p, opts); err != nil {
++			t.Fatalf("Review() = %v; want nil error", err)
++		}
++		step, err := os.ReadFile(firstGlob(t, filepath.Join(root, ".lym", "burler", "review-*", "instruction-2-review.md")))
++		if err != nil {
++			t.Fatalf("ReadFile(review step) = %v; want nil", err)
++		}
++		requireWords(t, map[string]string{"review step": string(step), "reviewer seat prompt": shuttle.specs[reviewHalfRole].Prompt}, "Claude words.", "Codex words.")
++	})
++	t.Run("Fix", func(t *testing.T) {
++		t.Parallel()
++		root, p, digest := newFixCase(t, nitReview)
++		shuttle := &fakeShuttle{fix: halfScript{result: shuttleengine.Result{Outcome: shuttleengine.OutcomeDone}, writes: "nothing fixed"}}
++		if _, err := newEngine(t, root, shuttle).Fix(p, opts, digest); err != nil {
++			t.Fatalf("Fix() = %v; want nil error", err)
++		}
++		requireWords(t, map[string]string{"fix step": fixInstructionFiles(t, root)["instruction-fix.md"], "fixer seat prompt": shuttle.specs[fixHalfRole].Prompt}, "Codex words.", "Claude words.")
++	})
++}
++
++// firstGlob returns the one path pattern matches, failing the test when it matches none or several.
++func firstGlob(t *testing.T, pattern string) string {
++	t.Helper()
++	matches, err := filepath.Glob(pattern)
++	if err != nil || len(matches) != 1 {
++		t.Fatalf("Glob(%s) = %v, %v; want exactly one match", pattern, matches, err)
++	}
++	return matches[0]
++}
++
+ // halfScript scripts one seat of a fake half.
+ type halfScript struct {
+ 	// result is what Wait returns once it is let through.
+diff --git a/internal/burlerengine/fix.go b/internal/burlerengine/fix.go
+index 837e2fdf..b95ba5c7 100644
+--- a/internal/burlerengine/fix.go
++++ b/internal/burlerengine/fix.go
+@@ -154,7 +154,7 @@ func (e *Engine) Fix(p Profile, opts RunOpts, digest string) (FixResult, error)
+ 			return FixResult{}, fmt.Errorf("burler: materialize instruction files: %w", err)
+ 		}
+ 	}
+-	prompt, err := composeFixPrompt(e.stencilsDir, e.geom.SpecsDir, &p, frictionDirective, fixWork(p.ReviewPath, gateFindingsPath, routed > 0), paths)
++	prompt, err := composeFixPrompt(e.stencilsDir, e.geom.SpecsDir, e.seatEngine(opts.Fix), &p, frictionDirective, fixWork(p.ReviewPath, gateFindingsPath, routed > 0), paths)
+ 	if err != nil {
+ 		return FixResult{}, err
+ 	}
+diff --git a/internal/burlerengine/geometry.go b/internal/burlerengine/geometry.go
+index 6a089fb6..9a9a2e16 100644
+--- a/internal/burlerengine/geometry.go
++++ b/internal/burlerengine/geometry.go
+@@ -32,4 +32,6 @@ type Geometry struct {
+ 	PatternRecordPath string
+ 	// SpecsDir is the deployed-specs directory a fanned half's prompt points at for the lens report format.
+ 	SpecsDir string
++	// DefaultEngine is the name of the engine a half whose model choice names none runs on, shuttle's default; that half's stencils and instruction files are rendered for it.
++	DefaultEngine string
+ }
+diff --git a/internal/burlerengine/prompt.go b/internal/burlerengine/prompt.go
+index 4640040d..b2c7d4cf 100644
+--- a/internal/burlerengine/prompt.go
++++ b/internal/burlerengine/prompt.go
+@@ -1,4 +1,4 @@
+-// prompt.go composes a half's prompt: it reads the half's instruction stencils from stencilsDir at call time via stencilstore.Read — the explore, review and review-format stencils for the review half, the fix step, review-format and, for a fixer fan, self-check stencils for the fix half, the focus directive block when the round carries one, and the fork-reading and the solo or fanned cluster-rules parts of the review half — each with only its own marker subset, and returns the seat's stencil marker values plus the rendered (path, content) instruction pairs the half (Engine.Review or Engine.Fix) writes to disk.
++// prompt.go composes a half's prompt: it reads the half's instruction stencils from stencilsDir at call time via stencilstore.ReadSet, with every block each includes and an engine block read for the half's engine — the explore, review and review-format stencils for the review half, the fix step, review-format and, for a fixer fan, self-check stencils for the fix half, the focus directive block when the round carries one, and the fork-reading and the solo or fanned cluster-rules parts of the review half — each with only its own marker subset, and returns the seat's stencil marker values plus the rendered (path, content) instruction pairs the half (Engine.Review or Engine.Fix) writes to disk.
+ // The seat stencil itself is filled by the seats engine from those values.
+ // composeReviewPrompt is called only after (*Profile).validateReview has run, and composeFixPrompt after (*Profile).validateFix, so every path field they read is already a cleaned absolute path and p.clusterLenses (when ClusterFan was set) is already resolved.
+ // They do no filesystem access beyond the directory check formatFileSet already performs on each Target/Fasit path and the stencilstore.Read calls.
+@@ -85,38 +85,48 @@ func fixSeatValues(p *Profile, paths fixFilePaths) map[string]string {
+ 	}
+ }
+ 
+-// renderReviewFormat renders the review-file format stencil, which carries no marker, into the file content both halves point at.
+-func renderReviewFormat(stencilsDir string) (string, error) {
+-	template, err := stencilstore.Read(stencilsDir, "burler-review-format")
++// fillInstruction reads the instruction stencil name from stencilsDir with every block it includes, an engine block read for engine, and fills it from values.
++// The names in optional may be empty.
++func fillInstruction(stencilsDir, engine, name string, values map[string]string, optional []string) ([]byte, error) {
++	template, blocks, err := stencilstore.ReadSet(stencilsDir, engine, name)
+ 	if err != nil {
+-		return "", err
++		return nil, err
++	}
++	filled, err := stencil.FillWith(template, blocks, values, optional)
++	if err != nil {
++		return nil, fmt.Errorf("burler: compose prompt: %w", err)
+ 	}
+-	format, err := stencil.Fill(template, nil)
++	return filled, nil
++}
++
++// renderReviewFormat renders the review-file format stencil, which carries no marker, for engine into the file content both halves point at.
++func renderReviewFormat(stencilsDir, engine string) (string, error) {
++	format, err := fillInstruction(stencilsDir, engine, "burler-review-format", nil, nil)
+ 	if err != nil {
+-		return "", fmt.Errorf("burler: compose prompt: %w", err)
++		return "", err
+ 	}
+ 	return string(format), nil
+ }
+ 
+-// composeReviewPrompt builds the review half's prompt for p: the explore step, the review step and the review-file format.
++// composeReviewPrompt builds the review half's prompt for p, rendered for the reviewer's engine: the explore step, the review step and the review-file format.
+ // patternDirective is the caller-resolved PATTERN directive for the explore step.
+ // specsDir holds the deployed lens report spec a fanned round's reviewer saves its fork reports in the format of.
+ // The reviewer's files hold no fixer-side text; p is assumed already validated by validateReview.
+-func composeReviewPrompt(stencilsDir, specsDir string, p *Profile, patternDirective string, paths reviewFilePaths) (halfPrompt, error) {
+-	exploreTemplate, err := stencilstore.Read(stencilsDir, "burler-step-1-explore")
++func composeReviewPrompt(stencilsDir, specsDir, engine string, p *Profile, patternDirective string, paths reviewFilePaths) (halfPrompt, error) {
++	exploreTemplate, exploreBlocks, err := stencilstore.ReadSet(stencilsDir, engine, "burler-step-1-explore")
+ 	if err != nil {
+ 		return halfPrompt{}, err
+ 	}
+-	focusDirective, err := focusDirectiveBlock(stencilsDir, p.FocusDirective)
++	focusDirective, err := focusDirectiveBlock(stencilsDir, engine, p.FocusDirective)
+ 	if err != nil {
+ 		return halfPrompt{}, err
+ 	}
+ 	warnIfFocusMarkerAbsent(exploreTemplate, "burler-step-1-explore", focusDirective)
+-	forkReading, err := forkReadingBlock(stencilsDir, p)
++	forkReading, err := forkReadingBlock(stencilsDir, engine, p)
+ 	if err != nil {
+ 		return halfPrompt{}, err
+ 	}
+-	explore, err := stencil.FillOptional(exploreTemplate, map[string]string{
++	explore, err := stencil.FillWith(exploreTemplate, exploreBlocks, map[string]string{
+ 		"pattern_directive": patternDirective,
+ 		focusMarkerName:     focusDirective,
+ 		"target":            formatFileSet(p.Target),
+@@ -129,25 +139,21 @@ func composeReviewPrompt(stencilsDir, specsDir string, p *Profile, patternDirect
+ 		return halfPrompt{}, fmt.Errorf("burler: compose prompt: %w", err)
+ 	}
+ 
+-	reviewTemplate, err := stencilstore.Read(stencilsDir, "burler-step-review")
++	clusterRules, err := clusterRulesBlock(stencilsDir, specsDir, engine, p)
+ 	if err != nil {
+ 		return halfPrompt{}, err
+ 	}
+-	clusterRules, err := clusterRulesBlock(stencilsDir, specsDir, p)
+-	if err != nil {
+-		return halfPrompt{}, err
+-	}
+-	review, err := stencil.Fill(reviewTemplate, map[string]string{
++	review, err := fillInstruction(stencilsDir, engine, "burler-step-review", map[string]string{
+ 		"cluster_rules":      clusterRules,
+ 		"review_path":        p.ReviewPath,
+ 		"review_format_path": paths.Format,
+ 		"prior_rounds":       priorRoundsBlock(p),
+-	})
++	}, nil)
+ 	if err != nil {
+-		return halfPrompt{}, fmt.Errorf("burler: compose prompt: %w", err)
++		return halfPrompt{}, err
+ 	}
+ 
+-	format, err := renderReviewFormat(stencilsDir)
++	format, err := renderReviewFormat(stencilsDir, engine)
+ 	if err != nil {
+ 		return halfPrompt{}, err
+ 	}
+@@ -161,21 +167,21 @@ func composeReviewPrompt(stencilsDir, specsDir string, p *Profile, patternDirect
+ 	}, nil
+ }
+ 
+-// composeFixPrompt builds the fix half's prompt for p: the review-file format and the fix step.
++// composeFixPrompt builds the fix half's prompt for p, rendered for the fixer's engine: the review-file format and the fix step.
+ // frictionDirective is the caller-resolved Tier 2 note directive, empty when Tier 2 is off, and work is the fix step's statement of what to fix (see fixWork).
+ // specsDir holds the deployed lens report spec a fixer fan's fixer saves its fork reports in the format of.
+ // The fixer's files hold no rubric, fasit, PATTERN directive, focus file, prior rounds or explore step; p is assumed already validated by validateFix.
+-func composeFixPrompt(stencilsDir, specsDir string, p *Profile, frictionDirective, work string, paths fixFilePaths) (halfPrompt, error) {
+-	fixTemplate, err := stencilstore.Read(stencilsDir, "burler-step-fix")
++func composeFixPrompt(stencilsDir, specsDir, engine string, p *Profile, frictionDirective, work string, paths fixFilePaths) (halfPrompt, error) {
++	fixTemplate, fixBlocks, err := stencilstore.ReadSet(stencilsDir, engine, "burler-step-fix")
+ 	if err != nil {
+ 		return halfPrompt{}, err
+ 	}
+ 	friction.WarnIfMarkerAbsent(fixTemplate, "burler-step-fix", frictionDirective)
+-	selfCheck, err := selfCheckBlock(stencilsDir, specsDir, p)
++	selfCheck, err := selfCheckBlock(stencilsDir, specsDir, engine, p)
+ 	if err != nil {
+ 		return halfPrompt{}, err
+ 	}
+-	fix, err := stencil.FillOptional(fixTemplate, map[string]string{
++	fix, err := stencil.FillWith(fixTemplate, fixBlocks, map[string]string{
+ 		friction.MarkerName: frictionDirective,
+ 		"work":              work,
+ 		"fix_scope_rules":   fixScopeRules(p),
+@@ -187,7 +193,7 @@ func composeFixPrompt(stencilsDir, specsDir string, p *Profile, frictionDirectiv
+ 		return halfPrompt{}, fmt.Errorf("burler: compose prompt: %w", err)
+ 	}
+ 
+-	format, err := renderReviewFormat(stencilsDir)
++	format, err := renderReviewFormat(stencilsDir, engine)
+ 	if err != nil {
+ 		return halfPrompt{}, err
+ 	}
+@@ -219,21 +225,17 @@ func fixWork(reviewPath, gateFindingsPath string, decisionsRouted bool) string {
+ // routedDecisionsLine tells a fixer that the review's decision-class findings went to the run's parent and are not its own.
+ const routedDecisionsLine = "Those went to your parent, who makes each call: you neither fix, dispute nor defer them, and your fixer-report leaves them out."
+ 
+-// focusDirectiveBlock renders the focus-directive stencil for focusPath, the value injected as the explore step's optional focus_directive marker.
++// focusDirectiveBlock renders the focus-directive stencil for engine and focusPath, the value injected as the explore step's optional focus_directive marker.
+ // An empty focusPath returns "" without reading anything:
+ // the round has no directive, and the marker renders as nothing.
+-func focusDirectiveBlock(stencilsDir, focusPath string) (string, error) {
++func focusDirectiveBlock(stencilsDir, engine, focusPath string) (string, error) {
+ 	if focusPath == "" {
+ 		return "", nil
+ 	}
+-	template, err := stencilstore.Read(stencilsDir, "burler-focus-directive")
++	block, err := fillInstruction(stencilsDir, engine, "burler-focus-directive", map[string]string{"focus_path": focusPath}, nil)
+ 	if err != nil {
+ 		return "", err
+ 	}
+-	block, err := stencil.Fill(template, map[string]string{"focus_path": focusPath})
+-	if err != nil {
+-		return "", fmt.Errorf("burler: compose prompt: %w", err)
+-	}
+ 	return string(block), nil
+ }
+ 
+@@ -367,11 +369,11 @@ func priorRoundsBlock(p *Profile) string {
+ 	return b.String()
+ }
+ 
+-// clusterRulesBlock renders the review step's cluster-rules value from the cluster stencils:
++// clusterRulesBlock renders the review step's cluster-rules value for engine from the cluster stencils:
+ // the solo part's body when p carries no ClusterFan, or the fanned part filled with p's lens list, the lens report path beside p's review and the lens report spec under specsDir when it does.
+ // The value carries no trailing newline, since the review step's marker sits on a line of its own.
+ // p.clusterLenses is assumed already resolved by (*Profile).validateReview — composeReviewPrompt never calls lenses.ResolveFan itself.
+-func clusterRulesBlock(stencilsDir, specsDir string, p *Profile) (string, error) {
++func clusterRulesBlock(stencilsDir, specsDir, engine string, p *Profile) (string, error) {
+ 	name, values := "burler-cluster-solo", map[string]string(nil)
+ 	if p.ClusterFan != "" {
+ 		name, values = "burler-cluster-fan", map[string]string{
+@@ -380,56 +382,44 @@ func clusterRulesBlock(stencilsDir, specsDir string, p *Profile) (string, error)
+ 			"lens_report_spec_path": stencilstore.Path(specsDir, lensreport.SpecName),
+ 		}
+ 	}
+-	template, err := stencilstore.Read(stencilsDir, name)
++	rules, err := fillInstruction(stencilsDir, engine, name, values, nil)
+ 	if err != nil {
+ 		return "", err
+ 	}
+-	rules, err := stencil.Fill(template, values)
+-	if err != nil {
+-		return "", fmt.Errorf("burler: compose prompt: %w", err)
+-	}
+ 	return strings.TrimRight(string(rules), "\n"), nil
+ }
+ 
+-// forkReadingBlock renders the fork-reading stencil for the explore step's optional fork_reading marker.
++// forkReadingBlock renders the fork-reading stencil for engine, for the explore step's optional fork_reading marker.
+ // A round with no ClusterFan returns "" without reading anything.
+ // The value is led by the blank line that separates it from the tool-use rules; the stencil loader drops a stencil's leading blank lines, so the separator is added here, and the trailing newline is left to the explore stencil.
+-func forkReadingBlock(stencilsDir string, p *Profile) (string, error) {
++func forkReadingBlock(stencilsDir, engine string, p *Profile) (string, error) {
+ 	if p.ClusterFan == "" {
+ 		return "", nil
+ 	}
+-	template, err := stencilstore.Read(stencilsDir, "burler-fork-reading")
++	reading, err := fillInstruction(stencilsDir, engine, "burler-fork-reading", nil, nil)
+ 	if err != nil {
+ 		return "", err
+ 	}
+-	reading, err := stencil.Fill(template, nil)
+-	if err != nil {
+-		return "", fmt.Errorf("burler: compose prompt: %w", err)
+-	}
+ 	return "\n\n" + strings.TrimRight(string(reading), "\n"), nil
+ }
+ 
+-// selfCheckBlock renders the fix self-check stencil for the fix step's optional self_check marker.
++// selfCheckBlock renders the fix self-check stencil for engine, for the fix step's optional self_check marker.
+ // A profile with no FixFan returns "" without reading anything.
+ // Otherwise the part is filled with the path of the deployed fix-check rubric, p's fixer lenses, the lens report path beside p's fixer-report and the lens report spec under specsDir;
+ // it ends in a blank line, which the fix step relies on to set off the heading that follows its marker.
+ // p.fixLenses is assumed already resolved by (*Profile).validateFix.
+-func selfCheckBlock(stencilsDir, specsDir string, p *Profile) (string, error) {
++func selfCheckBlock(stencilsDir, specsDir, engine string, p *Profile) (string, error) {
+ 	if p.FixFan == "" {
+ 		return "", nil
+ 	}
+-	template, err := stencilstore.Read(stencilsDir, "burler-fix-self-check")
+-	if err != nil {
+-		return "", err
+-	}
+-	block, err := stencil.Fill(template, map[string]string{
++	block, err := fillInstruction(stencilsDir, engine, "burler-fix-self-check", map[string]string{
+ 		"rubric_path":           stencilstore.Path(stencilsDir, "burler-fix-check-rubric"),
+ 		"lens_list":             lensList(p.fixLenses),
+ 		"lens_report_path":      lensreport.PathPattern(p.FixerReportPath),
+ 		"lens_report_spec_path": stencilstore.Path(specsDir, lensreport.SpecName),
+-	})
++	}, nil)
+ 	if err != nil {
+-		return "", fmt.Errorf("burler: compose prompt: %w", err)
++		return "", err
+ 	}
+ 	return string(block), nil
+ }
+diff --git a/internal/burlerengine/prompt_test.go b/internal/burlerengine/prompt_test.go
+index 9b060d4b..ec612efb 100644
+--- a/internal/burlerengine/prompt_test.go
++++ b/internal/burlerengine/prompt_test.go
+@@ -79,7 +79,7 @@ func newComposableProfile(t *testing.T) Profile {
+ // composeReview composes p's review half prompt over the placeholder paths, failing the test on error.
+ func composeReview(t *testing.T, stencilsDir string, p *Profile, patternDirective string) halfPrompt {
+ 	t.Helper()
+-	prompt, err := composeReviewPrompt(stencilsDir, testSpecsDir, p, patternDirective, testReviewFiles)
++	prompt, err := composeReviewPrompt(stencilsDir, testSpecsDir, "claude", p, patternDirective, testReviewFiles)
+ 	if err != nil {
+ 		t.Fatalf("composeReviewPrompt() = %v; want nil error", err)
+ 	}
+@@ -89,7 +89,7 @@ func composeReview(t *testing.T, stencilsDir string, p *Profile, patternDirectiv
+ // composeFix composes p's fix half prompt over the placeholder paths and a review's findings as the work, failing the test on error.
+ func composeFix(t *testing.T, stencilsDir string, p *Profile, frictionDirective string) halfPrompt {
+ 	t.Helper()
+-	prompt, err := composeFixPrompt(stencilsDir, testSpecsDir, p, frictionDirective, fixWork(p.ReviewPath, "", false), testFixFiles)
++	prompt, err := composeFixPrompt(stencilsDir, testSpecsDir, "claude", p, frictionDirective, fixWork(p.ReviewPath, "", false), testFixFiles)
+ 	if err != nil {
+ 		t.Fatalf("composeFixPrompt() = %v; want nil error", err)
+ 	}
+@@ -449,7 +449,7 @@ func TestComposePrompt_ClusterRules(t *testing.T) {
+ 			t.Fatalf("Remove(burler-cluster-fan) = %v; want nil", err)
+ 		}
+ 
+-		if _, err := composeReviewPrompt(stencilsDir, testSpecsDir, &p, "", testReviewFiles); err == nil || !strings.Contains(err.Error(), "burler-cluster-fan") {
++		if _, err := composeReviewPrompt(stencilsDir, testSpecsDir, "claude", &p, "", testReviewFiles); err == nil || !strings.Contains(err.Error(), "burler-cluster-fan") {
+ 			t.Errorf("composeReviewPrompt() error = %v; want the read error naming burler-cluster-fan", err)
+ 		}
+ 	})
+diff --git a/internal/burlerengine/review.go b/internal/burlerengine/review.go
+index 6d4ba88c..b1996105 100644
+--- a/internal/burlerengine/review.go
++++ b/internal/burlerengine/review.go
+@@ -96,7 +96,7 @@ func (e *Engine) Review(p Profile, opts RunOpts) (ReviewResult, error) {
+ 	if err != nil {
+ 		return ReviewResult{}, err
+ 	}
+-	prompt, err := composeReviewPrompt(e.stencilsDir, e.geom.SpecsDir, &p, directive, reviewFilesIn(dir))
++	prompt, err := composeReviewPrompt(e.stencilsDir, e.geom.SpecsDir, e.seatEngine(opts.Review), &p, directive, reviewFilesIn(dir))
+ 	if err != nil {
+ 		return ReviewResult{}, err
+ 	}
+diff --git a/internal/burlerengine/template_test.go b/internal/burlerengine/template_test.go
+index 04e24480..50522073 100644
+--- a/internal/burlerengine/template_test.go
++++ b/internal/burlerengine/template_test.go
+@@ -263,3 +263,43 @@ func TestComposePrompt_ReadsEditedStencilFromDisk(t *testing.T) {
+ 
+ 	requireContains(t, prompt.Files[reviewStepFile].Content, modifiedMarker)
+ }
++
++// TestComposePrompt_RendersEngineBlocksForTheHalfsEngine pins that an engine block an instruction stencil includes renders the copy of the engine the half runs on, in both halves.
++func TestComposePrompt_RendersEngineBlocksForTheHalfsEngine(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	stencilsDir := newTestStencilsDir(t)
++	seedEngineWords(t, stencilsDir, map[string][]byte{
++		"burler-step-1-explore": stencils.BurlerStep1Explore,
++		"burler-step-review":    stencils.BurlerStepReview,
++		"burler-step-fix":       stencils.BurlerStepFix,
++	})
++
++	tests := []struct {
++		engine string
++		want   string
++		absent string
++	}{
++		{"claude", "Claude words.", "Codex words."},
++		{"codex", "Codex words.", "Claude words."},
++	}
++	for _, tt := range tests {
++		t.Run(tt.engine, func(t *testing.T) {
++			t.Parallel()
++			p := newComposableProfile(t)
++			review, err := composeReviewPrompt(stencilsDir, testSpecsDir, tt.engine, &p, "", testReviewFiles)
++			if err != nil {
++				t.Fatalf("composeReviewPrompt(%s) = %v; want nil error", tt.engine, err)
++			}
++			fix, err := composeFixPrompt(stencilsDir, testSpecsDir, tt.engine, &p, "", fixWork(p.ReviewPath, "", false), testFixFiles)
++			if err != nil {
++				t.Fatalf("composeFixPrompt(%s) = %v; want nil error", tt.engine, err)
++			}
++			for file, content := range map[string]string{"explore step": review.Files[reviewExploreFile].Content, "review step": review.Files[reviewStepFile].Content, "fix step": fix.Files[fixStepFile].Content} {
++				if !strings.Contains(content, tt.want) || strings.Contains(content, tt.absent) {
++					t.Errorf("%s for engine %s = %q; want it to hold %q and not %q", file, tt.engine, content, tt.want, tt.absent)
++				}
++			}
++		})
++	}
++}
+diff --git a/internal/darnengine/spec_test.go b/internal/darnengine/spec_test.go
+index e4e28964..b95c5df0 100644
+--- a/internal/darnengine/spec_test.go
++++ b/internal/darnengine/spec_test.go
+@@ -143,12 +143,12 @@ func TestDarnSpec(t *testing.T) {
+ 			if err != nil {
+ 				t.Fatalf("DarnTable() = _, %v; want nil error", err)
+ 			}
+-			if err := table.Validate(in.StencilsDir); err != nil {
++			if err := table.Validate(in.StencilsDir, ""); err != nil {
+ 				t.Fatalf("table.Validate() = %v; want nil", err)
+ 			}
+ 			// The loom wiring fills this marker blank for a pair under no beam, which only an Optional marker accepts.
+ 			table.Values["project_directive"] = ""
+-			if err := table.Validate(in.StencilsDir); err != nil {
++			if err := table.Validate(in.StencilsDir, ""); err != nil {
+ 				t.Errorf("table.Validate() with a blank project_directive = %v; want nil, the marker is optional", err)
+ 			}
+ 			if len(table.Seats) != 1 {
+@@ -244,7 +244,7 @@ func TestDarnSpec_Refusals(t *testing.T) {
+ 				t.Errorf("DarnTable() seats = %d alongside the error; want none", len(table.Seats))
+ 			}
+ 			if err == nil {
+-				err = table.Validate(in.StencilsDir)
++				err = table.Validate(in.StencilsDir, "")
+ 			}
+ 			if err == nil || !strings.Contains(err.Error(), tt.want) {
+ 				t.Fatalf("DarnTable() and its Validate = %v; want an error containing %q", err, tt.want)
+diff --git a/internal/driftengine/seats_test.go b/internal/driftengine/seats_test.go
+index 448a2503..4f0a7c24 100644
+--- a/internal/driftengine/seats_test.go
++++ b/internal/driftengine/seats_test.go
+@@ -156,7 +156,7 @@ func TestSeatTables(t *testing.T) {
+ 		if err != nil {
+ 			t.Fatalf("BaselineTable() = _, %v; want nil error", err)
+ 		}
+-		if err := table.Validate(in.StencilsDir); err != nil {
++		if err := table.Validate(in.StencilsDir, ""); err != nil {
+ 			t.Fatalf("table.Validate() = %v; want nil", err)
+ 		}
+ 		lead := table.Chair()
+@@ -207,7 +207,7 @@ func TestSeatTables(t *testing.T) {
+ 		if err != nil {
+ 			t.Fatalf("VerifyTable() = _, %v; want nil error", err)
+ 		}
+-		if err := table.Validate(in.StencilsDir); err != nil {
++		if err := table.Validate(in.StencilsDir, ""); err != nil {
+ 			t.Fatalf("table.Validate() = %v; want nil", err)
+ 		}
+ 		lead := table.Chair()
+diff --git a/internal/heddleengine/doc.go b/internal/heddleengine/doc.go
+index a0e02249..243dd42d 100644
+--- a/internal/heddleengine/doc.go
++++ b/internal/heddleengine/doc.go
+@@ -4,6 +4,8 @@
+ // The repository layer is heddle.json at the Bolt checkout's root, which the `lym heddle` verbs write.
+ // A file target is rendered into a git-excluded file at a worktree's anchor, beside the repository's own CLAUDE and AGENTS files, the shipped entries first under a level-one heading of their own and the repository's after under theirs;
+ // each shipped entry opens with a level-two heading, so the file skips no heading level;
++// the codex-file target opens with the anchor's AGENTS.md, else its CLAUDE.md, and carries every repository entry aimed at claude-file, so a Codex session gets the repository's agent instructions a Claude session gets;
++// shipped entries stay on claude-file alone, and a render that names claude-file renders codex-file too;
+ // a prompt target is read as passages appended to a session's system prompt, the shipped ones first.
+ // A prompt target reaches the sessions its row names by engine, by strand role, or both: `claude-prompt` reaches every Claude session and `orch-prompt` every orch session, and an engine whose launch appends no passages delivers neither.
+ // A hub whose heddle.yaml sets lym_override renders a shipped entry with the text of its override in heddle-lym-override.json beside heddle.json, so lym's own text is tuned there with no build;
+diff --git a/internal/heddleengine/render.go b/internal/heddleengine/render.go
+index 719a6d3b..7781f963 100644
+--- a/internal/heddleengine/render.go
++++ b/internal/heddleengine/render.go
+@@ -61,6 +61,7 @@ type Renderer struct {
+ // Render writes the file targets of req into its anchor from the entries of the shipped layer and the store.
+ // It holds the worktree's render lock for the whole read and write, so two renders of one worktree serialize and the last one's text stands whole.
+ // A target with no entry loses its marked file; a target the exclude list does not cover, or whose file lacks the marker, is left alone with a warning.
++// A render whose Only names claude-file renders codex-file too, so a worktree that already exists takes a changed repository entry at its next render.
+ // The lock wait running out fails the render before it writes anything.
+ func (r Renderer) Render(req RenderRequest) (Report, error) {
+ 	var report Report
+@@ -92,8 +93,9 @@ func (r Renderer) Render(req RenderRequest) (Report, error) {
+ 		report.warn(fmt.Sprintf("%s holds something heddle did not write, so no file is written; way forward: move or remove it, then run `%s`", tempDir, renderVerb))
+ 	}
+ 
++	only := withCodexFile(req.Only)
+ 	for _, target := range targetTable {
+-		if target.Delivery != DeliveryFile || (len(req.Only) > 0 && !slices.Contains(req.Only, target.Name)) {
++		if target.Delivery != DeliveryFile || (len(only) > 0 && !slices.Contains(only, target.Name)) {
+ 			continue
+ 		}
+ 		text, held, err := fileText(target, req.Anchor, entries)
+@@ -138,6 +140,14 @@ func (r Renderer) Render(req RenderRequest) (Report, error) {
+ 	return report, nil
+ }
+ 
++// withCodexFile returns only with codexFileTarget added when it names claudeFileTarget and not codexFileTarget, and only itself otherwise.
++func withCodexFile(only []string) []string {
++	if slices.Contains(only, claudeFileTarget) && !slices.Contains(only, codexFileTarget) {
++		return append(slices.Clone(only), codexFileTarget)
++	}
++	return only
++}
++
+ // warn adds a warning once.
+ func (r *Report) warn(text string) {
+ 	if !slices.Contains(r.Warnings, text) {
+@@ -225,11 +235,15 @@ func removeTempDir(dir string) error {
+ // fileText builds the text a file target renders to at anchor from the layered entries that name it, and reports false when none does.
+ // It opens with Marker.
+ // The shipped layer's texts follow under their own heading, then the repository's, under a heading of their own only when shipped texts precede them.
+-// The claude-file target imports the AGENTS.md files the anchor holds when the anchor holds no CLAUDE.md, and the codex-file target opens with the anchor's AGENTS.md.
++// The claude-file target imports the AGENTS.md files the anchor holds when the anchor holds no CLAUDE.md.
++// The codex-file target opens with the anchor's AGENTS.md, or with its CLAUDE.md when the anchor holds no AGENTS.md, or with neither when it holds neither.
++// An entry reaches the codex-file target when it names it, or when it is a repository entry that names claude-file, so a Codex session gets the repository instructions a Claude session gets.
++// A shipped entry reaches the codex-file target only by naming it.
+ func fileText(target Target, anchor string, entries []LayeredEntry) (string, bool, error) {
+ 	var shipped, repository []string
+ 	for _, entry := range entries {
+-		if !slices.Contains(entry.Targets, target.Name) {
++		if !slices.Contains(entry.Targets, target.Name) &&
++			!(target.Name == codexFileTarget && entry.Layer != LayerShipped && slices.Contains(entry.Targets, claudeFileTarget)) {
+ 			continue
+ 		}
+ 		text := strings.Trim(entry.Text, "\n")
+@@ -252,7 +266,7 @@ func fileText(target Target, anchor string, entries []LayeredEntry) (string, boo
+ 	}
+ 	parts := []string{Marker}
+ 	switch target.Name {
+-	case "claude-file":
++	case claudeFileTarget:
+ 		if !fileExists(filepath.Join(anchor, "CLAUDE.md")) && !fileExists(filepath.Join(anchor, ".claude", "CLAUDE.md")) {
+ 			var imports []string
+ 			for _, agents := range []string{"AGENTS.md", ".claude/AGENTS.md"} {
+@@ -264,13 +278,17 @@ func fileText(target Target, anchor string, entries []LayeredEntry) (string, boo
+ 				parts = append(parts, strings.Join(imports, "\n"))
+ 			}
+ 		}
+-	case "codex-file":
+-		content, err := os.ReadFile(filepath.Join(anchor, "AGENTS.md"))
+-		if err != nil && !errors.Is(err, os.ErrNotExist) {
+-			return "", false, fmt.Errorf("read AGENTS.md: %w", err)
+-		}
+-		if err == nil {
++	case codexFileTarget:
++		for _, name := range []string{"AGENTS.md", "CLAUDE.md"} {
++			content, err := os.ReadFile(filepath.Join(anchor, name))
++			if errors.Is(err, os.ErrNotExist) {
++				continue
++			}
++			if err != nil {
++				return "", false, fmt.Errorf("read %s: %w", name, err)
++			}
+ 			parts = append(parts, strings.Trim(string(content), "\n"))
++			break
+ 		}
+ 	}
+ 	return strings.Join(append(parts, texts...), "\n\n") + "\n", true, nil
+diff --git a/internal/heddleengine/render_test.go b/internal/heddleengine/render_test.go
+index 5a8f6809..71bcd4b5 100644
+--- a/internal/heddleengine/render_test.go
++++ b/internal/heddleengine/render_test.go
+@@ -234,8 +234,11 @@ func TestRender(t *testing.T) {
+ 		if want := claudeFileWant("", "one", "two"); f.readAnchor(t, "CLAUDE.local.md") != want {
+ 			t.Errorf("CLAUDE.local.md = %q; want %q", f.readAnchor(t, "CLAUDE.local.md"), want)
+ 		}
+-		if !slices.Equal(report.Written, []string{"CLAUDE.local.md"}) || len(report.Warnings) != 0 {
+-			t.Errorf("report = %+v; want only CLAUDE.local.md written", report)
++		if want := Marker + "\n\none\n\ntwo\n"; f.readAnchor(t, "AGENTS.override.md") != want {
++			t.Errorf("AGENTS.override.md = %q; want %q", f.readAnchor(t, "AGENTS.override.md"), want)
++		}
++		if want := []string{"CLAUDE.local.md", "AGENTS.override.md"}; !slices.Equal(report.Written, want) || len(report.Warnings) != 0 {
++			t.Errorf("report = %+v; want %v written", report, want)
+ 		}
+ 		if f.anchorHas(".heddle") {
+ 			t.Error(".heddle left behind")
+@@ -272,11 +275,28 @@ func TestRender(t *testing.T) {
+ 
+ 	t.Run("CodexFileOpensWithRootAgents", func(t *testing.T) {
+ 		t.Parallel()
+-		f := newRenderFixture(t, Store{Entries: []Entry{entryFor("c", "codex text", 1, "codex-file")}})
+-		f.writeAnchor(t, "AGENTS.md", "repository rules\n")
+-		mustRender(t, f)
+-		if want := Marker + "\n\nrepository rules\n\ncodex text\n"; f.readAnchor(t, "AGENTS.override.md") != want {
+-			t.Errorf("AGENTS.override.md = %q; want %q", f.readAnchor(t, "AGENTS.override.md"), want)
++		tests := []struct {
++			name  string
++			files map[string]string
++			want  string
++		}{
++			{"RootAgents", map[string]string{"AGENTS.md": "repository rules\n"}, Marker + "\n\nrepository rules\n\ncodex text\n"},
++			{"ClaudeMdWhenNoAgents", map[string]string{"CLAUDE.md": "claude rules\n"}, Marker + "\n\nclaude rules\n\ncodex text\n"},
++			{"AgentsWinsOverClaudeMd", map[string]string{"AGENTS.md": "repository rules\n", "CLAUDE.md": "claude rules\n"}, Marker + "\n\nrepository rules\n\ncodex text\n"},
++			{"NeitherFile", nil, Marker + "\n\ncodex text\n"},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				f := newRenderFixture(t, Store{Entries: []Entry{entryFor("c", "codex text", 1, "codex-file")}})
++				for rel, content := range tt.files {
++					f.writeAnchor(t, rel, content)
++				}
++				mustRender(t, f)
++				if got := f.readAnchor(t, "AGENTS.override.md"); got != tt.want {
++					t.Errorf("AGENTS.override.md = %q; want %q", got, tt.want)
++				}
++			})
+ 		}
+ 	})
+ 
+@@ -495,10 +515,24 @@ func TestRender(t *testing.T) {
+ 
+ 	t.Run("OnlyLimitsTheTargets", func(t *testing.T) {
+ 		t.Parallel()
+-		f := newRenderFixture(t, Store{Entries: []Entry{entryFor("both", "t", 1, "claude-file", "codex-file")}})
+-		mustRender(t, f, "codex-file")
+-		if f.anchorHas("CLAUDE.local.md") || !f.anchorHas("AGENTS.override.md") {
+-			t.Error("Only codex-file did not leave CLAUDE.local.md unwritten and AGENTS.override.md written")
++		tests := []struct {
++			name       string
++			only       []string
++			wantClaude bool
++		}{
++			{"CodexFileAlone", []string{"codex-file"}, false},
++			{"ClaudeFileRendersCodexFileToo", []string{"claude-file"}, true},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				f := newRenderFixture(t, Store{Entries: []Entry{entryFor("mine", "t", 1, "claude-file")}})
++				mustRender(t, f, tt.only...)
++				if f.anchorHas("CLAUDE.local.md") != tt.wantClaude || !f.anchorHas("AGENTS.override.md") {
++					t.Errorf("Only %v: CLAUDE.local.md present = %v, AGENTS.override.md present = %v; want %v and true",
++						tt.only, f.anchorHas("CLAUDE.local.md"), f.anchorHas("AGENTS.override.md"), tt.wantClaude)
++				}
++			})
+ 		}
+ 	})
+ 
+diff --git a/internal/heddleengine/seam_test.go b/internal/heddleengine/seam_test.go
+index 404ca01d..5935197e 100644
+--- a/internal/heddleengine/seam_test.go
++++ b/internal/heddleengine/seam_test.go
+@@ -95,9 +95,11 @@ func TestSeam(t *testing.T) {
+ 		}{
+ 			{"AgentsMd", ".", []string{"AGENTS.md"}, true, true},
+ 			{"UnrelatedPath", ".", []string{"src/x.go"}, false, false},
+-			{"ClaudeDirClaudeMd", ".", []string{".claude/CLAUDE.md"}, true, false},
++			{"ClaudeDirClaudeMd", ".", []string{".claude/CLAUDE.md"}, true, true},
+ 			{"AnchoredAgentsMd", "src/app", []string{"src/app/AGENTS.md"}, true, true},
+-			{"AnchoredClaudeMd", "src/app", []string{"src/app/CLAUDE.md"}, true, false},
++			{"ClaudeMd", ".", []string{"CLAUDE.md"}, true, true},
++			{"AnchoredClaudeMd", "src/app", []string{"src/app/CLAUDE.md"}, true, true},
++			{"ClaudeMdAboveTheAnchor", "src/app", []string{"CLAUDE.md"}, false, false},
+ 			{"AgentsMdAboveTheAnchor", "src/app", []string{"AGENTS.md"}, false, false},
+ 		}
+ 		for _, tt := range tests {
+diff --git a/internal/heddleengine/target.go b/internal/heddleengine/target.go
+index 063596e4..57dc8f6a 100644
+--- a/internal/heddleengine/target.go
++++ b/internal/heddleengine/target.go
+@@ -19,6 +19,13 @@ const (
+ // OrchPromptTarget is the prompt target whose passages reach an orch session alone, the home of a repository's orch rules.
+ const OrchPromptTarget = "orch-prompt"
+ 
++const (
++	// claudeFileTarget is the file target rendered into CLAUDE.local.md, the instructions a Claude session reads.
++	claudeFileTarget = "claude-file"
++	// codexFileTarget is the file target rendered into AGENTS.override.md, the instructions a Codex session reads.
++	codexFileTarget = "codex-file"
++)
++
+ // Target is one place an entry's text is delivered to.
+ // File is the anchor-relative path of a file target and empty for a prompt target.
+ // ReRender lists the anchor-relative paths whose change re-renders a file target.
+@@ -34,8 +41,8 @@ type Target struct {
+ 
+ // targetTable holds one row per target; a further target is one new row.
+ var targetTable = []Target{
+-	{Name: "claude-file", Delivery: DeliveryFile, File: "CLAUDE.local.md", ReRender: []string{"CLAUDE.local.md", "AGENTS.md", "CLAUDE.md", ".claude/AGENTS.md", ".claude/CLAUDE.md"}},
+-	{Name: "codex-file", Delivery: DeliveryFile, File: "AGENTS.override.md", ReRender: []string{"AGENTS.md", "AGENTS.override.md"}},
++	{Name: claudeFileTarget, Delivery: DeliveryFile, File: "CLAUDE.local.md", ReRender: []string{"CLAUDE.local.md", "AGENTS.md", "CLAUDE.md", ".claude/AGENTS.md", ".claude/CLAUDE.md"}},
++	{Name: codexFileTarget, Delivery: DeliveryFile, File: "AGENTS.override.md", ReRender: []string{"AGENTS.md", "CLAUDE.md", "AGENTS.override.md"}},
+ 	{Name: "claude-prompt", Delivery: DeliveryPrompt, Engine: "claude"},
+ 	{Name: "codex-prompt", Delivery: DeliveryPrompt, Engine: "codex"},
+ 	{Name: OrchPromptTarget, Delivery: DeliveryPrompt, Role: agentname.RoleOrch},
+diff --git a/internal/landingshed/describe_test.go b/internal/landingshed/describe_test.go
+index 62e64b7c..1e888c89 100644
+--- a/internal/landingshed/describe_test.go
++++ b/internal/landingshed/describe_test.go
+@@ -107,7 +107,7 @@ func TestDescribeSpec_ComposesSpec(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("DescribeTable = _, %v; want nil error", err)
+ 	}
+-	if err := table.Validate(in.StencilsDir); err != nil {
++	if err := table.Validate(in.StencilsDir, ""); err != nil {
+ 		t.Fatalf("table.Validate() = %v; want nil", err)
+ 	}
+ 
+diff --git a/internal/landingshed/fixer_test.go b/internal/landingshed/fixer_test.go
+index 93286dd4..80bbc5aa 100644
+--- a/internal/landingshed/fixer_test.go
++++ b/internal/landingshed/fixer_test.go
+@@ -54,7 +54,7 @@ func TestFixerTable(t *testing.T) {
+ 			if err != nil {
+ 				t.Fatalf("FixerTable(%s) = _, %v; want nil error", mode, err)
+ 			}
+-			if err := table.Validate(in.StencilsDir); err != nil {
++			if err := table.Validate(in.StencilsDir, ""); err != nil {
+ 				t.Fatalf("table.Validate() = %v; want nil", err)
+ 			}
+ 
+@@ -98,7 +98,7 @@ func TestFixerTable(t *testing.T) {
+ 		if err != nil {
+ 			t.Fatalf("FixerTable(finalize, empty optionals) = _, %v; want nil error", err)
+ 		}
+-		if err := table.Validate(in.StencilsDir); err != nil {
++		if err := table.Validate(in.StencilsDir, ""); err != nil {
+ 			t.Fatalf("table.Validate() = %v; want nil", err)
+ 		}
+ 		for _, name := range []string{"plan_dir", "failure_record_path", "fix_review_path", "aligned_tip"} {
+@@ -166,7 +166,7 @@ func TestFixerTable(t *testing.T) {
+ 			table, err := FixerTable(in, cfg, modelspec.Registry{})
+ 			if err == nil && in.StencilsDir != "" {
+ 				// An empty optional the seat engine judges is refused when the table is validated, not when it is built.
+-				err = table.Validate(in.StencilsDir)
++				err = table.Validate(in.StencilsDir, "")
+ 			}
+ 			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
+ 				t.Errorf("FixerTable(%s) error = %v; want one containing %q", tt.name, err, tt.wantErr)
+diff --git a/internal/loomcli/darnwiring.go b/internal/loomcli/darnwiring.go
+index 35802495..89963cb5 100644
+--- a/internal/loomcli/darnwiring.go
++++ b/internal/loomcli/darnwiring.go
+@@ -269,7 +269,7 @@ func (c *loomCLI) wireDarn(location *lymcwd.Location, stencilsDir, specsDir, fri
+ 		if err != nil {
+ 			return fmt.Errorf("build the darn writer table: %w; way forward: fix the config or model spec it names, then re-step", err)
+ 		}
+-		return table.CheckMarkers(stencilsDir)
++		return table.CheckMarkers(stencilsDir, c.shuttleCfg.Engine)
+ 	}
+ 
+ 	return nil
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index 5e1af32a..fad7248e 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -562,6 +562,7 @@ func (c *loomCLI) wire(location *lymcwd.Location, cwd string) error {
+ 		patternRecordPath = record.path
+ 	}
+ 	burlerGeom.PatternRecordPath = patternRecordPath
++	burlerGeom.DefaultEngine = shuttleCfg.Engine
+ 	burlerEngine := burlerengine.New(seatengine.RunnerShuttle(runner), burlerGeom, lensesCfg, websterGeom.StencilsDir, frictionDir, languageSkills)
+ 
+ 	runDeps := websterengine.RunDeps{
+@@ -734,12 +735,13 @@ func (c *loomCLI) wire(location *lymcwd.Location, cwd string) error {
+ 		Shuttle: runner,
+ 		// Seats runs the MultiLLM rows' seats over the same runner.
+ 		Seats: seatengine.New(seatengine.RunnerShuttle(runner), seatengine.Geometry{
+-			WorktreeRoot: location.WorktreePath(),
+-			AnchorPath:   anchorPath,
+-			StencilsDir:  websterGeom.StencilsDir,
+-			ParentName:   c.parentName,
+-			Shortname:    reedGeom.NameShortname,
+-			Slug:         reedGeom.NameSlug,
++			WorktreeRoot:  location.WorktreePath(),
++			AnchorPath:    anchorPath,
++			StencilsDir:   websterGeom.StencilsDir,
++			DefaultEngine: shuttleCfg.Engine,
++			ParentName:    c.parentName,
++			Shortname:     reedGeom.NameShortname,
++			Slug:          reedGeom.NameSlug,
+ 		}),
+ 		Models: registry,
+ 		// DiscussionTable is evaluated per Call, not resolved here, so the stencils are read at call time -- what the Stencil Ownership Invariant requires.
+@@ -903,8 +905,9 @@ func (c *loomCLI) wire(location *lymcwd.Location, cwd string) error {
+ 		// So each is one value read from one place, not a second copy that could drift from theirs.
+ 		// Now is filled explicitly with time.Now rather than left nil, even though nil defaults to time.Now inside the underlying constructors.
+ 		// The Bouncer's archive-filename collision suffix is the one place a test wants to inject a clock.
+-		StencilsDir: websterGeom.StencilsDir,
+-		SpecsDir:    websterGeom.SpecsDir,
++		StencilsDir:   websterGeom.StencilsDir,
++		SpecsDir:      websterGeom.SpecsDir,
++		DefaultEngine: shuttleCfg.Engine,
+ 		// RunRoot is durable: the status seam commits it with every transition.
+ 		RunRoot: loomengine.LoomReviewsDir(location),
+ 		Burler:  burlerEngine,
+diff --git a/internal/loomengine/discussiontable_test.go b/internal/loomengine/discussiontable_test.go
+index 9da712bb..e3ebe4e0 100644
+--- a/internal/loomengine/discussiontable_test.go
++++ b/internal/loomengine/discussiontable_test.go
+@@ -178,7 +178,7 @@ func TestDiscussionTable(t *testing.T) {
+ 				if got, want := table.Values["relevant_path"], DiscussionRelevant(layout); got != want {
+ 					t.Errorf("table.Values[\"relevant_path\"] = %q; want %q", got, want)
+ 				}
+-				if err := table.Validate(stencilsDir); err != nil {
++				if err := table.Validate(stencilsDir, ""); err != nil {
+ 					t.Fatalf("table.Validate() = %v; want nil", err)
+ 				}
+ 				prompts, err := seatengine.Prompts(discussionTableGeometry(layout, stencilsDir), table)
+@@ -247,7 +247,7 @@ func TestDiscussionTable(t *testing.T) {
+ 				if err != nil {
+ 					t.Fatalf("DiscussionTable(...) = _, %v; want nil error", err)
+ 				}
+-				if err := table.Validate(stencilsDir); err != nil {
++				if err := table.Validate(stencilsDir, ""); err != nil {
+ 					t.Fatalf("table.Validate() = %v; want nil", err)
+ 				}
+ 				if _, err := seatengine.Prompts(discussionTableGeometry(layout, stencilsDir), table); err != nil {
+diff --git a/internal/loomengine/parts_test.go b/internal/loomengine/parts_test.go
+index e2ae2ba9..a5317fca 100644
+--- a/internal/loomengine/parts_test.go
++++ b/internal/loomengine/parts_test.go
+@@ -54,7 +54,7 @@ func TestPartsTable(t *testing.T) {
+ 		if err != nil {
+ 			t.Fatalf("PartsTable(...) = _, %v; want nil error", err)
+ 		}
+-		if err := table.Validate(stencilsDir); err != nil {
++		if err := table.Validate(stencilsDir, ""); err != nil {
+ 			t.Fatalf("table.Validate() = %v; want nil", err)
+ 		}
+ 		if table.RolePrefix != "parts" || table.Segment != segmentcolor.Plan || table.Timeout != 120*time.Minute || table.Interactive {
+diff --git a/internal/loomengine/partsplan_test.go b/internal/loomengine/partsplan_test.go
+index 683634f6..aabc6319 100644
+--- a/internal/loomengine/partsplan_test.go
++++ b/internal/loomengine/partsplan_test.go
+@@ -116,7 +116,7 @@ func TestPartsPlanTable(t *testing.T) {
+ 		if err != nil {
+ 			t.Fatalf("PartsPlanTable(...) = _, %v; want nil error", err)
+ 		}
+-		if err := table.Validate(stencilsDir); err != nil {
++		if err := table.Validate(stencilsDir, ""); err != nil {
+ 			t.Fatalf("table.Validate() = %v; want nil", err)
+ 		}
+ 		anchor := layout.AnchorPath()
+diff --git a/internal/loomengine/plan_test.go b/internal/loomengine/plan_test.go
+index 02516157..7aa8885a 100644
+--- a/internal/loomengine/plan_test.go
++++ b/internal/loomengine/plan_test.go
+@@ -88,7 +88,7 @@ func TestPlanTable(t *testing.T) {
+ 			if err != nil {
+ 				t.Fatalf("PlanTable(...) = _, %v; want nil error", err)
+ 			}
+-			if err := table.Validate(stencilsDir); err != nil {
++			if err := table.Validate(stencilsDir, ""); err != nil {
+ 				t.Fatalf("table.Validate() = %v; want nil", err)
+ 			}
+ 			if got, want := table.Values["relevant_path"], DiscussionRelevant(layout); got != want {
+@@ -501,7 +501,7 @@ func TestPlanTable(t *testing.T) {
+ 				// A missing stencil is the seat engine's refusal: the table builder reads none, and Validate reads every seat's.
+ 				table, err := PlanTable(layout, configengine.Dirs{Anchor: layout.AnchorPath()}, stencilsDir, newTestSpecsDir(t), cfg, reg, "none", false)
+ 				if err == nil {
+-					err = table.Validate(stencilsDir)
++					err = table.Validate(stencilsDir, "")
+ 				}
+ 				if err == nil {
+ 					t.Fatalf("PlanTable(Plan=%q) and its Validate = nil; want a refusal", tt.plan)
+diff --git a/internal/seatengine/doc.go b/internal/seatengine/doc.go
+index 284388f5..99d4bcd6 100644
+--- a/internal/seatengine/doc.go
++++ b/internal/seatengine/doc.go
+@@ -29,6 +29,8 @@
+ // Every seat has at least one output and no two seats share an output path, and every advisor output is among the lead's inputs.
+ // The role prefix and every seat's formed role pass the agent-name role grammar.
+ // Every seat's stencil is readable from the told stencils directory, as is every block it includes (stencil.IncludeNames over the bytes read), and an included block declares no include of its own.
++// An engine block, an include named `engine-<block>`, is read through stencilstore.ReadSet for the seat's engine: the engine its model choice names, else the geometry's DefaultEngine.
++// Validation, the marker check and composition all read a seat's blocks that way, so an engine block its seat's engine has no copy of refuses the table, naming the block, the engine and the file.
+ // A table or seat value neither collides with a name in ReservedMarkers nor is empty or whitespace-only.
+ // A table value named in Table.Optional may be empty and then renders as nothing in the stencil and in every block it includes; an Optional name may not be a reserved marker, and a seat value is never exempt.
+ // Prompts composes every seat's prompt from a table without starting anything, so a table builder can test what its seats will read.
+diff --git a/internal/seatengine/engine.go b/internal/seatengine/engine.go
+index fd730cbe..56b917c5 100644
+--- a/internal/seatengine/engine.go
++++ b/internal/seatengine/engine.go
+@@ -227,7 +227,7 @@ func (e *Engine) absolute(paths []string) []string {
+ // The result carries the chair's outcome, gate and NotStarted as shuttle reported them; the engine judges nothing about finishing itself.
+ // A seat that cannot be stopped is an error wrapping ErrSeatNotStopped.
+ func (e *Engine) Run(table Table) (Result, error) {
+-	if err := table.Validate(e.geom.StencilsDir); err != nil {
++	if err := table.Validate(e.geom.StencilsDir, e.geom.DefaultEngine); err != nil {
+ 		return Result{}, err
+ 	}
+ 	names, err := strandNames(e.geom, table)
+@@ -290,7 +290,7 @@ func (e *Engine) startSeat(table Table, seat Seat, names map[string]string, work
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	prompt, err := composeSeatPrompt(e.geom.StencilsDir, table, seat, values)
++	prompt, err := composeSeatPrompt(e.geom, table, seat, values)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+diff --git a/internal/seatengine/engine_test.go b/internal/seatengine/engine_test.go
+index 7c902bfd..24b2aeec 100644
+--- a/internal/seatengine/engine_test.go
++++ b/internal/seatengine/engine_test.go
+@@ -1,4 +1,5 @@
+ // engine_test.go covers Engine.Run: the start order, how the chair's result and failures end the step, advisor failures, the notices sent to the chair and the stop rule.
++// It also covers the engine Run, Probe and Resume resolve a seat's engine blocks for when the seat names none.
+ 
+ package seatengine
+ 
+@@ -834,6 +835,81 @@ func TestEngine_Run_ChairHoldDeferral(t *testing.T) {
+ 	})
+ }
+ 
++// TestEngine_EntryPoints_ReadEngineBlocksForTheGeometrysDefaultEngine proves Run, Probe and Resume resolve a seat's engine blocks for the geometry's DefaultEngine when the seat's model choice names no engine,
++// and that Run starts the seat with that engine's block text; with no default engine at all, each refuses.
++func TestEngine_EntryPoints_ReadEngineBlocksForTheGeometrysDefaultEngine(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const refusal = "no engine was named"
++	tests := []struct {
++		name          string
++		defaultEngine string
++		want          string
++		absent        string
++	}{
++		{"Codex", "codex", "Codex words.", "Claude words."},
++		{"Claude", "claude", "Claude words.", "Codex words."},
++		{"NoEngine", "", "", ""},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			fixture := func(t *testing.T) (*fakeShuttle, *Engine, Table) {
++				t.Helper()
++				shuttle := newFakeShuttle(t)
++				engine, geom := engineFixture(t, shuttle)
++				engine.geom.DefaultEngine = tt.defaultEngine
++				table := engineTable(geom.WorktreeRoot, 0)
++				table.Seats[0].Stencil = "seat-test-engined-chair"
++				return shuttle, engine, table
++			}
++			requireOutcome := func(t *testing.T, err error) {
++				t.Helper()
++				if tt.want == "" {
++					if err == nil || !strings.Contains(err.Error(), refusal) {
++						t.Errorf("error = %v; want a refusal containing %q", err, refusal)
++					}
++					return
++				}
++				if err != nil {
++					t.Errorf("error = %v; want nil", err)
++				}
++			}
++
++			t.Run("Run", func(t *testing.T) {
++				t.Parallel()
++				shuttle, engine, table := fixture(t)
++				ended := runAsync(engine, table)
++				if tt.want == "" {
++					requireOutcome(t, await(t, ended).err)
++					return
++				}
++				shuttle.awaitStarts(1)
++				prompt := shuttle.spec(role("")).Prompt
++				if !strings.Contains(prompt, tt.want) || strings.Contains(prompt, tt.absent) {
++					t.Errorf("chair prompt = %q; want it to hold %q and not %q", prompt, tt.want, tt.absent)
++				}
++				shuttle.handle(role("")).release(shuttleengine.Result{Outcome: shuttleengine.OutcomeDone}, nil)
++				requireOutcome(t, await(t, ended).err)
++			})
++			t.Run("Probe", func(t *testing.T) {
++				t.Parallel()
++				_, engine, table := fixture(t)
++				_, err := engine.Probe(table)
++				requireOutcome(t, err)
++			})
++			t.Run("Resume", func(t *testing.T) {
++				t.Parallel()
++				shuttle, engine, table := fixture(t)
++				chair := shuttle.newHandle(role(""))
++				chair.release(shuttleengine.Result{Outcome: shuttleengine.OutcomeDone}, nil)
++				_, err := engine.Resume(table, LiveTable{Chair: chair})
++				requireOutcome(t, err)
++			})
++		})
++	}
++}
++
+ // heldAdvisor scripts an advisor's session to read as name.
+ func heldAdvisor(name shuttleengine.SessionStateName) func(*fakeHandle) {
+ 	return func(a *fakeHandle) {
+diff --git a/internal/seatengine/geometry.go b/internal/seatengine/geometry.go
+index fa8328bc..c44098a2 100644
+--- a/internal/seatengine/geometry.go
++++ b/internal/seatengine/geometry.go
+@@ -12,6 +12,8 @@ type Geometry struct {
+ 	AnchorPath string
+ 	// StencilsDir is the directory the seats' stencils and their include blocks are read from.
+ 	StencilsDir string
++	// DefaultEngine is the name of the engine a seat whose model choice names none runs on, shuttle's default; a seat's engine blocks are read for it.
++	DefaultEngine string
+ 	// ParentName is the told parent agent name the seat prompts render their parent directive from.
+ 	// An empty name renders the directive's no-parent variant.
+ 	ParentName string
+diff --git a/internal/seatengine/prompt.go b/internal/seatengine/prompt.go
+index 1018d42c..9e1ec9b4 100644
+--- a/internal/seatengine/prompt.go
++++ b/internal/seatengine/prompt.go
+@@ -92,9 +92,9 @@ func seatValues(geom Geometry, table Table, seat Seat, names map[string]string)
+ 
+ // Prompts returns the prompt every seat of table reads at a fresh start, keyed by seat name, and starts nothing.
+ // The lead's prompt ends with the table's Amendment.
+-// It validates table against geom.StencilsDir, so a table that would be refused at start is refused here.
++// It validates table against geom.StencilsDir and geom.DefaultEngine, so a table that would be refused at start is refused here.
+ func Prompts(geom Geometry, table Table) (map[string]string, error) {
+-	if err := table.Validate(geom.StencilsDir); err != nil {
++	if err := table.Validate(geom.StencilsDir, geom.DefaultEngine); err != nil {
+ 		return nil, err
+ 	}
+ 	names, err := strandNames(geom, table)
+@@ -107,7 +107,7 @@ func Prompts(geom Geometry, table Table) (map[string]string, error) {
+ 		if err != nil {
+ 			return nil, err
+ 		}
+-		prompt, err := composeSeatPrompt(geom.StencilsDir, table, seat, values)
++		prompt, err := composeSeatPrompt(geom, table, seat, values)
+ 		if err != nil {
+ 			return nil, err
+ 		}
+@@ -116,16 +116,17 @@ func Prompts(geom Geometry, table Table) (map[string]string, error) {
+ 	return prompts, nil
+ }
+ 
+-// CheckMarkers checks that a value fills every top-level marker of every seat's stencil and of every block it includes, read from stencilsDir.
++// CheckMarkers checks that a value fills every top-level marker of every seat's stencil and of every block it includes, read from stencilsDir, an engine block read for the seat's engine.
++// defaultEngine is the engine a seat whose model choice names none runs on.
+ // A non-blank table or seat value, a name in Optional or a marker the engine fills itself fills a marker, so a table that passes composes no prompt with an unfilled marker.
+ // The first seat with an unfilled marker is refused naming its strand role, its stencil and every unfilled marker.
+ // Such a marker means either the stencils are newer than the running binary, as after a version skew where a newer binary refreshed them, or a value is blank.
+ // The refusal names both causes and a way forward for each: a binary that fills the marker, or text for the blank value.
+ // It applies none of Validate's rules, and starts nothing.
+-func (t Table) CheckMarkers(stencilsDir string) error {
++func (t Table) CheckMarkers(stencilsDir, defaultEngine string) error {
+ 	for _, seat := range t.Seats {
+ 		label := t.seatLabel(seat)
+-		body, blocks, err := readStencilSet(stencilsDir, label, seat.Stencil)
++		body, blocks, err := readStencilSet(stencilsDir, seat.stencilEngine(defaultEngine), label, seat.Stencil)
+ 		if err != nil {
+ 			return err
+ 		}
+@@ -169,11 +170,11 @@ func amendLeadPrompt(table Table, seat Seat, prompt string) string {
+ 	return prompt + table.Amendment
+ }
+ 
+-// composeSeatPrompt reads seat's stencil and every block it includes from stencilsDir and fills them from values.
++// composeSeatPrompt reads seat's stencil and every block it includes from geom.StencilsDir, an engine block for the seat's engine, and fills them from values.
+ // A marker named in table's Optional renders as nothing when its value is empty, in the stencil and in every block.
+-func composeSeatPrompt(stencilsDir string, table Table, seat Seat, values map[string]string) (string, error) {
++func composeSeatPrompt(geom Geometry, table Table, seat Seat, values map[string]string) (string, error) {
+ 	label := table.seatLabel(seat)
+-	body, blocks, err := readStencilSet(stencilsDir, label, seat.Stencil)
++	body, blocks, err := readStencilSet(geom.StencilsDir, seat.stencilEngine(geom.DefaultEngine), label, seat.Stencil)
+ 	if err != nil {
+ 		return "", err
+ 	}
+diff --git a/internal/seatengine/prompt_test.go b/internal/seatengine/prompt_test.go
+index 31fa99bc..246272de 100644
+--- a/internal/seatengine/prompt_test.go
++++ b/internal/seatengine/prompt_test.go
+@@ -114,7 +114,7 @@ func TestSeatPrompts_ValuesPromptsAndSpecs(t *testing.T) {
+ 		t.Errorf("advisor parent_directive = %q, want the chair as parent and the operator ban", advisorValues["parent_directive"])
+ 	}
+ 
+-	chairPrompt, err := composeSeatPrompt(geom.StencilsDir, table, table.Seats[0], chairValues)
++	chairPrompt, err := composeSeatPrompt(geom, table, table.Seats[0], chairValues)
+ 	if err != nil {
+ 		t.Fatalf("composeSeatPrompt(chair) = %v", err)
+ 	}
+@@ -123,7 +123,7 @@ func TestSeatPrompts_ValuesPromptsAndSpecs(t *testing.T) {
+ 			t.Errorf("chair prompt lacks %q:\n%s", want, chairPrompt)
+ 		}
+ 	}
+-	advisorPrompt, err := composeSeatPrompt(geom.StencilsDir, table, table.Seats[1], advisorValues)
++	advisorPrompt, err := composeSeatPrompt(geom, table, table.Seats[1], advisorValues)
+ 	if err != nil {
+ 		t.Fatalf("composeSeatPrompt(advisor) = %v", err)
+ 	}
+@@ -265,7 +265,7 @@ func TestSeatPrompts_ValuesPromptsAndSpecs(t *testing.T) {
+ 		if err != nil {
+ 			t.Fatalf("seatValues(advisor) = %v", err)
+ 		}
+-		wantAdvisor, err := composeSeatPrompt(geom.StencilsDir, table, table.Seats[1], advisorNone)
++		wantAdvisor, err := composeSeatPrompt(geom, table, table.Seats[1], advisorNone)
+ 		if err != nil {
+ 			t.Fatalf("composeSeatPrompt(advisor) = %v", err)
+ 		}
+@@ -280,6 +280,41 @@ func TestSeatPrompts_ValuesPromptsAndSpecs(t *testing.T) {
+ 	})
+ }
+ 
++func TestPrompts_RenderEachSeatsEngineBlocksForItsEngine(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	geom := promptGeometry(t)
++	geom.DefaultEngine = "claude"
++	table := promptTable()
++	table.Seats[0].Stencil = "seat-test-engined-chair"
++	table.Seats[0].Engine = "codex"
++	table.Seats[1].Stencil = "seat-test-engined-advisor"
++	table.Seats[1].Engine = ""
++
++	prompts, err := Prompts(geom, table)
++	if err != nil {
++		t.Fatalf("Prompts() = %v; want nil error", err)
++	}
++	tests := []struct {
++		name   string
++		seat   string
++		want   string
++		absent string
++	}{
++		{"ChairOnItsOwnEngine", "", "Codex words.", "Claude words."},
++		{"AdvisorOnTheDefaultEngine", advisorName(1), "Claude words.", "Codex words."},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			prompt := prompts[tt.seat]
++			if !strings.Contains(prompt, tt.want) || strings.Contains(prompt, tt.absent) {
++				t.Errorf("Prompts()[%q] = %q; want it to hold %q and not %q", tt.seat, prompt, tt.want, tt.absent)
++			}
++		})
++	}
++}
++
+ func TestComposeSeatPrompt_RefusesAMarkerAbsentFromTheValueMapNamingTheSeatRole(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -311,7 +346,7 @@ func TestComposeSeatPrompt_RefusesAMarkerAbsentFromTheValueMapNamingTheSeatRole(
+ 				t.Fatalf("seatValues() = %v", err)
+ 			}
+ 
+-			_, err = composeSeatPrompt(geom.StencilsDir, table, seat, values)
++			_, err = composeSeatPrompt(geom, table, seat, values)
+ 			if err == nil || err.Error() != tt.want {
+ 				t.Fatalf("composeSeatPrompt() = %v, want %q", err, tt.want)
+ 			}
+diff --git a/internal/seatengine/resume.go b/internal/seatengine/resume.go
+index 857c91cf..f8f12e6c 100644
+--- a/internal/seatengine/resume.go
++++ b/internal/seatengine/resume.go
+@@ -27,7 +27,7 @@ type LiveTable struct {
+ // a stop that fails is an error wrapping ErrSeatNotStopped.
+ // Probe archives nothing and starts nothing.
+ func (e *Engine) Probe(table Table) (LiveTable, error) {
+-	if err := table.Validate(e.geom.StencilsDir); err != nil {
++	if err := table.Validate(e.geom.StencilsDir, e.geom.DefaultEngine); err != nil {
+ 		return LiveTable{}, err
+ 	}
+ 
+@@ -91,7 +91,7 @@ func (e *Engine) Resume(table Table, live LiveTable) (Result, error) {
+ 	if live.Chair == nil {
+ 		return Result{}, fmt.Errorf("seatengine: resume needs a live chair; way forward: run the row again so it starts the table fresh")
+ 	}
+-	if err := table.Validate(e.geom.StencilsDir); err != nil {
++	if err := table.Validate(e.geom.StencilsDir, e.geom.DefaultEngine); err != nil {
+ 		return Result{}, err
+ 	}
+ 	names, err := strandNames(e.geom, table)
+diff --git a/internal/seatengine/table.go b/internal/seatengine/table.go
+index 1352e079..e6e4dbbb 100644
+--- a/internal/seatengine/table.go
++++ b/internal/seatengine/table.go
+@@ -105,6 +105,14 @@ type Seat struct {
+ 	Accept func(shuttleengine.Result) error
+ }
+ 
++// stencilEngine returns the engine the seat's engine blocks are read for: the engine its model choice names, else defaultEngine.
++func (s Seat) stencilEngine(defaultEngine string) string {
++	if s.Engine != "" {
++		return s.Engine
++	}
++	return defaultEngine
++}
++
+ // endsStep reports whether an end of this seat's run that its gate and Accept do not pass ends the step: a required advisor or a writer.
+ func (s Seat) endsStep() bool {
+ 	return s.Required || s.Writer
+@@ -166,11 +174,12 @@ func (t Table) Outputs() []string {
+ // The role prefix and every seat's formed role are valid agent-name roles.
+ // The lead carries no gate, since the lead's gate is the table's, and is neither Required, a Writer nor given an Accept hook; Accept belongs to a seat that ends the step, a Required advisor or a Writer.
+ // A table holds advisors only or writers only after the lead.
+-// Every seat's stencil is readable from stencilsDir, as is every block it includes, and an included block includes nothing.
++// Every seat's stencil is readable from stencilsDir, as is every block it includes, an engine block read for the seat's engine, and an included block includes nothing.
++// defaultEngine is the engine a seat whose model choice names none runs on; an engine block its seat's engine has no copy of is refused naming the block, the engine and the file.
+ // The lead's stencil of an advisor table of more than one seat includes seat-directive-chair, and the lead's stencil of a writer table includes seat-directive-writer-chair in its place.
+ // A writer seat's stencil includes seat-directive-writer.
+ // A table or seat value neither collides with a reserved marker nor is blank, except a table value named in Optional, which may be blank; an Optional name may not be a reserved marker.
+-func (t Table) Validate(stencilsDir string) error {
++func (t Table) Validate(stencilsDir, defaultEngine string) error {
+ 	if err := agentname.ValidateRole(t.RolePrefix); err != nil {
+ 		return fmt.Errorf("seatengine: role prefix: %w", err)
+ 	}
+@@ -195,7 +204,7 @@ func (t Table) Validate(stencilsDir string) error {
+ 		if err := validateValues(fmt.Sprintf("seat %q", label), seat.Values); err != nil {
+ 			return err
+ 		}
+-		blocks, err := validateStencil(stencilsDir, label, seat.Stencil)
++		blocks, err := validateStencil(stencilsDir, seat.stencilEngine(defaultEngine), label, seat.Stencil)
+ 		if err != nil {
+ 			return err
+ 		}
+@@ -334,10 +343,10 @@ func validateValues(owner string, values map[string]string) error {
+ 	return nil
+ }
+ 
+-// validateStencil checks the stencil named stencilName and every block it includes are readable from stencilsDir, and that no block includes another.
++// validateStencil checks the stencil named stencilName and every block it includes, an engine block read for engine, are readable from stencilsDir, and that no block includes another.
+ // It returns the sorted names of the blocks the stencil includes; label is the name an error gives the seat the stencil opens.
+-func validateStencil(stencilsDir, label, stencilName string) ([]string, error) {
+-	_, blocks, err := readStencilSet(stencilsDir, label, stencilName)
++func validateStencil(stencilsDir, engine, label, stencilName string) ([]string, error) {
++	_, blocks, err := readStencilSet(stencilsDir, engine, label, stencilName)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -354,24 +363,12 @@ func validateStencil(stencilsDir, label, stencilName string) ([]string, error) {
+ 	return names, nil
+ }
+ 
+-// readStencilSet reads the stencil named stencilName from stencilsDir, with every block it includes keyed by block name.
++// readStencilSet reads the stencil named stencilName from stencilsDir, with every block it includes keyed by block name and an engine block read for engine.
+ // label is the name an error gives the seat the stencil opens.
+-func readStencilSet(stencilsDir, label, stencilName string) ([]byte, map[string][]byte, error) {
+-	body, err := stencilstore.Read(stencilsDir, stencilName)
++func readStencilSet(stencilsDir, engine, label, stencilName string) ([]byte, map[string][]byte, error) {
++	body, blocks, err := stencilstore.ReadSet(stencilsDir, engine, stencilName)
+ 	if err != nil {
+ 		return nil, nil, fmt.Errorf("seatengine: seat %q: %w", label, err)
+ 	}
+-	names, err := stencil.IncludeNames(body)
+-	if err != nil {
+-		return nil, nil, fmt.Errorf("seatengine: seat %q: stencil %q: %w", label, stencilName, err)
+-	}
+-	blocks := make(map[string][]byte, len(names))
+-	for _, name := range names {
+-		block, err := stencilstore.Read(stencilsDir, name)
+-		if err != nil {
+-			return nil, nil, fmt.Errorf("seatengine: seat %q: %w", label, err)
+-		}
+-		blocks[name] = block
+-	}
+ 	return body, blocks, nil
+ }
+diff --git a/internal/seatengine/table_test.go b/internal/seatengine/table_test.go
+index 752c41a7..2a7b4ea0 100644
+--- a/internal/seatengine/table_test.go
++++ b/internal/seatengine/table_test.go
+@@ -44,6 +44,10 @@ func seatedStencils(t *testing.T) string {
+ 	writeStencil(t, dir, "seat-test-advisor", advisorStencilBody)
+ 	writeStencil(t, dir, "seat-test-writer-chair", writerChairStencilBody)
+ 	writeStencil(t, dir, "seat-test-writer", writerStencilBody)
++	writeStencil(t, dir, "seat-test-engined-chair", "Chair of {{.seat_name}}.\n{{template \"seat-directive-chair\"}}\n{{template \"engine-test-words\"}}\n")
++	writeStencil(t, dir, "seat-test-engined-advisor", "Advisor {{.seat_name}}.\n{{template \"seat-directive-advisor\"}}\n{{template \"engine-test-words\"}}\n")
++	writeStencil(t, dir, stencilstore.EngineBlockName("claude", "test-words"), "Claude words.\n")
++	writeStencil(t, dir, stencilstore.EngineBlockName("codex", "test-words"), "Codex words.\n")
+ 	return dir
+ }
+ 
+@@ -79,11 +83,22 @@ func TestTable_Validate(t *testing.T) {
+ 	writeStencil(t, dir, "seat-test-bare", "Lead {{.seat_name}}.\n")
+ 
+ 	tests := []struct {
+-		name    string
+-		mutate  func(*Table)
+-		wantErr string
++		name   string
++		mutate func(*Table)
++		// defaultEngine is the engine a seat whose model choice names none runs on.
++		defaultEngine string
++		wantErr       string
+ 	}{
+ 		{name: "an accepted table"},
++		{name: "an engine block read for the seat's own engine", mutate: func(tb *Table) {
++			tb.Seats[0].Stencil, tb.Seats[0].Engine = "seat-test-engined-chair", "codex"
++		}},
++		{name: "an engine block read for the default engine", mutate: func(tb *Table) { tb.Seats[0].Stencil = "seat-test-engined-chair" }, defaultEngine: "claude"},
++		{name: "an engine block the chair's engine has no copy of", mutate: func(tb *Table) {
++			tb.Seats[0].Stencil, tb.Seats[0].Engine = "seat-test-engined-chair", "gemini"
++		}, wantErr: `seat "multi": stencilstore: engine "gemini" has no engine block "test-words": ` + filepath.Join(dir, "engine", "gemini", "test-words.md") + ` does not exist`},
++		{name: "an engine block an advisor's default engine has no copy of", mutate: func(tb *Table) { tb.Seats[1].Stencil = "seat-test-engined-advisor" }, defaultEngine: "gemini", wantErr: `seat "multi-advisor-1": stencilstore: engine "gemini" has no engine block "test-words"`},
++		{name: "an engine block with no engine named", mutate: func(tb *Table) { tb.Seats[0].Stencil = "seat-test-engined-chair" }, wantErr: `seat "multi": stencilstore: stencil "seat-test-engined-chair" includes engine block "test-words", but no engine was named`},
+ 		{name: "a gate on the lead", mutate: func(tb *Table) { tb.Seats[0].Gate = shuttleengine.GateSpec{{Name: "g", Attempts: 1}} }, wantErr: `the lead carries a gate`},
+ 		{name: "a required lead", mutate: func(tb *Table) { tb.Seats[0].Required = true }, wantErr: `the lead is marked required`},
+ 		{name: "an accept hook on the lead", mutate: func(tb *Table) { tb.Seats[0].Accept = func(shuttleengine.Result) error { return nil } }, wantErr: `the lead carries an accept hook`},
+@@ -164,7 +179,7 @@ func TestTable_Validate(t *testing.T) {
+ 			if tt.mutate != nil {
+ 				tt.mutate(&table)
+ 			}
+-			err := table.Validate(dir)
++			err := table.Validate(dir, tt.defaultEngine)
+ 			if tt.wantErr == "" {
+ 				if err != nil {
+ 					t.Fatalf("Validate() = %v, want nil", err)
+@@ -189,6 +204,9 @@ func TestTable_CheckMarkers(t *testing.T) {
+ 	writeStencil(t, dir, "seat-test-malformed", "Lead.\n{{template \"seat-test-malformed-block\"}}\n")
+ 	writeStencil(t, dir, "seat-test-twice-block", "Block [{{.topic}}].\n")
+ 	writeStencil(t, dir, "seat-test-twice", "Lead [{{.topic}}].\n{{template \"seat-test-twice-block\"}}\n{{template \"seat-directive-chair\"}}\n")
++	writeStencil(t, dir, "seat-test-marked-engined", "Lead [{{.topic}}] [{{.focus}}].\n{{template \"seat-directive-chair\"}}\n{{template \"engine-test-marked\"}}\n")
++	writeStencil(t, dir, stencilstore.EngineBlockName("claude", "test-marked"), "Claude.\n")
++	writeStencil(t, dir, stencilstore.EngineBlockName("codex", "test-marked"), "Codex [{{.depth}}].\n")
+ 
+ 	tests := []struct {
+ 		name   string
+@@ -238,6 +256,14 @@ func TestTable_CheckMarkers(t *testing.T) {
+ 		{name: "two unfilled seats name only the lead", mutate: func(tb *Table) {
+ 			tb.Seats[2].Stencil = "seat-test-marked-advisor"
+ 		}, wantErrs: []string{`seat "multi": stencil "seat-test-marked"`}, wantAbsent: []string{"multi-advisor-2", "angle"}},
++		{name: "an engine block of the default engine with no marker", mutate: func(tb *Table) {
++			tb.Values = map[string]string{"topic": "x", "focus": "y"}
++			tb.Seats[0].Stencil = "seat-test-marked-engined"
++		}},
++		{name: "a marker in the engine block of the seat's own engine", mutate: func(tb *Table) {
++			tb.Values = map[string]string{"topic": "x", "focus": "y"}
++			tb.Seats[0].Stencil, tb.Seats[0].Engine = "seat-test-marked-engined", "codex"
++		}, wantErrs: []string{`seat "multi": stencil "seat-test-marked-engined" has marker(s) depth that no value fills`}},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -247,7 +273,7 @@ func TestTable_CheckMarkers(t *testing.T) {
+ 			if tt.mutate != nil {
+ 				tt.mutate(&table)
+ 			}
+-			err := table.CheckMarkers(dir)
++			err := table.CheckMarkers(dir, "claude")
+ 			if len(tt.wantErrs) == 0 {
+ 				if err != nil {
+ 					t.Fatalf("CheckMarkers() = %v, want nil", err)
+diff --git a/internal/shedrecipe/entries_multillm.go b/internal/shedrecipe/entries_multillm.go
+index 8bca4ef9..c2999888 100644
+--- a/internal/shedrecipe/entries_multillm.go
++++ b/internal/shedrecipe/entries_multillm.go
+@@ -95,7 +95,7 @@ func multiLLMEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProduce
+ 		Values:      tokens,
+ 		Seats:       seats,
+ 	}
+-	if err := table.Validate(env.StencilsDir); err != nil {
++	if err := table.Validate(env.StencilsDir, env.DefaultEngine); err != nil {
+ 		return nil, fmt.Errorf("shedrecipe: MultiLLM: %w", err)
+ 	}
+ 
+diff --git a/internal/shedrecipe/recipe.go b/internal/shedrecipe/recipe.go
+index 45ea89a2..e8f0b66f 100644
+--- a/internal/shedrecipe/recipe.go
++++ b/internal/shedrecipe/recipe.go
+@@ -128,6 +128,8 @@ type Env struct {
+ 	StatusLockPath string
+ 	// StencilsDir is the told stencils directory, read by Bouncer.
+ 	StencilsDir string
++	// DefaultEngine is the name of shuttle's default engine, which a MultiLLM seat whose model spec names no engine runs on and reads its engine blocks for.
++	DefaultEngine string
+ 	// SpecsDir is the told deployed-specs directory, read by the Bouncer and BurlerReview entries.
+ 	// It is a run-wide root, which is exactly the class Env carries, so it belongs here rather
+ 	// than as a per-row Config key.
+diff --git a/internal/stencilstore/doc.go b/internal/stencilstore/doc.go
+index 2f5a8842..15b3c142 100644
+--- a/internal/stencilstore/doc.go
++++ b/internal/stencilstore/doc.go
+@@ -15,4 +15,11 @@
+ // The drift line lists each differing stencil with its class and logs at Info only when every differing stencil is in the behind class.
+ // Reconcile runs once per process, so each of those lines appears once per process.
+ // The drift warning's build-ancestry input arrives the same way, told by the caller through Source, because stencilstore runs no git.
++//
++// # Engine blocks
++//
++// An engine block is an include whose text differs by the engine a stencil is rendered for.
++// A stencil includes it as the bare {{template "engine-<block>"}}, and each engine keeps its own copy at `engine/<engine>/<block>.md` under the stencils directory, registered under the name EngineBlockName returns.
++// ReadSet is the one resolver: it reads a stencil with every block it includes, an engine block from the copy of the engine it is told, so every caller that renders a stencil for a seat reads its blocks for that seat's engine.
++// An engine with no copy of an included block is a MissingEngineBlockError naming the block, the engine and the file, so a caller can tell that refusal apart from any other read error.
+ package stencilstore
+diff --git a/internal/stencilstore/engineblock.go b/internal/stencilstore/engineblock.go
+new file mode 100644
+index 00000000..a80c11fe
+--- /dev/null
++++ b/internal/stencilstore/engineblock.go
+@@ -0,0 +1,82 @@
++// engineblock.go resolves engine blocks, the include blocks whose text differs by the engine a stencil is rendered for, and implements ReadSet, which reads a stencil with every block it includes.
++
++package stencilstore
++
++import (
++	"errors"
++	"fmt"
++	"os"
++	"path"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/stencil"
++)
++
++// EngineBlockPrefix opens the include name of an engine block: a stencil pulls in block <block> of the engine it is rendered for with the bare {{template "engine-<block>"}}.
++const EngineBlockPrefix = "engine-"
++
++// EngineBlocksDir is the directory under a stencils baseDir that holds one directory of engine blocks per engine.
++const EngineBlocksDir = "engine"
++
++// EngineBlockName returns the stencil name of engine's copy of block, `engine/<engine>/<block>`, which RelPath maps to `engine/<engine>/<block>.md`.
++func EngineBlockName(engine, block string) string {
++	return path.Join(EngineBlocksDir, engine, block)
++}
++
++// MissingEngineBlockError reports that an engine has no copy of an engine block a stencil includes.
++// Path is the absolute path the copy was looked for at.
++type MissingEngineBlockError struct {
++	Block  string
++	Engine string
++	Path   string
++}
++
++// Error names the block, the engine and the file, and the way forward.
++func (e *MissingEngineBlockError) Error() string {
++	return fmt.Sprintf("stencilstore: engine %q has no engine block %q: %s does not exist; way forward: add the block at that path, or run the seat on an engine that has it", e.Engine, e.Block, e.Path)
++}
++
++// ReadSet reads the stencil name from baseDir with every block it includes, keyed by include name.
++// An engine block, an include whose name opens with EngineBlockPrefix, is read from engine's copy of the block; any other include is read as the stencil of its name.
++// An engine block engine has no copy of is a *MissingEngineBlockError.
++// An engine block with an empty engine is refused, since no engine names the copy to read.
++// A stencil that includes no engine block reads the same whatever engine is given.
++func ReadSet(baseDir, engine, name string) ([]byte, map[string][]byte, error) {
++	body, err := Read(baseDir, name)
++	if err != nil {
++		return nil, nil, err
++	}
++	includes, err := stencil.IncludeNames(body)
++	if err != nil {
++		return nil, nil, fmt.Errorf("stencilstore: stencil %q: %w", name, err)
++	}
++	blocks := make(map[string][]byte, len(includes))
++	for _, include := range includes {
++		block, err := readInclude(baseDir, engine, name, include)
++		if err != nil {
++			return nil, nil, err
++		}
++		blocks[include] = block
++	}
++	return body, blocks, nil
++}
++
++// readInclude reads the block include names for the stencil called stencilName: engine's copy of an engine block, or the stencil of the include's name.
++func readInclude(baseDir, engine, stencilName, include string) ([]byte, error) {
++	block, isEngineBlock := strings.CutPrefix(include, EngineBlockPrefix)
++	if !isEngineBlock {
++		return Read(baseDir, include)
++	}
++	if engine == "" {
++		return nil, fmt.Errorf("stencilstore: stencil %q includes engine block %q, but no engine was named to read it for; way forward: name the seat's engine in its model spec, or set the engine key of shuttle.yaml", stencilName, block)
++	}
++	blockPath := Path(baseDir, EngineBlockName(engine, block))
++	content, err := os.ReadFile(blockPath)
++	if errors.Is(err, os.ErrNotExist) {
++		return nil, &MissingEngineBlockError{Block: block, Engine: engine, Path: blockPath}
++	}
++	if err != nil {
++		return nil, fmt.Errorf("stencilstore: read engine block %q of engine %q: %w", block, engine, err)
++	}
++	return content, nil
++}
+diff --git a/internal/stencilstore/engineblock_test.go b/internal/stencilstore/engineblock_test.go
+new file mode 100644
+index 00000000..2e3687ff
+--- /dev/null
++++ b/internal/stencilstore/engineblock_test.go
+@@ -0,0 +1,95 @@
++// engineblock_test.go covers ReadSet over a stencils directory holding plain includes and per-engine copies of an engine block.
++
++package stencilstore
++
++import (
++	"errors"
++	"maps"
++	"os"
++	"path/filepath"
++	"reflect"
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// writeNamed writes body as the stencil name under dir, at the path Path gives it.
++func writeNamed(t *testing.T, dir, name, body string) {
++	t.Helper()
++	path := Path(dir, name)
++	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
++		t.Fatal(err)
++	}
++}
++
++func TestReadSet(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	dir := t.TempDir()
++	writeNamed(t, dir, "seat-plain", "Plain {{.x}}.\n{{template \"seat-block\"}}\n")
++	writeNamed(t, dir, "seat-block", "Block.\n")
++	writeNamed(t, dir, "seat-engined", "Lead.\n{{template \"seat-block\"}}\n{{template \"engine-tool-words\"}}\n")
++	writeNamed(t, dir, EngineBlockName("claude", "tool-words"), "Use Edit.\n")
++	writeNamed(t, dir, EngineBlockName("codex", "tool-words"), "Use apply_patch.\n")
++
++	tests := []struct {
++		name       string
++		engine     string
++		stencil    string
++		wantBlocks map[string]string
++		wantErr    string
++		wantMissed *MissingEngineBlockError
++	}{
++		{name: "PlainIncludesReadTheSameWithNoEngine", stencil: "seat-plain", wantBlocks: map[string]string{"seat-block": "Block.\n"}},
++		{name: "EngineBlockReadsTheClaudeCopy", engine: "claude", stencil: "seat-engined", wantBlocks: map[string]string{"seat-block": "Block.\n", "engine-tool-words": "Use Edit.\n"}},
++		{name: "EngineBlockReadsTheCodexCopy", engine: "codex", stencil: "seat-engined", wantBlocks: map[string]string{"seat-block": "Block.\n", "engine-tool-words": "Use apply_patch.\n"}},
++		{name: "EngineWithNoCopyIsAMissingBlock", engine: "gemini", stencil: "seat-engined", wantMissed: &MissingEngineBlockError{Block: "tool-words", Engine: "gemini", Path: filepath.Join(dir, "engine", "gemini", "tool-words.md")}},
++		{name: "EngineBlockWithNoEngineIsRefused", stencil: "seat-engined", wantErr: `stencilstore: stencil "seat-engined" includes engine block "tool-words", but no engine was named to read it for; way forward:`},
++		{name: "UnreadableStencil", engine: "claude", stencil: "seat-absent", wantErr: `stencilstore: read stencil "seat-absent"`},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			body, blocks, err := ReadSet(dir, tt.engine, tt.stencil)
++			if tt.wantMissed != nil {
++				var missed *MissingEngineBlockError
++				if !errors.As(err, &missed) || !reflect.DeepEqual(missed, tt.wantMissed) {
++					t.Fatalf("ReadSet(%q, %q) error = %v; want %+v", tt.engine, tt.stencil, err, tt.wantMissed)
++				}
++				for _, part := range []string{tt.wantMissed.Block, tt.wantMissed.Engine, tt.wantMissed.Path, "way forward"} {
++					if !strings.Contains(err.Error(), part) {
++						t.Errorf("ReadSet() error = %q; want it to name %q", err, part)
++					}
++				}
++				return
++			}
++			if tt.wantErr != "" {
++				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
++					t.Fatalf("ReadSet(%q, %q) error = %v; want one containing %q", tt.engine, tt.stencil, err, tt.wantErr)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("ReadSet(%q, %q) = %v; want nil error", tt.engine, tt.stencil, err)
++			}
++			want, _ := os.ReadFile(Path(dir, tt.stencil))
++			if string(body) != string(want) {
++				t.Errorf("ReadSet() body = %q; want %q", body, want)
++			}
++			if got := slices.Sorted(maps.Keys(blocks)); !slices.Equal(got, slices.Sorted(maps.Keys(tt.wantBlocks))) {
++				t.Fatalf("ReadSet() blocks = %v; want %v", got, slices.Sorted(maps.Keys(tt.wantBlocks)))
++			}
++			for name, text := range tt.wantBlocks {
++				if string(blocks[name]) != text {
++					t.Errorf("ReadSet() block %q = %q; want %q", name, blocks[name], text)
++				}
++			}
++		})
++	}
++}
+diff --git a/internal/stencilstore/stencilstore.go b/internal/stencilstore/stencilstore.go
+index 7a3e22ed..22ea65f8 100644
+--- a/internal/stencilstore/stencilstore.go
++++ b/internal/stencilstore/stencilstore.go
+@@ -264,7 +264,11 @@ type Registry interface {
+ // RelPath returns name's path relative to a stencils baseDir: `<family>/<name>.md`, where <family>
+ // is the substring of name up to its first "-".
+ // Returns `name + ".md"` with no family directory when name contains no "-".
++// A name holding a "/" is a path of its own, such as an engine block's (EngineBlockName), and returns as `name + ".md"`.
+ func RelPath(name string) string {
++	if strings.Contains(name, "/") {
++		return name + ".md"
++	}
+ 	if idx := strings.Index(name, "-"); idx != -1 {
+ 		return name[:idx] + "/" + name + ".md"
+ 	}
+diff --git a/internal/stencilstore/stencilstore_test.go b/internal/stencilstore/stencilstore_test.go
+index f1bc0294..55c1819b 100644
+--- a/internal/stencilstore/stencilstore_test.go
++++ b/internal/stencilstore/stencilstore_test.go
+@@ -199,6 +199,7 @@ func TestRelPath(t *testing.T) {
+ 		{"loom-template-plan", "loom/loom-template-plan.md"},
+ 		{"loom-plan-spec", "loom/loom-plan-spec.md"},
+ 		{"solo", "solo.md"},
++		{"engine/codex/fan-spawn", "engine/codex/fan-spawn.md"},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
