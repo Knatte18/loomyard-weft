@@ -1,40 +1,30 @@
-# Darn-Write writer runs no gate itself when the cold fixer is on
+# Darn-Write: writer runs no gate when its verify gate has a cold fixer
 
-## What changes
+The Darn-Write writer ran `lym gate test` and fixed failures in its own session, at full context, though the cold gate fixer clears a failed `verify` gate after the writer hands off.
+Plan-Write and Discussion-Write already switch to a "gated" self-check when their row's gate has a fixer; Darn-Write's Step 4 was left out.
 
-When the Darn-Write row's `verify` gate has a cold fixer, the darn writer and its subagents no longer run `lym gate test`.
-The row's `verify` gate tests the committed tree once the writer ends its turn, and the fixer clears its failures before the writer hears of them.
-The writer acts only on what the fixer leaves.
-With the fixer off, or on the prime where there is no pair slug, the writer's prompt is byte for byte what it was.
+Now, when `darn.gate_fixer` holds a model-spec and the worktree has a pair slug, the writer's prompt tells the writer and its subagents to run no `lym gate test`.
+The row's `verify` gate and its fixer take the failures, and the writer acts only on what the fixer leaves.
+With the fixer off, or with no pair slug, the Step 4 text is unchanged.
 
-`darn-template-write.md`'s Step 4 list is now one `make_change` marker.
-`darnengine.DarnTable` fills it with one of two new fragments, read at call time from the stencils directory:
+## Design
 
-- `darn-fragment-make-change`, today's list, which has the writer test after each commit and its subagents run the gate on their packages;
-- `darn-fragment-make-change-gated`, which has the writer and its subagents run no `lym gate test`, drops "each leaving the tree green" from the commit step, and says the writer is re-prompted only with what the fixer leaves.
-
-`DarnInputs` gains `GateFixed`.
-`wireDarn` sets it through `writerFixerOn` over the Darn-Write row's `verify` element, so the prompt drops the gate runs exactly when `gateFixerSeam` wraps that gate: a pair slug and a non-empty `darn.gate_fixer`.
-This is the same rule the Plan-Write and Discussion-Write prompts already follow for their validators.
-
-## Design decisions
-
-- **The marker covers the whole Step 4 list.**
-  The gate runs are named in items 1, 2, 3 and 6, and the ungated text had to stay unchanged, so the only contiguous span holding all of them is the list.
-  Items 4 and 5 are therefore repeated in both fragments.
-- **`subagent_model` moves into the fragments.**
-  Item 2 carries the subagent model, so `DarnTable` fills the chosen fragment's `subagent_model` before it sets `make_change`.
-  The writer template no longer declares `subagent_model`; it declares `make_change`.
-  An older binary over the newer stencils would leave `make_change` unfilled.
-  The peer run `seat-stencil-marker-unfilled` adds a Preflight check that refuses such a skew.
+- Step 4's list moves out of `darn-template-write.md` into two fragments, `darn-fragment-make-change` and `darn-fragment-make-change-gated`, registered in `contracts/stencils`.
+  The template holds one `{{.make_change}}` marker where the list was.
+- `darnengine.DarnTable` reads the fragment its new `DarnInputs.GateFixed` field picks, fills the fragment's `subagent_model` marker, and fills the result into `make_change`.
+  `subagent_model` is no longer a marker of the template itself.
+  A missing fragment is refused by name.
+- `loomcli.wireDarn` takes the worktree's pair slug and computes `GateFixed` through `writerFixerOn`, the same condition Plan-Write and Discussion-Write use and the same one `gateFixerSeam` uses to attach a fixer to the row's gate.
+- The gated fragment differs from the ungated one in three places: no gate run per commit, a step saying the writer runs no gate and hears only what the fixer leaves, and subagent prompts that say to run no `lym gate test`.
 
 ## Tests
 
-- `TestDarnSpec` (`internal/darnengine/spec_test.go`) pins both renderings.
-  The ungated prompt carries the gate-run step and the subagent gate rule and lacks the no-gate step.
-  The gated prompt carries the no-gate step, the subagent no-gate instruction and the fixer hand-off, and lacks both gate-run lines and "each leaving the tree green".
-- `TestStencils_TopLevelMarkers` pins `subagent_model` as each new fragment's only marker.
+- `darnengine`: `TestDarnSpec` pins both renderings (gate step and subagent gate rule present or absent), and `TestDarnSpec_Refusals` covers each missing fragment.
+- `loomcli`: `TestWire_DarnRecipe` checks the choice through `wire` for a pair slug with a fixer, a pair slug with an empty fixer, and a fixer with no pair slug.
+- `contracts/stencils`: the marker tests cover both fragments and the `make_change` position.
 
 ## To check by hand
 
-- Run a darn task in a pair with `darn.gate_fixer` set and confirm the writer runs no `lym gate test` and that a failing verify gate goes to the fixer first.
+- `wireDarn`'s choice between the gated and ungated fragment, in `internal/loomcli/darnwiring.go`: confirm the wiring test in `wiring_darn_test.go` pins it, since a review left this finding (`wiredarn-gatefixed-choice-untested`, design, medium) open.
+- A real Darn run with `darn.gate_fixer` set: confirm the writer runs no gate and the fixer's leftovers reach it.
+  The tests above render the prompt only.
