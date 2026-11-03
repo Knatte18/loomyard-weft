@@ -1,6 +1,6 @@
 # Bench Plan and Discussion fixers on Sonnet against Opus
 
-`fixers-on-sonnet` · Task · research, burler, claude · running · PR-Review
+`fixers-on-sonnet` · Task · research, burler, claude · running · Finalize
 
 ## Seen
 
