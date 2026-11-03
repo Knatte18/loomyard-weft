@@ -24,6 +24,18 @@ On the `cs` hub (2026-11-03), `pipeflow-reynolds-helper` (darn, light) ran Drift
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-03): Drift verdict appended in Go, not written by Describe
+
+Decision: Keep the Go code that appends Drift's outcome to the summary as it stands, in place of having Describe write it into summary.md. No further rewrite of a summary line asking for a hand check is needed in code; the Describe stencil tells the writer that Drift already compared and not to ask for the compare by hand.
+
+Rationale: A section appended by code is exact and cannot drift from the record, which an agent's prose can; a stale hand-check line when Describe is skipped is a corner case the appended verdict next to it already contradicts.
+
+### Added after Discussion (parent, 2026-11-03): Drift verdict in the landing commit message is kept
+
+Decision: Keep the verdict appended to the landing commit message, beyond the summary, pull request and PR-Review prompt the entry names.
+
+Rationale: It costs nothing, and the verdict in main's history is where a later reader looks for it once the pull request is gone.
+
 ## Constraints
 
 ## Auto-mode assumptions
