@@ -1,6 +1,6 @@
 # fabric remove deletes the whole worktree directory, ignored files included
 
-`fabric-remove-ignored-files` · Task · bug, fabric · running · PR-Review
+`fabric-remove-ignored-files` · Task · bug, fabric · running · Finalize
 
 From [issue #21](https://github.com/Knatte18/loomyard/issues/21), first of its three faults; the batten half is task `batten-stray-dir-and-beam-mark`.
 
