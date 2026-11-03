@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=56cb2e877a75d7f718dc8a9c67a61e98e6a5dfc826d1ec664c5761b36bdecf56 build=4bb781f3e8e787b5c9c9f915f19efbf78a265144 time=2026-11-03T11:26:18Z -->
+<!-- lym-stencil: sha256=639ec11eb96f1d91354bf53ab6a9cf9573605dbf64462524e43e0c007db3dab0 build=58a85abf84fdc42b17b224e854ea7f4baef53f76 time=2026-11-03T17:52:02Z -->
 
 # Final-summary spec — the producer-agnostic final-summary artifact
 
@@ -37,6 +37,9 @@ The artifact has two consumers today, both in `internal/landingshed`:
 - **`Publish`** uses the parsed title and body as the pull request's own title and body fields.
 - **`Finalize`** uses `LandingMessage` — the title, a blank line, the body with its leading whitespace trimmed, then, after a blank line, the credit block Go composes from `landing.yaml`'s `credit_*` keys and the engines that ran a session in the task — as the landing merge commit's message.
   The pull request's body carries the same body and credit block.
+
+Both consumers append the task's regression check after the body and before the credit block, a `## Regression check` section `internal/driftengine` renders from the task's Drift records, when the task has one.
+The artifact never holds that section itself, so it reaches the pull request and the landing commit whichever producer wrote the artifact last.
 
 `Finalize`'s read is unconditional: a missing or malformed artifact there is a hard error.
 `Publish`'s read is reached only when the parent branch requires a pull request: it opens one from the artifact, or refreshes an open one's title and body, so a re-run Publish carries a rewritten description onto the pull request.
