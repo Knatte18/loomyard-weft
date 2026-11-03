@@ -1,11 +1,11 @@
 # Card 6 — remove-archive-order
 
 **Create:**
-- `plan:internal/fabricengine#weftArchive` -> `type weftArchive struct`
-- `plan:internal/fabricengine#archiveTagPushHook` -> `var archiveTagPushHook func(tagRef string) error`
-- `plan:internal/fabricengine#SetArchiveTagPushHookForTest` -> `func SetArchiveTagPushHookForTest(t testing.TB, hook func(tagRef string) error)`
-- `plan:internal/fabricengine#SetArchiveSleepForTest` -> `func SetArchiveSleepForTest(t *Topology, sleep func(time.Duration))`
-- `plan:internal/fabricengine_test#TestRemove_ArchiveOrder` -> `func TestRemove_ArchiveOrder(t *testing.T)`
+- `internal/fabricengine#weftArchive`
+- `internal/fabricengine#archiveTagPushHook`
+- `internal/fabricengine#SetArchiveTagPushHookForTest`
+- `internal/fabricengine#SetArchiveSleepForTest`
+- `internal/fabricengine_test#TestRemove_ArchiveOrder`
 
 **Edit:**
 - `internal/fabricengine#Topology`

@@ -14,8 +14,8 @@
 - `internal/fabriccli#addWeftVerbs`
 
 **Create:**
-- `plan:internal/fabricengine_test#TestTeardownLock_SerialisesAddDiscardAndPairPush` -> `func TestTeardownLock_SerialisesAddDiscardAndPairPush(t *testing.T)`
-- `plan:internal/fabriccli_test#TestRunCLI_PushSkippedWhileTeardownLockHeld` -> `func TestRunCLI_PushSkippedWhileTeardownLockHeld(t *testing.T)`
+- `internal/fabricengine_test#TestTeardownLock_SerialisesAddDiscardAndPairPush`
+- `internal/fabriccli_test#TestRunCLI_PushSkippedWhileTeardownLockHeld`
 
 **Extends:**
 - `internal/fabricengine/doc.go`
