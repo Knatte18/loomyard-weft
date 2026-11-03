@@ -93,12 +93,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 4h<br>4h | shuttle, codex, loom |
 | F16 |  | **Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | 2h<br>2h | drift, shed |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>1d | burler, shed, orch, quarry, report |
-
-## Done (2)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T2 | **Shipped heddle instructions as short imperative bullets**<br>• Rewrite the lym-batching and lym-plan-edits-before-gate shipped entries from prose walls into headed imperative bullet lists | [`heddle-shipped-bullets`](design-heddle-shipped-bullets.md) | 20m<br>20m | heddle |
-| T11 | **Map where fabricengine test time goes and propose cuts**<br>• Docs-only survey: time, git processes and files per fixture on neve, what hubforge templates already cover, ranked proposals<br>• `darn: writer fable[high]` | [`fabric-test-speed-survey`](design-fabric-test-speed-survey.md) | 49m<br>49m | fabric, testkit, docs |

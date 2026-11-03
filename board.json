@@ -836,55 +836,6 @@
       "revised": "2026-11-03T09:16:18Z"
     },
     {
-      "id": 1048,
-      "handle": "T11",
-      "slug": "fabric-test-speed-survey",
-      "title": "Map where fabricengine test time goes and propose cuts",
-      "kind": "task",
-      "labels": [
-        "research",
-        "fabric",
-        "testkit",
-        "docs"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Docs-only survey: time, git processes and files per fixture on neve, what hubforge templates already cover, ranked proposals",
-      "body": "A report that maps where `internal/fabricengine`'s test time goes and proposes how to cut it, on both machines (operator, 2026-11-03).\n\n## Why\n\n`internal/fabricengine` is most of the suite's test time.\n`docs/benchmarks/test-suite-timing.md` (`test-time-audit-3`) has it at 348.72 s of the 388.6 s `tier1` wall on OSL-1046, and at 45.69 s on neve in `test-time-audit-2`; the operator calls both too slow.\nOn OSL-1046, Cortex XDR scans every file opened and every process started, so the thousands of files and git processes the tests make each cost a scan.\nPutting the temp root in memory (`fabricengine-shm-bench` in the same doc, and `0197761c`) did not help much.\nThe operator accepts cutting tests if that is what it takes.\n\n## What the report answers\n\n- Where the time goes on neve, per test file and per fixture builder, from timed runs through `lym gate test`.\n- How many git processes and files a run makes, split into fixture setup and the code under test.\n- What the existing template-and-copy model in `internal/hubforge` (`doc.go`: bares built once per binary through `sync.Once`, `CopyHub` and `SharedHub` per shape) already covers, and which fabricengine fixtures (`newMergePairFixture`, `newOriginHub`, `newRecordsFixture` and the other `new*Fixture` builders) build their repos with git per test instead.\n- Which of these levers would pay and roughly how much, each against the measured split:\n  - more fixtures on the hub template, or templates of their own;\n  - shared read-only fixtures where a test only reads;\n  - fewer files per fixture;\n  - fewer git process starts in the code under test, such as one go-git read in place of several `git` calls;\n  - merging or cutting overlapping tests, naming each candidate and the behavior it alone pins;\n  - the effect of `t.Parallel` and `-p` on this package.\n- Which results carry over to OSL-1046, where the report cannot measure, said as reasoning, not as numbers.\n\n## Bounds\n\n- Documentation only: a section in `docs/benchmarks/test-suite-timing.md` or a report under `docs/research/`, with no code, test or config change.\n- Measure through `lym gate test` only, as the gate rule says, and record each command and machine state with its numbers.\n- End with a ranked list of proposed follow-up tasks, each with its expected saving; file none of them.\n",
-      "status": "done",
-      "created": "2026-11-03T11:10:50Z",
-      "revised": "2026-11-03T11:10:50Z",
-      "run_settings": {
-        "darn": {
-          "writer": "fable[high]"
-        }
-      },
-      "profile": "docs"
-    },
-    {
-      "id": 1049,
-      "handle": "T2",
-      "slug": "heddle-shipped-bullets",
-      "title": "Shipped heddle instructions as short imperative bullets",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "heddle"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Rewrite the lym-batching and lym-plan-edits-before-gate shipped entries from prose walls into headed imperative bullet lists",
-      "body": "The shipped heddle entries `lym-batching` and `lym-plan-edits-before-gate` (`internal/heddleengine/shipped.json`) render into every worktree's `CLAUDE.local.md` as walls of prose; the operator judges that agents do not take such text seriously and asks for short imperative bullet points (operator, 2026-11-03).\n\n## Expected\n\n- Each shipped entry opens with a `##` heading of its own under the `# LoomYard's own instructions` section heading, and its text is a list of short imperative bullets, one instruction per bullet.\n  A numbered list stays numbered where order is the point, as in the round of edits.\n- Every instruction the entries give today survives the rewrite with its meaning unchanged, including the override of the Read tool's advice to read only a part, the reread after a command rewrites files, and the four steps of a round.\n- Repeated statements are said once: the rule against reading one file in slices appears in both entries today.\n- The rendered file has no heading-level skip: the shipped entries' `##` headings sit under the `#` section heading, as a repository entry's `##` heading sits under `# This repository's instructions`.\n- Tests that pin the shipped text or its render follow the new text; any stencil or doc that quotes the old sentences is updated in the same change.\n",
-      "status": "done",
-      "created": "2026-11-03T11:40:14Z",
-      "revised": "2026-11-03T11:40:14Z",
-      "profile": "light"
-    },
-    {
       "id": 1050,
       "handle": "T4",
       "slug": "readme-shows-discussed",
