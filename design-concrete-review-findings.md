@@ -1,6 +1,6 @@
 # Bench reviewers that name the place and the change in every finding
 
-`concrete-review-findings` · Note · research, burler, stencil
+`concrete-review-findings` · Task · research, burler, stencil · draft
 
 ## Seen
 

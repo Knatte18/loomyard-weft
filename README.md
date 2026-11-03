@@ -38,7 +38,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Owner `neve`
 
-### Tasks (6)
+### Tasks (7)
 
 Concrete and claimable; only a task can run.
 
@@ -75,16 +75,23 @@ Starts when every entry it names under After is done.
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T8<br>T9<br>T10<br>T3 | 3d<br>41m | fabric |
 
-### Notes (27)
+#### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T2 | `draft` **Bench reviewers that name the place and the change in every finding**<br>• Eight review runs: the current review stencil against one that demands concrete findings | [`concrete-review-findings`](design-concrete-review-findings.md) | darn |  | 0m<br>0m | burler, stencil |
+
+### Notes (26)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-#### Research (3)
+#### Research (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R4 |  | **Bench Plan and Discussion fixers on Sonnet against Opus**<br>• Twelve fixer runs: Opus against Sonnet, and Sonnet on concrete findings | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 12d<br>0m | burler, claude |
-| R5 |  | **Bench reviewers that name the place and the change in every finding**<br>• Eight review runs: the current review stencil against one that demands concrete findings | [`concrete-review-findings`](design-concrete-review-findings.md) | 0m<br>0m | burler, stencil |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 12d<br>10h | loom, stencil |
 
 #### Bugs (1)
