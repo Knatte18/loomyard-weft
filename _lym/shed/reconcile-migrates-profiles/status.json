@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -34,6 +34,51 @@
       "output": "",
       "at": "2026-11-03T09:17:03Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/reconcile-migrates-profiles/_lym/landing/summary.md",
+      "at": "2026-11-03T09:41:56Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-03T09:25:01.245459933Z",
+          "end": "2026-11-03T09:25:01.254669454Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-03T09:38:11.457954359Z",
+          "end": "2026-11-03T09:38:11.477472216Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-03T09:25:01.32212321Z",
+          "end": "2026-11-03T09:37:18.687021989Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-03T09:37:19.249976195Z",
+          "end": "2026-11-03T09:38:11.407643195Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-03T09:38:11.594537208Z",
+          "end": "2026-11-03T09:41:30.928757207Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-03T09:41:30.985287293Z",
+          "end": "2026-11-03T09:41:30.989375399Z"
+        }
+      ]
     }
   ],
   "product": {
