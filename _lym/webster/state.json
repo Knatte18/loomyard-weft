@@ -326,7 +326,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "e72ba4dee163127ae0ab79eb29b70a06",
   "masterSessionId": "8965312c-1965-41e5-bab9-4e7de716ebbb",
   "masterEngine": "claude",
@@ -411,6 +411,22 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-shed-sub-run-block/8965312c-1965-41e5-bab9-4e7de716ebbb/subagents/agent-ac5e3542af19b37ab.jsonl"
       ]
+    },
+    "7": {
+      "slug": "arras-seedable",
+      "cards": [
+        "07-arras-seedable"
+      ],
+      "cardHashes": {
+        "07-arras-seedable": "3a8e1507206e61170b8db01604fe62e375b20a63d467d9441ac62797dc53a791"
+      },
+      "startSha": "01922415abe2f73e8e891e599281ce1d04365902",
+      "kind": "fork",
+      "spawnedAt": "2026-11-03T08:49:15Z",
+      "sessionId": "8965312c-1965-41e5-bab9-4e7de716ebbb",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
