@@ -1,6 +1,6 @@
 # One base for a command dir; a missing Drift dir fails by name
 
-`drift-dir-base` · Task · bug, drift, gate, config · draft
+`drift-dir-base` · Task · bug, drift, gate, config
 
 Depends on: [`gate-orphan-pipe-hang`](design-gate-orphan-pipe-hang.md)
 
