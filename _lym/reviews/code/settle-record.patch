@@ -1,0 +1,436 @@
+diff --git a/internal/fabricengine/add.go b/internal/fabricengine/add.go
+index 45d8eb0d..df491f18 100644
+--- a/internal/fabricengine/add.go
++++ b/internal/fabricengine/add.go
+@@ -849,7 +849,7 @@ func (t *Topology) rollbackAdd(rec *Mutations, l *lymcwd.Location, slug, warpBra
+ 	// A reused records worktree predates this Add and stays.
+ 	// remote is hardcoded false here: Add pushes nothing, and an adopted branch's copy on origin is not this Add's to delete.
+ 	if !weftReused {
+-		if _, err := removeWeftWorktree(rec, l, slug, weftBranch, true, !weftBranchAdopted, false, t.cfg.BranchPrefix, ""); err != nil {
++		if _, err := removeWeftWorktree(rec, l, slug, weftBranch, true, !weftBranchAdopted, false, t.cfg.BranchPrefix, "", t.leftover); err != nil {
+ 			if firstErr == nil {
+ 				firstErr = err
+ 			}
+diff --git a/internal/fabricengine/add_rollback_adopt_test.go b/internal/fabricengine/add_rollback_adopt_test.go
+index 8d2f0907..2a74a5b3 100644
+--- a/internal/fabricengine/add_rollback_adopt_test.go
++++ b/internal/fabricengine/add_rollback_adopt_test.go
+@@ -228,6 +228,46 @@ func TestAddRollback_WarpBranchDeletedUnderEmptyPrefix(t *testing.T) {
+ 	}
+ }
+ 
++// TestAddRollback_FinishesRefilledWeftWorktree forces Add to fail after its weft worktree exists, has a late writer refill that directory after the rollback's clean `git worktree remove`, and asserts the rollback still deletes it.
++func TestAddRollback_FinishesRefilledWeftWorktree(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const slug = "refilled-rollback"
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	l := h.Location
++	weftDir := fabricengine.RecordsWorktreePath(l, slug)
++
++	plantLauncherBlocker(t, l, slug)
++
++	refilled := false
++	fabricengine.SetLeftoverRefillForTest(h.Topology, func(target string) {
++		if target != weftDir {
++			return
++		}
++		refilled = true
++		output := filepath.Join(weftDir, "obj", "project.assets.json")
++		if err := os.MkdirAll(filepath.Dir(output), 0o755); err != nil {
++			t.Errorf("refill %s: %v", weftDir, err)
++			return
++		}
++		if err := os.WriteFile(output, []byte("{}\n"), 0o644); err != nil {
++			t.Errorf("refill %s: %v", weftDir, err)
++		}
++	})
++
++	if _, err := h.Topology.Add(l, slug, fabricengine.AddOptions{SkipPush: true}); err == nil {
++		t.Fatalf("Add should have failed (launcher blocker)")
++	}
++
++	if !refilled {
++		t.Fatalf("no late writer refilled %s; want the refill to run after the rollback's clean git exit", weftDir)
++	}
++	if _, err := os.Lstat(weftDir); !os.IsNotExist(err) {
++		t.Errorf("weft worktree dir %s still on disk after the rollback (stat error = %v)", weftDir, err)
++	}
++}
++
+ // TestAddRollback_AdoptedWarpBranchLocalCopyDeleted forces Add to fail after it adopted a live pair's warp branch from origin, and asserts the rollback deletes the local copy and leaves origin's branch untouched.
+ func TestAddRollback_AdoptedWarpBranchLocalCopyDeleted(t *testing.T) {
+ 	tiergate.Require(t, 1)
+diff --git a/internal/fabricengine/destroy.go b/internal/fabricengine/destroy.go
+index f7c5f658..0995d2db 100644
+--- a/internal/fabricengine/destroy.go
++++ b/internal/fabricengine/destroy.go
+@@ -1346,14 +1346,16 @@ func removePath(rec *Mutations, req pathRequest) error {
+ // leftoverRemoveAttempts bounds removeWorktreeLeftover: the first removal and two retries.
+ const leftoverRemoveAttempts = 3
+ 
+-// leftoverSeam holds the removal and the sleep behind removeWorktreeLeftover.
+-// A nil field means production: removeContainedPath over the whole subtree, and time.Sleep.
++// leftoverSeam holds the removal and the sleep behind removeWorktreeLeftover, and the refill a late writer makes after a clean `git worktree remove`.
++// A nil field means production: removeContainedPath over the whole subtree, time.Sleep, and no refill.
+ type leftoverSeam struct {
+ 	remove func(container, target string) (removed, wasDir bool, err error)
+ 	sleep  func(delay time.Duration)
++	// refill runs on target after a `git worktree remove` of it exited cleanly, so a test plays the late writer that refills the directory.
++	refill func(target string)
+ }
+ 
+-// removeWorktreeLeftover finishes the removal of a task worktree directory that `git worktree remove` deregistered but left on disk.
++// removeWorktreeLeftover finishes the removal of a worktree directory still on disk after `git worktree remove` deregistered it.
+ // Its caller's git run is its ownership proof: that run passed the gate's registered-linked-worktree and dirtiness checks on this same target and had already accepted discarding it, so no check runs here, and containment is kept by the removal's os.Root under container.
+ // A removal that fails with a late writer's error (a refilled directory, or on Windows a file its writer still holds open) is retried after one second and then two, three attempts in all; any other failure is returned at once.
+ // A removal appends KindPathRemoved for target, as removePath does.
+@@ -1393,6 +1395,39 @@ func removeWorktreeLeftover(rec *Mutations, container, target string, seam lefto
+ 	return fmt.Errorf("remove %s: %w", target, err)
+ }
+ 
++// finishGitWorktreeRemoval completes a `git worktree remove` of target run from repoDir, given gitErr, the error removeGitWorktree returned for it.
++// A clean exit with target still on disk is a directory a late writer, such as a build or language server writing git-ignored output, refilled after git deleted it;
++// a git failure that left target deregistered and on disk is git dropping the registration and failing on the directory.
++// Either directory is removed through removeWorktreeLeftover, under container, and a nil error then means the worktree is gone.
++// Any other outcome returns gitErr unchanged: a clean exit with nothing left, a failure before git ran, a failure that left target registered, a failure after which the repository's worktrees cannot be listed, or one that left nothing on disk.
++func finishGitWorktreeRemoval(rec *Mutations, repoDir, container, target string, gitErr error, seam leftoverSeam) error {
++	if gitErr == nil {
++		if seam.refill != nil {
++			seam.refill(target)
++		}
++	} else {
++		var gitRunErr *gitexec.GitError
++		if !errors.As(gitErr, &gitRunErr) {
++			return gitErr
++		}
++		// An unlistable repository proves nothing about target, so it is treated as registered: the recursive delete needs the proof that git dropped the registration.
++		entries, listErr := List(repoDir)
++		if listErr != nil || listsLinkedWorktree(entries, target) {
++			return gitErr
++		}
++	}
++	if !pathPresent(target) {
++		return gitErr
++	}
++	if err := removeWorktreeLeftover(rec, container, target, seam); err != nil {
++		if gitErr != nil {
++			return fmt.Errorf("git worktree remove %s deregistered it and failed (%v), and finishing the directory's removal failed: %w", target, gitErr, err)
++		}
++		return fmt.Errorf("git worktree remove %s succeeded, but the directory was refilled on disk and finishing its removal failed; it is no longer a worktree, so stop whatever refills it and delete it by hand; a pair that remains is then removed by running remove again: %w", target, err)
++	}
++	return nil
++}
++
+ // removeGitWorktree is the executor for the git worktree remove primitive: it runs the pipeline,
+ // then runs git worktree remove [--force] from repoDir.
+ // It returns the resulting error unchanged rather than wrapping it, because every call site builds
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 67f74d4e..30cbbd03 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -586,7 +586,9 @@
+ // worktree carrying state it will not discard — and treating every one of those refusals as licence
+ // to delete the directory turned an ordinary typo into the loss of a whole git clone, gitdir
+ // included, reported as success.
+-// A directory git deregistered but left on disk, as when a late writer refilled it while git deleted it, is finished through the contained removal `removeWorktreeLeftover`, which retries a late-writer failure (a not-empty directory, or on Windows a file its writer still holds open) after one second and then two, three attempts in all, and returns any other failure at once.
++// A directory git deregistered but left on disk, on either side of the pair, is finished through the contained removal `removeWorktreeLeftover`:
++// one git failed to delete, as when a late writer refilled it while git deleted it, and one on disk after git's clean exit, which a late writer such as a build or language server refilled with git-ignored output once git had deleted it.
++// The removal retries a late-writer failure (a not-empty directory, or on Windows a file its writer still holds open) after one second and then two, three attempts in all, and returns any other failure at once.
+ // The hub's prime worktree is refused by name before any teardown begins, since it is the warp
+ // repository rather than a pair.
+ // After its refusals — the no-force dirtiness checks and their status probes among them — and before its first mutation, `Remove` archives the pair's weft tip:
+diff --git a/internal/fabricengine/export_test.go b/internal/fabricengine/export_test.go
+index 730a9d6d..31ee10bc 100644
+--- a/internal/fabricengine/export_test.go
++++ b/internal/fabricengine/export_test.go
+@@ -710,7 +710,14 @@ func CleanupRemoteWarpWithHookForTest(t *Topology, l *lymcwd.Location, apply boo
+ // A nil argument keeps the production behaviour for that part.
+ // It sets the seam on the one Topology, so parallel tests inject per instance.
+ func SetLeftoverSeamForTest(t *Topology, remove func(container, target string) (removed, wasDir bool, err error), sleep func(delay time.Duration)) {
+-	t.leftover = leftoverSeam{remove: remove, sleep: sleep}
++	t.leftover.remove = remove
++	t.leftover.sleep = sleep
++}
++
++// SetLeftoverRefillForTest makes t's Remove call refill with each worktree path a `git worktree remove` exited cleanly on, before it looks for a directory left on disk, so a test plays a late writer refilling it.
++// It sets the seam on the one Topology, so parallel tests inject per instance.
++func SetLeftoverRefillForTest(t *Topology, refill func(target string)) {
++	t.leftover.refill = refill
+ }
+ 
+ // SetTeardownWaitForTest shortens how long t's Remove waits for the pair's teardown lock.
+diff --git a/internal/fabricengine/remove.go b/internal/fabricengine/remove.go
+index bae9c408..652cdfd3 100644
+--- a/internal/fabricengine/remove.go
++++ b/internal/fabricengine/remove.go
+@@ -336,7 +336,7 @@ func (t *Topology) removePair(l *lymcwd.Location, slug string, force, remote, lo
+ 	var teardown weftTeardownResult
+ 	var siblingSteps []string
+ 	if local {
+-		siblingSteps, err = removeLocalWeft(rec, l, slug, weftBranch, t.cfg.BranchPrefix)
++		siblingSteps, err = removeLocalWeft(rec, l, slug, weftBranch, t.cfg.BranchPrefix, t.leftover)
+ 		if remote {
+ 			teardown.remoteSkippedReason = "the pair is local-only: nothing of it is on origin, so --remote has nothing to do"
+ 		}
+@@ -444,9 +444,10 @@ func regenerateHubWorkspaceNow(rec *Mutations, l *lymcwd.Location) (skipped bool
+ }
+ 
+ // removeLocalWeft tears down a local pair's sibling without touching origin: its worktree goes through removeGitWorktree with dirtyRecordsDisposable, so uncommitted records are discarded, then its local branch is deleted and stale worktree registrations are pruned.
++// A worktree directory git deregistered but left on disk is finished through finishGitWorktreeRemoval, with leftover as its seam.
+ // It returns the steps that changed state, in the order they ran, ending with RemoveStepRecordsDropped when the branch carried records away.
+ // A worktree that survives a failed removal is an error; a missing worktree or branch is nothing to do.
+-func removeLocalWeft(rec *Mutations, l *lymcwd.Location, slug, branch, branchPrefix string) (steps []string, err error) {
++func removeLocalWeft(rec *Mutations, l *lymcwd.Location, slug, branch, branchPrefix string, leftover leftoverSeam) (steps []string, err error) {
+ 	weftRoot, err := RecordsRepoRoot(l)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("resolve weft repo root: %w", err)
+@@ -465,7 +466,8 @@ func removeLocalWeft(rec *Mutations, l *lymcwd.Location, slug, branch, branchPre
+ 			dirtiness: dirtyRecordsDisposable(),
+ 			force:     false,
+ 		}
+-		if removeErr := removeGitWorktree(rec, req, weftRoot); removeErr != nil && pathPresent(weftPath) {
++		removeErr := finishGitWorktreeRemoval(rec, weftRoot, l.HubPath, weftPath, removeGitWorktree(rec, req, weftRoot), leftover)
++		if removeErr != nil && pathPresent(weftPath) {
+ 			return nil, fmt.Errorf("warp worktree removed, but weft teardown failed and the weft worktree remains at %s: %w", weftPath, removeErr)
+ 		}
+ 	}
+@@ -534,7 +536,7 @@ func (t *Topology) removeSibling(rec *Mutations, l *lymcwd.Location, slug, weftB
+ 	// absent, or removed with just a branch/prune step failing) — a weft worktree still on disk
+ 	// after a "successful" Remove is a half-torn pair the operator was never told about. This check
+ 	// reads the error return alone, never the teardown struct: the remote outcome never affects it.
+-	teardown, weftErr := removeWeftWorktree(rec, l, slug, weftBranch, force, true, remote, t.cfg.BranchPrefix, leaseSHA)
++	teardown, weftErr := removeWeftWorktree(rec, l, slug, weftBranch, force, true, remote, t.cfg.BranchPrefix, leaseSHA, t.leftover)
+ 	if weftErr != nil {
+ 		weftTarget := RecordsWorktreePath(l, slug)
+ 		if _, statErr := os.Stat(weftTarget); statErr == nil {
+@@ -1001,6 +1003,7 @@ func refusePrimeSlug(l *lymcwd.Location, slug string) error {
+ // therefore delete exactly the untracked files git had just declined to discard.
+ //
+ // When git exits nonzero having deleted the registration and the directory is still on disk, the directory is finished through removeWorktreeLeftover, with leftover as its seam.
++// A directory on disk after git's clean exit, refilled by a late writer once git deleted it, is finished the same way.
+ func removeWarpWorktreeDir(rec *Mutations, l *lymcwd.Location, target string, force bool, leftover leftoverSeam) error {
+ 	req := pathRequest{
+ 		what:      "remove warp worktree",
+@@ -1014,7 +1017,7 @@ func removeWarpWorktreeDir(rec *Mutations, l *lymcwd.Location, target string, fo
+ 
+ 	err := removeGitWorktree(rec, req, l.WorktreePath())
+ 	if err == nil {
+-		return nil
++		return finishGitWorktreeRemoval(rec, l.WorktreePath(), l.HubPath, target, nil, leftover)
+ 	}
+ 
+ 	var refusal *destructiveRefusal
+@@ -1105,6 +1108,11 @@ func isRegisteredLinkedWorktreeIn(repoDir, target string) bool {
+ 	if err != nil {
+ 		return false
+ 	}
++	return listsLinkedWorktree(entries, target)
++}
++
++// listsLinkedWorktree reports whether entries, a repository's worktree list, holds target as a worktree other than the main one.
++func listsLinkedWorktree(entries []WorktreeEntry, target string) bool {
+ 	cleanTarget := filepath.Clean(target)
+ 	for _, entry := range entries {
+ 		if entry.Main {
+diff --git a/internal/fabricengine/remove_leftoverdir_integration_test.go b/internal/fabricengine/remove_leftoverdir_integration_test.go
+new file mode 100644
+index 00000000..c1771404
+--- /dev/null
++++ b/internal/fabricengine/remove_leftoverdir_integration_test.go
+@@ -0,0 +1,171 @@
++// remove_leftoverdir_integration_test.go covers Remove finishing a pair worktree directory that `git worktree remove` deregistered but left on disk, on either side of the pair.
++//
++// Package fabricengine_test; shares the single TestMain in testmain_test.go.
++
++package fabricengine_test
++
++import (
++	"errors"
++	"io/fs"
++	"os"
++	"path/filepath"
++	"runtime"
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestRemove_FinishesWorktreeDirGitLeftOnDisk asserts Remove deletes a worktree directory a late writer refilled with git-ignored build output after git's clean exit, and one git deregistered and failed to delete.
++func TestRemove_FinishesWorktreeDirGitLeftOnDisk(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const lockedDirName = "locked"
++	tests := []struct {
++		name string
++		slug string
++		// local builds the pair with AddLocal on a dead-origin hub, so its sibling goes through the local-only teardown.
++		local bool
++		// sibling puts the sibling worktree under test, else the task worktree.
++		sibling bool
++		// readOnly commits a file under a directory made read-only in the worktree under test, so git deregisters it and fails to delete it;
++		// otherwise a late writer refills it after git's clean exit.
++		readOnly bool
++		// locked locks the worktree under test, so git refuses to remove it and it stays registered.
++		locked bool
++		// removeErr is what the seam's removal of the directory returns; nil keeps the removal working.
++		removeErr error
++		// wantErrContains is text the error of a Remove that must fail holds; empty means Remove succeeds.
++		wantErrContains string
++		// wantStep is the step Remove reports for the worktree under test.
++		wantStep string
++	}{
++		{name: "a task worktree refilled after git's clean exit is removed", slug: "refilled-task", wantStep: fabricengine.RemoveStepTaskWorktree},
++		{name: "a sibling worktree refilled after git's clean exit is removed", slug: "refilled-sibling", sibling: true, wantStep: fabricengine.RemoveStepSiblingWorktree},
++		{name: "a local pair's sibling worktree refilled after git's clean exit is removed", slug: "refilled-local", local: true, sibling: true, wantStep: fabricengine.RemoveStepSiblingWorktree},
++		{name: "a sibling worktree git deregistered and failed to delete is removed", slug: "undeleted-sibling", sibling: true, readOnly: true, wantStep: fabricengine.RemoveStepSiblingWorktree},
++		{name: "a refilled task worktree whose removal fails is returned and kept", slug: "refilled-kept", removeErr: fs.ErrPermission, wantErrContains: "delete it by hand; a pair that remains is then removed by running remove again"},
++		{name: "a sibling worktree git deregistered whose removal fails is returned and kept", slug: "undeleted-kept", sibling: true, readOnly: true, removeErr: fs.ErrPermission, wantErrContains: "deregistered it and failed"},
++		{name: "a locked sibling worktree git refused to remove is returned and kept", slug: "locked-sibling", sibling: true, locked: true, wantErrContains: "weft worktree remains"},
++	}
++
++	for _, tt := range tests {
++		// A read-only directory stops git's delete only off Windows, so Windows generates no subtest for such a row.
++		if tt.readOnly && runtime.GOOS == "windows" {
++			continue
++		}
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if tt.readOnly && os.Geteuid() == 0 {
++				t.Skip("a read-only directory stops git's delete only for a non-root user")
++			}
++
++			var h *hubforge.Hub
++			if tt.local {
++				h = addLocalPairOnDeadOrigin(t, tt.slug)
++			} else {
++				h = hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++				hubforge.AddPairWith(t, h, tt.slug, fabricengine.AddOptions{})
++			}
++			l := h.Location
++			dir := fabricengine.WorktreePath(l, tt.slug)
++			if tt.sibling {
++				dir = fabricengine.RecordsWorktreePath(l, tt.slug)
++			}
++			lockedDir := filepath.Join(dir, lockedDirName)
++			if tt.readOnly {
++				gitkit.CommitFile(t, dir, lockedDirName+"/held.txt", "committed\n", "add a file under the directory made read-only")
++				if err := os.Chmod(lockedDir, 0o555); err != nil {
++					t.Fatalf("make %s read-only: %v", lockedDir, err)
++				}
++				t.Cleanup(func() { _ = os.Chmod(lockedDir, 0o755) })
++			}
++			if tt.locked {
++				gitkit.MustRun(t, mustRecordsRepoRoot(t, l), "git", "worktree", "lock", dir)
++			}
++
++			refilled := false
++			fabricengine.SetLeftoverRefillForTest(h.Topology, func(target string) {
++				if target != dir {
++					return
++				}
++				refilled = true
++				output := filepath.Join(dir, "src", "App", "obj", "project.assets.json")
++				if err := os.MkdirAll(filepath.Dir(output), 0o755); err != nil {
++					t.Errorf("refill %s: %v", dir, err)
++					return
++				}
++				if err := os.WriteFile(output, []byte("{}\n"), 0o644); err != nil {
++					t.Errorf("refill %s: %v", dir, err)
++				}
++			})
++			var remove func(container, target string) (bool, bool, error)
++			switch {
++			case tt.removeErr != nil:
++				remove = func(container, target string) (bool, bool, error) {
++					return false, false, &os.PathError{Op: "unlinkat", Path: target, Err: tt.removeErr}
++				}
++			case tt.readOnly:
++				remove = func(container, target string) (bool, bool, error) {
++					if err := os.Chmod(lockedDir, 0o755); err != nil {
++						return false, false, err
++					}
++					return true, true, os.RemoveAll(target)
++				}
++			}
++			fabricengine.SetLeftoverSeamForTest(h.Topology, remove, nil)
++
++			res, err := h.Topology.Remove(l, tt.slug, false, false)
++
++			rel, relErr := filepath.Rel(l.HubPath, dir)
++			if relErr != nil {
++				t.Fatalf("relate %s to the hub: %v", dir, relErr)
++			}
++			want := fabricengine.Mutation{Kind: fabricengine.KindPathRemoved, Target: filepath.ToSlash(rel), Detail: "recursive"}
++
++			if tt.wantErrContains != "" {
++				if err == nil {
++					t.Fatalf("Remove error = nil; want a failure holding %q", tt.wantErrContains)
++				}
++				if !strings.Contains(err.Error(), tt.wantErrContains) {
++					t.Errorf("Remove error = %q; want it to hold %q", err.Error(), tt.wantErrContains)
++				}
++				if tt.removeErr != nil && !errors.Is(err, tt.removeErr) {
++					t.Errorf("Remove error = %v; want it to wrap %v", err, tt.removeErr)
++				}
++				if _, statErr := os.Lstat(dir); statErr != nil {
++					t.Errorf("%s is gone after a failed finish (stat error = %v); want it on disk", dir, statErr)
++				}
++				if tt.locked {
++					if _, statErr := os.Lstat(filepath.Join(dir, ".git")); statErr != nil {
++						t.Errorf("%s lost its content though git refused to remove it (stat error = %v)", dir, statErr)
++					}
++				}
++				if slices.Contains(res.Mutations.Entries(), want) {
++					t.Errorf("mutation record = %+v; want no removal of %s", res.Mutations.Entries(), dir)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("Remove error = %v; want the directory left on disk finished", err)
++			}
++			if !tt.readOnly && !refilled {
++				t.Fatalf("no late writer refilled %s; want the refill to run after git's clean exit", dir)
++			}
++			if _, statErr := os.Lstat(dir); !os.IsNotExist(statErr) {
++				t.Errorf("%s still on disk after Remove (stat error = %v)", dir, statErr)
++			}
++			if !slices.Contains(res.Mutations.Entries(), want) {
++				t.Errorf("mutation record = %+v; want it to hold %+v", res.Mutations.Entries(), want)
++			}
++			if !slices.Contains(res.Steps, tt.wantStep) {
++				t.Errorf("Steps = %v; want it to hold %q", res.Steps, tt.wantStep)
++			}
++		})
++	}
++}
+diff --git a/internal/fabricengine/weftwiring.go b/internal/fabricengine/weftwiring.go
+index 990fe96a..297c26ee 100644
+--- a/internal/fabricengine/weftwiring.go
++++ b/internal/fabricengine/weftwiring.go
+@@ -187,7 +187,8 @@ type weftTeardownResult struct {
+ // A branch origin moved since is kept and reported in the result, never as a failure.
+ // rec is the calling verb's own recorder.
+ // It is threaded through to removeGitWorktree, deleteBranch, and the remote deletion below.
+-func removeWeftWorktree(rec *Mutations, l *lymcwd.Location, slug, branch string, force, alsoDeleteBranch, remote bool, branchPrefix, leaseSHA string) (weftTeardownResult, error) {
++// A worktree directory git deregistered but left on disk is finished through finishGitWorktreeRemoval, with leftover as its seam.
++func removeWeftWorktree(rec *Mutations, l *lymcwd.Location, slug, branch string, force, alsoDeleteBranch, remote bool, branchPrefix, leaseSHA string, leftover leftoverSeam) (weftTeardownResult, error) {
+ 	weftPath := RecordsWorktreePath(l, slug)
+ 	weftRoot, err := RecordsRepoRoot(l)
+ 	if err != nil {
+@@ -206,7 +207,7 @@ func removeWeftWorktree(rec *Mutations, l *lymcwd.Location, slug, branch string,
+ 		dirtiness: dirtyScopeAll(),
+ 		force:     force,
+ 	}
+-	if err := removeGitWorktree(rec, req, weftRoot); err != nil {
++	if err := finishGitWorktreeRemoval(rec, weftRoot, l.HubPath, weftPath, removeGitWorktree(rec, req, weftRoot), leftover); err != nil {
+ 		firstErr = err
+ 	}
+ 
