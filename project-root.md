@@ -21,9 +21,9 @@ Held by a run; its scope is locked until the run ends.
 | T2 | **A beam cannot be made from a project whose slug already ran a motif run** | [`beam-after-motif`](design-beam-after-motif.md) | darn · light | Darn-Write | neve | 2h<br>10m | batten, pawl |
 | T3 | **A gate tier whose shell exits while a grandchild holds its pipe hangs forever**<br>• No WaitDelay on tier and build children: an orphaned MSBuild node keeps lym gate test, and the adopt check, running past every timeout | [`gate-orphan-pipe-hang`](design-gate-orphan-pipe-hang.md) | darn · light | Code-Burler-Fix | neve | 32m<br>10m | gate, process |
 | T4 | **Way-forward texts name lym board remove <slug>, which the verb refuses**<br>• adoptcli, fronttask and boardengine tell the reader to run lym board remove with a bare slug; the verb takes JSON or a bare handle | [`board-remove-slug-form`](design-board-remove-slug-form.md) | darn · light | Darn-Write | neve | 31m<br>10m | board |
-| T6 | **loom status --watch prints every poll while a verify runs**<br>• The verify wait text carries its elapsed seconds, so the watch sees a change on every poll | [`watch-elapsed-churn`](design-watch-elapsed-churn.md) | darn · light | Darn-Write | neve | 27m<br>10m | loom, cli |
+| T6 | **loom status --watch prints every poll while a verify runs**<br>• The verify wait text carries its elapsed seconds, so the watch sees a change on every poll | [`watch-elapsed-churn`](design-watch-elapsed-churn.md) | darn · light | Darn-Write | neve | 28m<br>10m | loom, cli |
 | T7 | **A wake from a lym hibernate lifts the pause only when a switch allows it** | [`hibernate-wake-resume-switch`](design-hibernate-wake-resume-switch.md) | darn · light | Darn-Write | neve | 19h<br>3m | hibernate, tender |
-| T8 | **A run checks what moved on origin and its owners before it pushes or lands** | [`remote-moved-before-push`](design-remote-moved-before-push.md) | darn · solid | Darn-Write | neve | 5m<br>3m | fabric, batten |
+| T8 | **A run checks what moved on origin and its owners before it pushes or lands** | [`remote-moved-before-push`](design-remote-moved-before-push.md) | darn · solid | Darn-Write | neve | 6m<br>3m | fabric, batten |
 
 ### Ready (0)
 
@@ -37,9 +37,9 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **One base for a command dir; a missing Drift dir fails by name**<br>• gate.yaml and drift.yaml resolve a relative dir against the same base, and a Drift step whose dir is missing fails naming the path and the config key | [`drift-dir-base`](design-drift-dir-base.md) | darn · solid | T3 | 28m<br>10m | drift, gate, config |
+| T1 | **One base for a command dir; a missing Drift dir fails by name**<br>• gate.yaml and drift.yaml resolve a relative dir against the same base, and a Drift step whose dir is missing fails naming the path and the config key | [`drift-dir-base`](design-drift-dir-base.md) | darn · solid | T3 | 29m<br>10m | drift, gate, config |
 
-## Notes (29)
+## Notes (30)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -48,6 +48,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 11d<br>7h | loom, stencil |
+
+### Bugs (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| B1 |  | **Drift-Verify's verdict never reaches the summary or the pull request**<br>• A clean compare leaves the PR asking the operator to run the regression compare by hand | [`drift-verdict-in-pr`](design-drift-verdict-in-pr.md) | 0m<br>0m | drift, loom, landing |
 
 ### Enhancements (11)
 
