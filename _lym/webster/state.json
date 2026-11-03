@@ -355,7 +355,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 13,
   "masterStrand": "8c367ba1767cd7b167f0db07436c37c8",
   "masterSessionId": "87115963-d0b5-4d72-bf90-38335a1927d4",
   "masterEngine": "claude",
@@ -446,6 +446,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-batten-remote-order/87115963-d0b5-4d72-bf90-38335a1927d4/subagents/agent-a56eda91227d880e7.jsonl"
       ]
+    },
+    "13": {
+      "slug": "remove-follow-up",
+      "cards": [
+        "13-remove-follow-up",
+        "14-tackler-remote-check"
+      ],
+      "cardHashes": {
+        "13-remove-follow-up": "eb3adb6e769e485908d590ecb0b397e0f22dc09c9ca5faa7c845b73fb1cc0280",
+        "14-tackler-remote-check": "2280d314d8cb21bd5ad50a1510aacbb433a8fdef54e3d64895072e73a66cf097"
+      },
+      "startSha": "f930e4a70d0451fbb90f7250bd54ca48a745a220",
+      "kind": "fork",
+      "spawnedAt": "2026-11-03T11:34:30Z",
+      "sessionId": "87115963-d0b5-4d72-bf90-38335a1927d4",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "teardown-lock-add-discard-push",
