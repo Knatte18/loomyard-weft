@@ -28,7 +28,7 @@ Facts that shaped the design:
 ### Turn 3 — the design, self-decided
 
 Every question below was decided by auto-pick; see the question ledger.
-The assistant seat kind (D1) answers the creel and wait facts; the report under `.lym` with a Go copy beside the review (D2) answers the sandbox fact; skills by path (D9) answers the popup and untested discovery; the prompt-file notice (D6) avoids an untested setting; engine blocks (D11) answer the audit; the codex-file fallback (D12) answers the one-file-per-directory fact; the rendered `config.toml` (D5) avoids a TOML dependency.
+The assistant seat kind (D1) answers the creel and wait facts; the weft checkout as a writable root (D6) answers the sandbox fact, and the Go copy beside the review (D2) keeps the report with the round's records; skills by path (D9) answers the popup and untested discovery; the prompt-file notice (D6) avoids an untested setting; engine blocks (D11) answer the audit; the codex-file fallback (D12) answers the one-file-per-directory fact; the rendered `config.toml` (D5) avoids a TOML dependency.
 
 ### Turn 4 — lens review
 
@@ -58,7 +58,7 @@ Findings, duplicates merged:
 - Notice and passages as turn text: compaction and the skill-load turn precede them (bound-breaker 6, interactions F9): fixed as D6's bound; the hooks deny regardless.
 - Quiet hold of an assistant unstated (interactions F7): fixed in D1 and the acceptance criteria.
 - Skill classification by absolute path misses relative reads (bound-breaker 8): fixed; D9 matches the `skills/<name>/SKILL.md` tail and states the retry cost.
-- Positional first-turn prompt untested (walkthrough 3): fixed; D6 cites the 0.164.0 help text and states that a turn that never starts fails the start, which shuttle retries.
+- Positional first-turn prompt untested (walkthrough 3): fixed; D6 cites the 0.164.0 help text and states that a turn that never starts fails the start, which shuttle does not retry.
 - Await-forks in a fanned assistant on an engine without the reader (walkthrough 5): fixed; D11 lists the in-turn wait among the engine blocks.
 - Auto-mode assumptions restating decisions (leanness 1): fixed; trimmed to the two no decision states.
 - `PATTERN-fs-links` listed as holding while changed (leanness 2): fixed.
@@ -75,7 +75,11 @@ Findings, duplicates merged:
 - A done line typed to the chair when the assistant finishes: the chair is busy inside its await, and ending its turn to wait risks a cold prompt cache.
 - The assistant as a required advisor: Codex would then gate the step, against the goal.
 - Codex reviewer as a replacement for the Claude fan: the goal of 2026-10-27, set aside by the operator on 2026-11-03.
-- Writing the assistant's report under `_lym` or `.lym` with Codex writable roots: rests on an untested `-c` setting; writing under `/tmp` needs none.
+- Writing the assistant's report under `/tmp` with a kept copy under `.lym`: the parent's entry of 2026-11-03 makes the weft checkout a writable root, so the report goes under `.lym` as a Claude seat's does, and a `/tmp` directory breaks `PATTERN-lym-temp-root`.
+- A Warn, not a refusal, for a committed `.codex/rules/`: an allow rule there lifts the sandbox, so a Warn would accept a session that can write anywhere and reach the network.
+- Parity of repository instructions through an operator `lym heddle set`: the operator rule of 2026-10-27 asks for parity by default.
+- Refusing at config load an assist timeout not below `review_timeout_min`: it refuses a legitimate `review_timeout_min` of 0, and a one-minute margin still lets the chair time out inside its wait.
+- Pointing the assistant's stencil at the anchor's `CLAUDE.local.md`: it carries the shipped entries' directions for Claude tools the assistant lacks.
 - Writing the assistant's report inside the worktree's own tree: an untracked file there would reach the round's fixer commit (D6).
 - `developer_instructions` for the deny notice and passages: untested on Codex; the prompt file is proven.
 - Skills synced into `$CODEX_HOME/skills` or `~/.agents/skills` and named with `$`: discovery untested, and the `$` popup eats Enter.
@@ -101,19 +105,34 @@ Codex 0.164.0's source showed `auth.json` written in place, recorded in D13.
 D5 names the `[tui]` keys; D6 states the `.codex/` trust edge and corrects the dropped-prompt ending; D1 corrects its wait bound and the pane-mail channel; D2 names the assistant's no-parent directive; the skills-sync open risk moved into D9's rationale.
 The fan before Step 4 went to the parent.
 
+### Round 2
+
+The parent's entry of 2026-11-03 made the weft checkout a Codex writable root: D2 writes the report under the anchor's `.lym` with no `/tmp` directory or kept copy, D6 adds the root to the launch line and states what it lets through, and the macOS `/tmp` risk is gone.
+The parent's entry on the opt-in fan closed Q4.
+The review row now rewrites the round's record with `<round>b` before a retry, and the probe builds the chair's table from it (D2).
+Prepare refuses a launch under a committed `.codex/rules/` and warns on an `auth.json` or `sessions` that is no link to the operator's (D5).
+The `codex-file` render carries repository entries aimed at `claude-file`, giving the assistant the chair's repository instructions by default (D12).
+The table builder caps the assist timeout inside the chair's (D3), and a failed seat gate has its own marker text (D1).
+
+### Round 3
+
+Codex 0.164.0's source showed a linked worktree's hooks taken from the main checkout's `.codex/config.toml` when the worktree's root holds a `.codex/` directory, so Prepare's Warn names that file too (D5, D6); rules stay per layer, so the `.codex/rules/` refusal is unchanged.
+The same source showed the `-c` writable-roots key reaching the workspace roots under `-s workspace-write`, recorded in Constraints; the build keeps only the check that the sandbox lets the write through the links (D6, Open risks).
+A record without the assistant fields reads as a round with no assistant (D2); the marker and outputs sit under `.lym` (D1), so D6's Bound no longer calls markers tracked.
+
 ## Question ledger
 
 - Q1 Which roles run on Codex? Auto-pick: the Burler review assistant only, all three segments; recommended by the goal of 2026-11-03. Resolved.
 - Q2 How does the assistant reach the chair? Auto-pick: a new assistant seat kind with an ended marker and a file wait (D1); alternatives: advisor with creel, typed done line. Resolved.
 - Q3 Where is the assistant configured? Auto-pick: per-segment per-round keys, default empty, plus a timeout key (D3). Resolved.
-- Q4 Which fan does the assistant run? Auto-pick, revised at the lens review: a fan key of its own per segment and round, solo by default (D3); whether a fan may run before Step 4 is open for the parent. Open.
-- Q5 Where does the assistant write? Auto-pick, revised at the lens review and round 1: under `/tmp` at a path keyed on the review path and attempt token, kept under the anchor's `.lym` before a done marker and copied beside the review by Go (D2). Resolved.
+- Q4 Which fan does the assistant run? Auto-pick, revised at the lens review: a fan key of its own per segment and round, solo by default (D3); the parent's Added-after entry of 2026-11-03 allows the opt-in fan before Step 4. Resolved.
+- Q5 Where does the assistant write? Revised at the lens review, round 1 and the parent's Added-after entry of 2026-11-03: under the anchor's `.lym` at a path keyed on the review path and attempt token, the weft checkout being a writable root (D6), and copied beside the review by Go on a done marker (D2). Resolved.
 - Q6 How does Codex get the deny notice and passages? Auto-pick: the run's prompt file (D6). Resolved.
 - Q7 How do skills load? Auto-pick: read by path from configured skill roots (D9); departs from the entry's Step 2 wording on tested grounds, stated in D9's rationale. Resolved.
 - Q8 How is the home's `config.toml` kept? Auto-pick: rendered whole from lym's trusted-roots record under a lock (D5). Resolved.
 - Q9 Shell guard text naming Claude tools? Auto-pick: a per-engine text beside the plain one in the row table (D10). Resolved.
 - Q10 How are engine-specific stencil passages chosen? Auto-pick: engine blocks resolved by stencilstore for the seat's engine (D11). Resolved.
-- Q11 Repository instructions for Codex? Auto-pick: heddle's codex-file falls back to `CLAUDE.md` (D12); shipped entries stay on `claude-file`, and adding `codex-file` to the repository entry is the operator's step, raised under Open risks. Resolved.
+- Q11 Repository instructions for Codex? Auto-pick: heddle's codex-file falls back to `CLAUDE.md` (D12); the render also carries the repository entries aimed at `claude-file`, revised at round 2 for the operator rule of 2026-10-27; shipped entries stay on `claude-file`. Resolved.
 - Q12 `auth.json` link and Windows? Auto-pick: `CreateFileLink` in fslink, refused on Windows (D13). Resolved.
 - Q13 Effort cap? Auto-pick: `efforts` list in `codex.yaml`, default low, medium, high (D4). Resolved.
 - Q14 Live testing? Auto-pick: one llm-tier smoke test on `luna[low]`, run by the operator, capped at one run. Resolved.
