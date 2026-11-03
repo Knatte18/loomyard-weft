@@ -1,0 +1,1460 @@
+diff --git a/internal/hubgeom/webstergeom.go b/internal/hubgeom/webstergeom.go
+index 0b2cafd2..1b97f5ca 100644
+--- a/internal/hubgeom/webstergeom.go
++++ b/internal/hubgeom/webstergeom.go
+@@ -16,11 +16,9 @@ import (
+ // its accessors and passed through untouched.
+ // It performs no cwd resolution of its own — internal/lymcwd stays the sole owner of cwd resolution
+ // (the Cwd Resolution Invariant), and WebsterGeometry only reads what l's caller already resolved.
+-// WorktreeRoot is l.AnchorPath(), NOT l.WorktreePath(): every one of webster's CLI call sites passes
+-// the anchor path today, and this is the opposite of the neighbouring ReedGeometry's own
+-// WorktreeRoot, which is l.WorktreePath(). Converging the two would silently change behaviour in a
+-// subpath-anchored hub, where the anchor path and the worktree path diverge.
+-// RepoRoot is l.WorktreePath(), the directory holding PATTERN.md.
++// WorktreeRoot is l.WorktreePath(), the git worktree every git call opens and every card path resolves against;
++// PaneCwd is l.AnchorPath(), where webster's sessions run, as ReedGeometry's PaneCwd is.
++// The two differ in a hub whose anchor sits in a subdirectory.
+ // ParentName is what ResolveParent returns; an unresolvable parent logs a warning and leaves it empty, as reedGeometry does.
+ // DecisionRecordPath is the location's decision record, where the task's declared PATTERN changes are read from.
+ // GateConfig loads the hub's gate config over the hub's config dirs at each call.
+@@ -28,8 +26,8 @@ func WebsterGeometry(l *lymcwd.Location) websterengine.Geometry {
+ 	anchorPath := l.AnchorPath()
+ 	return websterengine.Geometry{
+ 		AnchorRoot:         anchorPath,
+-		WorktreeRoot:       anchorPath,
+-		RepoRoot:           l.WorktreePath(),
++		WorktreeRoot:       l.WorktreePath(),
++		PaneCwd:            anchorPath,
+ 		WebsterDir:         websterengine.Dir(anchorPath),
+ 		ReportsDir:         websterengine.ReportsDir(anchorPath),
+ 		ScratchDir:         websterengine.ScratchDir(anchorPath),
+diff --git a/internal/hubgeom/webstergeom_test.go b/internal/hubgeom/webstergeom_test.go
+index 2de15457..c419cd6f 100644
+--- a/internal/hubgeom/webstergeom_test.go
++++ b/internal/hubgeom/webstergeom_test.go
+@@ -59,18 +59,11 @@ func TestWebsterGeometry(t *testing.T) {
+ 			if got.AnchorRoot != anchorPath {
+ 				t.Errorf("WebsterGeometry(l).AnchorRoot = %q; want %q", got.AnchorRoot, anchorPath)
+ 			}
+-			if got.WorktreeRoot != l.AnchorPath() {
+-				t.Errorf("WebsterGeometry(l).WorktreeRoot = %q; want %q (l.AnchorPath())", got.WorktreeRoot, l.AnchorPath())
+-			}
+-			if got.RepoRoot != worktreeRoot {
+-				t.Errorf("WebsterGeometry(l).RepoRoot = %q; want %q (l.WorktreePath(), not the anchor path)", got.RepoRoot, worktreeRoot)
+-			}
+-			if tt.anchorRel != "." && got.WorktreeRoot == l.WorktreePath() {
+-				// The subpath-anchored row must catch a later "consistency fix"
+-				// that converges webster's field on reed's WorktreePath: the two
+-				// only coincide when AnchorRel is ".", which this row deliberately
+-				// is not.
+-				t.Errorf("WebsterGeometry(l).WorktreeRoot = %q; want != l.WorktreePath() %q", got.WorktreeRoot, l.WorktreePath())
++			if got.WorktreeRoot != worktreeRoot {
++				t.Errorf("WebsterGeometry(l).WorktreeRoot = %q; want %q (l.WorktreePath(), not the anchor path)", got.WorktreeRoot, worktreeRoot)
++			}
++			if got.PaneCwd != anchorPath {
++				t.Errorf("WebsterGeometry(l).PaneCwd = %q; want %q (l.AnchorPath())", got.PaneCwd, anchorPath)
+ 			}
+ 			if want := websterengine.Dir(anchorPath); got.WebsterDir != want {
+ 				t.Errorf("WebsterGeometry(l).WebsterDir = %q; want %q", got.WebsterDir, want)
+diff --git a/internal/standalonegeom/standalonegeom_test.go b/internal/standalonegeom/standalonegeom_test.go
+index 8dd3f263..b3e75a6e 100644
+--- a/internal/standalonegeom/standalonegeom_test.go
++++ b/internal/standalonegeom/standalonegeom_test.go
+@@ -219,8 +219,8 @@ func TestWebsterGeometry(t *testing.T) {
+ 	if got.WorktreeRoot != target {
+ 		t.Errorf("WebsterGeometry().WorktreeRoot = %q; want %q (target)", got.WorktreeRoot, target)
+ 	}
+-	if got.RepoRoot != target {
+-		t.Errorf("WebsterGeometry().RepoRoot = %q; want %q (target)", got.RepoRoot, target)
++	if got.PaneCwd != target {
++		t.Errorf("WebsterGeometry().PaneCwd = %q; want %q (target)", got.PaneCwd, target)
+ 	}
+ 	// AnchorRoot and WorktreeRoot asserted in the same case, for the same reason
+ 	// as the reed test's PaneCwd/AnchorPath pair.
+diff --git a/internal/standalonegeom/webstergeom.go b/internal/standalonegeom/webstergeom.go
+index 4715f82f..68f859e3 100644
+--- a/internal/standalonegeom/webstergeom.go
++++ b/internal/standalonegeom/webstergeom.go
+@@ -34,14 +34,13 @@ import (
+ // GateConfig loads the gate config over the target worktree's own directory at each call, the file the gate verb reads outside every hub;
+ // a worktree with none is refused naming `lym config gate`.
+ //
+-// WorktreeRoot is target, never stateDir: it is the fork-audit workdir and the {{.worktree_root}}
+-// token's value in standalone, since target is the git repository an implementer's work happens
+-// in.
++// WorktreeRoot and PaneCwd are both target, never stateDir:
++// target is the git repository an implementer's work happens in and the directory its sessions run in.
+ func WebsterGeometry(target, stateDir string) websterengine.Geometry {
+ 	return websterengine.Geometry{
+ 		AnchorRoot:   stateDir,
+ 		WorktreeRoot: target,
+-		RepoRoot:     target,
++		PaneCwd:      target,
+ 		WebsterDir:   websterengine.Dir(stateDir),
+ 		ReportsDir:   websterengine.ReportsDir(stateDir),
+ 		ScratchDir:   websterengine.ScratchDir(stateDir),
+diff --git a/internal/webstercli/acceptaudit_test.go b/internal/webstercli/acceptaudit_test.go
+index 4af28fe4..1a45bb6c 100644
+--- a/internal/webstercli/acceptaudit_test.go
++++ b/internal/webstercli/acceptaudit_test.go
+@@ -15,10 +15,10 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/websterengine"
+ )
+ 
+-// seedPendingFinding points the geometry at the fixture's real repo, records a done batch at its HEAD, and leaves one pending finding naming the tracked base.txt.
++// seedPendingFinding records a done batch at the fixture repo's HEAD and leaves one pending finding naming the tracked base.txt, relative to a pane run at the worktree root.
+ func (fx *verbsFixture) seedPendingFinding(t *testing.T) {
+ 	t.Helper()
+-	fx.CLI.geom.WorktreeRoot = fx.Worktree
++	fx.CLI.geom.PaneCwd = fx.Worktree
+ 	st := fx.initState(t)
+ 	head := gitkit.RevParse(t, fx.Worktree, "HEAD")
+ 	st.Batches[1] = &websterengine.BatchState{Slug: "only", Kind: "fork", Terminal: true, Status: "done", Digest: &websterengine.Digest{Status: "done", HeadSHA: head}}
+@@ -75,7 +75,6 @@ func TestAcceptAuditCmd_BatchClearsFabricReference(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Setenv("FABRIC_SKIP_GIT", "1")
+ 	fx := newVerbsFixture(t)
+-	fx.CLI.geom.WorktreeRoot = fx.Worktree
+ 	st := fx.initState(t)
+ 	head := gitkit.RevParse(t, fx.Worktree, "HEAD")
+ 	st.Batches[2] = &websterengine.BatchState{
+diff --git a/internal/webstercli/cli_test.go b/internal/webstercli/cli_test.go
+index a72e8b61..c89fd13a 100644
+--- a/internal/webstercli/cli_test.go
++++ b/internal/webstercli/cli_test.go
+@@ -336,7 +336,7 @@ func TestValidateCmd_BatchesFlag(t *testing.T) {
+ 		c.batcher = cost
+ 		c.instructionFiles = claudeInstructionFiles
+ 		plankit.Write(t, c.geom.PlanDir, twoCardUsesPlan(2, 1))
+-		if err := os.Mkdir(filepath.Join(c.geom.WorktreeRoot, "CLAUDE.md"), 0o755); err != nil {
++		if err := os.Mkdir(filepath.Join(c.geom.PaneCwd, "CLAUDE.md"), 0o755); err != nil {
+ 			t.Fatalf("plant a directory in place of CLAUDE.md: %v", err)
+ 		}
+ 
+@@ -1252,7 +1252,7 @@ func TestRebaselineCmd_Refusals(t *testing.T) {
+ 			name: "unreadable Merriam start base",
+ 			arrange: func(t *testing.T, c *websterCLI) []string {
+ 				c.instructionFiles = claudeInstructionFiles
+-				if err := os.Mkdir(filepath.Join(c.geom.WorktreeRoot, "CLAUDE.md"), 0o755); err != nil {
++				if err := os.Mkdir(filepath.Join(c.geom.PaneCwd, "CLAUDE.md"), 0o755); err != nil {
+ 					t.Fatalf("plant a directory in place of CLAUDE.md: %v", err)
+ 				}
+ 				return []string{}
+diff --git a/internal/webstercli/smoke_test.go b/internal/webstercli/smoke_test.go
+index a78478e5..ddfaa0e0 100644
+--- a/internal/webstercli/smoke_test.go
++++ b/internal/webstercli/smoke_test.go
+@@ -334,7 +334,7 @@ func TestSmoke_RecordBatchConsumesCrashedSessionReport(t *testing.T) {
+ 		Batches: []batcher.Batch{{Cards: cards}},
+ 		State:   state,
+ 		Engines: shuttleengine.NewEngineSet("claude", map[string]shuttleengine.Engine{"claude": eng}),
+-		Geom:    websterengine.Geometry{WorktreeRoot: dir, ReportsDir: reportsDir},
++		Geom:    websterengine.Geometry{WorktreeRoot: dir, PaneCwd: dir, ReportsDir: reportsDir},
+ 		// RecordBatch's glyph passes (DoneChecks, BindHandles, DetectDrift) all take the parsed plan,
+ 		// so a nil Plan is refused outright. The card carries no targets, so every one of those passes
+ 		// is a clean no-op here and this fixture stays about the crashed-session report it exists to
+diff --git a/internal/webstercli/verbs_test.go b/internal/webstercli/verbs_test.go
+index 98e901aa..0fb10fc4 100644
+--- a/internal/webstercli/verbs_test.go
++++ b/internal/webstercli/verbs_test.go
+@@ -53,25 +53,6 @@ func newScratchRepo(t *testing.T) string {
+ 	return dir
+ }
+ 
+-// seedAnchoredGitLink makes anchorPath (a plain, .git-less subdirectory of worktree) openable as a
+-// git checkout by go-git's PlainOpenWithOptions, which requires a literal ".git" entry at the exact
+-// path it is given rather than discovering one in a parent directory. It writes a ".git" gitlink
+-// file at anchorPath pointing straight at worktree's own ".git" directory, so reads through it (e.g.
+-// gitrepo.Repo.CurrentSHA) see the SAME live refs worktree's own commits update -- unlike
+-// `git worktree add`, which would pin anchorPath to a detached SHA at creation time and go stale the
+-// moment a later commit lands in worktree.
+-func seedAnchoredGitLink(t *testing.T, anchorPath, worktree string) {
+-	t.Helper()
+-	if err := os.MkdirAll(anchorPath, 0o755); err != nil {
+-		t.Fatalf("mkdir anchor path %s: %v", anchorPath, err)
+-	}
+-	gitdir := filepath.Join(worktree, ".git")
+-	content := fmt.Sprintf("gitdir: %s\n", gitdir)
+-	if err := os.WriteFile(filepath.Join(anchorPath, ".git"), []byte(content), 0o644); err != nil {
+-		t.Fatalf("write anchored .git link at %s: %v", anchorPath, err)
+-	}
+-}
+-
+ // verbsFakeMasterStarter is a hermetic websterengine.MasterStarter double
+ // that records whether it was ever called and errors loud if it is — used
+ // only by tests proving a refusal path never reaches Master's own spawn.
+@@ -89,7 +70,7 @@ var _ websterengine.MasterStarter = (*verbsFakeMasterStarter)(nil)
+ // verbsFixture is a fully-wired *websterCLI (bypassing Command()'s
+ // PersistentPreRunE) over a real scratch git repo and a real
+ // *shuttleengine.Runner wired over local fakes, plus a single-batch plan
+-// fixture seeded under the fixture's own _lym/plan.
++// fixture seeded under the fixture's own _lym/plan, whose root: is the anchor directory.
+ type verbsFixture struct {
+ 	CLI      *websterCLI
+ 	Reed     *shuttlefake.Reed
+@@ -105,14 +86,17 @@ func newVerbsFixture(t *testing.T) *verbsFixture {
+ 	gitkit.CommitFile(t, worktree, "base.txt", "base", "base commit")
+ 
+ 	layout := &lymcwd.Location{HubPath: filepath.Dir(worktree), WorktreeName: filepath.Base(worktree), AnchorRel: "backend"}
+-	seedValidPlanDir(t, planparser.PlanDir(layout.AnchorPath()))
++	// The plan's root: names the anchor directory, so a card path resolved against the anchor instead of the worktree root doubles the prefix and reads as missing.
++	// The Edit target exists only under that directory of the worktree root, which makes a dispatch-time lookup against the anchor report it missing.
++	gitkit.CommitFile(t, worktree, layout.AnchorRel+"/README.md", "# backend\n", "add the anchor's README")
++	plan := onlyCreatePlan("", "internal/only/new.go")
++	plan.Root = layout.AnchorRel
++	plan.Cards[0].Groups = append(plan.Cards[0].Groups, plankit.Group{Label: "Edit", Targets: []string{"README.md"}})
++	plan.Cards[0].ImpactSummary = "Edits the README."
++	plankit.Write(t, planparser.PlanDir(layout.AnchorPath()), plan)
+ 	seedHubStencils(t, layout.HubPath)
+ 	seedHubGateConfig(t, layout.HubPath)
+-	// begin-batch/record-batch/recover-batch read HEAD at layout.AnchorPath() (RunDeps.WorktreeRoot,
+-	// unchanged by this batch), which requires a literal .git at that path -- link the anchored
+-	// directory back onto worktree's real .git so it shares the same live ref/commit history rather
+-	// than needing its own separate repository.
+-	seedAnchoredGitLink(t, layout.AnchorPath(), worktree)
++	// The anchor holds no .git of its own, so every verb that reads git proves it opens the repository at the worktree root.
+ 
+ 	reed := &shuttlefake.Reed{}
+ 	engine := &shuttlefake.Engine{}
+@@ -203,6 +187,71 @@ func (fx *verbsFixture) initState(t *testing.T) *websterengine.State {
+ 	return seedRunState(t, fx.CLI)
+ }
+ 
++// sizeProbeBatcher is a batcher.Batcher double that asks its size source about one path while batching and records the answer, then batches like the identity batchifier.
++type sizeProbeBatcher struct {
++	path  string
++	found bool
++}
++
++func (b *sizeProbeBatcher) Batch(plan *planparser.Plan, cards []planparser.Card, sizes batcher.SizeSource, before int, base batcher.StartBase) ([]batcher.Batch, error) {
++	_, found, err := sizes.Lines(b.path)
++	if err != nil {
++		return nil, err
++	}
++	b.found = found
++	return batcher.Identity().Batch(plan, cards, sizes, before, base)
++}
++
++func (b *sizeProbeBatcher) Name() string { return "size-probe" }
++
++// TestExecutionBatches_SizesReadFromWorktreeRoot proves the size source handed to the batchifier is rooted at the git worktree root: a repository-relative path under the anchor directory is found, which a source rooted at the pane's cwd would not find.
++func TestExecutionBatches_SizesReadFromWorktreeRoot(t *testing.T) {
++	tiergate.Require(t, 1)
++	fx := newVerbsFixture(t)
++	probe := &sizeProbeBatcher{path: "backend/README.md"}
++	fx.CLI.batcher = probe
++	plan, err := planparser.ParsePlan(fx.CLI.geom.PlanDir)
++	if err != nil {
++		t.Fatalf("ParsePlan() error = %v", err)
++	}
++
++	if _, err := fx.CLI.executionBatches(plan, nil); err != nil {
++		t.Fatalf("executionBatches() error = %v", err)
++	}
++
++	if !probe.found {
++		t.Errorf("size source found %q = false; want true, the fixture commits it under the worktree root", probe.path)
++	}
++}
++
++// TestRebaselineCmd_SizesReadFromWorktreeRoot proves rebaseline hands the batchifier a size source rooted at the git worktree root when it re-forms the unbegun tail of a recorded partition.
++func TestRebaselineCmd_SizesReadFromWorktreeRoot(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Setenv("FABRIC_SKIP_GIT", "1")
++	fx := newVerbsFixture(t)
++	plan := onlyCreatePlan("", "internal/only/new.go")
++	plan.Root = fx.CLI.anchorRel
++	plan.Cards = append(plan.Cards, plankit.Card{Number: 2, Slug: "second", Summary: "edits the README", Groups: []plankit.Group{{Label: "Edit", Targets: []string{"README.md"}}}, Intent: "edit it.", ImpactSummary: "Edits the README."})
++	plankit.Write(t, fx.CLI.geom.PlanDir, plan)
++	st := fx.initState(t)
++	st.Partition = []websterengine.PartitionBatch{{Cards: []string{"01-only"}}}
++	st.Batches[1] = &websterengine.BatchState{Slug: "only", Cards: []string{"01-only"}, StartSHA: "abc123", Kind: "fork"}
++	if err := websterengine.SaveState(fx.CLI.geom.WebsterDir, fx.CLI.geom.ScratchDir, st); err != nil {
++		t.Fatalf("SaveState() error = %v", err)
++	}
++	probe := &sizeProbeBatcher{path: "backend/README.md"}
++	fx.CLI.batcher = probe
++
++	var out strings.Builder
++	if exitCode := clihelp.Execute(fx.CLI.rebaselineCmd(), &out, nil); exitCode != 0 {
++		t.Fatalf("rebaseline = %d; want 0, output: %s", exitCode, out.String())
++	}
++
++	if !probe.found {
++		t.Errorf("size source found %q = false; want true, the fixture commits it under the worktree root", probe.path)
++	}
++}
++
+ // TestBeginBatchCmd_HappyPath proves the success envelope carries prompt_path/start_sha and no model key, that begin-batch types nothing into Master's pane, and that state.json was persisted with the new BatchState.
+ func TestBeginBatchCmd_HappyPath(t *testing.T) {
+ 	tiergate.Require(t, 1)
+@@ -561,7 +610,7 @@ func TestFingerprintRefusals_CarryPlanDrifted(t *testing.T) {
+ 		{
+ 			name: "record-batch over a begun batch",
+ 			seed: func(t *testing.T, fx *verbsFixture, st *websterengine.State) {
+-				startSHA := gitkit.CommitFile(t, fx.CLI.geom.WorktreeRoot, "internal/only/new.go", "package only\n", "01.1: add impl")
++				startSHA := gitkit.CommitFile(t, fx.CLI.geom.WorktreeRoot, "backend/internal/only/new.go", "package only\n", "01.1: add impl")
+ 				st.Batches[1] = &websterengine.BatchState{Slug: "only", StartSHA: startSHA, Kind: "fork"}
+ 				st.CurrentBatch = 1
+ 				if err := websterengine.SaveState(fx.CLI.geom.WebsterDir, fx.CLI.geom.ScratchDir, st); err != nil {
+@@ -582,7 +631,7 @@ func TestFingerprintRefusals_CarryPlanDrifted(t *testing.T) {
+ 				if code := clihelp.Execute(fx.CLI.recoverBatchCmd(), &spawn, []string{"1", "--wait", "1ns"}); code != 0 {
+ 					t.Fatalf("recover-batch 1 (spawn) = %d; want 0, output: %s", code, spawn.String())
+ 				}
+-				head := gitkit.CommitFile(t, fx.CLI.geom.WorktreeRoot, "internal/only/new.go", "package only\n", "01.1: land the card's Create target")
++				head := gitkit.CommitFile(t, fx.CLI.geom.WorktreeRoot, "backend/internal/only/new.go", "package only\n", "01.1: land the card's Create target")
+ 				writeBatchReport(t, fx.CLI.geom.ReportsDir, head)
+ 			},
+ 			verb: func(fx *verbsFixture) *cobra.Command { return fx.CLI.recoverBatchCmd() },
+@@ -652,20 +701,8 @@ func TestRecordBatchCmd_Envelope(t *testing.T) {
+ 			// record-batch runs on a recorded state and prices no partition, so a lister that fails proves it is never called.
+ 			fx.CLI.instructionFiles = failingInstructionFiles
+ 			st := fx.initState(t)
+-			// DoneChecks resolves a card's Create target against
+-			// deps.Geom.WorktreeRoot, which hubgeom.WebsterGeometry fills
+-			// with layout.AnchorPath() (fx.Worktree + anchorRel), not
+-			// fx.Worktree itself -- quarry.Resolve is a live filesystem
+-			// walk rooted there, so the file must physically exist under
+-			// that anchored directory, not merely under fx.Worktree.
+-			// commitFile therefore runs with the anchored path itself as
+-			// its git working directory (seedAnchoredGitLink's gitlink
+-			// makes that a valid, shared-history checkout) rather than
+-			// fx.Worktree plus a path prefix: git treats a nested ".git"
+-			// file as an embedded-repository boundary, so `git add`
+-			// invoked from fx.Worktree silently refuses to descend into
+-			// it and stages nothing.
+-			startSHA := gitkit.CommitFile(t, fx.CLI.geom.WorktreeRoot, "internal/only/new.go", "package only\n", "01.1: add impl")
++			// DoneChecks resolves a card's Create target, prefixed by the plan's root, against the git worktree root, so the file is committed there under the anchor directory.
++			startSHA := gitkit.CommitFile(t, fx.CLI.geom.WorktreeRoot, "backend/internal/only/new.go", "package only\n", "01.1: add impl")
+ 			st.Batches[1] = &websterengine.BatchState{Slug: "only", StartSHA: startSHA, Kind: "fork"}
+ 			st.CurrentBatch = 1
+ 			if err := websterengine.SaveState(fx.CLI.geom.WebsterDir, fx.CLI.geom.ScratchDir, st); err != nil {
+@@ -725,7 +762,7 @@ func TestRecordBatchCmd_FailedBatchEnvelope(t *testing.T) {
+ 	t.Setenv("FABRIC_SKIP_GIT", "1")
+ 	fx := newVerbsFixture(t)
+ 	st := fx.initState(t)
+-	startSHA := gitkit.CommitFile(t, fx.CLI.geom.WorktreeRoot, "internal/only/new.go", "package only\n", "01.1: add impl")
++	startSHA := gitkit.CommitFile(t, fx.CLI.geom.WorktreeRoot, "backend/internal/only/new.go", "package only\n", "01.1: add impl")
+ 	st.Batches[1] = &websterengine.BatchState{Slug: "only", StartSHA: startSHA, Kind: "fork", AmendedCards: []websterengine.AmendedCard{{Card: "01-only"}}}
+ 	st.CurrentBatch = 1
+ 	if err := websterengine.SaveState(fx.CLI.geom.WebsterDir, fx.CLI.geom.ScratchDir, st); err != nil {
+@@ -888,7 +925,7 @@ func TestRecordBatchCmd_ReportArchivedEnvelope(t *testing.T) {
+ 	t.Setenv("FABRIC_SKIP_GIT", "1")
+ 	fx := newVerbsFixture(t)
+ 	fx.initState(t)
+-	startSHA := gitkit.CommitFile(t, fx.CLI.geom.WorktreeRoot, "internal/only/new.go", "package only\n", "01.1: add impl")
++	startSHA := gitkit.CommitFile(t, fx.CLI.geom.WorktreeRoot, "backend/internal/only/new.go", "package only\n", "01.1: add impl")
+ 	writeBatchReport(t, fx.CLI.geom.ReportsDir, startSHA)
+ 
+ 	var out strings.Builder
+@@ -1023,7 +1060,10 @@ func TestRebaselineCmd_EditedCardOfFailedBatchThenRecover(t *testing.T) {
+ 	}
+ 	startSHA := failed.StartSHA
+ 
+-	plankit.Write(t, fx.CLI.geom.PlanDir, onlyCreatePlan("", "internal/edited/new.go"))
++	// The edit keeps the plan's root, so only the card changes and the overview stays as recorded.
++	edited := onlyCreatePlan("", "internal/edited/new.go")
++	edited.Root = fx.CLI.anchorRel
++	plankit.Write(t, fx.CLI.geom.PlanDir, edited)
+ 
+ 	out.Reset()
+ 	if code := clihelp.Execute(fx.CLI.rebaselineCmd(), &out, []string{"--card", "1"}); code != 0 {
+@@ -1051,7 +1091,9 @@ func TestRebaselineCmd_EditedCardOfFailedBatchThenRecover(t *testing.T) {
+ 	}
+ 
+ 	// The recovery strand is now in flight: a further edit of its card is accepted and reported as amended.
+-	plankit.Write(t, fx.CLI.geom.PlanDir, onlyCreatePlan("", "internal/edited-again/new.go"))
++	edited = onlyCreatePlan("", "internal/edited-again/new.go")
++	edited.Root = fx.CLI.anchorRel
++	plankit.Write(t, fx.CLI.geom.PlanDir, edited)
+ 	out.Reset()
+ 	if code := clihelp.Execute(fx.CLI.rebaselineCmd(), &out, []string{"--card", "1"}); code != 0 {
+ 		t.Fatalf("rebaseline --card 1 over the in-flight recovery = %d; want 0, output: %s", code, out.String())
+@@ -1115,7 +1157,7 @@ func TestRecoverBatchCmd_RunningThenTerminal(t *testing.T) {
+ 	// "Finishes" means its card's own Create target actually lands and is committed: the terminal
+ 	// recovery path now runs the same mechanical post-batch pass record-batch does, so a recovery
+ 	// reporting done over a card whose target never appeared is refused rather than marked terminal.
+-	head := gitkit.CommitFile(t, fx.CLI.geom.WorktreeRoot, "internal/only/new.go", "package only\n", "01.1: land the card's Create target")
++	head := gitkit.CommitFile(t, fx.CLI.geom.WorktreeRoot, "backend/internal/only/new.go", "package only\n", "01.1: land the card's Create target")
+ 	writeBatchReport(t, fx.CLI.geom.ReportsDir, head)
+ 
+ 	// A card of the batch is amended while that recovery runs, which forces its done report failed.
+@@ -1652,12 +1694,29 @@ func unmakeConfigUnreadable(t *testing.T, h *hubforge.Hub, module string) {
+ // production call site that regressed to layout.WorktreePath() would stay self-consistent and pass
+ // at either of those. This test drives the real PersistentPreRunE through RunCLIIn and asserts on
+ // planparser's own error text, which only a wrong-root c.planDir can produce.
++// The plan's `root:` names the anchor's own directory and its Edit target is a file there,
++// so a card path checked against the anchor instead of the worktree root doubles the prefix and reads as missing.
+ // This file stays serial: no t.Parallel() is added here, matching every other test in this file.
+ func TestPersistentPreRunE_PlanDirAnchoredAtSubpath(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	h := seedPersistentPreRunFixture(t, "backend", batcher.ConfigTemplate())
+ 
+-	seedValidPlanDir(t, planparser.PlanDir(h.Location.AnchorPath()))
++	if err := os.WriteFile(filepath.Join(h.PrimeWorktree(), "backend", "README.md"), []byte("# backend\n"), 0o644); err != nil {
++		t.Fatalf("write README.md under the anchor: %v", err)
++	}
++	plankit.Write(t, planparser.PlanDir(h.Location.AnchorPath()), plankit.Plan{
++		Approved: true,
++		Root:     "backend",
++		Framing:  "Framing.",
++		Cards: []plankit.Card{{
++			Number:        1,
++			Slug:          "only",
++			Summary:       "edits the anchor's README",
++			Groups:        []plankit.Group{{Label: "Edit", Targets: []string{"README.md"}}},
++			Intent:        "placeholder card.",
++			ImpactSummary: "none.",
++		}},
++	})
+ 
+ 	// lymcwd.Resolve gates cwd against the anchored directory exactly, so at a "backend" hub the
+ 	// anchor directory -- not h.PrimeWorktree(), the unanchored worktree root -- is what RunCLIIn
+@@ -1675,6 +1734,11 @@ func TestPersistentPreRunE_PlanDirAnchoredAtSubpath(t *testing.T) {
+ 	if strings.Contains(got, "plan overview not found") {
+ 		t.Errorf("output contains \"plan overview not found\"; got %q -- a WorktreePath()-based resolution at cli.go's c.planDir assignment would look under the un-anchored worktree root and produce exactly that error", got)
+ 	}
++	for _, finding := range []string{"path-missing", "glyph-not-found"} {
++		if strings.Contains(got, finding) {
++			t.Errorf("output contains %q; got %q -- the root:-joined card path was looked up under the anchor instead of the worktree root", finding, got)
++		}
++	}
+ }
+ 
+ // TestFabricSyncWayForward_NextSyncCommitsSavedState takes the fabric-sync refusals' way forward against a real hub.
+@@ -1743,7 +1807,7 @@ func TestRecordBatchCmd_FabricSyncFailureWayForward(t *testing.T) {
+ 	t.Setenv("FABRIC_SKIP_GIT", "")
+ 	fx := newVerbsFixture(t)
+ 	st := fx.initState(t)
+-	startSHA := gitkit.CommitFile(t, fx.CLI.geom.WorktreeRoot, "internal/only/new.go", "package only\n", "01.1: add impl")
++	startSHA := gitkit.CommitFile(t, fx.CLI.geom.WorktreeRoot, "backend/internal/only/new.go", "package only\n", "01.1: add impl")
+ 	st.Batches[1] = &websterengine.BatchState{Slug: "only", StartSHA: startSHA, Kind: "fork"}
+ 	st.CurrentBatch = 1
+ 	if err := websterengine.SaveState(fx.CLI.geom.WebsterDir, fx.CLI.geom.ScratchDir, st); err != nil {
+diff --git a/internal/webstercli/verify.go b/internal/webstercli/verify.go
+index 79213ec2..2fc2bf43 100644
+--- a/internal/webstercli/verify.go
++++ b/internal/webstercli/verify.go
+@@ -65,7 +65,7 @@ func (c *websterCLI) runVerify(cmd *cobra.Command) int {
+ 		return output.Err(out, fmt.Sprintf("webster: verify: %v", err))
+ 	}
+ 
+-	paths := verifytree.NewPaths(c.geom.WorktreeRoot, c.geom.VerifyDir)
++	paths := verifytree.NewPaths(c.geom.PaneCwd, c.geom.VerifyDir)
+ 	res, err := verifytree.Verify(cmd.Context(), paths, verifytree.Site{Label: verifyVerbSite, Hold: c.geom.VerifyHold}, command)
+ 	if err != nil {
+ 		return output.Err(out, fmt.Sprintf("webster: verify: %v", err))
+diff --git a/internal/webstercli/verify_integration_test.go b/internal/webstercli/verify_integration_test.go
+index 2fd34380..e5f29303 100644
+--- a/internal/webstercli/verify_integration_test.go
++++ b/internal/webstercli/verify_integration_test.go
+@@ -92,6 +92,7 @@ func newVerifyFixture(t *testing.T, command string) *verifyFixture {
+ 	geom := websterengine.Geometry{
+ 		AnchorRoot:   anchor,
+ 		WorktreeRoot: worktree,
++		PaneCwd:      worktree,
+ 		WebsterDir:   websterDir,
+ 		ReportsDir:   filepath.Join(websterDir, "reports"),
+ 		PromptsDir:   filepath.Join(websterDir, "prompts"),
+diff --git a/internal/webstercli/wiring_test.go b/internal/webstercli/wiring_test.go
+index 8a902c9b..3829a953 100644
+--- a/internal/webstercli/wiring_test.go
++++ b/internal/webstercli/wiring_test.go
+@@ -123,8 +123,11 @@ func TestWire_ModeHubSelectsHubMode(t *testing.T) {
+ 			if c.geom.AnchorRoot != loc.AnchorPath() {
+ 				t.Errorf("geom.AnchorRoot = %q; want %q", c.geom.AnchorRoot, loc.AnchorPath())
+ 			}
+-			if c.geom.WorktreeRoot != loc.AnchorPath() {
+-				t.Errorf("geom.WorktreeRoot = %q; want %q -- hub mode's WorktreeRoot is the anchor path", c.geom.WorktreeRoot, loc.AnchorPath())
++			if c.geom.WorktreeRoot != loc.WorktreePath() {
++				t.Errorf("geom.WorktreeRoot = %q; want %q -- hub mode's WorktreeRoot is the git worktree, not the anchor", c.geom.WorktreeRoot, loc.WorktreePath())
++			}
++			if c.geom.PaneCwd != loc.AnchorPath() {
++				t.Errorf("geom.PaneCwd = %q; want %q -- hub mode's sessions run at the anchor", c.geom.PaneCwd, loc.AnchorPath())
+ 			}
+ 			if c.anchorRel != loc.AnchorRel {
+ 				t.Errorf("anchorRel = %q; want %q", c.anchorRel, loc.AnchorRel)
+diff --git a/internal/websterengine/acceptbatch_test.go b/internal/websterengine/acceptbatch_test.go
+index a21d64b3..c0e09560 100644
+--- a/internal/websterengine/acceptbatch_test.go
++++ b/internal/websterengine/acceptbatch_test.go
+@@ -53,7 +53,7 @@ func acceptBatchFixture(t *testing.T) (*websterengine.State, websterengine.Geome
+ 		Uncheckable: []string{fabricEntry},
+ 	}}}
+ 	root := t.TempDir()
+-	return st, websterengine.Geometry{WorktreeRoot: root, WebsterDir: filepath.Join(root, "_lym", "webster"), Git: g}, g
++	return st, websterengine.Geometry{WorktreeRoot: root, PaneCwd: root, WebsterDir: filepath.Join(root, "_lym", "webster"), Git: g}, g
+ }
+ 
+ func TestAcceptBatchFabricReference_ToleratesTheRunsOwnState(t *testing.T) {
+diff --git a/internal/websterengine/archivereset_test.go b/internal/websterengine/archivereset_test.go
+index 5856b977..d3073f2f 100644
+--- a/internal/websterengine/archivereset_test.go
++++ b/internal/websterengine/archivereset_test.go
+@@ -28,6 +28,7 @@ func newResetArchiveFixture(t *testing.T) *resetArchiveFixture {
+ 	git := newFakeGit()
+ 	geom := websterengine.Geometry{
+ 		WorktreeRoot: filepath.Join(root, "worktree"),
++		PaneCwd:      filepath.Join(root, "worktree"),
+ 		WebsterDir:   filepath.Join(root, "webster"),
+ 		ReportsDir:   filepath.Join(root, "webster", "reports"),
+ 		PromptsDir:   filepath.Join(root, "scratch", "prompts"),
+diff --git a/internal/websterengine/audit.go b/internal/websterengine/audit.go
+index dd068862..9967319c 100644
+--- a/internal/websterengine/audit.go
++++ b/internal/websterengine/audit.go
+@@ -401,7 +401,7 @@ func ClassifyViolation(v AuditViolation, geom Geometry, readOnly func(cmd string
+ 		return AuditSeverityPolicy, nil
+ 	}
+ 
+-	written, err := canonicalPath(resolveWritePath(geom.WorktreeRoot, v.Path))
++	written, err := canonicalPath(resolveWritePath(geom.PaneCwd, v.Path))
+ 	if err != nil {
+ 		return "", err
+ 	}
+diff --git a/internal/websterengine/auditledger_test.go b/internal/websterengine/auditledger_test.go
+index d0705972..296ca1ff 100644
+--- a/internal/websterengine/auditledger_test.go
++++ b/internal/websterengine/auditledger_test.go
+@@ -79,7 +79,7 @@ func TestAcceptPendingAudit_RefusesPathlessFinding(t *testing.T) {
+ 	t.Parallel()
+ 	st := &State{PendingAuditFindings: []PendingAuditFinding{{ID: "s1/parent:named-spawn:1", Class: "named-spawn", Detail: "d"}}}
+ 
+-	_, _, err := AcceptPendingAudit(nil, st, Geometry{WorktreeRoot: t.TempDir(), PlanDir: t.TempDir(), ScratchDir: t.TempDir()}, nil)
++	_, _, err := AcceptPendingAudit(nil, st, Geometry{WorktreeRoot: t.TempDir(), PaneCwd: t.TempDir(), PlanDir: t.TempDir(), ScratchDir: t.TempDir()}, nil)
+ 	if !errors.Is(err, ErrAuditNotAcceptable) {
+ 		t.Fatalf("AcceptPendingAudit() error = %v; want ErrAuditNotAcceptable", err)
+ 	}
+diff --git a/internal/websterengine/auditseverity_test.go b/internal/websterengine/auditseverity_test.go
+index a0595c7e..a1ec2788 100644
+--- a/internal/websterengine/auditseverity_test.go
++++ b/internal/websterengine/auditseverity_test.go
+@@ -30,6 +30,7 @@ func TestClassifyViolation(t *testing.T) {
+ 	geom := Geometry{
+ 		AnchorRoot:   root,
+ 		WorktreeRoot: root,
++		PaneCwd:      root,
+ 		WebsterDir:   filepath.Join(root, "_lym", "webster"),
+ 		ReportsDir:   filepath.Join(root, "_lym", "webster", "reports"),
+ 		PlanDir:      filepath.Join(root, "_lym", "plan"),
+@@ -49,6 +50,7 @@ func TestClassifyViolation(t *testing.T) {
+ 	linkGeom := Geometry{
+ 		AnchorRoot:   linkRoot,
+ 		WorktreeRoot: linkRoot,
++		PaneCwd:      linkRoot,
+ 		WebsterDir:   filepath.Join(linkRoot, "_lym", "webster"),
+ 		ReportsDir:   filepath.Join(linkRoot, "_lym", "webster", "reports"),
+ 		PlanDir:      filepath.Join(linkRoot, "_lym", "plan"),
+@@ -69,6 +71,7 @@ func TestClassifyViolation(t *testing.T) {
+ 	nestedGeom := Geometry{
+ 		AnchorRoot:   nested,
+ 		WorktreeRoot: nested,
++		PaneCwd:      nested,
+ 		WebsterDir:   filepath.Join(nested, "_lym", "webster"),
+ 		ReportsDir:   filepath.Join(nested, "_lym", "webster", "reports"),
+ 		PlanDir:      filepath.Join(nested, "_lym", "plan"),
+diff --git a/internal/websterengine/batchfail.go b/internal/websterengine/batchfail.go
+index c9de7b8a..04b45632 100644
+--- a/internal/websterengine/batchfail.go
++++ b/internal/websterengine/batchfail.go
+@@ -68,6 +68,7 @@ type failBatchInput struct {
+ 	Number         int
+ 	Slug           string
+ 	ReportsDir     string
++	PaneCwd        string
+ 	WorktreeRoot   string
+ 	HeadSHA        string
+ 	Reasons        []string
+@@ -89,7 +90,7 @@ type failBatchInput struct {
+ // The returned error is only the archive's I/O failure;
+ // the blob probes and the archive run first, so nothing in State has been mutated when one fails.
+ func failBatch(in failBatchInput) (*BatchFailedError, error) {
+-	blobs, err := suspectBlobs(orReal(in.Git), in.WorktreeRoot, in.SuspectPaths)
++	blobs, err := suspectBlobs(orReal(in.Git), in.PaneCwd, in.WorktreeRoot, in.SuspectPaths)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+diff --git a/internal/websterengine/batchfail_integration_test.go b/internal/websterengine/batchfail_integration_test.go
+index b3a2634a..b9ef042c 100644
+--- a/internal/websterengine/batchfail_integration_test.go
++++ b/internal/websterengine/batchfail_integration_test.go
+@@ -50,6 +50,7 @@ func TestFailBatch_RecordsSuspectBlobs(t *testing.T) {
+ 	}
+ 	in, _ := failBatchFixture(t, true)
+ 	in.WorktreeRoot = repo
++	in.PaneCwd = repo
+ 	in.SuspectPaths = []string{"internal/x.go", "internal/gone.go"}
+ 	if _, err := failBatch(in); err != nil {
+ 		t.Fatal(err)
+@@ -64,4 +65,16 @@ func TestFailBatch_RecordsSuspectBlobs(t *testing.T) {
+ 	if got[1].Path != "internal/gone.go" || got[1].Blob != "" {
+ 		t.Errorf("absent file = %+v, want empty blob", got[1])
+ 	}
++
++	// A pane cwd below the worktree root resolves a relative suspect path there, and the blob probe still runs on the worktree root.
++	split, _ := failBatchFixture(t, true)
++	split.WorktreeRoot = repo
++	split.PaneCwd = filepath.Join(repo, "internal")
++	split.SuspectPaths = []string{"x.go"}
++	if _, err := failBatch(split); err != nil {
++		t.Fatal(err)
++	}
++	if got := split.Batch.SuspectPaths; len(got) != 1 || got[0].Path != "x.go" || got[0].Blob != strings.TrimSpace(want) {
++		t.Errorf("suspect path relative to a subdirectory pane cwd = %+v, want x.go with blob %s", got, strings.TrimSpace(want))
++	}
+ }
+diff --git a/internal/websterengine/beginbatch.go b/internal/websterengine/beginbatch.go
+index 7abef5f4..adcf2304 100644
+--- a/internal/websterengine/beginbatch.go
++++ b/internal/websterengine/beginbatch.go
+@@ -122,7 +122,7 @@ func (e *PlanConflictError) Unwrap() error { return ErrPlanConflict }
+ // State is the already-loaded run state BeginBatch reads and mutates;
+ // Config is the loaded webster.yaml;
+ // Stopper is the seam the prior-recovery-strand reclaim stops a leftover strand through (a dead-but-live recovery record a fork batch is about to overwrite);
+-// Geom is the told Geometry BeginBatch reads every path from: WorktreeRoot is the repo checkout HeadSHA is captured from and RenderForkPrompt's promptWorktreeRoot, WebsterDir and ReportsDir are the reports directory,
++// Geom is the told Geometry BeginBatch reads every path from: WorktreeRoot is the git worktree HeadSHA is captured from and the plan's card paths resolve against, PaneCwd is RenderForkPrompt's promptWorktreeRoot, WebsterDir and ReportsDir are the reports directory,
+ // and PromptsDir and StencilsDir feed the prompt write and the fork template's read location.
+ type BeginDeps struct {
+ 	Plan    *planparser.Plan
+@@ -518,7 +518,7 @@ func BeginBatch(deps BeginDeps, batchNumber int) (*BeginResult, error) {
+ 	}
+ 
+ 	// The gate calls render before the first mutation, so a gate list the config lacks refuses with no prompt written and no state recorded.
+-	cardGates, err := renderCardGates(batch.Cards, masterPlanDirDisplay(deps.Geom.WorktreeRoot, deps.Geom.PlanDir), deps.Gate)
++	cardGates, err := renderCardGates(batch.Cards, masterPlanDirDisplay(deps.Geom.PaneCwd, deps.Geom.PlanDir), deps.Gate)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -581,15 +581,12 @@ func BeginBatch(deps BeginDeps, batchNumber int) (*BeginResult, error) {
+ 		return nil, fmt.Errorf("webster: resolve report path: %w", err)
+ 	}
+ 
+-	// WorktreeRoot, not AnchorRoot, is correct in both modes here: hub
+-	// mode's WorktreeRoot is the anchor path, the exact value this call
+-	// rendered before this Geometry split.
+ 	notePath := friction.NotePath(deps.FrictionDir, batchName)
+ 	promptPath, err := filepath.Abs(filepath.Join(deps.Geom.PromptsDir, batchName+".md"))
+ 	if err != nil {
+ 		return nil, fmt.Errorf("webster: resolve prompt path: %w", err)
+ 	}
+-	prompt, err := RenderForkPrompt(batch, cardGates, batchGate, prevDigest, reportPath, deps.Geom.PlanDir, deps.Geom.WorktreeRoot, deps.Geom.StencilsDir, deps.Geom.SpecsDir, deps.GateTiers, deps.RenameTools, OutcomePath(deps.Geom.WebsterDir), summaryparser.Path(deps.Geom.WebsterDir), deps.Config.SelfFixCap, notePath, deps.CardFixer)
++	prompt, err := RenderForkPrompt(batch, cardGates, batchGate, prevDigest, reportPath, deps.Geom.PlanDir, deps.Geom.PaneCwd, deps.Geom.StencilsDir, deps.Geom.SpecsDir, deps.GateTiers, deps.RenameTools, OutcomePath(deps.Geom.WebsterDir), summaryparser.Path(deps.Geom.WebsterDir), deps.Config.SelfFixCap, notePath, deps.CardFixer)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+diff --git a/internal/websterengine/beginbatch_helper_test.go b/internal/websterengine/beginbatch_helper_test.go
+index f8e257be..7a840ee6 100644
+--- a/internal/websterengine/beginbatch_helper_test.go
++++ b/internal/websterengine/beginbatch_helper_test.go
+@@ -109,6 +109,7 @@ func newBeginFixture(t *testing.T) *beginFixture {
+ 		Geom: websterengine.Geometry{
+ 			AnchorRoot:   worktree,
+ 			WorktreeRoot: worktree,
++			PaneCwd:      worktree,
+ 			WebsterDir:   t.TempDir(),
+ 			ScratchDir:   t.TempDir(),
+ 			ReportsDir:   t.TempDir(),
+diff --git a/internal/websterengine/contractevidence.go b/internal/websterengine/contractevidence.go
+index 2d6ec035..1cab2285 100644
+--- a/internal/websterengine/contractevidence.go
++++ b/internal/websterengine/contractevidence.go
+@@ -24,7 +24,7 @@ func contractFilePaths(geom Geometry) []string {
+ // contractCanon returns path's canonical spelling and whether it resolves to one of the run's contract files.
+ // The error is a link-resolution failure.
+ func contractCanon(geom Geometry, path string) (canon string, contract bool, err error) {
+-	canon, err = canonicalPath(resolveWritePath(geom.WorktreeRoot, path))
++	canon, err = canonicalPath(resolveWritePath(geom.PaneCwd, path))
+ 	if err != nil {
+ 		return "", false, err
+ 	}
+@@ -72,7 +72,7 @@ func contractFileStatus(geom Geometry, writes RunWrites, path string) (contract,
+ 		events []shuttleengine.WriteEvent
+ 	}{{writerFork, writes.Forks}, {writerRecovery, writes.Recoveries}} {
+ 		for _, ev := range source.events {
+-			evCanon, err := canonicalPath(resolveWritePath(geom.WorktreeRoot, ev.Path))
++			evCanon, err := canonicalPath(resolveWritePath(geom.PaneCwd, ev.Path))
+ 			if err != nil {
+ 				return false, false, "", err
+ 			}
+@@ -96,7 +96,7 @@ func latestSucceededWrite(geom Geometry, events []shuttleengine.WriteEvent, cano
+ 		if !ev.Succeeded {
+ 			continue
+ 		}
+-		evCanon, err := canonicalPath(resolveWritePath(geom.WorktreeRoot, ev.Path))
++		evCanon, err := canonicalPath(resolveWritePath(geom.PaneCwd, ev.Path))
+ 		if err != nil || evCanon != canon {
+ 			continue
+ 		}
+@@ -171,7 +171,7 @@ func contractWritesFor(engines AuditEngines, st *State, geom Geometry, paths []s
+ 		if _, contract, err := contractCanon(geom, p); err != nil {
+ 			return RunWrites{}, err
+ 		} else if contract {
+-			return loadRunWrites(engines, st, geom.WorktreeRoot)
++			return loadRunWrites(engines, st, geom.PaneCwd)
+ 		}
+ 	}
+ 	return RunWrites{}, nil
+diff --git a/internal/websterengine/contractevidence_test.go b/internal/websterengine/contractevidence_test.go
+index 20ca8fd4..77671fa7 100644
+--- a/internal/websterengine/contractevidence_test.go
++++ b/internal/websterengine/contractevidence_test.go
+@@ -26,6 +26,7 @@ func evidenceGeom(t *testing.T) Geometry {
+ 	root := t.TempDir()
+ 	return Geometry{
+ 		WorktreeRoot: filepath.Join(root, "wt"),
++		PaneCwd:      filepath.Join(root, "wt"),
+ 		PlanDir:      filepath.Join(root, "wt", "_lym", "plan"),
+ 		WebsterDir:   filepath.Join(root, "wt", "_lym", "webster"),
+ 		ScratchDir:   filepath.Join(root, "wt", ".lym", "webster"),
+diff --git a/internal/websterengine/findingtext.go b/internal/websterengine/findingtext.go
+index 7a20ffdd..d836efe6 100644
+--- a/internal/websterengine/findingtext.go
++++ b/internal/websterengine/findingtext.go
+@@ -92,7 +92,7 @@ func uncheckableReason(geom Geometry, st *State, path string) (reason string, un
+ 	if _, pathless := pathlessEntryClass(path); path == "" || pathless {
+ 		return reasonNoPath, true, nil
+ 	}
+-	lexical := resolveWritePath(geom.WorktreeRoot, path)
++	lexical := resolveWritePath(geom.PaneCwd, path)
+ 	canon, err := canonicalPath(lexical)
+ 	if err != nil {
+ 		return "", false, err
+@@ -114,19 +114,19 @@ func uncheckableReason(geom Geometry, st *State, path string) (reason string, un
+ 	if pathWithin(scratch, canon) {
+ 		return reasonScratch, true, nil
+ 	}
+-	if _, ok, err := trackedRel(geom.git(), geom.WorktreeRoot, path); err != nil || ok {
++	if _, ok, err := trackedRel(geom.git(), geom.PaneCwd, geom.WorktreeRoot, path); err != nil || ok {
+ 		return "", false, err
+ 	}
+ 	root, err := canonicalPath(geom.WorktreeRoot)
+ 	if err != nil {
+ 		return "", false, err
+ 	}
+-	lymLink := filepath.Join(geom.WorktreeRoot, lymdirs.LymDirName)
++	lymLink := filepath.Join(geom.PaneCwd, lymdirs.LymDirName)
+ 	lymReal, err := canonicalPath(lymLink)
+ 	if err != nil {
+ 		return "", false, err
+ 	}
+-	dotLym, err := canonicalPath(filepath.Join(geom.WorktreeRoot, lymdirs.DotLymDirName))
++	dotLym, err := canonicalPath(filepath.Join(geom.PaneCwd, lymdirs.DotLymDirName))
+ 	if err != nil {
+ 		return "", false, err
+ 	}
+diff --git a/internal/websterengine/geometry.go b/internal/websterengine/geometry.go
+index f2c2f7f7..9d930495 100644
+--- a/internal/websterengine/geometry.go
++++ b/internal/websterengine/geometry.go
+@@ -24,25 +24,16 @@ var errNoIndex = errors.New("webster: the geometry carries no code index; the CL
+ type Geometry struct {
+ 	// AnchorRoot is the base every _lym/.lym join and every module config read hangs off.
+ 	AnchorRoot string
+-	// WorktreeRoot is the repo checkout the head-SHA capture and the dirty-worktree check read.
+-	// It is also the fork-audit workdir, which must equal the pane's actual cwd
+-	// (reedengine.Geometry.PaneCwd), because the audit resolves transcript-relative write paths
+-	// against it.
+-	// It is NOT the same notion as reedengine.Geometry.WorktreeRoot in HUB mode specifically:
+-	// hubgeom.WebsterGeometry sets this to the anchor-anchored value (l.AnchorPath(), never
+-	// l.WorktreePath()), while reed's is the worktree path, so the two coincide only at an
+-	// unanchored anchor there. Standalone mode does NOT share that collision:
+-	// standalonegeom.WebsterGeometry sets this to the standalone TARGET, deliberately disjoint
+-	// from AnchorRoot (the derived state directory) — see that constructor's own doc comment. A
+-	// caller must not assume WorktreeRoot == AnchorRoot holds across both modes; only hub mode's
+-	// own construction makes it so today, and that collision is deliberate continuity, not to be
+-	// "fixed" by converging either field on the other.
++	// WorktreeRoot is the git worktree's root, the directory holding `.git`, PATTERN.md and go.mod.
++	// Every git call opens the repository here, and the plan's card paths resolve against it.
++	// In a hub whose anchor sits in a subdirectory it is above PaneCwd and AnchorRoot, never equal to them.
++	// An empty WorktreeRoot yields no PATTERN directive.
+ 	WorktreeRoot string
+-	// RepoRoot is the directory holding PATTERN.md and go.mod, the repository's worktree root.
+-	// It is told separately because WorktreeRoot is the anchor path in hub mode, which is not
+-	// the repo root for a subpath-anchored hub.
+-	// An empty RepoRoot yields no PATTERN directive.
+-	RepoRoot string
++	// PaneCwd is the directory every webster session's pane runs in.
++	// Transcript-relative write paths resolve against it, so it is the fork-audit workdir;
++	// the gate runs use it as their working directory, the prompts render {{.worktree_root}} and the plan directory's spelling from it,
++	// and the session's instruction files and its `_lym` and `.lym` are read under it.
++	PaneCwd string
+ 	// WebsterDir is the told path to webster's durable run state directory (state.json,
+ 	// outcome.yaml).
+ 	WebsterDir string
+diff --git a/internal/websterengine/merriambase.go b/internal/websterengine/merriambase.go
+index 3b3382ab..4050749c 100644
+--- a/internal/websterengine/merriambase.go
++++ b/internal/websterengine/merriambase.go
+@@ -35,12 +35,12 @@ func MerriamBaseOf(texts ...string) batcher.StartBase {
+ 	return batcher.StartBase{Lines: lines, Fixed: merriamFixedContext}
+ }
+ 
+-// MerriamBase returns the start base of the Merriam session geom describes: the named instruction files at the worktree root when present, the Master stencil with the orchestrator PATTERN directive and the declared changes of geom.DecisionRecordPath, and the plan's 00-overview.md.
++// MerriamBase returns the start base of the Merriam session geom describes: the named instruction files in the pane's cwd when present, the Master stencil with the orchestrator PATTERN directive and the declared changes of geom.DecisionRecordPath, and the plan's 00-overview.md.
+ // An absent instruction file adds nothing; any other failure is refused naming the file and the cause, with no way forward.
+ func MerriamBase(geom Geometry, instructionFiles []string) (batcher.StartBase, error) {
+ 	var texts []string
+ 	for _, name := range instructionFiles {
+-		data, err := os.ReadFile(filepath.Join(geom.WorktreeRoot, name))
++		data, err := os.ReadFile(filepath.Join(geom.PaneCwd, name))
+ 		if errors.Is(err, fs.ErrNotExist) {
+ 			continue
+ 		}
+@@ -59,7 +59,7 @@ func MerriamBase(geom Geometry, instructionFiles []string) (batcher.StartBase, e
+ 	if err != nil {
+ 		patternChanges = nil
+ 	}
+-	directive, err := pattern.Directive(geom.RepoRoot, geom.StencilsDir, pattern.RoleOrchestrator, patternChanges)
++	directive, err := pattern.Directive(geom.WorktreeRoot, geom.StencilsDir, pattern.RoleOrchestrator, patternChanges)
+ 	if err != nil {
+ 		return batcher.StartBase{}, merriamBaseError("PATTERN.md", err)
+ 	}
+diff --git a/internal/websterengine/merriambase_test.go b/internal/websterengine/merriambase_test.go
+index 959a5701..9b98042a 100644
+--- a/internal/websterengine/merriambase_test.go
++++ b/internal/websterengine/merriambase_test.go
+@@ -86,7 +86,7 @@ func TestMerriamBase(t *testing.T) {
+ 	if err := os.MkdirAll(planDir, 0o755); err != nil {
+ 		t.Fatalf("mkdir plan dir: %v", err)
+ 	}
+-	geom := websterengine.Geometry{WorktreeRoot: worktree, PlanDir: planDir, StencilsDir: stencilsDir}
++	geom := websterengine.Geometry{PaneCwd: worktree, PlanDir: planDir, StencilsDir: stencilsDir}
+ 	write := func(t *testing.T, path, content string) {
+ 		t.Helper()
+ 		if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+@@ -178,7 +178,7 @@ func TestMerriamBase(t *testing.T) {
+ 		write(t, filepath.Join(repoRoot, "PATTERN.md"), "# PATTERN\n\nsome constraints\n")
+ 		record := filepath.Join(worktree, "decision-record.md")
+ 		patternGeom := geom
+-		patternGeom.RepoRoot = repoRoot
++		patternGeom.WorktreeRoot = repoRoot
+ 		patternGeom.DecisionRecordPath = record
+ 
+ 		noRecord, err := websterengine.MerriamBase(patternGeom, nil)
+diff --git a/internal/websterengine/parentmerge_test.go b/internal/websterengine/parentmerge_test.go
+index 88ebf19d..79fe1127 100644
+--- a/internal/websterengine/parentmerge_test.go
++++ b/internal/websterengine/parentmerge_test.go
+@@ -28,6 +28,7 @@ func TestParentMergeBetweenForkCommitAndRecordBatch(t *testing.T) {
+ 	gitkit.CommitFile(t, fx.Worktree, "base.txt", "base", "base commit")
+ 	fx.Deps.Geom.Git = nil
+ 	fx.Deps.Geom.WorktreeRoot = fx.Worktree
++	fx.Deps.Geom.PaneCwd = fx.Worktree
+ 	deps := fx.Deps
+ 
+ 	// 1. begin-batch 1 records its StartSHA.
+diff --git a/internal/websterengine/planfixer.go b/internal/websterengine/planfixer.go
+index adf920ac..792668f6 100644
+--- a/internal/websterengine/planfixer.go
++++ b/internal/websterengine/planfixer.go
+@@ -137,7 +137,7 @@ func FixPlanSpawnOrAttach(deps FixPlanDeps, st *State, clk Clock) (*PlanFixerSta
+ 		return nil, false, fmt.Errorf("webster: resolve plan-conflict record path: %w", err)
+ 	}
+ 	notePath := friction.NotePath(deps.FrictionDir, "webster-plan-fix")
+-	prompt, err := RenderPlanFixPrompt(recordPath, replyPath, deps.Geom.WorktreeRoot, deps.Geom.PlanDir, deps.Geom.StencilsDir, deps.Geom.SpecsDir, notePath, deps.Geom.ParentName)
++	prompt, err := RenderPlanFixPrompt(recordPath, replyPath, deps.Geom.PaneCwd, deps.Geom.PlanDir, deps.Geom.StencilsDir, deps.Geom.SpecsDir, notePath, deps.Geom.ParentName)
+ 	if err != nil {
+ 		return nil, false, err
+ 	}
+diff --git a/internal/websterengine/rebaseline_test.go b/internal/websterengine/rebaseline_test.go
+index 3de01785..bc01c385 100644
+--- a/internal/websterengine/rebaseline_test.go
++++ b/internal/websterengine/rebaseline_test.go
+@@ -135,7 +135,7 @@ func rebaselineDeps(t *testing.T, planCards []planparser.Card, partition []webst
+ 		Plan:   &planparser.Plan{Dir: planDir, Format: 5, Cards: planCards},
+ 		Active: active,
+ 		State:  &websterengine.State{PlanFingerprint: "old-fingerprint", Batches: recs, Partition: slices.Clone(partition)},
+-		Geom:   websterengine.Geometry{WorktreeRoot: worktree, WebsterDir: t.TempDir(), Git: git},
++		Geom:   websterengine.Geometry{WorktreeRoot: worktree, PaneCwd: worktree, WebsterDir: t.TempDir(), Git: git},
+ 	}
+ }
+ 
+diff --git a/internal/websterengine/recordbatch.go b/internal/websterengine/recordbatch.go
+index 05a6d001..3228f0c4 100644
+--- a/internal/websterengine/recordbatch.go
++++ b/internal/websterengine/recordbatch.go
+@@ -217,10 +217,9 @@ func failCardNotDone(in cardNotDoneInputs, cause error) (*BatchFailedError, erro
+ // State is the already-loaded run state RecordBatch reads and mutates;
+ // Config is the loaded webster.yaml;
+ // Engines supplies the incremental fork audit (AuditForksIncremental), read for each session through the engine its batch record names;
+-// Geom is the told Geometry the audit and the dirty-worktree/head-SHA checks read: the audit workdir
+-// is Geom.WorktreeRoot (not Geom.AnchorRoot) — the audit resolves transcript-relative recorded write
+-// paths against this directory, so it must be the directory the fork actually ran in, which is the
+-// worktree root in every mode (the two coincide in hub mode, so nothing changes there);
++// Geom is the told Geometry the audit and the dirty-worktree/head-SHA checks read;
++// the audit resolves transcript-relative recorded write paths against Geom.PaneCwd, the directory the fork ran in,
++// and the git checks read Geom.WorktreeRoot;
+ // RefMatcher is the injected fabric-reference class matcher (a real *fabricengine.RefScanner in hub
+ // mode, NeverMatches in standalone) CheckParent/CheckFork consult, never nil in either mode;
+ // OutcomePath and SummaryPath are the run's two Master contract files CheckParent's write-policy
+@@ -358,7 +357,7 @@ func RecordBatch(deps RecordDeps, batchNumber int) (*RecordResult, error) {
+ 		return nil, err
+ 	}
+ 	fetch := func() (shuttleengine.ForkAudit, error) {
+-		return engine.AuditForksIncremental(bs.SessionID, deps.Geom.WorktreeRoot, seenSet)
++		return engine.AuditForksIncremental(bs.SessionID, deps.Geom.PaneCwd, seenSet)
+ 	}
+ 
+ 	audit, newReports, err := SettleRetry(fetch, deps.State.SeenForkTranscripts, DefaultSettleWindow, DefaultSettleTick, deps.Sleeper)
+@@ -379,7 +378,7 @@ func RecordBatch(deps RecordDeps, batchNumber int) (*RecordResult, error) {
+ 	for _, f := range audit.Forks {
+ 		if slices.Contains(bs.BracketTranscripts, f.TranscriptPath) {
+ 			bracketForks = append(bracketForks, f)
+-			if slices.ContainsFunc(f.WritePaths, func(w string) bool { return isOwnReportWrite(deps.Geom.WorktreeRoot, w, ownReport) }) {
++			if slices.ContainsFunc(f.WritePaths, func(w string) bool { return isOwnReportWrite(deps.Geom.PaneCwd, w, ownReport) }) {
+ 				counted = append(counted, f)
+ 			}
+ 		}
+@@ -409,9 +408,9 @@ func RecordBatch(deps RecordDeps, batchNumber int) (*RecordResult, error) {
+ 		return nil, err
+ 	}
+ 	var candidates []AuditViolation
+-	candidates = append(candidates, CheckParent(audit, deps.OutcomePath, deps.SummaryPath, deps.Geom.WorktreeRoot, deps.RefMatcher)...)
++	candidates = append(candidates, CheckParent(audit, deps.OutcomePath, deps.SummaryPath, deps.Geom.PaneCwd, deps.RefMatcher)...)
+ 	for _, f := range append(slices.Clone(newReports), bracketForks...) {
+-		candidates = append(candidates, CheckFork(f, deps.OutcomePath, deps.SummaryPath, deps.Geom.WorktreeRoot, planDirs, websterDirs, ownReport, deps.RefMatcher)...)
++		candidates = append(candidates, CheckFork(f, deps.OutcomePath, deps.SummaryPath, deps.Geom.PaneCwd, planDirs, websterDirs, ownReport, deps.RefMatcher)...)
+ 		forkWarnings = append(forkWarnings, ForkWarnings(f)...)
+ 	}
+ 
+@@ -530,7 +529,7 @@ func RecordBatch(deps RecordDeps, batchNumber int) (*RecordResult, error) {
+ 	// a policy warning is only safe to carry once the work is evidenced.
+ 	// A FAILED report takes its policy findings as warnings with no re-run.
+ 	if report.Status == ReportStatusOK && (len(policy) > 0 || len(bs.AuditWarnings) > 0) {
+-		runner := cardverify.Runner{Worktree: deps.Geom.WorktreeRoot, Slots: deps.Geom.GateSlots, WaitDir: deps.Geom.GateWaitDir, Timeout: deps.VerifyTimeout}
++		runner := cardverify.Runner{Worktree: deps.Geom.PaneCwd, Slots: deps.Geom.GateSlots, WaitDir: deps.Geom.GateWaitDir, Timeout: deps.VerifyTimeout}
+ 		if failures := rerunCardVerifies(batch.Cards, runner); len(failures) > 0 {
+ 			var earlier []string
+ 			for _, w := range bs.AuditWarnings {
+@@ -602,6 +601,7 @@ func RecordBatch(deps RecordDeps, batchNumber int) (*RecordResult, error) {
+ 			Number:       number,
+ 			Slug:         slug,
+ 			ReportsDir:   deps.Geom.ReportsDir,
++			PaneCwd:      deps.Geom.PaneCwd,
+ 			WorktreeRoot: deps.Geom.WorktreeRoot,
+ 			Git:          deps.Geom.Git,
+ 			HeadSHA:      report.HeadSHA,
+@@ -709,7 +709,7 @@ func auditTerminalFork(deps RecordDeps, bs *BatchState, batchNumber int) (*Recor
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	audit, err := engine.AuditForksIncremental(bs.SessionID, deps.Geom.WorktreeRoot, seenSet)
++	audit, err := engine.AuditForksIncremental(bs.SessionID, deps.Geom.PaneCwd, seenSet)
+ 	if err != nil {
+ 		if errors.Is(err, fs.ErrNotExist) {
+ 			return nil, nil
+@@ -732,7 +732,7 @@ func auditTerminalFork(deps RecordDeps, bs *BatchState, batchNumber int) (*Recor
+ 	ownReport := filepath.Join(deps.Geom.ReportsDir, ReportFileName(number, slug))
+ 	var correctness []classifiedFinding
+ 	for _, f := range newReports {
+-		for _, v := range CheckFork(f, deps.OutcomePath, deps.SummaryPath, deps.Geom.WorktreeRoot, planDirs, websterDirs, ownReport, deps.RefMatcher) {
++		for _, v := range CheckFork(f, deps.OutcomePath, deps.SummaryPath, deps.Geom.PaneCwd, planDirs, websterDirs, ownReport, deps.RefMatcher) {
+ 			id := findingIdentity(bs.SessionID, v)
+ 			if isDispositioned(deps.State, id) {
+ 				continue
+@@ -785,6 +785,7 @@ func failFromFindings(deps RecordDeps, bs *BatchState, number int, slug, headSHA
+ 		Number:         number,
+ 		Slug:           slug,
+ 		ReportsDir:     deps.Geom.ReportsDir,
++		PaneCwd:        deps.Geom.PaneCwd,
+ 		WorktreeRoot:   deps.Geom.WorktreeRoot,
+ 		Git:            deps.Geom.Git,
+ 		HeadSHA:        headSHA,
+diff --git a/internal/websterengine/recordbatch_helper_test.go b/internal/websterengine/recordbatch_helper_test.go
+index e08d9ccc..c29c6833 100644
+--- a/internal/websterengine/recordbatch_helper_test.go
++++ b/internal/websterengine/recordbatch_helper_test.go
+@@ -145,6 +145,7 @@ func newRecordFixtureOver(t *testing.T, worktree string, git websterengine.Git,
+ 		Geom: websterengine.Geometry{
+ 			AnchorRoot:   worktree,
+ 			WorktreeRoot: worktree,
++			PaneCwd:      worktree,
+ 			WebsterDir:   websterDir,
+ 			ReportsDir:   reportsDir,
+ 			PlanDir:      planDir,
+diff --git a/internal/websterengine/recoverbatch.go b/internal/websterengine/recoverbatch.go
+index 44717c43..c8bf58ee 100644
+--- a/internal/websterengine/recoverbatch.go
++++ b/internal/websterengine/recoverbatch.go
+@@ -205,11 +205,11 @@ func uncommittedPathsBlock(deps RecoverDeps) (string, error) {
+ 	}
+ 	var written []string
+ 	if deps.Engines != nil {
+-		writes, err := loadRunWrites(deps.Engines, deps.State, deps.Geom.WorktreeRoot)
++		writes, err := loadRunWrites(deps.Engines, deps.State, deps.Geom.PaneCwd)
+ 		if err != nil {
+ 			return "", err
+ 		}
+-		if written, err = writtenWorktreePaths(writes, deps.Geom.WorktreeRoot); err != nil {
++		if written, err = writtenWorktreePaths(writes, deps.Geom.PaneCwd, deps.Geom.WorktreeRoot); err != nil {
+ 			return "", err
+ 		}
+ 	}
+@@ -279,7 +279,7 @@ func recoverSpawn(deps RecoverDeps, batch batcher.Batch, prior *BatchState, prev
+ 	}
+ 
+ 	// The gate calls render before the first mutation, so a gate list the config lacks refuses with nothing changed.
+-	cardGates, err := renderCardGates(batch.Cards, masterPlanDirDisplay(deps.Geom.WorktreeRoot, deps.Geom.PlanDir), deps.Gate)
++	cardGates, err := renderCardGates(batch.Cards, masterPlanDirDisplay(deps.Geom.PaneCwd, deps.Geom.PlanDir), deps.Gate)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -315,7 +315,7 @@ func recoverSpawn(deps RecoverDeps, batch batcher.Batch, prior *BatchState, prev
+ 	if err != nil {
+ 		return nil, fmt.Errorf("webster: list the worktree's uncommitted paths for batch %s: %w; way forward: transient, re-run `lym webster recover-batch %d`", batchName, err, number)
+ 	}
+-	prompt, err := RenderRecoveryPrompt(batch, cardGates, batchGate, prevDigest, failureDigestBlock(prior), uncommittedPaths, reportPath, deps.Geom.RepoRoot, deps.Geom.PlanDir, deps.Geom.WorktreeRoot, deps.Geom.StencilsDir, deps.Geom.SpecsDir, deps.GateTiers, deps.RenameTools, patternChanges, deps.Config.SelfFixCap, notePath, deps.Geom.ParentName, deps.CardFixer)
++	prompt, err := RenderRecoveryPrompt(batch, cardGates, batchGate, prevDigest, failureDigestBlock(prior), uncommittedPaths, reportPath, deps.Geom.WorktreeRoot, deps.Geom.PlanDir, deps.Geom.PaneCwd, deps.Geom.StencilsDir, deps.Geom.SpecsDir, deps.GateTiers, deps.RenameTools, patternChanges, deps.Config.SelfFixCap, notePath, deps.Geom.ParentName, deps.CardFixer)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -691,6 +691,7 @@ func PersistRecoveryTerminal(deps RecoverDeps, st *State, batchNumber int, diges
+ 			Number:       number,
+ 			Slug:         slug,
+ 			ReportsDir:   deps.Geom.ReportsDir,
++			PaneCwd:      deps.Geom.PaneCwd,
+ 			WorktreeRoot: deps.Geom.WorktreeRoot,
+ 			Git:          deps.Geom.Git,
+ 			HeadSHA:      head,
+@@ -755,6 +756,7 @@ func PersistRecoveryTerminal(deps RecoverDeps, st *State, batchNumber int, diges
+ 			Number:       number,
+ 			Slug:         slug,
+ 			ReportsDir:   deps.Geom.ReportsDir,
++			PaneCwd:      deps.Geom.PaneCwd,
+ 			WorktreeRoot: deps.Geom.WorktreeRoot,
+ 			Git:          deps.Geom.Git,
+ 			HeadSHA:      head,
+diff --git a/internal/websterengine/recoverbatch_helper_test.go b/internal/websterengine/recoverbatch_helper_test.go
+index 75799546..4128fb9b 100644
+--- a/internal/websterengine/recoverbatch_helper_test.go
++++ b/internal/websterengine/recoverbatch_helper_test.go
+@@ -115,6 +115,7 @@ func newRecoverFixtureOver(t *testing.T, worktree string, git websterengine.Git)
+ 		Geom: websterengine.Geometry{
+ 			AnchorRoot:   worktree,
+ 			WorktreeRoot: worktree,
++			PaneCwd:      worktree,
+ 			WebsterDir:   websterDir,
+ 			ReportsDir:   reportsDir,
+ 			StencilsDir:  fabricengine.StencilsDir(hubPath),
+diff --git a/internal/websterengine/render.go b/internal/websterengine/render.go
+index 09b93b74..7ab941a6 100644
+--- a/internal/websterengine/render.go
++++ b/internal/websterengine/render.go
+@@ -446,7 +446,7 @@ func RenderPlanFixPrompt(recordPath, replyPath, worktreeRoot, planDir, stencilsD
+ }
+ 
+ // masterPlanDirDisplay returns the plan-directory spelling the rendered prompts carry: planDir relative to paneCwd when it sits inside it — hub geometry, whose pane runs at the anchor the plan's `_lym/plan` junction hangs off, so the byte-exact "_lym/plan" keeps the prompt's own never-reference-_lym-by-another-path rule self-consistent — and the absolute planDir otherwise, which is standalone geometry, whose plan lives in the derived state directory and is reachable from the pane's cwd by no relative spelling at all.
+-// The base is the PANE's cwd (Geometry.WorktreeRoot, where every session actually runs), never AnchorRoot: standalone's AnchorRoot IS the state directory containing the plan, so an anchor-based split rendered the unreachable relative spelling for exactly the mode this function exists to fix (proven live in round fable5-high-r3's second E2E attempt).
++// The base is the PANE's cwd (Geometry.PaneCwd, where every session actually runs), never AnchorRoot: standalone's AnchorRoot IS the state directory containing the plan, so an anchor-based split rendered the unreachable relative spelling for exactly the mode this function exists to fix (proven live in round fable5-high-r3's second E2E attempt).
+ func masterPlanDirDisplay(paneCwd, planDir string) string {
+ 	if rel, err := filepath.Rel(paneCwd, planDir); err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+ 		return filepath.ToSlash(rel)
+diff --git a/internal/websterengine/reset.go b/internal/websterengine/reset.go
+index bc628a7c..b1ae7505 100644
+--- a/internal/websterengine/reset.go
++++ b/internal/websterengine/reset.go
+@@ -424,7 +424,7 @@ func ownTrackedPaths(deps ResetDeps) ([]string, error) {
+ 	if deps.Engines == nil {
+ 		return nil, nil
+ 	}
+-	writes, err := loadRunWrites(deps.Engines, deps.State, deps.Geom.WorktreeRoot)
++	writes, err := loadRunWrites(deps.Engines, deps.State, deps.Geom.PaneCwd)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -433,7 +433,7 @@ func ownTrackedPaths(deps ResetDeps) ([]string, error) {
+ 		if !ev.Succeeded {
+ 			continue
+ 		}
+-		rel, ok, err := trackedRel(deps.Geom.git(), deps.Geom.WorktreeRoot, ev.Path)
++		rel, ok, err := trackedRel(deps.Geom.git(), deps.Geom.PaneCwd, deps.Geom.WorktreeRoot, ev.Path)
+ 		if err != nil {
+ 			return nil, err
+ 		}
+diff --git a/internal/websterengine/reset_integration_test.go b/internal/websterengine/reset_integration_test.go
+index 168f22c0..3d3a3345 100644
+--- a/internal/websterengine/reset_integration_test.go
++++ b/internal/websterengine/reset_integration_test.go
+@@ -41,7 +41,7 @@ func (fx *resetFixture) step(t *testing.T, name string, run func(t *testing.T))
+ 	t.Helper()
+ 	t.Run(name, func(t *testing.T) {
+ 		fx.deps = ResetDeps{
+-			Geom:         Geometry{WorktreeRoot: fx.root, ScratchDir: t.TempDir()},
++			Geom:         Geometry{WorktreeRoot: fx.root, PaneCwd: fx.root, ScratchDir: t.TempDir()},
+ 			State:        &State{MasterSessionID: "s1", Batches: map[int]*BatchState{1: {Slug: "one", StartSHA: fx.first}}},
+ 			Engines:      shuttlefake.EngineSet(&shuttlefake.Engine{}),
+ 			ParentBranch: func() (string, error) { return "main", nil },
+diff --git a/internal/websterengine/reset_test.go b/internal/websterengine/reset_test.go
+index 848db6e2..168c25ed 100644
+--- a/internal/websterengine/reset_test.go
++++ b/internal/websterengine/reset_test.go
+@@ -90,7 +90,8 @@ func newResolutionFixture(t *testing.T) *resolutionFixture {
+ 			2: {Slug: "two", Kind: "fork", StartSHA: fx.batch1Head},
+ 		},
+ 	}
+-	fx.geom = websterengine.Geometry{ScratchDir: t.TempDir(), ReportsDir: t.TempDir(), WorktreeRoot: t.TempDir(), Git: git}
++	worktree := t.TempDir()
++	fx.geom = websterengine.Geometry{ScratchDir: t.TempDir(), ReportsDir: t.TempDir(), WorktreeRoot: worktree, PaneCwd: worktree, Git: git}
+ 	fx.writeReport(2, "two", fx.batch2Head)
+ 	return fx
+ }
+diff --git a/internal/websterengine/runlevel.go b/internal/websterengine/runlevel.go
+index b7def6f2..85689d8e 100644
+--- a/internal/websterengine/runlevel.go
++++ b/internal/websterengine/runlevel.go
+@@ -116,7 +116,7 @@ type MasterStarter interface {
+ // Starter spawns Master; Stopper is the seam the entry-time reclaim stops a leftover strand through;
+ // Engines and ShuttleCfg support session resolution and audit, Engines reading each recorded session through its own engine;
+ // Geom is the told Geometry every path (PlanDir, WebsterDir, ReportsDir, PromptsDir, ScratchDir,
+-// WorktreeRoot, AnchorRoot, StencilsDir) is read from;
++// WorktreeRoot, PaneCwd, AnchorRoot, StencilsDir) is read from;
+ // RefMatcher is the injected fabric-reference class matcher CheckParent/CheckFork consult, never nil
+ // in either mode;
+ // Config, Roles, and Batcher carry the loaded configuration, pre-flight-resolved role->model-spec
+@@ -729,7 +729,7 @@ func Run(deps RunDeps, opts RunOptions) (_ RunResult, err error) {
+ 	// The fixer fork's prompt is Go-rendered and Go-written up front for the same reason as a batch fork's:
+ 	// Merriam may write nothing but its two contract files.
+ 	verifyFixNotePath := friction.NotePath(deps.FrictionDir, "webster-verify-fix")
+-	verifyFixPrompt, err := RenderVerifyFixPrompt(verifyGateReportPath, deps.Geom.WorktreeRoot, deps.Geom.PlanDir, deps.Geom.StencilsDir, outcomePath, summaryPath, verifyFixNotePath, verifyFixGate)
++	verifyFixPrompt, err := RenderVerifyFixPrompt(verifyGateReportPath, deps.Geom.PaneCwd, deps.Geom.PlanDir, deps.Geom.StencilsDir, outcomePath, summaryPath, verifyFixNotePath, verifyFixGate)
+ 	if err != nil {
+ 		return RunResult{}, err
+ 	}
+@@ -753,7 +753,7 @@ func Run(deps RunDeps, opts RunOptions) (_ RunResult, err error) {
+ 		return RunResult{}, fmt.Errorf("%w %s", err, deps.reentryStep())
+ 	}
+ 	masterNotePath := friction.NotePath(deps.FrictionDir, "webster-master")
+-	prompt, err := RenderMasterPrompt(batches, st, outcomePath, summaryPath, verifyFixPromptPath, deps.Geom.PlanDir, deps.Config.SelfFixCap, deps.Geom.WorktreeRoot, deps.Geom.RepoRoot, deps.Geom.StencilsDir, patternChanges, parentDecisions, masterNotePath, deps.Geom.ParentName)
++	prompt, err := RenderMasterPrompt(batches, st, outcomePath, summaryPath, verifyFixPromptPath, deps.Geom.PlanDir, deps.Config.SelfFixCap, deps.Geom.PaneCwd, deps.Geom.WorktreeRoot, deps.Geom.StencilsDir, patternChanges, parentDecisions, masterNotePath, deps.Geom.ParentName)
+ 	if err != nil {
+ 		return RunResult{}, err
+ 	}
+@@ -1095,9 +1095,9 @@ func runExitAuditCrossCheck(deps RunDeps, outcomePath, summaryPath string, resul
+ 		return nil, "", err
+ 	}
+ 	var candidates []AuditViolation
+-	candidates = append(candidates, CheckParent(*result.ForkAudit, outcomePath, summaryPath, deps.Geom.WorktreeRoot, deps.RefMatcher)...)
++	candidates = append(candidates, CheckParent(*result.ForkAudit, outcomePath, summaryPath, deps.Geom.PaneCwd, deps.RefMatcher)...)
+ 	for _, f := range result.ForkAudit.Forks {
+-		candidates = append(candidates, CheckFork(f, outcomePath, summaryPath, deps.Geom.WorktreeRoot, planDirs, websterDirs, forkOwnReport(st, deps.Geom, f.TranscriptPath), deps.RefMatcher)...)
++		candidates = append(candidates, CheckFork(f, outcomePath, summaryPath, deps.Geom.PaneCwd, planDirs, websterDirs, forkOwnReport(st, deps.Geom, f.TranscriptPath), deps.RefMatcher)...)
+ 	}
+ 
+ 	// Classification is the only fallible step and runs before any mutation.
+diff --git a/internal/websterengine/runlevel_helper_test.go b/internal/websterengine/runlevel_helper_test.go
+index 39fcc400..3e84b416 100644
+--- a/internal/websterengine/runlevel_helper_test.go
++++ b/internal/websterengine/runlevel_helper_test.go
+@@ -199,6 +199,7 @@ func newRunFixtureOver(t *testing.T, numCards int, worktree string, git webstere
+ 		Geom: websterengine.Geometry{
+ 			AnchorRoot:   worktree,
+ 			WorktreeRoot: worktree,
++			PaneCwd:      worktree,
+ 			VerifyDir:    t.TempDir(),
+ 			WebsterDir:   t.TempDir(),
+ 			ScratchDir:   t.TempDir(),
+diff --git a/internal/websterengine/runlevel_test.go b/internal/websterengine/runlevel_test.go
+index 1ede425f..1b74723c 100644
+--- a/internal/websterengine/runlevel_test.go
++++ b/internal/websterengine/runlevel_test.go
+@@ -1632,6 +1632,22 @@ func TestRun_MasterSpawn(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			// The size source reads repository-relative paths from the worktree root, which differs from the pane's cwd under a subpath anchor.
++			name:  "a first init sizes cards from the worktree root when the pane's cwd is a subdirectory",
++			cards: 2,
++			prepare: func(t *testing.T, fx *runFixture) {
++				writeWorktreeFile(t, fx.Worktree, "any.go", strings.Repeat("x\n", 150))
++				writeWorktreeFile(t, fx.Worktree, "backend/base.txt", "base")
++				fx.Deps.Geom.PaneCwd = filepath.Join(fx.Worktree, "backend")
++				fx.Deps.Batcher = sizeBatcher{}
++			},
++			check: func(t *testing.T, fx *runFixture) {
++				if got := loadRunState(t, fx).Partition; len(got) != 2 {
++					t.Errorf("State.Partition = %+v; want one batch per card, as a 150-line file read from the worktree root groups them", got)
++				}
++			},
++		},
+ 		{
+ 			// When FindRun fails AFTER Master's pane is live, state.json has already recorded
+ 			// MasterStrand, so the next run's entry-time reclaim can find and stop the orphaned pane.
+diff --git a/internal/websterengine/runwrites.go b/internal/websterengine/runwrites.go
+index 23fda060..037af6cf 100644
+--- a/internal/websterengine/runwrites.go
++++ b/internal/websterengine/runwrites.go
+@@ -28,8 +28,9 @@ type RunWrites struct {
+ // the recovery sessions follow, each batch's RecoverySessions in batch-number order, then the cold verify-gate fixers' sessions; both are deduplicated, an empty id skipped, and each id is audited once.
+ // Each session is audited through the engine its own state entry records, so a later change to the configured engine never changes it.
+ // It reads only; an engine or audit error is returned naming the session.
++// paneCwd is the directory the sessions ran in, which the audit resolves relative write paths against.
+ // A nil engines yields an empty history.
+-func loadRunWrites(engines AuditEngines, st *State, worktree string) (RunWrites, error) {
++func loadRunWrites(engines AuditEngines, st *State, paneCwd string) (RunWrites, error) {
+ 	var writes RunWrites
+ 	if st == nil || engines == nil {
+ 		return writes, nil
+@@ -40,7 +41,7 @@ func loadRunWrites(engines AuditEngines, st *State, worktree string) (RunWrites,
+ 		if err != nil {
+ 			return RunWrites{}, err
+ 		}
+-		audit, err := engine.AuditForks(session.ID, worktree)
++		audit, err := engine.AuditForks(session.ID, paneCwd)
+ 		if err != nil {
+ 			return RunWrites{}, fmt.Errorf("audit session %s for run writes: %w", session.ID, err)
+ 		}
+@@ -54,7 +55,7 @@ func loadRunWrites(engines AuditEngines, st *State, worktree string) (RunWrites,
+ 		if err != nil {
+ 			return RunWrites{}, err
+ 		}
+-		audit, err := engine.AuditForks(session.ID, worktree)
++		audit, err := engine.AuditForks(session.ID, paneCwd)
+ 		if err != nil {
+ 			return RunWrites{}, fmt.Errorf("audit recovery session %s for run writes: %w", session.ID, err)
+ 		}
+@@ -68,8 +69,9 @@ func loadRunWrites(engines AuditEngines, st *State, worktree string) (RunWrites,
+ 
+ // writtenWorktreePaths returns, sorted and deduplicated, the slash-separated paths relative to worktree that some session of the run wrote successfully.
+ // Unlike the tracked own paths of a reset it keeps untracked files, and a failed write is not evidence.
++// A relative write path is resolved against paneCwd.
+ // A path outside the worktree is dropped, and the error is a link-resolution failure.
+-func writtenWorktreePaths(writes RunWrites, worktree string) ([]string, error) {
++func writtenWorktreePaths(writes RunWrites, paneCwd, worktree string) ([]string, error) {
+ 	root, err := canonicalPath(worktree)
+ 	if err != nil {
+ 		return nil, err
+@@ -79,7 +81,7 @@ func writtenWorktreePaths(writes RunWrites, worktree string) ([]string, error) {
+ 		if !ev.Succeeded {
+ 			continue
+ 		}
+-		canon, err := canonicalPath(resolveWritePath(worktree, ev.Path))
++		canon, err := canonicalPath(resolveWritePath(paneCwd, ev.Path))
+ 		if err != nil {
+ 			return nil, err
+ 		}
+diff --git a/internal/websterengine/runwrites_test.go b/internal/websterengine/runwrites_test.go
+index 6c829010..5650b693 100644
+--- a/internal/websterengine/runwrites_test.go
++++ b/internal/websterengine/runwrites_test.go
+@@ -7,6 +7,7 @@ package websterengine
+ 
+ import (
+ 	"errors"
++	"os"
+ 	"path/filepath"
+ 	"reflect"
+ 	"strings"
+@@ -147,13 +148,31 @@ func TestLoadRunWrites(t *testing.T) {
+ 			},
+ 		}
+ 
+-		got, err := writtenWorktreePaths(writes, worktree)
++		got, err := writtenWorktreePaths(writes, worktree, worktree)
+ 		if err != nil {
+ 			t.Fatalf("writtenWorktreePaths: %v", err)
+ 		}
+ 		if want := []string{"a.go", "b/new.go", "recovered.go"}; !reflect.DeepEqual(got, want) {
+ 			t.Errorf("writtenWorktreePaths = %v, want %v", got, want)
+ 		}
++
++		// A session that ran in a subdirectory resolves its relative writes there, while the within-tree check and the returned paths stay on the worktree root.
++		paneCwd := filepath.Join(worktree, "backend")
++		if err := os.MkdirAll(paneCwd, 0o755); err != nil {
++			t.Fatal(err)
++		}
++		split := RunWrites{Master: []shuttleengine.WriteEvent{
++			{Path: "a.go", Succeeded: true},
++			{Path: filepath.Join("..", "top.go"), Succeeded: true},
++			{Path: filepath.Join("..", "..", "outside.go"), Succeeded: true},
++		}}
++		got, err = writtenWorktreePaths(split, paneCwd, worktree)
++		if err != nil {
++			t.Fatalf("writtenWorktreePaths: %v", err)
++		}
++		if want := []string{"backend/a.go", "top.go"}; !reflect.DeepEqual(got, want) {
++			t.Errorf("writtenWorktreePaths with a subdirectory pane cwd = %v, want %v", got, want)
++		}
+ 	})
+ 
+ 	t.Run("each session is audited through its recorded engine", func(t *testing.T) {
+diff --git a/internal/websterengine/suspect.go b/internal/websterengine/suspect.go
+index bb44fa5c..f5720243 100644
+--- a/internal/websterengine/suspect.go
++++ b/internal/websterengine/suspect.go
+@@ -137,7 +137,7 @@ func splitPlanPaths(geom Geometry, paths []string) (plan, rest []string, err err
+ 		return nil, nil, err
+ 	}
+ 	for _, p := range paths {
+-		canon, err := canonicalPath(resolveWritePath(geom.WorktreeRoot, p))
++		canon, err := canonicalPath(resolveWritePath(geom.PaneCwd, p))
+ 		if err != nil {
+ 			return nil, nil, err
+ 		}
+@@ -156,7 +156,7 @@ func planFileName(geom Geometry, p string) (string, error) {
+ 	if err != nil {
+ 		return "", err
+ 	}
+-	canon, err := canonicalPath(resolveWritePath(geom.WorktreeRoot, p))
++	canon, err := canonicalPath(resolveWritePath(geom.PaneCwd, p))
+ 	if err != nil {
+ 		return "", err
+ 	}
+@@ -186,7 +186,7 @@ func checkSuspectPaths(geom Geometry, st *State, base string, paths []string) (d
+ 	if err != nil {
+ 		return nil, nil, err
+ 	}
+-	lym, err := canonicalPath(filepath.Join(geom.WorktreeRoot, lymdirs.LymDirName))
++	lym, err := canonicalPath(filepath.Join(geom.PaneCwd, lymdirs.LymDirName))
+ 	if err != nil {
+ 		return nil, nil, err
+ 	}
+@@ -195,7 +195,7 @@ func checkSuspectPaths(geom Geometry, st *State, base string, paths []string) (d
+ 		base = ""
+ 	}
+ 	for _, p := range paths {
+-		lexical := resolveWritePath(geom.WorktreeRoot, p)
++		lexical := resolveWritePath(geom.PaneCwd, p)
+ 		canon, err := canonicalPath(lexical)
+ 		if err != nil {
+ 			return nil, nil, err
+@@ -212,7 +212,7 @@ func checkSuspectPaths(geom Geometry, st *State, base string, paths []string) (d
+ 				differing = append(differing, p)
+ 			}
+ 		case !pathWithin(worktree, canon),
+-			pathWithin(lym, canon), pathWithin(filepath.Join(geom.WorktreeRoot, lymdirs.LymDirName), lexical),
++			pathWithin(lym, canon), pathWithin(filepath.Join(geom.PaneCwd, lymdirs.LymDirName), lexical),
+ 			pathWithin(scratch, canon):
+ 			unverifiable = append(unverifiable, p)
+ 		default:
+@@ -262,19 +262,20 @@ func planFileDiffers(st *State, planDir, canon string) (differs, ok bool, err er
+ }
+ 
+ // trackedRel returns the slash-separated path of p relative to worktree when p lies in the task worktree's tracked tree:
+-// inside the worktree, outside its _lym and not git-ignored.
++// inside the worktree, outside the _lym under paneCwd and not git-ignored.
++// A relative p is resolved against paneCwd, the directory the session that recorded it ran in.
+ // ok is false for every other path, which has no blob to compare.
+-func trackedRel(git Git, worktree, p string) (rel string, ok bool, err error) {
++func trackedRel(git Git, paneCwd, worktree, p string) (rel string, ok bool, err error) {
+ 	root, err := canonicalPath(worktree)
+ 	if err != nil {
+ 		return "", false, err
+ 	}
+-	lexical := resolveWritePath(worktree, p)
++	lexical := resolveWritePath(paneCwd, p)
+ 	canon, err := canonicalPath(lexical)
+ 	if err != nil {
+ 		return "", false, err
+ 	}
+-	lymLink := filepath.Join(worktree, lymdirs.LymDirName)
++	lymLink := filepath.Join(paneCwd, lymdirs.LymDirName)
+ 	lymReal, err := canonicalPath(lymLink)
+ 	if err != nil {
+ 		return "", false, err
+@@ -313,12 +314,13 @@ func uncheckableSuspects(geom Geometry, st *State, paths []string) ([]string, er
+ }
+ 
+ // suspectBlobs records, for each of paths, the blob of its worktree content now.
++// A relative path is resolved against paneCwd.
+ // A path outside the tracked tree, or an absent file, gets an empty Blob.
+-func suspectBlobs(git Git, worktree string, paths []string) ([]SuspectPath, error) {
++func suspectBlobs(git Git, paneCwd, worktree string, paths []string) ([]SuspectPath, error) {
+ 	var out []SuspectPath
+ 	for _, p := range paths {
+ 		sp := SuspectPath{Path: p}
+-		rel, ok, err := trackedRel(git, worktree, p)
++		rel, ok, err := trackedRel(git, paneCwd, worktree, p)
+ 		if err != nil {
+ 			return nil, err
+ 		}
+diff --git a/internal/websterengine/suspect_test.go b/internal/websterengine/suspect_test.go
+index 60b42672..ef78ca0a 100644
+--- a/internal/websterengine/suspect_test.go
++++ b/internal/websterengine/suspect_test.go
+@@ -42,6 +42,7 @@ func newSuspectFixture(t *testing.T) *suspectFixture {
+ 	}
+ 	geom := Geometry{
+ 		WorktreeRoot: root,
++		PaneCwd:      root,
+ 		PlanDir:      planDir,
+ 		WebsterDir:   filepath.Join(root, "_lym", "webster"),
+ 		ScratchDir:   filepath.Join(root, ".lym", "webster"),
+@@ -129,6 +130,30 @@ func TestCheckSuspectPaths(t *testing.T) {
+ 		d, _ = check(t, fx.head, "tracked.txt")
+ 		expect(t, d, "tracked.txt")
+ 	})
++	t.Run("relative paths resolve against a subdirectory pane cwd inside the worktree root", func(t *testing.T) {
++		gitkit.CommitFile(t, root, "backend/f.txt", "f", "add backend file")
++		paneCwd := filepath.Join(root, "backend")
++		git := fx.geom.git()
++
++		// The second path leaves the pane cwd but stays in the worktree, so only a within-tree check on the worktree root accepts it.
++		for p, want := range map[string]string{"f.txt": "backend/f.txt", "../tracked.txt": "tracked.txt"} {
++			rel, ok, err := trackedRel(git, paneCwd, root, p)
++			if err != nil || !ok || rel != want {
++				t.Errorf("trackedRel(%q) = %q, %v, %v; want %q, true, nil", p, rel, ok, err, want)
++			}
++		}
++
++		blobs, err := suspectBlobs(git, paneCwd, root, []string{"f.txt", "../tracked.txt"})
++		if err != nil {
++			t.Fatalf("suspectBlobs() error = %v", err)
++		}
++		wantF := strings.TrimSpace(gitkit.Git(t, root, "rev-parse", "HEAD:backend/f.txt"))
++		wantTracked := strings.TrimSpace(gitkit.Git(t, root, "rev-parse", "HEAD:tracked.txt"))
++		want := []SuspectPath{{Path: "f.txt", Blob: wantF}, {Path: "../tracked.txt", Blob: wantTracked}}
++		if !reflect.DeepEqual(blobs, want) {
++			t.Errorf("suspectBlobs() = %+v; want %+v", blobs, want)
++		}
++	})
+ }
+ 
+ // reversedOrderFixture is newSuspectFixture's repo with batch 02 run before batch 01:
+diff --git a/internal/websterengine/verifyfixer.go b/internal/websterengine/verifyfixer.go
+index 6ad2a27c..0e8c57f5 100644
+--- a/internal/websterengine/verifyfixer.go
++++ b/internal/websterengine/verifyfixer.go
+@@ -186,7 +186,7 @@ func FixVerifySpawnOrAttach(deps FixVerifyDeps, st *State, clk Clock) (*VerifyFi
+ 	}
+ 
+ 	// The friction directive is rendered by gatefixer.RenderPrompt from the note path, so the body's own values carry none.
+-	bodyValues, err := verifyFixValues(reportPath, deps.Geom.WorktreeRoot, deps.Geom.PlanDir, deps.Geom.StencilsDir, outcomePath, summaryPath, "", fixGate, verifyFixBodyStencil)
++	bodyValues, err := verifyFixValues(reportPath, deps.Geom.PaneCwd, deps.Geom.PlanDir, deps.Geom.StencilsDir, outcomePath, summaryPath, "", fixGate, verifyFixBodyStencil)
+ 	if err != nil {
+ 		return nil, false, err
+ 	}
+@@ -196,7 +196,7 @@ func FixVerifySpawnOrAttach(deps FixVerifyDeps, st *State, clk Clock) (*VerifyFi
+ 		BodyValues:     bodyValues,
+ 		ReportPath:     reportPath,
+ 		ReplyPath:      replyPath,
+-		RepoRoot:       deps.Geom.RepoRoot,
++		RepoRoot:       deps.Geom.WorktreeRoot,
+ 		PatternChanges: patternChanges,
+ 		ParentName:     deps.Geom.ParentName,
+ 		NotePath:       friction.NotePath(deps.FrictionDir, "webster-verify-fix-cold"),
+diff --git a/internal/websterengine/verifygate.go b/internal/websterengine/verifygate.go
+index 93415453..f1f68481 100644
+--- a/internal/websterengine/verifygate.go
++++ b/internal/websterengine/verifygate.go
+@@ -206,7 +206,7 @@ type verifyGateSeams struct {
+ // Attempt and failure counts, the routing and the pre-fix head live in the closure for one shuttle run;
+ // the pre-fix head is also persisted as state.json's PreFixHead when it is recorded, overwriting an earlier run's, and cleared on a passing evaluation.
+ func NewVerifyGate(geom Geometry, attempts int, batches []batcher.Batch, parentBranch ParentBranchFunc, frictionDir, fixPromptPath string) (shuttleengine.Gate, *VerifyGateNotes) {
+-	paths := verifytree.NewPaths(geom.WorktreeRoot, geom.VerifyDir)
++	paths := verifytree.NewPaths(geom.PaneCwd, geom.VerifyDir)
+ 	seams := verifyGateSeams{
+ 		outcome: func() (string, error) {
+ 			o, err := parseOutcome(OutcomePath(geom.WebsterDir))
+diff --git a/internal/websterengine/verifygate_integration_test.go b/internal/websterengine/verifygate_integration_test.go
+index 2dd1a32e..5da5a1ff 100644
+--- a/internal/websterengine/verifygate_integration_test.go
++++ b/internal/websterengine/verifygate_integration_test.go
+@@ -80,6 +80,7 @@ func newVerifyGateRepo(t *testing.T) verifyGateRepo {
+ 	return verifyGateRepo{
+ 		geom: Geometry{
+ 			WorktreeRoot: dir,
++			PaneCwd:      dir,
+ 			WebsterDir:   websterDir,
+ 			ScratchDir:   t.TempDir(),
+ 			ReportsDir:   t.TempDir(),
