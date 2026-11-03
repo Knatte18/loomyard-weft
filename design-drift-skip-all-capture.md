@@ -1,6 +1,8 @@
 # A partial scope that skips every test ends in a capture that wrote no file, with no cause named
 
-`drift-skip-all-capture` · Note · bug, drift
+`drift-skip-all-capture` · Task · bug, drift
+
+Depends on: [`drift-baseline-skips-intended`](design-drift-baseline-skips-intended.md)
 
 A partial Drift scope that skips every test is accepted, and its capture then fails as `exit 0 but wrote no file`, a reason that names neither the skips nor a way out.
 
