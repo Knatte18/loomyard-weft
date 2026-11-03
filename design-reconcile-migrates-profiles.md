@@ -1,6 +1,6 @@
 # config reconcile never migrates profiles.yaml, so a hub seeded before the loom-to-tapestry rename stops tapestry runs at Seed-Child
 
-`reconcile-migrates-profiles` · Task · bug, reconcile, profiles, config · running · Code-Burler-Review
+`reconcile-migrates-profiles` · Task · bug, reconcile, profiles, config · running · Code-Burler-Fix
 
 Imported from [issue #29](https://github.com/Knatte18/loomyard/issues/29).
 
