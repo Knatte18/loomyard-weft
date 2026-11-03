@@ -1,0 +1,114 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index e6ac0aa7..88c60803 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -364,7 +364,7 @@ User-facing modules each get one `lym <module>` namespace:
+   `default_recipe` names the recipe a task with no recipe field runs, `darn` in the template.
+   `lym board intake` lists the open issues of the hub's own GitHub repository not yet on the board, imports one as a note or folds it into an entry, and closes noise with a stated reason.
+   The hub's repository is the one its recorded binding names, else its origin remote, so only the loomyard hub's intake reads LoomYard's issues; intake never goes through selfreport.
+-  The README renders Tasks split into Running, Ready (waiting on nothing open) and dependency layers whose entries can run in parallel, then Notes grouped by type label, each subsection one numbered table that links each slug to its design doc;
++  The README renders Tasks split into Running, Ready (waiting on nothing open) and dependency layers whose entries can run in parallel, then Notes grouped by type label, each subsection one numbered table that links each slug to its design doc, with a `Sketch` link to the decision record `decision-<slug>.md` under the slug of a discussed entry;
+   every project, the root included as `P0` with its file `project-root.md`, renders through one project section that nests the projects under it, each with its own slug, age, owner, Tasks, Notes and Done, so the README shows every open project's entries split the same way, with the root's section last, and a project file shows its project and the projects under it.
+   An entry may carry a priority, `high` or `low`, absent meaning normal, which orders it first or last within its subsection.
+   A task may name a run profile in its `profile` field, and `lym board profiles` prints the hub's profiles with their settings and each recipe's default profile.
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index 573cc9d0..ea468214 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -203,7 +203,7 @@
+ // Layer A holds the tasks that wait only on Running, Ready or Draft entries, Layer B those that wait on something in Layer A, and so on; ComputeLayers names each task's subsection, and the same name is the layer field of `lym board list`.
+ // Each subsection, Done included, is one markdown table in RenderOrder's order: a task subsection and a Notes type subsection by handle, and Done its tasks before its notes, each by handle, so `lym board list` and `find` follow the same order.
+ // A row opens with the entry's handle, and a Notes row adds the Prio column after it, H for a high priority, L for a low one and blank for normal.
+-// The row then holds the bold title, with the brief as a `• ` bullet under it in the same cell, and then one `• ` bullet per run setting, a code span such as `loom: code_max_bounces 1` with a nested key as its dotted path, sorted, so the settings stack in height and add no column, the slug linked to its design doc when the entry has a body, the one `Age<br>Revised` cell, the entry's age above the time since its last revision, blank for an unknown date, and the labels that are not type labels.
++// The row then holds the bold title, with the brief as a `• ` bullet under it in the same cell, and then one `• ` bullet per run setting, a code span such as `loom: code_max_bounces 1` with a nested key as its dotted path, sorted, so the settings stack in height and add no column, the slug linked to its design doc when the entry has a body, with a `Sketch` link to its decision record file under it, in the same cell, when the entry carries the discussed flag, the one `Age<br>Revised` cell, the entry's age above the time since its last revision, blank for an unknown date, and the labels that are not type labels.
+ // The Running, Ready, layer and Draft tables add a Recipe column after the slug, the recipe the task runs, the board's `default_recipe` (`darn` in the template) when its recipe field is empty, followed by ` · ` and the run profile when the task names one, such as `tapestry · light`; a task naming no profile takes its recipe's default profile and shows the recipe alone.
+ // The Notes and Done tables have no Recipe column.
+ // Running adds an At column, the run status without the state when the state is `running`, and an Owner column, the entry's effective owner machine, blank when none is recorded, and Ready, the layers and Draft add an After column, the handles of the open entries named in depends_on, one per line, an entry with no handle or no longer on the board named by its slug.
+@@ -291,7 +291,7 @@
+ // # Decision record
+ //
+ // An entry whose run's Discussion was approved carries the discussed flag, and its decision record is the file `decision-<slug>.md` beside board.json, at the Bolt root; the file follows its entry through a rename, and a remove, a prune or a merge that drops the slug removes it.
+-// No render output names that file, so RenderToDisk's manifest never holds it and a render never deletes it.
++// The file is no render output, so RenderToDisk's manifest never holds it and a render never deletes it; a flagged entry's Slug cell in every board table links it as `Sketch`.
+ // Only lym writes the flag and the file: Board.StoreDecisionRecord is the one writer, and a payload may carry discussed only as the entry's stored value, false for a new entry, which is dropped as a no-op; any other value is refused.
+ // StoreDecisionRecord writes the file before it saves board.json, so a crash leaves a file with no flag and never a flag with no file, and it writes nothing when the entry is flagged and the file already holds the bytes.
+ // It bypasses the run lock for the flag and the file alone, so every other field of a held entry stays locked, and it refuses an absent entry and a done entry, the latter with an error that matches ErrRecordEntryDone, since a landed entry keeps the record it last stored.
+diff --git a/internal/boardengine/render.go b/internal/boardengine/render.go
+index a4f206c9..087ea396 100644
+--- a/internal/boardengine/render.go
++++ b/internal/boardengine/render.go
+@@ -8,7 +8,7 @@
+ // A project's own entries split into Tasks, by Running, Ready, dependency layers, Independent and Draft, Notes with one subsection per type label, research first, then Done.
+ // Each subsection holds one markdown table in RenderOrder's order, each row opening with the entry's handle, and a Notes table adds the priority as H or L after it, under Prio;
+ // README.md opens with the time it was rendered and the machine that owns the hub's prime, and a project file with the time, a link up to its parent's file and the project's brief and, for a beam, its owner;
+-// the rows show the bold title with the brief, the run profile and each run setting as a bullet under it, the linked slug, the entry's age above its time since its last revision as of that time, and the labels that are not type labels;
++// the rows show the bold title with the brief, the run profile and each run setting as a bullet under it, the linked slug with a Sketch link to the decision record under it for a discussed entry, the entry's age above its time since its last revision as of that time, and the labels that are not type labels;
+ // every Tasks table adds the recipe after the slug, the configured default recipe for an empty one;
+ // Running adds where its run stands and the entry's recorded owner machine, and Ready and the layers add the handles of the open entries each waits on.
+ // The section names, their meaning lines and the table columns are declared here alone;
+@@ -446,7 +446,7 @@ func (b boardView) table(entries []TaskWithLayer, table readmeTable) []string {
+ 		if table.priority {
+ 			row = append(row, priorityCell(twl.Priority))
+ 		}
+-		row = append(row, slices.Insert(table.cells(twl.Task), 1, slugCell(twl.Task, b.out.DesignPrefix))...)
++		row = append(row, slices.Insert(table.cells(twl.Task), 1, slugColumnCell(twl.Task, b.out.DesignPrefix))...)
+ 		row = append(row, ageCell(twl.Task, b.now), labelsCell(twl.Task, b.out.Types))
+ 		lines = append(lines, tableRow(row))
+ 	}
+@@ -641,6 +641,18 @@ func slugCell(t Task, designPrefix string) string {
+ 	return "`" + t.Slug + "`"
+ }
+ 
++// sketchLinkText is the text of a discussed entry's link to its decision record.
++const sketchLinkText = "Sketch"
++
++// slugColumnCell is a table's Slug cell: slugCell, with a Sketch link to the decision record stacked under it for a discussed entry, so the mark adds no column.
++func slugColumnCell(t Task, designPrefix string) string {
++	cell := slugCell(t, designPrefix)
++	if !t.Discussed {
++		return cell
++	}
++	return cell + cellBreak + "[" + sketchLinkText + "](" + DecisionFileName(t.Slug) + ")"
++}
++
+ // priorityCell is H for a high priority, L for a low one and empty for normal.
+ func priorityCell(priority string) string {
+ 	switch priority {
+diff --git a/internal/boardengine/render_test.go b/internal/boardengine/render_test.go
+index 4a2030a4..74fdd172 100644
+--- a/internal/boardengine/render_test.go
++++ b/internal/boardengine/render_test.go
+@@ -915,6 +915,33 @@ func TestRenderRecipeCellTakesTheDefaultRecipe(t *testing.T) {
+ 	}
+ }
+ 
++// TestRenderSlugCellLinksTheDecisionRecord pins that a discussed entry's Slug cell stacks a Sketch link to its decision record under the slug, in an open and a Done table of every board file listing it, and that an entry not flagged discussed renders the slug alone.
++func TestRenderSlugCellLinksTheDecisionRecord(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tasks := []boardengine.Task{
++		{ID: 1, Handle: "T1", Slug: "sketched", Title: "Sketched", Kind: boardengine.KindTask, Labels: []string{"bug"}, Body: "body", Discussed: true},
++		{ID: 2, Handle: "T2", Slug: "plain", Title: "Plain", Kind: boardengine.KindTask, Labels: []string{"bug"}, Body: "body"},
++		{ID: 3, Handle: "T3", Slug: "landed", Title: "Landed", Kind: boardengine.KindTask, Labels: []string{"bug"}, Status: stringPtr("done"), Discussed: true},
++	}
++	result, err := boardengine.Render(tasks, "", boardengine.Outputs{Readme: "README.md", DesignPrefix: "design-", Types: readmeTypes, DefaultRecipe: "darn"}, renderTime)
++	if err != nil {
++		t.Fatalf("Render: %v", err)
++	}
++	wantRows := []string{
++		"| T1 | **Sketched** | [`sketched`](design-sketched.md)<br>[Sketch](decision-sketched.md) | darn |",
++		"| T2 | **Plain** | [`plain`](design-plain.md) | darn |",
++		"| T3 | **Landed** | `landed`<br>[Sketch](decision-landed.md) |",
++	}
++	for _, file := range []string{"README.md", "project-root.md"} {
++		for _, want := range wantRows {
++			if !strings.Contains(result[file], want) {
++				t.Errorf("%s lacks row %q:\n%s", file, want, result[file])
++			}
++		}
++	}
++}
++
+ // emptyProjectEntries is the rendered own entries of a project holding none, its Tasks and Notes at heading level level and Ready one level down.
+ func emptyProjectEntries(level int) string {
+ 	return strings.Repeat("#", level) + " Tasks (0)\n" +
