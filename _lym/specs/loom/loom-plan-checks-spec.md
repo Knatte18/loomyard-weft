@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=1158c506da997af28f3a619f010c0eefcc798e2c83197905a9945210037883c6 build=fe753d409cad46ac575d6ca5c96b51058567644d time=2026-11-02T19:09:15Z -->
+<!-- lym-stencil: sha256=d78d0887d0d2e2af9f375dfe7aba03d5479677b328347960c123e126d85a8960 build=bd41b02393cc89f1aeed62df89399a68cda8fc18 time=2026-11-03T10:48:20Z -->
 
 # Loom plan-checks spec — the plan gate's validation checks
 
@@ -155,7 +155,7 @@ The other PATTERN checks are *loomshed*'s, and run only in a worktree with a `PA
 
 ## Tests, docs and names
 
-- `edit-test-file` — a `_test.go` file self glyph under `Edit` or `Extends`; a path holding a segment the go tool ignores is exempt.
+- `edit-test-file` — a `_test.go` file self glyph under `Edit` or `Extends`; a path holding a segment the go tool ignores is exempt, and so is a file `lym quarry toc` lists with no symbol, such as one holding only blank-identifier vars, since no member glyph can name the edit.
   Way forward: name each test function, fake or helper the card changes as a member glyph under `**Edit:**`, declare each new one as a `**Create:**` handle on the package directory or `<dir>_test`, keep a new test file a `**Create:**` path, and for a header-only change such as a build constraint, name every member of the file.
 - `test-tier-unstated` *(loomshed)* — under `go`, a `**Create:**` `_test.go` file whose Intent lines name no valid tier.
   The tiers are the hub's `gate.yaml` tier keys, read as whole words on the Intent lines that name the file by path or base name; a line naming another test file counts toward that file too.
