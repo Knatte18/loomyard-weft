@@ -786,6 +786,106 @@
       "body": "Imported from [issue #28](https://github.com/Knatte18/loomyard/issues/28).\n\n## What happened\n\nA `sampler` run in the Models hub (`drift-numerical-baseline`) had one job: trial the drift flow with the operator before drift is trusted on real tasks.\nEvery `lym drift` verb refused in the sampler worktree, because each verb is gated on the run's stage and the sampler recipe has no drift rows:\n\n```\ndrift capture refused: the run is at Sampler-Session (running), and a main capture runs only at Drift-Baseline or at a Drift-Await halt\ncapture --side: the run is at Sampler-Session (running), and the verb runs only at Drift-Verify\ncompare: the run is at Sampler-Session (running), and the verb runs only at Drift-Verify\ndrift accept refused: the run is at Sampler-Session (running), and the verb runs only at Drift-Verify\nwithdraw: same as accept\n```\n\nThe sampler fell back to running the hub's capture and compare commands by hand, and mimicked accept and withdraw with the skip file.\nThat proved the repository's harness, but none of lym's own drift stages: the Drift-Baseline agent's scope choice, `accept` and `withdraw` taking effect in the drift records, and the interactive Drift-Verify session.\nThe first real test of those stages is now a production task with drift full.\n\n## Wanted\n\nA way to trial drift in a sampler, the recipe meant for trying things with the operator.\nFor example, either:\n\n- the drift verbs run in a sampler session, against a sampler-local drift record, so scope, capture, compare, accept and withdraw can be exercised end to end; or\n- a sampler variant (or option) that carries the Drift-Baseline, Drift-Await and Drift-Verify rows, so the interactive Drift-Verify session can be reached with a deliberate change.\n\nThe stage gates stay as they are for tapestry and darn, where they keep an agent from re-baselining mid-task.",
       "created": "2026-11-03T09:16:18Z",
       "revised": "2026-11-03T09:16:18Z"
+    },
+    {
+      "id": 1042,
+      "handle": "T1",
+      "slug": "codex-engine-core",
+      "title": "codexengine: the Codex CLI shuttle engine, its home and its launch",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "shuttle",
+        "codex"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Part 1 of project `codex-engine`.\nIts Sketch is the project's stored decision record: read it with `lym board get P2 --record`.\n\n## Build\n\n- Decisions D4, D5, D6, D7, D8 and D13 of the Sketch.\n- The parent decision added after Discussion, \"Weft checkout as a Codex writable root\", which replaces the one on the assistant report path.\n\n## Bounds\n\n- The Sketch's Scope, Constraints, Open risks and Acceptance criteria bind this part as far as they concern these decisions.\n- The other decisions belong to the project's other parts: leave them out.\n",
+      "status": "draft",
+      "created": "2026-11-03T12:38:40Z",
+      "revised": "2026-11-03T12:38:40Z",
+      "profile": "solid",
+      "project": "codex-engine"
+    },
+    {
+      "id": 1043,
+      "handle": "T3",
+      "slug": "codex-skills-guards",
+      "title": "Skills and every shell guard row on Codex",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "shuttle",
+        "codex"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "codex-engine-core"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Part 2 of project `codex-engine`.\nIts Sketch is the project's stored decision record: read it with `lym board get P2 --record`.\n\n## Build\n\n- Decisions D9 and D10 of the Sketch.\n\n## Bounds\n\n- The Sketch's Scope, Constraints, Open risks and Acceptance criteria bind this part as far as they concern these decisions.\n- The other decisions belong to the project's other parts: leave them out.\n",
+      "status": "draft",
+      "created": "2026-11-03T12:38:40Z",
+      "revised": "2026-11-03T12:38:40Z",
+      "profile": "light",
+      "project": "codex-engine"
+    },
+    {
+      "id": 1044,
+      "handle": "T4",
+      "slug": "codex-stencil-blocks",
+      "title": "Engine-keyed stencil blocks and heddle's codex-file fallback",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "stencil",
+        "heddle",
+        "codex"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Part 3 of project `codex-engine`.\nIts Sketch is the project's stored decision record: read it with `lym board get P2 --record`.\n\n## Build\n\n- Decisions D11 and D12 of the Sketch.\n\n## Bounds\n\n- The Sketch's Scope, Constraints, Open risks and Acceptance criteria bind this part as far as they concern these decisions.\n- The other decisions belong to the project's other parts: leave them out.\n",
+      "status": "draft",
+      "created": "2026-11-03T12:38:40Z",
+      "revised": "2026-11-03T12:38:40Z",
+      "profile": "light",
+      "project": "codex-engine"
+    },
+    {
+      "id": 1045,
+      "handle": "T5",
+      "slug": "codex-assist-seat",
+      "title": "The assistant seat and the Burler review round with a Codex assistant",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "burler",
+        "shuttle",
+        "codex"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "codex-engine-core",
+        "codex-skills-guards",
+        "codex-stencil-blocks"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Part 4 of project `codex-engine`.\nIts Sketch is the project's stored decision record: read it with `lym board get P2 --record`.\n\n## Build\n\n- Decisions D1, D2 and D3 of the Sketch.\n- The parent decision added after Discussion, \"Opt-in Codex subagent fan allowed before Step 4\".\n- The assistant's report path as the parent decision \"Weft checkout as a Codex writable root\" leaves it.\n\n## Bounds\n\n- The Sketch's Scope, Constraints, Open risks and Acceptance criteria bind this part as far as they concern these decisions.\n- The other decisions belong to the project's other parts, landed before this one: build on them.\n",
+      "status": "draft",
+      "created": "2026-11-03T12:38:40Z",
+      "revised": "2026-11-03T12:38:40Z",
+      "profile": "solid",
+      "project": "codex-engine"
     }
   ],
   "prime_owner": "neve",

@@ -34,13 +34,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R2 |  | **Plan and Discussion writers explore through parallel Sonnet agents that return only what is relevant**<br>• Bench the guidance that sends Plan and Discussion writers' lookups to parallel Sonnet subagents against a writer given none | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 1d<br>23h | loom |
 | R3 |  | **Measure the effect of the batching breach hook**<br>• After the batching breach hook lands, compare breach turns and context tokens against the 28-session baseline and tune its thresholds | [`batching-hook-effect`](design-batching-hook-effect.md) | 1d<br>23h | claude, shuttle, tools |
 
-## [P2 Codex CLI as a second shuttle engine: codexengine](project-codex-engine.md) (0)
+## [P2 Codex CLI as a second shuttle engine: codexengine](project-codex-engine.md) (4)
 
 [`codex-engine`](design-codex-engine.md) · Age 4w · Owner `neve`
 
 codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs
 
-### Tasks (0)
+### Tasks (4)
 
 Concrete and claimable; only a task can run.
 
@@ -49,6 +49,17 @@ Concrete and claimable; only a task can run.
 Waits on nothing open; can start now.
 
 _None._
+
+#### Draft (4)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | `draft` **codexengine: the Codex CLI shuttle engine, its home and its launch** | [`codex-engine-core`](design-codex-engine-core.md) | darn · solid |  | 0m<br>0m | shuttle, codex |
+| T3 | `draft` **Skills and every shell guard row on Codex** | [`codex-skills-guards`](design-codex-skills-guards.md) | darn · light | T1 | 0m<br>0m | shuttle, codex |
+| T4 | `draft` **Engine-keyed stencil blocks and heddle's codex-file fallback** | [`codex-stencil-blocks`](design-codex-stencil-blocks.md) | darn · light |  | 0m<br>0m | stencil, heddle, codex |
+| T5 | `draft` **The assistant seat and the Burler review round with a Codex assistant** | [`codex-assist-seat`](design-codex-assist-seat.md) | darn · solid | T1<br>T3<br>T4 | 0m<br>0m | burler, shuttle, codex |
 
 ### Notes (0)
 
