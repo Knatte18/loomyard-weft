@@ -76,7 +76,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Drift-Verify's verdict never reaches the summary or the pull request**<br>• A clean compare leaves the PR asking the operator to run the regression compare by hand | [`drift-verdict-in-pr`](design-drift-verdict-in-pr.md) | darn · light | Drift-Verify | neve | 2h<br>35m | drift, loom, landing |
+| T1 | **Drift-Verify's verdict never reaches the summary or the pull request**<br>• A clean compare leaves the PR asking the operator to run the regression compare by hand | [`drift-verdict-in-pr`](design-drift-verdict-in-pr.md) | darn · light | Code-Bouncer | neve | 2h<br>35m | drift, loom, landing |
 | T2 | **Every remote operation runs async, and local-only fabric pairs go**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | darn · solid | Code-Burler-Fix | neve | 2w<br>1h | fabric, batten |
 | T5 | **depends_on accepts a project or any entry that lands, and dobby holds the task until it does** | [`depends-on-any-entry`](design-depends-on-any-entry.md) | darn · light | Finalize | neve | 56m<br>53m | board, dobby |
 | T6 | **A partial scope that skips every test ends in a capture that wrote no file, with no cause named**<br>• The capture failure names neither the skips nor the scope change that would fix it, so the tackler re-launches blind | [`drift-skip-all-capture`](design-drift-skip-all-capture.md) | darn · light | Darn-Write | neve | 41m<br>35m | drift |
