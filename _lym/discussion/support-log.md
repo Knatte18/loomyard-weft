@@ -32,7 +32,7 @@ Judged together, duplicates merged:
 - existing-paths (LOW, a store on a done entry may be set aside by the run ledger): fixed. D2 refuses a done entry.
 - existing-paths, bound-breaker (LOW, older binary leaves orphan files): fixed. Stated under Auto-mode assumptions.
 - bound-breaker (LOW, merge re-upserting its removed slug): fixed. D4 judges removal by net change.
-- bound-breaker (LOW, D10 message for a flagged entry with no file): rejected. D2's file-first write makes that state reachable only by hand deletion.
+- bound-breaker (LOW, D10 message for a flagged entry with no file): fixed in review round 1. An older binary's rename reaches that state, so D10 refuses it, naming the old slug's file and the entry's next Discussion approval as the way forward.
 - walkthrough (LOW, D6 overstates carry-over ordering): fixed. D6 says carry-over precedes the seam only on paths that write one.
 - leanness (MEDIUM, garbled carry-over assumption): fixed. Stated in D8 as behaviour.
 - leanness (LOW, assumptions repeating D1 and D6; constraints that change nothing; OpenHub hint; duplicate constants line; Goal clause repeating Scope; Open risk repeating D7): fixed. Cut or moved to Notes; the Open risk is now only the question for the parent.
@@ -52,7 +52,7 @@ Judged together, duplicates merged:
 
 ## Review rounds
 
-_No rounds yet._
+- Round 1: the design and consistency findings are fixed; the round's fixer-report lists each change.
 
 ## Question ledger
 
@@ -66,4 +66,4 @@ _No rounds yet._
 - Q8 (auto-pick): How is the parallel `cartoon` work kept in step? A recipe guard test that every discussion approval row carries the seam and no other Bouncer does. Rationale: it fails whichever task lands second until its copy carries the key; raised to the parent under Open risks.
 - Q9 (auto-pick, after lens review): How is the discussion approval row found? The Bouncer a DiscussionWrite row's `on_done` names. Rationale: `artifact_paths` also matches every Code-Bouncer; the DiscussionWrite engine names Discussion alone.
 - Q10 (auto-pick, after lens review): May a done entry be stored? No. Rationale: the run ledger sets aside a board commit whose entries have all ended, so the copy would never reach origin.
-- Q11 (auto-pick, after lens review): What if a hub sets `design_prefix` to the record prefix? The config load refuses it. Rationale: the render would otherwise own and delete record files.
+- Q11 (auto-pick, after lens review): What if a hub sets `design_prefix` so a design file can take a record file's name? The config load refuses every prefix of `decision-`, the empty one included, and every prefix starting with `decision-`. Rationale: the render would otherwise own and delete record files.
