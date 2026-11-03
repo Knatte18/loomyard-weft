@@ -23,6 +23,12 @@ So no lym verb brings an existing hub's profiles in line with a renamed or added
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-03): A former recipe block that differs from the current one is kept and reported
+
+Decision: When a profile holds both a former recipe block (such as loom) and the current one (tapestry), the migration deletes the former block only when it equals the current block. When they differ it renames and deletes nothing for that entry, and reconcile reports the entry with both blocks so the operator settles it by hand. Update the second row of TestMigrateConfig, the MigrateConfig doc comment and the runprofile doc.go paragraph to match.
+
+Rationale: profiles.yaml is operator-owned: a migration must never drop operator values silently, and a copy kept only in the Bolt checkout's git history is lost in practice.
+
 ## Constraints
 
 ## Auto-mode assumptions
