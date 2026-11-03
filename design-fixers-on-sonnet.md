@@ -1,6 +1,6 @@
 # Bench Plan and Discussion fixers on Sonnet against Opus
 
-`fixers-on-sonnet` · Task · research, burler, claude · running · Code-Bouncer
+`fixers-on-sonnet` · Task · research, burler, claude · running · Drift-Recheck
 
 ## Seen
 
