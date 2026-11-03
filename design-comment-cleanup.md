@@ -2,6 +2,8 @@
 
 `comment-cleanup` · Task · enhancement, fabric · draft
 
+Depends on: [`drift-dir-base`](design-drift-dir-base.md), [`fabric-remote-async`](design-fabric-remote-async.md), [`hibernate-in-dobby`](design-hibernate-in-dobby.md), [`codex-engine-merge-main`](design-codex-engine-merge-main.md)
+
 ## Seen (operator and hub orch, 2026-10-31)
 
 Comments in the Go source go stale as the code moves on.
