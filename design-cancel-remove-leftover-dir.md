@@ -1,6 +1,6 @@
 # batten cancel --remove leaves a non-git directory that blocks Worktree-Create
 
-`cancel-remove-leftover-dir` · Task · bug, batten, fabric · running · Drift-Await
+`cancel-remove-leftover-dir` · Task · bug, batten, fabric · running · Darn-Write
 
 Depends on: [`fabric-remote-async`](design-fabric-remote-async.md)
 
