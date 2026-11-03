@@ -699,31 +699,6 @@
       "revised": "2026-11-02T20:34:12Z"
     },
     {
-      "id": 1021,
-      "handle": "T9",
-      "slug": "run-done-with-background-shell",
-      "title": "Run ends with a background shell outstanding: its commit and gate result are lost",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "shuttle",
-        "webster",
-        "gate"
-      ],
-      "issues": [
-        7
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #7](https://github.com/Knatte18/loomyard/issues/7).\n\n**What happened**\n\nThe Master run finished with outcome `done` while a background shell was still running (outstanding for 39s).\nThe shell chained a `git add`, a `git commit`, `git log` and `lym gate test --wait --gate \u003cgate\u003e`.\nThe run never read the shell's result, and lym did not stop the shell.\nThe loom wrote a friction note (\"Master's run ended with a background shell outstanding\") that says shuttle removes Master's strand when the run finishes, which ends the shell only where it sits in the pane's process tree.\n\n**Why it is abnormal**\n\nA run reported as `done` can have an unfinished commit and an unread gate verdict.\nThe commit may or may not have landed, and the gate result was never checked, so `done` does not guarantee the work was committed or gated.\nWhether the shell is killed depends on process-tree placement, so the outcome is nondeterministic.\nThe `lym gate test --wait` inside the shell may also be cut off mid-run, which can leave a gate slot held or a gate run without a reader.\n\n**What to do**\n\n- Make the run refuse `done` (or downgrade it) while the payload signal reports an outstanding background shell, and tell the agent to wait for or read the shell first.\n- Alternatively, have shuttle stop outstanding background shells explicitly on run end and record the result, rather than relying on pane teardown.\n- Check that a gate run abandoned this way releases its slot.\n\nProvenance: task `gate-run-keeps-cache-warm`; notes: `webster-background-shell.md`.\n\n\n\n_Moved from #912 in the repository before it was recreated._\n",
-      "status": "done",
-      "created": "2026-11-02T20:34:23Z",
-      "revised": "2026-11-03T09:53:14Z",
-      "profile": "solid"
-    },
-    {
       "id": 1025,
       "handle": "E7",
       "slug": "parts-plan-and-build",
@@ -967,7 +942,7 @@
       "isolated": false,
       "brief": "The darn writer prompt still has the writer run and fix lym gate test; with the gate fixer on it should run none",
       "body": "The Darn-Write writer still runs `lym gate test` and fixes its failures in its own session, at full context, though the cold gate fixer was meant to take that work off it.\n\n## What is wrong\n\nThe cold gate fixer (`internal/gatefixer`, landed in `a9536680`) clears a failed Darn-Write `verify` gate after the writer hands off, and the writer hears only what the fixer leaves.\nThat commit switched the Plan-Write and Discussion-Write prompts to a \"gated\" self-check fragment that runs no validator when the row's gate has a cold fixer (`LoomFragmentSelfCheckPlanGated`, `LoomFragmentSelfCheckDiscussionGated` in `contracts/stencils/stencils.go`).\nDarn-Write's prompt was left out: `contracts/stencils/darn/darn-template-write.md` Step 4 still tells the writer to run `lym gate test` after each commit, rerun it, and leave each commit green, and tells its subagents to run the gate on their packages.\nSeen in task `webster-subpath-anchor`: the writer ran the gate and fixed failures itself before and after the fixer.\n\n## Expected\n\n- When `darn.gate_fixer` is set and the worktree has a pair slug, the Darn-Write prompt has the writer and its subagents run no `lym gate test`; the row's `verify` gate and its fixer take the failures, and the writer acts only on what the fixer leaves.\n- With the fixer off, or with no pair slug, the prompt text stays as it is today.\n- Follow the Plan-Write pattern: a marker in `darn-template-write.md` filled by the darn engine with one of two fragments, chosen on the same condition the row gate uses to attach a fixer.\n- A test pins both renderings.\n",
-      "status": "running · Darn-Write",
+      "status": "running · Drift-Verify",
       "created": "2026-11-03T10:58:17Z",
       "revised": "2026-11-03T10:58:17Z",
       "profile": "light"
