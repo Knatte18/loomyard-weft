@@ -1,6 +1,6 @@
 # A shuttle session gets its prompt and its creel hooks at launch
 
-`shuttle-launch-delivery` · Task · bug, shuttle, claude, creel, darn, loom · running · Worktree-Create
+`shuttle-launch-delivery` · Task · bug, shuttle, claude, creel, darn, loom · running · Record-Write
 
 Two faults in how a Claude session started through `lym shuttle` gets what it needs at launch.
 
