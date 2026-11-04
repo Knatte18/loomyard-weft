@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-04 12:02 UTC; every age below is as of then.
+Rendered 2026-11-04 12:03 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -34,23 +34,15 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R2 |  | **Plan and Discussion writers explore through parallel Sonnet agents that return only what is relevant**<br>• Bench the guidance that sends Plan and Discussion writers' lookups to parallel Sonnet subagents against a writer given none | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 2d<br>1d | loom |
 | R3 |  | **Measure the effect of the batching breach hook**<br>• After the batching breach hook lands, compare breach turns and context tokens against the 28-session baseline and tune its thresholds | [`batching-hook-effect`](design-batching-hook-effect.md) | 2d<br>1d | claude, shuttle, tools |
 
-## [P2 Stress test of codexengine: every designed capability, hooks above all](project-codex-engine-trial.md) (3)
+## [P2 Stress test of codexengine: every designed capability, hooks above all](project-codex-engine-trial.md) (2)
 
 [`codex-engine-trial`](design-codex-engine-trial.md) · Age 16h · Owner `neve`
 
 Real Codex launches through lym shuttle check home, sandbox, hooks, guards, pane, skills and load
 
-### Tasks (3)
+### Tasks (2)
 
 Concrete and claimable; only a task can run.
-
-#### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Codex trial: home, trust, sandbox and refusals**<br>• Seven cases on real Codex launches against the package doc | [`codex-trial-home-sandbox`](design-codex-trial-home-sandbox.md) | darn · docs | Finalize | neve | 16h<br>16h | codex, shuttle |
 
 #### Ready (0)
 
@@ -64,12 +56,20 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | `draft` **Codex trial: hooks, shell guards and skills**<br>• Seven cases on real Codex launches against the package doc | [`codex-trial-hooks-guards-skills`](design-codex-trial-hooks-guards-skills.md) | darn · docs | T3 | 16h<br>16h | codex, shuttle |
+| T5 | `draft` **Codex trial: hooks, shell guards and skills**<br>• Seven cases on real Codex launches against the package doc | [`codex-trial-hooks-guards-skills`](design-codex-trial-hooks-guards-skills.md) | darn · docs |  | 16h<br>16h | codex, shuttle |
 | T6 | `draft` **Codex trial: pane, sends, creel by the pane path, and load**<br>• Six cases, three sessions at once and one darn run with a Codex reviewer seat | [`codex-trial-pane-load`](design-codex-trial-pane-load.md) | darn · docs | T5 | 16h<br>16h | codex, shuttle, creel |
 
 ### Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T3 | **Codex trial: home, trust, sandbox and refusals**<br>• Seven cases on real Codex launches against the package doc | [`codex-trial-home-sandbox`](design-codex-trial-home-sandbox.md) | 16h<br>16h | codex, shuttle |
 
 ## [P0 Root: entries under no project](project-root.md) (40)
 
@@ -113,7 +113,7 @@ Not released; nothing starts it until its status is cleared.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Review Drift as a whole and redesign it from the trials**<br>• Two C# trials found many Drift faults, mostly in agent judgment and gaps in the flow; map the whole and propose one design | [`drift-whole-review`](design-drift-whole-review.md) | darn · docs |  | 17h<br>16h | drift, stencil, loom |
-| T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T1<br>T3<br>T5<br>T6<br>T7<br>T8<br>T9<br>T10<br>T11<br>T12<br>T13 | 3d<br>1h | fabric |
+| T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T1<br>T5<br>T6<br>T7<br>T8<br>T9<br>T10<br>T11<br>T12<br>T13 | 3d<br>1h | fabric |
 
 ### Notes (31)
 
@@ -130,16 +130,16 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• No waiting line in loom or batten status and no notice while PR-Review waits for a human review | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 16h<br>1h | landing, loom, batten |
-| B2 |  | **Worktree-Create runs one at a time and spends minutes on network round trips**<br>• Five released tasks left Worktree-Create one by one over minutes, behind fetches, remote-ref reads and a weft push | [`worktree-create-serial`](design-worktree-create-serial.md) | 43m<br>40m | fabric, batten, dobby |
-| B3 |  | **lym shuttle run takes no model spec and has no engine choice**<br>• run --model is a provider id on the configured engine, so luna[medium] launched a Claude session and failed model_not_found; open takes a spec | [`shuttle-run-no-model-spec`](design-shuttle-run-no-model-spec.md) | 11m<br>11m | shuttle, codex |
-| B4 |  | **lym shuttle open refuses the codex engine because it has no prompt**<br>• open --model luna[medium] answers: the engine codex cannot open a session with no prompt | [`shuttle-open-refuses-codex`](design-shuttle-open-refuses-codex.md) | 11m<br>11m | shuttle, codex |
-| B5 |  | **A codexengine test writes the real ~/.lym/codex**<br>• TestPrepare_AppendsStandingPassages leaves /tmp test roots in the real lym Codex home trust record | [`codex-test-writes-real-home`](design-codex-test-writes-real-home.md) | 11m<br>11m | codex, testkit |
+| B2 |  | **Worktree-Create runs one at a time and spends minutes on network round trips**<br>• Five released tasks left Worktree-Create one by one over minutes, behind fetches, remote-ref reads and a weft push | [`worktree-create-serial`](design-worktree-create-serial.md) | 44m<br>41m | fabric, batten, dobby |
+| B3 |  | **lym shuttle run takes no model spec and has no engine choice**<br>• run --model is a provider id on the configured engine, so luna[medium] launched a Claude session and failed model_not_found; open takes a spec | [`shuttle-run-no-model-spec`](design-shuttle-run-no-model-spec.md) | 12m<br>12m | shuttle, codex |
+| B4 |  | **lym shuttle open refuses the codex engine because it has no prompt**<br>• open --model luna[medium] answers: the engine codex cannot open a session with no prompt | [`shuttle-open-refuses-codex`](design-shuttle-open-refuses-codex.md) | 12m<br>12m | shuttle, codex |
+| B5 |  | **A codexengine test writes the real ~/.lym/codex**<br>• TestPrepare_AppendsStandingPassages leaves /tmp test roots in the real lym Codex home trust record | [`codex-test-writes-real-home`](design-codex-test-writes-real-home.md) | 12m<br>12m | codex, testkit |
 
 #### Enhancements (7)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **lym ide opens configured files on start, rendered markdown for a beam README**<br>• A beam IDE starts with its README rendered; which files open is config, not code, so per-beam docs can be named later | [`ide-open-files`](design-ide-open-files.md) | 16h<br>16h | ide, config |
+| E1 |  | **lym ide opens configured files on start, rendered markdown for a beam README**<br>• A beam IDE starts with its README rendered; which files open is config, not code, so per-beam docs can be named later | [`ide-open-files`](design-ide-open-files.md) | 17h<br>17h | ide, config |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 7d<br>2d | batten, stencil, config |
 | E5 |  | **A landing notice is not lost when set late, when dobby was down, or when the orch is absent**<br>• Close the known limits landing-watch left: a late notify_on_land, a Land passed while dobby was down, and a dropped line when no orch is live | [`landing-watch-limits`](design-landing-watch-limits.md) | 3d<br>3d | dobby, orch |
 | E7 |  | **Each part agent plans and builds its own part, instead of joining the parts into one plan** | [`parts-plan-and-build`](design-parts-plan-and-build.md) | 1d<br>1d | loom |
