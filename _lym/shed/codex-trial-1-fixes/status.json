@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -140,6 +140,21 @@
       "output": "",
       "at": "2026-11-04T14:11:02Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/codex-trial-1-fixes/_lym/landing/summary.md",
+      "at": "2026-11-04T14:11:59Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-04T14:11:58.577313945Z",
+          "end": "2026-11-04T14:11:58.577357677Z"
+        }
+      ]
     }
   ],
   "product": {
