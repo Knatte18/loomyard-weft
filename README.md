@@ -22,7 +22,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **Measure agent-turns and the batching hook from landed runs**<br>• One report: turns, calls per turn, gate loops, refusals and batching-hook breaches over up to 20 darn and 5 tapestry runs landed since 2026-11-02 | [`turn-savings-measure`](design-turn-savings-measure.md) | darn · docs | Darn-Write | neve | 2d<br>13m | tools, claude, shuttle |
+| T9 | **Measure agent-turns and the batching hook from landed runs**<br>• One report: turns, calls per turn, gate loops, refusals and batching-hook breaches over up to 20 darn and 5 tapestry runs landed since 2026-11-02 | [`turn-savings-measure`](design-turn-savings-measure.md) | darn · docs | Darn-Write | neve | 2d<br>14m | tools, claude, shuttle |
 
 #### Ready (0)
 
@@ -85,7 +85,7 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Running (2)
+#### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -93,14 +93,13 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **lym ide opens configured files on start, rendered markdown for a beam README**<br>• A beam IDE starts with its README rendered; which files open is config, not code, so per-beam docs can be named later | [`ide-open-files`](design-ide-open-files.md) | darn · light | Darn-Write | neve | 19h<br>23m | ide, config |
 | T3 | **Worktree-Create runs one at a time and spends minutes on network round trips**<br>• Five released tasks left Worktree-Create one by one over minutes, behind fetches, remote-ref reads and a weft push | [`worktree-create-serial`](design-worktree-create-serial.md) | darn · light | Code-Burler-Fix | neve | 2h<br>26m | fabric, batten, dobby |
+| T12 | **A status-bar button opens a short-lived board agent, so board talks need no orch**<br>• An ordinary agent with a board-policy skill loaded, for discussing and filing notes and releasing tasks on go-ahead | [`board-agent-button`](design-board-agent-button.md) | darn · light | Worktree-Create | neve | 3d<br>0m | reed, board, shuttle, orch |
 
-#### Ready (1)
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T12 | **A status-bar button opens a short-lived board agent, so board talks need no orch**<br>• An ordinary agent with a board-policy skill loaded, for discussing and filing notes and releasing tasks on go-ahead | [`board-agent-button`](design-board-agent-button.md) | darn · light |  | 3d<br>0m | reed, board, shuttle, orch |
+_None._
 
 #### Layer A (2)
 
