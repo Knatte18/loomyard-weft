@@ -1,0 +1,15 @@
+---
+round: 1
+focus:
+  - "internal/fabricengine/add.go: the warp and weft branch-exists reads and the weftBranchExists call moved above opts.Hold. Settle whether any decision made from them, such as the adopt and live-pair checks, can go stale before the hold is taken, now that a concurrent create may write the hub's registry in between."
+  - "internal/fabricengine/add.go: the probe goroutines read l and the worktree paths while Add continues under the hold and may mutate. Settle whether every return path, early refusals and the rollback included, still waits for the probes, and whether the order of the three defers (teardown lock, probes.Wait, releaseHold) is sound."
+  - "internal/fabricengine/add.go: the probe errors are now read only after the pre-flight refusals. Settle whether the error precedence and the AdoptOnly, SkipPush and SkipGit behaviour match what the code did before the move, including the warp tip read that used to wait beside the weft probe."
+  - "internal/battenshed/create.go: the HoldPrimeLock error contract. Settle whether PrimeLockBusyError and primeLockFailure survive wrapping by every caller, createRefusal in internal/battencli/wire.go and the Add error path among them, and whether a busy wait still becomes Stuck and a lock failure still a hard error."
+  - "internal/battenshed/create.go: the holds slice is appended by hold and drained in the Call defer. Settle whether a closure that releases early and then holds again, or that holds from a goroutine, leaves the lock released exactly once and never leaked."
+  - "internal/battencli/wire.go and beamfork.go: settle whether every path in the create closure that writes the hub's worktree registry or reads the prime's tree now runs under a hold: the Add call, refuseHeldMember's pair removal, reconcileTaskPair, and the complete-pair skip path. Settle also whether a lock now taken in a different order than Worktree-Teardown takes it can deadlock with the slug's teardown lock."
+  - "Scope against the decision record's Goal: the diff narrows only the prime lock's span. Settle which of the Goal's ideas the diff makes (side-by-side creates), which it does not (a background branch push, one fetch and one remote-refs read per create, no synchronous weft push on the create path, the Open-Window delay), and whether the diff or its commit message claims more than it does."
+  - "Test coverage of the new behaviour: settle whether Hold's ordering relative to the probes, the busy-wait Stuck path, the failure hard-error path, the release-once and release-on-return paths, and the held-member pair removal under the hold each have a test, and whether any new test in internal/battenshed/create_test.go or internal/fabricengine/add_hold_test.go duplicates an existing one."
+  - "docs/overview.md and the doc comments in internal/battenshed/doc.go, create.go, recipe.go and add.go: settle whether each claim about where the lock is taken matches the code as the diff leaves it."
+---
+
+Seeded from the decision record's Goal and the two commits of the review range.
