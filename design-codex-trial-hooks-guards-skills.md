@@ -2,8 +2,6 @@
 
 `codex-trial-hooks-guards-skills` · Task · research, codex, shuttle · running · Drift-Await
 
-Depends on: [`codex-trial-1-fixes`](design-codex-trial-1-fixes.md)
-
 ## Goal
 
 Test parts 3, 4 and 6 of project `codex-engine-trial` against real Codex sessions launched through `lym shuttle`: hooks, shell guards and skills, as `internal/shuttleengine/codexengine/doc.go` describes them.

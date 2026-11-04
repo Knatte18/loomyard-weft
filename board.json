@@ -660,9 +660,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "codex-trial-1-fixes"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Seven cases on real Codex launches against the package doc",
       "body": "## Goal\n\nTest parts 3, 4 and 6 of project `codex-engine-trial` against real Codex sessions launched through `lym shuttle`: hooks, shell guards and skills, as `internal/shuttleengine/codexengine/doc.go` describes them.\n\n## Cases\n\nEach case runs once, on `luna[medium]`, in this task's worktree, unless it names two repeats.\n\n1. Hooks: one `lym shuttle run` turn and one `lym shuttle open` session; SessionStart, UserPromptSubmit, Stop with the reply, and PostToolUse each reach the run's events file or activity stamp, with the payloads named.\n2. PermissionRequest: a turn that asks for an approval reaches the events file, or the report shows why `-a never` never raises one.\n3. Interrupt: a turn interrupted mid-tool-call reads as interrupted through the rollout's newest `turn_aborted`; two repeats.\n4. Context size: the reading from the rollout's newest `token_count` matches the rollout after three turns.\n5. Shell guards: every installed row of the shell guard table, one command each that it must deny; each is denied through the PreToolUse hook with its Codex steer, and the prompt file opens with the rows' notices.\n6. A guard hook that fails to run, by a hook command made to exit non-zero in a throwaway copy, is seen failing open, and the report says how that shows.\n7. Skills: a load of one `\u003cplugin\u003e:\u003cname\u003e` skill under `skill_roots` reads the newest version's `SKILL.md` and is seen loaded in the rollout; a load of a skill under no root is reported unknown.\n\n## Deliver\n\n- A report at `docs/research/codex-engine-trial-hooks-guards-skills-2026-11-03.md`: per case, what was run, what was seen and whether it matches the package doc.\n- Each lym fault as a bug note on the board (`kind: note`, label `bug` and the module labels), one finding per note.\n",
@@ -736,7 +734,6 @@
       "recipe": "darn",
       "depends_on": [
         "worktree-create-serial",
-        "codex-trial-1-fixes",
         "landing-watch-limits"
       ],
       "isolated": false,
@@ -745,30 +742,6 @@
       "created": "2026-11-04T13:30:18Z",
       "revised": "2026-11-04T13:52:00Z",
       "profile": "solid"
-    },
-    {
-      "id": 1096,
-      "handle": "T2",
-      "slug": "codex-trial-1-fixes",
-      "title": "Fix the Codex trial faults: shuttle run takes a model spec, open and codex, a test writing the real home",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "shuttle",
-        "codex",
-        "testkit"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "shuttle run --model takes alias[effort] and picks the engine; open starts codex; a test stops writing ~/.lym/codex; committed-.codex check wording",
-      "body": "Fix the faults the first Codex engine trial found (`docs/research/codex-engine-trial-home-sandbox-2026-11-03.md`), before the next Codex trials run.\n\n## 1. `lym shuttle run --model` takes a model spec\n\n`lym shuttle run --model luna[medium]` passed the string to shuttle.yaml's engine (claude) as a provider model id; Claude stopped with `model_not_found`, the run sat to its timeout and left its strand alive.\n`lym shuttle open --model` already takes a model spec and picks the engine from it.\n\nWanted (operator, 2026-11-04):\n\n- `run --model` takes the same model spec as `open`: `\u003calias\u003e[\u003ceffort\u003e]` or `\u003cengine\u003e:\u003cmodel-id\u003e[\u003ceffort\u003e]`, such as `sonnet[medium]` or `luna[high]`.\n- The model resolver picks the engine from the alias: `sonnet` runs on claude, `luna` on codex, as the model registry says.\n- A model the engine rejects fails the run at once, never a wait to the timeout.\n\n## 2. `lym shuttle open` and the codex engine\n\n`lym shuttle open --role x --model 'luna[medium]'` resolves codex and is refused: `the engine \"codex\" cannot open a session with no prompt`, while `--list-models` lists the codex aliases.\n\nWanted: `open` starts an interactive Codex session with no prompt; where Codex cannot, `open` refuses a codex spec before it creates anything, and `--list-models` and the help say which engines `open` can start.\n\n## 3. A test writes the real `~/.lym/codex`\n\n`TestPrepare_AppendsStandingPassages` in `internal/shuttleengine/codexengine/prepare_test.go` sets `engine.dirs.Board = t.TempDir()` after `newEngine(anchor)`, so the fixture's codex.yaml is no longer found, the config resolves the template's `~/.lym/codex` and `~/.codex`, and each gate run adds `/tmp` roots to the real `lym-trust.json` and `config.toml`.\n\nWanted: the test keeps the fixture's home; no test reaches the operator's home.\nRemove the `/tmp` test roots the test left in `~/.lym/codex` is not part of the change: the next real launch drops roots whose folder is gone.\n\n## 4. The committed-`.codex` check\n\n- The refusal and the Warn fire on a `.codex/rules` folder or `.codex/config.toml` that git does not track; the package doc says \"committed\". Make the code and the doc agree, choosing whichever the safety argument wants.\n- The refusal's way forward ends in \"clear the round's assist model key\", which fits a review round and not a plain `lym shuttle run`; word it for the launch at hand.\n",
-      "status": "done",
-      "created": "2026-11-04T11:50:37Z",
-      "revised": "2026-11-04T13:36:49Z",
-      "profile": "light",
-      "project": "codex-engine-trial"
     },
     {
       "id": 1097,
@@ -788,7 +761,7 @@
       "isolated": false,
       "brief": "One report: turns, calls per turn, gate loops, refusals and batching-hook breaches over up to 20 darn and 5 tapestry runs landed since 2026-11-02",
       "body": "Measure, from transcripts of runs that already landed, the effect of project `agent-turns` as a whole and of the batching breach hook (`batching-breach-nudge`, landed 2026-11-02). One report under `docs/research/`.\n\n## Sample (operator, 2026-11-04)\n\n- At most 20 darn runs and 5 tapestry runs, the most recent that landed since 2026-11-02; darns weigh most, since they run most.\n- No new agent run: the work reads transcripts, run records and hook state of sessions that already ran.\n- The operator chose to measure the hook now rather than wait to 2026-11-16: the report states the window, and whether the hook's `batching_nudge` thresholds changed within it.\n- The report states the sample size beside each number.\n\n## Part 1: agent-turns\n\n- Baseline: the numbers in `agent-turns`' body (`tools/tokencount` and `tools/forkaudit` on `warp-visibility`, `interactive-recipe` and `run-verbs-shared`), and `docs/research/review-turn-audit-2026-11-01` for the review roles.\n- Darn writers: turns, calls per turn, shell edits against Edit-tool edits and gate-loop turns, with the scripts of `docs/research/turn-audit-2026-10-28`.\n- Webster forks: turns per card, calls per turn and peak context, with `tools/forkaudit`; cost with `tools/tokencount`.\n- Review roles: calls per turn, fork wake-up turns and removable turns, with the scripts of `docs/research/review-turn-audit-2026-11-01`, including the fanned Plan reviewer's pre-read turns (`plan-reviewer-batching`) against the baseline.\n- Refused turns: the baseline is 6 turns refused by lym's guards across the five heaviest forks; count them again, and count `awk ... \u003e file \u0026\u0026 mv` edits, the route the shell-edit guard leaves open.\n- Card gate fix loops: before `agent-turns` one Webster fork spent 69 turns fixing its own card gate at 150k to 450k context a turn. Count, per fork, the turns between a failing card gate and its next green one, with their tokens and peak context.\n- Name which members' behaviour shows in the transcripts.\n\n## Part 2: the batching breach hook\n\nThe hook is a PostToolUse hook on Read, Grep, Glob, Edit and Write that adds one `additionalContext` line on a breach (single-lookup chain, Read slice, edit-only chain); its thresholds are `claude.yaml`'s `batching_nudge` block, copied per run into `batching-nudge.json` beside the events file with the nudge count.\n\n- Baseline: the 28-session sample behind `batching-breach-nudge`: single-lookup turns following another single lookup above 150k context, 128 turns and 34.7M context tokens; edits spread over consecutive turns, 39 turns and 15M; of the sample's 147M.\n- Measure the same two figures and every session's context tokens over the sample, extending `tools/tokencount` where it lacks the breach counts; compare by recipe and role.\n- Read how often the hook fired, how often the next message after a firing batched, and how many firings were on a lookup that had to be sequential.\n- Any threshold change the report recommends becomes a note of its own.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Drift-Recheck",
       "created": "2026-11-01T14:16:30Z",
       "revised": "2026-11-04T13:58:25Z",
       "profile": "docs",
