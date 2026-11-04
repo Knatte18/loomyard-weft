@@ -1,0 +1,1627 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 5a64d45d..4ed6d9d0 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -612,7 +612,7 @@ User-facing modules each get one `lym <module>` namespace:
+   `lym loom start` writes a handoff voucher right before it spawns a driver, so a deliberate resume never reads as a crash.
+   A tapestry run's tail is `Webster → Parent-Align → Drift-Verify → Code-Review → Drift-Recheck → Describe → PR-Review → Finalize`, where `Code-Review` is the Code-Perch of `Code-Bouncer`, `Code-Burler-Review` and `Code-Burler-Fix`;
+   a darn run's tail is `Darn-Write → Drift-Verify → Code-Review → Drift-Recheck → Describe → PR-Review → Finalize`, with no `Parent-Align`.
+-  `Drift-Recheck` compares again code committed after `Drift-Verify`'s last compare, its accepted tests against the profile captured when they were accepted, and its Stuck routes back to `Drift-Verify`.
++  `Drift-Recheck` compares again code committed after `Drift-Verify`'s last compare, its accepted tests against the accepted profile built from the output kept when they were accepted, and its Stuck routes back to `Drift-Verify`.
+   The regression rows, `Drift-Baseline` before `Parts-Write` in loom and before `Drift-Await` in darn, `Drift-Await` before `Webster` in loom and before `Darn-Write` in darn, and `Drift-Verify` and `Drift-Recheck` as above, each carry the entry gate `drift.enabled` of the hub-wide `drift.yaml`, so a hub that leaves it off records each of them skipped and spawns or runs nothing for them.
+   `Drift-Baseline` records a scope that `drift.scope` sets, such as one in a task's `run_settings`, with no agent, and spawns its agent to decide the scope only when the key is empty.
+   Each Drift producer also reads `drift.enabled` at every pass, so switching it off, in the hub or in one task's local layer, lets a resume pass a Drift row the run already entered.
+diff --git a/internal/battencli/wire_seams_test.go b/internal/battencli/wire_seams_test.go
+index 8c5ce1b6..fd41c5c3 100644
+--- a/internal/battencli/wire_seams_test.go
++++ b/internal/battencli/wire_seams_test.go
+@@ -146,7 +146,6 @@ var intentionallyNil = map[string]string{
+ 	"Drift.Sleep":                         "loom- and darn-only seam, batten has no Drift row",
+ 	"Drift.VerifyTable":                   "loom- and darn-only seam, batten has no Drift row",
+ 	"Drift.Compare":                       "loom- and darn-only seam, batten has no Drift row",
+-	"Drift.CaptureAccepted":               "loom- and darn-only seam, batten has no Drift row",
+ 	"Drift.CompareAccepted":               "loom- and darn-only seam, batten has no Drift row",
+ 	"Sampler.Spec":                        "sampler-only seam, batten runs no sampler row",
+ 	"Sampler.Sessions":                    "sampler-only seam, batten runs no sampler row",
+diff --git a/internal/driftcli/accept_integration_test.go b/internal/driftcli/accept_integration_test.go
+new file mode 100644
+index 00000000..88f964fb
+--- /dev/null
++++ b/internal/driftcli/accept_integration_test.go
+@@ -0,0 +1,158 @@
++//go:build !windows
++
++// accept_integration_test.go drives the built `lym drift accept` in a hubforge hub pair: the order of its check, capture and record, the skip list its capture is handed, and what it keeps.
++
++package driftcli_test
++
++import (
++	"errors"
++	"fmt"
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/driftengine"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/state"
++	"github.com/Knatte18/loomyard/internal/testkit/lymbin"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestAccept_CapturesBeforeItRecords covers the order check, capture, record: a refusal spends no capture, a capture that does not pass records nothing, and a passing capture keeps its output and records the acceptance.
++// Every capture is handed the scope's skip list.
++func TestAccept_CapturesBeforeItRecords(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const (
++		acceptedTest = "t1"
++		skippedTest  = "slow"
++		keptOutput   = "new\n"
++	)
++	bin := lymbin.Build(t)
++	tests := []struct {
++		name string
++		row  string
++		// holdLock holds the accept lock while the verb runs.
++		holdLock bool
++		// capture is the end of the capture command, after it records that it ran and copies its skip file.
++		capture  string
++		wantErr  []string
++		wantRan  bool
++		wantKept bool
++	}{
++		{name: "a passing capture keeps the output and records the acceptance", row: "Drift-Verify", capture: "mkdir -p {baseline_dir} && echo new > {baseline_dir}/t1.txt", wantRan: true, wantKept: true},
++		{name: "a capture that exits non-zero refuses and records nothing", row: "Drift-Verify", capture: ": {baseline_dir}; exit 1", wantErr: []string{"the capture of t1's output did not pass", "exit 1", "way forward"}, wantRan: true},
++		{name: "a refused check runs no capture", row: "Drift-Await", capture: "mkdir -p {baseline_dir} && echo new > {baseline_dir}/t1.txt", wantErr: []string{"Drift-Verify", "lym loom status"}},
++		{name: "a held accept lock refuses before any capture", row: "Drift-Verify", holdLock: true, capture: "mkdir -p {baseline_dir} && echo new > {baseline_dir}/t1.txt", wantErr: []string{"another accept holds", "lym drift accept again"}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: ".", Pairs: []string{pairSlug}})
++			pair := h.PairCodeWorktree(pairSlug)
++			loc, err := lymcwd.Resolve(pair)
++			if err != nil {
++				t.Fatal(err)
++			}
++			paths := driftengine.NewPaths(loc.AnchorPath())
++
++			work := t.TempDir()
++			ran, skipCopy := filepath.Join(work, "ran"), filepath.Join(work, "skip")
++			command := `touch "$RAN"; cp {skip_file} "$SKIPCOPY"; ` + tt.capture
++			driftYAML := fmt.Sprintf("capture:\n  command: %q\n  timeout_min: 1\n  env:\n    RAN: %q\n    SKIPCOPY: %q\nverify_max_runs: 2\n", command, ran, skipCopy)
++			driftFile := configengine.ConfigFile(h.BoardDir(), "drift")
++			if err := os.MkdirAll(filepath.Dir(driftFile), 0o755); err != nil {
++				t.Fatal(err)
++			}
++			if err := os.WriteFile(driftFile, []byte(driftYAML), 0o644); err != nil {
++				t.Fatal(err)
++			}
++
++			if err := shedrun.WriteSeed(loc, shedrun.SelfRunID, shedrun.Seed{Recipe: shedrun.RecipeTapestry, Driver: shedrun.DriverGo}); err != nil {
++				t.Fatal(err)
++			}
++			lockPath := shedrun.StatusLock(loc, shedrun.SelfRunID)
++			if err := os.MkdirAll(filepath.Dir(lockPath), 0o755); err != nil {
++				t.Fatal(err)
++			}
++			status := shedengine.Status{CurrentProducer: tt.row, State: shedengine.StateBlocked}
++			if err := state.WriteJSON(shedrun.StatusFile(loc, shedrun.SelfRunID), lockPath, status); err != nil {
++				t.Fatal(err)
++			}
++
++			if err := os.MkdirAll(paths.BaselineDir, 0o755); err != nil {
++				t.Fatal(err)
++			}
++			if err := os.WriteFile(filepath.Join(paths.BaselineDir, "t1.txt"), []byte("baseline\n"), 0o644); err != nil {
++				t.Fatal(err)
++			}
++			scope := driftengine.ScopeRecord{Scope: driftengine.ScopePartial, Skip: []string{skippedTest}, RecordedAt: "2026-01-01T00:00:00Z"}
++			if err := driftengine.UpdateScope(paths, func(driftengine.ScopeRecord, bool) (driftengine.ScopeRecord, error) { return scope, nil }); err != nil {
++				t.Fatal(err)
++			}
++
++			if tt.holdLock {
++				held, taken, err := lock.TryAcquireWriteLock(paths.AcceptLock)
++				if err != nil || !taken {
++					t.Fatalf("TryAcquireWriteLock() = %v, %v; want the accept lock taken", taken, err)
++				}
++				t.Cleanup(func() { _ = held.Release() })
++			}
++
++			env := lymRun(t, bin, pair, "accept", acceptedTest, "--reason", "intended")
++
++			if tt.wantErr != nil {
++				if env.OK {
++					t.Fatalf("lym drift accept = ok; want a refusal naming %q", tt.wantErr)
++				}
++				for _, fragment := range tt.wantErr {
++					if !strings.Contains(env.Error, fragment) {
++						t.Errorf("lym drift accept refused with %q; want it to name %q", env.Error, fragment)
++					}
++				}
++			} else {
++				if !env.OK {
++					t.Fatalf("lym drift accept: %s", env.Error)
++				}
++				body, _ := env.Raw["accept"].(map[string]any)
++				if log, _ := body["log"].(string); body["test"] != acceptedTest || log == "" {
++					t.Errorf("lym drift accept result = %v; want test %s and the capture's log", body, acceptedTest)
++				}
++			}
++
++			if _, err := os.Stat(ran); (err == nil) != tt.wantRan {
++				t.Errorf("capture ran = %v (stat err %v); want %v", err == nil, err, tt.wantRan)
++			}
++			if tt.wantRan {
++				got, err := os.ReadFile(skipCopy)
++				if err != nil || strings.TrimSpace(string(got)) != skippedTest {
++					t.Errorf("skip file the capture read = %q, %v; want the scope's skip list %q", got, err, skippedTest)
++				}
++			}
++
++			rec, found, err := driftengine.ReadScope(paths)
++			if err != nil || !found {
++				t.Fatalf("ReadScope() = %v, %v; want the seeded record", found, err)
++			}
++			accepted := len(rec.Accepted) == 1 && rec.Accepted[0].Test == acceptedTest
++			if accepted != tt.wantKept {
++				t.Errorf("scope record accepted = %+v; want the acceptance recorded = %v", rec.Accepted, tt.wantKept)
++			}
++			kept, err := os.ReadFile(filepath.Join(paths.AcceptedTestsDir, "t1.txt"))
++			if tt.wantKept {
++				if err != nil || string(kept) != keptOutput {
++					t.Errorf("kept output = %q, %v; want %q", kept, err, keptOutput)
++				}
++			} else if !errors.Is(err, os.ErrNotExist) {
++				t.Errorf("kept output = %q, %v; want none after a refusal", kept, err)
++			}
++		})
++	}
++}
+diff --git a/internal/driftcli/cli.go b/internal/driftcli/cli.go
+index e81ed2db..5a77f3d7 100644
+--- a/internal/driftcli/cli.go
++++ b/internal/driftcli/cli.go
+@@ -7,6 +7,7 @@ import (
+ 	"fmt"
+ 	"io"
+ 	"os"
++	"path/filepath"
+ 	"testing"
+ 	"time"
+ 
+@@ -15,6 +16,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/driftengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/output"
+@@ -119,29 +121,27 @@ func acceptCmd() *cobra.Command {
+ 		Short:       "accept a drifted test as intended",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceRole},
+ 		Long: `accept records that a test's drift is intended, with the reason, so the
+-compare skips the test from then on. The Drift-Verify agent accepts while its
++compare skips the test from then on. The test is named as its profile file
++under the baseline directory is named, with or without the file's last
++extension (a dotfile has none), and any other name is refused. Before it records the acceptance it captures
++the current code's output, in a gate slot and outside the session's run
++budget, and keeps the test's output as the accepted one: Drift-Verify and
++Drift-Recheck later compare the code against it, so a change to that output
++after the acceptance shows as drift. The Drift-Verify agent accepts while its
+ session runs; under scope full its acceptances stay unruled until the run's
+ parent rules at a decision halt. The parent uses accept at a halt, where it is
+ the only way to re-accept a test it withdrew. A halt that is no decision halt
+ refuses the parent's accept of a withdrawn test or under scope full. With
+ drift.yaml's verify_interactive set, the agent's session has the operator in
+ its pane, and each acceptance it records is the operator's decision: ruled
+-under scope full, and admitted for a withdrawn test.
++under scope full, and admitted for a withdrawn test. A second accept in the
++same worktree is refused while one runs.
+ 
+ Example:
+   lym drift accept parser_roundtrip --reason "the format changed on purpose"`,
+ 		Args: cobra.ExactArgs(1),
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+-			return runVerb(cmd, "accept", func(w *worktree) (any, error) {
+-				st, err := w.verbStatus()
+-				if err != nil {
+-					return nil, err
+-				}
+-				if err := driftengine.Accept(w.paths, st, args[0], reason); err != nil {
+-					return nil, err
+-				}
+-				return map[string]any{"test": args[0]}, nil
+-			})
++			return runVerb(cmd, "accept", func(w *worktree) (any, error) { return acceptTest(cmd, w, args[0], reason) })
+ 		},
+ 	}
+ 	cmd.Flags().StringVar(&reason, "reason", "", "why the drift is intended")
+@@ -149,6 +149,66 @@ Example:
+ 	return cmd
+ }
+ 
++// holdAcceptLock takes the lock that keeps two accepts of one worktree from sharing the accepting directory, and refuses while another accept holds it.
++func holdAcceptLock(p driftengine.Paths) (*lock.FileLock, error) {
++	if err := os.MkdirAll(filepath.Dir(p.AcceptLock), 0o755); err != nil {
++		return nil, fmt.Errorf("drift: create %s: %w", filepath.Dir(p.AcceptLock), err)
++	}
++	held, taken, err := lock.TryAcquireWriteLock(p.AcceptLock)
++	if err != nil {
++		return nil, err
++	}
++	if !taken {
++		return nil, fmt.Errorf("drift accept refused: another accept holds %s; way forward: wait for it to end, then lym drift accept again", p.AcceptLock)
++	}
++	return held, nil
++}
++
++// acceptTest checks the acceptance, captures the current code's output for it and records it, keeping the test's output as the accepted one.
++// It holds the accept lock throughout, and reads the run status again after the capture, which can last minutes, for who the acceptance is by.
++func acceptTest(cmd *cobra.Command, w *worktree, test, reason string) (any, error) {
++	held, err := holdAcceptLock(w.paths)
++	if err != nil {
++		return nil, err
++	}
++	defer held.Release()
++	st, err := w.verbStatus()
++	if err != nil {
++		return nil, err
++	}
++	if err := driftengine.CheckAccept(w.paths, st, test); err != nil {
++		return nil, err
++	}
++	cfg, err := w.config()
++	if err != nil {
++		return nil, err
++	}
++	step, err := cfg.StepWithHubEnv("capture", w.configDirs())
++	if err != nil {
++		return nil, err
++	}
++	scope, _, err := driftengine.ReadScope(w.paths)
++	if err != nil {
++		return nil, err
++	}
++	request := w.captureRequest(step)
++	request.Skip = scope.Skip
++	captured, err := driftengine.RunAcceptanceCapture(cmd.Context(), request, test)
++	if err != nil {
++		return nil, err
++	}
++	if !captured.Passed {
++		return nil, fmt.Errorf("drift accept refused: the capture of %s's output did not pass: %s; way forward: fix what it names, then lym drift accept again", test, captured.Reason)
++	}
++	if st, err = w.verbStatus(); err != nil {
++		return nil, err
++	}
++	if err := driftengine.Accept(w.paths, st, test, reason); err != nil {
++		return nil, err
++	}
++	return map[string]any{"test": test, "log": captured.Log}, nil
++}
++
+ // withdrawCmd returns the `drift withdraw` verb.
+ func withdrawCmd() *cobra.Command {
+ 	return &cobra.Command{
+diff --git a/internal/driftcli/doc.go b/internal/driftcli/doc.go
+index 346c54c7..c09a6cbd 100644
+--- a/internal/driftcli/doc.go
++++ b/internal/driftcli/doc.go
+@@ -27,4 +27,12 @@
+ //
+ // `compare` and `capture --side` each take one run of the agent session's budget from the run counter after the declared step is known, so a verb that fails on an undeclared step spends none.
+ // A spent budget is refused to the agent session with the instruction to write verify-report.md and end its turn, and to a caller at a halt with the instruction to resume the run for a fresh agent.
++//
++// # Accept
++//
++// `accept` takes the accept lock first and refuses while another accept of the worktree holds it, so two accepts never share the accepting directory.
++// It then runs driftengine.CheckAccept, so a refused acceptance, a test name with no profile file under the baseline directory among them, captures nothing.
++// It then runs the acceptance capture of the current code with the scope's skipped tests left out, in a gate slot and outside the session's budget, and a capture that does not pass refuses the acceptance with its reason;
++// it reads the run status again after the capture, which can last minutes, and driftengine.Accept then keeps the test's output from that capture as the accepted one and decides from that status who the acceptance is by.
++// The lock is held until Accept returns.
+ package driftcli
+diff --git a/internal/driftengine/accepted.go b/internal/driftengine/accepted.go
+new file mode 100644
+index 00000000..0343456a
+--- /dev/null
++++ b/internal/driftengine/accepted.go
+@@ -0,0 +1,157 @@
++// accepted.go — the accepted profile: each accepted test's output kept as it was when the test was accepted, and the profile built from the baseline and those outputs.
++//
++// A test is named by its profile files: a file under a profile directory holds a test's profile when its path relative to the directory, with or without its last extension, is the test's name; a dotfile has no extension to drop, so its whole name is the test's name.
++
++package driftengine
++
++import (
++	"errors"
++	"fmt"
++	"io/fs"
++	"os"
++	"path"
++	"path/filepath"
++	"slices"
++)
++
++// testFiles returns the slash-separated paths, relative to dir, of the regular files under dir that hold test's profile, and none when dir does not exist.
++func testFiles(dir, test string) ([]string, error) {
++	if _, err := os.Stat(dir); errors.Is(err, fs.ErrNotExist) {
++		return nil, nil
++	}
++	var files []string
++	err := filepath.WalkDir(dir, func(full string, entry fs.DirEntry, err error) error {
++		if err != nil {
++			return err
++		}
++		if !entry.Type().IsRegular() {
++			return nil
++		}
++		rel, err := filepath.Rel(dir, full)
++		if err != nil {
++			return err
++		}
++		rel = filepath.ToSlash(rel)
++		base := path.Base(rel)
++		ext := path.Ext(base)
++		// A dotfile's whole name is its extension, so it has no stem to be named by.
++		if rel == test || (ext != "" && ext != base && rel[:len(rel)-len(ext)] == test) {
++			files = append(files, rel)
++		}
++		return nil
++	})
++	if err != nil {
++		return nil, fmt.Errorf("drift: read the profile files under %s: %w", dir, err)
++	}
++	return files, nil
++}
++
++// requireBaselineTest refuses an empty test and a test with no profile file under the baseline directory, naming the test and the directory.
++func requireBaselineTest(p Paths, test string) error {
++	if test == "" {
++		return noBaselineTestRefusal(p, `""`)
++	}
++	files, err := testFiles(p.BaselineDir, test)
++	if err != nil {
++		return err
++	}
++	if len(files) == 0 {
++		return noBaselineTestRefusal(p, test)
++	}
++	return nil
++}
++
++// noBaselineTestRefusal is the refusal of an acceptance whose test name, as shown, names no profile file under the baseline directory.
++func noBaselineTestRefusal(p Paths, shown string) error {
++	return fmt.Errorf("drift accept refused: %s is no test of the baseline, since no file under %s is named for it; way forward: name the test as its profile file under that directory is named, with or without the file's extension", shown, p.BaselineDir)
++}
++
++// keepAcceptedOutput moves test's profile files from the accepting directory, where an acceptance capture left them, to the kept outputs, replacing those an earlier acceptance of test kept.
++// The new files are moved before the earlier ones they do not replace are removed, so a failure while moving removes no earlier kept file.
++func keepAcceptedOutput(p Paths, test string) error {
++	staged, err := testFiles(p.AcceptingDir, test)
++	if err != nil {
++		return err
++	}
++	if len(staged) == 0 {
++		return fmt.Errorf("drift accept refused: no output of %s was captured for this acceptance under %s; way forward: lym drift accept <test> --reason <text>, which captures it first", test, p.AcceptingDir)
++	}
++	for _, rel := range staged {
++		kept := filepath.Join(p.AcceptedTestsDir, filepath.FromSlash(rel))
++		if err := os.MkdirAll(filepath.Dir(kept), 0o755); err != nil {
++			return fmt.Errorf("drift: create %s: %w", filepath.Dir(kept), err)
++		}
++		if err := os.Rename(filepath.Join(p.AcceptingDir, filepath.FromSlash(rel)), kept); err != nil {
++			return fmt.Errorf("drift: keep the accepted output of %s: %w", test, err)
++		}
++	}
++	return dropAcceptedOutput(p, test, staged)
++}
++
++// dropAcceptedOutput removes the output an acceptance of test kept, except the files named in except, which are slash-separated paths relative to the kept outputs' directory; a test with none kept is no error.
++func dropAcceptedOutput(p Paths, test string, except []string) error {
++	kept, err := testFiles(p.AcceptedTestsDir, test)
++	if err != nil {
++		return err
++	}
++	for _, rel := range kept {
++		if slices.Contains(except, rel) {
++			continue
++		}
++		if err := os.Remove(filepath.Join(p.AcceptedTestsDir, filepath.FromSlash(rel))); err != nil {
++			return fmt.Errorf("drift: drop the accepted output of %s: %w", test, err)
++		}
++	}
++	return nil
++}
++
++// buildAcceptedProfile rebuilds the accepted profile directory as the baseline with each accepted test's profile files replaced by the output kept at its acceptance.
++// It returns the accepted tests that have no kept output, whose baseline files it leaves out.
++func buildAcceptedProfile(p Paths, scope ScopeRecord) (missing []string, err error) {
++	if err := os.RemoveAll(p.AcceptedDir); err != nil {
++		return nil, fmt.Errorf("drift: empty the accepted profile %s: %w", p.AcceptedDir, err)
++	}
++	if err := os.CopyFS(p.AcceptedDir, os.DirFS(p.BaselineDir)); err != nil {
++		return nil, fmt.Errorf("drift: copy the baseline into the accepted profile %s: %w", p.AcceptedDir, err)
++	}
++	for _, acceptance := range scope.Accepted {
++		baseline, err := testFiles(p.AcceptedDir, acceptance.Test)
++		if err != nil {
++			return nil, err
++		}
++		for _, rel := range baseline {
++			if err := os.Remove(filepath.Join(p.AcceptedDir, filepath.FromSlash(rel))); err != nil {
++				return nil, fmt.Errorf("drift: replace the baseline output of %s: %w", acceptance.Test, err)
++			}
++		}
++		kept, err := testFiles(p.AcceptedTestsDir, acceptance.Test)
++		if err != nil {
++			return nil, err
++		}
++		if len(kept) == 0 {
++			missing = append(missing, acceptance.Test)
++			continue
++		}
++		for _, rel := range kept {
++			if err := copyFile(filepath.Join(p.AcceptedTestsDir, filepath.FromSlash(rel)), filepath.Join(p.AcceptedDir, filepath.FromSlash(rel))); err != nil {
++				return nil, err
++			}
++		}
++	}
++	return missing, nil
++}
++
++// copyFile copies the file at from to to, creating to's directory.
++func copyFile(from, to string) error {
++	data, err := os.ReadFile(from)
++	if err != nil {
++		return fmt.Errorf("drift: read %s: %w", from, err)
++	}
++	if err := os.MkdirAll(filepath.Dir(to), 0o755); err != nil {
++		return fmt.Errorf("drift: create %s: %w", filepath.Dir(to), err)
++	}
++	if err := os.WriteFile(to, data, 0o644); err != nil {
++		return fmt.Errorf("drift: write %s: %w", to, err)
++	}
++	return nil
++}
+diff --git a/internal/driftengine/capture.go b/internal/driftengine/capture.go
+index 66c36b14..31d83c3d 100644
+--- a/internal/driftengine/capture.go
++++ b/internal/driftengine/capture.go
+@@ -256,9 +256,9 @@ func RunSideCapture(ctx context.Context, req CaptureRequest) (SideResult, error)
+ 	return captureInto(ctx, req, nextFree(req.Paths.SideDir, ""), siteSideCapture, "side-capture")
+ }
+ 
+-// AcceptedCapture is how a capture of the accepted profile ended.
+-type AcceptedCapture struct {
+-	// Passed is true when the command exited 0 within its timeout and wrote at least one file.
++// AcceptanceCapture is how the capture of a test's output for its acceptance ended.
++type AcceptanceCapture struct {
++	// Passed is true when the command exited 0 within its timeout and wrote at least one profile file of the test.
+ 	Passed bool
+ 	// Log is the command's log file.
+ 	Log string
+@@ -266,16 +266,16 @@ type AcceptedCapture struct {
+ 	Reason string
+ }
+ 
+-// RunAcceptedCapture captures the accepted profile: the capture command run on the current code into the accepted directory, which it empties first.
+-// A later compare against that profile shows an accepted test whose output changed after its acceptance as drift.
+-// It takes no capture lock and writes no capture record; a command that fails, times out or writes no file is a result that did not pass, not an error.
+-func RunAcceptedCapture(ctx context.Context, req CaptureRequest) (AcceptedCapture, error) {
+-	dir := req.Paths.AcceptedDir
++// RunAcceptanceCapture captures the current code's output for an acceptance of test: the capture command run into the accepting directory, which it empties first.
++// Accept then keeps the test's profile files as the output the acceptance saw, so the accepted profile holds that output and not a later one.
++// It takes no capture lock and writes no capture record; a command that fails, times out or writes no profile file of test is a result that did not pass, not an error.
++func RunAcceptanceCapture(ctx context.Context, req CaptureRequest, test string) (AcceptanceCapture, error) {
++	dir := req.Paths.AcceptingDir
+ 	if err := os.RemoveAll(dir); err != nil {
+-		return AcceptedCapture{}, fmt.Errorf("drift: empty the accepted profile %s: %w", dir, err)
++		return AcceptanceCapture{}, fmt.Errorf("drift: empty the accepting directory %s: %w", dir, err)
+ 	}
+-	side, err := captureInto(ctx, req, dir, siteAcceptedCapture, "accepted-capture")
+-	result := AcceptedCapture{Log: side.Log}
++	side, err := captureInto(ctx, req, dir, siteAcceptanceCapture, "acceptance-capture")
++	result := AcceptanceCapture{Log: side.Log}
+ 	if err != nil {
+ 		return result, err
+ 	}
+@@ -286,12 +286,12 @@ func RunAcceptedCapture(ctx context.Context, req CaptureRequest) (AcceptedCaptur
+ 	case side.ExitCode != 0:
+ 		result.Reason = "exit " + strconv.Itoa(side.ExitCode) + report()
+ 	default:
+-		wrote, err := holdsFile(dir)
++		files, err := testFiles(dir, test)
+ 		if err != nil {
+ 			return result, err
+ 		}
+-		if !wrote {
+-			result.Reason = "exit 0 but wrote no file to " + dir + report()
++		if len(files) == 0 {
++			result.Reason = "exit 0 but wrote no file for " + test + " to " + dir + report()
+ 			break
+ 		}
+ 		result.Passed = true
+diff --git a/internal/driftengine/capture_test.go b/internal/driftengine/capture_test.go
+index b99f32db..9b46821e 100644
+--- a/internal/driftengine/capture_test.go
++++ b/internal/driftengine/capture_test.go
+@@ -1,6 +1,6 @@
+ //go:build !windows
+ 
+-// capture_test.go — tier 1 tests for RunCapture and RunSideCapture, driven by fake sh commands against a temp gate-slot pool.
++// capture_test.go — tier 1 tests for RunCapture, RunSideCapture and RunAcceptanceCapture, driven by fake sh commands against a temp gate-slot pool.
+ 
+ package driftengine
+ 
+@@ -484,83 +484,83 @@ func TestRunCapture(t *testing.T) {
+ 		}
+ 	})
+ 
+-	acceptedRows := []struct {
++	acceptanceRows := []struct {
+ 		name    string
+ 		command string
+-		// stale seeds a file in the accepted directory before the capture.
++		// stale seeds a profile file of t1 in the accepting directory before the capture.
+ 		stale bool
+ 		// timeout, when set, replaces the fixture's timeout.
+ 		timeout    time.Duration
+ 		wantPassed bool
+-		// wantFile is the file the command wrote under the accepted directory.
++		// wantFile is the file the command wrote under the accepting directory.
+ 		wantFile     string
+ 		wantReasonIn []string
+ 	}{
+-		{name: "an accepted capture past the timeout does not pass and names the timeout and the log", command: "sleep 60", timeout: 300 * time.Millisecond, wantReasonIn: []string{"timed out after ", "; it ran in {dir} and printed nothing; log "}},
+-		{name: "an accepted capture writing a file passes and leaves its output under the accepted directory", command: "echo profile > {baseline_dir}/p.json", wantPassed: true, wantFile: "p.json"},
+-		{name: "an accepted capture empties a file left in the accepted directory first", command: "echo profile > {baseline_dir}/p.json", stale: true, wantPassed: true, wantFile: "p.json"},
++		{name: "an acceptance capture past the timeout does not pass and names the timeout and the log", command: "sleep 60", timeout: 300 * time.Millisecond, wantReasonIn: []string{"timed out after ", "; it ran in {dir} and printed nothing; log "}},
++		{name: "an acceptance capture writing the test's file passes and leaves it under the accepting directory", command: "echo profile > {baseline_dir}/t1.json", wantPassed: true, wantFile: "t1.json"},
++		{name: "an acceptance capture empties a file left in the accepting directory first", command: "echo profile > {baseline_dir}/t1.json", stale: true, wantPassed: true, wantFile: "t1.json"},
+ 		{
+-			name:    "an accepted capture exiting non-zero does not pass and names the exit, the directory, the last output and the log",
++			name:    "an acceptance capture exiting non-zero does not pass and names the exit, the directory, the last output and the log",
+ 			command: "echo boom; exit 3", wantReasonIn: []string{"exit 3; it ran in {dir} and its last output was: boom; log "},
+ 		},
+ 		{
+-			name:    "an accepted capture exiting 0 with no file does not pass and names the missing file, the directory and the log",
+-			command: "true", wantReasonIn: []string{"wrote no file", "; it ran in {dir} and printed nothing; log "},
++			name:    "an acceptance capture writing only another test's file does not pass and names the test, the directory and the log",
++			command: "echo profile > {baseline_dir}/t2.json", wantReasonIn: []string{"wrote no file for t1", "; it ran in {dir} and printed nothing; log "},
+ 		},
+-		{name: "a file left in the accepted directory does not make an empty capture pass", command: "true", stale: true, wantReasonIn: []string{"wrote no file"}},
++		{name: "a file of the test left in the accepting directory does not make an empty capture pass", command: "true", stale: true, wantReasonIn: []string{"wrote no file for t1"}},
+ 	}
+-	for _, tt := range acceptedRows {
++	for _, tt := range acceptanceRows {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			f := newCaptureFixture(t, tt.command)
+ 			if tt.timeout > 0 {
+ 				f.req.Timeout = tt.timeout
+ 			}
+-			dir := f.req.Paths.AcceptedDir
++			dir := f.req.Paths.AcceptingDir
+ 			if tt.stale {
+ 				if err := os.MkdirAll(dir, 0o755); err != nil {
+ 					t.Fatalf("MkdirAll() = %v; want nil", err)
+ 				}
+-				if err := os.WriteFile(filepath.Join(dir, "stale.json"), []byte("old"), 0o644); err != nil {
++				if err := os.WriteFile(filepath.Join(dir, "t1.stale"), []byte("old"), 0o644); err != nil {
+ 					t.Fatalf("WriteFile() = %v; want nil", err)
+ 				}
+ 			}
+ 
+-			got, err := RunAcceptedCapture(context.Background(), f.req)
++			got, err := RunAcceptanceCapture(context.Background(), f.req, "t1")
+ 			if err != nil {
+-				t.Fatalf("RunAcceptedCapture() = _, %v; want nil", err)
++				t.Fatalf("RunAcceptanceCapture() = _, %v; want nil", err)
+ 			}
+ 			if got.Passed != tt.wantPassed {
+-				t.Errorf("RunAcceptedCapture() = %+v; want passed = %v", got, tt.wantPassed)
++				t.Errorf("RunAcceptanceCapture() = %+v; want passed = %v", got, tt.wantPassed)
+ 			}
+ 			if tt.wantPassed && got.Reason != "" {
+-				t.Errorf("RunAcceptedCapture() reason = %q; want none for a pass", got.Reason)
++				t.Errorf("RunAcceptanceCapture() reason = %q; want none for a pass", got.Reason)
+ 			}
+ 			for _, want := range tt.wantReasonIn {
+ 				want = strings.ReplaceAll(want, "{dir}", f.req.WorktreeDir)
+ 				if !strings.Contains(got.Reason, want) {
+-					t.Errorf("RunAcceptedCapture() reason = %q; want it to name %q", got.Reason, want)
++					t.Errorf("RunAcceptanceCapture() reason = %q; want it to name %q", got.Reason, want)
+ 				}
+ 			}
+ 			if !tt.wantPassed && !strings.Contains(got.Reason, got.Log) {
+-				t.Errorf("RunAcceptedCapture() reason = %q; want it to name the log %q", got.Reason, got.Log)
++				t.Errorf("RunAcceptanceCapture() reason = %q; want it to name the log %q", got.Reason, got.Log)
+ 			}
+ 			if _, err := os.Stat(got.Log); err != nil {
+-				t.Errorf("accepted capture log %q: %v; want the log file", got.Log, err)
++				t.Errorf("acceptance capture log %q: %v; want the log file", got.Log, err)
+ 			}
+ 			if tt.wantFile != "" {
+ 				if text := readFile(t, filepath.Join(dir, tt.wantFile)); text != "profile\n" {
+-					t.Errorf("accepted/%s = %q; want the command's output", tt.wantFile, text)
++					t.Errorf("accepting/%s = %q; want the command's output", tt.wantFile, text)
+ 				}
+ 			}
+-			if _, err := os.Stat(filepath.Join(dir, "stale.json")); !errors.Is(err, os.ErrNotExist) {
+-				t.Errorf("the stale file is still in the accepted directory")
++			if _, err := os.Stat(filepath.Join(dir, "t1.stale")); !errors.Is(err, os.ErrNotExist) {
++				t.Errorf("the stale file is still in the accepting directory")
+ 			}
+ 			if _, found, _ := ReadCapture(f.req.Paths); found {
+-				t.Errorf("an accepted capture wrote a capture record")
++				t.Errorf("an acceptance capture wrote a capture record")
+ 			}
+ 			if !slotFree(t, f.pool) {
+-				t.Errorf("the slot is still held after the accepted capture")
++				t.Errorf("the slot is still held after the acceptance capture")
+ 			}
+ 		})
+ 	}
+@@ -606,6 +606,17 @@ func TestRunCapture(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("an acceptance capture of a missing dir is refused with the acceptance as its way forward", func(t *testing.T) {
++		t.Parallel()
++		f := newCaptureFixture(t, "true")
++		f.req.Step.Dir = "gone"
++
++		_, err := RunAcceptanceCapture(context.Background(), f.req, "t1")
++		if err == nil || !strings.Contains(err.Error(), "lym config drift --set capture.dir=<dir> from the prime, then lym drift accept") {
++			t.Errorf("RunAcceptanceCapture() = %v; want an error naming the dir write and lym drift accept", err)
++		}
++	})
++
+ 	t.Run("a side capture writes the next numbered directory and leaves the main capture's files", func(t *testing.T) {
+ 		t.Parallel()
+ 		f := newCaptureFixture(t, "echo side > {baseline_dir}/p.json")
+diff --git a/internal/driftengine/deps.go b/internal/driftengine/deps.go
+index 709ef87e..2764ee73 100644
+--- a/internal/driftengine/deps.go
++++ b/internal/driftengine/deps.go
+@@ -46,8 +46,6 @@ type Deps struct {
+ 	VerifyTable func(told VerifyTold) (seatengine.Table, error)
+ 	// Compare runs the mechanical compare against the baseline over the scope's skip list and returns how it ended.
+ 	Compare func(ctx context.Context) (CompareResult, error)
+-	// CaptureAccepted captures the accepted profile on the current code, leaving out the scope's skipped tests alone.
+-	CaptureAccepted func(ctx context.Context) (AcceptedCapture, error)
+ 	// CompareAccepted runs the compare against the accepted profile, leaving out the scope's skipped tests alone, so the accepted tests are compared too.
+ 	CompareAccepted func(ctx context.Context) (CompareResult, error)
+ 	// GateFindingsFile is the file an exhausted gate entry's findings are kept in; empty keeps none.
+diff --git a/internal/driftengine/doc.go b/internal/driftengine/doc.go
+index 2b268e16..67b59406 100644
+--- a/internal/driftengine/doc.go
++++ b/internal/driftengine/doc.go
+@@ -18,10 +18,11 @@
+ // Config.StepWithHubEnv, which every row and verb that runs a command calls, adds the env config module's variables beneath the step's own `env`, so a command runs with the inherited environment, then the hub's and this machine's variables, then the step's, each replacing the one before.
+ //
+ // Paths is the one declarer of every drift path.
+-// The durable directory `_lym/drift/` holds the scope record, the two agents' reports and the logs of every run; the ephemeral directory `.lym/drift/` holds the capture record, the capture lock, the compare marker, the baseline, side-capture and accepted-profile directories, the skip file and the run counter.
++// The durable directory `_lym/drift/` holds the scope record, the two agents' reports and the logs of every run; the ephemeral directory `.lym/drift/` holds the capture record, the capture lock, the compare marker, the accept lock that serializes accepts, the baseline, side-capture and accepted-profile directories, the accepting directory an acceptance captures into, the accepted tests' kept outputs, the skip file and the run counter.
++// A profile file holds a test's profile when its path relative to its profile directory, with or without its last extension, is the test's name; a dotfile has no extension to drop, so its whole name is the test's name.
+ //
+ // Every record is JSON written through `internal/state`, so an unknown key survives a rewrite.
+-// The scope record (`scope.json`) holds the recorded scope (`off`, `partial` or `full`) and its skipped tests, when the baseline was awaited or deferred, a waiver, the accepted and withdrawn tests, the unruled tests the last decision halt named, the time of the last gate halt, the last compare Drift-Verify or Drift-Recheck ran: the baseline's commit, the commit compared, its time and whether it passed, and the commit the accepted profile was captured at.
++// The scope record (`scope.json`) holds the recorded scope (`off`, `partial` or `full`) and its skipped tests, when the baseline was awaited or deferred, a waiver, the accepted and withdrawn tests, the unruled tests the last decision halt named, the time of the last gate halt, the last compare Drift-Verify or Drift-Recheck ran: the baseline's commit, the commit compared, its time and whether it passed, and the commit a compare against the accepted profile last passed at.
+ // Verdict renders that record as the `## Regression check` section a landing carries: the scope and its skipped tests, the baseline's commit, the last compare's result or the waiver, and each accepted test with who accepted it and why; with no scope record it renders nothing and creates no directory.
+ // The capture record (`capture.json`) holds the state of the latest main capture (`running`, `passed` or `failed`) with its pid, HEAD, the tests it skipped, times, exit code, reason, whether it exited 0 with no file written, and log.
+ // CountedCapture decides whether a capture counts as the baseline: a passed record with an `awaited_at` in the scope record.
+@@ -41,7 +42,7 @@
+ // A Stuck over such a record, at Drift-Baseline or Drift-Await, names in place of a plain capture, which would fail the same way, `lym drift scope --scope full` or a shorter `--skip` list followed by `lym drift capture` and `lym loom resume` while HEAD is the branch point, and `lym drift scope --scope off` followed by `lym loom resume`, besides `lym drift defer`.
+ // RunCapture holds no job object of its own, since it also runs in a row's step process; the detached child holds the capture's named job (CaptureJobName) around it.
+ // RunSideCapture takes no lock and writes no record: it runs the same command into the next free numbered directory under the side directory.
+-// RunAcceptedCapture takes no lock and writes no record either: it empties the accepted-profile directory and runs the same command into it, and passes for exit 0 within the timeout with a file written; a reason it did not pass names the directory and the last output as a failed record's does.
++// RunAcceptanceCapture takes no lock and writes no record either: it empties the accepting directory and runs the same command into it for an acceptance of one test, and passes for exit 0 within the timeout with a profile file of that test written; a reason it did not pass names the directory and the last output as a failed record's does.
+ // CheckMainCapture is the main capture's precondition: the run is at Drift-Baseline, or blocked at Drift-Await, HEAD equals the branch point and the tracked tree is clean; each refusal names its way forward.
+ // StartCapture spawns `drift capture-child` detached in the anchored directory, where a lym verb's cwd must be, with breakaway, registers it under the run's processes with role `capture` and returns its pid only once the capture record carries that pid, in any state, since a capture can fail between two reads.
+ // A child that ends or stalls before that record is an error carrying the last JSON error envelope's error from the child's log, folded onto one bounded line, and whether the child marked it with LastingFaultKey as one a fresh start in the same directory cannot change.
+@@ -67,7 +68,10 @@
+ // Accept admits the agent session and a caller at a halt; a running status with the mark closed is the row's own work and refuses, and any other state refuses naming `lym loom resume`.
+ // Under scope full the agent's acceptances are unruled and a caller's are ruled; a withdrawn test, and under scope full any test, is accepted by a caller only at a decision halt, and never by an autonomous agent session.
+ // An acceptance in a session with the operator in its pane is the operator's decision: it is ruled under scope full and may accept a withdrawn test again.
+-// Withdraw moves an accepted test to the withdrawn list, and RunCount reads the agent session's run count.
++// Accept refuses a test with no profile file under the baseline directory, naming the test and the directory, so a typo or a test the capture skipped never joins the compare's skip list.
++// It keeps the test's profile files that RunAcceptanceCapture left in the accepting directory as the output the acceptance saw, and refuses an acceptance with none there; CheckAccept runs Accept's checks writing nothing, so `lym drift accept` refuses before it captures.
++// The verb holds the accept lock, `Paths.AcceptLock`, from before its check until Accept returns and refuses while another accept holds it, so two accepts never share the accepting directory; the engine functions take no part in it.
++// Withdraw moves an accepted test to the withdrawn list and drops its kept output, and RunCount reads the agent session's run count.
+ // Accept and Withdraw clear the accepted profile's commit, since the profile no longer holds the acceptances.
+ // Defer sets awaited_at with deferred while blocked at Drift-Await or at a Drift-Baseline capture halt, and refuses while the capture lock is held.
+ // Waive records a waiver at a blocked Drift-Verify only when no counted capture exists.
+@@ -126,7 +130,8 @@
+ // then the compare runs, its result goes into the scope record, and a pass is Done.
+ // A failing compare resets the run counter at the current HEAD, recording whether `verify_interactive` puts the operator in the session, and spawns one agent whose table gates, in order, on a clean tree, on the verify entry, which runs only once the session committed code, and on a final compare that ends the session when drift remains.
+ // The agent's end closes the mark; a Done records a passed compare at the agent's HEAD and, under scope full, is checked again for unruled acceptances.
+-// A Done with tests accepted first captures the accepted profile at HEAD, unless the scope record names HEAD as its commit already, and records HEAD as its commit; a capture that does not pass is a Stuck naming `lym loom resume`.
++// A Done with tests accepted first builds the accepted profile, the baseline with each accepted test's profile files replaced by the output its acceptance kept, compares HEAD against it with only the scope's skipped tests left out, and records HEAD as its commit, unless the scope record names HEAD as its commit already.
++// So an accepted test whose output moved after its acceptance, such as by a later fix of the agent, shows as drift and is never taken into the profile: that compare failing is a Stuck naming `lym drift accept` again, `lym drift withdraw` or a fix, then `lym loom resume`, as is an acceptance with no kept output.
+ //
+ // A Stuck opens with shedadapters.DecisionHaltPrefix, so the stop chain hands it to the parent, under scope full, for the missing counted capture, and under scope partial for a failing final compare while a test is withdrawn.
+ // Under scope full a decision halt names the unruled acceptances and the parent's ways forward for them, `lym loom resume` to stand by them or `lym drift withdraw <test>` to reject one, and records the names and the time in the scope record; the parent's resume then rules them.
+@@ -141,6 +146,6 @@
+ // Otherwise it compares HEAD again and records the compare: against the baseline while no test is accepted, and against the accepted profile, with only the scope's skipped tests left out, while tests are accepted, so an accepted test whose output differs from the one its acceptance saw shows as drift.
+ // A passing compare is Done; a compare against the accepted profile that passes also records HEAD as the profile's commit.
+ // No compare recorded yet, a dirty tracked tree, an undeclared compare and a compare showing drift are a Stuck, which the recipe routes to Drift-Verify to judge the drift again.
+-// With tests accepted, drift against the accepted profile, or no profile captured at the last compare's commit, lapses every acceptance first, since the compare cannot tell which accepted test changed, so Drift-Verify compares each of them against the baseline again.
++// With tests accepted, drift against the accepted profile, or no compare against the accepted profile that passed at the last compare's commit, lapses every acceptance first, since the compare cannot tell which accepted test changed, so Drift-Verify compares each of them against the baseline again.
+ // Under scope full that includes the parent's rulings: every lapsed acceptance needs the parent's ruling again once Drift-Verify's agent accepts it anew.
+ package driftengine
+diff --git a/internal/driftengine/paths.go b/internal/driftengine/paths.go
+index 621d191c..8b12d25a 100644
+--- a/internal/driftengine/paths.go
++++ b/internal/driftengine/paths.go
+@@ -33,8 +33,14 @@ type Paths struct {
+ 	BaselineDir string
+ 	// SideDir holds the numbered directories of side captures.
+ 	SideDir string
+-	// AcceptedDir is the accepted profile: the capture Drift-Verify takes once its compare passed with tests accepted, which Drift-Recheck compares later code against.
++	// AcceptedDir is the accepted profile: the baseline with each accepted test's profile files replaced by the output kept at its acceptance, which Drift-Verify and Drift-Recheck compare later code against.
+ 	AcceptedDir string
++	// AcceptingDir is where an acceptance's capture writes the current code's output before the accepted test's files are kept.
++	AcceptingDir string
++	// AcceptLock is the lock an accept holds from before its capture until it records the acceptance, so two accepts never share the accepting directory.
++	AcceptLock string
++	// AcceptedTestsDir holds each accepted test's profile files as captured at its acceptance, under their paths in the profile.
++	AcceptedTestsDir string
+ 	// SkipFile is the file naming one skipped test per line.
+ 	SkipFile string
+ 	// Runs is the run counter of the Drift-Verify agent session.
+@@ -46,18 +52,21 @@ func NewPaths(anchorRoot string) Paths {
+ 	durable := filepath.Join(anchorRoot, lymdirs.LymDirName, driftDirName)
+ 	ephemeral := filepath.Join(anchorRoot, lymdirs.DotLymDirName, driftDirName)
+ 	return Paths{
+-		Scope:          filepath.Join(durable, "scope.json"),
+-		BaselineReport: filepath.Join(durable, "baseline.md"),
+-		VerifyReport:   filepath.Join(durable, "verify-report.md"),
+-		LogsDir:        filepath.Join(durable, "logs"),
+-		Capture:        filepath.Join(ephemeral, "capture.json"),
+-		CaptureLock:    filepath.Join(ephemeral, "capture.lock"),
+-		CompareMarker:  filepath.Join(ephemeral, "compare.lock"),
+-		BaselineDir:    filepath.Join(ephemeral, "baseline"),
+-		SideDir:        filepath.Join(ephemeral, "side"),
+-		AcceptedDir:    filepath.Join(ephemeral, "accepted"),
+-		SkipFile:       filepath.Join(ephemeral, "skip.txt"),
+-		Runs:           filepath.Join(ephemeral, "runs.json"),
++		Scope:            filepath.Join(durable, "scope.json"),
++		BaselineReport:   filepath.Join(durable, "baseline.md"),
++		VerifyReport:     filepath.Join(durable, "verify-report.md"),
++		LogsDir:          filepath.Join(durable, "logs"),
++		Capture:          filepath.Join(ephemeral, "capture.json"),
++		CaptureLock:      filepath.Join(ephemeral, "capture.lock"),
++		CompareMarker:    filepath.Join(ephemeral, "compare.lock"),
++		BaselineDir:      filepath.Join(ephemeral, "baseline"),
++		SideDir:          filepath.Join(ephemeral, "side"),
++		AcceptedDir:      filepath.Join(ephemeral, "accepted"),
++		AcceptingDir:     filepath.Join(ephemeral, "accepting"),
++		AcceptLock:       filepath.Join(ephemeral, "accept.lock"),
++		AcceptedTestsDir: filepath.Join(ephemeral, "accepted-tests"),
++		SkipFile:         filepath.Join(ephemeral, "skip.txt"),
++		Runs:             filepath.Join(ephemeral, "runs.json"),
+ 	}
+ }
+ 
+diff --git a/internal/driftengine/recheck.go b/internal/driftengine/recheck.go
+index 1f1e4b67..acc98618 100644
+--- a/internal/driftengine/recheck.go
++++ b/internal/driftengine/recheck.go
+@@ -33,7 +33,7 @@ func NewDriftRecheck(name string, deps Deps) *DriftRecheck {
+ // Otherwise it compares the code again: against the accepted profile while tests are accepted, which checks each accepted test against the output its acceptance saw, and against the baseline while none is.
+ // A passing compare is Done and records the compare at HEAD.
+ // A pass with no compare recorded yet, a dirty tracked tree, an undeclared compare or a compare that shows drift is a Stuck.
+-// With tests accepted, a compare against the accepted profile that shows drift, or no accepted profile captured at the last compare's commit, first lapses every acceptance, since the compare cannot tell which accepted test changed, so Drift-Verify compares them again.
++// With tests accepted, a compare against the accepted profile that shows drift, or no compare against the accepted profile that passed at the last compare's commit, first lapses every acceptance, since the compare cannot tell which accepted test changed, so Drift-Verify compares them again.
+ func (p *DriftRecheck) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	d := p.deps
+ 	err := requireSeams(p.name,
+@@ -118,7 +118,7 @@ func (p *DriftRecheck) pass(ctx context.Context) (shedengine.Outcome, shedengine
+ 		if err := p.lapse(); err != nil {
+ 			return "", shedengine.OutputPointer{}, err
+ 		}
+-		return back(fmt.Sprintf("no accepted profile was captured at %s, the commit of the last compare, so the acceptances of %s lapse", scope.ComparedHead, tests))
++		return back(fmt.Sprintf("no compare against the accepted profile passed at %s, the commit of the last compare, so the acceptances of %s lapse", scope.ComparedHead, tests))
+ 	}
+ 	result, err := d.CompareAccepted(ctx)
+ 	if err != nil {
+diff --git a/internal/driftengine/recheck_test.go b/internal/driftengine/recheck_test.go
+index a56a5f57..dd7d9d60 100644
+--- a/internal/driftengine/recheck_test.go
++++ b/internal/driftengine/recheck_test.go
+@@ -44,7 +44,7 @@ func comparedScope() ScopeRecord {
+ 	}
+ }
+ 
+-// acceptingScope returns comparedScope with t1 and t2 accepted and the accepted profile captured at profileHead.
++// acceptingScope returns comparedScope with t1 and t2 accepted and a compare against the accepted profile last passed at profileHead.
+ func acceptingScope(profileHead string) ScopeRecord {
+ 	scope := comparedScope()
+ 	scope.Accepted = []Acceptance{{Test: "t1", By: AcceptedByAgent}, {Test: "t2", By: AcceptedByAgent}}
+@@ -233,7 +233,7 @@ func TestDriftRecheck(t *testing.T) {
+ 		})
+ 	})
+ 
+-	t.Run("with tests accepted and the profile captured at the compared head", func(t *testing.T) {
++	t.Run("with tests accepted and the profile compare last passed at the compared head", func(t *testing.T) {
+ 		t.Parallel()
+ 
+ 		t.Run("a passing compare against the accepted profile is Done and moves both heads to HEAD", func(t *testing.T) {
+@@ -269,12 +269,12 @@ func TestDriftRecheck(t *testing.T) {
+ 		})
+ 	})
+ 
+-	t.Run("tests accepted with the profile captured at another commit lapse with no compare", func(t *testing.T) {
++	t.Run("tests accepted with the profile compare last passed at another commit lapse with no compare", func(t *testing.T) {
+ 		t.Parallel()
+ 		for _, profileHead := range []string{"", "older"} {
+ 			scope := acceptingScope(profileHead)
+ 			f := newRecheckFixture(t, &scope)
+-			f.requireOutcome(shedengine.Stuck, "no accepted profile", recheckComparedHead, "`t1`", "`t2`", "lapse")
++			f.requireOutcome(shedengine.Stuck, "no compare against the accepted profile passed", recheckComparedHead, "`t1`", "`t2`", "lapse")
+ 			f.requireCompares(0, 0)
+ 			f.requireCommittedOnce()
+ 			got := f.scope()
+diff --git a/internal/driftengine/records.go b/internal/driftengine/records.go
+index ecdb1959..a3e7a1dc 100644
+--- a/internal/driftengine/records.go
++++ b/internal/driftengine/records.go
+@@ -100,7 +100,7 @@ type ScopeRecord struct {
+ 	ComparedAt string `json:"compared_at"`
+ 	// ComparePassed reports whether the last compare showed no drift.
+ 	ComparePassed bool `json:"compare_passed"`
+-	// AcceptedProfileHead is the commit the accepted profile was captured at, and empty while no profile holds the current acceptances: an acceptance, a withdrawal and a lapse clear it.
++	// AcceptedProfileHead is the commit a compare against the accepted profile last passed at, and empty while no profile holds the current acceptances: an acceptance, a withdrawal and a lapse clear it.
+ 	AcceptedProfileHead string `json:"accepted_profile_head"`
+ }
+ 
+diff --git a/internal/driftengine/seats.go b/internal/driftengine/seats.go
+index 2a4296e1..c7f198d8 100644
+--- a/internal/driftengine/seats.go
++++ b/internal/driftengine/seats.go
+@@ -55,11 +55,16 @@ const (
+ 	operatorVerifyMode   = "The operator is present at your pane and decides each drift: you present it, discuss it and record what the operator decides.\n" +
+ 		"Ask in plain text in the pane and wait for the operator's typed reply; never call the `AskUserQuestion` tool, whose modal dialog the run cannot drive."
+ 	autonomousVerifyJudging = "Accept a drifted test with `lym drift accept <test> --reason <text>`, giving the reason the drift is intended.\n" +
++		acceptanceKeepsOutput +
+ 		"The run's parent can withdraw an acceptance; a withdrawn test is refused to you, so fix its drift or report it in the report."
+ 	operatorVerifyJudging = "Present the drift to the operator one test at a time: for each quantity that drifted, its baseline value, its current value and the size of the deviation, then the baseline report's expectation for the test and your own judgment with its reason.\n" +
+ 		"Discuss it with the operator, who decides whether the test's drift is accepted or fixed, and go on to the next test only once the operator has decided.\n" +
+ 		"Record each acceptance the operator decides with `lym drift accept <test> --reason <text>`, giving the operator's reason, and never accept a test the operator has not decided on.\n" +
++		acceptanceKeepsOutput +
+ 		"Each test the operator decides to fix, you fix in Step 3."
++	// acceptanceKeepsOutput tells either verify agent how an acceptance names its test and what output it keeps.
++	acceptanceKeepsOutput = "Name the test as its profile file under the baseline directory is named, with or without the file's extension; any other name is refused.\n" +
++		"The acceptance captures the test's output first and keeps it as the accepted output, so accept a test only once its output is final: a later change to that output halts the row.\n"
+ )
+ 
+ // subjectFields are the told values the task's subject is read from.
+diff --git a/internal/driftengine/steprun.go b/internal/driftengine/steprun.go
+index 603e1fb7..ccd701b5 100644
+--- a/internal/driftengine/steprun.go
++++ b/internal/driftengine/steprun.go
+@@ -30,10 +30,10 @@ const stampLayout = "20060102T150405.000Z"
+ 
+ // The sites a drift command runs from, which label its slot holder and wait record and word the way forward of a refused dir.
+ const (
+-	siteCapture         = "drift capture"
+-	siteSideCapture     = "drift side capture"
+-	siteAcceptedCapture = "drift accepted capture"
+-	siteCompare         = "drift compare"
++	siteCapture           = "drift capture"
++	siteSideCapture       = "drift side capture"
++	siteAcceptanceCapture = "drift acceptance capture"
++	siteCompare           = "drift compare"
+ )
+ 
+ // stepRun is one drift command to run.
+@@ -247,6 +247,8 @@ func missingDirRefusal(run stepRun, cause error) error {
+ 		again = "lym drift capture and lym loom resume"
+ 	case siteSideCapture:
+ 		again = "lym drift capture --side"
++	case siteAcceptanceCapture:
++		again = "lym drift accept"
+ 	}
+ 	return fmt.Errorf("drift: the %s command cannot start: %s.yaml key %q: %w; way forward: lym config drift --set %s.dir=<dir> from the prime, then %s", run.Site, configModule, run.Name+".dir", cause, run.Name, again)
+ }
+diff --git a/internal/driftengine/verbs.go b/internal/driftengine/verbs.go
+index 6b6fe0c4..3ae29423 100644
+--- a/internal/driftengine/verbs.go
++++ b/internal/driftengine/verbs.go
+@@ -119,34 +119,19 @@ func dropCaptureSkipping(p Paths, skip []string) error {
+ // a running status with the mark closed is the row's own work, and any other state is an error or a transient stop that only lym loom resume settles.
+ // A session with the operator in its pane records the operator's decision, which is ruled under scope full and may accept a withdrawn test again.
+ // Otherwise a withdrawn test is accepted again only by a caller at a decision halt, and under scope full so is every test a caller accepts.
++// A test with no profile file under the baseline directory is refused, naming the test and the directory.
++// The test's profile files that RunAcceptanceCapture left in the accepting directory are kept as the output the acceptance saw, replacing any an earlier acceptance kept, and an acceptance with none there is refused.
+ func Accept(p Paths, st VerbStatus, test, reason string) error {
+-	if st.Status.CurrentProducer != verifyRow {
+-		return wrongRow("accept", verifyRow, st)
+-	}
+-	by := AcceptedByCaller
+-	switch {
+-	case st.AtOperatorSession():
+-		by = AcceptedByOperator
+-	case st.AtAgentSession():
+-		by = AcceptedByAgent
+-	case st.Status.State == shedengine.StateBlocked:
+-	case st.Status.State == shedengine.StateRunning:
+-		return errors.New("drift accept refused: the row is running its own compare and checks; way forward: wait for the row's halt (lym loom status shows it), then accept there under the parent's ruling")
+-	default:
+-		return fmt.Errorf("drift accept refused: the run is %s at %s, and no acceptance settles that; way forward: lym loom resume", st.Status.State, verifyRow)
++	by, decisionHalt, err := acceptingCaller(st)
++	if err != nil {
++		return err
+ 	}
+-	decisionHalt := st.AtDecisionHalt()
+-
+ 	return UpdateScope(p, func(cur ScopeRecord, found bool) (ScopeRecord, error) {
+-		if !found {
+-			return cur, errNoScope
++		if err := admitAcceptance(p, cur, found, by, decisionHalt, test); err != nil {
++			return cur, err
+ 		}
+-		withdrawn := slices.Contains(cur.Withdrawn, test)
+-		switch {
+-		case withdrawn && by == AcceptedByAgent:
+-			return cur, fmt.Errorf("drift accept refused: the run's parent withdrew %s; way forward: fix its drift or report it in verify-report.md; only the parent re-accepts it at a decision halt", test)
+-		case by == AcceptedByCaller && !decisionHalt && (withdrawn || cur.Scope == ScopeFull):
+-			return cur, fmt.Errorf("drift accept refused: %s needs the parent's ruling; way forward: re-accept it at a decision halt, which lym loom status shows", test)
++		if err := keepAcceptedOutput(p, test); err != nil {
++			return cur, err
+ 		}
+ 
+ 		acceptance := Acceptance{Test: test, Reason: reason, By: by, At: stamp(time.Now())}
+@@ -164,13 +149,60 @@ func Accept(p Paths, st VerbStatus, test, reason string) error {
+ 	})
+ }
+ 
+-// Withdraw moves an accepted test back to the compare, so its drift is judged again.
++// CheckAccept runs every check Accept runs before it keeps the test's output, and writes nothing, so a caller refuses an acceptance before it captures that output.
++func CheckAccept(p Paths, st VerbStatus, test string) error {
++	by, decisionHalt, err := acceptingCaller(st)
++	if err != nil {
++		return err
++	}
++	cur, found, err := ReadScope(p)
++	if err != nil {
++		return err
++	}
++	return admitAcceptance(p, cur, found, by, decisionHalt, test)
++}
++
++// acceptingCaller returns who an acceptance at st is by and whether st is a decision halt, or the refusal of an acceptance at st.
++func acceptingCaller(st VerbStatus) (by string, decisionHalt bool, err error) {
++	if st.Status.CurrentProducer != verifyRow {
++		return "", false, wrongRow("accept", verifyRow, st)
++	}
++	switch {
++	case st.AtOperatorSession():
++		return AcceptedByOperator, false, nil
++	case st.AtAgentSession():
++		return AcceptedByAgent, false, nil
++	case st.Status.State == shedengine.StateBlocked:
++		return AcceptedByCaller, st.AtDecisionHalt(), nil
++	case st.Status.State == shedengine.StateRunning:
++		return "", false, errors.New("drift accept refused: the row is running its own compare and checks; way forward: wait for the row's halt (lym loom status shows it), then accept there under the parent's ruling")
++	}
++	return "", false, fmt.Errorf("drift accept refused: the run is %s at %s, and no acceptance settles that; way forward: lym loom resume", st.Status.State, verifyRow)
++}
++
++// admitAcceptance returns the refusal of an acceptance of test by by against the scope record cur, or nil when it is admitted.
++func admitAcceptance(p Paths, cur ScopeRecord, found bool, by string, decisionHalt bool, test string) error {
++	if !found {
++		return errNoScope
++	}
++	withdrawn := slices.Contains(cur.Withdrawn, test)
++	switch {
++	case withdrawn && by == AcceptedByAgent:
++		return fmt.Errorf("drift accept refused: the run's parent withdrew %s; way forward: fix its drift or report it in verify-report.md; only the parent re-accepts it at a decision halt", test)
++	case by == AcceptedByCaller && !decisionHalt && (withdrawn || cur.Scope == ScopeFull):
++		return fmt.Errorf("drift accept refused: %s needs the parent's ruling; way forward: re-accept it at a decision halt, which lym loom status shows", test)
++	}
++	return requireBaselineTest(p, test)
++}
++
++// Withdraw moves an accepted test back to the compare, so its drift is judged again, and drops the output its acceptance kept.
+ // It is admitted only at Drift-Verify and refuses a test that is not accepted.
++// The output is dropped once the scope record is written, so a failed drop leaves a record that already compares the test again.
+ func Withdraw(p Paths, st VerbStatus, test string) error {
+ 	if st.Status.CurrentProducer != verifyRow {
+ 		return wrongRow("withdraw", verifyRow, st)
+ 	}
+-	return UpdateScope(p, func(cur ScopeRecord, found bool) (ScopeRecord, error) {
++	err := UpdateScope(p, func(cur ScopeRecord, found bool) (ScopeRecord, error) {
+ 		if !found {
+ 			return cur, errNoScope
+ 		}
+@@ -183,6 +215,10 @@ func Withdraw(p Paths, st VerbStatus, test string) error {
+ 		cur.AcceptedProfileHead = ""
+ 		return cur, nil
+ 	})
++	if err != nil {
++		return err
++	}
++	return dropAcceptedOutput(p, test, nil)
+ }
+ 
+ // Defer settles the baseline wait with no baseline taken, so the run goes on to code changes.
+diff --git a/internal/driftengine/verbs_test.go b/internal/driftengine/verbs_test.go
+index 256e87af..7644f636 100644
+--- a/internal/driftengine/verbs_test.go
++++ b/internal/driftengine/verbs_test.go
+@@ -3,6 +3,7 @@
+ package driftengine
+ 
+ import (
++	"errors"
+ 	"os"
+ 	"path/filepath"
+ 	"reflect"
+@@ -47,6 +48,38 @@ func mustReadScope(t *testing.T, p Paths) (ScopeRecord, bool) {
+ 	return rec, found
+ }
+ 
++// writeProfileFile writes text to the profile file rel under dir, creating its directory.
++func writeProfileFile(t *testing.T, dir, rel, text string) {
++	t.Helper()
++	file := filepath.Join(dir, filepath.FromSlash(rel))
++	if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
++		t.Fatalf("MkdirAll() = %v; want nil", err)
++	}
++	if err := os.WriteFile(file, []byte(text), 0o644); err != nil {
++		t.Fatalf("WriteFile() = %v; want nil", err)
++	}
++}
++
++// stageAcceptance writes test's profile file rel into the baseline and the output an acceptance capture leaves in the accepting directory, as `lym drift accept` captures it before Accept.
++func stageAcceptance(t *testing.T, p Paths, rel, output string) {
++	t.Helper()
++	writeProfileFile(t, p.BaselineDir, rel, "baseline\n")
++	writeProfileFile(t, p.AcceptingDir, rel, output)
++}
++
++// keptOutput returns the text of the output an acceptance kept under rel, and "" when none is kept.
++func keptOutput(t *testing.T, p Paths, rel string) string {
++	t.Helper()
++	data, err := os.ReadFile(filepath.Join(p.AcceptedTestsDir, filepath.FromSlash(rel)))
++	if errors.Is(err, os.ErrNotExist) {
++		return ""
++	}
++	if err != nil {
++		t.Fatalf("ReadFile() = %v; want nil", err)
++	}
++	return string(data)
++}
++
+ // requireRefusal checks that err names every fragment of want and that the scope record still reads as it did before.
+ func requireRefusal(t *testing.T, err error, want []string, p Paths, before *ScopeRecord) {
+ 	t.Helper()
+@@ -182,7 +215,7 @@ func TestRecordScope(t *testing.T) {
+ 	})
+ }
+ 
+-// TestAcceptWithdraw covers Accept's callers and rulings, Withdraw, and CheckVerifyRow's admissions.
++// TestAcceptWithdraw covers Accept's callers and rulings, its test names and kept outputs, CheckAccept, Withdraw, and CheckVerifyRow's admissions.
+ func TestAcceptWithdraw(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -226,9 +259,13 @@ func TestAcceptWithdraw(t *testing.T) {
+ 			t.Run(tt.name, func(t *testing.T) {
+ 				t.Parallel()
+ 				p := seedScope(t, tt.before)
++				stageAcceptance(t, p, "t1.txt", "accepted\n")
+ 				err := Accept(p, tt.st, "t1", "intended")
+ 				if tt.wantErr != nil {
+ 					requireRefusal(t, err, tt.wantErr, p, tt.before)
++					if kept := keptOutput(t, p, "t1.txt"); kept != "" {
++						t.Errorf("kept output = %q; want none after a refusal", kept)
++					}
+ 					return
+ 				}
+ 				if err != nil {
+@@ -248,6 +285,119 @@ func TestAcceptWithdraw(t *testing.T) {
+ 				if got.AcceptedProfileHead != "" {
+ 					t.Errorf("accepted_profile_head = %q; want it cleared by the acceptance", got.AcceptedProfileHead)
+ 				}
++				if kept := keptOutput(t, p, "t1.txt"); kept != "accepted\n" {
++					t.Errorf("kept output = %q; want the output the acceptance captured", kept)
++				}
++				if _, err := os.Stat(filepath.Join(p.AcceptingDir, "t1.txt")); !errors.Is(err, os.ErrNotExist) {
++					t.Errorf("the captured output is still in the accepting directory: %v", err)
++				}
++			})
++		}
++	})
++
++	t.Run("Accept names a test by its profile file and keeps the output captured for it", func(t *testing.T) {
++		t.Parallel()
++		agent := statusAt("Drift-Verify", shedengine.StateRunning, "", true)
++		tests := []struct {
++			name string
++			// baseline and staged are the profile files under the baseline and the accepting directory.
++			baseline, staged []string
++			test             string
++			// wantErr names the refusal's fragments; "{baseline}" stands for the baseline directory.
++			wantErr  []string
++			wantKept string
++		}{
++			{name: "a name without the file's extension", baseline: []string{"t1.txt"}, staged: []string{"t1.txt"}, test: "t1", wantKept: "t1.txt"},
++			{name: "a name with the file's extension", baseline: []string{"t1.txt"}, staged: []string{"t1.txt"}, test: "t1.txt", wantKept: "t1.txt"},
++			{name: "a nested file named by its relative path", baseline: []string{"group/t1.txt"}, staged: []string{"group/t1.txt"}, test: "group/t1", wantKept: "group/t1.txt"},
++			{name: "a typo is refused naming the name and the baseline directory", baseline: []string{"t1.txt"}, staged: []string{"t1.txt"}, test: "t11", wantErr: []string{"t11 is no test of the baseline", "{baseline}", "way forward"}},
++			{name: "a nested file's bare name is refused", baseline: []string{"group/t1.txt"}, staged: []string{"group/t1.txt"}, test: "t1", wantErr: []string{"t1 is no test of the baseline"}},
++			{name: "an empty name is refused against a top-level dotfile", baseline: []string{".gitkeep"}, staged: []string{".gitkeep"}, test: "", wantErr: []string{`"" is no test of the baseline`, "{baseline}"}},
++			{name: "a directory name is refused against a nested dotfile", baseline: []string{"group/.gitkeep"}, staged: []string{"group/.gitkeep"}, test: "group/", wantErr: []string{"group/ is no test of the baseline"}},
++			{name: "a name is the file's stem under a second extension", baseline: []string{"t1.txt.bak"}, staged: []string{"t1.txt.bak"}, test: "t1.txt", wantKept: "t1.txt.bak"},
++			{name: "a name two extensions short is refused", baseline: []string{"t1.txt.bak"}, staged: []string{"t1.txt.bak"}, test: "t1", wantErr: []string{"t1 is no test of the baseline"}},
++			{name: "an empty baseline refuses every name", staged: []string{"t1.txt"}, test: "t1", wantErr: []string{"t1 is no test of the baseline", "{baseline}"}},
++			{name: "an acceptance with no captured output is refused", baseline: []string{"t1.txt"}, test: "t1", wantErr: []string{"no output of t1 was captured", "lym drift accept"}},
++			{name: "a captured output of another test is refused", baseline: []string{"t1.txt"}, staged: []string{"t2.txt"}, test: "t1", wantErr: []string{"no output of t1 was captured"}},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				before := &ScopeRecord{Scope: ScopePartial}
++				p := seedScope(t, before)
++				for _, rel := range tt.baseline {
++					writeProfileFile(t, p.BaselineDir, rel, "baseline\n")
++				}
++				for _, rel := range tt.staged {
++					writeProfileFile(t, p.AcceptingDir, rel, "accepted\n")
++				}
++				err := Accept(p, agent, tt.test, "intended")
++				if tt.wantErr != nil {
++					want := slices.Clone(tt.wantErr)
++					for i := range want {
++						want[i] = strings.ReplaceAll(want[i], "{baseline}", p.BaselineDir)
++					}
++					requireRefusal(t, err, want, p, before)
++					return
++				}
++				if err != nil {
++					t.Fatalf("Accept(%q) = %v; want nil", tt.test, err)
++				}
++				if kept := keptOutput(t, p, tt.wantKept); kept != "accepted\n" {
++					t.Errorf("kept output %s = %q; want the captured output", tt.wantKept, kept)
++				}
++			})
++		}
++
++		t.Run("a second acceptance replaces the output the first kept", func(t *testing.T) {
++			t.Parallel()
++			p := seedScope(t, &ScopeRecord{Scope: ScopePartial})
++			stageAcceptance(t, p, "t1.txt", "first\n")
++			if err := Accept(p, agent, "t1", "intended"); err != nil {
++				t.Fatalf("Accept() = %v; want nil", err)
++			}
++			writeProfileFile(t, p.AcceptingDir, "t1.json", "second\n")
++			if err := Accept(p, agent, "t1", "intended again"); err != nil {
++				t.Fatalf("Accept() again = %v; want nil", err)
++			}
++			if old := keptOutput(t, p, "t1.txt"); old != "" {
++				t.Errorf("kept t1.txt = %q; want the first acceptance's output dropped", old)
++			}
++			if kept := keptOutput(t, p, "t1.json"); kept != "second\n" {
++				t.Errorf("kept t1.json = %q; want the second acceptance's output", kept)
++			}
++		})
++	})
++
++	t.Run("CheckAccept refuses as Accept does and writes nothing", func(t *testing.T) {
++		t.Parallel()
++		agent := statusAt("Drift-Verify", shedengine.StateRunning, "", true)
++		tests := []struct {
++			name    string
++			before  *ScopeRecord
++			test    string
++			wantErr []string
++		}{
++			{name: "an admitted acceptance with no output captured yet", before: scoped(ScopePartial), test: "t1"},
++			{name: "a typo", before: scoped(ScopePartial), test: "t11", wantErr: []string{"t11 is no test of the baseline"}},
++			{name: "a withdrawn test", before: withdrawn(ScopePartial), test: "t1", wantErr: []string{"the run's parent withdrew t1"}},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				p := seedScope(t, tt.before)
++				writeProfileFile(t, p.BaselineDir, "t1.txt", "baseline\n")
++				err := CheckAccept(p, agent, tt.test)
++				if tt.wantErr != nil {
++					requireRefusal(t, err, tt.wantErr, p, tt.before)
++					return
++				}
++				if err != nil {
++					t.Fatalf("CheckAccept() = %v; want nil", err)
++				}
++				if got, _ := mustReadScope(t, p); !reflect.DeepEqual(got, *tt.before) {
++					t.Errorf("scope record = %+v after CheckAccept; want %+v", got, *tt.before)
++				}
+ 			})
+ 		}
+ 	})
+@@ -260,9 +410,17 @@ func TestAcceptWithdraw(t *testing.T) {
+ 			t.Parallel()
+ 			before := &ScopeRecord{Scope: ScopePartial, Skip: []string{"s"}, Accepted: []Acceptance{{Test: "t1"}, {Test: "t2"}}, AcceptedProfileHead: "aaa"}
+ 			p := seedScope(t, before)
++			writeProfileFile(t, p.AcceptedTestsDir, "t1.txt", "accepted\n")
++			writeProfileFile(t, p.AcceptedTestsDir, "t2.txt", "accepted\n")
+ 			if err := Withdraw(p, running, "t1"); err != nil {
+ 				t.Fatalf("Withdraw() = %v; want nil", err)
+ 			}
++			if kept := keptOutput(t, p, "t1.txt"); kept != "" {
++				t.Errorf("kept output of t1 = %q; want it dropped by the withdrawal", kept)
++			}
++			if kept := keptOutput(t, p, "t2.txt"); kept != "accepted\n" {
++				t.Errorf("kept output of t2 = %q; want it kept", kept)
++			}
+ 			got, _ := mustReadScope(t, p)
+ 			if want := []string{"s", "t2"}; !slices.Equal(SkipList(got), want) {
+ 				t.Errorf("SkipList() = %v; want %v, so t1 is compared again", SkipList(got), want)
+diff --git a/internal/driftengine/verify.go b/internal/driftengine/verify.go
+index 21b9888a..99bde276 100644
+--- a/internal/driftengine/verify.go
++++ b/internal/driftengine/verify.go
+@@ -67,7 +67,8 @@ func NewDriftVerify(name string, row Row, verify shuttleengine.GateEntry, deps D
+ // It halts for the parent on an unruled acceptance under scope full and on a missing baseline.
+ // It checks that the tree is clean and that the agent's commits pass the verify gate, then runs the compare.
+ // A passing compare is Done; a failing one spawns one agent, with the operator in its pane under verify_interactive, whose table gates on a clean tree, on the verify entry and on a final compare.
+-// A Done with tests accepted first captures the accepted profile at HEAD, unless one was captured there since the last acceptance, and a capture that does not pass is a Stuck naming lym loom resume.
++// A Done with tests accepted first builds the accepted profile from the baseline and the output each acceptance kept and compares HEAD against it, unless such a compare passed at HEAD since the last acceptance;
++// an acceptance with no kept output, and a compare that does not pass, are a Stuck naming the ways forward.
+ // Every Stuck under scope full, and under scope partial the missing-baseline halt and a failing final compare while a test is withdrawn, opens with shedadapters.DecisionHaltPrefix.
+ func (p *DriftVerify) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	d := p.deps
+@@ -80,7 +81,7 @@ func (p *DriftVerify) Call(ctx context.Context) (shedengine.Outcome, shedengine.
+ 		seam{"Seats", d.Seats != nil},
+ 		seam{"VerifyTable", d.VerifyTable != nil},
+ 		seam{"Compare", d.Compare != nil},
+-		seam{"CaptureAccepted", d.CaptureAccepted != nil},
++		seam{"CompareAccepted", d.CompareAccepted != nil},
+ 	)
+ 	if err == nil && p.verify.Gate == nil {
+ 		err = fmt.Errorf("drift: %s is wired without a verify gate entry", p.name)
+@@ -196,8 +197,8 @@ func (p *DriftVerify) pass(ctx context.Context) (shedengine.Outcome, shedengine.
+ }
+ 
+ // keepAcceptedProfile ends a pass whose compare passed as a Done carrying pointer.
+-// With tests accepted and no accepted profile captured at HEAD since their acceptance, it first captures one and records HEAD as its commit, so a later compare can tell an accepted test whose output changed.
+-// A capture that does not pass is a Stuck naming its reason and lym loom resume.
++// With tests accepted and no compare against the accepted profile passed at HEAD since their acceptance, it first builds the profile from the baseline and the output each acceptance kept, compares HEAD against it and records HEAD as its commit, so an accepted test whose output changed after its acceptance shows, now and in a later compare.
++// An acceptance with no kept output, and a compare that does not pass, are a Stuck naming the ways forward, and record no commit.
+ func (p *DriftVerify) keepAcceptedProfile(ctx context.Context, pointer shedengine.OutputPointer) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	scope, _, err := ReadScope(p.deps.Paths)
+ 	if err != nil {
+@@ -210,12 +211,19 @@ func (p *DriftVerify) keepAcceptedProfile(ctx context.Context, pointer shedengin
+ 	if len(scope.Accepted) == 0 || scope.AcceptedProfileHead == head {
+ 		return shedengine.Done, pointer, nil
+ 	}
+-	captured, err := p.deps.CaptureAccepted(ctx)
++	missing, err := buildAcceptedProfile(p.deps.Paths, scope)
+ 	if err != nil {
+ 		return "", shedengine.OutputPointer{}, err
+ 	}
+-	if !captured.Passed {
+-		return p.haltFrom(pointer, false, generalHaltOpening, "the capture of the accepted profile did not pass: "+captured.Reason+"; way forward: lym loom resume")
++	if len(missing) > 0 {
++		return p.haltFrom(pointer, false, generalHaltOpening, fmt.Sprintf("no output was kept at the acceptance of %s, so the accepted profile cannot be built; way forward: lym drift accept <test> --reason <text> again for each, which keeps its output, then lym loom resume", strings.Join(missing, ", ")))
++	}
++	compared, err := p.deps.CompareAccepted(ctx)
++	if err != nil {
++		return "", shedengine.OutputPointer{}, err
++	}
++	if !compared.Passed {
++		return p.haltFrom(pointer, false, generalHaltOpening, "the compare against the accepted profile shows drift, so an accepted test's output changed after its acceptance: "+compared.Reason+"; way forward: lym drift accept <test> --reason <text> again for a test whose new output is intended, lym drift withdraw <test> to judge it again, or a fix that restores its accepted output, then lym loom resume")
+ 	}
+ 	if _, err := p.updateScope(func(cur *ScopeRecord) { cur.AcceptedProfileHead = head }); err != nil {
+ 		return "", shedengine.OutputPointer{}, err
+diff --git a/internal/driftengine/verify_test.go b/internal/driftengine/verify_test.go
+index a3a8c872..e658c48b 100644
+--- a/internal/driftengine/verify_test.go
++++ b/internal/driftengine/verify_test.go
+@@ -105,9 +105,11 @@ type verifyFixture struct {
+ 	events    []string
+ 	told      []VerifyTold
+ 
+-	// accepted is what the scripted accepted capture answers, and acceptedHeads the HEAD each of its calls saw.
+-	accepted      AcceptedCapture
+-	acceptedHeads []string
++	// acceptedCompares are what the scripted compares against the accepted profile answer in turn, the last one repeating;
++	// acceptedHeads is the HEAD each of their calls saw and acceptedProfiles the accepted profile's t1.txt each read.
++	acceptedCompares []CompareResult
++	acceptedHeads    []string
++	acceptedProfiles []string
+ 
+ 	compareCalls int
+ 	verifyCalls  int
+@@ -118,10 +120,12 @@ var (
+ 	failingCompare = CompareResult{ExitCode: 1, Log: "compare-1.log", Reason: "exit 1; log compare-1.log"}
+ )
+ 
+-// newVerifyFixture returns a fixture with a counted capture at HEAD, a declared compare and a scope record of scope.
++// newVerifyFixture returns a fixture with a counted capture at HEAD holding the profile files t1.txt and t2.txt, a declared compare and a scope record of scope.
+ func newVerifyFixture(t *testing.T, scope ScopeRecord, actions []func()) *verifyFixture {
+ 	t.Helper()
+-	f := &verifyFixture{baselineFixture: newBaselineFixture(t), compares: []CompareResult{passingCompare}, accepted: AcceptedCapture{Passed: true}}
++	f := &verifyFixture{baselineFixture: newBaselineFixture(t), compares: []CompareResult{passingCompare}, acceptedCompares: []CompareResult{passingCompare}}
++	writeProfileFile(t, f.paths.BaselineDir, "t1.txt", "baseline\n")
++	writeProfileFile(t, f.paths.BaselineDir, "t2.txt", "baseline\n")
+ 	f.verifyFn = func() (shuttleengine.GateResult, error) { return shuttleengine.GateResult{Passed: true}, nil }
+ 	if scope.Scope != "" {
+ 		scope.AwaitedAt = "2026-01-01T00:00:00Z"
+@@ -176,10 +180,15 @@ func newVerifyFixture(t *testing.T, scope ScopeRecord, actions []func()) *verify
+ 		f.compareCalls++
+ 		return result, nil
+ 	}
+-	d.CaptureAccepted = func(context.Context) (AcceptedCapture, error) {
+-		f.events = append(f.events, "capture-accepted")
++	d.CompareAccepted = func(context.Context) (CompareResult, error) {
++		f.events = append(f.events, "compare-accepted")
+ 		f.acceptedHeads = append(f.acceptedHeads, f.head)
+-		return f.accepted, nil
++		profile, err := os.ReadFile(filepath.Join(f.paths.AcceptedDir, "t1.txt"))
++		if err != nil {
++			return CompareResult{}, err
++		}
++		f.acceptedProfiles = append(f.acceptedProfiles, string(profile))
++		return f.acceptedCompares[min(len(f.acceptedHeads)-1, len(f.acceptedCompares)-1)], nil
+ 	}
+ 	return f
+ }
+@@ -206,9 +215,15 @@ func (f *verifyFixture) stuckHistory(at, lastAt string) {
+ 	f.history = []shedengine.HistoryEntry{{Producer: "Drift-Verify", Outcome: shedengine.Stuck, At: at, LastAt: lastAt}}
+ }
+ 
++// captureForAcceptance leaves t1's output at the current HEAD in the accepting directory, as `lym drift accept` captures it before Accept.
++func (f *verifyFixture) captureForAcceptance() {
++	writeProfileFile(f.t, f.paths.AcceptingDir, "t1.txt", "accepted at "+f.head+"\n")
++}
++
+ // agentAccept is the action of the agent accepting test t1.
+ func (f *verifyFixture) agentAccept() func() {
+ 	return func() {
++		f.captureForAcceptance()
+ 		if err := Accept(f.paths, statusAt("Drift-Verify", shedengine.StateRunning, "", true), "t1", "intended"); err != nil {
+ 			f.t.Fatal(err)
+ 		}
+@@ -228,6 +243,7 @@ func (f *verifyFixture) sessionAccept() func() {
+ 		}
+ 		st := statusAt("Drift-Verify", shedengine.StateRunning, "", open)
+ 		st.OperatorSession = operator
++		f.captureForAcceptance()
+ 		if err := Accept(f.paths, st, "t1", "intended"); err != nil {
+ 			f.t.Fatal(err)
+ 		}
+@@ -868,28 +884,34 @@ func TestDriftVerify(t *testing.T) {
+ 		withAccepted := func(profileHead string) ScopeRecord {
+ 			return ScopeRecord{Scope: ScopePartial, Skip: []string{"slow"}, Accepted: accepted, AcceptedProfileHead: profileHead}
+ 		}
++		// withKept is a fixture over scope with t1's output kept at its acceptance.
++		withKept := func(t *testing.T, scope ScopeRecord) *verifyFixture {
++			f := newVerifyFixture(t, scope, nil)
++			writeProfileFile(t, f.paths.AcceptedTestsDir, "t1.txt", "accepted\n")
++			return f
++		}
+ 		rows := []struct {
+ 			name  string
+ 			scope ScopeRecord
+-			// wantCaptures is how many accepted captures the pass runs, and wantProfileHead the commit the scope record names afterwards.
+-			wantCaptures    int
++			// wantCompares is how many compares against the accepted profile the pass runs, and wantProfileHead the commit the scope record names afterwards.
++			wantCompares    int
+ 			wantProfileHead string
+ 		}{
+-			{"a passing compare with tests accepted captures the profile once and records HEAD", withAccepted(""), 1, "aaa"},
+-			{"a profile captured at an earlier commit is captured again at HEAD", withAccepted("old"), 1, "aaa"},
+-			{"a profile already captured at HEAD runs no capture", withAccepted("aaa"), 0, "aaa"},
+-			{"no acceptance runs no capture", partial, 0, ""},
++			{"a passing compare with tests accepted checks the profile once and records HEAD", withAccepted(""), 1, "aaa"},
++			{"a profile checked at an earlier commit is checked again at HEAD", withAccepted("old"), 1, "aaa"},
++			{"a profile already checked at HEAD runs no compare", withAccepted("aaa"), 0, "aaa"},
++			{"no acceptance runs no compare", partial, 0, ""},
+ 		}
+ 		for _, row := range rows {
+ 			t.Run(row.name, func(t *testing.T) {
+ 				t.Parallel()
+-				f := newVerifyFixture(t, row.scope, nil)
++				f := withKept(t, row.scope)
+ 				requireDone(f)
+-				if len(f.acceptedHeads) != row.wantCaptures {
+-					t.Errorf("accepted captures = %d; want %d", len(f.acceptedHeads), row.wantCaptures)
++				if len(f.acceptedHeads) != row.wantCompares {
++					t.Errorf("compares against the accepted profile = %d; want %d", len(f.acceptedHeads), row.wantCompares)
+ 				}
+-				if row.wantCaptures > 0 && f.events[len(f.events)-1] != "capture-accepted" {
+-					t.Errorf("events = %v; want the accepted capture after the compare", f.events)
++				if row.wantCompares > 0 && f.events[len(f.events)-1] != "compare-accepted" {
++					t.Errorf("events = %v; want the compare against the accepted profile after the compare", f.events)
+ 				}
+ 				if got := f.scope().AcceptedProfileHead; got != row.wantProfileHead {
+ 					t.Errorf("accepted_profile_head = %q; want %q", got, row.wantProfileHead)
+@@ -897,33 +919,59 @@ func TestDriftVerify(t *testing.T) {
+ 			})
+ 		}
+ 
+-		t.Run("a capture that does not pass is Stuck naming the accepted profile and resume, and records no commit", func(t *testing.T) {
++		t.Run("the profile is the baseline with the accepted test's kept output in its place", func(t *testing.T) {
+ 			t.Parallel()
+-			f := newVerifyFixture(t, withAccepted(""), nil)
+-			f.accepted = AcceptedCapture{Reason: "exit 2; log accepted-capture-1.log"}
++			f := withKept(t, withAccepted(""))
++			writeProfileFile(t, f.paths.AcceptedDir, "stale.txt", "old\n")
++			requireDone(f)
++			if !slices.Equal(f.acceptedProfiles, []string{"accepted\n"}) {
++				t.Errorf("accepted profile t1.txt = %q; want the kept output", f.acceptedProfiles)
++			}
++			if got, err := os.ReadFile(filepath.Join(f.paths.AcceptedDir, "t2.txt")); err != nil || string(got) != "baseline\n" {
++				t.Errorf("accepted profile t2.txt = %q, %v; want the baseline's", got, err)
++			}
++			if _, err := os.Stat(filepath.Join(f.paths.AcceptedDir, "stale.txt")); !errors.Is(err, os.ErrNotExist) {
++				t.Errorf("a file of an earlier profile is still in the accepted profile: %v", err)
++			}
++		})
++
++		t.Run("an accepted output that changed after its acceptance is Stuck naming the ways forward, and records no commit", func(t *testing.T) {
++			t.Parallel()
++			f := withKept(t, withAccepted(""))
++			f.acceptedCompares = []CompareResult{failingCompare}
+ 			outcome, pointer, err := f.call()
+-			requireStuck(t, outcome, pointer, err, false, "accepted profile", "lym loom resume", "exit 2; log accepted-capture-1.log")
++			requireStuck(t, outcome, pointer, err, false, "changed after its acceptance", "exit 1; log compare-1.log", "lym drift accept <test>", "lym drift withdraw <test>", "lym loom resume")
+ 			if got := f.scope().AcceptedProfileHead; got != "" {
+-				t.Errorf("accepted_profile_head = %q; want none after a capture that did not pass", got)
++				t.Errorf("accepted_profile_head = %q; want none after a compare that did not pass", got)
+ 			}
+ 			if len(f.commits) != 1 || !slices.Equal(f.commits[0], []string{DirRel()}) {
+ 				t.Errorf("commits = %v; want the durable directory once", f.commits)
+ 			}
+ 		})
+ 
+-		t.Run("an agent's acceptance is captured at the agent's HEAD before Done", func(t *testing.T) {
++		t.Run("an acceptance with no kept output is Stuck naming the test and a new acceptance, with no compare against the profile", func(t *testing.T) {
++			t.Parallel()
++			f := newVerifyFixture(t, withAccepted(""), nil)
++			outcome, pointer, err := f.call()
++			requireStuck(t, outcome, pointer, err, false, "no output was kept at the acceptance of t1", "lym drift accept <test>", "lym loom resume")
++			if len(f.acceptedHeads) != 0 {
++				t.Errorf("compares against the accepted profile = %d; want none", len(f.acceptedHeads))
++			}
++		})
++
++		t.Run("an agent's acceptance keeps the output it saw, and the agent's later commit is compared against it", func(t *testing.T) {
+ 			t.Parallel()
+ 			f := newVerifyFixture(t, partial, nil)
+ 			f.compares = []CompareResult{failingCompare, passingCompare}
+ 			accept := f.agentAccept()
+ 			f.seats = gateLoopSeats(t, []func(){func() {
+-				f.head = "bbb"
+ 				accept()
++				f.head = "bbb"
+ 			}})
+ 			f.deps.Seats = f.seats
+ 			requireDone(f)
+-			if !slices.Equal(f.acceptedHeads, []string{"bbb"}) {
+-				t.Errorf("accepted capture heads = %v; want one capture at the agent's HEAD bbb", f.acceptedHeads)
++			if !slices.Equal(f.acceptedHeads, []string{"bbb"}) || !slices.Equal(f.acceptedProfiles, []string{"accepted at aaa\n"}) {
++				t.Errorf("compares against the accepted profile at %v reading %q; want one at the agent's HEAD bbb reading the output accepted at aaa", f.acceptedHeads, f.acceptedProfiles)
+ 			}
+ 			scope := f.scope()
+ 			if scope.AcceptedProfileHead != "bbb" || len(scope.Accepted) != 1 || scope.Accepted[0].Test != "t1" {
+diff --git a/internal/loomcli/driftwiring.go b/internal/loomcli/driftwiring.go
+index 316f81bf..317d2419 100644
+--- a/internal/loomcli/driftwiring.go
++++ b/internal/loomcli/driftwiring.go
+@@ -191,19 +191,6 @@ func driftDeps(location *lymcwd.Location, statusPath, statusLockPath string, tab
+ 			request.LockRetry = driftCompareLockRetry
+ 			return driftengine.RunCompare(ctx, request)
+ 		},
+-		CaptureAccepted: func(ctx context.Context) (driftengine.AcceptedCapture, error) {
+-			step, err := stepOf("capture")
+-			if err != nil {
+-				return driftengine.AcceptedCapture{}, err
+-			}
+-			scope, _, err := driftengine.ReadScope(paths)
+-			if err != nil {
+-				return driftengine.AcceptedCapture{}, err
+-			}
+-			request := driftCaptureRequest(location, paths, pool, waitDir, step)
+-			request.Skip = scope.Skip
+-			return driftengine.RunAcceptedCapture(ctx, request)
+-		},
+ 		CompareAccepted: func(ctx context.Context) (driftengine.CompareResult, error) {
+ 			step, err := stepOf("compare")
+ 			if err != nil {
+diff --git a/internal/loomcli/driftwiring_integration_test.go b/internal/loomcli/driftwiring_integration_test.go
+index 97a26c14..90e8c6b8 100644
+--- a/internal/loomcli/driftwiring_integration_test.go
++++ b/internal/loomcli/driftwiring_integration_test.go
+@@ -131,8 +131,8 @@ compare:
+ 	}
+ }
+ 
+-// TestDriftDeps_AcceptedSeamsKeepAcceptedTestsInTheRun covers the CaptureAccepted and CompareAccepted seams against Compare:
+-// with skip s1 and accepted test t1, Compare leaves out both, the two accepted seams leave out s1 alone, and CompareAccepted renders {baseline_dir} as the accepted profile directory.
++// TestDriftDeps_AcceptedSeamsKeepAcceptedTestsInTheRun covers the CompareAccepted seam against Compare:
++// with skip s1 and accepted test t1, Compare leaves out both, CompareAccepted leaves out s1 alone and renders {baseline_dir} as the accepted profile directory.
+ func TestDriftDeps_AcceptedSeamsKeepAcceptedTestsInTheRun(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+@@ -203,16 +203,4 @@ compare:
+ 	if got, want := strings.TrimSpace(readSeen("dir.txt")), paths.AcceptedDir; got != want {
+ 		t.Errorf("CompareAccepted() rendered {baseline_dir} as %q; want the accepted profile directory %q", got, want)
+ 	}
+-
+-	captured, err := deps.CaptureAccepted(context.Background())
+-	if err != nil || !captured.Passed {
+-		t.Fatalf("CaptureAccepted() = %+v, %v; want a passed capture", captured, err)
+-	}
+-	data, err := os.ReadFile(filepath.Join(paths.AcceptedDir, "skip.txt"))
+-	if err != nil {
+-		t.Fatal(err)
+-	}
+-	if got, want := string(data), "s1\n"; got != want {
+-		t.Errorf("CaptureAccepted() skip file = %q; want %q, the accepted test left in", got, want)
+-	}
+ }
+diff --git a/internal/shedrecipe/entries_drift.go b/internal/shedrecipe/entries_drift.go
+index d95392b8..c8b22ce5 100644
+--- a/internal/shedrecipe/entries_drift.go
++++ b/internal/shedrecipe/entries_drift.go
+@@ -136,7 +136,7 @@ func driftVerifyEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProd
+ 		{"Drift.Commit", d.Commit},
+ 		{"Drift.VerifyTable", d.VerifyTable},
+ 		{"Drift.Compare", d.Compare},
+-		{"Drift.CaptureAccepted", d.CaptureAccepted},
++		{"Drift.CompareAccepted", d.CompareAccepted},
+ 	})
+ 	if err != nil {
+ 		return nil, err
+diff --git a/internal/shedrecipe/entries_drift_test.go b/internal/shedrecipe/entries_drift_test.go
+index d178d18b..218a3217 100644
+--- a/internal/shedrecipe/entries_drift_test.go
++++ b/internal/shedrecipe/entries_drift_test.go
+@@ -37,9 +37,6 @@ func driftTestEnv(t *testing.T) Env {
+ 		Compare: func(context.Context) (driftengine.CompareResult, error) {
+ 			return driftengine.CompareResult{}, nil
+ 		},
+-		CaptureAccepted: func(context.Context) (driftengine.AcceptedCapture, error) {
+-			return driftengine.AcceptedCapture{}, nil
+-		},
+ 		CompareAccepted: func(context.Context) (driftengine.CompareResult, error) {
+ 			return driftengine.CompareResult{}, nil
+ 		},
+@@ -83,7 +80,7 @@ func TestDriftEntries(t *testing.T) {
+ 		{"VerifySecondGate", driftVerifyEntry, verifyCfg(verifyGate, map[string]any{"name": "description", "attempts": 3}), nil, nil, "way forward: set gates"},
+ 		{"VerifyOnlyOtherGate", driftVerifyEntry, verifyCfg(map[string]any{"name": "description", "attempts": 3}), nil, nil, "way forward: set gates"},
+ 		{"VerifyNilCompare", driftVerifyEntry, verifyCfg(verifyGate), func(e *Env) { e.Drift.Compare = nil }, nil, "Drift.Compare"},
+-		{"VerifyNilCaptureAccepted", driftVerifyEntry, verifyCfg(verifyGate), func(e *Env) { e.Drift.CaptureAccepted = nil }, nil, "Drift.CaptureAccepted"},
++		{"VerifyNilCompareAccepted", driftVerifyEntry, verifyCfg(verifyGate), func(e *Env) { e.Drift.CompareAccepted = nil }, nil, "Drift.CompareAccepted"},
+ 		{"RecheckBuilds", driftRecheckEntry, Config{}, nil, reflect.TypeOf(&driftengine.DriftRecheck{}), ""},
+ 		{"RecheckUnknownKey", driftRecheckEntry, Config{"subject": "decision-record"}, nil, nil, "entry_gate"},
+ 		{"RecheckNilConfig", driftRecheckEntry, Config{}, func(e *Env) { e.Drift.Config = nil }, nil, "Drift.Config"},
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index 975b4217..0c94500d 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -607,9 +607,6 @@ func driftDeps(root string) driftengine.Deps {
+ 		Compare: func(context.Context) (driftengine.CompareResult, error) {
+ 			return driftengine.CompareResult{Passed: true}, nil
+ 		},
+-		CaptureAccepted: func(context.Context) (driftengine.AcceptedCapture, error) {
+-			return driftengine.AcceptedCapture{Passed: true}, nil
+-		},
+ 		CompareAccepted: func(context.Context) (driftengine.CompareResult, error) {
+ 			return driftengine.CompareResult{Passed: true}, nil
+ 		},
