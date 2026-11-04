@@ -45,4 +45,13 @@ Rationale: The capture is detached by design so Drift-Await waits on it; the ope
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - capture-failure-subtest-timing-and-untested-exit (class design, severity BLOCKING, open in rounds 1)
+  - capture-verb-exits-zero-before-baseline-check (class decision, severity MEDIUM, open in rounds 1)
+  - command-report-reads-whole-log-and-drops-last-line (class design, severity MEDIUM, open in rounds 1)
+  - reconcile-notifier-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
