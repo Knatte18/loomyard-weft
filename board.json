@@ -697,7 +697,7 @@
       "isolated": false,
       "brief": "Two interim Drift repairs: name checks on accept and scope --skip, and the accepted profile recorded when a test is accepted",
       "body": "## Seen (`docs/research/drift-whole-review-2026-11-04.md`, faults 1 and 3)\n\n- `lym drift accept \u003ctest\u003e` checks nothing about its test name: the name goes straight into the scope record, and an accepted name joins the compare's skip list (`SkipList`).\n  A typo, or a test that never drifted, hides that test from every later compare.\n  The same holds for the `--skip` names of `lym drift scope`.\n- Drift-Verify captures the accepted profile at the end of its pass (`keepAcceptedProfile`), after the verify agent's fixes, while the agent's later compares skip accepted tests.\n  An agent that accepts test X and then edits code that moves X again leaves a profile that records the moved output as the accepted one.\n\n## Wanted (operator, 2026-11-04)\n\nTwo interim repairs ahead of the Drift rework the report proposes; nothing else of Drift changes.\n\n1. `lym drift accept` and `lym drift scope --skip` refuse a test name that is not a file under the run's baseline profile directory, naming the name and the directory in the refusal.\n2. The accepted profile records each accepted test's output as it was when the test was accepted, not the output at the end of Drift-Verify's pass.\n   A later change that moves an accepted test's output is no longer taken into the accepted profile unseen.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Code-Burler-Review",
       "created": "2026-11-04T15:05:51Z",
       "revised": "2026-11-04T15:05:51Z",
       "profile": "light"
