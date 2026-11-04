@@ -1,6 +1,6 @@
 # Beam pull requests: reopen a beam from PR-Review, name PRs in squash commits, list sub-PRs
 
-`beam-pr-lifecycle` · Task · feature, enhancement, pawl, landing, cli · running · Worktree-Create
+`beam-pr-lifecycle` · Task · feature, enhancement, pawl, landing, cli · running · Record-Write
 
 Two parts, both on a beam's pull request lifecycle, from issues #46 and #44.
 
