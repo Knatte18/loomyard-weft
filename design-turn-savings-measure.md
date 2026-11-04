@@ -1,6 +1,6 @@
 # Measure agent-turns and the batching hook from landed runs
 
-`turn-savings-measure` · Task · research, tools, claude, shuttle · running · Drift-Baseline
+`turn-savings-measure` · Task · research, tools, claude, shuttle · running · Drift-Await
 
 Measure, from transcripts of runs that already landed, the effect of project `agent-turns` as a whole and of the batching breach hook (`batching-breach-nudge`, landed 2026-11-02). One report under `docs/research/`.
 
