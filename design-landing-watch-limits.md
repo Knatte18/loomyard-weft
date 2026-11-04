@@ -1,6 +1,6 @@
 # A landing notice is not lost when set late, when dobby was down, or when the orch is absent
 
-`landing-watch-limits` · Task · enhancement, dobby, orch, creel, board · running · Drift-Await
+`landing-watch-limits` · Task · enhancement, dobby, orch, creel, board · running · Darn-Write
 
 Depends on: [`worktree-create-serial`](design-worktree-create-serial.md)
 
