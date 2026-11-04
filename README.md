@@ -22,7 +22,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **Measure agent-turns and the batching hook from landed runs**<br>• One report: turns, calls per turn, gate loops, refusals and batching-hook breaches over up to 20 darn and 5 tapestry runs landed since 2026-11-02 | [`turn-savings-measure`](design-turn-savings-measure.md) | darn · docs | Drift-Verify | neve | 3d<br>20m | tools, claude, shuttle |
+| T9 | **Measure agent-turns and the batching hook from landed runs**<br>• One report: turns, calls per turn, gate loops, refusals and batching-hook breaches over up to 20 darn and 5 tapestry runs landed since 2026-11-02 | [`turn-savings-measure`](design-turn-savings-measure.md) | darn · docs | Code-Bouncer | neve | 3d<br>20m | tools, claude, shuttle |
 
 #### Ready (0)
 
