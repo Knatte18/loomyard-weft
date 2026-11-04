@@ -1,0 +1,732 @@
+diff --git a/internal/battencli/cli.go b/internal/battencli/cli.go
+index 0f3b5bde..a1a8c96f 100644
+--- a/internal/battencli/cli.go
++++ b/internal/battencli/cli.go
+@@ -127,6 +127,8 @@ type battenCLI struct {
+ 	routing shedengine.Routing
+ 	// untilStop, when non-nil, replaces the shared --until-stop loop as what the run verb's driver steps the run through, so the run verb is testable without a detached loop.
+ 	untilStop func(ctx context.Context, attempt string) ([]byte, error)
++	// recordsDeps, when non-nil, replaces the fabric calls that commit the run's records, so the run verb is testable without a git pair.
++	recordsDeps func() commitStatusDeps
+ 	// spec is the shedverbs.Spec the pre-run fills in place (arm.go) and the shedverbs verbs read
+ 	// at run time. It is always non-nil after construction, so Command() can hand the same
+ 	// pointer to shedverbs.Verbs before the pre-run has ever run.
+diff --git a/internal/battencli/commitstatus.go b/internal/battencli/commitstatus.go
+index 679bfd76..e1876e3a 100644
+--- a/internal/battencli/commitstatus.go
++++ b/internal/battencli/commitstatus.go
+@@ -25,6 +25,7 @@
+ package battencli
+ 
+ import (
++	"fmt"
+ 	"os"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+@@ -52,8 +53,10 @@ type commitStatusDeps struct {
+ // spawnStatusPush starts the detached push of the status records at a location, held under a gate slug; a test swaps it for a recorder.
+ var spawnStatusPush = fabricengine.SpawnStatusPush
+ 
+-// battenRunCommitPaths returns the anchor-relative paths a status transition commits: the run's
+-// status file, and its seed, dobby's run notice marker, the settle records and the child-recipe record whenever each is on disk.
++// battenRunCommitPaths returns the anchor-relative paths a commit of the run's records stages.
++// It always stages the run's status file.
++// It stages the seed, dobby's run notice marker, the settle records and the child-recipe record whenever each is on disk.
++// It stages the driver's drive-reports, tackler and arbiter directories whenever each holds a file.
+ //
+ // Both belong on the pair because a run directory is durable, fabric-synced state -- a status
+ // committed without its seed leaves a resumed machine able to read how far the run came but not
+@@ -79,7 +82,30 @@ func battenRunCommitPaths(location *lymcwd.Location, runID string) []string {
+ 	if _, err := os.Stat(shedrun.ChildRecipeFile(location, runID)); err == nil {
+ 		paths = append(paths, shedrun.ChildRecipeRel(location, runID))
+ 	}
+-	return paths
++	return append(paths, shedrun.DriverRecordsRel(location, runID)...)
++}
++
++// commitRunRecords commits the run's records outside a status transition and starts their push when it made a commit.
++// The driver writes a hand-back's stop report, and saves a done step's envelope, after the transition's own commit, so these two stops commit them here.
++// A merge in progress on the pair commits nothing, and the next commit of the run's records carries them.
++// A push that fails to start is logged, never returned, since the next push carries the commit.
++func commitRunRecords(deps commitStatusDeps, slug string) error {
++	active, err := deps.MergeActive()
++	if err != nil {
++		return fmt.Errorf("battencli: read the pair's merge state: %w", err)
++	}
++	if active {
++		logger.Info("battencli: a merge is in progress on the pair; the run records stay uncommitted", "slug", slug)
++		return nil
++	}
++	committed, err := deps.Commit("batten: run records for " + slug)
++	if err != nil || !committed {
++		return err
++	}
++	if err := deps.Spawn(); err != nil {
++		logger.Warn("battencli: the push of the run records did not start; the next push carries them", "slug", slug, "error", err)
++	}
++	return nil
+ }
+ 
+ // battenCommitStatusDeps builds a commitStatusDeps over location and runID, filling each field from fabric:
+diff --git a/internal/battencli/commitstatus_test.go b/internal/battencli/commitstatus_test.go
+index e8a2ff53..4ece947f 100644
+--- a/internal/battencli/commitstatus_test.go
++++ b/internal/battencli/commitstatus_test.go
+@@ -133,7 +133,7 @@ func TestStatusPushSpawns_TellTheirLocationAndGateSlug(t *testing.T) {
+ 	}
+ }
+ 
+-// TestBattenRunCommitPaths asserts a status transition commits the run's seed, dobby's run notice marker, the settle records and the child-recipe record alongside its status once each exists, and commits the status alone while none does.
++// TestBattenRunCommitPaths asserts a commit of the run's records stages the run's seed, dobby's run notice marker, the settle records, the child-recipe record and each driver directory holding a file alongside its status once each exists, and commits the status alone while none does.
+ // A run directory is durable, fabric-synced state: a status committed without its seed leaves a resumed machine able to read how far the run came but not what it is running.
+ //
+ //testtiming:keep pins the seed-alongside-status commit paths, which the end-to-end rows never assert
+@@ -184,4 +184,85 @@ func TestBattenRunCommitPaths(t *testing.T) {
+ 	if want = append(want, shedrun.ChildRecipeRel(loc, runID)); !reflect.DeepEqual(got, want) {
+ 		t.Errorf("battenRunCommitPaths with a child-recipe record on disk = %v; want %v", got, want)
+ 	}
++
++	// A driver directory holding only an empty attempt directory is nothing to commit.
++	if err := os.MkdirAll(shedrun.TacklerAttemptDir(loc, runID, 1), 0o755); err != nil {
++		t.Fatalf("mkdir empty tackler attempt: %v", err)
++	}
++	got = battenRunCommitPaths(loc, runID)
++	if !reflect.DeepEqual(got, want) {
++		t.Errorf("battenRunCommitPaths with an empty tackler attempt directory = %v; want %v", got, want)
++	}
++
++	driverFiles := []string{
++		filepath.Join(shedrun.DriveReportsDir(loc, runID), "drive-envelope.json"),
++		filepath.Join(shedrun.ArbiterAttemptDir(loc, runID, 1), "verdict.yaml"),
++		filepath.Join(shedrun.TacklerAttemptDir(loc, runID, 1), "verdict.yaml"),
++	}
++	for _, path := range driverFiles {
++		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++			t.Fatalf("mkdir %s: %v", filepath.Dir(path), err)
++		}
++		if err := os.WriteFile(path, []byte("x"), 0o644); err != nil {
++			t.Fatalf("write %s: %v", path, err)
++		}
++	}
++	got = battenRunCommitPaths(loc, runID)
++	want = append(want, shedrun.DriveReportsRel(loc, runID), shedrun.ArbiterRel(loc, runID), shedrun.TacklerRel(loc, runID))
++	if !reflect.DeepEqual(got, want) {
++		t.Errorf("battenRunCommitPaths with driver records on disk = %v; want %v", got, want)
++	}
++}
++
++// TestCommitRunRecords asserts the hand-back and done commit of the run's records:
++// it commits and starts the push, starts no push when nothing was committed, commits nothing while the pair is mid-merge, returns a failed commit or merge-state read, and never returns a push that failed to start.
++func TestCommitRunRecords(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	boom := errors.New("boom")
++	tests := []struct {
++		name        string
++		mergeActive bool
++		mergeErr    error
++		committed   bool
++		commitErr   error
++		spawnErr    error
++		wantCommits int
++		wantSpawns  int
++		wantErr     error
++	}{
++		{name: "CommitsAndStartsThePush", committed: true, wantCommits: 1, wantSpawns: 1},
++		{name: "NothingCommittedStartsNoPush", wantCommits: 1},
++		{name: "MidMergeCommitsNothing", mergeActive: true},
++		{name: "FailedMergeStateReadIsReturned", mergeErr: boom, wantErr: boom},
++		{name: "FailedCommitIsReturned", commitErr: boom, wantCommits: 1, wantErr: boom},
++		{name: "FailedPushStartIsNotReturned", committed: true, spawnErr: boom, wantCommits: 1, wantSpawns: 1},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			var commits, spawns int
++			var msg string
++			err := commitRunRecords(commitStatusDeps{
++				MergeActive: func() (bool, error) { return tt.mergeActive, tt.mergeErr },
++				Commit:      func(m string) (bool, error) { commits++; msg = m; return tt.committed, tt.commitErr },
++				Spawn:       func() error { spawns++; return tt.spawnErr },
++			}, "a-slug")
++
++			if !errors.Is(err, tt.wantErr) {
++				t.Errorf("commitRunRecords() = %v; want %v", err, tt.wantErr)
++			}
++			if commits != tt.wantCommits {
++				t.Errorf("commits = %d; want %d", commits, tt.wantCommits)
++			}
++			if spawns != tt.wantSpawns {
++				t.Errorf("spawns = %d; want %d", spawns, tt.wantSpawns)
++			}
++			if want := "batten: run records for a-slug"; commits > 0 && msg != want {
++				t.Errorf("Commit msg = %q; want %q", msg, want)
++			}
++		})
++	}
+ }
+diff --git a/internal/battencli/drive.go b/internal/battencli/drive.go
+index 66cea43f..88974c01 100644
+--- a/internal/battencli/drive.go
++++ b/internal/battencli/drive.go
+@@ -226,7 +226,8 @@ func battenHandBackNotice(deps battenshed.RowNoticeDeps, slug, scratchDir string
+ 
+ // driverDepsFor fills the shed driver's seams for batten's run in the prime.
+ // Every path comes from shedrun over the prime's location and the slug, and nothing is read or built here: the configs, the model registry and the shuttle runner load inside the Tackler and Arbiter seams on their first call.
+-// The seams it leaves nil, the verify, watched, hand-over, tamper, record-commit and friction-note ones, remove their rows from the driver's rule table.
++// The seams it leaves nil, the verify, watched, hand-over, tamper and friction-note ones, remove their rows from the driver's rule table.
++// A hand-back's park and a done stop commit the run's records on the prime's pair, since the stop report and the done step's envelope are written after the transition's own commit.
+ func (c *battenCLI) driverDepsFor() (sheddriver.Deps, error) {
+ 	location, slug := c.location, c.slug
+ 	runID := shedrun.ResolveRunID(location, slug)
+@@ -272,6 +273,10 @@ func (c *battenCLI) driverDepsFor() (sheddriver.Deps, error) {
+ 			},
+ 			OrchRecorded: func() (bool, error) { return runParentRecorded(location, slug) },
+ 			Park: func(reportPath string) error {
++				// A failed commit leaves the records for the next one and still parks the run.
++				if err := commitRunRecords(c.runRecordsDeps(), slug); err != nil {
++					logger.Warn("battencli: committing the run records at the hand-back failed; the run is still parked", "slug", slug, "error", err)
++				}
+ 				marker := shedrun.ParkMarker(location, slug)
+ 				if err := os.MkdirAll(filepath.Dir(marker), 0o755); err != nil {
+ 					return err
+@@ -319,11 +324,22 @@ func (c *battenCLI) driverDepsFor() (sheddriver.Deps, error) {
+ 			}
+ 			return tackler, arbiter, applied, nil
+ 		},
++		CommitRecords: func() error {
++			return commitRunRecords(c.runRecordsDeps(), slug)
++		},
+ 		Arbiter: c.arbiterSeam(runID),
+ 		Now:     time.Now,
+ 	}, nil
+ }
+ 
++// runRecordsDeps returns the fabric calls that commit the run's records: the recordsDeps override when set, else the real ones over the prime's pair.
++func (c *battenCLI) runRecordsDeps() commitStatusDeps {
++	if c.recordsDeps != nil {
++		return c.recordsDeps()
++	}
++	return battenCommitStatusDeps(c.location, c.slug)
++}
++
+ // arbiterSeam builds batten's arbiter seam, whose deps load on its first Judge call.
+ // A batten stop never awaits a review escalation, so EscalationPending answers false.
+ func (c *battenCLI) arbiterSeam(runID string) *sheddriver.ArbiterSeam {
+diff --git a/internal/battencli/driverdeps_test.go b/internal/battencli/driverdeps_test.go
+index 08903ab5..f098b390 100644
+--- a/internal/battencli/driverdeps_test.go
++++ b/internal/battencli/driverdeps_test.go
+@@ -5,6 +5,7 @@ package battencli
+ import (
+ 	"context"
+ 	"errors"
++	"os"
+ 	"path/filepath"
+ 	"slices"
+ 	"strings"
+@@ -40,7 +41,6 @@ func TestBattenDriverDeps(t *testing.T) {
+ 		"Watched":           deps.Watched == nil,
+ 		"HandOver":          deps.HandOver == nil,
+ 		"Tamper":            deps.Tamper == nil,
+-		"CommitRecords":     deps.CommitRecords == nil,
+ 		"WriteFrictionNote": deps.WriteFrictionNote == nil,
+ 	}
+ 	for seam, isNil := range unwired {
+@@ -61,6 +61,7 @@ func TestBattenDriverDeps(t *testing.T) {
+ 		"Tackler":               deps.Tackler != nil,
+ 		"ConsumeTackler":        deps.ConsumeTackler != nil,
+ 		"OpenAttempts":          deps.OpenAttempts != nil,
++		"CommitRecords":         deps.CommitRecords != nil,
+ 		"Arbiter":               deps.Arbiter != nil,
+ 		"Now":                   deps.Now != nil,
+ 		"HandBack.Notify":       deps.HandBack.Notify != nil,
+@@ -192,6 +193,63 @@ func TestBattenDriverDeps(t *testing.T) {
+ 	}
+ }
+ 
++// TestBattenRecordsCommitSeams asserts the hand-back's park and the done stop's CommitRecords both commit the run's records under the run's message, and that a failed commit never keeps the run from parking.
++func TestBattenRecordsCommitSeams(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name      string
++		commitErr error
++	}{
++		{"ParksAfterACommit", nil},
++		{"ParksAfterAFailedCommit", errors.New("commit failed")},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			c := newFakeReceiver(t, nil)
++			var messages []string
++			c.recordsDeps = func() commitStatusDeps {
++				return commitStatusDeps{
++					MergeActive: func() (bool, error) { return false, nil },
++					Commit: func(msg string) (bool, error) {
++						messages = append(messages, msg)
++						return false, tt.commitErr
++					},
++					Spawn: func() error { return nil },
++				}
++			}
++			deps, err := c.driverDepsFor()
++			if err != nil {
++				t.Fatalf("driverDepsFor() error = %v", err)
++			}
++			wantMessage := "batten: run records for " + c.slug
++
++			if err := deps.HandBack.Park("/reports/stop.md"); err != nil {
++				t.Fatalf("Park() = %v; want nil, since a failed commit never blocks the park", err)
++			}
++			if !slices.Equal(messages, []string{wantMessage}) {
++				t.Errorf("Park() commit messages = %q; want %q", messages, []string{wantMessage})
++			}
++			marker, err := os.ReadFile(shedrun.ParkMarker(c.location, c.slug))
++			if err != nil || string(marker) != "/reports/stop.md" {
++				t.Errorf("park marker = %q, %v; want the stop report path", marker, err)
++			}
++
++			messages = nil
++			err = deps.CommitRecords()
++			if (err != nil) != (tt.commitErr != nil) {
++				t.Errorf("CommitRecords() = %v; want an error exactly when the commit fails (%v)", err, tt.commitErr)
++			}
++			if !slices.Equal(messages, []string{wantMessage}) {
++				t.Errorf("CommitRecords() commit messages = %q; want %q", messages, []string{wantMessage})
++			}
++		})
++	}
++}
++
+ // TestBattenConsumeAttempt asserts the consume hook refuses an attempt that is no positive number, naming the hand-back to the run's parent, before it reads any attempt directory.
+ func TestBattenConsumeAttempt(t *testing.T) {
+ 	tiergate.Require(t, 0)
+diff --git a/internal/battencli/run_test.go b/internal/battencli/run_test.go
+index 2023bf84..5ba90bee 100644
+--- a/internal/battencli/run_test.go
++++ b/internal/battencli/run_test.go
+@@ -45,6 +45,14 @@ func newFakeReceiver(t *testing.T, shutdown func(ctx context.Context) (string, e
+ 		location: &lymcwd.Location{RepoName: "example", HubPath: dir, WorktreeName: "hub-repo", AnchorRel: "."},
+ 		slug:     "some-slug",
+ 	}
++	// The fake receiver has no git pair, so the run's records commit through stubs that find nothing to commit.
++	c.recordsDeps = func() commitStatusDeps {
++		return commitStatusDeps{
++			MergeActive: func() (bool, error) { return false, nil },
++			Commit:      func(string) (bool, error) { return false, nil },
++			Spawn:       func() error { return nil },
++		}
++	}
+ 	c.shedPaths = shedbuild.ShedPaths{
+ 		StatusPath:     filepath.Join(dir, "status.json"),
+ 		LockPath:       filepath.Join(dir, "run.lock"),
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 95387a73..49ea0c96 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -254,7 +254,7 @@
+ //
+ // A step at a row waiting on the operator (Beam-Await, PR-Review, Sampler-Session) reads as active to the step watchdog and as a live wait to dobby, so neither kills it nor sends a quiet notice.
+ //
+-// The loop steps the run through the shared `--until-stop` body, saves each stop envelope under the run's drive-reports directory and decides the stop by a closed rule table over the envelope's fields and the facts it reads from disk, never over a row name or the reason text.
++// The loop steps the run through the shared `--until-stop` body, saves the envelope of each stop it decides under the run's drive-reports directory, a yielded step saving none, and decides the stop by a closed rule table over the envelope's fields and the facts it reads from disk, never over a row name or the reason text.
+ // The table settles a done run, a busy exit, a re-step of an interrupted step under the `reinvoke` policy up to a cap of two per stop key, and the one verify goto to the Publish failure record's target;
+ // it asks the tackler at a stop no rule settles, the arbiter at an awaiting stop with a pending hard-cap or circling escalation only, after a tackler `escalate` and when an applied tackler `resume` returns to the same stop, and hands over at a binary-eligible stop whose last step ran another build than the `lym` on disk.
+ // Everything else hands back.
+diff --git a/internal/loomcli/landingdeps.go b/internal/loomcli/landingdeps.go
+index 9ba02b5a..bda521cd 100644
+--- a/internal/loomcli/landingdeps.go
++++ b/internal/loomcli/landingdeps.go
+@@ -669,7 +669,7 @@ func parentRecordsCommitter(l *lymcwd.Location, slug string) func() error {
+ 			return fmt.Errorf("locate the parent pair %q: %w", parent.Worktree, err)
+ 		}
+ 		runsRoot := shedrun.RunsRootRel()
+-		if !holdsFile(filepath.Join(parentLocation.AnchorPath(), runsRoot)) {
++		if !shedrun.HoldsFile(filepath.Join(parentLocation.AnchorPath(), runsRoot)) {
+ 			return nil
+ 		}
+ 		_, _, err = fabricengine.CommitAnchoredPaths(fabricengine.NewMutations(""), parentLocation, []string{runsRoot}, loomengine.LandingCheckpointSubject(slug), fabricengine.EnvSyncOptions())
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index 6b35522d..a2ad007c 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -85,7 +85,7 @@ type commitStatusDeps struct {
+ 	FinishedStatus string
+ }
+ 
+-// statusCommitPathspec returns the fabric-sibling pathspec one status commit stages: shedrun.StatusRel(location, runID), plus each of loomengine.LoomReviewsDirRel(), loomengine.LoomDurableDirRel(), shedrun.DriveReportsRel(location, runID), shedrun.ArbiterRel(location, runID) and shedrun.TacklerRel(location, runID) when its directory holds at least one non-directory entry anywhere beneath it, plus shedrun.SettleRecordsRel(location, runID) when the settle-records file exists.
++// statusCommitPathspec returns the fabric-sibling pathspec one status commit stages: shedrun.StatusRel(location, runID), plus each of loomengine.LoomReviewsDirRel() and loomengine.LoomDurableDirRel() when its directory holds at least one non-directory entry anywhere beneath it, then shedrun.DriverRecordsRel(location, runID), plus shedrun.SettleRecordsRel(location, runID) when the settle-records file exists.
+ // The arbiter directory carries each attempt's record, prompt, verdict and envelope, so they are committed with the run records.
+ // The tackler directory, staged under the same rule, carries each tackler attempt's record, prompt, verdict and envelope.
+ // The loom durable directory is staged whole rather than its friction directory alone:
+@@ -101,21 +101,13 @@ type commitStatusDeps struct {
+ // and a transition whose commit was skipped mid-merge is caught up by the next one.
+ func statusCommitPathspec(location *lymcwd.Location, runID string) []string {
+ 	paths := []string{shedrun.StatusRel(location, runID)}
+-	if holdsFile(loomengine.LoomReviewsDir(location)) {
++	if shedrun.HoldsFile(loomengine.LoomReviewsDir(location)) {
+ 		paths = append(paths, loomengine.LoomReviewsDirRel())
+ 	}
+-	if holdsFile(loomengine.LoomDurableDir(location)) {
++	if shedrun.HoldsFile(loomengine.LoomDurableDir(location)) {
+ 		paths = append(paths, loomengine.LoomDurableDirRel())
+ 	}
+-	if holdsFile(shedrun.DriveReportsDir(location, runID)) {
+-		paths = append(paths, shedrun.DriveReportsRel(location, runID))
+-	}
+-	if holdsFile(shedrun.ArbiterDir(location, runID)) {
+-		paths = append(paths, shedrun.ArbiterRel(location, runID))
+-	}
+-	if holdsFile(shedrun.TacklerDir(location, runID)) {
+-		paths = append(paths, shedrun.TacklerRel(location, runID))
+-	}
++	paths = append(paths, shedrun.DriverRecordsRel(location, runID)...)
+ 	if _, err := os.Stat(shedrun.SettleRecords(location, runID)); err == nil {
+ 		paths = append(paths, shedrun.SettleRecordsRel(location, runID))
+ 	}
+@@ -137,7 +129,7 @@ func planCommitPathspec(location *lymcwd.Location) []string {
+ // planCommitPathspecWith is planCommitPathspec with the index lookup injected as tracked.
+ func planCommitPathspecWith(location *lymcwd.Location, tracked func(rel string) (bool, error)) []string {
+ 	paths := []string{planparser.PlanDirRel()}
+-	if holdsFile(websterengine.Dir(location.AnchorPath())) {
++	if shedrun.HoldsFile(websterengine.Dir(location.AnchorPath())) {
+ 		paths = append(paths, websterengine.DirRel())
+ 	} else if isTracked, err := tracked(websterengine.DirRel()); err != nil || isTracked {
+ 		paths = append(paths, websterengine.DirRel())
+@@ -176,27 +168,6 @@ func removeSettledAmendment(amendmentPath, planRunDir string) error {
+ 	return loomshed.RemoveAmendment(amendmentPath)
+ }
+ 
+-// holdsFile reports whether dir is a directory holding at least one non-directory entry anywhere beneath it, stopping the walk at the first such entry.
+-func holdsFile(dir string) bool {
+-	info, err := os.Stat(dir)
+-	if err != nil || !info.IsDir() {
+-		return false
+-	}
+-	found := false
+-	// A walk error can only end the walk before a file is found, so found alone is the answer.
+-	_ = filepath.WalkDir(dir, func(_ string, d fs.DirEntry, err error) error {
+-		if err != nil {
+-			return err
+-		}
+-		if !d.IsDir() {
+-			found = true
+-			return fs.SkipAll
+-		}
+-		return nil
+-	})
+-	return found
+-}
+-
+ // loomCommitStatusDeps builds a commitStatusDeps over location and runID, filling each field from fabric: MergeActive from fabricengine.MergeStateActive, Commit from fabricengine.CommitAnchoredPaths scoped to statusCommitPathspec, Spawn from spawnStatusPush, which pushes the run records and, in a task pair, the task branch, and Push from fabricengine.PushPairAnchored, the same push run synchronously.
+ // Commit, Spawn and Push each pass the run's pre-push check first: a Commit it stops commits nothing and returns the check's error, which the status seam reads as no commit made, a Spawn it stops starts no push and returns nil, its commits staying local, and a Push it stops returns the check's error.
+ func loomCommitStatusDeps(location *lymcwd.Location, runID string) commitStatusDeps {
+diff --git a/internal/sheddriver/doc.go b/internal/sheddriver/doc.go
+index 5b05aafc..70742376 100644
+--- a/internal/sheddriver/doc.go
++++ b/internal/sheddriver/doc.go
+@@ -11,10 +11,10 @@
+ // # The loop
+ //
+ // `Run` steps the run through `Deps.Step` and `Deps.Goto`, which the arming module points at `shedverbs`' `--until-stop` and goto bodies, so the driver restates neither.
+-// Each step prints one stop envelope; the driver saves it under the run's drive-reports directory and decides it.
++// Each step prints one stop envelope; the driver saves each envelope it decides under the run's drive-reports directory.
+ // Before it acts on a stop it re-reads the status: a run another process is running, or whose run lock is held, ends the driver, and a run that moved to another stop is decided afresh from its status.
+ // A driver that starts at a blocked stop with no open agent attempt first asks `Deps.StartCheck` about the stop's row, once, before its first step, and a refusal hands the run back quoting it with nothing stepped.
+-// A step that yielded, whose envelope reports outcome `yield` with the run still running, ends the driver with `ExitYield` and nothing decided: no rule row, settle record, report, repair, bounce or tackler budget applies, and the run is left as it was.
++// A step that yielded, whose envelope reports outcome `yield` with the run still running, ends the driver with `ExitYield` and nothing decided: no saved envelope, rule row, settle record, report, repair, bounce or tackler budget applies, and the run is left as it was.
+ // A pause covering the run holds the driver before it spawns or re-steps anything.
+ // A failure the driver cannot act on is handed back; only a failed hand-back or a cancelled context is returned as an error.
+ // `DriveVerb` holds the run's driver lock for the driver's life, removes the stale park marker and resume report, and refuses a second driver for the run at once.
+diff --git a/internal/sheddriver/drive.go b/internal/sheddriver/drive.go
+index e1997007..6531ba09 100644
+--- a/internal/sheddriver/drive.go
++++ b/internal/sheddriver/drive.go
+@@ -83,6 +83,7 @@ type Deps struct {
+ 	Now func() time.Time
+ 
+ 	// CommitRecords commits the run's records at a done stop; nil commits nothing.
++	// A done stop that reported friction: failed calls it a second time once its hand-back report is written, so a call over records already committed must be a no-op.
+ 	CommitRecords func() error
+ 	// WriteFrictionNote writes the friction note of a paused stop that carries no reason; nil writes none.
+ 	WriteFrictionNote func(stop Stop) error
+@@ -201,6 +202,13 @@ func (d *goDriver) run(ctx context.Context) error {
+ 			if err != nil {
+ 				return d.handBackFailure(err)
+ 			}
++			// A yield decides nothing: no envelope, rule row, report, repair or budget applies, and the pass ends with the run as it was.
++			// A run waiting at a row yields on every pass, so a saved envelope would be one more file per pass for the whole wait.
++			if stop.OK && stop.LoopState == string(shedengine.StateRunning) && stop.Outcome == string(shedengine.Yield) {
++				logger.Debug("sheddriver: drive: the step yielded; ending the pass", "run", d.deps.RunID, "producer", stop.CurrentProducer)
++				d.exit = ExitYield
++				return nil
++			}
+ 			path, err := d.deps.SaveEnvelope(raw)
+ 			if err != nil {
+ 				return d.handBackFailure(fmt.Errorf("saving the stop envelope: %w", err))
+@@ -216,13 +224,6 @@ func (d *goDriver) run(ctx context.Context) error {
+ 		}
+ 		resumed = false
+ 
+-		// A yield decides nothing: no rule row, report, repair or budget applies, and the pass ends with the run as it was.
+-		if stop.OK && stop.LoopState == string(shedengine.StateRunning) && stop.Outcome == string(shedengine.Yield) {
+-			logger.Debug("sheddriver: drive: the step yielded; ending the pass", "run", d.deps.RunID, "producer", stop.CurrentProducer)
+-			d.exit = ExitYield
+-			return nil
+-		}
+-
+ 		next, exit, err := d.settleStop(ctx, stop)
+ 		if err != nil || exit {
+ 			return err
+@@ -829,19 +830,32 @@ func (d *goDriver) settle(stop Stop, settler, action, outcome, target string) {
+ }
+ 
+ // finishDone commits the run's records when CommitRecords is wired, and hands a run that finished with friction: failed to the parent without parking it.
++// The friction hand-back writes its report after the first commit, so the records are committed again once it is written.
+ func (d *goDriver) finishDone(stop Stop) error {
+ 	d.exit = ExitDone
+-	if d.deps.CommitRecords != nil {
+-		if err := d.deps.CommitRecords(); err != nil {
+-			return fmt.Errorf("sheddriver: drive: commit the run's records: %w", err)
+-		}
++	if err := d.commitRecords(); err != nil {
++		return err
+ 	}
+ 	if stop.Friction != "failed" {
+ 		return nil
+ 	}
+ 	err := d.handBack(stop, driveHandBack{DoneFrictionFailed: true})
+ 	d.exit = ExitDone
+-	return err
++	if err != nil {
++		return err
++	}
++	return d.commitRecords()
++}
++
++// commitRecords commits the run's records through CommitRecords, and does nothing when that seam is not wired.
++func (d *goDriver) commitRecords() error {
++	if d.deps.CommitRecords == nil {
++		return nil
++	}
++	if err := d.deps.CommitRecords(); err != nil {
++		return fmt.Errorf("sheddriver: drive: commit the run's records: %w", err)
++	}
++	return nil
+ }
+ 
+ // handBackStop hands the run back at stop on the decision's rule, after the friction note a paused stop without a reason asks for.
+diff --git a/internal/sheddriver/drive_test.go b/internal/sheddriver/drive_test.go
+index e17b135d..1eb9be50 100644
+--- a/internal/sheddriver/drive_test.go
++++ b/internal/sheddriver/drive_test.go
+@@ -212,10 +212,12 @@ func TestGoDriver_Settle(t *testing.T) {
+ 		// wantReportHas maps a stop report's number, from 1, to substrings it holds.
+ 		wantReportHas map[int][]string
+ 		wantReports   int
+-		wantParked    bool
+-		wantNotifies  int
+-		wantHandBack  bool
+-		wantExit      Exit
++		// wantNoEnvelope asserts the driver saved no stop envelope.
++		wantNoEnvelope bool
++		wantParked     bool
++		wantNotifies   int
++		wantHandBack   bool
++		wantExit       Exit
+ 		// wantOrder, when set, is the order of the parent notice, the lock release and the successor spawn.
+ 		wantOrder []string
+ 		// wantBuild, when set, is the build the last settle record names.
+@@ -223,12 +225,12 @@ func TestGoDriver_Settle(t *testing.T) {
+ 	}{
+ 		{name: "done commits and exits with no park", steps: []func(*testing.T) []byte{done}, wantCalls: []string{"step", "commit-records"}, wantExit: ExitDone},
+ 		{
+-			name: "a yielded step ends the pass with nothing decided: no settle record, report, park or hand-back", steps: []func(*testing.T) []byte{yielded}, escalation: true, buildChanged: true,
+-			wantCalls: []string{"step"}, wantExit: ExitYield,
++			name: "a yielded step ends the pass with nothing decided: no saved envelope, settle record, report, park or hand-back", steps: []func(*testing.T) []byte{yielded}, escalation: true, buildChanged: true,
++			wantCalls: []string{"step"}, wantExit: ExitYield, wantNoEnvelope: true,
+ 		},
+ 		{
+-			name: "done with friction failed writes its report, notifies and parks nothing", steps: []func(*testing.T) []byte{doneFrictionFailed},
+-			orchRecorded: true, wantCalls: []string{"step", "commit-records"}, wantReports: 1, wantNotifies: 1, wantExit: ExitDone,
++			name: "done with friction failed writes its report, notifies, commits the report and parks nothing", steps: []func(*testing.T) []byte{doneFrictionFailed},
++			orchRecorded: true, wantCalls: []string{"step", "commit-records", "commit-records"}, wantReports: 1, wantNotifies: 1, wantExit: ExitDone,
+ 		},
+ 		{
+ 			name: "busy exits with a busy-exit record and parks nothing", steps: []func(*testing.T) []byte{busy}, runLockHeld: true,
+@@ -597,6 +599,7 @@ func TestGoDriver_Settle(t *testing.T) {
+ 			statusReads := 0
+ 			pauseAnswers := slices.Clone(tt.pauseCovered)
+ 			reports := 0
++			envelopes := 0
+ 
+ 			openTackler := tt.openTackler
+ 			if tt.restartAttempt {
+@@ -655,6 +658,7 @@ func TestGoDriver_Settle(t *testing.T) {
+ 				},
+ 				RunLockHeld: func() (bool, error) { return tt.runLockHeld, nil },
+ 				SaveEnvelope: func(raw []byte) (string, error) {
++					envelopes++
+ 					path := filepath.Join(root, "drive-reports", fmt.Sprintf("envelope-%d.json", len(raw)))
+ 					if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+ 						return "", err
+@@ -851,6 +855,9 @@ func TestGoDriver_Settle(t *testing.T) {
+ 			if reports != tt.wantReports {
+ 				t.Errorf("stop reports taken = %d; want %d", reports, tt.wantReports)
+ 			}
++			if tt.wantNoEnvelope && envelopes != 0 {
++				t.Errorf("stop envelopes saved = %d; want none", envelopes)
++			}
+ 			for i := 1; i <= tt.wantReports; i++ {
+ 				if _, err := os.Stat(filepath.Join(root, "drive-reports", fmt.Sprintf("report-%d.md", i))); err != nil {
+ 					t.Errorf("stop report %d is not on disk: %v", i, err)
+diff --git a/internal/shedrun/doc.go b/internal/shedrun/doc.go
+index 70c3a5ff..27a6c952 100644
+--- a/internal/shedrun/doc.go
++++ b/internal/shedrun/doc.go
+@@ -33,6 +33,7 @@
+ // DriverLock is the ephemeral Go-driver lock under ScratchDir, distinct from the run lock and the status lock.
+ // TacklerDir is the durable directory of a run's tackler attempts, TacklerRel its anchor-relative form and TacklerAttemptDir one attempt's directory (attempt-<N>, 1-based).
+ // TacklerMarker is the ephemeral in-flight marker under ScratchDir.
++// DriverRecordsRel lists the anchor-relative drive-reports, arbiter and tackler directories that hold a file, the driver records every recipe's commit of a run's records stages.
+ // ChildRecipeFile is the durable record under RunDir of the recipe a batten run seeded its task worktree's run with, which WriteChildRecipe writes and ReadChildRecipe reads, empty when none is recorded;
+ // it outlives the task worktree's own seed, so a done run still tells which recipe its child ran.
+ // LandedCommitFile is the ephemeral file under ScratchDir holding the commit a run's landing put on its parent branch, which WriteLandedCommit writes and ReadLandedCommit reads, empty when none is recorded.
+diff --git a/internal/shedrun/paths.go b/internal/shedrun/paths.go
+index a7b14a26..4d1dc08d 100644
+--- a/internal/shedrun/paths.go
++++ b/internal/shedrun/paths.go
+@@ -1,4 +1,4 @@
+-// paths.go declares the shed run-directory path constructors: the durable paths under _lym (the run directory, its seed and status files, and the drive-reports directory), the ephemeral paths under .lym (including the driver park marker), the anchor-relative paths for fabric commit pathspecs (including the run-records root), the tree-relative seed and status paths a git tree read takes, and the hub-scoped ephemeral files that sit one level above any single run-id: its locks and the notice log.
++// paths.go declares the shed run-directory path constructors: the durable paths under _lym (the run directory, its seed and status files, and the drive-reports directory), the ephemeral paths under .lym (including the driver park marker), the anchor-relative paths for fabric commit pathspecs (including the run-records root and the driver records that hold a file), the tree-relative seed and status paths a git tree read takes, and the hub-scoped ephemeral files that sit one level above any single run-id: its locks and the notice log.
+ // Every constructor that returns an absolute path joins onto the given *lymcwd.Location's AnchorPath(), per the Cwd Resolution Invariant; the *Rel constructors and TreeRunFileRels return relative paths; none of them calls os.Getwd or any git command.
+ 
+ package shedrun
+@@ -7,6 +7,8 @@ import (
+ 	"crypto/sha256"
+ 	"encoding/hex"
+ 	"fmt"
++	"io/fs"
++	"os"
+ 	"path"
+ 	"path/filepath"
+ 	"strconv"
+@@ -318,6 +320,46 @@ func TacklerRel(l *lymcwd.Location, runID string) string {
+ 	return filepath.Join(lymdirs.LymDirName, shedDirName, runSegment(l, runID), tacklerDirName)
+ }
+ 
++// DriverRecordsRel returns the anchor-relative paths of a run's driver records for a commit pathspec: DriveReportsRel, ArbiterRel and TacklerRel, in that order, each only when its directory holds a file anywhere beneath it.
++// A directory with no file is left out, since a pathspec that matches nothing fails the commit.
++func DriverRecordsRel(l *lymcwd.Location, runID string) []string {
++	dirs := []struct{ abs, rel string }{
++		{DriveReportsDir(l, runID), DriveReportsRel(l, runID)},
++		{ArbiterDir(l, runID), ArbiterRel(l, runID)},
++		{TacklerDir(l, runID), TacklerRel(l, runID)},
++	}
++	var rels []string
++	for _, dir := range dirs {
++		if HoldsFile(dir.abs) {
++			rels = append(rels, dir.rel)
++		}
++	}
++	return rels
++}
++
++// HoldsFile reports whether dir is a directory holding at least one non-directory entry anywhere beneath it, stopping the walk at the first such entry.
++// An absent, unreadable or non-directory dir holds none.
++// A commit pathspec names a directory only when this holds, since a pathspec that matches nothing fails the commit.
++func HoldsFile(dir string) bool {
++	info, err := os.Stat(dir)
++	if err != nil || !info.IsDir() {
++		return false
++	}
++	found := false
++	// A walk error can only end the walk before a file is found, so found alone is the answer.
++	_ = filepath.WalkDir(dir, func(_ string, d fs.DirEntry, err error) error {
++		if err != nil {
++			return err
++		}
++		if !d.IsDir() {
++			found = true
++			return fs.SkipAll
++		}
++		return nil
++	})
++	return found
++}
++
+ // TacklerAttemptDir returns the path to one tackler attempt's durable directory, attempt-<N> under TacklerDir(l, runID), where attempt is the attempt's 1-based number.
+ func TacklerAttemptDir(l *lymcwd.Location, runID string, attempt int) string {
+ 	return filepath.Join(TacklerDir(l, runID), "attempt-"+strconv.Itoa(attempt))
+diff --git a/internal/shedrun/paths_test.go b/internal/shedrun/paths_test.go
+index 98a64045..07cec11b 100644
+--- a/internal/shedrun/paths_test.go
++++ b/internal/shedrun/paths_test.go
+@@ -1,6 +1,7 @@
+ package shedrun
+ 
+ import (
++	"os"
+ 	"path/filepath"
+ 	"strings"
+ 	"testing"
+@@ -292,6 +293,53 @@ func TestDriveReportsRel(t *testing.T) {
+ 	}
+ }
+ 
++// TestHoldsFile pins that only a directory with a file beneath it holds one: an absent path, a plain file, an empty directory and a directory of empty directories hold none.
++func TestHoldsFile(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name  string
++		build func(t *testing.T, root string) string
++		want  bool
++	}{
++		{"AbsentPath", func(_ *testing.T, root string) string { return filepath.Join(root, "absent") }, false},
++		{"PlainFile", func(t *testing.T, root string) string {
++			path := filepath.Join(root, "plain")
++			if err := os.WriteFile(path, []byte("x"), 0o644); err != nil {
++				t.Fatal(err)
++			}
++			return path
++		}, false},
++		{"EmptyDirectory", func(_ *testing.T, root string) string { return root }, false},
++		{"NestedEmptyDirectories", func(t *testing.T, root string) string {
++			if err := os.MkdirAll(filepath.Join(root, "a", "b"), 0o755); err != nil {
++				t.Fatal(err)
++			}
++			return root
++		}, false},
++		{"FileBeneathNestedDirectory", func(t *testing.T, root string) string {
++			if err := os.MkdirAll(filepath.Join(root, "a", "b"), 0o755); err != nil {
++				t.Fatal(err)
++			}
++			if err := os.WriteFile(filepath.Join(root, "a", "b", "f"), []byte("x"), 0o644); err != nil {
++				t.Fatal(err)
++			}
++			return root
++		}, true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			dir := tt.build(t, t.TempDir())
++			if got := HoldsFile(dir); got != tt.want {
++				t.Errorf("HoldsFile(%s) = %v; want %v", tt.name, got, tt.want)
++			}
++		})
++	}
++}
++
+ // TestLocksAreDistinct pins that a run's RunLock and StatusLock never share a file, which shedengine.Shed's own validation rejects outright (a shared file would hang on the first persist rather than fail), and that PrimeRunLock and LandLock are distinct hub-scoped locks from each other and from any single run-id's locks.
+ //
+ //testtiming:keep pins that RunLock, StatusLock, PrimeRunLock and LandLock never share a file, which its covering tests do not
