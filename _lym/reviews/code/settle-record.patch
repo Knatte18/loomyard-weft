@@ -1,0 +1,1392 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 675da157..367fdf73 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -423,7 +423,7 @@ User-facing modules each get one `lym <module>` namespace:
+   defaults to `bug`.
+   Callable from any sandbox agent context with no config. ✅ Implemented.
+ - **reed** — **the window to the world**: tmux overlay + **strand** bookkeeping + render (`internal/reedcli` + `internal/reedengine` + `internal/reedengine/render`). Hosts every managed process as a strand in a window of its own or its group's, persists to `.lym/reed.json` (`lym reed up|add|remove|status|list|attach|switch|resume|watchdog|down`); `lym reed add` places a strand `--anchor own-window` by default. Every strand carries a hierarchical full name (see the `internal/agentname` package documentation), mirrored into its pane title and Claude session name and exported to its process as `LYM_STRAND_NAME` and `LYM_PARENT`, with the watchdog repairing drift; `list` is the hub-wide name directory. Built on what its proof-of-concept, `muxpoc`, proved first (env hygiene, native `--resume`); `muxpoc` has since been deleted, its job done. `reed attach` and `reed watchdog` are this module's two registered interactive-handoff exceptions ([PATTERN-cli-cobra](../pattern/PATTERN-cli-cobra.md)): `attach` hands the operator's stdio to a `tmux attach-session` child in place, pre-flighting through checking tmux's floor version, booting the session if cold and checking server/session liveness, and `watchdog` is the detached per-hub name-repair and reap daemon that blocks for its process lifetime — in both cases every fallible step runs pre-flight, on the envelope, and only the terminal-handover/daemon tail itself is exempt from emitting JSON. `add` and `attach` boot this worktree's session when none is up, with `up`'s own semantics — a bare substrate, with no persisted strand relaunched — instead of refusing; every other reed verb still refuses on a cold worktree. ✅ Implemented. See the `internal/reedengine` package documentation.
+-- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengine/codexengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await|await-forks`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository; its cap defaults to the caller role's keep-warm cap from `claude.yaml`. `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine: a reviewer, fixer or writer that waits inside it takes every fork's result in one turn instead of waking once per fork. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into the outcomes `done`/`died`/`timeout` and `api-error`. A spec with `APIErrorRetries` re-sends a turn the provider's API ended on an error that many times, then ends the run `api-error`. Any other turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run holds at once with an output file missing, a gated run with every output file present counts done once they pass the shell wait bound after telling the agent to read them, and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane; the exception is a handle whose own `Stop` removed the strand, which ends `died` and is recorded as stopped unless the files show the run done. No guardrail denies the in-process `Agent` tool: a subagent or fork shows in the session's own pane and lym reads its transcript under the session's `subagents` directory. A `PreToolUse` guardrail denies `AskUserQuestion` when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode, a version check included (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and to a package-scoped compile check the hub's `refuse_raw` does not refuse, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write, and a fifth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a headless `claude` launch with `-p` or `--print`, whose work shows in no pane, steering the session to a subagent through the `Agent` tool; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one and follows `[creel]` mail from its hooks. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). `claude.yaml`'s `keep_warm_cap` (template 250s) and `keep_warm_cap_roles` set the per-role keep-warm cap beside them. While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups, a sliced read of a short or already-read file, or a chain of edit-only messages; it never denies a call, and the block's switches and thresholds are config. The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, or per run by a model-spec naming it. Two engines are registered: `claude`, and `codex`, which drives the Codex CLI's TUI under one shared lym Codex home (`codex.yaml`'s `home`, linked to the operator's own login and sessions, its folder trust rendered by lym), with `-a never -s workspace-write` and the records checkout it is told through its config dirs as a writable root, none outside a hub; it loads skills as SKILL.md files the model reads by absolute path under `codex.yaml`'s `skill_roots`, and installs the shell guard rows of the `shellguard` table as `PreToolUse` hooks matching `Bash` with Codex's own steer and notice texts (`apply_patch` in place of Read, Edit and Write), the python and publish rows following their switches and the refuse-raw row a non-empty `refuse_raw` list, but has no fork audit or creel hooks yet, and the model registry's `sol`, `astra` and `luna` aliases name it. Per-run `Model`/`Effort` knobs (`lym shuttle run --model`/`--effort`; effort values `low|medium|high|xhigh|max`, empty = provider default) are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
++- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengine/codexengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await|await-forks`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits; in a hub an opened Claude session carries creel's hook delivery and the creel trust sentence as a run session does, so mail reaches it through its hooks; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository; its cap defaults to the caller role's keep-warm cap from `claude.yaml`. `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine: a reviewer, fixer or writer that waits inside it takes every fork's result in one turn instead of waking once per fork. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into the outcomes `done`/`died`/`timeout` and `api-error`. A spec with `APIErrorRetries` re-sends a turn the provider's API ended on an error that many times, then ends the run `api-error`. Any other turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run holds at once with an output file missing, a gated run with every output file present counts done once they pass the shell wait bound after telling the agent to read them, and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane; the exception is a handle whose own `Stop` removed the strand, which ends `died` and is recorded as stopped unless the files show the run done. No guardrail denies the in-process `Agent` tool: a subagent or fork shows in the session's own pane and lym reads its transcript under the session's `subagents` directory. A `PreToolUse` guardrail denies `AskUserQuestion` when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode, a version check included (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and to a package-scoped compile check the hub's `refuse_raw` does not refuse, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write, and a fifth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a headless `claude` launch with `-p` or `--print`, whose work shows in no pane, steering the session to a subagent through the `Agent` tool; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one and follows `[creel]` mail from its hooks. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). `claude.yaml`'s `keep_warm_cap` (template 250s) and `keep_warm_cap_roles` set the per-role keep-warm cap beside them. While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups, a sliced read of a short or already-read file, or a chain of edit-only messages; it never denies a call, and the block's switches and thresholds are config. The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, or per run by a model-spec naming it. Two engines are registered: `claude`, and `codex`, which drives the Codex CLI's TUI under one shared lym Codex home (`codex.yaml`'s `home`, linked to the operator's own login and sessions, its folder trust rendered by lym), with `-a never -s workspace-write` and the records checkout it is told through its config dirs as a writable root, none outside a hub; it loads skills as SKILL.md files the model reads by absolute path under `codex.yaml`'s `skill_roots`, and installs the shell guard rows of the `shellguard` table as `PreToolUse` hooks matching `Bash` with Codex's own steer and notice texts (`apply_patch` in place of Read, Edit and Write), the python and publish rows following their switches and the refuse-raw row a non-empty `refuse_raw` list, but has no fork audit or creel hooks yet, and the model registry's `sol`, `astra` and `luna` aliases name it. Per-run `Model`/`Effort` knobs (`lym shuttle run --model`/`--effort`; effort values `low|medium|high|xhigh|max`, empty = provider default) are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). A prompt deferred behind the skill-load turn is typed again at a held turn end, or when `Attach` takes over the run, while no turn start carries it, so an agent that sat idle without its task gets it. Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
+ - **orch** — the hub orchestrator hosted as an interactive Claude session in a reed strand of the prime worktree or of a beam, cycled before its context fills (`internal/orchcli` + `internal/orchengine`; `lym orch stop|status|refresh|distill|withdraw|rules`, in the prime and in any beam). `lym beam start` first ensures the worktree's `runs` strand, which runs `lym batten overview` as the beam's window, named `beam: prime` or `beam: <slug>` opened with the beam's board handle as in `P1: beam: <slug>`, and `stop` leaves it; ensuring it adds the runs strand beside a `loom-status` strand a pawl run's `lym loom start` put in an overview window first, as the session's first overview window, and a failure to add, replace or record it is a warning on the bring-up report naming `lym beam start`, never a stop; the orchestrator has a window of its own, and the session's windows run the beam window, agents, shell. A detached watcher has the session write a note, then clears it and resumes it from that note (`refresh`) or compacts it in place (`distill`), never clearing or compacting without one. ✅ Implemented. See the `internal/orchengine` package documentation.- **webster** — the implementer module: one long-lived Master session that reads the plan and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool), each fork reading its cards' code itself, instead of spawning a fresh reed/tmux strand per batch;
+   bracket verbs (`begin-batch`/`record-batch`) drive each in-session fork (Master ends its turn while a backgrounded fork works and records the batch on the fork's completion notification, shuttle reading that turn end as waiting rather than done), and a genuine model escalation (recovery after a stuck/report-less fork) spawns a cold strand.
+   Consumes the flat card-list plan (pinned in the plan-format blocks `contracts/stencils/loom/loom-block-plan-*.md`, which `contracts/stencils/loom/loom-template-plan.md`, the Plan producer's own stencil, includes) via its own sole parser, `internal/planparser`, groups cards into execution batches via `internal/batcher`, a separate config-selected registry module webster consumes (profiles in `batcher.yaml`, the `wide` cost profile by default), then runs those batches in card order, refusing a backward dependency derived from the cards' own `Targets`/`Uses` refs, records the partition in `state.json` at first init, and carries the plan's `## verify:` command as a must-pass gate on Merriam's strand: a failure is rerun once (a pass on the rerun records the identities as flaky;
+diff --git a/internal/creelengine/doc.go b/internal/creelengine/doc.go
+index 89f81804..c9301672 100644
+--- a/internal/creelengine/doc.go
++++ b/internal/creelengine/doc.go
+@@ -80,7 +80,7 @@
+ // A reply to an EXTERNAL sender, which only a waiting `post --wait-reply` receives and no claim hands out, keeps a 64 KiB cap on its body.
+ // A claim never hands out a message an older binary stored whose line is past 10,000 UTF-16 units, the cap Claude Code keeps of one hook field; it stays for `lym creel read` and raises no mail flag.
+ //
+-// The pane path types notices and reminders only into a pane-mail strand, one whose session runs without creel's hook delivery, as a Claude session launched before that delivery, a `lym shuttle open` session or a hand-added strand does;
++// The pane path types notices and reminders only into a pane-mail strand, one whose session runs without creel's hook delivery, as a Claude session launched before that delivery, a Codex session or a hand-added strand does;
+ // a strand marked `CreelHooks` gets its mail through its hooks, and only queued injects are typed into its pane.
+ // A notice is a message from any sender but an agent strand, a program or EXTERNAL, whose body is at most 4 KiB.
+ // It is carried in full in its own line, typed when the receiver is idle, `[creel] #<id> from "<sender>": <body>`, with every run of line breaks and other control characters turned into one space.
+diff --git a/internal/shuttlecli/cli_test.go b/internal/shuttlecli/cli_test.go
+index a4e33c9c..5f8ff866 100644
+--- a/internal/shuttlecli/cli_test.go
++++ b/internal/shuttlecli/cli_test.go
+@@ -736,7 +736,7 @@ type openRecorderEngine struct {
+ 	specs []shuttleengine.OpenSpec
+ }
+ 
+-func (e *openRecorderEngine) OpenLaunch(spec shuttleengine.OpenSpec, cfg shuttleengine.Config) (shuttleengine.Launch, error) {
++func (e *openRecorderEngine) OpenLaunch(dir string, spec shuttleengine.OpenSpec, cfg shuttleengine.Config) (shuttleengine.Launch, error) {
+ 	e.specs = append(e.specs, spec)
+ 	return shuttleengine.Launch{Cmd: "open-cmd", ResumeCmd: "resume-cmd", SessionID: "session-1"}, e.err
+ }
+diff --git a/internal/shuttleengine/attach.go b/internal/shuttleengine/attach.go
+index 6dc94079..444497f8 100644
+--- a/internal/shuttleengine/attach.go
++++ b/internal/shuttleengine/attach.go
+@@ -361,6 +361,7 @@ func (r *Runner) reconstruct(candidate attachCandidate, normalized Spec, gate Ga
+ 		deadline:  createdAt.Add(normalized.Timeout),
+ 		createdAt: createdAt,
+ 		gate:      gate,
++		attached:  true,
+ 	}
+ 
+ 	// Live-Substrate Spawn Observability invariant: a re-attach to a live agent is as instrumented as
+diff --git a/internal/shuttleengine/attach_test.go b/internal/shuttleengine/attach_test.go
+index f6209d7f..9dd1e895 100644
+--- a/internal/shuttleengine/attach_test.go
++++ b/internal/shuttleengine/attach_test.go
+@@ -12,6 +12,7 @@ import (
+ 	"errors"
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 	"strings"
+ 	"testing"
+ 	"time"
+@@ -62,6 +63,9 @@ type seedAttachRunOpts struct {
+ 	started bool
+ 	// forkSubagents seeds RunState.ForkSubagents; the key is written only when true, so a seed without it is the older record's shape.
+ 	forkSubagents bool
++	// promptLine and promptOffset seed RunState.PromptLine and PromptOffset, written only when set.
++	promptLine   string
++	promptOffset int64
+ }
+ 
+ // seedAttachRun writes a run.json fixture at <root>/<id>/run.json built from a plain map rather than
+@@ -90,6 +94,12 @@ func seedAttachRun(t *testing.T, root, id string, opts seedAttachRunOpts) string
+ 	if opts.forkSubagents {
+ 		fields["forkSubagents"] = true
+ 	}
++	if opts.promptLine != "" {
++		fields["promptLine"] = opts.promptLine
++	}
++	if opts.promptOffset != 0 {
++		fields["promptOffset"] = opts.promptOffset
++	}
+ 	data, err := json.MarshalIndent(fields, "", "  ")
+ 	if err != nil {
+ 		t.Fatalf("marshal run.json fixture: %v", err)
+@@ -1056,6 +1066,74 @@ func TestAttach_OffsetStartsAtZero(t *testing.T) {
+ 	})
+ }
+ 
++// TestAttach_DeliversTheDeferredPrompt pins that a run Attach reconstructs types its deferred prompt line once at Wait entry when its output files are missing and no turn of the prompt started, and types nothing when every output file exists.
++func TestAttach_DeliversTheDeferredPrompt(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const promptLine = "Read the task prompt and carry it out."
++	tests := []struct {
++		name         string
++		events       string
++		promptOffset int64
++		outputExists bool
++		// covered runs Attach under a hub entry that a later clock sleep resumes, and sendFails makes every send into the pane fail.
++		covered   bool
++		sendFails bool
++		wantTyped []string
++	}{
++		{name: "a zero prompt offset with output files missing types the prompt", events: "SESSIONSTART:startup\n", wantTyped: []string{promptLine}},
++		{name: "a set prompt offset with no prompt turn start types the prompt", events: skillLoadEvents, promptOffset: skillLoadOffset, wantTyped: []string{promptLine}},
++		{name: "output files that all exist type nothing", events: skillLoadEvents, promptOffset: skillLoadOffset, outputExists: true},
++		{name: "a covering pause holds the prompt until the pause lifts", events: skillLoadEvents, promptOffset: skillLoadOffset, covered: true, wantTyped: []string{promptLine}},
++		{name: "a failed send is logged and Attach still returns the run", events: skillLoadEvents, promptOffset: skillLoadOffset, sendFails: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			reed := &echoReed{fakeReed: &fakeReed{StatusQueue: []reedengine.StatusResult{liveStatus("strand-1", "%1")}}, pane: "❯ "}
++			engine := &sessionFakeEngine{waitingEngine: waitingEngine{fakeEngine: fakeEngine{StartupScript: []StartupState{StartupReady}}}, liveness: LivenessAlive}
++			if tt.sendFails {
++				reed.SendTextErr = errors.New("pane gone")
++			}
++			fc := newFakeClock(time.Now())
++			geometry, resume := coverHub(t, fc.Now())
++			var clock Clock = fc
++			if tt.covered {
++				clock = &liftClock{Clock: fc, liftAfter: 3, lift: func() { resume(fc.Now()) }}
++			}
++			fx := newFixture(t, reed, engine, withConfig(fastConfig), withSeparateRunDir(), withClock(clock))
++			if tt.covered {
++				fx.Runner.SetPause(geometry)
++			}
++			seedPresentReedState(t, fx.DotLym)
++			outputFile := filepath.Join(fx.RunRoot, "out.md")
++			if tt.outputExists {
++				touchOutputFile(t, outputFile)
++			}
++			runDir := seedAttachRun(t, fx.RunRoot, "run-1", seedAttachRunOpts{
++				strandGUID: "strand-1", sessionID: "session-1", outputFiles: []string{outputFile}, outcome: runOutcomeRunning, includeOutcome: true,
++				promptLine: promptLine, promptOffset: tt.promptOffset,
++			})
++			if err := os.WriteFile(filepath.Join(runDir, eventsFileName), []byte(tt.events), 0o644); err != nil {
++				t.Fatalf("seed events: %v", err)
++			}
++
++			_, found, err := fx.Runner.Attach(Spec{OutputFiles: []string{outputFile}, Timeout: heldTestTimeout})
++			if err != nil || !found {
++				t.Fatalf("Attach() = (_, %v, %v); want found and no error", found, err)
++			}
++
++			if !slices.Equal(reed.typed, tt.wantTyped) {
++				t.Errorf("Attach() typed %q; want %q", reed.typed, tt.wantTyped)
++			}
++			if tt.sendFails && len(reed.SendTextCalls) == 0 {
++				t.Errorf("SendText calls = none; want the failed send attempted")
++			}
++		})
++	}
++}
++
+ // TestAttach_StartedSeededTrue pins the started seed: attaching to a strand whose run.json already
+ // carries Started: true (a prior Wait already observed StartupReady for it) and whose CapturePane
+ // now returns a mid-turn capture (no ready markers) must not classify OutcomeDied after
+diff --git a/internal/shuttleengine/claudeengine/claudeengine.go b/internal/shuttleengine/claudeengine/claudeengine.go
+index 72b49671..b0e15601 100644
+--- a/internal/shuttleengine/claudeengine/claudeengine.go
++++ b/internal/shuttleengine/claudeengine/claudeengine.go
+@@ -200,23 +200,16 @@ func (c *Claude) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengi
+ 		}
+ 	}
+ 
+-	// A session in a hub gets creel's mail hook; the flag directory takes the same POSIX conversion as the events path.
+-	creelFlagDirForHook := ""
+-	if c.dirs.Board != "" {
+-		creelFlagDirForHook = CreelFlagDir(c.dirs.Board)
+-		if runtime.GOOS == "windows" {
+-			creelFlagDirForHook, err = shuttleengine.PosixPath(creelFlagDirForHook)
+-			if err != nil {
+-				return shuttleengine.Launch{}, fmt.Errorf("convert creel flag directory to posix: %w", err)
+-			}
+-		}
++	creelFlagDirForHook, err := c.creelFlagDirForHook()
++	if err != nil {
++		return shuttleengine.Launch{}, err
+ 	}
+ 
+ 	settingsJSON, err := buildSettings(eventsPathForHook, spec.Interactive, cfg, claude, spec.ForkSubagents, spec.DenyPublish, spec.ContextAfterCompaction, creelFlagDirForHook)
+ 	if err != nil {
+ 		return shuttleengine.Launch{}, fmt.Errorf("build settings: %w", err)
+ 	}
+-	settingsPath := filepath.Join(runDir, "settings.json")
++	settingsPath := filepath.Join(runDir, settingsFileName)
+ 	if err := os.WriteFile(settingsPath, settingsJSON, 0o644); err != nil {
+ 		return shuttleengine.Launch{}, fmt.Errorf("write settings: %w", err)
+ 	}
+@@ -266,3 +259,23 @@ func (c *Claude) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengi
+ 		CreelHooks: creelFlagDirForHook != "",
+ 	}, nil
+ }
++
++// settingsFileName is the settings document a launch writes and names with --settings.
++const settingsFileName = "settings.json"
++
++// creelFlagDirForHook returns the creel flag directory a session's hooks test, empty for an engine told no hub board directory.
++// On Windows it takes the git-bash POSIX conversion the hook commands need.
++func (c *Claude) creelFlagDirForHook() (string, error) {
++	if c.dirs.Board == "" {
++		return "", nil
++	}
++	flagDir := CreelFlagDir(c.dirs.Board)
++	if runtime.GOOS != "windows" {
++		return flagDir, nil
++	}
++	posix, err := shuttleengine.PosixPath(flagDir)
++	if err != nil {
++		return "", fmt.Errorf("convert creel flag directory to posix: %w", err)
++	}
++	return posix, nil
++}
+diff --git a/internal/shuttleengine/claudeengine/command.go b/internal/shuttleengine/claudeengine/command.go
+index 2245a5eb..06bea59d 100644
+--- a/internal/shuttleengine/claudeengine/command.go
++++ b/internal/shuttleengine/claudeengine/command.go
+@@ -1,6 +1,7 @@
+ // command.go composes the opaque pane-shell command lines Prepare (settings.go) hands back as a
+ // Launch: the launch line that starts a fresh session and the resume line that reattaches an
+ // existing one.
++// It also holds OpenLaunch, which writes an opened session's creel settings and composes its lines.
+ // Both are single-line strings typed verbatim into a pane via tmux send-keys (see
+ // reedengine/spawn.go's launchStrandLocked) — no newline may appear in either, since send-keys
+ // submits a line at a time.
+@@ -12,6 +13,8 @@ package claudeengine
+ 
+ import (
+ 	"fmt"
++	"os"
++	"path/filepath"
+ 	"slices"
+ 	"strconv"
+ 	"strings"
+@@ -365,8 +368,9 @@ func buildLaunchCmd(sh shell.Shell, bin, pointer, settingsPath, sessionID, model
+ // It names the session with --name as a reference to LYM_STRAND_NAME, as buildLaunchCmd does, and appends --model and --effort only when non-empty.
+ // It appends --dangerously-skip-permissions when skipPermissions is true, on the fresh and the resume form alike.
+ // Reed replays the resume line verbatim, so a resume without the flag would bring a bypass session back prompting.
+-// It passes no prompt, no --settings (the session takes the worktree's own settings) and no environment assignment, so the line is one pipeline that OrElse may join.
+-func buildOpenCmd(sh shell.Shell, bin, sessionID, model, effort string, skipPermissions, resume bool) string {
++// A non-empty settingsPath adds --settings naming it, which Claude Code stacks over the worktree's own settings, and a non-empty appendPromptPath adds --append-system-prompt-file naming it.
++// It passes no prompt and no environment assignment, so the line is one pipeline that OrElse may join.
++func buildOpenCmd(sh shell.Shell, bin, sessionID, model, effort, settingsPath, appendPromptPath string, skipPermissions, resume bool) string {
+ 	sessionFlag := " --session-id "
+ 	if resume {
+ 		sessionFlag = " --resume "
+@@ -381,19 +385,29 @@ func buildOpenCmd(sh shell.Shell, bin, sessionID, model, effort string, skipPerm
+ 	if skipPermissions {
+ 		cmd += " --dangerously-skip-permissions"
+ 	}
++	if settingsPath != "" {
++		cmd += " --settings " + sh.Quote(settingsPath)
++	}
++	if appendPromptPath != "" {
++		cmd += " --append-system-prompt-file " + sh.Quote(appendPromptPath)
++	}
+ 	return cmd
+ }
+ 
+ // OpenLaunch returns the launch of a named interactive session with no prompt.
+ // It loads claude.yaml, validates the effort and the permission mode and resolves the model and version into a model id before anything else, mints a session id, and returns the fresh line as Cmd.
++// An engine told a hub board directory then creates dir and writes into it settings.json, holding creel's hook delivery alone, and the append-system-prompt file, holding the creel trust sentence alone;
++// both lines name the two files, and the launch is marked CreelHooks, so the session gets its mail through its hooks as a run session does.
++// A failure after it creates dir removes dir.
++// An engine told no board directory writes nothing, leaves dir uncreated and marks nothing.
+ // Bypass is the default, and spec.PermissionMode "prompt" opts out per call;
+-// the session still loads Claude Code's own settings layers, whose deny rules and hooks Claude Code applies in bypass too, and carries no shuttle --settings or guard.
++// the session still loads Claude Code's own settings layers, whose deny rules and hooks Claude Code applies in bypass too, and carries no shuttle guard.
+ // "prompt" adds nothing, so it cannot override a default mode the settings set.
+ // The session takes no turn until text reaches its pane through the operator or creel, each bounded by its own rules.
+ // ResumeCmd resumes the session and falls back to a fresh start under the same id, because Claude Code keeps no transcript for a session that never took a turn, so --resume fails there.
+ // Bound: the fresh line runs whenever the resume line exits nonzero, including a resumed session that ends nonzero after a working life;
+ // a fresh start under a session id whose transcript exists fails at once, so the fallback never starts a second live session over a recorded one.
+-func (c *Claude) OpenLaunch(spec shuttleengine.OpenSpec, cfg shuttleengine.Config) (shuttleengine.Launch, error) {
++func (c *Claude) OpenLaunch(dir string, spec shuttleengine.OpenSpec, cfg shuttleengine.Config) (shuttleengine.Launch, error) {
+ 	claude, err := loadConfigOrRefuse(c.dirs)
+ 	if err != nil {
+ 		return shuttleengine.Launch{}, err
+@@ -409,15 +423,57 @@ func (c *Claude) OpenLaunch(spec shuttleengine.OpenSpec, cfg shuttleengine.Confi
+ 	if err != nil {
+ 		return shuttleengine.Launch{}, err
+ 	}
++	creelFlagDirForHook, err := c.creelFlagDirForHook()
++	if err != nil {
++		return shuttleengine.Launch{}, err
++	}
+ 	sessionID, err := newSessionID()
+ 	if err != nil {
+ 		return shuttleengine.Launch{}, fmt.Errorf("mint session id: %w", err)
+ 	}
++	settingsPath, appendPromptPath := "", ""
++	if creelFlagDirForHook != "" {
++		settingsPath, appendPromptPath, err = writeOpenFiles(dir, creelFlagDirForHook)
++		if err != nil {
++			return shuttleengine.Launch{}, err
++		}
++	}
+ 	sh := shell.ForGOOS()
+ 	bin := claudeBinary(claude)
+-	fresh := buildOpenCmd(sh, bin, sessionID, resolvedModel, spec.Effort, skipPermissions, false)
+-	resumeLine := buildOpenCmd(sh, bin, sessionID, resolvedModel, spec.Effort, skipPermissions, true)
+-	return shuttleengine.Launch{Cmd: fresh, ResumeCmd: sh.OrElse(resumeLine, fresh), SessionID: sessionID}, nil
++	fresh := buildOpenCmd(sh, bin, sessionID, resolvedModel, spec.Effort, settingsPath, appendPromptPath, skipPermissions, false)
++	resumeLine := buildOpenCmd(sh, bin, sessionID, resolvedModel, spec.Effort, settingsPath, appendPromptPath, skipPermissions, true)
++	return shuttleengine.Launch{Cmd: fresh, ResumeCmd: sh.OrElse(resumeLine, fresh), SessionID: sessionID, CreelHooks: creelFlagDirForHook != ""}, nil
++}
++
++// writeOpenFiles creates dir and writes an opened session's settings.json, holding creel's hook delivery over the flag directory creelFlagDirPosix, and its append-system-prompt file, holding the creel trust sentence.
++// It returns the two files' absolute paths.
++// A failure after the directory is created removes it, so a failed launch leaves nothing behind.
++func writeOpenFiles(dir, creelFlagDirPosix string) (settingsPath, appendPromptPath string, err error) {
++	absDir, err := filepath.Abs(dir)
++	if err != nil {
++		return "", "", fmt.Errorf("resolve the open session directory: %w", err)
++	}
++	if err := os.MkdirAll(absDir, 0o755); err != nil {
++		return "", "", fmt.Errorf("create the open session directory: %w", err)
++	}
++	defer func() {
++		if err != nil {
++			_ = os.RemoveAll(absDir)
++		}
++	}()
++	settingsJSON, err := buildOpenSettings(creelFlagDirPosix)
++	if err != nil {
++		return "", "", fmt.Errorf("build open settings: %w", err)
++	}
++	settingsPath = filepath.Join(absDir, settingsFileName)
++	if err := os.WriteFile(settingsPath, settingsJSON, 0o644); err != nil {
++		return "", "", fmt.Errorf("write open settings: %w", err)
++	}
++	appendPromptPath = filepath.Join(absDir, appendPromptFileName)
++	if err := os.WriteFile(appendPromptPath, []byte(appendPromptText("", nil)), 0o644); err != nil {
++		return "", "", fmt.Errorf("write open append system prompt: %w", err)
++	}
++	return settingsPath, appendPromptPath, nil
+ }
+ 
+ // Compile-time proof that Claude can open a session with no prompt.
+diff --git a/internal/shuttleengine/claudeengine/command_test.go b/internal/shuttleengine/claudeengine/command_test.go
+index 39876a89..2e85184d 100644
+--- a/internal/shuttleengine/claudeengine/command_test.go
++++ b/internal/shuttleengine/claudeengine/command_test.go
+@@ -9,6 +9,10 @@
+ package claudeengine
+ 
+ import (
++	"encoding/json"
++	"os"
++	"path/filepath"
++	"runtime"
+ 	"strings"
+ 	"testing"
+ 
+@@ -355,9 +359,16 @@ func TestOpenLaunch(t *testing.T) {
+ 		spec shuttleengine.OpenSpec
+ 		// invalidConfig makes the engine load a claude.yaml the loader refuses.
+ 		invalidConfig bool
+-		wantErr       string
+-		check         func(t *testing.T, launch shuttleengine.Launch)
++		// board gives the engine a hub board directory, so the launch writes creel's files into the open directory.
++		board bool
++		// obstructAppendPrompt makes a directory of the append-prompt file's path, so the write of that file fails after the directory and settings.json exist.
++		obstructAppendPrompt bool
++		wantErr              string
++		check                func(t *testing.T, launch shuttleengine.Launch)
+ 	}{
++		{name: "a failed append-prompt write removes the directory", spec: shuttleengine.OpenSpec{Role: "explore"}, board: true, obstructAppendPrompt: true, wantErr: "write open append system prompt"},
++		{name: "a board writes the creel settings and the append prompt", spec: shuttleengine.OpenSpec{Role: "explore"}, board: true},
++		{name: "a board refusal creates nothing", spec: shuttleengine.OpenSpec{Role: "explore", PermissionMode: "auto"}, board: true, wantErr: "invalid permission mode"},
+ 		{
+ 			name: "fresh line",
+ 			spec: shuttleengine.OpenSpec{Role: "explore", ModelChoice: shuttleengine.ModelChoice{Model: "opus", Effort: "high"}},
+@@ -443,7 +454,18 @@ func TestOpenLaunch(t *testing.T) {
+ 			if tt.invalidConfig {
+ 				engine = engineWithInvalidConfig(t)
+ 			}
+-			launch, err := engine.OpenLaunch(tt.spec, shuttleengine.Config{})
++			boardDir := ""
++			if tt.board {
++				boardDir = t.TempDir()
++				engine.dirs.Board = boardDir
++			}
++			dir := filepath.Join(t.TempDir(), "open")
++			if tt.obstructAppendPrompt {
++				if err := os.MkdirAll(filepath.Join(dir, appendPromptFileName), 0o755); err != nil {
++					t.Fatalf("MkdirAll: %v", err)
++				}
++			}
++			launch, err := engine.OpenLaunch(dir, tt.spec, shuttleengine.Config{})
+ 			if tt.wantErr != "" {
+ 				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
+ 					t.Fatalf("OpenLaunch() error = %v; want it to contain %q", err, tt.wantErr)
+@@ -458,6 +480,9 @@ func TestOpenLaunch(t *testing.T) {
+ 				if launch.SessionID != "" {
+ 					t.Errorf("SessionID = %q; want none from a refused open", launch.SessionID)
+ 				}
++				if _, statErr := os.Stat(dir); !os.IsNotExist(statErr) {
++					t.Errorf("Stat(%s) error = %v; want the directory uncreated by a refused open", dir, statErr)
++				}
+ 				return
+ 			}
+ 			if err != nil {
+@@ -466,14 +491,93 @@ func TestOpenLaunch(t *testing.T) {
+ 			if strings.ContainsAny(launch.Cmd+launch.ResumeCmd, "\r\n") {
+ 				t.Errorf("launch = %+v; want single-line commands", launch)
+ 			}
++			if tt.board {
++				checkOpenCreelFiles(t, launch, dir, boardDir, sh)
++				return
++			}
++			if launch.CreelHooks {
++				t.Errorf("Launch.CreelHooks = true; want false for an engine told no board directory")
++			}
+ 			if strings.Contains(launch.Cmd+launch.ResumeCmd, "--append-system-prompt-file") {
+-				t.Errorf("launch = %+v; want no --append-system-prompt-file on an open session", launch)
++				t.Errorf("launch = %+v; want no --append-system-prompt-file on an open session without a board", launch)
++			}
++			if strings.Contains(launch.Cmd+launch.ResumeCmd, "--settings") {
++				t.Errorf("launch = %+v; want no --settings on an open session without a board", launch)
++			}
++			if _, statErr := os.Stat(dir); !os.IsNotExist(statErr) {
++				t.Errorf("Stat(%s) error = %v; want the directory uncreated without a board", dir, statErr)
+ 			}
+ 			tt.check(t, launch)
+ 		})
+ 	}
+ }
+ 
++// checkOpenCreelFiles asserts what an open launch with a board directory leaves: CreelHooks, both lines naming the two files in dir, the settings document holding creel's hooks alone, and the append prompt holding the trust sentence alone.
++func checkOpenCreelFiles(t *testing.T, launch shuttleengine.Launch, dir, boardDir string, sh shell.Shell) {
++	t.Helper()
++	if !launch.CreelHooks {
++		t.Errorf("Launch.CreelHooks = false; want true for an engine told a board directory")
++	}
++	settingsPath := filepath.Join(dir, "settings.json")
++	appendPath := filepath.Join(dir, "append-system-prompt.txt")
++	for _, line := range []string{launch.Cmd, launch.ResumeCmd} {
++		for _, want := range []string{"--settings " + sh.Quote(settingsPath), "--append-system-prompt-file " + sh.Quote(appendPath)} {
++			if !strings.Contains(line, want) {
++				t.Errorf("line = %q; want it to hold %q", line, want)
++			}
++		}
++	}
++	flagDir := CreelFlagDir(boardDir)
++	if runtime.GOOS == "windows" {
++		posixFlagDir, err := shuttleengine.PosixPath(flagDir)
++		if err != nil {
++			t.Fatalf("PosixPath(%q) error: %v", flagDir, err)
++		}
++		flagDir = posixFlagDir
++	}
++	data, err := os.ReadFile(settingsPath)
++	if err != nil {
++		t.Fatalf("read settings.json: %v", err)
++	}
++	var doc map[string]map[string][]struct {
++		Hooks []struct {
++			Command       string `json:"command"`
++			AsyncRewake   bool   `json:"asyncRewake"`
++			Timeout       int    `json:"timeout"`
++			RewakeMessage string `json:"rewakeMessage"`
++			RewakeSummary string `json:"rewakeSummary"`
++		} `json:"hooks"`
++	}
++	if err := json.Unmarshal(data, &doc); err != nil {
++		t.Fatalf("parse settings.json %q: %v", data, err)
++	}
++	if len(doc) != 1 || len(doc["hooks"]) != 2 {
++		t.Fatalf("settings.json = %s; want a hooks object holding only Stop and PostToolUse", data)
++	}
++	stop, post := doc["hooks"]["Stop"], doc["hooks"]["PostToolUse"]
++	if len(stop) != 2 || len(stop[0].Hooks) != 1 || len(stop[1].Hooks) != 1 || len(post) != 1 || len(post[0].Hooks) != 1 {
++		t.Fatalf("settings.json = %s; want two Stop entries and one PostToolUse entry of one hook each", data)
++	}
++	quotedFlagDir := shQuote(flagDir)
++	if got, want := stop[0].Hooks[0].Command, creelOpenStopHookCommand(quotedFlagDir); got != want {
++		t.Errorf("Stop delivery command = %q; want %q", got, want)
++	}
++	waiter := stop[1].Hooks[0]
++	if waiter.Command != creelWaitHookCommand() || !waiter.AsyncRewake || waiter.Timeout != creelWaitTimeout || waiter.RewakeMessage != creelRewakeMessage || waiter.RewakeSummary != creelRewakeSummary {
++		t.Errorf("Stop waiter = %+v; want the idle waiter with asyncRewake", waiter)
++	}
++	if got, want := post[0].Hooks[0].Command, creelMailHookCommand(quotedFlagDir); got != want {
++		t.Errorf("PostToolUse command = %q; want %q", got, want)
++	}
++	appendBytes, err := os.ReadFile(appendPath)
++	if err != nil {
++		t.Fatalf("read append-system-prompt.txt: %v", err)
++	}
++	if got, want := string(appendBytes), appendPromptText("", nil); got != want {
++		t.Errorf("append-system-prompt.txt = %q; want %q", got, want)
++	}
++}
++
+ // TestValidateEffort covers validateEffort's full input space: the empty string (defers to claude's default), every exact-lowercase valid value, and both an unrecognized value and a wrong-case valid value (case sensitivity is load-bearing — claude only warns-and-ignores an unrecognized value rather than failing, so a silently-accepted "High" would defeat the whole hard-error guarantee).
+ //
+ //testtiming:keep pins the accepted effort values and the wrong-case rejection, which its covering tests do not assert row by row
+diff --git a/internal/shuttleengine/claudeengine/corpus_test.go b/internal/shuttleengine/claudeengine/corpus_test.go
+index 29795050..0cdb2422 100644
+--- a/internal/shuttleengine/claudeengine/corpus_test.go
++++ b/internal/shuttleengine/claudeengine/corpus_test.go
+@@ -194,6 +194,8 @@ func replayCorpusCase(t *testing.T, name string) {
+ 	}
+ 	checkCorpusStates(t, claude, name, c, lines, turnEndOf, consumed)
+ 
++	const promptLine = "Read the prompt."
++
+ 	worktree := t.TempDir()
+ 	replay := &corpusReplay{
+ 		t:          t,
+@@ -210,15 +212,20 @@ func replayCorpusCase(t *testing.T, name string) {
+ 	reed := &shuttlefake.Reed{
+ 		SendTextFn: func(_, text string, _ bool) error {
+ 			pane.WriteString(text + "\n")
++			if text == promptLine {
++				// The recorded events hold no turn start for the deferred prompt, which Wait would type again at a held turn end.
++				// So the replay appends the one the prompt's own turn writes when the line is typed.
++				appendEventsLine(t, name, replay.eventsPath, promptTurnStartLine(t, name, lines[0], promptLine))
++			}
+ 			return nil
+ 		},
+ 		CapturePaneFn: func(string) (string, error) { return pane.String(), nil },
+ 	}
+ 	launch := shuttleengine.Launch{Cmd: "replay", SessionID: "replay"}
+ 	if len(c.Skills) > 0 {
+-		launch.PromptLine = "Read the prompt."
++		launch.PromptLine = promptLine
+ 	}
+-	engine := &shuttlefake.Engine{
++	fake := &shuttlefake.Engine{
+ 		PrepareFn: func(runDir string, _ shuttleengine.Spec, _ shuttleengine.Config) (shuttleengine.Launch, error) {
+ 			replay.eventsPath = filepath.Join(runDir, "events.jsonl")
+ 			return launch, nil
+@@ -230,6 +237,12 @@ func replayCorpusCase(t *testing.T, name string) {
+ 		SkillLoadMessageFn:  claude.SkillLoadMessage,
+ 		ClassifySkillLoadFn: claude.ClassifySkillLoad,
+ 	}
++	var engine shuttleengine.Engine = fake
++	if len(c.Skills) > 0 {
++		// Only a run with a deferred prompt needs the signal parser: it tells the run whether the prompt's own turn started.
++		// The other cases keep the inert engine, so a recorded operator turn does not silence the notice their expected readings name.
++		engine = &corpusEngine{Engine: fake, claude: claude}
++	}
+ 	cfg := shuttleengine.Config{PollIntervalMS: 1000, LivenessEveryNPolls: 1, RunTimeoutMin: 60, StartupTimeoutS: 30, BackgroundShellWaitMin: 10}
+ 	runner := shuttleengine.NewRunner(reed, shuttlefake.EngineSet(engine), worktree, worktree, cfg)
+ 	runner.SetClock(replay)
+@@ -265,6 +278,46 @@ func replayCorpusCase(t *testing.T, name string) {
+ 	}
+ }
+ 
++// corpusEngine is the replay's fake engine with the real Claude session-signal parser, so the run can tell whether its deferred prompt's own turn started.
++type corpusEngine struct {
++	*shuttlefake.Engine
++	claude *claudeengine.Claude
++}
++
++// ParseSessionSignals reads data through the real Claude parser.
++func (e *corpusEngine) ParseSessionSignals(data []byte) ([]shuttleengine.SessionSignal, int) {
++	return e.claude.ParseSessionSignals(data)
++}
++
++// appendEventsLine appends line to the events file at path.
++func appendEventsLine(t *testing.T, name, path, line string) {
++	t.Helper()
++	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
++	if err != nil {
++		t.Fatalf("%s: open events file: %v", name, err)
++	}
++	defer f.Close()
++	if _, err := f.WriteString(line + "\n"); err != nil {
++		t.Fatalf("%s: append to events file: %v", name, err)
++	}
++}
++
++// promptTurnStartLine returns a UserPromptSubmit events line for prompt, built from the session fields of sample, an events line of the same session.
++func promptTurnStartLine(t *testing.T, name, sample, prompt string) string {
++	t.Helper()
++	var fields map[string]any
++	if err := json.Unmarshal([]byte(sample), &fields); err != nil {
++		t.Fatalf("%s: parse events line: %v", name, err)
++	}
++	fields["hook_event_name"] = "UserPromptSubmit"
++	fields["prompt"] = prompt
++	line, err := json.Marshal(fields)
++	if err != nil {
++		t.Fatalf("%s: build the prompt's turn start: %v", name, err)
++	}
++	return string(line)
++}
++
+ // checkCorpusStates folds the case's lines after the ones Start consumes, a line at a time, through the real ParseSessionSignals into one SessionFold,
+ // and checks the state after each line that yields a signal against the case's states in order.
+ // The facts are the replay's own: liveness alive, an autonomous run, outputs present exactly when the newest turn end at or before the line says so, a fixed reading time and no transcript marker.
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index 503bb19a..de07ddf7 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -254,7 +254,7 @@
+ // A resume through the launch's resume line reuses the file its launch wrote, so its passages stay;
+ // a Prepare that runs again, as an adopted session's does, reads the passages afresh.
+ // It is a file because the sentence holds a double quote, which an argument passed through pwsh's Legacy mode (an npm claude.cmd shim) would drop.
+-// A session opened with `lym shuttle open` writes no run directory and carries no file.
++// A session opened with `lym shuttle open` in a hub carries its own such file in the session directory Runner.Open names, holding the creel trust sentence alone; one opened outside a hub carries none.
+ // Both the hooks and the notice are built from one deny list in settings.go, so the two cannot drift:
+ // each row names its tool matcher, hook command, notice sentence and the run inputs that install it.
+ // The webster fork guard has no notice sentence and is not announced.
+@@ -300,7 +300,11 @@
+ // It is a guardrail, not a barrier: a launch behind `bash -c`, a script, an assignment prefix or `env` with an assignment passes, and a claude subcommand, or a command launched through one, taking a single-dash flag word holding `p` of its own is falsely denied.
+ //
+ // The open launch (Claude.OpenLaunch) starts a named interactive session with no prompt.
+-// Its line carries the session id and the strand-name reference, adds `--model` and `--effort` only when set, and passes no `--settings`, so the session takes the worktree's own settings.
++// Its line carries the session id and the strand-name reference, and adds `--model` and `--effort` only when set.
++// An engine told no board directory passes no `--settings`, so the session takes the worktree's own settings.
++// An engine told one writes, into the directory Runner.Open names for the session, a settings.json holding creel's hook delivery and nothing else, and the append-system-prompt file holding the creel trust sentence; both lines name the two files, and the launch is marked CreelHooks.
++// The settings' PostToolUse mail hook and idle waiter are a run's; its Stop delivery is the merged command without the recording, since an opened session has no events file: it exits 0 whatever the delivery printed, so an echo reaches the operator.
++// Claude Code stacks `--settings` over the worktree's own settings, so every other setting stays the worktree's.
+ // It carries `--dangerously-skip-permissions` unless the open's permission mode is `prompt`, on the fresh and the resume line alike, and an unknown mode refuses the open.
+ // Its resume line falls back to a fresh start under the same id, because Claude Code keeps no transcript for a session that never took a turn and `--resume` then fails.
+ //
+diff --git a/internal/shuttleengine/claudeengine/hookcmd_integration_test.go b/internal/shuttleengine/claudeengine/hookcmd_integration_test.go
+index 2c8934ec..cfd6ca45 100644
+--- a/internal/shuttleengine/claudeengine/hookcmd_integration_test.go
++++ b/internal/shuttleengine/claudeengine/hookcmd_integration_test.go
+@@ -357,12 +357,17 @@ func TestCreelStopHook_RecordsATurnEndOnlyWithoutABlock(t *testing.T) {
+ 		wantRecord  bool
+ 		wantStubRun bool
+ 		wantFailure bool
++		// open runs creelOpenStopHookCommand, which records nothing and always exits 0, in place of the merged command.
++		open bool
+ 	}{
+-		{"FlagStandsAndMailIsWritten", true, "0", mail, "", mail + "\n", false, true, false},
+-		{"FlagStandsAndAnEchoAloneIsWritten", true, "1", echo, "", echo + "\n", true, true, false},
+-		{"FlagStandsAndNothingIsClaimed", true, "1", "", "", "", true, true, false},
+-		{"FlagAbsent", false, "0", mail, "", "", true, false, false},
+-		{"UnwritableEventsFile", true, "1", "", "missing-dir", "", false, true, true},
++		{"FlagStandsAndMailIsWritten", true, "0", mail, "", mail + "\n", false, true, false, false},
++		{"FlagStandsAndAnEchoAloneIsWritten", true, "1", echo, "", echo + "\n", true, true, false, false},
++		{"FlagStandsAndNothingIsClaimed", true, "1", "", "", "", true, true, false, false},
++		{"FlagAbsent", false, "0", mail, "", "", true, false, false, false},
++		{"UnwritableEventsFile", true, "1", "", "missing-dir", "", false, true, true, false},
++		{"OpenFlagStandsAndMailIsWritten", true, "0", mail, "", mail + "\n", false, true, false, true},
++		{"OpenFlagStandsAndAnEchoReachesTheOperator", true, "1", echo, "", echo + "\n", false, true, false, true},
++		{"OpenFlagAbsent", false, "0", mail, "", "", false, false, false, true},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -387,6 +392,9 @@ func TestCreelStopHook_RecordsATurnEndOnlyWithoutABlock(t *testing.T) {
+ 			}
+ 			eventsPath := filepath.Join(root, tt.eventsDir, "events.jsonl")
+ 			command := creelStopHookCommand(shQuote(flagDir), shQuote(eventsPath))
++			if tt.open {
++				command = creelOpenStopHookCommand(shQuote(flagDir))
++			}
+ 			env := []string{
+ 				"PATH=" + binDir + ":/usr/bin:/bin", "CLAUDE_PROJECT_DIR=" + projectDir, agentname.StrandNameEnv + "=" + name,
+ 				"STUB_STDIN=" + stdinPath, "STUB_OUT=" + tt.stubOut, "STUB_EXIT=" + tt.stubExit,
+diff --git a/internal/shuttleengine/claudeengine/settings.go b/internal/shuttleengine/claudeengine/settings.go
+index 6ba7b759..b8183b18 100644
+--- a/internal/shuttleengine/claudeengine/settings.go
++++ b/internal/shuttleengine/claudeengine/settings.go
+@@ -1,4 +1,4 @@
+-// settings.go composes the Claude Code settings.json document Prepare writes for each run:
++// settings.go composes the Claude Code settings.json document Prepare writes for each run, and the creel-only document OpenLaunch writes for a session opened in a hub:
+ // a Stop hook that appends every turn-end event to the run's events.jsonl (the only channel ParseEvents reads).
+ // A session in a hub also gets creel's hook delivery: the PostToolUse mail hook, a Stop hook that merges the turn-end recording with creel's turn-end delivery so a Stop that handed mail to the session records no turn end, and the idle waiter hook that wakes an idle session.
+ // The UserPromptSubmit, StopFailure, Notification, SessionEnd, SessionStart and PermissionRequest hooks append their payloads to the same file for ParseSessionSignals;
+@@ -136,9 +136,21 @@ func strandFlagName() string {
+ // An exit 0 of that step means mail was handed to the session, which continues the turn, and the command then exits 0 having appended nothing to the events file at quotedEventsPath.
+ // Otherwise, or when the flag is absent, it appends the Stop stamp and the input as recordingCommand does and exits with that append's status, leaving whatever the delivery step printed as the hook's output, which an echo printed with exit 1 relies on to reach the operator.
+ func creelStopHookCommand(quotedFlagDir, quotedEventsPath string) string {
+-	deliver := `if [ -f ` + quotedFlagDir + `/"$f$n" ]; then cd "${CLAUDE_PROJECT_DIR:-.}" 2>/dev/null; printf '%s' "$in" | ` + creelMailCommand + ` && exit 0; fi`
+ 	record := `printf '%s' "$in" | { ` + recordingCommand(hookEventStop, quotedEventsPath) + `; }`
+-	return `in=$(cat); ` + strandFlagName() + `; ` + deliver + `; ` + record
++	return creelStopDelivery(quotedFlagDir) + `; ` + record
++}
++
++// creelOpenStopHookCommand returns the Stop hook command of a session with no events file: creel's turn-end delivery alone.
++// It reads the hook input once and, when the strand's flag stands in the directory at quotedFlagDir, pipes it to creelMailCommand from the session's project directory, whose output is the hook's.
++// It always exits 0, so whatever the delivery printed, an echo with exit 1 included, reaches Claude Code as the hook's output.
++func creelOpenStopHookCommand(quotedFlagDir string) string {
++	return creelStopDelivery(quotedFlagDir) + `; true`
++}
++
++// creelStopDelivery returns the opening of a creel Stop hook command: it reads the hook input into $in, forms the strand's flag name, and when that flag stands in the directory at quotedFlagDir pipes the input to creelMailCommand from the session's project directory, exiting 0 when that hands out mail.
++func creelStopDelivery(quotedFlagDir string) string {
++	deliver := `if [ -f ` + quotedFlagDir + `/"$f$n" ]; then cd "${CLAUDE_PROJECT_DIR:-.}" 2>/dev/null; printf '%s' "$in" | ` + creelMailCommand + ` && exit 0; fi`
++	return `in=$(cat); ` + strandFlagName() + `; ` + deliver
+ }
+ 
+ // creelWaitCommand is the command the idle waiter hook runs: creel's waiter verb, told this engine's registry name so it renders the wake as this engine's.
+@@ -162,6 +174,42 @@ func creelWaitHookCommand() string {
+ 	return `cd "${CLAUDE_PROJECT_DIR:-.}" 2>/dev/null; ` + creelWaitCommand
+ }
+ 
++// creelWaitHookEntry returns the Stop hook entry of the idle waiter: it runs creelWaitHookCommand in the background for up to creelWaitTimeout seconds and wakes the idle session, under creel's labels, when it exits 2.
++func creelWaitHookEntry() hookEntry {
++	return hookEntry{Hooks: []hookCommand{{Type: "command", Command: creelWaitHookCommand(), AsyncRewake: true, Timeout: creelWaitTimeout, RewakeMessage: creelRewakeMessage, RewakeSummary: creelRewakeSummary}}}
++}
++
++// openSettingsHooks is the "hooks" object of an opened session's settings document: creel's hook delivery and nothing else.
++type openSettingsHooks struct {
++	Stop        []hookEntry `json:"Stop"`
++	PostToolUse []hookEntry `json:"PostToolUse"`
++}
++
++// openSettingsDoc is the settings document OpenLaunch writes for a session opened in a hub.
++// It carries hooks alone, so every other setting of the session stays the worktree's own.
++type openSettingsDoc struct {
++	Hooks openSettingsHooks `json:"hooks"`
++}
++
++// buildOpenSettings marshals an opened session's settings document over the creel flag directory creelFlagDirPosix, a git-bash POSIX path:
++// the PostToolUse creel mail hook, and on Stop creel's turn-end delivery followed by the idle waiter.
++// It records nothing, since an opened session has no events file.
++func buildOpenSettings(creelFlagDirPosix string) ([]byte, error) {
++	quotedFlagDir := shQuote(creelFlagDirPosix)
++	doc := openSettingsDoc{Hooks: openSettingsHooks{
++		Stop: []hookEntry{
++			{Hooks: []hookCommand{{Type: "command", Command: creelOpenStopHookCommand(quotedFlagDir)}}},
++			creelWaitHookEntry(),
++		},
++		PostToolUse: []hookEntry{{Hooks: []hookCommand{{Type: "command", Command: creelMailHookCommand(quotedFlagDir)}}}},
++	}}
++	data, err := json.Marshal(doc)
++	if err != nil {
++		return nil, fmt.Errorf("marshal open settings: %w", err)
++	}
++	return data, nil
++}
++
+ // settingsDoc is the Claude Code settings.json document Prepare writes.
+ // PromptSuggestionEnabled has no omitempty and buildSettings leaves it false, so every document carries `"promptSuggestionEnabled": false`.
+ // The styled read is what lets a hand-added session, which this document does not configure, have its suggestion read as an empty box.
+@@ -390,7 +438,7 @@ func buildSettings(eventsPathPosix string, interactive bool, cfg shuttleengine.C
+ 		doc.Hooks.PostToolUse = append(doc.Hooks.PostToolUse, hookEntry{Hooks: []hookCommand{{Type: "command", Command: creelMailHookCommand(quotedFlagDir)}}})
+ 		doc.Hooks.Stop = []hookEntry{
+ 			{Hooks: []hookCommand{{Type: "command", Command: creelStopHookCommand(quotedFlagDir, quotedEventsPath)}}},
+-			{Hooks: []hookCommand{{Type: "command", Command: creelWaitHookCommand(), AsyncRewake: true, Timeout: creelWaitTimeout, RewakeMessage: creelRewakeMessage, RewakeSummary: creelRewakeSummary}}},
++			creelWaitHookEntry(),
+ 		}
+ 	}
+ 
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 3ba7d1ff..5fc24d0f 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -145,8 +145,12 @@
+ // # Pending prompt
+ //
+ // A launch that defers its prompt to a typed line (Launch.PromptLine) records the line in run.json as `promptLine`.
+-// Run.DeliverPendingPrompt reads that record and types the line through the guarded paste-submit when no turn start lies at or past RunState.PromptOffset, so a step that died between its skill-load turns and its prompt delivery does not leave an agent that never got its task.
+-// It persists the events file's size as the prompt offset first when none was recorded, reports whether it sent, and changes nothing when it fails.
++// Run.DeliverPendingPrompt reads that record and types the line through the guarded paste-submit when no turn start whose instruction is the line lies at or past RunState.PromptOffset, so a step that died between its skill-load turns and its prompt delivery does not leave an agent that never got its task.
++// A turn start with another instruction, one the operator typed included, does not count as the prompt's.
++// It persists the events file's size as the prompt offset first when none was recorded, clears any pending-send record so the send types the line, reports whether it sent, types the line at most once per handle, and changes nothing when it fails.
++// Wait calls it on two occasions: once, at the first tick no pause covers the run, for a run Attach reconstructed whose output files are missing, and at a held turn end with no turn start read past it and no pause covering the run.
++// A held turn end it types the prompt at sends no hold notice, and a failed delivery is logged at Warn and tried again at the next held turn end.
++// Bound: a prompt the provider queued while a turn ran starts its turn only when that turn ends, so a held turn end read before it can type the line a second time.
+ //
+ // # Pause
+ //
+@@ -186,7 +190,8 @@
+ // It needs an engine with the optional SessionOpener capability, and a covered pause refuses it before anything is created.
+ // The strand's command chains, after the provider line, an exit marker under the anchor's ephemeral `shuttle-open` directory, reed's detached self-removal and the shell's exit, so ending the session closes its window.
+ // The marker is the strand's done-when path, so a resume drops a finished session instead of relaunching it.
+-// The strand carries the provider's session id, which the watchdog's name repair reads.
++// OpenLaunch is told a directory of the session's own beside the marker, named by the same token, for the files its launch reads, and the engine creates it only when it writes one.
++// The strand carries the provider's session id, which the watchdog's name repair reads, and the launch's CreelHooks mark, so a session whose launch carries creel's hook delivery gets its mail through its hooks as a run session does.
+ // An open writes no run directory, no run.json and no output file, so the state verb and the hold notices never cover an opened session.
+ // OpenSpec.PermissionMode is engine vocabulary carried blind to OpenLaunch, and the engine realizes it or refuses it before anything is created.
+ //
+diff --git a/internal/shuttleengine/engine.go b/internal/shuttleengine/engine.go
+index e70568df..a28a12ec 100644
+--- a/internal/shuttleengine/engine.go
++++ b/internal/shuttleengine/engine.go
+@@ -315,13 +315,14 @@ type OpenSpec struct {
+ }
+ 
+ // SessionOpener is an optional capability beside Engine: the provider's way of opening a named interactive session with no prompt.
+-// OpenLaunch returns the launch and resume lines and the session id of a session that runs with no prompt, no run directory and no run artifacts.
+-// The session runs under the caller's own worktree settings, takes no turn, and is opened by Runner.Open.
+-// An implementing engine honours spec.PermissionMode or refuses it from OpenLaunch,
+-// so the refusal lands before Runner.Open mints the marker token, creates the marker directory or adds a strand.
++// OpenLaunch returns the launch and resume lines and the session id of a session that runs with no prompt, no run directory and no run record.
++// dir is a directory of the session's own that does not yet exist; the engine creates it only to write files its launch lines read, such as settings that carry creel's hook delivery, and then marks the launch CreelHooks.
++// The session runs under the caller's own worktree settings and any the engine adds, takes no turn, and is opened by Runner.Open.
++// An implementing engine honours spec.PermissionMode or refuses it from OpenLaunch before it writes anything,
++// so the refusal lands before Runner.Open creates the marker directory or adds a strand.
+ // It is separate from Engine for the same reason SessionCycler is: most implementers and test fakes never open a session.
+ type SessionOpener interface {
+-	OpenLaunch(spec OpenSpec, cfg Config) (Launch, error)
++	OpenLaunch(dir string, spec OpenSpec, cfg Config) (Launch, error)
+ }
+ 
+ // SkillLoader is an optional capability beside Engine: the provider's way of loading a list of named skills into a live session in one submitted turn, and of checking that turn afterwards.
+diff --git a/internal/shuttleengine/enginedispatch_test.go b/internal/shuttleengine/enginedispatch_test.go
+index 56c86c86..6a864f5c 100644
+--- a/internal/shuttleengine/enginedispatch_test.go
++++ b/internal/shuttleengine/enginedispatch_test.go
+@@ -144,7 +144,7 @@ func (e *dispatchEngine) ParseSessionSignals(data []byte) ([]SessionSignal, int)
+ 	return nil, len(data)
+ }
+ 
+-func (e *dispatchEngine) OpenLaunch(OpenSpec, Config) (Launch, error) {
++func (e *dispatchEngine) OpenLaunch(string, OpenSpec, Config) (Launch, error) {
+ 	e.record("OpenLaunch")
+ 	return Launch{Cmd: "open-" + e.name, ResumeCmd: "resume-" + e.name, SessionID: "session-" + e.name}, nil
+ }
+diff --git a/internal/shuttleengine/fakes_test.go b/internal/shuttleengine/fakes_test.go
+index b814d031..c71e74b1 100644
+--- a/internal/shuttleengine/fakes_test.go
++++ b/internal/shuttleengine/fakes_test.go
+@@ -915,18 +915,20 @@ var (
+ 	_ UsageLimitReader    = (*sessionFakeEngine)(nil)
+ )
+ 
+-// openerFakeEngine is fakeEngine plus the SessionOpener capability: OpenLaunch records the spec it was given and returns the scripted launch, or the scripted error.
++// openerFakeEngine is fakeEngine plus the SessionOpener capability: OpenLaunch records the directory and the spec it was given and returns the scripted launch, or the scripted error.
+ type openerFakeEngine struct {
+ 	fakeEngine
+ 
+ 	launch    Launch
+ 	openErr   error
++	openDirs  []string
+ 	openSpecs []OpenSpec
+ }
+ 
+-func (e *openerFakeEngine) OpenLaunch(spec OpenSpec, cfg Config) (Launch, error) {
++func (e *openerFakeEngine) OpenLaunch(dir string, spec OpenSpec, cfg Config) (Launch, error) {
+ 	e.mu.Lock()
+ 	defer e.mu.Unlock()
++	e.openDirs = append(e.openDirs, dir)
+ 	e.openSpecs = append(e.openSpecs, spec)
+ 	return e.launch, e.openErr
+ }
+diff --git a/internal/shuttleengine/hold.go b/internal/shuttleengine/hold.go
+index 6140fc10..9e1a9854 100644
+--- a/internal/shuttleengine/hold.go
++++ b/internal/shuttleengine/hold.go
+@@ -2,6 +2,7 @@
+ // It also declares the optional capability that tells a held turn end the provider's usage limit caused, which sends no notice.
+ // Its background-wake check sends none for a held turn end left waiting on background work a session wakes from.
+ // Its operator-turn check sends none for a held turn end of a turn the operator started by typing into the pane.
++// It also types a deferred prompt line whose own turn never started, at a held turn end and when Attach reconstructs a run, in place of a notice.
+ 
+ package shuttleengine
+ 
+@@ -122,6 +123,46 @@ func (run *Run) wakesOnBackground(held *heldTurnEnd) bool {
+ 	return held.background && meetsAll(run.engine, []Requirement{RequirementBackgroundWake})
+ }
+ 
++// deliverPromptAtHold types the run's deferred prompt line at held when the prompt's own turn never started, and reports whether it did.
++// It sends only for a run with a deferred prompt line, no pause covering it and no turn start read past held;
++// DeliverPendingPrompt judges the prompt's turn and types the line at most once per handle.
++// A failed send is logged at Warn and held is held as any other turn end, so the next held turn end tries again.
++func (run *Run) deliverPromptAtHold(held *heldTurnEnd) bool {
++	if run.state.PromptLine == "" || run.covered || run.turnStartRead {
++		return false
++	}
++	sent, err := run.DeliverPendingPrompt()
++	if err != nil {
++		logger.Warn("shuttle: the deferred prompt never started a turn and could not be typed at a held turn end", "strandGUID", run.state.StrandGUID, "offset", held.offset, "error", err)
++		return false
++	}
++	if sent {
++		logger.Warn("shuttle: the deferred prompt never started a turn; typed it at a held turn end", "strandGUID", run.state.StrandGUID, "offset", held.offset)
++	}
++	return sent
++}
++
++// deliverPromptOnAttach types the deferred prompt line of an attached run whose output files are missing when the prompt's own turn never started, as when the driver that launched it died before the line went out.
++// It judges the delivery once per handle, at the first call made while no pause covers the run; a call made under a pause does nothing, so the pause is waited out by Wait's own polling and not inside the send.
++// A failed send is logged at Warn, and the run's next held turn end tries again.
++func (run *Run) deliverPromptOnAttach() {
++	if !run.attached || run.attachPromptTried || run.covered {
++		return
++	}
++	run.attachPromptTried = true
++	if run.state.PromptLine == "" || allOutputFilesExist(run.state.OutputFiles) {
++		return
++	}
++	sent, err := run.DeliverPendingPrompt()
++	if err != nil {
++		logger.Warn("shuttle: attach: the deferred prompt never started a turn and could not be typed", "strandGUID", run.state.StrandGUID, "error", err)
++		return
++	}
++	if sent {
++		logger.Warn("shuttle: attach: the deferred prompt never started a turn; typed it", "strandGUID", run.state.StrandGUID)
++	}
++}
++
+ // apiErrorContinueLine is the one line an agent whose turn ended on an API error across a machine sleep is given to carry on.
+ const apiErrorContinueLine = "[lym] Your last turn ended on an API error while the machine slept; it is awake again. Carry on with your task where you stopped."
+ 
+diff --git a/internal/shuttleengine/hold_test.go b/internal/shuttleengine/hold_test.go
+index f1f1d4af..6af6b677 100644
+--- a/internal/shuttleengine/hold_test.go
++++ b/internal/shuttleengine/hold_test.go
+@@ -38,11 +38,17 @@ type echoReed struct {
+ 
+ 	pane  string
+ 	typed []string
++	// sendFailures is how many leading SendText calls fail before the rest succeed.
++	sendFailures int
+ }
+ 
+ func (r *echoReed) CapturePane(string) (string, error) { return r.pane, nil }
+ 
+ func (r *echoReed) SendText(guid, text string, submit bool) error {
++	if r.sendFailures > 0 {
++		r.sendFailures--
++		return errors.New("pane gone")
++	}
+ 	if err := r.fakeReed.SendText(guid, text, submit); err != nil {
+ 		return err
+ 	}
+@@ -87,6 +93,11 @@ func TestWait_HeldTurnEndNotice(t *testing.T) {
+ 		// apiError makes the engine read the "STOP:overloaded" turn end as an API error and the pane take the lines sent to it, and sendFails makes that send fail.
+ 		apiError  bool
+ 		sendFails bool
++		// prompt is the run's deferred prompt line, which makes the engine parse session signals and the pane take the lines sent to it.
++		prompt string
++		// pendingSend seeds the pending-send record a failed earlier send of the prompt line left, at the prompt offset, and promptSendFailures is how many leading sends into the pane fail.
++		pendingSend        bool
++		promptSendFailures int
+ 		// usageLimit makes the engine read the "STOP:limit" turn end as one the provider's usage limit caused.
+ 		usageLimit bool
+ 		// sleepJump is the clock jump per Sleep, nonzero to reach a wait bound in a few ticks, and timeout is the run's deadline, heldTestTimeout when zero.
+@@ -304,6 +315,63 @@ func TestWait_HeldTurnEndNotice(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name:   "a held turn end after an operator's turn start types the deferred prompt once and sends no notice",
++			events: skillLoadEvents + "START:fortsett?\nSTOP:answered\n", session: true, promptOffset: skillLoadOffset, prompt: "Read the task prompt and carry it out.",
++			check: func(t *testing.T, got heldRun) {
++				if !slices.Equal(got.sent, []string{"Read the task prompt and carry it out."}) || len(got.notices) != 0 {
++					t.Errorf("sent = %q, notices = %q; want the prompt line once and no notice", got.sent, got.notices)
++				}
++			},
++		},
++		{
++			name:   "a held turn end after the prompt's own turn start types nothing and is notified",
++			events: skillLoadEvents + "START:Read the task prompt and carry it out.\nSTOP:answered\n", session: true, promptOffset: skillLoadOffset, prompt: "Read the task prompt and carry it out.",
++			check: func(t *testing.T, got heldRun) {
++				if len(got.sent) != 0 || len(got.notices) != 1 {
++					t.Errorf("sent = %q, notices = %q; want nothing typed and one notice", got.sent, got.notices)
++				}
++			},
++		},
++		{
++			name:   "a held turn end after an operator's turn start types the prompt over a pending-send record of it",
++			events: skillLoadEvents + "START:fortsett?\nSTOP:answered\n", session: true, promptOffset: skillLoadOffset, prompt: "Read the task prompt and carry it out.", pendingSend: true,
++			check: func(t *testing.T, got heldRun) {
++				if !slices.Equal(got.sent, []string{"Read the task prompt and carry it out."}) || len(got.notices) != 0 {
++					t.Errorf("sent = %q, notices = %q; want the prompt line once and no notice", got.sent, got.notices)
++				}
++			},
++		},
++		{
++			name:   "a held turn end read while a pause covers the run types no prompt",
++			events: skillLoadEvents + "START:fortsett?\nSTOP:answered\n", session: true, promptOffset: skillLoadOffset, prompt: "Read the task prompt and carry it out.", coveredSleeps: 3,
++			check: func(t *testing.T, got heldRun) {
++				if len(got.sent) != 0 || len(got.notices) != 0 {
++					t.Errorf("sent = %q, notices = %q; want nothing typed and no notice", got.sent, got.notices)
++				}
++			},
++		},
++		{
++			name:   "a held turn end with a turn start read after it in the same batch types no prompt",
++			events: skillLoadEvents + "START:fortsett?\nSTOP:answered\nSTART\n", session: true, promptOffset: skillLoadOffset, prompt: "Read the task prompt and carry it out.",
++			check: func(t *testing.T, got heldRun) {
++				if len(got.sent) != 0 {
++					t.Errorf("sent = %q; want nothing typed", got.sent)
++				}
++			},
++		},
++		{
++			name:   "a failed prompt send is notified as a held stop and the next held turn end types the prompt",
++			events: skillLoadEvents + "START\nSTOP:first\n", session: true, promptOffset: skillLoadOffset, prompt: "Read the task prompt and carry it out.", promptSendFailures: 1,
++			script: func(appendLine func(string), _ func(time.Duration)) []func() {
++				return []func(){func() { appendLine("START:fortsett?") }, func() { appendLine("STOP:second") }}
++			},
++			check: func(t *testing.T, got heldRun) {
++				if !slices.Equal(got.sent, []string{"Read the task prompt and carry it out."}) || len(got.notices) != 1 || !strings.HasSuffix(got.notices[0], "«first»") {
++					t.Errorf("sent = %q, notices = %q; want the prompt line once, typed at the second turn end, and one notice for the first", got.sent, got.notices)
++				}
++			},
++		},
+ 		{
+ 			name: "a plain stop on an engine that wakes on background work is notified", events: "STOP:which approach?\n", strand: strandName,
+ 			backgroundWake: true,
+@@ -464,12 +532,13 @@ func TestWait_HeldTurnEndNotice(t *testing.T) {
+ 			}
+ 			var reed ReedOps = &fakeReed{StatusQueue: liveStrandStatus(true)}
+ 			var paneReed *echoReed
+-			if tt.apiError {
++			if tt.apiError || tt.prompt != "" {
+ 				engine = &sessionFakeEngine{waitingEngine: waitingEngine{fakeEngine: fakeEngine{StartupScript: []StartupState{StartupReady}}}, liveness: LivenessAlive, apiErrorLine: "STOP:overloaded"}
+ 				paneReed = &echoReed{fakeReed: &fakeReed{StatusQueue: liveStrandStatus(true)}, pane: "❯ "}
+ 				if tt.sendFails {
+ 					paneReed.SendTextErr = errors.New("pane gone")
+ 				}
++				paneReed.sendFailures = tt.promptSendFailures
+ 				reed = paneReed
+ 			}
+ 			if tt.backgroundWake {
+@@ -502,7 +571,7 @@ func TestWait_HeldTurnEndNotice(t *testing.T) {
+ 				holdDeferral = tt.deferral(t, elapsed)
+ 			}
+ 			runOpts := []runOpt{
+-				withRunState(RunState{StrandGUID: "strand-1", StrandName: tt.strand, SessionID: "session-1", PromptOffset: tt.promptOffset}),
++				withRunState(RunState{StrandGUID: "strand-1", StrandName: tt.strand, SessionID: "session-1", PromptOffset: tt.promptOffset, PromptLine: tt.prompt}),
+ 				withRunEvents(tt.events),
+ 				withRunOffset(tt.promptOffset),
+ 				withRunClock(clk, fc.Now().Add(timeout)),
+@@ -511,6 +580,16 @@ func TestWait_HeldTurnEndNotice(t *testing.T) {
+ 				runOpts = append(runOpts, withRunGate(GateSpec{{Name: "check", Gate: func() (GateResult, error) { return GateResult{Passed: true}, nil }}}))
+ 			}
+ 			run := fx.newRun(Spec{OutputFiles: []string{filepath.Join(t.TempDir(), "out.md")}, Timeout: timeout, Interactive: tt.interact, QuietHold: tt.quiet, HoldDeferral: holdDeferral}, runOpts...)
++			if tt.prompt != "" {
++				if err := saveRunState(run.runDir, run.state); err != nil {
++					t.Fatalf("saveRunState: %v", err)
++				}
++				if tt.pendingSend {
++					if err := savePendingSend(run.runDir, pendingSend{Text: tt.prompt, EventsOffset: tt.promptOffset}); err != nil {
++						t.Fatalf("savePendingSend: %v", err)
++					}
++				}
++			}
+ 			for _, text := range tt.sentTexts {
+ 				recordSentText(run.runDir, text)
+ 			}
+diff --git a/internal/shuttleengine/open.go b/internal/shuttleengine/open.go
+index 389b2bfb..cd0ba27c 100644
+--- a/internal/shuttleengine/open.go
++++ b/internal/shuttleengine/open.go
+@@ -35,11 +35,16 @@ func openMarkerPath(anchorPath, token string) string {
+ 	return filepath.Join(anchorPath, lymdirs.DotLymDirName, openMarkerDirName, token+".exited")
+ }
+ 
++// openSessionDir returns the directory an opened session's engine may write its launch files into, beside the exit marker and named by the same token.
++func openSessionDir(anchorPath, token string) string {
++	return filepath.Join(anchorPath, lymdirs.DotLymDirName, openMarkerDirName, token)
++}
++
+ // Open opens a named interactive session with no prompt in its own window and returns without waiting.
+-// The strand takes its name from spec.Role, numbered by reed when the role is held.
++// The strand takes its name from spec.Role, numbered by reed when the role is held, and carries the launch's CreelHooks mark.
+ // Its pane line runs the provider, then writes the exit marker, asks reed to remove the strand and exits the shell, so ending the session closes its window;
+ // when the self-removal fails the strand stays as a dead pane until `lym reed remove`, and a resume drops it through the marker instead of relaunching it.
+-// It writes no run directory, no run record and no output file.
++// It writes no run directory, no run record and no output file; the engine may write its launch files into the session's own directory beside the marker.
+ // spec.Engine names the engine, empty for the set's default;
+ // an unregistered name, a covered pause geometry and an engine without SessionOpener each refuse the open before anything is created.
+ // Bound: one interactive session per call, in the caller's own worktree under its settings, never a turn; nothing caps the count.
+@@ -66,15 +71,16 @@ func (r *Runner) Open(spec OpenSpec) (OpenResult, error) {
+ 	if !ok {
+ 		return OpenResult{}, fmt.Errorf("shuttle: open: the engine %q cannot open a session with no prompt", engineName)
+ 	}
+-	launch, err := opener.OpenLaunch(spec, r.cfg)
+-	if err != nil {
+-		return OpenResult{}, err
+-	}
+-
+ 	token, err := newRunID()
+ 	if err != nil {
+ 		return OpenResult{}, fmt.Errorf("shuttle: open: mint the exit marker token: %w", err)
+ 	}
++	sessionDir := openSessionDir(r.anchorPath, token)
++	launch, err := opener.OpenLaunch(sessionDir, spec, r.cfg)
++	if err != nil {
++		return OpenResult{}, err
++	}
++
+ 	marker := openMarkerPath(r.anchorPath, token)
+ 	if err := os.MkdirAll(filepath.Dir(marker), 0o755); err != nil {
+ 		return OpenResult{}, fmt.Errorf("shuttle: open: create the exit marker directory: %w", err)
+@@ -83,19 +89,21 @@ func (r *Runner) Open(spec OpenSpec) (OpenResult, error) {
+ 	sh := shell.ForGOOS()
+ 	selfRemove := sh.Invoke("lym") + " reed remove --name " + sh.EnvRef(agentname.StrandNameEnv) + " --detach"
+ 	strand, err := r.reed.AddStrand(reedengine.AddSpec{
+-		Role:      spec.Role,
+-		Segment:   string(spec.Segment),
+-		Provider:  engineName,
+-		Cmd:       sh.Chain(launch.Cmd, sh.Touch(marker), selfRemove, sh.Exit()),
+-		ResumeCmd: sh.Chain(launch.ResumeCmd, sh.Touch(marker), selfRemove, sh.Exit()),
+-		SessionID: launch.SessionID,
+-		Display:   render.Display{Anchor: render.AnchorOwnWindow},
+-		DoneWhen:  []string{marker},
++		Role:       spec.Role,
++		Segment:    string(spec.Segment),
++		Provider:   engineName,
++		CreelHooks: launch.CreelHooks,
++		Cmd:        sh.Chain(launch.Cmd, sh.Touch(marker), selfRemove, sh.Exit()),
++		ResumeCmd:  sh.Chain(launch.ResumeCmd, sh.Touch(marker), selfRemove, sh.Exit()),
++		SessionID:  launch.SessionID,
++		Display:    render.Display{Anchor: render.AnchorOwnWindow},
++		DoneWhen:   []string{marker},
+ 	})
+ 	if err != nil {
++		_ = os.RemoveAll(sessionDir)
+ 		return OpenResult{}, fmt.Errorf("shuttle: open: add the strand: %w", err)
+ 	}
+ 
+-	logger.Info("shuttle: opened session", "strandGUID", strand.GUID, "strandName", strand.Name, "role", spec.Role, "sessionID", launch.SessionID, "marker", marker, "engine", engineName, "permissionMode", spec.PermissionMode)
++	logger.Info("shuttle: opened session", "strandGUID", strand.GUID, "strandName", strand.Name, "role", spec.Role, "sessionID", launch.SessionID, "marker", marker, "engine", engineName, "permissionMode", spec.PermissionMode, "creelHooks", launch.CreelHooks)
+ 	return OpenResult{StrandGUID: strand.GUID, StrandName: strand.Name, SessionID: launch.SessionID, Engine: engineName}, nil
+ }
+diff --git a/internal/shuttleengine/open_test.go b/internal/shuttleengine/open_test.go
+index ed8ce8f4..f0abb53f 100644
+--- a/internal/shuttleengine/open_test.go
++++ b/internal/shuttleengine/open_test.go
+@@ -20,6 +20,16 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++// dirCreatingOpenerEngine is an openerFakeEngine whose OpenLaunch creates the session directory, as an engine that writes the session's files does.
++type dirCreatingOpenerEngine struct{ *openerFakeEngine }
++
++func (e dirCreatingOpenerEngine) OpenLaunch(dir string, spec OpenSpec, cfg Config) (Launch, error) {
++	if err := os.MkdirAll(dir, 0o755); err != nil {
++		return Launch{}, err
++	}
++	return e.openerFakeEngine.OpenLaunch(dir, spec, cfg)
++}
++
+ // TestRunner_Open pins the strand Open adds and what it refuses before creating one.
+ func TestRunner_Open(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -92,6 +102,15 @@ func TestRunner_Open(t *testing.T) {
+ 			t.Fatalf("Open() error = %v", err)
+ 		}
+ 
++		if len(engine.openDirs) != 1 || len(reed.AddStrandCalls) != 1 || len(reed.AddStrandCalls[0].DoneWhen) != 1 {
++			t.Fatalf("OpenLaunch dirs = %v and AddStrand calls = %v; want one of each, the strand with one marker", engine.openDirs, reed.AddStrandCalls)
++		}
++		sessionDir := engine.openDirs[0]
++		wantMarker := sessionDir + ".exited"
++		if filepath.Dir(sessionDir) != filepath.Join(fx.Anchor, lymdirs.DotLymDirName, openMarkerDirName) || reed.AddStrandCalls[0].DoneWhen[0] != wantMarker {
++			t.Errorf("OpenLaunch dir = %q and marker = %q; want a dir under the marker directory and the marker %q named by the same token", sessionDir, reed.AddStrandCalls[0].DoneWhen[0], wantMarker)
++		}
++
+ 		if len(engine.openSpecs) != 1 || engine.openSpecs[0].PermissionMode != "bypass" {
+ 			t.Errorf("OpenLaunch specs = %+v; want exactly one carrying PermissionMode bypass", engine.openSpecs)
+ 		}
+@@ -129,6 +148,50 @@ func TestRunner_Open(t *testing.T) {
+ 		}
+ 	})
+ 
++	creelTests := []struct {
++		name       string
++		creelHooks bool
++	}{
++		{name: "a launch marked with creel hooks marks the strand", creelHooks: true},
++		{name: "a launch without creel hooks leaves the strand unmarked"},
++	}
++	for _, tt := range creelTests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			reed := &fakeReed{}
++			marked := launch
++			marked.CreelHooks = tt.creelHooks
++			fx := newFixture(t, reed, &openerFakeEngine{launch: marked})
++
++			if _, err := fx.Runner.Open(spec); err != nil {
++				t.Fatalf("Open() error = %v", err)
++			}
++
++			if len(reed.AddStrandCalls) != 1 || reed.AddStrandCalls[0].CreelHooks != tt.creelHooks {
++				t.Errorf("AddStrand calls = %+v; want one with CreelHooks %v", reed.AddStrandCalls, tt.creelHooks)
++			}
++		})
++	}
++
++	t.Run("a failed strand add removes the session directory", func(t *testing.T) {
++		t.Parallel()
++		reed := &fakeReed{AddStrandErr: errors.New("reed down")}
++		engine := &openerFakeEngine{launch: launch}
++		fx := newFixture(t, reed, dirCreatingOpenerEngine{engine})
++
++		_, err := fx.Runner.Open(spec)
++
++		if err == nil || !strings.Contains(err.Error(), "reed down") {
++			t.Fatalf("Open() error = %v; want it to contain %q", err, "reed down")
++		}
++		if len(engine.openDirs) != 1 {
++			t.Fatalf("OpenLaunch dirs = %v; want one", engine.openDirs)
++		}
++		if _, statErr := os.Stat(engine.openDirs[0]); !os.IsNotExist(statErr) {
++			t.Errorf("session directory stat err = %v; want it removed after the failed add", statErr)
++		}
++	})
++
+ 	t.Run("a second open of the same role passes the role again", func(t *testing.T) {
+ 		t.Parallel()
+ 		reed := &fakeReed{}
+diff --git a/internal/shuttleengine/run.go b/internal/shuttleengine/run.go
+index 02e071fe..d99e7381 100644
+--- a/internal/shuttleengine/run.go
++++ b/internal/shuttleengine/run.go
+@@ -331,6 +331,12 @@ type Run struct {
+ 	stopMarked bool
+ 	// sendMu orders the in-process sends on this run: Send and sendWithin each hold it for the whole idle wait, typing and delivery check.
+ 	sendMu sync.Mutex
++	// promptDelivered reports that DeliverPendingPrompt typed the deferred prompt line through this handle, so no later call types it again; sendMu guards it.
++	promptDelivered bool
++	// attachPromptTried reports that Wait judged the attach-time prompt delivery through this handle, so no later tick judges it again; only Wait's goroutine touches it.
++	attachPromptTried bool
++	// attached reports that Attach reconstructed this handle over a persisted record, so Wait first delivers a deferred prompt the crashed driver never sent.
++	attached bool
+ 
+ 	// offset is the byte offset already consumed from state.EventsPath.
+ 	offset int64
+@@ -787,8 +793,8 @@ func (run *Run) typeStartupColor(color segmentcolor.Color) {
+ // So Wait never reads one as a held turn end of the run's own.
+ // A pane that dies meanwhile is a died startup.
+ // Every other failure tears the run down through abandonStartup too: a skill-load send, a prompt-offset persist or a prompt delivery that fails returns an error wrapping ErrNotStarted beside the cause.
+-// A prompt delivery that fails with ErrSubmissionNotLanded but is followed by a turn start in the events file past the pre-send offset landed late.
+-// Start then returns the run.
++// A prompt delivery that fails with ErrSubmissionNotLanded but is followed by a turn start in the events file past the pre-send offset is taken as landed late, and Start returns the run.
++// That turn start may be one the operator typed, so Wait checks the prompt's own turn at each held turn end and types the line again when it never started.
+ // Residual: a prompt consumed between that signal read and the strand removal is killed with its agent;
+ // if it wrote an output file, the re-step's Spec.validate refuses on that file.
+ func (run *Run) loadSkillsThenPrompt(promptLine string, color segmentcolor.Color) (Result, error) {
+@@ -857,15 +863,23 @@ func (run *Run) sendThroughPause(sc sendContext, text string) error {
+ }
+ 
+ // DeliverPendingPrompt types the run's deferred prompt line when the prompt's turn never started, and reports whether it did.
+-// It reads the persisted record: a record with no prompt line, or whose events file holds a turn start at or past the prompt offset, reports false and sends nothing.
++// It reads the persisted record: a record with no prompt line, or whose events file holds past the prompt offset a turn start whose instruction is that line, reports false and sends nothing.
++// A turn start with any other instruction, such as one the operator typed or the skill-load turn before a zero prompt offset, leaves the prompt pending.
+ // Otherwise it persists the events file's current size as the prompt offset when none was recorded, sends the line through the guarded paste-submit, and reports true.
++// A pending-send record left by an earlier failed send is cleared first, so the send types the line instead of reading an operator's turn start as the line having gone out.
++// A handle types the line at most once: every call after a delivery through it reports false.
+ // A failure is returned and nothing else changes.
+ func (run *Run) DeliverPendingPrompt() (bool, error) {
++	run.sendMu.Lock()
++	defer run.sendMu.Unlock()
++	if run.promptDelivered {
++		return false, nil
++	}
+ 	record, found, err := loadRunState(run.runDir)
+ 	if err != nil {
+ 		return false, fmt.Errorf("shuttle: read the run record in %s to deliver a pending prompt: %w", run.runDir, err)
+ 	}
+-	if !found || record.PromptLine == "" || turnStartedSince(run.engine, record.EventsPath, record.PromptOffset) {
++	if !found || record.PromptLine == "" || promptTurnStartedSince(run.engine, record.EventsPath, record.PromptOffset, record.PromptLine) {
+ 		return false, nil
+ 	}
+ 	if record.PromptOffset == 0 {
+@@ -881,11 +895,13 @@ func (run *Run) DeliverPendingPrompt() (bool, error) {
+ 			return false, fmt.Errorf("shuttle: persist the prompt offset in %s before delivering the pending prompt: %w", run.runDir, err)
+ 		}
+ 	}
+-	run.sendMu.Lock()
+-	defer run.sendMu.Unlock()
++	if err := clearPendingSend(run.runDir); err != nil {
++		logger.Warn("shuttle: pending send not cleared before delivering the pending prompt", "strandGUID", run.state.StrandGUID, "error", err)
++	}
+ 	if err := run.sendThroughPause(run.newSendContext(), record.PromptLine); err != nil {
+ 		return false, fmt.Errorf("shuttle: deliver the pending prompt: %w", err)
+ 	}
++	run.promptDelivered = true
+ 	return true, nil
+ }
+ 
+diff --git a/internal/shuttleengine/run_test.go b/internal/shuttleengine/run_test.go
+index 04eb6247..15bb8258 100644
+--- a/internal/shuttleengine/run_test.go
++++ b/internal/shuttleengine/run_test.go
+@@ -581,16 +581,30 @@ func TestRun_DeliverPendingPrompt_SendsOnlyAPromptWhoseTurnNeverStarted(t *testi
+ 		wantOffset int64
+ 		// covered runs the send under a hub entry that a later clock sleep resumes.
+ 		covered bool
++		// pendingSend seeds the pending-send record a failed earlier send of the prompt line left, at the prompt offset.
++		pendingSend bool
+ 	}{
++		{
++			name: "an operator's turn start past a pending-send record of the prompt still types the prompt", promptLine: promptLine, events: loadTurns + "START:fortsett?\n",
++			promptOffset: int64(len(loadTurns)), wantSent: true, wantOffset: int64(len(loadTurns)), pendingSend: true,
++		},
+ 		{name: "a record with no prompt line sends nothing", events: loadTurns, promptOffset: int64(len(loadTurns)), wantOffset: int64(len(loadTurns))},
+ 		{
+ 			name: "a covering hub entry holds the prompt until its resume", promptLine: promptLine, events: loadTurns,
+ 			promptOffset: int64(len(loadTurns)), wantSent: true, wantOffset: int64(len(loadTurns)), covered: true,
+ 		},
+ 		{
+-			name: "a turn start past the prompt offset means the prompt was taken", promptLine: promptLine, events: loadTurns + "START\n",
++			name: "a turn start of the prompt line past the prompt offset means the prompt was taken", promptLine: promptLine, events: loadTurns + "START:" + promptLine + "\n",
+ 			promptOffset: int64(len(loadTurns)), wantOffset: int64(len(loadTurns)),
+ 		},
++		{
++			name: "an operator's turn start past the prompt offset leaves the prompt pending", promptLine: promptLine, events: loadTurns + "START:fortsett?\n",
++			promptOffset: int64(len(loadTurns)), wantSent: true, wantOffset: int64(len(loadTurns)),
++		},
++		{
++			name: "a zero prompt offset over the load turn's own start sends the prompt", promptLine: promptLine, events: loadTurns,
++			wantSent: true, wantOffset: int64(len(loadTurns)),
++		},
+ 		{
+ 			name: "only the load turns before the prompt offset sends the prompt once", promptLine: promptLine, events: loadTurns,
+ 			promptOffset: int64(len(loadTurns)), wantSent: true, wantOffset: int64(len(loadTurns)),
+@@ -630,6 +644,11 @@ func TestRun_DeliverPendingPrompt_SendsOnlyAPromptWhoseTurnNeverStarted(t *testi
+ 			if err := saveRunState(run.runDir, record); err != nil {
+ 				t.Fatalf("saveRunState: %v", err)
+ 			}
++			if tt.pendingSend {
++				if err := savePendingSend(run.runDir, pendingSend{Text: promptLine, EventsOffset: tt.promptOffset}); err != nil {
++					t.Fatalf("savePendingSend: %v", err)
++				}
++			}
+ 
+ 			sent, err := run.DeliverPendingPrompt()
+ 			if err != nil {
+@@ -655,6 +674,17 @@ func TestRun_DeliverPendingPrompt_SendsOnlyAPromptWhoseTurnNeverStarted(t *testi
+ 			if persisted.PromptOffset != tt.wantOffset {
+ 				t.Errorf("persisted PromptOffset = %d, want %d", persisted.PromptOffset, tt.wantOffset)
+ 			}
++
++			again, err := run.DeliverPendingPrompt()
++			if err != nil {
++				t.Fatalf("second DeliverPendingPrompt() error = %v", err)
++			}
++			if again {
++				t.Errorf("second DeliverPendingPrompt() = %v, want false", again)
++			}
++			if !reflect.DeepEqual(reed.typed, wantTyped) {
++				t.Errorf("typed after the second call = %q, want %q", reed.typed, wantTyped)
++			}
+ 		})
+ 	}
+ }
+diff --git a/internal/shuttleengine/send.go b/internal/shuttleengine/send.go
+index 3edd3b23..e80acea2 100644
+--- a/internal/shuttleengine/send.go
++++ b/internal/shuttleengine/send.go
+@@ -851,6 +851,19 @@ func eventsSize(path string) int64 {
+ // turnStartedSince reports whether the events file holds a turn_start past byte offset.
+ // An engine without SessionSignalParser and an unreadable file read as no.
+ func turnStartedSince(engine Engine, eventsPath string, offset int64) bool {
++	return turnStartMatchedSince(engine, eventsPath, offset, func(SessionSignal) bool { return true })
++}
++
++// promptTurnStartedSince reports whether the events file holds past byte offset a turn start whose typed instruction is promptLine, trimmed, so a turn the operator or another send started never counts as the prompt's.
++// An engine without SessionSignalParser and an unreadable file read as no.
++func promptTurnStartedSince(engine Engine, eventsPath string, offset int64, promptLine string) bool {
++	instruction := strings.TrimSpace(promptLine)
++	return turnStartMatchedSince(engine, eventsPath, offset, func(signal SessionSignal) bool { return signal.Instruction == instruction })
++}
++
++// turnStartMatchedSince reports whether the events file holds past byte offset a turn start that match accepts.
++// An engine without SessionSignalParser and an unreadable file read as no.
++func turnStartMatchedSince(engine Engine, eventsPath string, offset int64, match func(SessionSignal) bool) bool {
+ 	parser, ok := engine.(SessionSignalParser)
+ 	if !ok {
+ 		return false
+@@ -861,7 +874,7 @@ func turnStartedSince(engine Engine, eventsPath string, offset int64) bool {
+ 	}
+ 	signals, _ := parser.ParseSessionSignals(data[offset:])
+ 	for _, signal := range signals {
+-		if signal.Kind == SessionSignalTurnStart {
++		if signal.Kind == SessionSignalTurnStart && match(signal) {
+ 			return true
+ 		}
+ 	}
+diff --git a/internal/shuttleengine/wait.go b/internal/shuttleengine/wait.go
+index 91a7ffba..d1ea4d46 100644
+--- a/internal/shuttleengine/wait.go
++++ b/internal/shuttleengine/wait.go
+@@ -295,6 +295,7 @@ func (run *Run) Wait() (Result, error) {
+ 	run.turnSince = run.clock.Now()
+ 	for tick := 1; ; tick++ {
+ 		run.observePause()
++		run.deliverPromptOnAttach()
+ 		outcome, held, err := run.pollEventsTick()
+ 		if err == nil && run.turnStartRead {
+ 			run.turnSince = run.clock.Now()
+@@ -327,6 +328,8 @@ func (run *Run) Wait() (Result, error) {
+ 				}
+ 				switch {
+ 				case continued:
++				case run.deliverPromptAtHold(held):
++					// The agent never got its task; the turn its prompt now starts is the work, so the parent has nothing to answer.
+ 				case run.holdNoticePending() && run.usageLimited(held):
+ 					// The parent cannot act while the account is limited, and a notice sent now lands in its context as stale clutter after the reset.
+ 					logger.Info("shuttle: held turn end stopped on the usage limit; no hold notice", "strandGUID", run.state.StrandGUID, "offset", held.offset)
