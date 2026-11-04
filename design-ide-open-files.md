@@ -19,4 +19,5 @@ Later each beam will have markdown files of its own, which the window should ope
 - The `code` CLI opens files given after the folder or workspace path.
 - VS Code renders markdown on open through the `workbench.editorAssociations` setting `{"*.md": "vscode.markdown.preview.editor"}`, which lym can write into the seeded workspace settings, with no plugin; `workbench.startupEditor: readme` opens a README rendered when no other editor opens.
 
-Related: task `beam-code-opens-workspace` makes a beam's `code` button open the beam workspace.
+Built (2026-11-04): task `beam-code-opens-workspace` makes `lym ide spawn <beam>` regenerate and open the beam's `<RepoName>-<beam>.code-workspace` file, so a beam's `code` button opens the beam workspace; a task slug still opens its bare folder.
+The files-on-start idea above is not built.
