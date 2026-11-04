@@ -2,8 +2,6 @@
 
 `landing-watch-limits` · Task · enhancement, dobby, orch, creel, board · running · Darn-Write
 
-Depends on: [`worktree-create-serial`](design-worktree-create-serial.md)
-
 ## Seen (orch, 2026-11-01)
 
 `landing-watch` (commit `c9d52bdb`) has dobby send the orch a line when a task with `notify_on_land` set lands.

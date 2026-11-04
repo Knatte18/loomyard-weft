@@ -328,9 +328,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "worktree-create-serial"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Close the known limits landing-watch left: a late notify_on_land, a Land passed while dobby was down, and a dropped line when no orch is live",
       "body": "## Seen (orch, 2026-11-01)\n\n`landing-watch` (commit `c9d52bdb`) has dobby send the orch a line when a task with `notify_on_land` set lands.\nIts commit lists known limits:\n\n- A `notify_on_land` set after the run passed Land gets no line.\n- A run that passes Land while dobby is down long enough for a fresh state record to be written gets no line.\n- The line needs a live orch; after three failed posts it is dropped.\n\nThe notice was never run end to end against a live orch.\n\n## Wanted (operator, 2026-11-04: close all three)\n\n1. Setting `notify_on_land` on an entry whose run already landed answers at once: the board write says it landed, or the line is sent then.\n2. A landing missed while dobby was down is still noticed: on start dobby finds `notify_on_land` entries that landed since it last ran (board done state, not only its own state record) and sends their lines.\n3. A line the orch cannot take now waits in creel for the orch and reaches it when it comes back, never dropped after a fixed number of posts.\n\nShow the notice end to end against a live orch once, in a test or by hand, and say which in the change description.\n",
@@ -553,9 +551,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "worktree-create-serial"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Branch protection refuses a direct push to main, so no task or beam can land on such a repository",
       "body": "## Seen (operator, 2026-11-03)\n\nOn the NORCE Models repository, on machine OSL-1046, a direct commit or push to `main` is refused by branch protection: every change reaches `main` as a merge from a branch, on the remote.\nThat is intended and stays so.\nlym lands every run by merging locally and pushing the parent: a task's Finalize squashes onto the parent and pushes it, and a beam's pawl run lands the beam the same way.\nSo on such a repository no task and no beam can land.\n\n## Design (operator, 2026-11-03)\n\nA hub, or a parent branch, can be marked as landed through the remote:\n\n- Finalize pushes the task or beam branch, opens a pull request into the parent and squash-merges it on the remote at once, then pulls the parent, in place of the local squash and push.\n- A pull request is always opened, by the hub's own rule, though the protection demands no approval and no status check: lym merges it without waiting for a review.\n- The merge is always a squash.\n- The parent lock, the gate of the merged tree and the board's done mark stay as today.\n- A refused push to a protected branch names this setting as the way forward, instead of a bare push failure.\n",
@@ -698,29 +694,6 @@
       "project": "codex-engine-trial"
     },
     {
-      "id": 1091,
-      "handle": "T3",
-      "slug": "worktree-create-serial",
-      "title": "Worktree-Create runs one at a time and spends minutes on network round trips",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "fabric",
-        "batten",
-        "dobby"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Five released tasks left Worktree-Create one by one over minutes, behind fetches, remote-ref reads and a weft push",
-      "body": "## Seen (operator and hub orch, 2026-11-04)\n\nSeven tasks were released together on the loomyard prime; five were ready at once and dobby (max_runs 8) started all five.\nThe operator found the start very slow.\nOver about three minutes the five runs left Worktree-Create one after another, never together:\n\n- `beam-pr-lifecycle` reached Seed-IDE first, while the other four still sat in Worktree-Create.\n- `dobby-zombie-children` then sat at Open-Window for over a minute.\n- `shuttle-launch-delivery` left Worktree-Create about two minutes in; `drift-capture-and-migration` and `drive-reports-untracked` were still in Worktree-Create after that.\n\nMeanwhile `lym tender status` showed network operations in flight only (several `remote-refs` and a `fetch` per slug, none under a parent lock), and a `lym fabric … push` of the prime's weft for `beam-pr-lifecycle` ran over two minutes, its `git send-pack` to `loomyard-weft.git` alone about a minute.\n\nAt the same time githubstatus.com reported Git Operations and API Requests as `degraded_performance` (minor outage); a `git ls-remote` took 0.9 s, while a branch push of `shuttle-launch-delivery` was refused with `Internal Server Error` and its retry hung over two minutes.\nA create normally takes about 10 s, so the slowness is mostly GitHub's push path; the note stands for how a slow or failing push stalls every create behind it.\n\n## Idea\n\n- A create does not wait on a push: a branch push that is slow or refused runs and retries in the background, so a GitHub outage delays the remote copy, not the run.\n\n- Find what serializes Worktree-Create across runs (a fabric lock, the weft push, or the network ops), and let independent creates run side by side.\n- Cut the network round trips per create: one fetch and one remote-refs read per create, and no synchronous weft push of the prime on the create path.\n- Find why Open-Window takes over a minute.\n",
-      "status": "done",
-      "created": "2026-11-04T11:18:51Z",
-      "revised": "2026-11-04T13:46:18Z",
-      "profile": "light"
-    },
-    {
       "id": 1095,
       "handle": "T7",
       "slug": "locks-out-of-tracked-trees",
@@ -734,7 +707,6 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "worktree-create-serial",
         "landing-watch-limits",
         "batching-hook-reach"
       ],

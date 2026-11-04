@@ -2,8 +2,6 @@
 
 `protected-parent-landing` · Task · feature, landing, git · running · Drift-Await
 
-Depends on: [`worktree-create-serial`](design-worktree-create-serial.md)
-
 ## Seen (operator, 2026-11-03)
 
 On the NORCE Models repository, on machine OSL-1046, a direct commit or push to `main` is refused by branch protection: every change reaches `main` as a merge from a branch, on the remote.
