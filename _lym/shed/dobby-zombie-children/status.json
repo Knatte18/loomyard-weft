@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -34,6 +34,33 @@
       "output": "",
       "at": "2026-11-04T11:25:06Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/dobby-zombie-children/_lym/landing/summary.md",
+      "at": "2026-11-04T12:07:31Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-04T11:35:20.110558676Z",
+          "end": "2026-11-04T11:35:20.12395146Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-04T11:35:20.184083653Z",
+          "end": "2026-11-04T12:06:52.89808059Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-04T12:06:52.976786404Z",
+          "end": "2026-11-04T12:06:52.978342071Z"
+        }
+      ]
     }
   ],
   "product": {
