@@ -1,6 +1,6 @@
 # Let the pr-reviewer read and edit on GitHub
 
-`pr-reviewer-github-access` · Task · enhancement, landing, stencil · running · Drift-Await
+`pr-reviewer-github-access` · Task · enhancement, landing, stencil · running · Darn-Write
 
 Depends on: [`beam-pr-lifecycle`](design-beam-pr-lifecycle.md)
 
