@@ -598,13 +598,14 @@
         "config"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "A beam IDE starts with its README rendered; which files open is config, not code, so per-beam docs can be named later",
       "body": "## Seen (operator, 2026-11-03)\n\nA beam's VS Code window opens with no file; the operator wants it to start on the README, rendered, not as source.\nThe operator renders markdown by hand today with a plugin's `Ctrl+K V`.\nLater each beam will have markdown files of its own, which the window should open instead.\n\n## Idea (operator, 2026-11-03)\n\n- Which files `lym ide spawn` opens on start is config, per place (prime, beam, task), never hard-coded: a list of paths relative to the worktree, with placeholders such as `{beam}` so a beam's own file can be named later.\n- The default opens `README.md` for a beam.\n- A markdown file opens rendered.\n\n## Hints (hub orch)\n\n- The `code` CLI opens files given after the folder or workspace path.\n- VS Code renders markdown on open through the `workbench.editorAssociations` setting `{\"*.md\": \"vscode.markdown.preview.editor\"}`, which lym can write into the seeded workspace settings, with no plugin; `workbench.startupEditor: readme` opens a README rendered when no other editor opens.\n\nBuilt (2026-11-04): task `beam-code-opens-workspace` makes `lym ide spawn \u003cbeam\u003e` regenerate and open the beam's `\u003cRepoName\u003e-\u003cbeam\u003e.code-workspace` file, so a beam's `code` button opens the beam workspace; a task slug still opens its bare folder.\nThe files-on-start idea above is not built.\n",
-      "status": "draft",
       "created": "2026-11-03T19:02:45Z",
-      "revised": "2026-11-04T12:14:32Z"
+      "revised": "2026-11-04T13:48:46Z",
+      "profile": "light"
     },
     {
       "id": 1073,
