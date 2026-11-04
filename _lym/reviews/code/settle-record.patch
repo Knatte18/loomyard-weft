@@ -1,0 +1,1401 @@
+diff --git a/docs/research/writer-lookups-measure-2026-11-04/README.md b/docs/research/writer-lookups-measure-2026-11-04/README.md
+new file mode 100644
+index 00000000..c007b4d6
+--- /dev/null
++++ b/docs/research/writer-lookups-measure-2026-11-04/README.md
+@@ -0,0 +1,31 @@
++# Writer lookups measure
++
++The scripts and tables behind [report.md](report.md): how the Plan-Write and Discussion-Write sessions of landed tapestry runs explore the code and use lookup subagents.
++The tables record one run on one machine and are not claiming to stay true.
++
++## Rerunning
++
++Run `run-all.sh [out-dir]` from any working directory; the repo root is found from the script's location.
++`out-dir` defaults to this folder.
++
++Environment:
++
++- `PROJECTS` names the transcript root; it defaults to `~/.claude/projects`.
++- `SCRATCH` names the work directory; it defaults to `<repo root>/.scratch/writer-lookups-measure`.
++- `CUTOFF` names the first session date; it defaults to 2026-11-02.
++- `LINE_TOKENS` names the context line of the "over" figures; it defaults to 200000.
++
++The scripts need `bash`, `jq` and `awk`.
++Everything is read-only apart from the tables and the work directory.
++
++## Adding a run
++
++Add the slug to `slugs.txt`; its transcripts must be under `$PROJECTS/-home-knatte-Code-loomyard-LYMHUB-<slug>/`.
++Then rerun `run-all.sh` and update the report's tables.
++
++## Scripts
++
++- `run-all.sh` extracts turns and calls with a copy of the turn audit's `extract-turns.sh` and runs the rest.
++- `writers.sh` writes `writer-turns.tsv` (every writer turn, with its kind and cost), `writer-sessions.tsv` (one row per writer session and a total) and `writer-chains.tsv` (every chain of exploration turns).
++- `subagents.sh` writes `writer-subagents.tsv`: every Agent call of a writer session, with its batch, kind, model, turns and cost.
++- `turns.tsv` and `calls.tsv` hold the writer sessions' rows of the turn audit's extraction.
+diff --git a/docs/research/writer-lookups-measure-2026-11-04/calls.tsv b/docs/research/writer-lookups-measure-2026-11-04/calls.tsv
+new file mode 100644
+index 00000000..ae6b07db
+--- /dev/null
++++ b/docs/research/writer-lookups-measure-2026-11-04/calls.tsv
+@@ -0,0 +1,472 @@
++slug	session	kind	role	turn	call	ts	tool	class	key
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	1	1	2026-11-03T07:29:14.849Z	Skill	skill	
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	1	2	2026-11-03T07:29:14.849Z	Skill	skill	
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	3	1	2026-11-03T07:29:17.921Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/.lym/shuttle/c2f0cfd3cb30004194dbda1dba39ef3b/prompt.md
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	4	1	2026-11-03T07:29:19.557Z	Bash	lym-read	lym board get '{"slug":"batten-remote-order"}'; echo ----; lym board list
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	4	2	2026-11-03T07:29:19.557Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/specs/loom/loom-discussion-spec.md
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	5	1	2026-11-03T07:29:22.940Z	Bash	lym-read	lym board get '{"slug":"fabric-remote-async"}'; echo ----; lym board get '{"slug":"landed-run-left-paused"}'; echo ----; lym loom peers 2>&1 | head -50; ls /hom
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	6	1	2026-11-03T07:29:27.955Z	Bash	search	cd /home/knatte/Code/loomyard-LYMHUB/batten-remote-order; grep -rn "no pair worktree" --include=*.go internal cmd | grep -v _test | head; echo ---; grep -rn "or
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	7	1	2026-11-03T07:29:32.193Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/pattern/PATTERN-fabric-git.md
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	7	2	2026-11-03T07:29:32.193Z	Agent	agent	
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	7	3	2026-11-03T07:29:32.193Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/pattern/PATTERN-owner-machine.md
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	7	4	2026-11-03T07:29:32.193Z	Agent	agent	
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	7	5	2026-11-03T07:29:32.193Z	Agent	agent	
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	7	6	2026-11-03T07:29:32.193Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/pattern/PATTERN-remote-refs-lock.md
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	7	7	2026-11-03T07:29:32.193Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/pattern/PATTERN-push-both-sides.md
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	7	8	2026-11-03T07:29:32.193Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/pattern/PATTERN-run-process-owner.md
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	7	9	2026-11-03T07:29:32.193Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/pattern/PATTERN-pair-teardown.md
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	9	1	2026-11-03T07:30:18.234Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/internal/battencli/resumereconcile.go
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	9	2	2026-11-03T07:30:18.234Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/internal/fabricengine/teardownlock.go
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	10	1	2026-11-03T07:30:23.162Z	Bash	other-bash	lym shuttle await-forks 2>&1 | head -5; echo
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	13	1	2026-11-03T07:30:53.117Z	Bash	search	cd /home/knatte/Code/loomyard-LYMHUB/batten-remote-order; grep -rn "Seed-Child" --include=*.go internal | grep -v _test | head -15; echo ---; grep -rn "func del
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	14	1	2026-11-03T07:30:58.117Z	Bash	search	cd /home/knatte/Code/loomyard-LYMHUB/batten-remote-order; grep -rn "couldn't find remote ref\|BranchGone\|upstream is gone\|remote branch is gone\|ErrUpstreamGo
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	15	1	2026-11-03T07:31:02.659Z	Bash	search	cd /home/knatte/Code/loomyard-LYMHUB/batten-remote-order; sed -n 470,560p internal/fabricengine/remove.go; echo ----; sed -n 175,260p internal/fabricengine/weft
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	16	1	2026-11-03T07:31:12.077Z	Bash	search	cd /home/knatte/Code/loomyard-LYMHUB/batten-remote-order; sed -n 1,80p internal/fabricengine/originreconcileended.go; grep -n "func \|deleteRemote\|DeleteRemote
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	17	1	2026-11-03T07:31:22.117Z	Bash	search	cd /home/knatte/Code/loomyard-LYMHUB/batten-remote-order; sed -n 1,60p internal/fabricengine/remoteleftover.go; grep -n "func " internal/fabricengine/remoteleft
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	18	1	2026-11-03T07:31:28.646Z	Bash	search	cd /home/knatte/Code/loomyard-LYMHUB/batten-remote-order; grep -rln "ReconcileOrigin(" --include=*.go internal | grep -v _test; echo ---; grep -rn "BranchGone" 
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	19	1	2026-11-03T07:32:14.239Z	Bash	search	cd /home/knatte/Code/loomyard-LYMHUB/batten-remote-order; grep -rn "pattern-entry-line-cap\|PatternRuleTextCap\|ruleTextCap" --include=*.go internal | grep -v _
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	20	1	2026-11-03T07:32:19.273Z	Bash	search	cd /home/knatte/Code/loomyard-LYMHUB/batten-remote-order; grep -rn "MaxEntryTextChars *=" internal/pattern; grep -n "lockPairTeardown\|TeardownLock" internal/fa
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	21	1	2026-11-03T07:33:01.446Z	Bash	search	cd /home/knatte/Code/loomyard-LYMHUB/batten-remote-order; grep -rn "^func WriteFailedStop\|^func SpawnPairPush\|^func PushWithRetry\|DeleteRemoteBranchLeased(\|
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	22	1	2026-11-03T07:33:05.724Z	Bash	search	cd /home/knatte/Code/loomyard-LYMHUB/batten-remote-order; sed -n 150,166p internal/landingshed/finalize_owner.go; grep -rn "ls-remote" internal/shellguard/*.go 
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	23	1	2026-11-03T07:33:22.950Z	Bash	search	cd /home/knatte/Code/loomyard-LYMHUB/batten-remote-order; grep -n "pastMerge\|PastMerge" internal/battencli/cancel*.go | head; sed -n 700,730p internal/battencl
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	24	1	2026-11-03T07:33:36.685Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/discussion/decision-record.md
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	24	2	2026-11-03T07:33:36.685Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/discussion/relevant.md
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	24	3	2026-11-03T07:33:36.685Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/discussion/support-log.md
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	25	1	2026-11-03T07:34:48.261Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/stencils/loom/loom-rubric-discussion-review.md
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	26	1	2026-11-03T07:34:54.177Z	Agent	agent	
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	26	2	2026-11-03T07:34:54.177Z	Agent	agent	
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	26	3	2026-11-03T07:34:54.177Z	Agent	agent	
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	26	4	2026-11-03T07:34:54.177Z	Agent	agent	
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	26	5	2026-11-03T07:34:54.177Z	Agent	agent	
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	26	6	2026-11-03T07:34:54.177Z	Agent	agent	
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	27	1	2026-11-03T07:35:17.127Z	Bash	other-bash	lym shuttle await-forks
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	28	1	2026-11-03T07:37:22.280Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/specs/twill/twill-lens-report-spec.md
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	29	1	2026-11-03T07:38:21.050Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/discussion/support-log.lens-board-scope.md
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	29	2	2026-11-03T07:38:21.050Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/discussion/support-log.lens-leanness.md
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	29	3	2026-11-03T07:38:21.050Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/discussion/support-log.lens-bound-breaker.md
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	29	4	2026-11-03T07:38:21.050Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/discussion/support-log.lens-interactions.md
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	29	5	2026-11-03T07:38:21.050Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/discussion/support-log.lens-existing-paths.md
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	29	6	2026-11-03T07:38:21.050Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/discussion/support-log.lens-walkthrough.md
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	30	1	2026-11-03T07:39:44.583Z	Bash	search	cd /home/knatte/Code/loomyard-LYMHUB/batten-remote-order; sed -n 615,645p internal/fabricengine/originreconcile.go; grep -n "AdoptOnly\|AdoptLocal\|ErrBranchExi
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	31	1	2026-11-03T07:39:49.554Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/discussion/support-log.md
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	31	2	2026-11-03T07:39:49.554Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/discussion/decision-record.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	1	1	2026-11-03T08:24:48.058Z	Skill	skill	
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	1	2	2026-11-03T08:24:48.058Z	Skill	skill	
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	3	1	2026-11-03T08:24:52.261Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/.lym/shuttle/a58b7153e4638ae3ee5fc219b43294aa/prompt.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	4	1	2026-11-03T08:24:54.364Z	Bash	search	ls /home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/discussion/ /home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan 2>&1; ls /home/knatte/
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	5	1	2026-11-03T08:24:57.427Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/discussion/decision-record.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	5	2	2026-11-03T08:24:57.427Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/pattern/PATTERN-test-speed.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	5	3	2026-11-03T08:24:57.427Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/pattern/PATTERN-fabric-git.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	5	4	2026-11-03T08:24:57.427Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/pattern/PATTERN-fabric-isolation.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	5	5	2026-11-03T08:24:57.427Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/discussion/relevant.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	5	6	2026-11-03T08:24:57.427Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/PATTERN.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	5	7	2026-11-03T08:24:57.427Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/pattern/PATTERN-push-both-sides.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	5	8	2026-11-03T08:24:57.427Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/pattern/PATTERN-remote-refs-lock.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	5	9	2026-11-03T08:24:57.427Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/stencils/loom/loom-rubric-plan-review.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	5	10	2026-11-03T08:24:57.427Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/pattern/PATTERN-pair-teardown.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	6	1	2026-11-03T08:25:05.098Z	Bash	git-read	wc -l internal/battencli/resumereconcile.go internal/battencli/owner.go internal/battencli/cancel.go internal/battencli/cancelcmd.go internal/fabricengine/teard
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	7	1	2026-11-03T08:25:11.302Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/internal/fabricengine/add.go
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	7	2	2026-11-03T08:25:11.302Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/internal/battencli/commitstatus.go
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	7	3	2026-11-03T08:25:11.302Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/internal/fabricengine/cleanup.go
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	7	4	2026-11-03T08:25:11.302Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/internal/battencli/resumereconcile.go
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	7	5	2026-11-03T08:25:11.302Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/internal/fabricengine/teardownlock.go
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	7	6	2026-11-03T08:25:11.302Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/internal/fabricengine/archive.go
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	7	7	2026-11-03T08:25:11.302Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/internal/shedengine/failedstop.go
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	7	8	2026-11-03T08:25:11.302Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/internal/fabricengine/addadopt.go
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	7	9	2026-11-03T08:25:11.302Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/internal/fabricengine/weftwiring.go
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	7	10	2026-11-03T08:25:11.302Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/internal/fabricengine/remoteleftover.go
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	7	11	2026-11-03T08:25:11.302Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/internal/fabricengine/taskbranchdiscard.go
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	7	12	2026-11-03T08:25:11.302Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/internal/battencli/owner.go
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	7	13	2026-11-03T08:25:11.302Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/internal/landingshed/finalize_owner.go
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	7	14	2026-11-03T08:25:11.302Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/contracts/stencils/shed/shed-template-tackler.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	8	1	2026-11-03T08:25:22.991Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/internal/fabricengine/remove.go
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	8	2	2026-11-03T08:25:22.991Z	Bash	search	grep -n "func \|originTargets\|pair worktree\|ErrNo\|Run string\|RunAbsent\|type ReconcileScope" internal/fabricengine/originreconcile.go | head -80; grep -rn "
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	9	1	2026-11-03T08:25:30.951Z	Bash	read	sed -n 1,140p internal/fabricengine/originreconcile.go; sed -n 525,760p internal/fabricengine/originreconcile.go
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	10	1	2026-11-03T08:25:47.449Z	Agent	agent	
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	10	2	2026-11-03T08:25:47.449Z	Agent	agent	
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	10	3	2026-11-03T08:25:47.449Z	Agent	agent	
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	10	4	2026-11-03T08:25:47.449Z	Agent	agent	
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	11	1	2026-11-03T08:26:27.979Z	Bash	search	grep -n "AdoptLocal\|adopt-local\|teardown lock\|archive tag\|archive/<slug>" internal/fabricengine/doc.go internal/fabriccli/doc.go | head -40; grep -rln "shed
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	12	1	2026-11-03T08:26:33.440Z	Bash	search	head -3 contracts/stencils/shed/shed-template-tackler.md | cut -c1-200; grep -rn "lym-stencil: sha" contracts/stencils/shed/ | head -3; sed -n 680,780p internal
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	13	1	2026-11-03T08:26:37.511Z	Bash	search	ls internal/fabricengine | sed -n '200,400p' | tr '\n' ' '; echo; grep -n "lym fabric remove\|Pattern-Departure\|## Shared Decisions" /home/knatte/Code/loomyard
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	14	1	2026-11-03T08:26:40.926Z	Bash	search	grep -n "func Test" internal/fabricengine/remove_archive_integration_test.go internal/fabricengine/archive_integration_test.go internal/fabricengine/teardownloc
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	15	1	2026-11-03T08:26:47.608Z	Bash	search	cd /home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/specs/loom && sed -n 280,330p loom-plan-spec.md; grep -n "pattern-entry-line-cap\|pattern-card-headroom\|headroo
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	16	1	2026-11-03T08:26:51.019Z	Bash	other-bash	cd /home/knatte/Code/loomyard-LYMHUB/batten-remote-order && pwd; lym loom --help 2>&1 | grep -i headroom; grep -rn "MaxEntryTextChars\s*=" internal/ | head -2; 
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	17	1	2026-11-03T08:26:54.663Z	Bash	test-lint	sed -n 15,30p internal/pattern/check.go; wc -c PATTERN.md; lym loom lint-pattern 2>&1 | tail -5
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	18	1	2026-11-03T08:26:56.915Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/internal/battencli/arm.go
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	19	1	2026-11-03T08:26:59.808Z	Bash	quarry	lym quarry glyphs --text internal/fabricengine 2>/dev/null | grep -E "#(Topology\.Add|Topology\.add|AddOptions|ReconcileScope|originTargets|ReconcileOrigin|Entr
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	20	1	2026-11-03T08:27:05.673Z	Bash	quarry	lym quarry glyphs --text internal/battencli 2>/dev/null | awk '{print $NF}' | grep -E "#(battenCLI|battenCLI\.(battenPreRun|refuseContinuePass|ownerPreflight|pr
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	21	1	2026-11-03T08:27:13.831Z	Bash	search	sed -n 1,60p internal/fabricengine/teardownlock_integration_test.go; grep -n "func " internal/fabricengine/export_integration_test.go internal/fabricengine/expo
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	22	1	2026-11-03T08:27:20.197Z	Bash	search	grep -rn "\-\-remove" internal/battencli/cancelcmd.go | head -5; sed -n 925,1000p internal/battencli/wire.go
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	23	1	2026-11-03T08:27:26.674Z	Bash	read	sed -n 215,245p internal/fabricengine/failedpush.go; echo ----; sed -n 300,330p internal/battencli/wire.go; echo ----; sed -n 345,365p internal/tendercli/deps.g
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	24	1	2026-11-03T08:27:33.310Z	Bash	search	sed -n 15,30p internal/gitrepo/push.go; grep -n "leaseRejectedTrigger" -r internal/gitrepo/*.go | head -3; sed -n 200,260p internal/gitrepo/push.go; sed -n 40,7
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	25	1	2026-11-03T08:27:38.263Z	Bash	search	grep -rn "func .*[Cc]hild.*Status\|childStatus(" internal/battencli/*.go | grep -v _test | head -10; grep -n "^func " internal/shedrun/*.go | grep -v _test | gr
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	26	1	2026-11-03T08:27:41.833Z	Bash	search	sed -n 990,1030p internal/battencli/arm.go; grep -n "^func StatusRel\|^func RunsRootRel\|^func runSegment" -A8 internal/shedrun/*.go | head -40
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	27	1	2026-11-03T08:27:49.008Z	Agent	agent	
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	29	1	2026-11-03T08:37:34.822Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/13-remove-follow-up.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	29	2	2026-11-03T08:37:34.822Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/06-remove-archive-order.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	29	3	2026-11-03T08:37:34.822Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/10-batten-resume-readopt.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	29	4	2026-11-03T08:37:34.822Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/05-teardown-lock-add-discard-push.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	29	5	2026-11-03T08:37:34.822Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/01-gitrepo-lease-and-retry.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	29	6	2026-11-03T08:37:34.822Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/09-reconcile-absent-pair.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	29	7	2026-11-03T08:37:34.822Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/02-gitrepo-branch-push-and-tracking-drop.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	29	8	2026-11-03T08:37:34.822Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/07-leased-weft-delete.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	29	9	2026-11-03T08:37:34.822Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/00-overview.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	29	10	2026-11-03T08:37:34.822Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/03-add-drops-stale-tracking.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	29	11	2026-11-03T08:37:34.822Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/08-cleanup-teardown-lock.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	29	12	2026-11-03T08:37:34.822Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/04-add-adopt-only.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	29	13	2026-11-03T08:37:34.822Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/11-records-tag-reads.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	29	14	2026-11-03T08:37:34.822Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/14-tackler-remote-check.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	29	15	2026-11-03T08:37:34.822Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/12-readopt-failed-stop.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	30	1	2026-11-03T08:37:45.863Z	Agent	agent	
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	30	2	2026-11-03T08:37:45.863Z	Agent	agent	
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	30	3	2026-11-03T08:37:45.863Z	Agent	agent	
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	30	4	2026-11-03T08:37:45.863Z	Agent	agent	
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	30	5	2026-11-03T08:37:45.863Z	Agent	agent	
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	31	1	2026-11-03T08:38:11.793Z	Bash	other-bash	lym shuttle await-forks
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	32	1	2026-11-03T08:40:45.012Z	Bash	read	cat /home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/specs/twill/twill-lens-report-spec.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	33	1	2026-11-03T08:42:00.157Z	Bash	quarry	lym quarry resolve internal/dobbyengine#TestPlanPass internal/fabricengine_test#publishBoard internal/fabricengine_test#originBoard internal/pairteardown#fakeSu
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	34	1	2026-11-03T08:42:11.512Z	Bash	quarry	grep -rn "DenyPublish\s*[:=]\s*true\|DenyPublish: *true" internal --include=*.go | grep -v _test | head; lym quarry resolve internal/battencli#battenCLI.startFi
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	35	1	2026-11-03T08:42:15.411Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/lens-review.lens-way-forward.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	35	2	2026-11-03T08:42:15.411Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/lens-review.lens-guard-reach.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	35	3	2026-11-03T08:42:15.411Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/lens-review.lens-coverage.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	35	4	2026-11-03T08:42:15.411Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/lens-review.lens-forced-edits.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	35	5	2026-11-03T08:42:15.411Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/lens-review.lens-row-validity.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	36	1	2026-11-03T08:43:52.985Z	Bash	quarry	grep -rn "archiveTaskTip\|tagAndPushArchiveTip\|archiveWeftTip" internal --include=*.go | grep -v "^internal/fabricengine/archive.go" | grep -v "doc.go" ; grep 
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	37	1	2026-11-03T08:43:58.314Z	Bash	search	awk 'NR<=197 && /^func Test/ {f=$0} END{print f}' internal/fabricengine/remove_local_integration_test.go; grep -n "ArchiveWeftTipForTest" internal/fabricengine/
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	38	1	2026-11-03T08:44:01.290Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/03-add-drops-stale-tracking.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	38	2	2026-11-03T08:44:01.290Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/02-gitrepo-branch-push-and-tracking-drop.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	38	3	2026-11-03T08:44:01.290Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/01-gitrepo-lease-and-retry.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	39	1	2026-11-03T08:44:35.422Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/04-add-adopt-only.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	39	2	2026-11-03T08:44:35.422Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/04-add-adopt-only.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	39	3	2026-11-03T08:44:35.422Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/05-teardown-lock-add-discard-push.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	39	4	2026-11-03T08:44:35.422Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/04-add-adopt-only.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	40	1	2026-11-03T08:44:59.039Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/07-leased-weft-delete.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	40	2	2026-11-03T08:44:59.039Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/06-remove-archive-order.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	40	3	2026-11-03T08:44:59.039Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/07-leased-weft-delete.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	40	4	2026-11-03T08:44:59.039Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/07-leased-weft-delete.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	40	5	2026-11-03T08:44:59.039Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/07-leased-weft-delete.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	41	1	2026-11-03T08:45:37.180Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/07-leased-weft-delete.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	41	2	2026-11-03T08:45:37.180Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/09-reconcile-absent-pair.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	41	3	2026-11-03T08:45:37.180Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/07-leased-weft-delete.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	41	4	2026-11-03T08:45:37.180Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/08-cleanup-teardown-lock.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	42	1	2026-11-03T08:46:06.598Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/11-records-tag-reads.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	42	2	2026-11-03T08:46:06.598Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/10-batten-resume-readopt.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	43	1	2026-11-03T08:46:33.659Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/13-remove-follow-up.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	43	2	2026-11-03T08:46:33.659Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/12-readopt-failed-stop.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	44	1	2026-11-03T08:47:24.255Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/00-overview.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	44	2	2026-11-03T08:47:24.255Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/00-overview.md
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	45	1	2026-11-03T08:47:30.102Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/plan/lens-review.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	1	1	2026-11-03T07:42:10.439Z	Skill	skill	
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	1	2	2026-11-03T07:42:10.439Z	Skill	skill	
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	3	1	2026-11-03T07:42:14.827Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/.lym/shuttle/2739fc434caac3e57ab14c523109e4c1/prompt.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	4	1	2026-11-03T07:42:16.256Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/discussion/decision-record.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	4	2	2026-11-03T07:42:16.256Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/discussion/relevant.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	5	1	2026-11-03T07:42:19.086Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/boardengine/board.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	5	2	2026-11-03T07:42:19.086Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/boardengine/task.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	5	3	2026-11-03T07:42:19.086Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/reviews/discussion/round-1-fixer-report.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	5	4	2026-11-03T07:42:19.086Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/stencils/loom/loom-rubric-plan-review.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	5	5	2026-11-03T07:42:19.086Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/boardengine/rename.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	5	6	2026-11-03T07:42:19.086Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/boardengine/doc.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	5	7	2026-11-03T07:42:19.086Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/boardengine/runlock.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	5	8	2026-11-03T07:42:19.086Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/reviews/discussion/round-1-review.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	6	1	2026-11-03T07:42:25.987Z	Bash	git-read	wc -l internal/boardengine/store.go internal/boardengine/replay.go internal/boardengine/render.go internal/boardengine/config.go internal/boardcli/cli.go intern
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	7	1	2026-11-03T07:42:34.569Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/loomrecipe/recipekeys.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	7	2	2026-11-03T07:42:34.569Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/shedrecipe/entries_bouncer.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	7	3	2026-11-03T07:42:34.569Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/boardengine/store.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	7	4	2026-11-03T07:42:34.569Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/loomrecipe/names.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	7	5	2026-11-03T07:42:34.569Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/boardengine/config.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	7	6	2026-11-03T07:42:34.569Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/boardengine/replay.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	8	1	2026-11-03T07:42:40.398Z	Bash	search	grep -n "name:\|engine:\|segment:\|on_done:\|approve_seam\|commit_seam\|carry_over\|skip_seam\|zero_rounds" contracts/recipes/tapestry-recipe.yaml | head -150; 
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	8	2	2026-11-03T07:42:40.398Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/loomrecipe/approveseam_test.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	8	3	2026-11-03T07:42:40.398Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/loomcli/decision.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	9	1	2026-11-03T07:42:46.572Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/shedrecipe/recipe.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	9	2	2026-11-03T07:42:46.572Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/contracts/recipes/tapestry-recipe.yaml
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	9	3	2026-11-03T07:42:46.572Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/shedadapters/bouncer.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	9	4	2026-11-03T07:42:46.572Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/shedadapters/bouncer.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	10	1	2026-11-03T07:42:53.434Z	Bash	search	grep -n "SetRunStatus\|OpenHub\|func newCommitStatusSeam\|loomCommitStatusDeps\|CarryOver:\|ApprovePlan\|CommitDiscussion:\|func (c \*loomCLI) wire\|boardSlug\|
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	11	1	2026-11-03T07:42:57.733Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/loomcli/wiring.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	11	2	2026-11-03T07:42:57.733Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/loomcli/wiring.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	12	1	2026-11-03T07:43:07.574Z	Agent	agent	
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	12	2	2026-11-03T07:43:07.574Z	Bash	search	grep -n "func getCmd\|func outputGetTask\|\"body\"\|--body\|bodyOnly\|func (c \*\|GetTask(" internal/boardcli/cli.go | head -40; grep -n "manifest\|func RenderT
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	12	3	2026-11-03T07:43:07.574Z	Agent	agent	
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	12	4	2026-11-03T07:43:07.574Z	Agent	agent	
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	13	1	2026-11-03T07:43:41.311Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/boardengine/render.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	13	2	2026-11-03T07:43:41.311Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/boardcli/cli.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	13	3	2026-11-03T07:43:41.311Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/boardengine/render.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	13	4	2026-11-03T07:43:41.311Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/boardcli/cli.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	14	1	2026-11-03T07:43:51.695Z	Bash	search	grep -rn "design_prefix" --include=*.go --include=*.yaml . | grep -v "^./_lym" | head -20; grep -n "func ResolveRunID" -B4 -A10 internal/shedrun/*.go | head -30
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	15	1	2026-11-03T07:44:33.476Z	Bash	search	grep -rn "func Test.*Get\|\"get\"" internal/boardcli/*_test.go | head -20; grep -rln "ApprovePlan" --include=*_test.go internal | head; grep -rn "Approve:" inte
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	16	1	2026-11-03T07:44:37.126Z	Bash	search	grep -n "ApprovePlan\|approved\b" internal/loomrecipe/sequence_test.go internal/loomrecipe/fixture_test.go internal/loomrecipe/shape_test.go | head -20; grep -r
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	17	1	2026-11-03T07:44:43.269Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/loomrecipe/sequence_test.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	17	2	2026-11-03T07:44:43.269Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/loomcli/wiring_commitstatus_integration_test.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	17	3	2026-11-03T07:44:43.269Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/loomrecipe/fixture_test.go
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	18	1	2026-11-03T07:44:51.587Z	Bash	quarry	lym quarry glyphs --text internal/boardengine | grep -E "#(Task|Task\.Discussed|scopeChanged|cloneTasks|Board\.boardCriticalSection|Board\.Rename|Board\.RemoveT
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	19	1	2026-11-03T07:44:56.811Z	Bash	quarry	lym quarry glyphs --text internal/loomcli | grep -E "#(decisionVerb|decisionDeps|decisionState\.preRun|loomCLI\.decisionCmd|decisionCmd|amendmentCall\.afterFail
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	20	1	2026-11-03T07:45:03.687Z	Bash	quarry	for d in internal/shedrecipe internal/loomrecipe internal/testkit/envkit internal/boardcli; do lym quarry glyphs --text $d | grep -E "#(Env|Env\.ApprovePlan|bou
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	21	1	2026-11-03T07:45:09.110Z	Bash	quarry	lym quarry resolve internal/boardcli_test#TestCLI internal/boardcli#TestCLI internal/boardengine_test#TestStoreDecisionRecord internal/loomrecipe#TestBouncerRow
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	22	1	2026-11-03T07:45:13.722Z	Agent	agent	
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	24	1	2026-11-03T07:49:57.817Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/00-overview.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	24	2	2026-11-03T07:49:57.817Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/03-design-prefix-refusal.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	24	3	2026-11-03T07:49:57.817Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/07-discussion-approve-seam.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	24	4	2026-11-03T07:49:57.817Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/08-decision-add-copies.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	24	5	2026-11-03T07:49:57.817Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/06-discussion-approval-row.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	24	6	2026-11-03T07:49:57.817Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/09-decision-store-verb.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	24	7	2026-11-03T07:49:57.817Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/05-board-get-record.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	24	8	2026-11-03T07:49:57.817Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/02-record-follows-entry.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	24	9	2026-11-03T07:49:57.817Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/04-replay-carries-record.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	24	10	2026-11-03T07:49:57.817Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/01-board-decision-record.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	25	1	2026-11-03T07:50:04.834Z	Agent	agent	
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	25	2	2026-11-03T07:50:04.834Z	Agent	agent	
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	25	3	2026-11-03T07:50:04.834Z	Agent	agent	
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	25	4	2026-11-03T07:50:04.834Z	Agent	agent	
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	25	5	2026-11-03T07:50:04.834Z	Agent	agent	
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	26	1	2026-11-03T07:50:30.850Z	Bash	other-bash	lym shuttle await-forks
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	27	1	2026-11-03T07:52:02.702Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/specs/twill/twill-lens-report-spec.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	28	1	2026-11-03T07:52:04.614Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/lens-review.lens-coverage.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	28	2	2026-11-03T07:52:04.614Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/lens-review.lens-guard-reach.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	28	3	2026-11-03T07:52:04.614Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/lens-review.lens-row-validity.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	28	4	2026-11-03T07:52:04.614Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/lens-review.lens-forced-edits.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	28	5	2026-11-03T07:52:04.614Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/lens-review.lens-way-forward.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	29	1	2026-11-03T07:53:43.361Z	Bash	quarry	sed -n 236,262p internal/shedadapters/bouncer_circling_test.go; grep -n "^func Test.*Accept" internal/shedadapters/*_test.go | head; lym quarry resolve internal
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	30	1	2026-11-03T07:53:52.685Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/01-board-decision-record.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	30	2	2026-11-03T07:53:52.685Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/02-record-follows-entry.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	30	3	2026-11-03T07:53:52.685Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/07-discussion-approve-seam.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	30	4	2026-11-03T07:53:52.685Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/09-decision-store-verb.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	30	5	2026-11-03T07:53:52.685Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/02-record-follows-entry.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	30	6	2026-11-03T07:53:52.685Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/03-design-prefix-refusal.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	30	7	2026-11-03T07:53:52.685Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/04-replay-carries-record.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	30	8	2026-11-03T07:53:52.685Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/02-record-follows-entry.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	30	9	2026-11-03T07:53:52.685Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/05-board-get-record.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	30	10	2026-11-03T07:53:52.685Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/01-board-decision-record.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	30	11	2026-11-03T07:53:52.685Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/00-overview.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	30	12	2026-11-03T07:53:52.685Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/01-board-decision-record.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	30	13	2026-11-03T07:53:52.685Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/06-discussion-approval-row.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	30	14	2026-11-03T07:53:52.685Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/08-decision-add-copies.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	30	15	2026-11-03T07:53:52.685Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/01-board-decision-record.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	30	16	2026-11-03T07:53:52.685Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/04-replay-carries-record.md
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	31	1	2026-11-03T07:55:40.625Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/plan/lens-review.md
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	1	1	2026-11-03T07:19:05.161Z	Skill	skill	
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	1	2	2026-11-03T07:19:05.161Z	Skill	skill	
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	3	1	2026-11-03T07:19:08.233Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/.lym/shuttle/787ee35c959dff02d33df5b3cb16894c/prompt.md
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	4	1	2026-11-03T07:19:10.076Z	Bash	lym-read	lym board get '{"slug":"decision-record-on-board"}'; echo ---; lym board list
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	4	2	2026-11-03T07:19:10.076Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/specs/loom/loom-discussion-spec.md
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	5	1	2026-11-03T07:19:12.902Z	Bash	lym-read	lym board get '{"slug":"discussed-task-split"}'; echo ---; lym board get '{"slug":"shed-sub-run-block"}'; echo ---; lym loom peers 2>&1 | head -50
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	6	1	2026-11-03T07:19:16.615Z	Bash	search	ls internal | tr '\n' ' '; echo; ls internal/boardengine internal/loomdecision* internal/projectrecord* 2>&1 | head -80; grep -rln "project record\|ProjectRecor
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	7	1	2026-11-03T07:19:19.496Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/boardengine/store.go
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	7	2	2026-11-03T07:19:19.496Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/boardengine/doc.go
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	7	3	2026-11-03T07:19:19.496Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/boardengine/runlock.go
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	7	4	2026-11-03T07:19:19.496Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/loomcli/decision.go
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	7	5	2026-11-03T07:19:19.496Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/loomcli/projectrecord.go
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	8	1	2026-11-03T07:19:25.704Z	Bash	search	grep -rn "design-\|designFile\|DesignFile" internal/boardengine/*.go | grep -v _test | head -30; echo ---; grep -rln "RunStatus(" internal --include=*.go | grep
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	9	1	2026-11-03T07:19:28.866Z	Bash	search	find internal -name "*.yaml" | grep -i -E "tapestry|darn|pawl|recipe" | head; echo ---; grep -rn "Discussion" internal/loomrecipe/names.go | head -30
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	10	1	2026-11-03T07:19:30.762Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/loomrecipe/names.go
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	10	2	2026-11-03T07:19:30.762Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/boardengine/replay.go
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	10	3	2026-11-03T07:19:30.762Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/loomengine/tapestry.yaml
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	10	4	2026-11-03T07:19:30.762Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/internal/loomshed/recordwrite.go
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	11	1	2026-11-03T07:19:36.987Z	Bash	search	ls contracts/recipes; grep -n "name:\|engine:\|on_done:\|on_stuck:\|segment:" contracts/recipes/tapestry.yaml | head -90
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	12	1	2026-11-03T07:19:39.862Z	Bash	search	grep -n "name:\|engine:\|on_done:\|on_stuck:\|segment:" contracts/recipes/tapestry-recipe.yaml | head -90; echo ---; grep -n "name:\|engine:" contracts/recipes/
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	13	1	2026-11-03T07:19:54.825Z	Bash	search	grep -n "^func " internal/boardengine/board.go internal/boardengine/task.go internal/boardengine/render.go internal/boardengine/rename.go | head -80; echo ---; 
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	14	1	2026-11-03T07:19:58.408Z	Bash	search	sed -n 1,300p internal/boardengine/board.go; echo ----; sed -n 180,260p internal/loomcli/wiring.go; echo ----; grep -n "name:\|engine:\|on_done:" contracts/reci
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	15	1	2026-11-03T07:20:06.191Z	Bash	search	cat pattern/PATTERN-shed-recipe-registry.md; echo ----; grep -rn "Command" internal/shedrecipe/*.go | grep -v _test | head -20; echo ----; grep -n "Constructor\
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	16	1	2026-11-03T07:20:14.384Z	Bash	search	grep -n -i "approve" internal/shedrecipe/entries_bouncer.go internal/shedrecipe/recipe.go | head -30; echo ----; grep -rn -i "approveseam\|ApprovePlan\|\.Approv
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	17	1	2026-11-03T07:20:19.197Z	Bash	search	sed -n 105,160p internal/shedrecipe/entries_bouncer.go; echo ----; sed -n 500,560p internal/shedadapters/bouncer.go; sed -n 1105,1150p internal/shedadapters/bou
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	18	1	2026-11-03T07:21:20.740Z	Bash	search	sed -n 1,40p internal/entrymerge/*.go | head -60; echo ----; grep -n "afterSave\|, func() error" internal/boardengine/*.go | grep -v _test | head; echo ----; gr
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	19	1	2026-11-03T07:21:24.469Z	Bash	search	sed -n 695,765p internal/boardcli/cli.go; echo ----; sed -n 440,470p internal/boardengine/board.go; echo ---; grep -n "Name: \"" internal/boardengine/replay.go 
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	20	1	2026-11-03T07:21:38.076Z	Bash	search	sed -n 270,370p internal/boardengine/replay.go; sed -n 525,580p internal/boardengine/replay.go; echo ----; sed -n 40,95p internal/boardengine/render.go; echo --
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	21	1	2026-11-03T07:22:48.262Z	Bash	search	sed -n 1,72p internal/boardengine/task.go; echo ----; sed -n 845,870p internal/loomcli/wiring.go; echo ----; grep -n "Config\b\|Config " internal/shedbuild/*.go
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	22	1	2026-11-03T07:22:54.742Z	Bash	search	grep -n "approveAndCommit()\|cfg.Approve" internal/shedadapters/*.go | grep -v _test; grep -rn "func.*[Aa]ccept" internal/shedadapters/bouncer*.go | grep -v _te
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	23	1	2026-11-03T07:23:27.101Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/discussion/decision-record.md
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	24	1	2026-11-03T07:24:19.527Z	Bash	search	grep -rn "^func OpenHub" internal/boardengine/; grep -n "Board.SetRunStatus\|boardengine\.\|Board\." _lym/discussion/decision-record.md
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	25	1	2026-11-03T07:24:22.600Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/discussion/decision-record.md
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	25	2	2026-11-03T07:24:22.600Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/discussion/relevant.md
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	25	3	2026-11-03T07:24:22.600Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/discussion/support-log.md
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	26	1	2026-11-03T07:24:47.996Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/stencils/loom/loom-rubric-discussion-review.md
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	26	2	2026-11-03T07:24:47.996Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/specs/twill/twill-lens-report-spec.md
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	27	1	2026-11-03T07:24:54.414Z	Agent	agent	
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	27	2	2026-11-03T07:24:54.414Z	Agent	agent	
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	27	3	2026-11-03T07:24:54.414Z	Agent	agent	
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	27	4	2026-11-03T07:24:54.414Z	Agent	agent	
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	27	5	2026-11-03T07:24:54.414Z	Agent	agent	
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	27	6	2026-11-03T07:24:54.414Z	Agent	agent	
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	28	1	2026-11-03T07:25:16.935Z	Bash	other-bash	lym shuttle await-forks
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	29	1	2026-11-03T07:26:47.365Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/discussion/support-log.lens-bound-breaker.md
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	29	2	2026-11-03T07:26:47.365Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/discussion/support-log.lens-board-scope.md
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	29	3	2026-11-03T07:26:47.365Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/discussion/support-log.lens-leanness.md
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	29	4	2026-11-03T07:26:47.365Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/discussion/support-log.lens-interactions.md
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	29	5	2026-11-03T07:26:47.365Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/discussion/support-log.lens-walkthrough.md
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	29	6	2026-11-03T07:26:47.365Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/discussion/support-log.lens-existing-paths.md
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	30	1	2026-11-03T07:28:06.035Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/discussion/decision-record.md
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	31	1	2026-11-03T07:28:45.060Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/discussion/support-log.md
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	31	2	2026-11-03T07:28:45.060Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/discussion/support-log.md
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	32	1	2026-11-03T07:29:00.114Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/_lym/discussion/relevant.md
++decision-record-on-board	b6756453-ec14-4e68-9423-67de6eeeb9e0	main	discussion	1	1	2026-11-03T07:15:22.749Z	Skill	skill	
++decision-record-on-board	b6756453-ec14-4e68-9423-67de6eeeb9e0	main	discussion	1	2	2026-11-03T07:15:22.749Z	Skill	skill	
++decision-record-on-board	b6756453-ec14-4e68-9423-67de6eeeb9e0	main	discussion	3	1	2026-11-03T07:15:25.924Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/decision-record-on-board/.lym/shuttle/3bffee44ecbc102319ad421ac74aba3d/prompt.md
++decision-record-on-board	b6756453-ec14-4e68-9423-67de6eeeb9e0	main	discussion	4	1	2026-11-03T07:15:27.766Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/specs/loom/loom-discussion-spec.md
++decision-record-on-board	b6756453-ec14-4e68-9423-67de6eeeb9e0	main	discussion	4	2	2026-11-03T07:15:27.766Z	Bash	lym-read	lym board get '{"slug":"decision-record-on-board"}'; echo ----; lym board list
++decision-record-on-board	b6756453-ec14-4e68-9423-67de6eeeb9e0	main	discussion	5	1	2026-11-03T07:15:30.348Z	Bash	lym-read	lym board get '{"slug":"discussed-task-split"}'; echo ----; lym board get '{"slug":"shed-sub-run-block"}'; echo ----; lym loom peers 2>&1 | head -50
++decision-record-on-board	b6756453-ec14-4e68-9423-67de6eeeb9e0	main	discussion	6	1	2026-11-03T07:15:33.705Z	Bash	search	ls internal | grep -i -E "board|loom|bolt|decision|discussion|shed|claim|lock"; echo ---; ls internal/boardengine internal/boardcli 2>/dev/null; echo ---; grep 
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	1	1	2026-11-03T07:21:39.581Z	Skill	skill	
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	1	2	2026-11-03T07:21:39.581Z	Skill	skill	
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	3	1	2026-11-03T07:21:43.677Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/.lym/shuttle/45851987dee5f943c2fbf8ed6b1bb583/prompt.md
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	4	1	2026-11-03T07:21:45.521Z	Bash	lym-read	lym board get '{"slug":"shed-sub-run-block"}'; lym board list
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	4	2	2026-11-03T07:21:45.521Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/specs/loom/loom-discussion-spec.md
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	5	1	2026-11-03T07:21:48.056Z	Bash	git-read	lym board get '{"slug":"discussed-task-split"}'; lym board get '{"slug":"decision-record-on-board"}'; lym board get '{"slug":"parts-plan-and-build"}'; lym loom 
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	6	1	2026-11-03T07:21:51.052Z	Bash	search	ls internal | grep -iE 'shed|loom|batten|pawl|recipe|runprofile|discussion|tapestry'; echo ---; ls internal/shedrecipe internal/loomrecipe internal/sheddriver i
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	7	1	2026-11-03T07:21:53.670Z	Bash	search	find . -name 'tapestry.yaml' -not -path './.git/*' ; find . -path ./node_modules -prune -o -name '*.yaml' -path '*recipe*' -print | grep -v '/.git/' | head -30;
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	8	1	2026-11-03T07:21:55.850Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedengine/shed.go
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	8	2	2026-11-03T07:21:55.850Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/contracts/recipes/tapestry-recipe.yaml
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	8	3	2026-11-03T07:21:55.850Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/loomrecipe/loomrecipe.go
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	8	4	2026-11-03T07:21:55.850Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedrecipe/recipe.go
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	9	1	2026-11-03T07:22:03.475Z	Bash	search	ls internal/shedbuild internal/loomengine internal/shedcheck; wc -l internal/shedbuild/*.go internal/shedengine/entry.go internal/shedengine/goto.go internal/sh
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	10	1	2026-11-03T07:22:06.919Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/loomrecipe/names.go
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	10	2	2026-11-03T07:22:06.919Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/loomengine/tapestry.go
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	10	3	2026-11-03T07:22:06.919Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedbuild/recipe.go
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	10	4	2026-11-03T07:22:06.919Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedbuild/newshed.go
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	10	5	2026-11-03T07:22:06.919Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedbuild/entrygate.go
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	10	6	2026-11-03T07:22:06.919Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedengine/progress.go
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	10	7	2026-11-03T07:22:06.919Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedengine/producer.go
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	10	8	2026-11-03T07:22:06.919Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedengine/status.go
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	10	9	2026-11-03T07:22:06.919Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedbuild/parse.go
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	11	1	2026-11-03T07:22:14.089Z	Bash	search	grep -rn 'RecipeTapestry\b' --include=*.go internal cmd | grep -v _test.go | wc -l; grep -rln 'RecipeTapestry\b' --include=*.go internal cmd | grep -v _test.go;
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	12	1	2026-11-03T07:22:18.288Z	Bash	search	grep -n 'RecipeTapestry\b' --include=*.go -r internal cmd | grep -v _test.go; echo; grep -rn 'runprofile\|profiles' internal/runprofile/*.go | grep -v _test | g
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	13	1	2026-11-03T07:23:26.151Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/loomcli/wiring.go
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	13	2	2026-11-03T07:23:26.151Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/loomrecipe/recipekeys.go
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	13	3	2026-11-03T07:23:26.151Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/contracts/recipes/recipes.go
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	13	4	2026-11-03T07:23:26.151Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/runprofile/template.yaml
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	13	5	2026-11-03T07:23:26.151Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedengine/entry.go
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	13	6	2026-11-03T07:23:26.151Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedbuild/loomcontract.go
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	13	7	2026-11-03T07:23:26.151Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/loomcli/arm.go
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	13	8	2026-11-03T07:23:26.151Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedbuild/build.go
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	14	1	2026-11-03T07:23:36.216Z	Bash	search	grep -rn 'shedbuild\.\(Parse\|Load\|NewShed\|NewShedFrom\|RoutingOf\|Build\)\b' --include=*.go internal cmd | grep -v _test.go; echo ---; cat internal/shedbuild
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	15	1	2026-11-03T07:23:41.129Z	Bash	search	grep -rn 'MaxEntryTextChars *=' --include=*.go internal; grep -n 'func appendOrFold' -A 25 internal/shedengine/run.go | head -40; sed -n 340,365p internal/shede
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	16	1	2026-11-03T07:24:34.685Z	Bash	read	printf '%s' 'Adding producer or recipe row: one `Constructor` map in `internal/shedrecipe`, bar `Implementer`'"'"'s; a row'"'"'s value looked up by key, a side 
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	17	1	2026-11-03T07:24:39.700Z	Bash	search	printf '%s' 'Adding producer, recipe row or block gate: one `Constructor` or `BlockGates` map in `internal/shedrecipe`, bar `Implementer`'"'"'s; a row'"'"'s val
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	18	1	2026-11-03T07:24:51.746Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/discussion/relevant.md
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	18	2	2026-11-03T07:24:51.746Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/discussion/decision-record.md
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	18	3	2026-11-03T07:24:51.746Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/discussion/support-log.md
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	19	1	2026-11-03T07:26:18.824Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/specs/twill/twill-lens-report-spec.md
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	19	2	2026-11-03T07:26:18.824Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/stencils/loom/loom-rubric-discussion-review.md
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	20	1	2026-11-03T07:26:25.221Z	Agent	agent	
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	20	2	2026-11-03T07:26:25.221Z	Agent	agent	
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	20	3	2026-11-03T07:26:25.221Z	Agent	agent	
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	20	4	2026-11-03T07:26:25.221Z	Agent	agent	
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	20	5	2026-11-03T07:26:25.221Z	Agent	agent	
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	20	6	2026-11-03T07:26:25.221Z	Agent	agent	
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	21	1	2026-11-03T07:26:48.223Z	Bash	other-bash	lym shuttle await-forks
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	22	1	2026-11-03T07:28:01.342Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/discussion/support-log.lens-leanness.md
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	22	2	2026-11-03T07:28:01.342Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/discussion/support-log.lens-existing-paths.md
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	22	3	2026-11-03T07:28:01.342Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/discussion/support-log.lens-interactions.md
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	22	4	2026-11-03T07:28:01.342Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/discussion/support-log.lens-board-scope.md
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	22	5	2026-11-03T07:28:01.342Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/discussion/support-log.lens-walkthrough.md
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	22	6	2026-11-03T07:28:01.342Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/discussion/support-log.lens-bound-breaker.md
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	23	1	2026-11-03T07:29:24.168Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/discussion/decision-record.md
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	24	1	2026-11-03T07:30:11.502Z	Bash	search	ls internal/battencli/runsettings.go internal/reportengine/timingspans.go internal/reportengine/runs.go
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	25	1	2026-11-03T07:30:23.561Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/discussion/support-log.md
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	25	2	2026-11-03T07:30:23.561Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/discussion/support-log.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	1	1	2026-11-03T07:53:21.617Z	Skill	skill	
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	1	2	2026-11-03T07:53:21.617Z	Skill	skill	
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	3	1	2026-11-03T07:53:26.025Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/.lym/shuttle/c5893ecc54b012fbe0b265ab97bc2ca1/prompt.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	4	1	2026-11-03T07:53:27.627Z	Bash	git-read	ls /home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/discussion/ /home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan 2>&1; git -C /home/knatt
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	5	1	2026-11-03T07:53:30.358Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/stencils/loom/loom-rubric-plan-review.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	5	2	2026-11-03T07:53:30.358Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/specs/loom/loom-plan-spec.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	5	3	2026-11-03T07:53:30.358Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/specs/loom/loom-plan-checks-spec.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	5	4	2026-11-03T07:53:30.358Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/discussion/decision-record.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	5	5	2026-11-03T07:53:30.358Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/discussion/relevant.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	6	1	2026-11-03T07:53:35.271Z	Bash	search	wc -l internal/shedbuild/*.go internal/shedengine/*.go internal/shedrecipe/*.go internal/loomrecipe/*.go contracts/recipes/*.go contracts/recipes/*.yaml interna
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	7	1	2026-11-03T07:53:38.143Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedbuild/loomcontract.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	7	2	2026-11-03T07:53:38.143Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedbuild/build.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	7	3	2026-11-03T07:53:38.143Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedbuild/routing.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	7	4	2026-11-03T07:53:38.143Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedbuild/doc.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	7	5	2026-11-03T07:53:38.143Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedbuild/recipe.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	7	6	2026-11-03T07:53:38.143Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedbuild/parse.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	7	7	2026-11-03T07:53:38.143Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedbuild/entrygate.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	7	8	2026-11-03T07:53:38.143Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedbuild/newshed.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	8	1	2026-11-03T07:53:44.077Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedengine/status.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	8	2	2026-11-03T07:53:44.077Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedengine/run.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	8	3	2026-11-03T07:53:44.077Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedengine/progress.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	8	4	2026-11-03T07:53:44.077Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedengine/validate.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	8	5	2026-11-03T07:53:44.077Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedengine/producer.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	8	6	2026-11-03T07:53:44.077Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedengine/goto.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	8	7	2026-11-03T07:53:44.077Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedengine/entry.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	9	1	2026-11-03T07:53:50.836Z	Bash	search	grep -rn "HistoryEntry{" --include=*.go internal | grep -v _test.go; echo ---; grep -rln "RecipeTapestry\|RecipeNameTapestry" --include=*.go . | sort; echo ---;
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	10	1	2026-11-03T07:53:54.670Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/contracts/recipes/recipes.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	10	2	2026-11-03T07:53:54.670Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/loomrecipe/names.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	10	3	2026-11-03T07:53:54.670Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/loomrecipe/doc.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	10	4	2026-11-03T07:53:54.670Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/loomrecipe/finalizerow.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	10	5	2026-11-03T07:53:54.670Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/loomrecipe/recipekeys.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	10	6	2026-11-03T07:53:54.670Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedrecipe/registry.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	10	7	2026-11-03T07:53:54.670Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedrecipe/recipe.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	10	8	2026-11-03T07:53:54.670Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/loomrecipe/bouncerrows.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	10	9	2026-11-03T07:53:54.670Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/loomrecipe/loomrecipe.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	10	10	2026-11-03T07:53:54.670Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/pattern/PATTERN-shed-recipe-registry.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	11	1	2026-11-03T07:54:06.400Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedrecipe/doc.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	11	2	2026-11-03T07:54:06.400Z	Agent	agent	
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	11	3	2026-11-03T07:54:06.400Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/contracts/recipes/tapestry-recipe.yaml
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	11	4	2026-11-03T07:54:06.400Z	Agent	agent	
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	11	5	2026-11-03T07:54:06.400Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedrun/seed.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	11	6	2026-11-03T07:54:06.400Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedengine/reroute.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	11	7	2026-11-03T07:54:06.400Z	Agent	agent	
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	11	8	2026-11-03T07:54:06.400Z	Agent	agent	
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	12	1	2026-11-03T07:54:35.138Z	Bash	quarry	for d in internal/shedbuild internal/shedengine internal/loomrecipe internal/shedrecipe internal/shedrun contracts/recipes; do echo "== $d"; lym quarry glyphs -
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	13	1	2026-11-03T07:54:41.531Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedengine/entry_test.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	13	2	2026-11-03T07:54:41.531Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedengine/progress_test.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	13	3	2026-11-03T07:54:41.531Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedbuild/routing_test.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	13	4	2026-11-03T07:54:41.531Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/loomrecipe/progress_test.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	13	5	2026-11-03T07:54:41.531Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/loomrecipe/recipe_test.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	13	6	2026-11-03T07:54:41.531Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedbuild/build_test.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	14	1	2026-11-03T07:54:47.670Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/loomcli/checklist.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	14	2	2026-11-03T07:54:47.670Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/battencli/runsettings.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	14	3	2026-11-03T07:54:47.670Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/loomcli/checklist.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	15	1	2026-11-03T07:54:58.426Z	Bash	search	grep -rn "OutcomeSkipped" --include=*.go . | grep -v _test.go | grep -v "^./internal/shedengine/producer.go"; echo ---; grep -rn "\.OnDone" --include=*.go inter
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	16	1	2026-11-03T07:55:03.780Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedcheck/check.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	16	2	2026-11-03T07:55:03.780Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedengine/activity.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	18	1	2026-11-03T07:55:10.537Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/battencli/wire.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	18	2	2026-11-03T07:55:10.537Z	Bash	read	sed -n 15,35p internal/reportengine/runs.go; sed -n 135,150p tools/tokencount/shed.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	18	3	2026-11-03T07:55:10.537Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedcli/table.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	18	4	2026-11-03T07:55:10.537Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/reportengine/timingspans.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	19	1	2026-11-03T07:55:17.464Z	Bash	search	grep -rn "GotoRequest{\|RelaunchRequest{\|CheckGotoTarget(" --include=*.go internal | grep -v _test.go; grep -n "func (c \*loomCLI) recipeRouting" -A25 internal
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	20	1	2026-11-03T07:55:22.245Z	Agent	agent	
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	22	1	2026-11-03T08:01:28.453Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/04-shedbuild-expand.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	22	2	2026-11-03T08:01:28.453Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/06-loom-recipes-motif-arras.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	22	3	2026-11-03T08:01:28.453Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/01-shedengine-block-routing.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	22	4	2026-11-03T08:01:28.453Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/02-shedrecipe-block-registry.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	22	5	2026-11-03T08:01:28.453Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/08-profile-recipe.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	22	6	2026-11-03T08:01:28.453Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/03-shedbuild-block-row-parse.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	22	7	2026-11-03T08:01:28.453Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/00-overview.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	22	8	2026-11-03T08:01:28.453Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/05-shedbuild-block-build.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	22	9	2026-11-03T08:01:28.453Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/09-checklist-block-marks.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	22	10	2026-11-03T08:01:28.453Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/07-arras-seedable.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	23	1	2026-11-03T08:01:35.131Z	Agent	agent	
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	23	2	2026-11-03T08:01:35.131Z	Agent	agent	
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	23	3	2026-11-03T08:01:35.131Z	Agent	agent	
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	23	4	2026-11-03T08:01:35.131Z	Agent	agent	
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	23	5	2026-11-03T08:01:35.131Z	Agent	agent	
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	24	1	2026-11-03T08:02:01.095Z	Bash	other-bash	lym shuttle await-forks
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	25	1	2026-11-03T08:04:18.340Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/specs/twill/twill-lens-report-spec.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	26	1	2026-11-03T08:04:20.485Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/lens-review.lens-coverage.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	26	2	2026-11-03T08:04:20.485Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/lens-review.lens-row-validity.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	26	3	2026-11-03T08:04:20.485Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/lens-review.lens-forced-edits.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	26	4	2026-11-03T08:04:20.485Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/lens-review.lens-way-forward.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	26	5	2026-11-03T08:04:20.485Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/lens-review.lens-guard-reach.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	27	1	2026-11-03T08:05:31.846Z	Read	read	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/internal/shedverbs/human.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	27	2	2026-11-03T08:05:31.846Z	Bash	quarry	sed -n 50,64p internal/loomcli/doc.go; echo ---; sed -n 45,62p contracts/specs/loom-status-spec.md; echo ---; grep -n "func Test" internal/loomcli/recipekeyed_t
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	28	1	2026-11-03T08:05:41.001Z	Bash	search	awk 'NR>=400 && NR<=480 && /^func Test/ {print NR": "$0}' internal/loomcli/wiring_test.go; sed -n 455,490p internal/loomcli/wiring_test.go; sed -n 15,60p intern
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	29	1	2026-11-03T08:05:44.051Z	Bash	search	awk 'NR<=455 && /^func Test/ {l=NR": "$0} END{print l}' internal/loomcli/wiring_test.go; grep -n "recipe\b\|c.recipe\|RecipeTapestry" internal/loomcli/wiring_te
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	30	1	2026-11-03T08:05:48.421Z	Bash	search	grep -rn "a task driven from discussion to landing" --include=*.go internal | grep -v _test; sed -n 20,70p internal/loomcli/arbiterprompt.go
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	31	1	2026-11-03T08:06:45.489Z	Bash	quarry	ls internal/battenshed/doc.go internal/boardcli/doc.go internal/shedverbs/doc.go internal/gateslot/doc.go tools/tokencount/doc.go internal/reportengine/doc.go 2
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	32	1	2026-11-03T08:06:49.686Z	Bash	quarry	grep -rln "tapestry or the darn recipe" tools/ ; ls tools/tokencount | head -30; awk 'NR<=497 && /^(func|var) /{l=NR": "$0} END{print l}' internal/boardcli/cli.
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	33	1	2026-11-03T08:06:55.421Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/01-shedengine-block-routing.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	33	2	2026-11-03T08:06:55.421Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/07-arras-seedable.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	33	3	2026-11-03T08:06:55.421Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/04-shedbuild-expand.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	33	4	2026-11-03T08:06:55.421Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/09-checklist-block-marks.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	33	5	2026-11-03T08:06:55.421Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/05-shedbuild-block-build.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	33	6	2026-11-03T08:06:55.421Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/02-shedrecipe-block-registry.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	33	7	2026-11-03T08:06:55.421Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/08-profile-recipe.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	33	8	2026-11-03T08:06:55.421Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/06-loom-recipes-motif-arras.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	34	1	2026-11-03T08:08:56.970Z	Bash	quarry	awk 'NR<=27 && /^func /{l=NR": "$0} END{print l}' internal/loomcli/arbiterprompt.go; lym quarry resolve internal/loomcli#TestWire_DefaultConfig internal/shedver
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	35	1	2026-11-03T08:09:01.447Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/07-arras-seedable.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	35	2	2026-11-03T08:09:01.447Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/00-overview.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	36	1	2026-11-03T08:09:10.408Z	Edit	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/00-overview.md
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	36	2	2026-11-03T08:09:10.408Z	Write	edit	/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/plan/lens-review.md
+diff --git a/docs/research/writer-lookups-measure-2026-11-04/report.md b/docs/research/writer-lookups-measure-2026-11-04/report.md
+new file mode 100644
+index 00000000..bc0c8697
+--- /dev/null
++++ b/docs/research/writer-lookups-measure-2026-11-04/report.md
+@@ -0,0 +1,134 @@
++# Plan and Discussion writers: exploration and lookup subagents, 2026-11-04
++
++How the Plan-Write and Discussion-Write sessions of recently landed tapestry runs explore the code, and whether they hand lookups to subagents as their stencils suggest.
++Every figure derives from the scripts and tables beside this file; the sample size stands beside each number.
++No agent run was made: the work reads transcripts of finished sessions.
++
++## Finding
++
++The sample is 3 tapestry runs, not the 10 the measurement asked for: only 4 tapestry runs landed after 2026-11-02, and one of them, `cold-gate-fixer`, ran no Plan or Discussion writer.
++The 7 writer sessions of the 3 runs follow the guidance where it matters least and break it where it costs most.
++
++- The Plan writers follow it: 3 of 3 handed one batch of 3 or 4 `sonnet` lookup subagents to the Agent tool in a single message.
++  The Discussion writers do not: 1 of 3 full sessions did.
++- Exploration is 56% of the writers' turns (119 of 212) and 46% of their cost ($11.03 of $23.76).
++  Only $3.61 of it (15%) is paid above 200k context, and $3.38 of that is in Plan sessions.
++- Every one of the 6 chains the writers ran above 200k is in a Plan session, after that session's one lookup batch.
++  3 of them, 14 turns, are single-call serial lookups.
++  Batching them in the writer would save more than moving them to subagents would.
++- Taking every lookup that holds a search call to subagents at the observed subagent price would save about $4.7, one fifth of writer spend, as an upper bound.
++- The report recommends neither a bench nor a stronger stencil now; see Recommendation.
++
++## Sample and method
++
++- Runs: the tapestry runs that landed after 2026-11-02, as `go run ./tools/tokencount -since 2026-11-02` lists them: `batten-remote-order`, `decision-record-on-board`, `shed-sub-run-block`, and `cold-gate-fixer`, which has no writer session.
++  The slugs are in `slugs.txt`.
++- Sessions: the main sessions titled `plan` and `discussion`, 3 and 4 of them.
++  `decision-record-on-board` holds two Discussion sessions, because its first one ended after 6 turns and a second started a few minutes later; both count.
++- Guidance in force: every session started after the commit that added the Discussion writer's guidance (`2d319fe5`, 2026-11-02 14:02), and the text "hand a batch of independent lookups" is in all 7 transcripts.
++- A turn is one assistant message id, as in the turn audit.
++  An exploration turn is a turn whose every call is a lookup: the Read tool, Grep, Glob, or a Bash call the turn audit classes `read`, `search`, `git-read` or `lym-read`.
++  A chain is two or more exploration turns in a row.
++  A search turn is an exploration turn with at least one call other than the Read tool; the rest only read files.
++- Cost: list price of the turn's tokens at `claude-opus-5-5`, the model of every writer session, from `internal/shuttleengine/claudeengine/pricing.go`.
++  The Plan sessions priced this way sum to $14.48, the Plan writer figure `tokencount` gives for the same runs.
++- Subagents: each Agent call of the writer, matched to its transcript through the sub-agent's meta file.
++  A `general-purpose` subagent is a lookup; a `fork` is not, and is counted apart.
++- Carry: the context an exploration turn adds, priced as one cache write and one cache read in each later turn of the session.
++  It is the cost of keeping what a lookup returned, and is part of the session's cost, not on top of it.
++
++## Do the writers follow the guidance
++
++| session | role | turns | exploration turns | lookup subagents | batches | cost |
++| --- | --- | --- | --- | --- | --- | --- |
++| `batten-remote-order` | Plan | 46 | 22 | 4 | 1 | $5.63 |
++| `decision-record-on-board` | Plan | 32 | 16 | 3 | 1 | $4.15 |
++| `shed-sub-run-block` | Plan | 37 | 19 | 4 | 1 | $4.70 |
++| `batten-remote-order` | Discussion | 32 | 19 | 3 | 1 | $2.79 |
++| `decision-record-on-board` | Discussion | 33 | 22 | 0 | 0 | $3.33 |
++| `shed-sub-run-block` | Discussion | 26 | 17 | 0 | 0 | $2.80 |
++| `decision-record-on-board`, ended early | Discussion | 6 | 4 | 0 | 0 | $0.36 |
++
++The 14 lookup subagents ran on `sonnet`, as `subagent_model` names.
++Each batch went out in one message with 3 or 4 subagents.
++A subagent held about 5 questions by a count of its prompt's numbered and bulleted lines (74 over 14), took 7 turns and cost $0.24; together they cost $3.41.
++The writers' 36 forks, 18 each, are lens reviewers and the plan-writing fork, not lookups, and cost $22.01.
++
++Every delegating session delegated once, early, and went on exploring in its own context afterwards.
++The Plan writers' first chain, before the batch, runs 7 to 9 turns and 28 to 34 calls, so those calls average 3 to 4 a turn.
++The Discussion writers that did not delegate ran chains of 20 and 15 turns, at 26k to 191k and 26k to 163k context, with 28 and 34 calls.
++
++## Where the exploration cost falls
++
++| writer | sessions | cost | exploration | exploration above 200k | search turns | search turns above 200k | carry |
++| --- | --- | --- | --- | --- | --- | --- | --- |
++| Plan | 3 | $14.48 | $6.15 | $3.38 | $4.08 | $2.14 | $7.63 |
++| Discussion | 4 | $9.28 | $4.88 | $0.23 | $4.11 | $0.17 | $3.62 |
++| both | 7 | $23.76 | $11.03 | $3.61 | $8.19 | $2.31 | $11.25 |
++
++The Plan sessions pass 200k early and stay there: 85 of their 115 turns are above it, the largest context is 380k, and the sessions' turns above 200k cost $11.00 of $14.48.
++Most of that is not exploration.
++The Discussion sessions peak at 249k and have 14 of 97 turns above 200k.
++Their exploration is cheap per turn and expensive in carry: one session took in 170k tokens of lookup results and kept them for every turn after.
++
++By context of the turn, all 119 exploration turns:
++
++| context | turns | calls | turns the turn audit marks as dependent on the previous result | cost |
++| --- | --- | --- | --- | --- |
++| under 100k | 38 | 99 | 10 | $2.42 |
++| 100k to 200k | 43 | 80 | 3 | $4.99 |
++| above 200k | 38 | 88 | 2 | $3.61 |
++
++The dependency mark is the turn audit's heuristic: a path in the call that first appeared in the previous turn's result.
++It marks 2 of the 38 turns above 200k, so most of them name nothing the previous turn found; read with that caution, the calls could have gone out a turn earlier.
++
++## What could have moved to subagents up front
++
++The late chains, the ones the entry's example is about, are the six chains whose first turn is above 200k.
++
++| chain | session | turns | calls | context | cost |
++| --- | --- | --- | --- | --- | --- |
++| 1 | `batten-remote-order` Plan | 5 | 5 | 200k to 213k | $0.35 |
++| 2 | `batten-remote-order` Plan | 6 | 6 | 232k to 259k | $0.49 |
++| 3 | `decision-record-on-board` Plan | 5 | 10 | 226k to 252k | $0.55 |
++| 4 | `shed-sub-run-block` Plan | 4 | 12 | 216k to 260k | $0.52 |
++| 5 | `shed-sub-run-block` Plan | 2 | 5 | 270k to 281k | $0.21 |
++| 6 | `shed-sub-run-block` Plan | 3 | 3 | 336k to 340k | $0.27 |
++
++Together: 25 turns, 41 calls, $2.38.
++Chains 1, 2 and 6 are single-call turns in a row, greps and `sed -n` slices of Go files already named; chains 3 to 5 mix batched reads of 2 to 6 files a turn with greps.
++
++Two ways to cheapen these, priced on the sample:
++
++- One delegating turn per chain at the chain's first context ($0.55 over the six) plus one lookup subagent per chain at the observed $0.24 costs about $2.01, saving about $0.37.
++- One batched turn per chain at its first context costs $0.55, saving about $1.83; it holds only where the later calls do not need an earlier result.
++
++Short late chains gain little from a subagent, since the subagent's own cost nearly equals the chain's; batching gains more.
++`batching-hook-reach` (T2) extends the batching nudge to Bash lookups, which is the route to the second figure.
++
++Across all search turns the upper bound is larger.
++The 80 search turns cost $8.19; the lookup subagents averaged $0.034 a turn, so the same turns in subagents would cost $2.75, and the 14 chains' delegating turns at their first context about $0.73.
++That leaves about $4.7, 20% of writer spend, before counting the smaller carry a short answer leaves behind, and before the lookups the writer has to read whole.
++The estimate is an upper bound, since a writer keeps the code it needs to see, as the stencil says.
++
++## Recommendation
++
++- No bench of the guidance.
++  The Plan writers already follow it, so the "with" arm exists in every landed run.
++  A one-input bench gets one session per arm, and the three Plan sessions here vary from $4.15 to $5.63, a spread larger than the $0.4 to $1.8 the late chains offer.
++- No stronger guidance for the Plan stencil.
++  What remains in Plan sessions is short serial chains after the batch, a batching question that `batching-hook-reach` addresses by letting the hook count Bash lookups.
++  Re-measure after it lands, with the scripts here and the batching hook's own re-measure note.
++- One candidate for later: the Discussion stencil.
++  2 of its 3 full sessions did not delegate and ran 15 and 20 serial turns, costing $1.74 and $1.13 in search turns.
++  That is $2.87 over two sessions, and subagents would save a part of it, so it is a small candidate; decide it on a sample of 10 or more tapestry runs.
++- Re-run `run-all.sh` once more tapestry runs have landed: add the slugs to `slugs.txt` and the tables rebuild.
++
++## Limits
++
++- 3 runs and 7 sessions, not 10 runs; every rate here is a case count, not a rate.
++- Pricing is list price of the tokens; the model of every writer session was `claude-opus-5-5` and none wrote a one-hour cache entry, so the price table is exact for them.
++- The classification of a Bash call as a lookup is the turn audit's heuristic, applied unchanged.
++- The question count of a subagent's prompt counts numbered and bulleted lines; two prompts of `shed-sub-run-block` hold none by that count and ask in prose.
++- The counterfactual prices assume the writer keeps the code it needs to see, and treat a subagent as costing what the observed ones cost; a subagent given a larger lookup would cost more.
++- The sample has no writer without the guidance, so a difference the guidance makes is not measured here, only whether it is followed.
+diff --git a/docs/research/writer-lookups-measure-2026-11-04/run-all.sh b/docs/research/writer-lookups-measure-2026-11-04/run-all.sh
+new file mode 100755
+index 00000000..dcf6d23c
+--- /dev/null
++++ b/docs/research/writer-lookups-measure-2026-11-04/run-all.sh
+@@ -0,0 +1,27 @@
++#!/usr/bin/env bash
++# Usage: run-all.sh [out-dir]
++# Rebuilds every table of the report from the Claude Code transcripts on this machine:
++# <out-dir>/turns.tsv, calls.tsv (the turn audit's extractor on the Plan-Write and Discussion-Write sessions of the slugs in slugs.txt, with their forks),
++# writer-turns.tsv, writer-sessions.tsv, writer-chains.tsv (writers.sh) and writer-subagents.tsv (subagents.sh).
++# out-dir defaults to this directory.
++# Environment: PROJECTS names the transcript root (default ~/.claude/projects), SCRATCH the work directory (default <repo root>/.scratch/writer-lookups-measure),
++# CUTOFF the first session date (default 2026-11-02), LINE_TOKENS the context line of the over figures (default 200000).
++# Needs bash, jq and awk; reads only, apart from the tables and the work directory.
++set -euo pipefail
++here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
++root=$(cd "$here/../../.." && pwd)
++out=${1:-$here}
++scratch=${SCRATCH:-$root/.scratch/writer-lookups-measure}
++audit=$here/../turn-audit-2026-10-28
++mkdir -p "$out" "$scratch"
++
++# The extractor reads slugs.txt beside itself, so run a copy of it next to this sample's slugs.
++cp "$audit/extract-turns.sh" "$scratch/"
++cp "$here/slugs.txt" "$scratch/slugs.txt"
++CUTOFF=${CUTOFF:-2026-11-02} "$scratch/extract-turns.sh" "$scratch/extract"
++"$here/writers.sh" "$scratch/extract" "$out"
++# Keep only the writers' own rows in the published turns and calls; the rest of the extraction is every role of the three runs.
++for table in turns calls; do
++  awk -F'\t' 'NR == 1 || ($3 == "main" && ($4 == "plan" || $4 == "discussion"))' "$scratch/extract/$table.tsv" > "$out/$table.tsv"
++done
++CUTOFF=${CUTOFF:-2026-11-02} "$here/subagents.sh" "$out"
+diff --git a/docs/research/writer-lookups-measure-2026-11-04/slugs.txt b/docs/research/writer-lookups-measure-2026-11-04/slugs.txt
+new file mode 100644
+index 00000000..3c6641c5
+--- /dev/null
++++ b/docs/research/writer-lookups-measure-2026-11-04/slugs.txt
+@@ -0,0 +1,3 @@
++batten-remote-order
++decision-record-on-board
++shed-sub-run-block
+diff --git a/docs/research/writer-lookups-measure-2026-11-04/subagents.sh b/docs/research/writer-lookups-measure-2026-11-04/subagents.sh
+new file mode 100755
+index 00000000..5f54895c
+--- /dev/null
++++ b/docs/research/writer-lookups-measure-2026-11-04/subagents.sh
+@@ -0,0 +1,65 @@
++#!/usr/bin/env bash
++# Usage: subagents.sh <out-dir>
++# Reads the Plan-Write and Discussion-Write main transcripts of the slugs in slugs.txt (sessions that started on or after CUTOFF, default 2026-11-02)
++# and the sub-agents each started, and writes <out-dir>/writer-subagents.tsv, one row per Agent call:
++# slug session role batch kind description model questions turns cost_usd
++#   batch numbers the writer's messages that hold Agent calls, in order, so rows with the same batch were started together.
++#   kind is lookup for a general-purpose sub-agent and fork for a fork (the writer, the lens reviewers); only lookup rows are lookups.
++#   questions counts the numbered or bulleted lines of the call's prompt, an estimate of the lookups the sub-agent was handed.
++#   turns and cost_usd come from the sub-agent's own transcript, priced at its model's list price (internal/shuttleengine/claudeengine/pricing.go);
++#   a sub-agent with no transcript has no turns and no cost.
++# Needs bash and jq.
++set -euo pipefail
++out=$1
++here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
++cutoff=${CUTOFF:-2026-11-02}
++projects=${PROJECTS:-$HOME/.claude/projects}
++mkdir -p "$out"
++printf 'slug\tsession\trole\tbatch\tkind\tdescription\tmodel\tquestions\tturns\tcost_usd\n' > "$out/writer-subagents.tsv"
++
++# calls of one main transcript: batch, tool use id, subagent type, model, description, question lines
++# shellcheck disable=SC2016
++callsprog='
++[.[] | select(.type == "assistant" and .message.id != null)] | group_by(.message.id) | map(sort_by(.timestamp)) | sort_by(.[0].timestamp)
++| map([.[] | .message.content[]? | select(.type == "tool_use" and (.name == "Agent" or .name == "Task"))] | unique_by(.id))
++| map(select(length > 0)) | to_entries[] | (.key + 1) as $b | .value[]
++| [$b, .id, (.input.subagent_type // "general-purpose"), (.input.model // "inherit"), (.input.description // ""),
++   ((.input.prompt // "") | [split("\n")[] | select(test("^\\s*([0-9]+[.)]|[-*]) "))] | length)] | @tsv'
++
++# turns and cost of one sub-agent transcript at its model's list price, in USD per million tokens
++# shellcheck disable=SC2016
++costprog='
++def price($m): {"claude-opus-5-5": [4, 5, 8, 0.2, 20], "claude-sonnet-5-5": [2, 2.5, 4, 0.2, 10]}[$m] // [0, 0, 0, 0, 0];
++[.[] | select(.type == "assistant" and .message.id != null)] | group_by(.message.id)
++| map(max_by(.message.usage.output_tokens // 0)) as $t
++| [($t | length),
++   ([$t[] | .message.model as $m | .message.usage as $u | price($m) as $p
++     | (($u.input_tokens // 0) * $p[0] + (($u.cache_creation_input_tokens // 0) - ($u.cache_creation.ephemeral_1h_input_tokens // 0)) * $p[1]
++        + ($u.cache_creation.ephemeral_1h_input_tokens // 0) * $p[2] + ($u.cache_read_input_tokens // 0) * $p[3] + ($u.output_tokens // 0) * $p[4]) / 1e6] | add // 0)] | @tsv'
++
++while read -r slug; do
++  dir=$projects/-home-knatte-Code-loomyard-LYMHUB-$slug
++  [ -d "$dir" ] || continue
++  for f in "$dir"/*.jsonl; do
++    [ -e "$f" ] || continue
++    first=$(jq -rn 'first(inputs | select(.type == "user" or .type == "assistant") | .timestamp)' "$f")
++    [[ "$first" < "$cutoff" ]] && continue
++    title=$(jq -r 'select(.type == "custom-title") | .customTitle' "$f" | tail -1)
++    role=${title##*:}; role=${role//\"/}
++    [ "$role" = plan ] || [ "$role" = discussion ] || continue
++    sid=$(basename "$f" .jsonl)
++    jq -rs "$callsprog" "$f" | while IFS=$'\t' read -r batch id type model description questions; do
++      kind=fork; [ "$type" = general-purpose ] && kind=lookup
++      turns=; cost=; submodel=$model
++      for meta in "$dir/$sid"/subagents/*.meta.json; do
++        [ -e "$meta" ] || continue
++        [ "$(jq -r .toolUseId "$meta")" = "$id" ] || continue
++        sub=${meta%.meta.json}.jsonl
++        [ -e "$sub" ] && IFS=$'\t' read -r turns cost < <(jq -rs "$costprog" "$sub")
++        [ "$kind" = lookup ] && submodel=$(jq -r .model "$meta")
++        break
++      done
++      printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$slug" "$sid" "$role" "$batch" "$kind" "$description" "$submodel" "$questions" "$turns" "$cost"
++    done >> "$out/writer-subagents.tsv"
++  done
++done < "$here/slugs.txt"
+diff --git a/docs/research/writer-lookups-measure-2026-11-04/turns.tsv b/docs/research/writer-lookups-measure-2026-11-04/turns.tsv
+new file mode 100644
+index 00000000..82b92294
+--- /dev/null
++++ b/docs/research/writer-lookups-measure-2026-11-04/turns.tsv
+@@ -0,0 +1,213 @@
++slug	session	kind	role	turn	ts	ncalls	ctx	input	cache_write	cache_read	output	weight	dep
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	1	2026-11-03T07:29:14.849Z	2	20457	2	11155	9300	104	15395.75	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	2	2026-11-03T07:29:15.772Z	0	26308	2	5851	20455	18	9451.25	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	3	2026-11-03T07:29:17.921Z	1	26485	4	2923	23558	116	6593.55	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	4	2026-11-03T07:29:19.557Z	2	41678	2	15195	26481	233	22808.85	1
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	5	2026-11-03T07:29:22.940Z	1	56351	2	14673	41676	402	24520.85	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	6	2026-11-03T07:29:27.955Z	1	59608	2	3257	56349	548	12448.150000000001	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	7	2026-11-03T07:29:32.193Z	9	62914	2	3306	59606	3475	27470.1	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	8	2026-11-03T07:30:04.806Z	0	74296	2	11382	62912	161	21325.7	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	9	2026-11-03T07:30:18.234Z	2	77230	4	2932	74294	193	12063.400000000001	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	10	2026-11-03T07:30:23.162Z	1	84456	2	7228	77226	394	18729.6	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	11	2026-11-03T07:30:26.221Z	0	84868	2	412	84454	173	9827.4	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	12	2026-11-03T07:30:43.206Z	0	87719	4	2849	84866	1492	19511.85	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	13	2026-11-03T07:30:53.117Z	1	92379	4	4660	87715	940	19300.5	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	14	2026-11-03T07:30:58.117Z	1	94590	2	2213	92375	432	14165.75	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	15	2026-11-03T07:31:02.659Z	1	97991	2	3401	94588	396	15692.050000000001	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	16	2026-11-03T07:31:12.077Z	1	101617	2	3626	97989	851	18588.4	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	17	2026-11-03T07:31:22.117Z	1	103867	2	2250	101615	890	17426	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	18	2026-11-03T07:31:28.646Z	1	106139	2	2272	103865	657	16513.5	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	19	2026-11-03T07:32:14.239Z	1	108692	2	2553	106137	4356	35586.95	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	20	2026-11-03T07:32:19.273Z	1	114497	2	5805	108690	260	19427.25	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	21	2026-11-03T07:33:01.446Z	1	114789	2	292	114495	4276	33196.5	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	22	2026-11-03T07:33:05.724Z	1	119687	2	4898	114787	302	19113.2	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	23	2026-11-03T07:33:22.950Z	1	120339	2	652	119685	1617	20870.5	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	24	2026-11-03T07:33:36.685Z	3	122825	2	2486	120337	8909	59688.2	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	25	2026-11-03T07:34:48.261Z	1	132014	2	9189	122823	280	25170.550000000003	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	26	2026-11-03T07:34:54.177Z	6	134482	2	2468	132012	3799	35283.2	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	27	2026-11-03T07:35:17.127Z	1	140768	2	6286	134480	111	21862.5	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	28	2026-11-03T07:37:22.280Z	1	155710	2	14942	140766	136	33436.1	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	29	2026-11-03T07:38:21.050Z	6	156641	2	931	155708	18216	107816.55	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	30	2026-11-03T07:39:44.583Z	1	175490	2	18849	156639	295	40702.15	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	31	2026-11-03T07:39:49.554Z	2	176729	2	1239	175488	8655	62374.55	0
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	main	discussion	32	2026-11-03T07:41:02.215Z	0	185579	2	8850	176727	1276	35117.2	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	1	2026-11-03T08:24:48.058Z	2	20459	2	11157	9300	255	16153.25	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	2	2026-11-03T08:24:49.549Z	0	26510	2	6051	20457	17	9696.45	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	3	2026-11-03T08:24:52.261Z	1	26687	4	175	26508	114	3443.55	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	4	2026-11-03T08:24:54.364Z	1	48476	2	21791	26683	290	31359.05	1
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	5	2026-11-03T08:24:57.427Z	10	49549	2	1073	48474	906	10720.650000000001	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	6	2026-11-03T08:25:05.098Z	1	85709	2	36160	49547	573	53021.7	1
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	7	2026-11-03T08:25:11.302Z	14	89219	2	3510	85707	1453	20225.2	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	8	2026-11-03T08:25:22.991Z	2	159508	2	70289	89217	511	99339.95	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	9	2026-11-03T08:25:30.951Z	1	185837	2	26329	159506	599	51858.85	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	10	2026-11-03T08:25:47.449Z	4	193015	2	7178	185835	5608	55598	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	11	2026-11-03T08:26:27.979Z	1	200286	2	7271	193013	317	29977.05	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	12	2026-11-03T08:26:33.440Z	1	202814	2	2528	200284	449	25435.4	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	13	2026-11-03T08:26:37.511Z	1	208755	2	5941	202812	338	29399.45	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	14	2026-11-03T08:26:40.926Z	1	210682	2	1927	208753	398	25276.050000000003	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	15	2026-11-03T08:26:47.608Z	1	213463	2	2781	210680	553	27311.25	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	16	2026-11-03T08:26:51.019Z	1	215128	2	1665	213461	251	24684.350000000002	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	17	2026-11-03T08:26:54.663Z	1	215857	2	729	215126	166	23255.850000000002	1
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	18	2026-11-03T08:26:56.915Z	1	221052	2	5195	215855	206	29111.25	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	19	2026-11-03T08:26:59.808Z	1	229090	2	8038	221050	651	35409.5	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	20	2026-11-03T08:27:05.673Z	1	230436	2	1346	229088	806	28623.300000000003	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	21	2026-11-03T08:27:13.831Z	1	232172	2	1736	230434	263	26530.4	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	22	2026-11-03T08:27:20.197Z	1	236859	2	4687	232170	553	31842.75	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	23	2026-11-03T08:27:26.674Z	1	243295	2	6436	236857	700	35232.7	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	24	2026-11-03T08:27:33.310Z	1	254610	2	11315	243293	629	41620.05	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	25	2026-11-03T08:27:38.263Z	1	257760	2	3150	254608	367	31235.300000000003	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	26	2026-11-03T08:27:41.833Z	1	259378	2	1618	257758	232	28960.300000000003	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	27	2026-11-03T08:27:49.008Z	1	261433	2	2055	259376	800	32508.350000000002	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	28	2026-11-03T08:27:52.695Z	0	262627	2	1194	261431	34	27807.600000000002	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	29	2026-11-03T08:37:34.822Z	15	263455	4	2020	261431	1439	35867.100000000006	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	30	2026-11-03T08:37:45.863Z	5	295613	2	32160	263451	3626	84677.1	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	31	2026-11-03T08:38:11.793Z	1	301314	2	5701	295611	111	37244.350000000006	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	32	2026-11-03T08:40:45.012Z	1	314786	2	13472	301312	176	47853.2	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	33	2026-11-03T08:42:00.157Z	1	315667	2	881	314784	8096	73061.65	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	34	2026-11-03T08:42:11.512Z	1	326033	2	10366	315665	458	46816	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	35	2026-11-03T08:42:15.411Z	5	326847	2	814	326031	11501	91127.6	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	36	2026-11-03T08:43:52.985Z	1	338850	2	12003	326845	3208	63730.25	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	37	2026-11-03T08:43:58.314Z	1	344300	2	5450	338848	267	42034.3	1
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	38	2026-11-03T08:44:01.290Z	3	344665	2	365	344298	4636	58068.05	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	39	2026-11-03T08:44:35.422Z	4	349626	2	4961	344663	3160	56469.55	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	40	2026-11-03T08:44:59.039Z	5	353228	2	3602	349624	4948	64206.9	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	41	2026-11-03T08:45:37.180Z	4	358685	2	5457	353226	4165	62970.85	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	42	2026-11-03T08:46:06.598Z	2	363263	2	4578	358683	3886	61022.8	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	43	2026-11-03T08:46:33.659Z	2	367356	2	4093	363261	6918	76034.35	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	44	2026-11-03T08:47:24.255Z	2	374480	2	7124	367354	730	49292.4	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	45	2026-11-03T08:47:30.102Z	1	375406	2	926	374478	4312	60167.3	0
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	main	plan	46	2026-11-03T08:48:14.521Z	0	379790	2	4384	375404	1126	48652.4	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	1	2026-11-03T07:42:10.439Z	2	20460	2	11158	9300	212	15939.5	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	2	2026-11-03T07:42:12.670Z	0	26468	2	6008	20458	81	9962.8	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	3	2026-11-03T07:42:14.827Z	1	26708	4	238	26466	113	3513.1000000000004	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	4	2026-11-03T07:42:16.256Z	2	48145	2	21439	26704	201	30476.15	1
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	5	2026-11-03T07:42:19.086Z	8	57170	2	9025	48143	804	20117.55	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	6	2026-11-03T07:42:25.987Z	1	106928	2	49758	57168	459	70211.3	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	7	2026-11-03T07:42:34.569Z	6	110698	2	3770	106926	1093	20872.1	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	8	2026-11-03T07:42:40.398Z	3	155833	2	45135	110696	563	70305.35	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	9	2026-11-03T07:42:46.572Z	4	187256	2	31423	155831	760	58663.85	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	10	2026-11-03T07:42:53.434Z	1	200561	2	13305	187254	500	37858.65	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	11	2026-11-03T07:42:57.733Z	2	207355	2	6794	200559	267	29885.4	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	12	2026-11-03T07:43:07.574Z	4	217184	2	9829	207353	3819	52118.55	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	13	2026-11-03T07:43:41.311Z	4	226041	2	8857	217182	994	37761.45	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	14	2026-11-03T07:43:51.695Z	1	231888	2	5847	226039	764	33734.65	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	15	2026-11-03T07:44:33.476Z	1	238075	2	6187	231886	4050	51174.350000000006	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	16	2026-11-03T07:44:37.126Z	1	249856	2	11781	238073	428	40675.55	1
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	17	2026-11-03T07:44:43.269Z	3	252249	2	2393	249854	737	31663.65	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	18	2026-11-03T07:44:51.587Z	1	267990	2	15741	252247	980	49802.95	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	19	2026-11-03T07:44:56.811Z	1	269770	2	1780	267988	760	32825.8	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	20	2026-11-03T07:45:03.687Z	1	271070	2	1300	269768	563	31418.800000000003	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	21	2026-11-03T07:45:09.110Z	1	272168	2	1098	271068	363	30296.300000000003	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	22	2026-11-03T07:45:13.722Z	1	273004	2	836	272166	491	30718.600000000002	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	23	2026-11-03T07:45:16.996Z	0	273885	2	881	273002	32	28563.45	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	24	2026-11-03T07:49:57.817Z	10	274648	4	761	273883	943	33058.55	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	25	2026-11-03T07:50:04.834Z	5	293464	2	18818	274644	3643	69203.9	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	26	2026-11-03T07:50:30.850Z	1	299178	2	5714	293462	112	37050.7	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	27	2026-11-03T07:52:02.702Z	1	310801	2	11623	299176	147	45183.350000000006	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	28	2026-11-03T07:52:04.614Z	5	311743	2	942	310799	9776	81139.4	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	29	2026-11-03T07:53:43.361Z	1	322057	2	10314	311741	3857	63353.600000000006	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	30	2026-11-03T07:53:52.685Z	16	326997	2	4940	322055	14830	112532.5	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	31	2026-11-03T07:55:40.625Z	1	343439	2	16442	326995	3121	68859	0
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	main	plan	32	2026-11-03T07:56:15.443Z	0	346633	2	3194	343437	985	43263.200000000004	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	1	2026-11-03T07:19:05.161Z	2	20458	2	9139	11317	104	13077.45	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	2	2026-11-03T07:19:05.981Z	0	26309	2	5851	20456	18	9451.35	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	3	2026-11-03T07:19:08.233Z	1	26483	4	2920	23559	113	6574.9	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	4	2026-11-03T07:19:10.076Z	2	41693	2	15212	26479	221	22769.9	1
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	5	2026-11-03T07:19:12.902Z	1	55685	2	13992	41691	245	22886.1	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	6	2026-11-03T07:19:16.615Z	1	59533	2	3848	55683	361	12185.3	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	7	2026-11-03T07:19:19.496Z	5	61271	2	1738	59531	441	10332.6	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	8	2026-11-03T07:19:25.704Z	1	124609	2	63338	61269	506	87831.4	1
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	9	2026-11-03T07:19:28.866Z	1	126899	2	2290	124607	155	16100.2	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	10	2026-11-03T07:19:30.762Z	4	127117	2	218	126897	381	14869.2	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	11	2026-11-03T07:19:36.987Z	1	137096	2	9979	127115	442	27397.25	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	12	2026-11-03T07:19:39.862Z	1	137639	2	543	137094	177	15275.150000000001	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	13	2026-11-03T07:19:54.825Z	1	139672	2	2033	137637	1491	23761.95	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	14	2026-11-03T07:19:58.408Z	1	147181	2	7509	139670	338	25045.25	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	15	2026-11-03T07:20:06.191Z	1	153796	2	6615	147179	821	27093.65	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	16	2026-11-03T07:20:14.384Z	1	158323	2	4527	153794	847	25275.15	1
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	17	2026-11-03T07:20:19.197Z	1	161743	2	3420	158321	230	21259.1	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	18	2026-11-03T07:21:20.740Z	1	166308	2	4565	161741	5821	50987.35	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	19	2026-11-03T07:21:24.469Z	1	173689	2	7381	166306	163	26673.850000000002	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	20	2026-11-03T07:21:38.076Z	1	177006	2	3317	173687	1356	28296.95	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	21	2026-11-03T07:22:48.262Z	1	181974	2	4968	177004	6431	56067.4	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	22	2026-11-03T07:22:54.742Z	1	191041	2	9067	181972	509	32077.95	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	23	2026-11-03T07:23:27.101Z	1	192211	2	1170	191039	8165	61393.4	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	24	2026-11-03T07:24:19.527Z	1	200450	2	8239	192209	511	32076.65	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	25	2026-11-03T07:24:22.600Z	3	201098	2	648	200448	3043	36071.8	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	26	2026-11-03T07:24:47.996Z	2	204428	2	3330	201096	282	25684.100000000002	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	27	2026-11-03T07:24:54.414Z	6	207737	2	3309	204426	3835	43755.850000000006	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	28	2026-11-03T07:25:16.935Z	1	214049	2	6312	207735	111	29220.5	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	29	2026-11-03T07:26:47.365Z	6	227478	2	13429	214047	12335	99867.95	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	30	2026-11-03T07:28:06.035Z	1	240421	2	12943	227476	6120	69528.35	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	31	2026-11-03T07:28:45.060Z	2	246618	2	6197	240419	1761	40595.15	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	32	2026-11-03T07:29:00.114Z	1	248577	2	1959	246616	293	28577.350000000002	0
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	main	discussion	33	2026-11-03T07:29:12.184Z	0	248946	2	369	248575	946	30050.75	0
++decision-record-on-board	b6756453-ec14-4e68-9423-67de6eeeb9e0	main	discussion	1	2026-11-03T07:15:22.749Z	2	20461	2	20459	0	104	26095.75	0
++decision-record-on-board	b6756453-ec14-4e68-9423-67de6eeeb9e0	main	discussion	2	2026-11-03T07:15:23.682Z	0	26312	2	5851	20459	19	9456.65	0
++decision-record-on-board	b6756453-ec14-4e68-9423-67de6eeeb9e0	main	discussion	3	2026-11-03T07:15:25.924Z	1	26488	4	2922	23562	114	6582.700000000001	0
++decision-record-on-board	b6756453-ec14-4e68-9423-67de6eeeb9e0	main	discussion	4	2026-11-03T07:15:27.766Z	2	41699	2	15213	26484	225	22791.65	1
++decision-record-on-board	b6756453-ec14-4e68-9423-67de6eeeb9e0	main	discussion	5	2026-11-03T07:15:30.348Z	1	55534	2	13835	41697	180	22365.45	0
++decision-record-on-board	b6756453-ec14-4e68-9423-67de6eeeb9e0	main	discussion	6	2026-11-03T07:15:33.705Z	1	59317	2	3783	55532	347	12018.95	0
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	1	2026-11-03T07:21:39.581Z	2	20461	2	11159	9300	104	15400.75	0
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	2	2026-11-03T07:21:40.680Z	0	26312	2	5851	20459	17	9446.65	0
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	3	2026-11-03T07:21:43.677Z	1	26488	4	2922	23562	116	6592.700000000001	0
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	4	2026-11-03T07:21:45.521Z	2	41721	2	15235	26484	195	22669.15	1
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	5	2026-11-03T07:21:48.056Z	1	56334	2	14613	41719	263	23755.15	0
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	6	2026-11-03T07:21:51.052Z	1	61455	2	5121	56332	280	13436.45	0
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	7	2026-11-03T07:21:53.670Z	1	64029	2	2574	61453	205	10389.8	0
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	8	2026-11-03T07:21:55.850Z	4	64424	2	395	64027	400	8898.45	0
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	9	2026-11-03T07:22:03.475Z	1	95448	2	31024	64422	726	48854.2	1
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	10	2026-11-03T07:22:06.919Z	9	97277	2	1829	95446	805	15857.85	0
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	11	2026-11-03T07:22:14.089Z	1	126991	2	29714	97275	442	49082	0
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	12	2026-11-03T07:22:18.288Z	1	128903	2	1912	126989	198	16080.900000000001	0
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	13	2026-11-03T07:23:26.151Z	8	131396	2	2493	128901	7159	51803.35	0
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	14	2026-11-03T07:23:36.216Z	1	151321	2	19925	131394	637	41232.65	0
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	15	2026-11-03T07:23:41.129Z	1	155018	2	3697	151319	238	20945.15	1
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	16	2026-11-03T07:24:34.685Z	1	156665	2	1647	155016	5418	44652.35	0
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	17	2026-11-03T07:24:39.700Z	1	162563	2	5898	156663	452	25300.800000000003	0
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	18	2026-11-03T07:24:51.746Z	3	163395	2	832	162561	10308	68838.1	0
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	19	2026-11-03T07:26:18.824Z	2	173989	2	10594	163393	302	31093.800000000003	0
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	20	2026-11-03T07:26:25.221Z	6	177318	2	3329	173987	3823	40676.95	0
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	21	2026-11-03T07:26:48.223Z	1	183597	2	6279	177316	111	26137.350000000002	0
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	22	2026-11-03T07:28:01.342Z	6	198050	2	14453	183595	13033	101592.75	0
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	23	2026-11-03T07:29:24.168Z	1	211697	2	13647	198048	6989	71810.55	0
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	24	2026-11-03T07:30:11.502Z	1	218764	2	7067	211695	197	30990.25	0
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	25	2026-11-03T07:30:23.561Z	2	219007	2	243	218762	1623	30296.95	0
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	main	discussion	26	2026-11-03T07:30:33.542Z	0	220830	2	1823	219005	1056	29461.25	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	1	2026-11-03T07:53:21.617Z	2	20465	2	11163	9300	303	16400.75	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	2	2026-11-03T07:53:23.118Z	0	26564	2	6099	20463	17	9757.05	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	3	2026-11-03T07:53:26.025Z	1	26745	4	179	26562	118	3473.9500000000003	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	4	2026-11-03T07:53:27.627Z	1	48491	2	21748	26741	252	31121.1	1
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	5	2026-11-03T07:53:30.358Z	5	49169	2	678	48489	462	8008.400000000001	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	6	2026-11-03T07:53:35.271Z	1	83607	2	34438	49167	358	49756.2	1
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	7	2026-11-03T07:53:38.143Z	8	87624	2	4017	83605	737	17068.75	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	8	2026-11-03T07:53:44.077Z	7	103350	2	15726	87622	681	31826.7	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	9	2026-11-03T07:53:50.836Z	1	143852	2	40502	103348	394	62934.3	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	10	2026-11-03T07:53:54.670Z	10	147253	2	3401	143850	923	23253.25	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	11	2026-11-03T07:54:06.400Z	8	175093	2	27840	147251	3551	67282.1	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	12	2026-11-03T07:54:35.138Z	1	204574	2	29481	175091	433	56527.350000000006	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	13	2026-11-03T07:54:41.531Z	6	216111	2	11537	204572	880	39280.45	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	14	2026-11-03T07:54:47.670Z	3	248584	2	32473	216109	463	64519.15	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	15	2026-11-03T07:54:58.426Z	1	257800	2	9216	248582	965	41205.2	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	16	2026-11-03T07:55:03.780Z	2	260443	2	2643	257798	457	31370.550000000003	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	17	2026-11-03T07:55:08.672Z	0	265117	2	4674	260441	260	33188.600000000006	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	18	2026-11-03T07:55:10.537Z	4	269766	4	4647	265115	615	35399.25	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	19	2026-11-03T07:55:17.464Z	1	280556	2	10792	269762	450	42718.2	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	20	2026-11-03T07:55:22.245Z	1	282260	2	1704	280554	489	32632.4	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	21	2026-11-03T07:55:25.371Z	0	283141	2	881	282258	21	29434.050000000003	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	22	2026-11-03T08:01:28.453Z	10	283855	4	1593	282258	956	35001.05	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	23	2026-11-03T08:01:35.131Z	5	301237	2	17384	283851	3643	68332.1	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	24	2026-11-03T08:02:01.095Z	1	307392	2	6155	301235	201	38824.25	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	25	2026-11-03T08:04:18.340Z	1	319444	2	12052	307390	182	46716	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	26	2026-11-03T08:04:20.485Z	5	320421	2	977	319442	10119	83762.45	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	27	2026-11-03T08:05:31.846Z	2	331083	2	10662	320419	1288	51811.4	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	28	2026-11-03T08:05:41.001Z	1	336024	2	4941	331081	494	41756.35	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	29	2026-11-03T08:05:44.051Z	1	338352	2	2328	336022	274	37884.200000000004	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	30	2026-11-03T08:05:48.421Z	1	340183	2	1831	338350	363	37940.75	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	31	2026-11-03T08:06:45.489Z	1	341066	2	883	340181	6043	65338.85	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	32	2026-11-03T08:06:49.686Z	1	347619	2	6553	341064	294	43769.65	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	33	2026-11-03T08:06:55.421Z	8	348193	2	574	347617	17432	122641.20000000001	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	34	2026-11-03T08:08:56.970Z	1	366452	2	18259	348191	359	59439.85	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	35	2026-11-03T08:09:01.447Z	2	366840	2	388	366450	924	41752	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	36	2026-11-03T08:09:10.408Z	2	367968	2	1128	366838	2996	53075.8	0
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	main	plan	37	2026-11-03T08:09:42.543Z	0	371160	2	3192	367966	975	45663.6	0
+diff --git a/docs/research/writer-lookups-measure-2026-11-04/writer-chains.tsv b/docs/research/writer-lookups-measure-2026-11-04/writer-chains.tsv
+new file mode 100644
+index 00000000..f50aa770
+--- /dev/null
++++ b/docs/research/writer-lookups-measure-2026-11-04/writer-chains.tsv
+@@ -0,0 +1,15 @@
++slug	session	role	start_turn	length	calls	ctx_first	ctx_max	cost_usd	first_turn_cost_usd	cost_over_line_usd
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	3	4	5	26485	59608	0.2359	0.0217	0.0000
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	13	11	11	92379	120339	0.6911	0.0597	0.0000
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	3	7	30	26687	185837	0.9827	0.0085	0.0000
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	11	5	5	200286	213463	0.3465	0.0813	0.3465
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	21	6	6	232172	259378	0.4907	0.0600	0.4907
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	3	9	28	26708	207355	1.1837	0.0088	0.1934
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	13	5	10	226041	252249	0.5474	0.1076	0.5474
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	3	20	28	26483	191041	1.7348	0.0216	0.0000
++decision-record-on-board	b6756453-ec14-4e68-9423-67de6eeeb9e0	discussion	3	4	5	26488	59317	0.2256	0.0216	0.0000
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	3	15	34	26488	162563	1.3220	0.0217	0.0000
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	3	8	34	26745	147253	0.7959	0.0086	0.0000
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	13	4	12	216111	260443	0.5201	0.1162	0.5201
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	18	2	5	269766	280556	0.2055	0.0886	0.2055
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	28	3	3	336024	340183	0.2692	0.1008	0.2692
+diff --git a/docs/research/writer-lookups-measure-2026-11-04/writer-sessions.tsv b/docs/research/writer-lookups-measure-2026-11-04/writer-sessions.tsv
+new file mode 100644
+index 00000000..9555e73b
+--- /dev/null
++++ b/docs/research/writer-lookups-measure-2026-11-04/writer-sessions.tsv
+@@ -0,0 +1,9 @@
++slug	session	role	turns	cost_usd	explore_turns	explore_cost_usd	explore_over_line_usd	explore_over_line_turns	chains	chain_turns	chain_cost_usd	chains3	chain3_turns	chain3_cost_usd	chain3_first_turn_cost_usd	agent_turns	max_ctx	explore_result_tokens	explore_result_carry_usd	search_turns	search_cost_usd	search_over_line_usd
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	32	2.7903	19	1.2736	0.0000	0	2	15	0.9270	2	15	0.9270	0.0813	2	185579	78739	0.7074	15	1.0368	0.0000
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	46	5.6273	22	2.2159	1.2331	15	3	18	1.8199	3	18	1.8199	0.1498	3	379790	251873	2.9231	17	1.9460	1.0687
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	32	4.1524	16	1.9295	0.9392	9	2	14	1.7311	2	14	1.7311	0.1164	3	346633	252183	2.3530	6	1.0056	0.4771
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	33	3.3310	22	1.8872	0.1524	2	1	20	1.7348	1	20	1.7348	0.0216	1	248946	169685	1.5887	18	1.7396	0.0899
++decision-record-on-board	b6756453-ec14-4e68-9423-67de6eeeb9e0	discussion	6	0.3637	4	0.2256	0.0000	0	1	4	0.2256	1	4	0.2256	0.0216	0	59317	32829	0.1730	3	0.2040	0.0000
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	26	2.7974	17	1.4953	0.0816	1	1	15	1.3220	1	15	1.3220	0.0217	1	220830	140479	1.1500	12	1.1334	0.0816
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	37	4.7025	19	1.9997	1.2038	11	4	17	1.7907	3	15	1.5852	0.2256	3	371160	233249	2.3554	9	1.1292	0.5898
++TOTAL	7 sessions		212	23.7645	119	11.0266	3.6101	38	14	103	9.5511	13	101	9.3456	0.6380	13		1159037	11.2507	80	8.1946	2.3071
+diff --git a/docs/research/writer-lookups-measure-2026-11-04/writer-subagents.tsv b/docs/research/writer-lookups-measure-2026-11-04/writer-subagents.tsv
+new file mode 100644
+index 00000000..227ed9ba
+--- /dev/null
++++ b/docs/research/writer-lookups-measure-2026-11-04/writer-subagents.tsv
+@@ -0,0 +1,51 @@
++slug	session	role	batch	kind	description	model	questions	turns	cost_usd
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	1	lookup	Trace bug 2: archive tag push	sonnet	5	7	0.20300720000000003
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	1	lookup	Trace bug 3: cancel push race	sonnet	6	8	0.31434490000000004
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	1	lookup	Trace bug 1: pair gone	sonnet	6	9	0.239793
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	2	fork	Lens: interactions	inherit	4	3	0.2472856
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	2	fork	Lens: board-scope	inherit	4	3	0.128999
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	2	fork	Lens: leanness	inherit	4	2	0.0935674
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	2	fork	Lens: existing-paths	inherit	4	5	0.356288
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	2	fork	Lens: walkthrough	inherit	4	5	0.2983432
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	2	fork	Lens: bound-breaker	inherit	4	5	0.5133928
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	1	lookup	Fabric pushes and locks lookup	sonnet	7	11	0.39558580000000004
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	1	lookup	Batten pre-run flow lookup	sonnet	9	10	0.3788542
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	1	lookup	Fabric remove way-forward lookup	sonnet	6	8	0.26746410000000004
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	1	lookup	Origin reconcile entry lookup	sonnet	5	4	0.2373652
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	2	fork	fork0 writes the plan	inherit	5	16	2.5869406
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	3	fork	Lens row-validity review	inherit	4	4	0.6110864
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	3	fork	Lens coverage review	inherit	4	4	0.6153476000000001
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	3	fork	Lens way-forward review	inherit	4	8	0.9547620000000001
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	3	fork	Lens guard-reach review	inherit	4	7	0.9944442
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	3	fork	Lens forced-edits review	inherit	4	8	1.003327
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	1	lookup	Find docs naming board get, decision verbs	sonnet	6	5	0.1792786
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	1	lookup	Map boardengine tests and helpers	sonnet	8	5	0.1732147
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	1	lookup	Map loomcli decision and seam tests	sonnet	7	9	0.2107313
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	2	fork	fork0 writes the plan	inherit	5	20	2.0106478
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	3	fork	Lens fork: way-forward	inherit	4	5	0.6605924000000001
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	3	fork	Lens fork: row-validity	inherit	4	6	0.6641174
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	3	fork	Lens fork: guard-reach	inherit	4	3	0.5078813999999999
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	3	fork	Lens fork: coverage	inherit	4	2	0.3182502
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	3	fork	Lens fork: forced-edits	inherit	4	7	0.6848044
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	1	fork	Lens: leanness	inherit	4	2	0.1435062
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	1	fork	Lens: walkthrough	inherit	4	4	0.300105
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	1	fork	Lens: interactions	inherit	4	3	0.3052828
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	1	fork	Lens: board-scope	inherit	4	3	0.1777312
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	1	fork	Lens: bound-breaker	inherit	4	4	0.40944060000000004
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	1	fork	Lens: existing-paths	inherit	4	6	0.4321368
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	1	fork	Lens: walkthrough	inherit	4	5	0.39139960000000007
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	1	fork	Lens: bound-breaker	inherit	4	4	0.3608022
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	1	fork	Lens: board-scope	inherit	4	4	0.2349542
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	1	fork	Lens: leanness	inherit	4	2	0.20767460000000001
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	1	fork	Lens: interactions	inherit	4	3	0.25298160000000003
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	1	fork	Lens: existing-paths	inherit	4	7	0.4724472
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	1	lookup	Registry coverage guards lookup	sonnet	5	7	0.2345602
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	1	lookup	Status rendering lookup	sonnet	4	4	0.1941144
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	1	lookup	Tapestry-by-name sites	sonnet	0	6	0.22587669999999999
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	1	lookup	Profile block lookup	sonnet	0	6	0.15137520000000002
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	2	fork	fork0 writes the plan	inherit	5	12	1.8045417999999998
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	3	fork	Lens forced-edits review	inherit	4	9	1.0799172000000001
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	3	fork	Lens guard-reach review	inherit	4	4	0.5625194
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	3	fork	Lens row-validity review	inherit	4	6	0.7384034
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	3	fork	Lens way-forward review	inherit	4	3	0.37942240000000005
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	3	fork	Lens coverage review	inherit	4	3	0.5089878
+diff --git a/docs/research/writer-lookups-measure-2026-11-04/writer-turns.tsv b/docs/research/writer-lookups-measure-2026-11-04/writer-turns.tsv
+new file mode 100644
+index 00000000..c6dfbfc6
+--- /dev/null
++++ b/docs/research/writer-lookups-measure-2026-11-04/writer-turns.tsv
+@@ -0,0 +1,213 @@
++slug	session	role	turn	ctx	cost_usd	ncalls	kind
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	1	20457	0.0597	2	other
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	2	26308	0.0337	0	other
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	3	26485	0.0217	1	explore
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	4	41678	0.0859	2	explore
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	5	56351	0.0897	1	explore
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	6	59608	0.0385	1	explore
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	7	62914	0.0980	9	delegate
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	8	74296	0.0727	0	other
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	9	77230	0.0334	2	explore
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	10	84456	0.0595	1	other
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	11	84868	0.0224	0	other
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	12	87719	0.0611	0	other
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	13	92379	0.0597	1	explore
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	14	94590	0.0382	1	explore
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	15	97991	0.0439	1	explore
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	16	101617	0.0548	1	explore
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	17	103867	0.0494	1	explore
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	18	106139	0.0453	1	explore
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	19	108692	0.1211	1	explore
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	20	114497	0.0560	1	explore
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	21	114789	0.1099	1	explore
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	22	119687	0.0535	1	explore
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	23	120339	0.0595	1	explore
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	24	122825	0.2147	3	other
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	25	132014	0.0761	1	explore
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	26	134482	0.1147	6	delegate
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	27	140768	0.0606	1	other
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	28	155710	0.1056	1	explore
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	29	156641	0.4001	6	other
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	30	175490	0.1315	1	explore
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	31	176729	0.2144	2	other
++batten-remote-order	2a21cc59-db9b-4250-8a2d-60cc010620dc	discussion	32	185579	0.1051	0	other
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	1	20459	0.0628	2	other
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	2	26510	0.0347	0	other
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	3	26687	0.0085	1	explore
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	4	48476	0.1201	1	explore
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	5	49549	0.0332	10	explore
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	6	85709	0.2022	1	explore
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	7	89219	0.0638	14	explore
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	8	159508	0.3795	2	explore
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	9	185837	0.1755	1	explore
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	10	193015	0.1852	4	delegate
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	11	200286	0.0813	1	explore
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	12	202814	0.0617	1	explore
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	13	208755	0.0770	1	explore
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	14	210682	0.0594	1	explore
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	15	213463	0.0671	1	explore
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	16	215128	0.0560	1	other
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	17	215857	0.0500	1	other
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	18	221052	0.0733	1	explore
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	19	229090	0.0974	1	other
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	20	230436	0.0687	1	other
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	21	232172	0.0600	1	explore
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	22	236859	0.0809	1	explore
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	23	243295	0.0936	1	explore
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	24	254610	0.1178	1	explore
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	25	257760	0.0740	1	explore
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	26	259378	0.0643	1	explore
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	27	261433	0.0782	1	delegate
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	28	262627	0.0589	0	other
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	29	263455	0.0912	15	explore
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	30	295613	0.2860	5	delegate
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	31	301314	0.0899	1	other
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	32	314786	0.1312	1	explore
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	33	315667	0.2293	1	other
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	34	326033	0.1241	1	other
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	35	326847	0.2993	5	other
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	36	338850	0.1896	1	other
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	37	344300	0.1004	1	explore
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	38	344665	0.1634	3	other
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	39	349626	0.1569	4	other
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	40	353228	0.1869	5	other
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	41	358685	0.1812	4	other
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	42	363263	0.1724	2	other
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	43	367356	0.2315	2	other
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	44	374480	0.1237	2	other
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	45	375406	0.1658	1	other
++batten-remote-order	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	plan	46	379790	0.1195	0	other
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	1	20460	0.0619	2	other
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	2	26468	0.0358	0	other
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	3	26708	0.0088	1	explore
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	4	48145	0.1166	2	explore
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	5	57170	0.0708	8	explore
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	6	106928	0.2694	1	explore
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	7	110698	0.0621	6	explore
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	8	155833	0.2591	3	explore
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	9	187256	0.2035	4	explore
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	10	200561	0.1140	1	explore
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	11	207355	0.0794	2	explore
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	12	217184	0.1670	4	delegate
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	13	226041	0.1076	4	explore
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	14	231888	0.0897	1	explore
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	15	238075	0.1583	1	explore
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	16	249856	0.1151	1	explore
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	17	252249	0.0767	3	explore
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	18	267990	0.1488	1	other
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	19	269770	0.0777	1	other
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	20	271070	0.0717	1	other
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	21	272168	0.0670	1	other
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	22	273004	0.0684	1	delegate
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	23	273885	0.0597	0	other
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	24	274648	0.0775	10	explore
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	25	293464	0.2219	5	delegate
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	26	299178	0.0895	1	other
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	27	310801	0.1209	1	explore
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	28	311743	0.2624	5	other
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	29	322057	0.1911	1	other
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	30	326997	0.3857	16	other
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	31	343439	0.2100	1	other
++decision-record-on-board	28d93419-263a-4ffe-8d12-419ea0b81ad9	plan	32	346633	0.1044	0	other
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	1	20458	0.0500	2	other
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	2	26309	0.0337	0	other
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	3	26483	0.0216	1	explore
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	4	41693	0.0858	2	explore
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	5	55685	0.0832	1	explore
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	6	59533	0.0376	1	explore
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	7	61271	0.0294	5	explore
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	8	124609	0.3391	1	explore
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	9	126899	0.0395	1	explore
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	10	127117	0.0341	4	explore
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	11	137096	0.0842	1	explore
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	12	137639	0.0337	1	explore
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	13	139672	0.0675	1	explore
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	14	147181	0.0722	1	explore
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	15	153796	0.0789	1	explore
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	16	158323	0.0703	1	explore
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	17	161743	0.0534	1	explore
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	18	166308	0.1716	1	explore
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	19	173689	0.0734	1	explore
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	20	177006	0.0785	1	explore
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	21	181974	0.1889	1	explore
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	22	191041	0.0919	1	explore
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	23	192211	0.2074	1	other
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	24	200450	0.0899	1	explore
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	25	201098	0.1042	3	other
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	26	204428	0.0625	2	explore
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	27	207737	0.1341	6	delegate
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	28	214049	0.0753	1	other
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	29	227478	0.3567	6	other
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	30	240421	0.2326	1	other
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	31	246618	0.1143	2	other
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	32	248577	0.0650	1	other
++decision-record-on-board	36602133-4927-4580-9929-a4f9bc571cd5	discussion	33	248946	0.0705	0	other
++decision-record-on-board	b6756453-ec14-4e68-9423-67de6eeeb9e0	discussion	1	20461	0.1044	2	other
++decision-record-on-board	b6756453-ec14-4e68-9423-67de6eeeb9e0	discussion	2	26312	0.0337	0	other
++decision-record-on-board	b6756453-ec14-4e68-9423-67de6eeeb9e0	discussion	3	26488	0.0216	1	explore
++decision-record-on-board	b6756453-ec14-4e68-9423-67de6eeeb9e0	discussion	4	41699	0.0859	2	explore
++decision-record-on-board	b6756453-ec14-4e68-9423-67de6eeeb9e0	discussion	5	55534	0.0811	1	explore
++decision-record-on-board	b6756453-ec14-4e68-9423-67de6eeeb9e0	discussion	6	59317	0.0370	1	explore
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	1	20461	0.0597	2	other
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	2	26312	0.0337	0	other
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	3	26488	0.0217	1	explore
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	4	41721	0.0854	2	explore
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	5	56334	0.0867	1	explore
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	6	61455	0.0425	1	explore
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	7	64029	0.0293	1	explore
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	8	64424	0.0228	4	explore
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	9	95448	0.1825	1	explore
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	10	97277	0.0443	9	explore
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	11	126991	0.1769	1	explore
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	12	128903	0.0389	1	explore
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	13	131396	0.1814	8	explore
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	14	151321	0.1387	1	explore
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	15	155018	0.0535	1	explore
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	16	156665	0.1476	1	explore
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	17	162563	0.0699	1	explore
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	18	163395	0.2428	3	other
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	19	173989	0.0917	2	explore
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	20	177318	0.1279	6	delegate
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	21	183597	0.0691	1	other
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	22	198050	0.3697	6	other
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	23	211697	0.2476	1	other
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	24	218764	0.0816	1	explore
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	25	219007	0.0774	2	other
++shed-sub-run-block	02072f8e-c066-4701-a378-a4832af2946d	discussion	26	220830	0.0740	0	other
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	1	20465	0.0637	2	other
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	2	26564	0.0349	0	other
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	3	26745	0.0086	1	explore
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	4	48491	0.1191	1	explore
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	5	49169	0.0223	5	explore
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	6	83607	0.1892	1	explore
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	7	87624	0.0516	8	explore
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	8	103350	0.1098	7	explore
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	9	143852	0.2311	1	explore
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	10	147253	0.0642	10	explore
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	11	175093	0.2397	8	delegate
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	12	204574	0.1911	1	other
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	13	216111	0.1162	6	explore
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	14	248584	0.2149	3	explore
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	15	257800	0.1151	1	explore
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	16	260443	0.0739	2	explore
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	17	265117	0.0807	0	other
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	18	269766	0.0886	4	explore
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	19	280556	0.1169	1	explore
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	20	282260	0.0744	1	delegate
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	21	283141	0.0613	0	other
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	22	283855	0.0836	10	explore
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	23	301237	0.2166	5	delegate
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	24	307392	0.0950	1	other
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	25	319444	0.1254	1	explore
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	26	320421	0.2712	5	other
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	27	331083	0.1432	2	other
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	28	336024	0.1008	1	explore
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	29	338352	0.0843	1	explore
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	30	340183	0.0841	1	explore
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	31	341066	0.1933	1	other
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	32	347619	0.1069	1	other
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	33	348193	0.4210	8	other
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	34	366452	0.1681	1	other
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	35	366840	0.0937	2	other
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	36	367968	0.1389	2	other
++shed-sub-run-block	ff2ee39d-1896-4684-8752-c15b4f20d8f7	plan	37	371160	0.1091	0	other
+diff --git a/docs/research/writer-lookups-measure-2026-11-04/writers.sh b/docs/research/writer-lookups-measure-2026-11-04/writers.sh
+new file mode 100755
+index 00000000..b9f14257
+--- /dev/null
++++ b/docs/research/writer-lookups-measure-2026-11-04/writers.sh
+@@ -0,0 +1,96 @@
++#!/usr/bin/env bash
++# Usage: writers.sh <dir-with-turns-and-calls> <out-dir>
++# From turns.tsv and calls.tsv (extract-turns.sh of the turn audit), writes for the Plan-Write and Discussion-Write main sessions (roles plan and discussion):
++#   <out-dir>/writer-turns.tsv:    one row per turn: slug session role turn ctx cost_usd ncalls kind
++#   <out-dir>/writer-sessions.tsv: one row per session, then a TOTAL row
++#   <out-dir>/writer-chains.tsv:   one row per chain of exploration turns in a row
++# A turn's kind is explore when every call in it is a lookup (class read, search, git-read or lym-read of the turn audit: Read, Grep, Glob, or a read-only Bash lookup),
++# delegate when it holds an Agent call, and other otherwise. A chain is two or more explore turns in a row.
++# cost_usd prices a turn's input, cache write and cache read at the Opus 5.5 list price (claude-opus-5-5 in internal/shuttleengine/claudeengine/pricing.go;
++# every writer session of the sample ran that model and wrote no one-hour cache entry).
++# explore_result_tokens is the context the explore turns added, the growth from an explore turn to the next turn;
++# explore_result_carry_usd prices carrying it: one cache write at 5 USD per million, then a cache read at 0.2 USD per million in each later turn.
++# search_turns, search_cost_usd and search_over_line_usd are the explore turns that hold a call other than the Read tool (a Grep, a Glob or a Bash lookup),
++# the lookups a subagent can take whole; the rest of the explore turns read files the writer may need to see itself.
++# LINE_TOKENS (default 200000) is the context line the "over" figures count from.
++set -euo pipefail
++dir=$1
++out=$2
++mkdir -p "$out"
++awk -F'\t' -v OFS='\t' -v line="${LINE_TOKENS:-200000}" -v turnsout="$out/writer-turns.tsv" -v sessout="$out/writer-sessions.tsv" -v chainout="$out/writer-chains.tsv" '
++function endchain() {
++  if (runlen >= 2) {
++    print slug, session, role, runstart, runlen, runcalls, runctxfirst, runctxmax, sprintf("%.4f", runcost), sprintf("%.4f", runfirstcost), sprintf("%.4f", runovercost) >> chainout
++    chains++; chainturns += runlen; chaincost += runcost; chainfirst += runfirstcost
++    if (runlen >= 3) { chains3++; chain3turns += runlen; chain3cost += runcost; chain3first += runfirstcost }
++  }
++  runlen = 0
++}
++function flush(   i, resulttok, carry) {
++  if (cur == "") return
++  endchain()
++  # The context an exploration turn adds first shows in the next turn, which pays its cache write; every turn after that reads it.
++  resulttok = carry = 0
++  for (i in growth) { resulttok += growth[i]; carry += growth[i] * (5 + 0.2 * (turns - (i + 1))) / 1e6 }
++  print slug, session, role, turns, sprintf("%.4f", cost), exturns, sprintf("%.4f", excost), sprintf("%.4f", exover), exoverturns, chains + 0, chainturns + 0, sprintf("%.4f", chaincost), chains3 + 0, chain3turns + 0, sprintf("%.4f", chain3cost), sprintf("%.4f", chain3first), agentturns + 0, maxctx, resulttok, sprintf("%.4f", carry), sturns, sprintf("%.4f", scost), sprintf("%.4f", sover) >> sessout
++  T_result += resulttok; T_carry += carry; T_sturns += sturns; T_scost += scost; T_sover += sover
++  T_turns += turns; T_cost += cost; T_ex += exturns; T_excost += excost; T_exover += exover; T_exoverturns += exoverturns
++  T_chains += chains; T_chainturns += chainturns; T_chaincost += chaincost; T_chains3 += chains3; T_chain3turns += chain3turns; T_chain3cost += chain3cost; T_chain3first += chain3first; T_agent += agentturns
++  T_n++
++}
++FNR == 1 { next }
++FILENAME == ARGV[1] {
++  # calls.tsv: slug session kind role turn call ts tool class key
++  if ($3 != "main" || ($4 != "plan" && $4 != "discussion")) next
++  id = $1 SUBSEP $2 SUBSEP $5
++  ncls[id]++
++  if ($9 !~ /^(read|search|git-read|lym-read)$/) nonlookup[id]++
++  if ($9 == "agent") agent[id]++
++  if ($8 != "Read") nonread[id]++
++  next
++}
++{
++  # turns.tsv: slug session kind role turn ts ncalls ctx input cache_write cache_read output weight dep
++  if ($3 != "main" || ($4 != "plan" && $4 != "discussion")) next
++  sid = $1 SUBSEP $2
++  if (sid != cur) {
++    flush()
++    cur = sid; slug = $1; session = $2; role = $4
++    turns = cost = exturns = excost = exover = exoverturns = chains = chainturns = chaincost = chains3 = chain3turns = chain3cost = chain3first = agentturns = maxctx = 0
++    runlen = 0
++    prevkind = ""; prevctx = 0
++    sturns = scost = sover = 0
++    split("", growth)
++    if (!headers) {
++      print "slug", "session", "role", "turn", "ctx", "cost_usd", "ncalls", "kind" > turnsout
++      print "slug", "session", "role", "start_turn", "length", "calls", "ctx_first", "ctx_max", "cost_usd", "first_turn_cost_usd", "cost_over_line_usd" > chainout
++      print "slug", "session", "role", "turns", "cost_usd", "explore_turns", "explore_cost_usd", "explore_over_line_usd", "explore_over_line_turns", "chains", "chain_turns", "chain_cost_usd", "chains3", "chain3_turns", "chain3_cost_usd", "chain3_first_turn_cost_usd", "agent_turns", "max_ctx", "explore_result_tokens", "explore_result_carry_usd", "search_turns", "search_cost_usd", "search_over_line_usd" > sessout
++      headers = 1
++    }
++  }
++  id = sid SUBSEP $5
++  c = ($9 * 4 + $10 * 5 + $11 * 0.2 + $12 * 20) / 1e6
++  ctx = $8
++  kind = "other"
++  if ($7 >= 1 && ncls[id] == $7 && nonlookup[id] == 0) kind = "explore"
++  else if (agent[id] > 0) kind = "delegate"
++  if (prevkind == "explore" && ctx > prevctx) growth[turns] = ctx - prevctx
++  prevkind = kind; prevctx = ctx
++  turns++; cost += c
++  if (ctx > maxctx) maxctx = ctx
++  if (kind == "delegate") agentturns++
++  print $1, $2, $4, $5, ctx, sprintf("%.4f", c), $7, kind >> turnsout
++  if (kind == "explore") {
++    exturns++; excost += c
++    if (nonread[id] > 0) { sturns++; scost += c; if (ctx >= line) sover += c }
++    if (ctx >= line) { exover += c; exoverturns++ }
++    if (runlen == 0) { runstart = $5; runcalls = 0; runcost = 0; runfirstcost = c; runctxfirst = ctx; runctxmax = 0; runovercost = 0 }
++    runlen++; runcalls += $7; runcost += c
++    if (ctx > runctxmax) runctxmax = ctx
++    if (ctx >= line) runovercost += c
++  } else endchain()
++}
++END {
++  flush()
++  print "TOTAL", T_n " sessions", "", T_turns, sprintf("%.4f", T_cost), T_ex, sprintf("%.4f", T_excost), sprintf("%.4f", T_exover), T_exoverturns, T_chains + 0, T_chainturns + 0, sprintf("%.4f", T_chaincost), T_chains3 + 0, T_chain3turns + 0, sprintf("%.4f", T_chain3cost), sprintf("%.4f", T_chain3first), T_agent + 0, "", T_result + 0, sprintf("%.4f", T_carry), T_sturns + 0, sprintf("%.4f", T_scost), sprintf("%.4f", T_sover) >> sessout
++}' "$dir/calls.tsv" "$dir/turns.tsv"
