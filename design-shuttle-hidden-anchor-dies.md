@@ -6,7 +6,7 @@ Found in the codex-trial-hooks-guards-skills trial, 2026-11-04.
 
 ## What happens
 
-`lym shuttle run --anchor hidden --model 'luna[medium]' --role x --prompt ... --output-file ...` from a worktree whose reed session is live ends with outcome died after two start attempts about 10 s apart.
+`lym shuttle run --anchor hidden --model 'luna[medium]' --role x --prompt ... --output-file ...` from a worktree whose reed session is live ends with outcome died after two start attempts about 5 s apart.
 The log says `shuttle: provider never became ready; strand torn down` and the error says `no pane capture was saved; the strand was removed`.
 The same run with the default own-window anchor starts and finishes.
 

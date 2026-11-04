@@ -6,9 +6,9 @@ Found in the codex-trial-hooks-guards-skills trial, 2026-11-04.
 
 ## What happens
 
-`lym shuttle state` shows `state: unknown, cause: liveness-unproven` for every Codex run, whatever the session does.
+`lym shuttle state` shows `state: unknown, cause: liveness-unproven` for every Codex run it was read for, whatever the session does.
 The session fold does derive the right state: the history of an interrupted run lists `idle-fresh/session-start`, `busy/turn`, `idle-stalled/interrupt` at the rollout's `turn_aborted` time, and then `unknown/liveness-unproven`.
-The current state is the last entry, so a reader sees `unknown` while the turn runs and after an interrupt.
+The current state is the last entry, so a reader sees `unknown` after the interrupt, and while a turn runs.
 
 ## Cause
 
@@ -19,6 +19,6 @@ Every Codex poll therefore also logs `shuttle: session state disagrees ... stand
 
 A Codex strand reads busy while a turn runs and idle-stalled with cause interrupt after an interrupt, as the package doc says an interrupt marks the turn interrupted. Unproven liveness need only stop the state from claiming the process is alive, not replace the turn state.
 
-## Check
+## Seen on
 
-Two more interrupts of a sleeping turn gave the same history and the same current state.
+One interrupted run read through `lym shuttle state`; two further interrupted runs were checked in the rollout only, where each newest `turn_aborted` carries reason interrupted.
