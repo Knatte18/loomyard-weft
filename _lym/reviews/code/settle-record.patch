@@ -1,0 +1,579 @@
+diff --git a/contracts/orchrole/orch-role.md b/contracts/orchrole/orch-role.md
+index 74a397b5..fdf2f5e5 100644
+--- a/contracts/orchrole/orch-role.md
++++ b/contracts/orchrole/orch-role.md
+@@ -28,7 +28,6 @@ This list holds every `lym` command you may use, and `lym <command> --help` give
+   Board, config and orch rules writes through `lym` are no prime edits.
+ - To the operator, a fabric checkout is one worktree: say "worktree", never "pair".
+ - A question is never a go-ahead: release a task, or take any other step that starts work, only on the operator's explicit go-ahead naming that step, never inferred from a rejected alternative or from an answer to another question.
+-- Never set a priority on a board entry unless the operator names one.
+ - An agent reads the source itself: never hand it inlined file contents, digests or summaries of code in its prompt in place of its own reads.
+   Cost is cut by fewer turns, never by reading for it.
+ - A Codex run gets `high` effort at most, in a bench or anywhere else.
+@@ -42,7 +41,6 @@ This list holds every `lym` command you may use, and `lym <command> --help` give
+    The operator's terminal window on the task's worktree is opened by the run, so never open one yourself.
+    The batten run creates the task pair, drives the task's run inside it, tapestry, motif, darn or sampler as the board entry's `recipe` says, and tears the pair down after the run ends.
+    A darn run has no Discussion review: its Code-Review perch, the one tapestry runs, reviews the writer's diff before Describe unless the run's `code_max_bounces` is 0, in `loom.yaml` or the task's `run_settings`, and its Finalize lands it as tapestry's does.
+-   Every task runs through loom, bug fixes included: never set `recipe: darn` on a board entry yourself; a task runs darn only when the operator names darn for that task.
+ 2. A halted or paused batten run waits for you: dobby does not resume it.
+    The one exception is a paused run whose work already reached its parent: dobby finishes it through Land and Worktree-Teardown once no `lym tender pause` entry covers it.
+    Once its cause is known (see Investigating a stop), resume it with a hand pass, `lym batten run <slug>`, which you run only on the operator's word or after judging the stop under Investigating a stop.
+@@ -205,12 +203,7 @@ Never read the run's friction notes: its Friction-Reflect files them as LoomYard
+ 
+ ## The board
+ 
+-The mechanics of reading and writing the board are in the `ly:board` skill; this section is policy only.
+-- A proposal goes on the board as a note at once, never held in your head.
+-- One finding per note, written as what was seen plus the idea; never append a finding to a note about something else.
+-- A board body holds the current design only: when a newer design, decision or answer replaces part of an entry's body, rewrite the body so it holds only what stands now, removing the replaced drafts, recommendations and open questions in the same write, never keeping them under a "this replaces everything above" line.
+-  Bolt's git history keeps the old text.
+-- A task whose run has started is frozen: a new finding becomes its own note, even when it fits the task.
++The mechanics of reading and writing the board are in the `ly:board` skill, and the policy for keeping it is in the `ly:board-policy` skill, which you follow; this section holds only the board rules that are the orch's own.
+ - An operator decision made in chat is recorded in the same turn, split by who holds the entry:
+   - A decision on an entry no run holds is written into that entry's body through `lym board`.
+   - A decision on a task a run holds is recorded with `lym loom decision add <slug> --by parent`.
+@@ -224,27 +217,7 @@ The mechanics of reading and writing the board are in the `ly:board` skill; this
+   - Only when the verb refuses because Discussion-Write is running and owns the record does the decision go by message to the Discussion-Write session.
+     A Record-Write run's verb refuses until Record-Write has committed the record, and each refusal names its own way forward, which you take in place of a board note; the verb alone then records the decision, with no message of your own, since it tells each live agent of the run and a producer that starts later reads the record.
+   - The board's run lock is unchanged, so a held task's entry is never edited.
+-- Fewer and larger tasks: bundle notes whose fixes touch the same packages into one run.
+-  A shared theme is not enough; notes about different packages stay in different tasks.
+-- Never propose one note alone as a loom task: a loom run has a fixed cost of about half its spend whatever its size.
+-  Fold related notes into one loom task, or propose darn for a small change and let the operator name darn.
+-  A part of a darn task that looks large raises the darn's profile; it never becomes a loom run of its own.
+-- A rename is a task of its own: mechanical, done by script, with nothing else in it.
+-  It runs alone, with no other run in flight: it depends on every task released before it, and every task made before it lands depends on it.
+-- A bench, spike or other exploration the operator approves runs as a darn task with profile `docs`, in its own worktree, so its report lands as a commit; the operator naming an exploration for a run counts as naming darn for it.
+-  Never run such work as a background agent of your own: an agent of yours only reads and answers within your turn's scope, such as a quick study for a chat question.
+-  Its body states an exact cap on runs: inputs, models, efforts and repeats by number, one or two inputs unless the operator names more, and never an open word such as "many".
+-- A full board body is no reason to lower a task's Discussion rounds: Discussion explores the code, bounds the scope and weighs the impact, which a body does not do.
+-- Which notes become a task, and when a task is released for its run, is the operator's call: propose the bundle and its release, and merge, promote or release only after the operator approves that bundle.
+-- A finding essentially the same as an existing note, or a correction to its subject, goes into that note; any other finding stays its own note, even when its work overlaps another entry.
+-  Notes are bundled only when the operator promotes them into a task.
+-- Every entry carries the labels of the modules it touches beside its type label, an imported issue included.
+-- Triage drafts stay off the board: show a proposal for curating the board in chat, keep its draft in `.scratch/`, and change the board only after the operator decides.
+-- A task that needs other review rounds than its recipe's default profile names a profile of the ladder, `speed`, `light`, `solid` or `wide`, in its board entry's `profile` field through `lym board upsert`, before its batten run starts;
+-  it gets hand-written `run_settings` for its review bounds only when no profile fits.
+-  `lym board profiles` lists the hub's profiles and each recipe's default.
+-- A task's regression scope that the operator decides while discussing it goes in its board entry's `run_settings`, as `{"drift": {"scope": "full"}}`, `{"drift": {"scope": "off"}}` or `{"drift": {"scope": "partial", "skip": ["<test>", ...]}}`, before its batten run starts;
+-  Drift-Baseline then records it and spawns no agent, which otherwise decides the scope.
++- Never run a bench, spike or other exploration as a background agent of your own: an agent of yours only reads and answers within your turn's scope, such as a quick study for a chat question.
+ 
+ ## Where a finding goes
+ 
+diff --git a/docs/overview.md b/docs/overview.md
+index 15d5d1cb..d3ab7dfe 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -370,7 +370,7 @@ User-facing modules each get one `lym <module>` namespace:
+   every project, the root included as `P0` with its file `project-root.md`, renders through one project section that nests the projects under it, each with its own slug, age, owner, Tasks, Notes and Done, so the README shows every open project's entries split the same way, with the root's section last, and a project file shows its project and the projects under it.
+   An entry may carry a priority, `high` or `low`, absent meaning normal, which orders it first or last within its subsection.
+   A task may name a run profile in its `profile` field, and `lym board profiles` prints the hub's profiles with their settings and each recipe's default profile.
+-  Agents use the board through the `ly:board` skill.
++  Agents use the board through the `ly:board` skill, and a session keeping it for the operator follows the `ly:board-policy` skill: the orch, and the board agent the prime's `board` status-bar button opens for a short talk about one or a few entries.
+   ✅ Implemented.
+ - **config** — bare `lym config` lists modules and verbs, `lym config menu` picks a module to edit interactively, and `lym config <module>` edits that module's config;
+   `lym config reconcile` reconciles all module config files against their live templates (dry-run by default, `--apply` writes atomically) except seed-only modules (today: `models`), which are materialized once when absent and never rewritten again since the file is operator-owned;
+@@ -423,7 +423,7 @@ User-facing modules each get one `lym <module>` namespace:
+   defaults to `bug`.
+   Callable from any sandbox agent context with no config. ✅ Implemented.
+ - **reed** — **the window to the world**: tmux overlay + **strand** bookkeeping + render (`internal/reedcli` + `internal/reedengine` + `internal/reedengine/render`). Hosts every managed process as a strand in a window of its own or its group's, persists to `.lym/reed.json` (`lym reed up|add|remove|status|list|attach|switch|resume|watchdog|down`); `lym reed add` places a strand `--anchor own-window` by default. Every strand carries a hierarchical full name (see the `internal/agentname` package documentation), mirrored into its pane title and Claude session name and exported to its process as `LYM_STRAND_NAME` and `LYM_PARENT`, with the watchdog repairing drift; `list` is the hub-wide name directory. Built on what its proof-of-concept, `muxpoc`, proved first (env hygiene, native `--resume`); `muxpoc` has since been deleted, its job done. `reed attach` and `reed watchdog` are this module's two registered interactive-handoff exceptions ([PATTERN-cli-cobra](../pattern/PATTERN-cli-cobra.md)): `attach` hands the operator's stdio to a `tmux attach-session` child in place, pre-flighting through checking tmux's floor version, booting the session if cold and checking server/session liveness, and `watchdog` is the detached per-hub name-repair and reap daemon that blocks for its process lifetime — in both cases every fallible step runs pre-flight, on the envelope, and only the terminal-handover/daemon tail itself is exempt from emitting JSON. `add` and `attach` boot this worktree's session when none is up, with `up`'s own semantics — a bare substrate, with no persisted strand relaunched — instead of refusing; every other reed verb still refuses on a cold worktree. ✅ Implemented. See the `internal/reedengine` package documentation.
+-- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengine/codexengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await|await-forks`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits; in a hub an opened Claude session carries creel's hook delivery and the creel trust sentence as a run session does, so mail reaches it through its hooks; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository; its cap defaults to the caller role's keep-warm cap from `claude.yaml`. `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine: a reviewer, fixer or writer that waits inside it takes every fork's result in one turn instead of waking once per fork. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into the outcomes `done`/`died`/`timeout` and `api-error`. A spec with `APIErrorRetries` re-sends a turn the provider's API ended on an error that many times, then ends the run `api-error`. Any other turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run holds at once with an output file missing, a gated run with every output file present counts done once they pass the shell wait bound after telling the agent to read them, and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane; the exception is a handle whose own `Stop` removed the strand, which ends `died` and is recorded as stopped unless the files show the run done. No guardrail denies the in-process `Agent` tool: a subagent or fork shows in the session's own pane and lym reads its transcript under the session's `subagents` directory. A `PreToolUse` guardrail denies `AskUserQuestion` when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode, a version check included (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and to a package-scoped compile check the hub's `refuse_raw` does not refuse, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write, and a fifth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a headless `claude` launch with `-p` or `--print`, whose work shows in no pane, steering the session to a subagent through the `Agent` tool; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one and follows `[creel]` mail from its hooks. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). `claude.yaml`'s `keep_warm_cap` (template 250s) and `keep_warm_cap_roles` set the per-role keep-warm cap beside them. While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups, a sliced read of a short or already-read file, or a chain of edit-only messages; it never denies a call, and the block's switches and thresholds are config. The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, or per run by a model-spec naming it. Two engines are registered: `claude`, and `codex`, which drives the Codex CLI's TUI under one shared lym Codex home (`codex.yaml`'s `home`, linked to the operator's own login and sessions, its folder trust rendered by lym), with `-a never -s workspace-write` and the records checkout it is told through its config dirs as a writable root, none outside a hub; it loads skills as SKILL.md files the model reads by absolute path under `codex.yaml`'s `skill_roots`, and installs the shell guard rows of the `shellguard` table as `PreToolUse` hooks matching `Bash` with Codex's own steer and notice texts (`apply_patch` in place of Read, Edit and Write), the python and publish rows following their switches and the refuse-raw row a non-empty `refuse_raw` list, but has no fork audit or creel hooks yet, and the model registry's `sol`, `astra` and `luna` aliases name it. Per-run `Model`/`Effort` knobs (`lym shuttle run --model`/`--effort`; effort values `low|medium|high|xhigh|max`, empty = provider default) are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). A prompt deferred behind the skill-load turn is typed again at a held turn end, or when `Attach` takes over the run, while no turn start carries it, so an agent that sat idle without its task gets it. Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
++- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengine/codexengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await|await-forks`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits, and each repeatable `--skill` is loaded in its one first turn; in a hub an opened Claude session carries creel's hook delivery and the creel trust sentence as a run session does, so mail reaches it through its hooks; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository; its cap defaults to the caller role's keep-warm cap from `claude.yaml`. `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine: a reviewer, fixer or writer that waits inside it takes every fork's result in one turn instead of waking once per fork. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into the outcomes `done`/`died`/`timeout` and `api-error`. A spec with `APIErrorRetries` re-sends a turn the provider's API ended on an error that many times, then ends the run `api-error`. Any other turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run holds at once with an output file missing, a gated run with every output file present counts done once they pass the shell wait bound after telling the agent to read them, and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane; the exception is a handle whose own `Stop` removed the strand, which ends `died` and is recorded as stopped unless the files show the run done. No guardrail denies the in-process `Agent` tool: a subagent or fork shows in the session's own pane and lym reads its transcript under the session's `subagents` directory. A `PreToolUse` guardrail denies `AskUserQuestion` when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode, a version check included (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and to a package-scoped compile check the hub's `refuse_raw` does not refuse, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write, and a fifth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a headless `claude` launch with `-p` or `--print`, whose work shows in no pane, steering the session to a subagent through the `Agent` tool; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one and follows `[creel]` mail from its hooks. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). `claude.yaml`'s `keep_warm_cap` (template 250s) and `keep_warm_cap_roles` set the per-role keep-warm cap beside them. While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups, a sliced read of a short or already-read file, or a chain of edit-only messages; it never denies a call, and the block's switches and thresholds are config. The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, or per run by a model-spec naming it. Two engines are registered: `claude`, and `codex`, which drives the Codex CLI's TUI under one shared lym Codex home (`codex.yaml`'s `home`, linked to the operator's own login and sessions, its folder trust rendered by lym), with `-a never -s workspace-write` and the records checkout it is told through its config dirs as a writable root, none outside a hub; it loads skills as SKILL.md files the model reads by absolute path under `codex.yaml`'s `skill_roots`, and installs the shell guard rows of the `shellguard` table as `PreToolUse` hooks matching `Bash` with Codex's own steer and notice texts (`apply_patch` in place of Read, Edit and Write), the python and publish rows following their switches and the refuse-raw row a non-empty `refuse_raw` list, but has no fork audit or creel hooks yet, and the model registry's `sol`, `astra` and `luna` aliases name it. Per-run `Model`/`Effort` knobs (`lym shuttle run --model`/`--effort`; effort values `low|medium|high|xhigh|max`, empty = provider default) are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). A prompt deferred behind the skill-load turn is typed again at a held turn end, or when `Attach` takes over the run, while no turn start carries it, so an agent that sat idle without its task gets it. Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
+ - **orch** — the hub orchestrator hosted as an interactive Claude session in a reed strand of the prime worktree or of a beam, cycled before its context fills (`internal/orchcli` + `internal/orchengine`; `lym orch stop|status|refresh|distill|withdraw|rules`, in the prime and in any beam). `lym beam start` first ensures the worktree's `runs` strand, which runs `lym batten overview` as the beam's window, named `beam: prime` or `beam: <slug>` opened with the beam's board handle as in `P1: beam: <slug>`, and `stop` leaves it; ensuring it adds the runs strand beside a `loom-status` strand a pawl run's `lym loom start` put in an overview window first, as the session's first overview window, and a failure to add, replace or record it is a warning on the bring-up report naming `lym beam start`, never a stop; the orchestrator has a window of its own, and the session's windows run the beam window, agents, shell. A detached watcher has the session write a note, then clears it and resumes it from that note (`refresh`) or compacts it in place (`distill`), never clearing or compacting without one. ✅ Implemented. See the `internal/orchengine` package documentation.- **webster** — the implementer module: one long-lived Master session that reads the plan and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool), each fork reading its cards' code itself, instead of spawning a fresh reed/tmux strand per batch;
+   bracket verbs (`begin-batch`/`record-batch`) drive each in-session fork (Master ends its turn while a backgrounded fork works and records the batch on the fork's completion notification, shuttle reading that turn end as waiting rather than done), and a genuine model escalation (recovery after a stuck/report-less fork) spawns a cold strand.
+   Consumes the flat card-list plan (pinned in the plan-format blocks `contracts/stencils/loom/loom-block-plan-*.md`, which `contracts/stencils/loom/loom-template-plan.md`, the Plan producer's own stencil, includes) via its own sole parser, `internal/planparser`, groups cards into execution batches via `internal/batcher`, a separate config-selected registry module webster consumes (profiles in `batcher.yaml`, the `wide` cost profile by default), then runs those batches in card order, refusing a backward dependency derived from the cards' own `Targets`/`Uses` refs, records the partition in `state.json` at first init, and carries the plan's `## verify:` command as a must-pass gate on Merriam's strand: a failure is rerun once (a pass on the rerun records the identities as flaky;
+diff --git a/internal/orchcli/doc.go b/internal/orchcli/doc.go
+index 183209fa..16949a9a 100644
+--- a/internal/orchcli/doc.go
++++ b/internal/orchcli/doc.go
+@@ -18,7 +18,7 @@
+ // # The role file and the note
+ //
+ // The procedure lives in the orch role, one fixed text for every orch built into the binary, not in the launch prompt.
+-// `BeamUp` renders it to `.lym/orch/role.md` and launches the session with a one-line pointer at it; skills (`scribe:prose`, `scribe:conversation`, `ly:board`) are loaded by shuttle before that pointer on every launch path, a resume included.
++// `BeamUp` renders it to `.lym/orch/role.md` and launches the session with a one-line pointer at it; the orch's skills, `ly:board`'s board mechanics and `ly:board-policy`'s board policy among them, are loaded by shuttle before that pointer on every launch path, a resume included.
+ // `BeamUp` records the orch session's id in orch's state and resumes it after a reboot, a `stop` or a dead strand, falling back to the last note, else the start stencil, when the resume fails; see the internal/orchengine package documentation's `Continuing after a reboot` section.
+ // A context cycle asks the session for an orch note at the path it names, following `.lym/orch/note-template.md`, in place of a general handoff skill.
+ // `lym orch refresh` requests a clear cycle and `lym orch distill` a compact cycle, whatever `cycle_mode` says; both write the note first.
+diff --git a/internal/orchcli/start.go b/internal/orchcli/start.go
+index 250b3858..f13a9b60 100644
+--- a/internal/orchcli/start.go
++++ b/internal/orchcli/start.go
+@@ -33,7 +33,7 @@ import (
+ const orchStrandName = agentname.RoleOrch
+ 
+ // orchSkills are the skills shuttle loads into the orch session before its prompt pointer on every launch path.
+-var orchSkills = []string{"scribe:prose", "scribe:conversation", "ly:board"}
++var orchSkills = []string{"scribe:prose", "scribe:conversation", "ly:board", "ly:board-policy"}
+ 
+ // Report "action" values.
+ const (
+diff --git a/internal/orchcli/start_test.go b/internal/orchcli/start_test.go
+index 07fcdbfa..5fd74fd3 100644
+--- a/internal/orchcli/start_test.go
++++ b/internal/orchcli/start_test.go
+@@ -483,8 +483,8 @@ func TestStart_NoStrandLaunchesAndSpawnsWatcher(t *testing.T) {
+ 	if spec.Segment != segmentcolor.Coordinator || !spec.ColorByCaller {
+ 		t.Errorf("Segment/ColorByCaller = %q/%v; want %q/true", spec.Segment, spec.ColorByCaller, segmentcolor.Coordinator)
+ 	}
+-	if !slices.Equal(spec.Skills, []string{"scribe:prose", "scribe:conversation", "ly:board"}) {
+-		t.Errorf("Skills = %v; want the three orch skills", spec.Skills)
++	if !slices.Equal(spec.Skills, []string{"scribe:prose", "scribe:conversation", "ly:board", "ly:board-policy"}) {
++		t.Errorf("Skills = %v; want the orch skills", spec.Skills)
+ 	}
+ 	if spec.SkillLoadTimeout != h.cli.cfg.HandoffTimeout() {
+ 		t.Errorf("SkillLoadTimeout = %v; want the handoff timeout %v", spec.SkillLoadTimeout, h.cli.cfg.HandoffTimeout())
+diff --git a/internal/reedengine/config_test.go b/internal/reedengine/config_test.go
+index 0ae44ca8..77964192 100644
+--- a/internal/reedengine/config_test.go
++++ b/internal/reedengine/config_test.go
+@@ -106,8 +106,18 @@ func TestLoadConfig_TemplateDefaultsResolve(t *testing.T) {
+ 		{Label: "distill", Run: "lym orch distill", Confirm: "Distill the orch?"},
+ 		{Label: "refresh", Run: "lym orch refresh", Confirm: "Refresh the orch?"},
+ 	}
+-	if got := decodeButtons(t, cfg.Buttons); !reflect.DeepEqual(got, shippedButtons{Task: wantTaskButtons, Beam: wantBeamButtons, Prime: []buttonWant{}}) {
+-		t.Errorf("Buttons = %+v; want task %+v, beam %+v and an empty prime", got, wantTaskButtons, wantBeamButtons)
++	// The prime alone carries the board button: a board agent opened in a beam carries the beam's slug, and the board refuses a task write from a slug-carrying session.
++	wantPrimeButtons := []buttonWant{
++		{Label: "code", Run: "lym ide spawn {slug}"},
++		{Label: "terminal", Run: "lym reed window {worktree} --title {slug}"},
++		{Label: "agent", Run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]'", Ask: "Agent name:", AskDefault: "agent"},
++		{Label: "board", Run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]' --skill ly:board-policy --skill ly:board", Ask: "Board agent name:", AskDefault: "board"},
++		{Label: "distill", Run: "lym orch distill", Confirm: "Distill the orch?"},
++		{Label: "refresh", Run: "lym orch refresh", Confirm: "Refresh the orch?"},
++	}
++	wantShipped := shippedButtons{Task: wantTaskButtons, Beam: wantBeamButtons, Prime: wantPrimeButtons}
++	if got := decodeButtons(t, cfg.Buttons); !reflect.DeepEqual(got, wantShipped) {
++		t.Errorf("Buttons = %+v; want %+v", got, wantShipped)
+ 	}
+ 
+ 	t.Run("BothTemplatesShipTheSameButtons", func(t *testing.T) {
+@@ -122,7 +132,7 @@ func TestLoadConfig_TemplateDefaultsResolve(t *testing.T) {
+ 			if err := yaml.Unmarshal(raw, &doc); err != nil {
+ 				t.Fatalf("unmarshal %s: %v", file, err)
+ 			}
+-			if got := decodeButtons(t, doc.Buttons); !reflect.DeepEqual(got, shippedButtons{Task: wantTaskButtons, Beam: wantBeamButtons, Prime: []buttonWant{}}) {
++			if got := decodeButtons(t, doc.Buttons); !reflect.DeepEqual(got, wantShipped) {
+ 				t.Errorf("%s buttons = %+v; want the shipped default set", file, got)
+ 			}
+ 		}
+diff --git a/internal/reedengine/template_posix.yaml b/internal/reedengine/template_posix.yaml
+index 1e6d59f6..d4e25fa5 100644
+--- a/internal/reedengine/template_posix.yaml
++++ b/internal/reedengine/template_posix.yaml
+@@ -49,4 +49,22 @@ buttons:  # status-bar buttons in the groups task, beam and prime; an entry has
+     - label: refresh
+       run: lym orch refresh
+       confirm: Refresh the orch?
+-  prime: []
++  prime:
++    - label: code
++      run: lym ide spawn {slug}
++    - label: terminal
++      run: lym reed window {worktree} --title {slug}
++    - label: agent
++      ask: "Agent name:"
++      ask_default: agent
++      run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]'"
++    - label: board
++      ask: "Board agent name:"
++      ask_default: board
++      run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]' --skill ly:board-policy --skill ly:board"
++    - label: distill
++      run: lym orch distill
++      confirm: Distill the orch?
++    - label: refresh
++      run: lym orch refresh
++      confirm: Refresh the orch?
+diff --git a/internal/reedengine/template_windows.yaml b/internal/reedengine/template_windows.yaml
+index c509d91f..7047a25f 100644
+--- a/internal/reedengine/template_windows.yaml
++++ b/internal/reedengine/template_windows.yaml
+@@ -49,4 +49,22 @@ buttons:  # status-bar buttons in the groups task, beam and prime; an entry has
+     - label: refresh
+       run: lym orch refresh
+       confirm: Refresh the orch?
+-  prime: []
++  prime:
++    - label: code
++      run: lym ide spawn {slug}
++    - label: terminal
++      run: lym reed window {worktree} --title {slug}
++    - label: agent
++      ask: "Agent name:"
++      ask_default: agent
++      run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]'"
++    - label: board
++      ask: "Board agent name:"
++      ask_default: board
++      run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]' --skill ly:board-policy --skill ly:board"
++    - label: distill
++      run: lym orch distill
++      confirm: Distill the orch?
++    - label: refresh
++      run: lym orch refresh
++      confirm: Refresh the orch?
+diff --git a/internal/shuttlecli/cli_test.go b/internal/shuttlecli/cli_test.go
+index 5f8ff866..34b4568c 100644
+--- a/internal/shuttlecli/cli_test.go
++++ b/internal/shuttlecli/cli_test.go
+@@ -12,6 +12,7 @@ import (
+ 	"io"
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 	"sort"
+ 	"strings"
+ 	"sync"
+@@ -753,9 +754,14 @@ func TestOpenCmd_ModelAliasEngine(t *testing.T) {
+ 		wantModel  string
+ 		wantEffort string
+ 		wantMode   string
++		wantSkills []string
+ 		// openErr scripts the wanted engine's refusal.
+ 		openErr error
+ 	}{
++		{
++			name: "skills are passed in the order given", args: []string{"--role", "board", "--skill", "ly:board-policy", "--skill", "ly:board"},
++			wantEngine: shuttlefake.EngineName, wantSkills: []string{"ly:board-policy", "ly:board"},
++		},
+ 		{name: "an alias of the claude engine", args: []string{"--role", "explore", "--model", "opus"}, wantEngine: "claude", wantModel: "opus"},
+ 		{name: "an alias with an effort", args: []string{"--role", "explore", "--model", "opus[high]"}, wantEngine: "claude", wantModel: "opus", wantEffort: "high"},
+ 		{name: "no model leaves the set's default", args: []string{"--role", "explore"}, wantEngine: shuttlefake.EngineName},
+@@ -812,8 +818,8 @@ func TestOpenCmd_ModelAliasEngine(t *testing.T) {
+ 					}
+ 					continue
+ 				}
+-				if len(recorder.specs) != 1 || recorder.specs[0].PermissionMode != tt.wantMode {
+-					t.Errorf("engine %s saw specs %+v; want exactly one with PermissionMode %q", name, recorder.specs, tt.wantMode)
++				if len(recorder.specs) != 1 || recorder.specs[0].PermissionMode != tt.wantMode || !slices.Equal(recorder.specs[0].Skills, tt.wantSkills) {
++					t.Errorf("engine %s saw specs %+v; want exactly one with PermissionMode %q and Skills %v", name, recorder.specs, tt.wantMode, tt.wantSkills)
+ 				}
+ 			}
+ 		})
+diff --git a/internal/shuttlecli/open.go b/internal/shuttlecli/open.go
+index fe18535e..2a89a65c 100644
+--- a/internal/shuttlecli/open.go
++++ b/internal/shuttlecli/open.go
+@@ -14,13 +14,14 @@ import (
+ 	"github.com/spf13/cobra"
+ )
+ 
+-// openCmd builds the `open` subcommand, which opens a named session that takes no turn and returns at once.
++// openCmd builds the `open` subcommand, which opens a named session that takes no turn but the load of its --skill list, and returns at once.
+ func (c *shuttleCLI) openCmd() *cobra.Command {
+ 	var (
+ 		role           string
+ 		model          string
+ 		segment        string
+ 		permissionMode string
++		skills         []string
+ 		listModels     bool
+ 	)
+ 
+@@ -32,7 +33,8 @@ func (c *shuttleCLI) openCmd() *cobra.Command {
+ returns at once. --role is required and names the strand; a second open of the
+ same role is numbered by reed.
+ The session takes no turn and writes no run record, so lym shuttle state never
+-lists it. Its window closes when the session exits. It is refused under a pause.
++lists it. Each --skill, repeatable, is loaded in the order given in the
++session's one first turn; an engine that cannot load skills refuses the open. Its window closes when the session exits. It is refused under a pause.
+ 
+ --model chooses the engine, model and effort as a model spec, in one of two forms:
+   <alias>[<effort>]               an alias from the model registry, e.g. opus or opus[high]
+@@ -72,7 +74,7 @@ Example:
+ 				return nil
+ 			}
+ 
+-			spec := shuttleengine.OpenSpec{Role: role, Segment: segmentcolor.Segment(segment), PermissionMode: permissionMode}
++			spec := shuttleengine.OpenSpec{Role: role, Segment: segmentcolor.Segment(segment), PermissionMode: permissionMode, Skills: skills}
+ 			if model != "" {
+ 				parsed, err := modelspec.Parse(model)
+ 				if err != nil {
+@@ -114,6 +116,7 @@ Example:
+ 	cmd.Flags().StringVar(&model, "model", "", "model spec, <alias>[<effort>] or <engine>:<model-id>[<effort>]; empty defers to the provider default")
+ 	cmd.Flags().StringVar(&segment, "segment", "", "loom segment the session's window is colored by")
+ 	cmd.Flags().StringVar(&permissionMode, "permission-mode", "", "permission mode of the session: bypass or prompt; empty is the engine's bypass mode")
++	cmd.Flags().StringArrayVar(&skills, "skill", nil, "skill the session loads in its first turn; repeatable, loaded in the order given")
+ 	cmd.Flags().BoolVar(&listModels, "list-models", false, "print the model registry's aliases with their engine, model and default effort, and open nothing")
+ 
+ 	return cmd
+diff --git a/internal/shuttleengine/claudeengine/command.go b/internal/shuttleengine/claudeengine/command.go
+index 06bea59d..3b3de96c 100644
+--- a/internal/shuttleengine/claudeengine/command.go
++++ b/internal/shuttleengine/claudeengine/command.go
+@@ -363,19 +363,24 @@ func buildLaunchCmd(sh shell.Shell, bin, pointer, settingsPath, sessionID, model
+ 	return sh.WithEnv(envFileKey, envFilePath, cmd)
+ }
+ 
+-// buildOpenCmd composes the pane-shell line of a named interactive session that takes no prompt.
++// buildOpenCmd composes the pane-shell line of a named interactive session that takes no task prompt.
++// A non-empty firstTurn goes after the binary as the session's first turn.
+ // A fresh session is named with --session-id; when resume is true the line takes over the session sessionID names with --resume instead.
+ // It names the session with --name as a reference to LYM_STRAND_NAME, as buildLaunchCmd does, and appends --model and --effort only when non-empty.
+ // It appends --dangerously-skip-permissions when skipPermissions is true, on the fresh and the resume form alike.
+ // Reed replays the resume line verbatim, so a resume without the flag would bring a bypass session back prompting.
+ // A non-empty settingsPath adds --settings naming it, which Claude Code stacks over the worktree's own settings, and a non-empty appendPromptPath adds --append-system-prompt-file naming it.
+-// It passes no prompt and no environment assignment, so the line is one pipeline that OrElse may join.
+-func buildOpenCmd(sh shell.Shell, bin, sessionID, model, effort, settingsPath, appendPromptPath string, skipPermissions, resume bool) string {
++// It passes no environment assignment, so the line is one pipeline that OrElse may join.
++func buildOpenCmd(sh shell.Shell, bin, firstTurn, sessionID, model, effort, settingsPath, appendPromptPath string, skipPermissions, resume bool) string {
+ 	sessionFlag := " --session-id "
+ 	if resume {
+ 		sessionFlag = " --resume "
+ 	}
+-	cmd := sh.Invoke(bin) + sessionFlag + sh.Quote(sessionID) + " --name " + sh.EnvRef(agentname.StrandNameEnv)
++	cmd := sh.Invoke(bin)
++	if firstTurn != "" {
++		cmd += " " + sh.Quote(firstTurn)
++	}
++	cmd += sessionFlag + sh.Quote(sessionID) + " --name " + sh.EnvRef(agentname.StrandNameEnv)
+ 	if model != "" {
+ 		cmd += " --model " + sh.Quote(model)
+ 	}
+@@ -403,7 +408,8 @@ func buildOpenCmd(sh shell.Shell, bin, sessionID, model, effort, settingsPath, a
+ // Bypass is the default, and spec.PermissionMode "prompt" opts out per call;
+ // the session still loads Claude Code's own settings layers, whose deny rules and hooks Claude Code applies in bypass too, and carries no shuttle guard.
+ // "prompt" adds nothing, so it cannot override a default mode the settings set.
+-// The session takes no turn until text reaches its pane through the operator or creel, each bounded by its own rules.
++// A non-empty spec.Skills puts their load message on the fresh line as the session's first turn, and a message past the launch limit refuses the open before anything is written; the resume line carries none.
++// The session takes no other turn until text reaches its pane through the operator or creel, each bounded by its own rules.
+ // ResumeCmd resumes the session and falls back to a fresh start under the same id, because Claude Code keeps no transcript for a session that never took a turn, so --resume fails there.
+ // Bound: the fresh line runs whenever the resume line exits nonzero, including a resumed session that ends nonzero after a working life;
+ // a fresh start under a session id whose transcript exists fails at once, so the fallback never starts a second live session over a recorded one.
+@@ -423,6 +429,16 @@ func (c *Claude) OpenLaunch(dir string, spec shuttleengine.OpenSpec, cfg shuttle
+ 	if err != nil {
+ 		return shuttleengine.Launch{}, err
+ 	}
++	skillLoadMessage := ""
++	if len(spec.Skills) > 0 {
++		skillLoadMessage = c.SkillLoadMessage(spec.Skills)
++		if len(skillLoadMessage) > maxLaunchPromptBytes {
++			return shuttleengine.Launch{}, fmt.Errorf(
++				"skill-load message is %d bytes, over the %d-byte launch limit: the pane launch carries it as one command-line argument and Windows caps a process command line at 32,767 characters — name fewer or shorter skills than %v",
++				len(skillLoadMessage), maxLaunchPromptBytes, spec.Skills,
++			)
++		}
++	}
+ 	creelFlagDirForHook, err := c.creelFlagDirForHook()
+ 	if err != nil {
+ 		return shuttleengine.Launch{}, err
+@@ -440,8 +456,8 @@ func (c *Claude) OpenLaunch(dir string, spec shuttleengine.OpenSpec, cfg shuttle
+ 	}
+ 	sh := shell.ForGOOS()
+ 	bin := claudeBinary(claude)
+-	fresh := buildOpenCmd(sh, bin, sessionID, resolvedModel, spec.Effort, settingsPath, appendPromptPath, skipPermissions, false)
+-	resumeLine := buildOpenCmd(sh, bin, sessionID, resolvedModel, spec.Effort, settingsPath, appendPromptPath, skipPermissions, true)
++	fresh := buildOpenCmd(sh, bin, skillLoadMessage, sessionID, resolvedModel, spec.Effort, settingsPath, appendPromptPath, skipPermissions, false)
++	resumeLine := buildOpenCmd(sh, bin, "", sessionID, resolvedModel, spec.Effort, settingsPath, appendPromptPath, skipPermissions, true)
+ 	return shuttleengine.Launch{Cmd: fresh, ResumeCmd: sh.OrElse(resumeLine, fresh), SessionID: sessionID, CreelHooks: creelFlagDirForHook != ""}, nil
+ }
+ 
+diff --git a/internal/shuttleengine/claudeengine/command_test.go b/internal/shuttleengine/claudeengine/command_test.go
+index 2e85184d..31d2aae2 100644
+--- a/internal/shuttleengine/claudeengine/command_test.go
++++ b/internal/shuttleengine/claudeengine/command_test.go
+@@ -442,6 +442,21 @@ func TestOpenLaunch(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name: "skills ride the fresh line as the first turn and no resume line",
++			spec: shuttleengine.OpenSpec{Role: "board", Skills: []string{"ly:board-policy", "ly:board"}},
++			check: func(t *testing.T, launch shuttleengine.Launch) {
++				message := " " + sh.Quote(new(Claude).SkillLoadMessage([]string{"ly:board-policy", "ly:board"}))
++				if want := sh.Invoke("claude") + message + " --session-id "; !strings.HasPrefix(launch.Cmd, want) {
++					t.Errorf("Cmd = %q; want it to start with %q", launch.Cmd, want)
++				}
++				resumeLine := strings.Replace(strings.Replace(launch.Cmd, message, "", 1), "--session-id", "--resume", 1)
++				if want := sh.OrElse(resumeLine, launch.Cmd); launch.ResumeCmd != want {
++					t.Errorf("ResumeCmd = %q; want %q", launch.ResumeCmd, want)
++				}
++			},
++		},
++		{name: "a skill-load message past the launch limit is refused", spec: shuttleengine.OpenSpec{Role: "board", Skills: []string{strings.Repeat("x", maxLaunchPromptBytes)}}, board: true, wantErr: "skill-load message is"},
+ 		{name: "an invalid effort is refused", spec: shuttleengine.OpenSpec{Role: "explore", ModelChoice: shuttleengine.ModelChoice{Effort: "turbo"}}, wantErr: "invalid effort"},
+ 		{name: "a version without a model is refused", spec: shuttleengine.OpenSpec{Role: "explore", ModelChoice: shuttleengine.ModelChoice{Version: "4.5"}}, wantErr: "no model"},
+ 		{name: "an unknown mode is refused", spec: shuttleengine.OpenSpec{Role: "explore", PermissionMode: "auto"}, wantErr: "invalid permission mode"},
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index b065a8d1..74a1e5ca 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -301,6 +301,7 @@
+ //
+ // The open launch (Claude.OpenLaunch) starts a named interactive session with no prompt.
+ // Its line carries the session id and the strand-name reference, and adds `--model` and `--effort` only when set.
++// An open naming skills puts their load message after the binary on the fresh line as the session's first turn; the resume line carries none.
+ // An engine told no board directory passes no `--settings`, so the session takes the worktree's own settings.
+ // An engine told one writes, into the directory Runner.Open names for the session, a settings.json holding creel's hook delivery and nothing else, and the append-system-prompt file holding the creel trust sentence; both lines name the two files, and the launch is marked CreelHooks.
+ // The settings' PostToolUse mail hook and idle waiter are a run's; its Stop delivery is the merged command without the recording, since an opened session has no events file: it exits 0 whatever the delivery printed, so an echo reaches the operator.
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 5fc24d0f..5beb9af2 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -188,6 +188,7 @@
+ //
+ // Runner.Open opens a named interactive session with no prompt in a window of its own, for an extra session the orch or the operator wants beside the runs.
+ // It needs an engine with the optional SessionOpener capability, and a covered pause refuses it before anything is created.
++// A non-empty OpenSpec.Skills needs the SkillLoader capability too: the engine's fresh launch line carries their load message as the session's only turn, after which the session waits for the operator.
+ // The strand's command chains, after the provider line, an exit marker under the anchor's ephemeral `shuttle-open` directory, reed's detached self-removal and the shell's exit, so ending the session closes its window.
+ // The marker is the strand's done-when path, so a resume drops a finished session instead of relaunching it.
+ // OpenLaunch is told a directory of the session's own beside the marker, named by the same token, for the files its launch reads, and the engine creates it only when it writes one.
+diff --git a/internal/shuttleengine/engine.go b/internal/shuttleengine/engine.go
+index a28a12ec..d2af3fbc 100644
+--- a/internal/shuttleengine/engine.go
++++ b/internal/shuttleengine/engine.go
+@@ -299,7 +299,7 @@ type SessionResumer interface {
+ 	CheckResume(sessionID, workdir string) (warning string, err error)
+ }
+ 
+-// OpenSpec describes one named session that runs with no prompt: the caller's strand role, the resolved model choice, the segment its window is colored by and its permission mode.
++// OpenSpec describes one named session that runs with no prompt: the caller's strand role, the resolved model choice, the segment its window is colored by, its permission mode and the skills its first turn loads.
+ type OpenSpec struct {
+ 	// Role is the strand role, from the caller's flag.
+ 	Role string
+@@ -312,12 +312,16 @@ type OpenSpec struct {
+ 	// Empty selects the engine's bypass mode.
+ 	// Open and the CLI pass it uninspected; the engine is the sole validator and realizer.
+ 	PermissionMode string
++	// Skills names the provider-neutral skills the session loads, all in its first turn and in list order.
++	// Empty leaves the session with no turn; Open refuses a non-empty list for an engine without SkillLoader.
++	Skills []string
+ }
+ 
+ // SessionOpener is an optional capability beside Engine: the provider's way of opening a named interactive session with no prompt.
+ // OpenLaunch returns the launch and resume lines and the session id of a session that runs with no prompt, no run directory and no run record.
+ // dir is a directory of the session's own that does not yet exist; the engine creates it only to write files its launch lines read, such as settings that carry creel's hook delivery, and then marks the launch CreelHooks.
+-// The session runs under the caller's own worktree settings and any the engine adds, takes no turn, and is opened by Runner.Open.
++// The session runs under the caller's own worktree settings and any the engine adds, takes no turn but the load of spec.Skills, and is opened by Runner.Open.
++// For a non-empty spec.Skills the engine carries their load message on the fresh launch line as the session's first turn, and on no resume line.
+ // An implementing engine honours spec.PermissionMode or refuses it from OpenLaunch before it writes anything,
+ // so the refusal lands before Runner.Open creates the marker directory or adds a strand.
+ // It is separate from Engine for the same reason SessionCycler is: most implementers and test fakes never open a session.
+diff --git a/internal/shuttleengine/open.go b/internal/shuttleengine/open.go
+index cd0ba27c..2370f3ae 100644
+--- a/internal/shuttleengine/open.go
++++ b/internal/shuttleengine/open.go
+@@ -46,8 +46,8 @@ func openSessionDir(anchorPath, token string) string {
+ // when the self-removal fails the strand stays as a dead pane until `lym reed remove`, and a resume drops it through the marker instead of relaunching it.
+ // It writes no run directory, no run record and no output file; the engine may write its launch files into the session's own directory beside the marker.
+ // spec.Engine names the engine, empty for the set's default;
+-// an unregistered name, a covered pause geometry and an engine without SessionOpener each refuse the open before anything is created.
+-// Bound: one interactive session per call, in the caller's own worktree under its settings, never a turn; nothing caps the count.
++// an unregistered name, a covered pause geometry, an engine without SessionOpener and a non-empty spec.Skills for an engine without SkillLoader each refuse the open before anything is created.
++// Bound: one interactive session per call, in the caller's own worktree under its settings, with no turn but the load of spec.Skills; nothing caps the count.
+ func (r *Runner) Open(spec OpenSpec) (OpenResult, error) {
+ 	if r.toldErr != nil {
+ 		return OpenResult{}, r.toldErr
+@@ -71,6 +71,11 @@ func (r *Runner) Open(spec OpenSpec) (OpenResult, error) {
+ 	if !ok {
+ 		return OpenResult{}, fmt.Errorf("shuttle: open: the engine %q cannot open a session with no prompt", engineName)
+ 	}
++	if len(spec.Skills) > 0 {
++		if _, err := r.skillLoader(engine); err != nil {
++			return OpenResult{}, fmt.Errorf("shuttle: open: the spec names skills %v: %w", spec.Skills, err)
++		}
++	}
+ 	token, err := newRunID()
+ 	if err != nil {
+ 		return OpenResult{}, fmt.Errorf("shuttle: open: mint the exit marker token: %w", err)
+@@ -104,6 +109,6 @@ func (r *Runner) Open(spec OpenSpec) (OpenResult, error) {
+ 		return OpenResult{}, fmt.Errorf("shuttle: open: add the strand: %w", err)
+ 	}
+ 
+-	logger.Info("shuttle: opened session", "strandGUID", strand.GUID, "strandName", strand.Name, "role", spec.Role, "sessionID", launch.SessionID, "marker", marker, "engine", engineName, "permissionMode", spec.PermissionMode, "creelHooks", launch.CreelHooks)
++	logger.Info("shuttle: opened session", "strandGUID", strand.GUID, "strandName", strand.Name, "role", spec.Role, "sessionID", launch.SessionID, "marker", marker, "engine", engineName, "permissionMode", spec.PermissionMode, "skills", spec.Skills, "creelHooks", launch.CreelHooks)
+ 	return OpenResult{StrandGUID: strand.GUID, StrandName: strand.Name, SessionID: launch.SessionID, Engine: engineName}, nil
+ }
+diff --git a/internal/shuttleengine/open_test.go b/internal/shuttleengine/open_test.go
+index f0abb53f..4631d652 100644
+--- a/internal/shuttleengine/open_test.go
++++ b/internal/shuttleengine/open_test.go
+@@ -51,6 +51,7 @@ func TestRunner_Open(t *testing.T) {
+ 			engine: func() Engine { return &openerFakeEngine{openErr: errors.New("provider down")} },
+ 		},
+ 		{name: "an engine without the capability is refused", spec: spec, engine: func() Engine { return &fakeEngine{} }, wantErr: "cannot open a session"},
++		{name: "skills for an engine that cannot load them are refused", spec: OpenSpec{Role: "board", Skills: []string{"ly:board"}}, wantErr: "SkillLoader"},
+ 		{
+ 			name: "a failed open launch is returned", spec: spec, wantErr: "provider down",
+ 			engine: func() Engine { return &openerFakeEngine{openErr: errors.New("provider down")} },
+diff --git a/plugins/ly/skills/INDEX.md b/plugins/ly/skills/INDEX.md
+index c06e9b17..eb0e7e92 100644
+--- a/plugins/ly/skills/INDEX.md
++++ b/plugins/ly/skills/INDEX.md
+@@ -3,6 +3,7 @@
+ | Skill | Description |
+ | --- | --- |
+ | [board](board/SKILL.md) | Read or write the board — create or promote an entry, find or list entries, prune done ones — always through `lym board`, never by touching the board's JSON files in the Bolt checkout. |
++| [board-policy](board-policy/SKILL.md) | The policy for keeping the board on the operator's behalf — one finding per note, a body holds the current design only, propose bundles and wait for approval, release only on a named go-ahead. |
+ | [cli](cli/SKILL.md) | Load the index of every `lym` command an operator may use into the session. |
+ | [distill](distill/SKILL.md) | Request a compact cycle of the orch session through `lym orch distill`. |
+ | [refresh](refresh/SKILL.md) | Request a clear cycle of the orch session through `lym orch refresh`. |
+diff --git a/plugins/ly/skills/board-policy/SKILL.md b/plugins/ly/skills/board-policy/SKILL.md
+new file mode 100644
+index 00000000..942ea4c8
+--- /dev/null
++++ b/plugins/ly/skills/board-policy/SKILL.md
+@@ -0,0 +1,61 @@
++---
++name: board-policy
++description: The policy for keeping the board on the operator's behalf — one finding per note, a body holds the current design only, propose bundles and wait for approval, release only on a named go-ahead. Used beside `ly:board`, which holds the commands.
++---
++
++# board-policy
++
++## What it covers
++
++This is how a session that keeps the board for the operator decides what to write and when.
++The commands that read and write the board are in the `ly:board` skill.
++
++## Notes
++
++- A proposal goes on the board as a note at once, never held in your head.
++- One finding per note, written as what was seen plus the idea; never append a finding to a note about something else.
++- A finding essentially the same as an existing note, or a correction to its subject, goes into that note; any other finding stays its own note, even when its work overlaps another entry.
++  Notes are bundled only when the operator promotes them into a task.
++- A board body holds the current design only: when a newer design, decision or answer replaces part of an entry's body, rewrite the body so it holds only what stands now, removing the replaced drafts, recommendations and open questions in the same write, never keeping them under a "this replaces everything above" line.
++  Bolt's git history keeps the old text.
++- An operator decision made in chat on an entry no run holds is written into that entry's body in the same turn.
++- Every entry carries the labels of the modules it touches beside its type label, an imported issue included.
++- Never set a priority on a board entry unless the operator names one.
++- Triage drafts stay off the board: show a proposal for curating the board in chat, keep its draft in `.scratch/`, and change the board only after the operator decides.
++
++## Tasks
++
++- Which notes become a task, and when a task is released for its run, is the operator's call: propose the bundle and its release, and merge, promote or release only after the operator approves that bundle.
++- A question is never a go-ahead: release a task only on the operator's explicit go-ahead naming that release, never inferred from a rejected alternative or from an answer to another question.
++  A release is `lym board set-status '{"slug":"<slug>","status":null}'`; a new task is `draft` until then.
++- Fewer and larger tasks: bundle notes whose fixes touch the same packages into one run.
++  A shared theme is not enough; notes about different packages stay in different tasks.
++- Never propose one note alone as a loom task: a loom run has a fixed cost of about half its spend whatever its size.
++  Fold related notes into one loom task, or propose darn for a small change and let the operator name darn.
++  A part of a darn task that looks large raises the darn's profile; it never becomes a loom run of its own.
++- Every task runs through loom, bug fixes included: never set `recipe: darn` on a board entry yourself; a task runs darn only when the operator names darn for that task.
++- A rename is a task of its own: mechanical, done by script, with nothing else in it.
++  It runs alone, with no other run in flight: it depends on every task released before it, and every task made before it lands depends on it.
++- A bench, spike or other exploration the operator approves runs as a darn task with profile `docs`, in its own worktree, so its report lands as a commit; the operator naming an exploration for a run counts as naming darn for it.
++  Its body states an exact cap on runs: inputs, models, efforts and repeats by number, one or two inputs unless the operator names more, and never an open word such as "many".
++- A full board body is no reason to lower a task's Discussion rounds: Discussion explores the code, bounds the scope and weighs the impact, which a body does not do.
++- A task that needs other review rounds than its recipe's default profile names a profile of the ladder, `speed`, `light`, `solid` or `wide`, in its board entry's `profile` field, before its batten run starts;
++  it gets hand-written `run_settings` for its review bounds only when no profile fits.
++- A task's regression scope that the operator decides while discussing it goes in its board entry's `run_settings`, as `{"drift": {"scope": "full"}}`, `{"drift": {"scope": "off"}}` or `{"drift": {"scope": "partial", "skip": ["<test>", ...]}}`, before its batten run starts;
++  Drift-Baseline then records it and spawns no agent, which otherwise decides the scope.
++
++## Entries a run holds
++
++- A task whose run has started is frozen: a new finding becomes its own note, even when it fits the task.
++- A decision on a task a run holds, and anything about a run in flight, is the orch's: the orch of the task's worktree records it on the run.
++
++## A session opened for board work
++
++A session opened from the prime's `board` status-bar button exists for one or a few board cases, and the board holds all its state.
++
++- Read the board, and the code a case needs, yourself.
++- Talk each case through with the operator before writing it, then write, merge or remove notes, promote notes to tasks and release tasks as the sections above say.
++- Split an entry into tasks on the operator's approval: each part is a task with its own body, its `depends_on` set, and no two parts that run in parallel changing the same package.
++  For a discussed entry, each part's body carries the part of the decision record it builds, which `lym board get` with `--record` prints; only lym flags an entry discussed, so each part still runs its own Discussion.
++- A case that belongs to the orch, under Entries a run holds, goes back to the operator naming the orch.
++- When the cases are written, say so in one line; the operator closes the session, and nothing needs handing off.
