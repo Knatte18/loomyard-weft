@@ -1,6 +1,6 @@
 # Codex trial: hooks, shell guards and skills
 
-`codex-trial-hooks-guards-skills` · Task · research, codex, shuttle · running · Describe
+`codex-trial-hooks-guards-skills` · Task · research, codex, shuttle · running · PR-Review
 
 ## Goal
 
