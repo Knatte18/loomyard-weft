@@ -1,6 +1,6 @@
 # Dobby and the orch watcher leave their child processes as zombies
 
-`dobby-zombie-children` · Task · bug, dobby, orch, tender, process · running · Code-Bouncer
+`dobby-zombie-children` · Task · bug, dobby, orch, tender, process · running · Drift-Recheck
 
 ## Seen (hub orch, 2026-11-03 ~20:50)
 
