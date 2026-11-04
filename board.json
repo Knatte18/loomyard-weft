@@ -740,6 +740,25 @@
       "body": "## Seen (`docs/research/writer-lookups-measure-2026-11-04/report.md`)\n\n- The Plan writers follow the stencil's lookup guidance: 3 of 3 sent one early batch of 3 or 4 `sonnet` lookup subagents.\n- The Discussion writers mostly do not: 2 of 3 full sessions started no lookup subagent and explored in their own context, in chains of 15 and 20 serial turns.\n  One Discussion session took in 170k tokens of lookup results and carried them through every later turn.\n- Carry, the cost of keeping what lookups returned in context for the rest of the session, was $11.25 of the writers' $23.76, larger than the lookups' own cost.\n  An early explore subagent returns only what is relevant, so its main saving is a smaller context for the whole session, not cheaper lookups.\n\n## Idea (operator and orch, 2026-11-04)\n\nThe Discussion-Write stencil asks the writer to start its exploration with explore subagents: one batch of independent questions to fresh `subagent_model` subagents up front, before it reads code in its own context, as the Plan writers already do.\n",
       "created": "2026-11-04T15:28:18Z",
       "revised": "2026-11-04T15:28:18Z"
+    },
+    {
+      "id": 1108,
+      "handle": "R2",
+      "slug": "writer-lookups-remeasure",
+      "title": "Re-measure writer exploration and the carry of lookup results after the Discussion stencil change",
+      "kind": "note",
+      "labels": [
+        "research",
+        "loom",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Re-run the writer-lookups measurement on 10 tapestry runs, pricing the carry saved by early explore subagents",
+      "body": "## Idea (operator and orch, 2026-11-04)\n\nRe-run the writer-lookups measurement (`docs/research/writer-lookups-measure-2026-11-04/`, `run-all.sh`) once at least 10 tapestry runs have landed after the Discussion-Write stencil change of `discussion-explore-agents-first`, on those runs, with no new agent run.\n\n- Count, per Plan-Write and Discussion-Write session, whether it started lookup subagents up front, and its exploration turns, chains and cost, as the 2026-11-04 report did.\n- Price the carry of lookup results (the context a lookup adds, paid in every later turn) as a saving of its own: compare the carry of sessions that delegated early against those that did not, which the 2026-11-04 report measured but left out of its savings estimate.\n- Cap: the 10 most recent tapestry runs landed after that change; both writer roles of each.\n- Runs as darn with profile `docs`.\n",
+      "created": "2026-11-04T15:28:18Z",
+      "revised": "2026-11-04T15:28:18Z"
     }
   ],
   "prime_owner": "neve",
