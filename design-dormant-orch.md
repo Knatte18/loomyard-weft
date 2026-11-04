@@ -5,7 +5,7 @@
 ## Seen (operator, 2026-10-31)
 
 The orch is a long-lived, heavy session that handles board work, run notices and escalations alike.
-Board work can move to a short-lived board agent (note `board-agent-button`), and dobby already does the mechanical run work.
+Board work moves to a short-lived board agent: the prime's `board` button opens one with the skills `ly:board-policy` and `ly:board` (task `board-agent-button`, `2def9684`, landed 2026-11-04), and dobby already does the mechanical run work.
 
 ## Idea (long term)
 
