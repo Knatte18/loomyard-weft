@@ -1,0 +1,1904 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index a4e79349..4ca8e44e 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -54,7 +54,7 @@
+ - `PATTERN-friction-capture` — Halting or crash-resuming a run, or refusing in webster: Go writes a note via `internal/friction`; none is archived before a reflection covers it. (test)
+ - `PATTERN-tolerant-records` — Go-written JSON records: never refuse an unknown key; rewrite via `internal/state`. (test) — [background](pattern/PATTERN-tolerant-records.md)
+ - `PATTERN-gate-slot` — Running gate build, test or verify: in held `internal/gateslot` slots, verify via `verifytree.Verify`, a tier skipped only on `lym gate test`'s green record; a gate and its self-check call one function. (test) — [background](pattern/PATTERN-gate-slot.md)
+-- `PATTERN-gate-fixer` — Clearing a failed gate with a cold agent: only `gatefixer`, one fixer per failed evaluation; Go's re-run of the gate judges, never the fixer; a fixer's own gate calls spawn none.
++- `PATTERN-gate-fixer` — Clearing a failed gate with a cold agent: only `gatefixer`, one fixer per failed evaluation; Go's re-run of the gate judges, never the fixer; a fixer's own gate calls spawn none; a runner crash gets none.
+ - `PATTERN-sole-parsers` — Parsing plan, parts file, discussion, summary, recipe or halt note, or classifying a plan ref: only its sole parser. (test) — [background](pattern/PATTERN-sole-parsers.md)
+ - `PATTERN-shed-shared-machinery` — Adding what every phase machine needs: once, in shed's packages, never in one recipe's or module's own package.
+ 
+diff --git a/internal/gatecli/cardfixer_test.go b/internal/gatecli/cardfixer_test.go
+index 61774473..19634825 100644
+--- a/internal/gatecli/cardfixer_test.go
++++ b/internal/gatecli/cardfixer_test.go
+@@ -152,6 +152,8 @@ type fixerRig struct {
+ 	recordStatusAtCall []string
+ 	// silent makes a gate call exit without writing a failure report, as a refusal does.
+ 	silent bool
++	// closing is written after the failure report of every gate call, as the closing line a call ends with.
++	closing string
+ 
+ 	stopperErr   error
+ 	stoppedGuids []string
+@@ -186,7 +188,7 @@ func (r *fixerRig) gateTree() *cobra.Command {
+ 			r.recordStatusAtCall = append(r.recordStatusAtCall, record.Status)
+ 			r.treeMu.Unlock()
+ 			if !r.silent {
+-				_, _ = cmd.ErrOrStderr().Write([]byte("failure report " + string(rune('0'+call)) + "\n"))
++				_, _ = cmd.ErrOrStderr().Write([]byte("failure report " + string(rune('0'+call)) + "\n" + r.closing))
+ 			}
+ 			code := r.codes[min(call, len(r.codes))-1]
+ 			clihelp.SetExit(cmd.Context(), code)
+@@ -323,6 +325,21 @@ func TestRunWithFixer(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("RunnerCrashLineSpawnsNone", func(t *testing.T) {
++		t.Parallel()
++		rig := newFixerRig(t, 134)
++		rig.closing = gateslot.RunnerCrashLine("tier1 (exit 134, SIGABRT)") + "\n"
++		if exit := rig.runRequest(request); exit != (detachExit{Code: 134}) {
++			t.Errorf("exit = %+v; want the first exit 134", exit)
++		}
++		if len(rig.fixer.specs) != 0 || rig.calls.Load() != 1 {
++			t.Errorf("spawned %d fixers over %d gate calls; want none over one", len(rig.fixer.specs), rig.calls.Load())
++		}
++		if stderr := rig.stderr(); strings.Contains(stderr, "Cold fixer reply") {
++			t.Errorf("stderr = %q; want no fixer reply for a crash", stderr)
++		}
++	})
++
+ 	t.Run("DeadFixerCarriesTheDeadNote", func(t *testing.T) {
+ 		t.Parallel()
+ 		rig := newFixerRig(t, 1, 1)
+diff --git a/internal/gatecli/cli.go b/internal/gatecli/cli.go
+index 4cd79f2a..ec28a150 100644
+--- a/internal/gatecli/cli.go
++++ b/internal/gatecli/cli.go
+@@ -27,16 +27,16 @@ const defaultGoBinary = "go"
+ // defaultPreTierCeiling bounds the work before a call's first tier.
+ const defaultPreTierCeiling = 10 * time.Minute
+ 
+-// defaultShortageRetryDelay is how long a tier that failed on a resource shortage waits before its one rerun, long enough for a burst of short-lived processes elsewhere to end.
+-const defaultShortageRetryDelay = 10 * time.Second
++// defaultRerunDelay is how long a tier that failed on a resource shortage or crashed its test runner waits before its one rerun, long enough for a burst of short-lived processes elsewhere to end.
++const defaultRerunDelay = 10 * time.Second
+ 
+ // Command builds the cobra command tree for the gate module.
+ func Command() *cobra.Command {
+-	return newCommand(defaultGoBinary, defaultSamplePeriod, defaultPreTierCeiling, time.Minute, defaultShortageRetryDelay, defaultPipeWaitDelay, defaultDetachSeams())
++	return newCommand(defaultGoBinary, defaultSamplePeriod, defaultPreTierCeiling, time.Minute, defaultRerunDelay, defaultPipeWaitDelay, defaultDetachSeams())
+ }
+ 
+-// newCommand builds the gate command tree over goBinary, the go command a prebuilding tier builds `lym` with, samplePeriod, how often the CPU watchdog samples a tier's process tree, preTierCeiling, the bound on the work before the first tier, timeoutUnit, the length of one `timeout_min` minute, shortageRetryDelay, how long a tier that failed on a resource shortage waits before its one rerun, pipeWaitDelay, how long a tier's or the build's output is still read after its shell exits, and seams, the bounds and launcher of a capped call's front.
+-func newCommand(goBinary string, samplePeriod, preTierCeiling, timeoutUnit, shortageRetryDelay, pipeWaitDelay time.Duration, seams detachSeams) *cobra.Command {
++// newCommand builds the gate command tree over goBinary, the go command a prebuilding tier builds `lym` with, samplePeriod, how often the CPU watchdog samples a tier's process tree, preTierCeiling, the bound on the work before the first tier, timeoutUnit, the length of one `timeout_min` minute, rerunDelay, how long a tier that failed on a resource shortage or crashed its test runner waits before its one rerun, pipeWaitDelay, how long a tier's or the build's output is still read after its shell exits, and seams, the bounds and launcher of a capped call's front.
++func newCommand(goBinary string, samplePeriod, preTierCeiling, timeoutUnit, rerunDelay, pipeWaitDelay time.Duration, seams detachSeams) *cobra.Command {
+ 	cmd := &cobra.Command{
+ 		Use:   "gate",
+ 		Short: "run the hub's test tiers inside the hub's gate-slot pool",
+@@ -87,7 +87,7 @@ Examples:
+ 				return nil
+ 			}
+ 			request := testRequest{
+-				goBinary: goBinary, samplePeriod: samplePeriod, preTierCeiling: preTierCeiling, timeoutUnit: timeoutUnit, shortageRetryDelay: shortageRetryDelay, pipeWaitDelay: pipeWaitDelay,
++				goBinary: goBinary, samplePeriod: samplePeriod, preTierCeiling: preTierCeiling, timeoutUnit: timeoutUnit, rerunDelay: rerunDelay, pipeWaitDelay: pipeWaitDelay,
+ 				stderr: cmd.ErrOrStderr(), dir: dir, tags: tags, gate: gate, tiers: tiers, cards: cards, base: base, all: all, guards: guards, targets: args,
+ 				upto: upto, uptoGiven: cmd.Flags().Changed("upto"),
+ 				phase: phaseFrom(cmd.Context()),
+@@ -118,7 +118,7 @@ Examples:
+ 	cmd.AddCommand(reportCmd())
+ 	cmd.AddCommand(cardVerifyCmd(seams))
+ 	cmd.AddCommand(runnerCmd(func() *cobra.Command {
+-		return newCommand(goBinary, samplePeriod, preTierCeiling, timeoutUnit, shortageRetryDelay, pipeWaitDelay, seams)
++		return newCommand(goBinary, samplePeriod, preTierCeiling, timeoutUnit, rerunDelay, pipeWaitDelay, seams)
+ 	}, seams))
+ 
+ 	return cmd
+@@ -148,8 +148,8 @@ type testRequest struct {
+ 	preTierCeiling time.Duration
+ 	// timeoutUnit is the length of one `timeout_min` minute.
+ 	timeoutUnit time.Duration
+-	// shortageRetryDelay is how long a tier that failed on a resource shortage waits before its one rerun.
+-	shortageRetryDelay time.Duration
++	// rerunDelay is how long a tier that failed on a resource shortage or crashed its test runner waits before its one rerun.
++	rerunDelay time.Duration
+ 	// pipeWaitDelay is how long a tier's or the build's output is still read after its shell exits.
+ 	pipeWaitDelay time.Duration
+ 	// stderr receives the lines the verb prints beside its output: the CPU watchdog's quit, a tier's timeout and each tier's summary.
+diff --git a/internal/gatecli/detachfixer.go b/internal/gatecli/detachfixer.go
+index a7e03b11..f13444ca 100644
+--- a/internal/gatecli/detachfixer.go
++++ b/internal/gatecli/detachfixer.go
+@@ -16,6 +16,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/fsx"
+ 	"github.com/Knatte18/loomyard/internal/gatefixer"
++	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/languageconfig"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/segmentcolor"
+@@ -94,7 +95,7 @@ func (d detachRun) watchPhase(ctx context.Context) (context.Context, func() (det
+ // runWithFixer runs request as runRequest does, with the card fixer around a `test` request.
+ // Before the gate runs, a live fixer record in the key directory is waited on and marked terminal, or its strand is stopped when it cannot be attached to.
+ // A red verdict, after the run released its slots, goes to a cold fixer whose reply the re-run's stderr carries; the re-run's exit is the call's.
+-// A pass, an abandoned exit, a non-zero exit that left nothing on stderr, as a refusal does, a `card-verify` request, and a request the seam turns down or errors on end with the first run's result.
++// A pass, an abandoned exit, a non-zero exit that left nothing on stderr, as a refusal does, a red verdict whose every failed run crashed its test runner, a `card-verify` request, and a request the seam turns down or errors on end with the first run's result.
+ func (d detachRun) runWithFixer(ctx context.Context, request detachRequest, gateTree func() *cobra.Command, seams detachSeams) detachExit {
+ 	if request.Verb != verbTest {
+ 		return d.runRequest(ctx, request, gateTree)
+@@ -109,7 +110,7 @@ func (d detachRun) runWithFixer(ctx context.Context, request detachRequest, gate
+ 		return exit
+ 	}
+ 	first := d.runRequest(ctx, request, gateTree)
+-	if !on || first.Abandoned || first.Code == 0 || !d.holdsFailureReport() {
++	if !on || first.Abandoned || first.Code == 0 || !d.holdsFailureReport() || d.endedOnRunnerCrash() {
+ 		return first
+ 	}
+ 	return d.fixAndRerun(ctx, request, gateTree, seams, kit, store, first)
+@@ -121,6 +122,16 @@ func (d detachRun) holdsFailureReport() bool {
+ 	return err == nil && info.Size() > 0
+ }
+ 
++// endedOnRunnerCrash reports whether the run's stderr file holds the line a call closes with when every failed run crashed its test runner, a failure no change to the code mends.
++func (d detachRun) endedOnRunnerCrash() bool {
++	report, err := os.ReadFile(d.path(stderrFile))
++	if err != nil {
++		return false
++	}
++	_, crashed := gateslot.FindRunnerCrash(string(report))
++	return crashed
++}
++
+ // settleLiveFixer waits on the live fixer record of an earlier run before the gate runs, under the phase fixing.
+ // A record it cannot attach to, because there is no kit or the wait failed, has its strand stopped through the stopper and is marked dead only once the stop succeeded;
+ // a failed stop ends the call with exit 1 and the way forward, leaving the record live.
+diff --git a/internal/gatecli/detachrun_test.go b/internal/gatecli/detachrun_test.go
+index 784533cd..06ab087f 100644
+--- a/internal/gatecli/detachrun_test.go
++++ b/internal/gatecli/detachrun_test.go
+@@ -64,7 +64,7 @@ func TestGateRunner_Refusals(t *testing.T) {
+ 			tt.prepare(t, detachRun{dir: dir})
+ 
+ 			var out bytes.Buffer
+-			command := newCommand(defaultGoBinary, defaultSamplePeriod, defaultPreTierCeiling, time.Minute, defaultShortageRetryDelay, defaultPipeWaitDelay, seams)
++			command := newCommand(defaultGoBinary, defaultSamplePeriod, defaultPreTierCeiling, time.Minute, defaultRerunDelay, defaultPipeWaitDelay, seams)
+ 			if code := clihelp.ExecuteIn(command, dir, &out, []string{"run-detached", dir}); code != 1 {
+ 				t.Errorf("run-detached exit = %d, stdout %q; want 1", code, out.String())
+ 			}
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 8801c632..089c998a 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -13,7 +13,13 @@
+ // A tier run that fails without timing out and whose output holds a resource-shortage marker, `resource temporarily unavailable`, `failed to create new OS thread` or `cannot fork` in any case, runs once more inside the same slots after a ten-second delay, and the rerun's result is the tier's;
+ // a stderr line names the marker, and the rerun's log opens with it.
+ // A rerun that fails on a marker again keeps its exit code, and the closing line names the run as a resource shortage, an environment error, with the way forward of re-running once the machine's process load drops.
+-// Bound: one rerun per tier run, so a test whose own output holds a marker costs one extra run and keeps its verdict; the build step is not rerun.
++// A tier run that fails without timing out, reports no failing test and exits 128 plus the number of a crash signal, SIGABRT, SIGILL, SIGTRAP, SIGBUS, SIGSEGV or SIGFPE, as a shell reports a runtime that aborted, crashed its test runner and judged no code, so it also runs once more after the same delay;
++// a command the shell replaced and the signal ended takes that same exit code.
++// A run with no shortage marker is read for a crash, the stderr line names the exit code and the signal, and the rerun's log opens with it.
++// Before either rerun starts the first run's record and log are written, its record carrying a crash's signal as `runner_crash`, and the rerun's record carries `rerun` and counts its slot wait as none, since the first run's record holds it.
++// A rerun that crashes again keeps its exit code, and the closing line names the run as a runner crash with no failing test.
++// When every failed run of a call crashed so, with no failing test, failed build or lint finding beside them, the call closes with `gateslot.RunnerCrashLine` after the line of failed runs, so a site tells a runtime's crash from a failing test.
++// Bound: one rerun per tier run, so a test whose own output holds a marker costs one extra run and keeps its verdict, and a test that aborts its own runner, such as a .NET stack overflow, is reported as a crash rather than as a failing test; the build step is not rerun.
+ // A refusal, a slot wait that does not end with the slots held and a terminating signal still end the call at once.
+ // `--gate <key>` runs the tiers and the scope the `gates` key of that name holds, and `listedTiers` takes the key's tiers as the listed tiers.
+ // It goes with none of `--tier`, `--upto`, `--all` and `--base`, which is refused before hub resolution naming the key and the flag to drop, since the key's tiers and scope come from gate.yaml.
+@@ -390,7 +396,7 @@
+ // `runWithFixer` runs in place of `runRequest`:
+ // before the gate runs it waits on a live fixer record of an earlier run in the key directory's `fixer.json`, and when it cannot attach it stops the strand through `fixerStopper` and marks the record dead only once the stop succeeded, ending with exit 1 and the way forward when the stop failed;
+ // on a red verdict, after `runRequest` released its slots, it writes the phase `fixing`, the stderr report to `fixer-report.md`, spawns one fixer with the shared cold frame and the card body, waits on it, rewrites `tree.json` and runs `runRequest` again, then marks the fixer's record terminal, so a restart during the re-run still finds it live, and appends the fixer's reply or the dead note to the re-run's stderr under `## Cold fixer reply`.
+-// A pass, an abandoned exit, a non-zero exit that left nothing on stderr, as a refusal does, a `card-verify` request and a spawn that failed end with the first run's result, the last with a stderr line saying no fixer ran.
++// A pass, an abandoned exit, a non-zero exit that left nothing on stderr, as a refusal does, a red verdict whose stderr holds `gateslot.RunnerCrashLine`, a `card-verify` request and a spawn that failed end with the first run's result, the last with a stderr line saying no fixer ran.
+ // A passed lease or a terminating signal during the phase stops the fixer, marks its record dead once the stop succeeded and ends the run abandoned.
+ // A run in the phase `fixing` is joinable under changed dirty paths, so a caller's repeated call joins whatever tree the fixer is changing; from the re-run's start the rewritten `tree.json` holds the rule again.
+ // Bound: one fixer per red call, which Go bounds; the number of red calls per card rests on the Webster fork prompt's self-fix cap.
+@@ -435,10 +441,11 @@
+ // The caller names only the key and the directory, never targets or tiers, and gets the call's exit code, the envelope on `out` and the summary lines on `stderr`.
+ // A `TierObserver` hears each tier of the run: `Started` with the tier's number once its slots are held, or at once for a run that takes none, and `Ended` with the tier's run record when the tier reports.
+ // A tier carried as already green ends with no start, and a tier blocked by a failed build ends with its blocked record, started only for the tier whose slots ran the build.
++// A tier rerun after a crash or a resource shortage ends once, with the rerun's record.
+ // A guard or vet run reports through the same calls with its record's own flags, and a refusal after a start ends with no end.
+ // A nil func is skipped, and every CLI call passes the zero observer.
+ //
+ // # Exit codes
+ //
+-// The first failing run's own code, in plan order, which for a test binary the watchdog quit is the test run's failure code; 1 for a tier that timed out; SlotBusyExit (75) only as a capped call's `done: false` answer, which is no failure and never the code of a call that runs in this process; 1 for a run that ended without a failure while the call was cancelled; 128 plus the signal number after a terminating signal; 1 for a refusal, with a JSON error envelope on stdout.
++// The first failing run's own code, in plan order, which for a test binary the watchdog quit is the test run's failure code and for a runner crash 128 plus the signal's number; 1 for a tier that timed out; SlotBusyExit (75) only as a capped call's `done: false` answer, which is no failure and never the code of a call that runs in this process; 1 for a run that ended without a failure while the call was cancelled; 128 plus the signal number after a terminating signal; 1 for a refusal, with a JSON error envelope on stdout.
+ package gatecli
+diff --git a/internal/gatecli/exitcode_integration_test.go b/internal/gatecli/exitcode_integration_test.go
+new file mode 100644
+index 00000000..35daa77a
+--- /dev/null
++++ b/internal/gatecli/exitcode_integration_test.go
+@@ -0,0 +1,55 @@
++//go:build !windows
++
++// exitcode_integration_test.go covers the exit codes exitCodeOf and tierExitCodeOf read from real child processes ended by a signal or by an exit.
++
++package gatecli
++
++import (
++	"os/exec"
++	"syscall"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestExitCodeOf(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	tests := []struct {
++		name   string
++		script string
++		// wantTier is the code of a tier command, which reads a crash signal as 128 plus its number; wantPlain is the code of any other child, which reads every signal as 1.
++		wantTier  int
++		wantPlain int
++	}{
++		{"Exited", "exit 7", 7, 7},
++		{"Passed", "exit 0", 0, 0},
++		{"SegmentationFault", "kill -SEGV $$", 128 + int(syscall.SIGSEGV), 1},
++		{"Aborted", "kill -ABRT $$", 128 + int(syscall.SIGABRT), 1},
++		{"KilledIsNoCrash", "kill -KILL $$", 1, 1},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			err := exec.Command("sh", "-c", tt.script).Run()
++			if got := tierExitCodeOf(err); got != tt.wantTier {
++				t.Errorf("tierExitCodeOf(%q) = %d; want %d", tt.script, got, tt.wantTier)
++			}
++			if got := exitCodeOf(err); got != tt.wantPlain {
++				t.Errorf("exitCodeOf(%q) = %d; want %d", tt.script, got, tt.wantPlain)
++			}
++		})
++	}
++
++	t.Run("NeverStarted", func(t *testing.T) {
++		t.Parallel()
++		err := exec.Command("/nonexistent/lym-gate-test-shell").Run()
++		if got := tierExitCodeOf(err); got != 1 {
++			t.Errorf("tierExitCodeOf(a command that cannot start) = %d; want 1", got)
++		}
++		if got := exitCodeOf(err); got != 1 {
++			t.Errorf("exitCodeOf(a command that cannot start) = %d; want 1", got)
++		}
++	})
++}
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index b65d008f..88a32c17 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -147,6 +147,9 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 	var failures []string
+ 	code, firstFailed := 0, ""
+ 	buildNamed := false
++	// crashed names the failed runs that crashed their test runner twice, and judged is set once any other run failed, so the call closes with the runner crash line only when no failure judged the code.
++	var crashed []string
++	judged := false
+ 	for _, run := range plan {
+ 		var end runEnd
+ 		if run.guardStep {
+@@ -155,6 +158,7 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 			end = exe.runListed(run)
+ 		}
+ 		if end.blocked {
++			judged = true
+ 			// The build is a failed run counted before the first tier it blocked.
+ 			if !buildNamed {
+ 				buildNamed = true
+@@ -166,6 +170,11 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 			failures = append(failures, runLabel(run)+" (blocked by the build)")
+ 		} else if end.ran && end.code != 0 {
+ 			failures = append(failures, failedRunLabel(run, end))
++			if end.crash != "" {
++				crashed = append(crashed, fmt.Sprintf("%s (exit %d, %s)", runLabel(run), end.code, end.crash))
++			} else {
++				judged = true
++			}
+ 			if code == 0 {
+ 				code, firstFailed = end.code, runLabel(run)
+ 			}
+@@ -182,6 +191,7 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 	// The lint steps run after the tiers, so a call that fails both reports the two in one go.
+ 	if request.gate != "" && runCtx.Err() == nil {
+ 		for _, lint := range runLints(request.root, cfg.Gates[request.gate].Lints) {
++			judged = true
+ 			exe.failed = append(exe.failed, lint)
+ 			failures = append(failures, fmt.Sprintf("%s (%s)", lint.label, lint.outcome))
+ 			if code == 0 {
+@@ -191,6 +201,9 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 	}
+ 	exe.printReport(inHub)
+ 	printFailedRuns(request.stderr, failures, firstFailed, false)
++	if len(crashed) > 0 && !judged {
++		printLine(request.stderr, gateslot.RunnerCrashLine(strings.Join(crashed, ", ")))
++	}
+ 	if code == 0 && sc.form == scopeCard {
+ 		printNotRunTiers(request.stderr, notRunTiers(cfg, plan))
+ 	}
+@@ -234,12 +247,17 @@ func printNotRunTiers(stderr io.Writer, numbers []int) {
+ 	printLine(stderr, "gate test: "+tierNames(numbers)+notRunSuffix)
+ }
+ 
+-// failedRunLabel names run, which ran and failed as end says, in the closing line of failed runs: its label and exit code, and for a run that failed on a resource shortage twice, the marker and the way forward of re-running once the load drops.
++// failedRunLabel names run, which ran and failed as end says, in the closing line of failed runs: its label and exit code;
++// for a run that failed on a resource shortage twice, the marker and the way forward of re-running once the load drops;
++// and for a run that crashed its test runner twice, the signal and that no test failed.
+ func failedRunLabel(run tierRun, end runEnd) string {
+-	if end.shortage == "" {
+-		return fmt.Sprintf("%s (exit %d)", runLabel(run), end.code)
++	switch {
++	case end.shortage != "":
++		return fmt.Sprintf("%s (exit %d, a resource shortage, %q, in its run and its rerun: an environment error, not a test failure; way forward: re-run the same command once the machine's process load drops)", runLabel(run), end.code, end.shortage)
++	case end.crash != "":
++		return fmt.Sprintf("%s (exit %d, a runner crash, %s, in its run and its rerun with no failing test: the code under test was not judged)", runLabel(run), end.code, end.crash)
+ 	}
+-	return fmt.Sprintf("%s (exit %d, a resource shortage, %q, in its run and its rerun: an environment error, not a test failure; way forward: re-run the same command once the machine's process load drops)", runLabel(run), end.code, end.shortage)
++	return fmt.Sprintf("%s (exit %d)", runLabel(run), end.code)
+ }
+ 
+ // runEnd is how one run of the plan ended: its exit code, and whether the call stops there instead of going on to the next run.
+@@ -253,6 +271,8 @@ type runEnd struct {
+ 	blocked bool
+ 	// shortage is the resource-shortage marker of a run that failed on one twice, its run and its one rerun; empty otherwise.
+ 	shortage string
++	// crash is the signal name of a run that crashed its test runner twice, its run and its one rerun, with no failing test; empty otherwise.
++	crash string
+ }
+ 
+ // runLabel names run in the closing line of failed runs: its tier, prefixed `guard` for a guard run and `vet` for a vet run.
+@@ -442,7 +462,7 @@ func (e *execution) runListed(run tierRun) runEnd {
+ 	}
+ 	if len(run.invocations) == 0 && !run.buildOnly {
+ 		printLine(e.request.stderr, fmt.Sprintf("gate test: the scope is empty, so %s runs no command", tierName(run.number)))
+-		return e.runWithSlots(run, true, func(env []string) tierResult {
++		return e.runWithSlots(run, true, func(env []string, _ time.Time) tierResult {
+ 			return runTier(e.ctx, e.out, run, env, e.request)
+ 		})
+ 	}
+@@ -472,14 +492,17 @@ func (e *execution) runGreenAware(run tierRun) runEnd {
+ 		}
+ 		run.invocations = plan.invocations
+ 	}
+-	end := e.runWithSlots(run, false, func(env []string) tierResult {
++	end := e.runWithSlots(run, false, func(env []string, waitStart time.Time) tierResult {
+ 		if run.tier.SharedBuild && !run.guardStep && !run.vetStep && !e.buildDone {
+ 			if result, ok := e.runBuild(run, env); !ok {
+ 				return result
+ 			}
+ 		}
+-		return retryOnShortage(e.ctx, e.request.stderr, runLabel(run), e.request.shortageRetryDelay, func() tierResult {
++		return retryTier(e.ctx, e.request.stderr, runLabel(run), e.request.rerunDelay, func() tierResult {
+ 			return runTier(e.ctx, e.out, run, env, e.request)
++		}, func(first tierResult) {
++			first.record.WaitStart = waitStart
++			e.writeRecord(first.record, first.log, tierName(run.number))
+ 		})
+ 	})
+ 	if end.code == 0 && !end.halt && e.green != nil {
+@@ -495,9 +518,9 @@ func (e *execution) reportCarried(run tierRun) runEnd {
+ 	return e.report(run, tierResult{record: record}, now)
+ }
+ 
+-// runWithSlots takes the slots of run's tier unless the call is unslotted, inherited or the run empty, runs body inside them with the environment the slots give, releases the slots and reports the tier's outcome.
++// runWithSlots takes the slots of run's tier unless the call is unslotted, inherited or the run empty, runs body inside them with the environment the slots give and the time the wait for them started, releases the slots and reports the tier's outcome.
+ // A wait that does not end with the slots held halts the call.
+-func (e *execution) runWithSlots(run tierRun, empty bool, body func(env []string) tierResult) runEnd {
++func (e *execution) runWithSlots(run tierRun, empty bool, body func(env []string, waitStart time.Time) tierResult) runEnd {
+ 	waitStart := time.Now()
+ 	env := e.env
+ 	if e.pool != nil && !e.inherited && !empty {
+@@ -514,7 +537,7 @@ func (e *execution) runWithSlots(run tierRun, empty bool, body func(env []string
+ 	if e.request.observer.Started != nil {
+ 		e.request.observer.Started(run.number)
+ 	}
+-	return e.report(run, body(env), waitStart)
++	return e.report(run, body(env, waitStart), waitStart)
+ }
+ 
+ // report writes the tier's run record and log, prints its `-trimpath` line, when it has one, and its summary line to stderr and returns the tier's exit code.
+@@ -529,6 +552,10 @@ func (e *execution) report(run tierRun, result tierResult, waitStart time.Time)
+ 	}
+ 	record := result.record
+ 	record.WaitStart = waitStart
++	if record.Rerun {
++		// The slot wait is on the first run's record, so the rerun's own record waited for nothing.
++		record.WaitStart = record.Start
++	}
+ 	logPath := e.writeRecord(record, result.log, tierName(run.number))
+ 	if result.trimpathNote != "" {
+ 		printLine(e.request.stderr, result.trimpathNote)
+@@ -540,7 +567,7 @@ func (e *execution) report(run tierRun, result tierResult, waitStart time.Time)
+ 	if e.request.observer.Ended != nil {
+ 		e.request.observer.Ended(record)
+ 	}
+-	return runEnd{code: record.ExitCode, halt: e.ctx.Err() != nil, ran: true, shortage: result.shortage}
++	return runEnd{code: record.ExitCode, halt: e.ctx.Err() != nil, ran: true, shortage: result.shortage, crash: result.crash}
+ }
+ 
+ // writeRecord adds the call's worktree, slug, tier list, gate key and call id to record, marks it abandoned when the call's context is cancelled, writes it with log under a stamp later than the previous record's, and returns the log's path, "(not written)" when the write failed.
+@@ -650,12 +677,28 @@ func exitCodeOf(runErr error) int {
+ 		return 0
+ 	}
+ 	var exitErr *exec.ExitError
+-	if errors.As(runErr, &exitErr) && exitErr.ExitCode() >= 0 {
+-		return exitErr.ExitCode()
++	if !errors.As(runErr, &exitErr) {
++		return 1
++	}
++	if code := exitErr.ExitCode(); code >= 0 {
++		return code
+ 	}
+ 	return 1
+ }
+ 
++// tierExitCodeOf returns the exit code of a finished tier command: 128 plus the signal's number for a child a crash signal ended, as a shell reports one, which is how a tier whose test runner died of a signal reads as a runner crash, and otherwise what exitCodeOf returns.
++func tierExitCodeOf(runErr error) int {
++	var exitErr *exec.ExitError
++	if errors.As(runErr, &exitErr) && exitErr.ExitCode() < 0 {
++		if status, ok := exitErr.Sys().(syscall.WaitStatus); ok && status.Signaled() {
++			if _, crash := crashSignals[status.Signal()]; crash {
++				return 128 + int(status.Signal())
++			}
++		}
++	}
++	return exitCodeOf(runErr)
++}
++
+ // withBuildServerOff returns env with every proc.BuildServerOffEnv variable set to its value, replacing an inherited one, so no .NET build a run starts leaves MSBuild servers behind.
+ func withBuildServerOff(env []string) []string {
+ 	env = slices.DeleteFunc(env, func(entry string) bool {
+diff --git a/internal/gatecli/rungate.go b/internal/gatecli/rungate.go
+index 25d552ea..2b34f50b 100644
+--- a/internal/gatecli/rungate.go
++++ b/internal/gatecli/rungate.go
+@@ -25,7 +25,7 @@ type TierObserver struct {
+ // The envelope goes to out and the summary lines to stderr.
+ func RunGate(ctx context.Context, dir, gate string, out, stderr io.Writer, observer TierObserver) int {
+ 	request := testRequest{
+-		goBinary: defaultGoBinary, samplePeriod: defaultSamplePeriod, preTierCeiling: defaultPreTierCeiling, timeoutUnit: time.Minute, shortageRetryDelay: defaultShortageRetryDelay, pipeWaitDelay: defaultPipeWaitDelay,
++		goBinary: defaultGoBinary, samplePeriod: defaultSamplePeriod, preTierCeiling: defaultPreTierCeiling, timeoutUnit: time.Minute, rerunDelay: defaultRerunDelay, pipeWaitDelay: defaultPipeWaitDelay,
+ 		stderr: stderr, gate: gate, observer: observer,
+ 	}
+ 	return runTest(lymcwd.WithCwd(ctx, dir), out, request)
+diff --git a/internal/gatecli/test_integration_test.go b/internal/gatecli/test_integration_test.go
+index da84fa53..274e2c32 100644
+--- a/internal/gatecli/test_integration_test.go
++++ b/internal/gatecli/test_integration_test.go
+@@ -1455,6 +1455,96 @@ func TestGateTest_Scenario(t *testing.T) {
+ 		requireFree(t)
+ 	})
+ 
++	// A stand-in exiting 134 with no test event is a tier that crashed its test runner on SIGABRT, as a shell reports one.
++	crashEnv := []string{helperExitEnv + "=134"}
++	// closingOf returns the last closing line of failed runs in output.
++	closingOf := func(output string) string {
++		closing := ""
++		for _, line := range strings.Split(output, "\n") {
++			if strings.HasPrefix(line, gateslot.FailedRunsPrefix) {
++				closing = line
++			}
++		}
++		return closing
++	}
++
++	t.Run("a tier that crashes its test runner twice closes the call with the runner crash line", func(t *testing.T) {
++		g := startGate(t, gateRun{cwd: prime, args: []string{"test", "--tier", "6", "./pkg"}, env: crashEnv})
++		if code := g.wait(t); code != 134 {
++			t.Fatalf("exit code = %d, stdout %q; want the crash's 134", code, g.stdout.String())
++		}
++		if got := len(g.tierRecords(t)); got != 2 {
++			t.Errorf("tier invocations = %d; want the run and one rerun", got)
++		}
++		runs, found := gateslot.FindRunnerCrash(g.stdout.String())
++		if !found || runs != "tier6 (exit 134, SIGABRT)" {
++			t.Errorf("runner crash line runs = %q, %v; want tier6 (exit 134, SIGABRT)", runs, found)
++		}
++		requireFree(t)
++	})
++
++	t.Run("a crash beside a run that judged the code closes the call without the runner crash line", func(t *testing.T) {
++		tests := []struct {
++			name  string
++			setup func(t *testing.T) (gate string, env []string)
++			want  []string
++		}{
++			{
++				name: "a failing tier",
++				setup: func(t *testing.T) (string, []string) {
++					writeConfig(t, scenarioConfig(t, func(cfg map[string]any) {
++						cfg["tiers"].(map[string]any)["tier7"] = map[string]any{"command": "exit 1", "all_targets": "./pkg", "timeout_min": 1, "counter": "go-json"}
++						cfg["gates"] = map[string]any{"mixed": map[string]any{"tiers": []int{6, 7}, "scope": "all"}}
++					}))
++					return "mixed", crashEnv
++				},
++				want: []string{"tier6 (exit 134, a runner crash, SIGABRT", "tier7 (exit 1)"},
++			},
++			{
++				name: "a lint finding",
++				setup: func(t *testing.T) (string, []string) {
++					writeConfig(t, scenarioConfig(t, func(cfg map[string]any) {
++						cfg["gates"] = map[string]any{"linted": map[string]any{"tiers": []int{6}, "scope": "all", "lints": []string{"comments"}}}
++					}))
++					wrapComment(t)
++					return "linted", crashEnv
++				},
++				want: []string{"tier6 (exit 134, a runner crash, SIGABRT", "lint comments (1 finding)"},
++			},
++			{
++				name: "a tier blocked by the build",
++				setup: func(t *testing.T) (string, []string) {
++					writeConfig(t, scenarioConfig(t, func(cfg map[string]any) {
++						withSharedBuild(buildDir)(cfg)
++						cfg["gates"] = map[string]any{"built": map[string]any{"tiers": []int{0, 2}, "scope": "all"}}
++					}))
++					return "built", append(slices.Clone(crashEnv), helperBuildExitEnv+"=3")
++				},
++				want: []string{"build (exit 3)", "tier0 (blocked by the build)", "tier2 (exit 134, a runner crash, SIGABRT"},
++			},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				defer writeConfig(t, gateConfig)
++				gate, env := tt.setup(t)
++
++				g := startGate(t, gateRun{cwd: prime, args: []string{"test", "--gate", gate}, env: env})
++				g.wait(t)
++
++				if runs, found := gateslot.FindRunnerCrash(g.stdout.String()); found {
++					t.Errorf("stdout = %q; want no runner crash line, which a run that judged the code rules out, got runs %q", g.stdout.String(), runs)
++				}
++				closing := closingOf(g.stdout.String())
++				for _, want := range tt.want {
++					if !strings.Contains(closing, want) {
++						t.Errorf("closing line = %q; want it to name %q", closing, want)
++					}
++				}
++				requireFree(t)
++			})
++		}
++	})
++
+ 	t.Run("a halted call prints its failure report before the closing line and runs no lint", func(t *testing.T) {
+ 		if err := os.MkdirAll(filepath.Join(prime, "cmd", "lym"), 0o755); err != nil {
+ 			t.Fatal(err)
+diff --git a/internal/gatecli/tierrun.go b/internal/gatecli/tierrun.go
+index a64f04a4..d923fa41 100644
+--- a/internal/gatecli/tierrun.go
++++ b/internal/gatecli/tierrun.go
+@@ -20,6 +20,7 @@ import (
+ 	"sort"
+ 	"strings"
+ 	"sync"
++	"syscall"
+ 	"time"
+ 	"unicode"
+ 	"unicode/utf8"
+@@ -43,6 +44,8 @@ type tierResult struct {
+ 	buildFailed bool
+ 	// shortage is the resource-shortage marker of a tier that failed on one in its run and again in its one rerun; empty otherwise.
+ 	shortage string
++	// crash is the signal name of a tier that crashed its test runner in its run and again in its one rerun; empty otherwise.
++	crash string
+ 	// failures are the failed tests and packages the counter read, causes the lines the verb itself states a failure with, such as a timeout, and unparsed the first lines of output no test event carried, all for the failure report.
+ 	failures []runFailure
+ 	causes   []string
+@@ -163,18 +166,49 @@ func failedOnShortage(result tierResult) string {
+ 	return resourceShortage(result.log)
+ }
+ 
+-// retryOnShortage runs attempt, the tier named tier, and when it failed on a resource shortage, an environment error a rerun clears, runs it once more after delay and returns the rerun's result.
+-// The rerun's log opens with the line announcing it, which also goes to stderr, and a rerun that fails on a shortage again carries its marker in shortage.
++// crashSignals names the signals a test runner dies of when it crashes, as opposed to being stopped from outside: an abort, a bad instruction, a trap, a bus or segmentation fault and a floating-point fault.
++var crashSignals = map[syscall.Signal]string{
++	syscall.SIGABRT: "SIGABRT",
++	syscall.SIGILL:  "SIGILL",
++	syscall.SIGTRAP: "SIGTRAP",
++	syscall.SIGBUS:  "SIGBUS",
++	syscall.SIGSEGV: "SIGSEGV",
++	syscall.SIGFPE:  "SIGFPE",
++}
++
++// runnerCrash returns the name of the crash signal that ended a tier run with no failing test, read from an exit code of 128 plus the signal's number as a shell reports it, or "" for any other result.
++// A refusal, a blocked or timed-out run and a run that reported a failing test are no crash, since each says something about the code under test or none ran.
++func runnerCrash(result tierResult) string {
++	if result.refusal != "" || result.buildFailed || result.record.TimedOut || result.record.Failed > 0 || len(result.record.Failures) > 0 {
++		return ""
++	}
++	return crashSignals[syscall.Signal(result.record.ExitCode-128)]
++}
++
++// retryTier runs attempt, the tier named tier, and runs it once more after delay when it failed on a resource shortage or crashed its test runner with no failing test, since neither judges the code under test, returning the rerun's result.
++// The line announcing the rerun goes to stderr and opens the rerun's log.
++// Once the delay has passed, recordFirst gets the first run's result, so its record stays on file beside the rerun's, which is marked Rerun.
++// A rerun that fails on a shortage again carries its marker in shortage, and a rerun that crashes after a first run that crashed carries its signal in crash and its record's RunnerCrash.
++// A rerun that crashes after a first run that failed on a shortage carries no crash, since only one of the two runs crashed.
+ // A ctx cancelled before or during the delay returns the first result.
+-func retryOnShortage(ctx context.Context, stderr io.Writer, tier string, delay time.Duration, attempt func() tierResult) tierResult {
++func retryTier(ctx context.Context, stderr io.Writer, tier string, delay time.Duration, attempt func() tierResult, recordFirst func(tierResult)) tierResult {
+ 	result := attempt()
+ 	marker := failedOnShortage(result)
+-	if marker == "" || ctx.Err() != nil {
++	signal := ""
++	if marker == "" {
++		signal = runnerCrash(result)
++	}
++	if (marker == "" && signal == "") || ctx.Err() != nil {
+ 		return result
+ 	}
+-	line := fmt.Sprintf("gate test: %s failed on a resource shortage (%q in its output), an environment error a rerun clears; running it once more in %s", tier, marker, delay)
++	cause := fmt.Sprintf("failed on a resource shortage (%q in its output), an environment error a rerun clears", marker)
++	if signal != "" {
++		cause = fmt.Sprintf("crashed its test runner (exit %d, %s) with no failing test, which judges no code", result.record.ExitCode, signal)
++		result.record.RunnerCrash = signal
++	}
++	line := fmt.Sprintf("gate test: %s %s; running it once more in %s", tier, cause, delay)
+ 	printLine(stderr, line)
+-	logger.Warn("gate test: rerunning a tier that failed on a resource shortage", "tier", tier, "marker", marker, "delay", delay)
++	logger.Warn("gate test: rerunning a tier that failed on its environment", "tier", tier, "marker", marker, "signal", signal, "delay", delay)
+ 	timer := time.NewTimer(delay)
+ 	defer timer.Stop()
+ 	select {
+@@ -182,8 +216,14 @@ func retryOnShortage(ctx context.Context, stderr io.Writer, tier string, delay t
+ 		return result
+ 	case <-timer.C:
+ 	}
++	recordFirst(result)
+ 	retried := attempt()
++	retried.record.Rerun = true
+ 	retried.shortage = failedOnShortage(retried)
++	if retried.shortage == "" && signal != "" {
++		retried.crash = runnerCrash(retried)
++		retried.record.RunnerCrash = retried.crash
++	}
+ 	retried.log = append([]byte(line+"\n"), retried.log...)
+ 	return retried
+ }
+@@ -237,7 +277,7 @@ func runInvocations(ctx context.Context, run tierRun, counter counter, env []str
+ 		})
+ 		stopWatching()
+ 		watchdogDone.Wait()
+-		exit = exitCodeOf(runErr)
++		exit = tierExitCodeOf(runErr)
+ 		logger.Info("gate test: tier command ended", "tier", tierName(run.number), "exit", exit, "error", runErr)
+ 		if cmd.Process == nil && ctx.Err() == nil {
+ 			return 0, commands, fmt.Sprintf("gate test: could not start the shell for %s in %s: %v; way forward: make the tier's dir an existing directory and put the platform shell on PATH, then re-run the same command", tierName(run.number), dir, runErr)
+diff --git a/internal/gatecli/tierrun_test.go b/internal/gatecli/tierrun_test.go
+index 8eb8fa96..df2ba88a 100644
+--- a/internal/gatecli/tierrun_test.go
++++ b/internal/gatecli/tierrun_test.go
+@@ -1,12 +1,14 @@
+-// tierrun_test.go covers the one rerun of a tier that failed on a resource shortage and how the closing line names such a run, over fake attempts that spawn nothing.
++// tierrun_test.go covers the one rerun of a tier that failed on a resource shortage or crashed its test runner and how the closing line names such a run, over fake attempts that spawn nothing.
+ 
+ package gatecli
+ 
+ import (
+ 	"bytes"
+ 	"context"
++	"fmt"
+ 	"io"
+ 	"strings"
++	"syscall"
+ 	"testing"
+ 	"time"
+ 
+@@ -25,7 +27,7 @@ func (w cancelOnWrite) Write(p []byte) (int, error) {
+ 	return w.Writer.Write(p)
+ }
+ 
+-func TestRetryOnShortage(t *testing.T) {
++func TestRetryTier(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+@@ -34,6 +36,12 @@ func TestRetryOnShortage(t *testing.T) {
+ 	}
+ 	eagain := failed(2, "fork/exec /usr/bin/git: Resource temporarily unavailable\n")
+ 	thread := failed(2, "runtime: failed to create new OS thread (have 12 already; errno=11)\n")
++	abort := 128 + int(syscall.SIGABRT)
++	aborted := failed(abort, "Fatal error. Internal CLR error. (0x80131506)\nAborted (core dumped)\n")
++	segv := failed(128+int(syscall.SIGSEGV), "Segmentation fault (core dumped)\n")
++	abortedWithFailure := tierResult{record: gateslot.RunRecord{ExitCode: abort, Failed: 1}, log: aborted.log}
++	const shortageAnnounced = "gate test: tier0 failed on a resource shortage"
++	crashAnnounced := fmt.Sprintf("gate test: tier0 crashed its test runner (exit %d, SIGABRT) with no failing test", abort)
+ 	tests := []struct {
+ 		name      string
+ 		attempts  []tierResult
+@@ -43,18 +51,26 @@ func TestRetryOnShortage(t *testing.T) {
+ 		wantAttempts      int
+ 		wantExit          int
+ 		wantShortage      string
+-		wantRetry         bool
++		wantCrash         string
++		// wantAnnounced opens stderr when the rerun is announced, and is empty when it is not.
++		wantAnnounced string
+ 	}{
+ 		{name: "PassIsNotRerun", attempts: []tierResult{failed(0, "Resource temporarily unavailable\n")}, wantAttempts: 1},
+ 		{name: "FailureWithoutMarkerIsNotRerun", attempts: []tierResult{failed(1, "--- FAIL: TestX\n")}, wantAttempts: 1, wantExit: 1},
+ 		{name: "TimeoutIsNotRerun", attempts: []tierResult{{record: gateslot.RunRecord{ExitCode: 1, TimedOut: true}, log: eagain.log}}, wantAttempts: 1, wantExit: 1},
+ 		{name: "RefusalIsNotRerun", attempts: []tierResult{{refusal: "no shell", log: eagain.log}}, wantAttempts: 1},
+ 		{name: "CancelledCallIsNotRerun", attempts: []tierResult{eagain}, cancelled: true, wantAttempts: 1, wantExit: 2},
+-		{name: "CancelDuringTheDelayReturnsTheFirstResult", attempts: []tierResult{eagain}, cancelDuringDelay: true, wantAttempts: 1, wantExit: 2, wantRetry: true},
+-		{name: "ShortageThenPassEndsPassed", attempts: []tierResult{eagain, failed(0, "ok\n")}, wantAttempts: 2, wantRetry: true},
+-		{name: "ShortageThenOrdinaryFailureCarriesNoShortage", attempts: []tierResult{thread, failed(1, "--- FAIL: TestX\n")}, wantAttempts: 2, wantExit: 1, wantRetry: true},
+-		{name: "ShortageTwiceCarriesTheMarker", attempts: []tierResult{eagain, thread}, wantAttempts: 2, wantExit: 2, wantShortage: "failed to create new os thread", wantRetry: true},
+-		{name: "ShellForkFailureIsAShortage", attempts: []tierResult{failed(1, "sh: Cannot fork\n"), failed(1, "bash: fork: Cannot fork\n")}, wantAttempts: 2, wantExit: 1, wantShortage: "cannot fork", wantRetry: true},
++		{name: "CancelDuringTheDelayReturnsTheFirstResult", attempts: []tierResult{eagain}, cancelDuringDelay: true, wantAttempts: 1, wantExit: 2, wantAnnounced: shortageAnnounced},
++		{name: "ShortageThenPassEndsPassed", attempts: []tierResult{eagain, failed(0, "ok\n")}, wantAttempts: 2, wantAnnounced: shortageAnnounced},
++		{name: "ShortageThenOrdinaryFailureCarriesNoShortage", attempts: []tierResult{thread, failed(1, "--- FAIL: TestX\n")}, wantAttempts: 2, wantExit: 1, wantAnnounced: shortageAnnounced},
++		{name: "ShortageTwiceCarriesTheMarker", attempts: []tierResult{eagain, thread}, wantAttempts: 2, wantExit: 2, wantShortage: "failed to create new os thread", wantAnnounced: shortageAnnounced},
++		{name: "ShellForkFailureIsAShortage", attempts: []tierResult{failed(1, "sh: Cannot fork\n"), failed(1, "bash: fork: Cannot fork\n")}, wantAttempts: 2, wantExit: 1, wantShortage: "cannot fork", wantAnnounced: shortageAnnounced},
++		{name: "CrashThenPassEndsPassed", attempts: []tierResult{aborted, failed(0, "Passed!  - Failed: 0, Passed: 138, Skipped: 0, Total: 138\n")}, wantAttempts: 2, wantAnnounced: crashAnnounced},
++		{name: "CrashTwiceCarriesTheSignal", attempts: []tierResult{aborted, segv}, wantAttempts: 2, wantExit: 128 + int(syscall.SIGSEGV), wantCrash: "SIGSEGV", wantAnnounced: crashAnnounced},
++		{name: "CrashThenFailingTestCarriesNoCrash", attempts: []tierResult{aborted, abortedWithFailure}, wantAttempts: 2, wantExit: abort, wantAnnounced: crashAnnounced},
++		{name: "ShortageThenCrashCarriesNoCrash", attempts: []tierResult{eagain, aborted}, wantAttempts: 2, wantExit: abort, wantAnnounced: shortageAnnounced},
++		{name: "SignalExitWithAFailingTestIsNotRerun", attempts: []tierResult{abortedWithFailure}, wantAttempts: 1, wantExit: abort},
++		{name: "TerminatedRunIsNoCrash", attempts: []tierResult{failed(128+int(syscall.SIGTERM), "Terminated\n")}, wantAttempts: 1, wantExit: 128 + int(syscall.SIGTERM)},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -72,22 +88,36 @@ func TestRetryOnShortage(t *testing.T) {
+ 				delay = time.Hour
+ 			}
+ 			calls := 0
+-			got := retryOnShortage(ctx, out, "tier0", delay, func() tierResult {
++			var recorded []tierResult
++			got := retryTier(ctx, out, "tier0", delay, func() tierResult {
+ 				calls++
+ 				return tt.attempts[calls-1]
+-			})
++			}, func(first tierResult) { recorded = append(recorded, first) })
+ 			if calls != tt.wantAttempts {
+-				t.Errorf("retryOnShortage ran %d attempts; want %d", calls, tt.wantAttempts)
++				t.Errorf("retryTier ran %d attempts; want %d", calls, tt.wantAttempts)
+ 			}
+-			if got.record.ExitCode != tt.wantExit || got.shortage != tt.wantShortage {
+-				t.Errorf("retryOnShortage() = exit %d, shortage %q; want exit %d, shortage %q", got.record.ExitCode, got.shortage, tt.wantExit, tt.wantShortage)
++			if got.record.ExitCode != tt.wantExit || got.shortage != tt.wantShortage || got.crash != tt.wantCrash || got.record.RunnerCrash != tt.wantCrash {
++				t.Errorf("retryTier() = exit %d, shortage %q, crash %q, record crash %q; want exit %d, shortage %q, crash %q", got.record.ExitCode, got.shortage, got.crash, got.record.RunnerCrash, tt.wantExit, tt.wantShortage, tt.wantCrash)
+ 			}
+-			const announced = "gate test: tier0 failed on a resource shortage"
+-			if retried := strings.HasPrefix(stderr.String(), announced); retried != tt.wantRetry {
+-				t.Errorf("stderr = %q; want the rerun announced: %v", stderr.String(), tt.wantRetry)
++			retried := tt.wantAnnounced != ""
++			if announced := retried && strings.HasPrefix(stderr.String(), tt.wantAnnounced); announced != retried || (!retried && stderr.Len() > 0) {
++				t.Errorf("stderr = %q; want the rerun announced with %q", stderr.String(), tt.wantAnnounced)
+ 			}
+-			if tt.wantRetry && calls == 2 && !strings.HasPrefix(string(got.log), stderr.String()) {
+-				t.Errorf("rerun log = %q; want it to open with the announcement %q", got.log, stderr.String())
++			if calls != 2 {
++				if len(recorded) != 0 {
++					t.Errorf("recorded %d first runs; want none for a run that was not rerun", len(recorded))
++				}
++				return
++			}
++			if !strings.HasPrefix(string(got.log), stderr.String()) || !got.record.Rerun {
++				t.Errorf("rerun log = %q, rerun mark %v; want the log to open with the announcement %q and the record marked a rerun", got.log, got.record.Rerun, stderr.String())
++			}
++			wantFirstCrash := ""
++			if tt.wantAnnounced == crashAnnounced {
++				wantFirstCrash = "SIGABRT"
++			}
++			if len(recorded) != 1 || recorded[0].record.ExitCode != tt.attempts[0].record.ExitCode || recorded[0].record.Rerun || recorded[0].record.RunnerCrash != wantFirstCrash {
++				t.Errorf("recorded first runs = %+v; want the first run once, not marked a rerun, with runner crash %q", recorded, wantFirstCrash)
+ 			}
+ 		})
+ 	}
+@@ -108,6 +138,11 @@ func TestFailedRunLabel(t *testing.T) {
+ 			end:  runEnd{code: 2, ran: true, shortage: "cannot fork"},
+ 			want: `tier1 (exit 2, a resource shortage, "cannot fork", in its run and its rerun: an environment error, not a test failure; way forward: re-run the same command once the machine's process load drops)`,
+ 		},
++		{
++			name: "CrashTwice",
++			end:  runEnd{code: 134, ran: true, crash: "SIGABRT"},
++			want: "tier1 (exit 134, a runner crash, SIGABRT, in its run and its rerun with no failing test: the code under test was not judged)",
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index 8222e99f..b7240ae6 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -130,6 +130,7 @@
+ // The line the gate prints when a tier outlives its `timeout_min` is rendered by TierTimeoutLine and found by FindTierTimeout;
+ // it names the tier, the timeout and the whole-tier `lym config gate --set` rewrite that raises it.
+ // The build step's timeout line is rendered by BuildTimeoutLine, names `lym config gate --set 'build={...}'` as the rewrite, and FindTierTimeout finds it too and returns `build` as the tier.
++// The line a gate call closes with when every failed run crashed its test runner, in its run and its one rerun, is rendered by RunnerCrashLine and found by FindRunnerCrash, which returns the runs it names, so a site tells a runtime's crash from a failing test.
+ //
+ // # Run log
+ //
+@@ -139,6 +140,7 @@
+ // The record is a domain log that no run reads to proceed.
+ // Every record of one gate call carries the call's id, and a record written after the call was cancelled is marked abandoned; a record without either reads with them empty.
+ // A tier the gate carried forward over an unchanged tree writes its record with `carried` set.
++// A tier run that crashed its test runner carries the signal as `runner_crash`, and the one rerun after such a crash or a resource shortage writes its own record with `rerun` set beside the first run's.
+ // A go-json tier's record lists a PackageLaunch per package whose test binary ran; a record written without the list reads with none.
+ // A tier the build step blocked by failing writes its record with `blocked_by` set to the failed build's log path.
+ // TierSummaryLine renders the one stderr line the gate prints after each tier run, marking a carried tier with `carried` after the scope form, and BuildSummaryLine renders the build step's line, `gate test: build before tier<N> wall <s>s exit <code> log <path>`, which no tier summary reader matches.
+diff --git a/internal/gateslot/runlog.go b/internal/gateslot/runlog.go
+index 41bc316b..d05294a0 100644
+--- a/internal/gateslot/runlog.go
++++ b/internal/gateslot/runlog.go
+@@ -1,4 +1,4 @@
+-// runlog.go keeps one diagnostic record and log per tier run under the gate directory, and renders and finds the tier timeout and tier summary lines a site reads from a log.
++// runlog.go keeps one diagnostic record and log per tier run under the gate directory, and renders and finds the tier timeout, runner crash and tier summary lines a site reads from a log.
+ 
+ package gateslot
+ 
+@@ -26,6 +26,8 @@ const (
+ 
+ 	buildTimeoutPrefix = "lym gate test: build timeout: "
+ 	buildTierName      = "build"
++
++	runnerCrashPrefix = "lym gate test: runner crash: "
+ )
+ 
+ var (
+@@ -74,6 +76,10 @@ type RunRecord struct {
+ 	CallID string `json:"call_id,omitempty"`
+ 	// Abandoned is set on a record written after its call was cancelled, such as by a terminating signal or a passed lease; reports count such a record apart.
+ 	Abandoned bool `json:"abandoned,omitempty"`
++	// RunnerCrash names the signal, such as SIGABRT, that ended a tier run with no failing test, so the run judged no code; empty for any other run.
++	RunnerCrash string `json:"runner_crash,omitempty"`
++	// Rerun is set on the record of a tier's one rerun after its first run crashed its test runner or failed on a resource shortage; the first run has its own record.
++	Rerun bool `json:"rerun,omitempty"`
+ }
+ 
+ // TestFailure is one failed test of a tier run.
+@@ -212,6 +218,27 @@ func FindTierTimeout(log string) (tier string, ok bool) {
+ 	return "", false
+ }
+ 
++// RunnerCrashLine renders the line a gate call closes with when every run that failed crashed its test runner on a signal with no failing test, in its run and its one rerun.
++// runs names each such run with its exit code and signal, and holds no semicolon.
++// The line names the way forward, since no change to the code under test mends a runtime's crash.
++func RunnerCrashLine(runs string) string {
++	return fmt.Sprintf("%s%s; every failed run ended on a signal with no failing test, in its run and its one rerun, so no test judged the code; way forward: re-run the same command, and when the runner crashes again, look in the runs' logs for a fault of the runtime itself, such as a .NET CLR or Go runtime error",
++		runnerCrashPrefix, runs)
++}
++
++// FindRunnerCrash returns the runs the first runner crash line in log names, and false when log holds none.
++func FindRunnerCrash(log string) (runs string, ok bool) {
++	for _, line := range strings.Split(log, "\n") {
++		rest, found := strings.CutPrefix(strings.TrimRight(line, "\r"), runnerCrashPrefix)
++		if !found {
++			continue
++		}
++		runs, _, _ = strings.Cut(rest, ";")
++		return runs, true
++	}
++	return "", false
++}
++
+ // FailedRunsPrefix opens the one stderr line a gate call that had a failed run closes with, naming each failed run, so a reader of the call's output can find it.
+ const FailedRunsPrefix = "gate test: failed runs: "
+ 
+diff --git a/internal/gateslot/watchdogline_test.go b/internal/gateslot/watchdogline_test.go
+index 8fa0b116..5bdf30cd 100644
+--- a/internal/gateslot/watchdogline_test.go
++++ b/internal/gateslot/watchdogline_test.go
+@@ -63,4 +63,25 @@ func TestWatchdogLine(t *testing.T) {
+ 	if line, want := BuildTimeoutLine(5*time.Minute), "--set 'build={...}'"; !strings.Contains(line, want) {
+ 		t.Errorf("BuildTimeoutLine() = %q; want it to name the whole-build step %q", line, want)
+ 	}
++
++	crashLine := RunnerCrashLine("tier1 (exit 134, SIGABRT)")
++	crashTests := []struct {
++		name     string
++		log      string
++		wantRuns string
++		wantOK   bool
++	}{
++		{"the crash line after the closing line of failed runs", "Aborted (core dumped)\n" + FailedRunsPrefix + "tier1 (exit 134)\r\n" + crashLine + "\r\n", "tier1 (exit 134, SIGABRT)", true},
++		{"a log with no crash line", "Fatal error. Internal CLR error. (0x80131506)\n" + FailedRunsPrefix + "tier1 (exit 134)\n", "", false},
++	}
++	for _, tt := range crashTests {
++		t.Run("RunnerCrash_"+tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			runs, ok := FindRunnerCrash(tt.log)
++			if runs != tt.wantRuns || ok != tt.wantOK {
++				t.Errorf("FindRunnerCrash() = %q, %v; want %q, %v", runs, ok, tt.wantRuns, tt.wantOK)
++			}
++		})
++	}
+ }
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index 6162f512..772e9e61 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -10,7 +10,7 @@
+ // The wait has no timeout and wakes at least a second apart, doubling to a minute while nothing changes and back to a second when the task head moves.
+ // Each wake re-reads the record, which the agent's `lym loom pr-continue` writes the continue flag into; a record write goes through the record's update so a flag written meanwhile survives.
+ // A change to the record file, seen through the PullRequest.RecordChanges watch, ends the sleep between two wakes early, still a second after the last wake began, so a continue flag is acted on at once and not after up to a minute.
+-// A clean tree whose head the record has not gated runs the `pr-review` gate key; a pass pushes the head and records it as gated, and a failure pushes nothing and mails the reason, naming the failing tier and log, to the PR-Review session once per head.
++// A clean tree whose head the record has not gated runs the `pr-review` gate key; a pass pushes the head and records it as gated, and a failure pushes nothing and mails the reason, naming the failing tier and log, to the PR-Review session once per head, except that a failure whose every failed run crashed its test runner halts the row with LandingStopPrefix, naming the crashed runs, and mails nothing.
+ // A head moved or a tree dirtied during the gate discards its verdict, and a dirty tree is the agent at work and is not gated.
+ // The pull request's status is read at most once a minute, the entry's own read counting as the first, and at once on the first wake that sees the continue flag.
+ // Merged at the gated head on a clean tree is Done, and merged without task commits or at another head is Stuck with Halt naming the way forward.
+@@ -156,6 +156,7 @@
+ // The row's gate key is the told Deps.GateKey, which each row's registry entry sets from its optional `gate_key` config key, else its row name in lower case.
+ // The told call, that key's `lym gate test` call rendered from the hub's gate config at each run, runs through internal/verifytree, unless its verified-tree record already names the tree and the command.
+ // The merge fixer a row spawns judges each turn through that row's gate, so it runs the same key.
++// A gate whose every failed run crashed its test runner with no failing test, in its run and its one rerun, judged no code: at Parent-Align, at Finalize, after a fixer's turn and at the pr-review gate alike it halts the row with LandingStopPrefix, naming the crashed runs and the way forward of `lym loom resume`, which runs the gate again, and spawns no fixer and writes no landing failure record.
+ // A fixer turn that leaves the tree dirty is re-prompted with the paths, on a charged turn, to commit what belongs to the fix and delete the rest; only a dirty tree after the last turn ends the fixer.
+ // Its base command is the told Deps.BaseCommand, the fix rows' `code-burler-fix` call, so a landing pass keeps the entry the Code-Burler-Fix lint base reads.
+ // A refusal of the gate config or of the key is the producer's returned error, carrying the refusal's way forward.
+diff --git a/internal/landingshed/finalize.go b/internal/landingshed/finalize.go
+index 9ea3453f..714e83c9 100644
+--- a/internal/landingshed/finalize.go
++++ b/internal/landingshed/finalize.go
+@@ -679,6 +679,7 @@ func (fz *Finalize) mergeAndGate(ctx context.Context) (shedengine.Outcome, shede
+ // The fixer and the fix review run with the parent lock freed.
+ //
+ // A failing gate spawns the fixer on the attempts landing.yaml's finalize_fix_attempts leaves the entry, read from the attempt record under the row's entry.
++// A gate whose every failed run crashed its test runner judged no code, so it halts with the gate's LandingStopPrefix reason, spawning no fixer and spending no attempt.
+ // A pass after the lock was taken again spends from the same attempts, so a second failed verify never grants a fresh cap.
+ // The fixer's whole change is judged against the size and kind caps from the entry's Baseline, the HEAD before its first turn, so turns that each stay under the cap but sum past it are over it.
+ // An entry has no attempts left when its Spent reaches the cap, whatever the record's Halt notes, and such an entry spawns no fixer: over a failing gate it ends as a spent cap, and over a passing one its change since Baseline is judged.
+@@ -710,10 +711,13 @@ func (fz *Finalize) gateAndFix(ctx context.Context) (shedengine.Outcome, shedeng
+ 		return fz.errorStop(ctx, err)
+ 	}
+ 
+-	gateReason, err := fz.gate.check(ctx, finalizeName, fz.deps.ParentBranch)
++	gateReason, crashed, err := fz.gate.check(ctx, finalizeName, fz.deps.ParentBranch)
+ 	if outcome, out, err, stop := fz.gateStop(ctx, "", err); stop {
+ 		return outcome, out, err, true
+ 	}
++	if crashed {
++		return fz.halt(ctx, gateReason)
++	}
+ 	passed := gateReason == ""
+ 	if passed {
+ 		fz.gate.clearFailure()
+diff --git a/internal/landingshed/finalize_verify_test.go b/internal/landingshed/finalize_verify_test.go
+index 16d8b049..0b332080 100644
+--- a/internal/landingshed/finalize_verify_test.go
++++ b/internal/landingshed/finalize_verify_test.go
+@@ -143,6 +143,26 @@ func TestFinalizeVerify_Fail(t *testing.T) {
+ 	}
+ }
+ 
++// TestFinalizeVerify_RunnerCrashHaltsWithoutFixer pins that a verify whose every failed run crashed its test runner halts naming the crashed runs, with no fixer session, no landing failure record and nothing landed.
++func TestFinalizeVerify_RunnerCrashHaltsWithoutFixer(t *testing.T) {
++	tiergate.Require(t, 0)
++	fx := newFinalizeGateFixture(t)
++	fx.scriptGate(verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 134, RunnerCrash: true, Detail: "gate test runner crashed with no failing test: tier1 (exit 134, SIGABRT)"})
++
++	outcome, ptr := fx.call(t)
++
++	requireHalt(t, outcome, ptr, "test runner crashed", "tier1 (exit 134, SIGABRT)", "no fixer runs")
++	if len(fx.seats.tables) != 0 {
++		t.Errorf("fixer sessions = %d; want none after a runner crash", len(fx.seats.tables))
++	}
++	if _, found, err := verifytree.ReadLandingFailure(fx.gate.paths); err != nil || found {
++		t.Errorf("ReadLandingFailure() = (_, %v, %v); want no record for a runner crash", found, err)
++	}
++	if len(fx.merger.calls) != 0 || len(fx.merger.pushCalls) != 0 {
++		t.Errorf("merge calls = %d, push calls = %d; want none after a halted gate", len(fx.merger.calls), len(fx.merger.pushCalls))
++	}
++}
++
+ // TestFinalizeVerify_DirtyTreeHalts pins that a dirty tree at each of the three points ends Stuck naming the paths,
+ // before the parent-side merge.
+ func TestFinalizeVerify_DirtyTreeHalts(t *testing.T) {
+diff --git a/internal/landingshed/fixerrun.go b/internal/landingshed/fixerrun.go
+index 87e6ce2b..950ece44 100644
+--- a/internal/landingshed/fixerrun.go
++++ b/internal/landingshed/fixerrun.go
+@@ -54,6 +54,8 @@ const (
+ 	fixerEndDirty fixerEnd = "dirty"
+ 	// fixerEndPushed is a session during which the task branch's remote ref moved.
+ 	fixerEndPushed fixerEnd = "pushed"
++	// fixerEndCrash is a landing gate after a turn whose every failed run crashed its test runner, which judged no code.
++	fixerEndCrash fixerEnd = "crash"
+ )
+ 
+ // fixerOutcome is how a fixer run ended and what the halt that follows names.
+@@ -72,6 +74,8 @@ type fixerOutcome struct {
+ 	pushedRef string
+ 	// dirty lists the uncommitted or untracked paths the last turn left; set for a dirty end.
+ 	dirty []string
++	// crash is the landing gate's halt reason naming the crashed runs; set for a crash end.
++	crash string
+ }
+ 
+ // fixerRun runs the merge fixer for one row.
+@@ -234,6 +238,7 @@ func (s *fixerSession) halt(end fixerEnd, findings string) (shuttleengine.GateRe
+ // It judges the turn's duration, then the tree, then the report, and on a fixed verdict the landing gate.
+ // A dirty tree with a turn left charges it and re-prompts naming the paths, so the fixer commits or deletes what it left; one with none left is the dirty end.
+ // A failing gate with a turn left charges it and re-prompts; one with none left is the spent end.
++// A gate whose every failed run crashed its test runner is the crash end, whatever turns are left, since no turn mends it.
+ func (s *fixerSession) check() (shuttleengine.GateResult, error) {
+ 	result, err := s.judge()
+ 	if err != nil {
+@@ -279,10 +284,14 @@ func (s *fixerSession) judge() (shuttleengine.GateResult, error) {
+ 		return s.halt(fixerEndEscalate, report.Conflict)
+ 	}
+ 
+-	reason, err := gate.check(s.ctx, s.run.row, s.run.deps.ParentBranch)
++	reason, crashed, err := gate.check(s.ctx, s.run.row, s.run.deps.ParentBranch)
+ 	if err != nil {
+ 		return shuttleengine.GateResult{}, err
+ 	}
++	if crashed {
++		s.outcome.crash = reason
++		return s.halt(fixerEndCrash, reason)
++	}
+ 	if reason == "" {
+ 		passed := shuttleengine.GateResult{Passed: true}
+ 		s.decided = &passed
+@@ -312,10 +321,13 @@ func (s *fixerSession) judge() (shuttleengine.GateResult, error) {
+ // Every reason except a tapestry, darn or sampler escalate opens with LandingStopPrefix and ends with a way forward, and is one line.
+ // An escalate end with escalateJudgedFirst true opens with EscalateStopPrefix instead and names the decision verb as its way forward;
+ // with it false the way forward is the conflict settled on the task branch, since a pawl run refuses the decision verb.
++// A crash end's reason is the landing gate's own, which already opens with LandingStopPrefix and names its way forward.
+ func (o fixerOutcome) haltReason(row string, escalateJudgedFirst bool) string {
+ 	prefix := LandingStopPrefix
+ 	var cause, wayForward string
+ 	switch o.end {
++	case fixerEndCrash:
++		return o.crash
+ 	case fixerEndSpent:
+ 		cause = fmt.Sprintf("the fixer spent every attempt of %s and the landing gate still fails; log: %s", row, o.failureLog)
+ 		wayForward = "fix the failure on the task branch, then `lym loom resume`"
+diff --git a/internal/landingshed/fixerrun_test.go b/internal/landingshed/fixerrun_test.go
+index 76a0f07b..c50833ef 100644
+--- a/internal/landingshed/fixerrun_test.go
++++ b/internal/landingshed/fixerrun_test.go
+@@ -292,6 +292,16 @@ func TestFixerRun_Outcomes(t *testing.T) {
+ 			wantReason:  []string{LandingStopPrefix, "after its last turn: a.go;", fakeFixerRunDir, "commit or remove them on the task branch", "`lym loom resume`"},
+ 			avoidReason: []string{"without a usable turn"},
+ 		},
++		{
++			name: "a gate whose runner crashed after a turn is the crash end, never re-prompted",
++			setup: func(t *testing.T, fx *fixerRunFixture) {
++				fx.gate.fake.result = verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 134, RunnerCrash: true, Detail: "gate test runner crashed with no failing test: tier1 (exit 134, SIGABRT)"}
++				report := func() { fx.writeReport(t, fixedReport) }
++				fx.seats.turns = []func(){report, report}
++			},
++			wantEnd: fixerEndCrash, wantSpent: 1, wantTurns: 1,
++			wantReason: []string{LandingStopPrefix, "test runner crashed", "tier1 (exit 134, SIGABRT)", "`lym loom resume`"},
++		},
+ 		{
+ 			name: "a remote tip that moved during the session is the pushed end",
+ 			setup: func(t *testing.T, fx *fixerRunFixture) {
+diff --git a/internal/landingshed/parentalign.go b/internal/landingshed/parentalign.go
+index 697bef1a..5ea7bf8c 100644
+--- a/internal/landingshed/parentalign.go
++++ b/internal/landingshed/parentalign.go
+@@ -120,6 +120,7 @@ func NewParentAlign(deps Deps) (*ParentAlign, error) {
+ // It writes nothing in the parent pair and holds no parent lock across the merge; a paused lock wait and an unreadable lock record for the local-tip read are Stuck with Halt, so the run stops at this row.
+ // After the merge and the `landing` gate it aligns: it runs the merge fixer when the parent brought in commits or the gate fails,
+ // and every halt of that alignment is a Stuck with Halt whose reason opens with LandingStopPrefix.
++// A gate whose every failed run crashed its test runner judged no code, so it halts the same way before any alignment, with no fixer.
+ // A fixer's escalate on a tapestry, darn or sampler run (Deps.EscalateJudgedFirst) opens with EscalateStopPrefix instead.
+ // A failed record write and every infrastructure fault are errors.
+ func (m *ParentAlign) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error) {
+@@ -194,10 +195,13 @@ func (m *ParentAlign) Call(ctx context.Context) (shedengine.Outcome, shedengine.
+ 	if outcome, out, err, stop := gateStop(ctx, parentAlignName, reason, err); stop {
+ 		return outcome, out, err
+ 	}
+-	gateReason, err := m.gate.check(ctx, parentAlignName, m.deps.ParentBranch)
++	gateReason, crashed, err := m.gate.check(ctx, parentAlignName, m.deps.ParentBranch)
+ 	if outcome, out, err, stop := gateStop(ctx, parentAlignName, "", err); stop {
+ 		return outcome, out, err
+ 	}
++	if crashed {
++		return stuckVerdict(ctx, parentAlignName, gateReason, true)
++	}
+ 	if gateReason == "" {
+ 		reason, err = m.gate.clean(parentAlignName, "after the verify")
+ 		if outcome, out, err, stop := gateStop(ctx, parentAlignName, reason, err); stop {
+diff --git a/internal/landingshed/parentalign_fixer_test.go b/internal/landingshed/parentalign_fixer_test.go
+index b278f32d..0eb9a077 100644
+--- a/internal/landingshed/parentalign_fixer_test.go
++++ b/internal/landingshed/parentalign_fixer_test.go
+@@ -189,6 +189,24 @@ func TestMergeIn_Fixer(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a runner crash halts naming the crashed runs, with no fixer session and no landing failure record", func(t *testing.T) {
++		t.Parallel()
++		fx := newMergeInFixture(t)
++		brought(fx)
++		writeVerifyLog(t, fx.gate, "FAIL")
++		fx.scriptGate(verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 134, RunnerCrash: true, Detail: "gate test runner crashed with no failing test: tier1 (exit 134, SIGABRT)"})
++
++		outcome, ptr := fx.call(t)
++
++		requireHalt(t, outcome, ptr, "test runner crashed", "tier1 (exit 134, SIGABRT)", "no fixer runs", "`lym loom resume`")
++		if len(fx.seats.tables) != 0 {
++			t.Errorf("fixer sessions = %d; want none after a runner crash", len(fx.seats.tables))
++		}
++		if _, found, err := verifytree.ReadLandingFailure(fx.gate.paths); err != nil || found {
++			t.Errorf("ReadLandingFailure() = (_, %v, %v); want no record for a runner crash", found, err)
++		}
++	})
++
+ 	t.Run("escalate on a run's first Merge-In halts naming the report, and the resumed entry still reads the fork point", func(t *testing.T) {
+ 		t.Parallel()
+ 		fx := newMergeInFixture(t)
+diff --git a/internal/landingshed/prreview.go b/internal/landingshed/prreview.go
+index c1cf470a..0ebd13c0 100644
+--- a/internal/landingshed/prreview.go
++++ b/internal/landingshed/prreview.go
+@@ -549,11 +549,12 @@ func (p *PRReview) readTree() (string, []string, error) {
+ 
+ // gateHead runs the pr-review gate over head, a clean tree whose head the record has not gated.
+ // A pass pushes head and records it as gated, and a failure pushes nothing and mails its reason to the PR-Review session once per head.
++// A runner crash judges no code, so it halts the row naming the crash and mails nothing; the resume gates the head again.
+ // A head moved or a tree dirtied during the gate discards the verdict.
+ // It reports whether it ended the call.
+ func (p *PRReview) gateHead(ctx context.Context, head string, rec pullrequest.Record, label string) (shedengine.Outcome, shedengine.OutputPointer, bool, error) {
+ 	pr := p.deps.PullRequest
+-	reason, err := p.gate.checkHead(ctx, p.name)
++	reason, crashed, err := p.gate.checkHead(ctx, p.name)
+ 	p.gate.markWait(label)
+ 	if err != nil {
+ 		return "", shedengine.OutputPointer{}, true, err
+@@ -566,6 +567,10 @@ func (p *PRReview) gateHead(ctx context.Context, head string, rec pullrequest.Re
+ 		return "", shedengine.OutputPointer{}, false, nil
+ 	}
+ 
++	if crashed {
++		outcome, pointer, serr := stuckVerdict(ctx, p.name, reason, true)
++		return outcome, pointer, true, serr
++	}
+ 	if reason == "" {
+ 		if err := pr.PushTask(); err != nil {
+ 			if terr := transientFailure(ctx, p.name, "push the task branch", err); terr != nil {
+diff --git a/internal/landingshed/prreview_wait_test.go b/internal/landingshed/prreview_wait_test.go
+index 2334351a..08e63289 100644
+--- a/internal/landingshed/prreview_wait_test.go
++++ b/internal/landingshed/prreview_wait_test.go
+@@ -405,6 +405,20 @@ func TestPRReview_Wait(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name: "ARunnerCrashHaltsTheRowNamingTheCrashAndMailsNothing", record: seed("h1", withStrand), scripts: statusScript(open), head: "h2",
++			setup: func(w *waitWorld) {
++				w.withGateCommand()
++				w.tree.result = verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 134, RunnerCrash: true, Detail: "gate test runner crashed with no failing test: tier1 (exit 134, SIGABRT)", Log: "/logs/gate.log"}
++				w.cancelAfter(3)
++			},
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{LandingStopPrefix, "tier1 (exit 134, SIGABRT)", "/logs/gate.log", "`lym loom resume`"},
++			check: func(t *testing.T, w *waitWorld, _ string) {
++				if len(w.mails) != 0 {
++					t.Errorf("mails = %q; want none, a crash halting the row instead of telling the agent", w.mails)
++				}
++			},
++		},
+ 		{
+ 			name: "AFailedMailPostIsLoggedAndNotRetriedForThatHead", record: seed("h1", withStrand), scripts: statusScript(open), head: "h2",
+ 			setup:   func(w *waitWorld) { failingGate(w); w.mailErr = errors.New("creel down"); w.cancelAfter(3) },
+diff --git a/internal/landingshed/verifygate.go b/internal/landingshed/verifygate.go
+index c35c0118..b6a9b104 100644
+--- a/internal/landingshed/verifygate.go
++++ b/internal/landingshed/verifygate.go
+@@ -56,11 +56,11 @@ type failureRecorder struct {
+ // recordFailure writes the landing failure record for a verify of the row's gate key that ended in result.
+ // The record's kind is that key, and its tier is the first failing tier the log's summary lines name;
+ // a log without one, such as a refusal before the first tier, takes the highest tier of the key.
+-// A result that is not a failed run, a timeout and a shell that could not start write none, since none of them names a failing test.
++// A result that is not a failed run, a timeout, a runner crash and a shell that could not start write none, since none of them names a failing test.
+ // It returns whether it wrote the record: a write failure is logged, reported as false and changes nothing else.
+ func (g verifyGate) recordFailure(result verifytree.Result) bool {
+ 	kind := verifytree.FailureKind(g.key)
+-	if g.recorder == nil || result.Status != verifytree.StatusFailed || result.TimedOut || result.ExitCode < 0 {
++	if g.recorder == nil || result.Status != verifytree.StatusFailed || result.TimedOut || result.RunnerCrash || result.ExitCode < 0 {
+ 		return false
+ 	}
+ 	failure := verifytree.LandingFailure{
+@@ -222,24 +222,26 @@ func (g verifyGate) readBase(producer string) (string, error) {
+ // The base command is the site's BaseCommand, so a pass keeps the entry the next round diffs from.
+ //
+ // It returns a non-empty Stuck reason naming the gate when the call fails or the tree is dirty,
+-// a non-nil error for an infrastructure fault or a cancellation, and ("", nil) when the producer may proceed.
++// a non-nil error for an infrastructure fault or a cancellation, and ("", false, nil) when the producer may proceed.
++// crashed is set when every failed run of the call crashed its test runner with no failing test, so no test judged the code:
++// the reason is then a halt reason opening with LandingStopPrefix, which the producer halts with instead of spawning a fixer.
+ // A pass, and a skip over a tree already recorded as passed, remove a landing failure record an earlier failed call left.
+-func (g verifyGate) check(ctx context.Context, producer, parentBranch string) (string, error) {
++func (g verifyGate) check(ctx context.Context, producer, parentBranch string) (reason string, crashed bool, err error) {
+ 	if g.command == nil {
+-		return "", nil
++		return "", false, nil
+ 	}
+ 
+ 	command, err := g.command(g.key)
+ 	if err != nil {
+-		return "", fmt.Errorf("landingshed: %s: read gate command: %w", producer, err)
++		return "", false, fmt.Errorf("landingshed: %s: read gate command: %w", producer, err)
+ 	}
+ 	if command == "" {
+ 		logger.Warn("landingshed: post-merge verify skipped because no verify command is configured", "producer", producer, "parentBranch", parentBranch)
+-		return "", nil
++		return "", false, nil
+ 	}
+ 	base, err := g.readBase(producer)
+ 	if err != nil {
+-		return "", err
++		return "", false, err
+ 	}
+ 
+ 	g.markWait("")
+@@ -247,36 +249,38 @@ func (g verifyGate) check(ctx context.Context, producer, parentBranch string) (s
+ 	result, err := g.verify(ctx, g.paths, verifytree.Site{Label: producer, BaseCommand: base, Hold: g.hold}, command)
+ 	g.markWait("")
+ 	if err != nil {
+-		return "", fmt.Errorf("landingshed: %s: %w", producer, err)
++		return "", false, fmt.Errorf("landingshed: %s: %w", producer, err)
+ 	}
+ 	g.recordFailure(result)
+-	reason, err := g.verdict(result, "landing gate", producer, parentBranch)
++	reason, err = g.verdict(result, "landing gate", producer, parentBranch)
+ 	if reason == "" && err == nil {
+ 		g.clearFailure()
+ 	}
+-	return reason, err
++	return reason, result.Status == verifytree.StatusFailed && result.RunnerCrash, err
+ }
+ 
+ // checkHead runs the call of the row's gate key over the task head for producer, the PR-Review gate over an agent's commits.
+ // It reads the key's command and base command and marks the wait as check does, skipping with a warning when no command is configured, and writes no landing failure record.
+ //
+-// It returns the reason the gate refuses the head, written for the agent to act on in a new commit, an error for an infrastructure fault or a cancellation, and ("", nil) on a pass or a skip.
++// It returns the reason the gate refuses the head, written for the agent to act on in a new commit, an error for an infrastructure fault or a cancellation, and ("", false, nil) on a pass or a skip.
+ // A dirty result returns the dirty reason.
+-func (g verifyGate) checkHead(ctx context.Context, producer string) (string, error) {
++// crashed is set when every failed run of the call crashed its test runner with no failing test, so no test judged the head:
++// the reason is then a halt reason opening with LandingStopPrefix, which the caller halts the row with instead of telling the agent.
++func (g verifyGate) checkHead(ctx context.Context, producer string) (reason string, crashed bool, err error) {
+ 	if g.command == nil {
+-		return "", nil
++		return "", false, nil
+ 	}
+ 	command, err := g.command(g.key)
+ 	if err != nil {
+-		return "", fmt.Errorf("landingshed: %s: read gate command: %w", producer, err)
++		return "", false, fmt.Errorf("landingshed: %s: read gate command: %w", producer, err)
+ 	}
+ 	if command == "" {
+ 		logger.Warn("landingshed: the pr-review gate skipped because no verify command is configured", "producer", producer)
+-		return "", nil
++		return "", false, nil
+ 	}
+ 	base, err := g.readBase(producer)
+ 	if err != nil {
+-		return "", err
++		return "", false, err
+ 	}
+ 
+ 	g.markWait("")
+@@ -284,7 +288,7 @@ func (g verifyGate) checkHead(ctx context.Context, producer string) (string, err
+ 	result, err := g.verify(ctx, g.paths, verifytree.Site{Label: producer, BaseCommand: base, Hold: g.hold}, command)
+ 	g.markWait("")
+ 	if err != nil {
+-		return "", fmt.Errorf("landingshed: %s: %w", producer, err)
++		return "", false, fmt.Errorf("landingshed: %s: %w", producer, err)
+ 	}
+ 	switch result.Status {
+ 	case verifytree.StatusPassed:
+@@ -292,21 +296,24 @@ func (g verifyGate) checkHead(ctx context.Context, producer string) (string, err
+ 	case verifytree.StatusSkipped:
+ 		logger.Info("landingshed: the pr-review gate skipped because the tree is already verified", "producer", producer, "tree", result.Tree)
+ 	case verifytree.StatusDirty:
+-		return dirtyReason("when the pr-review gate was about to run", result.Dirty), nil
++		return dirtyReason("when the pr-review gate was about to run", result.Dirty), false, nil
+ 	case verifytree.StatusFailed:
+-		return g.headFailureReason(result), nil
++		return g.headFailureReason(result), result.RunnerCrash, nil
+ 	default:
+-		return "", fmt.Errorf("landingshed: %s: unknown pr-review gate status %q", producer, result.Status)
++		return "", false, fmt.Errorf("landingshed: %s: unknown pr-review gate status %q", producer, result.Status)
+ 	}
+-	return "", nil
++	return "", false, nil
+ }
+ 
+ // headFailureReason is the reason a failed run of the pr-review gate gives the agent: the failing tier or the build, the log and the instruction to fix it in a new commit.
+-// A timeout and a shell that could not start name no tier, since neither names a failing test.
++// A timeout, a runner crash and a shell that could not start name no tier, since none names a failing test.
++// A runner crash is a halt reason opening with LandingStopPrefix, since no change to the code mends it and the agent has no commit to make.
+ func (g verifyGate) headFailureReason(result verifytree.Result) string {
+ 	switch {
+ 	case result.TimedOut:
+ 		return fmt.Sprintf("the pr-review gate timed out: %s; output: %s; fix the hanging test or build in a new commit", result.Detail, result.Log)
++	case result.RunnerCrash:
++		return fmt.Sprintf("%sthe pr-review gate's test runner crashed in its run and its one rerun (%s), so no test judged the head and no change to the code mends it; output: %s; way forward: `lym loom resume`, which runs the gate again, and when the runner crashes again, find the runtime's own fault in the output", LandingStopPrefix, result.Detail, result.Log)
+ 	case result.ExitCode < 0:
+ 		return fmt.Sprintf("the pr-review gate could not start: %s; output: %s", result.Detail, result.Log)
+ 	}
+@@ -346,6 +353,7 @@ func watchdogClause(logPath string) string {
+ // It returns a non-empty Stuck reason for a dirty tree or a failed command, an error for an unknown status, and ("", nil) when the producer may proceed.
+ // A failed command with an exit code ends its reason with the clause asking to fix forward on the task branch.
+ // After a CPU watchdog quit the reason names the window and the busy_quit_sec way forward before that clause.
++// A runner crash is a halt reason opening with LandingStopPrefix that names the crashed runs and the way forward of resuming, which runs the gate again.
+ func (g verifyGate) verdict(result verifytree.Result, what, producer, parentBranch string) (string, error) {
+ 	switch result.Status {
+ 	case verifytree.StatusPassed:
+@@ -364,6 +372,9 @@ func (g verifyGate) verdict(result verifytree.Result, what, producer, parentBran
+ 		if result.ExitCode < 0 {
+ 			return fmt.Sprintf("%s could not start after merging parent branch %q: %s; output: %s", what, parentBranch, result.Detail, result.Log), nil
+ 		}
++		if result.RunnerCrash {
++			return fmt.Sprintf("%s%s's test runner crashed after merging parent branch %q, in its run and its one rerun (%s), so no test judged the code and no fixer runs; output: %s; way forward: `lym loom resume`, which runs the gate again, and when the runner crashes again, find the runtime's own fault in the output", LandingStopPrefix, what, parentBranch, result.Detail, result.Log), nil
++		}
+ 		watchdog := watchdogClause(result.Log)
+ 		return fmt.Sprintf("%s failed after merging parent branch %q (exit code %d); output: %s%s; fix forward on the task branch, then resume", what, parentBranch, result.ExitCode, result.Log, watchdog), nil
+ 	default:
+diff --git a/internal/landingshed/verifygate_integration_test.go b/internal/landingshed/verifygate_integration_test.go
+index 5e64b847..ac73180d 100644
+--- a/internal/landingshed/verifygate_integration_test.go
++++ b/internal/landingshed/verifygate_integration_test.go
+@@ -59,7 +59,10 @@ func TestVerifyGate_RealVerifytreeScenario(t *testing.T) {
+ 	command := "echo verify-ok; echo run >> " + counter
+ 	deps.VerifyCommand = func(string) (string, error) { return command, nil }
+ 	gate := newVerifyGate(deps)
+-	check := func(ctx context.Context) (string, error) { return gate.check(ctx, "Publish", "main") }
++	check := func(ctx context.Context) (string, error) {
++		reason, _, err := gate.check(ctx, "Publish", "main")
++		return reason, err
++	}
+ 	requireRuns := func(t *testing.T, want int) {
+ 		t.Helper()
+ 		if got := runs(t, counter); got != want {
+diff --git a/internal/landingshed/verifygate_test.go b/internal/landingshed/verifygate_test.go
+index 610ae8a6..d9efc8c5 100644
+--- a/internal/landingshed/verifygate_test.go
++++ b/internal/landingshed/verifygate_test.go
+@@ -184,7 +184,7 @@ func TestVerifyGate_WaitMark(t *testing.T) {
+ 					return tc.markErr
+ 				}
+ 			}
+-			reason, err := f.gate.check(context.Background(), "Publish", "main")
++			reason, _, err := f.gate.check(context.Background(), "Publish", "main")
+ 
+ 			if !strings.Contains(reason, tc.wantReason) || (tc.wantReason == "" && reason != "") {
+ 				t.Errorf("reason = %q, want it to contain %q", reason, tc.wantReason)
+@@ -229,6 +229,8 @@ func TestVerifyGate_CheckMapsVerifyResult(t *testing.T) {
+ 		wantErrHas      string
+ 		// staleRecord, when set, leaves a landing failure record from an earlier failed call that the verdict must remove.
+ 		staleRecord bool
++		// wantCrashed is the crash flag the check returns beside its reason.
++		wantCrashed bool
+ 	}{
+ 		{name: "pass", command: "go test ./...", site: "Publish", result: verifytree.Result{Status: verifytree.StatusPassed}},
+ 		{name: "site label follows the producer", command: "true", site: "Finalize", result: verifytree.Result{Status: verifytree.StatusPassed}},
+@@ -273,6 +275,12 @@ func TestVerifyGate_CheckMapsVerifyResult(t *testing.T) {
+ 					`, carrying every key of the build and the raised timeout_min, since a dotted key under the build writes an entry the loader refuses; a session that is not the prime reports status: FAILED and the orch runs it; then resume`
+ 			},
+ 		},
++		{
++			name: "runner crash is a halt reason naming the crashed runs and no fixer", command: "true", site: "Finalize",
++			result:        verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 134, RunnerCrash: true, Detail: "gate test runner crashed with no failing test: tier1 (exit 134, SIGABRT)", Log: failedLog},
++			wantReasonHas: []string{LandingStopPrefix, "test runner crashed", "tier1 (exit 134, SIGABRT)", "no fixer runs", "`lym loom resume`"},
++			wantCrashed:   true,
++		},
+ 		{
+ 			name: "dirty result names the paths", command: "true", site: "Publish",
+ 			result:        verifytree.Result{Status: verifytree.StatusDirty, Dirty: []string{"a.txt", "b.txt"}},
+@@ -304,7 +312,10 @@ func TestVerifyGate_CheckMapsVerifyResult(t *testing.T) {
+ 					t.Fatal(err)
+ 				}
+ 			}
+-			reason, err := f.gate.check(context.Background(), tc.site, "main")
++			reason, crashed, err := f.gate.check(context.Background(), tc.site, "main")
++			if crashed != tc.wantCrashed {
++				t.Errorf("check() crashed = %v; want %v", crashed, tc.wantCrashed)
++			}
+ 			if tc.staleRecord {
+ 				if _, found, readErr := verifytree.ReadLandingFailure(f.paths); readErr != nil || found {
+ 					t.Errorf("ReadLandingFailure() = (_, %v, %v); want the stale record removed", found, readErr)
+@@ -369,7 +380,7 @@ func TestVerifyGate_CheckWithoutCommandSkipsVerify(t *testing.T) {
+ 			if tc.noGate {
+ 				f.gate.command = nil
+ 			}
+-			reason, err := f.gate.check(context.Background(), "Publish", "main")
++			reason, _, err := f.gate.check(context.Background(), "Publish", "main")
+ 			if reason != "" || err != nil {
+ 				t.Fatalf("got (%q, %v), want (\"\", nil)", reason, err)
+ 			}
+@@ -396,7 +407,7 @@ func TestVerifyGate_ClosureError(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	f := newGateFixture(t, "finalize", "", errors.New("plan unreadable"))
+-	reason, err := f.gate.check(context.Background(), "Publish", "main")
++	reason, _, err := f.gate.check(context.Background(), "Publish", "main")
+ 	if reason != "" || err == nil || !strings.Contains(err.Error(), "plan unreadable") || !strings.Contains(err.Error(), "Publish") {
+ 		t.Fatalf("got (%q, %v)", reason, err)
+ 	}
+@@ -413,7 +424,7 @@ func TestVerifyGate_Cancellation(t *testing.T) {
+ 	ctx, cancel := context.WithCancel(context.Background())
+ 	f.fake.onVerify = cancel
+ 	f.fake.verifyErr = context.Canceled
+-	reason, err := f.gate.check(ctx, "Publish", "main")
++	reason, _, err := f.gate.check(ctx, "Publish", "main")
+ 	if reason != "" || !errors.Is(err, context.Canceled) {
+ 		t.Fatalf("got (%q, %v), want a context.Canceled error", reason, err)
+ 	}
+diff --git a/internal/loomshed/verifygate.go b/internal/loomshed/verifygate.go
+index 10681014..5d59b81e 100644
+--- a/internal/loomshed/verifygate.go
++++ b/internal/loomshed/verifygate.go
+@@ -50,6 +50,7 @@ const verifyFailureTruncated = "\n[truncated]"
+ // `StatusPassed` and `StatusSkipped` pass.
+ // `StatusDirty` fails with the dirty paths.
+ // `StatusFailed` fails with the exit code, the log path and the log's tail, and, after a CPU watchdog quit, the window and the `busy_quit_sec` way forward; a test file the command's guard scan rejects, such as a misplaced `//lym:guard` marker, reaches the findings through that tail with its file and line.
++// A `StatusFailed` runner crash, every failed run having crashed its test runner with no failing test, fails terminally naming the crashed runs, since no change the writer makes mends it and no fixer gets it.
+ // A headroom finding or a comment lint finding fails with its file and line or its bytes and the way forward.
+ // A command, merge base or tree scope read error, a failure to read git, a lint run error or a cancelled verify is a returned error, since none is a defect the writer can fix.
+ func NewVerifyGate(worktreeRoot, verifyDir, siteLabel string, command, mergeBase func() (string, error), treeScope func() (string, bool, error), hold *verifytree.PauseHold) shuttleengine.Gate {
+@@ -136,8 +137,8 @@ func NewVerifyGate(worktreeRoot, verifyDir, siteLabel string, command, mergeBase
+ 			return shuttleengine.GateResult{Passed: false, Findings: findings}, nil
+ 		default:
+ 			findings := verifyFailureFindings(res, res.Log)
+-			logger.Warn("loomshed: verify gate failed", "gate", siteLabel, "attempt", attempt, "exitCode", res.ExitCode, "log", res.Log)
+-			return shuttleengine.GateResult{Passed: false, Findings: findings}, nil
++			logger.Warn("loomshed: verify gate failed", "gate", siteLabel, "attempt", attempt, "exitCode", res.ExitCode, "runnerCrash", res.RunnerCrash, "log", res.Log)
++			return shuttleengine.GateResult{Passed: false, Findings: findings, Terminal: res.RunnerCrash}, nil
+ 		}
+ 	}
+ }
+@@ -163,15 +164,18 @@ func commentLintFindings(findings []commentlint.Finding) string {
+ 	return b.String()
+ }
+ 
+-// verifyFailureFindings renders a StatusFailed result as the exit code or the timeout, the log path, and the failing tests and packages the log names, each with its own output, and the gate's closing line of failed runs;
++// verifyFailureFindings renders a StatusFailed result as the exit code, the timeout or the runner crash, the log path, and the failing tests and packages the log names, each with its own output, and the gate's closing line of failed runs;
+ // a log that names no failing test or package is quoted as its tail instead, since in the output of parallel packages the last lines need not hold the failures.
+ // When the whole log holds the CPU watchdog's line, a paragraph after the first sentence names the window and the way forward for a healthy package that is CPU-bound.
+ func verifyFailureFindings(res verifytree.Result, logPath string) string {
+ 	log, _ := os.ReadFile(logPath)
+ 	var b strings.Builder
+-	if res.TimedOut {
++	switch {
++	case res.TimedOut:
+ 		fmt.Fprintf(&b, "The verify command timed out: %s.", res.Detail)
+-	} else {
++	case res.RunnerCrash:
++		fmt.Fprintf(&b, "The verify command's test runner crashed in its run and its one rerun, so no test judged the code: %s. No change to the code mends it, so the run stops here; resuming it runs the gate again.", res.Detail)
++	default:
+ 		fmt.Fprintf(&b, "The verify command failed with exit code %d.", res.ExitCode)
+ 		if res.Detail != "" {
+ 			fmt.Fprintf(&b, " Its shell could not start: %s.", res.Detail)
+diff --git a/internal/loomshed/verifygate_crash_integration_test.go b/internal/loomshed/verifygate_crash_integration_test.go
+new file mode 100644
+index 00000000..13a47931
+--- /dev/null
++++ b/internal/loomshed/verifygate_crash_integration_test.go
+@@ -0,0 +1,57 @@
++// verifygate_crash_integration_test.go covers the Terminal flag NewVerifyGate sets on a failed verify, over a real scratch repo and real shell processes.
++
++package loomshed
++
++import (
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestVerifyGate_TerminalOnlyForARunnerCrash(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	tests := []struct {
++		name         string
++		logLines     []string
++		exit         string
++		wantTerminal bool
++		wantFindings string
++	}{
++		{name: "a runner crash line is terminal", logLines: []string{gateslot.RunnerCrashLine("tier1 (exit 134, SIGABRT)")}, exit: "134", wantTerminal: true, wantFindings: "tier1 (exit 134, SIGABRT)"},
++		{name: "a plain failure is not terminal", logLines: []string{"FAIL"}, exit: "3", wantFindings: "exit code 3"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			worktree, verifyDir := t.TempDir(), t.TempDir()
++			gitkit.Git(t, worktree, "init", "-b", "main")
++			gitkit.Git(t, worktree, "config", "user.email", "test@test.com")
++			gitkit.Git(t, worktree, "config", "user.name", "Test")
++			gitkit.CommitFile(t, worktree, "a.txt", "a\n", "init")
++			logSource := filepath.Join(t.TempDir(), "gate.log")
++			if err := os.WriteFile(logSource, []byte(strings.Join(tt.logLines, "\n")+"\n"), 0o644); err != nil {
++				t.Fatal(err)
++			}
++			command := "cat '" + logSource + "'; exit " + tt.exit
++
++			got, err := NewVerifyGate(worktree, verifyDir, "Webster-Burler gate", func() (string, error) { return command, nil }, nil, nil, nil)()
++
++			if err != nil {
++				t.Fatalf("gate() error = %v; want nil", err)
++			}
++			if got.Passed || got.Terminal != tt.wantTerminal {
++				t.Errorf("gate() = passed %v, terminal %v; want a failure with terminal %v", got.Passed, got.Terminal, tt.wantTerminal)
++			}
++			if !strings.Contains(got.Findings, tt.wantFindings) {
++				t.Errorf("gate() findings = %q; want %q in them", got.Findings, tt.wantFindings)
++			}
++		})
++	}
++}
+diff --git a/internal/loomshed/verifygate_test.go b/internal/loomshed/verifygate_test.go
+index fde6ccef..63c43ca3 100644
+--- a/internal/loomshed/verifygate_test.go
++++ b/internal/loomshed/verifygate_test.go
+@@ -46,6 +46,12 @@ func TestVerifyFailureFindings(t *testing.T) {
+ 			want:    []string{"The verify command timed out: gate tier2 exceeded timeout_min 30m0s and was killed."},
+ 			wantNot: []string{"exit code", "could not start"},
+ 		},
++		{
++			name:    "a runner crash names the crashed runs instead of an exit code",
++			result:  verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 134, RunnerCrash: true, Detail: "gate test runner crashed with no failing test: tier1 (exit 134, SIGABRT)"},
++			want:    []string{"test runner crashed in its run and its one rerun", "tier1 (exit 134, SIGABRT)", "the run stops here"},
++			wantNot: []string{"failed with exit code", "could not start", "timed out"},
++		},
+ 		{
+ 			name:    "a log with the watchdog line names the window and the way forward",
+ 			result:  verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 1},
+diff --git a/internal/verifytree/doc.go b/internal/verifytree/doc.go
+index d41013b9..d816e142 100644
+--- a/internal/verifytree/doc.go
++++ b/internal/verifytree/doc.go
+@@ -12,6 +12,8 @@
+ // Verify takes no gate slot and applies no timeout: every command it runs is one `lym gate test --wait` call, or such calls joined by `&&`, which take their own slots and are bounded by the gate's pre-tier ceiling and the tiers' timeouts.
+ // A failed command whose log holds the gate's tier timeout line (gateslot.FindTierTimeout) is read as timed out:
+ // the result is a failed one with the command's own exit code, TimedOut set and the tier and its timeout in Detail.
++// A failed command whose log holds no such line but the gate's runner crash line (gateslot.FindRunnerCrash) is read as a runner crash, which judged no code:
++// the result is a failed one with the command's own exit code, RunnerCrash set and the crashed runs in Detail, so a site stops rather than hand it to a fixer.
+ // The marker is written as running from the start, and a waiting gate shows through the gate's own wait record.
+ // A marker an older binary wrote in the waiting state, or without a state, stays readable.
+ // The command's environment drops the strand-name variable (agentname.StrandNameEnv), so a test that drives `lym fabric` never meets the sandboxed-role guard.
+diff --git a/internal/verifytree/verify.go b/internal/verifytree/verify.go
+index a1b7ca0b..3684759d 100644
+--- a/internal/verifytree/verify.go
++++ b/internal/verifytree/verify.go
+@@ -101,7 +101,10 @@ type Result struct {
+ 	// TimedOut is set when the failed command's log holds a gate tier timeout line;
+ 	// the status is then StatusFailed with the command's own exit code.
+ 	TimedOut bool
+-	// Detail carries the cause of a shell that could not start, or names the tier and timeout of a timed-out run.
++	// RunnerCrash is set when the failed command's log holds the gate's runner crash line: every failed tier run crashed its test runner on a signal with no failing test, in its run and its one rerun, so no test judged the code.
++	// The status is then StatusFailed with the command's own exit code.
++	RunnerCrash bool
++	// Detail carries the cause of a shell that could not start, names the tier and timeout of a timed-out run, or names the crashed runs of a runner crash.
+ 	Detail string
+ 	// Log is this run's own verify log, empty for a dirty or skipped result.
+ 	Log string
+@@ -302,6 +305,7 @@ func parsePorcelainZ(out string) []string {
+ // The write replaces the entry of command and drops every other command's entry naming a different tree, except site.BaseCommand's.
+ // A non-zero exit is StatusFailed with the exit code, and a shell that could not start is StatusFailed with exit code -1 and the cause in Detail.
+ // A failed command whose log holds a tier timeout line is also marked TimedOut, with the tier and its timeout in Detail and the command's own exit code.
++// One whose log holds no timeout line but the gate's runner crash line is marked RunnerCrash instead, with the crashed runs in Detail.
+ // A cancelled ctx is a returned error and writes no record.
+ // With a site.Hold, a covering pause holds Verify before its command and stops a running command at the pause's grace end, then Verify starts over from the dirty check after the resume.
+ // A held Verify removes its marker on every return, its dirty and skipped returns included.
+@@ -415,6 +419,9 @@ func runAndRecord(ctx context.Context, p Paths, site Site, command, tree, commit
+ 	if code != 0 {
+ 		failed := Result{Status: StatusFailed, ExitCode: code, Tree: tree, Log: logPath}
+ 		failed.TimedOut, failed.Detail = tierTimeoutDetail(logPath)
++		if !failed.TimedOut {
++			failed.RunnerCrash, failed.Detail = runnerCrashDetail(logPath)
++		}
+ 		return failed, false, nil
+ 	}
+ 
+@@ -497,6 +504,19 @@ func tierTimeoutDetail(logPath string) (bool, string) {
+ 	return true, detail
+ }
+ 
++// runnerCrashDetail reports whether the log at logPath holds the gate's runner crash line, and names the crashed runs when it does.
++func runnerCrashDetail(logPath string) (bool, string) {
++	data, err := os.ReadFile(logPath)
++	if err != nil {
++		return false, ""
++	}
++	runs, ok := gateslot.FindRunnerCrash(string(data))
++	if !ok {
++		return false, ""
++	}
++	return true, "gate test runner crashed with no failing test: " + runs
++}
++
+ // headTree returns HEAD's tree SHA in worktree.
+ func headTree(worktree string) (string, error) {
+ 	out, err := gitexec.Run([]string{"rev-parse", "HEAD^{tree}"}, worktree)
+diff --git a/internal/verifytree/verify_crash_integration_test.go b/internal/verifytree/verify_crash_integration_test.go
+new file mode 100644
+index 00000000..75a28f03
+--- /dev/null
++++ b/internal/verifytree/verify_crash_integration_test.go
+@@ -0,0 +1,57 @@
++// verify_crash_integration_test.go covers how Verify reads the gate's runner crash line and tier timeout line from a failed command's log, over real shell processes.
++
++package verifytree
++
++import (
++	"context"
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestVerify_ReadsTheRunnerCrashAndTimeoutLines(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	crashLine := gateslot.RunnerCrashLine("tier1 (exit 134, SIGABRT)")
++	timeoutLine := gateslot.TierTimeoutLine("tier2", 30*time.Minute)
++	tests := []struct {
++		name         string
++		logLines     []string
++		exit         string
++		wantCrash    bool
++		wantTimedOut bool
++		wantDetail   string
++	}{
++		{name: "a crash line", logLines: []string{crashLine}, exit: "134", wantCrash: true, wantDetail: "tier1 (exit 134, SIGABRT)"},
++		{name: "a timeout line beside a crash line is a timeout", logLines: []string{timeoutLine, crashLine}, exit: "1", wantTimedOut: true, wantDetail: "tier2"},
++		{name: "neither line", logLines: []string{"FAIL"}, exit: "3"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			logSource := filepath.Join(t.TempDir(), "gate.log")
++			if err := os.WriteFile(logSource, []byte(strings.Join(tt.logLines, "\n")+"\n"), 0o644); err != nil {
++				t.Fatal(err)
++			}
++			p := newScratch(t)
++
++			res, err := Verify(context.Background(), p, Site{Label: "webster verify"}, "cat '"+logSource+"'; exit "+tt.exit)
++			if err != nil {
++				t.Fatalf("Verify() error = %v", err)
++			}
++
++			if res.Status != StatusFailed || res.RunnerCrash != tt.wantCrash || res.TimedOut != tt.wantTimedOut {
++				t.Errorf("Verify() = status %q, runner crash %v, timed out %v; want %q, %v, %v", res.Status, res.RunnerCrash, res.TimedOut, StatusFailed, tt.wantCrash, tt.wantTimedOut)
++			}
++			if !strings.Contains(res.Detail, tt.wantDetail) || (tt.wantDetail == "" && res.Detail != "") {
++				t.Errorf("Verify() detail = %q; want it to name %q", res.Detail, tt.wantDetail)
++			}
++		})
++	}
++}
+diff --git a/internal/webstercli/verify.go b/internal/webstercli/verify.go
+index 2fc2bf43..8f73b945 100644
+--- a/internal/webstercli/verify.go
++++ b/internal/webstercli/verify.go
+@@ -2,6 +2,7 @@
+ // It renders the hub's `webster` gate key's call from the told gate config, then calls verifytree.Verify over the worktree with it, the same call the webster verify gate makes.
+ // A pass or skip is ok.
+ // A dirty tree or a failing command is an error envelope carrying a `findings` key, the shape the gate-parity test maps onto a stuck verdict.
++// A command whose test runner crashed in its run and its rerun is an error envelope too, naming the crashed runs and the way forward of running the verb again instead of a fix.
+ 
+ package webstercli
+ 
+@@ -35,7 +36,9 @@ names the same command exits 0 without running. A dirty tree is refused with
+ its paths under "findings", and a failing command with its exit code, log path
+ and failing identities under "findings"; both exit non-zero. A gate.yaml that
+ cannot be loaded, or a "webster" key naming an undeclared tier, is refused
+-naming "lym config gate".
++naming "lym config gate". A command whose test runner crashed in its run and
++its one rerun judged no code: it is refused naming the crashed runs under
++"findings", and the way forward is to run the verb again.
+ 
+ A pause covering the worktree holds the run until the resume: the verify waits
+ before its command, and stops a running command at the pause's grace end.
+@@ -80,6 +83,12 @@ func (c *websterCLI) runVerify(cmd *cobra.Command) int {
+ 			map[string]any{"findings": map[string]any{"dirty": res.Dirty}})
+ 	}
+ 
++	if res.RunnerCrash {
++		return output.ErrFields(out,
++			fmt.Sprintf("webster: verify: the verify command's test runner crashed in its run and its one rerun, so no test judged the code (%s); no change to the code mends it; way forward: run `lym webster verify` again, and when the runner crashes again, find the runtime's own fault in %s", res.Detail, res.Log),
++			map[string]any{"findings": map[string]any{"exit_code": res.ExitCode, "log": res.Log, "detail": res.Detail}})
++	}
++
+ 	findings := map[string]any{"exit_code": res.ExitCode, "log": res.Log}
+ 	if res.Detail != "" {
+ 		findings["detail"] = res.Detail
+diff --git a/internal/webstercli/verify_integration_test.go b/internal/webstercli/verify_integration_test.go
+index e5f29303..481b9673 100644
+--- a/internal/webstercli/verify_integration_test.go
++++ b/internal/webstercli/verify_integration_test.go
+@@ -171,6 +171,33 @@ func TestVerifyVerb_FailureExitsOneWithFindings(t *testing.T) {
+ 	}
+ }
+ 
++// TestVerifyVerb_RunnerCrashIsNoFailureToFix pins that a verify whose log holds the gate's runner crash line is refused naming the crashed run, with no failing identities to fix.
++// The tier prints the line itself and exits 1, which is no crash signal, so the gate does not wait out its rerun delay.
++func TestVerifyVerb_RunnerCrashIsNoFailureToFix(t *testing.T) {
++	tiergate.Require(t, 1)
++	crashLine := filepath.Join(t.TempDir(), "crash.txt")
++	if err := os.WriteFile(crashLine, []byte(gateslot.RunnerCrashLine("tier0 (exit 134, SIGABRT)")+"\n"), 0o644); err != nil {
++		t.Fatal(err)
++	}
++	fx := newVerifyFixture(t, "cat '"+crashLine+"'; exit 1")
++
++	code, env := fx.run(t)
++
++	if code != 1 || env.OK {
++		t.Fatalf("verify on a crashing runner = %d, envelope %+v; want 1 and not ok", code, env)
++	}
++	findings, ok := env.Raw["findings"].(map[string]any)
++	if !ok {
++		t.Fatalf("crash envelope has no findings object: %+v", env.Raw)
++	}
++	if detail, _ := findings["detail"].(string); !strings.Contains(detail, "SIGABRT") {
++		t.Errorf("findings detail = %q; want it to name SIGABRT", detail)
++	}
++	if _, hasFailures := findings["failures"]; hasFailures {
++		t.Errorf("findings = %+v; want no failures list for a crash", findings)
++	}
++}
++
+ func TestVerifyVerb_DirtyTreeExitsOneNamingPaths(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	fx := newVerifyFixture(t, "exit 0")
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index 2eac0b6c..cc500a17 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -611,6 +611,7 @@
+ // Bound: a re-prompt shuttle could not deliver is evaluated again, which counts one more failure, so the routing can go cold one attempt early.
+ // A run that outlives the verify timeout is never rerun, since a hang is not flakiness: it fails the gate at once,
+ // and the report names the timeout, the log path and the log tail, and says the step was not re-run.
++// A run whose every failed tier run crashed its test runner with no failing test judged no code: on the first run or the rerun it fails the gate at once and terminally, naming the crashed runs, with no fixer, no spent attempt, no pre-fix head and no report.
+ // A failed run that hung is not re-run either: classifyHang reads the log and exit code, and the first failure and the rerun's failure are both checked.
+ // The markers are checked in this order: the CPU watchdog line of `lym gate test`, go test's `panic: test timed out after`, the runtime's `SIGQUIT: quit` dump header and a log line starting `signal: `.
+ // Without a marker, an exit code of 128 or above, or -1 with no `Detail`, which `verifyrun` returns for a shell killed by a signal, is a hang.
+diff --git a/internal/websterengine/verifygate.go b/internal/websterengine/verifygate.go
+index f1f68481..a3a68c3a 100644
+--- a/internal/websterengine/verifygate.go
++++ b/internal/websterengine/verifygate.go
+@@ -27,6 +27,9 @@ const verifyGateName = "verify"
+ // verifyGateSite is the site label the gate's verify call writes to the running marker.
+ const verifyGateSite = "webster gate"
+ 
++// verifyGateCrashFindingsPrefix opens the findings of a verify whose test runner crashed, which verifyGateStuckReason reads to end the stuck reason in reentry alone.
++const verifyGateCrashFindingsPrefix = "The verify command's test runner crashed"
++
+ // VerifyGateNotes collects what a gate's evaluations observed that is not a failure: the identities that failed once and passed on rerun, and the commits made above the pre-fix head.
+ // Run applies it after the wait, so a flaky pass reaches the warnings, summary.md and a friction note, and the fixer's commits reach summary.md.
+ // It also holds the fixer the latest failure went to, which the re-prompt line names.
+@@ -198,6 +201,7 @@ type verifyGateSeams struct {
+ // it renders the hub's `webster` gate call over the whole tree from the told gate config, and returns the config's refusal, which names `lym config gate`, as its error;
+ // otherwise it runs that call through verifytree.Verify, told geom.VerifyHold on the first run and the rerun alike, reruns it once on a failure, and passes a flaky failure whose rerun passed.
+ // A run that timed out or hung, as classifyHang reads its log and exit code, is not re-run: it fails at once.
++// A run whose every failed tier run crashed its test runner with no failing test judged no code: it fails `Terminal` at once, on the first run or the rerun, naming the crashed runs, and no fixer gets it, no attempt is spent and no report is written.
+ // A failure that survives returns findings, and the first failure of any kind records HEAD as the pre-fix head.
+ // Each failure goes to a fixer, which the report, the findings and the re-prompt line name:
+ // the cold fixer for the failure that reaches attempts, for one after a fixer that added no commit above the pre-fix head, and for every failure after one that went cold;
+@@ -375,6 +379,14 @@ func newVerifyGate(reportsDir string, attempts int, notes *VerifyGateNotes, fixP
+ 		})
+ 	}
+ 
++	// failRunnerCrash fails the gate terminally for res, a verify whose every failed tier run crashed its test runner with no failing test:
++	// no change to the code mends it, so no fixer gets it, and it is never re-run.
++	failRunnerCrash := func(res verifytree.Result) shuttleengine.GateResult {
++		logger.Warn("websterengine: verify gate's test runner crashed, so no fixer runs", "attempt", attempt, "detail", res.Detail, "log", res.Log)
++		findings := fmt.Sprintf("%s in its run and its one rerun, so no test judged the code: %s. No change to the code mends it, so no fixer runs and the run stops here; output: %s.", verifyGateCrashFindingsPrefix, res.Detail, res.Log)
++		return shuttleengine.GateResult{Passed: false, Terminal: true, Findings: findings}
++	}
++
+ 	return func() (shuttleengine.GateResult, error) {
+ 		attempt++
+ 
+@@ -431,6 +443,9 @@ func newVerifyGate(reportsDir string, attempts int, notes *VerifyGateNotes, fixP
+ 		if res.TimedOut {
+ 			return failTimedOut(res)
+ 		}
++		if res.RunnerCrash {
++			return failRunnerCrash(res), nil
++		}
+ 
+ 		firstOutput, err := readOutput(res)
+ 		if err != nil {
+@@ -455,6 +470,9 @@ func newVerifyGate(reportsDir string, attempts int, notes *VerifyGateNotes, fixP
+ 		if res.TimedOut {
+ 			return failTimedOut(res)
+ 		}
++		if res.RunnerCrash {
++			return failRunnerCrash(res), nil
++		}
+ 		rerunOutput, err := readOutput(res)
+ 		if err != nil {
+ 			return shuttleengine.GateResult{}, err
+@@ -481,9 +499,13 @@ func readVerifyGateReport(path string) (VerifyGateReport, error) {
+ 
+ // verifyGateStuckReason is the stuck reason of a done run whose verify gate did not pass.
+ // A Terminal failure, the rejection of a fixer commit, names the gate's own reason and ends in the reset to the pre-fix head followed by reentry.
++// A Terminal runner crash names the gate's own reason and ends in reentry alone, since no fixer commit exists to reset.
+ // Otherwise it names the hang, the failing identities, the dirty paths or the verify timeout and its log the latest failed evaluation's report holds, and the attempts spent.
+ // After a CPU watchdog quit the reason also names the window and the way forward for a package that is CPU-bound but healthy, then reentry.
+ func verifyGateStuckReason(reportsDir string, gate *shuttleengine.GateOutcome, reentry string) string {
++	if strings.HasPrefix(gate.Reason, verifyGateCrashFindingsPrefix) {
++		return "verify gate failed: " + oneLine(gate.Reason) + "; " + wayForwardSteps(reentry)
++	}
+ 	if gate.Reason != "" {
+ 		return "verify gate failed: " + oneLine(gate.Reason) + "; " + wayForwardSteps("lym webster reset --to pre-fix", reentry)
+ 	}
+diff --git a/internal/websterengine/verifygate_test.go b/internal/websterengine/verifygate_test.go
+index 307229a9..09454a0f 100644
+--- a/internal/websterengine/verifygate_test.go
++++ b/internal/websterengine/verifygate_test.go
+@@ -287,6 +287,56 @@ func TestVerifyGate_HungVerifyFailsAtOnceWithoutRerun(t *testing.T) {
+ 	}
+ }
+ 
++// TestVerifyGate_RunnerCrashFailsTerminalWithoutFixer pins that a verify whose test runner crashed fails the gate terminally at once, on the first run or the rerun, naming the crashed runs, with no pre-fix head, no failure report and a stuck reason that ends in reentry alone.
++func TestVerifyGate_RunnerCrashFailsTerminalWithoutFixer(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const crashDetail = "gate test runner crashed with no failing test: tier1 (exit 134, SIGABRT)"
++	crashed := verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 134, RunnerCrash: true, Detail: crashDetail}
++	tests := []struct {
++		name          string
++		results       []verifytree.Result
++		wantVerifyRun int
++	}{
++		{name: "first run crashes", results: []verifytree.Result{crashed}, wantVerifyRun: 1},
++		{name: "rerun crashes", results: []verifytree.Result{failedResult(), crashed}, wantVerifyRun: 2},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			reports := t.TempDir()
++			f := &gateFake{outcome: outcomeDone, command: "go test ./...", head: "head0", results: tt.results, logs: []string{failingPackageLog}}
++			gate := newVerifyGate(reports, 3, &VerifyGateNotes{}, testFixPromptPath, f.seams())
++
++			res, err := gate()
++
++			if err != nil || res.Passed || !res.Terminal {
++				t.Fatalf("gate() = %+v, %v; want a terminal failure", res, err)
++			}
++			if f.verifyCalls != tt.wantVerifyRun {
++				t.Errorf("verify ran %d time(s); want %d", f.verifyCalls, tt.wantVerifyRun)
++			}
++			for _, want := range []string{crashDetail, "no fixer runs", f.issuedLogs[len(f.issuedLogs)-1]} {
++				if !strings.Contains(res.Findings, want) {
++					t.Errorf("findings = %q; want %q in it", res.Findings, want)
++				}
++			}
++			if len(f.recorded) != 0 {
++				t.Errorf("pre-fix heads recorded = %v; want none for a crash", f.recorded)
++			}
++			if _, err := os.Stat(VerifyGateReportPath(reports)); err == nil {
++				t.Error("a verify-gate report was written; want none, since no fixer reads it")
++			}
++			reason := verifyGateStuckReason(reports, &shuttleengine.GateOutcome{Reason: res.Findings}, "lym webster run")
++			if !strings.HasSuffix(reason, "way forward: lym webster run") || strings.Contains(reason, "reset --to pre-fix") || strings.Contains(reason, "\n") || !strings.Contains(reason, crashDetail) {
++				t.Errorf("verifyGateStuckReason() = %q; want one line naming the crash and ending in reentry alone", reason)
++			}
++		})
++	}
++}
++
+ //testtiming:keep pins the failure report's attempt, cap, failures, card hint, fix commits and log path, and the findings naming them; the run-level verify-gate test observes only the failure
+ func TestVerifyGate_FailedEvaluationWritesReport(t *testing.T) {
+ 	tiergate.Require(t, 0)
