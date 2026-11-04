@@ -2,7 +2,7 @@
 
 `locks-out-of-tracked-trees` · Task · bug, fabric, loom
 
-Depends on: [`worktree-create-serial`](design-worktree-create-serial.md), [`codex-trial-1-fixes`](design-codex-trial-1-fixes.md)
+Depends on: [`worktree-create-serial`](design-worktree-create-serial.md), [`codex-trial-1-fixes`](design-codex-trial-1-fixes.md), [`landing-watch-limits`](design-landing-watch-limits.md)
 
 ## Seen (operator and hub orch, 2026-11-04)
 
