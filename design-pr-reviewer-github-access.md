@@ -1,6 +1,6 @@
 # Let the pr-reviewer read and edit on GitHub
 
-`pr-reviewer-github-access` · Task · enhancement, landing, stencil · running · Worktree-Create
+`pr-reviewer-github-access` · Task · enhancement, landing, stencil · running · Record-Write
 
 Depends on: [`beam-pr-lifecycle`](design-beam-pr-lifecycle.md)
 
