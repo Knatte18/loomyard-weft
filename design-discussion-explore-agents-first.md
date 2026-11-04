@@ -1,6 +1,6 @@
 # Discussion writers start their exploration with explore subagents
 
-`discussion-explore-agents-first` · Note · enhancement, stencil, loom
+`discussion-explore-agents-first` · Task · enhancement, stencil, loom
 
 ## Seen (`docs/research/writer-lookups-measure-2026-11-04/report.md`)
 

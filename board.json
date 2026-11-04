@@ -725,10 +725,10 @@
     },
     {
       "id": 1107,
-      "handle": "E2",
+      "handle": "T2",
       "slug": "discussion-explore-agents-first",
       "title": "Discussion writers start their exploration with explore subagents",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "stencil",

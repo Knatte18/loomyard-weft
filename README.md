@@ -64,7 +64,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Owner `neve`
 
-### Tasks (5)
+### Tasks (6)
 
 Concrete and claimable; only a task can run.
 
@@ -79,11 +79,13 @@ Held by a run; its scope is locked until the run ends.
 | T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | Darn-Write | neve | 2h<br>57m | fabric, loom |
 | T11 | **Merge in from parent as a task of its own in a beam, before pawl lands it**<br>• A command on a beam files a merge-in-from-parent task, run as darn with its perch on | [`parent-merge-task`](design-parent-merge-task.md) | darn · light | Drift-Baseline | neve | 4d<br>1h | pawl, workspaces, reed, landing |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T2 | **Discussion writers start their exploration with explore subagents**<br>• The Discussion-Write stencil asks for one early batch of explore subagents, as the Plan writers already send | [`discussion-explore-agents-first`](design-discussion-explore-agents-first.md) | darn · speed |  | 2m<br>0m | stencil, loom |
 
 #### Draft (1)
 
@@ -93,7 +95,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T6 | 3d<br>1h | fabric |
 
-### Notes (27)
+### Notes (26)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -112,12 +114,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B2 |  | **A weft push holds the remote-refs lock over its whole transfer, so board claims queue behind it**<br>• Bolt and every weft share one remote-refs lock; a slow push stalls every claim and weft fetch for its whole send-pack | [`push-holds-remote-refs`](design-push-holds-remote-refs.md) | 1h<br>1h |  |
 | B3 |  | **A test leaves an empty /tmp/.git, which breaks go VCS stamping**<br>• An empty /tmp/.git appeared during a tier1 run and failed TestPrebuildLym; find the leaker and guard against writes outside t.TempDir | [`tmp-git-leak`](design-tmp-git-leak.md) | 58m<br>58m | testkit, gate |
 
-#### Enhancements (6)
+#### Enhancements (5)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 | H | **Drift compares cell by cell in code against a sealed expectation, with a separate judge**<br>• The Drift whole review design: code-side profile diff, structured sealed expectation, containment by code, a judge per changed cell | [`drift-rework`](design-drift-rework.md) | 6m<br>6m | drift, loom, darn, stencil, config |
-| E2 |  | **Discussion writers start their exploration with explore subagents**<br>• The Discussion-Write stencil asks for one early batch of explore subagents, as the Plan writers already send | [`discussion-explore-agents-first`](design-discussion-explore-agents-first.md) | 2m<br>0m | stencil, loom |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 8d<br>3d | batten, stencil, config |
 | E7 |  | **Each part agent plans and builds its own part, instead of joining the parts into one plan** | [`parts-plan-and-build`](design-parts-plan-and-build.md) | 1d<br>1d | loom |
 | E9 |  | **An interactive agent idle for a set time gets its session compacted**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 4d<br>23h | shed, shuttle, batten |
