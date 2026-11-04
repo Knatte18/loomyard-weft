@@ -1,6 +1,6 @@
 # A crashed test runner is treated as a failing gate and spends a fixer
 
-`gate-runner-crash-fixer` · Task · bug, gate, landing · draft
+`gate-runner-crash-fixer` · Task · bug, gate, landing
 
 Depends on: [`beam-pr-lifecycle`](design-beam-pr-lifecycle.md)
 
