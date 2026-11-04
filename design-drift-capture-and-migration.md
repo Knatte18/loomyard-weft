@@ -1,6 +1,6 @@
 # Drift capture fails by name with no baseline, and a reinterpreted drift.yaml is migrated
 
-`drift-capture-and-migration` · Task · bug, drift, loom, reconcile · running · PR-Review
+`drift-capture-and-migration` · Task · bug, drift, loom, reconcile · running · Finalize
 
 Two Drift faults around the baseline capture.
 
