@@ -262,8 +262,7 @@
         "drift-capture-and-migration",
         "pr-reviewer-github-access",
         "gate-runner-crash-fixer",
-        "dobby-zombie-children",
-        "drive-reports-untracked"
+        "dobby-zombie-children"
       ],
       "isolated": false,
       "brief": "An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics",
@@ -791,31 +790,6 @@
       "body": "## Seen (hub orch, 2026-11-03 ~20:50)\n\n`lym tender status` listed about 170 `batten` processes as `owned`, `orphan: false`, under slugs that landed hours or a day ago.\n`ps` shows every one as `[lym] \u003cdefunct\u003e`: zombies whose parent never reaped them.\n\nZombies per parent at that time:\n\n- 170 under the loomyard prime's `lym beam dobby` (up 25 h).\n- 31 under the loomyard `lym orch watch` (up 25 h).\n- 14 under the `cs` hub's `lym beam dobby` and 15 under its `lym orch watch` (up 5.5 h).\n\nSo both dobby and the orch watcher start child `lym` processes and never `Wait` on them, and the tender registry reads a zombie as a live owned process.\n\n## Idea\n\n- Dobby and `lym orch watch` reap every child they start (wait on it, or detach it so init reaps it).\n- The process registry treats a zombie (state `Z`) as gone, so `lym tender status` and `lym tender reap` stop listing landed runs as live.\n",
       "status": "running · Code-Burler-Fix",
       "created": "2026-11-03T19:45:16Z",
-      "revised": "2026-11-04T10:22:33Z",
-      "profile": "light"
-    },
-    {
-      "id": 1085,
-      "handle": "T13",
-      "slug": "drive-reports-untracked",
-      "title": "loom drive writes untracked files under _lym/; _lym is expected to be fully tracked",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "loom",
-        "shed",
-        "fabric"
-      ],
-      "issues": [
-        43
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #43](https://github.com/Knatte18/loomyard/issues/43).\n\n## Observed\n\nIn a hub's weft checkout, `git status` shows 1580 untracked files, all under `\u003cproject\u003e/_lym/shed/\u003cslug\u003e/`:\n\n- 1563 `drive-reports/drive-envelope-\u003ctimestamp\u003e.json` (one slug)\n- a few `drive-reports/` directories for other slugs\n- `tackler/` and `arbiter/` directories\n- 1 modified file: `\u003cslug\u003e/status.json`\n\nTimestamps of the first three drive envelopes: 08:38:00, 08:38:26 and 08:38:56, so a new file roughly every 30 seconds while `lym loom drive` runs.\nThe newest was written the next morning at 09:06.\nLater weft sync commits (20:44 and 21:19 the same day) did not include any of them.\nThere is no `.gitignore` entry for them, and 534 other files under `_lym/` are tracked.\n\n## Expected\n\nEverything under `_lym/` is tracked in git.\nFiles that must not be tracked live under `.lym/`.\n\n## Impact\n\n- The files are neither synced nor ignored, so `git status` is permanently dirty and the work would be lost if the checkout is lost (found while preparing an OS upgrade).\n- If `drive-reports` is meant to be transient, it belongs in `.lym/`.\n- The rate (one file per ~30 s) may itself be a bug; please check whether a report is written per poll rather than per drive.\n\n## Environment\n\nloomyard built from main, Ubuntu 24.04, `lym loom drive` and `lym orch watch` running.\n",
-      "status": "done",
-      "created": "2026-11-04T10:07:42Z",
       "revised": "2026-11-04T10:22:33Z",
       "profile": "light"
     },
