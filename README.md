@@ -54,7 +54,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | `draft` **Codex trial: pane, sends, creel by the pane path, and load**<br>• Six cases, three sessions at once and one darn run with a Codex reviewer seat | [`codex-trial-pane-load`](design-codex-trial-pane-load.md) | darn · docs |  | 19h<br>19h | codex, shuttle, creel |
+| T6 | `draft` **Codex trial: pane, sends, creel by the pane path, and load**<br>• Six cases, three sessions at once and one darn run with a Codex reviewer seat | [`codex-trial-pane-load`](design-codex-trial-pane-load.md) | darn · docs | T1 | 19h<br>0m | codex, shuttle, creel |
 
 ### Notes (0)
 
@@ -78,11 +78,13 @@ Held by a run; its scope is locked until the run ends.
 | T8 | **A landing notice is not lost when set late, when dobby was down, or when the orch is absent**<br>• Close the known limits landing-watch left: a late notify_on_land, a Land passed while dobby was down, and a dropped line when no orch is live | [`landing-watch-limits`](design-landing-watch-limits.md) | darn · light | Finalize | neve | 3d<br>1h | dobby, orch, creel, board |
 | T10 | **A run lands on a parent the hub may not push to by merging on the remote**<br>• Branch protection refuses a direct push to main, so no task or beam can land on such a repository | [`protected-parent-landing`](design-protected-parent-landing.md) | darn · solid | Code-Burler-Fix | neve | 21h<br>1h | landing, git |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Hidden-anchor shuttle runs start, and lym shuttle state reads Codex turns**<br>• A hidden-anchor run dies before its provider is ready; every Codex session reads unknown in lym shuttle state | [`shuttle-hidden-and-codex-state`](design-shuttle-hidden-and-codex-state.md) | darn · light |  | 43m<br>0m | shuttle, reed, codex |
 
 #### Layer A (2)
 
@@ -93,13 +95,12 @@ Waits only on Running, Ready or Draft entries.
 | T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | T8 | 1h<br>48m | fabric, loom |
 | T11 | **Merge in from parent as a task of its own in a beam, before pawl lands it**<br>• A command on a beam files a merge-in-from-parent task, run as darn with its perch on | [`parent-merge-task`](design-parent-merge-task.md) | darn · light | T10 | 4d<br>1h | pawl, workspaces, reed, landing |
 
-#### Draft (2)
+#### Draft (1)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Hidden-anchor shuttle runs start, and lym shuttle state reads Codex turns**<br>• A hidden-anchor run dies before its provider is ready; every Codex session reads unknown in lym shuttle state | [`shuttle-hidden-and-codex-state`](design-shuttle-hidden-and-codex-state.md) | darn · light |  | 43m<br>0m | shuttle, reed, codex |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T6 | 3d<br>1h | fabric |
 
 ### Notes (24)
