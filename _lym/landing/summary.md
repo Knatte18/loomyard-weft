@@ -1,46 +1,32 @@
 # Let the pr-reviewer read and edit on GitHub
 
-The PR-Review session ran under a publish shell guard that refused `git push` and every `gh` call, read-only ones included.
-So the pr-reviewer could not look up merged PRs, read a PR's comments or review threads, or carry a rewritten `_lym/landing/summary.md` onto the PR body, and the orch had to relay each lookup and body change by hand.
-This change narrows the guard to what has to stay with lym, and has PR-Review keep the PR's title and body in step with the change description.
+A pr-reviewer session ran under a publish deny that refused `git push` and every `gh` call, so it could not look up merged PRs, read a PR's comments or review threads, or change the PR body.
+The orch had to relay each lookup and apply each body change by hand.
 
-## The publish guard becomes an allowlist
+The pr-reviewer now reads the pull request on GitHub, comments on it, and changes its title and body by rewriting the change description.
+Pushing, approving, merging and closing stay with lym.
 
-The `publish` row in `internal/shellguard/rows.go` still refuses `git push`.
-For `gh` it now refuses every command and subcommand that the new `githubAllowed` table does not list.
-The table lists `gh pr view`, `list`, `diff`, `checks`, `status`, `edit`, `comment` and `review`, `gh run` and `gh issue` reads, `gh repo view`, `gh search`, `gh status` and `gh api`.
-Merges, closes, reopens, PR creation, `gh pr update-branch`, releases and `gh auth` stay refused.
-Some calls are refused even though their command is listed:
+Closes #45
 
-- `gh pr review` with `--approve` or `--request-changes`.
-- `gh pr edit` with `--base`.
-- `gh api` with a writing `-X`/`--method`, with `--input`, or with `mutation` anywhere in its command.
+## What changes
 
-ERE has no negative lookahead, so `notWordPattern` builds a trie over the listed words and generates a pattern that matches any word except them.
-A gh subcommand added later is therefore refused until the table lists it.
-The steer and notice text is generated from the same table, so the allowed calls are named in one place.
-`-R`/`--repo` between a command and its subcommand is read as a flag, so `gh pr -R o/r merge 3` is still refused.
-
-## PR-Review resyncs the title and body
-
-Each status poll in the PR-Review wait (`internal/landingshed/prreview.go`) re-parses the change description, but only when the poll finds the PR open with no continue flag or ending recorded.
-When the description yields different text than the PR was last set to, PR-Review calls `Edit` through the existing GitHub client.
-That text is the title, plus the body with the regression check and credit block appended.
-A description that does not parse, for example one caught mid-edit, logs one Warn per episode and is retried at the next poll.
-A failed edit is judged the same way as a failed poll.
-The entry's own title-and-body computation moved into `pullRequestText`, so the entry and the resync build identical text.
-
-The pr-reviewer stencil now names the `gh` calls it may make.
-It tells the agent to change the title or body by editing the change description, not with `gh pr edit --body`, which would drop the regression check and credit block.
+- `shellguard`: the publish deny still refuses `git push`, and now lets through a fixed set of `gh` calls: `gh api`, `gh pr checks|comment|diff|edit|list|review|view` and `gh run view`.
+  Within that set it still refuses `gh api` with a writing `-X`/`--method`, with `--input`, or with a GraphQL `mutation`; `gh pr review` with an approve or request-changes flag; and `gh pr edit` with a new base.
+  The allowlist lives in `githubAllowed`, and the pattern and the steer text are both built from it.
+- `landingshed` PR-Review: the wait re-reads the change description at each status poll of an open pull request, and sets the title and body again when the text differs from what was last set.
+  This is the issue's alternative, chosen over letting the reviewer run `gh pr edit` for the body, because the body must carry the regression check and the credit block after the description's own text, and `gh pr edit` would drop them.
+  A text that cannot be built, such as a description caught mid-edit, is logged once and retried at the next poll.
+  A failed edit follows the same transient or hard failure judgment as a failed status read.
+- The PR-Review stencil tells the reviewer which `gh` reads and comments it has, and to change the title or body by editing the description, never with `gh pr edit`.
+- `contracts/specs/loom-final-summary-spec.md` records the re-read.
 
 ## Design decisions
 
-- **Allowlist rather than a denylist of publishing calls.** gh grows subcommands that push, such as `pr update-branch`, so refusing unknown words fails safe.
-- **Both halves of the entry, not one.** The entry offered the resync as an alternative to `gh pr edit`. Opening `gh` alone would have made the agent assemble the regression check and credit block itself. The resync keeps the PR body exactly what Finalize's landing message uses.
-- **The sampler shares the switch.** `samplerengine` also sets `DenyPublish`, so a sampler session gets the same gh reads and comments. Nothing it does needs a stricter guard, and a second switch would add a row with no caller.
-- **`gh api` field flags pass.** A GraphQL query and a GET with query parameters both use `-f`, so the row cannot refuse an implied POST without refusing those. The row comment names this hole next to the existing guardrail list.
+- The deny is a guardrail, not a barrier, as before; the row's comment lists the known gaps.
+- A review ends the sync: it stops once the review has ended or the operator continued, so the reviewer's edit after that point is not pushed to the PR.
 
-## Testing
+## To check by hand
 
-- `TestRows_PatternsDenyAndAllow` gains deny rows for the refused calls above. It also gains allow rows for every listed read, comment and edit form, a `-R` flag, a pipe, `gh --version`, and a GraphQL query. The description-field case for `publish` was added too.
-- `TestPRReview_Wait` gains three rows: an edited description is set at the next poll and not again; a description that yields no text warns once over two polls and edits nothing; and no resync happens once the continue flag is recorded.
+- `shellguard`, quoted `gh` words: a command word or a method word in quotes is handled by the pattern, but the review left open that a quoted spelling might still get past the deny. Try a few quoted variants of `gh pr merge` and `gh api -X POST` against the row.
+- `landingshed` `syncText`: the path where the title and body edit fails is not covered by a test. Check it by hand, or add a case to `prreview_wait_test.go`.
+- No integration run against a real pull request was done; try one description edit in a live PR-Review and confirm the title and body update within a minute.
