@@ -1,70 +1,43 @@
-# Landing notice survives a late request, a down dobby and an absent orch
+# A landing notice survives a late request, a dobby outage, an absent orch
 
-`landing-watch` left three known limits on the landing notice dobby sends when a task with `notify_on_land` lands.
+`landing-watch` has dobby send the orch one creel line when a task with `notify_on_land` lands.
+Three known limits left that line lost: a request set after the run passed Land, a landing while dobby was down, and an orch that is not live to take the post.
 This change closes all three.
 
-## Behavior
+## What changes
 
-- **A request set after the run landed is answered at once.**
-  `lym board upsert` on a done entry stores `notify_on_land` and returns a notice saying the run already landed, and that the parent's dobby sends the line at its next tick.
-  The dobby then sends it, since the board write wakes its watch.
-  A bare `{"slug":…,"notify_on_land":true}` on a slug the board no longer holds is refused, naming `lym batten status <slug>`, instead of filing a new note.
-- **A landing dobby missed is still noticed.**
-  Board prune keeps a done entry while it carries `notify_on_land`, so the request outlives Land's prune.
-  Each tick, dobby takes up every done entry whose parent is its worktree and that carries the field with no memory of its own.
-  It sends `[dobby notice] <slug>: landed as <commit>` when the run is still listed past Land, and `landed, commit unknown` otherwise.
-  This covers a landing made while dobby was down, a fresh state record, and a request raised after the last tick that saw the run ahead of Land.
-- **A line the orch cannot take waits.**
-  Creel now accepts a post to an orch's fixed name of this hub, `<shortname>:orch` or `<shortname>:<slug>:orch`, whether or not a strand of that name is listed.
-  The mail stays unread in the pool and is delivered once the orch's strand is back.
-  On the dobby side, a decided line is kept in the state record as owed and posted at every tick until a post succeeds.
-  The old three-attempt cap is gone.
-  An owed line survives the run's listing ending, a restart and a re-exec.
-- Once the line goes out, dobby clears the entry's `notify_on_land`.
-  When no line is owed, as under `land_notice: off`, dobby clears it at once.
-  Either way the next prune can drop the landed entry.
+- **Late request.**
+  `lym board upsert` with `notify_on_land: true` on a done entry now prints a notice that the run already landed and that its parent's dobby sends the line at its next tick.
+  A payload that only asks for a notice (slug and `notify_on_land`) on a slug the board no longer holds is refused, since Land already pruned it and the upsert would file a new entry for a landed run.
+- **Landing missed while dobby was down.**
+  `lym board prune` and Land's prune keep a done entry that still carries `notify_on_land`.
+  Dobby reads the board's done state as well as its own state record: a done entry of its worktree, owned by this machine, that carries the request and has no memory gets its landed line at the first tick that reads it, naming the commit when its run is listed past Land.
+  Dobby clears the field once the line went out, which lets the next prune drop the entry.
+- **Absent orch.**
+  The three-attempt cap is gone.
+  Dobby keeps an owed line and an owed clear in its state record and retries at every tick until they succeed, across a restart and a re-exec; each failing post is logged once per episode.
+  Creel now accepts mail to the fixed name of an orch of this hub (`<shortname>:orch`, `<shortname>:<slug>:orch`) whether or not a strand of that name is listed, and holds it unread until the strand is back.
+  The sweep no longer returns unread program mail for such an orch to a sender that has no mailbox.
 
 ## Design decisions
 
-- **The board holds the request across the landing.**
-  The decision record asks for "board done state, not only its own state record".
-  Land prunes every done entry, so the request was lost with the entry.
-  Keeping a flagged done entry until dobby clears it makes the board the durable record, and dobby needs no history of what it saw.
-- **One memory, two sources.**
-  `LandNoticeState` gains `Line` (the owed notice) and `ClearOwed`, and loses `Attempts`.
-  A run seen ahead of Land is decided at Land as before, counting a request read that tick as well as the remembered one.
-  A done entry with no memory is decided by the new board step.
-  A slug with a memory is never taken up by the board step, so a run gets one line, not two.
-- **`off` now clears the request.**
-  Before, `off` left the request on an entry that Land then pruned anyway.
-  Now prune keeps flagged done entries, so leaving the field would keep the entry on the board forever.
-  The `OffSendsNothingAndClearsTheRequest` row pins the new behavior.
-- **Creel's rule is narrow.**
-  Only this hub's plain orch names pass when unlisted: an orch thread (`orch-N`), another hub's shortname and any other role are still refused as unknown receivers.
-  The orch name comes from `orchroute.StrandOf`, which already answers the fixed name when reed no longer holds the strand.
-  A prime orch that was never recorded still posts nothing; dobby keeps that line owed and retries it.
-- `battencli.DobbyTasks` now reads the parent worktree of every entry carrying `notify_on_land`, so a done entry reaches only its parent's dobby.
-  `boardengine` exports `StatusDone` and `IsDoneStatus` for the dobby and CLI checks.
+- A done board entry is read as landed whatever set its status, so an entry marked done by hand with `notify_on_land` gets a landed line for a landing it never made.
+  This is documented in `dobbyengine/doc.go`.
+- Under `land_notice: off` the line is skipped, but the request is still cleared, so prune does not keep the entry forever.
+- A beam entry's `Parent` and owner are now read for any entry carrying `notify_on_land`, not only for a released task.
+  When they do not read, a released task still fails the whole read; a flagged entry only waits, logged once per episode, so it never blocks other starts.
+- A run first seen past its Land row whose entry asks nothing still gets no line, so `land_notice: all` does not notice a landing dobby did not see ahead of Land.
+- The orch-role contract, `docs/overview.md`, the board skill and the `prune` help describe the kept entry.
 
-## Tests
+## End to end
 
-- `internal/dobbyengine/landnotice_test.go`, tier 0: new rows cover done entries with and without a listed run, under `off`, under another worktree, a request raised as the run lands (one line), and owed lines posted until they succeed and after the run leaves the listing.
-- `internal/creelengine/verbs_test.go`, tier 0: a post to an unlisted orch of the hub is stored and read by the strand once it is listed; another hub's orch and an orch thread are still refused.
-- `internal/boardengine/board_test.go`, tier 0: prune keeps a flagged done entry and drops it once cleared.
-- `internal/boardcli` `TestCLI`, tier 1: the upsert notice on a done entry, prune keeping it, and the refusal on a pruned slug.
-- `internal/battencli/dobbyreading_test.go`, tier 0: a done entry carrying the field gets its parent read.
+The notice is shown end to end in a test, not by hand against a live orch.
+`internal/dobbyengine/landnotice_creel_test.go` runs dobby's notice against a real creel store, scheduler and sweep, with the orch absent and then back.
+No live-orch run by hand was made.
 
-## End to end against a live orch
+## To check by hand
 
-The record asks for the notice to be shown once against a live orch, in a test or by hand.
-That has not been done.
-The tests above drive dobby over fakes and creel over its fake delivery, not a live orch.
-A live run needs this branch's binary deployed, because the creel daemon and dobby both change.
-
-To check by hand after deploy:
-
-1. Stop the prime orch with `lym orch stop`.
-2. Set `notify_on_land` on a running task and let it land.
-3. Confirm with `lym creel log` that the `[dobby notice] <slug>: landed as …` mail is stored for `<shortname>:orch`.
-4. Start the orch and confirm the line arrives and the entry's field clears.
-5. Run `lym board prune --apply` and confirm it drops the entry.
+- `internal/dobbyengine/landnotice.go`, `takeDoneEntries` and `internal/battencli/dobbyreads.go`: a done entry's notice honours the owner machine and parent worktree; a flagged entry whose parent or owner is unreadable waits without failing the read.
+- `internal/dobbyengine/landnotice.go`, `rememberRuns` and `settleLandNotices`: the rows for a failed clear, an unreadable `land_notice` mode and a restart with an owed line each keep the memory and retry at the next tick.
+- `internal/dobbyengine/landnotice_creel_test.go`: the test stands in for a live orch; run the notice once against a live orch if that is wanted.
+- `internal/creelengine/sweep.go`, `waitsForHubOrch`, and `internal/creelengine/pool.go`, `isHubOrchName`: unread program mail for an unlisted hub orch stays under the orch's name and is never returned, and a mistyped orch slug is refused only when it is no hub orch name.
