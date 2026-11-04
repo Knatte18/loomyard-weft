@@ -1,0 +1,858 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index 7b4ed484..1b0e37cc 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -76,6 +76,7 @@
+ 
+ - `PATTERN-spawn-observability` — Starting OS process from `lym`: log the spawn via `internal/logger`; logging in a loop or poll follows its Level policy. — [background](pattern/PATTERN-spawn-observability.md)
+ - `PATTERN-run-process-owner` — A run's processes: registered in `internal/runproc`, ended only via `runproc`'s `End`, `EndSparing` or `EndRole`. — [background](pattern/PATTERN-run-process-owner.md)
++- `PATTERN-reap-children` — Starting a child process: its starter waits on it, by `cmd.Wait` or `proc.Reap`, never only releasing it; a process that re-execs itself calls `proc.ReapInheritedChildren` before it starts a child.
+ - `PATTERN-daemon-wakeups` — Unbounded wait wakes at most once a second and backs off while idle. (test) — [background](pattern/PATTERN-daemon-wakeups.md)
+ - `PATTERN-keep-warm-cap` — Bounding a wait an agent blocks on: the cap from `shuttleengines`' one keep-warm resolver for the caller's role, never a constant bar its fallback; a long gate run goes on in a detached runner the same command joins.
+ 
+diff --git a/internal/adoptcli/deps.go b/internal/adoptcli/deps.go
+index 3dd32f4e..5449d468 100644
+--- a/internal/adoptcli/deps.go
++++ b/internal/adoptcli/deps.go
+@@ -219,7 +219,7 @@ func suiteArgs(subject string) []string {
+ }
+ 
+ // startSuite starts the adopt check of subject detached in dir, with its stdout and stderr appended to the file at outPath, and returns its pid.
+-// The check is started and never waited for, so the adopt returns while it runs; the file holds a losing check's envelope and a panic, and the gate's own output goes to the suite log the check truncates.
++// The check is reaped in the background through proc.Reap rather than waited for, so the adopt returns while it runs; the file holds a losing check's envelope and a panic, and the gate's own output goes to the suite log the check truncates.
+ // It starts nothing and returns an error in a test binary, where forking the running binary would re-run the test binary.
+ func startSuite(dir, outPath, subject string) (int, error) {
+ 	if testing.Testing() {
+@@ -248,6 +248,7 @@ func startSuite(dir, outPath, subject string) (int, error) {
+ 		logger.Warn("adoptcli: the adopt check did not start", "exe", executable, "args", args, "dir", dir, "error", err)
+ 		return 0, err
+ 	}
++	proc.Reap(command)
+ 	pid := command.Process.Pid
+ 	logger.Info("adoptcli: spawned the adopt check", "exe", executable, "args", args, "dir", dir, "pid", pid, "out", outPath)
+ 	return pid, nil
+diff --git a/internal/battencli/cli.go b/internal/battencli/cli.go
+index 0f3b5bde..f12cf2e9 100644
+--- a/internal/battencli/cli.go
++++ b/internal/battencli/cli.go
+@@ -501,7 +501,7 @@ func (c *battenCLI) startFirstPass(cmd *cobra.Command) error {
+ }
+ 
+ // spawnDetachedPass starts `<lym> args...` as a detached process in its own process group with dir as its working directory, and returns its pid.
+-// The child's output is discarded, and the child is started but never waited for.
++// The child's output is discarded, and the child is reaped in the background while this process lives.
+ // It returns an error, starting nothing, in a test binary, where forking the running binary would re-run the test suite.
+ func spawnDetachedPass(dir string, args []string) (int, error) {
+ 	if testing.Testing() {
+@@ -519,6 +519,7 @@ func spawnDetachedPass(dir string, args []string) (int, error) {
+ 		return 0, err
+ 	}
+ 	logger.Info("battencli: spawned pass", "exe", executable, "args", args, "dir", dir, "pid", cmd.Process.Pid)
++	proc.Reap(cmd)
+ 	return cmd.Process.Pid, nil
+ }
+ 
+diff --git a/internal/beamcli/cli.go b/internal/beamcli/cli.go
+index bbbfd559..4245e4e2 100644
+--- a/internal/beamcli/cli.go
++++ b/internal/beamcli/cli.go
+@@ -24,6 +24,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/orchcli"
+ 	"github.com/Knatte18/loomyard/internal/output"
++	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/spf13/cobra"
+ )
+ 
+@@ -383,16 +384,27 @@ machine owns the beam. It is launched by "lym beam start", never by hand.`,
+ // runDobby places the worktree at root, registers this process as its dobby and runs it until ctx ends, and prints the outcome.
+ // A worktree dobby cannot be placed is refused before anything is registered or locked, and the registration waits for the lock, so a dobby that finds another one holding it ends the call with nothing registered.
+ func runDobby(ctx context.Context, out io.Writer, root string) int {
+-	return runDobbyWith(ctx, out, root, hubDobbyDeps, orchcli.NotifyFromScoped)
++	return runDobbyWith(ctx, out, root, hubDobbyDeps, orchcli.NotifyFromScoped, reapInheritedChildren)
+ }
+ 
+-// runDobbyWith is runDobby over the seams that wire the dobby over the hub and post a notice to the nearest live orch.
++// reapInheritedChildren waits on the batten passes a dobby re-exec'd onto a new binary keeps from its old image, with nothing left waiting on them.
++func reapInheritedChildren() {
++	if pids, err := proc.ReapInheritedChildren(); err != nil {
++		logger.Warn("beamcli: the dobby's inherited children are not reaped", "error", err)
++	} else if len(pids) > 0 {
++		logger.Info("beamcli: the dobby reaps the children it inherited", "pids", pids)
++	}
++}
++
++// runDobbyWith is runDobby over the seams that wire the dobby over the hub, post a notice to the nearest live orch and reap the children it inherited.
++// The reap runs once the worktree is placed and before the dobby starts anything, so a refused start waits on no child of the process.
+ // Each exit it takes before dobbyengine.Run leaves a line in the dobby's log, and one after a re-exec also a notice.
+ // Where selfexec execs, it moves the process's standard output and error onto the beam's `dobby.out`, and rotates that file once it holds the lock.
+ func runDobbyWith(
+ 	ctx context.Context, out io.Writer, root string,
+ 	wire func(prime *lymcwd.Location, geom dobbyengine.Geometry) (dobbyengine.Deps, error),
+ 	notify func(from *lymcwd.Location, slug, program, line string) (bool, error),
++	reap func(),
+ ) int {
+ 	location, prime, geom, err := placeDobby(root)
+ 	if err != nil {
+@@ -401,6 +413,7 @@ func runDobbyWith(
+ 		}
+ 		return output.Err(out, err.Error())
+ 	}
++	reap()
+ 	if selfexecs() {
+ 		if err := reopenStdio(geom.OutPath); err != nil {
+ 			logger.Warn("beamcli: the dobby's output was not moved onto its output file", "path", geom.OutPath, "error", err)
+diff --git a/internal/beamcli/dobbydeps.go b/internal/beamcli/dobbydeps.go
+index 7de974c5..827bf0d2 100644
+--- a/internal/beamcli/dobbydeps.go
++++ b/internal/beamcli/dobbydeps.go
+@@ -360,7 +360,7 @@ func liftOwnerPause(prime *lymcwd.Location, recordPath, slug string) error {
+ 	return nil
+ }
+ 
+-// spawnPass starts `<lym> batten run <slug>` for geom as its own process, in the prime's anchor, and delivers its exit once.
++// spawnPass starts `<lym> batten run <slug>` for geom as its own process, in the prime's anchor, and delivers its exit once, which reaps it.
+ // The pass registers itself in the run-process registry as the run's batten, so dobby registers nothing.
+ func spawnPass(geom dobbyengine.Geometry, slug string, continuePass, noReopen bool) (<-chan dobbyengine.PassExit, error) {
+ 	if testing.Testing() {
+diff --git a/internal/beamcli/dobbytrace_integration_test.go b/internal/beamcli/dobbytrace_integration_test.go
+index b1fee48c..6a7dd2ea 100644
+--- a/internal/beamcli/dobbytrace_integration_test.go
++++ b/internal/beamcli/dobbytrace_integration_test.go
+@@ -50,13 +50,15 @@ func TestRunDobbyWith_TracesEachExitBeforeRun(t *testing.T) {
+ 		notices = append(notices, postedNotice{from.WorktreeName, slug, program, line})
+ 		return true, nil
+ 	}
++	reaps, reapsAtWiring := 0, -1
+ 	failWiring := func(*lymcwd.Location, dobbyengine.Geometry) (dobbyengine.Deps, error) {
++		reapsAtWiring = reaps
+ 		return dobbyengine.Deps{}, errors.New("hub unreadable")
+ 	}
+ 	run := func(root string, wire func(*lymcwd.Location, dobbyengine.Geometry) (dobbyengine.Deps, error)) string {
+ 		t.Helper()
+ 		var out bytes.Buffer
+-		runDobbyWith(context.Background(), &out, root, wire, notify)
++		runDobbyWith(context.Background(), &out, root, wire, notify, func() { reaps++ })
+ 		return out.String()
+ 	}
+ 	readLog := func(path string) string {
+@@ -82,6 +84,9 @@ func TestRunDobbyWith_TracesEachExitBeforeRun(t *testing.T) {
+ 	if got := readLog(primeGeom.LogPath); !strings.Contains(got, startFailed) || len(notices) != 0 {
+ 		t.Fatalf("prime log, notices after a failed wiring with no state record = %q, %v; want the start-failed line and no notice", got, notices)
+ 	}
++	if reaps != 1 || reapsAtWiring != 1 {
++		t.Fatalf("reaps after a placed worktree, reaps when wiring ran = %d, %d; want the one reap done before the wiring", reaps, reapsAtWiring)
++	}
+ 
+ 	recordThisPid(primeGeom.StatePath)
+ 	envelope.RequireErr(t, run(h.PrimeWorktree(), failWiring), "hub unreadable")
+@@ -105,6 +110,9 @@ func TestRunDobbyWith_TracesEachExitBeforeRun(t *testing.T) {
+ 	if len(notices) != 2 {
+ 		t.Fatalf("notices after the refusal = %v; want a second", notices)
+ 	}
++	if reaps != 2 {
++		t.Errorf("reaps after a refused placement = %d; want still 2, the refused start reaping nothing", reaps)
++	}
+ 	if n := notices[1]; n.worktree != "task1" || n.slug != "task1" || !strings.Contains(n.line, "is neither the prime nor a beam") || !strings.Contains(n.line, wayForward) {
+ 		t.Errorf("notice = %+v; want task1's, naming the refusal and %q", n, wayForward)
+ 	}
+diff --git a/internal/beamcli/doc.go b/internal/beamcli/doc.go
+index 2f4c12f3..a7e8bd1f 100644
+--- a/internal/beamcli/doc.go
++++ b/internal/beamcli/doc.go
+@@ -107,6 +107,7 @@
+ // # dobby
+ //
+ // `dobby <worktree root>` is hidden and internal: `dobbyengine.SpawnDetached` launches it, with the hub root as its working directory.
++// Before it starts anything it reaps every child it already has through `proc.ReapInheritedChildren`: a dobby re-exec'd onto a new binary keeps the batten passes its old image started, with no wait left on them.
+ // It resolves the prime and runs `dobbyengine.Run` over `hubDobbyDeps` under a SIGINT/SIGTERM context.
+ // `registerDobby` runs only once `Run` holds the lock, through `Deps.Locked`: it writes `runproc.SelfRecord(runproc.RoleDobby)` under the beam's slug, or `runproc.HubOwner` for the prime, so the pair teardown of a landed beam ends that beam's dobby.
+ // It prints `already_running` when the lock stays held past the lock wait, with nothing registered.
+diff --git a/internal/boardengine/spawn.go b/internal/boardengine/spawn.go
+index c58e9ead..73625f5f 100644
+--- a/internal/boardengine/spawn.go
++++ b/internal/boardengine/spawn.go
+@@ -50,10 +50,11 @@ func spawnSync(boardPath string) error {
+ 	proc.Detach(cmd)
+ 	// Leave stdin/stdout/stderr nil so no handles are inherited from the parent.
+ 	logger.Info("boardengine: spawning detached board sync", "exe", exe, "boardPath", abs)
+-	if err := cmd.Start(); err != nil { // intentionally not Wait()ed
++	if err := cmd.Start(); err != nil {
+ 		logger.Warn("boardengine: board sync spawn failed", "exe", exe, "boardPath", abs, "cause", err)
+ 		return err
+ 	}
++	proc.Reap(cmd)
+ 	pid := cmd.Process.Pid
+ 	record := runproc.ChildRecord(pid, runproc.RoleSync, cmd.Args)
+ 	if err := runproc.Register(fabricengine.RunProcDir(filepath.Dir(abs)), runproc.HubOwner, record); err != nil {
+diff --git a/internal/dobbyengine/start.go b/internal/dobbyengine/start.go
+index 6fb105ea..2774b2bb 100644
+--- a/internal/dobbyengine/start.go
++++ b/internal/dobbyengine/start.go
+@@ -258,13 +258,19 @@ func Live(geom Geometry) (bool, error) {
+ }
+ 
+ // SpawnDetached starts `<lym> beam dobby <worktree root>` for geom as a detached process with the hub root as its working directory.
+-// The child's output is appended to the file at geom.OutPath, and the child is started but never waited for.
++// The child's output is appended to the file at geom.OutPath, and the child is reaped in the background while this process lives.
+ // It returns ErrSpawnUnderTest, starting nothing, in a test binary.
+ func SpawnDetached(geom Geometry) error {
+ 	if testing.Testing() {
+ 		return ErrSpawnUnderTest
+ 	}
+-	return spawnDetached(geom, (*exec.Cmd).Start)
++	return spawnDetached(geom, func(cmd *exec.Cmd) error {
++		if err := cmd.Start(); err != nil {
++			return err
++		}
++		proc.Reap(cmd)
++		return nil
++	})
+ }
+ 
+ // spawnDetached rotates the raw-output file where the platform needs it, opens geom.OutPath for append, builds the dobby command with stdout and stderr on that file and starts it through start.
+diff --git a/internal/fabricengine/spawn.go b/internal/fabricengine/spawn.go
+index 04fef8df..a60fc4b1 100644
+--- a/internal/fabricengine/spawn.go
++++ b/internal/fabricengine/spawn.go
+@@ -63,7 +63,7 @@ type SpawnResult struct {
+ // SpawnDetachedPush launches a detached, windowless child that pushes the sides req carries.
+ // Returns nil immediately, forking no child, when FABRIC_SKIP_GIT or FABRIC_SKIP_PUSH is set or when both paths are empty — there is nothing to push.
+ // Returns ErrSpawnUnderTest, forking no child, in a test binary.
+-// The child is started but never Waited,
++// The child is reaped in the background through proc.Reap rather than waited for,
+ // and its stdin/stdout/stderr are left nil so no handle is inherited from the parent.
+ // The started child is registered in the hub's owner record.
+ func SpawnDetachedPush(req PushSpawn) error {
+@@ -97,12 +97,13 @@ func startDetachedPush(exe string, req PushSpawn) error {
+ 		logger.Warn("fabricengine: spawn detached push failed", "exe", exe, "args", args, "dir", dir, "error", err)
+ 		return err
+ 	}
++	proc.Reap(cmd)
+ 	pid := cmd.Process.Pid
+ 	logger.Info("fabricengine: spawned detached push", "exe", exe, "args", args, "dir", dir, "pid", pid)
+ 	if err := runproc.Register(RunProcDir(filepath.Dir(dir)), owner, runproc.ChildRecord(pid, runproc.RolePush, args)); err != nil {
+ 		logger.Warn("fabricengine: detached push not registered", "owner", owner, "pid", pid, "error", err)
+ 	}
+-	return nil // intentionally not Wait()ed
++	return nil
+ }
+ 
+ // pushSpawnCommand returns the arguments, working directory and owner of the child req describes.
+diff --git a/internal/fronttask/hub.go b/internal/fronttask/hub.go
+index 47ad9846..5efe08d1 100644
+--- a/internal/fronttask/hub.go
++++ b/internal/fronttask/hub.go
+@@ -109,7 +109,7 @@ func HubSettleDeps(prime *lymcwd.Location, beam string) (SettleDeps, error) {
+ 	}, nil
+ }
+ 
+-// startDetached starts command detached, releases its handle and returns its pid.
++// startDetached starts command detached, reaps it in the background and returns its pid.
+ // It starts nothing and returns an error in a test binary, where forking the running binary would re-run the test binary.
+ func startDetached(command *exec.Cmd) (int, error) {
+ 	if testing.Testing() {
+@@ -119,9 +119,8 @@ func startDetached(command *exec.Cmd) (int, error) {
+ 	if err := command.Start(); err != nil {
+ 		return 0, err
+ 	}
+-	pid := command.Process.Pid
+-	// The dobby that started it never waits for it, so the handle is released to leave no zombie.
+-	return pid, command.Process.Release()
++	proc.Reap(command)
++	return command.Process.Pid, nil
+ }
+ 
+ // startAction builds the lym command of the action table's row key for subject, to run in the prime's anchor with its output appended to a file in the front-task directory, and starts it through start.
+diff --git a/internal/orchcli/cli.go b/internal/orchcli/cli.go
+index ddf676c0..5d66e356 100644
+--- a/internal/orchcli/cli.go
++++ b/internal/orchcli/cli.go
+@@ -118,6 +118,8 @@ type orchCLI struct {
+ 	dobbyLive func() (bool, error)
+ 	// endDobby ends this worktree's dobby and the processes below it, and no other process of the beam.
+ 	endDobby func() error
++	// reapInherited waits on the children a re-exec'd watcher inherited, which `watch` calls before it starts anything.
++	reapInherited func()
+ }
+ 
+ // Command returns the cobra command tree for the orch module.
+@@ -237,6 +239,7 @@ func wireCLI(c *orchCLI, location *lymcwd.Location) error {
+ 	c.spawnWatcher = c.spawnWatcherProcess
+ 	c.startLockWait = stopStartLockWait
+ 	c.sleep = time.Sleep
++	c.reapInherited = reapInheritedChildren
+ 	c.indexRunner = runHelpIndex
+ 	c.executable = os.Executable
+ 	c.currentBuild = statuspane.CurrentBuild
+diff --git a/internal/orchcli/cli_test.go b/internal/orchcli/cli_test.go
+index cff167db..f278ba1b 100644
+--- a/internal/orchcli/cli_test.go
++++ b/internal/orchcli/cli_test.go
+@@ -115,6 +115,7 @@ func newTestCLI(t *testing.T, fake *fakeStrands) *orchCLI {
+ 		indexRunner:     func(string) (string, error) { return fakeRunnerIndex, nil },
+ 		newCreel:        func() (orchengine.Creel, error) { return &fakeCreel{}, nil },
+ 		spawnWatcher:    func() error { return nil },
++		reapInherited:   func() {},
+ 		// A short wait keeps a stop that finds start.lock held from waiting out the production minute.
+ 		startLockWait: 100 * time.Millisecond,
+ 		paths: orchengine.Paths{
+diff --git a/internal/orchcli/watch.go b/internal/orchcli/watch.go
+index 794af898..66af3958 100644
+--- a/internal/orchcli/watch.go
++++ b/internal/orchcli/watch.go
+@@ -14,11 +14,13 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
++	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/machinename"
+ 	"github.com/Knatte18/loomyard/internal/orchengine"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/parentlock"
++	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/selfexec"
+ 	"github.com/spf13/cobra"
+ )
+@@ -77,6 +79,15 @@ func beamOwnerElsewhere(location *lymcwd.Location) (owner string, elsewhere bool
+ 	return owner, boardengine.OwnedElsewhere(owner, here), nil
+ }
+ 
++// reapInheritedChildren waits on the children a watcher re-exec'd onto a new binary keeps from its old image, with nothing left waiting on them.
++func reapInheritedChildren() {
++	if pids, err := proc.ReapInheritedChildren(); err != nil {
++		logger.Warn("orch: the watcher's inherited children are not reaped", "error", err)
++	} else if len(pids) > 0 {
++		logger.Info("orch: the watcher reaps the children it inherited", "pids", pids)
++	}
++}
++
+ // watchCmd builds the `watch` subcommand, hidden because start launches it and an operator never needs to.
+ func (c *orchCLI) watchCmd() *cobra.Command {
+ 	return &cobra.Command{
+@@ -93,6 +104,7 @@ A second watcher finding the first alive reports already_running and exits.`,
+ 				return nil
+ 			}
+ 			out := cmd.OutOrStdout()
++			c.reapInherited()
+ 
+ 			st, err := orchengine.LoadState(c.paths)
+ 			if err != nil {
+diff --git a/internal/orchcli/watch_test.go b/internal/orchcli/watch_test.go
+index 446239e0..663e219b 100644
+--- a/internal/orchcli/watch_test.go
++++ b/internal/orchcli/watch_test.go
+@@ -115,6 +115,8 @@ func TestWatch(t *testing.T) {
+ 			t.Parallel()
+ 
+ 			c := newTestCLI(t, &fakeStrands{})
++			reaps := 0
++			c.reapInherited = func() { reaps++ }
+ 			// The watch verb tells the watcher the prime's pause record, which needs a prime worktree to tell.
+ 			c.location = &lymcwd.Location{HubPath: t.TempDir(), WorktreeName: "prime", AnchorRel: "."}
+ 			if err := os.MkdirAll(filepath.Join(c.location.WorktreePath(), ".git"), 0o755); err != nil {
+@@ -138,6 +140,9 @@ func TestWatch(t *testing.T) {
+ 			if tc.wantAlreadyRunning && env["already_running"] != true {
+ 				t.Errorf("watch = %v; want already_running", env)
+ 			}
++			if reaps != 1 {
++				t.Errorf("watch reaped inherited children %d times; want once, before it reads its state", reaps)
++			}
+ 		})
+ 	}
+ }
+diff --git a/internal/orchengine/doc.go b/internal/orchengine/doc.go
+index a10162ca..5b39da81 100644
+--- a/internal/orchengine/doc.go
++++ b/internal/orchengine/doc.go
+@@ -446,6 +446,7 @@
+ // A watcher never told a pause record reads no entry, and a state or record read error waits for the next tick.
+ //
+ // The exec keeps the argv and environment, and the watch lock does not survive it, since the lock file is opened close-on-exec.
++// The exec keeps the watcher's children too, but not the goroutines that waited on them, so `lym orch watch` reaps every child it has through `proc.ReapInheritedChildren` before it starts anything.
+ // The new image takes the lock again through the acquire retry.
+ // In that gap a start may spawn a second watcher; both contend for the one lock and the loser exits as already running, so exactly one watcher remains.
+ // A refresh, distill, hub pause or revive in the gap reports no live watcher, as it does with none.
+diff --git a/internal/proc/doc.go b/internal/proc/doc.go
+index e49062ed..e40d083a 100644
+--- a/internal/proc/doc.go
++++ b/internal/proc/doc.go
+@@ -12,6 +12,10 @@
+ // IsAlive reports whether a pid answers a signal, which a zombie still does;
+ // IsRunning reports whether it is alive and not a zombie, so a process that exited but was not yet reaped counts as gone.
+ //
++// Reap waits on a started command in the background, so a detached child its starter never waits on leaves no zombie.
++// ReapInheritedChildren waits in the background on every child the calling process has:
++// a process that re-execs itself keeps its children but not the goroutines that waited on them, so the new image calls it before it starts a child of its own.
++//
+ // TreeCPU samples the user plus system CPU time of a process and each of its descendants.
+ // IsAncestor reports whether a pid is one of the calling process's ancestors.
+ // ListProcesses lists every process with its start time, exe and cwd links and command line.
+diff --git a/internal/proc/proc_linux_test.go b/internal/proc/proc_linux_test.go
+index e118d464..e0fbc55c 100644
+--- a/internal/proc/proc_linux_test.go
++++ b/internal/proc/proc_linux_test.go
+@@ -229,6 +229,62 @@ func TestProcessTreeReads(t *testing.T) {
+ 	}
+ }
+ 
++// awaitReaped polls until pid no longer answers a signal, which an exited child does only once its parent has waited on it.
++func awaitReaped(t *testing.T, pid int) {
++	t.Helper()
++	for deadline := time.Now().Add(5 * time.Second); IsAlive(pid); time.Sleep(10 * time.Millisecond) {
++		if time.Now().After(deadline) {
++			t.Fatalf("child %d was never reaped", pid)
++		}
++	}
++}
++
++func TestReap(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	child := exec.Command("true")
++	if err := child.Start(); err != nil {
++		t.Fatalf("start true: %v", err)
++	}
++	Reap(child)
++	awaitReaped(t, child.Process.Pid)
++}
++
++// TestReapInheritedChildren is not parallel: it waits on every child of the test process, which would race the wait of a parallel test's own child.
++func TestReapInheritedChildren(t *testing.T) {
++	tiergate.Require(t, 0)
++
++	exited := exec.Command("true")
++	running := exec.Command("sleep", "30")
++	for _, child := range []*exec.Cmd{exited, running} {
++		if err := child.Start(); err != nil {
++			t.Fatalf("start %v: %v", child.Args, err)
++		}
++	}
++	t.Cleanup(func() { _ = running.Process.Kill() })
++	for deadline := time.Now().Add(5 * time.Second); IsRunning(exited.Process.Pid); time.Sleep(10 * time.Millisecond) {
++		if time.Now().After(deadline) {
++			t.Fatalf("child %d never exited", exited.Process.Pid)
++		}
++	}
++
++	pids, err := ReapInheritedChildren()
++	if err != nil {
++		t.Fatalf("ReapInheritedChildren() error = %v", err)
++	}
++	for _, child := range []*exec.Cmd{exited, running} {
++		if !slices.Contains(pids, child.Process.Pid) {
++			t.Errorf("ReapInheritedChildren() = %v; want it to hold child %d", pids, child.Process.Pid)
++		}
++	}
++	awaitReaped(t, exited.Process.Pid)
++	if err := SignalProcess(running.Process.Pid, true); err != nil {
++		t.Fatalf("SignalProcess(running child, true): %v", err)
++	}
++	awaitReaped(t, running.Process.Pid)
++}
++
+ func TestHideWindowIsNoop(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/proc/reap.go b/internal/proc/reap.go
+new file mode 100644
+index 00000000..b0954b1f
+--- /dev/null
++++ b/internal/proc/reap.go
+@@ -0,0 +1,44 @@
++// reap.go holds the waits that keep a process's children from staying zombies once they exit.
++
++package proc
++
++import (
++	"errors"
++	"os"
++	"os/exec"
++)
++
++// Reap waits on the started command in the background and discards its exit, so a child its starter never waits on leaves no zombie once it exits.
++// When the starter exits first, the child is reparented and init reaps it.
++func Reap(cmd *exec.Cmd) {
++	go func() { _ = cmd.Wait() }()
++}
++
++// ReapInheritedChildren waits in the background on every child the calling process has, and returns their pids.
++// A process that re-execs itself keeps its children but loses the goroutines that waited on them,
++// so the new image calls it before it starts a child of its own: every child it finds then is one the replaced image started.
++// Called once the process has started a child itself, it races that child's own wait.
++// It finds none where the platform cannot list processes.
++func ReapInheritedChildren() ([]int, error) {
++	stats, err := ListStats()
++	if errors.Is(err, errors.ErrUnsupported) {
++		return nil, nil
++	}
++	if err != nil {
++		return nil, err
++	}
++	self := os.Getpid()
++	var pids []int
++	for _, entry := range stats {
++		if entry.PPID != self {
++			continue
++		}
++		child, err := os.FindProcess(entry.PID)
++		if err != nil {
++			continue
++		}
++		go func() { _, _ = child.Wait() }()
++		pids = append(pids, entry.PID)
++	}
++	return pids, nil
++}
+diff --git a/internal/reedcli/remove.go b/internal/reedcli/remove.go
+index 4a6b9c6c..72ed5747 100644
+--- a/internal/reedcli/remove.go
++++ b/internal/reedcli/remove.go
+@@ -75,10 +75,12 @@ func (c *reedCLI) spawnDetachedRemove(guid string, recursive bool) error {
+ 	proc.Detach(cmd)
+ 
+ 	logger.Info("reed: spawning detached remove", "exe", exe, "guid", guid, "dir", c.anchorPath, "wait_pid", os.Getpid())
+-	if err := cmd.Start(); err != nil { // no Wait: detached, so the spawn is the only lifecycle line
++	// Detached, so the spawn is the only lifecycle line.
++	if err := cmd.Start(); err != nil {
+ 		logger.Warn("reed: detached remove spawn failed", "exe", exe, "guid", guid, "err", err)
+ 		return fmt.Errorf("spawn detached remove: %w", err)
+ 	}
++	proc.Reap(cmd)
+ 	return nil
+ }
+ 
+diff --git a/internal/reedengine/lifecycle.go b/internal/reedengine/lifecycle.go
+index 4a95afbf..a2a479ab 100644
+--- a/internal/reedengine/lifecycle.go
++++ b/internal/reedengine/lifecycle.go
+@@ -468,6 +468,7 @@ func (e *Engine) ensureServerAndSessionLocked() (booted bool, strippedKeys []str
+ 			logger.Warn("reed: failed to start tmux server", "socket", e.Socket(), "session", session, "err", err)
+ 			return fmt.Errorf("start tmux: %w", err)
+ 		}
++		proc.Reap(cmd)
+ 		logger.Info("reed: spawned tmux server", "socket", e.Socket(), "session", session, "pid", cmd.Process.Pid)
+ 		return nil
+ 	}
+diff --git a/internal/reedengine/spawnwatchdog.go b/internal/reedengine/spawnwatchdog.go
+index 65c95378..b16b55d2 100644
+--- a/internal/reedengine/spawnwatchdog.go
++++ b/internal/reedengine/spawnwatchdog.go
+@@ -65,10 +65,12 @@ func SpawnWatchdog(hubPath, tmuxPath, shellPath string, suppress bool) {
+ 	proc.Detach(cmd)
+ 
+ 	logger.Info("reed: spawning detached per-hub watchdog", "exe", exe, "hub", hubPath, "tmux", tmuxPath, "shell", shellPath)
+-	if err := cmd.Start(); err != nil { // intentionally not Wait()ed: a detached Start with no Wait
+-		// logs the spawn alone, since there is no teardown to log.
++	// A detached spawn logs the spawn alone, since there is no teardown to log.
++	if err := cmd.Start(); err != nil {
+ 		logger.Warn("reed: watchdog spawn failed", "exe", exe, "hub", hubPath, "err", err)
++		return
+ 	}
++	proc.Reap(cmd)
+ }
+ 
+ // spawnWatchdogEnv returns environ without any entry whose key is exactly LYM_LOG_FILE.
+diff --git a/internal/runproc/doc.go b/internal/runproc/doc.go
+index 29454597..4d213d29 100644
+--- a/internal/runproc/doc.go
++++ b/internal/runproc/doc.go
+@@ -7,8 +7,9 @@
+ // `HubOwner` is the Bolt checkout's directory name, which the fabric slug check refuses as reserved hub geometry, so no slug can take it.
+ //
+ // No process removes its own record.
+-// List prunes on read: it drops every record whose pid is dead or now carries another start time, with its lock file, and skips a file that does not decode.
+-// Where no start time can be read, as on Windows, a record with an empty start time lives while its pid does.
++// List prunes on read: it drops, with its lock file, every record whose pid is gone or now carries another start time, and skips a file that does not decode.
++// A zombie has ended and only waits for its parent's wait, so List leaves its record out of the result but keeps the file until the zombie is reaped; members of the zombie leader's group may still run, and End still reaches them through the kept record.
++// Where no start time can be read, as on Windows, a record with an empty start time lives while its pid runs.
+ // Owners lists every owner directory the same way.
+ //
+ // End, EndSparing and EndRole are the only ways an owner's registered processes are ended, and End is the base sequence.
+diff --git a/internal/runproc/end.go b/internal/runproc/end.go
+index cd447336..70b077a3 100644
+--- a/internal/runproc/end.go
++++ b/internal/runproc/end.go
+@@ -132,12 +132,19 @@ type unit struct {
+ 	members   []watched
+ }
+ 
++// recordLister returns the lister an end reads records through.
++// A record whose leader is a zombie stays listed: members of its group may still run, and the group signal must reach them.
++// The lister's running check is therefore the alive check.
++func (e ender) recordLister() lister {
++	return lister{startTime: e.startTime, isAlive: e.isAlive, isRunning: e.isAlive}
++}
++
+ // end is the sequence behind End, EndSparing and EndRole: a live record whose role the ends predicate rejects is treated like the caller, left out of every signalled set with the processes below it.
+ func (e ender) end(dir, owner string, callerPID int, ends func(role string) bool) ([]Ended, error) {
+ 	if e.goos == "windows" {
+ 		return nil, nil
+ 	}
+-	list := lister{startTime: e.startTime, isAlive: e.isAlive}
++	list := e.recordLister()
+ 	attempted := map[string]bool{}
+ 	var ended, survivors []Ended
+ 	for pass := 0; pass < endPasses; pass++ {
+diff --git a/internal/runproc/record.go b/internal/runproc/record.go
+index 4067e88f..61db4505 100644
+--- a/internal/runproc/record.go
++++ b/internal/runproc/record.go
+@@ -106,22 +106,31 @@ func recordPath(dir, owner string, rec Record) string {
+ 	return filepath.Join(dir, owner, fmt.Sprintf("%d-%s.json", rec.PID, rec.StartTime))
+ }
+ 
+-// lister reads the records of an owner against the liveness seams, so a test reaches the Windows branch on Linux.
++// lister reads the records of an owner against the liveness seams, so a test reaches the Windows branch and a zombie on any platform.
+ type lister struct {
+ 	startTime func(pid int) (string, bool)
+-	isAlive   func(pid int) bool
++	// isAlive reports whether the pid answers, a zombie included.
++	isAlive func(pid int) bool
++	// isRunning reports whether the pid answers and is not a zombie.
++	isRunning func(pid int) bool
++}
++
++// productionLister is the lister over the real process table.
++func productionLister() lister {
++	return lister{startTime: proc.StartTime, isAlive: proc.IsAlive, isRunning: proc.IsRunning}
+ }
+ 
+ // List returns the live records of one owner, ordered by pid.
+-// It removes every record whose process is gone or whose pid now carries another start time, with its lock file; a record file that does not decode is skipped.
++// It removes, with its lock file, every record whose process is gone or whose pid now carries another start time; a record file that does not decode is skipped.
++// A record whose process is a zombie is left out of the result but kept on disk, since members of its group may still run and an end must still reach them; it is removed once the zombie is reaped.
+ // A missing owner directory lists nothing.
+ func List(dir, owner string) ([]Record, error) {
+-	return lister{startTime: proc.StartTime, isAlive: proc.IsAlive}.list(dir, owner)
++	return productionLister().list(dir, owner)
+ }
+ 
+ // Owners returns List for every owner directory under dir, leaving out an owner with no live record.
+ func Owners(dir string) (map[string][]Record, error) {
+-	return lister{startTime: proc.StartTime, isAlive: proc.IsAlive}.owners(dir)
++	return productionLister().owners(dir)
+ }
+ 
+ func (l lister) owners(dir string) (map[string][]Record, error) {
+@@ -167,22 +176,33 @@ func (l lister) list(dir, owner string) ([]Record, error) {
+ 		if err != nil || !found {
+ 			continue
+ 		}
+-		if !l.live(record) {
++		present, running := l.liveness(record)
++		if !present {
+ 			_ = os.Remove(path)
+ 			_ = os.Remove(path + ".lock")
+ 			continue
+ 		}
+-		records = append(records, record)
++		if running {
++			records = append(records, record)
++		}
+ 	}
+ 	slices.SortFunc(records, func(a, b Record) int { return a.PID - b.PID })
+ 	return records, nil
+ }
+ 
+-// live reports whether the record's process is still the one that was registered.
+-// Where no start time can be read, as on Windows, a record with an empty start time lives while its pid does.
+-func (l lister) live(record Record) bool {
++// liveness reports whether the record's process is still the one that was registered, and whether it runs.
++// present is false when the pid is gone or carries another start time; running is false for a zombie, which has ended though its parent has not reaped it.
++// Where no start time can be read, as on Windows, a record with an empty start time is present while its pid answers.
++func (l lister) liveness(record Record) (present, running bool) {
++	if !l.isAlive(record.PID) {
++		return false, false
++	}
+ 	if startTime, ok := l.startTime(record.PID); ok {
+-		return startTime == record.StartTime
++		if startTime != record.StartTime {
++			return false, false
++		}
++	} else if record.StartTime != "" {
++		return false, false
+ 	}
+-	return record.StartTime == "" && l.isAlive(record.PID)
++	return true, l.isRunning(record.PID)
+ }
+diff --git a/internal/runproc/record_linux_test.go b/internal/runproc/record_linux_test.go
+new file mode 100644
+index 00000000..cb19083c
+--- /dev/null
++++ b/internal/runproc/record_linux_test.go
+@@ -0,0 +1,56 @@
++// record_linux_test.go pins the production zombie reading of the owner record against a real unreaped child.
++
++package runproc
++
++import (
++	"os"
++	"os/exec"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestListAndEnderReadAZombieLeader(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	dir := t.TempDir()
++
++	truePath, err := exec.LookPath("true")
++	if err != nil {
++		t.Fatalf("LookPath(true): %v", err)
++	}
++	child, err := os.StartProcess(truePath, []string{"true"}, &os.ProcAttr{})
++	if err != nil {
++		t.Fatalf("StartProcess(true): %v", err)
++	}
++	t.Cleanup(func() { _, _ = child.Wait() })
++	pid := child.Pid
++
++	// Nothing waits on the child, so it stays a zombie once it exits.
++	deadline := time.Now().Add(10 * time.Second)
++	for proc.IsRunning(pid) {
++		if time.Now().After(deadline) {
++			t.Fatalf("pid %d still running after 10s; want it exited", pid)
++		}
++		time.Sleep(10 * time.Millisecond)
++	}
++	if !proc.IsAlive(pid) {
++		t.Fatalf("IsAlive(%d) = false; want the unreaped child to still answer", pid)
++	}
++
++	if err := Register(dir, "slug", ChildRecord(pid, RoleLoop, []string{"true"})); err != nil {
++		t.Fatalf("Register: %v", err)
++	}
++	if listed, err := List(dir, "slug"); err != nil || len(listed) != 0 {
++		t.Errorf("List(slug) with a zombie leader = %+v, %v; want nothing", listed, err)
++	}
++	if owners, err := Owners(dir); err != nil || len(owners) != 0 {
++		t.Errorf("Owners with a zombie leader = %+v, %v; want none", owners, err)
++	}
++	kept, err := productionEnder().recordLister().list(dir, "slug")
++	if err != nil || len(kept) != 1 || kept[0].PID != pid {
++		t.Errorf("end lister with a zombie leader = %+v, %v; want its record kept, so the group signal reaches the members", kept, err)
++	}
++}
+diff --git a/internal/runproc/record_test.go b/internal/runproc/record_test.go
+index 20edb5f0..50f83fec 100644
+--- a/internal/runproc/record_test.go
++++ b/internal/runproc/record_test.go
+@@ -135,6 +135,7 @@ func TestRegisterAndList(t *testing.T) {
+ 	unreadable := lister{
+ 		startTime: func(int) (string, bool) { return "", false },
+ 		isAlive:   func(int) bool { return alive },
++		isRunning: func(int) bool { return alive },
+ 	}
+ 	if listed, err := unreadable.list(dir, "windows"); err != nil || len(listed) != 1 {
+ 		t.Errorf("list with the pid alive = %+v, %v; want the record kept", listed, err)
+@@ -143,4 +144,32 @@ func TestRegisterAndList(t *testing.T) {
+ 	if listed, err := unreadable.list(dir, "windows"); err != nil || len(listed) != 0 {
+ 		t.Errorf("list with the pid dead = %+v, %v; want the record pruned", listed, err)
+ 	}
++
++	// A zombie's stat still carries the registered start time: the record is left out of the listing yet kept on disk, until the zombie is gone.
++	if err := Register(dir, "zombie", self); err != nil {
++		t.Fatal(err)
++	}
++	running, alive := true, true
++	zombieAware := lister{
++		startTime: func(int) (string, bool) { return self.StartTime, true },
++		isAlive:   func(int) bool { return alive },
++		isRunning: func(int) bool { return running },
++	}
++	if listed, err := zombieAware.list(dir, "zombie"); err != nil || len(listed) != 1 {
++		t.Errorf("list with the pid running = %+v, %v; want the record listed", listed, err)
++	}
++	running = false
++	if listed, err := zombieAware.list(dir, "zombie"); err != nil || len(listed) != 0 {
++		t.Errorf("list with the pid a zombie = %+v, %v; want the record left out", listed, err)
++	}
++	if _, err := os.Stat(recordPath(dir, "zombie", self)); err != nil {
++		t.Errorf("Stat(zombie record) = %v; want the file kept for an end to reach the group", err)
++	}
++	alive = false
++	if listed, err := zombieAware.list(dir, "zombie"); err != nil || len(listed) != 0 {
++		t.Errorf("list with the pid reaped = %+v, %v; want nothing", listed, err)
++	}
++	if _, err := os.Stat(recordPath(dir, "zombie", self)); !os.IsNotExist(err) {
++		t.Errorf("Stat(zombie record) after the reap = %v; want the file removed", err)
++	}
+ }
+diff --git a/internal/selfexec/doc.go b/internal/selfexec/doc.go
+index bdc08b26..8eaa677c 100644
+--- a/internal/selfexec/doc.go
++++ b/internal/selfexec/doc.go
+@@ -9,6 +9,7 @@
+ // A changed identity is acted on only when it is seen on two consecutive checks, so a binary caught mid-write is not exec'd.
+ // A failed stat counts as unchanged, logs at Debug and resets that streak.
+ // The exec replaces the process with the recorded path, its own os.Args and its own environment, logging at Info first; that is the spawn's log.
++// The new image keeps the process's children but none of the goroutines that waited on them, so a caller that starts children reaps them again with `proc.ReapInheritedChildren` before it starts one.
+ // A failed exec logs at Warn and marks that identity as failed, so no later check execs for it again; a different identity is tried again after its own two checks.
+ // Nothing a poll repeats logs above Debug.
+ //
+diff --git a/internal/termwindow/termwindow.go b/internal/termwindow/termwindow.go
+index ae0e8c04..d9509b40 100644
+--- a/internal/termwindow/termwindow.go
++++ b/internal/termwindow/termwindow.go
+@@ -101,7 +101,8 @@ func (l Launcher) OpenAttach(dir, title, lymPath string) error {
+ 	if err := cmd.Start(); err != nil {
+ 		return fmt.Errorf("termwindow: start %s: %w", l.name, err)
+ 	}
+-	return cmd.Process.Release()
++	proc.Reap(cmd)
++	return nil
+ }
+ 
+ // pairGoneWaitSeconds is how long a window whose attach ended with a nonzero status waits for the run's worktree to be removed before it keeps an interactive shell.
+diff --git a/internal/vscode/launch_linux.go b/internal/vscode/launch_linux.go
+index cea2095d..99a71c56 100644
+--- a/internal/vscode/launch_linux.go
++++ b/internal/vscode/launch_linux.go
+@@ -9,6 +9,7 @@ import (
+ 	"os/exec"
+ 
+ 	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/proc"
+ )
+ 
+ // Launch launches VS Code for the given worktree directory on Linux.
+@@ -24,6 +25,7 @@ func Launch(worktreeDir string) error {
+ 		logger.Warn("vscode: VS Code launch spawn failed", "worktreeDir", worktreeDir, "cause", err)
+ 		return fmt.Errorf("launch code: %w", err)
+ 	}
++	proc.Reap(cmd)
+ 
+ 	return nil
+ }
+diff --git a/internal/vscode/launch_windows.go b/internal/vscode/launch_windows.go
+index 7a9d4e6c..0e626cda 100644
+--- a/internal/vscode/launch_windows.go
++++ b/internal/vscode/launch_windows.go
+@@ -23,6 +23,7 @@ func Launch(worktreeDir string) error {
+ 		logger.Warn("vscode: VS Code launch spawn failed", "worktreeDir", worktreeDir, "cause", err)
+ 		return fmt.Errorf("launch code: %w", err)
+ 	}
++	proc.Reap(cmd)
+ 
+ 	return nil
+ }
+diff --git a/pattern/PATTERN-spawn-observability.md b/pattern/PATTERN-spawn-observability.md
+index 7bc3ea51..a684f3ec 100644
+--- a/pattern/PATTERN-spawn-observability.md
++++ b/pattern/PATTERN-spawn-observability.md
+@@ -3,7 +3,7 @@
+ Every code path reachable from a `lym` command that starts a real OS process logs its spawn via `internal/logger`, and logs its teardown wherever it waits for one.
+ The level is `Info` for a lifecycle spawn and `Debug` for a spawn inside a polling probe.
+ 
+-- A detached spawn (`Start` with no `Wait`) logs the spawn alone; there is no teardown to observe.
++- A detached spawn, reaped in the background by `proc.Reap`, logs the spawn alone; there is no teardown to observe.
+ - A site structurally barred from importing `internal/logger` is exempt, and carries a written reason wherever the exemption is recorded.
+ - Test-fixture machinery, standalone harnesses and dev tooling under `tools/` are outside this rule, not exemptions to it.
+ - Never re-exec `os.Executable()` under `go test`.
