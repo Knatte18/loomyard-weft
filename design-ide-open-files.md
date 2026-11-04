@@ -1,6 +1,6 @@
 # lym ide opens configured files on start, rendered markdown for a beam README
 
-`ide-open-files` · Task · enhancement, ide, config · running · Worktree-Create
+`ide-open-files` · Task · enhancement, ide, config · running · Record-Write
 
 ## Seen (operator, 2026-11-03)
 
