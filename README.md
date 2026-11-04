@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-04 13:29 UTC; every age below is as of then.
+Rendered 2026-11-04 13:30 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -63,7 +63,7 @@ Not released; nothing starts it until its status is cleared.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-## [P0 Root: entries under no project](project-root.md) (35)
+## [P0 Root: entries under no project](project-root.md) (36)
 
 Owner `neve`
 
@@ -95,7 +95,7 @@ Not released; nothing starts it until its status is cleared.
 | T1 | `draft` **Review Drift as a whole and redesign it from the trials**<br>• Two C# trials found many Drift faults, mostly in agent judgment and gaps in the flow; map the whole and propose one design | [`drift-whole-review`](design-drift-whole-review.md) | darn · docs |  | 18h<br>17h | drift, stencil, loom |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T1<br>T5<br>T6<br>T10<br>T11 | 3d<br>3h | fabric |
 
-### Notes (31)
+### Notes (32)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -105,7 +105,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 12d<br>1d | loom, stencil |
 
-#### Bugs (5)
+#### Bugs (6)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -114,6 +114,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B3 |  | **lym shuttle run takes no model spec and has no engine choice**<br>• run --model is a provider id on the configured engine, so luna[medium] launched a Claude session and failed model_not_found; open takes a spec | [`shuttle-run-no-model-spec`](design-shuttle-run-no-model-spec.md) | 1h<br>1h | shuttle, codex |
 | B4 |  | **lym shuttle open refuses the codex engine because it has no prompt**<br>• open --model luna[medium] answers: the engine codex cannot open a session with no prompt | [`shuttle-open-refuses-codex`](design-shuttle-open-refuses-codex.md) | 1h<br>1h | shuttle, codex |
 | B5 |  | **A codexengine test writes the real ~/.lym/codex**<br>• TestPrepare_AppendsStandingPassages leaves /tmp test roots in the real lym Codex home trust record | [`codex-test-writes-real-home`](design-codex-test-writes-real-home.md) | 1h<br>1h | codex, testkit |
+| B6 |  | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | 0m<br>0m | fabric, loom |
 
 #### Enhancements (7)
 
