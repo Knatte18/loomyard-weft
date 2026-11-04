@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-04 15:05 UTC; every age below is as of then.
+Rendered 2026-11-04 15:06 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -12,22 +12,21 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (2)
+### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| T3 | **Drift accept and skip refuse unknown test names, and the accepted profile is taken at accept**<br>• Two interim Drift repairs: name checks on accept and scope --skip, and the accepted profile recorded when a test is accepted | [`drift-interim-repairs`](design-drift-interim-repairs.md) | darn · light | Worktree-Create | neve | 0m<br>0m | drift |
 | T8 | **A landing notice is not lost when set late, when dobby was down, or when the orch is absent**<br>• Close the known limits landing-watch left: a late notify_on_land, a Land passed while dobby was down, and a dropped line when no orch is live | [`landing-watch-limits`](design-landing-watch-limits.md) | darn · light | Code-Burler-Fix | neve | 3d<br>1h | dobby, orch, creel, board |
 | T10 | **A run lands on a parent the hub may not push to by merging on the remote**<br>• Branch protection refuses a direct push to main, so no task or beam can land on such a repository | [`protected-parent-landing`](design-protected-parent-landing.md) | darn · solid | Code-Burler-Fix | neve | 20h<br>53m | landing, git |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Drift accept and skip refuse unknown test names, and the accepted profile is taken at accept**<br>• Two interim Drift repairs: name checks on accept and scope --skip, and the accepted profile recorded when a test is accepted | [`drift-interim-repairs`](design-drift-interim-repairs.md) | darn · light |  | 0m<br>0m | drift |
+_None._
 
 ### Layer A (2)
 
@@ -35,7 +34,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | T8<br>T2 | 1h<br>32m | fabric, loom |
+| T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | T8<br>T2 | 1h<br>33m | fabric, loom |
 | T11 | **Merge in from parent as a task of its own in a beam, before pawl lands it**<br>• A command on a beam files a merge-in-from-parent task, run as darn with its perch on | [`parent-merge-task`](design-parent-merge-task.md) | darn · light | T10 | 4d<br>53m | pawl, workspaces, reed, landing |
 
 ### Draft (1)
@@ -62,9 +61,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• No waiting line in loom or batten status and no notice while PR-Review waits for a human review | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 19h<br>4h | landing, loom, batten |
 | B2 |  | **A weft push holds the remote-refs lock over its whole transfer, so board claims queue behind it**<br>• Bolt and every weft share one remote-refs lock; a slow push stalls every claim and weft fetch for its whole send-pack | [`push-holds-remote-refs`](design-push-holds-remote-refs.md) | 1h<br>1h |  |
-| B3 |  | **A test leaves an empty /tmp/.git, which breaks go VCS stamping**<br>• An empty /tmp/.git appeared during a tier1 run and failed TestPrebuildLym; find the leaker and guard against writes outside t.TempDir | [`tmp-git-leak`](design-tmp-git-leak.md) | 33m<br>33m | testkit, gate |
-| B4 |  | **lym shuttle run --anchor hidden ends died on both engines: the provider never becomes ready**<br>• A hidden-anchor run is torn down within seconds as died, for Codex and Claude alike, with no pane capture saved | [`shuttle-hidden-anchor-dies`](design-shuttle-hidden-anchor-dies.md) | 28m<br>27m | shuttle, reed |
-| B5 |  | **lym shuttle state reads every Codex session as unknown, which hides a running turn and an interrupt**<br>• settle() lets an unproven liveness win over the signal-derived state, so a Codex strand never reads busy, idle or interrupted | [`codex-state-always-unknown`](design-codex-state-always-unknown.md) | 28m<br>27m | shuttle, codex |
+| B3 |  | **A test leaves an empty /tmp/.git, which breaks go VCS stamping**<br>• An empty /tmp/.git appeared during a tier1 run and failed TestPrebuildLym; find the leaker and guard against writes outside t.TempDir | [`tmp-git-leak`](design-tmp-git-leak.md) | 34m<br>34m | testkit, gate |
+| B4 |  | **lym shuttle run --anchor hidden ends died on both engines: the provider never becomes ready**<br>• A hidden-anchor run is torn down within seconds as died, for Codex and Claude alike, with no pane capture saved | [`shuttle-hidden-anchor-dies`](design-shuttle-hidden-anchor-dies.md) | 28m<br>28m | shuttle, reed |
+| B5 |  | **lym shuttle state reads every Codex session as unknown, which hides a running turn and an interrupt**<br>• settle() lets an unproven liveness win over the signal-derived state, so a Codex strand never reads busy, idle or interrupted | [`codex-state-always-unknown`](design-codex-state-always-unknown.md) | 28m<br>28m | shuttle, codex |
 
 ### Enhancements (4)
 
