@@ -1,53 +1,50 @@
 # A shuttle session gets its prompt and its creel hooks at launch
 
-Two launch faults made a Claude session started through `lym shuttle` miss what it needs: a darn writer that never got its task, and a `lym shuttle open` session that got its creel mail only as reminder lines.
+Two faults in how a Claude session started through `lym shuttle` gets what it needs at launch.
 
-## The deferred prompt is typed again when its turn never started
+Closes #42
 
-A launch that loads skills carries the skill-load message on its launch line and defers the prompt pointer to a typed line (`Launch.PromptLine`).
-The trace of the reported Darn-Write run (task `transitional-report-note` on the `cs` hub) shows how it went wrong.
-After the load turn ended, the display-only segment color waited out the whole `send_ready_timeout_s` on a session it read as not idle.
-Meanwhile the operator typed into the pane.
-The prompt send then failed its landing check,
-and `loadSkillsThenPrompt` accepted *any* turn start past the pre-send offset as proof the prompt had landed late.
-The operator's own turn start passed that check, so Start returned the run and Wait held turn ends of an agent that never had its task.
-`Run.DeliverPendingPrompt` had the same blind spot: any turn start past the prompt offset counted as the prompt's, and with a zero offset the skill-load turn did too.
+## Prompt delivery (issue #42)
 
-- `promptTurnStartedSince` (send.go) counts only a turn start whose typed instruction equals the prompt line.
-  `DeliverPendingPrompt` uses it, holds the send lock for the whole call, and types the line at most once per handle.
-- Wait calls `DeliverPendingPrompt` at a held turn end of a run with a deferred prompt line when no pause covers it and no later turn start was read (`deliverPromptAtHold`, hold.go).
-  A held turn end it types the prompt at sends no hold notice; a failed delivery is logged at Warn and tried again at the next held turn end.
-- A run `Attach` reconstructs is marked `attached`, and Wait first delivers its pending prompt when its output files are missing (`deliverPromptOnAttach`).
-  This covers a driver that died after persisting the prompt offset but before typing the line, which leaves no later turn end to act on.
-  burler's explicit call on its probed handle stays; the once-per-handle rule keeps Wait from typing a second time.
-- The late-landing acceptance in `loadSkillsThenPrompt` is unchanged: it keeps a session the operator is talking to from being torn down, and the held-turn check now repairs the case it misjudges.
+A run whose launch defers its prompt types the skill-loading turn first and the prompt line after it.
+When the prompt send was accepted but the prompt's own turn never started, the old check still read any later turn start as the prompt having gone out, so an operator's nudge hid the miss and the session never got its instructions.
 
-## A session opened with `lym shuttle open` in a hub is a full creel agent
+- `DeliverPendingPrompt` now counts only a turn start whose instruction is the prompt line, trimmed.
+  A turn start with another instruction, such as one the operator typed, leaves the prompt pending.
+  It clears a stale pending-send record before it types, and types the line at most once per handle.
+- `Wait` calls it at a held turn end that has no turn start read past it and no pause covering the run.
+  A prompt typed there sends no hold notice, since the turn it starts is the work.
+  A failed delivery is logged at Warn and tried again at the next held turn end.
+- A run that `Attach` reconstructs, whose output files are missing, gets the same delivery once, at the first tick no pause covers.
+  This covers a driver that died between the skill-load turn and the prompt.
 
-`SessionOpener.OpenLaunch` now takes a directory of the session's own, `<anchor>/.lym/shuttle-open/<token>`, beside the exit marker of the same token.
-`Runner.Open` mints the token before calling it, forwards `Launch.CreelHooks` onto the strand, and removes the directory when the strand add fails.
-Claude's `OpenLaunch`, told a hub board directory, writes two files into that directory, names both on the fresh and the resume line, and marks the launch `CreelHooks`:
+## Creel hooks for `lym shuttle open`
 
-- `settings.json`, holding creel's hook delivery and nothing else: the PostToolUse mail hook, a Stop delivery and the idle waiter.
-  The Stop delivery is the run's merged command without the recording, since an opened session has no events file, and it always exits 0 so an echo reaches the operator.
-  Claude Code stacks `--settings` over the worktree's settings, so every other setting stays the worktree's.
-- `append-system-prompt.txt`, holding the creel trust sentence alone.
+An opened session launched with no creel hooks, so creel marked its strand without `CreelHooks` and typed only a reminder line for mail from an agent strand.
 
-Told no board directory, it writes nothing and marks nothing, as before.
-The creel Stop command is split into `creelStopDelivery`, shared by the run's merged command and the open command, and the waiter entry into `creelWaitHookEntry`.
-The flag-directory resolution Prepare did inline is now `creelFlagDirForHook`, which both launches use.
+- `SessionOpener.OpenLaunch` now takes a directory of the session's own, beside the exit marker and named by the same token.
+  In a hub, `claudeengine` creates it and writes a `settings.json` holding creel's hook delivery alone, and an append-system-prompt file holding the creel trust sentence.
+  Both launch lines name the two files, and the launch is marked `CreelHooks`.
+- The hook set is the PostToolUse mail claim, the turn-end Stop delivery and the idle waiter.
+  It records nothing, since an opened session has no events file.
+- `Runner.Open` passes the mark on to the strand.
+  It removes the directory when adding the strand fails, and the engine removes it on a later write failure.
+- An engine told no board directory writes nothing and marks nothing, as before.
 
 ## Design decisions
 
-- The fix lives in shuttleengine's Wait and Attach, not in a loom or seat caller, so every recipe whose run defers its prompt gets it, and so does every caller that attaches.
-- The opened session also gets the creel trust sentence, not only the hooks: the hooks hand it `[creel]` lines, and the sentence is what tells a session to follow them.
-- The color still precedes the prompt and can hold it for one send-ready window. It was the delay in the reported run, but with the held-turn redelivery it no longer loses the prompt.
+- Open settings carry hooks only, and `--settings` stacks over the worktree's own settings, so the session's other settings, deny rules and hooks stay as before.
+- The Stop and waiter hook builders in `settings.go` are shared with the run settings (`creelStopDelivery`, `creelWaitHookEntry`), so a run session and an opened one deliver mail the same way.
+- Prompt redelivery is judged by the prompt's own instruction and not by any turn start; the cost is the bound below.
 
-## Bounds
+## To check by hand
 
-- A prompt line the provider queued while a turn ran starts its turn only when that turn ends, so a held turn end read before then can type the line a second time.
-- The prompt-turn match relies on the engine reporting a typed turn start's instruction verbatim; both registered engines do.
+Not run against a live tmux session:
 
-## Docs
+- Open a session with `lym shuttle open --role <role>` in a hub and post it mail from `ly:orch`; the message itself, not the `[creel] 1 unread` reminder, should reach the session.
+- Start a darn run, type a nudge into its pane before the prompt lands, and confirm the prompt still arrives.
 
-The package docs of `shuttleengine` (Pending prompt, Opened sessions) and `claudeengine` (open launch, append-system-prompt file), `SessionOpener`'s contract, creelengine's list of pane-mail strands, and `docs/overview.md`'s shuttle entry are updated.
+Findings a review left open:
+
+- Redelivery at a held turn end counts as delivered: a prompt the provider queued while a turn ran starts its turn only when that turn ends, so a held turn end read before it can type the line a second time (`deliverPromptAtHold` in `internal/shuttleengine/hold.go`; the bound is written in `internal/shuttleengine/doc.go`).
+- The prompt-delivery guards and failure branches may lack coverage: the covered-pause, already-delivered and failed-send paths of `deliverPromptAtHold` and `deliverPromptOnAttach`, tested in `hold_test.go` and `attach_test.go`.
