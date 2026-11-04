@@ -1,6 +1,6 @@
 # Measure how Plan and Discussion writers explore and whether they use lookup subagents
 
-`planner-fork-lookups` · Task · research, loom
+`planner-fork-lookups` · Task · research, loom · running · Worktree-Create
 
 ## Seen (orch, 2026-11-01)
 
