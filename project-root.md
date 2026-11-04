@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (4)
+## Tasks (9)
 
 Concrete and claimable; only a task can run.
 
@@ -18,18 +18,23 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Draft (4)
+### Draft (9)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Review Drift as a whole and redesign it from the trials**<br>• Two C# trials found many Drift faults, mostly in agent judgment and gaps in the flow; map the whole and propose one design | [`drift-whole-review`](design-drift-whole-review.md) | darn · docs |  | 15h<br>14h | drift, stencil, loom |
-| T2 | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• No waiting line in loom or batten status and no notice while PR-Review waits for a human review | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | darn · light |  | 15h<br>15h | landing, loom, batten |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light |  | 3d<br>16h | fabric |
 | T7 | `draft` **Beam pull requests: reopen a beam from PR-Review, name PRs in squash commits, list sub-PRs**<br>• lym beam reopen back to Beam-Await, PR number in squash subjects, Beam-Describe lists the sub-task PRs | [`beam-pr-lifecycle`](design-beam-pr-lifecycle.md) | darn · solid |  | 14m<br>0m | pawl, landing, cli |
+| T8 | `draft` **A shuttle session gets its prompt and its creel hooks at launch**<br>• Darn-Write never got its shuttle prompt; a lym shuttle open session gets no creel hooks | [`shuttle-launch-delivery`](design-shuttle-launch-delivery.md) | darn · light |  | 14h<br>0m | shuttle, claude, creel, darn, loom |
+| T9 | `draft` **Drift capture fails by name with no baseline, and a reinterpreted drift.yaml is migrated**<br>• A capture that writes no baseline fails with a cause; a binary that moves the dir base migrates drift.yaml | [`drift-capture-and-migration`](design-drift-capture-and-migration.md) | darn · light |  | 17h<br>0m | drift, loom, reconcile |
+| T10 | `draft` **Let the pr-reviewer read and edit on GitHub** | [`pr-reviewer-github-access`](design-pr-reviewer-github-access.md) | darn · light |  | 14m<br>0m | landing, stencil |
+| T11 | `draft` **A crashed test runner is treated as a failing gate and spends a fixer**<br>• Exit 134 with no test result sends Finalize to an agent fixer on a green tree instead of a rerun | [`gate-runner-crash-fixer`](design-gate-runner-crash-fixer.md) | darn · light |  | 14h<br>0m | gate, landing |
+| T12 | `draft` **Dobby and the orch watcher leave their child processes as zombies**<br>• Hundreds of defunct lym children pile up under dobby and orch watch, and tender lists them as live | [`dobby-zombie-children`](design-dobby-zombie-children.md) | darn · light |  | 14h<br>0m | dobby, orch, tender, process |
+| T13 | `draft` **loom drive writes untracked files under _lym/; _lym is expected to be fully tracked** | [`drive-reports-untracked`](design-drive-reports-untracked.md) | darn · light |  | 14m<br>0m | loom, shed, fabric |
 
-## Notes (34)
+## Notes (27)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -39,25 +44,18 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 12d<br>1d | loom, stencil |
 
-### Bugs (7)
+### Bugs (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **A lym shuttle open session gets creel hook delivery like a run session**<br>• Opened sessions are pane-mail strands, so agent mail reaches them only as a run-lym-creel-read reminder | [`open-session-creel-hooks`](design-open-session-creel-hooks.md) | 14h<br>14h | shuttle, creel, claude |
-| B2 |  | **A crashed test runner is treated as a failing gate and spends a fixer**<br>• Exit 134 with no test result sends Finalize to an agent fixer on a green tree instead of a rerun | [`gate-runner-crash-fixer`](design-gate-runner-crash-fixer.md) | 14h<br>14h | gate, landing |
-| B3 |  | **Dobby and the orch watcher leave their child processes as zombies**<br>• Hundreds of defunct lym children pile up under dobby and orch watch, and tender lists them as live | [`dobby-zombie-children`](design-dobby-zombie-children.md) | 14h<br>14h | dobby, orch, tender, process |
-| B4 |  | **lym drift capture: baseline capture exits 0 but writes no baseline file, halting loom at Drift-Await** | [`drift-capture-no-baseline`](design-drift-capture-no-baseline.md) | 14m<br>14m | drift, loom |
-| B5 |  | **Moving Drift's dir base reinterpreted existing drift.yaml files with no migration**<br>• cs drift.yaml dir . moved from the anchor to the worktree root at deploy and the capture failed exit 1 | [`drift-dir-base-migration`](design-drift-dir-base-migration.md) | 17h<br>17h | drift, reconcile |
-| B6 |  | **Darn-Write session never received its shuttle prompt** | [`darn-write-prompt-not-sent`](design-darn-write-prompt-not-sent.md) | 14m<br>14m | shuttle, darn, loom |
-| B7 |  | **loom drive writes untracked files under _lym/; _lym is expected to be fully tracked** | [`drive-reports-untracked`](design-drive-reports-untracked.md) | 14m<br>14m | loom, shed, fabric |
+| B1 |  | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• No waiting line in loom or batten status and no notice while PR-Review waits for a human review | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 15h<br>0m | landing, loom, batten |
 
-### Enhancements (8)
+### Enhancements (7)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **lym ide opens configured files on start, rendered markdown for a beam README**<br>• A beam IDE starts with its README rendered; which files open is config, not code, so per-beam docs can be named later | [`ide-open-files`](design-ide-open-files.md) | 15h<br>15h | ide, config |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 7d<br>2d | batten, stencil, config |
-| E4 |  | **Let the pr-reviewer read and edit on GitHub** | [`pr-reviewer-github-access`](design-pr-reviewer-github-access.md) | 14m<br>14m | landing, stencil |
 | E5 |  | **A landing notice is not lost when set late, when dobby was down, or when the orch is absent**<br>• Close the known limits landing-watch left: a late notify_on_land, a Land passed while dobby was down, and a dropped line when no orch is live | [`landing-watch-limits`](design-landing-watch-limits.md) | 3d<br>3d | dobby, orch |
 | E7 |  | **Each part agent plans and builds its own part, instead of joining the parts into one plan** | [`parts-plan-and-build`](design-parts-plan-and-build.md) | 1d<br>1d | loom |
 | E9 |  | **An interactive agent idle for a set time gets its session compacted**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 3d<br>17h | shed, shuttle, batten |

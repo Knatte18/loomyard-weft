@@ -1,6 +1,6 @@
 # loom drive writes untracked files under _lym/; _lym is expected to be fully tracked
 
-`drive-reports-untracked` · Note · bug, loom, shed, fabric
+`drive-reports-untracked` · Task · bug, loom, shed, fabric · draft
 
 Imported from [issue #43](https://github.com/Knatte18/loomyard/issues/43).
 

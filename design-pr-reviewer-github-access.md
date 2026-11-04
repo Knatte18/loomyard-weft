@@ -1,6 +1,6 @@
 # Let the pr-reviewer read and edit on GitHub
 
-`pr-reviewer-github-access` · Note · enhancement, landing, stencil
+`pr-reviewer-github-access` · Task · enhancement, landing, stencil · draft
 
 Imported from [issue #45](https://github.com/Knatte18/loomyard/issues/45).
 

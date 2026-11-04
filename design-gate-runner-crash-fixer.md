@@ -1,6 +1,6 @@
 # A crashed test runner is treated as a failing gate and spends a fixer
 
-`gate-runner-crash-fixer` · Note · bug, gate, landing
+`gate-runner-crash-fixer` · Task · bug, gate, landing · draft
 
 ## Seen
 

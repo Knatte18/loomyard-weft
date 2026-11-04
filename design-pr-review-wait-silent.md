@@ -1,6 +1,6 @@
 # A PR-Review waiting on the operator shows nowhere
 
-`pr-review-wait-silent` · Task · bug, landing, loom, batten · draft
+`pr-review-wait-silent` · Note · bug, landing, loom, batten · draft
 
 ## Seen
 
