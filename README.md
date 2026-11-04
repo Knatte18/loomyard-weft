@@ -23,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Measure how Plan and Discussion writers explore and whether they use lookup subagents**<br>• From 10 landed tapestry runs, measure the Plan and Discussion writers exploration turns and their use of lookup subagents | [`planner-fork-lookups`](design-planner-fork-lookups.md) | darn · docs | Darn-Write | neve | 2d<br>2m | loom |
-| T2 | **The batching hook counts Bash lookups and reaches forks**<br>• Lookup chain counts read-only Bash commands; the hook judges subagent and fork calls against their own transcript | [`batching-hook-reach`](design-batching-hook-reach.md) | darn · light | Code-Burler-Fix | neve | 34m<br>34m | claude, shuttle |
+| T2 | **The batching hook counts Bash lookups and reaches forks**<br>• Lookup chain counts read-only Bash commands; the hook judges subagent and fork calls against their own transcript | [`batching-hook-reach`](design-batching-hook-reach.md) | darn · light | Code-Bouncer | neve | 34m<br>34m | claude, shuttle |
 
 #### Ready (0)
 
@@ -85,7 +85,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Drift accept and skip refuse unknown test names, and the accepted profile is taken at accept**<br>• Two interim Drift repairs: name checks on accept and scope --skip, and the accepted profile recorded when a test is accepted | [`drift-interim-repairs`](design-drift-interim-repairs.md) | darn · light | Record-Write | neve | 1m<br>1m | drift |
 | T8 | **A landing notice is not lost when set late, when dobby was down, or when the orch is absent**<br>• Close the known limits landing-watch left: a late notify_on_land, a Land passed while dobby was down, and a dropped line when no orch is live | [`landing-watch-limits`](design-landing-watch-limits.md) | darn · light | Code-Burler-Fix | neve | 3d<br>1h | dobby, orch, creel, board |
-| T10 | **A run lands on a parent the hub may not push to by merging on the remote**<br>• Branch protection refuses a direct push to main, so no task or beam can land on such a repository | [`protected-parent-landing`](design-protected-parent-landing.md) | darn · solid | Code-Burler-Fix | neve | 20h<br>54m | landing, git |
+| T10 | **A run lands on a parent the hub may not push to by merging on the remote**<br>• Branch protection refuses a direct push to main, so no task or beam can land on such a repository | [`protected-parent-landing`](design-protected-parent-landing.md) | darn · solid | Code-Burler-Fix | neve | 20h<br>55m | landing, git |
 
 #### Ready (0)
 
@@ -100,7 +100,7 @@ Waits only on Running, Ready or Draft entries.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | T8<br>T2 | 1h<br>34m | fabric, loom |
-| T11 | **Merge in from parent as a task of its own in a beam, before pawl lands it**<br>• A command on a beam files a merge-in-from-parent task, run as darn with its perch on | [`parent-merge-task`](design-parent-merge-task.md) | darn · light | T10 | 4d<br>54m | pawl, workspaces, reed, landing |
+| T11 | **Merge in from parent as a task of its own in a beam, before pawl lands it**<br>• A command on a beam files a merge-in-from-parent task, run as darn with its perch on | [`parent-merge-task`](design-parent-merge-task.md) | darn · light | T10 | 4d<br>55m | pawl, workspaces, reed, landing |
 
 #### Draft (1)
 
@@ -108,7 +108,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T6 | 3d<br>49m | fabric |
+| T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T6 | 3d<br>50m | fabric |
 
 ### Notes (26)
 
