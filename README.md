@@ -78,7 +78,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T7 | **Beam pull requests: reopen a beam from PR-Review, name PRs in squash commits, list sub-PRs**<br>• lym beam reopen back to Beam-Await, PR number in squash subjects, Beam-Describe lists the sub-task PRs | [`beam-pr-lifecycle`](design-beam-pr-lifecycle.md) | darn · solid | Finalize | neve | 2h<br>2h | pawl, landing, cli |
-| T8 | **A shuttle session gets its prompt and its creel hooks at launch**<br>• Darn-Write never got its shuttle prompt; a lym shuttle open session gets no creel hooks | [`shuttle-launch-delivery`](design-shuttle-launch-delivery.md) | darn · light | Drift-Recheck | neve | 17h<br>2h | shuttle, claude, creel, darn, loom |
+| T8 | **A shuttle session gets its prompt and its creel hooks at launch**<br>• Darn-Write never got its shuttle prompt; a lym shuttle open session gets no creel hooks | [`shuttle-launch-delivery`](design-shuttle-launch-delivery.md) | darn · light | Describe | neve | 17h<br>2h | shuttle, claude, creel, darn, loom |
 | T9 | **Drift capture fails by name with no baseline, and a reinterpreted drift.yaml is migrated**<br>• A capture that writes no baseline fails with a cause; a binary that moves the dir base migrates drift.yaml | [`drift-capture-and-migration`](design-drift-capture-and-migration.md) | darn · light | Finalize | neve | 20h<br>2h | drift, loom, reconcile |
 
 #### Ready (0)
