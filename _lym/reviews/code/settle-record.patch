@@ -1,0 +1,1353 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 15d5d1cb..2b13b53f 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -423,7 +423,7 @@ User-facing modules each get one `lym <module>` namespace:
+   defaults to `bug`.
+   Callable from any sandbox agent context with no config. ✅ Implemented.
+ - **reed** — **the window to the world**: tmux overlay + **strand** bookkeeping + render (`internal/reedcli` + `internal/reedengine` + `internal/reedengine/render`). Hosts every managed process as a strand in a window of its own or its group's, persists to `.lym/reed.json` (`lym reed up|add|remove|status|list|attach|switch|resume|watchdog|down`); `lym reed add` places a strand `--anchor own-window` by default. Every strand carries a hierarchical full name (see the `internal/agentname` package documentation), mirrored into its pane title and Claude session name and exported to its process as `LYM_STRAND_NAME` and `LYM_PARENT`, with the watchdog repairing drift; `list` is the hub-wide name directory. Built on what its proof-of-concept, `muxpoc`, proved first (env hygiene, native `--resume`); `muxpoc` has since been deleted, its job done. `reed attach` and `reed watchdog` are this module's two registered interactive-handoff exceptions ([PATTERN-cli-cobra](../pattern/PATTERN-cli-cobra.md)): `attach` hands the operator's stdio to a `tmux attach-session` child in place, pre-flighting through checking tmux's floor version, booting the session if cold and checking server/session liveness, and `watchdog` is the detached per-hub name-repair and reap daemon that blocks for its process lifetime — in both cases every fallible step runs pre-flight, on the envelope, and only the terminal-handover/daemon tail itself is exempt from emitting JSON. `add` and `attach` boot this worktree's session when none is up, with `up`'s own semantics — a bare substrate, with no persisted strand relaunched — instead of refusing; every other reed verb still refuses on a cold worktree. ✅ Implemented. See the `internal/reedengine` package documentation.
+-- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengine/codexengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await|await-forks`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits; in a hub an opened Claude session carries creel's hook delivery and the creel trust sentence as a run session does, so mail reaches it through its hooks; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository; its cap defaults to the caller role's keep-warm cap from `claude.yaml`. `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine: a reviewer, fixer or writer that waits inside it takes every fork's result in one turn instead of waking once per fork. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into the outcomes `done`/`died`/`timeout` and `api-error`. A spec with `APIErrorRetries` re-sends a turn the provider's API ended on an error that many times, then ends the run `api-error`. Any other turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run holds at once with an output file missing, a gated run with every output file present counts done once they pass the shell wait bound after telling the agent to read them, and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane; the exception is a handle whose own `Stop` removed the strand, which ends `died` and is recorded as stopped unless the files show the run done. No guardrail denies the in-process `Agent` tool: a subagent or fork shows in the session's own pane and lym reads its transcript under the session's `subagents` directory. A `PreToolUse` guardrail denies `AskUserQuestion` when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode, a version check included (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and to a package-scoped compile check the hub's `refuse_raw` does not refuse, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write, and a fifth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a headless `claude` launch with `-p` or `--print`, whose work shows in no pane, steering the session to a subagent through the `Agent` tool; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one and follows `[creel]` mail from its hooks. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). `claude.yaml`'s `keep_warm_cap` (template 250s) and `keep_warm_cap_roles` set the per-role keep-warm cap beside them. While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups, a sliced read of a short or already-read file, or a chain of edit-only messages; it never denies a call, and the block's switches and thresholds are config. The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, or per run by a model-spec naming it. Two engines are registered: `claude`, and `codex`, which drives the Codex CLI's TUI under one shared lym Codex home (`codex.yaml`'s `home`, linked to the operator's own login and sessions, its folder trust rendered by lym), with `-a never -s workspace-write` and the records checkout it is told through its config dirs as a writable root, none outside a hub; it loads skills as SKILL.md files the model reads by absolute path under `codex.yaml`'s `skill_roots`, and installs the shell guard rows of the `shellguard` table as `PreToolUse` hooks matching `Bash` with Codex's own steer and notice texts (`apply_patch` in place of Read, Edit and Write), the python and publish rows following their switches and the refuse-raw row a non-empty `refuse_raw` list, but has no fork audit or creel hooks yet, and the model registry's `sol`, `astra` and `luna` aliases name it. Per-run `Model`/`Effort` knobs (`lym shuttle run --model`/`--effort`; effort values `low|medium|high|xhigh|max`, empty = provider default) are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). A prompt deferred behind the skill-load turn is typed again at a held turn end, or when `Attach` takes over the run, while no turn start carries it, so an agent that sat idle without its task gets it. Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
++- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengine/codexengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await|await-forks`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits; in a hub an opened Claude session carries creel's hook delivery and the creel trust sentence as a run session does, so mail reaches it through its hooks, and an opened Codex session runs under the lym Codex home with no shell guard and no creel hooks; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository; its cap defaults to the caller role's keep-warm cap from `claude.yaml`. `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine: a reviewer, fixer or writer that waits inside it takes every fork's result in one turn instead of waking once per fork. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into the outcomes `done`/`died`/`timeout` and `api-error`. A spec with `APIErrorRetries` re-sends a turn the provider's API ended on an error that many times, then ends the run `api-error`; a turn end the engine reads as a model the provider does not know, Claude's `model_not_found`, ends the run `api-error` at once. Any other turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run holds at once with an output file missing, a gated run with every output file present counts done once they pass the shell wait bound after telling the agent to read them, and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane; the exception is a handle whose own `Stop` removed the strand, which ends `died` and is recorded as stopped unless the files show the run done. No guardrail denies the in-process `Agent` tool: a subagent or fork shows in the session's own pane and lym reads its transcript under the session's `subagents` directory. A `PreToolUse` guardrail denies `AskUserQuestion` when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode, a version check included (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and to a package-scoped compile check the hub's `refuse_raw` does not refuse, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write, and a fifth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a headless `claude` launch with `-p` or `--print`, whose work shows in no pane, steering the session to a subagent through the `Agent` tool; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one and follows `[creel]` mail from its hooks. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). `claude.yaml`'s `keep_warm_cap` (template 250s) and `keep_warm_cap_roles` set the per-role keep-warm cap beside them. While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups, a sliced read of a short or already-read file, or a chain of edit-only messages; it never denies a call, and the block's switches and thresholds are config. The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, or per run by a model-spec naming it. Two engines are registered: `claude`, and `codex`, which drives the Codex CLI's TUI under one shared lym Codex home (`codex.yaml`'s `home`, linked to the operator's own login and sessions, its folder trust rendered by lym), with `-a never -s workspace-write` and the records checkout it is told through its config dirs as a writable root, none outside a hub; it loads skills as SKILL.md files the model reads by absolute path under `codex.yaml`'s `skill_roots`, and installs the shell guard rows of the `shellguard` table as `PreToolUse` hooks matching `Bash` with Codex's own steer and notice texts (`apply_patch` in place of Read, Edit and Write), the python and publish rows following their switches and the refuse-raw row a non-empty `refuse_raw` list, but has no fork audit or creel hooks yet, and the model registry's `sol`, `astra` and `luna` aliases name it. `lym shuttle run --model` takes the model spec `lym shuttle open` takes, so an alias picks its engine from the model registry and the bracket the effort; the model and effort are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). A prompt deferred behind the skill-load turn is typed again at a held turn end, or when `Attach` takes over the run, while no turn start carries it, so an agent that sat idle without its task gets it. Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
+ - **orch** — the hub orchestrator hosted as an interactive Claude session in a reed strand of the prime worktree or of a beam, cycled before its context fills (`internal/orchcli` + `internal/orchengine`; `lym orch stop|status|refresh|distill|withdraw|rules`, in the prime and in any beam). `lym beam start` first ensures the worktree's `runs` strand, which runs `lym batten overview` as the beam's window, named `beam: prime` or `beam: <slug>` opened with the beam's board handle as in `P1: beam: <slug>`, and `stop` leaves it; ensuring it adds the runs strand beside a `loom-status` strand a pawl run's `lym loom start` put in an overview window first, as the session's first overview window, and a failure to add, replace or record it is a warning on the bring-up report naming `lym beam start`, never a stop; the orchestrator has a window of its own, and the session's windows run the beam window, agents, shell. A detached watcher has the session write a note, then clears it and resumes it from that note (`refresh`) or compacts it in place (`distill`), never clearing or compacting without one. ✅ Implemented. See the `internal/orchengine` package documentation.- **webster** — the implementer module: one long-lived Master session that reads the plan and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool), each fork reading its cards' code itself, instead of spawning a fresh reed/tmux strand per batch;
+   bracket verbs (`begin-batch`/`record-batch`) drive each in-session fork (Master ends its turn while a backgrounded fork works and records the batch on the fork's completion notification, shuttle reading that turn end as waiting rather than done), and a genuine model escalation (recovery after a stuck/report-less fork) spawns a cold strand.
+   Consumes the flat card-list plan (pinned in the plan-format blocks `contracts/stencils/loom/loom-block-plan-*.md`, which `contracts/stencils/loom/loom-template-plan.md`, the Plan producer's own stencil, includes) via its own sole parser, `internal/planparser`, groups cards into execution batches via `internal/batcher`, a separate config-selected registry module webster consumes (profiles in `batcher.yaml`, the `wide` cost profile by default), then runs those batches in card order, refusing a backward dependency derived from the cards' own `Targets`/`Uses` refs, records the partition in `state.json` at first init, and carries the plan's `## verify:` command as a must-pass gate on Merriam's strand: a failure is rerun once (a pass on the rerun records the identities as flaky;
+diff --git a/internal/shedarbiter/call.go b/internal/shedarbiter/call.go
+index 20e4c1de..0b07b59d 100644
+--- a/internal/shedarbiter/call.go
++++ b/internal/shedarbiter/call.go
+@@ -266,7 +266,7 @@ func (c *Call) concludeWait(attempt loomengine.ArbiterAttempt, result shuttleeng
+ 	case result.Outcome == shuttleengine.OutcomeTimeout:
+ 		return c.stopRunAndHandOn(attempt, stop, guid, sheddriver.CauseTimeout, "the arbiter ran past its deadline")
+ 	case result.Outcome == shuttleengine.OutcomeAPIError:
+-		return c.stopRunAndHandOn(attempt, stop, guid, sheddriver.CauseAPIError, fmt.Sprintf("the arbiter's session failed on an API error its %d re-sends did not clear: %s", sheddriver.SettlerAPIErrorRetries, result.APIError))
++		return c.stopRunAndHandOn(attempt, stop, guid, sheddriver.CauseAPIError, fmt.Sprintf("the arbiter's session failed on an API error: %s", result.APIError))
+ 	case result.Outcome != shuttleengine.OutcomeDone:
+ 		return c.stopRunAndHandOn(attempt, stop, guid, sheddriver.CauseDied, fmt.Sprintf("the arbiter ended %s without a verdict", result.Outcome))
+ 	}
+diff --git a/internal/shedarbiter/doc.go b/internal/shedarbiter/doc.go
+index de257975..1c5111fe 100644
+--- a/internal/shedarbiter/doc.go
++++ b/internal/shedarbiter/doc.go
+@@ -12,7 +12,7 @@
+ // A call spawns at most Settings.MaxSpawns agents per run, counted from the attempt records on disk, so no restart resets the count, and it moves no run itself.
+ // A call for a stop an earlier attempt already arbitrated spawns nothing: it returns that attempt's verdict, or waits on the attempt's live arbiter.
+ // A verdict file that does not read, a run that timed out or died, and a resume whose precondition fails each end as a hand-on naming a cause.
+-// The arbiter's spec has shuttle re-send a turn the provider's API ended on an error, and a run whose re-sends did not clear it ends as a hand-on with cause `api-error` whose question names the error, so the stop reaches the run's parent at once rather than at the deadline.
++// The arbiter's spec has shuttle re-send a turn the provider's API ended on an error, and a run that ends on an API error, its re-sends spent or its model rejected, ends as a hand-on with cause `api-error` whose question names the error, so the stop reaches the run's parent at once rather than at the deadline.
+ // Every refusal ends with Deps.HandBackWayForward, which names the verb that shows the stop.
+ //
+ // # The prompt
+diff --git a/internal/sheddriver/doc.go b/internal/sheddriver/doc.go
+index 70742376..9d548f37 100644
+--- a/internal/sheddriver/doc.go
++++ b/internal/sheddriver/doc.go
+@@ -88,7 +88,7 @@
+ // A call first reuses the newest attempt for the stop key that was not yet handed to the parent: it waits on a live agent up to the attempt's deadline, and concludes from a verdict already written.
+ // The verdict is `resume`, `hand-back` or `escalate`.
+ // A resume is checked against the status and the goto rules before it is applied, and an agent that timed out, died, left no verdict or an unreadable one, or named a precondition the run does not meet, is a hand-back with that cause.
+-// A turn the provider's API ends on an error is re-sent `SettlerAPIErrorRetries` times by shuttle, and the error past them is a hand-back with cause `api-error` whose question names the error, so the parent hears of the stop at once rather than at the deadline.
++// A turn the provider's API ends on an error is re-sent `SettlerAPIErrorRetries` times by shuttle, and the error past them, or a model the provider rejects, is a hand-back with cause `api-error` whose question names the error, so the parent hears of the stop at once rather than at the deadline.
+ // A tackler switched off, or a spawn budget spent, hands the stop back without a spawn.
+ // `TacklerDeps.Snapshot` is optional: a recipe that sets it has the driver compare the worktree with the snapshot taken at spawn and refuse a verdict over a tampered tree.
+ //
+diff --git a/internal/sheddriver/tackler.go b/internal/sheddriver/tackler.go
+index a54a90fb..27465c60 100644
+--- a/internal/sheddriver/tackler.go
++++ b/internal/sheddriver/tackler.go
+@@ -270,7 +270,7 @@ func (c *TacklerCall) recordStartedTackler(attempt TacklerAttempt) error {
+ // concludeWait concludes attempt after a wait ended with result and waitErr.
+ // A verdict on disk wins whatever the wait reported.
+ // A timeout that ended while the hub's pause record covered part of the run moves the deadline out by the paused time and attaches again for the remainder.
+-// A run that ended on an API error its re-sends did not clear is stopped and reads as a hand-back naming the error.
++// A run that ended on an API error is stopped and reads as a hand-back naming the error.
+ // Any other run that did not finish is stopped through stop and reads as a hand-back.
+ func (c *TacklerCall) concludeWait(attempt TacklerAttempt, result shuttleengine.Result, waitErr error, stop func() error, guid string) (TacklerEnvelope, error) {
+ 	for {
+@@ -298,7 +298,7 @@ func (c *TacklerCall) concludeWait(attempt TacklerAttempt, result shuttleengine.
+ 			}
+ 			stop = func() error { return c.deps.Shuttle.StopStrand(guid) }
+ 		case result.Outcome == shuttleengine.OutcomeAPIError:
+-			return c.stopRunAndHandBack(attempt, stop, guid, CauseAPIError, fmt.Sprintf("the tackler's session failed on an API error its %d re-sends did not clear: %s", SettlerAPIErrorRetries, result.APIError))
++			return c.stopRunAndHandBack(attempt, stop, guid, CauseAPIError, fmt.Sprintf("the tackler's session failed on an API error: %s", result.APIError))
+ 		case result.Outcome != shuttleengine.OutcomeDone:
+ 			return c.stopRunAndHandBack(attempt, stop, guid, CauseDied, fmt.Sprintf("the tackler ended %s without a verdict", result.Outcome))
+ 		default:
+diff --git a/internal/shuttlecli/cli_test.go b/internal/shuttlecli/cli_test.go
+index 5f8ff866..9698eddc 100644
+--- a/internal/shuttlecli/cli_test.go
++++ b/internal/shuttlecli/cli_test.go
+@@ -498,31 +498,23 @@ var errSpecCaptured = errors.New("specCapturingEngine: spec captured")
+ // startupPending answers every capture as a pane that never becomes ready.
+ func startupPending(string) shuttleengine.StartupState { return shuttleengine.StartupPending }
+ 
+-// TestRunCmd_EffortAndFocusFlags proves --effort and --focus land in the shuttleengine.Spec run builds, mirroring how --model is wired: a real *shuttleengine.Runner over a spec-capturing Engine fake and an inert reed fake lets the test drive runCmd()'s RunE directly and inspect the Spec the engine's Prepare was actually called with, without a live tmux/claude session.
++// TestRunCmd_FocusFlag proves --focus lands in the shuttleengine.Spec run builds: a real *shuttleengine.Runner over a spec-capturing Engine fake and an inert reed fake lets the test drive runCmd()'s RunE directly and inspect the Spec the engine's Prepare was actually called with, without a live tmux/claude session.
+ // --focus=false keeps the viewer where it is, and the default takes focus.
+ // Prepare fails before Runner.Start reaches reed.AddStrand, so the reed fake is never exercised.
+ // That failure happens before any strand exists, so the error envelope must carry none of the run-identity fields (guid, sessionId, runDir) rather than three empty strings.
+-func TestRunCmd_EffortAndFocusFlags(t *testing.T) {
++func TestRunCmd_FocusFlag(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 	tests := []struct {
+ 		name           string
+ 		args           []string
+-		wantEffort     string
+ 		wantFocus      bool
+ 		wantKeepViewer bool
+ 	}{
+ 		{
+-			name:       "EffortFlagSet",
+-			args:       []string{"--prompt", "do the thing", "--output-file", "out.md", "--effort", "high"},
+-			wantEffort: "high",
+-			wantFocus:  true,
+-		},
+-		{
+-			name:       "EffortAndFocusFlagsOmitted",
+-			args:       []string{"--prompt", "do the thing", "--output-file", "out.md"},
+-			wantEffort: "",
+-			wantFocus:  true,
++			name:      "FocusFlagOmitted",
++			args:      []string{"--prompt", "do the thing", "--output-file", "out.md"},
++			wantFocus: true,
+ 		},
+ 		{
+ 			name:           "FocusFalseKeepsTheViewer",
+@@ -560,9 +552,6 @@ func TestRunCmd_EffortAndFocusFlags(t *testing.T) {
+ 			if engine.LastSpec.Prompt == "" {
+ 				t.Fatalf("Engine.Prepare was never called; want it invoked with the built Spec; output: %s", out.String())
+ 			}
+-			if engine.LastSpec.Effort != tt.wantEffort {
+-				t.Errorf("Spec.Effort = %q; want %q", engine.LastSpec.Effort, tt.wantEffort)
+-			}
+ 			if display := engine.LastSpec.Display; display.Focus != tt.wantFocus || display.KeepViewer != tt.wantKeepViewer {
+ 				t.Errorf("Spec.Display = %+v; want Focus %v and KeepViewer %v", display, tt.wantFocus, tt.wantKeepViewer)
+ 			}
+@@ -577,6 +566,73 @@ func TestRunCmd_EffortAndFocusFlags(t *testing.T) {
+ 	}
+ }
+ 
++// TestRunCmd_ModelSpec pins that run's --model takes a model spec.
++// An alias or an escape-form spec picks the engine whose Prepare sees the run's spec, with the resolved model and effort.
++// No --model leaves the set's default engine.
++// A spec the registry cannot resolve is refused before any engine prepares.
++func TestRunCmd_ModelSpec(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name string
++		// model is the --model value; empty passes no flag.
++		model string
++		// wantEngine is the engine whose Prepare must see the spec; empty means none may.
++		wantEngine string
++		wantChoice shuttleengine.ModelChoice
++		// wantErr is a text the error envelope must hold when no engine prepares.
++		wantErr string
++	}{
++		{name: "CodexAliasWithEffort", model: "luna[high]", wantEngine: "codex", wantChoice: shuttleengine.ModelChoice{Engine: "codex", Model: "gpt-6-luna", Effort: "high"}},
++		{name: "ClaudeAlias", model: "sonnet", wantEngine: "claude", wantChoice: shuttleengine.ModelChoice{Engine: "claude", Model: "sonnet"}},
++		{name: "EscapeForm", model: "claude:claude-opus-5-5[max]", wantEngine: "claude", wantChoice: shuttleengine.ModelChoice{Engine: "claude", Model: "claude-opus-5-5", Effort: "max"}},
++		{name: "NoModel", wantEngine: shuttlefake.EngineName},
++		{name: "UnknownAlias", model: "bogus[high]", wantErr: `unknown alias "bogus"`},
++		{name: "MalformedSpec", model: "sonnet[", wantErr: "--model"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			engines := map[string]*shuttlefake.Engine{}
++			set := map[string]shuttleengine.Engine{}
++			for _, name := range []string{shuttlefake.EngineName, "claude", "codex"} {
++				engines[name] = &shuttlefake.Engine{PrepareErr: errSpecCaptured, StartupFn: startupPending}
++				set[name] = engines[name]
++			}
++			worktreeRoot := t.TempDir()
++			runner := shuttleengine.NewRunner(&shuttlefake.Reed{}, shuttleengine.NewEngineSet(shuttlefake.EngineName, set), worktreeRoot, worktreeRoot, shuttleengine.Config{RunTimeoutMin: 30})
++			c := &shuttleCLI{runner: runner, configDirs: configengine.Dirs{Anchor: t.TempDir()}}
++			cmd := c.runCmd()
++			var out bytes.Buffer
++			cmd.SetOut(&out)
++			args := []string{"--prompt", "do the thing", "--output-file", "out.md"}
++			if tt.model != "" {
++				args = append(args, "--model", tt.model)
++			}
++			cmd.SetArgs(args)
++			if err := cmd.Execute(); err != nil {
++				t.Fatalf("cmd.Execute() error: %v; output: %s", err, out.String())
++			}
++
++			for name, engine := range engines {
++				if prepared := engine.LastSpec.Prompt != ""; prepared != (name == tt.wantEngine) {
++					t.Errorf("engine %s prepared = %v; want %v; output: %s", name, prepared, name == tt.wantEngine, out.String())
++				}
++			}
++			if tt.wantEngine != "" {
++				if got := engines[tt.wantEngine].LastSpec.ModelChoice; got != tt.wantChoice {
++					t.Errorf("Spec.ModelChoice = %+v; want %+v", got, tt.wantChoice)
++				}
++				return
++			}
++			envelope := parseSingleEnvelope(t, out.Bytes())
++			if got, _ := envelope["error"].(string); envelope["ok"] != false || !strings.Contains(got, tt.wantErr) {
++				t.Errorf("envelope = %v; want ok false with an error containing %q", envelope, tt.wantErr)
++			}
++		})
++	}
++}
++
+ // TestRunCmd_MechanismFailure_EnvelopeCarriesRunIdentity pins that a run which fails after its
+ // strand registered still names the strand, session, and run directory in its envelope.
+ // The failing status checks tear the run down as not started, so the envelope reports a died outcome with the run's identity.
+@@ -631,6 +687,97 @@ func TestRunCmd_MechanismFailure_EnvelopeCarriesRunIdentity(t *testing.T) {
+ 	}
+ }
+ 
++// apiErrorEngine is a shuttlefake.Engine that reads session signals: a line REJECT:<text> is an API-error turn end carrying <text> as its error.
++// Its process always reads alive.
++type apiErrorEngine struct {
++	*shuttlefake.Engine
++}
++
++func (apiErrorEngine) ParseSessionSignals(data []byte) ([]shuttleengine.SessionSignal, int) {
++	var signals []shuttleengine.SessionSignal
++	for _, line := range strings.Split(string(data), "\n") {
++		if text, ok := strings.CutPrefix(line, "REJECT:"); ok {
++			signals = append(signals, shuttleengine.SessionSignal{Kind: shuttleengine.SessionSignalAPIErrorTurnEnd, ErrorText: text, ModelRejected: true, SessionID: "session-1", Raw: []byte(line)})
++		}
++	}
++	return signals, len(data)
++}
++
++func (apiErrorEngine) ProcessLiveness(string) shuttleengine.Liveness {
++	return shuttleengine.LivenessAlive
++}
++
++func (apiErrorEngine) TurnStartInterrupt(shuttleengine.SessionSignal) (time.Time, bool) {
++	return time.Time{}, false
++}
++
++// TestRunCmd_APIErrorEnvelope pins that run's envelope carries apiError when the run ends api-error, and omits it on a done outcome.
++func TestRunCmd_APIErrorEnvelope(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name string
++		// events is what the engine's Prepare writes into the run's events file.
++		events string
++		// writeOutput makes Prepare write the run's output file.
++		writeOutput bool
++		wantOutcome shuttleengine.Outcome
++		wantError   string
++	}{
++		{name: "RejectedModelCarriesTheError", events: "START\nREJECT:model_not_found\n", wantOutcome: shuttleengine.OutcomeAPIError, wantError: "model_not_found"},
++		// The engine reads no turn end, so the run ends done at its deadline with the output file on disk.
++		{name: "DoneCarriesNone", events: "START\n", writeOutput: true, wantOutcome: shuttleengine.OutcomeDone},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			anchorPath := t.TempDir()
++			worktreeRoot := filepath.Dir(anchorPath)
++			output := filepath.Join(anchorPath, "out.md")
++			fake := &shuttlefake.Engine{
++				StartupFn:     func(string) shuttleengine.StartupState { return shuttleengine.StartupReady },
++				ParseEventsFn: func(data []byte) ([]shuttleengine.Event, error) { return nil, nil },
++				PrepareFn: func(runDir string, _ shuttleengine.Spec, _ shuttleengine.Config) (shuttleengine.Launch, error) {
++					if err := os.WriteFile(filepath.Join(runDir, "events.jsonl"), []byte(tt.events), 0o644); err != nil {
++						return shuttleengine.Launch{}, err
++					}
++					if tt.writeOutput {
++						if err := os.WriteFile(output, []byte("done"), 0o644); err != nil {
++							return shuttleengine.Launch{}, err
++						}
++					}
++					return shuttleengine.Launch{Cmd: "launch", ResumeCmd: "resume", SessionID: "session-1"}, nil
++				},
++			}
++			reed := &shuttlefake.Reed{
++				AddStrandFn: func(reedengine.AddSpec) (reedengine.Strand, error) {
++					return reedengine.Strand{GUID: "strand-1"}, nil
++				},
++				Strands: []reedengine.StrandStatus{{GUID: "strand-1", PaneID: "%0", Live: true}},
++			}
++			runner := newFakeClockRunner(reed, apiErrorEngine{fake}, anchorPath, worktreeRoot)
++
++			c := &shuttleCLI{runner: runner}
++			cmd := c.runCmd()
++			var out bytes.Buffer
++			cmd.SetOut(&out)
++			cmd.SetArgs([]string{"--prompt", "do the thing", "--output-file", output})
++			if err := cmd.Execute(); err != nil {
++				t.Fatalf("cmd.Execute() error: %v; output: %s", err, out.String())
++			}
++
++			envelope := parseSingleEnvelope(t, out.Bytes())
++			if got, _ := envelope["outcome"].(string); got != string(tt.wantOutcome) {
++				t.Fatalf("envelope outcome = %q; want %q; output: %s", got, tt.wantOutcome, out.String())
++			}
++			got, present := envelope["apiError"].(string)
++			if got != tt.wantError || present != (tt.wantError != "") {
++				t.Errorf("envelope apiError = %q (present %v); want %q; output: %s", got, present, tt.wantError, out.String())
++			}
++		})
++	}
++}
++
+ // stateEngine is a shuttlefake.Engine that also reads session signals: a line STOP@<time> is a turn end stamped with that time.
+ // Its process always reads alive, so the state read depends on the run's files alone.
+ type stateEngine struct {
+diff --git a/internal/shuttlecli/open.go b/internal/shuttlecli/open.go
+index fe18535e..8898ea1b 100644
+--- a/internal/shuttlecli/open.go
++++ b/internal/shuttlecli/open.go
+@@ -1,4 +1,5 @@
+ // open.go implements the `open` shuttle verb: it opens a named LLM session with no prompt in a window of its own through c.runner.Open, or lists the model registry a --model spec resolves against.
++// It also holds the --model resolution `open` and `run` share.
+ 
+ package shuttlecli
+ 
+@@ -39,7 +40,9 @@ lists it. Its window closes when the session exits. It is refused under a pause.
+   <engine>:<model-id>[<effort>]   an engine and a provider model id, e.g. claude:claude-opus-5-5[max]
+ The bracket is optional and overrides the alias's default effort; the engine
+ validates the effort. Without --model the session gets the default engine and
+-the provider's default model and effort.
++the provider's default model and effort. An engine that cannot open a session
++with no prompt is refused before anything is created; a codex session opens
++with no shell guard and no creel hooks.
+ --list-models prints the registry's aliases with their engine, model and
+ default effort, and opens nothing.
+ The output names the engine, model and effort the session got, an empty model
+@@ -74,22 +77,12 @@ Example:
+ 
+ 			spec := shuttleengine.OpenSpec{Role: role, Segment: segmentcolor.Segment(segment), PermissionMode: permissionMode}
+ 			if model != "" {
+-				parsed, err := modelspec.Parse(model)
++				choice, err := c.resolveModelSpec(model)
+ 				if err != nil {
+ 					clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("--model: %v", err)))
+ 					return nil
+ 				}
+-				registry, err := modelspec.LoadRegistry(c.configDirs)
+-				if err != nil {
+-					clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("--model: load the model registry: %v", err)))
+-					return nil
+-				}
+-				resolved, err := registry.Resolve(parsed)
+-				if err != nil {
+-					clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("--model: %v", err)))
+-					return nil
+-				}
+-				spec.ModelChoice = shuttleengine.NewModelChoice(resolved)
++				spec.ModelChoice = choice
+ 			}
+ 
+ 			result, err := c.runner.Open(spec)
+@@ -119,6 +112,24 @@ Example:
+ 	return cmd
+ }
+ 
++// resolveModelSpec resolves a --model value, `<alias>[<effort>]` or `<engine>:<model-id>[<effort>]`, against the model registry c's config dirs locate.
++// It returns the engine, model, effort and version the spec names, the alias's engine for an alias, and refuses a malformed spec or an unknown alias.
++func (c *shuttleCLI) resolveModelSpec(model string) (shuttleengine.ModelChoice, error) {
++	parsed, err := modelspec.Parse(model)
++	if err != nil {
++		return shuttleengine.ModelChoice{}, err
++	}
++	registry, err := modelspec.LoadRegistry(c.configDirs)
++	if err != nil {
++		return shuttleengine.ModelChoice{}, fmt.Errorf("load the model registry: %w", err)
++	}
++	resolved, err := registry.Resolve(parsed)
++	if err != nil {
++		return shuttleengine.ModelChoice{}, err
++	}
++	return shuttleengine.NewModelChoice(resolved), nil
++}
++
+ // registryRows returns one row per alias of registry, sorted by alias, each naming the alias's engine, model and default effort.
+ func registryRows(registry modelspec.Registry) []map[string]string {
+ 	aliases := make([]string, 0, len(registry))
+diff --git a/internal/shuttlecli/run.go b/internal/shuttlecli/run.go
+index 3ff4e0b1..151096e4 100644
+--- a/internal/shuttlecli/run.go
++++ b/internal/shuttlecli/run.go
+@@ -39,7 +39,6 @@ func (c *shuttleCLI) runCmd() *cobra.Command {
+ 		promptFile  string
+ 		outputFiles []string
+ 		model       string
+-		effort      string
+ 		interactive bool
+ 		role        string
+ 		round       string
+@@ -75,8 +74,17 @@ Example (autonomous, two output files):
+ Example (interactive, agent may ask clarifying questions):
+   lym shuttle run --prompt-file task.md --output-file result.md --interactive
+ 
+---effort overrides the provider's reasoning-effort level; empty defers to
+-the provider default.`,
++--model chooses the engine, model and effort as a model spec, the form
++lym shuttle open takes:
++  <alias>[<effort>]               an alias from the model registry, e.g. sonnet[medium] or luna[high]
++  <engine>:<model-id>[<effort>]   an engine and a provider model id, e.g. claude:claude-opus-5-5[max]
++The alias's engine runs the session, as the registry names it
++(lym shuttle open --list-models prints it), and the bracket overrides the
++alias's default effort. Without --model the run gets shuttle.yaml's engine
++and the provider's default model and effort.
++A model the provider reports it does not know ends the run at once with
++outcome api-error and the error in apiError, on an engine that reads that
++report.`,
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			out := cmd.OutOrStdout()
+ 
+@@ -125,10 +133,20 @@ the provider default.`,
+ 				promptText = string(data)
+ 			}
+ 
++			var choice shuttleengine.ModelChoice
++			if model != "" {
++				resolved, err := c.resolveModelSpec(model)
++				if err != nil {
++					clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("--model: %v", err)))
++					return nil
++				}
++				choice = resolved
++			}
++
+ 			spec := shuttleengine.Spec{
+ 				Prompt:      promptText,
+ 				OutputFiles: outputFiles,
+-				ModelChoice: shuttleengine.ModelChoice{Model: model, Effort: effort},
++				ModelChoice: choice,
+ 				Interactive: interactive,
+ 				Role:        role,
+ 				Round:       round,
+@@ -153,13 +171,17 @@ the provider default.`,
+ 				return nil
+ 			}
+ 
+-			clihelp.SetExit(cmd.Context(), output.Ok(out, map[string]any{
++			fields := map[string]any{
+ 				"outcome":              string(result.Outcome),
+ 				"sessionId":            result.SessionID,
+ 				"guid":                 result.StrandGUID,
+ 				"lastAssistantMessage": result.LastAssistantMessage,
+ 				"runDir":               result.RunDir,
+-			}))
++			}
++			if result.APIError != "" {
++				fields["apiError"] = result.APIError
++			}
++			clihelp.SetExit(cmd.Context(), output.Ok(out, fields))
+ 			return nil
+ 		},
+ 	}
+@@ -167,8 +189,7 @@ the provider default.`,
+ 	cmd.Flags().StringVar(&prompt, "prompt", "", "task prompt text (mutually exclusive with --prompt-file)")
+ 	cmd.Flags().StringVar(&promptFile, "prompt-file", "", "path to a file whose contents become the task prompt")
+ 	cmd.Flags().StringArrayVar(&outputFiles, "output-file", nil, "output file the agent must write (repeatable; required at least once; must not already exist; relative paths resolve against the worktree root)")
+-	cmd.Flags().StringVar(&model, "model", "", "provider model override; empty defers to the engine/provider default")
+-	cmd.Flags().StringVar(&effort, "effort", "", "reasoning-effort override; empty defers to the provider default")
++	cmd.Flags().StringVar(&model, "model", "", "model spec, <alias>[<effort>] or <engine>:<model-id>[<effort>]; empty defers to shuttle.yaml's engine and the provider default")
+ 	cmd.Flags().BoolVar(&interactive, "interactive", false, "run interactively (the agent may ask questions); default is autonomous")
+ 	cmd.Flags().StringVar(&role, "role", "", "role token used to fill the strand-name template")
+ 	cmd.Flags().StringVar(&round, "round", "", "round token used to fill the strand-name template")
+diff --git a/internal/shuttleengine/apierrorretry.go b/internal/shuttleengine/apierrorretry.go
+index 1875c05b..e2af60b3 100644
+--- a/internal/shuttleengine/apierrorretry.go
++++ b/internal/shuttleengine/apierrorretry.go
+@@ -1,4 +1,5 @@
+-// apierrorretry.go re-sends the turn of a run whose provider's API ended a turn on an error, for a spec that sets APIErrorRetries, and ends the run OutcomeAPIError once the re-sends are spent.
++// apierrorretry.go re-sends the turn of a run whose provider's API ended a turn on an error, for a spec that sets APIErrorRetries.
++// It ends the run OutcomeAPIError once the re-sends are spent, or at once when the provider rejected the session's model.
+ // It reads the session signals itself, since an API-error turn end is no event the run loop classifies.
+ 
+ package shuttleengine
+@@ -28,22 +29,23 @@ type apiErrorWatch struct {
+ 	errors int
+ 	// pending is true while the newest turn signal read is an API-error turn end.
+ 	pending bool
++	// rejected is true when the pending turn end is one the provider marked ModelRejected.
++	rejected bool
+ 	// text is the pending turn end's error text, and readAt when Wait read it.
+ 	text   string
+ 	readAt time.Time
+ }
+ 
+-// retryAPIError acts on an API-error turn end of a run whose spec sets APIErrorRetries, and reports whether Wait finishes with the returned Result and error.
++// retryAPIError acts on an API-error turn end of a run, and reports whether Wait finishes with the returned Result and error.
+ // A turn end on an API error stays pending until a turn start, a turn end or a session start is read after it.
++// While one the engine marks ModelRejected is pending and no pause covers the run, the run ends at once through classifyDeadlineExpiry, whatever the spec's APIErrorRetries, since no re-send changes the model.
++// For any other, the spec must set APIErrorRetries.
+ // While one is pending and no pause covers the run, the n-th such turn end of the run is re-sent with apiErrorRetryLine once apiErrorRetryBackoff times 2^(n-1) has passed since it was read.
+ // The turn end past the last re-send, or one that leaves every output file on disk, ends the run through classifyDeadlineExpiry: done when the files exist, else OutcomeAPIError with Result.APIError naming the error.
+ // A send that fails is logged once per episode and tried again on a later tick, bounded by the run deadline.
+ // A session the provider's usage limit stopped is re-sent and handed on like any other API error.
+ // An engine without SessionSignalParser and an unreadable events file change nothing.
+ func (run *Run) retryAPIError() (Result, bool, error) {
+-	if run.spec.APIErrorRetries <= 0 {
+-		return Result{}, false, nil
+-	}
+ 	parser, ok := run.engine.(SessionSignalParser)
+ 	if !ok {
+ 		return Result{}, false, nil
+@@ -60,9 +62,9 @@ func (run *Run) retryAPIError() (Result, bool, error) {
+ 			switch signal.Kind {
+ 			case SessionSignalAPIErrorTurnEnd:
+ 				watch.errors++
+-				watch.pending, watch.text, watch.readAt = true, signal.ErrorText, run.clock.Now()
++				watch.pending, watch.rejected, watch.text, watch.readAt = true, signal.ModelRejected, signal.ErrorText, run.clock.Now()
+ 			case SessionSignalTurnStart, SessionSignalTurnEnd, SessionSignalSessionStart:
+-				watch.pending = false
++				watch.pending, watch.rejected = false, false
+ 			}
+ 		}
+ 	}
+@@ -70,8 +72,14 @@ func (run *Run) retryAPIError() (Result, bool, error) {
+ 		return Result{}, false, nil
+ 	}
+ 	outcome := run.classifyDeadlineExpiry(OutcomeAPIError)
++	if watch.rejected {
++		return run.endOnAPIError(outcome, "shuttle: run ended at once on a model the provider rejected")
++	}
++	if run.spec.APIErrorRetries <= 0 {
++		return Result{}, false, nil
++	}
+ 	if watch.errors > run.spec.APIErrorRetries || outcome == OutcomeDone {
+-		return run.endOnAPIError(outcome)
++		return run.endOnAPIError(outcome, "shuttle: run ended on API errors its re-sends did not clear")
+ 	}
+ 	if run.clock.Now().Sub(watch.readAt) < apiErrorRetryBackoff<<(watch.errors-1) {
+ 		return Result{}, false, nil
+@@ -86,15 +94,17 @@ func (run *Run) retryAPIError() (Result, bool, error) {
+ 	return Result{}, false, nil
+ }
+ 
+-// endOnAPIError finalizes the run with outcome and, for OutcomeAPIError, names the pending error on the Result, or apiErrorUnknownText when the turn end carried none.
+-func (run *Run) endOnAPIError(outcome Outcome) (Result, bool, error) {
++// endOnAPIError finalizes the run with outcome and, for OutcomeAPIError, logs warning at Warn and names the pending error on the Result, or apiErrorUnknownText when the turn end carried none.
++// An OutcomeAPIError end also removes the run's own-window strand, since its pane is still live and no caller is guaranteed to stop it.
++func (run *Run) endOnAPIError(outcome Outcome, warning string) (Result, bool, error) {
+ 	text := cmp.Or(run.apiErrors.text, apiErrorUnknownText)
+ 	if outcome == OutcomeAPIError {
+-		logger.Warn("shuttle: run ended on API errors its re-sends did not clear", "strandGUID", run.state.StrandGUID, "apiErrors", run.apiErrors.errors, "error", text)
++		logger.Warn(warning, "strandGUID", run.state.StrandGUID, "apiErrors", run.apiErrors.errors, "error", text)
+ 	}
+ 	result, err := run.finalize(outcome)
+ 	if result.Outcome == OutcomeAPIError {
+ 		result.APIError = text
++		run.removeEndedOwnWindowStrand()
+ 	}
+ 	return result, true, err
+ }
+diff --git a/internal/shuttleengine/apierrorretry_test.go b/internal/shuttleengine/apierrorretry_test.go
+index 1f39e9f8..03a8d807 100644
+--- a/internal/shuttleengine/apierrorretry_test.go
++++ b/internal/shuttleengine/apierrorretry_test.go
+@@ -59,6 +59,9 @@ func TestWait_APIErrorRetry(t *testing.T) {
+ 		// wantGaps is the least run-clock time before each send, from the API-error turn end it re-sends.
+ 		wantGaps     []time.Duration
+ 		wantAPIError string
++		// ownWindow makes the run's strand an own-window one, and wantRemoved is how many strand removals the run makes, asserted only then.
++		ownWindow   bool
++		wantRemoved int
+ 	}{
+ 		{
+ 			name: "a re-send after the back-off lets the agent finish", retries: 2,
+@@ -66,9 +69,9 @@ func TestWait_APIErrorRetry(t *testing.T) {
+ 			wantOutcome: OutcomeDone, wantGaps: []time.Duration{apiErrorRetryBackoff},
+ 		},
+ 		{
+-			name: "an API error past the re-sends ends the run naming the error", retries: 2,
++			name: "an API error past the re-sends ends the run naming the error and removes its strand", retries: 2, ownWindow: true,
+ 			react:       []string{"START", "APIERR:server_error"},
+-			wantOutcome: OutcomeAPIError, wantGaps: []time.Duration{apiErrorRetryBackoff, 2 * apiErrorRetryBackoff}, wantAPIError: "server_error",
++			wantOutcome: OutcomeAPIError, wantGaps: []time.Duration{apiErrorRetryBackoff, 2 * apiErrorRetryBackoff}, wantAPIError: "server_error", wantRemoved: 1,
+ 		},
+ 		{
+ 			name: "an API error with no text ends the run naming an unknown error", retries: 1, events: "START\nAPIERR\n",
+@@ -104,6 +107,26 @@ func TestWait_APIErrorRetry(t *testing.T) {
+ 			react: []string{"START", "STOP:done"}, writeOutput: true,
+ 			wantOutcome: OutcomeDone, wantGaps: []time.Duration{apiErrorRetryBackoff},
+ 		},
++		{
++			name: "a rejected model ends a run with no retries at once and removes its strand", retries: 0, ownWindow: true,
++			events:      "START\nREJECT:model_not_found\n",
++			wantOutcome: OutcomeAPIError, wantAPIError: "model_not_found", wantRemoved: 1,
++		},
++		{
++			name: "a rejected model ends the run at once, spending no re-send", retries: 2, ownWindow: true,
++			events:      "START\nREJECT:model_not_found\n",
++			wantOutcome: OutcomeAPIError, wantAPIError: "model_not_found", wantRemoved: 1,
++		},
++		{
++			name: "a rejected model with every output file on disk ends the run done", retries: 0, outputFirst: true, ownWindow: true,
++			events:      "START\nREJECT:model_not_found\n",
++			wantOutcome: OutcomeDone, wantRemoved: 1,
++		},
++		{
++			name: "a pause covering the run holds the rejected-model end until it lifts", retries: 0, covered: true, ownWindow: true,
++			events:      "START\nREJECT:model_not_found\n",
++			wantOutcome: OutcomeAPIError, wantAPIError: "model_not_found", wantRemoved: 1,
++		},
+ 		{
+ 			name: "earlier API errors in the events file count against the re-sends", retries: 2,
+ 			events:      "START\nAPIERR:first\nAPIERR:second\nAPIERR:third\n",
+@@ -117,7 +140,11 @@ func TestWait_APIErrorRetry(t *testing.T) {
+ 			fc := newFakeClock(time.Now())
+ 			start := fc.Now()
+ 			output := filepath.Join(t.TempDir(), "out.md")
+-			pane := &reactingReed{echoReed: &echoReed{fakeReed: &fakeReed{StatusQueue: liveStrandStatus(true)}, pane: "❯ "}, failSends: tt.failSends}
++			status := liveStrandStatus(true)
++			if tt.ownWindow {
++				status[0].Strands[0].OwnWindow, status[0].Strands[0].Present = true, true
++			}
++			pane := &reactingReed{echoReed: &echoReed{fakeReed: &fakeReed{StatusQueue: status}, pane: "❯ "}, failSends: tt.failSends}
+ 			fx := newFixture(t, pane, engine, withConfig(gateConfig))
+ 			var clk Clock = fc
+ 			lifted := false
+@@ -165,6 +192,9 @@ func TestWait_APIErrorRetry(t *testing.T) {
+ 			if pane.failSends != 0 {
+ 				t.Errorf("failSends left = %d; want 0, every failing send attempted", pane.failSends)
+ 			}
++			if tt.ownWindow && len(pane.RemoveStrandCalls) != tt.wantRemoved {
++				t.Errorf("RemoveStrand calls = %d; want %d", len(pane.RemoveStrandCalls), tt.wantRemoved)
++			}
+ 			if tt.covered && !lifted {
+ 				t.Error("Wait() ended the run while a pause covered it; want it held until the pause lifted")
+ 			}
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index de07ddf7..0368801a 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -115,7 +115,7 @@
+ // The message pricer (MessagePricer) prices one message's neutral usage from its model; the price table is Claude's API list price, with its source cited at the table.
+ //
+ // The session-signal parse (SessionSignalParser) reads the same events file as ParseEvents but yields a separate stream, in signals.go, and leaves ParseEvents unchanged.
+-// A `Stop` line is a turn end with its outstanding tasks read exactly as ParseEvents reads them, a `StopFailure` an API-error turn end, a `UserPromptSubmit` a turn start whose Instruction is the trimmed `prompt`, empty for a prompt opening `<task-notification>`, which Claude Code submits itself when background work ends, and for a slash command, a `PreToolUse` for `AskUserQuestion` an ask, a `PermissionRequest` an ask by its hook name alone, a `Notification` by the fixed table `notificationSignalKinds` (`permission_prompt`, `elicitation_dialog` and `elicitation_url_dialog` are asks, `idle_prompt` is an idle notice, and `agent_needs_input`, `elicitation_response` and any other type are skipped), a `SessionEnd` a session end with its reason, and a `SessionStart` a session start carrying the payload's `source` mapped to a provider-neutral one: `startup`, `resume`, `clear` and `compact` to their constants, and any other or missing string to the empty source.
++// A `Stop` line is a turn end with its outstanding tasks read exactly as ParseEvents reads them, a `StopFailure` an API-error turn end, marked ModelRejected when its `error` is `model_not_found`, a `UserPromptSubmit` a turn start whose Instruction is the trimmed `prompt`, empty for a prompt opening `<task-notification>`, which Claude Code submits itself when background work ends, and for a slash command, a `PreToolUse` for `AskUserQuestion` an ask, a `PermissionRequest` an ask by its hook name alone, a `Notification` by the fixed table `notificationSignalKinds` (`permission_prompt`, `elicitation_dialog` and `elicitation_url_dialog` are asks, `idle_prompt` is an idle notice, and `agent_needs_input`, `elicitation_response` and any other type are skipped), a `SessionEnd` a session end with its reason, and a `SessionStart` a session start carrying the payload's `source` mapped to a provider-neutral one: `startup`, `resume`, `clear` and `compact` to their constants, and any other or missing string to the empty source.
+ // The asks that are not events, the ones the dialog notice reads, are the `PermissionRequest` hook and the `permission_prompt`, `elicitation_dialog` and `elicitation_url_dialog` Notifications, a fork's included; the question tool's ask is an event.
+ // The session fold reads a `resume` or `clear` start as an idle-fresh session, and a `startup` start too unless a turn is running; a `compact` start moves nothing.
+ // A `SessionEnd` reason of `logout`, `prompt_input_exit` or `other` ends the process; `clear`, `resume` and an unknown reason do not.
+diff --git a/internal/shuttleengine/claudeengine/signals.go b/internal/shuttleengine/claudeengine/signals.go
+index da62ec09..b90d8adb 100644
+--- a/internal/shuttleengine/claudeengine/signals.go
++++ b/internal/shuttleengine/claudeengine/signals.go
+@@ -57,6 +57,9 @@ var notificationSignalKinds = map[string]shuttleengine.SessionSignalKind{
+ 	notificationIdlePrompt:           shuttleengine.SessionSignalIdleNotice,
+ }
+ 
++// stopFailureModelNotFound is the StopFailure error Claude Code writes when the API does not know the session's model.
++const stopFailureModelNotFound = "model_not_found"
++
+ // SessionEnd reasons that end Claude's process.
+ const (
+ 	sessionEndReasonLogout         = "logout"
+@@ -155,9 +158,11 @@ func signalFromPayload(hookName string, fields map[string]any) (shuttleengine.Se
+ 			Event:       true,
+ 		}, true
+ 	case hookEventStopFailure:
++		errorType, _ := fields["error"].(string)
+ 		return shuttleengine.SessionSignal{
+-			Kind:      shuttleengine.SessionSignalAPIErrorTurnEnd,
+-			ErrorText: apiErrorText(fields),
++			Kind:          shuttleengine.SessionSignalAPIErrorTurnEnd,
++			ErrorText:     apiErrorText(fields),
++			ModelRejected: errorType == stopFailureModelNotFound,
+ 		}, true
+ 	case hookEventUserPromptSubmit:
+ 		prompt, _ := fields["prompt"].(string)
+diff --git a/internal/shuttleengine/claudeengine/signals_test.go b/internal/shuttleengine/claudeengine/signals_test.go
+index 8603b476..d5b1509d 100644
+--- a/internal/shuttleengine/claudeengine/signals_test.go
++++ b/internal/shuttleengine/claudeengine/signals_test.go
+@@ -90,6 +90,11 @@ func TestParseSessionSignals(t *testing.T) {
+ 			chunks: []string{signalStamp("StopFailure", stampTime) + signalPayload(t, "StopFailure", map[string]any{"error": "rate_limit", "error_details": "d", "last_assistant_message": "m"})},
+ 			want:   []shuttleengine.SessionSignal{{Kind: shuttleengine.SessionSignalAPIErrorTurnEnd, At: at, SessionID: "sess-1", ErrorText: "rate_limit"}},
+ 		},
++		{
++			name:   "stop_failure_on_an_unknown_model_rejects_the_model",
++			chunks: []string{signalStamp("StopFailure", stampTime) + signalPayload(t, "StopFailure", map[string]any{"error": "model_not_found", "last_assistant_message": "m"})},
++			want:   []shuttleengine.SessionSignal{{Kind: shuttleengine.SessionSignalAPIErrorTurnEnd, At: at, SessionID: "sess-1", ErrorText: "model_not_found", ModelRejected: true}},
++		},
+ 		{
+ 			name:   "stop_failure_text_falls_back_to_error_details",
+ 			chunks: []string{signalStamp("StopFailure", stampTime) + signalPayload(t, "StopFailure", map[string]any{"error_details": "details", "last_assistant_message": "m"})},
+diff --git a/internal/shuttleengine/codexengine/codexengine.go b/internal/shuttleengine/codexengine/codexengine.go
+index 60863028..c7662c7e 100644
+--- a/internal/shuttleengine/codexengine/codexengine.go
++++ b/internal/shuttleengine/codexengine/codexengine.go
+@@ -1,4 +1,6 @@
+-// codexengine.go defines the Codex type, its constructors and Prepare, which readies the lym Codex home and writes the run's prompt file before returning the launch.
++// codexengine.go defines the Codex type, its constructors, Prepare and OpenLaunch.
++// Prepare readies the lym Codex home and writes the run's prompt file before returning the launch.
++// OpenLaunch readies the same home for a session opened with no prompt.
+ 
+ package codexengine
+ 
+@@ -38,6 +40,7 @@ type Codex struct {
+ var (
+ 	_ shuttleengine.Engine         = (*Codex)(nil)
+ 	_ shuttleengine.StartupChecker = (*Codex)(nil)
++	_ shuttleengine.SessionOpener  = (*Codex)(nil)
+ )
+ 
+ // New returns a Codex engine with the default redraw settle and no Dirs.
+@@ -53,24 +56,30 @@ func NewFromConfig(cfg shuttleengine.Config, dirs configengine.Dirs) *Codex {
+ // Legal Spec.PermissionMode values: empty and bypass, the mode every launch runs in.
+ const permissionModeBypass = "bypass"
+ 
+-// validateSpec refuses what a Codex launch cannot realize, before anything is written: a version pin, a permission mode other than bypass, a resumed session, and an effort codex.yaml does not list.
++// validateSpec refuses what a Codex run cannot realize, before anything is written: a resumed session, and whatever validateChoice refuses.
+ func validateSpec(spec shuttleengine.Spec, codex Config) error {
+-	if spec.Version != "" {
+-		return fmt.Errorf("codexengine: version %q given, but Codex takes a model slug and no version pin; way forward: name the slug as the model-spec's model", spec.Version)
+-	}
+-	if spec.PermissionMode != "" && spec.PermissionMode != permissionModeBypass {
+-		return fmt.Errorf("codexengine: permission mode %q is not realizable; every Codex launch runs -a never, the bypass mode; way forward: leave it empty or set %q", spec.PermissionMode, permissionModeBypass)
+-	}
+ 	if spec.ResumeSessionID != "" {
+ 		return fmt.Errorf("codexengine: Codex sessions cannot be resumed by a new run; way forward: start a fresh session")
+ 	}
+-	return validateEffort(spec.Effort, codex)
++	return validateChoice(spec.ModelChoice, spec.PermissionMode, codex)
++}
++
++// validateChoice refuses a model choice and permission mode a Codex launch cannot realize, before anything is written:
++// a version pin, a permission mode other than bypass, and an effort codex.yaml does not list.
++func validateChoice(choice shuttleengine.ModelChoice, permissionMode string, codex Config) error {
++	if choice.Version != "" {
++		return fmt.Errorf("codexengine: version %q given, but Codex takes a model slug and no version pin; way forward: name the slug as the model-spec's model", choice.Version)
++	}
++	if permissionMode != "" && permissionMode != permissionModeBypass {
++		return fmt.Errorf("codexengine: permission mode %q is not realizable; every Codex launch runs -a never, the bypass mode; way forward: leave it empty or set %q", permissionMode, permissionModeBypass)
++	}
++	return validateEffort(choice.Effort, codex)
+ }
+ 
+ // Prepare readies a Codex launch and returns its lines.
+ // It validates the spec and loads the hub's gate config, whose refuse_raw list the shell guard installs.
+ // A gate config that fails to load refuses the launch.
+-// It reads the checkout the anchor sits in and refuses under committed Codex rules, all before anything is written.
++// It reads the checkout the anchor sits in and refuses under Codex rules there, all before anything is written.
+ // It then readies the lym home, trusting the worktree root and a linked worktree's main checkout root, and writes prompt.md into runDir.
+ // The prompt file opens with the deny notice announcing each installed shell guard row and the standing passages heddle holds for engine codex and the spec's role, then the spec's prompt.
+ // The launch line carries a PreToolUse hook per installed row, and its writable root is the records checkout the engine is told through its Dirs, symlink-resolved and kept as told with a Warn when it cannot be resolved, so the session writes its report through the anchor's `.lym` and `_lym` links; outside a hub it is empty and the line adds none.
+@@ -90,24 +99,10 @@ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengin
+ 		return shuttleengine.Launch{}, fmt.Errorf("codexengine: %w", err)
+ 	}
+ 	guards := installedGuards(gate.RefuseRaw, guardInputs{denyPython: cfg.DenyPython, denyPublish: spec.DenyPublish})
+-	homes, err := resolveHomes(codex)
+-	if err != nil {
+-		return shuttleengine.Launch{}, err
+-	}
+-	anchor := c.dirs.Anchor
+-	if anchor == "" || !filepath.IsAbs(anchor) {
+-		return shuttleengine.Launch{}, fmt.Errorf("codexengine: the engine was told no absolute anchor (%q), so it cannot locate the checkout a launch starts in", anchor)
+-	}
+-	found, err := readCheckout(anchor)
++	home, writableRoots, err := c.readyHome(codex)
+ 	if err != nil {
+ 		return shuttleengine.Launch{}, err
+ 	}
+-	if err := c.checkCodexFolders(found, anchor); err != nil {
+-		return shuttleengine.Launch{}, err
+-	}
+-	if err := c.prepareHome(homes, found.trustRoots()); err != nil {
+-		return shuttleengine.Launch{}, err
+-	}
+ 
+ 	absRunDir, err := filepath.Abs(runDir)
+ 	if err != nil {
+@@ -125,21 +120,11 @@ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengin
+ 		firstTurn, promptLine = skillLoadOver(spec.Skills, c.expandSkillRoots(codex)), firstTurn
+ 	}
+ 
+-	var writableRoots []string
+-	if c.dirs.Records != "" {
+-		// Codex keys a linked path by its resolved target, as it does the trust roots.
+-		records, err := filepath.EvalSymlinks(c.dirs.Records)
+-		if err != nil {
+-			c.warn("codexengine: records checkout not resolvable, using the told path as the writable root", "path", c.dirs.Records, "error", err)
+-			records = c.dirs.Records
+-		}
+-		writableRoots = []string{records}
+-	}
+ 	sh := shell.ForGOOS()
+ 	return shuttleengine.Launch{
+ 		Cmd: buildLaunchCmd(sh, launchLine{
+ 			bin:           codexBinary(codex),
+-			home:          homes.lym,
++			home:          home,
+ 			writableRoots: writableRoots,
+ 			model:         spec.Model,
+ 			effort:        spec.Effort,
+@@ -152,6 +137,68 @@ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengin
+ 	}, nil
+ }
+ 
++// OpenLaunch returns the launch of a named interactive Codex session with no prompt.
++// It validates the model choice and the permission mode and readies the lym home as Prepare does, refusing under Codex rules before anything is written.
++// Its line runs Codex with no hooks and no first turn, so the session carries no shell guard and waits at its composer, and the pane's shell goes on to Runner.Open's chain when Codex exits.
++// It writes nothing into dir, carries no creel hooks and names no session id.
++// Its resume line is empty: Codex mints the session id at the first turn, so a revive starts no Codex and the chain after it ends the strand.
++func (c *Codex) OpenLaunch(_ string, spec shuttleengine.OpenSpec, _ shuttleengine.Config) (shuttleengine.Launch, error) {
++	codex, err := loadConfigOrRefuse(c.dirs)
++	if err != nil {
++		return shuttleengine.Launch{}, err
++	}
++	if err := validateChoice(spec.ModelChoice, spec.PermissionMode, codex); err != nil {
++		return shuttleengine.Launch{}, err
++	}
++	home, writableRoots, err := c.readyHome(codex)
++	if err != nil {
++		return shuttleengine.Launch{}, err
++	}
++	return shuttleengine.Launch{
++		Cmd: codexCommand(shell.ForGOOS(), launchLine{
++			bin:           codexBinary(codex),
++			home:          home,
++			writableRoots: writableRoots,
++			model:         spec.Model,
++			effort:        spec.Effort,
++		}),
++	}, nil
++}
++
++// readyHome readies the lym home codex.yaml names for a launch in the checkout the engine's anchor sits in.
++// It refuses an anchor that is not absolute, a folder in no git checkout and Codex rules in the checkout before anything is written, then trusts the checkout's roots in the home.
++// It returns the home and the launch's writable roots: the records checkout the engine is told, symlink-resolved and kept as told with a Warn when it cannot be resolved, or none outside a hub.
++func (c *Codex) readyHome(codex Config) (home string, writableRoots []string, err error) {
++	homes, err := resolveHomes(codex)
++	if err != nil {
++		return "", nil, err
++	}
++	anchor := c.dirs.Anchor
++	if anchor == "" || !filepath.IsAbs(anchor) {
++		return "", nil, fmt.Errorf("codexengine: the engine was told no absolute anchor (%q), so it cannot locate the checkout a launch starts in", anchor)
++	}
++	found, err := readCheckout(anchor)
++	if err != nil {
++		return "", nil, err
++	}
++	if err := c.checkCodexFolders(found, anchor); err != nil {
++		return "", nil, err
++	}
++	if err := c.prepareHome(homes, found.trustRoots()); err != nil {
++		return "", nil, err
++	}
++	if c.dirs.Records != "" {
++		// Codex keys a linked path by its resolved target, as it does the trust roots.
++		records, err := filepath.EvalSymlinks(c.dirs.Records)
++		if err != nil {
++			c.warn("codexengine: records checkout not resolvable, using the told path as the writable root", "path", c.dirs.Records, "error", err)
++			records = c.dirs.Records
++		}
++		writableRoots = []string{records}
++	}
++	return homes.lym, writableRoots, nil
++}
++
+ // promptText returns the prompt file's text: the deny notice, each passage, then prompt, separated by blank lines, with an empty notice left out.
+ func promptText(notice string, passages []string, prompt string) string {
+ 	var parts []string
+diff --git a/internal/shuttleengine/codexengine/command.go b/internal/shuttleengine/codexengine/command.go
+index 1214eced..97e70aee 100644
+--- a/internal/shuttleengine/codexengine/command.go
++++ b/internal/shuttleengine/codexengine/command.go
+@@ -1,5 +1,6 @@
+-// command.go composes the pane-shell lines Prepare hands back as a Launch, and the `-c` hook settings the launch line carries.
++// command.go composes the pane-shell lines Prepare and OpenLaunch hand back as a Launch, and the `-c` hook settings the launch line carries.
+ // The launch line starts the Codex TUI under the lym home with its first turn as the positional argument, then exits the pane's shell, so a Codex exit leaves a dead pane.
++// An opened session's line is the Codex command alone, with no hooks, no first turn and no exit.
+ // The resume line exits the pane's shell alone and starts no Codex.
+ // Every hook is a plain POSIX sh command that appends a stamp line and its payload to the run's events file, touches the run's activity stamp, or guards a shell command.
+ // Argument quoting and statement chaining are pane-shell mechanics owned by internal/shell.
+@@ -39,18 +40,23 @@ type launchLine struct {
+ 	model string
+ 	// effort is the reasoning effort; empty takes Codex's default.
+ 	effort string
+-	// hooks are the `-c` hook settings, each one `hooks.<Event>=[…]` value.
++	// hooks are the `-c` hook settings, each one `hooks.<Event>=[…]` value; none for an opened session.
+ 	hooks []string
+-	// firstTurn is the session's first turn, typed as the positional prompt.
++	// firstTurn is the session's first turn, typed as the positional prompt; empty for an opened session, which waits at its composer.
+ 	firstTurn string
+ }
+ 
+ // buildLaunchCmd composes the pane-shell line that starts a Codex session and exits the pane's shell when Codex exits.
+-// The line runs `-a never -s workspace-write`, so no approval prompt shows and the sandbox bounds writes to the workspace, the writable roots and the temporary folders.
+-// It passes every hook setting with `--dangerously-bypass-hook-trust`, since a hook given by `-c` otherwise waits on a review prompt,
++func buildLaunchCmd(sh shell.Shell, line launchLine) string {
++	return sh.Chain(codexCommand(sh, line), sh.Exit())
++}
++
++// codexCommand composes the command that starts a Codex session under the lym home.
++// It runs `-a never -s workspace-write`, so no approval prompt shows and the sandbox bounds writes to the workspace, the writable roots and the temporary folders.
++// It passes every hook setting with `--dangerously-bypass-hook-trust`, since a hook given by `-c` otherwise waits on a review prompt, and the first turn when there is one,
+ // and it loads CLAUDE.md as the project instructions of a directory with no AGENTS.md.
+ // CODEX_HOME names the lym home as a command-scoped assignment.
+-func buildLaunchCmd(sh shell.Shell, line launchLine) string {
++func codexCommand(sh shell.Shell, line launchLine) string {
+ 	cmd := sh.Invoke(line.bin) + " --no-alt-screen -a never -s workspace-write"
+ 	if len(line.writableRoots) > 0 {
+ 		cmd += " -c " + sh.Quote("sandbox_workspace_write.writable_roots="+tomlArray(line.writableRoots))
+@@ -65,8 +71,13 @@ func buildLaunchCmd(sh shell.Shell, line launchLine) string {
+ 	for _, hook := range line.hooks {
+ 		cmd += " -c " + sh.Quote(hook)
+ 	}
+-	cmd += " --dangerously-bypass-hook-trust " + sh.Quote(line.firstTurn)
+-	return sh.Chain(sh.WithEnv(codexHomeEnvKey, line.home, cmd), sh.Exit())
++	if len(line.hooks) > 0 {
++		cmd += " --dangerously-bypass-hook-trust"
++	}
++	if line.firstTurn != "" {
++		cmd += " " + sh.Quote(line.firstTurn)
++	}
++	return sh.WithEnv(codexHomeEnvKey, line.home, cmd)
+ }
+ 
+ // buildResumeCmd composes the line reed replays to revive the strand: an exit of the pane's shell and no Codex.
+diff --git a/internal/shuttleengine/codexengine/command_test.go b/internal/shuttleengine/codexengine/command_test.go
+index 4223bcd7..b0ed2e47 100644
+--- a/internal/shuttleengine/codexengine/command_test.go
++++ b/internal/shuttleengine/codexengine/command_test.go
+@@ -11,6 +11,7 @@ import (
+ )
+ 
+ // TestBuildLaunchCmd pins the POSIX launch line: CODEX_HOME leading, every flag of the spike's line with the writable root, model and effort when set, each hook setting, the bypass flag, the first turn, and the shell exit.
++// It also pins an opened session's command: no hook bypass, no first turn and no exit when the line has no hooks and no first turn.
+ func TestBuildLaunchCmd(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -27,8 +28,8 @@ func TestBuildLaunchCmd(t *testing.T) {
+ 		},
+ 		{
+ 			name: "NoWritableRootModelOrEffort",
+-			line: launchLine{bin: "codex", home: "/h", firstTurn: "it's"},
+-			want: `CODEX_HOME='/h' 'codex' --no-alt-screen -a never -s workspace-write -c 'project_doc_fallback_filenames=["CLAUDE.md"]' --dangerously-bypass-hook-trust 'it'\''s'; exit`,
++			line: launchLine{bin: "codex", home: "/h", hooks: []string{`hooks.Stop=[{hooks=[]}]`}, firstTurn: "it's"},
++			want: `CODEX_HOME='/h' 'codex' --no-alt-screen -a never -s workspace-write -c 'project_doc_fallback_filenames=["CLAUDE.md"]' -c 'hooks.Stop=[{hooks=[]}]' --dangerously-bypass-hook-trust 'it'\''s'; exit`,
+ 		},
+ 	}
+ 	for _, tt := range tests {
+@@ -42,6 +43,10 @@ func TestBuildLaunchCmd(t *testing.T) {
+ 	if got := buildResumeCmd(shell.Posix()); got != "exit" {
+ 		t.Errorf("buildResumeCmd() = %q; want exit", got)
+ 	}
++	opened := launchLine{bin: "codex", home: "/h", model: "gpt-6-luna"}
++	if got, want := codexCommand(shell.Posix(), opened), `CODEX_HOME='/h' 'codex' --no-alt-screen -a never -s workspace-write -m 'gpt-6-luna' -c 'project_doc_fallback_filenames=["CLAUDE.md"]'`; got != want {
++		t.Errorf("codexCommand(%+v) = %s; want %s", opened, got, want)
++	}
+ }
+ 
+ // TestHookSettings pins one setting per recorded hook in order, then one PreToolUse setting holding every guard entry when guards are given, then the activity hook on every tool, each running the command for the run's events file.
+diff --git a/internal/shuttleengine/codexengine/doc.go b/internal/shuttleengine/codexengine/doc.go
+index b501ae27..87983342 100644
+--- a/internal/shuttleengine/codexengine/doc.go
++++ b/internal/shuttleengine/codexengine/doc.go
+@@ -10,7 +10,8 @@
+ //
+ // The launch line runs `-a never -s workspace-write`, so no approval prompt shows, and adds the records checkout it is told through its Dirs as a writable root, symlink-resolved as the trusted roots are and kept as told, with a Warn, when it cannot be resolved,
+ // so the session writes under the anchor's `.lym` as a Claude seat does; outside a hub it is told none and adds none.
+-// A committed `.codex/rules` folder refuses the launch, since an allow rule there lifts the sandbox; a committed `.codex/config.toml` is named in a Warn, since its hooks run unreviewed.
++// A `.codex/rules` folder in the worktree refuses the launch, since an allow rule there lifts the sandbox; a `.codex/config.toml` there is named in a Warn, since its hooks run unreviewed.
++// Both are read on disk, tracked by git or not, since Codex reads them either way.
+ // The first turn is the positional prompt pointer, and the pane's shell exits after Codex, so a Codex exit reads as a dead pane;
+ // the resume line starts no Codex, since Codex mints its session id at the first turn.
+ //
+@@ -28,5 +29,9 @@
+ // A skill `<plugin>:<name>` is a file the model reads: the load line names the newest version's skills/<name>/SKILL.md under codex.yaml's skill_roots by absolute path,
+ // and a tool call of the load turn naming that tail in the rollout reads the skill loaded; a skill under no root is reported unknown.
+ //
++// OpenLaunch opens a named interactive session with no prompt, for `lym shuttle open`: it validates the model choice and readies the lym home as Prepare does,
++// and its line runs Codex with no hooks and no first turn, so the session carries no shell guard and waits at its composer.
++// Its resume line is empty, so a revive starts no Codex and Runner.Open's chain ends the strand.
++//
+ // The engine has no fork audit, no transcript reading and no creel hooks.
+ package codexengine
+diff --git a/internal/shuttleengine/codexengine/fixture_test.go b/internal/shuttleengine/codexengine/fixture_test.go
+index c6dc3da4..2f614bb7 100644
+--- a/internal/shuttleengine/codexengine/fixture_test.go
++++ b/internal/shuttleengine/codexengine/fixture_test.go
+@@ -73,7 +73,12 @@ func (r repoFixture) addClone(t *testing.T, name string) string {
+ // writeCodexLayer writes anchor's codex.yaml local layer: the fixture's homes, then extra.
+ func (r repoFixture) writeCodexLayer(t *testing.T, anchor, extra string) {
+ 	t.Helper()
+-	path := configengine.LocalFile(anchor, "codex")
++	r.writeCodexConfig(t, configengine.LocalFile(anchor, "codex"), extra)
++}
++
++// writeCodexConfig writes the codex.yaml layer at path: the fixture's homes, then extra.
++func (r repoFixture) writeCodexConfig(t *testing.T, path, extra string) {
++	t.Helper()
+ 	mkdirAll(t, filepath.Dir(path))
+ 	writeFile(t, path, fmt.Sprintf("home: %s\noperator_home: %s\n%s", r.lymHome, r.operatorHome, extra))
+ }
+diff --git a/internal/shuttleengine/codexengine/home.go b/internal/shuttleengine/codexengine/home.go
+index 4990a037..170c049b 100644
+--- a/internal/shuttleengine/codexengine/home.go
++++ b/internal/shuttleengine/codexengine/home.go
+@@ -1,6 +1,6 @@
+ // home.go prepares the shared lym Codex home a launch runs under and reads the checkout the launch starts in.
+ // The home holds links to the operator home's login and sessions, lym's record of the roots it trusts, and the config.toml rendered whole from that record.
+-// The checkout gives the roots Codex keys folder trust on and the committed `.codex` folders a launch warns about or refuses.
++// The checkout gives the roots Codex keys folder trust on and the `.codex` folders in it, tracked by git or not, which a launch warns about or refuses.
+ 
+ package codexengine
+ 
+@@ -75,7 +75,8 @@ func readCheckout(anchor string) (checkout, error) {
+ 	return found, nil
+ }
+ 
+-// checkCodexFolders warns about the committed Codex settings a launch in found and anchor runs, and refuses a launch under committed Codex rules.
++// checkCodexFolders warns about the Codex settings a launch in found and anchor runs, and refuses a launch under Codex rules.
++// It reads the folders on disk, whether git tracks them or not, since Codex reads them either way.
+ // A `.codex/config.toml` in the worktree is named in a Warn.
+ // For a linked worktree whose root holds a `.codex` folder, the main checkout's `.codex/config.toml` is named too, since Codex then takes its hooks from that file.
+ // A `.codex/rules` directory in the worktree root or the anchor refuses the launch, since an allow rule there lifts the sandbox for its command, and the refusal is also logged.
+@@ -86,12 +87,12 @@ func (c *Codex) checkCodexFolders(found checkout, anchor string) error {
+ 	}
+ 	for _, folder := range folders {
+ 		if rules := filepath.Join(folder, rulesDirName); isDir(rules) {
+-			refusal := fmt.Errorf("codexengine: %s holds committed Codex rules, and an allow rule there lifts the sandbox for its command; way forward: remove the directory from the repository, or clear the round's assist model key so later rounds run no Codex seat", rules)
+-			c.warn("codexengine: refused a Codex launch under committed Codex rules", "path", rules)
++			refusal := fmt.Errorf("codexengine: %s holds Codex rules, and an allow rule there lifts the sandbox for its command, whether git tracks the directory or not; way forward: remove the directory from the worktree, in a commit when git tracks it, then launch again, or launch on an engine other than codex", rules)
++			c.warn("codexengine: refused a Codex launch under Codex rules in the worktree", "path", rules)
+ 			return refusal
+ 		}
+ 		if config := filepath.Join(folder, configFileName); isFile(config) {
+-			c.warn("codexengine: the worktree commits a Codex config, whose hooks and settings the session runs without review", "path", config)
++			c.warn("codexengine: the worktree holds a Codex config, whose hooks and settings the session runs without review", "path", config)
+ 		}
+ 	}
+ 	if found.mainRoot != "" && isDir(filepath.Join(found.root, codexFolderName)) {
+diff --git a/internal/shuttleengine/codexengine/open_test.go b/internal/shuttleengine/codexengine/open_test.go
+new file mode 100644
+index 00000000..e66b2e16
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/open_test.go
+@@ -0,0 +1,95 @@
++// open_test.go covers OpenLaunch: the launch of a session opened with no prompt, the lym home it readies, and the refusals that write nothing.
++
++package codexengine
++
++import (
++	"errors"
++	"os"
++	"path/filepath"
++	"reflect"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/shell"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestOpenLaunch pins the launch an opened session gets and what it refuses.
++// A valid spec gets the Codex command with the told records as its writable root, the model and the effort, no hooks, no first turn, an empty resume line, no creel hooks and no session id,
++// and the lym home trusts the checkout's roots while the session directory stays unmade.
++// A permission mode other than bypass, an effort codex.yaml does not list and Codex rules in the worktree are refused before the lym home is made.
++func TestOpenLaunch(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		spec shuttleengine.OpenSpec
++		// setup changes the worktree before OpenLaunch.
++		setup func(t *testing.T, anchor string)
++		// wantErr holds the texts a refusal must carry; empty means the launch goes ahead.
++		wantErr []string
++	}{
++		{name: "BypassDefault", spec: shuttleengine.OpenSpec{Role: "explore", ModelChoice: shuttleengine.ModelChoice{Engine: "codex", Model: "gpt-6-luna", Effort: "high"}}},
++		{name: "PromptPermissionMode", spec: shuttleengine.OpenSpec{Role: "explore", PermissionMode: "prompt"}, wantErr: []string{`permission mode "prompt"`, "way forward"}},
++		{name: "EffortOutsideEfforts", spec: shuttleengine.OpenSpec{Role: "explore", ModelChoice: shuttleengine.ModelChoice{Effort: "xhigh"}}, wantErr: []string{`effort "xhigh"`, "way forward"}},
++		{
++			name: "RulesInWorktree",
++			spec: shuttleengine.OpenSpec{Role: "explore"},
++			setup: func(t *testing.T, anchor string) {
++				mkdirAll(t, filepath.Join(anchor, codexFolderName, rulesDirName))
++			},
++			wantErr: []string{filepath.Join(codexFolderName, rulesDirName), "way forward"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			repo := newRepoFixture(t)
++			anchor, records := repo.addWorktree(t, "wt")
++			if tt.setup != nil {
++				tt.setup(t, anchor)
++			}
++			engine, _ := newEngine(anchor)
++			engine.dirs.Records = records
++			sessionDir := filepath.Join(t.TempDir(), "session")
++
++			launch, err := engine.OpenLaunch(sessionDir, tt.spec, shuttleengine.Config{})
++			if len(tt.wantErr) > 0 {
++				if err == nil {
++					t.Fatal("OpenLaunch() error = nil; want a refusal")
++				}
++				for _, want := range tt.wantErr {
++					if !strings.Contains(err.Error(), want) {
++						t.Errorf("OpenLaunch() error %q does not contain %q", err, want)
++					}
++				}
++				if _, statErr := os.Lstat(repo.lymHome); !errors.Is(statErr, os.ErrNotExist) {
++					t.Errorf("lym home stat error = %v; want the home unmade", statErr)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("OpenLaunch() error: %v", err)
++			}
++
++			want := shuttleengine.Launch{Cmd: codexCommand(shell.ForGOOS(), launchLine{
++				bin:           "codex",
++				home:          repo.lymHome,
++				writableRoots: []string{records},
++				model:         tt.spec.Model,
++				effort:        tt.spec.Effort,
++			})}
++			if !reflect.DeepEqual(launch, want) {
++				t.Errorf("OpenLaunch() launch = %+v; want %+v", launch, want)
++			}
++			if got, want := readRecord(t, repo.lymHome).Roots, []string{repo.mainRoot, anchor}; !reflect.DeepEqual(got, want) {
++				t.Errorf("trust record roots = %v; want %v", got, want)
++			}
++			if _, statErr := os.Lstat(sessionDir); !errors.Is(statErr, os.ErrNotExist) {
++				t.Errorf("session dir stat error = %v; want the directory unmade", statErr)
++			}
++		})
++	}
++}
+diff --git a/internal/shuttleengine/codexengine/prepare_test.go b/internal/shuttleengine/codexengine/prepare_test.go
+index 18af8698..bb2241f1 100644
+--- a/internal/shuttleengine/codexengine/prepare_test.go
++++ b/internal/shuttleengine/codexengine/prepare_test.go
+@@ -1,6 +1,6 @@
+ // prepare_test.go covers Prepare and the lym Codex home.
+ // It covers the launch Prepare returns, the trust record and config.toml it renders, and the links it makes.
+-// It also covers the refusals that write nothing, the warnings about a committed Codex folder or a home entry that is not lym's link, and the check after startup.
++// It also covers the refusals that write nothing, the warnings about a Codex folder in the worktree or a home entry that is not lym's link, and the check after startup.
+ 
+ package codexengine
+ 
+@@ -179,6 +179,8 @@ func TestPrepare_InstallsGuardsFromItsInputs(t *testing.T) {
+ }
+ 
+ // TestPrepare_AppendsStandingPassages pins that the prompt file opens with the deny notice and the passages the reader finds for engine codex and the spec's role, each before a blank line.
++// The told board's base layer names the fixture's homes, since a told board hides the local layer of a worktree with no `_lym` folder,
++// and the test checks the launch readied the fixture's lym home, so it never reaches the operator's.
+ // It installs the process-wide passage reader, so it does not run in parallel.
+ func TestPrepare_AppendsStandingPassages(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -186,7 +188,9 @@ func TestPrepare_AppendsStandingPassages(t *testing.T) {
+ 	repo := newRepoFixture(t)
+ 	anchor, _ := repo.addWorktree(t, "wt")
+ 	engine, _ := newEngine(anchor)
+-	engine.dirs.Board = t.TempDir()
++	board := t.TempDir()
++	repo.writeCodexConfig(t, configengine.ConfigFile(board, "codex"), "")
++	engine.dirs.Board = board
+ 	var asked []string
+ 	restore := shuttleengine.InstallPassageReader(func(boltDir, engine, role string) ([]string, error) {
+ 		asked = append(asked, engine, role)
+@@ -205,6 +209,9 @@ func TestPrepare_AppendsStandingPassages(t *testing.T) {
+ 	if want := []string{"codex", "code-review-assist"}; !reflect.DeepEqual(asked, want) {
+ 		t.Errorf("passage reader asked for %v; want %v", asked, want)
+ 	}
++	if got, want := readRecord(t, repo.lymHome).Roots, []string{repo.mainRoot, anchor}; !reflect.DeepEqual(got, want) {
++		t.Errorf("fixture lym home trust roots = %v; want %v", got, want)
++	}
+ }
+ 
+ // TestPrepare_ReadiesHome pins the lym home a launch leaves.
+@@ -346,15 +353,15 @@ func TestPrepare_RefusesBeforeWriting(t *testing.T) {
+ 		{name: "ResumedSession", spec: shuttleengine.Spec{ResumeSessionID: "abc"}, wantErr: []string{"cannot be resumed", "way forward"}},
+ 		{name: "EffortOutsideEfforts", spec: shuttleengine.Spec{ModelChoice: shuttleengine.ModelChoice{Effort: "xhigh"}}, wantErr: []string{`effort "xhigh"`, "codex.yaml's efforts", "way forward"}},
+ 		{
+-			name: "CommittedRules",
++			name: "RulesInWorktree",
+ 			setup: func(t *testing.T, anchor string) {
+ 				mkdirAll(t, filepath.Join(anchor, codexFolderName, rulesDirName))
+ 			},
+-			wantErr:  []string{filepath.Join(codexFolderName, rulesDirName), "way forward", "remove the directory"},
++			wantErr:  []string{filepath.Join(codexFolderName, rulesDirName), "way forward", "remove the directory", "launch on an engine other than codex"},
+ 			wantWarn: filepath.Join(codexFolderName, rulesDirName),
+ 		},
+ 		{
+-			name:      "CommittedRulesUnderSubfolderAnchor",
++			name:      "RulesUnderSubfolderAnchor",
+ 			anchorRel: "sub",
+ 			setup: func(t *testing.T, anchor string) {
+ 				mkdirAll(t, filepath.Join(anchor, "sub", codexFolderName, rulesDirName))
+@@ -401,7 +408,7 @@ func TestPrepare_RefusesBeforeWriting(t *testing.T) {
+ 	}
+ }
+ 
+-// TestPrepare_Warnings pins the warnings a launch goes on despite: a committed worktree config, the main checkout's config behind a worktree's `.codex` folder,
++// TestPrepare_Warnings pins the warnings a launch goes on despite: a worktree config, the main checkout's config behind a worktree's `.codex` folder,
+ // and a home auth.json or sessions that is a regular file or a link elsewhere, which Prepare keeps.
+ func TestPrepare_Warnings(t *testing.T) {
+ 	tiergate.Require(t, 0)
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 5fc24d0f..952a76a7 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -72,8 +72,8 @@
+ //
+ // A turn end without every output file never ends a run: Wait holds it, logs it at Info and keeps polling the same agent,
+ // whether the turn end is a Stop or a live ask.
+-// A run ends only as done (every output file present at a turn end, or at the deadline or a pane's death), died, timeout, api-error (a spec with APIErrorRetries only) or a mechanism failure.
+-// A died run whose strand is own-window keeps its last pane capture in `died-capture.txt` in the run directory and loses its strand;
++// A run ends only as done (every output file present at a turn end, or at the deadline or a pane's death), died, timeout, api-error (a spec with APIErrorRetries, or a turn end the engine marks ModelRejected) or a mechanism failure.
++// A died or api-error run whose strand is own-window keeps its last pane capture in `died-capture.txt` in the run directory and loses its strand, and an anchored strand stays;
+ // a timed-out run keeps its strand, since its agent may still be live.
+ // A run's strand lands in a window of its own unless its spec names an anchor.
+ // A turn end that precedes the start prompt's own turn start is not a task turn end:
+@@ -120,7 +120,7 @@
+ // A turn end on an API error that is not also an event, such as Claude's StopFailure, holds nothing and sends no notice.
+ // A run whose Spec.APIErrorRetries is set re-sends such a turn with one line after a back-off that doubles with each API-error turn end of the run, and the one past the last re-send ends the run OutcomeAPIError, Result.APIError naming the error, unless every output file exists, which ends it done.
+ // A run with no retries waits such a turn end out to its deadline.
+-// RunState.NotifiedOffset, the events-file offset past the last notified one, is persisted before the notifier is called,
++// A turn end the engine marks SessionSignal.ModelRejected ends the run OutcomeAPIError at once, retries or not, unless every output file exists, since no re-send changes the model.// RunState.NotifiedOffset, the events-file offset past the last notified one, is persisted before the notifier is called,
+ // and a held turn end at or below it is never notified again, including when an Attach replays it.
+ // A batch of several new events is classified by its last event, so only its last held turn end is notified.
+ // It stays provider-invariant, per the Shuttle Provider-Seam Invariant.
+diff --git a/internal/shuttleengine/engine.go b/internal/shuttleengine/engine.go
+index a28a12ec..8432158c 100644
+--- a/internal/shuttleengine/engine.go
++++ b/internal/shuttleengine/engine.go
+@@ -31,7 +31,7 @@ const (
+ 	// OutcomeTimeout: wall-clock Timeout elapsed before output files written.
+ 	// A provider crash behind a still-live pane shell that nothing proves, such as an engine without liveness probing, also ends here.
+ 	OutcomeTimeout Outcome = "timeout"
+-	// OutcomeAPIError: the provider's API ended the agent's turn on an error past the re-sends Spec.APIErrorRetries allows, before output files were written.
++	// OutcomeAPIError: the provider's API ended the agent's turn on an error past the re-sends Spec.APIErrorRetries allows, or at once on a model the provider rejected, before output files were written.
+ 	OutcomeAPIError Outcome = "api-error"
+ )
+ 
+diff --git a/internal/shuttleengine/fakes_test.go b/internal/shuttleengine/fakes_test.go
+index c71e74b1..3eefacb5 100644
+--- a/internal/shuttleengine/fakes_test.go
++++ b/internal/shuttleengine/fakes_test.go
+@@ -799,7 +799,7 @@ func (r *skillReed) CapturePane(guid string) (string, error) {
+ var _ ReedOps = (*skillReed)(nil)
+ 
+ // sessionFakeEngine is waitingEngine plus the opt-in SessionSignalParser, SessionProber and ActivityReader capabilities.
+-// ParseSessionSignals reads "START" as a turn start, "START:<text>" as a turn start carrying <text> as its typed instruction, "APIERR" and "APIERR:<text>" as an API-error turn end carrying <text> as its error, "STOP:<message>" as a turn end, "WAIT:<message>" as a turn end carrying outstanding, "ASK" as an ask, "SESSIONSTART" or "SESSIONSTART:<source>" as a session start with that source and "SESSIONEND:<reason>" as a session end that ends the process unless its reason is "clear".
++// ParseSessionSignals reads "START" as a turn start, "START:<text>" as a turn start carrying <text> as its typed instruction, "APIERR" and "APIERR:<text>" as an API-error turn end carrying <text> as its error, "REJECT:<text>" as such a turn end marked ModelRejected, "STOP:<message>" as a turn end, "WAIT:<message>" as a turn end carrying outstanding, "ASK" as an ask, "SESSIONSTART" or "SESSIONSTART:<source>" as a session start with that source and "SESSIONEND:<reason>" as a session end that ends the process unless its reason is "clear".
+ // Every signal names session-1, and the read consumes through the last complete line.
+ // ProcessLiveness answers liveness for any session id, and TurnStartInterrupt answers interrupted and interruptAt for any turn start.
+ // TurnEndActivity marks a turn end as an API error when its line is apiErrorLine.
+@@ -864,6 +864,10 @@ func (e *sessionFakeEngine) ParseSessionSignals(data []byte) ([]SessionSignal, i
+ 		case strings.HasPrefix(trimmed, "APIERR:"):
+ 			signal.Kind = SessionSignalAPIErrorTurnEnd
+ 			signal.ErrorText = strings.TrimPrefix(trimmed, "APIERR:")
++		case strings.HasPrefix(trimmed, "REJECT:"):
++			signal.Kind = SessionSignalAPIErrorTurnEnd
++			signal.ErrorText = strings.TrimPrefix(trimmed, "REJECT:")
++			signal.ModelRejected = true
+ 		case trimmed == "ASK":
+ 			signal.Kind = SessionSignalAsk
+ 		case strings.HasPrefix(trimmed, "SESSIONSTART"):
+diff --git a/internal/shuttleengine/sessionsignal.go b/internal/shuttleengine/sessionsignal.go
+index 82a88e04..8a970d49 100644
+--- a/internal/shuttleengine/sessionsignal.go
++++ b/internal/shuttleengine/sessionsignal.go
+@@ -55,6 +55,9 @@ type SessionSignal struct {
+ 	Outstanding []BackgroundTask
+ 	// ErrorText is an API-error turn end's text; empty on every other kind.
+ 	ErrorText string
++	// ModelRejected is true when an API-error turn end says the provider does not know the session's model, which no re-send clears;
++	// the provider decides which errors say so, and it is false on every other kind.
++	ModelRejected bool
+ 	// Reason is a session end's reason; empty on every other kind.
+ 	Reason string
+ 	// EndsProcess is true when a session end's reason ends the provider's process; the provider decides which reasons do.
+diff --git a/internal/shuttleengine/spec.go b/internal/shuttleengine/spec.go
+index 212e2e43..1fbe1c33 100644
+--- a/internal/shuttleengine/spec.go
++++ b/internal/shuttleengine/spec.go
+@@ -77,6 +77,7 @@ type Spec struct {
+ 	// Each re-send waits a back-off that doubles with each API-error turn end of the run,
+ 	// and the API-error turn end past the last re-send ends the run OutcomeAPIError, whose Result names the error.
+ 	// Zero re-sends nothing, and such a turn end then waits out the run's deadline.
++	// A turn end the engine marks as rejecting the session's model ends the run OutcomeAPIError at once, whatever this count.
+ 	// validate does not inspect it.
+ 	APIErrorRetries int
+ 	// HoldDeferral, when set, reports whether outstanding work elsewhere defers this run's held-turn parent notice.
+diff --git a/internal/shuttleengine/wait.go b/internal/shuttleengine/wait.go
+index d1ea4d46..8051bbec 100644
+--- a/internal/shuttleengine/wait.go
++++ b/internal/shuttleengine/wait.go
+@@ -5,7 +5,7 @@
+ // died is reserved for a strand reed STILL TRACKS AND STILL HOLDS A PANE FOR, whose pane is not alive;
+ // the two ways reed's own bookkeeping can go away instead — a strand it no longer tracks (errStrandNotTracked) and a strand whose pane binding it cleared (errStrandPaneBindingCleared) — are mechanism failures, not classifications.
+ // The exception is a handle whose own Stop removed the strand: its Wait ends OutcomeDied, which finalize records as stopped unless the files show the run done.
+-// A turn end without every output file never ends the run: Wait logs the hold and keeps polling the same agent, so every other exit (OutcomeDone, OutcomeDied, a liveness mechanism failure, OutcomeTimeout, and OutcomeAPIError for a spec with APIErrorRetries) is the only way out.
++// A turn end without every output file never ends the run: Wait logs the hold and keeps polling the same agent, so every other exit (OutcomeDone, OutcomeDied, a liveness mechanism failure, OutcomeTimeout, and OutcomeAPIError for a spec with APIErrorRetries or a turn end the engine marks ModelRejected) is the only way out.
+ // That observation is logged at Info, so it reaches internal/logger's DURABLE trace sink (.lym/logs/trace-<stamp>-<trace>-<pid>.log, unconditionally enabled at Info) and not the detached driver's own log, which captures stderr and therefore only Warn and above.
+ // An operator asking "is this interview waiting for me, or is it wedged?"
+ // reads the trace sink.
+@@ -218,7 +218,7 @@ var ErrAgentDied = errors.New("shuttle: the agent died before it wrote its outpu
+ // Error is reserved for mechanism failures that leave no classifiable outcome.
+ // A turn end without every output file is held, never terminal: Wait logs the hold and keeps polling,
+ // so it terminates only on OutcomeDone, OutcomeDied, a liveness mechanism failure or OutcomeTimeout.
+-// It also terminates on OutcomeAPIError, once a spec's APIErrorRetries re-sends of API-error turn ends are spent.
++// It also terminates on OutcomeAPIError, once a spec's APIErrorRetries re-sends of API-error turn ends are spent, or at once on a turn end the engine marks ModelRejected.
+ //
+ // An error result still carries the run's IDENTITY — SessionID, StrandGUID, and RunDir — with an
+ // empty Outcome, because a mechanism failure is precisely when a caller needs them: no cleanup ran,
+@@ -1965,27 +1965,27 @@ func (run *Run) finalize(outcome Outcome) (Result, error) {
+ 	return result, nil
+ }
+ 
+-// diedCaptureFileName is where removeDiedOwnWindowStrand saves a died run's last pane capture in the run directory.
++// diedCaptureFileName is where removeEndedOwnWindowStrand saves an ended run's last pane capture in the run directory.
+ const diedCaptureFileName = "died-capture.txt"
+ 
+ // finalizeAndRemoveDiedWindow finalizes the run with outcome, then ends the window of a died run's own-window strand.
+ func (run *Run) finalizeAndRemoveDiedWindow(outcome Outcome) (Result, error) {
+ 	result, err := run.finalize(outcome)
+ 	if result.Outcome == OutcomeDied {
+-		run.removeDiedOwnWindowStrand()
++		run.removeEndedOwnWindowStrand()
+ 	}
+ 	return result, err
+ }
+ 
+-// removeDiedOwnWindowStrand saves a died run's last pane capture to died-capture.txt in the run directory and removes the run's strand, when the strand is tracked, own-window and present.
++// removeEndedOwnWindowStrand saves a died or api-error run's last pane capture to died-capture.txt in the run directory and removes the run's strand, when the strand is tracked, own-window and present.
+ // A window 0 strand is left to reed's reconcile.
+ // A failed capture or write is a Warn and the removal still runs; a failed removal is a Warn naming `lym reed remove` as the way forward.
+-func (run *Run) removeDiedOwnWindowStrand() {
++func (run *Run) removeEndedOwnWindowStrand() {
+ 	guid := run.state.StrandGUID
+ 	reed := run.runner.reed
+ 	status, err := reed.Status()
+ 	if err != nil {
+-		logger.Warn("shuttle: died run: probe reed before removing its own-window strand failed (non-fatal)", "strandGUID", guid, "error", err)
++		logger.Warn("shuttle: ended run: probe reed before removing its own-window strand failed (non-fatal)", "strandGUID", guid, "error", err)
+ 		return
+ 	}
+ 	strand, tracked := strandStatusByGUID(status.Strands, guid)
+@@ -1993,13 +1993,13 @@ func (run *Run) removeDiedOwnWindowStrand() {
+ 		return
+ 	}
+ 	if capture, err := reed.CapturePane(guid); err != nil {
+-		logger.Warn("shuttle: died run: capture the own-window pane failed (non-fatal)", "strandGUID", guid, "error", err)
++		logger.Warn("shuttle: ended run: capture the own-window pane failed (non-fatal)", "strandGUID", guid, "error", err)
+ 	} else if err := os.WriteFile(filepath.Join(run.runDir, diedCaptureFileName), []byte(capture), 0o644); err != nil {
+-		logger.Warn("shuttle: died run: save the last pane capture failed (non-fatal)", "runDir", run.runDir, "strandGUID", guid, "error", err)
++		logger.Warn("shuttle: ended run: save the last pane capture failed (non-fatal)", "runDir", run.runDir, "strandGUID", guid, "error", err)
+ 	}
+ 	if _, err := reed.RemoveStrand(guid, false); err != nil {
+-		logger.Warn("shuttle: died run: remove the own-window strand failed; run \"lym reed remove\" to clear it", "strandGUID", guid, "error", err)
++		logger.Warn("shuttle: ended run: remove the own-window strand failed; run \"lym reed remove\" to clear it", "strandGUID", guid, "error", err)
+ 		return
+ 	}
+-	logger.Info("shuttle: removed a died run's own-window strand", "runDir", run.runDir, "strandGUID", guid)
++	logger.Info("shuttle: removed an ended run's own-window strand", "runDir", run.runDir, "strandGUID", guid)
+ }
