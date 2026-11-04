@@ -22,6 +22,12 @@ Two interim repairs ahead of the Drift rework the report proposes; nothing else 
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-04): Drop the --skip name check; keep the accept check
+
+Decision: Wanted item 1 covers lym drift accept only. lym drift scope --skip stays unchecked: it runs at Drift-Baseline before any capture, and a capture writes no file for a skipped test, so a check against the baseline directory would refuse every partial scope. The capture harness already refuses an unknown skip name, and the partial scope goes in the Drift rework.
+
+Rationale: Option (a) from the writer's question #647: a check that cannot hold as written is dropped rather than rebuilt for a scope the rework removes.
+
 ## Constraints
 
 ## Auto-mode assumptions
