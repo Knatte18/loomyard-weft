@@ -2,6 +2,8 @@
 
 `pr-reviewer-github-access` · Task · enhancement, landing, stencil · draft
 
+Depends on: [`beam-pr-lifecycle`](design-beam-pr-lifecycle.md)
+
 Imported from [issue #45](https://github.com/Knatte18/loomyard/issues/45).
 
 A pr-reviewer session runs under the publish deny (`shellguard` `SwitchDenyPublish`, `steerPublishDeny` in `internal/shellguard/rows.go`). That deny refuses `git push` and every `gh` call, including read-only ones such as `gh pr view`, `gh pr list` and `gh api` GET. lym also offers the agent no verb of its own to read a pull request.

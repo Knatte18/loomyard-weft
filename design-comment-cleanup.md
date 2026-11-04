@@ -2,6 +2,8 @@
 
 `comment-cleanup` · Task · enhancement, fabric · draft
 
+Depends on: [`drift-whole-review`](design-drift-whole-review.md), [`codex-trial-home-sandbox`](design-codex-trial-home-sandbox.md), [`codex-trial-hooks-guards-skills`](design-codex-trial-hooks-guards-skills.md), [`codex-trial-pane-load`](design-codex-trial-pane-load.md), [`beam-pr-lifecycle`](design-beam-pr-lifecycle.md), [`shuttle-launch-delivery`](design-shuttle-launch-delivery.md), [`drift-capture-and-migration`](design-drift-capture-and-migration.md), [`pr-reviewer-github-access`](design-pr-reviewer-github-access.md), [`gate-runner-crash-fixer`](design-gate-runner-crash-fixer.md), [`dobby-zombie-children`](design-dobby-zombie-children.md), [`drive-reports-untracked`](design-drive-reports-untracked.md)
+
 ## Seen (operator and hub orch, 2026-10-31)
 
 Comments in the Go source go stale as the code moves on.

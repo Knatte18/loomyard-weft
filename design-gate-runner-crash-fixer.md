@@ -2,6 +2,8 @@
 
 `gate-runner-crash-fixer` · Task · bug, gate, landing · draft
 
+Depends on: [`beam-pr-lifecycle`](design-beam-pr-lifecycle.md)
+
 ## Seen
 
 On the `cs` hub, task `transitional-report-note` (Drift trial 2, 2026-11-03) ran its Finalize gate at 20:36:40.
