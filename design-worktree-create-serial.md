@@ -1,6 +1,6 @@
 # Worktree-Create runs one at a time and spends minutes on network round trips
 
-`worktree-create-serial` · Task · bug, fabric, batten, dobby · running · Describe
+`worktree-create-serial` · Task · bug, fabric, batten, dobby · running · PR-Review
 
 ## Seen (operator and hub orch, 2026-11-04)
 
