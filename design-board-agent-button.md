@@ -1,6 +1,6 @@
 # A status-bar button opens a short-lived board agent, so board talks need no orch
 
-`board-agent-button` · Task · feature, reed, board, shuttle, orch · running · Drift-Await
+`board-agent-button` · Task · feature, reed, board, shuttle, orch · running · Darn-Write
 
 ## Seen (operator, 2026-10-31)
 
