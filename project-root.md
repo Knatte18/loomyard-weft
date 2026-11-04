@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (4)
+### Running (5)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -22,14 +22,13 @@ Held by a run; its scope is locked until the run ends.
 | T8 | **A shuttle session gets its prompt and its creel hooks at launch**<br>• Darn-Write never got its shuttle prompt; a lym shuttle open session gets no creel hooks | [`shuttle-launch-delivery`](design-shuttle-launch-delivery.md) | darn · light | Worktree-Create | neve | 15h<br>56m | shuttle, claude, creel, darn, loom |
 | T9 | **Drift capture fails by name with no baseline, and a reinterpreted drift.yaml is migrated**<br>• A capture that writes no baseline fails with a cause; a binary that moves the dir base migrates drift.yaml | [`drift-capture-and-migration`](design-drift-capture-and-migration.md) | darn · light | Worktree-Create | neve | 18h<br>56m | drift, loom, reconcile |
 | T12 | **Dobby and the orch watcher leave their child processes as zombies**<br>• Hundreds of defunct lym children pile up under dobby and orch watch, and tender lists them as live | [`dobby-zombie-children`](design-dobby-zombie-children.md) | darn · light | Record-Write | neve | 15h<br>56m | dobby, orch, tender, process |
+| T13 | **loom drive writes untracked files under _lym/; _lym is expected to be fully tracked** | [`drive-reports-untracked`](design-drive-reports-untracked.md) | darn · light | Worktree-Create | neve | 1h<br>56m | loom, shed, fabric |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T13 | **loom drive writes untracked files under _lym/; _lym is expected to be fully tracked** | [`drive-reports-untracked`](design-drive-reports-untracked.md) | darn · light |  | 1h<br>56m | loom, shed, fabric |
+_None._
 
 ### Layer A (2)
 
