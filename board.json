@@ -906,27 +906,6 @@
       "revised": "2026-11-04T10:07:42Z"
     },
     {
-      "id": 1086,
-      "handle": "E2",
-      "slug": "squash-names-pr",
-      "title": "Name the PR in squash commits and list a beam's sub-PRs in Beam-Describe",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "landing",
-        "pawl"
-      ],
-      "issues": [
-        44
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #44](https://github.com/Knatte18/loomyard/issues/44).\n\nWhen a task lands through a pull request, the squash commit lym writes carries only the task title, for example `Tool-joint pressure loss in the hydraulics`. Nothing in the commit names the pull request it came from. Landed board entries are pruned, so their `pull_request` field is gone too.\n\nOn beam `duplication-and-import-followups` (NORCE-DrillingAndWells/Models PR #267), the operator wanted the beam's PR description to list every sub-task PR merged into the beam branch. The pr-reviewer could not rebuild that list from git or from lym's records, which named only two of the eleven PRs. The orch had to list them by hand with `gh pr list --base \u003cbeam-branch\u003e --state merged`.\n\nWanted:\n\n1. Squash commits end the subject with the PR number the way GitHub's own squash merge does: `Tool-joint pressure loss in the hydraulics (#266)`.\n2. Beam-Describe lists every sub-task PR merged into the beam branch, oldest first. Each entry gives the linked PR number, title, merge time and a short summary of what it did. Commits made straight to the beam branch with no PR (including merges from the parent) appear in the same order with a commit link. The final body of PR #267 shows the wanted shape: https://github.com/NORCE-DrillingAndWells/Models/pull/267\n\nWith item 1 in place, Beam-Describe can read the PR numbers from the beam's own commit subjects. Without it, Beam-Describe can query GitHub for PRs whose base is the beam branch.",
-      "created": "2026-11-04T10:07:48Z",
-      "revised": "2026-11-04T10:07:48Z"
-    },
-    {
       "id": 1087,
       "handle": "E4",
       "slug": "pr-reviewer-github-access",
@@ -949,25 +928,30 @@
     },
     {
       "id": 1088,
-      "handle": "F19",
-      "slug": "beam-reopen",
-      "title": "Reopen a beam from PR-Review: cancel its pull request and go back to Beam-Await",
-      "kind": "note",
+      "handle": "T7",
+      "slug": "beam-pr-lifecycle",
+      "title": "Beam pull requests: reopen a beam from PR-Review, name PRs in squash commits, list sub-PRs",
+      "kind": "task",
       "labels": [
         "feature",
+        "enhancement",
         "pawl",
         "landing",
         "cli"
       ],
       "issues": [
-        46
+        46,
+        44
       ],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #46](https://github.com/Knatte18/loomyard/issues/46).\n\nA beam's pawl run cannot take new work once it has left Beam-Await. Suppose the operator flags a beam ready, the run reaches PR-Review, and then a new task should join the beam. Today that takes several untested manual steps:\n\n- `lym loom goto --to Beam-Await` only moves a halted run, but at PR-Review the run is awaiting, so it has to be paused first and resumed afterwards.\n- `lym beam ready` writes and commits `_lym/landing/beam-ready.json`, and no `unready` verb exists. While the flag stands, the dobby lands the beam again as soon as nothing works under it.\n- The open pull request to the parent stays open with a stale body. Only lym may close it, and it is unclear whether a later PR-Review reuses it or opens a new one.\n- The pr-reviewer's rewritten `summary.md` in the weft goes stale too.\n\nThis came up on beam `duplication-and-import-followups` (NORCE-DrillingAndWells/Models PR #267).\n\nWanted: one operator verb, for example `lym beam reopen \u003cslug\u003e`, that does all of this in one step:\n\n1. Refuses unless the beam's pawl run is at PR-Review, or at a row after Beam-Await and before Finalize.\n2. Stops the pr-reviewer and closes the beam's pull request with a comment saying the beam was reopened.\n3. Removes the ready flag.\n4. Moves the run back to Beam-Await and leaves it waiting, so the beam can take new members. A later `lym beam ready` lands it again through Parent-Align, Beam-Describe and a fresh PR-Review.\n\n## Issue comment, 2026-11-04\n\nAmendment to step 2: the verb need not close the pull request. It can keep the PR open, convert it to a draft, and post a comment saying the beam was reopened. The next PR-Review then reuses that PR, and Beam-Describe refreshes its body, rather than opening a new one. This keeps the PR's link, its review comments and its history. Closing the PR remains an option, for example through a flag, for the case where the reopened work changes the beam's scope enough that a fresh PR reads better.",
-      "created": "2026-11-04T10:07:56Z",
-      "revised": "2026-11-04T10:07:56Z"
+      "brief": "lym beam reopen back to Beam-Await, PR number in squash subjects, Beam-Describe lists the sub-task PRs",
+      "body": "Two parts, both on a beam's pull request lifecycle, from issues #46 and #44.\n\n## Part 1: reopen a beam from PR-Review (issue #46)\n\nA beam's pawl run cannot take new work once it has left Beam-Await. Suppose the operator flags a beam ready, the run reaches PR-Review, and then a new task should join the beam. Today that takes several untested manual steps:\n\n- `lym loom goto --to Beam-Await` only moves a halted run, but at PR-Review the run is awaiting, so it has to be paused first and resumed afterwards.\n- `lym beam ready` writes and commits `_lym/landing/beam-ready.json`, and no `unready` verb exists. While the flag stands, the dobby lands the beam again as soon as nothing works under it.\n- The open pull request to the parent stays open with a stale body.\n- The pr-reviewer's rewritten `summary.md` in the weft goes stale too.\n\nThis came up on beam `duplication-and-import-followups` (NORCE-DrillingAndWells/Models PR #267).\n\nWanted: one operator verb, for example `lym beam reopen \u003cslug\u003e`, that does all of this in one step:\n\n1. Refuses unless the beam's pawl run is at PR-Review, or at a row after Beam-Await and before Finalize.\n2. Stops the pr-reviewer, keeps the pull request open, converts it to a draft and posts a comment saying the beam was reopened.\n   The next PR-Review reuses that PR and Beam-Describe refreshes its body, which keeps the PR's link, review comments and history.\n   A flag closes the PR instead, for when the reopened work changes the beam's scope enough that a fresh PR reads better.\n3. Removes the ready flag.\n4. Moves the run back to Beam-Await and leaves it waiting, so the beam can take new members. A later `lym beam ready` lands it again through Parent-Align, Beam-Describe and PR-Review.\n\n## Part 2: name the PR in squash commits and list a beam's sub-PRs (issue #44)\n\nWhen a task lands through a pull request, the squash commit lym writes carries only the task title, for example `Tool-joint pressure loss in the hydraulics`. Nothing in the commit names the pull request it came from. Landed board entries are pruned, so their `pull_request` field is gone too.\n\nOn the same beam the operator wanted the beam's PR description to list every sub-task PR merged into the beam branch. The pr-reviewer could not rebuild that list from git or from lym's records, which named only two of the eleven PRs; the orch listed them by hand with `gh pr list --base \u003cbeam-branch\u003e --state merged`.\n\nWanted:\n\n1. Squash commits end the subject with the PR number the way GitHub's own squash merge does: `Tool-joint pressure loss in the hydraulics (#266)`.\n2. Beam-Describe lists every sub-task PR merged into the beam branch, oldest first. Each entry gives the linked PR number, title, merge time and a short summary of what it did. Commits made straight to the beam branch with no PR (including merges from the parent) appear in the same order with a commit link. The final body of PR #267 shows the wanted shape: https://github.com/NORCE-DrillingAndWells/Models/pull/267\n\nWith item 1 in place, Beam-Describe reads the PR numbers from the beam's own commit subjects.\n",
+      "status": "draft",
+      "created": "2026-11-04T10:07:48Z",
+      "revised": "2026-11-04T10:22:32Z",
+      "profile": "solid"
     }
   ],
   "prime_owner": "neve",
