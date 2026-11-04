@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-04 12:11 UTC; every age below is as of then.
+Rendered 2026-11-04 12:12 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -80,7 +80,7 @@ Held by a run; its scope is locked until the run ends.
 | T7 | **Beam pull requests: reopen a beam from PR-Review, name PRs in squash commits, list sub-PRs**<br>• lym beam reopen back to Beam-Await, PR number in squash subjects, Beam-Describe lists the sub-task PRs | [`beam-pr-lifecycle`](design-beam-pr-lifecycle.md) | darn · solid | Code-Burler-Fix | neve | 2h<br>1h | pawl, landing, cli |
 | T8 | **A shuttle session gets its prompt and its creel hooks at launch**<br>• Darn-Write never got its shuttle prompt; a lym shuttle open session gets no creel hooks | [`shuttle-launch-delivery`](design-shuttle-launch-delivery.md) | darn · light | Darn-Write | neve | 16h<br>1h | shuttle, claude, creel, darn, loom |
 | T9 | **Drift capture fails by name with no baseline, and a reinterpreted drift.yaml is migrated**<br>• A capture that writes no baseline fails with a cause; a binary that moves the dir base migrates drift.yaml | [`drift-capture-and-migration`](design-drift-capture-and-migration.md) | darn · light | Code-Burler-Fix | neve | 19h<br>1h | drift, loom, reconcile |
-| T12 | **Dobby and the orch watcher leave their child processes as zombies**<br>• Hundreds of defunct lym children pile up under dobby and orch watch, and tender lists them as live | [`dobby-zombie-children`](design-dobby-zombie-children.md) | darn · light | Code-Burler-Review | neve | 16h<br>1h | dobby, orch, tender, process |
+| T12 | **Dobby and the orch watcher leave their child processes as zombies**<br>• Hundreds of defunct lym children pile up under dobby and orch watch, and tender lists them as live | [`dobby-zombie-children`](design-dobby-zombie-children.md) | darn · light | Code-Burler-Fix | neve | 16h<br>1h | dobby, orch, tender, process |
 
 #### Ready (0)
 
@@ -121,7 +121,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• No waiting line in loom or batten status and no notice while PR-Review waits for a human review | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 16h<br>1h | landing, loom, batten |
-| B2 |  | **Worktree-Create runs one at a time and spends minutes on network round trips**<br>• Five released tasks left Worktree-Create one by one over minutes, behind fetches, remote-ref reads and a weft push | [`worktree-create-serial`](design-worktree-create-serial.md) | 53m<br>50m | fabric, batten, dobby |
+| B2 |  | **Worktree-Create runs one at a time and spends minutes on network round trips**<br>• Five released tasks left Worktree-Create one by one over minutes, behind fetches, remote-ref reads and a weft push | [`worktree-create-serial`](design-worktree-create-serial.md) | 53m<br>51m | fabric, batten, dobby |
 | B3 |  | **lym shuttle run takes no model spec and has no engine choice**<br>• run --model is a provider id on the configured engine, so luna[medium] launched a Claude session and failed model_not_found; open takes a spec | [`shuttle-run-no-model-spec`](design-shuttle-run-no-model-spec.md) | 21m<br>21m | shuttle, codex |
 | B4 |  | **lym shuttle open refuses the codex engine because it has no prompt**<br>• open --model luna[medium] answers: the engine codex cannot open a session with no prompt | [`shuttle-open-refuses-codex`](design-shuttle-open-refuses-codex.md) | 21m<br>21m | shuttle, codex |
 | B5 |  | **A codexengine test writes the real ~/.lym/codex**<br>• TestPrepare_AppendsStandingPassages leaves /tmp test roots in the real lym Codex home trust record | [`codex-test-writes-real-home`](design-codex-test-writes-real-home.md) | 21m<br>21m | codex, testkit |
@@ -152,7 +152,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F8 |  | **fabric reset: reset warp to a SHA and re-anchor the weft trailers**<br>• The post-conclude undo the merge surface does not ship: reset to a warp SHA, resolve the paired weft SHA through the correspondence index, gate both sides | [`fabric-reset-to-sha`](design-fabric-reset-to-sha.md) | 4w<br>1d | fabric |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 5d<br>17h | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 | F10 |  | **The arbiter settles review escalations and records their decisions, so they never reach the orch**<br>• Decision escalations become eligible for the arbiter, and the arbiter may record decisions and accept or continue a review | [`arbiter-settles-escalations`](design-arbiter-settles-escalations.md) | 2d<br>2d | burler, arbiter, dobby, orch |
-| F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 4w<br>23h | board, ide, orch |
+| F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 4w<br>1d | board, ide, orch |
 | F12 |  | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md) | 1d<br>17h | claude, shuttle, config |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 3w<br>17h | webster |
 | F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 12d<br>20h | loom, board, batten, workspaces |
