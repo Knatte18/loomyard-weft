@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -34,6 +34,33 @@
       "output": "",
       "at": "2026-11-04T15:23:13Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/shuttle-hidden-and-codex-state/_lym/landing/summary.md",
+      "at": "2026-11-04T15:39:01Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-04T15:30:06.512002836Z",
+          "end": "2026-11-04T15:30:06.521176522Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-04T15:30:06.599600546Z",
+          "end": "2026-11-04T15:38:37.02294869Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-04T15:38:37.065331303Z",
+          "end": "2026-11-04T15:38:37.06560818Z"
+        }
+      ]
     }
   ],
   "product": {
