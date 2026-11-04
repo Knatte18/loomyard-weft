@@ -1,6 +1,6 @@
 # A run lands on a parent the hub may not push to by merging on the remote
 
-`protected-parent-landing` · Note · feature, landing, git
+`protected-parent-landing` · Task · feature, landing, git · draft
 
 ## Seen (operator, 2026-11-03)
 
