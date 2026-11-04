@@ -215,9 +215,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "protected-parent-landing"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "A command on a beam files a merge-in-from-parent task, run as darn with its perch on",
       "body": "## Seen (operator, 2026-10-31)\n\nThe pawl recipe, a beam's run, had a Code-Review perch of its own; the operator did not want it, since the beam's members are already reviewed by their own runs.\nThe perch is gone: pawl became a loom recipe with no review round (`pawl-loom-recipe`), and Parent-Align brings the parent in before Finalize and Beam-Down land the beam.\nNothing now checks that a beam has reached its project's goal before it lands: Beam-Await ends on a land request.\nBringing the parent into a beam is today done by writing a merge task by hand, as the `codex-engine` beam's two merge-main tasks were.\n\n## Design (operator, 2026-11-01 and 2026-11-03)\n\n- Bringing the parent into a beam is a task of its own: a darn run with its own worktree inside the beam's project, \"merge in from parent\", with its perch on.\n- `lym beam merge-parent \u003cbeam\u003e` files such a task in the beam's project with one call, at any time, not only at landing; dobby starts it as any member.\n- The run merges the parent into the beam, settles conflicts and gate failures with the merge fixer, and can run Drift.\n- Its perch reviews the merge alone; checking the project's goal before the beam lands is no part of it.\n- pawl neither starts such a run nor requires one before it lands: pawl lands the beam without a perch round of its own (built by `pawl-loom-recipe`), and its Parent-Align brings the parent in as today.\n- Two default buttons in reed's `beam` button group, each with a confirm prompt:\n  - `merge-in` runs `lym beam merge-parent {beam}`.\n  - `land` runs `lym beam land {beam}`.\n- The prime has no parent, so the default `prime` group gets the beam group's other buttons without these two, instead of falling back to the beam group.\n\nRelated: note `protected-parent-landing`, landing on a parent the hub may not push to.\n",
@@ -467,28 +465,6 @@
       "body": "Imported from [issue #28](https://github.com/Knatte18/loomyard/issues/28).\n\n## What happened\n\nA `sampler` run in the Models hub (`drift-numerical-baseline`) had one job: trial the drift flow with the operator before drift is trusted on real tasks.\nEvery `lym drift` verb refused in the sampler worktree, because each verb is gated on the run's stage and the sampler recipe has no drift rows:\n\n```\ndrift capture refused: the run is at Sampler-Session (running), and a main capture runs only at Drift-Baseline or at a Drift-Await halt\ncapture --side: the run is at Sampler-Session (running), and the verb runs only at Drift-Verify\ncompare: the run is at Sampler-Session (running), and the verb runs only at Drift-Verify\ndrift accept refused: the run is at Sampler-Session (running), and the verb runs only at Drift-Verify\nwithdraw: same as accept\n```\n\nThe sampler fell back to running the hub's capture and compare commands by hand, and mimicked accept and withdraw with the skip file.\nThat proved the repository's harness, but none of lym's own drift stages: the Drift-Baseline agent's scope choice, `accept` and `withdraw` taking effect in the drift records, and the interactive Drift-Verify session.\nThe first real test of those stages is now a production task with drift full.\n\n## Wanted\n\nA way to trial drift in a sampler, the recipe meant for trying things with the operator.\nFor example, either:\n\n- the drift verbs run in a sampler session, against a sampler-local drift record, so scope, capture, compare, accept and withdraw can be exercised end to end; or\n- a sampler variant (or option) that carries the Drift-Baseline, Drift-Await and Drift-Verify rows, so the interactive Drift-Verify session can be reached with a deliberate change.\n\nThe stage gates stay as they are for tapestry and darn, where they keep an agent from re-baselining mid-task.",
       "created": "2026-11-03T09:16:18Z",
       "revised": "2026-11-03T09:16:18Z"
-    },
-    {
-      "id": 1068,
-      "handle": "T10",
-      "slug": "protected-parent-landing",
-      "title": "A run lands on a parent the hub may not push to by merging on the remote",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "landing",
-        "git"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Branch protection refuses a direct push to main, so no task or beam can land on such a repository",
-      "body": "## Seen (operator, 2026-11-03)\n\nOn the NORCE Models repository, on machine OSL-1046, a direct commit or push to `main` is refused by branch protection: every change reaches `main` as a merge from a branch, on the remote.\nThat is intended and stays so.\nlym lands every run by merging locally and pushing the parent: a task's Finalize squashes onto the parent and pushes it, and a beam's pawl run lands the beam the same way.\nSo on such a repository no task and no beam can land.\n\n## Design (operator, 2026-11-03)\n\nA hub, or a parent branch, can be marked as landed through the remote:\n\n- Finalize pushes the task or beam branch, opens a pull request into the parent and squash-merges it on the remote at once, then pulls the parent, in place of the local squash and push.\n- A pull request is always opened, by the hub's own rule, though the protection demands no approval and no status check: lym merges it without waiting for a review.\n- The merge is always a squash.\n- The parent lock, the gate of the merged tree and the board's done mark stay as today.\n- A refused push to a protected branch names this setting as the way forward, instead of a bare push failure.\n",
-      "status": "done",
-      "created": "2026-11-03T18:07:32Z",
-      "revised": "2026-11-04T14:12:19Z",
-      "profile": "solid"
     },
     {
       "id": 1073,

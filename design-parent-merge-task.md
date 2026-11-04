@@ -2,8 +2,6 @@
 
 `parent-merge-task` · Task · enhancement, pawl, workspaces, reed, landing · running · Darn-Write
 
-Depends on: [`protected-parent-landing`](design-protected-parent-landing.md)
-
 ## Seen (operator, 2026-10-31)
 
 The pawl recipe, a beam's run, had a Code-Review perch of its own; the operator did not want it, since the beam's members are already reviewed by their own runs.
