@@ -289,30 +289,6 @@
       "revised": "2026-11-04T15:20:25Z"
     },
     {
-      "id": 943,
-      "handle": "T8",
-      "slug": "landing-watch-limits",
-      "title": "A landing notice is not lost when set late, when dobby was down, or when the orch is absent",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "dobby",
-        "orch",
-        "creel",
-        "board"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Close the known limits landing-watch left: a late notify_on_land, a Land passed while dobby was down, and a dropped line when no orch is live",
-      "body": "## Seen (orch, 2026-11-01)\n\n`landing-watch` (commit `c9d52bdb`) has dobby send the orch a line when a task with `notify_on_land` set lands.\nIts commit lists known limits:\n\n- A `notify_on_land` set after the run passed Land gets no line.\n- A run that passes Land while dobby is down long enough for a fresh state record to be written gets no line.\n- The line needs a live orch; after three failed posts it is dropped.\n\nThe notice was never run end to end against a live orch.\n\n## Wanted (operator, 2026-11-04: close all three)\n\n1. Setting `notify_on_land` on an entry whose run already landed answers at once: the board write says it landed, or the line is sent then.\n2. A landing missed while dobby was down is still noticed: on start dobby finds `notify_on_land` entries that landed since it last ran (board done state, not only its own state record) and sends their lines.\n3. A line the orch cannot take now waits in creel for the orch and reaches it when it comes back, never dropped after a fixed number of posts.\n\nShow the notice end to end against a live orch once, in a test or by hand, and say which in the change description.\n",
-      "status": "done",
-      "created": "2026-11-01T07:43:17Z",
-      "revised": "2026-11-04T13:51:55Z",
-      "profile": "light"
-    },
-    {
       "id": 948,
       "handle": "F14",
       "slug": "discussed-task-split",
@@ -614,9 +590,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "landing-watch-limits"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym",
       "body": "## Seen (operator and hub orch, 2026-11-04)\n\nLock files live beside the files they guard inside tracked trees, kept out of git only by `*.lock` and `*.swaplock` patterns in `.git/info/exclude`.\nRunning task wefts hold `_lym/reviews/code/generation-record.json.lock`, `settle-record.json.lock` and `settle-record.patch.lock`; the Bolt checkout holds `board.lock`, `board.json.swaplock`, `board.push.lock` and `.gitrepo-push.lock`.\nThe pattern is general: many state files take their lock as `path + \".lock\"` (`state.ReadJSON(path, path+\".lock\")` across `fabricengine`, `shuttleengine`, `reedengine`, `adoptcli`, the review-record writers in `shedadapters` and `sheddriver`, and others).\n\nThe operator's rule: `_lym/` is what git tracks and `.lym/` is machine-local, so a lock file, being machine-local, never lives under `_lym/` or any other tracked tree.\n\n## Idea\n\n- One helper gives the lock path of a tracked file: under the checkout's `.lym/locks/`, mirroring the file's path, never beside it.\n- Every `path + \".lock\"` and `.swaplock` site whose file sits in a tracked tree (`_lym/`, Bolt) moves to that helper.\n- The `*.lock` and `*.swaplock` excludes then go, so a stray lock in a tracked tree shows in `git status` instead of hiding.\n- A check (test or lint) refuses a lock path built beside a file under `_lym/` or Bolt.\n",

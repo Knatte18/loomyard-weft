@@ -2,8 +2,6 @@
 
 `locks-out-of-tracked-trees` · Task · bug, fabric, loom · running · Darn-Write
 
-Depends on: [`landing-watch-limits`](design-landing-watch-limits.md)
-
 ## Seen (operator and hub orch, 2026-11-04)
 
 Lock files live beside the files they guard inside tracked trees, kept out of git only by `*.lock` and `*.swaplock` patterns in `.git/info/exclude`.
