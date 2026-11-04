@@ -1,0 +1,1173 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 15d5d1cb..9681c4d3 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -747,6 +747,7 @@ User-facing modules each get one `lym <module>` namespace:
+   uncommitted content in the task worktree itself keeps fabric's refusal, and neither is ever `--force`.
+   A fresh pair's records branch starts without its parent's `_lym/shed/` run records, which fabric's `add` drops in the pair's first records commit, so a child never sees prime's batten records or any other run's.
+   `Worktree-Create` and `Worktree-Teardown` wait for a prime lock another run holds, polling every 2 s for up to 10 min, and halt `blocked` only once that wait runs out.
++  `Worktree-Create` holds it only while fabric's `add` reads the fork point and writes the hub's worktree registry, never over the board claim, the config reconcile or the pair's push, and over origin's probes only for the time they still need once the pre-flight reads are done, so runs started together create their pairs side by side.
+   `step` drives exactly one producer forward from the run's persisted current producer, seeding a fresh run first when none is persisted yet.
+   `lym loom step` is the single-producer primitive of the same shape over a run that is already seeded.
+   `run` and `step` carry `--driver` (batten's own, `go`-only: batten has no bootstrap verb, so `llm` is refused by name) and `--child-driver` (the driver the task worktree's own inner run uses, `llm` or `go`; unset, `shed.yaml`'s `driver_kind`, `go` by default); `--driver` is recorded into the run's write-once seed at first seeding and `--child-driver` only when typed, and an explicitly typed flag that disagrees with an already-seeded run is refused rather than silently dropped.
+diff --git a/internal/battencli/beamfork.go b/internal/battencli/beamfork.go
+index 4d1cb76f..4ff32c33 100644
+--- a/internal/battencli/beamfork.go
++++ b/internal/battencli/beamfork.go
+@@ -105,8 +105,9 @@ func readBeamHold(prime *lymcwd.Location, beam string) (status string, held bool
+ // refuseHeldMember reads slug's beam again once slug's pair is made, or found complete, and removes the pair and refuses with memberHoldRefusal when the beam's run holds its entry.
+ // The beam's accept may write its hold between the fork precondition's read and the pair's making, and a member that crashed after the pair was made is judged here when it is resumed; either way this read or the beam's own re-check sees the other.
+ // The member keeps its claim, so the removal settles none.
++// The removal runs under holdPrime, since it writes the hub's worktree registry.
+ // A slug outside a beam is never refused.
+-func (c *battenCLI) refuseHeldMember(ctx context.Context, prime *lymcwd.Location, slug string) error {
++func (c *battenCLI) refuseHeldMember(ctx context.Context, prime *lymcwd.Location, slug string, holdPrime battenshed.HoldPrimeLock) error {
+ 	tasks, err := boardengine.ReadTasks(fabricengine.BoardDir(prime.HubPath))
+ 	if err != nil {
+ 		return err
+@@ -126,6 +127,11 @@ func (c *battenCLI) refuseHeldMember(ctx context.Context, prime *lymcwd.Location
+ 	if !held {
+ 		return nil
+ 	}
++	release, err := holdPrime()
++	if err != nil {
++		return err
++	}
++	defer release()
+ 	td, err := pairteardown.New(prime)
+ 	if err != nil {
+ 		return err
+diff --git a/internal/battencli/beamfork_integration_test.go b/internal/battencli/beamfork_integration_test.go
+index 381af430..67e2b005 100644
+--- a/internal/battencli/beamfork_integration_test.go
++++ b/internal/battencli/beamfork_integration_test.go
+@@ -106,7 +106,7 @@ func TestWorktreeCreate_ForksFromTheBeam(t *testing.T) {
+ 
+ 	t.Run("MemberForksFromTheBeamWhileThePrimeIsDirty", func(t *testing.T) {
+ 		c := wireForHub(t, h, "m", nil)
+-		if err := c.env.CreateWorktree(context.Background()); err != nil {
++		if err := c.env.CreateWorktree(context.Background(), holdNothing); err != nil {
+ 			t.Fatalf("CreateWorktree(m): %v", err)
+ 		}
+ 		if got := parentOf(t, "m"); got != "b" {
+@@ -123,7 +123,7 @@ func TestWorktreeCreate_ForksFromTheBeam(t *testing.T) {
+ 		if err := c.wire(prime, "armed"); err != nil {
+ 			t.Fatalf("wire(armed): %v", err)
+ 		}
+-		if err := c.env.CreateWorktree(context.Background()); err != nil {
++		if err := c.env.CreateWorktree(context.Background(), holdNothing); err != nil {
+ 			t.Fatalf("CreateWorktree(armed): %v", err)
+ 		}
+ 		if got := parentOf(t, "armed"); got != "b" {
+@@ -133,7 +133,7 @@ func TestWorktreeCreate_ForksFromTheBeam(t *testing.T) {
+ 
+ 	t.Run("LocalBranchLeftFromARemovedPairIsRefused", func(t *testing.T) {
+ 		c := wireForHub(t, h, "left", nil)
+-		err := c.env.CreateWorktree(context.Background())
++		err := c.env.CreateWorktree(context.Background(), holdNothing)
+ 		var exists *fabricengine.ErrBranchExists
+ 		if !errors.As(err, &exists) {
+ 			t.Fatalf("CreateWorktree(left) = %v; want ErrBranchExists", err)
+@@ -142,7 +142,7 @@ func TestWorktreeCreate_ForksFromTheBeam(t *testing.T) {
+ 
+ 	t.Run("BeamProjectForksFromItsParentBeamUnmarked", func(t *testing.T) {
+ 		c := wireForHub(t, h, "inner", nil)
+-		if err := c.env.CreateWorktree(context.Background()); err != nil {
++		if err := c.env.CreateWorktree(context.Background(), holdNothing); err != nil {
+ 			t.Fatalf("CreateWorktree(inner): %v", err)
+ 		}
+ 		origin, found, err := fabricengine.ReadOriginFor(h.Location, "inner")
+@@ -156,7 +156,7 @@ func TestWorktreeCreate_ForksFromTheBeam(t *testing.T) {
+ 
+ 	t.Run("BeamProjectWhoseParentBeamHasNoPairHereIsRefusedNamingItsCreate", func(t *testing.T) {
+ 		c := wireForHub(t, h, "orphan", nil)
+-		err := c.env.CreateWorktree(context.Background())
++		err := c.env.CreateWorktree(context.Background(), holdNothing)
+ 		if err == nil || !strings.Contains(err.Error(), "lym beam create far") {
+ 			t.Fatalf("CreateWorktree(orphan) = %v; want a refusal naming `lym beam create far`", err)
+ 		}
+@@ -181,16 +181,26 @@ func TestWorktreeCreate_ForksFromTheBeam(t *testing.T) {
+ 	t.Run("MemberWhoseBeamHoldsAfterItsPairIsMadeLosesThePair", func(t *testing.T) {
+ 		c := wireForHub(t, h, "late", nil)
+ 		c.beamHold = heldAtParentAlign
+-		wantHeldRefusal(t, "late", c.env.CreateWorktree(context.Background()))
++		holds := &countingHold{}
++		wantHeldRefusal(t, "late", c.env.CreateWorktree(context.Background(), holds.hold))
++		// One hold for Add, and one for the removal of the held member's pair.
++		if holds.takes != 2 || holds.releases != 2 {
++			t.Errorf("prime lock takes/releases = %d/%d; want 2/2", holds.takes, holds.releases)
++		}
+ 	})
+ 
+ 	t.Run("MemberResumedOverACompletePairWhileItsBeamHoldsLosesThePair", func(t *testing.T) {
+ 		c := wireForHub(t, h, "crashed", nil)
+-		if err := c.env.CreateWorktree(context.Background()); err != nil {
++		if err := c.env.CreateWorktree(context.Background(), holdNothing); err != nil {
+ 			t.Fatalf("CreateWorktree(crashed): %v", err)
+ 		}
+ 		c.beamHold = heldAtParentAlign
+-		wantHeldRefusal(t, "crashed", c.env.CreateWorktree(context.Background()))
++		holds := &countingHold{}
++		wantHeldRefusal(t, "crashed", c.env.CreateWorktree(context.Background(), holds.hold))
++		// The complete pair skips Add, so the removal takes the only hold.
++		if holds.takes != 1 || holds.releases != 1 {
++			t.Errorf("prime lock takes/releases = %d/%d; want 1/1", holds.takes, holds.releases)
++		}
+ 	})
+ 
+ 	t.Run("TaskOfAGroupingProjectForksFromThePrime", func(t *testing.T) {
+@@ -198,7 +208,7 @@ func TestWorktreeCreate_ForksFromTheBeam(t *testing.T) {
+ 			t.Fatal(err)
+ 		}
+ 		c := wireForHub(t, h, "grouped", nil)
+-		if err := c.env.CreateWorktree(context.Background()); err != nil {
++		if err := c.env.CreateWorktree(context.Background(), holdNothing); err != nil {
+ 			t.Fatalf("CreateWorktree(grouped): %v", err)
+ 		}
+ 		if got := parentOf(t, "grouped"); got != primeName {
+diff --git a/internal/battencli/beamfork_test.go b/internal/battencli/beamfork_test.go
+index 9aac6ff7..8573b16e 100644
+--- a/internal/battencli/beamfork_test.go
++++ b/internal/battencli/beamfork_test.go
+@@ -188,21 +188,26 @@ func TestAnchorFromSeed(t *testing.T) {
+ }
+ 
+ // TestRefuseHeldMember asserts a member is judged against its beam's hold read through beamHold: a slug outside a beam and a beam that is not held pass untouched, and a failed read is returned.
+-// The held case removes a real pair, which the integration tests drive.
++// None of them takes the prime lock, which only a removal needs; a held beam takes it first and returns its failure as is.
++// The held case that removes a real pair is driven by the integration tests.
+ func TestRefuseHeldMember(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+ 	readFailure := errors.New("board unreadable")
++	holdFailure := errors.New("prime lock unavailable")
+ 	tests := []struct {
+-		name    string
+-		slug    string
+-		hold    func(beam string) (string, bool, error)
+-		wantErr error
++		name      string
++		slug      string
++		hold      func(beam string) (string, bool, error)
++		holdErr   error
++		wantTakes int
++		wantErr   error
+ 	}{
+ 		{name: "SlugOutsideABeamIsNeverRead", slug: "loose", hold: func(string) (string, bool, error) { return "", true, errors.New("read for a slug with no beam") }},
+ 		{name: "BeamNotHeldPasses", slug: "m", hold: func(beam string) (string, bool, error) { return "running · Beam-Await", false, nil }},
+ 		{name: "FailedReadIsReturned", slug: "m", hold: func(string) (string, bool, error) { return "", false, readFailure }, wantErr: readFailure},
++		{name: "HeldBeamWithFailedHoldReturnsTheHoldError", slug: "m", hold: func(string) (string, bool, error) { return "running · Parent-Align", true, nil }, holdErr: holdFailure, wantTakes: 1, wantErr: holdFailure},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -222,11 +227,16 @@ func TestRefuseHeldMember(t *testing.T) {
+ 			}
+ 			c := &battenCLI{beamHold: tt.hold}
+ 
+-			err := c.refuseHeldMember(context.Background(), location, tt.slug)
++			holds := &countingHold{err: tt.holdErr}
++
++			err := c.refuseHeldMember(context.Background(), location, tt.slug, holds.hold)
+ 
+ 			if !errors.Is(err, tt.wantErr) {
+ 				t.Errorf("refuseHeldMember(%s) = %v; want %v", tt.slug, err, tt.wantErr)
+ 			}
++			if holds.takes != tt.wantTakes {
++				t.Errorf("refuseHeldMember(%s) took the prime lock %d times; want %d, taken only to remove a held member's pair", tt.slug, holds.takes, tt.wantTakes)
++			}
+ 		})
+ 	}
+ }
+diff --git a/internal/battencli/beamland_integration_test.go b/internal/battencli/beamland_integration_test.go
+index e9c092a0..4ee914f6 100644
+--- a/internal/battencli/beamland_integration_test.go
++++ b/internal/battencli/beamland_integration_test.go
+@@ -91,7 +91,7 @@ func TestBeamLanding_ReachesWorktreeCreateSkip(t *testing.T) {
+ 				t.Fatalf("start guard for %s = %v; want it passed", slug, err)
+ 			}
+ 			c := wireForHub(t, h, slug, nil)
+-			if err := c.env.CreateWorktree(context.Background()); err != nil {
++			if err := c.env.CreateWorktree(context.Background(), holdNothing); err != nil {
+ 				t.Fatalf("CreateWorktree(%s) = %v; want the skip over the complete pair", slug, err)
+ 			}
+ 		})
+diff --git a/internal/battencli/lifecycle_integration_test.go b/internal/battencli/lifecycle_integration_test.go
+index c427d745..62cf87ce 100644
+--- a/internal/battencli/lifecycle_integration_test.go
++++ b/internal/battencli/lifecycle_integration_test.go
+@@ -239,14 +239,22 @@ func TestBattenIntegration_RunReconcilesTheHubBeforeAndThePairAfterCreating(t *t
+ 	if err := c.wire(h.Location, slug); err != nil {
+ 		t.Fatalf("wire(%s): %v", slug, err)
+ 	}
+-	if err := c.env.CreateWorktree(context.Background()); err != nil {
++	holds := &countingHold{}
++	if err := c.env.CreateWorktree(context.Background(), holds.hold); err != nil {
+ 		t.Fatalf("CreateWorktree: %v", err)
+ 	}
++	// The hold reached Add and was released; a slug outside a beam takes none for a held member's removal.
++	if holds.takes != 1 || holds.releases != 1 {
++		t.Errorf("prime lock takes/releases after the create = %d/%d; want 1/1", holds.takes, holds.releases)
++	}
+ 
+ 	pair := h.PairCodeWorktree(slug)
+-	if err := c.env.CreateWorktree(context.Background()); err != nil {
++	if err := c.env.CreateWorktree(context.Background(), holds.hold); err != nil {
+ 		t.Fatalf("CreateWorktree re-entered on the complete pair: %v", err)
+ 	}
++	if holds.takes != 1 {
++		t.Errorf("prime lock takes after the re-entry over the complete pair = %d; want no further take", holds.takes)
++	}
+ 	// The create row spawns the new pair's push once, and the re-entered row on the complete pair spawns none.
+ 	if got := pairPushCounts.count(pair); got != 1 {
+ 		t.Errorf("pair pushes spawned for %s = %d; want 1", pair, got)
+@@ -975,7 +983,7 @@ func stepCreateRow_PairWithoutOriginRecordIsIncomplete(t *testing.T, h *hubforge
+ 		return shedengine.Status{}, false, nil
+ 	})
+ 
+-	err := c.env.CreateWorktree(context.Background())
++	err := c.env.CreateWorktree(context.Background(), holdNothing)
+ 	if err == nil {
+ 		t.Fatal("CreateWorktree() error = nil; want the incomplete-pair refusal for a pair with no origin record")
+ 	}
+@@ -997,7 +1005,7 @@ func stepCreateRow_LeftoverBranchIsRewordedForPrime(t *testing.T, h *hubforge.Hu
+ 	})
+ 	c.owner = hubOwnerSeams(h.Location)
+ 
+-	err := c.env.CreateWorktree(context.Background())
++	err := c.env.CreateWorktree(context.Background(), holdNothing)
+ 	if err == nil {
+ 		t.Fatal("CreateWorktree() error = nil; want the leftover-branch refusal")
+ 	}
+@@ -1036,7 +1044,7 @@ func stepCreateRow_IncompletePairRefusesRatherThanSkippingAdd(t *testing.T, h *h
+ 		return shedengine.Status{}, false, nil
+ 	})
+ 
+-	err := c.env.CreateWorktree(context.Background())
++	err := c.env.CreateWorktree(context.Background(), holdNothing)
+ 	if err == nil {
+ 		t.Fatal("CreateWorktree() error = nil; want a refusal naming the incomplete pair, not silent success")
+ 	}
+@@ -1081,7 +1089,7 @@ func TestBattenIntegration_CreateRow_IncompletePairRemedyWorksVerbatimOnAPrefixe
+ 		return shedengine.Status{}, false, nil
+ 	})
+ 
+-	err = c.env.CreateWorktree(context.Background())
++	err = c.env.CreateWorktree(context.Background(), holdNothing)
+ 	if err == nil {
+ 		t.Fatal("CreateWorktree() error = nil; want the incomplete-pair refusal")
+ 	}
+@@ -1108,7 +1116,7 @@ func TestBattenIntegration_CreateRow_IncompletePairRemedyWorksVerbatimOnAPrefixe
+ 		t.Fatalf("%q still present after the remedy; want it gone", branch)
+ 	}
+ 
+-	if err := c.env.CreateWorktree(context.Background()); err != nil {
++	if err := c.env.CreateWorktree(context.Background(), holdNothing); err != nil {
+ 		t.Fatalf("CreateWorktree() after the remedy = %v; want the fresh create to succeed", err)
+ 	}
+ 	if !pathExists(h.PairRecordsSibling(slug)) {
+@@ -1429,7 +1437,7 @@ func stepMidListResume_SkipsTheCompletedCreateRow(t *testing.T, h *hubforge.Hub)
+ 	c := wireForHub(t, h, slug, func(statusPath, statusLockPath string) (shedengine.Status, bool, error) {
+ 		return shedengine.Status{State: shedengine.StateDone}, true, nil
+ 	})
+-	c.env.CreateWorktree = func(ctx context.Context) error {
++	c.env.CreateWorktree = func(context.Context, battenshed.HoldPrimeLock) error {
+ 		t.Fatal("CreateWorktree must not run again: the create row already completed before the crash this test simulates")
+ 		return nil
+ 	}
+diff --git a/internal/battencli/pausehold_test.go b/internal/battencli/pausehold_test.go
+index e68162a4..a556e6bf 100644
+--- a/internal/battencli/pausehold_test.go
++++ b/internal/battencli/pausehold_test.go
+@@ -13,6 +13,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/battenrecipe"
++	"github.com/Knatte18/loomyard/internal/battenshed"
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/dobbyengine"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+@@ -85,7 +86,9 @@ func TestBattenRun_LostWorktreeCreateClaimExitsWithTheDriversCode(t *testing.T)
+ 	t.Parallel()
+ 
+ 	c := newFakeReceiver(t, nil)
+-	c.env.CreateWorktree = func(context.Context) error { return ownedElsewhereFor(c.slug, "there", "some-beam") }
++	c.env.CreateWorktree = func(context.Context, battenshed.HoldPrimeLock) error {
++		return ownedElsewhereFor(c.slug, "there", "some-beam")
++	}
+ 
+ 	var out bytes.Buffer
+ 	exitCode := clihelp.Execute(runCommand(c), &out, []string{c.slug})
+diff --git a/internal/battencli/predrive_test.go b/internal/battencli/predrive_test.go
+index 8ffe375f..1b96e7c3 100644
+--- a/internal/battencli/predrive_test.go
++++ b/internal/battencli/predrive_test.go
+@@ -12,6 +12,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/battenrecipe"
++	"github.com/Knatte18/loomyard/internal/battenshed"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/shedverbs"
+@@ -143,7 +144,7 @@ func TestPreDriveCheck(t *testing.T) {
+ 		}
+ 		t.Cleanup(func() { _ = held.release(true) })
+ 		var producerCalled bool
+-		c.env.CreateWorktree = func(context.Context) error {
++		c.env.CreateWorktree = func(context.Context, battenshed.HoldPrimeLock) error {
+ 			producerCalled = true
+ 			return nil
+ 		}
+diff --git a/internal/battencli/run_test.go b/internal/battencli/run_test.go
+index 5ba90bee..326d2534 100644
+--- a/internal/battencli/run_test.go
++++ b/internal/battencli/run_test.go
+@@ -34,6 +34,26 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++// holdNothing is a battenshed.HoldPrimeLock for a test that calls the Worktree-Create closure directly, outside the row that owns the prime lock: it takes no lock.
++func holdNothing() (func(), error) { return func() {}, nil }
++
++// countingHold is a battenshed.HoldPrimeLock for a test that asserts where the Worktree-Create closure takes the prime lock.
++// It counts takes and releases, and fails every take with err when err is set.
++type countingHold struct {
++	takes    int
++	releases int
++	err      error
++}
++
++// hold takes the lock, counting the take, and returns a release that counts itself.
++func (h *countingHold) hold() (func(), error) {
++	h.takes++
++	if h.err != nil {
++		return nil, h.err
++	}
++	return func() { h.releases++ }, nil
++}
++
+ // newFakeReceiver builds a *battenCLI whose Env is filled entirely with fakes that perform no
+ // real I/O, over a fresh t.TempDir(). shutdown, when non-nil, replaces the default no-op
+ // Teardown.Shutdown closure.
+@@ -76,7 +96,7 @@ func newFakeReceiver(t *testing.T, shutdown func(ctx context.Context) (string, e
+ 				return func() error { return nil }, true, nil
+ 			},
+ 		},
+-		CreateWorktree: func(ctx context.Context) error { return nil },
++		CreateWorktree: func(context.Context, battenshed.HoldPrimeLock) error { return nil },
+ 		Teardown: battenshed.TeardownDeps{
+ 			Shutdown: shutdown,
+ 			Remove:   func(ctx context.Context) error { return nil },
+diff --git a/internal/battencli/wire.go b/internal/battencli/wire.go
+index afc6d9ab..c6cb0ca6 100644
+--- a/internal/battencli/wire.go
++++ b/internal/battencli/wire.go
+@@ -936,9 +936,12 @@ func (c *battenCLI) wire(location *lymcwd.Location, slug string) error {
+ 		Slug:       slug,
+ 		ScratchDir: BattenDir(location, slug),
+ 		PrimeLock:  primeLock,
+-		CreateWorktree: func(ctx context.Context) error {
++		// The closure takes the prime lock through holdPrime only where Add reads the fork point and writes the hub's worktree registry, and where a held member's pair is removed.
++		// The claim, the config reconcile and the push run outside it, and the origin probes start before it, so a create waiting on the claim or the push holds up no other run's create.
++		CreateWorktree: func(ctx context.Context, holdPrime battenshed.HoldPrimeLock) error {
+ 			// The claim comes first, so the run lock on the board entry starts before the pair exists and survives this row failing.
+ 			// It records this machine as the entry's owner in the same commit, so a failed write or push refuses the row and the stopped run resumes with the same verb.
++			// Its push stays synchronous: it is what tells another machine this one owns the entry.
+ 			if err := c.claimBoardEntry(slug); err != nil {
+ 				return err
+ 			}
+@@ -952,7 +955,7 @@ func (c *battenCLI) wire(location *lymcwd.Location, slug string) error {
+ 			if complete {
+ 				logger.Info("battencli: create worktree skipped, the task worktree is already present", "slug", slug)
+ 				// A member that crashed between Add and its hold read is judged here when it is resumed.
+-				if err := c.refuseHeldMember(ctx, location, slug); err != nil {
++				if err := c.refuseHeldMember(ctx, location, slug, holdPrime); err != nil {
+ 					return err
+ 				}
+ 				return reconcileTaskPair(location, slug)
+@@ -988,13 +991,13 @@ func (c *battenCLI) wire(location *lymcwd.Location, slug string) error {
+ 					return err
+ 				}
+ 			}
+-			_, err = top.Add(location, slug, fabricengine.AddOptions{Parent: parent, Anchor: anchor})
++			_, err = top.Add(location, slug, fabricengine.AddOptions{Parent: parent, Anchor: anchor, Hold: holdPrime})
+ 			logger.Info("battencli: create worktree", "slug", slug)
+ 			if err != nil {
+ 				return createRefusal(err, slug, cfg.BranchPrefix+slug, func() bool { return fabricengine.PairWorktreeStands(location, slug) })
+ 			}
+ 			// The beam's accept may have written its hold while the pair was being made, so the member's beam is read again before anything more is done to the pair.
+-			if err := c.refuseHeldMember(ctx, location, slug); err != nil {
++			if err := c.refuseHeldMember(ctx, location, slug, holdPrime); err != nil {
+ 				return err
+ 			}
+ 			if err := reconcileTaskPair(location, slug); err != nil {
+diff --git a/internal/battencli/wire_seams_test.go b/internal/battencli/wire_seams_test.go
+index e1876baf..8c5ce1b6 100644
+--- a/internal/battencli/wire_seams_test.go
++++ b/internal/battencli/wire_seams_test.go
+@@ -658,7 +658,7 @@ func TestWire_CreateWorktreeClaimsTheBoardEntry(t *testing.T) {
+ 				c.beam = *tt.landing
+ 			}
+ 
+-			err := c.env.CreateWorktree(context.Background())
++			err := c.env.CreateWorktree(context.Background(), holdNothing)
+ 
+ 			if err == nil {
+ 				t.Fatal("CreateWorktree() error = nil; want a failed row")
+diff --git a/internal/battenshed/create.go b/internal/battenshed/create.go
+index 299e17e0..a4d7a6cf 100644
+--- a/internal/battenshed/create.go
++++ b/internal/battenshed/create.go
+@@ -1,11 +1,11 @@
+-// create.go implements NewWorktreeCreate, the producer that creates the task worktree under the
+-// hub's prime lock.
++// create.go implements NewWorktreeCreate, the producer that creates the task worktree, and the hold through which its create closure takes the hub's prime lock for the steps that need it.
+ 
+ package battenshed
+ 
+ import (
+ 	"context"
+ 	"errors"
++	"sync"
+ 
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+@@ -32,25 +32,59 @@ func (e *PreconditionError) Unwrap() error {
+ 	return e.Err
+ }
+ 
+-// worktreeCreateProducer creates the task worktree pair, holding the hub's prime lock for the
+-// duration of the create call.
++// HoldPrimeLock takes the hub's prime lock for a create closure, waiting out a contended lock, and returns its release.
++// The closure calls it around the steps that write the hub's worktree registry or read the prime's tree.
++// The origin probes start before the hold and overlap its wait, but Add waits for them under it, so the hold covers the probe time left after the pre-flight reads.
++// The steps under the hold also fetch when they adopt a live pair, fast-forward a behind branch of the pair or replace an archived leftover on origin.
++// Calling the release more than once releases the lock once; a hold the closure never releases is released when the row returns.
++// An error is returned as the closure's own error: the row reads it as Stuck when the wait ran out and as a hard error when the lock itself failed.
++type HoldPrimeLock func() (release func(), err error)
++
++// PrimeLockBusyError is the error a HoldPrimeLock returns when its wait for a contended prime lock ran out.
++// Worktree-Create reads it as Stuck, with Reason as the stuck reason.
++type PrimeLockBusyError struct {
++	// Reason names the lock path and the wait.
++	Reason string
++}
++
++// Error returns Reason.
++func (e *PrimeLockBusyError) Error() string {
++	return e.Reason
++}
++
++// primeLockFailure is the error a HoldPrimeLock returns when acquiring the lock itself failed or the context ended during the wait.
++// Worktree-Create returns it as a hard error: the lock mechanism failing is no producer verdict.
++type primeLockFailure struct {
++	err error
++}
++
++// Error returns the cause's text.
++func (e *primeLockFailure) Error() string {
++	return e.err.Error()
++}
++
++// Unwrap returns the cause.
++func (e *primeLockFailure) Unwrap() error {
++	return e.err
++}
++
++// worktreeCreateProducer creates the task worktree pair, handing its create closure the hold on the hub's prime lock.
+ type worktreeCreateProducer struct {
+ 	name           string
+ 	slug           string
+-	createWorktree func(context.Context) error
++	createWorktree func(context.Context, HoldPrimeLock) error
+ 	primeLock      PrimeLock
+ 	scratchDir     string
+ }
+ 
+ var _ shedengine.ShedProducer = (*worktreeCreateProducer)(nil)
+ 
+-// NewWorktreeCreate returns a shedengine.ShedProducer that acquires primeLock, then calls
+-// createWorktree to create the task worktree pair for slug.
++// NewWorktreeCreate returns a shedengine.ShedProducer that calls createWorktree to create the task worktree pair for slug, handing it a HoldPrimeLock over primeLock.
+ //
+ // name is told rather than hardcoded because a second producer list may name this row
+ // independently. slug is used only as a log field and in stuck-reason text -- never compared,
+ // parsed, or used for control flow.
+-func NewWorktreeCreate(name, slug string, createWorktree func(context.Context) error, primeLock PrimeLock, scratchDir string) shedengine.ShedProducer {
++func NewWorktreeCreate(name, slug string, createWorktree func(context.Context, HoldPrimeLock) error, primeLock PrimeLock, scratchDir string) shedengine.ShedProducer {
+ 	return &worktreeCreateProducer{
+ 		name:           name,
+ 		slug:           slug,
+@@ -60,14 +94,14 @@ func NewWorktreeCreate(name, slug string, createWorktree func(context.Context) e
+ 	}
+ }
+ 
+-// Call implements shedengine.ShedProducer. It acquires the prime lock, calls createWorktree while
+-// holding it, and releases it on every exit path -- including every Stuck one -- before returning.
++// Call implements shedengine.ShedProducer. It calls createWorktree with a hold on the prime lock, and releases every hold the closure took and did not release on every exit path -- including every Stuck one -- before returning.
++// The closure takes the lock only for the steps that need it, so two rows creating different pairs overlap everywhere else.
+ //
+-// A contended lock is waited for, polling every primeLockPollInterval for up to primeLockWaitBound (see acquirePrimeLock), so overlapping batten runs take turns.
++// A hold waits for a contended lock, polling every primeLockPollInterval for up to primeLockWaitBound (see acquirePrimeLock).
++// A context cancelled at any point returns the cancelled-during-run error.
+ // An Acquire error at any attempt is a returned hard error: the lock mechanism itself failed, which is not a producer verdict.
+-// A context cancelled during the wait returns the cancelled-during-run error.
+ // The bound spent with the lock still held is Stuck, with a reason naming primeLock.Path and the wait -- never a holder identity, which the lock file carries no record of and so cannot report.
+-// A createWorktree error is Stuck with that error's own text passed through verbatim and unreworded:
++// Any other createWorktree error is Stuck with that error's own text passed through verbatim and unreworded:
+ // fabric's own refusals already name their own remedies,
+ // and reworking that text would only drop information.
+ // A createWorktree error that is a PreconditionError is instead a Halt Stuck whose reason starts with shedengine.ReasonPreconditionUnmet.
+@@ -77,24 +111,38 @@ func (p *worktreeCreateProducer) Call(ctx context.Context) (shedengine.Outcome,
+ 		return "", shedengine.OutputPointer{}, err
+ 	}
+ 
+-	release, reason, err := acquirePrimeLock(ctx, p.name, p.slug, p.primeLock)
+-	if err != nil {
+-		return "", shedengine.OutputPointer{}, err
+-	}
+-	if release == nil {
+-		reportStuck(p.name, reason, p.scratchDir, "slug", p.slug)
+-		return shedengine.Stuck, shedengine.OutputPointer{Reason: reason}, nil
+-	}
++	var holds []func()
+ 	defer func() {
+-		if rerr := release(); rerr != nil {
+-			logger.Warn("battenshed: release prime lock failed", "producer", p.name, "slug", p.slug, "path", p.primeLock.Path, "error", rerr)
++		for _, release := range holds {
++			release()
+ 		}
+ 	}()
++	hold := func() (func(), error) {
++		release, reason, err := acquirePrimeLock(ctx, p.name, p.slug, p.primeLock)
++		if err != nil {
++			return nil, &primeLockFailure{err: err}
++		}
++		if release == nil {
++			return nil, &PrimeLockBusyError{Reason: reason}
++		}
++		once := p.releaseOnce(release)
++		holds = append(holds, once)
++		return once, nil
++	}
+ 
+-	if err := p.createWorktree(ctx); err != nil {
++	if err := p.createWorktree(ctx, hold); err != nil {
+ 		if cerr := cancelErr(ctx, p.name); cerr != nil {
+ 			return "", shedengine.OutputPointer{}, cerr
+ 		}
++		var failure *primeLockFailure
++		if errors.As(err, &failure) {
++			return "", shedengine.OutputPointer{}, failure.err
++		}
++		var busy *PrimeLockBusyError
++		if errors.As(err, &busy) {
++			reportStuck(p.name, busy.Reason, p.scratchDir, "slug", p.slug)
++			return shedengine.Stuck, shedengine.OutputPointer{Reason: busy.Reason}, nil
++		}
+ 		var precondition *PreconditionError
+ 		if errors.As(err, &precondition) {
+ 			reason := shedengine.ReasonPreconditionUnmet + ": " + err.Error()
+@@ -110,3 +158,15 @@ func (p *worktreeCreateProducer) Call(ctx context.Context) (shedengine.Outcome,
+ 	}
+ 	return shedengine.Done, shedengine.OutputPointer{}, nil
+ }
++
++// releaseOnce wraps release so it runs once however often it is called, warning when it fails.
++func (p *worktreeCreateProducer) releaseOnce(release func() error) func() {
++	var once sync.Once
++	return func() {
++		once.Do(func() {
++			if err := release(); err != nil {
++				logger.Warn("battenshed: release prime lock failed", "producer", p.name, "slug", p.slug, "path", p.primeLock.Path, "error", err)
++			}
++		})
++	}
++}
+diff --git a/internal/battenshed/create_test.go b/internal/battenshed/create_test.go
+index 1623298d..4c84fa94 100644
+--- a/internal/battenshed/create_test.go
++++ b/internal/battenshed/create_test.go
+@@ -1,5 +1,6 @@
+-// create_test.go covers NewWorktreeCreate over fake seams: the happy path, the prime-lock
+-// dispositions, and createWorktree's error mappings, including fabric's own verbatim refusal text.
++// create_test.go covers NewWorktreeCreate over fake seams.
++// It covers the happy path, the prime-lock dispositions of the closure's hold, and createWorktree's error mappings.
++// The error mappings include fabric's own verbatim refusal text.
+ 
+ package battenshed
+ 
+@@ -68,6 +69,99 @@ func waitingPrimeLock(path string, contendedPolls int, laterErr error, released
+ 	}
+ }
+ 
++// holdingCreate returns a create closure that takes the prime lock through its hold and then runs work, which never runs when the hold fails.
++func holdingCreate(work func() error) func(context.Context, HoldPrimeLock) error {
++	return func(_ context.Context, hold HoldPrimeLock) error {
++		if _, err := hold(); err != nil {
++			return err
++		}
++		return work()
++	}
++}
++
++// TestWorktreeCreate_TakesThePrimeLockOnlyThroughItsHold asserts the row acquires the prime lock only when its closure takes the hold, even while the lock is held elsewhere, releases a hold once however often the closure releases it, and lets the closure take a second hold after releasing the first.
++func TestWorktreeCreate_TakesThePrimeLockOnlyThroughItsHold(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	t.Run("NoHold", func(t *testing.T) {
++		t.Parallel()
++		acquires := 0
++		lock := PrimeLock{
++			Path: "/lock/path",
++			Acquire: func() (func() error, bool, error) {
++				acquires++
++				return nil, false, nil
++			},
++			Sleep: func(context.Context, time.Duration) {},
++		}
++		producer := NewWorktreeCreate("create", "myslug", func(context.Context, HoldPrimeLock) error { return nil }, lock, t.TempDir())
++		shedfake.RequireOutcome(t, producer, shedengine.Done)
++		if acquires != 0 {
++			t.Errorf("Acquire calls = %d; want 0 for a closure that takes no hold", acquires)
++		}
++	})
++
++	t.Run("ReleasedByTheClosure", func(t *testing.T) {
++		t.Parallel()
++		releases := 0
++		lock := PrimeLock{
++			Path: "/lock/path",
++			Acquire: func() (func() error, bool, error) {
++				return func() error {
++					releases++
++					return nil
++				}, true, nil
++			},
++		}
++		producer := NewWorktreeCreate("create", "myslug", func(_ context.Context, hold HoldPrimeLock) error {
++			release, err := hold()
++			if err != nil {
++				return err
++			}
++			release()
++			release()
++			return nil
++		}, lock, t.TempDir())
++		shedfake.RequireOutcome(t, producer, shedengine.Done)
++		if releases != 1 {
++			t.Errorf("releases = %d; want 1", releases)
++		}
++	})
++
++	t.Run("HeldAgainAfterRelease", func(t *testing.T) {
++		t.Parallel()
++		acquires, releases := 0, 0
++		lock := PrimeLock{
++			Path: "/lock/path",
++			Acquire: func() (func() error, bool, error) {
++				acquires++
++				return func() error {
++					releases++
++					return nil
++				}, true, nil
++			},
++		}
++		producer := NewWorktreeCreate("create", "myslug", func(_ context.Context, hold HoldPrimeLock) error {
++			for range 2 {
++				release, err := hold()
++				if err != nil {
++					return err
++				}
++				release()
++			}
++			return nil
++		}, lock, t.TempDir())
++		shedfake.RequireOutcome(t, producer, shedengine.Done)
++		if acquires != 2 {
++			t.Errorf("Acquire calls = %d; want 2", acquires)
++		}
++		if releases != 2 {
++			t.Errorf("releases = %d; want 2", releases)
++		}
++	})
++}
++
+ func readStuckFile(t *testing.T, scratchDir, producer string, ptr shedengine.OutputPointer) string {
+ 	t.Helper()
+ 	data, err := os.ReadFile(filepath.Join(scratchDir, producer+stuckFileSuffix))
+@@ -128,9 +222,9 @@ func TestWorktreeCreate_CreateErrorsStickWithTheirTextVerbatim(t *testing.T) {
+ 			var released bool
+ 			lock := fakePrimeLock("/lock/path", true, nil, nil, &released)
+ 
+-			producer := NewWorktreeCreate("create", "myslug", func(ctx context.Context) error {
++			producer := NewWorktreeCreate("create", "myslug", holdingCreate(func() error {
+ 				return tt.err
+-			}, lock, scratchDir)
++			}), lock, scratchDir)
+ 
+ 			ptr := shedfake.RequireOutcome(t, producer, shedengine.Stuck)
+ 			if !released {
+@@ -157,9 +251,9 @@ func TestWorktreeCreate_AcquireError(t *testing.T) {
+ 	acquireErr := errors.New("flock: device error")
+ 	lock := fakePrimeLock("/lock/path", false, acquireErr, nil, &released)
+ 
+-	producer := NewWorktreeCreate("create", "myslug", func(ctx context.Context) error {
++	producer := NewWorktreeCreate("create", "myslug", holdingCreate(func() error {
+ 		return nil
+-	}, lock, scratchDir)
++	}), lock, scratchDir)
+ 
+ 	_, _, err := producer.Call(context.Background())
+ 	if err == nil {
+@@ -179,9 +273,9 @@ func TestWorktreeCreate_CancelledContext(t *testing.T) {
+ 	ctx, cancel := context.WithCancel(context.Background())
+ 	cancel()
+ 
+-	producer := NewWorktreeCreate("create", "myslug", func(ctx context.Context) error {
++	producer := NewWorktreeCreate("create", "myslug", holdingCreate(func() error {
+ 		return nil
+-	}, lock, scratchDir)
++	}), lock, scratchDir)
+ 
+ 	outcome, _, err := producer.Call(ctx)
+ 	if err == nil {
+@@ -209,9 +303,9 @@ func TestWorktreeCreate_CancelledDuringAcquireError(t *testing.T) {
+ 		},
+ 	}
+ 
+-	producer := NewWorktreeCreate("create", "myslug", func(ctx context.Context) error {
++	producer := NewWorktreeCreate("create", "myslug", holdingCreate(func() error {
+ 		return nil
+-	}, lock, scratchDir)
++	}), lock, scratchDir)
+ 
+ 	_, _, err := producer.Call(ctx)
+ 	if err == nil {
+@@ -229,10 +323,10 @@ func TestWorktreeCreate_CancelledAfterSuccessfulCreate(t *testing.T) {
+ 	lock := fakePrimeLock("/lock/path", true, nil, nil, &released)
+ 
+ 	ctx, cancel := context.WithCancel(context.Background())
+-	producer := NewWorktreeCreate("create", "myslug", func(ctx context.Context) error {
++	producer := NewWorktreeCreate("create", "myslug", holdingCreate(func() error {
+ 		cancel()
+ 		return nil
+-	}, lock, scratchDir)
++	}), lock, scratchDir)
+ 
+ 	outcome, _, err := producer.Call(ctx)
+ 	if err == nil {
+@@ -261,10 +355,10 @@ func TestWorktreeCreate_CreatesOnceTheLockIsFree(t *testing.T) {
+ 			lock := waitingPrimeLock("/lock/path", contendedPolls, nil, &released, &sleeps, nil)
+ 
+ 			called := false
+-			producer := NewWorktreeCreate("create", "myslug", func(ctx context.Context) error {
++			producer := NewWorktreeCreate("create", "myslug", holdingCreate(func() error {
+ 				called = true
+ 				return nil
+-			}, lock, scratchDir)
++			}), lock, scratchDir)
+ 
+ 			shedfake.RequireOutcome(t, producer, shedengine.Done)
+ 			if !called {
+@@ -288,14 +382,17 @@ func TestWorktreeCreate_LockStillHeldPastBoundIsStuck(t *testing.T) {
+ 	lock := waitingPrimeLock("/lock/contended/path", -1, nil, &released, &sleeps, nil)
+ 
+ 	called := false
+-	producer := NewWorktreeCreate("create", "myslug", func(ctx context.Context) error {
++	producer := NewWorktreeCreate("create", "myslug", holdingCreate(func() error {
+ 		called = true
+ 		return nil
+-	}, lock, scratchDir)
++	}), lock, scratchDir)
+ 
+ 	ptr := shedfake.RequireOutcome(t, producer, shedengine.Stuck)
+ 	if called {
+-		t.Error("createWorktree was called although the lock was never acquired")
++		t.Error("the work behind the hold ran although the lock was never acquired")
++	}
++	if ptr.Halt {
++		t.Error("OutputPointer.Halt = true; want a lock wait that ran out to stand Stuck without halting")
+ 	}
+ 	if want := int(primeLockWaitBound / primeLockPollInterval); sleeps != want {
+ 		t.Errorf("sleeps = %d; want %d", sleeps, want)
+@@ -315,10 +412,10 @@ func TestWorktreeCreate_CancelledDuringLockWait(t *testing.T) {
+ 	lock := waitingPrimeLock("/lock/path", -1, nil, &released, &sleeps, cancel)
+ 
+ 	called := false
+-	producer := NewWorktreeCreate("create", "myslug", func(ctx context.Context) error {
++	producer := NewWorktreeCreate("create", "myslug", holdingCreate(func() error {
+ 		called = true
+ 		return nil
+-	}, lock, scratchDir)
++	}), lock, scratchDir)
+ 
+ 	outcome, _, err := producer.Call(ctx)
+ 	if err == nil {
+@@ -343,9 +440,9 @@ func TestWorktreeCreate_AcquireErrorOnLaterAttempt(t *testing.T) {
+ 	acquireErr := errors.New("flock: device error")
+ 	lock := waitingPrimeLock("/lock/path", -1, acquireErr, &released, &sleeps, nil)
+ 
+-	producer := NewWorktreeCreate("create", "myslug", func(ctx context.Context) error {
++	producer := NewWorktreeCreate("create", "myslug", holdingCreate(func() error {
+ 		return nil
+-	}, lock, scratchDir)
++	}), lock, scratchDir)
+ 
+ 	outcome, _, err := producer.Call(context.Background())
+ 	if err == nil || !errors.Is(err, acquireErr) {
+diff --git a/internal/battenshed/deps.go b/internal/battenshed/deps.go
+index bb18a0b5..db172e68 100644
+--- a/internal/battenshed/deps.go
++++ b/internal/battenshed/deps.go
+@@ -61,7 +61,7 @@ var ErrChildDriverBusy = errors.New("battenshed: the task worktree's driver pane
+ var ErrChildRunBusy = errors.New("battenshed: the child's run lock is held")
+ 
+ // PrimeLock carries the told absolute path to a hub-scoped advisory lock plus the injected
+-// acquire closure both WorktreeCreate and WorktreeTeardown hold it behind, so the two producers
++// acquire closure WorktreeTeardown holds it behind and WorktreeCreate's create closure takes it through, so the two producers
+ // that mutate the hub's worktree registry concurrently with each other never race.
+ //
+ // Acquire mirrors lock.TryAcquireWriteLock's own contract and stays non-blocking: a (nil, false, nil) return means the lock is already held by someone else -- contention, not an error --
+diff --git a/internal/battenshed/doc.go b/internal/battenshed/doc.go
+index c6387076..9236b760 100644
+--- a/internal/battenshed/doc.go
++++ b/internal/battenshed/doc.go
+@@ -175,8 +175,15 @@
+ // Session shutdown no longer skips a gone task worktree, since the composite ends that session by name.
+ // A pair of which nothing remains is the done post-condition for both halves: session shutdown has nothing left to end, and the removal reports the pair not found.
+ //
+-// The two producers that hold the hub's prime lock, Worktree-Create and Worktree-Teardown, wait for a contended lock instead of halting on the first try:
++// Every producer that holds the hub's prime lock waits for a contended lock instead of halting on the first try:
+ // they poll it every two seconds for up to ten minutes, stop at once when the context is cancelled, and return Stuck only when the bound is spent (primelockwait.go).
++// Worktree-Teardown holds it for its whole body.
++// Worktree-Create hands its create closure a HoldPrimeLock instead.
++// The closure takes it only around the steps that read the prime's tree or write the hub's worktree registry.
++// The origin probes start before the hold and overlap its wait, but Add waits for them under it, so the hold covers the probe time left after the pre-flight reads;
++// the adopt fetch, the fast-forward fetch of a behind branch and the archived-leftover replace of the pair's making also run under it.
++// Runs creating different pairs therefore overlap on everything else: the board claim, the start of the probes and the new pair's push.
++// The row releases any hold the closure left taken when it returns.
+ // Worktree-Create halts, blocked at its own row and with no bounce budget spent, when the create closure returns a PreconditionError, for a precondition no tackler can settle:
+ // the halt's reason starts with the precondition-unmet prefix and names what is unmet and its way forward, and the Go driver hands such a halt back.
+ // battenshed never imports fabric, so the closure alone builds the error.
+diff --git a/internal/battenshed/primelockwait.go b/internal/battenshed/primelockwait.go
+index 4db84647..b40b7376 100644
+--- a/internal/battenshed/primelockwait.go
++++ b/internal/battenshed/primelockwait.go
+@@ -1,4 +1,4 @@
+-// primelockwait.go implements acquirePrimeLock, the bounded, cancellable wait both prime-lock producers (Worktree-Create and Worktree-Teardown) call in place of a single Acquire.
++// primelockwait.go implements acquirePrimeLock, the bounded, cancellable wait every producer that holds the prime lock calls in place of a single Acquire.
+ 
+ package battenshed
+ 
+diff --git a/internal/battenshed/stuck_test.go b/internal/battenshed/stuck_test.go
+index 9955b6b3..186758b4 100644
+--- a/internal/battenshed/stuck_test.go
++++ b/internal/battenshed/stuck_test.go
+@@ -40,7 +40,7 @@ func TestStuckReport_LevelFollowsCause(t *testing.T) {
+ 				scratchDir := t.TempDir()
+ 				var released bool
+ 				lock := fakePrimeLock("/lock/path", true, nil, nil, &released)
+-				producer := NewWorktreeCreate("create", "myslug", func(context.Context) error { return errors.New("create boom") }, lock, scratchDir)
++				producer := NewWorktreeCreate("create", "myslug", holdingCreate(func() error { return errors.New("create boom") }), lock, scratchDir)
+ 				shedfake.RequireOutcome(t, producer, shedengine.Stuck)
+ 				return scratchDir, "create"
+ 			},
+diff --git a/internal/fabricengine/add.go b/internal/fabricengine/add.go
+index f2c33f1a..69b00cb7 100644
+--- a/internal/fabricengine/add.go
++++ b/internal/fabricengine/add.go
+@@ -60,6 +60,12 @@ type AddOptions struct {
+ 	// Empty, or equal to the fork point's anchor, keeps the fork point's own.
+ 	// It is set only by a command naming the flag, and a pair over an existing weft branch refuses it.
+ 	Anchor string
++	// Hold, when set, takes a lock the caller serializes the hub's worktree writes under and returns its release.
++	// Add takes it once its origin probes have started and before it reads the fork point, and releases it when it returns, so the hold covers only the probe time left when Add waits for the probes under it.
++	// An error from Hold is returned as is, before any mutation.
++	// Add calls Hold while it holds the pair's teardown lock, so a Hold that waits on a lock whose holder is waiting for this pair's teardown lock stalls both until the teardown wait runs out;
++	// it is safe only because a pair is never created and removed at once.
++	Hold func() (release func(), err error)
+ }
+ 
+ // syncOptions returns the options the records helpers take.
+@@ -133,6 +139,8 @@ func SourceDirtyPaths(l *lymcwd.Location) ([]string, error) {
+ // Right after the slug is validated and before any origin probe or mutation, Add takes the slug's teardown lock exclusive and holds it to its return, rollback included, waiting at most the topology's teardown wait;
+ // when the wait runs out it returns, before any mutation, an error wrapping ErrPairPushRunning that names re-running the command that made the pair.
+ // The caller's push of the new pair runs after Add has released the lock and takes it shared.
++// The origin probes then start in the background, and opts.Hold, when set, is taken before the fork point is read and held to Add's return;
++// every return waits for the probes, a refusal before them included.
+ // A newly forked weft branch does not inherit the parent's shed run records: the fork is no-checkout, so the run-records root never reaches the new worktree's disk,
+ // and the pair's first weft commit (the origin record's) also records the root's deletion.
+ // An adopted, already-existing weft branch keeps its own run records.
+@@ -183,6 +191,56 @@ func (t *Topology) Add(l *lymcwd.Location, slug string, opts AddOptions) (res Ad
+ 	}
+ 	defer releaseTeardown()
+ 
++	warpBranch := t.cfg.BranchPrefix + slug
++	weftBranch := RecordsBranchName(warpBranch)
++
++	// A missing branch is an answer; a failed read is an error.
++	warpBranchExists, existsErr := gitrepo.New(l.WorktreePath()).BranchExists(warpBranch)
++	if existsErr != nil {
++		return AddResult{}, fmt.Errorf("check whether warp branch %q exists: %w", warpBranch, existsErr)
++	}
++	warpAdopted := warpBranchExists
++	weftBranchAlreadyExists := weftBranchExists(l, weftBranch)
++
++	// Probe both origins before the first mutation: decide whether the pair is live, and refuse an unreplaceable leftover here rather than at the caller's later push.
++	// Both probes run beside each other and beside the hold's wait and the pre-flight reads below, so the add waits on one round of network, and the hold covers only what is left of it when the probes are waited for.
++	// The answers are read only once the pre-flight refusals have passed, so a refusal keeps its precedence over a probe's error.
++	probeOrigins := !opts.SkipPush && !opts.SkipGit
++	// A local warp branch being adopted is the pair's own, so origin's copy of it is not consulted.
++	// AdoptOnly is the exception: its probe only learns whether origin holds the branch, and the adopted branch is never fetched or replaced from origin.
++	probeWarp := probeOrigins && (!warpAdopted || opts.AdoptOnly)
++	var (
++		probes       sync.WaitGroup
++		weftProbe    weftLeftover
++		weftProbeErr error
++		warpTip      string
++		warpTipErr   error
++	)
++	if probeWarp {
++		probes.Add(1)
++		go func() {
++			defer probes.Done()
++			warpTip, warpTipErr = remoteHeadTip(l.WorktreePath(), warpBranch)
++		}()
++	}
++	if probeOrigins {
++		probes.Add(1)
++		go func() {
++			defer probes.Done()
++			weftProbe, weftProbeErr = probeWeftLeftover(l, slug, weftBranch, weftBranchAlreadyExists)
++		}()
++	}
++	// No git call a probe started outlives Add.
++	defer probes.Wait()
++
++	if opts.Hold != nil {
++		releaseHold, err := opts.Hold()
++		if err != nil {
++			return AddResult{}, err
++		}
++		defer releaseHold()
++	}
++
+ 	// A named parent replaces the acting worktree as the fork point, and the fork takes its last commit only, so neither worktree's tracked dirt is checked.
+ 	// An adopt-only add forks nothing, so it checks no source dirt, resolves no parent and checks no fork point.
+ 	var parent addParent
+@@ -238,18 +296,9 @@ func (t *Topology) Add(l *lymcwd.Location, slug string, opts AddOptions) (res Ad
+ 	// A pair moved to a requested anchor takes it once the move has committed.
+ 	pairAt := fork
+ 
+-	warpBranch := t.cfg.BranchPrefix + slug
+-	weftBranch := RecordsBranchName(warpBranch)
+-
+-	// A missing branch is an answer; a failed read is an error.
+-	warpBranchExists, existsErr := gitrepo.New(l.WorktreePath()).BranchExists(warpBranch)
+-	if existsErr != nil {
+-		return AddResult{}, fmt.Errorf("check whether warp branch %q exists: %w", warpBranch, existsErr)
+-	}
+ 	if warpBranchExists && !opts.AdoptLocal {
+ 		return AddResult{}, &ErrBranchExists{Branch: warpBranch}
+ 	}
+-	warpAdopted := warpBranchExists
+ 
+ 	target := WorktreePath(l, slug)
+ 	if _, err := os.Stat(target); !os.IsNotExist(err) {
+@@ -292,8 +341,6 @@ func (t *Topology) Add(l *lymcwd.Location, slug string, opts AddOptions) (res Ad
+ 		}
+ 	}
+ 
+-	weftBranchAlreadyExists := weftBranchExists(l, weftBranch)
+-
+ 	// An adopt-only add also guards a records branch another records worktree holds when the task branch comes from origin, which would otherwise fail later as a plain worktree-add error.
+ 	if opts.AdoptLocal && (warpAdopted || (opts.AdoptOnly && weftBranchAlreadyExists)) {
+ 		reusedWeft := ""
+@@ -335,36 +382,21 @@ func (t *Topology) Add(l *lymcwd.Location, slug string, opts AddOptions) (res Ad
+ 		}
+ 	}
+ 
+-	// Probe both origins before the first mutation: decide whether the pair is live, and refuse an unreplaceable leftover here rather than at the caller's later push.
+ 	// The weft answer is carried on: its fastForwardTo advances a behind local weft branch,
+ 	// and an archived leftover is replaced at step 11, so the caller's push of the weft branch is not rejected.
++	// The warp branch's origin tip is judged once the weft answer says whether the pair is live.
++	probes.Wait()
+ 	weftOld := weftLeftover{live: weftBranchAlreadyExists}
++	if probeOrigins {
++		if weftProbeErr != nil {
++			return AddResult{}, weftProbeErr
++		}
++		weftOld = weftProbe
++	}
+ 	var warpAdoptTip string
+ 	var warpPush addWarpBranch
+ 	// warpAbsentOnOrigin is whether the warp probe ran and read the branch absent on origin.
+ 	warpAbsentOnOrigin := false
+-	probeOrigins := !opts.SkipPush && !opts.SkipGit
+-	// A local warp branch being adopted is the pair's own, so origin's copy of it is not consulted.
+-	// AdoptOnly is the exception: its probe only learns whether origin holds the branch, and the adopted branch is never fetched or replaced from origin.
+-	probeWarp := probeOrigins && (!warpAdopted || opts.AdoptOnly)
+-	// The warp branch's origin tip is read beside the weft probe, so the add waits on one round of network, and judged once the weft answer says whether the pair is live.
+-	var warpTip string
+-	var warpTipErr error
+-	var warpRead sync.WaitGroup
+-	if probeWarp {
+-		warpRead.Add(1)
+-		go func() {
+-			defer warpRead.Done()
+-			warpTip, warpTipErr = remoteHeadTip(l.WorktreePath(), warpBranch)
+-		}()
+-	}
+-	if probeOrigins {
+-		weftOld, err = probeWeftLeftover(l, slug, weftBranch, weftBranchAlreadyExists)
+-	}
+-	warpRead.Wait()
+-	if err != nil {
+-		return AddResult{}, err
+-	}
+ 	if opts.AdoptOnly && !weftOld.live {
+ 		return AddResult{}, &ErrNotLive{Branch: weftBranch, Records: true}
+ 	}
+diff --git a/internal/fabricengine/add_hold_test.go b/internal/fabricengine/add_hold_test.go
+new file mode 100644
+index 00000000..fbb448a1
+--- /dev/null
++++ b/internal/fabricengine/add_hold_test.go
+@@ -0,0 +1,83 @@
++// add_hold_test.go proves Add's Hold option: the caller's lock is taken once before the worktree is made and released after it, by the time Add returns, and a hold that fails refuses the add before anything is made.
++//
++// Package fabricengine_test; shares the TestMain in testmain_test.go.
++
++package fabricengine_test
++
++import (
++	"errors"
++	"os"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestAdd_HoldsTheCallersLock asserts Add takes opts.Hold once, before it makes the worktree, and releases it before it returns, after the worktree is made,
++// and that a Hold error is returned as is with no worktree made and nothing to release.
++func TestAdd_HoldsTheCallersLock(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	holdFailure := errors.New("lock unavailable")
++	tests := []struct {
++		name     string
++		holdErr  error
++		wantMade bool
++	}{
++		{name: "HeldAroundTheAdd", wantMade: true},
++		{name: "FailedHoldMakesNothing", holdErr: holdFailure},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++			const slug = "held-pair"
++			worktree := fabricengine.WorktreePath(h.Location, slug)
++			worktreeExists := func() bool {
++				_, statErr := os.Stat(worktree)
++				return statErr == nil
++			}
++			takes, releases := 0, 0
++			var existsAtHold, existsAtRelease bool
++			hold := func() (func(), error) {
++				takes++
++				existsAtHold = worktreeExists()
++				if tt.holdErr != nil {
++					return nil, tt.holdErr
++				}
++				return func() {
++					releases++
++					existsAtRelease = worktreeExists()
++				}, nil
++			}
++
++			_, err := h.Topology.Add(h.Location, slug, fabricengine.AddOptions{SkipGit: true, Hold: hold})
++
++			if !errors.Is(err, tt.holdErr) || (tt.holdErr == nil && err != nil) {
++				t.Fatalf("Add(%q) error = %v; want %v", slug, err, tt.holdErr)
++			}
++			if takes != 1 {
++				t.Errorf("Hold calls = %d; want 1", takes)
++			}
++			wantReleases := 0
++			if tt.holdErr == nil {
++				wantReleases = 1
++			}
++			if releases != wantReleases {
++				t.Errorf("releases = %d; want %d", releases, wantReleases)
++			}
++			if made := worktreeExists(); made != tt.wantMade {
++				t.Errorf("worktree made = %v; want %v", made, tt.wantMade)
++			}
++			if existsAtHold {
++				t.Error("worktree existed when Hold was called; want the hold taken before the worktree is made")
++			}
++			if tt.wantMade && !existsAtRelease {
++				t.Error("worktree did not exist when the hold was released; want the hold to span the worktree's making")
++			}
++		})
++	}
++}
+diff --git a/internal/shedrecipe/fixture_test.go b/internal/shedrecipe/fixture_test.go
+index 9d7e02c3..cdbe7bcc 100644
+--- a/internal/shedrecipe/fixture_test.go
++++ b/internal/shedrecipe/fixture_test.go
+@@ -253,7 +253,7 @@ func newTestEnv(t *testing.T) Env {
+ 
+ 		ReviewCirclingCheckpoint: 3,
+ 
+-		CreateWorktree: func(context.Context) error {
++		CreateWorktree: func(context.Context, battenshed.HoldPrimeLock) error {
+ 			return nil
+ 		},
+ 		InnerRun: battenshed.InnerRunDeps{
+diff --git a/internal/shedrecipe/recipe.go b/internal/shedrecipe/recipe.go
+index 80453674..a66e80b4 100644
+--- a/internal/shedrecipe/recipe.go
++++ b/internal/shedrecipe/recipe.go
+@@ -338,7 +338,8 @@ type Env struct {
+ 	// CreateWorktree is the single closure WorktreeCreate calls to create the task worktree pair,
+ 	// following the CommitDiscussion/CommitPlan/ApprovePlan convention: that producer's whole job is
+ 	// one told action with no behaviour of its own a caller must observe.
+-	CreateWorktree func(context.Context) error
++	// It takes the hub's prime lock through the hold it is handed, only around the steps that need it.
++	CreateWorktree func(context.Context, battenshed.HoldPrimeLock) error
+ 	// InnerRun is a whole-struct passthrough to battenshed.NewInnerRun, following Env.Landing's
+ 	// own precedent: InnerRun has behaviour of its own -- spawning, resolving, and polling status --
+ 	// that per-seam fakes must be able to substitute individually.
+@@ -354,8 +355,8 @@ type Env struct {
+ 	Teardown battenshed.TeardownDeps
+ 	// Land is a whole-struct passthrough to battenshed.NewLand, for the reason Teardown is.
+ 	Land battenshed.LandDeps
+-	// PrimeLock is the told hub-scoped advisory lock WorktreeCreate and WorktreeTeardown both
+-	// acquire, read by those two bookend entries only.
++	// PrimeLock is the told hub-scoped advisory lock WorktreeTeardown acquires and WorktreeCreate hands its closure a hold on.
++	// Those two bookend entries alone read it.
+ 	PrimeLock battenshed.PrimeLock
+ 
+ 	// Command is a whole-struct passthrough to shedadapters.NewCommandProducer, following Env.Landing's precedent, read by the Command entry.
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index e3147162..975b4217 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -497,7 +497,7 @@ func FullEnv(t testing.TB) shedrecipe.Env {
+ 		ReviewCirclingCheckpoint: 3,
+ 
+ 		ScratchDir:     mustMkdir(t, filepath.Join(dir, "scratch")),
+-		CreateWorktree: func(context.Context) error { return nil },
++		CreateWorktree: func(context.Context, battenshed.HoldPrimeLock) error { return nil },
+ 		InnerRun: battenshed.InnerRunDeps{
+ 			Spawn: func(context.Context) error { return nil },
+ 			ResolveStatus: func() (string, string, error) {
