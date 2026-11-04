@@ -777,6 +777,29 @@
       "body": "## Seen (worktree-create-serial's Finalize fixer and hub orch, 2026-11-04)\n\nAn empty directory `/tmp/.git` appeared at 15:27:32 local, during a gate's tier1 run; no test or process was found to have made it.\nWith it in place, go's VCS stamping ran git in `/tmp`, and `TestPrebuildLym` failed on `worktree-create-serial`'s Finalize; the fixer hardened that test on the branch (`311bb513`).\nThe hub orch removed the empty `/tmp/.git` by hand.\n\n## Idea\n\n- Find the test or code that creates `.git` under the shared `/tmp` instead of under its own `t.TempDir()`; a likely shape is a path joined from an empty or unset directory, which resolves to `/tmp/.git` through a temp-dir parent.\n- A test never writes outside its own `t.TempDir()`; a guard (testkit or a gate check) fails a run that leaves a new entry directly under `/tmp` or the gate's temp root.\n",
       "created": "2026-11-04T14:32:08Z",
       "revised": "2026-11-04T14:32:08Z"
+    },
+    {
+      "id": 1100,
+      "handle": "T2",
+      "slug": "batching-hook-reach",
+      "title": "The batching hook counts Bash lookups and reaches forks",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "claude",
+        "shuttle"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Lookup chain counts read-only Bash commands; the hook judges subagent and fork calls against their own transcript",
+      "body": "## Seen (`docs/research/turn-savings-measure-2026-11-04/report.md`)\n\nThe batching breach hook (`internal/shuttleengine/claudeengine/batchingnudge.go`) fired 4 times in 24 landed runs.\n\n- Its lookup chain matches Read, Grep and Glob tool calls only. lym sessions search with Bash `grep`: the sample holds 1 Grep and 1 Glob call against 3,040 Bash calls, so the lookup-chain breach, 9.8% of context by the report's class reading, never fired.\n- It skips every call from a subagent or fork, while forks hold 57 of the sample's 117 edit-chain turns and most lookup chains.\n\n## Wanted (operator, 2026-11-04)\n\n1. A Bash call whose command is a read-only lookup (`grep`, `rg`, `find`, `ls`, `cat`, `head`, `tail`, `sed -n`, `wc`, a `git` read such as `log`, `show`, `diff` or `status`, and a pipe or `;`-chain made only of these) counts as a lookup in the lookup-chain breach, as Read, Grep and Glob do. A Bash call with any other command breaks a chain as today.\n2. The hook reaches subagents and forks: a call carrying `agent_id` is judged against that agent's own transcript, context and nudge count, under the same `batching_nudge` thresholds.\n3. The report's method stays valid for a re-measure: `docs/research/turn-savings-measure-2026-11-04/run-all.sh` keeps working on runs that land after this change.\n\nThresholds are unchanged.\n",
+      "status": "draft",
+      "created": "2026-11-04T14:33:02Z",
+      "revised": "2026-11-04T14:33:02Z",
+      "profile": "light",
+      "project": "turn-savings"
     }
   ],
   "prime_owner": "neve",
