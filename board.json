@@ -679,44 +679,6 @@
       "project": "turn-savings"
     },
     {
-      "id": 1102,
-      "handle": "B4",
-      "slug": "shuttle-hidden-anchor-dies",
-      "title": "lym shuttle run --anchor hidden ends died on both engines: the provider never becomes ready",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "shuttle",
-        "reed"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A hidden-anchor run is torn down within seconds as died, for Codex and Claude alike, with no pane capture saved",
-      "body": "Found in the codex-trial-hooks-guards-skills trial, 2026-11-04.\n\n## What happens\n\n`lym shuttle run --anchor hidden --model 'luna[medium]' --role x --prompt ... --output-file ...` from a worktree whose reed session is live ends with outcome died after two start attempts about 5 s apart.\nThe log says `shuttle: provider never became ready; strand torn down` and the error says `no pane capture was saved; the strand was removed`.\nThe same run with the default own-window anchor starts and finishes.\n\n## Reproduced\n\nThree hidden runs, three deaths: `luna[medium]` twice and `sonnet[low]` once. So the fault is not in codexengine.\nThe sonnet death carried a sessionId, so Claude started a session before the strand was torn down.\n\n## Expected\n\nA hidden strand reaches the provider as an own-window one does, or the refusal names why a hidden anchor cannot run.\n\n## Not known\n\nWhich of reed (hidden placement) or shuttle (the readiness read of a hidden pane) is at fault; both labels are set until one is cleared.",
-      "created": "2026-11-04T14:37:56Z",
-      "revised": "2026-11-04T14:38:06Z"
-    },
-    {
-      "id": 1103,
-      "handle": "B5",
-      "slug": "codex-state-always-unknown",
-      "title": "lym shuttle state reads every Codex session as unknown, which hides a running turn and an interrupt",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "shuttle",
-        "codex"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "settle() lets an unproven liveness win over the signal-derived state, so a Codex strand never reads busy, idle or interrupted",
-      "body": "Found in the codex-trial-hooks-guards-skills trial, 2026-11-04.\n\n## What happens\n\n`lym shuttle state` shows `state: unknown, cause: liveness-unproven` for every Codex run it was read for, whatever the session does.\nThe session fold does derive the right state: the history of an interrupted run lists `idle-fresh/session-start`, `busy/turn`, `idle-stalled/interrupt` at the rollout's `turn_aborted` time, and then `unknown/liveness-unproven`.\nThe current state is the last entry, so a reader sees `unknown` after the interrupt, and while a turn runs.\n\n## Cause\n\n`SessionFold.settle` in `internal/shuttleengine/sessionstate.go` takes `facts.Liveness == LivenessUnproven` before it reaches the signal-derived state, and `codexengine.Codex.ProcessLiveness` returns unproven for every session by design (Codex keeps no session registry).\nEvery Codex poll therefore also logs `shuttle: session state disagrees ... stands=loop` once per disagreement.\n\n## Expected\n\nA Codex strand reads busy while a turn runs and idle-stalled with cause interrupt after an interrupt, as the package doc says an interrupt marks the turn interrupted. Unproven liveness need only stop the state from claiming the process is alive, not replace the turn state.\n\n## Seen on\n\nOne interrupted run read through `lym shuttle state`; two further interrupted runs were checked in the rollout only, where each newest `turn_aborted` carries reason interrupted.",
-      "created": "2026-11-04T14:37:56Z",
-      "revised": "2026-11-04T14:38:06Z"
-    },
-    {
       "id": 1104,
       "handle": "T3",
       "slug": "drift-interim-repairs",
@@ -735,6 +697,29 @@
       "status": "running · Darn-Write",
       "created": "2026-11-04T15:05:51Z",
       "revised": "2026-11-04T15:05:51Z",
+      "profile": "light"
+    },
+    {
+      "id": 1105,
+      "handle": "T1",
+      "slug": "shuttle-hidden-and-codex-state",
+      "title": "Hidden-anchor shuttle runs start, and lym shuttle state reads Codex turns",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "shuttle",
+        "reed",
+        "codex"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A hidden-anchor run dies before its provider is ready; every Codex session reads unknown in lym shuttle state",
+      "body": "Two shuttle faults found in the Codex trial of hooks, shell guards and skills (`docs/research/codex-engine-trial-hooks-guards-skills-2026-11-03.md`), 2026-11-04. Fix both.\n\n## 1. A hidden-anchor run dies before its provider is ready\n\n`lym shuttle run --anchor hidden --model 'luna[medium]' --role x --prompt ... --output-file ...` from a worktree whose reed session is live ends with outcome died after two start attempts about 5 s apart.\nThe log says `shuttle: provider never became ready; strand torn down` and the error says `no pane capture was saved; the strand was removed`.\nThe same run with the default own-window anchor starts and finishes.\n\nThree hidden runs, three deaths: `luna[medium]` twice and `sonnet[low]` once, so the fault is not in codexengine.\nThe sonnet death carried a sessionId, so Claude started a session before the strand was torn down.\nWhich of reed (hidden placement) or shuttle (the readiness read of a hidden pane) is at fault is not known.\n\nExpected: a hidden strand reaches the provider as an own-window one does, or the refusal names why a hidden anchor cannot run.\n\n## 2. lym shuttle state reads every Codex session as unknown\n\n`lym shuttle state` shows `state: unknown, cause: liveness-unproven` for every Codex run, whatever the session does.\nThe session fold derives the right state: the history of an interrupted run lists `idle-fresh/session-start`, `busy/turn`, `idle-stalled/interrupt` at the rollout's `turn_aborted` time, and then `unknown/liveness-unproven`.\n\nCause: `SessionFold.settle` in `internal/shuttleengine/sessionstate.go` takes `facts.Liveness == LivenessUnproven` before it reaches the signal-derived state, and `codexengine.Codex.ProcessLiveness` returns unproven for every session by design (Codex keeps no session registry).\nEvery Codex poll therefore also logs `shuttle: session state disagrees ... stands=loop` once per disagreement.\n\nExpected: a Codex strand reads busy while a turn runs and idle-stalled with cause interrupt after an interrupt, as the package doc says.\nUnproven liveness only stops the state from claiming the process is alive; it does not replace the turn state.\n",
+      "status": "draft",
+      "created": "2026-11-04T14:37:56Z",
+      "revised": "2026-11-04T15:21:37Z",
       "profile": "light"
     }
   ],
