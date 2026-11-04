@@ -1,33 +1,28 @@
-# Plan and Discussion writers explore through parallel Sonnet agents that return only what is relevant
+# Measure how Plan and Discussion writers explore and whether they use lookup subagents
 
 `planner-fork-lookups` · Note · research, loom
 
 ## Seen (orch, 2026-11-01)
 
-In a sample of 28 sessions (`.scratch/batching-breach.md` of the batching study), the single largest cost was the Plan writer of `run-verbs-shared` in `plan-split-bench`: 31 chained grep turns at 390k to 530k context and 15 one-file-per-turn fix turns at 630k to 668k.
+In a sample of 28 sessions from the batching study, the single largest cost was the Plan writer of `run-verbs-shared` in `plan-split-bench`: 31 chained grep turns at 390k to 530k context and 15 one-file-per-turn fix turns at 630k to 668k.
 Every lookup the writer makes is paid at its whole context, so exploration late in a large session is the expensive part of planning.
 Discussion-Write explores the code more than any other role, so the same cost applies there.
 
-## What is being benched
+Since task `explore-subagent-model` landed (2026-11-02), the Plan-Write, Discussion-Write and darn writer stencils encourage the writer to hand batches of independent lookups to fresh subagents on the `subagent_model` of `loom.yaml` (default `sonnet`), which return only what is relevant with paths and line ranges.
+The guidance encourages; it does not command.
+`turn-savings-measure` (`docs/research/turn-savings-measure-2026-11-04/report.md`) measured darn and Webster only, not these two writers.
 
-The writers hand batches of independent lookups to fresh Sonnet subagents that return only what is relevant, with paths and line ranges, and read only what those lists name.
-The writer is encouraged to work this way by its stencil, not commanded.
-Task `explore-subagent-model` has landed (2026-11-02): the Discussion-Write stencil now carries the guidance the Plan and darn stencils already carried, and the subagent model is the `subagent_model` key of `loom.yaml` (default `sonnet`), read by all three stencils.
-A fork does not serve for lookups: it inherits the writer's whole context and saves nothing.
+## Measurement (operator, 2026-11-04)
 
-## Research
+A measurement from transcripts of landed runs only; no agent run, no replay and no bench.
 
-- From the Plan-Write and Discussion-Write transcripts of landed tapestry runs, count the writers' exploration turns, their context and cost, and how many could have gone to parallel explore agents up front.
-- Bench on one or two replays (the `plan-split-bench` inputs) for both roles: the writer allowed subagents but given no stencil guidance, against the writer with the guidance.
-  Compare whether the guidance changes what the writer does, and cost, turns, peak context and review findings.
-- Name the risk: an explore agent's list may leave out what the writer would have seen in the code, so count review findings that trace to a missed fact.
-
-## What the bench writer did (orch, 2026-11-01)
-
-The `psb-rv-plan` writer ran on `opus[medium]`; its Agent calls were one fork writing the plan and the `twill-plan` lens reviews, none for lookups.
-No run denies the Agent tool any more, so a writer may start a fresh subagent.
-
-## Timing
-
-The guidance now exists for both roles, so the bench no longer waits on `explore-subagent-model`.
-The "no guidance" arm needs the guidance removed from a stencil in the bench's own worktree, since the landed stencils all carry it.
+- Sample: the Plan-Write and Discussion-Write sessions of the 10 most recent tapestry runs that landed after 2026-11-02, both roles of each run.
+- For each writer session, count:
+  - its exploration turns (turns made only of lookups: Read, Grep, Glob, or a read-only Bash lookup such as `grep`, `rg`, `find`, `ls`, `cat`, `sed -n` or a `git` read), with the context and cost at each;
+  - chains of exploration turns in a row, their length and the context they ran at;
+  - the subagents it started for lookups, how many lookups each batch held, and the subagent's model and cost;
+  - how much of its exploration cost fell above 200k context.
+- Report whether the writers follow the stencil guidance, and how much of their exploration cost a writer could have moved to subagents up front, with the chains that show it.
+- Reuse the method and scripts of `docs/research/turn-savings-measure-2026-11-04/` where they fit.
+- The report closes with a recommendation: whether a bench of the guidance (writer with it against writer without it, on one `plan-split-bench` input) is worth running, or whether the guidance should become stronger, or nothing.
+- The report lands under `docs/research/`.
