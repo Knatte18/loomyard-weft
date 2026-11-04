@@ -63,14 +63,6 @@ Not released; nothing starts it until its status is cleared.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T3 | **Codex trial: home, trust, sandbox and refusals**<br>• Seven cases on real Codex launches against the package doc | [`codex-trial-home-sandbox`](design-codex-trial-home-sandbox.md) | 16h<br>16h | codex, shuttle |
-
 ## [P0 Root: entries under no project](project-root.md) (40)
 
 Owner `neve`
