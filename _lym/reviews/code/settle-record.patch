@@ -1,0 +1,827 @@
+diff --git a/internal/dobbyengine/config.go b/internal/dobbyengine/config.go
+index dcb701be..1423f022 100644
+--- a/internal/dobbyengine/config.go
++++ b/internal/dobbyengine/config.go
+@@ -39,7 +39,7 @@ type Config struct {
+ 	BoardTidyTimeoutMin int `yaml:"board_tidy_timeout_min"`
+ 	// TaskHeadroom is the fewest free tasks under the cgroup task limit for dobby to start a run; 0 never holds a start.
+ 	TaskHeadroom int `yaml:"task_headroom"`
+-	// PullRequest is the receiving branch's pull-request mode: "on", "off" or "required".
++	// PullRequest is the receiving branch's pull-request mode: "on", "off", "required" or "merge", which is required with the pull request squash-merged on GitHub at once and no review.
+ 	PullRequest string `yaml:"pull_request"`
+ 	// LandNotice decides which runs the dobby sends a landing notice for: LandNoticeAll, LandNoticePerTask or LandNoticeOff.
+ 	LandNotice string `yaml:"land_notice"`
+@@ -66,7 +66,7 @@ func ConfigSpec() configengine.Spec {
+ }
+ 
+ // LoadConfig resolves beam.yaml strictly from the layer stack under dirs, since dobby only ever runs inside a hub.
+-// A negative value is refused naming its key, and so is a pull_request other than on, off or required and a land_notice other than all, per-task or off.
++// A negative value is refused naming its key, and so is a pull_request other than on, off, required or merge and a land_notice other than all, per-task or off.
+ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+ 	resolved, err := configengine.Load(dirs, ConfigSpec())
+ 	if err != nil {
+@@ -91,9 +91,9 @@ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+ 		}
+ 	}
+ 	switch cfg.PullRequest {
+-	case "on", "off", "required":
++	case "on", "off", "required", "merge":
+ 	default:
+-		return Config{}, configengine.MarkInvalid(fmt.Errorf("beam config key %q is %q: must be on, off or required; way forward: fix it with lym config beam --set pull_request=<on|off|required>", "pull_request", cfg.PullRequest))
++		return Config{}, configengine.MarkInvalid(fmt.Errorf("beam config key %q is %q: must be on, off, required or merge; way forward: fix it with lym config beam --set pull_request=<on|off|required|merge>", "pull_request", cfg.PullRequest))
+ 	}
+ 	switch cfg.LandNotice {
+ 	case LandNoticeAll, LandNoticePerTask, LandNoticeOff:
+diff --git a/internal/dobbyengine/config_test.go b/internal/dobbyengine/config_test.go
+index 7c6fab17..f4bbd1a8 100644
+--- a/internal/dobbyengine/config_test.go
++++ b/internal/dobbyengine/config_test.go
+@@ -38,7 +38,8 @@ func TestLoadConfig(t *testing.T) {
+ 		{name: "a worktree layer's max_runs of 0 starts none", worktree: "max_runs: 0\n", want: Config{MaxRuns: 0, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "on", LandNotice: "per-task", AdoptFixTries: 3}},
+ 		{name: "a worktree layer's pull_request of required resolves as set", worktree: "pull_request: required\n", want: Config{MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "required", LandNotice: "per-task", AdoptFixTries: 3}},
+ 		{name: "a worktree layer's pull_request of off resolves as set", worktree: "pull_request: \"off\"\n", want: Config{MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "off", LandNotice: "per-task", AdoptFixTries: 3}},
+-		{name: "an unknown pull_request is refused naming the key and the way forward", worktree: "pull_request: maybe\n", wantErr: []string{"pull_request", "must be on, off or required", "lym config beam --set pull_request="}},
++		{name: "a worktree layer's pull_request of merge resolves as set", worktree: "pull_request: merge\n", want: Config{MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "merge", LandNotice: "per-task", AdoptFixTries: 3}},
++		{name: "an unknown pull_request is refused naming the key and the way forward", worktree: "pull_request: maybe\n", wantErr: []string{"pull_request", "must be on, off, required or merge", "lym config beam --set pull_request="}},
+ 		{name: "a worktree layer's land_notice of all resolves as set", worktree: "land_notice: all\n", want: Config{MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "on", LandNotice: "all", AdoptFixTries: 3}},
+ 		{name: "a worktree layer's land_notice of off resolves as set", worktree: "land_notice: \"off\"\n", want: Config{MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "on", LandNotice: "off", AdoptFixTries: 3}},
+ 		{name: "an unknown land_notice is refused naming the key and the way forward", worktree: "land_notice: some\n", wantErr: []string{"land_notice", "must be all, per-task or off", "lym config beam --set land_notice="}},
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index 8bf6ab3f..8b46420e 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -16,7 +16,7 @@
+ //     OwnedWorktrees lists the prime and every local beam this machine may start, the set a caller that narrows nothing names.
+ //     A worktree with an anchor change standing on its own records worktree or the prime's is refused with the change's way forward and starts nothing, through StartDeps.MoveInProgress, and a nil one reads as no change standing.
+ //   - Config is beam.yaml, loaded strictly because dobby only ever runs inside a hub.
+-//     Its `pull_request` key is the receiving branch's pull-request mode, on, off or required, read with the receiving branch's worktree as the anchor.
++//     Its `pull_request` key is the receiving branch's pull-request mode, on, off, required or merge, read with the receiving branch's worktree as the anchor; set at the default layer it marks every branch of the hub.
+ //     Its `land_notice` key, all, per-task or off, decides which runs get a landing notice.
+ //     Its `adopt_fix_tries` key is the adopt check's try limit, the most fix tasks a failed adopt check files for the worktree's subject between two hand adopts, which dobby itself never reads.
+ //   - Run is the daemon loop, with every seam it reads in Deps.
+diff --git a/internal/dobbyengine/template.yaml b/internal/dobbyengine/template.yaml
+index fc464db2..596b2096 100644
+--- a/internal/dobbyengine/template.yaml
++++ b/internal/dobbyengine/template.yaml
+@@ -2,6 +2,6 @@ max_runs: 3  # the most runs of this beam's tasks dobby drives at once; 0 starts
+ board_tidy_every: 5  # dobby starts the board-tidy agent after this many landings; 0 never tidies
+ board_tidy_timeout_min: 30  # the minutes the board-tidy agent may run before dobby gives up on it
+ task_headroom: 500  # the fewest free tasks under the cgroup task limit (pids.max) for dobby to start a run; 0 never holds a start
+-pull_request: "on"  # whether a landing into this worktree's branch goes through a GitHub pull request: on (unless the entry's pull_request field is off), off (only when the entry's field is on) or required (always, whatever the field says)
++pull_request: "on"  # whether a landing into this worktree's branch goes through a GitHub pull request: on (unless the entry's pull_request field is off), off (only when the entry's field is on), required (always, whatever the field says) or merge (always, squash-merged on GitHub at once with no review, for a branch the remote takes only through a pull request)
+ land_notice: per-task  # which runs dobby posts a line to the orch for once they land or end without landing: all, per-task (only a task whose board entry carries notify_on_land) or off
+ adopt_fix_tries: 3  # the most adopt fix tasks a failed adopt check files for this worktree's subject between two hand adopts; 0 files none
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index dedfeaf4..84313476 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -4,7 +4,8 @@
+ // It reads the receiving branch's beam.yaml `pull_request`, the landing entry's field, the origin and whether the task branch has commits beyond its parent through Deps.PullRequest, and takes no parent lock.
+ // A beam.yaml it cannot read is Stuck with Halt naming the worktree and `lym config beam`, and a resolver Halt is Stuck with Halt.
+ // A no logs the reason, closes a recorded pull request GitHub reports open with the comment `lym closed this pull request: <reason>`, drops the record and ends Done.
+-// A yes pushes the task branch, then finds the pull request the record names or the open one on the task branch, else opens one, sets its title from the change description and its body from the description's body, the regression check and the credit block, and records its number, URL, base and head, and then waits on it in process.
++// A yes the resolver marks MergeAtOnce logs it and ends Done with no push, GitHub call, session or wait, since Finalize opens and merges that pull request with no review.
++// Any other yes pushes the task branch, then finds the pull request the record names or the open one on the task branch, else opens one, sets its title from the change description and its body from the description's body, the regression check and the credit block, and records its number, URL, base and head, and then waits on it in process.
+ // The record's gated head is set to the task head on the first entry only, so a re-entry keeps it, and a record carrying the operator's ending keeps the run's ending when the task head is still the gated one and starts a new review when it is not.
+ //
+ // The wait has no timeout and wakes at least a second apart, doubling to a minute while nothing changes and back to a second when the task head moves.
+@@ -41,8 +42,10 @@
+ // A nil seam, an empty record path and a cancelled context are errors.
+ //
+ // ResolvePullRequest is the one decision of whether a landing goes through a pull request, so PR-Review and Finalize cannot disagree.
+-// It takes the receiving branch's beam.yaml `pull_request` (`on`, `off` or `required`), the landing entry's `pull_request` field (empty, `on` or `off`), the origin facts and whether the task branch has commits beyond its parent, and reads no file: its callers read the parent's beam.yaml, the entry and the task branch through git and tell the values.
+-// A required parent wants a pull request whatever the field says, an on parent wants one unless the field is off, and an off parent wants one only when the field is on.
++// It takes the receiving branch's beam.yaml `pull_request` (`on`, `off`, `required` or `merge`), the landing entry's `pull_request` field (empty, `on` or `off`), the origin facts and whether the task branch has commits beyond its parent, and reads no file: its callers read the parent's beam.yaml, the entry and the task branch through git and tell the values.
++// A required or merge parent wants a pull request whatever the field says, an on parent wants one unless the field is off, and an off parent wants one only when the field is on.
++// A merge parent's yes is marked MergeAtOnce: the parent is one the remote takes only through a pull request, with no approval or check to wait for, so the pull request is opened and squash-merged at once.
++// beam.yaml's `pull_request` set at the default layer marks every branch of the hub, and at a worktree's layer that worktree's branch.
+ // A wanted pull request needs an origin on github.com that the owner and repository parse from, an upstream for the parent and no push skip.
+ // A wanted pull request on a task branch with no commit beyond its parent is a no, before any origin fact is judged, since GitHub opens none on an empty branch; both rows then take the no path, and Finalize's parent-side merge commits nothing.
+ // A missing fact is a Halt when the parent is required or the field is on, and a no with the fact named when the parent is on alone; an origin on github.com that names no repository is a Halt in every mode that wants a pull request.
+@@ -130,6 +133,9 @@
+ // A parent push that fails for a reason other than a transient one carries a repair note when origin's parent already holds the task's work, which an adopter-first landing leaves:
+ // it names the task's squash by the parent head's SHA, a `git reset --keep` to origin's parent when the squash is the only commit origin lacks or a `git rebase --onto` dropping it when another is listed, and then `lym fabric remove` of the run, leaving the owner pause standing.
+ // An origin parent lacking the work, or a failed read, adds no note.
++// A parent push the remote refuses as a protected branch, read from GitHub's `protected branch` or `repository rule violations` rejection wording, carries in place of that note and of any push class's way forward the setting that lands the parent through the remote: `pull_request=merge` in the parent's worktree, or at the default layer for every branch, with the hand landing of the work the local parent alone holds, through a pull request, `git reset --keep origin/<parent>` and `lym loom resume`.
++// A landing that went through a parent already marked merge leaves the setting out and keeps the hand landing.
++// Bound: such a run is marked done on the board while its work is on the local parent only, until that hand landing.
+ //
+ // Parent-Align and Finalize clear the merge-in their own earlier attempt left parked before the clean-tree check that precedes each merge of the parent, Finalize's retry pass included.
+ // A parked fabric `merge-in` of the parent branch is aborted, whoever started it, so a conflict session's resolution and a hand-started merge-in with its partial resolution are both discarded and the merge starts afresh.
+@@ -250,11 +256,14 @@
+ // Right after it takes the lock it asks ResolvePullRequest the question PR-Review asked, from the same beam.yaml, entry field, parent-branch rules, origin and task-branch commits, and a Finalize with no `ParentMode` seam skips the step and lands locally.
+ // A no closes a recorded pull request GitHub reports open with the comment `lym closed this pull request: <reason>`, removes the record, and lands locally.
+ // A yes never lands by a local merge pushed to the parent.
+-// A yes with no record is Stuck with Halt naming `lym loom goto PR-Review`, and a yes whose pull request GitHub reports closed while the record carries no operator's ending is Stuck with Halt naming a reopen on GitHub and `lym batten cancel`; only PR-Review writes that mark.
+-// A yes whose record carries the operator's ending and whose pull request is closed is reopened on GitHub and merged like an open one, since GitHub squash-merges only an open pull request; a failed reopen is judged as any GitHub failure.
++// A yes with no record is Stuck with Halt naming `lym loom goto PR-Review`, except a yes marked MergeAtOnce, and a yes whose pull request GitHub reports closed while the record carries no operator's ending is Stuck with Halt naming a reopen on GitHub and `lym batten cancel`, except a yes marked MergeAtOnce; PR-Review writes that mark on the operator's continue, and Finalize writes it on the record it opens itself for a yes marked MergeAtOnce.
++// A yes whose record carries the operator's ending and whose pull request is closed, and any closed recorded pull request under a yes marked MergeAtOnce, is reopened on GitHub and merged like an open one, since GitHub squash-merges only an open pull request; a failed reopen is judged as any GitHub failure.
++// The reopen under a yes marked MergeAtOnce comes after the owner checks and the lock re-check, right after the task push, so a machine that may not land the run reopens nothing.
+ // A merged pull request makes no GitHub merge, and the parent sync fast-forwards to the merged upstream so the parent-side merge takes the already-landed path.
+ // An open one is merged on GitHub after the lock re-check and before the parent-side merge: Finalize pushes the task branch, merges with the pushed head as the expected head, `squash` choosing the method, the change description's title followed by ` (#<number>)` as the commit title, the form GitHub's own squash merge writes, so the landed commit names its pull request after the board entry is pruned, and its body and the credit block as the commit message, then fetches and fast-forwards the parent pair.
+-// A merge GitHub refuses as pending is retried for at most a minute under the lock, a method refusal names `lym config landing --set squash=<true|false>`, and any other refusal names a second person's approval or a settled check or conflict, and `lym batten cancel`.
++// A yes marked MergeAtOnce with no record opens the pull request at that point, after the task push: Finalize finds the open one from the task branch into the parent and sets its title and body, else opens one with them, records it with the pushed head as gated and the review ended, and merges it.
++// A yes marked MergeAtOnce always merges by squash, on GitHub and in the parent-side merge alike, whatever `squash` says.
++// A merge GitHub refuses as pending is retried for at most a minute under the lock, a method refusal names `lym config landing --set squash=<true|false>`, or the repository's settings under MergeAtOnce, and any other refusal names a second person's approval or a settled check or conflict, and `lym batten cancel`.
+ // The retry after a merge-in-required error never merges on GitHub a second time.
+ // Every GitHub failure is judged as PR-Review judges one, with each halt opening with LandingStopPrefix.
+ //
+diff --git a/internal/landingshed/finalize.go b/internal/landingshed/finalize.go
+index 714e83c9..928e6685 100644
+--- a/internal/landingshed/finalize.go
++++ b/internal/landingshed/finalize.go
+@@ -169,9 +169,11 @@ func NewFinalize(deps Deps) (*Finalize, error) {
+ //
+ // Right after the lock it follows the pull-request resolver, asked with GitHub's rules for the parent branch: a no closes a recorded open pull request, drops the record and lands locally;
+ // a rules read that fails for a reason other than a transient or token one halts when a pull request is recorded, and closes nothing;
+-// a yes needs the recorded pull request and halts without one, and halts on one closed without the operator's ending;
++// a yes needs the recorded pull request and halts without one, and halts on one closed without the operator's ending, except under a parent that takes its pull request at once, which reopens a closed one only after the owner checks, just before the merge;
+ // a closed pull request whose record carries the operator's ending is reopened and merged on GitHub like an open one, and a merged one lands through the already-landed path.
+ // An open pull request is merged on GitHub just before the parent-side merge, with the pushed task head as its expected head, and the parent pair is fast-forwarded to the merge, so the parent-side merge then finds the parent holding the task's work.
++// A parent whose beam.yaml pull_request is merge needs no record: Finalize opens the pull request itself at that point and squash-merges it with no review.
++// A parent push the remote refuses as a protected branch is Stuck naming that setting, unless the landing already went through it.
+ //
+ // Finalize is idempotent over an already-landed parent: when the parent already contains the task's
+ // changes -- an operator squash-merged the task on the remote, or an earlier Finalize landed and
+@@ -331,12 +333,13 @@ func (fz *Finalize) landUnderLock(ctx context.Context, front bool, title, body,
+ 	// Step 6: the parent-side merge, this producer's own merge critical section. Message is set
+ 	// whether or not Config.Squash is true -- it is the conclude-commit message for both merge
+ 	// shapes, so gating it on Squash would leave the non-squash landing commit with an unset message.
+-	mergeOpts := fabricengine.MergeOptions{Squash: fz.deps.Config.Squash, Message: landingMessage}
++	// A parent that takes its pull request at once always squashes on GitHub, so the parent-side merge squashes too, whatever landing.yaml says.
++	mergeOpts := fabricengine.MergeOptions{Squash: fz.deps.Config.Squash || landing.atOnce, Message: landingMessage}
+ 	_, mergeErr := parentHandle.Merge(fz.deps.TaskBranch, mergeOpts)
+ 	if mergeErr == nil {
+ 		fz.markTaskDone()
+ 		fz.recordLanding(parentHandle)
+-		return end(fz.pushParent(ctx, parentHandle, notice))
++		return end(fz.pushParent(ctx, parentHandle, notice, landing.atOnce))
+ 	}
+ 
+ 	// Retry: on the merge-in-required error, re-run steps 2 to 5 under the same lock and retry the parent-side merge exactly once.
+@@ -359,7 +362,7 @@ func (fz *Finalize) landUnderLock(ctx context.Context, front bool, title, body,
+ 		if retryErr == nil {
+ 			fz.markTaskDone()
+ 			fz.recordLanding(parentHandle)
+-			return end(fz.pushParent(ctx, parentHandle, notice))
++			return end(fz.pushParent(ctx, parentHandle, notice, landing.atOnce))
+ 		}
+ 		mergeErr = retryErr
+ 	}
+@@ -620,13 +623,25 @@ func (fz *Finalize) recordLanding(parentHandle parentMerger) {
+ // When origin's parent already holds the task's work, the reason also carries the repair of an adopter-first landing.
+ // Deps.PushSkipped suppresses the push.
+ //
++// A push the remote refuses as a protected branch carries protectedParentWayForward alone, in place of any class's way forward and the repair note.
++// parentMerges is true when the landing went through a parent that takes its pull request at once, so that way forward leaves out the advice to set that mode.
+ // On its Done return only, a non-empty notice is queued through Deps.Notify, and a failure there is a logged warning that never changes the verdict.
+ // The push is the parent branch's own, whether the landing went through a pull request merged on GitHub or not.
+-func (fz *Finalize) pushParent(ctx context.Context, parentHandle parentMerger, notice string) (shedengine.Outcome, shedengine.OutputPointer, error) {
++func (fz *Finalize) pushParent(ctx context.Context, parentHandle parentMerger, notice string, parentMerges bool) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	if _, err := parentHandle.PushBranch(fabricengine.SyncOptions{SkipPush: fz.deps.PushSkipped}); err != nil {
+ 		if terr := transientFailure(ctx, finalizeName, "push parent branch", err); terr != nil {
+ 			return "", shedengine.OutputPointer{}, terr
+ 		}
++		if protectedBranchRefusal(err) {
++			cause := err
++			var failed *fabricengine.PushFailedError
++			if errors.As(err, &failed) {
++				cause = failed.Err
++			}
++			reason := fmt.Sprintf("parent branch %q was merged locally but the remote refused its push as a protected branch: %v; %s",
++				fz.deps.ParentBranch, cause, protectedParentWayForward(fz.deps.TaskBranch, fz.deps.ParentBranch, parentMerges))
++			return fz.stuckOrCancelled(ctx, reason, "error", err)
++		}
+ 		reason := fmt.Sprintf("parent branch %q was merged locally but its push failed: %v", fz.deps.ParentBranch, err)
+ 		// A classified failure's text already ends in the way forward of its class, and a plain push is what a hold-back refuses.
+ 		var failed *fabricengine.PushFailedError
+@@ -648,6 +663,30 @@ func (fz *Finalize) pushParent(ctx context.Context, parentHandle parentMerger, n
+ 	return shedengine.Done, shedengine.OutputPointer{}, nil
+ }
+ 
++// protectedBranchMarkers are the lower-case texts of GitHub's push rejection for a branch that takes changes only through a pull request: classic branch protection and repository rules.
++var protectedBranchMarkers = []string{"protected branch", "repository rule violations"}
++
++// protectedBranchRefusal reports whether err is a push the remote refused because the branch is protected.
++func protectedBranchRefusal(err error) bool {
++	text := strings.ToLower(err.Error())
++	for _, marker := range protectedBranchMarkers {
++		if strings.Contains(text, marker) {
++			return true
++		}
++	}
++	return false
++}
++
++// protectedParentWayForward is the way forward of a parent push refused as a protected branch, for task landing on parent.
++// It names beam.yaml's pull_request=merge, at the parent's worktree or the hub's default layer, unless parentMerges says the parent already has it, and the hand landing of the work the local parent alone holds.
++func protectedParentWayForward(task, parent string, parentMerges bool) string {
++	handLanding := fmt.Sprintf(`this run's work is on the local parent only, so merge task branch %q into %q through a pull request on GitHub by hand, then run "git fetch origin" and "git reset --keep origin/%s" in the parent's worktree, then "lym loom resume" in the task worktree, which finds the work on the parent and ends the landing`, task, parent, parent)
++	if parentMerges {
++		return "way forward: " + handLanding
++	}
++	return `way forward: mark the parent to land through a pull request lym squash-merges on GitHub at once, with "lym config beam --set pull_request=merge" in the parent's worktree, or for every branch of the hub with "lym config beam --layer default --set pull_request=merge" from the prime; ` + handLanding
++}
++
+ // recheckLock re-reads the parent lock record immediately before a landing attempt.
+ // stop is false when the record still names this run, so Call lands.
+ // Otherwise the other values are what Call returns at once: a halting Stuck for a release or an unreadable record, an error for an infrastructure fault.
+diff --git a/internal/landingshed/finalize_pr.go b/internal/landingshed/finalize_pr.go
+index ec343d06..10a00d7a 100644
+--- a/internal/landingshed/finalize_pr.go
++++ b/internal/landingshed/finalize_pr.go
+@@ -22,17 +22,23 @@ const prMergeRetryWindow = time.Minute
+ // prLanding is what Finalize's decision about the run's pull request leaves for the landing.
+ // The zero value is a landing with no GitHub merge, which lands through the parent-side merge alone.
+ type prLanding struct {
+-	// merge marks a landing that merges the open pull request on GitHub before the parent-side merge.
++	// merge marks a landing that merges the run's pull request on GitHub before the parent-side merge, opening it first when open is set.
+ 	merge bool
++	// open marks a landing whose pull request Finalize finds or opens and records itself, just before it merges it.
++	open bool
++	// atOnce marks a parent that takes its pull request with no review, which always squash-merges.
++	atOnce bool
++	// reopen marks a landing whose closed recorded pull request mergeOnGitHub reopens just before it merges.
++	reopen bool
+ 	// api calls GitHub for the repository the origin names, set when merge is.
+ 	api pullrequest.API
+-	// record is the run's pull request record, set when merge is.
++	// record is the run's pull request record, set when merge is and open is not.
+ 	record pullrequest.Record
+ }
+ 
+ // beamModeUnreadableReason is the Stuck reason of a receiving branch's beam.yaml that could not be read in worktree.
+ func beamModeUnreadableReason(worktree string, err error) string {
+-	return fmt.Sprintf("the receiving branch's beam.yaml could not be read in worktree %s: %v; way forward: fix it with lym config beam --set pull_request=<on|off|required> in that worktree, then run lym loom resume", worktree, err)
++	return fmt.Sprintf("the receiving branch's beam.yaml could not be read in worktree %s: %v; way forward: fix it with lym config beam --set pull_request=<on|off|required|merge> in that worktree, then run lym loom resume", worktree, err)
+ }
+ 
+ // pushHaltReason is the Stuck reason of a push of the task branch that failed for a reason other than a transient one.
+@@ -130,6 +136,7 @@ func (fz *Finalize) githubFailure(ctx context.Context, action string, err error)
+ // pullRequestLanding decides, under the parent lock, how the landing relates to the run's pull request, following ResolvePullRequest, asked with GitHub's rules for the parent branch, and never the record alone.
+ // A no closes a recorded pull request GitHub reports open, removes the record and lands locally.
+ // A yes needs the recorded pull request: an absent record, and a closed pull request the operator did not end the review with, are halts.
++// The exception is a yes marked MergeAtOnce, which has no review to end: with no record it is marked for mergeOnGitHub to open the pull request itself, and a closed recorded pull request is marked for mergeOnGitHub to reopen, so nothing is opened or reopened on GitHub before the owner checks.
+ // A yes never lands by a local merge pushed to the parent: a merged pull request lands through the parent-side merge's already-landed path, an open one is marked to merge on GitHub, and a closed one whose record carries the operator's ending is reopened and marked to merge, since GitHub merges only an open pull request.
+ // A Finalize with no ParentMode seam skips the step and lands locally.
+ // stop is true when Call returns the other values at once.
+@@ -179,7 +186,7 @@ func (fz *Finalize) pullRequestLanding(ctx context.Context) (prLanding, shedengi
+ 		}
+ 		return fz.dropRecordedPullRequest(ctx, origin, rec, decision.Reason)
+ 	}
+-	if !found {
++	if !found && !decision.MergeAtOnce {
+ 		return halt(fmt.Sprintf("this landing goes through a pull request (%s) but the run has no pull request recorded; way forward: lym loom goto PR-Review, which opens it", decision.Reason))
+ 	}
+ 
+@@ -187,23 +194,30 @@ func (fz *Finalize) pullRequestLanding(ctx context.Context) (prLanding, shedengi
+ 	if err != nil {
+ 		return ended(fz.githubFailure(ctx, "open the GitHub client", err))
+ 	}
++	if !found {
++		return prLanding{merge: true, open: true, atOnce: true, api: api}, "", shedengine.OutputPointer{}, nil, false
++	}
+ 	status, err := api.Status(ctx, rec.Number)
+ 	if err != nil {
+ 		return ended(fz.githubFailure(ctx, "read the pull request's status", err))
+ 	}
+ 	switch status.State {
+ 	case pullrequest.StateOpen:
+-		return prLanding{merge: true, api: api, record: rec}, "", shedengine.OutputPointer{}, nil, false
++		return prLanding{merge: true, atOnce: decision.MergeAtOnce, api: api, record: rec}, "", shedengine.OutputPointer{}, nil, false
+ 	case pullrequest.StateClosed:
+-		if !rec.ReviewEnded {
++		if !rec.ReviewEnded && !decision.MergeAtOnce {
+ 			return halt(fmt.Sprintf("the run's pull request %s was closed without a merge; way forward: reopen it on GitHub, then lym loom goto PR-Review, or lym batten cancel %s", rec.URL, fz.deps.Slug))
+ 		}
++		if decision.MergeAtOnce {
++			return prLanding{merge: true, atOnce: true, reopen: true, api: api, record: rec}, "", shedengine.OutputPointer{}, nil, false
++		}
+ 		if err := api.Reopen(ctx, rec.Number); err != nil {
+ 			return ended(fz.githubFailure(ctx, "reopen the pull request", err))
+ 		}
+ 		return prLanding{merge: true, api: api, record: rec}, "", shedengine.OutputPointer{}, nil, false
+ 	}
+-	return prLanding{}, "", shedengine.OutputPointer{}, nil, false
++	// A merged pull request has no GitHub merge left, yet the parent-side merge still follows the parent's mode.
++	return prLanding{atOnce: decision.MergeAtOnce}, "", shedengine.OutputPointer{}, nil, false
+ }
+ 
+ // dropRecordedPullRequest ends the run's pull request when the landing no longer goes through one.
+@@ -238,7 +252,7 @@ func pullRequestCommitTitle(title string, number int) string {
+ }
+ 
+ // mergeOnGitHub merges the run's pull request on GitHub, which Finalize does after its lock re-check and before the parent-side merge.
+-// It pushes the task branch and merges with the pushed head as the expected head, squashing as Config.Squash says, with title and the pull request's number as the commit title and message as the commit message.
++// It pushes the task branch, opens the pull request through openAtOnce or reopens the closed recorded one when the landing is marked to, and merges with the pushed head as the expected head, squashing as Config.Squash says, or always for a parent that takes the pull request with no review, with title and the pull request's number as the commit title and message as the commit message.
+ // A merge GitHub refuses as pending is retried for at most a minute of the told clock.
+ // It then fetches the parent's upstream and fast-forwards the parent pair to it, so the parent-side merge that follows finds the parent holding the task's work.
+ // stop is true when Call returns the other values at once; each halt opens with LandingStopPrefix.
+@@ -254,11 +268,24 @@ func (fz *Finalize) mergeOnGitHub(ctx context.Context, parentHandle parentMerger
+ 	if err != nil {
+ 		return fz.errorStop(ctx, fmt.Errorf("landingshed: %s: read the task head: %w", finalizeName, err))
+ 	}
++	if landing.reopen {
++		if err := landing.api.Reopen(ctx, landing.record.Number); err != nil {
++			return fz.githubFailure(ctx, "reopen the pull request", err)
++		}
++	}
++	if landing.open {
++		rec, outcome, out, err, stop := fz.openAtOnce(ctx, landing.api, head, title, message)
++		if stop {
++			return outcome, out, err, true
++		}
++		landing.record = rec
++	}
+ 
++	squash := fz.deps.Config.Squash || landing.atOnce
+ 	deadline := pr.Now().Add(prMergeRetryWindow)
+ 	wait := prWaitFloor
+ 	for {
+-		err := landing.api.Merge(ctx, landing.record.Number, head, fz.deps.Config.Squash, pullRequestCommitTitle(title, landing.record.Number), message)
++		err := landing.api.Merge(ctx, landing.record.Number, head, squash, pullRequestCommitTitle(title, landing.record.Number), message)
+ 		if err == nil {
+ 			break
+ 		}
+@@ -276,7 +303,7 @@ func (fz *Finalize) mergeOnGitHub(ctx context.Context, parentHandle parentMerger
+ 			wait = nextPRWait(wait, false)
+ 			continue
+ 		}
+-		return fz.halt(ctx, LandingStopPrefix+fz.mergeRefusalReason(landing.record, refusal))
++		return fz.halt(ctx, LandingStopPrefix+fz.mergeRefusalReason(landing, refusal))
+ 	}
+ 
+ 	if _, err := fz.deps.ReadParentTips(true); err != nil {
+@@ -292,8 +319,47 @@ func (fz *Finalize) mergeOnGitHub(ctx context.Context, parentHandle parentMerger
+ 	return "", shedengine.OutputPointer{}, nil, false
+ }
+ 
++// openAtOnce finds the open pull request from the task branch into the parent and sets its title and body, else opens one with them, for a parent that takes its pull request with no review.
++// It records the pull request with head as its gated head and the review ended, so a re-entry merges the recorded one and reopens it when it was closed.
++// stop is true when Call returns the other values at once; a GitHub failure is judged as githubFailure judges one.
++func (fz *Finalize) openAtOnce(ctx context.Context, api pullrequest.API, head, title, body string) (pullrequest.Record, shedengine.Outcome, shedengine.OutputPointer, error, bool) {
++	failed := func(outcome shedengine.Outcome, out shedengine.OutputPointer, err error, _ bool) (pullrequest.Record, shedengine.Outcome, shedengine.OutputPointer, error, bool) {
++		return pullrequest.Record{}, outcome, out, err, true
++	}
++	ref, open, err := api.FindOpen(ctx, fz.deps.TaskBranch, fz.deps.ParentBranch)
++	if err != nil {
++		return failed(fz.githubFailure(ctx, "look for an open pull request", err))
++	}
++	if open {
++		if err := api.Edit(ctx, ref.Number, title, body); err != nil {
++			return failed(fz.githubFailure(ctx, "set the pull request's title and body", err))
++		}
++	} else if ref, err = api.Create(ctx, fz.deps.TaskBranch, fz.deps.ParentBranch, title, body); err != nil {
++		return failed(fz.githubFailure(ctx, "open the pull request", err))
++	}
++
++	rec := pullrequest.Record{
++		Number:      ref.Number,
++		URL:         ref.URL,
++		Base:        fz.deps.ParentBranch,
++		Head:        fz.deps.TaskBranch,
++		GatedHead:   head,
++		ReviewEnded: true,
++	}
++	pr := fz.deps.PullRequest
++	if err := pullrequest.WriteRecord(pr.RecordPath, pr.RecordLockPath, rec); err != nil {
++		return failed(fz.errorStop(ctx, fmt.Errorf("landingshed: %s: record the pull request: %w", finalizeName, err)))
++	}
++	return rec, "", shedengine.OutputPointer{}, nil, false
++}
++
+ // mergeRefusalReason is the Stuck reason of a merge GitHub refused for good, or kept refusing as pending past the retry window.
+-func (fz *Finalize) mergeRefusalReason(rec pullrequest.Record, refusal *pullrequest.MergeRefusal) string {
++// A method refusal names the squash setting, or the repository's settings for a parent that always squashes.
++func (fz *Finalize) mergeRefusalReason(landing prLanding, refusal *pullrequest.MergeRefusal) string {
++	rec := landing.record
++	if refusal.Kind == pullrequest.RefusalMethod && landing.atOnce {
++		return fmt.Sprintf("GitHub refused the squash merge of pull request %s: %s; way forward: allow squash merging in the repository's settings on GitHub, since a parent whose beam.yaml pull_request is merge always squashes, then run lym loom resume", rec.URL, refusal.Message)
++	}
+ 	if refusal.Kind == pullrequest.RefusalMethod {
+ 		return fmt.Sprintf("GitHub refused the merge method for pull request %s: %s; way forward: set landing.yaml's squash to the method the repository allows with lym config landing --set squash=<true|false> in the prime worktree, or allow the method in the repository's settings, then run lym loom resume", rec.URL, refusal.Message)
+ 	}
+diff --git a/internal/landingshed/finalize_pr_test.go b/internal/landingshed/finalize_pr_test.go
+index 2a72f17e..8b807030 100644
+--- a/internal/landingshed/finalize_pr_test.go
++++ b/internal/landingshed/finalize_pr_test.go
+@@ -32,6 +32,7 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 	const recordedURL = "https://github.com/acme/widgets/pull/7"
+ 	const wantCredit = "Created using\n - LoomYard\n - Test Author <test@example.com>"
+ 	const wantGitHubMerge = "Merge 7|task-head|true|A landing title (#7)|A landing body.\n\n" + wantCredit
++	const wantCreate = "Create task-branch main|A landing title|A landing body.\n\n" + wantCredit
+ 	const wantGitHubMergeWithVerdict = "Merge 7|task-head|true|A landing title (#7)|A landing body.\n\n" + testVerdict + "\n\n" + wantCredit
+ 	statusScript := func(calls ...scriptedCall) map[string][]scriptedCall {
+ 		return map[string][]scriptedCall{"Status": calls}
+@@ -47,6 +48,8 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 		return rec
+ 	}
+ 	reviewEnded := func(r *pullrequest.Record) { r.ReviewEnded = true }
++	// openedRecord is the record Finalize writes for a pull request it opens itself under a merge parent.
++	openedRecord := &pullrequest.Record{Number: 7, URL: recordedURL, Base: "main", Head: "task-branch", GatedHead: "task-head", ReviewEnded: true}
+ 	withContinue := func(r *pullrequest.Record) { r.Continue = true }
+ 	refusal := func(kind pullrequest.RefusalKind, message string) scriptedCall {
+ 		return scriptedCall{err: &pullrequest.MergeRefusal{Kind: kind, Message: message}}
+@@ -72,6 +75,16 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 		taskEmpty bool
+ 		// taskErr makes the TaskHasCommits seam fail.
+ 		taskErr error
++		// parentPushErr makes the parent branch's push fail.
++		parentPushErr error
++		// wantSquashedMerges asserts every parent-side merge was asked to squash.
++		wantSquashedMerges bool
++		// parentOwnedElsewhere makes the owner checks find the parent owned by another machine.
++		parentOwnedElsewhere bool
++		// wantRecord is the pull request record the landing must leave behind.
++		wantRecord *pullrequest.Record
++		// wantOwnerHalt makes the halt reason open with OwnerHaltPrefix instead of LandingStopPrefix.
++		wantOwnerHalt bool
+ 
+ 		wantOutcome shedengine.Outcome
+ 		wantHalt    bool
+@@ -127,6 +140,31 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 			name: "YesWithNoRecordHaltsNamingGotoPRReview", parentMode: "on",
+ 			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"has no pull request recorded", "lym loom goto PR-Review"},
+ 		},
++		{
++			name: "AMergeParentWithNoRecordOpensThePullRequestAndSquashMergesItWhateverTheSquashSetting", parentMode: "merge", squashOff: true,
++			scripts:     map[string][]scriptedCall{"Create": {{ref: pullrequest.Ref{Number: 7, URL: recordedURL}}}, "Merge": {{}}},
++			wantOutcome: shedengine.Done, wantMerges: 1, wantOrder: "task-push,fast-forward,merge,mark,push", wantRecordKept: true,
++			wantSquashedMerges: true, wantRecord: openedRecord,
++			wantCalls: []string{"FindOpen task-branch main", wantCreate, wantGitHubMerge},
++		},
++		{
++			name: "AMergeParentFindsTheOpenPullRequestOnTheTaskBranchSetsItsTextAndMergesIt", parentMode: "merge",
++			scripts:     map[string][]scriptedCall{"FindOpen": {{ref: pullrequest.Ref{Number: 7, URL: recordedURL}, found: true}}, "Merge": {{}}},
++			wantOutcome: shedengine.Done, wantMerges: 1, wantOrder: "task-push,fast-forward,merge,mark,push", wantRecordKept: true, wantRecord: openedRecord,
++			wantCalls: []string{"FindOpen task-branch main", "Edit 7|A landing title|A landing body.\n\n" + wantCredit, wantGitHubMerge},
++		},
++		{
++			name: "AFailedOpenUnderAMergeParentHaltsNamingGitHubsMessageAndMergesNothing", parentMode: "merge",
++			scripts:     map[string][]scriptedCall{"Create": {{err: githubErrorResponse(http.StatusUnprocessableEntity, "No commits between main and task-branch")}}},
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"open the pull request", "No commits between", "lym loom resume"},
++			wantOrder: "task-push", wantCalls: []string{"FindOpen task-branch main", wantCreate},
++		},
++		{
++			name: "AMethodRefusalUnderAMergeParentNamesTheRepositorySettingsAndNotTheSquashSetting", parentMode: "merge", record: recorded(), squashOff: true,
++			scripts:     mergeScript(open, refusal(pullrequest.RefusalMethod, "Squash merges are not allowed")),
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"Squash merges are not allowed", "allow squash merging", "lym loom resume"},
++			wantNotInReason: []string{"lym config landing"}, wantCalls: []string{"Status 7", wantGitHubMerge},
++		},
+ 		{
+ 			name: "YesWithAClosedRecordWithoutTheOperatorsEndingHaltsNamingReopenAndCancel", parentMode: "on", record: recorded(), scripts: statusScript(closed),
+ 			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"reopen it on GitHub", "lym loom goto PR-Review", "lym batten cancel me"}, wantCalls: []string{"Status 7"},
+@@ -138,14 +176,47 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 		{
+ 			name: "TheOperatorsEndingOnAClosedPullRequestReopensItAndMergesOnGitHub", parentMode: "on", record: recorded(reviewEnded),
+ 			scripts:     map[string][]scriptedCall{"Status": {closed}, "Merge": {{}}},
+-			wantOutcome: shedengine.Done, wantMerges: 1, wantOrder: "task-push,fast-forward,merge,mark,push",
++			wantOutcome: shedengine.Done, wantMerges: 1, wantOrder: "reopen,task-push,fast-forward,merge,mark,push",
+ 			wantCalls: []string{"Status 7", "Reopen 7", wantGitHubMerge},
+ 		},
++		{
++			name: "AReopenedPullRequestUnderAMergeParentSquashMergesWhateverTheSquashSetting", parentMode: "merge", record: recorded(reviewEnded), squashOff: true,
++			scripts:     map[string][]scriptedCall{"Status": {closed}, "Merge": {{}}},
++			wantOutcome: shedengine.Done, wantMerges: 1, wantSquashedMerges: true, wantOrder: "task-push,reopen,fast-forward,merge,mark,push",
++			wantCalls: []string{"Status 7", "Reopen 7", wantGitHubMerge},
++		},
++		{
++			name: "AMergeParentReopensAClosedRecordedPullRequestWithNoOperatorEndingAfterTheTaskPush", parentMode: "merge", record: recorded(),
++			scripts:     map[string][]scriptedCall{"Status": {closed}, "Merge": {{}}},
++			wantOutcome: shedengine.Done, wantMerges: 1, wantOrder: "task-push,reopen,fast-forward,merge,mark,push",
++			wantCalls: []string{"Status 7", "Reopen 7", wantGitHubMerge},
++		},
++		{
++			name: "AnOwnerHaltUnderAMergeParentReopensNothingOnGitHub", parentMode: "merge", record: recorded(), scripts: statusScript(closed), parentOwnedElsewhere: true,
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantOwnerHalt: true, wantReason: []string{"owned by machine"},
++			wantOrder: "", wantCalls: []string{"Status 7"},
++		},
++		{
++			name: "AFailedReopenUnderAMergeParentHaltsNamingGitHubsMessageAndMergesNothing", parentMode: "merge", record: recorded(),
++			scripts:     map[string][]scriptedCall{"Status": {closed}, "Reopen": {{err: errors.New("state cannot be changed")}}},
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"reopen the pull request", "state cannot be changed", "lym loom resume"},
++			wantOrder: "task-push,reopen", wantCalls: []string{"Status 7", "Reopen 7"},
++		},
++		{
++			name: "AProtectedParentPushRefusalUnderAMergeParentOmitsTheSettingAdvice", parentMode: "merge", record: recorded(), scripts: mergeScript(open, scriptedCall{}),
++			parentPushErr: errors.New("gitrepo: push rejected: ! [remote rejected] main -> main (protected branch hook declined)"),
++			wantOutcome:   shedengine.Stuck, wantMerges: 1, wantReason: []string{"protected branch hook declined", `"git reset --keep origin/main"`},
++			wantNotInReason: []string{"lym config beam"}, wantCalls: []string{"Status 7", wantGitHubMerge},
++		},
+ 		{
+ 			name: "AFailedReopenHaltsNamingGitHubsMessageAndMergesNothing", parentMode: "on", record: recorded(reviewEnded),
+ 			scripts:     map[string][]scriptedCall{"Status": {closed}, "Reopen": {{err: errors.New("state cannot be changed")}}},
+ 			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"reopen the pull request", "state cannot be changed", "lym loom resume"},
+-			wantCalls: []string{"Status 7", "Reopen 7"},
++			wantOrder: "reopen", wantCalls: []string{"Status 7", "Reopen 7"},
++		},
++		{
++			name: "AMergedPullRequestUnderAMergeParentLandsThroughASquashingParentSideMerge", parentMode: "merge", record: recorded(), squashOff: true, scripts: statusScript(merged),
++			wantOutcome: shedengine.Done, wantMerges: 1, wantSquashedMerges: true, wantOrder: "merge,mark,push", wantCalls: []string{"Status 7"},
+ 		},
+ 		{
+ 			name: "AMergedPullRequestMakesNoGitHubMergeAndLandsThroughTheParentSideMerge", parentMode: "on", record: recorded(), scripts: statusScript(merged),
+@@ -240,9 +311,17 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 			t.Parallel()
+ 			var order []string
+ 			api := &fakePullRequestAPI{scripts: tt.scripts}
++			api.onCall = func(method string) {
++				if method == "Reopen" {
++					order = append(order, "reopen")
++				}
++			}
+ 			deps := newTestDeps(t)
+ 			deps.Slug = "me"
+ 			deps.Config.Squash = !tt.squashOff
++			if tt.parentOwnedElsewhere {
++				deps.ParentOwner = func() (ParentOwnership, error) { return ParentOwnership{Owner: "other-machine"}, nil }
++			}
+ 			if tt.verdict != "" {
+ 				deps.DriftVerdict = func() (string, error) { return tt.verdict, nil }
+ 			}
+@@ -289,7 +368,7 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 			if merges == nil {
+ 				merges = []mergeCallResult{{result: fabricengine.MergeResult{Committed: true}}}
+ 			}
+-			merger := &recordingParentMerger{results: merges, order: &order, ffErr: tt.ffErr}
++			merger := &recordingParentMerger{results: merges, order: &order, ffErr: tt.ffErr, pushErr: tt.parentPushErr}
+ 			res := &recordingResolver{result: mergeresolve.Result{Outcome: mergeresolve.OutcomeResolved}}
+ 			fz := &Finalize{deps: deps, resolver: res, guard: newParentGuard(deps), parentOpener: func() (parentMerger, error) { return merger, nil }}
+ 
+@@ -305,8 +384,12 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 				if outcome != tt.wantOutcome || pointer.Halt != tt.wantHalt {
+ 					t.Fatalf("Call() = %q, halt %v; want %q, halt %v (reason %q)", outcome, pointer.Halt, tt.wantOutcome, tt.wantHalt, pointer.Reason)
+ 				}
+-				if tt.wantHalt && !strings.HasPrefix(pointer.Reason, LandingStopPrefix) {
+-					t.Errorf("Call() reason %q does not open with %q", pointer.Reason, LandingStopPrefix)
++				wantPrefix := LandingStopPrefix
++				if tt.wantOwnerHalt {
++					wantPrefix = OwnerHaltPrefix
++				}
++				if tt.wantHalt && !strings.HasPrefix(pointer.Reason, wantPrefix) {
++					t.Errorf("Call() reason %q does not open with %q", pointer.Reason, wantPrefix)
+ 				}
+ 				for _, want := range tt.wantReason {
+ 					if !strings.Contains(pointer.Reason, want) {
+@@ -330,6 +413,20 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 			if len(merger.calls) != tt.wantMerges {
+ 				t.Errorf("parent-side merges = %d; want %d", len(merger.calls), tt.wantMerges)
+ 			}
++			for i, call := range merger.calls {
++				if tt.wantSquashedMerges && !call.opts.Squash {
++					t.Errorf("parent-side merge %d Squash = false; want true", i)
++				}
++			}
++			if tt.wantRecord != nil {
++				got, found, rerr := pullrequest.ReadRecord(deps.PullRequest.RecordPath, deps.PullRequest.RecordLockPath)
++				key := func(r pullrequest.Record) string {
++					return fmt.Sprintf("%d|%s|%s|%s|%s|%t", r.Number, r.URL, r.Base, r.Head, r.GatedHead, r.ReviewEnded)
++				}
++				if rerr != nil || !found || key(got) != key(*tt.wantRecord) {
++					t.Errorf("ReadRecord() = %q, found %v, error %v; want %q", key(got), found, rerr, key(*tt.wantRecord))
++				}
++			}
+ 			if !lockHeldAtMode {
+ 				t.Error("the parent lock was not held when the pull-request mode was read; want the decision made under the lock")
+ 			}
+diff --git a/internal/landingshed/finalize_test.go b/internal/landingshed/finalize_test.go
+index edc8e8f3..53d47b36 100644
+--- a/internal/landingshed/finalize_test.go
++++ b/internal/landingshed/finalize_test.go
+@@ -196,6 +196,18 @@ func TestFinalize_MergeMarkPushOrderAndVerdict(t *testing.T) {
+ 			&repairSeams{holds: true, lacks: []string{squash, "other222"}},
+ 			[]string{"git rebase --onto " + squash + "~1 " + squash + " main", "git rebase --abort", `lym fabric remove me`},
+ 		},
++		{
++			"a protected branch refusal names the merge mode and the hand landing", false,
++			errors.New("gitrepo: push rejected: ! [remote rejected] main -> main (protected branch hook declined)"), nil, shedengine.Stuck,
++			protectedParentWayForward("task-branch", "main", false), nil,
++			[]string{"protected branch hook declined", `"lym config beam --set pull_request=merge"`, "--layer default", `"git reset --keep origin/main"`, `"lym loom resume"`},
++		},
++		{
++			"a classified repository-rules refusal names the merge mode in place of its class's way forward", false,
++			&fabricengine.PushFailedError{Record: fabricengine.FailedPush{Class: fabricengine.PushFailureOther}, Err: errors.New("gitrepo: push rejected: ! [remote rejected] main -> main (push declined due to repository rule violations)")},
++			nil, shedengine.Stuck, protectedParentWayForward("task-branch", "main", false), &repairSeams{holds: true, lacks: []string{squash}},
++			[]string{"repository rule violations", "pull_request=merge"},
++		},
+ 		{"origin's parent lacking the work names no repair", false, errors.New("remote rejected"), nil, shedengine.Stuck, "", &repairSeams{lacks: []string{squash}}, nil},
+ 		{"a failed read of origin's parent names no repair", false, errors.New("remote rejected"), nil, shedengine.Stuck, "", &repairSeams{holdsErr: errors.New("fetch failed")}, nil},
+ 		{"a failed commit listing names no repair", false, errors.New("remote rejected"), nil, shedengine.Stuck, "", &repairSeams{holds: true, lacksErr: errors.New("no branch")}, nil},
+@@ -252,8 +264,10 @@ func TestFinalize_MergeMarkPushOrderAndVerdict(t *testing.T) {
+ 					t.Errorf("reason = %q; want the repair note to carry %q", reason, want)
+ 				}
+ 			}
+-			if hasNote := strings.Contains(reason, "duplicates it"); hasNote != (len(tt.wantRepair) > 0) {
+-				t.Errorf("reason = %q; repair note present = %v; want %v", reason, hasNote, len(tt.wantRepair) > 0)
++			// A case with an exact way forward carries no adopter-first repair note; its wantRepair strings belong to that way forward.
++			wantNote := len(tt.wantRepair) > 0 && tt.wantWayForward == ""
++			if hasNote := strings.Contains(reason, "duplicates it"); hasNote != wantNote {
++				t.Errorf("reason = %q; repair note present = %v; want %v", reason, hasNote, wantNote)
+ 			}
+ 			if strings.Contains(reason, "lym batten cancel") {
+ 				t.Errorf("reason = %q; want it free of `lym batten cancel`, since a cancel lifts the owner pause of a landed run", reason)
+diff --git a/internal/landingshed/prreview.go b/internal/landingshed/prreview.go
+index 49e9eb9e..bfaff1c0 100644
+--- a/internal/landingshed/prreview.go
++++ b/internal/landingshed/prreview.go
+@@ -25,7 +25,8 @@ const (
+ )
+ 
+ // PRReview is the ShedProducer that lands a run through a GitHub pull request when ResolvePullRequest says so.
+-// A no closes any pull request the run recorded and passes, except that a failed read of GitHub's rules with a pull request recorded is Stuck and closes nothing; a yes pushes the task branch, finds or opens the pull request, sets its title from the change description and its body from the description's body, the regression check and the credit block, records it, keeps one interactive session for the operator to discuss it in, and waits on it.
++// A no closes any pull request the run recorded and passes, except that a failed read of GitHub's rules with a pull request recorded is Stuck and closes nothing.
++// A yes the resolver marks MergeAtOnce passes at once, since Finalize opens and merges that pull request with no review; any other yes pushes the task branch, finds or opens the pull request, sets its title from the change description and its body from the description's body, the regression check and the credit block, records it, keeps one interactive session for the operator to discuss it in, and waits on it.
+ // The wait gates and pushes the agent's commits, sets the title and body again when the text yielded from the change description, the regression check and the credit block changes, and ends when the pull request is merged or approved, or closed or continued by the operator.
+ // A reopen request, read on entry and at every wake, ends the row first: it sends the run back through the row's reroute edge, the pull request kept open as a draft or closed.
+ // It takes no parent lock.
+@@ -104,6 +105,10 @@ func (p *PRReview) decide(ctx context.Context) (shedengine.Outcome, shedengine.O
+ 	if !decision.Open {
+ 		return p.closeRecordedPullRequest(ctx, origin, decision.Reason)
+ 	}
++	if decision.MergeAtOnce {
++		logger.Info("landingshed: the parent merges its pull request at once, so Finalize opens and merges it with no review", "row", p.name, "reason", decision.Reason)
++		return shedengine.Done, shedengine.OutputPointer{}, nil
++	}
+ 	return p.openPullRequest(ctx, origin)
+ }
+ 
+diff --git a/internal/landingshed/prreview_test.go b/internal/landingshed/prreview_test.go
+index e83897a0..b99eb06b 100644
+--- a/internal/landingshed/prreview_test.go
++++ b/internal/landingshed/prreview_test.go
+@@ -43,6 +43,8 @@ type fakePullRequestAPI struct {
+ 	used    map[string]int
+ 	// statusCalls counts the Status calls, which the once-a-minute poll bound is read from.
+ 	statusCalls int
++	// onCall, when set, is told each method's name as it is called.
++	onCall func(method string)
+ }
+ 
+ var _ pullrequest.API = (*fakePullRequestAPI)(nil)
+@@ -51,6 +53,9 @@ func (f *fakePullRequestAPI) next(method, record string) scriptedCall {
+ 	f.mu.Lock()
+ 	defer f.mu.Unlock()
+ 	f.calls = append(f.calls, method+" "+record)
++	if f.onCall != nil {
++		f.onCall(method)
++	}
+ 	if method == "Status" {
+ 		f.statusCalls++
+ 	}
+@@ -233,6 +238,10 @@ func TestPRReview_Call(t *testing.T) {
+ 			wantOutcome: shedengine.Stuck, wantHalt: true,
+ 			wantReason: []string{"lym loom resume", "lym batten cancel the-slug"},
+ 		},
++		{
++			name: "AMergeParentLeavesThePullRequestToFinalizeWithNoPushOrGitHubCall", parentMode: "merge", origin: githubOrigin,
++			wantOutcome: shedengine.Done, wantNoRecord: true,
++		},
+ 		{
+ 			name: "FirstYesPushesCreatesAndRecordsThePullRequest", parentMode: "on", origin: githubOrigin,
+ 			scripts:     map[string][]scriptedCall{"Create": {created}, "Status": {mergedAtHead}},
+diff --git a/internal/landingshed/pullrequestmode.go b/internal/landingshed/pullrequestmode.go
+index ceb0dde9..3ac51c77 100644
+--- a/internal/landingshed/pullrequestmode.go
++++ b/internal/landingshed/pullrequestmode.go
+@@ -14,11 +14,12 @@ import (
+ // githubHost is the one host a landing opens a pull request on.
+ const githubHost = "github.com"
+ 
+-// Pull-request modes of the receiving branch's beam.yaml and the landing entry's field.
++// Pull-request modes of the receiving branch's beam.yaml and the landing entry's field; merge is beam.yaml's alone.
+ const (
+ 	pullRequestOn       = "on"
+ 	pullRequestOff      = "off"
+ 	pullRequestRequired = "required"
++	pullRequestMerge    = "merge"
+ )
+ 
+ // Origin holds the facts about the origin a pull request needs.
+@@ -35,6 +36,8 @@ type Origin struct {
+ type PullRequestDecision struct {
+ 	// Open reports whether the landing goes through a pull request.
+ 	Open bool
++	// MergeAtOnce reports whether Finalize opens the pull request itself and squash-merges it on GitHub at once, with no review, as a parent whose beam.yaml pull_request is merge asks.
++	MergeAtOnce bool
+ 	// Reason names the values the decision read.
+ 	Reason string
+ 	// Halt is a Stuck reason with its way forward, non-empty only when the landing must stop.
+@@ -42,18 +45,20 @@ type PullRequestDecision struct {
+ }
+ 
+ // ResolvePullRequest decides whether a landing goes through a pull request.
+-// parentMode is the receiving branch's beam.yaml pull_request (on, off or required) and entryField the landing entry's pull_request (empty, on or off); slug is the landing run's slug.
++// parentMode is the receiving branch's beam.yaml pull_request (on, off, required or merge) and entryField the landing entry's pull_request (empty, on or off); slug is the landing run's slug.
+ // parentRuleRequired reports whether GitHub's rules for the parent branch require a pull request, and counts as a required parent whatever beam.yaml says, since GitHub refuses the direct push a landing with no pull request ends in.
+-// A required parent wants one whatever the field says, an on parent wants one unless the field is off, and an off parent wants one only when the field is on.
+-// A field off under a required parent logs one Warn and still wants one.
++// A required or merge parent wants one whatever the field says, an on parent wants one unless the field is off, and an off parent wants one only when the field is on.
++// A merge parent's yes is marked MergeAtOnce.
++// A field off under a required or merge parent logs one Warn and still wants one.
+ // A wanted pull request needs, in this order, an origin on github.com, an origin ParseOwnerRepo accepts, an upstream for the parent and no push skip.
+ // A missing fact is a Halt when the parent is required or the field is on, and an origin on github.com that ParseOwnerRepo refuses is always a Halt; any other missing fact under an on parent alone is no pull request, naming the fact.
+ // A wanted pull request on a task branch with no commit beyond its parent, taskHasCommits false, is no pull request before any origin fact is judged, since GitHub opens none on an empty branch.
+ // It reads no file: the caller reads the parent's beam.yaml, the entry, the parent branch's rules and the task branch and tells the values.
+ func ResolvePullRequest(slug, parentMode, entryField string, parentRuleRequired bool, origin Origin, taskHasCommits bool) PullRequestDecision {
+-	required := parentMode == pullRequestRequired || parentRuleRequired
++	mergeAtOnce := parentMode == pullRequestMerge
++	required := parentMode == pullRequestRequired || mergeAtOnce || parentRuleRequired
+ 	if required && entryField == pullRequestOff {
+-		logger.Warn("landingshed: the entry's pull_request is off but the parent's beam.yaml pull_request is required or GitHub's rules for the parent branch require a pull request, so a pull request is still required", "slug", slug)
++		logger.Warn("landingshed: the entry's pull_request is off but the parent's beam.yaml pull_request is required or merge, or GitHub's rules for the parent branch require a pull request, so a pull request is still required", "slug", slug)
+ 	}
+ 
+ 	field := entryField
+@@ -63,8 +68,8 @@ func ResolvePullRequest(slug, parentMode, entryField string, parentRuleRequired
+ 	wanted := false
+ 	demand := ""
+ 	switch {
+-	case parentMode == pullRequestRequired:
+-		wanted, demand = true, "the parent's beam.yaml pull_request is required"
++	case parentMode == pullRequestRequired, mergeAtOnce:
++		wanted, demand = true, fmt.Sprintf("the parent's beam.yaml pull_request is %s", parentMode)
+ 	case parentRuleRequired:
+ 		wanted, demand = true, "GitHub's rules for the parent branch require a pull request"
+ 	case entryField == pullRequestOn:
+@@ -85,7 +90,7 @@ func ResolvePullRequest(slug, parentMode, entryField string, parentRuleRequired
+ 		if parentRuleRequired {
+ 			rule = ", GitHub's rules for the parent branch require one"
+ 		}
+-		return PullRequestDecision{Open: true, Reason: fmt.Sprintf("pull request on: the parent's beam.yaml pull_request is %s%s, the entry's pull_request is %s and the origin is %s/%s", parentMode, rule, field, owner, repo)}
++		return PullRequestDecision{Open: true, MergeAtOnce: mergeAtOnce, Reason: fmt.Sprintf("pull request on: the parent's beam.yaml pull_request is %s%s, the entry's pull_request is %s and the origin is %s/%s", parentMode, rule, field, owner, repo)}
+ 	}
+ 
+ 	demanded := required || entryField == pullRequestOn
+diff --git a/internal/landingshed/pullrequestmode_test.go b/internal/landingshed/pullrequestmode_test.go
+index 3af46517..d67d9943 100644
+--- a/internal/landingshed/pullrequestmode_test.go
++++ b/internal/landingshed/pullrequestmode_test.go
+@@ -1,4 +1,4 @@
+-// pullrequestmode_test.go covers ResolvePullRequest: the nine mode and field combinations, the warning for an off field under a required parent, a parent branch GitHub's rules guard, each origin fact that blocks a pull request, and an empty task branch.
++// pullrequestmode_test.go covers ResolvePullRequest: the mode and field combinations, the warning for an off field under a required or merge parent, a parent branch GitHub's rules guard, each origin fact that blocks a pull request, and an empty task branch.
+ 
+ package landingshed
+ 
+@@ -13,7 +13,7 @@ import (
+ // TestResolvePullRequest stays serial: logcapture redirects the process-global logger.
+ func TestResolvePullRequest(t *testing.T) {
+ 	tiergate.Require(t, 0)
+-	const warnLine = "the entry's pull_request is off but the parent's beam.yaml pull_request is required or GitHub's rules for the parent branch require a pull request"
++	const warnLine = "the entry's pull_request is off but the parent's beam.yaml pull_request is required or merge, or GitHub's rules for the parent branch require a pull request"
+ 	githubOrigin := Origin{URL: "https://github.com/o/r.git", Upstream: true}
+ 
+ 	t.Run("ModeAndFieldCombinations", func(t *testing.T) {
+@@ -25,6 +25,7 @@ func TestResolvePullRequest(t *testing.T) {
+ 			{"on", "", true}, {"on", "on", true}, {"on", "off", false},
+ 			{"off", "", false}, {"off", "on", true}, {"off", "off", false},
+ 			{"required", "", true}, {"required", "on", true}, {"required", "off", true},
++			{"merge", "", true}, {"merge", "on", true}, {"merge", "off", true},
+ 		}
+ 		for _, tt := range tests {
+ 			t.Run(tt.parent+"_"+tt.field, func(t *testing.T) {
+@@ -33,7 +34,10 @@ func TestResolvePullRequest(t *testing.T) {
+ 				if got.Open != tt.wantOpen || got.Halt != "" || got.Reason == "" {
+ 					t.Errorf("ResolvePullRequest(%q, %q) = %+v; want Open %v, no halt and a reason", tt.parent, tt.field, got, tt.wantOpen)
+ 				}
+-				wantWarn := tt.parent == "required" && tt.field == "off"
++				if wantAtOnce := tt.parent == "merge"; got.MergeAtOnce != wantAtOnce {
++					t.Errorf("ResolvePullRequest(%q, %q).MergeAtOnce = %v; want %v", tt.parent, tt.field, got.MergeAtOnce, wantAtOnce)
++				}
++				wantWarn := (tt.parent == "required" || tt.parent == "merge") && tt.field == "off"
+ 				if gotWarn := strings.Contains(logs.String(), warnLine); gotWarn != wantWarn {
+ 					t.Errorf("ResolvePullRequest(%q, %q) warned = %v; want %v\n%s", tt.parent, tt.field, gotWarn, wantWarn, logs.String())
+ 				}
+@@ -118,6 +122,7 @@ func TestResolvePullRequest(t *testing.T) {
+ 			{"NoOriginUnderOnIsNo", "on", "", Origin{Upstream: true}, false, "no origin remote", false},
+ 			{"NoUpstreamUnderOnIsNo", "on", "", Origin{URL: githubOrigin.URL}, false, "no upstream", false},
+ 			{"NoUpstreamUnderRequiredHalts", "required", "", Origin{URL: githubOrigin.URL}, true, "no upstream", false},
++			{"NoUpstreamUnderMergeHalts", "merge", "", Origin{URL: githubOrigin.URL}, true, "the parent's beam.yaml pull_request is merge", false},
+ 			{"PushSkipUnderOnIsNo", "on", "", Origin{URL: githubOrigin.URL, Upstream: true, PushSkipped: true}, false, "push skip", false},
+ 			{"PushSkipUnderRequiredHalts", "required", "", Origin{URL: githubOrigin.URL, Upstream: true, PushSkipped: true}, true, "push skip", false},
+ 		}
+diff --git a/internal/pullrequest/doc.go b/internal/pullrequest/doc.go
+index 6c6c9a61..2ca23bff 100644
+--- a/internal/pullrequest/doc.go
++++ b/internal/pullrequest/doc.go
+@@ -1,7 +1,7 @@
+ // Package pullrequest holds a run's pull request: its record on disk and the GitHub calls on it, for PR-Review, Finalize and pair teardown.
+ //
+ // Record is the run's one JSON file about its pull request, in the run's scratch directory so it is never tracked and goes with the pair.
+-// It holds the pull request's number, URL, base and head branches, the head the PR-Review row last gated and pushed, the head whose gate failure was mailed, the interactive session's strand and session identity and engine, the operator's continue flag, and whether the row ended the review on that flag.
++// It holds the pull request's number, URL, base and head branches, the head the PR-Review row last gated and pushed, the head whose gate failure was mailed, the interactive session's strand and session identity and engine, the operator's continue flag, and whether the review ended, by the row on that flag or by Finalize on the record it opens itself for a parent that takes its pull request with no review.
+ // ReadRecord, WriteRecord, UpdateRecord and RemoveRecord go through internal/state, so a key a newer binary wrote survives a rewrite;
+ // an absent file reads as not found, UpdateRecord on an absent record returns ErrNoRecord and writes nothing, and RemoveRecord of an absent file is no error.
+ //
+diff --git a/internal/pullrequest/record.go b/internal/pullrequest/record.go
+index 1c87a6cf..1afa4339 100644
+--- a/internal/pullrequest/record.go
++++ b/internal/pullrequest/record.go
+@@ -32,7 +32,7 @@ type Record struct {
+ 	Engine     string `json:"engine,omitempty"`
+ 	// Continue is the operator's continue flag, set by `lym loom pr-continue`.
+ 	Continue bool `json:"continue,omitempty"`
+-	// ReviewEnded records that the row ended the review on the continue flag, leaving the pull request for Finalize to merge.
++	// ReviewEnded records that the review ended, either by the PR-Review row on the continue flag or by Finalize on the record it opens itself for a parent that takes its pull request with no review, leaving the pull request for Finalize to merge.
+ 	// Its key keeps the name of the older mark, set when the row closed the pull request on the flag, so a record an older build wrote reads the same.
+ 	ReviewEnded bool `json:"closed_for_continue,omitempty"`
+ }
