@@ -2,7 +2,7 @@
 
 `comment-cleanup` · Task · enhancement, fabric · draft
 
-Depends on: [`drift-whole-review`](design-drift-whole-review.md), [`codex-trial-hooks-guards-skills`](design-codex-trial-hooks-guards-skills.md), [`codex-trial-pane-load`](design-codex-trial-pane-load.md), [`pr-reviewer-github-access`](design-pr-reviewer-github-access.md), [`gate-runner-crash-fixer`](design-gate-runner-crash-fixer.md)
+Depends on: [`drift-whole-review`](design-drift-whole-review.md), [`codex-trial-hooks-guards-skills`](design-codex-trial-hooks-guards-skills.md), [`codex-trial-pane-load`](design-codex-trial-pane-load.md), [`pr-reviewer-github-access`](design-pr-reviewer-github-access.md)
 
 ## Seen (operator and hub orch, 2026-10-31)
 
