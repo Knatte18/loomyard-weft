@@ -1,6 +1,6 @@
 # Measure how Plan and Discussion writers explore and whether they use lookup subagents
 
-`planner-fork-lookups` · Task · research, loom · running · Code-Bouncer
+`planner-fork-lookups` · Task · research, loom · running · Drift-Recheck
 
 ## Seen (orch, 2026-11-01)
 
