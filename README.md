@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-04 14:10 UTC; every age below is as of then.
+Rendered 2026-11-04 14:11 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -42,7 +42,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 ## [P2 Stress test of codexengine: every designed capability, hooks above all](project-codex-engine-trial.md) (3)
 
-[`codex-engine-trial`](design-codex-engine-trial.md) · Age 18h · Owner `neve`
+[`codex-engine-trial`](design-codex-engine-trial.md) · Age 19h · Owner `neve`
 
 Real Codex launches through lym shuttle check home, sandbox, hooks, guards, pane, skills and load
 
@@ -56,7 +56,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Fix the Codex trial faults: shuttle run takes a model spec, open and codex, a test writing the real home**<br>• shuttle run --model takes alias[effort] and picks the engine; open starts codex; a test stops writing ~/.lym/codex; committed-.codex check wording | [`codex-trial-1-fixes`](design-codex-trial-1-fixes.md) | darn · light | Drift-Recheck | neve | 2h<br>34m | shuttle, codex, testkit |
+| T2 | **Fix the Codex trial faults: shuttle run takes a model spec, open and codex, a test writing the real home**<br>• shuttle run --model takes alias[effort] and picks the engine; open starts codex; a test stops writing ~/.lym/codex; committed-.codex check wording | [`codex-trial-1-fixes`](design-codex-trial-1-fixes.md) | darn · light | Describe | neve | 2h<br>34m | shuttle, codex, testkit |
 
 #### Ready (0)
 
@@ -70,7 +70,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | `draft` **Codex trial: hooks, shell guards and skills**<br>• Seven cases on real Codex launches against the package doc | [`codex-trial-hooks-guards-skills`](design-codex-trial-hooks-guards-skills.md) | darn · docs | T2 | 18h<br>38m | codex, shuttle |
+| T5 | `draft` **Codex trial: hooks, shell guards and skills**<br>• Seven cases on real Codex launches against the package doc | [`codex-trial-hooks-guards-skills`](design-codex-trial-hooks-guards-skills.md) | darn · docs | T2 | 18h<br>39m | codex, shuttle |
 | T6 | `draft` **Codex trial: pane, sends, creel by the pane path, and load**<br>• Six cases, three sessions at once and one darn run with a Codex reviewer seat | [`codex-trial-pane-load`](design-codex-trial-pane-load.md) | darn · docs | T5 | 18h<br>18h | codex, shuttle, creel |
 
 ### Notes (0)
@@ -106,7 +106,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **A landing notice is not lost when set late, when dobby was down, or when the orch is absent**<br>• Close the known limits landing-watch left: a late notify_on_land, a Land passed while dobby was down, and a dropped line when no orch is live | [`landing-watch-limits`](design-landing-watch-limits.md) | darn · light | T3 | 3d<br>18m | dobby, orch, creel, board |
+| T8 | **A landing notice is not lost when set late, when dobby was down, or when the orch is absent**<br>• Close the known limits landing-watch left: a late notify_on_land, a Land passed while dobby was down, and a dropped line when no orch is live | [`landing-watch-limits`](design-landing-watch-limits.md) | darn · light | T3 | 3d<br>19m | dobby, orch, creel, board |
 
 #### Layer B (1)
 
@@ -114,7 +114,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | T3<br>T2<br>T8 | 40m<br>18m | fabric, loom |
+| T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | T3<br>T2<br>T8 | 40m<br>19m | fabric, loom |
 
 #### Draft (1)
 
