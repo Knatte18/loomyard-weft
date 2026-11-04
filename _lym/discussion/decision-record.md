@@ -33,6 +33,12 @@ Wanted:
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-04): Detached capture meets the no-baseline item
+
+Decision: lym drift capture stays detached. The detached verb plus a non-zero exit of the capture child, a failed record with the stated cause, lym drift status and the Drift-Await halt reason carrying that cause together meet the Goal's first Part 1 item. The verb does not wait for the record to leave running.
+
+Rationale: The capture is detached by design so Drift-Await waits on it; the operator reads the cause where the run halts, not from the verb that started the child. Making the verb block would change the capture's shape for every caller, which is outside this task's scope.
+
 ## Constraints
 
 ## Auto-mode assumptions
