@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -34,6 +34,51 @@
       "output": "",
       "at": "2026-11-04T14:34:15Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/batching-hook-reach/_lym/landing/summary.md",
+      "at": "2026-11-04T14:54:25Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-04T14:42:16.327716142Z",
+          "end": "2026-11-04T14:42:16.338031503Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-04T14:47:51.212383894Z",
+          "end": "2026-11-04T14:47:51.220925013Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-04T14:42:16.393342547Z",
+          "end": "2026-11-04T14:47:31.680869106Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-04T14:47:32.135073168Z",
+          "end": "2026-11-04T14:47:51.183747471Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-04T14:47:51.26880561Z",
+          "end": "2026-11-04T14:53:59.110590254Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-04T14:53:59.155177525Z",
+          "end": "2026-11-04T14:53:59.155682557Z"
+        }
+      ]
     }
   ],
   "product": {
