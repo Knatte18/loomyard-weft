@@ -18,11 +18,11 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Hidden-anchor shuttle runs start, and lym shuttle state reads Codex turns**<br>• A hidden-anchor run dies before its provider is ready; every Codex session reads unknown in lym shuttle state | [`shuttle-hidden-and-codex-state`](design-shuttle-hidden-and-codex-state.md) | darn · light | Darn-Write | neve | 53m<br>9m | shuttle, reed, codex |
+| T1 | **Hidden-anchor shuttle runs start, and lym shuttle state reads Codex turns**<br>• A hidden-anchor run dies before its provider is ready; every Codex session reads unknown in lym shuttle state | [`shuttle-hidden-and-codex-state`](design-shuttle-hidden-and-codex-state.md) | darn · light | Darn-Write | neve | 53m<br>10m | shuttle, reed, codex |
 | T2 | **Discussion writers start their exploration with explore subagents**<br>• The Discussion-Write stencil asks for one early batch of explore subagents, as the Plan writers already send | [`discussion-explore-agents-first`](design-discussion-explore-agents-first.md) | darn · speed | Worktree-Create | neve | 3m<br>0m | stencil, loom |
-| T3 | **Drift accept and skip refuse unknown test names, and the accepted profile is taken at accept**<br>• Two interim Drift repairs: name checks on accept and scope --skip, and the accepted profile recorded when a test is accepted | [`drift-interim-repairs`](design-drift-interim-repairs.md) | darn · light | Code-Burler-Fix | neve | 25m<br>25m | drift |
+| T3 | **Drift accept and skip refuse unknown test names, and the accepted profile is taken at accept**<br>• Two interim Drift repairs: name checks on accept and scope --skip, and the accepted profile recorded when a test is accepted | [`drift-interim-repairs`](design-drift-interim-repairs.md) | darn · light | Code-Burler-Fix | neve | 26m<br>26m | drift |
 | T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | Darn-Write | neve | 2h<br>58m | fabric, loom |
-| T11 | **Merge in from parent as a task of its own in a beam, before pawl lands it**<br>• A command on a beam files a merge-in-from-parent task, run as darn with its perch on | [`parent-merge-task`](design-parent-merge-task.md) | darn · light | Drift-Await | neve | 4d<br>1h | pawl, workspaces, reed, landing |
+| T11 | **Merge in from parent as a task of its own in a beam, before pawl lands it**<br>• A command on a beam files a merge-in-from-parent task, run as darn with its perch on | [`parent-merge-task`](design-parent-merge-task.md) | darn · light | Darn-Write | neve | 4d<br>1h | pawl, workspaces, reed, landing |
 
 ### Ready (0)
 
