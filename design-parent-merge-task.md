@@ -1,6 +1,8 @@
 # Merge in from parent as a task of its own in a beam, before pawl lands it
 
-`parent-merge-task` · Task · enhancement, pawl, workspaces, reed, landing · draft
+`parent-merge-task` · Task · enhancement, pawl, workspaces, reed, landing
+
+Depends on: [`protected-parent-landing`](design-protected-parent-landing.md)
 
 ## Seen (operator, 2026-10-31)
 

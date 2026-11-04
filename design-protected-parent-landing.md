@@ -1,6 +1,8 @@
 # A run lands on a parent the hub may not push to by merging on the remote
 
-`protected-parent-landing` · Task · feature, landing, git · draft
+`protected-parent-landing` · Task · feature, landing, git
+
+Depends on: [`worktree-create-serial`](design-worktree-create-serial.md)
 
 ## Seen (operator, 2026-11-03)
 
