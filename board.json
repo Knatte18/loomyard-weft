@@ -391,32 +391,7 @@
       "brief": "Token savings by cutting agent turns, above all late turns at large context",
       "body": "",
       "created": "2026-11-01T18:17:27Z",
-      "revised": "2026-11-04T13:58:25Z",
-      "order": [
-        "planner-fork-lookups"
-      ]
-    },
-    {
-      "id": 986,
-      "handle": "T1",
-      "slug": "planner-fork-lookups",
-      "title": "Measure how Plan and Discussion writers explore and whether they use lookup subagents",
-      "kind": "task",
-      "labels": [
-        "research",
-        "loom"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "From 10 landed tapestry runs, measure the Plan and Discussion writers exploration turns and their use of lookup subagents",
-      "body": "## Seen (orch, 2026-11-01)\n\nIn a sample of 28 sessions from the batching study, the single largest cost was the Plan writer of `run-verbs-shared` in `plan-split-bench`: 31 chained grep turns at 390k to 530k context and 15 one-file-per-turn fix turns at 630k to 668k.\nEvery lookup the writer makes is paid at its whole context, so exploration late in a large session is the expensive part of planning.\nDiscussion-Write explores the code more than any other role, so the same cost applies there.\n\nSince task `explore-subagent-model` landed (2026-11-02), the Plan-Write, Discussion-Write and darn writer stencils encourage the writer to hand batches of independent lookups to fresh subagents on the `subagent_model` of `loom.yaml` (default `sonnet`), which return only what is relevant with paths and line ranges.\nThe guidance encourages; it does not command.\n`turn-savings-measure` (`docs/research/turn-savings-measure-2026-11-04/report.md`) measured darn and Webster only, not these two writers.\n\n## Measurement (operator, 2026-11-04)\n\nA measurement from transcripts of landed runs only; no agent run, no replay and no bench.\n\n- Sample: the Plan-Write and Discussion-Write sessions of the 10 most recent tapestry runs that landed after 2026-11-02, both roles of each run.\n- For each writer session, count:\n  - its exploration turns (turns made only of lookups: Read, Grep, Glob, or a read-only Bash lookup such as `grep`, `rg`, `find`, `ls`, `cat`, `sed -n` or a `git` read), with the context and cost at each;\n  - chains of exploration turns in a row, their length and the context they ran at;\n  - the subagents it started for lookups, how many lookups each batch held, and the subagent's model and cost;\n  - how much of its exploration cost fell above 200k context.\n- Report whether the writers follow the stencil guidance, and how much of their exploration cost a writer could have moved to subagents up front, with the chains that show it.\n- Reuse the method and scripts of `docs/research/turn-savings-measure-2026-11-04/` where they fit.\n- The report closes with a recommendation: whether a bench of the guidance (writer with it against writer without it, on one `plan-split-bench` input) is worth running, or whether the guidance should become stronger, or nothing.\n- The report lands under `docs/research/`.\n",
-      "status": "done",
-      "created": "2026-11-01T18:22:44Z",
-      "revised": "2026-11-04T15:04:40Z",
-      "profile": "docs",
-      "project": "turn-savings"
+      "revised": "2026-11-04T13:58:25Z"
     },
     {
       "id": 1002,
@@ -638,8 +613,7 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "landing-watch-limits",
-        "batching-hook-reach"
+        "landing-watch-limits"
       ],
       "isolated": false,
       "brief": "Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym",
@@ -683,29 +657,6 @@
       "body": "## Seen (worktree-create-serial's Finalize fixer and hub orch, 2026-11-04)\n\nAn empty directory `/tmp/.git` appeared at 15:27:32 local, during a gate's tier1 run; no test or process was found to have made it.\nWith it in place, go's VCS stamping ran git in `/tmp`, and `TestPrebuildLym` failed on `worktree-create-serial`'s Finalize; the fixer hardened that test on the branch (`311bb513`).\nThe hub orch removed the empty `/tmp/.git` by hand.\n\n## Idea\n\n- Find the test or code that creates `.git` under the shared `/tmp` instead of under its own `t.TempDir()`; a likely shape is a path joined from an empty or unset directory, which resolves to `/tmp/.git` through a temp-dir parent.\n- A test never writes outside its own `t.TempDir()`; a guard (testkit or a gate check) fails a run that leaves a new entry directly under `/tmp` or the gate's temp root.\n",
       "created": "2026-11-04T14:32:08Z",
       "revised": "2026-11-04T14:32:08Z"
-    },
-    {
-      "id": 1100,
-      "handle": "T2",
-      "slug": "batching-hook-reach",
-      "title": "The batching hook counts Bash lookups and reaches forks",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "claude",
-        "shuttle"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Lookup chain counts read-only Bash commands; the hook judges subagent and fork calls against their own transcript",
-      "body": "## Seen (`docs/research/turn-savings-measure-2026-11-04/report.md`)\n\nThe batching breach hook (`internal/shuttleengine/claudeengine/batchingnudge.go`) fired 4 times in 24 landed runs.\n\n- Its lookup chain matches Read, Grep and Glob tool calls only. lym sessions search with Bash `grep`: the sample holds 1 Grep and 1 Glob call against 3,040 Bash calls, so the lookup-chain breach, 9.8% of context by the report's class reading, never fired.\n- It skips every call from a subagent or fork, while forks hold 57 of the sample's 117 edit-chain turns and most lookup chains.\n\n## Wanted (operator, 2026-11-04)\n\n1. A Bash call whose command is a read-only lookup (`grep`, `rg`, `find`, `ls`, `cat`, `head`, `tail`, `sed -n`, `wc`, a `git` read such as `log`, `show`, `diff` or `status`, and a pipe or `;`-chain made only of these) counts as a lookup in the lookup-chain breach, as Read, Grep and Glob do. A Bash call with any other command breaks a chain as today.\n2. The hook reaches subagents and forks: a call carrying `agent_id` is judged against that agent's own transcript, context and nudge count, under the same `batching_nudge` thresholds.\n3. The report's method stays valid for a re-measure: `docs/research/turn-savings-measure-2026-11-04/run-all.sh` keeps working on runs that land after this change.\n\nThresholds are unchanged.\n",
-      "status": "done",
-      "created": "2026-11-04T14:33:02Z",
-      "revised": "2026-11-04T14:33:02Z",
-      "profile": "light",
-      "project": "turn-savings"
     },
     {
       "id": 1101,

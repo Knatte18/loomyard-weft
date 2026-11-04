@@ -2,7 +2,7 @@
 
 `locks-out-of-tracked-trees` · Task · bug, fabric, loom
 
-Depends on: [`landing-watch-limits`](design-landing-watch-limits.md), [`batching-hook-reach`](design-batching-hook-reach.md)
+Depends on: [`landing-watch-limits`](design-landing-watch-limits.md)
 
 ## Seen (operator and hub orch, 2026-11-04)
 
