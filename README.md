@@ -6,24 +6,23 @@ Prime owner: `neve`.
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## [P1 Fewer agent turns, fewer tokens](project-turn-savings.md) (3)
+## [P1 Fewer agent turns, fewer tokens](project-turn-savings.md) (2)
 
 `turn-savings` · Age 2d · Owner `neve`
 
 Token savings by cutting agent turns, above all late turns at large context
 
-### Tasks (2)
+### Tasks (1)
 
 Concrete and claimable; only a task can run.
 
-#### Running (2)
+#### Running (1)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Measure how Plan and Discussion writers explore and whether they use lookup subagents**<br>• From 10 landed tapestry runs, measure the Plan and Discussion writers exploration turns and their use of lookup subagents | [`planner-fork-lookups`](design-planner-fork-lookups.md) | darn · docs | Drift-Recheck | neve | 2d<br>10m | loom |
-| T2 | **The batching hook counts Bash lookups and reaches forks**<br>• Lookup chain counts read-only Bash commands; the hook judges subagent and fork calls against their own transcript | [`batching-hook-reach`](design-batching-hook-reach.md) | darn · light | Finalize | neve | 42m<br>42m | claude, shuttle |
 
 #### Ready (0)
 
@@ -40,6 +39,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Re-measure the batching hook and the edit-round rule a week after the hook reaches forks**<br>• run-all.sh on a fresh sample: firing rate, batching after a firing, edit chains split by gate fix against mid-round | [`batching-hook-remeasure`](design-batching-hook-remeasure.md) | 42m<br>42m | tools, claude |
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T2 | **The batching hook counts Bash lookups and reaches forks**<br>• Lookup chain counts read-only Bash commands; the hook judges subagent and fork calls against their own transcript | [`batching-hook-reach`](design-batching-hook-reach.md) | 42m<br>42m | claude, shuttle |
 
 ## [P2 Stress test of codexengine: every designed capability, hooks above all](project-codex-engine-trial.md) (1)
 
@@ -99,7 +106,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | T8<br>T2 | 1h<br>42m | fabric, loom |
+| T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | T8 | 1h<br>42m | fabric, loom |
 | T11 | **Merge in from parent as a task of its own in a beam, before pawl lands it**<br>• A command on a beam files a merge-in-from-parent task, run as darn with its perch on | [`parent-merge-task`](design-parent-merge-task.md) | darn · light | T10 | 4d<br>1h | pawl, workspaces, reed, landing |
 
 #### Draft (1)
