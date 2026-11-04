@@ -1,0 +1,728 @@
+diff --git a/contracts/specs/loom-final-summary-spec.md b/contracts/specs/loom-final-summary-spec.md
+index e51bfd40..191e2002 100644
+--- a/contracts/specs/loom-final-summary-spec.md
++++ b/contracts/specs/loom-final-summary-spec.md
+@@ -41,6 +41,7 @@ The artifact never holds that section itself, so it reaches the pull request and
+ 
+ `Finalize`'s read is unconditional: a missing or malformed artifact there is a hard error.
+ `Publish`'s read is reached only when the parent branch requires a pull request: it opens one from the artifact, or refreshes an open one's title and body, so a re-run Publish carries a rewritten description onto the pull request.
++While its review runs, PR-Review reads the artifact again at each status poll of an open pull request, and sets the title and body again when the artifact yields other text, so the pr-reviewer changes them by rewriting the artifact; a read that fails there is logged and retried at the next poll, never an error.
+ 
+ ## Producer-appended sections
+ 
+diff --git a/contracts/stencils/landing/landing-template-pr-review.md b/contracts/stencils/landing/landing-template-pr-review.md
+index ba16a1f9..a1a8763e 100644
+--- a/contracts/stencils/landing/landing-template-pr-review.md
++++ b/contracts/stencils/landing/landing-template-pr-review.md
+@@ -37,7 +37,11 @@ Answer from it, and never ask the operator to run a regression compare it settle
+ - Answer the operator's questions about the change, and change it when the operator asks.
+ - Commit to the task branch `{{.task_branch}}`.
+   lym gates and pushes each commit you make, and mails this session when a commit fails the gate.
+-- Never push, never approve, merge or close the pull request, and never call GitHub; your settings deny them too.
++- Read the pull request and the repository on GitHub with `gh`: `gh pr view`, `gh pr list`, `gh pr diff` and `gh pr checks`, `gh run view` for a check's log, and `gh api` reads such as a pull request's review comments.
++- Comment on the pull request with `gh pr comment`, or leave a review comment with `gh pr review --comment`.
++- Change the pull request's title or body by editing the change description, `{{.description_path}}`: its heading is the title and the rest the body.
++  lym sets them on the pull request within a minute of your edit, with the regression check and the credit block after the body, so never set the body with `gh pr edit`.
++- Never push, and never approve, merge, close or reopen the pull request; your settings deny them too.
+ 
+ The run ends on the pull request's state, not on this session, so after each answer you wait for the operator's next message.
+ 
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index 6162f512..4a35399d 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -13,6 +13,8 @@
+ // A clean tree whose head the record has not gated runs the `pr-review` gate key; a pass pushes the head and records it as gated, and a failure pushes nothing and mails the reason, naming the failing tier and log, to the PR-Review session once per head.
+ // A head moved or a tree dirtied during the gate discards its verdict, and a dirty tree is the agent at work and is not gated.
+ // The pull request's status is read at most once a minute, the entry's own read counting as the first, and at once on the first wake that sees the continue flag.
++// A read that finds the pull request open, with no continue flag or ending recorded, sets its title and body again when the change description yields other text than they were last set to, so the agent changes them by editing the description;
++// a description that yields no text, as one mid-edit may, is logged once and left for a later read.
+ // Merged at the gated head on a clean tree is Done, and merged without task commits or at another head is Stuck with Halt naming the way forward.
+ // Closed after the operator's ending is Done on a clean tree, and closed otherwise is Stuck with Halt.
+ // The continue flag on an open or closed pull request at a clean gated head records the operator's ending and is Done, and leaves the pull request as it is for Finalize to merge on GitHub, so ending the review never lands the run by a direct push; an open one approved at the gated and task head is Done.
+@@ -28,7 +30,7 @@
+ // The row keeps one interactive agent session per run, in a window of its own in the task worktree, for the operator to discuss the pull request in; the row never waits on its output.
+ // After it records the pull request, and before it waits, it reuses the recorded strand when that is live, resumes the recorded session id when the strand is not, and otherwise starts a new session.
+ // A review whose record carries the operator's ending gets no session.
+-// The session starts from the `landing-template-pr-review` stencil filled with paths and the regression check, under the `pr_reviewer` model, with the publish shell guard installed and the pane process registered under the run.
++// The session starts from the `landing-template-pr-review` stencil filled with paths and the regression check, under the `pr_reviewer` model, with the publish shell guard installed, which leaves it gh's reads, comments and title and body edits and refuses git push and every gh call that merges, closes or opens a pull request, and the pane process registered under the run.
+ // A start that fails transiently is an error the driver re-steps, and any other start failure is Stuck with Halt naming `lym loom resume`.
+ // The row stops the session before each read that may end the review, which is a merged pull request, an approval of the gated head and the continue flag, and resumes it when that read keeps waiting.
+ // It stops it at the first wake a pause covers and resumes it at the first uncovered wake, and on every verdict, Stuck and error, and it leaves it running when the context is cancelled.
+diff --git a/internal/landingshed/prreview.go b/internal/landingshed/prreview.go
+index c1cf470a..ccacd7b8 100644
+--- a/internal/landingshed/prreview.go
++++ b/internal/landingshed/prreview.go
+@@ -26,7 +26,7 @@ const (
+ 
+ // PRReview is the ShedProducer that lands a run through a GitHub pull request when ResolvePullRequest says so.
+ // A no closes any pull request the run recorded and passes, except that a failed read of GitHub's rules with a pull request recorded is Stuck and closes nothing; a yes pushes the task branch, finds or opens the pull request, sets its title from the change description and its body from the description's body, the regression check and the credit block, records it, keeps one interactive session for the operator to discuss it in, and waits on it.
+-// The wait gates and pushes the agent's commits, and ends when the pull request is merged or approved, or closed or continued by the operator.
++// The wait gates and pushes the agent's commits, sets the title and body again when the text yielded from the change description, the regression check and the credit block changes, and ends when the pull request is merged or approved, or closed or continued by the operator.
+ // A reopen request, read on entry and at every wake, ends the row first: it sends the run back through the row's reroute edge, the pull request kept open as a draft or closed.
+ // It takes no parent lock.
+ type PRReview struct {
+@@ -225,7 +225,7 @@ func (p *PRReview) openPullRequest(ctx context.Context, origin Origin) (shedengi
+ 		// The operator already ended this review.
+ 		// A head past the one gated then means commits were added since that need review, so the review starts afresh.
+ 		if head == rec.GatedHead {
+-			return p.wait(ctx, api, rec, nil, time.Time{})
++			return p.wait(ctx, api, rec, nil, time.Time{}, prText{})
+ 		}
+ 		if err := pullrequest.RemoveRecord(pr.RecordPath, pr.RecordLockPath); err != nil {
+ 			return "", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: %w", p.name, err)
+@@ -233,19 +233,10 @@ func (p *PRReview) openPullRequest(ctx context.Context, origin Origin) (shedengi
+ 		found = false
+ 	}
+ 
+-	summary, err := summaryparser.Parse(p.deps.DescriptionPath)
+-	if err != nil {
+-		return "", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: read the change description: %w", p.name, err)
+-	}
+-	credit, err := p.deps.creditBlock()
+-	if err != nil {
+-		return "", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: %w", p.name, err)
+-	}
+-	verdict, err := p.deps.driftVerdict()
++	text, err := p.pullRequestText()
+ 	if err != nil {
+ 		return "", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: %w", p.name, err)
+ 	}
+-	body := bodyWithCredit(withSection(summary.Body, verdict), credit)
+ 
+ 	// A recorded pull request GitHub no longer reports open is left as it is, for the wait to judge.
+ 	var ref pullrequest.Ref
+@@ -272,7 +263,7 @@ func (p *PRReview) openPullRequest(ctx context.Context, origin Origin) (shedengi
+ 					return "", shedengine.OutputPointer{}, err
+ 				}
+ 			}
+-			return p.wait(ctx, api, rec, entryStatus, entryReadAt)
++			return p.wait(ctx, api, rec, entryStatus, entryReadAt, prText{})
+ 		}
+ 		ref = pullrequest.Ref{Number: rec.Number, URL: rec.URL}
+ 	} else {
+@@ -282,7 +273,7 @@ func (p *PRReview) openPullRequest(ctx context.Context, origin Origin) (shedengi
+ 		}
+ 		ref = existing
+ 		if !open {
+-			ref, err = api.Create(ctx, p.deps.TaskBranch, p.deps.ParentBranch, summary.Title, body)
++			ref, err = api.Create(ctx, p.deps.TaskBranch, p.deps.ParentBranch, text.title, text.body)
+ 			if err != nil {
+ 				return p.githubFailure(ctx, "open the pull request", err)
+ 			}
+@@ -290,7 +281,7 @@ func (p *PRReview) openPullRequest(ctx context.Context, origin Origin) (shedengi
+ 		}
+ 	}
+ 	if editTitleAndBody {
+-		if err := api.Edit(ctx, ref.Number, summary.Title, body); err != nil {
++		if err := api.Edit(ctx, ref.Number, text.title, text.body); err != nil {
+ 			return p.githubFailure(ctx, "set the pull request's title and body", err)
+ 		}
+ 	}
+@@ -304,7 +295,61 @@ func (p *PRReview) openPullRequest(ctx context.Context, origin Origin) (shedengi
+ 	if rec, err = p.ensureSession(ctx, rec); err != nil {
+ 		return "", shedengine.OutputPointer{}, err
+ 	}
+-	return p.wait(ctx, api, rec, entryStatus, entryReadAt)
++	return p.wait(ctx, api, rec, entryStatus, entryReadAt, text)
++}
++
++// prText is a pull request's title and body.
++// A title is never empty, so the zero prText stands for a text not known.
++type prText struct {
++	title string
++	body  string
++}
++
++// pullRequestText returns the title and body the pull request carries for the change description as it reads now: the description's title, and its body followed by the regression check and the credit block.
++func (p *PRReview) pullRequestText() (prText, error) {
++	summary, err := summaryparser.Parse(p.deps.DescriptionPath)
++	if err != nil {
++		return prText{}, fmt.Errorf("read the change description: %w", err)
++	}
++	credit, err := p.deps.creditBlock()
++	if err != nil {
++		return prText{}, err
++	}
++	verdict, err := p.deps.driftVerdict()
++	if err != nil {
++		return prText{}, err
++	}
++	return prText{title: summary.Title, body: bodyWithCredit(withSection(summary.Body, verdict), credit)}, nil
++}
++
++// syncText sets the pull request's title and body again when the change description no longer yields the text they were last set to, so an edit of the description reaches the pull request at the next poll.
++// A wait that knows no last-set text takes the description's present text as it, and edits nothing.
++// A text that cannot be built is logged once per episode and left for a later poll, since the agent may be mid-edit; a failed edit is judged as pollFailure judges one, with a transient failure's Warn logged once per episode of failed edits.
++// It reports whether it ended the call.
++func (p *PRReview) syncText(ctx context.Context, api pullrequest.API, state *prWaitState, number int) (shedengine.Outcome, shedengine.OutputPointer, bool, error) {
++	text, err := p.pullRequestText()
++	if err != nil {
++		if !state.textWarned {
++			logger.Warn("landingshed: no pull request text could be built, so the pull request keeps its title and body", "row", p.name, "cause", err)
++			state.textWarned = true
++		}
++		return "", shedengine.OutputPointer{}, false, nil
++	}
++	state.textWarned = false
++	switch {
++	case state.synced == prText{}:
++		state.synced = text
++		return "", shedengine.OutputPointer{}, false, nil
++	case text == state.synced:
++		state.editWarned = false
++		return "", shedengine.OutputPointer{}, false, nil
++	}
++	if err := api.Edit(ctx, number, text.title, text.body); err != nil {
++		return p.pollFailure(ctx, &state.editWarned, "set the pull request's title and body", err)
++	}
++	state.synced = text
++	state.editWarned = false
++	return "", shedengine.OutputPointer{}, false, nil
+ }
+ 
+ // pushHalt is the Stuck verdict of a push that failed for a reason other than a transient one.
+@@ -400,22 +445,29 @@ type prWaitState struct {
+ 	lastPoll time.Time
+ 	// transientWarned is set after a transient poll failure logged its Warn and cleared by the next good poll.
+ 	transientWarned bool
++	// synced is the title and body the pull request was last set to, zero until the wait knows them.
++	synced prText
++	// textWarned is set after a failure to build the pull request text logged its Warn and cleared by the next build that succeeds.
++	textWarned bool
++	// editWarned is set after a transient failure of the title and body edit logged its Warn and cleared by the next edit that succeeds.
++	editWarned bool
+ }
+ 
+ // wait holds the call on the pull request until the review ends.
+ // Each wake reads the pull request's status at most once a minute, gates and pushes the agent's new commits unless the pull request is merged, and judges the status: merged, closed, approved or continued by the operator is Done or Stuck, anything else keeps waiting.
+ // A wake with a head to gate reads the status whatever the minute says.
+ // A change to the record ends the sleep between two wakes early, so a continue flag the agent writes is read within a second.
+-// rec is the record the wait starts from, and entryStatus and entryReadAt are the status Call read and its time, nil and zero when Call read none.
++// A poll that finds the pull request open and the review going sets its title and body again when the text yielded from the change description, the regression check and the credit block changed since they were last set.
++// rec is the record the wait starts from, entryStatus and entryReadAt are the status Call read and its time, nil and zero when Call read none, and synced is the title and body Call set, zero when it set none.
+ // A cancelled context is an error.
+-func (p *PRReview) wait(ctx context.Context, api pullrequest.API, rec pullrequest.Record, entryStatus *pullrequest.Status, entryReadAt time.Time) (shedengine.Outcome, shedengine.OutputPointer, error) {
++func (p *PRReview) wait(ctx context.Context, api pullrequest.API, rec pullrequest.Record, entryStatus *pullrequest.Status, entryReadAt time.Time, synced prText) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	label := fmt.Sprintf("PR #%d", rec.Number)
+ 	p.gate.markWait(label)
+ 	defer p.gate.markWait("")
+ 	changes, stopWatch := p.deps.PullRequest.RecordChanges()
+ 	defer stopWatch()
+ 
+-	state := prWaitState{continueSeen: rec.Continue, pending: entryStatus, lastPoll: entryReadAt}
++	state := prWaitState{continueSeen: rec.Continue, pending: entryStatus, lastPoll: entryReadAt, synced: synced}
+ 	for {
+ 		outcome, pointer, ended, err := p.wake(ctx, api, &state, label)
+ 		if err != nil || ended {
+@@ -501,6 +553,11 @@ func (p *PRReview) wake(ctx context.Context, api pullrequest.API, state *prWaitS
+ 	if !polled {
+ 		return "", shedengine.OutputPointer{}, false, nil
+ 	}
++	if status.State == pullrequest.StateOpen && !rec.ReviewEnded && !rec.Continue {
++		if outcome, pointer, ended, err := p.syncText(ctx, api, state, rec.Number); err != nil || ended {
++			return outcome, pointer, ended, err
++		}
++	}
+ 
+ 	// The session is stopped before the read that may end the review, so the agent cannot change the tree between the read and the verdict.
+ 	stopped := false
+@@ -634,7 +691,7 @@ func (p *PRReview) pollStatus(ctx context.Context, api pullrequest.API, state *p
+ 	state.lastPoll = now
+ 	status, err := api.Status(ctx, rec.Number)
+ 	if err != nil {
+-		outcome, pointer, ended, ferr := p.pollFailure(ctx, state, "read the pull request's status", err)
++		outcome, pointer, ended, ferr := p.pollFailure(ctx, &state.transientWarned, "read the pull request's status", err)
+ 		return pullrequest.Status{}, false, outcome, pointer, ended, ferr
+ 	}
+ 	state.transientWarned = false
+@@ -642,16 +699,16 @@ func (p *PRReview) pollStatus(ctx context.Context, api pullrequest.API, state *p
+ }
+ 
+ // pollFailure judges a failed GitHub call of the wait named by action.
+-// A token failure and any other failure but a transient one end the call as githubFailure judges them; a transient failure logs one Warn per episode and lets the wait go on.
++// A token failure and any other failure but a transient one end the call as githubFailure judges them; a transient failure logs one Warn per episode, tracked in warned, and lets the wait go on.
+ // It reports whether it ended the call.
+-func (p *PRReview) pollFailure(ctx context.Context, state *prWaitState, action string, err error) (shedengine.Outcome, shedengine.OutputPointer, bool, error) {
++func (p *PRReview) pollFailure(ctx context.Context, warned *bool, action string, err error) (shedengine.Outcome, shedengine.OutputPointer, bool, error) {
+ 	if cerr := cancelErr(ctx, p.name); cerr != nil {
+ 		return "", shedengine.OutputPointer{}, true, cerr
+ 	}
+ 	if !tokenFailure(err) && shedtransient.Class(err) != "" {
+-		if !state.transientWarned {
++		if !*warned {
+ 			logger.Warn("landingshed: a GitHub call failed transiently, the wait goes on", "row", p.name, "action", action, "cause", err)
+-			state.transientWarned = true
++			*warned = true
+ 		}
+ 		return "", shedengine.OutputPointer{}, false, nil
+ 	}
+diff --git a/internal/landingshed/prreview_wait_test.go b/internal/landingshed/prreview_wait_test.go
+index 2334351a..a5998e97 100644
+--- a/internal/landingshed/prreview_wait_test.go
++++ b/internal/landingshed/prreview_wait_test.go
+@@ -7,6 +7,7 @@ import (
+ 	"errors"
+ 	"net/http"
+ 	"net/url"
++	"os"
+ 	"strings"
+ 	"testing"
+ 	"time"
+@@ -128,6 +129,8 @@ func TestPRReview_Wait(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	// The wait captures the process-global logger, so this test and its subtests stay serial.
+ 	const editSeven = "Edit 7|Change title|" + wantPRBody
++	const editNew = "Edit 7|New title|New body\n\nCreated using\n - LoomYard\n - Claude <c@x>"
++	const newDescription = "# New title\n\nNew body\n"
+ 	open := scriptedCall{status: pullrequest.Status{State: pullrequest.StateOpen}}
+ 	closed := scriptedCall{status: pullrequest.Status{State: pullrequest.StateClosed}}
+ 	mergedAt := func(head string) scriptedCall {
+@@ -190,6 +193,28 @@ func TestPRReview_Wait(t *testing.T) {
+ 			}
+ 		}
+ 	}
++	// rewriteDescriptionsThenCancel returns a setup that writes each content of writes to the change description at the sleep whose count is its key and cancels the wait at the n-th.
++	rewriteDescriptionsThenCancel := func(writes map[int]string, n int) func(w *waitWorld) {
++		return func(w *waitWorld) {
++			w.onSleep = func(w *waitWorld, count int) {
++				if content, ok := writes[count]; ok {
++					if err := os.WriteFile(w.deps.DescriptionPath, []byte(content), 0o644); err != nil {
++						t.Errorf("rewrite the change description: %v", err)
++					}
++				}
++				if count >= n {
++					w.cancel()
++				}
++			}
++		}
++	}
++	// rewriteDescriptionThenCancel returns a setup that writes content to the change description at the first sleep and cancels the wait at the n-th.
++	rewriteDescriptionThenCancel := func(content string, n int) func(w *waitWorld) {
++		return rewriteDescriptionsThenCancel(map[int]string{1: content}, n)
++	}
++	editFailing := func(failures ...scriptedCall) map[string][]scriptedCall {
++		return map[string][]scriptedCall{"Status": {open}, "Edit": append([]scriptedCall{{}}, failures...)}
++	}
+ 	failingGate := func(w *waitWorld) {
+ 		w.withGateCommand()
+ 		w.tree.result = verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 1, Log: "/logs/gate.log"}
+@@ -600,6 +625,86 @@ func TestPRReview_Wait(t *testing.T) {
+ 			},
+ 			wantErr: context.Canceled, wantCalls: []string{"Status 7", editSeven, "Status 7"},
+ 		},
++		{
++			// The sleeps run 1, 2, 4, 8, 16, 32 and 60 seconds, so the 7th and 8th wakes are the polls after the entry's.
++			name: "AnEditedDescriptionSetsTheTitleAndBodyAgainAtTheNextPollAndOnlyThen", record: seed("h1"), scripts: statusScript(open),
++			setup:   rewriteDescriptionThenCancel(newDescription, 8),
++			wantErr: context.Canceled,
++			wantCalls: []string{
++				"Status 7", editSeven, "Status 7",
++				editNew,
++				"Status 7",
++			},
++		},
++		{
++			name: "ADescriptionThatYieldsNoTextIsLoggedOnceAndEditsNothing", record: seed("h1"), scripts: statusScript(open),
++			setup:     rewriteDescriptionThenCancel("", 8),
++			wantErr:   context.Canceled,
++			wantCalls: []string{"Status 7", editSeven, "Status 7", "Status 7"},
++			check: func(t *testing.T, _ *waitWorld, logs string) {
++				if got := strings.Count(logs, "no pull request text could be built"); got != 1 {
++					t.Errorf("warnings for the unreadable description = %d; want one over two polls", got)
++				}
++			},
++		},
++		{
++			// The polls after the entry's are the 7th, 8th and 9th wakes: a bad description, a good one, a bad one again.
++			name: "ADescriptionThatYieldsNoTextAgainAfterAGoodOneIsLoggedAgain", record: seed("h1"), scripts: statusScript(open),
++			setup:     rewriteDescriptionsThenCancel(map[int]string{1: "", 7: newDescription, 8: ""}, 9),
++			wantErr:   context.Canceled,
++			wantCalls: []string{"Status 7", editSeven, "Status 7", "Status 7", editNew, "Status 7"},
++			check: func(t *testing.T, _ *waitWorld, logs string) {
++				if got := strings.Count(logs, "no pull request text could be built"); got != 2 {
++					t.Errorf("warnings for the unreadable description = %d; want one per episode, two", got)
++				}
++			},
++		},
++		{
++			name: "AnEditedDescriptionIsNotSetAfterTheOperatorsEnding", record: seed("h1", withContinue), scripts: statusScript(open), dirty: []string{"wip.go"},
++			setup:     rewriteDescriptionThenCancel(newDescription, 8),
++			wantErr:   context.Canceled,
++			wantCalls: []string{"Status 7", editSeven, "Status 7", "Status 7"},
++		},
++		{
++			name: "AnEditedDescriptionIsNotSetOnAPullRequestThatIsClosedAtThePoll", record: seed("h1"), scripts: statusScript(open, closed),
++			setup:       rewriteDescriptionThenCancel(newDescription, 8),
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"reopen it on GitHub"},
++			wantCalls: []string{"Status 7", editSeven, "Status 7"},
++		},
++		{
++			name: "AnEditedDescriptionIsNotSetOnAPullRequestThatIsMergedAtThePoll", record: seed("h1"), scripts: statusScript(open, mergedAt("h1")),
++			setup:       rewriteDescriptionThenCancel(newDescription, 8),
++			wantOutcome: shedengine.Done,
++			wantCalls:   []string{"Status 7", editSeven, "Status 7"},
++		},
++		{
++			name: "ATransientEditFailureKeepsWaitingAndSetsTheSameTextAtTheNextPoll", record: seed("h1"), scripts: editFailing(scriptedCall{err: context.DeadlineExceeded}, scriptedCall{}),
++			setup:     rewriteDescriptionThenCancel(newDescription, 9),
++			wantErr:   context.Canceled,
++			wantCalls: []string{"Status 7", editSeven, "Status 7", editNew, "Status 7", editNew, "Status 7"},
++			check: func(t *testing.T, _ *waitWorld, logs string) {
++				if got := strings.Count(logs, "a GitHub call failed transiently"); got != 1 {
++					t.Errorf("transient warnings = %d; want one", got)
++				}
++			},
++		},
++		{
++			name: "AnEditThatKeepsFailingTransientlyIsRetriedAtEveryPollAndLoggedOnce", record: seed("h1"), scripts: editFailing(scriptedCall{err: context.DeadlineExceeded}),
++			setup:     rewriteDescriptionThenCancel(newDescription, 9),
++			wantErr:   context.Canceled,
++			wantCalls: []string{"Status 7", editSeven, "Status 7", editNew, "Status 7", editNew, "Status 7", editNew},
++			check: func(t *testing.T, _ *waitWorld, logs string) {
++				if got := strings.Count(logs, "a GitHub call failed transiently"); got != 1 {
++					t.Errorf("transient warnings = %d; want one for the whole episode of failed edits", got)
++				}
++			},
++		},
++		{
++			name: "AnEditThatFailsForGoodHaltsNamingTheEdit", record: seed("h1"), scripts: editFailing(scriptedCall{err: githubErrorResponse(http.StatusUnprocessableEntity, "Unprocessable")}),
++			setup:       rewriteDescriptionThenCancel(newDescription, 8),
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"set the pull request's title and body", "422"},
++			wantCalls: []string{"Status 7", editSeven, "Status 7", editNew},
++		},
+ 		{
+ 			name: "TheMarkIsSetAtTheStartAndAfterAGateAndClearedOnDone", record: seed("h1"), scripts: statusScript(approvedAt("h2", false)), head: "h2",
+ 			setup:       func(w *waitWorld) { w.withGateCommand() },
+@@ -686,3 +791,26 @@ func TestPRReview_Wait(t *testing.T) {
+ 		})
+ 	}
+ }
++
++func TestPRReview_WaitWithNoLastSetTextTakesTheDescriptionAsTheBaselineAndEditsNothing(t *testing.T) {
++	tiergate.Require(t, 0)
++	// The wait captures the process-global logger, so this test stays serial.
++	logcapture.CaptureVerbose(t)
++	w, ctx := newWaitWorld(t, map[string][]scriptedCall{"Status": {{status: pullrequest.Status{State: pullrequest.StateOpen}}}})
++	rec := pullrequest.Record{Number: 7, URL: "u7", GatedHead: "h1"}
++	if err := pullrequest.WriteRecord(w.deps.PullRequest.RecordPath, w.deps.PullRequest.RecordLockPath, rec); err != nil {
++		t.Fatalf("write record: %v", err)
++	}
++	w.cancelAfter(1)
++	row := NewPRReview("PR-Review", w.deps)
++	row.gate.verify = w.tree.verify
++
++	_, _, err := row.wait(ctx, w.api, rec, nil, time.Time{}, prText{})
++
++	if !errors.Is(err, context.Canceled) {
++		t.Fatalf("wait() error = %v; want one wrapping %v", err, context.Canceled)
++	}
++	if diff := cmp.Diff([]string{"Status 7"}, w.api.calls); diff != "" {
++		t.Errorf("GitHub calls mismatch (-want +got):\n%s", diff)
++	}
++}
+diff --git a/internal/shellguard/doc.go b/internal/shellguard/doc.go
+index f83af845..c126ef22 100644
+--- a/internal/shellguard/doc.go
++++ b/internal/shellguard/doc.go
+@@ -27,7 +27,8 @@
+ //
+ // A row hangs on a Switch.
+ // A SwitchNone row is installed for every run, and SwitchDenyPython follows the shuttle config's python key.
+-// SwitchDenyPublish, which the publish row hangs on, is turned on only by a launch spec, so only the session that sets it cannot run git push or gh.
++// SwitchDenyPublish, which the publish row hangs on, is turned on only by a launch spec, so only the session that sets it cannot run git push or a gh call outside the reads, comments and title and body edits the row's table lets through.
++// The row's pattern refuses every gh command and subcommand the table does not list, through a generated pattern that matches any word but the listed ones, so a new gh subcommand is refused until the table lists it.
+ //
+ // Its imports are the standard library and the two packages that own the environment-variable names the raw go row's pattern names.
+ package shellguard
+diff --git a/internal/shellguard/rows.go b/internal/shellguard/rows.go
+index 07efc9a3..7ab74ea1 100644
+--- a/internal/shellguard/rows.go
++++ b/internal/shellguard/rows.go
+@@ -20,7 +20,7 @@ const (
+ 	SwitchNone Switch = ""
+ 	// SwitchDenyPython marks the row the python switch of the shuttle config turns off.
+ 	SwitchDenyPython Switch = "deny_python"
+-	// SwitchDenyPublish marks the row a launch spec turns on to keep a session from publishing: git push and gh.
++	// SwitchDenyPublish marks the row a launch spec turns on to keep a session from publishing: git push and the gh calls beyond reads, comments and title and body edits.
+ 	SwitchDenyPublish Switch = "deny_publish"
+ )
+ 
+@@ -194,15 +194,128 @@ const codexSteerHeadlessClaudeDeny = headlessClaudeRefusal + "hand the work to a
+ // A word that crosses a separator ends the match, so a print flag of a later command passes.
+ const headlessClaudeCommandPattern = commandPositionPattern + `claude(\.exe)?([[:space:]]+` + shellArgumentPattern + `)*[[:space:]]+(-[a-z]*p[a-z]*|--print)([^A-Za-z0-9_./-]|$)`
+ 
+-// steerPublishDeny refuses a Bash git push or gh; it must contain no single/double quote or backslash (checked at init).
+-const steerPublishDeny = "git push and gh are refused in this session: lym pushes the task branch after it gates your commits, and only lym opens, merges or closes the pull request; commit your change and tell the operator"
++// githubAllowed maps each gh command the publish row lets through to the subcommands of it the row lets through, nil for every subcommand.
++// They read GitHub, comment on a pull request or edit its title and body; every other gh command and subcommand is refused.
++// Each word is lowercase letters only, which notWordPattern relies on.
++var githubAllowed = map[string][]string{
++	"api": nil,
++	"pr":  {"checks", "comment", "diff", "edit", "list", "review", "view"},
++	"run": {"view"},
++}
++
++// steerPublishDeny returns the publish row's steer, naming the gh calls githubAllowed lets through; it must contain no single/double quote or backslash (checked at init).
++func steerPublishDeny() string {
++	commands := slices.Sorted(maps.Keys(githubAllowed))
++	calls := make([]string, len(commands))
++	for i, command := range commands {
++		calls[i] = "gh " + command
++		if subcommands := githubAllowed[command]; subcommands != nil {
++			calls[i] += " " + joinWords(subcommands, "or")
++		}
++	}
++	return "git push is refused in this session, and gh runs only its reads and comments: " + joinWords(calls, "and") +
++		"; gh api takes no writing method, no --input and no GraphQL mutation, gh pr review no approval or change request, and gh pr edit no new base." +
++		" lym pushes the task branch after it gates your commits, and only lym opens, merges or closes the pull request; commit your change and tell the operator"
++}
++
++// joinWords joins words with commas and conjunction before the last, as in a, b or c.
++func joinWords(words []string, conjunction string) string {
++	if len(words) == 1 {
++		return words[0]
++	}
++	return strings.Join(words[:len(words)-1], ", ") + " " + conjunction + " " + words[len(words)-1]
++}
++
++// wordEndPattern matches what ends a command-line word: a character no word, path or flag holds, or the end of the payload.
++const wordEndPattern = `([^A-Za-z0-9_./-]|$)`
++
++// ghWordClass is the grep -E bracket body of the characters one gh argument word holds: neither whitespace, a separator, a quote, a redirect nor a backtick.
++const ghWordClass = `[:space:]"\\;&|()<>` + "`"
++
++// ghRepoFlagsPattern matches any run of -R or --repo flags with their repository word, the one flag gh takes between a command and its subcommand.
++const ghRepoFlagsPattern = `([[:space:]]+(-R|--repo)([[:space:]]+|=)[^` + ghWordClass + `]+)*`
++
++// ghArgumentsPattern matches any argument words after a gh subcommand and the whitespace before the next word, on one command.
++const ghArgumentsPattern = `([[:space:]]+` + shellArgumentPattern + `)*[[:space:]]+`
++
++// ghWriteMethodPattern matches an HTTP method that writes, in upper or lower case.
++const ghWriteMethodPattern = `([Pp][Oo][Ss][Tt]|[Pp][Uu][Tt]|[Pp][Aa][Tt][Cc][Hh]|[Dd][Ee][Ll][Ee][Tt][Ee])`
++
++// optionalQuotePattern matches one JSON-escaped double quote or nothing, the quote a shell double-quoted word opens or closes with.
++const optionalQuotePattern = `(\\")?`
++
++// ghMutationScanPattern matches the rest of a gh api command up to a GraphQL mutation word.
++// The scan stays on one command: it stops at an unquoted separator or newline, and crosses a newline only inside a single-quoted or double-quoted string, so a mutation on a later line of a multi-line query is found.
++const ghMutationScanPattern = `([^;&|\\'"]|\\[^"n]|'[^']*'|` + doubleQuotedOpenPattern + `\\")*(mutation|'[^']*mutation|` + doubleQuotedOpenPattern + `mutation)`
+ 
+-// noticePublishDeny announces the publish deny in the same wording as its steer.
+-const noticePublishDeny = steerPublishDeny + "."
++// quotableWord returns a grep -E pattern matching word bare or inside a pair of JSON-escaped double quotes.
++func quotableWord(word string) string {
++	return optionalQuotePattern + word + optionalQuotePattern
++}
++
++// notWordPattern returns a grep -E pattern matching one whole gh argument word, up to a word end, that is none of words and opens with no dash, so a flag word never matches.
++// A word in double quotes is read by what is inside them, so a listed word in quotes is no match and an unlisted one is.
++// Each word must be lowercase letters only.
++func notWordPattern(words []string) string {
++	return optionalQuotePattern + notWordFrom(words, true) + wordEndPattern
++}
+ 
+-// publishCommandPattern is the grep -E pattern the publish deny matches against the raw PreToolUse payload JSON.
+-// It matches, in command position and optionally path-prefixed, either git followed by any flag words, with -C taking its directory word, and then push as a whole word, or gh as a whole word.
+-const publishCommandPattern = commandPositionPattern + `(git([[:space:]]+(-C[[:space:]=]+` + goWordPattern + `|-` + goWordPattern + `))*[[:space:]]+push|gh)([^A-Za-z0-9_./-]|$)`
++// notWordFrom returns a grep -E group matching the rest of a word, after a prefix already read, that is no suffix in suffixes.
++// It matches the empty rest only when suffixes holds no empty suffix and first is false, since a word is never empty.
++func notWordFrom(suffixes []string, first bool) string {
++	children := map[byte][]string{}
++	terminal := false
++	for _, suffix := range suffixes {
++		if suffix == "" {
++			terminal = true
++			continue
++		}
++		children[suffix[0]] = append(children[suffix[0]], suffix[1:])
++	}
++	letters := slices.Sorted(maps.Keys(children))
++	excluded := ghWordClass + string(letters)
++	if first {
++		excluded += "-"
++	}
++	alternatives := []string{`[^` + excluded + `][^` + ghWordClass + `]*`}
++	for _, letter := range letters {
++		alternatives = append(alternatives, string(letter)+notWordFrom(children[letter], false))
++	}
++	group := `(` + strings.Join(alternatives, "|") + `)`
++	if !terminal && !first {
++		group += "?"
++	}
++	return group
++}
++
++// publishCommandPattern returns the grep -E pattern the publish deny matches against the raw PreToolUse payload JSON.
++// In command position and optionally path-prefixed, it matches git followed by any flag words, with -C taking its directory word, and then push as a whole word;
++// a gh command, or a subcommand of a command githubAllowed limits, that githubAllowed does not list;
++// gh pr review with an approve or request-changes flag, alone or in a cluster of short flags, gh pr edit with a base flag and any value attached to the short one;
++// and gh api with a writing -X or --method, with --input, or with mutation anywhere in the rest of its command, a quoted multi-line query included.
++// A command, subcommand or method word may sit in double quotes.
++// A gh word opening with a dash is no command, so gh --version passes.
++func publishCommandPattern() string {
++	gh := `gh` + ghRepoFlagsPattern + `[[:space:]]+`
++	subcommand := func(command, sub string) string {
++		return quotableWord(command) + ghRepoFlagsPattern + `[[:space:]]+` + sub
++	}
++	alternatives := []string{
++		`git([[:space:]]+(-C[[:space:]=]+` + goWordPattern + `|-` + goWordPattern + `))*[[:space:]]+push` + wordEndPattern,
++		gh + notWordPattern(slices.Sorted(maps.Keys(githubAllowed))),
++		gh + subcommand("pr", quotableWord("review")) + ghArgumentsPattern + `(-[A-Za-z]*[ar][A-Za-z]*|--approve|--request-changes)` + wordEndPattern,
++		gh + subcommand("pr", quotableWord("edit")) + ghArgumentsPattern + `(-B|--base` + wordEndPattern + `)`,
++		gh + quotableWord(`api`) + ghArgumentsPattern + `(-X[[:space:]=]*|--method([[:space:]]+|=))` + optionalQuotePattern + ghWriteMethodPattern + wordEndPattern,
++		gh + quotableWord(`api`) + ghArgumentsPattern + `--input` + wordEndPattern,
++		gh + quotableWord(`api`) + wordEndPattern + ghMutationScanPattern,
++	}
++	for _, command := range slices.Sorted(maps.Keys(githubAllowed)) {
++		if subcommands := githubAllowed[command]; subcommands != nil {
++			alternatives = append(alternatives, gh+subcommand(command, notWordPattern(subcommands)))
++		}
++	}
++	return commandPositionPattern + `(` + strings.Join(alternatives, "|") + `)`
++}
+ 
+ // goSubcommandPattern is the grep -E prefix of a go test, build or vet command: go in command position directly before the subcommand, with an optional -C <dir> between them, then whitespace.
+ const goSubcommandPattern = commandPositionPattern + `go[[:space:]]+(-C[[:space:]=]+[^[:space:]]+[[:space:]]+)?`
+@@ -400,13 +513,15 @@ func rowsAfterRawGo() []Row {
+ 			EngineTexts: map[string]EngineText{engineCodex: {Steer: codexSteerHeadlessClaudeDeny, Notice: codexSteerHeadlessClaudeDeny + "."}},
+ 		},
+ 		{
+-			// Installed only for a launch spec that sets DenyPublish, the PR-Review session.
+-			// A guardrail, not a barrier: bash -c, a script, env forms the pattern does not list, a git alias or hub pass, and a gh spelling after a separator inside a quote commandPositionPattern misreads is falsely denied.
++			// Installed only for a launch spec that sets DenyPublish, such as the PR-Review session's, which reads the pull request, comments on it and edits its title and body through gh.
++			// A guardrail, not a barrier: bash -c, a script, env forms the pattern does not list, a git alias or hub pass, as do a flag word between gh and its command, a gh api call that writes by an implied POST with field flags, and a GraphQL mutation read from a file;
++			// a gh spelling after a separator inside a quote commandPositionPattern misreads is falsely denied, and so is a gh pr review short-flag cluster whose attached body holds an a or an r.
++			// A gh api call with an unbalanced apostrophe before its mutation word passes, since the scan reads a quoted string whole.
+ 			// A lym verb that pushes the task branch, such as lym fabric push or the detached both-sides push a run-record commit fires, reaches origin from the session too, so the row gates what lands, not what reaches the pull request.
+ 			Name:     "publish",
+-			Patterns: []string{publishCommandPattern},
+-			Steer:    steerPublishDeny,
+-			Notice:   noticePublishDeny,
++			Patterns: []string{publishCommandPattern()},
++			Steer:    steerPublishDeny(),
++			Notice:   steerPublishDeny() + ".",
+ 			Switch:   SwitchDenyPublish,
+ 		},
+ 	}
+diff --git a/internal/shellguard/rows_integration_test.go b/internal/shellguard/rows_integration_test.go
+index 5891bb0a..4e0ac830 100644
+--- a/internal/shellguard/rows_integration_test.go
++++ b/internal/shellguard/rows_integration_test.go
+@@ -226,11 +226,68 @@ func TestRows_PatternsDenyAndAllow(t *testing.T) {
+ 		{"publish", "git_push", "git push", true},
+ 		{"publish", "git_push_after_dash_c", "git -C x push origin b", true},
+ 		{"publish", "gh_pr_merge", "gh pr merge 3", true},
+-		{"publish", "gh_after_a_separator", "cd x && gh api y", true},
++		{"publish", "gh_pr_close", "gh pr close 3", true},
++		{"publish", "gh_pr_create", "gh pr create --fill", true},
++		{"publish", "gh_pr_update_branch", "gh pr update-branch 3", true},
++		{"publish", "gh_pr_merge_after_a_repo_flag", "gh pr -R o/r merge 3", true},
++		{"publish", "gh_pr_merge_after_a_separator", "cd x && gh pr merge 3", true},
++		{"publish", "unlisted_gh_command", "gh release create v1", true},
++		{"publish", "unlisted_gh_command_sharing_a_prefix", "gh prs", true},
++		{"publish", "unlisted_gh_auth_token", "gh auth token", true},
++		{"publish", "gh_pr_review_approve", "gh pr review 3 --approve", true},
++		{"publish", "gh_pr_review_request_changes", "gh pr review 3 -r -b x", true},
++		{"publish", "gh_pr_edit_base", "gh pr edit 3 --base main", true},
++		{"publish", "gh_api_post", "gh api -X POST repos/o/r/pulls/3/merge", true},
++		{"publish", "gh_api_lowercase_method", "gh api --method=put repos/o/r/pulls/3/merge", true},
++		{"publish", "gh_api_input", "gh api repos/o/r/pulls/3 --input body.json", true},
++		{"publish", "gh_api_graphql_mutation", "gh api graphql -f query='mutation { mergePullRequest }'", true},
++		{"publish", "gh_api_graphql_mutation_on_a_later_query_line", "gh api graphql -f query='query { viewer { login } }\nmutation { mergePullRequest }'", true},
++		{"publish", "gh_api_graphql_mutation_in_a_double_quoted_query", `gh api graphql -f query="mutation { mergePullRequest }"`, true},
++		{"publish", "quoted_gh_command_word", `gh "pr" merge 3`, true},
++		{"publish", "quoted_gh_subcommand_word", `gh pr "merge" 3`, true},
++		{"publish", "quoted_unlisted_gh_command", `gh "release" create v1`, true},
++		{"publish", "quoted_write_method", `gh api -X "POST" repos/o/r/pulls/3/merge`, true},
++		{"publish", "quoted_review_subcommand_with_approval", `gh pr "review" 3 --approve`, true},
++		{"publish", "gh_pr_review_request_changes_long_flag", "gh pr review 3 --request-changes", true},
++		{"publish", "gh_pr_review_approve_with_a_body_in_a_cluster", "gh pr review 3 -ab x", true},
++		{"publish", "gh_pr_review_request_changes_with_a_body_in_a_cluster", "gh pr review 3 -rb x", true},
++		{"publish", "gh_pr_edit_base_short_flag", "gh pr edit 3 -B x", true},
++		{"publish", "gh_pr_edit_base_with_an_attached_value", "gh pr edit 3 -Bmain", true},
++		{"publish", "gh_api_delete_method_with_equals", "gh api --method=DELETE x", true},
++		{"publish", "gh_api_method_flag_without_a_space", "gh api -XPOST x", true},
++		{"publish", "gh_pr_merge_after_a_repo_flag_before_the_command", "gh --repo o/r pr merge 3", true},
++		{"publish", "gh_pr_merge_after_a_repo_flag_with_equals", "gh --repo=o/r pr merge 3", true},
++		{"publish", "gh_issue_create", "gh issue create", true},
++		{"publish", "gh_issue_list", "gh issue list", true},
++		{"publish", "gh_repo_view", "gh repo view", true},
++		{"publish", "gh_run_list", "gh run list", true},
++		{"publish", "gh_run_watch", "gh run watch 5", true},
++		{"publish", "gh_search", "gh search prs --repo o/r x", true},
++		{"publish", "gh_status", "gh status", true},
++		{"publish", "gh_pr_status", "gh pr status", true},
+ 		{"publish", "git_status", "git status", false},
+ 		{"publish", "gh_as_an_argument", "echo gh", false},
+ 		{"publish", "push_in_a_grep_flag", "git log --grep=push", false},
+ 		{"publish", "longer_word_than_gh", "ghost", false},
++		{"publish", "gh_version", "gh --version", false},
++		{"publish", "gh_pr_view", "gh pr view 3 --json body,comments", false},
++		{"publish", "gh_pr_view_after_a_repo_flag", "gh pr -R o/r view 3", false},
++		{"publish", "gh_pr_view_piped", "gh pr view 3 | head", false},
++		{"publish", "gh_pr_list", "gh pr list --base main --state merged", false},
++		{"publish", "gh_pr_diff", "gh pr diff 3", false},
++		{"publish", "gh_pr_checks", "gh pr checks 3", false},
++		{"publish", "gh_pr_edit_title_and_body", "gh pr edit 3 --title x --body-file .scratch/body.txt", false},
++		{"publish", "gh_pr_comment", `gh pr comment 3 --body "looks good"`, false},
++		{"publish", "gh_pr_review_comment", `gh pr review 3 --comment -b "a nit"`, false},
++		{"publish", "gh_api_read", "gh api repos/o/r/pulls/3/comments", false},
++		{"publish", "gh_api_get_with_fields", "gh api -X GET search/issues -f q=x", false},
++		{"publish", "gh_api_graphql_query", "gh api graphql -f query='query { viewer { login } }'", false},
++		{"publish", "gh_run_view", "gh run view 5 --log-failed", false},
++		{"publish", "quoted_listed_gh_command_word", `gh "pr" view 3`, false},
++		{"publish", "quoted_listed_gh_subcommand_word", `gh pr "view" 3`, false},
++		{"publish", "quoted_read_method", `gh api -X "GET" search/issues -f q=x`, false},
++		{"publish", "gh_pr_review_comment_with_a_short_flag_cluster", `gh pr review 3 -cb "a nit"`, false},
++		{"publish", "gh_api_then_mutation_word_on_the_next_command_line", "gh api repos/o/r/pulls/3\ngrep mutation f", false},
+ 	}
+ 	// Each description names a command the row would deny as a command, in the payload's description field, beside a command that is harmless.
+ 	descriptionTests := []struct {
+@@ -243,6 +300,7 @@ func TestRows_PatternsDenyAndAllow(t *testing.T) {
+ 		{"machine-sleep", "x; systemctl hibernate"},
+ 		{"shell-edit", "x; sed -i s/a/b/ f > g.go"},
+ 		{"headless-claude", "x; claude -p hi"},
++		{"publish", "x; gh pr merge 3"},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.row+"_"+tt.name, func(t *testing.T) {
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index 503bb19a..eecfb14e 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -263,7 +263,7 @@
+ // The python row denies a Bash command that runs `python`, `python3` or `python3.<minor>` in command position, in every run mode;
+ // `shuttle.yaml`'s `deny_python` switches it off for a Python target repo.
+ // Its notice names a version check as refused, so a session does not probe for Python, and its steer names jq, grep and awk for parsing and the edit rule.
+-// The publish row denies a Bash `git push`, with any flag words before `push`, and `gh`, in command position;
++// The publish row denies a Bash `git push`, with any flag words before `push`, and every `gh` call in command position but the reads, comments and title and body edits the shell guard table lists;
+ // it is installed only for a run whose spec sets `DenyPublish`, which the `deny_publish` switch of the shell guard table names, and announced like every other row.
+ // The command-shaped rows read the command as the shell would, so a command word in quoted text, a heredoc body or another payload field such as the description does not trip a row.
+ // For every such row, a command substitution inside a double-quoted string, a command after a `<` before a quote or a backslash, and any line after a heredoc operator's line are not read and pass.
+diff --git a/internal/shuttleengine/claudeengine/settings.go b/internal/shuttleengine/claudeengine/settings.go
+index 6ba7b759..9705bc89 100644
+--- a/internal/shuttleengine/claudeengine/settings.go
++++ b/internal/shuttleengine/claudeengine/settings.go
+@@ -319,7 +319,7 @@ func activityStampHook(eventsPathPosix string) []hookEntry {
+ // eventsPathPosix must be a git-bash POSIX path (from shuttleengine.PosixPath); it's embedded via shQuote to escape any apostrophes.
+ // The denies are the entries of standingDeniesFor(cfg.RefuseRaw).
+ // The AskUserQuestion deny is controlled by claude, the python deny by cfg and the refuse-raw deny by cfg.RefuseRaw; forkSubagents adds a webster-verb guard.
+-// denyPublish adds the publish deny of git push and gh.
++// denyPublish adds the publish deny of git push and the gh calls beyond reads, comments and title and body edits.
+ // Every SessionStart source is recorded exactly once.
+ // A non-empty contextAfterCompaction splits the SessionStart hook in two: one entry records every source but compaction, and the compaction entry records the event and then runs that command verbatim, so its standard output reaches the session's context.
+ // Empty gives a single recording entry with no matcher.
+diff --git a/internal/shuttleengine/spec.go b/internal/shuttleengine/spec.go
+index 212e2e43..eb533c5f 100644
+--- a/internal/shuttleengine/spec.go
++++ b/internal/shuttleengine/spec.go
+@@ -46,7 +46,7 @@ type Spec struct {
+ 	// validate does not inspect this field at all.
+ 	// The run records it at spawn, and the record, not a later Call's Spec, decides the fork audit and a gate entry's Forked closure.
+ 	ForkSubagents bool
+-	// DenyPublish, when true, makes the engine install a shell guard refusing git push and gh for this one run and announce it.
++	// DenyPublish, when true, makes the engine install a shell guard refusing git push and the gh calls beyond reads, comments and title and body edits for this one run and announce it.
+ 	// It is engine vocabulary exactly like ForkSubagents — validate does not inspect this field at all.
+ 	DenyPublish bool
+ 	// PermissionMode, when non-empty, selects the run's permission mode;
