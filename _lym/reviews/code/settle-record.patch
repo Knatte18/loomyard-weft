@@ -1,0 +1,1968 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index 7b4ed484..c2b6ebcf 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -20,6 +20,7 @@
+ - `PATTERN-cliwire-sole-wiring` — Wiring standalone CLI: `internal/cliwire` alone resolves target dir, repo root and state. (test) — [background](pattern/PATTERN-cliwire-sole-wiring.md)
+ - `PATTERN-config-layers` — Loading config: only `configengine` reads, stacks, locates and judges layers against the template; a caller adopts `Load` or `LoadOrTemplate`, bar `runprofile`; only `hubreconcile.Ensure` reconciles on a binary change; only `lym config reconcile` prunes unknown base-layer keys. — [background](pattern/PATTERN-config-layers.md)
+ - `PATTERN-sparse-hub-base` — Writing a hub base file, from any package: only the units the hub tuned, never a template fill; only `internal/hubreconcile`'s one-time strip drops a template-equal unit.
++- `PATTERN-config-reinterpretation` — Changing what a hub config value means: the binary carries a `configreg.Reinterpretation` on the module that rewrites the value to its old meaning, or flags it with a way forward; only `hubreconcile`'s walk applies it, once per hub behind its board marker, and mails the prime orch.
+ - `PATTERN-refusal-way-forward` — Adding webster, shed or loom refusal: message names the way forward and a test reaches it; no refusal, stencil or spec names a step agents' settings deny. (test) — [background](pattern/PATTERN-refusal-way-forward.md)
+ 
+ ## Fabric and git
+diff --git a/cmd/lym/main.go b/cmd/lym/main.go
+index eabe59b8..cc3e1ea9 100644
+--- a/cmd/lym/main.go
++++ b/cmd/lym/main.go
+@@ -154,6 +154,8 @@ Shortcuts, declared in internal/shortcutcli's embedded file, are listed under th
+ 				tendercli.InstallNetworkGate(cmd.Context(), pauseSlugOverride(cmd), detachedChild(cmd))
+ 				// A push origin refuses reaches the prime orch as creel mail from FABRIC, whichever process pushed.
+ 				orchcli.InstallPushNotifier(cmd.Context())
++				// A reconcile that rewrites or flags a reinterpreted hub config value reaches the prime orch as creel mail from RECONCILE.
++				orchcli.InstallReconcileNotifier(cmd.Context())
+ 				// lym beam start pauses a run another machine owns through tender, which imports orchcli.
+ 				orchcli.InstallOwnerPause(tendercli.PauseOwnedElsewhere)
+ 				// A records replay, in the detached push child as in Bolt's pull-first, merges the board by entry through boardengine's Bolt replayer.
+diff --git a/internal/configengine/config.go b/internal/configengine/config.go
+index 6dfd4369..9725ff1b 100644
+--- a/internal/configengine/config.go
++++ b/internal/configengine/config.go
+@@ -133,6 +133,19 @@ func BaseSparseMarkerRel() string {
+ 	return filepath.Join(lymdirs.LymDirName, configDirName, baseSparseMarkerName)
+ }
+ 
++// reinterpretedMarkerPrefix opens the name of a board marker recording one applied reinterpretation; the name has no .yaml suffix, so no module reader takes it for a module file.
++const reinterpretedMarkerPrefix = "reinterpreted-"
++
++// ReinterpretedMarker returns the tracked marker file under boardDir that records the reinterpretation named id was applied to the hub's base files.
++func ReinterpretedMarker(boardDir, id string) string {
++	return filepath.Join(ConfigDir(boardDir), reinterpretedMarkerPrefix+id)
++}
++
++// ReinterpretedMarkerRel returns the marker of the reinterpretation named id relative to the board dir, the form a board commit lists.
++func ReinterpretedMarkerRel(id string) string {
++	return filepath.Join(lymdirs.LymDirName, configDirName, reinterpretedMarkerPrefix+id)
++}
++
+ // sparseBase reports whether the base layer under dirs is sparse over the template:
+ // a board dir is told and the spec is not seed-only.
+ func sparseBase(dirs Dirs, spec Spec) bool {
+diff --git a/internal/configreg/configreg.go b/internal/configreg/configreg.go
+index 33056730..9ad6fa3b 100644
+--- a/internal/configreg/configreg.go
++++ b/internal/configreg/configreg.go
+@@ -86,6 +86,9 @@ type Module struct {
+ 	// CheckDirs, when non-nil, loads the module under dirs and refuses a command dir that is no existing directory in the worktree at worktreeRoot, whose anchored directory is anchorDir.
+ 	// A module whose keys declare commands sets it, so a hub-wide write refuses a dir that would fail every run in the prime.
+ 	CheckDirs func(dirs configengine.Dirs, worktreeRoot, anchorDir string) error
++	// Reinterpretations are the changes a binary made to what a value in the module's hub base file means, in the order they were made.
++	// A binary that changes such a meaning adds one, so the hub-wide reconcile carries every hub's file across the change before the binary runs a command from it.
++	Reinterpretations []Reinterpretation
+ 	// Spec returns the module's own layered-load spec: its name, template, open maps, hub-wide flag and per-key classification.
+ 	Spec func() configengine.Spec
+ 	// LocalKeys are the keys of a hub-wide module a local override may set, derived from Spec.
+@@ -96,6 +99,15 @@ type Module struct {
+ 	LocalDenied []string
+ }
+ 
++// Reinterpretation is one change a binary made to what a value in a module's hub base file means, with the rewrite that keeps what the hub meant by the value.
++type Reinterpretation struct {
++	// ID names the change; the hub-wide reconcile writes a board marker carrying it once the change is applied, so it is applied once per hub.
++	ID string
++	// Rewrite is told the hub base file's bytes and the prime's worktree root and anchored directory.
++	// It returns the bytes, rewritten only when a value changed, one line per value it rewrote and one line per value it could not settle, the latter naming its way forward.
++	Rewrite func(existing []byte, worktreeRoot, anchorDir string) (rewritten []byte, rewrote, flagged []string, err error)
++}
++
+ // withLocalBounds fills the module's LocalKeys or LocalDenied from its Spec, so the registry never restates a key.
+ func withLocalBounds(m Module) Module {
+ 	spec := m.Spec()
+@@ -136,7 +148,7 @@ func Modules() []Module {
+ 		{Name: "board", Template: boardengine.ConfigTemplate, OpenMaps: boardengine.ConfigOpenMaps(), HubWide: true, CheckLoad: checkLoadNamed(boardengine.LoadConfig, "board"), Spec: boardengine.ConfigSpec},
+ 		{Name: "darn", Template: darnengine.ConfigTemplate, OpenMaps: darnengine.ConfigOpenMaps(), HubWide: true, Migrate: darnengine.MigrateConfig, CheckLoad: checkLoadNamed(darnengine.LoadConfig, "darn"), Spec: darnengine.ConfigSpec},
+ 		{Name: "desktop", Template: desktophook.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(desktophook.LoadConfig), Spec: desktophook.ConfigSpec},
+-		{Name: "drift", Template: driftengine.ConfigTemplate, OpenMaps: driftengine.ConfigOpenMaps(), HubWide: true, CheckLoad: checkLoad(driftengine.LoadConfig), CheckDirs: driftengine.CheckDirs, Spec: driftengine.ConfigSpec},
++		{Name: "drift", Template: driftengine.ConfigTemplate, OpenMaps: driftengine.ConfigOpenMaps(), HubWide: true, CheckLoad: checkLoad(driftengine.LoadConfig), CheckDirs: driftengine.CheckDirs, Reinterpretations: []Reinterpretation{{ID: driftengine.DirBaseReinterpretation, Rewrite: driftengine.RebaseDirsOntoRoot}}, Spec: driftengine.ConfigSpec},
+ 		{Name: "env", Template: envconfig.ConfigTemplate, PerNameMaps: envconfig.ConfigPerNameMaps(), HubWide: true, CheckLoad: checkLoad(envconfig.LoadConfig), Spec: envconfig.ConfigSpec},
+ 		{Name: "fabric", Template: fabricengine.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(fabricengine.LoadConfig), Spec: fabricengine.ConfigSpec},
+ 		{Name: "gate", Template: gateslot.ConfigTemplate, OpenMaps: gateslot.ConfigOpenMaps(), PerNameMaps: gateslot.ConfigPerNameMaps(), HubWide: true, Migrate: gateslot.MigrateConfig, MigrateHubBase: gateslot.SeedAdoptGate, CheckLoad: checkLoad(gateslot.LoadConfig), CheckDirs: gateslot.CheckDirs, Spec: gateslot.ConfigSpec},
+diff --git a/internal/configreg/doc.go b/internal/configreg/doc.go
+index bc232385..b4922a14 100644
+--- a/internal/configreg/doc.go
++++ b/internal/configreg/doc.go
+@@ -15,4 +15,9 @@
+ // KeyMoves declares keys that moved from one module's file to another's; a reconcile relocates the value and drops the source key.
+ // KeyCopies declares keys copied instead, under the same or another name, from a source module's hub file into a target module's hub file; the source keeps its key.
+ // A copy places the value only when the source file sets the key and the target file does not, so a second reconcile changes nothing, and it reads no worktree layer, local override or run setting.
++//
++// # Reinterpretations
++//
++// A binary that changes what a value in a module's hub base file means declares a Reinterpretation on that module: an ID and a rewrite that keeps what the hub meant, or flags a value it cannot settle with a way forward.
++// The hub-wide reconcile applies each once per hub behind a board marker carrying its ID, and tells the hub's orch what it rewrote or flagged.
+ package configreg
+diff --git a/internal/driftcli/capture_integration_test.go b/internal/driftcli/capture_integration_test.go
+index 388d3405..8e3aef02 100644
+--- a/internal/driftcli/capture_integration_test.go
++++ b/internal/driftcli/capture_integration_test.go
+@@ -106,6 +106,17 @@ func touch(t *testing.T, path string) {
+ 	}
+ }
+ 
++// lastLogEnvelope decodes the last non-empty line of the log at path as an envelope, and reports false while the log holds none.
++func lastLogEnvelope(path string) (envelope.Envelope, bool) {
++	data, err := os.ReadFile(path)
++	if err != nil {
++		return envelope.Envelope{}, false
++	}
++	lines := strings.Split(strings.TrimSpace(string(data)), "\n")
++	env, err := envelope.Parse(lines[len(lines)-1])
++	return env, err == nil
++}
++
+ // TestCapture_OutlivesCaller covers a capture that fails, one that passes after its caller exited, one ended by the owned-process end of a teardown, and the compare's refusals.
+ func TestCapture_OutlivesCaller(t *testing.T) {
+ 	tiergate.Require(t, 1)
+@@ -149,12 +160,37 @@ func TestCapture_OutlivesCaller(t *testing.T) {
+ 	writeDrift("")
+ 	writeStatus("Drift-Await", shedengine.StateBlocked)
+ 
+-	t.Run("a capture with the marker absent records failed", func(t *testing.T) {
++	t.Run("a capture with the marker absent records failed and its child logs the reason", func(t *testing.T) {
++		// The command exits non-zero at once, so whether the record already reads failed when the verb reads it is a race:
++		// the verb either starts the child and succeeds, or refuses with the capture's reason.
+ 		env := lymRun(t, bin, pair, "capture")
+ 		if !env.OK {
+-			t.Fatalf("lym drift capture: %s", env.Error)
++			for _, want := range []string{"drift: the baseline capture ended failed (exit 1; it ran in ", "printed nothing", "log ", "lym drift capture followed by lym loom resume"} {
++				if !strings.Contains(env.Error, want) {
++					t.Errorf("lym drift capture refused with %q; want it to name %q", env.Error, want)
++				}
++			}
+ 		}
+ 		waitFor(t, "the capture record to read failed", func() bool { return captureState(statusBody(t, bin, pair)) == driftengine.CaptureFailed })
++
++		rec, found, err := driftengine.ReadCapture(paths)
++		if err != nil || !found || !strings.HasPrefix(rec.Reason, "exit 1; it ran in ") || !strings.Contains(rec.Reason, "printed nothing") {
++			t.Fatalf("ReadCapture() = %+v, %v, %v; want a failed record whose reason names exit 1, the directory and that nothing was printed", rec, found, err)
++		}
++		logs, err := filepath.Glob(filepath.Join(paths.LogsDir, "capture-child-*.log"))
++		if err != nil || len(logs) != 1 {
++			t.Fatalf("capture child logs = %v, %v; want exactly one", logs, err)
++		}
++		var childEnv envelope.Envelope
++		waitFor(t, "the capture child to log its error envelope", func() bool {
++			var ok bool
++			childEnv, ok = lastLogEnvelope(logs[0])
++			return ok && !childEnv.OK
++		})
++		wantError := "drift: the baseline capture ended failed (" + rec.Reason + ")"
++		if !strings.HasPrefix(childEnv.Error, wantError) {
++			t.Errorf("capture child envelope error = %q; want it to open %q", childEnv.Error, wantError)
++		}
+ 	})
+ 
+ 	t.Run("a capture returns while it holds the lock and passes after the caller exited", func(t *testing.T) {
+diff --git a/internal/driftcli/cli.go b/internal/driftcli/cli.go
+index 774529a1..e81ed2db 100644
+--- a/internal/driftcli/cli.go
++++ b/internal/driftcli/cli.go
+@@ -263,7 +263,11 @@ func captureCmd() *cobra.Command {
+ Drift-Baseline, or at a Drift-Await halt, with HEAD on the branch point and a
+ clean tracked tree, starts the capture in a detached process that outlives this
+ call, and returns once its record reads running; lym drift status shows it.
+-Another capture holding the lock is refused.
++Another capture holding the lock is refused. A capture that has already ended
++failed when the call returns, such as one that exited 0 with no baseline file,
++fails the call with its reason: the directory the command ran in, its last
++output and the ways forward. One that fails later records the same reason,
++which lym drift status shows and the Drift-Await halt carries.
+ 
+ --side is the Drift-Verify agent's form: it captures a spare profile into a
+ numbered directory under the side directory, spends one run of the session's
+@@ -342,7 +346,14 @@ func startMainCapture(w *worktree) (any, error) {
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	return map[string]any{"pid": pid}, nil
++	rec, _, err := driftengine.ReadCapture(w.paths)
++	if err != nil {
++		return nil, err
++	}
++	if rec.Pid == pid && rec.State == driftengine.CaptureFailed {
++		return nil, driftengine.FailedCaptureError(rec)
++	}
++	return map[string]any{"pid": pid, "state": rec.State}, nil
+ }
+ 
+ // captureChildCmd returns the hidden `drift capture-child` verb, the detached process `drift capture` spawns.
+@@ -355,7 +366,9 @@ func captureChildCmd() *cobra.Command {
+ 		Long: `capture-child is the body of the process "lym drift capture" spawns detached.
+ It holds the capture's named job, runs the main capture under the capture lock,
+ re-checking the precondition under the lock, and releases the job as its last
+-act. It writes nothing to its log once the capture has returned.`,
++act. A capture that ends failed is written to its log as an error envelope
++with the capture's reason, under the lock, and the process exits non-zero.
++It writes nothing to its log once the capture has returned.`,
+ 		Args: cobra.NoArgs,
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+@@ -415,6 +428,11 @@ func runCaptureChild(cmd *cobra.Command) {
+ 		return head, nil
+ 	}
+ 	request.LockRetry = captureLockRetry
++	request.OnEnd = func(rec driftengine.CaptureRecord) {
++		if rec.State != driftengine.CapturePassed {
++			fail(driftengine.FailedCaptureError(rec))
++		}
++	}
+ 	_, runErr := driftengine.RunCapture(ctx, request)
+ 	if runErr != nil {
+ 		clihelp.SetExit(ctx, 1)
+diff --git a/internal/driftcli/doc.go b/internal/driftcli/doc.go
+index ce047a51..346c54c7 100644
+--- a/internal/driftcli/doc.go
++++ b/internal/driftcli/doc.go
+@@ -15,8 +15,10 @@
+ //
+ // # Capture
+ //
+-// `capture` checks the main capture's precondition, then starts `<this binary> drift capture-child` detached in the worktree's anchored directory with breakaway, falling back to a plain detached start where Windows refuses breakaway, and returns once the child's capture record reads running.
++// `capture` checks the main capture's precondition, then starts `<this binary> drift capture-child` detached in the worktree's anchored directory with breakaway, falling back to a plain detached start where Windows refuses breakaway, and returns once the child's capture record carries the child's pid.
++// A record that already reads failed then fails the call with driftengine.FailedCaptureError, so a capture that ended before the call returned, an exit 0 with no baseline file among them, exits non-zero with its stated cause; otherwise the result carries the pid and the record's state.
+ // The child holds the capture's named job, runs the capture under the capture lock, re-checks the precondition under that lock and releases the job as its last act.
++// A capture that ends failed is written to the child's log as an error envelope carrying driftengine.FailedCaptureError, through RunCapture's OnEnd under the capture lock, and the child exits non-zero.
+ // A child whose cwd is outside a git repository or is not the anchored directory marks its error envelope with driftengine.LastingFaultKey, since a fresh start runs in the same directory and fails the same way.
+ // It writes nothing to its log once the capture has returned, because the Drift-Await row may commit the log once the lock is free.
+ // Under go test the start returns an error and spawns nothing.
+diff --git a/internal/driftengine/capture.go b/internal/driftengine/capture.go
+index 5725df03..66c36b14 100644
+--- a/internal/driftengine/capture.go
++++ b/internal/driftengine/capture.go
+@@ -47,6 +47,8 @@ type CaptureRequest struct {
+ 	Now func() time.Time
+ 	// LockRetry bounds how long a main capture retries a held capture lock before it refuses.
+ 	LockRetry time.Duration
++	// OnEnd, when non-nil, is called with the final record of a main capture whose command ran, once the record is written and while the capture lock is still held.
++	OnEnd func(rec CaptureRecord)
+ }
+ 
+ // lockHeldRefusal is the refusal of a capture or a spawn that finds the capture lock held.
+@@ -56,8 +58,10 @@ func lockHeldRefusal(lockPath string) error {
+ 
+ // RunCapture runs the main capture under the capture lock and returns its final record.
+ // A refusal of the lock or of Check is returned with no record written.
+-// A command that fails, times out or writes no file under the baseline directory is a record in state failed with its reason and no error.
++// A command that fails, times out or writes no file under the baseline directory is a record in state failed with no error,
++// and its reason names the directory the command ran in and the command's last output lines, or that it printed nothing.
+ // An existing non-empty baseline directory is first moved to the first free numbered backup beside it, so no baseline is deleted or overwritten.
++// Once the command ran, the final record is handed to OnEnd under the capture lock.
+ func RunCapture(ctx context.Context, req CaptureRequest) (CaptureRecord, error) {
+ 	p := req.Paths
+ 	if err := os.MkdirAll(filepath.Dir(p.CaptureLock), 0o755); err != nil {
+@@ -118,11 +122,12 @@ func RunCapture(ctx context.Context, req CaptureRequest) (CaptureRecord, error)
+ 
+ 	rec.ExitCode = outcome.ExitCode
+ 	rec.EndedAt = stamp(req.Now())
++	report := func() string { return commandReport(outcome.Dir, rec.Log) }
+ 	switch {
+ 	case outcome.TimedOut:
+-		rec.State, rec.Reason = CaptureFailed, "timed out after "+timeoutMinutes(req.Timeout)+"m"
++		rec.State, rec.Reason = CaptureFailed, "timed out after "+timeoutMinutes(req.Timeout)+"m"+report()
+ 	case outcome.ExitCode != 0:
+-		rec.State, rec.Reason = CaptureFailed, "exit "+strconv.Itoa(outcome.ExitCode)
++		rec.State, rec.Reason = CaptureFailed, "exit "+strconv.Itoa(outcome.ExitCode)+report()
+ 	default:
+ 		wrote, err := holdsFile(p.BaselineDir)
+ 		if err != nil {
+@@ -131,10 +136,21 @@ func RunCapture(ctx context.Context, req CaptureRequest) (CaptureRecord, error)
+ 		if wrote {
+ 			rec.State = CapturePassed
+ 		} else {
+-			rec.State, rec.Reason, rec.WroteNoFile = CaptureFailed, noFileReason(p.BaselineDir, req.Skip), true
++			rec.State, rec.Reason, rec.WroteNoFile = CaptureFailed, noFileReason(p.BaselineDir, req.Skip)+report(), true
+ 		}
+ 	}
+-	return rec, WriteCapture(p, rec)
++	if err := WriteCapture(p, rec); err != nil {
++		return rec, err
++	}
++	if req.OnEnd != nil {
++		req.OnEnd(rec)
++	}
++	return rec, nil
++}
++
++// FailedCaptureError is the error of a main capture whose record ended failed: the record's reason and log, and the ways forward a Drift-Await halt over the record names while HEAD is on the branch point, where every main capture runs.
++func FailedCaptureError(rec CaptureRecord) error {
++	return fmt.Errorf("drift: the baseline capture ended %s (%s)%s; way forward: %s", rec.State, rec.Reason, logClause(rec.Log), awaitWaysForward(true, emptyUnderSkips(rec)))
+ }
+ 
+ // noFileReason is the reason of a capture that exited 0 and wrote no file under baselineDir.
+@@ -230,6 +246,8 @@ type SideResult struct {
+ 	ExitCode int
+ 	// TimedOut is true when the timeout killed the command.
+ 	TimedOut bool
++	// CommandDir is the absolute directory the command ran in.
++	CommandDir string
+ }
+ 
+ // RunSideCapture runs the capture command into the next free numbered directory under the side directory.
+@@ -244,7 +262,7 @@ type AcceptedCapture struct {
+ 	Passed bool
+ 	// Log is the command's log file.
+ 	Log string
+-	// Reason says why the capture did not pass and names its log; empty when it passed.
++	// Reason says why the capture did not pass, where its command ran and what it printed last, and names its log; empty when it passed.
+ 	Reason string
+ }
+ 
+@@ -261,18 +279,19 @@ func RunAcceptedCapture(ctx context.Context, req CaptureRequest) (AcceptedCaptur
+ 	if err != nil {
+ 		return result, err
+ 	}
++	report := func() string { return commandReport(side.CommandDir, side.Log) + "; log " + side.Log }
+ 	switch {
+ 	case side.TimedOut:
+-		result.Reason = "timed out after " + timeoutMinutes(req.Timeout) + "m; log " + side.Log
++		result.Reason = "timed out after " + timeoutMinutes(req.Timeout) + "m" + report()
+ 	case side.ExitCode != 0:
+-		result.Reason = "exit " + strconv.Itoa(side.ExitCode) + "; log " + side.Log
++		result.Reason = "exit " + strconv.Itoa(side.ExitCode) + report()
+ 	default:
+ 		wrote, err := holdsFile(dir)
+ 		if err != nil {
+ 			return result, err
+ 		}
+ 		if !wrote {
+-			result.Reason = "exit 0 but wrote no file to " + dir + "; log " + side.Log
++			result.Reason = "exit 0 but wrote no file to " + dir + report()
+ 			break
+ 		}
+ 		result.Passed = true
+@@ -311,6 +330,6 @@ func captureInto(ctx context.Context, req CaptureRequest, dir, site, logName str
+ 		return result, err
+ 	}
+ 	outcome.release()
+-	result.ExitCode, result.TimedOut = outcome.ExitCode, outcome.TimedOut
++	result.ExitCode, result.TimedOut, result.CommandDir = outcome.ExitCode, outcome.TimedOut, outcome.Dir
+ 	return result, nil
+ }
+diff --git a/internal/driftengine/capture_test.go b/internal/driftengine/capture_test.go
+index 95f58860..b99f32db 100644
+--- a/internal/driftengine/capture_test.go
++++ b/internal/driftengine/capture_test.go
+@@ -86,6 +86,60 @@ func slotFree(t *testing.T, pool *gateslot.Pool) bool {
+ 	return len(holders) == 0
+ }
+ 
++// TestFailedCaptureError covers the reason and log the error carries and the ways forward by whether the capture wrote no file under skipped tests.
++func TestFailedCaptureError(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	tests := []struct {
++		name    string
++		rec     CaptureRecord
++		want    []string
++		wantNot []string
++	}{
++		{
++			name:    "a plain failure names capture followed by resume",
++			rec:     CaptureRecord{State: CaptureFailed, Reason: "exit 3; it ran in /w and printed nothing", Log: "/logs/capture.log"},
++			want:    []string{"lym drift capture followed by lym loom resume"},
++			wantNot: []string{"lym drift scope"},
++		},
++		{
++			name:    "no file under an empty skip list is a plain failure",
++			rec:     CaptureRecord{State: CaptureFailed, Reason: "exit 3; it ran in /w and printed nothing", Log: "/logs/capture.log", WroteNoFile: true},
++			want:    []string{"lym drift capture followed by lym loom resume"},
++			wantNot: []string{"lym drift scope"},
++		},
++		{
++			name: "no file under skipped tests names the scope changes",
++			rec:  CaptureRecord{State: CaptureFailed, Reason: "exit 3; it ran in /w and printed nothing", Log: "/logs/capture.log", WroteNoFile: true, Skip: []string{"TestA"}},
++			want: []string{"lym drift scope --scope full", "lym drift scope --scope off"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			err := FailedCaptureError(tt.rec)
++			if err == nil {
++				t.Fatalf("FailedCaptureError() = nil; want an error")
++			}
++			wantOpen := "drift: the baseline capture ended failed (" + tt.rec.Reason + "), log /logs/capture.log; way forward: "
++			if !strings.HasPrefix(err.Error(), wantOpen) {
++				t.Errorf("FailedCaptureError() = %q; want it to open %q", err, wantOpen)
++			}
++			for _, want := range tt.want {
++				if !strings.Contains(err.Error(), want) {
++					t.Errorf("FailedCaptureError() = %q; want it to name %q", err, want)
++				}
++			}
++			for _, unwanted := range tt.wantNot {
++				if strings.Contains(err.Error(), unwanted) {
++					t.Errorf("FailedCaptureError() = %q; want no %q", err, unwanted)
++				}
++			}
++		})
++	}
++}
++
+ // TestRunCapture covers the command's outcome rows, the skip file, the timeout tree kill, the kept backup, the capture lock, the slot wait, Check's refusal and the side capture.
+ func TestRunCapture(t *testing.T) {
+ 	tiergate.Require(t, 1)
+@@ -99,14 +153,22 @@ func TestRunCapture(t *testing.T) {
+ 		wantReason string
+ 		wantFile   string
+ 		wantText   string
++		// timeout, when set, replaces the fixture's timeout.
++		timeout time.Duration
+ 		// wantNamed lists text the reason holds past its opening.
+-		wantNamed       []string
++		wantNamed []string
++		// wantEnds is the exact end of the reason; "{dir}" stands for the directory the command ran in.
++		wantEnds        string
+ 		wantWroteNoFile bool
+ 	}{
+ 		{name: "a command writing a file passes", command: "echo profile > {baseline_dir}/p.json", wantState: CapturePassed, wantFile: "p.json", wantText: "profile\n"},
+ 		{name: "the command sees the skip file with one test per line", command: "cat {skip_file} > {baseline_dir}/seen", skip: []string{"TestA", "TestB"}, wantState: CapturePassed, wantFile: "seen", wantText: "TestA\nTestB\n"},
+ 		{name: "the command sees an empty skip file when nothing is skipped", command: "cat {skip_file} > {baseline_dir}/seen", wantState: CapturePassed, wantFile: "seen", wantText: ""},
+-		{name: "exit 0 with no file fails", command: "true", wantState: CaptureFailed, wantReason: "exit 0 but wrote no file to ", wantWroteNoFile: true},
++		{
++			name:    "exit 0 with no file and no output fails and says the command printed nothing",
++			command: "true", wantState: CaptureFailed, wantReason: "exit 0 but wrote no file to ", wantWroteNoFile: true,
++			wantEnds: "; it ran in {dir} and printed nothing",
++		},
+ 		{
+ 			name:    "exit 0 with no file under skipped tests names the scope, the count and the skips",
+ 			command: "true", skip: []string{"TestA", "TestB"}, wantState: CaptureFailed, wantReason: "exit 0 but wrote no file to ", wantWroteNoFile: true,
+@@ -123,12 +185,40 @@ func TestRunCapture(t *testing.T) {
+ 			wantNamed: []string{"scope partial skipped 1 test,"},
+ 		},
+ 		{name: "a non-zero exit fails", command: "exit 3", wantState: CaptureFailed, wantReason: "exit 3"},
++		{
++			name:    "a non-zero exit after several lines quotes the directory and only the last three non-empty lines",
++			command: "echo one; echo two; echo; echo three; echo four; exit 5", wantState: CaptureFailed, wantReason: "exit 5",
++			wantEnds: "; it ran in {dir} and its last output was: two / three / four",
++		},
++		{
++			name:    "an over-long last line is cut to the output bound with an ellipsis",
++			command: "printf '%0500d\\n' 0; exit 2", wantState: CaptureFailed, wantReason: "exit 2",
++			wantEnds: "and its last output was: …" + strings.Repeat("0", outputTailMaxRunes-1),
++		},
++		{
++			name:    "a short last line after two long lines is quoted whole",
++			command: "printf '%0500d\\n' 0; printf '%0500d\\n' 0; echo cause; exit 2", wantState: CaptureFailed, wantReason: "exit 2",
++			wantEnds: "and its last output was: …" + strings.Repeat("0", outputTailMaxRunes-1-len(" / cause")) + " / cause",
++		},
++		{
++			name:    "a log past the read window quotes the lines inside it and drops the line the window begins in",
++			command: "head -c 100000 /dev/zero | tr '\\0' x; echo; echo cause; exit 2", wantState: CaptureFailed, wantReason: "exit 2",
++			wantEnds: "and its last output was: cause",
++		},
++		{
++			name:    "a timeout fails and says the directory and that the command printed nothing",
++			command: "sleep 60", timeout: 300 * time.Millisecond, wantState: CaptureFailed, wantReason: "timed out after ",
++			wantEnds: "; it ran in {dir} and printed nothing",
++		},
+ 	}
+ 	for _, tt := range outcomes {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			f := newCaptureFixture(t, tt.command)
+ 			f.req.Skip = tt.skip
++			if tt.timeout > 0 {
++				f.req.Timeout = tt.timeout
++			}
+ 
+ 			rec, err := RunCapture(context.Background(), f.req)
+ 			if err != nil {
+@@ -142,6 +232,9 @@ func TestRunCapture(t *testing.T) {
+ 					t.Errorf("RunCapture() reason = %q; want it to name %q", rec.Reason, want)
+ 				}
+ 			}
++			if wantEnds := strings.ReplaceAll(tt.wantEnds, "{dir}", f.req.WorktreeDir); !strings.HasSuffix(rec.Reason, wantEnds) {
++				t.Errorf("RunCapture() reason = %q; want it to end %q", rec.Reason, wantEnds)
++			}
+ 			if len(tt.wantNamed) == 0 && strings.Contains(rec.Reason, "skipped") {
+ 				t.Errorf("RunCapture() reason = %q; want no skips named when none were skipped", rec.Reason)
+ 			}
+@@ -198,6 +291,9 @@ func TestRunCapture(t *testing.T) {
+ 					t.Fatalf("MkdirAll() = %v; want nil", err)
+ 				}
+ 				f.req.Step.Dir = tt.dir
++				if tt.ranIn == "" {
++					f.req.OnEnd = func(CaptureRecord) { t.Errorf("OnEnd was called for a capture whose command never ran") }
++				}
+ 
+ 				rec, err := RunCapture(context.Background(), f.req)
+ 				if tt.ranIn == "" {
+@@ -254,6 +350,18 @@ func TestRunCapture(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a log the command removed is reported unreadable beside the directory", func(t *testing.T) {
++		t.Parallel()
++		f := newCaptureFixture(t, "true")
++		f.req.Step.Command = "rm -f " + f.req.Paths.LogsDir + "/capture-*.log; exit 4"
++
++		rec, err := RunCapture(context.Background(), f.req)
++		wantEnds := "exit 4; it ran in " + f.req.WorktreeDir + " and its log could not be read: "
++		if err != nil || rec.State != CaptureFailed || !strings.Contains(rec.Reason, wantEnds) {
++			t.Errorf("RunCapture() = %+v, %v; want a failed record whose reason holds %q", rec, err, wantEnds)
++		}
++	})
++
+ 	t.Run("an existing non-empty baseline is moved to a numbered backup and kept", func(t *testing.T) {
+ 		t.Parallel()
+ 		f := newCaptureFixture(t, "echo new > {baseline_dir}/p.json")
+@@ -345,6 +453,35 @@ func TestRunCapture(t *testing.T) {
+ 		if _, found, _ := ReadCapture(f.req.Paths); found {
+ 			t.Errorf("a capture record was written for a refused capture")
+ 		}
++		f.req.OnEnd = func(CaptureRecord) { t.Errorf("OnEnd was called for a refused capture") }
++		if _, err := RunCapture(context.Background(), f.req); err != refusal {
++			t.Errorf("RunCapture() with OnEnd = %v; want Check's error untouched", err)
++		}
++	})
++
++	t.Run("OnEnd is called once with the final record while the capture lock is held", func(t *testing.T) {
++		t.Parallel()
++		f := newCaptureFixture(t, "exit 3")
++		var calls []CaptureRecord
++		var heldInside bool
++		f.req.OnEnd = func(rec CaptureRecord) {
++			calls = append(calls, rec)
++			heldInside, _ = ProbeLock(f.req.Paths.CaptureLock)
++		}
++
++		rec, err := RunCapture(context.Background(), f.req)
++		if err != nil {
++			t.Fatalf("RunCapture() = _, %v; want nil", err)
++		}
++		if len(calls) != 1 || !reflect.DeepEqual(calls[0], rec) || calls[0].State != CaptureFailed || calls[0].Reason != rec.Reason {
++			t.Errorf("OnEnd calls = %+v; want one call with the returned failed record %+v", calls, rec)
++		}
++		if !heldInside {
++			t.Errorf("ProbeLock(CaptureLock) inside OnEnd = false; want held")
++		}
++		if held, _ := ProbeLock(f.req.Paths.CaptureLock); held {
++			t.Errorf("the capture lock is still held after the capture")
++		}
+ 	})
+ 
+ 	acceptedRows := []struct {
+@@ -359,11 +496,17 @@ func TestRunCapture(t *testing.T) {
+ 		wantFile     string
+ 		wantReasonIn []string
+ 	}{
+-		{name: "an accepted capture past the timeout does not pass and names the timeout and the log", command: "sleep 60", timeout: 300 * time.Millisecond, wantReasonIn: []string{"timed out after "}},
++		{name: "an accepted capture past the timeout does not pass and names the timeout and the log", command: "sleep 60", timeout: 300 * time.Millisecond, wantReasonIn: []string{"timed out after ", "; it ran in {dir} and printed nothing; log "}},
+ 		{name: "an accepted capture writing a file passes and leaves its output under the accepted directory", command: "echo profile > {baseline_dir}/p.json", wantPassed: true, wantFile: "p.json"},
+ 		{name: "an accepted capture empties a file left in the accepted directory first", command: "echo profile > {baseline_dir}/p.json", stale: true, wantPassed: true, wantFile: "p.json"},
+-		{name: "an accepted capture exiting non-zero does not pass and names the exit and the log", command: "exit 3", wantReasonIn: []string{"exit 3; log "}},
+-		{name: "an accepted capture exiting 0 with no file does not pass and names the missing file", command: "true", wantReasonIn: []string{"wrote no file", "; log "}},
++		{
++			name:    "an accepted capture exiting non-zero does not pass and names the exit, the directory, the last output and the log",
++			command: "echo boom; exit 3", wantReasonIn: []string{"exit 3; it ran in {dir} and its last output was: boom; log "},
++		},
++		{
++			name:    "an accepted capture exiting 0 with no file does not pass and names the missing file, the directory and the log",
++			command: "true", wantReasonIn: []string{"wrote no file", "; it ran in {dir} and printed nothing; log "},
++		},
+ 		{name: "a file left in the accepted directory does not make an empty capture pass", command: "true", stale: true, wantReasonIn: []string{"wrote no file"}},
+ 	}
+ 	for _, tt := range acceptedRows {
+@@ -394,6 +537,7 @@ func TestRunCapture(t *testing.T) {
+ 				t.Errorf("RunAcceptedCapture() reason = %q; want none for a pass", got.Reason)
+ 			}
+ 			for _, want := range tt.wantReasonIn {
++				want = strings.ReplaceAll(want, "{dir}", f.req.WorktreeDir)
+ 				if !strings.Contains(got.Reason, want) {
+ 					t.Errorf("RunAcceptedCapture() reason = %q; want it to name %q", got.Reason, want)
+ 				}
+diff --git a/internal/driftengine/compare.go b/internal/driftengine/compare.go
+index e02c48e0..87df761f 100644
+--- a/internal/driftengine/compare.go
++++ b/internal/driftengine/compare.go
+@@ -52,7 +52,7 @@ type CompareResult struct {
+ 	Log string
+ 	// Passed is true when the command exited 0 within its timeout.
+ 	Passed bool
+-	// Reason says why a compare did not pass and names its log; empty when it passed.
++	// Reason says why a compare did not pass, where its command ran and what it printed last, and names its log; empty when it passed.
+ 	Reason string
+ }
+ 
+@@ -106,9 +106,9 @@ func RunCompare(ctx context.Context, req CompareRequest) (CompareResult, error)
+ 	result.ExitCode = outcome.ExitCode
+ 	switch {
+ 	case outcome.TimedOut:
+-		result.Reason = "timed out after " + timeoutMinutes(req.Timeout) + "m; log " + result.Log
++		result.Reason = "timed out after " + timeoutMinutes(req.Timeout) + "m" + commandReport(outcome.Dir, result.Log) + "; log " + result.Log
+ 	case outcome.ExitCode != 0:
+-		result.Reason = "exit " + strconv.Itoa(outcome.ExitCode) + "; log " + result.Log
++		result.Reason = "exit " + strconv.Itoa(outcome.ExitCode) + commandReport(outcome.Dir, result.Log) + "; log " + result.Log
+ 	default:
+ 		result.Passed = true
+ 	}
+diff --git a/internal/driftengine/compare_test.go b/internal/driftengine/compare_test.go
+index 7954b037..7303733c 100644
+--- a/internal/driftengine/compare_test.go
++++ b/internal/driftengine/compare_test.go
+@@ -51,12 +51,13 @@ func TestRunCompare(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("a non-zero exit fails and names the log", func(t *testing.T) {
++	t.Run("a non-zero exit fails and names the directory, the last output and the log", func(t *testing.T) {
+ 		t.Parallel()
+ 		req, _ := newCompareFixture(t, "echo drifted; exit 4")
+ 		got, err := RunCompare(context.Background(), req)
+-		if err != nil || got.Passed || got.ExitCode != 4 || !strings.Contains(got.Reason, "exit 4") || !strings.Contains(got.Reason, got.Log) {
+-			t.Fatalf("RunCompare() = %+v, %v; want a failure with exit 4 naming its log", got, err)
++		wantReason := "exit 4; it ran in " + req.AnchorDir + " and its last output was: drifted; log " + got.Log
++		if err != nil || got.Passed || got.ExitCode != 4 || got.Reason != wantReason {
++			t.Fatalf("RunCompare() = %+v, %v; want a failure with reason %q", got, err, wantReason)
+ 		}
+ 		if text := readFile(t, got.Log); text != "drifted\n" {
+ 			t.Errorf("log = %q; want the command's output", text)
+@@ -170,6 +171,9 @@ func TestRunCompare(t *testing.T) {
+ 		if err != nil || got.Passed || !strings.HasPrefix(got.Reason, "timed out after ") {
+ 			t.Errorf("RunCompare() = %+v, %v; want a failure naming the timeout", got, err)
+ 		}
++		if want := "; it ran in " + req.WorktreeDir + " and printed nothing; log " + got.Log; !strings.HasSuffix(got.Reason, want) {
++			t.Errorf("RunCompare() reason = %q; want it to end %q", got.Reason, want)
++		}
+ 		if !slotFree(t, pool) {
+ 			t.Errorf("the slot is still held after the timeout")
+ 		}
+diff --git a/internal/driftengine/dirbase.go b/internal/driftengine/dirbase.go
+new file mode 100644
+index 00000000..a75483b5
+--- /dev/null
++++ b/internal/driftengine/dirbase.go
+@@ -0,0 +1,103 @@
++// dirbase.go — the rewrite that carries a hub's drift.yaml across the move of a relative command dir's base from the worktree's anchored directory to its root.
++
++package driftengine
++
++import (
++	"bytes"
++	"fmt"
++	"os"
++	"path/filepath"
++
++	"gopkg.in/yaml.v3"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++)
++
++// DirBaseReinterpretation names the move of a relative capture or compare dir's base from the worktree's anchored directory to its root.
++const DirBaseReinterpretation = "drift-dir-root-base"
++
++// RebaseDirsOntoRoot rewrites the relative capture and compare dirs of a hub drift.yaml written while a relative dir was joined onto the anchored directory, so each names, joined onto the worktree root, the directory it named before.
++// worktreeRoot and anchorDir are the prime's, and a hub anchored at its root changes nothing.
++// A dir naming an existing directory under the anchored directory is rewritten, even when it names one under the root too, since the file predates the move;
++// a dir naming one under the root alone is kept, since it was already written for the root;
++// a dir naming neither is flagged with the write that fixes it, and an absolute or unset dir is kept.
++// It returns the document, rewritten only when a dir changed, one line per rewritten dir and one per flagged dir.
++// A document that does not parse returns an error marked configengine.ErrInvalid.
++func RebaseDirsOntoRoot(existing []byte, worktreeRoot, anchorDir string) (rewritten []byte, rewrote, flagged []string, err error) {
++	if filepath.Clean(worktreeRoot) == filepath.Clean(anchorDir) {
++		return existing, nil, nil, nil
++	}
++	var document yaml.Node
++	if err := yaml.Unmarshal(existing, &document); err != nil {
++		return nil, nil, nil, configengine.MarkInvalid(fmt.Errorf("rebase drift dirs: unmarshal yaml: %w", err))
++	}
++	if document.Kind != yaml.DocumentNode || len(document.Content) == 0 || document.Content[0].Kind != yaml.MappingNode {
++		return existing, nil, nil, nil
++	}
++	for _, step := range []string{stepCapture, stepCompare} {
++		dir := scalarAt(document.Content[0], step, "dir")
++		if dir == nil || dir.Tag == "!!null" || dir.Value == "" || filepath.IsAbs(dir.Value) {
++			continue
++		}
++		key := step + ".dir"
++		underAnchor := filepath.Join(anchorDir, dir.Value)
++		switch {
++		case isDir(underAnchor):
++			moved, err := filepath.Rel(worktreeRoot, underAnchor)
++			if err != nil {
++				return nil, nil, nil, fmt.Errorf("rebase drift dirs: %s: %w", key, err)
++			}
++			moved = filepath.ToSlash(moved)
++			rewrote = append(rewrote, fmt.Sprintf("%s %q rewritten to %q, since a relative dir now joins the worktree root, not the anchored directory; lym config drift --set %s=<dir> from the prime sets another", key, dir.Value, moved, key))
++			dir.Value = moved
++		case isDir(filepath.Join(worktreeRoot, dir.Value)):
++		default:
++			flagged = append(flagged, fmt.Sprintf("%s %q names no directory under the worktree root %s or the anchored directory %s; way forward: lym config drift --set %s=<dir> from the prime, with <dir> relative to the worktree root", key, dir.Value, worktreeRoot, anchorDir, key))
++		}
++	}
++	if len(rewrote) == 0 {
++		return existing, nil, flagged, nil
++	}
++
++	var out bytes.Buffer
++	encoder := yaml.NewEncoder(&out)
++	encoder.SetIndent(2)
++	if err := encoder.Encode(&document); err != nil {
++		return nil, nil, nil, configengine.MarkInvalid(fmt.Errorf("rebase drift dirs: encode yaml: %w", err))
++	}
++	if err := encoder.Close(); err != nil {
++		return nil, nil, nil, configengine.MarkInvalid(fmt.Errorf("rebase drift dirs: encode yaml: %w", err))
++	}
++	return out.Bytes(), rewrote, flagged, nil
++}
++
++// scalarAt returns the scalar node at the key path under mapping, or nil when a key is absent, a node on the way is no mapping or the leaf is no scalar.
++func scalarAt(mapping *yaml.Node, keys ...string) *yaml.Node {
++	node := mapping
++	for _, key := range keys {
++		if node.Kind != yaml.MappingNode {
++			return nil
++		}
++		var next *yaml.Node
++		for i := 0; i+1 < len(node.Content); i += 2 {
++			if node.Content[i].Value == key {
++				next = node.Content[i+1]
++				break
++			}
++		}
++		if next == nil {
++			return nil
++		}
++		node = next
++	}
++	if node.Kind != yaml.ScalarNode {
++		return nil
++	}
++	return node
++}
++
++// isDir reports whether path names an existing directory.
++func isDir(path string) bool {
++	info, err := os.Stat(path)
++	return err == nil && info.IsDir()
++}
+diff --git a/internal/driftengine/dirbase_test.go b/internal/driftengine/dirbase_test.go
+new file mode 100644
+index 00000000..81d639d6
+--- /dev/null
++++ b/internal/driftengine/dirbase_test.go
+@@ -0,0 +1,235 @@
++// dirbase_test.go — tier 0 unit tests for driftengine.RebaseDirsOntoRoot.
++//
++// Seeds directories under t.TempDir() and rewrites in-memory drift.yaml bytes; no hub, no git spawn.
++
++package driftengine
++
++import (
++	"errors"
++	"os"
++	"path/filepath"
++	"reflect"
++	"strings"
++	"testing"
++
++	"gopkg.in/yaml.v3"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// rebasedStep is the slice of a drift step the rebase tests decode.
++type rebasedStep struct {
++	Command    string            `yaml:"command"`
++	Dir        string            `yaml:"dir"`
++	TimeoutMin int               `yaml:"timeout_min"`
++	Env        map[string]string `yaml:"env"`
++}
++
++// rebasedDoc is the slice of a drift.yaml the rebase tests decode.
++type rebasedDoc struct {
++	Enabled bool        `yaml:"enabled"`
++	Capture rebasedStep `yaml:"capture"`
++	Compare rebasedStep `yaml:"compare"`
++}
++
++// TestRebaseDirsOntoRoot pins that a relative capture or compare dir moves from the anchored directory to the worktree root:
++// a dir naming a directory under the anchor is rewritten (even when the root holds one too).
++// A dir under the root alone is kept.
++// A dir naming neither is flagged with its way forward.
++// An absolute, unset, null or undeclared dir is kept, and other keys survive.
++// An unparseable document is an ErrInvalid error.
++// A second run over the result changes nothing.
++func TestRebaseDirsOntoRoot(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const anchorName = "dotnet"
++	tests := []struct {
++		name string
++		// sameDir anchors the worktree at its root.
++		sameDir bool
++		// dirs are directories created under the root before the run.
++		dirs []string
++		// yaml is the input; ABS stands for the absolute root path.
++		yaml string
++		// wantCapture and wantCompare are the dirs the result decodes to.
++		wantCapture, wantCompare string
++		// wantSame is whether the bytes come back unchanged.
++		wantSame bool
++		// wantRewrote and wantFlagged are the keys, in order, of the lines returned.
++		wantRewrote, wantFlagged []string
++		wantInvalid              bool
++	}{
++		{
++			name: "SameDirChangesNothing", sameDir: true,
++			yaml:        "capture:\n  dir: out\ncompare:\n  dir: .\n",
++			wantCapture: "out", wantCompare: ".", wantSame: true,
++		},
++		{
++			name: "DotBecomesAnchorDirectory",
++			dirs: []string{anchorName},
++			yaml: "capture:\n  dir: .\ncompare:\n  dir: .\n",
++			// The dot names both the anchor and the root; the file predates the move, so the anchor wins.
++			wantCapture: "dotnet", wantCompare: "dotnet",
++			wantRewrote: []string{"capture.dir", "compare.dir"},
++		},
++		{
++			name: "UnderAnchorIsRewritten",
++			dirs: []string{"dotnet/out"},
++			yaml: "capture:\n  dir: out\n",
++			// compare is undeclared and stays absent.
++			wantCapture: "dotnet/out", wantCompare: "",
++			wantRewrote: []string{"capture.dir"},
++		},
++		{
++			name:        "UnderAnchorWinsOverRoot",
++			dirs:        []string{"dotnet/out", "out"},
++			yaml:        "compare:\n  dir: out\n",
++			wantCapture: "", wantCompare: "dotnet/out",
++			wantRewrote: []string{"compare.dir"},
++		},
++		{
++			name:        "UnderRootAloneIsKept",
++			dirs:        []string{anchorName},
++			yaml:        "capture:\n  dir: dotnet\n",
++			wantCapture: "dotnet", wantSame: true,
++		},
++		{
++			name:        "NamingNeitherIsFlagged",
++			dirs:        []string{anchorName},
++			yaml:        "capture:\n  dir: missing\ncompare:\n  dir: gone\n",
++			wantCapture: "missing", wantCompare: "gone", wantSame: true,
++			wantFlagged: []string{"capture.dir", "compare.dir"},
++		},
++		{
++			name:        "RewrittenAndFlaggedTogether",
++			dirs:        []string{"dotnet/out"},
++			yaml:        "capture:\n  dir: out\ncompare:\n  dir: gone\n",
++			wantCapture: "dotnet/out", wantCompare: "gone",
++			wantRewrote: []string{"capture.dir"}, wantFlagged: []string{"compare.dir"},
++		},
++		{
++			name:        "AbsoluteIsKept",
++			dirs:        []string{anchorName},
++			yaml:        "capture:\n  dir: ABS\n",
++			wantCapture: "ABS", wantSame: true,
++		},
++		{
++			name:        "UnsetAndUndeclaredAreKept",
++			dirs:        []string{anchorName},
++			yaml:        "capture:\n  command: run\ncompare:\n  dir: \"\"\n",
++			wantCapture: "", wantCompare: "", wantSame: true,
++		},
++		{
++			name:        "NullDirsAreKept",
++			dirs:        []string{anchorName},
++			yaml:        "capture:\n  dir: null\ncompare:\n  dir: ~\n",
++			wantCapture: "", wantCompare: "", wantSame: true,
++		},
++		{
++			name:        "UnparseableYamlIsInvalid",
++			yaml:        "capture: {dir: [\n",
++			wantInvalid: true,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			root := t.TempDir()
++			for _, dir := range tt.dirs {
++				if err := os.MkdirAll(filepath.Join(root, filepath.FromSlash(dir)), 0o755); err != nil {
++					t.Fatal(err)
++				}
++			}
++			anchor := filepath.Join(root, anchorName)
++			if tt.sameDir {
++				anchor = root
++			}
++			input := []byte(strings.ReplaceAll(tt.yaml, "ABS", filepath.ToSlash(root)))
++			wantAbs := func(dir string) string { return strings.ReplaceAll(dir, "ABS", filepath.ToSlash(root)) }
++
++			out, rewrote, flagged, err := RebaseDirsOntoRoot(input, root, anchor)
++			if tt.wantInvalid {
++				if !errors.Is(err, configengine.ErrInvalid) {
++					t.Errorf("RebaseDirsOntoRoot(unparseable) error = %v; want one marked ErrInvalid", err)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("RebaseDirsOntoRoot() error = %v; want nil", err)
++			}
++			if tt.wantSame && string(out) != string(input) {
++				t.Errorf("RebaseDirsOntoRoot() bytes = %q; want them unchanged %q", out, input)
++			}
++			if !tt.wantSame && string(out) == string(input) {
++				t.Errorf("RebaseDirsOntoRoot() bytes = %q; want them rewritten", out)
++			}
++			var got rebasedDoc
++			if err := yaml.Unmarshal(out, &got); err != nil {
++				t.Fatalf("result does not parse: %v\n%s", err, out)
++			}
++			if got.Capture.Dir != wantAbs(tt.wantCapture) || got.Compare.Dir != wantAbs(tt.wantCompare) {
++				t.Errorf("RebaseDirsOntoRoot() dirs = capture %q, compare %q; want capture %q, compare %q", got.Capture.Dir, got.Compare.Dir, wantAbs(tt.wantCapture), wantAbs(tt.wantCompare))
++			}
++			assertLineKeys(t, "rewrote", rewrote, tt.wantRewrote, "")
++			assertLineKeys(t, "flagged", flagged, tt.wantFlagged, "way forward: lym config drift --set ")
++
++			// A second run over the result with the same dirs changes nothing.
++			again, rewroteAgain, _, err := RebaseDirsOntoRoot(out, root, anchor)
++			if err != nil {
++				t.Fatalf("second RebaseDirsOntoRoot() error = %v; want nil", err)
++			}
++			if len(rewroteAgain) != 0 || string(again) != string(out) {
++				t.Errorf("second RebaseDirsOntoRoot() = %q with rewrote %v; want the bytes unchanged and no rewrite", again, rewroteAgain)
++			}
++		})
++	}
++}
++
++// TestRebaseDirsOntoRoot_KeepsOtherKeys pins that a rewrite changes only the dir: the header comment, command, timeout_min, env and enabled survive and the compare step is untouched.
++func TestRebaseDirsOntoRoot_KeepsOtherKeys(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	root := t.TempDir()
++	anchor := filepath.Join(root, "dotnet")
++	if err := os.MkdirAll(anchor, 0o755); err != nil {
++		t.Fatal(err)
++	}
++	input := []byte("# drift header\nenabled: true\ncapture:\n  command: profile --out {baseline_dir}\n  dir: .\n  timeout_min: 30\n  env:\n    NAME: \"1\"\ncompare:\n  command: cmp {baseline_dir}\n  timeout_min: 5\n")
++	out, _, _, err := RebaseDirsOntoRoot(input, root, anchor)
++	if err != nil {
++		t.Fatalf("RebaseDirsOntoRoot() error = %v; want nil", err)
++	}
++	if !strings.Contains(string(out), "# drift header") {
++		t.Errorf("RebaseDirsOntoRoot() = %q; want the header comment kept", out)
++	}
++	var got rebasedDoc
++	if err := yaml.Unmarshal(out, &got); err != nil {
++		t.Fatalf("result does not parse: %v\n%s", err, out)
++	}
++	want := rebasedDoc{
++		Enabled: true,
++		Capture: rebasedStep{Command: "profile --out {baseline_dir}", Dir: "dotnet", TimeoutMin: 30, Env: map[string]string{"NAME": "1"}},
++		Compare: rebasedStep{Command: "cmp {baseline_dir}", TimeoutMin: 5},
++	}
++	if !reflect.DeepEqual(got, want) {
++		t.Errorf("RebaseDirsOntoRoot() decoded = %+v; want %+v", got, want)
++	}
++}
++
++// assertLineKeys fails unless lines is one line per key in wantKeys, in order, each starting with its key and holding wantPart followed by that key's set form.
++func assertLineKeys(t *testing.T, label string, lines, wantKeys []string, wantPart string) {
++	t.Helper()
++	if len(lines) != len(wantKeys) {
++		t.Errorf("%s lines = %q; want %d, one per key %v", label, lines, len(wantKeys), wantKeys)
++		return
++	}
++	for i, key := range wantKeys {
++		if !strings.HasPrefix(lines[i], key+" ") {
++			t.Errorf("%s line %d = %q; want it to start with %q", label, i, lines[i], key+" ")
++		}
++		if wantPart != "" && !strings.Contains(lines[i], wantPart+key+"=<dir>") {
++			t.Errorf("%s line %d = %q; want it to hold %q", label, i, lines[i], wantPart+key+"=<dir>")
++		}
++	}
++}
+diff --git a/internal/driftengine/doc.go b/internal/driftengine/doc.go
+index f59ad298..2b268e16 100644
+--- a/internal/driftengine/doc.go
++++ b/internal/driftengine/doc.go
+@@ -8,6 +8,8 @@
+ // A step's `dir` resolves by gateslot.ResolveCommandDir, so it means the directory a gate tier's `dir` means: relative to the worktree root, absolute as written, and the worktree's anchored directory when unset; every drift run is told both directories.
+ // Before a step's command starts, a `dir` that is no existing directory fails naming the resolved path, the `drift.yaml` key and, as the way forward, `lym config drift --set <step>.dir=<dir>` from the prime, then `lym drift capture` and `lym loom resume` for the capture, `lym drift capture --side` for the side capture and `lym loom resume` for the compare.
+ // CheckDirs refuses the same `dir` over the loaded config against a told worktree, which a hub-wide `lym config drift` write runs against the prime.
++// A relative `dir` was once joined onto the anchored directory, so RebaseDirsOntoRoot, the module's reinterpretation DirBaseReinterpretation, carries a hub's drift.yaml across that move once per hub:
++// a dir naming a directory under the prime's anchored directory is rewritten to name it from the root, one naming a directory under the root alone is kept as already written for it, and one naming neither is flagged with `lym config drift --set <step>.dir=<dir>`.
+ // `capture` and `compare` are executable keys, so only the template and the hub's board default layer set them, with `lym config drift --set 'capture={command: ..., timeout_min: N}'`.
+ // Once a step is declared, `--set` also changes one of its keys alone, as in `--set capture.env.NAME=1` or `--set compare.timeout_min=10`, and refuses a key a step lacks;
+ // a step left with keys but no command fails the load check, so a first declaration sets `command` and `timeout_min` together.
+@@ -33,11 +35,13 @@
+ // It moves a non-empty baseline directory to the first free numbered backup beside it, writes the skip file, waits for one gate slot as a non-tier holder with no deadline, and runs the declared command in its shell with `{baseline_dir}` and `{skip_file}` rendered as quoted paths and the command's stdout and stderr the open log file.
+ // A timeout, counted from the command's start, kills the command's whole tree.
+ // The record ends `passed` for exit 0 with at least one file under the baseline directory, else `failed` with the reason, and then the slot and the lock are released.
++// A failed record's reason ends naming the directory the command ran in and its last non-empty output lines from the log, folded onto one bounded line, or that it printed nothing, so a halt states the cause and not only the log path.
+ // An exit 0 with no file marks the record `wrote_no_file`, and under skipped tests its reason names scope partial, the count of skipped tests and that every test the capture command ran may have been skipped.
++// A told OnEnd is handed the final record while the lock is still held, so the capture child records a failed capture's FailedCaptureError, the reason, the log and the ways forward, in its own log and exits non-zero before the Drift-Await row may commit that log.
+ // A Stuck over such a record, at Drift-Baseline or Drift-Await, names in place of a plain capture, which would fail the same way, `lym drift scope --scope full` or a shorter `--skip` list followed by `lym drift capture` and `lym loom resume` while HEAD is the branch point, and `lym drift scope --scope off` followed by `lym loom resume`, besides `lym drift defer`.
+ // RunCapture holds no job object of its own, since it also runs in a row's step process; the detached child holds the capture's named job (CaptureJobName) around it.
+ // RunSideCapture takes no lock and writes no record: it runs the same command into the next free numbered directory under the side directory.
+-// RunAcceptedCapture takes no lock and writes no record either: it empties the accepted-profile directory and runs the same command into it, and passes for exit 0 within the timeout with a file written.
++// RunAcceptedCapture takes no lock and writes no record either: it empties the accepted-profile directory and runs the same command into it, and passes for exit 0 within the timeout with a file written; a reason it did not pass names the directory and the last output as a failed record's does.
+ // CheckMainCapture is the main capture's precondition: the run is at Drift-Baseline, or blocked at Drift-Await, HEAD equals the branch point and the tracked tree is clean; each refusal names its way forward.
+ // StartCapture spawns `drift capture-child` detached in the anchored directory, where a lym verb's cwd must be, with breakaway, registers it under the run's processes with role `capture` and returns its pid only once the capture record carries that pid, in any state, since a capture can fail between two reads.
+ // A child that ends or stalls before that record is an error carrying the last JSON error envelope's error from the child's log, folded onto one bounded line, and whether the child marked it with LastingFaultKey as one a fresh start in the same directory cannot change.
+@@ -49,7 +53,7 @@
+ // RunCompare is the mechanical compare, on the runner the capture uses.
+ // It takes the compare marker, an OS lock, before it waits for its gate slot and holds it until it ends, so a compare queued for a slot reads as activity and one a dead compare left reads as none; a marker still held after a bounded retry, which rides out a reader's probe, is refused.
+ // It writes the skip file, holds one slot as a non-tier holder, renders `{baseline_dir}` as the baseline directory, or the told profile directory such as the accepted profile, and `{skip_file}` as the skip file, and kills the command's tree at its timeout.
+-// The result carries the exit code, the log and whether the compare passed, which is exit 0 within the timeout; the compare writes no record and counts no run, since TakeRun is the caller's.
++// The result carries the exit code, the log and whether the compare passed, which is exit 0 within the timeout, and a compare that did not pass carries a reason naming the directory and the last output as a failed capture's does; the compare writes no record and counts no run, since TakeRun is the caller's.
+ // SkipList is the scope's skipped tests followed by every accepted test, without duplicates; a withdrawn test is off the accepted list and so is compared again.
+ //
+ // # Verbs
+diff --git a/internal/driftengine/spawn.go b/internal/driftengine/spawn.go
+index 35e94ced..692b6e08 100644
+--- a/internal/driftengine/spawn.go
++++ b/internal/driftengine/spawn.go
+@@ -183,21 +183,12 @@ func readChildReport(childLog string) childReport {
+ 			continue
+ 		}
+ 		if text, ok := envelope["error"].(string); ok {
+-			report = childReport{text: boundChildError(text), lasting: envelope[LastingFaultKey] == true}
++			report = childReport{text: boundOneLine(text, childErrorMaxRunes), lasting: envelope[LastingFaultKey] == true}
+ 		}
+ 	}
+ 	return report
+ }
+ 
+-// boundChildError folds text onto one line and cuts it to childErrorMaxRunes, marking a cut with an ellipsis.
+-func boundChildError(text string) string {
+-	runes := []rune(strings.Join(strings.Fields(text), " "))
+-	if len(runes) <= childErrorMaxRunes {
+-		return string(runes)
+-	}
+-	return string(runes[:childErrorMaxRunes-1]) + "…"
+-}
+-
+ // childNoRecordError is a started capture child that did not record its start.
+ // A calling row tells it from an environment fault that kept the child from starting, since only a child that ran and failed is a capture halt.
+ type childNoRecordError struct {
+diff --git a/internal/driftengine/steprun.go b/internal/driftengine/steprun.go
+index 3322ed42..603e1fb7 100644
+--- a/internal/driftengine/steprun.go
++++ b/internal/driftengine/steprun.go
+@@ -5,9 +5,11 @@
+ package driftengine
+ 
+ import (
++	"bytes"
+ 	"context"
+ 	"errors"
+ 	"fmt"
++	"io"
+ 	"os"
+ 	"os/exec"
+ 	"path/filepath"
+@@ -71,6 +73,8 @@ type stepOutcome struct {
+ 	ExitCode int
+ 	// TimedOut is true when the timeout killed the command's tree.
+ 	TimedOut bool
++	// Dir is the absolute directory the command ran in.
++	Dir string
+ 	// release gives back the slot; the caller calls it once it has recorded the outcome.
+ 	release func()
+ }
+@@ -147,7 +151,91 @@ func runStep(ctx context.Context, run stepRun) (stepOutcome, error) {
+ 		release()
+ 		return stepOutcome{}, fmt.Errorf("drift: wait for the %s command: %w", run.Site, err)
+ 	}
+-	return stepOutcome{ExitCode: exit, TimedOut: timedOut, release: release}, nil
++	return stepOutcome{ExitCode: exit, TimedOut: timedOut, Dir: dir, release: release}, nil
++}
++
++// outputTailLines is how many of a finished command's last non-empty output lines a failure's reason quotes.
++const outputTailLines = 3
++
++// outputTailMaxRunes bounds the quoted output, so a reason stays one readable line; a longer tail keeps its end.
++const outputTailMaxRunes = 400
++
++// outputTailReadBytes bounds how much of the end of a command's log commandReport reads.
++const outputTailReadBytes = 64 * 1024
++
++// readLogTail returns the last outputTailReadBytes bytes of the file at path, or all of it when it is shorter.
++// A cut file starts at a line boundary when its read window holds one, and a line the window begins inside is dropped.
++func readLogTail(path string) ([]byte, error) {
++	file, err := os.Open(path)
++	if err != nil {
++		return nil, err
++	}
++	defer file.Close()
++	info, err := file.Stat()
++	if err != nil {
++		return nil, err
++	}
++	// A cut file is read from one byte before its window, so the byte shows whether the window begins on a line start.
++	offset := max(0, info.Size()-outputTailReadBytes-1)
++	if _, err := file.Seek(offset, io.SeekStart); err != nil {
++		return nil, err
++	}
++	data, err := io.ReadAll(file)
++	if err != nil {
++		return nil, err
++	}
++	if offset > 0 {
++		startsLine := data[0] == '\n'
++		data = data[1:]
++		if newline := bytes.IndexByte(data, '\n'); !startsLine && newline >= 0 {
++			data = data[newline+1:]
++		}
++	}
++	return data, nil
++}
++
++// commandReport returns the clause a failed command's reason ends on: the directory the command ran in, and the end of its last non-empty output lines from its log or that it printed nothing.
++// A tail over the output bound is cut from its start, so the last line, which usually states the cause, stays.
++// A log that cannot be read is named with its error, so the clause still says where the command ran.
++func commandReport(dir, logPath string) string {
++	data, err := readLogTail(logPath)
++	if err != nil {
++		return fmt.Sprintf("; it ran in %s and its log could not be read: %v", dir, err)
++	}
++	var lines []string
++	for _, line := range strings.Split(string(data), "\n") {
++		if trimmed := strings.TrimSpace(line); trimmed != "" {
++			lines = append(lines, trimmed)
++		}
++	}
++	if len(lines) == 0 {
++		return "; it ran in " + dir + " and printed nothing"
++	}
++	tail := lines[max(0, len(lines)-outputTailLines):]
++	return "; it ran in " + dir + " and its last output was: " + boundOneLineKeepingEnd(strings.Join(tail, " / "), outputTailMaxRunes)
++}
++
++// foldOneLine folds text onto one line as runes.
++func foldOneLine(text string) []rune {
++	return []rune(strings.Join(strings.Fields(text), " "))
++}
++
++// boundOneLine folds text onto one line and cuts it to maxRunes from its end, marking a cut with a trailing ellipsis.
++func boundOneLine(text string, maxRunes int) string {
++	runes := foldOneLine(text)
++	if len(runes) <= maxRunes {
++		return string(runes)
++	}
++	return string(runes[:maxRunes-1]) + "…"
++}
++
++// boundOneLineKeepingEnd folds text onto one line and cuts it to maxRunes from its start, marking a cut with a leading ellipsis.
++func boundOneLineKeepingEnd(text string, maxRunes int) string {
++	runes := foldOneLine(text)
++	if len(runes) <= maxRunes {
++		return string(runes)
++	}
++	return "…" + string(runes[len(runes)-(maxRunes-1):])
+ }
+ 
+ // missingDirRefusal is the refusal of a step whose dir is no existing directory.
+diff --git a/internal/hubreconcile/doc.go b/internal/hubreconcile/doc.go
+index e2f9a04a..b9082ae7 100644
+--- a/internal/hubreconcile/doc.go
++++ b/internal/hubreconcile/doc.go
+@@ -76,6 +76,16 @@
+ // the Warn names the conflicting paths and the two ways to settle them, and a board push that lands the commit clears it too.
+ // A board with no upstream is never skipped: it is written and committed with no pull, and its detached sync fails on its own, so a board with no reachable remote is not re-walked on every start verb.
+ //
++// # Reinterpretations
++//
++// A binary that changes what a value in a module's hub base file means registers a configreg.Reinterpretation on the module.
++// In the board write, after the hub-wide reconcile, the walk applies each one whose board marker `_lym/config/reinterpreted-<id>` is absent: it hands the module's base file to the rewrite with the prime's root and anchored directory, writes the file when the rewrite changed it, and writes the marker after it, so each applies once per hub and a later binary never applies it again.
++// An absent base file is only marked.
++// The file and the marker join the board commit, and a failed write restores both with the board's other config files.
++// Once the commit landed, the lines naming each rewritten and each flagged value go, as one `[reconcile notice]` line, to the hub's orch through the notifier the process installed with InstallNotifier, and to the log at Warn; with none installed, or no orch recorded, the log alone holds them.
++// A walk runs before a start verb loads any config, so a reinterpreted file is carried across before the new binary runs a command from it.
++// A machine-local override file is not rewritten, since the board marker is shared by every machine of the hub while the override is not.
++//
+ // # The pair call
+ //
+ // Options.Pair reconciles that one pair unconditionally, whatever the stamp says, under the same lock and with the same mid-merge refusal.
+diff --git a/internal/hubreconcile/ensure_integration_test.go b/internal/hubreconcile/ensure_integration_test.go
+index 07000f26..10cd9d7c 100644
+--- a/internal/hubreconcile/ensure_integration_test.go
++++ b/internal/hubreconcile/ensure_integration_test.go
+@@ -218,10 +218,23 @@ func commitPreMigrationBase(t *testing.T, boardDir string) {
+ 		}
+ 	}
+ 	gitkit.Git(t, boardDir, "rm", "-q", "--ignore-unmatch", "--", filepath.ToSlash(configengine.BaseSparseMarkerRel()))
++	removeReinterpretationMarkers(t, boardDir)
+ 	gitkit.Git(t, boardDir, "add", "-A")
+ 	gitkit.Git(t, boardDir, "commit", "-q", "-m", "fixture: pre-migration board base files")
+ }
+ 
++// removeReinterpretationMarkers stages the deletion of every reinterpretation marker the board at boardDir tracks, so the board is one no registered reinterpretation has been applied to.
++// The forged hub arrives with them, written by the walk that cloned it.
++func removeReinterpretationMarkers(t *testing.T, boardDir string) {
++	t.Helper()
++
++	for _, module := range configreg.Modules() {
++		for _, change := range module.Reinterpretations {
++			gitkit.Git(t, boardDir, "rm", "-q", "--ignore-unmatch", "--", filepath.ToSlash(configengine.ReinterpretedMarkerRel(change.ID)))
++		}
++	}
++}
++
+ // commitRetiredKeys appends to the board's darn, gate and landing base files the key each module retired, and commits them.
+ func commitRetiredKeys(t *testing.T, boardDir string) {
+ 	t.Helper()
+@@ -1014,6 +1027,13 @@ func TestEnsure_FailedWalkNamesTheFileAndLeavesTheTreeAsItWas(t *testing.T) {
+ 				if _, statErr := os.Stat(configengine.BaseSparseMarker(h.BoardDir())); !os.IsNotExist(statErr) {
+ 					t.Errorf("the failed walk left the board marker behind (stat err = %v)", statErr)
+ 				}
++				for _, module := range configreg.Modules() {
++					for _, change := range module.Reinterpretations {
++						if _, statErr := os.Stat(configengine.ReinterpretedMarker(h.BoardDir(), change.ID)); !os.IsNotExist(statErr) {
++							t.Errorf("the failed walk left the reinterpretation marker %s behind (stat err = %v)", change.ID, statErr)
++						}
++					}
++				}
+ 			}
+ 			if _, statErr := os.Stat(file); statErr != nil {
+ 				t.Errorf("the failed file is gone after the walk: %v", statErr)
+@@ -1355,9 +1375,15 @@ func arrangeUnpushedHubWide(t *testing.T) *unpushedHubWide {
+ 	if key, found := stampKey(t, geom); !found || key != runningKey() {
+ 		t.Fatalf("stamp = %q (found %v); want the running key although the hub-wide commit was not pushed", key, found)
+ 	}
+-	changed := strings.Fields(gitkit.Git(t, board, "show", "--name-only", "--format=", "HEAD"))
++	// The first walk of a hub also commits each reinterpretation marker, which is no config file.
++	var changed []string
++	for _, path := range strings.Fields(gitkit.Git(t, board, "show", "--name-only", "--format=", "HEAD")) {
++		if !strings.Contains(path, "reinterpreted-") {
++			changed = append(changed, path)
++		}
++	}
+ 	if len(changed) != 1 {
+-		t.Fatalf("the hub-wide commit changed %v; want one config file", changed)
++		t.Fatalf("the hub-wide commit changed %v besides the reinterpretation markers; want one config file", changed)
+ 	}
+ 	if err := os.Remove(geom.StampPath()); err != nil {
+ 		t.Fatalf("remove the stamp: %v", err)
+diff --git a/internal/hubreconcile/reinterpret.go b/internal/hubreconcile/reinterpret.go
+new file mode 100644
+index 00000000..16adfa90
+--- /dev/null
++++ b/internal/hubreconcile/reinterpret.go
+@@ -0,0 +1,96 @@
++// reinterpret.go applies each registered reinterpretation once to the board's base files, and mails what it rewrote or flagged to the hub's orch through the process's installed notifier.
++
++package hubreconcile
++
++import (
++	"bytes"
++	"errors"
++	"fmt"
++	"io/fs"
++	"os"
++	"strings"
++	"sync/atomic"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/configreg"
++	"github.com/Knatte18/loomyard/internal/configsync"
++	"github.com/Knatte18/loomyard/internal/fsx"
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// Notifier posts line to the orch of the hub whose Bolt checkout is boardDir and reports whether the mail was posted.
++type Notifier func(boardDir, line string) (posted bool, err error)
++
++var installedNotifier atomic.Pointer[Notifier]
++
++// InstallNotifier stores n as the process's notifier, which a walk mails what its reinterpretations rewrote or flagged through, and returns a function that reinstates the previous one.
++func InstallNotifier(n Notifier) (restore func()) {
++	previous := installedNotifier.Swap(&n)
++	return func() { installedNotifier.Store(previous) }
++}
++
++// noticePrefix opens the mail a walk sends, so the orch tells it from operator input.
++const noticePrefix = "[reconcile notice]"
++
++// applyReinterpretations applies every registered reinterpretation whose board marker is absent to its module's hub base file at boardDir, judging the file's values against the prime's root and anchored directory, and writes each marker after the file.
++// An absent base file holds no value to carry across, so only its marker is written.
++// It returns the board-relative paths it wrote and one line per value rewritten or flagged, naming the module's file.
++func applyReinterpretations(boardDir, primeRoot, primeAnchor string) (written, lines []string, err error) {
++	for _, module := range configreg.Modules() {
++		for _, change := range module.Reinterpretations {
++			marker := configengine.ReinterpretedMarker(boardDir, change.ID)
++			if fileExists(marker) {
++				continue
++			}
++			path := configengine.ConfigFile(boardDir, module.Name)
++			fileError := func(err error) error { return &configsync.FileError{Module: module.Name, Path: path, Err: err} }
++			existing, err := os.ReadFile(path)
++			switch {
++			case errors.Is(err, fs.ErrNotExist):
++			case err != nil:
++				return nil, nil, fileError(err)
++			default:
++				rewritten, rewrote, flagged, err := change.Rewrite(existing, primeRoot, primeAnchor)
++				if err != nil {
++					return nil, nil, fileError(fmt.Errorf("reinterpretation %s: %w", change.ID, err))
++				}
++				if !bytes.Equal(rewritten, existing) {
++					if err := fsx.AtomicWriteBytes(path, rewritten); err != nil {
++						return nil, nil, fileError(err)
++					}
++					written = append(written, configengine.ConfigFileRel(module.Name))
++				}
++				for _, line := range append(rewrote, flagged...) {
++					lines = append(lines, module.Name+".yaml "+line)
++				}
++			}
++			if err := fsx.AtomicWriteBytes(marker, nil); err != nil {
++				return nil, nil, fmt.Errorf("write reinterpretation marker %s: %w", marker, err)
++			}
++			written = append(written, configengine.ReinterpretedMarkerRel(change.ID))
++		}
++	}
++	return written, lines, nil
++}
++
++// notifyReinterpretations logs what the walk's reinterpretations rewrote or flagged and mails it, as one line, to the hub's orch through the installed notifier.
++// No line sends nothing; with no notifier installed, or a mail not posted, the log holds the line alone.
++func notifyReinterpretations(boardDir, label string, lines []string) {
++	if len(lines) == 0 {
++		return
++	}
++	line := fmt.Sprintf("%s lym build %s changed what a value in the hub's config means, and the reconcile carried the hub's files across: %s", noticePrefix, label, strings.Join(lines, "; "))
++	logger.Warn("hubreconcile: a reinterpretation rewrote or flagged a hub config value", "board", boardDir, "lines", lines)
++	notifier := installedNotifier.Load()
++	if notifier == nil {
++		logger.Warn("hubreconcile: no notifier is installed, so the orch is not mailed", "line", line)
++		return
++	}
++	posted, err := (*notifier)(boardDir, line)
++	switch {
++	case err != nil:
++		logger.Warn("hubreconcile: mailing the orch failed", "line", line, "error", err)
++	case !posted:
++		logger.Warn("hubreconcile: the hub records no orch to mail", "line", line)
++	}
++}
+diff --git a/internal/hubreconcile/reinterpret_integration_test.go b/internal/hubreconcile/reinterpret_integration_test.go
+new file mode 100644
+index 00000000..1a705768
+--- /dev/null
++++ b/internal/hubreconcile/reinterpret_integration_test.go
+@@ -0,0 +1,201 @@
++// reinterpret_integration_test.go covers the reinterpretations a stale-build walk applies to the board's hub base files: the drift dir rewrite on an anchored hub, its marker, and the one mail to the orch.
++
++package hubreconcile_test
++
++import (
++	"errors"
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++	"sync"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/driftengine"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/hubreconcile"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// notice is one mail a walk sent through the installed notifier.
++type notice struct {
++	boardDir string
++	line     string
++}
++
++// recordNotices replaces the process's notifier with a recorder of the mails it is asked to send, and restores the previous one when the test ends.
++func recordNotices(t *testing.T) *[]notice {
++	t.Helper()
++
++	return recordNoticesAnswering(t, true, nil)
++}
++
++// recordNoticesAnswering is recordNotices with a notifier that answers each mail with posted and err.
++func recordNoticesAnswering(t *testing.T, posted bool, err error) *[]notice {
++	t.Helper()
++
++	var mu sync.Mutex
++	var sent []notice
++	t.Cleanup(hubreconcile.InstallNotifier(func(boardDir, line string) (bool, error) {
++		mu.Lock()
++		defer mu.Unlock()
++		sent = append(sent, notice{boardDir: boardDir, line: line})
++		return posted, err
++	}))
++	return &sent
++}
++
++// driftMarkerRel is the board-relative path of the marker the drift dir reinterpretation writes.
++func driftMarkerRel() string {
++	return filepath.ToSlash(configengine.ReinterpretedMarkerRel(driftengine.DirBaseReinterpretation))
++}
++
++// driftYAMLWithDir returns a drift.yaml declaring capture and compare, each with dir when dir is not empty.
++func driftYAMLWithDir(dir string) string {
++	dirLine := ""
++	if dir != "" {
++		dirLine = "  dir: " + dir + "\n"
++	}
++	return "capture:\n  command: \"profile --out {baseline_dir}\"\n" + dirLine + "  timeout_min: 30\n" +
++		"compare:\n  command: \"cmp {baseline_dir}\"\n" + dirLine + "  timeout_min: 5\n"
++}
++
++// driftDirs returns the capture and compare dirs the board's drift.yaml declares.
++func driftDirs(t *testing.T, boardDir string) (capture, compare string) {
++	t.Helper()
++
++	cfg, err := driftengine.LoadConfig(configengine.Dirs{Board: boardDir})
++	if err != nil {
++		t.Fatalf("driftengine.LoadConfig over the board: %v", err)
++	}
++	return cfg.Capture.Dir, cfg.Compare.Dir
++}
++
++// It does not call t.Parallel: it installs the process-global notifier and swaps the package-global detached board sync.
++func TestEnsure_DriftDirsOnAnAnchoredHubAreRewrittenOnceAndMailed(t *testing.T) {
++	tiergate.Require(t, 1)
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "backend"})
++	geom := geometryOf(h)
++	board := h.BoardDir()
++	removeReinterpretationMarkers(t, board)
++	gitkit.Git(t, board, "commit", "-q", "--allow-empty", "-m", "fixture: a board no reinterpretation was applied to")
++	gitkit.CommitFile(t, board, configengine.ConfigFileRel("drift"), driftYAMLWithDir("."), "fixture: drift dirs written against the anchored directory")
++	recordBoardSyncs(t)
++	sent := recordNotices(t)
++
++	if err := hubreconcile.Ensure(geom, hubreconcile.Options{}); err != nil {
++		t.Fatalf("Ensure: %v", err)
++	}
++
++	if capture, compare := driftDirs(t, board); capture != h.Anchor || compare != h.Anchor {
++		t.Errorf("drift dirs = %q and %q after the walk; want both rewritten to the anchor %q", capture, compare, h.Anchor)
++	}
++	committed := strings.Fields(gitkit.Git(t, board, "show", "--name-only", "--format=", "HEAD"))
++	for _, want := range []string{filepath.ToSlash(configengine.ConfigFileRel("drift")), driftMarkerRel()} {
++		if !slices.Contains(committed, want) {
++			t.Errorf("the walk's board commit holds %v; want it to carry %s", committed, want)
++		}
++	}
++	assertClean(t, board)
++	if len(*sent) != 1 {
++		t.Fatalf("notifier called %d times; want once: %v", len(*sent), *sent)
++	}
++	got := (*sent)[0]
++	if got.boardDir != board {
++		t.Errorf("notice sent for board %q; want %q", got.boardDir, board)
++	}
++	if !strings.HasPrefix(got.line, "[reconcile notice]") {
++		t.Errorf("notice line %q; want it to open with [reconcile notice]", got.line)
++	}
++	for _, key := range []string{"capture.dir", "compare.dir"} {
++		if !strings.Contains(got.line, key) {
++			t.Errorf("notice line %q; want it to name %s", got.line, key)
++		}
++	}
++
++	// The marker is present now: a drift.yaml written against the old base afterwards is left alone, and nothing is mailed.
++	gitkit.CommitFile(t, board, configengine.ConfigFileRel("drift"), driftYAMLWithDir("."), "fixture: drift dirs set to . after the marker")
++	if err := os.Remove(geom.StampPath()); err != nil {
++		t.Fatalf("remove the stamp: %v", err)
++	}
++	if err := hubreconcile.Ensure(geom, hubreconcile.Options{}); err != nil {
++		t.Fatalf("second Ensure: %v", err)
++	}
++	if capture, compare := driftDirs(t, board); capture != "." || compare != "." {
++		t.Errorf("drift dirs = %q and %q after the second walk; want them left alone beside the marker", capture, compare)
++	}
++	if len(*sent) != 1 {
++		t.Errorf("notifier called %d times after the second walk; want no further mail", len(*sent))
++	}
++}
++
++// It does not call t.Parallel: it installs the process-global notifier and swaps the package-global detached board sync.
++func TestEnsure_ReinterpretationMarkerIsCommittedAndMailsOnlyAFlaggedValue(t *testing.T) {
++	tiergate.Require(t, 1)
++
++	tests := []struct {
++		name   string
++		anchor string
++		// drift is the board's drift.yaml; empty leaves the hub's board as forged.
++		drift string
++		// wantDir is the capture and compare dir the file declares after the walk; ignored without a drift.yaml.
++		wantDir string
++		// wantMail is whether the walk mails the orch.
++		wantMail bool
++		// unposted makes the notifier report a mail not posted.
++		unposted bool
++		// notifierError makes the notifier fail.
++		notifierError error
++		// noNotifier leaves the process with no notifier installed, which holds once every earlier test has restored its own.
++		noNotifier bool
++	}{
++		{name: "root-anchored hub with a dot dir", anchor: ".", drift: driftYAMLWithDir("."), wantDir: "."},
++		{name: "anchored hub with no dir set", anchor: "backend", drift: driftYAMLWithDir(""), wantDir: ""},
++		{name: "anchored hub with no drift.yaml", anchor: "backend"},
++		{name: "anchored hub with a dir naming no directory is flagged and kept", anchor: "backend", drift: driftYAMLWithDir("nowhere"), wantDir: "nowhere", wantMail: true},
++		{name: "a mail the notifier reports not posted leaves the walk done", anchor: "backend", drift: driftYAMLWithDir("nowhere"), wantDir: "nowhere", wantMail: true, unposted: true},
++		{name: "a notifier error leaves the walk done", anchor: "backend", drift: driftYAMLWithDir("nowhere"), wantDir: "nowhere", wantMail: true, notifierError: errors.New("creel is down")},
++		{name: "no installed notifier leaves the walk done", anchor: "backend", drift: driftYAMLWithDir("nowhere"), wantDir: "nowhere", noNotifier: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: tt.anchor})
++			board := h.BoardDir()
++			removeReinterpretationMarkers(t, board)
++			gitkit.Git(t, board, "commit", "-q", "--allow-empty", "-m", "fixture: a board no reinterpretation was applied to")
++			if tt.drift != "" {
++				gitkit.CommitFile(t, board, configengine.ConfigFileRel("drift"), tt.drift, "fixture: drift.yaml")
++			}
++			recordBoardSyncs(t)
++			sent := new([]notice)
++			if !tt.noNotifier {
++				sent = recordNoticesAnswering(t, !tt.unposted, tt.notifierError)
++			}
++
++			if err := hubreconcile.Ensure(geometryOf(h), hubreconcile.Options{}); err != nil {
++				t.Fatalf("Ensure: %v", err)
++			}
++
++			if !slices.Contains(gitkit.LsFiles(t, board), driftMarkerRel()) {
++				t.Errorf("the board does not track %s after the walk", driftMarkerRel())
++			}
++			assertClean(t, board)
++			if tt.drift != "" {
++				if capture, compare := driftDirs(t, board); capture != tt.wantDir || compare != tt.wantDir {
++					t.Errorf("drift dirs = %q and %q; want %q and %q", capture, compare, tt.wantDir, tt.wantDir)
++				}
++			}
++			if gotMail := len(*sent) > 0; gotMail != tt.wantMail {
++				t.Fatalf("notifier called %d times; want a mail: %v", len(*sent), tt.wantMail)
++			}
++			if tt.wantMail {
++				if len(*sent) != 1 || !strings.Contains((*sent)[0].line, "capture.dir") || !strings.Contains((*sent)[0].line, "compare.dir") {
++					t.Errorf("notices = %v; want one line naming capture.dir and compare.dir", *sent)
++				}
++			}
++		})
++	}
++}
+diff --git a/internal/hubreconcile/walk.go b/internal/hubreconcile/walk.go
+index 69cd4c50..5944ae4e 100644
+--- a/internal/hubreconcile/walk.go
++++ b/internal/hubreconcile/walk.go
+@@ -8,6 +8,7 @@ import (
+ 	"io/fs"
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+@@ -124,7 +125,7 @@ func walkHub(geom Geometry, revision string, hooks walkHooks) (skipped bool, err
+ 		return false, fmt.Errorf("hubreconcile: no main code worktree among the hub's worktrees listed from %s", geom.WorktreePath)
+ 	}
+ 
+-	hubWideSkipped, err := reconcileHubWide(geom.BoardDir, prime.Anchor, fabricengine.BinaryLabel(), hooks)
++	hubWideSkipped, err := reconcileHubWide(geom.BoardDir, prime, fabricengine.BinaryLabel(), hooks)
+ 	if err != nil {
+ 		return false, err
+ 	}
+@@ -192,13 +193,16 @@ var spawnBoardSync = boardengine.SpawnSync
+ 
+ // reconcileHubWide reconciles the hub-wide config at boardDir, seeded from the prime's anchor, and commits what it wrote on the board.
+ // While the board's base-sparse marker is absent the pass also strips each present base file once, and the marker it writes joins the files in the board commit.
++// Each registered reinterpretation whose board marker is absent is then applied, judged against the prime, and its marker joins the commit too.
+ // The board is pulled first: when it cannot be brought up to date nothing is written and skipped is true.
+ // A reconcile or commit failure restores the board's config files to their prior bytes and removes a marker the pass wrote.
++// Once the commit landed, what the reinterpretations rewrote or flagged is mailed to the hub's orch.
+ // The board is synced by the detached board sync whether or not this run committed, so a hub-wide commit an earlier run left unpushed is pushed too.
+ // The walk never waits on that push: a refusal of it reaches the orch as a failed-push record, and a spawn failure is only logged.
+-func reconcileHubWide(boardDir, primeAnchor, label string, hooks walkHooks) (skipped bool, err error) {
++func reconcileHubWide(boardDir string, prime fabricengine.CodeWorktree, label string, hooks walkHooks) (skipped bool, err error) {
+ 	bolt := fabricengine.NewBolt(boardDir)
+ 	var prior map[string][]byte
++	var notices []string
+ 	write := fabricengine.BoltWrite{
+ 		Message: "lym: reconcile hub-wide config for build " + label,
+ 		Write: func() ([]string, error) {
+@@ -208,7 +212,7 @@ func reconcileHubWide(boardDir, primeAnchor, label string, hooks walkHooks) (ski
+ 				return nil, err
+ 			}
+ 			markedBefore := fileExists(configengine.BaseSparseMarker(boardDir))
+-			results, err := configsync.ReconcileHubWideAt(boardDir, primeAnchor, configsync.HubWideOptions{Apply: true, SeedDefaults: true, StripBase: true})
++			results, err := configsync.ReconcileHubWideAt(boardDir, prime.Anchor, configsync.HubWideOptions{Apply: true, SeedDefaults: true, StripBase: true})
+ 			if err != nil {
+ 				return nil, err
+ 			}
+@@ -230,6 +234,16 @@ func reconcileHubWide(boardDir, primeAnchor, label string, hooks walkHooks) (ski
+ 			if !markedBefore && fileExists(configengine.BaseSparseMarker(boardDir)) {
+ 				written = append(written, configengine.BaseSparseMarkerRel())
+ 			}
++			reinterpreted, lines, err := applyReinterpretations(boardDir, prime.Path, prime.Anchor)
++			if err != nil {
++				return nil, err
++			}
++			for _, rel := range reinterpreted {
++				if !slices.Contains(written, rel) {
++					written = append(written, rel)
++				}
++			}
++			notices = lines
+ 			if hooks.afterHubWideWrite != nil {
+ 				if err := hooks.afterHubWideWrite(); err != nil {
+ 					return nil, err
+@@ -245,6 +259,7 @@ func reconcileHubWide(boardDir, primeAnchor, label string, hooks walkHooks) (ski
+ 	if res.Skipped != "" {
+ 		return true, nil
+ 	}
++	notifyReinterpretations(boardDir, label, notices)
+ 	if err := spawnBoardSync(boardDir); err != nil {
+ 		logger.Warn("hubreconcile: the detached board sync did not start, so the board's commits wait for the board's next push", "board", boardDir, "committed", res.Committed, "error", err)
+ 	}
+@@ -393,7 +408,7 @@ func fileExists(path string) bool {
+ 	return err == nil
+ }
+ 
+-// snapshotConfig reads every file in anchor's config dir and every registry module's config file and local override file and the sparse and base-sparse markers under anchor; an absent one maps to nil.
++// snapshotConfig reads every file in anchor's config dir and every registry module's config file and local override file and the sparse, base-sparse and reinterpretation markers under anchor; an absent one maps to nil.
+ // The dir's own files cover a legacy file a migration removes.
+ // Any read or list failure other than absence is returned naming the path, since a snapshot missing a file could not restore it.
+ func snapshotConfig(anchor string) (map[string][]byte, error) {
+@@ -418,6 +433,9 @@ func snapshotConfig(anchor string) (map[string][]byte, error) {
+ 	paths := []string{configengine.SparseMarker(anchor), configengine.BaseSparseMarker(anchor)}
+ 	for _, module := range configreg.Modules() {
+ 		paths = append(paths, configengine.ConfigFile(anchor, module.Name), configengine.LocalFile(anchor, module.Name))
++		for _, change := range module.Reinterpretations {
++			paths = append(paths, configengine.ReinterpretedMarker(anchor, change.ID))
++		}
+ 	}
+ 	for _, path := range paths {
+ 		data, err := os.ReadFile(path)
+diff --git a/internal/orchcli/doc.go b/internal/orchcli/doc.go
+index 2d2cac3d..183209fa 100644
+--- a/internal/orchcli/doc.go
++++ b/internal/orchcli/doc.go
+@@ -153,4 +153,5 @@
+ // A beam's `watch` tells its watcher the orch's own agent name, so the pause checks match an orch caller or network operation marker against that name, and the prime's watcher keeps matching an orch name with no slug.
+ // `InstallPushNotifier` routes fabric's failed-push notice to the prime orch as mail signed `FABRIC`, for every lym process from the root pre-run.
+ // It resolves the hub from the working directory as the network gate does, so a detached push child starting in the board worktree is covered, and installs nothing outside a hub.
++// `InstallReconcileNotifier` routes the hub config reconcile's reinterpretation notice, what a binary's change of a config value's meaning rewrote or flagged in the hub's files, to the prime orch as mail signed `RECONCILE`, resolving the hub the same way.
+ package orchcli
+diff --git a/internal/orchcli/notifierwiring_test.go b/internal/orchcli/notifierwiring_test.go
+index 90a041a2..aabc5366 100644
+--- a/internal/orchcli/notifierwiring_test.go
++++ b/internal/orchcli/notifierwiring_test.go
+@@ -1,4 +1,5 @@
+ // notifierwiring_test.go pins the route of every runner's hold notice: each module wires its shuttle runner's notifier through NotifyAsker.
++// It also pins that the root pre-run installs the hub's push and reconcile notifiers.
+ 
+ package orchcli_test
+ 
+@@ -10,6 +11,28 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++// TestRootPreRun_InstallsTheHubNotifiers proves the root command's pre-run installs the push and reconcile notifiers, so every lym process routes their notices to the prime orch.
++// The pre-run builds its installs behind a testing guard, so the test reads the wiring source.
++func TestRootPreRun_InstallsTheHubNotifiers(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const path = "../../cmd/lym/main.go"
++	data, err := os.ReadFile(path)
++	if err != nil {
++		t.Fatalf("read %s: %v", path, err)
++	}
++	_, afterPreRun, found := strings.Cut(string(data), "PersistentPreRunE: func(")
++	if !found {
++		t.Fatalf("%s holds no root PersistentPreRunE", path)
++	}
++	preRun, _, _ := strings.Cut(afterPreRun, "seedStencils(cmd)")
++	for _, call := range []string{"orchcli.InstallPushNotifier(cmd.Context())", "orchcli.InstallReconcileNotifier(cmd.Context())"} {
++		if !strings.Contains(preRun, call) {
++			t.Errorf("%s: the root pre-run = %q; want it to call %s", path, preRun, call)
++		}
++	}
++}
++
+ // TestRunnerNotifiers_ResolveWithTheAskerRule proves each module that builds a shuttle runner wires its notifier through NotifyAsker, so a held agent's notice reaches the orch its own question reached.
+ // The runner keeps its notifier private and the wiring builds the runner inside the engine stack, so the test reads the wiring source.
+ func TestRunnerNotifiers_ResolveWithTheAskerRule(t *testing.T) {
+diff --git a/internal/orchcli/pushnotifier.go b/internal/orchcli/pushnotifier.go
+index c71aace5..a4981b1a 100644
+--- a/internal/orchcli/pushnotifier.go
++++ b/internal/orchcli/pushnotifier.go
+@@ -23,15 +23,8 @@ const fabricProgram = "FABRIC"
+ // Outside a hub nothing is installed.
+ // The notifier posts only for that hub, and reports a failure of another hub not posted.
+ func InstallPushNotifier(ctx context.Context) {
+-	cwd, err := lymcwd.CwdFrom(ctx)
+-	if err != nil {
+-		return
+-	}
+-	location, err := lymcwd.Resolve(cwd)
+-	if err != nil {
+-		location, err = lymcwd.ResolveWorktree(cwd)
+-	}
+-	if err != nil || !preflight.BoardLymPresent(location) {
++	location, inHub := hubLocation(ctx)
++	if !inHub {
+ 		return
+ 	}
+ 	hubPath := filepath.Clean(location.HubPath)
+@@ -47,6 +40,22 @@ func InstallPushNotifier(ctx context.Context) {
+ 	})
+ }
+ 
++// hubLocation resolves the hub the context's working directory lies in, as the network gate resolves it, and reports false outside a hub.
++func hubLocation(ctx context.Context) (*lymcwd.Location, bool) {
++	cwd, err := lymcwd.CwdFrom(ctx)
++	if err != nil {
++		return nil, false
++	}
++	location, err := lymcwd.Resolve(cwd)
++	if err != nil {
++		location, err = lymcwd.ResolveWorktree(cwd)
++	}
++	if err != nil || !preflight.BoardLymPresent(location) {
++		return nil, false
++	}
++	return location, true
++}
++
+ // drivableLocation returns location when a lym verb can run from it, and otherwise the first worktree of its hub one can run from.
+ // The board worktree and a records sibling cannot resolve the hub's prime, since that scan reads the code repository.
+ func drivableLocation(location *lymcwd.Location) (*lymcwd.Location, error) {
+diff --git a/internal/orchcli/pushnotifier_integration_test.go b/internal/orchcli/pushnotifier_integration_test.go
+index 24776a96..06502687 100644
+--- a/internal/orchcli/pushnotifier_integration_test.go
++++ b/internal/orchcli/pushnotifier_integration_test.go
+@@ -64,6 +64,49 @@ func startCreelDaemon(t *testing.T, h *hubforge.Hub, receiver string) {
+ 	}
+ }
+ 
++// startHubOrchDaemon records a prime orch strand for the hub, runs creel's daemon in process with that strand live, and returns the strand's name.
++func startHubOrchDaemon(t *testing.T, h *hubforge.Hub) string {
++	t.Helper()
++	root, err := lymtemp.ProcessRoot()
++	if err != nil {
++		t.Fatalf("ProcessRoot() = %v", err)
++	}
++	geometry, err := hubgeom.CreelGeometry(h.Path, root.Path())
++	if err != nil {
++		t.Fatalf("CreelGeometry() = %v", err)
++	}
++	receiver := geometry.Shortname + ":orch-held"
++	if err := orchengine.SaveState(PrimePaths(h.Location), orchengine.State{Phase: orchengine.PhaseIdle, Strand: "g1"}); err != nil {
++		t.Fatalf("SaveState: %v", err)
++	}
++	reedState := &reedengine.ReedState{Strands: []reedengine.Strand{{GUID: "g1", Name: receiver}}}
++	if err := reedengine.SaveState(filepath.Join(h.Location.AnchorPath(), lymdirs.DotLymDirName), reedState); err != nil {
++		t.Fatalf("reedengine.SaveState: %v", err)
++	}
++	startCreelDaemon(t, h, receiver)
++	return receiver
++}
++
++// postedMails returns the mails the hub's creel daemon logged as posted.
++func postedMails(t *testing.T, h *hubforge.Hub) []creelengine.LogEntry {
++	t.Helper()
++	reader, err := creelcli.NewProgramClient(h.Location, "CHECK")
++	if err != nil {
++		t.Fatalf("NewProgramClient: %v", err)
++	}
++	entries, err := reader.Log(creelengine.LogFilter{})
++	if err != nil {
++		t.Fatalf("Log: %v", err)
++	}
++	var posted []creelengine.LogEntry
++	for _, entry := range entries {
++		if entry.Event == "posted" {
++			posted = append(posted, entry)
++		}
++	}
++	return posted
++}
++
+ // TestInstallPushNotifier covers the install from the board worktree and from outside a hub.
+ //
+ // It runs without t.Parallel: the push notifier and the strand environment variable are process-global.
+@@ -72,23 +115,7 @@ func TestInstallPushNotifier(t *testing.T) {
+ 	t.Run("InstalledFromTheBoardWorktreeAFailureMailsTheOrchAsFabric", func(t *testing.T) {
+ 		t.Setenv(agentname.StrandNameEnv, "")
+ 		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-		root, err := lymtemp.ProcessRoot()
+-		if err != nil {
+-			t.Fatalf("ProcessRoot() = %v", err)
+-		}
+-		geometry, err := hubgeom.CreelGeometry(h.Path, root.Path())
+-		if err != nil {
+-			t.Fatalf("CreelGeometry() = %v", err)
+-		}
+-		receiver := geometry.Shortname + ":orch-held"
+-		if err := orchengine.SaveState(PrimePaths(h.Location), orchengine.State{Phase: orchengine.PhaseIdle, Strand: "g1"}); err != nil {
+-			t.Fatalf("SaveState: %v", err)
+-		}
+-		reedState := &reedengine.ReedState{Strands: []reedengine.Strand{{GUID: "g1", Name: receiver}}}
+-		if err := reedengine.SaveState(filepath.Join(h.Location.AnchorPath(), lymdirs.DotLymDirName), reedState); err != nil {
+-			t.Fatalf("reedengine.SaveState: %v", err)
+-		}
+-		startCreelDaemon(t, h, receiver)
++		receiver := startHubOrchDaemon(t, h)
+ 		t.Cleanup(fabricengine.InstallPushNotifier(func(string, string) (bool, error) { return false, nil }))
+ 
+ 		InstallPushNotifier(lymcwd.WithCwd(context.Background(), fabricengine.BoardDir(h.Path)))
+@@ -101,22 +128,9 @@ func TestInstallPushNotifier(t *testing.T) {
+ 		}
+ 
+ 		wantLine := fmt.Sprintf("a push of %s branch %s failed (%s): %s; way forward: %s", failure.Repo, failure.Branch, failure.Class, failure.Error, fabricengine.FailedPushWayForward(failure))
+-		reader, err := creelcli.NewProgramClient(h.Location, "CHECK")
+-		if err != nil {
+-			t.Fatalf("NewProgramClient: %v", err)
+-		}
+-		entries, err := reader.Log(creelengine.LogFilter{})
+-		if err != nil {
+-			t.Fatalf("Log: %v", err)
+-		}
+-		var posted []creelengine.LogEntry
+-		for _, entry := range entries {
+-			if entry.Event == "posted" {
+-				posted = append(posted, entry)
+-			}
+-		}
++		posted := postedMails(t, h)
+ 		if len(posted) != 1 {
+-			t.Fatalf("posted events = %+v; want exactly one", entries)
++			t.Fatalf("posted events = %+v; want exactly one", posted)
+ 		}
+ 		if posted[0].To != receiver || !strings.HasSuffix(posted[0].From, ":FABRIC") || posted[0].Subject != wantLine {
+ 			t.Errorf("posted mail = from %q to %q subject %q; want from <shortname>:FABRIC to %q subject %q", posted[0].From, posted[0].To, posted[0].Subject, receiver, wantLine)
+diff --git a/internal/orchcli/reconcilenotifier.go b/internal/orchcli/reconcilenotifier.go
+new file mode 100644
+index 00000000..5adfe603
+--- /dev/null
++++ b/internal/orchcli/reconcilenotifier.go
+@@ -0,0 +1,41 @@
++// reconcilenotifier.go installs the process-wide route that mails the hub config reconcile's reinterpretation notice to the hub's prime orch, signed as the RECONCILE program.
++
++package orchcli
++
++import (
++	"context"
++	"path/filepath"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubreconcile"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++)
++
++// reconcileProgram is the program name a reinterpretation notice is signed with.
++const reconcileProgram = "RECONCILE"
++
++// InstallReconcileNotifier installs hubreconcile's notifier for this process, so a reconcile that rewrites or flags a reinterpreted config value reaches the prime orch as creel mail.
++// The hub is the one the context's working directory resolves to, and outside a hub nothing is installed.
++// The notifier posts only for that hub's Bolt checkout, and reports another hub's notice not posted.
++func InstallReconcileNotifier(ctx context.Context) {
++	location, inHub := hubLocation(ctx)
++	if !inHub {
++		return
++	}
++	hubreconcile.InstallNotifier(reconcileNotifierFor(location))
++}
++
++// reconcileNotifierFor returns the notifier that posts a notice for the hub at location to its prime orch, signed RECONCILE, and reports a notice for another Bolt checkout not posted.
++func reconcileNotifierFor(location *lymcwd.Location) hubreconcile.Notifier {
++	boardDir := filepath.Clean(fabricengine.BoltDir(location.HubPath))
++	return func(noticeBoardDir, line string) (bool, error) {
++		if filepath.Clean(noticeBoardDir) != boardDir {
++			return false, nil
++		}
++		sender, err := drivableLocation(location)
++		if err != nil {
++			return false, err
++		}
++		return NotifyPrime(sender, reconcileProgram, line)
++	}
++}
+diff --git a/internal/orchcli/reconcilenotifier_integration_test.go b/internal/orchcli/reconcilenotifier_integration_test.go
+new file mode 100644
+index 00000000..c5082b38
+--- /dev/null
++++ b/internal/orchcli/reconcilenotifier_integration_test.go
+@@ -0,0 +1,63 @@
++// reconcilenotifier_integration_test.go proves the reconcile notice route over a real hub, with creel's daemon run in process on a fake delivery.
++
++package orchcli
++
++import (
++	"context"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestReconcileNotifierFor covers the notifier an install from the hub's board worktree stores: a notice for that hub's Bolt checkout and one for another.
++//
++// It runs without t.Parallel: the strand environment variable is process-global.
++func TestReconcileNotifierFor(t *testing.T) {
++	tiergate.Require(t, 1)
++
++	const line = "[reconcile notice] lym build x changed what a value in the hub's config means: drift.yaml capture.dir"
++	tests := []struct {
++		name string
++		// noticeBoardDir returns the Bolt checkout the notice is for.
++		noticeBoardDir func(t *testing.T, hubPath string) string
++		wantPosted     bool
++	}{
++		{"ThisHubsNoticeMailsThePrimeOrchAsReconcile", func(_ *testing.T, hubPath string) string { return fabricengine.BoltDir(hubPath) }, true},
++		{"AnotherHubsNoticeIsNotPostedAndMailsNothing", func(t *testing.T, _ string) string { return t.TempDir() }, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Setenv(agentname.StrandNameEnv, "")
++			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++			receiver := startHubOrchDaemon(t, h)
++			location, inHub := hubLocation(lymcwd.WithCwd(context.Background(), fabricengine.BoardDir(h.Path)))
++			if !inHub {
++				t.Fatalf("hubLocation(board worktree) found no hub")
++			}
++
++			posted, err := reconcileNotifierFor(location)(tt.noticeBoardDir(t, h.Path), line)
++			if err != nil || posted != tt.wantPosted {
++				t.Errorf("notifier() = %v, %v; want posted %v and no error", posted, err, tt.wantPosted)
++			}
++
++			mails := postedMails(t, h)
++			if !tt.wantPosted {
++				if len(mails) != 0 {
++					t.Errorf("posted events = %+v; want none for another hub's notice", mails)
++				}
++				return
++			}
++			if len(mails) != 1 {
++				t.Fatalf("posted events = %+v; want exactly one", mails)
++			}
++			if mails[0].To != receiver || !strings.HasSuffix(mails[0].From, ":RECONCILE") || mails[0].Subject != line {
++				t.Errorf("posted mail = from %q to %q subject %q; want from <shortname>:RECONCILE to %q subject %q", mails[0].From, mails[0].To, mails[0].Subject, receiver, line)
++			}
++		})
++	}
++}
