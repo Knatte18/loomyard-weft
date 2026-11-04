@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=639ec11eb96f1d91354bf53ab6a9cf9573605dbf64462524e43e0c007db3dab0 build=58a85abf84fdc42b17b224e854ea7f4baef53f76 time=2026-11-03T17:52:02Z -->
+<!-- lym-stencil: sha256=16d4ddf8ac6460f70b6773598ad88d8d3665167cee9157c0d23092abc990fbab build=8ef911f736ffa194364ad8c86c65c78211cafd3b time=2026-11-04T13:39:27Z -->
 
 # Final-summary spec — the producer-agnostic final-summary artifact
 
@@ -43,6 +43,7 @@ The artifact never holds that section itself, so it reaches the pull request and
 
 `Finalize`'s read is unconditional: a missing or malformed artifact there is a hard error.
 `Publish`'s read is reached only when the parent branch requires a pull request: it opens one from the artifact, or refreshes an open one's title and body, so a re-run Publish carries a rewritten description onto the pull request.
+While its review runs, PR-Review reads the artifact again at each status poll of an open pull request, and sets the title and body again when the artifact yields other text, so the pr-reviewer changes them by rewriting the artifact; a read that fails there is logged and retried at the next poll, never an error.
 
 ## Producer-appended sections
 
