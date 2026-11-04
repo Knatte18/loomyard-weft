@@ -1,0 +1,1265 @@
+diff --git a/cmd/lym/configstrictness_test.go b/cmd/lym/configstrictness_test.go
+index c8a70ce8..34885922 100644
+--- a/cmd/lym/configstrictness_test.go
++++ b/cmd/lym/configstrictness_test.go
+@@ -60,6 +60,7 @@ var configStrictnessDegradingSet = map[string]bool{
+ 	"internal/heddleengine":               true,
+ 	"internal/hibernateconfig":            true,
+ 	"internal/envconfig":                  true,
++	"internal/ideconfig":                  true,
+ }
+ 
+ // configStrictnessStrictSet is the pinned set of module-relative, slash-separated package directories that call configengine.Load -- the strict loading policy, where an absent _lym/ directory or absent config file is an error.
+diff --git a/docs/overview.md b/docs/overview.md
+index 15d5d1cb..a887f0e9 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -237,6 +237,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/shortcutcli/         the top-level operator shortcuts (`lym a`, `lym s`, `lym p`, `lym r`) from one embedded file
+ ├── internal/idecli/              the ide CLI command
+ ├── internal/ideengine/           the ide domain kernel
++├── internal/ideconfig/           the hub-wide `ide.yaml` config: the files a VS Code window lym opens shows on start, per place, and whether a markdown file opens rendered
+ ├── internal/pairteardown/        the one sequence that ends a pair: quiet wait or the skip's run-lock wait, refusal probe, owned-process end, loop and reed session end, then fabric removal
+ ├── internal/reedcli/             the reed CLI command
+ ├── internal/reedengine/          the reed domain kernel (overlay + strand bookkeeping)
+@@ -402,6 +403,9 @@ User-facing modules each get one `lym <module>` namespace:
+   `lym ide spawn <beam>` opens the beam's workspace `<hub>/<RepoName>-<beam>.code-workspace` (the beam, its parent, `Bolt` and the beam's pairs) the same way.
+   The files are lym-owned and regenerated on each prime or beam spawn, overwriting any edit made in them;
+   a task slug still opens its bare folder.
++  `lym ide spawn` and `lym ide open` also open, beside the folder or workspace, the files the hub-wide `ide.yaml` lists under `open_files` for the worktree's place, the prime, a beam or a task: paths relative to the worktree's anchored directory, `{beam}` standing for the beam's slug, and an entry naming no file skipped.
++  The template opens `README.md` for a beam and nothing for the prime or a task.
++  With `ide.yaml`'s `render_markdown` on, the default, a seed points the `*.md` entry of `workbench.editorAssociations` in the worktree's `settings.json` at the markdown preview, so a markdown file opens rendered, unless the operator holds that setting in its array form, which is left as it is.
+   The generated `tasks.json` holds one on-demand `reed attach` task, with the `lym` path stamped absolute at generation time, reached through "Tasks: Run Task" or the seeded `ctrl+alt+a` key binding;
+   no task runs on folder open, so opening a worktree in VS Code starts no session and no `claude`.
+   `lym ide spawn` and batten's Seed-IDE row write this config through one shared path.
+diff --git a/internal/configreg/configreg.go b/internal/configreg/configreg.go
+index 9ad6fa3b..9eabe150 100644
+--- a/internal/configreg/configreg.go
++++ b/internal/configreg/configreg.go
+@@ -28,6 +28,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/heddleengine"
+ 	"github.com/Knatte18/loomyard/internal/hibernateconfig"
++	"github.com/Knatte18/loomyard/internal/ideconfig"
+ 	"github.com/Knatte18/loomyard/internal/landingshed"
+ 	"github.com/Knatte18/loomyard/internal/languageconfig"
+ 	"github.com/Knatte18/loomyard/internal/lenses"
+@@ -154,6 +155,7 @@ func Modules() []Module {
+ 		{Name: "gate", Template: gateslot.ConfigTemplate, OpenMaps: gateslot.ConfigOpenMaps(), PerNameMaps: gateslot.ConfigPerNameMaps(), HubWide: true, Migrate: gateslot.MigrateConfig, MigrateHubBase: gateslot.SeedAdoptGate, CheckLoad: checkLoad(gateslot.LoadConfig), CheckDirs: gateslot.CheckDirs, Spec: gateslot.ConfigSpec},
+ 		{Name: "heddle", Template: heddleengine.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(heddleengine.LoadConfig), Spec: heddleengine.ConfigSpec},
+ 		{Name: "hibernate", Template: hibernateconfig.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(hibernateconfig.LoadConfig), Spec: hibernateconfig.ConfigSpec},
++		{Name: "ide", Template: ideconfig.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(ideconfig.LoadConfig), Spec: ideconfig.ConfigSpec},
+ 		{Name: "landing", Template: landingshed.ConfigTemplate, OpenMaps: landingshed.ConfigOpenMaps(), HubWide: true, SeedsFromPrime: true, Migrate: landingshed.MigrateConfig, CheckLoad: checkLoadNamed(landingshed.LoadConfig, "landing"), Spec: landingshed.ConfigSpec},
+ 		{Name: "language", Template: languageconfig.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(languageconfig.Load), Spec: languageconfig.ConfigSpec},
+ 		{Name: "lenses", Template: lenses.ConfigTemplate, PerNameMaps: lenses.ConfigPerNameMaps(), CheckLoad: lenses.CheckLoad, Spec: lenses.ConfigSpec},
+diff --git a/internal/configreg/configreg_test.go b/internal/configreg/configreg_test.go
+index ccf009a1..eaea0345 100644
+--- a/internal/configreg/configreg_test.go
++++ b/internal/configreg/configreg_test.go
+@@ -44,7 +44,7 @@ func TestNames(t *testing.T) {
+ 	}
+ }
+ 
+-// TestModules_SeedOnlyAndHubWideFlags pins the two flags: "models" and "profiles" carry an open-ended, operator-owned key set (model aliases and run profiles respectively), so they are the only entries with SeedOnly == true, "fabric", "board", "gate", "heddle", "hibernate", "landing", "darn", "desktop", "drift", "env", "language", "sampler" and "profiles" describe hub-level facts, so they are the only entries with HubWide == true, and "landing", whose per-worktree copy was in effect before it moved hub-wide, is the only entry with SeedsFromPrime == true.
++// TestModules_SeedOnlyAndHubWideFlags pins the two flags: "models" and "profiles" carry an open-ended, operator-owned key set (model aliases and run profiles respectively), so they are the only entries with SeedOnly == true, "fabric", "board", "gate", "heddle", "hibernate", "ide", "landing", "darn", "desktop", "drift", "env", "language", "sampler" and "profiles" describe hub-level facts, so they are the only entries with HubWide == true, and "landing", whose per-worktree copy was in effect before it moved hub-wide, is the only entry with SeedsFromPrime == true.
+ //
+ //testtiming:keep pins which modules carry the SeedOnly and HubWide flags, which the covering TestFill never asserts
+ func TestModules_SeedOnlyAndHubWideFlags(t *testing.T) {
+@@ -55,7 +55,7 @@ func TestModules_SeedOnlyAndHubWideFlags(t *testing.T) {
+ 		if m.SeedOnly != wantSeedOnly {
+ 			t.Errorf("Modules(): module %q SeedOnly = %v; want %v", m.Name, m.SeedOnly, wantSeedOnly)
+ 		}
+-		wantHubWide := m.Name == "fabric" || m.Name == "board" || m.Name == "gate" || m.Name == "heddle" || m.Name == "hibernate" || m.Name == "landing" || m.Name == "darn" || m.Name == "desktop" || m.Name == "drift" || m.Name == "env" || m.Name == "language" || m.Name == "profiles" || m.Name == "sampler"
++		wantHubWide := m.Name == "fabric" || m.Name == "board" || m.Name == "gate" || m.Name == "heddle" || m.Name == "hibernate" || m.Name == "ide" || m.Name == "landing" || m.Name == "darn" || m.Name == "desktop" || m.Name == "drift" || m.Name == "env" || m.Name == "language" || m.Name == "profiles" || m.Name == "sampler"
+ 		if m.HubWide != wantHubWide {
+ 			t.Errorf("Modules(): module %q HubWide = %v; want %v", m.Name, m.HubWide, wantHubWide)
+ 		}
+@@ -78,6 +78,7 @@ func TestModules_EveryTemplateKeyClassified(t *testing.T) {
+ 	wantLocalKeys := map[string][]string{
+ 		"darn":    {"gate_fixer", "verify_attempts", "writer", "writer_timeout_min"},
+ 		"drift":   {"baseline_model", "enabled", "scope", "skip", "verify_interactive", "verify_max_runs", "verify_model"},
++		"ide":     {"open_files", "render_markdown"},
+ 		"landing": {"conflict", "conflict_timeout_min", "describe", "describe_timeout_min", "fixer", "fixer_timeout_min", "pr_reviewer"},
+ 		"sampler": {"agent", "code_review"},
+ 	}
+diff --git a/internal/idecli/cli_test.go b/internal/idecli/cli_test.go
+index 3d7e8c3e..9b1d0ee2 100644
+--- a/internal/idecli/cli_test.go
++++ b/internal/idecli/cli_test.go
+@@ -32,7 +32,7 @@ func TestRunCLI_SpawnScenario(t *testing.T) {
+ 	defer func() { ideengine.CodeLauncher, ideengine.KeybindingsPath = originalLauncher, originalKeybindingsPath }()
+ 	var launches []string
+ 	var launchErr error
+-	ideengine.CodeLauncher = func(dir string) error {
++	ideengine.CodeLauncher = func(dir string, _ ...string) error {
+ 		launches = append(launches, dir)
+ 		return launchErr
+ 	}
+diff --git a/internal/ideconfig/config.go b/internal/ideconfig/config.go
+new file mode 100644
+index 00000000..09df10b1
+--- /dev/null
++++ b/internal/ideconfig/config.go
+@@ -0,0 +1,88 @@
++// config.go defines ide.yaml: the Config type, the template and spec accessors, and LoadConfig.
++
++package ideconfig
++
++import (
++	_ "embed"
++	"fmt"
++	"path/filepath"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"gopkg.in/yaml.v3"
++)
++
++//go:embed template.yaml
++var configTemplate string
++
++// ConfigTemplate returns the default YAML template for the ide config module.
++func ConfigTemplate() string {
++	return configTemplate
++}
++
++// configModule is the config module name ide.yaml is loaded under.
++const configModule = "ide"
++
++// Keys of ide.yaml.
++const (
++	openFilesKey      = "open_files"
++	renderMarkdownKey = "render_markdown"
++)
++
++// BeamPlaceholder is the text an open_files entry names to stand for the beam's slug.
++const BeamPlaceholder = "{beam}"
++
++// Config represents the resolved ide.yaml configuration.
++type Config struct {
++	// OpenFiles is the files a new window opens beside its folder or workspace, per place.
++	OpenFiles OpenFiles `yaml:"open_files"`
++	// RenderMarkdown reports whether a markdown file opens as VS Code's markdown preview in a seeded worktree.
++	RenderMarkdown bool `yaml:"render_markdown"`
++}
++
++// OpenFiles is one ordered list of open_files entries per place, each a path relative to the worktree's anchored directory that may name BeamPlaceholder.
++type OpenFiles struct {
++	Prime []string `yaml:"prime"`
++	Beam  []string `yaml:"beam"`
++	Task  []string `yaml:"task"`
++}
++
++// ConfigSpec returns the ide module's layered-load spec.
++// Both keys change only what a window shows, so the local layer may hold them.
++func ConfigSpec() configengine.Spec {
++	return configengine.Spec{
++		Name:     configModule,
++		Template: []byte(ConfigTemplate()),
++		HubWide:  true,
++		Categories: map[string]configengine.Category{
++			openFilesKey:      configengine.CategoryNone,
++			renderMarkdownKey: configengine.CategoryNone,
++		},
++	}
++}
++
++// LoadConfig loads and unmarshals the ide module's configuration through the hub-wide layer stack under dirs.
++// A hub whose base file is absent resolves the template under the local layer present, so opening a window never fails on a hub not yet reconciled.
++// It refuses an open_files entry that is empty, absolute or climbs out of the worktree, naming the key.
++func LoadConfig(dirs configengine.Dirs) (Config, error) {
++	resolved, err := configengine.LoadOrTemplate(dirs, ConfigSpec())
++	if err != nil {
++		return Config{}, err
++	}
++
++	var cfg Config
++	if err := yaml.Unmarshal(resolved, &cfg); err != nil {
++		return Config{}, configengine.MarkInvalid(fmt.Errorf("unmarshal ide config: %w", err))
++	}
++	places := []struct {
++		name    string
++		entries []string
++	}{{"prime", cfg.OpenFiles.Prime}, {"beam", cfg.OpenFiles.Beam}, {"task", cfg.OpenFiles.Task}}
++	for _, place := range places {
++		for _, entry := range place.entries {
++			if !filepath.IsLocal(filepath.FromSlash(entry)) {
++				return Config{}, configengine.MarkInvalid(fmt.Errorf("ide config key %q holds %q; want a path relative to the worktree's anchored directory that stays inside it", openFilesKey+"."+place.name, entry))
++			}
++		}
++	}
++	return cfg, nil
++}
+diff --git a/internal/ideconfig/config_test.go b/internal/ideconfig/config_test.go
+new file mode 100644
+index 00000000..bac6a713
+--- /dev/null
++++ b/internal/ideconfig/config_test.go
+@@ -0,0 +1,88 @@
++// config_test.go covers ideconfig.LoadConfig over a bare board and anchor, with no hub and no spawn.
++
++package ideconfig_test
++
++import (
++	"errors"
++	"os"
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/ideconfig"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestLoadConfig covers the template defaults, a hub file and a local override setting the keys, and the refused open_files entries.
++func TestLoadConfig(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name    string
++		hub     string
++		local   string
++		want    ideconfig.Config
++		wantErr string
++	}{
++		{
++			name: "TemplateDefaults",
++			want: ideconfig.Config{OpenFiles: ideconfig.OpenFiles{Prime: []string{}, Beam: []string{"README.md"}, Task: []string{}}, RenderMarkdown: true},
++		},
++		{
++			name: "HubFileSetsBothKeys",
++			hub:  "open_files:\n  prime: [docs/overview.md]\n  beam: [README.md, \"docs/{beam}.md\"]\n  task: []\nrender_markdown: false\n",
++			want: ideconfig.Config{OpenFiles: ideconfig.OpenFiles{Prime: []string{"docs/overview.md"}, Beam: []string{"README.md", "docs/{beam}.md"}, Task: []string{}}},
++		},
++		{
++			name:  "LocalOverrideSetsRenderMarkdown",
++			local: "render_markdown: false\n",
++			want:  ideconfig.Config{OpenFiles: ideconfig.OpenFiles{Prime: []string{}, Beam: []string{"README.md"}, Task: []string{}}},
++		},
++		{name: "AbsoluteEntryRefused", hub: "open_files:\n  task: [/etc/hosts]\n", wantErr: `ide config key "open_files.task" holds "/etc/hosts"`},
++		{name: "ClimbingEntryRefused", hub: "open_files:\n  beam: [../README.md]\n", wantErr: `ide config key "open_files.beam" holds "../README.md"`},
++		{name: "EmptyEntryRefused", hub: "open_files:\n  prime: [\"\"]\n", wantErr: `ide config key "open_files.prime" holds ""`},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dirs := configengine.Dirs{Board: t.TempDir(), Anchor: t.TempDir()}
++			writeLayer(t, configengine.ConfigDir(dirs.Board), configengine.ConfigFile(dirs.Board, "ide"), tt.hub)
++			if tt.local != "" {
++				// The anchor gets a _lym/config/ too, since a worktree with no _lym/ stacks no local layer.
++				writeLayer(t, configengine.ConfigDir(dirs.Anchor), "", "")
++				writeLayer(t, configengine.ScratchDir(dirs.Anchor), configengine.LocalFile(dirs.Anchor, "ide"), tt.local)
++			}
++
++			got, err := ideconfig.LoadConfig(dirs)
++			if tt.wantErr != "" {
++				if err == nil || !strings.Contains(err.Error(), tt.wantErr) || !errors.Is(err, configengine.ErrInvalid) {
++					t.Fatalf("LoadConfig() error = %v; want an ErrInvalid error containing %q", err, tt.wantErr)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("LoadConfig() error = %v; want nil", err)
++			}
++			sameFiles := slices.Equal(got.OpenFiles.Prime, tt.want.OpenFiles.Prime) && slices.Equal(got.OpenFiles.Beam, tt.want.OpenFiles.Beam) && slices.Equal(got.OpenFiles.Task, tt.want.OpenFiles.Task)
++			if !sameFiles || got.RenderMarkdown != tt.want.RenderMarkdown {
++				t.Errorf("LoadConfig() = %+v; want %+v", got, tt.want)
++			}
++		})
++	}
++}
++
++// writeLayer creates dir and, when contents is not empty, writes contents to path.
++func writeLayer(t *testing.T, dir, path, contents string) {
++	t.Helper()
++	if err := os.MkdirAll(dir, 0o755); err != nil {
++		t.Fatalf("MkdirAll(%q) = %v; want nil", dir, err)
++	}
++	if contents == "" {
++		return
++	}
++	if err := os.WriteFile(path, []byte(contents), 0o644); err != nil {
++		t.Fatalf("WriteFile(%q) = %v; want nil", path, err)
++	}
++}
+diff --git a/internal/ideconfig/doc.go b/internal/ideconfig/doc.go
+new file mode 100644
+index 00000000..23784b36
+--- /dev/null
++++ b/internal/ideconfig/doc.go
+@@ -0,0 +1,16 @@
++// doc.go carries the package godoc for ideconfig.
++
++// Package ideconfig owns the hub-wide ide.yaml: which files a VS Code window lym opens shows on start, per place, and whether a markdown file opens rendered.
++//
++// open_files holds one list per place: the prime, a beam and a task.
++// Each entry is a path relative to the worktree's anchored directory, the folder its window shows, and may name the {beam} placeholder, which the opener resolves to the beam's slug.
++// The template opens README.md for a beam and nothing for the prime or a task;
++// a beam's own file, such as docs/{beam}.md, is named by adding an entry.
++// render_markdown, on in the template, makes a markdown file open as VS Code's markdown preview rather than as source.
++// Both keys only change what a window shows, so a worktree's local override may set them.
++//
++// LoadConfig degrades to the template when the hub holds no ide.yaml, so opening a window never fails on a hub not yet reconciled.
++// It refuses an open_files entry that is empty, absolute or climbs out of the worktree, naming the key.
++// The module sits apart from the ide engine because configreg registers its template, and the engine already reaches configreg through its own imports.
++// LoadConfig never resolves cwd itself: the caller hands it the directories (see PATTERN-cwd-resolution).
++package ideconfig
+diff --git a/internal/ideconfig/template.yaml b/internal/ideconfig/template.yaml
+new file mode 100644
+index 00000000..cb5cb259
+--- /dev/null
++++ b/internal/ideconfig/template.yaml
+@@ -0,0 +1,6 @@
++open_files:  # files `lym ide spawn` and `lym ide open` open beside the folder or workspace they launch, one list per place, in order; each a path relative to the worktree's anchored directory, the folder its window shows, where {beam} stands for the beam's slug: a beam's own, a task's parent's, or the prime's name for the prime and a task forked from it; an entry naming no existing file is skipped
++  prime: []
++  beam:
++    - README.md
++  task: []
++render_markdown: true  # whether a markdown file opens rendered, as VS Code's markdown preview, in a worktree `lym ide` seeds; lym then owns the "*.md" entry of workbench.editorAssociations in the worktree's settings.json, and off removes that entry while it names the preview; "Reopen Editor With..." switches one file either way
+diff --git a/internal/ideconfig/testmain_test.go b/internal/ideconfig/testmain_test.go
+new file mode 100644
+index 00000000..0525efff
+--- /dev/null
++++ b/internal/ideconfig/testmain_test.go
+@@ -0,0 +1,14 @@
++// testmain_test.go runs the package's tests under tmuxkit.Main, so their temp files live in the process run directory and go with it.
++
++package ideconfig_test
++
++import (
++	"os"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
++)
++
++func TestMain(m *testing.M) {
++	os.Exit(tmuxkit.Main(m))
++}
+diff --git a/internal/ideengine/menu_test.go b/internal/ideengine/menu_test.go
+index a46111cb..2a8e4b8f 100644
+--- a/internal/ideengine/menu_test.go
++++ b/internal/ideengine/menu_test.go
+@@ -146,7 +146,7 @@ func TestMenuScenario(t *testing.T) {
+ 
+ 		originalLauncher := CodeLauncher
+ 		defer func() { CodeLauncher = originalLauncher }()
+-		CodeLauncher = func(dir string) error { return nil }
++		CodeLauncher = func(string, ...string) error { return nil }
+ 
+ 		var out bytes.Buffer
+ 
+@@ -195,7 +195,7 @@ func TestMenuScenario(t *testing.T) {
+ 		var launchCount int
+ 		originalLauncher := CodeLauncher
+ 		defer func() { CodeLauncher = originalLauncher }()
+-		CodeLauncher = func(dir string) error {
++		CodeLauncher = func(string, ...string) error {
+ 			launchCount++
+ 			return nil
+ 		}
+diff --git a/internal/ideengine/spawn.go b/internal/ideengine/spawn.go
+index 54726593..3df1ef04 100644
+--- a/internal/ideengine/spawn.go
++++ b/internal/ideengine/spawn.go
+@@ -1,5 +1,5 @@
+ // spawn.go implements the ide entry point Spawn (`ide spawn`), and its two halves, Seed and OpenTask.
+-// It resolves a worktree's window title and colours from the prime, the board's beams and the worktree's parent, generates the worktree's .vscode/ config, and launches VS Code;
++// It resolves a worktree's window title and colours from the prime, the board's beams and the worktree's parent, generates the worktree's .vscode/ config, and launches VS Code with the files the hub's ide.yaml lists for the worktree's place;
+ // after a launch it runs the machine's desktop window command through internal/desktophook;
+ // it regenerates tasks.json on every call and keeps .vscode/ out of git through info/exclude.
+ // A task slug opens its bare folder.
+@@ -19,13 +19,14 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/desktophook"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
++	"github.com/Knatte18/loomyard/internal/ideconfig"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/vscode"
+ )
+ 
+ // CodeLauncher is the exported package-level injectable seam that can be overridden in tests.
+-// It defaults to vscode.Launch but can be stubbed to record its argument for testing.
++// It defaults to vscode.Launch, told the folder or workspace file to open and the files to open beside it, and can be stubbed to record its arguments for testing.
+ // Exported so that cli_test.go in the idecli package can swap it.
+ var CodeLauncher = vscode.Launch
+ 
+@@ -37,15 +38,16 @@ var KeybindingsPath = vscode.UserKeybindingsPath
+ // A task slug launches its bare folder <hub>/<slug>/<its own anchor>.
+ // When slug names the prime, Spawn first regenerates the hub workspace file <hub>/<RepoName>.code-workspace and launches that file instead;
+ // when slug names a beam, one whose origin record carries the beam mark, it regenerates the same way and launches the beam's workspace file <hub>/<RepoName>-<beam>.code-workspace.
+-// Every error on either path is returned, never degraded to the bare folder.
+-// A failure to resolve the prime's name, or to read a pair's origin record, is logged and degrades to the bare-folder path.
++// The launch also opens the files ide.yaml lists for the worktree's place, the prime, a beam or a task, that exist under the worktree's anchored directory.
++// Every error on either path is returned, never degraded to the bare folder, and so is an ide.yaml that fails to load.
++// A failure to resolve the prime's name, or to read a pair's origin record, is logged and degrades to the bare-folder path and a task's files.
+ // It returns the keybindings seed's outcome beside the error; a skipped keybindings seed never fails the spawn.
+ func Spawn(l *lymcwd.Location, slug string) (vscode.KeybindingsResult, error) {
+ 	result, err := seed(l, slug)
+ 	if err != nil {
+ 		return result.keybindings, err
+ 	}
+-	if err := CodeLauncher(result.launchPath); err != nil {
++	if err := CodeLauncher(result.launchPath, result.openFiles...); err != nil {
+ 		return result.keybindings, err
+ 	}
+ 	placeWindow(l, result.windowDir)
+@@ -55,6 +57,7 @@ func Spawn(l *lymcwd.Location, slug string) (vscode.KeybindingsResult, error) {
+ // Seed writes the window title and colours and the .vscode/ config of the worktree slug, the prime or a pair, and launches nothing.
+ // It keeps .vscode/ out of git through info/exclude and never writes a .gitignore;
+ // a tracked .vscode/tasks.json is left alone with a warning.
++// The settings make a markdown file open rendered while ide.yaml's render_markdown is on, and an ide.yaml that fails to load fails the seed.
+ // When slug names the prime or a beam, Seed then regenerates the hub workspace file and every beam's, whose settings carry the prime's or the beam's with the workspace look, and returns any error on that path;
+ // a task slug leaves the workspace files as they are.
+ // It seeds the lym block of key bindings, the Alt-arrow keys the integrated terminal passes to reed, into the user's VS Code keybindings.json and returns the outcome beside the error;
+@@ -64,36 +67,40 @@ func Seed(l *lymcwd.Location, slug string) (vscode.KeybindingsResult, error) {
+ 	return result.keybindings, err
+ }
+ 
+-// seedResult is what seed did: the keybindings seed's outcome, the path a launch of the worktree opens and the directory the opened window is on.
++// seedResult is what seed did: the keybindings seed's outcome, the path a launch of the worktree opens, the directory the opened window is on and the files the launch opens beside the path.
+ // The window directory is the launch path itself unless that is a workspace file.
+ type seedResult struct {
+ 	keybindings vscode.KeybindingsResult
+ 	launchPath  string
+ 	windowDir   string
++	openFiles   []string
+ }
+ 
+ // seed writes slug's .vscode/ config, seeds the user's keybindings.json and, for the prime or a beam, regenerates the workspace files;
+ // the launch path is then the hub workspace file for the prime and the beam's own for a beam.
+ // A task's launch path is its bare folder at its own anchor.
+ // The config is written before the regeneration, so a beam's file splices the settings just written.
++// The files to open are those of the worktree's place in ide.yaml, read over the config stack of slug's own worktree, so its local override applies.
+ func seed(l *lymcwd.Location, slug string) (seedResult, error) {
+ 	own, err := lymcwd.NamedWorktree(l.HubPath, slug)
+ 	if err != nil {
+ 		return seedResult{}, fmt.Errorf("read the anchor of %q: %w", slug, err)
+ 	}
++	ide, err := ideconfig.LoadConfig(fabricengine.ConfigDirs(own))
++	if err != nil {
++		return seedResult{}, fmt.Errorf("load the ide config: %w", err)
++	}
+ 	worktreeDir, look, primeName, primeResolved := resolveSpawnTarget(l, own, slug)
+ 
+-	if err := writeWorktreeConfig(own, worktreeDir, slug, look); err != nil {
++	if err := writeWorktreeConfig(own, worktreeDir, slug, look, ide.RenderMarkdown); err != nil {
+ 		return seedResult{}, err
+ 	}
+ 
+ 	anchorPath := filepath.Join(worktreeDir, own.AnchorRel)
+ 	result := seedResult{keybindings: seedKeybindings(), launchPath: anchorPath, windowDir: anchorPath}
+-	if !primeResolved {
+-		return result, nil
+-	}
+-	isPrime := slug == primeName
+-	if !isPrime && !isBeam(l, slug) {
++	isPrime := primeResolved && slug == primeName
++	if !isPrime && (!primeResolved || !isBeam(l, slug)) {
++		result.openFiles = filesToOpen(anchorPath, ide.OpenFiles.Task, taskBeam(l, slug))
+ 		return result, nil
+ 	}
+ 	hubWorkspacePath, err := fabricengine.RegenerateHubWorkspace(fabricengine.NewMutations(l.HubPath), l)
+@@ -101,8 +108,10 @@ func seed(l *lymcwd.Location, slug string) (seedResult, error) {
+ 		return result, err
+ 	}
+ 	result.launchPath = hubWorkspacePath
++	result.openFiles = filesToOpen(anchorPath, ide.OpenFiles.Prime, func() string { return primeName })
+ 	if !isPrime {
+ 		result.launchPath = fabricengine.BeamWorkspacePath(l, slug)
++		result.openFiles = filesToOpen(anchorPath, ide.OpenFiles.Beam, func() string { return slug })
+ 	}
+ 	result.windowDir = filepath.Dir(result.launchPath)
+ 	return result, nil
+@@ -119,20 +128,73 @@ func isBeam(l *lymcwd.Location, slug string) bool {
+ 	return found && origin.Beam
+ }
+ 
+-// OpenTask launches VS Code on task slug's bare folder at the task's own anchor, as Spawn does for a task pair, runs the machine's desktop window command and writes nothing.
++// OpenTask launches VS Code on task slug's bare folder at the task's own anchor, with the files ide.yaml lists for a task, as Spawn does for a task pair, runs the machine's desktop window command and writes nothing.
++// The ide.yaml is read over the config stack of slug's own worktree, and one that fails to load fails it before the launch.
+ func OpenTask(l *lymcwd.Location, slug string) error {
+ 	own, err := lymcwd.NamedWorktree(l.HubPath, slug)
+ 	if err != nil {
+ 		return fmt.Errorf("read the anchor of %q: %w", slug, err)
+ 	}
++	ide, err := ideconfig.LoadConfig(fabricengine.ConfigDirs(own))
++	if err != nil {
++		return fmt.Errorf("load the ide config: %w", err)
++	}
+ 	launchPath := filepath.Join(fabricengine.WorktreePath(l, slug), own.AnchorRel)
+-	if err := CodeLauncher(launchPath); err != nil {
++	if err := CodeLauncher(launchPath, filesToOpen(launchPath, ide.OpenFiles.Task, taskBeam(l, slug))...); err != nil {
+ 		return err
+ 	}
+ 	placeWindow(l, launchPath)
+ 	return nil
+ }
+ 
++// filesToOpen returns the absolute paths under anchorPath that entries name, in order, keeping only those naming an existing regular file.
++// An entry naming ideconfig.BeamPlaceholder has it replaced by what beam returns; beam runs once, and only when an entry names the placeholder.
++// An entry beam answers "" for, and one naming no file, is skipped and logged at Info, since VS Code would open an empty editor on a path that does not exist.
++func filesToOpen(anchorPath string, entries []string, beam func() string) []string {
++	var files []string
++	beamName, beamAsked := "", false
++	for _, entry := range entries {
++		if strings.Contains(entry, ideconfig.BeamPlaceholder) {
++			if !beamAsked {
++				beamName, beamAsked = beam(), true
++			}
++			if beamName == "" {
++				logger.Info("ide: no beam resolves an open_files entry; skipping it", "entry", entry)
++				continue
++			}
++			entry = strings.ReplaceAll(entry, ideconfig.BeamPlaceholder, beamName)
++		}
++		filePath := filepath.Join(anchorPath, filepath.FromSlash(entry))
++		if info, err := os.Stat(filePath); err != nil || !info.Mode().IsRegular() {
++			logger.Info("ide: an open_files entry names no file; skipping it", "path", filePath)
++			continue
++		}
++		files = append(files, filePath)
++	}
++	return files
++}
++
++// taskBeam returns the function naming task slug's beam: the pair it was forked from, or the prime's name for a task forked from the prime.
++// A prime or parent it cannot resolve is logged at Warn and answers "".
++func taskBeam(l *lymcwd.Location, slug string) func() string {
++	return func() string {
++		primeName, err := fabricengine.PrimeName(l)
++		if err != nil {
++			logger.Warn("ide: resolve the prime for a task's beam", "slug", slug, "error", err)
++			return ""
++		}
++		parent, err := parentOf(l.HubPath, primeName, slug)
++		if err != nil {
++			logger.Warn("ide: read the parent of a task for its beam", "slug", slug, "error", err)
++			return ""
++		}
++		if parent == "" {
++			return primeName
++		}
++		return parent
++	}
++}
++
+ // placeWindow runs the machine's desktop window command, in the directory windowDir, for the VS Code window just launched, under l's config stack.
+ // The window is open by then, so a failure of the command only warns.
+ func placeWindow(l *lymcwd.Location, windowDir string) {
+@@ -143,9 +205,9 @@ func placeWindow(l *lymcwd.Location, windowDir string) {
+ 
+ // writeWorktreeConfig writes slug's .vscode/ config at own's anchor through writeVSCodeConfig, stamping in the absolute lym path.
+ // The path degrades to the empty string on error so vscode.WriteConfig's own bare-name fallback rule applies.
+-func writeWorktreeConfig(own *lymcwd.Location, worktreeDir, slug string, look vscode.Look) error {
++func writeWorktreeConfig(own *lymcwd.Location, worktreeDir, slug string, look vscode.Look, renderMarkdown bool) error {
+ 	lymPath, _ := os.Executable()
+-	return writeVSCodeConfig(own, worktreeDir, slug, look, lymPath)
++	return writeVSCodeConfig(own, worktreeDir, slug, look, renderMarkdown, lymPath)
+ }
+ 
+ // seedKeybindings seeds the user's keybindings.json through the KeybindingsPath seam; a path it cannot resolve is a skip.
+@@ -160,7 +222,7 @@ func seedKeybindings() vscode.KeybindingsResult {
+ // writeVSCodeConfig keeps .vscode/ out of git and writes the .vscode/ config at the worktree's anchor.
+ // When .vscode/tasks.json is already tracked, it logs one warning and writes neither file nor the exclude line.
+ // Otherwise it first adds an anchored .vscode line to the shared info/exclude, then calls vscode.WriteConfig.
+-func writeVSCodeConfig(l *lymcwd.Location, worktreeDir, slug string, look vscode.Look, lymPath string) error {
++func writeVSCodeConfig(l *lymcwd.Location, worktreeDir, slug string, look vscode.Look, renderMarkdown bool, lymPath string) error {
+ 	tasksRel := path.Join(filepath.ToSlash(l.AnchorRel), ".vscode", "tasks.json")
+ 	tracked, err := fabricengine.PathTracked(worktreeDir, tasksRel)
+ 	if err != nil {
+@@ -177,7 +239,7 @@ func writeVSCodeConfig(l *lymcwd.Location, worktreeDir, slug string, look vscode
+ 	if changed {
+ 		logger.Info("excluded .vscode/ from git", "slug", slug, "exclude", excludePath)
+ 	}
+-	if err := vscode.WriteConfig(worktreeDir, l.AnchorRel, look, lymPath); err != nil {
++	if err := vscode.WriteConfig(worktreeDir, l.AnchorRel, look, renderMarkdown, lymPath); err != nil {
+ 		return fmt.Errorf("write vscode config: %w", err)
+ 	}
+ 	return nil
+diff --git a/internal/ideengine/spawn_clean_integration_test.go b/internal/ideengine/spawn_clean_integration_test.go
+index 66267697..c679ae52 100644
+--- a/internal/ideengine/spawn_clean_integration_test.go
++++ b/internal/ideengine/spawn_clean_integration_test.go
+@@ -190,8 +190,11 @@ func checkSkipsTrackedVSCode(t *testing.T, h *hubforge.Hub, slug string, onPrime
+ 
+ // checkPrimeNameFailureOpensBareFolder asserts a Location whose worktree is not a git checkout logs the resolve-prime-name warning and launches the pair's bare folder.
+ func checkPrimeNameFailureOpensBareFolder(t *testing.T, h *hubforge.Hub, slug string) {
+-	launched := recordLauncher(t)
++	launched, opened := recordLaunches(t)
++	setIDEConfig(t, h, "open_files:\n  task: [\"{beam}.md\"]\n")
+ 	hubforge.AddPair(t, h, slug)
++	// A file named ".md" is what the entry reads as if the placeholder were replaced by nothing.
++	writeFileUnder(t, filepath.Join(fabricengine.WorktreePath(h.Location, slug), h.Location.AnchorRel), ".md")
+ 	notGit := "not-a-checkout"
+ 	notGitDir := filepath.Join(h.Path, notGit)
+ 	if err := os.MkdirAll(notGitDir, 0o755); err != nil {
+@@ -208,8 +211,14 @@ func checkPrimeNameFailureOpensBareFolder(t *testing.T, h *hubforge.Hub, slug st
+ 	if !strings.Contains(logBuf.String(), "resolve prime name") {
+ 		t.Errorf("no resolve prime name warning logged:\n%s", logBuf.String())
+ 	}
++	if !strings.Contains(logBuf.String(), "resolve the prime for a task's beam") {
++		t.Errorf("no warning logged for the prime a task's beam could not resolve:\n%s", logBuf.String())
++	}
+ 	want := filepath.Join(fabricengine.WorktreePath(h.Location, slug), h.Location.AnchorRel)
+ 	if len(*launched) != 1 || (*launched)[0] != want {
+ 		t.Errorf("CodeLauncher calls = %v, want [%s]", *launched, want)
+ 	}
++	if len(*opened) != 1 || len((*opened)[0]) != 0 {
++		t.Errorf("CodeLauncher files = %v; want none, since no beam resolves the {beam} entry", *opened)
++	}
+ }
+diff --git a/internal/ideengine/spawn_hub_integration_test.go b/internal/ideengine/spawn_hub_integration_test.go
+index 98bd548a..b2e6b686 100644
+--- a/internal/ideengine/spawn_hub_integration_test.go
++++ b/internal/ideengine/spawn_hub_integration_test.go
+@@ -25,15 +25,71 @@ import (
+ 
+ // recordLauncher swaps CodeLauncher for a recorder and returns the launched paths, restoring the seam on cleanup.
+ func recordLauncher(t *testing.T) *[]string {
++	t.Helper()
++	launched, _ := recordLaunches(t)
++	return launched
++}
++
++// recordLaunches swaps CodeLauncher for a recorder and returns the launched paths and, per launch, the files opened beside the path, restoring the seam on cleanup.
++func recordLaunches(t *testing.T) (launched *[]string, opened *[][]string) {
+ 	t.Helper()
+ 	original := CodeLauncher
+ 	t.Cleanup(func() { CodeLauncher = original })
+-	var launched []string
+-	CodeLauncher = func(path string) error {
+-		launched = append(launched, path)
++	var paths []string
++	var files [][]string
++	CodeLauncher = func(path string, openFiles ...string) error {
++		paths = append(paths, path)
++		files = append(files, openFiles)
+ 		return nil
+ 	}
+-	return &launched
++	return &paths, &files
++}
++
++// setIDEConfig writes h's hub ide.yaml with contents and removes it on cleanup.
++func setIDEConfig(t *testing.T, h *hubforge.Hub, contents string) {
++	t.Helper()
++	board := fabricengine.BoltDir(h.Location.HubPath)
++	if err := os.MkdirAll(configengine.ConfigDir(board), 0o755); err != nil {
++		t.Fatalf("MkdirAll(%q): %v", configengine.ConfigDir(board), err)
++	}
++	configPath := configengine.ConfigFile(board, "ide")
++	if err := os.WriteFile(configPath, []byte(contents), 0o644); err != nil {
++		t.Fatalf("WriteFile(%q): %v", configPath, err)
++	}
++	t.Cleanup(func() {
++		if err := os.Remove(configPath); err != nil && !os.IsNotExist(err) {
++			t.Errorf("remove %s: %v", configPath, err)
++		}
++	})
++}
++
++// setLocalIDEConfig writes the local override of the ide module under anchor, where a worktree's local config layer is read from, and removes it on cleanup.
++func setLocalIDEConfig(t *testing.T, anchor, contents string) {
++	t.Helper()
++	for _, dir := range []string{configengine.ConfigDir(anchor), configengine.ScratchDir(anchor)} {
++		if err := os.MkdirAll(dir, 0o755); err != nil {
++			t.Fatalf("MkdirAll(%q): %v", dir, err)
++		}
++	}
++	localPath := configengine.LocalFile(anchor, "ide")
++	if err := os.WriteFile(localPath, []byte(contents), 0o644); err != nil {
++		t.Fatalf("WriteFile(%q): %v", localPath, err)
++	}
++	t.Cleanup(func() { _ = os.Remove(localPath) })
++}
++
++// writeFileUnder writes a small file at rel under dir, creating its directory, and removes the file on cleanup.
++func writeFileUnder(t *testing.T, dir, rel string) string {
++	t.Helper()
++	full := filepath.Join(dir, filepath.FromSlash(rel))
++	if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
++		t.Fatalf("mkdir for %s: %v", rel, err)
++	}
++	if err := os.WriteFile(full, []byte("# "+rel+"\n"), 0o644); err != nil {
++		t.Fatalf("write %s: %v", rel, err)
++	}
++	t.Cleanup(func() { _ = os.Remove(full) })
++	return full
+ }
+ 
+ // primeOf returns the hub's prime worktree name.
+@@ -65,12 +121,16 @@ func resetPrimeEditorState(t *testing.T, h *hubforge.Hub) {
+ 
+ // checkPrimeWritesHubWorkspace covers the workspace file's location, folders and launch argument at the hub's anchor:
+ // the prime's branch, Bolt and every task pair the scenario added so far, and no _portals folder.
++// The launch opens beside the workspace, in order, the existing files the hub's ide.yaml lists for the prime, with {beam} resolved to the prime's name and an absent file skipped.
+ func checkPrimeWritesHubWorkspace(t *testing.T, h *hubforge.Hub) {
+ 	resetPrimeEditorState(t, h)
+ 	l := h.Location
+ 	prime := primeOf(t, h)
+-	launched := recordLauncher(t)
++	launched, opened := recordLaunches(t)
+ 	markerPath := setDesktopWindowCommand(t, h)
++	setIDEConfig(t, h, "open_files:\n  prime: [notes.md, absent.md, \"{beam}.md\"]\n")
++	primeAnchor := filepath.Join(h.Path, prime, l.AnchorRel)
++	wantFiles := []string{writeFileUnder(t, primeAnchor, "notes.md"), writeFileUnder(t, primeAnchor, prime+".md")}
+ 
+ 	if _, err := Spawn(l, prime); err != nil {
+ 		t.Fatalf("Spawn: %v", err)
+@@ -80,6 +140,9 @@ func checkPrimeWritesHubWorkspace(t *testing.T, h *hubforge.Hub) {
+ 	if len(*launched) != 1 || (*launched)[0] != wsPath {
+ 		t.Fatalf("CodeLauncher calls = %v, want exactly [%s]", *launched, wsPath)
+ 	}
++	if files := (*opened)[0]; !slices.Equal(files, wantFiles) {
++		t.Errorf("CodeLauncher files = %v; want %v", files, wantFiles)
++	}
+ 	if runs := windowCommandRuns(t, markerPath); runs != 1 {
+ 		t.Errorf("window command runs after a prime Spawn = %d; want 1, since the command runs in the hub directory beside the workspace file", runs)
+ 	}
+@@ -150,10 +213,12 @@ func readOptionalFile(t *testing.T, path string) (data []byte, exists bool) {
+ // checkTaskSlugOpensBareFolder asserts a task spawn launches its bare folder, and that a task seed and spawn leave the workspace file's bytes, or its absence, unchanged.
+ // It also asserts Seed writes the same on-demand attach task Spawn does and seeds the keybindings.json as Spawn does, each into a missing file.
+ // It also asserts Spawn, and never Seed, runs the machine's desktop window command.
++// An ide.yaml that fails to load fails Seed, Spawn and OpenTask, with nothing launched and no settings.json written.
++// A valid one opens beside the folder the existing files it lists for a task, with {beam} resolved to the prime for a task forked from it and a directory entry skipped.
+ func checkTaskSlugOpensBareFolder(t *testing.T, h *hubforge.Hub, slug string) {
+ 	resetPrimeEditorState(t, h)
+ 	l := h.Location
+-	launched := recordLauncher(t)
++	launched, opened := recordLaunches(t)
+ 	hubforge.AddPair(t, h, slug)
+ 	keybindingsPath, err := KeybindingsPath()
+ 	if err != nil {
+@@ -164,6 +229,32 @@ func checkTaskSlugOpensBareFolder(t *testing.T, h *hubforge.Hub, slug string) {
+ 	}
+ 	markerPath := setDesktopWindowCommand(t, h)
+ 	workspaceBefore, workspaceExisted := readOptionalFile(t, fabricengine.HubWorkspacePath(l))
++	taskAnchor := filepath.Join(fabricengine.WorktreePath(l, slug), l.AnchorRel)
++
++	setIDEConfig(t, h, "open_files:\n  task: [\"/absolute.md\"]\n")
++	verbs := []struct {
++		name string
++		run  func() error
++	}{
++		{"Seed", func() error { _, err := Seed(l, slug); return err }},
++		{"Spawn", func() error { _, err := Spawn(l, slug); return err }},
++		{"OpenTask", func() error { return OpenTask(l, slug) }},
++	}
++	for _, verb := range verbs {
++		if err := verb.run(); err == nil || !strings.Contains(err.Error(), "load the ide config") {
++			t.Errorf("%s error = %v; want the ide.yaml load failure", verb.name, err)
++		}
++	}
++	if len(*launched) != 0 {
++		t.Errorf("CodeLauncher calls with an invalid ide.yaml = %v; want none", *launched)
++	}
++	if _, err := os.Stat(filepath.Join(taskAnchor, ".vscode", "settings.json")); !os.IsNotExist(err) {
++		t.Errorf("settings.json after an invalid ide.yaml: stat error %v; want it absent, since the load runs before any write", err)
++	}
++
++	setIDEConfig(t, h, "open_files:\n  task: [\"{beam}.md\", docs, absent.md]\n")
++	writeFileUnder(t, taskAnchor, "docs/guide.md")
++	wantFiles := []string{writeFileUnder(t, taskAnchor, primeOf(t, h)+".md")}
+ 
+ 	keybindings, err := Seed(l, slug)
+ 	if err != nil {
+@@ -194,6 +285,9 @@ func checkTaskSlugOpensBareFolder(t *testing.T, h *hubforge.Hub, slug string) {
+ 	if len(*launched) != 1 || (*launched)[0] != want {
+ 		t.Fatalf("CodeLauncher calls = %v, want [%s]", *launched, want)
+ 	}
++	if files := (*opened)[0]; !slices.Equal(files, wantFiles) {
++		t.Errorf("CodeLauncher files = %v; want %v", files, wantFiles)
++	}
+ 	if marker, err := os.ReadFile(markerPath); err != nil || strings.TrimSpace(string(marker)) != "ran" {
+ 		t.Errorf("window command marker = %q, %v; want one run of the window command", marker, err)
+ 	}
+@@ -205,16 +299,22 @@ func checkTaskSlugOpensBareFolder(t *testing.T, h *hubforge.Hub, slug string) {
+ 
+ // checkBeamOpensBeamWorkspace asserts a beam seed regenerates the beam's workspace file with its workspace title and launches nothing,
+ // and a beam spawn regenerates that file, launches it with the beam as its first folder and runs the window command once.
++// The spawn opens beside it, in order, the existing files the hub's ide.yaml lists for a beam, with {beam} resolved to the beam's slug and an absent file and a directory skipped,
++// and the workspace's settings open a markdown file rendered.
++// A task forked from the beam opens, through OpenTask and Spawn, the file ide.yaml lists for a task with {beam} resolved to the beam's slug.
+ func checkBeamOpensBeamWorkspace(t *testing.T, h *hubforge.Hub, slug string) {
+ 	resetPrimeEditorState(t, h)
+ 	l := h.Location
+-	launched := recordLauncher(t)
++	launched, opened := recordLaunches(t)
+ 	hubforge.AddPair(t, h, slug)
+ 	if marked, err := fabricengine.MarkBeam(fabricengine.NewMutations(h.Path), l, slug); err != nil || !marked {
+ 		t.Fatalf("MarkBeam(%q) = (%v, %v); want (true, nil)", slug, marked, err)
+ 	}
+ 	markerPath := setDesktopWindowCommand(t, h)
+ 	beamPath := fabricengine.BeamWorkspacePath(l, slug)
++	setIDEConfig(t, h, "open_files:\n  beam: [README.md, absent.md, docs, \"docs/{beam}.md\"]\n  task: [\"{beam}.md\"]\n")
++	beamAnchor := filepath.Join(fabricengine.WorktreePath(l, slug), l.AnchorRel)
++	wantFiles := []string{writeFileUnder(t, beamAnchor, "README.md"), writeFileUnder(t, beamAnchor, "docs/"+slug+".md")}
+ 
+ 	if _, err := Seed(l, slug); err != nil {
+ 		t.Fatalf("Seed: %v", err)
+@@ -235,6 +335,12 @@ func checkBeamOpensBeamWorkspace(t *testing.T, h *hubforge.Hub, slug string) {
+ 	if len(*launched) != 1 || (*launched)[0] != beamPath {
+ 		t.Fatalf("CodeLauncher calls = %v, want exactly [%s]", *launched, beamPath)
+ 	}
++	if files := (*opened)[0]; !slices.Equal(files, wantFiles) {
++		t.Errorf("CodeLauncher files = %v; want %v", files, wantFiles)
++	}
++	if got := readWorkspaceLook(t, beamPath).Associations["*.md"]; got != "vscode.markdown.preview.editor" {
++		t.Errorf("beam workspace *.md editor association = %q; want the markdown preview", got)
++	}
+ 	if runs := windowCommandRuns(t, markerPath); runs != 1 {
+ 		t.Errorf("window command runs after a beam Spawn = %d; want 1", runs)
+ 	}
+@@ -253,20 +359,45 @@ func checkBeamOpensBeamWorkspace(t *testing.T, h *hubforge.Hub, slug string) {
+ 	if len(ws.Folders) == 0 || ws.Folders[0].Name != slug {
+ 		t.Errorf("beam workspace folders = %+v, want %q first", ws.Folders, slug)
+ 	}
++
++	child := slug + "-task"
++	hubforge.AddPairWith(t, h, child, fabricengine.AddOptions{Parent: slug})
++	// Removed on cleanup, since the hub workspace check of a later step lists every pair of the hub.
++	t.Cleanup(func() {
++		if _, err := h.Topology.Remove(l, child, true, false); err != nil {
++			t.Errorf("remove the task forked from the beam: %v", err)
++		}
++	})
++	childAnchor := filepath.Join(fabricengine.WorktreePath(l, child), l.AnchorRel)
++	wantChildFiles := []string{writeFileUnder(t, childAnchor, slug+".md")}
++	_, childOpened := recordLaunches(t)
++	if err := OpenTask(l, child); err != nil {
++		t.Fatalf("OpenTask of a task forked from the beam: %v", err)
++	}
++	if _, err := Spawn(l, child); err != nil {
++		t.Fatalf("Spawn of a task forked from the beam: %v", err)
++	}
++	if len(*childOpened) != 2 || !slices.Equal((*childOpened)[0], wantChildFiles) || !slices.Equal((*childOpened)[1], wantChildFiles) {
++		t.Errorf("OpenTask and Spawn files of a task forked from %q = %v; want %v each", slug, *childOpened, wantChildFiles)
++	}
+ }
+ 
+ // checkBeamWithoutReadableOriginOpensBareFolder asserts Spawn returns no error and launches the pair's bare anchor folder, never a workspace file.
+ // It covers a marked beam whose origin record cannot be read because its records worktree's lock directory is missing, and one whose record is absent.
++// It also asserts a {beam} entry of ide.yaml's task list opens nothing for such a pair, since its parent cannot be read, even beside a file named ".md".
+ // It restores the lock directory before returning, so later steps regenerate the hub workspace over a readable pair.
+ func checkBeamWithoutReadableOriginOpensBareFolder(t *testing.T, h *hubforge.Hub, slug string) {
+ 	resetPrimeEditorState(t, h)
+ 	l := h.Location
+-	launched := recordLauncher(t)
++	launched, opened := recordLaunches(t)
+ 	hubforge.AddPair(t, h, slug)
+ 	if marked, err := fabricengine.MarkBeam(fabricengine.NewMutations(h.Path), l, slug); err != nil || !marked {
+ 		t.Fatalf("MarkBeam(%q) = (%v, %v); want (true, nil)", slug, marked, err)
+ 	}
+ 	setDesktopWindowCommand(t, h)
++	setIDEConfig(t, h, "open_files:\n  task: [\"{beam}.md\"]\n")
++	// A file named ".md" is what the entry reads as if the placeholder were replaced by nothing.
++	writeFileUnder(t, filepath.Join(fabricengine.WorktreePath(l, slug), l.AnchorRel), ".md")
+ 	pair, err := lymcwd.NamedWorktree(l.HubPath, slug)
+ 	if err != nil {
+ 		t.Fatalf("NamedWorktree(%q): %v", slug, err)
+@@ -297,6 +428,11 @@ func checkBeamWithoutReadableOriginOpensBareFolder(t *testing.T, h *hubforge.Hub
+ 	if want := []string{bareFolder, bareFolder}; !slices.Equal(*launched, want) {
+ 		t.Errorf("CodeLauncher calls = %v, want %v", *launched, want)
+ 	}
++	for i, files := range *opened {
++		if len(files) != 0 {
++			t.Errorf("CodeLauncher files of launch %d = %v; want none, since no beam resolves the {beam} entry", i, files)
++		}
++	}
+ 	if _, err := os.Stat(fabricengine.BeamWorkspacePath(l, slug)); !os.IsNotExist(err) {
+ 		t.Errorf("beam workspace file written for a beam with no readable origin record (stat err = %v)", err)
+ 	}
+@@ -304,26 +440,34 @@ func checkBeamWithoutReadableOriginOpensBareFolder(t *testing.T, h *hubforge.Hub
+ 
+ // checkWindowCommandFollowsALaunch asserts OpenTask runs the machine's window command once after a launch,
+ // and that a failing CodeLauncher makes Spawn and OpenTask return its error and run no command.
++// It also asserts OpenTask passes the launcher the files ide.yaml lists for a task, with {beam} resolved to the prime for a task forked from it,
++// and that the task worktree's own local override of ide.yaml applies although the location OpenTask runs from is another worktree.
+ func checkWindowCommandFollowsALaunch(t *testing.T, h *hubforge.Hub, slug string) {
+ 	resetPrimeEditorState(t, h)
+ 	l := h.Location
+ 	hubforge.AddPair(t, h, slug)
+ 	markerPath := setDesktopWindowCommand(t, h)
++	setIDEConfig(t, h, "open_files:\n  task: [\"{beam}.md\"]\n")
++	slugAnchor := filepath.Join(fabricengine.WorktreePath(l, slug), l.AnchorRel)
++	wantSlugFiles := []string{writeFileUnder(t, slugAnchor, primeOf(t, h)+".md")}
+ 
+-	launched := recordLauncher(t)
++	launched, opened := recordLaunches(t)
+ 	if err := OpenTask(l, slug); err != nil {
+ 		t.Fatalf("OpenTask: %v", err)
+ 	}
+-	want := filepath.Join(fabricengine.WorktreePath(l, slug), l.AnchorRel)
++	want := slugAnchor
+ 	if len(*launched) != 1 || (*launched)[0] != want {
+ 		t.Fatalf("CodeLauncher calls = %v, want [%s]", *launched, want)
+ 	}
++	if files := (*opened)[0]; !slices.Equal(files, wantSlugFiles) {
++		t.Errorf("OpenTask files = %v; want %v", files, wantSlugFiles)
++	}
+ 	if runs := windowCommandRuns(t, markerPath); runs != 1 {
+ 		t.Fatalf("window command runs after OpenTask = %d; want 1", runs)
+ 	}
+ 
+ 	launchErr := errors.New("code is not installed")
+-	CodeLauncher = func(string) error { return launchErr }
++	CodeLauncher = func(string, ...string) error { return launchErr }
+ 	if err := OpenTask(l, slug); !errors.Is(err, launchErr) {
+ 		t.Errorf("OpenTask error = %v; want the launcher's error", err)
+ 	}
+@@ -333,6 +477,16 @@ func checkWindowCommandFollowsALaunch(t *testing.T, h *hubforge.Hub, slug string
+ 	if runs := windowCommandRuns(t, markerPath); runs != 1 {
+ 		t.Errorf("window command runs after failed launches = %d; want still 1, since a failed launch opens no window", runs)
+ 	}
++
++	localFile := writeFileUnder(t, slugAnchor, "local.md")
++	setLocalIDEConfig(t, slugAnchor, "open_files:\n  task: [local.md]\n")
++	_, localOpened := recordLaunches(t)
++	if err := OpenTask(l, slug); err != nil {
++		t.Fatalf("OpenTask with a local override: %v", err)
++	}
++	if want := []string{localFile}; len(*localOpened) != 1 || !slices.Equal((*localOpened)[0], want) {
++		t.Errorf("OpenTask files with a local override = %v; want [%v]", *localOpened, want)
++	}
+ }
+ 
+ // windowCommandRuns returns how many times the window command appended to the marker at markerPath.
+@@ -490,9 +644,10 @@ func checkPrimeWriteFailure(t *testing.T, h *hubforge.Hub) {
+ 
+ // primeLook is the part of a seeded settings.json, or of a workspace file's settings, the prime checks read.
+ type primeLook struct {
+-	TabSize int               `json:"editor.tabSize"`
+-	Title   string            `json:"window.title"`
+-	Colors  map[string]string `json:"workbench.colorCustomizations"`
++	TabSize      int               `json:"editor.tabSize"`
++	Title        string            `json:"window.title"`
++	Colors       map[string]string `json:"workbench.colorCustomizations"`
++	Associations map[string]string `json:"workbench.editorAssociations"`
+ }
+ 
+ // readWorkspaceLook reads the workspace file at path and decodes the settings it carries.
+diff --git a/internal/vscode/config.go b/internal/vscode/config.go
+index 9e7744e3..2afe9196 100644
+--- a/internal/vscode/config.go
++++ b/internal/vscode/config.go
+@@ -7,7 +7,10 @@
+ // A task's activity-bar colour is any palette colour but its project's, avoiding its siblings', the worktrees whose title bar holds the same project colour, while one is free.
+ // Text on either bar is black or white by the background's luminance.
+ // No status-bar, border or tab colour is written: the status bar loses its background in an unfocused window, the active border is not drawn, and tab colours follow the selected tab.
+-// lym owns those keys and window.title in a worktree's settings.json and rewrites them at every seed; every other key is the operator's.
++// lym owns those keys and window.title in a worktree's settings.json and rewrites them at every seed.
++// Every other key is the operator's, but for the "*.md" entry of workbench.editorAssociations:
++// a seed asked to render markdown points that entry at the markdown preview, so a markdown file opens rendered, unless the operator holds the setting in its array form, which is left as it is.
++// Launch opens a folder or workspace file and any files beside it in the new window.
+ // A workspace window keeps its project's colour on the title bar and takes WorkspaceColor, which no worktree takes, on its activity bar;
+ // WorkspaceSettings sets that look in the settings a workspace file splices.
+ // It also seeds the marked block of key bindings into the user's keybindings.json (see SeedKeybindings):
+@@ -44,6 +47,13 @@ const (
+ 	inactiveForegroundAlphaHex    = "aa"
+ )
+ 
++// The editor association lym owns in a worktree's settings.json: the "*.md" entry, pointed at VS Code's markdown preview.
++const (
++	editorAssociationsKey = "workbench.editorAssociations"
++	markdownPattern       = "*.md"
++	markdownPreviewEditor = "vscode.markdown.preview.editor"
++)
++
+ // Look is how a worktree's VS Code window shows itself: its window title, the project colour its title bar takes and the worktree's own colour its activity bar takes, each a #rrggbb colour.
+ type Look struct {
+ 	Title         string
+@@ -55,13 +65,15 @@ type Look struct {
+ // A missing settings.json is created with look and lym's defaults.
+ // In an existing one only the keys lym owns are set from look: window.title and the title-bar and activity-bar keys of workbench.colorCustomizations;
+ // every other key is kept, though comments are not, and a file that does not decode as JSONC is left untouched with a warning.
++// With renderMarkdown on, either file's "*.md" editor association is set to the markdown preview, so a markdown file opens rendered, unless the file holds the setting in its array form, which is left as it is;
++// with it off, that entry is removed while it names the preview, so an editor the operator chose stays.
+ // tasks.json is always written, overwriting any existing file, and holds one "reed attach" task, run on demand or by its seeded key binding;
+ // no task runs on folder open, so opening the folder starts no session and no agent.
+ // Neither file touches .gitignore; the caller keeps .vscode/ out of git through info/exclude.
+ // lymPath is the resolved absolute lym path stamped into the task;
+ // an empty lymPath becomes "lym", so a resolution failure upstream still produces a runnable (PATH-dependent) task file rather than a broken one.
+ // Returns an error if I/O fails.
+-func WriteConfig(worktreeDir, relpath string, look Look, lymPath string) error {
++func WriteConfig(worktreeDir, relpath string, look Look, renderMarkdown bool, lymPath string) error {
+ 	if lymPath == "" {
+ 		lymPath = "lym"
+ 	}
+@@ -70,15 +82,15 @@ func WriteConfig(worktreeDir, relpath string, look Look, lymPath string) error {
+ 	if err := os.MkdirAll(vscodePath, 0o755); err != nil {
+ 		return err
+ 	}
+-	if err := writeSettings(filepath.Join(vscodePath, "settings.json"), look); err != nil {
++	if err := writeSettings(filepath.Join(vscodePath, "settings.json"), look, renderMarkdown); err != nil {
+ 		return err
+ 	}
+ 	return writeAttachTask(filepath.Join(vscodePath, "tasks.json"), lymPath)
+ }
+ 
+-// writeSettings creates settingsPath with lym's defaults and look, or sets look's keys in the existing file, keeping its other keys.
++// writeSettings creates settingsPath with lym's defaults, look and the markdown association renderMarkdown asks for, or sets those keys in the existing file, keeping its other keys.
+ // An existing file that does not decode as a JSONC object is logged and left untouched.
+-func writeSettings(settingsPath string, look Look) error {
++func writeSettings(settingsPath string, look Look, renderMarkdown bool) error {
+ 	content, err := os.ReadFile(settingsPath)
+ 	var settings map[string]any
+ 	switch {
+@@ -102,6 +114,7 @@ func writeSettings(settingsPath string, look Look) error {
+ 	}
+ 
+ 	applyLook(settings, look)
++	applyMarkdownPreview(settings, renderMarkdown)
+ 
+ 	data, err := json.MarshalIndent(settings, "", "  ")
+ 	if err != nil {
+@@ -132,6 +145,32 @@ func applyLook(settings map[string]any, look Look) {
+ 	settings[windowTitleKey] = look.Title
+ }
+ 
++// applyMarkdownPreview sets the "*.md" entry of settings' workbench.editorAssociations to the markdown preview when render is on, keeping every other association.
++// When render is off it removes that entry only while it names the preview, and drops an association map left empty.
++// A value that is neither a map nor null, such as the array form of the setting, is left as it is, since lym cannot set its entry without replacing the operator's.
++func applyMarkdownPreview(settings map[string]any, render bool) {
++	existing := settings[editorAssociationsKey]
++	associations, isMap := existing.(map[string]any)
++	if existing != nil && !isMap {
++		return
++	}
++	if render {
++		if associations == nil {
++			associations = map[string]any{}
++		}
++		associations[markdownPattern] = markdownPreviewEditor
++		settings[editorAssociationsKey] = associations
++		return
++	}
++	if associations[markdownPattern] != markdownPreviewEditor {
++		return
++	}
++	delete(associations, markdownPattern)
++	if len(associations) == 0 {
++		delete(settings, editorAssociationsKey)
++	}
++}
++
+ // attachTaskLabel names the reed attach task; the seeded key binding finds the task by this label.
+ const attachTaskLabel = "reed attach"
+ 
+diff --git a/internal/vscode/config_test.go b/internal/vscode/config_test.go
+index 9c06a6ec..97dff855 100644
+--- a/internal/vscode/config_test.go
++++ b/internal/vscode/config_test.go
+@@ -43,7 +43,7 @@ func TestWriteVSCodeConfigCreatesFilesWhenAbsent(t *testing.T) {
+ 	dir := t.TempDir()
+ 	lymPath := "/opt/lym/bin/lym"
+ 
+-	if err := WriteConfig(dir, ".", testLook, lymPath); err != nil {
++	if err := WriteConfig(dir, ".", testLook, true, lymPath); err != nil {
+ 		t.Fatalf("WriteConfig failed: %v", err)
+ 	}
+ 
+@@ -125,7 +125,7 @@ func TestWriteConfigFallsBackToBareName(t *testing.T) {
+ 	t.Parallel()
+ 	dir := t.TempDir()
+ 
+-	if err := WriteConfig(dir, ".", testLook, ""); err != nil {
++	if err := WriteConfig(dir, ".", testLook, true, ""); err != nil {
+ 		t.Fatalf("WriteConfig failed: %v", err)
+ 	}
+ 
+@@ -158,7 +158,7 @@ func TestWriteConfigRewritesOwnSettingsKeysAndOverwritesTasks(t *testing.T) {
+ 		t.Fatalf("failed to write original tasks.json: %v", err)
+ 	}
+ 
+-	if err := WriteConfig(dir, ".", testLook, "/opt/lym/bin/lym"); err != nil {
++	if err := WriteConfig(dir, ".", testLook, true, "/opt/lym/bin/lym"); err != nil {
+ 		t.Fatalf("WriteConfig failed: %v", err)
+ 	}
+ 
+@@ -191,6 +191,89 @@ func TestWriteConfigRewritesOwnSettingsKeysAndOverwritesTasks(t *testing.T) {
+ 	}
+ }
+ 
++// TestWriteConfigOwnsMarkdownPreviewEntry pins the "*.md" editor association: set to the markdown preview when asked to render, removed while it names the preview when not, and every other association kept.
++func TestWriteConfigOwnsMarkdownPreviewEntry(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name     string
++		existing string
++		render   bool
++		// want is the workbench.editorAssociations value after the write, nil for no key.
++		want any
++	}{
++		{name: "FreshFileRendered", render: true, want: map[string]any{"*.md": "vscode.markdown.preview.editor"}},
++		{name: "FreshFileNotRendered", render: false, want: nil},
++		{
++			name:     "RenderKeepsOtherAssociations",
++			existing: `{"workbench.editorAssociations": {"*.png": "imagePreview.previewEditor", "*.md": "default"}}`,
++			render:   true,
++			want:     map[string]any{"*.png": "imagePreview.previewEditor", "*.md": "vscode.markdown.preview.editor"},
++		},
++		{
++			name:     "OffRemovesPreviewAndEmptyMap",
++			existing: `{"workbench.editorAssociations": {"*.md": "vscode.markdown.preview.editor"}}`,
++			render:   false,
++			want:     nil,
++		},
++		{
++			name:     "OffKeepsOperatorsMarkdownEditor",
++			existing: `{"workbench.editorAssociations": {"*.md": "default"}}`,
++			render:   false,
++			want:     map[string]any{"*.md": "default"},
++		},
++		{
++			name:     "RenderReplacesNullAssociations",
++			existing: `{"workbench.editorAssociations": null}`,
++			render:   true,
++			want:     map[string]any{"*.md": "vscode.markdown.preview.editor"},
++		},
++		{
++			name:     "RenderKeepsArrayFormAssociations",
++			existing: `{"workbench.editorAssociations": [{"viewType": "imagePreview.previewEditor", "filenamePattern": "*.png"}]}`,
++			render:   true,
++			want:     []any{map[string]any{"viewType": "imagePreview.previewEditor", "filenamePattern": "*.png"}},
++		},
++		{
++			name:     "OffKeepsArrayFormAssociations",
++			existing: `{"workbench.editorAssociations": [{"viewType": "imagePreview.previewEditor", "filenamePattern": "*.png"}]}`,
++			render:   false,
++			want:     []any{map[string]any{"viewType": "imagePreview.previewEditor", "filenamePattern": "*.png"}},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			settingsPath := filepath.Join(dir, ".vscode", "settings.json")
++			if tt.existing != "" {
++				if err := os.MkdirAll(filepath.Dir(settingsPath), 0o755); err != nil {
++					t.Fatal(err)
++				}
++				if err := os.WriteFile(settingsPath, []byte(tt.existing), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++
++			if err := WriteConfig(dir, ".", testLook, tt.render, "/opt/lym/bin/lym"); err != nil {
++				t.Fatalf("WriteConfig(render %v) failed: %v", tt.render, err)
++			}
++
++			data, err := os.ReadFile(settingsPath)
++			if err != nil {
++				t.Fatalf("read settings.json: %v", err)
++			}
++			var settings map[string]any
++			if err := json.Unmarshal(data, &settings); err != nil {
++				t.Fatalf("settings.json is not valid JSON: %v\n%s", err, data)
++			}
++			if got := settings["workbench.editorAssociations"]; !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("WriteConfig(render %v) workbench.editorAssociations = %v; want %v", tt.render, got, tt.want)
++			}
++		})
++	}
++}
++
+ // TestWriteConfigLeavesUndecodableSettingsAlone pins that a settings.json that is not a JSON object keeps its bytes while tasks.json is still written.
+ func TestWriteConfigLeavesUndecodableSettingsAlone(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -205,7 +288,7 @@ func TestWriteConfigLeavesUndecodableSettingsAlone(t *testing.T) {
+ 			t.Fatal(err)
+ 		}
+ 
+-		if err := WriteConfig(dir, ".", testLook, "/opt/lym/bin/lym"); err != nil {
++		if err := WriteConfig(dir, ".", testLook, true, "/opt/lym/bin/lym"); err != nil {
+ 			t.Fatalf("WriteConfig(%q settings) failed: %v", content, err)
+ 		}
+ 
+@@ -226,7 +309,7 @@ func TestWriteConfigLeavesGitignoreAlone(t *testing.T) {
+ 	t.Parallel()
+ 	dir := t.TempDir()
+ 
+-	if err := WriteConfig(dir, ".", testLook, "/opt/lym/bin/lym"); err != nil {
++	if err := WriteConfig(dir, ".", testLook, true, "/opt/lym/bin/lym"); err != nil {
+ 		t.Fatalf("WriteConfig failed: %v", err)
+ 	}
+ 	if _, err := os.Stat(filepath.Join(dir, ".gitignore")); !os.IsNotExist(err) {
+@@ -237,7 +320,7 @@ func TestWriteConfigLeavesGitignoreAlone(t *testing.T) {
+ 	if err := os.WriteFile(filepath.Join(dir, ".gitignore"), existing, 0o644); err != nil {
+ 		t.Fatal(err)
+ 	}
+-	if err := WriteConfig(dir, ".", testLook, "/opt/lym/bin/lym"); err != nil {
++	if err := WriteConfig(dir, ".", testLook, true, "/opt/lym/bin/lym"); err != nil {
+ 		t.Fatalf("WriteConfig failed: %v", err)
+ 	}
+ 	got, _ := os.ReadFile(filepath.Join(dir, ".gitignore"))
+diff --git a/internal/vscode/launch_linux.go b/internal/vscode/launch_linux.go
+index 99a71c56..78d19f5a 100644
+--- a/internal/vscode/launch_linux.go
++++ b/internal/vscode/launch_linux.go
+@@ -12,17 +12,17 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ )
+ 
+-// Launch launches VS Code for the given worktree directory on Linux.
++// Launch launches VS Code on Linux on target, a folder or a workspace file, opening each of files in an editor of the window.
+ //
+ // It starts the "code" command detached (cmd.Start(), not Run()) so the caller does not block on
+ // the editor process.
+ // Wraps start failures with context.
+-func Launch(worktreeDir string) error {
+-	cmd := exec.Command("code", worktreeDir)
++func Launch(target string, files ...string) error {
++	cmd := exec.Command("code", append([]string{target}, files...)...)
+ 
+-	logger.Info("vscode: spawning VS Code launch", "worktreeDir", worktreeDir)
++	logger.Info("vscode: spawning VS Code launch", "target", target, "files", files)
+ 	if err := cmd.Start(); err != nil {
+-		logger.Warn("vscode: VS Code launch spawn failed", "worktreeDir", worktreeDir, "cause", err)
++		logger.Warn("vscode: VS Code launch spawn failed", "target", target, "cause", err)
+ 		return fmt.Errorf("launch code: %w", err)
+ 	}
+ 	proc.Reap(cmd)
+diff --git a/internal/vscode/launch_windows.go b/internal/vscode/launch_windows.go
+index 0e626cda..ce36b55d 100644
+--- a/internal/vscode/launch_windows.go
++++ b/internal/vscode/launch_windows.go
+@@ -10,17 +10,17 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ )
+ 
+-// Launch launches VS Code for the given worktree directory on Windows.
++// Launch launches VS Code on Windows on target, a folder or a workspace file, opening each of files in an editor of the window.
+ //
+ // It runs "code" via cmd /c for PATH resolution and hides the console window.
+-func Launch(worktreeDir string) error {
+-	cmd := exec.Command("cmd", "/c", "code", worktreeDir)
++func Launch(target string, files ...string) error {
++	cmd := exec.Command("cmd", append([]string{"/c", "code", target}, files...)...)
+ 
+ 	proc.HideWindow(cmd)
+ 
+-	logger.Info("vscode: spawning VS Code launch", "worktreeDir", worktreeDir)
++	logger.Info("vscode: spawning VS Code launch", "target", target, "files", files)
+ 	if err := cmd.Start(); err != nil {
+-		logger.Warn("vscode: VS Code launch spawn failed", "worktreeDir", worktreeDir, "cause", err)
++		logger.Warn("vscode: VS Code launch spawn failed", "target", target, "cause", err)
+ 		return fmt.Errorf("launch code: %w", err)
+ 	}
+ 	proc.Reap(cmd)
+diff --git a/pattern/PATTERN-config-layers.md b/pattern/PATTERN-config-layers.md
+index 87222728..7b16d13d 100644
+--- a/pattern/PATTERN-config-layers.md
++++ b/pattern/PATTERN-config-layers.md
+@@ -56,7 +56,7 @@ A local override file is pruned of every such key on any reconcile, since its lo
+ 
+ `internal/configengine` offers `Load` (strict) and `LoadOrTemplate` (degrades to the embedded template); a caller adopts exactly one, except `runprofile`.
+ 
+-- Degrading callers: `{shuttleengine, claudeengine, reedengine, websterengine, batcher, orchengine, loggerconfig, battenshed, languageconfig, lenses, desktophook, heddleengine, hibernateconfig, envconfig}`.
++- Degrading callers: `{shuttleengine, claudeengine, reedengine, websterengine, batcher, orchengine, loggerconfig, battenshed, languageconfig, lenses, desktophook, heddleengine, hibernateconfig, ideconfig, envconfig}`.
+ - Strict callers: `{fabricengine, boardengine, loomengine, landingshed, gateslot, configcli, configreg}`.
+   `configcli` loads strictly only to validate a hub-wide module's file before committing it.
+   `configreg` loads strictly only to answer a recipe row's setting.
