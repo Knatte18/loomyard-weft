@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-04 14:19 UTC; every age below is as of then.
+Rendered 2026-11-04 14:20 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -22,7 +22,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **Measure agent-turns and the batching hook from landed runs**<br>• One report: turns, calls per turn, gate loops, refusals and batching-hook breaches over up to 20 darn and 5 tapestry runs landed since 2026-11-02 | [`turn-savings-measure`](design-turn-savings-measure.md) | darn · docs | Drift-Recheck | neve | 3d<br>21m | tools, claude, shuttle |
+| T9 | **Measure agent-turns and the batching hook from landed runs**<br>• One report: turns, calls per turn, gate loops, refusals and batching-hook breaches over up to 20 darn and 5 tapestry runs landed since 2026-11-02 | [`turn-savings-measure`](design-turn-savings-measure.md) | darn · docs | Describe | neve | 3d<br>21m | tools, claude, shuttle |
 
 #### Ready (0)
 
@@ -56,7 +56,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Codex trial: hooks, shell guards and skills**<br>• Seven cases on real Codex launches against the package doc | [`codex-trial-hooks-guards-skills`](design-codex-trial-hooks-guards-skills.md) | darn · docs | Darn-Write | neve | 18h<br>47m | codex, shuttle |
+| T5 | **Codex trial: hooks, shell guards and skills**<br>• Seven cases on real Codex launches against the package doc | [`codex-trial-hooks-guards-skills`](design-codex-trial-hooks-guards-skills.md) | darn · docs | Darn-Write | neve | 18h<br>48m | codex, shuttle |
 
 #### Ready (0)
 
@@ -106,7 +106,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **A landing notice is not lost when set late, when dobby was down, or when the orch is absent**<br>• Close the known limits landing-watch left: a late notify_on_land, a Land passed while dobby was down, and a dropped line when no orch is live | [`landing-watch-limits`](design-landing-watch-limits.md) | darn · light | T3 | 3d<br>27m | dobby, orch, creel, board |
+| T8 | **A landing notice is not lost when set late, when dobby was down, or when the orch is absent**<br>• Close the known limits landing-watch left: a late notify_on_land, a Land passed while dobby was down, and a dropped line when no orch is live | [`landing-watch-limits`](design-landing-watch-limits.md) | darn · light | T3 | 3d<br>28m | dobby, orch, creel, board |
 | T10 | **A run lands on a parent the hub may not push to by merging on the remote**<br>• Branch protection refuses a direct push to main, so no task or beam can land on such a repository | [`protected-parent-landing`](design-protected-parent-landing.md) | darn · solid | T3 | 20h<br>7m | landing, git |
 
 #### Layer B (2)
@@ -115,7 +115,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | T3<br>T8 | 49m<br>27m | fabric, loom |
+| T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | T3<br>T8 | 49m<br>28m | fabric, loom |
 | T11 | **Merge in from parent as a task of its own in a beam, before pawl lands it**<br>• A command on a beam files a merge-in-from-parent task, run as darn with its perch on | [`parent-merge-task`](design-parent-merge-task.md) | darn · light | T10 | 4d<br>7m | pawl, workspaces, reed, landing |
 
 #### Draft (1)
