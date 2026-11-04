@@ -1,6 +1,6 @@
 # The batching hook counts Bash lookups and reaches forks
 
-`batching-hook-reach` · Task · enhancement, claude, shuttle · draft
+`batching-hook-reach` · Task · enhancement, claude, shuttle
 
 ## Seen (`docs/research/turn-savings-measure-2026-11-04/report.md`)
 

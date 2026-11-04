@@ -795,10 +795,29 @@
       "isolated": false,
       "brief": "Lookup chain counts read-only Bash commands; the hook judges subagent and fork calls against their own transcript",
       "body": "## Seen (`docs/research/turn-savings-measure-2026-11-04/report.md`)\n\nThe batching breach hook (`internal/shuttleengine/claudeengine/batchingnudge.go`) fired 4 times in 24 landed runs.\n\n- Its lookup chain matches Read, Grep and Glob tool calls only. lym sessions search with Bash `grep`: the sample holds 1 Grep and 1 Glob call against 3,040 Bash calls, so the lookup-chain breach, 9.8% of context by the report's class reading, never fired.\n- It skips every call from a subagent or fork, while forks hold 57 of the sample's 117 edit-chain turns and most lookup chains.\n\n## Wanted (operator, 2026-11-04)\n\n1. A Bash call whose command is a read-only lookup (`grep`, `rg`, `find`, `ls`, `cat`, `head`, `tail`, `sed -n`, `wc`, a `git` read such as `log`, `show`, `diff` or `status`, and a pipe or `;`-chain made only of these) counts as a lookup in the lookup-chain breach, as Read, Grep and Glob do. A Bash call with any other command breaks a chain as today.\n2. The hook reaches subagents and forks: a call carrying `agent_id` is judged against that agent's own transcript, context and nudge count, under the same `batching_nudge` thresholds.\n3. The report's method stays valid for a re-measure: `docs/research/turn-savings-measure-2026-11-04/run-all.sh` keeps working on runs that land after this change.\n\nThresholds are unchanged.\n",
-      "status": "draft",
       "created": "2026-11-04T14:33:02Z",
       "revised": "2026-11-04T14:33:02Z",
       "profile": "light",
+      "project": "turn-savings"
+    },
+    {
+      "id": 1101,
+      "handle": "R1",
+      "slug": "batching-hook-remeasure",
+      "title": "Re-measure the batching hook and the edit-round rule a week after the hook reaches forks",
+      "kind": "note",
+      "labels": [
+        "research",
+        "tools",
+        "claude"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "run-all.sh on a fresh sample: firing rate, batching after a firing, edit chains split by gate fix against mid-round",
+      "body": "## Idea (operator and hub orch, 2026-11-04)\n\nRe-run the turn-savings measurement once about a week of runs has landed with task `batching-hook-reach`, using `docs/research/turn-savings-measure-2026-11-04/run-all.sh` on a fresh sample, no new agent run.\n\n- Count hook firings, by breach and by main session against fork, and whether the next message batched; with a few dozen firings this can be read as a rate.\n- Split the edit-chain turns (edit-only turns following an edit-only turn above 150k) by what they hold: edits after a failed gate, against edits in the middle of a round of edits. Edit follows rose from 2.5% to 4.2% of context in the 2026-11-04 sample, against the heddle entry `lym-plan-edits-before-gate`'s \"make all of those edits in one message\" rule; the split shows whether that rule works.\n- If the hook still shows little effect, the report recommends removing it.\n- Cap: at most 20 darn runs and 5 tapestry runs, the most recent landed after `batching-hook-reach`.\n- Runs as darn with profile `docs`.\n",
+      "created": "2026-11-04T14:33:02Z",
+      "revised": "2026-11-04T14:33:02Z",
       "project": "turn-savings"
     }
   ],
