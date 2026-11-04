@@ -58,7 +58,7 @@ How a task is best cut into smaller tasks is known only once its Discussion is d
 
 ## Ways to split, simplest first
 
-1. The operator, or the board agent of note `board-agent-button`, splits a discussed entry into tasks with `depends_on`, each with its part of the record and flagged discussed.
+1. The operator, or the board agent the prime's `board` button opens (task `board-agent-button`, `2def9684`, landed 2026-11-04; it loads `ly:board-policy` and `ly:board`), splits a discussed entry into tasks with `depends_on`, each with its part of the record and flagged discussed.
    The same agent can split an undiscussed entry before it runs, but then each part runs its own Discussion and rereads much of the same code; a tapestry part carries about $23 of fixed cost, so this pays best when the parts are darn-sized.
 2. `stitch`: a stand-alone loom recipe for a large task's whole course, chosen before the run starts.
    Preflight, Discussion, a Pre-Plan producer that splits the decided scope into parts with contracts (what each takes in, delivers and exports, and which parts it depends on), a row with no agent that turns the entry into a project and files each part as a darn task, then an inner pawl run through `battenshed.NewInnerRun` that brings up the beam, waits until every part has landed and lands the beam.

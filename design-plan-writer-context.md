@@ -98,6 +98,15 @@ Task `turn-savings-measure` (`3207d97e`, 2026-11-04) has since measured project 
 The report covers darn and Webster, not the Plan writer's serial lookups, so those stay unmeasured here; the rule's own effect on edit chains is the open question of note `batching-hook-remeasure`.
 `plan-reviewer-batching` (`5227aeaa`) added a wave structure for the fanned Plan reviewer's pre-read in `burler-fork-reading.md`; it too is unmeasured.
 
+## Writer lookups measured (landed 2026-11-04)
+
+Task `planner-fork-lookups` (`482c05d4`, `docs/research/writer-lookups-measure-2026-11-04/report.md`) measured the Plan and Discussion writers' exploration on 7 sessions of 3 tapestry runs, with no agent run.
+- The 3 Plan writers each handed one batch of 3 or 4 `sonnet` lookup subagents to the Agent tool in one message; 1 of 3 full Discussion sessions did.
+- Exploration is 46% of the writers' cost ($11.03 of $23.76); 15% of it is paid above 200k context, every chain above 200k is in a Plan session after its one batch, and 3 of the 6 are single-call serial lookups.
+- Moving every search turn to subagents would save at most about $4.7, one fifth of writer spend; for the short late chains, batching in the writer saves more.
+- The report recommends no bench of the excerpt cut below and no stronger stencil now, and a re-run once more tapestry runs have landed.
+Task `batching-hook-reach` (`119c1c05`, 2026-11-04) made the batching nudge hook count read-only Bash lookups and reach subagents and forks, so the writer's serial `grep` and `sed -n` chains are now what it nudges; its effect is the question of note `batching-hook-remeasure`.
+
 ## Split writing built and benched (landed 2026-11-01)
 
 The second variant above exists as two opt-in producers: `Parts-Write` splits the task into parts with contracts and shared spots, and `Parts-Plan-Write` runs one fresh writer session per part under a joining chair.

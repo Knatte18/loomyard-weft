@@ -23,9 +23,18 @@ Task `codex-trial-1-fixes` (`cd897ef0`) made `lym shuttle run --model` take the 
 The registry picks the engine from the alias, so `lym shuttle run --model 'luna[high]'` runs on Codex whatever `shuttle.yaml` names, and the `--effort` flag is gone.
 A shuttle-spawned lookup agent on Codex therefore needs no new engine selection in shuttle: a spec string is enough.
 
+## Measured since (tidy, 2026-11-04)
+
+Task `planner-fork-lookups` (`482c05d4`, `docs/research/writer-lookups-measure-2026-11-04/report.md`) measured how the Plan and Discussion writers use lookup subagents, on 7 writer sessions of 3 tapestry runs, with no agent run and no code change.
+- The 3 Plan writers each handed one batch of 3 or 4 `sonnet` lookup subagents to the Agent tool; 1 of 3 full Discussion sessions did.
+- Exploration is 46% of the writers' cost ($11.03 of $23.76), and 15% of it is paid above 200k context, all in Plan sessions after their one batch.
+- Moving every search turn to subagents would save at most about $4.7, one fifth of writer spend; batching the late serial chains in the writer saves more than a subagent does there.
+- The report recommends no bench and no stronger stencil now, and a re-run once more tapestry runs have landed.
+So the gain a lookup agent on another engine can add is small against what the Claude subagent path leaves.
+
 ## Open
 
-- How the writer asks for a shuttle-spawned lookup and gets its answer back: a `lym` verb that spawns the agent and waits for its reply, much as a fork returns only what is relevant (note `planner-fork-lookups`).
+- How the writer asks for a shuttle-spawned lookup and gets its answer back: a `lym` verb that spawns the agent and waits for its reply, much as a fork returns only what is relevant (task `planner-fork-lookups`, landed 2026-11-04 as the measure below).
   The assistant seat's report file and end marker are one existing answer path.
 - Whether one config value selects both the engine and the model, in model-spec form such as `codex[high]`, while a bare Claude name keeps today's Agent tool path; the aliases above already name a Codex model, so the value may take an alias.
 - Several lookups at once: each its own strand, and how many reed windows that makes.
