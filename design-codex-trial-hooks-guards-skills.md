@@ -1,6 +1,6 @@
 # Codex trial: hooks, shell guards and skills
 
-`codex-trial-hooks-guards-skills` · Task · research, codex, shuttle · draft
+`codex-trial-hooks-guards-skills` · Task · research, codex, shuttle
 
 Depends on: [`codex-trial-1-fixes`](design-codex-trial-1-fixes.md)
 
