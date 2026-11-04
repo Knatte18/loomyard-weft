@@ -1,0 +1,2454 @@
+diff --git a/contracts/recipes/pawl-recipe.yaml b/contracts/recipes/pawl-recipe.yaml
+index e30d3b36..7d84317c 100644
+--- a/contracts/recipes/pawl-recipe.yaml
++++ b/contracts/recipes/pawl-recipe.yaml
+@@ -71,10 +71,13 @@ producers:
+     engine: BeamDescribe
+     on_done: PR-Review
+ 
+-  # PR-Review carries no entry_gate and no on_stuck, because its Stuck is always a Halt.
++  # PR-Review carries no entry_gate and no on_stuck, because its Stuck is always a Halt or a reroute.
++  # Its on_reroute takes a reopen request, which `lym beam reopen` writes, back to Beam-Await, so the beam takes new members;
++  # Beam-Await removes the request on entry.
+   - name: PR-Review
+     engine: PRReview
+     on_done: Finalize
++    on_reroute: Beam-Await
+ 
+   - name: Finalize
+     engine: Finalize
+diff --git a/docs/overview.md b/docs/overview.md
+index 675da157..e2221e13 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -456,7 +456,7 @@ User-facing modules each get one `lym <module>` namespace:
+   A call then starts one adopt check per adopted subject and per named subject that still holds a run, detached, in that subject's worktree, which runs the hub's `adopt` gate there, reports each tier to the subject's orch, shows its tier in flight, time, tiers done and result on the prime's reed status bar, and shows in `lym beam status`, so a break this machine brings to the landed code shows at adopt time.
+   It calls each owning module's function in-process and has no engine package of its own.
+   ✅ Implemented. See the `internal/adoptcli` package documentation.
+-- **beam** — the making, landing, starting and stopping of a beam, a long-lived pair that groups board work, and dobby, the daemon every beam and the prime run (`internal/beamcli` + `internal/dobbyengine`; `lym beam create <slug>`, `lym beam ready <slug>`, which flags the beam ready to merge so its dobby writes the land request once nothing works under it, `lym beam land <slug>`, which writes the land request the beam's pawl run consumes at Beam-Await and refuses a beam not flagged ready, `lym beam start [slug] [--all]`, `lym beam stop [slug]` and `lym beam status`, from the prime and from any beam, and the hidden `lym beam dobby`).
++- **beam** — the making, landing, starting and stopping of a beam, a long-lived pair that groups board work, and dobby, the daemon every beam and the prime run (`internal/beamcli` + `internal/dobbyengine`; `lym beam create <slug>`, `lym beam ready <slug>`, which flags the beam ready to merge so its dobby writes the land request once nothing works under it, `lym beam reopen <slug> [--close]`, which removes that flag and sends a landing past Beam-Await back there, its pull request kept as a draft or closed, `lym beam land <slug>`, which writes the land request the beam's pawl run consumes at Beam-Await and refuses a beam not flagged ready, `lym beam start [slug] [--all]`, `lym beam stop [slug]` and `lym beam status`, from the prime and from any beam, and the hidden `lym beam dobby`).
+   Create runs from the beam's parent worktree, claims the root when none is recorded, records this machine as a board project's owner with the beam flag and the pawl recipe, and starts the beam's pawl run as a detached first pass, whose Worktree-Create makes the pair, forked from the parent beam of a nested beam, whose Record-Write writes the project record from the project entry's body under `_lym/project/<slug>/`, and whose Beam-Up marks it.
+   Before it starts that run, create removes a done batten run under the same slug whose pair is gone and whose child ran motif, reporting `motif_run_cleared`;
+   any other done run is still refused, naming `lym batten cleanup --apply`.
+diff --git a/internal/battencli/wire_seams_test.go b/internal/battencli/wire_seams_test.go
+index ca4be721..e1876baf 100644
+--- a/internal/battencli/wire_seams_test.go
++++ b/internal/battencli/wire_seams_test.go
+@@ -40,7 +40,7 @@ var intentionallyNil = map[string]string{
+ 	"Shuttle":                             "loom-only seam, batten drives no agent itself",
+ 	"Burler":                              "loom-only seam, batten runs no review round",
+ 	"BeamDescribe.Entry":                  "loom-only seam, batten runs no beam description row",
+-	"BeamDescribe.CommitSubjects":         "loom-only seam, batten runs no beam description row",
++	"BeamDescribe.Commits":                "loom-only seam, batten runs no beam description row",
+ 	"BeamDescribe.Commit":                 "loom-only seam, batten runs no beam description row",
+ 	"BeamDescribe.ProjectDecisions":       "loom-only seam, batten runs no beam description row",
+ 	"Pawl.SetStatus":                      "loom-only seam, batten runs no pawl row",
+@@ -109,6 +109,7 @@ var intentionallyNil = map[string]string{
+ 	"Landing.PullRequest.Sessions":        "loom-only seam, batten lands no branch",
+ 	"Landing.PullRequest.SessionLive":     "loom-only seam, batten lands no branch",
+ 	"Landing.PullRequest.RegisterSession": "loom-only seam, batten lands no branch",
++	"Landing.PullRequest.Reopen":          "loom-only seam, batten lands no branch",
+ 	"DiscussionTable":                     "loom-only seam, batten has no discussion segment",
+ 	"CommitDiscussion":                    "loom-only seam, batten has no discussion segment",
+ 	"DescribeTable":                       "loom-only seam, batten has no describe segment",
+diff --git a/internal/beamcli/cli.go b/internal/beamcli/cli.go
+index bbbfd559..e7b308b5 100644
+--- a/internal/beamcli/cli.go
++++ b/internal/beamcli/cli.go
+@@ -1,4 +1,4 @@
+-// cli.go builds the beam cobra command with its create, ready, land, start and stop verbs and the RunCLI/RunCLIIn seams that wire it into the standard io.Writer-based call contract.
++// cli.go builds the beam cobra command with its create, ready, reopen, land, start and stop verbs and the RunCLI/RunCLIIn seams that wire it into the standard io.Writer-based call contract.
+ 
+ package beamcli
+ 
+@@ -31,17 +31,17 @@ import (
+ func Command() *cobra.Command {
+ 	beam := &cobra.Command{
+ 		Use:   "beam",
+-		Short: "make, flag ready, land, start and stop beams, the long-lived pairs that group board work, and show their dobbies and orchs",
++		Short: "make, flag ready, reopen, land, start and stop beams, the long-lived pairs that group board work, and show their dobbies and orchs",
+ 		Long: `A beam is a long-lived pair that groups board work: its tasks fork from the
+ beam's own branch and land back into it, and it is one unit of two parts, its dobby
+ and its orch, that run on the machine owning it. The dobby drives the runs of the
+ beam's tasks, and the orch is the session that works the beam with the operator.
+ "lym beam start" brings both up and "lym beam stop" takes both down. Create and
+-status run from the hub's prime worktree and from any beam, ready and land from
+-anywhere in the hub, and all act on the prime's location.`,
++status run from the hub's prime worktree and from any beam, ready, reopen and land
++from anywhere in the hub, and all act on the prime's location.`,
+ 		RunE: clihelp.GroupRunE,
+ 	}
+-	beam.AddCommand(createCmd(), readyCmd(), landCmd(), startCmd(), stopCmd(), statusCmd(), dobbyCmd())
++	beam.AddCommand(createCmd(), readyCmd(), reopenCmd(), landCmd(), startCmd(), stopCmd(), statusCmd(), dobbyCmd())
+ 	return beam
+ }
+ 
+@@ -595,7 +595,52 @@ Example:
+ 	}
+ }
+ 
+-// onHubLandDeps runs verb, `beam land` or `beam ready`, over the land deps of the hub the command's cwd belongs to.
++// reopenCmd returns the `beam reopen` verb.
++func reopenCmd() *cobra.Command {
++	var closePR bool
++	cmd := &cobra.Command{
++		Use:         "reopen <slug>",
++		Short:       "send a beam's landing back to Beam-Await, so the beam takes new members",
++		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
++		Long: `Sends the landing of the beam <slug> back to Beam-Await, so new members can
++join the beam. The beam's pawl run must be past Beam-Await and before Finalize:
++at Parent-Align, Beam-Describe or PR-Review.
++
++The verb writes a reopen request naming the run into the beam worktree's
++.lym/beam directory, then removes the beam's ready record and commits that, so its
++dobby does not land the beam again. The run's PR-Review row takes the request: it
++stops the pr-reviewer, keeps the pull request open as a draft with a comment
++saying the beam was reopened, and sends the run back to Beam-Await, which restarts
++the beam's dobby. With --close it closes the pull request instead, and the next
++landing opens a new one; use it when the reopened work changes the beam enough
++that a fresh pull request reads better.
++
++A later "lym beam ready <slug>" lands the beam again through Parent-Align,
++Beam-Describe and PR-Review, which refreshes the kept pull request's description
++and marks it ready for review. A halted run takes the request once "lym loom
++resume" in the beam's worktree resumes it.
++
++It runs anywhere in the hub and refuses, each naming its way forward, an entry
++that is not an open beam project with a pair here, a beam another machine owns,
++a beam with no pawl run, and a run at any other row.
++
++Example:
++  lym beam reopen payments
++  lym beam reopen payments --close`,
++		Args: cobra.ExactArgs(1),
++		RunE: func(cmd *cobra.Command, args []string) error {
++			if clihelp.ShouldAbort(cmd.Context()) {
++				return nil
++			}
++			result, err := onHubLandDeps(cmd, "lym beam reopen", func(deps landDeps) (map[string]any, error) { return reopen(deps, args[0], closePR) })
++			return finishVerb(cmd, result, err)
++		},
++	}
++	cmd.Flags().BoolVar(&closePR, "close", false, "close the beam's pull request instead of keeping it open as a draft, so the next landing opens a new one")
++	return cmd
++}
++
++// onHubLandDeps runs verb, `beam land`, `beam ready` or `beam reopen`, over the land deps of the hub the command's cwd belongs to.
+ // It resolves the hub's prime from the cwd's own worktree, so a task pair reaches the verb's own refusals.
+ // A nil result is a refusal made before the request was written.
+ func onHubLandDeps(cmd *cobra.Command, verb string, run func(deps landDeps) (map[string]any, error)) (*map[string]any, error) {
+diff --git a/internal/beamcli/deps.go b/internal/beamcli/deps.go
+index 70d15791..1051aac3 100644
+--- a/internal/beamcli/deps.go
++++ b/internal/beamcli/deps.go
+@@ -1,4 +1,4 @@
+-// deps.go fills the verbs' deps over a real hub: the board reads and the owner write, the batten run's status and first pass, the ready record, and the landing's refusal and land request.
++// deps.go fills the verbs' deps over a real hub: the board reads and the owner write, the batten run's status and first pass, the ready record, the landing's refusal and land request, and the reopen request.
+ 
+ package beamcli
+ 
+@@ -150,6 +150,35 @@ func hubLandDeps(prime *lymcwd.Location) landDeps {
+ 			paths := hubgeom.PawlPaths(beam)
+ 			return paths.LandRequest, pawlengine.WriteLandRequest(paths, req)
+ 		},
++		WriteReopen: func(slug string, req pawlengine.ReopenRequest) (string, error) {
++			beam, err := beamOf(slug)
++			if err != nil {
++				return "", err
++			}
++			paths := hubgeom.PawlPaths(beam)
++			return paths.ReopenRequest, pawlengine.WriteReopenRequest(paths, req)
++		},
++		// Unready commits even when no record was removed, so a rerun after a failed commit commits the removal it left.
++		// It skips the commit when the landing directory holds nothing git tracks or finds, since git refuses a commit pathspec that matches nothing.
++		Unready: func(slug string) (bool, error) {
++			beam, err := beamOf(slug)
++			if err != nil {
++				return false, err
++			}
++			removed, err := pawlengine.RemoveReady(loomengine.BeamReadyPath(beam), loomengine.BeamReadyLockPath(beam), slug)
++			if err != nil {
++				return false, err
++			}
++			stands, err := fabricengine.AnchoredPathHasContent(beam, loomengine.LandingDirRel())
++			if err != nil {
++				return removed, err
++			}
++			if !stands {
++				return removed, nil
++			}
++			_, _, err = fabricengine.CommitAnchoredPaths(fabricengine.NewMutations(""), beam, []string{loomengine.LandingDirRel()}, fmt.Sprintf("beam: %s is reopened", slug), fabricengine.EnvSyncOptions())
++			return removed, err
++		},
+ 		Now: time.Now,
+ 	}
+ }
+diff --git a/internal/beamcli/dobbydeps_integration_test.go b/internal/beamcli/dobbydeps_integration_test.go
+index 12e7e39d..c803d0af 100644
+--- a/internal/beamcli/dobbydeps_integration_test.go
++++ b/internal/beamcli/dobbydeps_integration_test.go
+@@ -222,6 +222,42 @@ func TestHubLandDeps_MarkReadyCommitsAnUncommittedFlaggedRecord(t *testing.T) {
+ 	}
+ }
+ 
++func TestHubLandDeps_UnreadyCommitsTheRemovalOfTheReadyRecordAndSucceedsAgain(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h, _ := landingHub(t)
++	beam, err := lymcwd.ResolveWorktree(fabricengine.WorktreePath(h.Location, "b"))
++	if err != nil {
++		t.Fatalf("resolve the beam worktree: %v", err)
++	}
++	path := loomengine.BeamReadyPath(beam)
++	deps := hubLandDeps(h.Location)
++	if _, err := markReady(deps, "b"); err != nil {
++		t.Fatalf("markReady(b) = %v; want the record written and committed", err)
++	}
++
++	removed, err := deps.Unready("b")
++	if err != nil || !removed {
++		t.Fatalf("Unready(b) = %v, %v for a flagged beam; want true, nil", removed, err)
++	}
++	if _, statErr := os.Stat(path); !errors.Is(statErr, fs.ErrNotExist) {
++		t.Errorf("ready record after Unready: stat = %v; want it removed", statErr)
++	}
++	dirty, err := exec.Command("git", "-C", filepath.Dir(path), "status", "--porcelain", "--", ".").CombinedOutput()
++	if err != nil {
++		t.Fatalf("git status of the landing directory: %v: %s", err, dirty)
++	}
++	if len(strings.TrimSpace(string(dirty))) != 0 {
++		t.Errorf("git status of the landing directory = %q; want the removal committed", dirty)
++	}
++
++	removed, err = deps.Unready("b")
++	if err != nil || removed {
++		t.Errorf("Unready(b) = %v, %v with no record left; want false, nil", removed, err)
++	}
++}
++
+ func TestHubDobbyDeps_ClearNotifyOnLandClearsTheHubBoardEntry(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+diff --git a/internal/beamcli/doc.go b/internal/beamcli/doc.go
+index 2f4c12f3..de39d1d8 100644
+--- a/internal/beamcli/doc.go
++++ b/internal/beamcli/doc.go
+@@ -1,4 +1,4 @@
+-// Package beamcli is the beam module: `lym beam create <slug>`, the making of a beam from a board project entry, `lym beam ready <slug>`, the flag that a beam is ready to merge, `lym beam land <slug>`, the landing of a beam into its parent, `lym beam start [slug] [--all]`, the bring-up of a beam's dobby and orch, `lym beam stop [slug]`, their bring-down, `lym beam status`, the view of every local dobby and orch, and the hidden `lym beam dobby`, the dobby process itself.
++// Package beamcli is the beam module: `lym beam create <slug>`, the making of a beam from a board project entry, `lym beam ready <slug>`, the flag that a beam is ready to merge, `lym beam reopen <slug> [--close]`, the return of a beam's landing to Beam-Await, `lym beam land <slug>`, the landing of a beam into its parent, `lym beam start [slug] [--all]`, the bring-up of a beam's dobby and orch, `lym beam stop [slug]`, their bring-down, `lym beam status`, the view of every local dobby and orch, and the hidden `lym beam dobby`, the dobby process itself.
+ // The verbs only call each owning module's function in-process, so no module learns another's state; the daemon's engine is `internal/dobbyengine`, and this package wires its seams over the hub.
+ //
+ // # The verbs
+@@ -44,6 +44,15 @@
+ // The record names its beam because a pair forked from the beam inherits the beam's `_lym` records: `pawlengine.ReadyFor` reads a record naming another slug as no flag.
+ // The beam's orch or the operator runs it; dobby never does.
+ //
++// # reopen
++//
++// `reopen <slug> [--close]` sends the landing of a beam back to Beam-Await, so the beam takes new members.
++// It runs anywhere in the hub, as `land` does, refuses what `land`'s entry check refuses and a beam another machine owns, naming `lym adopt <slug>`, and refuses a beam with no pawl run, naming `lym beam create <slug>`, and a run that is done or at any row but Parent-Align, Beam-Describe and PR-Review, naming `lym batten status <slug>`.
++// It writes a `pawlengine.ReopenRequest` naming the run by its child seed's `started_at`, with `--close` as its Close, through `pawlengine.WriteReopenRequest` under the beam worktree's `.lym/beam/` directory.
++// It then removes the ready record through `pawlengine.RemoveReady` and commits the landing directory whether or not a record was removed, unless the directory holds nothing to commit, so a rerun after a failed commit commits the removal, and a standing flag cannot make the dobby land the beam again.
++// The run's PR-Review row answers the request: it stops the pr-reviewer, keeps the pull request open as a draft with a comment, or closes it under `--close`, and reroutes the run to Beam-Await, which removes the request and restarts the beam's dobby.
++// The envelope names the request's path, the run id, the close flag, whether a ready record was removed, and the way forward: `lym batten status <slug>` for a running run, and `lym loom resume` in the beam's worktree for a halted one.
++//
+ // # land
+ //
+ // `land <slug>` asks the beam's pawl run to land the beam by writing a land request, and starts no run of its own.
+diff --git a/internal/beamcli/land.go b/internal/beamcli/land.go
+index b2660792..738dac44 100644
+--- a/internal/beamcli/land.go
++++ b/internal/beamcli/land.go
+@@ -1,13 +1,15 @@
+-// land.go is the "lym beam land" and "lym beam ready" sequences: they judge the named beam; land applies the refusals that stop a landing of a beam not flagged ready or with work remaining under it and writes the land request the beam's pawl run consumes at Beam-Await, and ready writes the ready record.
++// land.go is the "lym beam land", "lym beam ready" and "lym beam reopen" sequences: they judge the named beam; land applies the refusals that stop a landing of a beam not flagged ready or with work remaining under it and writes the land request the beam's pawl run consumes at Beam-Await, ready writes the ready record, and reopen writes the reopen request that sends a landing back to Beam-Await and removes the ready record.
+ 
+ package beamcli
+ 
+ import (
+ 	"fmt"
++	"slices"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/loomshed"
+ 	"github.com/Knatte18/loomyard/internal/pawlengine"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ )
+@@ -18,7 +20,8 @@ import (
+ // RunID returns the seed id of that pawl run, which a land request names.
+ // Ready reads whether the beam's ready record flags it, and MarkReady writes that record unless it already flags the beam, commits it and returns its path.
+ // Refusal is the landing's refusal of a beam with work remaining under it.
+-// WriteRequest writes the land request into the beam worktree and returns its path.
++// WriteRequest writes the land request into the beam worktree and returns its path, and WriteReopen the reopen request.
++// Unready removes the beam's ready record when it flags the beam, commits the landing directory either way and reports whether it removed one.
+ type landDeps struct {
+ 	Machine      func() (string, error)
+ 	ReadOwners   func() (boardengine.Owners, error)
+@@ -31,9 +34,71 @@ type landDeps struct {
+ 	MarkReady    func(slug string, record pawlengine.ReadyRecord) (string, error)
+ 	Refusal      func(slug string) error
+ 	WriteRequest func(slug string, req pawlengine.LandRequest) (string, error)
++	WriteReopen  func(slug string, req pawlengine.ReopenRequest) (string, error)
++	Unready      func(slug string) (bool, error)
+ 	Now          func() time.Time
+ }
+ 
++// reopenRows are the pawl rows a reopen sends a run back from: those past Beam-Await and before Finalize.
++var reopenRows = []string{loomshed.NameParentAlign, loomshed.NameBeamDescribe, loomshed.NamePRReview}
++
++// reopen sends the landing of the beam slug back to Beam-Await, so the beam takes new members, and returns the request's path and how the run follows.
++// It writes a reopen request naming the beam's pawl run, with closePR asking for the pull request to be closed instead of kept as a draft, and then removes the beam's ready record, so its dobby does not land it again.
++// The run's PR-Review row answers the request; a halted run answers it once resumed.
++func reopen(deps landDeps, slug string, closePR bool) (map[string]any, error) {
++	const verb = "lym beam reopen"
++	here, err := deps.Machine()
++	if err != nil {
++		return nil, fmt.Errorf("%s: read this machine's name: %w", verb, err)
++	}
++	owners, err := deps.ReadOwners()
++	if err != nil {
++		return nil, fmt.Errorf("%s: read the board's owners: %w", verb, err)
++	}
++	if err := judgeLandEntry(deps, owners, verb, slug); err != nil {
++		return nil, err
++	}
++	if owner := owners.Entries[slug].Owner; boardengine.OwnedElsewhere(owner, here) {
++		return nil, fmt.Errorf("%s: the beam %s is owned by machine %s; way forward: run `%s %s` on %s, or run `lym adopt %s` here to take the beam over", verb, slug, owner, verb, slug, owner, slug)
++	}
++	status, found, err := deps.ChildStatus(slug)
++	if err != nil {
++		return nil, fmt.Errorf("%s: read the pawl run of %s: %w; way forward: fix the cause it names, then run `%s %s` again", verb, slug, err, verb, slug)
++	}
++	if !found {
++		return nil, fmt.Errorf("%s: the beam %s has no pawl run on this machine; way forward: run `lym beam create %s`, which starts it", verb, slug, slug)
++	}
++	if status.State == shedengine.StateDone || !slices.Contains(reopenRows, status.CurrentProducer) {
++		return nil, fmt.Errorf("%s: the pawl run of %s is %s at %s, and only a run past %s and before %s is sent back; way forward: run `lym batten status %s`; a run waiting at %s takes new members already, and a landing at %s or past it is no longer reopened", verb, slug, status.State, status.CurrentProducer, pawlengine.NameBeamAwait, loomshed.NameFinalize, slug, pawlengine.NameBeamAwait, loomshed.NameFinalize)
++	}
++
++	runID, err := deps.RunID(slug)
++	if err != nil {
++		return nil, fmt.Errorf("%s: read the pawl run id of %s: %w; way forward: fix the cause it names, then run `%s %s` again", verb, slug, err, verb, slug)
++	}
++	path, err := deps.WriteReopen(slug, pawlengine.ReopenRequest{RunID: runID, Close: closePR, RequestedAt: deps.Now().UTC()})
++	if err != nil {
++		return nil, fmt.Errorf("%s: write the reopen request of %s: %w; way forward: fix the cause it names, then run `%s %s` again", verb, slug, err, verb, slug)
++	}
++	removed, err := deps.Unready(slug)
++	if err != nil {
++		return nil, fmt.Errorf("%s: the reopen request of %s is written, but its ready record could not be removed and committed: %w; way forward: fix the cause it names, then run `%s %s` again, since a standing flag lands the beam again", verb, slug, err, verb, slug)
++	}
++
++	wayForward := fmt.Sprintf("the run's %s row takes the request and sends the run back to %s; run `lym batten status %s` to follow it, and `lym beam ready %s` once the beam is ready to land again", loomshed.NamePRReview, pawlengine.NameBeamAwait, slug, slug)
++	if status.State != shedengine.StateRunning {
++		wayForward = fmt.Sprintf("the run is %s at %s; run `lym loom resume` in the beam's worktree, after which its %s row takes the request and sends the run back to %s", status.State, status.CurrentProducer, loomshed.NamePRReview, pawlengine.NameBeamAwait)
++	}
++	return map[string]any{
++		"slug":          slug,
++		"request":       path,
++		"run_id":        runID,
++		"close":         closePR,
++		"ready_removed": removed,
++		"way_forward":   wayForward,
++	}, nil
++}
++
+ // land asks the pawl run of the beam slug to land the beam, and returns the request's path and the command that follows the landing.
+ // The request is only a file: Beam-Await consumes it, and the beam's pair is removed at the run's teardown, so the verb runs from any worktree, the beam itself included.
+ func land(deps landDeps, slug string) (map[string]any, error) {
+diff --git a/internal/beamcli/land_test.go b/internal/beamcli/land_test.go
+index 89119718..83648e6e 100644
+--- a/internal/beamcli/land_test.go
++++ b/internal/beamcli/land_test.go
+@@ -1,4 +1,4 @@
+-// land_test.go drives the land and ready sequences over fake deps: the entries that are not a landable beam, the pawl run, owner and ready refusals, the work-remaining refusal passed through, the land request written for a beam waiting at Beam-Await, and the ready record written once.
++// land_test.go drives the land, ready and reopen sequences over fake deps: the entries that are not a landable beam, the pawl run, owner and ready refusals, the work-remaining refusal passed through, the land request written for a beam waiting at Beam-Await, the ready record written once, and the reopen request written for a landing past Beam-Await with its ready record removed.
+ 
+ package beamcli
+ 
+@@ -38,6 +38,10 @@ type landWorld struct {
+ 	refusal    error
+ 	refusedFor []string
+ 	requests   []pawlengine.LandRequest
++	// reopens holds the reopen requests written, unreadyCalls the Unready calls and unreadyErr what that seam fails with.
++	reopens      []pawlengine.ReopenRequest
++	unreadyCalls int
++	unreadyErr   error
+ }
+ 
+ // newLandWorld returns a hub owned by here with a beam "b" whose pair is here and marked and whose pawl run waits at Beam-Await, a task, a grouping project and a done beam.
+@@ -93,10 +97,139 @@ func (w *landWorld) deps() landDeps {
+ 			w.requests = append(w.requests, req)
+ 			return "/hub/" + slug + "/.lym/beam/land-request.json", nil
+ 		},
++		WriteReopen: func(slug string, req pawlengine.ReopenRequest) (string, error) {
++			w.reopens = append(w.reopens, req)
++			return "/hub/" + slug + "/.lym/beam/reopen-request.json", nil
++		},
++		Unready: func(slug string) (bool, error) {
++			w.unreadyCalls++
++			if w.unreadyErr != nil {
++				return false, w.unreadyErr
++			}
++			removed := w.ready[slug]
++			delete(w.ready, slug)
++			return removed, nil
++		},
+ 		Now: func() time.Time { return landNow },
+ 	}
+ }
+ 
++func TestReopen(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	at := func(state shedengine.State, row string) func(w *landWorld) {
++		return func(w *landWorld) { w.children["b"] = shedengine.Status{State: state, CurrentProducer: row} }
++	}
++	tests := []struct {
++		name    string
++		slug    string
++		closePR bool
++		setup   func(w *landWorld)
++		// wantErr is empty for a reopen that writes its request, else every substring the refusal names.
++		wantErr []string
++		// wantWayForward is a substring of a written request's way forward.
++		wantWayForward string
++		// wantReopens is how many reopen requests were written, wantUnready how many times the ready record's removal ran.
++		wantReopens int
++		wantUnready int
++	}{
++		{name: "TaskRefusedNamingItsOwnLanding", slug: "task1", wantErr: []string{"lym beam reopen:", "lym batten run task1"}},
++		{name: "DoneBeamRefused", slug: "landed", wantErr: []string{"lym beam reopen:", "already landed"}},
++		{
++			name: "BeamOwnedElsewhereRefusedNamingAdopt", slug: "b",
++			setup: func(w *landWorld) {
++				w.owners.Entries["b"] = boardengine.OwnerEntry{IsProject: true, Beam: true, Owner: there}
++				at(shedengine.StateRunning, "PR-Review")(w)
++			},
++			wantErr: []string{"owned by machine there", "lym adopt b"},
++		},
++		{
++			name: "BeamWithNoPawlRunRefusedNamingCreate", slug: "b",
++			setup:   func(w *landWorld) { delete(w.children, "b") },
++			wantErr: []string{"no pawl run", "lym beam create b"},
++		},
++		{
++			name: "RunWaitingAtBeamAwaitRefusedAsTakingMembersAlready", slug: "b",
++			wantErr: []string{"Beam-Await", "takes new members already", "lym batten status b"},
++		},
++		{
++			name: "RunAtFinalizeRefused", slug: "b", setup: at(shedengine.StateRunning, "Finalize"),
++			wantErr: []string{"running at Finalize", "lym batten status b"},
++		},
++		{
++			name: "DoneRunRefused", slug: "b", setup: at(shedengine.StateDone, "PR-Review"),
++			wantErr: []string{"done at PR-Review"},
++		},
++		{
++			name: "RunAtPRReviewWritesTheRequestAndRemovesTheFlag", slug: "b", setup: at(shedengine.StateRunning, "PR-Review"),
++			wantWayForward: "lym batten status b", wantReopens: 1, wantUnready: 1,
++		},
++		{
++			name: "CloseRidesTheRequest", slug: "b", closePR: true, setup: at(shedengine.StateRunning, "PR-Review"),
++			wantWayForward: "lym beam ready b", wantReopens: 1, wantUnready: 1,
++		},
++		{
++			name: "RunAtParentAlignIsSentBack", slug: "b", setup: at(shedengine.StateRunning, "Parent-Align"),
++			wantWayForward: "Beam-Await", wantReopens: 1, wantUnready: 1,
++		},
++		{
++			name: "RunAtBeamDescribeIsSentBack", slug: "b", setup: at(shedengine.StateRunning, "Beam-Describe"),
++			wantWayForward: "Beam-Await", wantReopens: 1, wantUnready: 1,
++		},
++		{
++			name: "HaltedRunNamesLoomResume", slug: "b", setup: at(shedengine.StateBlocked, "PR-Review"),
++			wantWayForward: "lym loom resume", wantReopens: 1, wantUnready: 1,
++		},
++		{
++			name: "FailedReadyRemovalNamesReopenAgain", slug: "b",
++			setup: func(w *landWorld) {
++				at(shedengine.StateRunning, "PR-Review")(w)
++				w.unreadyErr = errors.New("the commit failed")
++			},
++			wantErr:     []string{"the commit failed", "lym beam reopen b"},
++			wantReopens: 1, wantUnready: 1,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			w := newLandWorld()
++			if tt.setup != nil {
++				tt.setup(w)
++			}
++			flagged := w.ready[tt.slug]
++
++			got, err := reopen(w.deps(), tt.slug, tt.closePR)
++
++			if len(w.reopens) != tt.wantReopens || w.unreadyCalls != tt.wantUnready {
++				t.Errorf("reopen(%q) wrote %d requests and ran Unready %d times; want %d and %d", tt.slug, len(w.reopens), w.unreadyCalls, tt.wantReopens, tt.wantUnready)
++			}
++			if len(tt.wantErr) > 0 {
++				if err == nil {
++					t.Fatalf("reopen(%q) = %v, nil; want a refusal naming %v", tt.slug, got, tt.wantErr)
++				}
++				for _, want := range tt.wantErr {
++					if !strings.Contains(err.Error(), want) {
++						t.Errorf("reopen(%q) error = %q; want it to name %q", tt.slug, err.Error(), want)
++					}
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("reopen(%q) = %v; want the request written", tt.slug, err)
++			}
++			want := pawlengine.ReopenRequest{RunID: w.runID, Close: tt.closePR, RequestedAt: landNow}
++			if w.reopens[0] != want {
++				t.Errorf("reopen(%q) wrote %+v; want %+v", tt.slug, w.reopens[0], want)
++			}
++			if got["request"] != "/hub/b/.lym/beam/reopen-request.json" || got["close"] != tt.closePR || got["ready_removed"] != flagged || !strings.Contains(got["way_forward"].(string), tt.wantWayForward) {
++				t.Errorf("reopen(%q) = %v; want the request's path, close %v, ready_removed %v and a way forward naming %q", tt.slug, got, tt.closePR, flagged, tt.wantWayForward)
++			}
++		})
++	}
++}
++
+ func TestLand(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/hubgeom/dobbygeom.go b/internal/hubgeom/dobbygeom.go
+index 8648f66d..045af209 100644
+--- a/internal/hubgeom/dobbygeom.go
++++ b/internal/hubgeom/dobbygeom.go
+@@ -69,12 +69,13 @@ func DobbyBeamDir(worktree *lymcwd.Location) string {
+ 	return filepath.Join(worktree.HubPath, worktree.WorktreeName, worktree.AnchorRel, lymdirs.DotLymDirName, lymdirs.BeamDirName)
+ }
+ 
+-// PawlPaths tells the pawl producers the land request, dobby-stop marker and await marker paths of the beam whose pair is at beam.
+-// All three lie directly under the beam worktree's `.lym/beam/` directory at the worktree's own anchor, where DobbyGeometry puts the dobby's files, so the dobby, `lym beam land` and Beam-Await read one directory.
++// PawlPaths tells the pawl producers the land request, reopen request, dobby-stop marker and await marker paths of the beam whose pair is at beam.
++// All four lie directly under the beam worktree's `.lym/beam/` directory at the worktree's own anchor, where DobbyGeometry puts the dobby's files, so the dobby, `lym beam land` and Beam-Await read one directory.
+ func PawlPaths(beam *lymcwd.Location) pawlengine.Paths {
+ 	beamDir := filepath.Join(beam.AnchorPath(), lymdirs.DotLymDirName, lymdirs.BeamDirName)
+ 	return pawlengine.Paths{
+ 		LandRequest:     filepath.Join(beamDir, pawlengine.LandRequestFileName),
++		ReopenRequest:   filepath.Join(beamDir, pawlengine.ReopenRequestFileName),
+ 		DobbyStopMarker: filepath.Join(beamDir, pawlengine.DobbyStopMarkerName),
+ 		AwaitMarker:     filepath.Join(beamDir, pawlengine.AwaitMarkerName),
+ 	}
+diff --git a/internal/hubgeom/dobbygeom_test.go b/internal/hubgeom/dobbygeom_test.go
+index 09dc205c..8e78f094 100644
+--- a/internal/hubgeom/dobbygeom_test.go
++++ b/internal/hubgeom/dobbygeom_test.go
+@@ -58,7 +58,7 @@ func standMove(t *testing.T, prime *lymcwd.Location, worktree string) string {
+ }
+ 
+ // TestDobbyGeometry asserts the lock, state, log and output paths and the tidy directory lie under the named worktree's `.lym/beam/` directory at its own anchor, the slug is empty for the prime, the batten runs directory lies under the prime, and a worktree with no directory is an error naming it.
+-// It also asserts PawlPaths puts the pawl run's three files in that same `.lym/beam/` directory at the beam's own anchor, a beam anchored under a sub-directory included.
++// It also asserts PawlPaths puts the pawl run's files in that same `.lym/beam/` directory at the beam's own anchor, a beam anchored under a sub-directory included.
+ // It also asserts the move records that stop a dobby: the prime's alone for the prime and the beam's own and then the prime's for a beam, and that DobbyStart reads a standing record the same way.
+ func TestDobbyGeometry(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -109,7 +109,7 @@ func TestDobbyGeometry(t *testing.T) {
+ 					t.Fatalf("NamedWorktree(%q) = %v; want nil", tt.worktree, err)
+ 				}
+ 				paths := PawlPaths(beam)
+-				for name, path := range map[string]string{"LandRequest": paths.LandRequest, "DobbyStopMarker": paths.DobbyStopMarker, "AwaitMarker": paths.AwaitMarker} {
++				for name, path := range map[string]string{"LandRequest": paths.LandRequest, "ReopenRequest": paths.ReopenRequest, "DobbyStopMarker": paths.DobbyStopMarker, "AwaitMarker": paths.AwaitMarker} {
+ 					if filepath.Dir(path) != beamDir {
+ 						t.Errorf("PawlPaths(%q).%s = %q; want it directly under the dobby's directory %q", tt.worktree, name, path, beamDir)
+ 					}
+diff --git a/internal/landingshed/beamdescribe.go b/internal/landingshed/beamdescribe.go
+index 1cf0acf0..0b1c6ade 100644
+--- a/internal/landingshed/beamdescribe.go
++++ b/internal/landingshed/beamdescribe.go
+@@ -7,14 +7,39 @@ import (
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
++	"regexp"
+ 	"strings"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/summaryparser"
+ )
+ 
+-// beamDescriptionTitleMax is the longest title the description carries, in characters, which is the limit summaryparser.ValidateDescription enforces.
+-const beamDescriptionTitleMax = 72
++const (
++	// beamDescriptionTitleMax is the longest title the description carries, in characters, which is the limit summaryparser.ValidateDescription enforces.
++	beamDescriptionTitleMax = 72
++	// beamChangesHeading heads the list of the commits the beam adds.
++	beamChangesHeading = "## Changes"
++	// beamCommitSHALength is how many characters of a commit's object name an entry shows, enough for GitHub to link it.
++	beamCommitSHALength = 12
++	// beamCommitSummaryMax is the longest summary an entry carries, in characters, before it is cut.
++	beamCommitSummaryMax = 200
++	// beamCommitTimeLayout formats the time an entry shows, in UTC.
++	beamCommitTimeLayout = "2006-01-02 15:04 UTC"
++)
++
++// pullRequestSubject matches the subject of a commit a pull request landed, `<title> (#<number>)`, capturing the title and the number.
++var pullRequestSubject = regexp.MustCompile(`^(.*\S) \(#(\d+)\)$`)
++
++// BeamCommit is one commit on the beam branch's own line of history.
++type BeamCommit struct {
++	// SHA is the commit's full hex object name.
++	SHA string
++	// Message is the commit's full message: its subject line, then its body.
++	Message string
++	// Committed is the commit's committer time, which for a pull request GitHub merged is when it merged.
++	Committed time.Time
++}
+ 
+ // BeamDescribeDeps carries the told values NewBeamDescribe needs.
+ // Every field is required.
+@@ -27,8 +52,8 @@ type BeamDescribeDeps struct {
+ 	ProjectDecisions func() ([]string, error)
+ 	// Entry reads the title and brief of the board entry of the run's slug, on every call.
+ 	Entry func() (title, brief string, err error)
+-	// CommitSubjects lists the subjects of the commits the beam adds over its merge base with the parent, oldest first, merge commits left out.
+-	CommitSubjects func() ([]string, error)
++	// Commits lists the commits on the beam branch's first-parent line that its parent branch lacks, oldest first: each landing into the beam, each merge from the parent and each commit made on the beam directly.
++	Commits func() ([]BeamCommit, error)
+ 	// Commit commits the description's directory; a repeat commit over unchanged content is a no-op.
+ 	Commit func() error
+ }
+@@ -42,9 +67,12 @@ type beamDescribeProducer struct {
+ var _ shedengine.ShedProducer = (*beamDescribeProducer)(nil)
+ 
+ // NewBeamDescribe returns the ShedProducer that writes and commits the change description of a beam.
+-// The description is the entry's title cut to 72 characters as a heading, its brief, one bullet per commit subject and the project record's added entries verbatim under a `## Project decisions` heading.
+-// It is validated like the Describe row's, and a finding is an error naming the finding and the way to end the landing and fix the entry.
+-// An empty brief with no commit subjects leaves the body empty, which that validation refuses.
++// The description is the entry's title cut to 72 characters as a heading, its brief, a `## Changes` list of the beam's commits oldest first and the project record's added entries verbatim under a `## Project decisions` heading.
++// A commit whose subject ends in ` (#<number>)`, as a pull request's merge writes it, is listed by its pull request's number, title and merge time; any other commit, a merge from the parent included, by its object name, subject and commit time.
++// Either entry carries the first sentence of the commit's body as its summary, when the body has one.
++// GitHub links the number and the object name in a pull request's body.
++// The description is validated like the Describe row's, and a finding is an error naming the finding and the way to end the landing and fix the entry.
++// An empty brief with no commits leaves the body empty, which that validation refuses.
+ // A re-run rewrites the same bytes.
+ func NewBeamDescribe(name string, deps BeamDescribeDeps) (shedengine.ShedProducer, error) {
+ 	required := []struct {
+@@ -55,7 +83,7 @@ func NewBeamDescribe(name string, deps BeamDescribeDeps) (shedengine.ShedProduce
+ 		{"DescriptionPath", deps.DescriptionPath != ""},
+ 		{"ProjectDecisions", deps.ProjectDecisions != nil},
+ 		{"Entry", deps.Entry != nil},
+-		{"CommitSubjects", deps.CommitSubjects != nil},
++		{"Commits", deps.Commits != nil},
+ 		{"Commit", deps.Commit != nil},
+ 	}
+ 	for _, r := range required {
+@@ -67,7 +95,7 @@ func NewBeamDescribe(name string, deps BeamDescribeDeps) (shedengine.ShedProduce
+ }
+ 
+ // Call implements shedengine.ShedProducer.
+-// It reads the entry, the record's added entries and the commit subjects, writes the description, validates it and commits it.
++// It reads the entry, the record's added entries and the commits, writes the description, validates it and commits it.
+ // A read, write or commit failure and a finding are errors; only a cancelled context is reported as the cancellation.
+ func (p *beamDescribeProducer) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	if err := entryErr(ctx, p.name); err != nil {
+@@ -88,14 +116,14 @@ func (p *beamDescribeProducer) Call(ctx context.Context) (shedengine.Outcome, sh
+ 	if err != nil {
+ 		return fail("read the project record", err)
+ 	}
+-	subjects, err := p.deps.CommitSubjects()
++	commits, err := p.deps.Commits()
+ 	if err != nil {
+-		return fail("read the beam's commit subjects", err)
++		return fail("read the beam's commits", err)
+ 	}
+ 	if err := os.MkdirAll(filepath.Dir(p.deps.DescriptionPath), 0o755); err != nil {
+ 		return fail("create the description directory", err)
+ 	}
+-	if err := os.WriteFile(p.deps.DescriptionPath, []byte(beamDescription(title, brief, decisions, subjects)), 0o644); err != nil {
++	if err := os.WriteFile(p.deps.DescriptionPath, []byte(beamDescription(title, brief, decisions, commits)), 0o644); err != nil {
+ 		return fail("write the description", err)
+ 	}
+ 	findings, err := summaryparser.ValidateDescription(p.deps.DescriptionPath)
+@@ -116,8 +144,8 @@ func (p *beamDescribeProducer) Call(ctx context.Context) (shedengine.Outcome, sh
+ 	return shedengine.Done, shedengine.OutputPointer{}, nil
+ }
+ 
+-// beamDescription renders the description file: the title cut to beamDescriptionTitleMax characters as a heading, then the brief, one bullet per subject and the project decisions, each part set off by a blank line.
+-func beamDescription(title, brief string, decisions, subjects []string) string {
++// beamDescription renders the description file: the title cut to beamDescriptionTitleMax characters as a heading, then the brief, the list of commits and the project decisions, each part set off by a blank line.
++func beamDescription(title, brief string, decisions []string, commits []BeamCommit) string {
+ 	title = strings.TrimSpace(title)
+ 	if runes := []rune(title); len(runes) > beamDescriptionTitleMax {
+ 		title = strings.TrimSpace(string(runes[:beamDescriptionTitleMax]))
+@@ -126,12 +154,12 @@ func beamDescription(title, brief string, decisions, subjects []string) string {
+ 	if brief = strings.TrimSpace(brief); brief != "" {
+ 		sections = append(sections, brief)
+ 	}
+-	if len(subjects) > 0 {
+-		bullets := make([]string, len(subjects))
+-		for i, subject := range subjects {
+-			bullets[i] = "- " + subject
++	if len(commits) > 0 {
++		entries := make([]string, len(commits))
++		for i, commit := range commits {
++			entries[i] = beamCommitEntry(commit)
+ 		}
+-		sections = append(sections, strings.Join(bullets, "\n"))
++		sections = append(sections, beamChangesHeading+"\n\n"+strings.Join(entries, "\n"))
+ 	}
+ 	if len(decisions) > 0 {
+ 		sections = append(sections, "## Project decisions\n\n"+strings.Join(decisions, "\n\n"))
+@@ -142,3 +170,38 @@ func beamDescription(title, brief string, decisions, subjects []string) string {
+ 	}
+ 	return description + "\n"
+ }
++
++// beamCommitEntry renders one commit as a list item: `#<number> <title>, merged <time>` for a pull request's merge, `<object name> <subject>, committed <time>` otherwise, and the body's summary indented on the next line when there is one.
++func beamCommitEntry(commit BeamCommit) string {
++	subject, body, _ := strings.Cut(strings.TrimSpace(commit.Message), "\n")
++	subject = strings.TrimSpace(subject)
++	when := commit.Committed.UTC().Format(beamCommitTimeLayout)
++	var entry string
++	if match := pullRequestSubject.FindStringSubmatch(subject); match != nil {
++		entry = fmt.Sprintf("- #%s %s, merged %s", match[2], match[1], when)
++	} else {
++		entry = fmt.Sprintf("- %s %s, committed %s", commit.SHA[:min(len(commit.SHA), beamCommitSHALength)], subject, when)
++	}
++	if summary := commitSummary(body); summary != "" {
++		entry += "\n  " + summary
++	}
++	return entry
++}
++
++// commitSummary returns the first sentence of the first paragraph of body that is not a heading, on one line, cut to beamCommitSummaryMax characters with an ellipsis; "" when body has no such paragraph.
++func commitSummary(body string) string {
++	for _, paragraph := range strings.Split(strings.ReplaceAll(body, "\r\n", "\n"), "\n\n") {
++		text := strings.Join(strings.Fields(paragraph), " ")
++		if text == "" || strings.HasPrefix(text, "#") {
++			continue
++		}
++		if end := strings.Index(text, ". "); end >= 0 {
++			text = text[:end+1]
++		}
++		if runes := []rune(text); len(runes) > beamCommitSummaryMax {
++			text = strings.TrimSpace(string(runes[:beamCommitSummaryMax])) + "…"
++		}
++		return text
++	}
++	return ""
++}
+diff --git a/internal/landingshed/beamdescribe_test.go b/internal/landingshed/beamdescribe_test.go
+index b748914b..9f173186 100644
+--- a/internal/landingshed/beamdescribe_test.go
++++ b/internal/landingshed/beamdescribe_test.go
+@@ -9,28 +9,38 @@ import (
+ 	"path/filepath"
+ 	"strings"
+ 	"testing"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestBeamDescribe asserts the beam description carries the entry's title, brief, one bullet per commit subject and the project record's added entries, cuts an over-long title, refuses an empty body naming the way out, returns a failed seam, and rewrites the same bytes on a re-run.
++// TestBeamDescribe asserts the beam description carries the entry's title, brief, one entry per commit and the project record's added entries, cuts an over-long title, refuses an empty body naming the way out, returns a failed seam, and rewrites the same bytes on a re-run.
+ func TestBeamDescribe(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+ 	const slug = "my-beam"
+ 	readErr := errors.New("board unreadable")
++	at := func(hour int) time.Time { return time.Date(2026, 10, 30, hour, 5, 0, 0, time.FixedZone("CET", 3600)) }
++	pullRequest := BeamCommit{SHA: "1111111111111111111111111111111111111111", Message: "Tool-joint pressure loss (#266)\n\nAdds the tool-joint loss to the hydraulics. Tests cover the annulus.\n\nCreated using\n - LoomYard", Committed: at(14)}
++	parentMerge := BeamCommit{SHA: "2222222222222222222222222222222222222222", Message: "Merge branch 'main' into my-beam\n\n# Conflicts:\n#\tsrc/a.go\n", Committed: at(15)}
++	direct := BeamCommit{SHA: "3333333333333333333333333333333333333333", Message: "Fix a typo", Committed: at(16)}
++	const (
++		wantPullRequestEntry = "- #266 Tool-joint pressure loss, merged 2026-10-30 13:05 UTC\n  Adds the tool-joint loss to the hydraulics."
++		wantParentMergeEntry = "- 222222222222 Merge branch 'main' into my-beam, committed 2026-10-30 14:05 UTC"
++		wantDirectEntry      = "- 333333333333 Fix a typo, committed 2026-10-30 15:05 UTC"
++	)
+ 	tests := []struct {
+-		name     string
+-		title    string
+-		brief    string
+-		subjects []string
++		name    string
++		title   string
++		brief   string
++		commits []BeamCommit
+ 		// decisions are the project record's added entries the seam returns.
+-		decisions []string
+-		decErr    error
+-		entryErr  error
+-		subjErr   error
++		decisions  []string
++		decErr     error
++		entryErr   error
++		commitsErr error
+ 		// wantFile is the exact description written; empty wants the call to fail.
+ 		wantFile string
+ 		// wantErr are the substrings the failure carries; a seam failure wants wantIs as well.
+@@ -38,13 +48,18 @@ func TestBeamDescribe(t *testing.T) {
+ 		wantIs  error
+ 	}{
+ 		{
+-			name: "TitleBriefAndTwoSubjects", title: "Ship the beam", brief: "Groups the work.", subjects: []string{"first change", "second change"},
+-			wantFile: "# Ship the beam\n\nGroups the work.\n\n- first change\n- second change\n",
++			name: "PullRequestsAndDirectCommitsAreListedOldestFirst", title: "Ship the beam", brief: "Groups the work.", commits: []BeamCommit{pullRequest, parentMerge, direct},
++			wantFile: "# Ship the beam\n\nGroups the work.\n\n## Changes\n\n" + wantPullRequestEntry + "\n" + wantParentMergeEntry + "\n" + wantDirectEntry + "\n",
+ 		},
+ 		{
+-			name: "ProjectDecisionsFollowTheSubjects", title: "Ship the beam", brief: "Groups the work.", subjects: []string{"first change"},
++			name: "ALongSummaryIsCutWithAnEllipsis", title: "Ship the beam",
++			commits:  []BeamCommit{{SHA: "4444", Message: "Long change\n\n" + strings.Repeat("word ", 50), Committed: at(12)}},
++			wantFile: "# Ship the beam\n\n## Changes\n\n- 4444 Long change, committed 2026-10-30 11:05 UTC\n  " + strings.TrimSpace(strings.Repeat("word ", 40)) + "…\n",
++		},
++		{
++			name: "ProjectDecisionsFollowTheChanges", title: "Ship the beam", brief: "Groups the work.", commits: []BeamCommit{direct},
+ 			decisions: []string{"### Added after Discussion (parent, 2026-10-31): Narrow the scope\n\n- **Decision:** Drop the CLI half.\n- **Rationale:** It belongs to a later beam."},
+-			wantFile:  "# Ship the beam\n\nGroups the work.\n\n- first change\n\n## Project decisions\n\n### Added after Discussion (parent, 2026-10-31): Narrow the scope\n\n- **Decision:** Drop the CLI half.\n- **Rationale:** It belongs to a later beam.\n",
++			wantFile:  "# Ship the beam\n\nGroups the work.\n\n## Changes\n\n" + wantDirectEntry + "\n\n## Project decisions\n\n### Added after Discussion (parent, 2026-10-31): Narrow the scope\n\n- **Decision:** Drop the CLI half.\n- **Rationale:** It belongs to a later beam.\n",
+ 		},
+ 		{
+ 			name: "ProjectDecisionsSeamErrorIsReturned", title: "Ship the beam", brief: "Groups the work.", decErr: readErr,
+@@ -55,11 +70,7 @@ func TestBeamDescribe(t *testing.T) {
+ 			wantFile: "# " + strings.Repeat("a", 72) + "\n\nGroups the work.\n",
+ 		},
+ 		{
+-			name: "SubjectsAloneFillTheBody", title: "Ship the beam", subjects: []string{"only change"},
+-			wantFile: "# Ship the beam\n\n- only change\n",
+-		},
+-		{
+-			name: "EmptyBriefAndNoSubjectsAreRefusedNamingTheWayOut", title: "Ship the beam",
++			name: "EmptyBriefAndNoCommitsAreRefusedNamingTheWayOut", title: "Ship the beam",
+ 			wantErr: []string{"body is empty", `"lym batten cancel my-beam"`, `"lym board upsert"`, `"lym beam land my-beam"`},
+ 		},
+ 		{
+@@ -67,8 +78,8 @@ func TestBeamDescribe(t *testing.T) {
+ 			wantErr: []string{"read the board entry"}, wantIs: readErr,
+ 		},
+ 		{
+-			name: "SubjectsSeamErrorIsReturned", title: "Ship the beam", brief: "Groups the work.", subjErr: readErr,
+-			wantErr: []string{"commit subjects"}, wantIs: readErr,
++			name: "CommitsSeamErrorIsReturned", title: "Ship the beam", brief: "Groups the work.", commitsErr: readErr,
++			wantErr: []string{"read the beam's commits"}, wantIs: readErr,
+ 		},
+ 	}
+ 	for _, tt := range tests {
+@@ -82,7 +93,7 @@ func TestBeamDescribe(t *testing.T) {
+ 				DescriptionPath:  path,
+ 				ProjectDecisions: func() ([]string, error) { return tt.decisions, tt.decErr },
+ 				Entry:            func() (string, string, error) { return tt.title, tt.brief, tt.entryErr },
+-				CommitSubjects:   func() ([]string, error) { return tt.subjects, tt.subjErr },
++				Commits:          func() ([]BeamCommit, error) { return tt.commits, tt.commitsErr },
+ 				Commit:           func() error { commits++; return nil },
+ 			})
+ 			if err != nil {
+diff --git a/internal/landingshed/deps.go b/internal/landingshed/deps.go
+index 809550bf..96311c5d 100644
+--- a/internal/landingshed/deps.go
++++ b/internal/landingshed/deps.go
+@@ -378,6 +378,15 @@ type PullRequestDeps struct {
+ 	SessionLive func(guid string) (bool, error)
+ 	// RegisterSession registers the process of the session's pane under the run, so a teardown ends it.
+ 	RegisterSession func(guid string) error
++	// Reopen reads whether a request stands to send the run back, through the row's reroute edge, to take more work before it lands.
++	// Nil reads as never: only a beam's run is told one.
++	Reopen func() (req ReopenRequest, found bool, err error)
++}
++
++// ReopenRequest asks the PR-Review row to send its run back through the row's reroute edge.
++type ReopenRequest struct {
++	// Close asks for the run's pull request to be closed, so the next landing opens a new one, instead of kept open as a draft.
++	Close bool
+ }
+ 
+ // ParentOwnership is who owns the parent a run lands on.
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index 597f57a1..6162f512 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -19,6 +19,12 @@
+ // A merged pull request takes the merged verdicts whatever the flag says, and an uncommitted file at any ending is Stuck with Halt.
+ // A pause that covers the run holds the row in process, before its push and at each wake, and does no gate, push or GitHub call meanwhile.
+ //
++// A reopen request, which the told Deps.PullRequest.Reopen reads and only a beam's run is told, is read on entry before the mode decision and at every wake of the wait after the pause hold.
++// It stops the session, then keeps an open recorded pull request open as a draft, through GitHub's GraphQL mutation, with a comment saying the landing was reopened, or closes it with a comment when the request asks.
++// A kept record loses the continue flag, the operator's ending, the mailed head and the session; a pull request closed by the request, or closed or merged on GitHub, loses its record, so the next entry opens a new one.
++// The row then ends Stuck with Reroute, which the recipe's reroute edge sends back to the row that takes more work, and leaves the request for that row to remove.
++// A later entry that finds its recorded pull request open as a draft marks it ready for review before it sets the title and body, so the reopened pull request keeps its link, comments and history.
++//
+ // The row keeps one interactive agent session per run, in a window of its own in the task worktree, for the operator to discuss the pull request in; the row never waits on its output.
+ // After it records the pull request, and before it waits, it reuses the recorded strand when that is live, resumes the recorded session id when the strand is not, and otherwise starts a new session.
+ // A review whose record carries the operator's ending gets no session.
+@@ -244,7 +250,7 @@
+ // A yes with no record is Stuck with Halt naming `lym loom goto PR-Review`, and a yes whose pull request GitHub reports closed while the record carries no operator's ending is Stuck with Halt naming a reopen on GitHub and `lym batten cancel`; only PR-Review writes that mark.
+ // A yes whose record carries the operator's ending and whose pull request is closed is reopened on GitHub and merged like an open one, since GitHub squash-merges only an open pull request; a failed reopen is judged as any GitHub failure.
+ // A merged pull request makes no GitHub merge, and the parent sync fast-forwards to the merged upstream so the parent-side merge takes the already-landed path.
+-// An open one is merged on GitHub after the lock re-check and before the parent-side merge: Finalize pushes the task branch, merges with the pushed head as the expected head, `squash` choosing the method, the change description's title as the commit title and its body and the credit block as the commit message, then fetches and fast-forwards the parent pair.
++// An open one is merged on GitHub after the lock re-check and before the parent-side merge: Finalize pushes the task branch, merges with the pushed head as the expected head, `squash` choosing the method, the change description's title followed by ` (#<number>)` as the commit title, the form GitHub's own squash merge writes, so the landed commit names its pull request after the board entry is pruned, and its body and the credit block as the commit message, then fetches and fast-forwards the parent pair.
+ // A merge GitHub refuses as pending is retried for at most a minute under the lock, a method refusal names `lym config landing --set squash=<true|false>`, and any other refusal names a second person's approval or a settled check or conflict, and `lym batten cancel`.
+ // The retry after a merge-in-required error never merges on GitHub a second time.
+ // Every GitHub failure is judged as PR-Review judges one, with each halt opening with LandingStopPrefix.
+@@ -271,7 +277,8 @@
+ // the seat engine's geometry for Describe, and Deps.ParentName passed through to the resolver for Parent-Align and Finalize.
+ // DescribeTable builds every loom recipe's session from one stencil, which reads the decision record, the board entry, the diff and the run records that exist, rendering an absent record as `(none)`.
+ // The stencil also shows the regression check the landing appends, so the session writes no section of its own for it and lists no check it settled as one to run by hand.
+-// NewBeamDescribe is the beam recipe's Describe row and starts no agent: it writes the description from the beam's board entry, the subjects of the commits the beam adds and the entries `lym loom decision add` added to the beam's project record, validates it with the check the Describe gate runs, and commits it.
++// NewBeamDescribe is the beam recipe's Describe row and starts no agent: it writes the description from the beam's board entry, the commits on the beam branch's own first-parent line and the entries `lym loom decision add` added to the beam's project record, validates it with the check the Describe gate runs, and commits it.
++// Its `## Changes` list names each pull request a member landed through by the ` (#<number>)` Finalize writes into the merge's subject, with its title, merge time and the first sentence of its body, and each other commit, a merge from the parent included, by its object name, subject and time, oldest first.
+ // A finding is an error naming the finding and the way out, which is to end the landing with `lym batten cancel <slug>`, fix the entry with `lym board upsert` and run `lym beam land <slug>` again, since the landing's claim holds the entry under the run lock.
+ //
+ // It takes told absolute paths and has no direct production import of internal/lymcwd, per the
+diff --git a/internal/landingshed/finalize_pr.go b/internal/landingshed/finalize_pr.go
+index 8c6bca10..ec343d06 100644
+--- a/internal/landingshed/finalize_pr.go
++++ b/internal/landingshed/finalize_pr.go
+@@ -232,8 +232,13 @@ func (fz *Finalize) dropRecordedPullRequest(ctx context.Context, origin Origin,
+ 	return prLanding{}, "", shedengine.OutputPointer{}, nil, false
+ }
+ 
++// pullRequestCommitTitle is the title of the commit a merge of pull request number writes: title followed by ` (#<number>)`, the form GitHub's own squash merge writes, so the landed commit names the pull request it came from.
++func pullRequestCommitTitle(title string, number int) string {
++	return fmt.Sprintf("%s (#%d)", title, number)
++}
++
+ // mergeOnGitHub merges the run's pull request on GitHub, which Finalize does after its lock re-check and before the parent-side merge.
+-// It pushes the task branch and merges with the pushed head as the expected head, squashing as Config.Squash says, with title as the commit title and message as the commit message.
++// It pushes the task branch and merges with the pushed head as the expected head, squashing as Config.Squash says, with title and the pull request's number as the commit title and message as the commit message.
+ // A merge GitHub refuses as pending is retried for at most a minute of the told clock.
+ // It then fetches the parent's upstream and fast-forwards the parent pair to it, so the parent-side merge that follows finds the parent holding the task's work.
+ // stop is true when Call returns the other values at once; each halt opens with LandingStopPrefix.
+@@ -253,7 +258,7 @@ func (fz *Finalize) mergeOnGitHub(ctx context.Context, parentHandle parentMerger
+ 	deadline := pr.Now().Add(prMergeRetryWindow)
+ 	wait := prWaitFloor
+ 	for {
+-		err := landing.api.Merge(ctx, landing.record.Number, head, fz.deps.Config.Squash, title, message)
++		err := landing.api.Merge(ctx, landing.record.Number, head, fz.deps.Config.Squash, pullRequestCommitTitle(title, landing.record.Number), message)
+ 		if err == nil {
+ 			break
+ 		}
+diff --git a/internal/landingshed/finalize_pr_test.go b/internal/landingshed/finalize_pr_test.go
+index 6329dc32..2a72f17e 100644
+--- a/internal/landingshed/finalize_pr_test.go
++++ b/internal/landingshed/finalize_pr_test.go
+@@ -31,8 +31,8 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 	githubOrigin := Origin{URL: "https://github.com/acme/widgets.git", Upstream: true}
+ 	const recordedURL = "https://github.com/acme/widgets/pull/7"
+ 	const wantCredit = "Created using\n - LoomYard\n - Test Author <test@example.com>"
+-	const wantGitHubMerge = "Merge 7|task-head|true|A landing title|A landing body.\n\n" + wantCredit
+-	const wantGitHubMergeWithVerdict = "Merge 7|task-head|true|A landing title|A landing body.\n\n" + testVerdict + "\n\n" + wantCredit
++	const wantGitHubMerge = "Merge 7|task-head|true|A landing title (#7)|A landing body.\n\n" + wantCredit
++	const wantGitHubMergeWithVerdict = "Merge 7|task-head|true|A landing title (#7)|A landing body.\n\n" + testVerdict + "\n\n" + wantCredit
+ 	statusScript := func(calls ...scriptedCall) map[string][]scriptedCall {
+ 		return map[string][]scriptedCall{"Status": calls}
+ 	}
+diff --git a/internal/landingshed/prreview.go b/internal/landingshed/prreview.go
+index c7d91d4b..c1cf470a 100644
+--- a/internal/landingshed/prreview.go
++++ b/internal/landingshed/prreview.go
+@@ -27,6 +27,7 @@ const (
+ // PRReview is the ShedProducer that lands a run through a GitHub pull request when ResolvePullRequest says so.
+ // A no closes any pull request the run recorded and passes, except that a failed read of GitHub's rules with a pull request recorded is Stuck and closes nothing; a yes pushes the task branch, finds or opens the pull request, sets its title from the change description and its body from the description's body, the regression check and the credit block, records it, keeps one interactive session for the operator to discuss it in, and waits on it.
+ // The wait gates and pushes the agent's commits, and ends when the pull request is merged or approved, or closed or continued by the operator.
++// A reopen request, read on entry and at every wake, ends the row first: it sends the run back through the row's reroute edge, the pull request kept open as a draft or closed.
+ // It takes no parent lock.
+ type PRReview struct {
+ 	name string
+@@ -65,9 +66,12 @@ func (p *PRReview) Call(ctx context.Context) (shedengine.Outcome, shedengine.Out
+ 	return outcome, pointer, err
+ }
+ 
+-// decide resolves whether the landing goes through a pull request and runs the row's side of the answer.
++// decide answers a standing reopen request first; otherwise it resolves whether the landing goes through a pull request and runs the row's side of the answer.
+ func (p *PRReview) decide(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	pr := p.deps.PullRequest
++	if outcome, pointer, err, answered := p.answerReopen(ctx); answered {
++		return outcome, pointer, err
++	}
+ 
+ 	mode, worktree, err := pr.ParentMode()
+ 	if err != nil {
+@@ -255,6 +259,12 @@ func (p *PRReview) openPullRequest(ctx context.Context, origin Origin) (shedengi
+ 			return p.githubFailure(ctx, "read the pull request's status", err)
+ 		}
+ 		entryStatus = &status
++		// A reopen left the pull request a draft, which GitHub refuses to merge, so the review starts by marking it ready.
++		if status.State == pullrequest.StateOpen && status.Draft {
++			if err := api.SetDraft(ctx, rec.Number, false); err != nil {
++				return p.githubFailure(ctx, "mark the pull request ready for review", err)
++			}
++		}
+ 		if status.State != pullrequest.StateOpen {
+ 			// A merged pull request has nothing left to discuss, so only a closed one gets a session, for the agent to clean the tree under a continue flag.
+ 			if status.State != pullrequest.StateMerged {
+@@ -454,6 +464,9 @@ func (p *PRReview) wake(ctx context.Context, api pullrequest.API, state *prWaitS
+ 	if err := p.holdWhileCovered(ctx); err != nil {
+ 		return end("", shedengine.OutputPointer{}, err)
+ 	}
++	if outcome, pointer, err, answered := p.answerReopen(ctx); answered {
++		return end(outcome, pointer, err)
++	}
+ 
+ 	head, dirty, err := p.readTree()
+ 	if err != nil {
+@@ -724,6 +737,101 @@ func (p *PRReview) dirtyEndReason(number int, dirty []string) string {
+ 	return fmt.Sprintf("pull request #%d ended the review, but the task worktree has uncommitted changes: %s; way forward: discard them in the task worktree, after filing any worth keeping as a board note, then run lym loom resume", number, listShown(dirty))
+ }
+ 
++const (
++	// reopenDraftComment is the comment a reopen posts on the pull request it keeps open as a draft.
++	reopenDraftComment = "lym reopened this landing for more work: the pull request stays open as a draft, and lym refreshes its description and marks it ready for review when the landing goes on."
++	// reopenCloseComment is the comment a reopen posts on the pull request it closes.
++	reopenCloseComment = "lym closed this pull request: the landing was reopened for more work, and its next pull request is a new one."
++)
++
++// answerReopen sends the run back through the row's reroute edge when the Reopen seam reads a request, and reports whether it answered one.
++// It stops the session, then keeps an open recorded pull request open as a draft with a comment saying so, or closes it with a comment when the request asks.
++// A record it keeps loses the continue flag, the operator's ending, the mailed head and the session, so the next entry starts a fresh review of the same pull request; a pull request it closes, or that GitHub reports closed or merged, loses its record.
++// The verdict is Stuck with Reroute and a reason naming what became of the pull request.
++// The request stays for the reroute's target to remove, so a run the reroute cap halts here answers it again when resumed.
++// A failed read or record write is an error, and a GitHub failure is judged as githubFailure judges one.
++func (p *PRReview) answerReopen(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error, bool) {
++	pr := p.deps.PullRequest
++	if pr.Reopen == nil {
++		return "", shedengine.OutputPointer{}, nil, false
++	}
++	answered := func(outcome shedengine.Outcome, pointer shedengine.OutputPointer, err error) (shedengine.Outcome, shedengine.OutputPointer, error, bool) {
++		return outcome, pointer, err, true
++	}
++	req, found, err := pr.Reopen()
++	if err != nil {
++		return answered("", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: read the reopen request: %w", p.name, err))
++	}
++	if !found {
++		return "", shedengine.OutputPointer{}, nil, false
++	}
++	reroute := func(fate string) (shedengine.Outcome, shedengine.OutputPointer, error, bool) {
++		reason := "the landing was reopened for more work; " + fate
++		logger.Info("landingshed: a reopen request sends the run back", "row", p.name, "reason", reason)
++		return answered(shedengine.Stuck, shedengine.OutputPointer{Reroute: true, Reason: reason}, nil)
++	}
++
++	rec, recorded, err := pullrequest.ReadRecord(pr.RecordPath, pr.RecordLockPath)
++	if err != nil {
++		return answered("", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: read the pull request record: %w", p.name, err))
++	}
++	if !recorded {
++		return reroute("the run has no pull request")
++	}
++	if _, err := p.stopLiveSession(rec); err != nil {
++		return answered("", shedengine.OutputPointer{}, err)
++	}
++	origin, err := pr.Origin()
++	if err != nil {
++		return answered("", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: read the origin: %w", p.name, err))
++	}
++	api, err := pr.API(origin.URL)
++	if err != nil {
++		return answered(p.githubFailure(ctx, "open the GitHub client", err))
++	}
++	status, err := api.Status(ctx, rec.Number)
++	if err != nil {
++		return answered(p.githubFailure(ctx, "read the pull request's status", err))
++	}
++
++	fate := fmt.Sprintf("pull request #%d is %s", rec.Number, status.State)
++	switch {
++	case status.State == pullrequest.StateOpen && req.Close:
++		if err := api.Close(ctx, rec.Number, reopenCloseComment); err != nil {
++			return answered(p.githubFailure(ctx, "close the pull request", err))
++		}
++		fate = fmt.Sprintf("pull request #%d is closed", rec.Number)
++	case status.State == pullrequest.StateOpen:
++		if !status.Draft {
++			if err := api.SetDraft(ctx, rec.Number, true); err != nil {
++				return answered(p.githubFailure(ctx, "turn the pull request into a draft", err))
++			}
++		}
++		if err := api.Comment(ctx, rec.Number, reopenDraftComment); err != nil {
++			return answered(p.githubFailure(ctx, "comment on the pull request", err))
++		}
++		fate = fmt.Sprintf("pull request #%d stays open as a draft", rec.Number)
++	case status.State == pullrequest.StateMerged:
++		fate = fmt.Sprintf("pull request #%d is already merged", rec.Number)
++	}
++
++	// A merged pull request already carries work to the parent, so keeping its record would let the next landing judge the reopened work as landed.
++	if req.Close || status.State == pullrequest.StateClosed || status.State == pullrequest.StateMerged {
++		if err := pullrequest.RemoveRecord(pr.RecordPath, pr.RecordLockPath); err != nil {
++			return answered("", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: %w", p.name, err))
++		}
++		return reroute(fate)
++	}
++	err = p.updateRecord(func(r *pullrequest.Record) {
++		r.Continue, r.ReviewEnded, r.MailedHead = false, false, ""
++		r.StrandGUID, r.StrandName, r.SessionID, r.Engine = "", "", "", ""
++	})
++	if err != nil {
++		return answered("", shedengine.OutputPointer{}, err)
++	}
++	return reroute(fate)
++}
++
+ // githubFailure judges a failed GitHub call named by action.
+ // A token failure is Stuck with Halt first, since the HTTP client wraps it in a type the transient classifier reads as transient; then a transient failure is an error the driver re-steps; any other failure is Stuck with Halt.
+ func (p *PRReview) githubFailure(ctx context.Context, action string, err error) (shedengine.Outcome, shedengine.OutputPointer, error) {
+diff --git a/internal/landingshed/prreview_session_test.go b/internal/landingshed/prreview_session_test.go
+index aabc7cb0..3c154a68 100644
+--- a/internal/landingshed/prreview_session_test.go
++++ b/internal/landingshed/prreview_session_test.go
+@@ -32,10 +32,12 @@ type fakePRSessions struct {
+ 	startErr    error
+ 	liveErr     error
+ 	registerErr error
+-	live        map[string]bool
+-	starts      []shuttleengine.Spec
+-	stops       []string
+-	registered  []string
++	// stopErr is what every stop fails with; a failed stop leaves the strand live.
++	stopErr    error
++	live       map[string]bool
++	starts     []shuttleengine.Spec
++	stops      []string
++	registered []string
+ }
+ 
+ var _ prSessions = (*fakePRSessions)(nil)
+@@ -63,6 +65,9 @@ func (f *fakePRSessions) StopStrand(guid string) error {
+ 	f.mu.Lock()
+ 	defer f.mu.Unlock()
+ 	f.stops = append(f.stops, guid)
++	if f.stopErr != nil {
++		return f.stopErr
++	}
+ 	f.live[guid] = false
+ 	return nil
+ }
+diff --git a/internal/landingshed/prreview_test.go b/internal/landingshed/prreview_test.go
+index 2b2d807f..e83897a0 100644
+--- a/internal/landingshed/prreview_test.go
++++ b/internal/landingshed/prreview_test.go
+@@ -97,6 +97,14 @@ func (f *fakePullRequestAPI) Reopen(_ context.Context, number int) error {
+ 	return f.next("Reopen", fmt.Sprint(number)).err
+ }
+ 
++func (f *fakePullRequestAPI) SetDraft(_ context.Context, number int, draft bool) error {
++	return f.next("SetDraft", fmt.Sprintf("%d %v", number, draft)).err
++}
++
++func (f *fakePullRequestAPI) Comment(_ context.Context, number int, body string) error {
++	return f.next("Comment", fmt.Sprintf("%d %s", number, body)).err
++}
++
+ // RequiresPullRequest answers the scripted call's found as whether the branch's rules require a pull request.
+ func (f *fakePullRequestAPI) RequiresPullRequest(_ context.Context, branch string) (bool, error) {
+ 	s := f.next("RequiresPullRequest", branch)
+@@ -242,6 +250,15 @@ func TestPRReview_Call(t *testing.T) {
+ 			wantCalls:  []string{"Status 7", wantEditSeven, "Status 7"},
+ 			wantRecord: &pullrequest.Record{Number: 7, URL: recordedURLSeen, Base: "main", Head: "task", GatedHead: recordedGated, Continue: true},
+ 		},
++		{
++			name: "ReentryOnADraftMarksItReadyForReviewBeforeTheEdit", parentMode: "on", origin: githubOrigin,
++			record:      &pullrequest.Record{Number: 7, URL: recordedURLSeen, GatedHead: recordedGated},
++			dirty:       []string{"wip.go"},
++			scripts:     map[string][]scriptedCall{"Status": {{status: pullrequest.Status{State: pullrequest.StateOpen, Draft: true}}, {status: pullrequest.Status{State: pullrequest.StateMerged, HeadSHA: recordedGated}}}},
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantPushes: 1,
++			wantReason: []string{"uncommitted changes: wip.go"},
++			wantCalls:  []string{"Status 7", "SetDraft 7 false", wantEditSeven, "Status 7"},
++		},
+ 		{
+ 			name: "ReentryRefreshesTheBodyWithTheRegressionCheckOnce", parentMode: "on", origin: githubOrigin, verdict: testVerdict,
+ 			record:      &pullrequest.Record{Number: 7, URL: recordedURLSeen, GatedHead: recordedGated},
+@@ -531,6 +548,143 @@ func TestPRReview_Call(t *testing.T) {
+ 	})
+ }
+ 
++// TestPRReview_Reopen asserts a reopen request, read on entry or at a wake of the wait, stops the live pr-reviewer and sends the run back through the reroute edge:
++// an open pull request is kept as a draft with a comment and its record's review state reset, or closed with a comment and its record removed when the request asks, one GitHub reports closed or merged loses its record with no further call, and a run with no pull request makes no GitHub call.
++// A stop that fails is an error that leaves the record as it was.
++func TestPRReview_Reopen(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const url7 = "https://github.com/acme/widgets/pull/7"
++	open := scriptedCall{status: pullrequest.Status{State: pullrequest.StateOpen}}
++	reviewed := &pullrequest.Record{Number: 7, URL: url7, GatedHead: "head-new", MailedHead: "head-old", StrandGUID: "g7", StrandName: "pr-reviewer", SessionID: "s7", Engine: "claude", Continue: true, ReviewEnded: true}
++	reset := &pullrequest.Record{Number: 7, URL: url7, GatedHead: "head-new"}
++	tests := []struct {
++		name   string
++		record *pullrequest.Record
++		req    ReopenRequest
++		// reopenAt is the Reopen read that first finds the request: 1 on entry, 2 at the wait's first wake.
++		reopenAt int
++		scripts  map[string][]scriptedCall
++		// stopErr is what stopping the live pr-reviewer fails with.
++		stopErr error
++
++		// wantStops is how many times the pr-reviewer's strand was stopped.
++		// A Call that returns an error ends its session, which stops a live strand once more.
++		wantStops    int
++		wantErr      bool
++		wantReason   string
++		wantCalls    []string
++		wantRecord   *pullrequest.Record
++		wantNoRecord bool
++	}{
++		{
++			name: "AnOpenPullRequestBecomesADraftWithACommentAndItsReviewStateIsReset", record: reviewed, reopenAt: 1, wantStops: 1,
++			scripts:    map[string][]scriptedCall{"Status": {open}},
++			wantReason: "pull request #7 stays open as a draft",
++			wantCalls:  []string{"Status 7", "SetDraft 7 true", "Comment 7 " + reopenDraftComment},
++			wantRecord: reset,
++		},
++		{
++			name: "ADraftIsOnlyCommentedOn", record: reviewed, reopenAt: 1, wantStops: 1,
++			scripts:    map[string][]scriptedCall{"Status": {{status: pullrequest.Status{State: pullrequest.StateOpen, Draft: true}}}},
++			wantReason: "stays open as a draft",
++			wantCalls:  []string{"Status 7", "Comment 7 " + reopenDraftComment},
++			wantRecord: reset,
++		},
++		{
++			name: "CloseClosesThePullRequestWithACommentAndRemovesTheRecord", record: reviewed, req: ReopenRequest{Close: true}, reopenAt: 1, wantStops: 1,
++			scripts:      map[string][]scriptedCall{"Status": {open}},
++			wantReason:   "pull request #7 is closed",
++			wantCalls:    []string{"Status 7", "Close 7 " + reopenCloseComment},
++			wantNoRecord: true,
++		},
++		{
++			name: "APullRequestClosedOnGitHubLosesItsRecord", record: reviewed, reopenAt: 1, wantStops: 1,
++			scripts:      map[string][]scriptedCall{"Status": {{status: pullrequest.Status{State: pullrequest.StateClosed}}}},
++			wantReason:   "pull request #7 is closed",
++			wantCalls:    []string{"Status 7"},
++			wantNoRecord: true,
++		},
++		{
++			name: "APullRequestMergedOnGitHubLosesItsRecordSoTheReopenedWorkGetsANewOne", record: reviewed, reopenAt: 1, wantStops: 1,
++			scripts:      map[string][]scriptedCall{"Status": {{status: pullrequest.Status{State: pullrequest.StateMerged}}}},
++			wantReason:   "pull request #7 is already merged",
++			wantCalls:    []string{"Status 7"},
++			wantNoRecord: true,
++		},
++		{
++			name: "AFailedStopOfThePRReviewerIsAnErrorBeforeAnyGitHubCallAndLeavesTheRecord", record: reviewed, reopenAt: 1, wantStops: 2,
++			stopErr:    errors.New("the strand would not stop"),
++			wantErr:    true,
++			wantRecord: reviewed,
++		},
++		{
++			name: "ARunWithNoPullRequestReroutesWithNoGitHubCall", reopenAt: 1,
++			wantReason:   "the run has no pull request",
++			wantNoRecord: true,
++		},
++		{
++			name: "ARequestSeenAtAWakeEndsTheWait", record: &pullrequest.Record{Number: 7, URL: url7, GatedHead: "head-new"}, reopenAt: 2, wantStops: 1,
++			scripts:    map[string][]scriptedCall{"Status": {open}},
++			wantReason: "stays open as a draft",
++			wantCalls:  []string{"Status 7", "Edit 7|Change title|" + wantPRBody, "Status 7", "SetDraft 7 true", "Comment 7 " + reopenDraftComment},
++			wantRecord: &pullrequest.Record{Number: 7, URL: url7, Base: "main", Head: "task", GatedHead: "head-new"},
++		},
++		{
++			name: "ATransientGitHubFailureIsAnError", record: reviewed, reopenAt: 1, wantStops: 1,
++			scripts:   map[string][]scriptedCall{"Status": {{err: context.DeadlineExceeded}}},
++			wantErr:   true,
++			wantCalls: []string{"Status 7"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			fx := newPRReviewFixture(t, "on", nil, "", Origin{URL: "https://github.com/acme/widgets.git", Upstream: true}, tt.record, tt.scripts, nil)
++			sessions := sessionsOf(fx.deps)
++			if tt.record != nil && tt.record.StrandGUID != "" {
++				sessions.live[tt.record.StrandGUID] = true
++			}
++			sessions.stopErr = tt.stopErr
++			reads := 0
++			fx.deps.PullRequest.Reopen = func() (ReopenRequest, bool, error) {
++				reads++
++				return tt.req, reads >= tt.reopenAt, nil
++			}
++
++			outcome, pointer, err := NewPRReview("PR-Review", fx.deps).Call(context.Background())
++
++			if (err != nil) != tt.wantErr {
++				t.Fatalf("Call() error = %v; want error %v", err, tt.wantErr)
++			}
++			if len(sessions.stops) != tt.wantStops {
++				t.Errorf("Call() stopped the strands %v; want %d stops", sessions.stops, tt.wantStops)
++			}
++			if !tt.wantErr && (outcome != shedengine.Stuck || !pointer.Reroute || pointer.Halt || !strings.Contains(pointer.Reason, tt.wantReason)) {
++				t.Errorf("Call() = %q, reroute %v, halt %v, reason %q; want a Stuck reroute whose reason holds %q", outcome, pointer.Reroute, pointer.Halt, pointer.Reason, tt.wantReason)
++			}
++			if diff := cmp.Diff(tt.wantCalls, fx.api.calls); diff != "" {
++				t.Errorf("GitHub calls mismatch (-want +got):\n%s", diff)
++			}
++			got, found, rerr := pullrequest.ReadRecord(fx.deps.PullRequest.RecordPath, fx.deps.PullRequest.RecordLockPath)
++			if rerr != nil {
++				t.Fatalf("ReadRecord() error = %v", rerr)
++			}
++			switch {
++			case tt.wantNoRecord && found:
++				t.Errorf("Call() left the record %+v; want none", got)
++			case tt.wantRecord != nil && !found:
++				t.Errorf("Call() left no record; want %+v", *tt.wantRecord)
++			case tt.wantRecord != nil:
++				if diff := cmp.Diff(*tt.wantRecord, got); diff != "" {
++					t.Errorf("record mismatch (-want +got):\n%s", diff)
++				}
++			}
++		})
++	}
++}
++
+ // emptyBranchReason is the resolver's reason for an on parent whose task branch holds no commit beyond it.
+ const emptyBranchReason = "no pull request: the parent's beam.yaml pull_request is on, but the task branch has no commits beyond its parent, so the landing is empty"
+ 
+diff --git a/internal/loomcli/beamwiring.go b/internal/loomcli/beamwiring.go
+index 709cde72..5ef6b301 100644
+--- a/internal/loomcli/beamwiring.go
++++ b/internal/loomcli/beamwiring.go
+@@ -8,7 +8,6 @@ import (
+ 	"io/fs"
+ 	"os"
+ 	"slices"
+-	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/discussionparser"
+@@ -22,7 +21,7 @@ import (
+ 
+ // beamDescribeDeps assembles the BeamDescribe row's seams for the beam pair at location, whose slug names its board entry, whose parentBranch is the branch it lands on and whose project record is at recordPath.
+ // Every closure reads or writes on demand and opens nothing at build time.
+-// An empty parentBranch, a pair with no origin record, is refused when the commit subjects are read.
++// An empty parentBranch, a pair with no origin record, is refused when the beam's commits are read.
+ func beamDescribeDeps(location *lymcwd.Location, slug, parentBranch, recordPath string) landingshed.BeamDescribeDeps {
+ 	return landingshed.BeamDescribeDeps{
+ 		Slug:            slug,
+@@ -44,8 +43,8 @@ func beamDescribeDeps(location *lymcwd.Location, slug, parentBranch, recordPath
+ 			}
+ 			return task.Title, task.Brief, nil
+ 		},
+-		CommitSubjects: func() ([]string, error) {
+-			return beamCommitSubjects(location, parentBranch)
++		Commits: func() ([]landingshed.BeamCommit, error) {
++			return beamCommits(location, parentBranch)
+ 		},
+ 		// Commit mirrors CommitDescription, including its discard of (sha, committed), which makes a repeat commit over an unchanged directory a no-op.
+ 		Commit: func() error {
+@@ -55,8 +54,9 @@ func beamDescribeDeps(location *lymcwd.Location, slug, parentBranch, recordPath
+ 	}
+ }
+ 
+-// beamCommitSubjects lists the subjects of the commits the beam at location adds over its merge base with parentBranch, oldest first, merge commits left out.
+-func beamCommitSubjects(location *lymcwd.Location, parentBranch string) ([]string, error) {
++// beamCommits lists the commits on the first-parent line of the beam at location that its merge base with parentBranch lacks, oldest first.
++// The first-parent line holds what landed on the beam branch itself: a squash or merge of each member, each merge from the parent and each commit made on the beam directly, and never the commits a merge brought in.
++func beamCommits(location *lymcwd.Location, parentBranch string) ([]landingshed.BeamCommit, error) {
+ 	if parentBranch == "" {
+ 		return nil, errors.New("the beam's pair records no parent branch to measure its commits from; way forward: make the beam through \"lym beam create\", which records its parent branch")
+ 	}
+@@ -74,29 +74,29 @@ func beamCommitSubjects(location *lymcwd.Location, parentBranch string) ([]strin
+ 		return nil, err
+ 	}
+ 	added, err := repo.CommitsNotIn(head, base)
+-	if err != nil {
++	if err != nil || len(added) == 0 {
+ 		return nil, err
+ 	}
+-
+-	// CommitsNotIn answers newest first.
+-	slices.Reverse(added)
+-	subjects := make([]string, 0, len(added))
++	beamOwn := make(map[string]bool, len(added))
+ 	for _, sha := range added {
+-		parents, err := repo.CommitParents(sha)
+-		if err != nil {
+-			return nil, err
+-		}
+-		if len(parents) > 1 {
+-			continue
+-		}
+-		detail, err := repo.CommitDetail(sha)
+-		if err != nil {
+-			return nil, err
++		beamOwn[sha] = true
++	}
++
++	// The first-parent line leaves the merge base's history at its first commit the parent already holds, so it is at most as long as added.
++	line, err := repo.Log(head, gitrepo.LogQuery{FirstParent: true, Limit: len(added)})
++	if err != nil {
++		return nil, err
++	}
++	var commits []landingshed.BeamCommit
++	for _, commit := range line {
++		if !beamOwn[commit.SHA] {
++			break
+ 		}
+-		subject, _, _ := strings.Cut(strings.TrimSpace(detail.Message), "\n")
+-		subjects = append(subjects, subject)
++		commits = append(commits, landingshed.BeamCommit{SHA: commit.SHA, Message: commit.Message, Committed: commit.Committed})
+ 	}
+-	return subjects, nil
++	// Log answers newest first.
++	slices.Reverse(commits)
++	return commits, nil
+ }
+ 
+ // beamParentBranch returns the parent branch the beam pair at location records, or "" when the pair has no origin record yet.
+diff --git a/internal/loomcli/beamwiring_integration_test.go b/internal/loomcli/beamwiring_integration_test.go
+new file mode 100644
+index 00000000..182eaa6f
+--- /dev/null
++++ b/internal/loomcli/beamwiring_integration_test.go
+@@ -0,0 +1,59 @@
++// beamwiring_integration_test.go drives beamCommits against a real fabric pair and real git, since the commits it lists are the beam branch's own first-parent line.
++
++package loomcli
++
++import (
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestBeamCommits_ListsTheBeamsOwnLine pins what Beam-Describe lists: each commit on the beam's first-parent line that the parent lacks, oldest first, a merge from the parent included and the commits a merge brought in left out, each with its full message and commit time.
++func TestBeamCommits_ListsTheBeamsOwnLine(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	const slug = "beamcommits"
++	hubforge.AddPair(t, hub, slug)
++	location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(slug))
++	if err != nil {
++		t.Fatalf("ResolveWorktree error = %v; want nil", err)
++	}
++	worktree := hub.PairCodeWorktree(slug)
++	prime := hub.PrimeWorktree()
++	parentBranch := gitkit.CurrentBranch(t, prime)
++	beamBranch := gitkit.CurrentBranch(t, worktree)
++
++	gitkit.CommitFile(t, worktree, "widgets.txt", "widgets\n", "Add widgets (#12)\n\nAdds the widgets.")
++	gitkit.Git(t, worktree, "checkout", "-b", "member")
++	gitkit.CommitFile(t, worktree, "member.txt", "member\n", "member: inner work")
++	gitkit.Git(t, worktree, "checkout", beamBranch)
++	gitkit.Git(t, worktree, "merge", "--no-ff", "-m", "Merge the member", "member")
++	parentTip := gitkit.CommitFile(t, prime, "parent.txt", "parent\n", "parent: progress")
++	gitkit.Git(t, worktree, "merge", "--no-ff", "-m", "Merge the parent", parentTip)
++
++	commits, err := beamCommits(location, parentBranch)
++	if err != nil {
++		t.Fatalf("beamCommits() error = %v; want nil", err)
++	}
++	var subjects []string
++	for _, commit := range commits {
++		subject, _, _ := strings.Cut(commit.Message, "\n")
++		subjects = append(subjects, subject)
++		if commit.SHA == "" || commit.Committed.IsZero() {
++			t.Errorf("beamCommits() entry %+v; want its object name and commit time", commit)
++		}
++	}
++	if want := []string{"Add widgets (#12)", "Merge the member", "Merge the parent"}; !slices.Equal(subjects, want) {
++		t.Errorf("beamCommits() subjects = %q; want %q", subjects, want)
++	}
++	if len(commits) > 0 && !strings.Contains(commits[0].Message, "Adds the widgets.") {
++		t.Errorf("beamCommits() first message = %q; want it to carry the body", commits[0].Message)
++	}
++}
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 95387a73..58cff3a5 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -37,13 +37,14 @@
+ // `ArmAt`, which `lym shed` shares, leaves `loomPath` false and never refuses a recipe, and `lym loom checklist` is exempt, being a read-only pane the pre-run never arms.
+ //
+ // A run seeded with the recipe `pawl` is a beam's life, batten's Seed-Child seeds it in the beam's pair.
+-// Its shed reads Preflight, Record-Write, Beam-Up, Beam-Await, Parent-Align, Beam-Describe, PR-Review, Finalize and Beam-Down, with no plan, no review round and no reroute edge.
++// Its shed reads Preflight, Record-Write, Beam-Up, Beam-Await, Parent-Align, Beam-Describe, PR-Review, Finalize and Beam-Down, with no plan, no review round and one reroute edge, PR-Review's back to Beam-Await, which a reopen request takes.
++// The PR-Review row's Reopen seam reads the reopen request under the pair's `.lym/beam/` directory, and a request naming another run than the seed's reads as none.
+ // Its Record-Write writes the project record and its support log from the project entry's body and commits them under the beam's slug.
+ // wire fills `Env.Pawl` for it through `pawlDeps`: the run's seed id is the seed's start time, the status is written on the beam's project entry through the board, and Beam-Up's one step is `orchcli.BeamUp` with no prepare, since the run already judged origin; the warnings its report carries are logged and posted to the beam's orch as one `PAWL` notice, and none halts the row.
+ // The beam's dobby is stopped through `runproc.EndRole` by its `RoleDobby` record, and restarted through `orchcli.BeamUpWorktree` naming the beam, which brings the beam's orch up with it.
+ // Beam-Await's re-check reads `battencli.ReadBeamLandBlockers` and `battencli.BeamLandRefusal` with the beam's owner, its parent's owner and the beam's ready record, and words each failure as `pawlRecheckLines` does, naming `lym adopt <beam>` or the parent's adopt subject, `root` for the prime, and `lym beam ready <slug>` for a beam not flagged ready.
+ // A running shed also watches the land request's directory, so a request wakes Beam-Await at once.
+-// Beam-Describe writes the change description from the beam's board entry, the commits the beam adds over the parent branch its pair records and the project record's added entries.
++// Beam-Describe writes the change description from the beam's board entry, the commits on the beam's first-parent line that the parent branch its pair records lacks, and the project record's added entries.
+ // Its Finalize reads the hub's `finalize` gate key over the whole merged tree and halts for the orch on a fixer that is spent or over its caps.
+ // A land check backstops the re-check: Finalize halts, behind its own prefix, while an open member or a pair forked from the beam still works, reading `pawlLandBlockers` and naming the beam's parent worktree as where a cancel runs.
+ //
+diff --git a/internal/loomcli/landingdeps.go b/internal/loomcli/landingdeps.go
+index 9ba02b5a..02b6fe8f 100644
+--- a/internal/loomcli/landingdeps.go
++++ b/internal/loomcli/landingdeps.go
+@@ -37,6 +37,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/pairteardown"
+ 	"github.com/Knatte18/loomyard/internal/parentlock"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
++	"github.com/Knatte18/loomyard/internal/pawlengine"
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/pullrequest"
+@@ -381,9 +382,27 @@ func pullRequestDepsGuardedBy(check prePushCheck, l *lymcwd.Location, parentBran
+ 		RecordChanges: func() (<-chan struct{}, func()) {
+ 			return watchFileChanges(shedrun.PullRequestRecord(l, shedrun.SelfRunID), "the PR-Review wait")
+ 		},
++		Reopen: func() (landingshed.ReopenRequest, bool, error) { return readReopenRequest(l) },
+ 	}
+ }
+ 
++// readReopenRequest reads the reopen request `lym beam reopen` writes into the pair at l, and reports whether one names the pair's own run.
++// Only a beam's pair is ever written one, and a request naming another run reads as none, for Beam-Await to remove.
++func readReopenRequest(l *lymcwd.Location) (landingshed.ReopenRequest, bool, error) {
++	req, found, err := pawlengine.ReadReopenRequest(hubgeom.PawlPaths(l))
++	if err != nil || !found {
++		return landingshed.ReopenRequest{}, false, err
++	}
++	seed, seeded, err := shedrun.ReadSeed(l, shedrun.SelfRunID)
++	if err != nil {
++		return landingshed.ReopenRequest{}, false, err
++	}
++	if !seeded || seed.StartedAt != req.RunID {
++		return landingshed.ReopenRequest{}, false, nil
++	}
++	return landingshed.ReopenRequest{Close: req.Close}, true, nil
++}
++
+ // landingPushRetryPauses are the growing pauses between the attempts of a landing push whose push lock stays held.
+ // Another session's push holds the lock only while git runs, so the attempts ride out such contention for minutes before the row halts.
+ var landingPushRetryPauses = []time.Duration{30 * time.Second, time.Minute, 2 * time.Minute}
+diff --git a/internal/loomcli/wiring_beam_test.go b/internal/loomcli/wiring_beam_test.go
+index f9265a0e..524acad8 100644
+--- a/internal/loomcli/wiring_beam_test.go
++++ b/internal/loomcli/wiring_beam_test.go
+@@ -1,4 +1,4 @@
+-// wiring_beam_test.go covers the wiring a pawl run adds to wire: the BeamDescribe and Pawl seams, the nine-row routing, and the landing deps a pawl run's Finalize is built with.
++// wiring_beam_test.go covers the wiring a pawl run adds to wire: the BeamDescribe and Pawl seams, the nine-row routing, the landing deps a pawl run's Finalize is built with, and the reopen request PR-Review reads.
+ // wire resolves no cwd and spawns no process over a hand-built hub.
+ 
+ package loomcli
+@@ -15,6 +15,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
++	"github.com/Knatte18/loomyard/internal/pawlengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/envkit"
+@@ -22,6 +23,52 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/websterengine"
+ )
+ 
++// TestReadReopenRequest asserts PR-Review reads only a reopen request that names the pair's own run:
++// no request file, a request of another run and a request with no seed to name the run read as none, and a matching request reads with its close flag.
++func TestReadReopenRequest(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const runStart = "2026-03-01T09:30:00Z"
++	tests := []struct {
++		name string
++		// seeded says the pair's pawl run has a seed started at runStart.
++		seeded bool
++		// request is the reopen request written first; nil writes none.
++		request   *pawlengine.ReopenRequest
++		want      landingshed.ReopenRequest
++		wantFound bool
++	}{
++		{name: "NoRequestFileReadsAsNone", seeded: true},
++		{name: "RequestOfAnotherRunReadsAsNone", seeded: true, request: &pawlengine.ReopenRequest{RunID: "2026-02-28T08:00:00Z"}},
++		{name: "RequestWithNoSeedReadsAsNone", request: &pawlengine.ReopenRequest{RunID: runStart}},
++		{name: "RequestOfThePairsRunReadsAsKeepingThePullRequest", seeded: true, request: &pawlengine.ReopenRequest{RunID: runStart}, wantFound: true},
++		{name: "RequestOfThePairsRunReadsWithItsCloseFlag", seeded: true, request: &pawlengine.ReopenRequest{RunID: runStart, Close: true}, want: landingshed.ReopenRequest{Close: true}, wantFound: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			loc := hubLocation(t, "pair", ".")
++			if tt.seeded {
++				if err := shedrun.WriteSeed(loc, shedrun.SelfRunID, shedrun.Seed{Recipe: shedrun.RecipePawl, Driver: shedrun.DriverGo, StartedAt: runStart}); err != nil {
++					t.Fatalf("WriteSeed() = %v; want nil", err)
++				}
++			}
++			if tt.request != nil {
++				if err := pawlengine.WriteReopenRequest(hubgeom.PawlPaths(loc), *tt.request); err != nil {
++					t.Fatalf("WriteReopenRequest() = %v; want nil", err)
++				}
++			}
++
++			got, found, err := readReopenRequest(loc)
++
++			if err != nil || found != tt.wantFound || got != tt.want {
++				t.Errorf("readReopenRequest() = %+v, %v, %v; want %+v, %v, nil", got, found, err, tt.want, tt.wantFound)
++			}
++		})
++	}
++}
++
+ //lym:seam internal/battenshed#InnerRunDeps
+ //lym:seam internal/battenshed#LandDeps
+ //lym:seam internal/battenshed#PrimeLock
+@@ -52,7 +99,7 @@ func TestWire_BeamRecipe(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+-	t.Run("a pawl seed fills the BeamDescribe and Pawl seams and routes its rows with no reroute edge", func(t *testing.T) {
++	t.Run("a pawl seed fills the BeamDescribe and Pawl seams and routes its rows with PR-Review's one reroute edge back to Beam-Await", func(t *testing.T) {
+ 		t.Parallel()
+ 		loc := hubLocation(t, "pair", ".")
+ 		c := &loomCLI{runID: shedrun.SelfRunID, recipe: shedrun.RecipePawl}
+@@ -109,8 +156,8 @@ func TestWire_BeamRecipe(t *testing.T) {
+ 		if got, want := filepath.Base(c.env.BeamDescribe.DescriptionPath), filepath.Base(c.env.DescriptionPath); got != want {
+ 			t.Errorf("c.env.BeamDescribe.DescriptionPath base = %q; want the landing description's %q", got, want)
+ 		}
+-		if _, err := c.env.BeamDescribe.CommitSubjects(); err == nil || !strings.Contains(err.Error(), "way forward") {
+-			t.Errorf("c.env.BeamDescribe.CommitSubjects() of a pair with no origin record = %v; want a refusal naming the way forward", err)
++		if _, err := c.env.BeamDescribe.Commits(); err == nil || !strings.Contains(err.Error(), "way forward") {
++			t.Errorf("c.env.BeamDescribe.Commits() of a pair with no origin record = %v; want a refusal naming the way forward", err)
+ 		}
+ 
+ 		routing, err := c.recipeRouting()
+@@ -120,8 +167,12 @@ func TestWire_BeamRecipe(t *testing.T) {
+ 		var rows []string
+ 		for _, producer := range routing.Producers {
+ 			rows = append(rows, producer.Name)
+-			if producer.OnReroute != "" {
+-				t.Errorf("row %q OnReroute = %q; want none", producer.Name, producer.OnReroute)
++			want := ""
++			if producer.Name == "PR-Review" {
++				want = "Beam-Await"
++			}
++			if producer.OnReroute != want {
++				t.Errorf("row %q OnReroute = %q; want %q", producer.Name, producer.OnReroute, want)
+ 			}
+ 		}
+ 		if want := []string{"Preflight", "Record-Write", "Beam-Up", "Beam-Await", "Parent-Align", "Beam-Describe", "PR-Review", "Finalize", "Beam-Down"}; strings.Join(rows, ",") != strings.Join(want, ",") {
+diff --git a/internal/loomcli/wiring_seams_test.go b/internal/loomcli/wiring_seams_test.go
+index 8ec0ce54..400581cb 100644
+--- a/internal/loomcli/wiring_seams_test.go
++++ b/internal/loomcli/wiring_seams_test.go
+@@ -50,6 +50,7 @@ var intentionallyNil = map[string]string{
+ 	"Landing.PullRequest.Sessions":        "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+ 	"Landing.PullRequest.SessionLive":     "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+ 	"Landing.PullRequest.RegisterSession": "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.PullRequest.Reopen":          "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+ 	"DarnTable":                           "darn-only seam, filled by wire for a darn seed",
+ 	"Darn.Commit":                         "darn-only seam, filled by wire for a darn seed",
+ 	"Darn.LatestOutcome":                  "darn-only seam, filled by wire for a darn seed",
+@@ -94,7 +95,7 @@ var intentionallyNil = map[string]string{
+ 	"Land.Landing":                        "batten-only seam, filled by battencli",
+ 	"Land.RunDeploy":                      "batten-only seam, filled by battencli",
+ 	"BeamDescribe.Entry":                  "beam-only seam, filled by wire for a beam seed",
+-	"BeamDescribe.CommitSubjects":         "beam-only seam, filled by wire for a beam seed",
++	"BeamDescribe.Commits":                "beam-only seam, filled by wire for a beam seed",
+ 	"BeamDescribe.Commit":                 "beam-only seam, filled by wire for a beam seed",
+ 	"BeamDescribe.ProjectDecisions":       "beam-only seam, filled by wire for a beam seed",
+ 	"Pawl.SetStatus":                      "pawl-only seam, filled by wire for a pawl seed",
+diff --git a/internal/loomrecipe/doc.go b/internal/loomrecipe/doc.go
+index 77f2d1ad..908698c1 100644
+--- a/internal/loomrecipe/doc.go
++++ b/internal/loomrecipe/doc.go
+@@ -40,8 +40,9 @@
+ // The caller carries a run parked under an old name across with shedengine.RenameProducers.
+ //
+ // The pawl recipe, a beam's life, is a loom recipe New builds like the others.
+-// It reads `Preflight → Record-Write → Beam-Up → Beam-Await → Parent-Align → Beam-Describe → PR-Review → Finalize → Beam-Down`, with no review segment and no reroute edge:
++// It reads `Preflight → Record-Write → Beam-Up → Beam-Await → Parent-Align → Beam-Describe → PR-Review → Finalize → Beam-Down`, with no review segment:
+ // Record-Write writes the project record, Beam-Await is its build row, held while the members' runs work in the beam, and a merge Finalize cannot land halts the run for the orch.
++// Its one reroute edge takes PR-Review back to Beam-Await, which PR-Review follows when `lym beam reopen` asked for the beam to take more work.
+ // A run at Parent-Align or any row after it holds its beam; before it the beam is free to start members.
+ //
+ // Rows and RowNames serve the tapestry, darn, batten, pawl, sampler and motif recipes, and EntryNumbers numbers any recipe's rows for the panes that draw them:
+diff --git a/internal/loomrecipe/pawlrecipe_test.go b/internal/loomrecipe/pawlrecipe_test.go
+index 5e57b906..a9bad598 100644
+--- a/internal/loomrecipe/pawlrecipe_test.go
++++ b/internal/loomrecipe/pawlrecipe_test.go
+@@ -1,4 +1,4 @@
+-// pawlrecipe_test.go covers the pawl recipe as a loom recipe: its rows, their edges and producer types through New and Routing, the absence of a review segment and of a reroute edge, and the hold boundary the recipe's rows pin against boardengine.RunHolds.
++// pawlrecipe_test.go covers the pawl recipe as a loom recipe: its rows, their edges and producer types through New and Routing, the absence of a review segment, PR-Review's one reroute edge back to Beam-Await, and the hold boundary the recipe's rows pin against boardengine.RunHolds.
+ 
+ package loomrecipe
+ 
+@@ -21,6 +21,7 @@ type wantPawlRow struct {
+ 	name         string
+ 	producerType reflect.Type
+ 	onDone       string
++	onReroute    string
+ }
+ 
+ func wantPawlRows(t *testing.T) []wantPawlRow {
+@@ -31,15 +32,15 @@ func wantPawlRows(t *testing.T) []wantPawlRow {
+ 		t.Fatalf("landingshed.NewBeamDescribe() error = %v; want nil", err)
+ 	}
+ 	return []wantPawlRow{
+-		{loomshed.NamePreflight, reflect.TypeOf(preflightshed.NewPreflight("", "")), loomshed.NameRecordWrite},
+-		{loomshed.NameRecordWrite, reflect.TypeOf(loomshed.NewRecordWrite("", loomshed.RecordWriteDeps{})), pawlengine.NameBeamUp},
+-		{pawlengine.NameBeamUp, reflect.TypeOf(&pawlengine.BeamUp{}), pawlengine.NameBeamAwait},
+-		{pawlengine.NameBeamAwait, reflect.TypeOf(&pawlengine.BeamAwait{}), loomshed.NameParentAlign},
+-		{loomshed.NameParentAlign, reflect.TypeOf(&landingshed.ParentAlign{}), "Beam-Describe"},
+-		{"Beam-Describe", reflect.TypeOf(describe), loomshed.NamePRReview},
+-		{loomshed.NamePRReview, reflect.TypeOf(&landingshed.PRReview{}), loomshed.NameFinalize},
+-		{loomshed.NameFinalize, reflect.TypeOf(&landingshed.Finalize{}), pawlengine.NameBeamDown},
+-		{pawlengine.NameBeamDown, reflect.TypeOf(&pawlengine.BeamDown{}), ""},
++		{loomshed.NamePreflight, reflect.TypeOf(preflightshed.NewPreflight("", "")), loomshed.NameRecordWrite, ""},
++		{loomshed.NameRecordWrite, reflect.TypeOf(loomshed.NewRecordWrite("", loomshed.RecordWriteDeps{})), pawlengine.NameBeamUp, ""},
++		{pawlengine.NameBeamUp, reflect.TypeOf(&pawlengine.BeamUp{}), pawlengine.NameBeamAwait, ""},
++		{pawlengine.NameBeamAwait, reflect.TypeOf(&pawlengine.BeamAwait{}), loomshed.NameParentAlign, ""},
++		{loomshed.NameParentAlign, reflect.TypeOf(&landingshed.ParentAlign{}), loomshed.NameBeamDescribe, ""},
++		{loomshed.NameBeamDescribe, reflect.TypeOf(describe), loomshed.NamePRReview, ""},
++		{loomshed.NamePRReview, reflect.TypeOf(&landingshed.PRReview{}), loomshed.NameFinalize, pawlengine.NameBeamAwait},
++		{loomshed.NameFinalize, reflect.TypeOf(&landingshed.Finalize{}), pawlengine.NameBeamDown, ""},
++		{pawlengine.NameBeamDown, reflect.TypeOf(&pawlengine.BeamDown{}), "", ""},
+ 	}
+ }
+ 
+@@ -65,8 +66,8 @@ func TestPawlRecipe(t *testing.T) {
+ 			if got.Name != w.name {
+ 				t.Errorf("row %d name = %q; want %q", i, got.Name, w.name)
+ 			}
+-			if got.OnDone != w.onDone || got.OnStuck != "" || got.OnReroute != "" {
+-				t.Errorf("row %q OnDone/OnStuck/OnReroute = %q/%q/%q; want %q/empty/empty", w.name, got.OnDone, got.OnStuck, got.OnReroute, w.onDone)
++			if got.OnDone != w.onDone || got.OnStuck != "" || got.OnReroute != w.onReroute {
++				t.Errorf("row %q OnDone/OnStuck/OnReroute = %q/%q/%q; want %q/empty/%q", w.name, got.OnDone, got.OnStuck, got.OnReroute, w.onDone, w.onReroute)
+ 			}
+ 			if got.Segment != "" || got.MaxBounces != 0 {
+ 				t.Errorf("row %q Segment/MaxBounces = %q/%d; want no review segment", w.name, got.Segment, got.MaxBounces)
+@@ -91,8 +92,8 @@ func TestPawlRecipe(t *testing.T) {
+ 			t.Fatalf("Routing(pawl) has %d rows; want %d", len(routing.Producers), len(want))
+ 		}
+ 		for i, w := range want {
+-			if got := routing.Producers[i]; got.Name != w.name || got.OnDone != w.onDone {
+-				t.Errorf("Routing(pawl) row %d = %q -> %q; want %q -> %q", i, got.Name, got.OnDone, w.name, w.onDone)
++			if got := routing.Producers[i]; got.Name != w.name || got.OnDone != w.onDone || got.OnReroute != w.onReroute {
++				t.Errorf("Routing(pawl) row %d = %q -> %q, reroute %q; want %q -> %q, reroute %q", i, got.Name, got.OnDone, got.OnReroute, w.name, w.onDone, w.onReroute)
+ 			}
+ 		}
+ 	})
+diff --git a/internal/loomshed/loomshed.go b/internal/loomshed/loomshed.go
+index a17771c4..b32c2940 100644
+--- a/internal/loomshed/loomshed.go
++++ b/internal/loomshed/loomshed.go
+@@ -42,6 +42,8 @@ const (
+ 	NameCodeBurlerReview = "Code-Burler-Review"
+ 	NameCodeBurlerFix    = "Code-Burler-Fix"
+ 	NamePRReview         = "PR-Review"
++	// NameBeamDescribe is the pawl recipe's Describe row, which writes a beam's change description with no agent.
++	NameBeamDescribe = "Beam-Describe"
+ 
+ 	// NameMotif is the block row of the tapestry recipe that runs the motif recipe.
+ 	NameMotif = "Motif"
+diff --git a/internal/pairteardown/teardown_test.go b/internal/pairteardown/teardown_test.go
+index 8937652a..4e2676bc 100644
+--- a/internal/pairteardown/teardown_test.go
++++ b/internal/pairteardown/teardown_test.go
+@@ -1256,6 +1256,14 @@ func (a *closeRecordingAPI) Reopen(context.Context, int) error {
+ 	panic("closeOpenPullRequest called Reopen")
+ }
+ 
++func (a *closeRecordingAPI) SetDraft(context.Context, int, bool) error {
++	panic("closeOpenPullRequest called SetDraft")
++}
++
++func (a *closeRecordingAPI) Comment(context.Context, int, string) error {
++	panic("closeOpenPullRequest called Comment")
++}
++
+ func (a *closeRecordingAPI) RequiresPullRequest(context.Context, string) (bool, error) {
+ 	panic("closeOpenPullRequest called RequiresPullRequest")
+ }
+diff --git a/internal/pawlengine/beamawait.go b/internal/pawlengine/beamawait.go
+index 829edc35..3ff00a79 100644
+--- a/internal/pawlengine/beamawait.go
++++ b/internal/pawlengine/beamawait.go
+@@ -118,9 +118,11 @@ type awaitRun struct {
+ 	*BeamAwait
+ 	// interrupted is true when the entry found the hold a crash left standing.
+ 	interrupted bool
+-	// entered is true once the entry's status write succeeded.
+-	entered  bool
+-	lastWake time.Time
++	// entered is true once the entry's status write succeeded and any reopen request of this run it found is removed.
++	entered bool
++	// reopenStuckNoticed is true once a notice told that a reopen request of this run could not be removed.
++	reopenStuckNoticed bool
++	lastWake           time.Time
+ }
+ 
+ // awaitWake is what one wake decided.
+@@ -169,13 +171,16 @@ func (r *awaitRun) wake(ctx context.Context) (awaitWake, error) {
+ 	return r.accept(ctx)
+ }
+ 
+-// enter writes the status naming this row and, once it is written, the entry's markers and notices.
+-// It reports whether the status write succeeded; a failed one is retried at the next wake.
++// enter writes the status naming this row and, once it is written, answers a reopen request and writes the entry's markers and notices.
++// It reports whether the entry completed; a failed status write, and a reopen request of this run that could not be removed, are retried at the next wake.
+ func (r *awaitRun) enter() bool {
+ 	if err := r.deps.SetStatus(NameBeamAwait); err != nil {
+ 		logger.Warn("pawlengine: the entry's status could not be written, so it is retried at the next wake", "producer", r.name, "error", err)
+ 		return false
+ 	}
++	if !r.answerReopen() {
++		return false
++	}
+ 	r.entered = true
+ 
+ 	marked, err := markerStands(r.deps.Paths.AwaitMarker)
+@@ -200,6 +205,48 @@ func (r *awaitRun) enter() bool {
+ 	return true
+ }
+ 
++// answerReopen removes a reopen request the entry finds, which PR-Review answered by sending the run back here, and reports whether the entry may go on.
++// For a request naming this run it starts the beam's dobby when it is down, since the landing stopped it, and posts that the beam is reopened; a request of another run is removed alone.
++// A failed read or dobby read is logged, and a failed start is named in the notice with `lym beam start`.
++// A request of another run whose removal fails is logged and the entry goes on, since PR-Review reads it as none.
++// A request naming this run whose removal fails would be read by PR-Review as a fresh request and reroute at once, so the entry starts nothing, posts one notice naming the file, and reports false for the next wake to retry.
++func (r *awaitRun) answerReopen() bool {
++	req, found, err := ReadReopenRequest(r.deps.Paths)
++	if err != nil {
++		logger.Warn("pawlengine: the reopen request could not be read on entry", "producer", r.name, "error", err)
++		return true
++	}
++	if !found {
++		return true
++	}
++	if err := RemoveReopenRequest(r.deps.Paths); err != nil {
++		logger.Warn("pawlengine: the answered reopen request could not be removed", "producer", r.name, "path", r.deps.Paths.ReopenRequest, "error", err)
++		if req.RunID != r.deps.RunID {
++			return true
++		}
++		if !r.reopenStuckNoticed {
++			r.reopenStuckNoticed = r.notify(fmt.Sprintf("the beam %s is reopened, but its reopen request %s could not be removed (%v), so the row waits at %s until the file is removed", r.deps.Slug, r.deps.Paths.ReopenRequest, err, NameBeamAwait))
++		}
++		return false
++	}
++	if req.RunID != r.deps.RunID {
++		return true
++	}
++	line := fmt.Sprintf("the beam %s is reopened: its run waits at %s and takes new members; run `lym beam ready %s` once it is ready to land again", r.deps.Slug, NameBeamAwait, r.deps.Slug)
++	live, err := r.deps.DobbyLive()
++	if err != nil {
++		logger.Warn("pawlengine: whether the reopened beam's dobby runs could not be read", "producer", r.name, "error", err)
++		live = true
++	}
++	if !live {
++		if err := r.deps.StartDobby(); err != nil {
++			line = fmt.Sprintf("%s; the beam's dobby could not be started (%v), so run `lym beam start %s`", line, err, r.deps.Slug)
++		}
++	}
++	r.notify(line)
++	return true
++}
++
+ // noticeDownDobby posts one notice per episode when a re-entry with no land request standing finds the beam's dobby down.
+ // The sent notice is recorded in the await marker and skipped on later re-entries until a re-entry sees the dobby live or a refusal restarts it.
+ // It reads the dobby only on a re-entry, since the dobby Beam-Up's steps just spawned may not hold its lock yet on the first entry.
+diff --git a/internal/pawlengine/beamawait_test.go b/internal/pawlengine/beamawait_test.go
+index b48a43af..b566046a 100644
+--- a/internal/pawlengine/beamawait_test.go
++++ b/internal/pawlengine/beamawait_test.go
+@@ -6,6 +6,8 @@ import (
+ 	"context"
+ 	"errors"
+ 	"os"
++	"path/filepath"
++	"runtime"
+ 	"strings"
+ 	"testing"
+ 	"time"
+@@ -26,6 +28,20 @@ func cancelAfter(w *world, n int) {
+ 	}
+ }
+ 
++// readOnlyBeamDir makes the directory of the world's pawl files read-only for the rest of the test, so removing a file there is refused.
++// It skips the test where a directory mode refuses no removal: for root, and on Windows.
++func readOnlyBeamDir(t *testing.T, w *world) {
++	t.Helper()
++	if os.Geteuid() == 0 || runtime.GOOS == "windows" {
++		t.Skip("only a non-root user on a POSIX filesystem is refused a removal from a read-only directory")
++	}
++	dir := filepath.Dir(w.paths.ReopenRequest)
++	if err := os.Chmod(dir, 0o500); err != nil {
++		t.Fatal(err)
++	}
++	t.Cleanup(func() { _ = os.Chmod(dir, 0o755) })
++}
++
+ // TestBeamAwait asserts the row's behavior over each state a run can enter it in and each answer to a land request:
+ // what it writes in order, which notices it posts, which files stand afterwards, and how long it waits.
+ func TestBeamAwait(t *testing.T) {
+@@ -64,7 +80,7 @@ func TestBeamAwait(t *testing.T) {
+ 		wantEvents    []string
+ 		// wantNotices holds, per posted notice in order, the substrings it carries.
+ 		wantNotices [][]string
+-		// wantFiles maps request, stop and await to whether that file stands afterwards, and record to whether the await marker carries the posted dobby-down notice.
++		// wantFiles maps request, reopen, stop and await to whether that file stands afterwards, and record to whether the await marker carries the posted dobby-down notice.
+ 		wantFiles      map[string]bool
+ 		wantDobbyReads int
+ 		// wantSleeps is checked when non-nil.
+@@ -292,6 +308,71 @@ func TestBeamAwait(t *testing.T) {
+ 			wantFiles:   map[string]bool{"request": false},
+ 			wantSleeps:  seconds(1),
+ 		},
++		{
++			name: "ReopenRequestIsRemovedTheDownDobbyStartedAndTheReopenPosted",
++			setup: func(t *testing.T, w *world) {
++				w.dobbyLive = false
++				w.reopen(t, testRunID)
++				cancelAfter(w, 1)
++			},
++			wantCancelled: true, wantEvents: []string{beamAwait, "start"}, wantDobbyReads: 1,
++			wantNotices: [][]string{{"my-beam is reopened", "lym beam ready my-beam"}},
++			wantFiles:   map[string]bool{"reopen": false, "await": true},
++		},
++		{
++			name: "ReopenWithALiveDobbyStartsNothing",
++			setup: func(t *testing.T, w *world) {
++				w.reopen(t, testRunID)
++				cancelAfter(w, 1)
++			},
++			wantCancelled: true, wantEvents: []string{beamAwait}, wantDobbyReads: 1,
++			wantNotices: [][]string{{"my-beam is reopened"}},
++			wantFiles:   map[string]bool{"reopen": false},
++		},
++		{
++			name: "ReopenWhoseDobbyStartFailsNamesBeamStart",
++			setup: func(t *testing.T, w *world) {
++				w.dobbyLive = false
++				w.startErr = errors.New("dobby will not start")
++				w.reopen(t, testRunID)
++				cancelAfter(w, 1)
++			},
++			wantCancelled: true, wantEvents: []string{beamAwait, "start"}, wantDobbyReads: 1,
++			wantNotices: [][]string{{"my-beam is reopened", "dobby will not start", "lym beam start my-beam"}},
++			wantFiles:   map[string]bool{"reopen": false},
++		},
++		{
++			name: "ReopenRequestOfAnotherRunIsRemovedAlone",
++			setup: func(t *testing.T, w *world) {
++				w.dobbyLive = false
++				w.reopen(t, "an-earlier-run")
++				cancelAfter(w, 1)
++			},
++			wantCancelled: true, wantEvents: []string{beamAwait},
++			wantFiles: map[string]bool{"reopen": false},
++		},
++		{
++			name: "ReopenRequestOfThisRunThatCannotBeRemovedPostsOneNoticeStartsNothingAndRetriesTheEntry",
++			setup: func(t *testing.T, w *world) {
++				w.dobbyLive = false
++				w.reopen(t, testRunID)
++				readOnlyBeamDir(t, w)
++				cancelAfter(w, 2)
++			},
++			wantCancelled: true, wantEvents: []string{beamAwait, beamAwait},
++			wantNotices: [][]string{{"my-beam is reopened", "reopen-request.json", "could not be removed"}},
++			wantFiles:   map[string]bool{"reopen": true},
++		},
++		{
++			name: "ReopenRequestOfAnotherRunThatCannotBeRemovedDoesNotHoldTheEntry",
++			setup: func(t *testing.T, w *world) {
++				w.reopen(t, "an-earlier-run")
++				readOnlyBeamDir(t, w)
++				cancelAfter(w, 2)
++			},
++			wantCancelled: true, wantEvents: []string{beamAwait},
++			wantFiles: map[string]bool{"reopen": true},
++		},
+ 		{
+ 			name:          "IdleTimerDoublesToTheCeilingWithNoWatch",
+ 			setup:         func(t *testing.T, w *world) { cancelAfter(w, 8) },
+@@ -332,7 +413,7 @@ func TestBeamAwait(t *testing.T) {
+ 					}
+ 				}
+ 			}
+-			paths := map[string]string{"request": w.paths.LandRequest, "stop": w.paths.DobbyStopMarker, "await": w.paths.AwaitMarker}
++			paths := map[string]string{"request": w.paths.LandRequest, "reopen": w.paths.ReopenRequest, "stop": w.paths.DobbyStopMarker, "await": w.paths.AwaitMarker}
+ 			for key, want := range tt.wantFiles {
+ 				got := exists(paths[key])
+ 				if key == "record" {
+diff --git a/internal/pawlengine/deps.go b/internal/pawlengine/deps.go
+index 2ae64c72..5de81b44 100644
+--- a/internal/pawlengine/deps.go
++++ b/internal/pawlengine/deps.go
+@@ -21,7 +21,7 @@ type Step struct {
+ type Deps struct {
+ 	// Slug is the beam's slug, which names its landing and start in a notice.
+ 	Slug string
+-	// Paths holds the run's land request, dobby-stop marker and await marker.
++	// Paths holds the run's land and reopen requests, dobby-stop marker and await marker.
+ 	Paths Paths
+ 	// RunID is the pawl run's seed id, which a land request names.
+ 	RunID string
+@@ -79,6 +79,7 @@ func requireSeams(producer string, seams ...seam) error {
+ func (d Deps) pathsSeams() []seam {
+ 	return []seam{
+ 		{"Paths.LandRequest", d.Paths.LandRequest != ""},
++		{"Paths.ReopenRequest", d.Paths.ReopenRequest != ""},
+ 		{"Paths.DobbyStopMarker", d.Paths.DobbyStopMarker != ""},
+ 		{"Paths.AwaitMarker", d.Paths.AwaitMarker != ""},
+ 	}
+diff --git a/internal/pawlengine/doc.go b/internal/pawlengine/doc.go
+index 6694b1d2..58de5f93 100644
+--- a/internal/pawlengine/doc.go
++++ b/internal/pawlengine/doc.go
+@@ -14,11 +14,15 @@
+ // A passing re-check ends the row; a failing one lifts the hold again, restarts the dobby the marker says was stopped, with its orch, removes the request and posts the blockers to the beam's orch.
+ // An await marker tells a re-entry from the first entry: a re-entry whose dobby is down (once until a re-entry sees it live, recorded in the marker), and a re-entry that finds the hold standing after a crash, post one notice naming `lym beam start` and `lym beam land`.
+ // A beam another machine owns removes any request and yields, deciding nothing.
++// An entry that finds a reopen request removes it: PR-Review answered it by sending the run back here.
++// An entry that cannot remove a request naming this run posts one notice naming the file and retries at the next wake, so PR-Review never reads the request again as a fresh one; a request of another run it cannot remove is logged.
++// For a request naming this run the entry starts the beam's dobby when it is down, since the landing stopped it, and posts that the beam is reopened, naming `lym beam ready`, and `lym beam start` when the start failed.
+ //
+ // Beam-Down stops the beam's dobby and orch through the told Down seam; a failure is logged and the row is Done, since Worktree-Teardown ends what is left.
+ //
+-// The land request, the dobby-stop marker and the await marker are files under the beam worktree's `.lym/beam/`, whose paths the hub wiring composes and tells through Paths.
++// The land request, the reopen request, the dobby-stop marker and the await marker are files under the beam worktree's `.lym/beam/`, whose paths the hub wiring composes and tells through Paths.
++// A ReopenRequest, which `lym beam reopen` writes, names its run as a land request does and says whether the run's pull request is closed rather than kept open as a draft.
+ //
+-// The ready record, ReadyRecord, flags a beam ready to be merged into its parent and names the beam it flags, since a pair forked from the beam inherits it; ReadyFor reads a record naming another slug as no flag.
++// The ready record, ReadyRecord, flags a beam ready to be merged into its parent and names the beam it flags, since a pair forked from the beam inherits it; ReadyFor reads a record naming another slug as no flag, and RemoveReady removes only a record naming the beam.
+ // It is tracked, unlike the files above, and its path and lock path are told by the caller.
+ package pawlengine
+diff --git a/internal/pawlengine/landrequest.go b/internal/pawlengine/landrequest.go
+index 13b70b3d..0b8df38f 100644
+--- a/internal/pawlengine/landrequest.go
++++ b/internal/pawlengine/landrequest.go
+@@ -1,4 +1,4 @@
+-// landrequest.go holds the pawl run's file records: the names of the files under the beam's `.lym/beam/` directory, Paths, and the land request with its write, read and remove.
++// landrequest.go holds the pawl run's file records: the names of the files under the beam's `.lym/beam/` directory, Paths, and the land and reopen requests with their writes, reads and removes.
+ 
+ package pawlengine
+ 
+@@ -16,6 +16,8 @@ import (
+ const (
+ 	// LandRequestFileName is the file name of the land request under the beam's `.lym/beam/` directory.
+ 	LandRequestFileName = "land-request.json"
++	// ReopenRequestFileName is the file name of the reopen request under the beam's `.lym/beam/` directory.
++	ReopenRequestFileName = "reopen-request.json"
+ 	// DobbyStopMarkerName is the file name of the marker that says the landing stopped the beam's dobby.
+ 	DobbyStopMarkerName = "dobby-stop"
+ 	// AwaitMarkerName is the file name of the marker that says Beam-Await was entered before and whether its dobby-down notice was posted.
+@@ -26,6 +28,8 @@ const (
+ type Paths struct {
+ 	// LandRequest is the land request file.
+ 	LandRequest string
++	// ReopenRequest is the reopen request file, which PR-Review answers by sending the run back to Beam-Await and Beam-Await removes.
++	ReopenRequest string
+ 	// DobbyStopMarker is the marker file the landing writes before it stops the dobby.
+ 	DobbyStopMarker string
+ 	// AwaitMarker is the marker file Beam-Await writes on its first entry; it also carries the line recording a posted dobby-down notice.
+@@ -64,6 +68,40 @@ func RemoveLandRequest(paths Paths) error {
+ 	return removeFile(paths.LandRequest)
+ }
+ 
++// ReopenRequest asks a pawl run past Beam-Await, and not yet at Finalize, to go back to Beam-Await, so the beam takes new members.
++// It names the run it was written for, as a land request does.
++type ReopenRequest struct {
++	// RunID is the seed id of the pawl run the request is for.
++	RunID string `json:"run_id"`
++	// Close asks for the run's pull request to be closed, so the next landing opens a new one, instead of kept open as a draft.
++	Close bool `json:"close,omitempty"`
++	// RequestedAt is when the request was written.
++	RequestedAt time.Time `json:"requested_at"`
++}
++
++// WriteReopenRequest writes req to the reopen request file, replacing a request already there.
++func WriteReopenRequest(paths Paths, req ReopenRequest) error {
++	if err := state.WriteJSON(paths.ReopenRequest, lockPath(paths.ReopenRequest), req); err != nil {
++		return fmt.Errorf("pawlengine: write the reopen request: %w", err)
++	}
++	return nil
++}
++
++// ReadReopenRequest reads the reopen request file and reports whether one stands.
++// An absent file reads as none.
++func ReadReopenRequest(paths Paths) (ReopenRequest, bool, error) {
++	req, found, err := state.ReadJSON[ReopenRequest](paths.ReopenRequest, lockPath(paths.ReopenRequest))
++	if err != nil {
++		return ReopenRequest{}, false, fmt.Errorf("pawlengine: read the reopen request: %w", err)
++	}
++	return req, found, nil
++}
++
++// RemoveReopenRequest removes the reopen request file; removing an absent one succeeds.
++func RemoveReopenRequest(paths Paths) error {
++	return removeFile(paths.ReopenRequest)
++}
++
+ // lockPath is the lock file that guards the record at path.
+ func lockPath(path string) string { return path + ".lock" }
+ 
+diff --git a/internal/pawlengine/ready.go b/internal/pawlengine/ready.go
+index df2150e0..adb26b79 100644
+--- a/internal/pawlengine/ready.go
++++ b/internal/pawlengine/ready.go
+@@ -1,4 +1,4 @@
+-// ready.go holds a beam's ready record, the flag that says the beam is ready to be merged into its parent, with its write and read.
++// ready.go holds a beam's ready record, the flag that says the beam is ready to be merged into its parent, with its write, read and removal.
+ 
+ package pawlengine
+ 
+@@ -8,6 +8,7 @@ import (
+ 	"path/filepath"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/state"
+ )
+ 
+@@ -31,6 +32,24 @@ func WriteReady(path, lockPath string, record ReadyRecord) error {
+ 	return nil
+ }
+ 
++// RemoveReady removes the ready record at path under the lock at lockPath when it flags the beam slug, and reports whether it did.
++// An absent record, and one naming another slug, are left as they are.
++func RemoveReady(path, lockPath, slug string) (bool, error) {
++	flagged, err := ReadyFor(path, lockPath, slug)
++	if err != nil || !flagged {
++		return false, err
++	}
++	held, err := lock.AcquireWriteLock(lockPath)
++	if err != nil {
++		return false, fmt.Errorf("pawlengine: lock the ready record: %w", err)
++	}
++	defer held.Release()
++	if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
++		return false, fmt.Errorf("pawlengine: remove the ready record: %w", err)
++	}
++	return true, nil
++}
++
+ // ReadyFor reports whether the ready record at path flags the beam slug.
+ // An absent record, and one naming another slug, read as not flagged.
+ func ReadyFor(path, lockPath, slug string) (bool, error) {
+diff --git a/internal/pawlengine/ready_test.go b/internal/pawlengine/ready_test.go
+index 0a51ea70..e14fa3fe 100644
+--- a/internal/pawlengine/ready_test.go
++++ b/internal/pawlengine/ready_test.go
+@@ -1,8 +1,9 @@
+-// ready_test.go covers a beam's ready record: which records flag which beam.
++// ready_test.go covers a beam's ready record: which records flag which beam, and which record its removal takes.
+ 
+ package pawlengine_test
+ 
+ import (
++	"os"
+ 	"path/filepath"
+ 	"testing"
+ 	"time"
+@@ -11,6 +12,53 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++func TestRemoveReady(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	setAt := time.Date(2026, 10, 30, 14, 0, 0, 0, time.UTC)
++
++	tests := []struct {
++		name string
++		// written is the slug of the record written first; empty writes none.
++		written      string
++		want         bool
++		wantStanding bool
++	}{
++		{name: "OwnRecordIsRemoved", written: "b", want: true},
++		{name: "AbsentRecordIsNotRemovedAndNothingIsCreated"},
++		{name: "RecordOfAnotherBeamIsLeftStanding", written: "outer", wantStanding: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			path := filepath.Join(dir, "_lym", "landing", "beam-ready.json")
++			lockPath := filepath.Join(dir, ".lym", "landing", "beam-ready.json.lock")
++			if tt.written != "" {
++				if err := pawlengine.WriteReady(path, lockPath, pawlengine.ReadyRecord{Slug: tt.written, SetAt: setAt}); err != nil {
++					t.Fatalf("WriteReady() = %v; want nil", err)
++				}
++			}
++			got, err := pawlengine.RemoveReady(path, lockPath, "b")
++			if err != nil {
++				t.Fatalf("RemoveReady() error = %v; want nil", err)
++			}
++			if got != tt.want {
++				t.Errorf("RemoveReady(b) after a record of %q = %t; want %t", tt.written, got, tt.want)
++			}
++			_, statErr := os.Stat(path)
++			if standing := statErr == nil; standing != tt.wantStanding {
++				t.Errorf("record standing after RemoveReady(b) over a record of %q = %t; want %t", tt.written, standing, tt.wantStanding)
++			}
++			if tt.written == "" {
++				if _, err := os.Stat(filepath.Dir(path)); !os.IsNotExist(err) {
++					t.Errorf("stat of the record's directory after RemoveReady(b) over no record = %v; want it not created", err)
++				}
++			}
++		})
++	}
++}
++
+ func TestReadyFor(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/pawlengine/world_test.go b/internal/pawlengine/world_test.go
+index 45564797..0f046ba8 100644
+--- a/internal/pawlengine/world_test.go
++++ b/internal/pawlengine/world_test.go
+@@ -62,6 +62,7 @@ func newWorld(t *testing.T) *world {
+ 	return &world{
+ 		paths: pawlengine.Paths{
+ 			LandRequest:     filepath.Join(dir, pawlengine.LandRequestFileName),
++			ReopenRequest:   filepath.Join(dir, pawlengine.ReopenRequestFileName),
+ 			DobbyStopMarker: filepath.Join(dir, pawlengine.DobbyStopMarkerName),
+ 			AwaitMarker:     filepath.Join(dir, pawlengine.AwaitMarkerName),
+ 		},
+@@ -107,6 +108,14 @@ func (w *world) request(t *testing.T, runID string) {
+ 	}
+ }
+ 
++// reopen writes a reopen request naming runID.
++func (w *world) reopen(t *testing.T, runID string) {
++	t.Helper()
++	if err := pawlengine.WriteReopenRequest(w.paths, pawlengine.ReopenRequest{RunID: runID, RequestedAt: w.now}); err != nil {
++		t.Fatal(err)
++	}
++}
++
+ // touch writes an empty marker file at path.
+ func touch(t *testing.T, path string) {
+ 	t.Helper()
+diff --git a/internal/pullrequest/client.go b/internal/pullrequest/client.go
+index 7bb0446a..eeb0e440 100644
+--- a/internal/pullrequest/client.go
++++ b/internal/pullrequest/client.go
+@@ -38,6 +38,8 @@ type Status struct {
+ 	Approved bool
+ 	// ChangesRequested reports whether any reviewer's standing review requests changes.
+ 	ChangesRequested bool
++	// Draft reports whether the pull request is a draft, which GitHub refuses to merge.
++	Draft bool
+ }
+ 
+ // Ref names a pull request.
+@@ -85,6 +87,10 @@ type API interface {
+ 	Close(ctx context.Context, number int, comment string) error
+ 	// Reopen reopens a pull request closed without merging, so it can be merged.
+ 	Reopen(ctx context.Context, number int) error
++	// SetDraft turns an open pull request into a draft, or a draft back into one ready for review.
++	SetDraft(ctx context.Context, number int, draft bool) error
++	// Comment posts one comment on a pull request.
++	Comment(ctx context.Context, number int, body string) error
+ 	// Merge merges a pull request whose head is expectedHead, squashing when squash is set.
+ 	// A merge GitHub refuses returns a *MergeRefusal.
+ 	Merge(ctx context.Context, number int, expectedHead string, squash bool, title, message string) error
+@@ -168,7 +174,7 @@ func (c *Client) Status(ctx context.Context, number int) (Status, error) {
+ 	if err != nil {
+ 		return Status{}, fmt.Errorf("pullrequest: read pull request #%d: %w", number, err)
+ 	}
+-	status := Status{State: StateOpen, HeadSHA: pull.GetHead().GetSHA()}
++	status := Status{State: StateOpen, HeadSHA: pull.GetHead().GetSHA(), Draft: pull.GetDraft()}
+ 	switch {
+ 	case pull.GetMerged():
+ 		status.State = StateMerged
+@@ -215,6 +221,56 @@ func (c *Client) Reopen(ctx context.Context, number int) error {
+ 	return nil
+ }
+ 
++// Comment posts body as one comment on a pull request.
++func (c *Client) Comment(ctx context.Context, number int, body string) error {
++	if _, _, err := c.gh.Issues.CreateComment(ctx, c.owner, c.repo, number, &github.IssueComment{Body: &body}); err != nil {
++		return fmt.Errorf("pullrequest: comment on pull request #%d: %w", number, err)
++	}
++	return nil
++}
++
++// SetDraft turns a pull request into a draft with draft set, and marks a draft ready for review without it.
++// GitHub's REST API sets neither, so it reads the pull request's node id and runs the GraphQL mutation that does.
++func (c *Client) SetDraft(ctx context.Context, number int, draft bool) error {
++	pull, _, err := c.gh.PullRequests.Get(ctx, c.owner, c.repo, number)
++	if err != nil {
++		return fmt.Errorf("pullrequest: read pull request #%d: %w", number, err)
++	}
++	mutation := "markPullRequestReadyForReview"
++	if draft {
++		mutation = "convertPullRequestToDraft"
++	}
++	query := fmt.Sprintf("mutation($id: ID!) { %s(input: {pullRequestId: $id}) { clientMutationId } }", mutation)
++	if err := c.graphQL(ctx, query, map[string]any{"id": pull.GetNodeID()}); err != nil {
++		return fmt.Errorf("pullrequest: %s on pull request #%d: %w", mutation, number, err)
++	}
++	return nil
++}
++
++// graphQL runs query with variables against GitHub's GraphQL endpoint, failing on a transport or HTTP failure and on any error GitHub lists in the response.
++func (c *Client) graphQL(ctx context.Context, query string, variables map[string]any) error {
++	req, err := c.gh.NewRequest(http.MethodPost, "graphql", map[string]any{"query": query, "variables": variables})
++	if err != nil {
++		return err
++	}
++	var response struct {
++		Errors []struct {
++			Message string `json:"message"`
++		} `json:"errors"`
++	}
++	if _, err := c.gh.Do(ctx, req, &response); err != nil {
++		return err
++	}
++	if len(response.Errors) > 0 {
++		messages := make([]string, len(response.Errors))
++		for i, e := range response.Errors {
++			messages[i] = e.Message
++		}
++		return fmt.Errorf("github refused the request: %s", strings.Join(messages, "; "))
++	}
++	return nil
++}
++
+ // RequiresPullRequest reads every page of the repository rules active on branch and reports whether any of them is a pull_request rule.
+ func (c *Client) RequiresPullRequest(ctx context.Context, branch string) (bool, error) {
+ 	opts := &github.ListOptions{PerPage: listPageSize}
+diff --git a/internal/pullrequest/client_test.go b/internal/pullrequest/client_test.go
+index a1895dfd..30fbc169 100644
+--- a/internal/pullrequest/client_test.go
++++ b/internal/pullrequest/client_test.go
+@@ -77,6 +77,16 @@ func (s *scriptedServer) handle(w http.ResponseWriter, r *http.Request) {
+ 		reply(200, `{}`)
+ 	case "POST /repos/owner/repo/issues/5/comments":
+ 		reply(201, `{}`)
++	case "GET " + pullsPath + "/6":
++		reply(200, `{"state": "open", "draft": true, "node_id": "PR_node6", "head": {"sha": "h6"}}`)
++	case "GET " + pullsPath + "/6/reviews":
++		reply(200, `[]`)
++	case "POST /graphql":
++		if strings.Contains(fmt.Sprint(body["query"]), "markPullRequestReadyForReview") {
++			reply(200, `{"errors": [{"message": "Pull request is not a draft"}]}`)
++			return
++		}
++		reply(200, `{"data": {}}`)
+ 	case "GET " + pullsPath + "/1":
+ 		reply(200, `{"state": "open", "head": {"sha": "h1"}}`)
+ 	case "GET " + pullsPath + "/2":
+@@ -212,6 +222,33 @@ func TestClient_Calls(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("CommentPostsOneComment", func(t *testing.T) {
++		if err := client.Comment(ctx, 5, "reopened"); err != nil {
++			t.Fatalf("Comment() error: %v", err)
++		}
++		sent := server.last(t)
++		if sent.method != "POST" || sent.path != "/repos/owner/repo/issues/5/comments" || sent.body["body"] != "reopened" {
++			t.Errorf("Comment sent %s %s %v; want the comment POST", sent.method, sent.path, sent.body)
++		}
++	})
++
++	t.Run("SetDraftRunsTheMutationOnTheNodeID", func(t *testing.T) {
++		if err := client.SetDraft(ctx, 6, true); err != nil {
++			t.Fatalf("SetDraft(6, true) error: %v", err)
++		}
++		sent := server.last(t)
++		variables, _ := sent.body["variables"].(map[string]any)
++		if sent.method != "POST" || sent.path != "/graphql" || !strings.Contains(fmt.Sprint(sent.body["query"]), "convertPullRequestToDraft") || variables["id"] != "PR_node6" {
++			t.Errorf("SetDraft sent %s %s %v; want the convertPullRequestToDraft mutation on PR_node6", sent.method, sent.path, sent.body)
++		}
++		if err := client.SetDraft(ctx, 6, false); err == nil || !strings.Contains(err.Error(), "Pull request is not a draft") {
++			t.Errorf("SetDraft(6, false) error = %v; want the error GitHub listed", err)
++		}
++		if err := client.SetDraft(ctx, 99, true); err == nil {
++			t.Error("SetDraft(99) error = nil; want the failure of the pull request read")
++		}
++	})
++
+ 	t.Run("RequiresPullRequest", func(t *testing.T) {
+ 		tests := []struct {
+ 			branch  string
+@@ -239,6 +276,7 @@ func TestClient_Calls(t *testing.T) {
+ 			{1, pullrequest.Status{State: pullrequest.StateOpen, HeadSHA: "h1", Approved: true, ChangesRequested: true}},
+ 			{2, pullrequest.Status{State: pullrequest.StateMerged, HeadSHA: "h2"}},
+ 			{3, pullrequest.Status{State: pullrequest.StateClosed, HeadSHA: "h3"}},
++			{6, pullrequest.Status{State: pullrequest.StateOpen, HeadSHA: "h6", Draft: true}},
+ 		}
+ 		for _, tt := range tests {
+ 			got, err := client.Status(ctx, tt.number)
+diff --git a/internal/pullrequest/doc.go b/internal/pullrequest/doc.go
+index 2bb7d522..6c6c9a61 100644
+--- a/internal/pullrequest/doc.go
++++ b/internal/pullrequest/doc.go
+@@ -8,9 +8,10 @@
+ // A Client is bound to one repository.
+ // Open authenticates only through githubclient and calls go-github directly, never the gh command; NewWithClient binds a told client, which tests point at an httptest server.
+ // The API interface lists the calls a caller makes, so a test of the caller fakes GitHub behind it:
+-// FindOpen, Create, Edit, Status, Close, Reopen, Merge and RequiresPullRequest, each taking the caller's context, with githubclient's own 30-second bound applying per request.
++// FindOpen, Create, Edit, Status, Close, Reopen, SetDraft, Comment, Merge and RequiresPullRequest, each taking the caller's context, with githubclient's own 30-second bound applying per request.
+ // RequiresPullRequest reads the repository rules active on a branch, `GET repos/{owner}/{repo}/rules/branches/{branch}`, and reports whether one is a pull_request rule, under which GitHub refuses a direct push.
+-// Status reads the state (merged wins over closed), the head SHA, and whether a standing review approves that head or requests changes;
++// SetDraft runs GitHub's GraphQL `convertPullRequestToDraft` or `markPullRequestReadyForReview` on the pull request's node id, since the REST API sets neither, and an error GitHub lists in the GraphQL response is a failure.
++// Status reads the state (merged wins over closed), the head SHA, whether the pull request is a draft, and whether a standing review approves that head or requests changes;
+ // a reviewer's standing review is the latest of their approvals, change requests and dismissals, so a later comment changes nothing.
+ // A merge GitHub refuses with HTTP 405 or 409 returns a MergeRefusal of kind RefusalMethod when the merge method is not allowed, RefusalPending when the base branch was modified or mergeability is still being computed, and RefusalOther for any other refusal;
+ // every other failure is returned wrapped, so githubclient.IsTransient still judges it.
+diff --git a/internal/shedrecipe/conformance_test.go b/internal/shedrecipe/conformance_test.go
+index 139ff5be..d359b36e 100644
+--- a/internal/shedrecipe/conformance_test.go
++++ b/internal/shedrecipe/conformance_test.go
+@@ -48,7 +48,7 @@ func minimalEntries() map[string]minimalEntry {
+ 					DescriptionPath:  filepath.Join(t.TempDir(), "summary.md"),
+ 					ProjectDecisions: func() ([]string, error) { return nil, nil },
+ 					Entry:            func() (string, string, error) { return "Title", "Brief", nil },
+-					CommitSubjects:   func() ([]string, error) { return nil, nil },
++					Commits:          func() ([]landingshed.BeamCommit, error) { return nil, nil },
+ 					Commit:           func() error { return nil },
+ 				}
+ 				return env
+diff --git a/internal/shedrecipe/fixture_test.go b/internal/shedrecipe/fixture_test.go
+index 7cf1c132..9d7e02c3 100644
+--- a/internal/shedrecipe/fixture_test.go
++++ b/internal/shedrecipe/fixture_test.go
+@@ -65,6 +65,7 @@ func validPawlDeps(dir string) pawlengine.Deps {
+ 		RunID: "run-1",
+ 		Paths: pawlengine.Paths{
+ 			LandRequest:     filepath.Join(dir, "land-request.json"),
++			ReopenRequest:   filepath.Join(dir, "reopen-request.json"),
+ 			DobbyStopMarker: filepath.Join(dir, "dobby-stop"),
+ 			AwaitMarker:     filepath.Join(dir, "await-entered"),
+ 		},
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index 4ce9df07..e3147162 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -229,6 +229,9 @@ func LandingDeps(dir string) landingshed.Deps {
+ 			Sessions:        noopSessions{},
+ 			SessionLive:     func(string) (bool, error) { return false, nil },
+ 			RegisterSession: func(string) error { return nil },
++			Reopen: func() (landingshed.ReopenRequest, bool, error) {
++				return landingshed.ReopenRequest{}, false, nil
++			},
+ 		},
+ 	}
+ }
+@@ -365,7 +368,7 @@ func FullEnv(t testing.TB) shedrecipe.Env {
+ 			DescriptionPath:  filepath.Join(dir, "beam-description.md"),
+ 			ProjectDecisions: func() ([]string, error) { return nil, nil },
+ 			Entry:            func() (string, string, error) { return "Title", "Brief", nil },
+-			CommitSubjects:   func() ([]string, error) { return nil, nil },
++			Commits:          func() ([]landingshed.BeamCommit, error) { return nil, nil },
+ 			Commit:           func() error { return nil },
+ 		},
+ 		Pawl: pawlengine.Deps{
+@@ -373,6 +376,7 @@ func FullEnv(t testing.TB) shedrecipe.Env {
+ 			RunID: "run-1",
+ 			Paths: pawlengine.Paths{
+ 				LandRequest:     filepath.Join(dir, "land-request.json"),
++				ReopenRequest:   filepath.Join(dir, "reopen-request.json"),
+ 				DobbyStopMarker: filepath.Join(dir, "dobby-stop"),
+ 				AwaitMarker:     filepath.Join(dir, "await-entered"),
+ 			},
