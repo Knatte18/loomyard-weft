@@ -1,6 +1,6 @@
 # Fix the Codex trial faults: shuttle run takes a model spec, open and codex, a test writing the real home
 
-`codex-trial-1-fixes` · Task · bug, shuttle, codex, testkit · running · Drift-Baseline
+`codex-trial-1-fixes` · Task · bug, shuttle, codex, testkit · running · Drift-Await
 
 Fix the faults the first Codex engine trial found (`docs/research/codex-engine-trial-home-sandbox-2026-11-03.md`), before the next Codex trials run.
 
