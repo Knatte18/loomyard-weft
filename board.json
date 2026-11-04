@@ -860,6 +860,28 @@
       "body": "Imported from [issue #41](https://github.com/Knatte18/loomyard/issues/41).\n\n## What happened\n\nThe loom run halted blocked at the Drift-Await row.\nIts reason: the baseline capture ended failed because it exited 0 but wrote no file to the drift baseline directory (`.lym/drift/baseline`).\nThe capture log lives under `_lym/drift/logs/`.\nThe halt recurred on the very next resume: Drift-Await went stuck, then goto, then stuck again with the identical reason, so the retry the way forward names did not recover it.\nOnly a later manual resume got the row to done.\n\n## Why it is abnormal\n\nA capture that exits 0 yet produces no baseline is either a capture that silently did nothing or a capture that wrote to the wrong place.\nEither way the failure is only detected afterwards by Drift-Await, and the operator gets no cause beyond the log path.\nThe automatic re-capture on resume reproduced the same failure, so the halt looked deterministic until something outside the run changed.\n\n## What to do\n\n- Have `lym drift capture` fail with a non-zero exit and a stated cause when it produced no baseline file.\n- Put the capture's stated cause into the Drift-Await halt reason, not only the log path.\n- Investigate why the capture produced no file on this run and why the first re-capture reproduced it.\n\nProvenance: task report-significant-digits; notes loom-halt.md, loom-halt-2.md.",
       "created": "2026-11-04T10:07:35Z",
       "revised": "2026-11-04T10:07:35Z"
+    },
+    {
+      "id": 1084,
+      "handle": "B6",
+      "slug": "darn-write-prompt-not-sent",
+      "title": "Darn-Write session never received its shuttle prompt",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle",
+        "darn",
+        "loom"
+      ],
+      "issues": [
+        42
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #42](https://github.com/Knatte18/loomyard/issues/42).\n\nWhat happened: the Darn-Write session's first message only asked it to load the scribe skills and reply ok. The shuttle prompt carrying the darn writer's instructions (.lym/shuttle/\u003cid\u003e/prompt.md) never followed. The session sat idle until the operator typed a nudge, then found the task through _lym/shed/\u003cslug\u003e/status.json and the decision record, and made the change without the instructions. The operator later pasted the prompt path by hand. Only then did the session learn to check the board, commit and write _lym/landing/summary.md. By then it had already run lym gate test itself, which the prompt forbids.\n\nWhy abnormal: the darn writer is meant to start from the shuttle prompt. Without it the session worked outside its role limits and needed manual operator intervention. The loom history recorded Darn-Write as done at 19:31:52Z although the prompt was only delivered by hand.\n\nWhat to do: find why the shuttle prompt was not delivered after the skill-loading first message (ordering or timing of the prompt send versus the session start hook). Deliver it reliably, or have loom detect an idle session that has not received its prompt and re-send it.\n\nProvenance: task transitional-report-note; notes Darn-Write.md.",
+      "created": "2026-11-04T10:07:39Z",
+      "revised": "2026-11-04T10:07:39Z"
     }
   ],
   "prime_owner": "neve",

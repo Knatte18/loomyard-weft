@@ -28,7 +28,7 @@ Not released; nothing starts it until its status is cleared.
 | T2 | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• No waiting line in loom or batten status and no notice while PR-Review waits for a human review | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | darn · light |  | 14h<br>14h | landing, loom, batten |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light |  | 3d<br>16h | fabric |
 
-## Notes (31)
+## Notes (32)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -38,7 +38,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 12d<br>1d | loom, stencil |
 
-### Bugs (5)
+### Bugs (6)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -47,6 +47,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B3 |  | **Dobby and the orch watcher leave their child processes as zombies**<br>• Hundreds of defunct lym children pile up under dobby and orch watch, and tender lists them as live | [`dobby-zombie-children`](design-dobby-zombie-children.md) | 14h<br>14h | dobby, orch, tender, process |
 | B4 |  | **lym drift capture: baseline capture exits 0 but writes no baseline file, halting loom at Drift-Await** | [`drift-capture-no-baseline`](design-drift-capture-no-baseline.md) | 0m<br>0m | drift, loom |
 | B5 |  | **Moving Drift's dir base reinterpreted existing drift.yaml files with no migration**<br>• cs drift.yaml dir . moved from the anchor to the worktree root at deploy and the capture failed exit 1 | [`drift-dir-base-migration`](design-drift-dir-base-migration.md) | 17h<br>17h | drift, reconcile |
+| B6 |  | **Darn-Write session never received its shuttle prompt** | [`darn-write-prompt-not-sent`](design-darn-write-prompt-not-sent.md) | 0m<br>0m | shuttle, darn, loom |
 
 ### Enhancements (7)
 
