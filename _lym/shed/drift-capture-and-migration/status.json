@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Baseline",
+  "current_producer": "Drift-Await",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Baseline",
-    "last": "Record-Write → done",
+    "now": "Drift-Await",
+    "last": "Drift-Baseline → skipped",
     "wait": ""
   },
   "history": [
@@ -20,6 +20,13 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYMHUB/drift-capture-and-migration/_lym/discussion/decision-record.md",
       "at": "2026-11-04T11:25:35Z"
+    },
+    {
+      "producer": "Drift-Baseline",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-04T11:26:31Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
