@@ -50,9 +50,9 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Codex trial: home, trust, sandbox and refusals**<br>• Seven cases on real Codex launches against the package doc | [`codex-trial-home-sandbox`](design-codex-trial-home-sandbox.md) | darn · docs |  | 15h<br>15h | codex, shuttle |
-| T5 | `draft` **Codex trial: hooks, shell guards and skills**<br>• Seven cases on real Codex launches against the package doc | [`codex-trial-hooks-guards-skills`](design-codex-trial-hooks-guards-skills.md) | darn · docs | T3 | 15h<br>15h | codex, shuttle |
-| T6 | `draft` **Codex trial: pane, sends, creel by the pane path, and load**<br>• Six cases, three sessions at once and one darn run with a Codex reviewer seat | [`codex-trial-pane-load`](design-codex-trial-pane-load.md) | darn · docs | T5 | 15h<br>15h | codex, shuttle, creel |
+| T3 | `draft` **Codex trial: home, trust, sandbox and refusals**<br>• Seven cases on real Codex launches against the package doc | [`codex-trial-home-sandbox`](design-codex-trial-home-sandbox.md) | darn · docs |  | 16h<br>16h | codex, shuttle |
+| T5 | `draft` **Codex trial: hooks, shell guards and skills**<br>• Seven cases on real Codex launches against the package doc | [`codex-trial-hooks-guards-skills`](design-codex-trial-hooks-guards-skills.md) | darn · docs | T3 | 16h<br>16h | codex, shuttle |
+| T6 | `draft` **Codex trial: pane, sends, creel by the pane path, and load**<br>• Six cases, three sessions at once and one darn run with a Codex reviewer seat | [`codex-trial-pane-load`](design-codex-trial-pane-load.md) | darn · docs | T5 | 16h<br>16h | codex, shuttle, creel |
 
 ## Notes (0)
 
