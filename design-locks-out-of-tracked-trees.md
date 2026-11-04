@@ -1,6 +1,6 @@
 # Lock files live in .lym, never beside a tracked file in _lym or Bolt
 
-`locks-out-of-tracked-trees` · Task · bug, fabric, loom · draft
+`locks-out-of-tracked-trees` · Task · bug, fabric, loom
 
 Depends on: [`worktree-create-serial`](design-worktree-create-serial.md), [`codex-trial-1-fixes`](design-codex-trial-1-fixes.md)
 
