@@ -1,53 +1,42 @@
-# Rerun a crashed test runner once; a repeat crash halts, not a fixer
+# gate: report a crashed test runner apart and rerun it once
 
-A gate tier whose test runner dies on a crash signal with no failing test judged no code. For example, `dotnet test` can abort with `Internal CLR error` and exit 134. Until now that read as an ordinary failure. Finalize freed the parent lock and sent an agent fixer to a green tree, which spent one of the fixer's attempts on nothing. A second crash would have spent the last attempt and stopped the landing.
+A tier whose test runner dies on a signal with no failing test, such as a .NET `Internal CLR error` ending in exit 134, no longer counts as a failing gate.
+Finalize used to read that as a code failure, free the parent lock and spend one of the fixer's two attempts on a green tree.
+Now the gate runs the tier once more, and a crash that repeats stops the run with the crash named and spawns no fixer.
 
 ## What changes
 
-**`lym gate test` (`internal/gatecli`, `internal/gateslot`)**
-- A tier run counts as a **runner crash** when all of these hold:
-  - it exits with 128 plus a crash signal: SIGABRT, SIGILL, SIGTRAP, SIGBUS, SIGSEGV or SIGFPE;
-  - it reported no failing test;
-  - it did not time out.
-- `exitCodeOf` now reports 128 plus the signal when the shell was replaced by the command and the command died of a crash signal. Before, it reported 1. Kills and terminations still report 1.
-- A crashed tier runs once more after the same 10 s delay as a resource-shortage rerun, inside the same slots. The rerun result is the tier's result. The shortage retry and the crash retry share one function, `retryTier`.
-- **Both runs are recorded.** The first run's record and log are written before the rerun, and the record carries `runner_crash: <signal>`. The rerun's record carries `rerun: true`. This now also applies to the resource-shortage rerun, whose first run was not recorded before.
-- If a rerun crashes again, the closing "failed runs" line names it as a runner crash. When every failed run of the call crashed this way, with no failing test, failed build or lint finding next to it, the call closes with `gateslot.RunnerCrashLine`. `gateslot.FindRunnerCrash` reads that line back.
-- The Webster card fixer (`runWithFixer`) hands no such verdict to a fixer.
-
-**`internal/verifytree`**
-- `Result.RunnerCrash` is set when a failed verify log holds the runner-crash line. `Detail` then names the crashed runs.
-
-**Landing (`internal/landingshed`)**
-- `verifyGate.check` now also returns a `crashed` flag.
-- On a runner crash, Parent-Align, Finalize and the merge fixer's per-turn gate halt with `LandingStopPrefix`. The halt names the crashed runs and gives `lym loom resume` as the way forward, which runs the gate again.
-- No fixer is spawned, no attempt is spent and no landing failure record is written.
-- The PR-Review gate's reason for a crash tells the agent to commit nothing and end its turn again.
-
-**Row verify gate (`internal/loomshed`)**
-- A runner crash fails the row's verify gate as `Terminal`, with findings that name the crashed runs. The row's `gatefixer` wrap spawns no fixer for a Terminal result, so the run stops with the crash named.
-
-`PATTERN-gate-fixer` gains "a runner crash gets none".
+- `gatecli`: a tier run that fails without timing out, reports no failing test and exits 128 plus a crash signal (SIGABRT, SIGILL, SIGTRAP, SIGBUS, SIGSEGV, SIGFPE) runs once more after the same delay as the resource-shortage rerun.
+  `defaultShortageRetryDelay` becomes `defaultRerunDelay`, shared by both reruns.
+  A command the shell replaced and a signal ended takes the same exit code, while a build a signal ended keeps exit 1.
+  The stderr line names the exit code and the signal, and the rerun's log opens with it.
+- `gateslot`: the first run's record and log are written before the rerun starts.
+  `RunRecord` gains `RunnerCrash` (the signal) and `Rerun`, and the rerun's record counts its slot wait as none.
+  When every failed run crashed this way, with no failing test, failed build or lint finding beside them, the call closes with `RunnerCrashLine`, which `FindRunnerCrash` reads back.
+- `verifytree`: `Result` gains `RunnerCrash`, set when a failed command's log holds that line and holds no timeout line.
+- `landingshed`: the Finalize and parent-align fixer paths, and the PR-Review gate, halt the row on a runner crash with a `LandingStopPrefix` reason naming the crashed runs and the way forward (`lym loom resume`), instead of spawning a fixer or mailing the agent.
+  A crash writes no landing failure record.
+- `websterengine`, `webstercli` and `loomshed`: the verify gate fails `Terminal` on a runner crash, on the first run or the rerun, with no fixer, no spent attempt and no report.
+  Its stuck reason ends in reentry alone, since no fixer commit exists to reset.
+- `gatecli` fixer detach: a red verdict whose stderr holds `RunnerCrashLine` ends with the first run's result and spawns no fixer.
+- Docs: `PATTERN.md` and the package docs of `gatecli`, `gateslot`, `landingshed`, `verifytree` and `websterengine` describe the crash rerun, the new exit code and the halt.
 
 ## Design decisions
 
-- **What counts as a crash is read from the exit code, not the output.** Only crash signals count, so a run killed from outside (SIGKILL, SIGTERM) or stopped by a timeout is never read as a crash. A run that reported a failing test is never a crash either, so a real failure always reaches the fixer.
-- **The landing site learns of a crash from one closing line.** The line is printed only when every failed run of the call is a crash. So a call where tier0 has failing tests and tier1 crashed still goes to the fixer for tier0's failures.
-- **A repeated crash stops the run instead of going to a fixer.** That is what the entry asks for. A test that aborts its own runner, such as a .NET stack overflow, is then reported as a runner crash and halts with the crash named. This is listed as a bound in the `gatecli` package doc.
-- **Webster's own verify gate (`websterengine`) is unchanged.** It already reruns a failed verify once on its own. Its fixer routing was outside this entry's landing scope.
+- The crash test is the exit code (128 plus a crash signal) together with no reported failing test, so a failing test keeps its verdict and goes to a fixer as before.
+- One rerun per tier run, bounded like the shortage rerun.
+  A test that aborts its own runner, such as a .NET stack overflow, is therefore reported as a crash, not as a failing test; the package doc says so.
+- A repeated crash is a halt, not a failure, because no change to the code under test mends a runtime fault.
+  The reason points the reader to the runs' logs.
+- A run's exit code is its own: a runner crash exits with 128 plus the signal, an exit the callers' failing-run line and `RunnerCrashLine` both report.
 
-## Tests
+## To check by hand
 
-- `TestRetryTier` replaces `TestRetryOnShortage`. It adds rows for:
-  - crash then pass;
-  - crash twice, which carries the signal;
-  - crash then a failing test, which carries no crash;
-  - a signal exit with a failing test, which is not rerun;
-  - SIGTERM, which is not a crash.
-  
-  Each row also checks the first-run record and the rerun mark.
-- `TestFailedRunLabel` adds a crash row.
-- `TestWatchdogLine` adds `FindRunnerCrash` rows.
-- `TestVerifyGate_CheckMapsVerifyResult` adds a crash row that checks the halt reason and the `crashed` flag.
-- `TestFinalizeVerify_RunnerCrashHaltsWithoutFixer` checks that Finalize halts naming the crash, with no fixer session, no failure record and nothing landed.
-- `TestVerifyFailureFindings` adds a crash row.
+No integration run on a machine whose runner really crashes was made.
+Check these findings, each listed as open after review:
+
+- The verify gate of Webster (`websterengine`, `webstercli`) must not treat a runner crash as a failing test; confirm a crash in the first run and in the rerun both end `Terminal` without a fixer.
+- `gatecli`: the closing line, the exit code and the fixer detach for a crash have tests only partly covering them; confirm `RunnerCrashLine` reaches `runWithFixer` and suppresses the fixer.
+- `landingshed`: the parent-align and Finalize fixer ends on a crash are thinly tested; confirm the halt reason and that the lock is not freed for a fixer.
+- `loomshed`: confirm the verify gate ends terminal on a crash.
+- `verifytree`: confirm a log with a timeout line and a crash line reads as a timeout, and that a log with only the crash line reads as `RunnerCrash`.
