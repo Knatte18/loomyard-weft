@@ -202,10 +202,10 @@
     },
     {
       "id": 928,
-      "handle": "E11",
+      "handle": "T11",
       "slug": "parent-merge-task",
       "title": "Merge in from parent as a task of its own in a beam, before pawl lands it",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "pawl",
@@ -214,12 +214,15 @@
         "landing"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "A command on a beam files a merge-in-from-parent task, run as darn with its perch on",
       "body": "## Seen (operator, 2026-10-31)\n\nThe pawl recipe, a beam's run, had a Code-Review perch of its own; the operator did not want it, since the beam's members are already reviewed by their own runs.\nThe perch is gone: pawl became a loom recipe with no review round (`pawl-loom-recipe`), and Parent-Align brings the parent in before Finalize and Beam-Down land the beam.\nNothing now checks that a beam has reached its project's goal before it lands: Beam-Await ends on a land request.\nBringing the parent into a beam is today done by writing a merge task by hand, as the `codex-engine` beam's two merge-main tasks were.\n\n## Design (operator, 2026-11-01 and 2026-11-03)\n\n- Bringing the parent into a beam is a task of its own: a darn run with its own worktree inside the beam's project, \"merge in from parent\", with its perch on.\n- `lym beam merge-parent \u003cbeam\u003e` files such a task in the beam's project with one call, at any time, not only at landing; dobby starts it as any member.\n- The run merges the parent into the beam, settles conflicts and gate failures with the merge fixer, and can run Drift.\n- Its perch reviews the merge alone; checking the project's goal before the beam lands is no part of it.\n- pawl neither starts such a run nor requires one before it lands: pawl lands the beam without a perch round of its own (built by `pawl-loom-recipe`), and its Parent-Align brings the parent in as today.\n- Two default buttons in reed's `beam` button group, each with a confirm prompt:\n  - `merge-in` runs `lym beam merge-parent {beam}`.\n  - `land` runs `lym beam land {beam}`.\n- The prime has no parent, so the default `prime` group gets the beam group's other buttons without these two, instead of falling back to the beam group.\n\nRelated: note `protected-parent-landing`, landing on a parent the hub may not push to.\n",
+      "status": "draft",
       "created": "2026-10-31T12:52:24Z",
-      "revised": "2026-11-03T18:07:32Z"
+      "revised": "2026-11-04T14:12:11Z",
+      "profile": "light"
     },
     {
       "id": 932,
@@ -267,10 +270,10 @@
     },
     {
       "id": 941,
-      "handle": "F2",
+      "handle": "T12",
       "slug": "board-agent-button",
       "title": "A status-bar button opens a short-lived board agent, so board talks need no orch",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "feature",
         "reed",
@@ -279,12 +282,15 @@
         "orch"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "An ordinary agent with a board-policy skill loaded, for discussing and filing notes and releasing tasks on go-ahead",
       "body": "## Seen (operator, 2026-10-31)\n\nAdding, changing or removing board entries is done today by talking to the orch, a long-lived session that carries every run's notices, escalations and rules, which is heavy for a talk about one or a few notes.\n\n## Idea\n\nA reed status-bar button of its own, added to the configurable action buttons reed now ships (`reed.yaml` `buttons`, landed 2026-11-01: one config entry per button, no build), opens a short-lived agent for board work.\n- The button opens an ordinary agent, as `lym shuttle open` does, with a skill loaded that makes it a board agent; no new role, so the same way can make other kinds of agent later (operator, 2026-10-31).\n- The agent reads the board and the code it needs, talks one or a few cases through with the operator, writes, merges or removes notes, promotes notes to tasks and releases tasks on the operator's named go-ahead (operator, 2026-10-31), and exits.\n  The board holds its state, so it needs no handoff and no context cycle.\n- `ly:board` holds the mechanics of the board only; the policy, today the orch role's \"The board\" section (one finding per note, discuss before writing, a body holds the current design only, propose bundles and wait for approval, release only on a named go-ahead), moves into a skill of its own that the button loads and the orch role points to, so the policy lives in one place.\n  It does not go into `ly:board`, which run agents load to file notes.\n\n## Built since (landed 2026-11-03)\n\nA button entry in `reed.yaml` takes an optional `ask` prompt and `ask_default` (`06a4ed9c`): a click raises a tmux prompt, and the answer fills `{answer}` in the entry's `run` and `confirm`.\nThe shipped `agent` buttons now use `ask: \"Agent name:\"` and `--role {answer}`, so each agent opened from the status bar carries a name of its own.\nThe board agent's button can use the same `ask` for a name or a first topic; the board-agent skill and the button entry itself are still unbuilt.\n\n## Splitting an entry\n\nThe agent can also split an entry into tasks, as the first of the ways note `discussed-task-split` describes.\n",
+      "status": "draft",
       "created": "2026-10-31T19:10:09Z",
-      "revised": "2026-11-03T19:06:24Z"
+      "revised": "2026-11-04T14:12:11Z",
+      "profile": "light"
     },
     {
       "id": 942,
@@ -545,13 +551,15 @@
         "git"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "Branch protection refuses a direct push to main, so no task or beam can land on such a repository",
       "body": "## Seen (operator, 2026-11-03)\n\nOn the NORCE Models repository, on machine OSL-1046, a direct commit or push to `main` is refused by branch protection: every change reaches `main` as a merge from a branch, on the remote.\nThat is intended and stays so.\nlym lands every run by merging locally and pushing the parent: a task's Finalize squashes onto the parent and pushes it, and a beam's pawl run lands the beam the same way.\nSo on such a repository no task and no beam can land.\n\n## Design (operator, 2026-11-03)\n\nA hub, or a parent branch, can be marked as landed through the remote:\n\n- Finalize pushes the task or beam branch, opens a pull request into the parent and squash-merges it on the remote at once, then pulls the parent, in place of the local squash and push.\n- A pull request is always opened, by the hub's own rule, though the protection demands no approval and no status check: lym merges it without waiting for a review.\n- The merge is always a squash.\n- The parent lock, the gate of the merged tree and the board's done mark stay as today.\n- A refused push to a protected branch names this setting as the way forward, instead of a bare push failure.\n",
       "status": "draft",
       "created": "2026-11-03T18:07:32Z",
-      "revised": "2026-11-03T18:14:12Z"
+      "revised": "2026-11-04T14:12:11Z",
+      "profile": "solid"
     },
     {
       "id": 1072,
