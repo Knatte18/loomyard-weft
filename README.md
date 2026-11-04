@@ -77,7 +77,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T10 | **Let the pr-reviewer read and edit on GitHub** | [`pr-reviewer-github-access`](design-pr-reviewer-github-access.md) | darn · light | Drift-Verify | neve | 3h<br>2h | landing, stencil |
+| T10 | **Let the pr-reviewer read and edit on GitHub** | [`pr-reviewer-github-access`](design-pr-reviewer-github-access.md) | darn · light | Code-Bouncer | neve | 3h<br>2h | landing, stencil |
 | T11 | **A crashed test runner is treated as a failing gate and spends a fixer**<br>• Exit 134 with no test result sends Finalize to an agent fixer on a green tree instead of a rerun | [`gate-runner-crash-fixer`](design-gate-runner-crash-fixer.md) | darn · light | Code-Burler-Fix | neve | 17h<br>2h | gate, landing |
 
 #### Ready (0)
