@@ -1,46 +1,35 @@
-# Reap lym's child processes, and read a zombie as gone in the registry
+# Reap dobby and orch watch children; tender ignores zombies
 
-Long-lived lym processes piled up hundreds of `[lym] <defunct>` children, and `lym tender status` listed them as live owned `batten` processes under slugs that had landed long before.
+Dobby and `lym orch watch` started child `lym` processes and never waited on them.
+Each finished child stayed a zombie until its parent exited, and `lym tender status` listed it as a live owned process.
+On a long-running hub this piled up to hundreds of defunct `batten` processes under landed slugs.
 
-## Cause
+## What changes
 
-On the live hub, every zombie under the prime's dobby was older than that dobby's last re-exec.
-Dobby waits on each batten pass in a goroutine, and `lym orch watch` waits on its children the same way.
-When either process re-execs onto a new lym binary, the kernel keeps its children but the goroutines that waited on them are gone, so the new image never reaps them.
-A second, smaller source: several detached starts never waited at all.
-These were the board sync, the detached push, the front-task action, the dobby spawn, the reed watchdog and remove, the adopt check and the terminal window.
-The front-task start called `Process.Release`, which does not reap a child on Linux.
-Inside a long-lived starter each of these left a zombie per spawn.
-
-The registry kept them visible: a zombie still answers signal 0 and its stat keeps the registered start time, so `runproc.List` read it as live.
-
-## Change
-
-- `proc.Reap` waits on a started command in the background.
-  Every detached start that never waited now calls it, and the front-task start uses it in place of `Process.Release`.
-- `proc.ReapInheritedChildren` waits in the background on every child the calling process already has.
-  `lym beam dobby` and `lym orch watch` call it first thing.
-  A fresh start has no children, so it does nothing; after a re-exec it adopts what the old image left, and logs the pids it reaps.
-- `runproc`'s listing requires a running pid, `proc.IsRunning`, so a zombie record is pruned like a dead one.
-  `lym tender status` and `lym tender reap` read the registry through it.
-  The end sequence's lister uses the same seam.
-- A new `PATTERN-reap-children` entry states the rule: a starter waits on its child, by `cmd.Wait` or `proc.Reap`, and a process that re-execs itself calls `proc.ReapInheritedChildren` before it starts a child.
-  The `PATTERN-spawn-observability` background, and the `proc`, `runproc`, `selfexec`, `beamcli` and `orchengine` package docs, now describe the reaping.
+- New `proc.Reap(cmd)` waits on a started command in a background goroutine and discards its exit.
+  Every place in `lym` that starts a long-lived child and does not wait on it now calls it after a successful `Start`: `dobbyengine.SpawnDetached`, the `adoptcli` suite start, `fabricengine`, `reedengine` (session and watchdog starts), `boardengine`, `battencli`, `fronttask`, `reedcli`, `termwindow` and `vscode.Launch` on Linux and Windows.
+- New `proc.ReapInheritedChildren` handles a process that re-execs itself onto a new binary.
+  The re-exec keeps the children but loses the goroutines that waited on them.
+  `lym beam dobby` and `lym orch watch` call it once at startup, before they start a child of their own, so every child it finds belongs to the replaced image.
+  On a platform that cannot list processes it finds none.
+- `runproc.List` and `runproc.Owners` leave out a record whose process is a zombie, so `lym tender status` and `lym tender reap` stop listing landed runs as live.
+- `PATTERN.md` gains `PATTERN-reap-children`, and `PATTERN-spawn-observability` and the package docs say the child is reaped.
 
 ## Design decisions
 
-- `ReapInheritedChildren` takes the pid set at the moment of the call and waits on those pids alone, so it must run before the process starts its own child: called later, it would race that child's own `Wait`.
-  Both callers run it in the cobra `RunE`, ahead of all wiring, and not in `runDobbyWith`, which tests drive in a parallel test binary.
-- A child that is mid-run when its starter re-execs keeps running.
-  The new image only adopts its wait, and a batten pass's exit is not delivered to the new dobby, which reads run state from disk as before.
-- The detached starts are reaped rather than double-forked, so the existing `runproc` registration, Setsid detachment and pids stay as they were.
-  In a short-lived CLI the starter usually exits first, and init reaps the child.
+- A zombie leader's record stays on disk and is removed once the zombie is reaped.
+  Members of the leader's process group may still run, and an end (`End`, `EndSparing`, `EndRole`) must still signal the group.
+  The end sequence therefore reads records through `ender.recordLister`, whose running check is the alive check, so a zombie leader stays in its set.
+  Only the read paths (`List`, `Owners`) hide it.
+- Reaping is a background wait, not a detach, so the starter keeps ownership while it lives; when the starter exits first, init reaps the child.
+- `ReapInheritedChildren` must run before the process starts a child itself, otherwise it races that child's own wait.
+  In `beamcli` it runs after the worktree is placed and before the first start, so a refused start waits on no child.
 
-## Tests
+## To check by hand
 
-- `TestReap` starts `true`, reaps it, and waits until its pid no longer answers a signal.
-- `TestReapInheritedChildren` starts an exited child and a running one without waiting.
-  It checks that `ReapInheritedChildren` returns both, and that each disappears once it exits.
-  The test is not parallel because it waits on every child of the test process.
-- `TestRegisterAndList` gains a zombie case: a record whose start time matches and whose pid is not running is pruned.
-  The end-sequence fake now reports a zombie entry as not running.
+- Every place that starts a child process and does not wait on it calls `proc.Reap` or waits through `cmd.Wait`; a start outside the files listed above would still leave a zombie.
+- The startup reap is wired through the `reap` seam of `runDobbyWith` and the `reapInherited` field of `orchCLI`.
+  Their tests count the calls, but they do not pin the call's order against `orchengine.LoadState` in `watch`.
+- On a hub running the old binary, restart dobby and `lym orch watch`, then confirm `ps` shows no `[lym] <defunct>` children and `lym tender status` lists no landed slug as owned.
+  No end-to-end run against a real long-lived hub was done.
+- No regression check ran for this task.
