@@ -840,7 +840,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #43](https://github.com/Knatte18/loomyard/issues/43).\n\n## Observed\n\nIn a hub's weft checkout, `git status` shows 1580 untracked files, all under `\u003cproject\u003e/_lym/shed/\u003cslug\u003e/`:\n\n- 1563 `drive-reports/drive-envelope-\u003ctimestamp\u003e.json` (one slug)\n- a few `drive-reports/` directories for other slugs\n- `tackler/` and `arbiter/` directories\n- 1 modified file: `\u003cslug\u003e/status.json`\n\nTimestamps of the first three drive envelopes: 08:38:00, 08:38:26 and 08:38:56, so a new file roughly every 30 seconds while `lym loom drive` runs.\nThe newest was written the next morning at 09:06.\nLater weft sync commits (20:44 and 21:19 the same day) did not include any of them.\nThere is no `.gitignore` entry for them, and 534 other files under `_lym/` are tracked.\n\n## Expected\n\nEverything under `_lym/` is tracked in git.\nFiles that must not be tracked live under `.lym/`.\n\n## Impact\n\n- The files are neither synced nor ignored, so `git status` is permanently dirty and the work would be lost if the checkout is lost (found while preparing an OS upgrade).\n- If `drive-reports` is meant to be transient, it belongs in `.lym/`.\n- The rate (one file per ~30 s) may itself be a bug; please check whether a report is written per poll rather than per drive.\n\n## Environment\n\nloomyard built from main, Ubuntu 24.04, `lym loom drive` and `lym orch watch` running.\n",
-      "status": "running · Drift-Baseline",
+      "status": "running · Drift-Await",
       "created": "2026-11-04T10:07:42Z",
       "revised": "2026-11-04T10:22:33Z",
       "profile": "light"
