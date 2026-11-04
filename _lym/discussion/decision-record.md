@@ -30,4 +30,14 @@ Treating it as a code failure spends an agent session (and one of the fixer's tw
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - gatecli-closing-line-exitcode-detach-untested (class design, severity MEDIUM, open in rounds 1)
+  - landingshed-parentalign-fixerend-crash-untested (class design, severity MEDIUM, open in rounds 1)
+  - loomshed-terminal-on-crash-untested (class design, severity MEDIUM, open in rounds 1)
+  - verifytree-crash-line-reading-untested (class design, severity MEDIUM, open in rounds 1)
+  - webster-verify-gate-ignores-runner-crash (class scope, severity BLOCKING, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
