@@ -5,15 +5,18 @@
 ## Seen (orch, 2026-11-01)
 
 `landing-watch` (commit `c9d52bdb`) has dobby send the orch a line when a task with `notify_on_land` set lands.
-Its commit lists known limits that no note covered:
+Its commit lists known limits:
+
 - A `notify_on_land` set after the run passed Land gets no line.
 - A run that passes Land while dobby is down long enough for a fresh state record to be written gets no line.
 - The line needs a live orch; after three failed posts it is dropped.
 
-The commit also records that the notice was never run end to end against a live orch.
+The notice was never run end to end against a live orch.
 
-## Open
+## Wanted (operator, 2026-11-04: close all three)
 
-- Whether any of these matter in practice, and which to close (operator to look at them).
-- Setting the field on a run already past Land could answer at once instead of staying silent.
-- A dropped line could wait in creel for the orch rather than be lost, which fits the dormant orch in `dormant-orch`.
+1. Setting `notify_on_land` on an entry whose run already landed answers at once: the board write says it landed, or the line is sent then.
+2. A landing missed while dobby was down is still noticed: on start dobby finds `notify_on_land` entries that landed since it last ran (board done state, not only its own state record) and sends their lines.
+3. A line the orch cannot take now waits in creel for the orch and reaches it when it comes back, never dropped after a fixed number of posts.
+
+Show the notice end to end against a live orch once, in a test or by hand, and say which in the change description.
