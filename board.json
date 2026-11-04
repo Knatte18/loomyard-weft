@@ -823,6 +823,25 @@
       "created": "2026-11-04T14:33:02Z",
       "revised": "2026-11-04T14:33:02Z",
       "project": "turn-savings"
+    },
+    {
+      "id": 1102,
+      "handle": "B4",
+      "slug": "shuttle-hidden-anchor-dies",
+      "title": "lym shuttle run --anchor hidden ends died on both engines: the provider never becomes ready",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle",
+        "reed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A hidden-anchor run is torn down within seconds as died, for Codex and Claude alike, with no pane capture saved",
+      "body": "Found in the codex-trial-hooks-guards-skills trial, 2026-11-04.\n\n## What happens\n\n`lym shuttle run --anchor hidden --model 'luna[medium]' --role x --prompt ... --output-file ...` from a worktree whose reed session is live ends with outcome died after two start attempts about 10 s apart.\nThe log says `shuttle: provider never became ready; strand torn down` and the error says `no pane capture was saved; the strand was removed`.\nThe same run with the default own-window anchor starts and finishes.\n\n## Reproduced\n\nThree hidden runs, three deaths: `luna[medium]` twice and `sonnet[low]` once. So the fault is not in codexengine.\nThe sonnet death carried a sessionId, so Claude started a session before the strand was torn down.\n\n## Expected\n\nA hidden strand reaches the provider as an own-window one does, or the refusal names why a hidden anchor cannot run.\n\n## Not known\n\nWhich of reed (hidden placement) or shuttle (the readiness read of a hidden pane) is at fault; both labels are set until one is cleared.",
+      "created": "2026-11-04T14:37:56Z",
+      "revised": "2026-11-04T14:37:56Z"
     }
   ],
   "prime_owner": "neve",
