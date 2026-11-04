@@ -61,7 +61,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 | H | **Drift compares cell by cell in code against a sealed expectation, with a separate judge**<br>• The Drift whole review design: code-side profile diff, structured sealed expectation, containment by code, a judge per changed cell | [`drift-rework`](design-drift-rework.md) | 6m<br>6m | drift, loom, darn, stencil, config |
-| E2 |  | **Discussion writers start their exploration with explore subagents**<br>• The Discussion-Write stencil asks for one early batch of explore subagents, as the Plan writers already send | [`discussion-explore-agents-first`](design-discussion-explore-agents-first.md) | 2m<br>2m | stencil, loom |
+| E2 |  | **Discussion writers start their exploration with explore subagents**<br>• The Discussion-Write stencil asks for one early batch of explore subagents, as the Plan writers already send | [`discussion-explore-agents-first`](design-discussion-explore-agents-first.md) | 2m<br>0m | stencil, loom |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 8d<br>3d | batten, stencil, config |
 | E7 |  | **Each part agent plans and builds its own part, instead of joining the parts into one plan** | [`parts-plan-and-build`](design-parts-plan-and-build.md) | 1d<br>1d | loom |
 | E9 |  | **An interactive agent idle for a set time gets its session compacted**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 4d<br>23h | shed, shuttle, batten |
