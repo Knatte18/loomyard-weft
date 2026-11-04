@@ -334,7 +334,7 @@
       "isolated": false,
       "brief": "Close the known limits landing-watch left: a late notify_on_land, a Land passed while dobby was down, and a dropped line when no orch is live",
       "body": "## Seen (orch, 2026-11-01)\n\n`landing-watch` (commit `c9d52bdb`) has dobby send the orch a line when a task with `notify_on_land` set lands.\nIts commit lists known limits:\n\n- A `notify_on_land` set after the run passed Land gets no line.\n- A run that passes Land while dobby is down long enough for a fresh state record to be written gets no line.\n- The line needs a live orch; after three failed posts it is dropped.\n\nThe notice was never run end to end against a live orch.\n\n## Wanted (operator, 2026-11-04: close all three)\n\n1. Setting `notify_on_land` on an entry whose run already landed answers at once: the board write says it landed, or the line is sent then.\n2. A landing missed while dobby was down is still noticed: on start dobby finds `notify_on_land` entries that landed since it last ran (board done state, not only its own state record) and sends their lines.\n3. A line the orch cannot take now waits in creel for the orch and reaches it when it comes back, never dropped after a fixed number of posts.\n\nShow the notice end to end against a live orch once, in a test or by hand, and say which in the change description.\n",
-      "status": "running · Worktree-Create",
+      "status": "running · Record-Write",
       "created": "2026-11-01T07:43:17Z",
       "revised": "2026-11-04T13:51:55Z",
       "profile": "light"
@@ -840,6 +840,25 @@
       "isolated": false,
       "brief": "A hidden-anchor run is torn down within seconds as died, for Codex and Claude alike, with no pane capture saved",
       "body": "Found in the codex-trial-hooks-guards-skills trial, 2026-11-04.\n\n## What happens\n\n`lym shuttle run --anchor hidden --model 'luna[medium]' --role x --prompt ... --output-file ...` from a worktree whose reed session is live ends with outcome died after two start attempts about 10 s apart.\nThe log says `shuttle: provider never became ready; strand torn down` and the error says `no pane capture was saved; the strand was removed`.\nThe same run with the default own-window anchor starts and finishes.\n\n## Reproduced\n\nThree hidden runs, three deaths: `luna[medium]` twice and `sonnet[low]` once. So the fault is not in codexengine.\nThe sonnet death carried a sessionId, so Claude started a session before the strand was torn down.\n\n## Expected\n\nA hidden strand reaches the provider as an own-window one does, or the refusal names why a hidden anchor cannot run.\n\n## Not known\n\nWhich of reed (hidden placement) or shuttle (the readiness read of a hidden pane) is at fault; both labels are set until one is cleared.",
+      "created": "2026-11-04T14:37:56Z",
+      "revised": "2026-11-04T14:37:56Z"
+    },
+    {
+      "id": 1103,
+      "handle": "B5",
+      "slug": "codex-state-always-unknown",
+      "title": "lym shuttle state reads every Codex session as unknown, which hides a running turn and an interrupt",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle",
+        "codex"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "settle() lets an unproven liveness win over the signal-derived state, so a Codex strand never reads busy, idle or interrupted",
+      "body": "Found in the codex-trial-hooks-guards-skills trial, 2026-11-04.\n\n## What happens\n\n`lym shuttle state` shows `state: unknown, cause: liveness-unproven` for every Codex run, whatever the session does.\nThe session fold does derive the right state: the history of an interrupted run lists `idle-fresh/session-start`, `busy/turn`, `idle-stalled/interrupt` at the rollout's `turn_aborted` time, and then `unknown/liveness-unproven`.\nThe current state is the last entry, so a reader sees `unknown` while the turn runs and after an interrupt.\n\n## Cause\n\n`SessionFold.settle` in `internal/shuttleengine/sessionstate.go` takes `facts.Liveness == LivenessUnproven` before it reaches the signal-derived state, and `codexengine.Codex.ProcessLiveness` returns unproven for every session by design (Codex keeps no session registry).\nEvery Codex poll therefore also logs `shuttle: session state disagrees ... stands=loop` once per disagreement.\n\n## Expected\n\nA Codex strand reads busy while a turn runs and idle-stalled with cause interrupt after an interrupt, as the package doc says an interrupt marks the turn interrupted. Unproven liveness need only stop the state from claiming the process is alive, not replace the turn state.\n\n## Check\n\nTwo more interrupts of a sleeping turn gave the same history and the same current state.",
       "created": "2026-11-04T14:37:56Z",
       "revised": "2026-11-04T14:37:56Z"
     }
