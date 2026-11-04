@@ -2,7 +2,7 @@
 
 `comment-cleanup` · Task · enhancement, fabric · draft
 
-Depends on: [`drift-whole-review`](design-drift-whole-review.md), [`codex-trial-hooks-guards-skills`](design-codex-trial-hooks-guards-skills.md), [`codex-trial-pane-load`](design-codex-trial-pane-load.md)
+Depends on: [`codex-trial-hooks-guards-skills`](design-codex-trial-hooks-guards-skills.md), [`codex-trial-pane-load`](design-codex-trial-pane-load.md)
 
 ## Seen (operator and hub orch, 2026-10-31)
 
