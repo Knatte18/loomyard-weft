@@ -93,7 +93,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **lym ide opens configured files on start, rendered markdown for a beam README**<br>• A beam IDE starts with its README rendered; which files open is config, not code, so per-beam docs can be named later | [`ide-open-files`](design-ide-open-files.md) | darn · light | Drift-Verify | neve | 19h<br>24m | ide, config |
 | T3 | **Worktree-Create runs one at a time and spends minutes on network round trips**<br>• Five released tasks left Worktree-Create one by one over minutes, behind fetches, remote-ref reads and a weft push | [`worktree-create-serial`](design-worktree-create-serial.md) | darn · light | Code-Burler-Fix | neve | 2h<br>26m | fabric, batten, dobby |
-| T12 | **A status-bar button opens a short-lived board agent, so board talks need no orch**<br>• An ordinary agent with a board-policy skill loaded, for discussing and filing notes and releasing tasks on go-ahead | [`board-agent-button`](design-board-agent-button.md) | darn · light | Worktree-Create | neve | 3d<br>0m | reed, board, shuttle, orch |
+| T12 | **A status-bar button opens a short-lived board agent, so board talks need no orch**<br>• An ordinary agent with a board-policy skill loaded, for discussing and filing notes and releasing tasks on go-ahead | [`board-agent-button`](design-board-agent-button.md) | darn · light | Record-Write | neve | 3d<br>0m | reed, board, shuttle, orch |
 
 #### Ready (0)
 
