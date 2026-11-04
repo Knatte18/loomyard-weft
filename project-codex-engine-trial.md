@@ -1,6 +1,6 @@
 # P2 Stress test of codexengine: every designed capability, hooks above all
 
-Rendered 2026-11-04 14:15 UTC; every age below is as of then.
+Rendered 2026-11-04 14:16 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`codex-engine-trial`](design-codex-engine-trial.md) · Age 19h · Owner `neve`
@@ -34,31 +34,17 @@ The package doc `internal/shuttleengine/codexengine/doc.go` is the spec; each pa
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (3)
+## Tasks (2)
 
 Concrete and claimable; only a task can run.
 
-### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Fix the Codex trial faults: shuttle run takes a model spec, open and codex, a test writing the real home**<br>• shuttle run --model takes alias[effort] and picks the engine; open starts codex; a test stops writing ~/.lym/codex; committed-.codex check wording | [`codex-trial-1-fixes`](design-codex-trial-1-fixes.md) | darn · light | Finalize | neve | 2h<br>38m | shuttle, codex, testkit |
-
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-### Layer A (1)
-
-Waits only on Running, Ready or Draft entries.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Codex trial: hooks, shell guards and skills**<br>• Seven cases on real Codex launches against the package doc | [`codex-trial-hooks-guards-skills`](design-codex-trial-hooks-guards-skills.md) | darn · docs | T2 | 18h<br>43m | codex, shuttle |
+| T5 | **Codex trial: hooks, shell guards and skills**<br>• Seven cases on real Codex launches against the package doc | [`codex-trial-hooks-guards-skills`](design-codex-trial-hooks-guards-skills.md) | darn · docs |  | 18h<br>44m | codex, shuttle |
 
 ### Draft (1)
 
@@ -71,3 +57,11 @@ Not released; nothing starts it until its status is cleared.
 ## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T2 | **Fix the Codex trial faults: shuttle run takes a model spec, open and codex, a test writing the real home**<br>• shuttle run --model takes alias[effort] and picks the engine; open starts codex; a test stops writing ~/.lym/codex; committed-.codex check wording | [`codex-trial-1-fixes`](design-codex-trial-1-fixes.md) | 2h<br>39m | shuttle, codex, testkit |

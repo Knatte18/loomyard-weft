@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-04 14:15 UTC; every age below is as of then.
+Rendered 2026-11-04 14:16 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -22,7 +22,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **Measure agent-turns and the batching hook from landed runs**<br>• One report: turns, calls per turn, gate loops, refusals and batching-hook breaches over up to 20 darn and 5 tapestry runs landed since 2026-11-02 | [`turn-savings-measure`](design-turn-savings-measure.md) | darn · docs | Darn-Write | neve | 2d<br>17m | tools, claude, shuttle |
+| T9 | **Measure agent-turns and the batching hook from landed runs**<br>• One report: turns, calls per turn, gate loops, refusals and batching-hook breaches over up to 20 darn and 5 tapestry runs landed since 2026-11-02 | [`turn-savings-measure`](design-turn-savings-measure.md) | darn · docs | Darn-Write | neve | 3d<br>18m | tools, claude, shuttle |
 
 #### Ready (0)
 
@@ -40,37 +40,23 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R2 |  | **Plan and Discussion writers explore through parallel Sonnet agents that return only what is relevant**<br>• Bench the guidance that sends Plan and Discussion writers' lookups to parallel Sonnet subagents against a writer given none | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 2d<br>2d | loom |
 
-## [P2 Stress test of codexengine: every designed capability, hooks above all](project-codex-engine-trial.md) (3)
+## [P2 Stress test of codexengine: every designed capability, hooks above all](project-codex-engine-trial.md) (2)
 
 [`codex-engine-trial`](design-codex-engine-trial.md) · Age 19h · Owner `neve`
 
 Real Codex launches through lym shuttle check home, sandbox, hooks, guards, pane, skills and load
 
-### Tasks (3)
+### Tasks (2)
 
 Concrete and claimable; only a task can run.
 
-#### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Fix the Codex trial faults: shuttle run takes a model spec, open and codex, a test writing the real home**<br>• shuttle run --model takes alias[effort] and picks the engine; open starts codex; a test stops writing ~/.lym/codex; committed-.codex check wording | [`codex-trial-1-fixes`](design-codex-trial-1-fixes.md) | darn · light | Finalize | neve | 2h<br>38m | shuttle, codex, testkit |
-
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-#### Layer A (1)
-
-Waits only on Running, Ready or Draft entries.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Codex trial: hooks, shell guards and skills**<br>• Seven cases on real Codex launches against the package doc | [`codex-trial-hooks-guards-skills`](design-codex-trial-hooks-guards-skills.md) | darn · docs | T2 | 18h<br>43m | codex, shuttle |
+| T5 | **Codex trial: hooks, shell guards and skills**<br>• Seven cases on real Codex launches against the package doc | [`codex-trial-hooks-guards-skills`](design-codex-trial-hooks-guards-skills.md) | darn · docs |  | 18h<br>44m | codex, shuttle |
 
 #### Draft (1)
 
@@ -83,6 +69,14 @@ Not released; nothing starts it until its status is cleared.
 ### Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T2 | **Fix the Codex trial faults: shuttle run takes a model spec, open and codex, a test writing the real home**<br>• shuttle run --model takes alias[effort] and picks the engine; open starts codex; a test stops writing ~/.lym/codex; committed-.codex check wording | [`codex-trial-1-fixes`](design-codex-trial-1-fixes.md) | 2h<br>39m | shuttle, codex, testkit |
 
 ## [P0 Root: entries under no project](project-root.md) (31)
 
@@ -99,8 +93,8 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **lym ide opens configured files on start, rendered markdown for a beam README**<br>• A beam IDE starts with its README rendered; which files open is config, not code, so per-beam docs can be named later | [`ide-open-files`](design-ide-open-files.md) | darn · light | Code-Burler-Review | neve | 19h<br>27m | ide, config |
-| T3 | **Worktree-Create runs one at a time and spends minutes on network round trips**<br>• Five released tasks left Worktree-Create one by one over minutes, behind fetches, remote-ref reads and a weft push | [`worktree-create-serial`](design-worktree-create-serial.md) | darn · light | Code-Burler-Fix | neve | 2h<br>29m | fabric, batten, dobby |
-| T12 | **A status-bar button opens a short-lived board agent, so board talks need no orch**<br>• An ordinary agent with a board-policy skill loaded, for discussing and filing notes and releasing tasks on go-ahead | [`board-agent-button`](design-board-agent-button.md) | darn · light | Darn-Write | neve | 3d<br>3m | reed, board, shuttle, orch |
+| T3 | **Worktree-Create runs one at a time and spends minutes on network round trips**<br>• Five released tasks left Worktree-Create one by one over minutes, behind fetches, remote-ref reads and a weft push | [`worktree-create-serial`](design-worktree-create-serial.md) | darn · light | Code-Burler-Fix | neve | 2h<br>30m | fabric, batten, dobby |
+| T12 | **A status-bar button opens a short-lived board agent, so board talks need no orch**<br>• An ordinary agent with a board-policy skill loaded, for discussing and filing notes and releasing tasks on go-ahead | [`board-agent-button`](design-board-agent-button.md) | darn · light | Darn-Write | neve | 3d<br>4m | reed, board, shuttle, orch |
 
 #### Ready (0)
 
@@ -114,8 +108,8 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **A landing notice is not lost when set late, when dobby was down, or when the orch is absent**<br>• Close the known limits landing-watch left: a late notify_on_land, a Land passed while dobby was down, and a dropped line when no orch is live | [`landing-watch-limits`](design-landing-watch-limits.md) | darn · light | T3 | 3d<br>23m | dobby, orch, creel, board |
-| T10 | **A run lands on a parent the hub may not push to by merging on the remote**<br>• Branch protection refuses a direct push to main, so no task or beam can land on such a repository | [`protected-parent-landing`](design-protected-parent-landing.md) | darn · solid | T3 | 20h<br>3m | landing, git |
+| T8 | **A landing notice is not lost when set late, when dobby was down, or when the orch is absent**<br>• Close the known limits landing-watch left: a late notify_on_land, a Land passed while dobby was down, and a dropped line when no orch is live | [`landing-watch-limits`](design-landing-watch-limits.md) | darn · light | T3 | 3d<br>24m | dobby, orch, creel, board |
+| T10 | **A run lands on a parent the hub may not push to by merging on the remote**<br>• Branch protection refuses a direct push to main, so no task or beam can land on such a repository | [`protected-parent-landing`](design-protected-parent-landing.md) | darn · solid | T3 | 20h<br>4m | landing, git |
 
 #### Layer B (2)
 
@@ -123,8 +117,8 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | T3<br>T2<br>T8 | 45m<br>23m | fabric, loom |
-| T11 | **Merge in from parent as a task of its own in a beam, before pawl lands it**<br>• A command on a beam files a merge-in-from-parent task, run as darn with its perch on | [`parent-merge-task`](design-parent-merge-task.md) | darn · light | T10 | 4d<br>3m | pawl, workspaces, reed, landing |
+| T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | T3<br>T8 | 46m<br>24m | fabric, loom |
+| T11 | **Merge in from parent as a task of its own in a beam, before pawl lands it**<br>• A command on a beam files a merge-in-from-parent task, run as darn with its perch on | [`parent-merge-task`](design-parent-merge-task.md) | darn · light | T10 | 4d<br>4m | pawl, workspaces, reed, landing |
 
 #### Draft (1)
 
