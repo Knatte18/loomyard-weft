@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-04 15:18 UTC; every age below is as of then.
+Rendered 2026-11-04 15:19 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -30,7 +30,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Re-measure the batching hook and the edit-round rule a week after the hook reaches forks**<br>• run-all.sh on a fresh sample: firing rate, batching after a firing, edit chains split by gate fix against mid-round | [`batching-hook-remeasure`](design-batching-hook-remeasure.md) | 45m<br>45m | tools, claude |
+| R1 |  | **Re-measure the batching hook and the edit-round rule a week after the hook reaches forks**<br>• run-all.sh on a fresh sample: firing rate, batching after a firing, edit chains split by gate fix against mid-round | [`batching-hook-remeasure`](design-batching-hook-remeasure.md) | 46m<br>46m | tools, claude |
 
 ## [P2 Stress test of codexengine: every designed capability, hooks above all](project-codex-engine-trial.md) (1)
 
@@ -90,7 +90,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | T8 | 1h<br>45m | fabric, loom |
+| T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | T8 | 1h<br>46m | fabric, loom |
 | T11 | **Merge in from parent as a task of its own in a beam, before pawl lands it**<br>• A command on a beam files a merge-in-from-parent task, run as darn with its perch on | [`parent-merge-task`](design-parent-merge-task.md) | darn · light | T10 | 4d<br>1h | pawl, workspaces, reed, landing |
 
 #### Draft (1)
@@ -117,9 +117,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• No waiting line in loom or batten status and no notice while PR-Review waits for a human review | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 20h<br>4h | landing, loom, batten |
 | B2 |  | **A weft push holds the remote-refs lock over its whole transfer, so board claims queue behind it**<br>• Bolt and every weft share one remote-refs lock; a slow push stalls every claim and weft fetch for its whole send-pack | [`push-holds-remote-refs`](design-push-holds-remote-refs.md) | 1h<br>1h |  |
-| B3 |  | **A test leaves an empty /tmp/.git, which breaks go VCS stamping**<br>• An empty /tmp/.git appeared during a tier1 run and failed TestPrebuildLym; find the leaker and guard against writes outside t.TempDir | [`tmp-git-leak`](design-tmp-git-leak.md) | 46m<br>46m | testkit, gate |
-| B4 |  | **lym shuttle run --anchor hidden ends died on both engines: the provider never becomes ready**<br>• A hidden-anchor run is torn down within seconds as died, for Codex and Claude alike, with no pane capture saved | [`shuttle-hidden-anchor-dies`](design-shuttle-hidden-anchor-dies.md) | 41m<br>40m | shuttle, reed |
-| B5 |  | **lym shuttle state reads every Codex session as unknown, which hides a running turn and an interrupt**<br>• settle() lets an unproven liveness win over the signal-derived state, so a Codex strand never reads busy, idle or interrupted | [`codex-state-always-unknown`](design-codex-state-always-unknown.md) | 41m<br>40m | shuttle, codex |
+| B3 |  | **A test leaves an empty /tmp/.git, which breaks go VCS stamping**<br>• An empty /tmp/.git appeared during a tier1 run and failed TestPrebuildLym; find the leaker and guard against writes outside t.TempDir | [`tmp-git-leak`](design-tmp-git-leak.md) | 47m<br>47m | testkit, gate |
+| B4 |  | **lym shuttle run --anchor hidden ends died on both engines: the provider never becomes ready**<br>• A hidden-anchor run is torn down within seconds as died, for Codex and Claude alike, with no pane capture saved | [`shuttle-hidden-anchor-dies`](design-shuttle-hidden-anchor-dies.md) | 41m<br>41m | shuttle, reed |
+| B5 |  | **lym shuttle state reads every Codex session as unknown, which hides a running turn and an interrupt**<br>• settle() lets an unproven liveness win over the signal-derived state, so a Codex strand never reads busy, idle or interrupted | [`codex-state-always-unknown`](design-codex-state-always-unknown.md) | 41m<br>41m | shuttle, codex |
 
 #### Enhancements (4)
 
