@@ -1,6 +1,6 @@
 # Drift accept and skip refuse unknown test names, and the accepted profile is taken at accept
 
-`drift-interim-repairs` · Task · bug, drift · running · Drift-Baseline
+`drift-interim-repairs` · Task · bug, drift · running · Drift-Await
 
 ## Seen (`docs/research/drift-whole-review-2026-11-04.md`, faults 1 and 3)
 
