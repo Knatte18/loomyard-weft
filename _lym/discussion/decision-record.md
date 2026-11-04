@@ -31,4 +31,13 @@ Show the notice end to end against a live orch once, in a test or by hand, and s
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - done-entry-notice-ignores-owner-machine (class design, severity MEDIUM, open in rounds 1)
+  - failed-clear-mode-read-restart-rows-missing (class scope, severity MEDIUM, open in rounds 1)
+  - no-end-to-end-demonstration-of-landing-notice (class scope, severity MEDIUM, open in rounds 1)
+  - sweep-returns-unread-mail-for-unlisted-hub-orch (class design, severity BLOCKING, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
