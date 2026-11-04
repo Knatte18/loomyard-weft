@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -34,6 +34,51 @@
       "output": "",
       "at": "2026-11-04T11:25:55Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/shuttle-launch-delivery/_lym/landing/summary.md",
+      "at": "2026-11-04T12:18:32Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-04T11:37:34.766294126Z",
+          "end": "2026-11-04T11:37:34.800000581Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-04T12:12:36.176421412Z",
+          "end": "2026-11-04T12:12:36.201446313Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-04T11:37:35.009279774Z",
+          "end": "2026-11-04T12:11:49.297983655Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-04T12:11:49.776295959Z",
+          "end": "2026-11-04T12:12:36.119864483Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-04T12:12:36.327229093Z",
+          "end": "2026-11-04T12:17:44.190429586Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-04T12:17:44.276655828Z",
+          "end": "2026-11-04T12:17:44.277193833Z"
+        }
+      ]
     }
   ],
   "product": {
