@@ -1,50 +1,32 @@
-# Batten commits its driver records; a yielded step saves no envelope
+# batten: commit driver records; no drive envelope per yielded poll
 
-Fixes issue #43: a hub's prime collected thousands of untracked files under `_lym/shed/<slug>/`, all written by the Go driver of a `lym batten run`.
+`lym batten`'s driver wrote its records under `_lym/shed/<slug>/` (`drive-reports/`, `tackler/`, `arbiter/`) but never committed them, so a hub's weft checkout stayed permanently dirty and the records were lost with the checkout.
+The driver also saved a stop envelope on every pass, including passes that yielded, which is why a run waiting at a row produced one `drive-envelope-<timestamp>.json` roughly every 30 seconds.
 
-## Cause
+This change fixes both causes.
 
-Two faults combined:
-
-- **One envelope per pass.**
-  `sheddriver.Run` saved every step's stop envelope under `drive-reports/` before checking whether the step yielded.
-  While batten's Run-Shed row watches a child run, dobby starts a pass about every 30 seconds and each pass yields, so each pass left one `drive-envelope-*.json` that nothing reads.
-- **Batten never committed its driver directories.**
-  `battenRunCommitPaths` staged the status, seed, notice marker, settle records and child-recipe record, but not `drive-reports/`, `tackler/` or `arbiter/`.
-  Loom's `statusCommitPathspec` stages all three; batten's did not, so every stop report, envelope and agent attempt in the prime stayed untracked.
-  Batten also wired no `CommitRecords` seam and its park committed nothing, so a stop report written after the transition's commit was never staged.
+Closes #43
 
 ## Changes
 
-- `internal/sheddriver`: the yield check now runs before `SaveEnvelope`, so a yielded step saves no envelope.
-  A yield already decided nothing and wrote no settle record or report; now it writes no file either.
-- `internal/shedrun`: `DriverRecordsRel` returns the anchor-relative drive-reports, arbiter and tackler directories that hold a file.
-  An empty directory is left out, since a pathspec matching nothing fails the commit.
-  Loom's `statusCommitPathspec` uses it in place of its three inline checks, so both recipes stage the same driver records.
-- `internal/battencli`:
-  - `battenRunCommitPaths` appends `DriverRecordsRel`, so every status transition carries the driver records with it.
-  - The new `commitRunRecords` commits the run's records outside a transition and starts their push.
-    It skips the commit while the pair is mid-merge and logs a push that fails to start.
-  - Batten's driver now wires `CommitRecords` at a done stop, and its hand-back `Park` commits the records before writing the park marker.
-    A failed commit at the park is logged and the run is still parked, as loom's park does.
+- `sheddriver`: a step that yields now ends the pass before its envelope is saved, so a wait at a row writes no file.
+  Only the envelope of a stop the driver decides is saved.
+- `battencli`: the run's records commit now stages the driver's `drive-reports`, `tackler` and `arbiter` directories, each when it holds a file.
+  The driver writes a hand-back's stop report and a done step's envelope after the status transition's own commit, so two stops commit them explicitly through a new `commitRunRecords`:
+  the hand-back's `Park` seam, and the new `CommitRecords` seam at a done stop.
+  A merge in progress on the pair commits nothing, and the next commit carries the records.
+  A failed commit at a hand-back is logged and the run still parks.
+- `sheddriver`: a done stop with `friction: failed` calls `CommitRecords` a second time after its hand-back report is written, so that report is committed too.
+- `shedrun`: new `DriverRecordsRel` returns the driver-record directories that hold a file, and `HoldsFile` is now exported from there.
+  `loomcli`'s statusCommitPathspec and the landing code use these, replacing `loomcli`'s private copy of `holdsFile`.
 
-## Design decisions
+## Design notes
 
-- Drive reports stay durable under `_lym`, where `shedrun` declares them and where loom commits them.
-  The issue offered moving them to `.lym/` if they were transient.
-  They are durable: `reportengine` counts drive reports from the committed run records, and the tackler and arbiter attempts are what a resumed machine reads.
-- Batten's `status.json` still shows as modified while Run-Shed watches a child.
-  `battencli/commitstatus.go` documents this as a deliberate trade: the no-op-transition skip declines one commit per self-bounce.
-  The file is tracked, and the next real transition commits it.
-- Files already left untracked in a hub are not migrated.
-  The next commit of that run's records stages its driver directories whole, including the old envelopes.
-  An operator who wants the old envelopes gone can delete them by hand first.
+- The directories stay under `_lym/` (tracked) rather than moving to `.lym/`: the tackler and arbiter records and the stop reports are durable run history that should sync with the run, and the per-poll volume was the actual problem.
+- Each directory is staged only when it holds a file, because a pathspec that matches nothing fails the commit.
+- `CommitRecords` must be a no-op over records already committed, since the friction path calls it twice.
 
-## Tests
+## To check by hand
 
-- `TestGoDriver_Settle`'s yield row asserts that no envelope is saved.
-- `TestBattenRunCommitPaths` covers the driver directories: a directory holding only an empty attempt directory is left out, and one holding a file is staged.
-- The new `TestCommitRunRecords` covers commit-and-push, nothing committed, mid-merge, a failed merge-state read, a failed commit and a push that fails to start.
-- `TestBattenDriverDeps` now requires the `CommitRecords` seam.
-- `battenCLI` gains a `recordsDeps` override, which the park and `CommitRecords` seams read through `runRecordsDeps`.
-  The run tests' fake receiver sets stubs that find nothing to commit, since its temp directory is no git pair.
+- Run `lym batten` through a wait at a row and through a hand-back, then confirm `git status` in the weft checkout is clean and no `drive-envelope-*.json` accrues per poll.
+- `battencli`: the `Park` seam's commit and `CommitRecords` are covered by seam-level tests with a fake `recordsDeps`; the real fabric commit over a git pair is not exercised by them.
