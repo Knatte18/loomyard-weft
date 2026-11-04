@@ -17,6 +17,12 @@ The chair waits for the assistant with `lym shuttle await <end marker>` and read
 That is a shuttle-spawned agent on another engine whose result returns through a file and an end marker, a pattern this note's lookup agent can reuse.
 No writer lookup runs on Codex yet, and nothing spawns a lookup agent through shuttle.
 
+## Built since (tidy, 2026-11-04)
+
+Task `codex-trial-1-fixes` (`cd897ef0`) made `lym shuttle run --model` take the model spec `lym shuttle open` takes, `<alias>[<effort>]` or `<engine>:<model-id>[<effort>]`, both through one `resolveModelSpec`.
+The registry picks the engine from the alias, so `lym shuttle run --model 'luna[high]'` runs on Codex whatever `shuttle.yaml` names, and the `--effort` flag is gone.
+A shuttle-spawned lookup agent on Codex therefore needs no new engine selection in shuttle: a spec string is enough.
+
 ## Open
 
 - How the writer asks for a shuttle-spawned lookup and gets its answer back: a `lym` verb that spawns the agent and waits for its reply, much as a fork returns only what is relevant (note `planner-fork-lookups`).

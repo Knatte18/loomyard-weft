@@ -94,6 +94,8 @@ The 33-of-101 serial turns the turn audit found are still there, so the ideas ab
 `plan-edits-before-gate` (`1834cebf`) removed the batching sentences from the stencils, `loom-template-plan.md`, `loom-template-discussion.md` and `twill-directive.md` among them.
 The one rule (read in one message, decide every edit, make them in one message, one gate run) is now the shipped heddle entry `lym-plan-edits-before-gate`, rendered after `lym-batching`.
 Its effect on agent behaviour is not measured; `agent-turns-effect` measures it.
+Task `turn-savings-measure` (`3207d97e`, 2026-11-04) has since measured project `agent-turns` as a whole in `docs/research/turn-savings-measure-2026-11-04/report.md`, over the 20 most recent darn runs and 4 tapestry runs: the darn writer issues 2.05 calls a turn against 1.08, and shell edits fall from 339 calls to 21.
+The report covers darn and Webster, not the Plan writer's serial lookups, so those stay unmeasured here; the rule's own effect on edit chains is the open question of note `batching-hook-remeasure`.
 `plan-reviewer-batching` (`5227aeaa`) added a wave structure for the fanned Plan reviewer's pre-read in `burler-fork-reading.md`; it too is unmeasured.
 
 ## Split writing built and benched (landed 2026-11-01)

@@ -12,7 +12,7 @@ A stress test proves, on real launches, that the engine does everything its desi
 The package doc `internal/shuttleengine/codexengine/doc.go` is the spec; each part below tests one area of it against real Codex sessions launched through `lym shuttle`.
 
 1. Home and trust: the shared lym Codex home under `CODEX_HOME`, `auth.json` and sessions linked to the operator's home, `config.toml` rendered whole under a file lock, trusted roots for a worktree and a linked worktree, dropped roots for a gone folder, the read-back Warn, and the folder-trust prompt backstop.
-2. Sandbox and refusals: `-a never -s workspace-write`, the records checkout as a writable root, a committed `.codex/rules` refusing the launch and a committed `.codex/config.toml` named in a Warn.
+2. Sandbox and refusals: `-a never -s workspace-write`, the records checkout as a writable root, a `.codex/rules` folder on disk, tracked by git or not, refusing the launch and a `.codex/config.toml` on disk named in a Warn (the checks read the folders on disk since `codex-trial-1-fixes`).
 3. Hooks: SessionStart, UserPromptSubmit, Stop with its reply, PermissionRequest and PostToolUse each reach the run's events file or activity stamp; an interrupt reads as interrupted through `turn_aborted`; the context size from `token_count`.
 4. Shell guards: every installed guard row denies its command through the PreToolUse hook with its Codex steer, the prompt file carries the notices, and a hook that fails to run is seen failing open.
 5. Pane and send: the composer, the busy line and the trust prompt read right; a long or multi-line send through the guarded paste-then-Enter lands whole; a dead pane after exit.
