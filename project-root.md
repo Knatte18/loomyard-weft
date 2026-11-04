@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-04 14:11 UTC; every age below is as of then.
+Rendered 2026-11-04 14:12 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -41,7 +41,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | T3<br>T2<br>T8 | 41m<br>19m | fabric, loom |
+| T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | T3<br>T2<br>T8 | 41m<br>20m | fabric, loom |
 
 ### Draft (1)
 

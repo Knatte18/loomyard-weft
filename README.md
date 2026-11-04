@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-04 14:11 UTC; every age below is as of then.
+Rendered 2026-11-04 14:12 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -56,7 +56,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Fix the Codex trial faults: shuttle run takes a model spec, open and codex, a test writing the real home**<br>• shuttle run --model takes alias[effort] and picks the engine; open starts codex; a test stops writing ~/.lym/codex; committed-.codex check wording | [`codex-trial-1-fixes`](design-codex-trial-1-fixes.md) | darn · light | PR-Review | neve | 2h<br>35m | shuttle, codex, testkit |
+| T2 | **Fix the Codex trial faults: shuttle run takes a model spec, open and codex, a test writing the real home**<br>• shuttle run --model takes alias[effort] and picks the engine; open starts codex; a test stops writing ~/.lym/codex; committed-.codex check wording | [`codex-trial-1-fixes`](design-codex-trial-1-fixes.md) | darn · light | Finalize | neve | 2h<br>35m | shuttle, codex, testkit |
 
 #### Ready (0)
 
@@ -114,7 +114,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | T3<br>T2<br>T8 | 41m<br>19m | fabric, loom |
+| T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | T3<br>T2<br>T8 | 41m<br>20m | fabric, loom |
 
 #### Draft (1)
 
