@@ -1,6 +1,6 @@
 # Codex trial: home, trust, sandbox and refusals
 
-`codex-trial-home-sandbox` · Task · research, codex, shuttle · draft
+`codex-trial-home-sandbox` · Task · research, codex, shuttle
 
 ## Goal
 
