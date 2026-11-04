@@ -1,6 +1,6 @@
 # lym ide opens configured files on start, rendered markdown for a beam README
 
-`ide-open-files` · Task · enhancement, ide, config · running · Drift-Baseline
+`ide-open-files` · Task · enhancement, ide, config · running · Drift-Await
 
 ## Seen (operator, 2026-11-03)
 
