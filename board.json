@@ -815,7 +815,7 @@
       "isolated": false,
       "brief": "Hundreds of defunct lym children pile up under dobby and orch watch, and tender lists them as live",
       "body": "## Seen (hub orch, 2026-11-03 ~20:50)\n\n`lym tender status` listed about 170 `batten` processes as `owned`, `orphan: false`, under slugs that landed hours or a day ago.\n`ps` shows every one as `[lym] \u003cdefunct\u003e`: zombies whose parent never reaped them.\n\nZombies per parent at that time:\n\n- 170 under the loomyard prime's `lym beam dobby` (up 25 h).\n- 31 under the loomyard `lym orch watch` (up 25 h).\n- 14 under the `cs` hub's `lym beam dobby` and 15 under its `lym orch watch` (up 5.5 h).\n\nSo both dobby and the orch watcher start child `lym` processes and never `Wait` on them, and the tender registry reads a zombie as a live owned process.\n\n## Idea\n\n- Dobby and `lym orch watch` reap every child they start (wait on it, or detach it so init reaps it).\n- The process registry treats a zombie (state `Z`) as gone, so `lym tender status` and `lym tender reap` stop listing landed runs as live.\n",
-      "status": "running · Worktree-Create",
+      "status": "running · Record-Write",
       "created": "2026-11-03T19:45:16Z",
       "revised": "2026-11-04T10:22:33Z",
       "profile": "light"
