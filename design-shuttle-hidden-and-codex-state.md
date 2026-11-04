@@ -1,6 +1,6 @@
 # Hidden-anchor shuttle runs start, and lym shuttle state reads Codex turns
 
-`shuttle-hidden-and-codex-state` · Task · bug, shuttle, reed, codex · running · Code-Bouncer
+`shuttle-hidden-and-codex-state` · Task · bug, shuttle, reed, codex · running · Code-Burler-Review
 
 Two shuttle faults found in the Codex trial of hooks, shell guards and skills (`docs/research/codex-engine-trial-hooks-guards-skills-2026-11-03.md`), 2026-11-04. Fix both.
 
