@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-04 13:42 UTC; every age below is as of then.
+Rendered 2026-11-04 13:45 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -50,7 +50,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Fix the Codex trial faults: shuttle run takes a model spec, open and codex, a test writing the real home**<br>• shuttle run --model takes alias[effort] and picks the engine; open starts codex; a test stops writing ~/.lym/codex; committed-.codex check wording | [`codex-trial-1-fixes`](design-codex-trial-1-fixes.md) | darn · light | Darn-Write | neve | 1h<br>5m | shuttle, codex, testkit |
+| T2 | **Fix the Codex trial faults: shuttle run takes a model spec, open and codex, a test writing the real home**<br>• shuttle run --model takes alias[effort] and picks the engine; open starts codex; a test stops writing ~/.lym/codex; committed-.codex check wording | [`codex-trial-1-fixes`](design-codex-trial-1-fixes.md) | darn · light | Darn-Write | neve | 1h<br>8m | shuttle, codex, testkit |
 
 #### Ready (0)
 
@@ -64,7 +64,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | `draft` **Codex trial: hooks, shell guards and skills**<br>• Seven cases on real Codex launches against the package doc | [`codex-trial-hooks-guards-skills`](design-codex-trial-hooks-guards-skills.md) | darn · docs | T2 | 18h<br>10m | codex, shuttle |
+| T5 | `draft` **Codex trial: hooks, shell guards and skills**<br>• Seven cases on real Codex launches against the package doc | [`codex-trial-hooks-guards-skills`](design-codex-trial-hooks-guards-skills.md) | darn · docs | T2 | 18h<br>13m | codex, shuttle |
 | T6 | `draft` **Codex trial: pane, sends, creel by the pane path, and load**<br>• Six cases, three sessions at once and one darn run with a Codex reviewer seat | [`codex-trial-pane-load`](design-codex-trial-pane-load.md) | darn · docs | T5 | 18h<br>18h | codex, shuttle, creel |
 
 ### Notes (0)
@@ -85,7 +85,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Review Drift as a whole and redesign it from the trials**<br>• Two C# trials found many Drift faults, mostly in agent judgment and gaps in the flow; map the whole and propose one design | [`drift-whole-review`](design-drift-whole-review.md) | darn · docs | Darn-Write | neve | 18h<br>17h | drift, stencil, loom |
+| T1 | **Review Drift as a whole and redesign it from the trials**<br>• Two C# trials found many Drift faults, mostly in agent judgment and gaps in the flow; map the whole and propose one design | [`drift-whole-review`](design-drift-whole-review.md) | darn · docs | Drift-Verify | neve | 18h<br>18h | drift, stencil, loom |
 
 #### Ready (0)
 
@@ -117,7 +117,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• No waiting line in loom or batten status and no notice while PR-Review waits for a human review | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 18h<br>3h | landing, loom, batten |
 | B2 |  | **Worktree-Create runs one at a time and spends minutes on network round trips**<br>• Five released tasks left Worktree-Create one by one over minutes, behind fetches, remote-ref reads and a weft push | [`worktree-create-serial`](design-worktree-create-serial.md) | 2h<br>2h | fabric, batten, dobby |
-| B6 |  | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | 11m<br>11m | fabric, loom |
+| B6 |  | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | 14m<br>14m | fabric, loom |
 
 #### Enhancements (7)
 
