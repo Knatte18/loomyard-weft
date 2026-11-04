@@ -1,55 +1,40 @@
-# Prime status-bar button opens a board agent; board policy gets a skill
+# Prime `board` button opens a short-lived board agent
 
-Talking through one or a few board entries no longer needs the orch.
-The prime's reed status bar gains a `board` button.
-It opens an ordinary agent, the same kind `lym shuttle open` opens, with two skills loaded: the new `ly:board-policy` and `ly:board`.
-The orch now loads `ly:board-policy` too, so the board policy is written in one place.
+Board work, such as filing, merging, promoting or releasing a few entries, went through the orch.
+The orch is a long-lived session that carries every run's notices and rules, which is heavy for a talk about one or a few notes.
+The prime's status bar now has a `board` button that opens an ordinary, short-lived agent for that work.
+The board holds the agent's state, so it needs no handoff and no context cycle.
 
 ## What changes
 
-- **`lym shuttle open --skill <name>`**, repeatable.
-  The skills go on `OpenSpec.Skills`.
-  `Runner.Open` refuses them before it creates anything when the engine lacks `SkillLoader`.
-  Claude's `OpenLaunch` puts the skill-load message on the fresh launch line as the session's first turn, the same way a run's launch does, and refuses a message over the launch limit.
-  The resume line carries no message, so a resumed session does not load the skills a second time.
-- **New skill `plugins/ly/skills/board-policy/SKILL.md`.**
-  It holds the policy that was in the orch role's "The board" section: one finding per note, a body holds the current design only, propose bundles and wait for approval, and release only on a named go-ahead.
-  It also takes the priority, recipe, profile and drift-scope rules.
-  A closing section tells a session opened from the button what to do.
-  It reads the board and code itself, talks each case through before writing, and splits an entry into tasks on the operator's approval.
-  It sends cases that belong to the orch back to the operator, and it ends without a handoff.
-  `ly:board` is unchanged and holds only the board mechanics, so run agents that load it to file notes do not get the policy.
-- **Orch role** (`contracts/orchrole/orch-role.md`).
-  "The board" now points to `ly:board-policy` and keeps only the orch's own rules: recording decisions on held tasks or beams, and never running an exploration as its own background agent.
-  The priority rule and the darn-recipe rule moved into the skill.
-  `orchSkills` adds `ly:board-policy`, so the orch loads it at every launch and at every skill reload.
-- **reed templates** (POSIX and Windows).
-  The `prime` group is no longer empty.
-  It lists the beam set (code, terminal, agent, distill, refresh) plus `board`, which asks `Board agent name:` (default `board`) and runs `lym shuttle open --role {answer} --model 'opus[high]' --skill ly:board-policy --skill ly:board`.
-- `docs/overview.md`, the `orchcli` package doc, the shuttle and claudeengine package docs, the plugin skill index and the `open` help text describe the above.
+- **`board` button.**
+  `internal/reedengine/template_posix.yaml` and `template_windows.yaml` give the `prime` group buttons in place of the empty list: `code`, `terminal`, `agent`, `board`, `distill` and `refresh`.
+  `board` uses the `ask` prompt (`Board agent name:`, default `board`) and runs `lym shuttle open --role {answer} --model 'opus[high]' --skill ly:board-policy --skill ly:board`.
+  No new role: the skills make it a board agent, so the same way can make other kinds of agent.
+- **`lym shuttle open --skill`.**
+  The flag is repeatable, and the skills load in the order given, in the opened session's one first turn.
+  `shuttleengine.OpenSpec` gains `Skills`.
+  `claudeengine` puts the skill-load message on the fresh launch line as the first turn and on no resume line.
+  `Runner.Open` refuses a non-empty list for an engine that cannot load skills, and the engine refuses a message past the launch limit, both before anything is created.
+- **`ly:board-policy` skill.**
+  The policy for keeping the board moves out of the orch role's "The board" section and the orch's rule list into `plugins/ly/skills/board-policy/SKILL.md`, listed in `INDEX.md`.
+  `ly:board` stays the mechanics only, since run agents load it to file notes.
+  The orch role now points to the skill, keeping only its own rules: recording a decision on a run's task, and no exploration as a background agent.
+  `orchSkills` in `internal/orchcli/start.go` loads `ly:board-policy` into the orch session.
+- **Board agent's own section.**
+  The skill's last section covers a session opened for board work: read the board and code itself, talk each case through before writing, split an entry into tasks on approval, and hand a case about a run in flight back to the operator naming the orch.
+- `docs/overview.md` and the `orchcli`, `shuttleengine` and `claudeengine` package docs describe the new flag and skill.
 
 ## Design decisions
 
-- **Only the prime gets the button.**
-  A session opened in a beam carries the beam's slug in its strand name.
-  The board's task guard treats any slug-carrying session other than an orch as a run agent and refuses its task creation and promotes.
-  So a board agent in a beam could not promote notes.
-  In the prime the name is `<shortname>:<role>` with no slug, so promotes and releases work.
-- **The skill load happens at launch.**
-  It is not typed into the pane after start.
-  This matches how `Runner.start` delivers a run's skills (PATTERN-parent-directive: skills go on the launch spec), and it needs no wait for the pane to be ready.
-- **Split parts are not flagged discussed.**
-  Only lym writes the `discussed` flag and the stored record.
-  For a discussed entry, the skill tells the agent to put each part's share of the Sketch in that part's body, and each part then runs its own Discussion.
-  The note `discussed-task-split` describes a split into discussed parts, which still needs lym to write the record for each part.
+- The policy lives in one skill that both the orch and the board agent load, so it cannot drift between two copies.
+- The orch keeps decisions on a task a run holds and anything about a run in flight; the skill says so, and the board agent hands such cases back.
+- Only the prime carries the `board` button: a board agent opened in a beam carries the beam's slug, and the board refuses a task write from a slug-carrying session.
+- The first-turn skill load is the only turn an opened session takes, so `lym shuttle open` stays a no-prompt open for callers that pass no `--skill`.
 
-## Open risks
+## To check by hand
 
-- **Codex.**
-  The peer task `codex-trial-1-fixes` gives Codex an `OpenLaunch`.
-  Once both land, that `OpenLaunch` must honour `spec.Skills`, or a Codex open with `--skill` will ignore them without any error.
-  `Runner.Open` only checks that the engine is a `SkillLoader`, and Codex is one.
-- **Hubs with a custom beam group.**
-  A hub layer that customised the `beam` buttons but set no `prime` group used to see its own beam set in the prime.
-  It now sees the shipped prime set, because a group written in a layer replaces only that group.
-  Such a hub can copy its beam entries into a `prime` group.
+- Click the `board` button in a live prime: it should ask for a name, open a window, and the agent should have both skills loaded before its first reply.
+- Confirm the orch session still gets `ly:board-policy` after a restart and behaves as before on release and bundling.
+- The orch role lost two lines the skill now carries, `Never set a priority on a board entry unless the operator names one` and `never set recipe: darn on a board entry yourself`; check that the skill's wording matches the intent and that the rule stays in force for an orch that loads the skill.
+- `template_windows.yaml` carries the same buttons and the same `cd {worktree} && …` `run` lines as the posix template; no Windows session ran them.
