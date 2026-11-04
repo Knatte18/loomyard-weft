@@ -1006,6 +1006,25 @@
       "body": "Found in the codex-trial-home-sandbox trial.\n\n`lym shuttle open --role x --model 'luna[medium]'` resolves the codex engine and is refused: `shuttle: open: the engine \"codex\" cannot open a session with no prompt`.\n\n`open --help` lists the codex aliases (astra, luna, sol) in `--list-models` and names `\u003cengine\u003e:\u003cmodel-id\u003e` specs without saying a Codex model cannot be opened. Codex takes its first turn as the positional prompt, so open cannot start it.\n\nExpected: `--list-models` and the help say which engines open can start, or open refuses a codex spec before it creates anything with a message naming the way forward (lym shuttle run with the engine set in shuttle.yaml).",
       "created": "2026-11-04T11:50:37Z",
       "revised": "2026-11-04T11:50:37Z"
+    },
+    {
+      "id": 1094,
+      "handle": "B5",
+      "slug": "codex-test-writes-real-home",
+      "title": "A codexengine test writes the real ~/.lym/codex",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "codex",
+        "testkit"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "TestPrepare_AppendsStandingPassages leaves /tmp test roots in the real lym Codex home trust record",
+      "body": "Found in the codex-trial-home-sandbox trial.\n\n`~/.lym/codex/lym-trust.json` and `config.toml` held trusted roots under `/tmp/lym-1000/\u003cid\u003e/TestPrepare_AppendsStandingPassages\u003cn\u003e/001/main` and `.../wt`, rewritten at each gate run.\n\nCause: `TestPrepare_AppendsStandingPassages` in `internal/shuttleengine/codexengine/prepare_test.go` sets `engine.dirs.Board = t.TempDir()` after `newEngine(anchor)`. The fixture's codex.yaml, which points `home` and `operator_home` at the test's folders, is then no longer found, so the config resolves the template's `~/.lym/codex` and `~/.codex` and Prepare writes the real lym home.\n\nExpected: the test keeps the fixture's board dir (or writes its own codex.yaml there); a test must never reach the operator's home.",
+      "created": "2026-11-04T11:50:40Z",
+      "revised": "2026-11-04T11:50:40Z"
     }
   ],
   "prime_owner": "neve",
