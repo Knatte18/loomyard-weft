@@ -1,64 +1,38 @@
-# Fix the Codex trial faults in shuttle run, shuttle open and codexengine
+# shuttle: run takes a model spec, open starts codex, test spares ~/.lym
 
-The first Codex engine trial (`docs/research/codex-engine-trial-home-sandbox-2026-11-03.md`) found four faults.
-This change fixes them before the next Codex trials run.
+Fixes the faults the first Codex engine trial found (`docs/research/codex-engine-trial-home-sandbox-2026-11-03.md`).
 
-## 1. `lym shuttle run --model` takes a model spec
+## What changes
 
-`run --model luna[medium]` used to pass the string to shuttle.yaml's engine as a provider model id.
-Claude then stopped with `model_not_found`, and the run sat until its timeout.
-
-- `run --model` now resolves through the same path as `open --model` (`shuttleCLI.resolveModelSpec` in `internal/shuttlecli/open.go`).
-  It takes `<alias>[<effort>]` or `<engine>:<model-id>[<effort>]`, and an alias picks its engine from the model registry, so `luna` runs on codex and `sonnet` on claude.
-  A malformed spec or an unknown alias is refused before any engine prepares.
-- The `--effort` flag is gone, since the spec's bracket carries the effort.
-- A model the engine rejects now fails the run at once.
-  `SessionSignal` gains `ModelRejected`, and claudeengine sets it on a `StopFailure` whose `error` is `model_not_found`.
-  `Run.retryAPIError` ends such a run `api-error` at once, whatever `APIErrorRetries` says, because no re-send changes the model.
-  As before, a run whose output files all exist ends `done`, and a pause covering the run holds the end.
-  The run envelope reports the error as `apiError`.
-
-## 2. `lym shuttle open` starts a Codex session
-
-The codex engine had no `SessionOpener`, so `open --model 'luna[medium]'` was refused even though `--list-models` lists the Codex aliases.
-`Codex.OpenLaunch` now does the following:
-
-- It validates the model choice and the permission mode (bypass only).
-- It readies the lym Codex home as `Prepare` does, so the folder trust is rendered and a `.codex/rules` folder still refuses before anything is written.
-- It returns the Codex command with no hooks and no first turn, so the session waits at its composer.
-
-The opened session carries no shell guard, no creel hooks and no session id, and it writes nothing into the session directory.
-Its resume line is empty: Codex mints its session id at the first turn, so a revive starts no Codex and `Runner.Open`'s chain ends the strand.
-
-`Prepare` and `OpenLaunch` share `readyHome` and `validateChoice`.
-The launch line's command part is now `codexCommand`, which leaves out `--dangerously-bypass-hook-trust` when there are no hooks and leaves out the positional prompt when there is no first turn; a run's line is unchanged.
-The `open` help now says that an engine unable to open a session is refused before anything is created, and that a codex session has no shell guard and no creel hooks.
-
-## 3. A test wrote the real `~/.lym/codex`
-
-`TestPrepare_AppendsStandingPassages` told the engine an empty board dir.
-That hid the fixture's local codex.yaml layer, so the config fell back to the template's `~/.lym/codex` and `~/.codex`, and every gate run added `/tmp` roots to the operator's trust record.
-The test now writes the fixture's homes as the board's base layer, and it asserts that the launch readied the fixture's lym home.
-The stale `/tmp` roots left in `~/.lym/codex` are not removed here, as the entry says: the next real launch drops roots whose folder is gone.
-
-## 4. The `.codex` check
-
-The check reads `.codex/rules` and `.codex/config.toml` on disk whether git tracks them or not, while the package doc said "committed".
-Codex reads both either way, so the presence check is the one the safety argument wants.
-The code is unchanged, and the package doc, the comments and the messages now say "in the worktree, tracked by git or not".
-The refusal's way forward fits any launch: remove the directory from the worktree (in a commit when git tracks it) and launch again, or launch on an engine other than codex.
-It no longer names a review round's assist model key.
+- `lym shuttle run --model` takes the model spec `lym shuttle open` takes: `<alias>[<effort>]` or `<engine>:<model-id>[<effort>]`, such as `sonnet[medium]` or `luna[high]`.
+  The registry picks the engine from the alias, so `luna` runs on codex whatever `shuttle.yaml` names.
+  Before, the string went to `shuttle.yaml`'s engine as a provider model id, so `luna[medium]` reached Claude, which stopped with `model_not_found`.
+  The `--effort` flag is removed; the effort is the spec's bracket.
+  `run`'s output gains an `apiError` field when the outcome is `api-error`.
+- A model the provider rejects ends the run at once with outcome `api-error`, whatever the spec's `APIErrorRetries`, since no re-send changes the model.
+  The claude engine marks `model_not_found` as such through the new `SessionSignal.ModelRejected`; an engine that does not set it keeps the old behaviour, a wait to the timeout.
+  Every `api-error` end now removes the run's own-window strand and saves its last pane capture to `died-capture.txt`, as a died run does, since the pane is still live and no caller is guaranteed to stop it.
+- `lym shuttle open` starts a codex session through the new `codexengine.OpenLaunch`: Codex under the lym home with no prompt, no hooks and no shell guard, waiting at its composer.
+  It readies the home and refuses under `.codex/rules` as `Prepare` does.
+  Its resume line is empty, so a revive starts no Codex and the chain after it ends the strand.
+  An engine without `SessionOpener` is still refused before anything is created; the `open` help says so.
+- `TestPrepare_AppendsStandingPassages` keeps the fixture's codex home: the told board gets a base `codex.yaml` naming the fixture's homes, and the test asserts the trust roots land in the fixture's lym home.
+  It no longer adds `/tmp` roots to the operator's `~/.lym/codex` and `~/.codex`.
+- The `.codex` check now says what it does.
+  The refusal on `.codex/rules` and the Warn on `.codex/config.toml` read the folders on disk, tracked by git or not, since Codex reads them either way; the package docs, comments and test names follow.
+  The refusal's way forward is worded for the launch at hand: remove the directory from the worktree, in a commit when git tracks it, then launch again, or launch on an engine other than codex.
 
 ## Design decisions
 
-- `--effort` was dropped rather than kept as an override beside the bracket, so `run` and `open` take the same flag with the same meaning.
-- The rejected-model end lives in the shared API-error watch, keyed on a provider-neutral signal field; the engine alone decides which provider error means a rejected model (PATTERN-shuttle-provider-seam).
-- An opened Codex session's resume ends the strand instead of starting a fresh Codex, because Codex cannot name the session to resume.
-  `codex resume --last` was not used: it would pick the newest session of the shared lym home, which may belong to another worktree.
+- Both checks stay on-disk rather than tracked-only, because the safety argument is about what Codex loads, and an untracked allow rule lifts the sandbox as much as a committed one.
+- `ModelRejected` is decided by the provider's engine and carried on the session signal, so the shuttle engine stays free of provider error strings.
+- `run` and `open` share one `resolveModelSpec`, so the two verbs cannot drift on what a spec means.
 
-## Limits
+## To check by hand
 
-- Only claudeengine reports a rejected model.
-  Codex has no turn-end-on-error hook in lym's events file, so a Codex model the provider rejects still waits out the run's deadline.
-  A Codex alias the registry does not hold is refused before launch.
-- The `model_not_found` value comes from the trial's observation of Claude's `StopFailure`.
+- The stale `/tmp` roots a past test run left in `~/.lym/codex` are not removed; the next real codex launch drops roots whose folder is gone.
+- A rejected model has an at-once end only on the claude engine; this diff adds no codex signal that sets `ModelRejected`.
+  Check that a codex run on an unknown model slug still ends in a bounded time.
+- `lym shuttle open --model 'luna[medium]'` was exercised by unit tests only; open it once against a real Codex install to see the composer come up.
+- Code review left `rejected-model-strand-left-live` open (design finding, severity medium): a rejected-model end must remove its own-window strand.
+  Later fixes remove the strand on every `api-error` end in `endOnAPIError`; check that path in `internal/shuttleengine/apierrorretry.go` leaves no live pane.
