@@ -17,6 +17,7 @@ Operator 2026-10-04: the board needs an interactive view with filters, reachable
   Since `board-no-project-heading` (`d54f5181`, 2026-11-01) a project with open sub-projects puts its own Tasks, Notes and Done under one heading after the sub-projects: `Own entries` for any project.
   Since `board-root-p0` (`a99b3b4d`, 2026-11-01) the root is a project like the others, handle `P0`: it opens with the same heading, renders to its own `project-root.md`, and has its `##` section last in `README.md`; the `## Prime` wrapper and the `No project` heading are gone, and the slug `root` is reserved.
   Since `project-design-link` (`ffb53ae1`, 2026-11-01) a project's body renders to `design-<slug>.md` and the project's facts line links its slug to that file, in `README.md` and in project files alike.
+  Since `project-body-in-render` (`9cf88e2a`, 2026-11-04) `project-<slug>.md` also shows the project's body under its brief, with the body's headings shifted so the shallowest sits at level two; `design-<slug>.md` and the link stay, and `README.md`'s project sections stay without the body.
   Since `readme-shows-discussed` (`1bbcc3b1`, 2026-11-03) a row for a discussed entry stacks a `Sketch` link to `decision-<slug>.md` under its slug, in every table of every board file.
   The priority column is headed `Prio` and belongs to Notes tables only.
 
