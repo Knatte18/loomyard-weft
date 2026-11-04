@@ -1,6 +1,6 @@
 # Let the pr-reviewer read and edit on GitHub
 
-`pr-reviewer-github-access` · Task · enhancement, landing, stencil · running · Drift-Recheck
+`pr-reviewer-github-access` · Task · enhancement, landing, stencil · running · Describe
 
 Imported from [issue #45](https://github.com/Knatte18/loomyard/issues/45).
 
