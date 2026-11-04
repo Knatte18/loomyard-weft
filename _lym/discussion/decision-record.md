@@ -29,6 +29,12 @@ A create normally takes about 10 s, so the slowness is mostly GitHub's push path
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-04): The create change stops at the prime lock's span
+
+Decision: This run delivers the narrowed prime lock: independent creates no longer wait on each other's network calls. Left unmade, and accepted: the board claim's Bolt push stays synchronous (it is the owner-machine claim), the weft remote-refs lock queue goes to note push-holds-remote-refs, merging the two Bolt round trips is not done, and the Open-Window delay is not diagnosed. summary.md's Known limits already state these; nothing more is asked of the fixer.
+
+Rationale: The serialization across runs was the fault the operator saw; the remaining items are either required for correctness (the synchronous claim) or need their own design, so they stay out of this darn.
+
 ## Constraints
 
 ## Auto-mode assumptions
