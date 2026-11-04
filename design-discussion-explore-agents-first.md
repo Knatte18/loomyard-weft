@@ -1,6 +1,6 @@
 # Discussion writers start their exploration with explore subagents
 
-`discussion-explore-agents-first` · Task · enhancement, stencil, loom · running · Worktree-Create
+`discussion-explore-agents-first` · Task · enhancement, stencil, loom · running · Record-Write
 
 ## Seen (`docs/research/writer-lookups-measure-2026-11-04/report.md`)
 
