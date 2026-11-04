@@ -2,8 +2,6 @@
 
 `codex-trial-pane-load` · Task · research, codex, shuttle, creel · draft
 
-Depends on: [`codex-trial-hooks-guards-skills`](design-codex-trial-hooks-guards-skills.md)
-
 ## Goal
 
 Test parts 5 and 7 of project `codex-engine-trial` against real Codex sessions launched through `lym shuttle`: the pane, sends, creel by the pane path, and load, as `internal/shuttleengine/codexengine/doc.go` and `internal/creelengine/doc.go` describe them.

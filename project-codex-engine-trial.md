@@ -1,6 +1,6 @@
 # P2 Stress test of codexengine: every designed capability, hooks above all
 
-Rendered 2026-11-04 14:49 UTC; every age below is as of then.
+Rendered 2026-11-04 14:50 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`codex-engine-trial`](design-codex-engine-trial.md) · Age 19h · Owner `neve`
@@ -55,11 +55,3 @@ Not released; nothing starts it until its status is cleared.
 ## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T5 | **Codex trial: hooks, shell guards and skills**<br>• Seven cases on real Codex launches against the package doc | [`codex-trial-hooks-guards-skills`](design-codex-trial-hooks-guards-skills.md) | 19h<br>1h | codex, shuttle |
