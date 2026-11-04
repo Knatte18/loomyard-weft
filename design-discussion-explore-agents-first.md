@@ -1,6 +1,6 @@
 # Discussion writers start their exploration with explore subagents
 
-`discussion-explore-agents-first` · Task · enhancement, stencil, loom · running · Darn-Write
+`discussion-explore-agents-first` · Task · enhancement, stencil, loom · running · Drift-Verify
 
 ## Seen (`docs/research/writer-lookups-measure-2026-11-04/report.md`)
 
