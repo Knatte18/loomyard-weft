@@ -1,6 +1,6 @@
 # A weft push holds the remote-refs lock over its whole transfer, so board claims queue behind it
 
-`push-holds-remote-refs` · Task · bug, fabric · running · Seed-IDE
+`push-holds-remote-refs` · Task · bug, fabric · running · Open-IDE
 
 Depends on: [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md)
 
