@@ -1,4 +1,4 @@
-# docs/research gets an index and loses its design notes
+# docs/research is restructured into topic folders with an index
 
 `research-dir-tidy` · Task · enhancement · draft
 
@@ -22,6 +22,19 @@ Depends on: [`readme-refresh`](design-readme-refresh.md)
 
 ## Chosen (operator, 2026-11-05)
 
-- A topic-grouped index `docs/research/README.md` lists every study once, with a line on what it measured; a near-duplicate series is one index line pointing at its newest member.
-- The design notes move out of `docs/research` to `docs/` (or beside the design they serve), with every link and code comment naming them updated.
-- Every study stays where it is: no study moves, is renamed or is deleted.
+`docs/research` is restructured into topic folders, not only indexed.
+
+- Every study moves into a topic folder, such as `codex/`, `twill/`, `glyph/`, `creel/`, and one per other theme the studies fall into; a near-duplicate series becomes one folder of its own inside its topic.
+- One layout per study: a study with data or scripts is a directory with a `report.md`; a lone report may stay a single file.
+- The design notes move out of `docs/research` to `docs/` (or beside the design they serve).
+- A topic-grouped index `docs/research/README.md` lists every study with a line on what it measured.
+- Nothing is deleted.
+
+Every reference is fixed in the same change, so nothing goes stale:
+
+- the scripts that find the repository root by `../../..` find it by a depth-independent means, such as `git rev-parse --show-toplevel`, so a later move breaks none;
+- `docsLinkIsResearchData` in `internal/lymcwd/docslink_test.go` accepts the new depth;
+- code comments, docs and `README.md` naming a moved path;
+- relative links inside the reports.
+
+A grep for every old path afterwards finds none outside git history.
