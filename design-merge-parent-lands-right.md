@@ -2,8 +2,6 @@
 
 `merge-parent-lands-right` · Task · bug, pawl, darn, landing, fabric · running · Darn-Write
 
-Depends on: [`clone-reset-deletes-first`](design-clone-reset-deletes-first.md)
-
 ## From note merge-in-writer-refused
 
 Imported from [issue #64](https://github.com/Knatte18/loomyard/issues/64).
