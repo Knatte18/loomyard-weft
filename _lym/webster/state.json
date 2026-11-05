@@ -1,0 +1,932 @@
+{
+  "runGuid": "a1c4865ab9aa37350056289ec21b537d",
+  "planFingerprint": "8dfdae39772bfb14ee8d764f3aec38c88e08b4a400da461779260216bc9079a1",
+  "planFileHashes": {
+    "00-overview.md": "23db230969dc39beb707659cbdf0389bfcf77c2143ebc77a9730567a70a41eaf",
+    "01-fabric-trailer-commits.md": "32f031ae9ba40dd6e687294a30efdd9c9305ada322198732b0c331c5df1c9d64",
+    "02-fabric-checkout-states.md": "d22b204a22c08eff4e10d3c66651f9db4841f37db78db9e591e10e9ed5cb5e6e",
+    "03-drift-capture-diff.md": "964ef5c9a6e545c74cc542cf450a158b4d6f1656ce922ef2cb9c3bd462f6c724",
+    "04-drift-config-keys.md": "3b4245f91019cee9fa32353877320ec995df6a23af712697ce795eb4d751b594",
+    "05-drift-expectation-parser.md": "07508c1d1db0a1116b6a31b94eda421f134cf2338179faf2133443995720b12a",
+    "06-drift-judgement-parser.md": "4c16a8bffedc209b8ae3740ab38fb5cd4fbb7411adecad28405c421ba23a4bd9",
+    "07-drift-records-guard.md": "7403ea19c62408542fa8444145a7acacf9b0f341142abc762debb9835a2f724a",
+    "08-drift-seal-baseline-checks.md": "3681fdd3e58a5132c23ee96c88e8bbf3c7fc63a1c420efdcffdfe7a5ce2e0ca0",
+    "09-drift-current-capture.md": "4455b251f3f90dd340d6eae78f956c7ab211b451258f3a8d77b9b63f665503e2",
+    "10-drift-containment-check.md": "454ce2b60facf3a1cbf686a9fea1b27bb1e410df465a86620a06780e85ca6f69",
+    "11-webster-runlevel-entry-report.md": "919b9451989a817322d42a872818016c744e01532afd639bcfa81b160783a780",
+    "12-drift-expect-producer.md": "0cffb3f6778542e937f3bec7fefb6512a91485082e3cb60c1c7e27af9f7904a1",
+    "13-drift-expect-rows.md": "820c6fc0aa66c1694fbb0d24e282de013ff5d88c5ba2f8c9ae4e2df4609c87f9",
+    "14-drift-check-verb.md": "70fb2e7d112d05f06a39d45010884e9edc5c049787a5aab5dfe51732e0918c70",
+    "15-drift-judge-seat.md": "5e95a954f784e3b78a6f5d82d0ae1f8f0ccb47fe74aa0af225776192310c6b0b",
+    "16-drift-verify-lines.md": "7c34b26782808539043601e0eabc727af0850c287c50c38e810035f164a17bdb",
+    "17-drift-verify-command.md": "a8ede1b5915dd973cbc894c2d74d197d783d144010a59d92136e675868793454",
+    "18-drift-baseline-await.md": "d0a08d6ba526e1559edef3e8f705b3d17db6389dfd0fe745f25a57c2bd09e9ff",
+    "19-drift-amend-defer.md": "5f699105216cf5fa1c85e876371756efb6a778d14d60a0f399637b6d6e5366c9",
+    "20-drift-verdict.md": "0ac2543485616748fab4fdbb4efc5969db28a207d90dfb3222470a0e3411e355",
+    "21-drift-writer-stencils.md": "27d72cbc10d602e84dc962f5c0411a93f775e59f063bac44f40a1e118db34457",
+    "22-driftcli-retire-verbs.md": "565f644b30a7d9d5f2a0c9b9c968f6ae522e967c6a2a9370f1a50a0ae5d0a2ae",
+    "23-drift-retire-recheck-engine.md": "9dc7421e2269d6355f48111babb54c85756dc732d035fa9a3f07f02b46fc4cc6",
+    "24-drift-retire-old-seats.md": "073756509da9f02f71d758a679b14245398295c754ce81ef0eb5a96f9730c5f4",
+    "25-driftengine-retire-acceptance.md": "0cd3983bfc2134842d385c7f6ee866412c89a2e8c2c1f29505fd0769772c7299",
+    "26-drift-retire-skip-keys.md": "91c731e29e12ec822c749e1fa2c3c5c88eaf4f2ec91783fd87c53bfd72d1125b",
+    "27-drift-retire-verify-gate-key.md": "3c0bae14ba157fe060239232d1c553ab790781c5286f9a9a9ca82b736e8f62db"
+  },
+  "planOverviewFrameHash": "81da568f63a452107de902d1bf08444596f94df7866550cc32c6f8ad40efaedb",
+  "partition": [
+    {
+      "cards": [
+        "01-fabric-trailer-commits",
+        "02-fabric-checkout-states",
+        "03-drift-capture-diff",
+        "04-drift-config-keys"
+      ],
+      "profile": "wide",
+      "estimate": 281012,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 55552,
+        "read_union": 42304,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 408,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 20568,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 165.5,
+            "written": 50058
+          },
+          {
+            "card": 2,
+            "card_text": 324,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 20568,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 151.5,
+            "written": 45774
+          },
+          {
+            "card": 3,
+            "card_text": 492,
+            "reads": {
+              "file:internal/driftengine/doc.go": 1812,
+              "package:internal/driftengine": 2000,
+              "tests:internal/driftengine": 2000
+            },
+            "messages": 98,
+            "written": 29892
+          },
+          {
+            "card": 4,
+            "card_text": 732,
+            "reads": {
+              "file:internal/configengine/doc.go": 1584,
+              "file:internal/configreg/doc.go": 276,
+              "file:internal/driftengine/doc.go": 1812,
+              "file:internal/driftengine/template.yaml": 108,
+              "package:internal/configengine": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/driftengine": 2000,
+              "tests:internal/configengine": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/driftengine": 2000
+            },
+            "messages": 189,
+            "written": 57432
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-drift-expectation-parser",
+        "06-drift-judgement-parser",
+        "07-drift-records-guard",
+        "08-drift-seal-baseline-checks"
+      ],
+      "profile": "wide",
+      "estimate": 294830,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 62552,
+        "read_union": 35040,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 552,
+            "reads": {
+              "file:internal/driftengine/doc.go": 1812,
+              "package:internal/driftengine": 2000,
+              "tests:internal/driftengine": 2000
+            },
+            "messages": 94,
+            "written": 28752
+          },
+          {
+            "card": 6,
+            "card_text": 564,
+            "reads": {
+              "file:PATTERN.md": 1056,
+              "file:internal/driftengine/doc.go": 1812,
+              "file:pattern/PATTERN-sole-parsers.md": 696,
+              "package:.": 2000,
+              "package:internal/driftengine": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:internal/driftengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 96,
+            "written": 29364
+          },
+          {
+            "card": 7,
+            "card_text": 804,
+            "reads": {
+              "file:internal/driftengine/doc.go": 1812,
+              "file:internal/loomcli/doc.go": 4788,
+              "package:internal/battencli": 2000,
+              "package:internal/driftengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/driftengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 266.5,
+            "written": 80754
+          },
+          {
+            "card": 8,
+            "card_text": 768,
+            "reads": {
+              "file:internal/driftengine/doc.go": 1812,
+              "package:internal/driftengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/driftengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 192,
+            "written": 58368
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-drift-current-capture",
+        "10-drift-containment-check"
+      ],
+      "profile": "wide",
+      "estimate": 250722,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 69552,
+        "read_union": 58524,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 720,
+            "reads": {
+              "file:internal/driftengine/doc.go": 1812,
+              "file:pattern/PATTERN-daemon-wakeups.md": 696,
+              "package:internal/battencli": 2000,
+              "package:internal/driftengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:pattern": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/driftengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 222.5,
+            "written": 67470
+          },
+          {
+            "card": 10,
+            "card_text": 876,
+            "reads": {
+              "file:contracts/recipes/darn-recipe.yaml": 3168,
+              "file:contracts/recipes/tapestry-recipe.yaml": 6204,
+              "file:internal/driftengine/doc.go": 1812,
+              "file:internal/loomrecipe/testdata/tapestry-rows-before-motif.yaml": 7404,
+              "file:internal/shedrecipe/doc.go": 1644,
+              "package:contracts/recipes": 2000,
+              "package:internal/driftengine": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/loomrecipe/testdata": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:internal/driftengine": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/loomrecipe/testdata": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 181,
+            "written": 55176
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "11-webster-runlevel-entry-report",
+        "12-drift-expect-producer"
+      ],
+      "profile": "wide",
+      "estimate": 265802,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 76552,
+        "read_union": 54748,
+        "cards": [
+          {
+            "card": 11,
+            "card_text": 432,
+            "reads": {
+              "file:contracts/stencils/webster/webster-body-verify-fix.md": 456,
+              "file:internal/websterengine/doc.go": 9384,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 86.5,
+            "written": 26382
+          },
+          {
+            "card": 12,
+            "card_text": 1020,
+            "reads": {
+              "file:internal/driftengine/doc.go": 1812,
+              "file:internal/shedrecipe/doc.go": 1644,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/drift": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/driftengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedbuild": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/drift": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/driftengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedbuild": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 357,
+            "written": 108120
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-drift-expect-rows",
+        "14-drift-check-verb"
+      ],
+      "profile": "wide",
+      "estimate": 219030,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 83552,
+        "read_union": 50992,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 540,
+            "reads": {
+              "file:contracts/recipes/darn-recipe.yaml": 3168,
+              "file:contracts/recipes/tapestry-recipe.yaml": 6204,
+              "file:internal/loomrecipe/doc.go": 876,
+              "file:internal/loomrecipe/testdata/tapestry-rows-before-motif.yaml": 7404,
+              "file:internal/loomshed/doc.go": 1632,
+              "file:internal/reportengine/doc.go": 2316,
+              "package:contracts/recipes": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/loomrecipe/testdata": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/reportengine": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/loomrecipe/testdata": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/reportengine": 2000
+            },
+            "messages": 231.5,
+            "written": 69990
+          },
+          {
+            "card": 14,
+            "card_text": 396,
+            "reads": {
+              "file:internal/driftcli/doc.go": 456,
+              "package:internal/driftcli": 2000,
+              "tests:internal/driftcli": 2000
+            },
+            "messages": 47,
+            "written": 14496
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "15-drift-judge-seat"
+      ],
+      "profile": "wide",
+      "estimate": 225524,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 90552,
+        "read_union": 36500,
+        "cards": [
+          {
+            "card": 15,
+            "card_text": 972,
+            "reads": {
+              "file:internal/driftengine/doc.go": 1812,
+              "file:internal/lymdirs/doc.go": 72,
+              "file:internal/shedrecipe/doc.go": 1644,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/drift": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/driftengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/lymdirs": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/drift": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/driftengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/lymdirs": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 325,
+            "written": 98472
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "16-drift-verify-lines"
+      ],
+      "profile": "wide",
+      "estimate": 337966,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 97552,
+        "read_union": 58836,
+        "cards": [
+          {
+            "card": 16,
+            "card_text": 1728,
+            "reads": {
+              "file:contracts/recipes/darn-recipe.yaml": 3168,
+              "file:contracts/recipes/tapestry-recipe.yaml": 6204,
+              "file:internal/driftengine/doc.go": 1812,
+              "file:internal/loomrecipe/doc.go": 876,
+              "file:internal/loomrecipe/testdata/tapestry-rows-before-motif.yaml": 7404,
+              "file:internal/shedrecipe/doc.go": 1644,
+              "package:contracts/recipes": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/driftengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/loomrecipe/testdata": 2000,
+              "package:internal/shedbuild": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/driftengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/loomrecipe/testdata": 2000,
+              "tests:internal/shedbuild": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 599.5,
+            "written": 181578
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "17-drift-verify-command",
+        "18-drift-baseline-await",
+        "19-drift-amend-defer"
+      ],
+      "profile": "wide",
+      "estimate": 271424,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 8,
+        "startup": 104552,
+        "read_union": 38376,
+        "cards": [
+          {
+            "card": 17,
+            "card_text": 408,
+            "reads": {
+              "file:internal/driftengine/doc.go": 1812,
+              "package:internal/driftengine": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:internal/driftengine": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 107,
+            "written": 32508
+          },
+          {
+            "card": 18,
+            "card_text": 648,
+            "reads": {
+              "file:contracts/recipes/darn-recipe.yaml": 3168,
+              "file:contracts/recipes/tapestry-recipe.yaml": 6204,
+              "file:internal/driftengine/doc.go": 1812,
+              "file:internal/runprofile/template.yaml": 840,
+              "package:contracts/recipes": 2000,
+              "package:internal/driftengine": 2000,
+              "package:internal/runprofile": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:internal/driftengine": 2000,
+              "tests:internal/runprofile": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 162,
+            "written": 49248
+          },
+          {
+            "card": 19,
+            "card_text": 840,
+            "reads": {
+              "file:internal/driftcli/doc.go": 456,
+              "file:internal/driftengine/doc.go": 1812,
+              "package:internal/driftcli": 2000,
+              "package:internal/driftengine": 2000,
+              "tests:internal/driftcli": 2000,
+              "tests:internal/driftengine": 2000
+            },
+            "messages": 153,
+            "written": 46740
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "20-drift-verdict",
+        "21-drift-writer-stencils",
+        "22-driftcli-retire-verbs"
+      ],
+      "profile": "wide",
+      "estimate": 241680,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 9,
+        "startup": 111552,
+        "read_union": 45612,
+        "cards": [
+          {
+            "card": 20,
+            "card_text": 492,
+            "reads": {
+              "file:internal/driftengine/doc.go": 1812,
+              "package:internal/driftengine": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:internal/driftengine": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 129,
+            "written": 39192
+          },
+          {
+            "card": 21,
+            "card_text": 144,
+            "reads": {
+              "file:contracts/stencils/darn/darn-template-write.md": 1140,
+              "file:contracts/stencils/webster/webster-prefix-fork.md": 372,
+              "file:contracts/stencils/webster/webster-template-master.md": 3804,
+              "package:contracts/stencils/darn": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "tests:contracts/stencils/darn": 2000,
+              "tests:contracts/stencils/webster": 2000
+            },
+            "messages": 18,
+            "written": 5544
+          },
+          {
+            "card": 22,
+            "card_text": 480,
+            "reads": {
+              "file:docs/overview.md": 11016,
+              "file:internal/driftcli/accept_integration_test.go": 1896,
+              "file:internal/driftcli/doc.go": 456,
+              "package:docs": 2000,
+              "package:internal/driftcli": 2000,
+              "tests:docs": 2000,
+              "tests:internal/driftcli": 2000
+            },
+            "messages": 131,
+            "written": 39780
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "23-drift-retire-recheck-engine"
+      ],
+      "profile": "wide",
+      "estimate": 160794,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 10,
+        "startup": 118552,
+        "read_union": 17228,
+        "cards": [
+          {
+            "card": 23,
+            "card_text": 264,
+            "reads": {
+              "file:internal/driftengine/doc.go": 1812,
+              "file:internal/driftengine/recheck.go": 2040,
+              "file:internal/driftengine/recheck_test.go": 3468,
+              "file:internal/shedrecipe/doc.go": 1644,
+              "package:internal/driftengine": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:internal/driftengine": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 82.5,
+            "written": 25014
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "24-drift-retire-old-seats"
+      ],
+      "profile": "wide",
+      "estimate": 314212,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 11,
+        "startup": 125552,
+        "read_union": 41456,
+        "cards": [
+          {
+            "card": 24,
+            "card_text": 1104,
+            "reads": {
+              "file:contracts/stencils/drift/drift-template-baseline.md": 744,
+              "file:contracts/stencils/drift/drift-template-verify.md": 648,
+              "file:internal/driftengine/doc.go": 1812,
+              "file:internal/loomcli/doc.go": 4788,
+              "file:pattern/PATTERN-parent-directive.md": 360,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/drift": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/driftengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:pattern": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/drift": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/driftengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 487,
+            "written": 147204
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "25-driftengine-retire-acceptance"
+      ],
+      "profile": "wide",
+      "estimate": 274280,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 12,
+        "startup": 132552,
+        "read_union": 11912,
+        "cards": [
+          {
+            "card": 25,
+            "card_text": 1116,
+            "reads": {
+              "file:internal/driftcli/doc.go": 456,
+              "file:internal/driftengine/doc.go": 1812,
+              "file:internal/driftengine/skiplist_test.go": 528,
+              "package:internal/driftcli": 2000,
+              "package:internal/driftengine": 2000,
+              "tests:internal/driftcli": 2000,
+              "tests:internal/driftengine": 2000
+            },
+            "messages": 429,
+            "written": 129816
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "26-drift-retire-skip-keys"
+      ],
+      "profile": "wide",
+      "estimate": 270318,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 13,
+        "startup": 139552,
+        "read_union": 28040,
+        "cards": [
+          {
+            "card": 26,
+            "card_text": 876,
+            "reads": {
+              "file:internal/driftcli/doc.go": 456,
+              "file:internal/driftengine/doc.go": 1812,
+              "file:internal/driftengine/template.yaml": 108,
+              "file:internal/loomcli/doc.go": 4788,
+              "package:internal/configcli": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/driftcli": 2000,
+              "package:internal/driftengine": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/driftcli": 2000,
+              "tests:internal/driftengine": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 339.5,
+            "written": 102726
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "27-drift-retire-verify-gate-key"
+      ],
+      "profile": "wide",
+      "estimate": 214520,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 14,
+        "startup": 146552,
+        "read_union": 38904,
+        "cards": [
+          {
+            "card": 27,
+            "card_text": 264,
+            "reads": {
+              "file:docs/dotnet-hub.md": 2196,
+              "file:internal/gatecli/doc.go": 5412,
+              "file:internal/gateslot/doc.go": 1836,
+              "file:internal/gateslot/template.yaml": 588,
+              "file:internal/loomshed/doc.go": 1632,
+              "file:pattern/PATTERN-gate-slot.md": 948,
+              "file:pattern/PATTERN-test-speed.md": 2028,
+              "package:docs": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/gateslot": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:pattern": 2000,
+              "tests:docs": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 96,
+            "written": 29064
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "d326ac861d4ceacc5a911fad80b062b2",
+  "masterSessionId": "0610df8b-f86b-42c0-b6a3-75053b19c15b",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "fabric-trailer-commits",
+      "cards": [
+        "01-fabric-trailer-commits",
+        "02-fabric-checkout-states",
+        "03-drift-capture-diff",
+        "04-drift-config-keys"
+      ],
+      "cardHashes": {
+        "01-fabric-trailer-commits": "32f031ae9ba40dd6e687294a30efdd9c9305ada322198732b0c331c5df1c9d64",
+        "02-fabric-checkout-states": "d22b204a22c08eff4e10d3c66651f9db4841f37db78db9e591e10e9ed5cb5e6e",
+        "03-drift-capture-diff": "964ef5c9a6e545c74cc542cf450a158b4d6f1656ce922ef2cb9c3bd462f6c724",
+        "04-drift-config-keys": "3b4245f91019cee9fa32353877320ec995df6a23af712697ce795eb4d751b594"
+      },
+      "startSha": "fe2663d3f4661d7031fd515cf8d5728a2b1895da",
+      "kind": "fork",
+      "spawnedAt": "2026-11-05T15:54:47Z",
+      "sessionId": "0610df8b-f86b-42c0-b6a3-75053b19c15b",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
