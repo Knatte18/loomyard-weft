@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-05 07:58 UTC; every age below is as of then.
+Rendered 2026-11-05 07:59 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -68,7 +68,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **A Sketch is a board type of its own**<br>• An entry whose motif run approved its decision record shows on the board as type sketch, beside research, bug, enhancement and feature | [`sketch-board-type`](design-sketch-board-type.md) | darn · solid | Darn-Write | neve | 43m<br>5m | board, loom |
 | T2 | **Teardown removes the whole worktree directory, and a gone pair blocks no board edit**<br>• Worktree-Teardown and fabric remove delete leftover build output; has-a-pair and batten cancel treat a non-git directory as no pair | [`teardown-gone-pair`](design-teardown-gone-pair.md) | darn · light | Code-Burler-Fix | neve | 2h<br>2h | batten, fabric, board |
-| T3 | **Template changes reach seed-only hub config, and light gets the lens fan back**<br>• Reconcile carries template changes into seed-only hub files like profiles.yaml while keeping hand-set values; light drops its solo code review | [`profiles-follow-template`](design-profiles-follow-template.md) | darn · solid | Code-Bouncer | neve | 1h<br>1h | profiles, config, reconcile |
+| T3 | **Template changes reach seed-only hub config, and light gets the lens fan back**<br>• Reconcile carries template changes into seed-only hub files like profiles.yaml while keeping hand-set values; light drops its solo code review | [`profiles-follow-template`](design-profiles-follow-template.md) | darn · solid | Code-Burler-Review | neve | 1h<br>1h | profiles, config, reconcile |
 | T6 | **A weft push holds the remote-refs lock over its whole transfer, so board claims queue behind it**<br>• Bolt and every weft share one remote-refs lock; a slow push stalls every claim and weft fetch for its whole send-pack | [`push-holds-remote-refs`](design-push-holds-remote-refs.md) | darn · light | Finalize | neve | 18h<br>51m | fabric |
 | T8 | **The beam orch drives the merge-in, pull request and review of its beam inside Beam-Await**<br>• Pawl drops Parent-Align, Beam-Describe and PR-Review; the beam orch opens and closes the PR, merges the parent in and runs lym beam ready | [`pawl-orch-landing`](design-pawl-orch-landing.md)<br>[Sketch](decision-pawl-orch-landing.md) | tapestry · solid | Plan-Write | neve | 2h<br>1h | pawl, landing, orch, workspaces, fabric |
 
