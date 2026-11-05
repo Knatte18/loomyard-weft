@@ -660,7 +660,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "f7c11c36f3d82fd543e95add1fdc3127",
   "masterSessionId": "7c8333ff-47b7-4804-bb88-3066d2caf642",
   "masterEngine": "claude",
@@ -752,6 +752,32 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/7c8333ff-47b7-4804-bb88-3066d2caf642/subagents/agent-a06b45e3e5cfdd540.jsonl"
       ]
+    },
+    "7": {
+      "slug": "report-config",
+      "cards": [
+        "07-report-config",
+        "08-report-cost",
+        "09-raddle-paths-and-keys",
+        "10-raddle-proposal-spec",
+        "11-discussion-part-splice",
+        "12-raddleparser"
+      ],
+      "cardHashes": {
+        "07-report-config": "0965d8b33cf044325bd3f5a57cadf876205855be825424d8db2033dfffedb061",
+        "08-report-cost": "f588bc9be3a273a1136e466ae92436fbf07854ba7ab3ef3009ba4dc69f1429bb",
+        "09-raddle-paths-and-keys": "87581f9ff27a30b2faf75b4e5c131e1e5e8253cfd96492407d6741c1c50f6cd7",
+        "10-raddle-proposal-spec": "a1820e1d2c3b14594b8ea7b6d0e5a08c362d3b0ef28aca5de3a61fe8e3286340",
+        "11-discussion-part-splice": "85634df50f62a874f13f7373473bc964c9aacb998e6c4c43aeb3f3a42c8230ca",
+        "12-raddleparser": "24ac89e85de4339e55930ac66b825556a03628b6ac0aab8e73ea2b623b267220"
+      },
+      "startSha": "b3944e8193c0995de85a3557bb777ff3706026ce",
+      "kind": "fork",
+      "spawnedAt": "2026-11-05T11:05:42Z",
+      "sessionId": "7c8333ff-47b7-4804-bb88-3066d2caf642",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
