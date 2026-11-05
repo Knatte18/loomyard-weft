@@ -1,6 +1,6 @@
 # Teardown removes the whole worktree directory, and a gone pair blocks no board edit
 
-`teardown-gone-pair` · Task · bug, batten, fabric, board · running · Drift-Baseline
+`teardown-gone-pair` · Task · bug, batten, fabric, board · running · Drift-Await
 
 Depends on: [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md)
 
