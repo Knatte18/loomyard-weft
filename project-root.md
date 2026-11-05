@@ -33,7 +33,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Distill PATTERN.md: cluster related entries, detail in background files**<br>• The overview sits at its headroom line, so every run adding an entry stops for trims; group related entries into clusters with short lines and move detail verbatim to background files | [`pattern-distill`](design-pattern-distill.md) | darn · solid | T5 | 18m<br>18m | pattern |
+| T2 | **Distill PATTERN.md: cluster related entries, detail in background files**<br>• The overview sits at its headroom line, so every run adding an entry stops for trims; group related entries into clusters with short lines and move detail verbatim to background files | [`pattern-distill`](design-pattern-distill.md) | darn · solid | T5 | 19m<br>19m | pattern |
 
 ### Draft (2)
 

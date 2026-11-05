@@ -59,14 +59,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 2d<br>2h | shuttle, codex, loom |
 | F18 |  | **Codex sessions get creel mail through hooks, as Claude sessions do**<br>• codexengine has no creel hooks, so every Codex strand is a pane-mail strand; the hook spike showed a way | [`codex-creel-hooks`](design-codex-creel-hooks.md) | 1d<br>2h | codex, creel, shuttle |
 
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T1 | **A Codex writer in a pair worktree cannot commit: the git dir is outside its sandbox roots**<br>• git index.lock under the main checkout .git/worktrees is read-only in workspace-write, so codex-greet stopped at Darn-Write | [`codex-writer-cannot-commit`](design-codex-writer-cannot-commit.md) | 1h<br>24m | codex, shuttle |
-
 ## [P0 Root: entries under no project](project-root.md) (29)
 
 Owner `neve`
@@ -96,7 +88,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Distill PATTERN.md: cluster related entries, detail in background files**<br>• The overview sits at its headroom line, so every run adding an entry stops for trims; group related entries into clusters with short lines and move detail verbatim to background files | [`pattern-distill`](design-pattern-distill.md) | darn · solid | T5 | 18m<br>18m | pattern |
+| T2 | **Distill PATTERN.md: cluster related entries, detail in background files**<br>• The overview sits at its headroom line, so every run adding an entry stops for trims; group related entries into clusters with short lines and move detail verbatim to background files | [`pattern-distill`](design-pattern-distill.md) | darn · solid | T5 | 19m<br>19m | pattern |
 
 #### Draft (2)
 
