@@ -1,6 +1,6 @@
 # Distill PATTERN.md: cluster related entries, detail in background files
 
-`pattern-distill` · Task · enhancement, pattern · running · Record-Write
+`pattern-distill` · Task · enhancement, pattern · running · Darn-Write
 
 Depends on: [`raddle-recipe`](design-raddle-recipe.md)
 
