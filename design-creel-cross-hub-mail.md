@@ -1,6 +1,6 @@
 # Creel mail between hubs with a verified sender and one-way hub trust
 
-`creel-cross-hub-mail` · Task · sketch, creel, orch · running · Raddle-Write
+`creel-cross-hub-mail` · Task · sketch, creel, orch · running · Raddle-File
 
 ## Seen (operator, 2026-10-30)
 
