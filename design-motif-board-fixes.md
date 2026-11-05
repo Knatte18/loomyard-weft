@@ -1,6 +1,6 @@
 # Motif runs: own profile recipe, a finished state on the board, and live status
 
-`motif-board-fixes` · Task · bug, loom, board, batten, profiles · running · Drift-Verify
+`motif-board-fixes` · Task · bug, loom, board, batten, profiles · running · Code-Bouncer
 
 Three motif faults from issues #58, #53 and #49, seen in hub Models-LYMHUB, beam `duplication-and-import-followups`, 2026-11-04. Fix all three.
 

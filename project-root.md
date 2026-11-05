@@ -18,10 +18,10 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Motif runs: own profile recipe, a finished state on the board, and live status**<br>• Motif drops profile_recipe tapestry, a finished motif reads as done, and the board status follows batten rows and the inner producer | [`motif-board-fixes`](design-motif-board-fixes.md) | darn · light | Drift-Verify | neve | 36m<br>34m | loom, board, batten, profiles |
-| T3 | **Loop exited without an envelope while step Webster was in flight** | [`loop-exit-no-envelope-cause`](design-loop-exit-no-envelope-cause.md) | darn · light | Finalize | neve | 36m<br>34m | shed, friction |
+| T1 | **Motif runs: own profile recipe, a finished state on the board, and live status**<br>• Motif drops profile_recipe tapestry, a finished motif reads as done, and the board status follows batten rows and the inner producer | [`motif-board-fixes`](design-motif-board-fixes.md) | darn · light | Code-Bouncer | neve | 36m<br>35m | loom, board, batten, profiles |
+| T3 | **Loop exited without an envelope while step Webster was in flight** | [`loop-exit-no-envelope-cause`](design-loop-exit-no-envelope-cause.md) | darn · light | Finalize | neve | 36m<br>35m | shed, friction |
 | T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | Code-Bouncer | neve | 16h<br>15h | fabric, loom |
-| T9 | **A test leaves an empty /tmp/.git, which breaks go VCS stamping**<br>• An empty /tmp/.git appeared during a tier1 run and failed TestPrebuildLym; find the leaker and guard against writes outside t.TempDir | [`tmp-git-leak`](design-tmp-git-leak.md) | darn · light | Darn-Write | neve | 15h<br>23m | testkit, gate |
+| T9 | **A test leaves an empty /tmp/.git, which breaks go VCS stamping**<br>• An empty /tmp/.git appeared during a tier1 run and failed TestPrebuildLym; find the leaker and guard against writes outside t.TempDir | [`tmp-git-leak`](design-tmp-git-leak.md) | darn · light | Darn-Write | neve | 15h<br>24m | testkit, gate |
 
 ### Ready (0)
 
@@ -35,7 +35,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Teardown removes the whole worktree directory, and a gone pair blocks no board edit**<br>• Worktree-Teardown and fabric remove delete leftover build output; has-a-pair and batten cancel treat a non-git directory as no pair | [`teardown-gone-pair`](design-teardown-gone-pair.md) | darn · light | T7<br>T1 | 36m<br>34m | batten, fabric, board |
+| T2 | **Teardown removes the whole worktree directory, and a gone pair blocks no board edit**<br>• Worktree-Teardown and fabric remove delete leftover build output; has-a-pair and batten cancel treat a non-git directory as no pair | [`teardown-gone-pair`](design-teardown-gone-pair.md) | darn · light | T7<br>T1 | 36m<br>35m | batten, fabric, board |
 | T8 | **The beam orch drives the merge-in, pull request and review of its beam inside Beam-Await**<br>• Pawl drops Parent-Align, Beam-Describe and PR-Review; the beam orch opens and closes the PR, merges the parent in and runs lym beam ready | [`pawl-orch-landing`](design-pawl-orch-landing.md) | tapestry · solid | T7 | 42m<br>26m | pawl, landing, orch, workspaces, fabric |
 
 ### Draft (1)
