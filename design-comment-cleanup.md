@@ -2,6 +2,8 @@
 
 `comment-cleanup` · Task · enhancement, fabric · draft
 
+Depends on: [`raddle-recipe`](design-raddle-recipe.md), [`pattern-distill`](design-pattern-distill.md), [`drift-rework`](design-drift-rework.md), [`readme-refresh`](design-readme-refresh.md), [`research-dir-tidy`](design-research-dir-tidy.md), [`codex-greet-finish`](design-codex-greet-finish.md)
+
 ## Seen (operator and hub orch, 2026-10-31)
 
 Comments in the Go source go stale as the code moves on.
