@@ -1,6 +1,6 @@
 # A Codex writer in a pair worktree cannot commit: the git dir is outside its sandbox roots
 
-`codex-writer-cannot-commit` · Note · bug, codex, shuttle
+`codex-writer-cannot-commit` · Task · bug, codex, shuttle · draft
 
 ## Found
 
