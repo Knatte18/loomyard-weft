@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-05 14:42 UTC; every age below is as of then.
+Rendered 2026-11-05 14:43 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -80,11 +80,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>3d | burler, shed, orch, quarry, report |
 | F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 8h<br>8h | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 8h<br>8h | batten, board, fabric, workspaces |
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T2 | **Landing credit block names Codex when a Codex session ran**<br>• credit_engines gains a codex item so a Codex-written landing credits Codex like Claude, with no trailer | [`codex-credit-line`](design-codex-credit-line.md) | 6m<br>6m | landing, codex |
