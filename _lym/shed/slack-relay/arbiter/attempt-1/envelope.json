@@ -1,0 +1,15 @@
+{
+  "verdict": "resume",
+  "reason": "Hard-cap stop at plan review round 3. The only open design-wrong finding is F1 (relay-restart-cap-unreachable): a relay dying after its first read respawned once a minute with no cap.\nThe fix in place answers it. Card 09 (slackengine-relay) now judges each spawned relay by its lifetime, LastSlackOK minus LastSpawnAt, against relayHealthyLifetime (10 minutes). A lifetime under that counts one failure, and the fifth failure in a row answers gave-up. Step 4 no longer resets StartFailures. A TestEnsureRelay row pins that five relays dying one minute after their first read end in gave-up.\nThis is F1's own proposed fix, and it caps the spawn count as PATTERN-child-processes asks.\nF2 to F7 are tagged mechanical, and the round-3 fixer applied each as proposed.\nThe ruling is recorded in the decision record, and the segment is accepted.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom decision add slack-relay --by arbiter --title \"Plan review round 3: the relay restart cap's lifetime rule answers F1\" --decision \"…\" --rationale \"…\"",
+    "lym loom circling accept slack-relay"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/slack-relay/_lym/shed/slack-relay/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/slack-relay/_lym/shed/slack-relay/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step slack-relay --until-stop --arbiter-attempt 1"
+}
