@@ -2,7 +2,7 @@
 
 `teardown-gone-pair` · Task · bug, batten, fabric, board
 
-Depends on: [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md), [`motif-board-fixes`](design-motif-board-fixes.md)
+Depends on: [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md)
 
 Two faults from issues #54 and #52, seen in hub Models-LYMHUB, beam `duplication-and-import-followups`, 2026-11-04. Fix both.
 
