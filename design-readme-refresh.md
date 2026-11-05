@@ -1,6 +1,6 @@
 # Bring README.md up to date
 
-`readme-refresh` · Task · enhancement · running · PR-Review
+`readme-refresh` · Task · enhancement · running · Finalize
 
 ## Wanted (operator, 2026-11-05)
 
