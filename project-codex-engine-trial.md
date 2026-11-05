@@ -38,19 +38,13 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **A Codex writer in a pair worktree cannot commit: the git dir is outside its sandbox roots**<br>• git index.lock under the main checkout .git/worktrees is read-only in workspace-write, so codex-greet stopped at Darn-Write | [`codex-writer-cannot-commit`](design-codex-writer-cannot-commit.md) | darn · light |  | 1h<br>0m | codex, shuttle |
+| T1 | **A Codex writer in a pair worktree cannot commit: the git dir is outside its sandbox roots**<br>• git index.lock under the main checkout .git/worktrees is read-only in workspace-write, so codex-greet stopped at Darn-Write | [`codex-writer-cannot-commit`](design-codex-writer-cannot-commit.md) | darn · light |  | 1h<br>0m | codex, shuttle |
 
 ## Notes (2)
 
