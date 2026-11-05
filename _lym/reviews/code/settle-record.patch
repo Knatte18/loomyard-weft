@@ -1,0 +1,692 @@
+diff --git a/internal/planglyph/doc.go b/internal/planglyph/doc.go
+index c71e99f8..6e602aac 100644
+--- a/internal/planglyph/doc.go
++++ b/internal/planglyph/doc.go
+@@ -140,7 +140,8 @@
+ //     Its path must exist for a Create or Rename new side and must not for a Delete or Rename old side (planparser.IsDiskCheckedTarget).
+ //     Each detail carries the lookup: the resolve key looked up beside the card's own spelling, quarry's status, for not_found whether the unit exists, and for ambiguous each candidate's file and build constraint.
+ //     Under a go plan, a Create or Rename new side answered not_found is done when the worktree's glyphs listing holds its member in its directory's other package, since a plan cannot tell which package a new test file declares.
+-//     A Create or Rename new side answered not_found also names the files declaring its unit and every declaration of its name elsewhere in the worktree, from one glyphs listing taken only when such a finding is due.
++//     A Create or Rename new side answered not_found also names how many files declare its unit and the nearest few declarations of its name elsewhere in the worktree, from one glyphs listing taken only when such a finding is due.
++//     signature-mismatch (blocking) replaces that finding when its unit declares the member under the same name with only other parameter lists, and leads with each declared signature and its file.
+ //     An ambiguous answer whose candidates sit in files no single build environment selects together counts as resolved, so a Create or a Rename new side over such a member lands;
+ //     the Delete direction and a Rename old side keep blocking on any surviving declaration.
+ //     glyph-rejected is additionally DoneChecks' own
+diff --git a/internal/planglyph/donecheck.go b/internal/planglyph/donecheck.go
+index 59036053..9feb2557 100644
+--- a/internal/planglyph/donecheck.go
++++ b/internal/planglyph/donecheck.go
+@@ -63,7 +63,8 @@ func resolveKeyFor(ref string) string {
+ // A target still path-shaped is a path canonicalization could not spell as a glyph, such as one whose directory holds a space.
+ // Quarry rejects it before resolution, so its worktree-relative path is checked on disk instead, existing for the Create direction and absent for the Delete direction.
+ // Under a go plan, a Create target or Rename new side quarry answers not_found is done when its member is declared in its directory's other package, `<dir>_test` for `<dir>` and the reverse, since a plan cannot tell which package a new test file declares.
+-// A Create target or Rename new side quarry answers not_found also names, in its detail, the files declaring the looked-up unit and every declaration elsewhere in the worktree carrying the looked-up name, so a missing declaration reads apart from one written somewhere the card did not say.
++// A Create target or Rename new side quarry answers not_found also names, in its detail, how many files declare the looked-up unit and the nearest few declarations elsewhere carrying the looked-up name, so a missing declaration reads apart from one written somewhere the card did not say.
++// One whose unit declares its member under the same name with only other parameter lists is the blocking finding signature-mismatch instead, which leads with each declared signature and its file.
+ // An answer outside quarry's four-value status vocabulary — a pre-resolution rejection, or a status
+ // this policy has not been taught — is the blocking finding glyph-rejected for that entry, failing
+ // closed exactly as statusFindings and createFindings do (see doneCheckVerdicts).
+@@ -179,7 +180,41 @@ func declaredInCounterpartPackage(plan *planparser.Plan, key string, declaration
+ 	return slices.ContainsFunc(declarations, func(s quarry.Symbol) bool { return s.ID == counterpart })
+ }
+ 
+-// searchedDescription names, for a key quarry answered not_found, the files among declarations that declare the key's unit and every declaration elsewhere whose own name is the key's member name, with its glyph and file.
++// maxListedDeclarations caps how many declarations one finding detail names, so a common name cannot bury the finding.
++const maxListedDeclarations = 3
++
++// signatureMismatches returns the declarations of key's member under key's own unit, owner chain and name whose parameter list differs from key's.
++// It returns none when key does not parse as a member glyph in the plan's alphabet or names no parameter list.
++func signatureMismatches(plan *planparser.Plan, key string, declarations []quarry.Symbol) []quarry.Symbol {
++	wanted, err := planparser.ParseRef(plan, key)
++	if err != nil || wanted.IsSelf() || wanted.Params == nil {
++		return nil
++	}
++	var mismatched []quarry.Symbol
++	for _, s := range declarations {
++		if s.Glyph.Unit == wanted.Unit && s.Glyph.Name == wanted.Name && slices.Equal(s.Glyph.Owner, wanted.Owner) && !slices.Equal(s.Glyph.Params, wanted.Params) {
++			mismatched = append(mismatched, s)
++		}
++	}
++	return mismatched
++}
++
++// signatureMismatchFinding is the blocking signature-mismatch finding for e, a Create target or Rename new side whose unit declares its member only with the parameter lists of mismatched.
++// Its detail leads with each declared signature and its file.
++func signatureMismatchFinding(e doneCheckEntry, mismatched []quarry.Symbol) Finding {
++	subject := "Create target"
++	if e.checkID == "rename-not-done-new" {
++		subject = "Rename pair's new side"
++	}
++	return Finding{
++		Check:    "signature-mismatch",
++		Card:     e.card.ID(),
++		Detail:   fmt.Sprintf("declared as %s, not with the parameter list %s %q names", declarationList(mismatched, mismatched[0].Glyph.Unit), subject, e.display),
++		Severity: SeverityBlocking,
++	}
++}
++
++// searchedDescription names, for a key quarry answered not_found, how many files among declarations declare the key's unit and the nearest declarations elsewhere whose own name is the key's member name.
+ // It returns "" when the key does not parse as a member glyph in the plan's alphabet, since then there is no name to look for.
+ func searchedDescription(plan *planparser.Plan, key string, declarations []quarry.Symbol) string {
+ 	wanted, err := planparser.ParseRef(plan, key)
+@@ -187,31 +222,67 @@ func searchedDescription(plan *planparser.Plan, key string, declarations []quarr
+ 		return ""
+ 	}
+ 
+-	var unitFiles []string
+-	var elsewhere []string
++	unitFiles := map[string]bool{}
++	var elsewhere []quarry.Symbol
+ 	for _, s := range declarations {
+-		if s.Glyph.Unit == wanted.Unit && !slices.Contains(unitFiles, s.File) {
+-			unitFiles = append(unitFiles, s.File)
++		if s.Glyph.Unit == wanted.Unit {
++			unitFiles[s.File] = true
+ 		}
+ 		if s.Glyph.Name == wanted.Name && s.ID != key {
+-			elsewhere = append(elsewhere, fmt.Sprintf("%s in %s", s.ID, s.File))
++			elsewhere = append(elsewhere, s)
+ 		}
+ 	}
+-	sort.Strings(unitFiles)
+-	sort.Strings(elsewhere)
+ 
+ 	var parts []string
+-	if len(unitFiles) > 0 {
+-		parts = append(parts, "quarry searched the unit's files "+strings.Join(unitFiles, ", "))
++	switch n := len(unitFiles); n {
++	case 0:
++	case 1:
++		parts = append(parts, "quarry searched 1 file of unit "+wanted.Unit)
++	default:
++		parts = append(parts, fmt.Sprintf("quarry searched %d files of unit %s", n, wanted.Unit))
+ 	}
+ 	if len(elsewhere) > 0 {
+-		parts = append(parts, fmt.Sprintf("%s is declared as %s", wanted.Name, strings.Join(elsewhere, ", ")))
++		parts = append(parts, fmt.Sprintf("%s is declared as %s", wanted.Name, declarationList(elsewhere, wanted.Unit)))
+ 	} else {
+ 		parts = append(parts, fmt.Sprintf("no declaration named %s exists anywhere in the worktree", wanted.Name))
+ 	}
+ 	return strings.Join(parts, "; ")
+ }
+ 
++// declarationList renders declarations as "<glyph> in <file>", nearest to unit first, naming at most maxListedDeclarations and counting the rest.
++// Nearness is how many leading unit segments, split at "/" and ".", a declaration's unit shares with unit; glyph order breaks a tie.
++func declarationList(declarations []quarry.Symbol, unit string) string {
++	sorted := slices.Clone(declarations)
++	slices.SortStableFunc(sorted, func(a, b quarry.Symbol) int {
++		if nearer := sharedUnitSegments(b.Glyph.Unit, unit) - sharedUnitSegments(a.Glyph.Unit, unit); nearer != 0 {
++			return nearer
++		}
++		return strings.Compare(a.ID, b.ID)
++	})
++	named := make([]string, 0, maxListedDeclarations)
++	for _, s := range sorted[:min(len(sorted), maxListedDeclarations)] {
++		named = append(named, fmt.Sprintf("%s in %s", s.ID, s.File))
++	}
++	list := strings.Join(named, ", ")
++	if rest := len(sorted) - len(named); rest > 0 {
++		list += fmt.Sprintf(" and %d more", rest)
++	}
++	return list
++}
++
++// sharedUnitSegments counts the leading segments, split at "/" and ".", that units a and b share.
++func sharedUnitSegments(a, b string) int {
++	split := func(unit string) []string {
++		return strings.FieldsFunc(unit, func(r rune) bool { return r == '/' || r == '.' })
++	}
++	as, bs := split(a), split(b)
++	shared := 0
++	for shared < len(as) && shared < len(bs) && as[shared] == bs[shared] {
++		shared++
++	}
++	return shared
++}
++
+ // diskLookup checks key, a worktree-relative path, on disk under worktreeRoot and reports whether anything exists there together with the lookup description a finding detail carries.
+ // A path whose parent component is a regular file reads as not existing.
+ // An error other than the path not existing is returned, so an unreadable tree never passes a done-check.
+@@ -248,7 +319,8 @@ func lookupDescription(key string, status quarry.Status, unitFound bool, candida
+ // answers keyed by target, reading ambiguous candidates' files and onDisk entries' paths under worktreeRoot.
+ // Each finding's detail names the lookup: the resolve key, quarry's status, the unit status of a
+ // missing member, and each candidate's file and build constraint for an ambiguous answer.
+-// A Create or Rename new side answered not_found also names, from declarations, the worktree's listed declarations, its unit's files and every declaration of its name.
++// A Create or Rename new side answered not_found also names how many files declare its unit and the nearest declarations of its name, read from declarations, the worktree's listed declarations.
++// It is a signature-mismatch finding instead when its unit declares its member only with other parameter lists.
+ //
+ // It is split out from DoneChecks so the coverage guard below is reachable from a unit test: every
+ // other path into it runs a real quarry.Repo, and the one condition worth pinning -- an answer set
+@@ -323,6 +395,10 @@ func doneCheckVerdicts(plan *planparser.Plan, worktreeRoot string, entries []don
+ 			if declaredInCounterpartPackage(plan, e.key, declarations) {
+ 				continue
+ 			}
++			if mismatched := signatureMismatches(plan, e.key, declarations); len(mismatched) > 0 {
++				findings = append(findings, signatureMismatchFinding(e, mismatched))
++				continue
++			}
+ 			if searched := searchedDescription(plan, e.key, declarations); searched != "" {
+ 				lookup += "; " + searched
+ 			}
+diff --git a/internal/planglyph/donecheck_resolve_test.go b/internal/planglyph/donecheck_resolve_test.go
+index ab217248..d630e18f 100644
+--- a/internal/planglyph/donecheck_resolve_test.go
++++ b/internal/planglyph/donecheck_resolve_test.go
+@@ -52,7 +52,7 @@ func TestDoneChecks_Verdicts(t *testing.T) {
+ 			},
+ 			group:      planparser.TargetGroup{Type: planparser.CardTypeCreate, Refs: []string{"sub#Foo"}},
+ 			wantChecks: []string{"create-not-done"},
+-			wantDetail: []string{"quarry searched the unit's files sub/a.go; Foo is declared as other#Foo in other/b.go"},
++			wantDetail: []string{"quarry searched 1 file of unit sub; Foo is declared as other#Foo in other/b.go"},
+ 		},
+ 		{
+ 			name: "Create test in external test package landed",
+diff --git a/internal/planglyph/donecheck_test.go b/internal/planglyph/donecheck_test.go
+index f0725694..5313f73b 100644
+--- a/internal/planglyph/donecheck_test.go
++++ b/internal/planglyph/donecheck_test.go
+@@ -5,6 +5,7 @@ package planglyph
+ 
+ import (
+ 	"errors"
++	"fmt"
+ 	"strings"
+ 	"testing"
+ 
+@@ -72,7 +73,7 @@ func TestDoneCheckVerdicts_Rules(t *testing.T) {
+ 		{Glyph: glyph.Glyph{Lang: glyph.Go, Unit: "internal/greet", Name: "Other"}, ID: "internal/greet#Other", File: "internal/greet/greet.go"},
+ 		{Glyph: glyph.Glyph{Lang: glyph.Go, Unit: "internal/other", Name: "Thing"}, ID: "internal/other#Thing", File: "internal/other/thing.go"},
+ 	}
+-	const searched = "quarry searched the unit's files internal/greet/greet.go; Thing is declared as internal/other#Thing in internal/other/thing.go"
++	const searched = "quarry searched 1 file of unit internal/greet; Thing is declared as internal/other#Thing in internal/other/thing.go"
+ 
+ 	tests := []struct {
+ 		name string
+@@ -160,3 +161,128 @@ func TestDoneCheckVerdicts_Rules(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestDoneCheckVerdicts_NotFoundDetail pins the finding for a Create target quarry answered not_found, read against the worktree's declarations.
++// A member its unit declares only with another parameter list is a signature-mismatch finding that leads with the declared signature and its file, for a Create target and a Rename new side alike.
++// A target with no parameter list, or whose same-named member sits under another owner or unit, stays create-not-done, as does a Go target.
++// A name declared in many other units names the nearest few and counts the rest, and the unit's files are counted, never listed.
++func TestDoneCheckVerdicts_NotFoundDetail(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	symbol := func(g glyph.Glyph, file string) quarry.Symbol {
++		return quarry.Symbol{Glyph: g, ID: g.String(), File: file}
++	}
++	goSymbol := func(unit, name, file string) quarry.Symbol {
++		return symbol(glyph.Glyph{Lang: glyph.Go, Unit: unit, Name: name}, file)
++	}
++	csharpMethod := func(unit, owner, name string, params []string, file string) quarry.Symbol {
++		return symbol(glyph.Glyph{Lang: glyph.CSharp, Unit: unit, Owner: []string{owner}, Name: name, Params: params}, file)
++	}
++	createDetail := func(key, searched string) string {
++		return fmt.Sprintf("Create target %q still does not resolve: looked up %q, quarry answered not_found (the unit exists and the member is missing); %s", key, key, searched)
++	}
++
++	tests := []struct {
++		name     string
++		language string
++		// checkID is the done-check arm of the entry; empty means create-not-done.
++		checkID      string
++		key          string
++		declarations []quarry.Symbol
++		wantCheck    string
++		wantDetail   string
++	}{
++		{
++			name:         "SignatureMismatch",
++			language:     "csharp",
++			key:          "Shop#CartTests.Adds(int)",
++			declarations: []quarry.Symbol{csharpMethod("Shop", "CartTests", "Adds", []string{"string"}, "tests/CartTests.cs"), csharpMethod("Shop", "CartTests", "Other", []string{}, "tests/CartTests.cs")},
++			wantCheck:    "signature-mismatch",
++			wantDetail:   `declared as Shop#CartTests.Adds(string) in tests/CartTests.cs, not with the parameter list Create target "Shop#CartTests.Adds(int)" names`,
++		},
++		{
++			name:         "SignatureMismatchOnRenameNewSide",
++			language:     "csharp",
++			checkID:      "rename-not-done-new",
++			key:          "Shop#CartTests.Adds(int)",
++			declarations: []quarry.Symbol{csharpMethod("Shop", "CartTests", "Adds", []string{"string"}, "tests/CartTests.cs")},
++			wantCheck:    "signature-mismatch",
++			wantDetail:   `declared as Shop#CartTests.Adds(string) in tests/CartTests.cs, not with the parameter list Rename pair's new side "Shop#CartTests.Adds(int)" names`,
++		},
++		{
++			name:         "TargetWithoutParameterListIsNotAMismatch",
++			language:     "csharp",
++			key:          "Shop#CartTests.Adds",
++			declarations: []quarry.Symbol{csharpMethod("Shop", "CartTests", "Adds", []string{"string"}, "tests/CartTests.cs")},
++			wantCheck:    "create-not-done",
++			wantDetail:   createDetail("Shop#CartTests.Adds", "quarry searched 1 file of unit Shop; Adds is declared as Shop#CartTests.Adds(string) in tests/CartTests.cs"),
++		},
++		{
++			name:         "OtherOwnerIsNotAMismatch",
++			language:     "csharp",
++			key:          "Shop#CartTests.Adds(int)",
++			declarations: []quarry.Symbol{csharpMethod("Shop", "OtherTests", "Adds", []string{"string"}, "tests/OtherTests.cs")},
++			wantCheck:    "create-not-done",
++			wantDetail:   createDetail("Shop#CartTests.Adds(int)", "quarry searched 1 file of unit Shop; Adds is declared as Shop#OtherTests.Adds(string) in tests/OtherTests.cs"),
++		},
++		{
++			name:         "OtherUnitIsNotAMismatch",
++			language:     "csharp",
++			key:          "Shop#CartTests.Adds(int)",
++			declarations: []quarry.Symbol{csharpMethod("Billing", "CartTests", "Adds", []string{"string"}, "tests/BillingCartTests.cs")},
++			wantCheck:    "create-not-done",
++			wantDetail:   createDetail("Shop#CartTests.Adds(int)", "Adds is declared as Billing#CartTests.Adds(string) in tests/BillingCartTests.cs"),
++		},
++		{
++			name:         "GoTargetIsNotAMismatch",
++			language:     "go",
++			key:          "internal/greet#Thing",
++			declarations: []quarry.Symbol{goSymbol("internal/greet", "Other", "internal/greet/greet.go")},
++			wantCheck:    "create-not-done",
++			wantDetail:   createDetail("internal/greet#Thing", "quarry searched 1 file of unit internal/greet; no declaration named Thing exists anywhere in the worktree"),
++		},
++		{
++			name:     "DeclaringSitesCappedNearestFirst",
++			language: "go",
++			key:      "internal/a/b#Load",
++			declarations: []quarry.Symbol{
++				goSymbol("internal/a/b", "Other", "internal/a/b/one.go"),
++				goSymbol("internal/a/b", "More", "internal/a/b/two.go"),
++				goSymbol("pkg/y", "Load", "pkg/y/y.go"),
++				goSymbol("cmd/x", "Load", "cmd/x/x.go"),
++				goSymbol("internal/z", "Load", "internal/z/z.go"),
++				goSymbol("internal/a/c", "Load", "internal/a/c/c.go"),
++			},
++			wantCheck:  "create-not-done",
++			wantDetail: createDetail("internal/a/b#Load", "quarry searched 2 files of unit internal/a/b; Load is declared as internal/a/c#Load in internal/a/c/c.go, internal/z#Load in internal/z/z.go, cmd/x#Load in cmd/x/x.go and 1 more"),
++		},
++	}
++
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			checkID := tt.checkID
++			if checkID == "" {
++				checkID = "create-not-done"
++			}
++			entries := []doneCheckEntry{{card: planparser.Card{Number: 1, Slug: "card"}, checkID: checkID, key: tt.key, display: tt.key}}
++			index := map[string]quarry.ResolveResult{tt.key: {Target: tt.key, Status: quarry.StatusNotFound, Unit: quarry.StatusFound}}
++
++			findings, err := doneCheckVerdicts(&planparser.Plan{Language: tt.language}, t.TempDir(), entries, index, tt.declarations)
++			if err != nil {
++				t.Fatalf("doneCheckVerdicts() error = %v; want nil", err)
++			}
++			if len(findings) != 1 {
++				t.Fatalf("doneCheckVerdicts() = %v; want exactly one %s finding", findings, tt.wantCheck)
++			}
++			if findings[0].Check != tt.wantCheck || findings[0].Severity != SeverityBlocking {
++				t.Errorf("finding = %+v; want a blocking %s finding", findings[0], tt.wantCheck)
++			}
++			if findings[0].Detail != tt.wantDetail {
++				t.Errorf("finding detail = %q; want %q", findings[0].Detail, tt.wantDetail)
++			}
++		})
++	}
++}
+diff --git a/internal/planglyph/status_enforcement_test.go b/internal/planglyph/status_enforcement_test.go
+index 4c503b26..a223b224 100644
+--- a/internal/planglyph/status_enforcement_test.go
++++ b/internal/planglyph/status_enforcement_test.go
+@@ -93,6 +93,9 @@ var allowedStatusConsumers = []scankit.Entry{
+ 	{Key: "internal/planglyph/donecheck.go:doneCheckVerdicts", Why: "fail-closed status reader"},
+ 	{Key: "internal/planglyph/donecheck.go:anyMemberMissing", Why: "decides only whether to list declarations for a finding's detail, never a verdict; any answer but not_found lists nothing"},
+ 	{Key: "internal/planglyph/donecheck.go:searchedDescription", Why: "reads glyph.Glyph.Unit, a name-shape match for the status vocabulary's Unit selector that is no resolve status"},
++	{Key: "internal/planglyph/donecheck.go:signatureMismatches", Why: "reads glyph.Glyph.Unit, a name-shape match for the status vocabulary's Unit selector that is no resolve status"},
++	{Key: "internal/planglyph/donecheck.go:signatureMismatchFinding", Why: "reads glyph.Glyph.Unit, a name-shape match for the status vocabulary's Unit selector that is no resolve status"},
++	{Key: "internal/planglyph/donecheck.go:declarationList", Why: "reads glyph.Glyph.Unit, a name-shape match for the status vocabulary's Unit selector that is no resolve status"},
+ 	{Key: "internal/planglyph/deleteorder.go:answerSymbols", Why: "fail-closed status reader"},
+ 	{Key: "internal/planglyph/handle.go:renameDeclSource", Why: "fail-closed status reader"},
+ 	{Key: "internal/planglyph/resign.go:RebindResigns", Why: "fail-closed status reader: only found passes, every other answer is resign-not-done"},
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index cc500a17..1dc0e002 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -328,6 +328,8 @@
+ // and the BatchFailedError's way forward is the plan edit (move the delete after that card, rebaseline, then recover-batch), or the reset-to-start steps when the record also lists uncheckable entries, since recover-batch would repeat the same failure.
+ // Only a reference resolved to the deleted member counts, which is the blocking finding; a method matched by name alone is informational, adds no reason and changes no way forward.
+ // A glyph-rejected finding, a card target quarry rejects before resolving it, takes the same plan-edit way forward with the card's target amended instead of the delete moved, since recovery re-runs the same check on the same plan.
++// A create-not-done or rename-not-done finding offers that card amendment beside recover-batch, and a signature-mismatch finding, or a create-not-done or rename-not-done finding a recovery has already failed, offers the amendment alone, so recover-batch never names itself as the way past its own repeat.
++// The delete-reference, glyph-rejected and create ways forward take the exhausted-batch steps once the batch has used its counted recoveries and holds no amendment a recovery has yet to render.
+ // PersistRecoveryTerminal fails a recovered batch the same way, and recover-batch runs the same check before spawning:
+ // while a blocking reference fires it refuses with ErrRecoveryDeleteReferenced, which the CLI maps to the `batch_failed` flag.
+ // At run exit the audit cross-check drops dispositioned findings, records the rest of the policy findings as run-level warnings, appended to summary.md under "Audit warnings", and demotes Master's outcome done to stuck for an undispositioned correctness finding.
+diff --git a/internal/websterengine/export_test.go b/internal/websterengine/export_test.go
+new file mode 100644
+index 00000000..8c18fa39
+--- /dev/null
++++ b/internal/websterengine/export_test.go
+@@ -0,0 +1,23 @@
++// export_test.go exposes the unexported done-check failure seams of record-batch to the package's external tests.
++
++package websterengine
++
++import "github.com/Knatte18/loomyard/internal/planindex"
++
++// MaxRecoveries is how many counted recovery spawns one batch gets.
++const MaxRecoveries = maxRecoveries
++
++// CardNotDoneInputs is the input failCardNotDone takes.
++type CardNotDoneInputs = cardNotDoneInputs
++
++// FailCardNotDone exposes failCardNotDone.
++var FailCardNotDone = failCardNotDone
++
++// CardNotDoneFor returns the error cardNotDoneFor builds from findings, or nil when findings is empty.
++func CardNotDoneFor(findings []planindex.Finding) error {
++	notDone := cardNotDoneFor(postBatchInputs{}, findings)
++	if notDone == nil {
++		return nil
++	}
++	return notDone
++}
+diff --git a/internal/websterengine/recordbatch.go b/internal/websterengine/recordbatch.go
+index 3228f0c4..afdf162d 100644
+--- a/internal/websterengine/recordbatch.go
++++ b/internal/websterengine/recordbatch.go
+@@ -82,10 +82,13 @@ func (e *LaterTargetRemovedError) Unwrap() error { return ErrLaterTargetRemoved
+ 
+ // cardNotDoneError is the error the post-batch done-checks return: it unwraps to ErrCardNotDone and its message carries the findings' text.
+ // deleteNotDone is set when a finding is a Delete target that still resolves, and glyphRejected when quarry rejected a card's target before resolving it.
++// createNotDone is set when a finding is a Create target that still does not resolve or a Rename pair that did not happen, and signatureMismatch when a target's member is declared only with another parameter list.
+ type cardNotDoneError struct {
+-	reasons       []string
+-	deleteNotDone bool
+-	glyphRejected bool
++	reasons           []string
++	deleteNotDone     bool
++	glyphRejected     bool
++	createNotDone     bool
++	signatureMismatch bool
+ }
+ 
+ func (e *cardNotDoneError) Error() string {
+@@ -108,23 +111,55 @@ func unbegunCards(batches []batcher.Batch, st *State) []planparser.Card {
+ }
+ 
+ // deleteReferencedWayForward is the way forward for a batch whose Delete target an unbegun later card still references.
+-// Recovery cannot change the plan, so the way forward edits it; a record recovery would refuse as uncheckable restarts the run instead.
+-func deleteReferencedWayForward(number int, uncheckable bool) string {
++// Recovery cannot change the plan, so the way forward edits it; a record recovery would refuse as uncheckable restarts the run instead,
++// and a batch that has used its counted recoveries takes the steps for an exhausted batch, since a failed batch records no amendment.
++func deleteReferencedWayForward(number int, uncheckable, exhausted bool) string {
+ 	if uncheckable {
+ 		return freshRestartSteps(stepRun)
+ 	}
++	if exhausted {
++		return strings.TrimPrefix(exhaustedRecoveryWayForward(number), "way forward: ")
++	}
+ 	return fmt.Sprintf("move the delete to a card after the one that still references it, run `lym webster rebaseline --card NN` naming each card you edited, then `lym webster recover-batch %02d`", number)
+ }
+ 
+ // glyphRejectedWayForward is the way forward for a batch whose card names a target quarry rejects before resolving it.
+-// Recovery re-runs the same check on the same plan, so the way forward edits the card; a record recovery would refuse as uncheckable restarts the run instead.
+-func glyphRejectedWayForward(number int, uncheckable bool) string {
++// Recovery re-runs the same check on the same plan, so the way forward edits the card; a record recovery would refuse as uncheckable restarts the run instead,
++// and a batch that has used its counted recoveries takes the steps for an exhausted batch, since a failed batch records no amendment.
++func glyphRejectedWayForward(number int, uncheckable, exhausted bool) string {
+ 	if uncheckable {
+ 		return freshRestartSteps(stepRun)
+ 	}
++	if exhausted {
++		return strings.TrimPrefix(exhaustedRecoveryWayForward(number), "way forward: ")
++	}
+ 	return fmt.Sprintf("amend the card's target to a spelling `lym quarry resolve` answers, run `lym webster rebaseline --card NN` naming each card you edited, then `lym webster recover-batch %02d`", number)
+ }
+ 
++// createTargetWayForward is the way forward for a batch whose card's Create target or Rename pair is not done, or names a member its unit declares only with another parameter list.
++// A recovery checks the same target again, so the way forward amends the target whenever the member may live under another unit or signature;
++// recover-batch leads it only when no recovery has tried the batch and no declared signature differs.
++// A batch whose counted recoveries are used up cannot be recovered after the amendment either, since a failed batch records no amendment, so it takes the steps for an exhausted batch.
++// A record recovery would refuse as uncheckable restarts the run instead.
++func createTargetWayForward(number int, uncheckable, recovered, signatureMismatch, exhausted bool) string {
++	if uncheckable {
++		return freshRestartSteps(stepRun)
++	}
++	if exhausted {
++		return strings.TrimPrefix(exhaustedRecoveryWayForward(number), "way forward: ")
++	}
++	amend := fmt.Sprintf("amend the card's Create target or Rename new side to the unit, owner or parameter list the finding names the member declared with, run `lym webster rebaseline --card NN` naming each card you edited, then `lym webster recover-batch %02d`", number)
++	if recovered || signatureMismatch {
++		return amend
++	}
++	return fmt.Sprintf("lym webster recover-batch %02d to build the target as the card names it; or, when the member is declared where the finding names it, %s", number, amend)
++}
++
++// exhaustedRecoveryWayForward is the way forward for a batch that has used its counted recoveries: reset it to its start and recover it again, or restart the run.
++func exhaustedRecoveryWayForward(number int) string {
++	return fmt.Sprintf("%s; or %s", wayForwardSteps(resetVerb(ResetToBatchStart, number), fmt.Sprintf("lym webster recover-batch %d", number)), freshRestartSteps(stepRun))
++}
++
+ // laterDeleteReferenceReasons returns one reason per blocking reference an unbegun card still has to a symbol the cards in own delete.
+ // A method matched by name alone is informational and gives no reason, since its receiver is not resolved and the later card's verify build catches a real call.
+ // An infrastructure error is wrapped in planindex.ErrQuarryUnavailable.
+@@ -166,14 +201,19 @@ type cardNotDoneInputs struct {
+ // When a finding is a Delete target that still resolves and an unbegun later card still references it, the reasons also name that reference,
+ // and the way forward is the plan edit rather than recover-batch, which would only repeat the same failure.
+ // A finding whose target quarry rejected before resolving it takes the card-amending plan edit as its way forward for the same reason.
++// A Create target that does not resolve, or a Rename pair that did not happen, offers the card amendment too.
++// The amendment comes alone once a recovery has tried the batch or when its member is declared with another parameter list.
++// Each of these three takes the exhausted-batch steps instead once the batch has used its counted recoveries and holds no amendment a recovery has yet to render.
+ func failCardNotDone(in cardNotDoneInputs, cause error) (*BatchFailedError, error) {
+ 	var reasons []string
+-	var deleteNotDone, glyphRejected bool
++	var deleteNotDone, glyphRejected, createNotDone, signatureMismatch bool
+ 	var notDone *cardNotDoneError
+ 	if errors.As(cause, &notDone) {
+ 		reasons = notDone.reasons
+ 		deleteNotDone = notDone.deleteNotDone
+ 		glyphRejected = notDone.glyphRejected
++		createNotDone = notDone.createNotDone
++		signatureMismatch = notDone.signatureMismatch
+ 	} else {
+ 		reasons = strings.Split(strings.TrimPrefix(cause.Error(), ErrCardNotDone.Error()+": "), "; ")
+ 	}
+@@ -184,6 +224,7 @@ func failCardNotDone(in cardNotDoneInputs, cause error) (*BatchFailedError, erro
+ 	}
+ 	reasons = append([]string{fmt.Sprintf("batch %02d-%s holds cards %s", in.Number, in.Slug, strings.Join(cardIDs, ", "))}, reasons...)
+ 
++	exhausted := in.Batch.Recoveries >= maxRecoveries && !rendersNewAmendment(in.Batch)
+ 	var wayForward string
+ 	if deleteNotDone {
+ 		referenced, err := laterDeleteReferenceReasons(in.Plan, in.Batches, in.State, in.Cards, in.Geom)
+@@ -192,11 +233,14 @@ func failCardNotDone(in cardNotDoneInputs, cause error) (*BatchFailedError, erro
+ 		}
+ 		if len(referenced) > 0 {
+ 			reasons = append(append([]string(nil), reasons...), referenced...)
+-			wayForward = deleteReferencedWayForward(in.Number, len(in.Batch.Uncheckable) > 0)
++			wayForward = deleteReferencedWayForward(in.Number, len(in.Batch.Uncheckable) > 0, exhausted)
+ 		}
+ 	}
+ 	if wayForward == "" && glyphRejected {
+-		wayForward = glyphRejectedWayForward(in.Number, len(in.Batch.Uncheckable) > 0)
++		wayForward = glyphRejectedWayForward(in.Number, len(in.Batch.Uncheckable) > 0, exhausted)
++	}
++	if wayForward == "" && (createNotDone || signatureMismatch) {
++		wayForward = createTargetWayForward(in.Number, len(in.Batch.Uncheckable) > 0, in.Verb == "recover-batch", signatureMismatch, exhausted)
+ 	}
+ 	return failBatch(failBatchInput{
+ 		State:      in.State,
+@@ -878,6 +922,10 @@ func cardNotDoneFor(in postBatchInputs, findings []planindex.Finding) *cardNotDo
+ 			notDone.deleteNotDone = true
+ 		case "glyph-rejected":
+ 			notDone.glyphRejected = true
++		case "create-not-done", "rename-not-done":
++			notDone.createNotDone = true
++		case "signature-mismatch":
++			notDone.signatureMismatch = true
+ 		}
+ 	}
+ 	logBindOutcomes(in.Number, failedBindOutcomes(in.Cards, func(c planparser.Card) planindex.BindReason {
+diff --git a/internal/websterengine/recordbatch_test.go b/internal/websterengine/recordbatch_test.go
+index e8474381..5c606457 100644
+--- a/internal/websterengine/recordbatch_test.go
++++ b/internal/websterengine/recordbatch_test.go
+@@ -1503,8 +1503,102 @@ func TestRecordBatch_MissingSessionTranscriptArchivesReport(t *testing.T) {
+ 	}
+ }
+ 
++// laterReferencesIndex is a planindex.Index whose only answer is the later-card references to a deleted symbol.
++type laterReferencesIndex struct {
++	planindex.Index
++	references []planindex.Finding
++}
++
++func (i laterReferencesIndex) LaterDeleteReferences(*planparser.Plan, []planparser.Card, []planparser.Card, string) ([]planindex.Finding, error) {
++	return i.references, nil
++}
++
++// TestFailCardNotDone_WayForward pins the way forward a batch failed on done-check findings names.
++// It covers each Create-target arm: a signature mismatch, a plain missing target, a Rename pair that did not happen, a target after a recovery, an uncheckable record, an exhausted batch,
++// and an exhausted batch whose record holds an amendment no recovery has rendered yet.
++// It also covers the precedence of the Delete reference, glyph-rejected and Create ways forward over one another.
++func TestFailCardNotDone_WayForward(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const (
++		amend        = "amend the card's Create target or Rename new side to the unit, owner or parameter list the finding names the member declared with, run `lym webster rebaseline --card NN` naming each card you edited, then `lym webster recover-batch 01`"
++		amendGlyph   = "amend the card's target to a spelling `lym quarry resolve` answers, run `lym webster rebaseline --card NN` naming each card you edited, then `lym webster recover-batch 01`"
++		moveDelete   = "move the delete to a card after the one that still references it, run `lym webster rebaseline --card NN` naming each card you edited, then `lym webster recover-batch 01`"
++		freshRestart = "1) lym webster reset --to start; 2) lym webster run"
++		exhausted    = "1) lym webster reset --to batch-start --batch 01; 2) lym webster recover-batch 1; or " + freshRestart
++	)
++	finding := func(check string) planindex.Finding {
++		return planindex.Finding{Check: check, Card: "1-json-flag", Detail: "the target is not done", Severity: planindex.SeverityBlocking}
++	}
++	signatureMismatch := finding("signature-mismatch")
++	createNotDone := finding("create-not-done")
++	glyphRejected := finding("glyph-rejected")
++	deleteNotDone := finding("delete-not-done")
++	renameNotDone := finding("rename-not-done")
++	stillReferenced := []planindex.Finding{{Check: "plan-references-deleted-symbol", Card: "2-later", Detail: "the card still references the deleted symbol", Severity: planindex.SeverityBlocking}}
++
++	tests := []struct {
++		name        string
++		findings    []planindex.Finding
++		verb        string
++		recoveries  int
++		uncheckable []string
++		references  []planindex.Finding
++		want        string
++		amended     []websterengine.AmendedCard
++	}{
++		{"SignatureMismatchAmendsAlone", []planindex.Finding{signatureMismatch}, "record-batch", 0, nil, nil, amend, nil},
++		{"CreateNotDoneOffersRecoverAndAmend", []planindex.Finding{createNotDone}, "record-batch", 0, nil, nil,
++			"lym webster recover-batch 01 to build the target as the card names it; or, when the member is declared where the finding names it, " + amend, nil},
++		{"RenameNotDoneOffersRecoverAndAmend", []planindex.Finding{renameNotDone}, "record-batch", 0, nil, nil,
++			"lym webster recover-batch 01 to build the target as the card names it; or, when the member is declared where the finding names it, " + amend, nil},
++		{"CreateNotDoneAfterARecoveryAmendsAlone", []planindex.Finding{createNotDone}, "recover-batch", 0, nil, nil, amend, nil},
++		{"UncheckableRestartsTheRun", []planindex.Finding{createNotDone}, "record-batch", 0, []string{"fabric-reference: Bash command references the fabric"}, nil, freshRestart, nil},
++		{"UncheckableSignatureMismatchRestartsTheRun", []planindex.Finding{signatureMismatch}, "record-batch", 0, []string{"fabric-reference: Bash command references the fabric"}, nil, freshRestart, nil},
++		{"ExhaustedRecoveriesTakeTheExhaustedSteps", []planindex.Finding{createNotDone}, "recover-batch", websterengine.MaxRecoveries, nil, nil, exhausted, nil},
++		{"ExhaustedRecoveriesBeatRenameNotDone", []planindex.Finding{renameNotDone}, "recover-batch", websterengine.MaxRecoveries, nil, nil, exhausted, nil},
++		{"ExhaustedBatchWithAnUnrenderedAmendmentAmendsAlone", []planindex.Finding{createNotDone}, "recover-batch", websterengine.MaxRecoveries, nil, nil, amend,
++			[]websterengine.AmendedCard{{Card: "1-json-flag", Rendered: false}}},
++		{"ExhaustedRecoveriesBeatSignatureMismatch", []planindex.Finding{signatureMismatch}, "recover-batch", websterengine.MaxRecoveries, nil, nil, exhausted, nil},
++		{"ExhaustedRecoveriesBeatGlyphRejected", []planindex.Finding{glyphRejected}, "recover-batch", websterengine.MaxRecoveries, nil, nil, exhausted, nil},
++		{"ExhaustedRecoveriesBeatReferencedDelete", []planindex.Finding{deleteNotDone}, "recover-batch", websterengine.MaxRecoveries, nil, stillReferenced, exhausted, nil},
++		{"GlyphRejectedBeatsCreateNotDone", []planindex.Finding{createNotDone, glyphRejected}, "record-batch", 0, nil, nil, amendGlyph, nil},
++		{"ReferencedDeleteBeatsCreateNotDone", []planindex.Finding{createNotDone, deleteNotDone}, "record-batch", 0, nil, stillReferenced, moveDelete, nil},
++		{"UnreferencedDeleteLeavesCreateNotDone", []planindex.Finding{deleteNotDone, createNotDone}, "record-batch", 0, nil, nil,
++			"lym webster recover-batch 01 to build the target as the card names it; or, when the member is declared where the finding names it, " + amend, nil},
++	}
++
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			batch := &websterengine.BatchState{Recoveries: tt.recoveries, Uncheckable: tt.uncheckable, AmendedCards: tt.amended}
++			in := websterengine.CardNotDoneInputs{
++				Plan:   &planparser.Plan{},
++				State:  &websterengine.State{Batches: map[int]*websterengine.BatchState{1: batch}},
++				Batch:  batch,
++				Cards:  []planparser.Card{{Number: 1, Slug: "json-flag"}},
++				Number: 1,
++				Slug:   "json-flag",
++				Geom:   websterengine.Geometry{ReportsDir: t.TempDir(), Index: laterReferencesIndex{references: tt.references}},
++				Verb:   tt.verb,
++			}
++
++			failed, err := websterengine.FailCardNotDone(in, websterengine.CardNotDoneFor(tt.findings))
++			if err != nil {
++				t.Fatalf("FailCardNotDone() error = %v; want nil", err)
++			}
++			if failed.WayForward != tt.want {
++				t.Errorf("FailCardNotDone() way forward = %q; want %q", failed.WayForward, tt.want)
++			}
++		})
++	}
++}
++
+ // TestRecordBatch_DoneChecksBlockOnUnresolvedCreate proves card 33's wiring as card 10 reshaped it:
+-// a Create target that still does not resolve against the worktree's actual post-card tree fails the batch terminally with its findings as reasons and the report archived, and a target quarry rejects outright names the card amendment as the way forward.
++// a Create target that still does not resolve against the worktree's actual post-card tree fails the batch terminally with its findings as reasons and the report archived, with recover-batch and the card amendment as its way forward,
++// and a target quarry rejects outright names the card amendment alone.
+ func TestRecordBatch_DoneChecksBlockOnUnresolvedCreate(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	fx := newRecordFixture(t, []shuttleengine.ForkAudit{
+@@ -1532,6 +1626,11 @@ func TestRecordBatch_DoneChecksBlockOnUnresolvedCreate(t *testing.T) {
+ 	if _, statErr := os.Stat(filepath.Join(fx.ReportsDir, websterengine.ReportFileName(1, "json-flag"))); !os.IsNotExist(statErr) {
+ 		t.Errorf("report still at its live path (stat err %v); want it archived", statErr)
+ 	}
++	for _, want := range []string{"way forward: lym webster recover-batch 01 to build the target as the card names it", "amend the card's Create target", "lym webster rebaseline --card NN"} {
++		if !strings.Contains(err.Error(), want) {
++			t.Errorf("RecordBatch() error = %q; want it to contain %q", err.Error(), want)
++		}
++	}
+ 
+ 	t.Run("ReasonsOpenWithTheBatchAndItsCards", func(t *testing.T) {
+ 		fx := newRecordFixture(t, []shuttleengine.ForkAudit{
+diff --git a/internal/websterengine/recoverbatch.go b/internal/websterengine/recoverbatch.go
+index c8bf58ee..cda9a195 100644
+--- a/internal/websterengine/recoverbatch.go
++++ b/internal/websterengine/recoverbatch.go
+@@ -507,8 +507,7 @@ func RecoverSpawnOrAttach(deps RecoverDeps, batchNumber int, clk Clock) (bs *Bat
+ 		}
+ 	}
+ 	if prior != nil && prior.Recoveries >= maxRecoveries && !rendersNewAmendment(prior) && !waitsOnParent(prior) {
+-		return nil, false, fmt.Errorf("%w: batch %02d has had %d recoveries; %s; or %s", ErrRecoveryExhausted, batchNumber, prior.Recoveries,
+-			wayForwardSteps(resetVerb(ResetToBatchStart, batchNumber), fmt.Sprintf("lym webster recover-batch %d", batchNumber)), freshRestartSteps(stepRun))
++		return nil, false, fmt.Errorf("%w: batch %02d has had %d recoveries; %s", ErrRecoveryExhausted, batchNumber, prior.Recoveries, exhaustedRecoveryWayForward(batchNumber))
+ 	}
+ 	if prior != nil && prior.Terminal && prior.Status == DigestStatusFailed && allReadOnlyFabricReferences(prior.Uncheckable, deps.ReadOnly) {
+ 		// An evidence failure returns the wrap unchanged: its way forward names this verb for the re-run.
+@@ -558,7 +557,7 @@ func RecoverSpawnOrAttach(deps RecoverDeps, batchNumber int, clk Clock) (bs *Bat
+ 		return nil, false, fmt.Errorf("%w; way forward: transient, re-run `lym webster recover-batch %d`", err, batchNumber)
+ 	}
+ 	if len(referenced) > 0 {
+-		return nil, false, fmt.Errorf("%w: batch %02d: %s; way forward: %s", ErrRecoveryDeleteReferenced, batchNumber, strings.Join(referenced, "; "), deleteReferencedWayForward(batchNumber, prior != nil && len(prior.Uncheckable) > 0))
++		return nil, false, fmt.Errorf("%w: batch %02d: %s; way forward: %s", ErrRecoveryDeleteReferenced, batchNumber, strings.Join(referenced, "; "), deleteReferencedWayForward(batchNumber, prior != nil && len(prior.Uncheckable) > 0, false))
+ 	}
+ 
+ 	prevDigest := predecessorDigestLine(deps.Batches, deps.State, batchNumber)
+diff --git a/internal/websterengine/recoverbatch_test.go b/internal/websterengine/recoverbatch_test.go
+index ccb7c454..f3d22592 100644
+--- a/internal/websterengine/recoverbatch_test.go
++++ b/internal/websterengine/recoverbatch_test.go
+@@ -665,6 +665,7 @@ func TestRecoverBatch_SecondCall(t *testing.T) {
+ //
+ // Here the recovery reports done over a Create card whose target never appeared in the tree.
+ // The mechanical pass must refuse it and take the batch terminal failed with its report archived, exactly as record-batch does, so the next recover-batch spawns a fresh strand.
++// Its way forward is the card amendment alone, since a recovery has already failed the same target.
+ func TestRecoverBatch_TerminalRunsTheSamePostBatchChecksAsRecordBatch(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	logs := captureLogs(t)
+@@ -706,6 +707,9 @@ func TestRecoverBatch_TerminalRunsTheSamePostBatchChecksAsRecordBatch(t *testing
+ 	if bs.Digest == nil || len(bs.Digest.Reasons) == 0 {
+ 		t.Errorf("failed digest = %+v; want reasons naming the done-check finding", bs.Digest)
+ 	}
++	if !strings.Contains(err.Error(), "way forward: amend the card's Create target") || strings.Contains(err.Error(), "to build the target as the card names it") {
++		t.Errorf("RecoverBatch() second call error = %q; want the card amendment alone as its way forward", err)
++	}
+ 	if _, statErr := os.Stat(filepath.Join(fx.ReportsDir, websterengine.ReportFileName(1, "json-flag"))); !os.IsNotExist(statErr) {
+ 		t.Errorf("stat(live report) = %v; want the report archived away", statErr)
+ 	}
