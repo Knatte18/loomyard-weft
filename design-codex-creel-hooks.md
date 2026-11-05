@@ -1,6 +1,6 @@
 # Codex sessions get creel mail through hooks, as Claude sessions do
 
-`codex-creel-hooks` · Task · feature, codex, creel, shuttle · running · Code-Burler-Fix
+`codex-creel-hooks` · Task · feature, codex, creel, shuttle · running · Code-Bouncer
 
 ## Seen (operator and hub orch, 2026-11-03)
 
