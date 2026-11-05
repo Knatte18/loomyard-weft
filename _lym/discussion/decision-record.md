@@ -189,6 +189,12 @@ Rationale: Round 3's only design-wrong finding, F1 (relay-restart-cap-unreachabl
   - setpresence-beams-error-outcome-unassigned (class scope, severity MEDIUM, open in rounds 3)
 <!-- /lym:carry-over Plan-Review -->
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - stale-summary-lost-on-failed-read (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1, D4: with a fake Slack API, a top-level message from the configured operator in the hub's channel reaches the prime orch's creel mailbox as a `[slack]` message from `<shortname>:SLACK`; a message from another user, a bot message, a thread reply and a message with a subtype reach no mailbox.
