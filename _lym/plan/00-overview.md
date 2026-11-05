@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -41,9 +41,9 @@ Build the per-hub Slack relay: a machine token file and a per-hub setup file onl
 
 ### Decision: the relay's files and process
 
-- **Decision:** The hub's `.lym/slack/` (`lymdirs.SlackDirName` under `fabricengine.HubScratchDir`) holds `setup.json`, `presence.json`, `cursor.json`, `outbox.json`, `relay.json`, the relay lock and the relay log; the token is `slack.json` in `githubclient.CredentialDir()`. The relay registers itself under `runproc.HubOwner` with `runproc.RoleSlackRelay`. Every relay argv carries `--hub-path <hub>`; the intermediate runs `--fork`, the relay `--after <intermediate pid>`.
+- **Decision:** The hub's `.lym/slack/` (`lymdirs.SlackDirName` under `fabricengine.HubScratchDir`) holds `setup.json`, `presence.json`, `cursor.json`, `outbox.json`, `relay.json`, the relay lock and the relay log; the token is `slack.json` in `githubclient.CredentialDir()`. The relay registers itself under `runproc.HubOwner` with `runproc.RoleSlackRelay`. Every relay argv carries `--hub-path <hub>` and `--prime <prime name>`, the prime's name told by the caller of `EnsureRelay` or `EnsureRelayWhileAway`; the intermediate runs `--fork`, the relay `--after <intermediate pid>`.
 - **Rationale:** D2 and D3; the creel daemon's `--hub-path` and dobby's self-registration are the precedents.
-- **Applies to:** cards 2, 4, 9, 10.
+- **Applies to:** cards 2, 4, 9 to 13.
 
 ### Decision: D8's reminders are outside this part
 
