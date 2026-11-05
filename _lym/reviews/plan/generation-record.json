@@ -1,9 +1,8 @@
 {
-  "number": 1,
+  "number": 2,
+  "amendment": true,
+  "base": "cde2a832ae70cc89928c4c9f383ee46e71cb7724",
   "judge_subject": {
-    "kind": "document",
-    "hash": "baa22525231975f4ec86be6404fd3f596a43d48ac203aa2bbc45ca30a70fb28d"
-  },
-  "judge_base": "2055e6a99097c072bad4f75cd22221e7587fdc55",
-  "judge_at": "2026-11-05T10:40:05Z"
+    "kind": ""
+  }
 }

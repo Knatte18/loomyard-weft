@@ -1,14 +1,14 @@
 ---
 round: 1
 focus:
-  - "Fidelity: map every Decision D1–D15 step and every Constraint to a carrying card, with particular attention to D9's seven steps and their done markers, D10's replayer and slug-rule changes (cards 14–16), and D12's per-fork-model records (cards 3–5); name any step no card carries."
-  - "Card order across the three groups (usage cards 1–8, raddle cards 9–22, recipe and wiring 23–27): does any card's Uses or Intent depend on a symbol, file or verb a later card creates, such as the parser (12) against its spec (10) and part splice (11), or the verbs (20) against the state (19)?"
-  - "Card 4 and card 12 (the PATTERN-headroom shared decision) and card 27: does each PATTERN change in the overview's list have exactly one carrying card, and does any card shorten a PATTERN entry beyond the recorded changes?"
-  - "Attack-surface and reachability: for cards that add a refusal or guard (13, 14, 16, 20, 22, 24), is the stated bound in Intent, and does each prescribed refusal have a named input and a named test that reaches it without an upstream check rejecting the input first?"
-  - "Edit cards over Go source files (3, 5, 6, 11, 13, 16, 18, 23, 24, 25): do targets use member glyphs where Intent names symbols, with the re-sign arrow where Intent changes parameters, results or receiver, and is any Extends used on a ref the card rewrites?"
-  - "Test economy: do cards plan per-symbol tests or tests for behavior another card's test already covers, for example the D6 checks (12 against 19 and 20) or the usage writer (4 against 5), and does any card plan a test asserting stencil, spec or glossary wording (10, 21, 27)?"
-  - "Research steps and board-entry edits: does any card leave a fact to be found while it runs or halt on a discovered fact, and does any card change this task's own board entry's body or scope or file a follow-up as a task rather than a note?"
-  - "Verify lines and ImpactSummary: does any Verify line name a raw test command rather than one `lym gate test` call, and does each Edit, Extends or Delete ImpactSummary state a blast-radius conclusion rather than restate Intent?"
+  - "Amendment scope: base commit cde2a832 is not an object in this worktree, so `git diff` cannot name the change. Establish the changed span from file mtimes and content instead, and review only cards touched since the settled generation (settle-record `settled_at` 10:40Z): 07-report-config, 08-report-cost, 23-raddle-recipe and 25-pawl-raddle-handoff were last written at 12:34, the newest. Settle which of these carry changed text before reviewing anything else."
+  - "Frozen cards: 01–06 are done and the gate refuses edits to them, and batch 7 (cards 07–12) has begun and failed. For any finding against 01–06, check that the fix is a follow-up card after the last begun batch with a Card Index line in `00-overview.md`, not an edit to the frozen file. Settle whether 07–12 are still editable, since batch 7 failed rather than finishing."
+  - "Card order across the amendment: 08-report-cost and 26-report-raddle depend on usage records from cards 04–06, and 23-raddle-recipe on cards 9–22. Settle whether any changed card now uses something a later card creates."
+  - "23-raddle-recipe (largest card, changed): settle whether its targets form one reviewable unit or bundle independent surfaces, whether any `Edit` glyph lacks the re-sign arrow where `Intent` changes a signature, and whether each new verb, flag or guard states in `Intent` what it can skip and what bounds it."
+  - "25-pawl-raddle-handoff (changed): settle whether each prescribed refusal or guard branch names an input and a test that reach it, and whether an upstream check already rejects that input."
+  - "Fidelity: for each changed card, settle whether the scope it carries is licensed by a Decision or Constraint in `_lym/discussion/decision-record.md`, and whether any Decision step is left uncarried by the amendment."
+  - "07-report-config and 08-report-cost (changed, after the failed batch 7): settle whether any `Verify:` line names a raw test command instead of one `lym gate test` form, and whether any planned test duplicates behavior an existing test covers or asserts static prose."
 ---
 
-Seed focus from the overview and the decision record only; the cards were not read.
+Seed rationale: the amendment base is unreachable in this worktree, so the focus names the files with the newest writes and the questions that decide whether the amendment is reviewable at all.
+No entry pre-states a verdict.
