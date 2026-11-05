@@ -43,8 +43,8 @@
 - `internal/loomrecipe#TestDriftRows_EntryGate`
 
 **Create:**
-- `plan:internal/driftengine#darnWriteRow` -> `const darnWriteRow = "Darn-Write"`
-- `plan:internal/driftengine#websterRow` -> `const websterRow = "Webster"`
+- `internal/driftengine#darnWriteRow`
+- `internal/driftengine#websterRow`
 
 **Delete:**
 - `internal/loomrecipe#driftRecheckType`

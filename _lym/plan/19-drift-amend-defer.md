@@ -31,8 +31,8 @@
 - `internal/driftengine#CheckBaseline`
 - `internal/driftengine#PastRow`
 - `internal/driftengine#expectRow`
-- `plan:internal/driftengine#darnWriteRow`
-- `plan:internal/driftengine#websterRow`
+- `internal/driftengine#darnWriteRow`
+- `internal/driftengine#websterRow`
 - `internal/driftengine#DeferHaltPrefix`
 - `internal/orchcli#NearestLiveParent`
 - `internal/fabricengine#WorktreePath`
