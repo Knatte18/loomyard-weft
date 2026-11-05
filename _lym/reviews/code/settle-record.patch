@@ -1,0 +1,2068 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index 4ca8e44e..ce5cd2d3 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -18,7 +18,7 @@
+ 
+ - `PATTERN-cli-cobra` — Adding CLI module: a cobra subtree under one root in `cmd/lym/main.go`. (test) — [background](pattern/PATTERN-cli-cobra.md)
+ - `PATTERN-cliwire-sole-wiring` — Wiring standalone CLI: `internal/cliwire` alone resolves target dir, repo root and state. (test) — [background](pattern/PATTERN-cliwire-sole-wiring.md)
+-- `PATTERN-config-layers` — Loading config: only `configengine` reads, stacks, locates and judges layers against the template; a caller adopts `Load` or `LoadOrTemplate`, bar `runprofile`; only `hubreconcile.Ensure` reconciles on a binary change; only `lym config reconcile` prunes unknown base-layer keys. — [background](pattern/PATTERN-config-layers.md)
++- `PATTERN-config-layers` — Loading config: only `configengine` reads, stacks, locates and judges layers against the template; a caller adopts `Load` or `LoadOrTemplate`, bar `runprofile`; only `hubreconcile.Ensure` reconciles on a binary change; only `lym config reconcile` prunes unknown base-layer keys; a seed-only key its template base holds is not unknown. — [background](pattern/PATTERN-config-layers.md)
+ - `PATTERN-sparse-hub-base` — Writing a hub base file, from any package: only the units the hub tuned, never a template fill; only `internal/hubreconcile`'s one-time strip drops a template-equal unit.
+ - `PATTERN-config-reinterpretation` — Changing a hub config value's meaning: a binary carries a `configreg.Reinterpretation` on its module that rewrites the value to its old meaning, or flags it with a way forward; only `hubreconcile`'s walk applies it, once per hub behind its board marker, and mails the prime orch.
+ - `PATTERN-refusal-way-forward` — Adding webster, shed or loom refusal: message names the way forward and a test reaches it; no refusal, stencil or spec names a step agents' settings deny. (test) — [background](pattern/PATTERN-refusal-way-forward.md)
+diff --git a/docs/overview.md b/docs/overview.md
+index 4ebf0e36..e22296bc 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -375,7 +375,7 @@ User-facing modules each get one `lym <module>` namespace:
+   ✅ Implemented.
+ - **config** — bare `lym config` lists modules and verbs, `lym config menu` picks a module to edit interactively, and `lym config <module>` edits that module's config;
+   `lym config reconcile` reconciles all module config files against their live templates (dry-run by default, `--apply` writes atomically) except seed-only modules (today: `models`), which are materialized once when absent and never rewritten again since the file is operator-owned;
+-  `lym config reconcile --layer default` seeds absent board files sparse, prunes but never fills a present one, and lists the one-time base strip as pending, which only a start verb's hub reconcile performs; with `--apply`, run from the prime, it commits them in the Bolt checkout;
++  `lym config reconcile --layer default` seeds absent board files sparse, prunes but never fills a present one that is not seed-only, carries a template change into a seed-only board file such as `profiles.yaml` against the template base `<module>.template-base` beside it while keeping every value the operator set, and lists the one-time base strip as pending, which only a start verb's hub reconcile performs; with `--apply`, run from the prime, it commits them in the Bolt checkout;
+   `lym config <module> --set key=value` (repeatable) writes one or more config values directly with no editor invocation, for scripts/agents that need a non-interactive path.
+   A key under a module's declared open map adds or rewrites one entry, e.g. `lym config board --set labels.quarry="glyphs and the quarry index"`.
+   A key that takes one value or a per-round list, such as loom's `reviewer_model` and tapestry's `plan_reviewer_model`, is written as a list when its value starts with `[`, e.g. `lym config tapestry --set 'plan_reviewer_model=["opus[medium]", "sonnet[high]"]'`, and a bracketed value that is not a list of scalars is refused.
+diff --git a/docs/shared-libs/yamlengine.md b/docs/shared-libs/yamlengine.md
+index c7daa1de..6a971b1b 100644
+--- a/docs/shared-libs/yamlengine.md
++++ b/docs/shared-libs/yamlengine.md
+@@ -126,6 +126,25 @@ Merges every mapping key the template holds and `existing` lacks into `existing`
+ **Differs from `Reconcile`:** `Reconcile` builds on the template, so it drops file keys the template lacks and replaces a mismatched shape, and its `added` lists keys inside list elements it never fills.
+ `FillMissing` builds on the file and only adds.
+ 
++### `FollowTemplate(base, template, existing []byte, haveBase bool) ([]byte, FollowReport, error)`
++
++Carries a template change into `existing`, an operator-owned file seeded from an earlier template, and keeps every value the operator set.
++`base` is the template the file last followed, and `haveBase` false says the file has no record of one, so `base` is not read.
++
++**Behavior:**
++
++- A unit is a mapping key, descended into while the file, the template and the base each hold a mapping or nothing there, and otherwise compared whole, so a scalar or a sequence is always one unit.
++- With a base, a unit the file holds as the base does, absence included, takes the template's value, gaining, changing or losing it.
++  Any other unit is the operator's and is kept, and `Differs` lists it when the template holds a third value.
++- Without a base, a unit the file lacks is added, one it holds with a value the template holds otherwise is kept and listed under `Differs`, and one only the file holds is kept silently.
++- A mapping a removal empties is removed with it.
++- An unchanged file comes back byte for byte.
++  A changed one is re-encoded, keeping its comments, each node's style and a long flow mapping on one line, and dropping the blank lines between entries.
++  A unit copied in from the template carries none of its comments.
++- A document whose top level is not a mapping is an error naming the document, and an error caused by `base` wraps `ErrInvalidBase`.
++
++**Returns:** the followed bytes and a `FollowReport` listing the `Added`, `Updated` and `Removed` units and the kept `Differs`, each sorted, or an error.
++
+ ### `SetValues(template, existing []byte, pairs []KV) (SetResult, error)`
+ 
+ Applies an explicit list of key=value pairs to a template-shaped YAML document.
+diff --git a/internal/battencli/runsettings_test.go b/internal/battencli/runsettings_test.go
+index 84a10e39..e2eaa53e 100644
+--- a/internal/battencli/runsettings_test.go
++++ b/internal/battencli/runsettings_test.go
+@@ -66,12 +66,12 @@ func TestPrepareRunSettings(t *testing.T) {
+ 		{
+ 			name:     "no profiles file takes the template's default for the recipe",
+ 			settings: battenshed.RunSettings{Recipe: "darn"},
+-			wantDocs: map[string]string{"loom": "code_hard_max_bounces: 2\ncode_max_bounces: 1\ncode_reviewer_fan: \"\"\n"},
++			wantDocs: map[string]string{"loom": "code_hard_max_bounces: 2\ncode_max_bounces: 1\n"},
+ 		},
+ 		{
+ 			name:     "a sampler task naming the template's light profile writes its loom values and the review on",
+ 			settings: battenshed.RunSettings{Recipe: "sampler", Profile: "light"},
+-			wantDocs: map[string]string{"loom": "code_hard_max_bounces: 2\ncode_max_bounces: 1\ncode_reviewer_fan: \"\"\n", "sampler": "code_review: true\n"},
++			wantDocs: map[string]string{"loom": "code_hard_max_bounces: 2\ncode_max_bounces: 1\n", "sampler": "code_review: true\n"},
+ 		},
+ 		{
+ 			name:        "the task's settings lie over the tapestry block with its plan keys in the tapestry document, and the profile's retired merge_max_bounces is dropped",
+diff --git a/internal/configcli/configcli.go b/internal/configcli/configcli.go
+index 0f5c2f6e..f8ccc5e7 100644
+--- a/internal/configcli/configcli.go
++++ b/internal/configcli/configcli.go
+@@ -626,9 +626,16 @@ func reconcileEnvelope(apply bool, results []configsync.Result) map[string]any {
+ 		if len(result.Dropped) > 0 {
+ 			m["dropped"] = result.Dropped
+ 		}
+-		// lacking is exceptional too: only a seed-only module whose file lacks a template unit, or holds a pair its module leaves for the operator to settle, sets it.
+-		if len(result.Lacking) > 0 {
+-			m["lacking"] = result.Lacking
++		// updated and differs are exceptional too: only a seed-only module's board file following its template sets them.
++		if len(result.Updated) > 0 {
++			m["updated"] = result.Updated
++		}
++		if len(result.Differs) > 0 {
++			m["differs"] = result.Differs
++		}
++		// unsettled is exceptional too: only a seed-only module whose file holds a pair its module leaves for the operator to settle sets it.
++		if len(result.Unsettled) > 0 {
++			m["unsettled"] = result.Unsettled
+ 		}
+ 		// seed is set only by a reconcile of the board dir's files.
+ 		if result.Seed != "" {
+diff --git a/internal/configcli/configcli_integration_test.go b/internal/configcli/configcli_integration_test.go
+index 3f6e01c3..3f95d002 100644
+--- a/internal/configcli/configcli_integration_test.go
++++ b/internal/configcli/configcli_integration_test.go
+@@ -370,20 +370,41 @@ func TestConfigOverRealHub(t *testing.T) {
+ 			t.Fatalf("seed the machine file: %v", err)
+ 		}
+ 
+-		// A starting profile seeded before motif and sampler existed lacks their blocks, which the dry run lists under lacking.
++		// A profiles file beside a template base recording an older template follows the template change, which the dry run lists:
++		// a key the file still holds at the base's value under removed and updated, a value the operator set that the template holds otherwise under differs,
++		// and a recipe block held under its former name beside a differing current one under unsettled.
+ 		profilesFile := configengine.ConfigFile(boardDir, "profiles")
+ 		profilesOriginal, err := os.ReadFile(profilesFile)
+ 		if err != nil {
+ 			t.Fatalf("read the board profiles.yaml: %v", err)
+ 		}
+-		const profilesLackingSampler = "light:\n  tapestry:\n    loom: {plan_max_bounces: 1}\n  darn:\n    loom: {code_max_bounces: 1}\n  pawl:\n    loom: {code_max_bounces: 1}\n"
+-		if err := os.WriteFile(profilesFile, []byte(profilesLackingSampler), 0o644); err != nil {
+-			t.Fatalf("plant a profile lacking its sampler block: %v", err)
++		baseFile := configengine.TemplateBaseFile(boardDir, "profiles")
++		baseOriginal, baseErr := os.ReadFile(baseFile)
++		const lightDarn = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 2}\n"
++		const lightDarnSolo = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: \"\"}\n"
++		const solidDarn = "  darn:\n    loom: {code_max_bounces: 2, code_hard_max_bounces: 3}\n"
++		const solidDarnBase = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 4}\n"
++		const solidDarnTuned = "  darn:\n    loom: {code_max_bounces: 5, code_hard_max_bounces: 4}\n"
++		const formerPair = "paired:\n  loom:\n    loom: {code_max_bounces: 1}\n  tapestry:\n    loom: {code_max_bounces: 2}\n"
++		olderTemplate := strings.Replace(runprofile.ConfigTemplate(), lightDarn, lightDarnSolo, 1)
++		basePlanted := strings.Replace(olderTemplate, solidDarn, solidDarnBase, 1)
++		profilesPlanted := strings.Replace(olderTemplate, solidDarn, solidDarnTuned, 1) + formerPair
++		for path, content := range map[string]string{profilesFile: profilesPlanted, baseFile: basePlanted} {
++			if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
++				t.Fatalf("plant the older template state at %s: %v", path, err)
++			}
+ 		}
+ 		restoreProfiles := sync.OnceFunc(func() {
+ 			if err := os.WriteFile(profilesFile, profilesOriginal, 0o644); err != nil {
+ 				t.Errorf("restore the board profiles.yaml: %v", err)
+ 			}
++			if baseErr != nil {
++				if err := os.Remove(baseFile); err != nil && !os.IsNotExist(err) {
++					t.Errorf("remove the planted profiles template base: %v", err)
++				}
++			} else if err := os.WriteFile(baseFile, baseOriginal, 0o644); err != nil {
++				t.Errorf("restore the board profiles template base: %v", err)
++			}
+ 		})
+ 		t.Cleanup(restoreProfiles)
+ 
+@@ -391,13 +412,23 @@ func TestConfigOverRealHub(t *testing.T) {
+ 		if code != 0 {
+ 			t.Fatalf("reconcile --layer default = %d; want 0; result: %v", code, result)
+ 		}
++		if got, err := os.ReadFile(profilesFile); err != nil || string(got) != profilesPlanted {
++			t.Errorf("board profiles.yaml after the dry run = %q, %v; want it unwritten", got, err)
++		}
+ 		restoreProfiles()
+-		if lacking := fmt.Sprint(reconcileModule(t, result, "profiles")["lacking"]); lacking != "[light.motif light.sampler]" {
+-			t.Errorf("dry-run profiles lacking = %s; want [light.motif light.sampler]", lacking)
++		for key, want := range map[string]string{
++			"removed":   "[light.darn.loom.code_reviewer_fan]",
++			"updated":   "[solid.darn.loom.code_hard_max_bounces: 4 -> 3]",
++			"differs":   "[solid.darn.loom.code_max_bounces: file 5, template 2]",
++			"unsettled": "[paired.loom: differs from paired.tapestry]",
++		} {
++			if got := fmt.Sprint(reconcileModule(t, result, "profiles")[key]); got != want {
++				t.Errorf("dry-run profiles %s = %s; want %s", key, got, want)
++			}
+ 		}
+ 		loom := reconcileBaseEntry(t, result, "loom")
+-		if _, has := loom["lacking"]; has {
+-			t.Errorf("dry-run loom entry = %v; want no lacking key for a module with no lacking units", loom)
++		if _, has := loom["differs"]; has {
++			t.Errorf("dry-run loom entry = %v; want no differs key for a module that is not seed-only", loom)
+ 		}
+ 		if loom["layer"] != string(configengine.LayerDefault) || loom["seed"] != "hub" || loom["applied"] != false {
+ 			t.Errorf("dry-run loom entry = %v; want layer default, seed hub, applied false", loom)
+@@ -463,6 +494,22 @@ func TestConfigOverRealHub(t *testing.T) {
+ 			})
+ 		}
+ 
++		// A committed template base holding an older template is rewritten by the apply, and the config commit carries it beside the files.
++		if err := os.WriteFile(baseFile, []byte(olderTemplate), 0o644); err != nil {
++			t.Fatalf("plant an older template as the committed profiles template base: %v", err)
++		}
++		baseRel := filepath.ToSlash(configengine.TemplateBaseFileRel("profiles"))
++		for _, args := range [][]string{
++			{"add", "--", baseRel},
++			{"-c", "user.name=fixture", "-c", "user.email=fixture@example.com", "commit", "-q", "-m", "fixture: an older profiles template base", "--", baseRel},
++		} {
++			fixtureGit := exec.Command("git", args...)
++			fixtureGit.Dir = boardDir
++			if out, err := fixtureGit.CombinedOutput(); err != nil {
++				t.Fatalf("git %v in the Bolt checkout: %v\n%s", args, err, out)
++			}
++		}
++
+ 		// An unrelated file left uncommitted in Bolt must stay out of the config commit.
+ 		const rulesContent = "an uncommitted rule\n"
+ 		rulesRel := filepath.Join("_lym", "orch", "rules.md")
+@@ -506,8 +553,8 @@ func TestConfigOverRealHub(t *testing.T) {
+ 			t.Fatalf("git show in the Bolt checkout: %v", err)
+ 		}
+ 		wantShow := "config: reconcile the board dir's files"
+-		for _, module := range []string{"lenses", "loom", "tapestry"} {
+-			wantShow += "\n" + strings.ReplaceAll(configengine.ConfigFileRel(module), "\\", "/")
++		for _, rel := range []string{configengine.ConfigFileRel("lenses"), configengine.ConfigFileRel("loom"), configengine.TemplateBaseFileRel("profiles"), configengine.ConfigFileRel("tapestry")} {
++			wantShow += "\n" + strings.ReplaceAll(rel, "\\", "/")
+ 		}
+ 		if strings.TrimSpace(string(showOut)) != wantShow {
+ 			t.Errorf("HEAD in the Bolt checkout = %q; want %q", showOut, wantShow)
+diff --git a/internal/configcli/doc.go b/internal/configcli/doc.go
+index 9b4f08ab..e01647f4 100644
+--- a/internal/configcli/doc.go
++++ b/internal/configcli/doc.go
+@@ -85,9 +85,11 @@
+ // With no `--layer` it reconciles the worktree's own and local files.
+ // `lym config reconcile --layer default` reconciles every file under the Bolt checkout's `_lym/config/` instead, the hub-wide modules' files and each per-worktree module's repo default:
+ // renamed keys are migrated, keys the template lacks are pruned, an absent file is seeded sparse, and each entry carries the `seed` it started from.
+-// A seed-only file, such as `profiles`, is never filled or pruned: only its migration runs, such as renaming a profile's block held under a recipe's former name,
+-// and the template units its module reports it lacking, such as a recipe block of a starting profile, or a pair it leaves for the operator to settle, such as a former recipe block differing from the current one, are listed under `lacking`.
+-// It never fills a base, and its dry run and apply list the one-time base strip under `stripped` as pending, which only the hub reconcile of a start verb performs;
++// A seed-only file, such as `profiles`, is never pruned down to the template: its migration runs, such as renaming a profile's block held under a recipe's former name,
++// and then each template change is carried in against the template base kept beside the file as `<module>.template-base`, which an apply writes.
++// A unit the file holds as the base does takes the template's value and is listed under `added`, `updated` or `removed`; a unit the operator set is kept and listed under `differs` when the template holds it otherwise;
++// a pair the module leaves for the operator to settle, such as a former recipe block differing from the current one, is listed under `unsettled`.
++// It never fills a base that is not seed-only, and its dry run and apply list the one-time base strip under `stripped` as pending, which only the hub reconcile of a start verb performs;
+ // the envelope then carries a top-level `base_strip` field saying so, and `--apply` writes no board marker.
+ // `--apply` with it passes the default-layer write guard above, then under the board write lock runs a dry run, so a file that fails to parse or migrate leaves every file unwritten, then writes, commits the written files in the Bolt checkout and pushes.
+ // A write that fails part-way is undone by restoring the Bolt checkout's config files.
+diff --git a/internal/configcli/hubwide.go b/internal/configcli/hubwide.go
+index 010b9a9b..97c681bc 100644
+--- a/internal/configcli/hubwide.go
++++ b/internal/configcli/hubwide.go
+@@ -160,7 +160,8 @@ func newHubCommit(boardDir string) hubCommitFunc {
+ }
+ 
+ // reconcileDefaultLayer reconciles every module's file under the hub's board dir against its template, seeded from the prime's anchor, and reports the reconcile envelope.
+-// It seeds absent bases sparse and never fills a present one.
++// It seeds absent bases sparse and never fills a present base that is not seed-only;
++// a present seed-only file follows its template against the template base kept beside it.
+ // The one-time base strip of an unmigrated board is reported as pending and never performed, so the board marker is not written.
+ // A dry run writes nothing and takes no guard.
+ // apply is refused when guard refuses.
+@@ -220,13 +221,7 @@ func reconcileDefaultLayer(l *lymcwd.Location, out io.Writer, apply bool, guard
+ 			return nil, restoreBoardConfig(prior, err)
+ 		}
+ 		for _, result := range results {
+-			if !result.Applied {
+-				continue
+-			}
+-			written = append(written, configengine.ConfigFileRel(result.Module))
+-			for _, legacy := range result.MigratedFrom {
+-				written = append(written, configengine.ConfigFileRel(legacy))
+-			}
++			written = append(written, result.ChangedFilesRel()...)
+ 		}
+ 		return written, nil
+ 	}, syncOpts)
+@@ -244,7 +239,7 @@ func reconcileDefaultLayer(l *lymcwd.Location, out io.Writer, apply bool, guard
+ 	return output.Ok(out, reconcileEnvelope(true, results))
+ }
+ 
+-// snapshotBoardConfig reads every file in the board dir's config dir and every registry module's config file there; an absent module file maps to a snapshot of absence.
++// snapshotBoardConfig reads every file in the board dir's config dir and every registry module's config file there, and each seed-only module's template base; an absent module file or base maps to a snapshot of absence.
+ func snapshotBoardConfig(board string) (map[string]fileSnapshot, error) {
+ 	prior := make(map[string]fileSnapshot)
+ 	configDir := configengine.ConfigDir(board)
+@@ -260,6 +255,9 @@ func snapshotBoardConfig(board string) (map[string]fileSnapshot, error) {
+ 	}
+ 	for _, module := range configreg.Modules() {
+ 		paths = append(paths, configengine.ConfigFile(board, module.Name))
++		if module.SeedOnly {
++			paths = append(paths, configengine.TemplateBaseFile(board, module.Name))
++		}
+ 	}
+ 	for _, path := range paths {
+ 		snap, err := snapshotFile(path)
+diff --git a/internal/configengine/config.go b/internal/configengine/config.go
+index 9725ff1b..0c4e4236 100644
+--- a/internal/configengine/config.go
++++ b/internal/configengine/config.go
+@@ -146,6 +146,24 @@ func ReinterpretedMarkerRel(id string) string {
+ 	return filepath.Join(lymdirs.LymDirName, configDirName, reinterpretedMarkerPrefix+id)
+ }
+ 
++// templateBaseSuffix ends the name of a seed-only module's template base file; the name has no .yaml suffix, so no module reader takes it for a module file.
++const templateBaseSuffix = ".template-base"
++
++// TemplateBaseFile returns the tracked file under boardDir that keeps, beside a seed-only module's board file, the template that file last followed.
++func TemplateBaseFile(boardDir, module string) string {
++	return filepath.Join(ConfigDir(boardDir), module+templateBaseSuffix)
++}
++
++// TemplateBaseFileRel returns a module's template base file relative to the board dir, the form a board commit lists.
++func TemplateBaseFileRel(module string) string {
++	return filepath.Join(lymdirs.LymDirName, configDirName, module+templateBaseSuffix)
++}
++
++// IsTemplateBaseFile reports whether path names a seed-only module's template base file.
++func IsTemplateBaseFile(path string) bool {
++	return strings.HasSuffix(path, templateBaseSuffix)
++}
++
+ // sparseBase reports whether the base layer under dirs is sparse over the template:
+ // a board dir is told and the spec is not seed-only.
+ func sparseBase(dirs Dirs, spec Spec) bool {
+diff --git a/internal/configengine/doc.go b/internal/configengine/doc.go
+index 5e639693..d137b703 100644
+--- a/internal/configengine/doc.go
++++ b/internal/configengine/doc.go
+@@ -49,7 +49,7 @@
+ //
+ // The base layer ([BaseLayer]) is the lowest file layer, the repo default or hub file when `Board` is set, else the worktree file.
+ // In a hub it is sparse over the template: a key-less base holds [SparseBaseHeader] and loads as a present base, its fill is not logged, and [Set] and [Edit] write it sparse, scaffolding an absent one through [BaseScaffold].
+-// Only a [Spec] with `SeedOnly`, the operator's registry seeded whole and never filled or pruned, and a standalone worktree base stay full.
++// Only a [Spec] with `SeedOnly`, the operator's registry seeded whole and never pruned down to the template, and a standalone worktree base stay full.
+ // Every layer above the base is sparse.
+ // Strictness applies to the base layer: [Load] errors on an absent base file with the way forward for its kind, [LoadOrTemplate] takes the template as the base and still stacks the upper layers present.
+ // An absent upper file adds nothing, and so does an empty or comment-only local file.
+diff --git a/internal/configengine/layers.go b/internal/configengine/layers.go
+index bca13fd6..7d2e7197 100644
+--- a/internal/configengine/layers.go
++++ b/internal/configengine/layers.go
+@@ -77,7 +77,7 @@ const (
+ // RetiredKeys are the dotted keys the module no longer reads, each mapped to the category it held as a template key;
+ // they stay out of Categories and OpenMaps, the local and machine layers admit them by that category, and a load drops them from the stacked document.
+ // RetiredWayForward maps a retired key, by the same dotted key, to the text telling the operator where the key lives now; the local layer's refusal of that key ends with it as a way forward.
+-// SeedOnly marks the module whose file is the operator's registry, seeded whole and never filled or pruned, so its base stays full in a hub too.
++// SeedOnly marks the module whose file is the operator's registry, seeded whole and never pruned down to the template, so its base stays full in a hub too.
+ // Overlay is the module's optional template overlay, picked by a selector key in the base layer; its zero value means none.
+ type Spec struct {
+ 	Name              string
+diff --git a/internal/configreg/configreg.go b/internal/configreg/configreg.go
+index 9eabe150..7c2e03b7 100644
+--- a/internal/configreg/configreg.go
++++ b/internal/configreg/configreg.go
+@@ -58,9 +58,10 @@ type Module struct {
+ 	// configsync keeps only the names the file changed, leaves out a name holding the template's value, never copies a template name in, and keeps every entry the template lacks.
+ 	PerNameMaps []string
+ 	// SeedOnly marks a module whose key set is open-ended and owned by the operator (e.g. models.yaml aliases).
+-	// configsync materializes a seed-only module's template when its file is absent, and never fills or prunes a present file.
++	// configsync materializes a seed-only module's template when its file is absent, and never prunes a present file down to the template or strips it sparse.
+ 	// This is unlike the default reconcile behavior applied to every other module, whose seed in a hub is sparse.
+-	// The board dir's reconcile still runs the module's Migrate and Lacking hooks over a present file.
++	// The board dir's reconcile runs the module's Migrate hook over a present file, then carries each template change into it against the template base kept beside it, keeping every value the operator set, then runs the Unsettled hook.
++	// A worktree's copy is never rewritten.
+ 	SeedOnly bool
+ 	// HubWide marks a module that describes a hub-level fact.
+ 	// Its one file lives at configengine.ConfigFile(<BoardDir>, name)
+@@ -72,9 +73,9 @@ type Module struct {
+ 	// Migrate, when non-nil, rewrites a present config file's bytes before reconcile compares them to the template.
+ 	// It returns the rewritten bytes and one human-readable line per rewrite, and changes only the keys its module declares retired, renames a retired name to its replacement, rewrites a key's retired meaning into its replacement, or raises a key to its module's floor.
+ 	Migrate func(existing []byte) ([]byte, []string, error)
+-	// Lacking, when non-nil, lists the units of the template a seed-only module's present file lacks and the module wants the operator told of, after Migrate.
+-	// Reconcile reports them and never adds them, since the file is the operator's.
+-	Lacking func(existing []byte) ([]string, error)
++	// Unsettled, when non-nil, lists the pairs a seed-only module's present file holds for the operator to settle, after Migrate and the template merge.
++	// Reconcile reports them and never changes them, since only the operator can tell which one holds.
++	Unsettled func(existing []byte) ([]string, error)
+ 	// MigrateHubBase, when non-nil, runs only over the module's hub base file: after Migrate on a present file, and over the prime or legacy seed on an absent one.
+ 	// It adds what only that file may gain, returns the rewritten bytes and one human-readable line per addition, and, like Migrate, leaves the registry fingerprint unchanged.
+ 	MigrateHubBase func(existing []byte) ([]byte, []string, error)
+@@ -163,7 +164,7 @@ func Modules() []Module {
+ 		{Name: "loom", Template: loomengine.ConfigTemplate, OpenMaps: loomengine.ConfigOpenMaps(), Migrate: loomengine.MigrateConfig, CheckValues: loomengine.ValidateLocalValues, CheckLoad: checkLoadNamed(loomengine.LoadConfig, "loom"), Spec: loomengine.ConfigSpec},
+ 		{Name: "models", Template: modelspec.ConfigTemplate, SeedOnly: true, CheckLoad: checkLoad(modelspec.LoadRegistry), Spec: modelspec.ConfigSpec},
+ 		{Name: "orch", Template: orchengine.ConfigTemplate, Migrate: orchengine.MigrateConfig, CheckLoad: checkLoadNamed(orchengine.LoadConfig, "orch"), Spec: orchengine.ConfigSpec},
+-		{Name: runprofile.ModuleName, Template: runprofile.ConfigTemplate, HubWide: true, SeedOnly: true, Migrate: runprofile.MigrateConfig, Lacking: runprofile.LackingTemplateBlocks, CheckLoad: checkProfiles, Spec: runprofile.ConfigSpec},
++		{Name: runprofile.ModuleName, Template: runprofile.ConfigTemplate, HubWide: true, SeedOnly: true, Migrate: runprofile.MigrateConfig, Unsettled: runprofile.UnsettledFormerBlocks, CheckLoad: checkProfiles, Spec: runprofile.ConfigSpec},
+ 		{Name: "reed", Template: reedengine.ConfigTemplate, OpenMaps: reedengine.ConfigOpenMaps(), CheckLoad: checkLoadNamed(reedengine.LoadConfig, "reed"), Spec: reedengine.ConfigSpec},
+ 		{Name: "sampler", Template: samplerengine.ConfigTemplate, HubWide: true, CheckLoad: checkLoadNamed(samplerengine.LoadConfig, "sampler"), Spec: samplerengine.ConfigSpec},
+ 		{Name: "shed", Template: sheddriver.ConfigTemplate, CheckValues: sheddriver.ValidateLocalValues, CheckLoad: checkLoad(sheddriver.LoadConfig), Spec: sheddriver.ConfigSpec},
+diff --git a/internal/configsync/configsync.go b/internal/configsync/configsync.go
+index 27ff6ee5..51c2e959 100644
+--- a/internal/configsync/configsync.go
++++ b/internal/configsync/configsync.go
+@@ -4,6 +4,7 @@
+ // added/removed keys and applying changes when requested.
+ // In a hub every non-seed-only base file is sparse over the template, seeded sparse and pruned but never filled, and stripped once by the walk behind the board marker;
+ // only a standalone worktree base and a seed-only file stay full, and every layer above a base is sparse.
++// A seed-only board file follows its template against the template base kept beside it, keeping every value the operator set.
+ // ReconcileHubWideAt covers every module's file at the board dir, hub files and per-worktree repo defaults;
+ // ReconcileAll covers a worktree's sparse and local layers.
+ // A key the template lacks and no retired key of its module covers leaves a hub base or worktree file only under the options' PruneUnknown;
+@@ -136,10 +137,17 @@ type Result struct {
+ 	// Module is the name of the config module (e.g., "board", "worktree", "fabric").
+ 	Module string
+ 	// Added is the slice of key-paths newly discovered in the template.
+-	// A hub base seed copies no template key, so it reports none; only a full base file and a seed-only seed do.
++	// A hub base seed copies no template key, so it reports none; only a full base file, a seed-only seed and a seed-only board file following its template do.
+ 	Added []string
+ 	// Removed is the slice of key-paths that existed in the file but not in the template.
++	// For a seed-only board file it lists the units the template dropped while the file held its template base's value.
+ 	Removed []string
++	// Updated lists, as "<dotted.key>: <old> -> <new>", each unit of a seed-only board file left at its template base's value that now holds the template's new value.
++	// Set only by ReconcileHubWideAt, on a dry run too.
++	Updated []string
++	// Differs lists, as "<dotted.key>: file <value>, template <value>", each unit of a seed-only board file the operator set that the template holds otherwise; reconcile keeps the operator's value.
++	// Set only by ReconcileHubWideAt, on a dry run too.
++	Differs []string
+ 	// Applied reports whether the file was written to disk, or deleted when Retired.
+ 	Applied bool
+ 	// MigratedFrom names the pre-cutover legacy config modules (e.g. "warp",
+@@ -200,9 +208,49 @@ type Result struct {
+ 	// Preserved lists, sorted, the dotted keys a sparse file holds that the template lacks and no retired key covers, left in place because the run did not prune unknown keys.
+ 	// Set on a dry run too.
+ 	Preserved []string
+-	// Lacking lists the template units a seed-only module's file lacks and the pairs it holds for the operator to settle, as its module's Lacking hook reports them; reconcile never adds or changes either.
++	// Unsettled lists the pairs a seed-only module's file holds for the operator to settle, as its module's Unsettled hook reports them; reconcile never changes them.
+ 	// Set only by ReconcileHubWideAt, on a dry run too.
+-	Lacking []string
++	Unsettled []string
++	// WroteTemplateBase reports that the apply wrote the template base beside a seed-only module's board file.
++	// Set only by ReconcileHubWideAt.
++	WroteTemplateBase bool
++}
++
++// ChangedFilesRel returns, relative to the board dir, each file an applied ReconcileHubWideAt result wrote or removed:
++// the module's file and the legacy files it folded in when Applied, and the template base when WroteTemplateBase.
++func (r Result) ChangedFilesRel() []string {
++	var files []string
++	if r.Applied {
++		files = append(files, configengine.ConfigFileRel(r.Module))
++		for _, legacy := range r.MigratedFrom {
++			files = append(files, configengine.ConfigFileRel(legacy))
++		}
++	}
++	if r.WroteTemplateBase {
++		files = append(files, configengine.TemplateBaseFileRel(r.Module))
++	}
++	return files
++}
++
++// templateBaseHeader opens a template base file, saying what it holds and that no one edits it.
++const templateBaseHeader = "# lym's template for the file beside this one, as the hub reconcile last carried it in.\n# Reconcile reads it to tell a template change from a value the operator set; never edit it by hand.\n"
++
++// templateBaseContent returns the template base a reconcile writes beside m's board file: the header over m's template.
++func templateBaseContent(m configreg.Module) []byte {
++	return []byte(templateBaseHeader + m.Template())
++}
++
++// readTemplateBase reads the template base beside m's board file under boardDir, reporting present false when there is none.
++func readTemplateBase(m configreg.Module, boardDir string) (base []byte, present bool, err error) {
++	path := configengine.TemplateBaseFile(boardDir, m.Name)
++	base, err = os.ReadFile(path)
++	if os.IsNotExist(err) {
++		return nil, false, nil
++	}
++	if err != nil {
++		return nil, false, &FileError{Module: m.Name, Path: path, Err: fmt.Errorf("read the template base of %s: %w", m.Name, err)}
++	}
++	return base, true, nil
+ }
+ 
+ // Options configures ReconcileAll.
+@@ -883,9 +931,13 @@ func primeConfig(primeBaseDir, module string) []byte {
+ // a hub-wide module's hub file and a per-worktree module's repo default, which is that module's full base layer.
+ // primeBaseDir is the prime worktree's anchor dir; empty means no prime is resolvable.
+ //
+-// A seed-only module is reconciled as a full file, never filled or pruned.
+-// A present one, or the prime's copy seeding an absent default, runs the module's Migrate hook and is written only when that rewrote it.
+-// Its Lacking hook's report goes in the result, and an absent one with no prime copy is seeded whole from the template.
++// A seed-only module is reconciled as a full file, never pruned down to the template or stripped.
++// A present one, or the prime's copy seeding an absent default, runs the module's Migrate hook and then follows the template through yamlengine.FollowTemplate, against the template base at configengine.TemplateBaseFile when the board file is present:
++// a unit the file holds as the base does takes the template's value and is reported Added, Updated or Removed, and any other unit is the operator's, kept and reported under Differs when the template holds a third value.
++// With no base, a unit the file lacks is added and one it holds otherwise than the template is kept and reported under Differs.
++// The file is written only when the migration or the merge rewrote it, and the module's Unsettled hook's report goes in the result.
++// An absent one with no prime copy is seeded whole from the template.
++// An apply also writes the template base, the template under a header, when it is absent or stale, and reports WroteTemplateBase.
+ // Every other module's file is a sparse base over the template: a present file runs the module's Migrate hook and is pruned of its retired keys, and nothing is ever added.
+ // Under opts.PruneUnknown it is pruned of every other key the template lacks as well; without it such a key stays and is reported as Preserved.
+ // A module's MigrateHubBase hook runs right after Migrate on a present hub file, and over the bytes of a prime or legacy seed on an absent one, so a hub file seeded in a pass holds what the hook adds at once, since the build stamp gates the next reconcile; no other reconcile path runs it.
+@@ -964,13 +1016,21 @@ func ReconcileHubWideAt(boardDir, primeBaseDir string, opts HubWideOptions) ([]R
+ 			}
+ 		}
+ 
+-		var added, removed, keptExtra, dropped, stripped, preserved, lacking []string
++		var templateBase []byte
++		templateBasePresent := false
++		if m.SeedOnly {
++			if templateBase, templateBasePresent, err = readTemplateBase(m, boardDir); err != nil {
++				return nil, err
++			}
++		}
++
++		var added, removed, updated, differs, keptExtra, dropped, stripped, preserved, unsettled []string
+ 		var mergedBytes []byte
+ 		var reconcileErr error
+ 		changed := fileAbsent
+ 		switch {
+ 		case m.SeedOnly:
+-			// An absent seed-only default is the prime's copy or the template, verbatim; a present file or prime copy is only migrated.
++			// An absent seed-only file with no prime copy is the template verbatim; a present file or prime copy is migrated and then follows the template.
+ 			mergedBytes = existing
+ 			if mergedBytes == nil {
+ 				mergedBytes = []byte(m.Template())
+@@ -981,8 +1041,17 @@ func ReconcileHubWideAt(boardDir, primeBaseDir string, opts HubWideOptions) ([]R
+ 				mergedBytes, migrated, reconcileErr = m.Migrate(mergedBytes)
+ 				changed = changed || len(migrated) > 0
+ 			}
+-			if reconcileErr == nil && m.Lacking != nil {
+-				lacking, reconcileErr = m.Lacking(mergedBytes)
++			if reconcileErr == nil {
++				var follow yamlengine.FollowReport
++				mergedBytes, follow, reconcileErr = yamlengine.FollowTemplate(templateBase, []byte(m.Template()), mergedBytes, templateBasePresent && !fileAbsent)
++				if errors.Is(reconcileErr, yamlengine.ErrInvalidBase) {
++					reconcileErr = &FileError{Module: m.Name, Path: configengine.TemplateBaseFile(boardDir, m.Name), Err: fmt.Errorf("%w; delete it, and the next reconcile treats %s.yaml as having no base", reconcileErr, m.Name)}
++				}
++				added, updated, removed, differs = follow.Added, follow.Updated, follow.Removed, follow.Differs
++				changed = changed || follow.Changed()
++			}
++			if reconcileErr == nil && m.Unsettled != nil {
++				unsettled, reconcileErr = m.Unsettled(mergedBytes)
+ 			}
+ 		case fileAbsent:
+ 			switch seed {
+@@ -1055,11 +1124,13 @@ func ReconcileHubWideAt(boardDir, primeBaseDir string, opts HubWideOptions) ([]R
+ 			Module:       m.Name,
+ 			Added:        added,
+ 			Removed:      removed,
++			Updated:      updated,
++			Differs:      differs,
+ 			KeptExtra:    keptExtra,
+ 			Dropped:      dropped,
+ 			Stripped:     stripped,
+ 			Preserved:    preserved,
+-			Lacking:      lacking,
++			Unsettled:    unsettled,
+ 			MigratedFrom: migratedFrom,
+ 			Migrated:     migrated,
+ 			Seed:         seed,
+@@ -1085,6 +1156,16 @@ func ReconcileHubWideAt(boardDir, primeBaseDir string, opts HubWideOptions) ([]R
+ 				}
+ 			}
+ 		}
++		if wantBase := templateBaseContent(m); opts.Apply && m.SeedOnly && !(templateBasePresent && bytes.Equal(templateBase, wantBase)) {
++			basePath := configengine.TemplateBaseFile(boardDir, m.Name)
++			if err := os.MkdirAll(configengine.ConfigDir(boardDir), 0o755); err != nil {
++				return nil, &FileError{Module: m.Name, Path: basePath, Err: fmt.Errorf("mkdir config dir for the template base of %s: %w", m.Name, err)}
++			}
++			if err := fsx.AtomicWriteBytes(basePath, wantBase); err != nil {
++				return nil, &FileError{Module: m.Name, Path: basePath, Err: fmt.Errorf("write the template base of %s: %w", m.Name, err)}
++			}
++			result.WroteTemplateBase = true
++		}
+ 
+ 		results = append(results, result)
+ 	}
+diff --git a/internal/configsync/configsync_test.go b/internal/configsync/configsync_test.go
+index f8d86ec0..72e3015d 100644
+--- a/internal/configsync/configsync_test.go
++++ b/internal/configsync/configsync_test.go
+@@ -19,6 +19,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lenses"
+ 	"github.com/Knatte18/loomyard/internal/loggerconfig"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
++	"github.com/Knatte18/loomyard/internal/runprofile"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ 	"github.com/Knatte18/loomyard/internal/yamlengine"
+ 	"gopkg.in/yaml.v3"
+@@ -559,9 +560,9 @@ func TestReconcileHubWideAt_SeedsFromHubPrimeLegacyOrTemplate(t *testing.T) {
+ 		wantNotDropped []string
+ 		// loadUnchanged pins that lenses.Load over the board dir resolves the same before the dry run and after the apply.
+ 		loadUnchanged bool
+-		// wantMigrated and wantLacking are the applied result's Migrated and Lacking, compared as they stand; nil skips the check.
+-		wantMigrated []string
+-		wantLacking  []string
++		// wantMigrated and wantUnsettled are the applied result's Migrated and Unsettled, compared as they stand; nil skips the check.
++		wantMigrated  []string
++		wantUnsettled []string
+ 		// wantFileError means both the dry run and the apply return a *FileError naming the module and leave the hub file's bytes as they were.
+ 		wantFileError bool
+ 	}{
+@@ -667,22 +668,20 @@ func TestReconcileHubWideAt_SeedsFromHubPrimeLegacyOrTemplate(t *testing.T) {
+ 			wantNoFile: true,
+ 		},
+ 		{
+-			name:         "models default absent is seeded from the prime verbatim",
++			name:         "models default absent is seeded from the prime and gains the template aliases it lacks",
+ 			module:       "models",
+ 			primeFile:    "zephyr:\n  engine: claude\n  model: claude-zephyr-1\n",
+ 			seedDefaults: true,
+ 			wantSeed:     SeedPrime,
+-			wantContains: []string{"zephyr:"},
+-			wantAbsent:   []string{"sonnet:"},
++			wantContains: []string{"zephyr:\n  engine: claude\n  model: claude-zephyr-1\n", "sonnet:"},
+ 		},
+ 		{
+-			name:         "models default present is never rewritten",
++			name:         "models default present keeps its own alias and gains the template aliases it lacks",
+ 			module:       "models",
+ 			hubFile:      "zephyr:\n  engine: claude\n  model: claude-zephyr-1\n",
+ 			seedDefaults: true,
+ 			wantSeed:     SeedHub,
+-			wantContains: []string{"zephyr:"},
+-			wantAbsent:   []string{"sonnet:"},
++			wantContains: []string{"zephyr:\n  engine: claude\n  model: claude-zephyr-1\n", "sonnet:"},
+ 		},
+ 		{
+ 			name:         "board absent with a prime copy is seeded from the prime",
+@@ -738,33 +737,32 @@ func TestReconcileHubWideAt_SeedsFromHubPrimeLegacyOrTemplate(t *testing.T) {
+ 			wantContains: []string{"defaults:", "light:", "solid:", "docs:"},
+ 		},
+ 		{
+-			name:         "profiles present with a starting profile removed is never rewritten",
+-			module:       "profiles",
+-			hubFile:      "broad:\n  darn:\n    loom: {code_max_bounces: 2}\n",
+-			wantSeed:     SeedHub,
+-			wantContains: []string{"broad:"},
+-			wantAbsent:   []string{"defaults:", "light:", "solid:", "docs:"},
+-			wantMigrated: []string{},
+-			wantLacking:  []string{},
++			name:          "profiles present with no template base gain every template unit they lack and keep their own profile",
++			module:        "profiles",
++			hubFile:       "broad:\n  darn:\n    loom: {code_max_bounces: 2}\n",
++			wantSeed:      SeedHub,
++			wantContains:  []string{"broad:\n  darn:\n    loom: {code_max_bounces: 2}\n", "defaults:", "light:", "solid:", "docs:"},
++			wantMigrated:  []string{},
++			wantUnsettled: []string{},
+ 		},
+ 		{
+-			name:         "profiles present under the recipe's former name are renamed in place and the template blocks they lack listed",
+-			module:       "profiles",
+-			hubFile:      "# operator note\ndefaults: {loom: solid}\nsolid:\n  loom:\n    loom: {plan_max_bounces: 7}\n",
+-			wantSeed:     SeedHub,
+-			wantContains: []string{"# operator note", "defaults: {tapestry: solid}", "  tapestry:\n    loom: {plan_max_bounces: 7}"},
+-			wantAbsent:   []string{"loom: solid", "  loom:\n    loom:", "sampler:", "darn:"},
+-			wantMigrated: []string{"defaults.loom: renamed to defaults.tapestry", "solid.loom: renamed to solid.tapestry"},
+-			wantLacking:  []string{"defaults.darn", "defaults.motif", "defaults.pawl", "solid.darn", "solid.motif", "solid.pawl", "solid.sampler"},
++			name:          "profiles present under the recipe's former name are renamed in place and then gain the template units they lack",
++			module:        "profiles",
++			hubFile:       "# operator note\ndefaults: {loom: solid}\nsolid:\n  loom:\n    loom: {plan_max_bounces: 7}\n",
++			wantSeed:      SeedHub,
++			wantContains:  []string{"# operator note", "defaults: {tapestry: solid, motif: solid, darn: light, pawl: light}", "  tapestry:\n    loom: {plan_max_bounces: 7, discussion_max_bounces: 2,"},
++			wantAbsent:    []string{"loom: solid", "  loom:\n    loom:"},
++			wantMigrated:  []string{"defaults.loom: renamed to defaults.tapestry", "solid.loom: renamed to solid.tapestry"},
++			wantUnsettled: []string{},
+ 		},
+ 		{
+-			name:         "profiles present with a former block differing from the current one keep both and list the pair",
+-			module:       "profiles",
+-			hubFile:      "light:\n  loom:\n    loom: {plan_max_bounces: 7}\n  tapestry:\n    loom: {plan_max_bounces: 1}\n",
+-			wantSeed:     SeedHub,
+-			wantContains: []string{"  loom:\n    loom: {plan_max_bounces: 7}", "  tapestry:\n    loom: {plan_max_bounces: 1}"},
+-			wantMigrated: []string{},
+-			wantLacking:  []string{"light.darn", "light.loom: differs from light.tapestry", "light.motif", "light.pawl", "light.sampler"},
++			name:          "profiles present with a former block differing from the current one keep both and list the pair",
++			module:        "profiles",
++			hubFile:       "light:\n  loom:\n    loom: {plan_max_bounces: 7}\n  tapestry:\n    loom: {plan_max_bounces: 1}\n",
++			wantSeed:      SeedHub,
++			wantContains:  []string{"  loom:\n    loom: {plan_max_bounces: 7}\n", "  tapestry:\n    loom: {plan_max_bounces: 1, discussion_max_bounces: 1,"},
++			wantMigrated:  []string{},
++			wantUnsettled: []string{"light.loom: differs from light.tapestry"},
+ 		},
+ 		{
+ 			name:          "profiles present that fails to parse is refused and left untouched",
+@@ -833,8 +831,8 @@ func TestReconcileHubWideAt_SeedsFromHubPrimeLegacyOrTemplate(t *testing.T) {
+ 			if dryResult != nil && tt.wantMigrated != nil && !slices.Equal(dryResult.Migrated, tt.wantMigrated) {
+ 				t.Errorf("dry-run Migrated = %v; want %v", dryResult.Migrated, tt.wantMigrated)
+ 			}
+-			if dryResult != nil && tt.wantLacking != nil && !slices.Equal(dryResult.Lacking, tt.wantLacking) {
+-				t.Errorf("dry-run Lacking = %v; want %v", dryResult.Lacking, tt.wantLacking)
++			if dryResult != nil && tt.wantUnsettled != nil && !slices.Equal(dryResult.Unsettled, tt.wantUnsettled) {
++				t.Errorf("dry-run Unsettled = %v; want %v", dryResult.Unsettled, tt.wantUnsettled)
+ 			}
+ 			if tt.hubFile == "" {
+ 				if _, err := os.Stat(hubPath); !os.IsNotExist(err) {
+@@ -864,11 +862,11 @@ func TestReconcileHubWideAt_SeedsFromHubPrimeLegacyOrTemplate(t *testing.T) {
+ 			if tt.wantMigrated != nil && !slices.Equal(appliedResult.Migrated, tt.wantMigrated) {
+ 				t.Errorf("applied Migrated = %v; want %v", appliedResult.Migrated, tt.wantMigrated)
+ 			}
+-			if tt.wantLacking != nil && !slices.Equal(appliedResult.Lacking, tt.wantLacking) {
+-				t.Errorf("applied Lacking = %v; want %v", appliedResult.Lacking, tt.wantLacking)
++			if tt.wantUnsettled != nil && !slices.Equal(appliedResult.Unsettled, tt.wantUnsettled) {
++				t.Errorf("applied Unsettled = %v; want %v", appliedResult.Unsettled, tt.wantUnsettled)
+ 			}
+-			if wantApplied := tt.hubFile == "" || len(tt.wantMigrated) > 0; tt.module == "profiles" && appliedResult.Applied != wantApplied {
+-				t.Errorf("applied Applied = %v; want %v, since a present seed-only file is written only when migrated", appliedResult.Applied, wantApplied)
++			if tt.module == "profiles" && !appliedResult.WroteTemplateBase {
++				t.Errorf("applied WroteTemplateBase = false; want the template base written beside a board that held none")
+ 			}
+ 			for _, name := range tt.wantDropped {
+ 				if !slices.Contains(appliedResult.Dropped, name) {
+@@ -909,6 +907,215 @@ func TestReconcileHubWideAt_SeedsFromHubPrimeLegacyOrTemplate(t *testing.T) {
+ 	}
+ }
+ 
++// TestReconcileHubWideAt_SeedOnlyFileFollowsItsTemplate pins how a present profiles.yaml follows the template against the template base beside it:
++// a key left at the base's value takes the template's change, a key the operator set or removed stays, a dry run writes nothing, and an apply writes an absent or stale base and leaves nothing for the next apply.
++func TestReconcileHubWideAt_SeedOnlyFileFollowsItsTemplate(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const (
++		lightDarn            = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 2}\n"
++		lightDarnSolo        = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: \"\"}\n"
++		lightDarnOperator    = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: standard}\n"
++		lightSamplerReview   = "    loom: {code_max_bounces: 1, code_hard_max_bounces: 2}\n    sampler: {code_review: true}\n"
++		lightSamplerNoReview = "    loom: {code_max_bounces: 1, code_hard_max_bounces: 2}\n"
++	)
++	template := runprofile.ConfigTemplate()
++	older := strings.Replace(template, lightDarn, lightDarnSolo, 1)
++	withoutSamplerReview := strings.Replace(template, lightSamplerReview, lightSamplerNoReview, 1)
++	m, ok := configreg.Lookup(runprofile.ModuleName)
++	if !ok {
++		t.Fatalf("module %q is not registered", runprofile.ModuleName)
++	}
++	currentBase := string(templateBaseContent(m))
++
++	tests := []struct {
++		name    string
++		hubFile string
++		// baseFile is the template base beside the hub file; empty leaves it absent.
++		baseFile string
++		// baseIsDir makes the template base a directory, so reading it fails.
++		baseIsDir bool
++		// wantBaseError, when set, expects both runs to fail with a FileError naming the template base and holding this text, and the hub file untouched.
++		wantBaseError string
++		// wantAdded nil skips the Added check, and wantAddedHas lists paths Added must hold.
++		wantAdded     []string
++		wantAddedHas  []string
++		wantUpdated   []string
++		wantRemoved   []string
++		wantDiffers   []string
++		wantContains  []string
++		wantAbsent    []string
++		wantRewritten bool
++	}{
++		{
++			name:          "a key left at the base's value follows the template's removal",
++			hubFile:       older,
++			baseFile:      older,
++			wantAdded:     []string{},
++			wantRemoved:   []string{"light.darn.loom.code_reviewer_fan"},
++			wantContains:  []string{lightDarn},
++			wantAbsent:    []string{lightDarnSolo},
++			wantRewritten: true,
++		},
++		{
++			name:         "a key the operator set is kept and listed when the template moved it",
++			hubFile:      strings.Replace(template, lightDarn, lightDarnOperator, 1),
++			baseFile:     older,
++			wantAdded:    []string{},
++			wantDiffers:  []string{"light.darn.loom.code_reviewer_fan: file standard, template absent"},
++			wantContains: []string{lightDarnOperator},
++		},
++		{
++			name:          "a key the template added since the base is added",
++			hubFile:       withoutSamplerReview,
++			baseFile:      withoutSamplerReview,
++			wantAdded:     []string{"light.sampler.sampler"},
++			wantContains:  []string{lightSamplerReview},
++			wantRewritten: true,
++		},
++		{
++			name:      "a key the operator removed stays removed",
++			hubFile:   withoutSamplerReview,
++			baseFile:  template,
++			wantAdded: []string{},
++		},
++		{
++			name:          "with no base a lacking key is added and a differing one kept and listed",
++			hubFile:       "light:\n  darn:\n    loom: {code_max_bounces: 4}\n",
++			wantAddedHas:  []string{"light.darn.loom.code_hard_max_bounces", "solid"},
++			wantDiffers:   []string{"light.darn.loom.code_max_bounces: file 4, template 1"},
++			wantContains:  []string{"    loom: {code_max_bounces: 4, code_hard_max_bounces: 2}\n", "solid:"},
++			wantRewritten: true,
++		},
++		{
++			name:      "a file and base that hold the template change nothing",
++			hubFile:   template,
++			baseFile:  currentBase,
++			wantAdded: []string{},
++		},
++		{
++			name:          "a template base that is not a YAML mapping fails naming the base and the way forward",
++			hubFile:       template,
++			baseFile:      "- not\n- a mapping\n",
++			wantBaseError: "delete it",
++		},
++		{
++			name:          "an unreadable template base fails naming the base",
++			hubFile:       template,
++			baseIsDir:     true,
++			wantBaseError: "read the template base",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			boardDir := t.TempDir()
++			writeModuleFile(t, boardDir, runprofile.ModuleName, tt.hubFile)
++			hubPath := configengine.ConfigFile(boardDir, runprofile.ModuleName)
++			basePath := configengine.TemplateBaseFile(boardDir, runprofile.ModuleName)
++			if tt.baseFile != "" {
++				if err := os.WriteFile(basePath, []byte(tt.baseFile), 0o644); err != nil {
++					t.Fatalf("write the template base: %v", err)
++				}
++			}
++			if tt.baseIsDir {
++				if err := os.Mkdir(basePath, 0o755); err != nil {
++					t.Fatalf("make the template base a directory: %v", err)
++				}
++			}
++			if tt.wantBaseError != "" {
++				for _, apply := range []bool{false, true} {
++					_, err := ReconcileHubWideAt(boardDir, "", HubWideOptions{Apply: apply})
++					var fileErr *FileError
++					if !errors.As(err, &fileErr) || fileErr.Path != basePath || !strings.Contains(err.Error(), tt.wantBaseError) {
++						t.Errorf("ReconcileHubWideAt(apply=%v) error = %v; want a *FileError naming %s and holding %q", apply, err, basePath, tt.wantBaseError)
++					}
++				}
++				if hub, err := os.ReadFile(hubPath); err != nil || string(hub) != tt.hubFile {
++					t.Errorf("hub file = %q, %v after the failed runs; want it untouched", hub, err)
++				}
++				return
++			}
++
++			for _, apply := range []bool{false, true} {
++				results, err := ReconcileHubWideAt(boardDir, "", HubWideOptions{Apply: apply})
++				if err != nil {
++					t.Fatalf("ReconcileHubWideAt(apply=%v): %v", apply, err)
++				}
++				result := findResult(results, runprofile.ModuleName)
++				if result == nil {
++					t.Fatalf("ReconcileHubWideAt(apply=%v) holds no profiles result", apply)
++				}
++				if tt.wantAdded != nil && !slices.Equal(result.Added, tt.wantAdded) {
++					t.Errorf("apply=%v Added = %q; want %q", apply, result.Added, tt.wantAdded)
++				}
++				for _, path := range tt.wantAddedHas {
++					if !slices.Contains(result.Added, path) {
++						t.Errorf("apply=%v Added = %q; want it to hold %q", apply, result.Added, path)
++					}
++				}
++				for _, field := range []struct {
++					name      string
++					got, want []string
++				}{
++					{"Updated", result.Updated, tt.wantUpdated},
++					{"Removed", result.Removed, tt.wantRemoved},
++					{"Differs", result.Differs, tt.wantDiffers},
++				} {
++					if !slices.Equal(field.got, field.want) {
++						t.Errorf("apply=%v %s = %q; want %q", apply, field.name, field.got, field.want)
++					}
++				}
++
++				hub, err := os.ReadFile(hubPath)
++				if err != nil {
++					t.Fatalf("read the hub file: %v", err)
++				}
++				base, baseErr := os.ReadFile(basePath)
++				if !apply {
++					if string(hub) != tt.hubFile {
++						t.Errorf("hub file after the dry run = %q; want it unwritten", hub)
++					}
++					if (tt.baseFile == "") != os.IsNotExist(baseErr) || (tt.baseFile != "" && string(base) != tt.baseFile) {
++						t.Errorf("template base after the dry run = %q, %v; want it unwritten", base, baseErr)
++					}
++					continue
++				}
++				if result.Applied != tt.wantRewritten {
++					t.Errorf("Applied = %v; want %v", result.Applied, tt.wantRewritten)
++				}
++				if wantBase := tt.baseFile != currentBase; result.WroteTemplateBase != wantBase {
++					t.Errorf("WroteTemplateBase = %v; want %v", result.WroteTemplateBase, wantBase)
++				}
++				if string(base) != currentBase {
++					t.Errorf("template base after the apply = %q, %v; want the header over the running template", base, baseErr)
++				}
++				if !tt.wantRewritten && string(hub) != tt.hubFile {
++					t.Errorf("hub file = %q; want it left as the operator holds it", hub)
++				}
++				for _, want := range tt.wantContains {
++					if !strings.Contains(string(hub), want) {
++						t.Errorf("hub file = %q; want it to contain %q", hub, want)
++					}
++				}
++				for _, absent := range tt.wantAbsent {
++					if strings.Contains(string(hub), absent) {
++						t.Errorf("hub file = %q; want it not to contain %q", hub, absent)
++					}
++				}
++			}
++
++			again, err := ReconcileHubWideAt(boardDir, "", HubWideOptions{Apply: true})
++			if err != nil {
++				t.Fatalf("second ReconcileHubWideAt: %v", err)
++			}
++			if r := findResult(again, runprofile.ModuleName); r == nil || r.Applied || r.WroteTemplateBase || len(r.Added)+len(r.Updated)+len(r.Removed)+len(r.Differs) > 0 {
++				t.Errorf("second apply result = %+v; want nothing written or reported, since the base now records the template", r)
++			}
++		})
++	}
++}
++
+ // TestReconcileHubWideAt_MigratesLegacyFabricConfig pins the fabric-cutover's one-shot migration
+ // (F-D): a pre-cutover hub's warp.yaml/weft.yaml values must be folded into fabric.yaml's first
+ // write instead of silently discarded in favor of the bare template default,
+@@ -1168,6 +1375,13 @@ func TestReconcileHubWideAt_StripsAnUnmigratedBaseOnce(t *testing.T) {
+ 					if len(registered.PerNameMaps) > 0 && tt.options.Apply && !registered.SeedOnly {
+ 						continue
+ 					}
++					if registered.SeedOnly && tt.options.Apply {
++						// An applied seed-only file follows its template: it gains the units it lacks and keeps everything it held.
++						if !strings.Contains(got, content) {
++							t.Errorf("%s.yaml = %q; want it to keep what it held, %q", module, got, content)
++						}
++						continue
++					}
+ 					if got != content {
+ 						t.Errorf("%s.yaml changed; want it byte for byte as written", module)
+ 					}
+diff --git a/internal/fabriccli/cli_test.go b/internal/fabriccli/cli_test.go
+index 835c65ae..bb170a34 100644
+--- a/internal/fabriccli/cli_test.go
++++ b/internal/fabriccli/cli_test.go
+@@ -210,6 +210,22 @@ func TestRunCLI_CloneEndToEnd(t *testing.T) {
+ 	if !markerRecorded {
+ 		t.Errorf("mutation record holds no file_written entry for %q\nentries: %v", wantTarget, mutations)
+ 	}
++	// The seed-only profiles file's template base is written and committed by the clone too.
++	baseRel := filepath.ToSlash(configengine.TemplateBaseFileRel("profiles"))
++	if tracked := strings.TrimSpace(gitOutputCLI(t, boardDir, "ls-files", "--", baseRel)); tracked != baseRel {
++		t.Errorf("board tracks %q for the profiles template base; want %q", tracked, baseRel)
++	}
++	wantBaseTarget := filepath.ToSlash(boardRel) + "/" + baseRel
++	baseRecorded := false
++	for _, entry := range mutations {
++		fields, _ := entry.(map[string]any)
++		if fields["kind"] == string(fabricengine.KindFileWritten) && fields["target"] == wantBaseTarget {
++			baseRecorded = true
++		}
++	}
++	if !baseRecorded {
++		t.Errorf("mutation record holds no file_written entry for %q\nentries: %v", wantBaseTarget, mutations)
++	}
+ 	if fabricYAML, err := os.ReadFile(configengine.ConfigFile(boardDir, "fabric")); err != nil || string(fabricYAML) != configengine.SparseBaseHeader {
+ 		t.Errorf("board fabric.yaml = %q, %v; want the header alone %q", fabricYAML, err, configengine.SparseBaseHeader)
+ 	}
+@@ -455,8 +471,9 @@ func TestRunCLI_ReconcileBacksFillsWarpBinding(t *testing.T) {
+ 	}
+ 
+ 	boardDir := fabricengine.BoardDir(hubPath)
+-	gitkit.MustRun(t, boardDir, "git", "rm", fabricengine.WarpBindingFileName)
+-	gitkit.MustRun(t, boardDir, "git", "commit", "-m", "test fixture: unbind hub")
++	baseRel := filepath.ToSlash(configengine.TemplateBaseFileRel("profiles"))
++	gitkit.MustRun(t, boardDir, "git", "rm", fabricengine.WarpBindingFileName, baseRel)
++	gitkit.MustRun(t, boardDir, "git", "commit", "-m", "test fixture: unbind hub and drop the profiles template base")
+ 
+ 	// Proving cwd is a per-call value and not a per-process one is exactly what this test exists to
+ 	// demonstrate: this reconcile runs against a different directory than the clone above, passed
+@@ -479,6 +496,9 @@ func TestRunCLI_ReconcileBacksFillsWarpBinding(t *testing.T) {
+ 	if tracked == "" {
+ 		t.Errorf("%s is not tracked on weft:main at %s after the reconcile backfill", fabricengine.WarpBindingFileName, boardDir)
+ 	}
++	if tracked := strings.TrimSpace(gitOutputCLI(t, boardDir, "ls-files", "--", baseRel)); tracked != baseRel {
++		t.Errorf("board tracks %q for the profiles template base after the reconcile; want %q committed again", tracked, baseRel)
++	}
+ }
+ 
+ // TestRunCLI_ReconcileBoardFailureFailsTheVerb runs reconcile over a cloned hub whose board commit or push fails, at the hub-wide heal, the warp-binding record or both.
+diff --git a/internal/fabriccli/clone.go b/internal/fabriccli/clone.go
+index 42e3c8b8..0fa818f1 100644
+--- a/internal/fabriccli/clone.go
++++ b/internal/fabriccli/clone.go
+@@ -63,6 +63,9 @@ func CloneAndWire(cwd string, opts fabricengine.CloneOptions) (res fabricengine.
+ 		if hubWideResult.Applied {
+ 			rec.Append(fabricengine.KindFileWritten, configengine.ConfigFile(res.BoardDir, hubWideResult.Module), "")
+ 		}
++		if hubWideResult.WroteTemplateBase {
++			rec.Append(fabricengine.KindFileWritten, configengine.TemplateBaseFile(res.BoardDir, hubWideResult.Module), "")
++		}
+ 	}
+ 	// A board seeded from nothing holds only sparse files, so it is marked here and the board commit below carries the marker.
+ 	// A board that already held a base file is left unmarked: the walk at the end strips it once and commits the marker itself.
+diff --git a/internal/fabriccli/fabric.go b/internal/fabriccli/fabric.go
+index 66f77936..c8f97e85 100644
+--- a/internal/fabriccli/fabric.go
++++ b/internal/fabriccli/fabric.go
+@@ -716,13 +716,7 @@ func runReconcile(ctx context.Context, out io.Writer, _ []string) int {
+ 			hubWideResults = results
+ 			var written []string
+ 			for _, result := range results {
+-				if !result.Applied {
+-					continue
+-				}
+-				written = append(written, configengine.ConfigFileRel(result.Module))
+-				for _, legacy := range result.MigratedFrom {
+-					written = append(written, configengine.ConfigFileRel(legacy))
+-				}
++				written = append(written, result.ChangedFilesRel()...)
+ 			}
+ 			return written, nil
+ 		},
+diff --git a/internal/hubreconcile/doc.go b/internal/hubreconcile/doc.go
+index b9082ae7..014a6e5b 100644
+--- a/internal/hubreconcile/doc.go
++++ b/internal/hubreconcile/doc.go
+@@ -30,7 +30,10 @@
+ // `lym config reconcile --apply`, with `--layer default` for a board file, is the one way to remove it.
+ // A local override file is pruned of every such key, since its load refuses one.
+ //
+-// A seed-only file is never filled: the walk runs its module's migration and logs one Warn per module naming the template units the file lacks and the pairs it leaves for the operator to settle, with `lym config <module>` as the way forward.
++// A seed-only file follows its template: the walk runs its module's migration, then carries each template change into the file against the template base kept beside it on the board, `<module>.template-base`, keeping every value the operator set, and commits the base with the file.
++// A key the file holds as the base does takes the template's new value, gained, changed or dropped, while a key the operator set, added or removed stays; a file with no base yet gains only the keys it lacks.
++// Once the board commit landed, what each file took and each operator value the template holds otherwise go to the hub's orch as one `[reconcile notice]` line.
++// A pair the module leaves for the operator to settle is logged in one Warn per module, with `lym config <module>` as the way forward.
+ //
+ // # The base strip
+ //
+@@ -40,7 +43,8 @@
+ // A failed hub-wide step restores the board's files to their prior bytes and removes a marker the pass wrote, while steps that committed before it keep their commits.
+ // With the marker present the walk strips no base, so a unit later set equal to the template stays as a pin.
+ //
+-// A base file is a hub-wide module's hub file or a per-worktree module's repo default.
++// A base file is a hub-wide module's hub file, a seed-only module's board file excepted, or a per-worktree module's repo default.
++// A seed-only module's board file takes each template change on every walk, against the template base kept beside it, and keeps every value the operator set.
+ // Every write to one, by any package, holds only the units the hub tuned and never fills in a template value (PATTERN-sparse-hub-base);
+ // only this walk's one-time strip drops a unit the template holds, behind the board marker.
+ // lenses' template-equal entries are the one exception: a per-name entry equal to the template is dropped on every reconcile.
+diff --git a/internal/hubreconcile/ensure_integration_test.go b/internal/hubreconcile/ensure_integration_test.go
+index 10cd9d7c..30cfd5f1 100644
+--- a/internal/hubreconcile/ensure_integration_test.go
++++ b/internal/hubreconcile/ensure_integration_test.go
+@@ -23,6 +23,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/hubreconcile"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
++	"github.com/Knatte18/loomyard/internal/runprofile"
+ 	"github.com/Knatte18/loomyard/internal/testkit/boardkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -885,6 +886,8 @@ func TestEnsure_FailedWalkNamesTheFileAndLeavesTheTreeAsItWas(t *testing.T) {
+ 		unmigratedBoard bool
+ 		// wantInMessage is text the error message must hold; empty skips the check.
+ 		wantInMessage string
++		// wantAbsentFromMessage is text the error message must not hold; empty skips the check.
++		wantAbsentFromMessage string
+ 		// ensure runs the walk; nil runs Ensure.
+ 		ensure func(geom hubreconcile.Geometry) error
+ 	}{
+@@ -970,9 +973,12 @@ func TestEnsure_FailedWalkNamesTheFileAndLeavesTheTreeAsItWas(t *testing.T) {
+ 			},
+ 		},
+ 		{
+-			name: "a failure after the hub-wide files and the marker were written restores the files and removes the marker",
++			name: "a failure after the hub-wide files, the marker and a template base were written restores the files and removes the marker and the base",
+ 			breakConfig: func(t *testing.T, h *hubforge.Hub) (string, string, string) {
+ 				commitPreMigrationBase(t, h.BoardDir())
++				// The profiles template base is dropped from the board, so the walk writes it before the failure and the restore must remove it again.
++				gitkit.Git(t, h.BoardDir(), "rm", "-q", "--ignore-unmatch", "--", filepath.ToSlash(configengine.TemplateBaseFileRel("profiles")))
++				gitkit.Git(t, h.BoardDir(), "commit", "-q", "--allow-empty", "-m", "fixture: no profiles template base")
+ 				return h.BoardDir(), h.BoardDir(), h.BoardDir()
+ 			},
+ 			unmigratedBoard: true,
+@@ -981,6 +987,19 @@ func TestEnsure_FailedWalkNamesTheFileAndLeavesTheTreeAsItWas(t *testing.T) {
+ 			},
+ 			repair: func(t *testing.T, h *hubforge.Hub) {},
+ 		},
++		{
++			name: "a template base that is not a YAML mapping names the base and no config command",
++			breakConfig: func(t *testing.T, h *hubforge.Hub) (string, string, string) {
++				gitkit.CommitFile(t, h.BoardDir(), configengine.TemplateBaseFileRel("profiles"), "- not\n- a mapping\n", "fixture: corrupt profiles template base")
++				return h.BoardDir(), h.BoardDir(), configengine.TemplateBaseFile(h.BoardDir(), "profiles")
++			},
++			wantInMessage:         "delete it",
++			wantAbsentFromMessage: "lym config",
++			repair: func(t *testing.T, h *hubforge.Hub) {
++				gitkit.Git(t, h.BoardDir(), "rm", "-q", "--", filepath.ToSlash(configengine.TemplateBaseFileRel("profiles")))
++				gitkit.Git(t, h.BoardDir(), "commit", "-q", "-m", "fixture: delete the corrupt profiles template base")
++			},
++		},
+ 	}
+ 	for _, tc := range tests {
+ 		t.Run(tc.name, func(t *testing.T) {
+@@ -1017,6 +1036,9 @@ func TestEnsure_FailedWalkNamesTheFileAndLeavesTheTreeAsItWas(t *testing.T) {
+ 					t.Errorf("message %q does not name lym config %s", err.Error(), tc.module)
+ 				}
+ 			}
++			if tc.wantAbsentFromMessage != "" && strings.Contains(err.Error(), tc.wantAbsentFromMessage) {
++				t.Errorf("message %q holds %q", err.Error(), tc.wantAbsentFromMessage)
++			}
+ 			if tc.wantInMessage != "" && !strings.Contains(err.Error(), tc.wantInMessage) {
+ 				t.Errorf("message %q does not hold %q", err.Error(), tc.wantInMessage)
+ 			}
+@@ -1312,29 +1334,74 @@ func TestEnsure_BoardWithNoRemoteCommitsHubWideConfigAndWritesStamp(t *testing.T
+ 	}
+ }
+ 
+-// The logger's output and the detached board sync are process-global, so this test does not call t.Parallel.
+-func TestEnsure_WarnsOfTemplateUnitsASeedOnlyConfigFileLacks(t *testing.T) {
++// The installed notifier and the detached board sync are process-global, so this test does not call t.Parallel.
++func TestEnsure_CarriesATemplateChangeIntoASeedOnlyConfigFile(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	logs := logcapture.Capture(t)
+ 
+ 	h := hubforge.NewHub(t, ".")
+ 	geom := geometryOf(h)
+-	const profilesLackingSampler = "light:\n  tapestry:\n    loom: {plan_max_bounces: 1}\n  darn:\n    loom: {code_max_bounces: 1}\n  pawl:\n    loom: {code_max_bounces: 1}\n"
+-	gitkit.CommitFile(t, h.BoardDir(), configengine.ConfigFileRel("profiles"), profilesLackingSampler, "fixture: a starting profile seeded before sampler")
++	const lightDarn = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 2}\n"
++	const lightDarnSolo = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: \"\"}\n"
++	const solidDarn = "  darn:\n    loom: {code_max_bounces: 2, code_hard_max_bounces: 3}\n"
++	const solidDarnBase = "  darn:\n    loom: {code_max_bounces: 3, code_hard_max_bounces: 4}\n"
++	const solidDarnTuned = "  darn:\n    loom: {code_max_bounces: 5, code_hard_max_bounces: 4}\n"
++	const solidDarnFollowed = "  darn:\n    loom: {code_max_bounces: 5, code_hard_max_bounces: 3}\n"
++	olderTemplate := strings.Replace(strings.Replace(runprofile.ConfigTemplate(), lightDarn, lightDarnSolo, 1), solidDarn, solidDarnBase, 1)
++	hubProfiles := strings.Replace(olderTemplate, solidDarnBase, solidDarnTuned, 1)
++	gitkit.CommitFile(t, h.BoardDir(), configengine.ConfigFileRel("profiles"), hubProfiles, "fixture: profiles seeded from an older template, with solid's darn rounds tuned")
++	gitkit.CommitFile(t, h.BoardDir(), configengine.TemplateBaseFileRel("profiles"), olderTemplate, "fixture: the older template as the profiles' base")
+ 	gitkit.Git(t, h.BoardDir(), "remote", "remove", "origin")
+ 	recordBoardSyncs(t)
++	var mailed []string
++	t.Cleanup(hubreconcile.InstallNotifier(func(_, line string) (bool, error) {
++		mailed = append(mailed, line)
++		return true, nil
++	}))
+ 
+ 	if err := hubreconcile.Ensure(geom, hubreconcile.Options{}); err != nil {
+ 		t.Fatalf("Ensure: %v", err)
+ 	}
+ 
+-	for _, want := range []string{"lacks units its template holds or holds a pair to settle", "module=profiles", "light.sampler"} {
+-		if !strings.Contains(logs.String(), want) {
+-			t.Errorf("log lacks %q:\n%s", want, logs.String())
++	got, err := os.ReadFile(configengine.ConfigFile(h.BoardDir(), "profiles"))
++	if err != nil {
++		t.Fatalf("read the board's profiles.yaml: %v", err)
++	}
++	if strings.Contains(string(got), lightDarnSolo) || !strings.Contains(string(got), lightDarn) {
++		t.Errorf("board profiles.yaml = %q; want light's darn block to follow the template and drop its solo fan", got)
++	}
++	if !strings.Contains(string(got), solidDarnFollowed) {
++		t.Errorf("board profiles.yaml = %q; want the operator's tuned solid code_max_bounces kept and the untouched code_hard_max_bounces updated", got)
++	}
++	if base, err := os.ReadFile(configengine.TemplateBaseFile(h.BoardDir(), "profiles")); err != nil || !strings.HasSuffix(string(base), runprofile.ConfigTemplate()) {
++		t.Errorf("board profiles.template-base = %q, %v; want it to end with the running template", base, err)
++	}
++	committed := gitkit.Git(t, h.BoardDir(), "log", "-1", "--name-only", "--format=")
++	for _, rel := range []string{configengine.ConfigFileRel("profiles"), configengine.TemplateBaseFileRel("profiles")} {
++		if !strings.Contains(committed, filepath.ToSlash(rel)) {
++			t.Errorf("the walk's board commit holds %q; want it to carry %s", committed, rel)
++		}
++	}
++	assertClean(t, h.BoardDir())
++	for _, want := range []string{
++		"profiles.yaml removed light.darn.loom.code_reviewer_fan",
++		"profiles.yaml updated solid.darn.loom.code_hard_max_bounces: 4 -> 3",
++		"profiles.yaml kept the hub's solid.darn.loom.code_max_bounces: file 5, template 2",
++	} {
++		if !strings.Contains(strings.Join(mailed, "\n"), want) {
++			t.Errorf("orch mail = %q; want a reconcile notice naming %q", mailed, want)
+ 		}
+ 	}
+-	if got, err := os.ReadFile(configengine.ConfigFile(h.BoardDir(), "profiles")); err != nil || string(got) != profilesLackingSampler {
+-		t.Errorf("board profiles.yaml = %q, %v after Ensure; want it left as the operator wrote it", got, err)
++
++	// The base now records the template, so a second walk has nothing to carry or report and mails nothing.
++	mailedByFirstWalk := len(mailed)
++	if err := os.Remove(geom.StampPath()); err != nil {
++		t.Fatalf("remove the stamp: %v", err)
++	}
++	if err := hubreconcile.Ensure(geom, hubreconcile.Options{}); err != nil {
++		t.Fatalf("second Ensure: %v", err)
++	}
++	if len(mailed) != mailedByFirstWalk {
++		t.Errorf("orch mail after the second walk = %q; want nothing beyond the first walk's", mailed[mailedByFirstWalk:])
+ 	}
+ }
+ 
+@@ -1375,10 +1442,10 @@ func arrangeUnpushedHubWide(t *testing.T) *unpushedHubWide {
+ 	if key, found := stampKey(t, geom); !found || key != runningKey() {
+ 		t.Fatalf("stamp = %q (found %v); want the running key although the hub-wide commit was not pushed", key, found)
+ 	}
+-	// The first walk of a hub also commits each reinterpretation marker, which is no config file.
++	// The first walk of a hub also commits each reinterpretation marker and each seed-only module's template base, which are no config files.
+ 	var changed []string
+ 	for _, path := range strings.Fields(gitkit.Git(t, board, "show", "--name-only", "--format=", "HEAD")) {
+-		if !strings.Contains(path, "reinterpreted-") {
++		if !strings.Contains(path, "reinterpreted-") && !strings.HasSuffix(path, ".template-base") {
+ 			changed = append(changed, path)
+ 		}
+ 	}
+diff --git a/internal/hubreconcile/reinterpret.go b/internal/hubreconcile/reinterpret.go
+index 16adfa90..297bc0fd 100644
+--- a/internal/hubreconcile/reinterpret.go
++++ b/internal/hubreconcile/reinterpret.go
+@@ -23,7 +23,7 @@ type Notifier func(boardDir, line string) (posted bool, err error)
+ 
+ var installedNotifier atomic.Pointer[Notifier]
+ 
+-// InstallNotifier stores n as the process's notifier, which a walk mails what its reinterpretations rewrote or flagged through, and returns a function that reinstates the previous one.
++// InstallNotifier stores n as the process's notifier, which a walk mails its reconcile notices through, and returns a function that reinstates the previous one.
+ func InstallNotifier(n Notifier) (restore func()) {
+ 	previous := installedNotifier.Swap(&n)
+ 	return func() { installedNotifier.Store(previous) }
+@@ -81,6 +81,12 @@ func notifyReinterpretations(boardDir, label string, lines []string) {
+ 	}
+ 	line := fmt.Sprintf("%s lym build %s changed what a value in the hub's config means, and the reconcile carried the hub's files across: %s", noticePrefix, label, strings.Join(lines, "; "))
+ 	logger.Warn("hubreconcile: a reinterpretation rewrote or flagged a hub config value", "board", boardDir, "lines", lines)
++	mailOrch(boardDir, line)
++}
++
++// mailOrch mails line to the orch of the hub whose Bolt checkout is boardDir through the installed notifier;
++// with no notifier installed, a failed mail or no orch recorded, the log holds the line alone.
++func mailOrch(boardDir, line string) {
+ 	notifier := installedNotifier.Load()
+ 	if notifier == nil {
+ 		logger.Warn("hubreconcile: no notifier is installed, so the orch is not mailed", "line", line)
+diff --git a/internal/hubreconcile/walk.go b/internal/hubreconcile/walk.go
+index 5944ae4e..7fc078d3 100644
+--- a/internal/hubreconcile/walk.go
++++ b/internal/hubreconcile/walk.go
+@@ -9,6 +9,7 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"slices"
++	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+@@ -193,16 +194,17 @@ var spawnBoardSync = boardengine.SpawnSync
+ 
+ // reconcileHubWide reconciles the hub-wide config at boardDir, seeded from the prime's anchor, and commits what it wrote on the board.
+ // While the board's base-sparse marker is absent the pass also strips each present base file once, and the marker it writes joins the files in the board commit.
++// Each seed-only module's template base the pass wrote joins the commit beside its file.
+ // Each registered reinterpretation whose board marker is absent is then applied, judged against the prime, and its marker joins the commit too.
+ // The board is pulled first: when it cannot be brought up to date nothing is written and skipped is true.
+-// A reconcile or commit failure restores the board's config files to their prior bytes and removes a marker the pass wrote.
+-// Once the commit landed, what the reinterpretations rewrote or flagged is mailed to the hub's orch.
++// A reconcile or commit failure restores the board's config files to their prior bytes and removes a marker or template base the pass wrote.
++// Once the commit landed, what the reinterpretations rewrote or flagged, and what the seed-only files took from their template or kept against it, is mailed to the hub's orch.
+ // The board is synced by the detached board sync whether or not this run committed, so a hub-wide commit an earlier run left unpushed is pushed too.
+ // The walk never waits on that push: a refusal of it reaches the orch as a failed-push record, and a spawn failure is only logged.
+ func reconcileHubWide(boardDir string, prime fabricengine.CodeWorktree, label string, hooks walkHooks) (skipped bool, err error) {
+ 	bolt := fabricengine.NewBolt(boardDir)
+ 	var prior map[string][]byte
+-	var notices []string
++	var notices, followed []string
+ 	write := fabricengine.BoltWrite{
+ 		Message: "lym: reconcile hub-wide config for build " + label,
+ 		Write: func() ([]string, error) {
+@@ -217,19 +219,19 @@ func reconcileHubWide(boardDir string, prime fabricengine.CodeWorktree, label st
+ 				return nil, err
+ 			}
+ 			var written []string
++			followed = nil
+ 			for _, result := range results {
+-				if len(result.Lacking) > 0 {
+-					logger.Warn("hubreconcile: a seed-only config file lacks units its template holds or holds a pair to settle, and reconcile never changes either", "module", result.Module, "lacking", result.Lacking,
+-						"way_forward", fmt.Sprintf("in \"lym config %s\" from the hub's prime worktree, add each lacking unit or leave it out on purpose, and keep one block of each pair that differs", result.Module))
++				if len(result.Unsettled) > 0 {
++					logger.Warn("hubreconcile: a seed-only config file holds a pair to settle, and reconcile never changes it", "module", result.Module, "unsettled", result.Unsettled,
++						"way_forward", fmt.Sprintf("in \"lym config %s\" from the hub's prime worktree, keep one block of each pair that differs", result.Module))
+ 				}
+-				if !result.Applied {
++				followed = append(followed, followedLines(result)...)
++				files := result.ChangedFilesRel()
++				if len(files) == 0 {
+ 					continue
+ 				}
+ 				logResult(boardDir, result)
+-				written = append(written, configengine.ConfigFileRel(result.Module))
+-				for _, legacy := range result.MigratedFrom {
+-					written = append(written, configengine.ConfigFileRel(legacy))
+-				}
++				written = append(written, files...)
+ 			}
+ 			if !markedBefore && fileExists(configengine.BaseSparseMarker(boardDir)) {
+ 				written = append(written, configengine.BaseSparseMarkerRel())
+@@ -260,6 +262,7 @@ func reconcileHubWide(boardDir string, prime fabricengine.CodeWorktree, label st
+ 		return true, nil
+ 	}
+ 	notifyReinterpretations(boardDir, label, notices)
++	notifyTemplateFollowed(boardDir, label, followed)
+ 	if err := spawnBoardSync(boardDir); err != nil {
+ 		logger.Warn("hubreconcile: the detached board sync did not start, so the board's commits wait for the board's next push", "board", boardDir, "committed", res.Committed, "error", err)
+ 	}
+@@ -379,10 +382,15 @@ func passOverOrFail(worktreePath string, err error) (skipped bool, failure error
+ }
+ 
+ // worktreeErrorFor wraps a reconcile failure, taking the file and module from a *configsync.FileError.
++// A template base is no file the module's editor repairs, so a failure naming one carries no module and its way forward is the file alone.
+ func worktreeErrorFor(worktree string, err error) *WorktreeError {
+ 	var fileErr *configsync.FileError
+ 	if errors.As(err, &fileErr) {
+-		return &WorktreeError{Worktree: worktree, File: fileErr.Path, Module: fileErr.Module, Err: fileErr.Err}
++		module := fileErr.Module
++		if configengine.IsTemplateBaseFile(fileErr.Path) {
++			module = ""
++		}
++		return &WorktreeError{Worktree: worktree, File: fileErr.Path, Module: module, Err: fileErr.Err}
+ 	}
+ 	return &WorktreeError{Worktree: worktree, Err: err}
+ }
+@@ -394,10 +402,45 @@ func boardErrorFor(boardDir string, err error) *WorktreeError {
+ 	return failure
+ }
+ 
++// followedLines renders what a board result carried from the template into a present seed-only file, and the operator values it kept against the template, one line per unit naming the module's file.
++// Any other result renders none.
++func followedLines(result configsync.Result) []string {
++	module, ok := configreg.Lookup(result.Module)
++	if !ok || !module.SeedOnly || result.Seed != configsync.SeedHub {
++		return nil
++	}
++	file := result.Module + ".yaml"
++	var lines []string
++	for _, path := range result.Added {
++		lines = append(lines, file+" added "+path)
++	}
++	for _, change := range result.Updated {
++		lines = append(lines, file+" updated "+change)
++	}
++	for _, path := range result.Removed {
++		lines = append(lines, file+" removed "+path)
++	}
++	for _, kept := range result.Differs {
++		lines = append(lines, file+" kept the hub's "+kept)
++	}
++	return lines
++}
++
++// notifyTemplateFollowed logs what the walk carried from the template into the hub's seed-only files and kept against it, and mails it, as one line, to the hub's orch through the installed notifier.
++// No line sends nothing.
++func notifyTemplateFollowed(boardDir, label string, lines []string) {
++	if len(lines) == 0 {
++		return
++	}
++	line := fmt.Sprintf("%s lym build %s carried template changes into the hub's operator-owned config files, keeping every value the operator set: %s; each kept value is the operator's to settle with lym config <module>", noticePrefix, label, strings.Join(lines, "; "))
++	logger.Info("hubreconcile: a seed-only config file followed its template", "board", boardDir, "lines", lines)
++	mailOrch(boardDir, line)
++}
++
+ // logResult logs one changed module.
+ func logResult(worktree string, result configsync.Result) {
+ 	logger.Info("hubreconcile: config changed", "worktree", worktree, "module", result.Module,
+-		"added", result.Added, "removed", result.Removed, "migrated", result.Migrated,
++		"added", result.Added, "removed", result.Removed, "updated", result.Updated, "differs", result.Differs, "templateBase", result.WroteTemplateBase, "migrated", result.Migrated,
+ 		"stripped", result.Stripped, "inherited", result.Inherited, "preserved", result.Preserved,
+ 		"moved", result.Moved, "keptTarget", result.KeptTarget, "keptExtra", result.KeptExtra, "dropped", result.Dropped, "overwritten", result.Overwritten, "copied", result.Copied)
+ }
+@@ -408,7 +451,7 @@ func fileExists(path string) bool {
+ 	return err == nil
+ }
+ 
+-// snapshotConfig reads every file in anchor's config dir and every registry module's config file and local override file and the sparse, base-sparse and reinterpretation markers under anchor; an absent one maps to nil.
++// snapshotConfig reads every file in anchor's config dir and every registry module's config file and local override file, each seed-only module's template base, and the sparse, base-sparse and reinterpretation markers under anchor; an absent one maps to nil.
+ // The dir's own files cover a legacy file a migration removes.
+ // Any read or list failure other than absence is returned naming the path, since a snapshot missing a file could not restore it.
+ func snapshotConfig(anchor string) (map[string][]byte, error) {
+@@ -433,6 +476,9 @@ func snapshotConfig(anchor string) (map[string][]byte, error) {
+ 	paths := []string{configengine.SparseMarker(anchor), configengine.BaseSparseMarker(anchor)}
+ 	for _, module := range configreg.Modules() {
+ 		paths = append(paths, configengine.ConfigFile(anchor, module.Name), configengine.LocalFile(anchor, module.Name))
++		if module.SeedOnly {
++			paths = append(paths, configengine.TemplateBaseFile(anchor, module.Name))
++		}
+ 		for _, change := range module.Reinterpretations {
+ 			paths = append(paths, configengine.ReinterpretedMarker(anchor, change.ID))
+ 		}
+diff --git a/internal/modelspec/template.yaml b/internal/modelspec/template.yaml
+index a91335d9..9c631a14 100644
+--- a/internal/modelspec/template.yaml
++++ b/internal/modelspec/template.yaml
+@@ -1,8 +1,9 @@
+ # models.yaml — the model-spec registry. Materialized once (lym init / lym
+ # config reconcile) when this file is absent; after that, this file is
+-# OPERATOR-OWNED: reconcile is seed-only for models.yaml and never rewrites or
+-# prunes it again, so any alias you add or default you change or remove here
+-# survives every future reconcile untouched.
++# OPERATOR-OWNED: any alias you add, or value you change or remove, here
++# survives every future reconcile. In a hub, the reconcile after a lym upgrade
++# carries a template change into the board's copy only where it still holds
++# lym's earlier value, kept in models.template-base beside it.
+ #
+ # Add a new alias by adding a block like this (freely — no code change or
+ # recompile is needed to adopt a brand-new model):
+diff --git a/internal/runprofile/doc.go b/internal/runprofile/doc.go
+index ac6318c8..47dead62 100644
+--- a/internal/runprofile/doc.go
++++ b/internal/runprofile/doc.go
+@@ -13,14 +13,15 @@
+ // Each ladder profile's motif block carries its tapestry block's Discussion perch values, the one perch a motif run has.
+ // Each ladder profile's pawl block carries the same perch values as its darn block.
+ // Its sampler block carries them too, and also turns the review on with `sampler.code_review` from `light` up, so a `speed` sampler run and a sampler run naming no profile skip the Code-Review perch.
+-// `light`, `docs` and `speed`'s tapestry block run the Code-Review round solo through `loom.code_reviewer_fan: ""`, while `solid`, `wide` and the rest take the hub's fan.
++// `docs` and `speed`'s tapestry block run the Code-Review round solo through `loom.code_reviewer_fan: ""`, while `light`, `solid`, `wide` and the rest take the hub's fan.
+ // A round count of 0 turns a perch off, since its Bouncer then settles approved with no review round.
+ //
+-// The module is hub-wide and seed-only: the hub reconcile seeds an absent file with the template's entries and never fills or prunes a present one.
+-// It does rename a recipe block or `defaults` entry held under a recipe's former name, such as `loom` for `tapestry`, keeping its value.
++// The module is hub-wide and seed-only: the hub reconcile seeds an absent file with the template's entries, and keeps beside a present one, as `profiles.template-base` on Bolt, the template it last carried in.
++// On each reconcile a key the file holds as that base does takes the template's new value, gained, changed or dropped, while a key the operator set, added or removed is kept, and reported under `differs` when the template holds it otherwise.
++// A file with no base yet gains each template key it lacks and keeps every value it holds, reporting under `differs` one the template holds otherwise.
++// It also renames a recipe block or `defaults` entry held under a recipe's former name, such as `loom` for `tapestry`, keeping its value.
+ // A former block beside a current one is dropped only when it equals the current block;
+-// a differing one stays, and reconcile reports it under `lacking` as `<entry>.<from>: differs from <entry>.<to>` for the operator to settle by hand.
+-// It also reports under `lacking` each recipe block a template profile holds and the hub's profile of that name lacks, never adding it.
++// a differing one stays, and reconcile reports it under `unsettled` as `<entry>.<from>: differs from <entry>.<to>` for the operator to settle by hand.
+ // A profile or `defaults` holding a recipe only under its former name is refused at Seed-Child with that reconcile as the way forward.
+ // Each profile, like `defaults`, is one whole entry, and `lym config profiles --set <name>='<json object>'` adds or replaces one whole entry;
+ // renaming one is adding it under the new name and removing the old block in the editor, `lym config profiles`.
+diff --git a/internal/runprofile/migrate.go b/internal/runprofile/migrate.go
+index 415083b5..68e96820 100644
+--- a/internal/runprofile/migrate.go
++++ b/internal/runprofile/migrate.go
+@@ -1,4 +1,4 @@
+-// migrate.go — the reconcile hooks of profiles.yaml: renaming a block held under a recipe's former name, and listing the template's recipe blocks a starting profile lacks and the former blocks left beside a differing current one.
++// migrate.go — the reconcile hooks of profiles.yaml: renaming a block held under a recipe's former name, and listing the former blocks left beside a differing current one.
+ 
+ package runprofile
+ 
+@@ -6,7 +6,6 @@ import (
+ 	"bytes"
+ 	"errors"
+ 	"fmt"
+-	"maps"
+ 	"reflect"
+ 	"slices"
+ 
+@@ -43,7 +42,7 @@ func heldFormerName[V any](entries map[string]V, recipe string) (string, bool) {
+ 
+ // MigrateConfig renames, in each profile and under defaults, every recipe block or entry keyed by a recipe's former name to the recipe's current name, keeping its value, so a hub seeded before a recipe rename runs that recipe on its profiles.
+ // An entry already holding the current name keeps it, and drops the former block only when it equals the current one;
+-// a differing former block stays untouched for the operator to settle, and LackingTemplateBlocks reports it.
++// a differing former block stays untouched for the operator to settle, and UnsettledFormerBlocks reports it.
+ // It returns one line per rewrite, "<entry>.<from>: renamed to <entry>.<to>" or "<entry>.<from>: removed, <entry>.<to> already set",
+ // and the document unchanged with no lines when nothing is rewritten.
+ // Every comment and other key is carried through yaml node editing.
+@@ -116,28 +115,14 @@ func mappingKeyIndex(mapping *yaml.Node, key string) int {
+ 	return -1
+ }
+ 
+-// LackingTemplateBlocks lists, sorted, as "<entry>.<recipe>", each recipe block or defaults entry the template holds under an entry existing also holds and that entry lacks.
+-// An example is a starting profile seeded before a recipe was added, so reconcile can report what the operator-owned file never gained.
+-// An entry the template lacks, or one existing lacks whole, lists nothing for the template's blocks.
+-// An entry holding a recipe's former name beside its current name with a differing block also lists "<entry>.<from>: differs from <entry>.<to>", so the operator settles the pair by hand.
++// UnsettledFormerBlocks lists, sorted, as "<entry>.<from>: differs from <entry>.<to>", each entry holding a recipe's former name beside its current name with a differing block, so the operator settles the pair by hand.
+ // A document that does not parse returns an error marked configengine.ErrInvalid.
+-func LackingTemplateBlocks(existing []byte) ([]string, error) {
++func UnsettledFormerBlocks(existing []byte) ([]string, error) {
+ 	var hub map[string]any
+ 	if err := yaml.Unmarshal(existing, &hub); err != nil {
+-		return nil, configengine.MarkInvalid(fmt.Errorf("runprofile: list the template blocks profiles lack: %w", err))
+-	}
+-	var lacking []string
+-	for name, templateEntry := range templateEntries() {
+-		hubRecipes, ok := hub[name].(map[string]any)
+-		if !ok {
+-			continue
+-		}
+-		for _, recipe := range slices.Sorted(maps.Keys(templateEntry.(map[string]any))) {
+-			if _, held := hubRecipes[recipe]; !held {
+-				lacking = append(lacking, name+"."+recipe)
+-			}
+-		}
++		return nil, configengine.MarkInvalid(fmt.Errorf("runprofile: list the former recipe blocks profiles hold beside a differing current one: %w", err))
+ 	}
++	var unsettled []string
+ 	for name, entry := range hub {
+ 		hubRecipes, ok := entry.(map[string]any)
+ 		if !ok {
+@@ -147,10 +132,10 @@ func LackingTemplateBlocks(existing []byte) ([]string, error) {
+ 			former, heldFormer := hubRecipes[rename.from]
+ 			current, heldCurrent := hubRecipes[rename.to]
+ 			if heldFormer && heldCurrent && !reflect.DeepEqual(former, current) {
+-				lacking = append(lacking, fmt.Sprintf("%s.%s: differs from %s.%s", name, rename.from, name, rename.to))
++				unsettled = append(unsettled, fmt.Sprintf("%s.%s: differs from %s.%s", name, rename.from, name, rename.to))
+ 			}
+ 		}
+ 	}
+-	slices.Sort(lacking)
+-	return lacking, nil
++	slices.Sort(unsettled)
++	return unsettled, nil
+ }
+diff --git a/internal/runprofile/migrate_test.go b/internal/runprofile/migrate_test.go
+index 6db94599..272ef576 100644
+--- a/internal/runprofile/migrate_test.go
++++ b/internal/runprofile/migrate_test.go
+@@ -1,4 +1,4 @@
+-// migrate_test.go table-drives the profiles reconcile hooks, MigrateConfig and LackingTemplateBlocks, and the Seed-Child lookups' refusal of a recipe held under its former name.
++// migrate_test.go table-drives the profiles reconcile hooks, MigrateConfig and UnsettledFormerBlocks, and the Seed-Child lookups' refusal of a recipe held under its former name.
+ 
+ package runprofile_test
+ 
+@@ -106,8 +106,8 @@ func TestMigrateConfig(t *testing.T) {
+ 	}
+ }
+ 
+-// TestLackingTemplateBlocks pins the report of the template's recipe blocks and defaults entries a hub's entry of the same name lacks and the former blocks held beside a differing current one, and that an entry the template lacks or the hub removed whole lists nothing.
+-func TestLackingTemplateBlocks(t *testing.T) {
++// TestUnsettledFormerBlocks pins the report of the former blocks held beside a differing current one, and that an equal pair, a lacking block or an empty document lists nothing.
++func TestUnsettledFormerBlocks(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 	tests := []struct {
+@@ -115,39 +115,29 @@ func TestLackingTemplateBlocks(t *testing.T) {
+ 		existing string
+ 		want     []string
+ 	}{
+-		{name: "the template itself lacks nothing", existing: runprofile.ConfigTemplate()},
+-		{
+-			name:     "a starting profile seeded before motif and sampler lists their blocks",
+-			existing: "light:\n  tapestry:\n    loom: {plan_max_bounces: 1}\n  darn:\n    loom: {code_max_bounces: 1}\n  pawl:\n    loom: {code_max_bounces: 1}\n",
+-			want:     []string{"light.motif", "light.sampler"},
+-		},
+-		{
+-			name:     "defaults lacking a template recipe list it",
+-			existing: "defaults: {darn: docs}\ndocs:\n  darn:\n    darn: {writer: opus}\n",
+-			want:     []string{"defaults.motif", "defaults.pawl", "defaults.tapestry"},
+-		},
++		{name: "the template itself holds no pair", existing: runprofile.ConfigTemplate()},
+ 		{
+ 			name:     "a former block differing from the current one is listed and an equal one is not",
+-			existing: "light:\n  loom:\n    loom: {plan_max_bounces: 7}\n  tapestry:\n    loom: {plan_max_bounces: 1}\n  darn:\n    loom: {code_max_bounces: 1}\n  pawl:\n    loom: {code_max_bounces: 1}\n  sampler:\n    loom: {code_max_bounces: 1}\nsolid:\n  loom:\n    loom: {plan_max_bounces: 2}\n  tapestry:\n    loom: {plan_max_bounces: 2}\n  darn:\n    loom: {code_max_bounces: 1}\n  pawl:\n    loom: {code_max_bounces: 1}\n  sampler:\n    loom: {code_max_bounces: 1}\n",
+-			want:     []string{"light.loom: differs from light.tapestry", "light.motif", "solid.motif"},
++			existing: "light:\n  loom:\n    loom: {plan_max_bounces: 7}\n  tapestry:\n    loom: {plan_max_bounces: 1}\nsolid:\n  loom:\n    loom: {plan_max_bounces: 2}\n  tapestry:\n    loom: {plan_max_bounces: 2}\n",
++			want:     []string{"light.loom: differs from light.tapestry"},
+ 		},
+-		{name: "a profile the template lacks lists nothing", existing: "broad:\n  darn:\n    loom: {code_max_bounces: 2}\n"},
++		{name: "a profile lacking template blocks lists nothing", existing: "light:\n  tapestry:\n    loom: {plan_max_bounces: 1}\n"},
+ 		{name: "an empty document lists nothing", existing: ""},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			got, err := runprofile.LackingTemplateBlocks([]byte(tt.existing))
++			got, err := runprofile.UnsettledFormerBlocks([]byte(tt.existing))
+ 			if err != nil {
+-				t.Fatalf("LackingTemplateBlocks() error = %v; want none", err)
++				t.Fatalf("UnsettledFormerBlocks() error = %v; want none", err)
+ 			}
+ 			if !slices.Equal(got, tt.want) {
+-				t.Errorf("LackingTemplateBlocks() = %q; want %q", got, tt.want)
++				t.Errorf("UnsettledFormerBlocks() = %q; want %q", got, tt.want)
+ 			}
+ 		})
+ 	}
+-	if _, err := runprofile.LackingTemplateBlocks([]byte("light: [\n")); !errors.Is(err, configengine.ErrInvalid) {
+-		t.Errorf("LackingTemplateBlocks(unparseable) error = %v; want one marked invalid", err)
++	if _, err := runprofile.UnsettledFormerBlocks([]byte("light: [\n")); !errors.Is(err, configengine.ErrInvalid) {
++		t.Errorf("UnsettledFormerBlocks(unparseable) error = %v; want one marked invalid", err)
+ 	}
+ }
+ 
+diff --git a/internal/runprofile/runprofile_test.go b/internal/runprofile/runprofile_test.go
+index 55db8587..d459ecb8 100644
+--- a/internal/runprofile/runprofile_test.go
++++ b/internal/runprofile/runprofile_test.go
+@@ -121,7 +121,7 @@ func TestTemplateLadder(t *testing.T) {
+ 		solo                   []string
+ 	}{
+ 		{"speed", 0, 0, 1, 0, []string{"tapestry"}},
+-		{"light", 1, 1, 1, 1, []string{"tapestry", "darn", "pawl"}},
++		{"light", 1, 1, 1, 1, nil},
+ 		{"solid", 2, 2, 1, 2, nil},
+ 		{"wide", 3, 2, 1, 3, nil},
+ 	}
+diff --git a/internal/runprofile/template.yaml b/internal/runprofile/template.yaml
+index 16914426..dff0e876 100644
+--- a/internal/runprofile/template.yaml
++++ b/internal/runprofile/template.yaml
+@@ -5,8 +5,10 @@
+ # batten's Seed-Child writes the block of the recipe the task runs into the pair's local config, with the task's own run_settings layered on top.
+ # Each perch's hard cap is its rounds plus one, so `lym loom circling continue` can grant one more round.
+ #
+-# Seeded once when this file is absent; after that it is operator-owned and no reconcile fills or prunes it.
+-# Reconcile only renames a block held under a recipe's former name, and lists a starting profile's missing recipe block without adding it.
++# Seeded once when this file is absent; after that it is operator-owned.
++# The hub reconcile after a lym upgrade carries a template change into it only where it still holds lym's earlier value, kept in profiles.template-base beside it:
++# a value you set, added or removed stays yours, and one the new template holds otherwise is reported under differs.
++# Reconcile also renames a block held under a recipe's former name, and lists a former block left beside a differing current one under unsettled.
+ # Add or replace a profile, or the defaults, with: lym config profiles --set <name>='<json object>'
+ # Remove one by deleting its block in the editor: lym config profiles
+ 
+@@ -28,15 +30,15 @@ speed:
+     loom: {code_max_bounces: 0, code_hard_max_bounces: 1}
+ light:
+   tapestry:
+-    loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2, plan_max_bounces: 1, plan_hard_max_bounces: 2, code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: ""}
++    loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2, plan_max_bounces: 1, plan_hard_max_bounces: 2, code_max_bounces: 1, code_hard_max_bounces: 2}
+   motif:
+     loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2}
+   darn:
+-    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: ""}
++    loom: {code_max_bounces: 1, code_hard_max_bounces: 2}
+   pawl:
+-    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: ""}
++    loom: {code_max_bounces: 1, code_hard_max_bounces: 2}
+   sampler:
+-    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: ""}
++    loom: {code_max_bounces: 1, code_hard_max_bounces: 2}
+     sampler: {code_review: true}
+ solid:
+   tapestry:
+diff --git a/internal/yamlengine/doc.go b/internal/yamlengine/doc.go
+index 2fc0b42e..611aa9e3 100644
+--- a/internal/yamlengine/doc.go
++++ b/internal/yamlengine/doc.go
+@@ -11,6 +11,7 @@
+ // [RaiseIntFloor] raises one top-level integer key to a floor, carrying every other key and comment through unchanged, for a module's migration hook.
+ // [RenameKeys] renames retired top-level keys to their new names with their values and the template's line comment for each new name, for a module's migration hook.
+ // [DropKeys] removes retired top-level keys with their values and comments, reporting one line per removed key, for a module's migration hook.
++// [FollowTemplate] carries a template change into an operator-owned file unit by unit, against the template the file last followed: a unit left at that template's value takes the new one, and a unit the operator set is kept and reported when the template holds it otherwise.
+ //
+ // # Layer operations
+ //
+diff --git a/internal/yamlengine/follow.go b/internal/yamlengine/follow.go
+new file mode 100644
+index 00000000..cd88e629
+--- /dev/null
++++ b/internal/yamlengine/follow.go
+@@ -0,0 +1,246 @@
++// follow.go carries a template change into an operator-owned file unit by unit, judging each unit against the template the file last followed so a value the operator set is kept.
++
++package yamlengine
++
++import (
++	"bytes"
++	"errors"
++	"fmt"
++	"slices"
++	"sort"
++	"strings"
++
++	"gopkg.in/yaml.v3"
++)
++
++// FollowReport lists, each sorted, what FollowTemplate changed in a file and the operator's values it kept against a template that holds them otherwise.
++type FollowReport struct {
++	// Added lists the dotted path of each template unit the file gained.
++	Added []string
++	// Updated lists, as "<path>: <old> -> <new>", each unit the file held at the base's value and now holds at the template's.
++	Updated []string
++	// Removed lists the dotted path of each unit the file held at the base's value and the template dropped.
++	Removed []string
++	// Differs lists, as "<path>: file <value>, template <value>", each unit the operator set that the template holds otherwise, kept as the file holds it.
++	// A value absent from one side renders as "absent".
++	Differs []string
++}
++
++// Changed reports whether the merge rewrote the file.
++func (r FollowReport) Changed() bool {
++	return len(r.Added)+len(r.Updated)+len(r.Removed) > 0
++}
++
++// ErrInvalidBase marks a FollowTemplate error caused by the base document, one that does not parse or whose top level is not a mapping, as opposed to the template or the file.
++var ErrInvalidBase = errors.New("the template base is not a YAML mapping")
++
++// FollowTemplate carries template into existing, an operator-owned file seeded from an earlier template, and keeps every value the operator set.
++// base is the template the file last followed, and haveBase false says the file has no record of one, so base is not read.
++// A unit is a mapping key, descended into while the file, the template and the base each hold a mapping or nothing there, and otherwise compared whole, so a scalar or a sequence is always one unit.
++// With a base, a unit the file holds as the base does, absence included, takes the template's value, gaining, changing or losing it;
++// any other unit is the operator's and is kept, listed under Differs when the template holds a third value.
++// Without a base, a unit the file lacks is added from the template, one it holds with a value the template holds otherwise is kept and listed under Differs, and one only the file holds is kept silently.
++// A mapping a removal empties is removed with it, and a unit copied in from the template carries none of its comments.
++// An unchanged file comes back byte for byte; a changed one is re-encoded, keeping its comments and each node's style, a long flow mapping on one line, and dropping the blank lines between entries.
++// A document whose top level is not a mapping is an error naming the document, and an error caused by the base wraps ErrInvalidBase.
++func FollowTemplate(base, template, existing []byte, haveBase bool) ([]byte, FollowReport, error) {
++	var baseRoot *yaml.Node
++	if haveBase {
++		var err error
++		_, baseRoot, err = parseMappingRoot(base, "base")
++		if err != nil {
++			return nil, FollowReport{}, fmt.Errorf("%w: %w", ErrInvalidBase, err)
++		}
++	}
++	_, templateRoot, err := parseMappingRoot(template, "template")
++	if err != nil {
++		return nil, FollowReport{}, err
++	}
++	doc, existingRoot, err := parseMappingRoot(existing, "file")
++	if err != nil {
++		return nil, FollowReport{}, err
++	}
++	if existingRoot == nil {
++		existingRoot = &yaml.Node{Kind: yaml.MappingNode, Tag: "!!map"}
++		if doc.Kind != yaml.DocumentNode {
++			doc = &yaml.Node{Kind: yaml.DocumentNode}
++		}
++		doc.Content = append(doc.Content, existingRoot)
++	}
++
++	f := follower{haveBase: haveBase}
++	f.followMapping("", baseRoot, templateRoot, existingRoot)
++	for _, list := range []*[]string{&f.report.Added, &f.report.Updated, &f.report.Removed, &f.report.Differs} {
++		sort.Strings(*list)
++	}
++	if !f.report.Changed() {
++		return existing, f.report, nil
++	}
++
++	var out bytes.Buffer
++	encoder := yaml.NewEncoder(&out)
++	encoder.SetIndent(2)
++	if err := encoder.Encode(doc); err != nil {
++		return nil, FollowReport{}, fmt.Errorf("encode the followed YAML: %w", err)
++	}
++	if err := encoder.Close(); err != nil {
++		return nil, FollowReport{}, fmt.Errorf("encode the followed YAML: %w", err)
++	}
++	return out.Bytes(), f.report, nil
++}
++
++// follower walks one FollowTemplate merge and gathers its report.
++type follower struct {
++	haveBase bool
++	report   FollowReport
++}
++
++// follow returns the value the file holds at path after the merge, nil to leave the key out.
++func (f *follower) follow(path string, base, template, existing *yaml.Node) *yaml.Node {
++	if isMapping(existing) && isMapping(template) && (base == nil || isMapping(base)) {
++		hadEntries := len(existing.Content) > 0
++		f.followMapping(path, base, template, existing)
++		if hadEntries && len(existing.Content) == 0 {
++			return nil
++		}
++		return existing
++	}
++	return f.followUnit(path, base, template, existing)
++}
++
++// followMapping merges the entries of the template and base mappings at path into existing in place, file keys first, then the keys only the template holds in its order.
++// A nil base or template mapping holds no entry.
++func (f *follower) followMapping(path string, base, template, existing *yaml.Node) {
++	keys := mappingKeys(existing)
++	for _, mapping := range []*yaml.Node{template, base} {
++		for _, key := range mappingKeys(mapping) {
++			if !slices.Contains(keys, key) {
++				keys = append(keys, key)
++			}
++		}
++	}
++	for _, key := range keys {
++		_, existingValue := mappingEntry(existing, key)
++		_, baseValue := mappingEntry(base, key)
++		templateKey, templateValue := mappingEntry(template, key)
++		result := f.follow(joinKeyPath(path, key), baseValue, templateValue, existingValue)
++		switch {
++		case result == existingValue:
++		case existingValue == nil:
++			existing.Content = append(existing.Content, copyWithoutComments(templateKey), result)
++		case result == nil:
++			at := mappingIndex(existing, key)
++			existing.Content = slices.Delete(existing.Content, at, at+2)
++		default:
++			existing.Content[mappingIndex(existing, key)+1] = result
++		}
++	}
++}
++
++// followUnit decides one unit compared whole and returns the value the file holds after the merge, nil for absent.
++func (f *follower) followUnit(path string, base, template, existing *yaml.Node) *yaml.Node {
++	if !f.haveBase {
++		switch {
++		case existing == nil && template != nil:
++			f.report.Added = append(f.report.Added, path)
++			return copyWithoutComments(template)
++		case existing != nil && template != nil && !nodesEqual(existing, template):
++			f.differs(path, existing, template)
++		}
++		return existing
++	}
++	if !nodesEqual(existing, base) {
++		if !nodesEqual(template, base) && !nodesEqual(template, existing) {
++			f.differs(path, existing, template)
++		}
++		return existing
++	}
++	switch {
++	case nodesEqual(existing, template):
++		return existing
++	case template == nil:
++		f.report.Removed = append(f.report.Removed, path)
++		return nil
++	case existing == nil:
++		f.report.Added = append(f.report.Added, path)
++		return copyWithoutComments(template)
++	default:
++		f.report.Updated = append(f.report.Updated, fmt.Sprintf("%s: %s -> %s", path, inlineValue(existing), inlineValue(template)))
++		updated := copyWithoutComments(template)
++		updated.HeadComment, updated.LineComment, updated.FootComment = existing.HeadComment, existing.LineComment, existing.FootComment
++		return updated
++	}
++}
++
++// differs records a unit the operator set that the template holds otherwise.
++func (f *follower) differs(path string, existing, template *yaml.Node) {
++	f.report.Differs = append(f.report.Differs, fmt.Sprintf("%s: file %s, template %s", path, inlineValue(existing), inlineValue(template)))
++}
++
++// isMapping reports whether node is a mapping.
++func isMapping(node *yaml.Node) bool {
++	return node != nil && node.Kind == yaml.MappingNode
++}
++
++// mappingKeys returns the keys of mapping in order, none for a nil mapping.
++func mappingKeys(mapping *yaml.Node) []string {
++	if mapping == nil {
++		return nil
++	}
++	keys := make([]string, 0, len(mapping.Content)/2)
++	for i := 0; i+1 < len(mapping.Content); i += 2 {
++		keys = append(keys, mapping.Content[i].Value)
++	}
++	return keys
++}
++
++// mappingEntry returns the key and value nodes of key in mapping, both nil when mapping is nil or lacks key.
++func mappingEntry(mapping *yaml.Node, key string) (keyNode, value *yaml.Node) {
++	if mapping == nil {
++		return nil, nil
++	}
++	at := mappingIndex(mapping, key)
++	if at < 0 {
++		return nil, nil
++	}
++	return mapping.Content[at], mapping.Content[at+1]
++}
++
++// copyWithoutComments returns a deep copy of node with every comment cleared and every style kept.
++func copyWithoutComments(node *yaml.Node) *yaml.Node {
++	clone := deepCopyNode(node)
++	clearComments(clone)
++	return clone
++}
++
++// clearComments clears the comments of node and every node under it.
++func clearComments(node *yaml.Node) {
++	node.HeadComment, node.LineComment, node.FootComment = "", "", ""
++	for _, child := range node.Content {
++		clearComments(child)
++	}
++}
++
++// inlineValue renders node as one line of flow YAML for a report, "absent" for nil.
++func inlineValue(node *yaml.Node) string {
++	if node == nil {
++		return "absent"
++	}
++	flow := copyWithoutComments(node)
++	setFlowStyle(flow)
++	rendered, err := yaml.Marshal(flow)
++	if err != nil {
++		return fmt.Sprintf("<unrenderable %s>", nodeShape(node))
++	}
++	return strings.TrimSpace(string(rendered))
++}
++
++// setFlowStyle sets every mapping and sequence at or under node to flow style.
++func setFlowStyle(node *yaml.Node) {
++	if node.Kind == yaml.MappingNode || node.Kind == yaml.SequenceNode {
++		node.Style = yaml.FlowStyle
++	}
++	for _, child := range node.Content {
++		setFlowStyle(child)
++	}
++}
+diff --git a/internal/yamlengine/follow_test.go b/internal/yamlengine/follow_test.go
+new file mode 100644
+index 00000000..911c3b6c
+--- /dev/null
++++ b/internal/yamlengine/follow_test.go
+@@ -0,0 +1,185 @@
++// follow_test.go table-drives FollowTemplate: what a file gains, changes and loses against its template base, and the operator values it keeps.
++
++package yamlengine_test
++
++import (
++	"slices"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++	"github.com/Knatte18/loomyard/internal/yamlengine"
++)
++
++func TestFollowTemplate(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const longFlowMapping = "m: {alpha: aaaaaaaaaaaaaaaaaaaa, beta: bbbbbbbbbbbbbbbbbbbb, gamma: cccccccccccccccccccc, delta: dddddddddddddddd}\n"
++	tests := []struct {
++		name     string
++		base     string
++		haveBase bool
++		template string
++		existing string
++		want     string
++		report   yamlengine.FollowReport
++	}{
++		{
++			name:     "a unit at the base's value takes the template's new value and keeps its comments",
++			base:     "a: 1\n",
++			haveBase: true,
++			template: "a: 2\n",
++			existing: "# note\na: 1 # mine\n",
++			want:     "# note\na: 2 # mine\n",
++			report:   yamlengine.FollowReport{Updated: []string{"a: 1 -> 2"}},
++		},
++		{
++			name:     "a unit the template dropped leaves while the file holds the base's value",
++			base:     "p:\n  x: 1\nq: 1\n",
++			haveBase: true,
++			template: "q: 1\n",
++			existing: "p:\n  x: 1\nq: 1\n",
++			want:     "q: 1\n",
++			report:   yamlengine.FollowReport{Removed: []string{"p"}},
++		},
++		{
++			name:     "a removal that empties a mapping removes the mapping",
++			base:     "p:\n  x: 1\nq: 1\n",
++			haveBase: true,
++			template: "p: {}\nq: 1\n",
++			existing: "p:\n  x: 1\nq: 1\n",
++			want:     "q: 1\n",
++			report:   yamlengine.FollowReport{Removed: []string{"p.x"}},
++		},
++		{
++			name:     "a subtree the template added is copied in its style without the template's comments",
++			haveBase: true,
++			template: "# head\nm: {a: 1, b: [x]}\n",
++			existing: "k: v\n",
++			want:     "k: v\nm: {a: 1, b: [x]}\n",
++			report:   yamlengine.FollowReport{Added: []string{"m"}},
++		},
++		{
++			name:     "a key the template added joins a flow mapping the file holds",
++			base:     "p: {a: 1}\n",
++			haveBase: true,
++			template: "p: {a: 1, b: \"\"}\n",
++			existing: "p: {a: 5}\n",
++			want:     "p: {a: 5, b: \"\"}\n",
++			report:   yamlengine.FollowReport{Added: []string{"p.b"}},
++		},
++		{
++			name:     "a value the operator set is kept and listed when the template moved it to a third value",
++			base:     "a: 1\n",
++			haveBase: true,
++			template: "a: 2\n",
++			existing: "a: 3\n",
++			want:     "a: 3\n",
++			report:   yamlengine.FollowReport{Differs: []string{"a: file 3, template 2"}},
++		},
++		{
++			name:     "a value the operator set is kept silently while the template holds the base's value",
++			base:     "a: 1\n",
++			haveBase: true,
++			template: "a: 1\n",
++			existing: "a: 3\n",
++			want:     "a: 3\n",
++		},
++		{
++			name:     "a unit the operator removed stays removed and is listed when the template moved it",
++			base:     "a: 1\nb: 1\n",
++			haveBase: true,
++			template: "a: 2\nb: 1\n",
++			existing: "c: 1\n",
++			want:     "c: 1\n",
++			report:   yamlengine.FollowReport{Differs: []string{"a: file absent, template 2"}},
++		},
++		{
++			name:     "without a base a lacking unit is added, a differing one kept and listed, and an extra one kept silently",
++			template: "a: 1\nb: 2\n",
++			existing: "a: 5\nc: 3\n",
++			want:     "a: 5\nc: 3\nb: 2\n",
++			report:   yamlengine.FollowReport{Added: []string{"b"}, Differs: []string{"a: file 5, template 1"}},
++		},
++		{
++			name:     "a scalar the template turned into a mapping is one unit",
++			base:     "a: 1\n",
++			haveBase: true,
++			template: "a: {x: 1}\n",
++			existing: "a: 1\n",
++			want:     "a: {x: 1}\n",
++			report:   yamlengine.FollowReport{Updated: []string{"a: 1 -> {x: 1}"}},
++		},
++		{
++			name:     "a sequence at the base's value takes the template's new sequence as one unit",
++			base:     "a: [1, 2]\n",
++			haveBase: true,
++			template: "a: [1, 3]\n",
++			existing: "a: [1, 2]\n",
++			want:     "a: [1, 3]\n",
++			report:   yamlengine.FollowReport{Updated: []string{"a: [1, 2] -> [1, 3]"}},
++		},
++		{
++			name:     "a sequence the operator edited is kept whole and listed",
++			base:     "a: [1, 2]\n",
++			haveBase: true,
++			template: "a: [1, 3]\n",
++			existing: "a: [1, 2, 9]\n",
++			want:     "a: [1, 2, 9]\n",
++			report:   yamlengine.FollowReport{Differs: []string{"a: file [1, 2, 9], template [1, 3]"}},
++		},
++		{
++			name:     "a changed file keeps a flow mapping past 80 columns on one line",
++			base:     "a: 1\n",
++			haveBase: true,
++			template: "a: 2\n",
++			existing: "a: 1\n\n" + longFlowMapping,
++			want:     "a: 2\n" + longFlowMapping,
++			report:   yamlengine.FollowReport{Updated: []string{"a: 1 -> 2"}},
++		},
++		{
++			name:     "a base that is not a mapping is not read while the file has no base",
++			base:     "- not\n- a mapping\n",
++			template: "a: 1\n",
++			existing: "a: 1\n",
++			want:     "a: 1\n",
++		},
++		{
++			name:     "an empty file gains the template",
++			template: "a: 1\n",
++			want:     "a: 1\n",
++			report:   yamlengine.FollowReport{Added: []string{"a"}},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, report, err := yamlengine.FollowTemplate([]byte(tt.base), []byte(tt.template), []byte(tt.existing), tt.haveBase)
++			if err != nil {
++				t.Fatalf("FollowTemplate() error = %v; want none", err)
++			}
++			if string(got) != tt.want {
++				t.Errorf("FollowTemplate() = %q; want %q", got, tt.want)
++			}
++			for _, field := range []struct {
++				name      string
++				got, want []string
++			}{
++				{"Added", report.Added, tt.report.Added},
++				{"Updated", report.Updated, tt.report.Updated},
++				{"Removed", report.Removed, tt.report.Removed},
++				{"Differs", report.Differs, tt.report.Differs},
++			} {
++				if !slices.Equal(field.got, field.want) {
++					t.Errorf("FollowTemplate() %s = %q; want %q", field.name, field.got, field.want)
++				}
++			}
++			if wantChanged := tt.want != tt.existing; report.Changed() != wantChanged {
++				t.Errorf("FollowTemplate() Changed = %v; want %v", report.Changed(), wantChanged)
++			}
++		})
++	}
++
++	if _, _, err := yamlengine.FollowTemplate(nil, []byte("a: 1\n"), []byte("- 1\n"), false); err == nil {
++		t.Error("FollowTemplate(a list document) error = nil; want a refusal naming the top level")
++	}
++}
+diff --git a/pattern/PATTERN-config-layers.md b/pattern/PATTERN-config-layers.md
+index 7b16d13d..9f7a22f1 100644
+--- a/pattern/PATTERN-config-layers.md
++++ b/pattern/PATTERN-config-layers.md
+@@ -52,6 +52,10 @@ Every other reconcile, the binary-change walk, a clone and `lym fabric reconcile
+ A binary older than the one that wrote a key cannot tell a key it never knew from one the template dropped, so an automatic removal would strip a newer binary's settings from the committed board.
+ A local override file is pruned of every such key on any reconcile, since its load refuses one.
+ 
++A seed-only board file's key that its template base, `<module>.template-base` beside it, holds is no such key: the base records that the template held it, so the template dropped it.
++Every reconcile of the board dir removes it while the file holds the base's value, and keeps it as the operator's otherwise.
++A binary older than the base's writer reads that drop the same way, and the newer binary's next walk adds the key back, since the older one wrote its own template as the base.
++
+ ## Strictness
+ 
+ `internal/configengine` offers `Load` (strict) and `LoadOrTemplate` (degrades to the embedded template); a caller adopts exactly one, except `runprofile`.
