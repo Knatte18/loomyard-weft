@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Review",
+  "current_producer": "Code-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Review",
-    "last": "Code-Bouncer → bounced to Code-Burler-Review",
+    "now": "Code-Burler-Fix",
+    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -140,6 +140,35 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/raddle-motif-finish-clean/_lym/reviews/code/round-1-bouncer-ledger.md",
       "at": "2026-11-05T20:10:16Z",
       "routed_to": "Code-Burler-Review"
+    },
+    {
+      "producer": "Code-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/raddle-motif-finish-clean/_lym/reviews/code/round-2-review.md",
+      "at": "2026-11-05T20:12:20Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-05T20:12:02.561400837Z",
+          "end": "2026-11-05T20:12:02.561580633Z"
+        },
+        {
+          "gate": "review",
+          "kind": "rework",
+          "start": "2026-11-05T20:12:02.971424624Z",
+          "end": "2026-11-05T20:12:20.041519002Z"
+        },
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-05T20:12:20.06588405Z",
+          "end": "2026-11-05T20:12:20.066420082Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Burler-Fix"
     }
   ],
   "product": {
