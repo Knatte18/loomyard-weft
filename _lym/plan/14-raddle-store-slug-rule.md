@@ -1,13 +1,13 @@
 # Card 14 — raddle-store-slug-rule
 
 **Create:**
-- `plan:internal/boardengine#RaddleStoreEntry` -> `type RaddleStoreEntry struct`
-- `plan:internal/boardengine#RaddleStore` -> `type RaddleStore struct`
-- `plan:internal/boardengine#ReadRaddleStore` -> `func ReadRaddleStore(boardDir string) (RaddleStore, error)`
-- `plan:internal/boardengine#RaddleStore.Holds` -> `func (s RaddleStore) Holds(slug string) (RaddleStoreEntry, bool)`
-- `plan:internal/boardengine#RaddleStoreDir` -> `func RaddleStoreDir(boardDir, sketch string) string`
-- `plan:internal/boardengine#TestReadRaddleStore` -> `func TestReadRaddleStore(t *testing.T)`
-- `plan:internal/boardengine_test#writeRaddleStore` -> `func writeRaddleStore(t *testing.T, boardDir, sketch string, entry boardengine.RaddleStoreEntry)`
+- `internal/boardengine#RaddleStoreEntry`
+- `internal/boardengine#RaddleStore`
+- `internal/boardengine#ReadRaddleStore`
+- `internal/boardengine#RaddleStore.Holds`
+- `internal/boardengine#RaddleStoreDir`
+- `internal/boardengine#TestReadRaddleStore`
+- `internal/boardengine_test#writeRaddleStore`
 
 **Edit:**
 - `internal/boardengine#checkNewSlugs` -> `func checkNewSlugs(loaded, after []Task, renamedTo string, validate func(slug string) error, store RaddleStore, storeErr error) error`

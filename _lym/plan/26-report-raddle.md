@@ -9,7 +9,7 @@
 - `plan:internal/reportcli#raddleCommand` -> `func raddleCommand() *cobra.Command`
 
 **Edit:**
-- `plan:internal/boardengine#ReadRaddleStore`
+- `internal/boardengine#ReadRaddleStore`
 - `internal/reportengine#allowedImports`
 - `internal/reportcli#Command`
 - `internal/reportcli#TestReportVerbs_RefuseBadFlags`

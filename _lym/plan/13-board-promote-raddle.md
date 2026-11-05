@@ -1,11 +1,11 @@
 # Card 13 — board-promote-raddle
 
 **Create:**
-- `plan:internal/shedrun#RecipeRaddle` -> `const RecipeRaddle = "raddle"`
-- `plan:internal/boardengine#Board.PromoteTo` -> `func (b *Board) PromoteTo(idOrSlug any, recipe string) (Task, error)`
-- `plan:internal/boardengine#Store.promoteTo` -> `func (s *Store) promoteTo(idOrSlug any, recipe string, recordStored func(slug string) bool) (task Task, changed bool, err error)`
-- `plan:internal/boardengine#checkDiscussedPromotion` -> `func checkDiscussedPromotion(loaded, after []Task, recordStored func(slug string) bool) error`
-- `plan:internal/boardengine_test#TestDiscussedPromotion` -> `func TestDiscussedPromotion(t *testing.T)`
+- `internal/shedrun#RecipeRaddle`
+- `internal/boardengine#Board.PromoteTo`
+- `internal/boardengine#Store.promoteTo`
+- `internal/boardengine#checkDiscussedPromotion`
+- `internal/boardengine_test#TestDiscussedPromotion`
 
 **Edit:**
 - `internal/boardengine#Board.Promote`

@@ -1,7 +1,7 @@
 # Card 15 — raddle-store-replay
 
 **Create:**
-- `plan:internal/boardengine#raddleStorePath` -> `func raddleStorePath(path string) (sketch string, ok bool)`
+- `internal/boardengine#raddleStorePath`
 
 **Edit:**
 - `internal/boardengine#FabricReplay.Claims`
@@ -12,7 +12,7 @@
 
 **Uses:**
 - `internal/boardengine#replayRun.addEntry`
-- `plan:internal/boardengine#RaddleStoreDir`
+- `internal/boardengine#RaddleStoreDir`
 
 **Intent:** D10: the store reaches origin with the filed entries through the board's Bolt replayer.
 `raddleStorePath` reports whether a Bolt-root-relative path is a file directly in a store directory, `raddle/<sketch>/<name>` with no deeper segment, and returns its Sketch slug.

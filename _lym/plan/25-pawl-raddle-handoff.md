@@ -28,7 +28,7 @@
 - `internal/pawlengine/doc.go`
 
 **Uses:**
-- `plan:internal/boardengine#RaddleStore.Holds`
+- `internal/boardengine#RaddleStore.Holds`
 - `internal/loomcli#TestWire_EverySeamFilled`
 - `internal/battencli#TestWire_EverySeamFilled`
 - `internal/loomcli#TestWire_BeamRecipe`

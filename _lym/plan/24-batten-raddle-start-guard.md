@@ -13,9 +13,9 @@
 **Uses:**
 - `internal/battencli#boardRecipe`
 - `internal/boardengine#ReadTasks`
-- `plan:internal/boardengine#RaddleStore.Holds`
+- `internal/boardengine#RaddleStore.Holds`
 - `internal/boardengine#DecisionFileName`
-- `plan:internal/shedrun#RecipeRaddle`
+- `internal/shedrun#RecipeRaddle`
 
 **Intent:** D2's start guard, batten's own check beside the board's refusal at promotion (card 14).
 `startGuard` gains `Raddle func() error`, nil checking nothing as every seam of a hand-populated receiver.

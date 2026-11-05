@@ -17,9 +17,9 @@
 - `internal/raddleparser#Parse`
 - `internal/raddleparser#Hash`
 - `internal/discussionparser#SplicePart`
-- `plan:internal/boardengine#RaddleFiling`
-- `plan:internal/boardengine#RaddleEntry`
-- `plan:internal/boardengine#ErrRaddleRecheck`
+- `internal/boardengine#RaddleFiling`
+- `internal/boardengine#RaddleEntry`
+- `internal/boardengine#ErrRaddleRecheck`
 - `internal/loomshed/doc.go`
 
 **Intent:** D9, D8's filing half and D7's hash match: Raddle-File, a Go row with no agent.

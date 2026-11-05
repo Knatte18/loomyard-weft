@@ -69,9 +69,9 @@
 - `plan:internal/loomengine#RaddleTable`
 - `plan:internal/loomcli#raddleCheckFor`
 - `plan:internal/loomcli#raddleBoardContext`
-- `plan:internal/boardengine#Board.FileRaddle`
-- `plan:internal/boardengine#Board.ReleaseTasks`
-- `plan:internal/boardengine#Board.EndRaddleEntry`
+- `internal/boardengine#Board.FileRaddle`
+- `internal/boardengine#Board.ReleaseTasks`
+- `internal/boardengine#Board.EndRaddleEntry`
 - `internal/hubgeom#ParentOf`
 - `internal/orchcli#NotifyParent`
 - `internal/loomcli#TestWire_EverySeamFilled`
@@ -85,7 +85,7 @@
 - `internal/testkit/envkit#TestNilSeams_SkipsNilLegalPaths`
 - `internal/testkit/envkit#TestSeamMarkers_ReflectiveTestsAreMarked`
 - `internal/shedrecipe_test#TestCoverageGuard`
-- `plan:internal/shedrun#RecipeRaddle`
+- `internal/shedrun#RecipeRaddle`
 - `internal/loomshed/doc.go`
 
 **Intent:** D1: the `raddle` recipe, its two engines' registry rows and its wiring, in one card because `TestWire_EverySeamFilled` checks every `Env` seam a new field adds is filled by the wiring in the same build.

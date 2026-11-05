@@ -1,16 +1,16 @@
 # Card 16 — board-raddle-writes
 
 **Create:**
-- `plan:internal/boardengine#RaddleEntry` -> `type RaddleEntry struct`
-- `plan:internal/boardengine#RaddleFiling` -> `type RaddleFiling struct`
-- `plan:internal/boardengine#ErrRaddleRecheck` -> `var ErrRaddleRecheck = errors.New("the board moved since the raddle proposal was checked")`
-- `plan:internal/boardengine#raddleFiled` -> `type raddleFiled struct`
-- `plan:internal/boardengine#Board.FileRaddle` -> `func (b *Board) FileRaddle(f RaddleFiling) error`
-- `plan:internal/boardengine#Board.ReleaseTasks` -> `func (b *Board) ReleaseTasks(slugs []string) error`
-- `plan:internal/boardengine#Board.EndRaddleEntry` -> `func (b *Board) EndRaddleEntry(slug string) error`
-- `plan:internal/boardengine#TestFileRaddle` -> `func TestFileRaddle(t *testing.T)`
-- `plan:internal/boardengine#TestReleaseTasks` -> `func TestReleaseTasks(t *testing.T)`
-- `plan:internal/boardengine#TestEndRaddleEntry` -> `func TestEndRaddleEntry(t *testing.T)`
+- `internal/boardengine#RaddleEntry`
+- `internal/boardengine#RaddleFiling`
+- `internal/boardengine#ErrRaddleRecheck`
+- `internal/boardengine#raddleFiled`
+- `internal/boardengine#Board.FileRaddle`
+- `internal/boardengine#Board.ReleaseTasks`
+- `internal/boardengine#Board.EndRaddleEntry`
+- `internal/boardengine#TestFileRaddle`
+- `internal/boardengine#TestReleaseTasks`
+- `internal/boardengine#TestEndRaddleEntry`
 
 **Edit:**
 - `internal/boardengine#Board.boardCriticalSection`
@@ -18,7 +18,7 @@
 
 **Uses:**
 - `internal/boardengine#applyDraftRule`
-- `plan:internal/boardengine#RaddleStoreDir`
+- `internal/boardengine#RaddleStoreDir`
 - `internal/boardengine#DecisionFileName`
 - `internal/boardengine#Board.StoreDecisionRecord`
 - `internal/boardengine#Board.FileFrontTask`

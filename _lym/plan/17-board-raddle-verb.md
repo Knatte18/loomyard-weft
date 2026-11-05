@@ -1,8 +1,8 @@
 # Card 17 — board-raddle-verb
 
 **Create:**
-- `plan:internal/boardengine#Board.RaddleProposal` -> `func (b *Board) RaddleProposal(slug string) ([]byte, bool, error)`
-- `plan:internal/boardengine_test#TestRaddleProposal` -> `func TestRaddleProposal(t *testing.T)`
+- `internal/boardengine#Board.RaddleProposal`
+- `internal/boardengine_test#TestRaddleProposal`
 
 **Edit:**
 - `internal/boardcli#Command`
@@ -10,9 +10,9 @@
 - `internal/boardcli/doc.go`
 
 **Uses:**
-- `plan:internal/boardengine#RaddleStore.Holds`
-- `plan:internal/boardengine#RaddleStoreDir`
-- `plan:internal/boardengine_test#writeRaddleStore`
+- `internal/boardengine#RaddleStore.Holds`
+- `internal/boardengine#RaddleStoreDir`
+- `internal/boardengine_test#writeRaddleStore`
 - `internal/boardengine/doc.go`
 
 **Intent:** D10's lookup, `lym board raddle <slug>`.

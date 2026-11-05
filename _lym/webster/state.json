@@ -1,6 +1,6 @@
 {
   "runGuid": "7a9a5588c121f4dc0797c48709cc1c8e",
-  "planFingerprint": "decb55232522ec58bf7ece45f0faf764a71748375dbf1428d87c339cf542e655",
+  "planFingerprint": "cfab95004da042111efeafb8bb5d96fbf0d5db44f7da5730ccf1e20f792ca9a4",
   "planFileHashes": {
     "00-overview.md": "606537116b951080b215656481da4eb0d1d5b0555deb8a08dce5b8deef7f76f2",
     "01-shuttle-usage-split.md": "691f172b6dec3e71bafe7e0cbc050e69d7224ab06aed6cf8bfda3d884f47316b",
@@ -15,20 +15,20 @@
     "10-raddle-proposal-spec.md": "216e594c42668be693552fcc88d0e034fdbd2b7368c3b29fddeedc450d2d8ee6",
     "11-discussion-part-splice.md": "98f600366c6ae82301b8845d9b852376aa6081af53e503c7002549eefea1495d",
     "12-raddleparser.md": "42245047a8eadcc09918437bf7356148388fd34cb8323cefb5bd8798e7c4f483",
-    "13-board-promote-raddle.md": "2ffd66dbd9bf286db4733ea6a759db6eca3562762c1bb89f553ff82b1842c0c0",
-    "14-raddle-store-slug-rule.md": "6c32af1556e6e9f39199bcf46b7b73d28b0fd3a1fcc98166e3b8b24be5836b88",
-    "15-raddle-store-replay.md": "7e1d06e228fa7cab61aa1286b2b7e76205b6851e96623f6414c3df4eeee8f66d",
-    "16-board-raddle-writes.md": "088d74aaf4087cca664e87ab9308b791b3959bac0100eb13cfff9587d4bbd69c",
-    "17-board-raddle-verb.md": "1d700856c1b76140548ac89da06dee49ca8f4e913117f229b1ebe54a58ac46b3",
+    "13-board-promote-raddle.md": "3281cab6e51fa1cb86ffcea29bb5e175f0672fd693a8294175dbb32160798fbd",
+    "14-raddle-store-slug-rule.md": "3267e562f3f0872908637a1eee7d06de012c1a34bae60ac2804f6a3a8f2fda1d",
+    "15-raddle-store-replay.md": "9509773aba1c1402aa352d182c119f0514720153bd22b18795f109bbc66607c8",
+    "16-board-raddle-writes.md": "5b2a199d55be21512354d91586e92d87093d1be231609852b2d81a9bee5221cf",
+    "17-board-raddle-verb.md": "c0aaeeeb0dcafde7fb131d40ebf81030bacb0ac51232bd88ee1c44183fe4791c",
     "18-record-write-stored.md": "3d054d9d2a432b51c4bb7006c2cb0477b8bd8927dfd8d4b699ca049a46aababb",
     "19-raddle-checks-and-state.md": "a4a20815ea903c9a68c01cb8338803687015005fde0d3954d932aef54be1c782",
     "20-raddle-verbs.md": "aa3ba2560a4d50b926228cefc18c7fbee68db10e2a78733f78a36833b7591181",
     "21-raddle-write-producer.md": "e2f47528ec4d23947c89d5b061254c25ba9e3bf8daa4c0f4c40e4892d9c6847a",
-    "22-raddle-file-producer.md": "c9a02c12e0277c56f741d52700f8f27700dc7f9a8cdef6455f054158954d8a69",
-    "23-raddle-recipe.md": "25ef7e75097dd66975ff657528bf8681088c8a9ae4f5815027f3c1c8f3fe42a3",
-    "24-batten-raddle-start-guard.md": "711fea881095b5e37ad8a30119a9b0108bccd70afe4f2f3c13f59211636c1578",
-    "25-pawl-raddle-handoff.md": "75a54cb0e2697efc56717c4d44966dcecf4d0aff818811d5b677984b4d31a442",
-    "26-report-raddle.md": "6cfe386c08c9c635cfcf0b9c0932338f83a87bd4c582898b80e46903cb3111aa",
+    "22-raddle-file-producer.md": "138cf53052f2e521b868213dc52e7a6dd47639d0b0b97392b3537f77321c51bb",
+    "23-raddle-recipe.md": "db0b7d2f471bc41ccb6e5a771272566f8e13ee985c6fd7179d00c3eca3ed9427",
+    "24-batten-raddle-start-guard.md": "e58b8f65932aa36de524d91df0b9b1694f9aca5a168728e046e8cc74a24164c1",
+    "25-pawl-raddle-handoff.md": "e7f6ab35065710e74803f68042fdd6b855f6514a66a43818281d64ab01004f99",
+    "26-report-raddle.md": "dc2e731424d4d8f91cd6c85104516d9e647c846b77d74de1a22744705d158f8d",
     "27-raddle-docs.md": "4e3a1c10cb3d496987bb4136673bfecbc98e78332518172f01ea7fb0b00d8ca6"
   },
   "planOverviewFrameHash": "c81be9c1adc8b02f466766b779d5e53d2f2b116ee4fbf4f75f7873d8b338c662",
@@ -661,7 +661,7 @@
       }
     }
   ],
-  "currentBatch": 13,
+  "currentBatch": 0,
   "masterStrand": "dd16c882ad00ef2ad3da669398a0b698",
   "masterSessionId": "46bcafb1-5b55-422f-b4b9-8099327fe599",
   "masterEngine": "claude",
@@ -723,11 +723,11 @@
         "18-record-write-stored"
       ],
       "cardHashes": {
-        "13-board-promote-raddle": "2ffd66dbd9bf286db4733ea6a759db6eca3562762c1bb89f553ff82b1842c0c0",
-        "14-raddle-store-slug-rule": "6c32af1556e6e9f39199bcf46b7b73d28b0fd3a1fcc98166e3b8b24be5836b88",
-        "15-raddle-store-replay": "7e1d06e228fa7cab61aa1286b2b7e76205b6851e96623f6414c3df4eeee8f66d",
-        "16-board-raddle-writes": "088d74aaf4087cca664e87ab9308b791b3959bac0100eb13cfff9587d4bbd69c",
-        "17-board-raddle-verb": "1d700856c1b76140548ac89da06dee49ca8f4e913117f229b1ebe54a58ac46b3",
+        "13-board-promote-raddle": "3281cab6e51fa1cb86ffcea29bb5e175f0672fd693a8294175dbb32160798fbd",
+        "14-raddle-store-slug-rule": "3267e562f3f0872908637a1eee7d06de012c1a34bae60ac2804f6a3a8f2fda1d",
+        "15-raddle-store-replay": "9509773aba1c1402aa352d182c119f0514720153bd22b18795f109bbc66607c8",
+        "16-board-raddle-writes": "5b2a199d55be21512354d91586e92d87093d1be231609852b2d81a9bee5221cf",
+        "17-board-raddle-verb": "c0aaeeeb0dcafde7fb131d40ebf81030bacb0ac51232bd88ee1c44183fe4791c",
         "18-record-write-stored": "3d054d9d2a432b51c4bb7006c2cb0477b8bd8927dfd8d4b699ca049a46aababb"
       },
       "startSha": "c0b0980113bb8ad2885da901f95d3ca7870d6fa5",
@@ -735,8 +735,40 @@
       "spawnedAt": "2026-11-05T11:56:05Z",
       "sessionId": "46bcafb1-5b55-422f-b4b9-8099327fe599",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "13-board-promote-raddle",
+        "status": "done",
+        "head_sha": "bff868473a6f550897cf4f64f5a1e6a1ba656207",
+        "deviations": [
+          "internal/battencli/wire_seams_test.go",
+          "internal/boardcli/verbs_test.go",
+          "internal/boardengine/decision.go",
+          "internal/boardengine/labels.go",
+          "internal/boardengine/raddlefile.go",
+          "internal/boardengine/raddlefile_test.go",
+          "internal/boardengine/raddlestore.go",
+          "internal/boardengine/raddlestore_test.go",
+          "internal/boardengine/replay.go",
+          "internal/boardengine/replay_test.go",
+          "internal/boardengine/sketch_test.go",
+          "internal/boardengine/slugrule_test.go",
+          "internal/loomcli/wiring_darn_test.go",
+          "internal/loomshed/recordwrite_test.go",
+          "internal/shedrecipe/fixture_test.go",
+          "internal/testkit/envkit/envkit.go"
+        ]
+      },
+      "cardShas": [
+        "bff868473a6f550897cf4f64f5a1e6a1ba656207"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/46bcafb1-5b55-422f-b4b9-8099327fe599/subagents/agent-a40411bce4ae38514.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/46bcafb1-5b55-422f-b4b9-8099327fe599/subagents/agent-a40411bce4ae38514.jsonl"
+      ]
     },
     "5": {
       "slug": "usage-wiring",
@@ -850,6 +882,7 @@
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/7c8333ff-47b7-4804-bb88-3066d2caf642/subagents/agent-a1497362e7a69934e.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/7c8333ff-47b7-4804-bb88-3066d2caf642/subagents/agent-a06b45e3e5cfdd540.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/7c8333ff-47b7-4804-bb88-3066d2caf642/subagents/agent-ab8364109d32bf43c.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/7c8333ff-47b7-4804-bb88-3066d2caf642/subagents/agent-ab8364109d32bf43c.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/46bcafb1-5b55-422f-b4b9-8099327fe599/subagents/agent-a40411bce4ae38514.jsonl"
   ]
 }
