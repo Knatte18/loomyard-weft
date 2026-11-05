@@ -303,7 +303,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 10,
   "masterStrand": "0b652e66eac7b28610d1ac37f51cc712",
   "masterSessionId": "92259c87-a13c-4393-84cc-c0c85e3379b0",
   "masterEngine": "claude",
@@ -352,6 +352,30 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-relay/92259c87-a13c-4393-84cc-c0c85e3379b0/subagents/agent-ae025356bd65419fa.jsonl"
       ]
+    },
+    "10": {
+      "slug": "slack-cli",
+      "cards": [
+        "10-slack-cli",
+        "11-orch-relay-presence",
+        "12-dobby-relay-tick",
+        "13-anchor-relay-restart",
+        "14-orch-role-slack"
+      ],
+      "cardHashes": {
+        "10-slack-cli": "f6c9158b99e965a4cda822c96574ff6b23da26427bd0edd2e986873de462aef5",
+        "11-orch-relay-presence": "43df22b0e950b47387271751beb2bcd6683909445173be419b9505018797e5ba",
+        "12-dobby-relay-tick": "cdae864ff89c8010d124b997936785c1f7380ea3bd0f55e5ec8834aeeb54e086",
+        "13-anchor-relay-restart": "8f34d80a66bfdb3155f9b5851f4be189bddd6c2efaa29412e716e21310e5c6d9",
+        "14-orch-role-slack": "4a4dae59193f1395a56fbf49c3ad5304f562ba13d3d5c5612a3eeebd8e5266cb"
+      },
+      "startSha": "6bd83089023dca29c5e3a635a75fc1ec4a84d798",
+      "kind": "fork",
+      "spawnedAt": "2026-11-05T18:55:30Z",
+      "sessionId": "92259c87-a13c-4393-84cc-c0c85e3379b0",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "6": {
       "slug": "slackengine-api",
