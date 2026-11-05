@@ -18,4 +18,4 @@ Through those 21 minutes nothing surfaced that the run waited for a human:
 - `lym batten status cached-friction-factor --watch` showed `running | now Run-Shed` throughout.
 - The `cs` creel journal holds no post between Drift-Recheck and creel 35: no batten notice, no notice to `cs:orch` and none to the loomyard hub.
 
-The first trial (`docs/research/drift-csharp-trial-2026-11-03.md`) saw the same: "PR-Review waited 32 minutes for the operator".
+The first trial (`docs/research/drift/csharp-trial/drift-csharp-trial-2026-11-03.md`) saw the same: "PR-Review waited 32 minutes for the operator".
