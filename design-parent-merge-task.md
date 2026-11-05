@@ -1,6 +1,6 @@
 # Merge in from parent as a task of its own in a beam, before pawl lands it
 
-`parent-merge-task` · Task · enhancement, pawl, workspaces, reed, landing · running · Darn-Write
+`parent-merge-task` · Task · enhancement, pawl, workspaces, reed, landing · running · Drift-Verify
 
 ## Seen (operator, 2026-10-31)
 
