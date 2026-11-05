@@ -726,6 +726,23 @@
       "status": "running · Sampler-Session",
       "created": "2026-11-05T08:27:38Z",
       "revised": "2026-11-05T08:27:38Z"
+    },
+    {
+      "id": 1134,
+      "handle": "E2",
+      "slug": "research-dir-tidy",
+      "title": "docs/research gets an index and loses its design notes",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "docs/research mixes layouts, near-duplicate series and design notes with no index; three options from an index alone to topic folders",
+      "body": "## Seen (readme-refresh sampler, 2026-11-05)\n\n`docs/research` is hard to find one's way in:\n\n1. It mixes flat `.md` files, dated directories with a `report.md`, and directories with a `README.md` and scripts.\n2. Long near-duplicate series: `codex-astra-*`, `codex-v2-p*`, `glyph-audit-*`, `creel-audit-*`, `twill-*`.\n3. Some entries are design notes, not research: `reed-proposal.md`, `reed-exploration.md`, `logging-inventory.md`, `quarry-holistic-fix-log.md`, `weaving-glossary.md`.\n4. No index.\n\n## Cost of moving studies\n\n- About 30 studies' scripts find the repository root by `../../..`.\n- `internal/lymcwd/docslink_test.go`'s `docsLinkIsResearchData` requires `docs/research/\u003creport\u003e/data/`.\n- Code comments cite exact paths, such as `codex-spike-2026-10-24`, `session-fork-spike.md`, `batch-budget-trial-2026-11-01` and `reed-hooks-exploration.md`.\n- Reports' relative links break on a move, and `README.md` now links several studies under `## Research on its own runs`.\n\n## Options (undecided)\n\n- (a) A topic-grouped index `docs/research/README.md`; design notes moved out; studies left in place.\n- (b) As (a), plus deleting superseded studies.\n- (c) Topic subfolders, fixing the scripts, the test, the comments and the links.\n",
+      "created": "2026-11-05T09:05:45Z",
+      "revised": "2026-11-05T09:05:45Z"
     }
   ],
   "prime_owner": "neve",
