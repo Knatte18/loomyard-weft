@@ -1,8 +1,8 @@
 # Card 10 — raddle-proposal-spec
 
-**Create:**
+**Edit:**
 - `contracts/specs/raddle-proposal-spec.md`
-- `plan:contracts/specs#RaddleProposalSpec` -> `var RaddleProposalSpec []byte`
+- `contracts/specs#RaddleProposalSpec`
 
 **Extends:**
 - `contracts/specs#entries`

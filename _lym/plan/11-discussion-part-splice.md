@@ -1,11 +1,11 @@
 # Card 11 — discussion-part-splice
 
-**Create:**
-- `plan:internal/discussionparser#SectionBullets` -> `func SectionBullets(record []byte, heading string) []string`
-- `plan:internal/discussionparser#PartSplice` -> `type PartSplice struct`
-- `plan:internal/discussionparser#SplicePart` -> `func SplicePart(record []byte, part PartSplice) ([]byte, error)`
-- `plan:internal/discussionparser#TestSectionBullets` -> `func TestSectionBullets(t *testing.T)`
-- `plan:internal/discussionparser#TestSplicePart` -> `func TestSplicePart(t *testing.T)`
+**Edit:**
+- `internal/discussionparser#SectionBullets`
+- `internal/discussionparser#PartSplice`
+- `internal/discussionparser#SplicePart`
+- `internal/discussionparser#TestSectionBullets`
+- `internal/discussionparser#TestSplicePart`
 
 **Extends:**
 - `internal/discussionparser/doc.go`

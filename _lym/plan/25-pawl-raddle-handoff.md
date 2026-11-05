@@ -25,8 +25,6 @@
 - `internal/shedrecipe#zeroEnvField`
 - `internal/shedrecipe#simpleEntryCases`
 - `internal/loomcli#pawlDeps`
-
-**Extends:**
 - `internal/pawlengine/doc.go`
 
 **Uses:**
@@ -47,6 +45,7 @@
 `pawlengine.Paths` gains `HandOffMarker`, a file beside the land request that BeamUp never removes; `pathsSeams` names it.
 `HandOffMarkerName` is the marker's file name, declared beside `AwaitMarkerName` in `internal/pawlengine/landrequest.go`.
 `hubgeom.PawlPaths` sets `HandOffMarker` to `HandOffMarkerName` under the beam's `.lym/beam/` directory beside the land request, and its doc comment names the hand-off marker among the paths it tells, with no count of them.
+`pawlengine/doc.go`'s sentence listing the files under the beam worktree's `.lym/beam/` (the land request, the reopen request, the dobby-stop marker and the await marker) gains the hand-off marker, and its Beam-Up description gains the hand-off step.
 `TestDobbyGeometry`'s assertion that every pawl path lies directly under the dobby's directory gains `HandOffMarker`.
 `pawlengine.Deps` gains `HandOff func() (line string, found bool, err error)`.
 `Deps.Notify` becomes `func(line string) (posted bool, err error)`, reporting whether the post reached an orch: `pawlDeps` returns `NotifyOrchAt`'s posted result instead of dropping it, BeamAwait's `awaitRun.notify` ignores it and keeps its behaviour, and the test fakes in `world.deps`, `validPawlDeps` and `envkit.FullEnv` report posted.

@@ -18,13 +18,13 @@
 - `//docs/overview.md`
 
 **Uses:**
-- `plan:internal/raddleparser#Parse`
+- `internal/raddleparser#Parse`
 - `internal/shedrun#ParseRunUsage`
 - `internal/shedrun#UsageDirRel`
 - `internal/reportengine#Sources`
 - `internal/reportengine#world`
-- `plan:internal/reportengine#usageFiles`
-- `plan:internal/reportcli#costCommand`
+- `internal/reportengine#usageFiles`
+- `internal/reportcli#costCommand`
 - `internal/boardengine/doc.go`
 
 **Intent:** D14, `lym report raddle`, the record the raddle stencil is tuned from.

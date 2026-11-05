@@ -14,9 +14,9 @@
 - `plan:internal/loomshed#UpdateRaddleState`
 - `plan:internal/loomshed#CheckRaddleProposal`
 - `plan:internal/loomshed#RecheckRaddleBoard`
-- `plan:internal/raddleparser#Parse`
-- `plan:internal/raddleparser#Hash`
-- `plan:internal/discussionparser#SplicePart`
+- `internal/raddleparser#Parse`
+- `internal/raddleparser#Hash`
+- `internal/discussionparser#SplicePart`
 - `plan:internal/boardengine#RaddleFiling`
 - `plan:internal/boardengine#RaddleEntry`
 - `plan:internal/boardengine#ErrRaddleRecheck`

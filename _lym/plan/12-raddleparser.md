@@ -1,24 +1,22 @@
 # Card 12 — raddleparser
 
-**Create:**
-- `internal/raddleparser/doc.go`
-- `internal/raddleparser/testmain_test.go`
-- `plan:internal/raddleparser#Proposal` -> `type Proposal struct`
-- `plan:internal/raddleparser#Part` -> `type Part struct`
-- `plan:internal/raddleparser#Finding` -> `type Finding struct`
-- `plan:internal/raddleparser#BoardEntry` -> `type BoardEntry struct`
-- `plan:internal/raddleparser#BoardContext` -> `type BoardContext struct`
-- `plan:internal/raddleparser#Recheck` -> `type Recheck struct`
-- `plan:internal/raddleparser#Parse` -> `func Parse(data []byte) (Proposal, error)`
-- `plan:internal/raddleparser#Hash` -> `func Hash(data []byte) string`
-- `plan:internal/raddleparser#Check` -> `func Check(p Proposal, record []byte, board BoardContext) []Finding`
-- `plan:internal/raddleparser#RecheckBoard` -> `func RecheckBoard(p Proposal, board BoardContext) Recheck`
-- `plan:internal/raddleparser#TestParse` -> `func TestParse(t *testing.T)`
-- `plan:internal/raddleparser#TestCheck` -> `func TestCheck(t *testing.T)`
-- `plan:internal/raddleparser#TestRecheckBoard` -> `func TestRecheckBoard(t *testing.T)`
-- `plan:internal/raddleparser#TestLeafInvariant_AllowlistOnly` -> `func TestLeafInvariant_AllowlistOnly(t *testing.T)`
-
 **Edit:**
+- `internal/raddleparser/doc.go`
+- `internal/raddleparser#TestMain`
+- `internal/raddleparser#Proposal`
+- `internal/raddleparser#Part`
+- `internal/raddleparser#Finding`
+- `internal/raddleparser#BoardEntry`
+- `internal/raddleparser#BoardContext`
+- `internal/raddleparser#Recheck`
+- `internal/raddleparser#Parse`
+- `internal/raddleparser#Hash`
+- `internal/raddleparser#Check`
+- `internal/raddleparser#RecheckBoard`
+- `internal/raddleparser#TestParse`
+- `internal/raddleparser#TestCheck`
+- `internal/raddleparser#TestRecheckBoard`
+- `internal/raddleparser#TestLeafInvariant_AllowlistOnly`
 - `PATTERN.md`
 
 **Extends:**
@@ -26,7 +24,7 @@
 
 **Uses:**
 - `internal/discussionparser#DecisionIDs`
-- `plan:internal/discussionparser#SectionBullets`
+- `internal/discussionparser#SectionBullets`
 - `internal/discussionparser#ParsePatternChanges`
 - `contracts/specs/raddle-proposal-spec.md`
 

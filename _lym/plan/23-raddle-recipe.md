@@ -47,14 +47,14 @@
 - `internal/loomcli#finishesAsSketch`
 - `internal/loomcli#arbiterRecipeDescription`
 - `internal/loomcli#TestRecipeKeyedWiring`
-
-**Extends:**
 - `internal/loomcli/doc.go`
 - `internal/shedrun/doc.go`
-- `internal/shedrecipe/doc.go`
 - `internal/loomrecipe/doc.go`
 - `internal/shedcli/doc.go`
 - `internal/runprofile/doc.go`
+
+**Extends:**
+- `internal/shedrecipe/doc.go`
 
 **Uses:**
 - `internal/shedbuild#checkLoomContract`
@@ -102,7 +102,8 @@ Every place this card writes the recipe's name in production code, `embeddedReci
 `loomCLI.wire` fills both fields for every recipe, as it fills the others: `raddleWriteEnv` (the table through `loomengine.RaddleTable`, the check through `raddleCheckFor`, `AutoApprove` through the run's setting lookup of `loom.raddle_auto_approve`, `FreshEntry` from the run's status history, `StoreCold` through `loomshed.StoreColdProposal` over the raddle paths, and the raddle directory commit) and `raddleFileDeps` (the board writes through `boardengine.OpenHub`, `StoreDone` through `ReadRaddleStore`, `Entry` reading the entry's `created` stamp, labels and own `project` field from the board, the level D9 files at, `Notify` through `orchcli.NotifyParent`, `EndEntry` through `EndRaddleEntry`, and `CreateBeam` through `createBeamFromParent`).
 `createBeamFromParent` resolves the parent worktree of the run's slug through `hubgeom.ParentOf` (`PATTERN-pair-parent`), the prime when it names none, and runs `lym beam create <project>` there as a child process it waits on (`PATTERN-reap-children`), logging the spawn (`PATTERN-spawn-observability`); `beamcli`'s create already skips each step whose result exists, so a retry finishes it.
 `finishesAsSketch` is false for a recipe with a `RaddleFile` row as well as for one with a Finalize row, so a finished raddle run never makes its entry a Sketch (D10), chosen by the recipe's rows.
-`loomcli/doc.go`'s paragraph on a finished run with no Finalize row says that a recipe with a `RaddleFile` row ends its entry done in its own Raddle-File instead of as a Sketch.
+`loomcli/doc.go` rewords its sentence "A finished run of a recipe with no Finalize row, a motif run, makes its entry a Sketch" so it no longer covers a raddle run, and says that a recipe with a `RaddleFile` row ends its entry done in its own Raddle-File instead of as a Sketch.
+The other doc files that list the recipes gain raddle: `shedrun/doc.go`'s list of the recipe names a seed may hold; `loomrecipe/doc.go`'s three recipe lists (the `New` and `Routing` line, the `Rows` and `RowNames` line, the `AmendmentTarget` line); `shedcli/doc.go`'s list of the recipe names its table maps; `runprofile/doc.go`'s recipe list and its defaults sentence (`solid` for tapestry and motif, `light` for darn and pawl), where raddle takes `light`.
 `arbiterRecipeDescription` describes a recipe with a `RaddleFile` row, chosen by its rows before the no-Finalize case, as a run that splits a Sketch's stored decision record into board entries the operator approves, landing no code; its doc comment names that case, and `TestRecipeKeyedWiring`'s raddle row asserts the description.
 `runprofile/template.yaml` gains `raddle: light` under `defaults` and a `raddle` block in each profile, `loom: {raddle_auto_approve: false}`, its header naming the recipe; `TestLoad`'s default map gains it.
 `TestRaddleRecipe` (tier0, `testEnv` gaining the raddle seams) builds the recipe and asserts the rows in order Record-Write, Raddle-Write, Raddle-File, Raddle-File's `on_stuck` and `max_bounces`, the `raddle` gate with 3 attempts, and that the loader accepts it under the record-only form.

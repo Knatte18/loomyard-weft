@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "Batch 07-report-config: recover-batch 07 refused with batch_failed (create-not-done/7-report-config[blocking]: Create target \"internal/reportengine/template.yaml#\" and the plan:internal/reportengine#Config, #ConfigTemplate, #ConfigSpec, #LoadConfig and #TestLoadConfig targets still do not resolve, since the config module was built in internal/reportconfig to avoid an import cycle; way forward: lym webster recover-batch 07)"
+batches_done: 2

@@ -21,10 +21,10 @@
 - `internal/loomshed/doc.go`
 
 **Uses:**
-- `plan:internal/raddleparser#Parse`
-- `plan:internal/raddleparser#Check`
-- `plan:internal/raddleparser#RecheckBoard`
-- `plan:internal/raddleparser#BoardContext`
+- `internal/raddleparser#Parse`
+- `internal/raddleparser#Check`
+- `internal/raddleparser#RecheckBoard`
+- `internal/raddleparser#BoardContext`
 - `internal/loomshed#NewDiscussionGate`
 - `internal/loomshed#DiscussionCheck`
 - `internal/shuttleengine#Gate`

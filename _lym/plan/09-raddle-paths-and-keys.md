@@ -1,19 +1,17 @@
 # Card 9 — raddle-paths-and-keys
 
-**Create:**
-- `plan:internal/lymdirs#RaddleDirName` -> `const RaddleDirName = "raddle"`
-- `plan:internal/loomengine#RaddleDirRel` -> `func RaddleDirRel() string`
-- `plan:internal/loomengine#RaddleDir` -> `func RaddleDir(l *lymcwd.Location) string`
-- `plan:internal/loomengine#RaddleProposal` -> `func RaddleProposal(l *lymcwd.Location) string`
-- `plan:internal/loomengine#RaddleColdProposal` -> `func RaddleColdProposal(l *lymcwd.Location) string`
-- `plan:internal/loomengine#RaddleReturnedProposal` -> `func RaddleReturnedProposal(l *lymcwd.Location) string`
-- `plan:internal/loomengine#RaddleApproval` -> `func RaddleApproval(l *lymcwd.Location) string`
-- `plan:internal/loomengine#RaddleStatePath` -> `func RaddleStatePath(l *lymcwd.Location) string`
-- `plan:internal/loomengine#RaddleStateLockPath` -> `func RaddleStateLockPath(l *lymcwd.Location) string`
-- `plan:internal/loomengine#RaddleStageDir` -> `func RaddleStageDir(l *lymcwd.Location) string`
-- `plan:internal/loomengine#RaddlePartRecord` -> `func RaddlePartRecord(l *lymcwd.Location, slug string) string`
-
 **Edit:**
+- `internal/lymdirs#RaddleDirName`
+- `internal/loomengine#RaddleDirRel`
+- `internal/loomengine#RaddleDir`
+- `internal/loomengine#RaddleProposal`
+- `internal/loomengine#RaddleColdProposal`
+- `internal/loomengine#RaddleReturnedProposal`
+- `internal/loomengine#RaddleApproval`
+- `internal/loomengine#RaddleStatePath`
+- `internal/loomengine#RaddleStateLockPath`
+- `internal/loomengine#RaddleStageDir`
+- `internal/loomengine#RaddlePartRecord`
 - `internal/loomengine#Config`
 - `internal/loomengine#LoadConfig`
 - `internal/loomengine#ConfigSpec`
