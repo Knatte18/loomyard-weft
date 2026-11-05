@@ -684,6 +684,28 @@
       "body": "## Seen\n\nIn the scribe hub (2026-11-05) the orch failed `Skill(ly:board)` with \"Unknown skill\", and shuttle logged `skill skipped ... ly:board cause=unknown`.\nThe user settings set `ly@loomyard: false`; only loomyard's own checked-in `.claude/settings.json` turns it on, so every other hub (quarry, scribe, lyt, cs) starts its orch and agents without the ly plugin.\nMeanwhile every session, in every hub, loads plugins, skills and connectors it never uses: report `docs/research/tokens/startup-context-2026-11-05/report.md` puts that at about 11,000 tokens per spawned role and 7,900 per orch start.\n\n## Decision (operator, 2026-11-05)\n\nPlugins and skills are available only where they are needed, scoped down hard.\nlym, not the hub's repository, decides what each session gets, through the settings file shuttle already writes and passes with `--settings` (`internal/shuttleengine/claudeengine`); no file is added to any hub's repository.\n\n## Change\n\n- Each role gets an explicit allowlist of plugins and skills; everything else is off for that session, whatever the user settings or the repository's `.claude/settings.json` say.\n  - `ly@loomyard` is on for the orch and the board session in every hub, and off for roles that do not use its skills (writers, reviewers, fixers, Webster, drivers, unless one does).\n  - scribe skills: only those the role's stencil and `language.yaml` preload; the other languages' skills are off.\n  - `prowler` off unless a role uses it.\n- Off for every session: claude.ai connectors (`disableClaudeAiConnectors`), the `anthropic-skills` listing (`skillOverrides`), bundled skills (`disableBundledSkills`, the orch may keep `update-config` only if needed).\n- Auto-memory off for spawned roles (`autoMemoryEnabled: false`); the orch keeps it.\n- `--disallowedTools ListAgents` for spawned roles.\n- Verify in a launch that each lever works as the report's table says (none was tried there), and measure one spawned role's and the orch's start load after the change.\n- A test checks the written settings per role.\n",
       "created": "2026-11-05T18:17:31Z",
       "revised": "2026-11-05T18:20:02Z"
+    },
+    {
+      "id": 1149,
+      "handle": "B9",
+      "slug": "merge-in-lands-as-squash",
+      "title": "beam merge-parent's merge-in task lands as a squash, which drops the parent-branch merge",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "pawl",
+        "landing",
+        "darn"
+      ],
+      "issues": [
+        66
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #66](https://github.com/Knatte18/loomyard/issues/66).\n\n## What happened\n\n`lym beam merge-parent knut-rheology` filed the darn `knut-rheology-merge-in`.\nIts branch held a true merge commit, 5f9167ab, whose second parent was main's fbc1cf13.\nThe task landed into the beam through its pull request (#275 in NORCE-DrillingAndWells/Models) as a squash: the beam's new commit 628b06dd has the single parent 17010e3b.\nThe second parent was lost, so `git merge-base --is-ancestor fbc1cf13 knut-rheology` is still false.\nThe beam's pull request into main, opened next with `lym beam pr open knut-rheology` (#276), reports `dirty: the pull request conflicts with its base branch`, the same six conflicts the merge-in had resolved.\nThe merge-in task did nothing it existed for.\n\n## Expected\n\nThe merge-in task lands into the beam as a merge that keeps the parent branch's commit as a parent, never as a squash.\nTogether with Knatte18/loomyard#65 (land it without a pull request), the simplest form is a fast-forward or true merge of the task branch into the beam.\n\nRelated: Knatte18/loomyard#64 and #65.\n",
+      "created": "2026-11-05T18:58:34Z",
+      "revised": "2026-11-05T18:58:34Z"
     }
   ],
   "prime_owner": "neve",
