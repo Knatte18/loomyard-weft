@@ -75,8 +75,8 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Motif runs: own profile recipe, a finished state on the board, and live status**<br>• Motif drops profile_recipe tapestry, a finished motif reads as done, and the board status follows batten rows and the inner producer | [`motif-board-fixes`](design-motif-board-fixes.md) | darn · light | Darn-Write | neve | 16m<br>14m | loom, board, batten, profiles |
-| T3 | **Loop exited without an envelope while step Webster was in flight** | [`loop-exit-no-envelope-cause`](design-loop-exit-no-envelope-cause.md) | darn · light | Drift-Verify | neve | 15m<br>14m | shed, friction |
-| T5 | **Seat start fails with 'pane is not idle' while the pane shows an idle prompt** | [`seat-start-idle-race`](design-seat-start-idle-race.md) | darn · light | Code-Burler-Fix | neve | 15m<br>14m | shuttle, burler |
+| T3 | **Loop exited without an envelope while step Webster was in flight** | [`loop-exit-no-envelope-cause`](design-loop-exit-no-envelope-cause.md) | darn · light | Code-Bouncer | neve | 16m<br>14m | shed, friction |
+| T5 | **Seat start fails with 'pane is not idle' while the pane shows an idle prompt** | [`seat-start-idle-race`](design-seat-start-idle-race.md) | darn · light | Code-Burler-Fix | neve | 16m<br>14m | shuttle, burler |
 | T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | Darn-Write | neve | 16h<br>15h | fabric, loom |
 | T9 | **A test leaves an empty /tmp/.git, which breaks go VCS stamping**<br>• An empty /tmp/.git appeared during a tier1 run and failed TestPrebuildLym; find the leaker and guard against writes outside t.TempDir | [`tmp-git-leak`](design-tmp-git-leak.md) | darn · light | Darn-Write | neve | 15h<br>3m | testkit, gate |
 
