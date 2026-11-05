@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -34,6 +34,33 @@
       "output": "",
       "at": "2026-11-05T15:09:33Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/codex-creel-trial/_lym/landing/summary.md",
+      "at": "2026-11-05T15:21:33Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-05T15:21:11.960143784Z",
+          "end": "2026-11-05T15:21:11.968641654Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-05T15:21:12.016044922Z",
+          "end": "2026-11-05T15:21:12.030257158Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-05T15:21:12.074669634Z",
+          "end": "2026-11-05T15:21:12.074805618Z"
+        }
+      ]
     }
   ],
   "product": {
