@@ -562,7 +562,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #67](https://github.com/Knatte18/loomyard/issues/67).\n\nSeen: `lym fabric clone --reset --into ~/Code/Knatte18 --shortname scribe https://github.com/Knatte18/scribe-weft https://github.com/Knatte18/scribe` on an existing hub (old layout with _board) failed with 'this repo's recorded shortname is \"scr\", not \"scribe\"; refusing to change it', but its envelope reported mutation path_removed '.' recursive and partial: true: the whole existing hub directory was already deleted when the refusal came.\n\nWorkaround: rerun `lym fabric clone` without --reset and without --shortname; the hub came back from its remotes. Nothing was lost only because every branch was pushed.\n\nExpected: --reset validates every argument against the remotes (shortname, binding) before removing anything, so a refusal leaves the existing hub untouched.",
-      "status": "running · Code-Bouncer",
+      "status": "running · Code-Burler-Review",
       "created": "2026-11-05T18:58:49Z",
       "revised": "2026-11-05T19:00:16Z",
       "profile": "solid"
