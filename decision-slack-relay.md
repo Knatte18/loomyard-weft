@@ -150,6 +150,12 @@ Decision: The Slack boundary joins the live cluster PATTERN-agent-addressing as 
 
 Rationale: PATTERN-agent-addressing already guards agent messaging (messages only through creel), which the Sketch names as the cluster the Slack rule joins.
 
+### Added after Discussion (parent, 2026-11-05): Inbound poll: a Hub.Paused error after an accepted post still moves the cursor
+
+Decision: Take F3's fix as written. In card 07 step 3 ('After a successful post'): a Hub.Paused error is logged at Warn once per episode, sends no paused answer, and counts the message as handled so the cursor moves past it. A Hub.Beams error for a text opening with an at-sign slug happens before any post, so the poll returns it with the cursor left before the message and retries with the backoff. TestInboundPoll gains one row: Paused errors after an accepted post; the message is forwarded once, the error logged, no answer sent, the cursor moved, and a second poll forwards nothing.
+
+Rationale: The post already reached creel; retrying would forward the operator's message twice, which is worse than a missing paused answer. A Beams error comes before any post, so retrying it duplicates nothing.
+
 ## Constraints
 
 - Slack facts (docs.slack.dev, fetched 2026-11-05):
