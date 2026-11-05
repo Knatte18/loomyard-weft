@@ -1,6 +1,6 @@
 # A plain promote of a Sketch starts raddle
 
-`sketch-promote-raddle` · Task · enhancement, board · running · Code-Burler-Review
+`sketch-promote-raddle` · Task · enhancement, board · running · Code-Burler-Fix
 
 ## Seen (2026-11-05)
 
