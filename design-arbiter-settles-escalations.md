@@ -1,6 +1,6 @@
 # The arbiter settles review escalations and records their decisions, so they never reach the orch
 
-`arbiter-settles-escalations` · Note · feature, burler, arbiter, dobby, orch
+`arbiter-settles-escalations` · Task · feature, burler, arbiter, dobby, orch · draft
 
 ## Seen (operator and orch, 2026-11-01)
 
