@@ -1,9 +1,9 @@
 # P1 Fewer agent turns, fewer tokens
 
-Rendered 2026-11-05 18:12 UTC; every age below is as of then.
+Rendered 2026-11-05 18:17 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-`turn-savings` · Age 3d · Owner `neve`
+`turn-savings` · Age 4d · Owner `neve`
 
 Token savings by cutting agent turns, above all late turns at large context
 

@@ -665,6 +665,24 @@
       "body": "## Seen\n\nRaddle on creel-cross-hub-mail filed its entry and ended at Raddle-File, which marks the Sketch entry done. Batten then failed at Run-Shed with \"origin ended ... (it landed and its board entry is done); run lym cleanup --apply\" and the shed driver asked the orch to run it, instead of going on through Land and Worktree-Teardown. `lym batten status` gave a contradicting hint (`child_done_batten_halted`: run `lym batten run`).\n\n## Workaround\n\n`lym cleanup --apply` from the prime, then `lym batten cancel \u003cslug\u003e`.\n\n## Expected\n\nA raddle run that filed its parts goes through Land and Worktree-Teardown like any finished run, with no orch turn.",
       "created": "2026-11-05T18:01:16Z",
       "revised": "2026-11-05T18:01:16Z"
+    },
+    {
+      "id": 1148,
+      "handle": "B8",
+      "slug": "ly-plugin-off-in-other-hubs",
+      "title": "Sessions in hubs other than loomyard lack the ly skills",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nIn the scribe hub (2026-11-05) the orch failed `Skill(ly:board)` with \"Unknown skill\", and shuttle logged `skill skipped ... ly:board cause=unknown`. The user settings set `ly@loomyard: false`; only loomyard's own checked-in `.claude/settings.json` turns it on, so every other hub (quarry, scribe, lyt, cs) starts its orch and agents without the ly plugin.\n\n## Expected\n\nlym turns the plugin on for every session it launches, in any hub, through the settings file shuttle already writes and passes with `--settings` (`internal/shuttleengine/claudeengine`), e.g. `\"enabledPlugins\": {\"ly@loomyard\": true}`, without adding any file to the hub's repository. A test checks the written settings carry it.",
+      "created": "2026-11-05T18:17:31Z",
+      "revised": "2026-11-05T18:17:31Z"
     }
   ],
   "prime_owner": "neve",
