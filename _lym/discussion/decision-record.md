@@ -12,6 +12,12 @@ Only `README.md` changes unless the operator asks for more.
 
 ## Decisions
 
+### Added after Discussion (operator, 2026-11-05): docs/research is tidied in this task
+
+Decision: Besides README.md, this task tidies docs/research: its layout, naming and index, as the operator settles them in the sampler session.
+
+Rationale: The operator asked for it during the README work, since README.md now points to the studies and the folder is hard to find one's way in.
+
 ## Constraints
 
 ## Auto-mode assumptions
