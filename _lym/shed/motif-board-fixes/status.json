@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -34,6 +34,51 @@
       "output": "",
       "at": "2026-11-05T05:54:24Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/motif-board-fixes/_lym/landing/summary.md",
+      "at": "2026-11-05T06:27:11Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-05T06:05:16.780027485Z",
+          "end": "2026-11-05T06:05:16.787148956Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-05T06:13:07.560711806Z",
+          "end": "2026-11-05T06:13:07.579146743Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-05T06:05:16.832072568Z",
+          "end": "2026-11-05T06:12:19.603063666Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-05T06:12:20.222208543Z",
+          "end": "2026-11-05T06:13:07.48594638Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-05T06:13:07.673724633Z",
+          "end": "2026-11-05T06:26:26.20095283Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-05T06:26:26.288394365Z",
+          "end": "2026-11-05T06:26:26.288954552Z"
+        }
+      ]
     }
   ],
   "product": {
