@@ -10,3 +10,8 @@ Re-run the writer-lookups measurement (`docs/research/writer-lookups-measure-202
 - Price the carry of lookup results (the context a lookup adds, paid in every later turn) as a saving of its own: compare the carry of sessions that delegated early against those that did not, which the 2026-11-04 report measured but left out of its savings estimate.
 - Cap: the 10 most recent tapestry runs landed after that change; both writer roles of each.
 - Runs as darn with profile `docs`.
+
+## Built since (tidy, 2026-11-05)
+
+Task `discussion-explore-agents-first` landed (`3085f451`): the Discussion-Write stencil now opens Step 2 with one batch of explore subagents.
+Runs landed after that commit count toward the 10.
