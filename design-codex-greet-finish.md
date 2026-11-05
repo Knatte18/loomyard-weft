@@ -1,6 +1,6 @@
 # Carry the Codex darn trial run codex-greet to its landing
 
-`codex-greet-finish` · Task · research, codex
+`codex-greet-finish` · Task · research, codex · running · Worktree-Create
 
 ## Goal (operator, 2026-11-05)
 

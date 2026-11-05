@@ -38,13 +38,19 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (1)
+### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Carry the Codex darn trial run codex-greet to its landing**<br>• Resume the sandbox hub run blocked at Darn-Write now that the Codex commit fix has landed, follow it to landing and add the result to the trial report | [`codex-greet-finish`](design-codex-greet-finish.md) | darn · docs | Worktree-Create | neve | 0m<br>0m | codex |
+
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Carry the Codex darn trial run codex-greet to its landing**<br>• Resume the sandbox hub run blocked at Darn-Write now that the Codex commit fix has landed, follow it to landing and add the result to the trial report | [`codex-greet-finish`](design-codex-greet-finish.md) | darn · docs |  | 0m<br>0m | codex |
+_None._
 
 ## Notes (2)
 
