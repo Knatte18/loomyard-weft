@@ -687,7 +687,7 @@
       "isolated": false,
       "brief": "The credit_engines claude item reads Claude Code \u003cnoreply@anthropic.com\u003e",
       "body": "## Wanted (operator, 2026-11-05)\n\nThe landing credit block lists `Claude \u003cnoreply@anthropic.com\u003e` when a Claude session ran; the engine is Claude Code, so the item reads `Claude Code \u003cnoreply@anthropic.com\u003e`.\n\n- Change the `claude` item of `credit_engines` in `internal/landingshed/template.yaml` and the tests in `internal/landingshed/config_test.go` that pin it.\n- Check that no hub layer or materialized config keeps the old text, and that `hubreconcile` needs no reinterpretation, since the key's meaning is unchanged.\n- No trailer of any kind is added.\n",
-      "status": "running · Open-Window",
+      "status": "running · Darn-Write",
       "created": "2026-11-05T17:25:31Z",
       "revised": "2026-11-05T17:25:31Z",
       "profile": "docs"
