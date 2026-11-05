@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (7)
+## Tasks (8)
 
 Concrete and claimable; only a task can run.
 
@@ -18,35 +18,37 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Codex sessions read idle, end when Codex exits, and reach creel from the sandbox**<br>• Fix the three Codex engine faults the pane and load trial found | [`codex-trial3-faults`](design-codex-trial3-faults.md) | darn · solid | Seed-Child | neve | 44m<br>0m | codex, shuttle, creel |
+| T1 | **Codex sessions read idle, end when Codex exits, and reach creel from the sandbox**<br>• Fix the three Codex engine faults the pane and load trial found | [`codex-trial3-faults`](design-codex-trial3-faults.md) | darn · solid | Open-Window | neve | 44m<br>0m | codex, shuttle, creel |
 | T3 | **Template changes reach seed-only hub config, and light gets the lens fan back**<br>• Reconcile carries template changes into seed-only hub files like profiles.yaml while keeping hand-set values; light drops its solo code review | [`profiles-follow-template`](design-profiles-follow-template.md) | darn · solid | Darn-Write | neve | 23m<br>23m | profiles, config, reconcile |
 | T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | Finalize | neve | 17h<br>16h | fabric, loom |
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T5 | **Quiet notice ignores gate fixers and the gate run**<br>• Dobby quiet notice fires while gate-fixer sessions or the run gate work, since it reads only the writer strand | [`quiet-notice-ignores-fixers`](design-quiet-notice-ignores-fixers.md) | darn · light |  | 39m<br>0m | dobby |
 
-### Layer A (2)
+### Layer A (3)
 
 Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Teardown removes the whole worktree directory, and a gone pair blocks no board edit**<br>• Worktree-Teardown and fabric remove delete leftover build output; has-a-pair and batten cancel treat a non-git directory as no pair | [`teardown-gone-pair`](design-teardown-gone-pair.md) | darn · light | T7 | 1h<br>1h | batten, fabric, board |
+| T6 | **A weft push holds the remote-refs lock over its whole transfer, so board claims queue behind it**<br>• Bolt and every weft share one remote-refs lock; a slow push stalls every claim and weft fetch for its whole send-pack | [`push-holds-remote-refs`](design-push-holds-remote-refs.md) | darn · light | T7 | 17h<br>0m | fabric |
 | T8 | **The beam orch drives the merge-in, pull request and review of its beam inside Beam-Await**<br>• Pawl drops Parent-Align, Beam-Describe and PR-Review; the beam orch opens and closes the PR, merges the parent in and runs lym beam ready | [`pawl-orch-landing`](design-pawl-orch-landing.md) | tapestry · solid | T7 | 1h<br>1h | pawl, landing, orch, workspaces, fabric |
 
-### Draft (2)
+### Draft (1)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light |  | 4d<br>16h | fabric |
-| T5 | `draft` **Quiet notice ignores gate fixers and the gate run**<br>• Dobby quiet notice fires while gate-fixer sessions or the run gate work, since it reads only the writer strand | [`quiet-notice-ignores-fixers`](design-quiet-notice-ignores-fixers.md) | darn |  | 39m<br>39m | dobby |
 
-## Notes (27)
+## Notes (26)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -57,12 +59,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R2 |  | **Re-measure writer exploration and the carry of lookup results after the Discussion stencil change**<br>• Re-run the writer-lookups measurement on 10 tapestry runs, pricing the carry saved by early explore subagents | [`writer-lookups-remeasure`](design-writer-lookups-remeasure.md) | 15h<br>1h | loom, stencil |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 13d<br>15h | loom, stencil |
 
-### Bugs (2)
+### Bugs (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• No waiting line in loom or batten status and no notice while PR-Review waits for a human review | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 1d<br>20h | landing, loom, batten |
-| B2 |  | **A weft push holds the remote-refs lock over its whole transfer, so board claims queue behind it**<br>• Bolt and every weft share one remote-refs lock; a slow push stalls every claim and weft fetch for its whole send-pack | [`push-holds-remote-refs`](design-push-holds-remote-refs.md) | 17h<br>17h |  |
 
 ### Enhancements (5)
 
