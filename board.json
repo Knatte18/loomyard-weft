@@ -701,7 +701,7 @@
       "isolated": false,
       "brief": "Dobby quiet notice fires while gate-fixer sessions or the run gate work, since it reads only the writer strand",
       "body": "## Seen (2026-11-05)\n\nDobby sent two quiet notices (\"no agent activity readable\") for darn runs that were working:\n\n- `locks-out-of-tracked-trees` (#668): a gate-fixer ran 06:05–06:18Z, the writer finished at 06:19Z and the darn-write gate ran tier0–tier2 until 06:26:14Z. The notice came at 06:26Z, in the gap between the writer's shuttle ending and the next row starting; the writer strand was gone.\n- `motif-board-fixes` (#669): the writer's strand sat idle while two gate-fixer sessions ran in their own windows (07:05–07:12 and 07:13–07:26 local). The notice counted only the writer's strand.\n\nEach notice cost the orch a stop investigation that found nothing to do.\n\n## Expected\n\nThe quiet check counts every session and process of the run as activity: gate-fixer sessions, a running `lym gate test` of the run, and the row hand-over after a writer ends.\nA quiet notice fires only when none of them shows activity for the threshold.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Code-Burler-Review",
       "created": "2026-11-05T06:27:37Z",
       "revised": "2026-11-05T07:07:32Z",
       "profile": "light"
