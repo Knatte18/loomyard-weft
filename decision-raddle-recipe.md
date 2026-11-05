@@ -257,6 +257,18 @@ Decision: Wording only: `a caller adopts` becomes `callers use`.
 
 Rationale: Headroom, as above; the rule is unchanged.
 
+### Added after Discussion (parent, 2026-11-05): A filed project's type label comes from the proposal
+
+Decision: The proposal spec's `project` object (card 10) gains a required `type` key, one of the hub's board type labels other than `sketch`, which the raddle agent picks and the operator sees in the proposal. Card 12 checks it under `type-invalid`, card 22 passes it through, and card 16's project `RaddleEntry` carries it as the project's type label. Card 16's `TestFileRaddle` project and beam rows assert it.
+
+Rationale: validateLabels refuses a project with no type label, and the Sketch's own type label is `sketch`, which a filed project must not carry; the agent judges the kind of work, and the operator approves it with the rest of the proposal (plan review F3).
+
+### Added after Discussion (parent, 2026-11-05): Filed entries take the Sketch's own project field
+
+Decision: Filed entries take the Sketch's own `project` field, with `ParentBeam` reading their parent beam, in place of the PATTERN-pair-parent Constraint's hubgeom parent read. This decision replaces that Constraint for raddle filing, and the filing-level Shared Decision cites it.
+
+Rationale: `hubgeom.ParentOf` answers the nearest beam and skips a grouping project, so it would file a Sketch's parts outside the project the Sketch belongs to; D9 asks for the Sketch's own project level (plan review F8).
+
 ## Constraints
 
 - `PATTERN-shed-recipe-registry`: the new engines are `Constructor` rows; the model is a setting lookup by key, and the mode one at Raddle-Write's first spawn, read from the run's state after it (D7), never `Env` fields.
