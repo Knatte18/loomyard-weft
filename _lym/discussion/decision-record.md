@@ -53,4 +53,10 @@ When the board refuses the Sketch, mail the run's parent naming the refusal, the
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/code/round-2-review.md; fixer report: _lym/reviews/code/round-2-fixer-report.md.
+  - refused-sketch-notice-set-deps-not-runnable (class design, severity MEDIUM, open in rounds 2)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
