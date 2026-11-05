@@ -1,0 +1,502 @@
+diff --git a/contracts/orchrole/orch-role.md b/contracts/orchrole/orch-role.md
+index a225f48c..6635d3c7 100644
+--- a/contracts/orchrole/orch-role.md
++++ b/contracts/orchrole/orch-role.md
+@@ -119,6 +119,7 @@ A landing that succeeds sends nothing, bar one records-stop line when the prime'
+ The driver, webster or a review loop that cannot go on escalates to you, its parent.
+ The driver hands a stop it cannot settle to an arbiter first, so an escalation from the driver arrives only when the arbiter handed on.
+ Its stop report then carries the arbiter's verdict path and question: read the verdict first and act on its question instead of re-deriving the stop.
++A review escalation the arbiter settled itself, its calls recorded with `--by arbiter`, reaches you as one line naming the run and the verdict file; it asks nothing, so take no action on it.
+ 
+ You settle every run-level call yourself and record it with `lym loom decision add <slug> --by parent`.
+ A run-level call decides how a run goes on within its board entry's scope: an arbiter's hand-on question, a `decision` escalation, a review finding, a hard-cap accept, a landing stop or a false premise in the entry.
+@@ -127,7 +128,7 @@ Only a design question goes to the operator: what to build, a change of a task's
+ - A review escalation whose stop report names an arbiter attempt whose `envelope.json`, in the attempt directory beside the verdict file the stop report names, carries verdict `hand-on` and an empty `cause` is the arbiter agent's own hand-on.
+   Read only the envelope's `question` and settle it yourself, never in a fork; record your answer and resume by the escalation brief's steps.
+   A design question among them goes to the operator in plain words instead: a repeat notice for the slug asks nothing again while it is with the operator, and the slug is named in the orch note until the operator answers.
+-- A review escalation of cause `decision` carries a question the review could not settle.
++- A review escalation of cause `decision` carries a question the review could not settle, and goes to the arbiter as `hard-cap` and `circling` do, so it reaches you only as the arbiter's hand-on.
+   Settle it as a hand-on question, and record the answer with `lym loom decision add <slug> --by parent` before the escalation brief's circling verb and resume.
+ - A review loop that ran out of rounds: `lym loom circling continue <slug>` grants one more round only below the perch's hard cap.
+   At or past it, or at a `hard-cap` escalation, the way forward is `lym loom circling accept <slug>` to take the work as it stands, or raising the hard cap by the command the refusal names for the layer its value comes from.
+diff --git a/contracts/specs/shed-recipe-spec.md b/contracts/specs/shed-recipe-spec.md
+index e43487c8..a6eb307a 100644
+--- a/contracts/specs/shed-recipe-spec.md
++++ b/contracts/specs/shed-recipe-spec.md
+@@ -58,7 +58,7 @@ A `Bouncer` row's optional `subject` key takes one of exactly two literal values
+ Every kind also tells the Bouncer `Env.ReviewInput`, which stays optional, and the segment's `AmendMaxBounces` as the amendment allowance.
+ It follows the same two rules as `commit_seam`: absent tells no subject and keeps the Bouncer on its clear-and-reseed path, and a present key naming a seam the `Env` does not carry is a construction error naming that seam.
+ An unknown value is a construction error naming the key, the value and the two legal ones.
+-A `Bouncer` row's optional boolean `escalate_decisions` key (default false) makes a judged round whose review holds a `decision`-class finding escalate to the run's parent with cause `decision`.
++A `Bouncer` row's optional boolean `escalate_decisions` key (default false) makes a judged round whose review holds a `decision`-class finding escalate with cause `decision`, which the arbiter settles where the board entry and the decision record answer it and the run's parent settles otherwise.
+ A `BurlerFix` row's optional boolean `decisions_escalated` key (default false) says its segment's Bouncer does so: the fixer is given no `decision` finding and the row posts no parent notice of its own.
+ Loom's recipe sets both keys on its Discussion-Review rows and on no other row.
+ 
+diff --git a/contracts/stencils/bouncer/bouncer-fragment-decision.md b/contracts/stencils/bouncer/bouncer-fragment-decision.md
+index 7cb90178..1217d4b7 100644
+--- a/contracts/stencils/bouncer/bouncer-fragment-decision.md
++++ b/contracts/stencils/bouncer/bouncer-fragment-decision.md
+@@ -1,11 +1,12 @@
+-<!-- This is the decision detail of the Bouncer's escalation brief for cause `decision`: the questions only the run's parent can settle, the BLOCKING findings the round's review holds, the refusal the recorded answer would meet, and the verbs that record it.
++<!-- This is the decision detail of the Bouncer's escalation brief for cause `decision`: the questions the review cannot settle itself, the BLOCKING findings the round's review holds, the refusal the recorded answer would meet, and the verbs that record it.
+      renderDecisionDetail fills it and passes the result as the brief's cause_detail marker, after the cause list.
+      Every marker below is a top-level {{.X}} substitution: slug, decision_findings, blocking_findings, refusal and decide_verbs, each Go-filled and non-empty. -->
+ 
+ ### Decision findings
+ 
+-Each finding below is a question only the run's parent can settle.
+-Put each to the operator, unless a recorded operator decision answers it.
++Each finding below is a question the review could not settle itself.
++Where an arbiter runs, it settles each finding the board entry and the decision record answer before the parent sees it.
++Put each remaining finding to the operator, unless a recorded operator decision answers it.
+ 
+ {{.decision_findings}}
+ 
+diff --git a/contracts/stencils/bouncer/bouncer-template-escalation.md b/contracts/stencils/bouncer/bouncer-template-escalation.md
+index 21c133bb..b450166c 100644
+--- a/contracts/stencils/bouncer/bouncer-template-escalation.md
++++ b/contracts/stencils/bouncer/bouncer-template-escalation.md
+@@ -13,7 +13,7 @@ The cause is `{{.cause}}`:
+ - `circling`: the judge found no progress on recurring gating findings, or a design-wrong finding returned after a continue.
+ - `budget`: the soft-cap rule could not read its inputs: the round's review, its ledger or the previous round's ledger.
+ - `hard-cap`: the round is at or past the perch's hard cap with a design-wrong finding still open, or a continue was recorded there.
+-- `decision`: the round's review holds a finding only the run's parent can settle.
++- `decision`: the round's review holds a finding the review cannot settle itself.
+ 
+ {{.cause_detail}}
+ 
+diff --git a/contracts/stencils/loom/loom-template-arbiter.md b/contracts/stencils/loom/loom-template-arbiter.md
+index 081d91fe..be396ee1 100644
+--- a/contracts/stencils/loom/loom-template-arbiter.md
++++ b/contracts/stencils/loom/loom-template-arbiter.md
+@@ -50,10 +50,22 @@ Check every fact you rely on against its pointer yourself, and never take its hy
+ Run in `{{.worktree}}` only the repair verbs the run's description above names, and nothing else.
+ A run whose description names none leaves you a plain re-launch, a goto or a hand-on.
+ 
++When the run's repair verbs include `lym loom decision add`, you settle every call the board entry's design and the decision record's decisions already settle, as the run's parent would, so it never reaches the parent:
++
++- Record each call you make with `lym loom decision add {{.slug}} --by arbiter …`, worded so the run's own agents act on it without you.
++- When the stop asks for one edit, such as the correction of a false clause in the decision record, record that edit as a decision that names the clause and its exact replacement.
++  That is the one edit you make, and nothing beyond it.
++- Anything wider, such as a code change or a change across several cards, you record as a decision for the run's own agents to carry out, and never make yourself.
++
++The escalation brief's "What to do" section is the parent's procedure, and these parts of it do not bind you:
++settling only on a recorded operator decision, never counting a `--by arbiter` entry, recording with `--by parent`, resuming the run, never accepting over an open design-wrong finding, and ending by reporting back to the parent.
++Its decide options still name the verbs that close the segment.
++Every other line of the brief still binds you: its materials list, its refusal text, the rule never to settle a question whose answer widens the task's scope, and the rule to decide nothing at cause `budget` and hand on, naming the input that could not be read.
++
+ When `amendment_target` names a row, a stop whose cause is a plan defect that the board entry and the decision record already settle is your call: record the amendment with `lym loom decision add {{.slug}} --by arbiter … --amends-plan`, wording it as a concrete change to named cards, each named by slug as well as number, and write a `resume` verdict whose `goto` is that target.
+ An amendment that needs an operator decision or widens the task's scope is handed on.
+ 
+-A refusal from either makes you hand on, quoting the refusal.
++A refusal from any repair verb makes you hand on, quoting the refusal.
+ 
+ ## What you never do
+ 
+@@ -67,12 +79,24 @@ The driver's re-launch performs the move after its own check.
+ 
+ ## When you hand on
+ 
+-Hand on when the call needs an operator decision that neither the board entry nor the decision record and support log record, when it widens the task's scope, or on any doubt.
++Hand on only a question that neither the board entry's design nor the decision record's decisions and the support log settle: what to build, a change of the task's scope, or a choice between designs the board entry leaves open.
++Hand on too when a verb you need refuses, or when the files leave a fact you rely on unclear.
++Before you hand on, record every call of the stop you could settle, so the parent answers only the open question.
+ 
+ - At a review escalation the rule follows the cause the review escalation brief names.
+   What a ledger entry's `design-wrong` and `mechanical` tags mean is the judge stencil's, which the brief names.
+-  - `hard-cap`: read the open design-wrong findings against the code; accept when a finding is wrong or the fix in place answers it, otherwise hand on.
+-  - `circling`: accept when the returned finding is wrong; continue when the fix is converging and the round is below the hard cap; otherwise hand on.
++  - `hard-cap`: read the open design-wrong findings against the code.
++    Accept only when a finding is wrong or the fix in place already answers it, and record a decision there only to leave the ruling in the record.
++    A fix that still has to be made goes to the parent as a hand-on question, since an accept ends the review segment and no run agent follows to carry a decision out.
++  - `circling`: accept when the returned finding is wrong; continue when the fix is converging and the round is below the hard cap.
++    When the board entry and the record settle the returned finding, record the ruling as a decision, then continue below the hard cap.
++    At the hard cap accept only when the finding is wrong or the fix in place already answers it.
++    In every other case hand on.
++  - `decision`: each decision finding the brief lists is a question the review could not settle.
++    Before choosing accept, read the brief's Refusal section;
++    when a refusal is named, a held accept meets the same refusal again, so record the answers and continue below the hard cap, and hand on at or past it.
++    When the board entry and the record answer every one, record each answer as a decision, then accept, or continue when an answer needs another round's fix and the round is below the hard cap.
++    Otherwise hand on with the questions they leave open.
+ - At an error stop you have no repair verbs.
+   You may judge a plain re-launch safe, name a goto target, or hand on.
+ - A `resume` at a review escalation needs its circling decision recorded first.
+diff --git a/internal/arbiterstop/arbiterstop.go b/internal/arbiterstop/arbiterstop.go
+index 0288763f..b497a70e 100644
+--- a/internal/arbiterstop/arbiterstop.go
++++ b/internal/arbiterstop/arbiterstop.go
+@@ -66,8 +66,8 @@ func HandsBack(producer, reason string) bool {
+ // Eligibility returns nil when the arbiter may settle stop and a refusal otherwise.
+ // For a tapestry, darn or sampler stop, eligible are an error stop of kind producer or bootstrap, of kind interrupted under the reinvoke policy or with a non-empty transient class.
+ // Eligible too is a halted blocked stop, bar a landing halt or a decision halt.
+-// Eligible too is a halted awaiting stop with a pending escalation of cause `hard-cap` or `circling`.
+-// Every other stop is refused, a landing halt, a decision halt and a `decision` escalation included, since only the run's parent lifts them, and the refusal ends with HandBackWayForward.
++// Eligible too is a halted awaiting stop with a pending escalation of cause `hard-cap`, `circling` or `decision`.
++// Every other stop is refused, a landing halt, a decision halt and a `budget` escalation included, since only the run's parent lifts them, and the refusal ends with HandBackWayForward.
+ // For a batten stop every stop is eligible, error stops of any kind and blocked stops included, bar a spent bounce budget, an unmet precondition and a pause-honoured Land stop;
+ // those three are refused with a refusal ending in BattenHandBackWayForward.
+ func Eligibility(stop Stop) error {
+@@ -104,7 +104,7 @@ func Eligibility(stop Stop) error {
+ 			return refuse(fmt.Sprintf("the review escalation at %q is unreadable: %v", stop.Producer, stop.EscalationErr))
+ 		case !stop.EscalationPending:
+ 			return refuse(fmt.Sprintf("the run awaits at %q with no pending review escalation", stop.Producer))
+-		case stop.EscalationCause == shedadapters.EscalationHardCap, stop.EscalationCause == shedadapters.EscalationCircling:
++		case stop.EscalationCause == shedadapters.EscalationHardCap, stop.EscalationCause == shedadapters.EscalationCircling, stop.EscalationCause == shedadapters.EscalationDecision:
+ 			return nil
+ 		default:
+ 			return refuse(fmt.Sprintf("the review escalation at %q has cause %q, which goes to the run's parent", stop.Producer, stop.EscalationCause))
+diff --git a/internal/arbiterstop/arbiterstop_test.go b/internal/arbiterstop/arbiterstop_test.go
+index 92c37bce..56a50fde 100644
+--- a/internal/arbiterstop/arbiterstop_test.go
++++ b/internal/arbiterstop/arbiterstop_test.go
+@@ -119,7 +119,7 @@ func TestEligibility_InterruptedPawlRows(t *testing.T) {
+ 	}
+ }
+ 
+-// TestEscalationEligible pins EscalationEligible over fake readers: only a pending hard-cap or circling escalation is eligible.
++// TestEscalationEligible pins EscalationEligible over fake readers: only a pending hard-cap, circling or decision escalation is eligible.
+ // Every refused row also runs Check over an awaiting status and wants the refusal to end with HandBackWayForward.
+ func TestEscalationEligible(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -136,7 +136,7 @@ func TestEscalationEligible(t *testing.T) {
+ 		{name: "pending hard-cap", cause: shedadapters.EscalationHardCap, pending: true, want: true},
+ 		{name: "pending circling", cause: shedadapters.EscalationCircling, pending: true, want: true},
+ 		{name: "pending budget", cause: shedadapters.EscalationBudget, pending: true},
+-		{name: "pending decision", cause: shedadapters.EscalationDecision, pending: true},
++		{name: "pending decision", cause: shedadapters.EscalationDecision, pending: true, want: true},
+ 		{name: "malformed record", err: fmt.Errorf("record: %w", shedadapters.ErrEscalationMalformed)},
+ 		{name: "plain read failure", err: errors.New("disk gone")},
+ 		{name: "nothing pending at a Bouncer"},
+diff --git a/internal/arbiterstop/doc.go b/internal/arbiterstop/doc.go
+index 31f91a1b..eac0dc04 100644
+--- a/internal/arbiterstop/doc.go
++++ b/internal/arbiterstop/doc.go
+@@ -7,8 +7,8 @@
+ //
+ // It is not in the loom CLI package because batten must call it, and the batten CLI cannot import the loom CLI without linking tree-sitter into its test binary.
+ //
+-// An awaiting stop is eligible only with a pending review escalation of cause `hard-cap` or `circling`;
+-// a `budget` or `decision` escalation, an unknown cause and an unreadable record all go to the run's parent.
++// An awaiting stop is eligible only with a pending review escalation of cause `hard-cap`, `circling` or `decision`, each a judgment call the arbiter settles before the run's parent hears of it;
++// a `budget` escalation, an unknown cause and an unreadable record all go to the run's parent.
+ // A blocked stop that is a landing halt, as the landing rows' hand-back predicate reads the status's producer and error, is refused too, since only the run's parent lifts it.
+ // So is a decision halt, a blocked stop whose error opens with the decision halt prefix.
+ // A tapestry, darn or sampler fixer's escalate halt opens with neither prefix, so it is no landing halt and is eligible as a blocked stop.
+diff --git a/internal/loomcli/circling.go b/internal/loomcli/circling.go
+index 06e1af83..ec475cd9 100644
+--- a/internal/loomcli/circling.go
++++ b/internal/loomcli/circling.go
+@@ -297,7 +297,7 @@ that escalated a round, because its judge found the rounds circling (a circling
+ escalation), because a design-wrong finding is still open at the perch's hard
+ cap (a hard-cap escalation), or because the review budget was spent and the
+ soft-cap rule could not settle the round (a budget escalation), or because a
+-review finding only the run's parent can settle is open (a decision escalation).
++review finding the review cannot settle itself is open (a decision escalation).
+ 
+ Each verb takes an optional slug naming the task worktree. A task worktree
+ addresses itself; from the prime the slug is required. A verb records the
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index a90e452a..212fb1fc 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -204,7 +204,7 @@
+ // It is a role verb, so the orch's command index leaves it out.
+ // The verb's body is `internal/shedarbiter`'s: the call, the prompt, the launch spec, the verdict gate and the consumption of a resume are that package's, and this package fills its deps with loom's seams.
+ //
+-// A stop is eligible only if the verb's closed list admits it: an error stop of kind `producer` or `bootstrap`, an `interrupted` stop under the `reinvoke` policy or with a transient class, a halted `blocked` stop other than a Parent-Align or Publish verify halt whose own failure record names a target, and a halted `awaiting` stop whose Bouncer row has a pending escalation of cause `hard-cap` or `circling`, so a `budget` escalation goes to the run's parent.
++// A stop is eligible only if the verb's closed list admits it: an error stop of kind `producer` or `bootstrap`, an `interrupted` stop under the `reinvoke` policy or with a transient class, a halted `blocked` stop other than a Parent-Align or Publish verify halt whose own failure record names a target, and a halted `awaiting` stop whose Bouncer row has a pending escalation of cause `hard-cap`, `circling` or `decision`, so a `budget` escalation goes to the run's parent.
+ // The rule lives in `internal/arbiterstop`, which batten's hold shares.
+ // Every other stop, a missing status file, an unreadable envelope, `arbiter_max_spawns` of 0 and a spent budget are refused with the hand-back to the run's parent as the way forward.
+ //
+@@ -260,7 +260,7 @@
+ //
+ // The loop steps the run through the shared `--until-stop` body, saves the envelope of each stop it decides under the run's drive-reports directory, a yielded step saving none, and decides the stop by a closed rule table over the envelope's fields and the facts it reads from disk, never over a row name or the reason text.
+ // The table settles a done run, a busy exit, a re-step of an interrupted step under the `reinvoke` policy up to a cap of two per stop key, and the one verify goto to the Publish failure record's target;
+-// it asks the tackler at a stop no rule settles, the arbiter at an awaiting stop with a pending hard-cap or circling escalation only, after a tackler `escalate` and when an applied tackler `resume` returns to the same stop, and hands over at a binary-eligible stop whose last step ran another build than the `lym` on disk.
++// it asks the tackler at a stop no rule settles, the arbiter at an awaiting stop with a pending hard-cap, circling or decision escalation only, after a tackler `escalate` and when an applied tackler `resume` returns to the same stop, and hands over at a binary-eligible stop whose last step ran another build than the `lym` on disk.
+ // Everything else hands back.
+ // Every action appends a settle record to the friction directory, so the repair cap, the one verify retry and the one hand-over per stop key and build are counted from disk and a restarted driver keeps every cap.
+ //
+diff --git a/internal/shedadapters/bouncer.go b/internal/shedadapters/bouncer.go
+index 7c7176cd..791743f7 100644
+--- a/internal/shedadapters/bouncer.go
++++ b/internal/shedadapters/bouncer.go
+@@ -155,7 +155,7 @@ type BouncerConfig struct {
+ 	// BlockingEscalates sends a spent budget to the soft-cap rule, instead of auto-accepting, when the round's ledger holds an open BLOCKING entry or cannot be read.
+ 	// It only turns some auto-accepts into rule runs: it never accepts what the rule would not, and it has no effect while AutoAccept is false.
+ 	BlockingEscalates bool
+-	// EscalateDecisions makes a judged round whose accepted review holds a finding of class decision escalate to the run's parent with cause decision, whatever the judge ruled.
++	// EscalateDecisions makes a judged round whose accepted review holds a finding of class decision escalate with cause decision, whatever the judge ruled; the arbiter settles it where the board entry and the decision record answer it, and the run's parent settles it otherwise.
+ 	// The parent's recorded accept passes the round over those findings and carries them into the carry-over;
+ 	// a recorded continue runs another round.
+ 	// False is the default and leaves every path behaving exactly as before.
+diff --git a/internal/shedadapters/doc.go b/internal/shedadapters/doc.go
+index e5118378..36ae79df 100644
+--- a/internal/shedadapters/doc.go
++++ b/internal/shedadapters/doc.go
+@@ -105,7 +105,7 @@
+ //     and the round re-escalates with cause `hard-cap`, the third cause beside budget and circling.
+ //     An escalation at or past the hard cap, whatever its cause, carries the accept-only Reason and the bouncer-fragment-decide-capped decide step; below it the Reason and the bouncer-fragment-decide-open step offer accept and continue.
+ //     PendingCirclingDecision, PendingEscalation and PendingEscalationCause read a run directory's latest round: the first reports a decision file not yet settled, the second a Bouncer-written escalation, with its round and brief path, that no decision file answers, and the third the same escalation with its cause and brief path.
+-//     Decision escalation: a Bouncer told BouncerConfig.EscalateDecisions escalates a judged round whose review holds a finding of class decision, a question only the run's parent can settle, with cause `decision`, whatever the judge ruled.
++//     Decision escalation: a Bouncer told BouncerConfig.EscalateDecisions escalates a judged round whose review holds a finding of class decision, a question the review cannot settle itself, which the arbiter settles where the board entry and the decision record answer it and the run's parent settles otherwise, with cause `decision`, whatever the judge ruled.
+ //     The routing runs first in the settle, ahead of the judgment refusal, the soft-cap rule, the circling escalation and auto-accept, so neither a re-judge nor auto-accept passes it.
+ //     It takes the round only when the review parses and holds such a finding, and the round carries no escalation record of another cause and no decision file of another cause or settled accept; every other round, and every round of a Bouncer with the switch off, takes the route it always took.
+ //     While the escalation is open, a replay and a re-entry over a changed subject return the same Awaiting instead of clearing a CONVERGED verdict or starting a generation.
+diff --git a/internal/shedadapters/escalation.go b/internal/shedadapters/escalation.go
+index 24c50c2d..88f1f5fa 100644
+--- a/internal/shedadapters/escalation.go
++++ b/internal/shedadapters/escalation.go
+@@ -15,7 +15,7 @@ import (
+ 
+ // EscalationCause names why a Bouncer escalated a round to the parent.
+ // `hard-cap` is a round at or past its perch's hard cap with a design-wrong finding open, or a recorded continue there.
+-// `decision` is a round whose accepted review holds a finding only the run's parent can settle.
++// `decision` is a round whose accepted review holds a finding the review cannot settle itself, a call for the arbiter and, when it hands on, the run's parent.
+ type EscalationCause string
+ 
+ // The four legal EscalationCause spellings.
+diff --git a/internal/sheddriver/doc.go b/internal/sheddriver/doc.go
+index 72520527..bfe5aa6e 100644
+--- a/internal/sheddriver/doc.go
++++ b/internal/sheddriver/doc.go
+@@ -72,6 +72,8 @@
+ //
+ // A stop a removed row would have caught meets the later rows unchanged, so it ends in the tackler under its spawn budget, a re-step under the repair cap, or a hand-back.
+ // No unwired seam adds a resume path: a tackler escalation with no arbiter hands back, naming the tackler's case brief.
++// An arbiter `resume` at an awaiting stop sends the parent one outcome line naming the run and the verdict file through `HandBackDeps.Notify`, when an orch strand is recorded and once the step has consumed the resume;
++// it asks nothing and parks nothing, and a resume the step refuses hands back with no outcome line.
+ // Loom's, darn's and batten's drivers all wire the arbiter after the tackler, batten's with `batten.yaml`'s arbiter overrides of `shed.yaml`.
+ // The loom CLI's wiring, which tapestry, darn and sampler share, marks two kinds of blocked stop the arbiter judges first: the Webster row, whose blocked stop is Merriam's stuck outcome, and a tapestry, darn or sampler landing escalate, a merge fixer's halt that opens with the escalate prefix.
+ //
+diff --git a/internal/sheddriver/drive.go b/internal/sheddriver/drive.go
+index 25ba04f5..5af85df9 100644
+--- a/internal/sheddriver/drive.go
++++ b/internal/sheddriver/drive.go
+@@ -159,15 +159,22 @@ type TamperSeam struct {
+ }
+ 
+ // goDriver settles one run's stops over its seams.
+-// rules and attempts are what the stop report quotes for the stop in hand, pendingAttempt is the arbiter attempt the next step consumes, and exit is how the run ended.
++// rules and attempts are what the stop report quotes for the stop in hand, pendingAttempt is the arbiter attempt the next step consumes, pendingNotice is the outcome line held until that step has consumed it, and exit is how the run ended.
+ type goDriver struct {
+ 	deps           Deps
+ 	rules          []string
+ 	attempts       []driveAttemptNote
+ 	pendingAttempt string
++	pendingNotice  *arbiterSettledNotice
+ 	exit           Exit
+ }
+ 
++// arbiterSettledNotice is what the parent hears once the arbiter's resume is consumed: the awaiting stop the arbiter settled and the path of its verdict.
++type arbiterSettledNotice struct {
++	stop        Stop
++	verdictPath string
++}
++
+ // Run steps the run and settles each stop until the run is done, another holder has it or a hand-back ends the driver, and returns how it ended.
+ // A failure the driver cannot act on is handed back; only a failed hand-back or a cancelled context is returned as an error.
+ func Run(ctx context.Context, deps Deps) (Exit, error) {
+@@ -205,6 +212,11 @@ func (d *goDriver) run(ctx context.Context) error {
+ 			if err != nil {
+ 				return d.handBackFailure(err)
+ 			}
++			attemptHeld := attempt != "" && stop.Kind != shedverbs.KindBusy
++			attemptRefused := attemptHeld && arbiterAttemptRefused(raw)
++			if attemptHeld && !attemptRefused {
++				d.noticeArbiterSettled()
++			}
+ 			// A yield decides nothing: no envelope, rule row, report, repair or budget applies, and the pass ends with the run as it was.
+ 			// A run waiting at a row yields on every pass, so a saved envelope would be one more file per pass for the whole wait.
+ 			if stop.OK && stop.LoopState == string(shedengine.StateRunning) && stop.Outcome == string(shedengine.Yield) {
+@@ -217,7 +229,7 @@ func (d *goDriver) run(ctx context.Context) error {
+ 				return d.handBackFailure(fmt.Errorf("saving the stop envelope: %w", err))
+ 			}
+ 			stop.EnvelopePath = path
+-			if attempt != "" && stop.Kind != shedverbs.KindBusy && arbiterAttemptRefused(raw) {
++			if attemptRefused {
+ 				d.rules = append(d.rules, "the step refused the arbiter's attempt")
+ 				return d.handBackAs(stop, driveHandBack{}, "the step refused the arbiter attempt")
+ 			}
+@@ -510,7 +522,7 @@ func (d *goDriver) tackle(ctx context.Context, stop Stop) (next Stop, exit bool,
+ }
+ 
+ // arbitrate asks the arbiter to judge stop and acts on its verdict, holding any pause first.
+-// A resume leaves the attempt the next step consumes; a refusal or a hand-on hands back, and at an awaiting stop relays its parent notice.
++// A resume leaves the attempt the next step consumes, and at an awaiting stop the outcome notice that step sends once it has consumed the attempt; a refusal or a hand-on hands back, and at an awaiting stop relays its parent notice.
+ // With no arbiter wired it hands back at once, relaying the same notice.
+ // The moved-run and spawn-record rules are the tackler's.
+ func (d *goDriver) arbitrate(ctx context.Context, stop Stop, caseBriefPath string) (next Stop, exit bool, err error) {
+@@ -551,6 +563,9 @@ func (d *goDriver) arbitrate(ctx context.Context, stop Stop, caseBriefPath strin
+ 
+ 	if outcome.Resume {
+ 		d.settle(stop, shedrun.SettlerArbiter, shedrun.SettleRestep, "arbiter resume", outcome.Goto)
++		if stop.Key().State == string(shedengine.StateAwaiting) {
++			d.pendingNotice = &arbiterSettledNotice{stop: stop, verdictPath: outcome.VerdictPath}
++		}
+ 		d.pendingAttempt = strconv.Itoa(outcome.Attempt)
+ 		stop.Restep = true
+ 		return stop, false, nil
+@@ -559,6 +574,26 @@ func (d *goDriver) arbitrate(ctx context.Context, stop Stop, caseBriefPath strin
+ 	return Stop{}, true, d.handBackAs(stop, h, "the arbiter handed the stop on")
+ }
+ 
++// noticeArbiterSettled tells the run's parent that the arbiter settled the review escalation and resumed the run, so the parent hears the outcome and is asked nothing.
++// It is called once a step has consumed the arbiter's resume, and does nothing when no outcome is pending; a refused resume hands back and sends no outcome line.
++// With no orch strand recorded the line is logged and posted nowhere, and a failed send is logged; neither stops the driver.
++func (d *goDriver) noticeArbiterSettled() {
++	pending := d.pendingNotice
++	if pending == nil {
++		return
++	}
++	d.pendingNotice = nil
++	line := fmt.Sprintf("Run %s: the arbiter settled the review escalation at %s and resumed the run; verdict %s. Nothing to answer.", d.deps.RunID, pending.stop.CurrentProducer, pending.verdictPath)
++	recorded, err := d.deps.HandBack.OrchRecorded()
++	if err != nil || !recorded {
++		logger.Info("sheddriver: drive: no orch strand recorded; outcome notice posted nowhere", "run", d.deps.RunID, "notice", line, "error", err)
++		return
++	}
++	if _, err := d.deps.HandBack.Notify(pending.stop, line); err != nil {
++		logger.Warn("sheddriver: drive: outcome notice send failed", "run", d.deps.RunID, "error", err)
++	}
++}
++
+ // recheckAfterVerdict re-reads the run after an agent's verdict, and when the run moved while the agent worked, notes the discarded verdict in the stop report at reportPath.
+ // It returns the stop itself for an unmoved run.
+ func (d *goDriver) recheckAfterVerdict(stop Stop, reportPath, agent string) (next Stop, exit bool, err error) {
+diff --git a/internal/sheddriver/drive_test.go b/internal/sheddriver/drive_test.go
+index b814b3a6..edb2d8f4 100644
+--- a/internal/sheddriver/drive_test.go
++++ b/internal/sheddriver/drive_test.go
+@@ -190,6 +190,9 @@ func TestGoDriver_Settle(t *testing.T) {
+ 		judgesFirstReason string
+ 		pauseCovered      []bool
+ 		orchRecorded      bool
++		// orchRecordedErr is the error OrchRecorded answers with, and notifyErr the one Notify answers with.
++		orchRecordedErr error
++		notifyErr       error
+ 
+ 		// The agent seams: what Tackler and Arbiter return, and what ConsumeTackler refuses with.
+ 		tacklerReturns TacklerEnvelope
+@@ -230,8 +233,11 @@ func TestGoDriver_Settle(t *testing.T) {
+ 		wantNoEnvelope bool
+ 		wantParked     bool
+ 		wantNotifies   int
+-		wantHandBack   bool
+-		wantExit       Exit
++		// wantNotice is a line Notify must have received, and wantNoNotice a substring none of its lines may hold.
++		wantNotice   string
++		wantNoNotice string
++		wantHandBack bool
++		wantExit     Exit
+ 		// wantOrder, when set, is the order of the parent notice, the lock release and the successor spawn.
+ 		wantOrder []string
+ 		// wantBuild, when set, is the build the last settle record names.
+@@ -449,6 +455,51 @@ func TestGoDriver_Settle(t *testing.T) {
+ 			wantActions: []string{shedrun.SettleSpawn, shedrun.SettleHandBack}, wantSettlers: []string{shedrun.SettlerArbiter, shedrun.SettlerParent},
+ 			wantReports: 2, wantParked: true, wantNotifies: 2, wantHandBack: true, wantExit: ExitHandBack,
+ 		},
++		{
++			name:  "an awaiting stop the arbiter settles with a resume tells the parent the outcome once and relays no notice",
++			steps: []func(*testing.T) []byte{awaiting("review is ready"), done}, escalation: true, orchRecorded: true, arbiterReturns: arbiterOutcome("resume", 1),
++			wantCalls:   []string{"step", "arbiter:", "step:1", "commit-records"},
++			wantActions: []string{shedrun.SettleSpawn, shedrun.SettleRestep}, wantSettlers: []string{shedrun.SettlerArbiter, shedrun.SettlerArbiter},
++			wantReports: 1, wantNotifies: 1, wantExit: ExitDone,
++			wantNotice: "Run run-1: the arbiter settled the review escalation at Review and resumed the run; verdict arbiter/1/verdict.yaml. Nothing to answer.",
++		},
++		{
++			name:  "an arbiter resume at an awaiting stop with no orch recorded sends no outcome line and the run finishes",
++			steps: []func(*testing.T) []byte{awaiting("review is ready"), done}, escalation: true, arbiterReturns: arbiterOutcome("resume", 1),
++			wantCalls:   []string{"step", "arbiter:", "step:1", "commit-records"},
++			wantActions: []string{shedrun.SettleSpawn, shedrun.SettleRestep}, wantSettlers: []string{shedrun.SettlerArbiter, shedrun.SettlerArbiter},
++			wantReports: 1, wantNotifies: 0, wantExit: ExitDone,
++		},
++		{
++			name:  "an arbiter resume at an awaiting stop whose orch lookup fails sends no outcome line and the run finishes",
++			steps: []func(*testing.T) []byte{awaiting("review is ready"), done}, escalation: true, orchRecorded: true, orchRecordedErr: errors.New("orch record unreadable"), arbiterReturns: arbiterOutcome("resume", 1),
++			wantCalls:   []string{"step", "arbiter:", "step:1", "commit-records"},
++			wantActions: []string{shedrun.SettleSpawn, shedrun.SettleRestep}, wantSettlers: []string{shedrun.SettlerArbiter, shedrun.SettlerArbiter},
++			wantReports: 1, wantNotifies: 0, wantExit: ExitDone,
++		},
++		{
++			name:  "an arbiter resume at an awaiting stop whose outcome send fails still finishes the run",
++			steps: []func(*testing.T) []byte{awaiting("review is ready"), done}, escalation: true, orchRecorded: true, notifyErr: errors.New("creel unreachable"), arbiterReturns: arbiterOutcome("resume", 1),
++			wantCalls:   []string{"step", "arbiter:", "step:1", "commit-records"},
++			wantActions: []string{shedrun.SettleSpawn, shedrun.SettleRestep}, wantSettlers: []string{shedrun.SettlerArbiter, shedrun.SettlerArbiter},
++			wantReports: 1, wantNotifies: 1, wantExit: ExitDone,
++		},
++		{
++			name:  "an arbiter resume at a blocked stop sends no outcome line",
++			steps: []func(*testing.T) []byte{blocked, done}, judgesFirst: "Build", orchRecorded: true, arbiterReturns: arbiterOutcome("resume", 1),
++			wantCalls:   []string{"step", "arbiter:", "step:1", "commit-records"},
++			wantActions: []string{shedrun.SettleSpawn, shedrun.SettleRestep}, wantSettlers: []string{shedrun.SettlerArbiter, shedrun.SettlerArbiter},
++			wantReports: 1, wantNotifies: 0, wantExit: ExitDone,
++		},
++		{
++			name:  "an arbiter resume the step refuses hands back and sends no outcome line",
++			steps: []func(*testing.T) []byte{awaiting("review is ready"), guardRefusedStep}, escalation: true, orchRecorded: true, arbiterReturns: arbiterOutcome("resume", 1),
++			wantCalls:    []string{"step", "arbiter:", "step:1"},
++			wantActions:  []string{shedrun.SettleSpawn, shedrun.SettleRestep, shedrun.SettleHandBack},
++			wantSettlers: []string{shedrun.SettlerArbiter, shedrun.SettlerArbiter, shedrun.SettlerParent},
++			wantReports:  2, wantParked: true, wantNotifies: 1, wantNoNotice: "Nothing to answer.", wantHandBack: true, wantExit: ExitHandBack,
++			wantReportHas: map[int][]string{2: {guardRefusal}},
++		},
+ 		{
+ 			name:  "a halted run with an open tackler attempt calls the tackler before any step and writes no spawn record for it",
+ 			steps: []func(*testing.T) []byte{}, initialStatus: &blockedStatus, restartAttempt: true, openKey: &blockedKey, openTackler: "tackler/1",
+@@ -649,7 +700,7 @@ func TestGoDriver_Settle(t *testing.T) {
+ 				}
+ 			}
+ 			markerPath := filepath.Join(root, "scratch", "driver-parked")
+-			var calls, order []string
++			var calls, order, lines []string
+ 			var notified int
+ 			stepsTaken := 0
+ 			statusReads := 0
+@@ -740,12 +791,13 @@ func TestGoDriver_Settle(t *testing.T) {
+ 					return filepath.Join(root, "drive-reports", fmt.Sprintf("report-%d.md", reports))
+ 				},
+ 				HandBack: HandBackDeps{
+-					Notify: func(Stop, string) (bool, error) {
++					Notify: func(_ Stop, line string) (bool, error) {
+ 						notified++
++						lines = append(lines, line)
+ 						order = append(order, "notify")
+-						return true, nil
++						return tt.notifyErr == nil, tt.notifyErr
+ 					},
+-					OrchRecorded: func() (bool, error) { return tt.orchRecorded, nil },
++					OrchRecorded: func() (bool, error) { return tt.orchRecorded, tt.orchRecordedErr },
+ 					Park: func(reportPath string) error {
+ 						if err := os.MkdirAll(filepath.Dir(markerPath), 0o755); err != nil {
+ 							return err
+@@ -940,6 +992,16 @@ func TestGoDriver_Settle(t *testing.T) {
+ 			if notified != tt.wantNotifies {
+ 				t.Errorf("Notify reached %d times; want %d", notified, tt.wantNotifies)
+ 			}
++			if tt.wantNotice != "" && !slices.Contains(lines, tt.wantNotice) {
++				t.Errorf("Notify lines = %q; want one equal to %q", lines, tt.wantNotice)
++			}
++			if tt.wantNoNotice != "" {
++				for _, line := range lines {
++					if strings.Contains(line, tt.wantNoNotice) {
++						t.Errorf("Notify line %q holds %q; want no such line", line, tt.wantNoNotice)
++					}
++				}
++			}
+ 		})
+ 	}
+ }
+diff --git a/internal/shedrecipe/entries_bouncer.go b/internal/shedrecipe/entries_bouncer.go
+index 1eb2cdf4..42556019 100644
+--- a/internal/shedrecipe/entries_bouncer.go
++++ b/internal/shedrecipe/entries_bouncer.go
+@@ -27,7 +27,7 @@ func rolePrefixKey(entry string, cfg Config) (string, error) {
+ 	return prefix, nil
+ }
+ 
+-// bouncerEntry is the Constructor for the "Bouncer" registry row: it validates cfg and env, joins and creates the run directory a segment's Bouncer, BurlerReview and BurlerFix rows share, resolves artifact_paths against env.AnchorPath, takes the row's seed and judge models from its segment's Bouncer pair and its hard cap from the segment's HardMaxBounces, resolves the optional commit_seam key to one of env.CommitPlan or env.CommitDiscussion, resolves the optional approve_seam key to one of env.ApprovePlan or env.ApproveDiscussion, resolves the optional skip_seam key to env.SkipPlanReview, reads the optional boolean zero_rounds key (default false; true makes the Bouncer settle approved at once over any skip_seam, and the recipe declares it on no row because loomrecipe stamps it), reads the optional boolean blocking_escalates key (default false), the optional boolean escalate_decisions key (default false; true makes a judged round whose review holds a decision-class finding escalate to the run's parent) and the optional color_segment and role_prefix keys, reads the optional carry_over key, the segment name that selects env.CarryOver, resolves the optional subject key ("document" or "code") to the Env subject seams it names and tells the Bouncer the segment's amendment allowance, reads the optional boolean cluster_excludes key (default false) telling the judge whether its partner BurlerReview row has a cluster fan, reads the optional reviewer_fan_setting key, a module.key setting reference whose list is the per-round fan list when it names a fan, reads the optional auto_accept_setting key, a module.key setting reference whose bool is the auto-accept flag (false for an absent key or a null), and returns shedadapters.NewBouncer(cfg).
++// bouncerEntry is the Constructor for the "Bouncer" registry row: it validates cfg and env, joins and creates the run directory a segment's Bouncer, BurlerReview and BurlerFix rows share, resolves artifact_paths against env.AnchorPath, takes the row's seed and judge models from its segment's Bouncer pair and its hard cap from the segment's HardMaxBounces, resolves the optional commit_seam key to one of env.CommitPlan or env.CommitDiscussion, resolves the optional approve_seam key to one of env.ApprovePlan or env.ApproveDiscussion, resolves the optional skip_seam key to env.SkipPlanReview, reads the optional boolean zero_rounds key (default false; true makes the Bouncer settle approved at once over any skip_seam, and the recipe declares it on no row because loomrecipe stamps it), reads the optional boolean blocking_escalates key (default false), the optional boolean escalate_decisions key (default false; true makes a judged round whose review holds a decision-class finding escalate with cause decision, which the arbiter settles where it can and the run's parent settles otherwise) and the optional color_segment and role_prefix keys, reads the optional carry_over key, the segment name that selects env.CarryOver, resolves the optional subject key ("document" or "code") to the Env subject seams it names and tells the Bouncer the segment's amendment allowance, reads the optional boolean cluster_excludes key (default false) telling the judge whether its partner BurlerReview row has a cluster fan, reads the optional reviewer_fan_setting key, a module.key setting reference whose list is the per-round fan list when it names a fan, reads the optional auto_accept_setting key, a module.key setting reference whose bool is the auto-accept flag (false for an absent key or a null), and returns shedadapters.NewBouncer(cfg).
+ func bouncerEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error) {
+ 	runSubdir, err := configString(cfg, "run_subdir", true)
+ 	if err != nil {
