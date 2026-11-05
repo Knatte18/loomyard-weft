@@ -48,7 +48,7 @@ How a task is best cut into smaller tasks is known only once its Discussion is d
 
 ## Triage of a Sketch (operator, 2026-11-05)
 
-A simple run of its own on a Sketch (see the `sketch` type note) whose agent breaks the Sketch down and decides what is wise to do with it:
+A simple run of its own on a Sketch (see the `sketch` type note), the recipe `raddle` (operator, 2026-11-05: the raddle spreads the warp into sections before it is beamed), whose agent breaks the Sketch down and decides what is wise to do with it:
 
 - one tapestry from Plan (way 1 above), or several darn tasks (way 2), or a mix;
 - the order of the tasks, as `depends_on`;
@@ -59,6 +59,10 @@ There is no fixed procedure for this today; the orch or the operator does it by 
 The triage agent is the cold split agent below, given the wider choice: it may also answer "one tapestry", which costs no split.
 
 - It runs cold, on Opus (operator, 2026-11-05); the operator's part is approving or correcting the proposal.
+- It runs through batten like `motif`, in a worktree of its own forked from the parent, so the code it reads stays still while it reads, though the prime moves with every landing; it lands no code, and its run shows on the board with a pane and notices.
+  The board can move meanwhile, so the proposal is checked against the board again when the operator approves it.
+- Motif and Sketches serve mostly large tasks, where an overview first pays (operator, 2026-11-05); a raddle's proposal may well be a project or beam, whose orch then takes over the Sketch and the proposal.
+- The glossary `docs/research/weaving-glossary.md` gains `raddle` as taken when the recipe is built.
 - It reads the Sketch, the board (entries that exist or run in the same packages) and only enough code to place each part: the packages and files the Sketch names, which packages each part changes, roughly how much, and who calls whom for the order.
   It designs nothing; the Sketch has done that.
 - It weighs cost, and is tuned for it (operator, 2026-11-05): a tapestry carries a large fixed start cost, so one large tapestry beside two small darns is often worse than fewer, larger darns or one tapestry for the whole.
