@@ -1,6 +1,6 @@
 # Credit Claude Code, not Claude, in the landing credit block
 
-`claude-code-credit` · Task · enhancement, landing, claude · running · Code-Bouncer
+`claude-code-credit` · Task · enhancement, landing, claude · running · Drift-Recheck
 
 ## Wanted (operator, 2026-11-05)
 
