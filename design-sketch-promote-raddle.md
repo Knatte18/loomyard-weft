@@ -1,6 +1,6 @@
 # A plain promote of a Sketch starts raddle
 
-`sketch-promote-raddle` · Task · enhancement, board · draft
+`sketch-promote-raddle` · Task · enhancement, board
 
 ## Seen (2026-11-05)
 
