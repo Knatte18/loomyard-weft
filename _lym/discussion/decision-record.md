@@ -29,6 +29,12 @@ lym, not the hub's repository, decides what each session gets, through the setti
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-05): Launch check and start-load measurement move to a docs task
+
+Decision: The run lands the per-role settings and their tests only. Checking in a live launch that each lever works, and measuring the start load before and after, moves to note session-scope-launch-trial, a darn docs task released after this lands.
+
+Rationale: A run cannot launch Claude headless, and trials run as darn docs tasks.
+
 ## Constraints
 
 ## Auto-mode assumptions
