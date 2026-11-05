@@ -5,7 +5,13 @@
 ## Operator's call (2026-11-05)
 
 Not a problem as things stand: the operator does not want a status line or orch notice built for it now.
-If it is solved, it is built only once F6 `reed-slack-relay` gives the hub a Slack link, and only as a reminder ping to the operator on Slack, such as "this has waited 30 minutes for you", repeated at an interval while the wait lasts.
+If it is solved, it is built only as a reminder ping to the operator on Slack, such as "this has waited 30 minutes for you", repeated at an interval while the wait lasts.
+
+## Built since (tidy, 2026-11-05)
+
+The Slack relay this waited on has landed (`slack-relay`): `lym slack`, the `<shortname>:SLACK` mailbox, presence and the `slack.remind_after_min` config key.
+The reminder ping itself is the task `slack-wait-reminders` (T6), running now.
+What stays open here is only the silence outside Slack: a PR-Review wait still shows nowhere in `lym loom status` or `lym batten status`.
 
 ## Seen
 
