@@ -706,6 +706,28 @@
       "body": "Imported from [issue #66](https://github.com/Knatte18/loomyard/issues/66).\n\n## What happened\n\n`lym beam merge-parent knut-rheology` filed the darn `knut-rheology-merge-in`.\nIts branch held a true merge commit, 5f9167ab, whose second parent was main's fbc1cf13.\nThe task landed into the beam through its pull request (#275 in NORCE-DrillingAndWells/Models) as a squash: the beam's new commit 628b06dd has the single parent 17010e3b.\nThe second parent was lost, so `git merge-base --is-ancestor fbc1cf13 knut-rheology` is still false.\nThe beam's pull request into main, opened next with `lym beam pr open knut-rheology` (#276), reports `dirty: the pull request conflicts with its base branch`, the same six conflicts the merge-in had resolved.\nThe merge-in task did nothing it existed for.\n\n## Expected\n\nThe merge-in task lands into the beam as a merge that keeps the parent branch's commit as a parent, never as a squash.\nTogether with Knatte18/loomyard#65 (land it without a pull request), the simplest form is a fast-forward or true merge of the task branch into the beam.\n\nRelated: Knatte18/loomyard#64 and #65.\n",
       "created": "2026-11-05T18:58:34Z",
       "revised": "2026-11-05T18:58:34Z"
+    },
+    {
+      "id": 1150,
+      "handle": "E1",
+      "slug": "merge-in-without-pull-request",
+      "title": "beam merge-parent's merge-in darn should land without a pull request",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "pawl",
+        "darn",
+        "landing"
+      ],
+      "issues": [
+        65
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #65](https://github.com/Knatte18/loomyard/issues/65).\n\n## What happened\n\n`lym beam merge-parent knut-rheology` filed the darn task `knut-rheology-merge-in`, which landed through its own pull request into the beam (#275 in NORCE-DrillingAndWells/Models).\nThe merge's tree was identical to the beam's, since main's commit was a squash of content the beam already carried, so the pull request had no changed files.\nThe operator still had to read and approve an empty pull request, and the run spent a PR-Review round and a Describe on it.\n\n## Wanted\n\nThe merge-in darn that `lym beam merge-parent` files needs no pull request.\nIt lands straight into the beam once its gate and its Code-Review of the merge pass, with no PR-Review row and no GitHub pull request, whether or not the merge changed files.\nThe merge is reviewed again anyway, as part of the beam's own pull request into its parent.\n\nRelated: Knatte18/loomyard#64, where the same task's writer is refused the merge verbs it needs.\n",
+      "created": "2026-11-05T18:58:37Z",
+      "revised": "2026-11-05T18:58:37Z"
     }
   ],
   "prime_owner": "neve",

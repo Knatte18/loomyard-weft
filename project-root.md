@@ -44,7 +44,7 @@ Not released; nothing starts it until its status is cleared.
 | T2 | `draft` **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | T5 | 58m<br>58m | creel, orch |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T7 | 5d<br>5h | fabric |
 
-## Notes (24)
+## Notes (25)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -68,10 +68,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B8 |  | **Scope plugins, skills and connectors per role, in every hub**<br>• lym gives each session only the plugins and skills its role needs, ly included in other hubs, and turns off connectors and unused listings | [`ly-plugin-off-in-other-hubs`](design-ly-plugin-off-in-other-hubs.md) | 41m<br>38m | shuttle |
 | B9 |  | **beam merge-parent's merge-in task lands as a squash, which drops the parent-branch merge** | [`merge-in-lands-as-squash`](design-merge-in-lands-as-squash.md) | 0m<br>0m | pawl, landing, darn |
 
-### Enhancements (3)
+### Enhancements (4)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
+| E1 |  | **beam merge-parent's merge-in darn should land without a pull request** | [`merge-in-without-pull-request`](design-merge-in-without-pull-request.md) | 0m<br>0m | pawl, darn, landing |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 9d<br>4d | batten, stencil, config |
 | E7 |  | **Each part agent plans and builds its own part, instead of joining the parts into one plan** | [`parts-plan-and-build`](design-parts-plan-and-build.md) | 2d<br>1h | loom |
 | E9 |  | **An interactive agent idle for a set time gets its session compacted**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 5d<br>2d | shed, shuttle, batten |
