@@ -1,0 +1,691 @@
+{
+  "runGuid": "7a9a5588c121f4dc0797c48709cc1c8e",
+  "planFingerprint": "890f6885bd3cee651390c100fa943695a6bee7dfe0cce477933bf8e5ee519919",
+  "planFileHashes": {
+    "00-overview.md": "606537116b951080b215656481da4eb0d1d5b0555deb8a08dce5b8deef7f76f2",
+    "01-shuttle-usage-split.md": "691f172b6dec3e71bafe7e0cbc050e69d7224ab06aed6cf8bfda3d884f47316b",
+    "02-codex-usage-reader.md": "88acac67a3bab5e49f896ea93172de72ec26347ae6c4156565fc41ebb2420c01",
+    "03-shuttle-session-end-hook.md": "19ddf9466b83efbcc4633080513cdf471477a13de7d74e29583e0ce14b71e622",
+    "04-usage-record-writer.md": "923625055efbda7207ae49715833ec0f614a6fa5a294e4194a15d3cc93280bdb",
+    "05-usage-wiring.md": "2a15c6fbda39f5f8f7951cfe3524d0ad7aac997b24f4dd3e8b7e3607e4344fb0",
+    "06-seed-and-landed-size.md": "ecb190afe8d06148c6bfe99970a362546acc0e8d0a041ea5baea3b530b8fd671",
+    "07-report-config.md": "0965d8b33cf044325bd3f5a57cadf876205855be825424d8db2033dfffedb061",
+    "08-report-cost.md": "752c7f08b6be755c052c493512fef79cb4d49800172a47af5e6e3fc5fcfe1f1f",
+    "09-raddle-paths-and-keys.md": "87581f9ff27a30b2faf75b4e5c131e1e5e8253cfd96492407d6741c1c50f6cd7",
+    "10-raddle-proposal-spec.md": "a1820e1d2c3b14594b8ea7b6d0e5a08c362d3b0ef28aca5de3a61fe8e3286340",
+    "11-discussion-part-splice.md": "85634df50f62a874f13f7373473bc964c9aacb998e6c4c43aeb3f3a42c8230ca",
+    "12-raddleparser.md": "24ac89e85de4339e55930ac66b825556a03628b6ac0aab8e73ea2b623b267220",
+    "13-board-promote-raddle.md": "2ffd66dbd9bf286db4733ea6a759db6eca3562762c1bb89f553ff82b1842c0c0",
+    "14-raddle-store-slug-rule.md": "6c32af1556e6e9f39199bcf46b7b73d28b0fd3a1fcc98166e3b8b24be5836b88",
+    "15-raddle-store-replay.md": "7e1d06e228fa7cab61aa1286b2b7e76205b6851e96623f6414c3df4eeee8f66d",
+    "16-board-raddle-writes.md": "088d74aaf4087cca664e87ab9308b791b3959bac0100eb13cfff9587d4bbd69c",
+    "17-board-raddle-verb.md": "1d700856c1b76140548ac89da06dee49ca8f4e913117f229b1ebe54a58ac46b3",
+    "18-record-write-stored.md": "3d054d9d2a432b51c4bb7006c2cb0477b8bd8927dfd8d4b699ca049a46aababb",
+    "19-raddle-checks-and-state.md": "d62203cf181e2ea58c98cd38f993311927ffc3a21e7edf060f167be0d93a70f5",
+    "20-raddle-verbs.md": "4a92e1d60c4fb42569b502d3d469e4d37024f13d7f46d7d6d09295300ae89e49",
+    "21-raddle-write-producer.md": "e2f47528ec4d23947c89d5b061254c25ba9e3bf8daa4c0f4c40e4892d9c6847a",
+    "22-raddle-file-producer.md": "40aa7939980a83e97d275e5b474ece35921af1a96c21069e4a5459815d1e8434",
+    "23-raddle-recipe.md": "a013bb3f9623fd177aeebfdebe98e3df6be2c03b0d61b7d7e5155bc0a8d7e482",
+    "24-batten-raddle-start-guard.md": "711fea881095b5e37ad8a30119a9b0108bccd70afe4f2f3c13f59211636c1578",
+    "25-pawl-raddle-handoff.md": "b8d537f8685fc93dae24dda474ca7d4794af02d0e987d6b1ff0f7dbcea3219de",
+    "26-report-raddle.md": "76f3805a6582b47a54c6369afd00588e9d2d51e67a93e33c061352dc06913a87",
+    "27-raddle-docs.md": "4e3a1c10cb3d496987bb4136673bfecbc98e78332518172f01ea7fb0b00d8ca6"
+  },
+  "planOverviewFrameHash": "c81be9c1adc8b02f466766b779d5e53d2f2b116ee4fbf4f75f7873d8b338c662",
+  "partition": [
+    {
+      "cards": [
+        "01-shuttle-usage-split",
+        "02-codex-usage-reader",
+        "03-shuttle-session-end-hook",
+        "04-usage-record-writer"
+      ],
+      "profile": "wide",
+      "estimate": 220352,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 55312,
+        "read_union": 48148,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 324,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 3900,
+              "file:internal/shuttleengine/doc.go": 6864,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 97.5,
+            "written": 29574
+          },
+          {
+            "card": 2,
+            "card_text": 348,
+            "reads": {
+              "file:internal/shuttleengine/codexengine/doc.go": 528,
+              "package:internal/shuttleengine/codexengine": 2000,
+              "tests:internal/shuttleengine/codexengine": 2000
+            },
+            "messages": 50,
+            "written": 15348
+          },
+          {
+            "card": 3,
+            "card_text": 408,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 6864,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 88.5,
+            "written": 26958
+          },
+          {
+            "card": 4,
+            "card_text": 912,
+            "reads": {
+              "file:PATTERN.md": 1056,
+              "file:internal/lymdirs/doc.go": 72,
+              "file:internal/shedadapters/doc.go": 5004,
+              "file:internal/shedrun/doc.go": 732,
+              "package:.": 2000,
+              "package:internal/lymdirs": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedrun": 2000,
+              "tests:.": 2000,
+              "tests:internal/lymdirs": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedrun": 2000
+            },
+            "messages": 147,
+            "written": 45012
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-usage-wiring",
+        "06-seed-and-landed-size"
+      ],
+      "profile": "wide",
+      "estimate": 267956,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 62312,
+        "read_union": 59616,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 456,
+            "reads": {
+              "file:internal/gatecli/doc.go": 5412,
+              "file:internal/shedadapters/doc.go": 5004,
+              "package:internal/battencli": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedadapters": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 180,
+            "written": 54456
+          },
+          {
+            "card": 6,
+            "card_text": 672,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 20448,
+              "file:internal/landingshed/doc.go": 3624,
+              "package:internal/fabricengine": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 303,
+            "written": 91572
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-report-config",
+        "08-report-cost",
+        "09-raddle-paths-and-keys",
+        "10-raddle-proposal-spec",
+        "11-discussion-part-splice",
+        "12-raddleparser"
+      ],
+      "profile": "wide",
+      "estimate": 283766,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 69312,
+        "read_union": 63596,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 348,
+            "reads": {
+              "file:internal/configreg/doc.go": 276,
+              "package:internal/configreg": 2000,
+              "package:internal/reportengine": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/reportengine": 2000
+            },
+            "messages": 66.5,
+            "written": 20298
+          },
+          {
+            "card": 8,
+            "card_text": 564,
+            "reads": {
+              "file:docs/overview.md": 11004,
+              "file:internal/reportcli/doc.go": 576,
+              "file:internal/reportengine/doc.go": 2316,
+              "package:docs": 2000,
+              "package:internal/reportcli": 2000,
+              "package:internal/reportengine": 2000,
+              "tests:docs": 2000,
+              "tests:internal/reportcli": 2000,
+              "tests:internal/reportengine": 2000
+            },
+            "messages": 107.5,
+            "written": 32814
+          },
+          {
+            "card": 9,
+            "card_text": 516,
+            "reads": {
+              "file:internal/loomengine/template.yaml": 516,
+              "file:internal/lymdirs/doc.go": 72,
+              "package:internal/loomengine": 2000,
+              "package:internal/lymdirs": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/lymdirs": 2000
+            },
+            "messages": 129,
+            "written": 39216
+          },
+          {
+            "card": 10,
+            "card_text": 264,
+            "reads": {
+              "package:contracts/specs": 2000,
+              "tests:contracts/specs": 2000
+            },
+            "messages": 25,
+            "written": 7764
+          },
+          {
+            "card": 11,
+            "card_text": 360,
+            "reads": {
+              "file:internal/discussionparser/doc.go": 276,
+              "package:internal/discussionparser": 2000,
+              "tests:internal/discussionparser": 2000
+            },
+            "messages": 49.5,
+            "written": 15210
+          },
+          {
+            "card": 12,
+            "card_text": 756,
+            "reads": {
+              "file:PATTERN.md": 1056,
+              "file:pattern/PATTERN-sole-parsers.md": 696,
+              "package:.": 2000,
+              "package:internal/raddleparser": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:internal/raddleparser": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 116,
+            "written": 35556
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-board-promote-raddle",
+        "14-raddle-store-slug-rule",
+        "15-raddle-store-replay",
+        "16-board-raddle-writes",
+        "17-board-raddle-verb",
+        "18-record-write-stored"
+      ],
+      "profile": "wide",
+      "estimate": 285040,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 76312,
+        "read_union": 32640,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 660,
+            "reads": {
+              "file:internal/boardcli/doc.go": 1248,
+              "file:internal/boardengine/doc.go": 4704,
+              "package:internal/boardcli": 2000,
+              "package:internal/boardengine": 2000,
+              "package:internal/shedrun": 2000,
+              "tests:internal/boardcli": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/shedrun": 2000
+            },
+            "messages": 135,
+            "written": 41160
+          },
+          {
+            "card": 14,
+            "card_text": 432,
+            "reads": {
+              "file:internal/boardengine/doc.go": 4704,
+              "package:internal/boardengine": 2000,
+              "tests:internal/boardengine": 2000
+            },
+            "messages": 88,
+            "written": 26832
+          },
+          {
+            "card": 15,
+            "card_text": 300,
+            "reads": {
+              "file:internal/boardengine/doc.go": 4704,
+              "package:internal/boardengine": 2000,
+              "tests:internal/boardengine": 2000
+            },
+            "messages": 56,
+            "written": 17100
+          },
+          {
+            "card": 16,
+            "card_text": 552,
+            "reads": {
+              "file:internal/boardengine/doc.go": 4704,
+              "package:internal/boardengine": 2000,
+              "tests:internal/boardengine": 2000
+            },
+            "messages": 100,
+            "written": 30552
+          },
+          {
+            "card": 17,
+            "card_text": 312,
+            "reads": {
+              "file:internal/boardcli/doc.go": 1248,
+              "file:internal/boardengine/doc.go": 4704,
+              "package:internal/boardcli": 2000,
+              "package:internal/boardengine": 2000,
+              "tests:internal/boardcli": 2000,
+              "tests:internal/boardengine": 2000
+            },
+            "messages": 59,
+            "written": 18012
+          },
+          {
+            "card": 18,
+            "card_text": 432,
+            "reads": {
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 140,
+            "written": 42432
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "19-raddle-checks-and-state",
+        "20-raddle-verbs",
+        "21-raddle-write-producer",
+        "22-raddle-file-producer"
+      ],
+      "profile": "wide",
+      "estimate": 248518,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 83312,
+        "read_union": 27404,
+        "cards": [
+          {
+            "card": 19,
+            "card_text": 588,
+            "reads": {
+              "file:internal/loomshed/doc.go": 1596,
+              "package:internal/loomshed": 2000,
+              "tests:internal/loomshed": 2000
+            },
+            "messages": 118.5,
+            "written": 36138
+          },
+          {
+            "card": 20,
+            "card_text": 564,
+            "reads": {
+              "package:internal/loomcli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 151,
+            "written": 45864
+          },
+          {
+            "card": 21,
+            "card_text": 672,
+            "reads": {
+              "file:contracts/stencils/parentdirective_test.go": 3216,
+              "file:internal/loomengine/status.go": 240,
+              "file:internal/loomshed/doc.go": 1596,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/raddle": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/loomshed": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/raddle": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/loomshed": 2000
+            },
+            "messages": 115.5,
+            "written": 35322
+          },
+          {
+            "card": 22,
+            "card_text": 528,
+            "reads": {
+              "file:internal/loomshed/doc.go": 1596,
+              "package:internal/loomshed": 2000,
+              "tests:internal/loomshed": 2000
+            },
+            "messages": 66.5,
+            "written": 20478
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "23-raddle-recipe"
+      ],
+      "profile": "wide",
+      "estimate": 287742,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 90312,
+        "read_union": 48612,
+        "cards": [
+          {
+            "card": 23,
+            "card_text": 1368,
+            "reads": {
+              "file:internal/loomcli/doc.go": 4776,
+              "file:internal/loomrecipe/doc.go": 852,
+              "file:internal/loomshed/doc.go": 1596,
+              "file:internal/runprofile/doc.go": 396,
+              "file:internal/runprofile/template.yaml": 840,
+              "file:internal/shedcli/doc.go": 360,
+              "file:internal/shedrecipe/doc.go": 1692,
+              "file:internal/shedrun/doc.go": 732,
+              "package:contracts/recipes": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/runprofile": 2000,
+              "package:internal/shedcli": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/shedrun": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/runprofile": 2000,
+              "tests:internal/shedcli": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/shedrun": 2000
+            },
+            "messages": 491.5,
+            "written": 148818
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "24-batten-raddle-start-guard",
+        "25-pawl-raddle-handoff"
+      ],
+      "profile": "wide",
+      "estimate": 224404,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 97312,
+        "read_union": 32616,
+        "cards": [
+          {
+            "card": 24,
+            "card_text": 384,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "tests:internal/battencli": 2000
+            },
+            "messages": 74.5,
+            "written": 22734
+          },
+          {
+            "card": 25,
+            "card_text": 792,
+            "reads": {
+              "file:internal/hubgeom/doc.go": 636,
+              "file:internal/loomcli/doc.go": 4776,
+              "file:internal/pawlengine/doc.go": 336,
+              "file:internal/shedrecipe/doc.go": 1692,
+              "package:internal/hubgeom": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/pawlengine": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/pawlengine": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 236.5,
+            "written": 71742
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "26-report-raddle",
+        "27-raddle-docs"
+      ],
+      "profile": "wide",
+      "estimate": 185518,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 8,
+        "startup": 104312,
+        "read_union": 41768,
+        "cards": [
+          {
+            "card": 26,
+            "card_text": 480,
+            "reads": {
+              "file:docs/overview.md": 11004,
+              "file:internal/boardengine/doc.go": 4704,
+              "file:internal/reportcli/doc.go": 576,
+              "file:internal/reportengine/doc.go": 2316,
+              "package:docs": 2000,
+              "package:internal/boardengine": 2000,
+              "package:internal/reportcli": 2000,
+              "package:internal/reportengine": 2000,
+              "tests:docs": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/reportcli": 2000,
+              "tests:internal/reportengine": 2000
+            },
+            "messages": 117.5,
+            "written": 35730
+          },
+          {
+            "card": 27,
+            "card_text": 108,
+            "reads": {
+              "file:docs/overview.md": 11004,
+              "file:docs/research/weaving-glossary.md": 2580,
+              "package:docs": 2000,
+              "package:docs/research": 2000,
+              "tests:docs": 2000,
+              "tests:docs/research": 2000
+            },
+            "messages": 12,
+            "written": 3708
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "f7c11c36f3d82fd543e95add1fdc3127",
+  "masterSessionId": "7c8333ff-47b7-4804-bb88-3066d2caf642",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "shuttle-usage-split",
+      "cards": [
+        "01-shuttle-usage-split",
+        "02-codex-usage-reader",
+        "03-shuttle-session-end-hook",
+        "04-usage-record-writer"
+      ],
+      "cardHashes": {
+        "01-shuttle-usage-split": "691f172b6dec3e71bafe7e0cbc050e69d7224ab06aed6cf8bfda3d884f47316b",
+        "02-codex-usage-reader": "88acac67a3bab5e49f896ea93172de72ec26347ae6c4156565fc41ebb2420c01",
+        "03-shuttle-session-end-hook": "19ddf9466b83efbcc4633080513cdf471477a13de7d74e29583e0ce14b71e622",
+        "04-usage-record-writer": "923625055efbda7207ae49715833ec0f614a6fa5a294e4194a15d3cc93280bdb"
+      },
+      "startSha": "f2ae537d965d3bd8ac0ed89d3acb54142f223693",
+      "kind": "fork",
+      "spawnedAt": "2026-11-05T10:41:09Z",
+      "sessionId": "7c8333ff-47b7-4804-bb88-3066d2caf642",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
