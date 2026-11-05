@@ -2,7 +2,7 @@
 
 `comment-cleanup` · Task · enhancement, fabric · draft
 
-Depends on: [`drift-rework`](design-drift-rework.md), [`research-dir-tidy`](design-research-dir-tidy.md)
+Depends on: [`drift-rework`](design-drift-rework.md)
 
 ## Seen (operator and hub orch, 2026-10-31)
 
