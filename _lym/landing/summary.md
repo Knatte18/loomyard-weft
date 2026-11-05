@@ -1,51 +1,42 @@
-# Teardown deletes a stray worktree directory, or fails loudly
+# Teardown deletes the leftover worktree directory; cancel clears it
 
-A directory that is no worktree, left at a task worktree's path after its pair is gone, now gets deleted by the routes that own the slug, or fails them loudly.
-Before, `lym fabric remove` and batten's Worktree-Teardown reported success when a late writer, such as a build or language server, refilled the directory with `obj/` and `bin/` output and the final delete failed.
-Nothing then cleared it: `lym batten cancel --remove` refused with "nothing left", and `lym batten cleanup` and `lym fabric prune` only reported it.
+A finished run left its task worktree directory behind, holding only ignored build output, because a build or language server refilled the path after `git worktree remove`.
+That directory was no worktree, yet it blocked the slug's next pair, and `lym batten cancel --remove` died with `not a git repository` instead of clearing it.
+Only a manual `rm -rf` unblocked the board write.
 
 Closes #54
 Closes #52
 
 ## What changes
 
-- `fabricengine.Remove` finishes the teardown as before when the post-teardown re-check cannot delete a refilled directory.
-  It then returns an error wrapping the new `ErrStrayPathKept`, naming the directory and the way forward, instead of a success with only `StrayPath` set.
-  The respawned pair push that follows a failed removal is skipped for this error, since no worktree is left to push.
-- New `Topology.RemoveStrayTaskPath` deletes what stands at a slug's task worktree path when it is no registered linked worktree.
-  It refuses a registered worktree and a directory holding a `.git` entry.
-  The delete goes through the existing contained `removeWorktreeLeftover` with its late-writer retries; a failure wraps `ErrStrayPathKept`.
-- `PairParts` gains `StrayPath`, read from the same `inspectPair` that `Remove` uses, and `Any()` counts it.
-- `pairteardown.Request` gains `ClearStray`.
-  Once the removal left the pair gone (success, `ErrPairNotFound` or `ErrStrayPathKept`), `RemovePair` calls `RemoveStrayTaskPath` before it settles the board claim.
-  A failed delete is returned.
-  A delete that clears a kept directory turns `ErrStrayPathKept` into success.
-- Batten's Worktree-Teardown sets `ClearStray`.
-  This second look runs after `Remove` has returned and regenerated the hub workspace file, which drops the pair's folder from an open editor.
-  A delete that still fails stops the row with "once it is deleted, resume this run with `lym batten run <slug>`".
-  The resumed row then deletes the directory, or finds it gone.
-- `lym batten cancel --remove` sets `ClearStray` and drops its old warning about a stray path.
-  With only a stray directory left, cancel without `--remove` refuses and names `--remove`.
-  With `--remove`, cancel deletes the directory instead of refusing with "nothing left".
-- The beam-land member listing reads a member's pair through `PairWorktreeStands`, so a leftover directory no longer reads as a pair in the landing refusal's way forward.
-- The fabricengine and pairteardown package docs and `PATTERN-pair-teardown`'s background file describe the new behavior.
+- Worktree-Teardown and `lym batten cancel --remove` now delete a directory that is no worktree at the pair's task worktree path, ignored build output included.
+  Both set the new `pairteardown.Request.ClearStray`, which runs after the removal left the pair gone.
+- A delete that fails now fails loudly.
+  `fabricengine.Remove` finishes the teardown and returns an error wrapping the new `ErrStrayPathKept`, naming the directory and the way forward, instead of logging a warning and succeeding.
+  A kept directory no longer respawns the pair's push, since it leaves nothing to push.
+- `batten` rewords that error as a resume instruction (`lym batten run <slug>`).
+- `PairParts` gains `StrayPath`, so `lym batten cancel` counts a stray directory as something left.
+  Without `--remove` it refuses and names `--remove`; with `--remove` it proceeds, and it no longer reports "nothing left" while the directory stands.
+- The cancel output gains `stray_directory_deleted`, and `lym fabric remove` output gains `stray_path_deleted` when a directory was deleted.
+  This replaces the old cancel warning that told the operator to delete the directory by hand.
+- Beam landing reads a member's `HasPair` through `fabricengine.PairWorktreeStands`, so a leftover directory reads as no pair.
 
 ## Design decisions
 
-- Fault 2's two named symptoms were already fixed on main by 56a77b49 and 5762ac04, which landed the day before the report.
-  The board's "has a pair" check uses `PairWorktreeStands`, and `taskWorktreePresent` reads a non-worktree directory as absent.
-  The hub that reported them most likely ran an older binary.
-  This change closes the rest of #52: the leftover directory is now deleted by the cancel the refusal names.
-- The ownership proof for deleting a non-worktree directory stays with the caller.
-  Batten's own run created the pair at that path, and `cancel --remove` is the operator's explicit removal of that slug's pair.
-  `fabric prune` and `fabric remove` on a stray-only slug still never delete one, as 5762ac04 decided.
-- `fabric remove` does not set `ClearStray`: its `Run` stops at the refusal probe's `ErrPairNotFound` before `RemovePair`.
-  Its way forward for a kept directory is to delete it by hand.
-- No settle delay was added before the second look.
-  Without one, a writer that refills the directory after the teardown has fully returned can still leave it behind.
-  That directory no longer blocks a board edit or a beam landing, and `cancel --remove` now clears it.
+- `Topology.RemoveStrayTaskPath` is a second exception to the destruction chokepoint, beside `removeWorktreeLeftover`, in `destroy.go`.
+  No git command runs before it, so ownership comes from the caller: a run that created the pair at that path, or an operator who asked to remove the slug's pair.
+  It refuses a registered linked worktree and any directory holding a `.git` entry, and keeps containment through `os.Root`.
+  `--force` and dirtiness do not apply, since nothing there is a worktree.
+  `PATTERN-fabric-git.md` and the `fabricengine` package doc state the exception.
+- The delete is opt-in per caller through `ClearStray`, so no other teardown route deletes an unowned directory.
+- `lym fabric remove` itself still never deletes a directory that stood at the path at entry; it deletes only one refilled after its own removal, and reports one it cannot.
 
 ## To check by hand
 
-- Not run end to end on a real hub: a C# pair whose language server writes `obj/` after the teardown, taken through Worktree-Teardown and then `lym batten cancel <slug> --remove`.
-- The `ErrStrayPathKept` path of `Remove` under `RemoveLocal` (local mode) has no test of its own.
+- Run `lym batten cancel <slug> --remove` against a slug whose task worktree path holds a plain directory, and confirm it deletes the directory and clears the board's has-a-pair block.
+- Run a full batten run to Worktree-Teardown with a build writing into the worktree, and confirm no directory stays.
+- The stray delete bypasses the shared four-check destruction pipeline (`stray-delete-bypasses-destruction-gate`, in `fabricengine/destroy.go`, `RemoveStrayTaskPath`).
+  Confirm the caller-proved ownership and the `.git` and registered-worktree refusals are enough.
+- Beam landing's member listing has no test that a leftover directory reads as no pair (`beamland-member-listing-untested`, in `internal/battencli/beamland.go`).
+- `PairParts.StrayPath` is not tested through `inspectPair` (`pairparts-straypath-untested-through-inspectpair`, in `internal/fabricengine/pairparts.go`).
+- `ClearStray` in the teardown request has no test that batten's Worktree-Teardown sets it (`teardown-request-clearstray-untested`, in `internal/battencli/wire.go`).
