@@ -1,0 +1,26 @@
+# Relevant files
+
+- `docs/research/drift-whole-review-2026-11-04.md` — the review whose design this task builds
+- `docs/research/drift-csharp-trial-2026-11-03.md` — the `cs` hub's capture format and compare output
+- `internal/driftengine/verify.go` `DriftVerify` — today's Drift-Verify and its gate table, rewritten to containment and judge
+- `internal/driftengine/recheck.go` — the `DriftRecheck` engine this task removes
+- `internal/driftengine/baseline.go` — Drift-Baseline, losing its agent
+- `internal/driftengine/records.go` `ScopeRecord` — the scope record that gains the seal and amendments
+- `internal/driftengine/paths.go` — declares every drift record and scratch path
+- `internal/driftengine/verdict.go` `Verdict` — the regression-check section to rewrite
+- `internal/driftengine/seats.go` — agent seat tables for the new expect and judge seats
+- `internal/driftengine/template.yaml` — the drift config template
+- `internal/driftengine/accepted.go` — accepted-profile machinery to remove
+- `internal/driftcli/cli.go` — the `lym drift` verbs
+- `contracts/recipes/darn-recipe.yaml` — darn row order and Darn-Write's gates list
+- `contracts/recipes/tapestry-recipe.yaml` — tapestry row order and the Webster row's gates list
+- `internal/shedrecipe/entries_drift.go` — drift constructors
+- `internal/shedrecipe/entries_gate.go` `resolvePlainGateClosure` — resolves a recipe's named gate entries
+- `internal/shuttleengine/gate.go` `GateEntry` — the gate entry shape
+- `internal/websterengine/runlevel.go` — Merriam's run-level gate fed by the Webster row's gates
+- `internal/loomcli/driftwiring.go` — drift wiring and the drift records commit
+- `internal/loomcli/gatefixer.go` — which gate entries carry fixers
+- `internal/configreg/configreg.go` `Reinterpretation` — the drift module's existing reinterpretation
+- `internal/fabricengine/trailer.go` — the `Warp-SHA` trailer the seal reads
+- `internal/runprofile/template.yaml` — the `docs` profile's darn block
+- `internal/loomcli/decision.go` — `lym loom decision add`, the model for `lym drift amend`
