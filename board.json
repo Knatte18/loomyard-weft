@@ -617,10 +617,32 @@
       "isolated": false,
       "brief": "docs/research moves into topic folders with one layout per study and an index; scripts, the docs-link test, comments and links follow",
       "body": "## Seen (readme-refresh sampler, 2026-11-05)\n\n`docs/research` is hard to find one's way in:\n\n1. It mixes flat `.md` files, dated directories with a `report.md`, and directories with a `README.md` and scripts.\n2. Long near-duplicate series: `codex-astra-*`, `codex-v2-p*`, `glyph-audit-*`, `creel-audit-*`, `twill-*`.\n3. Some entries are design notes, not research: `reed-proposal.md`, `reed-exploration.md`, `logging-inventory.md`, `quarry-holistic-fix-log.md`, `weaving-glossary.md`.\n4. No index.\n\n## Cost of moving studies\n\n- About 30 studies' scripts find the repository root by `../../..`.\n- `internal/lymcwd/docslink_test.go`'s `docsLinkIsResearchData` requires `docs/research/\u003creport\u003e/data/`.\n- Code comments cite exact paths, such as `codex-spike-2026-10-24`, `session-fork-spike.md`, `batch-budget-trial-2026-11-01` and `reed-hooks-exploration.md`.\n- Reports' relative links break on a move, and `README.md` now links several studies under `## Research on its own runs`.\n\n## Chosen (operator, 2026-11-05)\n\n`docs/research` is restructured into topic folders, not only indexed.\n\n- Every study moves into a topic folder, such as `codex/`, `twill/`, `glyph/`, `creel/`, and one per other theme the studies fall into; a near-duplicate series becomes one folder of its own inside its topic.\n- One layout per study: a study with data or scripts is a directory with a `report.md`; a lone report may stay a single file.\n- The design notes move out of `docs/research` to `docs/` (or beside the design they serve).\n- A topic-grouped index `docs/research/README.md` lists every study with a line on what it measured.\n- Nothing is deleted.\n\nEvery reference is fixed in the same change, so nothing goes stale:\n\n- the scripts that find the repository root by `../../..` find it by a depth-independent means, such as `git rev-parse --show-toplevel`, so a later move breaks none;\n- `docsLinkIsResearchData` in `internal/lymcwd/docslink_test.go` accepts the new depth;\n- code comments, docs and `README.md` naming a moved path;\n- relative links inside the reports.\n\nA grep for every old path afterwards finds none outside git history.\n",
-      "status": "running · Drift-Await",
+      "status": "running · Darn-Write",
       "created": "2026-11-05T09:05:45Z",
       "revised": "2026-11-05T09:14:34Z",
       "profile": "light"
+    },
+    {
+      "id": 1135,
+      "handle": "T2",
+      "slug": "codex-credit-line",
+      "title": "Landing credit block names Codex when a Codex session ran",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "landing",
+        "codex"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "credit_engines gains a codex item so a Codex-written landing credits Codex like Claude, with no trailer",
+      "body": "## Seen (2026-11-05)\n\nThe Codex trial run `codex-greet` in the sandbox hub `lyt` landed with a Codex writer, yet its landing commit's credit block named LoomYard and Claude only.\n`credit_engines` in `internal/landingshed/template.yaml` lists `claude` alone, so an engine that ran a session but has no entry adds nothing.\n\n## Wanted\n\n- `credit_engines` in the landing template gains `codex: \"Codex https://github.com/openai/codex\"`, so a task with a Codex session credits Codex in the same plain-line credit block as Claude.\n- `TestLoadConfig` (or the test in `internal/landingshed/config_test.go` that pins the template's `credit_engines`) expects both entries.\n- No `Co-Authored-By` trailer or any other trailer, for any engine: the credit block stays plain lines (operator, 2026-11-05).\n",
+      "status": "running · Worktree-Create",
+      "created": "2026-11-05T14:36:42Z",
+      "revised": "2026-11-05T14:36:42Z",
+      "profile": "speed"
     }
   ],
   "prime_owner": "neve",
