@@ -29,4 +29,14 @@ Rationale: SIGTERM reaches the loop from runproc.End on a cancel, a teardown or 
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - no-starting-mark-untested (class scope, severity MEDIUM, open in rounds 1)
+  - panic-recovery-narrower-than-claims (class design, severity MEDIUM, open in rounds 1)
+  - signal-choice-unrecorded-decision (class decision, severity MEDIUM, open in rounds 1)
+  - stale-step-stderr-on-dead-loop-stop (class design, severity MEDIUM, open in rounds 1)
+  - trace-copy-untested (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
