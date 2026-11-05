@@ -10,19 +10,48 @@
 # Remove one by deleting its block in the editor: lym config profiles
 
 defaults:
-    tapestry: solid
-    darn: light
+  tapestry: solid
+  darn: light
+  motif: solid
+  pawl: light
 speed:
-    tapestry: {loom: {discussion_max_bounces: 0, discussion_hard_max_bounces: 1, code_max_bounces: 1, code_hard_max_bounces: 2}, tapestry: {plan_max_bounces: 0, plan_hard_max_bounces: 1}}
-    darn: {loom: {code_max_bounces: 0, code_hard_max_bounces: 1}}
+  tapestry: {loom: {discussion_max_bounces: 0, discussion_hard_max_bounces: 1, code_max_bounces: 1, code_hard_max_bounces: 2, plan_max_bounces: 0, plan_hard_max_bounces: 1, code_reviewer_fan: ""}, tapestry: {plan_max_bounces: 0, plan_hard_max_bounces: 1}}
+  darn: {loom: {code_max_bounces: 0, code_hard_max_bounces: 1}}
+  motif:
+    loom: {discussion_max_bounces: 0, discussion_hard_max_bounces: 1}
+  pawl:
+    loom: {code_max_bounces: 0, code_hard_max_bounces: 1}
+  sampler:
+    loom: {code_max_bounces: 0, code_hard_max_bounces: 1}
 light:
-    tapestry: {loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2, code_max_bounces: 1, code_hard_max_bounces: 2}, tapestry: {plan_max_bounces: 1, plan_hard_max_bounces: 2}}
-    darn: {loom: {code_max_bounces: 1, code_hard_max_bounces: 2}}
+  tapestry: {loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2, code_max_bounces: 1, code_hard_max_bounces: 2, plan_max_bounces: 1, plan_hard_max_bounces: 2}, tapestry: {plan_max_bounces: 1, plan_hard_max_bounces: 2}}
+  darn: {loom: {code_max_bounces: 1, code_hard_max_bounces: 2}}
+  motif:
+    loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2}
+  pawl:
+    loom: {code_max_bounces: 1, code_hard_max_bounces: 2}
+  sampler:
+    loom: {code_max_bounces: 1, code_hard_max_bounces: 2}
+    sampler: {code_review: true}
 solid:
-    tapestry: {loom: {discussion_max_bounces: 2, discussion_hard_max_bounces: 3, code_max_bounces: 1, code_hard_max_bounces: 2}, tapestry: {plan_max_bounces: 2, plan_hard_max_bounces: 3}}
-    darn: {loom: {code_max_bounces: 2, code_hard_max_bounces: 3}}
+  tapestry: {loom: {discussion_max_bounces: 2, discussion_hard_max_bounces: 3, code_max_bounces: 1, code_hard_max_bounces: 2, plan_max_bounces: 2, plan_hard_max_bounces: 3}, tapestry: {plan_max_bounces: 2, plan_hard_max_bounces: 3}}
+  darn: {loom: {code_max_bounces: 2, code_hard_max_bounces: 3}}
+  motif:
+    loom: {discussion_max_bounces: 2, discussion_hard_max_bounces: 3}
+  pawl:
+    loom: {code_max_bounces: 2, code_hard_max_bounces: 3}
+  sampler:
+    loom: {code_max_bounces: 2, code_hard_max_bounces: 3}
+    sampler: {code_review: true}
 wide:
-    tapestry: {loom: {discussion_max_bounces: 3, discussion_hard_max_bounces: 4, code_max_bounces: 1, code_hard_max_bounces: 2}, tapestry: {plan_max_bounces: 2, plan_hard_max_bounces: 3}}
-    darn: {loom: {code_max_bounces: 3, code_hard_max_bounces: 4}}
+  tapestry: {loom: {discussion_max_bounces: 3, discussion_hard_max_bounces: 4, code_max_bounces: 1, code_hard_max_bounces: 2, plan_max_bounces: 2, plan_hard_max_bounces: 3}, tapestry: {plan_max_bounces: 2, plan_hard_max_bounces: 3}}
+  darn: {loom: {code_max_bounces: 3, code_hard_max_bounces: 4}}
+  motif:
+    loom: {discussion_max_bounces: 3, discussion_hard_max_bounces: 4}
+  pawl:
+    loom: {code_max_bounces: 3, code_hard_max_bounces: 4}
+  sampler:
+    loom: {code_max_bounces: 3, code_hard_max_bounces: 4}
+    sampler: {code_review: true}
 docs:
-    darn: {darn: {writer: 'sonnet[medium]'}, loom: {code_max_bounces: 0, code_hard_max_bounces: 1}}
+  darn: {darn: {writer: 'sonnet[medium]'}, loom: {code_max_bounces: 0, code_hard_max_bounces: 1, code_reviewer_fan: ""}}

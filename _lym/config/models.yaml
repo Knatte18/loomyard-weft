@@ -12,22 +12,37 @@
 # the built-in fallback set this file overrides/extends.
 
 sonnet:
-    engine: claude
-    model: sonnet
-    defaults:
-        effort: medium
+  engine: claude
+  model: sonnet
+  defaults:
+    effort: medium
 opus:
-    engine: claude
-    model: opus
-    defaults:
-        effort: medium
+  engine: claude
+  model: opus
+  defaults:
+    effort: medium
 haiku:
-    engine: claude
-    model: haiku
-    defaults:
-        effort: medium
+  engine: claude
+  model: haiku
+  defaults:
+    effort: medium
 fable:
-    engine: claude
-    model: fable
-    defaults:
-        effort: high
+  engine: claude
+  model: fable
+  defaults:
+    effort: high
+sol:
+  engine: codex
+  model: gpt-6.1-sol
+  defaults:
+    effort: medium
+astra:
+  engine: codex
+  model: gpt-6-astra
+  defaults:
+    effort: medium
+luna:
+  engine: codex
+  model: gpt-6-luna
+  defaults:
+    effort: medium
