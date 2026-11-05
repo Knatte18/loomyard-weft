@@ -12,10 +12,10 @@
 - `internal/beamcli#TestHubDobbyDeps_PrimeTidyShuttle`
 - `plan:internal/slackengine#EnsureRelayWhileAway`
 - `plan:internal/slackengine#ErrSpawnUnderTest`
-- `plan:internal/slackengine#WriteToken`
-- `plan:internal/slackengine#WriteSetup`
-- `plan:internal/slackengine#WritePresence`
-- `plan:internal/hubgeom#SlackGeometry`
+- `internal/slackengine#WriteToken`
+- `internal/slackengine#WriteSetup`
+- `internal/slackengine#WritePresence`
+- `internal/hubgeom#SlackGeometry`
 
 **Intent:** Have each tick of the prime's dobby bring back a relay that died while the operator is away, without a terminal (D3).
 

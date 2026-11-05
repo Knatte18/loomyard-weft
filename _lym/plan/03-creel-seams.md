@@ -1,12 +1,12 @@
 # Card 3 — creel-seams
 
 **Create:**
-- `plan:internal/creelengine#ErrProgramClaimInStrandPane` -> `var ErrProgramClaimInStrandPane = errors.New("creel: a program claim comes from a strand pane that is no orch's")`
-- `plan:internal/creelengine#CodeProgramClaimInStrandPane` -> `const CodeProgramClaimInStrandPane = "program-claim-in-strand-pane"`
-- `plan:internal/creelengine#PaneOf` -> `func PaneOf(pid int, strands []Strand, strandsErr error, parentPID func(int) (int, bool)) (*Strand, string)`
-- `plan:internal/creelengine#IsOrchStrand` -> `func IsOrchStrand(full string) bool`
-- `plan:internal/creelcli#GoClient.ReadWait` -> `func (c *GoClient) ReadWait(timeout time.Duration, handle func([]creelengine.Message) error) error`
-- `plan:internal/creelcli#HubStrands` -> `func HubStrands(hubPath string) ([]creelengine.Strand, error)`
+- `internal/creelengine#ErrProgramClaimInStrandPane`
+- `internal/creelengine#CodeProgramClaimInStrandPane`
+- `internal/creelengine#PaneOf`
+- `internal/creelengine#IsOrchStrand`
+- `internal/creelcli#GoClient.ReadWait`
+- `internal/creelcli#HubStrands`
 
 **Edit:**
 - `internal/creelengine#resolveSender`

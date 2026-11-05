@@ -2,12 +2,12 @@
 
 **Create:**
 - `internal/slackengine/template.yaml`
-- `plan:internal/slackengine#ConfigTemplate` -> `func ConfigTemplate() string`
-- `plan:internal/slackengine#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
-- `plan:internal/slackengine#Config` -> `type Config struct`
-- `plan:internal/slackengine#LoadConfig` -> `func LoadConfig(dirs configengine.Dirs) (Config, error)`
+- `internal/slackengine#ConfigTemplate`
+- `internal/slackengine#ConfigSpec`
+- `internal/slackengine#Config`
+- `internal/slackengine#LoadConfig`
 - `internal/slackengine/config_test.go`
-- `plan:internal/slackengine#TestLoadConfig` -> `func TestLoadConfig(t *testing.T)`
+- `internal/slackengine_test#TestLoadConfig`
 
 **Edit:**
 - `internal/configreg#Modules`

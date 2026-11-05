@@ -1,0 +1,54 @@
+# Card 3 — creel-seams
+
+**Create:**
+- `internal/creelengine#ErrProgramClaimInStrandPane`
+- `internal/creelengine#CodeProgramClaimInStrandPane`
+- `internal/creelengine#PaneOf`
+- `internal/creelengine#IsOrchStrand`
+- `internal/creelcli#GoClient.ReadWait`
+- `internal/creelcli#HubStrands`
+
+**Edit:**
+- `internal/creelengine#resolveSender`
+- `internal/creelengine#daemon.fail`
+- `internal/creelengine#Client.exchange`
+- `internal/creelengine#TestResolveSender`
+- `internal/creelcli#TestCreelCLI`
+- `internal/creelengine/doc.go`
+- `internal/creelcli/doc.go`
+- `internal/creelcli#goCallTimeout`
+
+**Uses:**
+- `internal/creelengine#paneOfPeer`
+- `internal/creelengine#isOrchName`
+- `internal/creelengine#ErrStrandClaimOutsidePane`
+- `internal/creelcli#GoClient`
+- `internal/creelcli#newHubDelivery`
+- `internal/creelcli#newRig`
+- `internal/testkit/creelfake#LiveStrand`
+
+**Intent:** Give the Slack relay and `lym slack` the four creel pieces the record's Takes line names, without changing what creel decides.
+
+- `PaneOf` is the exported pane-ancestry walk: it returns `paneOfPeer(pid, strands, strandsErr, parentPID)` unchanged, so `lym slack`'s pane check (card 10) decides "which live strand's pane is this process in, or what keeps that unknown" exactly as creel's sender resolution does (D6).
+  `IsOrchStrand` returns `isOrchName(full)`, so the check tells an orch's pane from another strand's by creel's own rule.
+- The refusal of a program claim from a non-orch strand's pane becomes a coded refusal: in `resolveSender`, the branch `!isOrchName(pane.Name)` with a program claim returns a `codedRefusal` with its current message and the sentinel `ErrProgramClaimInStrandPane`; `daemon.fail` sets `Response.Code` to `CodeProgramClaimInStrandPane` for an error matching it, as it does for `ErrStrandClaimOutsidePane`; `Client.exchange` maps that code back to a `codedRefusal` with the sentinel.
+  The message text is unchanged, so no assertion of it changes.
+  `resolveSender`'s doc comment, which says no refusal but the strand claim's wraps a sentinel, names both sentinels.
+  The relay (card 9) tells this one refusal, after which it ends, from every other refusal of its first read, after which it retries (D3); no other caller's behavior changes.
+- `GoClient.ReadWait` is `ReadAll` with `Wait: true` and the told timeout: it blocks until the caller has unread mail, hands it to handle, and acknowledges only when handle returns nil; it returns nil once the daemon confirmed the acknowledgement of the read it last made, so the relay clears its outbound record only after a confirmed acknowledgement (D5).
+  A connection lost before or after the handler ran sends the read again, as `creelengine.Client.CallWatching` resumes a waiting read, up to `creelengine.MaxReconnects`, so the handler can run a second time for mail it already saw; card 8's outbox record is what makes that second run post nothing twice.
+  A refused confirmation, the told timeout and exhausted reconnects return their error; a handle error releases the read unacknowledged and is returned as is.
+  Its doc says its timeout bounds the wait for mail, the handler and the confirmation together, as `creelengine.Client.Call`'s one timer does, so an `ErrWaitTimeout` can follow a handler that ran.
+- `HubStrands` lists the hub's strands the way the daemon does, through `newHubDelivery(hubPath, shuttleengines.New).Strands()`, so the pane check reads the same strand set creel reads; it is a one-line forward over the delivery whose listing `delivery_test.go` already pins.
+
+Tests:
+- `TestResolveSender` (tier0) gains no row: its existing row `Linux_ProgramClaimFromANonOrchPaneIsRefused` gains the assertion that the error matches `ErrProgramClaimInStrandPane` under `errors.Is`, beside its message check, and no other row's error matches it.
+- `TestCreelCLI` (tier1, in-process daemon of `newRig`) gains two subtests:
+  `ReadWait` blocks until a post arrives, hands that message to handle, and the delivered message is acknowledged: a later `ReadAll` finds nothing unread (a failing handler's branch is the existing subtest "a program client's ReadAll with a failing handler leaves the reply unread for the next ReadAll", which `ReadWait` shares);
+  a program client whose process sits in a live non-orch strand's pane (a `creelfake.LiveStrand` whose `PanePID` is the test's own pid) gets an error from `ReadAll` that matches `ErrProgramClaimInStrandPane`, which reaches the daemon's `fail` coding and the client's mapping end to end; this subtest rests on the daemon's Linux peer walk, so it is generated on Linux only, the loop passing over it before `t.Run` elsewhere (`PATTERN-test-speed`, no test skips by design).
+
+`internal/creelengine/doc.go` names the exported walk, and its Refusal code section, which now says the strand-claim refusal is the only coded one and a program claim from a non-orch pane carries no code, is rewritten to name both coded refusals: `program-claim-in-strand-pane` beside `strand-claim-outside-pane`.
+`internal/creelcli/doc.go` gains a sentence naming `ReadWait` and `HubStrands` among the Go client's calls, stating `ReadWait`'s contract in the same words as its doc comment, the resent read and the second handler run included, and its sentence "Every call passes a 30-second timeout, so a caller under a lock waits at most that long per call" is reworded to exempt `ReadWait`, whose timeout the caller tells.
+The doc comment of `goCallTimeout` in `internal/creelcli/goclient.go`, "bounds every request a GoClient makes", is reworded the same way.
+
+**ImpactSummary:** Additive exports plus one refusal gaining a code, with creelengine's Refusal code doc section and `resolveSender`'s comment rewritten to name both coded refusals, and creelcli's two timeout texts reworded to exempt `ReadWait`; its message is unchanged, so creel's existing callers and assertions are untouched, and only `lym slack` and the relay consume the new pieces.

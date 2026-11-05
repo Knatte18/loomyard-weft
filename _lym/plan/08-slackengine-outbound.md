@@ -15,7 +15,7 @@
 - `plan:internal/slackengine#Mailbox`
 - `plan:internal/slackengine#SlackClient`
 - `plan:internal/slackengine#Clock`
-- `plan:internal/creelengine#IsOrchStrand`
+- `internal/creelengine#IsOrchStrand`
 - `internal/agentname#TaskSlug`
 - `internal/creelengine#Message`
 - `internal/creelengine#ErrWaitTimeout`

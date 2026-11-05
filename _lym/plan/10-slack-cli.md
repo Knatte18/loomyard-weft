@@ -24,14 +24,14 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/creelengine#PaneOf`
-- `plan:internal/creelengine#IsOrchStrand`
-- `plan:internal/creelcli#HubStrands`
-- `plan:internal/creelcli#GoClient.ReadWait`
+- `internal/creelengine#PaneOf`
+- `internal/creelengine#IsOrchStrand`
+- `internal/creelcli#HubStrands`
+- `internal/creelcli#GoClient.ReadWait`
 - `internal/creelcli#NewProgramClient`
 - `internal/fabricengine#PrimeName`
 - `internal/lymcwd#NamedWorktree`
-- `plan:internal/hubgeom#SlackGeometry`
+- `internal/hubgeom#SlackGeometry`
 - `internal/hubgeom#PauseGeometry`
 - `internal/hubgeom#DobbyStart`
 - `internal/pauserecord#ReadCoverage`

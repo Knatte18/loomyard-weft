@@ -14,7 +14,7 @@
 
 **Uses:**
 - `plan:internal/slackengine#EnsureRelay`
-- `plan:internal/hubgeom#SlackGeometry`
+- `internal/hubgeom#SlackGeometry`
 
 **Intent:** Start the relay again once a prime anchor change ends, whether it lands or fails and whatever dobbies it starts again (D3).
 A prime move's `EndDobbies` ends every `runproc.HubOwner` process but a push or a sync, the relay included, and a failure with the change record standing starts no dobby, so the dobby restart alone cannot bring the relay back.

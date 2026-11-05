@@ -33,8 +33,8 @@
 **Uses:**
 - `plan:internal/slackengine#inbound.poll`
 - `plan:internal/slackengine#outbound.read`
-- `plan:internal/creelengine#ErrProgramClaimInStrandPane`
-- `plan:internal/runproc#RoleSlackRelay`
+- `internal/creelengine#ErrProgramClaimInStrandPane`
+- `internal/runproc#RoleSlackRelay`
 - `internal/runproc#EndRole`
 - `internal/runproc#SelfRecord`
 - `internal/runproc#Register`

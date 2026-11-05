@@ -1,9 +1,9 @@
 # Card 2 — slack-names
 
 **Create:**
-- `plan:internal/lymdirs#SlackDirName` -> `const SlackDirName = "slack"`
-- `plan:internal/runproc#RoleSlackRelay` -> `const RoleSlackRelay = "slack-relay"`
-- `plan:internal/githubclient#CredentialDir` -> `func CredentialDir() (string, bool)`
+- `internal/lymdirs#SlackDirName`
+- `internal/runproc#RoleSlackRelay`
+- `internal/githubclient#CredentialDir`
 
 **Edit:**
 - `internal/lymdirs/dirs.go`

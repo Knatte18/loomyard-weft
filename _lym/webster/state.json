@@ -1,21 +1,21 @@
 {
   "runGuid": "fc08175c6026a1f5e0be974deea15cc4",
-  "planFingerprint": "87dedabcc56b92b6714e6f98c3b5f07d31259670085d404a21fdffd7d64e95b2",
+  "planFingerprint": "a0bcec87eb43668bd0814cf7824f7b89e3431e397053bc833585bfdd8074e685",
   "planFileHashes": {
     "00-overview.md": "3200e9a58a9b553cf78ed40ca50ef40738f97e007a94d7120a3535070bfb1711",
     "01-pattern-clusters.md": "263ea28d63132e68dd11e9958fa17aa862043c7022bacdc3fa77d48aabbd7e03",
-    "02-slack-names.md": "08a2f81bac07263b0c493638ed11aa4896f0aba37851338ce8fdd0e815f7c46e",
-    "03-creel-seams.md": "9fb63c44703d9dbf537aa95ce1947a6980e009ff1e6e62ee070737cda645d8c7",
-    "04-slackengine-files.md": "40aaa22e1c3fadc3d6e8c64dcdb629c5474eb522565fcbe5f3969ec08358dde2",
-    "05-slack-config.md": "b130f69840769b26a9e99e2adcd73797d005ef037f5b0a904e699535717a4f9f",
+    "02-slack-names.md": "4520c839340eae4cf8d1c6aad390129cb4d016998be3139e4509813549904b5c",
+    "03-creel-seams.md": "f8cae7d31699f61a7367c09a607beb7160f3ec7ea4c26d329cca620ea3e573e0",
+    "04-slackengine-files.md": "c35c8d28c238b1b939c6c0d4bbd2a1e7fb63ac7d16c64ae084fd51e893cc0a09",
+    "05-slack-config.md": "7e0cf621b4af6f0ba216cc664aae2d1b968207dae1b9f5af375cbb0ad872555f",
     "06-slackengine-api.md": "7d4192923e21b130aba0ef4f934823185e19e088cfabe994f713dc8eb14c161e",
     "07-slackengine-inbound.md": "588785623859b9ebaf62f8fc25f8ddd9ca4d0d58a506b42f593a429b83cbcf79",
-    "08-slackengine-outbound.md": "5d09c60c071b42b3f77914951085d0849ed5d0275021cdba9e56d71d65fef3db",
-    "09-slackengine-relay.md": "a520347cadbd4b9cfb532b1d233747f0bf92fbd21846ea2f4709f2fa5d9e01e4",
-    "10-slack-cli.md": "48e023fc1249ffbda2982c17f590b9056c6e68b2c6a44873f2995ce50e0d5059",
-    "11-orch-relay-presence.md": "6cbdcfdf8bc48520de9cf8d8a7c06813b7f65eee5c00471aeeb3287935b703b4",
-    "12-dobby-relay-tick.md": "580cc1e0517953b89d06a19372c07cf1fd8eb35efd07c19bc89201a89c5dcf7f",
-    "13-anchor-relay-restart.md": "4cce7eacd19f76c6ac7a77830a4f1879d3d817bcfb17774373ec3c09f8e7bb19",
+    "08-slackengine-outbound.md": "3eec871d3da16dc2f8f0cd89187c66bd7e9a40093832eb1c8614b58efab1a7b6",
+    "09-slackengine-relay.md": "f5a601bf6f083dc0f0a6206531da68dc0b2ad3079868e236b6398634695583c3",
+    "10-slack-cli.md": "b966894712e2b0033481becf435bc1d6a9890817c516d0de75f31178effadab4",
+    "11-orch-relay-presence.md": "2f42eb7fcf08fe53017a80766d5b7f9f1cc1ba94597bd78f34e341bf382a2f47",
+    "12-dobby-relay-tick.md": "789f82fc077982e4168bd1b4947dce2e66906e0ba75f691ba604d754882c0e2a",
+    "13-anchor-relay-restart.md": "0b40c253dcd4f8637769af4adeb364e2e2f0c4e12fe2ceca63b4c48a09e5a692",
     "14-orch-role-slack.md": "4a4dae59193f1395a56fbf49c3ad5304f562ba13d3d5c5612a3eeebd8e5266cb"
   },
   "planOverviewFrameHash": "c831ad9407ba81201198f4ec360d2fa65df8eb648b8edf12470e8d2c586b133d",
@@ -303,7 +303,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "0b652e66eac7b28610d1ac37f51cc712",
   "masterSessionId": "92259c87-a13c-4393-84cc-c0c85e3379b0",
   "masterEngine": "claude",
@@ -319,18 +319,42 @@
       ],
       "cardHashes": {
         "01-pattern-clusters": "263ea28d63132e68dd11e9958fa17aa862043c7022bacdc3fa77d48aabbd7e03",
-        "02-slack-names": "08a2f81bac07263b0c493638ed11aa4896f0aba37851338ce8fdd0e815f7c46e",
-        "03-creel-seams": "9fb63c44703d9dbf537aa95ce1947a6980e009ff1e6e62ee070737cda645d8c7",
-        "04-slackengine-files": "40aaa22e1c3fadc3d6e8c64dcdb629c5474eb522565fcbe5f3969ec08358dde2",
-        "05-slack-config": "b130f69840769b26a9e99e2adcd73797d005ef037f5b0a904e699535717a4f9f"
+        "02-slack-names": "4520c839340eae4cf8d1c6aad390129cb4d016998be3139e4509813549904b5c",
+        "03-creel-seams": "f8cae7d31699f61a7367c09a607beb7160f3ec7ea4c26d329cca620ea3e573e0",
+        "04-slackengine-files": "c35c8d28c238b1b939c6c0d4bbd2a1e7fb63ac7d16c64ae084fd51e893cc0a09",
+        "05-slack-config": "7e0cf621b4af6f0ba216cc664aae2d1b968207dae1b9f5af375cbb0ad872555f"
       },
       "startSha": "f6b0f28d2190031ec4de222d5bcdf9d503dd4a4a",
       "kind": "fork",
       "spawnedAt": "2026-11-05T18:26:54Z",
       "sessionId": "92259c87-a13c-4393-84cc-c0c85e3379b0",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-pattern-clusters",
+        "status": "done",
+        "head_sha": "667e7cacd7d7ba5c16125ebf944ccdd4af34a95f",
+        "deviations": [
+          "internal/configcli/configcli.go",
+          "internal/slackengine/config.go",
+          "internal/slackengine/credentials.go",
+          "internal/slackengine/geometry.go",
+          "internal/slackengine/presence.go"
+        ]
+      },
+      "cardShas": [
+        "667e7cacd7d7ba5c16125ebf944ccdd4af34a95f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-relay/92259c87-a13c-4393-84cc-c0c85e3379b0/subagents/agent-ae025356bd65419fa.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-relay/92259c87-a13c-4393-84cc-c0c85e3379b0/subagents/agent-ae025356bd65419fa.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-relay/92259c87-a13c-4393-84cc-c0c85e3379b0/subagents/agent-ae025356bd65419fa.jsonl"
+  ]
 }

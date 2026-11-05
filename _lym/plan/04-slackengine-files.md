@@ -2,26 +2,26 @@
 
 **Create:**
 - `internal/slackengine/doc.go`
-- `plan:internal/slackengine#Geometry` -> `type Geometry struct`
-- `plan:internal/slackengine#Presence` -> `type Presence string`
-- `plan:internal/slackengine#PresenceTerminal` -> `const PresenceTerminal Presence = "terminal"`
-- `plan:internal/slackengine#PresenceSlack` -> `const PresenceSlack Presence = "slack"`
-- `plan:internal/slackengine#ReadPresence` -> `func ReadPresence(path string) (Presence, error)`
-- `plan:internal/slackengine#WritePresence` -> `func WritePresence(path string, presence Presence, now time.Time) (bool, error)`
-- `plan:internal/slackengine#Setup` -> `type Setup struct`
-- `plan:internal/slackengine#ReadSetup` -> `func ReadSetup(path string) (Setup, bool, error)`
-- `plan:internal/slackengine#WriteSetup` -> `func WriteSetup(path string, setup Setup) error`
-- `plan:internal/slackengine#ReadToken` -> `func ReadToken(path string) (string, bool, error)`
-- `plan:internal/slackengine#WriteToken` -> `func WriteToken(path, token string) error`
-- `plan:internal/slackengine#RequireConfigured` -> `func RequireConfigured(geom Geometry) (string, Setup, error)`
-- `plan:internal/slackengine#RelayState` -> `type RelayState struct`
-- `plan:internal/slackengine#ReadRelayState` -> `func ReadRelayState(geom Geometry) (RelayState, bool, error)`
-- `plan:internal/hubgeom#SlackGeometry` -> `func SlackGeometry(hubPath string) (slackengine.Geometry, error)`
+- `internal/slackengine#Geometry`
+- `internal/slackengine#Presence`
+- `internal/slackengine#PresenceTerminal`
+- `internal/slackengine#PresenceSlack`
+- `internal/slackengine#ReadPresence`
+- `internal/slackengine#WritePresence`
+- `internal/slackengine#Setup`
+- `internal/slackengine#ReadSetup`
+- `internal/slackengine#WriteSetup`
+- `internal/slackengine#ReadToken`
+- `internal/slackengine#WriteToken`
+- `internal/slackengine#RequireConfigured`
+- `internal/slackengine#RelayState`
+- `internal/slackengine#ReadRelayState`
+- `internal/hubgeom#SlackGeometry`
 - `internal/slackengine/testmain_test.go`
 - `internal/slackengine/files_test.go`
-- `plan:internal/slackengine#TestPresence` -> `func TestPresence(t *testing.T)`
-- `plan:internal/slackengine#TestCredentialFiles` -> `func TestCredentialFiles(t *testing.T)`
-- `plan:internal/hubgeom#TestSlackGeometry` -> `func TestSlackGeometry(t *testing.T)`
+- `internal/slackengine_test#TestPresence`
+- `internal/slackengine_test#TestCredentialFiles`
+- `internal/hubgeom#TestSlackGeometry`
 
 **Edit:**
 - `pattern/PATTERN-cwd-resolution.md`
@@ -34,8 +34,8 @@
 - `internal/fabricengine#HubScratchDir`
 - `internal/fabricengine#RunProcDir`
 - `internal/fabricengine#ReadShortname`
-- `plan:internal/lymdirs#SlackDirName`
-- `plan:internal/githubclient#CredentialDir`
+- `internal/lymdirs#SlackDirName`
+- `internal/githubclient#CredentialDir`
 
 **Intent:** Create `internal/slackengine`, the one package that calls Slack (`PATTERN-agent-addressing` as card 1 words it), with the files every later Slack card reads, and the hub teller of its geometry.
 
