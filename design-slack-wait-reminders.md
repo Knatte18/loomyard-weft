@@ -1,6 +1,6 @@
 # Dobby reminds the operator on Slack of a run waiting at PR-Review or Sampler-Session
 
-`slack-wait-reminders` · Task · feature, reed · running · Record-Write
+`slack-wait-reminders` · Task · feature, reed · running · Drift-Baseline
 
 Depends on: [`slack-relay`](design-slack-relay.md)
 
