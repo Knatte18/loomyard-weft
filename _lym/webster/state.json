@@ -1,6 +1,6 @@
 {
   "runGuid": "a1c4865ab9aa37350056289ec21b537d",
-  "planFingerprint": "0dc4d63eff582b8fe37ccd885287cc43c9866b89e84cafd42f37c27e4491df15",
+  "planFingerprint": "a44c897bfde8f910c2f9bf1687c18642cca9939adb0dee1048504b4d4b53173e",
   "planFileHashes": {
     "00-overview.md": "23db230969dc39beb707659cbdf0389bfcf77c2143ebc77a9730567a70a41eaf",
     "01-fabric-trailer-commits.md": "8a9daa9bb99055bd6d008fd529275a4f2b2fa6099cff69434e1c6904e0f73b83",
@@ -24,10 +24,10 @@
     "19-drift-amend-defer.md": "cedea66068c4c81ff8a68b0d4115133e177b309297e96a22d15fc410f16c7466",
     "20-drift-verdict.md": "749fac950f42c7624b34a2beab880be9338692921858a69ff9e7881b724d95ed",
     "21-drift-writer-stencils.md": "27d72cbc10d602e84dc962f5c0411a93f775e59f063bac44f40a1e118db34457",
-    "22-driftcli-retire-verbs.md": "565f644b30a7d9d5f2a0c9b9c968f6ae522e967c6a2a9370f1a50a0ae5d0a2ae",
+    "22-driftcli-retire-verbs.md": "f136135c8e93b1280e0d667781521091ef85162850b9c8308ff3d089cca1d734",
     "23-drift-retire-recheck-engine.md": "9dc7421e2269d6355f48111babb54c85756dc732d035fa9a3f07f02b46fc4cc6",
     "24-drift-retire-old-seats.md": "073756509da9f02f71d758a679b14245398295c754ce81ef0eb5a96f9730c5f4",
-    "25-driftengine-retire-acceptance.md": "6d27577f456d4d1c636b25f72434945c4284d05ac042963fea6e3720d1dd6bce",
+    "25-driftengine-retire-acceptance.md": "95848b0d6faab342cd1c2cd2a571803f55bd73177ad8afe9c2babe3e27ee72ca",
     "26-drift-retire-skip-keys.md": "df19efa1aa1d147feb135c048a538a2d6329306d98529312cbcace1ef0e41f7c",
     "27-drift-retire-verify-gate-key.md": "3c0bae14ba157fe060239232d1c553ab790781c5286f9a9a9ca82b736e8f62db"
   },
@@ -593,11 +593,10 @@
     {
       "cards": [
         "20-drift-verdict",
-        "21-drift-writer-stencils",
-        "22-driftcli-retire-verbs"
+        "21-drift-writer-stencils"
       ],
       "profile": "wide",
-      "estimate": 241680,
+      "estimate": 183304,
       "breakdown": {
         "weights": {
           "orientation": 31400,
@@ -613,20 +612,20 @@
         },
         "position": 9,
         "startup": 111552,
-        "read_union": 45612,
+        "read_union": 25216,
         "cards": [
           {
             "card": 20,
             "card_text": 492,
             "reads": {
-              "file:internal/driftengine/doc.go": 1812,
+              "file:internal/driftengine/doc.go": 3264,
               "package:internal/driftengine": 2000,
               "package:internal/loomcli": 2000,
               "tests:internal/driftengine": 2000,
               "tests:internal/loomcli": 2000
             },
-            "messages": 129,
-            "written": 39192
+            "messages": 135,
+            "written": 40992
           },
           {
             "card": 21,
@@ -642,31 +641,17 @@
             },
             "messages": 18,
             "written": 5544
-          },
-          {
-            "card": 22,
-            "card_text": 480,
-            "reads": {
-              "file:docs/overview.md": 11016,
-              "file:internal/driftcli/accept_integration_test.go": 1896,
-              "file:internal/driftcli/doc.go": 456,
-              "package:docs": 2000,
-              "package:internal/driftcli": 2000,
-              "tests:docs": 2000,
-              "tests:internal/driftcli": 2000
-            },
-            "messages": 131,
-            "written": 39780
           }
         ]
       }
     },
     {
       "cards": [
+        "22-driftcli-retire-verbs",
         "23-drift-retire-recheck-engine"
       ],
       "profile": "wide",
-      "estimate": 160794,
+      "estimate": 224576,
       "breakdown": {
         "weights": {
           "orientation": 31400,
@@ -682,23 +667,38 @@
         },
         "position": 10,
         "startup": 118552,
-        "read_union": 17228,
+        "read_union": 40792,
         "cards": [
+          {
+            "card": 22,
+            "card_text": 468,
+            "reads": {
+              "file:docs/overview.md": 11016,
+              "file:internal/driftcli/accept_integration_test.go": 1896,
+              "file:internal/driftcli/doc.go": 672,
+              "package:docs": 2000,
+              "package:internal/driftcli": 2000,
+              "tests:docs": 2000,
+              "tests:internal/driftcli": 2000
+            },
+            "messages": 126.5,
+            "written": 38418
+          },
           {
             "card": 23,
             "card_text": 264,
             "reads": {
-              "file:internal/driftengine/doc.go": 1812,
+              "file:internal/driftengine/doc.go": 3264,
               "file:internal/driftengine/recheck.go": 2040,
               "file:internal/driftengine/recheck_test.go": 3468,
-              "file:internal/shedrecipe/doc.go": 1644,
+              "file:internal/shedrecipe/doc.go": 1704,
               "package:internal/driftengine": 2000,
               "package:internal/shedrecipe": 2000,
               "tests:internal/driftengine": 2000,
               "tests:internal/shedrecipe": 2000
             },
-            "messages": 82.5,
-            "written": 25014
+            "messages": 88.5,
+            "written": 26814
           }
         ]
       }
@@ -708,7 +708,7 @@
         "24-drift-retire-old-seats"
       ],
       "profile": "wide",
-      "estimate": 314212,
+      "estimate": 317488,
       "breakdown": {
         "weights": {
           "orientation": 31400,
@@ -724,7 +724,7 @@
         },
         "position": 11,
         "startup": 125552,
-        "read_union": 41456,
+        "read_union": 42932,
         "cards": [
           {
             "card": 24,
@@ -732,8 +732,8 @@
             "reads": {
               "file:contracts/stencils/drift/drift-template-baseline.md": 744,
               "file:contracts/stencils/drift/drift-template-verify.md": 648,
-              "file:internal/driftengine/doc.go": 1812,
-              "file:internal/loomcli/doc.go": 4788,
+              "file:internal/driftengine/doc.go": 3264,
+              "file:internal/loomcli/doc.go": 4812,
               "file:pattern/PATTERN-parent-directive.md": 360,
               "package:contracts/stencils": 2000,
               "package:contracts/stencils/drift": 2000,
@@ -752,8 +752,8 @@
               "tests:internal/testkit/envkit": 2000,
               "tests:pattern": 2000
             },
-            "messages": 487,
-            "written": 147204
+            "messages": 493,
+            "written": 149004
           }
         ]
       }
@@ -763,7 +763,7 @@
         "25-driftengine-retire-acceptance"
       ],
       "profile": "wide",
-      "estimate": 274280,
+      "estimate": 276374,
       "breakdown": {
         "weights": {
           "orientation": 31400,
@@ -779,22 +779,22 @@
         },
         "position": 12,
         "startup": 132552,
-        "read_union": 11912,
+        "read_union": 13568,
         "cards": [
           {
             "card": 25,
-            "card_text": 1116,
+            "card_text": 1104,
             "reads": {
-              "file:internal/driftcli/doc.go": 456,
-              "file:internal/driftengine/doc.go": 1812,
+              "file:internal/driftcli/doc.go": 672,
+              "file:internal/driftengine/doc.go": 3264,
               "file:internal/driftengine/skiplist_test.go": 528,
               "package:internal/driftcli": 2000,
               "package:internal/driftengine": 2000,
               "tests:internal/driftcli": 2000,
               "tests:internal/driftengine": 2000
             },
-            "messages": 429,
-            "written": 129816
+            "messages": 430.5,
+            "written": 130254
           }
         ]
       }
@@ -804,7 +804,7 @@
         "26-drift-retire-skip-keys"
       ],
       "profile": "wide",
-      "estimate": 270318,
+      "estimate": 274284,
       "breakdown": {
         "weights": {
           "orientation": 31400,
@@ -820,16 +820,16 @@
         },
         "position": 13,
         "startup": 139552,
-        "read_union": 28040,
+        "read_union": 29756,
         "cards": [
           {
             "card": 26,
             "card_text": 876,
             "reads": {
-              "file:internal/driftcli/doc.go": 456,
-              "file:internal/driftengine/doc.go": 1812,
-              "file:internal/driftengine/template.yaml": 108,
-              "file:internal/loomcli/doc.go": 4788,
+              "file:internal/driftcli/doc.go": 672,
+              "file:internal/driftengine/doc.go": 3264,
+              "file:internal/driftengine/template.yaml": 132,
+              "file:internal/loomcli/doc.go": 4812,
               "package:internal/configcli": 2000,
               "package:internal/configreg": 2000,
               "package:internal/driftcli": 2000,
@@ -841,8 +841,8 @@
               "tests:internal/driftengine": 2000,
               "tests:internal/loomcli": 2000
             },
-            "messages": 339.5,
-            "written": 102726
+            "messages": 347,
+            "written": 104976
           }
         ]
       }
@@ -852,7 +852,7 @@
         "27-drift-retire-verify-gate-key"
       ],
       "profile": "wide",
-      "estimate": 214520,
+      "estimate": 214532,
       "breakdown": {
         "weights": {
           "orientation": 31400,
@@ -868,7 +868,7 @@
         },
         "position": 14,
         "startup": 146552,
-        "read_union": 38904,
+        "read_union": 38916,
         "cards": [
           {
             "card": 27,
@@ -878,7 +878,7 @@
               "file:internal/gatecli/doc.go": 5412,
               "file:internal/gateslot/doc.go": 1836,
               "file:internal/gateslot/template.yaml": 588,
-              "file:internal/loomshed/doc.go": 1632,
+              "file:internal/loomshed/doc.go": 1644,
               "file:pattern/PATTERN-gate-slot.md": 948,
               "file:pattern/PATTERN-test-speed.md": 2028,
               "package:docs": 2000,
@@ -901,9 +901,9 @@
       }
     }
   ],
-  "currentBatch": 0,
-  "masterStrand": "d326ac861d4ceacc5a911fad80b062b2",
-  "masterSessionId": "0610df8b-f86b-42c0-b6a3-75053b19c15b",
+  "currentBatch": 20,
+  "masterStrand": "83a798257355e3fbc145f5c353ce6c80",
+  "masterSessionId": "4e34b309-cce2-44d6-a7ed-361a666d1f58",
   "masterEngine": "claude",
   "batches": {
     "1": {
@@ -1177,6 +1177,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-ad2e0a7a2df25af22.jsonl"
       ]
+    },
+    "20": {
+      "slug": "drift-verdict",
+      "cards": [
+        "20-drift-verdict",
+        "21-drift-writer-stencils"
+      ],
+      "cardHashes": {
+        "20-drift-verdict": "749fac950f42c7624b34a2beab880be9338692921858a69ff9e7881b724d95ed",
+        "21-drift-writer-stencils": "27d72cbc10d602e84dc962f5c0411a93f775e59f063bac44f40a1e118db34457"
+      },
+      "startSha": "a2ca96d18a5ccaa77eaeedb5e0ab9aec19699208",
+      "kind": "fork",
+      "spawnedAt": "2026-11-05T18:12:51Z",
+      "sessionId": "4e34b309-cce2-44d6-a7ed-361a666d1f58",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "drift-expectation-parser",
