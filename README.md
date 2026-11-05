@@ -70,7 +70,7 @@ Held by a run; its scope is locked until the run ends.
 | T5 | **Slack relay per hub: credentials, setup, inbound and outbound mail, presence and the lym slack verbs** | [`slack-relay`](design-slack-relay.md)<br>[Sketch](decision-slack-relay.md) | tapestry · solid | Parent-Align | neve | 3h<br>2h | reed |
 | T8 | **Raddle and motif runs start and finish without the orch** | [`raddle-motif-finish-clean`](design-raddle-motif-finish-clean.md) | darn · solid | Darn-Write | neve | 2h<br>40m | batten, dobby, loom, board, orch |
 | T9 | **fabric clone --reset removes the hub before refusing a mismatched --shortname** | [`clone-reset-deletes-first`](design-clone-reset-deletes-first.md) | darn · solid | Code-Burler-Fix | neve | 42m<br>40m | fabric |
-| T10 | **Scope plugins, skills and connectors per role, in every hub**<br>• lym gives each session only the plugins and skills its role needs, ly included in other hubs, and turns off connectors and unused listings | [`ly-plugin-off-in-other-hubs`](design-ly-plugin-off-in-other-hubs.md) | darn · solid | Drift-Recheck | neve | 1h<br>40m | shuttle |
+| T10 | **Scope plugins, skills and connectors per role, in every hub**<br>• lym gives each session only the plugins and skills its role needs, ly included in other hubs, and turns off connectors and unused listings | [`ly-plugin-off-in-other-hubs`](design-ly-plugin-off-in-other-hubs.md) | darn · solid | Describe | neve | 1h<br>40m | shuttle |
 
 #### Ready (0)
 
