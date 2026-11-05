@@ -1,16 +1,16 @@
 # Card 12 — beam-describe-verb
 
 **Create:**
-- `plan:internal/fabricengine#LineCommit` -> `type LineCommit struct`
-- `plan:internal/fabricengine#BeamLineCommits` -> `func BeamLineCommits(l *lymcwd.Location, parentBranch string) ([]LineCommit, error)`
-- `plan:internal/fabricengine#TestBeamLineCommits` -> `func TestBeamLineCommits(t *testing.T)`
-- `plan:internal/beamcli#beamDescribeDeps` -> `func beamDescribeDeps(location *lymcwd.Location, slug, parentBranch, recordPath string) landingshed.BeamDescribeDeps`
-- `plan:internal/beamcli#describeCmd` -> `func describeCmd() *cobra.Command`
-- `plan:internal/beamcli#describe` -> `func describe(deps landDeps, slug string) (map[string]any, error)`
-- `plan:internal/beamcli#judgeAwaitingRun` -> `func judgeAwaitingRun(deps landDeps, verb, slug string) error`
-- `plan:internal/beamcli#judgeNotReady` -> `func judgeNotReady(deps landDeps, verb, slug string) error`
-- `plan:internal/beamcli#TestDescribe` -> `func TestDescribe(t *testing.T)`
-- `plan:internal/beamcli#TestHubLandDeps_DescribeStampsAndCommits` -> `func TestHubLandDeps_DescribeStampsAndCommits(t *testing.T)`
+- `internal/fabricengine#LineCommit`
+- `internal/fabricengine#BeamLineCommits`
+- `internal/fabricengine_test#TestBeamLineCommits`
+- `internal/beamcli#beamDescribeDeps`
+- `internal/beamcli#describeCmd`
+- `internal/beamcli#describe`
+- `internal/beamcli#judgeAwaitingRun`
+- `internal/beamcli#judgeNotReady`
+- `internal/beamcli#TestDescribe`
+- `internal/beamcli#TestHubLandDeps_DescribeStampsAndCommits`
 
 **Delete:**
 - `internal/loomcli/beamwiring.go`

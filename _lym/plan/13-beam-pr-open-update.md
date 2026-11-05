@@ -1,14 +1,14 @@
 # Card 13 — beam-pr-open-update
 
 **Create:**
-- `plan:internal/beamcli#prCmd` -> `func prCmd() *cobra.Command`
-- `plan:internal/beamcli#beamPullRequestSide` -> `type beamPullRequestSide struct`
-- `plan:internal/beamcli#prOpen` -> `func prOpen(ctx context.Context, deps landDeps, slug string) (map[string]any, error)`
-- `plan:internal/beamcli#prUpdate` -> `func prUpdate(ctx context.Context, deps landDeps, slug string) (map[string]any, error)`
-- `plan:internal/beamcli#judgePullRequestVerb` -> `func judgePullRequestVerb(deps landDeps, verb, slug string) error`
-- `plan:internal/beamcli#TestPROpen` -> `func TestPROpen(t *testing.T)`
-- `plan:internal/beamcli#TestPRUpdate` -> `func TestPRUpdate(t *testing.T)`
-- `plan:internal/landingshed#OriginMissing` -> `func OriginMissing(origin Origin) string`
+- `internal/beamcli#prCmd`
+- `internal/beamcli#beamPullRequestSide`
+- `internal/beamcli#prOpen`
+- `internal/beamcli#prUpdate`
+- `internal/beamcli#judgePullRequestVerb`
+- `internal/beamcli#TestPROpen`
+- `internal/beamcli#TestPRUpdate`
+- `internal/landingshed#OriginMissing`
 
 **Edit:**
 - `internal/beamcli#Command`
@@ -27,8 +27,8 @@
 
 **Uses:**
 - `internal/landingshed#checkOrigin`
-- `plan:internal/beamcli#judgeAwaitingRun`
-- `plan:internal/beamcli#judgeNotReady`
+- `internal/beamcli#judgeAwaitingRun`
+- `internal/beamcli#judgeNotReady`
 - `internal/beamcli#judgeLandEntry`
 - `internal/pawlengine#ReadLanding`
 - `internal/pawlengine#UpdateLanding`

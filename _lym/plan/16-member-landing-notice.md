@@ -21,7 +21,7 @@
 - `internal/loomengine#BeamLandingPath`
 - `internal/loomengine#BeamLandingLockPath`
 - `internal/hubgeom#DobbyBeamDir`
-- `plan:internal/fabricengine#BeamLineCommits`
+- `internal/fabricengine#BeamLineCommits`
 
 **Intent:** While the landing record holds a pull request, the beam's dobby tells the beam's orch about each landing into the beam branch (D7), so the orch keeps the description and the pull request listing every member.
 

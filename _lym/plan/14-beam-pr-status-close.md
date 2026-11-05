@@ -9,7 +9,7 @@
 - `plan:internal/beamcli#TestParentRuleRequired` -> `func TestParentRuleRequired(t *testing.T)`
 
 **Edit:**
-- `plan:internal/beamcli#prCmd`
+- `internal/beamcli#prCmd`
 - `internal/beamcli#landDeps`
 - `internal/beamcli#hubLandDeps`
 - `internal/beamcli#newLandWorld`
@@ -20,12 +20,12 @@
 - `internal/pullrequest#MergeState`
 - `internal/landingshed#ResolvePullRequest`
 - `internal/landingshed#BeamWithoutPullRequest`
-- `plan:internal/landingshed#OriginMissing`
+- `internal/landingshed#OriginMissing`
 - `internal/pullrequest#API`
 - `internal/pullrequest#Open`
-- `plan:internal/beamcli#judgePullRequestVerb`
+- `internal/beamcli#judgePullRequestVerb`
 - `internal/beamcli#judgeLandEntry`
-- `plan:internal/beamcli#beamPullRequestSide`
+- `internal/beamcli#beamPullRequestSide`
 - `internal/testkit/prkit#API`
 
 **Intent:** Add `lym beam pr status <slug>` and `lym beam pr close <slug>` (D6).

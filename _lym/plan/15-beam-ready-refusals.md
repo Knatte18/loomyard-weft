@@ -16,14 +16,14 @@
 - `plan:internal/beamcli#TestHubLandDeps_ReadyReads` -> `func TestHubLandDeps_ReadyReads(t *testing.T)`
 
 **Uses:**
-- `plan:internal/beamcli#judgeAwaitingRun`
+- `internal/beamcli#judgeAwaitingRun`
 - `plan:internal/beamcli#parentRuleRequired`
 - `internal/beamcli#openMergeTask`
-- `plan:internal/beamcli#beamPullRequestSide`
+- `internal/beamcli#beamPullRequestSide`
 - `internal/pullrequest#ReadMergeState`
 - `internal/landingshed#ResolvePullRequest`
 - `internal/landingshed#BeamWithoutPullRequest`
-- `plan:internal/landingshed#OriginMissing`
+- `internal/landingshed#OriginMissing`
 - `internal/pawlengine#ReadLanding`
 - `internal/testkit/prkit#API`
 
