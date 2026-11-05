@@ -6,7 +6,7 @@
      It is a marker VALUE, never a template -- it carries no top-level stencil markers of its own, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lym-stencil: sha256=e49765cc612ad14b5adfee6acb91a413efbea328171af4dc1fb413075b53756f build=fb1b33a44c8c9ab4490f983285088908a4de53ce time=2026-11-03T12:14:35Z -->
+lym-stencil: sha256=a76a7533dc943f26f63f43a8868f7e9a41fc24278cc63ea28aadaf5fcc852239 build=6e7a7d33364b792088e8c49fac97cb8c57ed3aa1 time=2026-11-05T05:49:41Z -->
 
 # Code-Review rubric
 
@@ -36,6 +36,10 @@ nothing else states it.
 
 Review `git diff {{.review_base}}..HEAD` — every commit the current branch introduces over the merge base the run's last merged parent tip leaves.
 Nothing else widens the range.
+
+When the amended board entry is a merge in from the parent, filed by `lym beam merge-parent`, the range narrows to the merge itself.
+Review each merge commit in the range through `git show --remerge-diff <commit>`, which shows how its conflicts were settled, and every commit in the range that is not a merge.
+The parent's own commits the merge brings in are no subject.
 
 The step is read-only.
 If the range above reads `git diff none..HEAD`, its base could not be read: raise a BLOCKING finding stating that the review range could not be determined, and review nothing.
