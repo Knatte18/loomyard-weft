@@ -1,6 +1,6 @@
 # P2 Codexengine: every task, trial and note about the Codex engine
 
-Rendered 2026-11-05 19:04 UTC; every age below is as of then.
+Rendered 2026-11-05 19:08 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`codex-engine-trial`](design-codex-engine-trial.md) · Age 1d · Owner `neve`
@@ -39,7 +39,7 @@ Task `codex-creel-trial` (`afa2cf2e`, `docs/research/codex/engine-trial/codex-cr
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (0)
+## Tasks (1)
 
 Concrete and claimable; only a task can run.
 
@@ -49,15 +49,17 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (2)
+### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T12 | `draft` **A Codex strand with a wake queued also gets a Mail-is-waiting reminder turn**<br>• Mail posted twice more while a codex queue wake is pending types a reminder that starts a turn of its own, and the queued mail waits behind it | [`codex-idle-wake-extra-reminder`](design-codex-idle-wake-extra-reminder.md) | darn |  | 3h<br>0m | codex, creel, shuttle |
+
+## Notes (1)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-### Bugs (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| B2 |  | **A Codex strand with a wake queued also gets a Mail-is-waiting reminder turn**<br>• Mail posted twice more while a codex queue wake is pending types a reminder that starts a turn of its own, and the queued mail waits behind it | [`codex-idle-wake-extra-reminder`](design-codex-idle-wake-extra-reminder.md) | 3h<br>3h | codex, creel, shuttle |
 
 ### Features (1)
 

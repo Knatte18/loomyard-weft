@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-05 19:04 UTC; every age below is as of then.
+Rendered 2026-11-05 19:08 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -38,7 +38,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Real Codex launches through lym shuttle check home, sandbox, hooks, guards, pane, skills and load
 
-### Tasks (0)
+### Tasks (1)
 
 Concrete and claimable; only a task can run.
 
@@ -48,15 +48,17 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (2)
+#### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T12 | `draft` **A Codex strand with a wake queued also gets a Mail-is-waiting reminder turn**<br>• Mail posted twice more while a codex queue wake is pending types a reminder that starts a turn of its own, and the queued mail waits behind it | [`codex-idle-wake-extra-reminder`](design-codex-idle-wake-extra-reminder.md) | darn |  | 3h<br>0m | codex, creel, shuttle |
+
+### Notes (1)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-#### Bugs (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| B2 |  | **A Codex strand with a wake queued also gets a Mail-is-waiting reminder turn**<br>• Mail posted twice more while a codex queue wake is pending types a reminder that starts a turn of its own, and the queued mail waits behind it | [`codex-idle-wake-extra-reminder`](design-codex-idle-wake-extra-reminder.md) | 3h<br>3h | codex, creel, shuttle |
 
 #### Features (1)
 
@@ -78,11 +80,11 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Webster refusals: short texts, the right cause and a real way forward** | [`webster-refusal-texts`](design-webster-refusal-texts.md) | darn · solid | Darn-Write | neve | 5m<br>3m | webster, quarry |
+| T3 | **Webster refusals: short texts, the right cause and a real way forward** | [`webster-refusal-texts`](design-webster-refusal-texts.md) | darn · solid | Darn-Write | neve | 9m<br>8m | webster, quarry |
 | T5 | **Slack relay per hub: credentials, setup, inbound and outbound mail, presence and the lym slack verbs** | [`slack-relay`](design-slack-relay.md)<br>[Sketch](decision-slack-relay.md) | tapestry · solid | Webster | neve | 2h<br>1h | reed |
 | T7 | **Drift compares changed values in code against a sealed expectation, with a separate judge**<br>• General Drift rework: code-side diff of any hub capture keyed by line key or number, structured sealed expectation, containment by code, a judge per changed value | [`drift-rework`](design-drift-rework.md)<br>[Sketch](decision-drift-rework.md) | tapestry · solid | Code-Burler-Review | neve | 1d<br>5h | drift, loom, darn, stencil, config |
-| T9 | **fabric clone --reset removes the hub before refusing a mismatched --shortname** | [`clone-reset-deletes-first`](design-clone-reset-deletes-first.md) | darn · solid | Darn-Write | neve | 5m<br>3m | fabric |
-| T10 | **Scope plugins, skills and connectors per role, in every hub**<br>• lym gives each session only the plugins and skills its role needs, ly included in other hubs, and turns off connectors and unused listings | [`ly-plugin-off-in-other-hubs`](design-ly-plugin-off-in-other-hubs.md) | darn · solid | Darn-Write | neve | 46m<br>3m | shuttle |
+| T9 | **fabric clone --reset removes the hub before refusing a mismatched --shortname** | [`clone-reset-deletes-first`](design-clone-reset-deletes-first.md) | darn · solid | Darn-Write | neve | 9m<br>8m | fabric |
+| T10 | **Scope plugins, skills and connectors per role, in every hub**<br>• lym gives each session only the plugins and skills its role needs, ly included in other hubs, and turns off connectors and unused listings | [`ly-plugin-off-in-other-hubs`](design-ly-plugin-off-in-other-hubs.md) | darn · solid | Darn-Write | neve | 50m<br>8m | shuttle |
 
 #### Ready (0)
 
@@ -96,9 +98,9 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **beam merge-parent: the merge-in task can merge, lands as a merge and needs no pull request** | [`merge-parent-lands-right`](design-merge-parent-lands-right.md) | darn · solid | T7<br>T9 | 5m<br>3m | pawl, darn, landing, fabric |
+| T1 | **beam merge-parent: the merge-in task can merge, lands as a merge and needs no pull request** | [`merge-parent-lands-right`](design-merge-parent-lands-right.md) | darn · solid | T7<br>T9 | 9m<br>7m | pawl, darn, landing, fabric |
 | T6 | **Dobby reminds the operator on Slack of a run waiting at PR-Review or Sampler-Session** | [`slack-wait-reminders`](design-slack-wait-reminders.md)<br>[Sketch](decision-slack-wait-reminders.md) | darn · light | T5 | 2h<br>2h | reed |
-| T8 | **Raddle and motif runs start and finish without the orch** | [`raddle-motif-finish-clean`](design-raddle-motif-finish-clean.md) | darn · solid | T7 | 1h<br>3m | batten, dobby, loom, board, orch |
+| T8 | **Raddle and motif runs start and finish without the orch** | [`raddle-motif-finish-clean`](design-raddle-motif-finish-clean.md) | darn · solid | T7 | 2h<br>8m | batten, dobby, loom, board, orch |
 
 #### Layer B (1)
 
@@ -106,7 +108,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T11 | **A parent cannot withdraw a PATTERN change the decision record declares**<br>• lym loom decision add only appends PATTERN bullets; a declared id the parent drops needs a hand edit of the record | [`decision-withdraw-pattern`](design-decision-withdraw-pattern.md) | darn · light | T7<br>T8 | 1h<br>3m | loom, parsers, pattern |
+| T11 | **A parent cannot withdraw a PATTERN change the decision record declares**<br>• lym loom decision add only appends PATTERN bullets; a declared id the parent drops needs a hand edit of the record | [`decision-withdraw-pattern`](design-decision-withdraw-pattern.md) | darn · light | T7<br>T8 | 1h<br>7m | loom, parsers, pattern |
 
 #### Draft (2)
 
@@ -151,7 +153,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F8 |  | **fabric reset: reset warp to a SHA and re-anchor the weft trailers**<br>• The post-conclude undo the merge surface does not ship: reset to a warp SHA, resolve the paired weft SHA through the correspondence index, gate both sides | [`fabric-reset-to-sha`](design-fabric-reset-to-sha.md) | 4w<br>2d | fabric |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 6d<br>2h | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 4w<br>1d | board, ide, orch |
-| F12 |  | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md) | 3d<br>1d | claude, shuttle, config |
+| F12 |  | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md) | 3d<br>2d | claude, shuttle, config |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 3w<br>2h | webster |
 | F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 2w<br>2h | loom, board, batten, workspaces |
 | F16 |  | **Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | 2d<br>2d | drift, shed |
