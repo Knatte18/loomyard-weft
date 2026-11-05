@@ -379,6 +379,12 @@ Decision: Live chairs of the removed roles drift-baseline and drift-verify are e
 
 Rationale: No seat chair is registered in internal/runproc under its seat role, so runproc.EndRole would end nothing; the strand table reaches the live panes, with the same effect D4 wanted: no pane keeps the old stencil.
 
+### Added after Discussion (parent, 2026-11-05): Short PATTERN-sole-parsers text
+
+Decision: PATTERN-sole-parsers reads 'Parsing an on-disk format its background lists, or classifying a plan ref: only its sole parser.'; the list of formats lives in pattern/PATTERN-sole-parsers.md, which gains the drift expectation and judgement section.
+
+Rationale: The declared text grew PATTERN.md 42 bytes past its headroom line; the list belongs in the background file.
+
 ## Constraints
 
 - `PATTERN-sole-parsers`: `expected.yaml` and `judgement.yaml` each have one parser; consumers read its model.
@@ -444,7 +450,7 @@ Rationale: No seat chair is registered in internal/runproc under its seat role, 
 
 ## PATTERN changes
 
-- `PATTERN-sole-parsers` — changes: Parsing plan, parts file, discussion, summary, recipe, halt note, raddle proposal, drift expectation or judgement, or classifying a plan ref: only its sole parser.
+- `PATTERN-sole-parsers` — changes: Parsing an on-disk format its background lists, or classifying a plan ref: only its sole parser. — added after Discussion (parent, 2026-11-05)
 
 ## Notes for the plan writer
 
