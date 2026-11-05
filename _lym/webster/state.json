@@ -901,7 +901,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 9,
   "masterStrand": "d326ac861d4ceacc5a911fad80b062b2",
   "masterSessionId": "0610df8b-f86b-42c0-b6a3-75053b19c15b",
   "masterEngine": "claude",
@@ -1012,6 +1012,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-a549dd69a66ca7b19.jsonl"
       ]
+    },
+    "9": {
+      "slug": "drift-current-capture",
+      "cards": [
+        "09-drift-current-capture",
+        "10-drift-containment-check"
+      ],
+      "cardHashes": {
+        "09-drift-current-capture": "4455b251f3f90dd340d6eae78f956c7ab211b451258f3a8d77b9b63f665503e2",
+        "10-drift-containment-check": "03fb5f61aff3ad72f7c46357d254bfdc7b235b87ab31623f89768bc68ced5e85"
+      },
+      "startSha": "e2dcd7478acada42970cf61f4969a21f9c7d27e3",
+      "kind": "fork",
+      "spawnedAt": "2026-11-05T16:31:03Z",
+      "sessionId": "0610df8b-f86b-42c0-b6a3-75053b19c15b",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
