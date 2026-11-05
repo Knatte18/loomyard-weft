@@ -1,6 +1,6 @@
 # The beam orch drives the merge-in, pull request and review of its beam inside Beam-Await
 
-`pawl-orch-landing` · Task · feature, pawl, landing, orch, workspaces, fabric · running · Motif
+`pawl-orch-landing` · Task · feature, pawl, landing, orch, workspaces, fabric · running · Discussion-Write
 
 Depends on: [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md)
 
