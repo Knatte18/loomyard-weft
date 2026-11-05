@@ -1,6 +1,6 @@
 # A plain promote of a Sketch starts raddle
 
-`sketch-promote-raddle` · Task · enhancement, board · running · Open-Window
+`sketch-promote-raddle` · Task · enhancement, board · running · Seed-IDE
 
 ## Seen (2026-11-05)
 
