@@ -34,17 +34,9 @@ The package doc `internal/shuttleengine/codexengine/doc.go` is the spec; each pa
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (1)
+## Tasks (0)
 
 Concrete and claimable; only a task can run.
-
-### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **Codex trial: follow the sandbox darn run with a Codex writer to landing and report**<br>• Follows codex-greet in the lym-test sandbox hub, a darn run with a Codex writer, to landing; report and bug notes | [`codex-trial-darn-e2e`](design-codex-trial-darn-e2e.md) | darn · docs | Finalize | neve | 7m<br>7m | codex, shuttle |
 
 ### Ready (0)
 
@@ -68,3 +60,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 2d<br>12m | shuttle, codex, loom |
 | F18 |  | **Codex sessions get creel mail through hooks, as Claude sessions do**<br>• codexengine has no creel hooks, so every Codex strand is a pane-mail strand; the hook spike showed a way | [`codex-creel-hooks`](design-codex-creel-hooks.md) | 1d<br>12m | codex, creel, shuttle |
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T7 | **Codex trial: follow the sandbox darn run with a Codex writer to landing and report**<br>• Follows codex-greet in the lym-test sandbox hub, a darn run with a Codex writer, to landing; report and bug notes | [`codex-trial-darn-e2e`](design-codex-trial-darn-e2e.md) | 7m<br>7m | codex, shuttle |
