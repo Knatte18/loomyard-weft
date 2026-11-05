@@ -1,0 +1,1058 @@
+diff --git a/internal/battencli/beamland.go b/internal/battencli/beamland.go
+index 8ae5ee26..c7a68b45 100644
+--- a/internal/battencli/beamland.go
++++ b/internal/battencli/beamland.go
+@@ -4,7 +4,6 @@ package battencli
+ 
+ import (
+ 	"fmt"
+-	"os"
+ 	"path/filepath"
+ 	"slices"
+ 	"strings"
+@@ -16,7 +15,7 @@ import (
+ )
+ 
+ // BeamLandMember is an open board entry whose parent is a beam.
+-// Slug names it, HasPair says whether this machine holds its pair, and Running says whether its board status is a run status, so a run is in flight on some machine.
++// Slug names it, HasPair says whether this machine holds its pair as a registered worktree, a directory left at its path reading as none, and Running says whether its board status is a run status, so a run is in flight on some machine.
+ type BeamLandMember struct {
+ 	Slug    string
+ 	HasPair bool
+@@ -125,25 +124,13 @@ func beamMembers(prime *lymcwd.Location, slug string) ([]BeamLandMember, error)
+ 		if parent != slug {
+ 			continue
+ 		}
+-		hasPair, err := pairPresent(prime, task.Slug)
+-		if err != nil {
+-			return nil, err
+-		}
++		hasPair := fabricengine.PairWorktreeStands(prime, task.Slug)
+ 		members = append(members, BeamLandMember{Slug: task.Slug, HasPair: hasPair, Running: boardengine.IsRunStatus(task.Status)})
+ 	}
+ 	slices.SortFunc(members, func(a, b BeamLandMember) int { return strings.Compare(a.Slug, b.Slug) })
+ 	return members, nil
+ }
+ 
+-// pairPresent reports whether this machine holds the worktree of slug's pair.
+-func pairPresent(prime *lymcwd.Location, slug string) (bool, error) {
+-	info, err := os.Stat(fabricengine.WorktreePath(prime, slug))
+-	if os.IsNotExist(err) {
+-		return false, nil
+-	}
+-	return err == nil && info.IsDir(), err
+-}
+-
+ // beamChildPairs lists, sorted, the local pairs whose origin record names the beam slug as their parent worktree.
+ func beamChildPairs(prime *lymcwd.Location, slug string) ([]string, error) {
+ 	worktrees, err := fabricengine.List(prime.AnchorPath())
+diff --git a/internal/battencli/beamland_integration_test.go b/internal/battencli/beamland_integration_test.go
+index 4ee914f6..80c93df9 100644
+--- a/internal/battencli/beamland_integration_test.go
++++ b/internal/battencli/beamland_integration_test.go
+@@ -125,6 +125,29 @@ func TestBeamLanding_ReachesWorktreeCreateSkip(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("MemberHoldsAPairOnlyThroughARegisteredWorktree", func(t *testing.T) {
++		// c is a registered worktree; t gets a plain directory at its task worktree path.
++		if err := os.MkdirAll(filepath.Join(fabricengine.WorktreePath(h.Location, "t"), "obj"), 0o755); err != nil {
++			t.Fatalf("plant a plain directory at the task worktree path of t: %v", err)
++		}
++		t.Cleanup(func() { _ = os.RemoveAll(fabricengine.WorktreePath(h.Location, "t")) })
++
++		members, err := beamMembers(h.Location, "outer")
++		if err != nil {
++			t.Fatalf("beamMembers(outer): %v", err)
++		}
++		got := map[string]bool{}
++		for _, member := range members {
++			got[member.Slug] = member.HasPair
++		}
++		if hasPair, listed := got["c"]; !listed || !hasPair {
++			t.Errorf("member c HasPair, listed = %v, %v; want true, true for a registered worktree", hasPair, listed)
++		}
++		if hasPair, listed := got["t"]; !listed || hasPair {
++			t.Errorf("member t HasPair, listed = %v, %v; want false, true for a plain directory", hasPair, listed)
++		}
++	})
++
+ 	t.Run("BeamWithMembersIsRefusedNamingEachOpenEntry", func(t *testing.T) {
+ 		err := BeamLandRefusal(h.Location, "outer")
+ 		if err == nil {
+diff --git a/internal/battencli/cancel.go b/internal/battencli/cancel.go
+index 4dd013cd..9386eaae 100644
+--- a/internal/battencli/cancel.go
++++ b/internal/battencli/cancel.go
+@@ -116,6 +116,8 @@ type cancelReport struct {
+ 	TacklerStopped string
+ 	// PairRemoved is true when the cancel removed the pair, or found nothing of it left.
+ 	PairRemoved bool
++	// StrayDirectoryDeleted is true when the cancel deleted a directory that is no worktree at the pair's task worktree path.
++	StrayDirectoryDeleted bool
+ 	// SnapshotTag names the snapshot tag that holds the pair's uncommitted paths, empty when none was taken.
+ 	SnapshotTag string
+ 	// ArchiveTags lists the archive tags that hold the deleted task branch tips.
+@@ -605,7 +607,7 @@ func cancelOwnedElsewhere(slug, owner, subject string) error {
+ 	return fmt.Errorf("%s is owned by machine %s; way forward: run \"lym adopt %s\" on this machine first, or \"lym batten cancel %s\" on %s", slug, owner, subjectOrSlug(subject, slug), slug, owner)
+ }
+ 
+-// refuseNothingLeft refuses a cancel when no record, claim, pair part, session, process or marker of the slug is left, and for a task branch left alone when remove is not set.
++// refuseNothingLeft refuses a cancel when no record, claim, pair part, session, process or marker of the slug is left, and for a task branch or a directory that is no worktree at the task worktree's path left alone when remove is not set.
+ // With remove the task branch on origin counts as left, read only when nothing else is left and origin was reached.
+ func refuseNothingLeft(slug string, remove, endOnly bool, rerun string, reading cancelMarkerReading, parts fabricengine.PairParts, deps cancelDeps) error {
+ 	recordsHere, err := deps.RecordsPresent()
+@@ -634,9 +636,12 @@ func refuseNothingLeft(slug string, remove, endOnly bool, rerun string, reading
+ 		if parts.TaskBranch {
+ 			return fmt.Errorf("the task branch of %s is all that is left; way forward: run %q, which archives and deletes its task branch", slug, cancelCommand(slug, true))
+ 		}
++		if parts.StrayPath {
++			return fmt.Errorf("a directory that is no worktree is all that is left of %s, at its task worktree path; way forward: run %q, which deletes it", slug, cancelCommand(slug, true))
++		}
+ 		return nothingLeft(slug)
+ 	}
+-	if parts.TaskBranch {
++	if parts.TaskBranch || parts.StrayPath {
+ 		return nil
+ 	}
+ 	if endOnly {
+@@ -659,17 +664,15 @@ func nothingLeft(slug string) error {
+ 
+ // removePairAndBranch removes the pair, snapshotting its uncommitted paths first, then archives and deletes the task branch while one is left.
+ // A pair with nothing left reads as removed.
+-// A directory the removal left at the pair's path, which is no worktree, is named in a warning with the way to clear it, since it blocks the slug's next run.
++// A directory that is no worktree at the pair's task worktree path is deleted with the pair, since it blocks the slug's next run, and a failed delete refuses naming the cancel to run again.
+ func removePairAndBranch(slug, rerun string, report *cancelReport, deps cancelDeps) error {
+-	result, err := deps.RemovePair(pairteardown.Request{Slug: slug, Force: true, Snapshot: true, Remote: true, LeaveClaim: true})
++	result, err := deps.RemovePair(pairteardown.Request{Slug: slug, Force: true, Snapshot: true, Remote: true, LeaveClaim: true, ClearStray: true})
+ 	report.SnapshotTag = result.SnapshotTag
++	report.StrayDirectoryDeleted = result.StrayPathDeleted
+ 	if err != nil && !errors.Is(err, fabricengine.ErrPairNotFound) {
+ 		return fmt.Errorf("battencli: removing the pair of %s refused: %w; way forward: fix the cause it names, then run \"lym batten cancel %s --remove\" again", slug, err, slug)
+ 	}
+ 	report.PairRemoved = true
+-	if result.StrayPath != "" {
+-		report.Warnings = append(report.Warnings, fmt.Sprintf("the directory %s stays at the pair's path and is not a worktree; save anything worth keeping from it, then delete it before %s runs again", result.StrayPath, slug))
+-	}
+ 
+ 	parts, err := deps.PairParts()
+ 	if err != nil {
+diff --git a/internal/battencli/cancel_test.go b/internal/battencli/cancel_test.go
+index 9b91348d..c5944096 100644
+--- a/internal/battencli/cancel_test.go
++++ b/internal/battencli/cancel_test.go
+@@ -339,8 +339,8 @@ func TestCancelRun(t *testing.T) {
+ 			wantCalls: []string{"EndForCancel", "RemovePair", "DiscardTaskBranch", "RemoveRecords", "ClearClaim"},
+ 			marker:    "removed",
+ 			check: func(t *testing.T, r cancelReport, f *cancelFake) {
+-				want := pairteardown.Request{Slug: cancelSlug, Force: true, Snapshot: true, Remote: true, LeaveClaim: true}
+-				if f.removeRequest.Slug != want.Slug || !f.removeRequest.Force || !f.removeRequest.Snapshot || !f.removeRequest.Remote || !f.removeRequest.LeaveClaim {
++				want := pairteardown.Request{Slug: cancelSlug, Force: true, Snapshot: true, Remote: true, LeaveClaim: true, ClearStray: true}
++				if f.removeRequest.Slug != want.Slug || !f.removeRequest.Force || !f.removeRequest.Snapshot || !f.removeRequest.Remote || !f.removeRequest.LeaveClaim || !f.removeRequest.ClearStray {
+ 					t.Errorf("RemovePair request = %+v; want %+v", f.removeRequest, want)
+ 				}
+ 				if f.endRequest.Keep {
+@@ -676,18 +676,30 @@ func TestCancelRun(t *testing.T) {
+ 			marker:  "left",
+ 		},
+ 		{
+-			name:   "RemoveLeavingAStrayDirectoryWarnsOfIt",
++			name: "StrayDirectoryAloneRefusesWithoutRemove",
++			setup: func(f *cancelFake) {
++				f.recordsPresent, f.boardStatus, f.boardFound = false, nil, false
++				f.parts = fabricengine.PairParts{StrayPath: true}
++			},
++			wantErr: `a directory that is no worktree is all that is left of some-slug, at its task worktree path; way forward: run "lym batten cancel some-slug --remove", which deletes it`,
++			noCalls: append([]string{"TakeMarker"}, destructiveCancelCalls...),
++			marker:  "none",
++		},
++		{
++			name:   "StrayDirectoryAloneWithRemoveDeletesIt",
+ 			remove: true,
+ 			setup: func(f *cancelFake) {
+-				f.parts = fabricengine.PairParts{TaskWorktree: true}
+-				f.removeResult = fabricengine.RemoveResult{StrayPath: "/hub/some-slug"}
++				f.recordsPresent, f.boardStatus, f.boardFound, f.statusFound = false, nil, false, false
++				f.parts = fabricengine.PairParts{StrayPath: true}
++				f.removeErr = fmt.Errorf("remove: %w", fabricengine.ErrPairNotFound)
++				f.removeResult = fabricengine.RemoveResult{StrayPathDeleted: true}
+ 			},
+-			wantCalls: []string{"RemovePair", "RemoveRecords", "ClearClaim"},
++			wantCalls: []string{"TakeMarker", "EndForCancel", "RemovePair", "RemoveRecords", "ClearClaim"},
++			noCalls:   []string{"DiscardTaskBranch"},
+ 			marker:    "removed",
+-			check: func(t *testing.T, r cancelReport, _ *cancelFake) {
+-				want := "the directory /hub/some-slug stays at the pair's path and is not a worktree; save anything worth keeping from it, then delete it before some-slug runs again"
+-				if !r.PairRemoved || !slices.Contains(r.Warnings, want) {
+-					t.Errorf("report pair removed, warnings = %v, %q; want true and a warning %q", r.PairRemoved, r.Warnings, want)
++			check: func(t *testing.T, r cancelReport, f *cancelFake) {
++				if !f.removeRequest.ClearStray || !r.PairRemoved || !r.StrayDirectoryDeleted {
++					t.Errorf("RemovePair request ClearStray, report pair removed, stray directory deleted = %v, %v, %v; want true, true, true", f.removeRequest.ClearStray, r.PairRemoved, r.StrayDirectoryDeleted)
+ 				}
+ 			},
+ 		},
+@@ -704,6 +716,9 @@ func TestCancelRun(t *testing.T) {
+ 				if !r.PairRemoved {
+ 					t.Error("PairRemoved = false; want a pair with nothing left read as removed")
+ 				}
++				if r.StrayDirectoryDeleted {
++					t.Error("StrayDirectoryDeleted = true; want false when the removal deleted no directory")
++				}
+ 			},
+ 		},
+ 		{
+diff --git a/internal/battencli/cancelcmd.go b/internal/battencli/cancelcmd.go
+index 82027458..9b83b3b6 100644
+--- a/internal/battencli/cancelcmd.go
++++ b/internal/battencli/cancelcmd.go
+@@ -53,10 +53,10 @@ func (c *battenCLI) cancelCmd() *cobra.Command {
+ 		Long: `cancel ends the batten run of one slug for good, from the prime or a beam, whatever its state.
+ It ends the run's registered processes and strands, stops the tackler strand its marker names,
+ clears the board claim, removes the run's records and scratch and commits that removal on the
+-records side, lifts the slug's own pause entries and spawns the push of the records.
++records side, lifts the slug's own pause entries and pushes the records.
+ The pair is kept by default, and "lym batten cancel <slug> --remove" must run before the slug runs again.
+ --remove removes the pair, keeps its uncommitted paths under a local snapshot tag, and archives
+-and deletes its task branch locally and on origin, each deleted tip held by an archive tag on origin.
++and deletes its task branch locally and on origin, each tip held by an archive tag on origin.
+ 
+ It refuses, before it ends or removes anything, while a hub pause covers the prime, when the run's
+ work already reached its parent (finish the landing with "lym batten run" instead), when another
+@@ -72,7 +72,7 @@ A beam with no members ends the pawl run's processes and the beam's dobby, then
+ beam's orch and watcher; "lym beam create <slug>" starts the run again.
+ 
+ Output: {"slug", "state", "row", "ended", "strands_stopped", "tackler_stopped", "pair_removed",
+-"snapshot_tag", "archive_tags", "records_removed", "claim_cleared", "lifted", "push_spawned",
++"stray_directory_deleted", "snapshot_tag", "archive_tags", "records_removed", "claim_cleared", "lifted", "push_spawned",
+ "notice_posted", "end_only", "way_forward", "warnings"}.
+ push_spawned says the push was started, not that origin took it.
+ 
+@@ -150,23 +150,24 @@ func cancelEnvelope(report cancelReport) map[string]any {
+ 		ended = append(ended, map[string]any{"pid": process.PID, "role": process.Role})
+ 	}
+ 	return map[string]any{
+-		"slug":            report.Slug,
+-		"state":           report.State,
+-		"row":             report.Row,
+-		"ended":           ended,
+-		"strands_stopped": slices.Concat([]string{}, report.StrandsStopped),
+-		"tackler_stopped": report.TacklerStopped,
+-		"pair_removed":    report.PairRemoved,
+-		"snapshot_tag":    report.SnapshotTag,
+-		"archive_tags":    slices.Concat([]string{}, report.ArchiveTags),
+-		"records_removed": report.RecordsRemoved,
+-		"claim_cleared":   report.ClaimCleared,
+-		"lifted":          slices.Concat([]string{}, report.Lifted),
+-		"push_spawned":    report.PushSpawned,
+-		"notice_posted":   report.NoticePosted,
+-		"end_only":        report.EndOnly,
+-		"way_forward":     report.WayForward,
+-		"warnings":        slices.Concat([]string{}, report.Warnings),
++		"slug":                    report.Slug,
++		"state":                   report.State,
++		"row":                     report.Row,
++		"ended":                   ended,
++		"strands_stopped":         slices.Concat([]string{}, report.StrandsStopped),
++		"tackler_stopped":         report.TacklerStopped,
++		"pair_removed":            report.PairRemoved,
++		"stray_directory_deleted": report.StrayDirectoryDeleted,
++		"snapshot_tag":            report.SnapshotTag,
++		"archive_tags":            slices.Concat([]string{}, report.ArchiveTags),
++		"records_removed":         report.RecordsRemoved,
++		"claim_cleared":           report.ClaimCleared,
++		"lifted":                  slices.Concat([]string{}, report.Lifted),
++		"push_spawned":            report.PushSpawned,
++		"notice_posted":           report.NoticePosted,
++		"end_only":                report.EndOnly,
++		"way_forward":             report.WayForward,
++		"warnings":                slices.Concat([]string{}, report.Warnings),
+ 	}
+ }
+ 
+diff --git a/internal/battencli/wire.go b/internal/battencli/wire.go
+index c6cb0ca6..f2549d3b 100644
+--- a/internal/battencli/wire.go
++++ b/internal/battencli/wire.go
+@@ -403,8 +403,9 @@ func finishRemoval(res fabricengine.RemoveResult, err error, slug string) error
+ // Remote is true: a batten-driven teardown is the task's own final removal, never a step toward re-adopting the pair, so nothing will ever need the pair's other-side branch again, and a remote copy left behind makes a later create of this slug refuse its push.
+ // It never forces, and it neither waits for a quiet driver nor refuses a busy one, since the InnerRun done arm already waited its driver_exit_grace_s.
+ // Landed is true: the row runs only after a done child, so the task's board entry is marked done once the pair is removed.
++// ClearStray is true: the run created the pair at its path, so a directory a late writer leaves there once the pair is removed is the run's to delete, and a resumed row deletes one an earlier attempt kept.
+ func teardownRequest(slug string) pairteardown.Request {
+-	return pairteardown.Request{Slug: slug, Force: false, Remote: true, QuietWait: 0, RefuseWhenBusy: false, Landed: true}
++	return pairteardown.Request{Slug: slug, Force: false, Remote: true, QuietWait: 0, RefuseWhenBusy: false, Landed: true, ClearStray: true}
+ }
+ 
+ // teardownRefusal rewords the teardown refusal for content in the pair's sibling the teardown could not commit, names the resume for a failed archive of the run records, and passes every other error through unchanged.
+@@ -415,7 +416,11 @@ func teardownRequest(slug string) pairteardown.Request {
+ // A push of the pair still running past the teardown's wait is refused before any mutation too, and the remedy names the resume once the push finishes.
+ // A failed archive runs before any teardown mutation, so the pair is still whole and a plain resume retries it once the failure is fixed.
+ // That failure is most often an unreachable remote, but not always, so the remedy points at the wrapped cause rather than naming one.
++// A directory the teardown could not delete at the task worktree's path names the resume once it is deleted.
+ func teardownRefusal(err error, slug string) error {
++	if errors.Is(err, fabricengine.ErrStrayPathKept) {
++		return fmt.Errorf("the pair for %q was removed, but a directory stays at its task worktree path: %w; once it is deleted, resume this run with \"lym batten run %s\"", slug, err, slug)
++	}
+ 	if errors.Is(err, fabricengine.ErrArchiveFailed) {
+ 		return fmt.Errorf("the pair for %q was left in place because archiving its run records to the remote failed: %w; fix the failure named here (most often an unreachable remote), then resume this run with \"lym batten run %s\"", slug, err, slug)
+ 	}
+diff --git a/internal/battencli/wire_test.go b/internal/battencli/wire_test.go
+index 0c8d71fb..29a3f75f 100644
+--- a/internal/battencli/wire_test.go
++++ b/internal/battencli/wire_test.go
+@@ -780,7 +780,22 @@ func TestCreateRefusal_LeftoverBranchRemedyNeverNamesCheckout(t *testing.T) {
+ 	}
+ }
+ 
+-// TestTeardownRefusal_RecordsRemedyNamesCommitRecordsNeverForce asserts a sibling-dirt refusal is reworded to batten's own recovery -- inspect the sibling's out-of-pathspec content, commit or remove it by hand, then resume -- and never names --force, that a failed archive and a still-running push of the pair each name the resume, and that every other teardown error passes through unchanged.
++// TestTeardownRequest_ClearsStrayAndLandsTheRemovalRemotely asserts the batten-driven teardown request names the slug, removes the remote branch, marks the entry landed and clears a directory left at the task worktree's path, and never forces.
++func TestTeardownRequest_ClearsStrayAndLandsTheRemovalRemotely(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	got := teardownRequest("some-slug")
++
++	if got.Slug != "some-slug" || got.Force {
++		t.Errorf("teardownRequest Slug, Force = %q, %v; want %q, false", got.Slug, got.Force, "some-slug")
++	}
++	if !got.Remote || !got.Landed || !got.ClearStray {
++		t.Errorf("teardownRequest Remote, Landed, ClearStray = %v, %v, %v; want true, true, true", got.Remote, got.Landed, got.ClearStray)
++	}
++}
++
++// TestTeardownRefusal_RecordsRemedyNamesCommitRecordsNeverForce asserts a sibling-dirt refusal is reworded to batten's own recovery -- inspect the sibling's out-of-pathspec content, commit or remove it by hand, then resume -- and never names --force, that a failed archive, a still-running push of the pair and a directory kept at the task worktree's path each name the resume, and that every other teardown error passes through unchanged.
+ func TestTeardownRefusal_RecordsRemedyNamesCommitRecordsNeverForce(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	dirty := fmt.Errorf("remove: %w", fabricengine.ErrPairSiblingDirty)
+@@ -829,6 +844,17 @@ func TestTeardownRefusal_RecordsRemedyNamesCommitRecordsNeverForce(t *testing.T)
+ 		t.Errorf("teardownRefusal(push running) = %q; want it to never name --force", got.Error())
+ 	}
+ 
++	strayKept := fmt.Errorf("%w: delete failed", fabricengine.ErrStrayPathKept)
++	got = teardownRefusal(strayKept, "some-slug")
++	if !errors.Is(got, fabricengine.ErrStrayPathKept) {
++		t.Errorf("teardownRefusal(stray kept) = %v; want it to still wrap ErrStrayPathKept", got)
++	}
++	for _, want := range []string{"was removed", "delete failed", "once it is deleted", "lym batten run some-slug"} {
++		if !strings.Contains(got.Error(), want) {
++			t.Errorf("teardownRefusal(stray kept) = %q; want it to contain %q", got.Error(), want)
++		}
++	}
++
+ 	other := errors.New("the task worktree has uncommitted changes")
+ 	if got := teardownRefusal(other, "some-slug"); got != other {
+ 		t.Errorf("teardownRefusal(other) = %v; want the same error passed through", got)
+diff --git a/internal/fabriccli/fabric.go b/internal/fabriccli/fabric.go
+index 66f77936..6fd13637 100644
+--- a/internal/fabriccli/fabric.go
++++ b/internal/fabriccli/fabric.go
+@@ -1163,6 +1163,9 @@ func removeFields(r fabricengine.RemoveResult, session pairteardown.SessionResul
+ 	if r.StrayPath != "" {
+ 		fields["stray_path"] = r.StrayPath
+ 	}
++	if r.StrayPathDeleted {
++		fields["stray_path_deleted"] = true
++	}
+ 	if r.OriginArchiveTag != "" {
+ 		fields["origin_archive_tag"] = r.OriginArchiveTag
+ 	}
+diff --git a/internal/fabriccli/removefields_test.go b/internal/fabriccli/removefields_test.go
+index 251837fb..c96ffc43 100644
+--- a/internal/fabriccli/removefields_test.go
++++ b/internal/fabriccli/removefields_test.go
+@@ -71,6 +71,7 @@ func TestRemoveFields(t *testing.T) {
+ 				Steps:                      []string{"a", "b"},
+ 				Finished:                   true,
+ 				StrayPath:                  "/stray",
++				StrayPathDeleted:           true,
+ 				RemoteCodeBranchDeleted:    true,
+ 				RemoteCodeBranchKeptReason: "not landed",
+ 			},
+@@ -78,6 +79,7 @@ func TestRemoveFields(t *testing.T) {
+ 			wantFields: map[string]any{
+ 				"finished":                       true,
+ 				"stray_path":                     "/stray",
++				"stray_path_deleted":             true,
+ 				"remote_code_branch_deleted":     true,
+ 				"remote_code_branch_kept_reason": "not landed",
+ 				"session_ended":                  true,
+@@ -121,7 +123,7 @@ func TestRemoveFields(t *testing.T) {
+ 			name:   "ConditionalKeysAbsentWhenEmpty",
+ 			result: fabricengine.RemoveResult{Slug: "s"},
+ 			wantAbsent: []string{
+-				"stray_path", "abandoned_session", "remote_branch_kept_reason", "remote_code_branch_kept_reason", "code_branch_kept_reason",
++				"stray_path", "stray_path_deleted", "abandoned_session", "remote_branch_kept_reason", "remote_code_branch_kept_reason", "code_branch_kept_reason",
+ 				"origin_archive_tag", "remote_handed_off", "warning",
+ 			},
+ 			// The always-present key set: the existing keys plus steps, finished, remote_code_branch_deleted, session_ended and ended_processes.
+diff --git a/internal/fabricengine/destroy.go b/internal/fabricengine/destroy.go
+index fb84be3d..1597c4d8 100644
+--- a/internal/fabricengine/destroy.go
++++ b/internal/fabricengine/destroy.go
+@@ -1412,6 +1412,38 @@ func finishGitWorktreeRemoval(rec *Mutations, repoDir, container, target string,
+ 	return nil
+ }
+ 
++// RemoveStrayTaskPath deletes what stands at slug's task worktree path when it is no registered linked worktree, such as a directory a build or language server refilled with ignored output after the pair's removal, and reports whether it deleted anything.
++// The caller's ownership proof is its own knowledge that a pair of slug stood at that path: a run that created the pair, or a removal of the slug's pair the operator asked for.
++// It refuses a registered linked worktree, which is a pair to remove, and a directory holding a `.git` entry, which is a repository of its own and never fabric's to delete.
++// Containment is kept by the delete's os.Root under the hub; no dirtiness check runs and no force applies, since what stands there is no worktree.
++// A delete that fails, after the late-writer retries, returns an error wrapping ErrStrayPathKept and leaves the path on disk.
++func (t *Topology) RemoveStrayTaskPath(l *lymcwd.Location, slug string) (bool, error) {
++	if err := validateWorktreeSlug(slug, t.cfg.Dirs()); err != nil {
++		return false, err
++	}
++	if err := refusePrimeSlug(l, slug); err != nil {
++		return false, err
++	}
++	target := WorktreePath(l, slug)
++	if !pathPresent(target) {
++		return false, nil
++	}
++	entries, err := List(l.WorktreePath())
++	if err != nil {
++		return false, fmt.Errorf("list the worktrees to judge %s: %w", target, err)
++	}
++	if listsLinkedWorktree(entries, target) {
++		return false, fmt.Errorf("%s is a registered worktree, so it is a pair to remove and not a stray directory", target)
++	}
++	if pathPresent(filepath.Join(target, ".git")) {
++		return false, fmt.Errorf("%s holds a .git entry, so it is a repository of its own and fabric leaves it alone; save anything worth keeping from it, then delete it", target)
++	}
++	if err := removeWorktreeLeftover(NewMutations(l.HubPath), l.HubPath, target, t.leftover); err != nil {
++		return false, fmt.Errorf("%w: %w; way forward: stop whatever writes into it, such as a build or language server, then delete it", ErrStrayPathKept, err)
++	}
++	return true, nil
++}
++
+ // removeGitWorktree is the executor for the git worktree remove primitive: it runs the pipeline,
+ // then runs git worktree remove [--force] from repoDir.
+ // It returns the resulting error unchanged rather than wrapping it, because every call site builds
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 85c51299..600196a0 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -587,13 +587,15 @@
+ // `Remove` reports the handover in `RemoteHandedOff`; in a test binary the child's steps run in process before the verb returns, filling `OriginArchiveTag`, the `RemoteBranch` and `RemoteCodeBranch` fields and the sweep entry's remote fields, an archive failure returned as the error.
+ // Just before the tag, `Remove` commits the sibling worktree's uncommitted changes under the scoped record pathspec, so the tag holds them; only changes outside that pathspec refuse without `force`.
+ // `Topology.RemoveRefusal` is the read-only probe of every refusal `Remove` raises before its first mutation.
+-// `Topology.PairParts` is the read-only, network-free reading of which parts of a pair are left locally (task worktree, records worktree, records branch, task branch, launchers), made from the same `inspectPair` `Remove` uses.
++// `Topology.PairParts` is the read-only, network-free reading of which parts of a pair are left locally (task worktree, records worktree, records branch, task branch, launchers, and a stray path at the task worktree's location), made from the same `inspectPair` `Remove` uses.
+ // `Topology.TaskBranchOnOrigin` reports whether the task branch is on the task repository's origin: a repository with no origin remote reads false, and a failed lookup is returned.
+ // `TaskBranchSlugs` lists, offline and read-only, the slugs of a prefix whose task branch exists locally or as an origin remote-tracking branch, so a caller numbering new slugs past a torn-down pair's kept branch sees it.
+ // `Topology.DiscardTaskBranch` archives and deletes the task branch locally and on origin whether or not its work is landed: it tags the local tip `archive/<slug>/<first 12 hex>` and deletes the local branch under that tag, and its teardown child pushes the tags, archiving only the containing tip when one tip holds the other, and deletes the branch on origin under them.
+ // A failed local tag deletes nothing and wraps `ErrArchiveFailed`, and a refused gate is returned as an error naming the branch.
+ // A pair already half removed is finished rather than refused: `Remove` does whatever teardown remains, reports its `Steps` and any `StrayPath`, and returns `ErrPairNotFound` when nothing is left.
+-// After the sibling's teardown `Remove` looks at the task worktree's path once more and removes a directory a late writer refilled there since its removal; one it cannot remove is reported in `StrayPath`.
++// After the sibling's teardown `Remove` looks at the task worktree's path once more and removes a directory a late writer refilled there since its removal;
++// one it cannot remove is reported in `StrayPath`, and `Remove` finishes the teardown and returns an error wrapping `ErrStrayPathKept`.
++// `Topology.RemoveStrayTaskPath` deletes a path at a slug's task worktree location that is no registered worktree and holds no `.git` entry, for a caller that knows the slug's pair stood there; a failed delete wraps `ErrStrayPathKept`.
+ // `PairWorktreeStands` reports whether a slug's task worktree stands as a registered linked worktree, so a caller never reads such a leftover directory as a pair.
+ // `Prune` reports every hub directory named as a pair slug that no registration covers as `Unowned`, naming the way to clear it, and never removes one.
+ // With `remote`, `Remove`'s teardown child also deletes the landed task branch on origin, leased to the observed tip and gated on the branch being landed; a refusal or lost lease is logged as kept and is no failure.
+@@ -921,7 +923,9 @@
+ // # The destruction chokepoint
+ //
+ // `destroy.go` is the one file in this package permitted to perform a destructive primitive — `os.RemoveAll`/`os.Remove`, `git worktree remove`, `git branch -D`, `fslink.Remove`, deleting a branch on a remote (`git push <remote> --delete`), moving a task branch on a remote (a leased force push), a warp checkout's `ResetHard`, and the board checkout's seed-commit drop — and every one of them runs its shared four-check pipeline first.
+-// The one exception is `removeWorktreeLeftover`: it keeps containment through `os.Root`, and takes ownership and dirtiness from the gated `git worktree remove` its caller just ran on the same target.
++// There are two exceptions.
++// `removeWorktreeLeftover` keeps containment through `os.Root`, and takes ownership and dirtiness from the gated `git worktree remove` its caller just ran on the same target.
++// `Topology.RemoveStrayTaskPath` reaches the same delete with no git run before it: its caller proves ownership, as a run that created the pair at that path or as an operator who asked to remove the slug's pair, it refuses a registered linked worktree and a directory holding a `.git` entry, and neither `force` nor dirtiness applies.
+ // See `PATTERN-fabric-git` for the rules;
+ // this section is the rationale the invariant deliberately omits.
+ //
+diff --git a/internal/fabricengine/pairparts.go b/internal/fabricengine/pairparts.go
+index 30cd1f77..8fa8a36f 100644
+--- a/internal/fabricengine/pairparts.go
++++ b/internal/fabricengine/pairparts.go
+@@ -22,11 +22,13 @@ type PairParts struct {
+ 	TaskBranch bool
+ 	// Launchers reports the pair's launcher directory.
+ 	Launchers bool
++	// StrayPath reports a path at the pair's task worktree location that is no registered linked worktree, such as a directory a late writer refilled after a removal.
++	StrayPath bool
+ }
+ 
+ // Any reports whether any part of the pair is present.
+ func (p PairParts) Any() bool {
+-	return p.TaskWorktree || p.RecordsWorktree || p.RecordsBranch || p.TaskBranch || p.Launchers
++	return p.TaskWorktree || p.RecordsWorktree || p.RecordsBranch || p.TaskBranch || p.Launchers || p.StrayPath
+ }
+ 
+ // PairParts reads which parts of slug's pair are present locally, by the same reading Remove makes of what is left.
+@@ -41,6 +43,7 @@ func (t *Topology) PairParts(l *lymcwd.Location, slug string) (PairParts, error)
+ 		RecordsBranch:   state.siblingBranch,
+ 		TaskBranch:      state.taskBranch,
+ 		Launchers:       state.launchers,
++		StrayPath:       state.strayPath,
+ 	}, nil
+ }
+ 
+diff --git a/internal/fabricengine/pairparts_integration_test.go b/internal/fabricengine/pairparts_integration_test.go
+index 12e0ae92..63b384a5 100644
+--- a/internal/fabricengine/pairparts_integration_test.go
++++ b/internal/fabricengine/pairparts_integration_test.go
+@@ -6,6 +6,8 @@
+ package fabricengine_test
+ 
+ import (
++	"os"
++	"path/filepath"
+ 	"slices"
+ 	"testing"
+ 
+@@ -60,6 +62,23 @@ func TestPairParts(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("PlainDirectoryAtTheTaskWorktreePathReadsAsStrayPathOnly", func(t *testing.T) {
++		t.Parallel()
++		const slug = "pp-stray"
++		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++		if err := os.MkdirAll(filepath.Join(fabricengine.WorktreePath(h.Location, slug), "obj"), 0o755); err != nil {
++			t.Fatalf("plant a plain directory at the task worktree path: %v", err)
++		}
++
++		got, err := h.Topology.PairParts(h.Location, slug)
++		if err != nil {
++			t.Fatalf("PairParts: %v", err)
++		}
++		if want := (fabricengine.PairParts{StrayPath: true}); got != want || !got.Any() {
++			t.Errorf("PairParts() = %+v, Any() = %v; want %+v, true", got, got.Any(), want)
++		}
++	})
++
+ 	t.Run("NeverAddedSlugReadsNothing", func(t *testing.T) {
+ 		t.Parallel()
+ 		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+diff --git a/internal/fabricengine/remove.go b/internal/fabricengine/remove.go
+index ceee0c27..620169cd 100644
+--- a/internal/fabricengine/remove.go
++++ b/internal/fabricengine/remove.go
+@@ -44,6 +44,10 @@ func (e siblingDirtyRefusal) Unwrap() error { return ErrPairSiblingDirty }
+ // It is worded without naming either side of the pair so callers outside the fabric vocabulary owner set can match it with errors.Is.
+ var ErrPairNotFound = errors.New("pair not found")
+ 
++// ErrStrayPathKept is the sentinel an error wraps when a directory that is no worktree stays at a pair's task worktree path after the pair's removal, because deleting it failed.
++// The pair itself is gone; the directory blocks the slug's next pair until it is deleted.
++var ErrStrayPathKept = errors.New("a directory that is no worktree stays at the pair's task worktree path")
++
+ // The steps a Remove call reports in RemoveResult.Steps, a closed set; each is appended only after it changed state.
+ // The two origin steps are the teardown child's, so they are listed only when its steps ran in process.
+ const (
+@@ -80,8 +84,10 @@ type RemoveResult struct {
+ 	// Finished is true when the task worktree was already gone at entry, so the call completed a half-removed pair.
+ 	Finished bool `json:"finished"`
+ 	// StrayPath names a path at the task worktree's location that is not a registered linked worktree:
+-	// one found there at entry, which Remove never deletes, or a directory a late writer refilled after the task worktree's removal and that a last removal could not delete.
++	// one found there at entry, which Remove never deletes, or a directory a late writer refilled after the task worktree's removal and that a last removal could not delete, which Remove also returns as an error wrapping ErrStrayPathKept.
+ 	StrayPath string `json:"stray_path,omitempty"`
++	// StrayPathDeleted is true when a caller's separate delete of a directory that is no worktree at the task worktree's path removed one; Remove itself never sets it.
++	StrayPathDeleted bool `json:"stray_path_deleted,omitempty"`
+ 	// RemoteBranchDeleted reports whether the pair's weft branch was observably removed from the
+ 	// remote. It is true only when the remote deletion was attempted and actually removed a ref.
+ 	RemoteBranchDeleted bool `json:"remote_branch_deleted,omitempty"`
+@@ -158,7 +164,7 @@ type RemoveResult struct {
+ // A sibling branch present only on origin is archived from there by the child and, with remote, deleted there; without remote it stays.
+ // A path at the task worktree's location that is not a registered linked worktree is reported in StrayPath and never deleted.
+ // A directory a late writer, such as a build server or a session's exit hooks, refills at the task worktree's path after its removal is removed once more after the sibling's teardown;
+-// one that cannot be is logged and reported in StrayPath, and Remove still succeeds, since the pair is gone.
++// one that cannot be is reported in StrayPath, and Remove finishes the teardown and then returns an error wrapping ErrStrayPathKept that names the directory.
+ // After the refusals and the pair inspection, and before its first mutation, Remove has the teardown child take the pair's teardown lock exclusive, waiting at most the topology's teardown wait for a push of the pair to let go of it;
+ // when the wait runs out it returns, before any mutation, an error wrapping ErrPairPushRunning.
+ // The child holds the lock past the remote steps, and a failure after taking it that leaves a worktree of the pair in place releases the lock and respawns the pair's push.
+@@ -222,7 +228,8 @@ func (t *Topology) removePair(l *lymcwd.Location, slug string, force, remote, lo
+ 		if !handedOver {
+ 			hold.finish(nil)
+ 		}
+-		if err != nil && !localMode && (pathPresent(target) || pathPresent(RecordsWorktreePath(l, slug))) {
++		// A directory kept at the task worktree's path is no worktree, so it leaves nothing to push.
++		if err != nil && !errors.Is(err, ErrStrayPathKept) && !localMode && (pathPresent(target) || pathPresent(RecordsWorktreePath(l, slug))) {
+ 			respawnPairPush(l, slug)
+ 		}
+ 	}()
+@@ -326,11 +333,12 @@ func (t *Topology) removePair(l *lymcwd.Location, slug string, force, remote, lo
+ 
+ 	// A late writer can refill the task worktree's directory after its removal finished, and a directory left there blocks the slug's next pair.
+ 	// This call's own removal of the registered worktree is the ownership proof, as it is for the finish right after git.
+-	refilledKept := false
++	var strayErr error
+ 	if pair.taskWorktree && pathPresent(target) && !isRegisteredLinkedWorktree(l, target) {
+ 		if leftoverErr := removeWorktreeLeftover(rec, l.HubPath, target, t.leftover); leftoverErr != nil {
+ 			logger.Warn("fabricengine: a directory refilled at a removed task worktree's path was not deleted", "slug", slug, "path", target, "error", leftoverErr)
+-			refilledKept = true
++			strayErr = fmt.Errorf("%w: the pair of %q is removed, but %s was refilled after its removal and deleting it failed: %w; way forward: stop whatever writes into it, such as a build or language server, then delete it",
++				ErrStrayPathKept, slug, target, leftoverErr)
+ 		}
+ 	}
+ 
+@@ -355,7 +363,7 @@ func (t *Topology) removePair(l *lymcwd.Location, slug string, force, remote, lo
+ 	}
+ 
+ 	strayPath := ""
+-	if pair.strayPath || refilledKept {
++	if pair.strayPath || strayErr != nil {
+ 		strayPath = target
+ 	}
+ 	res = RemoveResult{
+@@ -375,7 +383,7 @@ func (t *Topology) removePair(l *lymcwd.Location, slug string, force, remote, lo
+ 		res.RemoteSkippedReason = "no remote deletion attempted: " + strings.TrimPrefix(archiveSkippedReason, "no archive tag pushed: ")
+ 	}
+ 	if localMode {
+-		return res, nil
++		return res, strayErr
+ 	}
+ 
+ 	// The remote steps go last, to the holder of the teardown lock, which releases it once they end.
+@@ -394,7 +402,7 @@ func (t *Topology) removePair(l *lymcwd.Location, slug string, force, remote, lo
+ 	})
+ 	res.RemoteHandedOff = out.handedOff
+ 	if !out.ran {
+-		return res, nil
++		return res, strayErr
+ 	}
+ 	res.ArchiveTag, res.OriginArchiveTag = out.archive.localTag, out.archive.originTag
+ 	// A sibling found only on origin had no local tip to tag, so its archive is the child's alone.
+@@ -412,7 +420,10 @@ func (t *Topology) removePair(l *lymcwd.Location, slug string, force, remote, lo
+ 	if out.taskDeleted {
+ 		res.Steps = append(res.Steps, RemoveStepTaskBranchOnOrigin)
+ 	}
+-	return res, out.err
++	if out.err != nil {
++		return res, out.err
++	}
++	return res, strayErr
+ }
+ 
+ // housekeepHook, nil in production, runs with the slug just before a Remove's store housekeeping, so a test observes whether the housekeeping ran.
+diff --git a/internal/fabricengine/remove_leftoverdir_integration_test.go b/internal/fabricengine/remove_leftoverdir_integration_test.go
+index 07da7231..d8796b09 100644
+--- a/internal/fabricengine/remove_leftoverdir_integration_test.go
++++ b/internal/fabricengine/remove_leftoverdir_integration_test.go
+@@ -17,6 +17,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gitexec"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -200,9 +201,9 @@ func TestRemove_DeletesTaskWorktreeDirRefilledAfterItsRemoval(t *testing.T) {
+ 	}
+ }
+ 
+-// TestRemove_KeepsAndReportsTaskWorktreeDirRefilledAfterItsRemovalWhenItCannotBeDeleted asserts Remove still succeeds when the directory a late writer refilled at the task worktree's path cannot be deleted, leaves it on disk and reports its path in StrayPath.
++// TestRemove_FailsOnTaskWorktreeDirRefilledAfterItsRemovalThatCannotBeDeleted asserts Remove returns an error wrapping ErrStrayPathKept and naming the directory when the directory a late writer refilled at the task worktree's path cannot be deleted, leaves it on disk and reports its path in StrayPath.
+ // It sets the process-global teardown hook, so it is not parallel.
+-func TestRemove_KeepsAndReportsTaskWorktreeDirRefilledAfterItsRemovalWhenItCannotBeDeleted(t *testing.T) {
++func TestRemove_FailsOnTaskWorktreeDirRefilledAfterItsRemovalThatCannotBeDeleted(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 
+ 	const slug = "refilled-late-kept"
+@@ -219,8 +220,11 @@ func TestRemove_KeepsAndReportsTaskWorktreeDirRefilledAfterItsRemovalWhenItCanno
+ 		func(time.Duration) {})
+ 
+ 	res, err := h.Topology.Remove(l, slug, false, false)
+-	if err != nil {
+-		t.Fatalf("Remove error = %v; want success, since the pair is gone", err)
++	if !errors.Is(err, fabricengine.ErrStrayPathKept) || !errors.Is(err, fs.ErrPermission) {
++		t.Fatalf("Remove error = %v; want it to wrap ErrStrayPathKept and the delete's failure", err)
++	}
++	if !strings.Contains(err.Error(), dir) {
++		t.Errorf("Remove error = %q; want it to name %s", err.Error(), dir)
+ 	}
+ 	if !refilled {
+ 		t.Fatalf("no late writer refilled %s; want the refill after the teardown", dir)
+@@ -241,6 +245,40 @@ func TestRemove_KeepsAndReportsTaskWorktreeDirRefilledAfterItsRemovalWhenItCanno
+ 	}
+ }
+ 
++// TestRemove_ReturnsTheRemoteStepFailureOverAKeptDirectory asserts Remove returns the failure of a remote step, not the error for a kept refilled directory, when both occur, and still reports the directory in StrayPath.
++// It sets process-global hooks, so it is not parallel.
++func TestRemove_ReturnsTheRemoteStepFailureOverAKeptDirectory(t *testing.T) {
++	tiergate.Require(t, 1)
++
++	const slug = "refilled-late-remote"
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{})
++	l := h.Location
++	dir := fabricengine.WorktreePath(l, slug)
++	gitkit.CommitFile(t, h.PairRecordsSibling(slug), "_lym/record.txt", "run record\n", "record")
++	fabricengine.SetTeardownHooksForTest(t, nil, func() { refillWithLockFile(t, dir) })
++	fabricengine.SetLeftoverSeamForTest(h.Topology,
++		func(container, target string) (bool, bool, error) {
++			return false, false, &os.PathError{Op: "unlinkat", Path: target, Err: fs.ErrPermission}
++		},
++		func(time.Duration) {})
++	fabricengine.SetArchiveSleepForTest(h.Topology, func(time.Duration) {})
++	fabricengine.SetArchiveTagPushHookForTest(t, func(tagRef string) error {
++		return &gitexec.GitError{Args: []string{"push"}, ExitCode: 1, Stderr: " ! [remote rejected] " + tagRef + " -> " + tagRef + " (pre-receive hook declined)\n"}
++	})
++
++	res, err := h.Topology.Remove(l, slug, false, false)
++	if err == nil {
++		t.Fatal("Remove error = nil; want the remote step's failure")
++	}
++	if errors.Is(err, fabricengine.ErrStrayPathKept) {
++		t.Errorf("Remove error = %v; want the remote step's failure, not the kept directory's", err)
++	}
++	if res.StrayPath != dir {
++		t.Errorf("StrayPath = %q; want %q", res.StrayPath, dir)
++	}
++}
++
+ // refillWithLockFile plays a late writer: it writes a lock file under dir, recreating dir, and reports whether it did.
+ func refillWithLockFile(t *testing.T, dir string) bool {
+ 	t.Helper()
+@@ -257,6 +295,130 @@ func refillWithLockFile(t *testing.T, dir string) bool {
+ 	return true
+ }
+ 
++// TestRemoveStrayTaskPath asserts a plain directory at a pair's task worktree path is deleted, an absent path is no error, a registered worktree, a directory holding a .git entry, an invalid slug and the prime's slug are refused and kept, and a failed delete wraps ErrStrayPathKept and keeps the directory.
++func TestRemoveStrayTaskPath(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// slug is the slug asked for; empty means the default stray slug.
++		slug string
++		// primeSlug asks for the prime worktree's own name instead of slug.
++		primeSlug bool
++		// plant prepares the hub for the slug asked for; nil plants nothing.
++		plant func(t *testing.T, h *hubforge.Hub, slug string)
++		// removeErr is what the seam's removal returns; nil keeps the removal working.
++		removeErr   error
++		wantRemoved bool
++		// wantErrIs is a sentinel the error must wrap, and wantErrContains text it must hold; both empty means success.
++		wantErrIs       error
++		wantErrContains string
++		// wantGone says the path is absent afterwards.
++		wantGone bool
++	}{
++		{
++			name:        "PlainDirectoryWithBuildOutputIsDeleted",
++			plant:       plantStrayDir("obj"),
++			wantRemoved: true,
++			wantGone:    true,
++		},
++		{
++			name:     "AbsentPathIsNoError",
++			wantGone: true,
++		},
++		{
++			name: "RegisteredWorktreeIsRefused",
++			plant: func(t *testing.T, h *hubforge.Hub, slug string) {
++				hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{})
++			},
++			wantErrContains: "is a registered worktree",
++		},
++		{
++			name:            "DirectoryHoldingGitIsRefused",
++			plant:           plantStrayDir(".git"),
++			wantErrContains: "holds a .git entry",
++		},
++		{
++			name:      "FailedDeleteKeepsTheDirectory",
++			plant:     plantStrayDir("obj"),
++			removeErr: fs.ErrPermission,
++			wantErrIs: fabricengine.ErrStrayPathKept,
++		},
++		{
++			name:            "InvalidSlugIsRefusedAndNothingIsDeleted",
++			slug:            "nested/slug",
++			plant:           plantStrayDir("obj"),
++			wantErrContains: "invalid slug",
++		},
++		{
++			name:            "PrimeSlugIsRefusedAndThePrimeIsKept",
++			primeSlug:       true,
++			wantErrContains: "prime worktree",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			slug := "stray-left"
++			if tt.slug != "" {
++				slug = tt.slug
++			}
++			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++			if tt.primeSlug {
++				primeName, err := fabricengine.PrimeName(h.Location)
++				if err != nil {
++					t.Fatalf("read the prime worktree's name: %v", err)
++				}
++				slug = primeName
++			}
++			if tt.plant != nil {
++				tt.plant(t, h, slug)
++			}
++			if tt.removeErr != nil {
++				fabricengine.SetLeftoverSeamForTest(h.Topology,
++					func(container, target string) (bool, bool, error) {
++						return false, false, &os.PathError{Op: "unlinkat", Path: target, Err: tt.removeErr}
++					},
++					func(time.Duration) {})
++			}
++			dir := fabricengine.WorktreePath(h.Location, slug)
++
++			removed, err := h.Topology.RemoveStrayTaskPath(h.Location, slug)
++
++			switch {
++			case tt.wantErrIs != nil:
++				if !errors.Is(err, tt.wantErrIs) {
++					t.Errorf("RemoveStrayTaskPath error = %v; want it to wrap %v", err, tt.wantErrIs)
++				}
++			case tt.wantErrContains != "":
++				if err == nil || !strings.Contains(err.Error(), tt.wantErrContains) {
++					t.Errorf("RemoveStrayTaskPath error = %v; want it to hold %q", err, tt.wantErrContains)
++				}
++			case err != nil:
++				t.Errorf("RemoveStrayTaskPath error = %v; want nil", err)
++			}
++			if removed != tt.wantRemoved {
++				t.Errorf("RemoveStrayTaskPath removed = %v; want %v", removed, tt.wantRemoved)
++			}
++			_, statErr := os.Lstat(dir)
++			if gone := os.IsNotExist(statErr); gone != tt.wantGone {
++				t.Errorf("%s gone = %v (stat error = %v); want %v", dir, gone, statErr, tt.wantGone)
++			}
++		})
++	}
++}
++
++// plantStrayDir returns a plant that creates a plain directory at the slug's task worktree path holding an empty entry named child.
++func plantStrayDir(child string) func(t *testing.T, h *hubforge.Hub, slug string) {
++	return func(t *testing.T, h *hubforge.Hub, slug string) {
++		t.Helper()
++		if err := os.MkdirAll(filepath.Join(fabricengine.WorktreePath(h.Location, slug), child), 0o755); err != nil {
++			t.Fatalf("plant a stray directory for %s: %v", slug, err)
++		}
++	}
++}
++
+ // TestPairWorktreeStands_ReadsOnlyARegisteredWorktree asserts a registered task worktree reads as standing, while a plain directory at a pair's path and an absent path do not.
+ func TestPairWorktreeStands_ReadsOnlyARegisteredWorktree(t *testing.T) {
+ 	tiergate.Require(t, 1)
+diff --git a/internal/pairteardown/doc.go b/internal/pairteardown/doc.go
+index 65eb6ee5..8e7fd505 100644
+--- a/internal/pairteardown/doc.go
++++ b/internal/pairteardown/doc.go
+@@ -50,6 +50,8 @@
+ //
+ // RemovePair then archives the pair's logs and calls Topology.Remove.
+ // It repeats the probe's checks, so a refusal raised only by Remove means the pair changed between probe and removal, and the session is already ended.
++// With Request.ClearStray, once the removal left the pair gone, RemovePair deletes a directory that is no worktree at the task worktree's path through Topology.RemoveStrayTaskPath, such as one a build or language server refilled after the removal;
++// a delete that fails returns an error wrapping fabricengine.ErrStrayPathKept, and one that removed a directory sets StrayPathDeleted on the returned result.
+ //
+ // # Pull request
+ //
+diff --git a/internal/pairteardown/teardown.go b/internal/pairteardown/teardown.go
+index ae2af72f..89987237 100644
+--- a/internal/pairteardown/teardown.go
++++ b/internal/pairteardown/teardown.go
+@@ -57,6 +57,9 @@ type Request struct {
+ 	Snapshot bool
+ 	// LeaveClaim, in origin mode, leaves the pair's board claim to the caller: the removal reads no landed answer and settles no claim.
+ 	LeaveClaim bool
++	// ClearStray deletes a directory that is no worktree at the task worktree's path once the removal left the pair gone, such as one a build or language server refilled with ignored output.
++	// A caller sets it only where it created the slug's pair at that path or the operator asked to remove the slug's pair; a delete that fails returns an error wrapping fabricengine.ErrStrayPathKept.
++	ClearStray bool
+ 	// AfterSnapshot runs once the snapshot step succeeded and before the removal; its error stops the removal with the snapshot tag kept.
+ 	AfterSnapshot func() error
+ 	// Verdict is the caller's origin reconcile verdict for the slug, empty when it ran none.
+@@ -129,6 +132,8 @@ type Teardown struct {
+ 	ownedProcesses func(slug string) ([]runproc.Record, error)
+ 	endSession     func(slug string, gone bool) (ended bool, abandoned string, err error)
+ 	remove         func(req Request) (fabricengine.RemoveResult, error)
++	// removeStray deletes a path at the slug's task worktree location that is no worktree and reports whether it deleted anything.
++	removeStray func(slug string) (bool, error)
+ 	// snapshot keeps the pair's uncommitted paths under a local snapshot tag, recording into rec; the tag is empty when nothing was uncommitted.
+ 	snapshot func(rec *fabricengine.Mutations, slug string) (tag string, paths []string, err error)
+ 	// archive copies the pair's trace and verify logs into the hub's log archive; it never fails the teardown.
+@@ -222,6 +227,13 @@ func New(prime *lymcwd.Location) (*Teardown, error) {
+ 		}
+ 		return top.Remove(prime, req.Slug, req.Force, req.Remote)
+ 	}
++	t.removeStray = func(slug string) (bool, error) {
++		top, err := t.topology()
++		if err != nil {
++			return false, err
++		}
++		return top.RemoveStrayTaskPath(prime, slug)
++	}
+ 	t.snapshot = func(rec *fabricengine.Mutations, slug string) (string, []string, error) {
+ 		top, err := t.topology()
+ 		if err != nil {
+@@ -391,6 +403,9 @@ func (t *Teardown) driverLockBusyError(slug, retry string) error {
+ // The returned result carries the snapshot's tag, paths and mutation record on every return after the snapshot step.
+ //
+ // With req.LeaveClaim and no req.Local the landed answer is not read and the board claim is not settled, which the caller does itself.
++//
++// With req.ClearStray, a removal that left the pair gone, one that succeeded, found nothing of the pair, or kept a refilled directory, is followed by the delete of a directory that is no worktree at the task worktree's path, before the claim is settled.
++// A failed delete returns its error, and a delete that clears a kept directory turns the removal's error into success.
+ func (t *Teardown) RemovePair(req Request) (fabricengine.RemoveResult, error) {
+ 	var snap snapshotOutcome
+ 	if req.Snapshot {
+@@ -423,6 +438,9 @@ func (t *Teardown) RemovePair(req Request) (fabricengine.RemoveResult, error) {
+ 	t.archive(req.Slug)
+ 	res, err := t.remove(req)
+ 	res = snap.applyTo(res)
++	if req.ClearStray {
++		res, err = t.clearStray(req.Slug, res, err)
++	}
+ 	if err != nil {
+ 		return res, err
+ 	}
+@@ -432,6 +450,28 @@ func (t *Teardown) RemovePair(req Request) (fabricengine.RemoveResult, error) {
+ 	return res, nil
+ }
+ 
++// clearStray deletes a directory that is no worktree at the task worktree's path after a removal that left the pair gone, given the removal's result and error.
++// Any other removal error is returned as it is, since the pair may still stand.
++// A kept refilled directory the delete clears reads as a removal that succeeded.
++func (t *Teardown) clearStray(slug string, res fabricengine.RemoveResult, err error) (fabricengine.RemoveResult, error) {
++	if err != nil && !errors.Is(err, fabricengine.ErrPairNotFound) && !errors.Is(err, fabricengine.ErrStrayPathKept) {
++		return res, err
++	}
++	removed, strayErr := t.removeStray(slug)
++	if strayErr != nil {
++		return res, strayErr
++	}
++	if removed {
++		logger.Info("pairteardown: a directory that is no worktree was deleted at the task worktree's path", "slug", slug)
++	}
++	res.StrayPathDeleted = removed
++	res.StrayPath = ""
++	if errors.Is(err, fabricengine.ErrStrayPathKept) {
++		return res, nil
++	}
++	return res, err
++}
++
+ // snapshotOutcome is what the snapshot step of a local removal produced.
+ type snapshotOutcome struct {
+ 	tag   string
+diff --git a/internal/pairteardown/teardown_test.go b/internal/pairteardown/teardown_test.go
+index 4e2676bc..c8b417fa 100644
+--- a/internal/pairteardown/teardown_test.go
++++ b/internal/pairteardown/teardown_test.go
+@@ -41,8 +41,12 @@ type fakeSubstrates struct {
+ 	// killCaptureErr is what the capture job's termination answers.
+ 	killCaptureErr error
+ 
+-	// removeErr is returned by the removal.
+-	removeErr error
++	// removeErr is returned by the removal, and removeStrayPath is the StrayPath of its result.
++	removeErr       error
++	removeStrayPath string
++	// strayRemoved and strayErr are what the stray path's delete answers.
++	strayRemoved bool
++	strayErr     error
+ 	// snapshotErr fails the snapshot step.
+ 	snapshotErr error
+ 	// childLanded is what the landed read answers.
+@@ -176,7 +180,11 @@ func (f *fakeSubstrates) teardown() *Teardown {
+ 			} else {
+ 				f.calls = append(f.calls, "remove")
+ 			}
+-			return fabricengine.RemoveResult{}, f.removeErr
++			return fabricengine.RemoveResult{StrayPath: f.removeStrayPath}, f.removeErr
++		},
++		removeStray: func(string) (bool, error) {
++			f.calls = append(f.calls, "removeStray")
++			return f.strayRemoved, f.strayErr
+ 		},
+ 		snapshot: func(*fabricengine.Mutations, string) (string, []string, error) {
+ 			f.calls = append(f.calls, "snapshot")
+@@ -246,6 +254,62 @@ func (f *fakeSubstrates) teardown() *Teardown {
+ 
+ var busy = quietState{driver: "tst:slug:driver"}
+ 
++// TestRemovePair_ClearStray asserts a request with ClearStray deletes a stray path at the task worktree's location once the removal left the pair gone, reads a kept refilled directory the delete clears as success, returns a failed delete, and leaves the path alone without the flag or after a removal that may have left the pair standing.
++func TestRemovePair_ClearStray(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const strayPath = "/hub/slug"
++	kept := fmt.Errorf("remove: %w", fabricengine.ErrStrayPathKept)
++	notFound := fmt.Errorf("remove: %w", fabricengine.ErrPairNotFound)
++	refused := errors.New("removal refused")
++	deleteFailed := fmt.Errorf("%w: delete failed", fabricengine.ErrStrayPathKept)
++	tests := []struct {
++		name       string
++		clearStray bool
++		removeErr  error
++		strayPath  string
++		strayErr   error
++		// wantErrIs is what the error must wrap, nil for success.
++		wantErrIs     error
++		wantStrayPath string
++		// wantDeleted is the StrayPathDeleted the result must carry.
++		wantDeleted bool
++		wantCalls   string
++	}{
++		{name: "WithoutTheFlagAKeptDirectoryIsReturned", removeErr: kept, strayPath: strayPath, wantErrIs: fabricengine.ErrStrayPathKept, wantStrayPath: strayPath, wantCalls: "archive,remove"},
++		{name: "SuccessfulRemovalLooksForAStrayThenSettlesTheClaim", clearStray: true, wantDeleted: true, wantCalls: "archive,remove,removeStray,readClaim"},
++		{name: "KeptDirectoryTheDeleteClearsReadsAsSuccess", clearStray: true, removeErr: kept, strayPath: strayPath, wantDeleted: true, wantCalls: "archive,remove,removeStray,readClaim"},
++		{name: "NothingOfThePairLeftClearsTheStrayAndStaysNotFound", clearStray: true, removeErr: notFound, strayPath: strayPath, wantErrIs: fabricengine.ErrPairNotFound, wantDeleted: true, wantCalls: "archive,remove,removeStray"},
++		{name: "FailedDeleteIsReturned", clearStray: true, removeErr: kept, strayPath: strayPath, strayErr: deleteFailed, wantErrIs: deleteFailed, wantStrayPath: strayPath, wantCalls: "archive,remove,removeStray"},
++		{name: "RefusedRemovalLeavesThePathAlone", clearStray: true, removeErr: refused, wantErrIs: refused, wantCalls: "archive,remove"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			f := &fakeSubstrates{removeErr: tt.removeErr, removeStrayPath: tt.strayPath, strayRemoved: true, strayErr: tt.strayErr}
++
++			res, err := f.teardown().RemovePair(Request{Slug: "slug", Landed: true, ClearStray: tt.clearStray})
++
++			if tt.wantErrIs == nil && err != nil {
++				t.Errorf("RemovePair error = %v; want nil", err)
++			}
++			if tt.wantErrIs != nil && !errors.Is(err, tt.wantErrIs) {
++				t.Errorf("RemovePair error = %v; want it to wrap %v", err, tt.wantErrIs)
++			}
++			if res.StrayPath != tt.wantStrayPath {
++				t.Errorf("RemovePair StrayPath = %q; want %q", res.StrayPath, tt.wantStrayPath)
++			}
++			if res.StrayPathDeleted != tt.wantDeleted {
++				t.Errorf("RemovePair StrayPathDeleted = %v; want %v", res.StrayPathDeleted, tt.wantDeleted)
++			}
++			if got := strings.Join(f.calls, ","); got != tt.wantCalls {
++				t.Errorf("RemovePair calls = %q; want %q", got, tt.wantCalls)
++			}
++		})
++	}
++}
++
+ // TestTeardown_CallSequence drives EndSession and Run through the fake substrates and pins which substrate calls each makes, in what order, and what it returns.
+ // The board-claim rows pin the settlement rule through Run: which reads precede the removal and the write, and what is written.
+ func TestTeardown_CallSequence(t *testing.T) {
+diff --git a/pattern/PATTERN-fabric-git.md b/pattern/PATTERN-fabric-git.md
+index 150363dc..29f1350f 100644
+--- a/pattern/PATTERN-fabric-git.md
++++ b/pattern/PATTERN-fabric-git.md
+@@ -40,7 +40,9 @@ The entry binds lym's own code only.
+ `internal/fabricengine/destroy.go` is the only file in `package fabricengine` permitted a destructive primitive.
+ 
+ - Every executor checks, in order, stopping at the first failure: containment, ownership, dirtiness, force.
+-  The one exception is `removeWorktreeLeftover`, which keeps containment through `os.Root` and takes ownership and dirtiness from the gated `git worktree remove` its caller just ran on the same target.
++  There are two exceptions.
++  `removeWorktreeLeftover` keeps containment through `os.Root` and takes ownership and dirtiness from the gated `git worktree remove` its caller just ran on the same target.
++  `Topology.RemoveStrayTaskPath` reaches the same delete with no git run before it: its caller proves ownership, as a run that created the pair at that path or as an operator who asked to remove the slug's pair, the function refuses a registered linked worktree and a directory holding a `.git` entry, and `--force` and dirtiness do not apply.
+ - `--force` answers dirtiness only, never containment or ownership.
+ - A gate refusal is never silently discarded.
+ - The `rec *Mutations` recorder is threaded into `destroy.go` only.
+diff --git a/pattern/PATTERN-pair-teardown.md b/pattern/PATTERN-pair-teardown.md
+index 71038099..e257df7f 100644
+--- a/pattern/PATTERN-pair-teardown.md
++++ b/pattern/PATTERN-pair-teardown.md
+@@ -11,6 +11,7 @@ Every teardown of a pair goes through `internal/pairteardown`, which ends the pa
+ - After the run-lock wait and before the removal, the composite copies the pair's trace and verify logs into the hub log archive, and never fails the teardown on it.
+ - After a successful removal the composite settles the pair's board entry: a landed run's entry is marked done and an abandoned run's claim is cleared, never while batten's run for the slug is `running`, so every teardown route releases the claim.
+   A `running` record with no live registered batten process keeps the claim and warns with `lym batten cancel <slug>`, since the run is gone.
++- A request with `ClearStray`, which batten's Worktree-Teardown and `lym batten cancel --remove` set, deletes a directory that is no worktree at the task worktree's path once the removal left the pair gone, through `fabricengine`'s `RemoveStrayTaskPath`, and a failed delete fails the teardown.
+ - A batten cancel's phase, `EndForCancel`, ends the owned processes under the prime's and the pair's records write locks, then the pair's drift capture job, the strands, the loop, the run-lock wait and the session end, with the caller's own locks taken between the owned-process end and the capture job's termination.
+   Its removal passes `Request.LeaveClaim`, which settles no claim, since the cancel clears it under its own locks.
+ - `internal/pairteardown` stays inside the fabric-vocabulary entry: it names no side, and passes `fabricengine.RemoveResult` through whole.
