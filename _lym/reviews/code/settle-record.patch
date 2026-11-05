@@ -1,0 +1,1466 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 4ebf0e36..85fbe170 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -367,7 +367,7 @@ User-facing modules each get one `lym <module>` namespace:
+   `default_recipe` names the recipe a task with no recipe field runs, `darn` in the template.
+   `lym board intake` lists the open issues of the hub's own GitHub repository not yet on the board, imports one as a note or folds it into an entry, and closes noise with a stated reason.
+   The hub's repository is the one its recorded binding names, else its origin remote, so only the loomyard hub's intake reads LoomYard's issues; intake never goes through selfreport.
+-  The README renders Tasks split into Running, Ready (waiting on nothing open) and dependency layers whose entries can run in parallel, then Notes grouped by type label, each subsection one numbered table that links each slug to its design doc, with a `Sketch` link to the decision record `decision-<slug>.md` under the slug of a discussed entry;
++  The README renders Tasks split into Running, Ready (waiting on nothing open) and dependency layers whose entries can run in parallel, then Notes grouped by type label, Sketches first, each subsection one numbered table that links each slug to its design doc, with a `Sketch` link to the decision record `decision-<slug>.md` under the slug of a discussed entry;
+   every project, the root included as `P0` with its file `project-root.md`, renders through one project section that nests the projects under it, each with its own slug, age, owner, Tasks, Notes and Done, so the README shows every open project's entries split the same way, with the root's section last, and a project file shows its project and the projects under it.
+   An entry may carry a priority, `high` or `low`, absent meaning normal, which orders it first or last within its subsection.
+   A task may name a run profile in its `profile` field, and `lym board profiles` prints the hub's profiles with their settings and each recipe's default profile.
+@@ -628,7 +628,7 @@ User-facing modules each get one `lym <module>` namespace:
+   `Describe` writes the change description at `_lym/landing/summary.md`, the single source for the landing commit, whose message, like the pull request's body, ends in the plain-line credit block Go appends while `landing.yaml`'s `credit` is on: `credit_heading`, then a ` - ` line for `credit_loomyard` and for the `credit_engines` text of each engine that ran a session in the task, an empty text adding no line.
+   `Finalize` tolerates an already-landed parent and marks the board task `done` after the parent merge.
+   Every run transition before that writes the board task's status as `<state> · <producer>` (for example `awaiting · Code-Bouncer`), the run's start write naming its first row included, so the board README shows where each run stands; a failed board write only warns.
+-  Batten writes the same form for its own rows before `Run-Shed`, from its `Worktree-Create` claim on, and a run with no `Finalize` row, a motif run, ends by writing `discussed`.
++  Batten writes the same form for its own rows before `Run-Shed`, from its `Worktree-Create` claim on, and a run with no `Finalize` row, a motif run, ends by making its entry a Sketch, a note of the built-in type `sketch` that never runs and waits for triage.
+   `Parent-Align` and `Finalize` each run the plan's verify command after a parent merge-in that changed the task tree, and halt Stuck on a failure, with the command's output in the loom verify-output log;
+   a pending-verify marker keeps the gate armed across a resume until a verify passes.
+   `landing.yaml` also holds the `fixer` model-spec and `fixer_timeout_min` (those of the merge fixer and of the fix review session Finalize runs over an over-cap fixer change), `parent_align_fix_attempts`, `finalize_fix_attempts`, `finalize_fix_max_lines` and `finalize_fix_review_rounds`, and `deploy_branches`, the base branches whose landing runs `deploy`, which `lym config reconcile` renames from the retired `require_pr_to_base`; reconcile also renames the retired `merge_fix_attempts` key to `parent_align_fix_attempts` and `gate.yaml`'s `merge-in` gate key to `parent-align`.
+diff --git a/internal/battencli/startguard.go b/internal/battencli/startguard.go
+index f1090a6c..0a44219b 100644
+--- a/internal/battencli/startguard.go
++++ b/internal/battencli/startguard.go
+@@ -40,7 +40,7 @@ type startGuard struct {
+ 	Project func() (project, beam bool, err error)
+ 	// PairMark reads the origin record of the slug's local pair: found is false when the pair has no readable record, and marked says whether it carries the beam mark.
+ 	PairMark func() (marked, found bool, err error)
+-	// Unreleased reads the board status of the slug when it is a task no run starts, boardengine.StatusDraft or boardengine.StatusDiscussed, and "" for any other entry.
++	// Unreleased reads the board status of the slug when it is a task no run starts, boardengine.StatusDraft or boardengine.LegacyStatusDiscussed, and "" for any other entry.
+ 	// A nil Unreleased reads every entry as released.
+ 	Unreleased func() (string, error)
+ }
+@@ -96,7 +96,7 @@ func hubStartGuard(location *lymcwd.Location, slug string) startGuard {
+ 				if task.Slug != slug || task.Status == nil {
+ 					continue
+ 				}
+-				if *task.Status == boardengine.StatusDraft || *task.Status == boardengine.StatusDiscussed {
++				if *task.Status == boardengine.StatusDraft || *task.Status == boardengine.LegacyStatusDiscussed {
+ 					return *task.Status, nil
+ 				}
+ 			}
+diff --git a/internal/battencli/startguard_test.go b/internal/battencli/startguard_test.go
+index 87fb0080..9a975a97 100644
+--- a/internal/battencli/startguard_test.go
++++ b/internal/battencli/startguard_test.go
+@@ -165,13 +165,13 @@ func TestStartGuard_Refuse(t *testing.T) {
+ 		{
+ 			name:       "DiscussedTaskRefusesAFreshStartNamingTheRelease",
+ 			verbs:      []string{"run", "step"},
+-			unreleased: boardengine.StatusDiscussed,
++			unreleased: boardengine.LegacyStatusDiscussed,
+ 			wantExact:  "some-slug is a discussed task, which no run starts; way forward: run `lym board set-status '{\"slug\":\"some-slug\",\"status\":null}'` to release it, then `lym batten {verb} some-slug`",
+ 		},
+ 		{
+ 			name:       "UnreleasedTaskWithARunStatusFileResumes",
+ 			verbs:      []string{"run", "step"},
+-			unreleased: boardengine.StatusDiscussed,
++			unreleased: boardengine.StatusDraft,
+ 			found:      true,
+ 			producer:   battenrecipe.NameRunShed,
+ 		},
+diff --git a/internal/boardcli/cli.go b/internal/boardcli/cli.go
+index 6bea4061..986c0da0 100644
+--- a/internal/boardcli/cli.go
++++ b/internal/boardcli/cli.go
+@@ -638,13 +638,12 @@ Example:
+ 		Short:       "set the status of a task, or release it with null",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `Set the lifecycle status of a task. A new task is "draft"; null releases it, leaving it with no status, and an empty string on a task gives "draft" again.
+-A task a finished Discussion-only run leaves is "discussed", and null releases it the same way.
+ 
+ Fields:
+   "slug"   string      — task slug (one of slug, id or handle)
+   "id"     integer     — numeric task ID (one of slug, id or handle)
+   "handle" string      — task handle, such as T4 (one of slug, id or handle)
+-  "status" string|null — new status value; null releases a draft or discussed task
++  "status" string|null — new status value; null releases a draft task, or a task an older binary left discussed
+ 
+ Examples:
+   lym board set-status '{"slug":"my-task","status":"active"}'
+@@ -877,7 +876,7 @@ Fields:
+     "slug"   string      — task slug (one of slug, id or handle)
+     "id"     integer     — numeric task ID (one of slug, id or handle)
+     "handle" string      — task handle, such as T4 (one of slug, id or handle)
+-    "status" string|null — new status; null releases a draft or discussed task
++    "status" string|null — new status; null releases a draft task, or a task an older binary left discussed
+ 
+ A task the merge creates is "draft", and a "set_status" of null releases it.
+ 
+diff --git a/internal/boardcli/cli_test.go b/internal/boardcli/cli_test.go
+index c830a0da..5b12997c 100644
+--- a/internal/boardcli/cli_test.go
++++ b/internal/boardcli/cli_test.go
+@@ -119,7 +119,7 @@ func TestCLI(t *testing.T) {
+ 		{"ListAndFindLabelFilter", stepListAndFindLabelFilter},
+ 		{"Find_NoArgumentRefused", stepFind_NoArgumentRefused},
+ 		{"ListAndFindText", stepListAndFindText},
+-		{"ListShowsADiscussedEntry", stepListShowsADiscussedEntry},
++		{"ListShowsASketch", stepListShowsASketch},
+ 		{"RetireLegacy", stepRetireLegacy},
+ 		{"GetAndRemoveByID", stepGetAndRemoveByID},
+ 		{"Owners", stepOwners},
+diff --git a/internal/boardcli/doc.go b/internal/boardcli/doc.go
+index 025d2734..8b121ddf 100644
+--- a/internal/boardcli/doc.go
++++ b/internal/boardcli/doc.go
+@@ -34,6 +34,7 @@
+ // Every verb prints JSON through `internal/output`, one object per line, errors included.
+ // `list` and `find` take `--text` to print the compact one-line-per-entry listing instead;
+ // errors stay JSON.
++// The listing puts the Sketches after every other entry, under a `sketches:` line.
+ // The listing opens with the entry's handle, a column left out only when no listed entry has one.
+ // It carries a priority column after the kind, `high`, `low` or blank, only when some listed entry is not normal.
+ // Two age columns follow, the entry's age and the time since its last revision, computed as of the listing from the stored dates and blank for an unknown one;
+diff --git a/internal/boardcli/text.go b/internal/boardcli/text.go
+index c1694232..0b51c34a 100644
+--- a/internal/boardcli/text.go
++++ b/internal/boardcli/text.go
+@@ -13,7 +13,11 @@ import (
+ // columnGap separates the listing's columns.
+ const columnGap = "  "
+ 
++// sketchesHeading is the line the listing puts over its Sketches.
++const sketchesHeading = "sketches:"
++
+ // RenderCompact returns one line per entry, in the order given: handle, kind, priority, age, time since last revision, slug, title and the labels joined by commas, each padded to the widest value in its column, then "[<status>]" when the entry's status is set.
++// The Sketches follow every other entry, in the order given, under a sketches: line.
+ // The handle column is left out when no entry has a handle.
+ // The priority column holds high or low and is blank for a normal entry, and it is left out when every entry is normal.
+ // The ages are as of now, blank for an unknown date, and each age column is left out when no entry has that date.
+@@ -31,7 +35,7 @@ func RenderCompact(tasks []boardengine.BriefTask, now time.Time) string {
+ 		labelsWidth = max(labelsWidth, utf8.RuneCountInString(strings.Join(t.Labels, ",")))
+ 	}
+ 
+-	var sb strings.Builder
++	var sb, sketches strings.Builder
+ 	for _, t := range tasks {
+ 		line := ""
+ 		if handleWidth > 0 {
+@@ -53,8 +57,16 @@ func RenderCompact(tasks []boardengine.BriefTask, now time.Time) string {
+ 		if t.Status != nil && *t.Status != "" {
+ 			line += columnGap + "[" + *t.Status + "]"
+ 		}
+-		sb.WriteString(strings.TrimRight(line, " "))
+-		sb.WriteByte('\n')
++		target := &sb
++		if boardengine.IsSketch(t.Kind, t.Labels) {
++			target = &sketches
++		}
++		target.WriteString(strings.TrimRight(line, " "))
++		target.WriteByte('\n')
++	}
++	if sketches.Len() > 0 {
++		sb.WriteString(sketchesHeading + "\n")
++		sb.WriteString(sketches.String())
+ 	}
+ 	return sb.String()
+ }
+diff --git a/internal/boardcli/text_test.go b/internal/boardcli/text_test.go
+index f7e10900..930a4348 100644
+--- a/internal/boardcli/text_test.go
++++ b/internal/boardcli/text_test.go
+@@ -83,6 +83,15 @@ func TestRenderCompact(t *testing.T) {
+ 			},
+ 			want: "note  z  Z  bug\ntask  a  A  bug\n",
+ 		},
++		{
++			name: "sketches follow every other entry under their heading",
++			in: []boardengine.BriefTask{
++				{Handle: "S1", Kind: "note", Labels: []string{"sketch", "board"}, Slug: "s", Title: "Sketched"},
++				{Handle: "T1", Kind: "task", Labels: []string{"bug"}, Slug: "t", Title: "Task"},
++				{Handle: "B1", Kind: "note", Labels: []string{"bug"}, Slug: "b", Title: "Bug"},
++			},
++			want: "T1  task  t  Task      bug\nB1  note  b  Bug       bug\nsketches:\nS1  note  s  Sketched  sketch,board\n",
++		},
+ 		{
+ 			name: "empty input prints nothing",
+ 			in:   nil,
+diff --git a/internal/boardcli/verbs_test.go b/internal/boardcli/verbs_test.go
+index 85d83fd3..c96d1b75 100644
+--- a/internal/boardcli/verbs_test.go
++++ b/internal/boardcli/verbs_test.go
+@@ -323,33 +323,17 @@ func stepListAndFindText(t *testing.T, f *cliFixture) {
+ 	}
+ }
+ 
+-// stepListShowsADiscussedEntry asserts a task carrying the discussed status lists under the Discussed layer, and its --text line ends with the status.
+-func stepListShowsADiscussedEntry(t *testing.T, f *cliFixture) {
+-	mustUpsert(t, `{"slug":"sketched","title":"Sketched thing","kind":"task","labels":["bug"]}`)
+-	runJSON(t, 0, "set-status", `{"slug":"sketched","status":"discussed"}`)
+-
+-	var layer any
+-	for _, entry := range runJSON(t, 0, "list")["tasks"].([]any) {
+-		if row := entry.(map[string]any); row["slug"] == "sketched" {
+-			layer = row["layer"]
+-		}
+-	}
+-	if layer != "Discussed" {
+-		t.Errorf("list: layer of the discussed entry = %v; want Discussed", layer)
+-	}
++// stepListShowsASketch asserts the hub's board takes a note of the built-in sketch type, whatever its board.yaml lists, and that list --text lists it last under the sketches: line with handle S1.
++func stepListShowsASketch(t *testing.T, f *cliFixture) {
++	mustUpsert(t, `{"slug":"sketched","title":"Sketched thing","kind":"note","labels":["sketch"]}`)
+ 
+ 	exitCode, stdout := runCLI(t, "list", "--text")
+ 	if exitCode != 0 {
+ 		t.Fatalf("list --text: exit %d, stdout %q", exitCode, stdout)
+ 	}
+-	var line string
+-	for _, candidate := range strings.Split(stdout, "\n") {
+-		if strings.Contains(candidate, "sketched") {
+-			line = candidate
+-		}
+-	}
+-	if !strings.HasSuffix(line, "[discussed]") {
+-		t.Errorf("list --text line of the discussed entry = %q; want it to end with [discussed]", line)
++	lines := strings.Split(strings.TrimRight(stdout, "\n"), "\n")
++	if len(lines) < 2 || lines[len(lines)-2] != "sketches:" || !strings.HasPrefix(lines[len(lines)-1], "S1 ") || !strings.Contains(lines[len(lines)-1], "sketched") {
++		t.Errorf("list --text = %q; want it to end with a sketches: line and the S1 sketched line", stdout)
+ 	}
+ }
+ 
+@@ -806,13 +790,23 @@ func labelPairs(t *testing.T, result map[string]any, key string) [][2]string {
+ 	return pairs
+ }
+ 
++// sketchPair returns the first type label the labels verb printed, failing t unless it is the built-in sketch type label with a description, which leads every board's types.
++func sketchPair(t *testing.T, result map[string]any) [2]string {
++	t.Helper()
++	pairs := labelPairs(t, result, "types")
++	if len(pairs) == 0 || pairs[0][0] != "sketch" || pairs[0][1] == "" {
++		t.Fatalf("types = %v; want the described sketch type label first", pairs)
++	}
++	return pairs[0]
++}
++
+ func stepLabelsMapShapedPrintsFileOrderWithDescriptions(t *testing.T, f *cliFixture) {
+ 	cwd := f.cwd
+ 	content := "readme: Home.md\ndesign_prefix: proposal-\ntypes:\n  enhancement: A new capability\n  bug: Something broken\nlabels:\n  quarry: The code index\n  board: The task board\n"
+ 	seedHubBoardConfig(t, filepath.Dir(cwd), content)
+ 
+ 	result := runJSON(t, 0, "labels")
+-	wantTypes := [][2]string{{"enhancement", "A new capability"}, {"bug", "Something broken"}}
++	wantTypes := [][2]string{sketchPair(t, result), {"enhancement", "A new capability"}, {"bug", "Something broken"}}
+ 	wantLabels := [][2]string{{"quarry", "The code index"}, {"board", "The task board"}}
+ 	if got := labelPairs(t, result, "types"); !slices.Equal(got, wantTypes) {
+ 		t.Fatalf("types = %v, want %v", got, wantTypes)
+@@ -828,7 +822,7 @@ func stepLabelsListShapedPrintsNamesWithEmptyDescriptions(t *testing.T, f *cliFi
+ 	seedHubBoardConfig(t, filepath.Dir(cwd), content)
+ 
+ 	result := runJSON(t, 0, "labels")
+-	wantTypes := [][2]string{{"bug", ""}, {"enhancement", ""}}
++	wantTypes := [][2]string{sketchPair(t, result), {"bug", ""}, {"enhancement", ""}}
+ 	wantLabels := [][2]string{{"quarry", ""}}
+ 	if got := labelPairs(t, result, "types"); !slices.Equal(got, wantTypes) {
+ 		t.Fatalf("types = %v, want %v", got, wantTypes)
+diff --git a/internal/boardengine/board.go b/internal/boardengine/board.go
+index 850b32e0..34d53243 100644
+--- a/internal/boardengine/board.go
++++ b/internal/boardengine/board.go
+@@ -66,7 +66,7 @@ type noWrite struct{ result any }
+ type promoted struct{ task Task }
+ 
+ // boardCriticalSection runs the locked write scaffolding shared by every mutating Board method:
+-// it acquires the lock, loads the store, migrates a board that has not been marked draft, calls fn to mutate it, gives a new task the draft status, stamps the entry dates, assigns the handles the mutation left missing or of another letter, refuses a net change to a run-held entry's scope and a run agent's new task, saves board.json, runs afterSave when non-nil, moves or removes the decision record files of the entries the write renamed or removed, renders outputs, and spawns a detached sync.
++// it acquires the lock, loads the store, migrates a board that has not been marked draft and every task left discussed, calls fn to mutate it, gives a new task the draft status, stamps the entry dates, assigns the handles the mutation left missing or of another letter, refuses a net change to a run-held entry's scope and a run agent's new task, saves board.json, runs afterSave when non-nil, moves or removes the decision record files of the entries the write renamed or removed, renders outputs, and spawns a detached sync.
+ // fn returning a RenameResult judges the dates and the run lock against the loaded entries with that rename applied.
+ // afterSave runs under the lock after the save and before the render.
+ // The record step's error, a *DecisionRecordError, does not stop the render or the sync; it is returned last, with the write saved and the mutation's result.
+@@ -105,6 +105,7 @@ func (b *Board) boardCriticalSection(fn func(store *Store) (any, error), afterSa
+ 
+ 	// Migrated before fn mutates, so a write that releases a task to an empty status is not re-drafted by the migration.
+ 	migrateDraftStatus(store)
++	migrateDiscussedStatus(store)
+ 	loaded := cloneTasks(store.Tasks())
+ 
+ 	result, err := fn(store)
+@@ -142,7 +143,7 @@ func (b *Board) boardCriticalSection(fn func(store *Store) (any, error), afterSa
+ 		result = r
+ 	}
+ 
+-	if err := checkRunLocks(loaded, store.Tasks()); err != nil {
++	if err := checkRunLocks(loaded, store.Tasks(), b.vocab); err != nil {
+ 		return nil, err
+ 	}
+ 	if err := checkProjectRules(loaded, store.Tasks(), store.pairExists); err != nil {
+diff --git a/internal/boardengine/config.go b/internal/boardengine/config.go
+index adb6a1f2..56a4f9f0 100644
+--- a/internal/boardengine/config.go
++++ b/internal/boardengine/config.go
+@@ -150,7 +150,8 @@ func ConfigSpec() configengine.Spec {
+ 
+ // LoadConfig loads and unmarshals the board module configuration strictly through the hub-wide layer stack under dirs.
+ // An absent `_lym/` under the hub's board dir and an absent board.yaml under a present one both refuse naming the file and the `lym fabric reconcile` way forward.
+-// Type labels that would share a handle letter, with each other or with tasks, refuse naming the label to rename.
++// The built-in sketch type label leads the types unless board.yaml lists it.
++// Type labels that would share a handle letter, with each other, with the sketch type label or with tasks, refuse naming the label to rename.
+ func LoadConfig(dirs configengine.Dirs, module string) (Config, error) {
+ 	spec := ConfigSpec()
+ 	spec.Name = module
+@@ -187,6 +188,7 @@ func LoadConfig(dirs configengine.Dirs, module string) (Config, error) {
+ 	if cfg.Labels, err = decodeLabels("labels", &raw.Labels); err != nil {
+ 		return Config{}, err
+ 	}
++	cfg.Types = withSketchType(cfg.Types)
+ 	if err := validateTypeLetters(cfg.Types); err != nil {
+ 		return Config{}, err
+ 	}
+diff --git a/internal/boardengine/config_test.go b/internal/boardengine/config_test.go
+index dad4f4f9..151869b3 100644
+--- a/internal/boardengine/config_test.go
++++ b/internal/boardengine/config_test.go
+@@ -51,8 +51,8 @@ func TestLoadConfig_ScalarKeysAndTemplateDefaults(t *testing.T) {
+ 			if cfg.DesignPrefix != "proposal-" {
+ 				t.Errorf("expected DesignPrefix %q, got %q", "proposal-", cfg.DesignPrefix)
+ 			}
+-			if got := cfg.Outputs().Types; !reflect.DeepEqual(got, []string{"bug", "enhancement"}) {
+-				t.Errorf("type names = %v; want [bug enhancement]", got)
++			if got := cfg.Outputs().Types; !reflect.DeepEqual(got, []string{boardengine.SketchType, "bug", "enhancement"}) {
++				t.Errorf("type names = %v; want [sketch bug enhancement]", got)
+ 			}
+ 			for _, l := range cfg.Types {
+ 				if l.Description == "" {
+@@ -199,7 +199,7 @@ labels:
+ 	if err != nil {
+ 		t.Fatalf("unexpected error: %v", err)
+ 	}
+-	wantTypes := []boardengine.Label{{Name: "idea", Description: "A thing to try"}, {Name: "bug", Description: "Broken"}}
++	wantTypes := []boardengine.Label{sketchLabel(t, cfg.Types), {Name: "idea", Description: "A thing to try"}, {Name: "bug", Description: "Broken"}}
+ 	if !reflect.DeepEqual(cfg.Types, wantTypes) {
+ 		t.Errorf("Types = %v; want %v", cfg.Types, wantTypes)
+ 	}
+@@ -222,7 +222,7 @@ labels: [urgent, later]
+ 	if err != nil {
+ 		t.Fatalf("unexpected error: %v", err)
+ 	}
+-	wantTypes := []boardengine.Label{{Name: "bug"}, {Name: "idea"}}
++	wantTypes := []boardengine.Label{sketchLabel(t, cfg.Types), {Name: "bug"}, {Name: "idea"}}
+ 	if !reflect.DeepEqual(cfg.Types, wantTypes) {
+ 		t.Errorf("Types = %v; want %v", cfg.Types, wantTypes)
+ 	}
+@@ -246,6 +246,7 @@ func TestLoadConfig_LabelsRefused(t *testing.T) {
+ 		{"a type on the task letter", "types:\n  todo: x\n", `"todo"`},
+ 		{"a type on the project letter", "types:\n  plan: x\n", `"plan"`},
+ 		{"a type not beginning with a letter", "types:\n  '1st': x\n", `"1st"`},
++		{"a type on the sketch letter", "types:\n  spike: x\n", `"spike"`},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -282,6 +283,29 @@ func TestLoadConfig_LabelsRefused(t *testing.T) {
+ 	})
+ }
+ 
++// sketchLabel returns the first of types, failing t unless it is the built-in sketch type label with a description, which LoadConfig puts ahead of board.yaml's types.
++func sketchLabel(t *testing.T, types []boardengine.Label) boardengine.Label {
++	t.Helper()
++	if len(types) == 0 || types[0].Name != boardengine.SketchType || types[0].Description == "" {
++		t.Fatalf("Types = %v; want the described sketch type label first", types)
++	}
++	return types[0]
++}
++
++// TestLoadConfig_SketchListedInBoardYAML asserts a board.yaml listing the sketch type label keeps its own position and description, and gains no second sketch label.
++func TestLoadConfig_SketchListedInBoardYAML(t *testing.T) {
++	tiergate.Require(t, 0)
++	dir := writeBoardConfig(t, "readme: Home.md\ndesign_prefix: proposal-\ntypes:\n  bug: Broken\n  sketch: Approved, awaiting triage\n")
++	cfg, err := boardengine.LoadConfig(configengine.Dirs{Board: dir}, "board")
++	if err != nil {
++		t.Fatalf("LoadConfig() error = %v; want nil", err)
++	}
++	want := []boardengine.Label{{Name: "bug", Description: "Broken"}, {Name: boardengine.SketchType, Description: "Approved, awaiting triage"}}
++	if !reflect.DeepEqual(cfg.Types, want) {
++		t.Errorf("Types = %v; want %v", cfg.Types, want)
++	}
++}
++
+ // TestVocabulary asserts IsType and Known for a type, a plain label, an unknown label and the empty vocabulary of a path-only Config.
+ //
+ //testtiming:keep pins the IsType and Known answers for a type, a plain label, an unknown label and the empty vocabulary, which its covering test never asserts
+diff --git a/internal/boardengine/decision.go b/internal/boardengine/decision.go
+index 817c5464..aa97cda0 100644
+--- a/internal/boardengine/decision.go
++++ b/internal/boardengine/decision.go
+@@ -16,15 +16,6 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ )
+ 
+-// StatusDiscussed is the status a finished Discussion-only run leaves on its task: the Discussion was approved, its decision record stored, and no code built.
+-// It is no run status and no draft, so nothing starts the task until it is released.
+-const StatusDiscussed = "discussed"
+-
+-// isDiscussedStatus reports whether t carries StatusDiscussed.
+-func isDiscussedStatus(t Task) bool {
+-	return t.Status != nil && *t.Status == StatusDiscussed
+-}
+-
+ // ErrRecordEntryDone is the error StoreDecisionRecord wraps when the entry is done.
+ var ErrRecordEntryDone = errors.New("a landed entry keeps the decision record it last stored")
+ 
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index a8afe63e..c8d2d287 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -57,6 +57,7 @@
+ // and the older shape, a list of names, still loads read-only with empty descriptions.
+ // ConfigOpenMaps names the two keys as open maps,
+ // so configengine carries a repository's own entries whole through reconcile and --set.
++// The sketch type label (SketchType) is built in: LoadConfig puts it ahead of board.yaml's types unless the file lists it, since lym itself writes it.
+ // Vocabulary answers both questions, and Board copies it from its Config and sets it on every store it builds.
+ // A write that carries a label in neither list is refused, naming the entry, the label and board.yaml.
+ // A Board built from a bare path has no outputs configured, cannot write, and validates no label.
+@@ -64,8 +65,8 @@
+ // # Handles
+ //
+ // Every entry carries a handle, a letter and a number such as T4, B2 or E7, stored in board.json as the handle key, so the operator can name an entry without its slug.
+-// The letter is T for a task, P for a project, and for a note the upper-cased first letter of its type label, so the hub's board.yaml types decide the note letters;
+-// LoadConfig refuses type labels that do not begin with a letter, that share a first letter, or whose letter is T or P.
++// The letter is T for a task, P for a project, and for a note the upper-cased first letter of its type label, so the hub's board.yaml types decide the note letters and a Sketch takes S;
++// LoadConfig refuses type labels that do not begin with a letter, that share a first letter, the built-in sketch type label's included, or whose letter is T or P.
+ // The board alone assigns handles, and an upsert payload carrying one is refused.
+ // One assigner runs over the whole entry list on load, in the write critical section after the mutation and in the replay before its save:
+ // an entry keeps a stored handle of its own letter that no entry of lower id holds, and every other entry, in id order, takes the lowest number of its letter not in use.
+@@ -170,6 +171,7 @@
+ // A board without the top-level `draft_status` key is marked once: the next write sets `draft` on every open task whose status is empty and writes the key `draft_status: true` in the same save, and a board holding the key is never migrated again.
+ // The store's on-disk version stays 1, an older binary keeps the key as an unknown one, and a replayed commit that set it sets it on origin's board, so a replay cannot leave origin to migrate released tasks again.
+ // The accepted bound: a task an older binary creates after the migration has no status and starts without a release until every machine runs the new binary.
++// A task an older binary's Discussion-only run left in status `discussed` becomes a Sketch at the start of the next write, unless the write would refuse it as one, such as while another entry depends on it, when it keeps the status as a hand-set word.
+ //
+ // # README
+ //
+@@ -193,15 +195,14 @@
+ // An open project under a done project counts as under the root, since a done project has no section.
+ // README.md holds a `##` section per open project under the root, by handle, so every open project shows there with its own Running, Ready, Tasks, Notes and Done, and the root's `##` section comes last.
+ // A project file's header stands as its project's heading: after it come the project's sub-projects at `##`, then its own entries at `##`, or under `## Own entries` at `###` when it has open sub-projects.
+-// A project's own entries are a Tasks section, a Notes section grouped by type label, research first under the heading `Research`, then the other types in the order of the types list and the remainder under Other, and a Done section.
++// A project's own entries are a Tasks section, a Notes section grouped by type label, Sketches first under the heading `Sketches`, research next under the heading `Research`, then the other types in the order of the types list and the remainder under Other, and a Done section.
+ // An open project is in none of the Tasks layers: ComputeLayers puts it in its own Project layer, a run-held one in Running and a done one in the done layer, and RenderOrder places open projects by handle between open tasks and open notes, and a done project between done tasks and done notes.
+ // No project is a row of Tasks or Notes; a done project is a row of its parent file's Done table, its title linked to its file.
+ // Every section heading but Own entries ends in the number of entries listed under it in parentheses, such as `## Tasks (10)` or `### Ready (0)` in a project file, never the highest handle number, since handles have gaps.
+-// Tasks splits into Running, Ready, the dependency layers A, B and on, Independent for an isolated task, Discussed for a task whose Discussion-only run finished, and Draft for an unreleased one.
++// Tasks splits into Running, Ready, the dependency layers A, B and on, Independent for an isolated task, and Draft for an unreleased one.
+ // A task a run holds, by RunHolds as the run lock decides it, goes under Running and in no layer; Running is omitted when no task runs.
+ // An open draft task a run does not hold goes under Draft, whatever its dependencies or isolation, since nothing starts it until it is released;
+ // Draft follows Independent and is omitted when no task is draft, and a draft title cell opens with a `draft` code span before the bold title.
+-// A task carrying `discussed` (StatusDiscussed) goes under Discussed the same way, between Independent and Draft, its title cell opening with a `discussed` code span.
+ // Ready holds the open, released tasks with no open dependency, and is always written, as `_None._` when empty.
+ // A dependency on a done task does not count, and one on a running task does, so a task waiting on a run is not Ready.
+ // A dependency on a project that is not done counts too, and weighs as one on its deepest open landing member, so a task waiting on a project sits one layer below that member, in Layer A when the project's open members are all running, ready or draft, or it has none.
+@@ -209,9 +210,9 @@
+ // Each subsection, Done included, is one markdown table in RenderOrder's order: a task subsection and a Notes type subsection by handle, and Done its tasks before its notes, each by handle, so `lym board list` and `find` follow the same order.
+ // A row opens with the entry's handle, and a Notes row adds the Prio column after it, H for a high priority, L for a low one and blank for normal.
+ // The row then holds the bold title, with the brief as a `• ` bullet under it in the same cell, and then one `• ` bullet per run setting, a code span such as `loom: code_max_bounces 1` with a nested key as its dotted path, sorted, so the settings stack in height and add no column, the slug linked to its design doc when the entry has a body, with a `Sketch` link to its decision record file under it, in the same cell, when the entry carries the discussed flag, the one `Age<br>Revised` cell, the entry's age above the time since its last revision, blank for an unknown date, and the labels that are not type labels.
+-// The Running, Ready, layer, Discussed and Draft tables add a Recipe column after the slug, the recipe the task runs, the board's `default_recipe` (`darn` in the template) when its recipe field is empty, followed by ` · ` and the run profile when the task names one, such as `tapestry · light`; a task naming no profile takes its recipe's default profile and shows the recipe alone.
++// The Running, Ready, layer and Draft tables add a Recipe column after the slug, the recipe the task runs, the board's `default_recipe` (`darn` in the template) when its recipe field is empty, followed by ` · ` and the run profile when the task names one, such as `tapestry · light`; a task naming no profile takes its recipe's default profile and shows the recipe alone.
+ // The Notes and Done tables have no Recipe column.
+-// Running adds an At column, the run status without the state when the state is `running`, and an Owner column, the entry's effective owner machine, blank when none is recorded, and Ready, the layers, Discussed and Draft add an After column, the handles of the entries named in depends_on that are not done, a project as Dependencies judges it, one per line, an entry with no handle or no longer on the board named by its slug.
++// Running adds an At column, the run status without the state when the state is `running`, and an Owner column, the entry's effective owner machine, blank when none is recorded, and Ready, the layers and Draft add an After column, the handles of the entries named in depends_on that are not done, a project as Dependencies judges it, one per line, an entry with no handle or no longer on the board named by its slug.
+ // A pipe in a cell is escaped and a line break becomes a space, so an entry is always one row.
+ //
+ // # Intake
+@@ -241,12 +242,14 @@
+ // # Run lock
+ //
+ // A run holds a board entry while the entry's status has the run-status form "<state> · <producer>", which RunStatus composes and IsRunStatus recognizes.
+-// Nil, empty, "draft", "discussed", "done", "abandoned" and a hand-set word are not run statuses, and lock nothing.
++// Nil, empty, "draft", "done", "abandoned" and a hand-set word are not run statuses, and lock nothing.
+ // A held entry is the scope its run executes, so the write critical section refuses, before the save, any write whose net change on it removes it or touches a field other than status.
+ // The net change runs from the entries as loaded under the board file lock to the entries after the whole mutation,
+ // so a batch or merge that clears the status early and then edits the entry is still refused, and nothing reaches disk.
+ // A status-only net change passes: set-status, a merge's set_status and an upsert that differs only in status.
+ // The discussed flag is no scope either, so a held entry takes it, and only StoreDecisionRecord writes it.
++// A held task whose net change is becoming a Sketch with no status and no other scope change passes, since that change ends its Discussion-only run; MakeSketch writes it, and a hand write making the same change passes too, as set-status does.
++// The same write that also changes the entry's title, body or any other scope field, or that makes it a note without the sketch label, is refused.
+ // set-status is itself unguarded, so a live run's status can be cleared by hand.
+ // Prune passes, since a held entry's dependency on a done entry that the same write removes is not a change; every other depends_on change is refused.
+ // The refusal is a *RunLockedError that matches ErrRunLocked through errors.Is.
+@@ -270,7 +273,6 @@
+ // So a create of any verb, a batch or merge create, a note or project upserted to a task and a promoted note are `draft` even when the payload sets `status` to null.
+ // An entry that was a task before the write keeps an empty status the write left untouched, so an edit of a released task leaves it released.
+ // A task is released by a null status: `lym board set-status '{"slug":"<slug>","status":null}'`, an upsert setting `status` to null on a task, or a merge whose `set_status` sets null.
+-// A `discussed` task, which a finished Discussion-only run leaves, is released the same way.
+ // An empty string written to a task whose loaded status differs is `draft`, not a release.
+ // The owner write and the replay of a local commit run no draft rule: the first never makes a task, and the second copies entries a critical-section write already normalised.
+ //
+@@ -307,6 +309,15 @@
+ // A merge that removes a flagged slug and upserts it again keeps the flag.
+ // LoadConfig refuses a design_prefix that would render a design file onto a record file's name, a prefix of `decision-` or one starting with it, the empty prefix included.
+ //
++// # Sketch
++//
++// An entry whose Discussion-only run, a motif run, ended with its decision record approved and stored is a Sketch: a note of the built-in type `sketch`, handle letter S, which never runs.
++// It is the stage before triage, which breaks it down into tasks, each with its own type and recipe, or into a project.
++// Board.MakeSketch makes an entry one in one write: a note whose labels are `sketch` followed by the entry's labels that are not type labels, with no status, depends_on, isolated, recipe, profile, run_settings, pull_request or notify_on_land;
++// its title, brief, body, project, issues, Created date and discussed flag stay, and the write stamps Revised like any scope change.
++// It writes nothing for an absent, done or already sketched entry, and refuses while another entry depends on the entry, since a note cannot be depended on.
++// The README lists Sketches under their own `Sketches` heading, the first Notes subsection, and `lym board list --text` lists them after every other entry under a `sketches:` line.
++//
+ // # Siblings
+ //
+ // A write that gives an open task a depends_on entry it did not have reports its siblings: the other open tasks that wait on that same entry while sharing a module label with the written task.
+diff --git a/internal/boardengine/layer.go b/internal/boardengine/layer.go
+index 830bb4ca..531b0b8f 100644
+--- a/internal/boardengine/layer.go
++++ b/internal/boardengine/layer.go
+@@ -1,6 +1,6 @@
+ // layer.go — derived task fields.
+ //
+-// ComputeLayers assigns each task its README subsection: Running, Ready, a dependency layer, Independent, Discussed or Draft, and RenderOrder orders tasks for output.
++// ComputeLayers assigns each task its README subsection: Running, Ready, a dependency layer, Independent or Draft, and RenderOrder orders tasks for output.
+ // All computed at read time;
+ // never stored.
+ 
+@@ -11,22 +11,21 @@ import (
+ 	"sort"
+ )
+ 
+-// The non-letter layers: a running task, an open task waiting on nothing open, an isolated task, a task whose Discussion-only run finished, an unreleased task, an open project and a done entry.
++// The non-letter layers: a running task, an open task waiting on nothing open, an isolated task, an unreleased task, an open project and a done entry.
+ const (
+-	runningLayer   = "Running"
+-	readyLayer     = "Ready"
+-	isolatedLayer  = "Z"
+-	discussedLayer = "Discussed"
+-	draftLayer     = "Draft"
+-	projectLayer   = "Project"
+-	doneLayer      = "__done__"
++	runningLayer  = "Running"
++	readyLayer    = "Ready"
++	isolatedLayer = "Z"
++	draftLayer    = "Draft"
++	projectLayer  = "Project"
++	doneLayer     = "__done__"
+ )
+ 
+ // ComputeLayers assigns each task a bucket based on topological depth.
+ // A task a run holds is runningLayer, by RunHolds as the run lock decides it.
+ // An open project a run does not hold, a beam whose pawl run has not reached Parent-Align included, is projectLayer, never Ready or a letter.
+-// An open draft task a run does not hold is draftLayer, and one carrying StatusDiscussed is discussedLayer, whatever its dependencies or isolation, since nothing starts either until it is released;
+-// a dependency on either weighs as one on a ready task.
++// An open draft task a run does not hold is draftLayer, whatever its dependencies or isolation, since nothing starts it until it is released;
++// a dependency on one weighs as one on a ready task.
+ // An open task that is not a draft and has no open dependency is readyLayer, and every other task is the letter of its depth:
+ // A waits only on running, ready or draft tasks, B on something in A, and so on.
+ // A met dependency adds no depth, while one on a running task counts as one on a ready task, and cycle detection still follows running tasks.
+@@ -45,8 +44,6 @@ func ComputeLayers(tasks []Task) (map[string]string, error) {
+ 			layerMap[t.Slug] = projectLayer
+ 		} else if isDraft(t) {
+ 			layerMap[t.Slug] = draftLayer
+-		} else if isDiscussedStatus(t) {
+-			layerMap[t.Slug] = discussedLayer
+ 		} else if t.Isolated {
+ 			layerMap[t.Slug] = isolatedLayer
+ 		}
+@@ -210,8 +207,8 @@ func RenderOrder(tasks []Task) ([]TaskWithLayer, error) {
+ 		})
+ 	}
+ 
+-	// Running, then ready, then the letters A..Y, isolated, discussed, draft and done.
+-	bucketOrder := map[string]int{runningLayer: 0, readyLayer: 1, isolatedLayer: 27, discussedLayer: 28, draftLayer: 29, doneLayer: 30}
++	// Running, then ready, then the letters A..Y, isolated, draft and done.
++	bucketOrder := map[string]int{runningLayer: 0, readyLayer: 1, isolatedLayer: 27, draftLayer: 28, doneLayer: 29}
+ 	for letter := 'A'; letter <= 'Y'; letter++ {
+ 		bucketOrder[string(letter)] = 2 + int(letter-'A')
+ 	}
+diff --git a/internal/boardengine/layer_test.go b/internal/boardengine/layer_test.go
+index d1ec08d5..e0285c14 100644
+--- a/internal/boardengine/layer_test.go
++++ b/internal/boardengine/layer_test.go
+@@ -55,15 +55,6 @@ func TestComputeLayers(t *testing.T) {
+ 			},
+ 			want: map[string]string{"run": "Running", "x": "A", "y": "B", "free": "Ready", "word": "Ready"},
+ 		},
+-		{
+-			name: "a discussed task sits under Discussed whatever its dependencies, and weighs on a dependent as a ready one",
+-			tasks: []boardengine.Task{
+-				{ID: 1, Slug: "sketched", Title: "Sketched", DependsOn: []string{"base"}, Status: stringPtr(boardengine.StatusDiscussed), Discussed: true},
+-				{ID: 2, Slug: "base", Title: "Base"},
+-				{ID: 3, Slug: "after", Title: "After", DependsOn: []string{"sketched"}},
+-			},
+-			want: map[string]string{"sketched": "Discussed", "base": "Ready", "after": "A"},
+-		},
+ 		{
+ 			name: "a draft task carrying the discussed flag stays Draft, the layer following the status",
+ 			tasks: []boardengine.Task{
+diff --git a/internal/boardengine/render.go b/internal/boardengine/render.go
+index eaf889b1..dc771e5c 100644
+--- a/internal/boardengine/render.go
++++ b/internal/boardengine/render.go
+@@ -5,7 +5,7 @@
+ // with no open sub-project the own entries sit one level down, and with any they sit under an Own entries heading at the sub-projects' level, two levels down;
+ // the root's projects stand beside it rather than under it, so its section holds its own entries alone.
+ // README.md holds every top-level project's section under its header and the root's last, and a project file holds its project's sub-projects and own entries under its header.
+-// A project's own entries split into Tasks, by Running, Ready, dependency layers, Independent, Discussed and Draft, Notes with one subsection per type label, research first, then Done.
++// A project's own entries split into Tasks, by Running, Ready, dependency layers, Independent and Draft, Notes with one subsection per type label, Sketches first and research next, then Done.
+ // Each subsection holds one markdown table in RenderOrder's order, each row opening with the entry's handle, and a Notes table adds the priority as H or L after it, under Prio;
+ // README.md opens with the time it was rendered and the machine that owns the hub's prime, and a project file with the time, a link up to its parent's file, the project's brief, for a beam its owner, and the project's body with its headings shifted below the file's own;
+ // the rows show the bold title with the brief, the run profile and each run setting as a bullet under it, the linked slug with a Sketch link to the decision record under it for a discussed entry, the entry's age above its time since its last revision as of that time, and the labels that are not type labels;
+@@ -142,11 +142,14 @@ var (
+ // otherNotesHeading is the Notes subsection for a note whose type label is no longer configured.
+ const otherNotesHeading = "Other"
+ 
+-// researchType is the type label whose Notes subsection leads the others, headed without a plural s.
++// researchType is the type label of a measurement, bench or study, whose Notes subsection follows the Sketches.
+ const researchType = "research"
+ 
+-// researchHeading is the Notes subsection heading of researchType.
+-const researchHeading = "Research"
++// leadingNoteTypes are the type labels whose Notes subsections lead the others, in this order: Sketches wait for the operator's triage, and research follows them.
++var leadingNoteTypes = []string{SketchType, researchType}
++
++// typeHeadings are the Notes subsection headings of the type labels whose heading is not the label capitalised with an s appended.
++var typeHeadings = map[string]string{researchType: "Research", SketchType: "Sketches"}
+ 
+ // projectFilePrefix starts the file name of a project's own board file, which its slug and .md complete.
+ // The board's Bolt replayer recognises the same prefix as its own.
+@@ -223,10 +226,10 @@ func kindName(kind string) string {
+ 	return "Note"
+ }
+ 
+-// typeHeading is the Notes subsection heading of a type label: Research for research, else the name capitalised, with an s appended.
++// typeHeading is the Notes subsection heading of a type label: its typeHeadings entry, else the name capitalised, with an s appended.
+ func typeHeading(typeLabel string) string {
+-	if typeLabel == researchType {
+-		return researchHeading
++	if heading, irregular := typeHeadings[typeLabel]; irregular {
++		return heading
+ 	}
+ 	if typeLabel == "" {
+ 		return "s"
+@@ -234,14 +237,16 @@ func typeHeading(typeLabel string) string {
+ 	return strings.ToUpper(typeLabel[:1]) + typeLabel[1:] + "s"
+ }
+ 
+-// notesTypeOrder is the order of the Notes subsections: research first when it is configured, then the other types in configured order, then "" for Other.
++// notesTypeOrder is the order of the Notes subsections: the configured leadingNoteTypes in their order, then the other types in configured order, then "" for Other.
+ func notesTypeOrder(types []string) []string {
+ 	var order []string
+-	if slices.Contains(types, researchType) {
+-		order = append(order, researchType)
++	for _, lead := range leadingNoteTypes {
++		if slices.Contains(types, lead) {
++			order = append(order, lead)
++		}
+ 	}
+ 	for _, typeLabel := range types {
+-		if typeLabel != researchType {
++		if !slices.Contains(leadingNoteTypes, typeLabel) {
+ 			order = append(order, typeLabel)
+ 		}
+ 	}
+@@ -535,7 +540,7 @@ func (b boardView) table(entries []TaskWithLayer, table readmeTable) []string {
+ 	return append(lines, "")
+ }
+ 
+-// entrySections builds the Tasks, Notes and Done sections of project, rootProject naming the root, with level the heading level of their headings and their subsections one level down: Tasks split into Running, Ready, dependency layers, Independent, Discussed and Draft, Notes split by type label, then Done when any of its entries is done.
++// entrySections builds the Tasks, Notes and Done sections of project, rootProject naming the root, with level the heading level of their headings and their subsections one level down: Tasks split into Running, Ready, dependency layers, Independent and Draft, Notes split by type label, then Done when any of its entries is done.
+ // Every section holds only the entries whose project is project, while layers, After cells and owners read the whole board.
+ func (b boardView) entrySections(project Task, level int) []string {
+ 	sublevel := level + 1
+@@ -579,7 +584,7 @@ func (b boardView) entrySections(project Task, level int) []string {
+ 	} else {
+ 		lines = append(lines, emptySectionLine, "")
+ 	}
+-	// RenderOrder sorts tasks by layer, so each dependency layer, Independent, Discussed and Draft is a contiguous run.
++	// RenderOrder sorts tasks by layer, so each dependency layer, Independent and Draft is a contiguous run.
+ 	for start := 0; start < len(tasks); {
+ 		end := start
+ 		for end < len(tasks) && tasks[end].Layer == tasks[start].Layer {
+@@ -697,8 +702,6 @@ func layerSection(layer string) readmeSection {
+ 		return readmeSection{"Layer A", "Waits only on Running, Ready or Draft entries."}
+ 	case isolatedLayer:
+ 		return readmeSection{"Independent", "Depends on nothing and nothing depends on it, by design."}
+-	case discussedLayer:
+-		return readmeSection{"Discussed", "Discussion approved and its decision record stored; nothing starts it until its status is cleared."}
+ 	case draftLayer:
+ 		return readmeSection{"Draft", "Not released; nothing starts it until its status is cleared."}
+ 	default:
+@@ -757,14 +760,11 @@ func ageCell(t Task, now time.Time) string {
+ 	return age + cellBreak + revised
+ }
+ 
+-// entryCell is the bold title, led by a `draft` or `discussed` code span for a task carrying that status, with the brief as one bullet under it when there is one, then one code-span bullet per run setting.
++// entryCell is the bold title, led by a `draft` code span for a draft task, with the brief as one bullet under it when there is one, then one code-span bullet per run setting.
+ func entryCell(t Task) string {
+ 	cell := "**" + cellText(t.Title) + "**"
+-	switch {
+-	case isDraft(t):
++	if isDraft(t) {
+ 		cell = codeSpan(StatusDraft) + " " + cell
+-	case isDiscussedStatus(t):
+-		cell = codeSpan(StatusDiscussed) + " " + cell
+ 	}
+ 	if t.Brief != "" {
+ 		cell += cellBullet + cellText(t.Brief)
+diff --git a/internal/boardengine/render_test.go b/internal/boardengine/render_test.go
+index 979a77ee..366485d6 100644
+--- a/internal/boardengine/render_test.go
++++ b/internal/boardengine/render_test.go
+@@ -1076,33 +1076,27 @@ func TestRenderSlugCellLinksTheDecisionRecord(t *testing.T) {
+ 	}
+ }
+ 
+-// TestRenderDiscussedSection pins how a task a Discussion-only run finished renders: under a Discussed subsection before Draft, its title led by a `discussed` code span.
+-func TestRenderDiscussedSection(t *testing.T) {
++// TestRenderSketchSection pins that Sketches render under their own Sketches subsection, the first of the Notes subsections and ahead of Research, each row a note row with its Sketch link and its module labels.
++func TestRenderSketchSection(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 	tasks := []boardengine.Task{
+-		{ID: 1, Handle: "T1", Slug: "sketched", Title: "Sketched", Kind: boardengine.KindTask, Labels: []string{"bug"}, Status: stringPtr(boardengine.StatusDiscussed), Discussed: true},
+-		{ID: 2, Handle: "T2", Slug: "unreleased", Title: "Unreleased", Kind: boardengine.KindTask, Labels: []string{"bug"}, Status: stringPtr(boardengine.StatusDraft)},
++		{ID: 1, Handle: "R1", Slug: "measure", Title: "Measure", Kind: boardengine.KindNote, Labels: []string{"research"}},
++		{ID: 2, Handle: "S1", Slug: "sketched", Title: "Sketched", Kind: boardengine.KindNote, Labels: []string{boardengine.SketchType, "board"}, Discussed: true},
+ 	}
+-	result, err := boardengine.Render(tasks, "", boardengine.Outputs{Readme: "README.md", DesignPrefix: "design-", Types: readmeTypes, DefaultRecipe: "darn"}, renderTime)
++	types := append([]string{boardengine.SketchType}, readmeTypes...)
++	result, err := boardengine.Render(tasks, "", boardengine.Outputs{Readme: "README.md", DesignPrefix: "design-", Types: types, DefaultRecipe: "darn"}, renderTime)
+ 	if err != nil {
+ 		t.Fatalf("Render: %v", err)
+ 	}
+ 	readme := result["README.md"]
+-	discussed := strings.Index(readme, " Discussed (1)\n\nDiscussion approved and its decision record stored; nothing starts it until its status is cleared.\n")
+-	draft := strings.Index(readme, " Draft (1)\n")
+-	if discussed < 0 || draft < 0 || discussed > draft {
+-		t.Errorf("README Discussed section at %d, Draft at %d; want both, Discussed first:\n%s", discussed, draft, readme)
+-	}
+-	if want := "| T1 | `discussed` **Sketched** |"; !strings.Contains(readme, want) {
+-		t.Errorf("README lacks row opening %q:\n%s", want, readme)
++	sketches := strings.Index(readme, " Sketches (1)\n")
++	research := strings.Index(readme, " Research (1)\n")
++	if sketches < 0 || research < 0 || sketches > research {
++		t.Errorf("README Sketches section at %d, Research at %d; want both, Sketches first:\n%s", sketches, research, readme)
+ 	}
+-	if discussed >= 0 && draft > discussed {
+-		for _, column := range []string{"Recipe", "After"} {
+-			if !strings.Contains(readme[discussed:draft], column) {
+-				t.Errorf("README Discussed section lacks the %s column:\n%s", column, readme[discussed:draft])
+-			}
+-		}
++	if want := "| S1 |  | **Sketched** | `sketched`<br>[Sketch](decision-sketched.md) |  | board |"; !strings.Contains(readme, want) {
++		t.Errorf("README lacks row %q:\n%s", want, readme)
+ 	}
+ }
+ 
+diff --git a/internal/boardengine/replay.go b/internal/boardengine/replay.go
+index 64c6182a..9ad3b8cb 100644
+--- a/internal/boardengine/replay.go
++++ b/internal/boardengine/replay.go
+@@ -531,7 +531,7 @@ func (r *replayRun) changeEntry(before, commit Task) {
+ 	}
+ 	after := cloneTasks(r.store.tasks)
+ 	after[index] = incoming
+-	if err := checkRunLocks(r.origin, after); err != nil {
++	if err := checkRunLocks(r.origin, after, *r.store.vocab); err != nil {
+ 		r.refuse(commit.Slug, label, err)
+ 		return
+ 	}
+@@ -557,7 +557,7 @@ func (r *replayRun) removeEntry(before Task) {
+ 		}
+ 	}
+ 	after := slices.Delete(cloneTasks(r.store.tasks), index, index+1)
+-	if err := checkRunLocks(r.origin, after); err != nil {
++	if err := checkRunLocks(r.origin, after, *r.store.vocab); err != nil {
+ 		r.refuse(before.Slug, "", err)
+ 		return
+ 	}
+diff --git a/internal/boardengine/replay_test.go b/internal/boardengine/replay_test.go
+index 653770f1..6a4eb75c 100644
+--- a/internal/boardengine/replay_test.go
++++ b/internal/boardengine/replay_test.go
+@@ -235,6 +235,19 @@ func TestFabricReplay(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name:        "HeldTaskBecomingASketchIsNotRefused",
++			base:        []Task{replayEntry("a")},
++			origin:      []Task{replayEntry("a", withStatus(runLocked))},
++			parent:      []Task{replayEntry("a", withStatus(runLocked))},
++			commit:      []Task{replayEntry("a", withLabels("sketch"), asNote)},
++			wantEntries: map[string]string{"a": "a"},
++			check: func(t *testing.T, _ string, got map[string]Task) {
++				if got["a"].Kind != KindNote || got["a"].Status != nil {
++					t.Errorf("a kind, status = %q, %v; want note, none", got["a"].Kind, got["a"].Status)
++				}
++			},
++		},
+ 		{
+ 			name:        "DependsOnAnEntryARefusedChangeAddedIsRefusedToo",
+ 			base:        []Task{replayEntry("a"), replayEntry("b", withTitle("B"))},
+diff --git a/internal/boardengine/runlock.go b/internal/boardengine/runlock.go
+index d9b11ac6..b7bc3e2f 100644
+--- a/internal/boardengine/runlock.go
++++ b/internal/boardengine/runlock.go
+@@ -131,11 +131,12 @@ func (e *ProjectRecordLockedError) Is(target error) bool {
+ 
+ // checkRunLocks judges each run-status entry of loaded by its net change to after.
+ // An entry RunHolds accepts is refused when it is absent from after, or when any field but Status differs; Unknown is never compared, since this binary cannot change a kept key.
++// A held task whose net change is becoming a Sketch with no status and no other scope change, as vocab's type labels judge it, passes, since that change ends its Discussion-only run; a title, body or other scope change alongside it is refused.
+ // A beam project whose run holds nothing is refused only when it is absent from after, or its project, kind, recipe or beam differs, with a BeamRunLockedError.
+ // Its body change is refused with a ProjectRecordLockedError once ProjectRecordHeld accepts it.
+ // A dependency on a done entry that the same write removes does not count as a change, so prune passes.
+ // It returns the first refusal in loaded order.
+-func checkRunLocks(loaded, after []Task) error {
++func checkRunLocks(loaded, after []Task, vocab Vocabulary) error {
+ 	afterBySlug := make(map[string]Task, len(after))
+ 	for _, task := range after {
+ 		afterBySlug[task.Slug] = task
+@@ -148,6 +149,9 @@ func checkRunLocks(loaded, after []Task) error {
+ 		}
+ 		now, kept := afterBySlug[before.Slug]
+ 		if RunHolds(before) {
++			if kept && endsAsSketch(before, now, vocab, removedDone) {
++				continue
++			}
+ 			if !kept || scopeChanged(before, now, removedDone) {
+ 				return &RunLockedError{Slug: before.Slug, Status: *before.Status}
+ 			}
+diff --git a/internal/boardengine/runlock_test.go b/internal/boardengine/runlock_test.go
+index 9a4d95bc..ce10d715 100644
+--- a/internal/boardengine/runlock_test.go
++++ b/internal/boardengine/runlock_test.go
+@@ -360,7 +360,7 @@ func TestRunLock_BeamKindAndBeamChange(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			err := boardengine.CheckRunLocks([]boardengine.Task{before}, []boardengine.Task{tt.after})
++			err := boardengine.CheckRunLocks([]boardengine.Task{before}, []boardengine.Task{tt.after}, boardengine.Vocabulary{})
+ 			var beamErr *boardengine.BeamRunLockedError
+ 			if !errors.As(err, &beamErr) || !errors.Is(err, boardengine.ErrRunLocked) || !strings.Contains(err.Error(), "lym batten cancel locked") {
+ 				t.Errorf("CheckRunLocks error = %v; want a *BeamRunLockedError matching ErrRunLocked and naming lym batten cancel locked", err)
+diff --git a/internal/boardengine/sketch.go b/internal/boardengine/sketch.go
+new file mode 100644
+index 00000000..55f8ced8
+--- /dev/null
++++ b/internal/boardengine/sketch.go
+@@ -0,0 +1,102 @@
++// sketch.go — the Sketch: the built-in sketch type label, the one write that makes an entry a Sketch at the end of its Discussion-only run, and the migration of a task an older binary left discussed.
++
++package boardengine
++
++import (
++	"errors"
++	"fmt"
++	"slices"
++)
++
++// SketchType is the built-in type label of a Sketch: a note whose Discussion was approved and whose decision record is stored, which never runs and waits for the triage that breaks it into tasks or a project.
++// Every board's vocabulary carries it, whatever board.yaml lists, since lym itself writes it.
++const SketchType = "sketch"
++
++// sketchTypeDescription is the description of the built-in sketch type label when board.yaml does not list it.
++const sketchTypeDescription = "a note whose Discussion was approved and whose decision record is stored, waiting for triage into tasks or a project"
++
++// LegacyStatusDiscussed is the status an older binary left on a task whose Discussion-only run finished.
++// A task still carrying it is no run's to start, so a start guard refuses it like a draft.
++const LegacyStatusDiscussed = "discussed"
++
++// ErrSketchRefused matches, through errors.Is, a MakeSketch the board refused as an invalid write, such as while another entry depends on the entry.
++// Any other MakeSketch error is a failure of the write itself, after which the entry may or may not be a Sketch.
++var ErrSketchRefused = errors.New("board refuses the entry as a Sketch")
++
++// withSketchType returns types led by the built-in sketch type label, or types unchanged when board.yaml already lists it.
++func withSketchType(types []Label) []Label {
++	if slices.ContainsFunc(types, func(l Label) bool { return l.Name == SketchType }) {
++		return types
++	}
++	return append([]Label{{Name: SketchType, Description: sketchTypeDescription}}, types...)
++}
++
++// IsSketch reports whether an entry of kind carrying labels is a Sketch: a note carrying the sketch type label.
++func IsSketch(kind string, labels []string) bool {
++	return kind == KindNote && slices.Contains(labels, SketchType)
++}
++
++// sketchOf returns t made a Sketch: a note whose labels are the sketch type label followed by t's labels that vocab does not report as type labels.
++// It carries no status and none of the fields a run, a landing or the dependency graph reads: depends_on, isolated, recipe, profile, run_settings, pull_request and notify_on_land.
++// Every other field, the discussed flag included, stays.
++func sketchOf(t Task, vocab Vocabulary) Task {
++	labels := []string{SketchType}
++	for _, label := range t.Labels {
++		if !vocab.IsType(label) {
++			labels = append(labels, label)
++		}
++	}
++	t.Kind = KindNote
++	t.Labels = labels
++	t.Status = nil
++	t.DependsOn = []string{}
++	t.Isolated = false
++	t.Recipe = ""
++	t.Profile = ""
++	t.RunSettings = nil
++	t.PullRequest = ""
++	t.NotifyOnLand = false
++	return t
++}
++
++// endsAsSketch reports whether the net change from before to now is a task becoming a Sketch with no status and no other scope change, the change a Discussion-only run's end makes to the entry its run holds.
++// now must equal sketchOf(before, vocab) in every field scopeChanged compares, so a change to the title, body or any other scope field alongside it is no such change.
++func endsAsSketch(before, now Task, vocab Vocabulary, removedDone map[string]bool) bool {
++	return before.Kind == KindTask &&
++		IsSketch(now.Kind, now.Labels) &&
++		now.Status == nil &&
++		!scopeChanged(sketchOf(before, vocab), now, removedDone)
++}
++
++// MakeSketch makes the entry slug a Sketch under the write lock, and writes nothing when the entry is absent, done or already a Sketch.
++// It ends a Discussion-only run: the entry leaves its run status in the same write, which the run lock lets through, so it never reads as a released task.
++// Like any write that makes an entry a note, it refuses while another entry depends on the entry, naming those entries; that refusal matches ErrSketchRefused.
++func (b *Board) MakeSketch(slug string) error {
++	_, err := b.boardCriticalSection(func(store *Store) (any, error) {
++		i, found := store.index(slug)
++		if !found || isDone(store.tasks[i]) || IsSketch(store.tasks[i].Kind, store.tasks[i].Labels) {
++			return noWrite{}, nil
++		}
++		incoming := sketchOf(store.tasks[i], b.vocab)
++		if err := store.validateWrite(store.tasks, incoming); err != nil {
++			return nil, fmt.Errorf("%w: %w", ErrSketchRefused, err)
++		}
++		store.tasks[i] = incoming
++		return nil, nil
++	}, nil)
++	return err
++}
++
++// migrateDiscussedStatus makes a Sketch of every open task of the store carrying LegacyStatusDiscussed, in place.
++// A task the write would refuse as a Sketch, such as one another entry depends on, keeps the status as a hand-set word.
++func migrateDiscussedStatus(store *Store) {
++	for i, task := range store.tasks {
++		if task.Kind != KindTask || isDone(task) || task.Status == nil || *task.Status != LegacyStatusDiscussed {
++			continue
++		}
++		sketch := sketchOf(task, *store.vocab)
++		if store.validateWrite(store.tasks, sketch) == nil {
++			store.tasks[i] = sketch
++		}
++	}
++}
+diff --git a/internal/boardengine/sketch_test.go b/internal/boardengine/sketch_test.go
+new file mode 100644
+index 00000000..61be70b8
+--- /dev/null
++++ b/internal/boardengine/sketch_test.go
+@@ -0,0 +1,187 @@
++// sketch_test.go pins the Sketch end of a Discussion-only run: MakeSketch's one write on a run-held task, the entries it leaves alone or refuses, and the migration of a task an older binary left discussed.
++
++package boardengine_test
++
++import (
++	"errors"
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// newSketchBoard returns a board in a fresh directory whose vocabulary carries the sketch type label LoadConfig adds, the facade tests' types and the plain label board.
++func newSketchBoard(t *testing.T) *boardengine.Board {
++	t.Helper()
++	types := append([]boardengine.Label{{Name: boardengine.SketchType}}, testTypes...)
++	return boardengine.New(boardengine.Config{Path: t.TempDir(), Readme: "Home.md", DesignPrefix: "proposal-", Types: types, Labels: []boardengine.Label{{Name: "board"}}, SkipGit: true})
++}
++
++// mustUpsertEntry upserts fields onto b, failing t on a refusal.
++func mustUpsertEntry(t *testing.T, b *boardengine.Board, fields map[string]any) {
++	t.Helper()
++	if _, err := b.UpsertTask(fields); err != nil {
++		t.Fatalf("UpsertTask(%v) error = %v; want nil", fields, err)
++	}
++}
++
++// mustGetEntry returns the entry slug of b, failing t when it is absent.
++func mustGetEntry(t *testing.T, b *boardengine.Board, slug string) boardengine.Task {
++	t.Helper()
++	task, found, err := b.GetTask(slug)
++	if err != nil || !found {
++		t.Fatalf("GetTask(%q) = %v, %v; want the entry", slug, found, err)
++	}
++	return task
++}
++
++// TestMakeSketch asserts MakeSketch turns a run-held task into a Sketch in one write, leaves an absent or done entry alone and refuses an entry another depends on.
++func TestMakeSketch(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	t.Run("HeldTaskBecomesASketch", func(t *testing.T) {
++		t.Parallel()
++		b := newSketchBoard(t)
++		mustUpsertEntry(t, b, map[string]any{"slug": "base", "title": "Base", "kind": "task", "labels": bugLabels})
++		mustUpsertEntry(t, b, map[string]any{"slug": "grouping", "title": "Grouping", "kind": "project", "labels": bugLabels})
++		mustUpsertEntry(t, b, map[string]any{"slug": "motif", "title": "Motif", "kind": "task", "labels": []string{"bug", "board"}, "recipe": "motif", "depends_on": []string{"base"}, "run_settings": map[string]any{"loom": map[string]any{"code_max_bounces": 1}},
++			"isolated": true, "profile": "light", "pull_request": "on", "notify_on_land": true,
++			"brief": "short", "body": "The body.", "issues": []int{3}})
++		mustUpsertEntry(t, b, map[string]any{"slug": "motif", "project": "grouping"})
++		if err := b.SetRunStatus("motif", boardengine.RunStatus("running", "Discussion-Review")); err != nil {
++			t.Fatalf("SetRunStatus() error = %v; want nil", err)
++		}
++		if err := b.StoreDecisionRecord("motif", []byte("record\n")); err != nil {
++			t.Fatalf("StoreDecisionRecord() error = %v; want nil", err)
++		}
++
++		created := mustGetEntry(t, b, "motif").Created
++
++		if err := b.MakeSketch("motif"); err != nil {
++			t.Fatalf("MakeSketch() error = %v; want nil", err)
++		}
++
++		got := mustGetEntry(t, b, "motif")
++		if !got.Created.Equal(created) || got.Revised.Before(created) {
++			t.Errorf("entry created, revised = %v, %v; want created %v kept and revised not before it", got.Created, got.Revised, created)
++		}
++		if got.Kind != boardengine.KindNote || !slices.Equal(got.Labels, []string{boardengine.SketchType, "board"}) || got.Handle != "S1" {
++			t.Errorf("entry kind, labels, handle = %q, %v, %q; want note, [sketch board], S1", got.Kind, got.Labels, got.Handle)
++		}
++		if got.Status != nil || got.Recipe != "" || len(got.DependsOn) != 0 || got.RunSettings != nil {
++			t.Errorf("entry status, recipe, depends_on, run_settings = %v, %q, %v, %v; want none of them", got.Status, got.Recipe, got.DependsOn, got.RunSettings)
++		}
++		if !got.Discussed || got.Title != "Motif" {
++			t.Errorf("entry discussed, title = %t, %q; want true, Motif", got.Discussed, got.Title)
++		}
++		if got.Isolated || got.Profile != "" || got.PullRequest != "" || got.NotifyOnLand {
++			t.Errorf("entry isolated, profile, pull_request, notify_on_land = %t, %q, %q, %t; want all cleared", got.Isolated, got.Profile, got.PullRequest, got.NotifyOnLand)
++		}
++		if got.Project != "grouping" || got.Brief != "short" || got.Body != "The body." || !slices.Equal(got.Issues, []int{3}) {
++			t.Errorf("entry project, brief, body, issues = %q, %q, %q, %v; want grouping, short, The body., [3]", got.Project, got.Brief, got.Body, got.Issues)
++		}
++	})
++
++	t.Run("AbsentAndDoneEntriesStay", func(t *testing.T) {
++		t.Parallel()
++		b := newSketchBoard(t)
++		mustUpsertEntry(t, b, map[string]any{"slug": "landed", "title": "Landed", "kind": "task", "labels": bugLabels})
++		done := "done"
++		if err := b.SetStatus("landed", &done); err != nil {
++			t.Fatalf("SetStatus() error = %v; want nil", err)
++		}
++		mustUpsertEntry(t, b, map[string]any{"slug": "sketched", "title": "Sketched", "kind": "note", "labels": []string{boardengine.SketchType}})
++		for _, slug := range []string{"absent", "landed", "sketched"} {
++			if err := b.MakeSketch(slug); err != nil {
++				t.Errorf("MakeSketch(%q) error = %v; want nil", slug, err)
++			}
++		}
++		if got := mustGetEntry(t, b, "sketched"); !slices.Equal(got.Labels, []string{boardengine.SketchType}) || got.Kind != boardengine.KindNote {
++			t.Errorf("sketched entry kind, labels = %q, %v; want note, [sketch]", got.Kind, got.Labels)
++		}
++		if got := mustGetEntry(t, b, "landed"); got.Kind != boardengine.KindTask {
++			t.Errorf("done entry kind = %q; want task", got.Kind)
++		}
++	})
++
++	t.Run("DependedOnEntryIsRefused", func(t *testing.T) {
++		t.Parallel()
++		b := newSketchBoard(t)
++		mustUpsertEntry(t, b, map[string]any{"slug": "motif", "title": "Motif", "kind": "task", "labels": bugLabels})
++		mustUpsertEntry(t, b, map[string]any{"slug": "after", "title": "After", "kind": "task", "labels": bugLabels, "depends_on": []string{"motif"}})
++
++		err := b.MakeSketch("motif")
++		if !errors.Is(err, boardengine.ErrSketchRefused) || !strings.Contains(err.Error(), "after") || !strings.Contains(err.Error(), "set-deps") {
++			t.Errorf("MakeSketch() error = %v; want an ErrSketchRefused refusal naming the dependent and set-deps", err)
++		}
++		if got := mustGetEntry(t, b, "motif"); got.Kind != boardengine.KindTask {
++			t.Errorf("refused entry kind = %q; want task", got.Kind)
++		}
++	})
++}
++
++// TestRunLock_SketchExemptionIsTheWholeNetChange asserts a run-held task passes the run lock only when it becomes a status-less Sketch with no other scope change.
++func TestRunLock_SketchExemptionIsTheWholeNetChange(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	running := boardengine.RunStatus("running", "Discussion-Review")
++	vocab := boardengine.Vocabulary{Types: []string{boardengine.SketchType, "bug"}}
++	before := boardengine.Task{Slug: "held", Title: "Held", Body: "Body", Kind: boardengine.KindTask, Labels: []string{"bug", "board"}, Recipe: "motif", Status: &running}
++	sketch := func(edit func(*boardengine.Task)) boardengine.Task {
++		now := boardengine.Task{Slug: "held", Title: "Held", Body: "Body", Kind: boardengine.KindNote, Labels: []string{boardengine.SketchType, "board"}}
++		edit(&now)
++		return now
++	}
++	tests := []struct {
++		name    string
++		after   boardengine.Task
++		wantErr bool
++	}{
++		{"PlainSketchPasses", sketch(func(*boardengine.Task) {}), false},
++		{"SketchWithATitleChangeIsRefused", sketch(func(task *boardengine.Task) { task.Title = "Renamed" }), true},
++		{"SketchWithABodyChangeIsRefused", sketch(func(task *boardengine.Task) { task.Body = "Rewritten" }), true},
++		{"SketchThatKeepsItsRunStatusIsRefused", sketch(func(task *boardengine.Task) { task.Status = &running }), true},
++		{"NoteWithoutTheSketchLabelIsRefused", sketch(func(task *boardengine.Task) { task.Labels = []string{"board"} }), true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			err := boardengine.CheckRunLocks([]boardengine.Task{before}, []boardengine.Task{tt.after}, vocab)
++			if tt.wantErr != errors.Is(err, boardengine.ErrRunLocked) || (!tt.wantErr && err != nil) {
++				t.Errorf("CheckRunLocks error = %v; want a refusal matching ErrRunLocked = %t", err, tt.wantErr)
++			}
++		})
++	}
++}
++
++// TestDiscussedTaskBecomesASketchOnTheNextWrite asserts a task left in status discussed becomes a Sketch at the next write of any entry, unless another entry depends on it.
++func TestDiscussedTaskBecomesASketchOnTheNextWrite(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	b := newSketchBoard(t)
++	mustUpsertEntry(t, b, map[string]any{"slug": "talked", "title": "Talked", "kind": "task", "labels": []string{"bug", "board"}})
++	mustUpsertEntry(t, b, map[string]any{"slug": "needed", "title": "Needed", "kind": "task", "labels": bugLabels})
++	mustUpsertEntry(t, b, map[string]any{"slug": "needs", "title": "Needs", "kind": "task", "labels": bugLabels, "depends_on": []string{"needed"}})
++	discussed := boardengine.LegacyStatusDiscussed
++	for _, slug := range []string{"talked", "needed"} {
++		if err := b.SetStatus(slug, &discussed); err != nil {
++			t.Fatalf("SetStatus(%q) error = %v; want nil", slug, err)
++		}
++	}
++
++	if err := b.Rerender(); err != nil {
++		t.Fatalf("Rerender() error = %v; want nil", err)
++	}
++
++	got := mustGetEntry(t, b, "talked")
++	if got.Kind != boardengine.KindNote || !slices.Equal(got.Labels, []string{boardengine.SketchType, "board"}) || got.Status != nil {
++		t.Errorf("entry kind, labels, status = %q, %v, %v; want note, [sketch board], none", got.Kind, got.Labels, got.Status)
++	}
++	if kept := mustGetEntry(t, b, "needed"); kept.Kind != boardengine.KindTask || kept.Status == nil || *kept.Status != discussed {
++		t.Errorf("depended-on entry kind, status = %q, %v; want task, discussed", kept.Kind, kept.Status)
++	}
++}
+diff --git a/internal/loomcli/commitstatus_integration_test.go b/internal/loomcli/commitstatus_integration_test.go
+index 0f293922..700e1e39 100644
+--- a/internal/loomcli/commitstatus_integration_test.go
++++ b/internal/loomcli/commitstatus_integration_test.go
+@@ -1,8 +1,9 @@
+-// commitstatus_integration_test.go drives the commit-status seam each wiring entry point installs against a real hub pair and its hub board, to pin the finished status it writes per recipe.
++// commitstatus_integration_test.go drives the commit-status seam each wiring entry point installs against a real hub pair and its hub board, to pin the board entry a finished run leaves per recipe.
+ 
+ package loomcli
+ 
+ import (
++	"slices"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+@@ -12,10 +13,11 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestWiredCommitStatus_WritesFinishedStatus drives the seam each of wireLightweight and wire installs through a run's last transition and asserts the board status it leaves:
+-// a recipe with no Finalize row marks the entry discussed, and one with a Finalize row leaves the status of the last running transition.
++// TestWiredCommitStatus_FinishedRunEntry drives the seam each of wireLightweight and wire installs through a run's last transition and asserts the board entry it leaves:
++// a recipe with no Finalize row makes the run-held task a Sketch with no status, unless another entry depends on it, which leaves the task draft;
++// one with a Finalize row leaves the task with the status of the last running transition.
+ // It is serial because it sets the board skip variable, which is process-global.
+-func TestWiredCommitStatus_WritesFinishedStatus(t *testing.T) {
++func TestWiredCommitStatus_FinishedRunEntry(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Setenv("BOARD_SKIP_GIT", "1")
+ 	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+@@ -38,10 +40,16 @@ func TestWiredCommitStatus_WritesFinishedStatus(t *testing.T) {
+ 		name   string
+ 		slug   string
+ 		recipe string
+-		want   string
++		// wantKind and wantLabels are the entry's kind and labels after the finish, and wantStatus its status, "" for none.
++		wantKind   string
++		wantLabels []string
++		wantStatus string
++		// dependedOn makes another entry depend on the run's entry, so the board refuses to make it a Sketch.
++		dependedOn bool
+ 	}{
+-		{"FinalizeLessRunMarksTheEntryDiscussed", "motifrun", shedrun.RecipeMotif, boardengine.StatusDiscussed},
+-		{"FinalizingRunLeavesTheLastRunningStatus", "tapestryrun", shedrun.RecipeTapestry, running},
++		{"FinalizeLessRunMakesTheEntryASketch", "motifrun", shedrun.RecipeMotif, boardengine.KindNote, []string{boardengine.SketchType}, "", false},
++		{"FinalizingRunLeavesTheLastRunningStatus", "tapestryrun", shedrun.RecipeTapestry, boardengine.KindTask, []string{"bug"}, running, false},
++		{"RefusedSketchLeavesTheEntryDraft", "dependedrun", shedrun.RecipeMotif, boardengine.KindTask, []string{"bug"}, boardengine.StatusDraft, true},
+ 	}
+ 	for _, w := range wirings {
+ 		for _, tt := range tests {
+@@ -59,6 +67,11 @@ func TestWiredCommitStatus_WritesFinishedStatus(t *testing.T) {
+ 				if _, err := board.UpsertTask(map[string]any{"slug": slug, "title": "Finish", "kind": "task", "labels": []string{"bug"}}); err != nil {
+ 					t.Fatalf("UpsertTask() error = %v; want nil", err)
+ 				}
++				if tt.dependedOn {
++					if _, err := board.UpsertTask(map[string]any{"slug": slug + "-after", "title": "After", "kind": "task", "labels": []string{"bug"}, "depends_on": []string{slug}}); err != nil {
++						t.Fatalf("UpsertTask() error = %v; want nil", err)
++					}
++				}
+ 				if err := board.SetRunStatus(slug, running); err != nil {
+ 					t.Fatalf("SetRunStatus() error = %v; want nil", err)
+ 				}
+@@ -74,8 +87,15 @@ func TestWiredCommitStatus_WritesFinishedStatus(t *testing.T) {
+ 				if err != nil || !found {
+ 					t.Fatalf("GetTask(%q) = %v, %v; want the entry", slug, found, err)
+ 				}
+-				if task.Status == nil || *task.Status != tt.want {
+-					t.Errorf("board status = %v; want %q", task.Status, tt.want)
++				if task.Kind != tt.wantKind || !slices.Equal(task.Labels, tt.wantLabels) {
++					t.Errorf("board entry kind, labels = %q, %v; want %q, %v", task.Kind, task.Labels, tt.wantKind, tt.wantLabels)
++				}
++				status := ""
++				if task.Status != nil {
++					status = *task.Status
++				}
++				if status != tt.wantStatus {
++					t.Errorf("board status = %q; want %q", status, tt.wantStatus)
+ 				}
+ 			})
+ 		}
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 61e0f644..ef6c7371 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -22,7 +22,8 @@
+ // `decision add` copies the committed record onto the board entry after its commit once the run is past that approval, reporting a failed copy as `record_store_error` and never failing the verb, and `decision store` makes the same copy by hand, admitting the unnamed shell, the run's arbiter and its parent orch.
+ // Each status transition writes `<state> · <producer>` on the run's board entry, the run's start write included, so the entry names the first row while it runs.
+ // A finished run of a recipe with a Finalize row writes nothing, its landing having marked the entry done.
+-// A finished run of a recipe with no Finalize row, a motif run, writes the discussed status, so the entry leaves its run lock, shows as finished and waits for the operator with its record stored.
++// A finished run of a recipe with no Finalize row, a motif run, makes its entry a Sketch, a note of the built-in type `sketch` that leaves its run lock, never runs and waits for the operator's triage with its record stored;
++// when the board refuses that, as while another entry depends on the entry, the run warns and leaves the entry draft, and any other failure of the write is retried at the run's next finished transition.
+ //
+ // `wire` fills `Env.GateFixer` for every recipe through `gateFixerSeam`, which wraps the gate of a Darn-Write, Plan-Write or Discussion-Write row whose `fixer` element names a model-spec, so a failure at the writer's idle boundary goes to a cold fixer before the writer hears of it.
+ // The seam returns the spec unchanged on the prime and outside a hub, where no pair owns a fixer.
+diff --git a/internal/loomcli/recipekeyed_test.go b/internal/loomcli/recipekeyed_test.go
+index 8cd96a8a..b6dd360f 100644
+--- a/internal/loomcli/recipekeyed_test.go
++++ b/internal/loomcli/recipekeyed_test.go
+@@ -1,5 +1,5 @@
+ // recipekeyed_test.go pins the loomcli wiring branches that read the run's recipe rows and keys, per recipe name:
+-// the verify source, the merge fixer's plan directory, the arbiter's recipe description, the landing failure tracer and the board status a finished run writes.
++// the verify source, the merge fixer's plan directory, the arbiter's recipe description, the landing failure tracer and whether a finished run makes its entry a Sketch.
+ 
+ package loomcli
+ 
+@@ -8,7 +8,6 @@ import (
+ 	"strings"
+ 	"testing"
+ 
+-	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/landingshed"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+@@ -38,13 +37,13 @@ func TestRecipeKeyedWiring(t *testing.T) {
+ 		treeScope    bool
+ 		hasPlan      bool
+ 		wantFragment string
+-		wantFinished string
++		wantSketch   bool
+ 	}{
+-		{"Tapestry", shedrun.RecipeTapestry, false, true, "a tapestry run, a task driven from discussion to landing", ""},
+-		{"Motif", shedrun.RecipeMotif, false, false, "a motif run, a task's Discussion", boardengine.StatusDiscussed},
+-		{"Darn", shedrun.RecipeDarn, true, false, "its decision record through one build session", ""},
+-		{"Pawl", shedrun.RecipePawl, false, false, "a beam's life", ""},
+-		{"Sampler", shedrun.RecipeSampler, true, false, "made with the operator in one interactive session", ""},
++		{"Tapestry", shedrun.RecipeTapestry, false, true, "a tapestry run, a task driven from discussion to landing", false},
++		{"Motif", shedrun.RecipeMotif, false, false, "a motif run, a task's Discussion", true},
++		{"Darn", shedrun.RecipeDarn, true, false, "its decision record through one build session", false},
++		{"Pawl", shedrun.RecipePawl, false, false, "a beam's life", false},
++		{"Sampler", shedrun.RecipeSampler, true, false, "made with the operator in one interactive session", false},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -67,11 +66,11 @@ func TestRecipeKeyedWiring(t *testing.T) {
+ 				t.Errorf("arbiterRecipeDescription(%s) = %q; want it to contain %q", tt.recipe, got, tt.wantFragment)
+ 			}
+ 
+-			if got := finishedBoardStatus(tt.recipe); got != tt.wantFinished {
+-				t.Errorf("finishedBoardStatus(%s) = %q; want %q", tt.recipe, got, tt.wantFinished)
++			if got := finishesAsSketch(tt.recipe); got != tt.wantSketch {
++				t.Errorf("finishesAsSketch(%s) = %t; want %t", tt.recipe, got, tt.wantSketch)
+ 			}
+-			if got := c.commitStatusDeps(loc).FinishedStatus; got != tt.wantFinished {
+-				t.Errorf("commitStatusDeps(%s).FinishedStatus = %q; want %q", tt.recipe, got, tt.wantFinished)
++			if got := c.commitStatusDeps(loc).Finish != nil; got != tt.wantSketch {
++				t.Errorf("commitStatusDeps(%s).Finish set = %t; want %t", tt.recipe, got, tt.wantSketch)
+ 			}
+ 
+ 			deps := landingDeps(loc, tt.recipe, websterengine.Geometry{}, "task", "main",
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index 2f3997f9..a19075fd 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -81,8 +81,8 @@ type commitStatusDeps struct {
+ 	// SetBoardStatus writes status onto the run's board entry, leaving an entry that is absent or already done untouched.
+ 	// Nil writes nothing.
+ 	SetBoardStatus func(status string) error
+-	// FinishedStatus is the board status a finished run writes, empty to write none.
+-	FinishedStatus string
++	// Finish writes the board change a finished run leaves on its entry; nil writes none.
++	Finish func() error
+ }
+ 
+ // statusCommitPathspec returns the fabric-sibling pathspec one status commit stages: shedrun.StatusRel(location, runID), plus each of loomengine.LoomReviewsDirRel() and loomengine.LoomDurableDirRel() when its directory holds at least one non-directory entry anywhere beneath it, then shedrun.DriverRecordsRel(location, runID), plus shedrun.SettleRecordsRel(location, runID) when the settle-records file exists.
+@@ -204,36 +204,45 @@ func commitStatusDepsGuardedBy(check prePushCheck, location *lymcwd.Location, ru
+ 	}
+ }
+ 
+-// boardStatus is the board entry status for a run transition: the shed state and the producer it stands at, so the README shows where each run is.
+-// A finished run writes finished, and nothing when finished is empty.
+-func boardStatus(producer, state, finished string) (string, bool) {
+-	if state == string(shedengine.StateDone) {
+-		return finished, finished != ""
+-	}
+-	return boardengine.RunStatus(state, producer), true
+-}
+-
+-// finishedBoardStatus returns the board status a finished run of recipe writes.
+-// A recipe with a Finalize row writes none, since its landing marks the entry done.
+-// One with none lands nothing, its run ending at the Discussion approval, and writes the discussed status:
+-// that releases the entry from its run lock without dobby starting it again, and shows it on the board as finished.
+-func finishedBoardStatus(recipe string) string {
+-	if recipeHasEngine(recipe, shedrecipe.LoomFinalizeEngine) {
+-		return ""
+-	}
+-	return boardengine.StatusDiscussed
++// finishesAsSketch reports whether a finished run of recipe makes its board entry a Sketch.
++// A recipe with a Finalize row does not, since its landing marks the entry done.
++// One with none lands nothing, its run ending at the Discussion approval with the decision record stored, so its entry becomes a Sketch:
++// a note that leaves the run lock, never runs and waits for the operator's triage.
++func finishesAsSketch(recipe string) bool {
++	return !recipeHasEngine(recipe, shedrecipe.LoomFinalizeEngine)
+ }
+ 
+-// commitStatusDeps returns loomCommitStatusDeps over location and the run, with the finished status of the run's recipe.
++// commitStatusDeps returns loomCommitStatusDeps over location and the run, with the Finish of the run's recipe.
+ func (c *loomCLI) commitStatusDeps(location *lymcwd.Location) commitStatusDeps {
+ 	deps := loomCommitStatusDeps(location, c.runID)
+-	deps.FinishedStatus = finishedBoardStatus(c.recipe)
++	if finishesAsSketch(c.recipe) {
++		deps.Finish = sketchFinish(location, c.runID)
++	}
+ 	return deps
+ }
+ 
++// sketchFinish returns the Finish that makes the board entry of the run at location a Sketch.
++// When the board refuses the Sketch, as it does while another entry depends on the entry, it warns naming the refusal and leaves the entry draft instead, so the run still lets go of the entry and nothing starts it.
++// Any other error is returned, so the seam's next finished transition retries the write.
++func sketchFinish(location *lymcwd.Location, runID string) func() error {
++	return func() error {
++		board, err := boardengine.OpenHub(location.HubPath)
++		if err != nil {
++			return err
++		}
++		slug := shedrun.ResolveRunID(location, runID)
++		err = board.MakeSketch(slug)
++		if errors.Is(err, boardengine.ErrSketchRefused) {
++			logger.Warn("loomcli: the board refused to make the finished run's entry a Sketch; leaving it draft", "slug", slug, "error", err)
++			return board.SetRunStatus(slug, boardengine.StatusDraft)
++		}
++		return err
++	}
++}
++
+ // newCommitStatusSeam builds the shedengine.Shed.CommitStatus closure from deps.
+-// It first writes the run's board status when that status changed, and a failed board write only warns:
+-// the board is the hub's overview, never the run's own bookkeeping.
++// It first writes the run's board status, `<state> · <producer>`, when that status changed, and on the run's finish calls Finish until it succeeds once;
++// a failed board write only warns and the next transition retries it, since the board is the hub's overview, never the run's own bookkeeping.
+ // It then calls the shared statuscommit core, which owns the skip-while-mid-merge, commit-hard-errors and spawn-warns dispositions, with loom's own commit and log prefixes and no after-commit callback.
+ // A commit the pre-push check stopped reads as no commit made, so the core starts no push and the transition goes on.
+ func newCommitStatusSeam(deps commitStatusDeps) func(producer, state string) error {
+@@ -249,13 +258,24 @@ func newCommitStatusSeam(deps commitStatusDeps) func(producer, state string) err
+ 		},
+ 		Spawn: deps.Spawn,
+ 	}, "loom", "loomcli", nil)
+-	lastBoardStatus := ""
++	lastBoardStatus, finished := "", false
+ 	return func(producer, state string) error {
+-		if status, ok := boardStatus(producer, state, deps.FinishedStatus); ok && deps.SetBoardStatus != nil && status != lastBoardStatus {
+-			if err := deps.SetBoardStatus(status); err != nil {
+-				logger.Warn("loomcli: board status write failed, next transition retries", "status", status, "error", err)
+-			} else {
+-				lastBoardStatus = status
++		switch {
++		case state == string(shedengine.StateDone):
++			if deps.Finish != nil && !finished {
++				if err := deps.Finish(); err != nil {
++					logger.Warn("loomcli: the finished run's board write failed, next transition retries", "error", err)
++				} else {
++					finished = true
++				}
++			}
++		case deps.SetBoardStatus != nil:
++			if status := boardengine.RunStatus(state, producer); status != lastBoardStatus {
++				if err := deps.SetBoardStatus(status); err != nil {
++					logger.Warn("loomcli: board status write failed, next transition retries", "status", status, "error", err)
++				} else {
++					lastBoardStatus = status
++				}
+ 			}
+ 		}
+ 		return core(producer, state)
+diff --git a/internal/loomcli/wiring_commitstatus_test.go b/internal/loomcli/wiring_commitstatus_test.go
+index 637c124f..813b99ed 100644
+--- a/internal/loomcli/wiring_commitstatus_test.go
++++ b/internal/loomcli/wiring_commitstatus_test.go
+@@ -131,12 +131,13 @@ func TestNewCommitStatusSeam_BoardStatus(t *testing.T) {
+ 	}
+ }
+ 
+-// TestNewCommitStatusSeam_FinishedStatus asserts a finished run writes the seam's finished status to the board, after the run status it last wrote.
+-func TestNewCommitStatusSeam_FinishedStatus(t *testing.T) {
++// TestNewCommitStatusSeam_Finish asserts a finished run calls the seam's Finish after the run status it last wrote, retries a failed Finish at the next finished transition and calls it no more once it succeeded.
++func TestNewCommitStatusSeam_Finish(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+ 	var written []string
++	failNext := true
+ 	seam := newCommitStatusSeam(commitStatusDeps{
+ 		MergeActive: func() (bool, error) { return false, nil },
+ 		Commit:      func(string) (bool, error) { return false, nil },
+@@ -145,15 +146,23 @@ func TestNewCommitStatusSeam_FinishedStatus(t *testing.T) {
+ 			written = append(written, status)
+ 			return nil
+ 		},
+-		FinishedStatus: "draft",
++		Finish: func() error {
++			if failNext {
++				failNext = false
++				written = append(written, "finish failed")
++				return errors.New("board locked")
++			}
++			written = append(written, "finish")
++			return nil
++		},
+ 	})
+-	for _, state := range []string{"running", "done"} {
++	for _, state := range []string{"running", "done", "done", "done"} {
+ 		if err := seam("Discussion-Bouncer", state); err != nil {
+ 			t.Fatalf("seam(Discussion-Bouncer, %q) = %v; want nil", state, err)
+ 		}
+ 	}
+ 
+-	want := []string{"running · Discussion-Bouncer", "draft"}
++	want := []string{"running · Discussion-Bouncer", "finish failed", "finish"}
+ 	if !reflect.DeepEqual(written, want) {
+ 		t.Errorf("board writes = %q; want %q", written, want)
+ 	}
+diff --git a/plugins/ly/skills/board/SKILL.md b/plugins/ly/skills/board/SKILL.md
+index e0f59aeb..2f73a31e 100644
+--- a/plugins/ly/skills/board/SKILL.md
++++ b/plugins/ly/skills/board/SKILL.md
+@@ -43,14 +43,14 @@ A new task is `draft`; a null status on a task releases it rather than clearing
+ 
+ Every entry carries `labels`, validated against two maps in the hub's `board.yaml`, each from label to description:
+ 
+-- `types`: the type labels, such as `bug` and `enhancement`. A note carries exactly one, and a task one or more.
++- `types`: the type labels, such as `bug` and `enhancement`. A note carries exactly one, and a task one or more. Every board also has the built-in type `sketch`, which only lym writes.
+ - `labels`: every other label, such as an area.
+ 
+ Run `lym board labels` before choosing labels: it prints both maps in file order with their descriptions.
+ Beside its type label, every entry carries a label for each lym module it touches; an entry that spans the whole tool takes the modules its work would change first.
+ A label in neither map is refused; add it with `lym config board --set labels.<name>=<description>`, or edit the maps in the `lym config board` editor.
+ A recipe name goes in `recipe`, never in a label: `tapestry`, `darn` or `motif`, empty meaning the hub's `default_recipe` in `board.yaml`, which is `darn` unless the hub changed it.
+-A `motif` task runs Discussion alone: it stores the approved decision record on the entry, flags it `discussed`, lands no code and leaves the entry in status `discussed`, which nothing starts until a null status releases it.
++A `motif` task runs Discussion alone: it stores the approved decision record on the entry, flags it `discussed`, lands no code and makes the entry a Sketch, a note of the built-in type `sketch` (handle `S`) that keeps its module labels and never runs; triage breaks a Sketch down into tasks or a project.
+ A run profile goes in `profile`, never in `run_settings`: `lym board profiles` prints the hub's profiles with one settings block per recipe, and a task without one takes its recipe's default profile, listed under `defaults`.
+ 
+ ## Verbs
