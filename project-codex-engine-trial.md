@@ -38,19 +38,13 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Carry the Codex darn trial run codex-greet to its landing**<br>• Resume the sandbox hub run blocked at Darn-Write now that the Codex commit fix has landed, follow it to landing and add the result to the trial report | [`codex-greet-finish`](design-codex-greet-finish.md) | darn · docs |  | 0m<br>0m | codex |
+| T1 | **Carry the Codex darn trial run codex-greet to its landing**<br>• Resume the sandbox hub run blocked at Darn-Write now that the Codex commit fix has landed, follow it to landing and add the result to the trial report | [`codex-greet-finish`](design-codex-greet-finish.md) | darn · docs |  | 0m<br>0m | codex |
 
 ## Notes (2)
 
