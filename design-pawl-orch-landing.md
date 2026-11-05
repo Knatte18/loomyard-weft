@@ -29,7 +29,8 @@ The orch calls lym verbs, never `gh` by hand: thin verbs over the code the remov
 ### Members land while the pull request is open (operator, 2026-11-05)
 
 Member tasks keep landing into the beam while its pull request is open, as was common and useful in Millhouse.
-While the beam's pull request is open, every member task filed or running in the beam carries `notify_on_land`, so the beam's orch is told at each landing and updates the description, which keeps listing every member.
+`lym beam pr open` records that the beam has an open pull request, and closing it or the beam's landing clears the record.
+While the record stands, dobby mails the beam's orch at every member landing into the beam, members filed after the pull request opened included, with no per-task `notify_on_land`; the orch updates the description, which keeps listing every member.
 
 The orch opens, updates and reads the pull request; it never merges it and never closes it to add work.
 
@@ -60,7 +61,7 @@ Then Beam-Down.
 Task `protected-parent-landing` landed (`dbd169ae`): `beam.yaml` `pull_request: merge` makes Finalize push the task or beam branch, find or open a pull request into the parent and squash-merge it on GitHub at once with no review, then pull the parent.
 The review row returns Done for it (`MergeAtOnce`), and a parent push refused as protected is Stuck with a way forward naming `pull_request=merge`.
 
-## Open points
+## In-flight pawl runs (operator and orch, 2026-11-05)
 
-- Whether `notify_on_land` is set by lym when the pull request opens (and on each member filed while it is open), or by the orch.
-- Resume of in-flight pawl runs that sit on a removed row.
+A pawl run that sits on Parent-Align, Beam-Describe or PR-Review when the new binary takes it is moved to Beam-Await, paused, and the beam's orch is told; an open pull request stays open, and the orch carries on with the new verbs.
+A run at Finalize or later goes on as before.
