@@ -1,6 +1,6 @@
 # Re-measure the batching hook and the edit-round rule a week after the hook reaches forks
 
-`batching-hook-remeasure` · Task · research, tools, claude · running · Drift-Verify
+`batching-hook-remeasure` · Task · research, tools, claude · running · Code-Bouncer
 
 ## Idea (operator and hub orch, 2026-11-04)
 
