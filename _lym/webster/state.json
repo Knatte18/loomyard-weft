@@ -542,7 +542,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 14,
   "masterStrand": "2b7ad68dfc2bff4c8746024aef1dc184",
   "masterSessionId": "14aaf21f-1ca1-409b-81b1-3c72c8062a73",
   "masterEngine": "claude",
@@ -675,6 +675,30 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-pawl-orch-landing/14aaf21f-1ca1-409b-81b1-3c72c8062a73/subagents/agent-a0b6fe928b48c5e24.jsonl"
       ]
+    },
+    "14": {
+      "slug": "beam-pr-status-close",
+      "cards": [
+        "14-beam-pr-status-close",
+        "15-beam-ready-refusals",
+        "16-member-landing-notice",
+        "17-beam-start-in-landing",
+        "18-orch-role-landing"
+      ],
+      "cardHashes": {
+        "14-beam-pr-status-close": "a78d2d1d69e6f9357dc9f524fcb317a06caaf66b56f1e548a42eada04808f1fb",
+        "15-beam-ready-refusals": "f4dd940bc4f2388846326e574b9566eca12bbec2c9b22c8d90d42bee1a58da2d",
+        "16-member-landing-notice": "3bd55d310fdacef98e2c082a8625cf926ece886c13686ea2263df01a833ed4d3",
+        "17-beam-start-in-landing": "fff9c7dce1a348e23586fb24db44de60ee4a0c3d66d2bf61050beab966142ef7",
+        "18-orch-role-landing": "51279520e21e0f4dcf8aa092409ee5102499506784f8e282b67037d1df6eabd7"
+      },
+      "startSha": "0d1d343a89df9b11bb63929c473919baced0e29d",
+      "kind": "fork",
+      "spawnedAt": "2026-11-05T10:04:41Z",
+      "sessionId": "14aaf21f-1ca1-409b-81b1-3c72c8062a73",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "pawl-rows",
