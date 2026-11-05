@@ -54,6 +54,12 @@ Decision: The README gives no counts of LoomYard's own usage: no number of runs,
 
 Rationale: The operator finds boasting about one's own usage poor form; the reviewers' wish for whole-system numbers is not taken up.
 
+### Added after Discussion (operator, 2026-11-05): One sentence may give the number of landed runs
+
+Decision: The README may state the number of landed runs in one plain sentence, not as a key number; it still gives no tokens, costs or time per run.
+
+Rationale: The operator allows the count as context, while keeping the earlier rule against showcasing LoomYard's own usage.
+
 ## Constraints
 
 ## Auto-mode assumptions
