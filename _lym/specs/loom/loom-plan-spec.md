@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=c75b0f852ef64151a7c471aa6fcfdcb8b35ef736a2f1904b05aca9d60f6d18a6 build=035f5e288a7d5df4777cb03f94391db675507f89 time=2026-11-03T17:38:37Z -->
+<!-- lym-stencil: sha256=70d374c72a97f1cc02cbd5edb88b3da7bcb87f319dbbca8eef781166156f4fe0 build=f6b0f28d2190031ec4de222d5bcdf9d503dd4a4a time=2026-11-05T17:01:58Z -->
 
 # Loom plan-spec — flat card list
 
@@ -127,7 +127,7 @@ A card with several labels runs every group's mechanical check against that grou
 Assert-no-callers is necessary, not sufficient: interface satisfaction, dispatch-table registration, reflection and prose references survive a delete or a rename without failing the build.
 A rename also rewrites the symbol's own doc-comment opening to the new name, and the same grep pass verifies it.
 
-A `Create` target under the repository root's git-ignored `.scratch/` is a transient draft: the card may remove it once read, and Webster's `create-not-done` check skips it.
+A `Create` target under the worktree root's git-ignored `.scratch/` is a transient draft: the card may remove it once read, and Webster's `create-not-done` check skips it.
 A target no glyph spells, such as a path whose directory holds a space, stays a plain path, and Webster's done-checks judge it by whether the path exists.
 A card that renames or deletes what an earlier card targets never shares that card's batch.
 
