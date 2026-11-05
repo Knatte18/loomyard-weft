@@ -1,6 +1,6 @@
 # Creel mail between hubs with a verified sender and one-way hub trust
 
-`creel-cross-hub-mail` · Task · feature, creel, orch · running · Seed-IDE
+`creel-cross-hub-mail` · Task · feature, creel, orch · running · Open-IDE
 
 ## Seen (operator, 2026-10-30)
 
