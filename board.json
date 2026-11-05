@@ -646,6 +646,31 @@
       "created": "2026-11-05T14:36:42Z",
       "revised": "2026-11-05T14:36:42Z",
       "profile": "speed"
+    },
+    {
+      "id": 1136,
+      "handle": "T8",
+      "slug": "codex-creel-trial",
+      "title": "Live trial: creel mail reaches Codex sessions through the new hooks",
+      "kind": "task",
+      "labels": [
+        "research",
+        "codex",
+        "creel"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "codex-creel-hooks"
+      ],
+      "isolated": false,
+      "brief": "Real Codex sessions in lyt get mail at tool boundary, turn end and idle wake, and answer it",
+      "body": "## Goal\n\nA live check, on real Codex sessions in the sandbox hub `lyt`, that creel mail reaches a Codex strand through the hooks `codex-creel-hooks` adds, as it reaches a Claude strand.\n\n## Steps\n\nLaunch Codex sessions in `lyt` through `lym shuttle` with the installed `lym` built from the landed `codex-creel-hooks`, and record for each case whether the mail arrives, how fast, and whether the model acts on it:\n\n1. Mail posted while the session runs tools: delivered at the next tool boundary through `PostToolUse`.\n2. Mail posted during the last step of a turn: delivered at turn end through `Stop`, and the session goes on to answer it.\n3. Mail posted to an idle session: the daemon wakes it through `codex queue`.\n4. A program's notice and an agent's mail that expects a reply: the session answers with `lym creel post --reply` from inside its `workspace-write` sandbox.\n5. Several mails in a row and two Codex sessions at once, each getting only its own mail.\n\n## Rules\n\n- The trial runs everything; the operator does nothing in `lyt`.\n- Findings go to a report under `docs/research/`, and each lym fault becomes a bug note in project `codex-engine-trial`.\n",
+      "status": "draft",
+      "created": "2026-11-05T14:39:56Z",
+      "revised": "2026-11-05T14:39:56Z",
+      "profile": "docs",
+      "project": "codex-engine-trial"
     }
   ],
   "prime_owner": "neve",
