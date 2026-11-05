@@ -825,6 +825,25 @@
       "body": "`Runner.SessionIdle` (internal/shuttleengine/session.go) resolves the engine with `engineFor(RunState{})` when the strand has no run record, which is the hub default engine (claude here).\nA session from `lym shuttle open --model luna[medium]` has no run record, so its Codex pane is read with the Claude reading and the probe answers `NoInputBox` although the composer is on screen.\n\nSeen 2026-11-05: `lym creel post` of a notice from EXTERNAL to the opened strand was never typed; `lym creel log` shows a `stalled` record, reason `no-input-box`, one second after the post.\nThe same notice to a Codex strand started by `lym shuttle run` was typed in full within seconds.\n`Runner.Send` already picks the engine from the strand's provider tag for a recordless strand; the idle probe does not.\n\nFound by the pane/load trial, docs/research/codex-engine-trial-pane-load-2026-11-03.md case 4.",
       "created": "2026-11-05T06:22:34Z",
       "revised": "2026-11-05T06:22:34Z"
+    },
+    {
+      "id": 1125,
+      "handle": "B4",
+      "slug": "codex-state-asking-after-exit",
+      "title": "lym shuttle state keeps a Codex run asking after Codex exits",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle",
+        "codex"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "After /exit the pane is dead and the loop ends died, while the session state still reads asking",
+      "body": "An interactive Codex run held at its composer reads `asking/awaiting-input` in `lym shuttle state`.\nAfter `/exit` in its pane the run ended `died`, and the shadow state model logged `shuttle: session state disagrees ... loop=died state=asking cause=awaiting-input` in the same second.\nThe state of a Codex session follows hook signals alone and Codex exit fires none, so nothing in the run files reads as dead.\n\nFound by the pane/load trial, docs/research/codex-engine-trial-pane-load-2026-11-03.md case 3.",
+      "created": "2026-11-05T06:22:34Z",
+      "revised": "2026-11-05T06:22:34Z"
     }
   ],
   "prime_owner": "neve",

@@ -60,7 +60,7 @@ _None._
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-## [P0 Root: entries under no project](project-root.md) (35)
+## [P0 Root: entries under no project](project-root.md) (36)
 
 Owner `neve`
 
@@ -102,7 +102,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T6 | 4d<br>16h | fabric |
 
-### Notes (28)
+### Notes (29)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -113,13 +113,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R2 |  | **Re-measure writer exploration and the carry of lookup results after the Discussion stencil change**<br>• Re-run the writer-lookups measurement on 10 tapestry runs, pricing the carry saved by early explore subagents | [`writer-lookups-remeasure`](design-writer-lookups-remeasure.md) | 14h<br>34m | loom, stencil |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 13d<br>15h | loom, stencil |
 
-#### Bugs (3)
+#### Bugs (4)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• No waiting line in loom or batten status and no notice while PR-Review waits for a human review | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 1d<br>20h | landing, loom, batten |
 | B2 |  | **A weft push holds the remote-refs lock over its whole transfer, so board claims queue behind it**<br>• Bolt and every weft share one remote-refs lock; a slow push stalls every claim and weft fetch for its whole send-pack | [`push-holds-remote-refs`](design-push-holds-remote-refs.md) | 16h<br>16h |  |
 | B3 |  | **An opened Codex session never reads idle, so creel types nothing into it**<br>• SessionIdle judges a strand with no run record by the hub default engine, so a Codex pane reads as no input box | [`opened-codex-never-idle`](design-opened-codex-never-idle.md) | 0m<br>0m | shuttle, creel, codex |
+| B4 |  | **lym shuttle state keeps a Codex run asking after Codex exits**<br>• After /exit the pane is dead and the loop ends died, while the session state still reads asking | [`codex-state-asking-after-exit`](design-codex-state-asking-after-exit.md) | 0m<br>0m | shuttle, codex |
 
 #### Enhancements (5)
 
