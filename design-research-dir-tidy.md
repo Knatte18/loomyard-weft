@@ -1,6 +1,6 @@
 # docs/research is restructured into topic folders with an index
 
-`research-dir-tidy` · Task · enhancement · running · Code-Bouncer
+`research-dir-tidy` · Task · enhancement · running · Drift-Recheck
 
 ## Seen (readme-refresh sampler, 2026-11-05)
 
