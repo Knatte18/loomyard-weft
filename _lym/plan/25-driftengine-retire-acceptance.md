@@ -60,7 +60,7 @@
 - `internal/driftengine#missingDirRefusal`
 - `internal/driftengine#TestDeferWaive`
 - `internal/driftengine#statusAt` -> `func statusAt(row string, state shedengine.State, errText string) VerbStatus`
-- `plan:internal/driftengine#TestAmend`
+- `internal/driftengine#TestAmend`
 - `internal/driftengine#TestDriftAwait`
 - `internal/driftengine#TestDriftBaseline`
 - `internal/driftengine#newBaselineFixture`

@@ -8,7 +8,7 @@
 - `internal/loomcli#driftDeps`
 
 **Create:**
-- `plan:internal/driftengine#DriftVerify.passCommand` -> `func (p *DriftVerify) passCommand(ctx context.Context, rec Records, report CheckReport) (shedengine.Outcome, shedengine.OutputPointer, error)`
+- `internal/driftengine#DriftVerify.passCommand`
 
 **Uses:**
 - `internal/driftengine#Check`

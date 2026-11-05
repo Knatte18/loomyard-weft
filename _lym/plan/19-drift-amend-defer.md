@@ -1,15 +1,15 @@
 # Card 19 — drift-amend-defer
 
 **Create:**
-- `plan:internal/driftengine#AmendRequest` -> `type AmendRequest struct`
-- `plan:internal/driftengine#Amend` -> `func Amend(d Deps, st VerbStatus, req AmendRequest) error`
-- `plan:internal/driftengine#TestAmend` -> `func TestAmend(t *testing.T)`
-- `plan:internal/driftcli#amendCmd` -> `func amendCmd() *cobra.Command`
-- `plan:internal/driftcli#openSlugWorktree` -> `func openSlugWorktree(cmd *cobra.Command, slug string) (*worktree, error)`
-- `plan:internal/driftcli#checkParentCaller` -> `func checkParentCaller(verb, strand string, parent func() (hubgeom.Parent, error)) error`
-- `plan:internal/driftcli#TestCheckParentCaller` -> `func TestCheckParentCaller(t *testing.T)`
-- `plan:internal/driftcli_test#TestAmend_RefusesWhatItCannotRead` -> `func TestAmend_RefusesWhatItCannotRead(t *testing.T)`
-- `plan:internal/driftengine#recheckRow` -> `const recheckRow = "Drift-Recheck"`
+- `internal/driftengine#AmendRequest`
+- `internal/driftengine#Amend`
+- `internal/driftengine#TestAmend`
+- `internal/driftcli#amendCmd`
+- `internal/driftcli#openSlugWorktree`
+- `internal/driftcli#checkParentCaller`
+- `internal/driftcli#TestCheckParentCaller`
+- `internal/driftcli_test#TestAmend_RefusesWhatItCannotRead`
+- `internal/driftengine#recheckRow`
 
 **Edit:**
 - `internal/driftengine#Defer` -> `func Defer(d Deps, st VerbStatus) error`
