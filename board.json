@@ -755,7 +755,7 @@
       "id": 1135,
       "handle": "T7",
       "slug": "codex-trial-darn-e2e",
-      "title": "Codex trial: one darn run with a Codex writer, end to end, in the cs hub",
+      "title": "Codex trial: follow the sandbox darn run with a Codex writer to landing and report",
       "kind": "task",
       "labels": [
         "research",
@@ -766,11 +766,11 @@
       "recipe": "darn",
       "depends_on": [],
       "isolated": false,
-      "brief": "A darn run in the C# sandbox hub with a luna writer seat, watched to landing; report and bug notes",
-      "body": "## Goal (operator, 2026-11-05)\n\nPart 7's end-to-end case of this project: one darn run with a Codex writer seat, start to landing, in the C# sandbox hub `/home/knatte/Code/lym-csharp-LYMHUB` (repository `Knatte18/lym-csharp`).\nCase 6 of `docs/research/codex-engine-trial-pane-load-2026-11-03.md` was not run because a task session cannot clone a hub; the cs hub already exists, so none is cloned.\n\n## Method\n\n- Read the cs repository's code and file one small, real darn task on the cs hub's board (`env -C \u003ccs prime\u003e lym board upsert …`, kind task, recipe darn, profile light), so the run lands real code.\n- Give only that entry a Codex writer, `luna[medium]` (effort `high` at most), through the entry's own `run_settings`; never change the cs hub's config, so its other runs stay on Claude.\n  Find the key from `lym board upsert --help`, `lym board profiles` and `internal/runprofile/template.yaml`.\n  Reviewers and fixers stay on Claude.\n- Release it on the cs board and watch it to its landing or a stop, reading `lym loom status`, `lym reed list` and the panes; poll every few minutes, not faster.\n  A stop that needs a decision is reported to this run's parent with `lym creel post --parent`, not decided.\n- Watch above all: the Codex writer's launch, trust and sandbox; its hooks reaching the run's events; idle and turn-end readings; creel mail and notices reaching the Codex strand and its replies; the writer's commits; and the hand-over to the Claude reviewers and Finalize.\n\n## Deliverables\n\n- A report `docs/research/codex-engine-trial-darn-e2e-2026-11-05.md`: setup, timeline, each check matched or not against `internal/shuttleengine/codexengine/doc.go` and `internal/creelengine/doc.go`, cost and turns.\n- Each lym fault as a bug note of its own on this board, in project `codex-engine-trial`, labels `bug`, `codex` and the modules.\n- Nothing in the cs repository beyond the trial task's own landing.\n",
+      "brief": "Follows codex-greet in the lym-test sandbox hub, a darn run with a Codex writer, to landing; report and bug notes",
+      "body": "## Goal (operator, 2026-11-05)\n\nPart 7's end-to-end case of this project: one darn run with a Codex writer seat, start to landing.\nThe run already exists: task `codex-greet` (T5) on the board of the sandbox hub `/home/knatte/Code/lym-test-LYMHUB` (repositories `Knatte18/lym-test` and `Knatte18/lym-test-weft`), released by the orch on 2026-11-05 with a Codex writer and running at Darn-Write.\nThis task follows that run and reports on it; it starts no run of its own and never restarts, cancels or changes `codex-greet`.\n\n## Method\n\n- Find how the run's writer seat was set to Codex (the sandbox hub's config or the entry's settings) and record it.\n- Watch the run to its landing or a stop, reading `env -C /home/knatte/Code/lym-test-LYMHUB/codex-greet lym loom status`, `lym reed list` and the panes; poll every few minutes, not faster.\n  A stop that needs a decision is reported to this run's parent with `lym creel post --parent`, not decided.\n- Read the run's records afterwards: its events, the Codex rollout under `~/.codex/sessions`, its trace logs and its commits.\n- Watch above all: the Codex writer's launch, trust and sandbox; its hooks reaching the run's events; idle and turn-end readings; creel mail and notices reaching the Codex strand and its replies; the writer's commits; and the hand-over to the reviewers and Finalize.\n\n## Deliverables\n\n- A report `docs/research/codex-engine-trial-darn-e2e-2026-11-05.md`: setup, timeline, each check matched or not against `internal/shuttleengine/codexengine/doc.go` and `internal/creelengine/doc.go`, cost and turns.\n- Each lym fault as a bug note of its own on this board, in project `codex-engine-trial`, labels `bug`, `codex` and the modules.\n",
       "status": "draft",
       "created": "2026-11-05T09:11:48Z",
-      "revised": "2026-11-05T09:11:48Z",
+      "revised": "2026-11-05T09:12:41Z",
       "profile": "docs",
       "project": "codex-engine-trial"
     }
