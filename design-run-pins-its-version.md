@@ -5,8 +5,13 @@
 ## Seen (operator, 2026-10-27)
 
 A run reads its instructions live while it runs: the `lym` binary, and the stencils, specs and hub config on Bolt (`_bolt/_lym/{stencils,specs,config}`).
-A landing deploys a new `lym` and can change those files, so a run started on one version can finish on another, such as a darn run that sat between its drift rows when `darn-drift-await-row` landed and its recipe changed under it (that landing wrote no transition code: such a run halts at Drift-Verify and is settled by hand with `lym drift waive`).
+A landing deploys a new `lym` and can change those files, so a run started on one version can finish on another, such as a darn run that sat between its drift rows when `darn-drift-await-row` landed and its recipe changed under it (that landing wrote no transition code: such a run halted at Drift-Verify and was settled by hand with `lym drift waive`).
 LoomYard takes no special care for such a run today, and the operator wants none written per change (operator, 2026-10-27).
+
+## Built since (tidy, 2026-11-05)
+
+`drift-rework` (`3882070d`) removed `lym drift waive`, and with it the verb this note names for settling a run stranded mid-Drift.
+The version-change problem itself stands: the landing records that a run in flight past `Drift-Expect` with no seal is checked against an empty expectation and stops on any drift, and `lym drift amend` clears it.
 
 ## Idea (operator, 2026-10-27)
 
