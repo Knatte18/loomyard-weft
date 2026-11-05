@@ -52,11 +52,11 @@ _None._
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-## [P0 Root: entries under no project](project-root.md) (32)
+## [P0 Root: entries under no project](project-root.md) (33)
 
 Owner `neve`
 
-### Tasks (6)
+### Tasks (7)
 
 Concrete and claimable; only a task can run.
 
@@ -78,13 +78,14 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (1)
+#### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light |  | 4d<br>17h | fabric |
+| T5 | `draft` **Recipe raddle turns a Sketch into tasks or a project**<br>• A cold Opus run proposes how a Sketch becomes tasks, a project or a beam, weighs recipe costs, and files it on the operator approval unless auto-approve is set | [`raddle-recipe`](design-raddle-recipe.md) | tapestry | T1 | 0m<br>0m | loom, board, batten |
 
 ### Notes (26)
 
