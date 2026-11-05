@@ -3,48 +3,49 @@ lens: repo-invariants
 outcome: reported
 ```
 
-Task: the repo-invariants lens over the amended cards 07, 08, 23 and 25. For each card I checked test seams and tier tags, doc text the card makes false, and card order.
+Task: repo-invariants lens over the amended cards 07, 08, 23 and 25, plus the prefix-only change to 26.
 
-**Per-card list**
+**Per card, each invariant checked:**
 
-- **Card 07, report-config**
-  - Test seams: none added. Held.
-  - Tier tags: `config_test.go` calls `tiergate.Require(t, 0)` at line 18, and `testmain_test.go` holds only `TestMain`, which takes no tier. Held.
-  - Doc text: `internal/configreg/doc.go` does not list the config modules. `docs/overview.md:319` already names `internal/reportconfig`. Held.
-  - Card order: needs nothing from a later card. Held.
-- **Card 08, report-cost**
-  - Test seams: none added. Held.
-  - Tier tags: `cost_test.go:110` calls `tiergate.Require(t, 0)`. Held.
-  - Doc text: the card edits `reportengine/doc.go`, `reportcli/doc.go` and `docs/overview.md`. Held.
-  - Card order: it uses `plan:internal/reportconfig#LoadConfig` from card 7, which comes earlier. Held.
-- **Card 23, raddle-recipe**
-  - Test seams: **broken.** The card adds two fields to `shedrecipe.Env`, `RaddleWrite` and `RaddleFile`. It does not edit `envkit.FullEnv`, and it does not edit the `//lym:seam` markers of the envkit reflective tests.
-  - Tier tags: every new test is named tier0. Held.
-  - Doc text: the card lists the recipe-list doc files. Held.
-  - Card order: **broken**, as a result of the seam gap. The card's own gate fails, because the only card that edits `FullEnv` is card 25, which comes later and fills only the pawl seam.
-- **Card 25, pawl-raddle-handoff**
-  - Test seams: the card adds `Deps.HandOff` and `Paths.HandOffMarker`, and it edits `envkit#FullEnv`, `validPawlDeps` and `world.deps`. Held.
-  - Doc text: the card edits `pawlengine/doc.go`, and `internal/hubgeom/doc.go` does not list the pawl paths (a grep found none). Held.
-  - Card order: it uses `RaddleStore.Holds`, which an earlier card creates. Held.
+- **Card 07 (report-config)**
+  - Test seams, held. The card adds no field to a shared struct. `config_test.go` has one tier tag (`tiergate.Require(t, 0)`, line 18). `testmain_test.go` takes no tier tag and uses `tmuxkit.Main`.
+  - Configreg tests, held. `TestRegistration_MatchesDeclarers` scans every `ConfigTemplate` declarer, so registering `reportconfig` in `Modules` satisfies it (`registration_test.go`:28-50). `TestNames` checks order and shape only, so dropping it from the card's Edit list is correct (`configreg_test.go`:20-45).
+  - Doc text, held:
+    - The card lists `pattern/PATTERN-config-layers.md`'s Degrading callers set.
+    - The card lists `configStrictnessDegradingSet`.
+    - `configreg/doc.go` names no modules.
+  - Doc text, broken (finding F1). The new package needs a line in the `docs/overview.md` package tree. Neither card 07 nor card 08 names that line in its Intent.
+  - Card order, held. Nothing earlier is needed.
+- **Card 08 (report-cost)**
+  - Card order, held. `reportconfig#LoadConfig` comes from card 07, which is earlier.
+  - Import invariants, held:
+    - `reportengine#allowedImports` gains nothing, because the config import sits in `reportcli` (`internal/reportcli/cost.go`:12).
+    - `reportcli` has no import allowlist (grep found none).
+  - Doc text, partly broken (F1). The card's Intent names the report module line and the tree line "for the cost verb". It does not name the `+ internal/reportconfig` package in the module line or the new `internal/reportconfig/` tree line.
+- **Card 23 (raddle-recipe)**
+  - Doc text, held:
+    - The five recipe-list `doc.go` files now sit under Edit, and each named sentence exists (`loomcli/doc.go`:25, `shedrun/doc.go`:5, `loomrecipe/doc.go`:34/48/63, `shedcli/doc.go`:12, `runprofile/doc.go`:3/12).
+    - `shedrecipe/doc.go` stays under Extends. Its gate-fixer sentence (line 117) is not falsified, because the raddle gate carries no `fixer`.
+  - Test seams, held. The card's reflective seam tests are unchanged by the amendment and still listed.
+  - Card order, held.
+- **Card 25 (pawl-raddle-handoff)**
+  - Doc text, held:
+    - `pawlengine/doc.go` is now under Edit, and both sentences it names exist (lines 8 and 23).
+    - `hubgeom/doc.go` lists no pawl paths, so leaving it under Uses is correct.
+  - Test seams and card order, held. The amendment did not change them.
+- **Card 26 (report-raddle)**
+  - Only `plan:` prefixes were dropped, for symbols that now exist. Card order holds: `usageFiles` and `costCommand` come from card 08, which is earlier.
 
 **Findings**
 
-1. **BLOCKING, design, `_lym/plan/23-raddle-recipe.md` lines 34, 82–86 and 98.**
-   - **Summary:** card 23 adds `Env.RaddleWrite` (`RaddleWriteEnv`) and `Env.RaddleFile` (`loomshed.RaddleFileDeps`) but does not fill them in `envkit.FullEnv`. It also adds no `//lym:seam` markers for the new seam structs. The envkit tests appear only under `**Uses:**`.
-   - **Effect:** `TestFullEnv_FillsEverySeam` would fail at card 23's own gate, and so would `TestSeamMarkers_ReflectiveTestsAreMarked`, which checks that a test reaching `NilSeams` marks every struct it reflects over. No earlier card fills these fields; card 25, which is later, fills only the pawl seam.
-   - **Evidence:**
-     - `internal/testkit/envkit/envkit.go:299` declares `FullEnv`, and line 487 fills `RecordWrite` field by field. Line 632's `walkNil` reflects over the whole `Env`.
-     - `internal/testkit/envkit/envkit_test.go:40`, `:110` and `:153` carry `//lym:seam internal/loomshed#RecordWriteDeps` on the envkit tests, and lines 281–282 hold the "markers miss" refusal.
-     - `_lym/plan/25-pawl-raddle-handoff.md:17` is the only card that edits `envkit#FullEnv`.
-   - **Fix:** in card 23, move these from `**Uses:**` to `**Edit:**`:
-     - `internal/testkit/envkit#TestFullEnv_FillsEverySeam`
-     - `internal/testkit/envkit#TestNilSeams_ReportsExactPaths`
-     - `internal/testkit/envkit#TestNilSeams_SkipsNilLegalPaths`
+- **F1**
+  - Severity: LOW. Class: consistency. Location: `_lym/plan/07-report-config.md` Intent and `_lym/plan/08-report-cost.md`:45.
+  - Summary: Card 07 creates the package `internal/reportconfig`, and the package needs its own line in the `docs/overview.md` package tree. The report module line also needs to name `internal/reportconfig`. Card 07 does not list `docs/overview.md`. Card 08 edits that file, but its Intent names the overview lines only for the cost verb, so neither card states either edit.
+  - Evidence: the package tree lists every internal package (`docs/overview.md`:240/318, the `ideconfig` and `hibernateconfig` lines). Commit 807263d5 added `docs/overview.md`:319 (the `reportconfig` tree line) and :480 (`+ internal/reportconfig`) under card 08, without a plan line covering them.
+  - Fix: card 08's Intent names the new `internal/reportconfig/` tree line and the module line's `+ internal/reportconfig`. Its Edit list already has `//docs/overview.md`, so no target changes.
 
-     Also add `internal/testkit/envkit#FullEnv` under `**Edit:**`. The Intent should say that `FullEnv` fills both raddle fields and that those tests' markers name `shedrecipe#RaddleWriteEnv`, `loomshed#RaddleWriteDeps` and `loomshed#RaddleFileDeps`. The same holds for the `TestWire_EverySeamFilled` tests in `internal/loomcli` and `internal/battencli`, if their markers enumerate the seam structs; I did not check those.
+**Tool calls**
 
-Tool calls:
-1. Read the head and tier calls of `reportconfig` and `cost_test.go`, the `configreg` doc and the `docs/overview.md` module lines. My context did not show the new test files' tier tags or which docs list the config modules.
-2. Grepped `envkit` for `FullEnv` and the seam-marker tests. My context did not show how the envkit seam tests cover `Env`.
-3. Grepped `hubgeom/doc.go` for a list of pawl paths. My context lacked that doc's content, which card 25 might make false.
-4. Grepped the plan cards for envkit edits and checked the `tiergate` calls. I needed to know whether any earlier card fills the new `Env` fields.
+1. grep of `configreg/doc.go`, `docs/overview.md`, the `reportcli` allowlist and `hubgeom/doc.go`: the manifest did not cover the docs that list modules, packages or pawl paths.
+2. `git show 807263d5 -- docs/overview.md` and a search for tests that read the overview: to find which commit added the `reportconfig` overview lines and whether a test enforces them.
+3. `shedrecipe/doc.go` lines 110–124: to check whether card 23's Extends on that file falsifies the sentence saying which entries read the gate-fixer key.

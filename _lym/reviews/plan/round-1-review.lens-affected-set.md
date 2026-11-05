@@ -3,46 +3,46 @@ lens: affected-set
 outcome: reported
 ```
 
-Task: affected-set lens. For each change the amended cards (07, 08, 23, 25) make, find what else reads or asserts it, and which cards cover that.
+Lens: affected-set. I traced what each card in the amendment (07, 08, 23, 25) forces outside itself. The sets are almost fully covered; there is one LOW gap.
 
-**Per-change list**
+**Per change: the set found and the cards that cover it**
 
-- **Card 7: new hub-wide `report` config module, now in `internal/reportconfig`.**
-  - Set found:
-    - `internal/configreg#Modules` (`configreg.go:170`)
-    - `internal/configreg#TestModules_SeedOnlyAndHubWideFlags` (`configreg_test.go:58`)
-    - `internal/configreg#TestModules_EveryTemplateKeyClassified`, which reads the template through the registry
-    - `cmd/lym#configStrictnessDegradingSet` (`configstrictness_test.go:64`)
-    - `docs/overview.md:319`, the package tree line
-    - `docs/overview.md:480,483`, the report module line
-    - `internal/reportcli/doc.go:26`
-    - `pattern/PATTERN-config-layers.md:63`, the "Degrading callers" list
-  - Covered by:
-    - Card 7: `Modules`, `TestModules_SeedOnlyAndHubWideFlags` and `configStrictnessDegradingSet` as Edits; `TestModules_EveryTemplateKeyClassified` as a Use.
-    - Card 8: `docs/overview.md` (its Intent names the report module line and the tree line) and `reportcli/doc.go`.
-  - Not covered by any card: `pattern/PATTERN-config-layers.md:63`.
-- **Card 8: `reportcli` reads `cost_min_runs` through `reportconfig.LoadConfig`.**
-  - Set found:
-    - `internal/reportcli/cost.go:59`, the call site
-    - `internal/reportcli/doc.go:26`
-    - `docs/overview.md:483`
-  - Covered by: card 8 (`costCommand`, `reportcli/doc.go`, `//docs/overview.md`). Fully covered.
-- **Cards 23 and 25:** the amendment changes nothing in them that reaches the report config module. No baseline exists to name any other change, so this lens found no new affected set to check.
+- **Card 07: new hub-wide module `report` in the new package `internal/reportconfig`**
+  - `configreg#Modules`: covered by card 07 (Edit).
+  - `TestModules_SeedOnlyAndHubWideFlags`, its `wantHubWide` literal and its doc comment, which lists the hub-wide modules: covered by card 07 (Edit).
+  - `TestRegistration_MatchesDeclarers` (`internal/configreg/registration_test.go:28`) finds the new `ConfigTemplate` declarer through `Modules()` by itself. No card is needed.
+  - `TestNames` (`internal/configreg/configreg_test.go:23`) checks order and shape only, not membership. Card 07 rightly dropped its edit of it.
+  - `cmd/lym#configStrictnessDegradingSet` (`cmd/lym/configstrictness_test.go:64`): covered by card 07 (Edit).
+  - The Degrading callers line in `pattern/PATTERN-config-layers.md` (line 63): covered by card 07 (Edit).
+  - `reportengine#allowedImports` (`internal/reportengine/seam_enforcement_test.go:14`): no longer affected. `reportengine` does not import `reportconfig`; only `internal/reportcli/cost.go:12` does, and `reportcli` has no import allowlist. Card 07 rightly dropped the edit.
+  - `TestFingerprint` (`configreg_test.go:323`) uses synthetic modules. Not affected.
+  - In `docs/overview.md`, the package-tree line for `internal/reportconfig` (line 319) and the package list in the report module line (line 480): **no card's Intent names either.** Card 08 lists `//docs/overview.md` as an Edit target, but its Intent says only that the overview's "report module line and tree line … name the cost verb". Commit 807263d5 added both lines anyway.
+  - Other docs that name config files (`docs/overview.md:499`, `contracts/orchrole/orch-role.md:266`) are specific to hibernate. Not affected.
+- **Card 08: `reportconfig#LoadConfig` replaces `reportengine#LoadConfig`**
+  - The only reader is `costCommand` (`internal/reportcli/cost.go:59`): covered by card 08.
+  - The `reportcli` doc line (`internal/reportcli/doc.go:26`): covered by card 08 (Edit of `internal/reportcli/doc.go`).
+- **Card 23: the doc files that list recipes move from Extends to Edit, and the Intent names each sentence**
+  - `internal/loomcli/doc.go:25`
+  - `internal/shedrun/doc.go:5`
+  - `internal/loomrecipe/doc.go:34`, `:48` and `:63`
+  - `internal/shedcli/doc.go:12`
+  - `internal/runprofile/doc.go:3` and `:12`
+  - All are covered by card 23's Edit list and its Intent.
+  - `internal/shedrecipe/doc.go` stays under Extends and gains raddle entry sections. It is covered, with no recipe list to rewrite.
+- **Card 25: `pawlengine/doc.go` moves to Edit**
+  - Line 8 (the Beam-Up step list) and line 23 (the list of files under `.lym/beam/`): both covered by the Intent sentence card 25 added.
 
 **Findings**
 
-1. **LOW, consistency, `_lym/plan/07-report-config.md` (Edit list and Intent).**
-   - Summary: card 7 adds a new `LoadOrTemplate` caller, `internal/reportconfig`, but does not list `pattern/PATTERN-config-layers.md`. That file's "Degrading callers" set names its sibling `hibernateconfig` but not `reportconfig`, so the change makes the background's list wrong.
-   - Evidence:
-     - `pattern/PATTERN-config-layers.md:63`: the list includes `hibernateconfig` and has no `reportconfig`.
-     - `internal/reportconfig/doc.go:8`: "LoadConfig degrades to the template".
-     - `cmd/lym/configstrictness_test.go:64`: `"internal/reportconfig": true` in the degrading set.
-     - `git show --stat 5ec85b9c`: no `pattern/` file was touched.
-   - Mitigating: the list was already out of date before this card, since it lacks `sheddriver`, which also calls `LoadOrTemplate`. No test pins the background list.
-   - Proposed fix: card 7 lists `pattern/PATTERN-config-layers.md` under `**Edit:**`, and its Intent adds `reportconfig` to the "Degrading callers" set. Card 7 sits in failed batch 7, so it can still be edited.
+1. **LOW, consistency, card 08 (`08-report-cost`, `//docs/overview.md`).** The new package's `docs/overview.md` entries are covered only in part. Card 08's Intent names the overview lines only as gaining the cost verb. It omits two members of the set card 07's new package forces:
+   - the package-tree line for `internal/reportconfig/`, at `docs/overview.md:319`;
+   - the addition of `internal/reportconfig` to the report module line's package list, at `docs/overview.md:480`.
 
-**Tool calls**
+   Card 07, which creates the package, does not target the overview either. Commit 807263d5 shows that the implementer wrote both lines anyway.
 
-1. Grep for files that name `hibernateconfig` and `reportconfig`, to find the docs and lists that track sibling config packages. The manifest held no doc-side readers of the module.
-2. Grep of `docs/overview.md`, the pattern background, the `configreg` and `reportengine` docs, and every reader of `cost_min_runs` or `report.yaml`. This confirms the overview lines and the list that omits `reportconfig`.
-3. `sed` of `PATTERN-config-layers.md` lines 55–70, the production `LoadOrTemplate` callers, and `git show --stat 5ec85b9c`. This checks whether the list is meant to be complete and what card 7's landed commit touched.
+   Evidence: `_lym/plan/08-report-cost.md:45`, `_lym/plan/07-report-config.md:13-17`, and `git show 807263d5 -- docs/overview.md`.
+
+Tool calls:
+1. Grepped for files naming `hibernateconfig`. The manifest did not list which docs and lists name the sibling config packages.
+2. Grepped `docs/overview.md`, `configreg/doc.go` and `PATTERN-config-layers.md` for config package names, and ran `git show 807263d5 -- docs/overview.md`. I needed the overview lines the new package forces and which commit wrote them.
+3. Grepped `reportcli` and `configreg` for import allowlists, and `docs`, `configcli` and `contracts` for lists of config files. I needed to confirm no other allowlist or module list reads the new module.
