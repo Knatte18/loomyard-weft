@@ -2,8 +2,6 @@
 
 `creel-cross-hub-build` · Task · feature, creel, orch · draft
 
-Depends on: [`slack-relay`](design-slack-relay.md)
-
 Filed from the Sketch `creel-cross-hub-mail`.
 
 Takes: creel's journal, fold, delivery seam and verbs, and the orch role, as slack-relay leaves them, with its <shortname>:SLACK program sender and its orch-role rules on whose mail carries the operator's authority; fabricengine.ReadShortname, hubgeom.CreelGeometry, internal/state and internal/lock as they stand

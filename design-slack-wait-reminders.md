@@ -2,8 +2,6 @@
 
 `slack-wait-reminders` · Task · feature, reed · running · Darn-Write
 
-Depends on: [`slack-relay`](design-slack-relay.md)
-
 Filed from the Sketch `reed-slack-relay`.
 
 Takes: slack-relay's presence reader, remind_after_min loader and SLACK program mailbox; dobby's probe-tick child readings and its tolerant state record; pauserecord's resumed entries
