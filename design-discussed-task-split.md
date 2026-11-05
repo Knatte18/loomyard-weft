@@ -58,7 +58,9 @@ How a task is best cut into smaller tasks is known only once its Discussion is d
 
 Built (2026-11-05): task `raddle-recipe` (`257ab79a`), the recipe `raddle` (the raddle spreads the warp into sections before it is beamed).
 It is a record-only loom recipe with the rows Record-Write, Raddle-Write and Raddle-File, run through batten like `motif`: a worktree of its own, a pane, a board status and notices, no code landed.
-`lym board promote <slug> --recipe raddle` starts it on a Sketch; a Sketch with no stored record is refused, naming `motif`.
+Built (2026-11-05): task `sketch-promote-raddle` (`867b4eeb`).
+`lym board promote <slug>` of a Sketch, or `lym board promote S3` by handle, starts it with recipe `raddle`; `--recipe raddle` is still accepted, and any other recipe on a Sketch is refused, naming the plain promote.
+A Sketch with no stored record is refused, naming `motif`.
 
 - Raddle-Write is a cold Opus agent (loom key `raddle`, default `opus[high]`) that reads the Sketch, the board and a bounded read of code, and writes a proposal: one tapestry from Plan (way 1 above), several darn tasks (way 2), a mix, a project, or a beam, with the order as `depends_on`.
   It designs nothing; the Sketch has done that.
