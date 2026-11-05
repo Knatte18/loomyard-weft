@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-05 18:58 UTC; every age below is as of then.
+Rendered 2026-11-05 19:00 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (5)
+## Tasks (6)
 
 Concrete and claimable; only a task can run.
 
@@ -35,16 +35,17 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **Dobby reminds the operator on Slack of a run waiting at PR-Review or Sampler-Session** | [`slack-wait-reminders`](design-slack-wait-reminders.md)<br>[Sketch](decision-slack-wait-reminders.md) | darn · light | T5 | 2h<br>2h | reed |
 
-### Draft (2)
+### Draft (3)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | T5 | 58m<br>58m | creel, orch |
+| T1 | `draft` **beam merge-parent: the merge-in task can merge, lands as a merge and needs no pull request** | [`merge-parent-lands-right`](design-merge-parent-lands-right.md) | darn · solid | T7 | 1m<br>0m | pawl, darn, landing, fabric |
+| T2 | `draft` **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | T5 | 59m<br>59m | creel, orch |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T7 | 5d<br>5h | fabric |
 
-## Notes (30)
+## Notes (27)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -55,7 +56,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R2 |  | **Re-measure writer exploration and the carry of lookup results after the Discussion stencil change**<br>• Re-run the writer-lookups measurement on 10 tapestry runs, pricing the carry saved by early explore subagents | [`writer-lookups-remeasure`](design-writer-lookups-remeasure.md) | 1d<br>1h | loom, stencil |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>1h | loom, stencil |
 
-### Bugs (13)
+### Bugs (11)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -64,20 +65,17 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 1h<br>1h | reed, orch |
 | B5 |  | **A parent cannot withdraw a PATTERN change the decision record declares**<br>• lym loom decision add only appends PATTERN bullets; a declared id the parent drops needs a hand edit of the record | [`decision-withdraw-pattern`](design-decision-withdraw-pattern.md) | 1h<br>1h | loom, parsers, pattern |
 | B6 |  | **Raddle on a Sketch fails to start because the motif run that made it already completed under the same slug**<br>• Dobby refuses the raddle run until lym batten cleanup --apply removes the motif run dir | [`raddle-same-slug-completed`](design-raddle-same-slug-completed.md) | 1h<br>1h | batten, dobby, loom |
-| B7 |  | **A finished raddle run fails its batten run at Run-Shed** | [`raddle-end-fails-batten`](design-raddle-end-fails-batten.md) | 57m<br>57m | batten |
-| B8 |  | **Scope plugins, skills and connectors per role, in every hub**<br>• lym gives each session only the plugins and skills its role needs, ly included in other hubs, and turns off connectors and unused listings | [`ly-plugin-off-in-other-hubs`](design-ly-plugin-off-in-other-hubs.md) | 41m<br>38m | shuttle |
-| B9 |  | **beam merge-parent's merge-in task lands as a squash, which drops the parent-branch merge** | [`merge-in-lands-as-squash`](design-merge-in-lands-as-squash.md) | 0m<br>0m | pawl, landing, darn |
-| B10 |  | **webster recover-batch refuses with a way forward that names recover-batch itself** | [`recover-batch-self-way-forward`](design-recover-batch-self-way-forward.md) | 0m<br>0m | webster |
-| B11 |  | **webster record-batch: create-not-done refusal lists every searched file and reports a signature mismatch as a missing member** | [`record-batch-signature-mismatch`](design-record-batch-signature-mismatch.md) | 0m<br>0m | webster, quarry |
-| B12 |  | **fabric clone --reset removes the hub before refusing a mismatched --shortname** | [`clone-reset-deletes-first`](design-clone-reset-deletes-first.md) | 0m<br>0m | fabric |
-| B13 |  | **beam merge-parent task is told to run lym fabric merge-in, which the task session refuses** | [`merge-in-writer-refused`](design-merge-in-writer-refused.md) | 0m<br>0m | pawl, fabric, darn |
-| B14 |  | **webster refusal text repeats the full unit file list and every declaration site for each unresolved target** | [`webster-refusal-file-lists`](design-webster-refusal-file-lists.md) | 0m<br>0m | webster, quarry |
+| B7 |  | **A finished raddle run fails its batten run at Run-Shed** | [`raddle-end-fails-batten`](design-raddle-end-fails-batten.md) | 58m<br>58m | batten |
+| B8 |  | **Scope plugins, skills and connectors per role, in every hub**<br>• lym gives each session only the plugins and skills its role needs, ly included in other hubs, and turns off connectors and unused listings | [`ly-plugin-off-in-other-hubs`](design-ly-plugin-off-in-other-hubs.md) | 42m<br>40m | shuttle |
+| B10 |  | **webster recover-batch refuses with a way forward that names recover-batch itself** | [`recover-batch-self-way-forward`](design-recover-batch-self-way-forward.md) | 1m<br>1m | webster |
+| B11 |  | **webster record-batch: create-not-done refusal lists every searched file and reports a signature mismatch as a missing member** | [`record-batch-signature-mismatch`](design-record-batch-signature-mismatch.md) | 1m<br>1m | webster, quarry |
+| B12 |  | **fabric clone --reset removes the hub before refusing a mismatched --shortname** | [`clone-reset-deletes-first`](design-clone-reset-deletes-first.md) | 1m<br>1m | fabric |
+| B14 |  | **webster refusal text repeats the full unit file list and every declaration site for each unresolved target** | [`webster-refusal-file-lists`](design-webster-refusal-file-lists.md) | 1m<br>1m | webster, quarry |
 
-### Enhancements (4)
+### Enhancements (3)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **beam merge-parent's merge-in darn should land without a pull request** | [`merge-in-without-pull-request`](design-merge-in-without-pull-request.md) | 0m<br>0m | pawl, darn, landing |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 9d<br>4d | batten, stencil, config |
 | E7 |  | **Each part agent plans and builds its own part, instead of joining the parts into one plan** | [`parts-plan-and-build`](design-parts-plan-and-build.md) | 2d<br>1h | loom |
 | E9 |  | **An interactive agent idle for a set time gets its session compacted**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 5d<br>2d | shed, shuttle, batten |
