@@ -22,10 +22,16 @@ The beam's orch drives the landing work itself, inside Beam-Await; pawl drops Pa
 
 Pawl becomes Preflight, Record-Write, Beam-Up, Beam-Await, Finalize, Beam-Down.
 
+## Built since (tidy, 2026-11-05)
+
+Task `protected-parent-landing` landed (`dbd169ae`): `beam.yaml` `pull_request: merge` makes Finalize push the task or beam branch, find or open a pull request into the parent and squash-merge it on GitHub at once with no review, then pull the parent.
+The review row returns Done for it (`MergeAtOnce`), and a parent push refused as protected is Stuck with a way forward naming `pull_request=merge`.
+This answers the open point on a protected parent below.
+
 ## Open points
 
 - Verbs the beam's orch needs for 1 and 3, so the pull request and its description go through lym, not by hand: for example `lym beam pr open|close`, reusing Beam-Describe's description writer and PR-Review's pull-request code.
-- How Finalize lands a beam whose pull request was merged on the remote, or whose parent is protected; `protected-parent-landing` builds landing through a pull request on a protected parent.
+- How Finalize lands a beam whose pull request was merged on the remote; a protected parent is built (see above), and a pull request merged on the remote under a `merge` parent still squashes parent-side.
 - The hold boundary: today the beam is held from Parent-Align on (`boardengine.RunHolds`); with an open pull request inside Beam-Await, whether member landings are refused while it is open, or update it.
 - Whether `lym beam ready` still checks that the parent was merged in recently, since Parent-Align no longer runs before Finalize.
 - Resume of in-flight pawl runs that sit on a removed row.

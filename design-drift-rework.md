@@ -8,6 +8,19 @@ A Drift compare is an opaque command that exits 0 or not; which outputs changed,
 The agent decides the scope, whether each drift was expected and whether to accept it, and an acceptance covers a whole test.
 The report lists the faults this leaves (an acceptance hides later regressions in the same test, nothing checks the expectation's seal, the writer never sees the expectation) and proposes one reworked design, written against the `cs` hub's harness.
 
+## Built since (tidy, 2026-11-05)
+
+Task `drift-interim-repairs` landed (`83735e65`), two repairs ahead of this rework:
+
+- `lym drift accept <test>` refuses a name that matches no file under the run's baseline profile directory (with or without the file's last extension).
+  `lym drift scope --skip` stays unchecked: it runs before any capture, and a capture writes no file for a skipped test.
+- The accepted profile keeps each accepted test's output as it was at accept: the verb captures the current code first, outside the run budget, and Drift-Verify and Drift-Recheck build the profile from the baseline with those kept files replacing the tests'.
+  A later move of an accepted test shows as drift again.
+  `RunAcceptedCapture` and the `CaptureAccepted` seam are replaced by `RunAcceptanceCapture` and the `CompareAccepted` seam; new files under `.lym/drift/` are `accepting`, `accepted-tests` and `accept.lock`.
+
+This rework still removes the accepted profile and its seams, so these repairs live only until it is built.
+Two open points from the landing's review: whether the baseline directory holds only profile files (`testFiles` in `internal/driftengine/accepted.go` admits any file there), and the partial scope itself, which goes in this rework.
+
 ## Idea: the report's design, made general
 
 Drift stays a general lym module: nothing in it assumes one hub's harness or output format.
@@ -30,7 +43,7 @@ Drift stays a general lym module: nothing in it assumes one hub's harness or out
 - The writer gets the containment check as a gate entry of its own session.
 - Removed: `partial`, `skip`, `skip_file`, `accept`, `withdraw`, `waive`, the accepted profile and its seams, the run budget, side capture and `DriftRecheck` as a separate engine.
 
-The two interim repairs (`drift-interim-repairs`: a name check on `lym drift accept`, the accepted profile taken at accept) do not replace this.
+The two interim repairs above do not replace this.
 
 ## Open decisions (operator)
 
