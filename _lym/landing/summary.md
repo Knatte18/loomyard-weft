@@ -1,72 +1,45 @@
-# Codex runs get creel mail through hooks, as Claude runs do
+# Codex sessions get creel mail through hooks, as Claude sessions do
 
-Every Codex strand was a pane-mail strand: `codexengine` installed no creel hooks, so mail from another agent reached a Codex session only as a typed `run lym creel read` reminder.
-A Codex run in a hub now carries creel's hook delivery, built on what the hook spike measured on Codex CLI 0.164.0 (`docs/research/codex-hook-delivery-2026-10-28/report.md`), and its launch is marked `CreelHooks`.
-The daemon then treats it as a hook strand, the same as a Claude run.
+Creel's hook delivery reached only Claude sessions.
+Every Codex strand was a pane-mail strand, and mail from another agent arrived as a `run lym creel read` reminder.
+`codexengine` now carries creel's delivery the way `claudeengine` does, and a Codex launch built for a hub is marked `CreelHooks`.
 
-## What a Codex run in a hub carries
+## What changes
 
-- **Tool-boundary claim.**
-  A second `PostToolUse` entry, after the activity hook, forms the strand's flag name from `$LYM_STRAND_NAME`.
-  Only when that flag stands in the hub's creel flag directory does it run `lym creel hook-read codex`; with no flag it prints `{}` and starts no process.
-- **Turn-end delivery.**
-  The Stop recording becomes one merged command.
-  When the flag stands, it pipes the payload to `lym creel hook-read codex` and exits 0 if mail was handed out, recording no turn end, since the block continues the turn.
-  Otherwise it appends the Stop record as before, so `ParseEvents` never reads a Stop that handed out mail as a turn end.
+- **Tool boundary.**
+  A second `PostToolUse` entry, after the activity hook, forms the strand's flag name and runs `lym creel hook-read codex` only when that flag stands in the hub's creel flag directory.
+  With no flag it prints the empty hook output and starts no process.
+- **Turn end.**
+  The `Stop` recording is one merged command.
+  When the flag stands it pipes the payload to `hook-read` and exits 0 if that handed out mail, recording no turn end, since the block continues the turn; otherwise it appends the `Stop` record as before.
 - **Hook output.**
-  `HookOutput` renders mail as `{"decision":"block","reason":<mail>}`, the shape the spike saw Codex take at the next step after a tool call and at once after a turn end.
-  With no mail it renders `{}`.
+  `Codex.HookOutput` hands mail over as `{"decision":"block","reason":<mail>}`.
+  It drops the echo, because the idle wake already shows the same lines to the operator as a user turn.
 - **Idle wake.**
-  The Stop setting also carries an async second entry with a timeout of 86400 s: `lym creel hook-wait codex`, with `CODEX_HOME` and `LYM_CODEX_BINARY` set on its command.
-  When the daemon rings that waiter, hook-wait calls the new `shuttleengine.IdleWaker` capability.
-  Codex's `WakeIdle` runs `codex queue --thread <session_id> --message <mail>` with the session id from the Stop payload, before creel marks the mail read.
-  A failed queue leaves the mail unread, and the daemon's bell takes over once the ring goes unanswered.
+  The `Stop` setting also carries an async `lym creel hook-wait codex` waiter, with a timeout of a day.
+  No exit of a Codex hook wakes an idle session, so on a ring `Codex.WakeIdle` runs `codex queue --thread <session_id> --message <mail>` before creel marks the mail read.
+  A failed queue leaves the mail unread, and creel's bell into the pane wakes the session instead.
 - **Trust sentence.**
-  The prompt file opens with the creel trust sentence, after the deny notice.
-  Without it, the spike showed Codex reading a block as a failed tool call and not acting on it.
+  The prompt file now opens with the creel trust sentence after the deny notice.
+  Without it Codex reads a hook's block as a failed tool call.
+- The package doc's "no creel hooks" goes, and the README and overview now say Codex's hooks carry creel mail, under trial.
 
-A Codex engine told no board directory (a standalone run) installs none of this and keeps the plain Stop recording.
-
-## Shared pieces
-
-The creel trust sentence, the flag directory (`CreelFlagDir`) and the shell fragment that turns a strand name into its flag file name move from `claudeengine` into `internal/shuttleengine/creelhooks.go`.
-Both engines now use them, and Claude's behavior is unchanged.
-`shuttleengine.IdleWaker` is a new optional capability beside `ToolBoundaryContextRenderer`, for a provider whose idle session no hook exit wakes.
-hook-wait asks such an engine to start the woken turn, and keeps writing `RewakeOutput` to stderr for every other engine.
+Shared pieces moved from `claudeengine` into `shuttleengine` (`creelhooks.go`): `CreelTrustSentence`, `CreelFlagDir` and `StrandFlagNameShell`.
+`shuttleengine` gains the optional `IdleWaker` interface beside `ToolBoundaryContextRenderer`.
+`creelcli`'s `hook-wait` calls the engine's `WakeIdle` when the engine implements it and exits 0, and otherwise writes the wake text to stderr and exits with the wake code as before.
 
 ## Design decisions
 
-- **The `codex queue` call runs in the waiter process the daemon rings, not in the daemon itself.**
-  The daemon still decides when to wake, through its existing ring.
-  The waiter already holds what the call needs: the Codex session id from the Stop payload and the session's Codex home.
-  It also sits inside creel's claim and acknowledge sequence, so a failed queue leaves the mail unread with no new daemon path, Delivery method or session-id lookup.
-  The entry asked for the wake "from the daemon"; this meets the same need with the ring, claim and echo machinery unchanged.
-- **The echo of mail an idle wake handed over is dropped for Codex.**
-  The operator already sees the queued line as a user message.
-  Codex also shows a hook's system message beside the reason, so an echo there could read as new mail.
-- **An opened Codex session (`lym shuttle open`) stays a pane-mail strand.**
-  It has no prompt file to carry the trust sentence, and without the sentence Codex reads a block as a failed tool call.
-- **The hook commands call `lym creel hook-read codex` / `hook-wait codex` from the session's working directory**, which is the anchor Codex runs its hooks in.
-  They do not change directory first, as Claude's hooks do with `$CLAUDE_PROJECT_DIR`.
+- **The idle wake runs in the strand's hook-wait waiter, not in the creel daemon.**
+  Claude's idle wake already rides that waiter, so this keeps engine-specific commands out of the daemon.
+  The Goal's wording, "`codex queue` from the daemon", is amended to match; the effect, an idle Codex session woken by mail, is the same.
+- The waiter's command sets `CODEX_HOME` and `LYM_CODEX_BINARY` itself, so the queued turn reaches this session's home and the binary `codex.yaml` names, even when Codex hands its hooks a trimmed environment.
+- An engine told no board directory (a standalone run) and `OpenLaunch` carry no creel hooks.
+  An opened session has no prompt file to hold the trust sentence, so it stays a pane-mail strand.
+- A block after a tool call makes Codex read that call as failed, so the session may run the call once more.
 
-## Tests
+## To check
 
-- `codexengine`: `TestHookInput` and `TestHookOutput` (tier0) pin the payload parse and the block output, including the dropped echo.
-  `TestHookSettings` gains a creel row and pins the waiter entry literally.
-  `TestPrepare_CreelHooksInAHub` pins the `CreelHooks` mark and the creel settings for an engine told a board, and the existing Prepare tests pin the trust sentence in the prompt file.
-- `codexengine`, tier1: `TestCreelHookCommands` runs the mail hook and the merged Stop hook under `sh`, with a stand-in `lym`, in each flag and outcome case.
-  `TestWakeIdle` runs the idle wake against a stand-in `codex` and checks the queue arguments, `CODEX_HOME`, a payload with no session id and a failing queue.
-- `creelcli`: `TestWakeSession` pins hook-wait's two wake paths and that a failed wake is returned, so the mail stays unread.
-- `shuttleengines`: `TestToolBoundaryRenderer` pins that the `codex` entry renders hook output and is an `IdleWaker`.
-
-## Open risks
-
-Every Codex behavior here rests on one spike sample per case.
-These are not yet observed on real sessions, and the live trial task `codex-creel-trial` exists to check them:
-
-- whether an async Codex hook lives through a long idle spell;
-- whether `codex queue` works from inside a hook process;
-- whether Codex runs an event's hooks in parallel;
-- whether a Stop payload carries `stop_hook_active`.
-
-A block after a tool call makes Codex read that call as failed, so a session may run the call once more.
+- `Codex.WakeIdle` and the waiter live in the engine and `hook-wait`, not in the daemon: confirm this is the intended placement (`internal/shuttleengine/codexengine/capabilities.go`, `internal/creelcli/hookwait.go`).
+- Unit tests cover the hook output, the launch settings and the wake call (`hookrun_test.go`, `capabilities_test.go`, `hookread_test.go`).
+  No live check on real Codex sessions was run; that is the separate trial task that follows.
