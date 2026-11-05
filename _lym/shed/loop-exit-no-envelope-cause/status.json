@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -146,6 +146,21 @@
       "output": "",
       "at": "2026-11-05T06:23:57Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/loop-exit-no-envelope-cause/_lym/landing/summary.md",
+      "at": "2026-11-05T06:24:34Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-05T06:24:34.149540598Z",
+          "end": "2026-11-05T06:24:34.149596333Z"
+        }
+      ]
     }
   ],
   "product": {
