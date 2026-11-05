@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-05 16:33 UTC; every age below is as of then.
+Rendered 2026-11-05 16:42 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **The scratch dir lives at the anchor and is excluded there**<br>• Fabric wires and excludes <anchor>/.scratch instead of the root .scratch, and reconcile moves existing anchored hubs over | [`anchor-scratch-excluded`](design-anchor-scratch-excluded.md) | darn · light | Darn-Write | neve | 16m<br>11m | fabric |
+| T3 | **The scratch dir lives at the anchor and is excluded there**<br>• Fabric wires and excludes <anchor>/.scratch instead of the root .scratch, and reconcile moves existing anchored hubs over | [`anchor-scratch-excluded`](design-anchor-scratch-excluded.md) | darn · light | Drift-Verify | neve | 25m<br>20m | fabric |
 | T7 | **Drift compares changed values in code against a sealed expectation, with a separate judge**<br>• General Drift rework: code-side diff of any hub capture keyed by line key or number, structured sealed expectation, containment by code, a judge per changed value | [`drift-rework`](design-drift-rework.md)<br>[Sketch](decision-drift-rework.md) | tapestry · solid | Webster | neve | 1d<br>3h | drift, loom, darn, stencil, config |
 
 ### Ready (0)
@@ -33,7 +33,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Slack relay per hub: credentials, setup, inbound and outbound mail, presence and the lym slack verbs** | [`slack-relay`](design-slack-relay.md)<br>[Sketch](decision-slack-relay.md) | tapestry · solid | T1 | 6m<br>1m | reed |
+| T5 | **Slack relay per hub: credentials, setup, inbound and outbound mail, presence and the lym slack verbs** | [`slack-relay`](design-slack-relay.md)<br>[Sketch](decision-slack-relay.md) | tapestry · solid | T1 | 16m<br>10m | reed |
 
 ### Layer B (1)
 
@@ -41,7 +41,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Dobby reminds the operator on Slack of a run waiting at PR-Review or Sampler-Session** | [`slack-wait-reminders`](design-slack-wait-reminders.md)<br>[Sketch](decision-slack-wait-reminders.md) | darn · light | T5 | 6m<br>6m | reed |
+| T6 | **Dobby reminds the operator on Slack of a run waiting at PR-Review or Sampler-Session** | [`slack-wait-reminders`](design-slack-wait-reminders.md)<br>[Sketch](decision-slack-wait-reminders.md) | darn · light | T5 | 16m<br>16m | reed |
 
 ### Draft (2)
 
