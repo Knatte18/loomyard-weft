@@ -1,0 +1,459 @@
+diff --git a/internal/shell/posix.go b/internal/shell/posix.go
+index 8897be4f..afc5857f 100644
+--- a/internal/shell/posix.go
++++ b/internal/shell/posix.go
+@@ -31,6 +31,11 @@ func (p posixShell) Touch(path string) string {
+ 	return ": > " + p.Quote(path)
+ }
+ 
++// AppendLine returns the POSIX `printf '%s\n' <quoted line> >> <quoted path>` statement, which writes line verbatim, never reading it as a format.
++func (p posixShell) AppendLine(path, line string) string {
++	return `printf '%s\n' ` + p.Quote(line) + " >> " + p.Quote(path)
++}
++
+ // ExportEnv returns a POSIX `export key=<quoted value>` statement, session-scoped.
+ func (p posixShell) ExportEnv(key, value string) string {
+ 	return "export " + key + "=" + p.Quote(value)
+diff --git a/internal/shell/pwsh.go b/internal/shell/pwsh.go
+index e20fc5ec..affd4341 100644
+--- a/internal/shell/pwsh.go
++++ b/internal/shell/pwsh.go
+@@ -39,6 +39,11 @@ func (p pwshShell) Touch(path string) string {
+ 	return "New-Item -ItemType File -Force -Path " + p.Quote(path) + " | Out-Null"
+ }
+ 
++// AppendLine returns the `Add-Content -LiteralPath <quoted path> -Value <quoted line>` statement; Add-Content ends the line and creates an absent file.
++func (p pwshShell) AppendLine(path, line string) string {
++	return "Add-Content -LiteralPath " + p.Quote(path) + " -Value " + p.Quote(line)
++}
++
+ // ExportEnv returns a pwsh `$env:key = <quoted value>` statement, session-scoped.
+ func (p pwshShell) ExportEnv(key, value string) string {
+ 	return "$env:" + key + " = " + p.Quote(value)
+diff --git a/internal/shell/shell.go b/internal/shell/shell.go
+index 8416c3f3..8ba311c7 100644
+--- a/internal/shell/shell.go
++++ b/internal/shell/shell.go
+@@ -1,4 +1,4 @@
+-// shell.go defines the Shell interface — pane-shell mechanics (argument quoting, the call operator, session-scoped env export, live-PATH prepend, single-line statement chaining, script sourcing, the sourced-script file extension, and the key that discards an unsubmitted input line, output discard, zero exit, the command-line flag, and a directory change to an already-quoted word) that every provider engine composes its launch/resume command strings from — and the ForGOOS/Pwsh/Posix constructors that select or directly expose an implementation.
++// shell.go defines the Shell interface — pane-shell mechanics (argument quoting, the call operator, a line appended to a file, session-scoped env export, live-PATH prepend, single-line statement chaining, script sourcing, the sourced-script file extension, and the key that discards an unsubmitted input line, output discard, zero exit, the command-line flag, and a directory change to an already-quoted word) that every provider engine composes its launch/resume command strings from — and the ForGOOS/Pwsh/Posix constructors that select or directly expose an implementation.
+ 
+ package shell
+ 
+@@ -21,6 +21,8 @@ type Shell interface {
+ 	// Touch returns the shell syntax that creates path as an empty file, truncating it if it
+ 	// already exists.
+ 	Touch(path string) string
++	// AppendLine returns a standalone statement that appends line and a line ending to the file at path, creating the file when it is absent.
++	AppendLine(path, line string) string
+ 	// ExportEnv returns a standalone statement that exports key with value into the shell session.
+ 	// Session-scoped in both dialects.
+ 	// This differs deliberately from WithEnv, which is command-scoped on POSIX and therefore
+diff --git a/internal/shell/shell_test.go b/internal/shell/shell_test.go
+index ba4650d3..d1ad9995 100644
+--- a/internal/shell/shell_test.go
++++ b/internal/shell/shell_test.go
+@@ -1,4 +1,4 @@
+-// shell_test.go table-tests both pane-shell implementations: argument quoting across plain, space-containing, and quote-containing inputs, and the exact Invoke/WithEnv/ExportEnv/ PrependPathEntry/Chain/Source/EnvRef/Touch/ScriptExt output each impl composes.
++// shell_test.go table-tests both pane-shell implementations: argument quoting across plain, space-containing, and quote-containing inputs, and the exact Invoke/WithEnv/ExportEnv/ PrependPathEntry/Chain/Source/EnvRef/Touch/AppendLine/ScriptExt output each impl composes.
+ // One test per Shell method; each table holds both dialects' rows, named "<dialect>/<case>".
+ // The pwsh quoting cases are migrated verbatim from claudeengine's former TestPwshSingleQuote so the coverage moves with the logic it tests.
+ 
+@@ -117,6 +117,31 @@ func TestShell_Touch(t *testing.T) {
+ 	}
+ }
+ 
++func TestShell_AppendLine(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name string
++		sh   Shell
++		path string
++		line string
++		want string
++	}{
++		{"pwsh/plain", Pwsh(), `C:\a\events.jsonl`, `{"k":"v"}`, `Add-Content -LiteralPath 'C:\a\events.jsonl' -Value '{"k":"v"}'`},
++		{"pwsh/single_quote", Pwsh(), `C:\a'b\events.jsonl`, "it's", `Add-Content -LiteralPath 'C:\a''b\events.jsonl' -Value 'it''s'`},
++		{"posix/plain", Posix(), "/a/events.jsonl", `{"k":"v"}`, `printf '%s\n' '{"k":"v"}' >> '/a/events.jsonl'`},
++		{"posix/format_and_quote", Posix(), "/a'b/events.jsonl", "100% it's", `printf '%s\n' '100% it'\''s' >> '/a'\''b/events.jsonl'`},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := tt.sh.AppendLine(tt.path, tt.line); got != tt.want {
++				t.Errorf("%s AppendLine(%q, %q) = %q; want %q", tt.name, tt.path, tt.line, got, tt.want)
++			}
++		})
++	}
++}
++
+ func TestShell_ChangeDir(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/shuttleengine/codexengine/codexengine.go b/internal/shuttleengine/codexengine/codexengine.go
+index c7662c7e..6dbab545 100644
+--- a/internal/shuttleengine/codexengine/codexengine.go
++++ b/internal/shuttleengine/codexengine/codexengine.go
+@@ -84,6 +84,7 @@ func validateChoice(choice shuttleengine.ModelChoice, permissionMode string, cod
+ // The prompt file opens with the deny notice announcing each installed shell guard row and the standing passages heddle holds for engine codex and the spec's role, then the spec's prompt.
+ // The launch line carries a PreToolUse hook per installed row, and its writable root is the records checkout the engine is told through its Dirs, symlink-resolved and kept as told with a Warn when it cannot be resolved, so the session writes its report through the anchor's `.lym` and `_lym` links; outside a hub it is empty and the line adds none.
+ // A spec that names skills launches with the skill-load line as its first turn and returns the prompt pointer as Launch.PromptLine, for shuttle to send after the skills load.
++// The launch line turns on the sandbox's network access, so the session reaches the creel daemon's socket, and appends the exit record to the run's events file once Codex exits.
+ // The launch records session starts, carries no creel hooks and names no session id, since Codex mints its own at the first turn.
+ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengine.Config) (shuttleengine.Launch, error) {
+ 	codex, err := loadConfigOrRefuse(c.dirs)
+@@ -121,6 +122,7 @@ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengin
+ 	}
+ 
+ 	sh := shell.ForGOOS()
++	eventsPath := filepath.Join(absRunDir, "events.jsonl")
+ 	return shuttleengine.Launch{
+ 		Cmd: buildLaunchCmd(sh, launchLine{
+ 			bin:           codexBinary(codex),
+@@ -128,8 +130,9 @@ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengin
+ 			writableRoots: writableRoots,
+ 			model:         spec.Model,
+ 			effort:        spec.Effort,
+-			hooks:         hookSettings(filepath.Join(absRunDir, "events.jsonl"), guards),
++			hooks:         hookSettings(eventsPath, guards),
+ 			firstTurn:     firstTurn,
++			eventsPath:    eventsPath,
+ 		}),
+ 		ResumeCmd:            buildResumeCmd(sh),
+ 		PromptLine:           promptLine,
+@@ -140,6 +143,7 @@ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengin
+ // OpenLaunch returns the launch of a named interactive Codex session with no prompt.
+ // It validates the model choice and the permission mode and readies the lym home as Prepare does, refusing under Codex rules before anything is written.
+ // Its line runs Codex with no hooks and no first turn, so the session carries no shell guard and waits at its composer, and the pane's shell goes on to Runner.Open's chain when Codex exits.
++// The line turns on the sandbox's network access as a run's does, so an opened session reaches the creel daemon's socket too.
+ // It writes nothing into dir, carries no creel hooks and names no session id.
+ // Its resume line is empty: Codex mints the session id at the first turn, so a revive starts no Codex and the chain after it ends the strand.
+ func (c *Codex) OpenLaunch(_ string, spec shuttleengine.OpenSpec, _ shuttleengine.Config) (shuttleengine.Launch, error) {
+diff --git a/internal/shuttleengine/codexengine/command.go b/internal/shuttleengine/codexengine/command.go
+index 97e70aee..4989c95d 100644
+--- a/internal/shuttleengine/codexengine/command.go
++++ b/internal/shuttleengine/codexengine/command.go
+@@ -1,6 +1,7 @@
+ // command.go composes the pane-shell lines Prepare and OpenLaunch hand back as a Launch, and the `-c` hook settings the launch line carries.
+-// The launch line starts the Codex TUI under the lym home with its first turn as the positional argument, then exits the pane's shell, so a Codex exit leaves a dead pane.
+-// An opened session's line is the Codex command alone, with no hooks, no first turn and no exit.
++// The launch line starts the Codex TUI under the lym home with its first turn as the positional argument, then appends the exit record to the run's events file and exits the pane's shell,
++// so a Codex exit reads as a process-ending session end and leaves a dead pane.
++// An opened session's line is the Codex command alone, with no hooks, no first turn, no exit record and no exit.
+ // The resume line exits the pane's shell alone and starts no Codex.
+ // Every hook is a plain POSIX sh command that appends a stamp line and its payload to the run's events file, touches the run's activity stamp, or guards a shell command.
+ // Argument quoting and statement chaining are pane-shell mechanics owned by internal/shell.
+@@ -23,6 +24,18 @@ const codexHomeEnvKey = "CODEX_HOME"
+ // instructionFallbackFile is the file Codex loads as project instructions in a directory with no AGENTS.md.
+ const instructionFallbackFile = "CLAUDE.md"
+ 
++// sandboxNetworkAccess is the `-c` setting that lets the workspace-write sandbox open sockets.
++// Codex's Linux sandbox refuses every socket connect without it, a Unix socket's included, so a session could not reach the creel daemon.
++const sandboxNetworkAccess = "sandbox_workspace_write.network_access=true"
++
++// The exit record is the line the launch line appends to the events file once Codex exits, since Codex fires no hook on its own exit.
++// It reads as a process-ending session end with reason exitRecordReason; it has no stamp line, so it carries no time.
++const (
++	exitRecordEvent  = "LymExit"
++	exitRecordReason = "codex-exit"
++	exitRecordLine   = `{"hook_event_name":"` + exitRecordEvent + `"}`
++)
++
+ // launchPointer returns the first turn of a session that loads no skills: a pointer to the prompt file at promptPath.
+ func launchPointer(promptPath string) string {
+ 	return "Read " + promptPath + " in full first; it is your complete, authoritative instructions."
+@@ -44,20 +57,23 @@ type launchLine struct {
+ 	hooks []string
+ 	// firstTurn is the session's first turn, typed as the positional prompt; empty for an opened session, which waits at its composer.
+ 	firstTurn string
++	// eventsPath is the run's events file, which the launch line appends the exit record to; unused by an opened session's command.
++	eventsPath string
+ }
+ 
+-// buildLaunchCmd composes the pane-shell line that starts a Codex session and exits the pane's shell when Codex exits.
++// buildLaunchCmd composes the pane-shell line that starts a Codex session and, when Codex exits, appends the exit record to the events file and exits the pane's shell.
+ func buildLaunchCmd(sh shell.Shell, line launchLine) string {
+-	return sh.Chain(codexCommand(sh, line), sh.Exit())
++	return sh.Chain(codexCommand(sh, line), sh.AppendLine(line.eventsPath, exitRecordLine), sh.Exit())
+ }
+ 
+ // codexCommand composes the command that starts a Codex session under the lym home.
+ // It runs `-a never -s workspace-write`, so no approval prompt shows and the sandbox bounds writes to the workspace, the writable roots and the temporary folders.
++// It turns on the sandbox's network access, so the session's shell commands reach the creel daemon's socket.
+ // It passes every hook setting with `--dangerously-bypass-hook-trust`, since a hook given by `-c` otherwise waits on a review prompt, and the first turn when there is one,
+ // and it loads CLAUDE.md as the project instructions of a directory with no AGENTS.md.
+ // CODEX_HOME names the lym home as a command-scoped assignment.
+ func codexCommand(sh shell.Shell, line launchLine) string {
+-	cmd := sh.Invoke(line.bin) + " --no-alt-screen -a never -s workspace-write"
++	cmd := sh.Invoke(line.bin) + " --no-alt-screen -a never -s workspace-write -c " + sh.Quote(sandboxNetworkAccess)
+ 	if len(line.writableRoots) > 0 {
+ 		cmd += " -c " + sh.Quote("sandbox_workspace_write.writable_roots="+tomlArray(line.writableRoots))
+ 	}
+diff --git a/internal/shuttleengine/codexengine/command_test.go b/internal/shuttleengine/codexengine/command_test.go
+index b0ed2e47..d96c0f7e 100644
+--- a/internal/shuttleengine/codexengine/command_test.go
++++ b/internal/shuttleengine/codexengine/command_test.go
+@@ -10,8 +10,8 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestBuildLaunchCmd pins the POSIX launch line: CODEX_HOME leading, every flag of the spike's line with the writable root, model and effort when set, each hook setting, the bypass flag, the first turn, and the shell exit.
+-// It also pins an opened session's command: no hook bypass, no first turn and no exit when the line has no hooks and no first turn.
++// TestBuildLaunchCmd pins the POSIX launch line: CODEX_HOME leading, every flag of the spike's line with the network access, the writable root, model and effort when set, each hook setting, the bypass flag, the first turn, the exit record appended to the events file, and the shell exit.
++// It also pins an opened session's command: the network access, and no hook bypass, no first turn, no exit record and no exit when the line has no hooks and no first turn.
+ func TestBuildLaunchCmd(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -23,13 +23,13 @@ func TestBuildLaunchCmd(t *testing.T) {
+ 	}{
+ 		{
+ 			name: "EveryInput",
+-			line: launchLine{bin: "codex", home: "/h", writableRoots: []string{"/links"}, model: "gpt-6-luna", effort: "low", hooks: []string{`hooks.Stop=[{hooks=[]}]`}, firstTurn: "Read it"},
+-			want: `CODEX_HOME='/h' 'codex' --no-alt-screen -a never -s workspace-write -c 'sandbox_workspace_write.writable_roots=["/links"]' -m 'gpt-6-luna' -c 'model_reasoning_effort="low"' -c 'project_doc_fallback_filenames=["CLAUDE.md"]' -c 'hooks.Stop=[{hooks=[]}]' --dangerously-bypass-hook-trust 'Read it'; exit`,
++			line: launchLine{bin: "codex", home: "/h", writableRoots: []string{"/links"}, model: "gpt-6-luna", effort: "low", hooks: []string{`hooks.Stop=[{hooks=[]}]`}, firstTurn: "Read it", eventsPath: "/run/events.jsonl"},
++			want: `CODEX_HOME='/h' 'codex' --no-alt-screen -a never -s workspace-write -c 'sandbox_workspace_write.network_access=true' -c 'sandbox_workspace_write.writable_roots=["/links"]' -m 'gpt-6-luna' -c 'model_reasoning_effort="low"' -c 'project_doc_fallback_filenames=["CLAUDE.md"]' -c 'hooks.Stop=[{hooks=[]}]' --dangerously-bypass-hook-trust 'Read it'; printf '%s\n' '{"hook_event_name":"LymExit"}' >> '/run/events.jsonl'; exit`,
+ 		},
+ 		{
+ 			name: "NoWritableRootModelOrEffort",
+-			line: launchLine{bin: "codex", home: "/h", hooks: []string{`hooks.Stop=[{hooks=[]}]`}, firstTurn: "it's"},
+-			want: `CODEX_HOME='/h' 'codex' --no-alt-screen -a never -s workspace-write -c 'project_doc_fallback_filenames=["CLAUDE.md"]' -c 'hooks.Stop=[{hooks=[]}]' --dangerously-bypass-hook-trust 'it'\''s'; exit`,
++			line: launchLine{bin: "codex", home: "/h", hooks: []string{`hooks.Stop=[{hooks=[]}]`}, firstTurn: "it's", eventsPath: "/e"},
++			want: `CODEX_HOME='/h' 'codex' --no-alt-screen -a never -s workspace-write -c 'sandbox_workspace_write.network_access=true' -c 'project_doc_fallback_filenames=["CLAUDE.md"]' -c 'hooks.Stop=[{hooks=[]}]' --dangerously-bypass-hook-trust 'it'\''s'; printf '%s\n' '{"hook_event_name":"LymExit"}' >> '/e'; exit`,
+ 		},
+ 	}
+ 	for _, tt := range tests {
+@@ -44,7 +44,7 @@ func TestBuildLaunchCmd(t *testing.T) {
+ 		t.Errorf("buildResumeCmd() = %q; want exit", got)
+ 	}
+ 	opened := launchLine{bin: "codex", home: "/h", model: "gpt-6-luna"}
+-	if got, want := codexCommand(shell.Posix(), opened), `CODEX_HOME='/h' 'codex' --no-alt-screen -a never -s workspace-write -m 'gpt-6-luna' -c 'project_doc_fallback_filenames=["CLAUDE.md"]'`; got != want {
++	if got, want := codexCommand(shell.Posix(), opened), `CODEX_HOME='/h' 'codex' --no-alt-screen -a never -s workspace-write -c 'sandbox_workspace_write.network_access=true' -m 'gpt-6-luna' -c 'project_doc_fallback_filenames=["CLAUDE.md"]'`; got != want {
+ 		t.Errorf("codexCommand(%+v) = %s; want %s", opened, got, want)
+ 	}
+ }
+diff --git a/internal/shuttleengine/codexengine/doc.go b/internal/shuttleengine/codexengine/doc.go
+index e506db47..93917d81 100644
+--- a/internal/shuttleengine/codexengine/doc.go
++++ b/internal/shuttleengine/codexengine/doc.go
+@@ -10,15 +10,21 @@
+ //
+ // The launch line runs `-a never -s workspace-write`, so no approval prompt shows, and adds the records checkout it is told through its Dirs as a writable root, symlink-resolved as the trusted roots are and kept as told, with a Warn, when it cannot be resolved,
+ // so the session writes under the anchor's `.lym` as a Claude seat does; outside a hub it is told none and adds none.
++// The line also sets `sandbox_workspace_write.network_access`, the one opening the sandbox gets beyond writes:
++// Codex's Linux sandbox refuses every socket connect without it, a Unix socket's included, so a session could not run `lym creel read` or `post --reply` against the creel daemon.
++// Codex has no setting that opens Unix sockets alone; its network proxy forwards a Unix socket only for HTTP requests, which creel's protocol is not.
++// So the session's shell commands have the network a Claude seat's have, and writes stay bound to the workspace, the writable roots and the temporary folders.
++// The Bolt checkout's `.lym` stays read-only, so a client in the session that finds no daemon cannot start one; the daemon that delivers the session's mail is already up.
+ // A `.codex/rules` folder in the worktree refuses the launch, since an allow rule there lifts the sandbox; a `.codex/config.toml` there is named in a Warn, since its hooks run unreviewed.
+ // Both are read on disk, tracked by git or not, since Codex reads them either way.
+-// The first turn is the positional prompt pointer, and the pane's shell exits after Codex, so a Codex exit reads as a dead pane;
++// The first turn is the positional prompt pointer, and after Codex exits the line appends an exit record to the run's events file and exits the pane's shell, so a Codex exit reads as a dead pane;
+ // the resume line starts no Codex, since Codex mints its session id at the first turn.
+ //
+ // Hooks given by `-c` append a stamp line and the payload of SessionStart, UserPromptSubmit, Stop and PermissionRequest to the run's events file, and PostToolUse touches the activity stamp.
+ // A Stop is the turn end and carries the reply; an interrupt fires no Stop, so a newest turn_aborted in the rollout the payloads name marks the turn interrupted.
+ // The rollout's newest token_count gives the context size.
+-// Codex keeps no session registry, so liveness reads unproven, and the session state follows the hook signals and the interrupt marker alone.
++// Codex keeps no session registry, so liveness reads unproven, and the session state follows the hook signals, the exit record and the interrupt marker alone.
++// Codex fires no hook on its own exit, so the exit record stands in: it reads as a process-ending session end with reason `codex-exit`, and a run whose Codex exited reads dead as a Claude run does.
+ //
+ // The pane readings follow the spike's table: the `›` composer, the `Working (… esc to interrupt)` busy line and the folder-trust prompt, whose accept presses nothing unless the option sits by the caret.
+ // A send pastes the text and leaves the Enter to shuttle's guarded send, since Codex drops an Enter typed inside a burst of characters.
+@@ -31,6 +37,7 @@
+ //
+ // OpenLaunch opens a named interactive session with no prompt, for `lym shuttle open`: it validates the model choice and readies the lym home as Prepare does,
+ // and its line runs Codex with no hooks and no first turn, so the session carries no shell guard and waits at its composer.
++// The line keeps the network access, so an opened session reaches creel too, and appends no exit record, since an opened session has no events file.
+ // Its resume line is empty, so a revive starts no Codex and Runner.Open's chain ends the strand.
+ //
+ // The engine has no fork audit, no transcript reading and no creel hooks.
+diff --git a/internal/shuttleengine/codexengine/events.go b/internal/shuttleengine/codexengine/events.go
+index e0cae0e4..c4870bc8 100644
+--- a/internal/shuttleengine/codexengine/events.go
++++ b/internal/shuttleengine/codexengine/events.go
+@@ -48,7 +48,8 @@ type pendingStamp struct {
+ }
+ 
+ // ParseSessionSignals parses events file bytes into session signals, in file order.
+-// SessionStart reads as a session start, UserPromptSubmit as a turn start, Stop as a turn end and PermissionRequest as an ask.
++// SessionStart reads as a session start, UserPromptSubmit as a turn start, Stop as a turn end and PermissionRequest as an ask,
++// and the launch line's exit record as a session end that ends the process.
+ // A payload line takes its time from the nearest preceding untaken stamp naming its hook, and reads a zero time when there is none or the stamp's time is empty or malformed.
+ // consumed ends at the last newline-terminated line, except that it stops before the earliest line of the trailing run of stamp lines, which have no payload line after them yet.
+ // It is lenient: malformed lines, stamp lines and unknown hooks yield no signal.
+@@ -134,6 +135,8 @@ func signalFromPayload(hookName string, fields map[string]any) (shuttleengine.Se
+ 	case hookEventSessionStart:
+ 		source, _ := fields["source"].(string)
+ 		return shuttleengine.SessionSignal{Kind: shuttleengine.SessionSignalSessionStart, Source: sessionStartSource(source)}, true
++	case exitRecordEvent:
++		return shuttleengine.SessionSignal{Kind: shuttleengine.SessionSignalSessionEnd, Reason: exitRecordReason, EndsProcess: true}, true
+ 	}
+ 	return shuttleengine.SessionSignal{}, false
+ }
+diff --git a/internal/shuttleengine/codexengine/events_test.go b/internal/shuttleengine/codexengine/events_test.go
+index 5b4116b7..1fceb55a 100644
+--- a/internal/shuttleengine/codexengine/events_test.go
++++ b/internal/shuttleengine/codexengine/events_test.go
+@@ -41,7 +41,7 @@ func TestParseEvents(t *testing.T) {
+ 	}
+ }
+ 
+-// TestParseSessionSignals pins the four hooks' signals with each payload's stamp time and session id.
++// TestParseSessionSignals pins the four hooks' signals with each payload's stamp time and session id, and the exit record read as a process-ending session end with no time.
+ // It also pins a slash command read as no instruction and a fork's source read as none.
+ // It pins consumed stopping before a trailing stamp with no payload yet.
+ func TestParseSessionSignals(t *testing.T) {
+@@ -62,7 +62,7 @@ func TestParseSessionSignals(t *testing.T) {
+ 		stampLine(hookEventUserPromptSubmit, "2026-10-24T11:55:30Z"), userPromptSubmitPayload,
+ 		stampLine(hookEventStop, "2026-10-24T11:55:31Z"), stopPayload,
+ 		stampLine(hookEventPermissionRequest, ""), permissionRequestPayload,
+-		preToolUsePayload, slashPrompt, forkStart,
++		preToolUsePayload, slashPrompt, forkStart, exitRecordLine,
+ 	}
+ 	complete := ""
+ 	for _, line := range lines {
+@@ -81,6 +81,7 @@ func TestParseSessionSignals(t *testing.T) {
+ 		{Kind: shuttleengine.SessionSignalAsk, SessionID: "01a16d5d", Raw: []byte(permissionRequestPayload)},
+ 		{Kind: shuttleengine.SessionSignalTurnStart, SessionID: "s", Raw: []byte(slashPrompt)},
+ 		{Kind: shuttleengine.SessionSignalSessionStart, SessionID: "s", Raw: []byte(forkStart)},
++		{Kind: shuttleengine.SessionSignalSessionEnd, Reason: exitRecordReason, EndsProcess: true, Raw: []byte(exitRecordLine)},
+ 	}
+ 	if !reflect.DeepEqual(got, want) {
+ 		t.Errorf("ParseSessionSignals() =\n%+v\nwant\n%+v", got, want)
+diff --git a/internal/shuttleengine/codexengine/prepare_test.go b/internal/shuttleengine/codexengine/prepare_test.go
+index bb2241f1..ff01b82b 100644
+--- a/internal/shuttleengine/codexengine/prepare_test.go
++++ b/internal/shuttleengine/codexengine/prepare_test.go
+@@ -92,6 +92,7 @@ func TestPrepare_Launch(t *testing.T) {
+ 					effort:        "medium",
+ 					hooks:         hookSettings(filepath.Join(runDir, "events.jsonl"), guards),
+ 					firstTurn:     launchPointer(promptPath),
++					eventsPath:    filepath.Join(runDir, "events.jsonl"),
+ 				}),
+ 				ResumeCmd:            sh.Exit(),
+ 				RecordsSessionStarts: true,
+@@ -163,10 +164,11 @@ func TestPrepare_InstallsGuardsFromItsInputs(t *testing.T) {
+ 			}
+ 			guards := installedGuards(tt.wantRefuse, tt.wantInputs)
+ 			wantCmd := buildLaunchCmd(shell.ForGOOS(), launchLine{
+-				bin:       "codex",
+-				home:      repo.lymHome,
+-				hooks:     hookSettings(filepath.Join(runDir, "events.jsonl"), guards),
+-				firstTurn: launchPointer(promptPath),
++				bin:        "codex",
++				home:       repo.lymHome,
++				hooks:      hookSettings(filepath.Join(runDir, "events.jsonl"), guards),
++				firstTurn:  launchPointer(promptPath),
++				eventsPath: filepath.Join(runDir, "events.jsonl"),
+ 			})
+ 			if launch.Cmd != wantCmd {
+ 				t.Errorf("Prepare() launch line = %q; want %q", launch.Cmd, wantCmd)
+diff --git a/internal/shuttleengine/codexengine/rollout.go b/internal/shuttleengine/codexengine/rollout.go
+index 3b4e7b4f..0c0cce92 100644
+--- a/internal/shuttleengine/codexengine/rollout.go
++++ b/internal/shuttleengine/codexengine/rollout.go
+@@ -80,7 +80,7 @@ func payloadField(raw []byte, key string) string {
+ 	return value
+ }
+ 
+-// ProcessLiveness reads every session unproven: Codex keeps no registry of its live sessions, so a Codex exit is caught as the dead pane the launch line leaves.
++// ProcessLiveness reads every session unproven: Codex keeps no registry of its live sessions, so a Codex exit is caught by the exit record and the dead pane the launch line leaves.
+ func (c *Codex) ProcessLiveness(string) shuttleengine.Liveness {
+ 	return shuttleengine.LivenessUnproven
+ }
+diff --git a/internal/shuttleengine/codexengine/skillload_test.go b/internal/shuttleengine/codexengine/skillload_test.go
+index ae3b2b4d..c2202634 100644
+--- a/internal/shuttleengine/codexengine/skillload_test.go
++++ b/internal/shuttleengine/codexengine/skillload_test.go
+@@ -251,7 +251,7 @@ func TestPrepare_SkillsLoadFirst(t *testing.T) {
+ 		t.Errorf("Launch.PromptLine = %q; want the pointer %q", launch.PromptLine, pointer)
+ 	}
+ 	loadLine := engine.SkillLoadMessage([]string{"scribe:prose"})
+-	if !strings.HasSuffix(launch.Cmd, "--dangerously-bypass-hook-trust '"+loadLine+"'; exit") || strings.Contains(launch.Cmd, pointer) {
++	if !strings.Contains(launch.Cmd, "--dangerously-bypass-hook-trust '"+loadLine+"'; ") || strings.Contains(launch.Cmd, pointer) {
+ 		t.Errorf("Launch.Cmd = %q; want the load line %q as its first turn and no pointer", launch.Cmd, loadLine)
+ 	}
+ }
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 4c8484db..9244cfbb 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -497,7 +497,7 @@
+ // Session state has two consumers: Runner.SessionIdle and the verified send's idle wait, which gate on the readiness reading built from it.
+ // The reading is ready or held, or unknown when the state is, and an unknown reading falls back to the pane probe.
+ // Runner.SessionIdle answers IdleProbe.Idle for a ready reading and, for a held one, IdleProbe.Reason, with TooShort set when the reason is the short pane and Draft set when the reading names a draft in the input box and NoInputBox set when the reason is a pane showing no input box to an engine that reads one;
+-// on the pane fallback, which a strand with no run record always takes, an answer that is not idle also sets Draft when the input box holds text and NoInputBox when an engine that reads an input box finds none on a pane tall enough to draw one;
++// on the pane fallback, which a strand with no run record always takes through the engine of its live strand's provider, an answer that is not idle also sets Draft when the input box holds text and NoInputBox when an engine that reads an input box finds none on a pane tall enough to draw one;
+ // IdleProbe.NoTurn says no turn is in progress whatever the input box holds, so a draft, a pane too short or a missing box leaves it true while Idle stays false, and IdleProbe.TurnEndedAt says when the hook-derived reading behind it began;
+ // a reading with a running turn, an ask, a dead process or an unmatched turn start leaves both zero, and on the pane fallback NoTurn is the pane's idle answer or, for an engine with InterruptGuard, true when the box was found, the pane is not too short and no running turn shows, with TurnEndedAt zero;
+ // the runner keeps one turn-start hold per strand guid, so the orch watcher's probes keep one hold across its ticks as a send keeps one across its polls.
+diff --git a/internal/shuttleengine/session.go b/internal/shuttleengine/session.go
+index e4a73bd0..45adf45b 100644
+--- a/internal/shuttleengine/session.go
++++ b/internal/shuttleengine/session.go
+@@ -4,6 +4,7 @@
+ package shuttleengine
+ 
+ import (
++	"errors"
+ 	"fmt"
+ 	"strings"
+ 	"time"
+@@ -231,7 +232,8 @@ func (r *Runner) UsageLimit(guid string, turnEnd Event) (UsageLimit, error) {
+ // a ready reading is idle and a held one is not idle with its Reason, and the runner keeps one turn-start hold per strand across calls.
+ // A ready reading beside a pane that does not show the provider idle still answers idle, and logs the disagreement with the pane's last lines at Debug.
+ // An unknown reading, and a strand with no run record, fall back to the pane probe, which logs the cause at Debug.
+-// The engine is the one the run's record names, the set's default for a strand with no record.
++// The engine is the one the run's record names, or for a strand with no run record the live strand's provider, so an opened session is read by its own engine.
++// A guid that no run record names and reed does not track as a live strand fails.
+ // TooShort, Draft and NoInputBox are filled only for an answer that is not idle, on the pane fallback as on the readiness reading.
+ // NoTurn and TurnEndedAt are filled for a ready or held readiness reading that finds no turn, the operator-activity hold included;
+ // on the pane fallback NoTurn is the pane's idle answer or, for an engine with InterruptGuard, true when the box was found, the pane is not too short and no running turn shows, and TurnEndedAt stays zero.
+@@ -243,6 +245,13 @@ func (r *Runner) SessionIdle(guid string) (IdleProbe, error) {
+ 	if findErr != nil {
+ 		state = RunState{}
+ 	}
++	if errors.Is(findErr, ErrNoRunRecord) {
++		strand, liveErr := liveStrand(r.reed, guid)
++		if liveErr != nil {
++			return IdleProbe{}, notShuttleOrLiveStrandError(guid, liveErr)
++		}
++		state.Engine = strand.Provider
++	}
+ 	engine, _, err := r.engineFor(state)
+ 	if err != nil {
+ 		return IdleProbe{}, err
+diff --git a/internal/shuttleengine/session_test.go b/internal/shuttleengine/session_test.go
+index bf5807c8..d1e72304 100644
+--- a/internal/shuttleengine/session_test.go
++++ b/internal/shuttleengine/session_test.go
+@@ -228,6 +228,28 @@ func TestRunner_SessionIdle_DeadStrandErrors(t *testing.T) {
+ 	}
+ }
+ 
++// TestRunner_SessionIdle_RecordlessStrandReadsThroughProvider pins that a strand with no run record is probed through the engine its live provider names, never the set's default.
++func TestRunner_SessionIdle_RecordlessStrandReadsThroughProvider(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	reed := &fakeReed{StatusQueue: liveStrandStatus(true), CaptureQueue: []string{"composer"}}
++	reed.StatusQueue[0].Strands[0].Provider = "second"
++	first := &cyclerEngine{}
++	second := &cyclerEngine{idle: true}
++	fx := newFixture(t, reed, first, withEngines(NewEngineSet("first", map[string]Engine{"first": first, "second": second})))
++
++	got, err := fx.Runner.SessionIdle("strand-1")
++	if err != nil {
++		t.Fatalf("SessionIdle() error = %v; want nil", err)
++	}
++	if !got.Idle {
++		t.Errorf("SessionIdle() = %+v; want Idle, read by the provider's engine", got)
++	}
++	if len(first.captures) != 0 {
++		t.Errorf("the default engine read captures %v; want only the provider's engine consulted", first.captures)
++	}
++}
++
+ // TestRunner_SessionIdle_ReturnsScriptedClassification drives Runner.SessionIdle over a fake reed and an engine with the signal parser, the cycler and the box reader, or, for a guarded row, the box reader and the running-turn check.
+ // Each row is a series of probes of one strand on one runner, each appending events and moving the clock before it reads one pane capture:
+ // a ready, held or unknown readiness reading and its fallback to the pane, a prompt offset past the events a run already wrote, whose last turn end the reading then takes, a draft, a pane too short, a hook turn end beside a pane needle, a turn start held then released by a later turn end, an interrupt report and the idle override across polls.
