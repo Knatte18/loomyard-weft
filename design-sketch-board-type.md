@@ -1,6 +1,6 @@
 # A Sketch is a board type of its own
 
-`sketch-board-type` · Note · feature, board, loom
+`sketch-board-type` · Task · feature, board, loom · draft
 
 ## Idea (operator, 2026-11-05)
 
