@@ -58,7 +58,7 @@ Its proposal goes to the operator, who approves it before any task or project is
 There is no fixed procedure for this today; the orch or the operator does it by hand.
 The triage agent is the cold split agent below, given the wider choice: it may also answer "one tapestry", which costs no split.
 
-- It runs cold, on Opus (operator, 2026-11-05): it writes its proposal without asking first.
+- It runs cold, on Opus (operator, 2026-11-05): it asks the operator nothing while it works and writes a complete proposal first.
 - Interactive by default (operator, 2026-11-05): the operator takes part in how the Sketch is split.
   The agent puts its proposal to the operator and waits for their input; the operator may question it, correct the split, order or recipes, and the agent revises until the operator approves.
   This works like Discussion-Write's interactive mode.
