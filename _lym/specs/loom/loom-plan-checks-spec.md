@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=c7532b5003be2c96a66096b013dba3e01886f9ff87ce62a3a416c405b0d516ea build=035f5e288a7d5df4777cb03f94391db675507f89 time=2026-11-03T17:38:37Z -->
+<!-- lym-stencil: sha256=6ee608452a6de4f60377c49ccef201945894b2ad0a59f5f2a3494beca53a7059 build=49e96993dbdd7779d9b97db5c0c4bafe9e52bb7c time=2026-11-05T14:04:15Z -->
 
 # Loom plan-checks spec — the plan gate's validation checks
 
@@ -175,7 +175,7 @@ The other PATTERN checks are *loomshed*'s, and run only in a worktree with a `PA
   The card covers the `doc.go` when any of its groups or its `Uses` names it, when a ref is the package self glyph, or when a later card names it under `Edit` or `Extends`.
   Way forward: list it under `Edit` when the card changes what it says, under `Extends` when it only adds to it, under `Uses` when it stays as is and no later card targets it, leave it to the later card that edits it, else list it under `Edit`.
   It passes a `doc.go` under `Extends` or `Uses` that the card falsifies, and counts a card that creates a test helper by a handle without a `Test`, `Benchmark`, `Fuzz` or `Example` prefix as non-test code.
-- `fabric-vocabulary-name` — a name a `Create` handle or a `Rename` `New` handle declares that the fabric-vocabulary scan would refuse once it lands; the finding names `PATTERN-fabric-vocabulary` and the rule broken.
+- `fabric-vocabulary-name` — a name a `Create` handle or a `Rename` `New` handle declares that the fabric-vocabulary scan would refuse once it lands; the finding names `PATTERN-fabric-boundary` and the rule broken.
   Way forward: rename the member.
 
 ## Run state and parts
