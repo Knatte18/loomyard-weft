@@ -1,6 +1,6 @@
 # Bring README.md up to date
 
-`readme-refresh` · Task · enhancement · running · Sampler-Session
+`readme-refresh` · Task · enhancement · running · Code-Bouncer
 
 ## Wanted (operator, 2026-11-05)
 
