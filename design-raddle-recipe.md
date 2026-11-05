@@ -1,6 +1,6 @@
 # Recipe raddle turns a Sketch into tasks or a project
 
-`raddle-recipe` · Task · feature, loom, board, batten · running · Open-Window
+`raddle-recipe` · Task · feature, loom, board, batten · running · Discussion-Write
 
 Depends on: [`sketch-board-type`](design-sketch-board-type.md)
 

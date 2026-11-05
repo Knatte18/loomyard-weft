@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-05 08:32 UTC; every age below is as of then.
+Rendered 2026-11-05 08:33 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **A pair reads its branch from its worktree, so branch_prefix can change with pairs live** | [`branch-name-recorded`](design-branch-name-recorded.md) | darn · solid | Darn-Write | neve | 23m<br>22m | fabric |
 | T3 | **Bring README.md up to date**<br>• An interactive sampler session with the operator updates the repository README to what lym does today | [`readme-refresh`](design-readme-refresh.md) | sampler | Sampler-Session | neve | 5m<br>5m |  |
-| T5 | **Recipe raddle turns a Sketch into tasks or a project**<br>• A cold Opus run proposes how a Sketch becomes tasks, a project or a beam, weighs recipe costs, and files it on the operator approval unless auto-approve is set | [`raddle-recipe`](design-raddle-recipe.md) | tapestry | Open-Window | neve | 34m<br>23m | loom, board, batten |
+| T5 | **Recipe raddle turns a Sketch into tasks or a project**<br>• A cold Opus run proposes how a Sketch becomes tasks, a project or a beam, weighs recipe costs, and files it on the operator approval unless auto-approve is set | [`raddle-recipe`](design-raddle-recipe.md) | tapestry | Discussion-Write | neve | 34m<br>23m | loom, board, batten |
 | T8 | **The beam orch drives the merge-in, pull request and review of its beam inside Beam-Await**<br>• Pawl drops Parent-Align, Beam-Describe and PR-Review; the beam orch opens and closes the PR, merges the parent in and runs lym beam ready | [`pawl-orch-landing`](design-pawl-orch-landing.md)<br>[Sketch](decision-pawl-orch-landing.md) | tapestry · solid | Plan-Burler-Review | neve | 2h<br>2h | pawl, landing, orch, workspaces, fabric |
 
 ### Ready (0)
