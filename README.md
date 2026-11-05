@@ -75,7 +75,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Motif runs: own profile recipe, a finished state on the board, and live status**<br>• Motif drops profile_recipe tapestry, a finished motif reads as done, and the board status follows batten rows and the inner producer | [`motif-board-fixes`](design-motif-board-fixes.md) | darn · light | Darn-Write | neve | 4m<br>2m | loom, board, batten, profiles |
-| T3 | **Loop exited without an envelope while step Webster was in flight** | [`loop-exit-no-envelope-cause`](design-loop-exit-no-envelope-cause.md) | darn · light | Drift-Await | neve | 3m<br>2m | shed, friction |
+| T3 | **Loop exited without an envelope while step Webster was in flight** | [`loop-exit-no-envelope-cause`](design-loop-exit-no-envelope-cause.md) | darn · light | Darn-Write | neve | 3m<br>2m | shed, friction |
 | T5 | **Seat start fails with 'pane is not idle' while the pane shows an idle prompt** | [`seat-start-idle-race`](design-seat-start-idle-race.md) | darn · light | Darn-Write | neve | 3m<br>2m | shuttle, burler |
 | T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | Darn-Write | neve | 16h<br>15h | fabric, loom |
 
@@ -91,7 +91,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Teardown removes the whole worktree directory, and a gone pair blocks no board edit**<br>• Worktree-Teardown and fabric remove delete leftover build output; has-a-pair and batten cancel treat a non-git directory as no pair | [`teardown-gone-pair`](design-teardown-gone-pair.md) | darn · light | T7<br>T1 | 3m<br>2m | batten, fabric, board |
+| T2 | **Teardown removes the whole worktree directory, and a gone pair blocks no board edit**<br>• Worktree-Teardown and fabric remove delete leftover build output; has-a-pair and batten cancel treat a non-git directory as no pair | [`teardown-gone-pair`](design-teardown-gone-pair.md) | darn · light | T7<br>T1 | 4m<br>2m | batten, fabric, board |
 
 #### Draft (1)
 
@@ -119,7 +119,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B1 |  | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• No waiting line in loom or batten status and no notice while PR-Review waits for a human review | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 1d<br>19h | landing, loom, batten |
 | B2 |  | **A weft push holds the remote-refs lock over its whole transfer, so board claims queue behind it**<br>• Bolt and every weft share one remote-refs lock; a slow push stalls every claim and weft fetch for its whole send-pack | [`push-holds-remote-refs`](design-push-holds-remote-refs.md) | 15h<br>15h |  |
 | B3 |  | **A test leaves an empty /tmp/.git, which breaks go VCS stamping**<br>• An empty /tmp/.git appeared during a tier1 run and failed TestPrebuildLym; find the leaker and guard against writes outside t.TempDir | [`tmp-git-leak`](design-tmp-git-leak.md) | 15h<br>15h | testkit, gate |
-| B5 |  | **Beam landing overwrites a reopened PR's hand-written body and title with a flat title list** | [`beam-landing-overwrites-pr-body`](design-beam-landing-overwrites-pr-body.md) | 3m<br>3m | pawl, landing |
+| B5 |  | **Beam landing overwrites a reopened PR's hand-written body and title with a flat title list** | [`beam-landing-overwrites-pr-body`](design-beam-landing-overwrites-pr-body.md) | 4m<br>4m | pawl, landing |
 | B12 |  | **A beam in landing cannot get its orch back after a restart, and a ready flag cannot be withdrawn** | [`beam-landing-orch-and-unready`](design-beam-landing-orch-and-unready.md) | 3m<br>3m | pawl, landing, orch, fabric |
 
 #### Enhancements (5)
@@ -154,5 +154,5 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F16 |  | **Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | 1d<br>1d | drift, shed |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>2d | burler, shed, orch, quarry, report |
 | F18 |  | **Codex sessions get creel mail through hooks, as Claude sessions do**<br>• codexengine has no creel hooks, so every Codex strand is a pane-mail strand; the hook spike showed a way | [`codex-creel-hooks`](design-codex-creel-hooks.md) | 1d<br>1d | codex, creel, shuttle |
-| F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 3m<br>3m | board, orch, workspaces |
+| F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 4m<br>4m | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 3m<br>3m | batten, board, fabric, workspaces |
