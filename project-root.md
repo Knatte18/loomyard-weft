@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-05 14:03 UTC; every age below is as of then.
+Rendered 2026-11-05 14:04 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -8,20 +8,19 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (6)
+## Tasks (5)
 
 Concrete and claimable; only a task can run.
 
-### Running (4)
+### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Distill PATTERN.md: cluster related entries, detail in background files**<br>• The overview sits at its headroom line, so every run adding an entry stops for trims; group related entries into clusters with short lines and move detail verbatim to background files | [`pattern-distill`](design-pattern-distill.md) | darn · solid | Finalize | neve | 3h<br>3h | pattern |
 | T3 | **A plain promote of a Sketch starts raddle**<br>• lym board promote on a Sketch takes recipe raddle by itself, with no --recipe flag | [`sketch-promote-raddle`](design-sketch-promote-raddle.md) | darn · light | Code-Burler-Fix | neve | 16m<br>11m | board |
 | T5 | **Talk to the orch through Slack, and let the orch know when the operator is on Slack only**<br>• Slack as a creel endpoint for the orch, with an operator presence state so the orch reports and reminds through Slack while the operator is away | [`reed-slack-relay`](design-reed-slack-relay.md) | motif | Discussion-Write | neve | 4w<br>7m | reed |
-| T7 | **Drift compares changed values in code against a sealed expectation, with a separate judge**<br>• General Drift rework: code-side diff of any hub capture keyed by line key or number, structured sealed expectation, containment by code, a judge per changed value | [`drift-rework`](design-drift-rework.md) | tapestry · solid | Discussion-Bouncer | neve | 22h<br>48m | drift, loom, darn, stencil, config |
+| T7 | **Drift compares changed values in code against a sealed expectation, with a separate judge**<br>• General Drift rework: code-side diff of any hub capture keyed by line key or number, structured sealed expectation, containment by code, a judge per changed value | [`drift-rework`](design-drift-rework.md) | tapestry · solid | Discussion-Bouncer | neve | 22h<br>49m | drift, loom, darn, stencil, config |
 
 ### Ready (0)
 
@@ -35,7 +34,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T2<br>T7<br>T6<br>T1 | 4d<br>48m | fabric |
+| T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T7<br>T6<br>T1 | 4d<br>49m | fabric |
 | T6 | `draft` **docs/research is restructured into topic folders with an index**<br>• docs/research moves into topic folders with one layout per study and an index; scripts, the docs-link test, comments and links follow | [`research-dir-tidy`](design-research-dir-tidy.md) | darn · light |  | 4h<br>4h |  |
 
 ## Notes (21)
@@ -82,3 +81,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>3d | burler, shed, orch, quarry, report |
 | F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 8h<br>8h | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 8h<br>8h | batten, board, fabric, workspaces |
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T2 | **Distill PATTERN.md: cluster related entries, detail in background files**<br>• The overview sits at its headroom line, so every run adding an entry stops for trims; group related entries into clusters with short lines and move detail verbatim to background files | [`pattern-distill`](design-pattern-distill.md) | 3h<br>3h | pattern |
