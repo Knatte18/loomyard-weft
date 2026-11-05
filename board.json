@@ -864,6 +864,24 @@
       "body": "Inside a Codex run on `-a never -s workspace-write`, `lym creel read` and `lym creel post --reply \u003cid\u003e` both fail:\n\n`creel: no daemon answers on /tmp/lym-1000/creel-ly-92073c9b.sock after starting one and 6 connects: dial unix ...: connect: operation not permitted; daemon log .../_bolt/.lym/creel/daemon.log: the daemon log could not be opened: ... read-only file system`\n\nThe daemon was up (it had just sent the same strand mail), so the sandbox refuses the AF_UNIX connect.\nThe Bolt `.lym/creel` directory is read-only there too, so the client's own attempt to start a daemon cannot write its log.\nThe codexengine doc says the session runs `lym creel read` and `post --reply` from the sandbox and reaches the daemon; it does not.\nThe reminder `[creel] N unread ... run lym creel read` is typed, but the strand cannot act on it, so agent mail to a Codex strand is unreachable.\n\nFound by the pane/load trial, docs/research/codex-engine-trial-pane-load-2026-11-03.md case 4.",
       "created": "2026-11-05T06:22:41Z",
       "revised": "2026-11-05T06:22:41Z"
+    },
+    {
+      "id": 1127,
+      "handle": "B6",
+      "slug": "quiet-notice-ignores-fixers",
+      "title": "Quiet notice ignores gate fixers and the gate run",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "dobby"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Dobby quiet notice fires while gate-fixer sessions or the run gate work, since it reads only the writer strand",
+      "body": "## Seen (2026-11-05)\n\nDobby sent two quiet notices (\"no agent activity readable\") for darn runs that were working:\n\n- `locks-out-of-tracked-trees` (#668): a gate-fixer ran 06:05–06:18Z, the writer finished at 06:19Z and the darn-write gate ran tier0–tier2 until 06:26:14Z. The notice came at 06:26Z, in the gap between the writer's shuttle ending and the next row starting; the writer strand was gone.\n- `motif-board-fixes` (#669): the writer's strand sat idle while two gate-fixer sessions ran in their own windows (07:05–07:12 and 07:13–07:26 local). The notice counted only the writer's strand.\n\nEach notice cost the orch a stop investigation that found nothing to do.\n\n## Expected\n\nThe quiet check counts every session and process of the run as activity: gate-fixer sessions, a running `lym gate test` of the run, and the row hand-over after a writer ends.\nA quiet notice fires only when none of them shows activity for the threshold.\n",
+      "created": "2026-11-05T06:27:37Z",
+      "revised": "2026-11-05T06:27:37Z"
     }
   ],
   "prime_owner": "neve",
