@@ -1,6 +1,6 @@
 {
   "runGuid": "7a9a5588c121f4dc0797c48709cc1c8e",
-  "planFingerprint": "650b7ac6a551c7844ecf40e5504906ef862fcb0260b5fec32d7886757f5a3861",
+  "planFingerprint": "430e56e718b965c0228e19a9bd9bc7869836049f6a19f35d70d5849a191b5842",
   "planFileHashes": {
     "00-overview.md": "606537116b951080b215656481da4eb0d1d5b0555deb8a08dce5b8deef7f76f2",
     "01-shuttle-usage-split.md": "691f172b6dec3e71bafe7e0cbc050e69d7224ab06aed6cf8bfda3d884f47316b",
@@ -28,7 +28,7 @@
     "23-raddle-recipe.md": "5ede1fd596ff0a293db5104770129de45dfefdd288ecfcc5543860f854e467fc",
     "24-batten-raddle-start-guard.md": "56f77fae39f7997c34677e892f7220178de27cc97eec00338ad5258db1b707c9",
     "25-pawl-raddle-handoff.md": "97ce55342e69bece1435d2b107aea7ec47fcd8d3cb53dfd8c5c8efe8cb15dd87",
-    "26-report-raddle.md": "dc2e731424d4d8f91cd6c85104516d9e647c846b77d74de1a22744705d158f8d",
+    "26-report-raddle.md": "995b76cc300230f967efe2aeb217431dd237d7ce1027e4f2690818077708fb18",
     "27-raddle-docs.md": "4e3a1c10cb3d496987bb4136673bfecbc98e78332518172f01ea7fb0b00d8ca6"
   },
   "planOverviewFrameHash": "c81be9c1adc8b02f466766b779d5e53d2f2b116ee4fbf4f75f7873d8b338c662",
@@ -661,7 +661,7 @@
       }
     }
   ],
-  "currentBatch": 26,
+  "currentBatch": 0,
   "masterStrand": "dd16c882ad00ef2ad3da669398a0b698",
   "masterSessionId": "46bcafb1-5b55-422f-b4b9-8099327fe599",
   "masterEngine": "claude",
@@ -912,7 +912,7 @@
         "27-raddle-docs"
       ],
       "cardHashes": {
-        "26-report-raddle": "dc2e731424d4d8f91cd6c85104516d9e647c846b77d74de1a22744705d158f8d",
+        "26-report-raddle": "995b76cc300230f967efe2aeb217431dd237d7ce1027e4f2690818077708fb18",
         "27-raddle-docs": "4e3a1c10cb3d496987bb4136673bfecbc98e78332518172f01ea7fb0b00d8ca6"
       },
       "startSha": "56c68ed62f3ac6e6b7cda75f188a9cf7c4501091",
@@ -920,8 +920,28 @@
       "spawnedAt": "2026-11-05T12:55:39Z",
       "sessionId": "46bcafb1-5b55-422f-b4b9-8099327fe599",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "26-report-raddle",
+        "status": "done",
+        "head_sha": "7e402e0a2ac4813760bd470cb247aeb878ac2ac2",
+        "deviations": [
+          "internal/boardengine/raddlestore.go",
+          "internal/reportengine/raddle.go",
+          "internal/reportengine/raddle_test.go",
+          "internal/reportengine/raddlemarkdown.go"
+        ]
+      },
+      "cardShas": [
+        "7e402e0a2ac4813760bd470cb247aeb878ac2ac2"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/46bcafb1-5b55-422f-b4b9-8099327fe599/subagents/agent-a0714fd344033b447.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/46bcafb1-5b55-422f-b4b9-8099327fe599/subagents/agent-a0714fd344033b447.jsonl"
+      ]
     },
     "5": {
       "slug": "usage-wiring",
@@ -1039,6 +1059,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/46bcafb1-5b55-422f-b4b9-8099327fe599/subagents/agent-a40411bce4ae38514.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/46bcafb1-5b55-422f-b4b9-8099327fe599/subagents/agent-a08da3d042407ae6e.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/46bcafb1-5b55-422f-b4b9-8099327fe599/subagents/agent-ad8d43df85ad9d528.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/46bcafb1-5b55-422f-b4b9-8099327fe599/subagents/agent-a548880b9feed8ec4.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/46bcafb1-5b55-422f-b4b9-8099327fe599/subagents/agent-a548880b9feed8ec4.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/46bcafb1-5b55-422f-b4b9-8099327fe599/subagents/agent-a0714fd344033b447.jsonl"
   ]
 }

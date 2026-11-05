@@ -1,12 +1,12 @@
 # Card 26 — report-raddle
 
 **Create:**
-- `plan:internal/boardengine#ParseRaddleStoreEntry` -> `func ParseRaddleStoreEntry(data []byte) (RaddleStoreEntry, error)`
-- `plan:internal/reportengine#RaddleRow` -> `type RaddleRow struct`
-- `plan:internal/reportengine#RaddleReport` -> `type RaddleReport struct`
-- `plan:internal/reportengine#ComputeRaddle` -> `func ComputeRaddle(src Sources) (RaddleReport, error)`
-- `plan:internal/reportengine#TestComputeRaddle` -> `func TestComputeRaddle(t *testing.T)`
-- `plan:internal/reportcli#raddleCommand` -> `func raddleCommand() *cobra.Command`
+- `internal/boardengine#ParseRaddleStoreEntry`
+- `internal/reportengine#RaddleRow`
+- `internal/reportengine#RaddleReport`
+- `internal/reportengine#ComputeRaddle`
+- `internal/reportengine#TestComputeRaddle`
+- `internal/reportcli#raddleCommand`
 
 **Edit:**
 - `internal/boardengine#ReadRaddleStore`
