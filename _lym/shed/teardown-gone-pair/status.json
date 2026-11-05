@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -34,6 +34,51 @@
       "output": "",
       "at": "2026-11-05T07:13:21Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/teardown-gone-pair/_lym/landing/summary.md",
+      "at": "2026-11-05T07:34:25Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-05T07:22:31.397439299Z",
+          "end": "2026-11-05T07:22:31.406682076Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-05T07:30:28.380254785Z",
+          "end": "2026-11-05T07:30:28.39735238Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-05T07:22:31.457824391Z",
+          "end": "2026-11-05T07:30:16.749293919Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-05T07:30:17.265845443Z",
+          "end": "2026-11-05T07:30:28.306563038Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-05T07:30:28.505327012Z",
+          "end": "2026-11-05T07:33:39.898640771Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-05T07:33:39.968796044Z",
+          "end": "2026-11-05T07:33:39.969416714Z"
+        }
+      ]
     }
   ],
   "product": {
