@@ -1,6 +1,6 @@
 # Recipe raddle turns a Sketch into tasks or a project
 
-`raddle-recipe` · Task · feature, loom, board, batten · running · Finalize
+`raddle-recipe` · Task · feature, loom, board, batten · done
 
 ## Wanted (operator, 2026-11-05)
 
