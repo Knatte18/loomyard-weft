@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -39,7 +39,7 @@ Shed gains a recipe-declared retired-row map so an in-flight pawl run moves back
 - `pawlengine` keeps its own `finalizeName` for the hold row, as it kept `parentAlignName`, since it must not import `loomshed`.
 - `internal/loomcli/beamwiring.go` stays in loomcli, uncalled, from card 5 until card 12 replaces it with `fabricengine.BeamLineCommits` and beamcli's own description wiring; no dead-code check runs in the gates.
 - A records-only commit, one whose every changed path lies under `_lym`, is lym's own bookkeeping and never a landing: the description (card 12) lists none and the member-landing notice (card 16) announces none.
-- Beam-Await's entry finds an accepted landing either by the board's hold or, after a goto, by the ready record standing with the await marker absent (card 10), since every shed transition rewrites the board status through the run's `CommitStatus` seam before the row runs; this is how D10's and D11's entry rule is carried.
+- Beam-Await's entry finds an accepted landing by the board's hold, after a goto by the ready record standing with the await marker absent, or after a halted run's resume by the dobby-stop marker standing with no land request (card 10), since every shed transition rewrites the board status through the run's `CommitStatus` seam before the row runs; this is how D10's and D11's entry rule is carried.
 - The beam verbs' tests and `ReadMergeState`'s drive GitHub through one shared fake, `internal/testkit/prkit` (card 3).
 - `ReopenRequestFileName` and `Paths.ReopenRequest` stay after card 6 as the path of a reopen request an older binary wrote, which card 8's move removes.
 
