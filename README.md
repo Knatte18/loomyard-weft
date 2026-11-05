@@ -81,7 +81,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Distill PATTERN.md: cluster related entries, detail in background files**<br>• The overview sits at its headroom line, so every run adding an entry stops for trims; group related entries into clusters with short lines and move detail verbatim to background files | [`pattern-distill`](design-pattern-distill.md) | darn · solid | Seed-Child | neve | 2h<br>2h | pattern |
+| T2 | **Distill PATTERN.md: cluster related entries, detail in background files**<br>• The overview sits at its headroom line, so every run adding an entry stops for trims; group related entries into clusters with short lines and move detail verbatim to background files | [`pattern-distill`](design-pattern-distill.md) | darn · solid | Open-Window | neve | 2h<br>2h | pattern |
 | T7 | **Drift compares changed values in code against a sealed expectation, with a separate judge**<br>• General Drift rework: code-side diff of any hub capture keyed by line key or number, structured sealed expectation, containment by code, a judge per changed value | [`drift-rework`](design-drift-rework.md) | tapestry · solid | Discussion-Burler-Fix | neve | 22h<br>28m | drift, loom, darn, stencil, config |
 
 #### Ready (0)
