@@ -48,6 +48,12 @@ Decision: This task deletes the stale README.old.md at the repository root. The 
 
 Rationale: The operator asked for both; README.old.md is superseded by README.md.
 
+### Added after Discussion (operator, 2026-11-05): README shows no usage tallies
+
+Decision: The README gives no counts of LoomYard's own usage: no number of runs, tokens or time per run. Study findings in the self-tuning table keep their numbers.
+
+Rationale: The operator finds boasting about one's own usage poor form; the reviewers' wish for whole-system numbers is not taken up.
+
 ## Constraints
 
 ## Auto-mode assumptions
