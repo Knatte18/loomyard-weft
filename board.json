@@ -751,6 +751,25 @@
       "created": "2026-11-05T06:22:34Z",
       "revised": "2026-11-05T07:07:17Z",
       "profile": "solid"
+    },
+    {
+      "id": 1130,
+      "handle": "F2",
+      "slug": "sketch-board-type",
+      "title": "A Sketch is a board type of its own",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "board",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "An entry whose motif run approved its decision record shows on the board as type sketch, beside research, bug, enhancement and feature",
+      "body": "## Idea (operator, 2026-11-05)\n\nAn entry whose motif run ended with an approved decision record is a Sketch, and the board shows it as one: a type of its own beside `research`, `bug`, `enhancement` and `feature`.\n\n- The board gains the type label `sketch` (handle letter `S`).\n- When a motif run's Discussion is approved and the record is stored, lym gives the entry the type `sketch` in place of its former type label, keeping its module labels; the README and `lym board list --text` list it under its own heading.\n- A Sketch is the input of the triage run in `discussed-task-split` (F14, \"Triage of a Sketch\"), which decides what becomes of it.\n\n## Open\n\n- Whether the entry stays kind `task` (it can then run tapestry from Plan directly) or becomes kind `note` until the triage's proposal is approved.\n- Whether the former type label is kept somewhere, since a Sketch may become a mix of bugs and features.\n",
+      "created": "2026-11-05T07:15:30Z",
+      "revised": "2026-11-05T07:15:30Z"
     }
   ],
   "prime_owner": "neve",
