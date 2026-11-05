@@ -776,6 +776,27 @@
       "body": "Imported from [issue #54](https://github.com/Knatte18/loomyard/issues/54).\n\n## What happened\n\nModels hub, beam `duplication-and-import-followups` (P2), 2026-11-04.\nThe motif task `knut-rheology-friction-pvt` (T2) ran to the end: Run-Shed done, Land done, Worktree-Teardown done (18:04Z per `lym batten status`).\nThe directory `Models-LYMHUB/knut-rheology-friction-pvt` was left behind. It was no git worktree any more and held only `obj/` and `bin/` output (10 files).\n\nAfterwards:\n\n- `lym board upsert '{\"slug\":\"knut-rheology-friction-pvt\",\"project\":\"knut-rheology\"}'` was refused: \"entry has a pair, ... end the pair first with lym batten cancel knut-rheology-friction-pvt --remove\".\n  This held after `lym batten cleanup --apply` removed the done run's records.\n- `lym batten cancel knut-rheology-friction-pvt --remove` failed: \"could not read the task worktree of knut-rheology-friction-pvt: not a git repository\".\n- The beam orch could not move its finished motif to another project, so the beam could not be emptied for its landing.\n\nOnly a manual `rm -rf` of the directory by the operator unblocked the board write.\nThe same leftover exists for many earlier runs in that hub (drift-numerical-baseline, flat-test-namespaces, tool-joint-hydraulics, ...).\n\n## Expected\n\n- Worktree-Teardown (and `lym fabric remove`) removes the whole directory, ignored build output included, and fails loudly if it cannot.\n- The board's \"has a pair\" check and `batten cancel` treat a directory that is no git worktree as no pair, or name the exact cleanup.\n- A motif, which lands no code, should not need a worktree teardown to finish before its entry can move.\n\nRelated: #21 (fabric remove leaves obj dirs).",
       "created": "2026-11-05T05:50:36Z",
       "revised": "2026-11-05T05:50:36Z"
+    },
+    {
+      "id": 1115,
+      "handle": "B7",
+      "slug": "finished-motif-reads-draft",
+      "title": "A finished motif run leaves its entry as an ordinary draft, so it reads as not done",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "board",
+        "loom"
+      ],
+      "issues": [
+        53
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #53](https://github.com/Knatte18/loomyard/issues/53).\n\nSeen in hub Models-LYMHUB, beam duplication-and-import-followups, 2026-11-04.\n\nThe motif task knut-rheology-friction-pvt ran Discussion to an approved decision record. lym batten status reports state done, the record is stored on the entry (lym board get --record works), and the entry carries discussed: true. But the board status went back to draft, so the board list and the rendered README show it exactly like a task nobody has started. The operator read it as unfinished work, and nothing on the board says the motif is done.\n\nRelated: the entry is also not treated as finished by the board's own checks; see #52, where a project move is refused because the board still believes the entry has a pair.\n\nExpected: a motif whose Discussion is approved shows as finished on the board, for example a distinct status such as discussed or done-motif in the list, the --text listing and the README, rather than a plain draft. When the record is meant to feed a later task, the entry still needs a visible finished state and no pair record.\n\nWorkaround: none; the operator has to be told the draft status is how a finished motif looks.",
+      "created": "2026-11-05T05:50:38Z",
+      "revised": "2026-11-05T05:50:38Z"
     }
   ],
   "prime_owner": "neve",
