@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Teardown removes the whole worktree directory, and a gone pair blocks no board edit**<br>• Worktree-Teardown and fabric remove delete leftover build output; has-a-pair and batten cancel treat a non-git directory as no pair | [`teardown-gone-pair`](design-teardown-gone-pair.md) | darn · light | Code-Bouncer | neve | 1h<br>1h | batten, fabric, board |
+| T2 | **Teardown removes the whole worktree directory, and a gone pair blocks no board edit**<br>• Worktree-Teardown and fabric remove delete leftover build output; has-a-pair and batten cancel treat a non-git directory as no pair | [`teardown-gone-pair`](design-teardown-gone-pair.md) | darn · light | Code-Burler-Review | neve | 1h<br>1h | batten, fabric, board |
 | T3 | **Template changes reach seed-only hub config, and light gets the lens fan back**<br>• Reconcile carries template changes into seed-only hub files like profiles.yaml while keeping hand-set values; light drops its solo code review | [`profiles-follow-template`](design-profiles-follow-template.md) | darn · solid | Darn-Write | neve | 51m<br>51m | profiles, config, reconcile |
 | T5 | **Quiet notice ignores gate fixers and the gate run**<br>• Dobby quiet notice fires while gate-fixer sessions or the run gate work, since it reads only the writer strand | [`quiet-notice-ignores-fixers`](design-quiet-notice-ignores-fixers.md) | darn · light | Code-Burler-Fix | neve | 1h<br>27m | dobby |
 | T6 | **A weft push holds the remote-refs lock over its whole transfer, so board claims queue behind it**<br>• Bolt and every weft share one remote-refs lock; a slow push stalls every claim and weft fetch for its whole send-pack | [`push-holds-remote-refs`](design-push-holds-remote-refs.md) | darn · light | Darn-Write | neve | 17h<br>27m | fabric |
@@ -70,7 +70,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 4w<br>8d | burler |
-| F2 |  | **A Sketch is a board type of its own**<br>• An entry whose motif run approved its decision record shows on the board as type sketch, beside research, bug, enhancement and feature | [`sketch-board-type`](design-sketch-board-type.md) | 19m<br>16m | board, loom |
+| F2 |  | **A Sketch is a board type of its own**<br>• An entry whose motif run approved its decision record shows on the board as type sketch, beside research, bug, enhancement and feature | [`sketch-board-type`](design-sketch-board-type.md) | 20m<br>16m | board, loom |
 | F3 | L | **A module overlap lets a task run Discussion at once and wait only before Plan**<br>• A second kind of dependency, plan_after: the task starts and discusses, then waits before Plan until the named tasks have landed | [`plan-after-dependency`](design-plan-after-dependency.md) | 3d<br>3d | board, batten, loom |
 | F4 |  | **The orch lies dormant and wakes only when a run needs help**<br>• Dobby takes the mechanics and a spawned agent the doubtful cases; one orch per beam lives on, dormant, woken when needed | [`dormant-orch`](design-dormant-orch.md) | 4d<br>16h | orch, dobby, arbiter |
 | F6 |  | **Talk to the orch through Slack**<br>• A Slack relay so the operator can reach the orch from a phone where Claude's own app is not allowed | [`reed-slack-relay`](design-reed-slack-relay.md) | 4w<br> | reed |
@@ -95,4 +95,4 @@ Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T1 | **Codex sessions read idle, end when Codex exits, and reach creel from the sandbox**<br>• Fix the three Codex engine faults the pane and load trial found | [`codex-trial3-faults`](design-codex-trial3-faults.md) | 1h<br>27m | codex, shuttle, creel |
+| T1 | **Codex sessions read idle, end when Codex exits, and reach creel from the sandbox**<br>• Fix the three Codex engine faults the pane and load trial found | [`codex-trial3-faults`](design-codex-trial3-faults.md) | 1h<br>28m | codex, shuttle, creel |

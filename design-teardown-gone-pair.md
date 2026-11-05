@@ -1,6 +1,6 @@
 # Teardown removes the whole worktree directory, and a gone pair blocks no board edit
 
-`teardown-gone-pair` · Task · bug, batten, fabric, board · running · Code-Bouncer
+`teardown-gone-pair` · Task · bug, batten, fabric, board · running · Code-Burler-Review
 
 Two faults from issues #54 and #52, seen in hub Models-LYMHUB, beam `duplication-and-import-followups`, 2026-11-04. Fix both.
 
