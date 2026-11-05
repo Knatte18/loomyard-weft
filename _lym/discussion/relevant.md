@@ -1,0 +1,11 @@
+- `contracts/recipes/motif-recipe.yaml` — the record-only loom recipe raddle's recipe follows
+- `contracts/recipes/sampler-recipe.yaml` — Record-Write row and the operator-ended session raddle's approval mirrors
+- `internal/battencli/wire.go` `childRecipeSupported`, `unsupportedChildRecipeRefusal`, `boardRecipe` — recipes batten starts in a task worktree
+- `internal/loomcli/wiring.go` `finishesAsSketch`, `sketchFinish`, `commitStatusDeps` — the end-as-Sketch finish raddle must skip
+- `internal/boardengine/sketch.go` `SketchType`, `IsSketch`, `sketchOf`, `endsAsSketch`, `MakeSketch` — the Sketch shape and the run-lock exemption pattern for filing
+- `internal/shuttleengine/sessionusage.go` `SessionUsage`, `UsageReader` — the token reading the usage records extend
+- `internal/shuttleengine/claudeengine/usage.go` `SessionUsage` — Claude's transcript reading of a finished session's tokens
+- `internal/shedadapters/roundusage.go` `roundUsage` — the one place a token reading is recorded today
+- `internal/orchcli/notify.go` `NotifyParent`, `NotifyOrchAt` — notices to orchs and why a beam's orch cannot be mailed at create time
+- `internal/shedrecipe/entries_recordwrite.go` `recordWriteEntry` — the Record-Write row D3 extends
+- `internal/beamcli/create.go` `createDeps`, `create`, `refuseCreateHere` — the beam create steps Raddle-File runs for a new project from the parent worktree
