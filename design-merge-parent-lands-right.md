@@ -1,6 +1,6 @@
 # beam merge-parent: the merge-in task can merge, lands as a merge and needs no pull request
 
-`merge-parent-lands-right` · Task · bug, pawl, darn, landing, fabric · running · Seed-Child
+`merge-parent-lands-right` · Task · bug, pawl, darn, landing, fabric · running · Open-IDE
 
 Depends on: [`clone-reset-deletes-first`](design-clone-reset-deletes-first.md)
 
