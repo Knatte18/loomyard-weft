@@ -316,17 +316,6 @@ Self-picks, reasons in the support log's question ledger: the agent runs the app
   - store-slug-reuse-by-non-raddle-creators (class design, severity MEDIUM, open in rounds 3)
 <!-- /lym:carry-over Discussion-Review -->
 
-<!-- lym:carry-over Plan-Review -->
-- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
-  Review: _lym/reviews/plan/round-2-review.md; fixer report: _lym/reviews/plan/round-2-fixer-report.md.
-  - loomshed-allowlist-not-extended (class scope, severity MEDIUM, open in rounds 2)
-  - parse-strictness-no-tolerant-mechanism (class consistency, severity MEDIUM, open in rounds 2)
-  - pawlpaths-handoff-marker-untargeted (class scope, severity MEDIUM, open in rounds 2)
-  - raddle-table-return-note-not-optional (class scope, severity MEDIUM, open in rounds 2)
-  - shedcli-recipe-key-literal (class consistency, severity MEDIUM, open in rounds 2)
-  - splicepart-halt-unreachable (class design, severity MEDIUM, open in rounds 2)
-<!-- /lym:carry-over Plan-Review -->
-
 ## Acceptance criteria
 
 - D1: a board task with recipe `raddle` runs through batten in its own worktree, its rows in order Record-Write, Raddle-Write, Raddle-File, and lands no code; the recipe loader accepts it under the loom contract's record-only form.
