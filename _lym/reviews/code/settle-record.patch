@@ -1,0 +1,134 @@
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 7a88c5a3..4c8484db 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -336,6 +336,8 @@
+ // An engine with TurnProgressReader that reads the unmatched turn in flight vetoes the idle-pane release, so the turn start keeps holding until a turn end, a reported interrupt or a later session start.
+ // A session start after the turn start lifts the veto, since the session's context began anew.
+ // Runner.SessionIdle reports busy while a turn reads in flight.
++// The state is folded from the signals past the run's prompt offset, or from the whole events file when none lies past a non-zero offset,
++// so the prompt send after the skill-load turns reads the last load turn's end rather than an unknown state.
+ // When the session state is unknown, the reading falls back to the pane, which must classify ready and idle, and for an engine that parses session signals no turn start may be left unmatched by a later turn end; the cause is logged at Debug.
+ // A fallback hold whose box reads non-empty quotes the box.
+ // Styled box read: for an engine with StyledBoxReader, every box reading of a decision, the idle probe's, the pre-write guard's and the landing check's, takes one styled capture and reads the plain capture the engine makes of it, with a box holding only the provider's placeholder blanked.
+diff --git a/internal/shuttleengine/fakes_test.go b/internal/shuttleengine/fakes_test.go
+index f478ff69..f6bd9d7d 100644
+--- a/internal/shuttleengine/fakes_test.go
++++ b/internal/shuttleengine/fakes_test.go
+@@ -610,8 +610,8 @@ func (e *skillFakeEngine) DefaultSkillLoadTimeout() time.Duration { return e.Tim
+ var _ SkillLoader = (*skillFakeEngine)(nil)
+ 
+ // hookStateSkillEngine is a skillFakeEngine that also reads hook state: the session signal parser, a live prober and the SessionCycler idle reading.
+-// A capture is idle when it starts with "IDLE" or holds a skill load, carried on the launch line or typed, whose turn the skill reed ends at once.
+-// A pane the test leaves busy is one the pane fallback refuses until that load turn ends, and the hook fold reading idle from the launch-carried turn's end lets the color and retry sends through it before the prompt offset moves past that end.
++// A capture is idle when it starts with "IDLE".
++// A pane the test leaves busy is one the pane fallback refuses throughout, so every send of the start goes through on the hook fold's reading of the load turn's end, before the prompt offset moves past that end and after.
+ type hookStateSkillEngine struct {
+ 	*skillFakeEngine
+ 
+@@ -633,7 +633,7 @@ func (e *hookStateSkillEngine) CompactedSince(Event, time.Time) (CompactionBound
+ 	return CompactionBoundary{}, false
+ }
+ func (e *hookStateSkillEngine) IdleSession(capture string) bool {
+-	return strings.Contains(capture, "LOAD:") || e.hooks.IdleSession(capture)
++	return e.hooks.IdleSession(capture)
+ }
+ func (e *hookStateSkillEngine) PaneTooShort(string) bool                  { return false }
+ func (e *hookStateSkillEngine) ClearSessionSequence() []PaneInput         { return nil }
+diff --git a/internal/shuttleengine/readiness.go b/internal/shuttleengine/readiness.go
+index 1ac5803f..a9b4321d 100644
+--- a/internal/shuttleengine/readiness.go
++++ b/internal/shuttleengine/readiness.go
+@@ -123,9 +123,21 @@ func judgeReadiness(state SessionState, unmatched bool, box boxReading) readines
+ 	return readiness{ready: true, noTurn: noTurn, turnEndedAt: turnEndedAt}
+ }
+ 
++// readinessState returns the session state a readiness reading judges at now: the fold of the run's signals past its prompt offset.
++// When no signal lies past a non-zero offset, the session has done nothing since the offset was set, so the state is the fold of the whole events file.
++// A send right after the skill-load turns, which start moved the offset past, so reads the last load turn's end instead of an unknown state.
++func readinessState(rs RunState, engine Engine, now time.Time) SessionState {
++	state := readRunSessionState(rs, engine, now).State
++	if state.Name != SessionUnknown || state.Cause != SessionCauseNoSignal || rs.PromptOffset == 0 {
++		return state
++	}
++	rs.PromptOffset = 0
++	return readRunSessionState(rs, engine, now).State
++}
++
+ // sessionReadiness reads the readiness of the strand sc names from capture, its pane just captured.
+ // A recordless context reads unknown with cause no-run-record, so the caller takes the pane-only reading.
+-// It folds the run's session state at the context's clock; an unknown state settles nothing, so the reading is unknown without a look at the box.
++// It folds the run's session state at the context's clock, through readinessState; an unknown state settles nothing, so the reading is unknown without a look at the box.
+ // Otherwise it decides through hold whether an unmatched turn start still holds, and reads the box.
+ // A turn start whose hold released, by a later turn end, a reported interrupt, a later session start or the pane reading idle for turnStartIdleOverride, no longer counts as a running turn;
+ // a turn start the engine reads in flight is not released by the idle pane.
+@@ -134,7 +146,7 @@ func sessionReadiness(sc sendContext, cycler SessionCycler, hold *turnStartHold,
+ 		return judgeReadiness(SessionState{Name: SessionUnknown, Cause: sessionCauseNoRunRecord}, false, boxReading{})
+ 	}
+ 	now := sc.clock.Now()
+-	state := readRunSessionState(sc.state, sc.engine, now).State
++	state := readinessState(sc.state, sc.engine, now)
+ 	if state.Name == SessionUnknown {
+ 		return judgeReadiness(state, false, boxReading{})
+ 	}
+diff --git a/internal/shuttleengine/session_test.go b/internal/shuttleengine/session_test.go
+index 64a2c3e0..bf5807c8 100644
+--- a/internal/shuttleengine/session_test.go
++++ b/internal/shuttleengine/session_test.go
+@@ -230,7 +230,7 @@ func TestRunner_SessionIdle_DeadStrandErrors(t *testing.T) {
+ 
+ // TestRunner_SessionIdle_ReturnsScriptedClassification drives Runner.SessionIdle over a fake reed and an engine with the signal parser, the cycler and the box reader, or, for a guarded row, the box reader and the running-turn check.
+ // Each row is a series of probes of one strand on one runner, each appending events and moving the clock before it reads one pane capture:
+-// a ready, held or unknown readiness reading and its fallback to the pane, a draft, a pane too short, a hook turn end beside a pane needle, a turn start held then released by a later turn end, an interrupt report and the idle override across polls.
++// a ready, held or unknown readiness reading and its fallback to the pane, a prompt offset past the events a run already wrote, whose last turn end the reading then takes, a draft, a pane too short, a hook turn end beside a pane needle, a turn start held then released by a later turn end, an interrupt report and the idle override across polls.
+ // An engine without the signal parser falls back to the pane probe, whose TooShort is reported only for a pane that is not idle.
+ //
+ // It is not parallel: logcapture redirects the process-global logger.
+@@ -272,6 +272,8 @@ func TestRunner_SessionIdle_ReturnsScriptedClassification(t *testing.T) {
+ 		interactive, outputsExist   bool
+ 		// unreadable points the run record at an events file that cannot be read, so the session state reads unknown and the pane decides.
+ 		unreadable bool
++		// seeded is written to the events file before the first probe, and its length is the run's prompt offset.
++		seeded string
+ 		// styled gives the engine the styled box read, which blanks a capture's ~…~ spans.
+ 		styled bool
+ 		// guarded runs the row on guardedReadinessEngine, which adds the running-turn check Claude's pane probe uses.
+@@ -307,6 +309,20 @@ func TestRunner_SessionIdle_ReturnsScriptedClassification(t *testing.T) {
+ 			probes:  []probe{{events: turnEnded, capture: needleFrame, want: idleAtEnd}},
+ 			wantLog: "readiness reads ready beside a pane that does not show idle",
+ 		},
++		{
++			name:   "no signal past the prompt offset reads the load turn's end",
++			seeded: "SESSIONSTART:startup\nSTART\n" + endStamp + "STOP:done\n",
++			probes: []probe{{capture: idleFrame, want: idleAtEnd}},
++		},
++		{
++			name:   "no signal past the prompt offset keeps a stale unmatched turn start held",
++			seeded: "START\n",
++			probes: []probe{{capture: idleFrame, want: IdleProbe{Reason: "a turn is running"}, wantReason: "a turn is running"}},
++		},
++		{
++			name:   "no signal at a zero offset reads unknown and falls back to the pane",
++			probes: []probe{{capture: idleFrame, want: IdleProbe{Idle: true, NoTurn: true}}},
++		},
+ 		{name: "a pane with no readable box is held for an engine that reads one", probes: []probe{{events: turnEnded, capture: "no box here", want: atEnd(IdleProbe{Reason: readinessReasonNoInputBox, NoInputBox: true}), wantReason: "no input box"}}},
+ 		{name: "an active operator is held with the activity reason", probes: []probe{{events: turnEnded, capture: idleFrame, active: true, want: atEnd(IdleProbe{Reason: "the operator typed in this pane within the last 5 s"}), wantReason: "operator typed"}}},
+ 		{
+@@ -364,7 +380,7 @@ func TestRunner_SessionIdle_ReturnsScriptedClassification(t *testing.T) {
+ 			}
+ 			fx := newFixture(t, reed, probed, withStrand("strand-1"), withClock(clock))
+ 			runDir := filepath.Dir(fx.EventsPath)
+-			state := RunState{RunID: "run-1", StrandGUID: "strand-1", EventsPath: fx.EventsPath, Interactive: tt.interactive}
++			state := RunState{RunID: "run-1", StrandGUID: "strand-1", EventsPath: fx.EventsPath, Interactive: tt.interactive, PromptOffset: int64(len(tt.seeded))}
+ 			if tt.unreadable {
+ 				state.EventsPath = filepath.Join(runDir, "missing-events.jsonl")
+ 			}
+@@ -379,7 +395,7 @@ func TestRunner_SessionIdle_ReturnsScriptedClassification(t *testing.T) {
+ 				t.Fatalf("saveRunState: %v", err)
+ 			}
+ 
+-			events := ""
++			events := tt.seeded
+ 			for i, p := range tt.probes {
+ 				events += p.events
+ 				if err := os.WriteFile(fx.EventsPath, []byte(events), 0o644); err != nil {
