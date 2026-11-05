@@ -33,6 +33,12 @@ Related: project `codex-engine-trial`, part 5 (creel by the pane path) and part 
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-05): Codex idle wake runs in the hook-wait waiter
+
+Decision: The idle wake through codex queue runs in the strand's hook-wait waiter process (WakeIdle, IdleWaker, wakeSession), not in the creel daemon.
+
+Rationale: Claude's idle wake already rides the hook-wait waiter, so this matches the Goal's 'the way claudeengine does' and keeps engine-specific commands out of the creel daemon; the effect the Goal wants, an idle Codex session woken by mail, is the same.
+
 ## Constraints
 
 ## Auto-mode assumptions
