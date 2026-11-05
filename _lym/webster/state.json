@@ -661,7 +661,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 24,
   "masterStrand": "dd16c882ad00ef2ad3da669398a0b698",
   "masterSessionId": "46bcafb1-5b55-422f-b4b9-8099327fe599",
   "masterEngine": "claude",
@@ -865,6 +865,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/46bcafb1-5b55-422f-b4b9-8099327fe599/subagents/agent-ad8d43df85ad9d528.jsonl"
       ]
+    },
+    "24": {
+      "slug": "batten-raddle-start-guard",
+      "cards": [
+        "24-batten-raddle-start-guard",
+        "25-pawl-raddle-handoff"
+      ],
+      "cardHashes": {
+        "24-batten-raddle-start-guard": "e58b8f65932aa36de524d91df0b9b1694f9aca5a168728e046e8cc74a24164c1",
+        "25-pawl-raddle-handoff": "e7f6ab35065710e74803f68042fdd6b855f6514a66a43818281d64ab01004f99"
+      },
+      "startSha": "35985ae74da101ebf024e3fc7b45e911e72c6162",
+      "kind": "fork",
+      "spawnedAt": "2026-11-05T12:50:07Z",
+      "sessionId": "46bcafb1-5b55-422f-b4b9-8099327fe599",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "usage-wiring",
