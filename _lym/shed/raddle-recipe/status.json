@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Burler-Fix",
+  "current_producer": "Plan-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Burler-Fix",
-    "last": "Plan-Burler-Review → bounced to Plan-Burler-Fix",
+    "now": "Plan-Bouncer",
+    "last": "Plan-Burler-Fix → bounced to Plan-Bouncer",
     "wait": ""
   },
   "history": [
@@ -500,6 +500,35 @@
       ],
       "budget_exempt": true,
       "routed_to": "Plan-Burler-Fix"
+    },
+    {
+      "producer": "Plan-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/raddle-recipe/_lym/reviews/plan/round-1-review.md",
+      "at": "2026-11-05T11:53:57Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "plan",
+          "kind": "gate",
+          "start": "2026-11-05T11:51:17.098648044Z",
+          "end": "2026-11-05T11:51:23.889672299Z"
+        },
+        {
+          "gate": "plan",
+          "kind": "rework",
+          "start": "2026-11-05T11:51:24.28851664Z",
+          "end": "2026-11-05T11:53:49.750156127Z"
+        },
+        {
+          "gate": "plan",
+          "kind": "gate",
+          "start": "2026-11-05T11:53:49.777111883Z",
+          "end": "2026-11-05T11:53:56.654781247Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Plan-Bouncer"
     }
   ],
   "product": {

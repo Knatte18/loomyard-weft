@@ -3,14 +3,16 @@ lens: fix-consistency
 outcome: reported
 ```
 
-fix-consistency lens: checking whether the changes to card 7 still agree with its sibling cards, the overview and their cross-references.
+fix-consistency: checked the new card 08 Intent sentence about the overview's `internal/reportconfig` lines against the cards and decisions around it.
 
-no findings
+No findings.
 
-- The corrected Create target `plan:internal/reportconfig_test#TestLoadConfig` now uses the external-package form that cards 13, 14 and 17 use for their `_test` targets. No other plan file names `reportconfig#TestLoadConfig`, so no twin was left unchanged.
-- The new **Edit** target `pattern/PATTERN-config-layers.md` and its Intent line agree with `00-overview.md:87`, which lists `PATTERN-config-layers` under "changes". Before this fix no card edited that file. Card 4 names the pattern only as background at `04-usage-record-writer.md:66`, so there is no conflict.
-- The Intent line adds the short name `reportconfig`, matching how the background set spells its members (`hibernateconfig`, `heddleengine`). Card 7's earlier Intent reference, `PATTERN-config-layers`: only `configengine` reads…, still holds.
+- **Card 07** (`_lym/plan/07-report-config.md:24`) says the module lives in `internal/reportconfig` and is the hub-wide `report.yaml` module with `cost_min_runs`. The new sentence uses the same package and file, so the two cards agree. Card 07 does not list `docs/overview.md` under Edit, and the fix leaves that alone: card 08 already lists `//docs/overview.md`, so the twin sits in card 08 as the review proposed.
+- **Card 27** (`_lym/plan/27-raddle-docs.md:9`) says the report module's line names the `report` config module and its `cost_min_runs` key. That edits the same overview line from another angle and does not contradict the new package list entry.
+- **Card 26** (`_lym/plan/26-report-raddle.md:38`) only says the report lines name the raddle verb. That is unaffected.
+- **Plan overview** (`_lym/plan/00-overview.md:22-23`): the card summaries for 07 and 08 don't cover overview lines, so nothing there went stale.
+- **Card 08 ImpactSummary**: it doesn't mention the overview, and the overview never shows in it for any card, so it isn't stale.
 
 Tool calls:
-1. Grep of `_lym/plan/` and `_lym/*.md` for `reportconfig#TestLoadConfig`, `reportconfig_test#` and `PATTERN-config-layers`, to find twins in files my context had not shown.
-2. Grep of `00-overview.md` for card 7 and pattern lines, plus its pattern section, because my context held only line 87 of the overview.
+- Read `_lym/plan/07-report-config.md`: I needed card 07's Intent to check package and module naming, and my context only had grep lines from it.
+- Grepped "report" in `_lym/plan/00-overview.md` and `_lym/plan/26-report-raddle.md`: I needed the sibling summaries and card 26's overview sentence, and my context lacked them.
