@@ -1,0 +1,18 @@
+status: OK
+head_sha: d7f0465e76242419bd34398eb99d16489a91a727
+renames:
+  - old: internal/reportengine#Config
+    new: internal/reportconfig#Config
+    reason: importing internal/reportengine from internal/configreg closes an import cycle through battenrecipe, shedbuild, shedrecipe, preflightshed, hubgeom and hubreconcile, so the config module sits in its own package as hibernateconfig does
+  - old: internal/reportengine#ConfigTemplate
+    new: internal/reportconfig#ConfigTemplate
+    reason: same import cycle; the module moved to internal/reportconfig
+  - old: internal/reportengine#ConfigSpec
+    new: internal/reportconfig#ConfigSpec
+    reason: same import cycle; the module moved to internal/reportconfig
+  - old: internal/reportengine#LoadConfig
+    new: internal/reportconfig#LoadConfig
+    reason: same import cycle; the module moved to internal/reportconfig
+  - old: internal/reportengine#TestLoadConfig
+    new: internal/reportconfig#TestLoadConfig
+    reason: same import cycle; the module moved to internal/reportconfig
