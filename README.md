@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-05 15:53 UTC; every age below is as of then.
+Rendered 2026-11-05 15:54 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -79,7 +79,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Creel mail between hubs with a verified sender and one-way hub trust**<br>• Orchs of different hubs mail each other; the sending daemon confirms the sender, and a hub obeys only the orchs of hubs it lists as trusted | [`creel-cross-hub-mail`](design-creel-cross-hub-mail.md) | motif | awaiting · Discussion-Bouncer | neve | 6d<br>1h | creel, orch |
-| T7 | **Drift compares changed values in code against a sealed expectation, with a separate judge**<br>• General Drift rework: code-side diff of any hub capture keyed by line key or number, structured sealed expectation, containment by code, a judge per changed value | [`drift-rework`](design-drift-rework.md)<br>[Sketch](decision-drift-rework.md) | tapestry · solid | Plan-Bouncer | neve | 1d<br>2h | drift, loom, darn, stencil, config |
+| T7 | **Drift compares changed values in code against a sealed expectation, with a separate judge**<br>• General Drift rework: code-side diff of any hub capture keyed by line key or number, structured sealed expectation, containment by code, a judge per changed value | [`drift-rework`](design-drift-rework.md)<br>[Sketch](decision-drift-rework.md) | tapestry · solid | Drift-Await | neve | 1d<br>2h | drift, loom, darn, stencil, config |
 
 #### Ready (0)
 
