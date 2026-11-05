@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-05 07:09 UTC; every age below is as of then.
+Rendered 2026-11-05 07:10 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -60,7 +60,7 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Running (5)
+#### Running (6)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -71,14 +71,13 @@ Held by a run; its scope is locked until the run ends.
 | T3 | **Template changes reach seed-only hub config, and light gets the lens fan back**<br>• Reconcile carries template changes into seed-only hub files like profiles.yaml while keeping hand-set values; light drops its solo code review | [`profiles-follow-template`](design-profiles-follow-template.md) | darn · solid | Darn-Write | neve | 26m<br>26m | profiles, config, reconcile |
 | T5 | **Quiet notice ignores gate fixers and the gate run**<br>• Dobby quiet notice fires while gate-fixer sessions or the run gate work, since it reads only the writer strand | [`quiet-notice-ignores-fixers`](design-quiet-notice-ignores-fixers.md) | darn · light | Darn-Write | neve | 42m<br>2m | dobby |
 | T6 | **A weft push holds the remote-refs lock over its whole transfer, so board claims queue behind it**<br>• Bolt and every weft share one remote-refs lock; a slow push stalls every claim and weft fetch for its whole send-pack | [`push-holds-remote-refs`](design-push-holds-remote-refs.md) | darn · light | Worktree-Create | neve | 17h<br>2m | fabric |
+| T8 | **The beam orch drives the merge-in, pull request and review of its beam inside Beam-Await**<br>• Pawl drops Parent-Align, Beam-Describe and PR-Review; the beam orch opens and closes the PR, merges the parent in and runs lym beam ready | [`pawl-orch-landing`](design-pawl-orch-landing.md) | tapestry · solid | Worktree-Create | neve | 1h<br>1h | pawl, landing, orch, workspaces, fabric |
 
-#### Ready (1)
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T8 | **The beam orch drives the merge-in, pull request and review of its beam inside Beam-Await**<br>• Pawl drops Parent-Align, Beam-Describe and PR-Review; the beam orch opens and closes the PR, merges the parent in and runs lym beam ready | [`pawl-orch-landing`](design-pawl-orch-landing.md) | tapestry · solid |  | 1h<br>1h | pawl, landing, orch, workspaces, fabric |
+_None._
 
 #### Draft (1)
 
