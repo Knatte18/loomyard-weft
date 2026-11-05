@@ -1,6 +1,6 @@
 # Webster refusals: short texts, the right cause and a real way forward
 
-`webster-refusal-texts` · Task · bug, webster, quarry · running · PR-Review
+`webster-refusal-texts` · Task · bug, webster, quarry · running · Finalize
 
 ## From note recover-batch-self-way-forward
 
