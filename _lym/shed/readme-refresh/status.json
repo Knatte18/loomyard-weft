@@ -1,11 +1,11 @@
 {
-  "current_producer": "Sampler-Session",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Sampler-Session",
-    "last": "Record-Write → done",
+    "now": "Code-Bouncer",
+    "last": "Sampler-Session → done",
     "wait": ""
   },
   "history": [
@@ -20,6 +20,12 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYMHUB/readme-refresh/_lym/discussion/decision-record.md",
       "at": "2026-11-05T08:28:15Z"
+    },
+    {
+      "producer": "Sampler-Session",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-05T13:15:20Z"
     }
   ],
   "product": {
