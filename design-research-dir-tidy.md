@@ -1,6 +1,6 @@
 # docs/research gets an index and loses its design notes
 
-`research-dir-tidy` · Note · enhancement
+`research-dir-tidy` · Task · enhancement · draft
 
 ## Seen (readme-refresh sampler, 2026-11-05)
 
