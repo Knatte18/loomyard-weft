@@ -661,7 +661,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 19,
   "masterStrand": "dd16c882ad00ef2ad3da669398a0b698",
   "masterSessionId": "46bcafb1-5b55-422f-b4b9-8099327fe599",
   "masterEngine": "claude",
@@ -769,6 +769,28 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/46bcafb1-5b55-422f-b4b9-8099327fe599/subagents/agent-a40411bce4ae38514.jsonl"
       ]
+    },
+    "19": {
+      "slug": "raddle-checks-and-state",
+      "cards": [
+        "19-raddle-checks-and-state",
+        "20-raddle-verbs",
+        "21-raddle-write-producer",
+        "22-raddle-file-producer"
+      ],
+      "cardHashes": {
+        "19-raddle-checks-and-state": "a4a20815ea903c9a68c01cb8338803687015005fde0d3954d932aef54be1c782",
+        "20-raddle-verbs": "aa3ba2560a4d50b926228cefc18c7fbee68db10e2a78733f78a36833b7591181",
+        "21-raddle-write-producer": "e2f47528ec4d23947c89d5b061254c25ba9e3bf8daa4c0f4c40e4892d9c6847a",
+        "22-raddle-file-producer": "138cf53052f2e521b868213dc52e7a6dd47639d0b0b97392b3537f77321c51bb"
+      },
+      "startSha": "bff868473a6f550897cf4f64f5a1e6a1ba656207",
+      "kind": "fork",
+      "spawnedAt": "2026-11-05T12:18:20Z",
+      "sessionId": "46bcafb1-5b55-422f-b4b9-8099327fe599",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "usage-wiring",
