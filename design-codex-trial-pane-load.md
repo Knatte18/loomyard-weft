@@ -1,6 +1,6 @@
 # Codex trial: pane, sends, creel by the pane path, and load
 
-`codex-trial-pane-load` · Task · research, codex, shuttle, creel · running · Record-Write
+`codex-trial-pane-load` · Task · research, codex, shuttle, creel · running · Drift-Baseline
 
 ## Goal
 
