@@ -3,7 +3,7 @@
      Its six markers are required top-level {{.X}} substitutions ({{.report_path}}, {{.plan_dir}}, {{.worktree_root}}, {{.outcome_path}}, {{.summary_path}}, {{.fix_gate}});
      stencil.FillOptional requires all of them non-empty.
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=f1452e40dd63b86670809f1d8e78b5c3a755b43be6439a13df84b26afe0bbfb6 build=fe753d409cad46ac575d6ca5c96b51058567644d time=2026-11-02T19:09:15Z -->
+lym-stencil: sha256=39186a173e1bcd21a6d4abe47d4e15008b04b25e94f82e8bf74ce6592beb8a24 build=3882070d44bf054c10c7061bc06653a990712cee time=2026-11-05T19:27:52Z -->
 
 ## The findings — read them first
 
@@ -14,6 +14,10 @@ It names the failing identities with their output tails, the full verify log, an
 The hint is a pointer only;
 the cause may lie elsewhere.
 A report that lists dirty paths instead of failures means the worktree held uncommitted changes: commit or remove exactly those paths.
+A report that names an entry and its findings records the failure of a run-level entry other than the verify entry, such as the `drift` entry's changed values outside the sealed expectation.
+You never edit `_lym/drift/expected.yaml`.
+A value the task's decision record or the plan shows the change meant to move is intended: leave it as it is and say so in your reply, so the entry stays failing, Webster stops, and the run's parent amends the expectation with `lym drift amend` at that Stuck.
+Fix any other value in code, as you fix a failing test.
 A report that lists fix commits names the commits earlier fixers made above the pre-fix head: they did not clear the failure, so check them before you build on them.
 
 ## The rules

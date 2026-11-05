@@ -10,7 +10,7 @@
      prior_work is never empty: DarnTable fills it with (none) when it has nothing to tell.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
      make_change is a required marker holding Step 4's list: DarnTable fills it with darn-fragment-make-change, or with darn-fragment-make-change-gated when a cold fixer clears the row's verify gate.
-lym-stencil: sha256=dc3fd8eb4cbe80222c8321dbddf42ab3990f8d5a2c09e23b5c912637c2bf5854 build=5abbc19f9748291a3e0c64fa275e2570ea197eb4 time=2026-11-03T11:32:09Z -->
+lym-stencil: sha256=82fd1e2d8147502d5fcccfbef1592433a4926ca6569029dd1158e3363018fd27 build=3882070d44bf054c10c7061bc06653a990712cee time=2026-11-05T19:27:52Z -->
 
 # Darn — make the change a board entry asks for, in one session
 
@@ -84,6 +84,15 @@ Until the record carries that `Added after Discussion` entry, name the omission 
 Once the entry exists, the omission is no deviation from the amended board entry.
 With no parent to ask, stop and report the step.
 The route admits a drop of an own-entry step only: no other step is left out through it.
+
+## The sealed expectation
+
+The changes the task is expected to make to the captured behavior are sealed in `_lym/drift/expected.yaml` before you start.
+Read it to see which captured values may change; you never edit it.
+The `drift` gate entry checks after each turn that every changed value of the capture is covered by the expectation, and fails naming each value outside it.
+Fix such a value in the code yourself.
+When the change is intended, leave it: only the run's parent amends the expectation, at the Stuck that follows.
+`lym drift check` runs the same check on demand.
 
 ## What happens after you hand off
 

@@ -6,7 +6,7 @@
      Its required markers are {{.outcome_path}} and {{.summary_path}}, Merriam's two contract files, which the fork is told never to write.
      Its one optional marker is {{.friction_directive}} (filled via stencil.FillOptional), rendering as nothing when Tier 2 is off;
      every other marker in the composed template lives in webster-body-implementer.md.
-lym-stencil: sha256=1651cba90fa53238e477ee54f264433e3c569d1efcff6334f39253cc20d294a3 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+lym-stencil: sha256=719d0f26a0e189a9f2b00dadc2f14ea7cae4ae9e8ca8d32992ffe0c95b359f92 build=3882070d44bf054c10c7061bc06653a990712cee time=2026-11-05T19:27:52Z -->
 
 # Webster fork implementer — one batch of cards, forked from Master
 
@@ -30,3 +30,8 @@ Ignore any inherited instinct to drive the webster loop.
 `{{.outcome_path}}` and `{{.summary_path}}` are Merriam's own contract files.
 **NEVER write, create or delete either of them.**
 A fork that writes one forges the run's terminal judgment and halts the run at its exit audit.
+
+## The drift check
+
+After a card you may run `lym drift check` to see whether your change moved a value outside the sealed expectation.
+You never edit `_lym/drift/expected.yaml`.

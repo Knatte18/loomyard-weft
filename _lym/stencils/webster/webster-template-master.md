@@ -3,7 +3,7 @@
      It is filled by `run`'s engine core via internal/stencil and handed to the shuttle as the Master session's entire instruction set for one whole plan run: the long-lived session that reads the plan's overview and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lym/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. verify_fix_prompt_path is the Go-rendered verify-gate fixer fork prompt file. parent_decisions is every added-decision entry of the task's decision record, verbatim, or the literal `none`. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive. parent_directive is a third optional marker, rendered by internal/parentdirective. edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lym-stencil: sha256=471225df53a9add50e21be844cf6e85ce75178a071ac6941e565d94723f53ffa build=ba2a346b7d63e184b43f4c97ef8a29ae9ae77dab time=2026-10-28T18:20:54Z -->
+lym-stencil: sha256=349ccdd9941ba39c9d2016fee08b91b5b7c9bca1a6a2adfb9f7cde7326f45e77 build=3882070d44bf054c10c7061bc06653a990712cee time=2026-11-05T19:27:52Z -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
@@ -215,6 +215,10 @@ Otherwise, the fork steps:
 Answer each gate message with at most one fixer, a fork or one `fix-verify` call;
 the gate bounds the number of attempts.
 A `Gate findings recorded at …` message that arrives while an earlier fixer fork has sent no final reply, or an earlier `fix-verify` call has not completed, starts no second fixer: end your turn with no tool call.
+
+A failed `drift` entry at the run-level gate lands in the findings file like a failed `verify`, and you hand it to the fixer fork or `lym webster fix-verify` exactly as for any run-level gate failure, since you edit no code.
+A value the fixer leaves as intended keeps the entry failing, and the run's parent amends the expectation at the Stuck that follows.
+The expectation is `_lym/drift/expected.yaml`, and no one at this row edits it.
 
 ## A parent decision reaches the code through your forks
 
