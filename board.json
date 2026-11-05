@@ -729,7 +729,8 @@
       "status": "running · Darn-Write",
       "created": "2026-11-05T07:15:30Z",
       "revised": "2026-11-05T07:53:40Z",
-      "profile": "solid"
+      "profile": "solid",
+      "notify_on_land": true
     },
     {
       "id": 1131,
