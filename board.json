@@ -568,22 +568,25 @@
     },
     {
       "id": 1099,
-      "handle": "B3",
+      "handle": "T9",
       "slug": "tmp-git-leak",
       "title": "A test leaves an empty /tmp/.git, which breaks go VCS stamping",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "testkit",
         "gate"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "An empty /tmp/.git appeared during a tier1 run and failed TestPrebuildLym; find the leaker and guard against writes outside t.TempDir",
       "body": "## Seen (worktree-create-serial's Finalize fixer and hub orch, 2026-11-04)\n\nAn empty directory `/tmp/.git` appeared at 15:27:32 local, during a gate's tier1 run; no test or process was found to have made it.\nWith it in place, go's VCS stamping ran git in `/tmp`, and `TestPrebuildLym` failed on `worktree-create-serial`'s Finalize; the fixer hardened that test on the branch (`311bb513`).\nThe hub orch removed the empty `/tmp/.git` by hand.\n\n## Idea\n\n- Find the test or code that creates `.git` under the shared `/tmp` instead of under its own `t.TempDir()`; a likely shape is a path joined from an empty or unset directory, which resolves to `/tmp/.git` through a temp-dir parent.\n- A test never writes outside its own `t.TempDir()`; a guard (testkit or a gate check) fails a run that leaves a new entry directly under `/tmp` or the gate's temp root.\n",
+      "status": "draft",
       "created": "2026-11-04T14:32:08Z",
-      "revised": "2026-11-04T14:32:08Z"
+      "revised": "2026-11-05T06:03:13Z",
+      "profile": "light"
     },
     {
       "id": 1101,
