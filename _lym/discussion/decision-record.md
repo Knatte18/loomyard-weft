@@ -65,4 +65,13 @@ Rationale: Outside a hub there is no hub config or settings location to write to
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - board-button-scribe-preload-unlicensed (class decision, severity MEDIUM, open in rounds 1)
+  - interactive-sessions-keep-memory-listagents-plugin-skills (class decision, severity MEDIUM, open in rounds 1)
+  - listagents-denied-in-settings-not-launch-line (class decision, severity MEDIUM, open in rounds 1)
+  - no-scope-for-opened-session-outside-hub (class decision, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
