@@ -66,11 +66,11 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Codex sessions read idle, end when Codex exits, and reach creel from the sandbox**<br>• Fix the three Codex engine faults the pane and load trial found | [`codex-trial3-faults`](design-codex-trial3-faults.md) | darn · solid | Darn-Write | neve | 50m<br>6m | codex, shuttle, creel |
+| T1 | **Codex sessions read idle, end when Codex exits, and reach creel from the sandbox**<br>• Fix the three Codex engine faults the pane and load trial found | [`codex-trial3-faults`](design-codex-trial3-faults.md) | darn · solid | Darn-Write | neve | 51m<br>6m | codex, shuttle, creel |
 | T2 | **Teardown removes the whole worktree directory, and a gone pair blocks no board edit**<br>• Worktree-Teardown and fabric remove delete leftover build output; has-a-pair and batten cancel treat a non-git directory as no pair | [`teardown-gone-pair`](design-teardown-gone-pair.md) | darn · light | Darn-Write | neve | 1h<br>1h | batten, fabric, board |
 | T3 | **Template changes reach seed-only hub config, and light gets the lens fan back**<br>• Reconcile carries template changes into seed-only hub files like profiles.yaml while keeping hand-set values; light drops its solo code review | [`profiles-follow-template`](design-profiles-follow-template.md) | darn · solid | Darn-Write | neve | 29m<br>29m | profiles, config, reconcile |
-| T5 | **Quiet notice ignores gate fixers and the gate run**<br>• Dobby quiet notice fires while gate-fixer sessions or the run gate work, since it reads only the writer strand | [`quiet-notice-ignores-fixers`](design-quiet-notice-ignores-fixers.md) | darn · light | Darn-Write | neve | 45m<br>5m | dobby |
-| T6 | **A weft push holds the remote-refs lock over its whole transfer, so board claims queue behind it**<br>• Bolt and every weft share one remote-refs lock; a slow push stalls every claim and weft fetch for its whole send-pack | [`push-holds-remote-refs`](design-push-holds-remote-refs.md) | darn · light | Drift-Await | neve | 17h<br>5m | fabric |
+| T5 | **Quiet notice ignores gate fixers and the gate run**<br>• Dobby quiet notice fires while gate-fixer sessions or the run gate work, since it reads only the writer strand | [`quiet-notice-ignores-fixers`](design-quiet-notice-ignores-fixers.md) | darn · light | Darn-Write | neve | 46m<br>6m | dobby |
+| T6 | **A weft push holds the remote-refs lock over its whole transfer, so board claims queue behind it**<br>• Bolt and every weft share one remote-refs lock; a slow push stalls every claim and weft fetch for its whole send-pack | [`push-holds-remote-refs`](design-push-holds-remote-refs.md) | darn · light | Drift-Await | neve | 17h<br>6m | fabric |
 | T8 | **The beam orch drives the merge-in, pull request and review of its beam inside Beam-Await**<br>• Pawl drops Parent-Align, Beam-Describe and PR-Review; the beam orch opens and closes the PR, merges the parent in and runs lym beam ready | [`pawl-orch-landing`](design-pawl-orch-landing.md) | tapestry · solid | Discussion-Write | neve | 1h<br>1h | pawl, landing, orch, workspaces, fabric |
 
 #### Ready (0)
@@ -136,11 +136,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F18 |  | **Codex sessions get creel mail through hooks, as Claude sessions do**<br>• codexengine has no creel hooks, so every Codex strand is a pane-mail strand; the hook spike showed a way | [`codex-creel-hooks`](design-codex-creel-hooks.md) | 1d<br>1d | codex, creel, shuttle |
 | F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 1h<br>1h | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 1h<br>1h | batten, board, fabric, workspaces |
-
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | 17h<br>16h | fabric, loom |

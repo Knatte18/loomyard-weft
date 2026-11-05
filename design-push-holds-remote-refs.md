@@ -2,8 +2,6 @@
 
 `push-holds-remote-refs` · Task · bug, fabric · running · Drift-Await
 
-Depends on: [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md)
-
 ## Seen (worktree-create-serial, 2026-11-04)
 
 `worktree-create-serial` took the prime lock off the network part of Worktree-Create.

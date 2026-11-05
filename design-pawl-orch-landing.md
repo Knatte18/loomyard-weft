@@ -2,8 +2,6 @@
 
 `pawl-orch-landing` · Task · feature, pawl, landing, orch, workspaces, fabric · running · Discussion-Write
 
-Depends on: [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md)
-
 ## Seen (operator, 2026-11-05)
 
 The pawl recipe (`contracts/recipes/pawl-recipe.yaml`) runs Beam-Await, then Parent-Align, Beam-Describe and PR-Review as fixed producers before Finalize, as tapestry and darn do.
