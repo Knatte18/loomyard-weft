@@ -196,9 +196,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "drift-rework"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics",
       "body": "## Seen (operator and hub orch, 2026-10-31)\n\nComments in the Go source go stale as the code moves on.\nTwo found today: `internal/fabricengine/weftwiring.go` still speaks of a future `_lym/raddle/` squash-merge-back, though raddle will never be built; and many comments spelled the `_board` path instead of naming its constant (the rename to `_bolt` in `bolt-dir-rename` has since replaced the spelling itself).\nThere are surely more, in every package, against `scribe:prose`'s rule never to pin a perishable specific.\n\n## Goal\n\nA comment-cleanup campaign over the whole repository.\n\n- A worker fixes each comment or text that no longer matches the code, names something gone or planned and dropped, or pins a perishable specific: a count, a list of current callers, a path or name spelled where a constant or identifier should be named.\n- Workers change comments and text only, never code.\n\n## Design (operator, 2026-10-31)\n\n- One darn run, whose agent orchestrates the whole campaign: it splits the work and spawns the workers, many in parallel; not one darn per package, which would be far too many runs.\n- Scope: Go comments and docstrings, each package's `doc.go`, the stencils and the docs.\n- Models by scope: Haiku 5.5 takes the comments and docstrings of code files; `doc.go`, stencils and docs need a stronger model, Sonnet 5.5, as the `docs` profile's writer is.\n- Every Haiku 5.5 worker is scoped to modules so that its context stays under 100k tokens, since below that Haiku 5.5 is cheap (operator, 2026-11-04): one package per worker, a large package split by file groups, small packages grouped while the sum stays under the bound.\n  The writer sizes each worker's scope before it spawns it.\n- No review step of its own: most comments are assumed sound, and this run is itself the check on them; the darn's usual Code-Review is enough.\n- The run starts once every other running entry has landed, the `codex-engine` beam included, so it reads settled code (operator, 2026-11-03).\n\n## Workers (hub orch, 2026-11-03)\n\nThe writer spawns its workers as subagents through its own Agent tool, with the tool's model override set to `haiku` or `sonnet` by the scope above; no lym verb is needed.\nEach worker gets its scope from the bound above, edits only comments and text in it, and reports what it changed; the writer commits.\n\nRelated: note `hardener` is another autonomous campaign run by an orchestrating agent.\n",
@@ -370,32 +368,6 @@
       "profile": "light"
     },
     {
-      "id": 1106,
-      "handle": "T7",
-      "slug": "drift-rework",
-      "title": "Drift compares changed values in code against a sealed expectation, with a separate judge",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "drift",
-        "loom",
-        "darn",
-        "stencil",
-        "config"
-      ],
-      "issues": [],
-      "recipe": "tapestry",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "General Drift rework: code-side diff of any hub capture keyed by line key or number, structured sealed expectation, containment by code, a judge per changed value",
-      "body": "## Seen (`docs/research/drift-whole-review-2026-11-04.md`)\n\nA Drift compare is an opaque command that exits 0 or not; which outputs changed, and from what to what, exists only in the harness's log, which an agent reads.\nThe agent decides the scope, whether each drift was expected and whether to accept it, and an acceptance covers a whole test.\nThe report lists the faults this leaves (an acceptance hides later regressions in the same test, nothing checks the expectation's seal, the writer never sees the expectation) and proposes one reworked design, written against the `cs` hub's harness.\n\n## Built since (tidy, 2026-11-05)\n\nTask `drift-interim-repairs` landed (`83735e65`), two repairs ahead of this rework:\n\n- `lym drift accept \u003ctest\u003e` refuses a name that matches no file under the run's baseline profile directory (with or without the file's last extension).\n  `lym drift scope --skip` stays unchecked: it runs before any capture, and a capture writes no file for a skipped test.\n- The accepted profile keeps each accepted test's output as it was at accept: the verb captures the current code first, outside the run budget, and Drift-Verify and Drift-Recheck build the profile from the baseline with those kept files replacing the tests'.\n  A later move of an accepted test shows as drift again.\n  `RunAcceptedCapture` and the `CaptureAccepted` seam are replaced by `RunAcceptanceCapture` and the `CompareAccepted` seam; new files under `.lym/drift/` are `accepting`, `accepted-tests` and `accept.lock`.\n\nThis rework still removes the accepted profile and its seams, so these repairs live only until it is built.\nTwo open points from the landing's review: whether the baseline directory holds only profile files (`testFiles` in `internal/driftengine/accepted.go` admits any file there), and the partial scope itself, which goes in this rework.\n\n## Idea: the report's design, made general\n\nDrift stays a general lym module: nothing in it assumes one hub's harness or output format.\n\n### What a hub's capture owes\n\n- The hub's `capture` command writes deterministic text files under `{baseline_dir}`: the same code gives byte-identical files.\n- One file per case (a test, a scenario, a fixture); any text a line diff can read, such as golden files, snapshot output, CLI output or pretty-printed JSON.\n- A line that carries a key (`name = value`, `name: value`, or a pattern the hub declares in `drift.yaml`) is identified by its key; a line without one by its line number.\n  Keys keep the compare stable when a change inserts or removes lines, so a hub with keyed output needs no line ranges.\n- A hub whose capture cannot meet this keeps today's opaque compare with whole-test judgment, chosen in `drift.yaml`.\n\n### The compare and the expectation\n\n- lym's code diffs the baseline capture against the current one per case, into a set of changed values: (case, key or line, old value, new value), plus cases and lines added or removed.\n  The compare command becomes optional.\n- A Drift-Expect agent, after the capture, writes a structured `expected.yaml`: per case the keys or lines it expects to change, the cases it expects added or removed, and one reason each; sealed when the writer starts.\n- Containment by code: a changed value outside the expectation is a regression and stops the row.\n- A separate judge agent rules each expected changed value `matches` or `does not match`; an accepted value is stored as its exact tuple, and only a value whose tuple changes is judged again.\n- The writer gets the containment check as a gate entry of its own session.\n- Removed: `partial`, `skip`, `skip_file`, `accept`, `withdraw`, `waive`, the accepted profile and its seams, the run budget, side capture and `DriftRecheck` as a separate engine.\n\nThe two interim repairs above do not replace this.\n\n## Decisions (operator, 2026-11-05)\n\n1. The compare moves into lym's code, under the general capture contract above, with one file per test; the `cs` hub's regression suite is small, so one file per test is fine there.\n2. Open line ranges such as `12-` are allowed in the expectation for unkeyed output, without a halt, and every open range is listed in the judge's verdict.\n3. Where the fix loop lives for tapestry, which depends on Webster's gate seam, is settled in the plan after reading that seam.\n4. The seal is the expectation's hash, plus a check that the sealing commit precedes the writer's first commit.\n\nThe run goes autonomous: the Discussion asks the operator nothing.\n\n## Related\n\n`sampler-drift-trial` asks that Drift verbs work outside drift stages; this rework changes which stages exist, so that note is revisited when this lands.\n\n## Size\n\nA tapestry run, profile `solid`: it touches tapestry and darn recipes, Drift config keys (`PATTERN-config-reinterpretation`), stencils and records.\n",
-      "status": "done",
-      "created": "2026-11-04T15:24:13Z",
-      "revised": "2026-11-05T13:15:04Z",
-      "profile": "solid",
-      "discussed": true
-    },
-    {
       "id": 1108,
       "handle": "R2",
       "slug": "writer-lookups-remeasure",
@@ -562,7 +534,6 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "drift-rework",
         "raddle-motif-finish-clean"
       ],
       "isolated": false,
@@ -661,7 +632,6 @@
       ],
       "recipe": "darn",
       "depends_on": [
-        "drift-rework",
         "clone-reset-deletes-first"
       ],
       "isolated": false,
@@ -713,9 +683,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "drift-rework"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## From note raddle-same-slug-completed\n\n### Seen (orch, 2026-11-05, twice)\n\nPromoting a Sketch gives the same entry recipe raddle under the same slug.\nFor `reed-slack-relay` and again for `creel-cross-hub-mail`, dobby could not start the raddle run: battencli reported the slug `has already completed` and named `lym batten cleanup --apply`, since the motif run that made the Sketch left its run directory under `_lym/shed/\u003cslug\u003e`.\nThe orch ran the cleanup each time and released the task again.\n\n### Idea\n\nThe promotion of a Sketch to raddle, or batten at Seed of a raddle run, clears the finished motif run's directory of that slug, as the cleanup does, so the raddle run starts with no hand step.\n\n\n## From note raddle-end-fails-batten\n\n### Seen\n\nRaddle on creel-cross-hub-mail filed its entry and ended at Raddle-File, which marks the Sketch entry done. Batten then failed at Run-Shed with \"origin ended ... (it landed and its board entry is done); run lym cleanup --apply\" and the shed driver asked the orch to run it, instead of going on through Land and Worktree-Teardown. `lym batten status` gave a contradicting hint (`child_done_batten_halted`: run `lym batten run`).\n\n### Workaround\n\n`lym cleanup --apply` from the prime, then `lym batten cancel \u003cslug\u003e`.\n\n### Expected\n\nA raddle run that filed its parts goes through Land and Worktree-Teardown like any finished run, with no orch turn.\n\n## From note motif-sketch-refusal-silent\n\n### Seen (orch, 2026-11-05)\n\nThe motif run `creel-cross-hub-mail` ended at 16:33 UTC with its decision record stored and its pair torn down.\n`sketchFinish` in `internal/loomcli/wiring.go` could not make the entry a Sketch, since `slack-relay` depends on it, so it left the entry a draft task with `discussed: true` and logged a Warn.\nNo mail reached the orch; the orch learned of it from dobby's board tidy report an hour later.\n\n### Idea\n\nWhen the board refuses the Sketch, mail the run's parent naming the refusal, the entries that depend on the entry, and the way forward: drop or move those dependencies and make it a Sketch, or set recipe raddle on the discussed task.\n\n\n",

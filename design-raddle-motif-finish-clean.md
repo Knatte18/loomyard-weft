@@ -2,8 +2,6 @@
 
 `raddle-motif-finish-clean` · Task · bug, batten, dobby, loom, board, orch · running · Darn-Write
 
-Depends on: [`drift-rework`](design-drift-rework.md)
-
 ## From note raddle-same-slug-completed
 
 ### Seen (orch, 2026-11-05, twice)

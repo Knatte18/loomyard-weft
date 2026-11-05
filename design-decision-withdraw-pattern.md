@@ -2,7 +2,7 @@
 
 `decision-withdraw-pattern` · Task · bug, loom, parsers, pattern
 
-Depends on: [`drift-rework`](design-drift-rework.md), [`raddle-motif-finish-clean`](design-raddle-motif-finish-clean.md)
+Depends on: [`raddle-motif-finish-clean`](design-raddle-motif-finish-clean.md)
 
 ## Seen (orch, 2026-11-05)
 
