@@ -232,9 +232,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "codex-trial-pane-load"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics",
       "body": "## Seen (operator and hub orch, 2026-10-31)\n\nComments in the Go source go stale as the code moves on.\nTwo found today: `internal/fabricengine/weftwiring.go` still speaks of a future `_lym/raddle/` squash-merge-back, though raddle will never be built; and many comments spelled the `_board` path instead of naming its constant (the rename to `_bolt` in `bolt-dir-rename` has since replaced the spelling itself).\nThere are surely more, in every package, against `scribe:prose`'s rule never to pin a perishable specific.\n\n## Goal\n\nA comment-cleanup campaign over the whole repository.\n\n- A worker fixes each comment or text that no longer matches the code, names something gone or planned and dropped, or pins a perishable specific: a count, a list of current callers, a path or name spelled where a constant or identifier should be named.\n- Workers change comments and text only, never code.\n\n## Design (operator, 2026-10-31)\n\n- One darn run, whose agent orchestrates the whole campaign: it splits the work and spawns the workers, many in parallel; not one darn per package, which would be far too many runs.\n- Scope: Go comments and docstrings, each package's `doc.go`, the stencils and the docs.\n- Models by scope: Haiku 5.5 takes the comments and docstrings of code files; `doc.go`, stencils and docs need a stronger model, Sonnet 5.5, as the `docs` profile's writer is.\n- Every Haiku 5.5 worker is scoped to modules so that its context stays under 100k tokens, since below that Haiku 5.5 is cheap (operator, 2026-11-04): one package per worker, a large package split by file groups, small packages grouped while the sum stays under the bound.\n  The writer sizes each worker's scope before it spawns it.\n- No review step of its own: most comments are assumed sound, and this run is itself the check on them; the darn's usual Code-Review is enough.\n- The run starts once every other running entry has landed, the `codex-engine` beam included, so it reads settled code (operator, 2026-11-03).\n\n## Workers (hub orch, 2026-11-03)\n\nThe writer spawns its workers as subagents through its own Agent tool, with the tool's model override set to `haiku` or `sonnet` by the scope above; no lym verb is needed.\nEach worker gets its scope from the bound above, edits only comments and text in it, and reports what it changed; the writer commits.\n\nRelated: note `hardener` is another autonomous campaign run by an orchestrating agent.\n",
@@ -505,30 +503,6 @@
       "revised": "2026-11-03T19:24:10Z"
     },
     {
-      "id": 1080,
-      "handle": "T6",
-      "slug": "codex-trial-pane-load",
-      "title": "Codex trial: pane, sends, creel by the pane path, and load",
-      "kind": "task",
-      "labels": [
-        "research",
-        "codex",
-        "shuttle",
-        "creel"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Six cases, three sessions at once and one darn run with a Codex reviewer seat",
-      "body": "## Goal\n\nTest parts 5 and 7 of project `codex-engine-trial` against real Codex sessions launched through `lym shuttle`: the pane, sends, creel by the pane path, and load, as `internal/shuttleengine/codexengine/doc.go` and `internal/creelengine/doc.go` describe them.\n\n## Cases\n\nSessions run on `luna[medium]`, in this task's worktree.\n\n1. Pane readings: the composer, the busy line and the folder-trust prompt read right through `lym shuttle state`, once each.\n2. Sends: a 4,000-character send and a 40-line send through the guarded paste-then-Enter land whole; five sends each.\n3. Exit: a Codex exit reads as a dead pane.\n4. Creel by the pane path, in one opened session:\n   - a program's notice is typed in full while the session is idle;\n   - a post from an agent strand arrives as a `run lym creel read` reminder;\n   - the session runs `lym creel read` and `lym creel post --reply \u003cid\u003e` from inside its `workspace-write` sandbox and reaches the creel daemon.\n5. Load: three Codex sessions at once, each through ten turns, with one interrupt and one send during a busy turn in each; every turn end, interrupt and send reads right.\n6. End to end: one darn run of a small change in a throwaway sandbox hub, with `code_assist_reviewer_model` set to `luna[medium]` for that run's `run_settings` only, followed to Code-Review's end.\n\n## Deliver\n\n- A report at `docs/research/codex-engine-trial-pane-load-2026-11-03.md`: per case, what was run, what was seen and whether it matches the docs.\n- Each lym fault as a bug note on the board (`kind: note`, label `bug` and the module labels), one finding per note.\n- No config of this hub changes; case 6 sets its model in its own run's settings only.\n",
-      "status": "done",
-      "created": "2026-11-03T19:27:14Z",
-      "revised": "2026-11-04T15:21:37Z",
-      "profile": "docs",
-      "project": "codex-engine-trial"
-    },
-    {
       "id": 1095,
       "handle": "T7",
       "slug": "locks-out-of-tracked-trees",
@@ -702,30 +676,6 @@
       "body": "Imported from [issue #55](https://github.com/Knatte18/loomyard/issues/55).\n\n## What happened\n\nModels hub, 2026-11-04.\nThe motif `knut-rheology-friction-pvt`, run inside beam `duplication-and-import-followups` (P2), decided (its D1) that the follow-up work runs as a project of its own outside that beam.\nThe beam's orch, on the operator's order, tried to create that project (`knut-rheology`) at the root and was refused: a beam orch may create entries only under its own beam.\nIt had to create the project under P2 and the task split under it, and the operator then had to have the prime orch move things.\n\n## Why it matters\n\nA beam is meant to land and disappear. A project a beam's motif spins out often belongs beside the beam, not inside it, and keeping it inside blocks the beam's landing.\nThe operator gave the order in the beam's orch session, where the discussion happened, and had to repeat it in the prime.\n\n## Expected\n\nAn operator-ordered board write from a beam orch can target the root (or another project), e.g. with an explicit flag or owner field, or lym names the way: \"ask the prime orch\" with the exact payload to post.",
       "created": "2026-11-05T05:50:33Z",
       "revised": "2026-11-05T05:50:33Z"
-    },
-    {
-      "id": 1117,
-      "handle": "T3",
-      "slug": "loop-exit-no-envelope-cause",
-      "title": "Loop exited without an envelope while step Webster was in flight",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "shed",
-        "friction"
-      ],
-      "issues": [
-        51
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #51](https://github.com/Knatte18/loomyard/issues/51).\n\nWhat happened: the run halted as failed at step Webster with anomaly interrupted-stop. The status error was `loop-exited: loop ... ended without an envelope; its output is in .lym/shed/\u003ctask\u003e/steps/loop.log; step Webster was in flight under trace ...`, followed by `shedverbs: step Webster interrupted (loop-exited)`.\nThe way forward named was to read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, and re-run `lym shed step \u003ctask\u003e --until-stop`.\n\nWhy it is abnormal: a loop must end by writing an envelope. The note records no cause for the missing envelope (no crash, signal or budget reason), and the preceding history shows all earlier steps through Drift-Await finishing done, so the exit came while Webster was starting. The halt note carries nothing that lets the operator tell a loop crash from an external kill.\n\nWhat to do: have the loop-exited anomaly record the exit cause (exit code or signal, last lines of loop.stderr_path) in the halt note itself. Also check whether a loop can exit between Drift-Await done and the Webster start without writing an envelope, and make that path write one.\n\nProvenance: task server-based-live-viewer; notes loom-halt-2.md.\n",
-      "status": "done",
-      "created": "2026-11-05T05:50:43Z",
-      "revised": "2026-11-05T05:52:12Z",
-      "profile": "light"
     },
     {
       "id": 1120,

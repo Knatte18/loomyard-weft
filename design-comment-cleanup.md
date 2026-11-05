@@ -2,8 +2,6 @@
 
 `comment-cleanup` · Task · enhancement, fabric · draft
 
-Depends on: [`codex-trial-pane-load`](design-codex-trial-pane-load.md)
-
 ## Seen (operator and hub orch, 2026-10-31)
 
 Comments in the Go source go stale as the code moves on.
