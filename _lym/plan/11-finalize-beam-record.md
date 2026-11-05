@@ -22,11 +22,11 @@
 - `PATTERN.md`
 
 **Create:**
-- `plan:internal/landingshed#BeamRecord` -> `type BeamRecord int`
-- `plan:internal/landingshed#NotABeam` -> `const NotABeam BeamRecord = iota`
-- `plan:internal/landingshed#BeamWithoutPullRequest` -> `const BeamWithoutPullRequest BeamRecord = 1`
-- `plan:internal/landingshed#BeamWithPullRequest` -> `const BeamWithPullRequest BeamRecord = 2`
-- `plan:internal/landingshed#BeamPullRequest` -> `type BeamPullRequest struct`
+- `internal/landingshed#BeamRecord`
+- `internal/landingshed#NotABeam`
+- `internal/landingshed#BeamWithoutPullRequest`
+- `internal/landingshed#BeamWithPullRequest`
+- `internal/landingshed#BeamPullRequest`
 
 **Uses:**
 - `internal/pullrequest#MergeRetryWindow`

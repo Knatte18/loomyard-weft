@@ -21,7 +21,7 @@
 - `internal/testkit/envkit#FullEnv`
 
 **Create:**
-- `plan:internal/pawlengine#awaitRun.recheckStanding` -> `func (r *awaitRun) recheckStanding(ctx context.Context) (awaitWake, error)`
+- `internal/pawlengine#awaitRun.recheckStanding`
 
 **Uses:**
 - `internal/pawlengine#awaitRun.landChecks`

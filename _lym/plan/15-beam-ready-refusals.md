@@ -22,7 +22,7 @@
 - `plan:internal/beamcli#beamPullRequestSide`
 - `internal/pullrequest#ReadMergeState`
 - `internal/landingshed#ResolvePullRequest`
-- `plan:internal/landingshed#BeamWithoutPullRequest`
+- `internal/landingshed#BeamWithoutPullRequest`
 - `plan:internal/landingshed#OriginMissing`
 - `internal/pawlengine#ReadLanding`
 - `internal/testkit/prkit#API`

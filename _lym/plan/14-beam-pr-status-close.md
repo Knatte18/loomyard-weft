@@ -19,7 +19,7 @@
 - `internal/pullrequest#ReadMergeState`
 - `internal/pullrequest#MergeState`
 - `internal/landingshed#ResolvePullRequest`
-- `plan:internal/landingshed#BeamWithoutPullRequest`
+- `internal/landingshed#BeamWithoutPullRequest`
 - `plan:internal/landingshed#OriginMissing`
 - `internal/pullrequest#API`
 - `internal/pullrequest#Open`
