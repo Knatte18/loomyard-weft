@@ -1,6 +1,6 @@
 # Codex trial: pane, sends, creel by the pane path, and load
 
-`codex-trial-pane-load` · Task · research, codex, shuttle, creel · running · Code-Bouncer
+`codex-trial-pane-load` · Task · research, codex, shuttle, creel · running · Drift-Recheck
 
 ## Goal
 
