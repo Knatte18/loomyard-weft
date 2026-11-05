@@ -30,6 +30,12 @@ Decision: Besides README.md, this task updates docs/loomyard-overview.svg to the
 
 Rationale: The README shows the figure, and it no longer matches the recipes: Motif, Parts, Drift, the motif, sampler and pawl recipes, creel, heddle, gate and the orch watcher.
 
+### Added after Discussion (operator, 2026-11-05): A how-to document and a simpler README figure
+
+Decision: The setup steps leave the README for their own document, docs/getting-started.md, which the README links. The README embeds a new, simpler figure that uses only the README's terms; docs/loomyard-overview.svg stays as docs/overview.md's figure.
+
+Rationale: The operator agreed with a cold review: the README is for understanding what LoomYard is, the large figure is unreadable at GitHub width and names terms the README never teaches.
+
 ## Constraints
 
 ## Auto-mode assumptions
