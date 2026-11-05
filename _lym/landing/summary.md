@@ -1,50 +1,48 @@
-# Seed-only hub config follows the template; light gets the lens fan back
+# Seed-only hub config follows the template; light regains the lens fan
 
-A template change now reaches a hub's seed-only config files on the next reconcile, and a value the operator set by hand stays theirs.
-Before this, the hub reconcile seeded `profiles.yaml` once and never touched it again, so a hub seeded before `6d92bff1` never got that commit's `code_reviewer_fan: ""` keys and nothing told its operator.
+A template change now reaches a hub's seed-only config files on the next hub reconcile, and a value the operator set by hand stays theirs.
+Before, `profiles.yaml` and `models.yaml` were seeded once and never touched again, so a hub seeded before a template change never learned of it.
+The loomyard hub hit this: it missed `loom.code_reviewer_fan: ""` and kept running light darn reviews with the lens fan, while the Models hub, seeded later, ran them solo.
 
-## What changes
+`light` also drops `loom.code_reviewer_fan: ""` from every recipe block of the `profiles` template, so a light run's first Code-Review round takes the hub's fan again.
+`docs` and `speed` keep their solo round.
 
-- **Template base.** Beside each seed-only board file the reconcile keeps `<module>.template-base` (`configengine.TemplateBaseFile`): the template the file last followed, under a header saying not to edit it.
-  It is committed on Bolt with the file, by the walk, by `lym config reconcile --layer default --apply`, by `lym fabric reconcile` and by clone.
-  The seed-only modules are `profiles` (`profiles.yaml`, hub-wide) and `models` (`models.yaml`, the per-worktree repo default on the board).
-- **Three-way merge.** `yamlengine.FollowTemplate` merges key by key, descending into mappings and comparing a scalar or a list whole:
-  - a key the hub file holds as the base does takes the template's value, and is reported under `added`, `updated` or `removed`;
-  - a key the operator set, added or removed stays as it is, and is reported under `differs` with both values when the template holds a third value;
-  - a hub file with no base yet, which today is every hub, gains each key it lacks and keeps every value it holds, reporting under `differs` a value the template holds otherwise.
-    That first pass writes the base, so later template changes follow the rules above.
-- **Reporting.** `configsync.Result` gains `Updated`, `Differs` and `WroteTemplateBase`.
-  `lym config reconcile --layer default` lists `updated` and `differs` in its dry run beside `added` and `removed`.
-  After a walk's board commit lands, what each seed-only file took from the template and each operator value it kept go to the hub's orch as one `[reconcile notice]` line, through the notifier reinterpretations already use.
-- **Template.** `light` drops `loom.code_reviewer_fan: ""` from its tapestry, darn, pawl and sampler blocks, so a light run's Code-Review round takes the hub's lens fan again; `docs` and `speed` keep their solo round.
-  On the loomyard hub, with no base, the next walk adds `code_reviewer_fan: ""` to `docs` and `speed` and leaves `light` with the fan.
-  On the Models hub, once its orch removes the key from `light` by hand, the hub file and the template are equal there.
-- **Unsettled pairs.** The profiles `Lacking` hook is now `Unsettled` (`runprofile.UnsettledFormerBlocks`) and lists only a former-name recipe block beside a differing current one.
-  A template block the hub lacks is no longer listed, since the merge now adds it or keeps the operator's removal.
-  The result field and the envelope key are renamed to match (`unsettled`).
+## How it works
 
-Docs follow the new rule: `internal/runprofile/doc.go`, `internal/hubreconcile/doc.go`, `internal/configcli/doc.go`, `internal/configreg`'s `SeedOnly` doc, `docs/overview.md` and both templates' header comments.
+- `yamlengine.FollowTemplate(base, template, existing, haveBase)` is the merge.
+  A unit is a mapping key, descended into while the file, template and base each hold a mapping or nothing there, and otherwise compared whole, so a scalar or a sequence is one unit.
+  With a base, a unit the file holds as the base does (absence included) takes the template's value, whether that gains, changes or removes it.
+  Any other unit is the operator's and is kept, listed under `Differs` when the template holds a third value.
+  Without a base, a unit the file lacks is added, a differing value is kept and listed under `Differs`, and a unit only the file holds is kept silently.
+  An unchanged file comes back byte for byte; a changed one is re-encoded, keeping comments and node styles but dropping blank lines between entries.
+- The base is the template as the reconcile last wrote it, kept in `<module>.template-base` beside the module's file in the board's config dir.
+  An apply writes it when absent or stale, and the board commit carries it with the file.
+  The name has no `.yaml` suffix, so no module reader takes it for a module file.
+- `configsync.ReconcileHubWideAt` runs the merge for each seed-only module over a present board file, after `Migrate`.
+  `Result` gains `Updated`, `Differs`, `WroteTemplateBase` and `ChangedFilesRel()`; a dry run, including `lym config reconcile --layer default`, reports `updated` and `differs` too.
+- `hubreconcile` mails the hub's orch one line naming each unit added, updated, removed or kept against the template, so the operator learns of a template change.
+  The reconcile that a binary change, a start verb or a clone runs applies the merge, so no hub needs a hand step.
+- A worktree's copy of a seed-only file is never rewritten.
 
-## Design decisions
+The seed-only modules are `models` and `profiles`; both follow.
 
-- **No base: add every lacking key, whole profiles included.** The record's rule for a hub with no base treats a key the hub lacks as never chosen.
-  A hub with no base whose operator deleted a starting profile, or a `models.yaml` alias, gets it back once on the first pass.
-  The pass writes the base, so a second deletion stays deleted.
-- **No base: a key only the hub holds is kept silently.** An operator's own profile or alias is not reported under `differs`, since seed-only files are open-ended by design and nothing tells such a key from one a template dropped.
-- **Base content is the whole template.** The base records the template as of the last reconcile, also for keys the operator overrode, so `differs` fires only on a template move after the operator's change, not on every reconcile.
-- **A key the template dropped is removed by every board reconcile, the walk included.** The record asks for that removal.
-  `PATTERN-config-layers` says only `lym config reconcile` prunes unknown base-layer keys.
-  Its PATTERN line and background now state that a seed-only key its template base holds is not unknown, and the background records the accepted downgrade flip-flop: an older binary drops a newer template's key, and the newer binary's next walk adds it back.
-- **Orch notice.** The record asks only for `updated` and `differs` in the reconcile output.
-  The walk also mails them to the orch, since the problem was that nothing told either hub's operator that the template had changed.
-- **Template change kept apart from the merge.** The base path is a per-module file rather than a section inside `profiles.yaml`, so the operator-owned file holds only operator content, and the base uses the board config dir's no-`.yaml`-suffix convention so no module reader takes it for a module file.
-- **Prime-copy seed.** A per-worktree seed-only default seeded from the prime's copy follows the template with no base, so it gains the template's keys the copy lacks.
+## Decisions to review
 
-## Tests
+- A hub file with no base yet (every hub today) cannot tell which template it was seeded from, so the merge uses the no-base rules above rather than guessing a base.
+  On the loomyard hub this adds `code_reviewer_fan: ""` to the `docs` and `speed` blocks and leaves `light` as it is, with the fan.
+  The first apply then records the current template as the base, so a stale value the hub still holds from an older template is kept and reported under `differs`, never updated.
+- `configreg.Module.Lacking` and `runprofile.LackingTemplateBlocks` are replaced by `Unsettled` and `runprofile.UnsettledFormerBlocks`.
+  Adding a template's missing blocks is now the merge's job, so the hook keeps only the former-block-beside-a-differing-current-block pairs, which only the operator can settle.
+- A template base that does not parse fails the reconcile naming the base file, with the way forward to delete it; the next reconcile then treats the module's file as having no base.
+  A corrupt base is not read when the file has none to follow.
+- A failure naming a template base carries no module, since `lym config <module>` does not repair it.
+- The docs describe the new rule where they said a present seed-only file is never filled or pruned: `internal/runprofile/doc.go`, `internal/hubreconcile/doc.go`, `internal/configsync`, `internal/configengine`, `internal/configcli`, `docs/shared-libs/yamlengine.md`, `docs/overview.md`, `PATTERN.md` and `pattern/PATTERN-config-layers.md`.
 
-- `TestFollowTemplate` (`internal/yamlengine`) covers each merge case: update with comments kept, removal of a whole unit, removal that empties a mapping, a subtree or flow-mapping key added, an operator value kept with and without a template move, an operator removal kept, the no-base rules, a scalar replaced by a mapping, an empty file and a non-mapping document.
-- `TestReconcileHubWideAt_SeedOnlyFileFollowsItsTemplate` (`internal/configsync`) drives `profiles.yaml` through the light-fan removal and the other cases above, checking that a dry run writes nothing, that an apply writes an absent or stale base, and that a second apply has nothing to do.
-- `TestEnsure_CarriesATemplateChangeIntoASeedOnlyConfigFile` (`internal/hubreconcile`) runs a walk over a hub holding the older template with a tuned value.
-  It checks that the light fan goes, the tuned value stays, the file and base land in the board commit and the orch notice names the removal.
-- The `lym config reconcile --layer default` integration test now checks that the dry run lists the light-fan removal under `removed` and writes nothing.
-- The existing profiles rows, `TestUnsettledFormerBlocks` and the template ladder test are updated to the new rule and template.
+## To check by hand
+
+Not run: a reconcile against the real loomyard and Models hubs.
+
+- `lym config reconcile --layer default` on the loomyard hub: the dry run should list `code_reviewer_fan` added under `docs` and `speed` and no change to `light`.
+- Apply it and confirm the board commit holds `profiles.template-base` and `models.template-base` beside their files, and that the orch receives the mail line.
+- Run it again and confirm it reports nothing.
+- On the Models hub, after its orch removes the key from `light` by hand, confirm the reconcile finds hub and template equal there.
