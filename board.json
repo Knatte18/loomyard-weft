@@ -811,6 +811,27 @@
       "body": "Imported from [issue #64](https://github.com/Knatte18/loomyard/issues/64).\n\n## What happened\n\n`lym beam merge-parent knut-rheology` filed the darn task `knut-rheology-merge-in`.\nIts body, and the verb's own help, tell the task's writer to run `lym fabric merge-in \u003cparent branch\u003e` in the task's own worktree.\nFrom the task session `mo:knut-rheology-merge-in:darn`, lym refuses that verb:\n\n\u003e lym fabric merge-in is refused from the task session mo:knut-rheology-merge-in:darn ... when the work itself needs this verb, stop and report status: FAILED so the run ends stuck and the orch runs it\n\nThe writer could not do the one thing its task exists for.\nIt asked its parent orch by creel whether to fail the run.\nThe orch ran `lym fabric merge-in main` in the task worktree by hand, which left the pair mid-merge with six conflicts, and told the writer to resolve them, stage them and run `lym fabric merge --continue`.\n\n## Expected\n\nThe merge-in task's writer may run `lym fabric merge-in \u003cparent branch\u003e` (and `merge-stage`, `merge --continue`, `merge --abort`) in its own worktree.\nAlternatively, the run performs the merge-in itself before Darn-Write, and the body tells the writer only to settle the conflicts and the gate.\n\n## Where\n\n- `lym beam merge-parent`: the task body and help that name `lym fabric merge-in`.\n- The task-session refusal of `lym fabric merge-in`, which makes no exception for the merge-in task.\n\n\n## Issue comment, 2026-11-05\n\nSame refusal hits `lym fabric merge-stage` (and presumably `lym fabric merge --continue`) from the merge-in task session: the writer resolved the conflicts but could not stage or commit them, so the orch had to run both by hand.",
       "created": "2026-11-05T18:58:52Z",
       "revised": "2026-11-05T18:58:52Z"
+    },
+    {
+      "id": 1155,
+      "handle": "B14",
+      "slug": "webster-refusal-file-lists",
+      "title": "webster refusal text repeats the full unit file list and every declaration site for each unresolved target",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster",
+        "quarry"
+      ],
+      "issues": [
+        63
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #63](https://github.com/Knatte18/loomyard/issues/63).\n\nWhat happened: the webster refusal for record-batch and recover-batch on a batch with several unresolved create targets printed, per target, the complete list of files quarry searched in the unit plus every package in the repo that declares a member of the same name. The unit file list is identical for every target and is repeated for each one. Common names such as Config or LoadConfig produce a long list of unrelated declaring packages. The result is a multi-kilobyte single-line error, written again into the friction note and the loom halt reason context.\n\nWhy it is abnormal: the repeated, unrelated detail buries the actionable part (which targets did not resolve) and inflates every note and agent context that carries the refusal.\n\nWhat to do: list the searched files once per unit rather than per target, cap the declaring-sites list (for example to the nearest few or those in the same parent directory), and keep the one-line per target finding first.\n\nProvenance: task raddle-recipe; notes webster-refusal-record-batch.md, webster-refusal-recover-batch.md.",
+      "created": "2026-11-05T18:58:55Z",
+      "revised": "2026-11-05T18:58:55Z"
     }
   ],
   "prime_owner": "neve",
