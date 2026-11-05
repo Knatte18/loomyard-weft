@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-05 06:59 UTC; every age below is as of then.
+Rendered 2026-11-05 07:01 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -20,11 +20,13 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | Code-Burler-Fix | neve | 17h<br>16h | fabric, loom |
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T3 | **Template changes reach seed-only hub config, and light gets the lens fan back**<br>• Reconcile carries template changes into seed-only hub files like profiles.yaml while keeping hand-set values; light drops its solo code review | [`profiles-follow-template`](design-profiles-follow-template.md) | darn · solid |  | 17m<br>17m | profiles, config, reconcile |
 
 ### Layer A (2)
 
@@ -33,15 +35,14 @@ Waits only on Running, Ready or Draft entries.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Teardown removes the whole worktree directory, and a gone pair blocks no board edit**<br>• Worktree-Teardown and fabric remove delete leftover build output; has-a-pair and batten cancel treat a non-git directory as no pair | [`teardown-gone-pair`](design-teardown-gone-pair.md) | darn · light | T7 | 1h<br>1h | batten, fabric, board |
-| T8 | **The beam orch drives the merge-in, pull request and review of its beam inside Beam-Await**<br>• Pawl drops Parent-Align, Beam-Describe and PR-Review; the beam orch opens and closes the PR, merges the parent in and runs lym beam ready | [`pawl-orch-landing`](design-pawl-orch-landing.md) | tapestry · solid | T7 | 1h<br>58m | pawl, landing, orch, workspaces, fabric |
+| T8 | **The beam orch drives the merge-in, pull request and review of its beam inside Beam-Await**<br>• Pawl drops Parent-Align, Beam-Describe and PR-Review; the beam orch opens and closes the PR, merges the parent in and runs lym beam ready | [`pawl-orch-landing`](design-pawl-orch-landing.md) | tapestry · solid | T7 | 1h<br>1h | pawl, landing, orch, workspaces, fabric |
 
-### Draft (2)
+### Draft (1)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Template changes reach seed-only hub config, and light gets the lens fan back**<br>• Reconcile carries template changes into seed-only hub files like profiles.yaml while keeping hand-set values; light drops its solo code review | [`profiles-follow-template`](design-profiles-follow-template.md) | darn · solid |  | 15m<br>15m | profiles, config, reconcile |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light |  | 4d<br>16h | fabric |
 
 ## Notes (31)
@@ -61,10 +62,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• No waiting line in loom or batten status and no notice while PR-Review waits for a human review | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 1d<br>20h | landing, loom, batten |
 | B2 |  | **A weft push holds the remote-refs lock over its whole transfer, so board claims queue behind it**<br>• Bolt and every weft share one remote-refs lock; a slow push stalls every claim and weft fetch for its whole send-pack | [`push-holds-remote-refs`](design-push-holds-remote-refs.md) | 17h<br>17h |  |
-| B3 |  | **An opened Codex session never reads idle, so creel types nothing into it**<br>• SessionIdle judges a strand with no run record by the hub default engine, so a Codex pane reads as no input box | [`opened-codex-never-idle`](design-opened-codex-never-idle.md) | 36m<br>36m | shuttle, creel, codex |
-| B4 |  | **lym shuttle state keeps a Codex run asking after Codex exits**<br>• After /exit the pane is dead and the loop ends died, while the session state still reads asking | [`codex-state-asking-after-exit`](design-codex-state-asking-after-exit.md) | 36m<br>36m | shuttle, codex |
-| B5 |  | **A Codex session cannot reach the creel daemon from its workspace-write sandbox**<br>• lym creel read and post fail inside Codex: connect to the daemon socket is not permitted and the daemon log is read-only | [`codex-sandbox-no-creel-socket`](design-codex-sandbox-no-creel-socket.md) | 36m<br>36m | codex, creel, shuttle |
-| B6 |  | **Quiet notice ignores gate fixers and the gate run**<br>• Dobby quiet notice fires while gate-fixer sessions or the run gate work, since it reads only the writer strand | [`quiet-notice-ignores-fixers`](design-quiet-notice-ignores-fixers.md) | 31m<br>31m | dobby |
+| B3 |  | **An opened Codex session never reads idle, so creel types nothing into it**<br>• SessionIdle judges a strand with no run record by the hub default engine, so a Codex pane reads as no input box | [`opened-codex-never-idle`](design-opened-codex-never-idle.md) | 38m<br>38m | shuttle, creel, codex |
+| B4 |  | **lym shuttle state keeps a Codex run asking after Codex exits**<br>• After /exit the pane is dead and the loop ends died, while the session state still reads asking | [`codex-state-asking-after-exit`](design-codex-state-asking-after-exit.md) | 38m<br>38m | shuttle, codex |
+| B5 |  | **A Codex session cannot reach the creel daemon from its workspace-write sandbox**<br>• lym creel read and post fail inside Codex: connect to the daemon socket is not permitted and the daemon log is read-only | [`codex-sandbox-no-creel-socket`](design-codex-sandbox-no-creel-socket.md) | 38m<br>38m | codex, creel, shuttle |
+| B6 |  | **Quiet notice ignores gate fixers and the gate run**<br>• Dobby quiet notice fires while gate-fixer sessions or the run gate work, since it reads only the writer strand | [`quiet-notice-ignores-fixers`](design-quiet-notice-ignores-fixers.md) | 33m<br>33m | dobby |
 
 ### Enhancements (5)
 
