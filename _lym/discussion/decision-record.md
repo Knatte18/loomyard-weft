@@ -385,6 +385,12 @@ Decision: PATTERN-sole-parsers reads 'Parsing an on-disk format its background l
 
 Rationale: The declared text grew PATTERN.md 42 bytes past its headroom line; the list belongs in the background file.
 
+### Added after Discussion (parent, 2026-11-05): Drift-Verify removes judgement.yaml after storing the rulings
+
+Decision: Once the changes check passes, Drift-Verify stores the judge's rulings in judged.json and removes _lym/drift/judgement.yaml in the same step, on a Done and on a does-not-match Stuck alike; judgement.yaml is described as a file the judge writes, and TestDriftVerify asserts it is gone after the Done row and the does-not-match row.
+
+Rationale: The stored tuples in judged.json are the record; an untracked judgement.yaml left in the tracked _lym/drift directory is stray state, and every spawn removes a stale one anyway.
+
 ## Constraints
 
 - `PATTERN-sole-parsers`: `expected.yaml` and `judgement.yaml` each have one parser; consumers read its model.
