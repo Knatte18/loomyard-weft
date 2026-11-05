@@ -1,6 +1,6 @@
 # Scope plugins, skills and connectors per role, in every hub
 
-`ly-plugin-off-in-other-hubs` · Task · bug, shuttle · running · PR-Review
+`ly-plugin-off-in-other-hubs` · Task · bug, shuttle · running · Finalize
 
 ## Seen
 

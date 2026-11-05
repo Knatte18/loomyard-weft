@@ -21,8 +21,8 @@ Held by a run; its scope is locked until the run ends.
 | T3 | **Webster refusals: short texts, the right cause and a real way forward** | [`webster-refusal-texts`](design-webster-refusal-texts.md) | darn · solid | Code-Burler-Fix | neve | 43m<br>41m | webster, quarry |
 | T5 | **Slack relay per hub: credentials, setup, inbound and outbound mail, presence and the lym slack verbs** | [`slack-relay`](design-slack-relay.md)<br>[Sketch](decision-slack-relay.md) | tapestry · solid | Parent-Align | neve | 3h<br>2h | reed |
 | T8 | **Raddle and motif runs start and finish without the orch** | [`raddle-motif-finish-clean`](design-raddle-motif-finish-clean.md) | darn · solid | Darn-Write | neve | 2h<br>41m | batten, dobby, loom, board, orch |
-| T9 | **fabric clone --reset removes the hub before refusing a mismatched --shortname** | [`clone-reset-deletes-first`](design-clone-reset-deletes-first.md) | darn · solid | Code-Burler-Fix | neve | 42m<br>41m | fabric |
-| T10 | **Scope plugins, skills and connectors per role, in every hub**<br>• lym gives each session only the plugins and skills its role needs, ly included in other hubs, and turns off connectors and unused listings | [`ly-plugin-off-in-other-hubs`](design-ly-plugin-off-in-other-hubs.md) | darn · solid | PR-Review | neve | 1h<br>41m | shuttle |
+| T9 | **fabric clone --reset removes the hub before refusing a mismatched --shortname** | [`clone-reset-deletes-first`](design-clone-reset-deletes-first.md) | darn · solid | Code-Burler-Fix | neve | 43m<br>41m | fabric |
+| T10 | **Scope plugins, skills and connectors per role, in every hub**<br>• lym gives each session only the plugins and skills its role needs, ly included in other hubs, and turns off connectors and unused listings | [`ly-plugin-off-in-other-hubs`](design-ly-plugin-off-in-other-hubs.md) | darn · solid | Finalize | neve | 1h<br>41m | shuttle |
 
 ### Ready (0)
 
@@ -66,7 +66,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 | L | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• Not a problem now; if built, only after F6 Slack relay, as a Slack reminder ping while a PR-Review waits on the operator | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 2d<br>2h | landing, loom, batten |
-| B2 |  | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | 17m<br>17m | tools, claude |
+| B2 |  | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | 18m<br>18m | tools, claude |
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 2h<br>2h | reed, orch |
 
 ### Enhancements (3)
