@@ -2,7 +2,7 @@
 
 `merge-parent-lands-right` · Task · bug, pawl, darn, landing, fabric · draft
 
-Depends on: [`drift-rework`](design-drift-rework.md)
+Depends on: [`drift-rework`](design-drift-rework.md), [`clone-reset-deletes-first`](design-clone-reset-deletes-first.md)
 
 ## From note merge-in-writer-refused
 
