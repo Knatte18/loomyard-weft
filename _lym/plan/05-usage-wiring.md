@@ -14,12 +14,12 @@
 - `internal/battencli#battenCLI.primeShuttle`
 
 **Uses:**
-- `plan:internal/shedadapters#RecordSessionUsage`
-- `plan:internal/shedrun#UsageDir`
-- `plan:internal/shedrun#UsageDirRel`
+- `internal/shedadapters#RecordSessionUsage`
+- `internal/shedrun#UsageDir`
+- `internal/shedrun#UsageDirRel`
 - `internal/shedrun#StatusFile`
 - `internal/shuttleengines#RecordReaders`
-- `plan:internal/shuttleengine#Runner.SetSessionEnd`
+- `internal/shuttleengine#Runner.SetSessionEnd`
 - `internal/shedadapters/doc.go`
 - `internal/gatecli/doc.go`
 

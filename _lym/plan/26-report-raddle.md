@@ -19,8 +19,8 @@
 
 **Uses:**
 - `plan:internal/raddleparser#Parse`
-- `plan:internal/shedrun#ParseRunUsage`
-- `plan:internal/shedrun#UsageDirRel`
+- `internal/shedrun#ParseRunUsage`
+- `internal/shedrun#UsageDirRel`
 - `internal/reportengine#Sources`
 - `internal/reportengine#world`
 - `plan:internal/reportengine#usageFiles`

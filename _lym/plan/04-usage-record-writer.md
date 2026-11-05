@@ -1,21 +1,21 @@
 # Card 4 — usage-record-writer
 
 **Create:**
-- `plan:internal/lymdirs#UsageDirName` -> `const UsageDirName = "usage"`
-- `plan:internal/shedrun#UsageDirRel` -> `func UsageDirRel() string`
-- `plan:internal/shedrun#UsageDir` -> `func UsageDir(l *lymcwd.Location) string`
-- `plan:internal/shedrun#ModelUsage` -> `type ModelUsage struct`
-- `plan:internal/shedrun#SessionUsageRecord` -> `type SessionUsageRecord struct`
-- `plan:internal/shedrun#RunUsageRecord` -> `type RunUsageRecord struct`
-- `plan:internal/shedrun#LandedSizeRecord` -> `type LandedSizeRecord struct`
-- `plan:internal/shedrun#RunUsage` -> `type RunUsage struct`
-- `plan:internal/shedrun#WriteSessionUsage` -> `func WriteSessionUsage(dir string, rec SessionUsageRecord) error`
-- `plan:internal/shedrun#WriteRunUsage` -> `func WriteRunUsage(dir string, rec RunUsageRecord) error`
-- `plan:internal/shedrun#WriteLandedSize` -> `func WriteLandedSize(dir string, rec LandedSizeRecord) error`
-- `plan:internal/shedrun#ParseRunUsage` -> `func ParseRunUsage(files map[string][]byte) (RunUsage, error)`
-- `plan:internal/shedrun#TestUsageRecords` -> `func TestUsageRecords(t *testing.T)`
-- `plan:internal/shedadapters#RecordSessionUsage` -> `func RecordSessionUsage(dir, row string, end shuttleengine.SessionEnd, reads shuttleengine.RecordReads)`
-- `plan:internal/shedadapters#TestRecordSessionUsage` -> `func TestRecordSessionUsage(t *testing.T)`
+- `internal/lymdirs#UsageDirName`
+- `internal/shedrun#UsageDirRel`
+- `internal/shedrun#UsageDir`
+- `internal/shedrun#ModelUsage`
+- `internal/shedrun#SessionUsageRecord`
+- `internal/shedrun#RunUsageRecord`
+- `internal/shedrun#LandedSizeRecord`
+- `internal/shedrun#RunUsage`
+- `internal/shedrun#WriteSessionUsage`
+- `internal/shedrun#WriteRunUsage`
+- `internal/shedrun#WriteLandedSize`
+- `internal/shedrun#ParseRunUsage`
+- `internal/shedrun#TestUsageRecords`
+- `internal/shedadapters#RecordSessionUsage`
+- `internal/shedadapters#TestRecordSessionUsage`
 
 **Edit:**
 - `PATTERN.md`
@@ -26,7 +26,7 @@
 - `internal/shedadapters/doc.go`
 
 **Uses:**
-- `plan:internal/shuttleengine#SessionEnd`
+- `internal/shuttleengine#SessionEnd`
 - `internal/shuttleengine#RecordReads`
 - `internal/shuttleengine#TranscriptReader`
 - `internal/shuttleengine#MessagePricer`

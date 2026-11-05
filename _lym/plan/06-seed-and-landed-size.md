@@ -21,9 +21,9 @@
 **Uses:**
 - `internal/fabricengine#Fabric.LineChange`
 - `internal/fabricengine#countNumstatLines`
-- `plan:internal/shedrun#WriteRunUsage`
-- `plan:internal/shedrun#WriteLandedSize`
-- `plan:internal/shedrun#UsageDir`
+- `internal/shedrun#WriteRunUsage`
+- `internal/shedrun#WriteLandedSize`
+- `internal/shedrun#UsageDir`
 - `internal/runprofile#Load`
 - `internal/boardengine#OpenHub`
 - `internal/loomcli#TestWire_EverySeamFilled`

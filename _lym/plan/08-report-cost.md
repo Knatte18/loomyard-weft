@@ -26,8 +26,8 @@
 - `plan:internal/reportengine#LoadConfig`
 - `internal/reportcli#timingCommand`
 - `internal/reportcli#primeGeometry`
-- `plan:internal/shedrun#ParseRunUsage`
-- `plan:internal/shedrun#UsageDirRel`
+- `internal/shedrun#ParseRunUsage`
+- `internal/shedrun#UsageDirRel`
 - `internal/shedrun#ReadSeed`
 
 **Intent:** D13, `lym report cost`.

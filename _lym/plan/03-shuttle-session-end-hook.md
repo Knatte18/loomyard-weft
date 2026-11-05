@@ -1,9 +1,9 @@
 # Card 3 — shuttle-session-end-hook
 
 **Create:**
-- `plan:internal/shuttleengine#SessionEnd` -> `type SessionEnd struct`
-- `plan:internal/shuttleengine#Runner.SetSessionEnd` -> `func (r *Runner) SetSessionEnd(fn func(SessionEnd))`
-- `plan:internal/shuttleengine#TestRunner_SessionEnd` -> `func TestRunner_SessionEnd(t *testing.T)`
+- `internal/shuttleengine#SessionEnd`
+- `internal/shuttleengine#Runner.SetSessionEnd`
+- `internal/shuttleengine#TestRunner_SessionEnd`
 
 **Edit:**
 - `internal/shuttleengine#Runner`

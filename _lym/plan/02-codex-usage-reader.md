@@ -1,9 +1,9 @@
 # Card 2 — codex-usage-reader
 
 **Create:**
-- `plan:internal/shuttleengine/codexengine#Codex.SessionUsage` -> `func (c *Codex) SessionUsage(sessionID, workdir string) shuttleengine.SessionUsage`
-- `plan:internal/shuttleengine/codexengine#rolloutTotalUsage` -> `func rolloutTotalUsage(path string) (shuttleengine.SessionUsage, bool)`
-- `plan:internal/shuttleengine/codexengine#TestSessionUsage` -> `func TestSessionUsage(t *testing.T)`
+- `internal/shuttleengine/codexengine#Codex.SessionUsage`
+- `internal/shuttleengine/codexengine#rolloutTotalUsage`
+- `internal/shuttleengine/codexengine#TestSessionUsage`
 
 **Edit:**
 - `internal/shuttleengine/codexengine#rolloutEvent`
