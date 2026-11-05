@@ -1,0 +1,11 @@
+---
+round: 4
+focus:
+  - "D2 outbound worker and its retry bullet: it starts the receiving hub's daemon when none answers and retries transient failures with backoff until the message is an hour old. Settle whether the record caps the COUNT of daemon starts per receiving hub, not only the elapsed time, whether the PATTERN-child-processes Constraints bullet says the cap, and whether a D2 acceptance criterion tests a daemon that exits at start."
+  - "D3 drop-notice bound and its flood acceptance criterion: a drop sends a notice to the receiving hub's orch, bounded by a window. Settle whether the bound holds when a forged `deliver` flood from one registered sending hub varies the claimed strand name, whether the in-memory window state stays bounded in size, and whether a drop inside a window still reaches the orch or the record says why the journal and a later count meet the operator's rule that each drop is seen."
+  - "D3 duplicate tuple (steps 3 and 6) and the D2 `deliver` request and confirm tuple: a held message matches a new one on sending hub path, id, sender, receiver, reply-to id, expects-reply mark and body hash. Settle whether an identical message from a sending hub whose ids restarted (scratch directory removed, or hub re-created at the same path) can be answered accepted with nothing stored, and whether the acceptance criterion tests that case."
+  - "D7 bound for sessions launched before the deploy: the old creel trust sentence in `internal/shuttleengine/claudeengine/settings.go` has a session follow mail from an orch strand as the operator's own instructions and names no hub. Settle whether the bound states what the old text lets through and who is exposed as fact, and whether it rests on any assumption about how a session weighs a contradicting stamp."
+  - "D2 return notice from `<shortname>:CREEL` and D3's bound list: the notice names the receiving side's reason, and agents follow a lym program's mail as the operator's own instruction. Settle whether the record states what the relayed reason text may hold and its length, given that a process binding the receiving hub's socket while its daemon is down authors a refused or transient answer."
+---
+
+Each entry names a decision and the question to settle; none is a cap on severity.
