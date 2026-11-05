@@ -51,7 +51,7 @@
 - `internal/testkit/envkit#TestFullEnv_FillsEverySeam`
 - `internal/testkit/envkit#TestNilSeams_ReportsExactPaths`
 - `internal/testkit/envkit#TestNilSeams_SkipsNilLegalPaths`
-- `plan:internal/driftengine#ListCaptures`
+- `internal/driftengine#ListCaptures`
 - `plan:internal/driftengine#ParseExpectation`
 - `plan:internal/driftengine#SealExpectation`
 - `plan:internal/driftengine#CheckBaseline`

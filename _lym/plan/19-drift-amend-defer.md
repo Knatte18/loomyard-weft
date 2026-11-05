@@ -36,7 +36,7 @@
 - `plan:internal/driftengine#DeferHaltPrefix`
 - `internal/orchcli#NearestLiveParent`
 - `internal/fabricengine#WorktreePath`
-- `plan:internal/fabricengine#CommitAnchoredPathsWithTrailers`
+- `internal/fabricengine#CommitAnchoredPathsWithTrailers`
 - `plan:internal/driftengine#commitStore`
 - `plan:internal/driftengine#commitStore.deps`
 - `internal/driftcli_test#lymRun`

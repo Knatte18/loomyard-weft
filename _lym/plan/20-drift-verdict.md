@@ -16,8 +16,8 @@
 
 **Uses:**
 - `plan:internal/driftengine#ReadRecords`
-- `plan:internal/fabricengine#FindTrailerCommit`
-- `plan:internal/fabricengine#AnchoredFileAt`
+- `internal/fabricengine#FindTrailerCommit`
+- `internal/fabricengine#AnchoredFileAt`
 - `plan:internal/driftengine#commitStore`
 - `plan:internal/driftengine#commitStore.deps`
 

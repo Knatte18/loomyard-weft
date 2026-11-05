@@ -1,20 +1,20 @@
 # Card 3 — drift-capture-diff
 
 **Create:**
-- `plan:internal/driftengine#CompileKeyPatterns` -> `func CompileKeyPatterns(patterns []string) ([]*regexp.Regexp, error)`
-- `plan:internal/driftengine#Identity` -> `type Identity struct`
-- `plan:internal/driftengine#CellKind` -> `type CellKind string`
-- `plan:internal/driftengine#CellChanged` -> `const CellChanged CellKind = "changed"`
-- `plan:internal/driftengine#CellAddedLine` -> `const CellAddedLine CellKind = "added line"`
-- `plan:internal/driftengine#CellRemovedLine` -> `const CellRemovedLine CellKind = "removed line"`
-- `plan:internal/driftengine#CellAddedCase` -> `const CellAddedCase CellKind = "added case"`
-- `plan:internal/driftengine#CellRemovedCase` -> `const CellRemovedCase CellKind = "removed case"`
-- `plan:internal/driftengine#Cell` -> `type Cell struct`
-- `plan:internal/driftengine#ListedLine` -> `type ListedLine struct`
-- `plan:internal/driftengine#CaseListing` -> `type CaseListing struct`
-- `plan:internal/driftengine#ListCaptures` -> `func ListCaptures(dir string, patterns []*regexp.Regexp) ([]CaseListing, error)`
-- `plan:internal/driftengine#DiffCaptures` -> `func DiffCaptures(baselineDir, currentDir string, patterns []*regexp.Regexp, leaveOut []string) ([]Cell, error)`
-- `plan:internal/driftengine#TestDiffCaptures` -> `func TestDiffCaptures(t *testing.T)`
+- `internal/driftengine#CompileKeyPatterns`
+- `internal/driftengine#Identity`
+- `internal/driftengine#CellKind`
+- `internal/driftengine#CellChanged`
+- `internal/driftengine#CellAddedLine`
+- `internal/driftengine#CellRemovedLine`
+- `internal/driftengine#CellAddedCase`
+- `internal/driftengine#CellRemovedCase`
+- `internal/driftengine#Cell`
+- `internal/driftengine#ListedLine`
+- `internal/driftengine#CaseListing`
+- `internal/driftengine#ListCaptures`
+- `internal/driftengine#DiffCaptures`
+- `internal/driftengine#TestDiffCaptures`
 
 **Extends:**
 - `internal/driftengine/doc.go`

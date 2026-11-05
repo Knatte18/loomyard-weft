@@ -1,10 +1,10 @@
 # Card 2 — fabric-checkout-states
 
 **Create:**
-- `plan:internal/fabricengine#CheckoutState` -> `type CheckoutState struct`
-- `plan:internal/fabricengine#CheckoutStates` -> `func CheckoutStates(l *lymcwd.Location) (code, records CheckoutState, err error)`
-- `plan:internal/fabricengine#WeftPathsChangedSince` -> `func WeftPathsChangedSince(l *lymcwd.Location, rev string) ([]string, error)`
-- `plan:internal/fabricengine_test#TestCheckoutStates` -> `func TestCheckoutStates(t *testing.T)`
+- `internal/fabricengine#CheckoutState`
+- `internal/fabricengine#CheckoutStates`
+- `internal/fabricengine#WeftPathsChangedSince`
+- `internal/fabricengine_test#TestCheckoutStates`
 
 **Extends:**
 - `internal/fabricengine/doc.go`

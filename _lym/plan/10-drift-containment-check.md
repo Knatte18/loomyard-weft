@@ -35,9 +35,9 @@
 - `plan:internal/driftengine#Expectation.Merge`
 - `plan:internal/driftengine#Expectation.Cover`
 - `plan:internal/driftengine#Expectation.Uncovering`
-- `plan:internal/driftengine#ListCaptures`
-- `plan:internal/driftengine#DiffCaptures`
-- `plan:internal/driftengine#CompileKeyPatterns`
+- `internal/driftengine#ListCaptures`
+- `internal/driftengine#DiffCaptures`
+- `internal/driftengine#CompileKeyPatterns`
 - `internal/shuttleengine#GateEntry`
 - `plan:internal/driftengine#commitStore`
 - `plan:internal/driftengine#commitStore.deps`

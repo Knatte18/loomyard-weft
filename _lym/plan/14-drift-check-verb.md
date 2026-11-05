@@ -12,8 +12,8 @@
 **Uses:**
 - `plan:internal/driftengine#Check`
 - `plan:internal/driftengine#CheckReport.Findings`
-- `plan:internal/fabricengine#FindTrailerCommit`
-- `plan:internal/fabricengine#AnchoredFileAt`
+- `internal/fabricengine#FindTrailerCommit`
+- `internal/fabricengine#AnchoredFileAt`
 - `internal/shedrun#ReadSeed`
 - `internal/loomrecipe#RowNames`
 - `internal/driftcli_test#lymRun`

@@ -1,28 +1,28 @@
 {
   "runGuid": "a1c4865ab9aa37350056289ec21b537d",
-  "planFingerprint": "8dfdae39772bfb14ee8d764f3aec38c88e08b4a400da461779260216bc9079a1",
+  "planFingerprint": "92c35af75bfdafee252b2f3c8549ee433792789baf66617f5adc40c0c1d60700",
   "planFileHashes": {
     "00-overview.md": "23db230969dc39beb707659cbdf0389bfcf77c2143ebc77a9730567a70a41eaf",
-    "01-fabric-trailer-commits.md": "32f031ae9ba40dd6e687294a30efdd9c9305ada322198732b0c331c5df1c9d64",
-    "02-fabric-checkout-states.md": "d22b204a22c08eff4e10d3c66651f9db4841f37db78db9e591e10e9ed5cb5e6e",
-    "03-drift-capture-diff.md": "964ef5c9a6e545c74cc542cf450a158b4d6f1656ce922ef2cb9c3bd462f6c724",
-    "04-drift-config-keys.md": "3b4245f91019cee9fa32353877320ec995df6a23af712697ce795eb4d751b594",
-    "05-drift-expectation-parser.md": "07508c1d1db0a1116b6a31b94eda421f134cf2338179faf2133443995720b12a",
-    "06-drift-judgement-parser.md": "4c16a8bffedc209b8ae3740ab38fb5cd4fbb7411adecad28405c421ba23a4bd9",
-    "07-drift-records-guard.md": "7403ea19c62408542fa8444145a7acacf9b0f341142abc762debb9835a2f724a",
+    "01-fabric-trailer-commits.md": "8a9daa9bb99055bd6d008fd529275a4f2b2fa6099cff69434e1c6904e0f73b83",
+    "02-fabric-checkout-states.md": "582909614d443acd15bd829ac1e5cb2521c9dc8d7db513d883aa5181d3c2e24f",
+    "03-drift-capture-diff.md": "14ac06c3ab303f984a98f2af8498c9191bcf22f785a1c7bc15777b4e024a6663",
+    "04-drift-config-keys.md": "4dfcfed7d1f9e654ff7b6507da2b29ff2d20fccda8df339c6bcd68d6ab9eaf91",
+    "05-drift-expectation-parser.md": "6bc53bfd34dd908af57791d4e695e12b9d0041c01488799b10613688a81d9243",
+    "06-drift-judgement-parser.md": "3078a3fed8f95adfe180ad92db23b04c05f0ba9e1e44a6dde736c5c837a26a06",
+    "07-drift-records-guard.md": "ae3066c5498427129769662a1591db113a6ca050e4e29fb6e6adc5bc9348a05c",
     "08-drift-seal-baseline-checks.md": "3681fdd3e58a5132c23ee96c88e8bbf3c7fc63a1c420efdcffdfe7a5ce2e0ca0",
     "09-drift-current-capture.md": "4455b251f3f90dd340d6eae78f956c7ab211b451258f3a8d77b9b63f665503e2",
-    "10-drift-containment-check.md": "454ce2b60facf3a1cbf686a9fea1b27bb1e410df465a86620a06780e85ca6f69",
+    "10-drift-containment-check.md": "f9902f39d25fb1949f592b60d690b117d34387037f03338364155c9dadda25ff",
     "11-webster-runlevel-entry-report.md": "919b9451989a817322d42a872818016c744e01532afd639bcfa81b160783a780",
-    "12-drift-expect-producer.md": "0cffb3f6778542e937f3bec7fefb6512a91485082e3cb60c1c7e27af9f7904a1",
+    "12-drift-expect-producer.md": "4dc8e5627e3c8ec51c2a2d012a2d56f930cf006eda7af0110d589c3058330698",
     "13-drift-expect-rows.md": "820c6fc0aa66c1694fbb0d24e282de013ff5d88c5ba2f8c9ae4e2df4609c87f9",
-    "14-drift-check-verb.md": "70fb2e7d112d05f06a39d45010884e9edc5c049787a5aab5dfe51732e0918c70",
-    "15-drift-judge-seat.md": "5e95a954f784e3b78a6f5d82d0ae1f8f0ccb47fe74aa0af225776192310c6b0b",
+    "14-drift-check-verb.md": "db36e895c32f5b69db020775806fea1dc289ca7c1d0560624223cc90fa9cd9bf",
+    "15-drift-judge-seat.md": "36ef924c94d9b73face490e6c11165e2ac2dd21632c1c38fc41f3edb31284796",
     "16-drift-verify-lines.md": "7c34b26782808539043601e0eabc727af0850c287c50c38e810035f164a17bdb",
     "17-drift-verify-command.md": "a8ede1b5915dd973cbc894c2d74d197d783d144010a59d92136e675868793454",
     "18-drift-baseline-await.md": "d0a08d6ba526e1559edef3e8f705b3d17db6389dfd0fe745f25a57c2bd09e9ff",
-    "19-drift-amend-defer.md": "5f699105216cf5fa1c85e876371756efb6a778d14d60a0f399637b6d6e5366c9",
-    "20-drift-verdict.md": "0ac2543485616748fab4fdbb4efc5969db28a207d90dfb3222470a0e3411e355",
+    "19-drift-amend-defer.md": "4e0c11adcc4b6ef2e02f318dc3b2267580f069d5e77d5c7b1e36217e3b42f4fc",
+    "20-drift-verdict.md": "1f6664b4137cc3bd33e8c4b93d3d205f3cf690790b7cf2b1011ad940044adfa2",
     "21-drift-writer-stencils.md": "27d72cbc10d602e84dc962f5c0411a93f775e59f063bac44f40a1e118db34457",
     "22-driftcli-retire-verbs.md": "565f644b30a7d9d5f2a0c9b9c968f6ae522e967c6a2a9370f1a50a0ae5d0a2ae",
     "23-drift-retire-recheck-engine.md": "9dc7421e2269d6355f48111babb54c85756dc732d035fa9a3f07f02b46fc4cc6",
@@ -901,7 +901,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "d326ac861d4ceacc5a911fad80b062b2",
   "masterSessionId": "0610df8b-f86b-42c0-b6a3-75053b19c15b",
   "masterEngine": "claude",
@@ -915,18 +915,46 @@
         "04-drift-config-keys"
       ],
       "cardHashes": {
-        "01-fabric-trailer-commits": "32f031ae9ba40dd6e687294a30efdd9c9305ada322198732b0c331c5df1c9d64",
-        "02-fabric-checkout-states": "d22b204a22c08eff4e10d3c66651f9db4841f37db78db9e591e10e9ed5cb5e6e",
-        "03-drift-capture-diff": "964ef5c9a6e545c74cc542cf450a158b4d6f1656ce922ef2cb9c3bd462f6c724",
-        "04-drift-config-keys": "3b4245f91019cee9fa32353877320ec995df6a23af712697ce795eb4d751b594"
+        "01-fabric-trailer-commits": "8a9daa9bb99055bd6d008fd529275a4f2b2fa6099cff69434e1c6904e0f73b83",
+        "02-fabric-checkout-states": "582909614d443acd15bd829ac1e5cb2521c9dc8d7db513d883aa5181d3c2e24f",
+        "03-drift-capture-diff": "14ac06c3ab303f984a98f2af8498c9191bcf22f785a1c7bc15777b4e024a6663",
+        "04-drift-config-keys": "4dfcfed7d1f9e654ff7b6507da2b29ff2d20fccda8df339c6bcd68d6ab9eaf91"
       },
       "startSha": "fe2663d3f4661d7031fd515cf8d5728a2b1895da",
       "kind": "fork",
       "spawnedAt": "2026-11-05T15:54:47Z",
       "sessionId": "0610df8b-f86b-42c0-b6a3-75053b19c15b",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-fabric-trailer-commits",
+        "status": "done",
+        "head_sha": "0d621716eaba37c3e6a2f30448bed38b891f103a",
+        "deviations": [
+          "internal/driftcli/cli.go",
+          "internal/driftengine/config.go",
+          "internal/driftengine/diff.go",
+          "internal/driftengine/diff_test.go",
+          "internal/driftengine/diffmode.go",
+          "internal/driftengine/verify.go",
+          "internal/fabricengine/checkoutstate.go",
+          "internal/fabricengine/trailercommit.go",
+          "internal/fabricengine/trailercommit_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "0d621716eaba37c3e6a2f30448bed38b891f103a"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-a46a2966fa0459a2c.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-a46a2966fa0459a2c.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-a46a2966fa0459a2c.jsonl"
+  ]
 }

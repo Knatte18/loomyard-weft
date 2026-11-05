@@ -45,8 +45,8 @@
 - `internal/testkit/envkit#TestFullEnv_FillsEverySeam`
 - `internal/testkit/envkit#TestNilSeams_ReportsExactPaths`
 - `internal/testkit/envkit#TestNilSeams_SkipsNilLegalPaths`
-- `plan:internal/fabricengine#CheckoutStates`
-- `plan:internal/fabricengine#WeftPathsChangedSince`
+- `internal/fabricengine#CheckoutStates`
+- `internal/fabricengine#WeftPathsChangedSince`
 - `internal/shedrun#RunDirRel`
 - `internal/loomengine#LoomFrictionDirRel`
 - `internal/fabricengine#HubScratchDir`

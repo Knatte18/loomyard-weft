@@ -25,18 +25,18 @@
 - `internal/configengine/doc.go`
 
 **Create:**
-- `plan:internal/driftengine#DiffLines` -> `const DiffLines = "lines"`
-- `plan:internal/driftengine#DiffCommand` -> `const DiffCommand = "command"`
-- `plan:internal/driftengine#MigrateConfig` -> `func MigrateConfig(existing []byte) ([]byte, []string, error)`
-- `plan:internal/driftengine#DiffModeReinterpretation` -> `const DiffModeReinterpretation = "drift-diff-mode"`
-- `plan:internal/driftengine#FlagDiffMode` -> `func FlagDiffMode(existing []byte, worktreeRoot, anchorDir string) (rewritten []byte, rewrote, flagged []string, err error)`
-- `plan:internal/configreg#refuseHubOnlyKeys` -> `func refuseHubOnlyKeys(module Module, keys map[string]any) error`
-- `plan:internal/driftengine#TestMigrateConfig` -> `func TestMigrateConfig(t *testing.T)`
-- `plan:internal/driftengine#TestFlagDiffMode` -> `func TestFlagDiffMode(t *testing.T)`
+- `internal/driftengine#DiffLines`
+- `internal/driftengine#DiffCommand`
+- `internal/driftengine#MigrateConfig`
+- `internal/driftengine#DiffModeReinterpretation`
+- `internal/driftengine#FlagDiffMode`
+- `internal/configreg#refuseHubOnlyKeys`
+- `internal/driftengine#TestMigrateConfig`
+- `internal/driftengine#TestFlagDiffMode`
 
 **Uses:**
 - `internal/yamlengine#RenameKeys`
-- `plan:internal/driftengine#CompileKeyPatterns`
+- `internal/driftengine#CompileKeyPatterns`
 - `internal/configreg#Reinterpretation`
 
 **Intent:** Carry D15's key changes but the removals, which wait for the code that reads `skip` and `verify_max_runs` to go (card 26).

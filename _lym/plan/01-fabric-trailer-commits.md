@@ -1,12 +1,12 @@
 # Card 1 — fabric-trailer-commits
 
 **Create:**
-- `plan:internal/fabricengine#Trailer` -> `type Trailer struct`
-- `plan:internal/fabricengine#CommitAnchoredPathsWithTrailers` -> `func CommitAnchoredPathsWithTrailers(rec *Mutations, l *lymcwd.Location, relPaths []string, msg string, trailers []Trailer, opts SyncOptions) (sha string, committed bool, err error)`
-- `plan:internal/fabricengine#TrailerCommit` -> `type TrailerCommit struct`
-- `plan:internal/fabricengine#FindTrailerCommit` -> `func FindTrailerCommit(l *lymcwd.Location, key string, newest bool) (TrailerCommit, bool, error)`
-- `plan:internal/fabricengine#AnchoredFileAt` -> `func AnchoredFileAt(l *lymcwd.Location, rev, relPath string) ([]byte, bool, error)`
-- `plan:internal/fabricengine_test#TestTrailerCommits` -> `func TestTrailerCommits(t *testing.T)`
+- `internal/fabricengine#Trailer`
+- `internal/fabricengine#CommitAnchoredPathsWithTrailers`
+- `internal/fabricengine#TrailerCommit`
+- `internal/fabricengine#FindTrailerCommit`
+- `internal/fabricengine#AnchoredFileAt`
+- `internal/fabricengine_test#TestTrailerCommits`
 
 **Extends:**
 - `internal/fabricengine/doc.go`

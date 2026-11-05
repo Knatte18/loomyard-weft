@@ -21,8 +21,8 @@
 - `internal/driftengine/doc.go`
 
 **Uses:**
-- `plan:internal/driftengine#DiffLines`
-- `plan:internal/driftengine#DiffCommand`
+- `internal/driftengine#DiffLines`
+- `internal/driftengine#DiffCommand`
 
 **Intent:** The sole parser of `_lym/drift/judgement.yaml` (D9), strict like the expectation's, and the PATTERN change the decision record declares.
 

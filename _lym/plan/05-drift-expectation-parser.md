@@ -18,10 +18,10 @@
 - `internal/driftengine/doc.go`
 
 **Uses:**
-- `plan:internal/driftengine#CaseListing`
-- `plan:internal/driftengine#Cell`
-- `plan:internal/driftengine#DiffLines`
-- `plan:internal/driftengine#DiffCommand`
+- `internal/driftengine#CaseListing`
+- `internal/driftengine#Cell`
+- `internal/driftengine#DiffLines`
+- `internal/driftengine#DiffCommand`
 
 **Intent:** The sole parser of `_lym/drift/expected.yaml` (`PATTERN-sole-parsers`, D5, D2): an agent-written contract file, decoded strictly, so an unknown key is refused (`PATTERN-tolerant-records` keeps tolerance for Go-written records only).
 

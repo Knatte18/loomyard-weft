@@ -40,9 +40,9 @@
 - `internal/testkit/envkit#TestFullEnv_FillsEverySeam`
 - `internal/testkit/envkit#TestNilSeams_ReportsExactPaths`
 - `internal/testkit/envkit#TestNilSeams_SkipsNilLegalPaths`
-- `plan:internal/fabricengine#CommitAnchoredPathsWithTrailers`
-- `plan:internal/fabricengine#FindTrailerCommit`
-- `plan:internal/fabricengine#AnchoredFileAt`
+- `internal/fabricengine#CommitAnchoredPathsWithTrailers`
+- `internal/fabricengine#FindTrailerCommit`
+- `internal/fabricengine#AnchoredFileAt`
 - `internal/driftengine#UpdateScope`
 
 **Intent:** Add D6's guard over the drift records, `scope.json` and the new `judged.json`, and the record fields every later card writes; no row uses them yet.
