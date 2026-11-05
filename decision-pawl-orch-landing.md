@@ -215,6 +215,18 @@ Decision: D11: drop the sentence that starts the dobby when the dobby-stop marke
 
 Rationale: The review showed the dobby's persisted land episode stops it from rewriting the land request, so recovery must not depend on the dobby; the reviewer's fix keeps recovery inside the row that owns it.
 
+### Added after Discussion (parent, 2026-11-05): Shorten PATTERN-heddle-instructions for overview headroom
+
+Decision: PATTERN-heddle-instructions keeps every rule and drops wording only: the stale `(new)` mark, `internal/` before `heddleengine` (other entries name engines bare), `system` before `prompt`, and `'s write path or replayer` becomes ` or its replayer`.
+
+Rationale: The two declared PATTERN changes push PATTERN.md's overview 38 bytes past its headroom line; this saves 31 bytes without changing a rule.
+
+### Added after Discussion (parent, 2026-11-05): Shorten PATTERN-owner-machine for overview headroom
+
+Decision: PATTERN-owner-machine keeps every rule and drops wording only: `A run's` becomes `Run`, `where` becomes `if`, and `a dobby continue pass` becomes `a dobby continue`.
+
+Rationale: With the heddle entry's 31 bytes this saves 43 bytes in total, past the 38 needed, without changing a rule.
+
 ## Constraints
 
 - A flock is released when every descriptor of it is closed, and Go opens every file close-on-exec (Go `os` package docs; flock(2) man page), so a push lock whose holder process died is free already.
@@ -272,6 +284,8 @@ Rationale: The review showed the dobby's persisted land episode stops it from re
 
 - `PATTERN-pull-request-mode` — changes: Deciding if a landing uses a pull request: only landingshed's one resolver, from the receiving `beam.pull_request`, the entry's `pull_request` or a beam's pull-request record, the parent's GitHub rules, origin and task commits; no run setting carries it; a yes merges on GitHub.
 - `PATTERN-github-auth` — changes: Calling GitHub: auth only via internal/githubclient; no other production package runs gh; only lym selfreport create files an issue; only PR-Review, Finalize, `lym beam pr` and pair teardown open, reopen, merge or close a pull request; `lym beam pr` never merges. (test)
+- `PATTERN-heddle-instructions` — changes: Rendering heddle entries into a file or prompt: only via `heddleengine`, from its shipped layer, Bolt's `heddle.json` and, under `lym_override`, lym overrides; `heddle.json` written only via `lym heddle` or its replayer; fabric names no heddle file. — added after Discussion (parent, 2026-11-05)
+- `PATTERN-owner-machine` — changes: Run start, resume, push or landing: only if no other machine owns its entry; a loom push reconciles run-scope origin first; owners only on roots and beams, set only by `boardengine`'s setter; others read their `hubgeom.ParentOf` owner; a dobby continue is no resume. — added after Discussion (parent, 2026-11-05)
 
 ## Notes for the plan writer
 
