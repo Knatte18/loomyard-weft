@@ -1,6 +1,6 @@
 # Template changes reach seed-only hub config, and light gets the lens fan back
 
-`profiles-follow-template` · Task · bug, profiles, config, reconcile · running · Seed-IDE
+`profiles-follow-template` · Task · bug, profiles, config, reconcile · running · Open-IDE
 
 ## Seen (operator, 2026-11-05)
 
