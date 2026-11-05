@@ -470,30 +470,6 @@
       "profile": "light"
     },
     {
-      "id": 1077,
-      "handle": "T3",
-      "slug": "codex-creel-hooks",
-      "title": "Codex sessions get creel mail through hooks, as Claude sessions do",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "codex",
-        "creel",
-        "shuttle"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "codexengine has no creel hooks, so every Codex strand is a pane-mail strand; the hook spike showed a way",
-      "body": "## Seen (operator and hub orch, 2026-11-03)\n\nCreel's hook delivery works very well for Claude sessions.\n`codexengine` has none: its package doc says \"no creel hooks\", so every Codex strand is a pane-mail strand, and mail from another agent reaches it only as a `run lym creel read` reminder.\n\n## What the spike found\n\n`docs/research/codex-hook-delivery-2026-10-28/report.md` tested the channels by hand on Codex CLI 0.164.0:\n\n- A `Stop` hook answering `decision: block` with the message as `reason` is taken at once and acted on.\n- A `PostToolUse` block with the message is taken at the next step, but only when the session's instructions say `[creel]` lines are mail; without that sentence the model reads it as a failed tool call.\n- An async `Stop` hook cannot wake an idle session; `codex queue --thread \u003cid\u003e --message …` run from outside does, at once.\n\n## Wanted\n\n`codexengine` carries creel's delivery the way `claudeengine` does:\n\n- The tool-boundary claim through a `PostToolUse` block.\n- The turn-end delivery through a `Stop` block.\n- The idle wake through `codex queue` from the daemon.\n- The `[creel]` sentence in the prompt file, so the model reads a block as mail.\n- The launch is then marked `CreelHooks`, and the package doc's \"no creel hooks\" goes.\n\nEach delivery path is covered by a unit test on the hook output and the daemon's wake call; a live check on real Codex sessions is the separate trial task that follows this one.\n\nRelated: project `codex-engine-trial`, part 5 (creel by the pane path) and part 7 (stress).\n",
-      "status": "done",
-      "created": "2026-11-03T19:24:10Z",
-      "revised": "2026-11-05T14:39:52Z",
-      "profile": "light",
-      "project": "codex-engine-trial"
-    },
-    {
       "id": 1101,
       "handle": "R1",
       "slug": "batching-hook-remeasure",
@@ -616,9 +592,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "codex-creel-hooks"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Real Codex sessions in lyt get mail at tool boundary, turn end and idle wake, and answer it",
       "body": "## Goal\n\nA live check, on real Codex sessions in the sandbox hub `lyt`, that creel mail reaches a Codex strand through the hooks `codex-creel-hooks` adds, as it reaches a Claude strand.\n\n## Steps\n\nLaunch Codex sessions in `lyt` through `lym shuttle` with the installed `lym` built from the landed `codex-creel-hooks`, and record for each case whether the mail arrives, how fast, and whether the model acts on it:\n\n1. Mail posted while the session runs tools: delivered at the next tool boundary through `PostToolUse`.\n2. Mail posted during the last step of a turn: delivered at turn end through `Stop`, and the session goes on to answer it.\n3. Mail posted to an idle session: the daemon wakes it through `codex queue`.\n4. A program's notice and an agent's mail that expects a reply: the session answers with `lym creel post --reply` from inside its `workspace-write` sandbox.\n5. Several mails in a row and two Codex sessions at once, each getting only its own mail.\n\n## Rules\n\n- The trial runs everything; the operator does nothing in `lyt`.\n- Findings go to a report under `docs/research/`, and each lym fault becomes a bug note in project `codex-engine-trial`.\n",

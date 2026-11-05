@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-05 15:09 UTC; every age below is as of then.
+Rendered 2026-11-05 15:10 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -48,7 +48,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **Live trial: creel mail reaches Codex sessions through the new hooks**<br>• Real Codex sessions in lyt get mail at tool boundary, turn end and idle wake, and answer it | [`codex-creel-trial`](design-codex-creel-trial.md) | darn · docs | Darn-Write | neve | 29m<br>29m | codex, creel |
+| T8 | **Live trial: creel mail reaches Codex sessions through the new hooks**<br>• Real Codex sessions in lyt get mail at tool boundary, turn end and idle wake, and answer it | [`codex-creel-trial`](design-codex-creel-trial.md) | darn · docs | Darn-Write | neve | 30m<br>30m | codex, creel |
 
 #### Ready (0)
 
@@ -66,14 +66,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 2d<br>6h | shuttle, codex, loom |
 
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T3 | **Codex sessions get creel mail through hooks, as Claude sessions do**<br>• codexengine has no creel hooks, so every Codex strand is a pane-mail strand; the hook spike showed a way | [`codex-creel-hooks`](design-codex-creel-hooks.md) | 1d<br>29m | codex, creel, shuttle |
-
 ## [P0 Root: entries under no project](project-root.md) (24)
 
 Owner `neve`
@@ -88,7 +80,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Creel mail between hubs with a verified sender and one-way hub trust**<br>• Orchs of different hubs mail each other; the sending daemon confirms the sender, and a hub obeys only the orchs of hubs it lists as trusted | [`creel-cross-hub-mail`](design-creel-cross-hub-mail.md) | motif | awaiting · Discussion-Bouncer | neve | 6d<br>40m | creel, orch |
+| T1 | **Creel mail between hubs with a verified sender and one-way hub trust**<br>• Orchs of different hubs mail each other; the sending daemon confirms the sender, and a hub obeys only the orchs of hubs it lists as trusted | [`creel-cross-hub-mail`](design-creel-cross-hub-mail.md) | motif | awaiting · Discussion-Bouncer | neve | 6d<br>41m | creel, orch |
 | T7 | **Drift compares changed values in code against a sealed expectation, with a separate judge**<br>• General Drift rework: code-side diff of any hub capture keyed by line key or number, structured sealed expectation, containment by code, a judge per changed value | [`drift-rework`](design-drift-rework.md)<br>[Sketch](decision-drift-rework.md) | tapestry · solid | Plan-Burler-Fix | neve | 23h<br>1h | drift, loom, darn, stencil, config |
 
 #### Ready (0)
@@ -113,7 +105,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S1 |  | **Talk to the orch through Slack, and let the orch know when the operator is on Slack only**<br>• Slack as a creel endpoint for the orch, with an operator presence state so the orch reports and reminds through Slack while the operator is away | [`reed-slack-relay`](design-reed-slack-relay.md)<br>[Sketch](decision-reed-slack-relay.md) | 4w<br>25m | reed |
+| S1 |  | **Talk to the orch through Slack, and let the orch know when the operator is on Slack only**<br>• Slack as a creel endpoint for the orch, with an operator presence state so the orch reports and reminds through Slack while the operator is away | [`reed-slack-relay`](design-reed-slack-relay.md)<br>[Sketch](decision-reed-slack-relay.md) | 4w<br>26m | reed |
 
 #### Research (2)
 

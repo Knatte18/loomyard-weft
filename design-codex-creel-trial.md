@@ -2,8 +2,6 @@
 
 `codex-creel-trial` · Task · research, codex, creel · running · Darn-Write
 
-Depends on: [`codex-creel-hooks`](design-codex-creel-hooks.md)
-
 ## Goal
 
 A live check, on real Codex sessions in the sandbox hub `lyt`, that creel mail reaches a Codex strand through the hooks `codex-creel-hooks` adds, as it reaches a Claude strand.
