@@ -1,6 +1,6 @@
 {
   "runGuid": "7a9a5588c121f4dc0797c48709cc1c8e",
-  "planFingerprint": "441aad0eb0bd2508ab29062f5a46b1e0abecb83df36715a6c725d6721d00efc6",
+  "planFingerprint": "decb55232522ec58bf7ece45f0faf764a71748375dbf1428d87c339cf542e655",
   "planFileHashes": {
     "00-overview.md": "606537116b951080b215656481da4eb0d1d5b0555deb8a08dce5b8deef7f76f2",
     "01-shuttle-usage-split.md": "691f172b6dec3e71bafe7e0cbc050e69d7224ab06aed6cf8bfda3d884f47316b",
@@ -9,26 +9,26 @@
     "04-usage-record-writer.md": "363564213a916c4cc13a6ffd941d30ecedc255e84e98b9e60af2425c4c10f460",
     "05-usage-wiring.md": "77b9dd9695bc8b8bab3f82de465a424c836b7a16f354a5421e1623dc282565bb",
     "06-seed-and-landed-size.md": "707d2e9b2cdce0c16f341fa49b8f8dcbffd05773595ec1f7236ebf5eb2da9574",
-    "07-report-config.md": "0965d8b33cf044325bd3f5a57cadf876205855be825424d8db2033dfffedb061",
-    "08-report-cost.md": "f588bc9be3a273a1136e466ae92436fbf07854ba7ab3ef3009ba4dc69f1429bb",
-    "09-raddle-paths-and-keys.md": "87581f9ff27a30b2faf75b4e5c131e1e5e8253cfd96492407d6741c1c50f6cd7",
-    "10-raddle-proposal-spec.md": "a1820e1d2c3b14594b8ea7b6d0e5a08c362d3b0ef28aca5de3a61fe8e3286340",
-    "11-discussion-part-splice.md": "85634df50f62a874f13f7373473bc964c9aacb998e6c4c43aeb3f3a42c8230ca",
-    "12-raddleparser.md": "24ac89e85de4339e55930ac66b825556a03628b6ac0aab8e73ea2b623b267220",
+    "07-report-config.md": "b355fe0a97482cc1c90f0ec8cdd53625ff71205c1849a57a057ebd47186c12a4",
+    "08-report-cost.md": "8a21c90ce8b024eec223303fb006fd55fb2707feca988c125796055d5e84dc4d",
+    "09-raddle-paths-and-keys.md": "fbdfa2a6a16e43c1bcaa05af214b7aecde1dabc366c8725e332d821dddf762c6",
+    "10-raddle-proposal-spec.md": "216e594c42668be693552fcc88d0e034fdbd2b7368c3b29fddeedc450d2d8ee6",
+    "11-discussion-part-splice.md": "98f600366c6ae82301b8845d9b852376aa6081af53e503c7002549eefea1495d",
+    "12-raddleparser.md": "42245047a8eadcc09918437bf7356148388fd34cb8323cefb5bd8798e7c4f483",
     "13-board-promote-raddle.md": "2ffd66dbd9bf286db4733ea6a759db6eca3562762c1bb89f553ff82b1842c0c0",
     "14-raddle-store-slug-rule.md": "6c32af1556e6e9f39199bcf46b7b73d28b0fd3a1fcc98166e3b8b24be5836b88",
     "15-raddle-store-replay.md": "7e1d06e228fa7cab61aa1286b2b7e76205b6851e96623f6414c3df4eeee8f66d",
     "16-board-raddle-writes.md": "088d74aaf4087cca664e87ab9308b791b3959bac0100eb13cfff9587d4bbd69c",
     "17-board-raddle-verb.md": "1d700856c1b76140548ac89da06dee49ca8f4e913117f229b1ebe54a58ac46b3",
     "18-record-write-stored.md": "3d054d9d2a432b51c4bb7006c2cb0477b8bd8927dfd8d4b699ca049a46aababb",
-    "19-raddle-checks-and-state.md": "d62203cf181e2ea58c98cd38f993311927ffc3a21e7edf060f167be0d93a70f5",
-    "20-raddle-verbs.md": "4a92e1d60c4fb42569b502d3d469e4d37024f13d7f46d7d6d09295300ae89e49",
+    "19-raddle-checks-and-state.md": "a4a20815ea903c9a68c01cb8338803687015005fde0d3954d932aef54be1c782",
+    "20-raddle-verbs.md": "aa3ba2560a4d50b926228cefc18c7fbee68db10e2a78733f78a36833b7591181",
     "21-raddle-write-producer.md": "e2f47528ec4d23947c89d5b061254c25ba9e3bf8daa4c0f4c40e4892d9c6847a",
-    "22-raddle-file-producer.md": "40aa7939980a83e97d275e5b474ece35921af1a96c21069e4a5459815d1e8434",
-    "23-raddle-recipe.md": "a013bb3f9623fd177aeebfdebe98e3df6be2c03b0d61b7d7e5155bc0a8d7e482",
+    "22-raddle-file-producer.md": "c9a02c12e0277c56f741d52700f8f27700dc7f9a8cdef6455f054158954d8a69",
+    "23-raddle-recipe.md": "25ef7e75097dd66975ff657528bf8681088c8a9ae4f5815027f3c1c8f3fe42a3",
     "24-batten-raddle-start-guard.md": "711fea881095b5e37ad8a30119a9b0108bccd70afe4f2f3c13f59211636c1578",
-    "25-pawl-raddle-handoff.md": "b8d537f8685fc93dae24dda474ca7d4794af02d0e987d6b1ff0f7dbcea3219de",
-    "26-report-raddle.md": "b778b6eb664d13fa4d33e6de0aabf0788ea6b4d58dc3e877a631eb987ceca07c",
+    "25-pawl-raddle-handoff.md": "75a54cb0e2697efc56717c4d44966dcecf4d0aff818811d5b677984b4d31a442",
+    "26-report-raddle.md": "6cfe386c08c9c635cfcf0b9c0932338f83a87bd4c582898b80e46903cb3111aa",
     "27-raddle-docs.md": "4e3a1c10cb3d496987bb4136673bfecbc98e78332518172f01ea7fb0b00d8ca6"
   },
   "planOverviewFrameHash": "c81be9c1adc8b02f466766b779d5e53d2f2b116ee4fbf4f75f7873d8b338c662",
@@ -301,7 +301,7 @@
         "18-record-write-stored"
       ],
       "profile": "wide",
-      "estimate": 285040,
+      "estimate": 285202,
       "breakdown": {
         "weights": {
           "orientation": 31400,
@@ -316,7 +316,7 @@
           "write_per_card_line": 12
         },
         "position": 4,
-        "startup": 76312,
+        "startup": 76324,
         "read_union": 32640,
         "cards": [
           {
@@ -332,8 +332,8 @@
               "tests:internal/boardengine": 2000,
               "tests:internal/shedrun": 2000
             },
-            "messages": 135,
-            "written": 41160
+            "messages": 135.5,
+            "written": 41310
           },
           {
             "card": 14,
@@ -407,7 +407,7 @@
         "22-raddle-file-producer"
       ],
       "profile": "wide",
-      "estimate": 248518,
+      "estimate": 250066,
       "breakdown": {
         "weights": {
           "orientation": 31400,
@@ -422,8 +422,8 @@
           "write_per_card_line": 12
         },
         "position": 5,
-        "startup": 83312,
-        "read_union": 27404,
+        "startup": 83324,
+        "read_union": 28940,
         "cards": [
           {
             "card": 19,
@@ -450,6 +450,7 @@
             "card": 21,
             "card_text": 672,
             "reads": {
+              "file:contracts/specs/raddle-proposal-spec.md": 1536,
               "file:contracts/stencils/parentdirective_test.go": 3216,
               "file:internal/loomengine/status.go": 240,
               "file:internal/loomshed/doc.go": 1596,
@@ -484,7 +485,7 @@
         "23-raddle-recipe"
       ],
       "profile": "wide",
-      "estimate": 287742,
+      "estimate": 288024,
       "breakdown": {
         "weights": {
           "orientation": 31400,
@@ -499,12 +500,12 @@
           "write_per_card_line": 12
         },
         "position": 6,
-        "startup": 90312,
-        "read_union": 48612,
+        "startup": 90324,
+        "read_union": 48720,
         "cards": [
           {
             "card": 23,
-            "card_text": 1368,
+            "card_text": 1380,
             "reads": {
               "file:internal/loomcli/doc.go": 4776,
               "file:internal/loomrecipe/doc.go": 852,
@@ -513,7 +514,7 @@
               "file:internal/runprofile/template.yaml": 840,
               "file:internal/shedcli/doc.go": 360,
               "file:internal/shedrecipe/doc.go": 1692,
-              "file:internal/shedrun/doc.go": 732,
+              "file:internal/shedrun/doc.go": 828,
               "package:contracts/recipes": 2000,
               "package:internal/battencli": 2000,
               "package:internal/loomcli": 2000,
@@ -533,8 +534,8 @@
               "tests:internal/shedrecipe": 2000,
               "tests:internal/shedrun": 2000
             },
-            "messages": 491.5,
-            "written": 148818
+            "messages": 492,
+            "written": 148980
           }
         ]
       }
@@ -545,7 +546,7 @@
         "25-pawl-raddle-handoff"
       ],
       "profile": "wide",
-      "estimate": 224404,
+      "estimate": 224392,
       "breakdown": {
         "weights": {
           "orientation": 31400,
@@ -560,8 +561,8 @@
           "write_per_card_line": 12
         },
         "position": 7,
-        "startup": 97312,
-        "read_union": 32616,
+        "startup": 97324,
+        "read_union": 32604,
         "cards": [
           {
             "card": 24,
@@ -575,7 +576,7 @@
           },
           {
             "card": 25,
-            "card_text": 792,
+            "card_text": 780,
             "reads": {
               "file:internal/hubgeom/doc.go": 636,
               "file:internal/loomcli/doc.go": 4776,
@@ -593,7 +594,7 @@
               "tests:internal/testkit/envkit": 2000
             },
             "messages": 236.5,
-            "written": 71742
+            "written": 71730
           }
         ]
       }
@@ -604,7 +605,7 @@
         "27-raddle-docs"
       ],
       "profile": "wide",
-      "estimate": 185518,
+      "estimate": 185956,
       "breakdown": {
         "weights": {
           "orientation": 31400,
@@ -619,17 +620,17 @@
           "write_per_card_line": 12
         },
         "position": 8,
-        "startup": 104312,
-        "read_union": 41768,
+        "startup": 104324,
+        "read_union": 42044,
         "cards": [
           {
             "card": 26,
             "card_text": 480,
             "reads": {
-              "file:docs/overview.md": 11004,
+              "file:docs/overview.md": 11028,
               "file:internal/boardengine/doc.go": 4704,
-              "file:internal/reportcli/doc.go": 576,
-              "file:internal/reportengine/doc.go": 2316,
+              "file:internal/reportcli/doc.go": 660,
+              "file:internal/reportengine/doc.go": 2484,
               "package:docs": 2000,
               "package:internal/boardengine": 2000,
               "package:internal/reportcli": 2000,
@@ -639,14 +640,14 @@
               "tests:internal/reportcli": 2000,
               "tests:internal/reportengine": 2000
             },
-            "messages": 117.5,
-            "written": 35730
+            "messages": 118,
+            "written": 35880
           },
           {
             "card": 27,
             "card_text": 108,
             "reads": {
-              "file:docs/overview.md": 11004,
+              "file:docs/overview.md": 11028,
               "file:docs/research/weaving-glossary.md": 2580,
               "package:docs": 2000,
               "package:docs/research": 2000,
@@ -660,9 +661,9 @@
       }
     }
   ],
-  "currentBatch": 0,
-  "masterStrand": "f7c11c36f3d82fd543e95add1fdc3127",
-  "masterSessionId": "7c8333ff-47b7-4804-bb88-3066d2caf642",
+  "currentBatch": 7,
+  "masterStrand": "dd16c882ad00ef2ad3da669398a0b698",
+  "masterSessionId": "46bcafb1-5b55-422f-b4b9-8099327fe599",
   "masterEngine": "claude",
   "batches": {
     "1": {
@@ -764,45 +765,33 @@
         "12-raddleparser"
       ],
       "cardHashes": {
-        "07-report-config": "0965d8b33cf044325bd3f5a57cadf876205855be825424d8db2033dfffedb061",
-        "08-report-cost": "f588bc9be3a273a1136e466ae92436fbf07854ba7ab3ef3009ba4dc69f1429bb",
-        "09-raddle-paths-and-keys": "87581f9ff27a30b2faf75b4e5c131e1e5e8253cfd96492407d6741c1c50f6cd7",
-        "10-raddle-proposal-spec": "a1820e1d2c3b14594b8ea7b6d0e5a08c362d3b0ef28aca5de3a61fe8e3286340",
-        "11-discussion-part-splice": "85634df50f62a874f13f7373473bc964c9aacb998e6c4c43aeb3f3a42c8230ca",
-        "12-raddleparser": "24ac89e85de4339e55930ac66b825556a03628b6ac0aab8e73ea2b623b267220"
+        "07-report-config": "b355fe0a97482cc1c90f0ec8cdd53625ff71205c1849a57a057ebd47186c12a4",
+        "08-report-cost": "8a21c90ce8b024eec223303fb006fd55fb2707feca988c125796055d5e84dc4d",
+        "09-raddle-paths-and-keys": "fbdfa2a6a16e43c1bcaa05af214b7aecde1dabc366c8725e332d821dddf762c6",
+        "10-raddle-proposal-spec": "216e594c42668be693552fcc88d0e034fdbd2b7368c3b29fddeedc450d2d8ee6",
+        "11-discussion-part-splice": "98f600366c6ae82301b8845d9b852376aa6081af53e503c7002549eefea1495d",
+        "12-raddleparser": "42245047a8eadcc09918437bf7356148388fd34cb8323cefb5bd8798e7c4f483"
       },
       "startSha": "b3944e8193c0995de85a3557bb777ff3706026ce",
       "kind": "recovery",
-      "spawnedAt": "2026-11-05T11:25:57Z",
-      "terminal": true,
-      "status": "failed",
-      "digest": {
-        "batch": "07-report-config",
-        "status": "failed",
-        "head_sha": "d7f0465e76242419bd34398eb99d16489a91a727",
-        "reasons": [
-          "batch 07-report-config holds cards 7-report-config, 8-report-cost, 9-raddle-paths-and-keys, 10-raddle-proposal-spec, 11-discussion-part-splice, 12-raddleparser",
-          "create-not-done/7-report-config[blocking]: Create target \"internal/reportengine/template.yaml#\" still does not resolve: looked up \"internal/reportengine/template.yaml#\", quarry answered not_found (the unit is missing)",
-          "create-not-done/7-report-config[blocking]: Create target \"plan:internal/reportengine#Config\" still does not resolve: looked up \"internal/reportengine#Config\", quarry answered not_found (the unit exists and the member is missing); quarry searched the unit's files internal/reportengine/archivedrecords.go, internal/reportengine/archivedrecords_test.go, internal/reportengine/batten.go, internal/reportengine/cost.go, internal/reportengine/cost_test.go, internal/reportengine/costmarkdown.go, internal/reportengine/fake_test.go, internal/reportengine/landings.go, internal/reportengine/landings_test.go, internal/reportengine/markdown.go, internal/reportengine/replies.go, internal/reportengine/replies_test.go, internal/reportengine/report.go, internal/reportengine/rounds.go, internal/reportengine/rounds_test.go, internal/reportengine/runs.go, internal/reportengine/runs_test.go, internal/reportengine/seam_enforcement_test.go, internal/reportengine/source.go, internal/reportengine/stops.go, internal/reportengine/testmain_test.go, internal/reportengine/timing.go, internal/reportengine/timing_test.go, internal/reportengine/timingmarkdown.go, internal/reportengine/timingspans.go, internal/reportengine/timingstops.go, internal/reportengine/timingwaits.go, internal/reportengine/wakes.go, internal/reportengine/wakes_test.go, internal/reportengine/weeks.go, internal/reportengine/weeks_test.go; Config is declared as internal/battenshed#Config in internal/battenshed/config.go, internal/boardengine#Config in internal/boardengine/config.go, internal/darnengine#Config in internal/darnengine/config.go, internal/desktophook#Config in internal/desktophook/config.go, internal/dobbyengine#Config in internal/dobbyengine/config.go, internal/driftengine#Config in internal/driftengine/config.go, internal/envconfig#Config in internal/envconfig/config.go, internal/fabricengine#Config in internal/fabricengine/config.go, internal/gateslot#Config in internal/gateslot/config.go, internal/heddleengine#Config in internal/heddleengine/config.go, internal/hibernateconfig#Config in internal/hibernateconfig/config.go, internal/ideconfig#Config in internal/ideconfig/config.go, internal/landingshed#Config in internal/landingshed/config.go, internal/lenses#Config in internal/lenses/config.go, internal/loomengine#Config in internal/loomengine/config.go, internal/orchengine#Config in internal/orchengine/config.go, internal/reedengine#Config in internal/reedengine/config.go, internal/reportconfig#Config in internal/reportconfig/config.go, internal/samplerengine#Config in internal/samplerengine/config.go, internal/sheddriver#Config in internal/sheddriver/config.go, internal/shedrecipe#Config in internal/shedrecipe/recipe.go, internal/shuttleengine#Config in internal/shuttleengine/config.go, internal/shuttleengine/claudeengine#Config in internal/shuttleengine/claudeengine/config.go, internal/shuttleengine/codexengine#Config in internal/shuttleengine/codexengine/config.go, internal/websterengine#Config in internal/websterengine/config.go",
-          "create-not-done/7-report-config[blocking]: Create target \"plan:internal/reportengine#ConfigTemplate\" still does not resolve: looked up \"internal/reportengine#ConfigTemplate\", quarry answered not_found (the unit exists and the member is missing); quarry searched the unit's files internal/reportengine/archivedrecords.go, internal/reportengine/archivedrecords_test.go, internal/reportengine/batten.go, internal/reportengine/cost.go, internal/reportengine/cost_test.go, internal/reportengine/costmarkdown.go, internal/reportengine/fake_test.go, internal/reportengine/landings.go, internal/reportengine/landings_test.go, internal/reportengine/markdown.go, internal/reportengine/replies.go, internal/reportengine/replies_test.go, internal/reportengine/report.go, internal/reportengine/rounds.go, internal/reportengine/rounds_test.go, internal/reportengine/runs.go, internal/reportengine/runs_test.go, internal/reportengine/seam_enforcement_test.go, internal/reportengine/source.go, internal/reportengine/stops.go, internal/reportengine/testmain_test.go, internal/reportengine/timing.go, internal/reportengine/timing_test.go, internal/reportengine/timingmarkdown.go, internal/reportengine/timingspans.go, internal/reportengine/timingstops.go, internal/reportengine/timingwaits.go, internal/reportengine/wakes.go, internal/reportengine/wakes_test.go, internal/reportengine/weeks.go, internal/reportengine/weeks_test.go; ConfigTemplate is declared as internal/batcher#ConfigTemplate in internal/batcher/template.go, internal/battenshed#ConfigTemplate in internal/battenshed/config.go, internal/boardengine#ConfigTemplate in internal/boardengine/template.go, internal/darnengine#ConfigTemplate in internal/darnengine/config.go, internal/desktophook#ConfigTemplate in internal/desktophook/config.go, internal/dobbyengine#ConfigTemplate in internal/dobbyengine/config.go, internal/driftengine#ConfigTemplate in internal/driftengine/config.go, internal/envconfig#ConfigTemplate in internal/envconfig/config.go, internal/fabricengine#ConfigTemplate in internal/fabricengine/template.go, internal/gateslot#ConfigTemplate in internal/gateslot/configtemplate.go, internal/heddleengine#ConfigTemplate in internal/heddleengine/config.go, internal/hibernateconfig#ConfigTemplate in internal/hibernateconfig/config.go, internal/ideconfig#ConfigTemplate in internal/ideconfig/config.go, internal/landingshed#ConfigTemplate in internal/landingshed/configtemplate.go, internal/languageconfig#ConfigTemplate in internal/languageconfig/template.go, internal/lenses#ConfigTemplate in internal/lenses/config.go, internal/loggerconfig#ConfigTemplate in internal/loggerconfig/template.go, internal/loomengine#ConfigTemplate in internal/loomengine/configtemplate.go, internal/modelspec#ConfigTemplate in internal/modelspec/template.go, internal/orchengine#ConfigTemplate in internal/orchengine/template.go, internal/reedengine#ConfigTemplate in internal/reedengine/template.go, internal/reportconfig#ConfigTemplate in internal/reportconfig/config.go, internal/runprofile#ConfigTemplate in internal/runprofile/runprofile.go, internal/samplerengine#ConfigTemplate in internal/samplerengine/config.go, internal/sheddriver#ConfigTemplate in internal/sheddriver/config.go, internal/shuttleengine#ConfigTemplate in internal/shuttleengine/template.go, internal/shuttleengine/claudeengine#ConfigTemplate in internal/shuttleengine/claudeengine/config.go, internal/shuttleengine/codexengine#ConfigTemplate in internal/shuttleengine/codexengine/config.go, internal/websterengine#ConfigTemplate in internal/websterengine/template.go",
-          "create-not-done/7-report-config[blocking]: Create target \"plan:internal/reportengine#ConfigSpec\" still does not resolve: looked up \"internal/reportengine#ConfigSpec\", quarry answered not_found (the unit exists and the member is missing); quarry searched the unit's files internal/reportengine/archivedrecords.go, internal/reportengine/archivedrecords_test.go, internal/reportengine/batten.go, internal/reportengine/cost.go, internal/reportengine/cost_test.go, internal/reportengine/costmarkdown.go, internal/reportengine/fake_test.go, internal/reportengine/landings.go, internal/reportengine/landings_test.go, internal/reportengine/markdown.go, internal/reportengine/replies.go, internal/reportengine/replies_test.go, internal/reportengine/report.go, internal/reportengine/rounds.go, internal/reportengine/rounds_test.go, internal/reportengine/runs.go, internal/reportengine/runs_test.go, internal/reportengine/seam_enforcement_test.go, internal/reportengine/source.go, internal/reportengine/stops.go, internal/reportengine/testmain_test.go, internal/reportengine/timing.go, internal/reportengine/timing_test.go, internal/reportengine/timingmarkdown.go, internal/reportengine/timingspans.go, internal/reportengine/timingstops.go, internal/reportengine/timingwaits.go, internal/reportengine/wakes.go, internal/reportengine/wakes_test.go, internal/reportengine/weeks.go, internal/reportengine/weeks_test.go; ConfigSpec is declared as internal/batcher#ConfigSpec in internal/batcher/config.go, internal/battenshed#ConfigSpec in internal/battenshed/config.go, internal/boardengine#ConfigSpec in internal/boardengine/config.go, internal/darnengine#ConfigSpec in internal/darnengine/config.go, internal/desktophook#ConfigSpec in internal/desktophook/config.go, internal/dobbyengine#ConfigSpec in internal/dobbyengine/config.go, internal/driftengine#ConfigSpec in internal/driftengine/config.go, internal/envconfig#ConfigSpec in internal/envconfig/config.go, internal/fabricengine#ConfigSpec in internal/fabricengine/config.go, internal/gateslot#ConfigSpec in internal/gateslot/config.go, internal/heddleengine#ConfigSpec in internal/heddleengine/config.go, internal/hibernateconfig#ConfigSpec in internal/hibernateconfig/config.go, internal/ideconfig#ConfigSpec in internal/ideconfig/config.go, internal/landingshed#ConfigSpec in internal/landingshed/config.go, internal/languageconfig#ConfigSpec in internal/languageconfig/config.go, internal/lenses#ConfigSpec in internal/lenses/config.go, internal/loggerconfig#ConfigSpec in internal/loggerconfig/config.go, internal/loomengine#ConfigSpec in internal/loomengine/config.go, internal/modelspec#ConfigSpec in internal/modelspec/load.go, internal/orchengine#ConfigSpec in internal/orchengine/config.go, internal/reedengine#ConfigSpec in internal/reedengine/config.go, internal/reportconfig#ConfigSpec in internal/reportconfig/config.go, internal/runprofile#ConfigSpec in internal/runprofile/runprofile.go, internal/samplerengine#ConfigSpec in internal/samplerengine/config.go, internal/sheddriver#ConfigSpec in internal/sheddriver/config.go, internal/shuttleengine#ConfigSpec in internal/shuttleengine/config.go, internal/shuttleengine/claudeengine#ConfigSpec in internal/shuttleengine/claudeengine/config.go, internal/shuttleengine/codexengine#ConfigSpec in internal/shuttleengine/codexengine/config.go, internal/websterengine#ConfigSpec in internal/websterengine/config.go",
-          "create-not-done/7-report-config[blocking]: Create target \"plan:internal/reportengine#LoadConfig\" still does not resolve: looked up \"internal/reportengine#LoadConfig\", quarry answered not_found (the unit exists and the member is missing); quarry searched the unit's files internal/reportengine/archivedrecords.go, internal/reportengine/archivedrecords_test.go, internal/reportengine/batten.go, internal/reportengine/cost.go, internal/reportengine/cost_test.go, internal/reportengine/costmarkdown.go, internal/reportengine/fake_test.go, internal/reportengine/landings.go, internal/reportengine/landings_test.go, internal/reportengine/markdown.go, internal/reportengine/replies.go, internal/reportengine/replies_test.go, internal/reportengine/report.go, internal/reportengine/rounds.go, internal/reportengine/rounds_test.go, internal/reportengine/runs.go, internal/reportengine/runs_test.go, internal/reportengine/seam_enforcement_test.go, internal/reportengine/source.go, internal/reportengine/stops.go, internal/reportengine/testmain_test.go, internal/reportengine/timing.go, internal/reportengine/timing_test.go, internal/reportengine/timingmarkdown.go, internal/reportengine/timingspans.go, internal/reportengine/timingstops.go, internal/reportengine/timingwaits.go, internal/reportengine/wakes.go, internal/reportengine/wakes_test.go, internal/reportengine/weeks.go, internal/reportengine/weeks_test.go; LoadConfig is declared as internal/battenshed#LoadConfig in internal/battenshed/config.go, internal/boardengine#LoadConfig in internal/boardengine/config.go, internal/darnengine#LoadConfig in internal/darnengine/config.go, internal/desktophook#LoadConfig in internal/desktophook/config.go, internal/dobbyengine#LoadConfig in internal/dobbyengine/config.go, internal/driftengine#LoadConfig in internal/driftengine/config.go, internal/envconfig#LoadConfig in internal/envconfig/config.go, internal/fabricengine#LoadConfig in internal/fabricengine/config.go, internal/gateslot#LoadConfig in internal/gateslot/config.go, internal/heddleengine#LoadConfig in internal/heddleengine/config.go, internal/hibernateconfig#LoadConfig in internal/hibernateconfig/config.go, internal/ideconfig#LoadConfig in internal/ideconfig/config.go, internal/landingshed#LoadConfig in internal/landingshed/config.go, internal/loomengine#LoadConfig in internal/loomengine/config.go, internal/orchengine#LoadConfig in internal/orchengine/config.go, internal/reedengine#LoadConfig in internal/reedengine/config.go, internal/reportconfig#LoadConfig in internal/reportconfig/config.go, internal/samplerengine#LoadConfig in internal/samplerengine/config.go, internal/sheddriver#LoadConfig in internal/sheddriver/config.go, internal/shuttleengine#LoadConfig in internal/shuttleengine/config.go, internal/shuttleengine/claudeengine#LoadConfig in internal/shuttleengine/claudeengine/config.go, internal/shuttleengine/codexengine#LoadConfig in internal/shuttleengine/codexengine/config.go, internal/websterengine#LoadConfig in internal/websterengine/config.go",
-          "create-not-done/7-report-config[blocking]: Create target \"plan:internal/reportengine#TestLoadConfig\" still does not resolve: looked up \"internal/reportengine#TestLoadConfig\", quarry answered not_found (the unit exists and the member is missing); quarry searched the unit's files internal/reportengine/archivedrecords.go, internal/reportengine/archivedrecords_test.go, internal/reportengine/batten.go, internal/reportengine/cost.go, internal/reportengine/cost_test.go, internal/reportengine/costmarkdown.go, internal/reportengine/fake_test.go, internal/reportengine/landings.go, internal/reportengine/landings_test.go, internal/reportengine/markdown.go, internal/reportengine/replies.go, internal/reportengine/replies_test.go, internal/reportengine/report.go, internal/reportengine/rounds.go, internal/reportengine/rounds_test.go, internal/reportengine/runs.go, internal/reportengine/runs_test.go, internal/reportengine/seam_enforcement_test.go, internal/reportengine/source.go, internal/reportengine/stops.go, internal/reportengine/testmain_test.go, internal/reportengine/timing.go, internal/reportengine/timing_test.go, internal/reportengine/timingmarkdown.go, internal/reportengine/timingspans.go, internal/reportengine/timingstops.go, internal/reportengine/timingwaits.go, internal/reportengine/wakes.go, internal/reportengine/wakes_test.go, internal/reportengine/weeks.go, internal/reportengine/weeks_test.go; TestLoadConfig is declared as internal/battenshed#TestLoadConfig in internal/battenshed/config_test.go, internal/darnengine#TestLoadConfig in internal/darnengine/config_test.go, internal/desktophook_test#TestLoadConfig in internal/desktophook/config_test.go, internal/dobbyengine#TestLoadConfig in internal/dobbyengine/config_test.go, internal/driftengine#TestLoadConfig in internal/driftengine/config_test.go, internal/fabricengine_test#TestLoadConfig in internal/fabricengine/config_test.go, internal/gateslot#TestLoadConfig in internal/gateslot/config_test.go, internal/ideconfig_test#TestLoadConfig in internal/ideconfig/config_test.go, internal/reportconfig_test#TestLoadConfig in internal/reportconfig/config_test.go, internal/samplerengine#TestLoadConfig in internal/samplerengine/config_test.go, internal/sheddriver#TestLoadConfig in internal/sheddriver/config_test.go, internal/shuttleengine/claudeengine#TestLoadConfig in internal/shuttleengine/claudeengine/config_test.go, internal/websterengine_test#TestLoadConfig in internal/websterengine/config_test.go"
-        ]
-      },
+      "spawnedAt": "2026-11-05T11:54:49Z",
+      "terminal": false,
+      "status": "",
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/7c8333ff-47b7-4804-bb88-3066d2caf642/subagents/agent-ab8364109d32bf43c.jsonl"
       ],
-      "strandGuid": "cace59ddf2b86496429b1f1e0d67345f",
-      "shuttleRunDir": "/home/knatte/Code/loomyard-LYMHUB/raddle-recipe/.lym/shuttle/13a7304b1cc21e1c8e48c9d326c4fea6",
-      "eventsPath": "/home/knatte/Code/loomyard-LYMHUB/raddle-recipe/.lym/shuttle/13a7304b1cc21e1c8e48c9d326c4fea6/events.jsonl",
-      "eventsOffset": 2231,
-      "recoveries": 1,
+      "strandGuid": "912d912f7a80a3262f5c27caa70fb801",
+      "shuttleRunDir": "/home/knatte/Code/loomyard-LYMHUB/raddle-recipe/.lym/shuttle/4508648616ad37172457e0597866d13a",
+      "eventsPath": "/home/knatte/Code/loomyard-LYMHUB/raddle-recipe/.lym/shuttle/4508648616ad37172457e0597866d13a/events.jsonl",
+      "eventsOffset": 2230,
+      "recoveries": 2,
       "recoverySessions": [
-        "0c2ccd0d-3ce5-4612-a780-c433323a7836"
+        "0c2ccd0d-3ce5-4612-a780-c433323a7836",
+        "4058cc00-3775-45d6-987a-3685b55d04ce"
       ],
       "recoveryEngines": {
-        "0c2ccd0d-3ce5-4612-a780-c433323a7836": "claude"
+        "0c2ccd0d-3ce5-4612-a780-c433323a7836": "claude",
+        "4058cc00-3775-45d6-987a-3685b55d04ce": "claude"
       },
       "recoveryStartSha": "d7f0465e76242419bd34398eb99d16489a91a727"
     }
