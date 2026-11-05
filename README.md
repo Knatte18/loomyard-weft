@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-05 09:26 UTC; every age below is as of then.
+Rendered 2026-11-05 09:27 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -73,24 +73,23 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Running (4)
+#### Running (5)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Sessions lym launches add no Claude co-author or session link to commits and PRs**<br>• Claude Code sessions launched by lym get attribution off, so only the landing credit block credits | [`sessions-no-self-credit`](design-sessions-no-self-credit.md) | darn · light | Worktree-Create | neve | 0m<br>0m | claude, shuttle |
 | T2 | **A pair reads its branch from its worktree, so branch_prefix can change with pairs live** | [`branch-name-recorded`](design-branch-name-recorded.md) | darn · solid | Code-Burler-Fix | neve | 1h<br>1h | fabric |
 | T3 | **Bring README.md up to date**<br>• An interactive sampler session with the operator updates the repository README to what lym does today | [`readme-refresh`](design-readme-refresh.md) | sampler | Sampler-Session | neve | 59m<br>59m |  |
 | T5 | **Recipe raddle turns a Sketch into tasks or a project**<br>• A cold Opus run proposes how a Sketch becomes tasks, a project or a beam, weighs recipe costs, and files it on the operator approval unless auto-approve is set | [`raddle-recipe`](design-raddle-recipe.md) | tapestry | Discussion-Burler-Fix | neve | 1h<br>1h | loom, board, batten |
 | T8 | **The beam orch drives the merge-in, pull request and review of its beam inside Beam-Await**<br>• Pawl drops Parent-Align, Beam-Describe and PR-Review; the beam orch opens and closes the PR, merges the parent in and runs lym beam ready | [`pawl-orch-landing`](design-pawl-orch-landing.md)<br>[Sketch](decision-pawl-orch-landing.md) | tapestry · solid | Webster | neve | 3h<br>3h | pawl, landing, orch, workspaces, fabric |
 
-#### Ready (1)
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Sessions lym launches add no Claude co-author or session link to commits and PRs**<br>• Claude Code sessions launched by lym get attribution off, so only the landing credit block credits | [`sessions-no-self-credit`](design-sessions-no-self-credit.md) | darn · light |  | 0m<br>0m | claude, shuttle |
+_None._
 
 #### Draft (2)
 
