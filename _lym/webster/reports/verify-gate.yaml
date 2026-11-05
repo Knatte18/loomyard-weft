@@ -1,0 +1,13 @@
+attempt: 1
+cap: 2
+failures:
+    - id: github.com/Knatte18/loomyard/internal/configsync.TestReconcileHubWideAt_SeedsFromHubPrimeLegacyOrTemplate/profiles_present_under_the_recipe's_former_name_are_renamed_in_place_and_then_gain_the_template_units_they_lack
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/configsync
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/boardcli.TestCLI/Profiles
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/boardcli
+      tail: ""
+log_path: /home/knatte/Code/loomyard-LYMHUB/raddle-recipe/.lym/verify/verify-2.log
+fixer: fork
