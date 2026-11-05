@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-05 12:05 UTC; every age below is as of then.
+Rendered 2026-11-05 12:09 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -59,7 +59,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• No waiting line in loom or batten status and no notice while PR-Review waits for a human review | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 1d<br>1d | landing, loom, batten |
+| B1 | L | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• Not a problem now; if built, only after F6 Slack relay, as a Slack reminder ping while a PR-Review waits on the operator | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 1d<br>0m | landing, loom, batten |
 
 ### Enhancements (5)
 

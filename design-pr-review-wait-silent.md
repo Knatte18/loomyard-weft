@@ -2,6 +2,11 @@
 
 `pr-review-wait-silent` · Note · bug, landing, loom, batten · draft
 
+## Operator's call (2026-11-05)
+
+Not a problem as things stand: the operator does not want a status line or orch notice built for it now.
+If it is solved, it is built only once F6 `reed-slack-relay` gives the hub a Slack link, and only as a reminder ping to the operator on Slack, such as "this has waited 30 minutes for you", repeated at an interval while the wait lasts.
+
 ## Seen
 
 On the `cs` hub, task `cached-friction-factor` (Drift trial 2, 2026-11-03) reached PR-Review at 18:53:02Z and opened PR #4.
@@ -13,10 +18,4 @@ Through those 21 minutes nothing surfaced that the run waited for a human:
 - `lym batten status cached-friction-factor --watch` showed `running | now Run-Shed` throughout.
 - The `cs` creel journal holds no post between Drift-Recheck and creel 35: no batten notice, no notice to `cs:orch` and none to the loomyard hub.
 
-A watcher reading the documented status surfaces could not tell a PR waiting on the operator from a row at work.
 The first trial (`docs/research/drift-csharp-trial-2026-11-03.md`) saw the same: "PR-Review waited 32 minutes for the operator".
-
-## Expected
-
-- While PR-Review waits for the operator, `lym loom status` shows a `waiting` line naming the pull request and that it waits for a human review, as other rows show their waits.
-- The hub's orch gets one notice when a PR-Review starts waiting on the operator, naming the PR, so the wait reaches someone who can act.
