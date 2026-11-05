@@ -49,9 +49,9 @@
 - `internal/loomrecipe#TestPawlRecipe_HoldLiftsOnlyBeforeParentAlign`
 
 **Create:**
-- `plan:internal/pawlengine#finalizeName` -> `const finalizeName = "Finalize"`
-- `plan:internal/loomrecipe#RetiredRowNames` -> `func RetiredRowNames(recipe string) ([]string, error)`
-- `plan:internal/loomrecipe#TestPawlRecipe_HoldLiftsOnlyBeforeFinalize` -> `func TestPawlRecipe_HoldLiftsOnlyBeforeFinalize(t *testing.T)`
+- `internal/pawlengine#finalizeName`
+- `internal/loomrecipe#RetiredRowNames`
+- `internal/loomrecipe#TestPawlRecipe_HoldLiftsOnlyBeforeFinalize`
 
 **Uses:**
 - `internal/landingshed#WriteBeamDescription`
