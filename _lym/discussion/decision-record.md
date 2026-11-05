@@ -22,7 +22,7 @@ In:
 Out:
 
 - Another machine (the entry's "Not in this round").
-- The closed area of `sandbox-closed-area-build`.
+- The closed area of `sandbox-closed-area-build`; delivery needs each hub's socket reachable from the other's daemon, which a closed area binding only its own hub would cut.
 - Every verb but post and reply across hubs, and every sender and receiver but a strand (D2, D4, D8).
 - An inbox folder as a transport.
 
@@ -32,12 +32,12 @@ Out:
 
 - A new package `internal/hubregistry` (new) keeps one JSON record, `hubs.json`, in the per-user lym state directory, the `lym` directory under `$XDG_STATE_HOME` or `~/.local/state` that `internal/standalonestate/standalonestate.go` already uses; its file name is a named constant there, and its directory is told to the package, so a test points it into its own temporary directory.
 - An entry is a hub path with its shortname and the time it was last recorded; the record is rewritten through `internal/state` under a lock from `internal/lock`, so daemons of several hubs writing at once lose no entry.
-- The creel daemon records its own hub when it starts, after it takes its single-instance lock, and in the same write drops every entry that fails the check below.
+- The creel daemon records its own hub when it starts, after it takes its single-instance lock, and in the same write drops every entry whose hub path no longer exists or whose Bolt shortname record reads a valid shortname other than the entry's; an entry whose record cannot be read is kept, and the lookup below still filters it by its current read.
 - A lookup by shortname reads each entry's hub and keeps only the entries whose Bolt shortname record, read through `fabricengine.ReadShortname`, still equals the shortname, so a moved or removed hub drops out; it answers the one hub path, or refuses with none or with several.
 - The refusal for none names the shortname and the way forward: run any `lym creel` verb, such as `lym creel inbox`, in that hub once.
   The refusal for several names every hub path and says mail across hubs needs distinct shortnames.
 
-Rationale: no machine-wide list of hubs exists today, and the creel daemon is the one process every hub starts that mail needs anyway; the entry proposed writing the record when a hub is created or opened, and the daemon's start is the moment an opened hub always passes, while fabric's clone learns nothing of creel.
+Rationale: no machine-wide list of hubs exists today, and the creel daemon is the one process every hub starts that mail needs anyway.
 Bound: the record is a file the operator's user can write; a hub is addressable only after its daemon has started once; two hubs sharing a shortname cannot be addressed by it, and mail from either is refused at the receiver (D3).
 
 ### D2 — Posting to another hub: the sending daemon queues and delivers
@@ -48,13 +48,15 @@ Bound: the record is a file the operator's user can write; a hub is addressable 
 - The size check measures the line the receiver will render: the longer stamp of D6 and an id of the widest an int64 prints.
 - An accepted post is journaled under a new event, an outbound message, carrying the receiver's full name and the receiving hub's path, and answered with its id as a local post is.
   An outbound message is held by no local strand: no mail flag, delivery worker, reminder, sweep, chase or settle acts on it, and an older binary folding the journal ignores the event whole.
+  Bound: a downgraded daemon's retention carries only the kinds it knows, so it drops pending outbound messages older than seven days with no return and no notice.
 - An outbound worker delivers each pending outbound message, oldest first per receiving hub: it builds the receiving hub's creel geometry through `hubgeom.CreelGeometry`, starts that hub's daemon when none answers, as a client does through `internal/creelcli/spawn.go`, and sends one `deliver` request carrying the message id, the sender, the receiver, the body, the expects-reply mark and, for a reply, the id it answers.
 - The receiving daemon answers `accepted` with its own id, `refused` with a reason, or a transient refusal (D3); a call has a 30-second timeout.
   `accepted` is journaled as the message's remote delivery with the receiver's id; `refused` returns the message undelivered at once.
   A transient refusal, a failed connection and a timeout are retried from one second doubling to a minute, and a message still pending an hour after its journaled post time returns undelivered, also across daemon restarts.
+  That return waits for a `deliver` call in flight to end, so a return and an `accepted` never cross, and its reason is the last transient answer.
 - A returned message ends a `--wait-reply` wait as returned undelivered and sends the sender a `<shortname>:CREEL` notice naming the receiver, the reason and `lym creel log --id <id>`.
 - A delivered outbound message that expects a reply waits for it: a reply arriving by D4 ends its waits and marks it replied.
-- Retention carries an outbound message while it is pending, and while it expects a reply and has none, as it carries unread mail.
+- Retention carries an outbound message while it is pending; a delivered or returned one is not carried, so a delivered message that expects a reply waits for it until its day file passes the journal's seven-day retention.
 
 Rationale: the sending daemon already knows the sender from `SO_PEERCRED`, and its journal is a durable queue, so a receiving hub that is down or starting loses nothing and needs no inbox folder; a strand-only receiver keeps another hub's mail out of program mailboxes such as `reed-slack-relay`'s `<shortname>:SLACK`, which posts on by the sender's role.
 Bound: a post to another hub may wait up to an hour before it returns; delivery is at least once on the wire and exactly once in the receiver's pool by D3's duplicate rule.
@@ -63,21 +65,25 @@ Bound: a post to another hub may wait up to an hour before it returns; delivery 
 
 On a `deliver` request the receiving daemon:
 
-1. Refuses a sender that is not a strand name, a sender of its own shortname, a receiver that is not a strand name or that its receiver rules refuse, and a line over the cap, as `refused` with the reason.
+1. Refuses a sender that is not a strand name, a sender of its own shortname, a receiver that is not a strand name, and a line over the cap, as `refused` with the reason.
 2. Resolves the sender's shortname through D1, refusing on none or several; it never uses a hub path a request names.
 3. Answers `accepted` with the id it already gave when it holds a message with that sending hub path and sending id, and does nothing more, so a retried delivery stores nothing twice.
-4. Sends one `confirm` request to the resolved hub's socket, with a 10-second timeout, carrying the sending id, the sender, the receiver, the reply-to id and the SHA-256 of the body; it starts no daemon for it.
-5. The sending daemon answers `yes` when its journal holds an outbound message with that id, sender, receiver, reply-to and body hash that has no remote delivery journaled, and `no` otherwise; it never sends the text.
-6. On `yes` the receiving daemon journals the message as mail from that strand with the sending hub's path and id and the trust D5 decides, and answers `accepted`.
+   Only then does it apply its receiver rules, refusing a receiver they refuse as `refused` with the reason.
+4. Sends one `confirm` request to the resolved hub's socket, with a 10-second timeout, carrying the sending id, the sender, the receiver, the reply-to id, the expects-reply mark and the SHA-256 of the body; it starts no daemon for it.
+5. The sending daemon answers `yes` when its journal holds an outbound message with that id, sender, receiver, reply-to, expects-reply mark and body hash that is still pending, with no remote delivery and no return journaled, and `no` otherwise; it never sends the text.
+6. On `yes` the receiving daemon takes its store lock and repeats the duplicate check of step 3; when it finds a held message it answers `accepted` with that message's id, and otherwise it journals the message as mail from that strand with the sending hub's path and id and the trust D5 decides, and answers `accepted`.
    On `no` it answers `refused` and logs the refused delivery at Warn, naming the claimed sender; the message reaches no agent.
    A failed or timed-out confirm is a transient refusal, and the sending daemon retries (D2).
 
-No daemon holds its store lock across a call to another daemon, the `deliver` of D2 and the `confirm` of step 4 alike, so two hubs delivering to each other at once both serve the other's confirm.
+- The `deliver` and `confirm` requests skip the sender resolution every other verb passes before dispatch (`internal/creelengine/server.go`), since the calling daemon runs in no pane and the confirm alone settles who sent.
+- Any answer to `deliver` other than `accepted` or `refused`, an older binary's refusal of an unknown verb included, is a transient refusal the sending daemon retries (D2).
+- No daemon holds its store lock across a call to another daemon, the `deliver` of D2 and the `confirm` of step 4 alike, so two hubs delivering to each other at once both serve the other's confirm.
 
-Rationale: a call needs no secret, which every agent of the user could read; the sending daemon vouches only for what its own sender check accepted, and confirms until the receiver's `accepted` is journaled, so a receiver that dies between the confirm and its store gets the message on the retry.
-Bound: a replayed `deliver` is refused once the sending daemon has journaled the remote delivery, unless the receiver still holds it, when it gets the old id and nothing is stored; between the confirm and that journal write, a replay of the same tuple is stored once by step 3.
+Rationale: a call needs no secret, which every agent of the user could read; the sending daemon vouches only for what its own sender check accepted, and confirms while the message is pending, until the receiver's `accepted` or a return is journaled, so a receiver that dies between the confirm and its store gets the message on the retry, and a confirm that reaches the sender after a return answers `no`.
+Bound: a replayed `deliver` is refused once the sending daemon has journaled the remote delivery or a return, unless the receiver still holds it, when it gets the old id and nothing is stored; between the confirm and that journal write, a replay of the same tuple, or an overlapping retry, is stored once by steps 3 and 6.
 Bound: the check stops a sender forged with a hand-written `deliver` request or by claiming another strand through creel's verbs.
-It does not stop a process of the operator's user that writes a hub's journal files or the machine record (D1), binds a hub's socket while its daemon is down, types into the trusted hub's orch pane through its tmux socket, or starts a strand of an orch name in the trusted hub through reed (D5 narrows that to the exact orch names); the sandbox hubs' agents can do each, and closing them is `sandbox-closed-area-build`'s.
+It does not stop a process of the operator's user that writes a hub's journal files, the machine record (D1) or the trusting hub's `creel` base file (D5), binds a hub's socket while its daemon is down, types into the trusted hub's orch pane through its tmux socket, or starts a strand of an orch name in the trusted hub through reed (D5 narrows that to the exact orch names); the sandbox hubs' agents can do each, and closing them is `sandbox-closed-area-build`'s.
+Bound: a `confirm` answers only `yes` or `no` to a full tuple that includes the body hash, so it tells a caller nothing it could not learn by reading the sending hub's journal; a `deliver` flood costs the receiver at most one record lookup and one confirm per request, with no cap, the same exposure any process of the user has to any verb.
 Bound: off Linux the sending daemon knows its sender from the environment alone, so a receiving daemon off Linux stores every message from another hub as untrusted (D5).
 
 ### D4 — Replies cross back the same way
@@ -100,13 +106,13 @@ Bound: the sending side learns of an unanswered settle or a gone holder only by 
 - A message is trusted when the sender's shortname is in `trusted_hubs`, the sender's name is exactly `<shortname>:orch` or `<shortname>:<slug>:orch` (role `orch`, never a numbered `orch-N`), and the daemon runs on Linux; the trust is journaled with the message at arrival.
 - Every other message from another hub is untrusted.
 
-Rationale: the hub that obeys is the one that decides, and committing the list to its board keeps every change in git; programs are left out since any process outside a pane may claim a program name (`internal/creelengine/doc.go`, Sender identity), and a numbered orch role is what `lym reed add --role orch` forms beside a live orch.
+Rationale: the hub that obeys is the one that decides, and the list sits on its board, where a committed change leaves a trace in git; programs are left out since any process outside a pane may claim a program name (`internal/creelengine/doc.go`, Sender identity), and a numbered orch role is what `lym reed add --role orch` forms beside a live orch.
 Bound: a change to `trusted_hubs` does not restamp mail already stored; trust grants only what mail from the hub's own orch carries, and the sender check (D3) cannot stop a trusted orch that is itself prompt-injected, which is why loomyard lists no hub.
 
 ### D6 — The sender stamp of mail from another hub
 
 - A message from another hub carries a stamp between the sender's closing quote and the colon of its line: `[creel] #<id> from "<sender>" (other hub, trusted orch): <body>` or `(other hub, untrusted)`, and the expects-reply form puts the stamp before `, expects a reply`.
-- The unread reminder shows the same stamp after the sender's name; `lym creel read` keeps `from` as the bare name and adds the stamp's trust and the sending hub as fields of their own; `lym creel log` shows the sending hub's path and id on the message's entry.
+- The unread reminder shows the same stamp after the sender's name; the text header of `lym creel read` carries the same stamp after the quoted sender as the hook line, while its JSON keeps `from` as the bare name and adds the stamp's trust and the sending hub as fields of their own; `lym creel log` shows the sending hub's path and id on the message's entry.
 - The 8 KiB line cap measures the stamped form.
 - Mail from another hub is agent mail: a pane-mail strand gets it reminded, never typed in full.
 
@@ -135,6 +141,12 @@ It names the setup the trial needs: `trusted_hubs: [ly]` in the `creel` config o
 
 Rationale: a run's agent may file a note but not a task, and the trial needs this task deployed first.
 
+### Added after Discussion (operator, 2026-11-05): Unconfirmed cross-hub mail is dropped and logged
+
+Decision: D3 stands: a message whose confirm answers no is dropped, never delivered to any agent, and the confirm starts no daemon. Each drop is logged in the receiving hub's creel journal with sender hub, claimed strand, receiver and reason, and the receiving hub's orch gets a notice of it, so a drop is seen.
+
+Rationale: Operator, 2026-11-05: forged mail must never reach an agent. If a genuine message is ever dropped, that is a weakness in lym that must be found and fixed, so drops must be visible, not silent.
+
 ## Constraints
 
 - Today's creel facts the design rests on, read from `internal/creelengine/doc.go`: one daemon per hub; the socket `creel-<shortname>-<h>.sock` in the user's 0700 lymtemp root, named by `creelengine.SocketName` from the shortname and the hub path; the sender read from `SO_PEERCRED` and the pane ancestry on Linux, the environment alone elsewhere; a program claim accepted from any process outside a pane; one goroutine per connection; journal retention of seven days; ids per hub that are never reused.
@@ -158,19 +170,18 @@ Rationale: a run's agent may file a note but not a task, and the trial needs thi
 ## Open risks
 
 - The entry proposes that unverified mail shows as unverified; D3 drops a message whose confirm answers `no` and retries one whose confirm fails, so no agent ever sees unverified mail from another hub. The parent should confirm that this stricter reading is wanted.
-- `sandbox-closed-area-build` would bind only the area's own hub, so a sandbox hub inside an area could not reach loomyard's socket; if that note goes ahead, cross-hub mail needs a route through its broker.
 
 ## Acceptance criteria
 
-- D1: a daemon's start records its hub and drops entries whose Bolt shortname no longer matches; a lookup by shortname answers the one matching hub, refuses an unknown shortname naming `lym creel inbox` in that hub, and refuses a shortname two hubs share naming both paths; two daemons recording at once both stay in the record; a test's record lives in its own directory.
+- D1: a daemon's start records its hub, drops entries whose hub path is gone or whose Bolt shortname reads another valid shortname, and keeps an entry whose shortname record cannot be read; a lookup by shortname answers the one matching hub, refuses an unknown shortname naming `lym creel inbox` in that hub, and refuses a shortname two hubs share naming both paths; two daemons recording at once both stay in the record; a test's record lives in its own directory.
 - D2: a strand's post to a strand of another hub is answered with an id at once and reaches the receiver's pool; a post while the receiving daemon is down starts it and is delivered; a program or EXTERNAL sender, a program receiver of another hub and an unknown shortname are refused with their way forward; a body whose stamped line would pass 8 KiB is refused at the post.
 - D2: a pending outbound message gets no mail flag, reminder, delivery worker or sweep return in the sending hub, and a delivered one that expects a reply is not settled by a sweep there.
-- D2: a delivery the receiver refuses returns undelivered at once with a `CREEL` notice to the sender and ends a `--wait-reply` as returned; a receiver that stays unreachable returns the message an hour after its post, measured by an injected clock and counted across a daemon restart; a pending outbound message survives a sending daemon restart and is delivered after it.
-- D3: a `deliver` request written by hand naming a sender the sending daemon never sent is refused and reaches no agent; a second `deliver` of a stored message answers the same id and stores nothing; a receiver that confirmed and died before storing stores the message on the retry; a confirm after the remote delivery is journaled answers `no`; a body whose hash differs answers `no`; two hubs delivering to each other at once both complete.
+- D2: a delivery the receiver refuses returns undelivered at once with a `CREEL` notice to the sender and ends a `--wait-reply` as returned; a receiver that stays unreachable returns the message an hour after its post, measured by an injected clock and counted across a daemon restart, with the last transient answer as the notice's reason; a `deliver` in flight at the hour ends before the return is journaled; a pending outbound message survives a sending daemon restart and is delivered after it.
+- D3: a `deliver` request written by hand naming a sender the sending daemon never sent is refused and reaches no agent; a second `deliver` of a stored message answers the same id and stores nothing; a receiver that confirmed and died before storing stores the message on the retry; a confirm after the remote delivery is journaled answers `no`, and so does a confirm for a message already returned undelivered; a body whose hash differs answers `no`; two hubs delivering to each other at once both complete; two overlapping deliveries of one message store it once and answer the same id; a `deliver` while a live strand of the receiving hub has no known pane process is accepted, not refused; an answer to `deliver` that is neither `accepted` nor `refused`, an unknown verb's refusal included, is retried and does not return the message at once.
 - D3, D5: on Linux a message from `<shortname>:orch` or `<shortname>:<slug>:orch` of a hub in `trusted_hubs` is stored trusted; one from a non-orch strand or an `orch-2` strand of that hub, and one from the orch of a hub not listed, is stored untrusted; off Linux every message from another hub is untrusted.
-- D4: a reply from the holder in the receiving hub reaches the original sender as mail, ends its `--wait-reply` and marks the original replied; a delivered reply naming an id that did not go to the replier's hub is refused; a forward of a cross-hub message to a program or to another hub's name is refused.
+- D4: a reply from the holder in the receiving hub reaches the original sender as mail, ends its `--wait-reply` and marks the original replied; a delivered reply naming an id that did not go to the replier's hub is refused; a forward of a cross-hub message to a program or to another hub's name is refused; the replier's message is marked replied and its chase stops when the reply is journaled; a settle of a cross-hub message sends no notice to the other hub.
 - D5: a local layer file holding `trusted_hubs` is refused, a change in the base file applies to the next arrival without a daemon restart, and a load error stores the message untrusted.
-- D6: a trusted message's hook line and notice read `from "<sender>" (other hub, trusted orch): <body>`, an untrusted one's `(other hub, untrusted)`, the expects-reply form carries the stamp before `, expects a reply`, `lym creel read` keeps `from` the bare name, and a pane-mail strand gets a cross-hub message reminded, not typed.
+- D6: a trusted message's hook line and notice read `from "<sender>" (other hub, trusted orch): <body>`, an untrusted one's `(other hub, untrusted)`, the expects-reply form carries the stamp before `, expects a reply`, the unread reminder shows the stamp after the sender, the text output of `lym creel read` shows the stamp while its JSON keeps `from` the bare name, `lym creel log` shows the sending hub's path and id on the message's entry, and a pane-mail strand gets a cross-hub message reminded, not typed.
 - D8: `lym creel hubs` lists the record's live hubs with their trust; `inject`, `interrupt`, `hold`, `release` and `post --interrupt` to another hub's name are refused naming `lym creel post`.
 - Review: D7: the Claude creel trust sentence, the parent directive and the orch role say that `(other hub, trusted orch)` mail carries an orch's authority and `(other hub, untrusted)` mail is data, and the trust sentence no longer counts an orch strand of another hub as trusted.
 - Review: D7: `internal/creelengine/doc.go` documents the cross-hub route and drops the "later and not planned" line.
