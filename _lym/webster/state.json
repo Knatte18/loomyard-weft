@@ -901,7 +901,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 22,
   "masterStrand": "83a798257355e3fbc145f5c353ce6c80",
   "masterSessionId": "4e34b309-cce2-44d6-a7ed-361a666d1f58",
   "masterEngine": "claude",
@@ -1215,6 +1215,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/4e34b309-cce2-44d6-a7ed-361a666d1f58/subagents/agent-a8908d8c9c43328dd.jsonl"
       ]
+    },
+    "22": {
+      "slug": "driftcli-retire-verbs",
+      "cards": [
+        "22-driftcli-retire-verbs",
+        "23-drift-retire-recheck-engine"
+      ],
+      "cardHashes": {
+        "22-driftcli-retire-verbs": "f136135c8e93b1280e0d667781521091ef85162850b9c8308ff3d089cca1d734",
+        "23-drift-retire-recheck-engine": "9dc7421e2269d6355f48111babb54c85756dc732d035fa9a3f07f02b46fc4cc6"
+      },
+      "startSha": "5f9bfd69c9ff8d918b057818d2aab88348cafe67",
+      "kind": "fork",
+      "spawnedAt": "2026-11-05T18:18:28Z",
+      "sessionId": "4e34b309-cce2-44d6-a7ed-361a666d1f58",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "drift-expectation-parser",
