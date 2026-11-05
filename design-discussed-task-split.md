@@ -11,7 +11,8 @@ Several notes circled the same question (where the decision record lives, how a 
 ## Names (operator, 2026-11-03)
 
 A board idea is a note; the decision record that Discussion, or the recipe `motif`, makes is a Sketch, written with a capital S as a proper name, so it does not read as a loose draft; a finished plan may later be a cartoon.
-Code still says "decision record": nothing in code is renamed to Sketch.
+Code still says "decision record": nothing in code is renamed to Sketch, except the board type below.
+Since 2026-11-05 an entry that holds a motif run's record is also a Sketch on the board: a note of the built-in type `sketch`.
 
 ## Core: the decision record on the board (operator, 2026-11-01)
 
@@ -38,7 +39,12 @@ Code still says "decision record": nothing in code is renamed to Sketch.
 How a task is best cut into smaller tasks is known only once its Discussion is done, so the split comes after Discussion, not before.
 
 - A Discussion-only run, the recipe `motif` (operator, 2026-11-03: the motif is the design decided before the weaving; `cartoon`, the drawing the weaver follows, is kept for a later Plan block), interactive or not, runs Discussion-Write and its review and nothing else, then stores the record and flags the entry discussed, as the core above says.
-  Built (2026-11-03): a `motif` task runs alone, lands no code and returns the entry to `draft`; landing only prunes the board.
+  Built (2026-11-03): a `motif` task runs alone and lands no code; landing only prunes the board.
+  Built (2026-11-05): task `sketch-board-type` (`f2ae537d`).
+  A finished motif run no longer leaves the task `discussed`: the entry becomes a Sketch, a note of the built-in type `sketch` (handle letter `S`) that keeps its module labels and loses its status and the fields only a run, a landing or the dependency graph read (`depends_on`, `isolated`, `recipe`, `profile`, `run_settings`, `pull_request`, `notify_on_land`).
+  A Sketch is not a task and never runs.
+  The board lists Sketches last in `lym board list --text` and first among the Notes in the README; the `Discussed` README layer is gone, and every board write turns an older open `discussed` task into a Sketch.
+  A Sketch another entry depends on is refused: the entry stays `draft` with a warning.
   Built (2026-11-03): task `beam-after-motif` (`cfccb80a`).
   When the entry is then made a project, `lym beam create` removes the slug's done motif run, once its pair is gone, instead of refusing with `already completed`; the envelope reports it as `motif_run_cleared`.
   Seed-Child records the child recipe in batten's run directory, so a done run still tells it ran `motif`; a done motif run seeded before that has no record and still needs `lym batten cleanup --apply`.
@@ -48,7 +54,7 @@ How a task is best cut into smaller tasks is known only once its Discussion is d
 
 ## Triage of a Sketch (operator, 2026-11-05)
 
-A simple run of its own on a Sketch (see the `sketch` type note), the recipe `raddle` (operator, 2026-11-05: the raddle spreads the warp into sections before it is beamed), whose agent breaks the Sketch down and decides what is wise to do with it:
+A simple run of its own on a Sketch (a note of the built-in type `sketch`, built 2026-11-05, see above), the recipe `raddle` (operator, 2026-11-05: the raddle spreads the warp into sections before it is beamed), whose agent breaks the Sketch down and decides what is wise to do with it:
 
 - one tapestry from Plan (way 1 above), or several darn tasks (way 2), or a mix;
 - the order of the tasks, as `depends_on`;
