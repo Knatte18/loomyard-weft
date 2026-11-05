@@ -72,13 +72,12 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Running (3)
+#### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Creel mail between hubs with a verified sender and one-way hub trust**<br>• Orchs of different hubs mail each other; the sending daemon confirms the sender, and a hub obeys only the orchs of hubs it lists as trusted | [`creel-cross-hub-mail`](design-creel-cross-hub-mail.md)<br>[Sketch](decision-creel-cross-hub-mail.md) | motif | Discussion-Bouncer | neve | 6d<br>2h | creel, orch |
 | T3 | **The scratch dir lives at the anchor and is excluded there**<br>• Fabric wires and excludes <anchor>/.scratch instead of the root .scratch, and reconcile moves existing anchored hubs over | [`anchor-scratch-excluded`](design-anchor-scratch-excluded.md) | darn · light | Darn-Write | neve | 15m<br>10m | fabric |
 | T7 | **Drift compares changed values in code against a sealed expectation, with a separate judge**<br>• General Drift rework: code-side diff of any hub capture keyed by line key or number, structured sealed expectation, containment by code, a judge per changed value | [`drift-rework`](design-drift-rework.md)<br>[Sketch](decision-drift-rework.md) | tapestry · solid | Webster | neve | 1d<br>3h | drift, loom, darn, stencil, config |
 
@@ -104,12 +103,13 @@ Starts when every entry it names under After is done.
 | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **Dobby reminds the operator on Slack of a run waiting at PR-Review or Sampler-Session** | [`slack-wait-reminders`](design-slack-wait-reminders.md)<br>[Sketch](decision-slack-wait-reminders.md) | darn · light | T5 | 6m<br>6m | reed |
 
-#### Draft (1)
+#### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
+| T1 | `draft` **Creel mail between hubs with a verified sender and one-way hub trust**<br>• Orchs of different hubs mail each other; the sending daemon confirms the sender, and a hub obeys only the orchs of hubs it lists as trusted | [`creel-cross-hub-mail`](design-creel-cross-hub-mail.md)<br>[Sketch](decision-creel-cross-hub-mail.md) | motif |  | 6d<br>2h | creel, orch |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T7 | 5d<br>3h | fabric |
 
 ### Notes (19)
