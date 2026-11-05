@@ -1,6 +1,6 @@
 # P2 Codexengine: every task, trial and note about the Codex engine
 
-Rendered 2026-11-05 12:33 UTC; every age below is as of then.
+Rendered 2026-11-05 13:14 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`codex-engine-trial`](design-codex-engine-trial.md) · Age 1d · Owner `neve`
@@ -44,7 +44,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Carry the Codex darn trial run codex-greet to its landing**<br>• Resume the sandbox hub run blocked at Darn-Write now that the Codex commit fix has landed, follow it to landing and add the result to the trial report | [`codex-greet-finish`](design-codex-greet-finish.md) | darn · docs | Darn-Write | neve | 28m<br>28m | codex |
+| T1 | **Carry the Codex darn trial run codex-greet to its landing**<br>• Resume the sandbox hub run blocked at Darn-Write now that the Codex commit fix has landed, follow it to landing and add the result to the trial report | [`codex-greet-finish`](design-codex-greet-finish.md) | darn · docs | Darn-Write | neve | 1h<br>1h | codex |
 
 ### Ready (0)
 
@@ -60,5 +60,5 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 2d<br>3h | shuttle, codex, loom |
-| F18 |  | **Codex sessions get creel mail through hooks, as Claude sessions do**<br>• codexengine has no creel hooks, so every Codex strand is a pane-mail strand; the hook spike showed a way | [`codex-creel-hooks`](design-codex-creel-hooks.md) | 1d<br>3h | codex, creel, shuttle |
+| F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 2d<br>4h | shuttle, codex, loom |
+| F18 |  | **Codex sessions get creel mail through hooks, as Claude sessions do**<br>• codexengine has no creel hooks, so every Codex strand is a pane-mail strand; the hook spike showed a way | [`codex-creel-hooks`](design-codex-creel-hooks.md) | 1d<br>4h | codex, creel, shuttle |
