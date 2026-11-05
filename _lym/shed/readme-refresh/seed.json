@@ -1,0 +1,8 @@
+{
+  "recipe": "sampler",
+  "driver": "go",
+  "params": {
+    "parent": "main"
+  },
+  "started_at": "2026-11-05T08:27:50Z"
+}
