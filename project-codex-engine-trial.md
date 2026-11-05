@@ -1,6 +1,6 @@
 # P2 Codexengine: every task, trial and note about the Codex engine
 
-Rendered 2026-11-05 14:56 UTC; every age below is as of then.
+Rendered 2026-11-05 14:57 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`codex-engine-trial`](design-codex-engine-trial.md) · Age 1d · Owner `neve`
@@ -44,7 +44,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Codex sessions get creel mail through hooks, as Claude sessions do**<br>• codexengine has no creel hooks, so every Codex strand is a pane-mail strand; the hook spike showed a way | [`codex-creel-hooks`](design-codex-creel-hooks.md) | darn · light | Code-Burler-Review | neve | 1d<br>16m | codex, creel, shuttle |
+| T3 | **Codex sessions get creel mail through hooks, as Claude sessions do**<br>• codexengine has no creel hooks, so every Codex strand is a pane-mail strand; the hook spike showed a way | [`codex-creel-hooks`](design-codex-creel-hooks.md) | darn · light | Code-Burler-Review | neve | 1d<br>18m | codex, creel, shuttle |
 
 ### Ready (0)
 
@@ -58,7 +58,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **Live trial: creel mail reaches Codex sessions through the new hooks**<br>• Real Codex sessions in lyt get mail at tool boundary, turn end and idle wake, and answer it | [`codex-creel-trial`](design-codex-creel-trial.md) | darn · docs | T3 | 16m<br>16m | codex, creel |
+| T8 | **Live trial: creel mail reaches Codex sessions through the new hooks**<br>• Real Codex sessions in lyt get mail at tool boundary, turn end and idle wake, and answer it | [`codex-creel-trial`](design-codex-creel-trial.md) | darn · docs | T3 | 18m<br>18m | codex, creel |
 
 ## Notes (1)
 
