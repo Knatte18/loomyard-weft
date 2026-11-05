@@ -642,28 +642,6 @@
       "revised": "2026-11-05T05:50:49Z"
     },
     {
-      "id": 1130,
-      "handle": "T1",
-      "slug": "sketch-board-type",
-      "title": "A Sketch is a board type of its own",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "board",
-        "loom"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "An entry whose motif run approved its decision record shows on the board as type sketch, beside research, bug, enhancement and feature",
-      "body": "## Idea (operator, 2026-11-05)\n\nAn entry whose motif run ended with an approved decision record is a Sketch, and the board shows it as one: a note type of its own beside `research`, `bug`, `enhancement` and `feature`.\n\n- The board gains the note type label `sketch` (handle letter `S`).\n- A Sketch is not a task and never runs: it is the stage before the triage command in `discussed-task-split` (F14, \"Triage of a Sketch\").\n  That command breaks the Sketch down and alone decides what it becomes: one or more tasks, each with its own type and recipe, or a project.\n- When a motif run's Discussion is approved and the record is stored, lym makes the entry a note of type `sketch`, keeping its module labels and dropping its former type, since the triage gives each resulting task its type.\n- The README and `lym board list --text` list Sketches under their own heading.\n",
-      "status": "done",
-      "created": "2026-11-05T07:15:30Z",
-      "revised": "2026-11-05T07:53:40Z",
-      "profile": "solid"
-    },
-    {
       "id": 1131,
       "handle": "T5",
       "slug": "raddle-recipe",
@@ -677,9 +655,7 @@
       ],
       "issues": [],
       "recipe": "tapestry",
-      "depends_on": [
-        "sketch-board-type"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "A cold Opus run proposes how a Sketch becomes tasks, a project or a beam, weighs recipe costs, and files it on the operator approval unless auto-approve is set",
       "body": "## Wanted (operator, 2026-11-05)\n\nA recipe `raddle` (the raddle spreads the warp into sections before it is beamed) runs on a Sketch, a note of type `sketch`, and decides what it becomes:\n\n- one tapestry that starts at Plan from the stored record, or several darn tasks, or a mix;\n- the order of the tasks, as `depends_on`;\n- whether the whole becomes a project, or a beam.\n\nOnly this run turns a Sketch into tasks; a Sketch never runs itself.\n\n## The agent\n\n- A role of its own, cold, on Opus, so its prompt, model and effort are tuned apart from Discussion-Write's.\n- It reads the Sketch, the board (entries that exist or run in the same packages) and only enough code to place each part: the packages and files the Sketch names, which packages each part changes, roughly how much, and who calls whom for the order.\n  It designs nothing; the Sketch has done that.\n- Per part, the proposal holds: the Sketch decisions it builds, the packages it changes, its contract (what it takes in, delivers and exports), its `depends_on`, the Open risks and Acceptance criteria it carries, and a recipe and profile.\n  It checks that no two parallel parts change the same package.\n- It may answer \"one tapestry\", which costs no split.\n\n## Cost\n\n- A tapestry carries a large fixed start cost, so one large tapestry beside two small darns is often worse than fewer, larger darns or one tapestry for the whole.\n- The agent is given each recipe and profile's measured fixed and per-size cost from the hub's own run records (`lym report timing` and the token audits), not a figure written into its prompt.\n- Its proposal states the expected cost of the split it proposes against the next-best one.\n- Its choices are checked after landing against what the runs cost, so its prompt can be tuned.\n\n## Approval\n\n- The agent asks the operator nothing while it works: it writes a complete proposal first.\n- Interactive by default: only then does the agent put its proposal to the operator and wait for their input; the operator may question it, correct the split, order or recipes, and the agent revises until the operator approves.\n  This works like Discussion-Write's interactive mode.\n- An auto-approve flag lets the run file its proposal with no operator input.\n  It stays off until the agent's splits are tuned well enough to run alone; the operator's corrections in the interactive runs are what tune it.\n- On approval the run files the tasks, project or beam; nothing is filed before.\n  The board can move meanwhile, so the proposal is checked against the board again at approval.\n- A proposal that becomes a project or beam hands the Sketch and the proposal to that beam's orch.\n\n## Run\n\n- It runs through batten like `motif`, in a worktree of its own forked from the parent, so the code it reads stays still while it reads; it lands no code, and its run shows on the board with a pane and notices.\n- The glossary `docs/research/weaving-glossary.md` gains `raddle` as taken.\n",
@@ -750,29 +726,6 @@
       "created": "2026-11-05T09:05:45Z",
       "revised": "2026-11-05T09:14:34Z",
       "profile": "light"
-    },
-    {
-      "id": 1135,
-      "handle": "T7",
-      "slug": "codex-trial-darn-e2e",
-      "title": "Codex trial: follow the sandbox darn run with a Codex writer to landing and report",
-      "kind": "task",
-      "labels": [
-        "research",
-        "codex",
-        "shuttle"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Follows codex-greet in the lym-test sandbox hub, a darn run with a Codex writer, to landing; report and bug notes",
-      "body": "## Goal (operator, 2026-11-05)\n\nPart 7's end-to-end case of this project: one darn run with a Codex writer seat, start to landing.\nThe run already exists: task `codex-greet` (T5) on the board of the sandbox hub `/home/knatte/Code/lym-test-LYMHUB` (repositories `Knatte18/lym-test` and `Knatte18/lym-test-weft`), released by the orch on 2026-11-05 with a Codex writer and running at Darn-Write.\nThis task follows that run and reports on it; it starts no run of its own and never restarts, cancels or changes `codex-greet`.\n\n## Method\n\n- Find how the run's writer seat was set to Codex (the sandbox hub's config or the entry's settings) and record it.\n- Watch the run to its landing or a stop, reading `env -C /home/knatte/Code/lym-test-LYMHUB/codex-greet lym loom status`, `lym reed list` and the panes; poll every few minutes, not faster.\n  A stop that needs a decision is reported to this run's parent with `lym creel post --parent`, not decided.\n- Read the run's records afterwards: its events, the Codex rollout under `~/.codex/sessions`, its trace logs and its commits.\n- Watch above all: the Codex writer's launch, trust and sandbox; its hooks reaching the run's events; idle and turn-end readings; creel mail and notices reaching the Codex strand and its replies; the writer's commits; and the hand-over to the reviewers and Finalize.\n\n## Deliverables\n\n- A report `docs/research/codex-engine-trial-darn-e2e-2026-11-05.md`: setup, timeline, each check matched or not against `internal/shuttleengine/codexengine/doc.go` and `internal/creelengine/doc.go`, cost and turns.\n- Each lym fault as a bug note of its own on this board, in project `codex-engine-trial`, labels `bug`, `codex` and the modules.\n",
-      "status": "done",
-      "created": "2026-11-05T09:11:48Z",
-      "revised": "2026-11-05T09:12:41Z",
-      "profile": "docs",
-      "project": "codex-engine-trial"
     },
     {
       "id": 1136,

@@ -2,8 +2,6 @@
 
 `raddle-recipe` · Task · feature, loom, board, batten · running · Discussion-Burler-Review
 
-Depends on: [`sketch-board-type`](design-sketch-board-type.md)
-
 ## Wanted (operator, 2026-11-05)
 
 A recipe `raddle` (the raddle spreads the warp into sections before it is beamed) runs on a Sketch, a note of type `sketch`, and decides what it becomes:
