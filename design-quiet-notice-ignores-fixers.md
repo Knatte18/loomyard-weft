@@ -1,6 +1,6 @@
 # Quiet notice ignores gate fixers and the gate run
 
-`quiet-notice-ignores-fixers` · Task · bug, dobby · running · Open-Window
+`quiet-notice-ignores-fixers` · Task · bug, dobby · running · Seed-IDE
 
 ## Seen (2026-11-05)
 
