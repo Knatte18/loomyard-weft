@@ -748,6 +748,27 @@
       "body": "Imported from [issue #62](https://github.com/Knatte18/loomyard/issues/62).\n\nWhat happened: a batch whose cards named create targets in one package (a unit, a plan member set and a template file) failed record-batch with batch_failed and create-not-done blocking findings, because the implementer built the code in a different package to avoid an import cycle. The refusal's way forward was 'lym webster recover-batch 07'. Running recover-batch 07 refused with the same findings and the same way forward 'lym webster recover-batch 07'. The run then halted as blocked with anomaly escalation-to-human.\n\nWhy it is abnormal: the way forward points at the verb that just refused, so it is a dead end. When the code legitimately lives somewhere other than the card's create target, no verb in the refusal's guidance lets the operator or Webster amend, retarget or waive the create target. Recovery only repeats the same check against the same stale targets.\n\nWhat to do: when recover-batch refuses on the same findings as the failed record-batch, name a different way forward (for example amend the card's create targets, or escalate with the exact decision needed). Consider a supported verb to retarget a create target when the implementer relocated the unit.\n\nProvenance: task raddle-recipe; notes loom-halt.md, webster-refusal-record-batch.md, webster-refusal-recover-batch.md.",
       "created": "2026-11-05T18:58:41Z",
       "revised": "2026-11-05T18:58:41Z"
+    },
+    {
+      "id": 1152,
+      "handle": "B11",
+      "slug": "record-batch-signature-mismatch",
+      "title": "webster record-batch: create-not-done refusal lists every searched file and reports a signature mismatch as a missing member",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster",
+        "quarry"
+      ],
+      "issues": [
+        61
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #61](https://github.com/Knatte18/loomyard/issues/61).\n\nWhat happened: `lym webster record-batch` refused a batch because a card's create target (a test method written with a parameter list) did not resolve. quarry answered not_found with the text 'the unit exists and the member is missing'. The refusal then appended, in one line, the full list of every file quarry searched in the unit (hundreds of paths), and only at the very end said the member is declared in one file with a different parameter list than the target named.\n\nWhy abnormal: (1) The member exists; only the parameter signature differs, yet the primary message says it is missing, which misdirects the reader. (2) The searched-file list is unbounded and buries the one actionable fact (the declared signature) at the end of a very long line. (3) The way forward given was only `lym webster recover-batch \u003cn\u003e`, which does not tell the card author that the card's create target needs its signature corrected.\n\nWhat to do: when the member name resolves but the signature differs, report a distinct 'signature mismatch' result that leads with the declared signature and file. Cap or omit the searched-file list (name the count, or the unit, instead). Name the corrective step (fix the card's target signature) next to the recover-batch hint.\n\nProvenance: task slug knut-herschel-bulkley; notes: webster-refusal-record-batch.md",
+      "created": "2026-11-05T18:58:44Z",
+      "revised": "2026-11-05T18:58:44Z"
     }
   ],
   "prime_owner": "neve",
