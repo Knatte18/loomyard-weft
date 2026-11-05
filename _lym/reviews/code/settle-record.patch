@@ -1,0 +1,2241 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index 4ca8e44e..a1476a60 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -10,7 +10,8 @@
+ 
+ - `PATTERN-cwd-resolution` — Resolving a cwd, worktree root or anchor: only `internal/lymcwd`, from the worktree's own weft-root `.lym-anchor`; only `fabricengine` writes or git-reads it; engines get absolute paths, never import lymcwd; hub containers and workspace files stay hub-reachable only. (test) — [background](pattern/PATTERN-cwd-resolution.md)
+ - `PATTERN-lym-temp-root` — Creating temp file or dir: under `internal/lymtemp`'s run dir, never `os.TempDir()`. (test) — [background](pattern/PATTERN-lym-temp-root.md)
+-- `PATTERN-durable-vs-ephemeral-state` — Adding file: tracked under `_lym`, never-tracked under `.lym`, same subpath, bar heddle's rendered instruction files and their `.heddle` temporary directory at a warp worktree's anchor; only `internal/lymdirs` names either, bar a `tools/` script's variable block. — [background](pattern/PATTERN-durable-vs-ephemeral-state.md)
++- `PATTERN-durable-vs-ephemeral-state` — Adding file: tracked under `_lym`, never-tracked under `.lym`, same subpath, bar heddle's rendered files and `.heddle` at a warp worktree's anchor; only `internal/lymdirs` names either, bar a `tools/` script's variable block. — [background](pattern/PATTERN-durable-vs-ephemeral-state.md)
++- `PATTERN-tracked-file-locks` — Tracked-file lock: path via `lock`. (test) — [background](pattern/PATTERN-tracked-file-locks.md)
+ - `PATTERN-leaf-packages` — Importing into a leaf package: only closed import set. — [background](pattern/PATTERN-leaf-packages.md)
+ - `PATTERN-fs-links` — Creating a filesystem link: only `internal/fslink`'s `CreateDirLink` or `CreateFileLink`; no `os.Symlink` or `os.Link` outside `internal/fslink`. (test) — [background](pattern/PATTERN-fs-links.md)
+ 
+diff --git a/cmd/lym/uncontainedwrite_test.go b/cmd/lym/uncontainedwrite_test.go
+index 405aa353..29afdeb3 100644
+--- a/cmd/lym/uncontainedwrite_test.go
++++ b/cmd/lym/uncontainedwrite_test.go
+@@ -77,6 +77,8 @@ var uncontainedWriteAllowlist = []scankit.Entry{
+ 		"caller-derived slug path"},
+ 	{Key: "internal/fabricengine/recordsgit.go", Why: "the lock-directory helper's os.MkdirAll creates the lock directory inside the records worktree " +
+ 		"root fabric created via containedWorktreeAdd; race-only, not statically pre-plantable"},
++	{Key: "internal/fabricengine/junctionnames.go", Why: "BoltLockPath's os.MkdirAll creates the never-tracked lock directory under the Bolt checkout " +
++		"root the caller passes, a directory fabric created via containedWorktreeAdd; race-only, not statically pre-plantable"},
+ 	{Key: "internal/fabricengine/originreconcilemoves.go", Why: "tryPrimeLock's os.MkdirAll creates the hub-scoped ephemeral run-lock directory under the prime's .lym, " +
+ 		"the same directory batten's own prime lock creates, so the try-acquire has a file to lock; the path is shedrun's, never caller-derived"},
+ 	{Key: "internal/fabricengine/junction.go", Why: "seedLymJunction's os.MkdirAll(target) materialises a junction's records-side target inside the " +
+diff --git a/internal/boardengine/board.go b/internal/boardengine/board.go
+index ece1474d..642de093 100644
+--- a/internal/boardengine/board.go
++++ b/internal/boardengine/board.go
+@@ -9,6 +9,7 @@ import (
+ 	"path/filepath"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	flock "github.com/Knatte18/loomyard/internal/lock"
+ )
+ 
+@@ -84,7 +85,11 @@ func (b *Board) boardCriticalSection(fn func(store *Store) (any, error), afterSa
+ 		return nil, fmt.Errorf("mkdir board: %w", err)
+ 	}
+ 
+-	lock, err := flock.AcquireWriteLock(filepath.Join(b.boardPath, writeLockFile))
++	lockPath, err := fabricengine.BoltLockPath(b.boardPath, writeLockFile)
++	if err != nil {
++		return nil, err
++	}
++	lock, err := flock.AcquireWriteLock(lockPath)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("acquire lock: %w", err)
+ 	}
+diff --git a/internal/boardengine/board_test.go b/internal/boardengine/board_test.go
+index dd4f94db..cbdbb26f 100644
+--- a/internal/boardengine/board_test.go
++++ b/internal/boardengine/board_test.go
+@@ -14,6 +14,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	flock "github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/state"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -377,7 +378,11 @@ func TestPreUpgradeDoneMarkSurvivesNewWrite(t *testing.T) {
+ 		DependsOn []string `json:"depends_on"`
+ 		Status    string   `json:"status,omitempty"`
+ 	}
+-	l, err := flock.AcquireWriteLock(filepath.Join(boardPath, "board.lock"))
++	boardLockPath, err := fabricengine.BoltLockPath(boardPath, fabricengine.BoardWriteLockFile)
++	if err != nil {
++		t.Fatalf("locate board.lock: %v", err)
++	}
++	l, err := flock.AcquireWriteLock(boardLockPath)
+ 	if err != nil {
+ 		t.Fatalf("acquire board.lock: %v", err)
+ 	}
+diff --git a/internal/boardengine/boardtest/sync_test.go b/internal/boardengine/boardtest/sync_test.go
+index 0b0d5faf..25f461d0 100644
+--- a/internal/boardengine/boardtest/sync_test.go
++++ b/internal/boardengine/boardtest/sync_test.go
+@@ -181,9 +181,10 @@ func stepSyncIgnoresLockfiles(t *testing.T, f *syncFixture) {
+ 	if err != nil {
+ 		t.Fatalf("read .gitignore: %v", err)
+ 	}
++	// Locks live under .lym/locks, so no lock pattern hides a stray one in the tracked tree.
+ 	for _, pat := range []string{"*.lock", "*.swaplock"} {
+-		if got := strings.Count(string(gitignore), pat+"\n"); got != 1 {
+-			t.Errorf(".gitignore contains %q %d times; want exactly 1:\n%s", pat, got, gitignore)
++		if got := strings.Count(string(gitignore), pat+"\n"); got != 0 {
++			t.Errorf(".gitignore contains %q %d times; want none:\n%s", pat, got, gitignore)
+ 		}
+ 	}
+ }
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index 04d6dd2f..36632d51 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -325,7 +325,8 @@
+ // Read methods (Get/List) bypass the lock and load directly from disk, persisting nothing.
+ //
+ // The detached sync path talks to git through fabricengine.Bolt, never hand-rolled gitexec calls,
+-// under board's own board.lock/board.push.lock write and push locks.
++// under the board write and push locks, which sit in the board checkout's never-tracked lock directory.
++// The swap lock that fences readers of board.json sits there too, and the board's .gitignore ignores only the render manifest.
+ // The detached sync is spawned as `lym board sync --deferrable` in the board directory, so its network gate is held under the hub scope.
+ // Under a pause it defers instead of waiting: it exits with one Info line before it commits or pushes anything, or at its push's network call when the pause came later, leaving the change for the next sync.
+ //
+diff --git a/internal/boardengine/ownerset.go b/internal/boardengine/ownerset.go
+index 1d0b4a85..0a14f965 100644
+--- a/internal/boardengine/ownerset.go
++++ b/internal/boardengine/ownerset.go
+@@ -286,7 +286,7 @@ func ReadOwners(boardDir string) (Owners, error) {
+ 	if !fileExists(path) {
+ 		return Owners{}, nil
+ 	}
+-	raw, found, err := state.ReadJSON[json.RawMessage](path, path+swapLockSuffix)
++	raw, found, err := state.ReadJSON[json.RawMessage](path, swapLockPath(path))
+ 	if err != nil {
+ 		return Owners{}, fmt.Errorf("read owners: %w", err)
+ 	}
+diff --git a/internal/boardengine/ownerset_integration_test.go b/internal/boardengine/ownerset_integration_test.go
+index 41d90eb0..8c56fb7d 100644
+--- a/internal/boardengine/ownerset_integration_test.go
++++ b/internal/boardengine/ownerset_integration_test.go
+@@ -497,7 +497,11 @@ func TestSetOwners(t *testing.T) {
+ 							}
+ 						}
+ 					})
+-					lockHeld, acquired, err := lock.TryAcquireWriteLock(filepath.Join(f.boardDir, fabricengine.BoardWriteLockFile))
++					boardLockPath, err := fabricengine.BoltLockPath(f.boardDir, fabricengine.BoardWriteLockFile)
++					if err != nil {
++						t.Fatalf("locate the board write lock: %v", err)
++					}
++					lockHeld, acquired, err := lock.TryAcquireWriteLock(boardLockPath)
+ 					if err != nil || !acquired {
+ 						t.Fatalf("take the board write lock: acquired %v, error %v", acquired, err)
+ 					}
+diff --git a/internal/boardengine/render.go b/internal/boardengine/render.go
+index c7305381..d4c47627 100644
+--- a/internal/boardengine/render.go
++++ b/internal/boardengine/render.go
+@@ -35,7 +35,7 @@ import (
+ )
+ 
+ // renderManifestFile is the name of the sidecar that records the filenames the
+-// last render produced. It is gitignored (via ensureLockfilesIgnored) so it never
++// last render produced. It is gitignored (via ensureBoardIgnores) so it never
+ // adds commit churn, and it is never itself a member of the rendered file set.
+ const renderManifestFile = ".board-rendered.json"
+ 
+diff --git a/internal/boardengine/store.go b/internal/boardengine/store.go
+index 044c0749..501a9738 100644
+--- a/internal/boardengine/store.go
++++ b/internal/boardengine/store.go
+@@ -19,13 +19,19 @@ import (
+ 	"strings"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/state"
+ )
+ 
+-// swapLockSuffix is the fine-grained lock that fences readers during writer
+-// swap, separate from board.lock to minimize read latency.
++// swapLockSuffix ends the name of the fine-grained lock that fences readers during writer
++// swap, separate from the board write lock to minimize read latency.
+ const swapLockSuffix = ".swaplock"
+ 
++// swapLockPath returns the swap lock guarding the board file at path, in the board checkout's never-tracked lock directory.
++func swapLockPath(path string) string {
++	return lock.TrackedLockPath(filepath.Dir(path), filepath.Base(path)+swapLockSuffix)
++}
++
+ // BriefTask is the enriched read-only view returned by list, with Layer and HasProposal computed at
+ // read time.
+ type BriefTask struct {
+@@ -195,7 +201,7 @@ func (s *Store) Load() error {
+ 	if fileExists(path) {
+ 		// The raw bytes are read under the shared lock and decoded after it is released,
+ 		// so the decode never holds off a writer waiting for the exclusive lock.
+-		raw, found, err := state.ReadJSON[json.RawMessage](path, path+swapLockSuffix)
++		raw, found, err := state.ReadJSON[json.RawMessage](path, swapLockPath(path))
+ 		if err != nil {
+ 			return fmt.Errorf("load store: %w", err)
+ 		}
+@@ -263,13 +269,13 @@ func ParseBoardTasks(data []byte) ([]Task, error) {
+ 	return migrateEntries(file.Entries, nil), nil
+ }
+ 
+-// readLegacyFile reads one legacy file when it exists, under the swap lock the pre-upgrade binary wrote it with.
++// readLegacyFile reads one legacy file when it exists, under its swap lock.
+ // Existence is checked first so a read never creates a lock file for an absent file.
+ func readLegacyFile(path string) ([]legacyRecord, bool, error) {
+ 	if !fileExists(path) {
+ 		return nil, false, nil
+ 	}
+-	records, found, err := state.ReadJSON[[]legacyRecord](path, path+swapLockSuffix)
++	records, found, err := state.ReadJSON[[]legacyRecord](path, swapLockPath(path))
+ 	if err != nil {
+ 		return nil, false, err
+ 	}
+@@ -288,7 +294,7 @@ func (s *Store) Save() error {
+ 		return fmt.Errorf("save store: no board directory")
+ 	}
+ 	path := filepath.Join(s.boardDir, boardFile)
+-	return state.WriteJSON(path, path+swapLockSuffix, storeFile{
++	return state.WriteJSON(path, swapLockPath(path), storeFile{
+ 		Version:     storeVersion,
+ 		Entries:     s.tasks,
+ 		LegacyDone:  s.legacyDone,
+diff --git a/internal/boardengine/sync.go b/internal/boardengine/sync.go
+index 855491ba..a4c5722c 100644
+--- a/internal/boardengine/sync.go
++++ b/internal/boardengine/sync.go
+@@ -2,9 +2,7 @@
+ //
+ // Writes only touch the filesystem;
+ // Sync is what gets those changes to GitHub.
+-// The absorbing-lock loop-until-clean coalescing is owned by fabricengine.Bolt.Sync, composed here
+-// with board's own step closure: ensureLockfilesIgnored + commitDirty (which holds board's own
+-// board.lock) and, unless skipPush is set, a push through the same Bolt value.
++// The absorbing-lock loop-until-clean coalescing is owned by fabricengine.Bolt.Sync, composed here with board's own step closure: ensureBoardIgnores + commitDirty (which holds the board write lock) and, unless skipPush is set, a push through the same Bolt value.
+ // A single top-level push lock still serializes pushers across processes;
+ // concurrent sync processes block, then exit quickly once there is nothing to do.
+ // The write path launches `lym board sync` detached (see spawn.go) so it never waits.
+@@ -14,19 +12,21 @@ import (
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	flock "github.com/Knatte18/loomyard/internal/lock"
+ )
+ 
+-const (
+-	// writeLockFile aliases fabricengine.BoardWriteLockFile, which is the single declarer of this
+-	// literal — internal/fabricengine owns the name because a stencil-seeding commit verb outside
+-	// boardengine must take the same lock.
+-	writeLockFile = fabricengine.BoardWriteLockFile
+-	pushLockFile  = "board.push.lock"
+-)
++// writeLockFile aliases fabricengine.BoardWriteLockFile, which is the single declarer of this
++// literal — internal/fabricengine owns the name because a stencil-seeding commit verb outside
++// boardengine must take the same lock.
++const writeLockFile = fabricengine.BoardWriteLockFile
++
++// retiredIgnorePatterns are the lock patterns the board's .gitignore once held.
++// ensureBoardIgnores removes them, so a lock file that strays into the board shows in `git status` instead of hiding.
++var retiredIgnorePatterns = []string{"*.lock", "*.swaplock"}
+ 
+ // Sync commits pending changes and pushes to the remote, looping until clean and unpushed changes
+ // are gone.
+@@ -41,7 +41,7 @@ func Sync(boardPath string, skipGit, skipPush bool) error {
+ 	bolt := fabricengine.NewBolt(boardPath)
+ 
+ 	step := func() (progressed bool, err error) {
+-		if err := ensureLockfilesIgnored(boardPath); err != nil {
++		if err := ensureBoardIgnores(boardPath); err != nil {
+ 			return false, err
+ 		}
+ 
+@@ -63,7 +63,11 @@ func Sync(boardPath string, skipGit, skipPush bool) error {
+ // commitDirty stages and commits the working tree if it has changes, under board's write lock.
+ // Returns whether a commit was made.
+ func commitDirty(boardPath string, bolt *fabricengine.Bolt) (bool, error) {
+-	lock, err := flock.AcquireWriteLock(filepath.Join(boardPath, writeLockFile))
++	lockPath, err := fabricengine.BoltLockPath(boardPath, writeLockFile)
++	if err != nil {
++		return false, err
++	}
++	lock, err := flock.AcquireWriteLock(lockPath)
+ 	if err != nil {
+ 		return false, fmt.Errorf("acquire write lock: %w", err)
+ 	}
+@@ -76,33 +80,39 @@ func commitDirty(boardPath string, bolt *fabricengine.Bolt) (bool, error) {
+ 	return committed, nil
+ }
+ 
+-// ensureLockfilesIgnored adds lock-file and manifest-sidecar patterns to .gitignore idempotently.
+-func ensureLockfilesIgnored(boardPath string) error {
++// ensureBoardIgnores keeps the render manifest ignored in the board's .gitignore and removes the retired lock patterns from it.
++// It writes the file only when its content changes.
++func ensureBoardIgnores(boardPath string) error {
+ 	gitignorePath := filepath.Join(boardPath, ".gitignore")
+ 	existing, err := os.ReadFile(gitignorePath)
+ 	if err != nil && !os.IsNotExist(err) {
+ 		return fmt.Errorf("read .gitignore: %w", err)
+ 	}
+ 
+-	var missing []string
+-	for _, pat := range []string{"*.lock", "*.swaplock", renderManifestFile} {
+-		if !strings.Contains(string(existing), pat) {
+-			missing = append(missing, pat)
++	var kept []string
++	manifestIgnored := false
++	for _, line := range strings.Split(string(existing), "\n") {
++		trimmed := strings.TrimSpace(line)
++		if slices.Contains(retiredIgnorePatterns, trimmed) {
++			continue
++		}
++		if trimmed == renderManifestFile {
++			manifestIgnored = true
+ 		}
++		kept = append(kept, line)
+ 	}
+-	if len(missing) == 0 {
+-		return nil
++	content := strings.Join(kept, "\n")
++	if !manifestIgnored {
++		if content != "" && !strings.HasSuffix(content, "\n") {
++			content += "\n"
++		}
++		content += renderManifestFile + "\n"
+ 	}
+-
+-	f, err := os.OpenFile(gitignorePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+-	if err != nil {
+-		return fmt.Errorf("open .gitignore: %w", err)
++	if content == string(existing) {
++		return nil
+ 	}
+-	defer f.Close()
+-	for _, pat := range missing {
+-		if _, err := f.WriteString(pat + "\n"); err != nil {
+-			return fmt.Errorf("write .gitignore: %w", err)
+-		}
++	if err := os.WriteFile(gitignorePath, []byte(content), 0o644); err != nil {
++		return fmt.Errorf("write .gitignore: %w", err)
+ 	}
+ 	return nil
+ }
+diff --git a/internal/boardengine/sync_integration_test.go b/internal/boardengine/sync_integration_test.go
+index ca87004a..75389748 100644
+--- a/internal/boardengine/sync_integration_test.go
++++ b/internal/boardengine/sync_integration_test.go
+@@ -1,13 +1,6 @@
+-// sync_integration_test.go covers boardengine.Sync's parity after delegating
+-// its absorbing-lock coalescing loop to fabricengine.CoalescePush: a dirty
+-// board still commits and pushes, .gitignore is still seeded with the
+-// lock/manifest patterns, the absorbing push lock still lives at the
+-// unchanged board.push.lock path, and skipPush still commits locally without
+-// advancing the remote. The board+bare-origin fixture is built inline via
+-// gitkit.MustRun, mirroring the fixture shape of
+-// internal/gitrepo/push_test.go's newBareRemote/newRepoWithRemote —
+-// reimplemented locally since those helpers live in a different test
+-// package (gitrepo_test) and are not importable across that boundary.
++// sync_integration_test.go covers boardengine.Sync's parity after delegating its absorbing-lock coalescing loop to fabricengine.CoalescePush.
++// A dirty board still commits and pushes, .gitignore ignores the render manifest and loses the retired lock patterns, the absorbing push lock lives in the board checkout's lock directory, no lock file is left beside the board's files, and skipPush still commits locally without advancing the remote.
++// The board+bare-origin fixture is built inline via gitkit.MustRun, mirroring the fixture shape of internal/gitrepo/push_test.go's newBareRemote/newRepoWithRemote, reimplemented locally since those helpers live in a different test package (gitrepo_test) and are not importable across that boundary.
+ 
+ package boardengine
+ 
+@@ -18,6 +11,7 @@ import (
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gitexec"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+@@ -94,7 +88,7 @@ func TestSync_Scenario(t *testing.T) {
+ 	}{
+ 		{"SkipPush_CommitsLocallyButDoesNotPush", stepSyncSkipPushCommitsLocallyButDoesNotPush},
+ 		{"DirtyBoard_CommitsAndPushes", stepSyncDirtyBoardCommitsAndPushes},
+-		{"SeedsGitignoreWithLockAndManifestPatterns", stepSyncSeedsGitignoreWithLockAndManifestPatterns},
++		{"GitignoreIgnoresManifestAndDropsLockPatterns", stepSyncGitignoreIgnoresManifestAndDropsLockPatterns},
+ 		{"ConcurrentCallSerializesOnBoardPushLock", stepSyncConcurrentCallSerializesOnBoardPushLock},
+ 		{"RetireLegacy_CommitsBoardJSONAndLegacyDeletions", stepSyncRetireLegacyCommitsBoardJSONAndLegacyDeletions},
+ 	}
+@@ -142,22 +136,31 @@ func stepSyncDirtyBoardCommitsAndPushes(t *testing.T, f *syncFixture) {
+ 	}
+ }
+ 
+-// stepSyncSeedsGitignoreWithLockAndManifestPatterns asserts Sync seeded .gitignore with lock and manifest patterns.
+-func stepSyncSeedsGitignoreWithLockAndManifestPatterns(t *testing.T, f *syncFixture) {
+-	got, err := os.ReadFile(filepath.Join(f.boardPath, ".gitignore"))
++// stepSyncGitignoreIgnoresManifestAndDropsLockPatterns asserts Sync leaves .gitignore ignoring the render manifest alone, with the retired lock patterns removed.
++func stepSyncGitignoreIgnoresManifestAndDropsLockPatterns(t *testing.T, f *syncFixture) {
++	gitignorePath := filepath.Join(f.boardPath, ".gitignore")
++	writeBoardFile(t, f.boardPath, ".gitignore", "*.lock\n*.swaplock\n"+renderManifestFile+"\n")
++
++	if err := Sync(f.boardPath, false, false); err != nil {
++		t.Fatalf("Sync() error = %v; want nil", err)
++	}
++
++	got, err := os.ReadFile(gitignorePath)
+ 	if err != nil {
+ 		t.Fatalf("read .gitignore: %v", err)
+ 	}
+-	for _, pat := range []string{"*.lock", "*.swaplock", renderManifestFile} {
+-		if !strings.Contains(string(got), pat) {
+-			t.Errorf(".gitignore = %q; want it to contain %q", got, pat)
+-		}
++	if want := renderManifestFile + "\n"; string(got) != want {
++		t.Errorf(".gitignore = %q; want %q", got, want)
+ 	}
+ }
+ 
+-// stepSyncConcurrentCallSerializesOnBoardPushLock asserts concurrent Sync calls serialize on board.push.lock.
++// stepSyncConcurrentCallSerializesOnBoardPushLock asserts concurrent Sync calls serialize on the board push lock.
+ func stepSyncConcurrentCallSerializesOnBoardPushLock(t *testing.T, f *syncFixture) {
+-	held, err := lock.AcquireWriteLock(filepath.Join(f.boardPath, "board.push.lock"))
++	pushLockPath, err := fabricengine.BoltLockPath(f.boardPath, fabricengine.BoardPushLockFile)
++	if err != nil {
++		t.Fatalf("BoltLockPath() error = %v", err)
++	}
++	held, err := lock.AcquireWriteLock(pushLockPath)
+ 	if err != nil {
+ 		t.Fatalf("AcquireWriteLock() error = %v", err)
+ 	}
+@@ -171,7 +174,7 @@ func stepSyncConcurrentCallSerializesOnBoardPushLock(t *testing.T, f *syncFixtur
+ 	select {
+ 	case err := <-done:
+ 		_ = held.Release()
+-		t.Fatalf("Sync() returned (err=%v) while board.push.lock was externally held; want it to block", err)
++		t.Fatalf("Sync() returned (err=%v) while the board push lock was externally held; want it to block", err)
+ 	case <-time.After(200 * time.Millisecond):
+ 	}
+ 
+@@ -184,7 +187,7 @@ func stepSyncConcurrentCallSerializesOnBoardPushLock(t *testing.T, f *syncFixtur
+ 	}
+ }
+ 
+-// stepSyncRetireLegacyCommitsBoardJSONAndLegacyDeletions asserts that after RetireLegacy on a synced board that tracked the legacy files, Sync commits board.json and the deletions and leaves a clean tree.
++// stepSyncRetireLegacyCommitsBoardJSONAndLegacyDeletions asserts that after RetireLegacy on a synced board that tracked the legacy files, Sync commits board.json and the deletions and leaves a clean tree with no lock file beside the board's files.
+ func stepSyncRetireLegacyCommitsBoardJSONAndLegacyDeletions(t *testing.T, f *syncFixture) {
+ 	writeBoardFile(t, f.boardPath, legacyTasksFile, `[{"id":0,"slug":"alpha","title":"Alpha","depends_on":[]}]`)
+ 	writeBoardFile(t, f.boardPath, legacyNotesFile, `[]`)
+@@ -219,4 +222,13 @@ func stepSyncRetireLegacyCommitsBoardJSONAndLegacyDeletions(t *testing.T, f *syn
+ 	if strings.TrimSpace(status) != "" {
+ 		t.Errorf("working tree not clean after Sync: %q", status)
+ 	}
++	entries, err := os.ReadDir(f.boardPath)
++	if err != nil {
++		t.Fatalf("ReadDir(%q) error = %v", f.boardPath, err)
++	}
++	for _, entry := range entries {
++		if name := entry.Name(); strings.HasSuffix(name, ".lock") || strings.HasSuffix(name, swapLockSuffix) {
++			t.Errorf("board root holds lock file %q after a write and a sync; want every lock under the checkout's lock directory", name)
++		}
++	}
+ }
+diff --git a/internal/fabriccli/cli_test.go b/internal/fabriccli/cli_test.go
+index 835c65ae..c7a50277 100644
+--- a/internal/fabriccli/cli_test.go
++++ b/internal/fabriccli/cli_test.go
+@@ -152,10 +152,7 @@ func TestRunCLI_CloneEndToEnd(t *testing.T) {
+ 
+ 	// The repo-wide fabric.yaml and warp binding must be committed onto weft:main (the board worktree), not merely present on disk.
+ 	// The .lym-anchor marker is tracked at the root of the prime's weft worktree and absent from the board.
+-	// This checks tracked-ness directly (git ls-files) rather than a blanket `git status --porcelain` cleanliness assertion:
+-	// CommitWeftAt/PushWeftAt bypass ensureWeftLockDir's exclude-seeding (by design — see recordsgit.go's CommitWeftAt doc comment),
+-	// so gitrepo's own .gitrepo-push.lock can legitimately surface as untracked dirt on the board worktree;
+-	// that is a pre-existing gap in boardengine.Sync's own identical CommitWeftAt/PushWeftAt pairing, not something this batch's clone orchestration introduces or is responsible for fixing.
++	// This checks tracked-ness directly (git ls-files) rather than a blanket `git status --porcelain` cleanliness assertion.
+ 	boardDir := fabricengine.BoardDir(hubPath)
+ 	for _, relPath := range []string{
+ 		filepath.Join(lymdirs.LymDirName, "config", "fabric.yaml"),
+diff --git a/internal/fabricengine/bolt.go b/internal/fabricengine/bolt.go
+index 810028c1..ebbcc9d1 100644
+--- a/internal/fabricengine/bolt.go
++++ b/internal/fabricengine/bolt.go
+@@ -48,9 +48,9 @@ func (b *Bolt) Commit(message string, opts SyncOptions) (sha string, committed b
+ // With opts.SkipGit, write still runs under the lock but nothing is committed.
+ // It never pushes; callers push with Push afterwards, outside the write lock.
+ func (b *Bolt) CommitWritten(message string, write func() ([]string, error), opts SyncOptions) (sha string, committed bool, err error) {
+-	l, err := lock.AcquireWriteLock(filepath.Join(b.path, BoardWriteLockFile))
++	l, err := b.acquireWriteLock()
+ 	if err != nil {
+-		return "", false, fmt.Errorf("fabricengine: acquire board write lock: %w", err)
++		return "", false, err
+ 	}
+ 	defer func() { _ = l.Release() }()
+ 
+@@ -69,6 +69,19 @@ func (b *Bolt) CommitWritten(message string, write func() ([]string, error), opt
+ 	return repo.StageAndCommit(message, ScopedPathspec(".", stageable))
+ }
+ 
++// acquireWriteLock takes the board write lock of the Bolt's checkout, waiting while another holder has it.
++func (b *Bolt) acquireWriteLock() (*lock.FileLock, error) {
++	path, err := BoltLockPath(b.path, BoardWriteLockFile)
++	if err != nil {
++		return nil, err
++	}
++	l, err := lock.AcquireWriteLock(path)
++	if err != nil {
++		return nil, fmt.Errorf("fabricengine: acquire board write lock: %w", err)
++	}
++	return l, nil
++}
++
+ // stageablePaths returns the paths, relative to the repo at root, that git can stage: each one on disk, and each missing one HEAD's tree holds, whose deletion it stages.
+ // git add refuses a path that matches nothing, so a missing path HEAD does not hold, such as a name a stale local manifest kept after a pull removed the file, is left out.
+ // An unborn HEAD holds no path.
+@@ -129,7 +142,11 @@ func (b *Bolt) PushRecorded(opts SyncOptions, rec *Mutations) error {
+ 
+ // Sync drives step to completion under an absorbing push lock, looping while step reports progress.
+ func (b *Bolt) Sync(step func() (progressed bool, err error)) error {
+-	return coalescePush(filepath.Join(b.path, "board.push.lock"), step)
++	lockPath, err := BoltLockPath(b.path, BoardPushLockFile)
++	if err != nil {
++		return err
++	}
++	return coalescePush(lockPath, step)
+ }
+ 
+ // HasUpstream reports whether the Bolt's current branch has an upstream configured, read from local config without contacting the remote.
+@@ -192,9 +209,9 @@ type BoltWriteResult struct {
+ // A path that no longer exists stages its deletion and is not recorded as a written file, and one HEAD does not hold either is left out of the commit.
+ // It never pushes.
+ func (b *Bolt) PullThenCommitWritten(writes []BoltWrite, rec *Mutations) (res BoltWriteResult, err error) {
+-	l, err := lock.AcquireWriteLock(filepath.Join(b.path, BoardWriteLockFile))
++	l, err := b.acquireWriteLock()
+ 	if err != nil {
+-		return BoltWriteResult{}, fmt.Errorf("fabricengine: acquire board write lock: %w", err)
++		return BoltWriteResult{}, err
+ 	}
+ 	defer func() { _ = l.Release() }()
+ 
+@@ -248,9 +265,9 @@ func (b *Bolt) Pull(opts SyncOptions, rec *Mutations) (BoltSkip, string, error)
+ 	if opts.SkipGit {
+ 		return "", "", nil
+ 	}
+-	l, err := lock.AcquireWriteLock(filepath.Join(b.path, BoardWriteLockFile))
++	l, err := b.acquireWriteLock()
+ 	if err != nil {
+-		return "", "", fmt.Errorf("fabricengine: acquire board write lock: %w", err)
++		return "", "", err
+ 	}
+ 	defer func() { _ = l.Release() }()
+ 	return b.pullFirst(rec)
+@@ -258,7 +275,7 @@ func (b *Bolt) Pull(opts SyncOptions, rec *Mutations) (BoltSkip, string, error)
+ 
+ // pullFirst brings Bolt up to date with its upstream and reports why it could not, as a skip with a detail naming the way forward.
+ // The caller holds the board write lock.
+-// pullFirst also holds the push lock in the board dir for its whole run, taken after the board write lock.
++// pullFirst also holds the board checkout's push lock for its whole run, taken after the board write lock.
+ // A coalesced push rebases the board under that lock and never takes the write lock, so without it a push could rebase the board mid-drop.
+ //
+ // A Bolt with no upstream is left alone.
+@@ -267,13 +284,17 @@ func (b *Bolt) Pull(opts SyncOptions, rec *Mutations) (BoltSkip, string, error)
+ // A replay that stops on a conflict skips as diverged, and one an uncommitted change blocks skips as dirty.
+ // Each skip is logged at Warn here, once, so no caller repeats the text.
+ func (b *Bolt) pullFirst(rec *Mutations) (BoltSkip, string, error) {
+-	pushLock, err := lock.AcquireWriteLock(filepath.Join(b.path, gitrepo.PushLockFileName))
++	repo := gitrepo.New(b.path)
++	pushLockPath, err := repo.PushLockPath()
++	if err != nil {
++		return "", "", err
++	}
++	pushLock, err := lock.AcquireWriteLock(pushLockPath)
+ 	if err != nil {
+ 		return "", "", fmt.Errorf("fabricengine: acquire push lock: %w", err)
+ 	}
+ 	defer func() { _ = pushLock.Release() }()
+ 
+-	repo := gitrepo.New(b.path)
+ 	if err := repo.Fetch(); err != nil {
+ 		if _, upstreamErr := repo.UpstreamSHA(); errors.Is(upstreamErr, gitrepo.ErrNoUpstream) {
+ 			return "", "", nil
+diff --git a/internal/fabricengine/bolt_integration_test.go b/internal/fabricengine/bolt_integration_test.go
+index 30dcadaa..3ae62aab 100644
+--- a/internal/fabricengine/bolt_integration_test.go
++++ b/internal/fabricengine/bolt_integration_test.go
+@@ -327,7 +327,11 @@ func TestBolt_Sync_HoldsSingleAbsorbingLockAcrossBurst(t *testing.T) {
+ 	repoPath := newBoltRepo(t, container, "bolt", bareRemote)
+ 	b := NewBolt(repoPath)
+ 
+-	held, err := lock.AcquireWriteLock(filepath.Join(repoPath, "board.push.lock"))
++	pushLockPath, err := BoltLockPath(repoPath, BoardPushLockFile)
++	if err != nil {
++		t.Fatalf("BoltLockPath() error = %v", err)
++	}
++	held, err := lock.AcquireWriteLock(pushLockPath)
+ 	if err != nil {
+ 		t.Fatalf("AcquireWriteLock() error = %v", err)
+ 	}
+diff --git a/internal/fabricengine/boltpullfirst_integration_test.go b/internal/fabricengine/boltpullfirst_integration_test.go
+index 35091540..e801f3c2 100644
+--- a/internal/fabricengine/boltpullfirst_integration_test.go
++++ b/internal/fabricengine/boltpullfirst_integration_test.go
+@@ -486,7 +486,11 @@ func TestBolt_PullThenCommitWritten(t *testing.T) {
+ 		f.seedCommitLocal(stencilPath, "old\n")
+ 		tip := f.head()
+ 		upstream := f.moveUpstream("notes/up.md", "up\n")
+-		pushLock, err := lock.AcquireWriteLock(filepath.Join(f.board, gitrepo.PushLockFileName))
++		pushLockPath, err := gitrepo.New(f.board).PushLockPath()
++		if err != nil {
++			t.Fatalf("locate the push lock: %v", err)
++		}
++		pushLock, err := lock.AcquireWriteLock(pushLockPath)
+ 		if err != nil {
+ 			t.Fatalf("take the push lock: %v", err)
+ 		}
+diff --git a/internal/fabricengine/coalesce_integration_test.go b/internal/fabricengine/coalesce_integration_test.go
+index 1cb79088..213ee1df 100644
+--- a/internal/fabricengine/coalesce_integration_test.go
++++ b/internal/fabricengine/coalesce_integration_test.go
+@@ -1,6 +1,6 @@
+ // coalesce_integration_test.go — integration coverage for CoalescePushBothAt
+ // against real warp+weft repos with bare origins: the two-sided-advance case
+-// (including the no-warp-root-.gitrepo-push.lock assertion), and the
++// (including the no-push-lock-at-the-warp-root assertion), and the
+ // diverged-warp-remote case that must return nil (not an error) without
+ // spinning. Package fabricengine_test, driving the warp/bare fixture through
+ // export_test.go's ForTest shims (NewPlainWarpRepoForTest, CurrentSHAForTest,
+@@ -56,7 +56,7 @@ func runWithDeadline(t *testing.T, deadline time.Duration, fn func() error) erro
+ // TestCoalescePushBothAt_AdvancesBothSidesAndLeavesNoWarpRootLock covers the straightforward
+ // two-sided case: an unpushed commit on each side,
+ // and the no-warp-root-gitrepo-push-lock Shared Decision's assertion that the warp-via-fabric path
+-// never leaves a .gitrepo-push.lock at the warp worktree root.
++// never leaves a push lock file at the warp worktree root.
+ //
+ //testtiming:keep both sides advancing and no push lock being left at the warp root; coverage of its blocks by other tests does not show an assertion of this
+ func TestCoalescePushBothAt_AdvancesBothSidesAndLeavesNoWarpRootLock(t *testing.T) {
+diff --git a/internal/fabricengine/diff_integration_test.go b/internal/fabricengine/diff_integration_test.go
+index a4cdf2ec..90385c47 100644
+--- a/internal/fabricengine/diff_integration_test.go
++++ b/internal/fabricengine/diff_integration_test.go
+@@ -202,10 +202,12 @@ func TestStatus_MergesUncommittedChangesBothSides_ExcludesWeftArtifacts(t *testi
+ 	}
+ 	fabricengine.WriteWeftConfigContentForTest(t, weftFixture.PrimeRecords(), "weft dirty, uncommitted")
+ 
+-	// CommitWeft never creates the push lock file — only PushCoalesced
+-	// does — so it must be created explicitly to genuinely exercise the
+-	// exclude mechanism rather than assert on an absent file.
+-	pushLockPath := filepath.Join(weftFixture.PrimeRecords(), gitrepo.PushLockFileName)
++	// CommitWeft never creates the push lock file, only PushCoalesced does.
++	// It is created where it now lives, in the records git dir, so the test proves nothing of it surfaces in the worktree.
++	pushLockPath, err := gitrepo.New(weftFixture.PrimeRecords()).PushLockPath()
++	if err != nil {
++		t.Fatalf("PushLockPath() error = %v", err)
++	}
+ 	if err := os.WriteFile(pushLockPath, nil, 0o644); err != nil {
+ 		t.Fatalf("WriteFile(push lock): %v", err)
+ 	}
+@@ -259,13 +261,11 @@ func TestStatus_MergesUncommittedChangesBothSides_ExcludesWeftArtifacts(t *testi
+ 		t.Errorf("Status() weft-side paths = %v; want it to contain _lym/config.yaml", weftPaths)
+ 	}
+ 
+-	// Neither the lock dir nor the push lock file (both git-excluded) may
+-	// appear on the weft side. Scoped to weft only, per this batch's
+-	// documented known limitation: the warp/warp side deliberately does not
+-	// seed these excludes.
++	// The git-excluded lock dir must not appear on the weft side, and the push lock in the git dir must not appear anywhere.
++	// Scoped to weft only: the warp side deliberately does not seed these excludes.
+ 	for _, p := range weftPaths {
+-		if strings.HasPrefix(p, fabricengine.WeftLockDirNameForTest+"/") || p == gitrepo.PushLockFileName {
+-			t.Errorf("Status() weft-side paths = %v; want neither %s/ nor %s (both git-excluded)", weftPaths, fabricengine.WeftLockDirNameForTest, gitrepo.PushLockFileName)
++		if strings.HasPrefix(p, fabricengine.WeftLockDirNameForTest+"/") || filepath.Base(p) == gitrepo.PushLockFileName {
++			t.Errorf("Status() weft-side paths = %v; want neither %s/ nor any %s entry", weftPaths, fabricengine.WeftLockDirNameForTest, gitrepo.PushLockFileName)
+ 		}
+ 	}
+ }
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index f31cea32..85c51299 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -289,23 +289,7 @@
+ // and the unified `Fabric.Status` merges each side's currently-uncommitted worktree changes into
+ // one side-labelled view, reachable via `lym fabric status`.
+ //
+-// A known asymmetry in `Fabric.Status` is worth recording rather than leaving as a surprise: it may
+-// surface gitrepo's `.gitrepo-push.lock` operational artifact (`PushCoalesced`'s single-pusher lock
+-// file, left behind in a repo's worktree root because `lock.FileLock.Release` unlocks without
+-// deleting it) as an uncommitted change on the warp/warp side but never on the weft side, because
+-// fabric seeds a `.git/info/exclude` entry for it only on the weft worktree it owns
+-// (`seedWeftArtifactExcludes`) and deliberately does not manage the warp repo's own git
+-// configuration.
+-// This asymmetry is now narrower than it was: the warp-via-fabric async push described above uses
+-// the rebase-free `PushRebaseFree`, which takes no push-serialising lock, for both sides (per the
+-// no-warp-root-gitrepo-push-lock Shared Decision), so that path never creates a
+-// `.gitrepo-push.lock` at the pristine warp worktree root at all anymore — `Fabric.Status`'s own
+-// behavior of not suppressing a warp-side artifact is unchanged, but there is normally nothing
+-// there left for it to surface.
+-// A warp-side `.gitrepo-push.lock` can still appear only from a non-fabric caller of
+-// `gitrepo.PushCoalesced` running directly against the warp repo (e.g.
+-// a manual warp-side push outside fabric) — a lingering lock from that path is still reported by
+-// `Fabric.Status` like any other untracked warp file, not specially suppressed.
++// `gitrepo.PushCoalesced`'s single-pusher lock file sits in a checkout's own git dir, so `Fabric.Status` never reports it on either side.
+ //
+ // The read half of the same `Snapshot:` trailer mechanism exposes `Fabric.snapshotWarpSHA(tag
+ // string) (string, error)`, resolving a caller-supplied snapshot tag to the warp SHA recorded under
+@@ -972,7 +956,7 @@
+ // A Bolt with no upstream writes as before; one only behind is fast-forwarded (`repo_advanced`); one with seed commits ahead of a moved upstream has them dropped by the executor above.
+ // When Bolt cannot be brought up to date, no write runs and the result's `Skipped` names why: `fetch_failed`, `diverged` (a non-seed commit ahead of a moved upstream, a drop refused on containment or ownership, or a failed replay) or `dirty` (a tracked change blocking the reset or the fast-forward).
+ // Each skip is logged at Warn once, inside `Bolt.pullFirst`, with a detail naming the way forward; callers only read the result.
+-// The lock order is the board write lock, then the push lock (`gitrepo.PushLockFileName`) in the board dir, across every reset, replay and fast-forward of Bolt;
++// The lock order is the board write lock, then the board checkout's push lock (`gitrepo.Repo.PushLockPath`), across every reset, replay and fast-forward of Bolt;
+ // a coalesced push holds the push lock across its own rebase and never takes the board write lock, so the order cannot deadlock.
+ //
+ // **Push classification.** Every push fabric runs per side goes through `pushClassified`:
+diff --git a/internal/fabricengine/hubpull_integration_test.go b/internal/fabricengine/hubpull_integration_test.go
+index f293e71b..b15441c7 100644
+--- a/internal/fabricengine/hubpull_integration_test.go
++++ b/internal/fabricengine/hubpull_integration_test.go
+@@ -192,7 +192,11 @@ func TestBoltPull_HoldsTheBoardWriteLockWhileItPulls(t *testing.T) {
+ 	moveOrigin(t, second.BoardDir(), "board-moved.txt")
+ 	// Holding the push lock, which Bolt.Pull takes after the board write lock, parks the pull with the board write lock already held.
+ 	// The test then observes the lock instead of waiting out a clock.
+-	pushLock, err := lock.AcquireWriteLock(filepath.Join(h.BoardDir(), gitrepo.PushLockFileName))
++	pushLockPath, err := gitrepo.New(h.BoardDir()).PushLockPath()
++	if err != nil {
++		t.Fatalf("locate the push lock: %v", err)
++	}
++	pushLock, err := lock.AcquireWriteLock(pushLockPath)
+ 	if err != nil {
+ 		t.Fatalf("take the push lock: %v", err)
+ 	}
+@@ -208,7 +212,10 @@ func TestBoltPull_HoldsTheBoardWriteLockWhileItPulls(t *testing.T) {
+ 		done <- pullResult{skip, err}
+ 	}()
+ 
+-	writeLockPath := filepath.Join(h.BoardDir(), fabricengine.BoardWriteLockFile)
++	writeLockPath, err := fabricengine.BoltLockPath(h.BoardDir(), fabricengine.BoardWriteLockFile)
++	if err != nil {
++		t.Fatalf("locate the board write lock: %v", err)
++	}
+ 	deadline := time.Now().Add(30 * time.Second)
+ 	for {
+ 		contender, acquired, err := lock.TryAcquireWriteLock(writeLockPath)
+diff --git a/internal/fabricengine/junctionnames.go b/internal/fabricengine/junctionnames.go
+index 02009bd7..aba293d7 100644
+--- a/internal/fabricengine/junctionnames.go
++++ b/internal/fabricengine/junctionnames.go
+@@ -9,10 +9,12 @@
+ package fabricengine
+ 
+ import (
++	"fmt"
+ 	"os"
+ 	"path/filepath"
+ 
+ 	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
+@@ -88,9 +90,22 @@ func PathspecNames(dirs configengine.Dirs) ([]string, error) {
+ // the literal a second time.
+ const BoardWriteLockFile = "board.lock"
+ 
+-// BoardWriteLockPath returns the absolute path to the Bolt write lock file inside hub.
+-func BoardWriteLockPath(hub string) string {
+-	return filepath.Join(BoltDir(hub), BoardWriteLockFile)
++// BoardPushLockFile is the name of the Bolt checkout's absorbing push lock, held across a board sync's whole commit-and-push loop.
++const BoardPushLockFile = "board.push.lock"
++
++// BoardWriteLockPath returns the absolute path to the Bolt write lock file of hub, creating its directory.
++func BoardWriteLockPath(hub string) (string, error) {
++	return BoltLockPath(BoltDir(hub), BoardWriteLockFile)
++}
++
++// BoltLockPath returns the lock file named name of the Bolt checkout at boltDir, in the checkout's never-tracked lock directory, and creates that directory.
++// A lock there never shows as a change in the board repository, so a stage-all board commit never sweeps it in.
++func BoltLockPath(boltDir, name string) (string, error) {
++	path := lock.TrackedLockPath(boltDir, name)
++	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++		return "", fmt.Errorf("fabricengine: create the Bolt lock directory of %s: %w", boltDir, err)
++	}
++	return path, nil
+ }
+ 
+ // BoltDirName is the name of the Bolt checkout inside a hub, re-exported from lymcwd.
+diff --git a/internal/fabricengine/originreconcilemoves.go b/internal/fabricengine/originreconcilemoves.go
+index 965d3191..162bd935 100644
+--- a/internal/fabricengine/originreconcilemoves.go
++++ b/internal/fabricengine/originreconcilemoves.go
+@@ -51,7 +51,7 @@ func tryPrimeLock(l *lymcwd.Location) (release func(), held bool, err error) {
+ }
+ 
+ // tryRecordsLocks takes a records branch's write lock and then its push lock, each by one try-acquire.
+-// On Bolt they are `board.lock` and the push lock in the board checkout, and on a weft they are the weft's write and push locks.
++// On Bolt they are the board write lock and the board checkout's push lock, and on a weft they are the weft's write and push locks.
+ // A held lock returns its name in busy, with pushHeld set when it was the push lock, and nothing held.
+ func tryRecordsLocks(worktree string, bolt bool) (release func(), busy string, pushHeld bool, err error) {
+ 	writePath := ""
+@@ -61,8 +61,14 @@ func tryRecordsLocks(worktree string, bolt bool) (release func(), busy string, p
+ 	// weftLockDir is the weft's lock directory, whose push lock gets a holder record; it stays empty on Bolt.
+ 	weftLockDir := ""
+ 	if bolt {
+-		writePath = filepath.Join(worktree, BoardWriteLockFile)
+-		pushPath = filepath.Join(worktree, gitrepo.PushLockFileName)
++		writePath, err = BoltLockPath(worktree, BoardWriteLockFile)
++		if err != nil {
++			return nil, "", false, err
++		}
++		pushPath, err = gitrepo.New(worktree).PushLockPath()
++		if err != nil {
++			return nil, "", false, err
++		}
+ 		writeName = busyBoardWriteLock
+ 		pushName = busyBoardPushLock
+ 	} else {
+diff --git a/internal/fabricengine/originreconcilemoves_integration_test.go b/internal/fabricengine/originreconcilemoves_integration_test.go
+index c547585e..c5c7114f 100644
+--- a/internal/fabricengine/originreconcilemoves_integration_test.go
++++ b/internal/fabricengine/originreconcilemoves_integration_test.go
+@@ -515,7 +515,13 @@ func TestReconcileOrigin_Moves(t *testing.T) {
+ 		}{
+ 			{
+ 				"Bolt push lock", fabricengine.ReconcileScope{},
+-				func(pair *movesPair) string { return filepath.Join(pair.BoardDir(), gitrepo.PushLockFileName) },
++				func(pair *movesPair) string {
++					path, err := gitrepo.New(pair.BoardDir()).PushLockPath()
++					if err != nil {
++						t.Fatalf("locate the Bolt push lock: %v", err)
++					}
++					return path
++				},
+ 				func(pair *movesPair) { originCommitFile(t, pair.RecordsBare, "main", "moved.txt", "moved") },
+ 				"bolt", func(*movesPair) string { return "main" },
+ 			},
+diff --git a/internal/fabricengine/pushclasses_integration_test.go b/internal/fabricengine/pushclasses_integration_test.go
+index f9282b79..e9aca45b 100644
+--- a/internal/fabricengine/pushclasses_integration_test.go
++++ b/internal/fabricengine/pushclasses_integration_test.go
+@@ -754,7 +754,11 @@ func TestPushFailureClasses(t *testing.T) {
+ 		branch := f.boardBranch()
+ 		gitkit.CommitFile(t, board, "notes/a.md", "a\n", "board change")
+ 		f.originCommit(branch, "notes/up.md", "up\n", "upstream work")
+-		boardLock, err := lock.AcquireWriteLock(filepath.Join(board, fabricengine.BoardWriteLockFile))
++		boardLockPath, err := fabricengine.BoltLockPath(board, fabricengine.BoardWriteLockFile)
++		if err != nil {
++			t.Fatalf("locate the board lock: %v", err)
++		}
++		boardLock, err := lock.AcquireWriteLock(boardLockPath)
+ 		if err != nil {
+ 			t.Fatalf("take the board lock: %v", err)
+ 		}
+diff --git a/internal/fabricengine/pushclassified.go b/internal/fabricengine/pushclassified.go
+index d15ca8a3..16c18152 100644
+--- a/internal/fabricengine/pushclassified.go
++++ b/internal/fabricengine/pushclassified.go
+@@ -665,7 +665,11 @@ func fetchBoltBranch(hubPath string) error {
+ // A held write lock and an uncommitted change on a path the replay touches report a deferral, with nothing changed.
+ // A replay that stops returns ErrReplayConflict, and a second rejection returns gitrepo.ErrPushRejected.
+ func retryBoltPush(rec *Mutations, boardDir string) (deferred bool, err error) {
+-	writeLock, held, err := lock.TryAcquireWriteLock(filepath.Join(boardDir, BoardWriteLockFile))
++	writeLockPath, err := BoltLockPath(boardDir, BoardWriteLockFile)
++	if err != nil {
++		return false, err
++	}
++	writeLock, held, err := lock.TryAcquireWriteLock(writeLockPath)
+ 	if err != nil {
+ 		return false, fmt.Errorf("fabricengine: acquire board write lock: %w", err)
+ 	}
+@@ -673,13 +677,17 @@ func retryBoltPush(rec *Mutations, boardDir string) (deferred bool, err error) {
+ 		return true, nil
+ 	}
+ 	defer func() { _ = writeLock.Release() }()
+-	pushLock, err := lock.AcquireWriteLock(filepath.Join(boardDir, gitrepo.PushLockFileName))
++	repo := gitrepo.New(boardDir)
++	pushLockPath, err := repo.PushLockPath()
++	if err != nil {
++		return false, err
++	}
++	pushLock, err := lock.AcquireWriteLock(pushLockPath)
+ 	if err != nil {
+ 		return false, fmt.Errorf("fabricengine: acquire push lock: %w", err)
+ 	}
+ 	defer func() { _ = pushLock.Release() }()
+ 
+-	repo := gitrepo.New(boardDir)
+ 	if err := repo.Fetch(); err != nil {
+ 		return false, fmt.Errorf("fabricengine: fetch the board in %s: %w", boardDir, err)
+ 	}
+diff --git a/internal/fabricengine/pushlockholder_integration_test.go b/internal/fabricengine/pushlockholder_integration_test.go
+index cd158cd0..bdcaef7a 100644
+--- a/internal/fabricengine/pushlockholder_integration_test.go
++++ b/internal/fabricengine/pushlockholder_integration_test.go
+@@ -8,6 +8,7 @@ import (
+ 	"os"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -42,7 +43,10 @@ func TestTryRecordsLocks_HolderRecord(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			worktree := t.TempDir()
+-			if !tt.bolt {
++			if tt.bolt {
++				// Bolt's push lock sits in the checkout's git dir, so the checkout must be a repository.
++				gitkit.Git(t, worktree, "init", "-q", "-b", "main")
++			} else {
+ 				worktree = newPlainWeftRepo(t)
+ 			}
+ 			release, busy, _, err := tryRecordsLocks(worktree, tt.bolt)
+diff --git a/internal/fabricengine/recordsgit.go b/internal/fabricengine/recordsgit.go
+index 899c7440..8fa7f260 100644
+--- a/internal/fabricengine/recordsgit.go
++++ b/internal/fabricengine/recordsgit.go
+@@ -32,16 +32,17 @@ const (
+ 	// weftLockDirName + "/" entry, so no separate exclude entry is needed for
+ 	// it (Shared Decision lock-artifact-under-weft).
+ 	weftPushLockFile = "fabric.push.lock"
+-	// lockFilePattern and swapLockFilePattern cover every module's write- and swap-lock artifact
+-	// anywhere in the weft repo, not only fabric's own. They are load-bearing rather than tidy: a
+-	// lock file left at the board root by an ordinary board read makes `git status --porcelain`
+-	// non-empty there forever, and the once-per-hub warp-binding backfill refuses to run against a
+-	// dirty board (Bolt.Commit is stage-all), so a hub predating the binding would report
+-	// WarpBindingOutcomeDeferred on every reconcile and never record one.
+-	lockFilePattern     = "*.lock"
+-	swapLockFilePattern = "*.swaplock"
++	// retiredLockFilePattern and retiredSwapLockFilePattern once hid every lock file in the weft repo's checkouts.
++	// seedWeftArtifactExcludes removes them, so a lock file that strays into a tracked tree shows in `git status` instead of hiding.
++	retiredLockFilePattern     = "*.lock"
++	retiredSwapLockFilePattern = "*.swaplock"
+ )
+ 
++// legacyLockFileNames are the lock files earlier binaries wrote beside tracked files in the weft repo's checkouts: in the Bolt root, and beside the review records of a run directory.
++// No code writes them any more.
++// They stay excluded by name, so a leftover one never enters a stage-all board commit or a records commit.
++var legacyLockFileNames = []string{".gitrepo-push.lock", "board.lock", "board.push.lock", "board.json.swaplock", "tasks.json.swaplock", "notes.json.swaplock", "generation-record.json.lock", "settle-record.json.lock", "settle-record.patch.lock"}
++
+ // ensureWeftLockDir creates the .weft lock directory and seeds git-exclude
+ // entries for fabric's lock artifacts.
+ func (f *Fabric) ensureWeftLockDir() (string, error) {
+@@ -87,37 +88,29 @@ func HoldRecordsWriteLock(recordsWorktreePath string, wait time.Duration) (relea
+ 	return l.Release, true, nil
+ }
+ 
+-// seedWeftArtifactExcludes appends the weft repo's never-tracked operational artifacts — the
+-// .weft/ lock directory, gitrepo's push lock file, lymdirs.DotLymDirName, and every module's
+-// *.lock / *.swaplock write- and swap-lock file
+-// — to the weft repo's .git/info/exclude, line-exact idempotent (the same
+-// discipline as seedGitExclude). It is the sole owner of that file's
+-// content: one `.lym/` pattern now keeps every module's machine-local
+-// scratch untracked in the weft repo, replacing the three deep wildcard
+-// patterns batch 6 deleted, and no .gitignore is ever committed in weft
+-// either — .git/info/exclude wins there because it needs no commit, no
+-// pathspec change, and no new file in the weft root. Without this seeding,
+-// every weft worktree that has ever run a weft-git verb reports fabric's own
+-// artifacts (and, now, .lym scratch) as untracked dirt forever: Remove's
+-// no-force dirty gate then refuses with a "run lym fabric sync" hint that a
+-// pathspec-scoped sync can never satisfy. The exclude file lives in the
+-// repo's common gitdir, so one seeding covers every linked weft worktree,
+-// and — because excludes are evaluated at status time — it also heals
+-// worktrees that already carry the artifacts as untracked (though not ones
+-// where a prior sync already committed them; see commitWeft's doc comment
+-// for that limit).
++// seedWeftArtifactExcludes appends the weft repo's never-tracked operational artifacts — the .weft/ lock directory, lymdirs.DotLymDirName, and the legacy lock file names — to the weft repo's .git/info/exclude, line-exact idempotent (the same discipline as seedGitExclude), and removes the retired *.lock and *.swaplock lines.
++// Every lock file lives under .lym or .weft, or in a git dir, so the two wildcards would only hide a stray one.
++// It is the sole owner of that file's content: one `.lym/` pattern keeps every module's machine-local scratch and every lock under a checkout's .lym/locks untracked in the weft repo,
++// and no .gitignore is ever committed in weft either — .git/info/exclude wins there because it needs no commit, no pathspec change, and no new file in the weft root.
++// Without this seeding, every weft worktree that has ever run a weft-git verb reports fabric's own artifacts (and .lym scratch) as untracked dirt forever: Remove's no-force dirty gate then refuses with a "run lym fabric sync" hint that a pathspec-scoped sync can never satisfy.
++// The exclude file lives in the repo's common gitdir, so one seeding covers every linked weft worktree,
++// and — because excludes are evaluated at status time — it also heals worktrees that already carry the artifacts as untracked (though not ones where a prior sync already committed them; see commitWeft's doc comment for that limit).
+ func seedWeftArtifactExcludes(weftPath string) error {
+ 	_, _, err := mutateGitExclude(weftPath, func(content string) (string, error) {
+-		entries := []string{weftLockDirName + "/", gitrepo.PushLockFileName, lymdirs.DotLymDirName + "/", lockFilePattern, swapLockFilePattern}
+-		for _, entry := range entries {
+-			present := false
+-			for _, line := range strings.Split(content, "\n") {
+-				if strings.TrimSpace(line) == entry {
+-					present = true
+-					break
+-				}
++		present := map[string]bool{}
++		var kept []string
++		for _, line := range strings.Split(content, "\n") {
++			trimmed := strings.TrimSpace(line)
++			if trimmed == retiredLockFilePattern || trimmed == retiredSwapLockFilePattern {
++				continue
+ 			}
+-			if present {
++			present[trimmed] = true
++			kept = append(kept, line)
++		}
++		content = strings.Join(kept, "\n")
++		entries := append([]string{weftLockDirName + "/", lymdirs.DotLymDirName + "/"}, legacyLockFileNames...)
++		for _, entry := range entries {
++			if present[entry] {
+ 				continue
+ 			}
+ 			if content != "" && !strings.HasSuffix(content, "\n") {
+diff --git a/internal/fabricengine/shortnamecommit.go b/internal/fabricengine/shortnamecommit.go
+index 1906daba..a4abda41 100644
+--- a/internal/fabricengine/shortnamecommit.go
++++ b/internal/fabricengine/shortnamecommit.go
+@@ -16,7 +16,11 @@ import (
+ // It never pushes; the caller pushes through Bolt.Push.
+ // rec accumulates the file write and, when a commit was made, the commit.
+ func CommitShortname(hub, shortname, message string, rec *Mutations) (sha string, committed bool, err error) {
+-	l, err := lock.AcquireWriteLock(BoardWriteLockPath(hub))
++	lockPath, err := BoardWriteLockPath(hub)
++	if err != nil {
++		return "", false, err
++	}
++	l, err := lock.AcquireWriteLock(lockPath)
+ 	if err != nil {
+ 		return "", false, fmt.Errorf("fabricengine: acquire board write lock: %w", err)
+ 	}
+diff --git a/internal/fabricengine/spawn.go b/internal/fabricengine/spawn.go
+index a60fc4b1..5bf2e2f9 100644
+--- a/internal/fabricengine/spawn.go
++++ b/internal/fabricengine/spawn.go
+@@ -222,9 +222,8 @@ func PushWarpAt(warpPath string, opts SyncOptions) (res PushResult, err error) {
+ // no Fabric instance and no weft path involved.
+ //
+ // The push never runs `git pull --rebase`, so it never rewrites this side's SHAs while the
+-// paired side is not rebased and never invalidates the correspondence index; and it never
+-// takes the push lock, so it leaves no untracked .gitrepo-push.lock residue in the operator's own
+-// warp repo, which has no exclude entry for that file.
++// paired side is not rebased and never invalidates the correspondence index;
++// and it takes no push lock.
+ //
+ // A failed push is classified, recorded as a failed push and returned as a *PushFailedError.
+ // The error wraps gitrepo.ErrPushRejected for a rejection and gitrepo.ErrPushAuthRefused for a refused credential.
+diff --git a/internal/fabricengine/stencilcommit.go b/internal/fabricengine/stencilcommit.go
+index 2864869f..c76a33d4 100644
+--- a/internal/fabricengine/stencilcommit.go
++++ b/internal/fabricengine/stencilcommit.go
+@@ -62,7 +62,11 @@ func CommitSeededStencils(hub, subtreeRel, subtreeDir string, writtenRelPaths []
+ 		return StencilSeedResult{}, nil
+ 	}
+ 
+-	l, err := lock.AcquireWriteLock(BoardWriteLockPath(hub))
++	lockPath, err := BoardWriteLockPath(hub)
++	if err != nil {
++		return StencilSeedResult{}, err
++	}
++	l, err := lock.AcquireWriteLock(lockPath)
+ 	if err != nil {
+ 		return StencilSeedResult{}, fmt.Errorf("fabricengine: acquire board write lock: %w", err)
+ 	}
+diff --git a/internal/fabricengine/warpbinding_reconcile_integration_test.go b/internal/fabricengine/warpbinding_reconcile_integration_test.go
+index 93550e38..e5a91e20 100644
+--- a/internal/fabricengine/warpbinding_reconcile_integration_test.go
++++ b/internal/fabricengine/warpbinding_reconcile_integration_test.go
+@@ -421,7 +421,11 @@ func TestReconcile_BoardLockArtifactDoesNotDeferBackfill(t *testing.T) {
+ 	unbindHub(t, fixture.Result.BoardDir)
+ 
+ 	for _, name := range []string{"tasks.json.swaplock", "board.write.lock"} {
+-		if err := os.WriteFile(filepath.Join(fixture.Result.BoardDir, name), nil, 0o600); err != nil {
++		lockPath, err := fabricengine.BoltLockPath(fixture.Result.BoardDir, name)
++		if err != nil {
++			t.Fatalf("lock path of %s: %v", name, err)
++		}
++		if err := os.WriteFile(lockPath, nil, 0o600); err != nil {
+ 			t.Fatalf("write %s: %v", name, err)
+ 		}
+ 	}
+diff --git a/internal/fabricengine/weftgit_exclude_test.go b/internal/fabricengine/weftgit_exclude_test.go
+index b831de14..c0de072e 100644
+--- a/internal/fabricengine/weftgit_exclude_test.go
++++ b/internal/fabricengine/weftgit_exclude_test.go
+@@ -1,12 +1,5 @@
+-// weftgit_exclude_test.go proves fabric's own lock artifacts (.weft/ from
+-// Fabric.Commit's write lock, .gitrepo-push.lock from PushCoalesced) never
+-// surface as untracked dirt in the weft worktree: ensureWeftLockDir seeds
+-// them into the weft repo's info/exclude, so Remove's no-force dirty gate
+-// (a raw `git status --porcelain`, untracked included) never dead-ends on
+-// them. It also proves every module's machine-local artifact — locks, pause
+-// flags, rendered prompts — is kept out of weft history structurally, by
+-// living under .lym and so never falling inside a weft-commit pathspec,
+-// rather than by an exclude-layer pattern.
++// weftgit_exclude_test.go proves fabric's own lock artifacts (.weft/ from Fabric.Commit's write lock, and a legacy lock file left by an earlier binary) never surface as untracked dirt in the weft worktree: ensureWeftLockDir seeds them into the weft repo's info/exclude, so Remove's no-force dirty gate (a raw `git status --porcelain`, untracked included) never dead-ends on them, while a lock file that strays into _lym shows.
++// It also proves every module's machine-local artifact — locks, pause flags, rendered prompts — is kept out of weft history structurally, by living under .lym and so never falling inside a weft-commit pathspec, rather than by an exclude-layer pattern.
+ //
+ // Package fabricengine_test to construct a real *fabricengine.Fabric against a real hubforge.NewHub
+ // hub; shares the TestMain in testmain_test.go. newFabricPair/writeWeftConfig below are this file's
+@@ -21,12 +14,12 @@ package fabricengine_test
+ import (
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+-	"github.com/Knatte18/loomyard/internal/gitrepo"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -57,8 +50,8 @@ func writeWeftConfig(t *testing.T, weftPath, content string) {
+ }
+ 
+ // TestCommitWeft_LockArtifactsExcludedFromStatus commits scoped weft content (which creates the
+-// .weft lock dir) and drops a push lock file, then asserts neither artifact appears in `git status
+-// --porcelain` — the exact check Remove's no-force weft dirty gate runs.
++// .weft lock dir) and drops a legacy push lock file, then asserts neither artifact appears in `git status
++// --porcelain` — the exact check Remove's no-force weft dirty gate runs — while a stray lock file under _lym does.
+ func TestCommitWeft_LockArtifactsExcludedFromStatus(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+@@ -78,19 +71,25 @@ func TestCommitWeft_LockArtifactsExcludedFromStatus(t *testing.T) {
+ 		t.Fatalf(".weft lock dir missing after Commit: %v", err)
+ 	}
+ 
+-	// Materialize the push lock artifact the way an interrupted PushCoalesced
+-	// would leave it: a plain file at the worktree root.
+-	pushLock := filepath.Join(weftPath, gitrepo.PushLockFileName)
+-	if err := os.WriteFile(pushLock, nil, 0o644); err != nil {
+-		t.Fatalf("write push lock artifact: %v", err)
++	// Materialize the push lock an earlier binary left at the worktree root.
++	const legacyPushLock = ".gitrepo-push.lock"
++	if err := os.WriteFile(filepath.Join(weftPath, legacyPushLock), nil, 0o644); err != nil {
++		t.Fatalf("write legacy push lock: %v", err)
++	}
++	const strayLock = "stray-record.json.lock"
++	if err := os.WriteFile(filepath.Join(weftPath, lymdirs.LymDirName, strayLock), nil, 0o644); err != nil {
++		t.Fatalf("write stray lock: %v", err)
+ 	}
+ 
+ 	status := gitkit.GitStatusPorcelain(t, weftPath)
+ 	if strings.Contains(status, ".weft") {
+ 		t.Errorf("git status --porcelain reports .weft as dirt: %q; want it git-excluded", status)
+ 	}
+-	if strings.Contains(status, gitrepo.PushLockFileName) {
+-		t.Errorf("git status --porcelain reports %s as dirt: %q; want it git-excluded", gitrepo.PushLockFileName, status)
++	if strings.Contains(status, legacyPushLock) {
++		t.Errorf("git status --porcelain reports %s as dirt: %q; want it git-excluded", legacyPushLock, status)
++	}
++	if !strings.Contains(status, strayLock) {
++		t.Errorf("git status --porcelain = %q; want the stray %s under %s shown", status, strayLock, lymdirs.LymDirName)
+ 	}
+ }
+ 
+@@ -109,13 +108,8 @@ func nonEmptyExcludeLines(content string) []string {
+ 	return lines
+ }
+ 
+-// TestCommitWeft_SeedsFabricArtifactsOnlyAndIsIdempotent proves
+-// seedWeftArtifactExcludes' shape: it seeds exactly fabric's own .weft/ lock
+-// directory, gitrepo's push-lock filename, lymdirs.DotLymDirName + "/", and the
+-// *.lock / *.swaplock write- and swap-lock patterns every module's lock artifacts land under
+-// into the weft repo's info/exclude, none of the retired cross-module
+-// machine-local patterns, and re-seeding via a second commit leaves the file
+-// byte-identical.
++// TestCommitWeft_SeedsFabricArtifactsOnlyAndIsIdempotent proves seedWeftArtifactExcludes' shape: it seeds fabric's own .weft/ lock directory, lymdirs.DotLymDirName + "/" and the legacy lock file names into the weft repo's info/exclude, removes the retired *.lock / *.swaplock lines, and seeds none of the retired cross-module machine-local patterns.
++// Re-seeding via a second commit leaves the file byte-identical.
+ func TestCommitWeft_SeedsFabricArtifactsOnlyAndIsIdempotent(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+@@ -123,34 +117,44 @@ func TestCommitWeft_SeedsFabricArtifactsOnlyAndIsIdempotent(t *testing.T) {
+ 	f, weftPath := newFabricPair(t)
+ 	writeWeftConfig(t, weftPath, "modified for exclude test")
+ 
++	excludePath := filepath.Join(weftPath, ".git", "info", "exclude")
++	seeded, err := os.ReadFile(excludePath)
++	if err != nil && !os.IsNotExist(err) {
++		t.Fatalf("read info/exclude: %v", err)
++	}
++	if err := os.WriteFile(excludePath, append(seeded, []byte("*.lock\n*.swaplock\n")...), 0o644); err != nil {
++		t.Fatalf("write info/exclude: %v", err)
++	}
++
+ 	if _, err := f.Commit([]string{lymdirs.LymDirName}, fabricengine.DefaultCommitMessage, nil, fabricengine.SyncOptions{}); err != nil {
+ 		t.Fatalf("Commit: %v", err)
+ 	}
+ 
+-	excludePath := filepath.Join(weftPath, ".git", "info", "exclude")
+ 	first, err := os.ReadFile(excludePath)
+ 	if err != nil {
+ 		t.Fatalf("read info/exclude: %v", err)
+ 	}
+ 
+-	wantLines := []string{".weft/", gitrepo.PushLockFileName, lymdirs.DotLymDirName + "/", "*.lock", "*.swaplock"}
++	wantLines := []string{".weft/", lymdirs.DotLymDirName + "/", ".gitrepo-push.lock", "board.lock", "board.push.lock", "board.json.swaplock", "tasks.json.swaplock", "notes.json.swaplock", "generation-record.json.lock", "settle-record.json.lock", "settle-record.patch.lock"}
+ 	gotLines := nonEmptyExcludeLines(string(first))
+ 	if len(gotLines) != len(wantLines) {
+-		t.Fatalf("info/exclude entries = %v; want exactly %v", gotLines, wantLines)
++		t.Fatalf("info/exclude entries = %v; want exactly the entries of %v", gotLines, wantLines)
+ 	}
+-	for i, want := range wantLines {
+-		if gotLines[i] != want {
+-			t.Errorf("info/exclude entry %d = %q; want %q (full: %v)", i, gotLines[i], want, gotLines)
++	for _, want := range wantLines {
++		if !slices.Contains(gotLines, want) {
++			t.Errorf("info/exclude entries = %v; want %q among them", gotLines, want)
+ 		}
+ 	}
+ 
+ 	retiredPatterns := []string{
++		"*.lock",
++		"*.swaplock",
+ 		"**/" + lymdirs.LymDirName + "/*/**/*.lock",
+ 		"**/" + lymdirs.LymDirName + "/*/pause",
+ 		"**/" + lymdirs.LymDirName + "/*/prompts/",
+ 	}
+ 	for _, retired := range retiredPatterns {
+-		if strings.Contains(string(first), retired) {
++		if slices.Contains(gotLines, retired) {
+ 			t.Errorf("info/exclude seeds retired cross-module pattern %q; want it gone", retired)
+ 		}
+ 	}
+diff --git a/internal/gitrepo/doc.go b/internal/gitrepo/doc.go
+index d5a522fe..4070fa99 100644
+--- a/internal/gitrepo/doc.go
++++ b/internal/gitrepo/doc.go
+@@ -199,12 +199,8 @@
+ // A push that exhausts the attempts returns an error wrapping ErrPushRetriesExhausted and the last push error, never ErrPushRejected.
+ // PushWithRetry exposes the same loop for a caller that runs its own push, on the backoff delays the caller passes;
+ // PushWithRetryReasons adds reasons the caller names as retryable beside those two forms.
+-// PushCoalesced adds cross-process coalescing on top: it acquires a
+-// single-pusher lock file, .gitrepo-push.lock, in the repo's
+-// worktree root before checking whether anything is actually unpushed, so a
+-// burst of concurrent callers collapses into as few pushes as possible — a
+-// caller that finds nothing unpushed once it acquires the lock returns
+-// immediately instead of pushing again.
++// PushCoalesced adds cross-process coalescing on top: it acquires a single-pusher lock file in the checkout's own git dir (Repo.PushLockPath), out of the tracked tree, before checking whether anything is actually unpushed,
++// so a burst of concurrent callers collapses into as few pushes as possible — a caller that finds nothing unpushed once it acquires the lock returns immediately instead of pushing again.
+ //
+ // # Pull surface
+ //
+diff --git a/internal/gitrepo/push.go b/internal/gitrepo/push.go
+index 7b6fad12..f1604819 100644
+--- a/internal/gitrepo/push.go
++++ b/internal/gitrepo/push.go
+@@ -25,9 +25,18 @@ var ErrLeaseRejected = errors.New("gitrepo: lease rejected (remote branch moved)
+ // The package doc's locale caveat applies.
+ const leaseRejectedTrigger = "stale info"
+ 
+-// PushLockFileName is the name of the single-pusher lock file PushCoalesced acquires in the repo's
+-// worktree root.
+-const PushLockFileName = ".gitrepo-push.lock"
++// PushLockFileName is the name of the single-pusher lock file PushCoalesced acquires in the checkout's own git dir.
++const PushLockFileName = "lym-push.lock"
++
++// PushLockPath returns the single-pusher lock file PushCoalesced takes: PushLockFileName in the checkout's own git dir, where no commit can stage it.
++// A caller that must keep a coalesced push off the checkout while it works takes the same file.
++func (r *Repo) PushLockPath() (string, error) {
++	gitDir, err := r.GitDir()
++	if err != nil {
++		return "", err
++	}
++	return filepath.Join(gitDir, PushLockFileName), nil
++}
+ 
+ // rebaseRetryTriggers are the git-push stderr substrings indicating the
+ // remote has commits this checkout lacks.
+@@ -316,7 +325,11 @@ func containsAny(s string, substrs []string) bool {
+ // Returns immediately if nothing is unpushed once the lock is acquired.
+ // Shares Push's rebase-retry and SHA invalidation caveat.
+ func (r *Repo) PushCoalesced() error {
+-	l, err := lock.AcquireWriteLock(filepath.Join(r.path, PushLockFileName))
++	lockPath, err := r.PushLockPath()
++	if err != nil {
++		return err
++	}
++	l, err := lock.AcquireWriteLock(lockPath)
+ 	if err != nil {
+ 		return fmt.Errorf("gitrepo: acquire push lock: %w", err)
+ 	}
+diff --git a/internal/gitrepo/push_test.go b/internal/gitrepo/push_test.go
+index 9876ab70..0aa33b25 100644
+--- a/internal/gitrepo/push_test.go
++++ b/internal/gitrepo/push_test.go
+@@ -475,7 +475,12 @@ func pushCoalescedChild(dir string) int {
+ 
+ // lockHolderChild acquires the push lock of the clone at dir, prints a marker so the parent knows the lock is held, and blocks until the parent SIGKILLs it.
+ func lockHolderChild(dir string) int {
+-	held, err := lock.AcquireWriteLock(filepath.Join(dir, ".gitrepo-push.lock"))
++	lockPath, err := gitrepo.New(dir).PushLockPath()
++	if err != nil {
++		fmt.Fprintf(os.Stderr, "PushLockPath() in child process error = %v\n", err)
++		return 1
++	}
++	held, err := lock.AcquireWriteLock(lockPath)
+ 	if err != nil {
+ 		fmt.Fprintf(os.Stderr, "AcquireWriteLock() in child process error = %v\n", err)
+ 		return 1
+@@ -489,11 +494,11 @@ func lockHolderChild(dir string) int {
+ 	}
+ }
+ 
+-// TestPushCoalesced drives PushCoalesced's single-pusher lock (one clone, one .gitrepo-push.lock) through goroutines, genuinely separate OS processes and a crashed lock holder.
++// TestPushCoalesced drives PushCoalesced's single-pusher lock (one clone, one push lock) through goroutines, genuinely separate OS processes and a crashed lock holder.
+ // Several commits land locally before any push runs, so concurrent PushCoalesced calls must coalesce them rather than each pushing its own subset, serializing on the lock: the second finds nothing unpushed once it acquires the lock and returns immediately.
+ // The cross-process step proves the lock holds across real OS processes, not just goroutines sharing one process: several re-exec'd child processes call PushCoalesced against the same clone concurrently, and every commit must land on the bare remote with all children succeeding;
+ // synchronization is the lock itself — no timing assumptions.
+-// The crash step proves the push lock does not wedge the repo when its holder dies without releasing: a child process acquires .gitrepo-push.lock (confirmed genuinely held cross-process via a failed TryAcquire), is SIGKILLed mid-hold, and a fresh PushCoalesced must then complete — the OS releases a flock on process death — and push the pending commit.
++// The crash step proves the push lock does not wedge the repo when its holder dies without releasing: a child process acquires the push lock (confirmed genuinely held cross-process via a failed TryAcquire), is SIGKILLed mid-hold, and a fresh PushCoalesced must then complete — the OS releases a flock on process death — and push the pending commit.
+ // The steps run serially in that order and share the clone and the remote: each commits locally and leaves everything pushed for the next.
+ // The top-level test calls t.Parallel; no step does, because the steps share the fixture.
+ func TestPushCoalesced(t *testing.T) {
+@@ -637,7 +642,11 @@ func TestPushCoalesced(t *testing.T) {
+ 
+ 		// The lock must be genuinely held by the other process before the kill,
+ 		// or the recovery below would prove nothing.
+-		if _, ok, err := lock.TryAcquireWriteLock(filepath.Join(repoPath, ".gitrepo-push.lock")); err != nil {
++		pushLockPath, err := repo.PushLockPath()
++		if err != nil {
++			t.Fatalf("PushLockPath() error = %v", err)
++		}
++		if _, ok, err := lock.TryAcquireWriteLock(pushLockPath); err != nil {
+ 			t.Fatalf("TryAcquireWriteLock() error = %v", err)
+ 		} else if ok {
+ 			t.Fatal("TryAcquireWriteLock() ok = true while the child holds the lock; want contention")
+diff --git a/internal/gitrepo/pushlock_test.go b/internal/gitrepo/pushlock_test.go
+new file mode 100644
+index 00000000..d8a37506
+--- /dev/null
++++ b/internal/gitrepo/pushlock_test.go
+@@ -0,0 +1,57 @@
++// pushlock_test.go covers where the single-pusher lock of PushCoalesced sits: in the checkout's git dir, never in its working tree.
++
++package gitrepo_test
++
++import (
++	"os"
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/gitrepo"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestPushLockPath_InGitDirAndCreatedThereByPushCoalesced(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	container := t.TempDir()
++	bareRemote := newBareRemote(t, container)
++	repoPath, repo := newRepoWithRemote(t, container, "clone", bareRemote)
++	writeFile(t, repoPath, "a.txt", "initial")
++	commitAll(t, repoPath, "init")
++	if err := repo.Push(); err != nil {
++		t.Fatalf("Push() (establish upstream) error = %v; want nil", err)
++	}
++
++	lockPath, err := repo.PushLockPath()
++	if err != nil {
++		t.Fatalf("PushLockPath() error = %v; want nil", err)
++	}
++	if got := filepath.Base(lockPath); got != gitrepo.PushLockFileName {
++		t.Errorf("PushLockPath() base = %q; want %q", got, gitrepo.PushLockFileName)
++	}
++	wantDir, err := filepath.EvalSymlinks(filepath.Join(repoPath, ".git"))
++	if err != nil {
++		t.Fatalf("EvalSymlinks: %v", err)
++	}
++	gotDir, err := filepath.EvalSymlinks(filepath.Dir(lockPath))
++	if err != nil {
++		t.Fatalf("EvalSymlinks: %v", err)
++	}
++	if gotDir != wantDir {
++		t.Errorf("PushLockPath() dir = %q; want the git dir %q", gotDir, wantDir)
++	}
++
++	writeFile(t, repoPath, "b.txt", "more")
++	commitAll(t, repoPath, "more")
++	if err := repo.PushCoalesced(); err != nil {
++		t.Fatalf("PushCoalesced() error = %v; want nil", err)
++	}
++	if _, err := os.Stat(lockPath); err != nil {
++		t.Errorf("Stat(%q) error = %v; want the push lock created in the git dir", lockPath, err)
++	}
++	if _, err := os.Stat(filepath.Join(repoPath, gitrepo.PushLockFileName)); !os.IsNotExist(err) {
++		t.Errorf("Stat(working-tree %s) error = %v; want it absent", gitrepo.PushLockFileName, err)
++	}
++}
+diff --git a/internal/heddlecli/cli_integration_test.go b/internal/heddlecli/cli_integration_test.go
+index 3de8662c..ba468691 100644
+--- a/internal/heddlecli/cli_integration_test.go
++++ b/internal/heddlecli/cli_integration_test.go
+@@ -445,7 +445,10 @@ func TestHeddleCLI(t *testing.T) {
+ 		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 		cwd := primeCwd(h)
+ 		boltDir := fabricengine.BoltDir(h.Path)
+-		lockPath := filepath.Join(boltDir, fabricengine.BoardWriteLockFile)
++		lockPath, err := fabricengine.BoltLockPath(boltDir, fabricengine.BoardWriteLockFile)
++		if err != nil {
++			t.Fatalf("BoltLockPath: %v", err)
++		}
+ 		headBefore := git(t, boltDir, "rev-parse", "HEAD")
+ 		boltStatusBefore := git(t, boltDir, "status", "--porcelain", "--untracked-files=no")
+ 		primeStatusBefore := git(t, cwd, "status", "--porcelain")
+@@ -630,7 +633,11 @@ func TestHeddleCLI(t *testing.T) {
+ 		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 		cwd := primeCwd(h)
+ 		seedStore(t, h, map[string][]string{"rules": {"claude-file"}})
+-		held, err := lock.AcquireWriteLock(filepath.Join(fabricengine.BoltDir(h.Path), fabricengine.BoardWriteLockFile))
++		boltLockPath, err := fabricengine.BoltLockPath(fabricengine.BoltDir(h.Path), fabricengine.BoardWriteLockFile)
++		if err != nil {
++			t.Fatalf("BoltLockPath: %v", err)
++		}
++		held, err := lock.AcquireWriteLock(boltLockPath)
+ 		if err != nil {
+ 			t.Fatalf("AcquireWriteLock: %v", err)
+ 		}
+diff --git a/internal/heddlecli/verbs.go b/internal/heddlecli/verbs.go
+index cb363cf1..bcc906eb 100644
+--- a/internal/heddlecli/verbs.go
++++ b/internal/heddlecli/verbs.go
+@@ -6,7 +6,6 @@ import (
+ 	"fmt"
+ 	"io"
+ 	"os"
+-	"path/filepath"
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+@@ -408,7 +407,11 @@ func (c *heddleCLI) write(file storeFile, change func(*heddleengine.Store) error
+ 
+ // saveLocked loads file, applies change and saves it, all under the Bolt write lock.
+ func (c *heddleCLI) saveLocked(file storeFile, change func(*heddleengine.Store) error) error {
+-	boltLock, acquired, err := lock.AcquireWriteLockWithin(filepath.Join(c.boltDir, fabricengine.BoardWriteLockFile), heddleengine.DefaultBoltLockWait)
++	lockPath, err := fabricengine.BoltLockPath(c.boltDir, fabricengine.BoardWriteLockFile)
++	if err != nil {
++		return fmt.Errorf("heddle: %w", err)
++	}
++	boltLock, acquired, err := lock.AcquireWriteLockWithin(lockPath, heddleengine.DefaultBoltLockWait)
+ 	if err != nil {
+ 		return fmt.Errorf("heddle: %w", err)
+ 	}
+diff --git a/internal/heddleengine/render.go b/internal/heddleengine/render.go
+index 7781f963..a1922b18 100644
+--- a/internal/heddleengine/render.go
++++ b/internal/heddleengine/render.go
+@@ -162,7 +162,11 @@ func (r Renderer) read(boltDir string) (Layers, error) {
+ 	if wait == 0 {
+ 		wait = DefaultBoltLockWait
+ 	}
+-	boltLock, acquired, err := lock.AcquireWriteLockWithin(filepath.Join(boltDir, fabricengine.BoardWriteLockFile), wait)
++	lockPath, err := fabricengine.BoltLockPath(boltDir, fabricengine.BoardWriteLockFile)
++	if err != nil {
++		return Layers{}, err
++	}
++	boltLock, acquired, err := lock.AcquireWriteLockWithin(lockPath, wait)
+ 	if err != nil {
+ 		return Layers{}, err
+ 	}
+diff --git a/internal/heddleengine/render_test.go b/internal/heddleengine/render_test.go
+index 71bcd4b5..696d0db0 100644
+--- a/internal/heddleengine/render_test.go
++++ b/internal/heddleengine/render_test.go
+@@ -539,7 +539,11 @@ func TestRender(t *testing.T) {
+ 	t.Run("HeldBoltLockFailsTheRender", func(t *testing.T) {
+ 		t.Parallel()
+ 		f := newRenderFixture(t, claudeStore)
+-		held, err := lock.AcquireWriteLock(filepath.Join(f.bolt, fabricengine.BoardWriteLockFile))
++		boltLockPath, err := fabricengine.BoltLockPath(f.bolt, fabricengine.BoardWriteLockFile)
++		if err != nil {
++			t.Fatal(err)
++		}
++		held, err := lock.AcquireWriteLock(boltLockPath)
+ 		if err != nil {
+ 			t.Fatal(err)
+ 		}
+@@ -559,7 +563,11 @@ func TestRender(t *testing.T) {
+ 		if err := os.Remove(filepath.Join(f.bolt, FileName)); err != nil {
+ 			t.Fatal(err)
+ 		}
+-		held, err := lock.AcquireWriteLock(filepath.Join(f.bolt, fabricengine.BoardWriteLockFile))
++		boltLockPath, err := fabricengine.BoltLockPath(f.bolt, fabricengine.BoardWriteLockFile)
++		if err != nil {
++			t.Fatal(err)
++		}
++		held, err := lock.AcquireWriteLock(boltLockPath)
+ 		if err != nil {
+ 			t.Fatal(err)
+ 		}
+diff --git a/internal/lock/lock.go b/internal/lock/lock.go
+index f48fde1c..71a2d591 100644
+--- a/internal/lock/lock.go
++++ b/internal/lock/lock.go
+@@ -3,6 +3,7 @@
+ // FileLock backs both an exclusive write lock and a shared read lock.
+ // Being a real OS file lock it coordinates across processes — the way Loomyard is used, one
+ // short-lived process per command.
++// Every acquire refuses a lock path inside a tracked lym directory or a tracked directory of the Bolt checkout, so no lock file can show up as a change a commit stages.
+ 
+ package lock
+ 
+@@ -28,6 +29,9 @@ type FileLock struct {
+ 
+ // AcquireWriteLock acquires an exclusive lock, blocking until available.
+ func AcquireWriteLock(lockPath string) (*FileLock, error) {
++	if err := refuseTrackedTree(lockPath); err != nil {
++		return nil, err
++	}
+ 	fl := flock.New(lockPath)
+ 	if err := fl.Lock(); err != nil {
+ 		return nil, fmt.Errorf("acquire write lock: %w", err)
+@@ -38,6 +42,9 @@ func AcquireWriteLock(lockPath string) (*FileLock, error) {
+ // TryAcquireWriteLock attempts to acquire an exclusive lock without blocking.
+ // It reports (lock, true, nil) on success, and (nil, false, nil) when already held (not an error).
+ func TryAcquireWriteLock(lockPath string) (*FileLock, bool, error) {
++	if err := refuseTrackedTree(lockPath); err != nil {
++		return nil, false, err
++	}
+ 	fl := flock.New(lockPath)
+ 	locked, err := fl.TryLock()
+ 	if err != nil {
+@@ -52,6 +59,9 @@ func TryAcquireWriteLock(lockPath string) (*FileLock, bool, error) {
+ // AcquireWriteLockWithin acquires an exclusive lock, waiting at most wait for it.
+ // It reports (lock, true, nil) on success, and (nil, false, nil) when the lock is still held once wait runs out (not an error).
+ func AcquireWriteLockWithin(lockPath string, wait time.Duration) (*FileLock, bool, error) {
++	if err := refuseTrackedTree(lockPath); err != nil {
++		return nil, false, err
++	}
+ 	ctx, cancel := context.WithTimeout(context.Background(), wait)
+ 	defer cancel()
+ 
+@@ -68,6 +78,9 @@ func AcquireWriteLockWithin(lockPath string, wait time.Duration) (*FileLock, boo
+ 
+ // AcquireReadLock acquires a shared lock, blocking until available.
+ func AcquireReadLock(lockPath string) (*FileLock, error) {
++	if err := refuseTrackedTree(lockPath); err != nil {
++		return nil, err
++	}
+ 	fl := flock.New(lockPath)
+ 	if err := fl.RLock(); err != nil {
+ 		return nil, fmt.Errorf("acquire read lock: %w", err)
+@@ -78,6 +91,9 @@ func AcquireReadLock(lockPath string) (*FileLock, error) {
+ // TryAcquireReadLock attempts to acquire a shared lock without blocking.
+ // It reports (lock, true, nil) on success, and (nil, false, nil) when an exclusive holder has it (not an error).
+ func TryAcquireReadLock(lockPath string) (*FileLock, bool, error) {
++	if err := refuseTrackedTree(lockPath); err != nil {
++		return nil, false, err
++	}
+ 	fl := flock.New(lockPath)
+ 	locked, err := fl.TryRLock()
+ 	if err != nil {
+diff --git a/internal/lock/tracked.go b/internal/lock/tracked.go
+new file mode 100644
+index 00000000..6dcdbb2f
+--- /dev/null
++++ b/internal/lock/tracked.go
+@@ -0,0 +1,95 @@
++// tracked.go places the lock files of tracked files under a checkout's never-tracked lock directory and refuses a lock path inside a tracked lym or Bolt directory.
++
++package lock
++
++import (
++	"fmt"
++	"os"
++	"path/filepath"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/lymdirs"
++)
++
++// TrackedLockPath returns the lock file named name of the tracked checkout tree at root: name joined onto root's never-tracked lock directory.
++// root is resolved through symlinks, so every path that reaches one checkout names the same lock file;
++// a root that does not resolve is used as given.
++// It creates nothing.
++func TrackedLockPath(root, name string) string {
++	return filepath.Join(locksDir(resolve(root)), name)
++}
++
++// TrackedFileLockPath returns the lock file guarding the file at path, with suffix appended to the lock's name.
++// For a file under a tracked lym directory, the lock mirrors the file's place under the nearest such directory above it, inside the never-tracked lock directory of the checkout that physically holds that directory.
++// A lock reached through a linked lym directory is therefore the lock reached through the directory itself.
++// A file under no tracked lym directory gets its lock beside it, path with suffix appended.
++// It creates nothing.
++func TrackedFileLockPath(path, suffix string) string {
++	clean := filepath.Clean(path)
++	rel := filepath.Base(clean)
++	dir := filepath.Dir(clean)
++	for {
++		if filepath.Base(dir) == lymdirs.LymDirName {
++			return filepath.Join(locksDir(checkoutHolding(dir)), lymdirs.LymDirName, rel) + suffix
++		}
++		parent := filepath.Dir(dir)
++		if parent == dir {
++			return path + suffix
++		}
++		rel = filepath.Join(filepath.Base(dir), rel)
++		dir = parent
++	}
++}
++
++// checkoutHolding returns the directory that physically holds the tracked lym directory at lymDir, following a link to where the directory lives.
++func checkoutHolding(lymDir string) string {
++	if resolved, err := filepath.EvalSymlinks(lymDir); err == nil {
++		return filepath.Dir(resolved)
++	}
++	return resolve(filepath.Dir(lymDir))
++}
++
++// resolve returns dir with its symlinks followed, or dir unchanged when it does not resolve.
++func resolve(dir string) string {
++	if resolved, err := filepath.EvalSymlinks(dir); err == nil {
++		return resolved
++	}
++	return dir
++}
++
++// locksDir returns the never-tracked lock directory of the checkout tree at root.
++func locksDir(root string) string {
++	return filepath.Join(root, lymdirs.DotLymDirName, lymdirs.LocksDirName)
++}
++
++// refuseTrackedTree returns an error when lockPath sits inside a tracked lym directory or a tracked directory of the Bolt checkout, where the lock file would show as a change a commit can stage.
++// The checkout's lock directory is the exemption, a never-tracked directory below the Bolt checkout's root is not tracked,
++// and a directory named like the Bolt checkout that holds no checkout, such as its entry in a git dir, is no Bolt checkout.
++func refuseTrackedTree(lockPath string) error {
++	segments := strings.Split(filepath.ToSlash(filepath.Clean(lockPath)), "/")
++	inBolt := false
++	for i, segment := range segments {
++		switch segment {
++		case lymdirs.DotLymDirName:
++			if i+1 < len(segments) && segments[i+1] == lymdirs.LocksDirName {
++				return nil
++			}
++			inBolt = false
++		case lymdirs.LymDirName:
++			return refusedTrackedTree(lockPath, lymdirs.LymDirName)
++		case lymdirs.BoltDirName:
++			candidate := filepath.FromSlash(strings.Join(segments[:i+1], "/"))
++			_, err := os.Lstat(filepath.Join(candidate, ".git"))
++			inBolt = err == nil
++		}
++	}
++	if inBolt {
++		return refusedTrackedTree(lockPath, lymdirs.BoltDirName)
++	}
++	return nil
++}
++
++// refusedTrackedTree returns the refusal of a lock at lockPath inside the tracked directory named tracked, with the way forward.
++func refusedTrackedTree(lockPath, tracked string) error {
++	return fmt.Errorf("lock: %s sits in a tracked %s directory; way forward: build the lock path with lock.TrackedFileLockPath or lock.TrackedLockPath, which put it under the checkout's %s", lockPath, tracked, filepath.Join(lymdirs.DotLymDirName, lymdirs.LocksDirName))
++}
+diff --git a/internal/lock/tracked_test.go b/internal/lock/tracked_test.go
+new file mode 100644
+index 00000000..046260dc
+--- /dev/null
++++ b/internal/lock/tracked_test.go
+@@ -0,0 +1,177 @@
++// tracked_test.go covers the lock paths of tracked files (tracked.go) and the refusal of a lock inside a tracked lym or Bolt directory.
++
++package lock_test
++
++import (
++	"os"
++	"path/filepath"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/fslink"
++	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/lymdirs"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// resolvedTempDir returns a fresh temp dir with its symlinks followed, the form the lock paths are built from.
++func resolvedTempDir(t *testing.T) string {
++	t.Helper()
++	dir, err := filepath.EvalSymlinks(t.TempDir())
++	if err != nil {
++		t.Fatalf("EvalSymlinks: %v", err)
++	}
++	return dir
++}
++
++func TestTrackedFileLockPath(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	root := resolvedTempDir(t)
++	holder := filepath.Join(root, "holder")
++	linker := filepath.Join(root, "linker")
++	reviews := filepath.Join(holder, lymdirs.LymDirName, "reviews", "code")
++	if err := os.MkdirAll(reviews, 0o755); err != nil {
++		t.Fatalf("MkdirAll: %v", err)
++	}
++	if err := os.MkdirAll(linker, 0o755); err != nil {
++		t.Fatalf("MkdirAll: %v", err)
++	}
++	if err := fslink.CreateDirLink(filepath.Join(linker, lymdirs.LymDirName), filepath.Join(holder, lymdirs.LymDirName)); err != nil {
++		t.Fatalf("CreateDirLink: %v", err)
++	}
++	wantMirrored := filepath.Join(holder, lymdirs.DotLymDirName, lymdirs.LocksDirName, lymdirs.LymDirName, "reviews", "code", "record.json.lock")
++	outside := filepath.Join(root, "plain", "record.json")
++
++	tests := []struct {
++		name string
++		path string
++		want string
++	}{
++		{"UnderLymDir_MirroredUnderLocksDir", filepath.Join(reviews, "record.json"), wantMirrored},
++		{"ThroughLinkedLymDir_SameLockAsTheDirItself", filepath.Join(linker, lymdirs.LymDirName, "reviews", "code", "record.json"), wantMirrored},
++		{"UnderAbsentLymDir_MirroredUnderItsParent", filepath.Join(root, "fresh", lymdirs.LymDirName, "record.json"), filepath.Join(root, "fresh", lymdirs.DotLymDirName, lymdirs.LocksDirName, lymdirs.LymDirName, "record.json.lock")},
++		{"RelativePathUnderLymDir_MirroredUnderItsParent", filepath.Join("relative", lymdirs.LymDirName, "record.json"), filepath.Join("relative", lymdirs.DotLymDirName, lymdirs.LocksDirName, lymdirs.LymDirName, "record.json.lock")},
++		{"OutsideAnyLymDir_Beside", outside, outside + ".lock"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := lock.TrackedFileLockPath(tt.path, ".lock"); got != tt.want {
++				t.Errorf("TrackedFileLockPath(%q, %q) = %q; want %q", tt.path, ".lock", got, tt.want)
++			}
++		})
++	}
++}
++
++func TestTrackedLockPath(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	root := resolvedTempDir(t)
++	real := filepath.Join(root, "real")
++	if err := os.MkdirAll(real, 0o755); err != nil {
++		t.Fatalf("MkdirAll: %v", err)
++	}
++	link := filepath.Join(root, "link")
++	if err := fslink.CreateDirLink(link, real); err != nil {
++		t.Fatalf("CreateDirLink: %v", err)
++	}
++	wantUnder := func(checkout string) string {
++		return filepath.Join(checkout, lymdirs.DotLymDirName, lymdirs.LocksDirName, "board.lock")
++	}
++
++	tests := []struct {
++		name string
++		root string
++		want string
++	}{
++		{"ResolvedRoot", real, wantUnder(real)},
++		{"LinkedRoot_SameLockAsTheCheckoutItself", link, wantUnder(real)},
++		{"AbsentRoot_UsedAsGiven", filepath.Join(root, "absent"), wantUnder(filepath.Join(root, "absent"))},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := lock.TrackedLockPath(tt.root, "board.lock"); got != tt.want {
++				t.Errorf("TrackedLockPath(%q, %q) = %q; want %q", tt.root, "board.lock", got, tt.want)
++			}
++		})
++	}
++}
++
++func TestAcquire_LockInTrackedTree(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	acquirers := []struct {
++		name    string
++		acquire func(path string) (*lock.FileLock, error)
++	}{
++		{"AcquireWriteLock", lock.AcquireWriteLock},
++		{"TryAcquireWriteLock", func(path string) (*lock.FileLock, error) {
++			l, _, err := lock.TryAcquireWriteLock(path)
++			return l, err
++		}},
++		{"AcquireWriteLockWithin", func(path string) (*lock.FileLock, error) {
++			l, _, err := lock.AcquireWriteLockWithin(path, time.Second)
++			return l, err
++		}},
++		{"AcquireReadLock", lock.AcquireReadLock},
++		{"TryAcquireReadLock", func(path string) (*lock.FileLock, error) {
++			l, _, err := lock.TryAcquireReadLock(path)
++			return l, err
++		}},
++	}
++	for _, tt := range acquirers {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			root := resolvedTempDir(t)
++			tracked := filepath.Join(root, lymdirs.LymDirName, "reviews")
++			bolt := filepath.Join(root, lymdirs.BoltDirName)
++			if err := os.MkdirAll(bolt, 0o755); err != nil {
++				t.Fatalf("MkdirAll: %v", err)
++			}
++			if err := os.WriteFile(filepath.Join(bolt, ".git"), []byte("gitdir: elsewhere\n"), 0o644); err != nil {
++				t.Fatalf("WriteFile: %v", err)
++			}
++
++			refused := []string{
++				filepath.Join(tracked, "record.json.lock"),
++				filepath.Join(bolt, "board.lock"),
++				filepath.Join(bolt, "board.json.swaplock"),
++				filepath.Join(bolt, "sub", "board.lock"),
++				filepath.Join(root, lymdirs.DotLymDirName, "checkout", lymdirs.LymDirName, "record.json.lock"),
++			}
++			for _, path := range refused {
++				if l, err := tt.acquire(path); err == nil {
++					_ = l.Release()
++					t.Errorf("%s(%q) error = nil; want a refusal of a lock inside a tracked tree", tt.name, path)
++				}
++				if _, err := os.Stat(path); !os.IsNotExist(err) {
++					t.Errorf("Stat(%q) error = %v; want the refused lock file absent", path, err)
++				}
++			}
++
++			accepted := []string{
++				lock.TrackedFileLockPath(filepath.Join(tracked, "record.json"), ".lock"),
++				lock.TrackedLockPath(bolt, "board.lock"),
++				filepath.Join(bolt, lymdirs.DotLymDirName, lymdirs.PauseDirName, "pause.lock"),
++				filepath.Join(root, "worktrees", lymdirs.BoltDirName, "lym-push.lock"),
++			}
++			for _, path := range accepted {
++				if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++					t.Fatalf("MkdirAll: %v", err)
++				}
++				l, err := tt.acquire(path)
++				if err != nil {
++					t.Fatalf("%s(%q) error = %v; want a lock outside every tracked tree taken", tt.name, path, err)
++				}
++				if err := l.Release(); err != nil {
++					t.Errorf("Release(%q) error = %v", path, err)
++				}
++			}
++		})
++	}
++}
+diff --git a/internal/loomcli/checklist_test.go b/internal/loomcli/checklist_test.go
+index f4c83a39..c5c87c68 100644
+--- a/internal/loomcli/checklist_test.go
++++ b/internal/loomcli/checklist_test.go
+@@ -1277,7 +1277,11 @@ func TestChecklistPoll_WaitLineKeepsTheNoteText(t *testing.T) {
+ 				t.Fatalf("mkdir run dir: %v", err)
+ 			}
+ 			status := shedengine.Status{State: tt.state, CurrentProducer: "Build", Activity: shedengine.Activity{Now: "Build"}}
+-			if err := state.WriteJSON(statusFile, filepath.Join(filepath.Dir(statusFile), "status.lock"), status); err != nil {
++			statusLock := shedrun.StatusLock(location, shedrun.SelfRunID)
++			if err := os.MkdirAll(filepath.Dir(statusLock), 0o755); err != nil {
++				t.Fatalf("mkdir status lock dir: %v", err)
++			}
++			if err := state.WriteJSON(statusFile, statusLock, status); err != nil {
+ 				t.Fatalf("write status: %v", err)
+ 			}
+ 			waiting := func(shedengine.Status) (shedverbs.WaitNote, error) {
+diff --git a/internal/lymcwd/anchor.go b/internal/lymcwd/anchor.go
+index 476bf065..880137a3 100644
+--- a/internal/lymcwd/anchor.go
++++ b/internal/lymcwd/anchor.go
+@@ -16,13 +16,14 @@ import (
+ 	"runtime"
+ 	"strings"
+ 
++	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/weftname"
+ )
+ 
+-// BoltDirName is the name of the Bolt checkout inside a hub.
+-// It lives here because lymcwd reads the hub-wide anchor marker in the Bolt checkout.
++// BoltDirName is the name of the Bolt checkout inside a hub, re-exported from lymdirs.
++// lymcwd reads the hub-wide anchor marker in the Bolt checkout.
+ // fabricengine and runproc take the name from here, since lymcwd cannot import either.
+-const BoltDirName = "_bolt"
++const BoltDirName = lymdirs.BoltDirName
+ 
+ // boardDir returns the absolute path to the Bolt checkout inside hub.
+ // It is the one reader of BoltDirName in lymcwd, to find the recorded-anchor marker.
+diff --git a/internal/lymcwd/enforcement_test.go b/internal/lymcwd/enforcement_test.go
+index 25164e81..ca9841ea 100644
+--- a/internal/lymcwd/enforcement_test.go
++++ b/internal/lymcwd/enforcement_test.go
+@@ -218,12 +218,12 @@ func TestEnforcement_GeometryLiterals(t *testing.T) {
+ 	// geometryTokenOwners maps each policed geometry token to the set of directories permitted to declare or construct it in path-construction context: the finished per-token ownership map, converged batch by batch from a single allowlisted directory (internal/hubgeometry, then internal/lymcwd) to this map, each token's row landing in the same batch that moved its declaration.
+ 	//
+ 	geometryTokenOwners := map[string][]string{
+-		// "_bolt" is declared once, as lymcwd.BoltDirName; fabricengine and runproc take the name from it.
++		// "_bolt" is declared once, as lymdirs.BoltDirName, which lymcwd.BoltDirName re-exports; fabricengine and runproc take the name from it.
+ 		// "-LYMHUB" is dual-owned: internal/lymcwd keeps a private hubSuffix const
+ 		// (Location.RepoName derives from it), while internal/fabricengine
+ 		// owns the exported HubPath constructor every other caller uses.
+ 		// The duplication is sanctioned by this map, not a leak.
+-		"_bolt":   {"internal/lymcwd"},
++		"_bolt":   {"internal/lymdirs"},
+ 		"-weft":   {"internal/weftname"},
+ 		"-LYMHUB": {"internal/lymcwd", "internal/fabricengine"},
+ 		// "_portals" and "_launchers" are fabric's own illusion-maintenance
+@@ -512,7 +512,7 @@ func TestEnforcement_GeometryLiterals(t *testing.T) {
+ 
+ // TestEnforcement_BoltDirNameDeclaredOnce keeps the value of BoltDirName to its one declaration:
+ // no other Go file, stencil, spec or skill spells it as a whole token.
+-// internal/lymcwd/anchor.go holds exactly one occurrence, and this file spells the token its geometry test polices.
++// internal/lymdirs/dirs.go holds exactly one occurrence, and this file spells the token its geometry test polices.
+ //
+ //lym:guard
+ func TestEnforcement_BoltDirNameDeclaredOnce(t *testing.T) {
+@@ -528,7 +528,7 @@ func TestEnforcement_BoltDirNameDeclaredOnce(t *testing.T) {
+ 		}
+ 	})
+ 
+-	const declarationFile = "internal/lymcwd/anchor.go"
++	const declarationFile = "internal/lymdirs/dirs.go"
+ 	const policingFile = "internal/lymcwd/enforcement_test.go"
+ 
+ 	var findings []string
+diff --git a/internal/lymcwd/leaf_enforcement_test.go b/internal/lymcwd/leaf_enforcement_test.go
+index 4723cb5e..3d2edfbe 100644
+--- a/internal/lymcwd/leaf_enforcement_test.go
++++ b/internal/lymcwd/leaf_enforcement_test.go
+@@ -1,5 +1,5 @@
+ // leaf_enforcement_test.go enforces internal/lymcwd's own import cap from PATTERN-cwd-resolution.
+-// Production code in internal/lymcwd imports ONLY the standard library, internal/dotgit and internal/weftname.
++// Production code in internal/lymcwd imports ONLY the standard library, internal/dotgit, internal/lymdirs and internal/weftname.
+ // That keeps fabricengine -> logger -> lymcwd acyclic, and leaves lymcwd unable to spawn git.
+ 
+ package lymcwd
+@@ -15,6 +15,7 @@ func TestLeafInvariant_AllowlistOnly(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	scankit.AssertImportAllowlist(t, "internal/lymcwd",
+ 		"github.com/Knatte18/loomyard/internal/dotgit",
++		"github.com/Knatte18/loomyard/internal/lymdirs",
+ 		"github.com/Knatte18/loomyard/internal/weftname",
+ 	)
+ }
+diff --git a/internal/lymdirs/dirs.go b/internal/lymdirs/dirs.go
+index 31486624..681339ff 100644
+--- a/internal/lymdirs/dirs.go
++++ b/internal/lymdirs/dirs.go
+@@ -1,5 +1,5 @@
+-// dirs.go declares the lym directory-name tokens: the two worktree-level directories, the beam directory under a worktree's .lym and the pause directory under the board-level .lym.
+-// internal/lymdirs is the sole declarer of either worktree-level literal, enforced by TestEnforcement_GeometryLiterals in internal/lymcwd/enforcement_test.go.
++// dirs.go declares the lym directory-name tokens: the two worktree-level directories, the Bolt checkout directory, the beam directory under a worktree's .lym and the pause directory under the board-level .lym.
++// internal/lymdirs is the sole declarer of each worktree-level literal and of the Bolt checkout's, enforced by TestEnforcement_GeometryLiterals in internal/lymcwd/enforcement_test.go.
+ 
+ package lymdirs
+ 
+@@ -12,6 +12,10 @@ const LymDirName = "_lym"
+ // internal/lymdirs is the sole declarer of this literal, enforced by TestEnforcement_GeometryLiterals in internal/lymcwd/enforcement_test.go.
+ const DotLymDirName = ".lym"
+ 
++// BoltDirName is the name of the Bolt checkout inside a hub.
++// internal/lymdirs is the sole declarer of this literal, enforced by TestEnforcement_GeometryLiterals in internal/lymcwd/enforcement_test.go.
++const BoltDirName = "_bolt"
++
+ // PauseDirName is the directory under the hub's board-level DotLymDirName that holds the pause record and its lock.
+ const PauseDirName = "pause"
+ 
+@@ -41,3 +45,6 @@ const CreelFlagDirName = "flags"
+ 
+ // HeddleDirName is the directory under a worktree's DotLymDirName that holds heddle's render lock.
+ const HeddleDirName = "heddle"
++
++// LocksDirName is the directory under a checkout's DotLymDirName that holds the lock files guarding the checkout's tracked files.
++const LocksDirName = "locks"
+diff --git a/internal/lymdirs/doc.go b/internal/lymdirs/doc.go
+index 254f39da..a50f7928 100644
+--- a/internal/lymdirs/doc.go
++++ b/internal/lymdirs/doc.go
+@@ -1,6 +1,6 @@
+ // doc.go carries the package-level doc comment for internal/lymdirs.
+ 
+ // Package lymdirs is a stdlib-free leaf existing solely so internal/configengine, internal/logger, internal/gitkit, internal/fabricengine and every module engine can name the two lym directory tokens without any of them owning the pair, and without risking the internal/fabricengine -> internal/logger -> internal/lymcwd import cycle.
+-// It also declares the names of the directories modules keep under a worktree's or the hub's never-tracked directory, among them HeddleDirName for heddle's render lock.
++// It also declares BoltDirName, the name of the Bolt checkout inside a hub, and the names of the directories modules keep under a worktree's or the hub's never-tracked directory, among them HeddleDirName for heddle's render lock and LocksDirName for the locks of a checkout's tracked files.
+ // Under the hub's never-tracked directory sit AdoptDirName for the adopt check's files and FrontTaskDirName for the front-task record.
+ package lymdirs
+diff --git a/internal/shedadapters/settlerecord.go b/internal/shedadapters/settlerecord.go
+index 55398357..f7d1c76c 100644
+--- a/internal/shedadapters/settlerecord.go
++++ b/internal/shedadapters/settlerecord.go
+@@ -11,6 +11,7 @@ import (
+ 	"path/filepath"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/state"
+ )
+@@ -19,6 +20,8 @@ const (
+ 	settleRecordFile     = "settle-record.json"
+ 	settlePatchFile      = "settle-record.patch"
+ 	generationRecordFile = "generation-record.json"
++	// recordLockSuffix ends the name of each record's lock, which lock.TrackedFileLockPath places outside the tracked run directory.
++	recordLockSuffix = ".lock"
+ )
+ 
+ // The kinds of subject a review segment judges.
+@@ -118,16 +121,16 @@ func readRecord[T any](path string) (T, bool, error) {
+ 		}
+ 		return zero, false, fmt.Errorf("shedadapters: stat record %s: %w", path, err)
+ 	}
+-	record, found, err := state.ReadJSON[T](path, path+".lock")
++	record, found, err := state.ReadJSON[T](path, lock.TrackedFileLockPath(path, recordLockSuffix))
+ 	if err != nil {
+ 		return record, false, fmt.Errorf("shedadapters: read record %s: %w", path, err)
+ 	}
+ 	return record, found, nil
+ }
+ 
+-// writeRecord writes the JSON record at path through internal/state under a lock beside it.
++// writeRecord writes the JSON record at path through internal/state under its lock, which sits outside the tracked run directory.
+ func writeRecord[T any](path string, record T) error {
+-	if err := state.WriteJSON(path, path+".lock", record); err != nil {
++	if err := state.WriteJSON(path, lock.TrackedFileLockPath(path, recordLockSuffix), record); err != nil {
+ 		return fmt.Errorf("shedadapters: write record %s: %w", path, err)
+ 	}
+ 	return nil
+@@ -146,7 +149,7 @@ func readSettleRecord(runDir string) (settleRecord, bool, error) {
+ func writeSettleRecord(runDir string, rec settleRecord, patch []byte) error {
+ 	if patch != nil {
+ 		patchPath := filepath.Join(runDir, settlePatchFile)
+-		if err := state.WriteFile(patchPath, patchPath+".lock", patch); err != nil {
++		if err := state.WriteFile(patchPath, lock.TrackedFileLockPath(patchPath, recordLockSuffix), patch); err != nil {
+ 			return fmt.Errorf("shedadapters: write settle patch %s: %w", patchPath, err)
+ 		}
+ 	}
+@@ -252,7 +255,7 @@ func CarryRecords(fromDir, toDir string) error {
+ 			return fmt.Errorf("shedadapters: read %s to carry: %w", filepath.Join(fromDir, name), err)
+ 		}
+ 		target := filepath.Join(toDir, name)
+-		if err := state.WriteFile(target, target+".lock", data); err != nil {
++		if err := state.WriteFile(target, lock.TrackedFileLockPath(target, recordLockSuffix), data); err != nil {
+ 			return fmt.Errorf("shedadapters: carry %s: %w", target, err)
+ 		}
+ 	}
+diff --git a/internal/shedadapters/settlerecord_test.go b/internal/shedadapters/settlerecord_test.go
+index ed81004f..1d1836d7 100644
+--- a/internal/shedadapters/settlerecord_test.go
++++ b/internal/shedadapters/settlerecord_test.go
+@@ -7,6 +7,7 @@ import (
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -279,6 +280,52 @@ func TestCarryRecords(t *testing.T) {
+ 	}
+ }
+ 
++func TestRecordLocks_SitOutsideTheTrackedRunDirectory(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	root, err := filepath.EvalSymlinks(t.TempDir())
++	if err != nil {
++		t.Fatalf("EvalSymlinks: %v", err)
++	}
++	runDir := filepath.Join(root, lymdirs.LymDirName, "reviews", "code", "run")
++	carriedDir := filepath.Join(root, lymdirs.LymDirName, "reviews", "code", "carried")
++	if err := writeSettleRecord(runDir, documentSettleRecord(1, 1), []byte("patch")); err != nil {
++		t.Fatal(err)
++	}
++	if err := writeGenerationRecord(runDir, generationRecord{Number: 1}); err != nil {
++		t.Fatal(err)
++	}
++	if _, _, err := readSettleRecord(runDir); err != nil {
++		t.Fatal(err)
++	}
++	if err := CarryRecords(runDir, carriedDir); err != nil {
++		t.Fatal(err)
++	}
++
++	locksRoot := filepath.Join(root, lymdirs.DotLymDirName, lymdirs.LocksDirName, lymdirs.LymDirName, "reviews", "code")
++	for _, dir := range []string{"run", "carried"} {
++		for _, name := range []string{settleRecordFile, settlePatchFile, generationRecordFile} {
++			wantLock := filepath.Join(locksRoot, dir, name+recordLockSuffix)
++			if _, err := os.Stat(wantLock); err != nil {
++				t.Errorf("Stat(%q) error = %v; want the record's lock under the checkout's lock directory", wantLock, err)
++			}
++		}
++	}
++
++	for _, dir := range []string{runDir, carriedDir} {
++		entries, err := os.ReadDir(dir)
++		if err != nil {
++			t.Fatalf("ReadDir(%s): %v", dir, err)
++		}
++		for _, entry := range entries {
++			if ext := filepath.Ext(entry.Name()); ext == ".lock" || ext == ".swaplock" {
++				t.Errorf("run directory %s holds %s; want no lock file beside a tracked record", dir, entry.Name())
++			}
++		}
++	}
++}
++
+ func TestSettleRoundStart(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/state/lockdir_test.go b/internal/state/lockdir_test.go
+new file mode 100644
+index 00000000..956a9245
+--- /dev/null
++++ b/internal/state/lockdir_test.go
+@@ -0,0 +1,51 @@
++// lockdir_test.go covers the creation of a lock file's directory by the writers, which take a lock path that may sit in another tree than the record.
++
++package state_test
++
++import (
++	"os"
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/state"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestWriters_CreateAbsentLockDirectory(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	writers := []struct {
++		name  string
++		write func(path, lockPath string) error
++	}{
++		{"WriteJSON", func(path, lockPath string) error {
++			return state.WriteJSON(path, lockPath, sample{Name: "a", N: 1})
++		}},
++		{"WriteFile", func(path, lockPath string) error {
++			return state.WriteFile(path, lockPath, []byte("data"))
++		}},
++		{"UpdateJSON", func(path, lockPath string) error {
++			return state.UpdateJSON(path, lockPath, func(cur sample, found bool) (sample, error) {
++				return sample{Name: "a", N: 1}, nil
++			})
++		}},
++	}
++	for _, tt := range writers {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			root := t.TempDir()
++			path := filepath.Join(root, "records", "state.json")
++			lockPath := filepath.Join(root, "locks", "nested", "state.json.lock")
++
++			if err := tt.write(path, lockPath); err != nil {
++				t.Fatalf("%s() error = %v; want nil with the lock directory absent", tt.name, err)
++			}
++			for _, created := range []string{path, lockPath} {
++				if _, err := os.Stat(created); err != nil {
++					t.Errorf("Stat(%q) error = %v; want it created", created, err)
++				}
++			}
++		})
++	}
++}
+diff --git a/internal/state/state.go b/internal/state/state.go
+index 167bfa24..9e7ddfc5 100644
+--- a/internal/state/state.go
++++ b/internal/state/state.go
+@@ -27,10 +27,10 @@ var ErrRead = errors.New("state: read failed")
+ var ErrDecode = errors.New("state: decode failed")
+ 
+ // WriteJSON writes a value as indented JSON to path atomically, keeping every key of the file it replaces that the value's type does not declare.
++// It creates the directories of path and lockPath.
+ func WriteJSON[T any](path, lockPath string, v T) error {
+-	dir := filepath.Dir(path)
+-	if err := os.MkdirAll(dir, 0o755); err != nil {
+-		return fmt.Errorf("mkdir: %w", err)
++	if err := mkdirParents(path, lockPath); err != nil {
++		return err
+ 	}
+ 
+ 	l, err := lock.AcquireWriteLock(lockPath)
+@@ -42,11 +42,11 @@ func WriteJSON[T any](path, lockPath string, v T) error {
+ 	return writeJSONUnlocked(path, v)
+ }
+ 
+-// WriteFile writes data verbatim to path atomically under the write lock at lockPath, creating the parent directory.
++// WriteFile writes data verbatim to path atomically under the write lock at lockPath, creating the directories of path and lockPath.
+ // It does no marshalling and keeps nothing of the file it replaces, so it fits a record that is not JSON, such as a patch.
+ func WriteFile(path, lockPath string, data []byte) error {
+-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+-		return fmt.Errorf("mkdir: %w", err)
++	if err := mkdirParents(path, lockPath); err != nil {
++		return err
+ 	}
+ 
+ 	l, err := lock.AcquireWriteLock(lockPath)
+@@ -58,6 +58,16 @@ func WriteFile(path, lockPath string, data []byte) error {
+ 	return fsx.AtomicWriteBytes(path, data)
+ }
+ 
++// mkdirParents creates the directories of a record at path and of its lock at lockPath, which may sit in another tree.
++func mkdirParents(path, lockPath string) error {
++	for _, dir := range []string{filepath.Dir(path), filepath.Dir(lockPath)} {
++		if err := os.MkdirAll(dir, 0o755); err != nil {
++			return fmt.Errorf("mkdir: %w", err)
++		}
++	}
++	return nil
++}
++
+ // writeJSONUnlocked marshals v as indented JSON and writes it to path atomically, assuming the
+ // caller already holds whatever lock guards path.
+ // It keeps every key of the file it replaces that T does not declare.
+@@ -145,10 +155,10 @@ func readJSONUnlocked[T any](path string) (T, bool, error) {
+ // zero-value "fix" would silently discard whatever was actually on disk.
+ // UpdateJSON must never be composed from ReadJSON and WriteJSON — both acquire lockPath
+ // internally, so nesting one inside a held lock on the same path hangs rather than failing.
++// It creates the directories of path and lockPath.
+ func UpdateJSON[T any](path, lockPath string, mutate func(cur T, found bool) (T, error)) error {
+-	dir := filepath.Dir(path)
+-	if err := os.MkdirAll(dir, 0o755); err != nil {
+-		return fmt.Errorf("mkdir: %w", err)
++	if err := mkdirParents(path, lockPath); err != nil {
++		return err
+ 	}
+ 
+ 	l, err := lock.AcquireWriteLock(lockPath)
+diff --git a/pattern/PATTERN-cwd-resolution.md b/pattern/PATTERN-cwd-resolution.md
+index 80d8dc28..2d68d31d 100644
+--- a/pattern/PATTERN-cwd-resolution.md
++++ b/pattern/PATTERN-cwd-resolution.md
+@@ -10,7 +10,7 @@
+ - A worktree's anchor comes from its own `.lym-anchor` at the root of its weft branch, with the hub-wide Bolt marker as the fallback and `"."` after that.
+ - `lymcwd.NamedWorktree(hubPath, name)` is how code outside `lymcwd` gets another worktree's `Location`, at that worktree's own anchor.
+ - Only `fabricengine` writes the marker or reads it from git; `lymcwd` reads the working tree alone.
+-- `lymcwd` imports the standard library, `internal/dotgit` and `internal/weftname` only.
++- `lymcwd` imports the standard library, `internal/dotgit`, `internal/lymdirs` and `internal/weftname` only.
+ 
+ ## Told geometry
+ 
+diff --git a/pattern/PATTERN-durable-vs-ephemeral-state.md b/pattern/PATTERN-durable-vs-ephemeral-state.md
+index f567c189..dc1d5254 100644
+--- a/pattern/PATTERN-durable-vs-ephemeral-state.md
++++ b/pattern/PATTERN-durable-vs-ephemeral-state.md
+@@ -3,6 +3,7 @@
+ Every never-tracked file lives under `.lym`, at the mirrored subpath of the `_lym` content it relates to.
+ `_lym` holds tracked content only.
+ 
++- A lock file is never-tracked state: the lock of a tracked file sits under its checkout's `.lym/locks/`, mirroring the file's path, never beside the file (`PATTERN-tracked-file-locks`).
+ - Nothing a run, the orch or a landing depends on lives only under `.lym`: decisions, landings, stop reports and board state are always in git (board, records, decision record), and never-tracked state such as the creel journal is a delivery path or cache that a fresh machine starts without.
+ - The two are siblings under `AnchorPath()`: in a hub the sibling is `BoltDir(hub)`, standalone it is `standalonestate.Derive`.
+ - No engine derives its own `.lym` path; each module exposes a scratch accessor beside its durable one.
+diff --git a/pattern/PATTERN-fabric-git.md b/pattern/PATTERN-fabric-git.md
+index 08cc06b3..150363dc 100644
+--- a/pattern/PATTERN-fabric-git.md
++++ b/pattern/PATTERN-fabric-git.md
+@@ -22,7 +22,7 @@ The entry binds lym's own code only.
+ 
+ - Junction exclusion is `.git/info/exclude` on both sides, mutated only via `fabricengine.mutateGitExclude`, never a tracked `.gitignore`.
+ - The same holds for every warp-side writer: lym's own code never writes a `.gitignore` in a warp worktree, the prime included, and every ignore it needs there goes to `.git/info/exclude` through `fabricengine`.
+-- The one weft-side `.gitignore` writer is `boardengine`'s lock and manifest patterns in the Bolt checkout, the weft's `main` worktree.
++- The one weft-side `.gitignore` writer is `boardengine`'s render-manifest pattern in the Bolt checkout, the weft's `main` worktree; it removes the retired `*.lock` and `*.swaplock` lines.
+ 
+ ## Unwire and teardown
+ 
+diff --git a/pattern/PATTERN-tracked-file-locks.md b/pattern/PATTERN-tracked-file-locks.md
+new file mode 100644
+index 00000000..c87da164
+--- /dev/null
++++ b/pattern/PATTERN-tracked-file-locks.md
+@@ -0,0 +1,8 @@
++# PATTERN-tracked-file-locks
++
++A lock file is machine-local, so it never sits beside a tracked file.
++
++- The lock of a file in `_lym` or the Bolt checkout lives under that checkout's `.lym/locks/`, and its path comes from `lock.TrackedFileLockPath` (a `_lym` file, mirroring the file's path) or `lock.TrackedLockPath` (a Bolt file, by name), never `path + ".lock"` or `".swaplock"`.
++- A push lock lives in the git dir.
++- No `*.lock` or `*.swaplock` ignore in `.git/info/exclude` or a `.gitignore` hides a stray lock, so one shows in `git status`.
++- A test refuses a lock path built beside a file under `_lym`, or in a Bolt checkout, which is a `_bolt` directory holding a `.git` entry.
