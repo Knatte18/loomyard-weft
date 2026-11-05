@@ -89,7 +89,7 @@
 - `internal/testkit/envkit#TestNilSeams_ReportsExactPaths`
 - `internal/testkit/envkit#TestNilSeams_SkipsNilLegalPaths`
 - `internal/loomcli#conflictSessionStopper`
-- `plan:internal/driftengine#Check`
+- `internal/driftengine#Check`
 - `internal/driftengine#WriteRecords`
 - `internal/driftengine#ReadRecords`
 - `plan:internal/driftengine#WriteJudgeRequest`

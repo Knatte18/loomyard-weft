@@ -10,8 +10,8 @@
 - `internal/driftcli/doc.go`
 
 **Uses:**
-- `plan:internal/driftengine#Check`
-- `plan:internal/driftengine#CheckReport.Findings`
+- `internal/driftengine#Check`
+- `internal/driftengine#CheckReport.Findings`
 - `internal/fabricengine#FindTrailerCommit`
 - `internal/fabricengine#AnchoredFileAt`
 - `internal/shedrun#ReadSeed`

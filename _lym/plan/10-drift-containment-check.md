@@ -1,12 +1,12 @@
 # Card 10 — drift-containment-check
 
 **Create:**
-- `plan:internal/driftengine#ClassifiedCell` -> `type ClassifiedCell struct`
-- `plan:internal/driftengine#CheckReport` -> `type CheckReport struct`
-- `plan:internal/driftengine#Check` -> `func Check(ctx context.Context, d Deps) (CheckReport, error)`
-- `plan:internal/driftengine#CheckReport.Findings` -> `func (r CheckReport) Findings() string`
-- `plan:internal/driftengine#NewDriftGate` -> `func NewDriftGate(d Deps) shuttleengine.Gate`
-- `plan:internal/driftengine#TestCheck` -> `func TestCheck(t *testing.T)`
+- `internal/driftengine#ClassifiedCell`
+- `internal/driftengine#CheckReport`
+- `internal/driftengine#Check`
+- `internal/driftengine#CheckReport.Findings`
+- `internal/driftengine#NewDriftGate`
+- `internal/driftengine#TestCheck`
 
 **Edit:**
 - `internal/shedrecipe#resolvePlainGateClosure`

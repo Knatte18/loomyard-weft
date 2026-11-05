@@ -10,7 +10,7 @@
 - `internal/driftengine#CaptureRequest`
 - `internal/driftengine#CompareRequest`
 - `internal/driftengine#RunCapture`
-- `plan:internal/driftengine#CaptureCurrent`
+- `internal/driftengine#CaptureCurrent`
 - `internal/driftengine#RunCompare`
 - `internal/driftengine#renderCommand`
 - `internal/driftengine#Paths`
@@ -25,7 +25,7 @@
 - `internal/driftengine#TestSeatTables`
 - `internal/driftengine#TestRunCapture`
 - `internal/driftengine#TestRunCompare`
-- `plan:internal/driftengine#TestCaptureCurrent`
+- `internal/driftengine#TestCaptureCurrent`
 - `internal/driftengine#TestFailedCaptureError`
 - `internal/driftengine#TestDriftAwait`
 - `internal/driftengine#TestDriftBaseline`

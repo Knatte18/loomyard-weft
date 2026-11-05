@@ -11,7 +11,7 @@
 - `plan:internal/driftengine#DriftVerify.passCommand` -> `func (p *DriftVerify) passCommand(ctx context.Context, rec Records, report CheckReport) (shedengine.Outcome, shedengine.OutputPointer, error)`
 
 **Uses:**
-- `plan:internal/driftengine#Check`
+- `internal/driftengine#Check`
 - `internal/driftengine#JudgedCase`
 - `internal/driftengine#WriteRecords`
 - `plan:internal/driftengine#WriteJudgeRequest`

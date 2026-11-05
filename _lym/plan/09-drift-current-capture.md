@@ -21,9 +21,9 @@
 - `internal/driftengine#CaptureRequest`
 
 **Create:**
-- `plan:internal/driftengine#CurrentCapture` -> `type CurrentCapture struct`
-- `plan:internal/driftengine#CaptureCurrent` -> `func CaptureCurrent(ctx context.Context, req CaptureRequest) (CurrentCapture, error)`
-- `plan:internal/driftengine#TestCaptureCurrent` -> `func TestCaptureCurrent(t *testing.T)`
+- `internal/driftengine#CurrentCapture`
+- `internal/driftengine#CaptureCurrent`
+- `internal/driftengine#TestCaptureCurrent`
 
 **Uses:**
 - `internal/loomcli#TestWire_BeamRecipe`

@@ -1,6 +1,6 @@
 {
   "runGuid": "a1c4865ab9aa37350056289ec21b537d",
-  "planFingerprint": "0d72c3afd09d75ec9746ce993e9da62c201f9862fa5a17d8fab68d198d47635a",
+  "planFingerprint": "2c77a88a40b0ff7d69e9617019116d9ff8219220018413a51d03a1b01f72b9aa",
   "planFileHashes": {
     "00-overview.md": "23db230969dc39beb707659cbdf0389bfcf77c2143ebc77a9730567a70a41eaf",
     "01-fabric-trailer-commits.md": "8a9daa9bb99055bd6d008fd529275a4f2b2fa6099cff69434e1c6904e0f73b83",
@@ -11,15 +11,15 @@
     "06-drift-judgement-parser.md": "1a71dcd09cf7e82c0ea213c9dc4324ccec212ac40a6863d2005f22f1207f245a",
     "07-drift-records-guard.md": "c82d6371e83f7be40d2e59a32f6a11ca71ceb05b8ae9903737bd521c6981860f",
     "08-drift-seal-baseline-checks.md": "609e168e9d425a916687b2dcfabcb8b3bdad3db0d44fb4eb1a56003e0b9aa9f0",
-    "09-drift-current-capture.md": "4455b251f3f90dd340d6eae78f956c7ab211b451258f3a8d77b9b63f665503e2",
-    "10-drift-containment-check.md": "03fb5f61aff3ad72f7c46357d254bfdc7b235b87ab31623f89768bc68ced5e85",
+    "09-drift-current-capture.md": "78237b0e14d432e0aceedb2f385e9fa3912726fbb1cb85a369b5114438fc0815",
+    "10-drift-containment-check.md": "73c39460587d613452939242735167c472c9356efe1c09578087aa4883014a9f",
     "11-webster-runlevel-entry-report.md": "919b9451989a817322d42a872818016c744e01532afd639bcfa81b160783a780",
     "12-drift-expect-producer.md": "f1ce32109c4e101d24fc23f88ca5d96e46b6281fde7ee884e9b21747759042c4",
     "13-drift-expect-rows.md": "820c6fc0aa66c1694fbb0d24e282de013ff5d88c5ba2f8c9ae4e2df4609c87f9",
-    "14-drift-check-verb.md": "db36e895c32f5b69db020775806fea1dc289ca7c1d0560624223cc90fa9cd9bf",
+    "14-drift-check-verb.md": "b96495bb523254b4feb88543062cddd3b0d148ed8339bba77bb55e6ec1ebeafa",
     "15-drift-judge-seat.md": "97aa82cda320ab142cdc29b6f54e9e2bdc060b69bafad0af5c0c33564895ffd5",
-    "16-drift-verify-lines.md": "2e55c1d6d5a2107e8ca7ca72e9bd2cdda30f56660742058a3b5bb7f8488aa021",
-    "17-drift-verify-command.md": "7140870c3fe62092c7463a720ae77712637149d4e30eb46ca5a5d2e8a4b95368",
+    "16-drift-verify-lines.md": "cb9e682c42e33aee4c97f273a58ebf64922d6c983d277887a165f9d542da0cfc",
+    "17-drift-verify-command.md": "42f57b9192183e05e6aebe67be57442abba13076824bbfb476e2ad7b7b65ab57",
     "18-drift-baseline-await.md": "b01fdaa35530840de7a6050a63bcc33d2da19354f293da498635814b9551f2d2",
     "19-drift-amend-defer.md": "392291f1b8acd4890b5951a609312e937e0116b1092d261d137926f5b2d86979",
     "20-drift-verdict.md": "749fac950f42c7624b34a2beab880be9338692921858a69ff9e7881b724d95ed",
@@ -28,7 +28,7 @@
     "23-drift-retire-recheck-engine.md": "9dc7421e2269d6355f48111babb54c85756dc732d035fa9a3f07f02b46fc4cc6",
     "24-drift-retire-old-seats.md": "073756509da9f02f71d758a679b14245398295c754ce81ef0eb5a96f9730c5f4",
     "25-driftengine-retire-acceptance.md": "0cd3983bfc2134842d385c7f6ee866412c89a2e8c2c1f29505fd0769772c7299",
-    "26-drift-retire-skip-keys.md": "91c731e29e12ec822c749e1fa2c3c5c88eaf4f2ec91783fd87c53bfd72d1125b",
+    "26-drift-retire-skip-keys.md": "384b9bb44e6ffbe2d19d7cc5ea5494e03532fc57074d3940259fe39e4478fc4a",
     "27-drift-retire-verify-gate-key.md": "3c0bae14ba157fe060239232d1c553ab790781c5286f9a9a9ca82b736e8f62db"
   },
   "planOverviewFrameHash": "81da568f63a452107de902d1bf08444596f94df7866550cc32c6f8ad40efaedb",
@@ -901,7 +901,7 @@
       }
     }
   ],
-  "currentBatch": 9,
+  "currentBatch": 0,
   "masterStrand": "d326ac861d4ceacc5a911fad80b062b2",
   "masterSessionId": "0610df8b-f86b-42c0-b6a3-75053b19c15b",
   "masterEngine": "claude",
@@ -1020,20 +1020,45 @@
         "10-drift-containment-check"
       ],
       "cardHashes": {
-        "09-drift-current-capture": "4455b251f3f90dd340d6eae78f956c7ab211b451258f3a8d77b9b63f665503e2",
-        "10-drift-containment-check": "03fb5f61aff3ad72f7c46357d254bfdc7b235b87ab31623f89768bc68ced5e85"
+        "09-drift-current-capture": "78237b0e14d432e0aceedb2f385e9fa3912726fbb1cb85a369b5114438fc0815",
+        "10-drift-containment-check": "73c39460587d613452939242735167c472c9356efe1c09578087aa4883014a9f"
       },
       "startSha": "e2dcd7478acada42970cf61f4969a21f9c7d27e3",
       "kind": "fork",
       "spawnedAt": "2026-11-05T16:31:03Z",
       "sessionId": "0610df8b-f86b-42c0-b6a3-75053b19c15b",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "09-drift-current-capture",
+        "status": "done",
+        "head_sha": "db44dc72c16789a0b97fcc3182963cf4165a8da2",
+        "deviations": [
+          "internal/driftengine/capture.go",
+          "internal/driftengine/check.go",
+          "internal/driftengine/check_test.go",
+          "internal/driftengine/steprun.go",
+          "internal/loomcli/driftwiring.go",
+          "internal/loomrecipe/gatequiescence_test.go",
+          "internal/shedrecipe/entries_gate.go",
+          "internal/shedrecipe/entries_gate_test.go"
+        ]
+      },
+      "cardShas": [
+        "db44dc72c16789a0b97fcc3182963cf4165a8da2"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-afdb3484591165258.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-afdb3484591165258.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-a46a2966fa0459a2c.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-a549dd69a66ca7b19.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-a549dd69a66ca7b19.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-afdb3484591165258.jsonl"
   ]
 }
