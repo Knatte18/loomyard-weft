@@ -25,3 +25,8 @@ The package doc `internal/shuttleengine/codexengine/doc.go` is the spec; each pa
 - Each part writes its findings to a report under `docs/research/`, and files each lym fault as a bug note on this board.
 - Parts run as darn with profile `docs`, unless the operator says otherwise.
 - A Codex run gets `high` effort at most.
+
+## Built since (tidy, 2026-11-05)
+
+Task `codex-creel-hooks` (`e3aedbc5`) gave Codex strands creel delivery through hooks, as Claude strands have: mail reaches a running session at the end of a tool call through `PostToolUse`, at a turn end through `Stop`, and an idle session through `codex queue` run by the strand's `hook-wait` waiter. So part 5's "the only one a Codex strand has" holds only for a strand opened without a prompt file (`OpenLaunch`, a standalone run), which stays a pane-mail strand.
+Task `codex-creel-trial` (`afa2cf2e`, `docs/research/codex/engine-trial/codex-creel-trial-2026-11-05.md`) trialed it on real sessions in `lyt` and found one fault, filed as note `codex-idle-wake-extra-reminder`.
