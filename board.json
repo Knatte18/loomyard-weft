@@ -692,6 +692,27 @@
       "body": "## Seen (operator, 2026-11-05)\n\nThe pawl recipe (`contracts/recipes/pawl-recipe.yaml`) runs Beam-Await, then Parent-Align, Beam-Describe and PR-Review as fixed producers before Finalize, as tapestry and darn do.\nTapestry and darn are autonomous runs with no session the operator talks to, so they need those rows.\nA beam is a project: larger, iterated with the operator, and it has its own orch the operator talks to.\nFixed rows after Beam-Await get in the way: a PR-Review already started has to be cancelled, or reopened back to Beam-Await, when the operator finds the beam needs more work.\n\n## Idea (operator, 2026-11-05)\n\nThe beam's orch drives the landing work itself, inside Beam-Await; pawl drops Parent-Align, Beam-Describe and PR-Review.\nPawl becomes Preflight, Record-Write, Beam-Up, Beam-Await, Finalize, Beam-Down.\n\n1. Pull request: when the operator says so, the beam's orch opens the beam's pull request by the hub's rules for beam pull requests, with its description.\n   The description lists every member of the beam that landed, each with its own pull request or landing commit.\n2. Parent merge: the beam's orch brings the parent into the beam when the operator says so, through a merge-in run inside the beam (a darn run with its perch, as `lym beam merge-parent` files), so a hard merge gets a run of its own.\n3. Review: the operator and the beam's orch handle the pull request's review together.\n   If the beam is not ready, the orch closes the pull request and files more member tasks.\n   The operator may also tell the orch to skip the pull request and land by a direct squash merge.\n4. When the operator is satisfied, the orch runs `lym beam ready`; Beam-Await ends and Finalize lands the beam as today, then Beam-Down.\n\n### Verbs for the beam's orch\n\nThe orch calls lym verbs, never `gh` by hand: thin verbs over the code the removed rows run today, for example `lym beam describe` (Beam-Describe's description writer) and `lym beam pr open|close|merge` (PR-Review's and Finalize's pull-request code).\n\n### Members land while the pull request is open (operator, 2026-11-05)\n\nMember tasks keep landing into the beam while its pull request is open, as was common and useful in Millhouse.\nWhile the beam's pull request is open, every member task filed or running in the beam carries `notify_on_land`, so the beam's orch is told at each landing and updates the description, which keeps listing every member.\n\n### `lym beam ready` checks the parent merge (operator, 2026-11-05)\n\n`lym beam ready` refuses while the parent holds commits not merged into the beam, and its refusal names `lym beam merge-parent`.\n\n## Built since (tidy, 2026-11-05)\n\nTask `protected-parent-landing` landed (`dbd169ae`): `beam.yaml` `pull_request: merge` makes Finalize push the task or beam branch, find or open a pull request into the parent and squash-merge it on GitHub at once with no review, then pull the parent.\nThe review row returns Done for it (`MergeAtOnce`), and a parent push refused as protected is Stuck with a way forward naming `pull_request=merge`.\n\n## Open points\n\n- How Finalize lands a beam whose pull request the orch already merged on the remote; under a `merge` parent Finalize still squashes parent-side.\n- Whether `notify_on_land` is set by lym when the pull request opens (and on each member filed while it is open), or by the orch.\n- Resume of in-flight pawl runs that sit on a removed row.\n",
       "created": "2026-11-05T05:45:03Z",
       "revised": "2026-11-05T05:49:31Z"
+    },
+    {
+      "id": 1110,
+      "handle": "B4",
+      "slug": "motif-profile-recipe-tapestry",
+      "title": "Motif recipe lists profile_recipe: tapestry",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom",
+        "profiles"
+      ],
+      "issues": [
+        58
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #58](https://github.com/Knatte18/loomyard/issues/58).\n\nWhy does the motif recipe list \n\"profile_recipe: tapestry\". It should not depend on Tapestry",
+      "created": "2026-11-05T05:50:21Z",
+      "revised": "2026-11-05T05:50:21Z"
     }
   ],
   "prime_owner": "neve",
