@@ -2,8 +2,6 @@
 
 `pattern-distill` · Task · enhancement, pattern · running · Darn-Write
 
-Depends on: [`raddle-recipe`](design-raddle-recipe.md)
-
 ## Seen (2026-11-05)
 
 `PATTERN.md`'s overview sits at its headroom line (`internal/pattern/check.go`: `MaxOverviewBytes` 16 KB, `HeadroomBytes` 95%).
