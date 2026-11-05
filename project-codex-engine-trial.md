@@ -38,19 +38,13 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T7 | `draft` **Codex trial: follow the sandbox darn run with a Codex writer to landing and report**<br>• Follows codex-greet in the lym-test sandbox hub, a darn run with a Codex writer, to landing; report and bug notes | [`codex-trial-darn-e2e`](design-codex-trial-darn-e2e.md) | darn · docs |  | 0m<br>0m | codex, shuttle |
+| T7 | **Codex trial: follow the sandbox darn run with a Codex writer to landing and report**<br>• Follows codex-greet in the lym-test sandbox hub, a darn run with a Codex writer, to landing; report and bug notes | [`codex-trial-darn-e2e`](design-codex-trial-darn-e2e.md) | darn · docs |  | 0m<br>0m | codex, shuttle |
 
 ## Notes (2)
 
