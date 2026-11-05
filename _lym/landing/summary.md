@@ -1,43 +1,42 @@
-# Codex sessions read idle, end on Codex exit and reach creel from sandbox
+# Codex sessions read idle, end on exit, and reach creel
 
-Fixes the three Codex engine faults the pane and load trial found (`docs/research/codex-engine-trial-pane-load-2026-11-03.md`, B3, B4 and B5).
+Fixes the three Codex engine faults the pane/load trial found (`docs/research/codex-engine-trial-pane-load-2026-11-03.md`).
 
-## An opened Codex session reads idle
+## Idle probe of an opened session
 
-`Runner.SessionIdle` resolved a strand with no run record to the engine set's default.
-A session from `lym shuttle open --model luna[medium]` has no run record, so its Codex pane was read with the Claude reading, the probe answered `NoInputBox` beside a visible composer, and creel journaled `stalled no-input-box` instead of typing the notice.
-The probe now takes the live strand's provider for a recordless strand, as `Runner.Send` and the interrupt path already do; a guid that is neither a run nor a live strand fails with the same refusal those paths give.
+`Runner.SessionIdle` resolved the engine with an empty `RunState` for a strand with no run record, so it took the hub default engine.
+A Codex session from `lym shuttle open` was read with the Claude reading and answered `NoInputBox` with the composer on screen, so creel never typed its mail.
+It now takes the engine from the live strand's provider, as `Runner.Send` does.
+A guid that has no run record and is not a live strand now fails instead of reading through the default engine.
 
-## A Codex run reads dead once Codex exits
+## A Codex run reads ended after Codex exits
 
-Codex fires no hook on its own exit, and its liveness reads unproven, so `lym shuttle state` and the wait loop's shadow fold kept an exited run at `asking/awaiting-input`.
-The launch line now appends an exit record, `{"hook_event_name":"LymExit"}`, to the run's events file after Codex exits and before the pane's shell exits.
-`ParseSessionSignals` reads it as a session end with reason `codex-exit` that ends the process, so the fold settles `dead` as it does for a Claude run's `SessionEnd`, and the shadow's `died` pairing agrees.
-The wait loop's process-death check also sees that session end, which gives the same `died` outcome the dead pane gives.
-The record has no stamp line, so the dead state carries no time.
-An opened session's line appends none, since it has no events file.
+Codex fires no hook on exit, so a run's state stayed `asking/awaiting-input` after `/exit` while the loop recorded `died`.
+The launch line now appends an exit record, `{"hook_event_name":"LymExit"}`, to the run's events file once Codex exits, before the pane's shell exits.
+`codexengine` parses it as a process-ending session end with reason `codex-exit`, so the state reads dead as a Claude run does.
+The record has no stamp line, so it carries no time.
+An opened session has no events file and gets no exit record.
+This adds `Shell.AppendLine` to `internal/shell`, with a POSIX and a pwsh form; the POSIX form uses `printf '%s\n'` so the line is never read as a format.
 
-`internal/shell` gains `AppendLine` for this, in both dialects (`printf '%s\n' … >> …` and `Add-Content -LiteralPath … -Value …`), so the line stays shell-agnostic.
+## Creel reachable from the Codex sandbox
 
-## A Codex session reaches the creel daemon
+The launch line, for runs and opened sessions, now sets `sandbox_workspace_write.network_access=true`.
+Codex's Linux sandbox refuses every socket connect without it, a Unix socket's included, so `lym creel read` and `post --reply` could not reach the daemon.
 
-Both Codex launch lines now set `sandbox_workspace_write.network_access=true`.
-Codex's Linux sandbox refuses every socket connect without it, a Unix socket's included; that refusal was the `connect: operation not permitted` the trial saw.
-Running `socat` against a test Unix socket under `codex sandbox` (codex-cli 0.164.0) shows the plain `workspace-write` sandbox refusing the connect and the same sandbox with this setting allowing it.
-Codex has no setting that opens Unix sockets alone; its network proxy forwards a Unix socket only for HTTP requests, which creel's protocol is not.
-The opening is therefore network access for the session's shell commands, the same a Claude seat has, while writes stay bound to the workspace, the writable roots and the temporary folders.
-The Bolt `.lym` stays read-only, so a client in the sandbox that finds no daemon still cannot start one; the daemon that delivers the session's mail is already up.
-The codexengine package doc states what is opened and why.
+Design decisions:
 
-## Tests
+- Codex has no setting that opens Unix sockets alone, and its network proxy forwards a Unix socket only for HTTP requests, which creel's protocol is not.
+  Network access is the narrowest opening available, so a session's shell commands now have the network a Claude seat's have.
+- Writes stay bound to the workspace, the writable roots and the temporary folders.
+- The Bolt `.lym` stays read-only, so a client in the session that finds no daemon still cannot start one.
+  The daemon that delivers the session's mail is already up.
+- The `codexengine` package doc states what is opened and why.
 
-- `TestRunner_SessionIdle_RecordlessStrandReadsThroughProvider` pins the provider's engine reading a recordless strand, with the default engine never consulted.
-- `TestParseSessionSignals` gains the exit record as a process-ending session end.
-- `TestBuildLaunchCmd`, the Prepare tests and the skill-load test pin the network setting and the exit record on the launch line, and the network setting on an opened session's command.
-- `TestShell_AppendLine` pins both dialects, with a `%` and a quote in the line.
+## To check by hand
 
-## Design decisions
+Only the unit tier ran, with no regression check and no live Codex.
+The trial's end-to-end case 6 runs after this lands.
 
-- The exit record lives on the launch line, not in a liveness prober: Codex keeps no session registry, and the files-only state reader needs a fact on disk.
-- Network access over a writable Bolt `.lym/creel`: the connect, not the log write, is what failed while a daemon was up, and making Bolt state writable would widen writes rather than reach the daemon.
-- End-to-end case 6 of the trial is left to run after this lands, as the entry says.
+- In a real Codex run on `-a never -s workspace-write`, `lym creel read` and `lym creel post --reply <id>` reach the daemon with `network_access=true`.
+- `lym creel post` to a session from `lym shuttle open --model luna[medium]` is typed within seconds, with no `no-input-box` stall in `lym creel log`.
+- After `/exit` in a Codex run's pane, `lym shuttle state` reads ended and no `session state disagrees` line is logged.
