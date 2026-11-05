@@ -58,7 +58,12 @@ Its proposal goes to the operator, who approves it before any task or project is
 There is no fixed procedure for this today; the orch or the operator does it by hand.
 The triage agent is the cold split agent below, given the wider choice: it may also answer "one tapestry", which costs no split.
 
-- It runs cold, on Opus (operator, 2026-11-05); the operator's part is approving or correcting the proposal.
+- It runs cold, on Opus (operator, 2026-11-05): it writes its proposal without asking first.
+- Interactive by default (operator, 2026-11-05): the operator takes part in how the Sketch is split.
+  The agent puts its proposal to the operator and waits for their input; the operator may question it, correct the split, order or recipes, and the agent revises until the operator approves.
+  This works like Discussion-Write's interactive mode.
+- An auto-approve flag lets the run file its proposal with no operator input.
+  It stays off until the agent's splits are tuned well enough to run on their own; the operator's corrections in the interactive runs are what tune it.
 - It runs through batten like `motif`, in a worktree of its own forked from the parent, so the code it reads stays still while it reads, though the prime moves with every landing; it lands no code, and its run shows on the board with a pane and notices.
   The board can move meanwhile, so the proposal is checked against the board again when the operator approves it.
 - Motif and Sketches serve mostly large tasks, where an overview first pays (operator, 2026-11-05); a raddle's proposal may well be a project or beam, whose orch then takes over the Sketch and the proposal.
