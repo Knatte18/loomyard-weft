@@ -659,8 +659,7 @@
       "status": "done",
       "created": "2026-11-05T07:15:30Z",
       "revised": "2026-11-05T07:53:40Z",
-      "profile": "solid",
-      "notify_on_land": true
+      "profile": "solid"
     },
     {
       "id": 1131,
