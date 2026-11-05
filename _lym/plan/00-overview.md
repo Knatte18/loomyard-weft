@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -64,12 +64,12 @@ Cards 1–8 build the usage records and the cost report, cards 9–22 the raddle
 ### Decision: filing-level
 
 - **Decision:** filed entries take the Sketch's own `project` field as their project level, the project shape's project included.
-- **Rationale:** D9 files "at the Sketch's own project level"; `hubgeom.ParentOf` answers the nearest beam, which skips a grouping project, while copying the `project` link keeps every filed entry's parent beam, read through `ParentBeam`, equal to the Sketch's (`PATTERN-pair-parent`).
+- **Rationale:** D9 files "at the Sketch's own project level"; `hubgeom.ParentOf` answers the nearest beam, which skips a grouping project, while copying the `project` link keeps every filed entry's parent beam, read through `ParentBeam`, equal to the Sketch's. The decision record's Added after Discussion entry "Filed entries take the Sketch's own project field" records this in place of the `PATTERN-pair-parent` Constraint's `hubgeom` parent read.
 - **Applies to:** cards 16, 22, 23
 
 ### Decision: pattern-headroom
 
-- **Decision:** the two declared PATTERN lines are prescribed verbatim (cards 4 and 12); `PATTERN.md` stands at 15560 bytes against a 15564-byte headroom line, so the projected overview grows past it; the parent recorded eight `changes` decisions that shorten other entries by 321 bytes, and card 4, the growing card, prescribes those lines and moves each dropped rule verbatim into its background file.
+- **Decision:** the two declared PATTERN lines are prescribed verbatim (cards 4 and 12); `PATTERN.md` stands at 15560 bytes against a 15564-byte headroom line, so the projected overview grows past it; the parent recorded eight `changes` decisions that shorten other entries by 321 bytes, and card 4, the growing card, prescribes those lines; every rule they drop is already stated in its background file, so no rule text moves.
 - **Rationale:** the lines are the decision record's text and no card may shorten another entry without a recorded `changes` decision (Step 1's route for a design call after the Discussion).
 - **Applies to:** cards 4, 12
 

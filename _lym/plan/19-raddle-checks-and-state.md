@@ -14,6 +14,9 @@
 - `plan:internal/loomshed#TestCheckRaddleProposal` -> `func TestCheckRaddleProposal(t *testing.T)`
 - `plan:internal/loomshed#TestNewRaddleGate` -> `func TestNewRaddleGate(t *testing.T)`
 
+**Edit:**
+- `internal/loomshed#loomshedAllowedImports`
+
 **Extends:**
 - `internal/loomshed/doc.go`
 
@@ -40,6 +43,7 @@
 `TestRaddleState` (tier0) round-trips the state and keeps an unknown key, and covers `StoreColdProposal`: a first call stores the proposal, a second call after the proposal changed leaves the cold file as it was.
 `TestCheckRaddleProposal` (tier0, a fixture proposal and record in a temp dir, a stub `Board`) has rows: a valid proposal (no finding); one D6 finding passing through; an unparsable file; a record read error (returned).
 `TestNewRaddleGate` (tier0) has rows: pass (onPass called once), fail (findings, onPass not called), onPass error (returned as error).
+The allowlist `loomshedAllowedImports` in `internal/loomshed/seam_enforcement_test.go` gains `github.com/Knatte18/loomyard/internal/raddleparser`, with a comment line: the proposal parser and its finding type, resolving no geometry.
 `doc.go` gains a raddle paragraph.
 
 **ImpactSummary:** New loomshed members only; nothing reads them until the verbs and the raddle rows.

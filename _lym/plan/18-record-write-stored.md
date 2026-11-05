@@ -21,7 +21,6 @@
 - `internal/testkit/envkit#TestFullEnv_FillsEverySeam`
 - `internal/testkit/envkit#TestNilSeams_ReportsExactPaths`
 - `internal/testkit/envkit#TestNilSeams_SkipsNilLegalPaths`
-- `internal/loomcli/doc.go`
 
 **Intent:** D3: Record-Write seeds a discussed entry's stored record.
 `RecordWriteDeps` gains `ReadStored func() (record []byte, found bool, err error)`, which returns the run's board entry's stored decision record when the entry is flagged discussed and its record file exists.

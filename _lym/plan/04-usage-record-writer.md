@@ -24,9 +24,6 @@
 - `internal/lymdirs/doc.go`
 - `internal/shedrun/doc.go`
 - `internal/shedadapters/doc.go`
-- `pattern/PATTERN-shed-recipe-registry.md`
-- `pattern/PATTERN-test-speed.md`
-- `pattern/PATTERN-remote-refs-lock.md`
 
 **Uses:**
 - `plan:internal/shuttleengine#SessionEnd`
@@ -69,11 +66,11 @@ The new entry grows the overview past the headroom line, so this card also presc
 - `PATTERN-config-layers` — Loading config: only `configengine` reads, stacks, locates and judges layers against the template; callers use `Load` or `LoadOrTemplate`, bar `runprofile`; only `hubreconcile.Ensure` reconciles on a binary change; only `lym config reconcile` prunes unknown base-layer keys. — [background](pattern/PATTERN-config-layers.md)
 ```
 
-Where a decision moves rule text out of the overview, that text goes verbatim into the entry's background file, under a section naming it the rule the overview line points at, when the file does not already state it:
-- `pattern/PATTERN-shed-recipe-registry.md`: a row's value looked up by key, a side action a `Command` row, a row off by one config key its `entry_gate`, one whose off reads more its own call;
-- `pattern/PATTERN-test-speed.md`: a skip never names the OS alone; injected clocks, `t.Parallel` by default; a test reflecting over a struct's fields carries `//lym:seam`;
-- `pattern/PATTERN-remote-refs-lock.md`: taken past the pause gate; a tag push, a `--refmap=` or probe-clone fetch writes none; a judge of origin against tracking refs holds it to its verdict.
-`PATTERN-slug-remote-order` has no background file; the implementer first greps the teardown lock's takers, and should any taker other than Add, Remove, task-branch discard and the cleanup sweep hold it shared, it keeps the current line's list and reports that in the commit, as the decision says.
+Every rule the shortened lines drop is already stated in its entry's background file, so no rule text moves and no background file changes:
+- `pattern/PATTERN-shed-recipe-registry.md` states the lookup by key (line 8), the `Command` row (line 22), the `entry_gate` off (line 27) and the off that reads more than one key decided in its own call (line 29);
+- `pattern/PATTERN-test-speed.md` states the `//lym:seam` rule (lines 94-102), injected clocks (lines 104-108), `t.Parallel` by default (lines 110-113) and that a skip never names the OS alone (line 119);
+- `pattern/PATTERN-remote-refs-lock.md` states the pause gate (line 5), the writes that take no lock (line 10) and the judge rule (line 11).
+`PATTERN-slug-remote-order` has no background file; its shortened line holds, since only a pair push holds the teardown lock shared (`internal/fabricengine/teardownlock.go:81`, `internal/fabricengine/pushanchored.go:164`) and every other taker holds it exclusive (`teardownlock.go:114`, `remoteteardown.go:316` and `364`).
 The three `doc.go` files each gain a paragraph: lymdirs names `UsageDirName`; shedrun names the usage directory and its three record files; shedadapters names `RecordSessionUsage` as the one writer.
 
-**ImpactSummary:** New files and one new leaf constant; nothing calls the writer until card 5 wires it, and the PATTERN overview gains one entry while eight others shrink with their rule text kept in background files.
+**ImpactSummary:** New files and one new leaf constant; nothing calls the writer until card 5 wires it, and the PATTERN overview gains one entry while eight others shrink, every dropped rule already stated in its background file.

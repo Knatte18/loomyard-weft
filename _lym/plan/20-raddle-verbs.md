@@ -31,7 +31,6 @@
 - `plan:internal/loomengine#RaddleColdProposal`
 - `plan:internal/loomengine#RaddleApproval`
 - `plan:internal/loomengine#RaddleStatePath`
-- `internal/loomcli/doc.go`
 
 **Intent:** D7's interactive verbs, `lym loom raddle-propose` and `lym loom raddle-approve`, modelled on `sampler-done`, and the board context every raddle check reads.
 `raddleBoardContext` builds `raddleparser.BoardContext` for the run at location: the Sketch is the run's own entry (`seedSlug`), its module labels its non-type labels, every board entry from `boardengine.ReadTasks` of the hub's board, the store's held slugs from `ReadRaddleStore`, the board's type labels from its config, the profiles from `runprofile.Load`, and `filing`.

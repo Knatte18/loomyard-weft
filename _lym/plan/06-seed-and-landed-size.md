@@ -37,7 +37,6 @@
 - `internal/testkit/envkit#TestNilSeams_SkipsNilLegalPaths`
 - `internal/fabricengine/doc.go`
 - `internal/landingshed/doc.go`
-- `internal/loomcli/doc.go`
 
 **Intent:** D12's run-level records, which D13's cells key on.
 Seed: `seedAndCommitBootstrap`, on the run's first seed, writes `run.json` into `shedrun.UsageDir` through `shedrun.WriteRunUsage`, built by `runUsageRecord`: the run's recipe, its profile (the entry's `profile` field, else the recipe's entry under `profiles.yaml`'s `defaults`, read with `runprofile.Load`), and `stored_record`, true when the run's board entry is flagged discussed at the start, so the run starts from a stored record (D3); an absent entry writes an empty profile and false.

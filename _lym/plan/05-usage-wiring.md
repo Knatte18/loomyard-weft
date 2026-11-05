@@ -21,7 +21,6 @@
 - `internal/shuttleengines#RecordReaders`
 - `plan:internal/shuttleengine#Runner.SetSessionEnd`
 - `internal/shedadapters/doc.go`
-- `internal/loomcli/doc.go`
 - `internal/gatecli/doc.go`
 
 **Intent:** D12: every agent session a run spawns writes its usage file.

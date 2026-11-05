@@ -28,7 +28,7 @@
 A record already terminal is not reported again, since its own finalize reported it.
 The hook runs synchronously and its panics are not recovered; its contract, stated on `SetSessionEnd`, is that it never blocks and reports its own failures.
 `TestRun_Finalize_ReportsUsageAndTimes` gains a hook on its runner and asserts, in each of its done, stuck and died rows, one call carrying the outcome, role, model, times and usage, and, in a row whose run never started, no call.
-`TestRunner_SessionEnd` (tier0) has rows: a runner with no hook set runs a done run as before; a `StopStrand` of a running unawaited record, written on disk naming the `usageEngine` fake's engine name with a role and model, on a runner whose engine set resolves that name, calls the hook once with outcome stopped and the record's role, model and the fake's usage; a stop of a terminal record calls it not at all.
+`TestRunner_SessionEnd` (tier0) has rows: a `StopStrand` of a running unawaited record, written on disk naming the `usageEngine` fake's engine name with a role and model, on a runner whose engine set resolves that name, calls the hook once with outcome stopped and the record's role, model and the fake's usage; a stop of a terminal record calls it not at all.
 `internal/shuttleengine/doc.go` gains one paragraph on the session-end hook.
 
 **ImpactSummary:** One new optional runner field read at two terminal sites and two record fields written at launch; every existing runner leaves the hook nil, so no current caller changes behaviour.
