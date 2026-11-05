@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-05 13:56 UTC; every age below is as of then.
+Rendered 2026-11-05 13:57 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -83,8 +83,8 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Distill PATTERN.md: cluster related entries, detail in background files**<br>• The overview sits at its headroom line, so every run adding an entry stops for trims; group related entries into clusters with short lines and move detail verbatim to background files | [`pattern-distill`](design-pattern-distill.md) | darn · solid | Code-Burler-Review | neve | 2h<br>2h | pattern |
 | T3 | **A plain promote of a Sketch starts raddle**<br>• lym board promote on a Sketch takes recipe raddle by itself, with no --recipe flag | [`sketch-promote-raddle`](design-sketch-promote-raddle.md) | darn · light | Darn-Write | neve | 9m<br>4m | board |
-| T5 | **Talk to the orch through Slack, and let the orch know when the operator is on Slack only**<br>• Slack as a creel endpoint for the orch, with an operator presence state so the orch reports and reminds through Slack while the operator is away | [`reed-slack-relay`](design-reed-slack-relay.md) | motif | Worktree-Create | neve | 4w<br>0m | reed |
-| T7 | **Drift compares changed values in code against a sealed expectation, with a separate judge**<br>• General Drift rework: code-side diff of any hub capture keyed by line key or number, structured sealed expectation, containment by code, a judge per changed value | [`drift-rework`](design-drift-rework.md) | tapestry · solid | Discussion-Burler-Fix | neve | 22h<br>41m | drift, loom, darn, stencil, config |
+| T5 | **Talk to the orch through Slack, and let the orch know when the operator is on Slack only**<br>• Slack as a creel endpoint for the orch, with an operator presence state so the orch reports and reminds through Slack while the operator is away | [`reed-slack-relay`](design-reed-slack-relay.md) | motif | Seed-Child | neve | 4w<br>0m | reed |
+| T7 | **Drift compares changed values in code against a sealed expectation, with a separate judge**<br>• General Drift rework: code-side diff of any hub capture keyed by line key or number, structured sealed expectation, containment by code, a judge per changed value | [`drift-rework`](design-drift-rework.md) | tapestry · solid | Discussion-Burler-Fix | neve | 22h<br>42m | drift, loom, darn, stencil, config |
 
 #### Ready (0)
 
@@ -98,7 +98,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T2<br>T7<br>T6<br>T1 | 4d<br>41m | fabric |
+| T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T2<br>T7<br>T6<br>T1 | 4d<br>42m | fabric |
 | T6 | `draft` **docs/research is restructured into topic folders with an index**<br>• docs/research moves into topic folders with one layout per study and an index; scripts, the docs-link test, comments and links follow | [`research-dir-tidy`](design-research-dir-tidy.md) | darn · light |  | 4h<br>4h |  |
 
 ### Notes (21)
