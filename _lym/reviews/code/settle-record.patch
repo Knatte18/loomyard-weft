@@ -1,0 +1,1743 @@
+diff --git a/contracts/recipes/motif-recipe.yaml b/contracts/recipes/motif-recipe.yaml
+index 8b62b704..89c3cd38 100644
+--- a/contracts/recipes/motif-recipe.yaml
++++ b/contracts/recipes/motif-recipe.yaml
+@@ -10,12 +10,11 @@
+ #
+ # The top-level keys serve a motif run alone, since an expansion reads none of a block recipe's keys.
+ # contract: loom takes the loom contract's record-only form, one record row and neither a build row nor a Finalize row, which needs no verify_source.
+-# profile_recipe: tapestry gives a motif task tapestry's run-profile block and default profile.
++# A motif task takes the motif block of its run profile and the motif default profile, like any recipe.
+ 
+ version: 1
+ entry: Discussion-Write
+ contract: loom
+-profile_recipe: tapestry
+ terminals:
+   - Discussion-Bouncer
+ 
+diff --git a/contracts/specs/shed-recipe-spec.md b/contracts/specs/shed-recipe-spec.md
+index 827e1fcf..e43487c8 100644
+--- a/contracts/specs/shed-recipe-spec.md
++++ b/contracts/specs/shed-recipe-spec.md
+@@ -88,7 +88,6 @@ Its production import set is one-way: it imports `internal/shedrecipe`, `interna
+ It requires a `version` (currently only `1` is accepted), a told `entry` producer name, a told `terminals` list, and a `producers` list.
+ It may also set an optional top-level `amendment_target`, the name of the row a plan amendment routes to; `Parse` decodes it without checking that it names a row, since routing is `shedengine`'s and `shedcheck`'s.
+ It may also set a top-level `contract`, empty or `loom`, and a top-level `verify_source`, empty, `plan` or `tree_scope`; `Parse` refuses any other value of either, naming the key, the legal values and the way forward.
+-It may also set a top-level `profile_recipe`, the name of the recipe whose run-profile block a task takes; empty means the recipe's own name, and `Parse` decodes it without checking that it names a recipe.
+ A row is an engine row or a block row.
+ An engine row carries `name`, `engine`, `config`, `on_done`, `on_stuck`, `on_reroute`, `segment`, `max_bounces` and `entry_gate` — the same field set `shedengine.ProducerDef` itself carries, `segment` included per the reversal recorded above.
+ A block row carries only `name`, `block`, `block_gate` and `on_done`, and no engine: `block` names the recipe to run inline, `block_gate` the shipped check that gates it.
+@@ -106,7 +105,7 @@ A block row carries only `name`, `block`, `block_gate` and `on_done`, and no eng
+ The block row becomes an `engine: Block` row whose `on_done` is the sub-recipe's `entry` and whose skip target is the block's exit; the exit is the block row's own `on_done`, or, when that is empty, the exit of the block enclosing it, and an outermost block row must set `on_done`.
+ Every inlined row's empty `on_done`, and an inlined block row's empty skip target, become the exit of the innermost block enclosing the row.
+ Each inlined row carries its block path, the enclosing block rows' names joined by `/`, outermost first.
+-A sub-recipe's `terminals`, `contract`, `verify_source`, `amendment_target` and `profile_recipe` are not read, since those belong to the run, so a recipe that runs alone may also be a block.
++A sub-recipe's `terminals`, `contract`, `verify_source` and `amendment_target` are not read, since those belong to the run, so a recipe that runs alone may also be a block.
+ A recipe with no block row is returned unchanged.
+ 
+ **Strictness.** Unknown keys and duplicate keys are errors at both document level and row level, and every message the decoder produces keeps its own yaml line number.
+diff --git a/docs/overview.md b/docs/overview.md
+index d77c400f..4ebf0e36 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -627,7 +627,8 @@ User-facing modules each get one `lym <module>` namespace:
+   `Webster` reroutes to `Plan-Burler-Review` when begin-batch left a new plan conflict that the plan fixer `lym webster fix-plan` could not clear.
+   `Describe` writes the change description at `_lym/landing/summary.md`, the single source for the landing commit, whose message, like the pull request's body, ends in the plain-line credit block Go appends while `landing.yaml`'s `credit` is on: `credit_heading`, then a ` - ` line for `credit_loomyard` and for the `credit_engines` text of each engine that ran a session in the task, an empty text adding no line.
+   `Finalize` tolerates an already-landed parent and marks the board task `done` after the parent merge.
+-  Every run transition before that writes the board task's status as `<state> · <producer>` (for example `awaiting · Code-Bouncer`), so the board README shows where each run stands; a failed board write only warns.
++  Every run transition before that writes the board task's status as `<state> · <producer>` (for example `awaiting · Code-Bouncer`), the run's start write naming its first row included, so the board README shows where each run stands; a failed board write only warns.
++  Batten writes the same form for its own rows before `Run-Shed`, from its `Worktree-Create` claim on, and a run with no `Finalize` row, a motif run, ends by writing `discussed`.
+   `Parent-Align` and `Finalize` each run the plan's verify command after a parent merge-in that changed the task tree, and halt Stuck on a failure, with the command's output in the loom verify-output log;
+   a pending-verify marker keeps the gate armed across a resume until a verify passes.
+   `landing.yaml` also holds the `fixer` model-spec and `fixer_timeout_min` (those of the merge fixer and of the fix review session Finalize runs over an over-cap fixer change), `parent_align_fix_attempts`, `finalize_fix_attempts`, `finalize_fix_max_lines` and `finalize_fix_review_rounds`, and `deploy_branches`, the base branches whose landing runs `deploy`, which `lym config reconcile` renames from the retired `require_pr_to_base`; reconcile also renames the retired `merge_fix_attempts` key to `parent_align_fix_attempts` and `gate.yaml`'s `merge-in` gate key to `parent-align`.
+diff --git a/internal/battencli/cli.go b/internal/battencli/cli.go
+index bbd6503e..087e3dac 100644
+--- a/internal/battencli/cli.go
++++ b/internal/battencli/cli.go
+@@ -59,7 +59,7 @@
+ // The claim is one Bolt commit that also records this machine as the entry's owner, and an absent or done entry is skipped.
+ // A failed owner write or push refuses the row, and so does an entry another machine owns, which the claim never takes.
+ // The claim stays when the row then fails, and the stopped run resumes with the same verb.
+-// No other row writes a board status; loom's transitions are the only later writer.
++// Each later transition at a row before Run-Shed writes "<state> · <row>" on the entry through the status seam, and from Run-Shed on the inner run's own transitions are the only writer.
+ // A pair is forked from the entry's parent beam, or from the prime outside a beam; a beam project's pair is forked unmarked at the anchor the seed records, since the pawl run's Beam-Up marks it.
+ // A member's pair is judged against its beam's hold again once it is made, and when the row finds it already complete: a beam whose run holds its entry reads as held, so the row removes the member's pair and refuses, the member keeping its claim.
+ //
+diff --git a/internal/battencli/commitstatus.go b/internal/battencli/commitstatus.go
+index e1876e3a..6e329042 100644
+--- a/internal/battencli/commitstatus.go
++++ b/internal/battencli/commitstatus.go
+@@ -9,6 +9,10 @@
+ // The push is spawned, not run: the seam starts fabric's detached push and returns.
+ // The child logs a push rejected because a Board write advanced the branch at warn, and the next transition's spawn catches the branch up.
+ //
++// Before anything else, a transition at a row listed before Run-Shed writes "<state> · <row>" on the task's board entry,
++// so the board follows batten from its claim at Worktree-Create until the inner run starts and writes the entry's status itself.
++// A failed board write only warns, since the board is the hub's overview, never the run's own bookkeeping.
++//
+ // On top of loomcli's own dispositions, this seam adds one more, evaluated first: an on-disk
+ // no-op-transition skip. Each `lym batten step` is a fresh process, so the skip's memory cannot live
+ // in a closure variable -- it would start empty every call and the skip would work for `run` mode
+@@ -27,7 +31,10 @@ package battencli
+ import (
+ 	"fmt"
+ 	"os"
++	"slices"
+ 
++	"github.com/Knatte18/loomyard/internal/battenrecipe"
++	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+@@ -48,6 +55,9 @@ type commitStatusDeps struct {
+ 	Commit func(msg string) (committed bool, err error)
+ 	// Spawn starts the detached push of the fabric sibling worktree's unpushed commits.
+ 	Spawn func() error
++	// SetBoardStatus writes status onto the run's board entry, leaving an entry that is absent or already done untouched.
++	// Nil writes nothing.
++	SetBoardStatus func(status string) error
+ }
+ 
+ // spawnStatusPush starts the detached push of the status records at a location, held under a gate slug; a test swaps it for a recorder.
+@@ -110,6 +120,7 @@ func commitRunRecords(deps commitStatusDeps, slug string) error {
+ 
+ // battenCommitStatusDeps builds a commitStatusDeps over location and runID, filling each field from fabric:
+ // MergeActive from fabricengine.MergeStateActive, Commit from fabricengine.CommitAnchoredPaths scoped to battenRunCommitPaths(location, runID), and Spawn from spawnStatusPush.
++// SetBoardStatus writes the hub board's entry runID names, a batten run's id being its task's slug.
+ // The spawned push runs from the prime, so it is the prime's records side only, and it waits under the pair's pause entry with runID as its gate slug.
+ func battenCommitStatusDeps(location *lymcwd.Location, runID string) commitStatusDeps {
+ 	return commitStatusDeps{
+@@ -124,6 +135,13 @@ func battenCommitStatusDeps(location *lymcwd.Location, runID string) commitStatu
+ 			_, err := spawnStatusPush(location, runID)
+ 			return err
+ 		},
++		SetBoardStatus: func(status string) error {
++			board, err := boardengine.OpenHub(location.HubPath)
++			if err != nil {
++				return err
++			}
++			return board.SetRunStatus(runID, status)
++		},
+ 	}
+ }
+ 
+@@ -140,7 +158,7 @@ type commitStatusMarker struct {
+ // newCommitStatusSeam builds the shedengine.Shed.CommitStatus closure from deps, wrapped in an
+ // on-disk no-op-transition skip read from and written to markerPath (locked via markerLockPath).
+ //
+-// Evaluation order: the no-op-transition skip first -- when the incoming (producer, state) pair equals the marker's last-committed pair, return nil without committing or pushing --
++// Evaluation order: the board status write of a row before Run-Shed first, then the no-op-transition skip -- when the incoming (producer, state) pair equals the marker's last-committed pair, return nil without committing or pushing --
+ // then the shared statuscommit core's three dispositions: skip-while-mid-merge, commit-hard-errors, spawn-warns.
+ //
+ // A missing or corrupt marker falls back to committing once rather than erroring:
+@@ -160,7 +178,13 @@ func newCommitStatusSeam(deps commitStatusDeps, markerPath, markerLockPath strin
+ 			logger.Warn("battencli: status commit succeeded but the marker write failed; a future call may recommit", "producer", producer, "state", st, "error", err)
+ 		}
+ 	})
++	preRunRows := battenrecipe.RowsBeforeRunShed()
+ 	return func(producer, st string) error {
++		if deps.SetBoardStatus != nil && slices.Contains(preRunRows, producer) {
++			if err := deps.SetBoardStatus(boardengine.RunStatus(st, producer)); err != nil {
++				logger.Warn("battencli: board status write failed, next transition retries", "producer", producer, "state", st, "error", err)
++			}
++		}
+ 		marker, found, err := state.ReadJSON[commitStatusMarker](markerPath, markerLockPath)
+ 		if err != nil {
+ 			logger.Warn("battencli: status commit marker unreadable; treating it as absent", "producer", producer, "state", st, "error", err)
+diff --git a/internal/battencli/commitstatus_test.go b/internal/battencli/commitstatus_test.go
+index 4ece947f..c09af94e 100644
+--- a/internal/battencli/commitstatus_test.go
++++ b/internal/battencli/commitstatus_test.go
+@@ -10,9 +10,11 @@ import (
+ 	"reflect"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/testkit/boardkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -99,6 +101,97 @@ func TestNewCommitStatusSeam(t *testing.T) {
+ 	}
+ }
+ 
++// TestNewCommitStatusSeam_WritesBoardStatusBeforeRunShed pins the seam's board write.
++// A transition at a row before Run-Shed writes "<state> · <row>" on the entry.
++// A transition at Run-Shed or a later row writes nothing, since the inner run writes the entry's status from its start on.
++func TestNewCommitStatusSeam_WritesBoardStatusBeforeRunShed(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	markerPath := filepath.Join(t.TempDir(), "last-commit")
++	var written []string
++	seam := newCommitStatusSeam(commitStatusDeps{
++		MergeActive:    func() (bool, error) { return false, nil },
++		Commit:         func(string) (bool, error) { return true, nil },
++		Spawn:          func() error { return nil },
++		SetBoardStatus: func(status string) error { written = append(written, status); return nil },
++	}, markerPath, markerPath+".lock")
++
++	for _, call := range []struct{ producer, state string }{
++		{"Worktree-Create", "running"},
++		{"Seed-Child", "blocked"},
++		{"Open-IDE", "running"},
++		{"Run-Shed", "running"},
++		{"Land", "running"},
++		{"Worktree-Teardown", "done"},
++	} {
++		if err := seam(call.producer, call.state); err != nil {
++			t.Fatalf("seam(%q, %q) = %v; want nil", call.producer, call.state, err)
++		}
++	}
++
++	want := []string{"running · Worktree-Create", "blocked · Seed-Child", "running · Open-IDE"}
++	if !reflect.DeepEqual(written, want) {
++		t.Errorf("board statuses written = %q; want %q", written, want)
++	}
++}
++
++// TestNewCommitStatusSeam_BoardWriteFailureDoesNotStopTheCommit pins that a failing board write at a row before Run-Shed is only warned about:
++// the seam returns nil and still commits and spawns the push.
++func TestNewCommitStatusSeam_BoardWriteFailureDoesNotStopTheCommit(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	markerPath := filepath.Join(t.TempDir(), "last-commit")
++	var commits, spawns int
++	seam := newCommitStatusSeam(commitStatusDeps{
++		MergeActive:    func() (bool, error) { return false, nil },
++		Commit:         func(string) (bool, error) { commits++; return true, nil },
++		Spawn:          func() error { spawns++; return nil },
++		SetBoardStatus: func(string) error { return errors.New("board unreadable") },
++	}, markerPath, markerPath+".lock")
++
++	if err := seam("Worktree-Create", "running"); err != nil {
++		t.Fatalf("seam(Worktree-Create, running) = %v; want nil", err)
++	}
++
++	if commits != 1 || spawns != 1 {
++		t.Errorf("commits = %d, spawns = %d; want 1 and 1", commits, spawns)
++	}
++}
++
++// TestBattenCommitStatusDeps_SetBoardStatusWritesTheRunsEntry pins that the real SetBoardStatus writes the status onto the board entry whose slug is the run id.
++// It sets the board skip variables, which are process-global, so it does not call t.Parallel.
++func TestBattenCommitStatusDeps_SetBoardStatusWritesTheRunsEntry(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Setenv("BOARD_SKIP_GIT", "1")
++	t.Setenv("BOARD_SKIP_PUSH", "1")
++
++	const slug = "some-slug"
++	hub := boardkit.HubWithBoardConfig(t)
++	board, err := boardengine.OpenHub(hub)
++	if err != nil {
++		t.Fatalf("OpenHub: %v", err)
++	}
++	if _, err := board.UpsertTask(map[string]any{"slug": slug, "kind": "task", "labels": []string{"bug"}}); err != nil {
++		t.Fatalf("seed: %v", err)
++	}
++	location := &lymcwd.Location{HubPath: hub, WorktreeName: "code", AnchorRel: "."}
++
++	status := boardengine.RunStatus("running", "Worktree-Create")
++	if err := battenCommitStatusDeps(location, slug).SetBoardStatus(status); err != nil {
++		t.Fatalf("SetBoardStatus(%q) = %v; want nil", status, err)
++	}
++
++	task, found, err := board.GetTask(slug)
++	if err != nil || !found {
++		t.Fatalf("GetTask(%q) = %v, %v; want the entry", slug, found, err)
++	}
++	if task.Status == nil || *task.Status != status {
++		t.Errorf("board status = %v; want %q", task.Status, status)
++	}
++}
++
+ // TestStatusPushSpawns_TellTheirLocationAndGateSlug pins what batten's two push spawns ask fabric for: the status seam spawns for its location under the run's slug as gate slug, and cleanup spawns for its location with no gate slug.
+ // It swaps the package's spawnStatusPush for a recorder, so it is serial: no parallel test may run while the variable is swapped.
+ func TestStatusPushSpawns_TellTheirLocationAndGateSlug(t *testing.T) {
+diff --git a/internal/battencli/runsettings.go b/internal/battencli/runsettings.go
+index 8fc335a4..b92d64f7 100644
+--- a/internal/battencli/runsettings.go
++++ b/internal/battencli/runsettings.go
+@@ -9,12 +9,10 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/battenshed"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/configreg"
+-	"github.com/Knatte18/loomyard/internal/loomrecipe"
+ 	"github.com/Knatte18/loomyard/internal/runprofile"
+ )
+ 
+ // prepareRunSettings returns the local-layer document of each module a board task's run settings and its run profile's block for the task's recipe, the task's keys laid over the profile's.
+-// The recipe whose block and default profile apply is the one loomrecipe.ProfileRecipe resolves the task's recipe name to.
+ // The profile is the task's own, else that recipe's default from the run profiles under dirs; with neither, the task's settings stand alone.
+ // An unknown profile, a profile holding no block for the recipe, a default held only under the recipe's former name, a profiles file that does not decode, or a refusal of the profile's or the task's settings, wraps battenshed.ErrInvalidRunSettings;
+ // a profiles file that cannot be read is returned as it is.
+@@ -26,11 +24,7 @@ func prepareRunSettings(dirs configengine.Dirs, settings battenshed.RunSettings)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	// A recipe that selects no embedded recipe keeps the name the task gave it, so the missing profile or block refuses as before.
+ 	recipe := settings.Recipe
+-	if profileRecipe, resolveErr := loomrecipe.ProfileRecipe(recipe); resolveErr == nil {
+-		recipe = profileRecipe
+-	}
+ 	name := settings.Profile
+ 	if name == "" {
+ 		name, err = profiles.Default(recipe)
+diff --git a/internal/battencli/runsettings_test.go b/internal/battencli/runsettings_test.go
+index 73fe12e1..84a10e39 100644
+--- a/internal/battencli/runsettings_test.go
++++ b/internal/battencli/runsettings_test.go
+@@ -27,19 +27,23 @@ func TestPrepareRunSettings(t *testing.T) {
+ 		settings    battenshed.RunSettings
+ 		wantDocs    map[string]string
+ 		wantStuck   []string
+-		// like, when set, replaces wantDocs with the documents a task of these settings gets over the same profiles file.
+-		like *battenshed.RunSettings
+ 	}{
+ 		{
+-			name:     "a motif task naming no profile takes the template's tapestry default profile's tapestry block",
++			name:     "a motif task naming no profile takes the template's motif default profile's motif block",
+ 			settings: battenshed.RunSettings{Recipe: "motif"},
+-			like:     &battenshed.RunSettings{Recipe: "tapestry"},
++			wantDocs: map[string]string{"loom": "discussion_hard_max_bounces: 3\ndiscussion_max_bounces: 2\n"},
+ 		},
+ 		{
+-			name:        "a motif task naming light takes light's tapestry block",
++			name:        "a motif task naming light takes light's motif block, never its tapestry block",
++			profilesYML: "light:\n  tapestry:\n    loom: {discussion_max_bounces: 3}\n  motif:\n    loom: {discussion_max_bounces: 1}\n",
++			settings:    battenshed.RunSettings{Recipe: "motif", Profile: "light"},
++			wantDocs:    map[string]string{"loom": "discussion_max_bounces: 1\n"},
++		},
++		{
++			name:        "a motif task naming a profile with a tapestry block and no motif block is refused",
+ 			profilesYML: profiles,
+ 			settings:    battenshed.RunSettings{Recipe: "motif", Profile: "light"},
+-			like:        &battenshed.RunSettings{Recipe: "tapestry", Profile: "light"},
++			wantStuck:   []string{`run profile "light" holds no motif block`},
+ 		},
+ 		{
+ 			name:        "a task whose recipe names no embedded recipe and no profile writes the task's settings alone",
+@@ -152,16 +156,6 @@ func TestPrepareRunSettings(t *testing.T) {
+ 				t.Fatalf("prepareRunSettings() error = %v; want none", err)
+ 			}
+ 			wantDocs := tt.wantDocs
+-			if tt.like != nil {
+-				reference, err := prepareRunSettings(dirs, *tt.like)
+-				if err != nil || len(reference) == 0 {
+-					t.Fatalf("prepareRunSettings(%+v) = %v, %v; want documents and no error", *tt.like, reference, err)
+-				}
+-				wantDocs = map[string]string{}
+-				for module, document := range reference {
+-					wantDocs[module] = string(document)
+-				}
+-			}
+ 			if len(got) != len(wantDocs) {
+ 				t.Fatalf("prepareRunSettings() = %v; want %d modules", got, len(wantDocs))
+ 			}
+diff --git a/internal/battencli/startguard.go b/internal/battencli/startguard.go
+index 8b7da32f..f1090a6c 100644
+--- a/internal/battencli/startguard.go
++++ b/internal/battencli/startguard.go
+@@ -40,8 +40,9 @@ type startGuard struct {
+ 	Project func() (project, beam bool, err error)
+ 	// PairMark reads the origin record of the slug's local pair: found is false when the pair has no readable record, and marked says whether it carries the beam mark.
+ 	PairMark func() (marked, found bool, err error)
+-	// Draft reports whether the slug is a task whose board status is draft.
+-	Draft func() (bool, error)
++	// Unreleased reads the board status of the slug when it is a task no run starts, boardengine.StatusDraft or boardengine.StatusDiscussed, and "" for any other entry.
++	// A nil Unreleased reads every entry as released.
++	Unreleased func() (string, error)
+ }
+ 
+ // hubStartGuard builds the startGuard over the hub of location: the cancel marker, the prime's tracked dirty paths, the slug's pair parts and its beam, all local reads with no network call.
+@@ -86,17 +87,20 @@ func hubStartGuard(location *lymcwd.Location, slug string) startGuard {
+ 			return origin.Beam, found, nil
+ 		},
+ 		ReachedParent: hubChildReachedParent(location, slug),
+-		Draft: func() (bool, error) {
++		Unreleased: func() (string, error) {
+ 			tasks, err := boardengine.ReadTasks(fabricengine.BoardDir(location.HubPath))
+ 			if err != nil {
+-				return false, err
++				return "", err
+ 			}
+ 			for _, task := range tasks {
+-				if task.Slug == slug {
+-					return task.Status != nil && *task.Status == boardengine.StatusDraft, nil
++				if task.Slug != slug || task.Status == nil {
++					continue
++				}
++				if *task.Status == boardengine.StatusDraft || *task.Status == boardengine.StatusDiscussed {
++					return *task.Status, nil
+ 				}
+ 			}
+-			return false, nil
++			return "", nil
+ 		},
+ 		PairParts: func() (fabricengine.PairParts, error) {
+ 			cfg, err := fabricengine.LoadConfig(fabricengine.ConfigDirs(location))
+@@ -114,7 +118,7 @@ func hubStartGuard(location *lymcwd.Location, slug string) startGuard {
+ // a run whose work reached its parent passes that check, since a cancel refuses it and only the run finishes it.
+ // A run or step with no status file, or one whose status is at Worktree-Create while the task worktree is absent, refuses on tracked dirty paths of the source worktree, unless the task forks from a beam, whose pair forks from the beam's last commit and not from the source worktree.
+ // A run or step of a project entry is judged by refuseProject, which refuses a grouping project, passes a marked beam pair over the dirty-source and left-pair checks and a resume past Worktree-Create over all of them, and leaves a beam project with no marked pair here to the checks of a task.
+-// A run or step with no status file of a task whose board status is draft refuses, naming the release that makes it startable; a beam project skips that check, since a beam's cancel leaves its entry draft and `lym beam create` starts its run again from there.
++// A run or step with no status file of a task whose board status is draft or discussed refuses, naming that status and the release that makes it startable; a beam project skips that check, since a beam's cancel leaves its entry draft and `lym beam create` starts its run again from there.
+ // A run or step with no status file refuses when a task worktree, records worktree or local records branch is left from an earlier run.
+ // A probe error refuses naming the probe and the verb's re-run.
+ // found and status describe the run's status file, and taskWorktreePresent whether the task worktree is there, which only a status at Worktree-Create reads.
+@@ -161,13 +165,13 @@ func (g startGuard) refuse(slug, verb string, status shedengine.Status, found, t
+ 		}
+ 	}
+ 
+-	if !found && !beamProject && g.Draft != nil {
+-		draft, err := g.Draft()
++	if !found && !beamProject && g.Unreleased != nil {
++		unreleased, err := g.Unreleased()
+ 		if err != nil {
+ 			return probeRefusal("the board entry's status", slug, rerun, err)
+ 		}
+-		if draft {
+-			return fmt.Errorf("%s is a draft task, which no run starts; way forward: run `%s` to release it, then `lym batten %s %s`", slug, releaseCommandText(slug), verb, slug)
++		if unreleased != "" {
++			return fmt.Errorf("%s is a %s task, which no run starts; way forward: run `%s` to release it, then `lym batten %s %s`", slug, unreleased, releaseCommandText(slug), verb, slug)
+ 		}
+ 	}
+ 
+@@ -266,7 +270,7 @@ func leftPartNames(parts fabricengine.PairParts) []string {
+ 	return names
+ }
+ 
+-// releaseCommandText words the command that releases the draft task slug, with the slug filled in so a way forward naming it runs as typed.
++// releaseCommandText words the command that releases the draft or discussed task slug, with the slug filled in so a way forward naming it runs as typed.
+ func releaseCommandText(slug string) string {
+ 	return fmt.Sprintf(`lym board set-status '{"slug":"%s","status":null}'`, slug)
+ }
+diff --git a/internal/battencli/startguard_test.go b/internal/battencli/startguard_test.go
+index 94370391..87fb0080 100644
+--- a/internal/battencli/startguard_test.go
++++ b/internal/battencli/startguard_test.go
+@@ -8,6 +8,7 @@ import (
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/battenrecipe"
++	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/runproc"
+@@ -50,9 +51,9 @@ func TestStartGuard_Refuse(t *testing.T) {
+ 		// project and beam are what the Project seam reads; marked and unreadable describe the PairMark seam.
+ 		project, beam, marked, unreadable bool
+ 		projectErr                        error
+-		// draft is what the Draft seam reads: a task whose board status is draft.
+-		draft    bool
+-		draftErr error
++		// unreleased is what the Unreleased seam reads: the board status of a task no run starts, empty for a released entry.
++		unreleased    string
++		unreleasedErr error
+ 		// noSeams leaves every seam nil.
+ 		noSeams bool
+ 		// wantExact is the refusal's whole text, "{verb}" standing for the verb under test.
+@@ -92,7 +93,7 @@ func TestStartGuard_Refuse(t *testing.T) {
+ 			wantErrors: []string{"a.txt, dir/b.txt", "commit or revert", `run "lym batten {verb} some-slug" again`},
+ 		},
+ 		{
+-			// A released task reads a nil status, so the Draft seam reads false.
++			// A released task reads a nil status, so the Unreleased seam reads empty.
+ 			name:  "CleanStartPasses",
+ 			verbs: []string{"run", "step"},
+ 		},
+@@ -156,23 +157,29 @@ func TestStartGuard_Refuse(t *testing.T) {
+ 			wantErrors: []string{"some-slug left a pair from an earlier run (task worktree)", `run "lym batten cancel some-slug --remove" from the prime`, `then "lym board set-status '{"slug":"some-slug","status":null}'" and "lym batten {verb} some-slug"`},
+ 		},
+ 		{
+-			name:      "DraftTaskRefusesAFreshStartNamingTheRelease",
+-			verbs:     []string{"run", "step"},
+-			draft:     true,
+-			wantExact: "some-slug is a draft task, which no run starts; way forward: run `lym board set-status '{\"slug\":\"some-slug\",\"status\":null}'` to release it, then `lym batten {verb} some-slug`",
++			name:       "DraftTaskRefusesAFreshStartNamingTheRelease",
++			verbs:      []string{"run", "step"},
++			unreleased: boardengine.StatusDraft,
++			wantExact:  "some-slug is a draft task, which no run starts; way forward: run `lym board set-status '{\"slug\":\"some-slug\",\"status\":null}'` to release it, then `lym batten {verb} some-slug`",
+ 		},
+ 		{
+-			name:     "DraftTaskWithARunStatusFileResumes",
+-			verbs:    []string{"run", "step"},
+-			draft:    true,
+-			found:    true,
+-			producer: battenrecipe.NameRunShed,
++			name:       "DiscussedTaskRefusesAFreshStartNamingTheRelease",
++			verbs:      []string{"run", "step"},
++			unreleased: boardengine.StatusDiscussed,
++			wantExact:  "some-slug is a discussed task, which no run starts; way forward: run `lym board set-status '{\"slug\":\"some-slug\",\"status\":null}'` to release it, then `lym batten {verb} some-slug`",
+ 		},
+ 		{
+-			name:       "DraftProbeErrorRefusesNamingTheProbeAndTheRerun",
++			name:       "UnreleasedTaskWithARunStatusFileResumes",
+ 			verbs:      []string{"run", "step"},
+-			draftErr:   errors.New("board unreadable"),
+-			wantErrors: []string{"the board entry's status", "board unreadable", `run "lym batten {verb} some-slug" again`},
++			unreleased: boardengine.StatusDiscussed,
++			found:      true,
++			producer:   battenrecipe.NameRunShed,
++		},
++		{
++			name:          "UnreleasedProbeErrorRefusesNamingTheProbeAndTheRerun",
++			verbs:         []string{"run", "step"},
++			unreleasedErr: errors.New("board unreadable"),
++			wantErrors:    []string{"the board entry's status", "board unreadable", `run "lym batten {verb} some-slug" again`},
+ 		},
+ 		{
+ 			name:       "LeftRecordsWorktreeRefusesAStart",
+@@ -295,11 +302,11 @@ func TestStartGuard_Refuse(t *testing.T) {
+ 			wantErrors: []string{"some-slug left a pair from an earlier run (records worktree)"},
+ 		},
+ 		{
+-			name:    "BeamProjectWhoseStatusIsDraftPassesWhereADraftTaskIsRefused",
+-			verbs:   []string{"run", "step"},
+-			project: true,
+-			beam:    true,
+-			draft:   true,
++			name:       "BeamProjectWhoseStatusIsDraftPassesWhereADraftTaskIsRefused",
++			verbs:      []string{"run", "step"},
++			project:    true,
++			beam:       true,
++			unreleased: boardengine.StatusDraft,
+ 		},
+ 		{
+ 			name:       "UnmarkedBeamPairIsJudgedAsAFreshStart",
+@@ -369,9 +376,9 @@ func TestStartGuard_Refuse(t *testing.T) {
+ 						ReachedParent: func(shedengine.Status, bool) (bool, error) {
+ 							return tt.reached, tt.reachedErr
+ 						},
+-						Project:  func() (bool, bool, error) { return tt.project, tt.beam, tt.projectErr },
+-						PairMark: func() (bool, bool, error) { return tt.marked, !tt.unreadable, nil },
+-						Draft:    func() (bool, error) { return tt.draft, tt.draftErr },
++						Project:    func() (bool, bool, error) { return tt.project, tt.beam, tt.projectErr },
++						PairMark:   func() (bool, bool, error) { return tt.marked, !tt.unreadable, nil },
++						Unreleased: func() (string, error) { return tt.unreleased, tt.unreleasedErr },
+ 					}
+ 				}
+ 
+diff --git a/internal/battenrecipe/names.go b/internal/battenrecipe/names.go
+index 1187f368..6c5a8d67 100644
+--- a/internal/battenrecipe/names.go
++++ b/internal/battenrecipe/names.go
+@@ -1,5 +1,5 @@
+ // names.go declares the batten recipe's row-name constants, the authority the recipe file's
+-// row names are pinned against, and RecipeEngines, the derived engine set the cross-consumer
++// row names are pinned against, RowsBeforeRunShed, and RecipeEngines, the derived engine set the cross-consumer
+ // coverage guard in internal/shedrecipe trusts.
+ 
+ package battenrecipe
+@@ -47,6 +47,23 @@ const (
+ 	NameWorktreeTeardown = "Worktree-Teardown"
+ )
+ 
++// RowsBeforeRunShed returns the names of the batten recipe's rows listed before Run-Shed, in recipe order: the rows a task's run passes through before its inner run starts.
++// A recipe that fails to parse or holds no Run-Shed row panics, naming this package, as RecipeEngines does.
++func RowsBeforeRunShed() []string {
++	recipe, err := shedbuild.Parse(recipes.BattenRecipe)
++	if err != nil {
++		panic(fmt.Sprintf("battenrecipe: RowsBeforeRunShed: %v", err))
++	}
++	var rows []string
++	for _, row := range recipe.Producers {
++		if row.Name == NameRunShed {
++			return rows
++		}
++		rows = append(rows, row.Name)
++	}
++	panic("battenrecipe: RowsBeforeRunShed: the batten recipe holds no " + NameRunShed + " row")
++}
++
+ // RecipeEngines parses recipes.BattenRecipe, collects each row's engine name, de-duplicates,
+ // and returns the result sorted. It is the input the cross-consumer coverage guard in
+ // internal/shedrecipe trusts, unioned with loomrecipe.RecipeEngines to check
+diff --git a/internal/boardcli/cli.go b/internal/boardcli/cli.go
+index de7bcebc..6bea4061 100644
+--- a/internal/boardcli/cli.go
++++ b/internal/boardcli/cli.go
+@@ -638,12 +638,13 @@ Example:
+ 		Short:       "set the status of a task, or release it with null",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `Set the lifecycle status of a task. A new task is "draft"; null releases it, leaving it with no status, and an empty string on a task gives "draft" again.
++A task a finished Discussion-only run leaves is "discussed", and null releases it the same way.
+ 
+ Fields:
+   "slug"   string      — task slug (one of slug, id or handle)
+   "id"     integer     — numeric task ID (one of slug, id or handle)
+   "handle" string      — task handle, such as T4 (one of slug, id or handle)
+-  "status" string|null — new status value; null releases a draft task
++  "status" string|null — new status value; null releases a draft or discussed task
+ 
+ Examples:
+   lym board set-status '{"slug":"my-task","status":"active"}'
+@@ -876,7 +877,7 @@ Fields:
+     "slug"   string      — task slug (one of slug, id or handle)
+     "id"     integer     — numeric task ID (one of slug, id or handle)
+     "handle" string      — task handle, such as T4 (one of slug, id or handle)
+-    "status" string|null — new status; null releases a draft task
++    "status" string|null — new status; null releases a draft or discussed task
+ 
+ A task the merge creates is "draft", and a "set_status" of null releases it.
+ 
+diff --git a/internal/boardcli/cli_test.go b/internal/boardcli/cli_test.go
+index 00249b88..c830a0da 100644
+--- a/internal/boardcli/cli_test.go
++++ b/internal/boardcli/cli_test.go
+@@ -119,6 +119,7 @@ func TestCLI(t *testing.T) {
+ 		{"ListAndFindLabelFilter", stepListAndFindLabelFilter},
+ 		{"Find_NoArgumentRefused", stepFind_NoArgumentRefused},
+ 		{"ListAndFindText", stepListAndFindText},
++		{"ListShowsADiscussedEntry", stepListShowsADiscussedEntry},
+ 		{"RetireLegacy", stepRetireLegacy},
+ 		{"GetAndRemoveByID", stepGetAndRemoveByID},
+ 		{"Owners", stepOwners},
+diff --git a/internal/boardcli/verbs_test.go b/internal/boardcli/verbs_test.go
+index b7b6ec52..85d83fd3 100644
+--- a/internal/boardcli/verbs_test.go
++++ b/internal/boardcli/verbs_test.go
+@@ -323,6 +323,36 @@ func stepListAndFindText(t *testing.T, f *cliFixture) {
+ 	}
+ }
+ 
++// stepListShowsADiscussedEntry asserts a task carrying the discussed status lists under the Discussed layer, and its --text line ends with the status.
++func stepListShowsADiscussedEntry(t *testing.T, f *cliFixture) {
++	mustUpsert(t, `{"slug":"sketched","title":"Sketched thing","kind":"task","labels":["bug"]}`)
++	runJSON(t, 0, "set-status", `{"slug":"sketched","status":"discussed"}`)
++
++	var layer any
++	for _, entry := range runJSON(t, 0, "list")["tasks"].([]any) {
++		if row := entry.(map[string]any); row["slug"] == "sketched" {
++			layer = row["layer"]
++		}
++	}
++	if layer != "Discussed" {
++		t.Errorf("list: layer of the discussed entry = %v; want Discussed", layer)
++	}
++
++	exitCode, stdout := runCLI(t, "list", "--text")
++	if exitCode != 0 {
++		t.Fatalf("list --text: exit %d, stdout %q", exitCode, stdout)
++	}
++	var line string
++	for _, candidate := range strings.Split(stdout, "\n") {
++		if strings.Contains(candidate, "sketched") {
++			line = candidate
++		}
++	}
++	if !strings.HasSuffix(line, "[discussed]") {
++		t.Errorf("list --text line of the discussed entry = %q; want it to end with [discussed]", line)
++	}
++}
++
+ func stepRetireLegacy(t *testing.T, f *cliFixture) {
+ 	cwd := f.cwd
+ 	boardDir := fabricengine.BoardDir(filepath.Dir(cwd))
+@@ -824,7 +854,7 @@ func stepProfiles(t *testing.T, f *cliFixture) {
+ 	if want := []string{"docs", "light", "solid", "speed", "wide"}; !slices.Equal(names, want) {
+ 		t.Errorf("profile names = %v, want %v", names, want)
+ 	}
+-	if want := map[string]any{"tapestry": "solid", "darn": "light", "pawl": "light"}; !reflect.DeepEqual(result["defaults"], want) {
++	if want := map[string]any{"tapestry": "solid", "motif": "solid", "darn": "light", "pawl": "light"}; !reflect.DeepEqual(result["defaults"], want) {
+ 		t.Errorf("defaults = %v, want %v", result["defaults"], want)
+ 	}
+ 
+diff --git a/internal/boardengine/board.go b/internal/boardengine/board.go
+index ece1474d..5aa49549 100644
+--- a/internal/boardengine/board.go
++++ b/internal/boardengine/board.go
+@@ -190,11 +190,11 @@ func (b *Board) SetStatus(idOrSlug any, status *string) error {
+ 	return err
+ }
+ 
+-// SetRunStatus sets status on the entry slug under the write lock, and writes nothing when the entry is absent or done.
++// SetRunStatus sets status on the entry slug under the write lock, and writes nothing when the entry is absent, done or already carries status.
+ func (b *Board) SetRunStatus(slug, status string) error {
+ 	_, err := b.boardCriticalSection(func(store *Store) (any, error) {
+ 		task, found := store.GetTask(slug)
+-		if !found || isDone(task) {
++		if !found || isDone(task) || (task.Status != nil && *task.Status == status) {
+ 			return noWrite{}, nil
+ 		}
+ 		return nil, store.SetStatus(slug, &status)
+diff --git a/internal/boardengine/board_test.go b/internal/boardengine/board_test.go
+index dd4f94db..e4b56061 100644
+--- a/internal/boardengine/board_test.go
++++ b/internal/boardengine/board_test.go
+@@ -712,7 +712,7 @@ func TestFilterLabelValidation(t *testing.T) {
+ 	})
+ }
+ 
+-// TestSetRunStatus pins SetRunStatus's skip: an entry with no status is set, a done entry and an absent slug are left alone.
++// TestSetRunStatus pins SetRunStatus's skip: an entry with no status is set, and a done entry, an entry already carrying the status and an absent slug are left alone.
+ func TestSetRunStatus(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -723,23 +723,36 @@ func TestSetRunStatus(t *testing.T) {
+ 		slug   string
+ 		want   *string
+ 		absent bool
++		// unchanged requires the call to write nothing, which shows in the rendered Home.md, removed before the call, staying absent: a write renders it again.
++		unchanged bool
+ 	}{
+ 		{name: "entry with no status is set", seed: map[string]any{"slug": "x", "labels": bugLabels}, slug: "x", want: strPtr("running · Webster")},
+ 		{name: "done entry is left done", seed: map[string]any{"slug": "x", "labels": bugLabels, "status": "done"}, slug: "x", want: strPtr("done")},
++		{name: "entry already carrying the status writes nothing", seed: map[string]any{"slug": "x", "labels": bugLabels, "status": "running · Webster"}, slug: "x", want: strPtr("running · Webster"), unchanged: true},
+ 		{name: "absent slug creates nothing", seed: map[string]any{"slug": "x", "labels": bugLabels}, slug: "ghost", absent: true},
+ 	}
+ 	for _, tc := range rows {
+ 		t.Run(tc.name, func(t *testing.T) {
+ 			t.Parallel()
+-			b := boardengine.New(boardengine.Config{Path: t.TempDir(), Readme: "Home.md", DesignPrefix: "proposal-", Types: testTypes, Labels: testLabels, SkipGit: true})
++			boardPath := t.TempDir()
++			b := boardengine.New(boardengine.Config{Path: boardPath, Readme: "Home.md", DesignPrefix: "proposal-", Types: testTypes, Labels: testLabels, SkipGit: true})
+ 			if _, err := b.UpsertTask(tc.seed); err != nil {
+ 				t.Fatalf("seed: %v", err)
+ 			}
++			homePath := filepath.Join(boardPath, "Home.md")
++			if err := os.Remove(homePath); err != nil {
++				t.Fatalf("remove rendered Home.md: %v", err)
++			}
+ 
+ 			if err := b.SetRunStatus(tc.slug, "running · Webster"); err != nil {
+ 				t.Fatalf("SetRunStatus = %v; want nil", err)
+ 			}
+ 
++			_, statErr := os.Stat(homePath)
++			if tc.unchanged && statErr == nil {
++				t.Errorf("Home.md was rendered again; want the call to write nothing")
++			}
++
+ 			task, found, err := b.GetTask(tc.slug)
+ 			if err != nil {
+ 				t.Fatalf("GetTask: %v", err)
+diff --git a/internal/boardengine/decision.go b/internal/boardengine/decision.go
+index aa97cda0..817c5464 100644
+--- a/internal/boardengine/decision.go
++++ b/internal/boardengine/decision.go
+@@ -16,6 +16,15 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ )
+ 
++// StatusDiscussed is the status a finished Discussion-only run leaves on its task: the Discussion was approved, its decision record stored, and no code built.
++// It is no run status and no draft, so nothing starts the task until it is released.
++const StatusDiscussed = "discussed"
++
++// isDiscussedStatus reports whether t carries StatusDiscussed.
++func isDiscussedStatus(t Task) bool {
++	return t.Status != nil && *t.Status == StatusDiscussed
++}
++
+ // ErrRecordEntryDone is the error StoreDecisionRecord wraps when the entry is done.
+ var ErrRecordEntryDone = errors.New("a landed entry keeps the decision record it last stored")
+ 
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index 04d6dd2f..37f26c6f 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -197,10 +197,11 @@
+ // An open project is in none of the Tasks layers: ComputeLayers puts it in its own Project layer, a run-held one in Running and a done one in the done layer, and RenderOrder places open projects by handle between open tasks and open notes, and a done project between done tasks and done notes.
+ // No project is a row of Tasks or Notes; a done project is a row of its parent file's Done table, its title linked to its file.
+ // Every section heading but Own entries ends in the number of entries listed under it in parentheses, such as `## Tasks (10)` or `### Ready (0)` in a project file, never the highest handle number, since handles have gaps.
+-// Tasks splits into Running, Ready, the dependency layers A, B and on, Independent for an isolated task, and Draft for an unreleased one.
++// Tasks splits into Running, Ready, the dependency layers A, B and on, Independent for an isolated task, Discussed for a task whose Discussion-only run finished, and Draft for an unreleased one.
+ // A task a run holds, by RunHolds as the run lock decides it, goes under Running and in no layer; Running is omitted when no task runs.
+ // An open draft task a run does not hold goes under Draft, whatever its dependencies or isolation, since nothing starts it until it is released;
+ // Draft follows Independent and is omitted when no task is draft, and a draft title cell opens with a `draft` code span before the bold title.
++// A task carrying `discussed` (StatusDiscussed) goes under Discussed the same way, between Independent and Draft, its title cell opening with a `discussed` code span.
+ // Ready holds the open, released tasks with no open dependency, and is always written, as `_None._` when empty.
+ // A dependency on a done task does not count, and one on a running task does, so a task waiting on a run is not Ready.
+ // A dependency on a project that is not done counts too, and weighs as one on its deepest open landing member, so a task waiting on a project sits one layer below that member, in Layer A when the project's open members are all running, ready or draft, or it has none.
+@@ -208,9 +209,9 @@
+ // Each subsection, Done included, is one markdown table in RenderOrder's order: a task subsection and a Notes type subsection by handle, and Done its tasks before its notes, each by handle, so `lym board list` and `find` follow the same order.
+ // A row opens with the entry's handle, and a Notes row adds the Prio column after it, H for a high priority, L for a low one and blank for normal.
+ // The row then holds the bold title, with the brief as a `• ` bullet under it in the same cell, and then one `• ` bullet per run setting, a code span such as `loom: code_max_bounces 1` with a nested key as its dotted path, sorted, so the settings stack in height and add no column, the slug linked to its design doc when the entry has a body, with a `Sketch` link to its decision record file under it, in the same cell, when the entry carries the discussed flag, the one `Age<br>Revised` cell, the entry's age above the time since its last revision, blank for an unknown date, and the labels that are not type labels.
+-// The Running, Ready, layer and Draft tables add a Recipe column after the slug, the recipe the task runs, the board's `default_recipe` (`darn` in the template) when its recipe field is empty, followed by ` · ` and the run profile when the task names one, such as `tapestry · light`; a task naming no profile takes its recipe's default profile and shows the recipe alone.
++// The Running, Ready, layer, Discussed and Draft tables add a Recipe column after the slug, the recipe the task runs, the board's `default_recipe` (`darn` in the template) when its recipe field is empty, followed by ` · ` and the run profile when the task names one, such as `tapestry · light`; a task naming no profile takes its recipe's default profile and shows the recipe alone.
+ // The Notes and Done tables have no Recipe column.
+-// Running adds an At column, the run status without the state when the state is `running`, and an Owner column, the entry's effective owner machine, blank when none is recorded, and Ready, the layers and Draft add an After column, the handles of the entries named in depends_on that are not done, a project as Dependencies judges it, one per line, an entry with no handle or no longer on the board named by its slug.
++// Running adds an At column, the run status without the state when the state is `running`, and an Owner column, the entry's effective owner machine, blank when none is recorded, and Ready, the layers, Discussed and Draft add an After column, the handles of the entries named in depends_on that are not done, a project as Dependencies judges it, one per line, an entry with no handle or no longer on the board named by its slug.
+ // A pipe in a cell is escaped and a line break becomes a space, so an entry is always one row.
+ //
+ // # Intake
+@@ -240,7 +241,7 @@
+ // # Run lock
+ //
+ // A run holds a board entry while the entry's status has the run-status form "<state> · <producer>", which RunStatus composes and IsRunStatus recognizes.
+-// Nil, empty, "draft", "done", "abandoned" and a hand-set word are not run statuses, and lock nothing.
++// Nil, empty, "draft", "discussed", "done", "abandoned" and a hand-set word are not run statuses, and lock nothing.
+ // A held entry is the scope its run executes, so the write critical section refuses, before the save, any write whose net change on it removes it or touches a field other than status.
+ // The net change runs from the entries as loaded under the board file lock to the entries after the whole mutation,
+ // so a batch or merge that clears the status early and then edits the entry is still refused, and nothing reaches disk.
+@@ -269,6 +270,7 @@
+ // So a create of any verb, a batch or merge create, a note or project upserted to a task and a promoted note are `draft` even when the payload sets `status` to null.
+ // An entry that was a task before the write keeps an empty status the write left untouched, so an edit of a released task leaves it released.
+ // A task is released by a null status: `lym board set-status '{"slug":"<slug>","status":null}'`, an upsert setting `status` to null on a task, or a merge whose `set_status` sets null.
++// A `discussed` task, which a finished Discussion-only run leaves, is released the same way.
+ // An empty string written to a task whose loaded status differs is `draft`, not a release.
+ // The owner write and the replay of a local commit run no draft rule: the first never makes a task, and the second copies entries a critical-section write already normalised.
+ //
+diff --git a/internal/boardengine/layer.go b/internal/boardengine/layer.go
+index 49c2611c..830bb4ca 100644
+--- a/internal/boardengine/layer.go
++++ b/internal/boardengine/layer.go
+@@ -1,6 +1,6 @@
+ // layer.go — derived task fields.
+ //
+-// ComputeLayers assigns each task its README subsection: Running, Ready, a dependency layer, Independent or Draft, and RenderOrder orders tasks for output.
++// ComputeLayers assigns each task its README subsection: Running, Ready, a dependency layer, Independent, Discussed or Draft, and RenderOrder orders tasks for output.
+ // All computed at read time;
+ // never stored.
+ 
+@@ -11,21 +11,22 @@ import (
+ 	"sort"
+ )
+ 
+-// The non-letter layers: a running task, an open task waiting on nothing open, an isolated task, an unreleased task, an open project and a done entry.
++// The non-letter layers: a running task, an open task waiting on nothing open, an isolated task, a task whose Discussion-only run finished, an unreleased task, an open project and a done entry.
+ const (
+-	runningLayer  = "Running"
+-	readyLayer    = "Ready"
+-	isolatedLayer = "Z"
+-	draftLayer    = "Draft"
+-	projectLayer  = "Project"
+-	doneLayer     = "__done__"
++	runningLayer   = "Running"
++	readyLayer     = "Ready"
++	isolatedLayer  = "Z"
++	discussedLayer = "Discussed"
++	draftLayer     = "Draft"
++	projectLayer   = "Project"
++	doneLayer      = "__done__"
+ )
+ 
+ // ComputeLayers assigns each task a bucket based on topological depth.
+ // A task a run holds is runningLayer, by RunHolds as the run lock decides it.
+ // An open project a run does not hold, a beam whose pawl run has not reached Parent-Align included, is projectLayer, never Ready or a letter.
+-// An open draft task a run does not hold is draftLayer, whatever its dependencies or isolation, since nothing starts it until it is released;
+-// a dependency on it weighs as one on a ready task.
++// An open draft task a run does not hold is draftLayer, and one carrying StatusDiscussed is discussedLayer, whatever its dependencies or isolation, since nothing starts either until it is released;
++// a dependency on either weighs as one on a ready task.
+ // An open task that is not a draft and has no open dependency is readyLayer, and every other task is the letter of its depth:
+ // A waits only on running, ready or draft tasks, B on something in A, and so on.
+ // A met dependency adds no depth, while one on a running task counts as one on a ready task, and cycle detection still follows running tasks.
+@@ -44,6 +45,8 @@ func ComputeLayers(tasks []Task) (map[string]string, error) {
+ 			layerMap[t.Slug] = projectLayer
+ 		} else if isDraft(t) {
+ 			layerMap[t.Slug] = draftLayer
++		} else if isDiscussedStatus(t) {
++			layerMap[t.Slug] = discussedLayer
+ 		} else if t.Isolated {
+ 			layerMap[t.Slug] = isolatedLayer
+ 		}
+@@ -207,8 +210,8 @@ func RenderOrder(tasks []Task) ([]TaskWithLayer, error) {
+ 		})
+ 	}
+ 
+-	// Running, then ready, then the letters A..Y, isolated, draft and done.
+-	bucketOrder := map[string]int{runningLayer: 0, readyLayer: 1, isolatedLayer: 27, draftLayer: 28, doneLayer: 29}
++	// Running, then ready, then the letters A..Y, isolated, discussed, draft and done.
++	bucketOrder := map[string]int{runningLayer: 0, readyLayer: 1, isolatedLayer: 27, discussedLayer: 28, draftLayer: 29, doneLayer: 30}
+ 	for letter := 'A'; letter <= 'Y'; letter++ {
+ 		bucketOrder[string(letter)] = 2 + int(letter-'A')
+ 	}
+diff --git a/internal/boardengine/layer_test.go b/internal/boardengine/layer_test.go
+index d12eaab5..d1ec08d5 100644
+--- a/internal/boardengine/layer_test.go
++++ b/internal/boardengine/layer_test.go
+@@ -55,6 +55,22 @@ func TestComputeLayers(t *testing.T) {
+ 			},
+ 			want: map[string]string{"run": "Running", "x": "A", "y": "B", "free": "Ready", "word": "Ready"},
+ 		},
++		{
++			name: "a discussed task sits under Discussed whatever its dependencies, and weighs on a dependent as a ready one",
++			tasks: []boardengine.Task{
++				{ID: 1, Slug: "sketched", Title: "Sketched", DependsOn: []string{"base"}, Status: stringPtr(boardengine.StatusDiscussed), Discussed: true},
++				{ID: 2, Slug: "base", Title: "Base"},
++				{ID: 3, Slug: "after", Title: "After", DependsOn: []string{"sketched"}},
++			},
++			want: map[string]string{"sketched": "Discussed", "base": "Ready", "after": "A"},
++		},
++		{
++			name: "a draft task carrying the discussed flag stays Draft, the layer following the status",
++			tasks: []boardengine.Task{
++				{ID: 1, Slug: "released-again", Title: "Released again", Status: stringPtr(boardengine.StatusDraft), Discussed: true},
++			},
++			want: map[string]string{"released-again": "Draft"},
++		},
+ 		{
+ 			name: "an open project is neither ready nor a letter and weighs on a dependent as its deepest open member",
+ 			tasks: []boardengine.Task{
+diff --git a/internal/boardengine/render.go b/internal/boardengine/render.go
+index c7305381..4d0f0bf3 100644
+--- a/internal/boardengine/render.go
++++ b/internal/boardengine/render.go
+@@ -5,7 +5,7 @@
+ // with no open sub-project the own entries sit one level down, and with any they sit under an Own entries heading at the sub-projects' level, two levels down;
+ // the root's projects stand beside it rather than under it, so its section holds its own entries alone.
+ // README.md holds every top-level project's section under its header and the root's last, and a project file holds its project's sub-projects and own entries under its header.
+-// A project's own entries split into Tasks, by Running, Ready, dependency layers, Independent and Draft, Notes with one subsection per type label, research first, then Done.
++// A project's own entries split into Tasks, by Running, Ready, dependency layers, Independent, Discussed and Draft, Notes with one subsection per type label, research first, then Done.
+ // Each subsection holds one markdown table in RenderOrder's order, each row opening with the entry's handle, and a Notes table adds the priority as H or L after it, under Prio;
+ // README.md opens with the time it was rendered and the machine that owns the hub's prime, and a project file with the time, a link up to its parent's file, the project's brief, for a beam its owner, and the project's body with its headings shifted below the file's own;
+ // the rows show the bold title with the brief, the run profile and each run setting as a bullet under it, the linked slug with a Sketch link to the decision record under it for a discussed entry, the entry's age above its time since its last revision as of that time, and the labels that are not type labels;
+@@ -535,7 +535,7 @@ func (b boardView) table(entries []TaskWithLayer, table readmeTable) []string {
+ 	return append(lines, "")
+ }
+ 
+-// entrySections builds the Tasks, Notes and Done sections of project, rootProject naming the root, with level the heading level of their headings and their subsections one level down: Tasks split into Running, Ready, dependency layers, Independent and Draft, Notes split by type label, then Done when any of its entries is done.
++// entrySections builds the Tasks, Notes and Done sections of project, rootProject naming the root, with level the heading level of their headings and their subsections one level down: Tasks split into Running, Ready, dependency layers, Independent, Discussed and Draft, Notes split by type label, then Done when any of its entries is done.
+ // Every section holds only the entries whose project is project, while layers, After cells and owners read the whole board.
+ func (b boardView) entrySections(project Task, level int) []string {
+ 	sublevel := level + 1
+@@ -579,7 +579,7 @@ func (b boardView) entrySections(project Task, level int) []string {
+ 	} else {
+ 		lines = append(lines, emptySectionLine, "")
+ 	}
+-	// RenderOrder sorts tasks by layer, so each dependency layer, Independent and Draft is a contiguous run.
++	// RenderOrder sorts tasks by layer, so each dependency layer, Independent, Discussed and Draft is a contiguous run.
+ 	for start := 0; start < len(tasks); {
+ 		end := start
+ 		for end < len(tasks) && tasks[end].Layer == tasks[start].Layer {
+@@ -697,6 +697,8 @@ func layerSection(layer string) readmeSection {
+ 		return readmeSection{"Layer A", "Waits only on Running, Ready or Draft entries."}
+ 	case isolatedLayer:
+ 		return readmeSection{"Independent", "Depends on nothing and nothing depends on it, by design."}
++	case discussedLayer:
++		return readmeSection{"Discussed", "Discussion approved and its decision record stored; nothing starts it until its status is cleared."}
+ 	case draftLayer:
+ 		return readmeSection{"Draft", "Not released; nothing starts it until its status is cleared."}
+ 	default:
+@@ -755,11 +757,14 @@ func ageCell(t Task, now time.Time) string {
+ 	return age + cellBreak + revised
+ }
+ 
+-// entryCell is the bold title, led by a `draft` code span for a draft task, with the brief as one bullet under it when there is one, then one code-span bullet per run setting.
++// entryCell is the bold title, led by a `draft` or `discussed` code span for a task carrying that status, with the brief as one bullet under it when there is one, then one code-span bullet per run setting.
+ func entryCell(t Task) string {
+ 	cell := "**" + cellText(t.Title) + "**"
+-	if isDraft(t) {
++	switch {
++	case isDraft(t):
+ 		cell = codeSpan(StatusDraft) + " " + cell
++	case isDiscussedStatus(t):
++		cell = codeSpan(StatusDiscussed) + " " + cell
+ 	}
+ 	if t.Brief != "" {
+ 		cell += cellBullet + cellText(t.Brief)
+diff --git a/internal/boardengine/render_test.go b/internal/boardengine/render_test.go
+index b641654b..979a77ee 100644
+--- a/internal/boardengine/render_test.go
++++ b/internal/boardengine/render_test.go
+@@ -1076,6 +1076,36 @@ func TestRenderSlugCellLinksTheDecisionRecord(t *testing.T) {
+ 	}
+ }
+ 
++// TestRenderDiscussedSection pins how a task a Discussion-only run finished renders: under a Discussed subsection before Draft, its title led by a `discussed` code span.
++func TestRenderDiscussedSection(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tasks := []boardengine.Task{
++		{ID: 1, Handle: "T1", Slug: "sketched", Title: "Sketched", Kind: boardengine.KindTask, Labels: []string{"bug"}, Status: stringPtr(boardengine.StatusDiscussed), Discussed: true},
++		{ID: 2, Handle: "T2", Slug: "unreleased", Title: "Unreleased", Kind: boardengine.KindTask, Labels: []string{"bug"}, Status: stringPtr(boardengine.StatusDraft)},
++	}
++	result, err := boardengine.Render(tasks, "", boardengine.Outputs{Readme: "README.md", DesignPrefix: "design-", Types: readmeTypes, DefaultRecipe: "darn"}, renderTime)
++	if err != nil {
++		t.Fatalf("Render: %v", err)
++	}
++	readme := result["README.md"]
++	discussed := strings.Index(readme, " Discussed (1)\n\nDiscussion approved and its decision record stored; nothing starts it until its status is cleared.\n")
++	draft := strings.Index(readme, " Draft (1)\n")
++	if discussed < 0 || draft < 0 || discussed > draft {
++		t.Errorf("README Discussed section at %d, Draft at %d; want both, Discussed first:\n%s", discussed, draft, readme)
++	}
++	if want := "| T1 | `discussed` **Sketched** |"; !strings.Contains(readme, want) {
++		t.Errorf("README lacks row opening %q:\n%s", want, readme)
++	}
++	if discussed >= 0 && draft > discussed {
++		for _, column := range []string{"Recipe", "After"} {
++			if !strings.Contains(readme[discussed:draft], column) {
++				t.Errorf("README Discussed section lacks the %s column:\n%s", column, readme[discussed:draft])
++			}
++		}
++	}
++}
++
+ // emptyProjectEntries is the rendered own entries of a project holding none, its Tasks and Notes at heading level level and Ready one level down.
+ func emptyProjectEntries(level int) string {
+ 	return strings.Repeat("#", level) + " Tasks (0)\n" +
+diff --git a/internal/configcli/configcli_integration_test.go b/internal/configcli/configcli_integration_test.go
+index 16c71ff6..3f6e01c3 100644
+--- a/internal/configcli/configcli_integration_test.go
++++ b/internal/configcli/configcli_integration_test.go
+@@ -370,7 +370,7 @@ func TestConfigOverRealHub(t *testing.T) {
+ 			t.Fatalf("seed the machine file: %v", err)
+ 		}
+ 
+-		// A starting profile seeded before sampler existed lacks its sampler block, which the dry run lists under lacking.
++		// A starting profile seeded before motif and sampler existed lacks their blocks, which the dry run lists under lacking.
+ 		profilesFile := configengine.ConfigFile(boardDir, "profiles")
+ 		profilesOriginal, err := os.ReadFile(profilesFile)
+ 		if err != nil {
+@@ -392,8 +392,8 @@ func TestConfigOverRealHub(t *testing.T) {
+ 			t.Fatalf("reconcile --layer default = %d; want 0; result: %v", code, result)
+ 		}
+ 		restoreProfiles()
+-		if lacking := fmt.Sprint(reconcileModule(t, result, "profiles")["lacking"]); lacking != "[light.sampler]" {
+-			t.Errorf("dry-run profiles lacking = %s; want [light.sampler]", lacking)
++		if lacking := fmt.Sprint(reconcileModule(t, result, "profiles")["lacking"]); lacking != "[light.motif light.sampler]" {
++			t.Errorf("dry-run profiles lacking = %s; want [light.motif light.sampler]", lacking)
+ 		}
+ 		loom := reconcileBaseEntry(t, result, "loom")
+ 		if _, has := loom["lacking"]; has {
+diff --git a/internal/configsync/configsync_test.go b/internal/configsync/configsync_test.go
+index 95b1ccc9..f8d86ec0 100644
+--- a/internal/configsync/configsync_test.go
++++ b/internal/configsync/configsync_test.go
+@@ -755,7 +755,7 @@ func TestReconcileHubWideAt_SeedsFromHubPrimeLegacyOrTemplate(t *testing.T) {
+ 			wantContains: []string{"# operator note", "defaults: {tapestry: solid}", "  tapestry:\n    loom: {plan_max_bounces: 7}"},
+ 			wantAbsent:   []string{"loom: solid", "  loom:\n    loom:", "sampler:", "darn:"},
+ 			wantMigrated: []string{"defaults.loom: renamed to defaults.tapestry", "solid.loom: renamed to solid.tapestry"},
+-			wantLacking:  []string{"defaults.darn", "defaults.pawl", "solid.darn", "solid.pawl", "solid.sampler"},
++			wantLacking:  []string{"defaults.darn", "defaults.motif", "defaults.pawl", "solid.darn", "solid.motif", "solid.pawl", "solid.sampler"},
+ 		},
+ 		{
+ 			name:         "profiles present with a former block differing from the current one keep both and list the pair",
+@@ -764,7 +764,7 @@ func TestReconcileHubWideAt_SeedsFromHubPrimeLegacyOrTemplate(t *testing.T) {
+ 			wantSeed:     SeedHub,
+ 			wantContains: []string{"  loom:\n    loom: {plan_max_bounces: 7}", "  tapestry:\n    loom: {plan_max_bounces: 1}"},
+ 			wantMigrated: []string{},
+-			wantLacking:  []string{"light.darn", "light.loom: differs from light.tapestry", "light.pawl", "light.sampler"},
++			wantLacking:  []string{"light.darn", "light.loom: differs from light.tapestry", "light.motif", "light.pawl", "light.sampler"},
+ 		},
+ 		{
+ 			name:          "profiles present that fails to parse is refused and left untouched",
+diff --git a/internal/loomcli/commitstatus_integration_test.go b/internal/loomcli/commitstatus_integration_test.go
+index a12d8fe6..0f293922 100644
+--- a/internal/loomcli/commitstatus_integration_test.go
++++ b/internal/loomcli/commitstatus_integration_test.go
+@@ -13,7 +13,7 @@ import (
+ )
+ 
+ // TestWiredCommitStatus_WritesFinishedStatus drives the seam each of wireLightweight and wire installs through a run's last transition and asserts the board status it leaves:
+-// a recipe with no Finalize row releases the entry as draft, and one with a Finalize row leaves the status of the last running transition.
++// a recipe with no Finalize row marks the entry discussed, and one with a Finalize row leaves the status of the last running transition.
+ // It is serial because it sets the board skip variable, which is process-global.
+ func TestWiredCommitStatus_WritesFinishedStatus(t *testing.T) {
+ 	tiergate.Require(t, 1)
+@@ -40,7 +40,7 @@ func TestWiredCommitStatus_WritesFinishedStatus(t *testing.T) {
+ 		recipe string
+ 		want   string
+ 	}{
+-		{"FinalizeLessRunReleasesTheEntryAsDraft", "motifrun", shedrun.RecipeMotif, boardengine.StatusDraft},
++		{"FinalizeLessRunMarksTheEntryDiscussed", "motifrun", shedrun.RecipeMotif, boardengine.StatusDiscussed},
+ 		{"FinalizingRunLeavesTheLastRunningStatus", "tapestryrun", shedrun.RecipeTapestry, running},
+ 	}
+ 	for _, w := range wirings {
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index f8d702cf..61e0f644 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -20,9 +20,9 @@
+ // Discussion-Bouncer's approve seam stores the approved decision record on the run's board entry through the one `storeDecisionRecord` helper, logging and passing a done entry and failing the settle on any other store failure.
+ // The Motif block's undiscussed gate seam does the reverse for an entry flagged discussed: it writes the entry's stored record as the run's decision record, writes a support log saying so when none exists and commits the discussion directory, so the gate passes over Discussion.
+ // `decision add` copies the committed record onto the board entry after its commit once the run is past that approval, reporting a failed copy as `record_store_error` and never failing the verb, and `decision store` makes the same copy by hand, admitting the unnamed shell, the run's arbiter and its parent orch.
+-// Each status transition writes `<state> · <producer>` on the run's board entry.
++// Each status transition writes `<state> · <producer>` on the run's board entry, the run's start write included, so the entry names the first row while it runs.
+ // A finished run of a recipe with a Finalize row writes nothing, its landing having marked the entry done.
+-// A finished run of a recipe with no Finalize row, a motif run, writes the draft status, so the entry leaves its run lock and waits for the operator with its record stored.
++// A finished run of a recipe with no Finalize row, a motif run, writes the discussed status, so the entry leaves its run lock, shows as finished and waits for the operator with its record stored.
+ //
+ // `wire` fills `Env.GateFixer` for every recipe through `gateFixerSeam`, which wraps the gate of a Darn-Write, Plan-Write or Discussion-Write row whose `fixer` element names a model-spec, so a failure at the writer's idle boundary goes to a cold fixer before the writer hears of it.
+ // The seam returns the spec unchanged on the prime and outside a hub, where no pair owns a fixer.
+diff --git a/internal/loomcli/recipekeyed_test.go b/internal/loomcli/recipekeyed_test.go
+index 5db26c75..8cd96a8a 100644
+--- a/internal/loomcli/recipekeyed_test.go
++++ b/internal/loomcli/recipekeyed_test.go
+@@ -41,7 +41,7 @@ func TestRecipeKeyedWiring(t *testing.T) {
+ 		wantFinished string
+ 	}{
+ 		{"Tapestry", shedrun.RecipeTapestry, false, true, "a tapestry run, a task driven from discussion to landing", ""},
+-		{"Motif", shedrun.RecipeMotif, false, false, "a motif run, a task's Discussion", boardengine.StatusDraft},
++		{"Motif", shedrun.RecipeMotif, false, false, "a motif run, a task's Discussion", boardengine.StatusDiscussed},
+ 		{"Darn", shedrun.RecipeDarn, true, false, "its decision record through one build session", ""},
+ 		{"Pawl", shedrun.RecipePawl, false, false, "a beam's life", ""},
+ 		{"Sampler", shedrun.RecipeSampler, true, false, "made with the operator in one interactive session", ""},
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index a2ad007c..2f3997f9 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -215,12 +215,13 @@ func boardStatus(producer, state, finished string) (string, bool) {
+ 
+ // finishedBoardStatus returns the board status a finished run of recipe writes.
+ // A recipe with a Finalize row writes none, since its landing marks the entry done.
+-// One with none lands nothing and writes the draft status, which releases the entry from its run lock without dobby starting it again.
++// One with none lands nothing, its run ending at the Discussion approval, and writes the discussed status:
++// that releases the entry from its run lock without dobby starting it again, and shows it on the board as finished.
+ func finishedBoardStatus(recipe string) string {
+ 	if recipeHasEngine(recipe, shedrecipe.LoomFinalizeEngine) {
+ 		return ""
+ 	}
+-	return boardengine.StatusDraft
++	return boardengine.StatusDiscussed
+ }
+ 
+ // commitStatusDeps returns loomCommitStatusDeps over location and the run, with the finished status of the run's recipe.
+diff --git a/internal/loomrecipe/doc.go b/internal/loomrecipe/doc.go
+index 908698c1..0679d861 100644
+--- a/internal/loomrecipe/doc.go
++++ b/internal/loomrecipe/doc.go
+@@ -23,7 +23,7 @@
+ // Its Code-Review rows are the darn recipe's, each gated by `sampler.code_review`, so with that key false they are recorded skipped and Code-Bouncer routes on to Describe, which carries no entry gate.
+ //
+ // The motif recipe is the recipe that makes a sketch, the decision record, from a task: `Discussion-Write → Discussion-Review`, the one definition of those rows.
+-// Run alone it takes the loom contract's record-only form and tapestry's run-profile block through its profile_recipe key, and its run ends at the Discussion-Review approval with no landing.
++// Run alone it takes the loom contract's record-only form and its own run-profile block, and its run ends at the Discussion-Review approval with no landing.
+ // The tapestry recipe runs it as its Motif block, whose expansion reads none of motif's top-level keys.
+ // The block's gate is the `undiscussed` check, so a run whose board entry is flagged discussed seeds the stored record and goes on at Drift-Baseline.
+ //
+@@ -55,8 +55,6 @@
+ // PastDiscussionApproval answers whether a run standing at a row, mapped through RetiredRows, is past that approval: its row follows every row of the approval row's segment.
+ // Both read the recipe's expanded rows and never its name, so darn, sampler and pawl answer no approval row, and tapestry's approval row is the one inside its Motif block.
+ //
+-// ProfileRecipe answers which recipe's run-profile block and default profile a task running the named recipe takes: the recipe's `profile_recipe`, or its own name when it sets none, so every reader of a task's profile block resolves the recipe name through it.
+-//
+ // GateFixerSetting answers which setting a writer row's gate element names for its cold fixer's model-spec, so a caller reads whether a row's fixer is on from the recipe's own `fixer` key rather than from a row name.
+ //
+ // CodePerchGate answers the entry gate of a recipe's Code-Review Bouncer row, built over a told Env, and nil for a recipe whose perch carries none (tapestry, darn, pawl):
+diff --git a/internal/loomrecipe/recipekeys.go b/internal/loomrecipe/recipekeys.go
+index 07c1f611..0b6a7985 100644
+--- a/internal/loomrecipe/recipekeys.go
++++ b/internal/loomrecipe/recipekeys.go
+@@ -151,23 +151,6 @@ func VerifySource(recipe string) (string, error) {
+ 	return parsed.VerifySource, nil
+ }
+ 
+-// ProfileRecipe returns the recipe whose run-profile block and default profile a task running the named recipe takes: the recipe's top-level profile_recipe, or the recipe's own name when it sets none.
+-// An empty recipe name reads as the tapestry recipe, and a name that selects no embedded recipe is refused.
+-func ProfileRecipe(recipe string) (string, error) {
+-	parsed, err := parseEmbeddedRecipe(recipe)
+-	if err != nil {
+-		return "", err
+-	}
+-	if parsed.ProfileRecipe != "" {
+-		return parsed.ProfileRecipe, nil
+-	}
+-	if recipe == "" {
+-		return shedrun.RecipeTapestry, nil
+-	}
+-
+-	return recipe, nil
+-}
+-
+ // RetiredRows maps each row name a run of the named recipe may still carry in its status file from an earlier recipe onto the row that replaced it.
+ // It is nil for a recipe with none, and an empty name reads as the tapestry recipe.
+ func RetiredRows(recipe string) map[string]string {
+diff --git a/internal/loomrecipe/recipekeys_test.go b/internal/loomrecipe/recipekeys_test.go
+index e969e801..cb0c4063 100644
+--- a/internal/loomrecipe/recipekeys_test.go
++++ b/internal/loomrecipe/recipekeys_test.go
+@@ -51,32 +51,29 @@ func TestRecipeKeys(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	tests := []struct {
+-		name              string
+-		recipe            string
+-		wantLoom          bool
+-		wantRecord        string
+-		wantVerify        string
+-		wantProfileRecipe string
+-		wantEngines       map[string]bool
+-		wantEngineRow     map[string]string
+-		wantRetired       map[string]string
+-		wantRefusals      bool
++		name          string
++		recipe        string
++		wantLoom      bool
++		wantRecord    string
++		wantVerify    string
++		wantEngines   map[string]bool
++		wantEngineRow map[string]string
++		wantRetired   map[string]string
++		wantRefusals  bool
+ 	}{
+ 		{
+-			name:              "MotifRunsAloneTakingTapestrysProfile",
+-			recipe:            shedrun.RecipeMotif,
+-			wantLoom:          true,
+-			wantRecord:        "DiscussionWrite",
+-			wantProfileRecipe: shedrun.RecipeTapestry,
+-			wantEngines:       map[string]bool{"DiscussionWrite": true, "Block": false, "Implementer": false, "Finalize": false},
++			name:        "MotifRunsAlone",
++			recipe:      shedrun.RecipeMotif,
++			wantLoom:    true,
++			wantRecord:  "DiscussionWrite",
++			wantEngines: map[string]bool{"DiscussionWrite": true, "Block": false, "Implementer": false, "Finalize": false},
+ 		},
+ 		{
+-			name:              "Tapestry",
+-			recipe:            shedrun.RecipeTapestry,
+-			wantLoom:          true,
+-			wantRecord:        "DiscussionWrite",
+-			wantVerify:        "plan",
+-			wantProfileRecipe: shedrun.RecipeTapestry,
++			name:       "Tapestry",
++			recipe:     shedrun.RecipeTapestry,
++			wantLoom:   true,
++			wantRecord: "DiscussionWrite",
++			wantVerify: "plan",
+ 			wantEngines: map[string]bool{
+ 				"Block":       true,
+ 				"Implementer": true,
+@@ -91,12 +88,11 @@ func TestRecipeKeys(t *testing.T) {
+ 			},
+ 		},
+ 		{
+-			name:              "EmptyReadsAsTapestry",
+-			recipe:            "",
+-			wantLoom:          true,
+-			wantRecord:        "DiscussionWrite",
+-			wantVerify:        "plan",
+-			wantProfileRecipe: shedrun.RecipeTapestry,
++			name:       "EmptyReadsAsTapestry",
++			recipe:     "",
++			wantLoom:   true,
++			wantRecord: "DiscussionWrite",
++			wantVerify: "plan",
+ 			wantEngines: map[string]bool{
+ 				"Implementer": true,
+ 			},
+@@ -107,38 +103,34 @@ func TestRecipeKeys(t *testing.T) {
+ 			},
+ 		},
+ 		{
+-			name:              "Darn",
+-			recipe:            shedrun.RecipeDarn,
+-			wantLoom:          true,
+-			wantRecord:        "RecordWrite",
+-			wantVerify:        "tree_scope",
+-			wantProfileRecipe: shedrun.RecipeDarn,
+-			wantEngines:       map[string]bool{"DarnWrite": true, "RecordWrite": true, "PlanWrite": false},
+-			wantRetired:       map[string]string{"Darn": "Darn-Write"},
++			name:        "Darn",
++			recipe:      shedrun.RecipeDarn,
++			wantLoom:    true,
++			wantRecord:  "RecordWrite",
++			wantVerify:  "tree_scope",
++			wantEngines: map[string]bool{"DarnWrite": true, "RecordWrite": true, "PlanWrite": false},
++			wantRetired: map[string]string{"Darn": "Darn-Write"},
+ 		},
+ 		{
+-			name:              "Pawl",
+-			recipe:            shedrun.RecipePawl,
+-			wantLoom:          true,
+-			wantRecord:        "RecordWrite",
+-			wantVerify:        "plan",
+-			wantProfileRecipe: shedrun.RecipePawl,
+-			wantEngines:       map[string]bool{"BeamAwait": true, "RecordWrite": true, "Bouncer": false, "Implementer": false},
++			name:        "Pawl",
++			recipe:      shedrun.RecipePawl,
++			wantLoom:    true,
++			wantRecord:  "RecordWrite",
++			wantVerify:  "plan",
++			wantEngines: map[string]bool{"BeamAwait": true, "RecordWrite": true, "Bouncer": false, "Implementer": false},
+ 		},
+ 		{
+-			name:              "Sampler",
+-			recipe:            shedrun.RecipeSampler,
+-			wantLoom:          true,
+-			wantRecord:        "RecordWrite",
+-			wantVerify:        "tree_scope",
+-			wantProfileRecipe: shedrun.RecipeSampler,
+-			wantEngines:       map[string]bool{"SamplerSession": true, "RecordWrite": true, "DarnWrite": false},
++			name:        "Sampler",
++			recipe:      shedrun.RecipeSampler,
++			wantLoom:    true,
++			wantRecord:  "RecordWrite",
++			wantVerify:  "tree_scope",
++			wantEngines: map[string]bool{"SamplerSession": true, "RecordWrite": true, "DarnWrite": false},
+ 		},
+ 		{
+-			name:              "BattenIsNeither",
+-			recipe:            shedrun.RecipeBatten,
+-			wantProfileRecipe: shedrun.RecipeBatten,
+-			wantEngines:       map[string]bool{"Implementer": false},
++			name:        "BattenIsNeither",
++			recipe:      shedrun.RecipeBatten,
++			wantEngines: map[string]bool{"Implementer": false},
+ 		},
+ 		{name: "Beam", recipe: "beam", wantRefusals: true},
+ 		{name: "Unknown", recipe: "nope", wantRefusals: true},
+@@ -164,10 +156,6 @@ func TestRecipeKeys(t *testing.T) {
+ 			if err != nil || gotVerify != tt.wantVerify {
+ 				t.Errorf("VerifySource(%q) = %q, %v; want %q, nil", tt.recipe, gotVerify, err, tt.wantVerify)
+ 			}
+-			gotProfile, err := ProfileRecipe(tt.recipe)
+-			if err != nil || gotProfile != tt.wantProfileRecipe {
+-				t.Errorf("ProfileRecipe(%q) = %q, %v; want %q, nil", tt.recipe, gotProfile, err, tt.wantProfileRecipe)
+-			}
+ 			for engine, want := range tt.wantEngines {
+ 				got, err := HasEngine(tt.recipe, engine)
+ 				if err != nil || got != want {
+@@ -194,9 +182,8 @@ func assertRefusedByEveryAccessor(t *testing.T, recipe string) {
+ 	_, errHas := HasEngine(recipe, "Implementer")
+ 	_, errRecord := RecordEngine(recipe)
+ 	_, errVerify := VerifySource(recipe)
+-	_, errProfile := ProfileRecipe(recipe)
+ 	for accessor, err := range map[string]error{
+-		"IsLoom": errLoom, "HasEngine": errHas, "RecordEngine": errRecord, "VerifySource": errVerify, "ProfileRecipe": errProfile,
++		"IsLoom": errLoom, "HasEngine": errHas, "RecordEngine": errRecord, "VerifySource": errVerify,
+ 	} {
+ 		if err == nil || !strings.Contains(err.Error(), recipe) {
+ 			t.Errorf("%s(%q) error = %v; want a refusal naming the recipe", accessor, recipe, err)
+diff --git a/internal/runprofile/doc.go b/internal/runprofile/doc.go
+index e6bd0ef2..ac6318c8 100644
+--- a/internal/runprofile/doc.go
++++ b/internal/runprofile/doc.go
+@@ -1,6 +1,6 @@
+ // Package runprofile holds the hub's named run profiles, the `profiles` config module whose one file is `profiles.yaml` on Bolt.
+ //
+-// A profile maps a recipe name, `tapestry`, `darn`, `pawl` or `sampler`, to that recipe's settings in the shape of a board task's `run_settings`, module name to that module's config keys.
++// A profile maps a recipe name, `tapestry`, `motif`, `darn`, `pawl` or `sampler`, to that recipe's settings in the shape of a board task's `run_settings`, module name to that module's config keys.
+ // One profile name serves every recipe, and each recipe's block may set the same key to its own value:
+ // darn's and pawl's Code-Review perch read loom's `code_*` keys, so a profile's darn and pawl blocks set `loom.code_max_bounces` for darn and pawl runs while its tapestry block sets it for tapestry runs.
+ // The reserved top-level `defaults` entry maps a recipe name to the profile a task of that recipe takes when it names none.
+@@ -9,7 +9,8 @@
+ // A task naming no profile, whose recipe has no default, runs on the hub's own config.
+ //
+ // The template's starting profiles are one ladder of review rounds per perch, `speed`, `light`, `solid` and `wide`, each perch's hard cap its rounds plus one, and `docs`, a darn-only profile for prose and config value edits;
+-// its defaults are `solid` for tapestry and `light` for darn and pawl, and sampler has none.
++// its defaults are `solid` for tapestry and motif and `light` for darn and pawl, and sampler has none.
++// Each ladder profile's motif block carries its tapestry block's Discussion perch values, the one perch a motif run has.
+ // Each ladder profile's pawl block carries the same perch values as its darn block.
+ // Its sampler block carries them too, and also turns the review on with `sampler.code_review` from `light` up, so a `speed` sampler run and a sampler run naming no profile skip the Code-Review perch.
+ // `light`, `docs` and `speed`'s tapestry block run the Code-Review round solo through `loom.code_reviewer_fan: ""`, while `solid`, `wide` and the rest take the hub's fan.
+diff --git a/internal/runprofile/migrate_test.go b/internal/runprofile/migrate_test.go
+index ade71f09..6db94599 100644
+--- a/internal/runprofile/migrate_test.go
++++ b/internal/runprofile/migrate_test.go
+@@ -117,19 +117,19 @@ func TestLackingTemplateBlocks(t *testing.T) {
+ 	}{
+ 		{name: "the template itself lacks nothing", existing: runprofile.ConfigTemplate()},
+ 		{
+-			name:     "a starting profile seeded before sampler lists its sampler block",
++			name:     "a starting profile seeded before motif and sampler lists their blocks",
+ 			existing: "light:\n  tapestry:\n    loom: {plan_max_bounces: 1}\n  darn:\n    loom: {code_max_bounces: 1}\n  pawl:\n    loom: {code_max_bounces: 1}\n",
+-			want:     []string{"light.sampler"},
++			want:     []string{"light.motif", "light.sampler"},
+ 		},
+ 		{
+ 			name:     "defaults lacking a template recipe list it",
+ 			existing: "defaults: {darn: docs}\ndocs:\n  darn:\n    darn: {writer: opus}\n",
+-			want:     []string{"defaults.pawl", "defaults.tapestry"},
++			want:     []string{"defaults.motif", "defaults.pawl", "defaults.tapestry"},
+ 		},
+ 		{
+ 			name:     "a former block differing from the current one is listed and an equal one is not",
+ 			existing: "light:\n  loom:\n    loom: {plan_max_bounces: 7}\n  tapestry:\n    loom: {plan_max_bounces: 1}\n  darn:\n    loom: {code_max_bounces: 1}\n  pawl:\n    loom: {code_max_bounces: 1}\n  sampler:\n    loom: {code_max_bounces: 1}\nsolid:\n  loom:\n    loom: {plan_max_bounces: 2}\n  tapestry:\n    loom: {plan_max_bounces: 2}\n  darn:\n    loom: {code_max_bounces: 1}\n  pawl:\n    loom: {code_max_bounces: 1}\n  sampler:\n    loom: {code_max_bounces: 1}\n",
+-			want:     []string{"light.loom: differs from light.tapestry"},
++			want:     []string{"light.loom: differs from light.tapestry", "light.motif", "solid.motif"},
+ 		},
+ 		{name: "a profile the template lacks lists nothing", existing: "broad:\n  darn:\n    loom: {code_max_bounces: 2}\n"},
+ 		{name: "an empty document lists nothing", existing: ""},
+diff --git a/internal/runprofile/runprofile_test.go b/internal/runprofile/runprofile_test.go
+index d303d8ba..55db8587 100644
+--- a/internal/runprofile/runprofile_test.go
++++ b/internal/runprofile/runprofile_test.go
+@@ -43,7 +43,7 @@ func TestLoad(t *testing.T) {
+ 		{
+ 			name:         "no file reads the template's ladder, docs and defaults",
+ 			wantNames:    []string{"docs", "light", "solid", "speed", "wide"},
+-			wantDefaults: map[string]string{"tapestry": "solid", "darn": "light", "pawl": "light"},
++			wantDefaults: map[string]string{"tapestry": "solid", "motif": "solid", "darn": "light", "pawl": "light"},
+ 		},
+ 		{
+ 			name:         "a removed starting profile stays removed",
+@@ -94,6 +94,7 @@ func TestLoad(t *testing.T) {
+ 
+ // TestTemplateLadder pins the template's ladder: each profile's review rounds and hard caps per perch for loom, and the Code perch's for darn, every hard cap its rounds plus one.
+ // It also pins that each profile's sampler block carries its darn block's loom values, with sampler.code_review on from light up, and that sampler has no default profile.
++// Each profile's motif block holds its tapestry block's Discussion perch and nothing else.
+ func TestTemplateLadder(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -107,6 +108,9 @@ func TestTemplateLadder(t *testing.T) {
+ 	if got, err := profiles.Default("pawl"); got != "light" || err != nil {
+ 		t.Errorf("Default(pawl) = %q, %v; want light", got, err)
+ 	}
++	if got, err := profiles.Default("motif"); got != "solid" || err != nil {
++		t.Errorf("Default(motif) = %q, %v; want solid", got, err)
++	}
+ 	if got, err := profiles.Default("sampler"); got != "" || err != nil {
+ 		t.Errorf("Default(sampler) = %q, %v; want none, so a sampler task naming no profile runs on the hub's config", got, err)
+ 	}
+@@ -150,6 +154,14 @@ func TestTemplateLadder(t *testing.T) {
+ 			if !reflect.DeepEqual(got, want) {
+ 				t.Errorf("Settings(%s) rounds = %v; want %v", tt.profile, got, want)
+ 			}
++			motif, err := profiles.Settings(tt.profile, "motif")
++			if err != nil {
++				t.Fatal(err)
++			}
++			wantMotif := map[string]any{"loom": map[string]any{"discussion_max_bounces": tt.discussion, "discussion_hard_max_bounces": tt.discussion + 1}}
++			if !reflect.DeepEqual(motif, wantMotif) {
++				t.Errorf("Settings(%s, motif) = %v; want %v", tt.profile, motif, wantMotif)
++			}
+ 			sampler, err := profiles.Settings(tt.profile, "sampler")
+ 			if err != nil {
+ 				t.Fatal(err)
+diff --git a/internal/runprofile/template.yaml b/internal/runprofile/template.yaml
+index 2bafee60..16914426 100644
+--- a/internal/runprofile/template.yaml
++++ b/internal/runprofile/template.yaml
+@@ -1,5 +1,5 @@
+ # profiles.yaml — the hub's named run profiles, and the profile each recipe takes by default.
+-# Each top-level key but defaults is a profile name, and its value holds one block per recipe, tapestry, darn, pawl or sampler;
++# Each top-level key but defaults is a profile name, and its value holds one block per recipe, tapestry, motif, darn, pawl or sampler;
+ # a block has the shape of a board task's run_settings: module name to that module's config keys.
+ # A task names a profile in its board entry's profile field, or takes its recipe's entry under defaults when it names none;
+ # batten's Seed-Child writes the block of the recipe the task runs into the pair's local config, with the task's own run_settings layered on top.
+@@ -12,11 +12,14 @@
+ 
+ defaults:
+   tapestry: solid
++  motif: solid
+   darn: light
+   pawl: light
+ speed:
+   tapestry:
+     loom: {discussion_max_bounces: 0, discussion_hard_max_bounces: 1, plan_max_bounces: 0, plan_hard_max_bounces: 1, code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: ""}
++  motif:
++    loom: {discussion_max_bounces: 0, discussion_hard_max_bounces: 1}
+   darn:
+     loom: {code_max_bounces: 0, code_hard_max_bounces: 1}
+   pawl:
+@@ -26,6 +29,8 @@ speed:
+ light:
+   tapestry:
+     loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2, plan_max_bounces: 1, plan_hard_max_bounces: 2, code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: ""}
++  motif:
++    loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2}
+   darn:
+     loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: ""}
+   pawl:
+@@ -36,6 +41,8 @@ light:
+ solid:
+   tapestry:
+     loom: {discussion_max_bounces: 2, discussion_hard_max_bounces: 3, plan_max_bounces: 2, plan_hard_max_bounces: 3, code_max_bounces: 1, code_hard_max_bounces: 2}
++  motif:
++    loom: {discussion_max_bounces: 2, discussion_hard_max_bounces: 3}
+   darn:
+     loom: {code_max_bounces: 2, code_hard_max_bounces: 3}
+   pawl:
+@@ -46,6 +53,8 @@ solid:
+ wide:
+   tapestry:
+     loom: {discussion_max_bounces: 3, discussion_hard_max_bounces: 4, plan_max_bounces: 2, plan_hard_max_bounces: 3, code_max_bounces: 1, code_hard_max_bounces: 2}
++  motif:
++    loom: {discussion_max_bounces: 3, discussion_hard_max_bounces: 4}
+   darn:
+     loom: {code_max_bounces: 3, code_hard_max_bounces: 4}
+   pawl:
+diff --git a/internal/shedbuild/doc.go b/internal/shedbuild/doc.go
+index 83c545ed..9dd40a09 100644
+--- a/internal/shedbuild/doc.go
++++ b/internal/shedbuild/doc.go
+@@ -12,7 +12,7 @@
+ // A recipe holding neither a build row nor a Finalize row is the contract's record-only form, which lands nothing and needs the record row alone.
+ // The engine sets come from shedrecipe, so a new loom recipe needs no change to the check.
+ //
+-// # Block rows and profile_recipe
++// # Block rows
+ //
+ // A row with block or block_gate set is a block row: it names a recipe to run inline and the check that gates it.
+ // A block row carries only name, block, block_gate and on_done, and no engine.
+@@ -20,9 +20,6 @@
+ // A block row's on_done may be empty at Parse; Expand judges it.
+ // Row.SkipTo and Row.BlockPath sit outside the format and are set only by expansion, so a file that writes either is refused as an unknown key.
+ //
+-// A recipe may set a top-level profile_recipe naming the recipe whose run-profile block a task takes; empty means the recipe's own name.
+-// Parse decodes it into Recipe.ProfileRecipe without checking that it names a recipe.
+-//
+ // # Blocks
+ //
+ // Expand inlines each block row's sub-recipe into its parent at build time.
+@@ -34,7 +31,7 @@
+ // A block's exit is its row's on_done as the recipe file sets it, or, when that is empty, the exit of the block enclosing it.
+ // Every inlined row's empty on_done, and an inlined block row's empty skip target, become the exit of the innermost block enclosing the row.
+ // Each inlined row's BlockPath is the names of the block rows enclosing it, outermost first, joined by "/"; the outermost block row and every row outside a block carry none.
+-// A sub-recipe's terminals and its top-level keys, contract, verify_source, amendment_target and profile_recipe, are not read; the parent's stay the run's, so a recipe that runs alone may also be a block.
++// A sub-recipe's terminals and its top-level keys, contract, verify_source and amendment_target, are not read; the parent's stay the run's, so a recipe that runs alone may also be a block.
+ //
+ // Expand refuses, naming the block row and a way forward: a resolver that refuses the recipe, a nil resolver meeting a block row, a recipe that includes itself directly or through its own blocks, an inlined row named like a row outside its block, an inlined segment used outside the block, an inlined on_done, on_stuck or on_reroute that names no row of its recipe, an outermost block row with an empty on_done, and a block row whose on_done lies inside its own block.
+ // The same recipe in two blocks of one parent is refused by the row-name check.
+diff --git a/internal/shedbuild/expand_test.go b/internal/shedbuild/expand_test.go
+index 5e614792..b51cb4ac 100644
+--- a/internal/shedbuild/expand_test.go
++++ b/internal/shedbuild/expand_test.go
+@@ -153,7 +153,7 @@ func TestExpand(t *testing.T) {
+ 		if err != nil {
+ 			t.Fatalf("Parse(parent) = _, %v; want nil", err)
+ 		}
+-		foreign := strings.Replace(sub, "terminals: [Post]", "terminals: [NotMine]\ncontract: loom\nverify_source: plan\namendment_target: S1\nprofile_recipe: sub", 1)
++		foreign := strings.Replace(sub, "terminals: [Post]", "terminals: [NotMine]\ncontract: loom\nverify_source: plan\namendment_target: S1", 1)
+ 		got, err := Expand(parent, mapResolver(map[string]string{"sub": foreign}))
+ 		if err != nil {
+ 			t.Fatalf("Expand(...) = _, %v; want nil", err)
+@@ -161,8 +161,8 @@ func TestExpand(t *testing.T) {
+ 		if !reflect.DeepEqual(got.Terminals, []string{"Post"}) {
+ 			t.Errorf("Expand(...).Terminals = %v; want the parent's [Post]", got.Terminals)
+ 		}
+-		if got.Contract != "" || got.VerifySource != "tree_scope" || got.AmendmentTarget != "Pre" || got.ProfileRecipe != "" {
+-			t.Errorf("Expand(...) contract, verify_source, amendment_target, profile_recipe = %q, %q, %q, %q; want the parent's \"\", \"tree_scope\", \"Pre\", \"\"", got.Contract, got.VerifySource, got.AmendmentTarget, got.ProfileRecipe)
++		if got.Contract != "" || got.VerifySource != "tree_scope" || got.AmendmentTarget != "Pre" {
++			t.Errorf("Expand(...) contract, verify_source, amendment_target = %q, %q, %q; want the parent's \"\", \"tree_scope\", \"Pre\"", got.Contract, got.VerifySource, got.AmendmentTarget)
+ 		}
+ 	})
+ 
+diff --git a/internal/shedbuild/parse_test.go b/internal/shedbuild/parse_test.go
+index da58331a..a58b208f 100644
+--- a/internal/shedbuild/parse_test.go
++++ b/internal/shedbuild/parse_test.go
+@@ -112,27 +112,6 @@ producers:
+ 				},
+ 			},
+ 		},
+-		{
+-			name: "profile_recipe decodes into the field",
+-			yaml: `
+-version: 1
+-entry: start
+-profile_recipe: tapestry
+-terminals: [done]
+-producers:
+-  - name: row1
+-    engine: bouncer
+-`,
+-			wantRecipe: &Recipe{
+-				Version:       1,
+-				Entry:         "start",
+-				ProfileRecipe: "tapestry",
+-				Terminals:     []string{"done"},
+-				Producers: []Row{
+-					{Name: "row1", Engine: "bouncer"},
+-				},
+-			},
+-		},
+ 		{
+ 			name:       "a block row setting engine is refused naming the key and the way forward",
+ 			yaml:       blockRowYAML("engine: bouncer"),
+@@ -670,9 +649,6 @@ producers:
+ 			if !recipeEqual(got, *tt.wantRecipe) {
+ 				t.Errorf("Parse(%q) = %+v; want %+v", tt.name, got, *tt.wantRecipe)
+ 			}
+-			if got.ProfileRecipe != tt.wantRecipe.ProfileRecipe {
+-				t.Errorf("Parse(%q) ProfileRecipe = %q; want %q", tt.name, got.ProfileRecipe, tt.wantRecipe.ProfileRecipe)
+-			}
+ 			for i, row := range got.Producers {
+ 				if want := tt.wantRecipe.Producers[i]; row.Block != want.Block || row.BlockGate != want.BlockGate {
+ 					t.Errorf("Parse(%q) row %d Block, BlockGate = %q, %q; want %q, %q", tt.name, i, row.Block, row.BlockGate, want.Block, want.BlockGate)
+diff --git a/internal/shedbuild/recipe.go b/internal/shedbuild/recipe.go
+index a8e189b8..bf15250f 100644
+--- a/internal/shedbuild/recipe.go
++++ b/internal/shedbuild/recipe.go
+@@ -16,14 +16,12 @@ import (
+ // AmendmentTarget is optional graph metadata of the same kind: it names the row a plan amendment routes to, empty when the recipe sets none.
+ // Contract is empty or `loom`, and `loom` declares the recipe a loom, which Build checks against the loom contract.
+ // VerifySource is empty, `plan` or `tree_scope`, and a loom recipe must set it.
+-// ProfileRecipe names the recipe whose run-profile block a task takes, empty meaning the recipe's own name.
+ type Recipe struct {
+ 	Version         int      `yaml:"version"`
+ 	Entry           string   `yaml:"entry"`
+ 	AmendmentTarget string   `yaml:"amendment_target"`
+ 	Contract        string   `yaml:"contract"`
+ 	VerifySource    string   `yaml:"verify_source"`
+-	ProfileRecipe   string   `yaml:"profile_recipe"`
+ 	Terminals       []string `yaml:"terminals"`
+ 	Producers       []Row    `yaml:"producers"`
+ }
+diff --git a/internal/shedengine/doc.go b/internal/shedengine/doc.go
+index f9749670..1aa1e36a 100644
+--- a/internal/shedengine/doc.go
++++ b/internal/shedengine/doc.go
+@@ -131,6 +131,7 @@
+ //
+ // current_producer, state, pause_reason, error, activity and history are Shed-owned and rewritten on every persist.
+ // An empty current_producer is a run at its start, the first row of the producer list: a seed writes it so, naming no row, and a step's read resolves it to that row before anything else reads it.
++// Before calling that row the step writes it as current_producer and tells CommitStatus, the start write, so the status names the row in flight from the run's first call on.
+ // pause_reason is the why of a paused run: every write that records paused sets it, and every other write clears it.
+ // A pause request reads "pause requested", a cancelled context "cancelled", a fired condition its condition reason, Goto "goto to <row>" and a Relaunch onto a row "re-launched onto <row>";
+ // a Relaunch that moves nothing leaves the reason as it stands.
+diff --git a/internal/shedengine/run.go b/internal/shedengine/run.go
+index fb5a6cfb..6129c709 100644
+--- a/internal/shedengine/run.go
++++ b/internal/shedengine/run.go
+@@ -237,6 +237,8 @@ func (s *Shed) stepLocked(ctx context.Context) (StepResult, error) {
+ 	// every write this step makes then names the row itself.
+ 	// A named row not found is a hard error that changes nothing on disk.
+ 	// Shed never guesses, neither restarting from the first producer nor advancing to the nearest match, because both fabricate a status nobody confirmed.
++	// started records whether the status on disk names a row yet, which step 3b reads.
++	started := st.CurrentProducer != ""
+ 	st.CurrentProducer = RowAt(s.Producers, st.CurrentProducer)
+ 	def, ok := findProducer(s.Producers, st.CurrentProducer)
+ 	if !ok {
+@@ -294,6 +296,7 @@ func (s *Shed) stepLocked(ctx context.Context) (StepResult, error) {
+ 			return StepResult{}, fmt.Errorf("shedengine: status file %q vanished mid-run; Shed refuses to create one", s.StatusPath)
+ 		}
+ 		// The status on disk still records the run's start as empty, so the resolved row is applied again.
++		started = st.CurrentProducer != ""
+ 		st.CurrentProducer = RowAt(s.Producers, st.CurrentProducer)
+ 	}
+ 
+@@ -304,10 +307,14 @@ func (s *Shed) stepLocked(ctx context.Context) (StepResult, error) {
+ 	// error text goes with it: Activity.Wait is composed from it, so the pane would otherwise
+ 	// keep asserting a specific failure reason the loop is at that moment retrying past.
+ 	//
++	// A run at its start, whose status still names no row, takes the same write, the start write.
++	// Without it the status names no row until the first row's verdict.
++	// A first row that runs for minutes, such as a writer, would then show as no row at all and stay unseen by CommitStatus's readers.
++	//
+ 	// This is the only write in the loop that is not the record of a producer's verdict, and it
+ 	// is deliberately conditional: on the ordinary running-to-running path it never fires, so
+ 	// the loop's one-persist-per-iteration shape is unchanged for every step after the first.
+-	if st.State != StateRunning {
++	if st.State != StateRunning || !started {
+ 		if err := s.persistMarked(true, st.CurrentProducer, StateRunning, "", st.History, false, false, "", "", "", "", false); err != nil {
+ 			return StepResult{}, err
+ 		}
+diff --git a/internal/shedengine/run_commitstatus_test.go b/internal/shedengine/run_commitstatus_test.go
+index 4ef5e121..071b6592 100644
+--- a/internal/shedengine/run_commitstatus_test.go
++++ b/internal/shedengine/run_commitstatus_test.go
+@@ -10,6 +10,7 @@ package shedengine
+ import (
+ 	"context"
+ 	"errors"
++	"slices"
+ 	"strings"
+ 	"testing"
+ 	"time"
+@@ -280,6 +281,104 @@ func TestRun_CommitStatusReceivesTransitionProducerAndState(t *testing.T) {
+ 	}
+ }
+ 
++// TestStep_StartWriteNamesTheFirstRow pins the start write.
++// A step over a status that names no row writes the first row as current_producer, still running with no history.
++// It tells CommitStatus before that row's producer is called, so a reader during the first call sees the row in flight.
++func TestStep_StartWriteNamesTheFirstRow(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	shed, statusPath, _, statusLockPath := newTestShed(t)
++	var calls []commitStatusCall
++	shed.CommitStatus = recordingCommitStatus(&calls)
++	var duringCall Status
++	a := &funcProducer{fn: func(ctx context.Context) (Outcome, OutputPointer, error) {
++		duringCall = readStatus(t, statusPath, statusLockPath)
++		return Done, OutputPointer{}, nil
++	}}
++	shed.Producers = []ProducerDef{
++		{Name: "A", Producer: a, OnDone: "B"},
++		{Name: "B", Producer: fixedOutcomeProducer(Done, "")},
++	}
++	seedStatus(t, statusPath, statusLockPath, commonSeed(""))
++
++	if _, err := shed.Step(context.Background()); err != nil {
++		t.Fatalf("Step(...) = _, %v; want nil error", err)
++	}
++
++	if duringCall.CurrentProducer != "A" || duringCall.State != StateRunning || len(duringCall.History) != 0 {
++		t.Errorf("status during A's call = producer %q, state %q, history %v; want A, running, none", duringCall.CurrentProducer, duringCall.State, duringCall.History)
++	}
++	want := []commitStatusCall{
++		{producer: "A", state: string(StateRunning)},
++		{producer: "B", state: string(StateRunning)},
++	}
++	if len(calls) != len(want) || calls[0] != want[0] || calls[1] != want[1] {
++		t.Errorf("CommitStatus calls = %+v; want %+v", calls, want)
++	}
++}
++
++// TestStep_StartWriteWithAnEntryGatedFirstRow pins the start write over a first row that is entry-gated.
++// A holding gate keeps the first row, and the start write names it once before its call.
++// A skipping gate routes to the second row, whose call sees its own name, and the first row is never told to CommitStatus.
++func TestStep_StartWriteWithAnEntryGatedFirstRow(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name  string
++		holds bool
++		// wantCalled is the one row whose producer is called by the step.
++		wantCalled string
++		wantCalls  []commitStatusCall
++	}{
++		{
++			name: "HoldingGateNamesTheFirstRowOnce", holds: true, wantCalled: "A",
++			wantCalls: []commitStatusCall{{producer: "A", state: string(StateRunning)}, {producer: "B", state: string(StateRunning)}},
++		},
++		{
++			name: "SkippingGateNamesTheSecondRowOnly", holds: false, wantCalled: "B",
++			wantCalls: []commitStatusCall{{producer: "B", state: string(StateRunning)}, {producer: "C", state: string(StateRunning)}},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			shed, statusPath, _, statusLockPath := newTestShed(t)
++			var calls []commitStatusCall
++			shed.CommitStatus = recordingCommitStatus(&calls)
++			during := map[string]Status{}
++			recording := func(name string) *funcProducer {
++				return &funcProducer{fn: func(ctx context.Context) (Outcome, OutputPointer, error) {
++					during[name] = readStatus(t, statusPath, statusLockPath)
++					return Done, OutputPointer{}, nil
++				}}
++			}
++			gate := &fakeGate{holds: tt.holds, reason: "gate is off"}
++			shed.Producers = []ProducerDef{
++				{Name: "A", Producer: recording("A"), OnDone: "B", EntryGate: gate.evaluate},
++				{Name: "B", Producer: recording("B"), OnDone: "C"},
++				{Name: "C", Producer: fixedOutcomeProducer(Done, "")},
++			}
++			seedStatus(t, statusPath, statusLockPath, commonSeed(""))
++
++			if _, err := shed.Step(context.Background()); err != nil {
++				t.Fatalf("Step(...) = _, %v; want nil error", err)
++			}
++
++			if len(during) != 1 {
++				t.Fatalf("producers called = %v; want only %q", during, tt.wantCalled)
++			}
++			called, ok := during[tt.wantCalled]
++			if !ok || called.CurrentProducer != tt.wantCalled || called.State != StateRunning {
++				t.Errorf("status during %s's call = producer %q, state %q; want %s, running", tt.wantCalled, called.CurrentProducer, called.State, tt.wantCalled)
++			}
++			if !slices.Equal(calls, tt.wantCalls) {
++				t.Errorf("CommitStatus calls = %+v; want %+v", calls, tt.wantCalls)
++			}
++		})
++	}
++}
++
+ // TestRun_CommitStatusRunsOutsideTheStateWriteLock is property 5, and the primary proof of this
+ // batch's lock-ordering requirement: a closure that itself acquires a read lock on
+ // StatusLockPath must complete rather than deadlock, which is the executable form of "outside the
+diff --git a/plugins/ly/skills/board/SKILL.md b/plugins/ly/skills/board/SKILL.md
+index 21d18d67..e0f59aeb 100644
+--- a/plugins/ly/skills/board/SKILL.md
++++ b/plugins/ly/skills/board/SKILL.md
+@@ -50,7 +50,7 @@ Run `lym board labels` before choosing labels: it prints both maps in file order
+ Beside its type label, every entry carries a label for each lym module it touches; an entry that spans the whole tool takes the modules its work would change first.
+ A label in neither map is refused; add it with `lym config board --set labels.<name>=<description>`, or edit the maps in the `lym config board` editor.
+ A recipe name goes in `recipe`, never in a label: `tapestry`, `darn` or `motif`, empty meaning the hub's `default_recipe` in `board.yaml`, which is `darn` unless the hub changed it.
+-A `motif` task runs Discussion alone: it stores the approved decision record on the entry, flags it `discussed`, lands no code and returns the entry to draft.
++A `motif` task runs Discussion alone: it stores the approved decision record on the entry, flags it `discussed`, lands no code and leaves the entry in status `discussed`, which nothing starts until a null status releases it.
+ A run profile goes in `profile`, never in `run_settings`: `lym board profiles` prints the hub's profiles with one settings block per recipe, and a task without one takes its recipe's default profile, listed under `defaults`.
+ 
+ ## Verbs
