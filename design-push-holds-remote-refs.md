@@ -1,6 +1,6 @@
 # A weft push holds the remote-refs lock over its whole transfer, so board claims queue behind it
 
-`push-holds-remote-refs` · Task · bug, fabric · running · PR-Review
+`push-holds-remote-refs` · Task · bug, fabric · running · Finalize
 
 ## Seen (worktree-create-serial, 2026-11-04)
 
