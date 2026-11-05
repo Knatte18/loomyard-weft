@@ -1,0 +1,112 @@
+diff --git a/internal/creelengine/deliver.go b/internal/creelengine/deliver.go
+index a46bece5..4f62ad6e 100644
+--- a/internal/creelengine/deliver.go
++++ b/internal/creelengine/deliver.go
+@@ -22,7 +22,7 @@ const (
+ 	agedPersistInterval = time.Minute
+ 	// bellGrace is how long a hook strand with no waiter live waits, after the later of the store's opening and its last waiter's end, before it gets the bell; it keeps the bell out of the moment between a Stop and its waiter's connection.
+ 	bellGrace = 5 * time.Second
+-	// ringAnswerWindow is how long a ring may stand unanswered before the bell follows it.
++	// ringAnswerWindow is how long a ring may stand unanswered, or the turn it woke go without a turn end, before the bell follows it.
+ 	ringAnswerWindow = 30 * time.Second
+ )
+ 
+@@ -253,7 +253,9 @@ func (w *worker) probe() (delivered, pending bool) {
+ // A woken turn records no prompt submit, so from a ring on the reading counts as no turn only once a turn end was recorded after the ring; a reading the pane decided has no turn end time and is taken as it reads.
+ // A probe that reads a turn in progress after a ring marks the ring answered.
+ // When it does not ring, it types the bell for a claimable set no bell was typed for.
+-// With no unanswered ring standing, the bell waits for bellGrace with no waiter live; with one standing, it waits until the ring has gone unanswered for ringAnswerWindow.
++// Within ringAnswerWindow of a ring it types none while the ring stands unanswered or no turn end was read after the ring.
++// The turn an answered ring woke, queued or running, ends in a Stop that hands out the mail that arrived since.
++// Past that window an unanswered ring is followed by the bell at once; otherwise the bell waits for bellGrace with no waiter live.
+ func (w *worker) wakeHookStrand(strand Strand, now time.Time) bool {
+ 	store := w.scheduler.store
+ 	ids, mark, waiting := store.hookWakeState(strand.Name)
+@@ -282,11 +284,11 @@ func (w *worker) wakeHookStrand(strand Strand, now time.Time) bool {
+ 	if belled {
+ 		return false
+ 	}
+-	if unanswered {
+-		if now.Sub(mark.at) < ringAnswerWindow {
+-			return false
+-		}
+-	} else if waiting || now.Sub(store.lastHookWaiterEnd(strand.Name)) < bellGrace {
++	woken := !mark.at.IsZero() && !idleness.TurnEndedAt.After(mark.at)
++	if (unanswered || woken) && now.Sub(mark.at) < ringAnswerWindow {
++		return false
++	}
++	if !unanswered && (waiting || now.Sub(store.lastHookWaiterEnd(strand.Name)) < bellGrace) {
+ 		return false
+ 	}
+ 	return w.typeBell(strand, ids)
+diff --git a/internal/creelengine/deliver_test.go b/internal/creelengine/deliver_test.go
+index e1ed0006..c1855fde 100644
+--- a/internal/creelengine/deliver_test.go
++++ b/internal/creelengine/deliver_test.go
+@@ -1708,6 +1708,7 @@ func TestSweep_RemovedHolders(t *testing.T) {
+ // TestScheduler_HookWake drives a store over the fake delivery and clock with hook strands, and pins when the daemon rings a strand's idle waiter and when it types the bell.
+ // A strand's waiter is answered once per claimable set, and only while no turn is in progress, whatever the input box holds.
+ // The bell follows a set no waiter reaches, once per set, after the grace of 5 seconds or after a ring unanswered for 30.
++// Within 30 seconds of a ring the bell is also held while no turn end was read after it, since the woken turn's Stop hands out the mail.
+ func TestScheduler_HookWake(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -2403,6 +2404,34 @@ func TestScheduler_HookWake(t *testing.T) {
+ 				t.Errorf("typed %q after a running turn answered the ring; want no bell", got)
+ 			}
+ 		}},
++		{"MailAfterAnAcknowledgedRingGetsNoBellBeforeTheWindowWhileTheWokenTurnHasNotEnded", func(t *testing.T, e *env) {
++			ringAt := e.clock.Now()
++			e.del.SetTurn(alpha, false, ringAt.Add(-time.Minute))
++			ackedRing(t, e, "one")
++			settle(e, func() { e.post(t, strand(beta), alpha, "two") })
++			if elapsed := untilBell(t, e, ringAt); elapsed < 30*time.Second {
++				t.Errorf("the bell came %v after the acknowledged ring; want none before the 30s window, since the woken turn's Stop hands out the mail", elapsed)
++			}
++		}},
++		{"MailAfterAnAcknowledgedRingGetsTheBellAfterTheGraceOnceATurnEndFollowsTheRing", func(t *testing.T, e *env) {
++			ringAt := e.clock.Now()
++			e.del.SetTurn(alpha, false, ringAt.Add(-time.Minute))
++			ackedRing(t, e, "one")
++			e.del.SetTurn(alpha, false, ringAt.Add(time.Second))
++			settle(e, func() { e.post(t, strand(beta), alpha, "two") })
++			if elapsed := untilBell(t, e, ringAt); elapsed < 5*time.Second || elapsed >= 30*time.Second {
++				t.Errorf("the bell came %v after the acknowledged ring; want it after the 5s grace and before the 30s window, since the woken turn ended", elapsed)
++			}
++		}},
++		{"MailAfterAnAcknowledgedRingGetsNoBellBeforeTheWindowWhenTheReadingHasNoTurnEndTime", func(t *testing.T, e *env) {
++			ringAt := e.clock.Now()
++			e.del.SetTurn(alpha, false, time.Time{})
++			ackedRing(t, e, "one")
++			settle(e, func() { e.post(t, strand(beta), alpha, "two") })
++			if elapsed := untilBell(t, e, ringAt); elapsed < 30*time.Second {
++				t.Errorf("the bell came %v after the acknowledged ring; want none before the 30s window, since a reading with no turn end time holds the bell", elapsed)
++			}
++		}},
+ 		{"AWaiterThatEndsWithoutARingStartsTheGraceAgainFromItsEnd", func(t *testing.T, e *env) {
+ 			e.del.SetTurn(alpha, true, time.Time{})
+ 			e.start(t)
+diff --git a/internal/creelengine/doc.go b/internal/creelengine/doc.go
+index d9005960..0f427105 100644
+--- a/internal/creelengine/doc.go
++++ b/internal/creelengine/doc.go
+@@ -173,13 +173,16 @@
+ //
+ // A user interrupt fires no Stop, so a hook strand can sit idle with mail no waiter reaches; the worker then types the fixed bell line into its pane, `[creel] Mail is waiting for you. End this turn now; creel hands the mail to you as the turn ends. Do not run lym creel read for it.`, which carries no sender text, so no post is typed.
+ // A ring is answered by the acknowledgement of its own claim, by a claim of the strand that hands out at least one message, or by a probe that reads a turn in progress after the ring.
+-// When the worker does not ring, it types the bell for a claimable set no bell was typed for, in one of two cases.
+-// With no unanswered ring standing, it types it when no waiter is live and none has been for 5 seconds, counted from the later of the store's opening and the end of the strand's last waiter, so the bell stays out of the moment between a Stop and its waiter's connection.
+-// With the last ring unanswered, the grace does not apply, since a ring ends the waiter it rings, and it types the bell once the ring has gone unanswered for 30 seconds.
++// When the worker does not ring, it types the bell for a claimable set no bell was typed for.
++// Within 30 seconds of a ring it types none while the ring stands unanswered or no turn end was read after the ring:
++// an unanswered ring may still wake the strand, and the turn an answered ring woke, still queued or already running, ends in a Stop that hands out the mail that arrived since, so that mail starts no turn of its own.
++// Past that window an unanswered ring is followed by the bell at once, since a ring ends the waiter it rings and the grace below does not apply.
++// Otherwise it types the bell when no waiter is live and none has been for 5 seconds, counted from the later of the store's opening and the end of the strand's last waiter, so the bell stays out of the moment between a Stop and its waiter's connection.
+ // The bell goes through the guarded send under every rule a typed line has: a draft, a too-short pane or a missing input box holds it, a send that did not land is recorded and never retyped for the set, and a busy send is tried again on the next probe.
+ // A newer set may get its own bell, and an unchanged set never gets a second; a pause silences the bell as it does the ring, and under a hold from another sender only the owner's mail makes a set.
+ // Only a strand marked `CreelHooks` gets the bell: every other strand is a pane-mail strand and has its notice and reminder, so mail to an idle strand always wakes it.
+ // Bound: one fixed line per claimable set; a waiter whose session died rings into nothing once and the window hands the set to the bell; a restarted daemon may type the bell once more for a set it already woke.
++// Bound: a woken turn the operator interrupts before its Stop, or a reading the pane decided, which carries no turn end, holds the bell for mail that arrived since the ring until the window ends.
+ //
+ // # Delivery log
+ //
