@@ -46,6 +46,18 @@ How a task is best cut into smaller tasks is known only once its Discussion is d
   1. Tapestry from Plan, skipping Discussion-Write: Plan-Write and Webster as today. Built, see above.
   2. The part split: the record's scope is cut into darn tasks with contracts and `depends_on`, which run independently, each a task of its own.
 
+## Triage of a Sketch (operator, 2026-11-05)
+
+A simple run of its own on a Sketch (see the `sketch` type note) whose agent breaks the Sketch down and decides what is wise to do with it:
+
+- one tapestry from Plan (way 1 above), or several darn tasks (way 2), or a mix;
+- the order of the tasks, as `depends_on`;
+- whether the whole becomes a project, or a beam.
+
+Its proposal goes to the operator, who approves it before any task or project is filed; on approval the run files them.
+There is no fixed procedure for this today; the orch or the operator does it by hand.
+The triage agent is the cold split agent below, given the wider choice: it may also answer "one tapestry", which costs no split.
+
 ## The split is a cold agent of its own (operator, 2026-11-03)
 
 - The Sketch stays as it is: Discussion-Write writes no split and judges no seams, so a task going way 1 pays nothing for the split.
