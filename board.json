@@ -598,10 +598,10 @@
       "depends_on": [],
       "isolated": false,
       "brief": "Fabric wires or excludes the anchor .scratch as it does the root .scratch, so agent scratch files never show in git status",
-      "body": "## Seen (2026-11-05)\n\nIn the C# sandbox hub `cs`, whose anchor is `lym-csharp/dotnet`, `git status` in the prime showed `?? dotnet/.scratch/`.\nFabric's scratch step links and excludes only the warp worktree's root `.scratch` (`/.scratch` in `.git/info/exclude`), but agents work from the anchor and write `.scratch/` under their working directory, so an anchored hub gets an untracked `\u003canchor\u003e/.scratch`.\nThe orch added `/dotnet/.scratch` to cs's exclude by hand as a stopgap.\n\n## Wanted (operator, 2026-11-05)\n\n`.scratch` is always excluded from git, wherever an agent writes it:\n\n- In an anchored hub, the anchor's `.scratch` is treated as the root's is: wired as the same link into the weft-side `.lym` scratch, or at least excluded, and its exclude line written beside the other `/\u003canchor\u003e/…` lines.\n- Reconcile adds the line to existing worktrees and the prime, so cs's hand-added line becomes fabric's own.\n",
+      "body": "## Seen (2026-11-05)\n\nIn the C# sandbox hub `cs`, whose anchor is `lym-csharp/dotnet`, `git status` in the prime showed `?? dotnet/.scratch/`.\nFabric's scratch step links and excludes only the warp worktree's root `.scratch` (`/.scratch` in `.git/info/exclude`), but agents work from the anchor and write `.scratch/` under their working directory, so an anchored hub gets an untracked `\u003canchor\u003e/.scratch`.\n\n## Wanted (operator, 2026-11-05)\n\n`.scratch` is always excluded from git, wherever an agent writes it, and lym alone writes the exclude file: no hand edits of `.git/info/exclude`.\n\n- In an anchored hub, the anchor's `.scratch` is treated as the root's is: wired as the same link into the weft-side `.lym` scratch, or at least excluded, and its exclude line written beside the other `/\u003canchor\u003e/…` lines.\n- Reconcile adds the line to existing worktrees and the prime, so `cs` gets it without a hand edit.\n",
       "status": "draft",
       "created": "2026-11-05T16:17:16Z",
-      "revised": "2026-11-05T16:17:16Z",
+      "revised": "2026-11-05T16:19:21Z",
       "profile": "light"
     }
   ],
