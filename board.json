@@ -619,6 +619,26 @@
         }
       },
       "profile": "docs"
+    },
+    {
+      "id": 1142,
+      "handle": "B3",
+      "slug": "motif-sketch-refusal-silent",
+      "title": "A finished motif whose Sketch the board refuses stays a draft task with no notice to the orch",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom",
+        "board",
+        "orch"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The refusal only logs a Warn; the orch learns of it from a tidy report",
+      "body": "## Seen (orch, 2026-11-05)\n\nThe motif run `creel-cross-hub-mail` ended at 16:33 UTC with its decision record stored and its pair torn down.\n`sketchFinish` in `internal/loomcli/wiring.go` could not make the entry a Sketch, since `slack-relay` depends on it, so it left the entry a draft task with `discussed: true` and logged a Warn.\nNo mail reached the orch; the orch learned of it from dobby's board tidy report an hour later.\n\n## Idea\n\nWhen the board refuses the Sketch, mail the run's parent naming the refusal, the entries that depend on the entry, and the way forward: drop or move those dependencies and make it a Sketch, or set recipe raddle on the discussed task.\n",
+      "created": "2026-11-05T17:04:32Z",
+      "revised": "2026-11-05T17:04:32Z"
     }
   ],
   "prime_owner": "neve",
