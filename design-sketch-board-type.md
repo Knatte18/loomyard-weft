@@ -1,6 +1,6 @@
 # A Sketch is a board type of its own
 
-`sketch-board-type` · Task · feature, board, loom · running · Code-Bouncer
+`sketch-board-type` · Task · feature, board, loom · running · Drift-Recheck
 
 ## Idea (operator, 2026-11-05)
 
