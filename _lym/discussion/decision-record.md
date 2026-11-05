@@ -441,6 +441,12 @@ Rationale: The stored tuples in judged.json are the record; an untracked judgeme
   - card-22-deletes-live-compare-lock-retry (class design, severity BLOCKING, open in rounds 4)
 <!-- /lym:carry-over Plan-Review -->
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - drift-gate-passes-on-fault (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: a diff of two capture directories yields `added case`, `removed case`, `changed`, `added line` and `removed line` cells; inserting a keyed line moves no other keyed or unkeyed identity; a repeated key is told apart by its occurrence; a line keyed on one side and unkeyed on the other yields a keyed `added line` or `removed line` and an unkeyed cell; an empty `key_patterns` makes every line unkeyed; CRLF and LF captures of the same text yield no cell; a non-case file under the capture directory is read as a case; a repeated key holding `#` and digits, such as `Test #3`, is written with its occurrence as a separate field and reads unambiguously.
