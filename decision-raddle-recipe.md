@@ -209,6 +209,54 @@ Rationale: the operator's corrections and the cost error are what the raddle ste
 
 `docs/research/weaving-glossary.md` gains a `raddle` row, which it lacks today, whose last cell reads `Taken:` with the recipe's one-line meaning, in the shape the `motif` row uses.
 
+### Added after Discussion (parent, 2026-11-05): Trim PATTERN-shed-recipe-registry for headroom
+
+Decision: The overview line drops `internal/` and states the row rules in short; the full row rules (a row's value looked up by key, a side action a `Command` row, a row off by one config key its `entry_gate`, one whose off reads more its own call) move verbatim into pattern/PATTERN-shed-recipe-registry.md if not already there.
+
+Rationale: PATTERN.md's overview must stay under its headroom line; the declared changes need 300 bytes; no rule is dropped, detail moves to the background file.
+
+### Added after Discussion (parent, 2026-11-05): Trim PATTERN-test-speed for headroom
+
+Decision: The overview line keeps the gate, tier and coverage rules; the skip, clock, `t.Parallel` and `//lym:seam` rules (a skip never names the OS alone; injected clocks, `t.Parallel` by default; a test reflecting over a struct's fields carries `//lym:seam`) move verbatim into pattern/PATTERN-test-speed.md if not already there.
+
+Rationale: Headroom, as above; no rule is dropped.
+
+### Added after Discussion (parent, 2026-11-05): Trim PATTERN-stencil-ownership for headroom
+
+Decision: Wording only: `internal/` dropped and `fixed for every repository in` becomes `fixed in`.
+
+Rationale: Headroom, as above; the rule is unchanged.
+
+### Added after Discussion (parent, 2026-11-05): Trim PATTERN-cwd-resolution for headroom
+
+Decision: Wording only: `internal/` and `own` dropped.
+
+Rationale: Headroom, as above; the rule is unchanged.
+
+### Added after Discussion (parent, 2026-11-05): Trim PATTERN-durable-vs-ephemeral-state for headroom
+
+Decision: Wording only: `internal/` dropped.
+
+Rationale: Headroom, as above; the rule is unchanged.
+
+### Added after Discussion (parent, 2026-11-05): Trim PATTERN-remote-refs-lock for headroom
+
+Decision: The overview line keeps the lock and its owner; the pause-gate rule, the writes that take no lock (a tag push, a `--refmap=` or probe-clone fetch) and the judge rule (a judge of origin against tracking refs holds it to its verdict) move verbatim into pattern/PATTERN-remote-refs-lock.md if not already there.
+
+Rationale: Headroom, as above; no rule is dropped.
+
+### Added after Discussion (parent, 2026-11-05): Trim PATTERN-slug-remote-order for headroom
+
+Decision: The exclusive takers are no longer listed one by one: the lock is shared for a pair push outside a removal and exclusive otherwise (Add, Remove, task-branch discard and cleanup sweep today). The entry has no background file; if the writer finds a taker of the lock other than those four that holds it shared, it keeps the list instead and reports it.
+
+Rationale: Headroom, as above.
+
+### Added after Discussion (parent, 2026-11-05): Trim PATTERN-config-layers for headroom
+
+Decision: Wording only: `a caller adopts` becomes `callers use`.
+
+Rationale: Headroom, as above; the rule is unchanged.
+
 ## Constraints
 
 - `PATTERN-shed-recipe-registry`: the new engines are `Constructor` rows; the model is a setting lookup by key, and the mode one at Raddle-Write's first spawn, read from the run's state after it (D7), never `Env` fields.
@@ -283,6 +331,14 @@ Self-picks, reasons in the support log's question ledger: the agent runs the app
 
 - `PATTERN-sole-parsers` — changes: Parsing plan, parts file, discussion, summary, recipe, halt note or raddle proposal, or classifying a plan ref: only its sole parser.
 - `PATTERN-run-usage-record` — adds: Recording an agent session's tokens and cost per session under a run's `_lym/usage`: only shed's one usage writer, one file per session; a cost report reads token counts and session costs only from those files, never from a review round's usage record.
+- `PATTERN-shed-recipe-registry` — changes: Adding producer, recipe row or block gate: one `Constructor` or `BlockGates` map in `shedrecipe`, bar `Implementer`'s; row values by key, side actions as `Command` rows, off switches per the background. — added after Discussion (parent, 2026-11-05)
+- `PATTERN-test-speed` — changes: Writing or running a test: via `lym gate test` by gate key; one `tiergate.Require` tier, lowest that fits; it pins behavior no test covers; skips, clocks, `t.Parallel` and `//lym:seam` per the background. (test) — added after Discussion (parent, 2026-11-05)
+- `PATTERN-stencil-ownership` — changes: Reading prompt or spec: at call time via `stencilstore`, never embedded, bar the orch role, fixed in `contracts/orchrole` with no board copy; an instruction file points at another producer's format contract, never restating it. — added after Discussion (parent, 2026-11-05)
+- `PATTERN-cwd-resolution` — changes: Resolving a cwd, worktree root or anchor: only `lymcwd`, from the worktree's weft-root `.lym-anchor`; only `fabricengine` writes or git-reads it; engines get absolute paths, never import lymcwd; hub containers and workspace files stay hub-reachable only. (test) — added after Discussion (parent, 2026-11-05)
+- `PATTERN-durable-vs-ephemeral-state` — changes: Adding file: tracked under `_lym`, never-tracked under `.lym`, same subpath, bar heddle's rendered files and `.heddle` at a warp worktree's anchor; only `lymdirs` names either, bar a `tools/` script's variable block. — added after Discussion (parent, 2026-11-05)
+- `PATTERN-remote-refs-lock` — changes: Writing remote-tracking refs by fetch, pull or push: under the repository's remote-refs lock via `gitrepo`, waiting while held; the pause gate, writes that take none and judges that hold it per the background. (test) — added after Discussion (parent, 2026-11-05)
+- `PATTERN-slug-remote-order` — changes: Touching a slug's pair or origin branches: under its teardown lock, shared for a pair push outside a removal, else exclusive, held by a teardown's detached child to its last remote step; an origin weft delete leases the tip read. — added after Discussion (parent, 2026-11-05)
+- `PATTERN-config-layers` — changes: Loading config: only `configengine` reads, stacks, locates and judges layers against the template; callers use `Load` or `LoadOrTemplate`, bar `runprofile`; only `hubreconcile.Ensure` reconciles on a binary change; only `lym config reconcile` prunes unknown base-layer keys. — added after Discussion (parent, 2026-11-05)
 
 ## Notes for the plan writer
 
