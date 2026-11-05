@@ -29,11 +29,11 @@
 - `plan:internal/landingshed#BeamPullRequest` -> `type BeamPullRequest struct`
 
 **Uses:**
-- `plan:internal/pullrequest#MergeRetryWindow`
-- `plan:internal/pawlengine#ReadLanding`
-- `plan:internal/pawlengine#DropLandingPullRequest`
-- `plan:internal/loomengine#BeamLandingPath`
-- `plan:internal/loomengine#BeamLandingLockPath`
+- `internal/pullrequest#MergeRetryWindow`
+- `internal/pawlengine#ReadLanding`
+- `internal/pawlengine#DropLandingPullRequest`
+- `internal/loomengine#BeamLandingPath`
+- `internal/loomengine#BeamLandingLockPath`
 - `internal/loomcli#TestWire_BeamRecipe`
 - `internal/loomcli#TestWire_DarnRecipe`
 - `internal/loomcli#TestWire_SamplerRecipe`

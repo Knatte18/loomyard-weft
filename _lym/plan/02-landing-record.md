@@ -1,14 +1,14 @@
 # Card 2 — landing-record
 
 **Create:**
-- `plan:internal/pawlengine#LandingRecord` -> `type LandingRecord struct`
-- `plan:internal/pawlengine#LandingPullRequest` -> `type LandingPullRequest struct`
-- `plan:internal/pawlengine#ReadLanding` -> `func ReadLanding(path, lockPath, slug string) (LandingRecord, bool, error)`
-- `plan:internal/pawlengine#UpdateLanding` -> `func UpdateLanding(path, lockPath, slug string, mutate func(rec *LandingRecord) error) error`
-- `plan:internal/pawlengine#DropLandingPullRequest` -> `func DropLandingPullRequest(path, lockPath, slug string) (bool, error)`
-- `plan:internal/loomengine#BeamLandingPath` -> `func BeamLandingPath(l *lymcwd.Location) string`
-- `plan:internal/loomengine#BeamLandingLockPath` -> `func BeamLandingLockPath(l *lymcwd.Location) string`
-- `plan:internal/pawlengine_test#TestLandingRecord` -> `func TestLandingRecord(t *testing.T)`
+- `internal/pawlengine#LandingRecord`
+- `internal/pawlengine#LandingPullRequest`
+- `internal/pawlengine#ReadLanding`
+- `internal/pawlengine#UpdateLanding`
+- `internal/pawlengine#DropLandingPullRequest`
+- `internal/loomengine#BeamLandingPath`
+- `internal/loomengine#BeamLandingLockPath`
+- `internal/pawlengine_test#TestLandingRecord`
 
 **Edit:**
 - `internal/loomengine#TestLandingAndApprovalAccessors`

@@ -27,11 +27,11 @@
 - `internal/fabricengine/doc.go`
 
 **Uses:**
-- `plan:internal/landingshed#WriteBeamDescription`
+- `internal/landingshed#WriteBeamDescription`
 - `internal/landingshed#BeamDescribeDeps`
-- `plan:internal/pawlengine#UpdateLanding`
-- `plan:internal/loomengine#BeamLandingPath`
-- `plan:internal/loomengine#BeamLandingLockPath`
+- `internal/pawlengine#UpdateLanding`
+- `internal/loomengine#BeamLandingPath`
+- `internal/loomengine#BeamLandingLockPath`
 - `internal/loomengine#ProjectDecisionRecord`
 - `internal/loomengine#LandingDirRel`
 - `internal/beamcli#judgeLandEntry`

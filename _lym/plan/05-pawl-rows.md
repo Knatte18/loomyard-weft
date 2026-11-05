@@ -54,7 +54,7 @@
 - `plan:internal/loomrecipe#TestPawlRecipe_HoldLiftsOnlyBeforeFinalize` -> `func TestPawlRecipe_HoldLiftsOnlyBeforeFinalize(t *testing.T)`
 
 **Uses:**
-- `plan:internal/landingshed#WriteBeamDescription`
+- `internal/landingshed#WriteBeamDescription`
 - `internal/loomrecipe#RowNames`
 - `internal/testkit/envkit#TestFullEnv_PathFieldsAbsoluteUnderOneRoot`
 - `internal/testkit/envkit#TestSeamMarkers_ReflectiveTestsAreMarked`

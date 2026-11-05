@@ -20,12 +20,12 @@
 - `plan:internal/beamcli#parentRuleRequired`
 - `internal/beamcli#openMergeTask`
 - `plan:internal/beamcli#beamPullRequestSide`
-- `plan:internal/pullrequest#ReadMergeState`
+- `internal/pullrequest#ReadMergeState`
 - `internal/landingshed#ResolvePullRequest`
 - `plan:internal/landingshed#BeamWithoutPullRequest`
 - `plan:internal/landingshed#OriginMissing`
-- `plan:internal/pawlengine#ReadLanding`
-- `plan:internal/testkit/prkit#API`
+- `internal/pawlengine#ReadLanding`
+- `internal/testkit/prkit#API`
 
 **Intent:** `lym beam ready` becomes the point of no return and refuses, each with its way forward, every condition the orch could still fix at Beam-Await (D3).
 

@@ -30,11 +30,11 @@
 - `plan:internal/beamcli#judgeAwaitingRun`
 - `plan:internal/beamcli#judgeNotReady`
 - `internal/beamcli#judgeLandEntry`
-- `plan:internal/pawlengine#ReadLanding`
-- `plan:internal/pawlengine#UpdateLanding`
+- `internal/pawlengine#ReadLanding`
+- `internal/pawlengine#UpdateLanding`
 - `internal/pullrequest#API`
 - `internal/pullrequest#Open`
-- `plan:internal/testkit/prkit#API`
+- `internal/testkit/prkit#API`
 
 **Intent:** Add `lym beam pr open <slug>` and `lym beam pr update <slug>` (D6), thin verbs over `internal/pullrequest` the beam's orch calls, so the orch never runs `gh` by hand.
 

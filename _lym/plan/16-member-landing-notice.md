@@ -17,9 +17,9 @@
 - `internal/beamcli/doc.go`
 
 **Uses:**
-- `plan:internal/pawlengine#ReadLanding`
-- `plan:internal/loomengine#BeamLandingPath`
-- `plan:internal/loomengine#BeamLandingLockPath`
+- `internal/pawlengine#ReadLanding`
+- `internal/loomengine#BeamLandingPath`
+- `internal/loomengine#BeamLandingLockPath`
 - `internal/hubgeom#DobbyBeamDir`
 - `plan:internal/fabricengine#BeamLineCommits`
 

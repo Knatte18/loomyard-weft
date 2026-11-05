@@ -13,7 +13,7 @@
 - `internal/shedbuild#TestNewShed_FieldCompleteAssembly`
 
 **Create:**
-- `plan:internal/shedengine#TestStep_RetiredRowMovesAndPauses` -> `func TestStep_RetiredRowMovesAndPauses(t *testing.T)`
+- `internal/shedengine#TestStep_RetiredRowMovesAndPauses`
 
 **Uses:**
 - `internal/shedengine#TestStep_UnknownCurrentProducerNamesGoto`

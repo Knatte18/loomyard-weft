@@ -15,12 +15,12 @@
 - `internal/pawlengine/doc.go`
 
 **Uses:**
-- `plan:internal/pawlengine#UpdateLanding`
+- `internal/pawlengine#UpdateLanding`
 - `internal/pawlengine#RemoveReady`
 - `internal/pawlengine#RemoveLandRequest`
 - `internal/pawlengine#Paths`
-- `plan:internal/loomengine#BeamLandingPath`
-- `plan:internal/loomengine#BeamLandingLockPath`
+- `internal/loomengine#BeamLandingPath`
+- `internal/loomengine#BeamLandingLockPath`
 - `internal/loomengine#BeamReadyPath`
 - `internal/loomengine#BeamReadyLockPath`
 - `internal/loomengine#LandingDirRel`

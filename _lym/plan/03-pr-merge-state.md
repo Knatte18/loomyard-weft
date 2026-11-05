@@ -10,27 +10,27 @@
 - `internal/pairteardown#closeRecordingAPI`
 
 **Create:**
-- `plan:internal/pullrequest#Check` -> `type Check struct`
-- `plan:internal/pullrequest#Client.RequiredChecks` -> `func (c *Client) RequiredChecks(ctx context.Context, base, head string) ([]Check, error)`
-- `plan:internal/pullrequest#MergeState` -> `type MergeState struct`
-- `plan:internal/pullrequest#MergeRetryWindow` -> `const MergeRetryWindow = time.Minute`
-- `plan:internal/pullrequest#ReadMergeState` -> `func ReadMergeState(ctx context.Context, api API, number int, beamHead, base string, now func() time.Time, sleep func(ctx context.Context, d time.Duration) error) (MergeState, error)`
-- `plan:internal/landingshed#fakePullRequestAPI.RequiredChecks` -> `func (f *fakePullRequestAPI) RequiredChecks(_ context.Context, base, head string) ([]pullrequest.Check, error)`
-- `plan:internal/pairteardown#closeRecordingAPI.RequiredChecks` -> `func (a *closeRecordingAPI) RequiredChecks(context.Context, string, string) ([]pullrequest.Check, error)`
+- `internal/pullrequest#Check`
+- `internal/pullrequest#Client.RequiredChecks`
+- `internal/pullrequest#MergeState`
+- `internal/pullrequest#MergeRetryWindow`
+- `internal/pullrequest#ReadMergeState`
+- `internal/landingshed#fakePullRequestAPI.RequiredChecks`
+- `internal/pairteardown#closeRecordingAPI.RequiredChecks`
 - `internal/testkit/prkit/doc.go`
-- `plan:internal/testkit/prkit#API` -> `type API struct`
-- `plan:internal/testkit/prkit#API.FindOpen` -> `func (a *API) FindOpen(ctx context.Context, head, base string) (pullrequest.Ref, bool, error)`
-- `plan:internal/testkit/prkit#API.Create` -> `func (a *API) Create(ctx context.Context, head, base, title, body string) (pullrequest.Ref, error)`
-- `plan:internal/testkit/prkit#API.Edit` -> `func (a *API) Edit(ctx context.Context, number int, title, body string) error`
-- `plan:internal/testkit/prkit#API.Status` -> `func (a *API) Status(ctx context.Context, number int) (pullrequest.Status, error)`
-- `plan:internal/testkit/prkit#API.Close` -> `func (a *API) Close(ctx context.Context, number int, comment string) error`
-- `plan:internal/testkit/prkit#API.Reopen` -> `func (a *API) Reopen(ctx context.Context, number int) error`
-- `plan:internal/testkit/prkit#API.SetDraft` -> `func (a *API) SetDraft(ctx context.Context, number int, draft bool) error`
-- `plan:internal/testkit/prkit#API.Comment` -> `func (a *API) Comment(ctx context.Context, number int, body string) error`
-- `plan:internal/testkit/prkit#API.Merge` -> `func (a *API) Merge(ctx context.Context, number int, expectedHead string, squash bool, title, message string) error`
-- `plan:internal/testkit/prkit#API.RequiresPullRequest` -> `func (a *API) RequiresPullRequest(ctx context.Context, branch string) (bool, error)`
-- `plan:internal/testkit/prkit#API.RequiredChecks` -> `func (a *API) RequiredChecks(ctx context.Context, base, head string) ([]pullrequest.Check, error)`
-- `plan:internal/pullrequest_test#TestReadMergeState` -> `func TestReadMergeState(t *testing.T)`
+- `internal/testkit/prkit#API`
+- `internal/testkit/prkit#API.FindOpen`
+- `internal/testkit/prkit#API.Create`
+- `internal/testkit/prkit#API.Edit`
+- `internal/testkit/prkit#API.Status`
+- `internal/testkit/prkit#API.Close`
+- `internal/testkit/prkit#API.Reopen`
+- `internal/testkit/prkit#API.SetDraft`
+- `internal/testkit/prkit#API.Comment`
+- `internal/testkit/prkit#API.Merge`
+- `internal/testkit/prkit#API.RequiresPullRequest`
+- `internal/testkit/prkit#API.RequiredChecks`
+- `internal/pullrequest_test#TestReadMergeState`
 
 **Uses:**
 - `internal/pairteardown/doc.go`

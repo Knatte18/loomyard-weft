@@ -16,8 +16,8 @@
 - `internal/beamcli/doc.go`
 
 **Uses:**
-- `plan:internal/pullrequest#ReadMergeState`
-- `plan:internal/pullrequest#MergeState`
+- `internal/pullrequest#ReadMergeState`
+- `internal/pullrequest#MergeState`
 - `internal/landingshed#ResolvePullRequest`
 - `plan:internal/landingshed#BeamWithoutPullRequest`
 - `plan:internal/landingshed#OriginMissing`
@@ -26,7 +26,7 @@
 - `plan:internal/beamcli#judgePullRequestVerb`
 - `internal/beamcli#judgeLandEntry`
 - `plan:internal/beamcli#beamPullRequestSide`
-- `plan:internal/testkit/prkit#API`
+- `internal/testkit/prkit#API`
 
 **Intent:** Add `lym beam pr status <slug>` and `lym beam pr close <slug>` (D6).
 

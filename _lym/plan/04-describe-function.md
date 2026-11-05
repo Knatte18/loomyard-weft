@@ -1,7 +1,7 @@
 # Card 4 — describe-function
 
 **Create:**
-- `plan:internal/landingshed#WriteBeamDescription` -> `func WriteBeamDescription(deps BeamDescribeDeps) error`
+- `internal/landingshed#WriteBeamDescription`
 
 **Edit:**
 - `internal/landingshed#beamDescribeProducer.Call`
