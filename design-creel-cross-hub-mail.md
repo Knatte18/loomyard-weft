@@ -1,6 +1,6 @@
 # Creel mail between hubs with a verified sender and one-way hub trust
 
-`creel-cross-hub-mail` · Task · sketch, creel, orch
+`creel-cross-hub-mail` · Task · sketch, creel, orch · running · Worktree-Create
 
 ## Seen (operator, 2026-10-30)
 
