@@ -1,0 +1,1811 @@
+diff --git a/internal/battencli/readopt.go b/internal/battencli/readopt.go
+index 1e2af92d..0ff243de 100644
+--- a/internal/battencli/readopt.go
++++ b/internal/battencli/readopt.go
+@@ -46,13 +46,14 @@ type readoptSeams struct {
+ 	TaskBranchGone func(slug string) (bool, error)
+ }
+ 
+-// hubTaskBranch returns slug's task branch name under the hub's fabric config.
++// hubTaskBranch returns slug's task branch name, read from what is left of its pair, or from origin when nothing is, under the hub's fabric config, with that config.
+ func hubTaskBranch(location *lymcwd.Location, slug string) (string, fabricengine.Config, error) {
+ 	cfg, err := fabricengine.LoadConfig(fabricengine.ConfigDirs(location))
+ 	if err != nil {
+ 		return "", fabricengine.Config{}, err
+ 	}
+-	return cfg.BranchPrefix + slug, cfg, nil
++	branch, err := fabricengine.NewTopology(cfg).PairTaskBranchOrOrigin(location, slug)
++	return branch, cfg, err
+ }
+ 
+ // hubReadoptSeams builds the re-adoption seams over the prime location of a hub.
+diff --git a/internal/battencli/readopt_integration_test.go b/internal/battencli/readopt_integration_test.go
+index 9d464410..3e49d29a 100644
+--- a/internal/battencli/readopt_integration_test.go
++++ b/internal/battencli/readopt_integration_test.go
+@@ -268,6 +268,23 @@ func TestBattenIntegration_GoneTaskWorktree(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("APrefixSetOverALiveBareSlugPairKeepsItsBranch", func(t *testing.T) {
++		t.Parallel()
++
++		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++		const slug = "bare-pair"
++		hubforge.AddPair(t, h, slug)
++		hubforge.SeedFabricConfig(t, h, "branch_prefix: hanf/\npathspec: \"\"\n")
++		seams := hubReadoptSeams(h.Location)
++
++		if got, err := seams.TaskBranch(slug); err != nil || got != slug {
++			t.Errorf("TaskBranch(%q) = %q, %v; want the bare slug %q", slug, got, err, slug)
++		}
++		if gone, err := seams.TaskBranchGone(slug); err != nil || gone {
++			t.Errorf("TaskBranchGone(%q) = %v, %v; want false for a live bare-slug pair", slug, gone, err)
++		}
++	})
++
+ 	t.Run("TaskWorktreePresentReadsStrayPathsAsAbsent", func(t *testing.T) {
+ 		t.Parallel()
+ 
+diff --git a/internal/battencli/wire.go b/internal/battencli/wire.go
+index d6067fe0..615f8eff 100644
+--- a/internal/battencli/wire.go
++++ b/internal/battencli/wire.go
+@@ -1029,12 +1029,16 @@ func (c *battenCLI) wire(location *lymcwd.Location, slug string) error {
+ 				return err
+ 			}
+ 			if present {
++				branch, err := fabricengine.NewTopology(cfg).PairTaskBranch(location, slug)
++				if err != nil {
++					return err
++				}
+ 				// A worktree exists but Add never finished it -- see taskWorktreeComplete's own doc
+ 				// comment. Add refuses an existing worktree directory the same way it refuses a
+ 				// leftover branch, so the remedy is a cleanup followed by a resume.
+ 				return fmt.Errorf(
+ 					"the task worktree for %q exists but %s; %s, then resume this run to create it fresh",
+-					slug, incompleteReason, incompletePairRemedy(slug, cfg.BranchPrefix+slug),
++					slug, incompleteReason, incompletePairRemedy(slug, branch),
+ 				)
+ 			}
+ 
+diff --git a/internal/fabriccli/fabric.go b/internal/fabriccli/fabric.go
+index 6fd13637..0bc0ff79 100644
+--- a/internal/fabriccli/fabric.go
++++ b/internal/fabriccli/fabric.go
+@@ -1084,8 +1084,7 @@ func runRemoveWithFlag(ctx context.Context, out io.Writer, args []string, force,
+ 		return output.Err(out, err.Error())
+ 	}
+ 
+-	cfg, err := fabricengine.LoadConfig(fabricengine.ConfigDirs(l))
+-	if err != nil {
++	if _, err := fabricengine.LoadConfig(fabricengine.ConfigDirs(l)); err != nil {
+ 		return output.Err(out, err.Error())
+ 	}
+ 
+@@ -1117,7 +1116,7 @@ func runRemoveWithFlag(ctx context.Context, out io.Writer, args []string, force,
+ 	// produces exit 0 here exactly as it does from cleanup, and the identical configuration state
+ 	// never yields two different verdicts across the two verbs.
+ 	if r.RemoteBranchError != "" {
+-		weftBranch := fabricengine.RecordsBranchName(cfg.BranchPrefix + slug)
++		weftBranch := r.SiblingBranch
+ 		// "origin" is hardcoded here rather than referencing fabricengine's own unexported
+ 		// originRemoteName, which stays unexported: exporting it just to spell this one error string
+ 		// would widen the engine's API for no caller that needs it.
+diff --git a/internal/fabricengine/add.go b/internal/fabricengine/add.go
+index 69b00cb7..3f97e48c 100644
+--- a/internal/fabricengine/add.go
++++ b/internal/fabricengine/add.go
+@@ -727,7 +727,7 @@ func (t *Topology) rollbackAdd(rec *Mutations, l *lymcwd.Location, slug, warpBra
+ 	// A reused records worktree predates this Add and stays.
+ 	// remote is hardcoded false here: Add pushes nothing, and an adopted branch's copy on origin is not this Add's to delete.
+ 	if !weftReused {
+-		if _, err := removeWeftWorktree(rec, l, slug, weftBranch, true, !weftBranchAdopted, false, t.cfg.BranchPrefix, "", t.leftover); err != nil {
++		if _, err := removeWeftWorktree(rec, l, slug, weftBranch, true, !weftBranchAdopted, false, "", t.leftover); err != nil {
+ 			if firstErr == nil {
+ 				firstErr = err
+ 			}
+diff --git a/internal/fabricengine/addparent.go b/internal/fabricengine/addparent.go
+index 621e7437..5687f48e 100644
+--- a/internal/fabricengine/addparent.go
++++ b/internal/fabricengine/addparent.go
+@@ -7,6 +7,7 @@ import (
+ 	"errors"
+ 	"fmt"
+ 	"path/filepath"
++	"slices"
+ 
+ 	"github.com/Knatte18/loomyard/internal/gitrepo"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+@@ -22,7 +23,7 @@ type addParent struct {
+ 
+ // resolveAddParent resolves the pair slug parent of l's hub into the fork point of a new pair.
+ // It refuses a parent that is not a live pair of the hub, the prime, a parent on a detached HEAD or unborn branch,
+-// and a parent whose checked-out branch is not its own pair branch, each naming the way forward.
++// and a parent whose checked-out branch is not its own pair branch, under the current branch prefix, as the bare slug, or as any branch that has a records branch (a pair made under an earlier prefix), each naming the way forward.
+ // It reads and mutates nothing.
+ func resolveAddParent(l *lymcwd.Location, cfg Config, parent string) (addParent, error) {
+ 	entries, err := List(l.AnchorPath())
+@@ -44,7 +45,8 @@ func resolveAddParent(l *lymcwd.Location, cfg Config, parent string) (addParent,
+ 		return addParent{}, fmt.Errorf("--parent %q names the prime; way forward: drop --parent and run the add from the prime, since without --parent the add forks from the acting worktree's HEAD", parent)
+ 	}
+ 
+-	pairBranch := cfg.BranchPrefix + parent
++	pairNames := pairBranchNames(cfg, parent)
++	pairBranch := pairNames[0]
+ 	location, err := lymcwd.ResolveWorktree(parentPath)
+ 	if err != nil {
+ 		return addParent{}, fmt.Errorf("resolve the worktree of --parent %q: %w", parent, err)
+@@ -61,7 +63,7 @@ func resolveAddParent(l *lymcwd.Location, cfg Config, parent string) (addParent,
+ 	if shaErr != nil {
+ 		return addParent{}, fmt.Errorf("read HEAD commit of --parent %q: %w", parent, shaErr)
+ 	}
+-	if branch != pairBranch {
++	if !slices.Contains(pairNames, branch) && !weftBranchExists(l, RecordsBranchName(branch)) {
+ 		return addParent{}, fmt.Errorf("--parent %q has %q checked out, not its own pair branch %q; way forward: run `lym fabric checkout %s` in %s, then re-run the add", parent, branch, pairBranch, pairBranch, parentPath)
+ 	}
+ 	return addParent{location: location, branch: branch, recordsBranch: RecordsBranchName(branch), headSHA: headSHA}, nil
+diff --git a/internal/fabricengine/addparent_integration_test.go b/internal/fabricengine/addparent_integration_test.go
+index f78893fb..6374913d 100644
+--- a/internal/fabricengine/addparent_integration_test.go
++++ b/internal/fabricengine/addparent_integration_test.go
+@@ -32,6 +32,35 @@ func gitOut(t *testing.T, dir string, args ...string) string {
+ 	return strings.TrimSpace(out)
+ }
+ 
++// TestAdd_FromParentPairMadeBeforeBranchPrefix pins that --parent accepts a pair made under the empty prefix, which stands on its bare slug, once branch_prefix is set, and still refuses one switched to an unrelated branch.
++func TestAdd_FromParentPairMadeBeforeBranchPrefix(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	l := h.Location
++	for _, slug := range []string{"old-parent", "old-switched"} {
++		hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{SkipPush: true})
++	}
++	top := topologyWithPrefix(t, l, laterBranchPrefix)
++
++	if _, err := top.Add(l, "child", fabricengine.AddOptions{SkipPush: true, Parent: "old-parent"}); err != nil {
++		t.Fatalf("Add(child, Parent old-parent) error = %v; want the bare-slug parent accepted", err)
++	}
++	if !gitkit.BranchExists(t, l.WorktreePath(), laterBranchPrefix+"child") {
++		t.Errorf("child's branch %q missing; want the prefixed branch", laterBranchPrefix+"child")
++	}
++	origin, found, err := fabricengine.ReadOriginFor(l, "child")
++	if err != nil || !found || origin.ParentBranch != "old-parent" {
++		t.Errorf("ReadOriginFor(child) = (%+v, %v, %v); want a record naming the parent branch old-parent", origin, found, err)
++	}
++
++	gitOut(t, fabricengine.WorktreePath(l, "old-switched"), "checkout", "-b", "elsewhere")
++	if _, err := top.Add(l, "refused-child", fabricengine.AddOptions{SkipPush: true, Parent: "old-switched"}); err == nil || !strings.Contains(err.Error(), "\"elsewhere\"") {
++		t.Errorf("Add(refused-child, Parent old-switched) error = %v; want a refusal naming \"elsewhere\"", err)
++	}
++}
++
+ func TestAdd_FromParentPair(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+diff --git a/internal/fabricengine/checkout.go b/internal/fabricengine/checkout.go
+index 05e07558..280ff42f 100644
+--- a/internal/fabricengine/checkout.go
++++ b/internal/fabricengine/checkout.go
+@@ -291,7 +291,7 @@ func (t *Topology) rollbackSwitch(rec *Mutations, l *lymcwd.Location, originalBr
+ 			what:      "delete forked weft branch",
+ 			repoDir:   RecordsWorktree(l),
+ 			branch:    forkedWeftBranch,
+-			ownership: ownedManagedBranch(l, t.cfg.BranchPrefix),
++			ownership: ownedManagedBranch(l),
+ 			dirtiness: dirtyCheckedOutBranch(),
+ 			force:     false,
+ 		}
+diff --git a/internal/fabricengine/cleanup.go b/internal/fabricengine/cleanup.go
+index ef0ae009..af3d2988 100644
+--- a/internal/fabricengine/cleanup.go
++++ b/internal/fabricengine/cleanup.go
+@@ -41,7 +41,7 @@
+ // accepts — so a directory-name comparison would misclassify it as a deletable orphan
+ // and delete the very branch board's reserved weft:main branch requires to stay
+ // permanent, distinct from it. Comparing
+-// against live warp *branches* protects every task pair with no BranchPrefix juggling — but NOT the
++// against live warp *branches* protects every task pair whatever its branch prefix — but NOT the
+ // primary weft branch, which needs the explicit carve-out described below.
+ //
+ // Board needs no explicit exclusion: its weft:main branch is the warp's own
+@@ -270,7 +270,7 @@ func liveWarpBranchSet(l *lymcwd.Location) (map[string]bool, error) {
+ // It re-reads the live warp branches under the lock and reports false, so the caller records no entry, when a worktree now sits on the orphan's paired warp branch, since the sweep listed them before an Add of the slug may have finished.
+ // A failed local tag fills entry.Error and keeps the branch; a remote half that ran in process fills the entry's tags and remote outcome, and a failed one fills entry.Error.
+ func (t *Topology) cleanupOrphan(rec *Mutations, l *lymcwd.Location, warpBranch string, entry *CleanupBranchEntry, remoteWeftRoot string, result *CleanupResult) (record bool) {
+-	slug := strings.TrimPrefix(warpBranch, t.cfg.BranchPrefix)
++	slug := slugOfBranch(t.cfg, warpBranch)
+ 	if t.cleanupAfterEnumerate != nil {
+ 		t.cleanupAfterEnumerate()
+ 	}
+@@ -311,11 +311,11 @@ func (t *Topology) cleanupOrphan(rec *Mutations, l *lymcwd.Location, warpBranch
+ 		result.ArchiveSkippedReason = archiveSkipped
+ 	}
+ 
+-	entry.Deleted = deleteWeftBranch(rec, l, entry.Branch, t.cfg.BranchPrefix, entry)
++	entry.Deleted = deleteWeftBranch(rec, l, entry.Branch, entry)
+ 	if archiveSkipped != "" {
+ 		return true
+ 	}
+-	job = &remoteTeardownJob{Kind: remoteTeardownCleanup, Slug: slug, Worktree: l.WorktreePath(), BranchPrefix: t.cfg.BranchPrefix, WeftBranch: entry.Branch, WeftTip: tip, DeleteWeftOnOrigin: entry.Deleted && remoteWeftRoot != ""}
++	job = &remoteTeardownJob{Kind: remoteTeardownCleanup, Slug: slug, Worktree: l.WorktreePath(), WeftBranch: entry.Branch, WeftTip: tip, DeleteWeftOnOrigin: entry.Deleted && remoteWeftRoot != ""}
+ 	out := hold.finish(job)
+ 	if out.ran {
+ 		if out.err != nil {
+@@ -403,7 +403,7 @@ func listWeftBranches(l *lymcwd.Location) ([]weftBranchCheckout, error) {
+ // by no gate in this verb, and may not answer the gate's own primary-weft carve-out or checked-out
+ // check either way.
+ // rec is the calling verb's own recorder, passed straight through to deleteBranch.
+-func deleteWeftBranch(rec *Mutations, l *lymcwd.Location, branch, branchPrefix string, entry *CleanupBranchEntry) bool {
++func deleteWeftBranch(rec *Mutations, l *lymcwd.Location, branch string, entry *CleanupBranchEntry) bool {
+ 	weftRepoRoot, err := RecordsRepoRoot(l)
+ 	if err != nil {
+ 		entry.Error = fmt.Sprintf("resolve weft repo root: %v", err)
+@@ -413,7 +413,7 @@ func deleteWeftBranch(rec *Mutations, l *lymcwd.Location, branch, branchPrefix s
+ 		what:      "delete weft branch",
+ 		repoDir:   weftRepoRoot,
+ 		branch:    branch,
+-		ownership: ownedManagedBranch(l, branchPrefix),
++		ownership: ownedManagedBranch(l),
+ 		dirtiness: dirtyCheckedOutBranch(),
+ 		force:     false,
+ 	}
+@@ -432,7 +432,7 @@ func deleteWeftBranch(rec *Mutations, l *lymcwd.Location, branch, branchPrefix s
+ // and a branch origin moved since is kept and reported in entry.RemoteKeptReason, never in entry.RemoteError.
+ // A remote failure never aborts the sweep. It distinguishes a gate refusal from an operational
+ // failure so entry.RemoteError always names the layer that actually said no.
+-func deleteWeftBranchOnRemote(rec *Mutations, l *lymcwd.Location, branch, branchPrefix, weftRepoRoot, leaseSHA string, entry *CleanupBranchEntry) {
++func deleteWeftBranchOnRemote(rec *Mutations, l *lymcwd.Location, branch, weftRepoRoot, leaseSHA string, entry *CleanupBranchEntry) {
+ 	if leaseSHA == "" {
+ 		return
+ 	}
+@@ -441,7 +441,7 @@ func deleteWeftBranchOnRemote(rec *Mutations, l *lymcwd.Location, branch, branch
+ 		repoDir:   weftRepoRoot,
+ 		remote:    originRemoteName,
+ 		branch:    branch,
+-		ownership: ownedManagedBranch(l, branchPrefix),
++		ownership: ownedManagedBranch(l),
+ 		dirtiness: dirtyCheckedOutBranch(),
+ 		leaseSHA:  leaseSHA,
+ 		force:     false,
+diff --git a/internal/fabricengine/cleanupremote_integration_test.go b/internal/fabricengine/cleanupremote_integration_test.go
+index 648b6635..4bd73e0b 100644
+--- a/internal/fabricengine/cleanupremote_integration_test.go
++++ b/internal/fabricengine/cleanupremote_integration_test.go
+@@ -14,6 +14,7 @@ package fabricengine_test
+ 
+ import (
+ 	"path/filepath"
++	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+@@ -87,6 +88,34 @@ func TestCleanup_RemoteTrueDeletesLocalAndRemoteOrphan(t *testing.T) {
+ 	}
+ }
+ 
++// TestCleanup_PrefixSetOverBareSlugOrphan covers an orphan weft branch of a pair made before branch_prefix was set:
++// it is read as the bare slug, so the sweep archives and deletes it under that slug.
++func TestCleanup_PrefixSetOverBareSlugOrphan(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const slug = "cleanup-bare-before-prefix"
++	branch := fabricengine.RecordsBranchName(slug)
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	l := h.Location
++	weftRoot := mustRecordsRepoRoot(t, l)
++	mustCreateOrphanWeftBranch(t, weftRoot, branch)
++	mustPushBranch(t, weftRoot, branch)
++
++	res, err := topologyWithPrefix(t, l, laterBranchPrefix).Cleanup(l, true, false, true)
++	if err != nil {
++		t.Fatalf("Cleanup(apply=true, remote=true) error = %v", err)
++	}
++
++	entry := findCleanupEntry(t, res.Entries, branch)
++	if !entry.Deleted || !entry.RemoteDeleted || entry.Error != "" {
++		t.Errorf("entry = %+v; want the bare-slug orphan deleted locally and on the remote with no error", entry)
++	}
++	if !strings.HasPrefix(entry.ArchiveTag, fabricengine.ArchiveTagPrefix+slug+"/") {
++		t.Errorf("entry.ArchiveTag = %q; want a tag under %q", entry.ArchiveTag, fabricengine.ArchiveTagPrefix+slug+"/")
++	}
++}
++
+ // TestCleanup_RemoteFalseLeavesRemoteCopyIntact covers case 2: apply true and remote false is the
+ // regression guard on the existing default — the feature is opt-in.
+ func TestCleanup_RemoteFalseLeavesRemoteCopyIntact(t *testing.T) {
+diff --git a/internal/fabricengine/cleanupremotewarp.go b/internal/fabricengine/cleanupremotewarp.go
+index f4761890..378a69e0 100644
+--- a/internal/fabricengine/cleanupremotewarp.go
++++ b/internal/fabricengine/cleanupremotewarp.go
+@@ -39,8 +39,8 @@ type RemoteWarpCleanupResult struct {
+ }
+ 
+ // CleanupRemoteWarp classifies every branch on the warp repo's origin and, with apply, deletes the leftover task branches among them.
+-// A branch is fabric-managed when the weft origin holds an archive/<slug>/* tag or a RecordsBranchName(branch) branch for it, where slug is the branch without BranchPrefix;
+-// with a non-empty BranchPrefix, a branch lacking it is unmanaged.
++// A branch is fabric-managed when the weft origin holds an archive/<slug>/* tag or a RecordsBranchName(branch) branch for it, where slug is the branch without the current branch prefix;
++// a branch lacking the prefix is read as the bare slug of a pair made before the prefix was set, and the weft evidence alone decides whether it is managed.
+ // A managed branch is a deletion candidate unless it is origin's default branch, is checked out in a hub worktree, is in openPRHeads, or carries work not landed on the default branch.
+ // Every other entry carries the reason it was kept.
+ // Without apply nothing is deleted; with apply each candidate whose slug's teardown lock one try takes, and which no hub worktree has checked out under that lock, goes through the destructive gate, leased to the tip observed at enumeration,
+@@ -144,7 +144,7 @@ func checkedOutBranches(repoDir string) (map[string]bool, error) {
+ // It re-reads under the lock whether a hub worktree has the branch checked out, since the sweep read them before an Add of the slug may have finished, and keeps the candidate with a Reason when one does.
+ func (t *Topology) deleteLeftoverUnderLock(rec *Mutations, l *lymcwd.Location, entry *RemoteWarpBranchEntry, defaultBranch, parent, tip string) {
+ 	repoDir := l.WorktreePath()
+-	slug := strings.TrimPrefix(entry.Branch, t.cfg.BranchPrefix)
++	slug := slugOfBranch(t.cfg, entry.Branch)
+ 	// The lock file is the sweep's scratch state, not a mutation of the branch, so it joins no record.
+ 	release, lockErr := t.lockPairTeardown(NewMutations(l.HubPath), l, slug, true, cleanupSweepRerun)
+ 	switch {
+@@ -194,11 +194,7 @@ func (t *Topology) keptReason(branch, defaultBranch string, weftBranches map[str
+ 	if branch == defaultBranch {
+ 		return "origin's default branch"
+ 	}
+-	prefix := t.cfg.BranchPrefix
+-	if prefix != "" && !strings.HasPrefix(branch, prefix) {
+-		return fmt.Sprintf("not fabric-managed: lacks the branch prefix %q", prefix)
+-	}
+-	slug := strings.TrimPrefix(branch, prefix)
++	slug := slugOfBranch(t.cfg, branch)
+ 	if slug == "" {
+ 		return "not fabric-managed: empty slug"
+ 	}
+diff --git a/internal/fabricengine/cleanupremotewarp_integration_test.go b/internal/fabricengine/cleanupremotewarp_integration_test.go
+index 182ff091..ccc4b132 100644
+--- a/internal/fabricengine/cleanupremotewarp_integration_test.go
++++ b/internal/fabricengine/cleanupremotewarp_integration_test.go
+@@ -1,7 +1,7 @@
+ // cleanupremotewarp_integration_test.go covers Topology.CleanupRemoteWarp against hubforge bare origins:
+ // a dry run classifies every branch on the warp origin, apply deletes only the candidate, and a tip that moves after it was observed keeps the branch.
+ //
+-// Every hub is built through hubforge.CopyHub with an empty branch_prefix, so a branch is fabric-managed when the weft origin holds its weft branch.
++// Every hub is built through hubforge.CopyHub with an empty branch_prefix, so a branch is fabric-managed when the weft origin holds its weft branch; one test sets a prefix afterwards.
+ // Package fabricengine_test; shares the single TestMain in testmain_test.go.
+ 
+ package fabricengine_test
+@@ -231,6 +231,58 @@ func TestCleanupRemoteWarp_ApplyDeletesOnlyTheCandidate(t *testing.T) {
+ 	})
+ }
+ 
++// TestCleanupRemoteWarp_BranchPrefixSetOverBareBranches pins that, with branch_prefix set, a branch lacking the prefix is read as the bare slug of a pair made before it was set:
++// the weft evidence makes it managed and deletable, and without evidence it is kept as not fabric-managed.
++func TestCleanupRemoteWarp_BranchPrefixSetOverBareBranches(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := sweepFixture(t)
++	top := topologyWithPrefix(t, h.Location, laterBranchPrefix)
++
++	res, err := top.CleanupRemoteWarp(h.Location, true, map[string]bool{"has-pr": true})
++	if err != nil {
++		t.Fatalf("CleanupRemoteWarp error = %v", err)
++	}
++	got := remoteWarpEntries(res)
++
++	if e := got["gone-landed"]; !e.Candidate || !e.Deleted || e.Error != "" {
++		t.Errorf("gone-landed = %+v; want a managed candidate, deleted", e)
++	}
++	if originHasBranch(t, h.CodeBare, "gone-landed") {
++		t.Errorf("gone-landed still on origin")
++	}
++	if e := got["unmanaged"]; e.Candidate || e.Deleted || !strings.Contains(e.Reason, "not fabric-managed") {
++		t.Errorf("unmanaged = %+v; want a non-candidate whose reason says not fabric-managed", e)
++	}
++	if !originHasBranch(t, h.CodeBare, "unmanaged") {
++		t.Errorf("unmanaged was deleted from origin")
++	}
++}
++
++// TestCleanupRemoteWarp_BranchPrefixSetTakesTheBareSlugsLock pins that, with branch_prefix set, the sweep takes the teardown lock of a bare branch's own slug and keeps the branch while that lock is held.
++func TestCleanupRemoteWarp_BranchPrefixSetTakesTheBareSlugsLock(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := sweepFixture(t)
++	holdTeardownLock(t, h, "gone-landed")
++	top := topologyWithPrefix(t, h.Location, laterBranchPrefix)
++
++	res, err := top.CleanupRemoteWarp(h.Location, true, map[string]bool{"has-pr": true})
++	if err != nil {
++		t.Fatalf("CleanupRemoteWarp error = %v", err)
++	}
++
++	e := remoteWarpEntries(res)["gone-landed"]
++	if e.Deleted || e.Error != "" || !strings.Contains(e.Reason, "teardown lock") {
++		t.Errorf("gone-landed = %+v; want kept with a reason naming the teardown lock and no Error", e)
++	}
++	if !originHasBranch(t, h.CodeBare, "gone-landed") {
++		t.Errorf("gone-landed was deleted from origin despite the held lock")
++	}
++}
++
+ func TestCleanupRemoteWarp_NilOpenPRHeadsRefusesEveryDeletion(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+diff --git a/internal/fabricengine/destroy.go b/internal/fabricengine/destroy.go
+index 1597c4d8..cd3908fe 100644
+--- a/internal/fabricengine/destroy.go
++++ b/internal/fabricengine/destroy.go
+@@ -215,9 +215,8 @@ type pathRequest struct {
+ 
+ // branchRequest is the gate's request shape for the one destructive primitive whose target is a ref:
+ // git branch -D. It carries no container and no target field at all — containment is structurally
+-// N/A for a ref, expressed by the type rather than by a per-site "" that could be forgotten. It
+-// carries no branchPrefix field either: the prefix is an input ownedManagedBranch's predicate needs,
+-// so per the "each check's inputs travel with the check" rule it rides on that constructor instead.
++// N/A for a ref, expressed by the type rather than by a per-site "" that could be forgotten.
++// Per the "each check's inputs travel with the check" rule, an ownership predicate's inputs ride on its constructor.
+ type branchRequest struct {
+ 	// what names the act being attempted, for the refusal message.
+ 	what string
+@@ -419,9 +418,8 @@ const (
+ // branchOwnership declares which of the closed set of ownership kinds a branchRequest's branch must
+ // satisfy. The zero value is invalid and is refused by the pipeline before any check runs.
+ type branchOwnership struct {
+-	kind         branchOwnershipKind
+-	location     *lymcwd.Location
+-	branchPrefix string
++	kind     branchOwnershipKind
++	location *lymcwd.Location
+ 	// warpBranch serves ownedPairWarpBranch and ownedPairWeftBranch;
+ 	// parentBranch serves ownedPairWarpBranch only.
+ 	warpBranch   string
+@@ -438,12 +436,11 @@ func ownedCreatedBranch(l *lymcwd.Location, tok createdBranchToken) branchOwners
+ 	return branchOwnership{kind: branchOwnershipCreatedBranch, location: l, createdBranch: tok.branch}
+ }
+ 
+-// ownedPairWarpBranch declares branch as owned when it is exactly warpBranch — the pair's own
+-// BranchPrefix + slug — and warpBranch is not parentBranch, the branch the pair lands on.
+-// ownedManagedBranch cannot serve a warp branch: under the default empty branch_prefix the warp branch
+-// is the bare slug, which it accepts only when weft-suffixed, and its primary-branch and checked-out
+-// predicates read the weft side only. This kind consults no weft-side predicate; the checked-out
+-// question belongs to the dirtiness step. An empty warpBranch matches nothing.
++// ownedPairWarpBranch declares branch as owned when it is exactly warpBranch, the branch the pair stands on, and warpBranch is not parentBranch, the branch the pair lands on.
++// ownedManagedBranch cannot serve a warp branch:
++// under the default empty branch_prefix the warp branch is the bare slug, which it accepts only when weft-suffixed, and its primary-branch and checked-out predicates read the weft side only.
++// This kind consults no weft-side predicate; the checked-out question belongs to the dirtiness step.
++// An empty warpBranch matches nothing.
+ func ownedPairWarpBranch(warpBranch, parentBranch string) branchOwnership {
+ 	return branchOwnership{kind: branchOwnershipPairWarp, warpBranch: warpBranch, parentBranch: parentBranch}
+ }
+@@ -456,14 +453,12 @@ func ownedPairWeftBranch(l *lymcwd.Location, warpBranch string) branchOwnership
+ 	return branchOwnership{kind: branchOwnershipPairWeft, location: l, warpBranch: warpBranch}
+ }
+ 
+-// ownedManagedBranch declares branch as owned when it is one fabric's own scheme constructs (accepted
+-// by WeftWarpSlug, or carrying branchPrefix), is not l's primary weft branch, and is not checked out
+-// at any worktree. It is the only ownership constructor that takes a *lymcwd.Location, because
+-// primaryWeftBranch(l) is the one predicate that genuinely needs it — clone's two hub-level path
+-// sites have no Location in scope at all, which is exactly why every other kind does without one.
+-// An empty branchPrefix means "the prefix test does not apply", never a match-everything wildcard.
+-func ownedManagedBranch(l *lymcwd.Location, branchPrefix string) branchOwnership {
+-	return branchOwnership{kind: branchOwnershipManaged, location: l, branchPrefix: branchPrefix}
++// ownedManagedBranch declares a records branch as owned when it is one fabric's own scheme constructs (accepted
++// by WeftWarpSlug), is not l's primary weft branch, and is not checked out at any worktree.
++// It consults no branch prefix, so a pair made under an earlier prefix stays as owned as one made under the current prefix.
++// It takes a *lymcwd.Location because primaryWeftBranch(l) needs it.
++func ownedManagedBranch(l *lymcwd.Location) branchOwnership {
++	return branchOwnership{kind: branchOwnershipManaged, location: l}
+ }
+ 
+ // pathDirtinessKind enumerates the closed set of dirtiness declarations a pathRequest may carry.
+@@ -813,7 +808,7 @@ func containsCleanPath(paths []string, target string) bool {
+ func resolveBranchOwnership(own branchOwnership, branch string) (ok bool, reason string) {
+ 	switch own.kind {
+ 	case branchOwnershipManaged:
+-		return resolveManagedBranch(own.location, own.branchPrefix, branch)
++		return resolveManagedBranch(own.location, branch)
+ 	case branchOwnershipPairWarp:
+ 		return resolvePairWarpBranch(own.warpBranch, own.parentBranch, branch)
+ 	case branchOwnershipPairWeft:
+@@ -864,10 +859,8 @@ func resolvePairWeftBranch(l *lymcwd.Location, warpBranch, branch string) (bool,
+ // scheme constructs, must not be l's primary weft branch, and must not be checked out at any
+ // worktree. It inherits primaryWeftBranch's fail-closed direction: an unreadable primary refuses
+ // rather than proceeds, since Cleanup's deletions (and every other branch -D site) are irreversible.
+-func resolveManagedBranch(l *lymcwd.Location, branchPrefix, branch string) (bool, string) {
+-	_, weftManaged := WeftWarpSlug(branch)
+-	prefixManaged := branchPrefix != "" && strings.HasPrefix(branch, branchPrefix)
+-	if !weftManaged && !prefixManaged {
++func resolveManagedBranch(l *lymcwd.Location, branch string) (bool, string) {
++	if _, weftManaged := WeftWarpSlug(branch); !weftManaged {
+ 		return false, fmt.Sprintf("%s is not a name fabric's own scheme constructs", branch)
+ 	}
+ 
+diff --git a/internal/fabricengine/destroy_test.go b/internal/fabricengine/destroy_test.go
+index f0255fa6..d1384b68 100644
+--- a/internal/fabricengine/destroy_test.go
++++ b/internal/fabricengine/destroy_test.go
+@@ -443,7 +443,7 @@ func TestGate_ZeroValueDeclarationsAreRefusals(t *testing.T) {
+ 			what:      "test",
+ 			repoDir:   t.TempDir(),
+ 			branch:    "task-weft",
+-			ownership: ownedManagedBranch(l, ""),
++			ownership: ownedManagedBranch(l),
+ 		}
+ 		err := checkBranchRequest(req)
+ 		assertRefusalCheck(t, err, CheckDirtiness)
+@@ -519,15 +519,14 @@ func TestGate_ZeroValueDeclarationsAreRefusals(t *testing.T) {
+ 			repoDir:   t.TempDir(),
+ 			remote:    originRemoteName,
+ 			branch:    "task-weft",
+-			ownership: ownedManagedBranch(l, ""),
++			ownership: ownedManagedBranch(l),
+ 		}
+ 		err := checkRemoteBranchRequest(req)
+ 		assertRefusalCheck(t, err, CheckDirtiness)
+ 	})
+ 
+ 	t.Run("RemoteBranchNamingPredicateRefused", func(t *testing.T) {
+-		// A branch name fabric's own scheme does not construct (no "-weft" suffix, no branchPrefix
+-		// match) is refused by resolveManagedBranch's naming predicate before it spawns git at all —
++		// A branch name fabric's own scheme does not construct (no "-weft" suffix) is refused by resolveManagedBranch's naming predicate before it spawns git at all —
+ 		// safe with a hand-built Location for the same reason the naming-predicate case is safe
+ 		// elsewhere in this file: the predicate short-circuits ahead of the first spawn.
+ 		l := &lymcwd.Location{HubPath: t.TempDir(), WorktreeName: "prime"}
+@@ -536,7 +535,7 @@ func TestGate_ZeroValueDeclarationsAreRefusals(t *testing.T) {
+ 			repoDir:   t.TempDir(),
+ 			remote:    originRemoteName,
+ 			branch:    "not-a-fabric-branch",
+-			ownership: ownedManagedBranch(l, ""),
++			ownership: ownedManagedBranch(l),
+ 			dirtiness: dirtyCheckedOutBranch(),
+ 		}
+ 		err := checkRemoteBranchRequest(req)
+diff --git a/internal/fabricengine/destroyremote_integration_test.go b/internal/fabricengine/destroyremote_integration_test.go
+index 5a7ab0a7..9dd0af45 100644
+--- a/internal/fabricengine/destroyremote_integration_test.go
++++ b/internal/fabricengine/destroyremote_integration_test.go
+@@ -35,7 +35,7 @@ func TestDeleteRemoteBranchGate_PrimaryWeftBranchRefused(t *testing.T) {
+ 	}
+ 	primary := fabricengine.RecordsBranchName("main")
+ 
+-	err = fabricengine.CheckRemoteBranchRequestForTest(h.Location, weftRoot, "origin", primary, "")
++	err = fabricengine.CheckRemoteBranchRequestForTest(h.Location, weftRoot, "origin", primary)
+ 	if !RefusedByGate(err, fabricengine.CheckOwnership) {
+ 		t.Fatalf("CheckRemoteBranchRequestForTest(%q) = %v; want a CheckOwnership refusal", primary, err)
+ 	}
+@@ -67,7 +67,7 @@ func TestDeleteRemoteBranchGate_CheckedOutBranchRefused(t *testing.T) {
+ 	}
+ 	checkedOut := fabricengine.RecordsBranchName(slug)
+ 
+-	err = fabricengine.CheckRemoteBranchRequestForTest(h.Location, weftRoot, "origin", checkedOut, "")
++	err = fabricengine.CheckRemoteBranchRequestForTest(h.Location, weftRoot, "origin", checkedOut)
+ 	if !RefusedByGate(err, fabricengine.CheckOwnership) {
+ 		t.Fatalf("CheckRemoteBranchRequestForTest(%q) = %v; want a CheckOwnership refusal", checkedOut, err)
+ 	}
+diff --git a/internal/fabricengine/destructivegaps_integration_test.go b/internal/fabricengine/destructivegaps_integration_test.go
+index b121cce2..090e0abf 100644
+--- a/internal/fabricengine/destructivegaps_integration_test.go
++++ b/internal/fabricengine/destructivegaps_integration_test.go
+@@ -718,7 +718,7 @@ func TestWorktreeDirty_BothScopesAcrossFourStates(t *testing.T) {
+ }
+ 
+ // assertBranchGateRefusesBothForceModes asserts DeleteBranchForTest refuses branch (a weft branch
+-// in the repo at weftRoot, gated via ownedManagedBranch(l, "")) under both force=false and
++// in the repo at weftRoot, gated via ownedManagedBranch(l)) under both force=false and
+ // force=true, with the same wantSubstring reason each time, and that branch survives both attempts.
+ // The force=true half is what proves the property card 34 exists to pin: force reaches only
+ // Cleanup's own folded-back-raddle gate, never the branch-ownership kind itself — a
+@@ -726,7 +726,7 @@ func TestWorktreeDirty_BothScopesAcrossFourStates(t *testing.T) {
+ func assertBranchGateRefusesBothForceModes(t *testing.T, l *lymcwd.Location, weftRoot, branch, wantSubstring string) {
+ 	t.Helper()
+ 	for _, force := range []bool{false, true} {
+-		err := fabricengine.DeleteBranchForTest(l, weftRoot, branch, "", force)
++		err := fabricengine.DeleteBranchForTest(l, weftRoot, branch, force)
+ 		if err == nil {
+ 			t.Fatalf("DeleteBranchForTest(%q, force=%v) = nil error; want a refusal", branch, force)
+ 		}
+@@ -791,7 +791,7 @@ func TestBranchOwnership_ManagedBranchKind(t *testing.T) {
+ 	t.Run("AcceptsOrphanedFabricNamedNonPrimaryNonCheckedOutBranch", func(t *testing.T) {
+ 		const orphan = "orphan-task-weft"
+ 		gitkit.MustRun(t, weftRoot, "git", "branch", orphan)
+-		err := fabricengine.DeleteBranchForTest(l, weftRoot, orphan, "", false)
++		err := fabricengine.DeleteBranchForTest(l, weftRoot, orphan, false)
+ 		if err != nil {
+ 			t.Fatalf("DeleteBranchForTest(%q) = err %v; want a clean deletion", orphan, err)
+ 		}
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index c1b87faa..73272f8c 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -589,7 +589,12 @@
+ // Just before the tag, `Remove` commits the sibling worktree's uncommitted changes under the scoped record pathspec, so the tag holds them; only changes outside that pathspec refuse without `force`.
+ // `Topology.RemoveRefusal` is the read-only probe of every refusal `Remove` raises before its first mutation.
+ // `Topology.PairParts` is the read-only, network-free reading of which parts of a pair are left locally (task worktree, records worktree, records branch, task branch, launchers, and a stray path at the task worktree's location), made from the same `inspectPair` `Remove` uses.
+-// `Topology.TaskBranchOnOrigin` reports whether the task branch is on the task repository's origin: a repository with no origin remote reads false, and a failed lookup is returned.
++// `Topology.PairTaskBranch` reads the warp branch a pair stands on from the pair itself: the branch its task worktree has checked out, else the one its records worktree's branch pairs with, else the first of its names a local branch carries, else the current prefix's name.
++// A records worktree whose repository cannot be resolved is skipped, so a half-torn pair stays readable.
++// `Topology.PairTaskBranchOrOrigin` reads the same, except that a pair no local worktree or branch names is named by the first of its names origin holds, for a caller that runs after the pair's local parts are gone.
++// A pair's names are the current `branch_prefix` plus slug and the bare slug of a pair made before the prefix was set, so `branch_prefix` names only the branches of pairs made after it changes and can be set while pairs are live.
++// Every step that starts while a pair's worktree stands reads its branches this way, the remote teardown job carries the names read when the teardown started, and every step going from a branch to its slug (cleanup, the origin sweep, `TaskBranchSlugs`, the parent check of `Add`) accepts a branch with the current prefix and one without.
++// `Topology.TaskBranchOnOrigin` reports whether the task branch is on the task repository's origin under either name: a repository with no origin remote reads false, and a failed lookup is returned.
+ // `TaskBranchSlugs` lists, offline and read-only, the slugs of a prefix whose task branch exists locally or as an origin remote-tracking branch, so a caller numbering new slugs past a torn-down pair's kept branch sees it.
+ // `Topology.DiscardTaskBranch` archives and deletes the task branch locally and on origin whether or not its work is landed: it tags the local tip `archive/<slug>/<first 12 hex>` and deletes the local branch under that tag, and its teardown child pushes the tags, archiving only the containing tip when one tip holds the other, and deletes the branch on origin under them.
+ // A failed local tag deletes nothing and wraps `ErrArchiveFailed`, and a refused gate is returned as an error naming the branch.
+diff --git a/internal/fabricengine/export_test.go b/internal/fabricengine/export_test.go
+index cbc0703b..2cabc6bf 100644
+--- a/internal/fabricengine/export_test.go
++++ b/internal/fabricengine/export_test.go
+@@ -170,42 +170,33 @@ func WorktreeDirtyAllForTest(dir string) (dirty bool, detail string, err error)
+ 	return worktreeDirty(scopeAll, dir)
+ }
+ 
+-// DeleteBranchForTest re-exports the gate's deleteBranch executor, built from
+-// ownedManagedBranch(l, branchPrefix) and dirtyCheckedOutBranch(), for package fabricengine_test
+-// integration tests that need to drive the branch-ownership gate directly rather than through
+-// Cleanup's application-level orphan/liveness filtering — which never reaches the gate at all for
+-// the primary weft branch or a branch checked out at some worktree.
+-// It passes a throwaway NewMutations("") recorder, since this seam has no verb-level recorder of its
+-// own and its callers assert nothing about the record.
+-func DeleteBranchForTest(l *lymcwd.Location, repoDir, branch, branchPrefix string, force bool) error {
++// DeleteBranchForTest re-exports the gate's deleteBranch executor, built from ownedManagedBranch(l) and dirtyCheckedOutBranch(), for package fabricengine_test integration tests.
++// Those tests drive the branch-ownership gate directly rather than through Cleanup's application-level orphan/liveness filtering, which never reaches the gate at all for the primary weft branch or a branch checked out at some worktree.
++// It passes a throwaway NewMutations("") recorder, since this seam has no verb-level recorder of its own and its callers assert nothing about the record.
++func DeleteBranchForTest(l *lymcwd.Location, repoDir, branch string, force bool) error {
+ 	req := branchRequest{
+ 		what:      "test delete branch",
+ 		repoDir:   repoDir,
+ 		branch:    branch,
+-		ownership: ownedManagedBranch(l, branchPrefix),
++		ownership: ownedManagedBranch(l),
+ 		dirtiness: dirtyCheckedOutBranch(),
+ 		force:     force,
+ 	}
+ 	return deleteBranch(NewMutations(""), req)
+ }
+ 
+-// CheckRemoteBranchRequestForTest re-exports checkRemoteBranchRequest, built from
+-// ownedManagedBranch(l, branchPrefix) and dirtyCheckedOutBranch(), for package fabricengine_test
+-// integration tests that need to drive the remote-branch gate directly against a real hub —
+-// mirroring DeleteBranchForTest's shape for the local executor. package fabricengine_test cannot
+-// construct a remoteBranchRequest directly (it is unexported) and cannot import the hubforge package
+-// from an internal (unsuffixed package fabricengine) test file either, since that package imports
+-// fabriccli, which imports fabricengine, closing an import cycle for Go's internal test
+-// augmentation — this seam is what lets a package fabricengine_test file reach the gate while still
+-// building its real-hub fixture through that package's own factory function, per the hubforge
+-// Fabric-Fixture Invariant.
+-func CheckRemoteBranchRequestForTest(l *lymcwd.Location, repoDir, remote, branch, branchPrefix string) error {
++// CheckRemoteBranchRequestForTest re-exports checkRemoteBranchRequest, built from ownedManagedBranch(l) and dirtyCheckedOutBranch(), for package fabricengine_test integration tests.
++// Those tests drive the remote-branch gate directly against a real hub, mirroring DeleteBranchForTest's shape for the local executor.
++// package fabricengine_test cannot construct a remoteBranchRequest directly, since it is unexported.
++// It cannot import the hubforge package from an internal (unsuffixed package fabricengine) test file either, since that package imports fabriccli, which imports fabricengine, closing an import cycle for Go's internal test augmentation.
++// This seam is what lets a package fabricengine_test file reach the gate while still building its real-hub fixture through that package's own factory function, per the hubforge Fabric-Fixture Invariant.
++func CheckRemoteBranchRequestForTest(l *lymcwd.Location, repoDir, remote, branch string) error {
+ 	req := remoteBranchRequest{
+ 		what:      "test delete remote branch",
+ 		repoDir:   repoDir,
+ 		remote:    remote,
+ 		branch:    branch,
+-		ownership: ownedManagedBranch(l, branchPrefix),
++		ownership: ownedManagedBranch(l),
+ 		dirtiness: dirtyCheckedOutBranch(),
+ 		force:     false,
+ 	}
+diff --git a/internal/fabricengine/originreconcile.go b/internal/fabricengine/originreconcile.go
+index 1b735ccc..0780435b 100644
+--- a/internal/fabricengine/originreconcile.go
++++ b/internal/fabricengine/originreconcile.go
+@@ -663,7 +663,7 @@ func originTargets(l *lymcwd.Location, scope ReconcileScope) (targets []originTa
+ 		if entry.Main {
+ 			warpDir = filepath.FromSlash(entry.Path)
+ 		}
+-		if entry.Prunable || entry.Branch == "" || entry.Branch == "(detached)" || !wanted(entry) {
++		if entry.Prunable || entry.Branch == "" || entry.Branch == detachedBranch || !wanted(entry) {
+ 			continue
+ 		}
+ 		worktree := filepath.FromSlash(entry.Path)
+diff --git a/internal/fabricengine/pairbranch.go b/internal/fabricengine/pairbranch.go
+new file mode 100644
+index 00000000..14a7e81b
+--- /dev/null
++++ b/internal/fabricengine/pairbranch.go
+@@ -0,0 +1,154 @@
++// pairbranch.go reads the warp branch a pair stands on from the pair itself — its worktrees, then its local branches, then origin — so the branch prefix can change while pairs are live.
++
++package fabricengine
++
++import (
++	"fmt"
++	"path/filepath"
++	"slices"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/gitrepo"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++)
++
++// pairBranchNames returns the warp branch names a pair of slug may stand on: the current prefix's, then the bare slug a pair made before the prefix was set carries.
++// An empty prefix gives the one name.
++func pairBranchNames(cfg Config, slug string) []string {
++	if cfg.BranchPrefix == "" {
++		return []string{slug}
++	}
++	return []string{cfg.BranchPrefix + slug, slug}
++}
++
++// slugOfBranch returns the slug a warp branch names: the branch without the current prefix when it carries it, else the bare branch of a pair made before the prefix was set.
++func slugOfBranch(cfg Config, branch string) string {
++	return strings.TrimPrefix(branch, cfg.BranchPrefix)
++}
++
++// PairTaskBranch returns the task branch of slug's pair, read from the pair itself rather than from the current branch prefix alone.
++// It is the branch the task worktree has checked out, else the warp branch paired with the branch the records worktree has checked out, else the first of the pair's names (the current prefix's, then the bare slug) that a local task or records branch carries, else the current prefix's name.
++// A task worktree's branch is read when it is one of the pair's names or has a records branch, so a pair made under any earlier prefix stays recognised.
++// A records worktree's branch is read when its warp branch is one of the pair's names or exists locally.
++// A worktree on any other branch is not read, so a pair checked out onto an unrelated branch never hands that branch to a teardown.
++// It reads locally and makes no network call; a worktree list or branch lookup that fails is returned.
++func (t *Topology) PairTaskBranch(l *lymcwd.Location, slug string) (string, error) {
++	branch, _, err := t.pairTaskBranchLocal(l, slug)
++	return branch, err
++}
++
++// PairTaskBranchOrOrigin returns the task branch of slug's pair as PairTaskBranch reads it, except that a pair of which nothing is left locally is named by the first of its names whose task branch, or else records branch, origin holds.
++// It asks origin only when no local worktree or branch names the pair, so a pair the local read names makes no network call.
++// A repository with no origin remote is not asked, and a failed lookup on a configured origin is returned.
++func (t *Topology) PairTaskBranchOrOrigin(l *lymcwd.Location, slug string) (string, error) {
++	branch, found, err := t.pairTaskBranchLocal(l, slug)
++	if err != nil || found {
++		return branch, err
++	}
++	onOrigin, err := t.originPairBranch(l, slug)
++	if err != nil {
++		return "", err
++	}
++	if onOrigin != "" {
++		return onOrigin, nil
++	}
++	return branch, nil
++}
++
++// pairTaskBranchLocal is PairTaskBranch's local read; found is false when nothing local names the pair and the result is the current prefix's name.
++func (t *Topology) pairTaskBranchLocal(l *lymcwd.Location, slug string) (branch string, found bool, err error) {
++	names := pairBranchNames(t.cfg, slug)
++	if target := WorktreePath(l, slug); pathPresent(target) {
++		branch, err := worktreeBranchAt(l.WorktreePath(), target)
++		if err != nil {
++			return "", false, err
++		}
++		if branch != "" && (slices.Contains(names, branch) || weftBranchExists(l, RecordsBranchName(branch))) {
++			return branch, true, nil
++		}
++	}
++	if target := RecordsWorktreePath(l, slug); pathPresent(target) {
++		// An unresolvable records repository leaves this step to the local-branch step, so a half-torn pair stays readable.
++		if weftRoot, rootErr := RecordsRepoRoot(l); rootErr == nil {
++			branch, err := worktreeBranchAt(weftRoot, target)
++			if err != nil {
++				return "", false, err
++			}
++			if warp, ok := WeftWarpSlug(branch); ok {
++				exists, err := localBranchExists(l.WorktreePath(), warp)
++				if err != nil {
++					return "", false, err
++				}
++				if exists || slices.Contains(names, warp) {
++					return warp, true, nil
++				}
++			}
++		}
++	}
++	for _, name := range names {
++		exists, err := localBranchExists(l.WorktreePath(), name)
++		if err != nil {
++			return "", false, err
++		}
++		if exists || weftBranchExists(l, RecordsBranchName(name)) {
++			return name, true, nil
++		}
++	}
++	return names[0], false, nil
++}
++
++// worktreeBranchAt returns the branch the linked worktree of repoDir at target has checked out, or "" when target is no linked worktree of it or sits on a detached HEAD.
++func worktreeBranchAt(repoDir, target string) (string, error) {
++	entries, err := List(repoDir)
++	if err != nil {
++		return "", err
++	}
++	cleanTarget := filepath.Clean(target)
++	for _, entry := range entries {
++		if entry.Main || entry.Prunable || filepath.Clean(filepath.FromSlash(entry.Path)) != cleanTarget {
++			continue
++		}
++		if entry.Branch == detachedBranch {
++			return "", nil
++		}
++		return entry.Branch, nil
++	}
++	return "", nil
++}
++
++// originTaskBranch returns the first of slug's pair names whose task branch the task repository's origin holds, or "" when it holds none.
++// A repository with no origin remote reads "", and a failed lookup on a configured origin is returned.
++func (t *Topology) originTaskBranch(l *lymcwd.Location, slug string) (string, error) {
++	return firstOnOrigin(l.WorktreePath(), pairBranchNames(t.cfg, slug), func(name string) string { return name })
++}
++
++// originPairBranch returns the first of slug's pair names whose task branch, or else whose records branch, the respective origin holds, or "" when origin holds neither for any name.
++// A repository with no origin remote is not asked, and a failed lookup on a configured origin is returned.
++func (t *Topology) originPairBranch(l *lymcwd.Location, slug string) (string, error) {
++	found, err := t.originTaskBranch(l, slug)
++	if err != nil || found != "" {
++		return found, err
++	}
++	weftRoot, err := RecordsRepoRoot(l)
++	if err != nil {
++		return "", fmt.Errorf("resolve weft repo root: %w", err)
++	}
++	return firstOnOrigin(weftRoot, pairBranchNames(t.cfg, slug), RecordsBranchName)
++}
++
++// firstOnOrigin returns the first of names whose branch, as branchOf names it, the origin of the repository at repoDir holds, or "" when it holds none or has no origin remote.
++func firstOnOrigin(repoDir string, names []string, branchOf func(string) string) (string, error) {
++	if _, err := gitrepo.New(repoDir).RemoteURL(originRemoteName); err != nil {
++		return "", nil
++	}
++	for _, name := range names {
++		tip, err := remoteHeadTip(repoDir, branchOf(name))
++		if err != nil {
++			return "", err
++		}
++		if tip != "" {
++			return name, nil
++		}
++	}
++	return "", nil
++}
+diff --git a/internal/fabricengine/pairbranch_integration_test.go b/internal/fabricengine/pairbranch_integration_test.go
+new file mode 100644
+index 00000000..6bb9df5c
+--- /dev/null
++++ b/internal/fabricengine/pairbranch_integration_test.go
+@@ -0,0 +1,316 @@
++// pairbranch_integration_test.go covers a branch prefix set while pairs made under the empty prefix are live:
++// a pair is read from its own worktrees, local branches and origin, and remove, discard and the pair's name lookups reach it by the branches it was made under, while a new pair gets the prefixed branch.
++// Package fabricengine_test; shares the single TestMain in testmain_test.go.
++
++package fabricengine_test
++
++import (
++	"errors"
++	"os"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// laterBranchPrefix is the branch_prefix the tests set after their pairs were made under the empty prefix.
++const laterBranchPrefix = "hanf/"
++
++// earlierBranchPrefix is a branch_prefix a pair was made under before the prefix changed to laterBranchPrefix, neither empty nor the later one.
++const earlierBranchPrefix = "earlier/"
++
++// topologyWithPrefix returns a Topology over l's hub config with branch_prefix set to prefix, as if it had been changed after the hub's pairs were made.
++func topologyWithPrefix(t *testing.T, l *lymcwd.Location, prefix string) *fabricengine.Topology {
++	t.Helper()
++
++	cfg, err := fabricengine.LoadConfig(fabricengine.ConfigDirs(l))
++	if err != nil {
++		t.Fatalf("LoadConfig() error = %v", err)
++	}
++	cfg.BranchPrefix = prefix
++	return fabricengine.NewTopology(cfg)
++}
++
++// pairOnOriginOnly makes slug's pair under the empty prefix, removes it locally while both its branches stay on origin, and returns the hub with a Topology whose branch_prefix is laterBranchPrefix.
++func pairOnOriginOnly(t *testing.T, slug string) (*hubforge.Hub, *fabricengine.Topology) {
++	t.Helper()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPair(t, h, slug)
++	recordsBranch := fabricengine.RecordsBranchName(slug)
++	gitkit.MustRun(t, h.PairCodeWorktree(slug), "git", "push", "origin", slug)
++	gitkit.MustRun(t, h.PrimeRecords(), "git", "push", "origin", recordsBranch)
++	if _, err := h.Topology.Remove(h.Location, slug, false, false); err != nil {
++		t.Fatalf("Remove(%q) under the empty prefix: %v", slug, err)
++	}
++	if parts, err := h.Topology.PairParts(h.Location, slug); err != nil || parts.Any() {
++		t.Fatalf("PairParts(%q) = %+v, %v after the local removal; want nothing left locally", slug, parts, err)
++	}
++	if !gitkit.BranchExists(t, h.CodeBare, slug) || !gitkit.BranchExists(t, h.RecordsBare, recordsBranch) {
++		t.Fatalf("origin lacks a branch of %q after the local removal; want both", slug)
++	}
++	return h, topologyWithPrefix(t, h.Location, laterBranchPrefix)
++}
++
++func TestBranchPrefixChange_KeepsLivePairsManaged(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const (
++		oldSlug = "pb-old"
++		newSlug = "pb-new"
++	)
++	prefix := laterBranchPrefix
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	l := h.Location
++	hubforge.AddPair(t, h, oldSlug)
++	gitkit.MustRun(t, fabricengine.WorktreePath(l, oldSlug), "git", "push", "origin", oldSlug)
++
++	top := topologyWithPrefix(t, l, prefix)
++
++	if got, err := top.PairTaskBranch(l, oldSlug); err != nil || got != oldSlug {
++		t.Errorf("PairTaskBranch(%q) = %q, %v; want %q", oldSlug, got, err, oldSlug)
++	}
++	parts, err := top.PairParts(l, oldSlug)
++	if err != nil {
++		t.Fatalf("PairParts(%q) error = %v", oldSlug, err)
++	}
++	if !parts.TaskBranch || !parts.RecordsBranch {
++		t.Errorf("PairParts(%q) = %+v; want the task and records branches present", oldSlug, parts)
++	}
++	if onOrigin, err := top.TaskBranchOnOrigin(l, oldSlug); err != nil || !onOrigin {
++		t.Errorf("TaskBranchOnOrigin(%q) = %v, %v; want true", oldSlug, onOrigin, err)
++	}
++
++	if _, err := top.Add(l, newSlug, fabricengine.AddOptions{SkipPush: true}); err != nil {
++		t.Fatalf("Add(%q) error = %v", newSlug, err)
++	}
++	if !gitkit.BranchExists(t, l.WorktreePath(), prefix+newSlug) {
++		t.Errorf("new pair's branch %q missing; want the prefixed branch", prefix+newSlug)
++	}
++	if got, err := top.PairTaskBranch(l, newSlug); err != nil || got != prefix+newSlug {
++		t.Errorf("PairTaskBranch(%q) = %q, %v; want %q", newSlug, got, err, prefix+newSlug)
++	}
++
++	res, err := top.Remove(l, oldSlug, false, false)
++	if err != nil {
++		t.Fatalf("Remove(%q) error = %v", oldSlug, err)
++	}
++	oldWeft := fabricengine.RecordsBranchName(oldSlug)
++	if res.SiblingBranch != oldWeft {
++		t.Errorf("Remove(%q).SiblingBranch = %q; want %q", oldSlug, res.SiblingBranch, oldWeft)
++	}
++	if !res.CodeBranchDeleted || gitkit.BranchExists(t, l.WorktreePath(), oldSlug) {
++		t.Errorf("Remove(%q) CodeBranchDeleted = %v (kept: %q); want the bare-slug task branch deleted", oldSlug, res.CodeBranchDeleted, res.CodeBranchKeptReason)
++	}
++	if gitkit.BranchExists(t, mustRecordsRepoRoot(t, l), oldWeft) {
++		t.Errorf("records branch %q still present after Remove; want it deleted", oldWeft)
++	}
++}
++
++// TestBranchPrefixChange_PairWithNothingLeftLocally pins that a pair made under the empty prefix, of which only the branches on origin remain, is still found and torn down by its bare-slug names once branch_prefix is set.
++func TestBranchPrefixChange_PairWithNothingLeftLocally(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	t.Run("RemoveDeletesTheBareSlugBranchesOnOrigin", func(t *testing.T) {
++		t.Parallel()
++
++		tests := []struct {
++			name string
++			slug string
++			// launcherDirLeft leaves the pair's launcher directory behind as its only local remnant.
++			launcherDirLeft bool
++		}{
++			{"NothingLeftLocally", "pn-remove", false},
++			{"OnlyTheLauncherDirectoryLeft", "pn-launchers", true},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++
++				h, top := pairOnOriginOnly(t, tt.slug)
++				recordsBranch := fabricengine.RecordsBranchName(tt.slug)
++				if tt.launcherDirLeft {
++					if err := os.MkdirAll(h.PairLauncherDir(tt.slug), 0o755); err != nil {
++						t.Fatalf("create the launcher directory of %q: %v", tt.slug, err)
++					}
++				}
++
++				res, err := top.Remove(h.Location, tt.slug, false, true)
++				if err != nil {
++					t.Fatalf("Remove(%q, remote) error = %v", tt.slug, err)
++				}
++				if res.SiblingBranch != recordsBranch {
++					t.Errorf("Remove(%q).SiblingBranch = %q; want the bare records name %q", tt.slug, res.SiblingBranch, recordsBranch)
++				}
++				if gitkit.BranchExists(t, h.CodeBare, tt.slug) {
++					t.Errorf("task branch %q still on origin after Remove with remote; want it deleted", tt.slug)
++				}
++				if gitkit.BranchExists(t, h.RecordsBare, recordsBranch) {
++					t.Errorf("records branch %q still on origin after Remove with remote; want it deleted", recordsBranch)
++				}
++			})
++		}
++	})
++
++	t.Run("DiscardDeletesTheBareSlugTaskBranchOnOrigin", func(t *testing.T) {
++		t.Parallel()
++
++		const slug = "pn-discard"
++		h, top := pairOnOriginOnly(t, slug)
++
++		res, err := top.DiscardTaskBranch(h.Location, slug)
++		if err != nil {
++			t.Fatalf("DiscardTaskBranch(%q) error = %v", slug, err)
++		}
++		if !res.OriginDeleted || gitkit.BranchExists(t, h.CodeBare, slug) {
++			t.Errorf("DiscardTaskBranch(%q) OriginDeleted = %v; want the bare-slug task branch deleted on origin", slug, res.OriginDeleted)
++		}
++	})
++
++	t.Run("OriginNamesThePairByWhicheverBranchItHolds", func(t *testing.T) {
++		t.Parallel()
++
++		const slug = "pn-origin"
++		tests := []struct {
++			name string
++			// dropTask and dropRecords delete that side's branch from origin.
++			dropTask, dropRecords bool
++			wantNotFound          bool
++			wantBranch            string
++		}{
++			{name: "BothBranchesOnOrigin", wantBranch: slug},
++			{name: "OnlyRecordsBranchOnOrigin", dropTask: true, wantBranch: slug},
++			{name: "OnlyTaskBranchOnOrigin", dropRecords: true, wantBranch: slug},
++			{name: "NeitherBranchOnOrigin", dropTask: true, dropRecords: true, wantNotFound: true, wantBranch: laterBranchPrefix + slug},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++
++				h, top := pairOnOriginOnly(t, slug)
++				l := h.Location
++				if tt.dropTask {
++					gitkit.Git(t, h.CodeBare, "branch", "-D", slug)
++				}
++				if tt.dropRecords {
++					gitkit.Git(t, h.RecordsBare, "branch", "-D", fabricengine.RecordsBranchName(slug))
++				}
++
++				err := top.RemoveRefusal(l, slug, false)
++				if gotNotFound := errors.Is(err, fabricengine.ErrPairNotFound); gotNotFound != tt.wantNotFound || (err != nil && !gotNotFound) {
++					t.Errorf("RemoveRefusal(%q) = %v; want ErrPairNotFound = %v and no other error", slug, err, tt.wantNotFound)
++				}
++				if got, err := top.PairTaskBranchOrOrigin(l, slug); err != nil || got != tt.wantBranch {
++					t.Errorf("PairTaskBranchOrOrigin(%q) = %q, %v; want %q", slug, got, err, tt.wantBranch)
++				}
++				if got, err := top.PairTaskBranch(l, slug); err != nil || got != laterBranchPrefix+slug {
++					t.Errorf("PairTaskBranch(%q) = %q, %v; want the current prefix's %q, as it never asks origin", slug, got, err, laterBranchPrefix+slug)
++				}
++			})
++		}
++	})
++}
++
++// TestPairTaskBranch_ReadsThePairItself pins PairTaskBranch's read order over a pair made under the empty prefix or an earlier one, with branch_prefix set afterwards.
++func TestPairTaskBranch_ReadsThePairItself(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const slug = "pt-pair"
++	recordsBranch := fabricengine.RecordsBranchName(slug)
++	tests := []struct {
++		name string
++		// arrange changes the pair before PairTaskBranch reads it.
++		arrange func(t *testing.T, h *hubforge.Hub)
++		want    string
++	}{
++		{"TaskWorktreeOnAnUnrelatedBranchIsNotRead", func(t *testing.T, h *hubforge.Hub) {
++			gitkit.MustRun(t, h.PairCodeWorktree(slug), "git", "checkout", "-b", "elsewhere")
++		}, slug},
++		{"DetachedTaskWorktreeIsNotRead", func(t *testing.T, h *hubforge.Hub) {
++			gitkit.MustRun(t, h.PairCodeWorktree(slug), "git", "checkout", "--detach")
++		}, slug},
++		{"OnlyTheRecordsWorktreeStands", func(t *testing.T, h *hubforge.Hub) {
++			gitkit.MustRun(t, h.PrimeWorktree(), "git", "worktree", "remove", "--force", h.PairCodeWorktree(slug))
++		}, slug},
++		{"RecordsWorktreeStepAnswersBeforeLocalBranches", func(t *testing.T, h *hubforge.Hub) {
++			gitkit.MustRun(t, h.PrimeWorktree(), "git", "worktree", "remove", "--force", h.PairCodeWorktree(slug))
++			gitkit.MustRun(t, h.PrimeWorktree(), "git", "branch", laterBranchPrefix+slug)
++		}, slug},
++		{"OnlyLocalBareBranchesLeft", func(t *testing.T, h *hubforge.Hub) {
++			removePairWorktreesByHand(t, h, slug)
++		}, slug},
++		{"OnlyTheLocalRecordsBranchLeft", func(t *testing.T, h *hubforge.Hub) {
++			removePairWorktreesByHand(t, h, slug)
++			gitkit.MustRun(t, h.PrimeWorktree(), "git", "branch", "-D", slug)
++		}, slug},
++		{"PrefixedBranchWinsOverBareBranch", func(t *testing.T, h *hubforge.Hub) {
++			removePairWorktreesByHand(t, h, slug)
++			gitkit.MustRun(t, h.PrimeWorktree(), "git", "branch", laterBranchPrefix+slug)
++		}, laterBranchPrefix + slug},
++		{"NothingLeftFallsThroughToThePrefixedName", func(t *testing.T, h *hubforge.Hub) {
++			removePairWorktreesByHand(t, h, slug)
++			gitkit.MustRun(t, h.PrimeWorktree(), "git", "branch", "-D", slug)
++			gitkit.MustRun(t, h.PrimeRecords(), "git", "branch", "-D", recordsBranch)
++		}, laterBranchPrefix + slug},
++		{"TaskWorktreeOnAnEarlierPrefixBranchIsRead", func(t *testing.T, h *hubforge.Hub) {
++			renamePairBranches(t, h, slug, earlierBranchPrefix+slug)
++			gitkit.MustRun(t, h.PrimeRecords(), "git", "worktree", "remove", "--force", h.PairRecordsSibling(slug))
++		}, earlierBranchPrefix + slug},
++		{"RecordsWorktreeOnAnEarlierPrefixBranchIsRead", func(t *testing.T, h *hubforge.Hub) {
++			renamePairBranches(t, h, slug, earlierBranchPrefix+slug)
++			gitkit.MustRun(t, h.PrimeWorktree(), "git", "worktree", "remove", "--force", h.PairCodeWorktree(slug))
++		}, earlierBranchPrefix + slug},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++			hubforge.AddPair(t, h, slug)
++			tt.arrange(t, h)
++
++			top := topologyWithPrefix(t, h.Location, laterBranchPrefix)
++			if got, err := top.PairTaskBranch(h.Location, slug); err != nil || got != tt.want {
++				t.Errorf("PairTaskBranch(%q) = %q, %v; want %q", slug, got, err, tt.want)
++			}
++		})
++	}
++
++	// A half-torn pair whose records repository cannot be resolved stays readable: the records step is skipped and a local branch names the pair.
++	// The anchor directory is deleted from the prime worktree, so the worktree list RecordsRepoRoot resolves through cannot run.
++	t.Run("UnresolvableRecordsRepositoryLeavesTheLocalBranchStep", func(t *testing.T) {
++		t.Parallel()
++
++		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "backend"})
++		hubforge.AddPair(t, h, slug)
++		gitkit.MustRun(t, h.PrimeWorktree(), "git", "worktree", "remove", "--force", h.PairCodeWorktree(slug))
++		if err := os.RemoveAll(h.Location.AnchorPath()); err != nil {
++			t.Fatalf("delete the anchor directory: %v", err)
++		}
++		if _, err := fabricengine.RecordsRepoRoot(h.Location); err == nil {
++			t.Fatalf("RecordsRepoRoot() error = nil; want the records repository unresolvable")
++		}
++
++		top := topologyWithPrefix(t, h.Location, laterBranchPrefix)
++		if got, err := top.PairTaskBranch(h.Location, slug); err != nil || got != slug {
++			t.Errorf("PairTaskBranch(%q) = %q, %v; want %q", slug, got, err, slug)
++		}
++		if _, err := top.PairParts(h.Location, slug); err != nil {
++			t.Errorf("PairParts(%q) error = %v; want none", slug, err)
++		}
++	})
++}
++
++// renamePairBranches renames slug's task branch to branch and its records branch to branch's records name, as a pair made under an earlier prefix carries them, while both worktrees stand.
++func renamePairBranches(t *testing.T, h *hubforge.Hub, slug, branch string) {
++	t.Helper()
++
++	gitkit.MustRun(t, h.PairCodeWorktree(slug), "git", "branch", "-m", branch)
++	gitkit.MustRun(t, h.PairRecordsSibling(slug), "git", "branch", "-m", fabricengine.RecordsBranchName(branch))
++}
+diff --git a/internal/fabricengine/pairparts.go b/internal/fabricengine/pairparts.go
+index 8fa8a36f..dec3dc9f 100644
+--- a/internal/fabricengine/pairparts.go
++++ b/internal/fabricengine/pairparts.go
+@@ -47,20 +47,15 @@ func (t *Topology) PairParts(l *lymcwd.Location, slug string) (PairParts, error)
+ 	}, nil
+ }
+ 
+-// TaskBranchOnOrigin reports whether slug's task branch exists on the task repository's origin.
++// TaskBranchOnOrigin reports whether slug's task branch exists on the task repository's origin, under the current branch prefix or as the bare slug of a pair made before the prefix was set.
+ // A repository with no origin remote reads false, and a failed lookup on a configured origin is returned.
+ func (t *Topology) TaskBranchOnOrigin(l *lymcwd.Location, slug string) (bool, error) {
+-	if _, err := gitrepo.New(l.WorktreePath()).RemoteURL(originRemoteName); err != nil {
+-		return false, nil
+-	}
+-	tip, err := remoteHeadTip(l.WorktreePath(), t.cfg.BranchPrefix+slug)
+-	if err != nil {
+-		return false, err
+-	}
+-	return tip != "", nil
++	found, err := t.originTaskBranch(l, slug)
++	return found != "", err
+ }
+ 
+ // TaskBranchSlugs lists, sorted and without duplicates, the slugs starting with prefix whose task branch exists in the prime's warp repository, as a local branch or as an origin remote-tracking branch.
++// A branch carrying the configured branch prefix names the slug after it, and one lacking it names itself, as a pair made before the prefix was set does.
+ // It reads the branch prefix from the fabric config and the refs in-process, so the remote-tracking branches are the ones the last fetch left and no network call is made.
+ // An empty result is no error.
+ func TaskBranchSlugs(prime *lymcwd.Location, prefix string) ([]string, error) {
+@@ -76,8 +71,7 @@ func TaskBranchSlugs(prime *lymcwd.Location, prefix string) ([]string, error) {
+ 			return nil, err
+ 		}
+ 		for _, branch := range branches {
+-			slug, ok := strings.CutPrefix(branch, cfg.BranchPrefix)
+-			if ok && strings.HasPrefix(slug, prefix) {
++			if slug := slugOfBranch(cfg, branch); strings.HasPrefix(slug, prefix) {
+ 				seen[slug] = true
+ 			}
+ 		}
+diff --git a/internal/fabricengine/pairparts_integration_test.go b/internal/fabricengine/pairparts_integration_test.go
+index 63b384a5..f38db7f4 100644
+--- a/internal/fabricengine/pairparts_integration_test.go
++++ b/internal/fabricengine/pairparts_integration_test.go
+@@ -1,5 +1,5 @@
+ // pairparts_integration_test.go covers Topology.PairParts, Topology.TaskBranchOnOrigin and TaskBranchSlugs over hubforge hubs.
+-// Every hub has an empty branch_prefix, so a pair's task branch is the bare slug.
++// Every hub has an empty branch_prefix unless a test seeds one, so a pair's task branch is the bare slug.
+ //
+ // Package fabricengine_test; shares the single TestMain in testmain_test.go.
+ 
+@@ -120,30 +120,38 @@ func TestPairParts(t *testing.T) {
+ 	})
+ }
+ 
+-// TestTaskBranchSlugs pins which slugs of a prefix TaskBranchSlugs reads from the local branches and the origin remote-tracking branches.
++// TestTaskBranchSlugs pins which slugs of a prefix TaskBranchSlugs reads from the local branches and the origin remote-tracking branches, under the empty branch_prefix and under a set one.
+ func TestTaskBranchSlugs(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	prime := h.PrimeWorktree()
+-	gitkit.MustRun(t, prime, "git", "branch", "adopt-fix-x-t1")
+-	gitkit.MustRun(t, prime, "git", "branch", "other")
+-	gitkit.MustRun(t, prime, "git", "branch", "adopt-fix-x-t3")
+-	gitkit.MustRun(t, prime, "git", "push", "origin", "adopt-fix-x-t3")
+-	gitkit.MustRun(t, prime, "git", "branch", "-D", "adopt-fix-x-t3")
+-
+ 	tests := []struct {
+-		name   string
+-		prefix string
+-		want   []string
++		name string
++		// branchPrefix is the hub's branch_prefix; empty seeds none.
++		branchPrefix string
++		prefix       string
++		want         []string
+ 	}{
+-		{"LocalAndOriginTrackingBranches", "adopt-fix-x-t", []string{"adopt-fix-x-t1", "adopt-fix-x-t3"}},
+-		{"NoMatch", "nothing-", nil},
++		{"LocalAndOriginTrackingBranches", "", "adopt-fix-x-t", []string{"adopt-fix-x-t1", "adopt-fix-x-t3"}},
++		{"NoMatch", "", "nothing-", nil},
++		{"BareAndPrefixedBranchesUnderABranchPrefix", "hanf/", "adopt-fix-x-t", []string{"adopt-fix-x-t1", "adopt-fix-x-t3", "adopt-fix-x-t4"}},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
++
++			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++			if tt.branchPrefix != "" {
++				hubforge.SeedFabricConfig(t, h, "branch_prefix: "+tt.branchPrefix+"\npathspec: \"\"\n")
++			}
++			prime := h.PrimeWorktree()
++			gitkit.MustRun(t, prime, "git", "branch", "adopt-fix-x-t1")
++			gitkit.MustRun(t, prime, "git", "branch", "other")
++			gitkit.MustRun(t, prime, "git", "branch", "adopt-fix-x-t3")
++			gitkit.MustRun(t, prime, "git", "push", "origin", "adopt-fix-x-t3")
++			gitkit.MustRun(t, prime, "git", "branch", "-D", "adopt-fix-x-t3")
++			gitkit.MustRun(t, prime, "git", "branch", "hanf/adopt-fix-x-t4")
++
+ 			got, err := fabricengine.TaskBranchSlugs(h.Location, tt.prefix)
+ 			if err != nil {
+ 				t.Fatalf("TaskBranchSlugs(%q): %v", tt.prefix, err)
+diff --git a/internal/fabricengine/reconcile.go b/internal/fabricengine/reconcile.go
+index 12ed5bbe..8f2f1584 100644
+--- a/internal/fabricengine/reconcile.go
++++ b/internal/fabricengine/reconcile.go
+@@ -584,7 +584,7 @@ func (t *Topology) deleteAdoptedWeftBranch(rec *Mutations, warpLayout *lymcwd.Lo
+ 		what:      "delete weft branch adopted from origin",
+ 		repoDir:   weftRepoRoot,
+ 		branch:    weftBranch,
+-		ownership: ownedManagedBranch(warpLayout, t.cfg.BranchPrefix),
++		ownership: ownedManagedBranch(warpLayout),
+ 		dirtiness: dirtyCheckedOutBranch(),
+ 		force:     false,
+ 	}
+diff --git a/internal/fabricengine/remoteteardown.go b/internal/fabricengine/remoteteardown.go
+index 67d97811..953ed1b6 100644
+--- a/internal/fabricengine/remoteteardown.go
++++ b/internal/fabricengine/remoteteardown.go
+@@ -58,14 +58,15 @@ type remoteTeardownJob struct {
+ 	Kind string `json:"kind"`
+ 	Slug string `json:"slug"`
+ 	// Worktree is the warp worktree the command ran from, the location every step runs from.
+-	Worktree     string `json:"worktree"`
+-	BranchPrefix string `json:"branch_prefix"`
+-	WeftBranch   string `json:"weft_branch,omitempty"`
++	Worktree string `json:"worktree"`
++	// WeftBranch is the pair's records branch as the command read it from the pair, since the pair's worktrees are gone when the job runs.
++	WeftBranch string `json:"weft_branch,omitempty"`
+ 	// WeftTip is the local weft tip the command tagged before it deleted the branch, empty when no local branch was left, so the child reads origin's.
+ 	WeftTip string `json:"weft_tip,omitempty"`
+ 	// DeleteWeftOnOrigin asks for the weft branch's delete on origin, leased on the origin tip the archive read.
+-	DeleteWeftOnOrigin bool   `json:"delete_weft_on_origin,omitempty"`
+-	WarpBranch         string `json:"warp_branch,omitempty"`
++	DeleteWeftOnOrigin bool `json:"delete_weft_on_origin,omitempty"`
++	// WarpBranch is the pair's task branch as the command read it from the pair, since the pair's worktrees are gone when the job runs.
++	WarpBranch string `json:"warp_branch,omitempty"`
+ 	// ParentBranch is the pair's recorded parent, which gates the task branch's delete on origin.
+ 	ParentBranch       string `json:"parent_branch,omitempty"`
+ 	DeleteTaskOnOrigin bool   `json:"delete_task_on_origin,omitempty"`
+@@ -122,7 +123,7 @@ func runRemoteTeardown(rec *Mutations, l *lymcwd.Location, job remoteTeardownJob
+ 				out.err = out.weftRootErr
+ 				return out
+ 			}
+-			deleteWeftBranchOnRemote(rec, l, job.WeftBranch, job.BranchPrefix, weftRoot, out.archive.leaseTip, &out.weft)
++			deleteWeftBranchOnRemote(rec, l, job.WeftBranch, weftRoot, out.archive.leaseTip, &out.weft)
+ 		} else if job.WeftTip == "" {
+ 			out.weftKeptOnOrigin = fmt.Sprintf("the sibling branch %q exists only on %q and was kept; pass --remote to delete it", job.WeftBranch, originRemoteName)
+ 		}
+diff --git a/internal/fabricengine/remoteteardown_integration_test.go b/internal/fabricengine/remoteteardown_integration_test.go
+index 9229feca..24ed1847 100644
+--- a/internal/fabricengine/remoteteardown_integration_test.go
++++ b/internal/fabricengine/remoteteardown_integration_test.go
+@@ -99,7 +99,6 @@ func TestRunTeardownChild_RunsTheRemoteStepsInOrderUnderTheLock(t *testing.T) {
+ 				"kind":                  "remove",
+ 				"slug":                  slug,
+ 				"worktree":              l.WorktreePath(),
+-				"branch_prefix":         cfg.BranchPrefix,
+ 				"weft_branch":           weftBranch,
+ 				"weft_tip":              tip,
+ 				"delete_weft_on_origin": true,
+diff --git a/internal/fabricengine/remove.go b/internal/fabricengine/remove.go
+index 620169cd..e2b940a3 100644
+--- a/internal/fabricengine/remove.go
++++ b/internal/fabricengine/remove.go
+@@ -130,6 +130,8 @@ type RemoveResult struct {
+ 	SnapshotTag string `json:"snapshot_tag,omitempty"`
+ 	// SnapshotPaths lists the paths the snapshot tag holds.
+ 	SnapshotPaths []string `json:"snapshot_paths,omitempty"`
++	// SiblingBranch names the pair's sibling branch the removal tore down, read from the pair before its teardown.
++	SiblingBranch string `json:"sibling_branch,omitempty"`
+ }
+ 
+ // Remove removes a paired warp and weft git worktree with all associated artifacts.
+@@ -146,7 +148,9 @@ type RemoveResult struct {
+ // The tag is taken whatever remote says, and force does not skip it: force answers dirtiness only.
+ // A weft repo with no origin proceeds untagged, with ArchiveSkippedReason set on the result.
+ // Launcher cleanup runs after the tag but before the git removal.
+-// Once both worktrees are removed, Remove deletes the local warp branch (BranchPrefix + slug) through
++// The pair's branches are read from the pair itself before any teardown (PairTaskBranch), so a pair made under an earlier branch prefix is torn down by the branches it stands on;
++// with no worktree or local branch of the pair left, origin names them.
++// Once both worktrees are removed, Remove deletes the local warp branch through
+ // the destructive gate, which refuses unless the branch's work is on another ref or landed on the
+ // parent recorded in the pair's origin record; a refusal fills CodeBranchKeptReason and Remove still
+ // succeeds. force never answers that check.
+@@ -189,11 +193,9 @@ func (t *Topology) removePair(l *lymcwd.Location, slug string, force, remote, lo
+ 	rec := NewMutations(l.HubPath)
+ 	defer func() { res.Mutations = rec.Snapshot() }()
+ 
+-	warpBranch := t.cfg.BranchPrefix + slug
+-	weftBranch := RecordsBranchName(warpBranch)
+-
+ 	// Every refusal runs here, through the same probe a caller can ask without removing anything, so the two can never drift.
+-	if err := t.RemoveRefusal(l, slug, force); err != nil {
++	onOrigin, err := t.refuseRemoval(l, slug, force, localMode)
++	if err != nil {
+ 		return RemoveResult{}, err
+ 	}
+ 
+@@ -202,6 +204,12 @@ func (t *Topology) removePair(l *lymcwd.Location, slug string, force, remote, lo
+ 	if err != nil {
+ 		return RemoveResult{}, err
+ 	}
++	// No worktree or local branch of the pair is left to name its branch, so the name origin holds it under, which the refusal found, names it, as it must for a pair made before the branch prefix changed.
++	if !localMode && onOrigin != "" {
++		pair.warpBranch = onOrigin
++	}
++	warpBranch := pair.warpBranch
++	weftBranch := RecordsBranchName(warpBranch)
+ 	// Read before the teardown deletes the records worktree that holds the pair's own marker.
+ 	pairLoc, err := lymcwd.NamedWorktree(l.HubPath, slug)
+ 	if err != nil {
+@@ -378,6 +386,7 @@ func (t *Topology) removePair(l *lymcwd.Location, slug string, force, remote, lo
+ 		Finished:             !pair.taskWorktree,
+ 		StrayPath:            strayPath,
+ 		SetAsideTag:          setAsideTagName,
++		SiblingBranch:        weftBranch,
+ 	}
+ 	if remote && archiveSkippedReason != "" {
+ 		res.RemoteSkippedReason = "no remote deletion attempted: " + strings.TrimPrefix(archiveSkippedReason, "no archive tag pushed: ")
+@@ -392,7 +401,6 @@ func (t *Topology) removePair(l *lymcwd.Location, slug string, force, remote, lo
+ 		Kind:               remoteTeardownRemove,
+ 		Slug:               slug,
+ 		Worktree:           l.WorktreePath(),
+-		BranchPrefix:       t.cfg.BranchPrefix,
+ 		WeftBranch:         weftBranch,
+ 		WeftTip:            weftTip,
+ 		DeleteWeftOnOrigin: remote && !weftBranchExists(l, weftBranch),
+@@ -477,7 +485,7 @@ func (t *Topology) removeSibling(rec *Mutations, l *lymcwd.Location, slug, weftB
+ 	// absent, or removed with just a branch/prune step failing) — a weft worktree still on disk
+ 	// after a "successful" Remove is a half-torn pair the operator was never told about. This check
+ 	// reads the error return alone.
+-	_, weftErr := removeWeftWorktree(rec, l, slug, weftBranch, force, true, false, t.cfg.BranchPrefix, "", t.leftover)
++	_, weftErr := removeWeftWorktree(rec, l, slug, weftBranch, force, true, false, "", t.leftover)
+ 	if weftErr != nil {
+ 		weftTarget := RecordsWorktreePath(l, slug)
+ 		if _, statErr := os.Stat(weftTarget); statErr == nil {
+@@ -507,6 +515,8 @@ type pairState struct {
+ 	taskBranch, siblingBranch bool
+ 	// launchers reports the hub-level launcher directory Remove tears down.
+ 	launchers bool
++	// warpBranch is the pair's warp branch, read locally from the pair itself.
++	warpBranch string
+ }
+ 
+ // inspectPair reads pairState for slug.
+@@ -527,49 +537,51 @@ func (t *Topology) inspectPair(l *lymcwd.Location, slug string) (pairState, erro
+ 	}
+ 	s.launchers = pathPresent(LauncherDir(pairLoc, slug))
+ 
+-	taskBranch, err := localBranchExists(l.WorktreePath(), t.cfg.BranchPrefix+slug)
++	warpBranch, err := t.PairTaskBranch(l, slug)
++	if err != nil {
++		return pairState{}, err
++	}
++	s.warpBranch = warpBranch
++	taskBranch, err := localBranchExists(l.WorktreePath(), warpBranch)
+ 	if err != nil {
+ 		return pairState{}, err
+ 	}
+ 	s.taskBranch = taskBranch
+-	s.siblingBranch = weftBranchExists(l, RecordsBranchName(t.cfg.BranchPrefix+slug))
++	s.siblingBranch = weftBranchExists(l, RecordsBranchName(warpBranch))
+ 	return s, nil
+ }
+ 
+-// refuseWhenNothingRemains returns an error wrapping ErrPairNotFound when no part of the pair is left locally and neither of its branches is on origin.
+-// Origin is asked only after every local part is found gone, and only for a repository that has an origin, so a pair with any local remnant never costs a network call.
++// branchPartRemains reports whether a worktree or local branch of the pair is left, the parts that name its warp branch.
++func (s pairState) branchPartRemains() bool {
++	return s.taskWorktree || s.siblingWorktree || s.taskBranch || s.siblingBranch
++}
++
++// refuseWhenNothingRemains returns an error wrapping ErrPairNotFound when no part of the pair is left locally and none of its branches, under any of the pair's names, is on origin.
++// Origin is asked once no worktree and no local branch of the pair is left, and only for a repository that has an origin, so a pair with either never costs a network call.
++// A pair whose only local remnant is its launcher directory is asked too, since the directory names no branch, unless localMode is set, where a removal makes no origin call for a pair that still has a remnant; it is no error when origin holds nothing.
++// When origin holds the pair, it returns the name origin holds it under, and otherwise "".
+ // A stray path at the pair's location is named in the error and left alone.
+-func (t *Topology) refuseWhenNothingRemains(l *lymcwd.Location, slug string, s pairState) error {
+-	if s.taskWorktree || s.siblingWorktree || s.taskBranch || s.siblingBranch || s.launchers {
+-		return nil
++func (t *Topology) refuseWhenNothingRemains(l *lymcwd.Location, slug string, s pairState, localMode bool) (onOrigin string, err error) {
++	if s.branchPartRemains() || (s.launchers && localMode) {
++		return "", nil
+ 	}
+ 
+-	weftRoot, err := RecordsRepoRoot(l)
++	onOrigin, err = t.originPairBranch(l, slug)
+ 	if err != nil {
+-		return fmt.Errorf("resolve weft repo root: %w", err)
+-	}
+-	warpBranch := t.cfg.BranchPrefix + slug
+-	for _, side := range []struct{ repoDir, branch string }{
+-		{l.WorktreePath(), warpBranch},
+-		{weftRoot, RecordsBranchName(warpBranch)},
+-	} {
+-		if _, urlErr := gitrepo.New(side.repoDir).RemoteURL(originRemoteName); urlErr != nil {
+-			continue
+-		}
+-		tip, err := remoteHeadTip(side.repoDir, side.branch)
+-		if err != nil {
+-			return err
+-		}
+-		if tip != "" {
+-			return nil
+-		}
++		return "", err
++	}
++	if onOrigin != "" {
++		return onOrigin, nil
++	}
++	if s.launchers {
++		return "", nil
+ 	}
+ 
+ 	if s.strayPath {
+-		return fmt.Errorf("%w: nothing of %q remains, and %s exists at the pair location but is not a linked worktree of this repo, so it was left alone",
++		return "", fmt.Errorf("%w: nothing of %q remains, and %s exists at the pair location but is not a linked worktree of this repo, so it was left alone",
+ 			ErrPairNotFound, slug, WorktreePath(l, slug))
+ 	}
+-	return fmt.Errorf("%w: nothing of %q remains", ErrPairNotFound, slug)
++	return "", fmt.Errorf("%w: nothing of %q remains", ErrPairNotFound, slug)
+ }
+ 
+ // pathPresent reports whether anything, a dangling link included, exists at path.
+@@ -664,23 +676,29 @@ func deleteTaskBranchAtTip(rec *Mutations, l *lymcwd.Location, warpBranch, paren
+ // It mutates nothing, takes no lock and pushes nothing, and Remove calls it first, so the two can never drift.
+ // Its name carries no fabric side, because callers outside the owner set call it.
+ func (t *Topology) RemoveRefusal(l *lymcwd.Location, slug string, force bool) error {
+-	warpBranch := t.cfg.BranchPrefix + slug
++	_, err := t.refuseRemoval(l, slug, force, false)
++	return err
++}
+ 
++// refuseRemoval is RemoveRefusal's body; localMode is true for a removal that runs no origin step.
++// With no refusal it also returns the name origin holds the pair under when no worktree or local branch of the pair is left, else "", so a Remove asks origin once.
++func (t *Topology) refuseRemoval(l *lymcwd.Location, slug string, force, localMode bool) (onOrigin string, err error) {
+ 	if err := validateWorktreeSlug(slug, t.cfg.Dirs()); err != nil {
+-		return err
++		return "", err
+ 	}
+ 
+ 	if err := refusePrimeSlug(l, slug); err != nil {
+-		return err
++		return "", err
+ 	}
+ 
+ 	target := WorktreePath(l, slug)
+ 	pair, err := t.inspectPair(l, slug)
+ 	if err != nil {
+-		return err
++		return "", err
+ 	}
+-	if err := t.refuseWhenNothingRemains(l, slug, pair); err != nil {
+-		return err
++	onOrigin, err = t.refuseWhenNothingRemains(l, slug, pair, localMode)
++	if err != nil {
++		return "", err
+ 	}
+ 
+ 	// Refuse before any teardown for the named pair: a mid-merge pair is not force's to override —
+@@ -688,46 +706,49 @@ func (t *Topology) RemoveRefusal(l *lymcwd.Location, slug string, force bool) er
+ 	// A gone task worktree makes the probe read false on its own, so the task side needs no skip.
+ 	blocked, err := mergeBlocksMutation(target, RecordsWorktreePath(l, slug))
+ 	if err != nil {
+-		return err
++		return "", err
+ 	}
+ 	if blocked {
+-		return &ErrMergeInProgress{}
++		return "", &ErrMergeInProgress{}
+ 	}
+ 
+ 	// Refuse for the other direction too: this pair may be idle itself while some OTHER pair in the
+ 	// hub is mid-merge ON its branches. Removing it there deletes the weft branch that merge is
+ 	// resolving against, so an abort would leave the source work reachable only from the remote.
+-	inFlight, err := mergeSourceInFlight(l, warpBranch)
++	inFlight, err := mergeSourceInFlight(l, pair.warpBranch)
+ 	if err != nil {
+-		return err
++		return "", err
+ 	}
+ 	if inFlight {
+-		return &ErrMergeInProgress{}
++		return "", &ErrMergeInProgress{}
+ 	}
+ 
+ 	// force answers the two dirtiness checks only.
+ 	if force {
+-		return nil
++		return onOrigin, nil
+ 	}
+ 	if pair.taskWorktree {
+ 		dirty, _, err := worktreeDirty(scopeAll, target)
+ 		if err != nil {
+-			return fmt.Errorf("check warp worktree status: %w", err)
++			return "", fmt.Errorf("check warp worktree status: %w", err)
+ 		}
+ 		if dirty {
+-			return fmt.Errorf("worktree has uncommitted changes; use --force")
++			return "", fmt.Errorf("worktree has uncommitted changes; use --force")
+ 		}
+ 	}
+ 
+ 	names, err := PathspecNames(ConfigDirs(l))
+ 	if err != nil {
+-		return fmt.Errorf("load the record pathspec: %w", err)
++		return "", fmt.Errorf("load the record pathspec: %w", err)
+ 	}
+ 	pairLoc, err := lymcwd.NamedWorktree(l.HubPath, slug)
+ 	if err != nil {
+-		return fmt.Errorf("read the anchor of %q: %w", slug, err)
++		return "", fmt.Errorf("read the anchor of %q: %w", slug, err)
++	}
++	if err := refuseDirtyWeftWorktree(RecordsWorktreePath(l, slug), pairLoc.AnchorRel, names); err != nil {
++		return "", err
+ 	}
+-	return refuseDirtyWeftWorktree(RecordsWorktreePath(l, slug), pairLoc.AnchorRel, names)
++	return onOrigin, nil
+ }
+ 
+ // commitPendingRecords commits the pair's sibling worktree's uncommitted changes inside the record pathspec, so the archive tag that follows covers them.
+diff --git a/internal/fabricengine/taskbranchdiscard.go b/internal/fabricengine/taskbranchdiscard.go
+index 7b84f434..82e68063 100644
+--- a/internal/fabricengine/taskbranchdiscard.go
++++ b/internal/fabricengine/taskbranchdiscard.go
+@@ -21,7 +21,8 @@ type DiscardResult struct {
+ }
+ 
+ // DiscardTaskBranch archives and deletes slug's task branch locally and on the task repository's origin, whether or not its work is landed.
+-// It tags the local tip archive/<slug>/<first 12 hex> and deletes the local branch under that tag, then hands the remote half to the holder of the slug's teardown lock and returns without waiting on origin.
++// The task branch is the one the pair stands on, read from the pair itself; with no local branch of the pair's names, the first name origin holds, so a pair made under an earlier branch prefix is discarded by its own branch.
++// It tags the local tip archive/<slug>/<first 12 hex> and deletes the local branch under that tag, then hands the remote half to the holder of the slug's teardown lock and returns without waiting on the remote half.
+ // The remote half reads origin's tip, pushes the tags covering the tips, archiving only the containing tip when one tip holds the other, and deletes the branch on origin leased on the tip it read;
+ // a failure there is logged and mailed to the hub's orch with its way forward.
+ // A failed local tag deletes nothing and wraps ErrArchiveFailed, and a refused gate is returned as an error naming the branch.
+@@ -45,11 +46,24 @@ func (t *Topology) DiscardTaskBranch(l *lymcwd.Location, slug string) (res Disca
+ 	}()
+ 
+ 	repoDir := l.WorktreePath()
+-	warpBranch := t.cfg.BranchPrefix + slug
++	warpBranch, err := t.PairTaskBranch(l, slug)
++	if err != nil {
++		return DiscardResult{}, err
++	}
+ 	localTip, err := localBranchTip(repoDir, warpBranch)
+ 	if err != nil {
+ 		return DiscardResult{}, err
+ 	}
++	if localTip == "" {
++		// No local branch names the task branch, so origin names it, as it must for a pair made before the branch prefix changed.
++		onOrigin, err := t.originTaskBranch(l, slug)
++		if err != nil {
++			return DiscardResult{}, err
++		}
++		if onOrigin != "" {
++			warpBranch = onOrigin
++		}
++	}
+ 	if localTip != "" {
+ 		localTag, err := createArchiveTag(repoDir, slug, localTip, "task")
+ 		if err != nil {
+@@ -62,7 +76,7 @@ func (t *Topology) DiscardTaskBranch(l *lymcwd.Location, slug string) (res Disca
+ 		res.ArchiveTags = []string{localTag}
+ 	}
+ 
+-	job = &remoteTeardownJob{Kind: remoteTeardownDiscard, Slug: slug, Worktree: repoDir, BranchPrefix: t.cfg.BranchPrefix, WarpBranch: warpBranch, TaskTip: localTip}
++	job = &remoteTeardownJob{Kind: remoteTeardownDiscard, Slug: slug, Worktree: repoDir, WarpBranch: warpBranch, TaskTip: localTip}
+ 	out := hold.finish(job)
+ 	if out.ran {
+ 		res.ArchiveTags, res.OriginDeleted = out.discard.ArchiveTags, out.discard.OriginDeleted
+diff --git a/internal/fabricengine/template.yaml b/internal/fabricengine/template.yaml
+index 3ca2d621..057382df 100644
+--- a/internal/fabricengine/template.yaml
++++ b/internal/fabricengine/template.yaml
+@@ -1,3 +1,3 @@
+-branch_prefix: ${env:LYM_BRANCH_PREFIX:-}  # prefix prepended to the slug to form the branch name (e.g. "hanf/"); empty = branch == slug
++branch_prefix: ${env:LYM_BRANCH_PREFIX:-}  # prefix prepended to the slug of each new pair (e.g. "hanf/"); a pair keeps the branch name it was made with, so the value can change while pairs are live; empty = branch == slug
+ pathspec: ""  # OPTIONAL per-repo directory path(s) relative to worktree root, whitespace-separated; _lym and .lym are structural and injected in code by internal/fabricengine, never read from here
+ warp_exclude: CLAUDE.local.md AGENTS.override.md .heddle  # OPTIONAL paths relative to a warp worktree's anchor, whitespace-separated, excluded through the warp repository's info/exclude; separate from pathspec and never wired as a junction
+diff --git a/internal/fabricengine/weftwiring.go b/internal/fabricengine/weftwiring.go
+index 297c26ee..2ce21c13 100644
+--- a/internal/fabricengine/weftwiring.go
++++ b/internal/fabricengine/weftwiring.go
+@@ -180,15 +180,13 @@ type weftTeardownResult struct {
+ // encountered among worktree removal, local branch deletion, and prune, or nil if all three succeed
+ // — the error return's meaning is unchanged, and a remote deletion failure is never accumulated into
+ // it.
+-// branchPrefix is the caller's configured warp branch prefix, forwarded to ownedManagedBranch — this
+-// function has no config in scope of its own.
+ // leaseSHA is the origin tip the remote deletion is leased on, the tip the caller's archive read.
+ // With an origin configured, an empty leaseSHA means origin held no copy of the branch, and nothing is deleted there.
+ // A branch origin moved since is kept and reported in the result, never as a failure.
+ // rec is the calling verb's own recorder.
+ // It is threaded through to removeGitWorktree, deleteBranch, and the remote deletion below.
+ // A worktree directory git deregistered but left on disk is finished through finishGitWorktreeRemoval, with leftover as its seam.
+-func removeWeftWorktree(rec *Mutations, l *lymcwd.Location, slug, branch string, force, alsoDeleteBranch, remote bool, branchPrefix, leaseSHA string, leftover leftoverSeam) (weftTeardownResult, error) {
++func removeWeftWorktree(rec *Mutations, l *lymcwd.Location, slug, branch string, force, alsoDeleteBranch, remote bool, leaseSHA string, leftover leftoverSeam) (weftTeardownResult, error) {
+ 	weftPath := RecordsWorktreePath(l, slug)
+ 	weftRoot, err := RecordsRepoRoot(l)
+ 	if err != nil {
+@@ -216,7 +214,7 @@ func removeWeftWorktree(rec *Mutations, l *lymcwd.Location, slug, branch string,
+ 			what:      "delete weft branch",
+ 			repoDir:   weftRoot,
+ 			branch:    branch,
+-			ownership: ownedManagedBranch(l, branchPrefix),
++			ownership: ownedManagedBranch(l),
+ 			dirtiness: dirtyCheckedOutBranch(),
+ 			force:     false,
+ 		}
+@@ -232,7 +230,7 @@ func removeWeftWorktree(rec *Mutations, l *lymcwd.Location, slug, branch string,
+ 					originRemoteName, urlErr)
+ 			} else {
+ 				entry := CleanupBranchEntry{Branch: branch}
+-				deleteWeftBranchOnRemote(rec, l, branch, branchPrefix, weftRoot, leaseSHA, &entry)
++				deleteWeftBranchOnRemote(rec, l, branch, weftRoot, leaseSHA, &entry)
+ 				result.remoteBranchDeleted = entry.RemoteDeleted
+ 				result.remoteBranchError = entry.RemoteError
+ 				result.remoteBranchKeptReason = entry.RemoteKeptReason
+diff --git a/internal/fabricengine/worktreelist.go b/internal/fabricengine/worktreelist.go
+index d9c2c624..ad65398b 100644
+--- a/internal/fabricengine/worktreelist.go
++++ b/internal/fabricengine/worktreelist.go
+@@ -13,6 +13,9 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/weftname"
+ )
+ 
++// detachedBranch is the Branch a WorktreeEntry carries for a worktree on a detached HEAD.
++const detachedBranch = "(detached)"
++
+ // WorktreeEntry represents a single git worktree in the output of `git worktree list`.
+ type WorktreeEntry struct {
+ 	Path     string `json:"path"`
+@@ -67,7 +70,7 @@ func parseWorktreePorcelain(out string) ([]WorktreeEntry, error) {
+ 				branchRef := strings.TrimPrefix(line, "branch ")
+ 				entry.Branch = strings.TrimPrefix(branchRef, "refs/heads/")
+ 			} else if line == "detached" {
+-				entry.Branch = "(detached)"
++				entry.Branch = detachedBranch
+ 			} else if strings.HasPrefix(line, "prunable") {
+ 				// Real porcelain output emits "prunable <reason>" (a reason string
+ 				// follows the keyword), never a bare "prunable" line, so an
+diff --git a/internal/pairteardown/export_test.go b/internal/pairteardown/export_test.go
+new file mode 100644
+index 00000000..651da31c
+--- /dev/null
++++ b/internal/pairteardown/export_test.go
+@@ -0,0 +1,9 @@
++// export_test.go exposes the pull request close of a Teardown to package pairteardown_test.
++
++package pairteardown
++
++// ClosePairPullRequestForTest runs td's pull request close for slug with its task worktree read as gone, which warns naming the task branch read from what is left of the pair.
++func ClosePairPullRequestForTest(td *Teardown, slug string) {
++	td.gone = func(string) (bool, error) { return true, nil }
++	td.closePairPullRequest(slug)
++}
+diff --git a/internal/pairteardown/pullrequest.go b/internal/pairteardown/pullrequest.go
+index e6e1ceed..8f22f290 100644
+--- a/internal/pairteardown/pullrequest.go
++++ b/internal/pairteardown/pullrequest.go
+@@ -19,7 +19,7 @@ const closePullRequestTimeout = 30 * time.Second
+ const tornDownPullRequestComment = "lym closed this pull request: the run's pair was torn down before it landed"
+ 
+ // closePairPullRequest closes the open pull request the pair's run recorded, if any.
+-// It reads whether the task worktree is gone, and when gone derives the task branch from the fabric config; when present it resolves the task location, reads the record under the run's scratch directory and the pair's origin URL, then closes through closeOpenPullRequest.
++// It reads whether the task worktree is gone, and when gone reads the task branch from what is left of the pair, or from origin when nothing is; when present it resolves the task location, reads the record under the run's scratch directory and the pair's origin URL, then closes through closeOpenPullRequest.
+ // Every failure is logged as a warning naming the slug, and none stops the teardown.
+ func (t *Teardown) closePairPullRequest(slug string) {
+ 	gone, err := t.gone(slug)
+@@ -37,13 +37,13 @@ func (t *Teardown) closePairPullRequest(slug string) {
+ 	ctx, cancel := context.WithTimeout(context.Background(), closePullRequestTimeout)
+ 	defer cancel()
+ 	if gone {
+-		// An unreadable config leaves the branch unnamed; the warning still goes out.
++		// An unreadable config or pair leaves the branch unnamed; the warning still goes out.
+ 		taskBranch := ""
+ 		cfg, err := fabricengine.LoadConfig(fabricengine.ConfigDirs(t.prime))
+ 		if err != nil {
+ 			logger.Warn("pairteardown: could not read the fabric config to name the task branch", "slug", slug, "cause", err)
+-		} else {
+-			taskBranch = cfg.BranchPrefix + slug
++		} else if taskBranch, err = fabricengine.NewTopology(cfg).PairTaskBranchOrOrigin(t.prime, slug); err != nil {
++			logger.Warn("pairteardown: could not read the pair to name the task branch", "slug", slug, "cause", err)
+ 		}
+ 		closeOpenPullRequest(ctx, slug, taskBranch, true, pullrequest.Record{}, false, openClient, "")
+ 		return
+diff --git a/internal/pairteardown/pullrequest_integration_test.go b/internal/pairteardown/pullrequest_integration_test.go
+new file mode 100644
+index 00000000..7733a555
+--- /dev/null
++++ b/internal/pairteardown/pullrequest_integration_test.go
+@@ -0,0 +1,35 @@
++// pullrequest_integration_test.go covers the task branch a torn-down pair's pull request close names, over a real hub pair.
++
++package pairteardown_test
++
++import (
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/pairteardown"
++	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestClosePairPullRequest_NamesTheBareSlugBranchOfAPairMadeBeforeAPrefix pins that, with branch_prefix set over a live pair made under the empty prefix, the gone-worktree warning names the pair's bare slug.
++// It captures the process-global logger, so it is not parallel.
++func TestClosePairPullRequest_NamesTheBareSlugBranchOfAPairMadeBeforeAPrefix(t *testing.T) {
++	tiergate.Require(t, 1)
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	const slug = "pr-bare"
++	hubforge.AddPair(t, h, slug)
++	hubforge.SeedFabricConfig(t, h, "branch_prefix: hanf/\npathspec: \"\"\n")
++	td, err := pairteardown.New(h.Location)
++	if err != nil {
++		t.Fatalf("New() error = %v", err)
++	}
++	logs := logcapture.CaptureVerbose(t)
++
++	pairteardown.ClosePairPullRequestForTest(td, slug)
++
++	if !strings.Contains(logs.String(), "branch="+slug) || strings.Contains(logs.String(), "hanf/") {
++		t.Errorf("log does not name the bare slug %q as the task branch, or names the prefixed branch:\n%s", slug, logs.String())
++	}
++}
