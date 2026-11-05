@@ -14,6 +14,12 @@ Expected: --reset validates every argument against the remotes (shortname, bindi
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-05): --subpath is checked before --reset removes anything
+
+Decision: No narrowing: every argument check, --subpath included, runs before --reset removes the existing hub. A --subpath that disagrees with the anchor recorded on the weft, or names a directory absent from the warp, is refused while the old hub is still intact; read the warp's tree from a fetch into a staging location, not from the hub being replaced.
+
+Rationale: The entry's whole point is that --reset never destroys a hub and then refuses; a refusal after deletion for any argument is the same data loss.
+
 ## Constraints
 
 ## Auto-mode assumptions
