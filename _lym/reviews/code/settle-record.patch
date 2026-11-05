@@ -1,0 +1,689 @@
+diff --git a/contracts/stencils/loom/loom-rubric-code-review.md b/contracts/stencils/loom/loom-rubric-code-review.md
+index 1afc861c..1b6715b2 100644
+--- a/contracts/stencils/loom/loom-rubric-code-review.md
++++ b/contracts/stencils/loom/loom-rubric-code-review.md
+@@ -36,6 +36,10 @@ nothing else states it.
+ Review `git diff {{.review_base}}..HEAD` — every commit the current branch introduces over the merge base the run's last merged parent tip leaves.
+ Nothing else widens the range.
+ 
++When the amended board entry is a merge in from the parent, filed by `lym beam merge-parent`, the range narrows to the merge itself.
++Review each merge commit in the range through `git show --remerge-diff <commit>`, which shows how its conflicts were settled, and every commit in the range that is not a merge.
++The parent's own commits the merge brings in are no subject.
++
+ The step is read-only.
+ If the range above reads `git diff none..HEAD`, its base could not be read: raise a BLOCKING finding stating that the review range could not be determined, and review nothing.
+ Silently reviewing a guessed range is a worse failure than an honest block.
+diff --git a/docs/overview.md b/docs/overview.md
+index 4af9d381..a6e9d4bf 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -460,7 +460,7 @@ User-facing modules each get one `lym <module>` namespace:
+   A call then starts one adopt check per adopted subject and per named subject that still holds a run, detached, in that subject's worktree, which runs the hub's `adopt` gate there, reports each tier to the subject's orch, shows its tier in flight, time, tiers done and result on the prime's reed status bar, and shows in `lym beam status`, so a break this machine brings to the landed code shows at adopt time.
+   It calls each owning module's function in-process and has no engine package of its own.
+   ✅ Implemented. See the `internal/adoptcli` package documentation.
+-- **beam** — the making, landing, starting and stopping of a beam, a long-lived pair that groups board work, and dobby, the daemon every beam and the prime run (`internal/beamcli` + `internal/dobbyengine`; `lym beam create <slug>`, `lym beam ready <slug>`, which flags the beam ready to merge so its dobby writes the land request once nothing works under it, `lym beam reopen <slug> [--close]`, which removes that flag and sends a landing past Beam-Await back there, its pull request kept as a draft or closed, `lym beam land <slug>`, which writes the land request the beam's pawl run consumes at Beam-Await and refuses a beam not flagged ready, `lym beam start [slug] [--all]`, `lym beam stop [slug]` and `lym beam status`, from the prime and from any beam, and the hidden `lym beam dobby`).
++- **beam** — the making, landing, starting and stopping of a beam, a long-lived pair that groups board work, and dobby, the daemon every beam and the prime run (`internal/beamcli` + `internal/dobbyengine`; `lym beam create <slug>`, `lym beam ready <slug>`, which flags the beam ready to merge so its dobby writes the land request once nothing works under it, `lym beam reopen <slug> [--close]`, which removes that flag and sends a landing past Beam-Await back there, its pull request kept as a draft or closed, `lym beam land <slug>`, which writes the land request the beam's pawl run consumes at Beam-Await and refuses a beam not flagged ready, `lym beam merge-parent <slug>`, which files a darn task in the beam, its Code-Review perch on, whose run merges the beam's parent branch into the beam, `lym beam start [slug] [--all]`, `lym beam stop [slug]` and `lym beam status`, from the prime and from any beam, and the hidden `lym beam dobby`).
+   Create runs from the beam's parent worktree, claims the root when none is recorded, records this machine as a board project's owner with the beam flag and the pawl recipe, and starts the beam's pawl run as a detached first pass, whose Worktree-Create makes the pair, forked from the parent beam of a nested beam, whose Record-Write writes the project record from the project entry's body under `_lym/project/<slug>/`, and whose Beam-Up marks it.
+   Before it starts that run, create removes a done batten run under the same slug whose pair is gone and whose child ran motif, reporting `motif_run_cleared`;
+   any other done run is still refused, naming `lym batten cleanup --apply`.
+diff --git a/internal/beamcli/cli.go b/internal/beamcli/cli.go
+index ca7a5d77..8ead63f5 100644
+--- a/internal/beamcli/cli.go
++++ b/internal/beamcli/cli.go
+@@ -1,4 +1,4 @@
+-// cli.go builds the beam cobra command with its create, ready, reopen, land, start and stop verbs and the RunCLI/RunCLIIn seams that wire it into the standard io.Writer-based call contract.
++// cli.go builds the beam cobra command with its create, ready, reopen, land, merge-parent, start and stop verbs and the RunCLI/RunCLIIn seams that wire it into the standard io.Writer-based call contract.
+ 
+ package beamcli
+ 
+@@ -32,20 +32,54 @@ import (
+ func Command() *cobra.Command {
+ 	beam := &cobra.Command{
+ 		Use:   "beam",
+-		Short: "make, flag ready, reopen, land, start and stop beams, the long-lived pairs that group board work, and show their dobbies and orchs",
++		Short: "make, flag ready, reopen, land, start and stop beams, the long-lived pairs that group board work, file a beam's merge from its parent, and show their dobbies and orchs",
+ 		Long: `A beam is a long-lived pair that groups board work: its tasks fork from the
+ beam's own branch and land back into it, and it is one unit of two parts, its dobby
+ and its orch, that run on the machine owning it. The dobby drives the runs of the
+ beam's tasks, and the orch is the session that works the beam with the operator.
+ "lym beam start" brings both up and "lym beam stop" takes both down. Create and
+-status run from the hub's prime worktree and from any beam, ready, reopen and land
+-from anywhere in the hub, and all act on the prime's location.`,
++status run from the hub's prime worktree and from any beam, ready, reopen, land and
++merge-parent from anywhere in the hub, and all act on the prime's location.`,
+ 		RunE: clihelp.GroupRunE,
+ 	}
+-	beam.AddCommand(createCmd(), readyCmd(), reopenCmd(), landCmd(), startCmd(), stopCmd(), statusCmd(), dobbyCmd())
++	beam.AddCommand(createCmd(), readyCmd(), reopenCmd(), landCmd(), mergeParentCmd(), startCmd(), stopCmd(), statusCmd(), dobbyCmd())
+ 	return beam
+ }
+ 
++// mergeParentCmd returns the `beam merge-parent` verb.
++func mergeParentCmd() *cobra.Command {
++	return &cobra.Command{
++		Use:         "merge-parent <slug>",
++		Short:       "file a task in a beam that merges the beam's parent branch into it",
++		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
++		Long: `Files a darn task in the project of the beam <slug> whose run merges the beam's
++parent branch into the beam: its writer runs "lym fabric merge-in <parent branch>"
++in the task's own worktree, settles the conflicts and the gate failures, and its
++Code-Review perch, turned on through the task's run_settings, reviews the merge
++alone. The task's landing brings the merge into the beam. The beam's dobby starts
++it as any member, at any time; the beam's own landing brings the parent in at
++Parent-Align whether or not one ran.
++
++The task's slug is the beam's slug and "-merge-in", numbered from -2 when that slug
++is taken, and it carries the beam's labels.
++
++It runs anywhere in the hub and refuses, each naming its way forward, an entry
++that is not an open beam project with a pair here, a beam whose origin record
++names no parent branch, and a beam whose merge task stands open.
++
++Example:
++  lym beam merge-parent payments`,
++		Args: cobra.ExactArgs(1),
++		RunE: func(cmd *cobra.Command, args []string) error {
++			if clihelp.ShouldAbort(cmd.Context()) {
++				return nil
++			}
++			result, err := onHubLandDeps(cmd, "lym beam merge-parent", func(deps landDeps) (map[string]any, error) { return mergeParent(deps, args[0]) })
++			return finishVerb(cmd, result, err)
++		},
++	}
++}
++
+ // statusResult is the envelope of `beam status`: one entry per local beam, the prime's first, and one adopt check item per subject the hub holds a record of.
+ type statusResult struct {
+ 	Dobbies     []statusEntry        `json:"dobbies"`
+@@ -653,7 +687,7 @@ Example:
+ 	return cmd
+ }
+ 
+-// onHubLandDeps runs verb, `beam land`, `beam ready` or `beam reopen`, over the land deps of the hub the command's cwd belongs to.
++// onHubLandDeps runs verb, `beam land`, `beam ready`, `beam reopen` or `beam merge-parent`, over the land deps of the hub the command's cwd belongs to.
+ // It resolves the hub's prime from the cwd's own worktree, so a task pair reaches the verb's own refusals.
+ // A nil result is a refusal made before the request was written.
+ func onHubLandDeps(cmd *cobra.Command, verb string, run func(deps landDeps) (map[string]any, error)) (*map[string]any, error) {
+diff --git a/internal/beamcli/deps.go b/internal/beamcli/deps.go
+index 1051aac3..32d69f58 100644
+--- a/internal/beamcli/deps.go
++++ b/internal/beamcli/deps.go
+@@ -1,4 +1,4 @@
+-// deps.go fills the verbs' deps over a real hub: the board reads and the owner write, the batten run's status and first pass, the ready record, the landing's refusal and land request, and the reopen request.
++// deps.go fills the verbs' deps over a real hub: the board reads, the owner write and the merge task's filing, the batten run's status and first pass, the ready record, the landing's refusal and land request, the reopen request and the hub's Code-Review budget.
+ 
+ package beamcli
+ 
+@@ -18,6 +18,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/machinename"
+ 	"github.com/Knatte18/loomyard/internal/pawlengine"
++	"github.com/Knatte18/loomyard/internal/reviewbudget"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/state"
+@@ -180,6 +181,33 @@ func hubLandDeps(prime *lymcwd.Location) landDeps {
+ 			return removed, err
+ 		},
+ 		Now: time.Now,
++		Tasks: func() ([]boardengine.Task, error) {
++			return boardengine.ReadTasks(fabricengine.BoardDir(prime.HubPath))
++		},
++		// The board gives a new task the draft status, so the filing releases it with a second write.
++		// The writes carry no strand name, so the run-agent task guard does not judge them.
++		FileTask: func(fields map[string]any) error {
++			board, err := boardengine.OpenHub(prime.HubPath)
++			if err != nil {
++				return err
++			}
++			task, err := board.UpsertTask(fields)
++			if err != nil {
++				return err
++			}
++			if err := board.SetStatus(task.Slug, nil); err != nil {
++				return fmt.Errorf("the task %s was created but not released and stands as a draft with no run: remove it with `lym board remove %s` before filing again: %w", task.Slug, task.Slug, err)
++			}
++			return nil
++		},
++		// The budget is the prime's loom config, the hub's own, which no run profile reaches.
++		CodeReviewCaps: func() (reviewbudget.Caps, error) {
++			cfg, err := loomengine.LoadConfig(fabricengine.ConfigDirs(prime), "loom")
++			if err != nil {
++				return reviewbudget.Caps{}, err
++			}
++			return cfg.Caps(loomengine.PerchCode), nil
++		},
+ 	}
+ }
+ 
+diff --git a/internal/beamcli/dobbydeps_integration_test.go b/internal/beamcli/dobbydeps_integration_test.go
+index c803d0af..13a43cd9 100644
+--- a/internal/beamcli/dobbydeps_integration_test.go
++++ b/internal/beamcli/dobbydeps_integration_test.go
+@@ -21,6 +21,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/machinename"
+ 	"github.com/Knatte18/loomyard/internal/pawlengine"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+@@ -258,6 +259,52 @@ func TestHubLandDeps_UnreadyCommitsTheRemovalOfTheReadyRecordAndSucceedsAgain(t
+ 	}
+ }
+ 
++func TestHubLandDeps_FileTaskReleasesTheTaskAndCodeReviewCapsReadTheHubConfig(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h, _ := landingHub(t)
++	deps := hubLandDeps(h.Location)
++	// Distinct values for the code perch, so a read of another perch or of another config source fails the caps assertion.
++	loomPath := filepath.Join(h.Location.AnchorPath(), lymdirs.LymDirName, "config", "loom.yaml")
++	if err := os.MkdirAll(filepath.Dir(loomPath), 0o755); err != nil {
++		t.Fatalf("create the anchor config directory: %v", err)
++	}
++	if err := os.WriteFile(loomPath, []byte("code_max_bounces: 7\ncode_hard_max_bounces: 9\n"), 0o644); err != nil {
++		t.Fatalf("write the anchor loom.yaml: %v", err)
++	}
++
++	err := deps.FileTask(map[string]any{"slug": "b-merge-in", "title": "Merge main into the beam b", "kind": boardengine.KindTask, "project": "b", "recipe": "darn", "labels": []string{"bug"}})
++	if err != nil {
++		t.Fatalf("FileTask(b-merge-in) = %v; want nil", err)
++	}
++
++	tasks, err := deps.Tasks()
++	if err != nil {
++		t.Fatalf("Tasks() = %v; want nil", err)
++	}
++	var filed *boardengine.Task
++	for i := range tasks {
++		if tasks[i].Slug == "b-merge-in" {
++			filed = &tasks[i]
++		}
++	}
++	if filed == nil {
++		t.Fatalf("Tasks() = %v; want the filed task b-merge-in", tasks)
++	}
++	if filed.Status != nil {
++		t.Errorf("b-merge-in status = %q; want it released (nil), not draft", *filed.Status)
++	}
++
++	caps, err := deps.CodeReviewCaps()
++	if err != nil {
++		t.Fatalf("CodeReviewCaps() = %v; want nil", err)
++	}
++	if caps.Soft != 7 || caps.Hard != 9 {
++		t.Errorf("CodeReviewCaps() = %+v; want soft 7 and hard 9, the code perch's caps", caps)
++	}
++}
++
+ func TestHubDobbyDeps_ClearNotifyOnLandClearsTheHubBoardEntry(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+diff --git a/internal/beamcli/doc.go b/internal/beamcli/doc.go
+index d177378a..b94989e2 100644
+--- a/internal/beamcli/doc.go
++++ b/internal/beamcli/doc.go
+@@ -1,4 +1,4 @@
+-// Package beamcli is the beam module: `lym beam create <slug>`, the making of a beam from a board project entry, `lym beam ready <slug>`, the flag that a beam is ready to merge, `lym beam reopen <slug> [--close]`, the return of a beam's landing to Beam-Await, `lym beam land <slug>`, the landing of a beam into its parent, `lym beam start [slug] [--all]`, the bring-up of a beam's dobby and orch, `lym beam stop [slug]`, their bring-down, `lym beam status`, the view of every local dobby and orch, and the hidden `lym beam dobby`, the dobby process itself.
++// Package beamcli is the beam module: `lym beam create <slug>`, the making of a beam from a board project entry, `lym beam ready <slug>`, the flag that a beam is ready to merge, `lym beam reopen <slug> [--close]`, the return of a beam's landing to Beam-Await, `lym beam land <slug>`, the landing of a beam into its parent, `lym beam merge-parent <slug>`, the filing of a task that merges a beam's parent branch into it, `lym beam start [slug] [--all]`, the bring-up of a beam's dobby and orch, `lym beam stop [slug]`, their bring-down, `lym beam status`, the view of every local dobby and orch, and the hidden `lym beam dobby`, the dobby process itself.
+ // The verbs only call each owning module's function in-process, so no module learns another's state; the daemon's engine is `internal/dobbyengine`, and this package wires its seams over the hub.
+ //
+ // # The verbs
+@@ -82,6 +82,15 @@
+ //
+ // Bound: a pair on another machine whose origin names the beam is not seen when its entry no longer names the beam, as for a pair made by hand there with `--parent <beam>` and no board entry.
+ //
++// # merge-parent
++//
++// `merge-parent <slug>` files the beam's merge task: a released darn task in the beam's project whose run merges the beam's parent branch, the `ParentBranch` of the beam pair's origin record, into the task's branch, which its landing brings into the beam.
++// It runs anywhere in the hub, as `land` does, and refuses what `land`'s entry check refuses, a beam whose origin record names no parent branch, naming `lym fabric reconcile`, and a beam that holds an open merge task, naming `lym batten status` and `lym batten cancel --remove` of that task.
++// A merge task is found by its project and its slug's `-merge-in` suffix, with an optional number; the new one takes the first free slug of that shape, the beam's slug cut to fit the board's slug length.
++// It carries the beam's labels, so the board's type-label rule holds, and a body the decision record carries as the goal of both the darn writer and the Code-Review perch: the writer runs `lym fabric merge-in`, settles the conflicts, makes the gate pass and changes nothing else, and the perch reviews the merge alone.
++// Its `run_settings` turn the perch on: loom's `code_max_bounces` is the hub's resolved Code-Review budget, at least one round, and `code_hard_max_bounces` stays above it.
++// The beam's dobby starts it as any member, so it runs at any time; pawl neither starts one nor waits for one, and its Parent-Align brings the parent in at the landing either way.
++//
+ // # start
+ //
+ // `start [slug] [--all]` brings a beam up through `orchcli.BeamUp`: its dobby, its runs strand and its orch.
+diff --git a/internal/beamcli/land.go b/internal/beamcli/land.go
+index 738dac44..2a045df5 100644
+--- a/internal/beamcli/land.go
++++ b/internal/beamcli/land.go
+@@ -11,6 +11,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/loomshed"
+ 	"github.com/Knatte18/loomyard/internal/pawlengine"
++	"github.com/Knatte18/loomyard/internal/reviewbudget"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ )
+ 
+@@ -22,21 +23,25 @@ import (
+ // Refusal is the landing's refusal of a beam with work remaining under it.
+ // WriteRequest writes the land request into the beam worktree and returns its path, and WriteReopen the reopen request.
+ // Unready removes the beam's ready record when it flags the beam, commits the landing directory either way and reports whether it removed one.
++// Tasks reads the board's entries, FileTask creates the task its fields describe and releases it, and CodeReviewCaps reads the hub's Code-Review budget; `merge-parent` alone calls them.
+ type landDeps struct {
+-	Machine      func() (string, error)
+-	ReadOwners   func() (boardengine.Owners, error)
+-	ParentOf     func(slug string) (string, error)
+-	PairPresent  func(slug string) bool
+-	OriginRecord func(slug string) (fabricengine.Origin, bool, error)
+-	ChildStatus  func(slug string) (status shedengine.Status, found bool, err error)
+-	RunID        func(slug string) (string, error)
+-	Ready        func(slug string) (bool, error)
+-	MarkReady    func(slug string, record pawlengine.ReadyRecord) (string, error)
+-	Refusal      func(slug string) error
+-	WriteRequest func(slug string, req pawlengine.LandRequest) (string, error)
+-	WriteReopen  func(slug string, req pawlengine.ReopenRequest) (string, error)
+-	Unready      func(slug string) (bool, error)
+-	Now          func() time.Time
++	Machine        func() (string, error)
++	ReadOwners     func() (boardengine.Owners, error)
++	ParentOf       func(slug string) (string, error)
++	PairPresent    func(slug string) bool
++	OriginRecord   func(slug string) (fabricengine.Origin, bool, error)
++	ChildStatus    func(slug string) (status shedengine.Status, found bool, err error)
++	RunID          func(slug string) (string, error)
++	Ready          func(slug string) (bool, error)
++	MarkReady      func(slug string, record pawlengine.ReadyRecord) (string, error)
++	Refusal        func(slug string) error
++	WriteRequest   func(slug string, req pawlengine.LandRequest) (string, error)
++	WriteReopen    func(slug string, req pawlengine.ReopenRequest) (string, error)
++	Unready        func(slug string) (bool, error)
++	Now            func() time.Time
++	Tasks          func() ([]boardengine.Task, error)
++	FileTask       func(fields map[string]any) error
++	CodeReviewCaps func() (reviewbudget.Caps, error)
+ }
+ 
+ // reopenRows are the pawl rows a reopen sends a run back from: those past Beam-Await and before Finalize.
+diff --git a/internal/beamcli/land_test.go b/internal/beamcli/land_test.go
+index 83648e6e..43fb0f83 100644
+--- a/internal/beamcli/land_test.go
++++ b/internal/beamcli/land_test.go
+@@ -12,6 +12,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/pawlengine"
++	"github.com/Knatte18/loomyard/internal/reviewbudget"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+@@ -42,9 +43,13 @@ type landWorld struct {
+ 	reopens      []pawlengine.ReopenRequest
+ 	unreadyCalls int
+ 	unreadyErr   error
++	// tasks is the board's entries, filed the fields of each task FileTask filed and caps the hub's Code-Review budget.
++	tasks []boardengine.Task
++	filed []map[string]any
++	caps  reviewbudget.Caps
+ }
+ 
+-// newLandWorld returns a hub owned by here with a beam "b" whose pair is here and marked and whose pawl run waits at Beam-Await, a task, a grouping project and a done beam.
++// newLandWorld returns a hub owned by here with a beam "b" forked from main whose pair is here and marked and whose pawl run waits at Beam-Await, a task, a grouping project and a done beam.
+ func newLandWorld() *landWorld {
+ 	return &landWorld{
+ 		owners: boardengine.Owners{Prime: here, Entries: map[string]boardengine.OwnerEntry{
+@@ -56,10 +61,14 @@ func newLandWorld() *landWorld {
+ 		}},
+ 		parents:  map[string]string{},
+ 		pairs:    map[string]bool{"b": true, "landed": true},
+-		origins:  map[string]fabricengine.Origin{"b": {Beam: true}, "landed": {Beam: true}},
++		origins:  map[string]fabricengine.Origin{"b": {Beam: true, ParentBranch: "main"}, "landed": {Beam: true}},
+ 		children: map[string]shedengine.Status{"b": {State: shedengine.StateRunning, CurrentProducer: pawlengine.NameBeamAwait}},
+ 		runID:    "2026-02-28T08:00:00Z",
+ 		ready:    map[string]bool{"b": true},
++		tasks: []boardengine.Task{
++			{Slug: "b", Kind: boardengine.KindProject, Labels: []string{"enhancement", "reed"}},
++			{Slug: "task1", Kind: boardengine.KindTask, Project: "b"},
++		},
+ 	}
+ }
+ 
+@@ -110,7 +119,13 @@ func (w *landWorld) deps() landDeps {
+ 			delete(w.ready, slug)
+ 			return removed, nil
+ 		},
+-		Now: func() time.Time { return landNow },
++		Now:   func() time.Time { return landNow },
++		Tasks: func() ([]boardengine.Task, error) { return w.tasks, nil },
++		FileTask: func(fields map[string]any) error {
++			w.filed = append(w.filed, fields)
++			return nil
++		},
++		CodeReviewCaps: func() (reviewbudget.Caps, error) { return w.caps, nil },
+ 	}
+ }
+ 
+diff --git a/internal/beamcli/mergeparent.go b/internal/beamcli/mergeparent.go
+new file mode 100644
+index 00000000..dd436a14
+--- /dev/null
++++ b/internal/beamcli/mergeparent.go
+@@ -0,0 +1,140 @@
++// mergeparent.go is the "lym beam merge-parent" sequence: it judges the named beam and files the darn task, in the beam's project, whose run merges the beam's parent branch into the beam with its Code-Review perch on.
++
++package beamcli
++
++import (
++	"fmt"
++	"regexp"
++	"strconv"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/loomengine"
++	"github.com/Knatte18/loomyard/internal/reviewbudget"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++)
++
++// mergeParentSuffix ends the slug of every merge task `lym beam merge-parent` files, before the number a second one takes.
++const mergeParentSuffix = "-merge-in"
++
++// mergeTaskSlugPattern matches the slug of a merge task: the suffix, then an optional number.
++var mergeTaskSlugPattern = regexp.MustCompile(regexp.QuoteMeta(mergeParentSuffix) + `(-[0-9]+)?$`)
++
++// mergeParentMinRounds is the fewest Code-Review rounds a merge task runs, so its perch is on whatever the hub's budget.
++const mergeParentMinRounds = 1
++
++// mergeParent files the merge task of the beam slug and returns the task's slug, the parent branch it merges and how the run follows.
++// It refuses what `land`'s entry check refuses, a beam whose origin record names no parent branch, and a beam that holds an open merge task already.
++// The task is a released darn task in the beam's project, carrying the beam's labels, so the beam's dobby starts it as any member.
++// Its run settings set the Code-Review budget to the hub's, or to mergeParentMinRounds when the hub's is lower, with a hard cap above it.
++func mergeParent(deps landDeps, slug string) (map[string]any, error) {
++	const verb = "lym beam merge-parent"
++	owners, err := deps.ReadOwners()
++	if err != nil {
++		return nil, fmt.Errorf("%s: read the board's owners: %w", verb, err)
++	}
++	if err := judgeLandEntry(deps, owners, verb, slug); err != nil {
++		return nil, err
++	}
++	origin, _, err := deps.OriginRecord(slug)
++	if err != nil {
++		return nil, fmt.Errorf("%s: read the origin record of %s: %w", verb, slug, err)
++	}
++	if origin.ParentBranch == "" {
++		return nil, fmt.Errorf("%s: the origin record of the beam %s names no parent branch; way forward: run `lym fabric reconcile` to restore its records worktree, then `%s %s`", verb, slug, verb, slug)
++	}
++
++	tasks, err := deps.Tasks()
++	if err != nil {
++		return nil, fmt.Errorf("%s: read the board: %w", verb, err)
++	}
++	if open, found := openMergeTask(tasks, slug); found {
++		return nil, fmt.Errorf("%s: the merge task %s stands open in the beam %s; way forward: run `lym batten status %s` and let it land, or remove it with `lym batten cancel %s --remove`, then `%s %s`", verb, open, slug, open, open, verb, slug)
++	}
++	var labels []string
++	for _, task := range tasks {
++		if task.Slug == slug {
++			labels = task.Labels
++		}
++	}
++	caps, err := deps.CodeReviewCaps()
++	if err != nil {
++		return nil, fmt.Errorf("%s: read the hub's Code-Review budget: %w", verb, err)
++	}
++	rounds := max(caps.Soft, mergeParentMinRounds)
++	perch := string(loomengine.PerchCode)
++
++	taskSlug := freeMergeTaskSlug(tasks, slug)
++	fields := map[string]any{
++		"slug":    taskSlug,
++		"title":   fmt.Sprintf("Merge %s into the beam %s", origin.ParentBranch, slug),
++		"kind":    boardengine.KindTask,
++		"project": slug,
++		"recipe":  shedrun.RecipeDarn,
++		"labels":  labels,
++		"body":    mergeParentBody(slug, origin.ParentBranch),
++		"run_settings": map[string]any{
++			"loom": map[string]any{
++				reviewbudget.SoftKey(perch): rounds,
++				reviewbudget.HardKey(perch): max(caps.Hard, rounds+1),
++			},
++		},
++	}
++	if err := deps.FileTask(fields); err != nil {
++		return nil, fmt.Errorf("%s: file the merge task %s: %w; way forward: fix the cause it names, then run `%s %s` again", verb, taskSlug, err, verb, slug)
++	}
++	return map[string]any{
++		"slug":          slug,
++		"task":          taskSlug,
++		"parent_branch": origin.ParentBranch,
++		"way_forward":   fmt.Sprintf("the beam's dobby starts %s as any member; run `lym batten status %s` to follow it", taskSlug, taskSlug),
++	}, nil
++}
++
++// openMergeTask returns the slug of a merge task of beam that is not done, found by its project and its slug's suffix.
++func openMergeTask(tasks []boardengine.Task, beam string) (string, bool) {
++	for _, task := range tasks {
++		if task.Kind == boardengine.KindTask && task.Project == beam && !boardengine.IsDoneStatus(task.Status) && mergeTaskSlugPattern.MatchString(task.Slug) {
++			return task.Slug, true
++		}
++	}
++	return "", false
++}
++
++// freeMergeTaskSlug returns the first merge task slug of beam no board entry holds: the beam's slug and the suffix, then the same with -2, -3 and so on.
++// The beam's slug is cut so the whole fits the board's slug length.
++func freeMergeTaskSlug(tasks []boardengine.Task, beam string) string {
++	taken := make(map[string]bool, len(tasks))
++	for _, task := range tasks {
++		taken[task.Slug] = true
++	}
++	for number := 1; ; number++ {
++		tail := mergeParentSuffix
++		if number > 1 {
++			tail += "-" + strconv.Itoa(number)
++		}
++		head := beam
++		if room := boardengine.MaxSlugLength - len(tail); len(head) > room {
++			head = head[:room]
++		}
++		if candidate := head + tail; !taken[candidate] {
++			return candidate
++		}
++	}
++}
++
++// mergeParentBody returns the body of the merge task of beam, which merges parentBranch.
++// The decision record carries it as the task's goal, so it instructs both the darn writer and the Code-Review perch.
++func mergeParentBody(beam, parentBranch string) string {
++	return fmt.Sprintf(`Merge in from parent: bring the parent branch %[2]s into the beam %[1]s.
++This task's branch forks from the beam, so its landing carries the merge into the beam.
++Filed by `+"`lym beam merge-parent %[1]s`"+`.
++
++- Run `+"`lym fabric merge-in %[2]s`"+` in this task's worktree.
++  On a conflict, settle each path it lists, stage them with `+"`lym fabric merge-stage <paths>`"+` and conclude with `+"`lym fabric merge --continue`"+`.
++- Make the gate pass on the merged tree: fix what the merge broke, on either side, and nothing else.
++- Make no change the merge does not need: no refactor, no feature and no fix of an older fault.
++- When the merge is already up to date, change nothing and say so in the change description.
++- The Code-Review perch reviews the merge alone: each merge commit's conflict resolution and every commit after the merge, never the parent's own commits the merge brings in.
++  Checking the project's goal is no part of this task.
++`, beam, parentBranch)
++}
+diff --git a/internal/beamcli/mergeparent_test.go b/internal/beamcli/mergeparent_test.go
+new file mode 100644
+index 00000000..bedd31b1
+--- /dev/null
++++ b/internal/beamcli/mergeparent_test.go
+@@ -0,0 +1,131 @@
++// mergeparent_test.go drives the merge-parent sequence over the land test's fake hub: the entries that are not a beam, a beam with no parent branch or an open merge task, and the darn task filed with its perch on under the first free slug.
++
++package beamcli
++
++import (
++	"reflect"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/reviewbudget"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestMergeParent(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	done := boardengine.StatusDone
++	longBeam := strings.Repeat("x", boardengine.MaxSlugLength-2)
++	tests := []struct {
++		name  string
++		slug  string
++		setup func(w *landWorld)
++		// wantErr is empty for a filing, else every substring the refusal names.
++		wantErr []string
++		// wantTask is the filed task's slug, and wantRounds and wantHard the Code-Review caps its run settings carry.
++		wantTask   string
++		wantRounds int
++		wantHard   int
++	}{
++		{name: "TaskRefusedNamingItsOwnLanding", slug: "task1", wantErr: []string{"lym beam merge-parent:", "lym batten run task1"}},
++		{name: "GroupingProjectRefusedNamingCreate", slug: "group", wantErr: []string{"grouping project", "lym beam create group"}},
++		{name: "DoneBeamRefused", slug: "landed", wantErr: []string{"already landed"}},
++		{
++			name: "BeamWithNoParentBranchRefusedNamingReconcile", slug: "b",
++			setup:   func(w *landWorld) { w.origins["b"] = fabricengine.Origin{Beam: true} },
++			wantErr: []string{"names no parent branch", "lym fabric reconcile"},
++		},
++		{
++			name: "OpenMergeTaskRefused", slug: "b",
++			setup: func(w *landWorld) {
++				w.tasks = append(w.tasks, boardengine.Task{Slug: "b-merge-in-2", Kind: boardengine.KindTask, Project: "b"})
++			},
++			wantErr: []string{"b-merge-in-2 stands open", "lym batten cancel b-merge-in-2 --remove"},
++		},
++		{name: "OffPerchTurnedOnForOneRound", slug: "b", wantTask: "b-merge-in", wantRounds: 1, wantHard: 2},
++		{
++			name: "HubBudgetKept", slug: "b",
++			setup:    func(w *landWorld) { w.caps = reviewbudget.Caps{Soft: 3, Hard: 5} },
++			wantTask: "b-merge-in", wantRounds: 3, wantHard: 5,
++		},
++		{
++			name: "DoneMergeTaskTakesTheNextNumber", slug: "b",
++			setup: func(w *landWorld) {
++				w.tasks = append(w.tasks, boardengine.Task{Slug: "b-merge-in", Kind: boardengine.KindTask, Project: "b", Status: &done})
++			},
++			wantTask: "b-merge-in-2", wantRounds: 1, wantHard: 2,
++		},
++		{
++			name: "LongBeamSlugCutToTheBoardsLength", slug: longBeam,
++			setup: func(w *landWorld) {
++				w.owners.Entries[longBeam] = boardengine.OwnerEntry{IsProject: true, Beam: true, Owner: here}
++				w.pairs[longBeam] = true
++				w.origins[longBeam] = fabricengine.Origin{Beam: true, ParentBranch: "main"}
++			},
++			wantTask: longBeam[:boardengine.MaxSlugLength-len(mergeParentSuffix)] + mergeParentSuffix, wantRounds: 1, wantHard: 2,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			w := newLandWorld()
++			if tt.setup != nil {
++				tt.setup(w)
++			}
++
++			got, err := mergeParent(w.deps(), tt.slug)
++
++			if len(tt.wantErr) > 0 {
++				if err == nil {
++					t.Fatalf("mergeParent(%q) = %v, nil; want a refusal naming %v", tt.slug, got, tt.wantErr)
++				}
++				for _, want := range tt.wantErr {
++					if !strings.Contains(err.Error(), want) {
++						t.Errorf("mergeParent(%q) error = %q; want it to name %q", tt.slug, err.Error(), want)
++					}
++				}
++				if len(w.filed) != 0 {
++					t.Errorf("mergeParent(%q) filed %v; want nothing filed on a refusal", tt.slug, w.filed)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("mergeParent(%q) = %v; want the merge task filed", tt.slug, err)
++			}
++			if len(w.filed) != 1 {
++				t.Fatalf("mergeParent(%q) filed %d tasks; want 1", tt.slug, len(w.filed))
++			}
++			fields := w.filed[0]
++			if len(tt.wantTask) > boardengine.MaxSlugLength {
++				t.Fatalf("want slug %q is longer than the board's slug length", tt.wantTask)
++			}
++			wantSettings := map[string]any{"loom": map[string]any{"code_max_bounces": tt.wantRounds, "code_hard_max_bounces": tt.wantHard}}
++			if fields["slug"] != tt.wantTask || fields["kind"] != boardengine.KindTask || fields["project"] != tt.slug || fields["recipe"] != "darn" || !reflect.DeepEqual(fields["run_settings"], wantSettings) {
++				t.Errorf("mergeParent(%q) filed %v; want slug %q, a darn task in project %q with run settings %v", tt.slug, fields, tt.wantTask, tt.slug, wantSettings)
++			}
++			if body, _ := fields["body"].(string); !strings.Contains(body, "lym fabric merge-in main") || !strings.Contains(body, "reviews the merge alone") {
++				t.Errorf("mergeParent(%q) body = %q; want it to name `lym fabric merge-in main` and the perch's review of the merge alone", tt.slug, body)
++			}
++			if got["task"] != tt.wantTask || got["parent_branch"] != "main" || !strings.Contains(got["way_forward"].(string), "lym batten status "+tt.wantTask) {
++				t.Errorf("mergeParent(%q) = %v; want task %q, parent_branch main and a way forward naming its batten status", tt.slug, got, tt.wantTask)
++			}
++		})
++	}
++}
++
++func TestMergeParentCarriesTheBeamsLabels(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	w := newLandWorld()
++
++	if _, err := mergeParent(w.deps(), "b"); err != nil {
++		t.Fatalf("mergeParent(b) = %v; want the merge task filed", err)
++	}
++
++	if got, want := w.filed[0]["labels"], []string{"enhancement", "reed"}; !reflect.DeepEqual(got, want) {
++		t.Errorf("mergeParent(b) labels = %v; want the beam's %v", got, want)
++	}
++}
+diff --git a/internal/reedengine/config_test.go b/internal/reedengine/config_test.go
+index 77964192..2c053d77 100644
+--- a/internal/reedengine/config_test.go
++++ b/internal/reedengine/config_test.go
+@@ -105,6 +105,8 @@ func TestLoadConfig_TemplateDefaultsResolve(t *testing.T) {
+ 		{Label: "agent", Run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]'", Ask: "Agent name:", AskDefault: "agent"},
+ 		{Label: "distill", Run: "lym orch distill", Confirm: "Distill the orch?"},
+ 		{Label: "refresh", Run: "lym orch refresh", Confirm: "Refresh the orch?"},
++		{Label: "merge-in", Run: "lym beam merge-parent {slug}", Confirm: "Merge the parent into {slug}?"},
++		{Label: "land", Run: "lym beam land {slug}", Confirm: "Land {slug}?"},
+ 	}
+ 	// The prime alone carries the board button: a board agent opened in a beam carries the beam's slug, and the board refuses a task write from a slug-carrying session.
+ 	wantPrimeButtons := []buttonWant{
+diff --git a/internal/reedengine/template_posix.yaml b/internal/reedengine/template_posix.yaml
+index d4e25fa5..72b86542 100644
+--- a/internal/reedengine/template_posix.yaml
++++ b/internal/reedengine/template_posix.yaml
+@@ -49,6 +49,12 @@ buttons:  # status-bar buttons in the groups task, beam and prime; an entry has
+     - label: refresh
+       run: lym orch refresh
+       confirm: Refresh the orch?
++    - label: merge-in
++      run: lym beam merge-parent {slug}
++      confirm: Merge the parent into {slug}?
++    - label: land
++      run: lym beam land {slug}
++      confirm: Land {slug}?
+   prime:
+     - label: code
+       run: lym ide spawn {slug}
+diff --git a/internal/reedengine/template_windows.yaml b/internal/reedengine/template_windows.yaml
+index 7047a25f..f3e7b15e 100644
+--- a/internal/reedengine/template_windows.yaml
++++ b/internal/reedengine/template_windows.yaml
+@@ -49,6 +49,12 @@ buttons:  # status-bar buttons in the groups task, beam and prime; an entry has
+     - label: refresh
+       run: lym orch refresh
+       confirm: Refresh the orch?
++    - label: merge-in
++      run: lym beam merge-parent {slug}
++      confirm: Merge the parent into {slug}?
++    - label: land
++      run: lym beam land {slug}
++      confirm: Land {slug}?
+   prime:
+     - label: code
+       run: lym ide spawn {slug}
