@@ -661,7 +661,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 13,
   "masterStrand": "dd16c882ad00ef2ad3da669398a0b698",
   "masterSessionId": "46bcafb1-5b55-422f-b4b9-8099327fe599",
   "masterEngine": "claude",
@@ -711,6 +711,32 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/7c8333ff-47b7-4804-bb88-3066d2caf642/subagents/agent-a1497362e7a69934e.jsonl"
       ]
+    },
+    "13": {
+      "slug": "board-promote-raddle",
+      "cards": [
+        "13-board-promote-raddle",
+        "14-raddle-store-slug-rule",
+        "15-raddle-store-replay",
+        "16-board-raddle-writes",
+        "17-board-raddle-verb",
+        "18-record-write-stored"
+      ],
+      "cardHashes": {
+        "13-board-promote-raddle": "2ffd66dbd9bf286db4733ea6a759db6eca3562762c1bb89f553ff82b1842c0c0",
+        "14-raddle-store-slug-rule": "6c32af1556e6e9f39199bcf46b7b73d28b0fd3a1fcc98166e3b8b24be5836b88",
+        "15-raddle-store-replay": "7e1d06e228fa7cab61aa1286b2b7e76205b6851e96623f6414c3df4eeee8f66d",
+        "16-board-raddle-writes": "088d74aaf4087cca664e87ab9308b791b3959bac0100eb13cfff9587d4bbd69c",
+        "17-board-raddle-verb": "1d700856c1b76140548ac89da06dee49ca8f4e913117f229b1ebe54a58ac46b3",
+        "18-record-write-stored": "3d054d9d2a432b51c4bb7006c2cb0477b8bd8927dfd8d4b699ca049a46aababb"
+      },
+      "startSha": "c0b0980113bb8ad2885da901f95d3ca7870d6fa5",
+      "kind": "fork",
+      "spawnedAt": "2026-11-05T11:56:05Z",
+      "sessionId": "46bcafb1-5b55-422f-b4b9-8099327fe599",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "usage-wiring",
