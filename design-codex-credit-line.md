@@ -1,6 +1,6 @@
 # Landing credit block names Codex when a Codex session ran
 
-`codex-credit-line` · Task · enhancement, landing, codex · running · Worktree-Create
+`codex-credit-line` · Task · enhancement, landing, codex · running · Open-Window
 
 ## Seen (2026-11-05)
 
