@@ -56,7 +56,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B2 |  | **A Codex writer in a pair worktree cannot commit: the git dir is outside its sandbox roots**<br>• git index.lock under the main checkout .git/worktrees is read-only in workspace-write, so codex-greet stopped at Darn-Write | [`codex-writer-cannot-commit`](design-codex-writer-cannot-commit.md) | 8m<br>8m | codex, shuttle |
+| B2 |  | **A Codex writer in a pair worktree cannot commit: the git dir is outside its sandbox roots**<br>• git index.lock under the main checkout .git/worktrees is read-only in workspace-write, so codex-greet stopped at Darn-Write | [`codex-writer-cannot-commit`](design-codex-writer-cannot-commit.md) | 9m<br>9m | codex, shuttle |
 
 #### Features (2)
 
@@ -79,7 +79,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Sessions lym launches add no Claude co-author or session link to commits and PRs**<br>• Claude Code sessions launched by lym get attribution off, so only the landing credit block credits | [`sessions-no-self-credit`](design-sessions-no-self-credit.md) | darn · light | Drift-Baseline | neve | 0m<br>0m | claude, shuttle |
+| T1 | **Sessions lym launches add no Claude co-author or session link to commits and PRs**<br>• Claude Code sessions launched by lym get attribution off, so only the landing credit block credits | [`sessions-no-self-credit`](design-sessions-no-self-credit.md) | darn · light | Drift-Await | neve | 0m<br>0m | claude, shuttle |
 | T2 | **A pair reads its branch from its worktree, so branch_prefix can change with pairs live** | [`branch-name-recorded`](design-branch-name-recorded.md) | darn · solid | Code-Burler-Fix | neve | 1h<br>1h | fabric |
 | T3 | **Bring README.md up to date**<br>• An interactive sampler session with the operator updates the repository README to what lym does today | [`readme-refresh`](design-readme-refresh.md) | sampler | Sampler-Session | neve | 59m<br>59m |  |
 | T5 | **Recipe raddle turns a Sketch into tasks or a project**<br>• A cold Opus run proposes how a Sketch becomes tasks, a project or a beam, weighs recipe costs, and files it on the operator approval unless auto-approve is set | [`raddle-recipe`](design-raddle-recipe.md) | tapestry | Discussion-Burler-Fix | neve | 1h<br>1h | loom, board, batten |
