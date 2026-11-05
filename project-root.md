@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-05 15:08 UTC; every age below is as of then.
+Rendered 2026-11-05 15:09 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Creel mail between hubs with a verified sender and one-way hub trust**<br>• Orchs of different hubs mail each other; the sending daemon confirms the sender, and a hub obeys only the orchs of hubs it lists as trusted | [`creel-cross-hub-mail`](design-creel-cross-hub-mail.md) | motif | awaiting · Discussion-Bouncer | neve | 6d<br>39m | creel, orch |
+| T1 | **Creel mail between hubs with a verified sender and one-way hub trust**<br>• Orchs of different hubs mail each other; the sending daemon confirms the sender, and a hub obeys only the orchs of hubs it lists as trusted | [`creel-cross-hub-mail`](design-creel-cross-hub-mail.md) | motif | awaiting · Discussion-Bouncer | neve | 6d<br>40m | creel, orch |
 | T7 | **Drift compares changed values in code against a sealed expectation, with a separate judge**<br>• General Drift rework: code-side diff of any hub capture keyed by line key or number, structured sealed expectation, containment by code, a judge per changed value | [`drift-rework`](design-drift-rework.md)<br>[Sketch](decision-drift-rework.md) | tapestry · solid | Plan-Burler-Fix | neve | 23h<br>1h | drift, loom, darn, stencil, config |
 
 ### Ready (0)
@@ -43,7 +43,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S1 |  | **Talk to the orch through Slack, and let the orch know when the operator is on Slack only**<br>• Slack as a creel endpoint for the orch, with an operator presence state so the orch reports and reminds through Slack while the operator is away | [`reed-slack-relay`](design-reed-slack-relay.md)<br>[Sketch](decision-reed-slack-relay.md) | 4w<br>24m | reed |
+| S1 |  | **Talk to the orch through Slack, and let the orch know when the operator is on Slack only**<br>• Slack as a creel endpoint for the orch, with an operator presence state so the orch reports and reminds through Slack while the operator is away | [`reed-slack-relay`](design-reed-slack-relay.md)<br>[Sketch](decision-reed-slack-relay.md) | 4w<br>25m | reed |
 
 ### Research (2)
 
@@ -56,7 +56,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 | L | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• Not a problem now; if built, only after F6 Slack relay, as a Slack reminder ping while a PR-Review waits on the operator | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 1d<br>2h | landing, loom, batten |
+| B1 | L | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• Not a problem now; if built, only after F6 Slack relay, as a Slack reminder ping while a PR-Review waits on the operator | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 1d<br>3h | landing, loom, batten |
 
 ### Enhancements (4)
 
