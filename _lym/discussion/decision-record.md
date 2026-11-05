@@ -18,6 +18,12 @@ Decision: Besides README.md, this task tidies docs/research: its layout, naming 
 
 Rationale: The operator asked for it during the README work, since README.md now points to the studies and the folder is hard to find one's way in.
 
+### Added after Discussion (operator, 2026-11-05): docs/research tidy moves to its own task
+
+Decision: This task changes README.md only again; tidying docs/research becomes a separate board task that the orch files.
+
+Rationale: The operator chose to keep the README work separate from the docs/research cleanup, which touches scripts, a test and code comments.
+
 ## Constraints
 
 ## Auto-mode assumptions
