@@ -63,4 +63,4 @@ wide:
   raddle:
     loom: {raddle_auto_approve: false}
 docs:
-  darn: {darn: {writer: 'sonnet[medium]'}, loom: {code_max_bounces: 0, code_hard_max_bounces: 1, code_reviewer_fan: ""}}
+  darn: {darn: {writer: 'sonnet[medium]'}, loom: {code_max_bounces: 0, code_hard_max_bounces: 1, code_reviewer_fan: ""}, drift: {scope: "off"}}
