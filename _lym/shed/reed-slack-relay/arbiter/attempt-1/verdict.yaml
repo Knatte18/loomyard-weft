@@ -1,0 +1,10 @@
+verdict: resume
+reason: |-
+  Cause hard-cap at round 3, with three open design-wrong findings, all first raised in round 3; the round-3 fixer's changes in the decision record answer each of them against the code.
+  F1 (BLOCKING): the channel and operator ids no longer sit in config. D2 now puts them in a per-hub setup file under `.lym/slack/` that only `lym slack setup` writes, after its checks, and the `slack` config module keeps only `remind_after_min`, so `lym config slack --layer machine` cannot repoint a live relay. `hubWriteRefusal` in `internal/configcli/hubwide.go` is the mistaken-write-only guard D2's rationale cites, the second Bound line now states the true residual, and the D2 acceptance bullet covers it. The fixer did not move the ids to `slack.json` because that file is one per machine while D1 gives each hub its own channel, and that reason holds. No other lym verb writes those files: `lym shuttle state` is read-only.
+  F2 (MEDIUM): D6's pane-ancestry check now refuses a caller in no known pane while any live strand's pane process is unknown or the hub's strands cannot be read. That matches `paneOfPeer` and `resolveSender` in `internal/creelengine/identity.go`. D2 and D3 refer to the check, the acceptance bullets cover the case, and a D6 Bound line covers what the fail-closed choice blocks and the Slack-text fallback.
+  F3 (MEDIUM): D3 puts the first creel read before any Slack poll and ends the relay when creel refuses it for running in a non-orch strand's pane. D9 gives `relay` the internal audience. In `resolveSender`, a peer in a known pane is placed before the unknown-pane branch, so a relay run by hand in a non-orch pane always gets the non-orch refusal and exits, freeing the lock. The lock-holding retry is reachable only by a relay in no known pane, which is the legitimately started one.
+  Note for Plan: creel returns the non-orch-pane refusal as a plain error without a code, so the relay needs a code for it, or its own D6 pane check, to tell that refusal from the retried ones. This is a build detail, not a design defect.
+verbs:
+  - |-
+    lym loom circling accept reed-slack-relay
