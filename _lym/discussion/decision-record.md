@@ -60,6 +60,18 @@ Decision: The README may state the number of landed runs in one plain sentence, 
 
 Rationale: The operator allows the count as context, while keeping the earlier rule against showcasing LoomYard's own usage.
 
+### Added after Discussion (operator, 2026-11-05): Research heading becomes Measurements from its own runs
+
+Decision: The README's research section is headed "Measurements from its own runs" in place of "Self-tuning from its own transcripts".
+
+Rationale: Four cold reviewers read "self-tuning" as an automatic loop, while a person decides each recommendation; the operator accepted the change.
+
+### Added after Discussion (operator, 2026-11-05): Cobra line makes no claim about what Claude knows
+
+Decision: The README says the commands form a Cobra tree that agents list through --help, and drops "a CLI convention Claude knows well".
+
+Rationale: The phrase is an unsupported claim in Claude's favour; the operator asked the README to avoid self-praise and Claude favouring itself.
+
 ## Constraints
 
 ## Auto-mode assumptions
