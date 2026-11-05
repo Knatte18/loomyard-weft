@@ -263,6 +263,13 @@ Rationale: With the heddle entry's 31 bytes this saves 43 bytes in total, past t
   - push-lock-point-parent-decision (class decision, severity MEDIUM, open in rounds 1)
 <!-- /lym:carry-over Discussion-Review -->
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/plan/round-2-review.md; fixer report: _lym/reviews/plan/round-2-fixer-report.md.
+  - await-entry-misses-halted-recheck (class design, severity MEDIUM, open in rounds 2)
+  - ready-refusal-quotes-resume-way-forward (class design, severity MEDIUM, open in rounds 2)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - D1: the pawl recipe builds with the rows Preflight, Record-Write, Beam-Up, Beam-Await, Finalize, Beam-Down, Beam-Await's `on_done` is Finalize, and no recipe row names BeamDescribe.
