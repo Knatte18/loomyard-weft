@@ -64,23 +64,22 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 2d<br>34m | shuttle, codex, loom |
 
-## [P0 Root: entries under no project](project-root.md) (27)
+## [P0 Root: entries under no project](project-root.md) (26)
 
 Owner `neve`
 
-### Tasks (6)
+### Tasks (5)
 
 Concrete and claimable; only a task can run.
 
-#### Running (4)
+#### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Creel mail between hubs with a verified sender and one-way hub trust**<br>• Orchs of different hubs mail each other; the sending daemon confirms the sender, and a hub obeys only the orchs of hubs it lists as trusted | [`creel-cross-hub-mail`](design-creel-cross-hub-mail.md)<br>[Sketch](decision-creel-cross-hub-mail.md) | raddle | Raddle-Write | neve | 6d<br>13m | creel, orch |
-| T2 | **The arbiter settles review escalations and records their decisions, so they never reach the orch**<br>• Decision escalations become eligible for the arbiter, and the arbiter may record decisions and accept or continue a review | [`arbiter-settles-escalations`](design-arbiter-settles-escalations.md) | darn · light | Finalize | neve | 4d<br>37m | burler, arbiter, dobby, orch |
-| T5 | **Slack relay per hub: credentials, setup, inbound and outbound mail, presence and the lym slack verbs** | [`slack-relay`](design-slack-relay.md)<br>[Sketch](decision-slack-relay.md) | tapestry · solid | Plan-Bouncer | neve | 1h<br>23m | reed |
+| T1 | **Creel mail between hubs with a verified sender and one-way hub trust**<br>• Orchs of different hubs mail each other; the sending daemon confirms the sender, and a hub obeys only the orchs of hubs it lists as trusted | [`creel-cross-hub-mail`](design-creel-cross-hub-mail.md)<br>[Sketch](decision-creel-cross-hub-mail.md) | raddle | Raddle-Write | neve | 6d<br>14m | creel, orch |
+| T5 | **Slack relay per hub: credentials, setup, inbound and outbound mail, presence and the lym slack verbs** | [`slack-relay`](design-slack-relay.md)<br>[Sketch](decision-slack-relay.md) | tapestry · solid | Plan-Bouncer | neve | 1h<br>24m | reed |
 | T7 | **Drift compares changed values in code against a sealed expectation, with a separate judge**<br>• General Drift rework: code-side diff of any hub capture keyed by line key or number, structured sealed expectation, containment by code, a judge per changed value | [`drift-rework`](design-drift-rework.md)<br>[Sketch](decision-drift-rework.md) | tapestry · solid | Webster | neve | 1d<br>4h | drift, loom, darn, stencil, config |
 
 #### Ready (0)
@@ -122,7 +121,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B1 | L | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• Not a problem now; if built, only after F6 Slack relay, as a Slack reminder ping while a PR-Review waits on the operator | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 1d<br>34m | landing, loom, batten |
 | B3 |  | **A finished motif whose Sketch the board refuses stays a draft task with no notice to the orch**<br>• The refusal only logs a Warn; the orch learns of it from a tidy report | [`motif-sketch-refusal-silent`](design-motif-sketch-refusal-silent.md) | 33m<br>33m | loom, board, orch |
-| B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 25m<br>25m | reed, orch |
+| B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 26m<br>26m | reed, orch |
 | B5 |  | **A parent cannot withdraw a PATTERN change the decision record declares**<br>• lym loom decision add only appends PATTERN bullets; a declared id the parent drops needs a hand edit of the record | [`decision-withdraw-pattern`](design-decision-withdraw-pattern.md) | 13m<br>13m | loom, parsers, pattern |
 | B6 |  | **Raddle on a Sketch fails to start because the motif run that made it already completed under the same slug**<br>• Dobby refuses the raddle run until lym batten cleanup --apply removes the motif run dir | [`raddle-same-slug-completed`](design-raddle-same-slug-completed.md) | 13m<br>13m | batten, dobby, loom |
 
@@ -149,3 +148,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>34m | burler, shed, orch, quarry, report |
 | F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 11h<br>11h | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 11h<br>11h | batten, board, fabric, workspaces |
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T2 | **The arbiter settles review escalations and records their decisions, so they never reach the orch**<br>• Decision escalations become eligible for the arbiter, and the arbiter may record decisions and accept or continue a review | [`arbiter-settles-escalations`](design-arbiter-settles-escalations.md) | 4d<br>37m | burler, arbiter, dobby, orch |
