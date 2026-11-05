@@ -1,6 +1,6 @@
 # A plain promote of a Sketch starts raddle
 
-`sketch-promote-raddle` · Task · enhancement, board · running · Worktree-Create
+`sketch-promote-raddle` · Task · enhancement, board · running · Seed-Child
 
 ## Seen (2026-11-05)
 
