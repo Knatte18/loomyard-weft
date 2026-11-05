@@ -661,7 +661,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "dd16c882ad00ef2ad3da669398a0b698",
   "masterSessionId": "46bcafb1-5b55-422f-b4b9-8099327fe599",
   "masterEngine": "claude",
@@ -775,8 +775,33 @@
       "startSha": "b3944e8193c0995de85a3557bb777ff3706026ce",
       "kind": "recovery",
       "spawnedAt": "2026-11-05T11:54:49Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-report-config",
+        "status": "done",
+        "head_sha": "c0b0980113bb8ad2885da901f95d3ca7870d6fa5",
+        "deviations": [
+          "internal/discussionparser/partsplice.go",
+          "internal/discussionparser/partsplice_test.go",
+          "internal/loomengine/config_test.go",
+          "internal/loomengine/raddlepaths.go",
+          "internal/raddleparser/check.go",
+          "internal/raddleparser/check_test.go",
+          "internal/raddleparser/fixture_test.go",
+          "internal/raddleparser/proposal.go",
+          "internal/raddleparser/proposal_test.go",
+          "internal/raddleparser/recheck.go",
+          "internal/reportcli/cost.go",
+          "internal/reportconfig/config.go",
+          "internal/reportengine/cost.go",
+          "internal/reportengine/cost_test.go",
+          "internal/reportengine/costmarkdown.go"
+        ]
+      },
+      "cardShas": [
+        "c0b0980113bb8ad2885da901f95d3ca7870d6fa5"
+      ],
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/7c8333ff-47b7-4804-bb88-3066d2caf642/subagents/agent-ab8364109d32bf43c.jsonl"
       ],
