@@ -1,12 +1,13 @@
-<!-- This is the decision detail of the Bouncer's escalation brief for cause `decision`: the questions only the run's parent can settle, the BLOCKING findings the round's review holds, the refusal the recorded answer would meet, and the verbs that record it.
+<!-- This is the decision detail of the Bouncer's escalation brief for cause `decision`: the questions the review cannot settle itself, the BLOCKING findings the round's review holds, the refusal the recorded answer would meet, and the verbs that record it.
      renderDecisionDetail fills it and passes the result as the brief's cause_detail marker, after the cause list.
      Every marker below is a top-level {{.X}} substitution: slug, decision_findings, blocking_findings, refusal and decide_verbs, each Go-filled and non-empty.
-lym-stencil: sha256=06ff486371a58dbe838359bda57af018249de4dd136b51fd0140a19b49301184 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+lym-stencil: sha256=0c1a1d02814bd1b78883ce535c8435f76e63839074e0b2033b48aa55a4435b67 build=e45949b21285d1690783771ee8b872cdb086de72 time=2026-11-05T17:37:52Z -->
 
 ### Decision findings
 
-Each finding below is a question only the run's parent can settle.
-Put each to the operator, unless a recorded operator decision answers it.
+Each finding below is a question the review could not settle itself.
+Where an arbiter runs, it settles each finding the board entry and the decision record answer before the parent sees it.
+Put each remaining finding to the operator, unless a recorded operator decision answers it.
 
 {{.decision_findings}}
 
