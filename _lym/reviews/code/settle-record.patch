@@ -1,0 +1,907 @@
+diff --git a/cmd/lym/gitrepoboundary_test.go b/cmd/lym/gitrepoboundary_test.go
+index 388ddfc6..e8347f16 100644
+--- a/cmd/lym/gitrepoboundary_test.go
++++ b/cmd/lym/gitrepoboundary_test.go
+@@ -75,6 +75,9 @@ var gitrepoPinnedRunBoundMethods = []string{
+ 	"CherryPickAbort",
+ 	"pushWithRebaseRetry",
+ 	"pushPlainWithRetry",
++	"resolvePushDestination",
++	"recordPush",
++	"moveTrackingRef",
+ 	"HasUnpushed",
+ 	"HasUnpulled",
+ 	"DeleteRemoteBranch",
+diff --git a/internal/boardengine/boardtest/sync_test.go b/internal/boardengine/boardtest/sync_test.go
+index 25f461d0..04597389 100644
+--- a/internal/boardengine/boardtest/sync_test.go
++++ b/internal/boardengine/boardtest/sync_test.go
+@@ -25,7 +25,7 @@ import (
+ // fresh hub's records primary carries a local-only "initialise records primary branch" commit with no
+ // @{u} yet. This establishes tracking by pushing that commit against this hub's own per-test copy
+ // of the bare (never the cached template) -- exactly what boardengine's own first real Sync would
+-// otherwise do via push.autoSetupRemote, done once up front so "before" reflects a board that has
++// otherwise do when its push set the upstream, done once up front so "before" reflects a board that has
+ // already been synced once, matching the old fixture's pre-established state.
+ func newSyncRepo(t *testing.T) (work string, remoteCommits, localCommits func() int) {
+ 	t.Helper()
+diff --git a/internal/fabricengine/archive.go b/internal/fabricengine/archive.go
+index ac2a3140..fef11839 100644
+--- a/internal/fabricengine/archive.go
++++ b/internal/fabricengine/archive.go
+@@ -83,7 +83,7 @@ func ArchiveTagName(slug, tip string) string {
+ //
+ // With a branch on both sides it reads origin's tip and fetches it by SHA when it differs from the local tip, so both tips are present locally to compare.
+ // With pushBranch set and origin lacking the local tip, because origin has no branch or its tip is neither the local tip nor a descendant of it, it pushes the local tip to the weft branch alone first:
+-// rebase-free, the code branch not pushed, under the remote-refs lock, and with no local branch needed.
++// rebase-free, the code branch not pushed, its tracking ref written under the remote-refs lock, and with no local branch needed.
+ // A refused branch push is logged at Warn and never fails the archive.
+ // It then tags and pushes the local tip, and, when origin's tip after that push is neither the local tip nor an ancestor of it, tags and pushes that tip too.
+ // The returned weftArchive names the tags and the origin tip a later delete is leased on.
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 85c51299..4336f8d0 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -68,7 +68,8 @@
+ // Only the heads origin moved past the local tracking ref are then fetched, one fetch per repository.
+ // A judge-only reconcile fetches their objects by SHA into no ref and writes no FETCH_HEAD, so it moves nothing.
+ // The reconcile holds each repository's remote-refs lock (`gitrepo.Repo.HoldRemoteRefs`) from the ls-remote pair through the last branch verdict, the code repository's first,
+-// so a push or fetch of either repository waits for the verdicts, and a push already in flight lands before origin is read and is never judged a rewind.
++// so a fetch, or a push's tracking-ref write, of either repository waits for the verdicts.
++// A push transfers outside the lock and writes its tracking ref only after the verdicts, so one that lands meanwhile is judged against the origin read before it and never a rewind.
+ // A transport failure through the bound is `OriginReport.Unreachable`, with nothing judged and nothing moved, and a nil error.
+ // Any other failure of the ls-remote pair, or a failed fetch after both answered, is the returned error.
+ //
+diff --git a/internal/fabricengine/originreconcile.go b/internal/fabricengine/originreconcile.go
+index 132bb945..1b735ccc 100644
+--- a/internal/fabricengine/originreconcile.go
++++ b/internal/fabricengine/originreconcile.go
+@@ -711,7 +711,7 @@ func samePath(porcelain, built string) bool {
+ }
+ 
+ // ReconcileOrigin judges this machine's local branches against origin and returns the verdict on each, and on each entry whose pair has a batten run record.
+-// It runs one ls-remote per repository and fetches only the heads origin moved, holding each repository's remote-refs lock from the ls-remote through the branch verdicts, so a push in flight is never judged a rewind.
++// It runs one ls-remote per repository and fetches only the heads origin moved, holding each repository's remote-refs lock from the ls-remote through the branch verdicts, so no push's tracking-ref write lands between them and a push in flight is never judged a rewind.
+ // It reads the ended set, and tears down through the seam the local pair of each run origin has ended, before any branch moves; a judge-only scope reports those teardowns and runs none.
+ // It also asks the owner seam, over origin's Bolt tip, which recorded entries another machine owns, and reports those owned_elsewhere.
+ // A judge-only scope stops there.
+@@ -781,9 +781,9 @@ func ReconcileOrigin(l *lymcwd.Location, scope ReconcileScope, seams OriginSeams
+ 
+ // judgeAgainstOrigin reads origin's heads of both repositories, fetches the heads origin moved past their tracking refs and returns the verdict on each target.
+ // It holds the remote-refs lock of the code repository and then of the records repository throughout,
+-// so a push or fetch of either repository finishes before origin is read, or starts after every verdict, and never lands between the read and the verdict.
++// so a fetch, or the tracking-ref write that follows a push's transfer, of either repository finishes before origin is read, or starts after every verdict, and never lands between the read and the verdict.
+ // The locks are held through the ls-remote retries and their sleeps, bounded by opts' RetryBound,
+-// so an unreachable origin blocks every fetch and push of both repositories for that bound.
++// so an unreachable origin blocks every fetch and every push's tracking-ref write of both repositories for that bound.
+ // A transport failure that outlasts the retry bound returns unreachable true with no verdict and a nil error.
+ func judgeAgainstOrigin(targets []originTarget, warpDir, recordsDir string, judgeOnly bool, opts ReconcileOptions) (branches []BranchOutcome, unreachable bool, err error) {
+ 	for _, dir := range []string{warpDir, recordsDir} {
+diff --git a/internal/fabricengine/reflog.go b/internal/fabricengine/reflog.go
+index a10316ea..1b9bef9c 100644
+--- a/internal/fabricengine/reflog.go
++++ b/internal/fabricengine/reflog.go
+@@ -12,9 +12,6 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/gitrepo"
+ )
+ 
+-// pushReflogSubject is the reflog subject git writes for a remote-tracking ref this machine's own push updated.
+-const pushReflogSubject = "update by push"
+-
+ // rewriteKind is how origin moved a branch past this machine's tip.
+ type rewriteKind int
+ 
+@@ -28,7 +25,7 @@ const (
+ 	rewriteRewritten
+ )
+ 
+-// trackingReflog returns the values of the remote-tracking ref trackingRef in repoDir, newest last, from the last entry this machine's own push wrote onward.
++// trackingReflog returns the values of the remote-tracking ref trackingRef in repoDir, newest last, from the last entry lym's own recorded push wrote onward.
+ // A reflog holding no push entry, as for a branch this machine never pushed, returns every value it holds.
+ // A ref with no reflog returns none.
+ func trackingReflog(repoDir, trackingRef string) ([]string, error) {
+@@ -51,7 +48,7 @@ func trackingReflog(repoDir, trackingRef string) ([]string, error) {
+ 			continue
+ 		}
+ 		values = append(values, sha)
+-		if strings.HasPrefix(subject, pushReflogSubject) {
++		if strings.HasPrefix(subject, gitrepo.PushReflogSubject) {
+ 			break
+ 		}
+ 	}
+diff --git a/internal/gitrepo/doc.go b/internal/gitrepo/doc.go
+index 4070fa99..8131be8f 100644
+--- a/internal/gitrepo/doc.go
++++ b/internal/gitrepo/doc.go
+@@ -54,9 +54,11 @@
+ //     fetch-without-merge sibling, refreshing remote-tracking refs without
+ //     ever moving the local branch.
+ //   - HoldRemoteRefs takes the repository's remote-refs lock, a file in the common git dir every worktree shares.
+-//     Fetch, FetchWithArgs, Pull, every push method including PushBranch, and DropRemoteTracking, which deletes a branch's remote-tracking ref and upstream setting, run git under it, waiting while it is held,
++//     Fetch, FetchWithArgs, Pull and DropRemoteTracking, which deletes a branch's remote-tracking ref and upstream setting, run git under it, waiting while it is held,
+ //     since a fetch and a push both write the shared remote-tracking refs and two concurrent writers of one ref make the loser fail.
+-//     A caller that reads origin and then judges the tracking refs holds it across both.
++//     Every push method sends to the remote's push URL outside the lock, so git writes no tracking ref during the transfer, a slow or retried transfer included;
++//     once the transfer succeeded it takes the lock to move or delete the branch's tracking ref and, for a first push of the checked-out branch, to set its upstream.
++//     A caller that reads origin and then judges the tracking refs holds it across both, so no tracking-ref write lands between the read and the verdict.
+ //     It passes the process's pause gate before it takes the lock and stays admitted until the release, so a pause never holds a lock holder that other processes wait on.
+ //   - IsAncestor is the ancestry/reachability primitive: it answers "is sha
+ //     an ancestor of ref" via `git merge-base --is-ancestor`, mapping git's
+@@ -176,11 +178,11 @@
+ // Push and PushCoalesced are both push-only — committing is always the
+ // caller's separate, prior step, whether via StageAndCommit's explicit list
+ // or board's StageAllAndCommit wildcard escape hatch; push itself never
+-// stages anything. Every push goes through `git -c push.autoSetupRemote=true
+-// push`, so a checkout's very first push (no upstream configured yet) still
+-// succeeds and establishes tracking instead of failing outright — a
+-// checkout with no upstream configured is always treated as having
+-// something to push, so the first push is attempted rather than skipped.
++// stages anything.
++// Every push names its branch explicitly: the checked-out branch goes to the same-named branch of its push remote, its upstream remote or origin.
++// A branch with no upstream takes that remote branch as its upstream once the push succeeded, as git's push.autoSetupRemote would set it.
++// A checkout's very first push therefore establishes tracking instead of failing outright.
++// A checkout with no upstream configured is always treated as having something to push, so the first push is attempted rather than skipped.
+ // Push runs a single git push and transparently recovers from exactly one
+ // non-fast-forward-style rejection (stderr containing "non-fast-forward",
+ // "rejected", or "fetch first") via one `pull --rebase` before retrying; the
+diff --git a/internal/gitrepo/push.go b/internal/gitrepo/push.go
+index f1604819..2a693907 100644
+--- a/internal/gitrepo/push.go
++++ b/internal/gitrepo/push.go
+@@ -1,5 +1,8 @@
+ // push.go implements the push surface: Push (a single synchronous push with rebase-retry resilience), PushCoalesced (a single-pusher lock plus one guarded push, coalescing across processes via the lock queue rather than an internal retry loop), PushRebaseFree (a single plain push that never rebases, for callers that supply their own serialization), PushBranch (the same plain push of a named branch to a named remote, checked out or not), DropRemoteTracking (the removal of a branch's remote-tracking ref and upstream setting), and DeleteRemoteBranch (a single remote branch deletion, idempotent when the ref is already absent), DeleteRemoteBranchLeased (the same deletion, only while the remote branch sits at an expected SHA), and UpdateRemoteBranchLeased (a forced move of a remote branch, only while it sits at an expected SHA).
+-// All of them are push-shaped remote calls, the tracking-ref drop included, each git call run under the repository's remote-refs lock; committing is always the caller's separate StageAndCommit or StageAllAndCommit call.
++// Each push sends to the remote's push URL outside the repository's remote-refs lock, so git writes no remote-tracking ref while the transfer runs.
++// Once the transfer succeeded, the push records the result in the tracking ref under the lock.
++// The tracking-ref drop runs wholly under the lock.
++// Committing is always the caller's separate StageAndCommit or StageAllAndCommit call.
+ 
+ package gitrepo
+ 
+@@ -11,6 +14,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/gitexec"
+ 	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/logger"
+ )
+ 
+ // ErrPushRejected is matched with errors.Is against the error PushRebaseFree returns when the remote rejected the push, as not a fast-forward or for a remote reason such as a declining hook.
+@@ -82,9 +86,8 @@ func (e abortedRebaseError) Error() string { return e.message }
+ // Unwrap returns ErrPullRebaseFailed.
+ func (e abortedRebaseError) Unwrap() error { return ErrPullRebaseFailed }
+ 
+-// pushWithRebaseRetry runs git push and on rebaseRetryTrigger matches, runs
+-// git pull --rebase once and retries, aborting if rebase fails. Sets
+-// push.autoSetupRemote=true so first push establishes tracking.
++// pushWithRebaseRetry pushes the checked-out branch and on rebaseRetryTrigger matches runs git pull --rebase once and retries, aborting if the rebase fails.
++// A first push establishes tracking.
+ // A rebase that failed and was aborted returns an error satisfying errors.Is(err, ErrPullRebaseFailed).
+ func (r *Repo) pushWithRebaseRetry() error {
+ 	err := r.pushPlainWithRetry("", "", "")
+@@ -136,37 +139,59 @@ func (r *Repo) pushWithRebaseRetry() error {
+ 	return nil
+ }
+ 
+-// pushPlainWithRetry runs the plain push through PushWithRetry, each attempt under the remote-refs lock and every backoff outside it.
+-// With remote and branch both empty it pushes the checked-out branch to its configured destination; a branch that cannot be read leaves the ref empty, so nothing is retried.
++// pushPlainWithRetry runs the plain push through PushWithRetry, every attempt and backoff outside the remote-refs lock, and records the pushed commit in the branch's tracking ref under the lock once an attempt succeeds.
++// With remote and branch both empty it pushes the checked-out branch to the same-named branch of its default push remote, and gives a branch with no upstream that remote's branch as its upstream.
+ // With a named branch it pushes source, or refs/heads/<branch> when source is empty, to refs/heads/<branch> on remote, and the branch need not be checked out.
++// The commit recorded is the one source names when the push starts.
+ func (r *Repo) pushPlainWithRetry(remote, source, branch string) error {
+-	pushArgs := []string{"-c", "push.autoSetupRemote=true", "push"}
+ 	if branch == "" {
+-		branch, _ = r.CurrentBranch()
+-	} else {
+-		if source == "" {
+-			source = "refs/heads/" + branch
++		current, err := r.CurrentBranch()
++		if err != nil {
++			return err
+ 		}
+-		pushArgs = append(pushArgs, remote, source+":refs/heads/"+branch)
++		branch = current
+ 	}
+-	return PushWithRetry(func() error {
+-		return r.withRemoteRefs(func() error {
+-			_, err := r.runChecked(pushArgs...)
+-			return err
+-		})
++	if source == "" {
++		source = "refs/heads/" + branch
++	}
++	dest, err := r.resolvePushDestination(remote, branch)
++	if err != nil {
++		return err
++	}
++	sha, err := r.ResolveSHA(source)
++	if err != nil {
++		return err
++	}
++	err = PushWithRetry(func() error {
++		_, err := r.runChecked("push", dest.url, source+":refs/heads/"+branch)
++		return err
+ 	}, branch, PushBackoffDelays(), r.pushSleep)
++	if err != nil {
++		return err
++	}
++	r.recordLandedPush(dest, sha, true)
++	return nil
++}
++
++// recordLandedPush records a push whose transfer already landed, logging a failure of the record instead of returning it.
++// The remote has changed, so reporting the push as failed would be wrong.
++// A fetch corrects a tracking ref the push moved, whereas one a delete left behind stays until something drops it; the warning names that ref.
++func (r *Repo) recordLandedPush(dest pushDestination, sha string, keepNewer bool) {
++	if err := r.recordPush(dest, sha, keepNewer); err != nil {
++		logger.Warn("gitrepo: push landed but its tracking ref was not recorded", "branch", dest.branch, "trackingRef", dest.trackingRef, "error", err)
++	}
+ }
+ 
+ // PushBranch pushes the local branch to the same-named branch on the named remote, without rebasing or forcing; the branch need not be checked out.
+ // A rejection returns an error wrapping ErrPushRejected with git's rejection line, a refusal for want of authentication or permission wraps ErrPushAuthRefused,
+ // and a retryable remote refusal that outlasts the bounded retry wraps ErrPushRetriesExhausted.
+-// The push writes the branch's remote-tracking ref, each attempt under the remote-refs lock.
++// The transfer runs outside the remote-refs lock, and the branch's remote-tracking ref is written under it afterwards.
+ func (r *Repo) PushBranch(remote, branch string) error {
+ 	return mapPlainPushError(r.pushPlainWithRetry(remote, "", branch))
+ }
+ 
+ // PushCommit pushes the commit sha to the branch on the named remote, without rebasing or forcing, so it needs no local branch.
+-// It answers the errors PushBranch answers, and its push writes the branch's remote-tracking ref, each attempt under the remote-refs lock.
++// It answers the errors PushBranch answers, and records the push in the branch's remote-tracking ref as PushBranch does.
+ func (r *Repo) PushCommit(remote, sha, branch string) error {
+ 	return mapPlainPushError(r.pushPlainWithRetry(remote, sha, branch))
+ }
+@@ -193,12 +218,11 @@ func (r *Repo) DropRemoteTracking(remote, branch string) error {
+ 	})
+ }
+ 
+-// PushRebaseFree runs git push without rebasing, establishing upstream via
+-// push.autoSetupRemote=true.
++// PushRebaseFree pushes the checked-out branch without rebasing, giving a branch with no upstream its remote branch as upstream.
+ // A rejection, as not a fast-forward or for a remote reason such as a declining hook, returns an error wrapping ErrPushRejected with git's rejection line.
+ // A remote "(failed)" or "cannot lock ref" refusal is retried a bounded number of times, and an exhausted retry wraps ErrPushRetriesExhausted rather than mapping to ErrPushRejected.
+ // A refusal for want of authentication or permission wraps ErrPushAuthRefused with git's refusal line, is never retried, and never maps to ErrPushRejected.
+-// It takes no push-serialising lock of its own; each attempt runs under the repository's remote-refs lock.
++// It takes no push-serialising lock of its own; the transfer runs outside the repository's remote-refs lock, and the tracking ref and upstream are written under it afterwards.
+ func (r *Repo) PushRebaseFree() error {
+ 	return mapPlainPushError(r.pushPlainWithRetry("", "", ""))
+ }
+@@ -242,12 +266,16 @@ func lastLineHolding(stderr string, triggers []string) (line string, found bool)
+ // idempotent for an already-absent target and the common case is a branch that was never pushed.
+ // deleted is returned separately from err precisely so the caller can tell "removed it" from "there
+ // was nothing there", which is what the caller's mutation record needs.
++// The deletion runs outside the remote-refs lock, and the branch's remote-tracking ref is deleted under it afterwards.
+ func (r *Repo) DeleteRemoteBranch(remote, branch string) (deleted bool, err error) {
+-	err = r.withRemoteRefs(func() error {
+-		_, err := r.runChecked("push", remote, "--delete", branch)
+-		return err
+-	})
++	dest, err := r.resolvePushDestination(remote, branch)
++	if err != nil {
++		return false, err
++	}
++	// The short branch name makes git report an absent remote ref; a full refs/heads/ name deletes a missing ref silently.
++	_, err = r.runChecked("push", dest.url, "--delete", branch)
+ 	if err == nil {
++		r.recordLandedPush(dest, "", false)
+ 		return true, nil
+ 	}
+ 
+@@ -265,17 +293,20 @@ func (r *Repo) DeleteRemoteBranch(remote, branch string) (deleted bool, err erro
+ // the lease names a SHA the caller saw, so a branch that moved or vanished since is a failed lease.
+ // A failed lease returns an error matching ErrLeaseRejected under errors.Is and naming expectSHA;
+ // every other failure returns the wrapped git error and never matches it.
++// The deletion runs outside the remote-refs lock, and the branch's remote-tracking ref is deleted under it afterwards.
+ func (r *Repo) DeleteRemoteBranchLeased(remote, branch, expectSHA string) error {
+ 	if !validSHA(expectSHA) {
+ 		return ErrInvalidSHA
+ 	}
+ 
+-	lease := "--force-with-lease=refs/heads/" + branch + ":" + expectSHA
+-	err := r.withRemoteRefs(func() error {
+-		_, err := r.runChecked("push", lease, remote, "--delete", branch)
++	dest, err := r.resolvePushDestination(remote, branch)
++	if err != nil {
+ 		return err
+-	})
++	}
++	lease := "--force-with-lease=refs/heads/" + branch + ":" + expectSHA
++	_, err = r.runChecked("push", lease, dest.url, "--delete", branch)
+ 	if err == nil {
++		r.recordLandedPush(dest, "", false)
+ 		return nil
+ 	}
+ 	var gitErr *gitexec.GitError
+@@ -290,17 +321,20 @@ func (r *Repo) DeleteRemoteBranchLeased(remote, branch, expectSHA string) error
+ // A branch that moved or vanished since expectSHA was read is a failed lease, returned bare as ErrLeaseRejected;
+ // every other failure (network, authentication, a hook rejection) returns the wrapped git error and never the sentinel.
+ // It is the package's only force-shaped push: fabric's destruction gate is its only caller, and it never takes a lease it did not read itself.
++// The transfer runs outside the remote-refs lock, and the branch's remote-tracking ref moves to sha under it afterwards.
+ func (r *Repo) UpdateRemoteBranchLeased(remote, branch, sha, expectSHA string) error {
+ 	if !validSHA(sha) || !validSHA(expectSHA) {
+ 		return ErrInvalidSHA
+ 	}
+ 
+-	lease := "--force-with-lease=refs/heads/" + branch + ":" + expectSHA
+-	err := r.withRemoteRefs(func() error {
+-		_, err := r.runChecked("push", lease, remote, sha+":refs/heads/"+branch)
++	dest, err := r.resolvePushDestination(remote, branch)
++	if err != nil {
+ 		return err
+-	})
++	}
++	lease := "--force-with-lease=refs/heads/" + branch + ":" + expectSHA
++	_, err = r.runChecked("push", lease, dest.url, sha+":refs/heads/"+branch)
+ 	if err == nil {
++		r.recordLandedPush(dest, sha, false)
+ 		return nil
+ 	}
+ 	// ErrLeaseRejected is a sentinel consumers match with errors.Is, so it is returned bare.
+diff --git a/internal/gitrepo/push_destination_integration_test.go b/internal/gitrepo/push_destination_integration_test.go
+new file mode 100644
+index 00000000..2b45eb77
+--- /dev/null
++++ b/internal/gitrepo/push_destination_integration_test.go
+@@ -0,0 +1,157 @@
++// push_destination_integration_test.go covers where a push lands against real git repositories.
++// It covers the remote a default push picks from the branch's and repository's settings, and the pushes that record no remote-tracking ref.
++
++package gitrepo_test
++
++import (
++	"fmt"
++	"os"
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/gitrepo"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// featureClone returns a clone of a published bare remote, checked out on a new branch "feature" with one unpushed commit, and that commit.
++func featureClone(t *testing.T) (clone, origin, commit string) {
++	t.Helper()
++	clone, origin = publishedClone(t)
++	gitkit.Git(t, clone, "checkout", "-b", "feature")
++	return clone, origin, gitkit.CommitFile(t, clone, "feature.txt", "feature", "feature commit")
++}
++
++func TestPushRebaseFree_ADefaultPushGoesToTheRemoteTheSettingsPick(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	tests := []struct {
++		name string
++		// config is the `git config` arguments run in the clone before the push.
++		config     [][]string
++		wantRemote string
++	}{
++		{"BranchPushRemote", [][]string{{"branch.feature.pushRemote", "second"}}, "second"},
++		{"BranchPushRemoteOverPushDefault", [][]string{{"branch.feature.pushRemote", "second"}, {"remote.pushDefault", "origin"}}, "second"},
++		{"PushDefault", [][]string{{"remote.pushDefault", "second"}}, "second"},
++		{"PushDefaultOverUpstreamRemote", [][]string{{"remote.pushDefault", "second"}, {"branch.feature.remote", "origin"}, {"branch.feature.merge", "refs/heads/feature"}}, "second"},
++		{"UpstreamRemote", [][]string{{"branch.feature.remote", "second"}, {"branch.feature.merge", "refs/heads/feature"}}, "second"},
++		{"OriginWhenNothingIsSet", nil, "origin"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			clone, origin, commit := featureClone(t)
++			second := newBareRemote(t, t.TempDir())
++			gitkit.Git(t, clone, "remote", "add", "second", second)
++			for _, setting := range tt.config {
++				gitkit.Git(t, clone, append([]string{"config"}, setting...)...)
++			}
++
++			if err := gitrepo.New(clone).PushRebaseFree(); err != nil {
++				t.Fatalf("PushRebaseFree() error = %v; want nil", err)
++			}
++
++			bares := map[string]string{"origin": origin, "second": second}
++			for remote, bare := range bares {
++				wantCommit := ""
++				if remote == tt.wantRemote {
++					wantCommit = commit
++				}
++				if got := branchSHA(t, bare, "refs/heads/feature"); got != wantCommit {
++					t.Errorf("%s's feature = %q; want %q", remote, got, wantCommit)
++				}
++				if got := branchSHA(t, clone, "refs/remotes/"+remote+"/feature"); got != wantCommit {
++					t.Errorf("refs/remotes/%s/feature = %q; want %q", remote, got, wantCommit)
++				}
++			}
++		})
++	}
++}
++
++func TestPush_AFailedRecordAfterALandedTransferStillSucceeds(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	tests := []struct {
++		name   string
++		branch string
++		// prepare readies the clone and returns the push to run and the commit origin's branch holds afterwards, empty for a deleted branch.
++		prepare func(t *testing.T, clone string, repo *gitrepo.Repo) (call func() error, want string)
++	}{
++		{"PushBranch", "feature", func(t *testing.T, clone string, repo *gitrepo.Repo) (func() error, string) {
++			gitkit.Git(t, clone, "checkout", "-b", "feature")
++			want := gitkit.CommitFile(t, clone, "feature.txt", "feature", "feature commit")
++			return func() error { return repo.PushBranch("origin", "feature") }, want
++		}},
++		{"DeleteRemoteBranch", "doomed", func(t *testing.T, clone string, repo *gitrepo.Repo) (func() error, string) {
++			gitkit.Git(t, clone, "push", "origin", "main:doomed")
++			return func() error {
++				deleted, err := repo.DeleteRemoteBranch("origin", "doomed")
++				if err == nil && !deleted {
++					return fmt.Errorf("DeleteRemoteBranch() deleted = false; want true")
++				}
++				return err
++			}, ""
++		}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			clone, origin := publishedClone(t)
++			repo := gitrepo.New(clone)
++			call, want := tt.prepare(t, clone, repo)
++			commonDir, err := repo.CommonDir()
++			if err != nil {
++				t.Fatalf("CommonDir() error = %v", err)
++			}
++			// A leftover lock file makes git refuse to write the tracking ref, so the record step fails after the transfer landed.
++			lockFile := filepath.Join(commonDir, "refs", "remotes", "origin", tt.branch+".lock")
++			if err := os.WriteFile(lockFile, nil, 0o644); err != nil {
++				t.Fatalf("write %s: %v", lockFile, err)
++			}
++
++			if err := call(); err != nil {
++				t.Errorf("%s error = %v; want nil, since the transfer landed", tt.name, err)
++			}
++			if got := branchSHA(t, origin, "refs/heads/"+tt.branch); got != want {
++				t.Errorf("origin's %s = %q; want %q", tt.branch, got, want)
++			}
++		})
++	}
++}
++
++func TestPushBranch_APushWithNoTrackingRefToWriteLandsAndRecordsNothing(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	tests := []struct {
++		name string
++		// remoteFor readies the clone and returns the remote argument of the push.
++		remoteFor func(t *testing.T, clone, bare string) string
++	}{
++		{"RemoteGivenAsAPath", func(t *testing.T, clone, bare string) string { return bare }},
++		{"RemoteWhoseFetchRefspecMapsOnlyAnotherBranch", func(t *testing.T, clone, bare string) string {
++			gitkit.Git(t, clone, "remote", "add", "-t", "other", "second", bare)
++			return "second"
++		}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			clone, _, commit := featureClone(t)
++			second := newBareRemote(t, t.TempDir())
++			remote := tt.remoteFor(t, clone, second)
++			trackingBefore := gitkit.Git(t, clone, "for-each-ref", "refs/remotes")
++
++			if err := gitrepo.New(clone).PushBranch(remote, "feature"); err != nil {
++				t.Fatalf("PushBranch(%q, feature) error = %v; want nil", remote, err)
++			}
++
++			if got := branchSHA(t, second, "refs/heads/feature"); got != commit {
++				t.Errorf("the pushed-to remote's feature = %q; want %q", got, commit)
++			}
++			if got := gitkit.Git(t, clone, "for-each-ref", "refs/remotes"); got != trackingBefore {
++				t.Errorf("remote-tracking refs after the push = %q; want them unchanged at %q", got, trackingBefore)
++			}
++		})
++	}
++}
+diff --git a/internal/gitrepo/push_test.go b/internal/gitrepo/push_test.go
+index 0aa33b25..26943575 100644
+--- a/internal/gitrepo/push_test.go
++++ b/internal/gitrepo/push_test.go
+@@ -112,7 +112,7 @@ func resetToUpstream(t *testing.T, dir string) {
+ // Clone A's very first Push() has no upstream configured yet and must both succeed and establish tracking.
+ // Clone B then pushes ahead, putting clone A's next push into a non-fast-forward that Push() must recover from via one pull --rebase retry, landing every commit on the remote.
+ // The rebase-retry's refusals follow: a dirty tracked file aborts the pull --rebase so Push() surfaces an error instead of silently recovering (a caller-precondition failure, not a gitrepo bug — the caller owns a clean tree of tracked files), and a genuine content conflict stops the rebase mid-way, where Push must surface an error AND leave the repository fully restored — clean worktree, no rebase in progress, HEAD back on the local commit — because the rebase-retry's contract is to never leave a rebase half-done.
+-// PushRebaseFree never recovers a non-fast-forward rejection: it returns an error satisfying errors.Is(err, gitrepo.ErrPushRejected) and leaves the working tree completely untouched, a remote refusing for want of permission returns gitrepo.ErrPushAuthRefused after one attempt, and on a fresh clone it establishes tracking by applying push.autoSetupRemote=true exactly as Push's own first-push path does.
++// PushRebaseFree never recovers a non-fast-forward rejection: it returns an error satisfying errors.Is(err, gitrepo.ErrPushRejected) and leaves the working tree completely untouched, a remote refusing for want of permission returns gitrepo.ErrPushAuthRefused after one attempt, and on a fresh clone it establishes tracking exactly as Push's own first-push path does.
+ // The steps run serially in that order and share the remote and clones A and B: the dirty and diverged steps each start by returning clone A to the remote's tip, and the steps after the first rely on clone A's upstream and on clone B, which the rebase-retry step clones.
+ // The top-level test calls t.Parallel; no step does, because the steps share the fixture.
+ func TestPush(t *testing.T) {
+diff --git a/internal/gitrepo/pushdestination.go b/internal/gitrepo/pushdestination.go
+new file mode 100644
+index 00000000..8382e03e
+--- /dev/null
++++ b/internal/gitrepo/pushdestination.go
+@@ -0,0 +1,138 @@
++// pushdestination.go resolves where a push lands: the URL git sends to and the remote-tracking ref that records the branch locally.
++// It also records a finished push in that ref, and in the branch's upstream setting, under the remote-refs lock.
++
++package gitrepo
++
++import (
++	"errors"
++	"fmt"
++	"strings"
++
++	"github.com/go-git/go-git/v5"
++	"github.com/go-git/go-git/v5/plumbing"
++)
++
++// defaultPushRemote is the remote a push of the checked-out branch goes to when neither the branch nor the repository names one.
++const defaultPushRemote = "origin"
++
++// PushReflogSubject is the reflog subject of a remote-tracking ref a recorded push moves.
++// A push's own recording writes it, and a reader of the reflog finds the last push boundary by it.
++const PushReflogSubject = "update by push"
++
++// pushDestination is where a push of one branch lands and how this repository records it.
++// url is what git pushes to: a URL writes no remote-tracking ref, so the transfer runs outside the remote-refs lock.
++// trackingRef is the ref the remote's fetch refspecs map the branch to, empty when the remote is no configured remote or no refspec maps the branch.
++// setUpstream is set for a default push of a branch with no upstream yet, which then takes the remote's branch as its upstream, as git's push.autoSetupRemote does.
++type pushDestination struct {
++	remote      string
++	branch      string
++	url         string
++	trackingRef string
++	setUpstream bool
++}
++
++// resolvePushDestination returns where a push of branch to remote lands.
++// An empty remote is the default push of the checked-out branch: the branch's push remote, the repository's push default, the branch's upstream remote or origin, in that order.
++// A remote that names no configured remote is pushed to as a URL or path, and records nothing.
++func (r *Repo) resolvePushDestination(remote, branch string) (pushDestination, error) {
++	dest, err := readGoGit(r, func(repo *git.Repository) (pushDestination, error) {
++		cfg, err := repo.Config()
++		if err != nil {
++			return pushDestination{}, err
++		}
++		dest := pushDestination{remote: remote, branch: branch}
++		if remote == "" {
++			upstream := cfg.Branches[branch]
++			candidates := []string{cfg.Raw.Section("branch").Subsection(branch).Option("pushRemote"), cfg.Raw.Section("remote").Option("pushDefault")}
++			if upstream != nil {
++				candidates = append(candidates, upstream.Remote)
++			}
++			dest.remote = defaultPushRemote
++			for _, candidate := range candidates {
++				if candidate != "" {
++					dest.remote = candidate
++					break
++				}
++			}
++			dest.setUpstream = upstream == nil || upstream.Remote == "" || upstream.Merge == ""
++		}
++		remoteConfig, configured := cfg.Remotes[dest.remote]
++		if !configured {
++			dest.url = dest.remote
++			dest.setUpstream = false
++			return dest, nil
++		}
++		branchRef := plumbing.NewBranchReferenceName(branch)
++		for _, spec := range remoteConfig.Fetch {
++			if spec.Match(branchRef) {
++				dest.trackingRef = spec.Dst(branchRef).String()
++				break
++			}
++		}
++		return dest, nil
++	})
++	if err != nil {
++		return pushDestination{}, fmt.Errorf("gitrepo: resolve the push destination of %s in %s: %w", branch, r.path, err)
++	}
++	if dest.url != "" {
++		return dest, nil
++	}
++	url, err := r.runChecked("remote", "get-url", "--push", dest.remote)
++	if err != nil {
++		return pushDestination{}, fmt.Errorf("gitrepo: read the push URL of remote %s in %s: %w", dest.remote, r.path, err)
++	}
++	dest.url = strings.TrimSpace(url)
++	return dest, nil
++}
++
++// recordPush records a finished push to dest in one hold of the remote-refs lock.
++// The tracking ref moves to sha, or is deleted when sha is empty, and the branch takes its upstream when dest asks for one.
++// With keepNewer set, a tracking ref already at a descendant of sha stays there, since a fetch that ran after the push read origin past it.
++// A destination with nothing to record takes no lock.
++// Its callers log a failure and never return it, since the transfer it records has already landed.
++func (r *Repo) recordPush(dest pushDestination, sha string, keepNewer bool) error {
++	if dest.trackingRef == "" && !dest.setUpstream {
++		return nil
++	}
++	return r.withRemoteRefs(func() error {
++		if dest.trackingRef != "" {
++			if err := r.moveTrackingRef(dest.trackingRef, sha, keepNewer); err != nil {
++				return fmt.Errorf("gitrepo: record the push of %s in %s: %w", dest.branch, dest.trackingRef, err)
++			}
++		}
++		if !dest.setUpstream {
++			return nil
++		}
++		for _, setting := range [][2]string{{"branch." + dest.branch + ".remote", dest.remote}, {"branch." + dest.branch + ".merge", "refs/heads/" + dest.branch}} {
++			if _, err := r.runChecked("config", setting[0], setting[1]); err != nil {
++				return fmt.Errorf("gitrepo: set the upstream of %s: %w", dest.branch, err)
++			}
++		}
++		return nil
++	})
++}
++
++// moveTrackingRef moves trackingRef to sha, or deletes it when sha is empty; the caller holds the remote-refs lock.
++// With keepNewer set, a ref already at a descendant of sha stays where it is.
++func (r *Repo) moveTrackingRef(trackingRef, sha string, keepNewer bool) error {
++	current, err := r.RefSHA(trackingRef)
++	absent := errors.Is(err, ErrRefNotFound)
++	if err != nil && !absent {
++		return err
++	}
++	switch {
++	case sha == "" && absent, current == sha:
++		return nil
++	case sha == "":
++		_, err := r.runChecked("update-ref", "-m", PushReflogSubject, "-d", trackingRef)
++		return err
++	}
++	if keepNewer && !absent {
++		newer, err := r.IsAncestor(sha, current)
++		if err != nil || newer {
++			return err
++		}
++	}
++	_, err = r.runChecked("update-ref", "-m", PushReflogSubject, trackingRef, sha)
++	return err
++}
+diff --git a/internal/gitrepo/remoterefslock.go b/internal/gitrepo/remoterefslock.go
+index 1ca7587f..5e3e404a 100644
+--- a/internal/gitrepo/remoterefslock.go
++++ b/internal/gitrepo/remoterefslock.go
+@@ -1,4 +1,5 @@
+ // remoterefslock.go holds the remote-refs lock: one lock per repository, in its common git dir, that every lym git call writing the repository's remote-tracking refs holds while git runs.
++// A push's transfer writes none and runs outside it; only the push's tracking-ref write that follows takes it.
+ 
+ package gitrepo
+ 
+@@ -20,7 +21,7 @@ const remoteRefsGateOp = "remote-refs"
+ // HoldRemoteRefs takes the remote-refs lock of the repository this checkout belongs to, waiting while another holder has it, and returns its release.
+ // It passes the process's pause gate before it takes the lock and stays admitted until the release,
+ // so a pause never holds a git call made under the lock while other processes wait on it.
+-// A holder that reads origin and then judges the tracking refs sees no push or fetch of the repository land in between.
++// A holder that reads origin and then judges the tracking refs sees no fetch and no push's tracking-ref write in between.
+ // The lock is not reentrant: a holder runs no fetch, pull or push through this package, since each takes the lock itself.
+ func (r *Repo) HoldRemoteRefs() (release func() error, err error) {
+ 	commonDir, err := r.CommonDir()
+diff --git a/internal/gitrepo/remoterefslock_integration_test.go b/internal/gitrepo/remoterefslock_integration_test.go
+index 9a928e54..f8213ed1 100644
+--- a/internal/gitrepo/remoterefslock_integration_test.go
++++ b/internal/gitrepo/remoterefslock_integration_test.go
+@@ -1,4 +1,5 @@
+-// remoterefslock_integration_test.go covers the remote-refs lock against real git repositories: one lock per repository, the pause gate passed before it is taken, every fetch, pull and push method waiting on it, and concurrent fetches and pushes of one repository that all succeed under it.
++// remoterefslock_integration_test.go covers the remote-refs lock against real git repositories: one lock per repository, the pause gate passed before it is taken, and every fetch and pull method waiting on it.
++// It also covers every push method transferring outside the lock and writing its tracking ref only under it, and concurrent fetches and pushes of one repository that all succeed.
+ 
+ package gitrepo_test
+ 
+@@ -136,10 +137,9 @@ func TestHoldRemoteRefs_PassesThePauseGateBeforeTheLockAndStaysAdmittedUntilTheR
+ // A call that ignored the lock finishes a local git operation well inside it; a blocked call can never fail the check, so the window only bounds how fast a missing lock is caught.
+ const remoteRefsHeldWindow = 500 * time.Millisecond
+ 
+-func TestRemoteRefsLock_EveryFetchPullAndPushMethodWaitsWhileTheLockIsHeld(t *testing.T) {
++func TestRemoteRefsLock_EveryFetchAndPullMethodWaitsWhileTheLockIsHeld(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+-	absentSHA := strings.Repeat("a", 40)
+ 	tests := []struct {
+ 		name string
+ 		call func(repo *gitrepo.Repo)
+@@ -147,11 +147,6 @@ func TestRemoteRefsLock_EveryFetchPullAndPushMethodWaitsWhileTheLockIsHeld(t *te
+ 		{"Fetch", func(repo *gitrepo.Repo) { _ = repo.Fetch() }},
+ 		{"FetchWithArgs", func(repo *gitrepo.Repo) { _, _ = repo.FetchWithArgs("origin") }},
+ 		{"Pull", func(repo *gitrepo.Repo) { _ = repo.Pull() }},
+-		{"Push", func(repo *gitrepo.Repo) { _ = repo.Push() }},
+-		{"PushRebaseFree", func(repo *gitrepo.Repo) { _ = repo.PushRebaseFree() }},
+-		{"DeleteRemoteBranch", func(repo *gitrepo.Repo) { _, _ = repo.DeleteRemoteBranch("origin", "absent") }},
+-		{"DeleteRemoteBranchLeased", func(repo *gitrepo.Repo) { _ = repo.DeleteRemoteBranchLeased("origin", "absent", absentSHA) }},
+-		{"UpdateRemoteBranchLeased", func(repo *gitrepo.Repo) { _ = repo.UpdateRemoteBranchLeased("origin", "absent", absentSHA, absentSHA) }},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -189,6 +184,170 @@ func TestRemoteRefsLock_EveryFetchPullAndPushMethodWaitsWhileTheLockIsHeld(t *te
+ 	}
+ }
+ 
++// originLandedWithin is how long a push transfer may take to show on the bare remote while the remote-refs lock is held.
++const originLandedWithin = 30 * time.Second
++
++// originLandedTick is how often the bare remote is read while waiting for a push transfer to land.
++const originLandedTick = 20 * time.Millisecond
++
++// branchSHA returns the commit ref names in the repository at dir, or "" when the ref does not exist.
++func branchSHA(t *testing.T, dir, ref string) string {
++	t.Helper()
++	stdout, _, code, err := runGit(t, dir, "rev-parse", "--verify", "--quiet", ref)
++	if err != nil {
++		t.Fatalf("git rev-parse %s in %s error = %v", ref, dir, err)
++	}
++	if code != 0 {
++		return ""
++	}
++	return strings.TrimSpace(stdout)
++}
++
++// pushUnderHeldLock holds the clone's remote-refs lock, starts call, and waits until the bare remote's branch reads want, failing if call returns first.
++// It returns the function that releases the lock and then waits for call's error.
++func pushUnderHeldLock(t *testing.T, clone, bareRemote, branch, want string, call func() error) (releaseAndWait func() error) {
++	t.Helper()
++	release, err := gitrepo.New(clone).HoldRemoteRefs()
++	if err != nil {
++		t.Fatalf("HoldRemoteRefs() error = %v", err)
++	}
++	released := false
++	t.Cleanup(func() {
++		if !released {
++			_ = release()
++		}
++	})
++
++	var callErr error
++	done := make(chan struct{})
++	go func() {
++		defer close(done)
++		callErr = call()
++	}()
++	deadline := time.Now().Add(originLandedWithin)
++	for branchSHA(t, bareRemote, "refs/heads/"+branch) != want {
++		select {
++		case <-done:
++			t.Fatalf("the push returned with error %v before origin's %s read %q; want its transfer to land while the lock is held", callErr, branch, want)
++		default:
++		}
++		if time.Now().After(deadline) {
++			t.Fatalf("origin's %s never read %q while the remote-refs lock was held; want the transfer to run outside the lock", branch, want)
++		}
++		time.Sleep(originLandedTick)
++	}
++	select {
++	case <-done:
++		t.Fatalf("the push returned with error %v while the remote-refs lock was held; want its tracking-ref write to wait for the lock", callErr)
++	case <-time.After(remoteRefsHeldWindow):
++	}
++
++	return func() error {
++		released = true
++		if err := release(); err != nil {
++			t.Fatalf("release() error = %v", err)
++		}
++		<-done
++		return callErr
++	}
++}
++
++func TestRemoteRefsLock_APushTransfersWhileTheLockIsHeldAndWritesItsTrackingRefOnceReleased(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	tests := []struct {
++		name   string
++		branch string
++		// prepare readies the clone and returns the push to run and the commit origin's branch and its tracking ref hold afterwards, empty for a deleted branch.
++		prepare      func(t *testing.T, clone string, repo *gitrepo.Repo) (call func() error, want string)
++		wantUpstream string
++	}{
++		{"PushRebaseFree of a first push, which also sets the upstream", "fresh", func(t *testing.T, clone string, repo *gitrepo.Repo) (func() error, string) {
++			gitkit.Git(t, clone, "checkout", "-b", "fresh")
++			return repo.PushRebaseFree, gitkit.CommitFile(t, clone, "fresh.txt", "fresh", "fresh commit")
++		}, "origin/fresh"},
++		{"PushBranch", "main", func(t *testing.T, clone string, repo *gitrepo.Repo) (func() error, string) {
++			want := gitkit.CommitFile(t, clone, "next.txt", "next", "next commit")
++			return func() error { return repo.PushBranch("origin", "main") }, want
++		}, "origin/main"},
++		{"UpdateRemoteBranchLeased", "main", func(t *testing.T, clone string, repo *gitrepo.Repo) (func() error, string) {
++			first := gitkit.RevParse(t, clone, "HEAD")
++			second := gitkit.CommitFile(t, clone, "second.txt", "second", "second commit")
++			gitkit.Git(t, clone, "push", "origin", "main")
++			return func() error { return repo.UpdateRemoteBranchLeased("origin", "main", first, second) }, first
++		}, "origin/main"},
++		{"DeleteRemoteBranchLeased", "doomed", func(t *testing.T, clone string, repo *gitrepo.Repo) (func() error, string) {
++			gitkit.Git(t, clone, "push", "origin", "main:doomed")
++			tip := gitkit.RevParse(t, clone, "HEAD")
++			return func() error { return repo.DeleteRemoteBranchLeased("origin", "doomed", tip) }, ""
++		}, ""},
++		{"DeleteRemoteBranch", "doomed", func(t *testing.T, clone string, repo *gitrepo.Repo) (func() error, string) {
++			gitkit.Git(t, clone, "push", "origin", "main:doomed")
++			return func() error {
++				deleted, err := repo.DeleteRemoteBranch("origin", "doomed")
++				if err == nil && !deleted {
++					return fmt.Errorf("DeleteRemoteBranch() deleted = false; want true")
++				}
++				return err
++			}, ""
++		}, ""},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			clone, bareRemote := publishedClone(t)
++			call, want := tt.prepare(t, clone, gitrepo.New(clone))
++			trackingRef := "refs/remotes/origin/" + tt.branch
++			trackingBefore := branchSHA(t, clone, trackingRef)
++			upstreamBefore := upstreamRef(t, clone)
++
++			releaseAndWait := pushUnderHeldLock(t, clone, bareRemote, tt.branch, want, call)
++			if got := branchSHA(t, clone, trackingRef); got != trackingBefore {
++				t.Errorf("%s while the remote-refs lock was held = %q; want it unchanged at %q", trackingRef, got, trackingBefore)
++			}
++			if got := upstreamRef(t, clone); got != upstreamBefore {
++				t.Errorf("upstream while the remote-refs lock was held = %q; want it unchanged at %q", got, upstreamBefore)
++			}
++
++			if err := releaseAndWait(); err != nil {
++				t.Fatalf("%s error = %v; want nil", tt.name, err)
++			}
++			if got := branchSHA(t, clone, trackingRef); got != want {
++				t.Errorf("%s after the release = %q; want %q", trackingRef, got, want)
++			}
++			if tt.wantUpstream != "" {
++				if got := upstreamRef(t, clone); got != tt.wantUpstream {
++					t.Errorf("upstream after the release = %q; want %q", got, tt.wantUpstream)
++				}
++			}
++		})
++	}
++}
++
++// TestRemoteRefsLock_ATrackingRefAFetchMovedPastThePushedCommitStaysThere covers a fetch that read origin after the push's transfer and wrote the tracking ref before the push took the lock.
++func TestRemoteRefsLock_ATrackingRefAFetchMovedPastThePushedCommitStaysThere(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	clone, bareRemote := publishedClone(t)
++	repo := gitrepo.New(clone)
++	pushed := gitkit.CommitFile(t, clone, "pushed.txt", "pushed", "pushed commit")
++
++	releaseAndWait := pushUnderHeldLock(t, clone, bareRemote, "main", pushed, func() error { return repo.PushBranch("origin", "main") })
++	other := filepath.Join(t.TempDir(), "other")
++	gitkit.MustRun(t, filepath.Dir(other), "git", "clone", "-b", "main", bareRemote, other)
++	later := gitkit.CommitFile(t, other, "later.txt", "later", "later commit")
++	gitkit.Git(t, other, "push", "origin", "main")
++	// A raw fetch bypasses the held lock, standing in for a fetch that took the lock before the push did.
++	gitkit.Git(t, clone, "fetch", "origin")
++
++	if err := releaseAndWait(); err != nil {
++		t.Fatalf("PushBranch() error = %v; want nil", err)
++	}
++	if got := branchSHA(t, clone, "refs/remotes/origin/main"); got != later {
++		t.Errorf("origin/main after the push recorded = %q; want the later fetched commit %q, not the pushed %q", got, later, pushed)
++	}
++}
++
+ // TestRemoteRefsLock_ConcurrentFetchesAndPushesOfOneRepositoryAllSucceed reproduces two lym processes writing one repository's tracking refs at once.
+ // Without the lock, git fails the loser with "incorrect old value provided" or "cannot lock ref".
+ func TestRemoteRefsLock_ConcurrentFetchesAndPushesOfOneRepositoryAllSucceed(t *testing.T) {
+diff --git a/pattern/PATTERN-remote-refs-lock.md b/pattern/PATTERN-remote-refs-lock.md
+index 39396d0f..ff9277ae 100644
+--- a/pattern/PATTERN-remote-refs-lock.md
++++ b/pattern/PATTERN-remote-refs-lock.md
+@@ -1,10 +1,14 @@
+ # PATTERN-remote-refs-lock
+ 
+-A fetch, pull or push that writes remote-tracking refs runs under the repository's remote-refs lock, taken through `gitrepo`, and waits while another process holds it.
++A fetch, pull or push that writes remote-tracking refs writes them under the repository's remote-refs lock, taken through `gitrepo`, and waits while another process holds it.
+ 
+ - The process passes the pause gate before it takes the lock, and its network calls all pass the gate at once until it releases the lock.
+   A paused process therefore never holds the lock, and no other process, an exempt cancel included, waits on a pause through it.
++- A push sends to the remote's push URL, which writes no remote-tracking ref, so its transfer, retries included, runs outside the lock.
++  Once the transfer succeeded, the push takes the lock to write the branch's tracking ref, and the upstream setting of a first push.
++  A tracking ref a later fetch already moved past the pushed commit stays where it is.
+ - A tag push, a `--refmap=` fetch and a probe-clone fetch write no remote-tracking ref and take no lock.
+-- A judge of origin against tracking refs holds the lock from reading origin to its verdict, so no write lands between the read and the verdict.
++- A judge of origin against tracking refs holds the lock from reading origin to its verdict, so no tracking-ref write lands between the read and the verdict.
++  A push transfer that lands meanwhile is judged against the origin read before it.
+ 
+ A test enforces it.
