@@ -1,6 +1,6 @@
 # A plain promote of a Sketch starts raddle
 
-`sketch-promote-raddle` · Task · enhancement, board · running · Drift-Verify
+`sketch-promote-raddle` · Task · enhancement, board · running · Code-Bouncer
 
 ## Seen (2026-11-05)
 
