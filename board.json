@@ -769,6 +769,26 @@
       "body": "Imported from [issue #61](https://github.com/Knatte18/loomyard/issues/61).\n\nWhat happened: `lym webster record-batch` refused a batch because a card's create target (a test method written with a parameter list) did not resolve. quarry answered not_found with the text 'the unit exists and the member is missing'. The refusal then appended, in one line, the full list of every file quarry searched in the unit (hundreds of paths), and only at the very end said the member is declared in one file with a different parameter list than the target named.\n\nWhy abnormal: (1) The member exists; only the parameter signature differs, yet the primary message says it is missing, which misdirects the reader. (2) The searched-file list is unbounded and buries the one actionable fact (the declared signature) at the end of a very long line. (3) The way forward given was only `lym webster recover-batch \u003cn\u003e`, which does not tell the card author that the card's create target needs its signature corrected.\n\nWhat to do: when the member name resolves but the signature differs, report a distinct 'signature mismatch' result that leads with the declared signature and file. Cap or omit the searched-file list (name the count, or the unit, instead). Name the corrective step (fix the card's target signature) next to the recover-batch hint.\n\nProvenance: task slug knut-herschel-bulkley; notes: webster-refusal-record-batch.md",
       "created": "2026-11-05T18:58:44Z",
       "revised": "2026-11-05T18:58:44Z"
+    },
+    {
+      "id": 1153,
+      "handle": "B12",
+      "slug": "clone-reset-deletes-first",
+      "title": "fabric clone --reset removes the hub before refusing a mismatched --shortname",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "fabric"
+      ],
+      "issues": [
+        67
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #67](https://github.com/Knatte18/loomyard/issues/67).\n\nSeen: `lym fabric clone --reset --into ~/Code/Knatte18 --shortname scribe https://github.com/Knatte18/scribe-weft https://github.com/Knatte18/scribe` on an existing hub (old layout with _board) failed with 'this repo's recorded shortname is \"scr\", not \"scribe\"; refusing to change it', but its envelope reported mutation path_removed '.' recursive and partial: true: the whole existing hub directory was already deleted when the refusal came.\n\nWorkaround: rerun `lym fabric clone` without --reset and without --shortname; the hub came back from its remotes. Nothing was lost only because every branch was pushed.\n\nExpected: --reset validates every argument against the remotes (shortname, binding) before removing anything, so a refusal leaves the existing hub untouched.",
+      "created": "2026-11-05T18:58:49Z",
+      "revised": "2026-11-05T18:58:49Z"
     }
   ],
   "prime_owner": "neve",
