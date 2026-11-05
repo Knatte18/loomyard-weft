@@ -1,0 +1,842 @@
+diff --git a/cmd/lym/destructiveguard_test.go b/cmd/lym/destructiveguard_test.go
+index 7ff6d6a0..851dfec6 100644
+--- a/cmd/lym/destructiveguard_test.go
++++ b/cmd/lym/destructiveguard_test.go
+@@ -96,6 +96,8 @@ var destructiveGuardAllowlist = []scankit.Entry{
+ 		"a fabric-internal marker in the records worktree's untracked lock directory, never operator content"},
+ 	{Key: "internal/fabricengine/recordsprobe.go", Why: "the binding probe's os.RemoveAll(probeDir) removes the throwaway probe clone directory the " +
+ 		"same function created moments earlier"},
++	{Key: "internal/fabricengine/resetsubpathcheck.go", Why: "checkSubpathBeforeReset's os.RemoveAll(stageDir) removes the throwaway staging directory the " +
++		"same function created moments earlier"},
+ 	{Key: "internal/fabricengine/index.go", Why: "refreshCorrIndexAfterSwitch's os.Remove(path) deliberately deletes the correspondence-index " +
+ 		"cache before rebuilding it, so a failed refresh misses honestly rather than answering cross-branch"},
+ 	{Key: "internal/fabricengine/mergestate.go", Why: "deleteMergeState's os.Remove(path) deletes fabric's own merge-state record inside the " +
+diff --git a/internal/fabricengine/clone.go b/internal/fabricengine/clone.go
+index 90876eac..5953603e 100644
+--- a/internal/fabricengine/clone.go
++++ b/internal/fabricengine/clone.go
+@@ -107,14 +107,17 @@ type CloneResult struct {
+ // URL and the warp URL's availability differs between them:
+ //
+ //   - Two-argument form (opts.WarpURL != ""): the hub name is derivable with no network at all, so
+-//     the hub-exists check (and any --reset teardown) runs offline, exactly as before this change,
++//     the hub-exists check, or with --reset the refusal of a target that is not a hub, runs offline,
+ //     and only then does the pre-hub probe of opts.WeftURL run to resolve the effective warp
+-//     binding and check the old-order guard.
++//     binding and shortname and check the old-order guard.
+ //   - One-argument form (opts.WarpURL == ""): the hub name is unknowable until the binding is read,
+-//     so the pre-hub probe of opts.WeftURL runs first, and the hub name, the --reset teardown, and
+-//     the hub-exists check all follow it.
++//     so the pre-hub probe of opts.WeftURL runs first, and the hub name and the offline checks
++//     follow it.
+ //
+-// After that resolution, the operation proceeds exactly as before this change:
++// In both forms --reset removes the existing hub only after the probe has checked the warp binding, the shortname and the old-order guard, and after an explicit opts.Subpath has been checked against staged clones of both remotes.
++// A refused argument therefore leaves the existing hub untouched.
++//
++// After that resolution, the operation proceeds as follows:
+ //  1. Create the Hub directory; if it fails, return the wrapped error (no teardown yet).
+ //  2. Clone warp repo to <Hub>/<name>; on failure, teardown and return the error.
+ //  3. Clone weft repo to <Hub>/<name>-weft; on failure, teardown and return the error.
+@@ -163,8 +166,8 @@ func CloneHub(cwd string, opts CloneOptions) (res CloneResult, err error) {
+ 	var writeShortname bool
+ 
+ 	if opts.WarpURL != "" {
+-		// Two-argument form: the hub name is derivable with no network at all, so resolve it,
+-		// apply --reset, and check for an existing hub before ever touching the network.
++		// Two-argument form: the hub name is derivable with no network at all.
++		// Resolve it and run the offline checks before ever touching the network.
+ 		name = DeriveWarpName(opts.WarpURL)
+ 		if name == "" {
+ 			return CloneResult{}, fmt.Errorf("could not derive repo name from warp URL %s", opts.WarpURL)
+@@ -172,11 +175,10 @@ func CloneHub(cwd string, opts CloneOptions) (res CloneResult, err error) {
+ 		hubPath = HubPath(cwd, name)
+ 		rec = NewMutations(hubPath)
+ 		if opts.Reset {
+-			if err := resetHub(rec, cwd, hubPath); err != nil {
++			if _, err := checkResetTarget(hubPath); err != nil {
+ 				return CloneResult{}, err
+ 			}
+-		}
+-		if _, err := os.Stat(hubPath); err == nil {
++		} else if _, err := os.Stat(hubPath); err == nil {
+ 			return CloneResult{}, fmt.Errorf("hub already exists at %s", hubPath)
+ 		}
+ 
+@@ -228,32 +230,39 @@ func CloneHub(cwd string, opts CloneOptions) (res CloneResult, err error) {
+ 		}
+ 		hubPath = HubPath(cwd, name)
+ 		rec = NewMutations(hubPath)
+-		if opts.Reset {
+-			if err := resetHub(rec, cwd, hubPath); err != nil {
++	}
++
++	// --subpath can only be checked against the cloned trees, so a --reset clone checks it against staged shallow clones while the existing hub is still intact.
++	if opts.Reset && subpathRequestedExplicitly {
++		if _, statErr := os.Stat(hubPath); statErr == nil {
++			if err := checkSubpathBeforeReset(cwd, opts.WeftURL, effective, requestedAnchor); err != nil {
+ 				return CloneResult{}, err
+ 			}
+ 		}
+-		// The asymmetry with the two-argument form is deliberate: an offline two-argument re-clone
+-		// against an existing hub still fails with "hub already exists", exactly as today; an
+-		// offline one-argument invocation fails with "probe weft <url>:" instead, which is the
+-		// irreducible cost of deriving the hub name from a remote fact.
+-		if _, err := os.Stat(hubPath); err == nil {
+-			return CloneResult{}, fmt.Errorf("hub already exists at %s", hubPath)
++	}
++
++	// Every argument has now been checked against the remotes, so --reset may remove the existing hub.
++	// The offline check of the two-argument form repeats here, as the non-hub refusal with Reset and as the hub-exists check without it.
++	// The one-argument form runs its offline check here for the first time, and the asymmetry with the two-argument form is deliberate.
++	// An offline two-argument re-clone against an existing hub fails with "hub already exists".
++	// An offline one-argument invocation fails with "probe weft <url>:" instead, the irreducible cost of deriving the hub name from a remote fact.
++	if opts.Reset {
++		if err := resetHub(rec, cwd, hubPath); err != nil {
++			return CloneResult{}, err
+ 		}
++	} else if _, err := os.Stat(hubPath); err == nil {
++		return CloneResult{}, fmt.Errorf("hub already exists at %s", hubPath)
+ 	}
+ 
+ 	warpURL := effective
+ 
+-	// Create Hub directory exclusively, minting the token teardownHub needs to prove — rather than
+-	// merely assume — that a later teardown call is removing a directory this invocation created.
+-	// os.Mkdir's EEXIST is now the safety property, and the two offline "hub already exists" stat
+-	// guards above are UX and ordering only, not the last word on collision safety: this call staying
+-	// after both stat guards, rather than folding into either, is deliberate (see this function's doc
+-	// comment for why moving it would either leak a residual hub or break the offline-before-network
+-	// ordering). Being later, the exclusive create is also strictly more correct than the stat guards
+-	// it follows — it closes a real time-of-check-to-time-of-use window that exists between a stat and
+-	// a plain os.MkdirAll, in which a concurrent process can create the hub in between and have
+-	// MkdirAll silently accept it.
++	// Create the hub directory exclusively, minting the token teardownHub needs to prove that a later teardown call is removing a directory this invocation created.
++	// os.Mkdir's EEXIST is the safety property.
++	// The "hub already exists" stat guards above are UX and ordering only, not the last word on collision safety.
++	// This call staying after them, rather than folding into one, is deliberate:
++	// see this function's doc comment for why moving it would either leak a residual hub or break the offline-before-network ordering.
++	// Being later, the exclusive create is also strictly more correct than the stat guards it follows.
++	// It closes a real time-of-check-to-time-of-use window between a stat and a plain os.MkdirAll, in which a concurrent process can create the hub and have MkdirAll silently accept it.
+ 	hubTok, err := createExclusiveDir(rec, hubPath)
+ 	if err != nil {
+ 		return CloneResult{}, err
+@@ -619,24 +628,11 @@ func refuseUncheckedOutWarpClone(warpWorktreePath, warpURL string) error {
+ // Either is enough — a hub whose Bolt checkout was hand-deleted is still recognisably a hub, and
+ // so is one mid-clone whose board has not been materialised yet.
+ // An absent path stays a silent no-op, so --reset remains idempotent.
+-// rec is CloneHub's own recorder, already non-nil at both call sites (see this function's callers'
+-// own comment) — threaded through to removePath.
++// rec is CloneHub's own recorder, threaded through to removePath.
+ func resetHub(rec *Mutations, cwd, hubPath string) error {
+-	info, statErr := os.Stat(hubPath)
+-	if os.IsNotExist(statErr) {
+-		return nil
+-	}
+-	if statErr != nil {
+-		return fmt.Errorf("reset: inspect %s: %w", hubPath, statErr)
+-	}
+-	if !info.IsDir() {
+-		return fmt.Errorf("reset: refusing to remove %s: it is not a directory, so it is not a hub", hubPath)
+-	}
+-
+-	if !looksLikeHub(hubPath) {
+-		return fmt.Errorf(
+-			"reset: refusing to remove %s: it has no %s and no %q sibling, so it is not a fabric hub — remove it yourself if that is really what you meant",
+-			hubPath, BoltDirName, "*"+weftname.Suffix)
++	present, err := checkResetTarget(hubPath)
++	if err != nil || !present {
++		return err
+ 	}
+ 
+ 	req := pathRequest{
+@@ -654,6 +650,28 @@ func resetHub(rec *Mutations, cwd, hubPath string) error {
+ 	return nil
+ }
+ 
++// checkResetTarget refuses a --reset target that exists but is not a fabric hub, and reports whether the target is present.
++// It reads the filesystem only and removes nothing,
++// so a clone can run it before touching the network and remove the hub only once every argument has been checked against the remotes.
++func checkResetTarget(hubPath string) (present bool, err error) {
++	info, statErr := os.Stat(hubPath)
++	if os.IsNotExist(statErr) {
++		return false, nil
++	}
++	if statErr != nil {
++		return false, fmt.Errorf("reset: inspect %s: %w", hubPath, statErr)
++	}
++	if !info.IsDir() {
++		return false, fmt.Errorf("reset: refusing to remove %s: it is not a directory, so it is not a hub", hubPath)
++	}
++	if !looksLikeHub(hubPath) {
++		return false, fmt.Errorf(
++			"reset: refusing to remove %s: it has no %s and no %q sibling, so it is not a fabric hub — remove it yourself if that is really what you meant",
++			hubPath, BoltDirName, "*"+weftname.Suffix)
++	}
++	return true, nil
++}
++
+ // looksLikeHub reports whether hubPath carries the structural marks of a fabric hub:
+ // the Bolt checkout entry, or at least one weft sibling directory.
+ // An unreadable directory answers false, the conservative direction — a directory fabric cannot
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 7ce84cdd..9d0b7056 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -509,6 +509,7 @@
+ // `CloneHub` resolves the effective warp URL from that record when the caller supplies no warp URL, and writes the record when none exists yet and a warp URL is supplied;
+ // a supplied URL that disagrees with the recorded one is a hard error, never a silent re-point.
+ // That resolution runs through a throwaway pre-hub probe clone of the weft remote (recordsprobe.go), because the hub is named after the warp repo and therefore has no path to resolve into until the warp URL is known.
++// `clone --reset` removes an existing hub only after the probe has checked the warp binding, the shortname and the old-order guard, and has checked an explicit `--subpath` against staged clones of both remotes (resetsubpathcheck.go), so a refused argument leaves the hub untouched.
+ // `Reconcile` backfills the record once per hub from the warp side's own `origin` remote (reconcile.go's reconcileWarpBinding), with the CLI layer driving the commit and push, exactly as clone's own binding write is committed CLI-side.
+ //
+ // The hub's shortname is a fifth repo-wide record, held the same way as a plain single-line file, `.lym-shortname`, beside `.lym-warp` at the board root (see shortnamebinding.go).
+diff --git a/internal/fabricengine/livestate_doc_test.go b/internal/fabricengine/livestate_doc_test.go
+index fe4222c1..37348034 100644
+--- a/internal/fabricengine/livestate_doc_test.go
++++ b/internal/fabricengine/livestate_doc_test.go
+@@ -180,14 +180,14 @@
+ //     the cell failed the same way, the offending paths additionally including the clone's own ".git"
+ //     directory ("verb-prune-structural-orphan-weft/.git: removed (was dir)").
+ //   - (8) the Reset column's non-hub target x CloneHub{Reset} x "." -- R4, `clone --reset` destroyed a
+-//     non-hub `<derived>-LYMHUB`. Neutered clone.go's resetHub own pre-flight (the `if !looksLikeHub(hubPath)`
++//     non-hub `<derived>-LYMHUB`. Neutered clone.go's checkResetTarget (the `if !looksLikeHub(hubPath)`
+ //     guard, short-circuited to never fire). Ran `-run 'TestCloneHubReset/\./CloneHubReset/NonHubTarget$'`:
+ //     the cell failed with "expected pre-flight refusal containing \"is not a fabric hub\"; got err =
+ //     reset: remove hub at ...: refusing to reset hub: ownership check failed for ...: ... does not look
+ //     like a fabric hub (no <Bolt directory> entry and no weft sibling)" -- the gate's own ownedFabricHub check
+-//     caught what the pre-flight was neutered out of catching, so the operator-content sentinel survived
++//     caught what checkResetTarget was neutered out of catching, so the operator-content sentinel survived
+ //     this particular run, but the cell still failed on the Kind mismatch (a gate refusal, not the
+-//     pre-flight's), proving the pre-flight itself is load-bearing rather than redundant with the gate.
++//     checkResetTarget's), proving checkResetTarget itself is load-bearing rather than redundant with the gate.
+ //   - (9) hostile input ".." x Remove x "." -- R5, `remove ..` destroyed an entire hub. Neutered
+ //     slug.go's validateWorktreeSlug relative-path-element guard (the
+ //     `slug != filepath.Clean(slug) || slug == "." || slug == ".."` condition, short-circuited to never
+diff --git a/internal/fabricengine/livestate_matrix_test.go b/internal/fabricengine/livestate_matrix_test.go
+index fd70bb87..668450bf 100644
+--- a/internal/fabricengine/livestate_matrix_test.go
++++ b/internal/fabricengine/livestate_matrix_test.go
+@@ -309,8 +309,7 @@ func assertCellTally(t *testing.T, ran, omitted int) {
+ 	t.Logf("cross-product cell tally: %d ran, %d omitted (omission table), %d CloneHub{Reset} column cells, %d total", ran, omitted, cloneHubResetCellCount(), total)
+ }
+ 
+-// TestCloneHubReset drives the CloneHub{Reset: true} column: two targets (a non-hub directory refused at
+-// resetHub's own pre-flight, and a real hub torn down and rebuilt) at both anchors.
++// TestCloneHubReset drives the CloneHub{Reset: true} column: two targets (a non-hub directory refused at CloneHub's offline checkResetTarget pre-flight, and a real hub torn down and rebuilt) at both anchors.
+ // It is a separate test function rather than a row in TestCrossProduct's loop because the column is
+ // scoped to the ownership axis, not to the ten-member States matrix -- see verbs.go's doc comment on
+ // cloneHubResetNonHubCase and cloneHubResetRealHubCase for why folding it into the loop would either
+diff --git a/internal/fabricengine/livestate_refusal_selftest_test.go b/internal/fabricengine/livestate_refusal_selftest_test.go
+index d434baab..3b9342d1 100644
+--- a/internal/fabricengine/livestate_refusal_selftest_test.go
++++ b/internal/fabricengine/livestate_refusal_selftest_test.go
+@@ -306,9 +306,7 @@ func TestRefusedBefore(t *testing.T) {
+ 			t.Fatalf("mkdir %s: %v", hubPath, err)
+ 		}
+ 
+-		// A plain directory at the derived hub path has no Bolt checkout entry and no weft sibling, so
+-		// resetHub's own looksLikeHub pre-flight (clone.go:573-577) refuses before CloneHub ever
+-		// touches the network.
++		// A plain directory at the derived hub path has no Bolt checkout entry and no weft sibling, so checkResetTarget's looksLikeHub pre-flight refuses before CloneHub ever touches the network.
+ 		_, err := fabricengine.CloneHub(cwd, fabricengine.CloneOptions{
+ 			WeftURL: "https://example.invalid/reset-hub-preflight-weft.git",
+ 			WarpURL: warpURL,
+@@ -318,7 +316,7 @@ func TestRefusedBefore(t *testing.T) {
+ 			t.Fatalf("CloneHub(Reset: true) against a non-hub directory: want an error, got nil")
+ 		}
+ 		if !RefusedBefore(err, "is not a fabric hub") {
+-			t.Errorf("RefusedBefore(%v, ...) = false; want true for resetHub's own pre-flight refusal", err)
++			t.Errorf("RefusedBefore(%v, ...) = false; want true for the offline pre-flight refusal", err)
+ 		}
+ 	})
+ }
+diff --git a/internal/fabricengine/livestate_verbs_test.go b/internal/fabricengine/livestate_verbs_test.go
+index 8bcfed52..bf5991a2 100644
+--- a/internal/fabricengine/livestate_verbs_test.go
++++ b/internal/fabricengine/livestate_verbs_test.go
+@@ -47,8 +47,8 @@
+ // # CloneHub{Reset: true}
+ //
+ // This column is re-scoped to the ownership axis and is not run against the ten states.
+-// resetHub declares dirtinessNA (clone.go:585), so no dirtiness state can refuse it — total hub destruction on --reset is correct behaviour — which would make the permitted root the hub root itself and the manifest diff vacuous across all ten states.
+-// The gate is structurally unreachable for Reset: resetHub refuses a non-hub at its own pre-flight (clone.go:573-577, !looksLikeHub) BEFORE the pathRequest at :579 is built, and the gate's pathOwnershipFabricHub predicate is that SAME looksLikeHub call (destroy.go:346-350), so a RefusedByGate(CheckOwnership) expectation would fail against a correct binary.
++// resetHub declares dirtinessNA, so no dirtiness state can refuse it — total hub destruction on --reset is correct behaviour — which would make the permitted root the hub root itself and the manifest diff vacuous across all ten states.
++// The gate is structurally unreachable for Reset: CloneHub refuses a non-hub offline through checkResetTarget (!looksLikeHub) BEFORE resetHub builds its pathRequest, and the gate's pathOwnershipFabricHub predicate is that SAME looksLikeHub call, so a RefusedByGate(CheckOwnership) expectation would fail against a correct binary.
+ // This column therefore uses RefusedBefore("is not a fabric hub") and drives exactly two targets: a <derived>-LYMHUB-named directory that is not a hub (refused at the pre-flight, contents surviving — R4's `clone --reset` defect), and a real hub (torn down and rebuilt through fabriccli.CloneAndWire, the positive case proving the column is not trivially always-refusing).
+ //
+ // # The seventeen hostile-input cases
+@@ -989,8 +989,7 @@ func pullCase() VerbCase {
+ }
+ 
+ // cloneHubResetNonHubCase builds the CloneHub{Reset: true} column's non-hub target: an operator
+-// directory whose name happens to match the derived <name>-LYMHUB path is refused at resetHub's own
+-// pre-flight, contents fully surviving — R4's `clone --reset` defect.
++// directory whose name happens to match the derived <name>-LYMHUB path is refused at CloneHub's offline checkResetTarget pre-flight, contents fully surviving — R4's `clone --reset` defect.
+ func cloneHubResetNonHubCase() VerbCase {
+ 	return VerbCase{
+ 		Name:   "CloneHubReset/NonHubTarget",
+diff --git a/internal/fabricengine/recordsprobe.go b/internal/fabricengine/recordsprobe.go
+index ba922d2a..a3aa098c 100644
+--- a/internal/fabricengine/recordsprobe.go
++++ b/internal/fabricengine/recordsprobe.go
+@@ -7,6 +7,7 @@
+ // reads a single file from a remote without first materializing a local repo directory.
+ // This file is that materialization: a temporary clone, read, then removed, entirely before CloneHub
+ // commits to a hub layout.
++// It also holds the weft-branch fetch helper the --reset subpath check shares with the probe.
+ 
+ package fabricengine
+ 
+@@ -22,7 +23,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ )
+ 
+-// warpProbeDirPrefix is the os.MkdirTemp prefix for the probe's throwaway clone directory.
++// warpProbeDirPrefix is the os.MkdirTemp prefix for the throwaway clone directories of the pre-hub probe and of the --reset subpath check.
+ // This is a MkdirTemp prefix, not a _lym/.lym path token, so it does not fall under the Lymdirs Single-Declarer Invariant, and TestEnforcement_GeometryLiterals (exact-equality matching) does not trip on it.
+ const warpProbeDirPrefix = ".lym-clone-probe-"
+ 
+@@ -169,22 +170,32 @@ func probeTreeHasPath(weftURL, probeDir, path string) (bool, error) {
+ // It fetches the branch into the probe clone.
+ // A candidate without the branch answers false, and any other git failure is an error.
+ func probeMainWeftHasPath(weftURL, probeDir, path string) (bool, error) {
+-	branchRef := "refs/heads/" + RecordsBranchName("main")
+-	listed, err := gitexec.Run([]string{"ls-remote", "--heads", "origin", branchRef}, probeDir)
++	present, err := fetchWeftBranchTip(weftURL, probeDir, RecordsBranchName("main"))
++	if err != nil || !present {
++		return false, err
++	}
++	stdout, err := gitexec.Run([]string{"ls-tree", "FETCH_HEAD", "--name-only", "--", path}, probeDir)
++	if err != nil {
++		return false, wrapProbeError(weftURL, "ls-tree", err)
++	}
++	return strings.TrimSpace(stdout) != "", nil
++}
++
++// fetchWeftBranchTip fetches the tip of branch from origin into FETCH_HEAD of the clone at dir, one commit deep, and reports whether the remote carries the branch.
++// A remote without the branch answers false with nothing fetched, and any git failure is an error.
++func fetchWeftBranchTip(weftURL, dir, branch string) (bool, error) {
++	branchRef := "refs/heads/" + branch
++	listed, err := gitexec.Run([]string{"ls-remote", "--heads", "origin", branchRef}, dir)
+ 	if err != nil {
+ 		return false, wrapProbeError(weftURL, "ls-remote", err)
+ 	}
+ 	if strings.TrimSpace(listed) == "" {
+ 		return false, nil
+ 	}
+-	if _, err := gitexec.Run([]string{"fetch", "--depth", "1", "origin", branchRef}, probeDir); err != nil {
++	if _, err := gitexec.Run([]string{"fetch", "--depth", "1", "origin", branchRef}, dir); err != nil {
+ 		return false, wrapProbeError(weftURL, "fetch", err)
+ 	}
+-	stdout, err := gitexec.Run([]string{"ls-tree", "FETCH_HEAD", "--name-only", "--", path}, probeDir)
+-	if err != nil {
+-		return false, wrapProbeError(weftURL, "ls-tree", err)
+-	}
+-	return strings.TrimSpace(stdout) != "", nil
++	return true, nil
+ }
+ 
+ // wrapProbeError formats a probe-phase failure as "probe weft <url>: <detail>", using cause's own
+diff --git a/internal/fabricengine/resetsubpathcheck.go b/internal/fabricengine/resetsubpathcheck.go
+new file mode 100644
+index 00000000..759a58a0
+--- /dev/null
++++ b/internal/fabricengine/resetsubpathcheck.go
+@@ -0,0 +1,141 @@
++// resetsubpathcheck.go implements the --subpath check a --reset clone runs while the existing hub is still intact.
++// It stages shallow clones of the weft and warp remotes in throwaway directories and applies the anchor rules CloneHub applies after its own clone,
++// so a refused --subpath never costs the hub being replaced.
++
++package fabricengine
++
++import (
++	"errors"
++	"fmt"
++	"os"
++	"path/filepath"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/gitexec"
++	"github.com/Knatte18/loomyard/internal/gitrepo"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++)
++
++// checkSubpathBeforeReset refuses a requested --subpath that CloneHub would refuse after cloning, without touching any existing hub.
++// A subpath that disagrees with the anchor recorded on the weft is refused with the adopt-path error;
++// when the weft records none, a subpath that is not a directory in the warp's checked-out tree is refused with the create-path error.
++// The staged clones live under cwd and are removed before it returns.
++// requestedAnchor is the validated form of the explicit --subpath.
++func checkSubpathBeforeReset(cwd, weftURL, warpURL, requestedAnchor string) error {
++	stageDir, err := os.MkdirTemp(cwd, warpProbeDirPrefix)
++	if err != nil {
++		return fmt.Errorf("create staging directory in %s: %w", cwd, err)
++	}
++	defer func() { _ = os.RemoveAll(stageDir) }()
++
++	warpStage := filepath.Join(stageDir, "warp")
++	weftStage := filepath.Join(stageDir, "weft")
++	for _, stage := range []struct{ url, dir string }{{warpURL, warpStage}, {weftURL, weftStage}} {
++		_, err := gitexec.Run([]string{
++			"clone", "--depth", "1", "--no-checkout", "--single-branch",
++			filepath.ToSlash(stage.url), filepath.Base(stage.dir),
++		}, stageDir)
++		if err != nil {
++			return fmt.Errorf("stage %s to check --subpath: %w", stage.url, err)
++		}
++	}
++
++	warpBranch, err := checkedOutBranch(warpStage, "warp prime")
++	if err != nil {
++		return err
++	}
++
++	markerData, source, found, err := recordedAnchorOnWeft(weftURL, weftStage, warpBranch)
++	if err != nil {
++		return err
++	}
++	if found {
++		_, err := adoptRecordedAnchor(markerData, source, requestedAnchor, true)
++		return err
++	}
++
++	isDir, err := warpHasDirectory(warpStage, requestedAnchor)
++	if err != nil {
++		return err
++	}
++	if !isDir {
++		return fmt.Errorf("subpath %q does not exist as a directory in the cloned warp repo", requestedAnchor)
++	}
++	return nil
++}
++
++// recordedAnchorOnWeft reads the anchor marker the hub clone would adopt, from the staged weft clone at weftStage.
++// The prime's weft branch, RecordsBranchName(warpBranch), supplies it when the remote carries that branch and the weft's default HEAD supplies it otherwise, matching how the clone creates that branch.
++// Failing both, the default HEAD supplies the legacy board marker, but only when the default branch is warpBranch itself, since the board checkout adopts a local branch of that name and is orphan-created otherwise.
++// source names where the marker was read, in adoptRecordedAnchor's wording.
++func recordedAnchorOnWeft(weftURL, weftStage, warpBranch string) (data []byte, source string, found bool, err error) {
++	primeBranch := RecordsBranchName(warpBranch)
++	primeRef := "HEAD"
++	onRemote, err := fetchWeftBranchTip(weftURL, weftStage, primeBranch)
++	if err != nil {
++		return nil, "", false, err
++	}
++	if onRemote {
++		primeRef = "FETCH_HEAD"
++	}
++	data, found, err = readAnchorMarkerAt(weftURL, weftStage, primeRef)
++	if err != nil || found {
++		return data, "on " + primeBranch, found, err
++	}
++
++	stdout, err := gitexec.Run([]string{"branch", "--show-current"}, weftStage)
++	if err != nil {
++		return nil, "", false, wrapProbeError(weftURL, "branch --show-current", err)
++	}
++	if strings.TrimSpace(stdout) != warpBranch {
++		return nil, "", false, nil
++	}
++	data, found, err = readAnchorMarkerAt(weftURL, weftStage, "HEAD")
++	return data, "on weft:main", found, err
++}
++
++// readAnchorMarkerAt returns the anchor marker's content at the root of ref in the staged clone at dir, and whether the marker is present.
++// An unborn HEAD carries no marker.
++func readAnchorMarkerAt(weftURL, dir, ref string) ([]byte, bool, error) {
++	if ref == "HEAD" {
++		_, err := gitrepo.New(dir).CurrentSHA()
++		if errors.Is(err, gitrepo.ErrNoCommits) {
++			return nil, false, nil
++		}
++		if err != nil {
++			return nil, false, wrapProbeError(weftURL, "rev-parse HEAD", err)
++		}
++	}
++	listed, err := gitexec.Run([]string{"ls-tree", ref, "--name-only", "--", lymcwd.AnchorFileName}, dir)
++	if err != nil {
++		return nil, false, wrapProbeError(weftURL, "ls-tree", err)
++	}
++	if strings.TrimSpace(listed) == "" {
++		return nil, false, nil
++	}
++	content, err := gitexec.Run([]string{"show", ref + ":" + lymcwd.AnchorFileName}, dir)
++	if err != nil {
++		return nil, false, wrapProbeError(weftURL, "show", err)
++	}
++	return []byte(content), true, nil
++}
++
++// warpHasDirectory reports whether anchor names a directory in the HEAD tree of the staged warp clone at warpStage.
++// "." is always a directory, and an unborn warp has no other.
++func warpHasDirectory(warpStage, anchor string) (bool, error) {
++	if anchor == "." {
++		return true, nil
++	}
++	_, err := gitrepo.New(warpStage).CurrentSHA()
++	if errors.Is(err, gitrepo.ErrNoCommits) {
++		return false, nil
++	}
++	if err != nil {
++		return false, fmt.Errorf("stage warp to check --subpath: rev-parse HEAD: %w", err)
++	}
++	listed, err := gitexec.Run([]string{"ls-tree", "-d", "HEAD", "--name-only", "--", filepath.ToSlash(anchor)}, warpStage)
++	if err != nil {
++		return false, fmt.Errorf("stage warp to check --subpath: ls-tree: %w", err)
++	}
++	return strings.TrimSpace(listed) != "", nil
++}
+diff --git a/internal/fabricengine/shortnamebinding_clone_integration_test.go b/internal/fabricengine/shortnamebinding_clone_integration_test.go
+index c0c83463..5ca4e0f8 100644
+--- a/internal/fabricengine/shortnamebinding_clone_integration_test.go
++++ b/internal/fabricengine/shortnamebinding_clone_integration_test.go
+@@ -39,8 +39,9 @@ func TestCloneHub_FreshBindWithoutShortnameRefuses(t *testing.T) {
+ 	noProbeResidueInParent(t, cloneParent, "noshortname-warp")
+ }
+ 
+-// TestCloneHub_ShortnameRecordLifecycle walks one repo through its shortname record:
+-// recorded at the first clone and committed on weft:main, derived by a second clone, kept by a --reset re-clone, and refused when a different shortname is supplied.
++// TestCloneHub_ShortnameRecordLifecycle walks one repo through its shortname record.
++// The record is made at the first clone and committed on weft:main, derived by a second clone, kept by a --reset re-clone, and refused when a different shortname is supplied.
++// A --reset refusal leaves the existing hub in place.
+ func TestCloneHub_ShortnameRecordLifecycle(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+@@ -68,6 +69,8 @@ func TestCloneHub_ShortnameRecordLifecycle(t *testing.T) {
+ 	}
+ 
+ 	t.Run("SecondCloneDerivesShortname", func(t *testing.T) {
++		t.Parallel()
++
+ 		parent := t.TempDir()
+ 		res, err := fabricengine.CloneHub(parent, fabricengine.CloneOptions{WeftURL: weftURL})
+ 		if err != nil {
+@@ -80,6 +83,8 @@ func TestCloneHub_ShortnameRecordLifecycle(t *testing.T) {
+ 	})
+ 
+ 	t.Run("DisagreeingShortnameRefuses", func(t *testing.T) {
++		t.Parallel()
++
+ 		parent := t.TempDir()
+ 		_, err := fabricengine.CloneHub(parent, fabricengine.CloneOptions{WeftURL: weftURL, Shortname: "other"})
+ 		if err == nil {
+@@ -90,6 +95,36 @@ func TestCloneHub_ShortnameRecordLifecycle(t *testing.T) {
+ 		}
+ 	})
+ 
++	// This subtest and ResetKeepsRecord do not call t.Parallel: they share the one existing hub (firstParent and first) and run in order, since ResetKeepsRecord tears that hub down and rebuilds it.
++	t.Run("ResetWithDisagreeingShortnameKeepsHub", func(t *testing.T) {
++		tests := []struct {
++			name    string
++			warpURL string
++		}{
++			{"TwoArgument", filepath.ToSlash(warpBare)},
++			{"OneArgument", ""},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				_, err := fabricengine.CloneHub(firstParent, fabricengine.CloneOptions{
++					WeftURL:   weftURL,
++					WarpURL:   tt.warpURL,
++					Shortname: "other",
++					Reset:     true,
++				})
++				if err == nil {
++					t.Fatal("CloneHub(Reset) with a disagreeing shortname = nil error; want a refusal")
++				}
++				if !strings.Contains(err.Error(), `"tst"`) {
++					t.Errorf("CloneHub(Reset) error = %q; want it to name the recorded shortname", err.Error())
++				}
++				if shortname, found := fabricengine.ReadShortname(first.BoardDir); !found || shortname != "tst" {
++					t.Errorf("ReadShortname(existing board) = %q, %v; want %q, true: the refused reset must leave the hub in place", shortname, found, "tst")
++				}
++			})
++		}
++	})
++
+ 	t.Run("ResetKeepsRecord", func(t *testing.T) {
+ 		res, err := fabricengine.CloneHub(firstParent, fabricengine.CloneOptions{WeftURL: weftURL, Reset: true})
+ 		if err != nil {
+diff --git a/internal/fabricengine/warpbinding_clone_integration_test.go b/internal/fabricengine/warpbinding_clone_integration_test.go
+index aff59f2b..9a28173a 100644
+--- a/internal/fabricengine/warpbinding_clone_integration_test.go
++++ b/internal/fabricengine/warpbinding_clone_integration_test.go
+@@ -1,8 +1,8 @@
+ // warpbinding_clone_integration_test.go proves CloneHub's warp-binding conflict rule and the pre-hub
+ // probe's three-way failure taxonomy (absent, found, hard error) end to end against real local
+ // bare-repo fixtures.
+-// It also covers the old-order bootstrap guard, --reset in both argument forms, and the ordering
+-// guarantee that a two-argument re-clone against an existing hub never runs the probe at all.
++// It also covers the old-order bootstrap guard, --reset in both argument forms, the refusals under --reset that must leave the existing hub in place,
++// and the ordering guarantee that a two-argument re-clone against an existing hub never runs the probe at all.
+ // Every fixture helper it uses — makeBareRemote, makeEmptyBareRemote, commitFileOnBranch, gitOutput,
+ // and assertBoardIsWeftWorktree — is reused directly from clone_adopt_test.go; this file adds only
+ // seedWeftBinding, the one fixture shape none of those helpers already produce.
+@@ -713,6 +713,268 @@ func TestCloneHub_ResetInBothArgumentForms(t *testing.T) {
+ 	})
+ }
+ 
++// TestCloneHub_ResetWithSubpathPresentInWarp asserts that a --reset clone with an explicit --subpath naming a directory of the warp passes the subpath check and re-creates the hub anchored there.
++func TestCloneHub_ResetWithSubpathPresentInWarp(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	fixtures := t.TempDir()
++	warpBare := makeBareRemoteWithSubdir(t, fixtures, "reset-subpath-warp", "backend")
++	weftBare := makeBareRemote(t, fixtures, "reset-subpath-weft")
++
++	opts := fabricengine.CloneOptions{
++		WeftURL:        filepath.ToSlash(weftBare),
++		WarpURL:        filepath.ToSlash(warpBare),
++		Subpath:        "backend",
++		ForceBootstrap: true,
++		Shortname:      "tst",
++	}
++	cloneParent := t.TempDir()
++	first, err := fabricengine.CloneHub(cloneParent, opts)
++	if err != nil {
++		t.Fatalf("first CloneHub() error = %v; want nil", err)
++	}
++	t.Cleanup(func() { _ = os.RemoveAll(first.HubPath) })
++
++	opts.Reset = true
++	res, err := fabricengine.CloneHub(cloneParent, opts)
++	if err != nil {
++		t.Fatalf("CloneHub(Reset) with a subpath present in the warp error = %v; want nil", err)
++	}
++	if res.Anchor != "backend" {
++		t.Errorf("res.Anchor = %q; want %q", res.Anchor, "backend")
++	}
++}
++
++// TestCloneHub_ResetRefusalKeepsExistingHub asserts that a --reset refused before any removal leaves the existing hub in place.
++// The refusals are a warp URL that disagrees with the recorded binding, the old-order bootstrap guard, a --subpath that disagrees with the recorded anchor, and a --subpath absent from the warp.
++// A sentinel file written into the hub proves it survives, since a removed hub takes the file with it.
++func TestCloneHub_ResetRefusalKeepsExistingHub(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	plantSentinel := func(t *testing.T, hubPath string) string {
++		t.Helper()
++		sentinel := filepath.Join(hubPath, "sentinel.txt")
++		if err := os.WriteFile(sentinel, []byte("keep"), 0o644); err != nil {
++			t.Fatalf("write sentinel %s: %v", sentinel, err)
++		}
++		return sentinel
++	}
++
++	t.Run("BindingMismatch", func(t *testing.T) {
++		t.Parallel()
++
++		recordedFixtures := t.TempDir()
++		suppliedFixtures := t.TempDir()
++		// Both warps share a basename, so the supplied URL derives the same hub path as the recorded one while naming a different repository.
++		recordedWarpBare := makeBareRemote(t, recordedFixtures, "reset-refusal-warp")
++		suppliedWarpBare := makeBareRemote(t, suppliedFixtures, "reset-refusal-warp")
++		weftBare := makeBareRemote(t, recordedFixtures, "reset-refusal-weft")
++		recordedURL := filepath.ToSlash(recordedWarpBare)
++		seedWeftBinding(t, recordedFixtures, weftBare, recordedURL)
++
++		cloneParent := t.TempDir()
++		first, err := fabricengine.CloneHub(cloneParent, fabricengine.CloneOptions{
++			WeftURL: filepath.ToSlash(weftBare),
++			WarpURL: recordedURL,
++		})
++		if err != nil {
++			t.Fatalf("first CloneHub() error = %v; want nil", err)
++		}
++		t.Cleanup(func() { _ = os.RemoveAll(first.HubPath) })
++		sentinel := plantSentinel(t, first.HubPath)
++
++		_, err = fabricengine.CloneHub(cloneParent, fabricengine.CloneOptions{
++			WeftURL: filepath.ToSlash(weftBare),
++			WarpURL: filepath.ToSlash(suppliedWarpBare),
++			Reset:   true,
++		})
++		if !errors.Is(err, fabricengine.ErrWarpBindingMismatch) {
++			t.Errorf("CloneHub(Reset) error = %v; want errors.Is ErrWarpBindingMismatch", err)
++		}
++		if _, statErr := os.Stat(sentinel); statErr != nil {
++			t.Errorf("sentinel in the existing hub: %v; want the refused reset to leave the hub in place", statErr)
++		}
++	})
++
++	t.Run("OldOrderGuard", func(t *testing.T) {
++		t.Parallel()
++
++		fixtures := t.TempDir()
++		ordinarySourceBare := makeBareRemote(t, fixtures, "reset-refusal-source")
++		warpBare := makeBareRemote(t, fixtures, "reset-refusal-guard-warp")
++
++		opts := fabricengine.CloneOptions{
++			WeftURL:        filepath.ToSlash(ordinarySourceBare),
++			WarpURL:        filepath.ToSlash(warpBare),
++			ForceBootstrap: true,
++			Shortname:      "tst",
++		}
++		cloneParent := t.TempDir()
++		first, err := fabricengine.CloneHub(cloneParent, opts)
++		if err != nil {
++			t.Fatalf("first CloneHub() error = %v; want nil", err)
++		}
++		t.Cleanup(func() { _ = os.RemoveAll(first.HubPath) })
++		sentinel := plantSentinel(t, first.HubPath)
++
++		opts.ForceBootstrap = false
++		opts.Reset = true
++		_, err = fabricengine.CloneHub(cloneParent, opts)
++		if err == nil || !strings.Contains(err.Error(), "refusing to bootstrap") {
++			t.Errorf("CloneHub(Reset) error = %v; want it to contain %q", err, "refusing to bootstrap")
++		}
++		if _, statErr := os.Stat(sentinel); statErr != nil {
++			t.Errorf("sentinel in the existing hub: %v; want the refused reset to leave the hub in place", statErr)
++		}
++	})
++
++	t.Run("SubpathDisagreesWithRecordedAnchor", func(t *testing.T) {
++		t.Parallel()
++
++		fixtures := t.TempDir()
++		warpBare := makeBareRemote(t, fixtures, "reset-refusal-anchor-warp")
++		weftBare := makeBareRemote(t, fixtures, "reset-refusal-anchor-weft")
++		commitFileOnBranch(t, fixtures, weftBare, "main", lymcwd.AnchorFileName, ".\n")
++
++		opts := fabricengine.CloneOptions{
++			WeftURL:   filepath.ToSlash(weftBare),
++			WarpURL:   filepath.ToSlash(warpBare),
++			Shortname: "tst",
++		}
++		cloneParent := t.TempDir()
++		first, err := fabricengine.CloneHub(cloneParent, opts)
++		if err != nil {
++			t.Fatalf("first CloneHub() error = %v; want nil", err)
++		}
++		t.Cleanup(func() { _ = os.RemoveAll(first.HubPath) })
++		sentinel := plantSentinel(t, first.HubPath)
++
++		opts.Subpath = "elsewhere"
++		opts.Reset = true
++		_, err = fabricengine.CloneHub(cloneParent, opts)
++		if err == nil || !strings.Contains(err.Error(), "does not match the recorded anchor") {
++			t.Errorf("CloneHub(Reset) error = %v; want it to contain %q", err, "does not match the recorded anchor")
++		}
++		if _, statErr := os.Stat(sentinel); statErr != nil {
++			t.Errorf("sentinel in the existing hub: %v; want the refused reset to leave the hub in place", statErr)
++		}
++		noProbeResidueInParent(t, cloneParent)
++	})
++
++	t.Run("SubpathAbsentFromWarp", func(t *testing.T) {
++		t.Parallel()
++
++		fixtures := t.TempDir()
++		warpBare := makeBareRemote(t, fixtures, "reset-refusal-subpath-warp")
++		weftBare := makeBareRemote(t, fixtures, "reset-refusal-subpath-weft")
++
++		opts := fabricengine.CloneOptions{
++			WeftURL:        filepath.ToSlash(weftBare),
++			WarpURL:        filepath.ToSlash(warpBare),
++			ForceBootstrap: true,
++			Shortname:      "tst",
++		}
++		cloneParent := t.TempDir()
++		first, err := fabricengine.CloneHub(cloneParent, opts)
++		if err != nil {
++			t.Fatalf("first CloneHub() error = %v; want nil", err)
++		}
++		t.Cleanup(func() { _ = os.RemoveAll(first.HubPath) })
++		sentinel := plantSentinel(t, first.HubPath)
++
++		opts.Subpath = "backedn"
++		opts.Reset = true
++		_, err = fabricengine.CloneHub(cloneParent, opts)
++		if err == nil || !strings.Contains(err.Error(), "does not exist as a directory") {
++			t.Errorf("CloneHub(Reset) error = %v; want it to contain %q", err, "does not exist as a directory")
++		}
++		if _, statErr := os.Stat(sentinel); statErr != nil {
++			t.Errorf("sentinel in the existing hub: %v; want the refused reset to leave the hub in place", statErr)
++		}
++		noProbeResidueInParent(t, cloneParent)
++	})
++}
++
++// TestCloneHub_ResetSubpathCheckReadsRecordedAnchor asserts that the --subpath check a --reset clone runs before removing the hub reads the recorded anchor from the same weft branches the clone adopts it from.
++// A marker only on main-weft, or on the default branch when main-weft carries none, refuses a disagreeing --subpath and leaves the hub in place.
++// A marker on a default branch that is not the warp branch is not adopted, so a --subpath present in the warp is accepted.
++func TestCloneHub_ResetSubpathCheckReadsRecordedAnchor(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// seed shapes the weft bare's branches; the warp bare always carries a backend directory.
++		seed func(t *testing.T, fixtures, weftBare string)
++		// subpath is the explicit --subpath of the --reset clone.
++		subpath string
++		// wantRecordedAnchor is the anchor the refusal must name; empty means the reset must succeed.
++		wantRecordedAnchor string
++	}{
++		{"MarkerOnlyOnMainWeft", func(t *testing.T, fixtures, weftBare string) {
++			seedWeftBranchFromMain(t, fixtures, weftBare, "main-weft")
++			commitFileOnBranch(t, fixtures, weftBare, "main-weft", lymcwd.AnchorFileName, "backend\n")
++		}, "elsewhere", "backend"},
++		{"MainWeftWithoutMarkerFallsBackToDefaultBranch", func(t *testing.T, fixtures, weftBare string) {
++			seedWeftBranchFromMain(t, fixtures, weftBare, "main-weft")
++			commitFileOnBranch(t, fixtures, weftBare, "main", lymcwd.AnchorFileName, "backend\n")
++		}, "elsewhere", "backend"},
++		{"MarkerOnNonWarpDefaultBranchIsNotAdopted", func(t *testing.T, fixtures, weftBare string) {
++			seedWeftBranchFromMain(t, fixtures, weftBare, "main-weft")
++			seedWeftBranchFromMain(t, fixtures, weftBare, "trunk")
++			commitFileOnBranch(t, fixtures, weftBare, "trunk", lymcwd.AnchorFileName, "elsewhere\n")
++			gitkit.Git(t, weftBare, "symbolic-ref", "HEAD", "refs/heads/trunk")
++		}, "backend", ""},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			fixtures := t.TempDir()
++			warpBare := makeBareRemoteWithSubdir(t, fixtures, "reset-anchor-source-warp", "backend")
++			weftBare := makeBareRemote(t, fixtures, "reset-anchor-source-weft")
++			tt.seed(t, fixtures, weftBare)
++
++			opts := fabricengine.CloneOptions{
++				WeftURL:   filepath.ToSlash(weftBare),
++				WarpURL:   filepath.ToSlash(warpBare),
++				Shortname: "tst",
++			}
++			cloneParent := t.TempDir()
++			first, err := fabricengine.CloneHub(cloneParent, opts)
++			if err != nil {
++				t.Fatalf("first CloneHub() error = %v; want nil", err)
++			}
++			t.Cleanup(func() { _ = os.RemoveAll(first.HubPath) })
++			sentinel := filepath.Join(first.HubPath, "sentinel.txt")
++			if err := os.WriteFile(sentinel, []byte("keep"), 0o644); err != nil {
++				t.Fatalf("write sentinel %s: %v", sentinel, err)
++			}
++
++			opts.Subpath = tt.subpath
++			opts.Reset = true
++			res, err := fabricengine.CloneHub(cloneParent, opts)
++			if tt.wantRecordedAnchor == "" {
++				if err != nil {
++					t.Fatalf("CloneHub(Reset) error = %v; want nil", err)
++				}
++				if res.Anchor != tt.subpath {
++					t.Errorf("res.Anchor = %q; want %q", res.Anchor, tt.subpath)
++				}
++				return
++			}
++			if want := "does not match the recorded anchor " + `"` + tt.wantRecordedAnchor + `"`; err == nil || !strings.Contains(err.Error(), want) {
++				t.Errorf("CloneHub(Reset) error = %v; want it to contain %q", err, want)
++			}
++			if _, statErr := os.Stat(sentinel); statErr != nil {
++				t.Errorf("sentinel in the existing hub: %v; want the refused reset to leave the hub in place", statErr)
++			}
++		})
++	}
++}
++
+ // TestCloneHub_HubExistsCheckPrecedesProbeInTwoArgForm asserts that a second two-argument clone of an
+ // already-cloned pair, with Reset false, fails with today's "hub already exists" and — the observable
+ // difference this test exists to lock in — never runs the probe: no directory whose name begins with
