@@ -34,6 +34,12 @@ The pair's worktree is the source of its branch name, not a new record and not t
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-05): A pair's branch is the one its worktree has checked out, under any prefix
+
+Decision: The narrowing is refused (review F2). pairTaskBranchLocal accepts the task worktree's checked-out branch when it is a branch of the pair, recognised by its records branch existing in the records repository, not only a branch named by the current prefix or the bare slug. So pairs created under any earlier prefix, empty or not, stay recognised after branch_prefix changes again.
+
+Rationale: The operator chose the worktree as the source of a pair's branch (2026-11-05) so that branch_prefix can be set at any time; a fix that only covers a change away from the empty prefix leaves the same fault one prefix change later.
+
 ## Constraints
 
 ## Auto-mode assumptions
