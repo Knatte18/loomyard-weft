@@ -1,6 +1,6 @@
 # Re-measure the batching hook and the edit-round rule a week after the hook reaches forks
 
-`batching-hook-remeasure` · Task · research, tools, claude
+`batching-hook-remeasure` · Task · research, tools, claude · running · Worktree-Create
 
 ## Idea (operator and hub orch, 2026-11-04)
 
