@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Hard-cap escalation at Discussion-Bouncer round 3. The open design-wrong findings are F1 (mutable-records-bypass-seal) and F2 (judge-snapshot-misses-ignored-and-weft). The decision record already holds a fix for each, so the round is accepted.\nF1: D6 now guards scope.json and judged.json. Every write is committed at once in a weft commit carrying a Drift-Records trailer, and every row, the gate entry, lym drift check and the verdict read from the newest such commit's copies. Drift-Verify, Drift-Recheck, the gate entry and lym drift check run a records check first. A mismatch is a Stuck naming lym drift amend --restore, which restores both files. D6's Bound now states the true bound: forging needs a hand-made weft commit with the trailer, and in-flight runs are named. D4, D10, D11 and D13 read through the guard, and the acceptance bullets for D6, D10 and D11 cover hand edits. All five parts of the review's fix are in place.\nF2: The D9 snapshot now covers HEAD, the tracked tree and untracked paths outside ignore rules, with copies, in both checkouts, plus a hash list of the current capture's scratch directory. It lives under the hub's board-level .lym, under a name internal/lymdirs declares. The way forward now covers modified or deleted untracked paths and a changed scratch directory. A lost snapshot is a recorded Stuck that cannot be dropped silently, and the acceptance bullet matches. The one part not made is a baseline hash list. The finding's own fix assigns baseline changes to F3, and F3's fix recomputes the baseline digest after the judge returns and names lym drift defer. So that part is answered too.\nF3 is mechanical and was fixed as the review proposed.\nThe code facts the fixes rely on check out. The worktree's .lym is a link into the weft-side .lym (internal/fabricengine/gitexclude.go and ls -la). internal/lymdirs declares board-level .lym directories, among them the run process record directory. internal/fabricengine/trailer.go defines Warp-SHA.\nThe fixes add no scope beyond the board entry's design and the operator's decisions of 2026-11-05.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom circling accept drift-rework"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/drift-rework/_lym/shed/drift-rework/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/drift-rework/_lym/shed/drift-rework/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step drift-rework --until-stop --arbiter-attempt 1"
+}
