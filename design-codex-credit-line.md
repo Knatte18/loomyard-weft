@@ -1,6 +1,6 @@
 # Landing credit block names Codex when a Codex session ran
 
-`codex-credit-line` · Task · enhancement, landing, codex · running · Drift-Recheck
+`codex-credit-line` · Task · enhancement, landing, codex · running · Describe
 
 ## Seen (2026-11-05)
 
