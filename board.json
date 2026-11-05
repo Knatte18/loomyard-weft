@@ -724,7 +724,7 @@
       "isolated": false,
       "brief": "An interactive sampler session with the operator updates the repository README to what lym does today",
       "body": "## Wanted (operator, 2026-11-05)\n\nThe repository root `README.md` is updated to what lym does today.\nThe operator steers the session: the agent first reads the README against `docs/overview.md` and the current command tree (`lym --help`), lists what is stale, missing or wrong, and then edits with the operator.\nOnly `README.md` changes unless the operator asks for more.\n",
-      "status": "running · Open-IDE",
+      "status": "running · Preflight",
       "created": "2026-11-05T08:27:38Z",
       "revised": "2026-11-05T08:27:38Z"
     }
