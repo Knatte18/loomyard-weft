@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "Batch 07-report-config: recover-batch 07 refused with batch_failed (create-not-done/7-report-config[blocking]: Create target \"internal/reportengine/template.yaml#\" and the plan:internal/reportengine#Config, #ConfigTemplate, #ConfigSpec, #LoadConfig and #TestLoadConfig targets still do not resolve, since the config module was built in internal/reportconfig to avoid an import cycle; way forward: lym webster recover-batch 07)",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "Drift-Await → skipped",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "Batch 07-report-config: recover-batch 07 refused with batch_failed (create-not-done/7-report-config[blocking]: Create target \"internal/reportengine/template.yaml#\" and the plan:internal/reportengine#Config, #ConfigTemplate, #ConfigSpec, #LoadConfig and #TestLoadConfig targets still do not resolve, since the config module was built in internal/reportconfig to avoid an import cycle; way forward: lym webster recover-batch 07)"
   },
   "history": [
     {
@@ -307,6 +307,22 @@
       "output": "",
       "at": "2026-11-05T10:40:35Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-11-05T11:27:18Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-05T11:27:17.318305577Z",
+          "end": "2026-11-05T11:27:17.318413649Z"
+        }
+      ],
+      "budget_exempt": true
     }
   ],
   "product": {
