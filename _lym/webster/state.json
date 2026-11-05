@@ -1,0 +1,336 @@
+{
+  "runGuid": "fc08175c6026a1f5e0be974deea15cc4",
+  "planFingerprint": "87dedabcc56b92b6714e6f98c3b5f07d31259670085d404a21fdffd7d64e95b2",
+  "planFileHashes": {
+    "00-overview.md": "3200e9a58a9b553cf78ed40ca50ef40738f97e007a94d7120a3535070bfb1711",
+    "01-pattern-clusters.md": "263ea28d63132e68dd11e9958fa17aa862043c7022bacdc3fa77d48aabbd7e03",
+    "02-slack-names.md": "08a2f81bac07263b0c493638ed11aa4896f0aba37851338ce8fdd0e815f7c46e",
+    "03-creel-seams.md": "9fb63c44703d9dbf537aa95ce1947a6980e009ff1e6e62ee070737cda645d8c7",
+    "04-slackengine-files.md": "40aaa22e1c3fadc3d6e8c64dcdb629c5474eb522565fcbe5f3969ec08358dde2",
+    "05-slack-config.md": "b130f69840769b26a9e99e2adcd73797d005ef037f5b0a904e699535717a4f9f",
+    "06-slackengine-api.md": "7d4192923e21b130aba0ef4f934823185e19e088cfabe994f713dc8eb14c161e",
+    "07-slackengine-inbound.md": "588785623859b9ebaf62f8fc25f8ddd9ca4d0d58a506b42f593a429b83cbcf79",
+    "08-slackengine-outbound.md": "5d09c60c071b42b3f77914951085d0849ed5d0275021cdba9e56d71d65fef3db",
+    "09-slackengine-relay.md": "a520347cadbd4b9cfb532b1d233747f0bf92fbd21846ea2f4709f2fa5d9e01e4",
+    "10-slack-cli.md": "48e023fc1249ffbda2982c17f590b9056c6e68b2c6a44873f2995ce50e0d5059",
+    "11-orch-relay-presence.md": "6cbdcfdf8bc48520de9cf8d8a7c06813b7f65eee5c00471aeeb3287935b703b4",
+    "12-dobby-relay-tick.md": "580cc1e0517953b89d06a19372c07cf1fd8eb35efd07c19bc89201a89c5dcf7f",
+    "13-anchor-relay-restart.md": "4cce7eacd19f76c6ac7a77830a4f1879d3d817bcfb17774373ec3c09f8e7bb19",
+    "14-orch-role-slack.md": "4a4dae59193f1395a56fbf49c3ad5304f562ba13d3d5c5612a3eeebd8e5266cb"
+  },
+  "planOverviewFrameHash": "c831ad9407ba81201198f4ec360d2fa65df8eb648b8edf12470e8d2c586b133d",
+  "partition": [
+    {
+      "cards": [
+        "01-pattern-clusters",
+        "02-slack-names",
+        "03-creel-seams",
+        "04-slackengine-files",
+        "05-slack-config"
+      ],
+      "profile": "wide",
+      "estimate": 249240,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54460,
+        "read_union": 57836,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 324,
+            "reads": {
+              "file:PATTERN.md": 660,
+              "file:pattern/PATTERN-agent-addressing.md": 156,
+              "file:pattern/PATTERN-child-processes.md": 516,
+              "package:.": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 18,
+            "written": 5724
+          },
+          {
+            "card": 2,
+            "card_text": 336,
+            "reads": {
+              "file:internal/githubclient/doc.go": 1536,
+              "file:internal/lymdirs/dirs.go": 684,
+              "file:internal/lymdirs/doc.go": 84,
+              "file:internal/runproc/doc.go": 360,
+              "package:internal/githubclient": 2000,
+              "package:internal/lymdirs": 2000,
+              "package:internal/runproc": 2000,
+              "tests:internal/githubclient": 2000,
+              "tests:internal/lymdirs": 2000,
+              "tests:internal/runproc": 2000
+            },
+            "messages": 51.5,
+            "written": 15786
+          },
+          {
+            "card": 3,
+            "card_text": 648,
+            "reads": {
+              "file:internal/creelcli/doc.go": 744,
+              "file:internal/creelengine/doc.go": 3984,
+              "package:internal/creelcli": 2000,
+              "package:internal/creelengine": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:internal/creelengine": 2000
+            },
+            "messages": 107,
+            "written": 32748
+          },
+          {
+            "card": 4,
+            "card_text": 756,
+            "reads": {
+              "file:internal/hubgeom/doc.go": 648,
+              "file:pattern/PATTERN-cwd-resolution.md": 552,
+              "package:internal/hubgeom": 2000,
+              "package:internal/slackengine": 2000,
+              "package:pattern": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/slackengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 154.5,
+            "written": 47106
+          },
+          {
+            "card": 5,
+            "card_text": 480,
+            "reads": {
+              "file:internal/configreg/doc.go": 276,
+              "file:pattern/PATTERN-config-layers.md": 1092,
+              "package:cmd/lym": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/slackengine": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/slackengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 117,
+            "written": 35580
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-slackengine-api",
+        "07-slackengine-inbound",
+        "08-slackengine-outbound",
+        "09-slackengine-relay"
+      ],
+      "profile": "wide",
+      "estimate": 211904,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61460,
+        "read_union": 16200,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 444,
+            "reads": {
+              "package:internal/slackengine": 2000,
+              "tests:internal/slackengine": 2000
+            },
+            "messages": 96,
+            "written": 29244
+          },
+          {
+            "card": 7,
+            "card_text": 768,
+            "reads": {
+              "package:internal/slackengine": 2000,
+              "tests:internal/slackengine": 2000
+            },
+            "messages": 88,
+            "written": 27168
+          },
+          {
+            "card": 8,
+            "card_text": 528,
+            "reads": {
+              "package:internal/slackengine": 2000,
+              "tests:internal/slackengine": 2000
+            },
+            "messages": 56,
+            "written": 17328
+          },
+          {
+            "card": 9,
+            "card_text": 1104,
+            "reads": {
+              "file:pattern/PATTERN-child-processes.md": 516,
+              "file:pattern/PATTERN-daemon-wakeups.md": 840,
+              "package:cmd/lym": 2000,
+              "package:internal/slackengine": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/slackengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 198,
+            "written": 60504
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-slack-cli",
+        "11-orch-relay-presence",
+        "12-dobby-relay-tick",
+        "13-anchor-relay-restart",
+        "14-orch-role-slack"
+      ],
+      "profile": "wide",
+      "estimate": 269672,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68460,
+        "read_union": 62840,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 1164,
+            "reads": {
+              "file:cmd/lym/seamsignature_test.go": 936,
+              "file:docs/overview.md": 11136,
+              "package:cmd/lym": 2000,
+              "package:docs": 2000,
+              "package:internal/slackcli": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:docs": 2000,
+              "tests:internal/slackcli": 2000
+            },
+            "messages": 168,
+            "written": 51564
+          },
+          {
+            "card": 11,
+            "card_text": 672,
+            "reads": {
+              "file:internal/orchcli/doc.go": 1896,
+              "file:internal/orchengine/doc.go": 5916,
+              "package:internal/orchcli": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 154,
+            "written": 46872
+          },
+          {
+            "card": 12,
+            "card_text": 384,
+            "reads": {
+              "file:docs/overview.md": 11136,
+              "file:internal/beamcli/doc.go": 2556,
+              "package:docs": 2000,
+              "package:internal/beamcli": 2000,
+              "tests:docs": 2000,
+              "tests:internal/beamcli": 2000
+            },
+            "messages": 47.5,
+            "written": 14634
+          },
+          {
+            "card": 13,
+            "card_text": 348,
+            "reads": {
+              "file:internal/fabriccli/doc.go": 1572,
+              "package:internal/fabriccli": 2000,
+              "tests:internal/fabriccli": 2000
+            },
+            "messages": 76.5,
+            "written": 23298
+          },
+          {
+            "card": 14,
+            "card_text": 204,
+            "reads": {
+              "file:contracts/orchrole/orch-role.md": 4056,
+              "package:contracts/orchrole": 2000,
+              "tests:contracts/orchrole": 2000
+            },
+            "messages": 6,
+            "written": 2004
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "0b652e66eac7b28610d1ac37f51cc712",
+  "masterSessionId": "92259c87-a13c-4393-84cc-c0c85e3379b0",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "pattern-clusters",
+      "cards": [
+        "01-pattern-clusters",
+        "02-slack-names",
+        "03-creel-seams",
+        "04-slackengine-files",
+        "05-slack-config"
+      ],
+      "cardHashes": {
+        "01-pattern-clusters": "263ea28d63132e68dd11e9958fa17aa862043c7022bacdc3fa77d48aabbd7e03",
+        "02-slack-names": "08a2f81bac07263b0c493638ed11aa4896f0aba37851338ce8fdd0e815f7c46e",
+        "03-creel-seams": "9fb63c44703d9dbf537aa95ce1947a6980e009ff1e6e62ee070737cda645d8c7",
+        "04-slackengine-files": "40aaa22e1c3fadc3d6e8c64dcdb629c5474eb522565fcbe5f3969ec08358dde2",
+        "05-slack-config": "b130f69840769b26a9e99e2adcd73797d005ef037f5b0a904e699535717a4f9f"
+      },
+      "startSha": "f6b0f28d2190031ec4de222d5bcdf9d503dd4a4a",
+      "kind": "fork",
+      "spawnedAt": "2026-11-05T18:26:54Z",
+      "sessionId": "92259c87-a13c-4393-84cc-c0c85e3379b0",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
