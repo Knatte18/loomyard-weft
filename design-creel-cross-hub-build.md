@@ -1,6 +1,6 @@
 # Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp
 
-`creel-cross-hub-build` · Task · feature, creel, orch
+`creel-cross-hub-build` · Task · feature, creel, orch · draft
 
 Depends on: [`slack-relay`](design-slack-relay.md)
 

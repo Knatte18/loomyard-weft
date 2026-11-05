@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-05 18:52 UTC; every age below is as of then.
+Rendered 2026-11-05 18:53 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -87,21 +87,21 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Layer A (2)
+#### Layer A (1)
 
 Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | T5 | 52m<br>52m | creel, orch |
 | T6 | **Dobby reminds the operator on Slack of a run waiting at PR-Review or Sampler-Session** | [`slack-wait-reminders`](design-slack-wait-reminders.md)<br>[Sketch](decision-slack-wait-reminders.md) | darn · light | T5 | 2h<br>2h | reed |
 
-#### Draft (1)
+#### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
+| T2 | `draft` **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | T5 | 53m<br>53m | creel, orch |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T7 | 5d<br>5h | fabric |
 
 ### Notes (23)
@@ -124,8 +124,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 1h<br>1h | reed, orch |
 | B5 |  | **A parent cannot withdraw a PATTERN change the decision record declares**<br>• lym loom decision add only appends PATTERN bullets; a declared id the parent drops needs a hand edit of the record | [`decision-withdraw-pattern`](design-decision-withdraw-pattern.md) | 1h<br>1h | loom, parsers, pattern |
 | B6 |  | **Raddle on a Sketch fails to start because the motif run that made it already completed under the same slug**<br>• Dobby refuses the raddle run until lym batten cleanup --apply removes the motif run dir | [`raddle-same-slug-completed`](design-raddle-same-slug-completed.md) | 1h<br>1h | batten, dobby, loom |
-| B7 |  | **A finished raddle run fails its batten run at Run-Shed** | [`raddle-end-fails-batten`](design-raddle-end-fails-batten.md) | 51m<br>51m | batten |
-| B8 |  | **Scope plugins, skills and connectors per role, in every hub**<br>• lym gives each session only the plugins and skills its role needs, ly included in other hubs, and turns off connectors and unused listings | [`ly-plugin-off-in-other-hubs`](design-ly-plugin-off-in-other-hubs.md) | 35m<br>32m | shuttle |
+| B7 |  | **A finished raddle run fails its batten run at Run-Shed** | [`raddle-end-fails-batten`](design-raddle-end-fails-batten.md) | 52m<br>52m | batten |
+| B8 |  | **Scope plugins, skills and connectors per role, in every hub**<br>• lym gives each session only the plugins and skills its role needs, ly included in other hubs, and turns off connectors and unused listings | [`ly-plugin-off-in-other-hubs`](design-ly-plugin-off-in-other-hubs.md) | 36m<br>33m | shuttle |
 
 #### Enhancements (3)
 
