@@ -1,10 +1,9 @@
 {
   "current_producer": "Plan-Burler-Review",
-  "state": "paused",
+  "state": "running",
   "error": "",
   "entered_row": "Plan-Burler-Review",
   "pause_requested": false,
-  "pause_reason": "goto to Plan-Burler-Review by orch",
   "activity": {
     "now": "Plan-Burler-Review",
     "last": "Plan-Burler-Review → goto",
