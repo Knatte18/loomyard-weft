@@ -58,6 +58,13 @@ Its proposal goes to the operator, who approves it before any task or project is
 There is no fixed procedure for this today; the orch or the operator does it by hand.
 The triage agent is the cold split agent below, given the wider choice: it may also answer "one tapestry", which costs no split.
 
+- It runs cold, on Opus (operator, 2026-11-05); the operator's part is approving or correcting the proposal.
+- It reads the Sketch, the board (entries that exist or run in the same packages) and only enough code to place each part: the packages and files the Sketch names, which packages each part changes, roughly how much, and who calls whom for the order.
+  It designs nothing; the Sketch has done that.
+- It weighs cost, and is tuned for it (operator, 2026-11-05): a tapestry carries a large fixed start cost, so one large tapestry beside two small darns is often worse than fewer, larger darns or one tapestry for the whole.
+  It is given each recipe and profile's measured fixed and per-size cost, from the hub's own run records (`lym report timing` and the token audits), not a figure written into its prompt, and its proposal states the expected cost of the split it proposes against the next-best one.
+- Its choices are checked after landing against what the runs cost, so its prompt can be tuned.
+
 ## The split is a cold agent of its own (operator, 2026-11-03)
 
 - The Sketch stays as it is: Discussion-Write writes no split and judges no seams, so a task going way 1 pays nothing for the split.
