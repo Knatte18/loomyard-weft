@@ -27,6 +27,12 @@ Related: note `protected-parent-landing`, landing on a parent the hub may not pu
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-05): The darn writer makes the merge in place of the landing merge fixer
+
+Decision: Accepted departure from the entry's 'settles conflicts and gate failures with the merge fixer': the merge task is a plain darn run whose writer runs lym fabric merge-in and settles conflicts, and the Darn-Write verify gate's cold gate fixer clears gate failures. Review finding F1 is settled by this decision; the code stays as built.
+
+Rationale: The entry's intent is that the run itself settles conflicts and gate failures, which the writer and the cold gate fixer do. The merge fixer belongs to Parent-Align and Finalize, which merge the task's own parent under its lock; pointing them at the beam's parent would need a second parent branch, lock and merge record through landingshed and the darn recipe, for no gain.
+
 ## Constraints
 
 ## Auto-mode assumptions
