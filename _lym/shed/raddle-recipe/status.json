@@ -1,12 +1,14 @@
 {
-  "current_producer": "Webster",
-  "state": "blocked",
-  "error": "Batch 07-report-config: recover-batch 07 refused with batch_failed (create-not-done/7-report-config[blocking]: Create target \"internal/reportengine/template.yaml#\" and the plan:internal/reportengine#Config, #ConfigTemplate, #ConfigSpec, #LoadConfig and #TestLoadConfig targets still do not resolve, since the config module was built in internal/reportconfig to avoid an import cycle; way forward: lym webster recover-batch 07)",
+  "current_producer": "Plan-Burler-Review",
+  "state": "paused",
+  "error": "",
+  "entered_row": "Plan-Burler-Review",
   "pause_requested": false,
+  "pause_reason": "goto to Plan-Burler-Review by orch",
   "activity": {
-    "now": "Webster",
-    "last": "Webster → stuck",
-    "wait": "Batch 07-report-config: recover-batch 07 refused with batch_failed (create-not-done/7-report-config[blocking]: Create target \"internal/reportengine/template.yaml#\" and the plan:internal/reportengine#Config, #ConfigTemplate, #ConfigSpec, #LoadConfig and #TestLoadConfig targets still do not resolve, since the config module was built in internal/reportconfig to avoid an import cycle; way forward: lym webster recover-batch 07)"
+    "now": "Plan-Burler-Review",
+    "last": "Plan-Burler-Review → goto",
+    "wait": ""
   },
   "history": [
     {
@@ -323,6 +325,13 @@
         }
       ],
       "budget_exempt": true
+    },
+    {
+      "producer": "Plan-Burler-Review",
+      "outcome": "goto",
+      "output": "",
+      "at": "2026-11-05T11:27:59Z",
+      "by": "orch"
     }
   ],
   "product": {
