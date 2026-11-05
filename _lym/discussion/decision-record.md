@@ -35,6 +35,30 @@ Decision: The run lands the per-role settings and their tests only. Checking in 
 
 Rationale: A run cannot launch Claude headless, and trials run as darn docs tasks.
 
+### Added after Discussion (parent, 2026-11-05): Interactive sessions are scoped too; only the orch keeps memory and ListAgents
+
+Decision: Refuse the blanket interactive exception. Auto-memory stays on and ListAgents stays allowed for the orch alone: PR-Review, the sampler, the board session and every other session lym launches get memory off and ListAgents denied. Plugin skills follow one rule in every session, interactive or not: the ly plugin keeps all its skills where it is on, since the operator types them as slash commands, and every other plugin is limited to the skills the session preloads. So the orch keeps only its preloaded scribe skills.
+
+Rationale: The operator asked for plugins and skills to be scoped down hard, available only where needed. An interactive session does not need other languages' skills or the orch's memory index; ly's slash commands are the one case an operator types by hand.
+
+### Added after Discussion (parent, 2026-11-05): ListAgents is denied through permissions.deny in the settings
+
+Decision: Accept permissions.deny in the written settings in place of --disallowedTools on the launch line.
+
+Rationale: The behavior is the one asked for, one settings document carries the whole scope, and the resume line needs no second flag.
+
+### Added after Discussion (parent, 2026-11-05): The board button preloads scribe:prose and scribe:conversation
+
+Decision: Accept the preload in both reed templates and config_test.go.
+
+Rationale: The board session talks with the operator, so it needs those two rules, and with plugins following preloads it would otherwise lose them.
+
+### Added after Discussion (parent, 2026-11-05): A session opened outside a hub gets no scope
+
+Decision: Accept the narrowing: the scope covers sessions lym launches in a hub. An opened session outside a hub writes no settings, as today.
+
+Rationale: Outside a hub there is no hub config or settings location to write to, and the operator's concern is the hubs' sessions.
+
 ## Constraints
 
 ## Auto-mode assumptions
