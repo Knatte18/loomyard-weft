@@ -1,6 +1,6 @@
 # Bring README.md up to date
 
-`readme-refresh` · Task · enhancement · running · Seed-Child
+`readme-refresh` · Task · enhancement · running · Open-IDE
 
 ## Wanted (operator, 2026-11-05)
 
