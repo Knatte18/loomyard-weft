@@ -46,4 +46,12 @@ Rationale: The operator chose the worktree as the source of a pair's branch (202
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-2-review.md; fixer report: _lym/reviews/code/round-2-fixer-report.md.
+  - detached-literal-survives-next-to-constant (class consistency, severity BLOCKING, open in rounds 2)
+  - prefix-changed-between-nonempty-values-unrecognised (class decision, severity MEDIUM, open in rounds 2)
+  - unresolvable-records-root-skip-untested (class scope, severity MEDIUM, open in rounds 2)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
