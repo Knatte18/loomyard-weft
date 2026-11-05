@@ -193,7 +193,5 @@ Rationale: PATTERN-agent-addressing already guards agent messaging (messages onl
 
 ## PATTERN changes
 
-- `PATTERN-reap-children` — changes: Starting a child process: its starter waits on it, by `cmd.Wait` or `proc.Reap`, never only releasing it, bar a double fork's intermediate, which exits at once; a process that re-execs itself calls `proc.ReapInheritedChildren` before it starts a child.
-- `PATTERN-slack-boundary` — adds: Calling Slack: only `internal/slackengine` (new), with the token only from its machine credential file, never a config layer, env or repository; operator Slack text reaches agents only as creel mail from `<shortname>:SLACK`.
 - `PATTERN-child-processes` — changes: Starting or ending a process: log the spawn via `internal/logger`; its starter waits on it, bar a double fork's intermediate, which exits at once; a run's processes register in `internal/runproc` and end only through it. — added after Discussion (parent, 2026-11-05)
 - `PATTERN-agent-addressing` — changes: Naming or messaging an agent: names only via `internal/agentname`; messages only through creel; Slack only via `internal/slackengine`, its token only in its machine credential file; operator Slack text reaches agents only as creel mail from `<shortname>:SLACK`. — added after Discussion (parent, 2026-11-05)
