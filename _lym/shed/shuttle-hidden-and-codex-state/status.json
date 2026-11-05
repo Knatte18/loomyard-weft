@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -128,6 +128,21 @@
       "output": "",
       "at": "2026-11-05T05:40:49Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/shuttle-hidden-and-codex-state/_lym/landing/summary.md",
+      "at": "2026-11-05T05:41:17Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-05T05:41:17.051287612Z",
+          "end": "2026-11-05T05:41:17.051336404Z"
+        }
+      ]
     }
   ],
   "product": {
