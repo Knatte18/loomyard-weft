@@ -95,7 +95,7 @@ Built as Raddle-Write above; what follows is the original design.
 2. `stitch`: a stand-alone loom recipe for a large task's whole course, chosen before the run starts.
    Preflight, Discussion, a Pre-Plan producer that splits the decided scope into parts with contracts (what each takes in, delivers and exports, and which parts it depends on), a row with no agent that turns the entry into a project and files each part as a darn task, then an inner pawl run through `battenshed.NewInnerRun` that brings up the beam, waits until every part has landed and lands the beam.
    Parts run with review off; one review covers the whole diff after the last lands.
-   It is tried first as a hand-run test project with the projects and beams that exist, measured against tapestry runs of the same size (`docs/research/token-audit-2026-10-22`), and built only if it saves tokens.
+   It is tried first as a hand-run test project with the projects and beams that exist, measured against tapestry runs of the same size (`docs/research/tokens/token-audit-2026-10-22`), and built only if it saves tokens.
    The risk: tapestry's build is cheap because Webster runs on Sonnet following an Opus plan, while parts under a coarse pre-plan likely need Opus writers.
 
 ## Open

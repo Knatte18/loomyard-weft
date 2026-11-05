@@ -25,7 +25,7 @@ A shuttle-spawned lookup agent on Codex therefore needs no new engine selection 
 
 ## Measured since (tidy, 2026-11-04)
 
-Task `planner-fork-lookups` (`482c05d4`, `docs/research/writer-lookups-measure-2026-11-04/report.md`) measured how the Plan and Discussion writers use lookup subagents, on 7 writer sessions of 3 tapestry runs, with no agent run and no code change.
+Task `planner-fork-lookups` (`482c05d4`, `docs/research/turns/writer-lookups-measure-2026-11-04/report.md`) measured how the Plan and Discussion writers use lookup subagents, on 7 writer sessions of 3 tapestry runs, with no agent run and no code change.
 - The 3 Plan writers each handed one batch of 3 or 4 `sonnet` lookup subagents to the Agent tool; 1 of 3 full Discussion sessions did.
 - Exploration is 46% of the writers' cost ($11.03 of $23.76), and 15% of it is paid above 200k context, all in Plan sessions after their one batch.
 - Moving every search turn to subagents would save at most about $4.7, one fifth of writer spend; batching the late serial chains in the writer saves more than a subagent does there.

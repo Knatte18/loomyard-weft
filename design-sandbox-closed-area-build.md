@@ -6,7 +6,7 @@
 
 Every agent lym starts runs with `--dangerously-skip-permissions`, which many people do not accept, and a repository that states it supports safe sandboxing is worth more than one that does not.
 The operator uses lym alone, on Linux (OSL-1046: Ubuntu 24.04; Neve: Kubuntu on Ubuntu 26.04, Plasma 6), and has no interest in other users or in Windows.
-The research is `docs/research/sandboxing-options-2026-10-30.md`: it weighs `bwrap`, Landlock, a dedicated Linux user, systemd sandboxing, podman and Claude Code's own `/sandbox`, and the packages and cards each would change.
+The research is `docs/research/platform/sandboxing-options-2026-10-30.md`: it weighs `bwrap`, Landlock, a dedicated Linux user, systemd sandboxing, podman and Claude Code's own `/sandbox`, and the packages and cards each would change.
 
 Two exposures hold today with no area: an agent can reach `/run/user/<uid>/bus` and through it `systemd-run --user`, which starts any process outside lym's tree, and it can type into other hubs' tmux panes through their sockets in `/tmp/tmux-<uid>`, the Models hub's among them.
 

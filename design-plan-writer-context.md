@@ -4,7 +4,7 @@
 
 ## Seen
 
-`docs/research/token-audit-2026-10-22`: the Plan writer is the costliest session type, about $8 per run, $1,306 with its forks over two weeks (18% of all spend).
+`docs/research/tokens/token-audit-2026-10-22`: the Plan writer is the costliest session type, about $8 per run, $1,306 with its forks over two weeks (18% of all spend).
 It averages 81 turns at a mean context of 223k, holds 153k by its first fork and peaks around 308k, mostly from about 71 raw `sed -n`/`grep` code reads.
 Every `twill-plan` lens fork inherits that context, about 287k per turn; since 2026-10-20 the writer and its forks cost about $18 per run.
 
@@ -51,7 +51,7 @@ Plan writer plus its lens forks, means per run (API list price):
 - `relevant.md` use, over 32 runs with a list and a Plan-Write transcript: 85% of named files were read, but only 28% of read files were named (about 3.5 files read per file named, about 7 on large runs). Both shares are lower bounds (directory greps and quarry reads not counted).
 - So `relevant.md` works as a floor, not a boundary; most unnamed reading looks like tests and neighbouring callers, which a per-part split of the list would not remove.
 - Still open: the solo Opus high and Fable writer bench; the split-writing variant has since been built and benched against `Plan-Write` (see the last section).
-- Scripts, baseline tables and `results.md` are in `docs/research/plan-writer-audit-2026-10-24/`; rerun per its README.
+- Scripts, baseline tables and `results.md` are in `docs/research/loom/plan-writer-audit-2026-10-24/`; rerun per its README.
 
 ## Discussion versus Plan: double reading (Sonnet agent, 2026-10-25)
 
@@ -77,14 +77,14 @@ Plan writer plus its lens forks, means per run (API list price):
 
 ## Turn audit (landed 2026-10-28)
 
-`docs/research/turn-audit-2026-10-28/report.md` (n = 1 loom run, 213 sessions) finds the Plan writer spends 33 of its 101 turns on serial single-call reads and searches, mostly shell `grep` and `sed -n`, which a merged turn would remove.
+`docs/research/turns/turn-audit-2026-10-28/report.md` (n = 1 loom run, 213 sessions) finds the Plan writer spends 33 of its 101 turns on serial single-call reads and searches, mostly shell `grep` and `sed -n`, which a merged turn would remove.
 It recommends one stencil sentence in `loom-template-plan.md` and in the twill lens directive: issue every search and read you can name in one message.
 This is a cheaper cut than the digest, the earlier fork and the split writing above, and the audit proposes no pre-read for the writer.
 The Plan row rests on one session; the recommendation was later applied and measured, see the next section.
 
 ## Batching effect audit (landed 2026-11-01)
 
-The turn audit's recommendation above was applied (the batching sentences of `bf00a043`, 2026-10-28), and `docs/research/batching-effect-audit-2026-11-01/report.md` measured it on 8 runs, 7 landed (5 before, 2 after).
+The turn audit's recommendation above was applied (the batching sentences of `bf00a043`, 2026-10-28), and `docs/research/turns/batching-effect-audit-2026-11-01/report.md` measured it on 8 runs, 7 landed (5 before, 2 after).
 It finds no batching effect, and the sample cannot show a small one: the Plan writer issued 1.14 calls per turn after against 1.29 before, its single-call turn share was 83% against 75%, and its serial read and search turns were 44% of its turns against 41%.
 The Discussion writer is level on every measure.
 The 33-of-101 serial turns the turn audit found are still there, so the ideas above keep their value.
@@ -94,13 +94,13 @@ The 33-of-101 serial turns the turn audit found are still there, so the ideas ab
 `plan-edits-before-gate` (`1834cebf`) removed the batching sentences from the stencils, `loom-template-plan.md`, `loom-template-discussion.md` and `twill-directive.md` among them.
 The one rule (read in one message, decide every edit, make them in one message, one gate run) is now the shipped heddle entry `lym-plan-edits-before-gate`, rendered after `lym-batching`.
 Its effect on agent behaviour is not measured; `agent-turns-effect` measures it.
-Task `turn-savings-measure` (`3207d97e`, 2026-11-04) has since measured project `agent-turns` as a whole in `docs/research/turn-savings-measure-2026-11-04/report.md`, over the 20 most recent darn runs and 4 tapestry runs: the darn writer issues 2.05 calls a turn against 1.08, and shell edits fall from 339 calls to 21.
+Task `turn-savings-measure` (`3207d97e`, 2026-11-04) has since measured project `agent-turns` as a whole in `docs/research/turns/turn-savings-measure-2026-11-04/report.md`, over the 20 most recent darn runs and 4 tapestry runs: the darn writer issues 2.05 calls a turn against 1.08, and shell edits fall from 339 calls to 21.
 The report covers darn and Webster, not the Plan writer's serial lookups, so those stay unmeasured here; the rule's own effect on edit chains is the open question of note `batching-hook-remeasure`.
 `plan-reviewer-batching` (`5227aeaa`) added a wave structure for the fanned Plan reviewer's pre-read in `burler-fork-reading.md`; it too is unmeasured.
 
 ## Writer lookups measured (landed 2026-11-04)
 
-Task `planner-fork-lookups` (`482c05d4`, `docs/research/writer-lookups-measure-2026-11-04/report.md`) measured the Plan and Discussion writers' exploration on 7 sessions of 3 tapestry runs, with no agent run.
+Task `planner-fork-lookups` (`482c05d4`, `docs/research/turns/writer-lookups-measure-2026-11-04/report.md`) measured the Plan and Discussion writers' exploration on 7 sessions of 3 tapestry runs, with no agent run.
 - The 3 Plan writers each handed one batch of 3 or 4 `sonnet` lookup subagents to the Agent tool in one message; 1 of 3 full Discussion sessions did.
 - Exploration is 46% of the writers' cost ($11.03 of $23.76); 15% of it is paid above 200k context, every chain above 200k is in a Plan session after its one batch, and 3 of the 6 are single-call serial lookups.
 - Moving every search turn to subagents would save at most about $4.7, one fifth of writer spend; for the short late chains, batching in the writer saves more.
@@ -112,7 +112,7 @@ Task `batching-hook-reach` (`119c1c05`, 2026-11-04) made the batching nudge hook
 The second variant above exists as two opt-in producers: `Parts-Write` splits the task into parts with contracts and shared spots, and `Parts-Plan-Write` runs one fresh writer session per part under a joining chair.
 Both sit behind the tapestry flag `plan_split` (off by default; `Plan-Write` stays the default), and the joined plan passes the ordinary `plan` gate.
 
-`plan-split-bench` (`989a8b85`, `docs/research/plan-split-bench-2026-11-01/`) benched them against `Plan-Write` on replays of `warp-visibility` and `run-verbs-shared`, one Plan-Review round each.
+`plan-split-bench` (`989a8b85`, `docs/research/loom/plan-split/plan-split-bench-2026-11-01/`) benched them against `Plan-Write` on replays of `warp-visibility` and `run-verbs-shared`, one Plan-Review round each.
 - `warp-visibility`: the split cost $16.69 against $14.93 and took 15m39s against 25m07s; its largest session peaked at 245k context against 408k.
   The split plan had 34 cards against 15 and its review found 4 blocking findings against 3.
 - `run-verbs-shared`: the plan arm cost $28.03 with a 674k peak; the split arm failed when reed lost the chair strand (note `reed-loses-parts-chair`), so there is no comparison.
@@ -120,7 +120,7 @@ Both sit behind the tapestry flag `plan_split` (off by default; `Plan-Write` sta
 
 ## Split writers tuned, round 1 (landed 2026-11-02)
 
-Task `plan-split-tune` (`fe753d40`, `docs/research/plan-split-tune-2026-11-02.md`) landed round 1 with no replay.
+Task `plan-split-tune` (`fe753d40`, `docs/research/loom/plan-split/plan-split-tune-2026-11-02/report.md`) landed round 1 with no replay.
 The parts gate and `lym loom validate-parts` now refuse an export that is an existing member or path (`export-existing`) and run the name checks on each `plan:` export, and `Parts-Write` reads the PATTERN entries governing each export's name first.
 
 ## Split writers replayed (landed 2026-11-03)

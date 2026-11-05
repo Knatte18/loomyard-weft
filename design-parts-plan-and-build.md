@@ -4,7 +4,7 @@
 
 ## Seen (plan-split benches, 2026-11-01 and 2026-11-02)
 
-The plan-split writer (`Parts-Write` cuts the scope into parts with contracts, part writers plan each part, a chair joins them into one plan) was benched and replayed on two inputs (`docs/research/plan-split-tune-2026-11-02.md`).
+The plan-split writer (`Parts-Write` cuts the scope into parts with contracts, part writers plan each part, a chair joins them into one plan) was benched and replayed on two inputs (`docs/research/loom/plan-split/plan-split-tune-2026-11-02/report.md`).
 
 - Both inputs split into 6 parts; the joined plans had 36 and 37 cards against 20 in the solo plans that landed, for the same code locations.
   About 85% of the extra cards were changes the solo plan had bundled into too-large cards; the rest were per-part overhead (PATTERN and doc cards per part, a card for one registry line), and about 9 cards were too small to be worth a card.

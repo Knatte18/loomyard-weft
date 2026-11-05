@@ -130,7 +130,7 @@ The groundwork Weaver needs, the batchifier moved inside the implementer and the
 
 ## Decision gate run (2026-10-17)
 
-The width analysis ran on 34 real plans (238 cards, 106 batches): `docs/research/parallel-batches-2026-10-17/`.
+The width analysis ran on 34 real plans (238 cards, 106 batches): `docs/research/webster/parallel-batches-2026-10-17/`.
 
 - Narrow: the median plan has 6 cards and a critical path of 4, so unlimited worktrees give about 1.6x at best (1.3x counting same-package cards as dependent), with 2 to 3 cards runnable together.
 - Webster's actual batches leave about 1.0 to 1.1x, since batching by package already groups dependent cards.
