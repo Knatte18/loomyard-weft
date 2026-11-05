@@ -91,4 +91,4 @@ Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T6 | **docs/research is restructured into topic folders with an index**<br>• docs/research moves into topic folders with one layout per study and an index; scripts, the docs-link test, comments and links follow | [`research-dir-tidy`](design-research-dir-tidy.md) | 5h<br>5h |  |
+| T6 | **docs/research is restructured into topic folders with an index**<br>• docs/research moves into topic folders with one layout per study and an index; scripts, the docs-link test, comments and links follow | [`research-dir-tidy`](design-research-dir-tidy.md) | 6h<br>5h |  |
