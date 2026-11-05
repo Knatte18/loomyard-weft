@@ -1,6 +1,6 @@
 # Bring README.md up to date
 
-`readme-refresh` · Task · enhancement
+`readme-refresh` · Task · enhancement · running · Worktree-Create
 
 ## Wanted (operator, 2026-11-05)
 

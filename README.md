@@ -60,23 +60,22 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Running (3)
+#### Running (4)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **A Sketch is a board type of its own**<br>• An entry whose motif run approved its decision record shows on the board as type sketch, beside research, bug, enhancement and feature | [`sketch-board-type`](design-sketch-board-type.md) | darn · solid | Code-Bouncer | neve | 1h<br>33m | board, loom |
+| T1 | **A Sketch is a board type of its own**<br>• An entry whose motif run approved its decision record shows on the board as type sketch, beside research, bug, enhancement and feature | [`sketch-board-type`](design-sketch-board-type.md) | darn · solid | Code-Bouncer | neve | 1h<br>34m | board, loom |
 | T2 | **A pair reads its branch from its worktree, so branch_prefix can change with pairs live** | [`branch-name-recorded`](design-branch-name-recorded.md) | darn · solid | Darn-Write | neve | 17m<br>16m | fabric |
+| T3 | **Bring README.md up to date**<br>• An interactive sampler session with the operator updates the repository README to what lym does today | [`readme-refresh`](design-readme-refresh.md) | sampler | Worktree-Create | neve | 0m<br>0m |  |
 | T8 | **The beam orch drives the merge-in, pull request and review of its beam inside Beam-Await**<br>• Pawl drops Parent-Align, Beam-Describe and PR-Review; the beam orch opens and closes the PR, merges the parent in and runs lym beam ready | [`pawl-orch-landing`](design-pawl-orch-landing.md)<br>[Sketch](decision-pawl-orch-landing.md) | tapestry · solid | Plan-Burler-Review | neve | 2h<br>2h | pawl, landing, orch, workspaces, fabric |
 
-#### Ready (1)
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Bring README.md up to date**<br>• An interactive sampler session with the operator updates the repository README to what lym does today | [`readme-refresh`](design-readme-refresh.md) | sampler |  | 0m<br>0m |  |
+_None._
 
 #### Draft (2)
 
