@@ -1,6 +1,6 @@
 # P2 Codexengine: every task, trial and note about the Codex engine
 
-Rendered 2026-11-05 19:34 UTC; every age below is as of then.
+Rendered 2026-11-05 19:36 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`codex-engine-trial`](design-codex-engine-trial.md) · Age 2d · Owner `neve`
@@ -39,17 +39,9 @@ Task `codex-creel-trial` (`afa2cf2e`, `docs/research/codex/engine-trial/codex-cr
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (1)
+## Tasks (0)
 
 Concrete and claimable; only a task can run.
-
-### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T12 | **A Codex strand with a wake queued also gets a Mail-is-waiting reminder turn**<br>• Mail posted twice more while a codex queue wake is pending types a reminder that starts a turn of its own, and the queued mail waits behind it | [`codex-idle-wake-extra-reminder`](design-codex-idle-wake-extra-reminder.md) | darn · light | Finalize | neve | 4h<br>26m | codex, creel, shuttle |
 
 ### Ready (0)
 
@@ -66,3 +58,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 2d<br>2h | shuttle, codex, loom |
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T12 | **A Codex strand with a wake queued also gets a Mail-is-waiting reminder turn**<br>• Mail posted twice more while a codex queue wake is pending types a reminder that starts a turn of its own, and the queued mail waits behind it | [`codex-idle-wake-extra-reminder`](design-codex-idle-wake-extra-reminder.md) | 4h<br>28m | codex, creel, shuttle |
