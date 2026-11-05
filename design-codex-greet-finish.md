@@ -1,6 +1,6 @@
 # Carry the Codex darn trial run codex-greet to its landing
 
-`codex-greet-finish` · Task · research, codex · running · Drift-Recheck
+`codex-greet-finish` · Task · research, codex · running · Finalize
 
 ## Goal (operator, 2026-11-05)
 
