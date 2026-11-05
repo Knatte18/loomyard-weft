@@ -1,11 +1,11 @@
 # Card 6 — seed-and-landed-size
 
 **Create:**
-- `plan:internal/fabricengine#DiffSize` -> `type DiffSize struct`
-- `plan:internal/fabricengine#Fabric.DiffSize` -> `func (f *Fabric) DiffSize(from, to string) (DiffSize, error)`
-- `plan:internal/fabricengine#TestFabric_DiffSize` -> `func TestFabric_DiffSize(t *testing.T)`
-- `plan:internal/loomcli#runUsageRecord` -> `func runUsageRecord(recipe string, entry boardengine.Task, found bool, defaultProfile string) shedrun.RunUsageRecord`
-- `plan:internal/loomcli#TestRunUsageRecord` -> `func TestRunUsageRecord(t *testing.T)`
+- `internal/fabricengine#DiffSize`
+- `internal/fabricengine#Fabric.DiffSize`
+- `internal/fabricengine_test#TestFabric_DiffSize`
+- `internal/loomcli#runUsageRecord`
+- `internal/loomcli#TestRunUsageRecord`
 
 **Edit:**
 - `internal/loomcli#loomCLI.seedAndCommitBootstrap`

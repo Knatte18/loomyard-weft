@@ -1,8 +1,8 @@
 # Card 5 — usage-wiring
 
 **Create:**
-- `plan:internal/shedadapters#UsageRecorder` -> `func UsageRecorder(l *lymcwd.Location, readers map[string]shuttleengine.RecordReads) func(shuttleengine.SessionEnd)`
-- `plan:internal/shedadapters#TestUsageRecorder` -> `func TestUsageRecorder(t *testing.T)`
+- `internal/shedadapters#UsageRecorder`
+- `internal/shedadapters#TestUsageRecorder`
 
 **Edit:**
 - `internal/loomcli#loomCLI.wire`
