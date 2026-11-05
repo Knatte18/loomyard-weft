@@ -1,6 +1,6 @@
 # Drift compares changed values in code against a sealed expectation, with a separate judge
 
-`drift-rework` · Task · enhancement, drift, loom, darn, stencil, config · running · Drift-Recheck
+`drift-rework` · Task · enhancement, drift, loom, darn, stencil, config · running · Describe
 
 ## Seen (`docs/research/drift-whole-review-2026-11-04.md`)
 
