@@ -36,6 +36,12 @@ Decision: The setup steps leave the README for their own document, docs/getting-
 
 Rationale: The operator agreed with a cold review: the README is for understanding what LoomYard is, the large figure is unreadable at GitHub width and names terms the README never teaches.
 
+### Added after Discussion (operator, 2026-11-05): One name per thing in the README
+
+Decision: The README gives each thing one name. The records repository is named that throughout; 'piggyback' describes it once and is not a name.
+
+Rationale: The cold review found four names for that repository; the operator settled that piggyback is a description.
+
 ## Constraints
 
 ## Auto-mode assumptions
