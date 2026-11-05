@@ -156,6 +156,12 @@ Decision: Take F3's fix as written. In card 07 step 3 ('After a successful post'
 
 Rationale: The post already reached creel; retrying would forward the operator's message twice, which is worse than a missing paused answer. A Beams error comes before any post, so retrying it duplicates nothing.
 
+### Added after Discussion (arbiter, 2026-11-05): Plan review round 3: the relay restart cap's lifetime rule answers F1
+
+Decision: Card 09 (slackengine-relay) keeps its round-3 restart cap as written: starter.ensure judges each spawned relay by its lifetime, LastSlackOK minus LastSpawnAt, against relayHealthyLifetime (10 minutes); a lifetime under it counts one failure, five in a row answer gave-up, and step 4 no longer resets StartFailures. Restarts of relays that each lived relayHealthyLifetime open a new count and stay bounded in rate, at most one per relayHealthyLifetime.
+
+Rationale: Round 3's only design-wrong finding, F1 (relay-restart-cap-unreachable), said a relay dying after its first read respawned once a minute with no cap. The fixer applied F1's own proposed fix, and card 09 now counts that death as a failure and has a TestEnsureRelay row where five such deaths end in gave-up, so the spawn count of quick failures is capped as PATTERN-child-processes asks. The rate-bounded restart of long-lived relays is the reset F1's fix itself prescribed.
+
 ## Constraints
 
 - Slack facts (docs.slack.dev, fetched 2026-11-05):
