@@ -59,18 +59,23 @@ Six forks returned reports: interactions, existing-paths, bound-breaker, walkthr
 - A `lym beam pr merge` verb: the entry says the orch never merges; Finalize is the only merger.
 - Let `lym beam describe` publish to the pull request itself: separate verbs keep a describe run from touching GitHub and let the orch review the file first.
 - Notify member landings by setting `notify_on_land` on each member: the entry rules it out, and members filed later would miss it.
-- Board-level refusal of new members once the ready record stands: needs the board to read a tracked record; the accept's re-check already catches the narrow window.
 - Migrate in-flight runs in `hubreconcile`'s walk: it never visits runs, and a lazy move in shed's step covers every path that steps the run.
 - Break a push lock whose holder record names a dead pid: the flock is already free then; breaking a live holder's lock is unsafe.
 - Squash commit text from the pull request's current GitHub text: needs a further GitHub read; the orch keeps the pull request in step with the description through `lym beam pr update`.
 - Finalize never editing a found pull request in every recipe: task landings change with no ask on the board; kept to pawl.
 - Finalize writing the tracked landing record through its scratch record path: those writes carry no commit; Finalize reads the tracked record through a seam instead.
 - Halts naming `lym beam pr open` at Finalize: the verb refuses past Beam-Await; Finalize opens the pull request itself instead.
-- A board refusal of new members under a ready beam: the board cannot read the tracked ready record; the dobby's start hold covers it.
+- A board refusal of new members under a ready beam: the board cannot read the tracked ready record; the dobby's start hold and the member fork's precondition cover it.
+- The dobby writing the land request again after a crash in the accept: its land episode stays recorded across restarts, so Beam-Await's entry re-checks from the ready record itself (D11).
+- Finalize halting on a recorded pull request merged at another head: the beam verbs refuse once ready, so no way forward works there; Finalize lands the rest as with none recorded instead (D8).
+- Carrying a scratch-recorded pull request into the landing record at Finalize: the scratch record does not name its writer, so the carry would also fire on a pull request a halted Finalize opened; Finalize reads the scratch record instead (D8).
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+Fixed: the crash and goto recovery rests on Beam-Await's entry reading the ready record, not on the dobby (D10, D11); a hand member run under a ready beam is refused at the fork (D2); the repair-cap reset has a ten-minute bound (D11); a pull request whose merge lacks beam commits is refused at ready, and Finalize lands the rest of one merged at another head (D3, D8); Finalize's GitHub refusals halt naming GitHub's message (D8); a run at Finalize lands through a pull request in its scratch record (D8); D13's tracked changes commit and remove the reopen request; `close` on a `merge` parent, describe owning `summary.md`, the arbiter's rule, the paused hand-back, both retry windows, and cuts (D2, D4, D5, D6, D13, assumptions).
+Open for the parent: the push-lock point (Open risks).
 
 ## Question ledger
 

@@ -15,7 +15,7 @@ In:
 - The pawl recipe's rows, the hold boundary, and Beam-Await's accept and interrupt handling.
 - The verbs `lym beam describe` and `lym beam pr open|update|status|close`, and the new refusals of `lym beam ready`.
 - A tracked beam landing record, the dobby's notice to the beam's orch at each member landing while a pull request is recorded, and Finalize's landing of a pawl run with and without one.
-- The dobby holding a ready beam: no member run starts once the ready record stands.
+- The dobby and the member fork holding a ready beam: no member run starts once the ready record stands.
 - Removing `lym beam reopen`, the reopen request and PR-Review's reroute.
 - `lym beam start` bringing back the orch of a beam in landing.
 - Moving an in-flight pawl run off a removed row.
@@ -39,12 +39,13 @@ The BeamDescribe constructor leaves `internal/shedrecipe`'s registry, since no r
 
 Beam-Await's accept writes the entry status naming Finalize, not Parent-Align, as the landing hold.
 `boardengine.RunHolds`' hold-free rows stay Worktree-Create, Preflight, Record-Write, Beam-Up and Beam-Await, so the run holds its beam from Finalize on.
-From the ready record on, the beam's dobby starts no member run under the beam.
+From the ready record on, no member run starts under the beam.
+The beam's dobby starts none, and a member run's fork precondition, the `boardengine.RunHolds` check in battencli's beam fork (`internal/battencli/beamfork.go`), also refuses a member whose beam's ready record names that beam, naming `lym batten cancel <member> --remove`, as the dobby's notice does; a ready record the fork cannot read refuses too, naming the error.
 A member filed after ready stays unstarted and blocks the landing, as any open member does; the dobby posts one notice per episode to the beam's orch naming it and `lym batten cancel <member> --remove`, since ready is final and the member cannot land into this beam.
 A failing re-check at the accept still lifts the hold, restarts the dobby and posts the blockers, as today.
-Bound: between `lym beam ready` and the accept, the beam is held by the dobby's refusal to start members and by D3's refusal of open work; a member filed in that window never starts, so nothing lands into a ready beam.
+Bound: between `lym beam ready` and the accept, the beam is held by two guards, the dobby's start hold and the fork precondition, and by D3's refusal of open work; a member filed in that window never starts, by the dobby or by a hand `lym batten run`, so nothing lands into a ready beam.
 
-Rationale: the entry holds the beam from `lym beam ready` on and moves the `RunHolds` boundary from Parent-Align to Finalize; the board cannot read the tracked ready record, so the dobby that starts members enforces the hold until the status takes over.
+Rationale: the board cannot read the tracked ready record, so the dobby that starts members and the fork every member run passes enforce the hold until the status takes over.
 
 ### D3 — `lym beam ready` refuses before the point of no return
 
@@ -56,10 +57,12 @@ Rationale: the entry holds the beam from `lym beam ready` on and moves the `RunH
 4. The beam's landing record (D4) names no description written for this beam, or the description fails validation: names `lym beam describe <slug>`.
 5. The landing needs a pull request and none is recorded: the resolver answers a required pull request (beam.yaml `required`, or GitHub's rules for the parent) with no pull request in the landing record; names `lym beam pr open <slug>`.
 6. A pull request is recorded and either its head on GitHub is not the beam's head, naming `lym beam pr update <slug>`, or D6's merge state is not mergeable-now, naming the cause and `lym beam pr status <slug>`.
-   A pull request merged on GitHub passes, since Finalize lands it through the already-landed path; a closed one names `lym beam pr open <slug>`, which reopens it, or `lym beam pr close <slug>`.
+   A pull request merged on GitHub passes when the merge lacks no beam commit: its merged head is the beam's head, or the beam's first-parent commits past it only merge the parent in; Finalize lands it (D8).
+   One whose merge lacks beam commits is refused, naming those commits and the way forward: `lym beam pr close <slug>`, then land without a pull request or open a new one with `lym beam pr open <slug>`.
+   A closed one names `lym beam pr open <slug>`, which reopens it, or `lym beam pr close <slug>`.
 
-A beam already flagged ready reports `already` as today, and no verb removes the ready record: Finalize's landing and Beam-Down end it.
-Bound: refusals 3 and 6 read a moment, and after ready only the parent and GitHub can move, since no member starts (D2) and the beam verbs refuse (D5, D6); Finalize merges the parent in again and halts, with a way forward, on a merge GitHub refuses.
+A beam already flagged ready reports `already` as today, and no verb removes the ready record: Finalize's landing, Beam-Down and D13's move end it.
+Bound: refusals 3 and 6 read a moment, and after ready only the parent and GitHub can move, since D2's guards start no member and the beam verbs refuse (D5, D6); Finalize merges the parent in again and halts, with a way forward, on a merge GitHub refuses.
 
 Rationale: once ready, there is no way back to Beam-Await, so every condition the operator could still fix with the orch is checked before it.
 
@@ -75,13 +78,14 @@ It carries:
 `lym beam describe` and the `lym beam pr` verbs write and commit it; `lym beam pr close` drops the pull request from it.
 Finalize reads it through a seam the pawl wiring tells and drops the pull request from it, committed, only after the parent-side landing completes.
 
-Rationale: the record must survive a restart or an adopt onto another machine, since Finalize and the dobby act on it; Finalize's scratch pull-request record keeps serving what Finalize opens itself (D8).
+Rationale: the record must survive a restart or an adopt onto another machine, since Finalize and the dobby act on it.
 
 ### D5 — `lym beam describe`
 
 `lym beam describe <slug>` writes the beam's change description, `_lym/landing/summary.md`, with the description writer Beam-Describe runs today (entry title and brief, the beam's first-parent commits each with its pull request number or landing commit, merge time and summary, and the project record's added decisions), validates it, stamps D4's record and commits both.
 It refuses a beam whose run is not at Beam-Await, running or halted, a beam whose ready record stands, and a description that fails validation, naming the finding and `lym board upsert` for the entry's title or brief.
 The writer moves from a producer to a function the verb calls; it stays in `landingshed`.
+`lym beam describe` owns `summary.md` and writes it whole each run, so the orch never edits the file by hand; the orch's own text reaches it only through the entry's title and brief, set with `lym board upsert`.
 Nothing at landing rewrites `summary.md`.
 
 Rationale: issue #56's landing rewrote the orch's text; the description is now written only when the orch asks.
@@ -97,9 +101,12 @@ Thin verbs under `lym beam pr`, over `internal/pullrequest`, called by the beam'
   A recorded pull request that GitHub reports open answers `already`; one GitHub reports closed is reopened.
 - `update`: pushes the beam branch, sets the pull request's title and body from the description, marks a draft ready for review, and records the pushed head; refuses with no pull request recorded, naming `lym beam pr open`.
 - `status`: reads the recorded pull request from GitHub and prints its state, draft, head, `mergeable_state`, review approval and each required check with its conclusion, plus `mergeable_now` and the named causes when it is false.
-  `mergeable_now` is true only for an open, non-draft pull request whose head is the beam's head and whose `mergeable_state` is `clean`, `has_hooks` or `unstable`; `dirty` is a conflict, `blocked` a review or required check, `behind` a base ahead of the head, and `unknown` is retried for a short bounded window and then reported as not yet computed; a closed or merged pull request is named as such.
+  `mergeable_now` is true only for an open, non-draft pull request whose head is the beam's head and whose `mergeable_state` is `clean`, `has_hooks` or `unstable`; `dirty` is a conflict, `blocked` a review or required check, `behind` a base ahead of the head, and `unknown` is retried for up to one minute, the length of Finalize's merge retry window, and then reported as not yet computed; a closed or merged pull request is named as such.
   D3's refusal 6 calls the same function.
-- `close`: closes the recorded pull request on GitHub with a comment naming the operator's choice to land without one, skipping the GitHub call for one already closed or merged, and drops it from D4.
+- `close`: closes the recorded pull request on GitHub, skipping the GitHub call for one already closed or merged, and drops it from D4.
+  Where the resolver answers `on` or `off`, its GitHub comment names the operator's choice to land without a pull request.
+  Elsewhere the comment names only the close.
+  Where it answers `merge`, `close` reports that Finalize will still land through a pull request it finds or opens (D8); where it answers a required pull request, `close` reports that `lym beam ready` refuses until one is recorded again with `lym beam pr open <slug>` (D3).
 
 The orch never merges a pull request, and never closes one to add work: work lands into the beam while it stays open (D7).
 Bound: the verbs open, edit, reopen and close only the pull request from the beam's own branch into its parent, read a token only through `internal/githubclient`, and change nothing once the ready record stands.
@@ -122,8 +129,14 @@ For a pawl run, Finalize's pull-request decision reads D4's record beside the re
 - A pull request is recorded: the landing goes through it, always by squash.
   Finalize takes the parent lock, merges in what the parent gained and runs the landing gate as today, pushes the beam branch, squash-merges the recorded pull request on GitHub with the description's title and body as the commit, pulls the parent, completes the parent-side landing, and only then drops the pull request from D4.
   It never edits the pull request's title or body.
-  A pending merge past the retry window halts naming the check to settle on GitHub and `lym loom resume`; a recorded pull request GitHub reports closed halts naming the operator reopening it on GitHub and `lym loom resume`; one already merged lands through the already-landed path.
+  A merge GitHub refuses as pending (`pullrequest`'s RefusalPending) is retried within Finalize's existing one-minute merge retry window (`prMergeRetryWindow`).
+  A refusal still pending past that window, every RefusalOther, such as a required check the push restarted or an approval it dismissed, and a RefusalMethod, a repository that disallows squash merges, halt naming GitHub's message, `lym beam pr status <slug>` and `lym loom resume`, never `lym batten cancel`.
+  A recorded pull request GitHub reports closed halts naming the operator reopening it on GitHub and `lym loom resume`.
+  One merged at the beam's head lands through the already-landed path.
+  One merged at another head, the mismatch PR-Review halts on today, lands as with none recorded: Finalize pulls the parent first, so its merge-in carries GitHub's merge and the landing carries only the commits that merge lacked, an empty squash when it lacked none; the pull request is dropped from D4 after the parent-side landing, as always.
+- None recorded in D4, and the run's scratch pull-request record holds an open pull request, one Finalize opened before a halt or one the old binary's PR-Review left: Finalize merges it as it merges a pull request it opened, without editing its text.
 - None recorded, and a pull request is required (beam.yaml `required` or `merge`, or GitHub's rules): Finalize finds an open pull request from the beam branch, leaving its text as it is, or opens one from the description, and merges it, as `protected-parent-landing` built for `merge`.
+  Finalize keeps a pull request it finds or opens in its scratch pull-request record, as today.
   A merge GitHub refuses, such as a required review, halts naming what GitHub refuses, `lym beam pr status <slug>` and `lym loom resume`.
 - None recorded otherwise (beam.yaml `on` or `off`): Finalize squash-merges into the parent and pushes, as today; a push the parent refuses as protected halts with the way forward `protected-parent-landing` gives.
 
@@ -140,14 +153,24 @@ Rationale: issue #56.
 ### D10 — No way back from ready
 
 `lym beam reopen`, the reopen request, Beam-Await's handling of it and PR-Review's reroute to Beam-Await go, with PR-Review's `on_reroute` row in pawl and PR-Review's reopen handling, which only pawl used.
-Bound: `lym loom goto` stays the operator's hand escape; it leaves the ready record standing, so the dobby lands the beam again once nothing works under it, and it adds no way to take new work.
+Bound: `lym loom goto` stays the operator's hand escape.
+A goto back to Beam-Await while the ready record stands meets D11's entry rule: the entry finds the hold named Finalize with no land request, runs the accept's re-check itself, and is Done or refuses as the accept does.
+The goto adds no way to take new work, since D2's guards start no member while the ready record stands.
 
 ### D11 — Beam-Await survives a loop exit
 
 Beam-Await, Beam-Up and Beam-Down get the re-invoke interrupt policy, since each spawns no agent and is idempotent.
-The driver's rules re-step a re-invoke stop (`internal/sheddriver/driverules.go`), and the arbiter's eligibility for an interrupted stop under the re-invoke policy extends from tapestry, darn and sampler to pawl, so a loop exit at Beam-Await past the driver's repair cap is still resumed with no hand `lym loom resume`.
-A loop exit after a wake that completed counts as a new stop for the repair cap, so a beam waiting for days survives every exit.
-A re-entered Beam-Await finding the landing hold with no land request, a crash between the accept's removals and Done, starts the dobby when the dobby-stop marker stands, as `refuse` does, and the dobby writes the land request again from the tracked ready record.
+The driver's rules re-step a re-invoke stop (`internal/sheddriver/driverules.go`), and the re-invoke entries in loom's interrupt-policy table (`loomshed.InterruptPolicies`) make an interrupted pawl stop eligible under the arbiter's existing rule, so a loop exit at Beam-Await past the driver's repair cap is still resumed with no hand `lym loom resume`.
+
+Beam-Await stamps the time of each completed wake in a never-tracked wake record in the run's scratch directory.
+The driver reads a row's completed-wake stamp through a seam the pawl wiring tells, as D13's side effects hang on one, so its rule stays recipe-agnostic: the repair count for a stop key whose row supplies a stamp restarts at zero only when that stamp is at least ten minutes later than the `At` of the key's last restep settle record, so a beam waiting for days survives every exit.
+Bound: a loop that dies within ten minutes of each re-step is re-stepped at most the repair cap's times and then reaches the tackler and the arbiter; a loop that lives longer is re-stepped at most the cap's times per ten minutes.
+
+Beam-Await's entry reads the board status before it writes its own.
+Finding the landing hold with no land request, a crash between the accept's removals and Done, it reads the tracked ready record for this slug.
+If the record stands, the entry runs the accept's re-check itself, with no land request, and is Done or refuses as the accept does.
+If it does not stand, the entry lifts the hold and starts the dobby whether or not the dobby-stop marker stands.
+The dobby never writes the land request again here, since its land episode stays recorded (Constraints).
 That entry check reads the hold by the Finalize name or a retired row name (D13), so a crash under the old binary is caught too.
 Rationale: issue #57.
 
@@ -160,24 +183,37 @@ Rationale: issue #47; the landing tolerates a live orch, and the operator needs 
 ### D13 — In-flight pawl runs on a removed row
 
 A recipe may declare retired rows, each mapped to the row a run on it moves to; pawl declares Parent-Align, Beam-Describe and PR-Review, each to Beam-Await.
-Shed's step, run by a new-binary process and finding a status whose current row is retired, moves it once under the status lock: the status names the target row, halted with a reason naming the move and `lym loom resume`; the entry's board status names the target too, lifting the hold.
-The move's halt is judged first, by its row and reason, as the parent's and never the tackler's or the arbiter's, so the run stays paused for the orch.
+Shed's step, run by a new-binary process and finding a status whose current row is retired, moves it once under the status lock: the status names the target row, paused with a reason naming the move and `lym loom resume`; the entry's board status names the target too, lifting the hold.
+The driver's rule table hands a paused run back to the parent, never to the tackler or the arbiter, so the run stays paused for the orch.
 For pawl the move also:
 
 - ends a live PR-Review session of the run through `runproc`;
 - carries an open pull request from the run's scratch record into D4's record, with the beam's head as its announce head, and removes the scratch record;
-- removes the ready record, the land request and the dobby-stop marker;
+- removes the ready record, the land request, the dobby-stop marker and the reopen request;
+- commits the carry into D4's record and the ready record's removal together in the beam worktree, through `fabricengine.CommitAnchoredPaths` over the landing directory;
 - posts one notice to the beam's orch: the run was moved to Beam-Await and paused, the pull request stays open, run `lym beam start <slug>` and `lym loom resume`, a second resume when the move was made by a resume, then the new verbs.
 
-A run at Finalize or past it is untouched.
+A run at Finalize or past it is untouched; D8 lands through an open pull request the old PR-Review left in its scratch record.
 Bound: only a status naming a row the recipe lists as retired moves; any other unknown row keeps today's refusal naming `goto`.
 A driver process of the old binary still alive keeps running the old rows until it stops; the move happens at the first step a new-binary process makes.
 Rationale: the row lookup refuses a status naming a row the recipe lacks today, and no row-migration mechanism exists; a recipe-declared map keeps it in shed's shared machinery.
 
 ### D14 — The beam orch's landing instructions
 
-The orch role (`contracts/orchrole/orch-role.md`) carries a beam's landing workflow: describe, open, update and check the pull request when the operator says so, merge the parent in through `lym beam merge-parent`, act on the member-landing notices, and run `lym beam ready` only when the operator is satisfied, knowing it is final.
+The orch role (`contracts/orchrole/orch-role.md`) carries a beam's landing workflow: describe, open, update and check the pull request when the operator says so, change the description only through the entry's title and brief, merge the parent in through `lym beam merge-parent`, act on the member-landing notices, and run `lym beam ready` only when the operator is satisfied, knowing it is final.
 The `ready`, `pr` and `describe` verbs' help texts state the same, and the removed `reopen` text goes.
+
+### Added after Discussion (parent, 2026-11-05): Issue #47's push-lock point drops
+
+Decision: The board entry's point that a push lock whose holder died before a restart is taken as stale drops: a flock whose holder died is already free, so the `fabric.push.lock still held after 30s` seen in #47 was a live push left running from before the restart (the detached push child fabric spawns), doing legitimate work. lym does not stop such a push. How long a push holds its locks is the scope of the separate task `push-holds-remote-refs`, not of this task. The writer records the drop in Scope and states the researched cause in the open risk in place of `likely`. Settles review finding F7.
+
+Rationale: The entry's premise is false for a flock; stopping a live push risks a half-written remote and widens scope into fabric, which another task already owns.
+
+### Added after Discussion (parent, 2026-11-05): Beam-Await's entry re-checks a standing ready record itself (D10, D11)
+
+Decision: D11: drop the sentence that starts the dobby when the dobby-stop marker stands and has the dobby write the land request again, and drop the claim that the dobby lands the beam again. Instead, Beam-Await's entry, on finding the hold named Finalize or a retired row with no land request, reads the tracked ready record for this slug. If the record stands, the entry runs the accept's re-check itself, with no land request, and then is Done or refuses as the accept does. If it does not stand, the entry lifts the hold and starts the dobby whether or not the marker stands. D10's Bound gives the same entry rule for a goto back to Beam-Await while the ready record stands. D10's and D11's acceptance criteria follow this. Constraints name the fact it rests on: the dobby's persisted land episode (dobbyengine State.Land) is cleared only on a non-passing reading, and the dobby-stop marker is already removed by the accept. Settles review finding F1.
+
+Rationale: The review showed the dobby's persisted land episode stops it from rewriting the land request, so recovery must not depend on the dobby; the reviewer's fix keeps recovery inside the row that owns it.
 
 ## Constraints
 
@@ -186,15 +222,15 @@ The `ready`, `pr` and `describe` verbs' help texts state the same, and the remov
 - `PATTERN-pull-request-mode`: the resolver stays the one decision; D8 adds the beam record as an input (PATTERN changes).
 - `PATTERN-github-auth`: the `lym beam pr` verbs join the callers that open, reopen and close a pull request (PATTERN changes).
 - `PATTERN-remote-refs-lock`: D3's parent fetch and D6's pushes go through `gitrepo` and fabric under the lock.
-- `PATTERN-shed-shared-machinery`, `PATTERN-sole-parsers`, `PATTERN-shed-stop-chain`: D13's retired-row map is read by the recipe's sole parser and applied in shed's packages, and its halt is judged first as the parent's.
+- `PATTERN-shed-shared-machinery`, `PATTERN-sole-parsers`, `PATTERN-shed-stop-chain`: D13's retired-row map is read by the recipe's sole parser and applied in shed's packages, and the run it leaves paused is handed back to the parent by the driver's rule table.
+- The dobby keeps its land episode (`dobbyengine` `State.Land`) in its state file across restarts and clears it only on a reading that does not pass (`internal/dobbyengine/land.go`), so with the ready record standing and nothing working under the beam, neither it nor a restarted dobby writes the land request again; D10 and D11 rest on this.
+- `classifyRefusal` in `internal/pullrequest` reads a pending required check and a dismissed review as RefusalOther; RefusalPending covers only a modified base and mergeability still being computed.
 - `PATTERN-tracked-file-locks`, `PATTERN-durable-vs-ephemeral-state`, `PATTERN-tolerant-records`: D4's record is tracked with its lock under `.lym/locks/`; D7's announced head is never-tracked delivery state.
 
 ## Auto-mode assumptions
 
 - "The hub's rules for beam pull requests" reads as the resolver over the parent's beam.yaml, GitHub's rules and the origin facts (D6, D8).
 - The orch skips a pull request by not opening one or closing it (D8).
-- No `lym beam pr merge` verb (D6).
-- `lym beam ready` refuses more than the two causes the entry lists (D3).
 
 ## Open risks
 
@@ -203,18 +239,18 @@ The `ready`, `pr` and `describe` verbs' help texts state the same, and the remov
 ## Acceptance criteria
 
 - D1: the pawl recipe builds with the rows Preflight, Record-Write, Beam-Up, Beam-Await, Finalize, Beam-Down, Beam-Await's `on_done` is Finalize, and no recipe row names BeamDescribe.
-- D2: an accepted land request writes the entry status naming Finalize; `boardengine.RunHolds` reads a pawl run at Beam-Await as holding nothing and at Finalize as holding the beam; a beam dobby with the ready record standing starts no member run and posts the open-member notice once; a failing re-check writes Beam-Await back and restarts the dobby.
-- D3: `lym beam ready` refuses, each with its way forward, a run not at Beam-Await, open work under the beam, a parent tip not an ancestor of the beam head (naming `lym beam merge-parent`), a parent with no upstream judged by its local tip alone, no description stamped for this beam, a required pull request with none recorded, a recorded pull request whose head differs from the beam's (naming `lym beam pr update`), and one not mergeable now or closed; a merged recorded pull request passes; it writes the ready record when none applies.
+- D2: an accepted land request writes the entry status naming Finalize; `boardengine.RunHolds` reads a pawl run at Beam-Await as holding nothing and at Finalize as holding the beam; a beam dobby with the ready record standing starts no member run and posts the open-member notice once; a hand `lym batten run` of a member under a ready beam is refused naming `lym batten cancel <member> --remove`; a failing re-check writes Beam-Await back and restarts the dobby.
+- D3: `lym beam ready` refuses, each with its way forward, a run not at Beam-Await, open work under the beam, a parent tip not an ancestor of the beam head (naming `lym beam merge-parent`), a parent with no upstream judged by its local tip alone, no description stamped for this beam, a required pull request with none recorded, a recorded pull request whose head differs from the beam's (naming `lym beam pr update`), and one not mergeable now or closed; a recorded pull request whose merge lacks no beam commit passes, the beam having moved past it only by merging the parent in included, and one whose merge lacks beam commits is refused naming them and `lym beam pr close`; it writes the ready record when none applies.
 - D4: a landing record naming another slug reads as no record and is not removed; describe and `pr open` write and commit a record naming the beam; Finalize drops the pull request only after the parent-side landing.
 - D5: `lym beam describe` writes and commits a description listing each beam commit with its pull request number or commit, merge time and summary, stamps the record, and refuses a run not at Beam-Await and a beam whose ready record stands; a halted run at Beam-Await is accepted.
-- D6: `open` adopts an open pull request without editing it except a draft flag, creates one from the description otherwise, reopens a closed recorded one and answers `already` for an open recorded one; `update` sets title and body and the recorded head; `status` reports `mergeable_now` true only for an open non-draft pull request at the beam's head in `clean`, `has_hooks` or `unstable`, and names the cause otherwise, closed and merged included; `close` closes it, or skips GitHub when it is closed or merged, and drops it from the record; `open`, `update` and `close` refuse a run not at Beam-Await and a beam whose ready record stands, and `status` answers at Finalize.
+- D6: `open` adopts an open pull request without editing it except a draft flag, creates one from the description otherwise, reopens a closed recorded one and answers `already` for an open recorded one; `update` sets title and body and the recorded head; `status` reports `mergeable_now` true only for an open non-draft pull request at the beam's head in `clean`, `has_hooks` or `unstable`, and names the cause otherwise, closed and merged included, and retries `unknown` for up to one minute before reporting it as not yet computed; `close` closes it, or skips GitHub when it is closed or merged, and drops it from the record, and reports on a `merge` parent that Finalize will still land through a pull request and on a required one that `lym beam ready` refuses until `lym beam pr open`; `open`, `update` and `close` refuse a run not at Beam-Await and a beam whose ready record stands, and `status` answers at Finalize.
 - D7: with a pull request recorded, a member landing into the beam produces one notice to the beam's orch, a later pass with no new commit posts none, a member filed after the pull request opened is announced too, and a missing announced-head marker announces from the record's announce head; with none recorded, no notice.
-- D8: a pawl Finalize with a recorded pull request squash-merges it on GitHub without editing its text, whatever `Config.Squash` says, and drops it from the record after the parent-side landing; a crash between the GitHub merge and the parent-side landing re-enters through the already-landed path; with none recorded and a required or `merge` parent it finds or opens a pull request and merges it, halting on a GitHub refusal with `lym beam pr status`; with none recorded and `on` or `off` it lands by a local squash merge and push.
+- D8: a pawl Finalize with a recorded pull request squash-merges it on GitHub without editing its text, whatever `Config.Squash` says, and drops it from the record after the parent-side landing; a crash between the GitHub merge and the parent-side landing re-enters through the already-landed path; a refusal still pending past the one-minute retry window, a RefusalOther such as a pending required check or a dismissed review, and a RefusalMethod halt naming GitHub's message, `lym beam pr status` and `lym loom resume`; a recorded pull request merged at another head lands as with none recorded and is dropped from the record after the parent-side landing; with none in D4 and an open pull request in the scratch record, from the old PR-Review or a halted Finalize, it merges that one; with none recorded and a required or `merge` parent it finds or opens a pull request and merges it, halting on a GitHub refusal with `lym beam pr status`; with none recorded and `on` or `off` it lands by a local squash merge and push.
 - D9: a pawl Finalize finding an open pull request merges it without a title or body edit, and a task run's Finalize behaves as today.
-- D10: `lym beam reopen` is no longer a verb, and no pawl row reroutes to Beam-Await.
-- D11: Beam-Await, Beam-Up and Beam-Down carry the re-invoke interrupt policy; an interrupted pawl stop at Beam-Await under it is eligible for the arbiter; a second loop exit after a completed wake is re-stepped; a Beam-Await entry finding the hold named Finalize or a retired row with no request starts the dobby when the dobby-stop marker stands.
+- D10: `lym beam reopen` is no longer a verb, no pawl row reroutes to Beam-Await, and a goto back to Beam-Await with the ready record standing re-checks and is Done with no land request.
+- D11: Beam-Await, Beam-Up and Beam-Down carry the re-invoke entry in `loomshed.InterruptPolicies`, which makes an interrupted pawl stop at Beam-Await eligible for the arbiter with no change to `arbiterstop.Eligibility`; a loop crashing after each first wake is re-stepped at most the repair cap's times and then reaches the tackler; a loop exit after a completed wake stamped at least ten minutes past the last re-step is re-stepped again; a Beam-Await entry finding the hold named Finalize or a retired row with no land request runs the accept's re-check when the ready record stands, and is Done or refuses as the accept does, and otherwise lifts the hold and starts the dobby whether or not the dobby-stop marker stands.
 - D12: `lym beam start` on a beam held by its own pawl run at Finalize starts its orch and not its dobby, and still refuses a beam held otherwise.
-- D13: a pawl status naming Parent-Align, Beam-Describe or PR-Review is moved to Beam-Await, halted with a stop routed to the parent, with the board status naming Beam-Await, the scratch pull-request record carried into the landing record and removed, the ready record, land request and dobby-stop marker removed, and one notice posted; a status naming a row neither present nor retired still refuses naming `goto`; a run at Finalize is untouched.
+- D13: a pawl status naming Parent-Align, Beam-Describe or PR-Review is moved to Beam-Await, paused and handed back to the parent, with the board status naming Beam-Await, the scratch pull-request record carried into the landing record and removed, the ready record, land request, dobby-stop marker and reopen request removed, the carry and the ready record's removal committed together in the beam worktree, and one notice posted; a status naming a row neither present nor retired still refuses naming `goto`; a run at Finalize is untouched.
 - Review: D14's orch role text describes the beam landing workflow and the finality of `lym beam ready`, and no text names `lym beam reopen`.
 
 ## PATTERN changes
