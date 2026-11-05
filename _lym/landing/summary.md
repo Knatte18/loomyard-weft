@@ -1,31 +1,39 @@
-# Quiet notice counts a removed run's end, gate runs and gate fixers
+# Count gate fixers, gate runs and run hand-over in quiet notice
 
-Dobby sent quiet notices ("no agent activity readable") for darn runs that were working.
-In each case the notice came seconds after a shuttle run finished.
-A done run's cleanup removes its run directory, which held the only record of when the run ended.
-`ReadNewestRunEnd` then found no ended run, so the quiet check measured idle time from the child's last history entry, often more than the quiet window old.
+Dobby sent "no agent activity readable" notices for darn runs that were working.
+The quiet check read only the writer's strand, so it missed two kinds of activity:
+
+- A gate-fixer ran in its own session while the writer's strand sat idle.
+- A `lym gate test` ran, or a writer's shuttle had just ended and the next row had not started.
+  A done run's cleanup removes its run directory, so no record of the end was left to read.
+
+Each false notice cost the orch a stop investigation that found nothing to do.
+The quiet check now counts these as activity, and a notice fires only when none of them shows activity for the threshold.
 
 ## What changes
 
-- **shuttleengine**: every finalize sets a run-end stamp, the `run-ended` file at the run-directory root, before the cleanup removes the run directory.
-  `ReadNewestRunEnd` returns the later of the stamp and the newest ended run record.
-  A writer or fixer that has just finished now counts as recent activity while the next row starts.
-- **battencli**: `readAgentActivity`, behind dobby's `Agents` seam, reports a live wait when a process registered under the pair's slug is a detached `lym gate` runner (`runproc.RoleGate`) or a cold fixer's pane process (any `gatefixer` fixer role).
-  So a fixer that works while the writer's strand sits idle, or a gate run with no agent session at all, holds the quiet notice.
-  A gate entry run inside a writer's shuttle gate was already a live wait through its `gate <entry>` wait marker.
-
-The quiet notice still fires when none of these shows activity for the window.
+- `battencli`: `readAgentActivity` reports a live wait when `gateProcessLive` finds a registered process of the pair's slug.
+  A `lym gate` runner counts at any age.
+  A fixer's pane process counts only while it is younger than the fixer's timeout:
+  `websterengine`'s recovery timeout for a verify fixer, the gate config's fixer timeout for any other.
+  A process of another slug or another role does not count.
+- `shuttleengine`: every `finalize` stamps a `run-ended` file at the run-directory root, before a done run's cleanup removes the run directory.
+  `ReadNewestRunEnd` returns the later of that stamp and the newest ended run record, so the end of a removed run stays readable and covers the hand-over gap.
+- `dobbyengine`: the `Agents` doc comment names the new waits; no behavior change.
 
 ## Design decisions
 
-- The end stamp is one file at the run-directory root rather than a record kept per run.
-  Only the newest end matters to the reader, and the root already holds `engines-run.json`, which every run-directory scan skips as a non-directory.
-- A live fixer or gate process counts as a live wait, not as activity with a time.
-  Both are bounded by their own timeouts: the fixer timeout and the gate's CPU watchdog.
-  So a hung one delays the notice by that bound at most.
+- The age bound exists because a fixer that ended without its strand being removed leaves a pane process that outlives its work.
+  Without the bound, such a leftover would silence the notice for good.
+- A fixer with no known bound counts as live.
+  That happens only when the gate config is absent, which a gate fixer cannot be running without.
+- The stamp is a separate file rather than a keep-alive of the run directory, so cleanup of a done run is unchanged.
+  A stamp failure is logged and non-fatal.
 
-## Tests
+## To check by hand
 
-- `TestReadNewestRunEnd` gains rows for a stamp with no record left, a stamp newer than every record, and a record newer than the stamp.
-- The `Wait` cleanup table asserts that a cleaned-up done run still leaves its end readable through `ReadNewestRunEnd`.
-- `TestReadAgentActivity_ReadsLiveRunsAndTheWaitMarker` registers this process under the pair's slug as a loop (no wait), a gate runner, a gate fixer and a numbered verify fixer (each a wait).
+- A fixer pane process that ends without its strand removed no longer holds the quiet notice past the fixer's timeout.
+  The fixer's record age is its registration time, so check that a fixer which legitimately runs longer than its configured timeout is still caught by the notice, as intended, rather than silenced.
+- The test for another slug's gate process pins that it does not count.
+  Check that the row covers the pair's slug as `readAgentActivity` derives it from `taskLocation.WorktreeName`.
+- Not run: a live darn run through a real gate-fixer window and a `lym gate test`, to see no quiet notice fire.
