@@ -1,0 +1,611 @@
+diff --git a/internal/battencli/wire_seams_test.go b/internal/battencli/wire_seams_test.go
+index 8c5ce1b6..498f4494 100644
+--- a/internal/battencli/wire_seams_test.go
++++ b/internal/battencli/wire_seams_test.go
+@@ -19,7 +19,6 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/parentlock"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+-	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/shedadapters"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+@@ -411,15 +410,7 @@ func TestReadAgentActivity_ReadsLiveRunsAndTheWaitMarker(t *testing.T) {
+ 	if err := os.MkdirAll(registry, 0o755); err != nil {
+ 		t.Fatal(err)
+ 	}
+-	// A registry entry for the live run's session, proven alive by this test process, where the platform reads a process start time.
+-	wantState, wantCause := "unknown", "liveness-unproven"
+-	if procStart, ok := proc.StartTime(os.Getpid()); ok {
+-		entry := fmt.Sprintf(`{"pid":%d,"sessionId":"sess-1","procStart":%q}`, os.Getpid(), procStart)
+-		if err := os.WriteFile(filepath.Join(registry, "live.json"), []byte(entry), 0o644); err != nil {
+-			t.Fatal(err)
+-		}
+-		wantState, wantCause = "idle-stalled", "no-output"
+-	}
++	wantState, wantCause := "idle-stalled", "no-output"
+ 
+ 	taskLocation := &lymcwd.Location{RepoName: "example", HubPath: t.TempDir(), WorktreeName: "task", AnchorRel: "."}
+ 	runsRoot := filepath.Join(taskLocation.AnchorPath(), ".lym", "shuttle")
+diff --git a/internal/shuttlecli/cli_test.go b/internal/shuttlecli/cli_test.go
+index 8dbe8349..63ce44c7 100644
+--- a/internal/shuttlecli/cli_test.go
++++ b/internal/shuttlecli/cli_test.go
+@@ -115,10 +115,15 @@ func TestRunCLI_Run_FlagValidation(t *testing.T) {
+ 			args:    []string{"--prompt", "do the thing", "--output-file", "out.md", "--anchor", "overview"},
+ 			wantErr: "own-window",
+ 		},
++		{
++			name:    "AnchorHidden",
++			args:    []string{"--prompt", "do the thing", "--output-file", "out.md", "--anchor", "hidden"},
++			wantErr: `invalid --anchor "hidden"; want own-window: reed starts no command for a hidden strand, so its provider never starts, and --focus=false keeps the viewer where it is`,
++		},
+ 		{
+ 			name:    "AnchorUnknown",
+ 			args:    []string{"--prompt", "do the thing", "--output-file", "out.md", "--anchor", "sideways"},
+-			wantErr: "own-window",
++			wantErr: `invalid --anchor "sideways"; want own-window`,
+ 		},
+ 		{
+ 			name:    "AnchorEmpty",
+diff --git a/internal/shuttlecli/run.go b/internal/shuttlecli/run.go
+index 151096e4..d399e470 100644
+--- a/internal/shuttlecli/run.go
++++ b/internal/shuttlecli/run.go
+@@ -60,8 +60,9 @@ envelope. A run's output files ARE its return value: "done" means every
+ A turn end without them holds the run: it keeps waiting until the outputs
+ exist, the pane dies or the deadline passes, and an interactive run is
+ answered in its pane.
+-A run's strand opens in a detached window of its own unless --anchor says
+-otherwise.
++A run's strand opens in a detached window of its own; --focus=false keeps
++the viewer where it is. --anchor hidden is refused, since reed starts no
++command for a hidden strand.
+ 
+ An --output-file entry may be absolute or relative — a
+ relative path resolves against the WORKTREE ROOT, not the shell's cwd — and
+@@ -118,8 +119,12 @@ report.`,
+ 				return nil
+ 			}
+ 
+-			if anchor != string(render.AnchorOwnWindow) && anchor != string(render.AnchorHidden) {
+-				clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("invalid --anchor %q; want own-window|hidden", anchor)))
++			if anchor != string(render.AnchorOwnWindow) {
++				msg := fmt.Sprintf("invalid --anchor %q; want %s", anchor, render.AnchorOwnWindow)
++				if anchor == string(render.AnchorHidden) {
++					msg += fmt.Sprintf(": reed starts no command for a %s strand, so its provider never starts, and --focus=false keeps the viewer where it is", render.AnchorHidden)
++				}
++				clihelp.SetExit(cmd.Context(), output.Err(out, msg))
+ 				return nil
+ 			}
+ 
+@@ -194,7 +199,7 @@ report.`,
+ 	cmd.Flags().StringVar(&role, "role", "", "role token used to fill the strand-name template")
+ 	cmd.Flags().StringVar(&round, "round", "", "round token used to fill the strand-name template")
+ 	cmd.Flags().StringVar(&parent, "parent", "", "parent strand's guid")
+-	cmd.Flags().StringVar(&anchor, "anchor", string(render.AnchorOwnWindow), "placement: own-window|hidden")
++	cmd.Flags().StringVar(&anchor, "anchor", string(render.AnchorOwnWindow), "placement: own-window; hidden is refused, since reed starts no command for a hidden strand")
+ 	cmd.Flags().BoolVar(&focus, "focus", true, "give this strand tmux input focus; false never moves the viewer to its window")
+ 	cmd.Flags().DurationVar(&timeout, "timeout", 0, "wall-clock deadline before an in-progress run is classified as timed out (0 = config default)")
+ 	cmd.Flags().BoolVar(&keepPane, "keep-pane", false, `leave the strand and its pane alive after a "done" outcome`)
+diff --git a/internal/shuttleengine/codexengine/doc.go b/internal/shuttleengine/codexengine/doc.go
+index 87983342..e506db47 100644
+--- a/internal/shuttleengine/codexengine/doc.go
++++ b/internal/shuttleengine/codexengine/doc.go
+@@ -18,7 +18,7 @@
+ // Hooks given by `-c` append a stamp line and the payload of SessionStart, UserPromptSubmit, Stop and PermissionRequest to the run's events file, and PostToolUse touches the activity stamp.
+ // A Stop is the turn end and carries the reply; an interrupt fires no Stop, so a newest turn_aborted in the rollout the payloads name marks the turn interrupted.
+ // The rollout's newest token_count gives the context size.
+-// Codex keeps no session registry, so liveness reads unproven.
++// Codex keeps no session registry, so liveness reads unproven, and the session state follows the hook signals and the interrupt marker alone.
+ //
+ // The pane readings follow the spike's table: the `›` composer, the `Working (… esc to interrupt)` busy line and the folder-trust prompt, whose accept presses nothing unless the option sits by the caret.
+ // A send pastes the text and leaves the Enter to shuttle's guarded send, since Codex drops an Enter typed inside a burst of characters.
+diff --git a/internal/shuttleengine/conditionedsend_test.go b/internal/shuttleengine/conditionedsend_test.go
+index dbd5cb0b..adb22094 100644
+--- a/internal/shuttleengine/conditionedsend_test.go
++++ b/internal/shuttleengine/conditionedsend_test.go
+@@ -89,7 +89,7 @@ func TestRunner_SendConditioned(t *testing.T) {
+ 			reed := &framedReed{tuiReed: tui, frame: tt.frame}
+ 			var engine Engine = &pickerEngine{readinessEngine: readinessEngine{idleEngine: idleEngine{sessionFakeEngine: sessionFakeEngine{liveness: LivenessAlive}}}}
+ 			if tt.pasteEngine {
+-				engine = &strayPasteEngine{pasteEngine: &pasteEngine{tuiEngine: newTUIEngine(), pasteSubmits: true}, alive: true}
++				engine = &strayPasteEngine{pasteEngine: &pasteEngine{tuiEngine: newTUIEngine(), pasteSubmits: true}}
+ 			}
+ 			fx := newFixture(t, reed, engine, withConfig(cfg), withClock(clock), withStrand("strand-1"))
+ 			runDir := filepath.Join(fx.RunRoot, "run-1")
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index d39a8787..7a88c5a3 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -76,6 +76,7 @@
+ // A died or api-error run whose strand is own-window keeps its last pane capture in `died-capture.txt` in the run directory and loses its strand, and an anchored strand stays;
+ // a timed-out run keeps its strand, since its agent may still be live.
+ // A run's strand lands in a window of its own unless its spec names an anchor.
++// A spec naming the hidden anchor is refused before any strand exists, since reed starts no command for a hidden strand and its provider would never start.
+ // A turn end that precedes the start prompt's own turn start is not a task turn end:
+ // Wait logs it at Warn as `turn end before the prompt's turn start; not held` and neither holds nor notifies it.
+ // The hold guard arms when the events file holds a turn start before `promptOffset`, which proves the provider writes turn starts for typed turns.
+@@ -506,7 +507,8 @@
+ // A session start of source resume or clear sets idle-fresh with cause session-start, and so does one of source startup unless the derived state is a running turn;
+ // a compaction start, one with the empty source and a startup beside a running turn leave the state and the newest signal as they were, so an automatic compaction inside a turn keeps it busy.
+ // SessionFold reduces the signals in file order, with facts the caller reads, to one state: busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with a cause, a since time and the history of states passed through.
+-// Precedence, first that applies: a process-ending session end; a process proven dead; liveness left unproven; an unreadable events file; no signal at all; otherwise the state the signals give.
++// Precedence, first that applies: a process-ending session end; a process proven dead; an unreadable events file; no signal at all; otherwise the state the signals give.
++// Liveness left unproven settles nothing, so an engine whose prober never proves a process alive still reads the turn state its signals give.
+ // A turn end reads busy while it reports background tasks, idle-done when the run's output files exist, asking for an interactive run, and idle-stalled otherwise.
+ // The transcript's API-error marker turns the newest turn end into an API-error stall, and the interrupt marker turns a turn that is still open into an interrupt stall.
+ // The interrupt marker also releases an ask with cause ask, whichever signal raised it, to the same interrupt stall when the marker's time is not before the ask's, or either time is zero; an awaiting-input ask from a turn end is not released.
+diff --git a/internal/shuttleengine/fakes_test.go b/internal/shuttleengine/fakes_test.go
+index 3eefacb5..f478ff69 100644
+--- a/internal/shuttleengine/fakes_test.go
++++ b/internal/shuttleengine/fakes_test.go
+@@ -1078,15 +1078,17 @@ func (r *idleReed) CapturePane(guid string) (string, error) {
+ var _ ReedOps = (*idleReed)(nil)
+ 
+ // tuiReed is a fakeReed standing in for a Claude pane over time on its clock.
+-// The pane reads busy until busyUntil and "IDLE" after, then the history of submitted texts and the input box after a caret.
++// The pane reads "IDLE", then the history of submitted texts and the input box after a caret, and an operator is active in it until activeUntil.
++// While working is set the pane reads a turn in flight in place of "IDLE".
+ // Typed text lands in the box, C-u empties it, and Enter submits the box into the history once swallowEnterUntil has passed.
+ // While picker is set the pane shows it alone, and Escape clears it unless pickerSticky is set.
+ type tuiReed struct {
+ 	*fakeReed
+ 
+ 	clock             Clock
+-	busyUntil         time.Time
++	activeUntil       time.Time
+ 	swallowEnterUntil time.Time
++	working           bool
+ 
+ 	picker       string
+ 	pickerSticky bool
+@@ -1185,12 +1187,20 @@ func (r *tuiReed) frame(drawnSuggestion string) string {
+ 	if box == "" {
+ 		box = drawnSuggestion
+ 	}
+-	if r.clock.Now().Before(r.busyUntil) {
++	if r.working {
+ 		return "working (esc to interrupt)\n❯ " + box
+ 	}
+ 	return "IDLE\n" + strings.Join(r.history, "\n") + "\n❯ " + box
+ }
+ 
++// OperatorActive reads an operator active in the pane until activeUntil and answers from the embedded fakeReed after.
++func (r *tuiReed) OperatorActive(guid string) (bool, time.Duration, error) {
++	if r.clock.Now().Before(r.activeUntil) {
++		return true, 5 * time.Second, nil
++	}
++	return r.fakeReed.OperatorActive(guid)
++}
++
+ // blankMarkedSpans replaces every ~…~ span of a fake capture, tildes included, by spaces, standing in for a provider's placeholder cells.
+ func blankMarkedSpans(styled string) string {
+ 	var out strings.Builder
+@@ -1514,18 +1524,9 @@ var (
+ 
+ // strayPasteEngine is a pasteEngine whose idle reading needs an empty box and that implements StrayInputReader:
+ // a box holding exactly one character that is neither a letter, a digit nor whitespace is a candidate.
+-// The registry reads its process alive when alive is set, so the hook-derived reading decides; otherwise liveness is unproven and the pane decides.
++// The hook-derived reading decides once the events file holds a signal, and the pane decides while it holds none.
+ type strayPasteEngine struct {
+ 	*pasteEngine
+-
+-	alive bool
+-}
+-
+-func (e *strayPasteEngine) ProcessLiveness(string) Liveness {
+-	if e.alive {
+-		return LivenessAlive
+-	}
+-	return LivenessUnproven
+ }
+ 
+ func (e *strayPasteEngine) IdleSession(capture string) bool {
+diff --git a/internal/shuttleengine/gate_test.go b/internal/shuttleengine/gate_test.go
+index 812b183f..c787f28b 100644
+--- a/internal/shuttleengine/gate_test.go
++++ b/internal/shuttleengine/gate_test.go
+@@ -893,8 +893,8 @@ func TestGate_HoldsItsBoundaryWhileCovered(t *testing.T) {
+ 		initialScope string
+ 		// addAt adds a hub entry once the clock passes it, zero for never; appendAt appends a turn end to the events file; resumeAt resumes the oldest live entry, zero for never.
+ 		addAt, appendAt, resumeAt time.Duration
+-		// busyFor keeps the pane busy that long from the start.
+-		busyFor time.Duration
++		// activeFor keeps an operator active in the pane that long from the start.
++		activeFor time.Duration
+ 		// entry builds the rig's gate entry; evals counts its closure runs, and add adds a hub entry at the rig's clock.
+ 		entry func(evals *int, add func()) GateEntry
+ 		// wantEvalsAtResume and wantSendsAtResume are the closure runs and typed texts when the resume happens, -1 for unchecked.
+@@ -952,8 +952,8 @@ func TestGate_HoldsItsBoundaryWhileCovered(t *testing.T) {
+ 			wantEvalsAtResume: 1, wantSendsAtResume: 1, wantSends: []string{pendingLine, pendingLine}, wantAttempts: -1,
+ 		},
+ 		{
+-			name: "a re-prompt left unsent by a busy pane is not retried while covered", cfg: Config{SendReadyTimeoutS: 1}, events: "STOP:turn1\n",
+-			runnerSlug: "slug", addAt: 2 * time.Second, busyFor: 3 * time.Second, resumeAt: 7 * time.Second,
++			name: "a re-prompt left unsent by an active operator is not retried while covered", cfg: Config{SendReadyTimeoutS: 1}, events: "STOP:turn1\n",
++			runnerSlug: "slug", addAt: 2 * time.Second, activeFor: 3 * time.Second, resumeAt: 7 * time.Second,
+ 			entry:             func(evals *int, _ func()) GateEntry { return failing(evals) },
+ 			wantEvalsAtResume: -1, wantSendsAtResume: 0, wantAttempts: 1,
+ 		},
+@@ -994,7 +994,7 @@ func TestGate_HoldsItsBoundaryWhileCovered(t *testing.T) {
+ 				named.Name = tt.statusName
+ 				rig.reed.StatusQueue = []reedengine.StatusResult{{Strands: []reedengine.StrandStatus{named}}}
+ 			}
+-			rig.reed.busyUntil = rig.start.Add(tt.busyFor)
++			rig.reed.activeUntil = rig.start.Add(tt.activeFor)
+ 			rig.run.runner.SetPause(pauserecord.Geometry{RecordPath: path, Slug: tt.runnerSlug})
+ 			if tt.initialScope != "" {
+ 				addLiveEntry(t, path, tt.initialScope, rig.start)
+@@ -1133,8 +1133,8 @@ func TestGate_UnsentRepromptRetries(t *testing.T) {
+ 	tests := []struct {
+ 		name string
+ 		cfg  Config
+-		// busyFor and swallowEnterFor keep the pane busy, or swallow its Enters, for that long from the start.
+-		busyFor, swallowEnterFor time.Duration
++		// activeFor and swallowEnterFor keep an operator active in the pane, or swallow its Enters, for that long from the start.
++		activeFor, swallowEnterFor time.Duration
+ 		// startAt, when positive, is when the writer begins a new turn.
+ 		startAt time.Duration
+ 		// wantSends is the SendText count: -1 means more than one.
+@@ -1153,8 +1153,8 @@ func TestGate_UnsentRepromptRetries(t *testing.T) {
+ 		wantHeldInfo bool
+ 	}{
+ 		{
+-			name: "a busy re-prompt is re-sent once the pane idles", cfg: Config{SendReadyTimeoutS: 1},
+-			busyFor: 5 * time.Second, wantSends: 1, wantAttempts: 1, wantTypedMin: 5 * time.Second, wantHeldInfo: true,
++			name: "a re-prompt held by an active operator is re-sent once the operator goes quiet", cfg: Config{SendReadyTimeoutS: 1},
++			activeFor: 5 * time.Second, wantSends: 1, wantAttempts: 1, wantTypedMin: 5 * time.Second, wantHeldInfo: true,
+ 		},
+ 		{
+ 			name: "an unlanded re-prompt is re-sent into the box its failed send cleared", cfg: Config{SubmitConfirmTimeoutS: 1},
+@@ -1162,16 +1162,16 @@ func TestGate_UnsentRepromptRetries(t *testing.T) {
+ 		},
+ 		{
+ 			name: "a writer turn starting meanwhile cancels the pending re-send", cfg: Config{SendReadyTimeoutS: 1},
+-			busyFor: never, startAt: 4 * time.Second, wantSends: 0, wantAttempts: 0, wantNoEvalAfterStart: true,
++			activeFor: never, startAt: 4 * time.Second, wantSends: 0, wantAttempts: 0, wantNoEvalAfterStart: true,
+ 		},
+ 		{
+ 			// Each busy send waits out its 1 s idle window and a 1 s tick follows, so the retries run until the 30 s deadline ends the loop.
+ 			name: "a re-prompt that stays undelivered is retried until the run deadline", cfg: Config{SendReadyTimeoutS: 1},
+-			busyFor: never, wantSends: 0, wantAttempts: 0, wantEndAtLeast: 30 * time.Second, wantHeldInfo: true,
++			activeFor: never, wantSends: 0, wantAttempts: 0, wantEndAtLeast: 30 * time.Second, wantHeldInfo: true,
+ 		},
+ 		{
+ 			name: "a re-prompt with little time left ends its idle wait by the run deadline", cfg: Config{SendReadyTimeoutS: 60},
+-			busyFor: never, wantSends: 0, wantAttempts: 0, wantEndBy: 10 * time.Second,
++			activeFor: never, wantSends: 0, wantAttempts: 0, wantEndBy: 10 * time.Second,
+ 		},
+ 		{
+ 			name: "a re-prompt with little time left ends its submit window by the run deadline", cfg: Config{SubmitConfirmTimeoutS: 60},
+@@ -1183,7 +1183,7 @@ func TestGate_UnsentRepromptRetries(t *testing.T) {
+ 			buf := logcapture.CaptureVerbose(t)
+ 
+ 			rig := newGateRig(t, tt.cfg, "STOP:turn1\n")
+-			rig.reed.busyUntil = rig.start.Add(tt.busyFor)
++			rig.reed.activeUntil = rig.start.Add(tt.activeFor)
+ 			rig.reed.swallowEnterUntil = rig.start.Add(tt.swallowEnterFor)
+ 			if tt.wantEndBy > 0 {
+ 				rig.run.deadline = rig.start.Add(3 * time.Second)
+@@ -1193,6 +1193,7 @@ func TestGate_UnsentRepromptRetries(t *testing.T) {
+ 				rig.clock.onSleep = func(now time.Time) {
+ 					if callsAtStart < 0 && now.Sub(rig.start) >= tt.startAt {
+ 						callsAtStart = rig.gateCalls
++						rig.reed.working = true
+ 						appendEventsLine(t, rig.eventsPath, "START")
+ 					}
+ 				}
+diff --git a/internal/shuttleengine/run_test.go b/internal/shuttleengine/run_test.go
+index 15bb8258..4a826215 100644
+--- a/internal/shuttleengine/run_test.go
++++ b/internal/shuttleengine/run_test.go
+@@ -2447,6 +2447,7 @@ func TestScanPaneForNeedle(t *testing.T) {
+ // TestSend_WaitsForIdleSession drives the idle wait of Run.Send, and of Runner.Send in one row, over an engine with the idle reading.
+ // The pane turns idle at a fake-clock time, or never; an unmatched turn start in the events file holds a send against an idle pane until the override, an interrupt report or a later turn end releases it.
+ // Nothing is typed before the wait ends, and a session that stays busy fails with ErrSessionBusy carrying the pane's last lines.
++// A row with no events reads no signal, so the pane decides; a row with events reads the hook-derived state.
+ //
+ // It is not parallel: logcapture redirects the process-global logger.
+ func TestSend_WaitsForIdleSession(t *testing.T) {
+@@ -2463,10 +2464,9 @@ func TestSend_WaitsForIdleSession(t *testing.T) {
+ 		interrupted      bool
+ 		// progress is what the engine reads of any turn start.
+ 		progress TurnProgress
+-		// reading gives the engine a live process, so the hook-derived readiness reading decides instead of the pane;
+-		// reader also gives it an input-box reader, for a row that fails before anything is typed.
+-		reading, reader bool
+-		viaRunner       bool
++		// reader gives the engine an input-box reader, for a row that fails before anything is typed.
++		reader    bool
++		viaRunner bool
+ 		// recordless, with viaRunner, builds the runner's fixture without a run record naming the strand.
+ 		recordless bool
+ 		// activeQueue and activityErr script the fake reed's operator-activity answers.
+@@ -2508,14 +2508,14 @@ func TestSend_WaitsForIdleSession(t *testing.T) {
+ 		{name: "draft that never clears fails busy", reader: true, idleAfter: never, busyFrame: "earlier output\n❯ a half-typed draft", wantBusy: []string{"the pane is not idle", "a half-typed draft"}, wantDraft: true},
+ 		{name: "failed final capture is said so", idleAfter: never, busyFrame: "working", failCaptureAfter: 59 * time.Second, wantBusy: []string{"the final pane capture failed"}},
+ 		{name: "a busy pane under a clock that never advances fails busy at the poll count", idleAfter: never, busyFrame: "working", frozen: true, wantBusy: []string{"the pane is not idle"}},
+-		{name: "unmatched turn start is released by the idle override", events: "START\n", reading: true, wantTypedMin: turnStartIdleOverride, wantTypedMax: 15 * time.Second, wantWarns: 1},
+-		{name: "unmatched turn start is released by an interrupt report", events: "START\n", reading: true, interrupted: true},
+-		{name: "unmatched turn start against a busy pane fails busy with the reading's reason", events: "START\n", reading: true, idleAfter: never, busyFrame: "working", wantBusy: []string{"a turn is running"}, wantReason: "a turn is running"},
+-		{name: "draft in the box fails busy with the reading's reason", events: "START\nSTOP:done\n", reading: true, reader: true, idleAfter: never, busyFrame: "earlier output\n❯ a half-typed draft", wantBusy: []string{"the input box holds a draft", "a half-typed draft"}, wantReason: "the input box holds a draft", wantDraft: true},
++		{name: "unmatched turn start is released by the idle override", events: "START\n", wantTypedMin: turnStartIdleOverride, wantTypedMax: 15 * time.Second, wantWarns: 1},
++		{name: "unmatched turn start is released by an interrupt report", events: "START\n", interrupted: true},
++		{name: "unmatched turn start against a busy pane fails busy with the reading's reason", events: "START\n", idleAfter: never, busyFrame: "working", wantBusy: []string{"a turn is running"}, wantReason: "a turn is running"},
++		{name: "draft in the box fails busy with the reading's reason", events: "START\nSTOP:done\n", reader: true, idleAfter: never, busyFrame: "earlier output\n❯ a half-typed draft", wantBusy: []string{"the input box holds a draft", "a half-typed draft"}, wantReason: "the input box holds a draft", wantDraft: true},
+ 		{name: "an active operator holds the write until it goes quiet", activeQueue: []bool{true, true, true, false}, wantTypedMin: time.Second, wantTypedMax: 3 * time.Second},
+ 		{name: "an operator active through the whole window fails busy naming the activity", activeQueue: []bool{true}, wantBusy: []string{"the operator typed in this pane within the last 5 s"}, wantReason: "the operator typed in this pane"},
+-		{name: "an unreadable activity query still holds on a draft", activityErr: errors.New("list-clients failed"), events: "START\nSTOP:done\n", reading: true, reader: true, idleAfter: never, busyFrame: "earlier output\n❯ a half-typed draft", wantBusy: []string{"the input box holds a draft", "a half-typed draft"}, wantDraft: true},
+-		{name: "an unreadable activity query holds nothing over an empty box", activityErr: errors.New("list-clients failed"), events: "START\nSTOP:done\n", reading: true, reader: true, idleAfter: time.Millisecond, busyFrame: "IDLE\n❯ ", wantActivityWarns: 1},
++		{name: "an unreadable activity query still holds on a draft", activityErr: errors.New("list-clients failed"), events: "START\nSTOP:done\n", reader: true, idleAfter: never, busyFrame: "earlier output\n❯ a half-typed draft", wantBusy: []string{"the input box holds a draft", "a half-typed draft"}, wantDraft: true},
++		{name: "an unreadable activity query holds nothing over an empty box", activityErr: errors.New("list-clients failed"), events: "START\nSTOP:done\n", reader: true, idleAfter: time.Millisecond, busyFrame: "IDLE\n❯ ", wantActivityWarns: 1},
+ 		{
+ 			name:             "an activity query that reads again after failing logs its recovery",
+ 			activityErrQueue: []error{errors.New("list-clients failed"), errors.New("list-clients failed"), nil},
+@@ -2523,14 +2523,11 @@ func TestSend_WaitsForIdleSession(t *testing.T) {
+ 		},
+ 		{name: "turn end after the turn start releases at once", events: "START\nSTOP:done\n"},
+ 		{name: "api error turn end counts as a turn end", events: "START\nAPIERR\n"},
+-		{name: "a hook turn end beside a pane needle types at once", events: "START\nSTOP:done\n", reading: true, idleAfter: time.Second, busyFrame: "working (esc to interrupt)\n❯ "},
+-		{name: "unmatched turn start under an unknown reading is released by the idle override", events: "START\n", wantTypedMin: turnStartIdleOverride, wantTypedMax: 15 * time.Second, wantWarns: 1},
+-		{name: "an in-flight turn start holds an idle pane past the override", events: "START\n", reading: true, progress: TurnInFlight, wantBusy: []string{"a turn is running"}, wantReason: "a turn is running"},
+-		{name: "an in-flight turn start under an unknown reading holds past the override", events: "START\n", progress: TurnInFlight, wantBusy: []string{"has no turn end"}},
+-		{name: "a reported interrupt releases an in-flight turn start at once", events: "START\n", reading: true, interrupted: true, progress: TurnInFlight},
+-		{name: "an over reading still releases by the idle override", events: "START\n", reading: true, progress: TurnOver, wantTypedMin: turnStartIdleOverride, wantTypedMax: 15 * time.Second, wantWarns: 1},
+-		{name: "a session start after an in-flight turn start releases by the idle override", events: "START\nSESSIONSTART:resume\n", reading: true, progress: TurnInFlight, wantTypedMin: turnStartIdleOverride, wantTypedMax: 15 * time.Second, wantWarns: 1},
+-		{name: "a session start after an in-flight turn start under an unknown reading releases by the idle override", events: "START\nSESSIONSTART:resume\n", progress: TurnInFlight, wantTypedMin: turnStartIdleOverride, wantTypedMax: 15 * time.Second, wantWarns: 1},
++		{name: "a hook turn end beside a pane needle types at once", events: "START\nSTOP:done\n", idleAfter: time.Second, busyFrame: "working (esc to interrupt)\n❯ "},
++		{name: "an in-flight turn start holds an idle pane past the override", events: "START\n", progress: TurnInFlight, wantBusy: []string{"a turn is running"}, wantReason: "a turn is running"},
++		{name: "a reported interrupt releases an in-flight turn start at once", events: "START\n", interrupted: true, progress: TurnInFlight},
++		{name: "an over reading still releases by the idle override", events: "START\n", progress: TurnOver, wantTypedMin: turnStartIdleOverride, wantTypedMax: 15 * time.Second, wantWarns: 1},
++		{name: "a session start after an in-flight turn start releases by the idle override", events: "START\nSESSIONSTART:resume\n", progress: TurnInFlight, wantTypedMin: turnStartIdleOverride, wantTypedMax: 15 * time.Second, wantWarns: 1},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -2559,9 +2556,6 @@ func TestSend_WaitsForIdleSession(t *testing.T) {
+ 			idle.StartupScript = []StartupState{StartupReady}
+ 			idle.interrupted = tt.interrupted
+ 			idle.progress = tt.progress
+-			if tt.reading {
+-				idle.liveness = LivenessAlive
+-			}
+ 			cfg := Config{StartupTimeoutS: 30, RunTimeoutMin: 5, SendReadyTimeoutS: 60}
+ 
+ 			var err error
+@@ -2639,7 +2633,7 @@ func TestSend_WaitsForIdleSession(t *testing.T) {
+ }
+ 
+ // strayRow is one Send into a pane whose input box starts holding box, driven over a strayPasteEngine.
+-// hook gives the engine a live process and a finished turn, so the hook-derived reading decides; otherwise the pane does.
++// hook seeds a finished turn in the events file, so the hook-derived reading decides; otherwise the file holds no signal and the pane does.
+ // keepOnClear makes the clear leave the box as it is, active scripts the operator-activity answers, and wantClears is how many C-u keys the send plays.
+ // A row with wantBusy fails with ErrSessionBusy naming each fragment and pastes nothing; any other row pastes "hello" once.
+ type strayRow struct {
+@@ -2659,7 +2653,7 @@ func checkStraySend(t *testing.T, row *strayRow) {
+ 	clock := newFakeClock(time.Date(2026, 10, 8, 8, 0, 0, 0, time.UTC))
+ 	base := &fakeReed{StatusQueue: liveStrandStatus(true), ActiveQueue: row.active}
+ 	reed := &tuiReed{fakeReed: base, clock: clock, box: row.box, keepOnClear: row.keepOnClear}
+-	engine := &strayPasteEngine{pasteEngine: &pasteEngine{tuiEngine: newTUIEngine(), pasteSubmits: true}, alive: row.hook}
++	engine := &strayPasteEngine{pasteEngine: &pasteEngine{tuiEngine: newTUIEngine(), pasteSubmits: true}}
+ 	events := ""
+ 	if row.hook {
+ 		events = "START\nSTOP:done\n"
+diff --git a/internal/shuttleengine/session_test.go b/internal/shuttleengine/session_test.go
+index 9fbc38ad..64a2c3e0 100644
+--- a/internal/shuttleengine/session_test.go
++++ b/internal/shuttleengine/session_test.go
+@@ -268,8 +268,10 @@ func TestRunner_SessionIdle_ReturnsScriptedClassification(t *testing.T) {
+ 	tests := []struct {
+ 		name string
+ 		// engine settings; the zero value is a live process.
+-		dead, unproven, interrupted, tooShort bool
+-		interactive, outputsExist             bool
++		dead, interrupted, tooShort bool
++		interactive, outputsExist   bool
++		// unreadable points the run record at an events file that cannot be read, so the session state reads unknown and the pane decides.
++		unreadable bool
+ 		// styled gives the engine the styled box read, which blanks a capture's ~…~ spans.
+ 		styled bool
+ 		// guarded runs the row on guardedReadinessEngine, which adds the running-turn check Claude's pane probe uses.
+@@ -288,17 +290,17 @@ func TestRunner_SessionIdle_ReturnsScriptedClassification(t *testing.T) {
+ 		{name: "a running turn is held", probes: []probe{{events: "START\n", capture: idleFrame, want: IdleProbe{Reason: "a turn is running"}, wantReason: "a turn is running"}}},
+ 		{name: "an ask is held", probes: []probe{{events: "START\nASK\n", capture: idleFrame, want: IdleProbe{Reason: "the session waits on an answer"}, wantReason: "waits on an answer"}}},
+ 		{name: "a dead process is held", dead: true, probes: []probe{{events: turnEnded, capture: idleFrame, want: IdleProbe{Reason: "the session's process is gone"}, wantReason: "process is gone"}}},
+-		{name: "an unknown reading falls back to an idle pane", unproven: true, probes: []probe{{events: turnEnded, capture: idleFrame, want: IdleProbe{Idle: true, NoTurn: true}}}},
+-		{name: "an unknown reading falls back to a busy pane, too short or not", unproven: true, tooShort: true, probes: []probe{{events: turnEnded, capture: needleFrame, want: IdleProbe{TooShort: true}}}},
++		{name: "an unknown reading falls back to an idle pane", unreadable: true, probes: []probe{{events: turnEnded, capture: idleFrame, want: IdleProbe{Idle: true, NoTurn: true}}}},
++		{name: "an unknown reading falls back to a busy pane, too short or not", unreadable: true, tooShort: true, probes: []probe{{events: turnEnded, capture: needleFrame, want: IdleProbe{TooShort: true}}}},
+ 		{name: "a draft in the box is held with its reason", probes: []probe{{events: turnEnded, capture: "IDLE\n❯ half a draft", want: atEnd(IdleProbe{Reason: `the input box holds a draft: "half a draft"`, Draft: true}), wantReason: "draft"}}},
+ 		{name: "a placeholder in the box is idle for a styled box read", styled: true, probes: []probe{{events: turnEnded, capture: suggestionFrame, want: idleAtEnd}}},
+ 		{name: "a placeholder in the box is a draft for a plain box read", probes: []probe{{events: turnEnded, capture: suggestionFrame, want: atEnd(IdleProbe{Reason: `the input box holds a draft: "~Try something~"`, Draft: true}), wantReason: "draft"}}},
+-		{name: "an unknown reading over a placeholder falls back to an idle pane for a styled box read", unproven: true, styled: true, probes: []probe{{events: turnEnded, capture: suggestionFrame, want: IdleProbe{Idle: true, NoTurn: true}}}},
+-		{name: "an unknown reading falls back to a busy pane holding a draft", unproven: true, probes: []probe{{events: turnEnded, capture: "BUSY\n❯ half a draft", want: IdleProbe{Draft: true, NoTurn: true}}}},
+-		{name: "a guarded pane holding a draft with no running turn reads no turn while not idle", unproven: true, guarded: true, probes: []probe{{events: turnEnded, capture: "BUSY\n❯ half a draft", want: IdleProbe{Draft: true, NoTurn: true}}}},
+-		{name: "a guarded pane showing a running turn reads a turn", unproven: true, guarded: true, probes: []probe{{events: turnEnded, capture: "RUNNING\n❯ half a draft", want: IdleProbe{Draft: true}}}},
+-		{name: "a guarded pane too short reads a turn as possible", unproven: true, guarded: true, tooShort: true, probes: []probe{{events: turnEnded, capture: "BUSY\n❯ ", want: IdleProbe{TooShort: true}}}},
+-		{name: "a guarded pane showing no input box reads a turn as possible", unproven: true, guarded: true, probes: []probe{{events: turnEnded, capture: "BUSY no box here", want: IdleProbe{NoInputBox: true}}}},
++		{name: "an unknown reading over a placeholder falls back to an idle pane for a styled box read", unreadable: true, styled: true, probes: []probe{{events: turnEnded, capture: suggestionFrame, want: IdleProbe{Idle: true, NoTurn: true}}}},
++		{name: "an unknown reading falls back to a busy pane holding a draft", unreadable: true, probes: []probe{{events: turnEnded, capture: "BUSY\n❯ half a draft", want: IdleProbe{Draft: true, NoTurn: true}}}},
++		{name: "a guarded pane holding a draft with no running turn reads no turn while not idle", unreadable: true, guarded: true, probes: []probe{{events: turnEnded, capture: "BUSY\n❯ half a draft", want: IdleProbe{Draft: true, NoTurn: true}}}},
++		{name: "a guarded pane showing a running turn reads a turn", unreadable: true, guarded: true, probes: []probe{{events: turnEnded, capture: "RUNNING\n❯ half a draft", want: IdleProbe{Draft: true}}}},
++		{name: "a guarded pane too short reads a turn as possible", unreadable: true, guarded: true, tooShort: true, probes: []probe{{events: turnEnded, capture: "BUSY\n❯ ", want: IdleProbe{TooShort: true}}}},
++		{name: "a guarded pane showing no input box reads a turn as possible", unreadable: true, guarded: true, probes: []probe{{events: turnEnded, capture: "BUSY no box here", want: IdleProbe{NoInputBox: true}}}},
+ 		{name: "a pane too short is held and reported too short", tooShort: true, probes: []probe{{events: turnEnded, capture: "IDLE", want: atEnd(IdleProbe{TooShort: true, Reason: readinessReasonPaneTooShort}), wantReason: "too short"}}},
+ 		{
+ 			name:    "a hook turn end beside a pane needle reads idle and logs the disagreement",
+@@ -349,9 +351,6 @@ func TestRunner_SessionIdle_ReturnsScriptedClassification(t *testing.T) {
+ 			if tt.dead {
+ 				engine.liveness = LivenessDead
+ 			}
+-			if tt.unproven {
+-				engine.liveness = LivenessUnproven
+-			}
+ 			engine.interrupted = tt.interrupted
+ 			engine.markEvents = true
+ 			engine.progress = tt.progress
+@@ -366,6 +365,9 @@ func TestRunner_SessionIdle_ReturnsScriptedClassification(t *testing.T) {
+ 			fx := newFixture(t, reed, probed, withStrand("strand-1"), withClock(clock))
+ 			runDir := filepath.Dir(fx.EventsPath)
+ 			state := RunState{RunID: "run-1", StrandGUID: "strand-1", EventsPath: fx.EventsPath, Interactive: tt.interactive}
++			if tt.unreadable {
++				state.EventsPath = filepath.Join(runDir, "missing-events.jsonl")
++			}
+ 			if tt.outputsExist {
+ 				output := filepath.Join(runDir, "report.md")
+ 				if err := os.WriteFile(output, []byte("done"), 0o644); err != nil {
+@@ -563,7 +565,7 @@ func newSlashPasteRunnerAppending(t *testing.T, box string, active, noColor bool
+ 	cfg := Config{SubmitSettleMS: 100, SubmitConfirmTimeoutS: 30, SendReadyTimeoutS: 60}
+ 	fx := newFixture(t, appending, engine, withConfig(cfg), withStrand("strand-1"), withClock(clock))
+ 	appending.eventsPath = fx.EventsPath
+-	// A finished turn of a session whose process is alive makes the hook-derived session state known, so the idle wait reads the input box.
++	// A finished turn makes the hook-derived session state known, so the idle wait reads the input box.
+ 	if err := os.WriteFile(fx.EventsPath, []byte("START\nSTOP:done\n"), 0o644); err != nil {
+ 		t.Fatalf("write events: %v", err)
+ 	}
+diff --git a/internal/shuttleengine/sessionstate.go b/internal/shuttleengine/sessionstate.go
+index 2a6bded4..59d2a785 100644
+--- a/internal/shuttleengine/sessionstate.go
++++ b/internal/shuttleengine/sessionstate.go
+@@ -38,7 +38,6 @@ const (
+ 	SessionCauseContradiction    = "contradiction"
+ 	SessionCauseAsk              = "ask"
+ 	SessionCauseProcessGone      = "process-gone"
+-	SessionCauseLivenessUnproven = "liveness-unproven"
+ 	SessionCauseEventsUnreadable = "events-unreadable"
+ 	SessionCauseNoSignal         = "no-signal"
+ 	SessionCauseNoState          = "no-state"
+@@ -112,7 +111,7 @@ type SessionFold struct {
+ 	// sessionStartAt is the time of the newest session-start signal; zero when none arrived or it had no time.
+ 	sessionStartAt time.Time
+ 
+-	// derived is the state the signals alone give, before the facts' liveness and readability take precedence.
++	// derived is the state the signals alone give, before a dead process and an unreadable events file take precedence.
+ 	derived    SessionState
+ 	hasDerived bool
+ 	// derivedFromTurnEnd is true while derived is the judgment of the newest turn end.
+@@ -278,7 +277,8 @@ func (f *SessionFold) derivedIsAskReleasedBy(interruptAt time.Time) bool {
+ 	return interruptAt.IsZero() || f.derived.Since.IsZero() || !interruptAt.Before(f.derived.Since)
+ }
+ 
+-// settle sets the current state: the first of a process-ending session end, a dead process, an unproven liveness, an unreadable events file and an empty signal history that applies, else the signal-derived state.
++// settle sets the current state: the first of a process-ending session end, a dead process, an unreadable events file and an empty signal history that applies, else the signal-derived state.
++// An unproven liveness settles nothing, so an engine that cannot prove its process alive still reads the turn state its signals give.
+ // A state that keeps the current state's name and cause keeps its Since.
+ func (f *SessionFold) settle(facts SessionFacts) {
+ 	var settled SessionState
+@@ -287,8 +287,6 @@ func (f *SessionFold) settle(facts SessionFacts) {
+ 		settled = f.derived
+ 	case facts.Liveness == LivenessDead:
+ 		settled = SessionState{Name: SessionDead, Cause: SessionCauseProcessGone, Since: facts.ReadAt}
+-	case facts.Liveness == LivenessUnproven:
+-		settled = SessionState{Name: SessionUnknown, Cause: SessionCauseLivenessUnproven, Since: facts.ReadAt}
+ 	case facts.EventsUnreadable:
+ 		settled = SessionState{Name: SessionUnknown, Cause: SessionCauseEventsUnreadable, Since: facts.ReadAt}
+ 	case !f.hasNewest:
+diff --git a/internal/shuttleengine/sessionstate_test.go b/internal/shuttleengine/sessionstate_test.go
+index 753b0b20..770fee8d 100644
+--- a/internal/shuttleengine/sessionstate_test.go
++++ b/internal/shuttleengine/sessionstate_test.go
+@@ -82,10 +82,23 @@ func TestSessionFold(t *testing.T) {
+ 			wantHistory: []SessionState{state(SessionUnknown, SessionCauseEventsUnreadable, readAt)},
+ 		},
+ 		{
+-			name:        "an unproven liveness outranks the signals and an unreadable file",
++			name:            "an unproven liveness leaves a running turn busy",
++			steps:           []step{{[]SessionSignal{turnStart(1)}, factsWith(unproven)}},
++			wantState:       state(SessionBusy, SessionCauseTurn, at(1)),
++			wantRunningTurn: true,
++			wantHistory:     []SessionState{state(SessionBusy, SessionCauseTurn, at(1))},
++		},
++		{
++			name:        "an unproven liveness leaves an interrupted turn idle-stalled on the interrupt",
++			steps:       []step{{[]SessionSignal{sessionStart(1, SessionStartStartup), turnStart(2)}, factsWith(unproven, func(f *SessionFacts) { f.Interrupted, f.InterruptAt = true, at(50) })}},
++			wantState:   state(SessionIdleStalled, SessionCauseInterrupt, at(50)),
++			wantHistory: []SessionState{state(SessionIdleFresh, SessionCauseSessionStart, at(1)), state(SessionBusy, SessionCauseTurn, at(2)), state(SessionIdleStalled, SessionCauseInterrupt, at(50))},
++		},
++		{
++			name:        "an unreadable events file outranks the signals under an unproven liveness",
+ 			steps:       []step{{[]SessionSignal{turnStart(1)}, factsWith(unproven, unreadable)}},
+-			wantState:   state(SessionUnknown, SessionCauseLivenessUnproven, readAt),
+-			wantHistory: []SessionState{state(SessionBusy, SessionCauseTurn, at(1)), state(SessionUnknown, SessionCauseLivenessUnproven, readAt)},
++			wantState:   state(SessionUnknown, SessionCauseEventsUnreadable, readAt),
++			wantHistory: []SessionState{state(SessionBusy, SessionCauseTurn, at(1)), state(SessionUnknown, SessionCauseEventsUnreadable, readAt)},
+ 		},
+ 		{
+ 			name:        "a dead process outranks the signals, stamped with the reading",
+@@ -100,7 +113,7 @@ func TestSessionFold(t *testing.T) {
+ 			wantHistory: []SessionState{state(SessionDead, SessionCauseProcessGone, readAt)},
+ 		},
+ 		{
+-			name:        "a process-ending session end outranks even an unproven liveness",
++			name:        "a process-ending session end reads dead under an unproven liveness",
+ 			steps:       []step{{[]SessionSignal{turnStart(1), sessionEnd(2, "logout", true)}, factsWith(unproven)}},
+ 			wantState:   state(SessionDead, "logout", at(2)),
+ 			wantHistory: []SessionState{state(SessionBusy, SessionCauseTurn, at(1)), state(SessionDead, "logout", at(2))},
+@@ -158,10 +171,10 @@ func TestSessionFold(t *testing.T) {
+ 			wantHistory: []SessionState{state(SessionIdleFresh, SessionCauseSessionStart, at(1)), state(SessionDead, SessionCauseProcessGone, readAt)},
+ 		},
+ 		{
+-			name:        "an unproven liveness outranks idle-fresh",
++			name:        "an unproven liveness leaves idle-fresh",
+ 			steps:       []step{{[]SessionSignal{sessionStart(1, SessionStartStartup)}, factsWith(unproven)}},
+-			wantState:   state(SessionUnknown, SessionCauseLivenessUnproven, readAt),
+-			wantHistory: []SessionState{state(SessionIdleFresh, SessionCauseSessionStart, at(1)), state(SessionUnknown, SessionCauseLivenessUnproven, readAt)},
++			wantState:   state(SessionIdleFresh, SessionCauseSessionStart, at(1)),
++			wantHistory: []SessionState{state(SessionIdleFresh, SessionCauseSessionStart, at(1))},
+ 		},
+ 		{
+ 			name:        "a clear session end is unknown with its reason until the next signal",
+diff --git a/internal/shuttleengine/spec.go b/internal/shuttleengine/spec.go
+index 8257ef0d..f64c940a 100644
+--- a/internal/shuttleengine/spec.go
++++ b/internal/shuttleengine/spec.go
+@@ -168,6 +168,7 @@ type Spec struct {
+ // behind an instant OutcomeTimeout); a zero Timeout is replaced with
+ // cfg.RunTimeoutMin minutes.
+ // An empty Display.Anchor defaults to render.AnchorOwnWindow, so a run's strand opens in a window of its own unless the spec names an anchor.
++// A hidden anchor is refused: reed registers a hidden strand without starting its command or giving it a pane, so its provider would never start.
+ func (s *Spec) validate(worktreeRoot string, cfg Config) error {
+ 	if s.Prompt == "" {
+ 		return fmt.Errorf("shuttle: spec.Prompt must not be empty")
+@@ -216,6 +217,9 @@ func (s *Spec) validate(worktreeRoot string, cfg Config) error {
+ 	if s.Display.Anchor == "" {
+ 		s.Display.Anchor = render.AnchorOwnWindow
+ 	}
++	if s.Display.Anchor == render.AnchorHidden {
++		return fmt.Errorf("shuttle: spec.Display.Anchor %q cannot run: reed registers a hidden strand without starting its command or giving it a pane, so the provider never starts; use %q, with KeepViewer set to leave the viewer where it is", render.AnchorHidden, render.AnchorOwnWindow)
++	}
+ 
+ 	return nil
+ }
+diff --git a/internal/shuttleengine/spec_test.go b/internal/shuttleengine/spec_test.go
+index fd5ce62f..89fb8319 100644
+--- a/internal/shuttleengine/spec_test.go
++++ b/internal/shuttleengine/spec_test.go
+@@ -111,14 +111,21 @@ func TestSpec_Validate(t *testing.T) {
+ 			},
+ 		},
+ 		{
+-			name: "anchor passes through when set",
+-			spec: Spec{Prompt: "do the thing", OutputFiles: []string{"out.md"}, Display: render.Display{Anchor: render.AnchorHidden}},
++			name: "own-window anchor passes through when set",
++			spec: Spec{Prompt: "do the thing", OutputFiles: []string{"out.md"}, Display: render.Display{Anchor: render.AnchorOwnWindow, KeepViewer: true}},
+ 			check: func(t *testing.T, s *Spec) {
+-				if s.Display.Anchor != render.AnchorHidden {
+-					t.Errorf("Display.Anchor = %q, want unchanged %q", s.Display.Anchor, render.AnchorHidden)
++				if want := (render.Display{Anchor: render.AnchorOwnWindow, KeepViewer: true}); s.Display != want {
++					t.Errorf("Display = %+v, want unchanged %+v", s.Display, want)
+ 				}
+ 			},
+ 		},
++		{
++			// Reed starts no command for a hidden strand, so the run could only die at startup.
++			name:      "hidden anchor rejected, naming why and the own-window way forward",
++			spec:      Spec{Prompt: "do the thing", OutputFiles: []string{"out.md"}, Display: render.Display{Anchor: render.AnchorHidden}},
++			wantErr:   true,
++			wantErrIn: `without starting its command or giving it a pane, so the provider never starts; use "own-window"`,
++		},
+ 		{
+ 			name: "empty effort stays empty",
+ 			spec: Spec{Prompt: "do the thing", OutputFiles: []string{"out.md"}},
