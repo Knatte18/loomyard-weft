@@ -48,7 +48,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Codex trial: pane, sends, creel by the pane path, and load**<br>• Six cases, three sessions at once and one darn run with a Codex reviewer seat | [`codex-trial-pane-load`](design-codex-trial-pane-load.md) | darn · docs | Drift-Recheck | neve | 1d<br>15h | codex, shuttle, creel |
+| T6 | **Codex trial: pane, sends, creel by the pane path, and load**<br>• Six cases, three sessions at once and one darn run with a Codex reviewer seat | [`codex-trial-pane-load`](design-codex-trial-pane-load.md) | darn · docs | Describe | neve | 1d<br>15h | codex, shuttle, creel |
 
 #### Ready (0)
 
@@ -75,7 +75,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Motif runs: own profile recipe, a finished state on the board, and live status**<br>• Motif drops profile_recipe tapestry, a finished motif reads as done, and the board status follows batten rows and the inner producer | [`motif-board-fixes`](design-motif-board-fixes.md) | darn · light | Darn-Write | neve | 34m<br>32m | loom, board, batten, profiles |
-| T3 | **Loop exited without an envelope while step Webster was in flight** | [`loop-exit-no-envelope-cause`](design-loop-exit-no-envelope-cause.md) | darn · light | PR-Review | neve | 33m<br>32m | shed, friction |
+| T3 | **Loop exited without an envelope while step Webster was in flight** | [`loop-exit-no-envelope-cause`](design-loop-exit-no-envelope-cause.md) | darn · light | PR-Review | neve | 34m<br>32m | shed, friction |
 | T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | Darn-Write | neve | 16h<br>15h | fabric, loom |
 | T9 | **A test leaves an empty /tmp/.git, which breaks go VCS stamping**<br>• An empty /tmp/.git appeared during a tier1 run and failed TestPrebuildLym; find the leaker and guard against writes outside t.TempDir | [`tmp-git-leak`](design-tmp-git-leak.md) | darn · light | Darn-Write | neve | 15h<br>21m | testkit, gate |
 
@@ -91,7 +91,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Teardown removes the whole worktree directory, and a gone pair blocks no board edit**<br>• Worktree-Teardown and fabric remove delete leftover build output; has-a-pair and batten cancel treat a non-git directory as no pair | [`teardown-gone-pair`](design-teardown-gone-pair.md) | darn · light | T7<br>T1 | 33m<br>32m | batten, fabric, board |
+| T2 | **Teardown removes the whole worktree directory, and a gone pair blocks no board edit**<br>• Worktree-Teardown and fabric remove delete leftover build output; has-a-pair and batten cancel treat a non-git directory as no pair | [`teardown-gone-pair`](design-teardown-gone-pair.md) | darn · light | T7<br>T1 | 34m<br>32m | batten, fabric, board |
 | T8 | **The beam orch drives the merge-in, pull request and review of its beam inside Beam-Await**<br>• Pawl drops Parent-Align, Beam-Describe and PR-Review; the beam orch opens and closes the PR, merges the parent in and runs lym beam ready | [`pawl-orch-landing`](design-pawl-orch-landing.md) | tapestry · solid | T7 | 39m<br>23m | pawl, landing, orch, workspaces, fabric |
 
 #### Draft (1)
@@ -121,7 +121,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B2 |  | **A weft push holds the remote-refs lock over its whole transfer, so board claims queue behind it**<br>• Bolt and every weft share one remote-refs lock; a slow push stalls every claim and weft fetch for its whole send-pack | [`push-holds-remote-refs`](design-push-holds-remote-refs.md) | 16h<br>16h |  |
 | B3 |  | **An opened Codex session never reads idle, so creel types nothing into it**<br>• SessionIdle judges a strand with no run record by the hub default engine, so a Codex pane reads as no input box | [`opened-codex-never-idle`](design-opened-codex-never-idle.md) | 2m<br>2m | shuttle, creel, codex |
 | B4 |  | **lym shuttle state keeps a Codex run asking after Codex exits**<br>• After /exit the pane is dead and the loop ends died, while the session state still reads asking | [`codex-state-asking-after-exit`](design-codex-state-asking-after-exit.md) | 2m<br>2m | shuttle, codex |
-| B5 |  | **A Codex session cannot reach the creel daemon from its workspace-write sandbox**<br>• lym creel read and post fail inside Codex: connect to the daemon socket is not permitted and the daemon log is read-only | [`codex-sandbox-no-creel-socket`](design-codex-sandbox-no-creel-socket.md) | 1m<br>1m | codex, creel, shuttle |
+| B5 |  | **A Codex session cannot reach the creel daemon from its workspace-write sandbox**<br>• lym creel read and post fail inside Codex: connect to the daemon socket is not permitted and the daemon log is read-only | [`codex-sandbox-no-creel-socket`](design-codex-sandbox-no-creel-socket.md) | 2m<br>2m | codex, creel, shuttle |
 
 #### Enhancements (5)
 
