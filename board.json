@@ -735,6 +735,27 @@
       "body": "Imported from [issue #57](https://github.com/Knatte18/loomyard/issues/57).\n\nSeen in hub Models-LYMHUB, beam duplication-and-import-followups, 2026-11-04.\n\nThe beam's landing had opened PR #267 to main and waited at PR-Review. The operator then wanted one more task (a live viewer, PR #268) in the beam before landing. During that detour PR #267 was closed on GitHub (11:15 UTC), although nothing required it: an open PR from the beam branch to main picks up new commits on its own.\n\nWhen the task had landed and the beam was flagged ready again, the way back was rough:\n- The pawl run had failed at Beam-Await with 'step Beam-Await interrupted (loop-exited)', so the ready flag and lym beam land were not read until the orch ran lym loom resume by hand.\n- The run then blocked on 'pull request #267 was closed on GitHub without being merged; way forward: reopen it on GitHub and run lym loom resume'.\n- After the reopen, the landing overwrote the PR's hand-written title and body and summary.md with a flat title list (#56).\n- A finished motif member left behind a pair record that blocks moving it out of the beam (#52).\n\nExpected: a supported way to step a beam back from PR-Review to take in more work, which keeps the existing PR open and reuses it, waits in Beam-Await for the new members without failing, and on the next ready goes straight back to PR-Review on the same PR with its body kept. The orch role and stencils should say not to close the PR for such a detour.",
       "created": "2026-11-05T05:50:24Z",
       "revised": "2026-11-05T05:50:24Z"
+    },
+    {
+      "id": 1112,
+      "handle": "B5",
+      "slug": "beam-landing-overwrites-pr-body",
+      "title": "Beam landing overwrites a reopened PR's hand-written body and title with a flat title list",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "pawl",
+        "landing"
+      ],
+      "issues": [
+        56
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #56](https://github.com/Knatte18/loomyard/issues/56).\n\nSeen in hub Models-LYMHUB, beam duplication-and-import-followups, 2026-11-04.\n\nThe beam's pawl run blocked because its recorded PR #267 had been closed; the orch reopened it, set a full body listing every merged sub-PR with link, merge time and summary, and a new title, then ran lym loom resume. 33 seconds later the run rewrote the PR (GitHub edit history: 18:19:16 orch body, 18:19:49 lym body): the title went back to the original and the body became the summary.md flat list of sub-PR titles, with no links or explanations. It also rewrote _lym/landing/summary.md to that flat list, dropping the dated list the operator had asked for earlier.\n\nExpected: the landing does not regenerate a body over an existing PR body it did not write, or it builds the sub-PR list with links, merge times and summaries as operators want for a beam PR.\n\nWorkaround: the orch restored the body and title from the PR's edit history with gh pr edit, and the pr-reviewer put the dated list back into summary.md.",
+      "created": "2026-11-05T05:50:26Z",
+      "revised": "2026-11-05T05:50:26Z"
     }
   ],
   "prime_owner": "neve",
