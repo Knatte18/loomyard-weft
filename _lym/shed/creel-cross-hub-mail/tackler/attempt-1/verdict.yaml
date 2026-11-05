@@ -1,5 +1,0 @@
-verdict: hand-back
-reason: >-
-  The stop is a bootstrap refusal from battencli. The origin run "creel-cross-hub-mail" already landed and its board entry is done, so batten will not resume it. battencli names the fix: run "lym cleanup --apply" from the prime, whose hub reconcile tears the pair down. A plain re-launch of Run-Shed would hit the same refusal, so resume does not settle it. The fix tears down a pair and changes the run, which is the run's parent to run, not the tackler.
-question: >-
-  Run "lym cleanup --apply" from the prime to tear down the creel-cross-hub-mail pair, since the run landed and its board entry is done. Confirm once it is run, or tell the shed driver to close the run without it.
