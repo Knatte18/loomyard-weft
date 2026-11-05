@@ -1,6 +1,6 @@
 # Sessions lym launches add no Claude co-author or session link to commits and PRs
 
-`sessions-no-self-credit` · Task · bug, claude, shuttle · running · Open-Window
+`sessions-no-self-credit` · Task · bug, claude, shuttle · running · Drift-Baseline
 
 ## Seen (2026-11-05)
 
