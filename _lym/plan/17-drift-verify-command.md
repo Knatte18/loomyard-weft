@@ -14,7 +14,7 @@
 - `internal/driftengine#Check`
 - `internal/driftengine#JudgedCase`
 - `internal/driftengine#WriteRecords`
-- `plan:internal/driftengine#WriteJudgeRequest`
+- `internal/driftengine#WriteJudgeRequest`
 - `internal/driftengine#commitStore`
 - `internal/driftengine#commitStore.deps`
 

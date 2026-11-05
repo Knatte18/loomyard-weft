@@ -92,10 +92,10 @@
 - `internal/driftengine#Check`
 - `internal/driftengine#WriteRecords`
 - `internal/driftengine#ReadRecords`
-- `plan:internal/driftengine#WriteJudgeRequest`
-- `plan:internal/driftengine#TakeJudgeSnapshot`
-- `plan:internal/driftengine#ReadJudgeSnapshot`
-- `plan:internal/driftengine#JudgeSnapshot.Changes`
+- `internal/driftengine#WriteJudgeRequest`
+- `internal/driftengine#TakeJudgeSnapshot`
+- `internal/driftengine#ReadJudgeSnapshot`
+- `internal/driftengine#JudgeSnapshot.Changes`
 - `internal/driftengine#ParseJudgement`
 - `internal/driftengine#CheckBaseline`
 - `internal/driftengine#DeferHaltPrefix`

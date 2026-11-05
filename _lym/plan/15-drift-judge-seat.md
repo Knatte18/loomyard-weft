@@ -1,19 +1,19 @@
 # Card 15 — drift-judge-seat
 
 **Create:**
-- `plan:internal/driftengine#JudgeRequest` -> `type JudgeRequest struct`
-- `plan:internal/driftengine#WriteJudgeRequest` -> `func WriteJudgeRequest(p Paths, req JudgeRequest) error`
-- `plan:internal/driftengine#JudgeInputs` -> `type JudgeInputs struct`
-- `plan:internal/driftengine#JudgeTable` -> `func JudgeTable(in JudgeInputs, cfg Config, reg modelspec.Registry) (seatengine.Table, error)`
-- `plan:internal/driftengine#NewJudgementGate` -> `func NewJudgementGate(d Deps) shuttleengine.Gate`
-- `plan:internal/driftengine#JudgeSnapshot` -> `type JudgeSnapshot struct`
-- `plan:internal/driftengine#TakeJudgeSnapshot` -> `func TakeJudgeSnapshot(d Deps, scratchDir string) (JudgeSnapshot, error)`
-- `plan:internal/driftengine#ReadJudgeSnapshot` -> `func ReadJudgeSnapshot(d Deps) (JudgeSnapshot, bool, error)`
-- `plan:internal/driftengine#JudgeSnapshot.Changes` -> `func (s JudgeSnapshot) Changes(d Deps) ([]string, error)`
-- `plan:internal/driftengine#TestJudgeSnapshot` -> `func TestJudgeSnapshot(t *testing.T)`
-- `plan:internal/driftengine#TestJudgementGate` -> `func TestJudgementGate(t *testing.T)`
-- `plan:internal/lymdirs#DriftJudgeDirName` -> `const DriftJudgeDirName = "drift-judge"`
-- `plan:contracts/stencils#DriftTemplateJudge` -> `var DriftTemplateJudge string`
+- `internal/driftengine#JudgeRequest`
+- `internal/driftengine#WriteJudgeRequest`
+- `internal/driftengine#JudgeInputs`
+- `internal/driftengine#JudgeTable`
+- `internal/driftengine#NewJudgementGate`
+- `internal/driftengine#JudgeSnapshot`
+- `internal/driftengine#TakeJudgeSnapshot`
+- `internal/driftengine#ReadJudgeSnapshot`
+- `internal/driftengine#JudgeSnapshot.Changes`
+- `internal/driftengine#TestJudgeSnapshot`
+- `internal/driftengine#TestJudgementGate`
+- `internal/lymdirs#DriftJudgeDirName`
+- `contracts/stencils#DriftTemplateJudge`
 - `contracts/stencils/drift/drift-template-judge.md`
 
 **Extends:**

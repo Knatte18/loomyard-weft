@@ -1,0 +1,12 @@
+status: OK
+head_sha: b7f922f67fc7d0ef3149ae2cf297bb3fb0ae2264
+renames:
+  - old: internal/driftengine#Deps.WeftChangedSince
+    new: internal/driftengine#Deps.RecordsChangedSince
+    reason: PATTERN-fabric-vocabulary bars a side-named identifier outside the owner set.
+  - old: internal/driftengine#Deps.LoomWeftDirs
+    new: internal/driftengine#Deps.LoomRecordsDirs
+    reason: PATTERN-fabric-vocabulary bars a side-named identifier outside the owner set.
+  - old: internal/fabricengine#WeftPathsChangedSince
+    new: internal/fabricengine#RecordsPathsChangedSince
+    reason: PATTERN-fabric-vocabulary bars a side-named export called from non-owner code, and loomcli's driftwiring calls it.
