@@ -1,6 +1,6 @@
 # Live trial: creel mail reaches Codex sessions through the new hooks
 
-`codex-creel-trial` · Task · research, codex, creel · running · Worktree-Create
+`codex-creel-trial` · Task · research, codex, creel · running · Seed-Child
 
 Depends on: [`codex-creel-hooks`](design-codex-creel-hooks.md)
 
