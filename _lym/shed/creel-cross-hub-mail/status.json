@@ -1,10 +1,10 @@
 {
-  "current_producer": "",
+  "current_producer": "Record-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "",
+    "now": "Record-Write",
     "last": "",
     "wait": ""
   },
