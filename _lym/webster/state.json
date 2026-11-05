@@ -901,7 +901,7 @@
       }
     }
   ],
-  "currentBatch": 25,
+  "currentBatch": 0,
   "masterStrand": "83a798257355e3fbc145f5c353ce6c80",
   "masterSessionId": "4e34b309-cce2-44d6-a7ed-361a666d1f58",
   "masterEngine": "claude",
@@ -1298,8 +1298,29 @@
       "spawnedAt": "2026-11-05T18:28:45Z",
       "sessionId": "4e34b309-cce2-44d6-a7ed-361a666d1f58",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "25-driftengine-retire-acceptance",
+        "status": "done",
+        "head_sha": "d115996b60846ed3e2168e48ea36a95b95213eee",
+        "deviations": [
+          "internal/driftengine/capture.go",
+          "internal/driftengine/records.go",
+          "internal/driftengine/steprun.go",
+          "internal/driftengine/verbs.go",
+          "internal/driftengine/verbs_test.go"
+        ]
+      },
+      "cardShas": [
+        "d115996b60846ed3e2168e48ea36a95b95213eee"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/4e34b309-cce2-44d6-a7ed-361a666d1f58/subagents/agent-a1253fe4e9fdb80cc.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/4e34b309-cce2-44d6-a7ed-361a666d1f58/subagents/agent-a1253fe4e9fdb80cc.jsonl"
+      ]
     },
     "5": {
       "slug": "drift-expectation-parser",
@@ -1415,7 +1436,8 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-ad2e0a7a2df25af22.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/4e34b309-cce2-44d6-a7ed-361a666d1f58/subagents/agent-a8908d8c9c43328dd.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/4e34b309-cce2-44d6-a7ed-361a666d1f58/subagents/agent-a7a135906c1c6d6f6.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/4e34b309-cce2-44d6-a7ed-361a666d1f58/subagents/agent-ab885245bae364b2c.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/4e34b309-cce2-44d6-a7ed-361a666d1f58/subagents/agent-ab885245bae364b2c.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/4e34b309-cce2-44d6-a7ed-361a666d1f58/subagents/agent-a1253fe4e9fdb80cc.jsonl"
   ],
   "planFixers": [
     {
