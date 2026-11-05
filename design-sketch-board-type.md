@@ -1,6 +1,6 @@
 # A Sketch is a board type of its own
 
-`sketch-board-type` · Task · feature, board, loom · running · Seed-Child
+`sketch-board-type` · Task · feature, board, loom · running · Open-Window
 
 ## Idea (operator, 2026-11-05)
 
