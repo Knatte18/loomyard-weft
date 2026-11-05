@@ -905,6 +905,29 @@
       "body": "Imported from [issue #48](https://github.com/Knatte18/loomyard/issues/48).\n\n## Seen\n\nIn hub Models (shortname mo), beam duplication-and-import-followups (P2) is nearly done and waits only on one member task and the operator's manual PR review.\nThe operator wants to start a new piece of work (porting a colleague's rheology and PVT branch) that builds on P2's code but should land through its own project, not grow P2's PR to main.\nThe natural move is to spawn the task from P2, so it starts on P2's code, and re-parent it to main or to a new beam before it lands, once P2 has landed.\nlym has no way to do this:\n\n- A claimed board entry refuses every edit but its status, so its project field cannot move.\n- The batten run and the fabric pair record the parent branch at Worktree-Create, and Finalize lands into that parent and takes its parent lock.\n- The beam's Beam-Await waits for every member, so P2 cannot land while that task runs.\n\nHand-editing the board JSON, the batten record and the pair's parent together while a dobby reads them risks a half-changed state, and the orch role forbids those edits.\n\n## Workaround\n\nMake a new beam from main, merge the old beam's branch into it with lym fabric merge-in, and spawn the task there; merge the old beam in again as it changes, and expect conflicts when the old beam lands in main as a squash commit, since git no longer sees its commits.\n\n## Expected\n\nA verb such as 'lym batten reparent \u003cslug\u003e --to \u003cbeam|root\u003e' that moves a task, held or not, to another parent in one step: the board project field, the batten and pair parent records, the old beam's member list (so its Beam-Await no longer waits for it) and the new parent's; refused when the new parent's branch does not contain the commits the task branch was forked from, or with a merge of the new parent at its next Parent-Align.",
       "created": "2026-11-05T05:50:49Z",
       "revised": "2026-11-05T05:50:49Z"
+    },
+    {
+      "id": 1121,
+      "handle": "B12",
+      "slug": "beam-landing-orch-and-unready",
+      "title": "A beam in landing cannot get its orch back after a restart, and a ready flag cannot be withdrawn",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "pawl",
+        "landing",
+        "orch",
+        "fabric"
+      ],
+      "issues": [
+        47
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #47](https://github.com/Knatte18/loomyard/issues/47).\n\n## What happened\n\nHub NORCE-DrillingAndWells/Models, beam `duplication-and-import-followups`, flagged with `lym beam ready`; its pawl run went to PR-Review and opened PR #267.\nThe beam's orch kept running through PR-Review. The machine was then restarted.\n\n1. `lym beam start` in the beam refused: \"beam ... is held by its landing run (status running · PR-Review); way forward: ... run lym beam start again once the landing has ended\". The orch that ran before the restart cannot come back, although lym let it run during the same landing.\n2. The PR-Review reviewer session died with the restart. On the dobby's re-invoke, PR-Review's push of the task branch hit `fabric.push.lock still held after 30s` (a push the restart left running) and the row blocked, so no new reviewer started.\n3. The operator then decided not to land yet and to add one more task to the beam. lym has no verb that withdraws a beam's ready flag or a landing in progress. The workaround was `lym loom goto --to Beam-Await` plus `lym loom resume` in the beam, closing the PR by hand with gh, and keeping the ready record in place, so the beam's dobby will land the beam again as soon as no work remains under it.\n\n## Expected\n\n- `lym beam start` brings back the orch of a beam in landing, as the landing tolerates a live one, at least up to Finalize.\n- A verb to withdraw a ready flag or a pending landing (e.g. `lym beam unready \u003cslug\u003e`), which takes the pawl run back to Beam-Await and closes the landing's pull request.\n- PR-Review waits longer for, or recognises as stale, a push lock held by a push from before a restart.",
+      "created": "2026-11-05T05:50:51Z",
+      "revised": "2026-11-05T05:50:51Z"
     }
   ],
   "prime_owner": "neve",
