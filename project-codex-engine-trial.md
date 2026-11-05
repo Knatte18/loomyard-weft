@@ -52,7 +52,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B2 |  | **A Codex writer in a pair worktree cannot commit: the git dir is outside its sandbox roots**<br>• git index.lock under the main checkout .git/worktrees is read-only in workspace-write, so codex-greet stopped at Darn-Write | [`codex-writer-cannot-commit`](design-codex-writer-cannot-commit.md) | 19m<br>19m | codex, shuttle |
+| B2 |  | **A Codex writer in a pair worktree cannot commit: the git dir is outside its sandbox roots**<br>• git index.lock under the main checkout .git/worktrees is read-only in workspace-write, so codex-greet stopped at Darn-Write | [`codex-writer-cannot-commit`](design-codex-writer-cannot-commit.md) | 20m<br>20m | codex, shuttle |
 
 ### Features (2)
 
