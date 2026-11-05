@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-05 06:58 UTC; every age below is as of then.
+Rendered 2026-11-05 06:59 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | Code-Burler-Review | neve | 17h<br>16h | fabric, loom |
+| T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | Code-Burler-Fix | neve | 17h<br>16h | fabric, loom |
 
 ### Ready (0)
 
@@ -33,7 +33,7 @@ Waits only on Running, Ready or Draft entries.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Teardown removes the whole worktree directory, and a gone pair blocks no board edit**<br>• Worktree-Teardown and fabric remove delete leftover build output; has-a-pair and batten cancel treat a non-git directory as no pair | [`teardown-gone-pair`](design-teardown-gone-pair.md) | darn · light | T7 | 1h<br>1h | batten, fabric, board |
-| T8 | **The beam orch drives the merge-in, pull request and review of its beam inside Beam-Await**<br>• Pawl drops Parent-Align, Beam-Describe and PR-Review; the beam orch opens and closes the PR, merges the parent in and runs lym beam ready | [`pawl-orch-landing`](design-pawl-orch-landing.md) | tapestry · solid | T7 | 1h<br>57m | pawl, landing, orch, workspaces, fabric |
+| T8 | **The beam orch drives the merge-in, pull request and review of its beam inside Beam-Await**<br>• Pawl drops Parent-Align, Beam-Describe and PR-Review; the beam orch opens and closes the PR, merges the parent in and runs lym beam ready | [`pawl-orch-landing`](design-pawl-orch-landing.md) | tapestry · solid | T7 | 1h<br>58m | pawl, landing, orch, workspaces, fabric |
 
 ### Draft (2)
 
@@ -41,7 +41,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Template changes reach seed-only hub config, and light gets the lens fan back**<br>• Reconcile carries template changes into seed-only hub files like profiles.yaml while keeping hand-set values; light drops its solo code review | [`profiles-follow-template`](design-profiles-follow-template.md) | darn · solid |  | 14m<br>14m | profiles, config, reconcile |
+| T3 | `draft` **Template changes reach seed-only hub config, and light gets the lens fan back**<br>• Reconcile carries template changes into seed-only hub files like profiles.yaml while keeping hand-set values; light drops its solo code review | [`profiles-follow-template`](design-profiles-follow-template.md) | darn · solid |  | 15m<br>15m | profiles, config, reconcile |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light |  | 4d<br>16h | fabric |
 
 ## Notes (31)
@@ -105,4 +105,4 @@ Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T9 | **A test leaves an empty /tmp/.git, which breaks go VCS stamping**<br>• An empty /tmp/.git appeared during a tier1 run and failed TestPrebuildLym; find the leaker and guard against writes outside t.TempDir | [`tmp-git-leak`](design-tmp-git-leak.md) | 16h<br>55m | testkit, gate |
+| T9 | **A test leaves an empty /tmp/.git, which breaks go VCS stamping**<br>• An empty /tmp/.git appeared during a tier1 run and failed TestPrebuildLym; find the leaker and guard against writes outside t.TempDir | [`tmp-git-leak`](design-tmp-git-leak.md) | 16h<br>56m | testkit, gate |
