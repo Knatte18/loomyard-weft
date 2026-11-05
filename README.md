@@ -64,11 +64,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 2d<br>1h | shuttle, codex, loom |
 
-## [P0 Root: entries under no project](project-root.md) (33)
+## [P0 Root: entries under no project](project-root.md) (29)
 
 Owner `neve`
 
-### Tasks (6)
+### Tasks (11)
 
 Concrete and claimable; only a task can run.
 
@@ -95,7 +95,7 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **Dobby reminds the operator on Slack of a run waiting at PR-Review or Sampler-Session** | [`slack-wait-reminders`](design-slack-wait-reminders.md)<br>[Sketch](decision-slack-wait-reminders.md) | darn · light | T5 | 2h<br>2h | reed |
 
-#### Draft (3)
+#### Draft (8)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -103,9 +103,14 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **beam merge-parent: the merge-in task can merge, lands as a merge and needs no pull request** | [`merge-parent-lands-right`](design-merge-parent-lands-right.md) | darn · solid | T7 | 1m<br>0m | pawl, darn, landing, fabric |
 | T2 | `draft` **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | T5 | 59m<br>59m | creel, orch |
+| T3 | `draft` **Webster refusals: short texts, the right cause and a real way forward** | [`webster-refusal-texts`](design-webster-refusal-texts.md) | darn · solid |  | 1m<br>0m | webster, quarry |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T7 | 5d<br>5h | fabric |
+| T8 | `draft` **Raddle and motif runs start and finish without the orch** | [`raddle-motif-finish-clean`](design-raddle-motif-finish-clean.md) | darn · solid | T7 | 1h<br>0m | batten, dobby, loom, board, orch |
+| T9 | `draft` **fabric clone --reset removes the hub before refusing a mismatched --shortname** | [`clone-reset-deletes-first`](design-clone-reset-deletes-first.md) | darn · solid |  | 1m<br>0m | fabric |
+| T10 | `draft` **Scope plugins, skills and connectors per role, in every hub**<br>• lym gives each session only the plugins and skills its role needs, ly included in other hubs, and turns off connectors and unused listings | [`ly-plugin-off-in-other-hubs`](design-ly-plugin-off-in-other-hubs.md) | darn · solid |  | 42m<br>0m | shuttle |
+| T11 | `draft` **A parent cannot withdraw a PATTERN change the decision record declares**<br>• lym loom decision add only appends PATTERN bullets; a declared id the parent drops needs a hand edit of the record | [`decision-withdraw-pattern`](design-decision-withdraw-pattern.md) | darn · light | T7 | 1h<br>0m | loom, parsers, pattern |
 
-### Notes (27)
+### Notes (18)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -116,21 +121,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R2 |  | **Re-measure writer exploration and the carry of lookup results after the Discussion stencil change**<br>• Re-run the writer-lookups measurement on 10 tapestry runs, pricing the carry saved by early explore subagents | [`writer-lookups-remeasure`](design-writer-lookups-remeasure.md) | 1d<br>1h | loom, stencil |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>1h | loom, stencil |
 
-#### Bugs (11)
+#### Bugs (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 | L | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• Not a problem now; if built, only after F6 Slack relay, as a Slack reminder ping while a PR-Review waits on the operator | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 1d<br>1h | landing, loom, batten |
-| B3 |  | **A finished motif whose Sketch the board refuses stays a draft task with no notice to the orch**<br>• The refusal only logs a Warn; the orch learns of it from a tidy report | [`motif-sketch-refusal-silent`](design-motif-sketch-refusal-silent.md) | 1h<br>1h | loom, board, orch |
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 1h<br>1h | reed, orch |
-| B5 |  | **A parent cannot withdraw a PATTERN change the decision record declares**<br>• lym loom decision add only appends PATTERN bullets; a declared id the parent drops needs a hand edit of the record | [`decision-withdraw-pattern`](design-decision-withdraw-pattern.md) | 1h<br>1h | loom, parsers, pattern |
-| B6 |  | **Raddle on a Sketch fails to start because the motif run that made it already completed under the same slug**<br>• Dobby refuses the raddle run until lym batten cleanup --apply removes the motif run dir | [`raddle-same-slug-completed`](design-raddle-same-slug-completed.md) | 1h<br>1h | batten, dobby, loom |
-| B7 |  | **A finished raddle run fails its batten run at Run-Shed** | [`raddle-end-fails-batten`](design-raddle-end-fails-batten.md) | 58m<br>58m | batten |
-| B8 |  | **Scope plugins, skills and connectors per role, in every hub**<br>• lym gives each session only the plugins and skills its role needs, ly included in other hubs, and turns off connectors and unused listings | [`ly-plugin-off-in-other-hubs`](design-ly-plugin-off-in-other-hubs.md) | 42m<br>40m | shuttle |
-| B10 |  | **webster recover-batch refuses with a way forward that names recover-batch itself** | [`recover-batch-self-way-forward`](design-recover-batch-self-way-forward.md) | 1m<br>1m | webster |
-| B11 |  | **webster record-batch: create-not-done refusal lists every searched file and reports a signature mismatch as a missing member** | [`record-batch-signature-mismatch`](design-record-batch-signature-mismatch.md) | 1m<br>1m | webster, quarry |
-| B12 |  | **fabric clone --reset removes the hub before refusing a mismatched --shortname** | [`clone-reset-deletes-first`](design-clone-reset-deletes-first.md) | 1m<br>1m | fabric |
-| B14 |  | **webster refusal text repeats the full unit file list and every declaration site for each unresolved target** | [`webster-refusal-file-lists`](design-webster-refusal-file-lists.md) | 1m<br>1m | webster, quarry |
 
 #### Enhancements (3)
 

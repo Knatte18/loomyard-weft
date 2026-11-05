@@ -546,26 +546,6 @@
       "discussed": true
     },
     {
-      "id": 1142,
-      "handle": "B3",
-      "slug": "motif-sketch-refusal-silent",
-      "title": "A finished motif whose Sketch the board refuses stays a draft task with no notice to the orch",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "loom",
-        "board",
-        "orch"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The refusal only logs a Warn; the orch learns of it from a tidy report",
-      "body": "## Seen (orch, 2026-11-05)\n\nThe motif run `creel-cross-hub-mail` ended at 16:33 UTC with its decision record stored and its pair torn down.\n`sketchFinish` in `internal/loomcli/wiring.go` could not make the entry a Sketch, since `slack-relay` depends on it, so it left the entry a draft task with `discussed: true` and logged a Warn.\nNo mail reached the orch; the orch learned of it from dobby's board tidy report an hour later.\n\n## Idea\n\nWhen the board refuses the Sketch, mail the run's parent naming the refusal, the entries that depend on the entry, and the way forward: drop or move those dependencies and make it a Sketch, or set recipe raddle on the discussed task.\n",
-      "created": "2026-11-05T17:04:32Z",
-      "revised": "2026-11-05T17:04:32Z"
-    },
-    {
       "id": 1143,
       "handle": "B4",
       "slug": "prime-stray-bash-window",
@@ -586,10 +566,10 @@
     },
     {
       "id": 1144,
-      "handle": "B5",
+      "handle": "T11",
       "slug": "decision-withdraw-pattern",
       "title": "A parent cannot withdraw a PATTERN change the decision record declares",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "loom",
@@ -597,32 +577,17 @@
         "pattern"
       ],
       "issues": [],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "drift-rework"
+      ],
       "isolated": false,
       "brief": "lym loom decision add only appends PATTERN bullets; a declared id the parent drops needs a hand edit of the record",
       "body": "## Seen (orch, 2026-11-05)\n\nThe `slack-relay` record, filed by raddle, declared `PATTERN-reap-children` (changes) and `PATTERN-slack-boundary` (adds), while its Delivers line folded both into the live clusters `PATTERN-child-processes` and `PATTERN-agent-addressing`.\nThe parent recorded the two cluster changes with `lym loom decision add`, but the plan gate (`internal/loomshed/patternplan.go`: `pattern-line-unprescribed`, `pattern-changes-mismatch`) still demanded lines for the old ids, since `decision add` only appends and a `removes` action means removing a PATTERN.md entry.\nWith the operator's leave the orch deleted the two bullets from the record by hand, committed in the weft and ran `lym loom decision store`.\n\n## Idea\n\nA `lym loom decision add` option that withdraws a declared PATTERN change, striking its bullet in the same commit as the decision that says so; and raddle, when it maps a Sketch id onto a live cluster, writes the part record's `## PATTERN changes` under the cluster ids, so the conflict never reaches Plan.\n",
+      "status": "draft",
       "created": "2026-11-05T17:24:02Z",
-      "revised": "2026-11-05T17:24:02Z"
-    },
-    {
-      "id": 1145,
-      "handle": "B6",
-      "slug": "raddle-same-slug-completed",
-      "title": "Raddle on a Sketch fails to start because the motif run that made it already completed under the same slug",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "batten",
-        "dobby",
-        "loom"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Dobby refuses the raddle run until lym batten cleanup --apply removes the motif run dir",
-      "body": "## Seen (orch, 2026-11-05, twice)\n\nPromoting a Sketch gives the same entry recipe raddle under the same slug.\nFor `reed-slack-relay` and again for `creel-cross-hub-mail`, dobby could not start the raddle run: battencli reported the slug `has already completed` and named `lym batten cleanup --apply`, since the motif run that made the Sketch left its run directory under `_lym/shed/\u003cslug\u003e`.\nThe orch ran the cleanup each time and released the task again.\n\n## Idea\n\nThe promotion of a Sketch to raddle, or batten at Seed of a raddle run, clears the finished motif run's directory of that slug, as the cleanup does, so the raddle run starts with no hand step.\n",
-      "created": "2026-11-05T17:24:17Z",
-      "revised": "2026-11-05T17:24:17Z"
+      "revised": "2026-11-05T19:00:17Z",
+      "profile": "light"
     },
     {
       "id": 1146,
@@ -650,88 +615,32 @@
       "discussed": true
     },
     {
-      "id": 1147,
-      "handle": "B7",
-      "slug": "raddle-end-fails-batten",
-      "title": "A finished raddle run fails its batten run at Run-Shed",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "batten"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nRaddle on creel-cross-hub-mail filed its entry and ended at Raddle-File, which marks the Sketch entry done. Batten then failed at Run-Shed with \"origin ended ... (it landed and its board entry is done); run lym cleanup --apply\" and the shed driver asked the orch to run it, instead of going on through Land and Worktree-Teardown. `lym batten status` gave a contradicting hint (`child_done_batten_halted`: run `lym batten run`).\n\n## Workaround\n\n`lym cleanup --apply` from the prime, then `lym batten cancel \u003cslug\u003e`.\n\n## Expected\n\nA raddle run that filed its parts goes through Land and Worktree-Teardown like any finished run, with no orch turn.",
-      "created": "2026-11-05T18:01:16Z",
-      "revised": "2026-11-05T18:01:16Z"
-    },
-    {
       "id": 1148,
-      "handle": "B8",
+      "handle": "T10",
       "slug": "ly-plugin-off-in-other-hubs",
       "title": "Scope plugins, skills and connectors per role, in every hub",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "shuttle"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "lym gives each session only the plugins and skills its role needs, ly included in other hubs, and turns off connectors and unused listings",
       "body": "## Seen\n\nIn the scribe hub (2026-11-05) the orch failed `Skill(ly:board)` with \"Unknown skill\", and shuttle logged `skill skipped ... ly:board cause=unknown`.\nThe user settings set `ly@loomyard: false`; only loomyard's own checked-in `.claude/settings.json` turns it on, so every other hub (quarry, scribe, lyt, cs) starts its orch and agents without the ly plugin.\nMeanwhile every session, in every hub, loads plugins, skills and connectors it never uses: report `docs/research/tokens/startup-context-2026-11-05/report.md` puts that at about 11,000 tokens per spawned role and 7,900 per orch start.\n\n## Decision (operator, 2026-11-05)\n\nPlugins and skills are available only where they are needed, scoped down hard.\nlym, not the hub's repository, decides what each session gets, through the settings file shuttle already writes and passes with `--settings` (`internal/shuttleengine/claudeengine`); no file is added to any hub's repository.\n\n## Change\n\n- Each role gets an explicit allowlist of plugins and skills; everything else is off for that session, whatever the user settings or the repository's `.claude/settings.json` say.\n  - `ly@loomyard` is on for the orch and the board session in every hub, and off for roles that do not use its skills (writers, reviewers, fixers, Webster, drivers, unless one does).\n  - scribe skills: only those the role's stencil and `language.yaml` preload; the other languages' skills are off.\n  - `prowler` off unless a role uses it.\n- Off for every session: claude.ai connectors (`disableClaudeAiConnectors`), the `anthropic-skills` listing (`skillOverrides`), bundled skills (`disableBundledSkills`, the orch may keep `update-config` only if needed).\n- Auto-memory off for spawned roles (`autoMemoryEnabled: false`); the orch keeps it.\n- `--disallowedTools ListAgents` for spawned roles.\n- Verify in a launch that each lever works as the report's table says (none was tried there), and measure one spawned role's and the orch's start load after the change.\n- A test checks the written settings per role.\n",
+      "status": "draft",
       "created": "2026-11-05T18:17:31Z",
-      "revised": "2026-11-05T18:20:02Z"
-    },
-    {
-      "id": 1151,
-      "handle": "B10",
-      "slug": "recover-batch-self-way-forward",
-      "title": "webster recover-batch refuses with a way forward that names recover-batch itself",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster"
-      ],
-      "issues": [
-        62
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #62](https://github.com/Knatte18/loomyard/issues/62).\n\nWhat happened: a batch whose cards named create targets in one package (a unit, a plan member set and a template file) failed record-batch with batch_failed and create-not-done blocking findings, because the implementer built the code in a different package to avoid an import cycle. The refusal's way forward was 'lym webster recover-batch 07'. Running recover-batch 07 refused with the same findings and the same way forward 'lym webster recover-batch 07'. The run then halted as blocked with anomaly escalation-to-human.\n\nWhy it is abnormal: the way forward points at the verb that just refused, so it is a dead end. When the code legitimately lives somewhere other than the card's create target, no verb in the refusal's guidance lets the operator or Webster amend, retarget or waive the create target. Recovery only repeats the same check against the same stale targets.\n\nWhat to do: when recover-batch refuses on the same findings as the failed record-batch, name a different way forward (for example amend the card's create targets, or escalate with the exact decision needed). Consider a supported verb to retarget a create target when the implementer relocated the unit.\n\nProvenance: task raddle-recipe; notes loom-halt.md, webster-refusal-record-batch.md, webster-refusal-recover-batch.md.",
-      "created": "2026-11-05T18:58:41Z",
-      "revised": "2026-11-05T18:58:41Z"
-    },
-    {
-      "id": 1152,
-      "handle": "B11",
-      "slug": "record-batch-signature-mismatch",
-      "title": "webster record-batch: create-not-done refusal lists every searched file and reports a signature mismatch as a missing member",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster",
-        "quarry"
-      ],
-      "issues": [
-        61
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #61](https://github.com/Knatte18/loomyard/issues/61).\n\nWhat happened: `lym webster record-batch` refused a batch because a card's create target (a test method written with a parameter list) did not resolve. quarry answered not_found with the text 'the unit exists and the member is missing'. The refusal then appended, in one line, the full list of every file quarry searched in the unit (hundreds of paths), and only at the very end said the member is declared in one file with a different parameter list than the target named.\n\nWhy abnormal: (1) The member exists; only the parameter signature differs, yet the primary message says it is missing, which misdirects the reader. (2) The searched-file list is unbounded and buries the one actionable fact (the declared signature) at the end of a very long line. (3) The way forward given was only `lym webster recover-batch \u003cn\u003e`, which does not tell the card author that the card's create target needs its signature corrected.\n\nWhat to do: when the member name resolves but the signature differs, report a distinct 'signature mismatch' result that leads with the declared signature and file. Cap or omit the searched-file list (name the count, or the unit, instead). Name the corrective step (fix the card's target signature) next to the recover-batch hint.\n\nProvenance: task slug knut-herschel-bulkley; notes: webster-refusal-record-batch.md",
-      "created": "2026-11-05T18:58:44Z",
-      "revised": "2026-11-05T18:58:44Z"
+      "revised": "2026-11-05T19:00:16Z",
+      "profile": "solid"
     },
     {
       "id": 1153,
-      "handle": "B12",
+      "handle": "T9",
       "slug": "clone-reset-deletes-first",
       "title": "fabric clone --reset removes the hub before refusing a mismatched --shortname",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "fabric"
@@ -739,33 +648,15 @@
       "issues": [
         67
       ],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #67](https://github.com/Knatte18/loomyard/issues/67).\n\nSeen: `lym fabric clone --reset --into ~/Code/Knatte18 --shortname scribe https://github.com/Knatte18/scribe-weft https://github.com/Knatte18/scribe` on an existing hub (old layout with _board) failed with 'this repo's recorded shortname is \"scr\", not \"scribe\"; refusing to change it', but its envelope reported mutation path_removed '.' recursive and partial: true: the whole existing hub directory was already deleted when the refusal came.\n\nWorkaround: rerun `lym fabric clone` without --reset and without --shortname; the hub came back from its remotes. Nothing was lost only because every branch was pushed.\n\nExpected: --reset validates every argument against the remotes (shortname, binding) before removing anything, so a refusal leaves the existing hub untouched.",
+      "status": "draft",
       "created": "2026-11-05T18:58:49Z",
-      "revised": "2026-11-05T18:58:49Z"
-    },
-    {
-      "id": 1155,
-      "handle": "B14",
-      "slug": "webster-refusal-file-lists",
-      "title": "webster refusal text repeats the full unit file list and every declaration site for each unresolved target",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster",
-        "quarry"
-      ],
-      "issues": [
-        63
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #63](https://github.com/Knatte18/loomyard/issues/63).\n\nWhat happened: the webster refusal for record-batch and recover-batch on a batch with several unresolved create targets printed, per target, the complete list of files quarry searched in the unit plus every package in the repo that declares a member of the same name. The unit file list is identical for every target and is repeated for each one. Common names such as Config or LoadConfig produce a long list of unrelated declaring packages. The result is a multi-kilobyte single-line error, written again into the friction note and the loom halt reason context.\n\nWhy it is abnormal: the repeated, unrelated detail buries the actionable part (which targets did not resolve) and inflates every note and agent context that carries the refusal.\n\nWhat to do: list the searched files once per unit rather than per target, cap the declaring-sites list (for example to the nearest few or those in the same parent directory), and keep the one-line per target finding first.\n\nProvenance: task raddle-recipe; notes webster-refusal-record-batch.md, webster-refusal-recover-batch.md.",
-      "created": "2026-11-05T18:58:55Z",
-      "revised": "2026-11-05T18:58:55Z"
+      "revised": "2026-11-05T19:00:16Z",
+      "profile": "solid"
     },
     {
       "id": 1156,
@@ -795,6 +686,59 @@
       "status": "draft",
       "created": "2026-11-05T18:58:34Z",
       "revised": "2026-11-05T19:00:15Z",
+      "profile": "solid"
+    },
+    {
+      "id": 1157,
+      "handle": "T3",
+      "slug": "webster-refusal-texts",
+      "title": "Webster refusals: short texts, the right cause and a real way forward",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "webster",
+        "quarry"
+      ],
+      "issues": [
+        62,
+        61,
+        63
+      ],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## From note recover-batch-self-way-forward\n\nImported from [issue #62](https://github.com/Knatte18/loomyard/issues/62).\n\nWhat happened: a batch whose cards named create targets in one package (a unit, a plan member set and a template file) failed record-batch with batch_failed and create-not-done blocking findings, because the implementer built the code in a different package to avoid an import cycle. The refusal's way forward was 'lym webster recover-batch 07'. Running recover-batch 07 refused with the same findings and the same way forward 'lym webster recover-batch 07'. The run then halted as blocked with anomaly escalation-to-human.\n\nWhy it is abnormal: the way forward points at the verb that just refused, so it is a dead end. When the code legitimately lives somewhere other than the card's create target, no verb in the refusal's guidance lets the operator or Webster amend, retarget or waive the create target. Recovery only repeats the same check against the same stale targets.\n\nWhat to do: when recover-batch refuses on the same findings as the failed record-batch, name a different way forward (for example amend the card's create targets, or escalate with the exact decision needed). Consider a supported verb to retarget a create target when the implementer relocated the unit.\n\nProvenance: task raddle-recipe; notes loom-halt.md, webster-refusal-record-batch.md, webster-refusal-recover-batch.md.\n\n## From note record-batch-signature-mismatch\n\nImported from [issue #61](https://github.com/Knatte18/loomyard/issues/61).\n\nWhat happened: `lym webster record-batch` refused a batch because a card's create target (a test method written with a parameter list) did not resolve. quarry answered not_found with the text 'the unit exists and the member is missing'. The refusal then appended, in one line, the full list of every file quarry searched in the unit (hundreds of paths), and only at the very end said the member is declared in one file with a different parameter list than the target named.\n\nWhy abnormal: (1) The member exists; only the parameter signature differs, yet the primary message says it is missing, which misdirects the reader. (2) The searched-file list is unbounded and buries the one actionable fact (the declared signature) at the end of a very long line. (3) The way forward given was only `lym webster recover-batch \u003cn\u003e`, which does not tell the card author that the card's create target needs its signature corrected.\n\nWhat to do: when the member name resolves but the signature differs, report a distinct 'signature mismatch' result that leads with the declared signature and file. Cap or omit the searched-file list (name the count, or the unit, instead). Name the corrective step (fix the card's target signature) next to the recover-batch hint.\n\nProvenance: task slug knut-herschel-bulkley; notes: webster-refusal-record-batch.md\n\n## From note webster-refusal-file-lists\n\nImported from [issue #63](https://github.com/Knatte18/loomyard/issues/63).\n\nWhat happened: the webster refusal for record-batch and recover-batch on a batch with several unresolved create targets printed, per target, the complete list of files quarry searched in the unit plus every package in the repo that declares a member of the same name. The unit file list is identical for every target and is repeated for each one. Common names such as Config or LoadConfig produce a long list of unrelated declaring packages. The result is a multi-kilobyte single-line error, written again into the friction note and the loom halt reason context.\n\nWhy it is abnormal: the repeated, unrelated detail buries the actionable part (which targets did not resolve) and inflates every note and agent context that carries the refusal.\n\nWhat to do: list the searched files once per unit rather than per target, cap the declaring-sites list (for example to the nearest few or those in the same parent directory), and keep the one-line per target finding first.\n\nProvenance: task raddle-recipe; notes webster-refusal-record-batch.md, webster-refusal-recover-batch.md.\n\n",
+      "status": "draft",
+      "created": "2026-11-05T18:58:41Z",
+      "revised": "2026-11-05T19:00:16Z",
+      "profile": "solid"
+    },
+    {
+      "id": 1158,
+      "handle": "T8",
+      "slug": "raddle-motif-finish-clean",
+      "title": "Raddle and motif runs start and finish without the orch",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "batten",
+        "dobby",
+        "loom",
+        "board",
+        "orch"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "drift-rework"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "## From note raddle-same-slug-completed\n\n### Seen (orch, 2026-11-05, twice)\n\nPromoting a Sketch gives the same entry recipe raddle under the same slug.\nFor `reed-slack-relay` and again for `creel-cross-hub-mail`, dobby could not start the raddle run: battencli reported the slug `has already completed` and named `lym batten cleanup --apply`, since the motif run that made the Sketch left its run directory under `_lym/shed/\u003cslug\u003e`.\nThe orch ran the cleanup each time and released the task again.\n\n### Idea\n\nThe promotion of a Sketch to raddle, or batten at Seed of a raddle run, clears the finished motif run's directory of that slug, as the cleanup does, so the raddle run starts with no hand step.\n\n\n## From note raddle-end-fails-batten\n\n### Seen\n\nRaddle on creel-cross-hub-mail filed its entry and ended at Raddle-File, which marks the Sketch entry done. Batten then failed at Run-Shed with \"origin ended ... (it landed and its board entry is done); run lym cleanup --apply\" and the shed driver asked the orch to run it, instead of going on through Land and Worktree-Teardown. `lym batten status` gave a contradicting hint (`child_done_batten_halted`: run `lym batten run`).\n\n### Workaround\n\n`lym cleanup --apply` from the prime, then `lym batten cancel \u003cslug\u003e`.\n\n### Expected\n\nA raddle run that filed its parts goes through Land and Worktree-Teardown like any finished run, with no orch turn.\n\n## From note motif-sketch-refusal-silent\n\n### Seen (orch, 2026-11-05)\n\nThe motif run `creel-cross-hub-mail` ended at 16:33 UTC with its decision record stored and its pair torn down.\n`sketchFinish` in `internal/loomcli/wiring.go` could not make the entry a Sketch, since `slack-relay` depends on it, so it left the entry a draft task with `discussed: true` and logged a Warn.\nNo mail reached the orch; the orch learned of it from dobby's board tidy report an hour later.\n\n### Idea\n\nWhen the board refuses the Sketch, mail the run's parent naming the refusal, the entries that depend on the entry, and the way forward: drop or move those dependencies and make it a Sketch, or set recipe raddle on the discussed task.\n\n\n",
+      "status": "draft",
+      "created": "2026-11-05T17:04:32Z",
+      "revised": "2026-11-05T19:00:16Z",
       "profile": "solid"
     }
   ],
