@@ -1,6 +1,6 @@
 {
   "runGuid": "7a9a5588c121f4dc0797c48709cc1c8e",
-  "planFingerprint": "ae836d23a39560b86b33831a90acc87d8194cb46704da1994a1e25eb3e792a9f",
+  "planFingerprint": "650b7ac6a551c7844ecf40e5504906ef862fcb0260b5fec32d7886757f5a3861",
   "planFileHashes": {
     "00-overview.md": "606537116b951080b215656481da4eb0d1d5b0555deb8a08dce5b8deef7f76f2",
     "01-shuttle-usage-split.md": "691f172b6dec3e71bafe7e0cbc050e69d7224ab06aed6cf8bfda3d884f47316b",
@@ -26,8 +26,8 @@
     "21-raddle-write-producer.md": "1b6339a548af958ae4f5e190ecdee17984e130a72daa3d4dd921b5312a52e3a8",
     "22-raddle-file-producer.md": "81b470dff81064b4840d1781f70ccd4ddf2c1ac6c89e54e629864ec53c206660",
     "23-raddle-recipe.md": "5ede1fd596ff0a293db5104770129de45dfefdd288ecfcc5543860f854e467fc",
-    "24-batten-raddle-start-guard.md": "e58b8f65932aa36de524d91df0b9b1694f9aca5a168728e046e8cc74a24164c1",
-    "25-pawl-raddle-handoff.md": "e7f6ab35065710e74803f68042fdd6b855f6514a66a43818281d64ab01004f99",
+    "24-batten-raddle-start-guard.md": "56f77fae39f7997c34677e892f7220178de27cc97eec00338ad5258db1b707c9",
+    "25-pawl-raddle-handoff.md": "97ce55342e69bece1435d2b107aea7ec47fcd8d3cb53dfd8c5c8efe8cb15dd87",
     "26-report-raddle.md": "dc2e731424d4d8f91cd6c85104516d9e647c846b77d74de1a22744705d158f8d",
     "27-raddle-docs.md": "4e3a1c10cb3d496987bb4136673bfecbc98e78332518172f01ea7fb0b00d8ca6"
   },
@@ -661,7 +661,7 @@
       }
     }
   ],
-  "currentBatch": 24,
+  "currentBatch": 0,
   "masterStrand": "dd16c882ad00ef2ad3da669398a0b698",
   "masterSessionId": "46bcafb1-5b55-422f-b4b9-8099327fe599",
   "masterEngine": "claude",
@@ -873,16 +873,37 @@
         "25-pawl-raddle-handoff"
       ],
       "cardHashes": {
-        "24-batten-raddle-start-guard": "e58b8f65932aa36de524d91df0b9b1694f9aca5a168728e046e8cc74a24164c1",
-        "25-pawl-raddle-handoff": "e7f6ab35065710e74803f68042fdd6b855f6514a66a43818281d64ab01004f99"
+        "24-batten-raddle-start-guard": "56f77fae39f7997c34677e892f7220178de27cc97eec00338ad5258db1b707c9",
+        "25-pawl-raddle-handoff": "97ce55342e69bece1435d2b107aea7ec47fcd8d3cb53dfd8c5c8efe8cb15dd87"
       },
       "startSha": "35985ae74da101ebf024e3fc7b45e911e72c6162",
       "kind": "fork",
       "spawnedAt": "2026-11-05T12:50:07Z",
       "sessionId": "46bcafb1-5b55-422f-b4b9-8099327fe599",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "24-batten-raddle-start-guard",
+        "status": "done",
+        "head_sha": "56c68ed62f3ac6e6b7cda75f188a9cf7c4501091",
+        "deviations": [
+          "internal/battencli/startguard.go",
+          "internal/battencli/wire_seams_test.go",
+          "internal/loomcli/wiring_seams_test.go",
+          "internal/pawlengine/beamup.go",
+          "internal/pawlengine/world_test.go"
+        ]
+      },
+      "cardShas": [
+        "56c68ed62f3ac6e6b7cda75f188a9cf7c4501091"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/46bcafb1-5b55-422f-b4b9-8099327fe599/subagents/agent-a548880b9feed8ec4.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/46bcafb1-5b55-422f-b4b9-8099327fe599/subagents/agent-a548880b9feed8ec4.jsonl"
+      ]
     },
     "5": {
       "slug": "usage-wiring",
@@ -999,6 +1020,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/7c8333ff-47b7-4804-bb88-3066d2caf642/subagents/agent-ab8364109d32bf43c.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/46bcafb1-5b55-422f-b4b9-8099327fe599/subagents/agent-a40411bce4ae38514.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/46bcafb1-5b55-422f-b4b9-8099327fe599/subagents/agent-a08da3d042407ae6e.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/46bcafb1-5b55-422f-b4b9-8099327fe599/subagents/agent-ad8d43df85ad9d528.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/46bcafb1-5b55-422f-b4b9-8099327fe599/subagents/agent-ad8d43df85ad9d528.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-raddle-recipe/46bcafb1-5b55-422f-b4b9-8099327fe599/subagents/agent-a548880b9feed8ec4.jsonl"
   ]
 }

@@ -1,8 +1,8 @@
 # Card 24 — batten-raddle-start-guard
 
 **Create:**
-- `plan:internal/battencli#raddleStartRefusal` -> `func raddleStartRefusal(entry boardengine.Task, recordStored bool, store boardengine.RaddleStore) error`
-- `plan:internal/battencli#TestRaddleStartRefusal` -> `func TestRaddleStartRefusal(t *testing.T)`
+- `internal/battencli#raddleStartRefusal`
+- `internal/battencli#TestRaddleStartRefusal`
 
 **Edit:**
 - `internal/battencli#startGuard`

@@ -1,9 +1,9 @@
 # Card 25 — pawl-raddle-handoff
 
 **Create:**
-- `plan:internal/loomcli#raddleHandOff` -> `func raddleHandOff(location *lymcwd.Location, project string) (line string, found bool, err error)`
-- `plan:internal/loomcli#TestRaddleHandOff` -> `func TestRaddleHandOff(t *testing.T)`
-- `plan:internal/pawlengine#HandOffMarkerName` -> `const HandOffMarkerName = "handoff-sent"`
+- `internal/loomcli#raddleHandOff`
+- `internal/loomcli#TestRaddleHandOff`
+- `internal/pawlengine#HandOffMarkerName`
 
 **Edit:**
 - `internal/hubgeom#PawlPaths`
