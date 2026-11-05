@@ -545,7 +545,7 @@
       "isolated": false,
       "brief": "Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym",
       "body": "## Seen (operator and hub orch, 2026-11-04)\n\nLock files live beside the files they guard inside tracked trees, kept out of git only by `*.lock` and `*.swaplock` patterns in `.git/info/exclude`.\nRunning task wefts hold `_lym/reviews/code/generation-record.json.lock`, `settle-record.json.lock` and `settle-record.patch.lock`; the Bolt checkout holds `board.lock`, `board.json.swaplock`, `board.push.lock` and `.gitrepo-push.lock`.\nThe pattern is general: many state files take their lock as `path + \".lock\"` (`state.ReadJSON(path, path+\".lock\")` across `fabricengine`, `shuttleengine`, `reedengine`, `adoptcli`, the review-record writers in `shedadapters` and `sheddriver`, and others).\n\nThe operator's rule: `_lym/` is what git tracks and `.lym/` is machine-local, so a lock file, being machine-local, never lives under `_lym/` or any other tracked tree.\n\n## Idea\n\n- One helper gives the lock path of a tracked file: under the checkout's `.lym/locks/`, mirroring the file's path, never beside it.\n- Every `path + \".lock\"` and `.swaplock` site whose file sits in a tracked tree (`_lym/`, Bolt) moves to that helper.\n- The `*.lock` and `*.swaplock` excludes then go, so a stray lock in a tracked tree shows in `git status` instead of hiding.\n- A check (test or lint) refuses a lock path built beside a file under `_lym/` or Bolt.\n",
-      "status": "running · Drift-Verify",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-04T13:30:18Z",
       "revised": "2026-11-04T14:33:09Z",
       "profile": "solid"
