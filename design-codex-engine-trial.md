@@ -1,4 +1,4 @@
-# Stress test of codexengine: every designed capability, hooks above all
+# Codexengine: every task, trial and note about the Codex engine
 
 `codex-engine-trial` · Project · research, codex, shuttle
 
