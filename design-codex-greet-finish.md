@@ -1,6 +1,6 @@
 # Carry the Codex darn trial run codex-greet to its landing
 
-`codex-greet-finish` · Task · research, codex · running · Seed-Child
+`codex-greet-finish` · Task · research, codex · running · Open-Window
 
 ## Goal (operator, 2026-11-05)
 
