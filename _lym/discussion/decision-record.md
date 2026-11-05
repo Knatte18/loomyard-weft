@@ -17,6 +17,12 @@ Provenance: task server-based-live-viewer; notes loom-halt-2.md.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-05): A signal ends the loop without an envelope; a panic writes one
+
+Decision: Accepted: the entry's ask to make a no-envelope exit write one is met for the loop's own failure path (a panic is recovered and ends in an interrupted stop with its envelope), while a terminating signal only records a mark in the loop log and the next waiter's dead-loop stop reports it with the signal named. Review finding F3 is settled by this decision; the code stays as built.
+
+Rationale: SIGTERM reaches the loop from runproc.End on a cancel, a teardown or a reap; writing a failed stop inside the dying loop's kill grace would file halt notes for deliberate cancels and race the teardown's mark. The entry's goal, telling a crash from an external kill, is met by the recorded exit cause.
+
 ## Constraints
 
 ## Auto-mode assumptions
