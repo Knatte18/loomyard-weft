@@ -303,7 +303,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "0b652e66eac7b28610d1ac37f51cc712",
   "masterSessionId": "92259c87-a13c-4393-84cc-c0c85e3379b0",
   "masterEngine": "claude",
@@ -352,6 +352,28 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-relay/92259c87-a13c-4393-84cc-c0c85e3379b0/subagents/agent-ae025356bd65419fa.jsonl"
       ]
+    },
+    "6": {
+      "slug": "slackengine-api",
+      "cards": [
+        "06-slackengine-api",
+        "07-slackengine-inbound",
+        "08-slackengine-outbound",
+        "09-slackengine-relay"
+      ],
+      "cardHashes": {
+        "06-slackengine-api": "7d4192923e21b130aba0ef4f934823185e19e088cfabe994f713dc8eb14c161e",
+        "07-slackengine-inbound": "588785623859b9ebaf62f8fc25f8ddd9ca4d0d58a506b42f593a429b83cbcf79",
+        "08-slackengine-outbound": "3eec871d3da16dc2f8f0cd89187c66bd7e9a40093832eb1c8614b58efab1a7b6",
+        "09-slackengine-relay": "f5a601bf6f083dc0f0a6206531da68dc0b2ad3079868e236b6398634695583c3"
+      },
+      "startSha": "667e7cacd7d7ba5c16125ebf944ccdd4af34a95f",
+      "kind": "fork",
+      "spawnedAt": "2026-11-05T18:36:26Z",
+      "sessionId": "92259c87-a13c-4393-84cc-c0c85e3379b0",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
