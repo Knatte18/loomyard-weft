@@ -1,9 +1,9 @@
 # Card 14 — drift-check-verb
 
 **Create:**
-- `plan:internal/driftcli#checkCmd` -> `func checkCmd() *cobra.Command`
-- `plan:internal/driftcli#worktree.checkDeps` -> `func (w *worktree) checkDeps() (driftengine.Deps, error)`
-- `plan:internal/driftcli_test#TestCheck_PrintsTheFindings` -> `func TestCheck_PrintsTheFindings(t *testing.T)`
+- `internal/driftcli#checkCmd`
+- `internal/driftcli#worktree.checkDeps`
+- `internal/driftcli_test#TestCheck_PrintsTheFindings`
 
 **Edit:**
 - `internal/driftcli#Command`

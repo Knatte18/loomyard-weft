@@ -1,6 +1,6 @@
 {
   "runGuid": "a1c4865ab9aa37350056289ec21b537d",
-  "planFingerprint": "d9487dbb6b4b259dcbba17586fccb55c83bd82924765736227f8e0c375652e7a",
+  "planFingerprint": "bb744df8c63770445d5eb16e96e5b20a0558177e38fcca590f58827b4af4bee8",
   "planFileHashes": {
     "00-overview.md": "23db230969dc39beb707659cbdf0389bfcf77c2143ebc77a9730567a70a41eaf",
     "01-fabric-trailer-commits.md": "8a9daa9bb99055bd6d008fd529275a4f2b2fa6099cff69434e1c6904e0f73b83",
@@ -15,20 +15,20 @@
     "10-drift-containment-check.md": "73c39460587d613452939242735167c472c9356efe1c09578087aa4883014a9f",
     "11-webster-runlevel-entry-report.md": "dfaae62bc6a88906257921b64e594cccf5f104ef7bd489682f539ecdebf9c3fa",
     "12-drift-expect-producer.md": "614556cef8eaf5b36258263a449192d33ca9366a26f2fbcce485e2c4bfabfa3d",
-    "13-drift-expect-rows.md": "820c6fc0aa66c1694fbb0d24e282de013ff5d88c5ba2f8c9ae4e2df4609c87f9",
-    "14-drift-check-verb.md": "b96495bb523254b4feb88543062cddd3b0d148ed8339bba77bb55e6ec1ebeafa",
+    "13-drift-expect-rows.md": "3f6c899bf3abe75789eeb9b1416a392da2bed1d65ec9a0bd73f13282a0b72f37",
+    "14-drift-check-verb.md": "061c21f89576e4d0a7f187006b619a0f3a846d504d0da3bea5dc53c3f717a78f",
     "15-drift-judge-seat.md": "97aa82cda320ab142cdc29b6f54e9e2bdc060b69bafad0af5c0c33564895ffd5",
     "16-drift-verify-lines.md": "cb9e682c42e33aee4c97f273a58ebf64922d6c983d277887a165f9d542da0cfc",
     "17-drift-verify-command.md": "42f57b9192183e05e6aebe67be57442abba13076824bbfb476e2ad7b7b65ab57",
     "18-drift-baseline-await.md": "b01fdaa35530840de7a6050a63bcc33d2da19354f293da498635814b9551f2d2",
-    "19-drift-amend-defer.md": "392291f1b8acd4890b5951a609312e937e0116b1092d261d137926f5b2d86979",
+    "19-drift-amend-defer.md": "780e79819e5cb3a5312f9932fd5a78e6cd7785bbf12c593ff42373184a838717",
     "20-drift-verdict.md": "749fac950f42c7624b34a2beab880be9338692921858a69ff9e7881b724d95ed",
     "21-drift-writer-stencils.md": "27d72cbc10d602e84dc962f5c0411a93f775e59f063bac44f40a1e118db34457",
     "22-driftcli-retire-verbs.md": "565f644b30a7d9d5f2a0c9b9c968f6ae522e967c6a2a9370f1a50a0ae5d0a2ae",
     "23-drift-retire-recheck-engine.md": "9dc7421e2269d6355f48111babb54c85756dc732d035fa9a3f07f02b46fc4cc6",
     "24-drift-retire-old-seats.md": "073756509da9f02f71d758a679b14245398295c754ce81ef0eb5a96f9730c5f4",
     "25-driftengine-retire-acceptance.md": "0cd3983bfc2134842d385c7f6ee866412c89a2e8c2c1f29505fd0769772c7299",
-    "26-drift-retire-skip-keys.md": "384b9bb44e6ffbe2d19d7cc5ea5494e03532fc57074d3940259fe39e4478fc4a",
+    "26-drift-retire-skip-keys.md": "df19efa1aa1d147feb135c048a538a2d6329306d98529312cbcace1ef0e41f7c",
     "27-drift-retire-verify-gate-key.md": "3c0bae14ba157fe060239232d1c553ab790781c5286f9a9a9ca82b736e8f62db"
   },
   "planOverviewFrameHash": "81da568f63a452107de902d1bf08444596f94df7866550cc32c6f8ad40efaedb",
@@ -901,7 +901,7 @@
       }
     }
   ],
-  "currentBatch": 13,
+  "currentBatch": 0,
   "masterStrand": "d326ac861d4ceacc5a911fad80b062b2",
   "masterSessionId": "0610df8b-f86b-42c0-b6a3-75053b19c15b",
   "masterEngine": "claude",
@@ -1000,16 +1000,36 @@
         "14-drift-check-verb"
       ],
       "cardHashes": {
-        "13-drift-expect-rows": "820c6fc0aa66c1694fbb0d24e282de013ff5d88c5ba2f8c9ae4e2df4609c87f9",
-        "14-drift-check-verb": "b96495bb523254b4feb88543062cddd3b0d148ed8339bba77bb55e6ec1ebeafa"
+        "13-drift-expect-rows": "3f6c899bf3abe75789eeb9b1416a392da2bed1d65ec9a0bd73f13282a0b72f37",
+        "14-drift-check-verb": "061c21f89576e4d0a7f187006b619a0f3a846d504d0da3bea5dc53c3f717a78f"
       },
       "startSha": "7d4f2c9e6160c18b85ee96d1806c4e7c40e1fb8e",
       "kind": "fork",
       "spawnedAt": "2026-11-05T17:00:13Z",
       "sessionId": "0610df8b-f86b-42c0-b6a3-75053b19c15b",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "13-drift-expect-rows",
+        "status": "done",
+        "head_sha": "f14b7eb1626c2bce0a8b5a40a6fb704c64a51bae",
+        "deviations": [
+          "internal/driftcli/check_integration_test.go",
+          "internal/driftcli/cli.go",
+          "internal/loomrecipe/gatequiescence_test.go",
+          "internal/shedrecipe/coverage_guard_test.go"
+        ]
+      },
+      "cardShas": [
+        "f14b7eb1626c2bce0a8b5a40a6fb704c64a51bae"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-a06dba9b552e49077.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-a06dba9b552e49077.jsonl"
+      ]
     },
     "5": {
       "slug": "drift-expectation-parser",
@@ -1118,6 +1138,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-a46a2966fa0459a2c.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-a549dd69a66ca7b19.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-afdb3484591165258.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-ad3e9ce61ea12c1d8.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-ad3e9ce61ea12c1d8.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-a06dba9b552e49077.jsonl"
   ]
 }

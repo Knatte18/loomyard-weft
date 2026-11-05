@@ -19,7 +19,7 @@
 - `internal/driftengine/doc.go`
 - `internal/driftcli#deferCmd`
 - `internal/driftcli#Command`
-- `plan:internal/driftcli#worktree.checkDeps`
+- `internal/driftcli#worktree.checkDeps`
 - `internal/driftcli/doc.go`
 
 **Uses:**

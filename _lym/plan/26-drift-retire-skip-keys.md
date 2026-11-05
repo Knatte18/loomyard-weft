@@ -34,7 +34,7 @@
 - `internal/driftengine/doc.go`
 - `internal/loomcli#driftDeps`
 - `internal/driftcli#runCaptureChild`
-- `plan:internal/driftcli#worktree.checkDeps`
+- `internal/driftcli#worktree.checkDeps`
 - `internal/driftcli_test#driftYAML`
 - `internal/driftcli_test#TestDrift_RunsInTheAnchoredDirectory`
 - `internal/configreg#TestModules_EveryTemplateKeyClassified`

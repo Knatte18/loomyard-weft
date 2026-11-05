@@ -1,8 +1,8 @@
 # Card 13 — drift-expect-rows
 
 **Create:**
-- `plan:internal/loomshed#NameDriftExpect` -> `const NameDriftExpect = "Drift-Expect"`
-- `plan:internal/loomrecipe#driftExpectType` -> `var driftExpectType reflect.Type`
+- `internal/loomshed#NameDriftExpect`
+- `internal/loomrecipe#driftExpectType`
 
 **Edit:**
 - `contracts/recipes/darn-recipe.yaml`
