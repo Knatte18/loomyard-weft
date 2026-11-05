@@ -42,6 +42,12 @@ Decision: The README gives each thing one name. The records repository is named 
 
 Rationale: The cold review found four names for that repository; the operator settled that piggyback is a description.
 
+### Added after Discussion (operator, 2026-11-05): README.old.md is deleted
+
+Decision: This task deletes the stale README.old.md at the repository root. The crucible directory stays; only README.md must not mention it.
+
+Rationale: The operator asked for both; README.old.md is superseded by README.md.
+
 ## Constraints
 
 ## Auto-mode assumptions
