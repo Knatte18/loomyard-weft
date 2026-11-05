@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-05 07:08 UTC; every age below is as of then.
+Rendered 2026-11-05 07:09 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -68,7 +68,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Codex sessions read idle, end when Codex exits, and reach creel from the sandbox**<br>• Fix the three Codex engine faults the pane and load trial found | [`codex-trial3-faults`](design-codex-trial3-faults.md) | darn · solid | Drift-Await | neve | 46m<br>1m | codex, shuttle, creel |
 | T3 | **Template changes reach seed-only hub config, and light gets the lens fan back**<br>• Reconcile carries template changes into seed-only hub files like profiles.yaml while keeping hand-set values; light drops its solo code review | [`profiles-follow-template`](design-profiles-follow-template.md) | darn · solid | Darn-Write | neve | 25m<br>25m | profiles, config, reconcile |
-| T5 | **Quiet notice ignores gate fixers and the gate run**<br>• Dobby quiet notice fires while gate-fixer sessions or the run gate work, since it reads only the writer strand | [`quiet-notice-ignores-fixers`](design-quiet-notice-ignores-fixers.md) | darn · light | Record-Write | neve | 41m<br>1m | dobby |
+| T5 | **Quiet notice ignores gate fixers and the gate run**<br>• Dobby quiet notice fires while gate-fixer sessions or the run gate work, since it reads only the writer strand | [`quiet-notice-ignores-fixers`](design-quiet-notice-ignores-fixers.md) | darn · light | Drift-Baseline | neve | 41m<br>1m | dobby |
 | T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | Finalize | neve | 17h<br>16h | fabric, loom |
 
 #### Ready (0)
