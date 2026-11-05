@@ -12,26 +12,36 @@ Fixed rows after Beam-Await get in the way: a PR-Review already started has to b
 ## Idea (operator, 2026-11-05)
 
 The beam's orch drives the landing work itself, inside Beam-Await; pawl drops Parent-Align, Beam-Describe and PR-Review.
+Pawl becomes Preflight, Record-Write, Beam-Up, Beam-Await, Finalize, Beam-Down.
 
-1. Pull request: when the operator says so, the beam's orch opens the beam's pull request by the hub's rules for beam pull requests, writing its description.
+1. Pull request: when the operator says so, the beam's orch opens the beam's pull request by the hub's rules for beam pull requests, with its description.
+   The description lists every member of the beam that landed, each with its own pull request or landing commit.
 2. Parent merge: the beam's orch brings the parent into the beam when the operator says so, through a merge-in run inside the beam (a darn run with its perch, as `lym beam merge-parent` files), so a hard merge gets a run of its own.
 3. Review: the operator and the beam's orch handle the pull request's review together.
    If the beam is not ready, the orch closes the pull request and files more member tasks.
    The operator may also tell the orch to skip the pull request and land by a direct squash merge.
 4. When the operator is satisfied, the orch runs `lym beam ready`; Beam-Await ends and Finalize lands the beam as today, then Beam-Down.
 
-Pawl becomes Preflight, Record-Write, Beam-Up, Beam-Await, Finalize, Beam-Down.
+### Verbs for the beam's orch
+
+The orch calls lym verbs, never `gh` by hand: thin verbs over the code the removed rows run today, for example `lym beam describe` (Beam-Describe's description writer) and `lym beam pr open|close|merge` (PR-Review's and Finalize's pull-request code).
+
+### Members land while the pull request is open (operator, 2026-11-05)
+
+Member tasks keep landing into the beam while its pull request is open, as was common and useful in Millhouse.
+While the beam's pull request is open, every member task filed or running in the beam carries `notify_on_land`, so the beam's orch is told at each landing and updates the description, which keeps listing every member.
+
+### `lym beam ready` checks the parent merge (operator, 2026-11-05)
+
+`lym beam ready` refuses while the parent holds commits not merged into the beam, and its refusal names `lym beam merge-parent`.
 
 ## Built since (tidy, 2026-11-05)
 
 Task `protected-parent-landing` landed (`dbd169ae`): `beam.yaml` `pull_request: merge` makes Finalize push the task or beam branch, find or open a pull request into the parent and squash-merge it on GitHub at once with no review, then pull the parent.
 The review row returns Done for it (`MergeAtOnce`), and a parent push refused as protected is Stuck with a way forward naming `pull_request=merge`.
-This answers the open point on a protected parent below.
 
 ## Open points
 
-- Verbs the beam's orch needs for 1 and 3, so the pull request and its description go through lym, not by hand: for example `lym beam pr open|close`, reusing Beam-Describe's description writer and PR-Review's pull-request code.
-- How Finalize lands a beam whose pull request was merged on the remote; a protected parent is built (see above), and a pull request merged on the remote under a `merge` parent still squashes parent-side.
-- The hold boundary: today the beam is held from Parent-Align on (`boardengine.RunHolds`); with an open pull request inside Beam-Await, whether member landings are refused while it is open, or update it.
-- Whether `lym beam ready` still checks that the parent was merged in recently, since Parent-Align no longer runs before Finalize.
+- How Finalize lands a beam whose pull request the orch already merged on the remote; under a `merge` parent Finalize still squashes parent-side.
+- Whether `notify_on_land` is set by lym when the pull request opens (and on each member filed while it is open), or by the orch.
 - Resume of in-flight pawl runs that sit on a removed row.
