@@ -844,6 +844,26 @@
       "body": "An interactive Codex run held at its composer reads `asking/awaiting-input` in `lym shuttle state`.\nAfter `/exit` in its pane the run ended `died`, and the shadow state model logged `shuttle: session state disagrees ... loop=died state=asking cause=awaiting-input` in the same second.\nThe state of a Codex session follows hook signals alone and Codex exit fires none, so nothing in the run files reads as dead.\n\nFound by the pane/load trial, docs/research/codex-engine-trial-pane-load-2026-11-03.md case 3.",
       "created": "2026-11-05T06:22:34Z",
       "revised": "2026-11-05T06:22:34Z"
+    },
+    {
+      "id": 1126,
+      "handle": "B5",
+      "slug": "codex-sandbox-no-creel-socket",
+      "title": "A Codex session cannot reach the creel daemon from its workspace-write sandbox",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "codex",
+        "creel",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "lym creel read and post fail inside Codex: connect to the daemon socket is not permitted and the daemon log is read-only",
+      "body": "Inside a Codex run on `-a never -s workspace-write`, `lym creel read` and `lym creel post --reply \u003cid\u003e` both fail:\n\n`creel: no daemon answers on /tmp/lym-1000/creel-ly-92073c9b.sock after starting one and 6 connects: dial unix ...: connect: operation not permitted; daemon log .../_bolt/.lym/creel/daemon.log: the daemon log could not be opened: ... read-only file system`\n\nThe daemon was up (it had just sent the same strand mail), so the sandbox refuses the AF_UNIX connect.\nThe Bolt `.lym/creel` directory is read-only there too, so the client's own attempt to start a daemon cannot write its log.\nThe codexengine doc says the session runs `lym creel read` and `post --reply` from the sandbox and reaches the daemon; it does not.\nThe reminder `[creel] N unread ... run lym creel read` is typed, but the strand cannot act on it, so agent mail to a Codex strand is unreachable.\n\nFound by the pane/load trial, docs/research/codex-engine-trial-pane-load-2026-11-03.md case 4.",
+      "created": "2026-11-05T06:22:41Z",
+      "revised": "2026-11-05T06:22:41Z"
     }
   ],
   "prime_owner": "neve",
