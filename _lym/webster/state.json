@@ -542,7 +542,7 @@
       }
     }
   ],
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "2b7ad68dfc2bff4c8746024aef1dc184",
   "masterSessionId": "14aaf21f-1ca1-409b-81b1-3c72c8062a73",
   "masterEngine": "claude",
@@ -647,12 +647,33 @@
       "spawnedAt": "2026-11-05T09:14:02Z",
       "sessionId": "14aaf21f-1ca1-409b-81b1-3c72c8062a73",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-remove-reopen",
+        "status": "done",
+        "head_sha": "a3cc81a8ebbf40849f601fe3c8d916d64c47fea3",
+        "deviations": [
+          "internal/landingshed/prreview.go",
+          "internal/loomrecipe/pawlrecipe_test.go",
+          "internal/pawlengine/beamawait_test.go",
+          "internal/pawlengine/landrequest.go"
+        ]
+      },
+      "cardShas": [
+        "a3cc81a8ebbf40849f601fe3c8d916d64c47fea3"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-pawl-orch-landing/14aaf21f-1ca1-409b-81b1-3c72c8062a73/subagents/agent-a84221366474b3280.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-pawl-orch-landing/14aaf21f-1ca1-409b-81b1-3c72c8062a73/subagents/agent-a84221366474b3280.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-pawl-orch-landing/14aaf21f-1ca1-409b-81b1-3c72c8062a73/subagents/agent-a6b0d7e7bc0e4a444.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-pawl-orch-landing/14aaf21f-1ca1-409b-81b1-3c72c8062a73/subagents/agent-a02a4ee6ec45ea151.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-pawl-orch-landing/14aaf21f-1ca1-409b-81b1-3c72c8062a73/subagents/agent-a02a4ee6ec45ea151.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-pawl-orch-landing/14aaf21f-1ca1-409b-81b1-3c72c8062a73/subagents/agent-a84221366474b3280.jsonl"
   ]
 }
