@@ -839,6 +839,49 @@
       "body": "Imported from [issue #51](https://github.com/Knatte18/loomyard/issues/51).\n\nWhat happened: the run halted as failed at step Webster with anomaly interrupted-stop. The status error was `loop-exited: loop ... ended without an envelope; its output is in .lym/shed/\u003ctask\u003e/steps/loop.log; step Webster was in flight under trace ...`, followed by `shedverbs: step Webster interrupted (loop-exited)`.\nThe way forward named was to read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, and re-run `lym shed step \u003ctask\u003e --until-stop`.\n\nWhy it is abnormal: a loop must end by writing an envelope. The note records no cause for the missing envelope (no crash, signal or budget reason), and the preceding history shows all earlier steps through Drift-Await finishing done, so the exit came while Webster was starting. The halt note carries nothing that lets the operator tell a loop crash from an external kill.\n\nWhat to do: have the loop-exited anomaly record the exit cause (exit code or signal, last lines of loop.stderr_path) in the halt note itself. Also check whether a loop can exit between Drift-Await done and the Webster start without writing an envelope, and make that path write one.\n\nProvenance: task server-based-live-viewer; notes loom-halt-2.md.\n",
       "created": "2026-11-05T05:50:43Z",
       "revised": "2026-11-05T05:50:43Z"
+    },
+    {
+      "id": 1118,
+      "handle": "B10",
+      "slug": "seat-start-idle-race",
+      "title": "Seat start fails with 'pane is not idle' while the pane shows an idle prompt",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle",
+        "burler"
+      ],
+      "issues": [
+        50
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #50](https://github.com/Knatte18/loomyard/issues/50).\n\nWhat happened: step Plan-Burler-Review (burler-review) halted as failed with anomaly producer-hard-failure. Round 1 ended with two consecutive died outcomes (attempt 1 and attempt 1b), each \"review never started\".\nBoth attempts failed in seatengine with `shuttle: deliver the prompt after loading skills: shuttle: the session is not idle: ... the pane is not idle; retry once the session is idle`, then `shuttle: the provider never became ready`.\n\nWhy it is abnormal: the saved pane capture in both attempts shows the skill-loading turn finished (the three Skill calls succeeded, the agent replied `ok` with the skill names, the status line read \"done\") and an empty `❯` prompt on screen. The session was idle, yet the idle check refused. This looks like a race between the end of the skill-load turn and the idle detection used before delivering the prompt. The second attempt failed the same way a few seconds later, so the retry does not clear it.\n\nWhat to do: make the idle check after skill loading robust against the post-turn settle (re-poll for a bounded time before refusing, or accept the empty prompt plus a completed-turn marker). Consider a retry with backoff inside the seat start before counting the attempt as died, so one transient refusal does not consume a review round.\n\nEvidence: shuttle run dirs under `.lym/shuttle/`, `startup-capture.txt` in each; trace file under `.lym/logs/`.\n\nProvenance: task server-based-live-viewer; notes loom-halt.md.\n",
+      "created": "2026-11-05T05:50:45Z",
+      "revised": "2026-11-05T05:50:45Z"
+    },
+    {
+      "id": 1119,
+      "handle": "B11",
+      "slug": "motif-board-status-stale",
+      "title": "Board status of a motif run stays at Worktree-Create through Discussion",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "board",
+        "batten",
+        "loom"
+      ],
+      "issues": [
+        49
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #49](https://github.com/Knatte18/loomyard/issues/49).\n\n## Seen\n\nHub Models (shortname mo), beam duplication-and-import-followups, task knut-rheology-friction-pvt (T2), recipe motif, released 2026-11-04.\nSome 15 minutes after release, its Discussion-Write session (mo:knut-rheology-friction-pvt:discussion) was live and writing the decision record, and the operator was talking to it.\nAt the same time:\n\n- the board entry, and so the Bolt README, said running · Worktree-Create;\n- lym batten status showed current_producer Run-Shed, history_length 5 (Worktree-Create, Seed-Child, Open-Window, Seed-IDE, Open-IDE done);\n- lym loom status in the task worktree showed current_producer empty and history_length 0;\n- lym beam status showed the run with an empty producer column.\n\nA tapestry run in the same beam (server-based-live-viewer) showed its inner producer on the board, such as running · Webster.\n\n## Expected\n\nThe board status follows the batten rows past Worktree-Create and then the inner run's current producer, Discussion-Write here, and lym loom status names the producer in flight rather than an empty one, so the operator does not read a working run as stuck.\n\n## Issue comment, 2026-11-04\n\nClarification: the README is rendered by the board module on every board commit, so the README is not at fault. The stale value is the board entry's own status field: nothing wrote it after Worktree-Create, so no board commit re-rendered the README. The fix belongs where the run writes its status to the board entry as it moves through the batten rows and into the inner run's producers.\n\n## Issue comment, 2026-11-04\n\nBoard history for the entry, from the board.json commits in Bolt (times +01:00):\n\n- 18:29:56 draft\n- 18:30:08 to 18:34:43 running · Worktree-Create (four commits)\n- 18:44:31 running · Discussion-Bouncer\n- 18:45:01 running · Discussion-Burler-Review\n\nSo the status was never written for Seed-Child through Run-Shed, nor for Discussion-Write, which ran for about ten minutes in between; it jumped from Worktree-Create straight to Discussion-Bouncer. lym board get read the same stale value as board.json, so this is the status write, independent of how the README renders it; my earlier comment's claim about the renderer was not checked and should be disregarded.",
+      "created": "2026-11-05T05:50:47Z",
+      "revised": "2026-11-05T05:50:47Z"
     }
   ],
   "prime_owner": "neve",
