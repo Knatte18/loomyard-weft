@@ -1,6 +1,6 @@
 # P2 Codexengine: every task, trial and note about the Codex engine
 
-Rendered 2026-11-05 09:12 UTC; every age below is as of then.
+Rendered 2026-11-05 09:13 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`codex-engine-trial`](design-codex-engine-trial.md) · Age 1d · Owner `neve`
@@ -44,7 +44,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **Codex trial: follow the sandbox darn run with a Codex writer to landing and report**<br>• Follows codex-greet in the lym-test sandbox hub, a darn run with a Codex writer, to landing; report and bug notes | [`codex-trial-darn-e2e`](design-codex-trial-darn-e2e.md) | darn · docs | Open-Window | neve | 1m<br>0m | codex, shuttle |
+| T7 | **Codex trial: follow the sandbox darn run with a Codex writer to landing and report**<br>• Follows codex-greet in the lym-test sandbox hub, a darn run with a Codex writer, to landing; report and bug notes | [`codex-trial-darn-e2e`](design-codex-trial-darn-e2e.md) | darn · docs | Record-Write | neve | 1m<br>0m | codex, shuttle |
 
 ### Ready (0)
 
