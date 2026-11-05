@@ -1,4 +1,4 @@
-# Creel mail between hubs through an inbox folder, with a verified sender
+# Creel mail between hubs with a verified sender and one-way hub trust
 
 `creel-cross-hub-mail` · Note · feature, creel, orch
 
@@ -10,34 +10,44 @@ One daemon serves one hub, its socket is named from the hub path, and the hub a 
 A process outside the hub's strands is `EXTERNAL`, shown with a terminal and parent-process envelope, and its replies reach only a waiting `post --wait-reply`.
 `EXTERNAL` is the wrong sender for this: the receiver must see the real strand that sent the message.
 
-## Idea (operator, 2026-10-30)
-
-A shared inbox folder takes in messages from outside the hub.
-The file a message becomes carries its sender: the path of the sender hub's inbox folder and the name of the agent that sent it.
-A message needs a receiver, so the daemon knows whom to give it to.
-A reply is addressed from those two fields, so the replier knows which agent in which hub to answer.
+Seen again 2026-11-05: the loomyard orch could not steer trial run `codex-greet` in the sandbox hub `lyt` out of PR-Review, since lyt's reviewer and `lyt:orch` refused its mail as `EXTERNAL`, so the operator was asked to type in a sandbox hub's pane, which they never want to do.
 
 ## Verifying the sender (operator, 2026-10-30)
 
-A file cannot prove its sender: any process of the same user can write one, so a prompt-injected agent could write `ly:orch` in the sender field.
-The sending daemon, which reads the caller from `SO_PEERCRED` as it does today, writes the file.
-The receiving daemon then asks the sending hub's daemon to confirm it:
+Any process of the same user can claim any sender, so a prompt-injected agent could claim to be `ly:orch`.
+The sending daemon, which reads the caller from `SO_PEERCRED` as it does today, vouches for what it sent, and the receiving daemon asks it to confirm:
 
-1. The file names the sender hub's path, and the receiver derives that hub's socket name from it, as `creel-<shortname>-<hash>.sock`, with no registry.
+1. The receiver derives the sending hub's socket name from its hub path, as `creel-<shortname>-<hash>.sock`.
 2. The receiver sends one call in creel's JSON-lines protocol, such as `confirm`, with the message id, the receiver and a hash of the text.
 3. The sender's daemon looks in its own journal for a message from that strand to that receiver with that hash, and answers yes or no, never the text.
 4. Only on yes does the receiver show the sender as that strand; otherwise the message shows as unverified.
 
-This is a call and not a signature on the file, since a signature needs a secret and every agent of the same user can read a secret file; the sending daemon cannot be fooled, because it reads its caller from the process and knows what it sent.
-A message can be confirmed once, so a copied file cannot be reused.
-The journal's retention bounds how late a confirmation can come, so the receiver confirms when the message arrives.
+This is a call and not a signature, since a signature needs a secret and every agent of the same user can read a secret file.
+A message can be confirmed once, so a replayed message is refused.
+The receiver confirms when the message arrives, within the journal's retention.
 A sending daemon that is down is started as a client starts it today, or the message stays unverified.
 The check works only within one user, since the sockets do.
 
-## Open design points
+## Proposals (orch, agreed by the operator 2026-11-05)
 
-- Where the folder lives and how a sender addresses a hub: a path derived from the hub path, like the socket, and a record on the machine that maps a shortname to a hub path.
-- What a reply does across the hub border: it goes to the sender's inbox folder, addressed to the agent the file names.
-- How a role treats mail from another hub: as data to weigh, never as the operator's instruction, since it is a channel for prompt injection into the receiving orch.
-- How this fits a closed area for lym's process tree (research note `sandboxing-options-2026-10-30`): the folder sits outside an area, so reading and writing it goes through the broker.
-- Another machine: a folder that a synced directory carries would reach a hub on Neve; not designed here.
+Starting points for the Discussion, not final:
+
+- Transport: the sending daemon delivers straight to the receiving hub's socket, then the receiver confirms as above; an inbox folder (the operator's first idea, 2026-10-30) is needed only if a receiver cannot be started, so the Discussion weighs whether to keep it at all.
+- Addressing by hub shortname, such as `lyt:orch` or `cs:orch`, through a record on the machine that maps a shortname to a hub path, written when a hub is created or opened.
+- Replies: `lym creel post --reply <id>` works across the hub border by the same route, back to the strand that sent.
+- Trust per hub, in the hub's config, such as `trusted_hubs: [ly]`:
+  - Verified mail from the orch of a trusted hub carries the authority mail from the hub's own orch carries today.
+  - Verified mail from any other strand, or from a hub not listed, is data to weigh, never an instruction.
+  - Unverified mail shows as unverified and is data only.
+- Trust runs one way: loomyard steers the sandbox hubs `lyt` and `cs`, which list `ly`; loomyard lists neither, since the sandboxes run untrusted code and Codex and a prompt-injected sandbox orch must gain no hold on the main repository.
+  The sender check stops a forged sender; it cannot stop a trusted orch that is itself prompt-injected, which is why trust is not mutual.
+- Roles and the creel note in the shuttle hooks learn the new sender kinds, so an agent obeys verified trusted-orch mail and refuses the rest as today.
+
+## Not in this round
+
+- Another machine: a synced directory reaching a hub on Neve.
+- How this fits a closed area for lym's process tree (research note `sandboxing-options-2026-10-30`).
+
+## Trial at the end
+
+A darn `docs` task in which the loomyard orch drives a run in `lyt` from start to landing through creel alone, the operator doing nothing, and records the result in `docs/research/`.
