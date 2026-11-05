@@ -1,6 +1,6 @@
 # Distill PATTERN.md: cluster related entries, detail in background files
 
-`pattern-distill` · Task · enhancement, pattern · running · Code-Burler-Fix
+`pattern-distill` · Task · enhancement, pattern · running · Code-Bouncer
 
 ## Seen (2026-11-05)
 
