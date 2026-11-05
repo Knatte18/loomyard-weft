@@ -1,6 +1,6 @@
 # Find what sessions load at start that they do not need, to cut start tokens
 
-`startup-token-trim` · Task · research, claude, orch, shuttle, stencil · running · Drift-Verify
+`startup-token-trim` · Task · research, claude, orch, shuttle, stencil · running · Code-Bouncer
 
 ## Wanted (operator, 2026-11-05)
 
