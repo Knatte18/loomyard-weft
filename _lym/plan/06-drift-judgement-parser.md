@@ -1,17 +1,17 @@
 # Card 6 — drift-judgement-parser
 
 **Create:**
-- `plan:internal/driftengine#Ruling` -> `type Ruling string`
-- `plan:internal/driftengine#RulingMatches` -> `const RulingMatches Ruling = "matches"`
-- `plan:internal/driftengine#RulingNoMatch` -> `const RulingNoMatch Ruling = "does not match"`
-- `plan:internal/driftengine#RulingUnexpected` -> `const RulingUnexpected Ruling = "unexpected"`
-- `plan:internal/driftengine#Judgement` -> `type Judgement struct`
-- `plan:internal/driftengine#CellRuling` -> `type CellRuling struct`
-- `plan:internal/driftengine#CaseRuling` -> `type CaseRuling struct`
-- `plan:internal/driftengine#OpenRangeNote` -> `type OpenRangeNote struct`
-- `plan:internal/driftengine#JudgementWant` -> `type JudgementWant struct`
-- `plan:internal/driftengine#ParseJudgement` -> `func ParseJudgement(data []byte, want JudgementWant) (Judgement, error)`
-- `plan:internal/driftengine#TestParseJudgement` -> `func TestParseJudgement(t *testing.T)`
+- `internal/driftengine#Ruling`
+- `internal/driftengine#RulingMatches`
+- `internal/driftengine#RulingNoMatch`
+- `internal/driftengine#RulingUnexpected`
+- `internal/driftengine#Judgement`
+- `internal/driftengine#CellRuling`
+- `internal/driftengine#CaseRuling`
+- `internal/driftengine#OpenRangeNote`
+- `internal/driftengine#JudgementWant`
+- `internal/driftengine#ParseJudgement`
+- `internal/driftengine#TestParseJudgement`
 
 **Edit:**
 - `PATTERN.md`

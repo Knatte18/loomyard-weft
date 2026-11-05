@@ -26,21 +26,21 @@
 - `internal/driftengine/doc.go`
 
 **Uses:**
-- `plan:internal/driftengine#ReadRecords`
-- `plan:internal/driftengine#CheckBaseline`
-- `plan:internal/driftengine#CheckSeal`
-- `plan:internal/driftengine#PastRow`
-- `plan:internal/driftengine#expectRow`
-- `plan:internal/driftengine#ParseExpectation`
-- `plan:internal/driftengine#Expectation.Merge`
-- `plan:internal/driftengine#Expectation.Cover`
-- `plan:internal/driftengine#Expectation.Uncovering`
+- `internal/driftengine#ReadRecords`
+- `internal/driftengine#CheckBaseline`
+- `internal/driftengine#CheckSeal`
+- `internal/driftengine#PastRow`
+- `internal/driftengine#expectRow`
+- `internal/driftengine#ParseExpectation`
+- `internal/driftengine#Expectation.Merge`
+- `internal/driftengine#Expectation.Cover`
+- `internal/driftengine#Expectation.Uncovering`
 - `internal/driftengine#ListCaptures`
 - `internal/driftengine#DiffCaptures`
 - `internal/driftengine#CompileKeyPatterns`
 - `internal/shuttleengine#GateEntry`
-- `plan:internal/driftengine#commitStore`
-- `plan:internal/driftengine#commitStore.deps`
+- `internal/driftengine#commitStore`
+- `internal/driftengine#commitStore.deps`
 
 **Intent:** D7's containment by code as one function every check calls, and D8's `drift` gate entry over it on the two writers.
 

@@ -12,11 +12,11 @@
 
 **Uses:**
 - `plan:internal/driftengine#Check`
-- `plan:internal/driftengine#JudgedCase`
-- `plan:internal/driftengine#WriteRecords`
+- `internal/driftengine#JudgedCase`
+- `internal/driftengine#WriteRecords`
 - `plan:internal/driftengine#WriteJudgeRequest`
-- `plan:internal/driftengine#commitStore`
-- `plan:internal/driftengine#commitStore.deps`
+- `internal/driftengine#commitStore`
+- `internal/driftengine#commitStore.deps`
 
 **Intent:** D2's `command` mode at Drift-Verify and Drift-Recheck, replacing card 16's interim Stuck.
 

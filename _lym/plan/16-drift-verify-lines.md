@@ -90,19 +90,19 @@
 - `internal/testkit/envkit#TestNilSeams_SkipsNilLegalPaths`
 - `internal/loomcli#conflictSessionStopper`
 - `plan:internal/driftengine#Check`
-- `plan:internal/driftengine#WriteRecords`
-- `plan:internal/driftengine#ReadRecords`
+- `internal/driftengine#WriteRecords`
+- `internal/driftengine#ReadRecords`
 - `plan:internal/driftengine#WriteJudgeRequest`
 - `plan:internal/driftengine#TakeJudgeSnapshot`
 - `plan:internal/driftengine#ReadJudgeSnapshot`
 - `plan:internal/driftengine#JudgeSnapshot.Changes`
-- `plan:internal/driftengine#ParseJudgement`
-- `plan:internal/driftengine#CheckBaseline`
-- `plan:internal/driftengine#DeferHaltPrefix`
+- `internal/driftengine#ParseJudgement`
+- `internal/driftengine#CheckBaseline`
+- `internal/driftengine#DeferHaltPrefix`
 - `internal/driftengine#gateLoopSeats`
 - `internal/driftengine#fakeChair`
-- `plan:internal/driftengine#commitStore`
-- `plan:internal/driftengine#commitStore.deps`
+- `internal/driftengine#commitStore`
+- `internal/driftengine#commitStore.deps`
 
 **Intent:** Rewrite Drift-Verify as containment by code and the judge under `lines` mode (D4, D6, D7, D9, D10), and run Drift-Recheck on the same engine.
 `command` mode is card 17; until then a recorded `command` mode that step 2 below leaves standing, that is with scope other than `off`, no deferral and no waiver, is a Stuck naming `lym drift defer`, checked right after step 2.

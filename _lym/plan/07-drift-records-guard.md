@@ -14,23 +14,23 @@
 - `internal/loomcli/doc.go`
 
 **Create:**
-- `plan:internal/driftengine#SessionMark` -> `type SessionMark struct`
-- `plan:internal/driftengine#Amendment` -> `type Amendment struct`
-- `plan:internal/driftengine#CheckResult` -> `type CheckResult struct`
-- `plan:internal/driftengine#JudgedRecord` -> `type JudgedRecord struct`
-- `plan:internal/driftengine#JudgedTuple` -> `type JudgedTuple struct`
-- `plan:internal/driftengine#JudgedRange` -> `type JudgedRange struct`
-- `plan:internal/driftengine#JudgedCase` -> `type JudgedCase struct`
-- `plan:internal/driftengine#Records` -> `type Records struct`
-- `plan:internal/driftengine#RecordsTrailerKey` -> `const RecordsTrailerKey = "Drift-Records"`
-- `plan:internal/driftengine#RecordsDigest` -> `func RecordsDigest(scope, judged []byte, scopeFound, judgedFound bool) string`
-- `plan:internal/driftengine#ReadRecords` -> `func ReadRecords(d Deps) (Records, error)`
-- `plan:internal/driftengine#WriteRecords` -> `func WriteRecords(d Deps, change func(scope *ScopeRecord, judged *JudgedRecord) error, extra ...fabricengine.Trailer) error`
-- `plan:internal/driftengine#RestoreRecords` -> `func RestoreRecords(d Deps) error`
-- `plan:internal/driftengine#TestRecords` -> `func TestRecords(t *testing.T)`
-- `plan:internal/driftengine#commitStore` -> `type commitStore struct`
-- `plan:internal/driftengine#newCommitStore` -> `func newCommitStore(t *testing.T) *commitStore`
-- `plan:internal/driftengine#commitStore.deps` -> `func (s *commitStore) deps(p Paths) Deps`
+- `internal/driftengine#SessionMark`
+- `internal/driftengine#Amendment`
+- `internal/driftengine#CheckResult`
+- `internal/driftengine#JudgedRecord`
+- `internal/driftengine#JudgedTuple`
+- `internal/driftengine#JudgedRange`
+- `internal/driftengine#JudgedCase`
+- `internal/driftengine#Records`
+- `internal/driftengine#RecordsTrailerKey`
+- `internal/driftengine#RecordsDigest`
+- `internal/driftengine#ReadRecords`
+- `internal/driftengine#WriteRecords`
+- `internal/driftengine#RestoreRecords`
+- `internal/driftengine#TestRecords`
+- `internal/driftengine#commitStore`
+- `internal/driftengine#newCommitStore`
+- `internal/driftengine#commitStore.deps`
 
 **Uses:**
 - `internal/loomcli#TestWire_BeamRecipe`

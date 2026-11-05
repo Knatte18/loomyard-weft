@@ -42,8 +42,8 @@
 - `internal/shedbuild#engineMinimalConfig`
 
 **Uses:**
-- `plan:internal/driftengine#commitStore`
-- `plan:internal/driftengine#commitStore.deps`
+- `internal/driftengine#commitStore`
+- `internal/driftengine#commitStore.deps`
 - `internal/loomcli#TestWire_BeamRecipe`
 - `internal/battencli#TestWire_EverySeamFilled`
 - `internal/loomcli#TestWire_EverySeamFilled`
@@ -52,12 +52,12 @@
 - `internal/testkit/envkit#TestNilSeams_ReportsExactPaths`
 - `internal/testkit/envkit#TestNilSeams_SkipsNilLegalPaths`
 - `internal/driftengine#ListCaptures`
-- `plan:internal/driftengine#ParseExpectation`
-- `plan:internal/driftengine#SealExpectation`
-- `plan:internal/driftengine#CheckBaseline`
-- `plan:internal/driftengine#WriteRecords`
-- `plan:internal/driftengine#ReadRecords`
-- `plan:internal/driftengine#DeferHaltPrefix`
+- `internal/driftengine#ParseExpectation`
+- `internal/driftengine#SealExpectation`
+- `internal/driftengine#CheckBaseline`
+- `internal/driftengine#WriteRecords`
+- `internal/driftengine#ReadRecords`
+- `internal/driftengine#DeferHaltPrefix`
 - `internal/driftengine#gateLoopSeats`
 
 **Intent:** The Drift-Expect producer (D4, D5, D6) and its `expectation` gate entry, registered but in no recipe yet (card 13).

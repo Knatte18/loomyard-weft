@@ -11,18 +11,18 @@
 - `internal/testkit/envkit#driftDeps`
 
 **Create:**
-- `plan:internal/driftengine#SealTrailerKey` -> `const SealTrailerKey = "Drift-Seal"`
-- `plan:internal/driftengine#BaselineTrailerKey` -> `const BaselineTrailerKey = "Drift-Baseline"`
-- `plan:internal/driftengine#DeferHaltPrefix` -> `const DeferHaltPrefix = "drift defer halt: "`
-- `plan:internal/driftengine#BaselineDigest` -> `func BaselineDigest(dir string) (string, error)`
-- `plan:internal/driftengine#BaselineState` -> `type BaselineState struct`
-- `plan:internal/driftengine#CheckBaseline` -> `func CheckBaseline(d Deps) (BaselineState, error)`
-- `plan:internal/driftengine#SealExpectation` -> `func SealExpectation(d Deps, extra ...fabricengine.Trailer) error`
-- `plan:internal/driftengine#SealState` -> `type SealState struct`
-- `plan:internal/driftengine#CheckSeal` -> `func CheckSeal(d Deps, rec Records, baselineHead string) (SealState, error)`
-- `plan:internal/driftengine#PastRow` -> `func PastRow(rows []string, current, row string) bool`
-- `plan:internal/driftengine#expectRow` -> `const expectRow = "Drift-Expect"`
-- `plan:internal/driftengine#TestSealAndBaseline` -> `func TestSealAndBaseline(t *testing.T)`
+- `internal/driftengine#SealTrailerKey`
+- `internal/driftengine#BaselineTrailerKey`
+- `internal/driftengine#DeferHaltPrefix`
+- `internal/driftengine#BaselineDigest`
+- `internal/driftengine#BaselineState`
+- `internal/driftengine#CheckBaseline`
+- `internal/driftengine#SealExpectation`
+- `internal/driftengine#SealState`
+- `internal/driftengine#CheckSeal`
+- `internal/driftengine#PastRow`
+- `internal/driftengine#expectRow`
+- `internal/driftengine#TestSealAndBaseline`
 
 **Uses:**
 - `internal/loomcli#TestWire_BeamRecipe`
@@ -33,10 +33,10 @@
 - `internal/testkit/envkit#TestNilSeams_ReportsExactPaths`
 - `internal/testkit/envkit#TestNilSeams_SkipsNilLegalPaths`
 - `internal/loomrecipe#RowNames`
-- `plan:internal/driftengine#ReadRecords`
-- `plan:internal/driftengine#Records`
-- `plan:internal/driftengine#commitStore`
-- `plan:internal/driftengine#commitStore.deps`
+- `internal/driftengine#ReadRecords`
+- `internal/driftengine#Records`
+- `internal/driftengine#commitStore`
+- `internal/driftengine#commitStore.deps`
 
 **Intent:** The seal (D6) and the baseline digest (D7) as code checks every later check runs first; no row calls them yet.
 

@@ -1,28 +1,28 @@
 {
   "runGuid": "a1c4865ab9aa37350056289ec21b537d",
-  "planFingerprint": "92c35af75bfdafee252b2f3c8549ee433792789baf66617f5adc40c0c1d60700",
+  "planFingerprint": "0d72c3afd09d75ec9746ce993e9da62c201f9862fa5a17d8fab68d198d47635a",
   "planFileHashes": {
     "00-overview.md": "23db230969dc39beb707659cbdf0389bfcf77c2143ebc77a9730567a70a41eaf",
     "01-fabric-trailer-commits.md": "8a9daa9bb99055bd6d008fd529275a4f2b2fa6099cff69434e1c6904e0f73b83",
     "02-fabric-checkout-states.md": "582909614d443acd15bd829ac1e5cb2521c9dc8d7db513d883aa5181d3c2e24f",
     "03-drift-capture-diff.md": "14ac06c3ab303f984a98f2af8498c9191bcf22f785a1c7bc15777b4e024a6663",
     "04-drift-config-keys.md": "4dfcfed7d1f9e654ff7b6507da2b29ff2d20fccda8df339c6bcd68d6ab9eaf91",
-    "05-drift-expectation-parser.md": "6bc53bfd34dd908af57791d4e695e12b9d0041c01488799b10613688a81d9243",
-    "06-drift-judgement-parser.md": "3078a3fed8f95adfe180ad92db23b04c05f0ba9e1e44a6dde736c5c837a26a06",
-    "07-drift-records-guard.md": "ae3066c5498427129769662a1591db113a6ca050e4e29fb6e6adc5bc9348a05c",
-    "08-drift-seal-baseline-checks.md": "3681fdd3e58a5132c23ee96c88e8bbf3c7fc63a1c420efdcffdfe7a5ce2e0ca0",
+    "05-drift-expectation-parser.md": "db5dbd92743af47a98288d9e180da95322b3e3b11efcf918a4e1733e185516ad",
+    "06-drift-judgement-parser.md": "1a71dcd09cf7e82c0ea213c9dc4324ccec212ac40a6863d2005f22f1207f245a",
+    "07-drift-records-guard.md": "c82d6371e83f7be40d2e59a32f6a11ca71ceb05b8ae9903737bd521c6981860f",
+    "08-drift-seal-baseline-checks.md": "609e168e9d425a916687b2dcfabcb8b3bdad3db0d44fb4eb1a56003e0b9aa9f0",
     "09-drift-current-capture.md": "4455b251f3f90dd340d6eae78f956c7ab211b451258f3a8d77b9b63f665503e2",
-    "10-drift-containment-check.md": "f9902f39d25fb1949f592b60d690b117d34387037f03338364155c9dadda25ff",
+    "10-drift-containment-check.md": "03fb5f61aff3ad72f7c46357d254bfdc7b235b87ab31623f89768bc68ced5e85",
     "11-webster-runlevel-entry-report.md": "919b9451989a817322d42a872818016c744e01532afd639bcfa81b160783a780",
-    "12-drift-expect-producer.md": "4dc8e5627e3c8ec51c2a2d012a2d56f930cf006eda7af0110d589c3058330698",
+    "12-drift-expect-producer.md": "f1ce32109c4e101d24fc23f88ca5d96e46b6281fde7ee884e9b21747759042c4",
     "13-drift-expect-rows.md": "820c6fc0aa66c1694fbb0d24e282de013ff5d88c5ba2f8c9ae4e2df4609c87f9",
     "14-drift-check-verb.md": "db36e895c32f5b69db020775806fea1dc289ca7c1d0560624223cc90fa9cd9bf",
-    "15-drift-judge-seat.md": "36ef924c94d9b73face490e6c11165e2ac2dd21632c1c38fc41f3edb31284796",
-    "16-drift-verify-lines.md": "7c34b26782808539043601e0eabc727af0850c287c50c38e810035f164a17bdb",
-    "17-drift-verify-command.md": "a8ede1b5915dd973cbc894c2d74d197d783d144010a59d92136e675868793454",
-    "18-drift-baseline-await.md": "d0a08d6ba526e1559edef3e8f705b3d17db6389dfd0fe745f25a57c2bd09e9ff",
-    "19-drift-amend-defer.md": "4e0c11adcc4b6ef2e02f318dc3b2267580f069d5e77d5c7b1e36217e3b42f4fc",
-    "20-drift-verdict.md": "1f6664b4137cc3bd33e8c4b93d3d205f3cf690790b7cf2b1011ad940044adfa2",
+    "15-drift-judge-seat.md": "97aa82cda320ab142cdc29b6f54e9e2bdc060b69bafad0af5c0c33564895ffd5",
+    "16-drift-verify-lines.md": "2e55c1d6d5a2107e8ca7ca72e9bd2cdda30f56660742058a3b5bb7f8488aa021",
+    "17-drift-verify-command.md": "7140870c3fe62092c7463a720ae77712637149d4e30eb46ca5a5d2e8a4b95368",
+    "18-drift-baseline-await.md": "b01fdaa35530840de7a6050a63bcc33d2da19354f293da498635814b9551f2d2",
+    "19-drift-amend-defer.md": "392291f1b8acd4890b5951a609312e937e0116b1092d261d137926f5b2d86979",
+    "20-drift-verdict.md": "749fac950f42c7624b34a2beab880be9338692921858a69ff9e7881b724d95ed",
     "21-drift-writer-stencils.md": "27d72cbc10d602e84dc962f5c0411a93f775e59f063bac44f40a1e118db34457",
     "22-driftcli-retire-verbs.md": "565f644b30a7d9d5f2a0c9b9c968f6ae522e967c6a2a9370f1a50a0ae5d0a2ae",
     "23-drift-retire-recheck-engine.md": "9dc7421e2269d6355f48111babb54c85756dc732d035fa9a3f07f02b46fc4cc6",
@@ -901,7 +901,7 @@
       }
     }
   ],
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "d326ac861d4ceacc5a911fad80b062b2",
   "masterSessionId": "0610df8b-f86b-42c0-b6a3-75053b19c15b",
   "masterEngine": "claude",
@@ -962,21 +962,60 @@
         "08-drift-seal-baseline-checks"
       ],
       "cardHashes": {
-        "05-drift-expectation-parser": "6bc53bfd34dd908af57791d4e695e12b9d0041c01488799b10613688a81d9243",
-        "06-drift-judgement-parser": "3078a3fed8f95adfe180ad92db23b04c05f0ba9e1e44a6dde736c5c837a26a06",
-        "07-drift-records-guard": "ae3066c5498427129769662a1591db113a6ca050e4e29fb6e6adc5bc9348a05c",
-        "08-drift-seal-baseline-checks": "3681fdd3e58a5132c23ee96c88e8bbf3c7fc63a1c420efdcffdfe7a5ce2e0ca0"
+        "05-drift-expectation-parser": "db5dbd92743af47a98288d9e180da95322b3e3b11efcf918a4e1733e185516ad",
+        "06-drift-judgement-parser": "1a71dcd09cf7e82c0ea213c9dc4324ccec212ac40a6863d2005f22f1207f245a",
+        "07-drift-records-guard": "c82d6371e83f7be40d2e59a32f6a11ca71ceb05b8ae9903737bd521c6981860f",
+        "08-drift-seal-baseline-checks": "609e168e9d425a916687b2dcfabcb8b3bdad3db0d44fb4eb1a56003e0b9aa9f0"
       },
       "startSha": "0d621716eaba37c3e6a2f30448bed38b891f103a",
       "kind": "fork",
       "spawnedAt": "2026-11-05T16:16:18Z",
       "sessionId": "0610df8b-f86b-42c0-b6a3-75053b19c15b",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-drift-expectation-parser",
+        "status": "done",
+        "head_sha": "e2dcd7478acada42970cf61f4969a21f9c7d27e3",
+        "deviations": [
+          "internal/driftengine/commitstore_test.go",
+          "internal/driftengine/expectation.go",
+          "internal/driftengine/expectation_test.go",
+          "internal/driftengine/judgement.go",
+          "internal/driftengine/paths.go",
+          "internal/driftengine/recordsguard.go",
+          "internal/driftengine/recordsguard_test.go",
+          "internal/driftengine/seal.go",
+          "internal/driftengine/seal_test.go",
+          "internal/fabricengine/trailercommit.go",
+          "internal/fabricengine/trailercommit_integration_test.go",
+          "internal/testkit/envkit/envkit.go"
+        ],
+        "departures": [
+          "8: drift-seal-baseline-checks: PATTERN-fabric-vocabulary — card 8 reads the seal commit's `WarpSHA` and card 1 declared it; a side-named identifier is barred outside the owner set, so `fabricengine.TrailerCommit.WarpSHA` is renamed `CodeHead` and CheckSeal compares `CodeHead` with the baseline head."
+        ],
+        "renames": [
+          {
+            "old": "internal/fabricengine#TrailerCommit.WarpSHA",
+            "new": "internal/fabricengine#TrailerCommit.CodeHead",
+            "reason": "PATTERN-fabric-vocabulary bars a side-named identifier outside the owner set, and card 8's seal check in driftengine reads this field."
+          }
+        ]
+      },
+      "cardShas": [
+        "e2dcd7478acada42970cf61f4969a21f9c7d27e3"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-a549dd69a66ca7b19.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-a549dd69a66ca7b19.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-a46a2966fa0459a2c.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-a46a2966fa0459a2c.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/0610df8b-f86b-42c0-b6a3-75053b19c15b/subagents/agent-a549dd69a66ca7b19.jsonl"
   ]
 }

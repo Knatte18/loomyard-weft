@@ -50,9 +50,9 @@
 - `internal/shedrun#RunDirRel`
 - `internal/loomengine#LoomFrictionDirRel`
 - `internal/fabricengine#HubScratchDir`
-- `plan:internal/driftengine#ParseJudgement`
-- `plan:internal/driftengine#JudgementWant`
-- `plan:internal/driftengine#BaselineDigest`
+- `internal/driftengine#ParseJudgement`
+- `internal/driftengine#JudgementWant`
+- `internal/driftengine#BaselineDigest`
 - `internal/driftengine#copyFile`
 
 **Intent:** The judge's seat, its `judgement` entry and the snapshot that guards what the judge session may change (D9); no row spawns it yet.

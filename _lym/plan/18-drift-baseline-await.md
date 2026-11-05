@@ -27,9 +27,9 @@
 - `internal/driftengine#configuredBaselineReport`
 
 **Uses:**
-- `plan:internal/driftengine#WriteRecords`
-- `plan:internal/driftengine#BaselineDigest`
-- `plan:internal/driftengine#BaselineTrailerKey`
+- `internal/driftengine#WriteRecords`
+- `internal/driftengine#BaselineDigest`
+- `internal/driftengine#BaselineTrailerKey`
 
 **Intent:** Drift-Baseline becomes code only (D3, D4) and Drift-Await records the baseline digest (D7).
 

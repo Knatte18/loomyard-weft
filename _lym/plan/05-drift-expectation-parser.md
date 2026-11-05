@@ -1,18 +1,18 @@
 # Card 5 — drift-expectation-parser
 
 **Create:**
-- `plan:internal/driftengine#Expectation` -> `type Expectation struct`
-- `plan:internal/driftengine#ExpectedCase` -> `type ExpectedCase struct`
-- `plan:internal/driftengine#KeyEntry` -> `type KeyEntry struct`
-- `plan:internal/driftengine#LineEntry` -> `type LineEntry struct`
-- `plan:internal/driftengine#CaseEntry` -> `type CaseEntry struct`
-- `plan:internal/driftengine#Coverage` -> `type Coverage struct`
-- `plan:internal/driftengine#ParseExpectation` -> `func ParseExpectation(data []byte, mode string, baseline []CaseListing) (Expectation, error)`
-- `plan:internal/driftengine#Expectation.Merge` -> `func (e Expectation) Merge(more Expectation) Expectation`
-- `plan:internal/driftengine#Expectation.Cover` -> `func (e Expectation) Cover(c Cell) (Coverage, bool)`
-- `plan:internal/driftengine#Expectation.Uncovering` -> `func (e Expectation) Uncovering(cells []Cell) []string`
-- `plan:internal/driftengine#TestParseExpectation` -> `func TestParseExpectation(t *testing.T)`
-- `plan:internal/driftengine#TestExpectationCover` -> `func TestExpectationCover(t *testing.T)`
+- `internal/driftengine#Expectation`
+- `internal/driftengine#ExpectedCase`
+- `internal/driftengine#KeyEntry`
+- `internal/driftengine#LineEntry`
+- `internal/driftengine#CaseEntry`
+- `internal/driftengine#Coverage`
+- `internal/driftengine#ParseExpectation`
+- `internal/driftengine#Expectation.Merge`
+- `internal/driftengine#Expectation.Cover`
+- `internal/driftengine#Expectation.Uncovering`
+- `internal/driftengine#TestParseExpectation`
+- `internal/driftengine#TestExpectationCover`
 
 **Extends:**
 - `internal/driftengine/doc.go`

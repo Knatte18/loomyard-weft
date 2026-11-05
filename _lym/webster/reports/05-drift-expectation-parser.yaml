@@ -1,0 +1,6 @@
+status: OK
+head_sha: e2dcd7478acada42970cf61f4969a21f9c7d27e3
+renames:
+  - old: internal/fabricengine#TrailerCommit.WarpSHA
+    new: internal/fabricengine#TrailerCommit.CodeHead
+    reason: PATTERN-fabric-vocabulary bars a side-named identifier outside the owner set, and card 8's seal check in driftengine reads this field.

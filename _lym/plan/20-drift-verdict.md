@@ -15,11 +15,11 @@
 - `internal/driftengine#acceptedByText`
 
 **Uses:**
-- `plan:internal/driftengine#ReadRecords`
+- `internal/driftengine#ReadRecords`
 - `internal/fabricengine#FindTrailerCommit`
 - `internal/fabricengine#AnchoredFileAt`
-- `plan:internal/driftengine#commitStore`
-- `plan:internal/driftengine#commitStore.deps`
+- `internal/driftengine#commitStore`
+- `internal/driftengine#commitStore.deps`
 
 **Intent:** D13's verdict: the `## Regression check` section of the pull request and landing commit, rendered from the copies of `scope.json` and `judged.json` in the newest `Drift-Records` commit through `ReadRecords`, or from the files as they are on a run with no such commit, never running a capture.
 

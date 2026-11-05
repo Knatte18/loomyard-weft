@@ -23,22 +23,22 @@
 - `internal/driftcli/doc.go`
 
 **Uses:**
-- `plan:internal/driftengine#ParseExpectation`
-- `plan:internal/driftengine#Expectation.Cover`
-- `plan:internal/driftengine#WriteRecords`
-- `plan:internal/driftengine#RestoreRecords`
-- `plan:internal/driftengine#CheckSeal`
-- `plan:internal/driftengine#CheckBaseline`
-- `plan:internal/driftengine#PastRow`
-- `plan:internal/driftengine#expectRow`
+- `internal/driftengine#ParseExpectation`
+- `internal/driftengine#Expectation.Cover`
+- `internal/driftengine#WriteRecords`
+- `internal/driftengine#RestoreRecords`
+- `internal/driftengine#CheckSeal`
+- `internal/driftengine#CheckBaseline`
+- `internal/driftengine#PastRow`
+- `internal/driftengine#expectRow`
 - `plan:internal/driftengine#darnWriteRow`
 - `plan:internal/driftengine#websterRow`
-- `plan:internal/driftengine#DeferHaltPrefix`
+- `internal/driftengine#DeferHaltPrefix`
 - `internal/orchcli#NearestLiveParent`
 - `internal/fabricengine#WorktreePath`
 - `internal/fabricengine#CommitAnchoredPathsWithTrailers`
-- `plan:internal/driftengine#commitStore`
-- `plan:internal/driftengine#commitStore.deps`
+- `internal/driftengine#commitStore`
+- `internal/driftengine#commitStore.deps`
 - `internal/driftcli_test#lymRun`
 
 **Intent:** D11's parent amendment and D12's wider `lym drift defer`.
