@@ -882,6 +882,29 @@
       "body": "Imported from [issue #49](https://github.com/Knatte18/loomyard/issues/49).\n\n## Seen\n\nHub Models (shortname mo), beam duplication-and-import-followups, task knut-rheology-friction-pvt (T2), recipe motif, released 2026-11-04.\nSome 15 minutes after release, its Discussion-Write session (mo:knut-rheology-friction-pvt:discussion) was live and writing the decision record, and the operator was talking to it.\nAt the same time:\n\n- the board entry, and so the Bolt README, said running · Worktree-Create;\n- lym batten status showed current_producer Run-Shed, history_length 5 (Worktree-Create, Seed-Child, Open-Window, Seed-IDE, Open-IDE done);\n- lym loom status in the task worktree showed current_producer empty and history_length 0;\n- lym beam status showed the run with an empty producer column.\n\nA tapestry run in the same beam (server-based-live-viewer) showed its inner producer on the board, such as running · Webster.\n\n## Expected\n\nThe board status follows the batten rows past Worktree-Create and then the inner run's current producer, Discussion-Write here, and lym loom status names the producer in flight rather than an empty one, so the operator does not read a working run as stuck.\n\n## Issue comment, 2026-11-04\n\nClarification: the README is rendered by the board module on every board commit, so the README is not at fault. The stale value is the board entry's own status field: nothing wrote it after Worktree-Create, so no board commit re-rendered the README. The fix belongs where the run writes its status to the board entry as it moves through the batten rows and into the inner run's producers.\n\n## Issue comment, 2026-11-04\n\nBoard history for the entry, from the board.json commits in Bolt (times +01:00):\n\n- 18:29:56 draft\n- 18:30:08 to 18:34:43 running · Worktree-Create (four commits)\n- 18:44:31 running · Discussion-Bouncer\n- 18:45:01 running · Discussion-Burler-Review\n\nSo the status was never written for Seed-Child through Run-Shed, nor for Discussion-Write, which ran for about ten minutes in between; it jumped from Worktree-Create straight to Discussion-Bouncer. lym board get read the same stale value as board.json, so this is the status write, independent of how the README renders it; my earlier comment's claim about the renderer was not checked and should be disregarded.",
       "created": "2026-11-05T05:50:47Z",
       "revised": "2026-11-05T05:50:47Z"
+    },
+    {
+      "id": 1120,
+      "handle": "F20",
+      "slug": "reparent-running-task",
+      "title": "Move a running task to another parent (beam or prime)",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "batten",
+        "board",
+        "fabric",
+        "workspaces"
+      ],
+      "issues": [
+        48
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #48](https://github.com/Knatte18/loomyard/issues/48).\n\n## Seen\n\nIn hub Models (shortname mo), beam duplication-and-import-followups (P2) is nearly done and waits only on one member task and the operator's manual PR review.\nThe operator wants to start a new piece of work (porting a colleague's rheology and PVT branch) that builds on P2's code but should land through its own project, not grow P2's PR to main.\nThe natural move is to spawn the task from P2, so it starts on P2's code, and re-parent it to main or to a new beam before it lands, once P2 has landed.\nlym has no way to do this:\n\n- A claimed board entry refuses every edit but its status, so its project field cannot move.\n- The batten run and the fabric pair record the parent branch at Worktree-Create, and Finalize lands into that parent and takes its parent lock.\n- The beam's Beam-Await waits for every member, so P2 cannot land while that task runs.\n\nHand-editing the board JSON, the batten record and the pair's parent together while a dobby reads them risks a half-changed state, and the orch role forbids those edits.\n\n## Workaround\n\nMake a new beam from main, merge the old beam's branch into it with lym fabric merge-in, and spawn the task there; merge the old beam in again as it changes, and expect conflicts when the old beam lands in main as a squash commit, since git no longer sees its commits.\n\n## Expected\n\nA verb such as 'lym batten reparent \u003cslug\u003e --to \u003cbeam|root\u003e' that moves a task, held or not, to another parent in one step: the board project field, the batten and pair parent records, the old beam's member list (so its Beam-Await no longer waits for it) and the new parent's; refused when the new parent's branch does not contain the commits the task branch was forked from, or with a merge of the new parent at its next Parent-Align.",
+      "created": "2026-11-05T05:50:49Z",
+      "revised": "2026-11-05T05:50:49Z"
     }
   ],
   "prime_owner": "neve",
