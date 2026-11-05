@@ -270,6 +270,14 @@ Rationale: With the heddle entry's 31 bytes this saves 43 bytes in total, past t
   - ready-refusal-quotes-resume-way-forward (class design, severity MEDIUM, open in rounds 2)
 <!-- /lym:carry-over Plan-Review -->
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - finalize-ready-merged-pr-lacks-rule-differs (class design, severity MEDIUM, open in rounds 1)
+  - parent-unmerged-upstream-branch-untested (class design, severity MEDIUM, open in rounds 1)
+  - scratch-record-override-merges-closed-pr (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: the pawl recipe builds with the rows Preflight, Record-Write, Beam-Up, Beam-Await, Finalize, Beam-Down, Beam-Await's `on_done` is Finalize, and no recipe row names BeamDescribe.
