@@ -1,6 +1,6 @@
 # Loop exited without an envelope while step Webster was in flight
 
-`loop-exit-no-envelope-cause` · Task · bug, shed, friction · running · Drift-Baseline
+`loop-exit-no-envelope-cause` · Task · bug, shed, friction · running · Drift-Await
 
 Imported from [issue #51](https://github.com/Knatte18/loomyard/issues/51).
 
