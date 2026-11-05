@@ -24,6 +24,12 @@ Decision: This task changes README.md only again; tidying docs/research becomes 
 
 Rationale: The operator chose to keep the README work separate from the docs/research cleanup, which touches scripts, a test and code comments.
 
+### Added after Discussion (operator, 2026-11-05): The overview figure is updated in this task
+
+Decision: Besides README.md, this task updates docs/loomyard-overview.svg to the current pipeline.
+
+Rationale: The README shows the figure, and it no longer matches the recipes: Motif, Parts, Drift, the motif, sampler and pawl recipes, creel, heddle, gate and the orch watcher.
+
 ## Constraints
 
 ## Auto-mode assumptions
