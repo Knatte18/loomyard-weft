@@ -11,7 +11,6 @@
 - `internal/driftcli#compareCmd`
 - `internal/driftcli#runSideCapture`
 - `internal/driftcli#waiveCmd`
-- `internal/driftcli#compareLockRetry`
 - `internal/driftcli/accept_integration_test.go`
 
 **Edit:**

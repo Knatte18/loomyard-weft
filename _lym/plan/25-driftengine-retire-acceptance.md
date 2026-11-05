@@ -1,7 +1,6 @@
 # Card 25 — driftengine-retire-acceptance
 
 **Delete:**
-- `internal/driftengine#testFiles`
 - `internal/driftengine#requireBaselineTest`
 - `internal/driftengine#noBaselineTestRefusal`
 - `internal/driftengine#keepAcceptedOutput`
@@ -83,7 +82,7 @@
 
 **Intent:** Remove the acceptance machinery, the run budget and side capture that the retired verbs used (D14).
 
-- `accepted.go` keeps only `copyFile`, which the judge snapshot uses; its acceptance and profile functions go.
+- `accepted.go` keeps only `copyFile`, which the judge snapshot uses, and `testFiles`, which `Check` uses to leave a skipped test's cases out of an in-flight `partial` scope's diff; its acceptance and profile functions go.
 - `verbs.go` loses scope recording, accept, withdraw, waive, the run count and the verify-row check; `VerbStatus` drops `AgentSession` and `OperatorSession` and their methods, and `worktree.verbStatus` stops reading the agent-session mark.
 - `records.go` loses `runs.json`'s record and functions, whose session mark lives in `scope.json`'s `expect_session` and `judge_session` since cards 12 and 16, `ScopeRecord.Unruled`, and `CountedCapture`, whose last callers were the old Drift-Verify (card 16 reads the count from the tracked record alone) and `Waive`, with `TestCountedCapture` and the package doc's `CountedCapture` line; the old acceptance, compare and waiver fields and the `partial` scope stay readable for the verdict and D3's in-flight rule.
 - `capture.go` loses the side and acceptance captures and `captureInto`; `missingDirRefusal` drops their sites; `compare.go` loses `SkipList`.

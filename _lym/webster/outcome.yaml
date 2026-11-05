@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "Batch 20: begin-batch refused with plan_conflict tree_moved: delete-before-reference/22-driftcli-retire-verbs[blocking]: card 22 deletes \"internal/driftcli#compareLockRetry\", but card 26-drift-retire-skip-keys still references it at internal/driftcli/wiring.go:247 in its Edit code — move the delete to a card after card 26; fix-plan returned verdict plan_writer, so the plan needs a plan writer"
+batches_done: 8
