@@ -1,6 +1,6 @@
 # Quiet notice ignores gate fixers and the gate run
 
-`quiet-notice-ignores-fixers` · Note · bug, dobby
+`quiet-notice-ignores-fixers` · Task · bug, dobby · draft
 
 ## Seen (2026-11-05)
 
