@@ -1,6 +1,6 @@
 # Raddle and motif runs start and finish without the orch
 
-`raddle-motif-finish-clean` · Task · bug, batten, dobby, loom, board, orch · running · PR-Review
+`raddle-motif-finish-clean` · Task · bug, batten, dobby, loom, board, orch · running · Finalize
 
 ## From note raddle-same-slug-completed
 
