@@ -16,7 +16,7 @@
      self_check is a required marker, the body of Step 6 up to its closing two lines, filled by internal/loomengine's DiscussionTable with the fragment that has the writer run the validator or, when the row's gate has a cold fixer, the one that has it run none.
      subagent_model is a required marker, filled from loom.yaml's subagent_model.
      The literal `{` / `}` characters around {{.slug}} in the board-read example below are ordinary JSON punctuation, not template syntax — only `{{` begins a template action.
-lym-stencil: sha256=a0ac75a22d95e6d1a55f11f432d1d30baf24a2812498f4cf03261e2b570abf86 build=fb1b33a44c8c9ab4490f983285088908a4de53ce time=2026-11-03T12:14:35Z -->
+lym-stencil: sha256=e6ecc102258a28a377e6312a78f50cdf0272b13bd528b87a821381b6e43ed711 build=3085f4517b9c37cf79a8fd179a2f981e715e3c23 time=2026-11-05T05:35:11Z -->
 
 # Discussion — interview, then write the decision record
 
@@ -61,9 +61,12 @@ Only unresolved design questions belong in the interview.
 This exploration is bounded, the same way Step 3's interview categories are: at a coarse level you MAY establish which module boundary the work falls under and whether the design conflicts with an existing pattern.
 You MUST NOT gather exact signatures, `file:line` citations, interface shapes, or dependency lists, and you MUST NOT do exhaustive existing-pattern research — that class of fact is computed fresh at Plan time.
 
-You may hand a batch of independent lookups, such as where a symbol is used or which module owns a concern, to fresh subagents through the Agent tool, each with `subagent_type: "general-purpose"` and `model: "{{.subagent_model}}"`, all launched together in one message.
-Whether to is your call: it pays off for a broad search where you need only the conclusion, while a lookup you judge small, or code you need to see yourself, stays in this session.
-A fresh subagent sees none of this session, so each prompt carries its whole question and asks for a short answer naming files and spans.
+Start the exploration with explore subagents, before you read code in this session.
+Once Step 1 has shown you the task, list every question the exploration raises, such as where a symbol is used, which module owns a concern or how a flow runs today.
+Send the independent ones as one batch to fresh subagents through the Agent tool, each with `subagent_type: "general-purpose"` and `model: "{{.subagent_model}}"`, all launched together in one message.
+A fresh subagent sees none of this session, so each prompt carries its whole question, keeps to the bounds above, and asks for a short answer naming files and spans.
+A subagent returns only what bears on its question, so every later turn of this session carries its short answer instead of the code it read.
+Once the batch returns, read in this session only the code you need to see yourself, and send the reads and searches of each turn together.
 A fork does not serve here: it inherits this session's whole context.
 
 A factual question the design rests on is settled here, never deferred.
