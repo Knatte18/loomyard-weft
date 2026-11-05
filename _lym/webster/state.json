@@ -542,7 +542,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "2b7ad68dfc2bff4c8746024aef1dc184",
   "masterSessionId": "14aaf21f-1ca1-409b-81b1-3c72c8062a73",
   "masterEngine": "claude",
@@ -669,6 +669,26 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-pawl-orch-landing/14aaf21f-1ca1-409b-81b1-3c72c8062a73/subagents/agent-a84221366474b3280.jsonl"
       ]
+    },
+    "7": {
+      "slug": "ready-beam-starts-no-member",
+      "cards": [
+        "07-ready-beam-starts-no-member",
+        "08-retired-move-pawl",
+        "09-await-survives-loop-exit"
+      ],
+      "cardHashes": {
+        "07-ready-beam-starts-no-member": "24108c83d18a3cce148fdfcba98eb6cf9f2f55cd6ab2e36a61e032c39c127fbb",
+        "08-retired-move-pawl": "b9e2b567f110f8902c24ddb0a57798758ba350cb56b2cf68d1816f2716903207",
+        "09-await-survives-loop-exit": "45df646a89c7f353ad9edce4b37b7014947b87575606a02bb946773ea3b0da8e"
+      },
+      "startSha": "a3cc81a8ebbf40849f601fe3c8d916d64c47fea3",
+      "kind": "fork",
+      "spawnedAt": "2026-11-05T09:20:25Z",
+      "sessionId": "14aaf21f-1ca1-409b-81b1-3c72c8062a73",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
