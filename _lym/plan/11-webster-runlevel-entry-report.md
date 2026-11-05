@@ -1,8 +1,8 @@
 # Card 11 — webster-runlevel-entry-report
 
 **Create:**
-- `plan:internal/websterengine#wrapRunLevelEntry` -> `func wrapRunLevelEntry(entry shuttleengine.GateEntry, reportPath, fixPromptPath string, notes *VerifyGateNotes) shuttleengine.GateEntry`
-- `plan:internal/websterengine#TestWrapRunLevelEntry` -> `func TestWrapRunLevelEntry(t *testing.T)`
+- `internal/websterengine#wrapRunLevelEntry`
+- `internal/websterengine#TestWrapRunLevelEntry`
 
 **Extends:**
 - `internal/websterengine#VerifyGateReport`

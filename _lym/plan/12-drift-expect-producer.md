@@ -1,17 +1,17 @@
 # Card 12 — drift-expect-producer
 
 **Create:**
-- `plan:internal/driftengine#ExpectInputs` -> `type ExpectInputs struct`
-- `plan:internal/driftengine#ExpectTable` -> `func ExpectTable(in ExpectInputs, cfg Config, reg modelspec.Registry) (seatengine.Table, error)`
-- `plan:internal/driftengine#NewExpectationGate` -> `func NewExpectationGate(d Deps) shuttleengine.Gate`
-- `plan:internal/driftengine#DriftExpect` -> `type DriftExpect struct`
-- `plan:internal/driftengine#NewDriftExpect` -> `func NewDriftExpect(name string, row Row, expectation shuttleengine.GateEntry, deps Deps) *DriftExpect`
-- `plan:internal/driftengine#DriftExpect.Call` -> `func (p *DriftExpect) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/driftengine#TestDriftExpect` -> `func TestDriftExpect(t *testing.T)`
-- `plan:internal/driftengine#expectFixture` -> `type expectFixture struct`
-- `plan:internal/driftengine#newExpectFixture` -> `func newExpectFixture(t *testing.T) *expectFixture`
-- `plan:internal/shedrecipe#driftExpectEntry` -> `func driftExpectEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:contracts/stencils#DriftTemplateExpect` -> `var DriftTemplateExpect string`
+- `internal/driftengine#ExpectInputs`
+- `internal/driftengine#ExpectTable`
+- `internal/driftengine#NewExpectationGate`
+- `internal/driftengine#DriftExpect`
+- `internal/driftengine#NewDriftExpect`
+- `internal/driftengine#DriftExpect.Call`
+- `internal/driftengine#TestDriftExpect`
+- `internal/driftengine#expectFixture`
+- `internal/driftengine#newExpectFixture`
+- `internal/shedrecipe#driftExpectEntry`
+- `contracts/stencils#DriftTemplateExpect`
 - `contracts/stencils/drift/drift-template-expect.md`
 
 **Extends:**
