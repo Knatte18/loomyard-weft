@@ -269,6 +269,12 @@ Decision: Filed entries take the Sketch's own `project` field, with `ParentBeam`
 
 Rationale: `hubgeom.ParentOf` answers the nearest beam and skips a grouping project, so it would file a Sketch's parts outside the project the Sketch belongs to; D9 asks for the Sketch's own project level (plan review F8).
 
+### Added after Discussion (parent, 2026-11-05): The report config module lives in internal/reportconfig
+
+Decision: Card 7 (07-report-config) creates its targets in internal/reportconfig instead of internal/reportengine: internal/reportconfig/template.yaml and reportconfig#Config, #ConfigTemplate, #ConfigSpec, #LoadConfig and #TestLoadConfig. Card 8 uses reportconfig#LoadConfig in place of reportengine#LoadConfig.
+
+Rationale: internal/reportengine already depends on internal/configreg, and card 7 makes configreg import the module, so the module in reportengine is an import cycle Go forbids; a config package of its own follows hibernateconfig's shape. Commit 5ec85b9c already builds it there.
+
 ## Constraints
 
 - `PATTERN-shed-recipe-registry`: the new engines are `Constructor` rows; the model is a setting lookup by key, and the mode one at Raddle-Write's first spawn, read from the run's state after it (D7), never `Env` fields.
@@ -309,6 +315,17 @@ Self-picks, reasons in the support log's question ledger: the agent runs the app
   - step-5-marker-lost-when-released-part-lands (class design, severity MEDIUM, open in rounds 3)
   - store-slug-reuse-by-non-raddle-creators (class design, severity MEDIUM, open in rounds 3)
 <!-- /lym:carry-over Discussion-Review -->
+
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/plan/round-2-review.md; fixer report: _lym/reviews/plan/round-2-fixer-report.md.
+  - loomshed-allowlist-not-extended (class scope, severity MEDIUM, open in rounds 2)
+  - parse-strictness-no-tolerant-mechanism (class consistency, severity MEDIUM, open in rounds 2)
+  - pawlpaths-handoff-marker-untargeted (class scope, severity MEDIUM, open in rounds 2)
+  - raddle-table-return-note-not-optional (class scope, severity MEDIUM, open in rounds 2)
+  - shedcli-recipe-key-literal (class consistency, severity MEDIUM, open in rounds 2)
+  - splicepart-halt-unreachable (class design, severity MEDIUM, open in rounds 2)
+<!-- /lym:carry-over Plan-Review -->
 
 ## Acceptance criteria
 
