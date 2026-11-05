@@ -1,70 +1,47 @@
-# A loop that ends without an envelope says how it ended
+# shedverbs: record how a loop ended in the dead-loop halt note
 
-When the detached `--until-stop` loop disappears without writing its envelope, the waiter's dead-loop stop marks the run failed with the cause `loop-exited`.
-Until now that stop's detail, which is also the cause the halt note records, named only the loop log and the in-flight step.
-It did not say whether the loop crashed or was killed from outside.
-Its way forward told the reader to open `loop.trace_copy` and `loop.stderr_path`, but the stop left both empty.
-This change puts the exit cause into the detail and fills both paths.
-It also closes the one path inside the loop's own code that could end it without an envelope.
-All changes are in `internal/shedverbs`.
+A loop that ends without an envelope now leaves evidence of how it ended, and the halt note carries it.
+Before, the `loop-exited` stop said only that no envelope was written, so an operator could not tell a loop crash from an external kill.
 
-## What the dead-loop stop now reports
+Closes #51
 
-The detail of a dead loop, and of a spawned loop that exited before it recorded itself, now carries:
+## What changes
 
-- `loop exit:` followed by the marks lym wrote about that loop's process: its pid and exit status (`exit status 2`, `signal: killed`), and any terminating signal the loop recorded before it ended.
-  When there are none, it reads `loop exit: not recorded`, as when a kill also ended the waiter that spawned the loop.
-- `loop log:` followed by an excerpt of that loop's other lines in the loop log: a Go crash's first lines when there is one, otherwise the last lines.
-- `step stderr:` followed by an excerpt of the in-flight step's captured stderr, read the same way.
-
-The loop log is appended across every loop of the run, so the excerpt reads only the lines after this loop's starting mark.
-A log with no starting mark for the loop, such as one written by an older binary, yields only the `loop exit:` clause, so an older loop's crash is never blamed on this one.
-`loop.stderr_path` now names the recorded step's captured stderr, and `loop.trace_copy` a copy of its trace files when it has any.
-
-## How the evidence gets into the loop log
-
-- `spawnLoop` writes `lym shed: loop <id> starting` before it starts the process.
-  After it reaps the process, it writes `lym shed: loop <id> process <pid> exited: <status>`.
-- The loop watches for SIGINT, SIGTERM and SIGHUP for its whole life.
-  When one arrives, it writes `lym shed: loop <id> received signal <name> and ends without an envelope`, then ends the process by that signal: it restores the default action and sends the signal again, or exits 1 where the platform cannot.
-  `LoopSpec.Signals` and `LoopSpec.Raise` are the seams; nil selects `os/signal` and the re-raise.
-
-## The path that ended without an envelope
-
-`runLoop` has no return after its pid file is written that skips the envelope.
-The loop could still end without one in three ways: a panic while stepping, a signal, or the machine failing.
-That holds between Drift-Await's done step and Webster's start as at any other point.
-The halted run's record says Webster was already in flight, so its child had started.
-
-- **Panic.** The stepping loop now lives in `stepUntilStop`, which recovers a panic.
-  It kills the in-flight step tree, logs the stack at Error to the loop's trace file, and returns an interrupted stop with cause `loop-panicked: <value>`.
-  The stop then follows the usual interrupted path: the failed write, `AfterInterrupt`, `OnExit` and the envelope.
-- **Signal.** The loop records the signal and ends without an envelope, as before.
-  The waiter's dead-loop stop then reports it with the signal named.
+- `spawnLoop` (`loopwait.go`) marks in the loop log that a loop is starting, before its process starts, and the process's pid and exit status once the spawn reaps it.
+  Marks open with `lym shed: loop <loop id> `, which tells them from the output of the loop and its children, and each opens its own line even after output with no trailing newline.
+- A loop that receives SIGINT, SIGTERM or SIGHUP (`recordTerminatingSignals`, `loop.go`) writes a mark to the loop log and then ends through `Spec.Loop.Raise`.
+  By default `Raise` restores the signal's default action and sends it to the process again, so the process ends by the signal it was sent.
+- A panic while stepping (`stepUntilStop`, `loop.go`) is recovered: the in-flight child's step tree is killed, and the loop ends in an interrupted stop with the cause `loop-panicked: <value>`.
+  It writes its envelope as for any other interrupted stop.
+- The dead-loop stop and the early-exit stop (`deadLoopStop`, `loopExitedEarlyStop`) add to `loop.detail`:
+  - how the loop ended, read from the loop log after the loop's last starting mark: the loop's own marks, or `loop exit: not recorded` when there are none, then an excerpt of the loop's other lines (a Go crash's first lines, else the last lines);
+  - while the status file has not moved past the in-flight child, an excerpt of that child's captured stderr.
+- Under the same condition the stop's envelope fills `loop.stderr_path` and `loop.trace_copy`, which the way-forward text already names but a dead loop never filled.
+- `stderrExcerpt` is split so the same excerpt logic serves log lines (`outputExcerpt`).
+- `doc.go` and the doc comments describe the new marks, the signal and panic paths, and the detail layout.
 
 ## Design decisions
 
-- **A signal writes no envelope from the loop.**
-  SIGTERM reaches the loop from `runproc.End` on a cancel, a pair teardown or a reap.
-  The same `End` signals the step child too, and the run's waiter or driver as well.
-  Writing the failed stop and running `AfterInterrupt` inside the dying loop's kill grace would file halt notes for deliberate cancels, and could race the teardown's mark.
-  The loop therefore only records the signal, and the existing dead-loop stop, run by the next waiter, stays the one place that writes the failed stop.
-- **The exit status is recorded by the spawning waiter, in the loop log.**
-  Only the process that spawned the loop can read its exit status.
-  The loop log is where the dead-loop stop already points, and it is where the Go runtime writes a crash, so the marks sit beside that output.
-  The loop id inside each mark separates loops.
-  The `Spawn` seam's signature is unchanged; only the production `spawnLoop` takes the loop id.
-- **The root cause of the reported Webster halt is not identified.**
-  The halt note carried no evidence that could identify it, and nothing in the loop's code ends it without an envelope.
-  The next such halt will name the signal or exit status.
+- A terminating signal does not make the loop write an envelope, and the issue's ask to make a no-envelope exit write one is met only for a panic.
+  SIGTERM reaches the loop from `runproc.End` on a cancel, a teardown or a reap.
+  A failed stop written inside the dying loop's kill grace would file halt notes for deliberate cancels and race the teardown's mark.
+  The goal, telling a crash from an external kill, is met by the recorded signal mark that the next waiter's dead-loop stop reports.
+- After a signal is seen the loop runs no `OnExit` hook and writes no failed stop.
+  `OnExit` is documented as running at every stop but a terminating signal's while the loop steps.
+- Panics outside the stepping, in a hook or in the code after it, are not recovered and still end the loop without an envelope.
+  Their evidence is the exit mark and the Go crash lines in the loop log.
+- `Spec.Loop.Signals` and `Spec.Loop.Raise` are seams so tests drive the signal path without signalling the test process.
 
-## Tests
+## To check by hand
 
-- `TestUntilStop_DeadLoopStopsLoopExited` gains a row with a loop log holding an older loop's crash and the dead loop's own crash, signal and exit marks, plus a step stderr.
-  The row pins the exact cause, which reads only the dead loop's lines.
-  Every row now checks `loop.stderr_path`, and the existing rows pin `loop exit: not recorded`.
-- `TestLoop_InterruptedChildFillsTheErrorForm` adds a panicking step.
-  It checks the `loop-panicked` stop, the failed status, the written envelope and the removed pid file.
-- `TestLoop_TerminatingSignalIsMarkedInTheLoopLog` checks the signal mark and the raise through the seams.
-- `TestLoopIntegration_ChildTreeDiesWithLoop` now ends the real loop with SIGTERM instead of SIGKILL and checks that the next waiter's detail carries the loop's signal mark.
-- `TestLoopIntegration_SpawnMarksTheLoopsExit` spawns `/bin/sh` through `spawnLoop` and checks the exit mark and the stderr excerpt.
+- Not run: no real loop was killed by a signal end to end on a live run.
+  `TestLoopIntegration_ChildTreeDiesWithLoop` now terminates the loop with SIGTERM and asserts the signal mark in `loop.detail`; run the integration tier on Unix to confirm.
+- No test covers a loop log whose last starting mark for the loop is missing in the live spawn path.
+  `loopExitEvidence` (`loopwait.go`) returns only the first clause then, and only the unit case `NoStartingMark_OnlyTheLoopExitClause` covers it.
+- Panic recovery in `stepUntilStop` is narrower than the issue's "make that path write one" suggests: it covers only the stepping, as the first design decision says, and a panic in a hook or after the stop is final still leaves no envelope.
+  Check that this scope is acceptable.
+- `deadLoopStop` fills `loop.stderr_path` and `loop.trace_copy` only while the status file has not moved past the in-flight child.
+  A dead loop whose status file has moved on shows neither, and the stderr of the last finished step is not offered.
+  Check that this is the intended reading of "stale".
+- `loopExitStop` writes `loop.trace_copy` through `copyTraceFiles`; `TestUntilStop_DeadLoopStopsLoopExited` checks the copy's contents, but no test covers a copy that fails to write.
+- The choice of signal handling over an envelope write is recorded as a decision in this description only; it has no entry in the repository's design docs beyond the `doc.go` text.
