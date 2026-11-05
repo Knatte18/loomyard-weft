@@ -1,6 +1,6 @@
 # Codex trial: follow the sandbox darn run with a Codex writer to landing and report
 
-`codex-trial-darn-e2e` · Task · research, codex, shuttle · running · Worktree-Create
+`codex-trial-darn-e2e` · Task · research, codex, shuttle · running · Seed-Child
 
 ## Goal (operator, 2026-11-05)
 

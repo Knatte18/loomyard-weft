@@ -48,7 +48,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **Codex trial: follow the sandbox darn run with a Codex writer to landing and report**<br>• Follows codex-greet in the lym-test sandbox hub, a darn run with a Codex writer, to landing; report and bug notes | [`codex-trial-darn-e2e`](design-codex-trial-darn-e2e.md) | darn · docs | Worktree-Create | neve | 0m<br>0m | codex, shuttle |
+| T7 | **Codex trial: follow the sandbox darn run with a Codex writer to landing and report**<br>• Follows codex-greet in the lym-test sandbox hub, a darn run with a Codex writer, to landing; report and bug notes | [`codex-trial-darn-e2e`](design-codex-trial-darn-e2e.md) | darn · docs | Seed-Child | neve | 1m<br>0m | codex, shuttle |
 
 #### Ready (0)
 
@@ -99,7 +99,7 @@ Not released; nothing starts it until its status is cleared.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light |  | 4d<br>18h | fabric |
-| T6 | `draft` **docs/research gets an index and loses its design notes**<br>• docs/research mixes layouts, near-duplicate series and design notes with no index; three options from an index alone to topic folders | [`research-dir-tidy`](design-research-dir-tidy.md) | darn · docs | T3 | 6m<br>5m |  |
+| T6 | `draft` **docs/research gets an index and loses its design notes**<br>• docs/research mixes layouts, near-duplicate series and design notes with no index; three options from an index alone to topic folders | [`research-dir-tidy`](design-research-dir-tidy.md) | darn · docs | T3 | 7m<br>5m |  |
 
 ### Notes (24)
 
