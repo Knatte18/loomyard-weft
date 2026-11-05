@@ -1,0 +1,1245 @@
+diff --git a/README.md b/README.md
+index 2a1c9d3f..cb0d77fd 100644
+--- a/README.md
++++ b/README.md
+@@ -113,12 +113,12 @@ The orch steps in only when a run halts: dobby tells it, and it fixes what it ca
+    Every agent runs in an interactive terminal as a [Claude Code](https://claude.ai/code) session, with its skills, hooks and subagents, and you can attach to any of them with `lym reed attach` and watch.
+ 5. **Messaging through hooks.**
+    `creel`, the hub's message service, delivers messages into running agent sessions.
+-   It uses Claude Code's hooks, commands Claude Code runs at fixed points such as after each tool call.
++   It uses Claude Code's hooks, commands Claude Code runs at fixed points such as after each tool call, and Codex's hooks in the same way for a Codex run.
+    The senders are the orch, other agents and `lym` itself.
+ 6. **A long-lived orch.**
+    A watcher clears or compacts the orch's context before the window fills, so the orch session continues past one context window.
+ 
+-Under development: `creel` messages to Codex sessions, as part of the Codex support.
++Under trial: `creel` messages to Codex sessions through Codex's hooks, as part of the Codex support.
+ Planned: a Slack integration for `creel`.
+ 
+ ## Measurements from its own runs
+diff --git a/docs/overview.md b/docs/overview.md
+index b6ebec75..cb679852 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -429,7 +429,7 @@ User-facing modules each get one `lym <module>` namespace:
+   defaults to `bug`.
+   Callable from any sandbox agent context with no config. ✅ Implemented.
+ - **reed** — **the window to the world**: tmux overlay + **strand** bookkeeping + render (`internal/reedcli` + `internal/reedengine` + `internal/reedengine/render`). Hosts every managed process as a strand in a window of its own or its group's, persists to `.lym/reed.json` (`lym reed up|add|remove|status|list|attach|switch|resume|watchdog|down`); `lym reed add` places a strand `--anchor own-window` by default. Every strand carries a hierarchical full name (see the `internal/agentname` package documentation), mirrored into its pane title and Claude session name and exported to its process as `LYM_STRAND_NAME` and `LYM_PARENT`, with the watchdog repairing drift; `list` is the hub-wide name directory. Built on what its proof-of-concept, `muxpoc`, proved first (env hygiene, native `--resume`); `muxpoc` has since been deleted, its job done. `reed attach` and `reed watchdog` are this module's two registered interactive-handoff exceptions ([PATTERN-cli-cobra](../pattern/PATTERN-cli-cobra.md)): `attach` hands the operator's stdio to a `tmux attach-session` child in place, pre-flighting through checking tmux's floor version, booting the session if cold and checking server/session liveness, and `watchdog` is the detached per-hub name-repair and reap daemon that blocks for its process lifetime — in both cases every fallible step runs pre-flight, on the envelope, and only the terminal-handover/daemon tail itself is exempt from emitting JSON. `add` and `attach` boot this worktree's session when none is up, with `up`'s own semantics — a bare substrate, with no persisted strand relaunched — instead of refusing; every other reed verb still refuses on a cold worktree. ✅ Implemented. See the `internal/reedengine` package documentation.
+-- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengine/codexengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await|await-forks`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits, and each repeatable `--skill` is loaded in its one first turn; in a hub an opened Claude session carries creel's hook delivery and the creel trust sentence as a run session does, so mail reaches it through its hooks, and an opened Codex session runs under the lym Codex home with no shell guard and no creel hooks; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository; its cap defaults to the caller role's keep-warm cap from `claude.yaml`. `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine: a reviewer, fixer or writer that waits inside it takes every fork's result in one turn instead of waking once per fork. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into the outcomes `done`/`died`/`timeout` and `api-error`. A spec with `APIErrorRetries` re-sends a turn the provider's API ended on an error that many times, then ends the run `api-error`; a turn end the engine reads as a model the provider does not know, Claude's `model_not_found`, ends the run `api-error` at once. Any other turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run holds at once with an output file missing, a gated run with every output file present counts done once they pass the shell wait bound after telling the agent to read them, and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane; the exception is a handle whose own `Stop` removed the strand, which ends `died` and is recorded as stopped unless the files show the run done. No guardrail denies the in-process `Agent` tool: a subagent or fork shows in the session's own pane and lym reads its transcript under the session's `subagents` directory. A `PreToolUse` guardrail denies `AskUserQuestion` when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode, a version check included (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and to a package-scoped compile check the hub's `refuse_raw` does not refuse, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write, and a fifth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a headless `claude` launch with `-p` or `--print`, whose work shows in no pane, steering the session to a subagent through the `Agent` tool; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one and follows `[creel]` mail from its hooks. Every settings document the Claude engine writes, a run's and an opened session's alike, sets Claude Code's `attribution` to empty commit and pull-request texts, so no session lym launches credits itself in a commit or pull request and a landing's credit block stays the one credit. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). `claude.yaml`'s `keep_warm_cap` (template 250s) and `keep_warm_cap_roles` set the per-role keep-warm cap beside them. While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Bash`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups (a Bash call with a read-only lookup command such as `grep`, `find` or a git read counting as one), a sliced read of a short or already-read file, or a chain of edit-only messages; a subagent's or fork's call is judged against that agent's own transcript, context and nudge count; it never denies a call, and the block's switches and thresholds are config. The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, or per run by a model-spec naming it. Two engines are registered: `claude`, and `codex`, which drives the Codex CLI's TUI under one shared lym Codex home (`codex.yaml`'s `home`, linked to the operator's own login and sessions, its folder trust rendered by lym), with `-a never -s workspace-write` and, as writable roots, the records checkout it is told through its config dirs (none outside a hub), the checkout's git dir and the common git dir it links to, so a session in a linked worktree can commit, and the folders of `codex.yaml`'s `writable_roots` that exist (template: the Go build cache); it loads skills as SKILL.md files the model reads by absolute path under `codex.yaml`'s `skill_roots`, and installs the shell guard rows of the `shellguard` table as `PreToolUse` hooks matching `Bash` with Codex's own steer and notice texts (`apply_patch` in place of Read, Edit and Write), the python and publish rows following their switches and the refuse-raw row a non-empty `refuse_raw` list, but has no fork audit or creel hooks yet, and the model registry's `sol`, `astra` and `luna` aliases name it. `lym shuttle run --model` takes the model spec `lym shuttle open` takes, so an alias picks its engine from the model registry and the bracket the effort; the model and effort are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). A prompt deferred behind the skill-load turn is typed again at a held turn end, or when `Attach` takes over the run, while no turn start carries it, so an agent that sat idle without its task gets it. Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
++- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengine/codexengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await|await-forks`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits, and each repeatable `--skill` is loaded in its one first turn; in a hub an opened Claude session carries creel's hook delivery and the creel trust sentence as a run session does, so mail reaches it through its hooks, and an opened Codex session runs under the lym Codex home with no shell guard and no creel hooks; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository; its cap defaults to the caller role's keep-warm cap from `claude.yaml`. `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine: a reviewer, fixer or writer that waits inside it takes every fork's result in one turn instead of waking once per fork. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into the outcomes `done`/`died`/`timeout` and `api-error`. A spec with `APIErrorRetries` re-sends a turn the provider's API ended on an error that many times, then ends the run `api-error`; a turn end the engine reads as a model the provider does not know, Claude's `model_not_found`, ends the run `api-error` at once. Any other turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run holds at once with an output file missing, a gated run with every output file present counts done once they pass the shell wait bound after telling the agent to read them, and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane; the exception is a handle whose own `Stop` removed the strand, which ends `died` and is recorded as stopped unless the files show the run done. No guardrail denies the in-process `Agent` tool: a subagent or fork shows in the session's own pane and lym reads its transcript under the session's `subagents` directory. A `PreToolUse` guardrail denies `AskUserQuestion` when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode, a version check included (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and to a package-scoped compile check the hub's `refuse_raw` does not refuse, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write, and a fifth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a headless `claude` launch with `-p` or `--print`, whose work shows in no pane, steering the session to a subagent through the `Agent` tool; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one and follows `[creel]` mail from its hooks. Every settings document the Claude engine writes, a run's and an opened session's alike, sets Claude Code's `attribution` to empty commit and pull-request texts, so no session lym launches credits itself in a commit or pull request and a landing's credit block stays the one credit. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). `claude.yaml`'s `keep_warm_cap` (template 250s) and `keep_warm_cap_roles` set the per-role keep-warm cap beside them. While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Bash`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups (a Bash call with a read-only lookup command such as `grep`, `find` or a git read counting as one), a sliced read of a short or already-read file, or a chain of edit-only messages; a subagent's or fork's call is judged against that agent's own transcript, context and nudge count; it never denies a call, and the block's switches and thresholds are config. The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, or per run by a model-spec naming it. Two engines are registered: `claude`, and `codex`, which drives the Codex CLI's TUI under one shared lym Codex home (`codex.yaml`'s `home`, linked to the operator's own login and sessions, its folder trust rendered by lym), with `-a never -s workspace-write` and, as writable roots, the records checkout it is told through its config dirs (none outside a hub), the checkout's git dir and the common git dir it links to, so a session in a linked worktree can commit, and the folders of `codex.yaml`'s `writable_roots` that exist (template: the Go build cache); it loads skills as SKILL.md files the model reads by absolute path under `codex.yaml`'s `skill_roots`, and installs the shell guard rows of the `shellguard` table as `PreToolUse` hooks matching `Bash` with Codex's own steer and notice texts (`apply_patch` in place of Read, Edit and Write), the python and publish rows following their switches and the refuse-raw row a non-empty `refuse_raw` list; a Codex run in a hub carries creel's hook delivery, the mail handed over as a hook block after a tool call and at a turn end, an idle session woken by its async waiter hook through `codex queue`, and the creel trust sentence in its prompt file, while an opened Codex session stays a pane-mail strand; it has no fork audit, and the model registry's `sol`, `astra` and `luna` aliases name it. `lym shuttle run --model` takes the model spec `lym shuttle open` takes, so an alias picks its engine from the model registry and the bracket the effort; the model and effort are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). A prompt deferred behind the skill-load turn is typed again at a held turn end, or when `Attach` takes over the run, while no turn start carries it, so an agent that sat idle without its task gets it. Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
+ - **orch** — the hub orchestrator hosted as an interactive Claude session in a reed strand of the prime worktree or of a beam, cycled before its context fills (`internal/orchcli` + `internal/orchengine`; `lym orch stop|status|refresh|distill|withdraw|rules`, in the prime and in any beam). `lym beam start` first ensures the worktree's `runs` strand, which runs `lym batten overview` as the beam's window, named `beam: prime` or `beam: <slug>` opened with the beam's board handle as in `P1: beam: <slug>`, and `stop` leaves it; ensuring it adds the runs strand beside a `loom-status` strand a pawl run's `lym loom start` put in an overview window first, as the session's first overview window, and a failure to add, replace or record it is a warning on the bring-up report naming `lym beam start`, never a stop; the orchestrator has a window of its own, and the session's windows run the beam window, agents, shell. A detached watcher has the session write a note, then clears it and resumes it from that note (`refresh`) or compacts it in place (`distill`), never clearing or compacting without one. ✅ Implemented. See the `internal/orchengine` package documentation.- **webster** — the implementer module: one long-lived Master session that reads the plan and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool), each fork reading its cards' code itself, instead of spawning a fresh reed/tmux strand per batch;
+   bracket verbs (`begin-batch`/`record-batch`) drive each in-session fork (Master ends its turn while a backgrounded fork works and records the batch on the fork's completion notification, shuttle reading that turn end as waiting rather than done), and a genuine model escalation (recovery after a stuck/report-less fork) spawns a cold strand.
+   Consumes the flat card-list plan (pinned in the plan-format blocks `contracts/stencils/loom/loom-block-plan-*.md`, which `contracts/stencils/loom/loom-template-plan.md`, the Plan producer's own stencil, includes) via its own sole parser, `internal/planparser`, groups cards into execution batches via `internal/batcher`, a separate config-selected registry module webster consumes (profiles in `batcher.yaml`, the `wide` cost profile by default), then runs those batches in card order, refusing a backward dependency derived from the cards' own `Targets`/`Uses` refs, records the partition in `state.json` at first init, and carries the plan's `## verify:` command as a must-pass gate on Merriam's strand: a failure is rerun once (a pass on the rerun records the identities as flaky;
+diff --git a/internal/creelcli/hookread.go b/internal/creelcli/hookread.go
+index 634c7060..f27ef2bd 100644
+--- a/internal/creelcli/hookread.go
++++ b/internal/creelcli/hookread.go
+@@ -16,7 +16,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shuttleengines"
+ )
+ 
+-// hookReadVerb is the hidden verb's name, which the Claude engine's hooks spell.
++// hookReadVerb is the hidden verb's name, which the hooks of a strand's engine spell.
+ const hookReadVerb = "hook-read"
+ 
+ // hookReadTimeout bounds the verb's call to the daemon, since the provider holds the session at the tool boundary until its hook ends.
+diff --git a/internal/creelcli/hookread_test.go b/internal/creelcli/hookread_test.go
+index ef0037e4..874730e0 100644
+--- a/internal/creelcli/hookread_test.go
++++ b/internal/creelcli/hookread_test.go
+@@ -1,8 +1,9 @@
+-// hookread_test.go pins the exit decision of the hidden hook-read verb, which only a hook-driven CLI run reaches in pieces.
++// hookread_test.go pins the exit decisions of the hidden hook-read and hook-wait verbs and hook-wait's wake, which only a hook-driven CLI run reaches in pieces.
+ 
+ package creelcli
+ 
+ import (
++	"bytes"
+ 	"errors"
+ 	"testing"
+ 
+@@ -41,6 +42,68 @@ func TestHookWaitExit(t *testing.T) {
+ 	}
+ }
+ 
++// rewakeRenderer is an engine whose idle waiter wakes the session by writing the text to stderr and exiting 2.
++type rewakeRenderer struct{}
++
++func (rewakeRenderer) HookInput([]byte) (shuttleengine.HookInput, error) {
++	return shuttleengine.HookInput{}, nil
++}
++
++func (rewakeRenderer) HookOutput(shuttleengine.HookEvent, string, string) ([]byte, error) {
++	return nil, nil
++}
++
++func (rewakeRenderer) RewakeOutput(text string) ([]byte, int) { return []byte(text + "\n"), 2 }
++
++// queueingRenderer is an engine whose idle waiter starts the woken turn itself; it records what it was asked to wake with and answers err.
++type queueingRenderer struct {
++	rewakeRenderer
++	err     error
++	payload string
++	text    string
++}
++
++func (r *queueingRenderer) WakeIdle(payload []byte, text string) error {
++	r.payload, r.text = string(payload), text
++	return r.err
++}
++
++// TestWakeSession pins hook-wait's wake of a rung session.
++// An engine woken by a hook's exit gets its wake text on stderr and its wake code.
++// An engine that wakes the session itself is handed the hook payload and the mail and ends the hook with 0.
++// Its failure is returned so the mail stays unread.
++func TestWakeSession(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	payload, mail := []byte(`{"session_id":"thread-1"}`), "[creel] #1\n[creel] #2"
++	failure := errors.New("codex queue failed")
++	tests := []struct {
++		name       string
++		renderer   shuttleengine.ToolBoundaryContextRenderer
++		wantCode   int
++		wantStderr string
++		wantErr    error
++		wantWaked  bool
++	}{
++		{name: "WokenByTheHookExit", renderer: rewakeRenderer{}, wantCode: 2, wantStderr: mail + "\n"},
++		{name: "WakesItself", renderer: &queueingRenderer{}, wantWaked: true},
++		{name: "WakeFails", renderer: &queueingRenderer{err: failure}, wantErr: failure, wantWaked: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			var stderr bytes.Buffer
++			code, err := wakeSession(tt.renderer, payload, mail, &stderr)
++			if code != tt.wantCode || !errors.Is(err, tt.wantErr) || stderr.String() != tt.wantStderr {
++				t.Errorf("wakeSession() = %d, %v with stderr %q; want %d, %v with stderr %q", code, err, stderr.String(), tt.wantCode, tt.wantErr, tt.wantStderr)
++			}
++			if queueing, ok := tt.renderer.(*queueingRenderer); ok && (queueing.payload != string(payload) || queueing.text != mail) {
++				t.Errorf("WakeIdle got (%q, %q); want (%q, %q)", queueing.payload, queueing.text, payload, mail)
++			}
++		})
++	}
++}
++
+ // sendError wraps an error the way the client wraps a failed write of the acknowledgement, so the row reaches errors.Is through a chain.
+ type sendError struct{ err error }
+ 
+diff --git a/internal/creelcli/hookwait.go b/internal/creelcli/hookwait.go
+index 608cee7f..bae9fa16 100644
+--- a/internal/creelcli/hookwait.go
++++ b/internal/creelcli/hookwait.go
+@@ -11,14 +11,15 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/creelengine"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengines"
+ )
+ 
+-// hookWaitVerb is the hidden verb's name, which the Claude engine's waiter hook spells.
++// hookWaitVerb is the hidden verb's name, which the waiter hook of a strand's engine spells.
+ const hookWaitVerb = "hook-wait"
+ 
+ // hookWaitCmd builds the `hook-wait` subcommand, hidden because only a strand's idle waiter hook runs it.
+-// It prints nothing to standard output; on a ring it writes the claimed mail to standard error as the engine's wake text, acknowledges it and exits with the engine's wake code, and every other end exits 0 printing nothing.
++// It prints nothing to standard output; on a ring it wakes the session with the claimed mail, acknowledges it and exits with the engine's wake code, and every other end exits 0 printing nothing.
+ func hookWaitCmd() *cobra.Command {
+ 	return &cobra.Command{
+ 		Use:         hookWaitVerb + " <engine>",
+@@ -30,7 +31,9 @@ caller strand's idle waiter open on the daemon, with no timeout of its own: the
+ hook entry's timeout bounds it. When the daemon wakes the idle strand with its
+ mail, hook-wait writes the claimed [creel] lines to standard error as the
+ engine's wake text, acknowledges them and exits with the engine's wake code, 2
+-for Claude, which wakes the session with the mail. The wait is never resumed
++for Claude, which wakes the session with the mail. An engine no hook exit wakes,
++Codex, starts the woken turn with the lines itself before they are
++acknowledged, and hook-wait then exits 0. The wait is never resumed
+ once a ring reached it. A call from a subagent or fork, a waiter a newer one
+ superseded, an unreachable daemon, any refusal, a ring whose lines could not be
+ written and a ring whose acknowledgement could not be sent exit 0 and print
+@@ -57,8 +60,22 @@ func hookWaitExit(wakeCode int, wroteLines bool, err error) int {
+ 	return wakeCode
+ }
+ 
++// wakeSession wakes the idle session whose waiter hook input is payload with text, the claimed mail lines, and returns the exit code hook-wait ends with.
++// An engine that starts the woken turn itself is asked to, and ends the hook with 0; any other has its wake text written to stderr and ends it with its wake code.
++// An error means the session was not woken, so the caller leaves the mail unread.
++func wakeSession(renderer shuttleengine.ToolBoundaryContextRenderer, payload []byte, text string, stderr io.Writer) (int, error) {
++	if waker, ok := renderer.(shuttleengine.IdleWaker); ok {
++		return 0, waker.WakeIdle(payload, text)
++	}
++	out, code := renderer.RewakeOutput(text)
++	if _, err := stderr.Write(out); err != nil {
++		return 0, err
++	}
++	return code, nil
++}
++
+ // hookWait holds the caller strand's idle waiter and returns the exit code the command sets.
+-// On a ring it writes the claimed mail to standard error as the engine's wake text before the client acknowledges it, so a write that fails leaves the mail unread.
++// On a ring it wakes the session with the claimed mail before the client acknowledges it, so a wake that fails leaves the mail unread.
+ func hookWait(cmd *cobra.Command, engine string) int {
+ 	renderer, ok := shuttleengines.ToolBoundaryRenderer(engine)
+ 	if !ok {
+@@ -83,8 +100,8 @@ func hookWait(cmd *cobra.Command, engine string) int {
+ 		for i, msg := range resp.Messages {
+ 			lines[i] = creelengine.MessageLine(msg)
+ 		}
+-		stderr, code := renderer.RewakeOutput(strings.Join(lines, "\n"))
+-		if _, err := cmd.ErrOrStderr().Write(stderr); err != nil {
++		code, err := wakeSession(renderer, payload, strings.Join(lines, "\n"), cmd.ErrOrStderr())
++		if err != nil {
+ 			return err
+ 		}
+ 		wakeCode, wroteLines = code, true
+diff --git a/internal/creelengine/doc.go b/internal/creelengine/doc.go
+index 771138e4..d9005960 100644
+--- a/internal/creelengine/doc.go
++++ b/internal/creelengine/doc.go
+@@ -81,7 +81,7 @@
+ // A reply to an EXTERNAL sender, which only a waiting `post --wait-reply` receives and no claim hands out, keeps a 64 KiB cap on its body.
+ // A claim never hands out a message an older binary stored whose line is past 10,000 UTF-16 units, the cap Claude Code keeps of one hook field; it stays for `lym creel read` and raises no mail flag.
+ //
+-// The pane path types notices and reminders only into a pane-mail strand, one whose session runs without creel's hook delivery, as a Claude session launched before that delivery, a Codex session or a hand-added strand does;
++// The pane path types notices and reminders only into a pane-mail strand, one whose session runs without creel's hook delivery, as a Claude session launched before that delivery, a Codex session opened with `lym shuttle open` or a hand-added strand does;
+ // a strand marked `CreelHooks` gets its mail through its hooks, and only queued injects are typed into its pane.
+ // A notice is a message from any sender but an agent strand, a program or EXTERNAL, whose body is at most 4 KiB.
+ // It is carried in full in its own line, typed when the receiver is idle, `[creel] #<id> from "<sender>": <body>`, with every run of line breaks and other control characters turned into one space.
+diff --git a/internal/hubgeom/hubgeom_test.go b/internal/hubgeom/hubgeom_test.go
+index 8b7c702f..f60f16a2 100644
+--- a/internal/hubgeom/hubgeom_test.go
++++ b/internal/hubgeom/hubgeom_test.go
+@@ -21,7 +21,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+-	"github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+@@ -441,7 +441,7 @@ func TestCreelGeometry(t *testing.T) {
+ 		t.Errorf("CreelGeometry(%q) = %+v; want %+v", hub, got, want)
+ 	}
+ 	// A Claude strand's mail hook tests flags in the directory its engine derives from the board directory alone.
+-	if hookDir := claudeengine.CreelFlagDir(fabricengine.BoardDir(hub)); got.FlagDir != hookDir {
++	if hookDir := shuttleengine.CreelFlagDir(fabricengine.BoardDir(hub)); got.FlagDir != hookDir {
+ 		t.Errorf("CreelGeometry(%q).FlagDir = %q; want the Claude hook's %q", hub, got.FlagDir, hookDir)
+ 	}
+ 
+diff --git a/internal/shuttleengine/claudeengine/claudeengine.go b/internal/shuttleengine/claudeengine/claudeengine.go
+index b0e15601..6564a3f8 100644
+--- a/internal/shuttleengine/claudeengine/claudeengine.go
++++ b/internal/shuttleengine/claudeengine/claudeengine.go
+@@ -269,7 +269,7 @@ func (c *Claude) creelFlagDirForHook() (string, error) {
+ 	if c.dirs.Board == "" {
+ 		return "", nil
+ 	}
+-	flagDir := CreelFlagDir(c.dirs.Board)
++	flagDir := shuttleengine.CreelFlagDir(c.dirs.Board)
+ 	if runtime.GOOS != "windows" {
+ 		return flagDir, nil
+ 	}
+diff --git a/internal/shuttleengine/claudeengine/command_test.go b/internal/shuttleengine/claudeengine/command_test.go
+index f315d644..fa078bf4 100644
+--- a/internal/shuttleengine/claudeengine/command_test.go
++++ b/internal/shuttleengine/claudeengine/command_test.go
+@@ -543,7 +543,7 @@ func checkOpenCreelFiles(t *testing.T, launch shuttleengine.Launch, dir, boardDi
+ 			}
+ 		}
+ 	}
+-	flagDir := CreelFlagDir(boardDir)
++	flagDir := shuttleengine.CreelFlagDir(boardDir)
+ 	if runtime.GOOS == "windows" {
+ 		posixFlagDir, err := shuttleengine.PosixPath(flagDir)
+ 		if err != nil {
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index 8e046728..ab0e758c 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -141,7 +141,7 @@
+ // The settings leave Claude Code's `autoContinueAtUsageLimit` unset, so a session the usage limit stopped waits for the orch's wake and revive rather than racing it.
+ // They set Claude Code's `attribution` to `{"commit": "", "pr": ""}`, so a commit or pull request the session makes carries no credit of its own and a landing's credit block stays the one credit.
+ // An engine told a hub board directory also installs a second PostToolUse entry with no matcher, creel's mail hook; an engine told none, a standalone run, installs the stamp alone.
+-// Its command is plain POSIX `sh`: it forms the strand's flag name from `$LYM_STRAND_NAME` by parameter expansion alone, turning every `:` into `.` as agentname.FileName does, and exits 0 at once unless that flag stands in CreelFlagDir of the board directory, so a tool call with no mail starts no process.
++// Its command is plain POSIX `sh`: it forms the strand's flag name from `$LYM_STRAND_NAME` by parameter expansion alone, turning every `:` into `.` as agentname.FileName does, and exits 0 at once unless that flag stands in creel's flag directory of the board directory, so a tool call with no mail starts no process.
+ // When the flag stands it changes to `$CLAUDE_PROJECT_DIR` and runs `lym creel hook-read claude`, whose standard output, HookOutput's `{"systemMessage":<echo and mail>,"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":<mail>}}`, hands the strand's mail to the session after the tool call as additional context and shows it to the operator as the system message.
+ // On a Stop, HookOutput prints `{"systemMessage":<echo>,"hookSpecificOutput":{"hookEventName":"Stop","additionalContext":<mail>}}`, the system message absent with no echo, and with an echo and no mail on either event only `{"systemMessage":<echo>}`; no output carries `decision` or `reason`.
+ // A blocking hook would reach the model twice, as `Stop hook feedback:` and as `Stop hook blocking error from command: "<command>": <reason>`, and the operator as `Stop hook error:`, naming the hook's command;
+diff --git a/internal/shuttleengine/claudeengine/prepare_test.go b/internal/shuttleengine/claudeengine/prepare_test.go
+index 59013b7a..13cec8c1 100644
+--- a/internal/shuttleengine/claudeengine/prepare_test.go
++++ b/internal/shuttleengine/claudeengine/prepare_test.go
+@@ -390,7 +390,7 @@ func TestPrepare_AppendSystemPromptMatchesDenyNotice(t *testing.T) {
+ 							t.Errorf("ask=%v python=%v interactive=%v fork=%v: %s = %q; want no --append-system-prompt argument", denyAsk, denyPython, interactive, fork, name, cmd)
+ 						}
+ 					}
+-					want := creelTrustSentence
++					want := shuttleengine.CreelTrustSentence
+ 					if notice != "" {
+ 						want = notice + " " + want
+ 					}
+@@ -515,7 +515,7 @@ func TestPrepare_LogsResolvedPromptCacheTTL(t *testing.T) {
+ // It installs the process-wide passage reader and captures the logger, so it does not run in parallel.
+ func TestPrepare_AppendsStandingPassages(t *testing.T) {
+ 	tiergate.Require(t, 0)
+-	sentences := creelTrustSentence
++	sentences := shuttleengine.CreelTrustSentence
+ 	tests := []struct {
+ 		name string
+ 		// board is the told Bolt checkout; empty means a session outside a hub.
+diff --git a/internal/shuttleengine/claudeengine/settings.go b/internal/shuttleengine/claudeengine/settings.go
+index d220c5c9..6bb50f6a 100644
+--- a/internal/shuttleengine/claudeengine/settings.go
++++ b/internal/shuttleengine/claudeengine/settings.go
+@@ -26,11 +26,8 @@ import (
+ 	"encoding/json"
+ 	"fmt"
+ 	"path"
+-	"path/filepath"
+ 	"strings"
+ 
+-	"github.com/Knatte18/loomyard/internal/agentname"
+-	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/shellguard"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ )
+@@ -113,23 +110,12 @@ func hookContext(hookEventName, text string) ([]byte, error) {
+ // creelMailCommand is the command the PostToolUse hook runs when the strand's mail flag stands: creel's claim verb, told this engine's registry name so it renders the claimed mail as this engine's hook output.
+ const creelMailCommand = "lym creel hook-read claude"
+ 
+-// CreelFlagDir returns the directory creel keeps its per-strand mail flags in, for the hub whose board directory is boardDir.
+-func CreelFlagDir(boardDir string) string {
+-	return filepath.Join(boardDir, lymdirs.DotLymDirName, lymdirs.CreelDirName, lymdirs.CreelFlagDirName)
+-}
+-
+ // creelMailHookCommand returns the PostToolUse hook command that hands the strand its creel mail at each tool boundary.
+ // It forms the flag's file name from the strand's name by shell parameter expansion alone, turning every ":" into ".", and exits 0 at once unless that flag stands in the directory at quotedFlagDir, so a tool call with no mail starts no process.
+ // An empty or unset strand name names no regular file and exits the same way.
+ // When the flag stands it changes to the session's project directory, so a session that moved out of the hub still reaches it, and runs creelMailCommand, whose output is the hook's.
+ func creelMailHookCommand(quotedFlagDir string) string {
+-	return strandFlagName() + `; [ -f ` + quotedFlagDir + `/"$f$n" ] || exit 0; cd "${CLAUDE_PROJECT_DIR:-.}" 2>/dev/null; ` + creelMailCommand
+-}
+-
+-// strandFlagName returns the plain-sh fragment that forms the strand's flag file name in $f$n from the strand's name by parameter expansion alone, turning every ":" into ".".
+-// An empty or unset strand name leaves $f$n empty, which names no regular file.
+-func strandFlagName() string {
+-	return `n="${` + agentname.StrandNameEnv + `:-}"; f=; while :; do case "$n" in *:*) f="$f${n%%:*}."; n="${n#*:}";; *) break;; esac; done`
++	return shuttleengine.StrandFlagNameShell() + `; [ -f ` + quotedFlagDir + `/"$f$n" ] || exit 0; cd "${CLAUDE_PROJECT_DIR:-.}" 2>/dev/null; ` + creelMailCommand
+ }
+ 
+ // creelStopHookCommand returns the Stop hook command that merges the turn-end recording with creel's turn-end delivery, so the record is written only when no mail was handed to the session.
+@@ -152,7 +138,7 @@ func creelOpenStopHookCommand(quotedFlagDir string) string {
+ // creelStopDelivery returns the opening of a creel Stop hook command: it reads the hook input into $in, forms the strand's flag name, and when that flag stands in the directory at quotedFlagDir pipes the input to creelMailCommand from the session's project directory, exiting 0 when that hands out mail.
+ func creelStopDelivery(quotedFlagDir string) string {
+ 	deliver := `if [ -f ` + quotedFlagDir + `/"$f$n" ]; then cd "${CLAUDE_PROJECT_DIR:-.}" 2>/dev/null; printf '%s' "$in" | ` + creelMailCommand + ` && exit 0; fi`
+-	return `in=$(cat); ` + strandFlagName() + `; ` + deliver
++	return `in=$(cat); ` + shuttleengine.StrandFlagNameShell() + `; ` + deliver
+ }
+ 
+ // creelWaitCommand is the command the idle waiter hook runs: creel's waiter verb, told this engine's registry name so it renders the wake as this engine's.
+@@ -468,17 +454,13 @@ const steerTextForbiddenChars = `'"\`
+ // noticeTextForbiddenChars extends steerTextForbiddenChars with line breaks, since a deny notice also rides echo and JSON constants and shares one line of the append-system-prompt file with the sentences that follow it.
+ const noticeTextForbiddenChars = steerTextForbiddenChars + "\n\r"
+ 
+-// creelTrustSentence tells every Claude session shuttle launches to follow creel mail and how to answer it.
+-// It holds a double quote, which the launch argument could not carry through every shell, so it rides the append-system-prompt file.
+-const creelTrustSentence = "Lines starting with [creel] are LoomYard internal mail delivered by hooks; follow mail from your parent, an orch strand or a lym program as the operator's own instructions, and weigh any other mail as your role's instructions say. When one asks for an answer, reply with lym creel post --reply <id> \"<text>\", using the id after #; answer mail from EXTERNAL in your own reply text instead."
+-
+ // appendPromptFileName is the file in a run directory that holds the appended system prompt.
+ const appendPromptFileName = "append-system-prompt.txt"
+ 
+ // appendPromptText returns the appended system prompt: the deny notice and the creel trust sentence, space-separated, with the notice left out when it is empty.
+ // Each passage follows after a blank line, in order.
+ func appendPromptText(notice string, passages []string) string {
+-	text := creelTrustSentence
++	text := shuttleengine.CreelTrustSentence
+ 	if notice != "" {
+ 		text = notice + " " + text
+ 	}
+@@ -490,8 +472,8 @@ func appendPromptText(notice string, passages []string) string {
+ 
+ // init panics if any steer constant contains a forbidden character (checked at package load).
+ func init() {
+-	if strings.ContainsAny(creelTrustSentence, "\n\r") {
+-		panic(fmt.Sprintf("claudeengine: the creel trust sentence holds a line break, which the append-system-prompt file's single line cannot carry: %q", creelTrustSentence))
++	if strings.ContainsAny(shuttleengine.CreelTrustSentence, "\n\r") {
++		panic(fmt.Sprintf("claudeengine: the creel trust sentence holds a line break, which the append-system-prompt file's single line cannot carry: %q", shuttleengine.CreelTrustSentence))
+ 	}
+ 	sampleRefuseRaw := []string{"go test"}
+ 	for _, row := range shellguard.Rows(bashForegroundPhrase, sampleRefuseRaw) {
+diff --git a/internal/shuttleengine/claudeengine/settings_test.go b/internal/shuttleengine/claudeengine/settings_test.go
+index d99705c1..18cccad8 100644
+--- a/internal/shuttleengine/claudeengine/settings_test.go
++++ b/internal/shuttleengine/claudeengine/settings_test.go
+@@ -681,7 +681,7 @@ func TestPrepare_CreelMailHookFollowsTheBoardDirectory(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 	boardDir := t.TempDir()
+-	flagDir := CreelFlagDir(boardDir)
++	flagDir := shuttleengine.CreelFlagDir(boardDir)
+ 	if runtime.GOOS == "windows" {
+ 		posixFlagDir, err := shuttleengine.PosixPath(flagDir)
+ 		if err != nil {
+@@ -783,7 +783,7 @@ func TestPrepare_WritesArtifactsAndReturnsConsistentLaunch(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("read append-system-prompt.txt: %v", err)
+ 	}
+-	if want := buildDenyNotice(false, shuttleengine.Config{}, claude, false, false) + " " + creelTrustSentence; string(appendPromptBytes) != want {
++	if want := buildDenyNotice(false, shuttleengine.Config{}, claude, false, false) + " " + shuttleengine.CreelTrustSentence; string(appendPromptBytes) != want {
+ 		t.Errorf("append-system-prompt.txt = %q; want the deny notice and the trust sentence %q", appendPromptBytes, want)
+ 	}
+ 
+diff --git a/internal/shuttleengine/codexengine/capabilities.go b/internal/shuttleengine/codexengine/capabilities.go
+new file mode 100644
+index 00000000..72af402e
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/capabilities.go
+@@ -0,0 +1,101 @@
++// capabilities.go implements Codex's side of creel's hook delivery: the hook-input parse, the block that hands mail to the session, and the idle wake through `codex queue`.
++
++package codexengine
++
++import (
++	"bytes"
++	"context"
++	"encoding/json"
++	"errors"
++	"fmt"
++	"os"
++	"os/exec"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++)
++
++var (
++	_ shuttleengine.ToolBoundaryContextRenderer = (*Codex)(nil)
++	_ shuttleengine.IdleWaker                   = (*Codex)(nil)
++)
++
++// HookInput parses the JSON object Codex passes a hook on standard input.
++// PostToolUse maps to the tool-boundary event and Stop to the stop event; any other event leaves Event empty.
++// Codex runs no subagent whose calls reach these hooks, so no input is marked as one.
++func (c *Codex) HookInput(payload []byte) (shuttleengine.HookInput, error) {
++	if !bytes.HasPrefix(bytes.TrimSpace(payload), []byte("{")) {
++		return shuttleengine.HookInput{}, fmt.Errorf("parse hook input: the payload is not a JSON object")
++	}
++	var parsed struct {
++		HookEventName  string `json:"hook_event_name"`
++		StopHookActive bool   `json:"stop_hook_active"`
++	}
++	if err := json.Unmarshal(payload, &parsed); err != nil {
++		return shuttleengine.HookInput{}, fmt.Errorf("parse hook input: %w", err)
++	}
++	input := shuttleengine.HookInput{StopHookActive: parsed.StopHookActive}
++	switch parsed.HookEventName {
++	case hookEventPostToolUse:
++		input.Event = shuttleengine.HookEventToolBoundary
++	case hookEventStop:
++		input.Event = shuttleengine.HookEventStop
++	}
++	return input, nil
++}
++
++// HookOutput renders the JSON a PostToolUse or Stop hook prints to hand mail to the session: a block whose reason is the mail, which Codex hands to the model at its next step and shows the operator as `Blocked by hook`.
++// With no mail it is the empty hook output.
++// The echo is dropped: the idle wake queued the same lines as a user turn the operator already sees, and Codex shows a system message beside the reason, so an echo would read as new mail.
++func (c *Codex) HookOutput(_ shuttleengine.HookEvent, mail, _ string) ([]byte, error) {
++	if mail == "" {
++		return []byte("{}"), nil
++	}
++	data, err := json.Marshal(struct {
++		Decision string `json:"decision"`
++		Reason   string `json:"reason"`
++	}{Decision: "block", Reason: mail})
++	if err != nil {
++		return nil, fmt.Errorf("marshal hook output: %w", err)
++	}
++	return data, nil
++}
++
++// RewakeOutput returns no text and exit code 0: no exit of a Codex hook wakes an idle session, so WakeIdle starts the woken turn instead.
++func (c *Codex) RewakeOutput(string) (stderr []byte, exitCode int) {
++	return nil, 0
++}
++
++// queueTimeout bounds one `codex queue` call, which returns once Codex has queued the message.
++const queueTimeout = 30 * time.Second
++
++// WakeIdle starts a turn carrying text in the idle Codex session the waiter hook's payload names, through `codex queue --thread <session_id> --message <text>`.
++// It runs the executable the waiter's environment names in LYM_CODEX_BINARY, or codex on PATH, under the CODEX_HOME that environment sets.
++// A payload naming no session id, or a queue that fails or outlasts queueTimeout, returns an error and starts no turn.
++func (c *Codex) WakeIdle(payload []byte, text string) error {
++	var parsed struct {
++		SessionID string `json:"session_id"`
++	}
++	if err := json.Unmarshal(payload, &parsed); err != nil {
++		return fmt.Errorf("codexengine: parse the idle waiter's hook input: %w", err)
++	}
++	if parsed.SessionID == "" {
++		return errors.New("codexengine: the idle waiter's hook input names no session_id, so no Codex thread can be queued")
++	}
++	bin := os.Getenv(codexBinaryEnvKey)
++	if bin == "" {
++		bin = codexBinary(Config{})
++	}
++	ctx, cancel := context.WithTimeout(context.Background(), queueTimeout)
++	defer cancel()
++	cmd := exec.CommandContext(ctx, bin, "queue", "--thread", parsed.SessionID, "--message", text)
++	logger.Info("codexengine: queueing creel mail as a turn of the idle Codex session", "binary", bin, "thread", parsed.SessionID)
++	out, err := cmd.CombinedOutput()
++	if err != nil {
++		return fmt.Errorf("codexengine: %s queue --thread %s: %w: %s", bin, parsed.SessionID, err, strings.TrimSpace(string(out)))
++	}
++	logger.Info("codexengine: queued creel mail as a turn of the idle Codex session", "thread", parsed.SessionID)
++	return nil
++}
+diff --git a/internal/shuttleengine/codexengine/capabilities_test.go b/internal/shuttleengine/codexengine/capabilities_test.go
+new file mode 100644
+index 00000000..b3e7eb91
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/capabilities_test.go
+@@ -0,0 +1,77 @@
++// capabilities_test.go pins Codex's side of creel's hook delivery that runs no process: the hook-input parse and the hook output that hands mail over.
++
++package codexengine
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestHookInput pins the parse of a Codex hook payload: PostToolUse is the tool boundary, Stop the turn end with its stop_hook_active, another event none, and a payload that is no JSON object is refused.
++func TestHookInput(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name    string
++		payload string
++		want    shuttleengine.HookInput
++		wantErr bool
++	}{
++		{name: "PostToolUse", payload: `{"hook_event_name":"PostToolUse","tool_name":"Bash"}`, want: shuttleengine.HookInput{Event: shuttleengine.HookEventToolBoundary}},
++		{name: "StopContinued", payload: `{"hook_event_name":"Stop","stop_hook_active":true}`, want: shuttleengine.HookInput{Event: shuttleengine.HookEventStop, StopHookActive: true}},
++		{name: "OtherEvent", payload: `{"hook_event_name":"SessionStart"}`, want: shuttleengine.HookInput{}},
++		{name: "NotAnObject", payload: `[1]`, wantErr: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, err := New().HookInput([]byte(tt.payload))
++			if tt.wantErr {
++				if err == nil {
++					t.Errorf("HookInput(%s) error = nil; want a refusal", tt.payload)
++				}
++				return
++			}
++			if err != nil || got != tt.want {
++				t.Errorf("HookInput(%s) = %+v, %v; want %+v", tt.payload, got, err, tt.want)
++			}
++		})
++	}
++}
++
++// TestHookOutput pins that mail goes out as a block whose reason is the mail on either event, that the echo is dropped, and that no mail is the empty hook output.
++// It also pins that no hook exit wakes an idle Codex session.
++func TestHookOutput(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	mail := `[creel] #1 from "ly:orch": go` + "\n" + `[creel] #2 from "ly:orch": stop`
++	block := `{"decision":"block","reason":"[creel] #1 from \"ly:orch\": go\n[creel] #2 from \"ly:orch\": stop"}`
++	tests := []struct {
++		name  string
++		event shuttleengine.HookEvent
++		mail  string
++		echo  string
++		want  string
++	}{
++		{"ToolBoundaryMail", shuttleengine.HookEventToolBoundary, mail, "", block},
++		{"StopMailWithEcho", shuttleengine.HookEventStop, mail, "[creel] Delivered while idle:\n[creel] #0", block},
++		{"EchoAlone", shuttleengine.HookEventToolBoundary, "", "[creel] Delivered while idle:\n[creel] #0", "{}"},
++		{"Nothing", shuttleengine.HookEventStop, "", "", "{}"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, err := New().HookOutput(tt.event, tt.mail, tt.echo)
++			if err != nil || string(got) != tt.want {
++				t.Errorf("HookOutput(%q, %q, %q) = %s, %v; want %s", tt.event, tt.mail, tt.echo, got, err, tt.want)
++			}
++		})
++	}
++	if stderr, code := New().RewakeOutput(mail); stderr != nil || code != 0 {
++		t.Errorf("RewakeOutput() = %q, %d; want no text and exit 0", stderr, code)
++	}
++}
+diff --git a/internal/shuttleengine/codexengine/codexengine.go b/internal/shuttleengine/codexengine/codexengine.go
+index 9cc90c20..98ada63e 100644
+--- a/internal/shuttleengine/codexengine/codexengine.go
++++ b/internal/shuttleengine/codexengine/codexengine.go
+@@ -81,14 +81,15 @@ func validateChoice(choice shuttleengine.ModelChoice, permissionMode string, cod
+ // A gate config that fails to load refuses the launch.
+ // It reads the checkout the anchor sits in and refuses under Codex rules there, all before anything is written.
+ // It then readies the lym home, trusting the worktree root and a linked worktree's main checkout root, and writes prompt.md into runDir.
+-// The prompt file opens with the deny notice announcing each installed shell guard row and the standing passages heddle holds for engine codex and the spec's role, then the spec's prompt.
++// The prompt file opens with the deny notice announcing each installed shell guard row and the creel trust sentence, then the standing passages heddle holds for engine codex and the spec's role, then the spec's prompt.
+ // The launch line carries a PreToolUse hook per installed row, and the writable roots readyHome returns.
++// An engine told a board directory adds creel's hook delivery over that hub's flag directory and marks the launch CreelHooks; an engine told none, a standalone run, adds none.
+ // One root is the records checkout, so the session writes its report through the anchor's `.lym` and `_lym` links.
+ // Another is the checkout's git dirs, so the session can commit.
+ // The rest are codex.yaml's writable_roots that exist, such as a build cache the session's tools fill.
+ // A spec that names skills launches with the skill-load line as its first turn and returns the prompt pointer as Launch.PromptLine, for shuttle to send after the skills load.
+ // The launch line turns on the sandbox's network access, so the session reaches the creel daemon's socket, and appends the exit record to the run's events file once Codex exits.
+-// The launch records session starts, carries no creel hooks and names no session id, since Codex mints its own at the first turn.
++// The launch records session starts and names no session id, since Codex mints its own at the first turn.
+ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengine.Config) (shuttleengine.Launch, error) {
+ 	codex, err := loadConfigOrRefuse(c.dirs)
+ 	if err != nil {
+@@ -126,6 +127,10 @@ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengin
+ 
+ 	sh := shell.ForGOOS()
+ 	eventsPath := filepath.Join(absRunDir, "events.jsonl")
++	var creel creelDelivery
++	if c.dirs.Board != "" {
++		creel = creelDelivery{flagDir: shuttleengine.CreelFlagDir(c.dirs.Board), home: home, bin: codexBinary(codex)}
++	}
+ 	return shuttleengine.Launch{
+ 		Cmd: buildLaunchCmd(sh, launchLine{
+ 			bin:           codexBinary(codex),
+@@ -133,13 +138,14 @@ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengin
+ 			writableRoots: writableRoots,
+ 			model:         spec.Model,
+ 			effort:        spec.Effort,
+-			hooks:         hookSettings(eventsPath, guards),
++			hooks:         hookSettings(eventsPath, guards, creel),
+ 			firstTurn:     firstTurn,
+ 			eventsPath:    eventsPath,
+ 		}),
+ 		ResumeCmd:            buildResumeCmd(sh),
+ 		PromptLine:           promptLine,
+ 		RecordsSessionStarts: true,
++		CreelHooks:           creel.flagDir != "",
+ 	}, nil
+ }
+ 
+@@ -147,7 +153,8 @@ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengin
+ // It validates the model choice and the permission mode and readies the lym home as Prepare does, refusing under Codex rules before anything is written.
+ // Its line runs Codex with no hooks and no first turn, so the session carries no shell guard and waits at its composer, and the pane's shell goes on to Runner.Open's chain when Codex exits.
+ // The line turns on the sandbox's network access as a run's does, so an opened session reaches the creel daemon's socket too.
+-// It writes nothing into dir, carries no creel hooks and names no session id.
++// It writes nothing into dir and names no session id.
++// It carries no creel hooks, since the session has no prompt file to hold the creel trust sentence and Codex reads a hook's block as a failed tool call without it, so the strand gets its mail by the pane path.
+ // Its resume line is empty: Codex mints the session id at the first turn, so a revive starts no Codex and the chain after it ends the strand.
+ func (c *Codex) OpenLaunch(_ string, spec shuttleengine.OpenSpec, _ shuttleengine.Config) (shuttleengine.Launch, error) {
+ 	codex, err := loadConfigOrRefuse(c.dirs)
+@@ -214,13 +221,13 @@ func (c *Codex) readyHome(codex Config) (home string, writableRoots []string, er
+ 	return homes.lym, append(writableRoots, configured...), nil
+ }
+ 
+-// promptText returns the prompt file's text: the deny notice, each passage, then prompt, separated by blank lines, with an empty notice left out.
++// promptText returns the prompt file's text: the deny notice and the creel trust sentence space-separated, each passage, then prompt, separated by blank lines, with an empty notice left out.
+ func promptText(notice string, passages []string, prompt string) string {
+-	var parts []string
++	head := shuttleengine.CreelTrustSentence
+ 	if notice != "" {
+-		parts = append(parts, notice)
++		head = notice + " " + head
+ 	}
+-	return strings.Join(append(append(parts, passages...), prompt), "\n\n")
++	return strings.Join(append(append([]string{head}, passages...), prompt), "\n\n")
+ }
+ 
+ // PromptCacheLifetime returns zero: Codex states no warm lifetime for its prompt cache, so a caller keeps nothing warm.
+diff --git a/internal/shuttleengine/codexengine/command.go b/internal/shuttleengine/codexengine/command.go
+index 4989c95d..98e1a011 100644
+--- a/internal/shuttleengine/codexengine/command.go
++++ b/internal/shuttleengine/codexengine/command.go
+@@ -3,13 +3,14 @@
+ // so a Codex exit reads as a process-ending session end and leaves a dead pane.
+ // An opened session's line is the Codex command alone, with no hooks, no first turn, no exit record and no exit.
+ // The resume line exits the pane's shell alone and starts no Codex.
+-// Every hook is a plain POSIX sh command that appends a stamp line and its payload to the run's events file, touches the run's activity stamp, or guards a shell command.
++// Every hook is a plain POSIX sh command that appends a stamp line and its payload to the run's events file, touches the run's activity stamp, guards a shell command, or runs creel's hook delivery.
+ // Argument quoting and statement chaining are pane-shell mechanics owned by internal/shell.
+ 
+ package codexengine
+ 
+ import (
+ 	"path"
++	"strconv"
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/shell"
+@@ -124,14 +125,19 @@ var recordedHookEvents = []string{hookEventSessionStart, hookEventUserPromptSubm
+ // emptyHookOutput is what every hook prints: an empty decision, which leaves the session's behaviour unchanged.
+ const emptyHookOutput = "printf '{}\\n'"
+ 
+-// recordingCommand returns the hook command that appends one hook event to the events file at eventsPath:
+-// a stamp line naming hookEventName with the hook-side time, then the payload on standard input and a newline, then the empty hook output.
+-// A failed `date` leaves the stamp's time empty, which the parser reads as no time.
++// recordingCommand returns the hook command that appends one hook event to the events file at eventsPath, as appendRecord does, then prints the empty hook output.
+ func recordingCommand(hookEventName, eventsPath string) string {
++	return appendRecord(hookEventName, eventsPath) + "; " + emptyHookOutput
++}
++
++// appendRecord returns the command that appends one hook event to the events file at eventsPath and prints nothing:
++// a stamp line naming hookEventName with the hook-side time, then the payload on standard input and a newline.
++// Its exit status is the payload append's, and a failed `date` leaves the stamp's time empty, which the parser reads as no time.
++func appendRecord(hookEventName, eventsPath string) string {
+ 	quoted := shell.Posix().Quote(eventsPath)
+ 	stamp := `printf '{"` + stampHookKey + `":"` + hookEventName + `","` + stampAtKey + `":"%s"}\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> ` + quoted
+ 	payload := "cat >> " + quoted + " && printf '\\n' >> " + quoted
+-	return stamp + "; " + payload + "; " + emptyHookOutput
++	return stamp + "; " + payload
+ }
+ 
+ // activityCommand returns the hook command that touches the activity stamp beside the events file at eventsPath and prints the empty hook output, so a failed touch never blocks the session.
+@@ -143,18 +149,76 @@ func activityCommand(eventsPath string) string {
+ // toolMatcherAll is the matcher a tool hook takes to run on every tool.
+ const toolMatcherAll = "*"
+ 
++// creelDelivery is what a run's creel hooks are built from; its zero value installs none.
++type creelDelivery struct {
++	// flagDir is the hub's creel flag directory, which holds a flag per strand with unread mail; empty outside a hub.
++	flagDir string
++	// home is the lym Codex home the idle waiter queues a woken turn under.
++	home string
++	// bin is the Codex executable the idle waiter runs to queue that turn.
++	bin string
++}
++
++// Creel's hook verbs, told this engine's registry name so they render its hook output and its wake.
++const (
++	creelMailCommand = "lym creel hook-read " + engineName
++	creelWaitCommand = "lym creel hook-wait " + engineName
++)
++
++// creelWaitTimeoutSeconds bounds the idle waiter hook, a day: long enough to outlive any idle spell.
++const creelWaitTimeoutSeconds = 86400
++
++// codexBinaryEnvKey names the variable the idle waiter's command sets to the Codex executable WakeIdle runs.
++// It is not a CODEX_ key, since Codex may read every one of those as its own.
++const codexBinaryEnvKey = "LYM_CODEX_BINARY"
++
++// creelFlagTest returns the condition that holds when the strand's mail flag, the file name the command formed in $f$n, stands in the directory at flagDir.
++func creelFlagTest(flagDir string) string {
++	return `[ -f ` + shell.Posix().Quote(flagDir) + `/"$f$n" ]`
++}
++
++// creelMailHookCommand returns the PostToolUse hook command that hands the strand its creel mail after a tool call.
++// It prints the empty hook output and starts no process unless the strand's flag stands in flagDir, and then runs creelMailCommand, whose output is the hook's.
++func creelMailHookCommand(flagDir string) string {
++	return shuttleengine.StrandFlagNameShell() + "; " + creelFlagTest(flagDir) + " || { " + emptyHookOutput + "; exit 0; }; " + creelMailCommand
++}
++
++// creelStopHookCommand returns the Stop hook command that merges the turn-end recording into the events file at eventsPath with creel's turn-end delivery, so a Stop that hands the session mail records no turn end.
++// It reads the hook input once; when the strand's flag stands in flagDir it pipes the input to creelMailCommand, whose output is the hook's, and exits 0 when that exits 0, since then the mail continues the turn.
++// Otherwise it appends the Stop record, printing the empty hook output only when the flag is absent, so a hook-read output stays the hook's one JSON document.
++func creelStopHookCommand(flagDir, eventsPath string) string {
++	deliver := `if ` + creelFlagTest(flagDir) + `; then printf '%s' "$in" | ` + creelMailCommand + ` && exit 0; else ` + emptyHookOutput + `; fi`
++	return `in=$(cat); ` + shuttleengine.StrandFlagNameShell() + `; ` + deliver + `; printf '%s' "$in" | { ` + appendRecord(hookEventStop, eventsPath) + `; }`
++}
++
++// creelWaitHookCommand returns the idle waiter's command: creelWaitCommand under the Codex home and with the Codex executable it queues the woken turn through.
++// The home is set on the command as well as inherited, so the queued turn reaches this session's home even when Codex hands its hooks a trimmed environment.
++func creelWaitHookCommand(creel creelDelivery) string {
++	posix := shell.Posix()
++	return codexHomeEnvKey + "=" + posix.Quote(creel.home) + " " + codexBinaryEnvKey + "=" + posix.Quote(creel.bin) + " " + creelWaitCommand
++}
++
+ // hookSettings returns the `-c` hook settings of a run whose events file is eventsPath:
+ // a recording hook per recorded event, one PreToolUse setting holding an entry per guard row when guards is non-empty, then the activity hook after every tool call.
+-// The guard entries share one setting, since a second `-c` of the same key replaces the first.
+-func hookSettings(eventsPath string, guards []shellguard.Row) []string {
++// A creel delivery with a flag directory makes the Stop setting the merged creel Stop command followed by the async idle waiter, and adds the creel mail hook after the activity hook.
++// Entries of one event share one setting, since a second `-c` of the same key replaces the first.
++func hookSettings(eventsPath string, guards []shellguard.Row, creel creelDelivery) []string {
+ 	settings := make([]string, 0, len(recordedHookEvents)+2)
+ 	for _, event := range recordedHookEvents {
++		if event == hookEventStop && creel.flagDir != "" {
++			settings = append(settings, hookSetting(event, hookEntry("", creelStopHookCommand(creel.flagDir, eventsPath)), asyncHookEntry(creelWaitHookCommand(creel), creelWaitTimeoutSeconds)))
++			continue
++		}
+ 		settings = append(settings, hookSetting(event, hookEntry("", recordingCommand(event, eventsPath))))
+ 	}
+ 	if len(guards) > 0 {
+ 		settings = append(settings, hookSetting(hookEventPreToolUse, guardEntries(guards)...))
+ 	}
+-	return append(settings, hookSetting(hookEventPostToolUse, hookEntry(toolMatcherAll, activityCommand(eventsPath))))
++	postToolUse := []string{hookEntry(toolMatcherAll, activityCommand(eventsPath))}
++	if creel.flagDir != "" {
++		postToolUse = append(postToolUse, hookEntry(toolMatcherAll, creelMailHookCommand(creel.flagDir)))
++	}
++	return append(settings, hookSetting(hookEventPostToolUse, postToolUse...))
+ }
+ 
+ // hookEntry returns one `{matcher=…,hooks=[…]}` hook entry running command, with matcher when non-empty.
+@@ -166,6 +230,11 @@ func hookEntry(matcher, command string) string {
+ 	return entry + `hooks=[{type="command",command=` + tomlString(command) + "}]}"
+ }
+ 
++// asyncHookEntry returns one hook entry with no matcher that Codex runs command in the background for, up to timeoutSeconds, without holding the turn open.
++func asyncHookEntry(command string, timeoutSeconds int) string {
++	return `{hooks=[{type="command",command=` + tomlString(command) + `,async=true,timeout=` + strconv.Itoa(timeoutSeconds) + "}]}"
++}
++
+ // hookSetting returns one `hooks.<event>=[…]` setting holding entries.
+ func hookSetting(event string, entries ...string) string {
+ 	return "hooks." + event + "=[" + strings.Join(entries, ",") + "]"
+diff --git a/internal/shuttleengine/codexengine/command_test.go b/internal/shuttleengine/codexengine/command_test.go
+index d96c0f7e..b9935fca 100644
+--- a/internal/shuttleengine/codexengine/command_test.go
++++ b/internal/shuttleengine/codexengine/command_test.go
+@@ -50,31 +50,41 @@ func TestBuildLaunchCmd(t *testing.T) {
+ }
+ 
+ // TestHookSettings pins one setting per recorded hook in order, then one PreToolUse setting holding every guard entry when guards are given, then the activity hook on every tool, each running the command for the run's events file.
++// A creel delivery swaps the Stop setting for the merged creel Stop command and the async idle waiter, and adds the creel mail hook after the activity hook.
+ func TestHookSettings(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+ 	events := "/run/events.jsonl"
+-	recorded := []string{
+-		hookSetting(hookEventSessionStart, hookEntry("", recordingCommand(hookEventSessionStart, events))),
+-		hookSetting(hookEventUserPromptSubmit, hookEntry("", recordingCommand(hookEventUserPromptSubmit, events))),
+-		hookSetting(hookEventStop, hookEntry("", recordingCommand(hookEventStop, events))),
+-		hookSetting(hookEventPermissionRequest, hookEntry("", recordingCommand(hookEventPermissionRequest, events))),
+-	}
+-	activity := hookSetting(hookEventPostToolUse, hookEntry("*", activityCommand(events)))
++	sessionStart := hookSetting(hookEventSessionStart, hookEntry("", recordingCommand(hookEventSessionStart, events)))
++	promptSubmit := hookSetting(hookEventUserPromptSubmit, hookEntry("", recordingCommand(hookEventUserPromptSubmit, events)))
++	permission := hookSetting(hookEventPermissionRequest, hookEntry("", recordingCommand(hookEventPermissionRequest, events)))
++	recorded := []string{sessionStart, promptSubmit, hookSetting(hookEventStop, hookEntry("", recordingCommand(hookEventStop, events))), permission}
++	activityEntry := hookEntry("*", activityCommand(events))
++	activity := hookSetting(hookEventPostToolUse, activityEntry)
+ 	guards := installedGuards(nil, guardInputs{})
++	creel := creelDelivery{flagDir: "/hub/flags", home: "/h", bin: "codex"}
++	waiter := asyncHookEntry(creelWaitHookCommand(creel), creelWaitTimeoutSeconds)
+ 	tests := []struct {
+ 		name   string
+ 		guards []shellguard.Row
++		creel  creelDelivery
+ 		want   []string
+ 	}{
+-		{"NoGuards", nil, append(append([]string{}, recorded...), activity)},
+-		{"Guards", guards, append(append([]string{}, recorded...), hookSetting(hookEventPreToolUse, guardEntries(guards)...), activity)},
++		{"NoGuards", nil, creelDelivery{}, append(append([]string{}, recorded...), activity)},
++		{"Guards", guards, creelDelivery{}, append(append([]string{}, recorded...), hookSetting(hookEventPreToolUse, guardEntries(guards)...), activity)},
++		{"Creel", nil, creel, []string{
++			sessionStart,
++			promptSubmit,
++			hookSetting(hookEventStop, hookEntry("", creelStopHookCommand(creel.flagDir, events)), waiter),
++			permission,
++			hookSetting(hookEventPostToolUse, activityEntry, hookEntry("*", creelMailHookCommand(creel.flagDir))),
++		}},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			got := hookSettings(events, tt.guards)
++			got := hookSettings(events, tt.guards, tt.creel)
+ 			if len(got) != len(tt.want) {
+ 				t.Fatalf("hookSettings() = %d settings; want %d", len(got), len(tt.want))
+ 			}
+@@ -94,6 +104,9 @@ func TestHookSettings(t *testing.T) {
+ 	if got, want := activityCommand(events), `touch '/run/activity-stamp'; printf '{}\n'`; got != want {
+ 		t.Errorf("activityCommand() = %s; want %s", got, want)
+ 	}
++	if want := `{hooks=[{type="command",command="CODEX_HOME='/h' LYM_CODEX_BINARY='codex' lym creel hook-wait codex",async=true,timeout=86400}]}`; waiter != want {
++		t.Errorf("idle waiter entry = %s; want %s", waiter, want)
++	}
+ }
+ 
+ // TestTOMLString pins the basic-string escapes: quote, backslash, newline, tab and other control characters.
+diff --git a/internal/shuttleengine/codexengine/doc.go b/internal/shuttleengine/codexengine/doc.go
+index 098eefce..08228bea 100644
+--- a/internal/shuttleengine/codexengine/doc.go
++++ b/internal/shuttleengine/codexengine/doc.go
+@@ -23,6 +23,7 @@
+ // the resume line starts no Codex, since Codex mints its session id at the first turn.
+ //
+ // Hooks given by `-c` append a stamp line and the payload of SessionStart, UserPromptSubmit, Stop and PermissionRequest to the run's events file, and PostToolUse touches the activity stamp.
++// The prompt file opens with the creel trust sentence, after the deny notice, since Codex reads a hook's block reason as a failed tool call unless its instructions say `[creel]` lines are mail.
+ // A Stop is the turn end and carries the reply; an interrupt fires no Stop, so a newest turn_aborted in the rollout the payloads name marks the turn interrupted.
+ // The rollout's token_count events give the context size, from the newest event's latest call, and the session usage (UsageReader), from the newest event's running total.
+ // The session usage splits input net of its cached part, cache-read, cache-write and output, with a total that names no cache-write reading it as zero; the reasoning tokens are already in the output.
+@@ -39,10 +40,25 @@
+ // A skill `<plugin>:<name>` is a file the model reads: the load line names the newest version's skills/<name>/SKILL.md under codex.yaml's skill_roots by absolute path,
+ // and a tool call of the load turn naming that tail in the rollout reads the skill loaded; a skill under no root is reported unknown.
+ //
++// A run whose engine is told a hub board directory carries creel's hook delivery and is marked CreelHooks, so creel hands its mail over at the session's boundaries and wakes it when idle.
++// A second PostToolUse entry, after the activity hook, forms the strand's flag name from `$LYM_STRAND_NAME` and, only when that flag stands in the hub's creel flag directory, runs `lym creel hook-read codex`;
++// with no flag it prints the empty hook output and starts no process.
++// The Stop recording becomes one merged command: when the flag stands it pipes the payload to `lym creel hook-read codex` and exits 0 when that handed out mail, recording no turn end, since the block continues the turn;
++// otherwise it appends the Stop record as before.
++// HookOutput hands mail over as `{"decision":"block","reason":<mail>}`, which Codex takes at the next step after a tool call and at once after a turn end, and shows the operator as `Blocked by hook`.
++// It drops the echo of mail an idle wake handed over, since the operator already saw that wake as a user line and Codex would show the echo beside the reason.
++// A block after a tool call makes Codex read that call as failed, so the session may run it once more.
++// The Stop setting also carries the idle waiter as a second, async entry with a timeout of 86400 seconds: `lym creel hook-wait codex`, with CODEX_HOME and LYM_CODEX_BINARY set on its command.
++// No exit of a Codex hook wakes an idle session, so when creel rings the waiter it calls WakeIdle, which runs `codex queue --thread <session_id> --message <mail>` with the session id of the Stop payload, before creel marks the mail read;
++// the queued line starts a turn the operator sees as a user message.
++// A failed queue leaves the mail unread, and creel's bell, typed into the pane, wakes the session instead.
++// An engine told no board directory, a standalone run, keeps the plain Stop recording and adds no creel hook.
++//
+ // OpenLaunch opens a named interactive session with no prompt, for `lym shuttle open`: it validates the model choice and readies the lym home as Prepare does,
+ // and its line runs Codex with no hooks and no first turn, so the session carries no shell guard and waits at its composer.
+ // The line keeps the network access, so an opened session reaches creel too, and appends no exit record, since an opened session has no events file.
++// An opened session carries no creel hooks either, since it has no prompt file to hold the creel trust sentence, so it is a pane-mail strand.
+ // Its resume line is empty, so a revive starts no Codex and Runner.Open's chain ends the strand.
+ //
+-// The engine has no fork audit, no transcript reading and no creel hooks.
++// The engine has no fork audit and no transcript reading.
+ package codexengine
+diff --git a/internal/shuttleengine/codexengine/hookrun_test.go b/internal/shuttleengine/codexengine/hookrun_test.go
+index 09b85124..812c23ca 100644
+--- a/internal/shuttleengine/codexengine/hookrun_test.go
++++ b/internal/shuttleengine/codexengine/hookrun_test.go
+@@ -1,14 +1,17 @@
+ // hookrun_test.go runs the hook commands the launch line carries under sh, as Codex runs them, and reads what they write back through the parsers.
++// It also runs the idle wake against a stand-in codex executable.
+ 
+ package codexengine
+ 
+ import (
++	"fmt"
+ 	"os"
+ 	"os/exec"
+ 	"path/filepath"
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/shell"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+@@ -71,3 +74,121 @@ func TestHookCommands_RecordAndStamp(t *testing.T) {
+ 		t.Errorf("activity stamp: %v; want it touched", err)
+ 	}
+ }
++
++// writeExecutable writes a shell script with content to path and makes it executable.
++func writeExecutable(t *testing.T, path, content string) {
++	t.Helper()
++	if err := os.WriteFile(path, []byte(content), 0o755); err != nil {
++		t.Fatalf("write %s: %v", path, err)
++	}
++}
++
++// TestCreelHookCommands pins the creel hooks under sh, with a stand-in lym on PATH that records its arguments and input and answers as told.
++// The mail hook prints the empty decision and runs nothing with no flag, and passes hook-read's output through when the flag stands.
++// The merged Stop hook records the turn end with no flag or when hook-read hands out nothing, and records nothing when hook-read hands out mail, whose block is the hook's output.
++func TestCreelHookCommands(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	bin := t.TempDir()
++	writeExecutable(t, filepath.Join(bin, "lym"), "#!/bin/sh\nprintf '%s|' \"$*\" >> \"$FAKE_CALLS\"; cat >> \"$FAKE_CALLS\"; printf '%s' \"$FAKE_OUT\"; exit \"$FAKE_CODE\"\n")
++	block := `{"decision":"block","reason":"[creel] #1"}`
++	toolPayload := `{"hook_event_name":"PostToolUse"}`
++	tests := []struct {
++		name string
++		// stop selects the merged Stop hook over the mail hook.
++		stop     bool
++		flag     bool
++		fakeOut  string
++		fakeCode int
++		wantOut  string
++		// wantCall is what the stand-in lym recorded; empty means it never ran.
++		wantCall  string
++		wantStops int
++	}{
++		{name: "MailHookNoFlag", wantOut: "{}\n"},
++		{name: "MailHookFlagStands", flag: true, fakeOut: block, wantOut: block, wantCall: "creel hook-read codex|" + toolPayload},
++		{name: "StopNoFlag", stop: true, wantOut: "{}\n", wantStops: 1},
++		{name: "StopHandsOutMail", stop: true, flag: true, fakeOut: block, wantOut: block, wantCall: "creel hook-read codex|" + stopPayload},
++		{name: "StopHandsOutNothing", stop: true, flag: true, fakeCode: 1, wantCall: "creel hook-read codex|" + stopPayload, wantStops: 1},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			flagDir, calls, events := filepath.Join(dir, "flags"), filepath.Join(dir, "calls"), filepath.Join(dir, "events.jsonl")
++			mkdirAll(t, flagDir)
++			if tt.flag {
++				writeFile(t, filepath.Join(flagDir, "ly.alpha"), "")
++			}
++			command, payload := creelMailHookCommand(flagDir), toolPayload
++			if tt.stop {
++				command, payload = creelStopHookCommand(flagDir, events), stopPayload
++			}
++			env := fmt.Sprintf("LYM_STRAND_NAME=ly:alpha; PATH=%s:$PATH; FAKE_CALLS=%s; FAKE_OUT=%s; FAKE_CODE=%d; export FAKE_CALLS FAKE_OUT FAKE_CODE; ",
++				shell.Posix().Quote(bin), shell.Posix().Quote(calls), shell.Posix().Quote(tt.fakeOut), tt.fakeCode)
++
++			if out := runHook(t, env+command, payload); out != tt.wantOut {
++				t.Errorf("hook printed %q; want %q", out, tt.wantOut)
++			}
++			if got, _ := os.ReadFile(calls); string(got) != tt.wantCall {
++				t.Errorf("stand-in lym recorded %q; want %q", got, tt.wantCall)
++			}
++			data, _ := os.ReadFile(events)
++			if parsed, _ := New().ParseEvents(data); len(parsed) != tt.wantStops {
++				t.Errorf("ParseEvents() = %+v; want %d turn ends", parsed, tt.wantStops)
++			}
++		})
++	}
++}
++
++// TestWakeIdle pins the idle wake.
++// A stand-in codex is run as `queue --thread <session_id> --message <text>` under the CODEX_HOME of the environment.
++// A payload naming no session id starts nothing.
++// A queue that fails returns an error carrying its output.
++// It sets LYM_CODEX_BINARY and CODEX_HOME, so it does not run in parallel.
++func TestWakeIdle(t *testing.T) {
++	tiergate.Require(t, 1)
++
++	dir := t.TempDir()
++	queued := filepath.Join(dir, "queued")
++	codex := filepath.Join(dir, "codex")
++	writeExecutable(t, codex, "#!/bin/sh\nprintf '%s\\n' \"$CODEX_HOME\" \"$@\" > "+shell.Posix().Quote(queued)+"\n")
++	t.Setenv(codexBinaryEnvKey, codex)
++	t.Setenv(codexHomeEnvKey, "/lym-home")
++	text := "[creel] #1 from \"ly:orch\": go\n[creel] #2 from \"ly:orch\": stop"
++
++	if err := New().WakeIdle([]byte(`{"hook_event_name":"Stop","session_id":"thread-1"}`), text); err != nil {
++		t.Fatalf("WakeIdle() error: %v", err)
++	}
++	if got, want := readText(t, queued), "/lym-home\nqueue\n--thread\nthread-1\n--message\n"+text+"\n"; got != want {
++		t.Errorf("stand-in codex ran with %q; want %q", got, want)
++	}
++
++	if err := os.Remove(queued); err != nil {
++		t.Fatalf("remove: %v", err)
++	}
++	if err := New().WakeIdle([]byte(`{"hook_event_name":"Stop"}`), text); err == nil || !strings.Contains(err.Error(), "session_id") {
++		t.Errorf("WakeIdle() with no session id error = %v; want a refusal naming session_id", err)
++	}
++	if _, err := os.Stat(queued); !os.IsNotExist(err) {
++		t.Errorf("stand-in codex ran for a payload with no session id: stat error %v", err)
++	}
++
++	failing := filepath.Join(dir, "failing-codex")
++	writeExecutable(t, failing, "#!/bin/sh\necho no such thread >&2\nexit 3\n")
++	t.Setenv(codexBinaryEnvKey, failing)
++	if err := New().WakeIdle([]byte(`{"session_id":"thread-1"}`), text); err == nil || !strings.Contains(err.Error(), "no such thread") {
++		t.Errorf("WakeIdle() with a failing queue error = %v; want one carrying its output", err)
++	}
++}
++
++// readText returns the content of the file at path.
++func readText(t *testing.T, path string) string {
++	t.Helper()
++	data, err := os.ReadFile(path)
++	if err != nil {
++		t.Fatalf("read %s: %v", path, err)
++	}
++	return string(data)
++}
+diff --git a/internal/shuttleengine/codexengine/prepare_test.go b/internal/shuttleengine/codexengine/prepare_test.go
+index a0af4161..1620f16b 100644
+--- a/internal/shuttleengine/codexengine/prepare_test.go
++++ b/internal/shuttleengine/codexengine/prepare_test.go
+@@ -39,8 +39,8 @@ func readRecord(t *testing.T, home string) trustRecord {
+ // The line is built from the lym home, the model and effort, and the writable roots:
+ // the told records checkout (none when the engine is told none), the git dirs of a linked worktree or a plain clone, then the configured roots that exist.
+ // It carries the run's hooks with a guard per row the python switch and the publish guard install, and the prompt pointer.
+-// It also pins the resume line that exits, recorded session starts, no creel hooks and no session id.
+-// The prompt file holds the deny notice and the spec's prompt.
++// It also pins the resume line that exits, recorded session starts, no creel hooks for an engine told no board, and no session id.
++// The prompt file holds the deny notice, the creel trust sentence and the spec's prompt.
+ func TestPrepare_Launch(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -115,7 +115,7 @@ func TestPrepare_Launch(t *testing.T) {
+ 					writableRoots: wantRoots,
+ 					model:         "gpt-6-astra",
+ 					effort:        "medium",
+-					hooks:         hookSettings(filepath.Join(runDir, "events.jsonl"), guards),
++					hooks:         hookSettings(filepath.Join(runDir, "events.jsonl"), guards, creelDelivery{}),
+ 					firstTurn:     launchPointer(promptPath),
+ 					eventsPath:    filepath.Join(runDir, "events.jsonl"),
+ 				}),
+@@ -125,8 +125,8 @@ func TestPrepare_Launch(t *testing.T) {
+ 			if !reflect.DeepEqual(launch, want) {
+ 				t.Errorf("Prepare() launch = %+v; want %+v", launch, want)
+ 			}
+-			if got, err := os.ReadFile(promptPath); err != nil || string(got) != denyNotice(guards)+"\n\nreview the plan" {
+-				t.Errorf("prompt.md = %q, %v; want the deny notice and the spec's prompt", got, err)
++			if got, err := os.ReadFile(promptPath); err != nil || string(got) != denyNotice(guards)+" "+shuttleengine.CreelTrustSentence+"\n\nreview the plan" {
++				t.Errorf("prompt.md = %q, %v; want the deny notice, the creel trust sentence and the spec's prompt", got, err)
+ 			}
+ 			if warnings.String() != "" {
+ 				t.Errorf("warnings = %q; want none", warnings)
+@@ -161,7 +161,7 @@ func TestPrepare_ExpandsHomeInWritableRoots(t *testing.T) {
+ 		bin:           "codex",
+ 		home:          repo.lymHome,
+ 		writableRoots: append(repo.wantGitDirs(anchor), cache),
+-		hooks:         hookSettings(filepath.Join(runDir, "events.jsonl"), installedGuards(nil, guardInputs{})),
++		hooks:         hookSettings(filepath.Join(runDir, "events.jsonl"), installedGuards(nil, guardInputs{}), creelDelivery{}),
+ 		firstTurn:     launchPointer(promptPath),
+ 		eventsPath:    filepath.Join(runDir, "events.jsonl"),
+ 	})
+@@ -224,14 +224,14 @@ func TestPrepare_InstallsGuardsFromItsInputs(t *testing.T) {
+ 				bin:           "codex",
+ 				home:          repo.lymHome,
+ 				writableRoots: repo.wantGitDirs(anchor),
+-				hooks:         hookSettings(filepath.Join(runDir, "events.jsonl"), guards),
++				hooks:         hookSettings(filepath.Join(runDir, "events.jsonl"), guards, creelDelivery{}),
+ 				firstTurn:     launchPointer(promptPath),
+ 				eventsPath:    filepath.Join(runDir, "events.jsonl"),
+ 			})
+ 			if launch.Cmd != wantCmd {
+ 				t.Errorf("Prepare() launch line = %q; want %q", launch.Cmd, wantCmd)
+ 			}
+-			if got, err := os.ReadFile(promptPath); err != nil || string(got) != denyNotice(guards)+"\n\np" {
++			if got, err := os.ReadFile(promptPath); err != nil || string(got) != denyNotice(guards)+" "+shuttleengine.CreelTrustSentence+"\n\np" {
+ 				t.Errorf("prompt.md = %q, %v; want the deny notice of the installed rows and the prompt", got, err)
+ 			}
+ 		})
+@@ -263,7 +263,7 @@ func TestPrepare_AppendsStandingPassages(t *testing.T) {
+ 		t.Fatalf("Prepare() error: %v", err)
+ 	}
+ 	got, err := os.ReadFile(filepath.Join(runDir, "prompt.md"))
+-	if want := denyNotice(installedGuards(nil, guardInputs{})) + "\n\nfirst passage\n\nsecond passage\n\nthe prompt"; err != nil || string(got) != want {
++	if want := denyNotice(installedGuards(nil, guardInputs{})) + " " + shuttleengine.CreelTrustSentence + "\n\nfirst passage\n\nsecond passage\n\nthe prompt"; err != nil || string(got) != want {
+ 		t.Errorf("prompt.md = %q, %v; want %q", got, err, want)
+ 	}
+ 	if want := []string{"codex", "code-review-assist"}; !reflect.DeepEqual(asked, want) {
+@@ -274,6 +274,39 @@ func TestPrepare_AppendsStandingPassages(t *testing.T) {
+ 	}
+ }
+ 
++// TestPrepare_CreelHooksInAHub pins that an engine told a board directory marks the launch CreelHooks.
++// The launch carries the creel Stop and PostToolUse settings over that hub's flag directory.
++// The idle waiter is set to queue under the launch's lym home and the Codex executable codex.yaml names.
++func TestPrepare_CreelHooksInAHub(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	repo := newRepoFixture(t)
++	anchor, _ := repo.addWorktree(t, "wt")
++	engine, _ := newEngine(anchor)
++	board := t.TempDir()
++	repo.writeCodexConfig(t, configengine.ConfigFile(board, "codex"), "binary: /opt/codex/bin/codex-custom\n")
++	engine.dirs.Board = board
++	runDir := t.TempDir()
++
++	launch, err := engine.Prepare(runDir, shuttleengine.Spec{Prompt: "p"}, shuttleengine.Config{})
++	if err != nil {
++		t.Fatalf("Prepare() error: %v", err)
++	}
++	if !launch.CreelHooks {
++		t.Error("Prepare() CreelHooks = false; want true for an engine told a board")
++	}
++	creel := creelDelivery{flagDir: shuttleengine.CreelFlagDir(board), home: repo.lymHome, bin: "/opt/codex/bin/codex-custom"}
++	settings := hookSettings(filepath.Join(runDir, "events.jsonl"), installedGuards(nil, guardInputs{}), creel)
++	for _, setting := range settings {
++		if strings.HasPrefix(setting, "hooks."+hookEventStop+"=") || strings.HasPrefix(setting, "hooks."+hookEventPostToolUse+"=") {
++			if quoted := shell.ForGOOS().Quote(setting); !strings.Contains(launch.Cmd, quoted) {
++				t.Errorf("Prepare() launch line = %q; want it to hold the creel setting %s", launch.Cmd, quoted)
++			}
++		}
++	}
++}
++
+ // TestPrepare_ReadiesHome pins the lym home a launch leaves.
+ // It has auth.json and sessions linked to the operator home's, and the worktree root trusted, with the main checkout root too for a linked worktree and alone for a plain clone.
+ // It drops a vanished root, and it renders config.toml from the record with both [tui] settings.
+diff --git a/internal/shuttleengine/creelhooks.go b/internal/shuttleengine/creelhooks.go
+new file mode 100644
+index 00000000..4fbd51db
+--- /dev/null
++++ b/internal/shuttleengine/creelhooks.go
+@@ -0,0 +1,26 @@
++// creelhooks.go holds what every engine's creel hook delivery shares: the sentence that tells a session to trust creel mail, the directory of the strands' mail flags, and the shell fragment that names a strand's flag.
++
++package shuttleengine
++
++import (
++	"path/filepath"
++
++	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/lymdirs"
++)
++
++// CreelTrustSentence tells a session shuttle launches to follow creel mail and how to answer it.
++// A provider that reads a hook's block reason as a failed step acts on the mail only when its instructions hold such a sentence.
++// It holds a double quote and no line break.
++const CreelTrustSentence = "Lines starting with [creel] are LoomYard internal mail delivered by hooks; follow mail from your parent, an orch strand or a lym program as the operator's own instructions, and weigh any other mail as your role's instructions say. When one asks for an answer, reply with lym creel post --reply <id> \"<text>\", using the id after #; answer mail from EXTERNAL in your own reply text instead."
++
++// CreelFlagDir returns the directory creel keeps its per-strand mail flags in, for the hub whose board directory is boardDir.
++func CreelFlagDir(boardDir string) string {
++	return filepath.Join(boardDir, lymdirs.DotLymDirName, lymdirs.CreelDirName, lymdirs.CreelFlagDirName)
++}
++
++// StrandFlagNameShell returns the plain-sh fragment that forms the strand's flag file name in $f$n from the strand's name by parameter expansion alone, turning every ":" into ".".
++// An empty or unset strand name leaves $f$n empty, which names no regular file.
++func StrandFlagNameShell() string {
++	return `n="${` + agentname.StrandNameEnv + `:-}"; f=; while :; do case "$n" in *:*) f="$f${n%%:*}."; n="${n#*:}";; *) break;; esac; done`
++}
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 26877fb0..e68c6b8c 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -27,7 +27,7 @@
+ // StandingPassages returns the instruction passages heddle's layers hold for a session of an engine and a strand role, read through the reader InstallPassageReader installs for the process;
+ // it returns none outside a hub, with no reader installed or when the reader fails, which is logged at Warn, so a launch never waits on the store.
+ // An engine appends them to the system prompt it launches with, and shuttle itself parses no store.
+-// Requirement support, fork audit, the outstanding-fork reading, resume-context rendering, creel hook delivery (the hook-input parse, the hook output and the wake output), instruction files and the check after startup are optional capabilities beside Engine, which an engine without them lacks.
++// Requirement support, fork audit, the outstanding-fork reading, resume-context rendering, creel hook delivery (the hook-input parse, the hook output and the wake output), the idle wake of a provider no hook exit wakes, instruction files and the check after startup are optional capabilities beside Engine, which an engine without them lacks.
+ // A ForkSubagents run whose engine cannot audit forks finishes with its classified result, a nil ForkAudit and an error, and keeps its run directory.
+ // Spec.Requires lists what a run requires of its engine, and a ForkSubagents spec requires fork support without listing it.
+ // Start checks it right after resolving the spec's engine, and attach checks it against the engine the run's record names unless every output file is already on disk.
+diff --git a/internal/shuttleengine/engine.go b/internal/shuttleengine/engine.go
+index f61a2ceb..a8da27d0 100644
+--- a/internal/shuttleengine/engine.go
++++ b/internal/shuttleengine/engine.go
+@@ -263,6 +263,14 @@ type ToolBoundaryContextRenderer interface {
+ 	RewakeOutput(text string) (stderr []byte, exitCode int)
+ }
+ 
++// IdleWaker is an optional capability beside ToolBoundaryContextRenderer, for a provider whose idle session no hook's exit wakes.
++// Its idle waiter hook starts the woken turn itself, in place of writing RewakeOutput's text.
++type IdleWaker interface {
++	// WakeIdle starts a turn carrying text in the idle session the waiter hook's input payload names.
++	// An error means no turn was started.
++	WakeIdle(payload []byte, text string) error
++}
++
+ // BatchingHookVerb is the name of the hidden `lym shuttle` verb an engine's after-tool-call hook runs to nudge its session back to batching its calls.
+ const BatchingHookVerb = "hook-batching"
+ 
+diff --git a/internal/shuttleengines/shuttleengines_test.go b/internal/shuttleengines/shuttleengines_test.go
+index 7ee06e96..fdfb1bcc 100644
+--- a/internal/shuttleengines/shuttleengines_test.go
++++ b/internal/shuttleengines/shuttleengines_test.go
+@@ -337,7 +337,7 @@ func TestRecordReaders(t *testing.T) {
+ 	}
+ }
+ 
+-// TestToolBoundaryRenderer pins that the claude entry renders the hook output as the engine does and that an unknown name renders none.
++// TestToolBoundaryRenderer pins that the claude entry renders the hook output as the engine does, that the codex entry renders one and wakes an idle session itself, and that an unknown name renders none.
+ func TestToolBoundaryRenderer(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -351,6 +351,10 @@ func TestToolBoundaryRenderer(t *testing.T) {
+ 	if err != nil || wantErr != nil || string(got) != string(want) {
+ 		t.Errorf("HookOutput = %s, %v; want the engine's %s", got, err, want)
+ 	}
++	codex, ok := ToolBoundaryRenderer("codex")
++	if _, wakes := codex.(shuttleengine.IdleWaker); !ok || !wakes {
++		t.Errorf("ToolBoundaryRenderer(codex) = %T, %v; want a renderer that is an IdleWaker", codex, ok)
++	}
+ 	if _, ok := ToolBoundaryRenderer("nope"); ok {
+ 		t.Error("ToolBoundaryRenderer(nope) found one; want none")
+ 	}
