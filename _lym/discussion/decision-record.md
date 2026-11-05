@@ -436,11 +436,9 @@ Rationale: The stored tuples in judged.json are the record; an untracked judgeme
 <!-- /lym:carry-over Discussion-Review -->
 
 <!-- lym:carry-over Plan-Review -->
-- Plan-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
-  Review: _lym/reviews/plan/round-3-review.md; fixer report: _lym/reviews/plan/round-3-fixer-report.md.
-  - card-16-needs-row-constants-created-by-card-19 (class design, severity MEDIUM, open in rounds 3)
-  - drift-expect-never-counted-stuck-untested (class scope, severity BLOCKING, open in rounds 3)
-  - drift-verify-interim-command-stuck-untested (class scope, severity BLOCKING, open in rounds 3)
+- Plan-Review, round 4: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/plan/round-4-review.md; fixer report: _lym/reviews/plan/round-4-fixer-report.md.
+  - card-22-deletes-live-compare-lock-retry (class design, severity BLOCKING, open in rounds 4)
 <!-- /lym:carry-over Plan-Review -->
 
 ## Acceptance criteria
