@@ -628,6 +628,24 @@
       "body": "## Seen\n\n`slack-relay` landed (`5e9d4ffa`) without the operator's presence decision of 2026-11-05.\nIts change description says under \"Not included\" that presence switching by itself and the reed toggle are not in the diff: presence changes only through `lym slack away|back`, the Slack texts and `lym slack stop`.\n\n## Decision (operator, 2026-11-05)\n\nPresence switches by itself, as well as by `away`, `back` and `lym slack away|back`.\n\n- A message from the configured operator on Slack sets presence to `slack` when it is `terminal`.\n  lym sets it (the relay, before it forwards the message), not the orch's judgment; the message is then forwarded as usual, and the `[slack presence]` notice goes out as for any change.\n- A line the operator types in an orch's pane while presence is `slack` sets it back to `terminal`, set by lym from the `UserPromptSubmit` event shuttle already records.\n- lym tells the operator's own lines from what lym puts in the pane itself.\n  A slash command such as ORCHWATCH's `/compact` and `/color`, a text creel or another lym program injected (creel journals each inject), a task notification Claude Code submits itself, and mail a hook hands the session never switch presence.\n  The design names how each kind is recognised, such as matching a submitted prompt against the inject creel journaled for that pane just before it, and tests each kind.\n- Presence shows plainly in reed: a toggle on the status bar beside `follow`, labelled such as `slack: on` lit and `slack: off` unlit, which the operator can click to switch presence either way.\n  It redraws when presence changes by any route.\n- While presence is `slack`, the orch mirrors what it means for the operator to Slack; while `terminal`, it answers on Slack only mail that came from Slack.\n",
       "created": "2026-11-05T20:17:22Z",
       "revised": "2026-11-05T20:17:22Z"
+    },
+    {
+      "id": 1162,
+      "handle": "E1",
+      "slug": "orch-role-shorter",
+      "title": "Shorten the orch role file, the largest single start cost",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "orch"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "role.md costs 19,390 tokens per read: shorten it, or move rarely used parts to a file the orch reads on demand",
+      "body": "## Seen\n\nReport `docs/research/tokens/startup-context-2026-11-05/report.md`: `.lym/orch/role.md`, 54,443 characters, costs 19,390 tokens each time it is read, which is every orch start. It is the largest single source in an orch start, larger than everything Claude Code itself loads.\n\n## Idea\n\nShorten `contracts/orchrole`, or move the parts the orch reads only for a rare verb or event (such as intake, beams, landing halts) into a skill or a file it reads on demand. The command list alone is a large share and repeats what `lym \u003ccommand\u003e --help` gives.",
+      "created": "2026-11-05T20:18:23Z",
+      "revised": "2026-11-05T20:18:23Z"
     }
   ],
   "prime_owner": "neve",
