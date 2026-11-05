@@ -66,7 +66,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **beam merge-parent: the merge-in task can merge, lands as a merge and needs no pull request** | [`merge-parent-lands-right`](design-merge-parent-lands-right.md) | darn · solid | Worktree-Create | neve | 1h<br>1h | pawl, darn, landing, fabric |
+| T1 | **beam merge-parent: the merge-in task can merge, lands as a merge and needs no pull request** | [`merge-parent-lands-right`](design-merge-parent-lands-right.md) | darn · solid | Seed-Child | neve | 1h<br>1h | pawl, darn, landing, fabric |
 | T6 | **Dobby reminds the operator on Slack of a run waiting at PR-Review or Sampler-Session** | [`slack-wait-reminders`](design-slack-wait-reminders.md)<br>[Sketch](decision-slack-wait-reminders.md) | darn · light | Darn-Write | neve | 3h<br>3h | reed |
 | T8 | **Raddle and motif runs start and finish without the orch** | [`raddle-motif-finish-clean`](design-raddle-motif-finish-clean.md) | darn · solid | Code-Burler-Fix | neve | 3h<br>1h | batten, dobby, loom, board, orch |
 
@@ -91,7 +91,7 @@ Not released; nothing starts it until its status is cleared.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | `draft` **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid |  | 2h<br>2h | creel, orch |
-| T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light |  | 5d<br>6h | fabric |
+| T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light |  | 5d<br>7h | fabric |
 
 ### Notes (20)
 
