@@ -3,6 +3,9 @@
   "amendment": true,
   "base": "cde2a832ae70cc89928c4c9f383ee46e71cb7724",
   "judge_subject": {
-    "kind": ""
-  }
+    "kind": "document",
+    "hash": "01ff5146d1fa663ce1a75b24325b4bc9e0f4d14bc92d956e35357a830df3b84d"
+  },
+  "judge_base": "73a5d7729efdbad30c9c96c594d589671f37ef72",
+  "judge_at": "2026-11-05T11:53:59Z"
 }
