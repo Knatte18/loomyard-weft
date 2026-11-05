@@ -370,29 +370,6 @@
       "profile": "light"
     },
     {
-      "id": 1101,
-      "handle": "T13",
-      "slug": "batching-hook-remeasure",
-      "title": "Re-measure the batching hook and the edit-round rule a week after the hook reaches forks",
-      "kind": "task",
-      "labels": [
-        "research",
-        "tools",
-        "claude"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "run-all.sh on a fresh sample: firing rate, batching after a firing, edit chains split by gate fix against mid-round",
-      "body": "## Idea (operator and hub orch, 2026-11-04)\n\nRe-run the turn-savings measurement once about a week of runs has landed with task `batching-hook-reach`, using `docs/research/turns/turn-savings-measure-2026-11-04/run-all.sh` on a fresh sample, no new agent run.\n\n- Count hook firings, by breach and by main session against fork, and whether the next message batched; with a few dozen firings this can be read as a rate.\n- Split the edit-chain turns (edit-only turns following an edit-only turn above 150k) by what they hold: edits after a failed gate, against edits in the middle of a round of edits. Edit follows rose from 2.5% to 4.2% of context in the 2026-11-04 sample, against the heddle entry `lym-plan-edits-before-gate`'s \"make all of those edits in one message\" rule; the split shows whether that rule works.\n- If the hook still shows little effect, the report recommends removing it.\n- Cap: at most 20 darn runs and 5 tapestry runs, the most recent landed after `batching-hook-reach`.\n- Runs as darn with profile `docs`.\n",
-      "status": "done",
-      "created": "2026-11-04T14:33:02Z",
-      "revised": "2026-11-05T19:08:25Z",
-      "profile": "docs",
-      "project": "turn-savings"
-    },
-    {
       "id": 1106,
       "handle": "T7",
       "slug": "drift-rework",
