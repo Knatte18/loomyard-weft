@@ -1,6 +1,6 @@
 # A pair reads its branch from its worktree, so branch_prefix can change with pairs live
 
-`branch-name-recorded` · Task · bug, fabric · running · Drift-Baseline
+`branch-name-recorded` · Task · bug, fabric · running · Darn-Write
 
 ## Seen
 
