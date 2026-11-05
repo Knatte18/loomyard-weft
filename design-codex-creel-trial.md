@@ -1,6 +1,6 @@
 # Live trial: creel mail reaches Codex sessions through the new hooks
 
-`codex-creel-trial` · Task · research, codex, creel · running · Darn-Write
+`codex-creel-trial` · Task · research, codex, creel · running · Drift-Verify
 
 ## Goal
 
