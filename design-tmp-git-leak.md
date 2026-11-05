@@ -1,6 +1,6 @@
 # A test leaves an empty /tmp/.git, which breaks go VCS stamping
 
-`tmp-git-leak` · Task · bug, testkit, gate · running · Finalize
+`tmp-git-leak` · Task · bug, testkit, gate · done
 
 ## Seen (worktree-create-serial's Finalize fixer and hub orch, 2026-11-04)
 
