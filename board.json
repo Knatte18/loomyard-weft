@@ -745,6 +745,25 @@
       "created": "2026-11-05T17:04:32Z",
       "revised": "2026-11-05T19:00:16Z",
       "profile": "solid"
+    },
+    {
+      "id": 1159,
+      "handle": "R1",
+      "slug": "session-scope-launch-trial",
+      "title": "Trial the session-scope settings in a real launch and re-measure start load",
+      "kind": "note",
+      "labels": [
+        "research",
+        "claude",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Check each lever ly-plugin-off-in-other-hubs writes works in Claude Code, and measure one spawned role's and the orch's start load after it",
+      "body": "## Seen\n\nTask `ly-plugin-off-in-other-hubs` writes a session scope into every Claude session's `--settings` file (`internal/shuttleengine/claudeengine/scope.go`, `claude.yaml`'s `session_scope`).\nThe setting names come from the Claude Code 2.1.318 binary; no launch has tried them, and the darn writer could not, since a headless launch is refused in a run.\n\n## Check in a launch\n\n- `enabledPlugins` in the flag layer turns `ly@loomyard` on in a hub whose user settings turn it off, and `prowler@scribe` off.\n- `skillOverrides` `off` hides a plugin skill (`scribe:python-testing`) and a claude.ai skill (`anthropic-skills:docx`) from the listing; the binary's resolver reads plugin skills' overrides only through the synced-skill path, so the plugin case may not work.\n- `disableClaudeAiConnectors`, `disableBundledSkills` and `autoMemoryEnabled: false` drop their sources.\n- `permissions.deny: [\"ListAgents\"]` removes the tool's schema, not only its calls.\n\n## Measure\n\nRe-run `docs/research/tokens/startup-context-2026-11-05/measure.sh` on one spawned role and one orch start after the change, against the report's 34,252 and 45,865 tokens.\n",
+      "created": "2026-11-05T19:12:24Z",
+      "revised": "2026-11-05T19:12:24Z"
     }
   ],
   "prime_owner": "neve",
