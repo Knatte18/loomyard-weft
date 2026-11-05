@@ -316,6 +316,14 @@ Self-picks, reasons in the support log's question ledger: the agent runs the app
   - store-slug-reuse-by-non-raddle-creators (class design, severity MEDIUM, open in rounds 3)
 <!-- /lym:carry-over Discussion-Review -->
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - overview-raddle-and-usage-dirs-stale (class consistency, severity MEDIUM, open in rounds 1)
+  - raddle-file-done-marker-untested (class scope, severity MEDIUM, open in rounds 1)
+  - raddle-file-half-done-not-resumed (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: a board task with recipe `raddle` runs through batten in its own worktree, its rows in order Record-Write, Raddle-Write, Raddle-File, and lands no code; the recipe loader accepts it under the loom contract's record-only form.
