@@ -670,27 +670,6 @@
       "revised": "2026-11-05T05:51:20Z"
     },
     {
-      "id": 1110,
-      "handle": "B4",
-      "slug": "motif-profile-recipe-tapestry",
-      "title": "Motif recipe lists profile_recipe: tapestry",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "loom",
-        "profiles"
-      ],
-      "issues": [
-        58
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #58](https://github.com/Knatte18/loomyard/issues/58).\n\nWhy does the motif recipe list \n\"profile_recipe: tapestry\". It should not depend on Tapestry",
-      "created": "2026-11-05T05:50:21Z",
-      "revised": "2026-11-05T05:50:21Z"
-    },
-    {
       "id": 1111,
       "handle": "F5",
       "slug": "beam-pr-detour-keeps-pr",
@@ -778,27 +757,6 @@
       "revised": "2026-11-05T05:50:36Z"
     },
     {
-      "id": 1115,
-      "handle": "B7",
-      "slug": "finished-motif-reads-draft",
-      "title": "A finished motif run leaves its entry as an ordinary draft, so it reads as not done",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "board",
-        "loom"
-      ],
-      "issues": [
-        53
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #53](https://github.com/Knatte18/loomyard/issues/53).\n\nSeen in hub Models-LYMHUB, beam duplication-and-import-followups, 2026-11-04.\n\nThe motif task knut-rheology-friction-pvt ran Discussion to an approved decision record. lym batten status reports state done, the record is stored on the entry (lym board get --record works), and the entry carries discussed: true. But the board status went back to draft, so the board list and the rendered README show it exactly like a task nobody has started. The operator read it as unfinished work, and nothing on the board says the motif is done.\n\nRelated: the entry is also not treated as finished by the board's own checks; see #52, where a project move is refused because the board still believes the entry has a pair.\n\nExpected: a motif whose Discussion is approved shows as finished on the board, for example a distinct status such as discussed or done-motif in the list, the --text listing and the README, rather than a plain draft. When the record is meant to feed a later task, the entry still needs a visible finished state and no pair record.\n\nWorkaround: none; the operator has to be told the draft status is how a finished motif looks.",
-      "created": "2026-11-05T05:50:38Z",
-      "revised": "2026-11-05T05:50:38Z"
-    },
-    {
       "id": 1116,
       "handle": "B8",
       "slug": "gone-pair-blocks-board-edit",
@@ -862,28 +820,6 @@
       "revised": "2026-11-05T05:50:45Z"
     },
     {
-      "id": 1119,
-      "handle": "B11",
-      "slug": "motif-board-status-stale",
-      "title": "Board status of a motif run stays at Worktree-Create through Discussion",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "board",
-        "batten",
-        "loom"
-      ],
-      "issues": [
-        49
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #49](https://github.com/Knatte18/loomyard/issues/49).\n\n## Seen\n\nHub Models (shortname mo), beam duplication-and-import-followups, task knut-rheology-friction-pvt (T2), recipe motif, released 2026-11-04.\nSome 15 minutes after release, its Discussion-Write session (mo:knut-rheology-friction-pvt:discussion) was live and writing the decision record, and the operator was talking to it.\nAt the same time:\n\n- the board entry, and so the Bolt README, said running · Worktree-Create;\n- lym batten status showed current_producer Run-Shed, history_length 5 (Worktree-Create, Seed-Child, Open-Window, Seed-IDE, Open-IDE done);\n- lym loom status in the task worktree showed current_producer empty and history_length 0;\n- lym beam status showed the run with an empty producer column.\n\nA tapestry run in the same beam (server-based-live-viewer) showed its inner producer on the board, such as running · Webster.\n\n## Expected\n\nThe board status follows the batten rows past Worktree-Create and then the inner run's current producer, Discussion-Write here, and lym loom status names the producer in flight rather than an empty one, so the operator does not read a working run as stuck.\n\n## Issue comment, 2026-11-04\n\nClarification: the README is rendered by the board module on every board commit, so the README is not at fault. The stale value is the board entry's own status field: nothing wrote it after Worktree-Create, so no board commit re-rendered the README. The fix belongs where the run writes its status to the board entry as it moves through the batten rows and into the inner run's producers.\n\n## Issue comment, 2026-11-04\n\nBoard history for the entry, from the board.json commits in Bolt (times +01:00):\n\n- 18:29:56 draft\n- 18:30:08 to 18:34:43 running · Worktree-Create (four commits)\n- 18:44:31 running · Discussion-Bouncer\n- 18:45:01 running · Discussion-Burler-Review\n\nSo the status was never written for Seed-Child through Run-Shed, nor for Discussion-Write, which ran for about ten minutes in between; it jumped from Worktree-Create straight to Discussion-Bouncer. lym board get read the same stale value as board.json, so this is the status write, independent of how the README renders it; my earlier comment's claim about the renderer was not checked and should be disregarded.",
-      "created": "2026-11-05T05:50:47Z",
-      "revised": "2026-11-05T05:50:47Z"
-    },
-    {
       "id": 1120,
       "handle": "F20",
       "slug": "reparent-running-task",
@@ -928,6 +864,34 @@
       "body": "Imported from [issue #47](https://github.com/Knatte18/loomyard/issues/47).\n\n## What happened\n\nHub NORCE-DrillingAndWells/Models, beam `duplication-and-import-followups`, flagged with `lym beam ready`; its pawl run went to PR-Review and opened PR #267.\nThe beam's orch kept running through PR-Review. The machine was then restarted.\n\n1. `lym beam start` in the beam refused: \"beam ... is held by its landing run (status running · PR-Review); way forward: ... run lym beam start again once the landing has ended\". The orch that ran before the restart cannot come back, although lym let it run during the same landing.\n2. The PR-Review reviewer session died with the restart. On the dobby's re-invoke, PR-Review's push of the task branch hit `fabric.push.lock still held after 30s` (a push the restart left running) and the row blocked, so no new reviewer started.\n3. The operator then decided not to land yet and to add one more task to the beam. lym has no verb that withdraws a beam's ready flag or a landing in progress. The workaround was `lym loom goto --to Beam-Await` plus `lym loom resume` in the beam, closing the PR by hand with gh, and keeping the ready record in place, so the beam's dobby will land the beam again as soon as no work remains under it.\n\n## Expected\n\n- `lym beam start` brings back the orch of a beam in landing, as the landing tolerates a live one, at least up to Finalize.\n- A verb to withdraw a ready flag or a pending landing (e.g. `lym beam unready \u003cslug\u003e`), which takes the pawl run back to Beam-Await and closes the landing's pull request.\n- PR-Review waits longer for, or recognises as stale, a push lock held by a push from before a restart.",
       "created": "2026-11-05T05:50:51Z",
       "revised": "2026-11-05T05:50:51Z"
+    },
+    {
+      "id": 1122,
+      "handle": "T1",
+      "slug": "motif-board-fixes",
+      "title": "Motif runs: own profile recipe, a finished state on the board, and live status",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "loom",
+        "board",
+        "batten",
+        "profiles"
+      ],
+      "issues": [
+        58,
+        53,
+        49
+      ],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Motif drops profile_recipe tapestry, a finished motif reads as done, and the board status follows batten rows and the inner producer",
+      "body": "Three motif faults from issues #58, #53 and #49, seen in hub Models-LYMHUB, beam `duplication-and-import-followups`, 2026-11-04. Fix all three.\n\n## 1. The motif recipe names tapestry as its profile recipe (#58)\n\nThe motif recipe lists `profile_recipe: tapestry`; motif should not depend on tapestry's profile.\n\n## 2. A finished motif reads as a plain draft (#53)\n\nThe motif task `knut-rheology-friction-pvt` ran Discussion to an approved decision record.\n`lym batten status` reports state done, the record is stored on the entry (`lym board get --record` works), and the entry carries `discussed: true`.\nBut the board status went back to `draft`, so the board list and the rendered README show it like a task nobody has started; the operator read it as unfinished work.\n\nExpected: a motif whose Discussion is approved shows as finished on the board, in the list, the `--text` listing and the README, rather than a plain draft.\n\n## 3. The board status stays at Worktree-Create through Discussion (#49)\n\nAbout 15 minutes after release, the same task's Discussion-Write session was live and writing the record, while:\n\n- the board entry, and so the README, said `running · Worktree-Create`;\n- `lym batten status` showed current_producer Run-Shed, history_length 5;\n- `lym loom status` in the task worktree showed current_producer empty and history_length 0;\n- `lym beam status` showed the run with an empty producer column.\n\nBoard history from Bolt's commits: draft, then four `running · Worktree-Create` commits, then `running · Discussion-Bouncer` 14 minutes later.\nThe status was never written for Seed-Child through Run-Shed, nor for Discussion-Write; the README renderer is not at fault.\nA tapestry run in the same beam showed its inner producer, such as `running · Webster`.\n\nExpected: the board status follows the batten rows past Worktree-Create and then the inner run's current producer, Discussion-Write here, and `lym loom status` names the producer in flight.\n",
+      "status": "draft",
+      "created": "2026-11-05T05:50:21Z",
+      "revised": "2026-11-05T05:52:12Z",
+      "profile": "light"
     }
   ],
   "prime_owner": "neve",
