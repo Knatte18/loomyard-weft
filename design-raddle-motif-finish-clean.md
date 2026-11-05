@@ -1,6 +1,6 @@
 # Raddle and motif runs start and finish without the orch
 
-`raddle-motif-finish-clean` · Task · bug, batten, dobby, loom, board, orch · running · Seed-Child
+`raddle-motif-finish-clean` · Task · bug, batten, dobby, loom, board, orch · running · Preflight
 
 Depends on: [`drift-rework`](design-drift-rework.md)
 
