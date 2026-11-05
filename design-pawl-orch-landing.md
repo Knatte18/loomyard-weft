@@ -18,7 +18,7 @@ Pawl becomes Preflight, Record-Write, Beam-Up, Beam-Await, Finalize, Beam-Down.
    The description lists every member of the beam that landed, each with its own pull request or landing commit.
 2. Parent merge: the beam's orch brings the parent into the beam when the operator says so, through a merge-in run inside the beam (a darn run with its perch, as `lym beam merge-parent` files), so a hard merge gets a run of its own.
 3. Review: the operator and the beam's orch handle the pull request's review together.
-   If the beam is not ready, the orch closes the pull request and files more member tasks.
+   If the beam is not ready, the pull request stays open: the orch files more member tasks, they land into the beam while it is open, and the orch updates the description (see below).
    The operator may also tell the orch to skip the pull request and land by a direct squash merge.
 4. When the operator is satisfied, the orch runs `lym beam ready`; Beam-Await ends and Finalize lands the beam as today, then Beam-Down.
 
