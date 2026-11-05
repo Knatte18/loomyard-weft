@@ -34,7 +34,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **An anchored hub excludes the anchor .scratch from git**<br>• Fabric wires or excludes the anchor .scratch as it does the root .scratch, so agent scratch files never show in git status | [`anchor-scratch-excluded`](design-anchor-scratch-excluded.md) | darn · light |  | 4m<br>2m | fabric |
+| T3 | `draft` **The scratch dir lives at the anchor and is excluded there**<br>• Fabric wires and excludes <anchor>/.scratch instead of the root .scratch, and reconcile moves existing anchored hubs over | [`anchor-scratch-excluded`](design-anchor-scratch-excluded.md) | darn · light |  | 4m<br>0m | fabric |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T7 | 4d<br>3h | fabric |
 
 ## Notes (19)

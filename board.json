@@ -587,7 +587,7 @@
       "id": 1138,
       "handle": "T3",
       "slug": "anchor-scratch-excluded",
-      "title": "An anchored hub excludes the anchor .scratch from git",
+      "title": "The scratch dir lives at the anchor and is excluded there",
       "kind": "task",
       "labels": [
         "bug",
@@ -597,11 +597,11 @@
       "recipe": "darn",
       "depends_on": [],
       "isolated": false,
-      "brief": "Fabric wires or excludes the anchor .scratch as it does the root .scratch, so agent scratch files never show in git status",
-      "body": "## Seen (2026-11-05)\n\nIn the C# sandbox hub `cs`, whose anchor is `lym-csharp/dotnet`, `git status` in the prime showed `?? dotnet/.scratch/`.\nFabric's scratch step links and excludes only the warp worktree's root `.scratch` (`/.scratch` in `.git/info/exclude`), but agents work from the anchor and write `.scratch/` under their working directory, so an anchored hub gets an untracked `\u003canchor\u003e/.scratch`.\n\n## Wanted (operator, 2026-11-05)\n\n`.scratch` is always excluded from git, wherever an agent writes it, and lym alone writes the exclude file: no hand edits of `.git/info/exclude`.\n\n- In an anchored hub, the anchor's `.scratch` is treated as the root's is: wired as the same link into the weft-side `.lym` scratch, or at least excluded, and its exclude line written beside the other `/\u003canchor\u003e/…` lines.\n- Reconcile adds the line to existing worktrees and the prime, so `cs` gets it without a hand edit.\n",
+      "brief": "Fabric wires and excludes \u003canchor\u003e/.scratch instead of the root .scratch, and reconcile moves existing anchored hubs over",
+      "body": "## Seen (2026-11-05)\n\nIn the C# sandbox hub `cs`, whose anchor is `lym-csharp/dotnet`, `git status` in the prime showed `?? dotnet/.scratch/`.\nFabric's scratch step links and excludes only the warp worktree's root `.scratch` (`/.scratch` in `.git/info/exclude`), but agents work from the anchor and write `.scratch/` there, so an anchored hub gets an untracked `\u003canchor\u003e/.scratch`.\n\n## Wanted (operator, 2026-11-05)\n\nThe rule: `.scratch` lives at the anchor, and the anchor's `.scratch` is excluded from git. Lym alone writes the exclude file: no hand edits of `.git/info/exclude`.\n\n- Fabric's scratch step wires `\u003canchor\u003e/.scratch` (the link into the weft-side `.lym` scratch) and writes `/\u003canchor\u003e/.scratch` beside the other `/\u003canchor\u003e/…` exclude lines; in a hub without an anchor, the anchor is the root, so nothing changes there.\n- In an anchored hub, the root `.scratch` is not wired or excluded at all: nothing is to land at the repository root (operator, 2026-11-05).\n- Reconcile moves existing anchored worktrees and the prime over: the root link and its exclude line go, the anchor's come in, so `cs` gets it without a hand edit.\n",
       "status": "draft",
       "created": "2026-11-05T16:17:16Z",
-      "revised": "2026-11-05T16:19:21Z",
+      "revised": "2026-11-05T16:21:56Z",
       "profile": "light"
     }
   ],
