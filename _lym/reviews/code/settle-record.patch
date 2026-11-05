@@ -1,0 +1,35 @@
+diff --git a/internal/landingshed/config_test.go b/internal/landingshed/config_test.go
+index 6ec4e199..0ae4dba8 100644
+--- a/internal/landingshed/config_test.go
++++ b/internal/landingshed/config_test.go
+@@ -75,7 +75,7 @@ func TestLoadConfig_TemplateDefaults(t *testing.T) {
+ 	if want := "LoomYard https://github.com/Knatte18/loomyard"; cfg.CreditLoomYard != want {
+ 		t.Errorf("cfg.CreditLoomYard = %q; want %q", cfg.CreditLoomYard, want)
+ 	}
+-	if want := map[string]string{"claude": "Claude <noreply@anthropic.com>", "codex": "Codex https://github.com/openai/codex"}; !maps.Equal(cfg.CreditEngines, want) {
++	if want := map[string]string{"claude": "Claude Code <noreply@anthropic.com>", "codex": "Codex https://github.com/openai/codex"}; !maps.Equal(cfg.CreditEngines, want) {
+ 		t.Errorf("cfg.CreditEngines = %v; want %v", cfg.CreditEngines, want)
+ 	}
+ 	if cfg.Deploy != "" {
+@@ -284,7 +284,7 @@ func TestLoadConfig_InvalidKeys(t *testing.T) {
+ 
+ 	const wellFormed = "deploy_branches: [\"main\"]\nsquash: true\nconflict: opus[high]\nconflict_timeout_min: 60\n" +
+ 		"describe: sonnet[medium]\ndescribe_timeout_min: 30\npr_reviewer: opus[high]\nfixer: opus[high]\nfixer_timeout_min: 60\nparent_align_fix_attempts: 2\n" +
+-		"finalize_fix_attempts: 2\nfinalize_fix_max_lines: 40\nfinalize_fix_review_rounds: 3\ncredit_engines:\n  claude: \"Claude <noreply@anthropic.com>\"\n"
++		"finalize_fix_attempts: 2\nfinalize_fix_max_lines: 40\nfinalize_fix_review_rounds: 3\ncredit_engines:\n  claude: \"Claude Code <noreply@anthropic.com>\"\n"
+ 	cases := []struct {
+ 		name, valid, invalid, key string
+ 	}{
+diff --git a/internal/landingshed/template.yaml b/internal/landingshed/template.yaml
+index 09c825e6..6c7e1935 100644
+--- a/internal/landingshed/template.yaml
++++ b/internal/landingshed/template.yaml
+@@ -9,7 +9,7 @@ credit: true  # whether the landing commit and the pull request's body end with
+ credit_heading: "Created using"  # first line of the credit block; empty leaves the items without a heading
+ credit_loomyard: "LoomYard https://github.com/Knatte18/loomyard"  # credit block item listed whatever engines ran; empty adds none
+ credit_engines:  # engine name to the credit block item listed when that engine ran a session in the task; an engine left out or set to "" adds nothing
+-  claude: "Claude <noreply@anthropic.com>"
++  claude: "Claude Code <noreply@anthropic.com>"
+   codex: "Codex https://github.com/openai/codex"
+ deploy: ""  # shell command batten's Land row runs in the prime after a landing into a branch listed in deploy_branches; empty runs nothing
+ fixer: opus[high]  # model-spec for the merge fixer session that Parent-Align and Finalize run to fix a merge or test failure, and for the fix review Finalize runs over a fixer change past the caps (see contracts/specs/llm-model-spec.md)
