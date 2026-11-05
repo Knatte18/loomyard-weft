@@ -1,6 +1,6 @@
 # The scratch dir lives at the anchor and is excluded there
 
-`anchor-scratch-excluded` · Task · bug, fabric · running · Drift-Await
+`anchor-scratch-excluded` · Task · bug, fabric · running · Darn-Write
 
 ## Seen (2026-11-05)
 
