@@ -1,0 +1,344 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 13528ed3..105a5ff9 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -366,7 +366,7 @@ User-facing modules each get one `lym <module>` namespace:
+   One `board.json` store holds every entry, and each entry is a task or a note with labels; only a task runs.
+   `types` and `labels` in `board.yaml` are maps from label to description, and `lym board labels` prints both in file order.
+   `default_recipe` names the recipe a task with no recipe field runs, `darn` in the template.
+-  A Sketch, or any discussed note whose decision record is stored, becomes a task only through `lym board promote --recipe raddle`, which makes it a raddle run's entry; `lym board raddle <slug>` prints the approved proposal of the raddle store on the Bolt, which keeps each filed Sketch's proposal after prune.
++  A Sketch, or any discussed note whose decision record is stored, becomes a task only as a raddle run's entry, which a plain `lym board promote` of it makes; `lym board raddle <slug>` prints the approved proposal of the raddle store on the Bolt, which keeps each filed Sketch's proposal after prune.
+   `lym board intake` lists the open issues of the hub's own GitHub repository not yet on the board, imports one as a note or folds it into an entry, and closes noise with a stated reason.
+   The hub's repository is the one its recorded binding names, else its origin remote, so only the loomyard hub's intake reads LoomYard's issues; intake never goes through selfreport.
+   The README renders Tasks split into Running, Ready (waiting on nothing open) and dependency layers whose entries can run in parallel, then Notes grouped by type label, Sketches first, each subsection one numbered table that links each slug to its design doc, with a `Sketch` link to the decision record `decision-<slug>.md` under the slug of a discussed entry;
+diff --git a/internal/battencli/startguard.go b/internal/battencli/startguard.go
+index 1db93a81..4f84afd7 100644
+--- a/internal/battencli/startguard.go
++++ b/internal/battencli/startguard.go
+@@ -169,7 +169,7 @@ func readRaddleStartRefusal(location *lymcwd.Location, slug string) error {
+ func raddleStartRefusal(entry boardengine.Task, recordStored bool, store boardengine.RaddleStore) error {
+ 	slug := entry.Slug
+ 	if !recordStored {
+-		return raddleRefusal{fmt.Sprintf("%s runs the raddle recipe, which splits a Sketch's stored decision record, and it holds none; way forward: run its Discussion first with a motif run: `lym board upsert '{\"slug\":\"%s\",\"recipe\":\"motif\"}'`, release it with `lym board set-status '{\"slug\":\"%s\",\"status\":null}'`, and once the motif run has made it a Sketch, `lym board promote %s --recipe raddle`", slug, slug, slug, slug)}
++		return raddleRefusal{fmt.Sprintf("%s runs the raddle recipe, which splits a Sketch's stored decision record, and it holds none; way forward: run its Discussion first with a motif run: `lym board upsert '{\"slug\":\"%s\",\"recipe\":\"motif\"}'`, release it with `lym board set-status '{\"slug\":\"%s\",\"status\":null}'`, and once the motif run has made it a Sketch, `%s`", slug, slug, slug, boardengine.SketchPromoteCommand(slug))}
+ 	}
+ 	held, isHeld := store.Holds(slug)
+ 	if !isHeld || (held.Sketch == slug && held.Created.Equal(entry.Created)) {
+diff --git a/internal/battencli/startguard_test.go b/internal/battencli/startguard_test.go
+index 7d41a7c5..5579fc7a 100644
+--- a/internal/battencli/startguard_test.go
++++ b/internal/battencli/startguard_test.go
+@@ -455,7 +455,7 @@ func TestRaddleStartRefusal(t *testing.T) {
+ 	}{
+ 		{
+ 			name:       "NoStoredRecordRefusedNamingTheMotifUpsertAndTheRaddlePromote",
+-			wantErrors: []string{"holds none", `lym board upsert '{"slug":"some-slug","recipe":"motif"}'`, "lym board promote some-slug --recipe raddle"},
++			wantErrors: []string{"holds none", `lym board upsert '{"slug":"some-slug","recipe":"motif"}'`, `lym board promote '{"slug":"some-slug"}'`},
+ 		},
+ 		{
+ 			name:         "SlugFiledByAnotherSketchRefusedNamingTheRename",
+diff --git a/internal/boardcli/cli.go b/internal/boardcli/cli.go
+index e2a0402e..a7645377 100644
+--- a/internal/boardcli/cli.go
++++ b/internal/boardcli/cli.go
+@@ -171,9 +171,9 @@ available subcommands without requiring a git repo.
+ The promoted entry loses its priority, which only a note carries, and its note handle: it takes
+ the lowest free T handle.
+ --recipe <name> sets the task's recipe in the same write.
+-A Sketch, or any discussed note whose decision record is stored, becomes a task only through
+---recipe raddle, which keeps its record and releases the task so its raddle run starts; any other
+-promotion of it is refused, naming that command.
++A Sketch, or any discussed note whose decision record is stored, becomes a task only with recipe
++raddle, which keeps its record and releases the task so its raddle run starts: a promote with no
++--recipe gives it raddle, --recipe raddle is accepted, and any other recipe is refused.
+ Demotion goes through "lym board upsert" with "kind":"note".
+ 
+ Fields (one of):
+@@ -184,7 +184,7 @@ Fields (one of):
+ Examples:
+   lym board promote '{"slug":"my-note"}'
+   lym board promote B4
+-  lym board promote '{"slug":"my-sketch"}' --recipe raddle` + slugLimitNote(),
++  lym board promote S3` + slugLimitNote(),
+ 		RunE: clihelp.WrapRun(func(out io.Writer, args []string) int {
+ 			if len(args) == 0 {
+ 				return outputError(out, "json payload required")
+@@ -200,7 +200,7 @@ Examples:
+ 			return outputSuccessWithTask(out, task, "")
+ 		}),
+ 	}
+-	promoteCmd.Flags().StringVar(&promoteRecipe, "recipe", "", "set the promoted task's recipe in the same write; a Sketch is promoted only with raddle")
++	promoteCmd.Flags().StringVar(&promoteRecipe, "recipe", "", "set the promoted task's recipe in the same write; a Sketch takes raddle when none is given, and no other")
+ 
+ 	renameCmd := &cobra.Command{
+ 		Use:         "rename {slug|id|handle, to}",
+diff --git a/internal/boardcli/doc.go b/internal/boardcli/doc.go
+index 05f1528f..53dc7930 100644
+--- a/internal/boardcli/doc.go
++++ b/internal/boardcli/doc.go
+@@ -76,7 +76,8 @@
+ // `set-deps` prints `notice` only then.
+ // `promote` and `intake import` write no `depends_on` and stay unchanged.
+ // `promote` takes `--recipe <name>`, which sets the promoted task's recipe in the same write.
+-// A Sketch, or any discussed note whose decision record is stored, becomes a task only through `promote --recipe raddle`, which keeps its record and releases the task; any other promotion of it is refused, naming that command.
++// A Sketch, or any discussed note whose decision record is stored, becomes a task only with recipe raddle, which keeps its record and releases the task:
++// `promote` with no `--recipe` gives it raddle, `--recipe raddle` is accepted, and any other recipe is refused, naming the plain promote.
+ //
+ // `profiles` prints `{"ok":true,"defaults":{…},"profiles":[{"name":…,"settings":{recipe:{module:{…}}}}]}`, every run profile in the hub's `profiles.yaml` in name order with its settings per recipe, and `"profiles":[]` when there is none.
+ // `defaults` maps each recipe to the profile a task of that recipe takes when it names none.
+diff --git a/internal/boardengine/board.go b/internal/boardengine/board.go
+index e4b589c4..213a99dc 100644
+--- a/internal/boardengine/board.go
++++ b/internal/boardengine/board.go
+@@ -412,8 +412,9 @@ func (b *Board) Promote(idOrSlug any) (Task, error) {
+ 
+ // PromoteTo makes the entry identified by idOrSlug a task under the write lock, setting its recipe to recipe in the same write when recipe is not empty.
+ // An entry that is already a task is returned unchanged without a write.
+-// Promoting a discussed note whose decision record is stored with the raddle recipe keeps the record and the flag, restores the sketch label a note write dropped, and releases the task in the same write.
+-// A Sketch becomes a task only through that promotion; any other promotion of it is refused, naming `lym board promote <slug> --recipe raddle`.
++// A discussed note whose decision record is stored, or that carries the sketch label, takes the raddle recipe when recipe is empty;
++// promoting a note whose record is stored with the raddle recipe keeps the record and the flag, restores the sketch label a note write dropped, and releases the task in the same write.
++// A Sketch becomes a task only through that promotion; a promotion of it with any other recipe is refused, naming the plain promote.
+ func (b *Board) PromoteTo(idOrSlug any, recipe string) (Task, error) {
+ 	result, err := b.boardCriticalSection(func(store *Store) (any, error) {
+ 		task, changed, err := store.promoteTo(idOrSlug, recipe, b.recordStored)
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index c21a2a5d..6c278f74 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -319,12 +319,12 @@
+ // It writes nothing for an absent, done or already sketched entry, and refuses while another entry depends on the entry, since a note cannot be depended on.
+ // The README lists Sketches under their own `Sketches` heading, the first Notes subsection, and `lym board list --text` lists them after every other entry under a `sketches:` line.
+ //
+-// A Sketch becomes a task only as a raddle run's entry: Board.PromoteTo with recipe `raddle` makes the task in one write, keeps the decision record, the discussed flag and the sketch label, restores the label when a note write dropped it, and releases the task, so its parent's dobby starts the run.
++// A Sketch becomes a task only as a raddle run's entry: Board.PromoteTo with recipe `raddle`, or with no recipe, which gives a Sketch `raddle`, makes the task in one write, keeps the decision record, the discussed flag and the sketch label, restores the label when a note write dropped it, and releases the task, so its parent's dobby starts the run.
+ // Board.Promote is PromoteTo with no recipe.
+ // Two write rules close every other way.
+-// A discussed note whose record file exists that a write makes a task must carry recipe `raddle`, the discussed flag and the sketch label, else the write is refused with `lym board promote <slug> --recipe raddle` as the way forward; the rule keys on the flag and the stored record, never on the label.
++// A discussed note whose record file exists that a write makes a task must carry recipe `raddle`, the discussed flag and the sketch label, else the write is refused with the plain promote, `lym board promote '{"slug":"<slug>"}'`, as the way forward; the rule keys on the flag and the stored record, never on the label.
+ // The sketch label on a task whose recipe is not `raddle`, or on a project, is refused too, judged only for a write that adds the label, makes the entry a task or project, or changes its recipe, so a legacy task that already carries the label keeps taking writes that leave all three alone.
+-// The label rule cannot see the record file, so a discussed note whose record file is missing is led to the raddle promote as well.
++// The label rule cannot see the record file, so a discussed note whose record file is missing is led to the plain promote as well, which gives it recipe raddle when it still carries the label.
+ // The Bolt replayer admits an entry through the run lock and the kind and label checks only, never the promotion rule, so a promotion in a board commit from another machine can land on origin.
+ //
+ // # Raddle store
+@@ -337,7 +337,7 @@
+ // It then refuses a write that makes a slug the store holds, whether or not the pair slug seam is set, bar the made entry whose slug is a store entry's Sketch slug and whose created stamp is that entry's recorded one, so a live raddle run's own Sketch is never refused.
+ // A store file that cannot be read refuses only a write that makes a slug, naming the file and `git -C <bolt> checkout -- <path>` as the way forward; a write that makes no slug goes on.
+ // A refusal names a slug both the seam and the store admit; for a note made a task or project, which keeps its slug, it names `lym board rename` of the note to such a slug before the promotion.
+-// The input that reaches a refusal: `lym board upsert` creating a task or project under a filed slug, `lym board rename` to a Sketch slug the store holds, and `lym board promote --recipe raddle` of a note under a filed slug.
++// The input that reaches a refusal: `lym board upsert` creating a task or project under a filed slug, `lym board rename` to a Sketch slug the store holds, and `lym board promote` of a Sketch under a filed slug.
+ // The Bolt replayer adds an entry through the run lock and the kind and label checks only, never this rule, so a board commit from a machine that had not yet pulled the store can land an entry under a held slug on origin; only a raddle entry is caught, by batten's start guard.
+ //
+ // A raddle run writes the board through three Board methods, each one write under the board lock.
+diff --git a/internal/boardengine/labels.go b/internal/boardengine/labels.go
+index 4b3c5695..9cffd4c8 100644
+--- a/internal/boardengine/labels.go
++++ b/internal/boardengine/labels.go
+@@ -49,7 +49,7 @@ func validateLabels(t Task, prior *Task, v Vocabulary) error {
+ }
+ 
+ // checkSketchLabel refuses a project, and a task whose recipe is not raddle, that carries the sketch type label, when the write adds the label, changes the entry's kind or changes its recipe.
+-// A promotion of a discussed note names the raddle promote as the way forward, and any other write names the upsert.
++// A promotion of a discussed note names the plain promote, which gives it recipe raddle, as the way forward, and any other write names the upsert.
+ func checkSketchLabel(t Task, prior *Task) error {
+ 	if (t.Kind != KindTask && t.Kind != KindProject) || !slices.Contains(t.Labels, SketchType) {
+ 		return nil
+@@ -64,7 +64,7 @@ func checkSketchLabel(t Task, prior *Task) error {
+ 		return fmt.Errorf("project %q carries the %s type label, and a project is never a Sketch: drop the label with `lym board upsert`", t.Slug, SketchType)
+ 	}
+ 	if prior != nil && prior.Kind == KindNote && prior.Discussed {
+-		return fmt.Errorf("task %q carries the %s type label with recipe %q, and a Sketch becomes a task only as a raddle run's entry; way forward: `lym board promote %s --recipe raddle`", t.Slug, SketchType, t.Recipe, t.Slug)
++		return fmt.Errorf("task %q carries the %s type label with recipe %q, and a Sketch becomes a task only as a raddle run's entry; way forward: `%s`, which gives it recipe raddle", t.Slug, SketchType, t.Recipe, SketchPromoteCommand(t.Slug))
+ 	}
+ 	return fmt.Errorf("task %q carries the %s type label with recipe %q, and only a raddle run's entry is a Sketch made a task; way forward: `lym board upsert` setting the entry's recipe to raddle, or dropping the label", t.Slug, SketchType, t.Recipe)
+ }
+diff --git a/internal/boardengine/labels_test.go b/internal/boardengine/labels_test.go
+index a944140d..0a31b244 100644
+--- a/internal/boardengine/labels_test.go
++++ b/internal/boardengine/labels_test.go
+@@ -28,7 +28,7 @@ func TestValidateLabels(t *testing.T) {
+ 			name:    "sketch label on a darn task promoted from a discussed note",
+ 			task:    Task{Slug: "t", Kind: KindTask, Recipe: "darn", Labels: []string{SketchType}},
+ 			prior:   &Task{Slug: "t", Kind: KindNote, Discussed: true, Labels: []string{SketchType}},
+-			wantErr: []string{`"t"`, "lym board promote t --recipe raddle"},
++			wantErr: []string{`"t"`, `lym board promote '{"slug":"t"}'`},
+ 		},
+ 		{
+ 			name:    "sketch label added to a darn task",
+diff --git a/internal/boardengine/sketch.go b/internal/boardengine/sketch.go
+index 35e00140..695c9cb1 100644
+--- a/internal/boardengine/sketch.go
++++ b/internal/boardengine/sketch.go
+@@ -89,6 +89,12 @@ func (b *Board) MakeSketch(slug string) error {
+ 	return err
+ }
+ 
++// SketchPromoteCommand returns the command that makes the Sketch slug a raddle run's entry: a plain promote, which gives a Sketch recipe raddle.
++// A refusal of any other way to make a Sketch a task names it as the way forward.
++func SketchPromoteCommand(slug string) string {
++	return fmt.Sprintf(`lym board promote '{"slug":"%s"}'`, slug)
++}
++
+ // checkDiscussedPromotion refuses a write that makes a task of a discussed note whose decision record is stored, unless the task carries recipe raddle, the discussed flag and the sketch label.
+ // The rule keys on the flag and the stored record, never on the label, so a note a note write stripped of its sketch label is judged too.
+ // loaded is the entries before the write, under any rename the write made, and after the entries the write leaves; recordStored reports whether an entry's record file exists.
+@@ -105,7 +111,7 @@ func checkDiscussedPromotion(loaded, after []Task, recordStored func(slug string
+ 		if task.Recipe == shedrun.RecipeRaddle && task.Discussed && slices.Contains(task.Labels, SketchType) {
+ 			continue
+ 		}
+-		return fmt.Errorf("entry %q is a discussed note with a stored decision record, which becomes tasks only through a raddle run; way forward: `lym board promote %s --recipe raddle`", task.Slug, task.Slug)
++		return fmt.Errorf("entry %q is a discussed note with a stored decision record, which becomes tasks only through a raddle run; way forward: `%s`, which gives it recipe raddle", task.Slug, SketchPromoteCommand(task.Slug))
+ 	}
+ 	return nil
+ }
+diff --git a/internal/boardengine/sketch_test.go b/internal/boardengine/sketch_test.go
+index d7d9965f..28674af7 100644
+--- a/internal/boardengine/sketch_test.go
++++ b/internal/boardengine/sketch_test.go
+@@ -197,8 +197,8 @@ func newPromotionBoard(t *testing.T) (*boardengine.Board, string) {
+ 	return boardengine.New(boardengine.Config{Path: path, Readme: "Home.md", DesignPrefix: "proposal-", Types: types, Labels: []boardengine.Label{{Name: "board"}}, SkipGit: true}), path
+ }
+ 
+-// TestDiscussedPromotion asserts a Sketch, or a discussed note a note write stripped of its label, becomes a task only through a promotion with recipe raddle, which releases it in the same write,
+-// and that a note whose record file is missing or that was never discussed promotes as any note does.
++// TestDiscussedPromotion asserts a Sketch, or a discussed note a note write stripped of its label, becomes a task only through a promotion with recipe raddle, which a promotion with no recipe gives it and which releases it in the same write,
++// and that a note with no sketch label whose record file is missing, or that was never discussed, promotes as any note does.
+ func TestDiscussedPromotion(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -215,13 +215,30 @@ func TestDiscussedPromotion(t *testing.T) {
+ 		sketch(t, b, boardPath)
+ 		mustUpsertEntry(t, b, map[string]any{"slug": "idea", "labels": bugLabels})
+ 	}
+-	promoteTo := func(recipe string) func(b *boardengine.Board) error {
++	recordMissing := func(t *testing.T, b *boardengine.Board, boardPath string) {
++		t.Helper()
++		stripped(t, b, boardPath)
++		if err := os.Remove(filepath.Join(boardPath, boardengine.DecisionFileName("idea"))); err != nil {
++			t.Fatalf("remove record file: %v", err)
++		}
++	}
++	sketchRecordMissing := func(t *testing.T, b *boardengine.Board, boardPath string) {
++		t.Helper()
++		sketch(t, b, boardPath)
++		if err := os.Remove(filepath.Join(boardPath, boardengine.DecisionFileName("idea"))); err != nil {
++			t.Fatalf("remove record file: %v", err)
++		}
++	}
++	promote := func(selector any, recipe string) func(b *boardengine.Board) error {
+ 		return func(b *boardengine.Board) error {
+-			_, err := b.PromoteTo("idea", recipe)
++			_, err := b.PromoteTo(selector, recipe)
+ 			return err
+ 		}
+ 	}
+-	wayForward := "lym board promote idea --recipe raddle"
++	promoteTo := func(recipe string) func(b *boardengine.Board) error {
++		return promote("idea", recipe)
++	}
++	wayForward := `lym board promote '{"slug":"idea"}'`
+ 
+ 	tests := []struct {
+ 		name  string
+@@ -245,14 +262,21 @@ func TestDiscussedPromotion(t *testing.T) {
+ 			wantKind: boardengine.KindTask, wantRecipe: shedrun.RecipeRaddle, wantSketch: true, wantDiscussed: true, wantRecord: true,
+ 		},
+ 		{
+-			name: "PlainPromoteOfASketchIsRefusedByTheLabelRule", setup: sketch, act: promoteTo(""),
+-			wantErr:  []string{wayForward},
+-			wantKind: boardengine.KindNote, wantSketch: true, wantDiscussed: true, wantRecord: true,
++			name: "PlainPromoteOfASketchTakesRaddle", setup: sketch, act: promoteTo(""),
++			wantKind: boardengine.KindTask, wantRecipe: shedrun.RecipeRaddle, wantSketch: true, wantDiscussed: true, wantRecord: true,
+ 		},
+ 		{
+-			name: "PlainPromoteOfAStrippedNoteIsRefused", setup: stripped, act: promoteTo(""),
+-			wantErr:  []string{"discussed note with a stored decision record", wayForward},
+-			wantKind: boardengine.KindNote, wantDiscussed: true, wantRecord: true,
++			name: "PlainPromoteOfASketchByHandleTakesRaddle", setup: sketch, act: promote(boardengine.Handle("S1"), ""),
++			wantKind: boardengine.KindTask, wantRecipe: shedrun.RecipeRaddle, wantSketch: true, wantDiscussed: true, wantRecord: true,
++		},
++		{
++			name: "PlainPromoteOfAStrippedNoteTakesRaddle", setup: stripped, act: promoteTo(""),
++			wantKind: boardengine.KindTask, wantRecipe: shedrun.RecipeRaddle, wantSketch: true, wantDiscussed: true, wantRecord: true,
++		},
++		{
++			name: "DarnPromoteOfASketchIsRefusedByTheLabelRule", setup: sketch, act: promoteTo("darn"),
++			wantErr:  []string{wayForward},
++			wantKind: boardengine.KindNote, wantSketch: true, wantDiscussed: true, wantRecord: true,
+ 		},
+ 		{
+ 			name: "DarnPromoteOfAStrippedNoteIsRefused", setup: stripped, act: promoteTo("darn"),
+@@ -269,17 +293,17 @@ func TestDiscussedPromotion(t *testing.T) {
+ 			wantKind: boardengine.KindNote, wantSketch: true, wantDiscussed: true, wantRecord: true,
+ 		},
+ 		{
+-			name: "NoteWithAMissingRecordFileIsNotJudged",
+-			setup: func(t *testing.T, b *boardengine.Board, boardPath string) {
+-				t.Helper()
+-				stripped(t, b, boardPath)
+-				if err := os.Remove(filepath.Join(boardPath, boardengine.DecisionFileName("idea"))); err != nil {
+-					t.Fatalf("remove record file: %v", err)
+-				}
+-			},
+-			act:      promoteTo("darn"),
++			name: "NoteWithAMissingRecordFileIsNotJudged", setup: recordMissing, act: promoteTo("darn"),
+ 			wantKind: boardengine.KindTask, wantRecipe: "darn", wantDraft: true, wantDiscussed: true,
+ 		},
++		{
++			name: "PlainPromoteOfANoteWithAMissingRecordFileTakesNoRecipe", setup: recordMissing, act: promoteTo(""),
++			wantKind: boardengine.KindTask, wantDraft: true, wantDiscussed: true,
++		},
++		{
++			name: "PlainPromoteOfASketchWithAMissingRecordFileTakesRaddle", setup: sketchRecordMissing, act: promoteTo(""),
++			wantKind: boardengine.KindTask, wantRecipe: shedrun.RecipeRaddle, wantSketch: true, wantDiscussed: true,
++		},
+ 		{
+ 			name: "DarnPromoteOfAnUndiscussedNote",
+ 			setup: func(t *testing.T, b *boardengine.Board, _ string) {
+diff --git a/internal/boardengine/store.go b/internal/boardengine/store.go
+index 059f6c7b..ae8b05cb 100644
+--- a/internal/boardengine/store.go
++++ b/internal/boardengine/store.go
+@@ -762,8 +762,9 @@ func (s *Store) Promote(idOrSlug any) (task Task, changed bool, err error) {
+ }
+ 
+ // promoteTo is Promote with the recipe set in the same write when recipe is not empty.
+-// With recipe raddle, a discussed note whose decision record recordStored reports stored keeps its record and flag and gets the sketch label back when a note write dropped it.
+-// A nil recordStored reports no record stored.
++// A discussed note whose decision record recordStored reports stored, or that carries the sketch label, takes recipe raddle when recipe is empty, since raddle is the one recipe such a note may take.
++// With recipe raddle, a note whose record is stored keeps its record and flag and gets the sketch label back when a note write dropped it.
++// A nil recordStored reports no record stored, so only the label then gives recipe raddle.
+ func (s *Store) promoteTo(idOrSlug any, recipe string, recordStored func(slug string) bool) (task Task, changed bool, err error) {
+ 	current, ok := s.GetTask(idOrSlug)
+ 	if !ok {
+@@ -779,10 +780,14 @@ func (s *Store) promoteTo(idOrSlug any, recipe string, recordStored func(slug st
+ 	incoming := current
+ 	incoming.Kind = KindTask
+ 	incoming.Priority = ""
++	recordHeld := current.Discussed && recordStored != nil && recordStored(current.Slug)
++	if recipe == "" && current.Discussed && (recordHeld || slices.Contains(current.Labels, SketchType)) {
++		recipe = shedrun.RecipeRaddle
++	}
+ 	if recipe != "" {
+ 		incoming.Recipe = recipe
+ 	}
+-	if recipe == shedrun.RecipeRaddle && current.Discussed && recordStored != nil && recordStored(current.Slug) && !slices.Contains(incoming.Labels, SketchType) {
++	if recipe == shedrun.RecipeRaddle && recordHeld && !slices.Contains(incoming.Labels, SketchType) {
+ 		incoming.Labels = append([]string{SketchType}, incoming.Labels...)
+ 	}
+ 	if err := s.validateWrite(s.tasks, incoming); err != nil {
+diff --git a/plugins/ly/skills/board/SKILL.md b/plugins/ly/skills/board/SKILL.md
+index 2f73a31e..985b5736 100644
+--- a/plugins/ly/skills/board/SKILL.md
++++ b/plugins/ly/skills/board/SKILL.md
+@@ -95,6 +95,9 @@ Promote a note to a task:
+ lym board promote '{"slug":"my-note"}'
+ ```
+ 
++Promoting a Sketch, by slug or by its handle such as `lym board promote S3`, makes it a task with recipe `raddle`, which splits its decision record into tasks or a project.
++A Sketch takes no other recipe.
++
+ Rename an entry, keeping every other field and rewriting the old slug in every other entry's `depends_on`:
+ 
+ ```
