@@ -1,6 +1,6 @@
 # A Sketch is a board type of its own
 
-`sketch-board-type` · Task · feature, board, loom · running · Preflight
+`sketch-board-type` · Task · feature, board, loom · running · Record-Write
 
 ## Idea (operator, 2026-11-05)
 
