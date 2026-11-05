@@ -32,7 +32,8 @@ Only this run turns a Sketch into tasks; a Sketch never runs itself.
 
 ## Approval
 
-- Interactive by default: the agent puts its proposal to the operator and waits for their input; the operator may question it, correct the split, order or recipes, and the agent revises until the operator approves.
+- The agent asks the operator nothing while it works: it writes a complete proposal first.
+- Interactive by default: only then does the agent put its proposal to the operator and wait for their input; the operator may question it, correct the split, order or recipes, and the agent revises until the operator approves.
   This works like Discussion-Write's interactive mode.
 - An auto-approve flag lets the run file its proposal with no operator input.
   It stays off until the agent's splits are tuned well enough to run alone; the operator's corrections in the interactive runs are what tune it.
