@@ -138,6 +138,18 @@ Bound: the authority rests on creel's program trust, the same as `LOOM` and `DOB
 
 `lym slack` is a cobra subtree mounted in `cmd/lym/main.go` with the verbs `login`, `setup`, `start`, `stop`, `relay`, `away`, `back` and `status`; `relay` is hidden with the `internal` audience and carries no operator audience, since only the starter's double fork runs it, a run by hand being bounded by D3's refused first read; the rest are operator verbs, and `away`, `back` and `status` are also in the orch's command index.
 
+### Added after Discussion (parent, 2026-11-05): Child-process rule folds into PATTERN-child-processes
+
+Decision: The double-fork exception goes into the live cluster PATTERN-child-processes and its background file, in place of the declared PATTERN-reap-children, which is withdrawn: no top-level PATTERN-reap-children entry is added or changed.
+
+Rationale: The Sketch's Delivers line and Constraints fold both declared ids into the live cluster ids since pattern-distill landed; a new top-level entry would undo that fold.
+
+### Added after Discussion (parent, 2026-11-05): Slack boundary folds into PATTERN-agent-addressing
+
+Decision: The Slack boundary joins the live cluster PATTERN-agent-addressing as a change to it, in place of the declared PATTERN-slack-boundary, which is withdrawn: no top-level PATTERN-slack-boundary entry is added.
+
+Rationale: PATTERN-agent-addressing already guards agent messaging (messages only through creel), which the Sketch names as the cluster the Slack rule joins.
+
 ## Constraints
 
 - Slack facts (docs.slack.dev, fetched 2026-11-05):
@@ -183,3 +195,5 @@ Bound: the authority rests on creel's program trust, the same as `LOOM` and `DOB
 
 - `PATTERN-reap-children` — changes: Starting a child process: its starter waits on it, by `cmd.Wait` or `proc.Reap`, never only releasing it, bar a double fork's intermediate, which exits at once; a process that re-execs itself calls `proc.ReapInheritedChildren` before it starts a child.
 - `PATTERN-slack-boundary` — adds: Calling Slack: only `internal/slackengine` (new), with the token only from its machine credential file, never a config layer, env or repository; operator Slack text reaches agents only as creel mail from `<shortname>:SLACK`.
+- `PATTERN-child-processes` — changes: Starting or ending a process: log the spawn via `internal/logger`; its starter waits on it, bar a double fork's intermediate, which exits at once; a run's processes register in `internal/runproc` and end only through it. — added after Discussion (parent, 2026-11-05)
+- `PATTERN-agent-addressing` — changes: Naming or messaging an agent: names only via `internal/agentname`; messages only through creel; Slack only via `internal/slackengine`, its token only in its machine credential file; operator Slack text reaches agents only as creel mail from `<shortname>:SLACK`. — added after Discussion (parent, 2026-11-05)
