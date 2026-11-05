@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-05 14:39 UTC; every age below is as of then.
+Rendered 2026-11-05 14:40 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -42,20 +42,21 @@ Real Codex launches through lym shuttle check home, sandbox, hooks, guards, pane
 
 Concrete and claimable; only a task can run.
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T3 | **Codex sessions get creel mail through hooks, as Claude sessions do**<br>• codexengine has no creel hooks, so every Codex strand is a pane-mail strand; the hook spike showed a way | [`codex-creel-hooks`](design-codex-creel-hooks.md) | darn · light |  | 1d<br>0m | codex, creel, shuttle |
 
-#### Draft (2)
+#### Layer A (1)
 
-Not released; nothing starts it until its status is cleared.
+Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Codex sessions get creel mail through hooks, as Claude sessions do**<br>• codexengine has no creel hooks, so every Codex strand is a pane-mail strand; the hook spike showed a way | [`codex-creel-hooks`](design-codex-creel-hooks.md) | darn · light |  | 1d<br>0m | codex, creel, shuttle |
-| T8 | `draft` **Live trial: creel mail reaches Codex sessions through the new hooks**<br>• Real Codex sessions in lyt get mail at tool boundary, turn end and idle wake, and answer it | [`codex-creel-trial`](design-codex-creel-trial.md) | darn · docs | T3 | 0m<br>0m | codex, creel |
+| T8 | **Live trial: creel mail reaches Codex sessions through the new hooks**<br>• Real Codex sessions in lyt get mail at tool boundary, turn end and idle wake, and answer it | [`codex-creel-trial`](design-codex-creel-trial.md) | darn · docs | T3 | 0m<br>0m | codex, creel |
 
 ### Notes (1)
 
