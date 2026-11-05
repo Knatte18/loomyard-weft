@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -34,6 +34,51 @@
       "output": "",
       "at": "2026-11-04T15:26:57Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/locks-out-of-tracked-trees/_lym/landing/summary.md",
+      "at": "2026-11-05T06:27:00Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-05T06:05:43.496119554Z",
+          "end": "2026-11-05T06:05:43.515385557Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-05T06:19:42.676992038Z",
+          "end": "2026-11-05T06:19:42.693333606Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-05T06:05:43.591046647Z",
+          "end": "2026-11-05T06:18:39.571475064Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-05T06:18:40.0239995Z",
+          "end": "2026-11-05T06:19:42.623610522Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-05T06:19:42.804888432Z",
+          "end": "2026-11-05T06:26:14.389485744Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-05T06:26:14.440883703Z",
+          "end": "2026-11-05T06:26:14.443338408Z"
+        }
+      ]
     }
   ],
   "product": {
