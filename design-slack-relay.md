@@ -26,7 +26,9 @@ The cross-hub design's build tasks, filed later by raddle from that Sketch, run 
 This changes the record's D6 and D7: presence switches by itself, as well as by `away`, `back` and `lym slack away|back`.
 
 - A message from the configured operator on Slack sets presence to `slack` when it is `terminal`, set by lym itself (the relay, before it forwards the message), not by the orch's judgment, and the message is then forwarded as usual; the `[slack presence]` notice goes out as for any change.
-- A line the operator types in an orch's pane while presence is `slack` sets it back to `terminal`, set by lym itself, such as from the orch pane's prompt-submit hook, not left to the orch to remember.
+- A line the operator types in an orch's pane while presence is `slack` sets it back to `terminal`, set by lym itself from the `UserPromptSubmit` event shuttle already records, not left to the orch to remember.
+  Lym must tell the operator's own lines apart from what lym puts in the pane itself (operator, 2026-11-05): a slash command, such as ORCHWATCH's `/compact` and `/color`, a text creel or any other lym program injected (creel journals each inject), a task notification Claude Code submits itself, and mail a hook hands the session are never the operator's line and never switch presence.
+  The design names how each is recognised, such as matching a submitted prompt against the inject creel journaled for that pane just before it, and tests each kind.
 - Presence shows plainly in reed: a toggle button on the status bar beside `follow`, labelled such as `slack: on` lit and `slack: off` unlit, which the operator can click to switch presence either way; it redraws when presence changes by any route.
 - While presence is `slack`, the orch mirrors what it means for the operator to Slack (D7); while `terminal`, it answers on Slack only mail that came from Slack.
 
