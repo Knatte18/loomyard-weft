@@ -1,6 +1,6 @@
 # The beam orch drives the merge-in, pull request and review of its beam inside Beam-Await
 
-`pawl-orch-landing` · Task · feature, pawl, landing, orch, workspaces, fabric · running · Discussion-Write
+`pawl-orch-landing` · Task · feature, pawl, landing, orch, workspaces, fabric · running · Discussion-Bouncer
 
 ## Seen (operator, 2026-11-05)
 
