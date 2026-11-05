@@ -2,8 +2,6 @@
 
 `slack-relay` · Task · feature, reed
 
-Depends on: [`creel-cross-hub-mail`](design-creel-cross-hub-mail.md)
-
 Filed from the Sketch `reed-slack-relay`.
 
 Takes: creel's Go program client, given a read-with-wait wrapper in creelcli and an exported pane-ancestry walk in creelengine; runproc, selfexec, internal/state and lymdirs as they stand
