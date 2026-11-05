@@ -21,6 +21,15 @@ This run's Discussion reads that record (`lym board get <its slug or S handle> -
 
 The cross-hub design's build tasks, filed later by raddle from that Sketch, run after this task and build on its SLACK sender.
 
+## Presence follows where the operator writes (operator, 2026-11-05)
+
+This changes the record's D6 and D7: presence switches by itself, as well as by `away`, `back` and `lym slack away|back`.
+
+- A message from the configured operator on Slack sets presence to `slack` when it is `terminal`, set by lym itself (the relay, before it forwards the message), not by the orch's judgment, and the message is then forwarded as usual; the `[slack presence]` notice goes out as for any change.
+- A line the operator types in an orch's pane while presence is `slack` sets it back to `terminal`, set by lym itself, such as from the orch pane's prompt-submit hook, not left to the orch to remember.
+- Presence shows plainly in reed: a toggle button on the status bar beside `follow`, labelled such as `slack: on` lit and `slack: off` unlit, which the operator can click to switch presence either way; it redraws when presence changes by any route.
+- While presence is `slack`, the orch mirrors what it means for the operator to Slack (D7); while `terminal`, it answers on Slack only mail that came from Slack.
+
 The part changes these packages:
 
 - internal/slackengine (about 1600 changed lines)
@@ -33,6 +42,7 @@ The part changes these packages:
 - internal/fabriccli (about 20 changed lines)
 - internal/beamcli (about 20 changed lines)
 - internal/githubclient (about 15 changed lines)
+- internal/reedengine and internal/reedcli (the presence button, added after the Sketch)
 - internal/runproc (about 5 changed lines)
 - internal/lymdirs (about 5 changed lines)
 - internal/configreg (about 5 changed lines)
