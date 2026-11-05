@@ -16,21 +16,21 @@ Autonomous mode: no operator answered; every pick below is an auto-pick recorded
 
 ### Turn 2 — design picks
 
-- Channel per hub, app per machine (D1); token in a credential file, ids in machine config (D2); a per-hub relay process (D3); polling inbound (D4); outbound through the `SLACK` program mailbox (D5); presence file and notices (D6); orch role rules (D7); dobby reminders (D8); the CLI module (D9).
+- Channel per hub, app per machine (D1); token in a credential file, ids in machine config (D2; round 3 F1 moved the ids to a per-hub setup file); a per-hub relay process (D3); polling inbound (D4); outbound through the `SLACK` program mailbox (D5); presence file and notices (D6); orch role rules (D7); dobby reminders (D8); the CLI module (D9).
 
 ### Turn 3 — lens review
 
 Every lens returned a report.
 
 - walkthrough 1 / bound-breaker 4 (cursor never passes unforwarded messages): fixed, D4 moves the cursor past every message once handled.
-- walkthrough 2 / interactions LOW / existing-paths LOW (relay identity depends on its starter's pane): fixed, D3 starts it in a new session outside every pane tree.
+- walkthrough 2 / interactions LOW / existing-paths LOW (relay identity depends on its starter's pane): fixed, D3 starts it through a double fork so it is outside every pane tree at its first read (review round 1 F1 corrected the earlier new-session claim).
 - interactions 1 / existing-paths LOW / bound-breaker 5 (`SLACK` not a creel receiver before the relay's first read): fixed, D3 reads first, D6 `away` waits for that read, D8 logs a refused post.
 - interactions 2 (presence notice reads as operator words): fixed, `[slack presence]` prefix in D6 and D7.
 - interactions 3 (operator answer to a beam orch lands at the prime): fixed, D5 adds the `@<slug>` answer hint.
 - interactions 4 / walkthrough 4 / bound-breaker 3 (setup needs read scopes): fixed, D2 lists `channels:read`/`groups:read` and `users:read`.
 - walkthrough 3 (ack covers the whole read): fixed, D5 acknowledges only a fully posted read and releases otherwise.
-- walkthrough 5 (dead relay while away cannot be restarted from the phone): fixed, D3 has the prime dobby's passes start it while presence is `slack`.
-- walkthrough 6 / bound-breaker 6 / existing-paths (wait start field): fixed, D8 names the history entry's `At`.
+- walkthrough 5 (dead relay while away cannot be restarted from the phone): fixed, D3 has the prime dobby's ticks start it while presence is `slack`.
+- walkthrough 6 / bound-breaker 6 / existing-paths (wait start field): fixed, D8 keeps the wait's start in dobby's state record (review round 1 F7 replaced the history entry's `At`).
 - existing-paths MEDIUM (no stop path or role for the relay): fixed, D3 gives it a role and `lym slack stop`; D9 lists the verb.
 - existing-paths MEDIUM (pause or hold silently delays Slack mail): fixed for a pause, D4 answers in Slack and D3's status shows it; a hold stated as a D4 bound.
 - existing-paths LOW (4–8 KiB body only reminded on a pane-mail orch): fixed, D4 caps at 4 KiB.
@@ -65,7 +65,12 @@ Every lens returned a report.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 3
+
+- F1 (a `lym config slack --layer machine` write from the prime orch's pane repoints channel and operator past setup's checks): fixed differently from the proposal's `slack.json`, since that file is one per machine and the channel is per hub; D2 moves both ids to a per-hub setup file under `.lym/slack/` that only `lym slack setup` writes, and the `slack` config module keeps only `remind_after_min`.
+- F2 (pane-ancestry check silent on an unknown pane process): fixed, D6 defines the check's refusal for that case as creel does, and D2 and D3 refer to it.
+- F3 (`lym slack relay` by hand holds the lock): fixed, D3 ends the relay when creel refuses its first read as coming from a non-orch strand's pane, and retries any other refused first read holding the lock; the first read comes before any poll; D9 states its `internal` audience.
+- Self-check: the unknown-pane refusal names only waiting, and covers unreadable strands; D6 bounds the verbs' refusal while a pane process stays unknown; D2's rationale and bound restated.
 
 ## Question ledger
 
