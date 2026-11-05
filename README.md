@@ -64,7 +64,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 2d<br>1h | shuttle, codex, loom |
 
-## [P0 Root: entries under no project](project-root.md) (33)
+## [P0 Root: entries under no project](project-root.md) (34)
 
 Owner `neve`
 
@@ -104,7 +104,7 @@ Not released; nothing starts it until its status is cleared.
 | T2 | `draft` **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | T5 | 58m<br>58m | creel, orch |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T7 | 5d<br>5h | fabric |
 
-### Notes (28)
+### Notes (29)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -115,7 +115,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R2 |  | **Re-measure writer exploration and the carry of lookup results after the Discussion stencil change**<br>• Re-run the writer-lookups measurement on 10 tapestry runs, pricing the carry saved by early explore subagents | [`writer-lookups-remeasure`](design-writer-lookups-remeasure.md) | 1d<br>1h | loom, stencil |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>1h | loom, stencil |
 
-#### Bugs (11)
+#### Bugs (12)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -130,6 +130,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B10 |  | **webster recover-batch refuses with a way forward that names recover-batch itself** | [`recover-batch-self-way-forward`](design-recover-batch-self-way-forward.md) | 0m<br>0m | webster |
 | B11 |  | **webster record-batch: create-not-done refusal lists every searched file and reports a signature mismatch as a missing member** | [`record-batch-signature-mismatch`](design-record-batch-signature-mismatch.md) | 0m<br>0m | webster, quarry |
 | B12 |  | **fabric clone --reset removes the hub before refusing a mismatched --shortname** | [`clone-reset-deletes-first`](design-clone-reset-deletes-first.md) | 0m<br>0m | fabric |
+| B13 |  | **beam merge-parent task is told to run lym fabric merge-in, which the task session refuses** | [`merge-in-writer-refused`](design-merge-in-writer-refused.md) | 0m<br>0m | pawl, fabric, darn |
 
 #### Enhancements (4)
 
