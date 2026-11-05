@@ -1,18 +1,18 @@
 # Card 19 — raddle-checks-and-state
 
 **Create:**
-- `plan:internal/loomshed#RaddleMode` -> `type RaddleMode string`
-- `plan:internal/loomshed#RaddleState` -> `type RaddleState struct`
-- `plan:internal/loomshed#ReadRaddleState` -> `func ReadRaddleState(path, lockPath string) (RaddleState, error)`
-- `plan:internal/loomshed#UpdateRaddleState` -> `func UpdateRaddleState(path, lockPath string, mutate func(*RaddleState)) (RaddleState, error)`
-- `plan:internal/loomshed#RaddleCheck` -> `type RaddleCheck struct`
-- `plan:internal/loomshed#CheckRaddleProposal` -> `func CheckRaddleProposal(check RaddleCheck, filing bool) ([]raddleparser.Finding, error)`
-- `plan:internal/loomshed#RecheckRaddleBoard` -> `func RecheckRaddleBoard(check RaddleCheck) (raddleparser.Recheck, error)`
-- `plan:internal/loomshed#NewRaddleGate` -> `func NewRaddleGate(check RaddleCheck, onPass func() error) shuttleengine.Gate`
-- `plan:internal/loomshed#StoreColdProposal` -> `func StoreColdProposal(proposalPath, coldPath, statePath, lockPath string) error`
-- `plan:internal/loomshed#TestRaddleState` -> `func TestRaddleState(t *testing.T)`
-- `plan:internal/loomshed#TestCheckRaddleProposal` -> `func TestCheckRaddleProposal(t *testing.T)`
-- `plan:internal/loomshed#TestNewRaddleGate` -> `func TestNewRaddleGate(t *testing.T)`
+- `internal/loomshed#RaddleMode`
+- `internal/loomshed#RaddleState`
+- `internal/loomshed#ReadRaddleState`
+- `internal/loomshed#UpdateRaddleState`
+- `internal/loomshed#RaddleCheck`
+- `internal/loomshed#CheckRaddleProposal`
+- `internal/loomshed#RecheckRaddleBoard`
+- `internal/loomshed#NewRaddleGate`
+- `internal/loomshed#StoreColdProposal`
+- `internal/loomshed_test#TestRaddleState`
+- `internal/loomshed_test#TestCheckRaddleProposal`
+- `internal/loomshed_test#TestNewRaddleGate`
 
 **Edit:**
 - `internal/loomshed#loomshedAllowedImports`

@@ -1,16 +1,16 @@
 # Card 20 — raddle-verbs
 
 **Create:**
-- `plan:internal/loomcli#raddleVerbDeps` -> `type raddleVerbDeps struct`
-- `plan:internal/loomcli#raddleProposeVerb` -> `func raddleProposeVerb(out io.Writer, deps raddleVerbDeps) int`
-- `plan:internal/loomcli#raddleApproveVerb` -> `func raddleApproveVerb(out io.Writer, deps raddleVerbDeps) int`
-- `plan:internal/loomcli#loomCLI.raddleProposeCmd` -> `func (c *loomCLI) raddleProposeCmd() *cobra.Command`
-- `plan:internal/loomcli#loomCLI.raddleApproveCmd` -> `func (c *loomCLI) raddleApproveCmd() *cobra.Command`
-- `plan:internal/loomcli#raddleBoardContext` -> `func raddleBoardContext(location *lymcwd.Location, filing bool) (raddleparser.BoardContext, error)`
-- `plan:internal/loomcli#raddleCheckFor` -> `func raddleCheckFor(location *lymcwd.Location) loomshed.RaddleCheck`
-- `plan:internal/loomcli#TestRaddleProposeVerb` -> `func TestRaddleProposeVerb(t *testing.T)`
-- `plan:internal/loomcli#TestRaddleApproveVerb` -> `func TestRaddleApproveVerb(t *testing.T)`
-- `plan:internal/loomcli#TestRaddleBoardContext` -> `func TestRaddleBoardContext(t *testing.T)`
+- `internal/loomcli#raddleVerbDeps`
+- `internal/loomcli#raddleProposeVerb`
+- `internal/loomcli#raddleApproveVerb`
+- `internal/loomcli#loomCLI.raddleProposeCmd`
+- `internal/loomcli#loomCLI.raddleApproveCmd`
+- `internal/loomcli#raddleBoardContext`
+- `internal/loomcli#raddleCheckFor`
+- `internal/loomcli#TestRaddleProposeVerb`
+- `internal/loomcli#TestRaddleApproveVerb`
+- `internal/loomcli#TestRaddleBoardContext`
 
 **Edit:**
 - `internal/loomcli#Command`
@@ -19,10 +19,10 @@
 **Uses:**
 - `internal/loomcli#samplerDoneVerb`
 - `internal/loomrecipe#EngineRow`
-- `plan:internal/loomshed#CheckRaddleProposal`
-- `plan:internal/loomshed#RecheckRaddleBoard`
-- `plan:internal/loomshed#UpdateRaddleState`
-- `plan:internal/loomshed#StoreColdProposal`
+- `internal/loomshed#CheckRaddleProposal`
+- `internal/loomshed#RecheckRaddleBoard`
+- `internal/loomshed#UpdateRaddleState`
+- `internal/loomshed#StoreColdProposal`
 - `internal/raddleparser#Hash`
 - `internal/orchcli#NotifyParent`
 - `internal/boardengine#ReadTasks`

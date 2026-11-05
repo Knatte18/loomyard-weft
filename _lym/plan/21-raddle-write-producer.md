@@ -2,13 +2,13 @@
 
 **Create:**
 - `contracts/stencils/raddle/raddle-template-agent.md`
-- `plan:contracts/stencils#RaddleTemplateAgent` -> `var RaddleTemplateAgent []byte`
-- `plan:internal/loomengine#raddleRole` -> `const raddleRole = "raddle"`
-- `plan:internal/loomengine#RaddleTable` -> `func RaddleTable(layout *lymcwd.Location, stencilsDir, specsDir string, cfg Config, reg modelspec.Registry, slug string, interactive bool, returnReason string) (seatengine.Table, error)`
-- `plan:internal/loomengine#TestRaddleTable` -> `func TestRaddleTable(t *testing.T)`
-- `plan:internal/loomshed#RaddleWriteDeps` -> `type RaddleWriteDeps struct`
-- `plan:internal/loomshed#NewRaddleWrite` -> `func NewRaddleWrite(name string, inner shedengine.ShedProducer, deps RaddleWriteDeps) shedengine.ShedProducer`
-- `plan:internal/loomshed#TestRaddleWrite` -> `func TestRaddleWrite(t *testing.T)`
+- `contracts/stencils#RaddleTemplateAgent`
+- `internal/loomengine#raddleRole`
+- `internal/loomengine#RaddleTable`
+- `internal/loomengine#TestRaddleTable`
+- `internal/loomshed#RaddleWriteDeps`
+- `internal/loomshed#NewRaddleWrite`
+- `internal/loomshed#TestRaddleWrite`
 
 **Extends:**
 - `contracts/stencils#entries`
@@ -20,8 +20,8 @@
 - `internal/loomengine#discussionRole`
 - `internal/loomengine#Config`
 - `internal/loomshed#NewDiscussionWrite`
-- `plan:internal/loomshed#UpdateRaddleState`
-- `plan:internal/loomshed#ReadRaddleState`
+- `internal/loomshed#UpdateRaddleState`
+- `internal/loomshed#ReadRaddleState`
 - `internal/seatengine#Table`
 - `contracts/specs/raddle-proposal-spec.md`
 - `contracts/stencils#TestRegistry_MatchesOnDiskTree`

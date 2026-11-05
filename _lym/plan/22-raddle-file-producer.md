@@ -1,19 +1,19 @@
 # Card 22 — raddle-file-producer
 
 **Create:**
-- `plan:internal/loomshed#RaddleFileDeps` -> `type RaddleFileDeps struct`
-- `plan:internal/loomshed#NewRaddleFile` -> `func NewRaddleFile(name string, deps RaddleFileDeps) shedengine.ShedProducer`
-- `plan:internal/loomshed#raddleMaxReturns` -> `const raddleMaxReturns = 2`
-- `plan:internal/loomshed#TestRaddleFile` -> `func TestRaddleFile(t *testing.T)`
+- `internal/loomshed#RaddleFileDeps`
+- `internal/loomshed#NewRaddleFile`
+- `internal/loomshed#raddleMaxReturns`
+- `internal/loomshed_test#TestRaddleFile`
 
 **Edit:**
 - `internal/loomshed#loomshedAllowedImports`
 
 **Uses:**
-- `plan:internal/loomshed#RaddleState`
-- `plan:internal/loomshed#UpdateRaddleState`
-- `plan:internal/loomshed#CheckRaddleProposal`
-- `plan:internal/loomshed#RecheckRaddleBoard`
+- `internal/loomshed#RaddleState`
+- `internal/loomshed#UpdateRaddleState`
+- `internal/loomshed#CheckRaddleProposal`
+- `internal/loomshed#RecheckRaddleBoard`
 - `internal/raddleparser#Parse`
 - `internal/raddleparser#Hash`
 - `internal/discussionparser#SplicePart`
