@@ -1,26 +1,26 @@
 # Card 9 — slackengine-relay
 
 **Create:**
-- `plan:internal/slackengine#RelayDeps` -> `type RelayDeps struct`
-- `plan:internal/slackengine#RunRelay` -> `func RunRelay(ctx context.Context, geom Geometry, deps RelayDeps) error`
-- `plan:internal/slackengine#ErrRelayInStrandPane` -> `var ErrRelayInStrandPane = errors.New("slack: the relay runs in a strand pane that is no orch's")`
-- `plan:internal/slackengine#StartOutcome` -> `type StartOutcome string`
-- `plan:internal/slackengine#EnsureRelay` -> `func EnsureRelay(geom Geometry, primeName string) (StartOutcome, error)`
-- `plan:internal/slackengine#EnsureRelayWhileAway` -> `func EnsureRelayWhileAway(geom Geometry, primeName string) (StartOutcome, error)`
-- `plan:internal/slackengine#RelayLive` -> `func RelayLive(geom Geometry) (bool, error)`
-- `plan:internal/slackengine#StopRelay` -> `func StopRelay(geom Geometry, callerPID int) ([]runproc.Ended, error)`
-- `plan:internal/slackengine#SpawnRelayFromIntermediate` -> `func SpawnRelayFromIntermediate(geom Geometry, primeName string) error`
-- `plan:internal/slackengine#AwaitReparent` -> `func AwaitReparent(intermediate int, parentPID func() int, clock Clock, bound time.Duration) error`
-- `plan:internal/slackengine#AwaitFirstRead` -> `func AwaitFirstRead(geom Geometry, clock Clock, bound time.Duration) error`
-- `plan:internal/slackengine#ErrSpawnUnderTest` -> `var ErrSpawnUnderTest = errors.New("slackengine: no relay spawned under test")`
-- `plan:internal/slackengine#starter` -> `type starter struct`
-- `plan:internal/slackengine#starter.ensure` -> `func (s starter) ensure(geom Geometry, primeName string, whileAway bool) (StartOutcome, error)`
-- `plan:internal/slackengine#starter.spawnRelay` -> `func (s starter) spawnRelay(geom Geometry, primeName string) error`
-- `plan:internal/slackengine#errFirstReadAccepted` -> `var errFirstReadAccepted = errors.New("slack: the first read was accepted and its mail left for the outbound read")`
+- `internal/slackengine#RelayDeps`
+- `internal/slackengine#RunRelay`
+- `internal/slackengine#ErrRelayInStrandPane`
+- `internal/slackengine#StartOutcome`
+- `internal/slackengine#EnsureRelay`
+- `internal/slackengine#EnsureRelayWhileAway`
+- `internal/slackengine#RelayLive`
+- `internal/slackengine#StopRelay`
+- `internal/slackengine#SpawnRelayFromIntermediate`
+- `internal/slackengine#AwaitReparent`
+- `internal/slackengine#AwaitFirstRead`
+- `internal/slackengine#ErrSpawnUnderTest`
+- `internal/slackengine#starter`
+- `internal/slackengine#starter.ensure`
+- `internal/slackengine#starter.spawnRelay`
+- `internal/slackengine#errFirstReadAccepted`
 - `internal/slackengine/relay_test.go`
-- `plan:internal/slackengine#TestRunRelay` -> `func TestRunRelay(t *testing.T)`
-- `plan:internal/slackengine#TestEnsureRelay` -> `func TestEnsureRelay(t *testing.T)`
-- `plan:internal/slackengine#TestRelayWaits` -> `func TestRelayWaits(t *testing.T)`
+- `internal/slackengine_test#TestRunRelay`
+- `internal/slackengine_test#TestEnsureRelay`
+- `internal/slackengine_test#TestRelayWaits`
 
 **Edit:**
 - `cmd/lym#unboundedWaitFiles`
@@ -31,8 +31,8 @@
 - `internal/slackengine/doc.go`
 
 **Uses:**
-- `plan:internal/slackengine#inbound.poll`
-- `plan:internal/slackengine#outbound.read`
+- `internal/slackengine#inbound.poll`
+- `internal/slackengine#outbound.read`
 - `internal/creelengine#ErrProgramClaimInStrandPane`
 - `internal/runproc#RoleSlackRelay`
 - `internal/runproc#EndRole`

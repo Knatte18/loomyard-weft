@@ -1,6 +1,6 @@
 {
   "runGuid": "fc08175c6026a1f5e0be974deea15cc4",
-  "planFingerprint": "a0bcec87eb43668bd0814cf7824f7b89e3431e397053bc833585bfdd8074e685",
+  "planFingerprint": "54c0d21a3bdce53f1eac627b79e35221729e41901ff7d183fbe6a0b8db35d172",
   "planFileHashes": {
     "00-overview.md": "3200e9a58a9b553cf78ed40ca50ef40738f97e007a94d7120a3535070bfb1711",
     "01-pattern-clusters.md": "263ea28d63132e68dd11e9958fa17aa862043c7022bacdc3fa77d48aabbd7e03",
@@ -8,14 +8,14 @@
     "03-creel-seams.md": "f8cae7d31699f61a7367c09a607beb7160f3ec7ea4c26d329cca620ea3e573e0",
     "04-slackengine-files.md": "c35c8d28c238b1b939c6c0d4bbd2a1e7fb63ac7d16c64ae084fd51e893cc0a09",
     "05-slack-config.md": "7e0cf621b4af6f0ba216cc664aae2d1b968207dae1b9f5af375cbb0ad872555f",
-    "06-slackengine-api.md": "7d4192923e21b130aba0ef4f934823185e19e088cfabe994f713dc8eb14c161e",
-    "07-slackengine-inbound.md": "588785623859b9ebaf62f8fc25f8ddd9ca4d0d58a506b42f593a429b83cbcf79",
-    "08-slackengine-outbound.md": "3eec871d3da16dc2f8f0cd89187c66bd7e9a40093832eb1c8614b58efab1a7b6",
-    "09-slackengine-relay.md": "f5a601bf6f083dc0f0a6206531da68dc0b2ad3079868e236b6398634695583c3",
-    "10-slack-cli.md": "b966894712e2b0033481becf435bc1d6a9890817c516d0de75f31178effadab4",
-    "11-orch-relay-presence.md": "2f42eb7fcf08fe53017a80766d5b7f9f1cc1ba94597bd78f34e341bf382a2f47",
-    "12-dobby-relay-tick.md": "789f82fc077982e4168bd1b4947dce2e66906e0ba75f691ba604d754882c0e2a",
-    "13-anchor-relay-restart.md": "0b40c253dcd4f8637769af4adeb364e2e2f0c4e12fe2ceca63b4c48a09e5a692",
+    "06-slackengine-api.md": "243f6be1dfa9ce0388d76bdb09c33dd009634b59eac202e42bca433f15d3c103",
+    "07-slackengine-inbound.md": "ed00a53be3f0912f190c1f78b3257c08fe24d6b889be3bd2752938e73f4f8ba9",
+    "08-slackengine-outbound.md": "962b8567626efae30c7d43ebea67a12d98e2ecb800cceb19ab21c659eb2d00c6",
+    "09-slackengine-relay.md": "603a9a2da71953344a632b338cdd8b58d5169c57fda02496dcc293ac29e20187",
+    "10-slack-cli.md": "f6c9158b99e965a4cda822c96574ff6b23da26427bd0edd2e986873de462aef5",
+    "11-orch-relay-presence.md": "43df22b0e950b47387271751beb2bcd6683909445173be419b9505018797e5ba",
+    "12-dobby-relay-tick.md": "cdae864ff89c8010d124b997936785c1f7380ea3bd0f55e5ec8834aeeb54e086",
+    "13-anchor-relay-restart.md": "8f34d80a66bfdb3155f9b5851f4be189bddd6c2efaa29412e716e21310e5c6d9",
     "14-orch-role-slack.md": "4a4dae59193f1395a56fbf49c3ad5304f562ba13d3d5c5612a3eeebd8e5266cb"
   },
   "planOverviewFrameHash": "c831ad9407ba81201198f4ec360d2fa65df8eb648b8edf12470e8d2c586b133d",
@@ -303,7 +303,7 @@
       }
     }
   ],
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "0b652e66eac7b28610d1ac37f51cc712",
   "masterSessionId": "92259c87-a13c-4393-84cc-c0c85e3379b0",
   "masterEngine": "claude",
@@ -362,21 +362,45 @@
         "09-slackengine-relay"
       ],
       "cardHashes": {
-        "06-slackengine-api": "7d4192923e21b130aba0ef4f934823185e19e088cfabe994f713dc8eb14c161e",
-        "07-slackengine-inbound": "588785623859b9ebaf62f8fc25f8ddd9ca4d0d58a506b42f593a429b83cbcf79",
-        "08-slackengine-outbound": "3eec871d3da16dc2f8f0cd89187c66bd7e9a40093832eb1c8614b58efab1a7b6",
-        "09-slackengine-relay": "f5a601bf6f083dc0f0a6206531da68dc0b2ad3079868e236b6398634695583c3"
+        "06-slackengine-api": "243f6be1dfa9ce0388d76bdb09c33dd009634b59eac202e42bca433f15d3c103",
+        "07-slackengine-inbound": "ed00a53be3f0912f190c1f78b3257c08fe24d6b889be3bd2752938e73f4f8ba9",
+        "08-slackengine-outbound": "962b8567626efae30c7d43ebea67a12d98e2ecb800cceb19ab21c659eb2d00c6",
+        "09-slackengine-relay": "603a9a2da71953344a632b338cdd8b58d5169c57fda02496dcc293ac29e20187"
       },
       "startSha": "667e7cacd7d7ba5c16125ebf944ccdd4af34a95f",
       "kind": "fork",
       "spawnedAt": "2026-11-05T18:36:26Z",
       "sessionId": "92259c87-a13c-4393-84cc-c0c85e3379b0",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-slackengine-api",
+        "status": "done",
+        "head_sha": "6bd83089023dca29c5e3a635a75fc1ec4a84d798",
+        "deviations": [
+          "internal/slackengine/api.go",
+          "internal/slackengine/backoff.go",
+          "internal/slackengine/export_test.go",
+          "internal/slackengine/inbound.go",
+          "internal/slackengine/outbound.go",
+          "internal/slackengine/relay.go",
+          "internal/slackengine/start.go"
+        ]
+      },
+      "cardShas": [
+        "6bd83089023dca29c5e3a635a75fc1ec4a84d798"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-relay/92259c87-a13c-4393-84cc-c0c85e3379b0/subagents/agent-a75f1df690edcfba9.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-relay/92259c87-a13c-4393-84cc-c0c85e3379b0/subagents/agent-a75f1df690edcfba9.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-relay/92259c87-a13c-4393-84cc-c0c85e3379b0/subagents/agent-ae025356bd65419fa.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-relay/92259c87-a13c-4393-84cc-c0c85e3379b0/subagents/agent-ae025356bd65419fa.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-relay/92259c87-a13c-4393-84cc-c0c85e3379b0/subagents/agent-a75f1df690edcfba9.jsonl"
   ]
 }

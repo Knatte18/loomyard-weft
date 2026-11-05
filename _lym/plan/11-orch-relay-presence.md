@@ -29,7 +29,7 @@
 - `internal/orchcli#BeamUpReport`
 - `internal/orchcli#newStartHarness`
 - `internal/slackengine#ReadPresence`
-- `plan:internal/slackengine#EnsureRelay`
+- `internal/slackengine#EnsureRelay`
 - `internal/hubgeom#SlackGeometry`
 
 **Intent:** Bring the relay up with the prime orch, and carry the presence in the orch's resume pointer (D3, D6).

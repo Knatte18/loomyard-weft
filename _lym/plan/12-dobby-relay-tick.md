@@ -10,8 +10,8 @@
 
 **Uses:**
 - `internal/beamcli#TestHubDobbyDeps_PrimeTidyShuttle`
-- `plan:internal/slackengine#EnsureRelayWhileAway`
-- `plan:internal/slackengine#ErrSpawnUnderTest`
+- `internal/slackengine#EnsureRelayWhileAway`
+- `internal/slackengine#ErrSpawnUnderTest`
 - `internal/slackengine#WriteToken`
 - `internal/slackengine#WriteSetup`
 - `internal/slackengine#WritePresence`

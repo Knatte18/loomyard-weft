@@ -1,20 +1,20 @@
 # Card 8 — slackengine-outbound
 
 **Create:**
-- `plan:internal/slackengine#outbound` -> `type outbound struct`
-- `plan:internal/slackengine#outbound.read` -> `func (out *outbound) read(ctx context.Context) (time.Duration, error)`
-- `plan:internal/slackengine#outboxRecord` -> `type outboxRecord struct`
-- `plan:internal/slackengine#outboundText` -> `func outboundText(shortname string, msg creelengine.Message) (string, bool)`
+- `internal/slackengine#outbound`
+- `internal/slackengine#outbound.read`
+- `internal/slackengine#outboxRecord`
+- `internal/slackengine#outboundText`
 - `internal/slackengine/outbound_test.go`
-- `plan:internal/slackengine#TestOutboundRead` -> `func TestOutboundRead(t *testing.T)`
+- `internal/slackengine_test#TestOutboundRead`
 
 **Extends:**
 - `internal/slackengine/doc.go`
 
 **Uses:**
-- `plan:internal/slackengine#Mailbox`
-- `plan:internal/slackengine#SlackClient`
-- `plan:internal/slackengine#Clock`
+- `internal/slackengine#Mailbox`
+- `internal/slackengine#SlackClient`
+- `internal/slackengine#Clock`
 - `internal/creelengine#IsOrchStrand`
 - `internal/agentname#TaskSlug`
 - `internal/creelengine#Message`

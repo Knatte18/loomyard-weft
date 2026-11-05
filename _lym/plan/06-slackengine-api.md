@@ -1,21 +1,21 @@
 # Card 6 — slackengine-api
 
 **Create:**
-- `plan:internal/slackengine#DefaultBaseURL` -> `const DefaultBaseURL = "https://slack.com/api/"`
-- `plan:internal/slackengine#API` -> `type API struct`
-- `plan:internal/slackengine#NewAPI` -> `func NewAPI(baseURL, token string, client *http.Client) *API`
-- `plan:internal/slackengine#Message` -> `type Message struct`
-- `plan:internal/slackengine#ChannelInfo` -> `type ChannelInfo struct`
-- `plan:internal/slackengine#APIError` -> `type APIError struct`
-- `plan:internal/slackengine#RateLimitError` -> `type RateLimitError struct`
-- `plan:internal/slackengine#API.AuthTest` -> `func (a *API) AuthTest(ctx context.Context) error`
-- `plan:internal/slackengine#API.ConversationInfo` -> `func (a *API) ConversationInfo(ctx context.Context, channel string) (ChannelInfo, error)`
-- `plan:internal/slackengine#API.UserInfo` -> `func (a *API) UserInfo(ctx context.Context, user string) error`
-- `plan:internal/slackengine#API.History` -> `func (a *API) History(ctx context.Context, channel, oldest string) ([]Message, error)`
-- `plan:internal/slackengine#API.Latest` -> `func (a *API) Latest(ctx context.Context, channel string) (string, bool, error)`
-- `plan:internal/slackengine#API.PostMessage` -> `func (a *API) PostMessage(ctx context.Context, channel, text string) error`
+- `internal/slackengine#DefaultBaseURL`
+- `internal/slackengine#API`
+- `internal/slackengine#NewAPI`
+- `internal/slackengine#Message`
+- `internal/slackengine#ChannelInfo`
+- `internal/slackengine#APIError`
+- `internal/slackengine#RateLimitError`
+- `internal/slackengine#API.AuthTest`
+- `internal/slackengine#API.ConversationInfo`
+- `internal/slackengine#API.UserInfo`
+- `internal/slackengine#API.History`
+- `internal/slackengine#API.Latest`
+- `internal/slackengine#API.PostMessage`
 - `internal/slackengine/api_test.go`
-- `plan:internal/slackengine#TestAPI` -> `func TestAPI(t *testing.T)`
+- `internal/slackengine_test#TestAPI`
 
 **Extends:**
 - `internal/slackengine/doc.go`

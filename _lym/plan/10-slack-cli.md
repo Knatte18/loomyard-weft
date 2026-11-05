@@ -35,13 +35,13 @@
 - `internal/hubgeom#PauseGeometry`
 - `internal/hubgeom#DobbyStart`
 - `internal/pauserecord#ReadCoverage`
-- `plan:internal/slackengine#RunRelay`
-- `plan:internal/slackengine#EnsureRelay`
-- `plan:internal/slackengine#StopRelay`
-- `plan:internal/slackengine#SetPresence`
-- `plan:internal/slackengine#AwaitFirstRead`
-- `plan:internal/slackengine#AwaitReparent`
-- `plan:internal/slackengine#SpawnRelayFromIntermediate`
+- `internal/slackengine#RunRelay`
+- `internal/slackengine#EnsureRelay`
+- `internal/slackengine#StopRelay`
+- `internal/slackengine#SetPresence`
+- `internal/slackengine#AwaitFirstRead`
+- `internal/slackengine#AwaitReparent`
+- `internal/slackengine#SpawnRelayFromIntermediate`
 
 **Intent:** Add the `lym slack` CLI module (D9), mounted in `cmd/lym/main.go`'s `newRoot` beside `creelcli.Command()` (`PATTERN-cli-cobra`), wiring slackengine over the hub.
 

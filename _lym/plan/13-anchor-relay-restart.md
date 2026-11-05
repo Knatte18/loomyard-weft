@@ -13,7 +13,7 @@
 - `internal/fabriccli#anchorCommand`
 
 **Uses:**
-- `plan:internal/slackengine#EnsureRelay`
+- `internal/slackengine#EnsureRelay`
 - `internal/hubgeom#SlackGeometry`
 
 **Intent:** Start the relay again once a prime anchor change ends, whether it lands or fails and whatever dobbies it starts again (D3).

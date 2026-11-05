@@ -1,19 +1,19 @@
 # Card 7 — slackengine-inbound
 
 **Create:**
-- `plan:internal/slackengine#Clock` -> `type Clock interface`
-- `plan:internal/slackengine#Mailbox` -> `type Mailbox interface`
-- `plan:internal/slackengine#SlackClient` -> `type SlackClient interface`
-- `plan:internal/slackengine#Hub` -> `type Hub struct`
-- `plan:internal/slackengine#SlackProgram` -> `const SlackProgram = "SLACK"`
-- `plan:internal/slackengine#SetPresence` -> `func SetPresence(geom Geometry, mailbox Mailbox, beams func() ([]string, error), presence Presence, now time.Time) (bool, error)`
-- `plan:internal/slackengine#inbound` -> `type inbound struct`
-- `plan:internal/slackengine#inbound.poll` -> `func (in *inbound) poll(ctx context.Context) (bool, error)`
-- `plan:internal/slackengine#inboundText` -> `func inboundText(text string) string`
-- `plan:internal/slackengine#route` -> `func route(shortname, text string, beams []string) (string, string, bool)`
+- `internal/slackengine#Clock`
+- `internal/slackengine#Mailbox`
+- `internal/slackengine#SlackClient`
+- `internal/slackengine#Hub`
+- `internal/slackengine#SlackProgram`
+- `internal/slackengine#SetPresence`
+- `internal/slackengine#inbound`
+- `internal/slackengine#inbound.poll`
+- `internal/slackengine#inboundText`
+- `internal/slackengine#route`
 - `internal/slackengine/inbound_test.go`
-- `plan:internal/slackengine#TestInboundPoll` -> `func TestInboundPoll(t *testing.T)`
-- `plan:internal/slackengine#TestSetPresence` -> `func TestSetPresence(t *testing.T)`
+- `internal/slackengine_test#TestInboundPoll`
+- `internal/slackengine_test#TestSetPresence`
 
 **Extends:**
 - `internal/slackengine/doc.go`
