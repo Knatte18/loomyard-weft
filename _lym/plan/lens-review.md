@@ -1,0 +1,54 @@
+# Lens review
+
+Every lens fork returned a report; each is saved beside this file as `lens-review.lens-<lens>.md`.
+Duplicates across lenses are merged, and the lenses that raised each one are named.
+
+- coverage 1, BLOCKING — PATTERN headroom: fixed differently. The proposed change, asking the parent to record a `changes` decision, stands; the plan cannot shorten other entries before the record carries that decision (Step 1). The parent recorded eight `changes` decisions saving 321 bytes (creel #695, #697). Card 4 now prescribes those eight lines verbatim and moves each dropped rule into its background file, and the overview's `## PATTERN changes` copies the record's ten bullets. `PATTERN.md` is 15560 bytes against `internal/pattern/check.go:24`'s headroom line (15564), so the premise holds.
+- coverage 2, BLOCKING, and guard-reach 1, MEDIUM — card 12 admits a gone `board_checked` dependency only when filing: fixed as proposed. `depends-unknown` admits it whatever `Filing` says, and `TestCheck` gains a row with `Filing` false.
+- forced-edits 1, BLOCKING — the loom keys are not classified in `ConfigSpec`: fixed differently. Card 9 lists `internal/loomengine#ConfigSpec` and classifies both keys `none`, not `guard`. The finding itself notes that `guard` would refuse the profile raddle block D7 admits (`internal/loomengine/config.go:561` bars guard keys from the local layer, where batten writes profile blocks). The bound is stated, and the doc comment names the exception.
+- way-forward 1, BLOCKING — the promoted Sketch is drafted: fixed as proposed. Card 13 moves the `applyDraftRule` re-sign (`released` list) to itself. `boardCriticalSection` passes the slug of a raddle promotion as released, rows assert the empty status, and card 16 now only feeds that list.
+- forced-edits 2, MEDIUM; coverage 9, MEDIUM; guard-reach 2, MEDIUM — runners without the usage hook: fixed differently. Card 5 installs the hook on `loomCLI.stopStepRuns` (the watchdog's runner) and on batten's `battenCLI.wire` and `battenCLI.primeShuttle` runners, with the task worktree's location. The proposed hook on `lym batten cancel`'s and pair teardown's runners is not added: those stops end a run being cancelled or removed, which never lands, and D13's report reads landed runs only. Card 5 states this bound.
+- forced-edits 3, MEDIUM; row-validity (card 8 hours), MEDIUM; coverage 11, MEDIUM — no hours for motif and raddle cells: fixed differently. Extending `ComputeTiming`'s `runRecipes` and phase tables is not done: `selectRuns` also requires a Finalize entry (`internal/reportengine/runs.go:256`), which record-only runs never hold. Card 8 instead takes a run's hours from the union of its session records' spans when timing does not time it. Rows are added for a motif cell's hours, a fit absent for one size, and the unknown-hours branch.
+- forced-edits 4, LOW — `names.go` comments: fixed as proposed. Card 23 lists `internal/loomrecipe#RowNames` and `#Rows` and rewords their comments.
+- forced-edits 5, LOW — the interrupt-policy test message: fixed as proposed. Card 23 rewords its message to name raddle.
+- forced-edits 6, LOW — the shape table: fixed as proposed. Card 23 lists `internal/loomrecipe#wantProducerTable` and adds the two rows.
+- forced-edits 7, LOW — the role constant: fixed as proposed. Card 21 creates `raddleRole`, the table's role prefix.
+- way-forward 2, MEDIUM — the two-returns halt names no step: fixed differently. A `lym batten cancel` way forward is not named, because it would discard the run. Card 22's halt names `lym loom goto Raddle-Write` once the parent settles the cause. Card 21 takes a goto as a fresh entry (new session, approval cleared), and rows cover the halt's text and the goto entry.
+- way-forward 3, MEDIUM; coverage 4, MEDIUM — the session counts only returns: fixed differently. A per-return count is not kept. Cards 19 and 21 raise `session` at every call of Raddle-Write, so a resume after a died session needs a fresh propose and posts the notice again. A row asserts the raise.
+- way-forward 4, MEDIUM — a stale interactive output file: fixed as proposed. Card 21 clears the approval record, or sets the proposal aside, on every fresh entry (a return or a goto) once per history position, with rows.
+- coverage 5, MEDIUM — no fresh session after a return: fixed as proposed. Card 21 states why the seat spawns fresh: the output is cleared, the prior session ended Done with its strand removed, and a goto stops the strand.
+- coverage 3, MEDIUM, and guard-reach (outside-lens note) — the filing level uses `ParentOf`'s nearest beam: fixed as proposed. Cards 16, 22 and 23 file at the Sketch's own `project` field. The overview gains the `filing-level` decision, and `TestFileRaddle` gains a grouping-project row.
+- coverage 6, MEDIUM — the board write's re-check refusal is indistinguishable: fixed as proposed. Card 16 wraps it in the new `ErrRaddleRecheck`, and card 22 returns on it, with rows for both error kinds.
+- coverage 7, MEDIUM — a refused replay add sets nothing aside: fixed as proposed. Card 15 gains a refused-add row (a `depends_on` origin lacks).
+- coverage 8, MEDIUM — own slug under another `created`: fixed as proposed. Card 24's new `TestRaddleStartRefusal` has that row.
+- coverage 10, MEDIUM — archived, not landed, runs: fixed as proposed. Card 8 defines a landed run (`landed.json`, or a done terminal row for a recipe with no Finalize row) and adds a cancelled-run row.
+- coverage 12, MEDIUM — part records' content untested: fixed as proposed. `TestRaddleFile` gains a row asserting the records written.
+- coverage 13, MEDIUM — batten admits raddle untested: fixed as proposed. Card 23 creates `TestChildRecipeSupported`.
+- coverage 14, LOW, and guard-reach 3, LOW — the plain-promote row reaches the label rule, not `checkDiscussedPromotion`: fixed as proposed. Card 13's rows name each refusal: a labelled Sketch hits the label rule, and a stripped note hits `checkDiscussedPromotion` by plain promote and by `darn`.
+- coverage 15, LOW — first session after a return: fixed as proposed. Card 20 adds the row.
+- coverage 16, LOW — unreached branches:
+  - Fixed as proposed: rows for no session id (card 3), no held merge head (card 6), a flagged entry with no record file (card 18), the `AutoApprove` error (card 21), and the `Notify` failure (card 25).
+  - Not added: a Warn-logging row for card 6's board or profile read failure. Seeding builds `runUsageRecord` from what it read, and that function's rows cover the absent-entry result.
+- coverage 17, LOW — pawl wiring of Record-Write's stored branch: disputed, `premise false`. One `recordWriteDeps` fill serves every recipe's Record-Write row (`internal/loomcli/wiring.go:781`, `recordWriteDeps` at `:407`), so no wiring path differs for pawl. `TestWire_EverySeamFilled` checks the fill, and card 18's producer rows cover the branch.
+- coverage 18, LOW — an unreadable `store.json` fails every write: fixed differently. A row for the current behaviour is not added; the behaviour changes. Card 14 refuses only a slug-making write on a store read error, naming the file and its restore, and a row lets a status write through.
+- row-validity (card 6 operand), MEDIUM, and guard-reach 6, LOW — the Finalize size operand and its resume: fixed differently. Persisting the tip is not proposed, because no Finalize state record holds it today. Card 6 names the operand: the parent head merged in `mergeParent`, scripted apart by a new `recordingParentMerger` field. A resumed Finalize skips the record at Info, a stated bound.
+- row-validity (card 6 failure row), LOW: fixed as proposed. The row moves to `TestFinalize_RecordLandingFailureKeepsDone`.
+- row-validity (card 3 stop fields), MEDIUM: fixed as proposed. `RunState` gains `Role` and `Model`, written at launch. The stop row lists the on-disk record and engine-set fixture, and the fields the path fills.
+- row-validity (card 3 economy), LOW: fixed as proposed. The done, stuck and died assertions move into `TestRun_Finalize_ReportsUsageAndTimes`.
+- row-validity (card 5 repeat), LOW: fixed as proposed. The row asserts only the empty `RecordReads` handed over.
+- row-validity (cards 13/14 order and input), MEDIUM: fixed as proposed. Card 13 runs `checkDiscussedPromotion` before `checkNewSlugs`, and card 14's row is a `--recipe raddle` promotion of a discussed filed slug.
+- row-validity (card 24 logic untested), MEDIUM: fixed as proposed. The new `TestRaddleStartRefusal` drives the function itself, and `TestStartGuard_Refuse` keeps only plumbing rows.
+- row-validity (card 13 `TestPromote` external), LOW: fixed differently. An `export_test.go` is not added: the `TestPromote` edit is dropped, and the `PromoteTo` recipe row is in `TestDiscussedPromotion` (now `boardengine_test`), through the public method.
+- row-validity (glyphs), LOW: fixed as proposed. Cards 13, 14 and 17 now name `internal/boardengine_test#TestSlugRule` and `internal/boardcli_test#TestCLI`, confirmed with `lym quarry resolve`.
+- row-validity (card 14 helper), LOW: fixed as proposed. Card 14 creates `writeRaddleStore`, card 17 uses it, and the nil-seam board row is stated.
+- row-validity (card 16 repeat), LOW: fixed as proposed. The `checkTaskCreation` row is cut.
+- row-validity (card 25 fakes), LOW: fixed differently. A marker-write error field is not added: the row removes the written marker between calls, which stands for the interruption. The `HandOff` refusal row joins `TestNewProducers_RefuseAnUnsetSeam`.
+- guard-reach 4, LOW — the replay skips the store rule: fixed as proposed. Card 14 states the bound and points to card 24's guard as the check that meets it.
+- guard-reach 5, LOW — `filed` and the project slug: fixed as proposed. Card 14 and card 16 record the project's slug in `filed`, with `Holds` rows by project slug (cards 14, 17).
+- way-forward (card 13 label refusal), LOW: fixed as proposed. It names `lym board upsert` setting the recipe, or dropping the label.
+- way-forward (card 14 rename target), LOW: fixed as proposed. The promotion refusal names an admitted rename target.
+- way-forward (card 17 `lym board list`), LOW: fixed as proposed. It names `lym report raddle`.
+- way-forward (card 24 commands), LOW: fixed as proposed. The refusal names the motif upsert, the release and the raddle promote.
+- way-forward (card 22 `CreateBeam`), LOW: fixed as proposed. Failures of steps 4–7 halt naming `lym loom resume`, with a row.
+- way-forward (card 15 set-aside), LOW: fixed as proposed. The report names the Sketch and the run's committed `_lym/raddle/` records the operator re-files from.
+- way-forward (card 21 `AutoApprove`), LOW: fixed as proposed. A returned error names re-stepping the row, and nothing is recorded.
