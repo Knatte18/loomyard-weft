@@ -1,0 +1,15 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Discussion-Bouncer",
+    "history_length": 12,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-05T17:31:45.706905857+01:00",
+  "deadline": "2026-11-05T18:01:45.706905857+01:00",
+  "strand_guid": "322db5bb7536d35edbdd8c19441b6c59",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/creel-cross-hub-mail/_lym/shed/creel-cross-hub-mail/drive-reports/drive-envelope-20261105-173145-d53a.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/creel-cross-hub-mail/_lym/shed/creel-cross-hub-mail/drive-reports/drive-report-20261105-173145-3a6a.md"
+}

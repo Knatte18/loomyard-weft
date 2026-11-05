@@ -1,0 +1,12 @@
+verdict: resume
+reason: |-
+  Hard-cap escalation at round 3. The fixer's changes in the committed decision record answer each open design-wrong finding of round 3.
+  F1 (daemon-start retry capped by time only): D2 now caps the starts of a receiving hub's daemon at three per receiving hub, reset only when that daemon answers or the sending daemon restarts, holding across retries and new posts; each start is logged and reaped; the PATTERN-child-processes Constraints bullet says "caps spawn attempts by count", matching pattern/PATTERN-child-processes.md:16; a D2 criterion tests three starts across the hour with the message still returned at the hour.
+  F2 (drop-notice bound keyed on forged strand): D3 keys the window on the sending hub resolved through D1, so the map holds at most one entry per registered hub; five notices per hub per hour, the fifth announcing journal-only drops and naming `lym creel log --since 1h`, which is the burst-then-counted option the review itself offered as meeting the operator's added decision; the flood criterion covers one or many claimed strands. `lym creel log --from` and `--since` exist in internal/creelcli/cli.go.
+  F3 (identical message after id restart): the journaled post time to the nanosecond joins the deliver request, the duplicate tuple of steps 3 and 6 and the confirm tuple of steps 4 and 5; the id clash names it; a D3 bound states the residual same-instant case; a D3 criterion row tests it.
+  F4 (pre-deploy sessions, LOW): D7 states as fact what the old trust sentence (settings.go creelTrustSentence, "an orch strand", no hub) lets through, names the exposed long-lived orch, and bounds it by a restart right after the deploy in D9's setup, its criterion and the plan writer's deploy note, with the window stated as residual exposure.
+  F5 is mechanical and is also answered (200-byte escaped quote, D2 bound and criterion).
+  No fix widens scope or needs an operator decision, so the round is accepted.
+verbs:
+  - |-
+    lym loom circling accept creel-cross-hub-mail
