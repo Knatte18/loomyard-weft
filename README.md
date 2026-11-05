@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-05 14:09 UTC; every age below is as of then.
+Rendered 2026-11-05 14:10 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -67,23 +67,22 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 2d<br>5h | shuttle, codex, loom |
 | F18 |  | **Codex sessions get creel mail through hooks, as Claude sessions do**<br>• codexengine has no creel hooks, so every Codex strand is a pane-mail strand; the hook spike showed a way | [`codex-creel-hooks`](design-codex-creel-hooks.md) | 1d<br>5h | codex, creel, shuttle |
 
-## [P0 Root: entries under no project](project-root.md) (26)
+## [P0 Root: entries under no project](project-root.md) (25)
 
 Owner `neve`
 
-### Tasks (5)
+### Tasks (4)
 
 Concrete and claimable; only a task can run.
 
-#### Running (3)
+#### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **A plain promote of a Sketch starts raddle**<br>• lym board promote on a Sketch takes recipe raddle by itself, with no --recipe flag | [`sketch-promote-raddle`](design-sketch-promote-raddle.md) | darn · light | Finalize | neve | 21m<br>16m | board |
-| T5 | **Talk to the orch through Slack, and let the orch know when the operator is on Slack only**<br>• Slack as a creel endpoint for the orch, with an operator presence state so the orch reports and reminds through Slack while the operator is away | [`reed-slack-relay`](design-reed-slack-relay.md) | motif | Discussion-Burler-Review | neve | 4w<br>12m | reed |
-| T7 | **Drift compares changed values in code against a sealed expectation, with a separate judge**<br>• General Drift rework: code-side diff of any hub capture keyed by line key or number, structured sealed expectation, containment by code, a judge per changed value | [`drift-rework`](design-drift-rework.md) | tapestry · solid | Discussion-Burler-Fix | neve | 22h<br>54m | drift, loom, darn, stencil, config |
+| T5 | **Talk to the orch through Slack, and let the orch know when the operator is on Slack only**<br>• Slack as a creel endpoint for the orch, with an operator presence state so the orch reports and reminds through Slack while the operator is away | [`reed-slack-relay`](design-reed-slack-relay.md) | motif | Discussion-Burler-Review | neve | 4w<br>13m | reed |
+| T7 | **Drift compares changed values in code against a sealed expectation, with a separate judge**<br>• General Drift rework: code-side diff of any hub capture keyed by line key or number, structured sealed expectation, containment by code, a judge per changed value | [`drift-rework`](design-drift-rework.md) | tapestry · solid | Discussion-Burler-Fix | neve | 22h<br>55m | drift, loom, darn, stencil, config |
 
 #### Ready (0)
 
@@ -97,7 +96,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T7<br>T6<br>T1 | 4d<br>54m | fabric |
+| T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T7<br>T6<br>T1 | 4d<br>55m | fabric |
 | T6 | `draft` **docs/research is restructured into topic folders with an index**<br>• docs/research moves into topic folders with one layout per study and an index; scripts, the docs-link test, comments and links follow | [`research-dir-tidy`](design-research-dir-tidy.md) | darn · light |  | 5h<br>4h |  |
 
 ### Notes (21)
@@ -139,8 +138,16 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 4w<br>1d | board, ide, orch |
 | F12 |  | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md) | 3d<br>1d | claude, shuttle, config |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 3w<br>1d | webster |
-| F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 13d<br>23m | loom, board, batten, workspaces |
+| F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 13d<br>24m | loom, board, batten, workspaces |
 | F16 |  | **Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | 2d<br>2d | drift, shed |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>3d | burler, shed, orch, quarry, report |
 | F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 8h<br>8h | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 8h<br>8h | batten, board, fabric, workspaces |
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T3 | **A plain promote of a Sketch starts raddle**<br>• lym board promote on a Sketch takes recipe raddle by itself, with no --recipe flag | [`sketch-promote-raddle`](design-sketch-promote-raddle.md) | 22m<br>18m | board |
