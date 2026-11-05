@@ -45,18 +45,18 @@ Drift stays a general lym module: nothing in it assumes one hub's harness or out
 
 The two interim repairs above do not replace this.
 
-## Open decisions (operator)
+## Decisions (operator, 2026-11-05)
 
-The orch's recommendation stands beside each; none is decided.
+1. The compare moves into lym's code, under the general capture contract above, with one file per test; the `cs` hub's regression suite is small, so one file per test is fine there.
+2. Open line ranges such as `12-` are allowed in the expectation for unkeyed output, without a halt, and every open range is listed in the judge's verdict.
+3. Where the fix loop lives for tapestry, which depends on Webster's gate seam, is settled in the plan after reading that seam.
+4. The seal is the expectation's hash, plus a check that the sealing commit precedes the writer's first commit.
 
-1. Move the compare into code. Recommended: yes, under the general capture contract above.
-2. Open line ranges such as `12-` in the expectation, for unkeyed output. Recommended: allowed without a halt, but listed in the verdict.
-3. Where the fix loop lives for tapestry, which depends on Webster's gate seam. Recommended: settled in the plan after reading that seam.
-4. Seal strength. Recommended: the hash, plus a check that the sealing commit precedes the writer's first commit.
+The run goes autonomous: the Discussion asks the operator nothing.
 
 ## Related
 
-`sampler-drift-trial` asks that Drift verbs work outside drift stages; this rework changes which stages exist, so that note is revisited if this is built.
+`sampler-drift-trial` asks that Drift verbs work outside drift stages; this rework changes which stages exist, so that note is revisited when this lands.
 
 ## Size
 
