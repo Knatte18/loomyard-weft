@@ -1,0 +1,20 @@
+---
+round: 1
+focus:
+  - "Seal and records guard (`internal/fabricengine/trailercommit.go`, `internal/driftengine`): does every write of `scope.json` or `judged.json` commit at once with a `Drift-Records` trailer, do all readers (rows, gate entry, `lym drift check`, verdict) read the newest commit's copies, and does the seal check follow D6's order, including `--discard`, a run past Drift-Expect with no seal, and the `unsealed` mark?"
+  - "Containment diff (`internal/driftengine`, D1/D7): are keyed identities, occurrence `n` as a separate field, unkeyed `#n` pairing, CRLF and trailing-newline normalisation, and added or removed cases implemented as D1 states, and does an open range cover only unkeyed cells from its start to the case's end?"
+  - "Judge guard (D9): does Drift-Verify snapshot both checkouts and the scratch capture directory before the spawn, compare after, handle the lost snapshot and resumed-row cases, check the baseline digest, and remove `judgement.yaml` after storing rulings on a Done and on a does-not-match Stuck alike, as the third Added-after-Discussion entry requires?"
+  - "Row skip and re-check logic (D4, `DriftVerify` engine): is a row Done only at scope `off`, a deferral, an old waiver, or an unchanged head after a passing check with no amendment since, and is a resumed Stuck row checked again with stored rulings reused only for unchanged tuples?"
+  - "Old-chair ending (first Added-after-Discussion entry): is `Deps.EndRoles` over reed's strand table used instead of `runproc.EndRole`, and does it stop only this worktree's strands whose role is exactly `drift-baseline` or `drift-verify`?"
+  - "Recipes and wiring (`contracts/recipes`, `internal/shedrecipe`, `internal/loomrecipe`, `internal/loomcli/driftwiring.go`): are row order and gates per D4 and D8 in both tapestry and darn, does `Drift-Recheck` use `DriftVerify` with no `on_stuck`, is the `drift` entry on Webster's gates and does its report reach the fixer (`internal/websterengine`), and is no `DriftRecheck` registry entry left?"
+  - "Way-forward refusals (`PATTERN-refusal-way-forward`): does each new Stuck, refusal and gate report name the ways forward its decision lists (`--restore`, `--discard`, `lym drift defer`, `lym drift amend`, `lym loom goto --to Darn-Write`, the tapestry route), and does a test reach each?"
+  - "Amend and defer verbs (D11/D12): caller check, admitted rows, `--restore` and `--discard` semantics, dropping the rulings an amendment covers, and `defer` admission at each listed Stuck row."
+  - "Retirements (D14, cards 22 to 27): is anything still reading a removed verb, record, seam, stencil, gate key or config key (`partial`, `skip`, `{skip_file}`, `verify_max_runs`, `drift-verify` gate key), and are the read-only legacy fields kept for D3's in-flight rule and D13's old-Drift rendering?"
+  - "Config keys and reinterpretation (D15): renames migrate values, `skip` and `verify_max_runs` are retired under `CategoryNone`, `diff` and `key_patterns` are refused in `run_settings`, the three reinterpretation flags exist, and a command holding `{skip_file}` is refused at run time."
+  - "Stencils and PATTERN (D16, PATTERN changes): do `drift-template-expect`, `drift-template-judge` and the writers' drift paragraph say what D16 names, do old stencils drop no rule the answer key did not ask to drop, and does the `PATTERN-sole-parsers` text equal the declared line with the format list in `pattern/PATTERN-sole-parsers.md`?"
+  - "Commit messages and departures: does any commit carry a `Pattern-Departure:` trailer, and does the named entry forbid the answer key's way? Check the last two fix commits (`34fa6087`, `fcd194e0`) for scope the answer key does not license."
+  - "Test economy across the large test diff: new tests that duplicate an existing test's coverage, per-helper tests covered by a public-surface test, and behavior added with no coverage."
+---
+
+Seed focus from the decision record's decisions and the commit list.
+Every entry names where to look and the question to settle; none states a verdict.
