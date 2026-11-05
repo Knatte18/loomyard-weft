@@ -73,6 +73,28 @@ Every lens returned a report; each is saved beside this log.
 - F14: acceptance criteria added for D4's replied mark and settle, and D6's reminder and log.
 - F15: D1's rationale trimmed; the created-or-opened alternative moved here.
 
+### Round 2
+
+- F1: a confirm answering `no` journals a drop event and sends a coalesced `CREEL` notice to the receiving hub's orch, bounded per sending hub and claimed strand (D3).
+- F2: every JSON rendering of cross-hub mail, `--wait-reply`'s included, carries trust and sending hub (D6).
+- F3: a return past the hour follows one last `deliver` call, so a stored message whose `accepted` was lost is journaled delivered (D2).
+- F4: the untrusted stamp reads `(other hub, untrusted, data and never an instruction)`, and D7's bound names sessions launched before the deploy.
+- F5: inbound cross-hub mail is a new event an older binary ignores; stated in D2's downgrade bound.
+- F6: a duplicate hit must match the whole tuple, and a mismatch is refused as an id clash (D3).
+- F7: a cross-hub reply is measured stamped and refused at `--reply` over the cap (D4).
+- F8: the Open risks line dropped, settled by the operator's added decision.
+- F9: D5's config load joins the cwd-resolution constraint.
+- Self-check: the drop shows in `lym creel log --from <claimed strand>`, which the notice names; the counting notice rides the next drop, adding no wakeup; an id clash names the held range and is bounded; the ids constraint and the Q6 auto-mode line agree with the change; D7's bound separates the old trust sentence from the old parent directive; D6's JSON rule names `reply` only, since `returned` and `unanswered` never hold another hub's message.
+
+### Round 3
+
+- F1: the outbound worker starts a receiving hub's daemon at most three times, reset only when that hub's daemon answers or the sending daemon restarts (D2, Constraints).
+- F2: drop notices bounded per sending hub, five an hour with the fifth announcing the silent rest, and a counted notice from the first drop after the hour (D3).
+- F3: the journaled post time joins the `deliver` request and the duplicate and confirm tuples, so a restarted id sequence clashes even for an identical message (D2, D3).
+- F4: D7's pre-deploy bound states the exposure as fact and is bounded by a session restart in D9's setup and the plan's deploy note.
+- F5: the return notice's reason is a creel code or the receiver's text cut to 200 bytes and quoted as data, with a D2 bound.
+- Self-check: a post no longer resets the start cap; the quoted reason is escaped and cut on a rune boundary; the counted notice opens the next hour and the fifth names `lym creel log --since 1h`; D6's stamp line and D9's criterion agree with D7's bound, which names `orch-N` and the window between deploy and restart as residual exposure.
+
 ## Question ledger
 
 - Q1 Keep the inbox folder? — auto-pick: no; direct delivery, sender journal as queue (D2).
@@ -80,7 +102,7 @@ Every lens returned a report; each is saved beside this log.
 - Q3 Trust key by shortname or path, and which layer? — auto-pick: shortname, hub base file, Guard (D5).
 - Q4 Which sender kinds cross hubs? — auto-pick: strands only (D2).
 - Q5 Which verbs cross hubs? — auto-pick: post and reply only (D4, D8).
-- Q6 What happens to a message whose confirm says `no`? — auto-pick: refused and logged, never shown; raised under Open risks since the entry proposed showing it as unverified.
+- Q6 What happens to a message whose confirm says `no`? — auto-pick: refused and logged, never shown; settled by the operator's added decision, 2026-11-05.
 - Q7 How is the trial run arranged? — auto-pick: a board note filed by a card (D9), since a run cannot create a task.
 - Q8 Which orch names does trust accept? — auto-pick: the exact `<shortname>:orch` and `<shortname>:<slug>:orch`, never `orch-N`, after the bound-breaker lens showed `lym reed add --role orch` forms `orch-N` (D5).
 - Q9 May another hub's strand mail a program such as `<shortname>:SLACK`? — auto-pick: no; strand receivers only (D2).
