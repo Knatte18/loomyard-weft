@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-05 15:50 UTC; every age below is as of then.
+Rendered 2026-11-05 15:53 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Creel mail between hubs with a verified sender and one-way hub trust**<br>• Orchs of different hubs mail each other; the sending daemon confirms the sender, and a hub obeys only the orchs of hubs it lists as trusted | [`creel-cross-hub-mail`](design-creel-cross-hub-mail.md) | motif | awaiting · Discussion-Bouncer | neve | 6d<br>1h | creel, orch |
-| T7 | **Drift compares changed values in code against a sealed expectation, with a separate judge**<br>• General Drift rework: code-side diff of any hub capture keyed by line key or number, structured sealed expectation, containment by code, a judge per changed value | [`drift-rework`](design-drift-rework.md)<br>[Sketch](decision-drift-rework.md) | tapestry · solid | Plan-Burler-Fix | neve | 1d<br>2h | drift, loom, darn, stencil, config |
+| T7 | **Drift compares changed values in code against a sealed expectation, with a separate judge**<br>• General Drift rework: code-side diff of any hub capture keyed by line key or number, structured sealed expectation, containment by code, a judge per changed value | [`drift-rework`](design-drift-rework.md)<br>[Sketch](decision-drift-rework.md) | tapestry · solid | Plan-Bouncer | neve | 1d<br>2h | drift, loom, darn, stencil, config |
 
 ### Ready (0)
 
@@ -81,5 +81,5 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 13d<br>1h | loom, board, batten, workspaces |
 | F16 |  | **Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | 2d<br>2d | drift, shed |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>3d | burler, shed, orch, quarry, report |
-| F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 9h<br>9h | board, orch, workspaces |
-| F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 9h<br>9h | batten, board, fabric, workspaces |
+| F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 10h<br>10h | board, orch, workspaces |
+| F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 10h<br>10h | batten, board, fabric, workspaces |
