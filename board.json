@@ -754,6 +754,28 @@
       "body": "Imported from [issue #55](https://github.com/Knatte18/loomyard/issues/55).\n\n## What happened\n\nModels hub, 2026-11-04.\nThe motif `knut-rheology-friction-pvt`, run inside beam `duplication-and-import-followups` (P2), decided (its D1) that the follow-up work runs as a project of its own outside that beam.\nThe beam's orch, on the operator's order, tried to create that project (`knut-rheology`) at the root and was refused: a beam orch may create entries only under its own beam.\nIt had to create the project under P2 and the task split under it, and the operator then had to have the prime orch move things.\n\n## Why it matters\n\nA beam is meant to land and disappear. A project a beam's motif spins out often belongs beside the beam, not inside it, and keeping it inside blocks the beam's landing.\nThe operator gave the order in the beam's orch session, where the discussion happened, and had to repeat it in the prime.\n\n## Expected\n\nAn operator-ordered board write from a beam orch can target the root (or another project), e.g. with an explicit flag or owner field, or lym names the way: \"ask the prime orch\" with the exact payload to post.",
       "created": "2026-11-05T05:50:33Z",
       "revised": "2026-11-05T05:50:33Z"
+    },
+    {
+      "id": 1114,
+      "handle": "B6",
+      "slug": "teardown-leaves-worktree-dir",
+      "title": "Motif run leaves its worktree directory behind, and the leftover then blocks board and cancel",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "batten",
+        "fabric",
+        "board"
+      ],
+      "issues": [
+        54
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #54](https://github.com/Knatte18/loomyard/issues/54).\n\n## What happened\n\nModels hub, beam `duplication-and-import-followups` (P2), 2026-11-04.\nThe motif task `knut-rheology-friction-pvt` (T2) ran to the end: Run-Shed done, Land done, Worktree-Teardown done (18:04Z per `lym batten status`).\nThe directory `Models-LYMHUB/knut-rheology-friction-pvt` was left behind. It was no git worktree any more and held only `obj/` and `bin/` output (10 files).\n\nAfterwards:\n\n- `lym board upsert '{\"slug\":\"knut-rheology-friction-pvt\",\"project\":\"knut-rheology\"}'` was refused: \"entry has a pair, ... end the pair first with lym batten cancel knut-rheology-friction-pvt --remove\".\n  This held after `lym batten cleanup --apply` removed the done run's records.\n- `lym batten cancel knut-rheology-friction-pvt --remove` failed: \"could not read the task worktree of knut-rheology-friction-pvt: not a git repository\".\n- The beam orch could not move its finished motif to another project, so the beam could not be emptied for its landing.\n\nOnly a manual `rm -rf` of the directory by the operator unblocked the board write.\nThe same leftover exists for many earlier runs in that hub (drift-numerical-baseline, flat-test-namespaces, tool-joint-hydraulics, ...).\n\n## Expected\n\n- Worktree-Teardown (and `lym fabric remove`) removes the whole directory, ignored build output included, and fails loudly if it cannot.\n- The board's \"has a pair\" check and `batten cancel` treat a directory that is no git worktree as no pair, or name the exact cleanup.\n- A motif, which lands no code, should not need a worktree teardown to finish before its entry can move.\n\nRelated: #21 (fabric remove leaves obj dirs).",
+      "created": "2026-11-05T05:50:36Z",
+      "revised": "2026-11-05T05:50:36Z"
     }
   ],
   "prime_owner": "neve",
