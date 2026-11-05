@@ -41,7 +41,7 @@ Duplicates are merged; each line names the lenses that raised it.
 - bound-breaker 8 (gate slot deadlock when a gate key runs the check): fixed; D7 inherits a held slot.
 - existing-paths 3 (parent cannot reach `amend` from its own worktree): fixed; `amend` takes the slug and checks its caller as `lym loom decision add` does.
 - existing-paths 4 (`run_settings` can switch `diff` and `key_patterns`): fixed; D15 refuses both there, and D3 states the `scope: off` bound.
-- existing-paths 5, bound-breaker 13 (`run_settings` carrying removed keys): fixed; D15 declares `skip` and `verify_max_runs` retired with a way forward.
+- existing-paths 5, bound-breaker 13 (`run_settings` carrying removed keys): fixed; D15 declares `skip` and `verify_max_runs` retired under `CategoryNone`, so the load drops them (corrected in review round 1).
 - existing-paths 6 (recipe comments name removed verbs): fixed; D14 and the review criterion cover recipe comments.
 - bound-breaker 2 (counted baseline lost under `.lym`, `waive` gone): fixed; D12 admits `defer` at a Stuck row with a missing baseline.
 - bound-breaker 2, second half (old run whose agent chose `off`): fixed; D3 makes later rows read the recorded scope, which an old run keeps.
@@ -65,8 +65,8 @@ Duplicates are merged; each line names the lenses that raised it.
 - Pairing unkeyed lines by a sequence diff (LCS): heuristic pairings change with small edits; pairing by number plus open ranges is deterministic.
 - Keeping `compare` as an extra check under `lines` mode: the `cs` compare exits 1 on any drift, expected drift included, so it would fail every task that expects drift.
 - Rewriting a hub's capture command to drop `{skip_file}`: the flag before the placeholder is the harness's own and cannot be removed safely by code.
-- A cold fixer on the writer's `drift` entry: the writer holds the context; a fixer adds a session for no gain.
-- Routing Drift-Verify's Stuck back to the writer row: Webster re-entered after its last batch has no card to run; the stop chain already routes a Stuck.
+- A cold fixer on Darn-Write's `drift` entry: the writer edits code and holds the context; a fixer adds a session for no gain.
+- An automatic `on_stuck` route from Drift-Verify back to the writer row: Webster re-entered after its last batch has no card to run; the stop chain already routes a Stuck, and in darn the parent's `lym loom goto` re-enters the writer (D7).
 - Keeping amendments inside `expected.yaml`: it would break the seal on every amendment.
 - Hub-level exclusions of cases or lines: no hub needs one, and the capture owes deterministic output.
 - Keeping `baseline_model` and `verify_model` names: they would name agents that no longer exist.
@@ -77,15 +77,28 @@ Duplicates are merged; each line names the lenses that raised it.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+Every finding was fixed; the tapestry halves of two, the wiring of Master's fixer for the `drift` entry and the code-fixing route from a Stuck drift row, are handed to the plan under the operator's decision 3. See `_lym/reviews/discussion/round-1-fixer-report.md`.
+The main changes: a reinterpretation and a run rule for `partial` (D3, D15); `--discard` as the way forward for seal failures `--restore` cannot clear, and a gate entry that reports a seal failure without failing (D6, D11); the command-mode seal check and pass rule aligned (D2, D4, D8); the tapestry `drift` entry's findings go to Master's fixer paths (D8, D16); a code-fixing way forward for an unexpected-cell Stuck (D7); the judge's snapshot covers both checkouts' HEADs (D9); an identity's occurrence is a separate field (D1, D5).
+
+### Round 2
+
+Every finding was fixed; see `_lym/reviews/discussion/round-2-fixer-report.md`.
+The main changes: a baseline digest held in a weft trailer from Drift-Await and checked before every diff, with `lym drift defer` as the way forward (D7, D8, D12); per-seat session marks in `scope.json` replace `runs.json`'s (D6, D9, D14); `diff` and `key_patterns` recorded per run (D3); a per-case expectation and stored failing rulings under `command` mode (D2); a wider judge snapshot recorded for resume, a spawn id on `judgement.yaml` and an interrupted-judge rule (D9); a way forward at every Stuck; the capture lock taken after the slot and waited on (D7); in-flight runs with a live old agent, a waiver or an uncounted capture (D4, D12).
+
+### Round 3
+
+Every finding was fixed; see `_lym/reviews/discussion/round-3-fixer-report.md`.
+The main changes: `scope.json` and `judged.json` committed with a `Drift-Records` trailer at every write and read from that commit's copies, with `lym drift amend --restore` as the way forward for a mismatch (D4, D6, D10, D11, D13); the judge snapshot moved under the hub's board-level `.lym`, extended to untracked copies and the scratch capture directory, with a rule for a lost snapshot (D9); the baseline digest recomputed after the judge returns, naming `lym drift defer` (D9).
 
 ## Question ledger
 
 - Q1 — How are unkeyed lines paired? Auto-pick: by position among unkeyed lines; open ranges cover inserted lines. Resolved (D1), revised after the lens review.
 - Q2 — How is a repeated key told apart? Auto-pick: by occurrence number in file order. Resolved (D1).
 - Q3 — How does a `docs` run turn Drift off when code never sees the profile name? Auto-pick: the `docs` profile's darn block sets `drift.scope: off`. Resolved (D3).
-- Q4 — What happens to `partial` in a seeded run? Auto-pick: read as `full` with a Warn. Resolved (D3).
-- Q5 — What does `command` mode keep? Auto-pick: the compare command, with the judge reading its log per case and no stored rulings. Resolved (D2).
+- Q4 — What happens to `partial` in a seeded run? Auto-pick: read as `full` with a Warn; a recorded `partial` leaves its skipped cases out of the diff, and the reinterpretation flags a hub base holding it. Resolved (D3, D15), revised in review round 1.
+- Q5 — What does `command` mode keep? Auto-pick: the compare command, with the judge reading its log per case, a per-case expectation, and only failing rulings stored, keyed by warp head. Resolved (D2), revised in review round 2.
 - Q6 — Does the writer's drift entry carry a cold fixer? Auto-pick: no. Resolved (D8).
 - Q7 — Is a `lym drift check` verb worth adding? Auto-pick: yes, so Webster forks and writers can check mid-work. Resolved (D8).
 - Q8 — Where do amendments and rulings live? Auto-pick: amendments in `scope.json`, rulings in a new `judged.json`. Resolved (D10, D11).
@@ -93,6 +106,6 @@ _No rounds yet._
 - Q10 — What replaces `waive` after a deferred capture? Auto-pick: nothing; a deferred capture skips the compare and the verdict says so. Resolved (D12).
 - Q11 — Rename the model keys? Auto-pick: yes, through the module's migration. Resolved (D15).
 - Q12 — Should the baseline be re-captured after parent work is merged? Open: recorded under Open risks for the parent.
-- Q13 — What clears a failed seal check? Auto-pick: the parent's `lym drift amend --restore`. Resolved (D6, D11).
+- Q13 — What clears a failed seal check? Auto-pick: the parent's `lym drift amend --restore` for an edited file, `--discard` for a mis-sealed or unsealed file. Resolved (D6, D11), revised in review round 1.
 - Q14 — What happens when a counted baseline directory is lost? Auto-pick: Stuck naming `lym drift defer`, admitted there for the parent. Resolved (D12).
 - Q15 — May `run_settings` set `diff` or `key_patterns`? Auto-pick: no; hub-only. Resolved (D15).
