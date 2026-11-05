@@ -1,6 +1,6 @@
 # Slack relay per hub: credentials, setup, inbound and outbound mail, presence and the lym slack verbs
 
-`slack-relay` · Task · feature, reed · running · Plan-Bouncer
+`slack-relay` · Task · feature, reed · awaiting · Plan-Bouncer
 
 Filed from the Sketch `reed-slack-relay`.
 
