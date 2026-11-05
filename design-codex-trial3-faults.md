@@ -1,6 +1,6 @@
 # Codex sessions read idle, end when Codex exits, and reach creel from the sandbox
 
-`codex-trial3-faults` · Task · bug, codex, shuttle, creel · running · Drift-Await
+`codex-trial3-faults` · Task · bug, codex, shuttle, creel · running · Darn-Write
 
 Three Codex engine faults the pane/load trial found (`docs/research/codex-engine-trial-pane-load-2026-11-03.md`). Fix all three; the trial's end-to-end case 6 runs after this lands.
 
