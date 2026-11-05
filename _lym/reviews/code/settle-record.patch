@@ -1,0 +1,360 @@
+diff --git a/internal/battencli/wire.go b/internal/battencli/wire.go
+index c6cb0ca6..8a181701 100644
+--- a/internal/battencli/wire.go
++++ b/internal/battencli/wire.go
+@@ -23,6 +23,7 @@ import (
+ 	"strings"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/arbiterstop"
+ 	"github.com/Knatte18/loomyard/internal/battenrecipe"
+ 	"github.com/Knatte18/loomyard/internal/battenshed"
+@@ -33,6 +34,8 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/dobbyengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/fsx"
++	"github.com/Knatte18/loomyard/internal/gatefixer"
++	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/hubreconcile"
+ 	"github.com/Knatte18/loomyard/internal/landingshed"
+@@ -45,6 +48,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/parentlock"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
++	"github.com/Knatte18/loomyard/internal/runproc"
+ 	"github.com/Knatte18/loomyard/internal/shedadapters"
+ 	"github.com/Knatte18/loomyard/internal/shedbuild"
+ 	"github.com/Knatte18/loomyard/internal/sheddriver"
+@@ -57,6 +61,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/state"
+ 	"github.com/Knatte18/loomyard/internal/tendercli"
+ 	"github.com/Knatte18/loomyard/internal/verifytree"
++	"github.com/Knatte18/loomyard/internal/websterengine"
+ )
+ 
+ // spawnPairPush launches the detached push of a task pair; tests replace it, since a detached push forks the running binary.
+@@ -625,7 +630,7 @@ func readStopReport(taskLocation *lymcwd.Location) (path string, at time.Time, f
+ }
+ 
+ // readAgentActivity reads the running agent runs of the task worktree, those whose waiting process is gone included, through the shuttle config and its registered engines, mapped onto dobbyengine's neutral type,
+-// and reports whether a Go-side wait is live: a running verify, a parent lock wait, a child running at a row of loomshed.OperatorWaitRows, or a shuttle wait that is not a held turn end.
++// and reports whether a Go-side wait is live: a running verify, a parent lock wait, a child running at a row of loomshed.OperatorWaitRows, a live gate runner or a fixer process of the pair younger than its timeout, or a shuttle wait that is not a held turn end.
+ // A held run is idle at its turn end, so it does not suppress the quiet notice, and neither does a verify held by a pause.
+ // A lock wait record whose writer is dead is ignored.
+ // The waits are read from their marker and record files, never from the pane options that display them.
+@@ -672,6 +677,13 @@ func readAgentActivity(taskLocation *lymcwd.Location) (runs []dobbyengine.AgentR
+ 	if childAtWaitingRow(taskLocation) {
+ 		return runs, true, nil
+ 	}
++	gateLive, err := gateProcessLive(taskLocation, time.Now())
++	if err != nil {
++		return nil, false, err
++	}
++	if gateLive {
++		return runs, true, nil
++	}
+ 	markers, err := shuttleengine.ReadWaitMarkers(cfg, anchor)
+ 	if err != nil {
+ 		return nil, false, err
+@@ -684,6 +696,53 @@ func readAgentActivity(taskLocation *lymcwd.Location) (runs []dobbyengine.AgentR
+ 	return runs, false, nil
+ }
+ 
++// gateProcessLive reports whether the pair of taskLocation has a live registered gate process: a detached `lym gate` runner, or the pane process of a cold fixer strand.
++// A fixer works in its own session while the writer's strand sits idle, and a gate run shows no agent activity at all, so either one is the run at work.
++// A fixer record counts only while it is younger than the fixer's own timeout at now, since a fixer that ended without its strand being removed leaves a pane process that outlives its work.
++func gateProcessLive(taskLocation *lymcwd.Location, now time.Time) (bool, error) {
++	records, err := runproc.List(fabricengine.RunProcDir(taskLocation.HubPath), taskLocation.WorktreeName)
++	if err != nil {
++		return false, err
++	}
++	for _, record := range records {
++		if record.Role == runproc.RoleGate {
++			return true, nil
++		}
++		if !gatefixer.IsFixerRole(record.Role) {
++			continue
++		}
++		bound, bounded, err := fixerTimeout(taskLocation, record.Role)
++		if err != nil {
++			return false, err
++		}
++		if !bounded || now.Sub(record.RegisteredAt) <= bound {
++			return true, nil
++		}
++	}
++	return false, nil
++}
++
++// fixerTimeout returns how long a fixer under role may run: webster's recovery timeout for a verify fixer, the gate config's fixer timeout for any other.
++// It reports bounded == false when the gate config is absent, which leaves a gate fixer with no known bound.
++func fixerTimeout(taskLocation *lymcwd.Location, role string) (timeout time.Duration, bounded bool, err error) {
++	dirs := fabricengine.ConfigDirs(taskLocation)
++	if agentname.MatchesRole(role, gatefixer.RoleVerifyFixer) {
++		cfg, err := websterengine.LoadConfig(dirs, "webster")
++		if err != nil {
++			return 0, false, err
++		}
++		return time.Duration(cfg.RecoveryTimeoutMin) * time.Minute, true, nil
++	}
++	cfg, err := gateslot.LoadConfig(dirs)
++	if errors.Is(err, gateslot.ErrConfigAbsent) {
++		return 0, false, nil
++	}
++	if err != nil {
++		return 0, false, err
++	}
++	return cfg.FixerTimeout(), true, nil
++}
++
+ // readNewestAgentEnd reads when the task worktree's newest ended shuttle run ended, through the shuttle config, zero when none has.
+ func readNewestAgentEnd(taskLocation *lymcwd.Location) (time.Time, error) {
+ 	cfg, err := shuttleengine.LoadConfig(fabricengine.ConfigDirs(taskLocation), "shuttle")
+diff --git a/internal/battencli/wire_seams_test.go b/internal/battencli/wire_seams_test.go
+index aee18942..2fe24aaf 100644
+--- a/internal/battencli/wire_seams_test.go
++++ b/internal/battencli/wire_seams_test.go
+@@ -14,11 +14,14 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gatefixer"
++	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/landingshed"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/parentlock"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
++	"github.com/Knatte18/loomyard/internal/runproc"
+ 	"github.com/Knatte18/loomyard/internal/shedadapters"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+@@ -399,7 +402,7 @@ func TestWire_MarkerAndReportSeamsRefuseAnAbsentTaskWorktree(t *testing.T) {
+ 	}
+ }
+ 
+-// TestReadAgentActivity_ReadsLiveRunsAndTheWaitMarker asserts the Activity seam's reading maps a task worktree's live shuttle run onto dobbyengine's type, with the session state of its stamped turn end, skips a run whose record reads stopped, and reports a live wait marker, a live parent lock wait record or a child running at Beam-Await, PR-Review or Sampler-Session, ignoring a lock wait record whose writer is dead.
++// TestReadAgentActivity_ReadsLiveRunsAndTheWaitMarker asserts the Activity seam's reading maps a task worktree's live shuttle run onto dobbyengine's type, with the session state of its stamped turn end, skips a run whose record reads stopped, and reports a live wait marker, a live parent lock wait record, a child running at Beam-Await, PR-Review or Sampler-Session, or a live gate runner, or a fixer process younger than its timeout, registered under the pair's slug, ignoring a lock wait record whose writer is dead, a process of another role and a gate process of another slug.
+ // It points HOME at a session registry through t.Setenv, so it does not run in parallel.
+ func TestReadAgentActivity_ReadsLiveRunsAndTheWaitMarker(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -540,6 +543,46 @@ func TestReadAgentActivity_ReadsLiveRunsAndTheWaitMarker(t *testing.T) {
+ 			t.Errorf("readAgentActivity() waitLive = %v, error = %v for %s; want %v, nil", waitLive, err, step.name, step.wantLive)
+ 		}
+ 	}
++
++	runProcDir := fabricengine.RunProcDir(taskLocation.HubPath)
++	if err := runproc.Register(runProcDir, "another-slug", runproc.SelfRecord(runproc.RoleGate)); err != nil {
++		t.Fatal(err)
++	}
++	if _, waitLive, err := readAgentActivity(taskLocation); err != nil || waitLive {
++		t.Errorf("readAgentActivity() waitLive = %v, error = %v with a live gate process of another slug; want false, nil", waitLive, err)
++	}
++
++	gateConfigPath := gateslot.ConfigFiles(fabricengine.ConfigDirs(taskLocation))[0]
++	if err := os.MkdirAll(filepath.Dir(gateConfigPath), 0o755); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(gateConfigPath, []byte(gateslot.ConfigTemplate()), 0o644); err != nil {
++		t.Fatal(err)
++	}
++	// Each registration of this process under the pair's slug replaces the one before, since the record file is keyed by pid and start time.
++	for _, step := range []struct {
++		name         string
++		role         string
++		registeredAt time.Time
++		wantLive     bool
++	}{
++		{"LoopIsNoWait", runproc.RoleLoop, time.Now(), false},
++		{"GateRunnerIsAWait", runproc.RoleGate, time.Now(), true},
++		{"GateFixerIsAWait", gatefixer.RoleGateFixer, time.Now(), true},
++		{"NumberedVerifyFixerIsAWait", gatefixer.RoleVerifyFixer + "-2", time.Now(), true},
++		{"GateFixerPastItsTimeoutIsNoWait", gatefixer.RoleGateFixer, time.Now().Add(-24 * time.Hour), false},
++		{"VerifyFixerPastItsTimeoutIsNoWait", gatefixer.RoleVerifyFixer, time.Now().Add(-24 * time.Hour), false},
++		{"GateRunnerOfAnyAgeIsAWait", runproc.RoleGate, time.Now().Add(-24 * time.Hour), true},
++	} {
++		record := runproc.SelfRecord(step.role)
++		record.RegisteredAt = step.registeredAt
++		if err := runproc.Register(runProcDir, taskLocation.WorktreeName, record); err != nil {
++			t.Fatal(err)
++		}
++		if _, waitLive, err := readAgentActivity(taskLocation); err != nil || waitLive != step.wantLive {
++			t.Errorf("readAgentActivity() waitLive = %v, error = %v for %s; want %v, nil", waitLive, err, step.name, step.wantLive)
++		}
++	}
+ }
+ 
+ // TestWire_CreateWorktreeClaimsTheBoardEntry asserts the Worktree-Create closure claims the board entry for this machine before it touches the pair:
+diff --git a/internal/dobbyengine/runnotice.go b/internal/dobbyengine/runnotice.go
+index dc43380a..35507e1f 100644
+--- a/internal/dobbyengine/runnotice.go
++++ b/internal/dobbyengine/runnotice.go
+@@ -101,7 +101,7 @@ type RunNoticeDeps struct {
+ 	ReadChild func(slug string) (child ChildReading, found bool, err error)
+ 	// DriverAlive reports whether the child has a live driver: a live driver strand, or a held driver, run or bootstrap lock.
+ 	DriverAlive func(ctx context.Context, slug string) (bool, error)
+-	// Agents reads the child's agent runs, and whether a Go-side wait is live, such as a verify, a parent lock wait or a pull request's review.
++	// Agents reads the child's agent runs, and whether a Go-side wait is live, such as a verify, a gate run, a cold fixer's session, a parent lock wait or a pull request's review.
+ 	Agents func(ctx context.Context, slug string) (runs []AgentRun, waitLive bool, err error)
+ 	// NewestAgentEnd reads when the child's newest ended agent run ended, zero when none has; it is read only when Agents reads no run.
+ 	// A nil NewestAgentEnd reads none.
+diff --git a/internal/shuttleengine/activity.go b/internal/shuttleengine/activity.go
+index 8f6f6d07..3de952fa 100644
+--- a/internal/shuttleengine/activity.go
++++ b/internal/shuttleengine/activity.go
+@@ -121,7 +121,8 @@ func ReadAgentActivity(cfg Config, anchorPath string, engines EngineSet) ([]Agen
+ 	return readings, nil
+ }
+ 
+-// ReadNewestRunEnd returns when the newest ended run under the run-directory root of anchorPath ended: the latest modification time of a run record whose outcome reads anything but running, since a run's finalize is its record's last write.
++// ReadNewestRunEnd returns when the newest ended run under the run-directory root of anchorPath ended:
++// the later of the root's run-end stamp, which every finalize sets before a done run's cleanup removes its directory, and the latest modification time of a run record whose outcome reads anything but running.
+ // It lets a caller that finds no running run tell a session that has just ended, before its caller records the end, from a worktree whose agents have long been idle.
+ // A directory that is not a run directory and a run with no record are skipped, and an undecodable record is skipped and logged once per episode.
+ // It returns the zero time when no ended run is found, and no error for an absent root.
+@@ -135,6 +136,9 @@ func ReadNewestRunEnd(cfg Config, anchorPath string) (time.Time, error) {
+ 		return time.Time{}, err
+ 	}
+ 	var newest time.Time
++	if info, err := os.Stat(filepath.Join(root, runEndStampFileName)); err == nil {
++		newest = info.ModTime()
++	}
+ 	for _, entry := range entries {
+ 		if !entry.IsDir() {
+ 			continue
+diff --git a/internal/shuttleengine/activity_test.go b/internal/shuttleengine/activity_test.go
+index 10273404..1304e594 100644
+--- a/internal/shuttleengine/activity_test.go
++++ b/internal/shuttleengine/activity_test.go
+@@ -456,11 +456,30 @@ func TestReadNewestRunEnd(t *testing.T) {
+ 	tests := []struct {
+ 		name string
+ 		runs map[string]endedRun
+-		want time.Time
++		// endStamp is the run-end stamp's modification time, zero for no stamp.
++		endStamp time.Time
++		want     time.Time
+ 	}{
+ 		{
+ 			name: "NoRunReadsZero",
+ 		},
++		{
++			name:     "TheEndStampOfARemovedRunCountsWithNoRecordLeft",
++			endStamp: created.Add(30 * time.Minute),
++			want:     created.Add(30 * time.Minute),
++		},
++		{
++			name:     "AnEndStampNewerThanEveryRecordWins",
++			runs:     map[string]endedRun{"run-a": {outcome: "done", recordAt: created.Add(10 * time.Minute)}},
++			endStamp: created.Add(30 * time.Minute),
++			want:     created.Add(30 * time.Minute),
++		},
++		{
++			name:     "ARecordNewerThanTheEndStampWins",
++			runs:     map[string]endedRun{"run-a": {outcome: "died", recordAt: created.Add(40 * time.Minute)}},
++			endStamp: created.Add(30 * time.Minute),
++			want:     created.Add(40 * time.Minute),
++		},
+ 		{
+ 			name: "OnlyARunningRunReadsZero",
+ 			runs: map[string]endedRun{"run-a": {outcome: runOutcomeRunning, recordAt: created.Add(time.Hour)}},
+@@ -516,6 +535,11 @@ func TestReadNewestRunEnd(t *testing.T) {
+ 					t.Fatal(err)
+ 				}
+ 			}
++			if !tt.endStamp.IsZero() {
++				if err := stampRunEnd(root, tt.endStamp); err != nil {
++					t.Fatal(err)
++				}
++			}
+ 			got, err := ReadNewestRunEnd(Config{RunDir: root}, t.TempDir())
+ 			if err != nil || !got.Equal(tt.want) {
+ 				t.Errorf("ReadNewestRunEnd() = %v, %v; want %v, nil", got, err, tt.want)
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 4c8484db..eba5485a 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -486,6 +486,7 @@
+ // An engine without the capability, and a run with no turn end at all, are judged by the events file alone.
+ // Like ReadWaitMarker it reads files only, so a process that runs no shuttle may call it.
+ // ReadNewestRunEnd returns when the newest run whose record reads anything but running ended, its record's modification time, so a caller that reads no running run still counts a session that has just ended as activity; it reads files only too.
++// Every finalize also sets the run-end stamp, a file at the run-directory root, before a done run's cleanup removes the run directory, and ReadNewestRunEnd counts the stamp, so a removed run's end stays readable.
+ //
+ // Operator instructions carried over: every verified send into a run appends the text it types, as one JSON string line, to the run directory's sent-texts file before typing.
+ // A run's operator instructions are the SessionSignal.Instruction texts of its turn starts past its prompt offset, without the turn start of the run's prompt, and without any text the sent-texts file holds.
+diff --git a/internal/shuttleengine/rundir.go b/internal/shuttleengine/rundir.go
+index 2daff559..f12343e6 100644
+--- a/internal/shuttleengine/rundir.go
++++ b/internal/shuttleengine/rundir.go
+@@ -23,6 +23,23 @@ import (
+ // runStateFileName is the run.json file name inside a per-run directory.
+ const runStateFileName = "run.json"
+ 
++// runEndStampFileName is the file at the run-directory root whose modification time is when a run there was last finalized.
++// It outlives the run directory a done run's cleanup removes, so the end of a removed run stays readable.
++const runEndStampFileName = "run-ended"
++
++// stampRunEnd sets the modification time of the run-end stamp under root to at, creating the file when it is absent.
++func stampRunEnd(root string, at time.Time) error {
++	path := filepath.Join(root, runEndStampFileName)
++	stamp, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, 0o644)
++	if err != nil {
++		return err
++	}
++	if err := stamp.Close(); err != nil {
++		return err
++	}
++	return os.Chtimes(path, at, at)
++}
++
+ // ErrNoRunRecord marks a strand guid that no run record names: the run directory root is absent, or every run.json was read and none names the guid.
+ // A run directory that could not be read does not wrap it, since that guid may name a recorded run whose run.json is damaged.
+ var ErrNoRunRecord = errors.New("shuttle: no run record names the strand")
+diff --git a/internal/shuttleengine/wait.go b/internal/shuttleengine/wait.go
+index 8051bbec..5d544c8e 100644
+--- a/internal/shuttleengine/wait.go
++++ b/internal/shuttleengine/wait.go
+@@ -1923,6 +1923,10 @@ func (run *Run) finalize(outcome Outcome) (Result, error) {
+ 	if saveErr != nil {
+ 		logger.Warn("shuttle: persist run outcome failed (non-fatal)", "runDir", run.runDir, "strandGUID", run.state.StrandGUID, "outcome", recorded, "error", saveErr)
+ 	}
++	// Stamped before the cleanup below removes the run directory, so a reader that finds no running run still sees this one has just ended.
++	if err := stampRunEnd(filepath.Dir(run.runDir), run.clock.Now()); err != nil {
++		logger.Warn("shuttle: stamp the run end failed (non-fatal)", "runDir", run.runDir, "strandGUID", run.state.StrandGUID, "error", err)
++	}
+ 
+ 	if reader, ok := run.engine.(UsageReader); ok && outcome == OutcomeDone {
+ 		result.Usage = reader.SessionUsage(run.state.SessionID, run.runner.paneCwd)
+diff --git a/internal/shuttleengine/wait_test.go b/internal/shuttleengine/wait_test.go
+index 96faae20..22e26a60 100644
+--- a/internal/shuttleengine/wait_test.go
++++ b/internal/shuttleengine/wait_test.go
+@@ -428,6 +428,16 @@ func TestRun_Wait_Classification(t *testing.T) {
+ 				t.Errorf("Outcome = %q; want %q", result.Outcome, tt.wantOutcome)
+ 			}
+ 
++			// A row that wants an error fails before finalize, so only a finalized run is stamped.
++			if tt.wantErr == nil {
++				stamp, statErr := os.Stat(filepath.Join(filepath.Dir(runDir), runEndStampFileName))
++				if statErr != nil {
++					t.Errorf("run-end stamp: %v; want every finalize to stamp", statErr)
++				} else if stamp.ModTime().Before(result.EndedAt.Add(-time.Second)) {
++					t.Errorf("run-end stamp modified %v; want it at or after the run's end %v", stamp.ModTime(), result.EndedAt)
++				}
++			}
++
+ 			switch tt.wantCleanup {
+ 			case cleanupPerformed:
+ 				foundRemove := false
+@@ -442,6 +452,9 @@ func TestRun_Wait_Classification(t *testing.T) {
+ 				if _, err := os.Stat(runDir); !os.IsNotExist(err) {
+ 					t.Errorf("run dir still exists after cleanup, stat err = %v", err)
+ 				}
++				if ended, err := ReadNewestRunEnd(Config{RunDir: filepath.Dir(runDir)}, ""); err != nil || ended.Before(result.EndedAt.Add(-time.Second)) {
++					t.Errorf("ReadNewestRunEnd() after cleanup = %v, %v; want the run-end stamp at or after the run's end %v", ended, err, result.EndedAt)
++				}
+ 			case cleanupDiedCaptureKept:
+ 				if len(reed.RemoveStrandCalls) != 1 || reed.RemoveStrandCalls[0].GUID != "strand-1" || reed.RemoveStrandCalls[0].Recursive {
+ 					t.Errorf("RemoveStrand calls = %+v; want the one removal of strand-1 (non-recursive)", reed.RemoveStrandCalls)
