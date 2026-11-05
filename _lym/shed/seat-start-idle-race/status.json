@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -34,6 +34,33 @@
       "output": "",
       "at": "2026-11-05T05:54:02Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/seat-start-idle-race/_lym/landing/summary.md",
+      "at": "2026-11-05T06:02:11Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-05T05:58:05.689954997Z",
+          "end": "2026-11-05T05:58:05.703088707Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-05T05:58:05.758260174Z",
+          "end": "2026-11-05T06:01:47.55856209Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-05T06:01:47.605373759Z",
+          "end": "2026-11-05T06:01:47.605513459Z"
+        }
+      ]
     }
   ],
   "product": {
