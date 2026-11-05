@@ -658,7 +658,7 @@
       "isolated": false,
       "brief": "lym board promote on a Sketch takes recipe raddle by itself, with no --recipe flag",
       "body": "## Seen (2026-11-05)\n\nAfter `raddle-recipe` (`257ab79a`), a Sketch becomes a task only through `lym board promote \u003cslug\u003e --recipe raddle`; a plain `lym board promote \u003cslug\u003e` of a Sketch is refused, naming that flag as the way forward.\nSince raddle is the one recipe a Sketch may take, the flag only adds typing, and the operator finds the command clumsy.\n\n## Wanted\n\n- A plain `lym board promote \u003cslug\u003e` of a Sketch (a discussed note with a stored record) promotes it with recipe `raddle`, as if `--recipe raddle` were given.\n- `--recipe raddle` stays accepted; any other recipe on a Sketch is still refused, naming the plain promote as the way forward.\n- The handle form works too: `lym board promote S3`.\n- The refusal texts, the `ly:board` skill and the docs that name `--recipe raddle` as the required form are updated.\n",
-      "status": "running · PR-Review",
+      "status": "running · Finalize",
       "created": "2026-11-05T13:47:39Z",
       "revised": "2026-11-05T13:52:27Z",
       "profile": "light"
