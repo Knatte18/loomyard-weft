@@ -901,7 +901,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 24,
   "masterStrand": "83a798257355e3fbc145f5c353ce6c80",
   "masterSessionId": "4e34b309-cce2-44d6-a7ed-361a666d1f58",
   "masterEngine": "claude",
@@ -1251,6 +1251,22 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-drift-rework/4e34b309-cce2-44d6-a7ed-361a666d1f58/subagents/agent-a7a135906c1c6d6f6.jsonl"
       ]
+    },
+    "24": {
+      "slug": "drift-retire-old-seats",
+      "cards": [
+        "24-drift-retire-old-seats"
+      ],
+      "cardHashes": {
+        "24-drift-retire-old-seats": "073756509da9f02f71d758a679b14245398295c754ce81ef0eb5a96f9730c5f4"
+      },
+      "startSha": "46f2cc53c2ddcc1cb6f5dc04b5d307d45c818483",
+      "kind": "fork",
+      "spawnedAt": "2026-11-05T18:23:00Z",
+      "sessionId": "4e34b309-cce2-44d6-a7ed-361a666d1f58",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "drift-expectation-parser",
