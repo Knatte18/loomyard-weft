@@ -18,8 +18,8 @@
 - Code comments cite exact paths, such as `codex-spike-2026-10-24`, `session-fork-spike.md`, `batch-budget-trial-2026-11-01` and `reed-hooks-exploration.md`.
 - Reports' relative links break on a move, and `README.md` now links several studies under `## Research on its own runs`.
 
-## Options (undecided)
+## Chosen (operator, 2026-11-05)
 
-- (a) A topic-grouped index `docs/research/README.md`; design notes moved out; studies left in place.
-- (b) As (a), plus deleting superseded studies.
-- (c) Topic subfolders, fixing the scripts, the test, the comments and the links.
+- A topic-grouped index `docs/research/README.md` lists every study once, with a line on what it measured; a near-duplicate series is one index line pointing at its newest member.
+- The design notes move out of `docs/research` to `docs/` (or beside the design they serve), with every link and code comment naming them updated.
+- Every study stays where it is: no study moves, is renamed or is deleted.
