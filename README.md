@@ -60,7 +60,7 @@ Not released; nothing starts it until its status is cleared.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-## [P0 Root: entries under no project](project-root.md) (35)
+## [P0 Root: entries under no project](project-root.md) (37)
 
 Owner `neve`
 
@@ -90,7 +90,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T6 | 4d<br>15h | fabric |
 
-### Notes (33)
+### Notes (35)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -101,7 +101,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R2 |  | **Re-measure writer exploration and the carry of lookup results after the Discussion stencil change**<br>• Re-run the writer-lookups measurement on 10 tapestry runs, pricing the carry saved by early explore subagents | [`writer-lookups-remeasure`](design-writer-lookups-remeasure.md) | 14h<br>2m | loom, stencil |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 13d<br>14h | loom, stencil |
 
-#### Bugs (7)
+#### Bugs (9)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -112,6 +112,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B5 |  | **Beam landing overwrites a reopened PR's hand-written body and title with a flat title list** | [`beam-landing-overwrites-pr-body`](design-beam-landing-overwrites-pr-body.md) | 0m<br>0m | pawl, landing |
 | B6 |  | **Motif run leaves its worktree directory behind, and the leftover then blocks board and cancel** | [`teardown-leaves-worktree-dir`](design-teardown-leaves-worktree-dir.md) | 0m<br>0m | batten, fabric, board |
 | B7 |  | **A finished motif run leaves its entry as an ordinary draft, so it reads as not done** | [`finished-motif-reads-draft`](design-finished-motif-reads-draft.md) | 0m<br>0m | board, loom |
+| B8 |  | **Board refuses a project change for a finished motif entry whose pair is gone, and batten cancel --remove cannot clear it** | [`gone-pair-blocks-board-edit`](design-gone-pair-blocks-board-edit.md) | 0m<br>0m | board, batten |
+| B9 |  | **Loop exited without an envelope while step Webster was in flight** | [`loop-exit-no-envelope-cause`](design-loop-exit-no-envelope-cause.md) | 0m<br>0m | shed, friction |
 
 #### Enhancements (5)
 

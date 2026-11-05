@@ -797,6 +797,48 @@
       "body": "Imported from [issue #53](https://github.com/Knatte18/loomyard/issues/53).\n\nSeen in hub Models-LYMHUB, beam duplication-and-import-followups, 2026-11-04.\n\nThe motif task knut-rheology-friction-pvt ran Discussion to an approved decision record. lym batten status reports state done, the record is stored on the entry (lym board get --record works), and the entry carries discussed: true. But the board status went back to draft, so the board list and the rendered README show it exactly like a task nobody has started. The operator read it as unfinished work, and nothing on the board says the motif is done.\n\nRelated: the entry is also not treated as finished by the board's own checks; see #52, where a project move is refused because the board still believes the entry has a pair.\n\nExpected: a motif whose Discussion is approved shows as finished on the board, for example a distinct status such as discussed or done-motif in the list, the --text listing and the README, rather than a plain draft. When the record is meant to feed a later task, the entry still needs a visible finished state and no pair record.\n\nWorkaround: none; the operator has to be told the draft status is how a finished motif looks.",
       "created": "2026-11-05T05:50:38Z",
       "revised": "2026-11-05T05:50:38Z"
+    },
+    {
+      "id": 1116,
+      "handle": "B8",
+      "slug": "gone-pair-blocks-board-edit",
+      "title": "Board refuses a project change for a finished motif entry whose pair is gone, and batten cancel --remove cannot clear it",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "board",
+        "batten"
+      ],
+      "issues": [
+        52
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #52](https://github.com/Knatte18/loomyard/issues/52).\n\nSeen in hub Models-LYMHUB, beam duplication-and-import-followups, 2026-11-04.\n\nThe motif task knut-rheology-friction-pvt finished: lym batten status reports state done, its last row is Land, and the board entry is back to draft with discussed: true. lym fabric pairs lists no pair for the slug and the worktree directory is no git repository; only stray build output (obj directories of two projects) is left under its path.\n\nMoving the entry to another project is refused:\nlym board upsert '{\"slug\":\"knut-rheology-friction-pvt\",\"project\":\"knut-rheology\"}'\n-\u003e entry has a pair, and a change of its project moves its pair out from under its project's beam: end the pair first with lym batten cancel knut-rheology-friction-pvt --remove, then change project\n\nThe way forward it names fails:\nlym batten cancel knut-rheology-friction-pvt --remove\n-\u003e battencli: could not read the task worktree of knut-rheology-friction-pvt: not a git repository\n\nExpected: a finished run whose pair is torn down leaves no pair record that blocks a board edit; or batten cancel --remove clears the record when the worktree is already gone, instead of requiring a readable git worktree. Also, the stray obj directories under the removed worktree's path suggest something built there after teardown.\n\nWorkaround: none; the entry stays in its old project.",
+      "created": "2026-11-05T05:50:41Z",
+      "revised": "2026-11-05T05:50:41Z"
+    },
+    {
+      "id": 1117,
+      "handle": "B9",
+      "slug": "loop-exit-no-envelope-cause",
+      "title": "Loop exited without an envelope while step Webster was in flight",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shed",
+        "friction"
+      ],
+      "issues": [
+        51
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #51](https://github.com/Knatte18/loomyard/issues/51).\n\nWhat happened: the run halted as failed at step Webster with anomaly interrupted-stop. The status error was `loop-exited: loop ... ended without an envelope; its output is in .lym/shed/\u003ctask\u003e/steps/loop.log; step Webster was in flight under trace ...`, followed by `shedverbs: step Webster interrupted (loop-exited)`.\nThe way forward named was to read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, and re-run `lym shed step \u003ctask\u003e --until-stop`.\n\nWhy it is abnormal: a loop must end by writing an envelope. The note records no cause for the missing envelope (no crash, signal or budget reason), and the preceding history shows all earlier steps through Drift-Await finishing done, so the exit came while Webster was starting. The halt note carries nothing that lets the operator tell a loop crash from an external kill.\n\nWhat to do: have the loop-exited anomaly record the exit cause (exit code or signal, last lines of loop.stderr_path) in the halt note itself. Also check whether a loop can exit between Drift-Await done and the Webster start without writing an envelope, and make that path write one.\n\nProvenance: task server-based-live-viewer; notes loom-halt-2.md.\n",
+      "created": "2026-11-05T05:50:43Z",
+      "revised": "2026-11-05T05:50:43Z"
     }
   ],
   "prime_owner": "neve",
