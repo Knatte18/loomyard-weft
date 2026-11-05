@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 | T3 | **Webster refusals: short texts, the right cause and a real way forward** | [`webster-refusal-texts`](design-webster-refusal-texts.md) | darn · solid | Darn-Write | neve | 25m<br>23m | webster, quarry |
 | T5 | **Slack relay per hub: credentials, setup, inbound and outbound mail, presence and the lym slack verbs** | [`slack-relay`](design-slack-relay.md)<br>[Sketch](decision-slack-relay.md) | tapestry · solid | Webster | neve | 2h<br>2h | reed |
 | T7 | **Drift compares changed values in code against a sealed expectation, with a separate judge**<br>• General Drift rework: code-side diff of any hub capture keyed by line key or number, structured sealed expectation, containment by code, a judge per changed value | [`drift-rework`](design-drift-rework.md)<br>[Sketch](decision-drift-rework.md) | tapestry · solid | Finalize | neve | 1d<br>6h | drift, loom, darn, stencil, config |
-| T9 | **fabric clone --reset removes the hub before refusing a mismatched --shortname** | [`clone-reset-deletes-first`](design-clone-reset-deletes-first.md) | darn · solid | Drift-Verify | neve | 24m<br>23m | fabric |
+| T9 | **fabric clone --reset removes the hub before refusing a mismatched --shortname** | [`clone-reset-deletes-first`](design-clone-reset-deletes-first.md) | darn · solid | Code-Bouncer | neve | 24m<br>23m | fabric |
 | T10 | **Scope plugins, skills and connectors per role, in every hub**<br>• lym gives each session only the plugins and skills its role needs, ly included in other hubs, and turns off connectors and unused listings | [`ly-plugin-off-in-other-hubs`](design-ly-plugin-off-in-other-hubs.md) | darn · solid | Darn-Write | neve | 1h<br>23m | shuttle |
 
 ### Ready (0)
