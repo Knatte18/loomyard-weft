@@ -1,6 +1,6 @@
 # A Sketch is a board type of its own
 
-`sketch-board-type` · Task · feature, board, loom · running · Darn-Write
+`sketch-board-type` · Task · feature, board, loom · running · Drift-Verify
 
 ## Idea (operator, 2026-11-05)
 
