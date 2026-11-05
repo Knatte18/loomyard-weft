@@ -78,7 +78,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **The scratch dir lives at the anchor and is excluded there**<br>• Fabric wires and excludes <anchor>/.scratch instead of the root .scratch, and reconcile moves existing anchored hubs over | [`anchor-scratch-excluded`](design-anchor-scratch-excluded.md) | darn · light | PR-Review | neve | 44m<br>39m | fabric |
+| T3 | **The scratch dir lives at the anchor and is excluded there**<br>• Fabric wires and excludes <anchor>/.scratch instead of the root .scratch, and reconcile moves existing anchored hubs over | [`anchor-scratch-excluded`](design-anchor-scratch-excluded.md) | darn · light | Finalize | neve | 44m<br>39m | fabric |
 | T7 | **Drift compares changed values in code against a sealed expectation, with a separate judge**<br>• General Drift rework: code-side diff of any hub capture keyed by line key or number, structured sealed expectation, containment by code, a judge per changed value | [`drift-rework`](design-drift-rework.md)<br>[Sketch](decision-drift-rework.md) | tapestry · solid | Webster | neve | 1d<br>3h | drift, loom, darn, stencil, config |
 
 #### Ready (0)
