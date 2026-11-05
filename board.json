@@ -764,7 +764,6 @@
       "isolated": false,
       "brief": "Claude Code sessions launched by lym get attribution off, so only the landing credit block credits",
       "body": "## Seen (2026-11-05)\n\nLanding commits and pull-request bodies end with lym's own credit block (`364c47ca`), and the operator does not want an engine credited as a co-author.\nBut the Claude Code sessions lym launches get no attribution setting, so Claude Code's default applies: every commit a session makes itself ends with `Co-Authored-By: Claude …` and a `Claude-Session:` link, and a pull request it writes ends with \"Generated with Claude Code\".\nThat covers samplers, PR-Review fixers, writers, fixers and the orch; it reaches `main` through commits made outside a landing, such as `4cb1c4b1` and `263b2ca1` committed by the orch, and shows on a pull request's own commits and comments.\n\n## Wanted\n\n- Every settings document `internal/shuttleengine/claudeengine/settings.go` composes, the run document and the creel-only document for an opened session alike, sets Claude Code's `attribution` to `{\"commit\": \"\", \"pr\": \"\"}`, so no session lym launches credits itself.\n- The landing's credit block stays the one credit.\n- The package doc and `docs/overview.md` state it beside the other settings each document carries.\n",
-      "status": "draft",
       "created": "2026-11-05T09:26:58Z",
       "revised": "2026-11-05T09:26:58Z",
       "profile": "light"
