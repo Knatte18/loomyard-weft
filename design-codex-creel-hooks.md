@@ -15,8 +15,16 @@ Creel's hook delivery works very well for Claude sessions.
 - A `PostToolUse` block with the message is taken at the next step, but only when the session's instructions say `[creel]` lines are mail; without that sentence the model reads it as a failed tool call.
 - An async `Stop` hook cannot wake an idle session; `codex queue --thread <id> --message …` run from outside does, at once.
 
-## Idea
+## Wanted
 
-`codexengine` carries creel's delivery the way `claudeengine` does: the tool-boundary claim through a `PostToolUse` block, the turn-end delivery through a `Stop` block, the idle wake through `codex queue` from the daemon, and the `[creel]` sentence in the prompt file; the launch is then marked `CreelHooks`.
+`codexengine` carries creel's delivery the way `claudeengine` does:
 
-Related: project `codex-engine-trial` tests what the engine does today.
+- The tool-boundary claim through a `PostToolUse` block.
+- The turn-end delivery through a `Stop` block.
+- The idle wake through `codex queue` from the daemon.
+- The `[creel]` sentence in the prompt file, so the model reads a block as mail.
+- The launch is then marked `CreelHooks`, and the package doc's "no creel hooks" goes.
+
+Each delivery path is covered by a unit test on the hook output and the daemon's wake call; a live check on real Codex sessions is the separate trial task that follows this one.
+
+Related: project `codex-engine-trial`, part 5 (creel by the pane path) and part 7 (stress).
