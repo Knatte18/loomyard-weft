@@ -1,38 +1,38 @@
-# The arbiter settles decision escalations and records its own calls
+# The arbiter settles decision escalations and records its calls
 
-Review escalations reached the orch for run-level calls the arbiter could have made: whether a fix in the record holds, whether to accept at the hard cap, small rulings inside the board entry's design.
-Two limits sent them on: a `decision` escalation was not eligible for the arbiter, and an eligible arbiter could only resume or hand on, never record the ruling it had found.
+A `decision` review escalation now goes to the arbiter before the run's parent, as `hard-cap` and `circling` do.
+The arbiter records the calls the board entry's design and the decision record already settle, so the orch hears only the outcome.
+Before, a fixer's decision findings or a bouncer wanting a ruling reached the orch every time, and an eligible arbiter could only resume or hand on, even when it had found the exact correction.
 
 ## What changes
 
-- **Eligibility.** `arbiterstop.Eligibility` admits an awaiting stop with a pending escalation of cause `decision`, as it admits `hard-cap` and `circling`.
-  A `budget` escalation, a decision halt and a landing halt still go to the run's parent.
-  The driver's escalation fact, `lym loom arbiter` and batten's eligible-stop hold all answer through this one rule, so all three follow.
-- **Arbiter stencil** (`contracts/stencils/loom/loom-template-arbiter.md`).
-  When the run's repair verbs include `lym loom decision add`, the arbiter settles every call the board entry's design and the decision record's decisions already settle, as the parent would:
-  - it records each call with `--by arbiter`;
-  - the one edit its stop asks for, such as the correction of a false clause in the decision record, is a recorded decision that names the clause and its exact replacement;
-  - anything wider, such as a code change, is recorded as a decision for the run's own agents to carry out.
-
-  It hands on only a question the board entry and the record leave open, after it has recorded every call of the stop it could settle.
-  The per-cause rules gain a `decision` rule, and `hard-cap` and `circling` gain the record-then-accept (or continue) path.
-  The stencil also says that the escalation brief's own steps are the parent's procedure, which counts only operator decisions, and that the arbiter's prompt wins where they differ.
-- **Outcome notice.** When the arbiter resumes a run at an awaiting stop, the shed driver sends the parent one line naming the run, the row and the verdict file, ending "Nothing to answer."
-  It goes through the hand-back's `Notify` seam, only when an orch strand is recorded, and parks nothing.
-  Other arbiter and tackler resumes stay silent, as before.
-- **Orch role.** `contracts/orchrole/orch-role.md` says that a settled escalation reaches the orch as that one line and needs no action, and that a `decision` escalation reaches it only as the arbiter's hand-on.
+- `internal/arbiterstop`: a pending `decision` escalation is eligible; only `budget`, an unknown cause and an unreadable record still go to the parent.
+- `contracts/stencils/loom/loom-template-arbiter.md`:
+  - When the run's repair verbs include `lym loom decision add`, the arbiter records each call it settles with `--by arbiter`, worded so the run's own agents act on it.
+  - It makes at most the one edit its stop asks for, recorded as a decision naming the clause and its exact replacement; anything wider is recorded for the run's agents to carry out.
+  - It hands on only a question the board entry and the record leave open (what to build, scope, a choice between open designs), and records every call it could settle before it does.
+  - The brief's "What to do" section is the parent's procedure; the stencil lists the parts that do not bind the arbiter and the lines that still do.
+  - It has rules for `hard-cap`, `circling` and `decision`, summarised under the decisions below.
+- `internal/sheddriver`: when the arbiter's resume at an awaiting stop has been consumed by the step, the driver posts the parent one line naming the run, the stop and the verdict file, and asking nothing.
+  The line is skipped when the step refused the attempt, and with no orch strand recorded it is logged and posted nowhere.
+- `contracts/orchrole/orch-role.md`: the orch takes no action on that line, and a `decision` escalation reaches it only as the arbiter's hand-on.
+- Bouncer stencils, `shed-recipe-spec.md` and doc comments no longer say a `decision` finding is one "only the run's parent can settle".
 
 ## Design decisions
 
-- `--by arbiter` already existed as a decision author, restricted to the run's own arbiter strand and shown as `arbiter` in the entry's heading, so no new author was added.
-  The bouncer escalation brief still refuses to count `--by arbiter` entries as operator decisions, which keeps the parent's own rule unchanged when the arbiter hands on.
-- The arbiter edits no file but its verdict.
-  The decision record is append-only, and `lym loom decision add` refuses a record whose working copy differs from its committed one.
-  So the "one edit" is a recorded correction entry, which the run's agents follow over the earlier text.
-- Where the arbiter may decide alone is drawn in the stencil: a call the board entry's design and the record's decisions settle.
-  What to build, a scope change and a choice the board entry leaves open are handed on.
+- `--by arbiter` is an existing author, already used for `--amends-plan` amendments; no new author kind.
+- At `hard-cap` the arbiter accepts only when a finding is wrong or the fix in place already answers it.
+  An accept ends the review segment, so a fix still to be made goes to the parent as a hand-on question instead of a recorded decision no agent would carry out.
+- At `circling` it records the ruling and continues below the hard cap; at the hard cap the `hard-cap` rule applies.
+- At `decision` it reads the brief's Refusal section first.
+  When a refusal is named, a held accept meets it again, so it records the answers and continues below the hard cap, and hands on at or past it.
+- `budget` stays parent-only, since the arbiter has nothing to judge when an input could not be read.
+- The outcome line is held until the step has consumed the resume, so the parent is never told of a settlement the step refused.
 
-## Tests
+## To check by hand
 
-- `TestEscalationEligible`: a pending `decision` escalation is now eligible.
-- `TestGoDriver_Settle`: a new row checks that an arbiter resume at an awaiting stop sends one notice, relays no parent notice and finishes the run.
+- `hard-cap` record-and-accept: the arbiter stencil, at `hard-cap`, must not let the arbiter record a decision and accept over a fix that still has to be made.
+- Outcome notice order: in `internal/sheddriver/drive.go`, the notice must go out only after the step consumed the arbiter's resume.
+- Outcome notice paths: its skip paths, guard, refusal case and text are pinned by tests in `internal/sheddriver/drive_test.go`; confirm they cover each.
+- Parent-only prose: the bouncer stencils, `shed-recipe-spec.md` and the orch role must no longer read as if a decision finding goes to the parent alone.
+- No end-to-end run of an arbiter settling a `decision` escalation was made; the behaviour of the stencil's new rules rests on review of its text.
