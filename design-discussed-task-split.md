@@ -32,7 +32,9 @@ Since 2026-11-05 an entry that holds a motif run's record is also a Sketch on th
   The block's gate `undiscussed` passes the block over when the entry is flagged discussed: the stored record is seeded as the run's decision record and the run goes on at Drift-Baseline, so Plan-Write and the reviews read it as they read an approved one.
   Approval inside the block stores the record.
   The trial recipe `arras` is removed.
-- Still open: darn taking the stored record as final for a discussed entry.
+- Built (2026-11-05): task `raddle-recipe` (`257ab79a`).
+  Record-Write copies a discussed entry's stored record into the run's decision record for every recipe with that row, so a darn entry flagged `discussed` now builds from its stored record.
+  That closes the former open point that darn take the stored record as final.
 
 ## Discussion as a run of its own (operator, 2026-11-03)
 
@@ -54,33 +56,27 @@ How a task is best cut into smaller tasks is known only once its Discussion is d
 
 ## Triage of a Sketch (operator, 2026-11-05)
 
-A simple run of its own on a Sketch (a note of the built-in type `sketch`, built 2026-11-05, see above), the recipe `raddle` (operator, 2026-11-05: the raddle spreads the warp into sections before it is beamed), whose agent breaks the Sketch down and decides what is wise to do with it:
+Built (2026-11-05): task `raddle-recipe` (`257ab79a`), the recipe `raddle` (the raddle spreads the warp into sections before it is beamed).
+It is a record-only loom recipe with the rows Record-Write, Raddle-Write and Raddle-File, run through batten like `motif`: a worktree of its own, a pane, a board status and notices, no code landed.
+`lym board promote <slug> --recipe raddle` starts it on a Sketch; a Sketch with no stored record is refused, naming `motif`.
 
-- one tapestry from Plan (way 1 above), or several darn tasks (way 2), or a mix;
-- the order of the tasks, as `depends_on`;
-- whether the whole becomes a project, or a beam.
-
-Its proposal goes to the operator, who approves it before any task or project is filed; on approval the run files them.
-There is no fixed procedure for this today; the orch or the operator does it by hand.
-The triage agent is the cold split agent below, given the wider choice: it may also answer "one tapestry", which costs no split.
-
-- It runs cold, on Opus (operator, 2026-11-05): it asks the operator nothing while it works and writes a complete proposal first.
-- Interactive by default (operator, 2026-11-05): the operator takes part in how the Sketch is split.
-  The agent puts its proposal to the operator and waits for their input; the operator may question it, correct the split, order or recipes, and the agent revises until the operator approves.
-  This works like Discussion-Write's interactive mode.
-- An auto-approve flag lets the run file its proposal with no operator input.
-  It stays off until the agent's splits are tuned well enough to run on their own; the operator's corrections in the interactive runs are what tune it.
-- It runs through batten like `motif`, in a worktree of its own forked from the parent, so the code it reads stays still while it reads, though the prime moves with every landing; it lands no code, and its run shows on the board with a pane and notices.
-  The board can move meanwhile, so the proposal is checked against the board again when the operator approves it.
-- Motif and Sketches serve mostly large tasks, where an overview first pays (operator, 2026-11-05); a raddle's proposal may well be a project or beam, whose orch then takes over the Sketch and the proposal.
-- The glossary `docs/research/weaving-glossary.md` gains `raddle` as taken when the recipe is built.
-- It reads the Sketch, the board (entries that exist or run in the same packages) and only enough code to place each part: the packages and files the Sketch names, which packages each part changes, roughly how much, and who calls whom for the order.
+- Raddle-Write is a cold Opus agent (loom key `raddle`, default `opus[high]`) that reads the Sketch, the board and a bounded read of code, and writes a proposal: one tapestry from Plan (way 1 above), several darn tasks (way 2), a mix, a project, or a beam, with the order as `depends_on`.
   It designs nothing; the Sketch has done that.
-- It weighs cost, and is tuned for it (operator, 2026-11-05): a tapestry carries a large fixed start cost, so one large tapestry beside two small darns is often worse than fewer, larger darns or one tapestry for the whole.
-  It is given each recipe and profile's measured fixed and per-size cost, from the hub's own run records (`lym report timing` and the token audits), not a figure written into its prompt, and its proposal states the expected cost of the split it proposes against the next-best one.
-- Its choices are checked after landing against what the runs cost, so its prompt can be tuned.
+- Interactive by default: the operator approves the proposal in the agent's pane (`lym loom raddle-approve`), may question it and have it revise first.
+  The loom key `raddle_auto_approve` files with no operator input; it stays off until the splits are tuned well enough.
+- Raddle-File re-checks the board, then files every entry in one write, each with its part of the record stored and `discussed` set, creates the beam for shape `beam` and hands the Sketch slug and proposal to the beam's orch in Beam-Up.
+  A moved board, an invalid proposal or an approval-hash mismatch returns to Raddle-Write; the third return halts the run.
+- The stencil carries the rule that a tapestry's fixed start cost often favours fewer, larger parts.
+  The cost figures come from the hub's own runs: every agent session is recorded as `_lym/usage/<session>.json`, `lym report cost` gives the fixed-plus-per-size fit per recipe and profile, and `lym report raddle` compares each proposal's predicted cost with its landed parts, so the prompt can be tuned.
+  A Codex session's dollar cost stays unknown, so its runs enter the report in hours alone.
+- A raddle store beside `board.json` keeps each Sketch's proposals, record and filed slugs; `lym board raddle <slug>` prints a stored proposal.
+- Not run end to end against a live hub yet: an interactive raddle run through approval and filing, and a `beam` shape run through Beam-Up's hand-off.
+
+Still open here: the cold split agent below is now Raddle-Write, so its tuning follows from `lym report raddle` once runs have landed.
 
 ## The split is a cold agent of its own (operator, 2026-11-03)
+
+Built as Raddle-Write above; what follows is the original design.
 
 - The Sketch stays as it is: Discussion-Write writes no split and judges no seams, so a task going way 1 pays nothing for the split.
 - A separate cold agent splits a discussed entry when way 2 is chosen: it reads the stored Sketch and the code the Sketch names, and proposes the parts.
