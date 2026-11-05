@@ -1,8 +1,8 @@
 # A parent cannot withdraw a PATTERN change the decision record declares
 
-`decision-withdraw-pattern` · Task · bug, loom, parsers, pattern · draft
+`decision-withdraw-pattern` · Task · bug, loom, parsers, pattern
 
-Depends on: [`drift-rework`](design-drift-rework.md)
+Depends on: [`drift-rework`](design-drift-rework.md), [`raddle-motif-finish-clean`](design-raddle-motif-finish-clean.md)
 
 ## Seen (orch, 2026-11-05)
 
