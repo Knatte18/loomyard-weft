@@ -60,11 +60,11 @@ Not released; nothing starts it until its status is cleared.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-## [P0 Root: entries under no project](project-root.md) (39)
+## [P0 Root: entries under no project](project-root.md) (38)
 
 Owner `neve`
 
-### Tasks (3)
+### Tasks (6)
 
 Concrete and claimable; only a task can run.
 
@@ -82,16 +82,19 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (2)
+#### Draft (5)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Motif runs: own profile recipe, a finished state on the board, and live status**<br>• Motif drops profile_recipe tapestry, a finished motif reads as done, and the board status follows batten rows and the inner producer | [`motif-board-fixes`](design-motif-board-fixes.md) | darn · light |  | 1m<br>0m | loom, board, batten, profiles |
+| T2 | `draft` **Teardown removes the whole worktree directory, and a gone pair blocks no board edit**<br>• Worktree-Teardown and fabric remove delete leftover build output; has-a-pair and batten cancel treat a non-git directory as no pair | [`teardown-gone-pair`](design-teardown-gone-pair.md) | darn · light |  | 1m<br>0m | batten, fabric, board |
+| T3 | `draft` **Loop exited without an envelope while step Webster was in flight** | [`loop-exit-no-envelope-cause`](design-loop-exit-no-envelope-cause.md) | darn · light |  | 1m<br>0m | shed, friction |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T6 | 4d<br>15h | fabric |
+| T5 | `draft` **Seat start fails with 'pane is not idle' while the pane shows an idle prompt** | [`seat-start-idle-race`](design-seat-start-idle-race.md) | darn · light |  | 1m<br>0m | shuttle, burler |
 
-### Notes (36)
+### Notes (32)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -102,7 +105,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R2 |  | **Re-measure writer exploration and the carry of lookup results after the Discussion stencil change**<br>• Re-run the writer-lookups measurement on 10 tapestry runs, pricing the carry saved by early explore subagents | [`writer-lookups-remeasure`](design-writer-lookups-remeasure.md) | 14h<br>4m | loom, stencil |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 13d<br>14h | loom, stencil |
 
-#### Bugs (9)
+#### Bugs (5)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -110,10 +113,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B2 |  | **A weft push holds the remote-refs lock over its whole transfer, so board claims queue behind it**<br>• Bolt and every weft share one remote-refs lock; a slow push stalls every claim and weft fetch for its whole send-pack | [`push-holds-remote-refs`](design-push-holds-remote-refs.md) | 15h<br>15h |  |
 | B3 |  | **A test leaves an empty /tmp/.git, which breaks go VCS stamping**<br>• An empty /tmp/.git appeared during a tier1 run and failed TestPrebuildLym; find the leaker and guard against writes outside t.TempDir | [`tmp-git-leak`](design-tmp-git-leak.md) | 15h<br>15h | testkit, gate |
 | B5 |  | **Beam landing overwrites a reopened PR's hand-written body and title with a flat title list** | [`beam-landing-overwrites-pr-body`](design-beam-landing-overwrites-pr-body.md) | 1m<br>1m | pawl, landing |
-| B6 |  | **Motif run leaves its worktree directory behind, and the leftover then blocks board and cancel** | [`teardown-leaves-worktree-dir`](design-teardown-leaves-worktree-dir.md) | 1m<br>1m | batten, fabric, board |
-| B8 |  | **Board refuses a project change for a finished motif entry whose pair is gone, and batten cancel --remove cannot clear it** | [`gone-pair-blocks-board-edit`](design-gone-pair-blocks-board-edit.md) | 1m<br>1m | board, batten |
-| B9 |  | **Loop exited without an envelope while step Webster was in flight** | [`loop-exit-no-envelope-cause`](design-loop-exit-no-envelope-cause.md) | 1m<br>1m | shed, friction |
-| B10 |  | **Seat start fails with 'pane is not idle' while the pane shows an idle prompt** | [`seat-start-idle-race`](design-seat-start-idle-race.md) | 1m<br>1m | shuttle, burler |
 | B12 |  | **A beam in landing cannot get its orch back after a restart, and a ready flag cannot be withdrawn** | [`beam-landing-orch-and-unready`](design-beam-landing-orch-and-unready.md) | 1m<br>1m | pawl, landing, orch, fabric |
 
 #### Enhancements (5)

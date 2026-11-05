@@ -1,6 +1,6 @@
 # Seat start fails with 'pane is not idle' while the pane shows an idle prompt
 
-`seat-start-idle-race` · Note · bug, shuttle, burler
+`seat-start-idle-race` · Task · bug, shuttle, burler · draft
 
 Imported from [issue #50](https://github.com/Knatte18/loomyard/issues/50).
 
