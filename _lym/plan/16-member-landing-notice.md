@@ -1,9 +1,9 @@
 # Card 16 — member-landing-notice
 
 **Create:**
-- `plan:internal/dobbyengine#AnnounceFileName` -> `const AnnounceFileName = "announced-head"`
-- `plan:internal/dobbyengine#daemon.announceLandings` -> `func (d *daemon) announceLandings(ctx context.Context)`
-- `plan:internal/dobbyengine#TestAnnounceLandings` -> `func TestAnnounceLandings(t *testing.T)`
+- `internal/dobbyengine#AnnounceFileName`
+- `internal/dobbyengine#daemon.announceLandings`
+- `internal/dobbyengine#TestAnnounceLandings`
 
 **Edit:**
 - `internal/dobbyengine#Deps`

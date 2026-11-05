@@ -12,12 +12,12 @@
 - `internal/beamcli#mergeParentCmd`
 
 **Create:**
-- `plan:internal/beamcli#judgeReadyLanding` -> `func judgeReadyLanding(ctx context.Context, deps landDeps, slug string) error`
-- `plan:internal/beamcli#TestHubLandDeps_ReadyReads` -> `func TestHubLandDeps_ReadyReads(t *testing.T)`
+- `internal/beamcli#judgeReadyLanding`
+- `internal/beamcli#TestHubLandDeps_ReadyReads`
 
 **Uses:**
 - `internal/beamcli#judgeAwaitingRun`
-- `plan:internal/beamcli#parentRuleRequired`
+- `internal/beamcli#parentRuleRequired`
 - `internal/beamcli#openMergeTask`
 - `internal/beamcli#beamPullRequestSide`
 - `internal/pullrequest#ReadMergeState`

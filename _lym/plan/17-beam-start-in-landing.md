@@ -1,9 +1,9 @@
 # Card 17 — beam-start-in-landing
 
 **Create:**
-- `plan:internal/orchcli#ownLandingHold` -> `func ownLandingHold(boardStatus *string, run shedengine.Status, runFound bool) bool`
-- `plan:internal/orchcli#TestOwnLandingHold` -> `func TestOwnLandingHold(t *testing.T)`
-- `plan:internal/orchcli#TestStart_OwnLandingStartsTheOrchAlone` -> `func TestStart_OwnLandingStartsTheOrchAlone(t *testing.T)`
+- `internal/orchcli#ownLandingHold`
+- `internal/orchcli#TestOwnLandingHold`
+- `internal/orchcli#TestStart_OwnLandingStartsTheOrchAlone`
 
 **Edit:**
 - `internal/orchcli#beamFacts`

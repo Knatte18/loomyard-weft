@@ -1,12 +1,12 @@
 # Card 14 — beam-pr-status-close
 
 **Create:**
-- `plan:internal/beamcli#prStatus` -> `func prStatus(ctx context.Context, deps landDeps, slug string) (map[string]any, error)`
-- `plan:internal/beamcli#prClose` -> `func prClose(ctx context.Context, deps landDeps, slug string) (map[string]any, error)`
-- `plan:internal/beamcli#TestPRStatus` -> `func TestPRStatus(t *testing.T)`
-- `plan:internal/beamcli#TestPRClose` -> `func TestPRClose(t *testing.T)`
-- `plan:internal/beamcli#parentRuleRequired` -> `func parentRuleRequired(ctx context.Context, origin landingshed.Origin, parentBranch string, open func(originURL string) (pullrequest.API, error)) (bool, error)`
-- `plan:internal/beamcli#TestParentRuleRequired` -> `func TestParentRuleRequired(t *testing.T)`
+- `internal/beamcli#prStatus`
+- `internal/beamcli#prClose`
+- `internal/beamcli#TestPRStatus`
+- `internal/beamcli#TestPRClose`
+- `internal/beamcli#parentRuleRequired`
+- `internal/beamcli#TestParentRuleRequired`
 
 **Edit:**
 - `internal/beamcli#prCmd`
