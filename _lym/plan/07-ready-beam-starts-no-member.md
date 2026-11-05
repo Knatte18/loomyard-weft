@@ -20,8 +20,8 @@
 - `internal/beamcli/doc.go`
 
 **Create:**
-- `plan:internal/dobbyengine#ReadyHoldState` -> `type ReadyHoldState struct`
-- `plan:internal/dobbyengine#daemon.holdReadyBeam` -> `func (d *daemon) holdReadyBeam(ctx context.Context, tasks []TaskView) bool`
+- `internal/dobbyengine#ReadyHoldState`
+- `internal/dobbyengine#daemon.holdReadyBeam`
 
 **Uses:**
 - `internal/pawlengine#ReadyFor`

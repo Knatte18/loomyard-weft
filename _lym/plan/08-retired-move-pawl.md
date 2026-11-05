@@ -1,10 +1,10 @@
 # Card 8 — retired-move-pawl
 
 **Create:**
-- `plan:internal/pawlengine#RetiredMoveDeps` -> `type RetiredMoveDeps struct`
-- `plan:internal/pawlengine#MoveOffRetired` -> `func MoveOffRetired(deps RetiredMoveDeps, from, to string, resumed bool) error`
-- `plan:internal/pawlengine_test#TestMoveOffRetired` -> `func TestMoveOffRetired(t *testing.T)`
-- `plan:internal/loomcli#pawlRetiredMove` -> `func pawlRetiredMove(location *lymcwd.Location, slug string, pawl pawlengine.Deps) func(from, to string, resumed bool) error`
+- `internal/pawlengine#RetiredMoveDeps`
+- `internal/pawlengine#MoveOffRetired`
+- `internal/pawlengine_test#TestMoveOffRetired`
+- `internal/loomcli#pawlRetiredMove`
 
 **Edit:**
 - `internal/loomcli#loomCLI.wire`

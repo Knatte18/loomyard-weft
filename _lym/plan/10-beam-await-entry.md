@@ -27,8 +27,8 @@
 - `internal/pawlengine#awaitRun.landChecks`
 - `internal/pawlengine#awaitRun.refuse`
 - `internal/pawlengine#ReadyFor`
-- `plan:internal/shedrun#WriteWakeStamp`
-- `plan:internal/shedrun#WakeRecord`
+- `internal/shedrun#WriteWakeStamp`
+- `internal/shedrun#WakeRecord`
 - `internal/loomcli#TestWire_BeamRecipe`
 - `internal/loomcli#TestWire_DarnRecipe`
 - `internal/loomcli#TestWire_SamplerRecipe`

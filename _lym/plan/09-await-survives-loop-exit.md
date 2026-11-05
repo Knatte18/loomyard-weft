@@ -13,13 +13,13 @@
 - `internal/loomcli#loomCLI.goDriverDepsFor`
 
 **Create:**
-- `plan:internal/sheddriver#wakeRestartGap` -> `const wakeRestartGap = 10 * time.Minute`
-- `plan:internal/sheddriver#lastRestepAt` -> `func lastRestepAt(records []SettleRecord, key StopKey) (time.Time, bool)`
-- `plan:internal/shedrun#WakeRecord` -> `func WakeRecord(l *lymcwd.Location, runID string) string`
-- `plan:internal/shedrun#WriteWakeStamp` -> `func WriteWakeStamp(path, row string, at time.Time) error`
-- `plan:internal/shedrun#ReadWakeStamp` -> `func ReadWakeStamp(path, row string) (time.Time, bool, error)`
-- `plan:internal/shedrun#TestWakeStamp` -> `func TestWakeStamp(t *testing.T)`
-- `plan:internal/arbiterstop#TestEligibility_InterruptedPawlRows` -> `func TestEligibility_InterruptedPawlRows(t *testing.T)`
+- `internal/sheddriver#wakeRestartGap`
+- `internal/sheddriver#lastRestepAt`
+- `internal/shedrun#WakeRecord`
+- `internal/shedrun#WriteWakeStamp`
+- `internal/shedrun#ReadWakeStamp`
+- `internal/shedrun#TestWakeStamp`
+- `internal/arbiterstop#TestEligibility_InterruptedPawlRows`
 
 **Extends:**
 - `internal/loomshed/doc.go`
