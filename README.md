@@ -67,7 +67,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | Code-Burler-Fix | neve | 17h<br>16h | fabric, loom |
-| T9 | **A test leaves an empty /tmp/.git, which breaks go VCS stamping**<br>• An empty /tmp/.git appeared during a tier1 run and failed TestPrebuildLym; find the leaker and guard against writes outside t.TempDir | [`tmp-git-leak`](design-tmp-git-leak.md) | darn · light | Drift-Recheck | neve | 16h<br>51m | testkit, gate |
+| T9 | **A test leaves an empty /tmp/.git, which breaks go VCS stamping**<br>• An empty /tmp/.git appeared during a tier1 run and failed TestPrebuildLym; find the leaker and guard against writes outside t.TempDir | [`tmp-git-leak`](design-tmp-git-leak.md) | darn · light | Describe | neve | 16h<br>51m | testkit, gate |
 
 #### Ready (0)
 
