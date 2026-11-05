@@ -1,6 +1,6 @@
 # The beam orch drives the merge-in, pull request and review of its beam inside Beam-Await
 
-`pawl-orch-landing` · Note · feature, pawl, landing, orch, workspaces
+`pawl-orch-landing` · Note · feature, pawl, landing, orch, workspaces, fabric
 
 ## Seen (operator, 2026-11-05)
 
@@ -60,6 +60,17 @@ Then Beam-Down.
 
 Task `protected-parent-landing` landed (`dbd169ae`): `beam.yaml` `pull_request: merge` makes Finalize push the task or beam branch, find or open a pull request into the parent and squash-merge it on GitHub at once with no review, then pull the parent.
 The review row returns Done for it (`MergeAtOnce`), and a parent push refused as protected is Stuck with a way forward naming `pull_request=merge`.
+
+## Folded in (issues #57, #56, #47; hub Models-LYMHUB, beam `duplication-and-import-followups`, 2026-11-04)
+
+What these issues saw, and what this task does about each:
+
+- #57: during a detour to add one more member, the beam's PR #267 was closed on GitHub, the pawl run failed at Beam-Await with `step Beam-Await interrupted (loop-exited)` so the ready flag was not read until a hand `lym loom resume`, and then blocked on the closed PR.
+  Here: the pull request stays open for added work (above), and Beam-Await survives a loop exit or a restart: the next pass reads the ready flag with no hand resume.
+- #56: after the orch reopened the PR with a hand-written title and a body listing every merged sub-PR with link, merge time and summary, the landing rewrote the title back and the body, and `_lym/landing/summary.md`, to a flat list of sub-PR titles.
+  Here: Finalize keeps the title and body the orch wrote and never rewrites `summary.md` over the orch's text; `lym beam describe` builds the member list with each member's pull request link, merge time and summary.
+- #47: after a restart during the landing, `lym beam start` refused to bring the beam's orch back ("held by its landing run"); a push hit `fabric.push.lock still held after 30s` from a push the restart left running; and no verb withdrew the ready flag.
+  Here: `lym beam start` brings back the orch of a beam in landing, Finalize included, as the landing tolerates a live orch; a push lock whose holder died before a restart is taken as stale; a ready flag is never withdrawn, since `lym beam ready` is the point of no return, and the work that once needed a withdrawal now happens before it, in Beam-Await.
 
 ## In-flight pawl runs (operator and orch, 2026-11-05)
 
