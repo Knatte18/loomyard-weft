@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Bouncer",
+  "current_producer": "Describe",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Bouncer",
-    "last": "Sampler-Session → done",
+    "now": "Describe",
+    "last": "Code-Bouncer → skipped",
     "wait": ""
   },
   "history": [
@@ -26,6 +26,13 @@
       "outcome": "done",
       "output": "",
       "at": "2026-11-05T13:15:20Z"
+    },
+    {
+      "producer": "Code-Bouncer",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-05T13:15:26Z",
+      "reason": "sampler.code_review = false"
     }
   ],
   "product": {
