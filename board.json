@@ -696,6 +696,27 @@
       "body": "## Idea (operator and orch, 2026-11-04)\n\nRe-run the writer-lookups measurement (`docs/research/writer-lookups-measure-2026-11-04/`, `run-all.sh`) once at least 10 tapestry runs have landed after the Discussion-Write stencil change of `discussion-explore-agents-first`, on those runs, with no new agent run.\n\n- Count, per Plan-Write and Discussion-Write session, whether it started lookup subagents up front, and its exploration turns, chains and cost, as the 2026-11-04 report did.\n- Price the carry of lookup results (the context a lookup adds, paid in every later turn) as a saving of its own: compare the carry of sessions that delegated early against those that did not, which the 2026-11-04 report measured but left out of its savings estimate.\n- Cap: the 10 most recent tapestry runs landed after that change; both writer roles of each.\n- Runs as darn with profile `docs`.\n",
       "created": "2026-11-04T15:28:18Z",
       "revised": "2026-11-04T15:28:18Z"
+    },
+    {
+      "id": 1109,
+      "handle": "F2",
+      "slug": "pawl-orch-landing",
+      "title": "The beam orch drives the merge-in, pull request and review of its beam inside Beam-Await",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "pawl",
+        "landing",
+        "orch",
+        "workspaces"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Pawl drops Parent-Align, Beam-Describe and PR-Review; the beam orch opens and closes the PR, merges the parent in and runs lym beam ready",
+      "body": "## Seen (operator, 2026-11-05)\n\nThe pawl recipe (`contracts/recipes/pawl-recipe.yaml`) runs Beam-Await, then Parent-Align, Beam-Describe and PR-Review as fixed producers before Finalize, as tapestry and darn do.\nTapestry and darn are autonomous runs with no session the operator talks to, so they need those rows.\nA beam is a project: larger, iterated with the operator, and it has its own orch the operator talks to.\nFixed rows after Beam-Await get in the way: a PR-Review already started has to be cancelled, or reopened back to Beam-Await, when the operator finds the beam needs more work.\n\n## Idea (operator, 2026-11-05)\n\nThe beam's orch drives the landing work itself, inside Beam-Await; pawl drops Parent-Align, Beam-Describe and PR-Review.\n\n1. Pull request: when the operator says so, the beam's orch opens the beam's pull request by the hub's rules for beam pull requests, writing its description.\n2. Parent merge: the beam's orch brings the parent into the beam when the operator says so, through a merge-in run inside the beam (a darn run with its perch, as `lym beam merge-parent` files), so a hard merge gets a run of its own.\n3. Review: the operator and the beam's orch handle the pull request's review together.\n   If the beam is not ready, the orch closes the pull request and files more member tasks.\n   The operator may also tell the orch to skip the pull request and land by a direct squash merge.\n4. When the operator is satisfied, the orch runs `lym beam ready`; Beam-Await ends and Finalize lands the beam as today, then Beam-Down.\n\nPawl becomes Preflight, Record-Write, Beam-Up, Beam-Await, Finalize, Beam-Down.\n\n## Open points\n\n- Verbs the beam's orch needs for 1 and 3, so the pull request and its description go through lym, not by hand: for example `lym beam pr open|close`, reusing Beam-Describe's description writer and PR-Review's pull-request code.\n- How Finalize lands a beam whose pull request was merged on the remote, or whose parent is protected; `protected-parent-landing` builds landing through a pull request on a protected parent.\n- The hold boundary: today the beam is held from Parent-Align on (`boardengine.RunHolds`); with an open pull request inside Beam-Await, whether member landings are refused while it is open, or update it.\n- Whether `lym beam ready` still checks that the parent was merged in recently, since Parent-Align no longer runs before Finalize.\n- Resume of in-flight pawl runs that sit on a removed row.\n",
+      "created": "2026-11-05T05:45:03Z",
+      "revised": "2026-11-05T05:45:03Z"
     }
   ],
   "prime_owner": "neve",
