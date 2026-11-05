@@ -728,6 +728,26 @@
       "body": "Imported from [issue #65](https://github.com/Knatte18/loomyard/issues/65).\n\n## What happened\n\n`lym beam merge-parent knut-rheology` filed the darn task `knut-rheology-merge-in`, which landed through its own pull request into the beam (#275 in NORCE-DrillingAndWells/Models).\nThe merge's tree was identical to the beam's, since main's commit was a squash of content the beam already carried, so the pull request had no changed files.\nThe operator still had to read and approve an empty pull request, and the run spent a PR-Review round and a Describe on it.\n\n## Wanted\n\nThe merge-in darn that `lym beam merge-parent` files needs no pull request.\nIt lands straight into the beam once its gate and its Code-Review of the merge pass, with no PR-Review row and no GitHub pull request, whether or not the merge changed files.\nThe merge is reviewed again anyway, as part of the beam's own pull request into its parent.\n\nRelated: Knatte18/loomyard#64, where the same task's writer is refused the merge verbs it needs.\n",
       "created": "2026-11-05T18:58:37Z",
       "revised": "2026-11-05T18:58:37Z"
+    },
+    {
+      "id": 1151,
+      "handle": "B10",
+      "slug": "recover-batch-self-way-forward",
+      "title": "webster recover-batch refuses with a way forward that names recover-batch itself",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster"
+      ],
+      "issues": [
+        62
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #62](https://github.com/Knatte18/loomyard/issues/62).\n\nWhat happened: a batch whose cards named create targets in one package (a unit, a plan member set and a template file) failed record-batch with batch_failed and create-not-done blocking findings, because the implementer built the code in a different package to avoid an import cycle. The refusal's way forward was 'lym webster recover-batch 07'. Running recover-batch 07 refused with the same findings and the same way forward 'lym webster recover-batch 07'. The run then halted as blocked with anomaly escalation-to-human.\n\nWhy it is abnormal: the way forward points at the verb that just refused, so it is a dead end. When the code legitimately lives somewhere other than the card's create target, no verb in the refusal's guidance lets the operator or Webster amend, retarget or waive the create target. Recovery only repeats the same check against the same stale targets.\n\nWhat to do: when recover-batch refuses on the same findings as the failed record-batch, name a different way forward (for example amend the card's create targets, or escalate with the exact decision needed). Consider a supported verb to retarget a create target when the implementer relocated the unit.\n\nProvenance: task raddle-recipe; notes loom-halt.md, webster-refusal-record-batch.md, webster-refusal-recover-batch.md.",
+      "created": "2026-11-05T18:58:41Z",
+      "revised": "2026-11-05T18:58:41Z"
     }
   ],
   "prime_owner": "neve",
