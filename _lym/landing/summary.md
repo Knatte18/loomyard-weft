@@ -1,38 +1,40 @@
 # Raddle and motif runs start and finish without the orch
 
-Three hand steps the orch had to take around Sketches are gone.
+Three hand steps the orch had to take around a Sketch's raddle run are gone.
 
-## A raddle run finishes through Land and Worktree-Teardown
+## What changes
 
-Raddle-File ends the run's own board entry, so origin's board shows the entry done while the run still has batten's Land and Worktree-Teardown ahead.
-The origin reconcile exempted a run from the ended set only once its Finalize had passed the parent-side merge, and a raddle run has no Finalize.
-The next batten pass therefore refused with `origin ended ...; run lym cleanup --apply`, while `lym batten status` said to run `lym batten run`.
+**A promoted Sketch starts its raddle run with no cleanup.**
+Promoting a Sketch gives the entry recipe raddle under the slug of the motif run that made it, and that run's done record under `_lym/shed/<slug>` made battencli refuse the start with `has already completed`.
+The start of a raddle run now removes the slug's done motif run, as `lym batten cleanup --apply` does, and goes on.
+The removal happens in `battencli`'s start guard after the start's owner check passes, so a task another machine owns loses nothing.
+Dobby's read of a released task applies the same judgment, so it no longer holds the start for that run.
+A done run of any other recipe, or a raddle entry whose done run was not a motif run, is still refused as before.
+If the board or the child-recipe record cannot be read, the start is refused naming the command to re-run, and dobby keeps holding it.
 
-`finalizeEntered` in `internal/fabricengine/replay.go` now also counts a pair whose status stands at Raddle-File.
-The status stays there once the run is done, so the exemption lasts until batten's own status at Land or later takes over.
-That one read covers every reader of the ended set: the batten resume, the loom pre-push check, a hub reconcile, which would otherwise tear the pair down, and the records replay, which would otherwise set the run's commits aside.
-A Raddle-File history row alone does not count, because a return sends the run back to Raddle-Write, where an entry ended on origin is still a real end.
+**A filed raddle run goes on through Land and Worktree-Teardown.**
+Raddle-File marks the entry done, and `fabricengine`'s origin reconcile then read the run as ended on origin and paused it at Run-Shed naming `lym cleanup --apply`.
+The reconcile now exempts a raddle run standing at Raddle-File when origin shows its entry done, the way it already exempts a run whose landing is under way.
+An entry origin removed before it ended done still reconciles as ended.
+A pruned run the ledger had marked ended now reads as `done` in the ended set, not `removed`, which the exemption needs.
 
-## A promoted Sketch starts over its motif run
+**A refused Sketch tells the run's parent.**
+When the board refuses to make a finished motif run's entry a Sketch, as while another entry depends on it, `sketchFinish` in `loomcli` still leaves the entry a draft task, and now also mails the run's parent.
+The notice names the board's refusal, which lists the dependent entries, and both ways forward: drop or move those dependencies and make the entry a Sketch, or give the task recipe raddle and release it.
+A failed mail only logs a Warn.
 
-Promoting a Sketch gives the entry recipe raddle under the same slug, so the raddle run met the done record of the motif run that made the Sketch, and both dobby and batten refused the slug as already completed.
+`docs/overview.md`, the package docs and the `lym batten cleanup` help text state the new start behavior.
+The records commit of `ClearMotifRun` now reads `batten: remove the done motif run of <slug>`, since two callers make it.
 
-`refuseAtStart` now offers a done status to `ClearMotifRun` on a run or step, and a cleared run is judged as a fresh start, so the guard's start checks still apply.
-The clear happens only for a task with recipe raddle whose done run's child recipe was motif.
-Dobby's read uses the same test, `startClearsMotifRun`, so it holds no start for that run.
-Every other done slug keeps its refusal.
+## Design decisions
 
-The clear sits at batten's start rather than in the promote, since that covers every way an entry gets recipe raddle and runs on the machine that holds the run directory.
-`clearMotifRun`'s records commit message now reads `batten:` instead of `beam create:`, as it has two callers.
+- The raddle start removes the done motif run through the existing `ClearMotifRun`, so its refusals (lock held, run not done, child recipe not motif) stay in one place.
+- The guard judges the start twice: once read-only before the owner check, which pulls the board, and once more before the removal, so a pulled board that no longer says raddle removes nothing.
+- The Raddle-File exemption counts only a pair whose current producer is Raddle-File, never a history row, since a return sends the run back to Raddle-Write.
 
-## A refused Sketch reaches the parent
+## To check
 
-When the board refuses to make a finished motif run's entry a Sketch, `sketchFinish` still leaves the entry a draft task, and now also mails the run's parent.
-The line carries the board's refusal, which names the entries that depend on the entry, and both ways forward: drop or move those dependencies and make the entry a Sketch, or give the task recipe raddle and release it.
-The mail goes after the draft write, and a failed mail only warns, so it never holds the run's finish.
-
-## Risks
-
-No test runs a whole raddle run through Land and Worktree-Teardown.
-The tests pin the reconcile's verdict at Raddle-File, the start clear and dobby's read, and the rest of that path is the one a finished motif run already takes.
-The clear removes only the run directory and scratch, as `lym batten cleanup --apply` does; the task branch is left alone, matching the hand step that worked twice.
+- The refused-Sketch notice's first way forward embeds a `lym board set-deps` command and a `lym board upsert` command for the Sketch.
+  Run each as the notice prints it against a board with a dependent entry, in `sketchRefusedNotice` in `internal/loomcli/wiring.go`, to confirm both are runnable as written.
+- On a live hub, promote a Sketch to raddle and release it, then confirm dobby starts the run with no cleanup and the run ends through Land and Worktree-Teardown.
+  The new tests cover the pieces, not this whole path.
