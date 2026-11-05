@@ -1,6 +1,6 @@
 # Talk to the orch through Slack, and let the orch know when the operator is on Slack only
 
-`reed-slack-relay` · Task · feature, reed · running · Discussion-Bouncer
+`reed-slack-relay` · Note · sketch, reed
 
 ## Need (operator, 2026-10-03, confirmed 2026-11-05)
 
