@@ -1,7 +1,7 @@
 # Card 12 — dobby-relay-tick
 
 **Create:**
-- `plan:internal/beamcli#TestHubDobbyDeps_PrimeTickEnsuresRelay` -> `func TestHubDobbyDeps_PrimeTickEnsuresRelay(t *testing.T)`
+- `internal/beamcli#TestHubDobbyDeps_PrimeTickEnsuresRelay`
 
 **Edit:**
 - `internal/beamcli#hubDobbyDeps`

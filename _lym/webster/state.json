@@ -1,6 +1,6 @@
 {
   "runGuid": "fc08175c6026a1f5e0be974deea15cc4",
-  "planFingerprint": "54c0d21a3bdce53f1eac627b79e35221729e41901ff7d183fbe6a0b8db35d172",
+  "planFingerprint": "cddcae82084e03f64c2793cd914a847aed7a40b719e56e337a6f7c5b1d572942",
   "planFileHashes": {
     "00-overview.md": "3200e9a58a9b553cf78ed40ca50ef40738f97e007a94d7120a3535070bfb1711",
     "01-pattern-clusters.md": "263ea28d63132e68dd11e9958fa17aa862043c7022bacdc3fa77d48aabbd7e03",
@@ -12,9 +12,9 @@
     "07-slackengine-inbound.md": "ed00a53be3f0912f190c1f78b3257c08fe24d6b889be3bd2752938e73f4f8ba9",
     "08-slackengine-outbound.md": "962b8567626efae30c7d43ebea67a12d98e2ecb800cceb19ab21c659eb2d00c6",
     "09-slackengine-relay.md": "603a9a2da71953344a632b338cdd8b58d5169c57fda02496dcc293ac29e20187",
-    "10-slack-cli.md": "f6c9158b99e965a4cda822c96574ff6b23da26427bd0edd2e986873de462aef5",
-    "11-orch-relay-presence.md": "43df22b0e950b47387271751beb2bcd6683909445173be419b9505018797e5ba",
-    "12-dobby-relay-tick.md": "cdae864ff89c8010d124b997936785c1f7380ea3bd0f55e5ec8834aeeb54e086",
+    "10-slack-cli.md": "f27fe64e69cfdafc715956c8d4423a2f389e6a8a425d8e9d50433dd4354c5790",
+    "11-orch-relay-presence.md": "577fd33f39f70f4372ee95366db5915561efd3b600731ce6aa68b0b0929a83e4",
+    "12-dobby-relay-tick.md": "84343ae9e8b66f7ff95ae2ccf337143b253e497ff6482269d5134b55fd20d343",
     "13-anchor-relay-restart.md": "8f34d80a66bfdb3155f9b5851f4be189bddd6c2efaa29412e716e21310e5c6d9",
     "14-orch-role-slack.md": "4a4dae59193f1395a56fbf49c3ad5304f562ba13d3d5c5612a3eeebd8e5266cb"
   },
@@ -303,7 +303,7 @@
       }
     }
   ],
-  "currentBatch": 10,
+  "currentBatch": 0,
   "masterStrand": "0b652e66eac7b28610d1ac37f51cc712",
   "masterSessionId": "92259c87-a13c-4393-84cc-c0c85e3379b0",
   "masterEngine": "claude",
@@ -363,9 +363,9 @@
         "14-orch-role-slack"
       ],
       "cardHashes": {
-        "10-slack-cli": "f6c9158b99e965a4cda822c96574ff6b23da26427bd0edd2e986873de462aef5",
-        "11-orch-relay-presence": "43df22b0e950b47387271751beb2bcd6683909445173be419b9505018797e5ba",
-        "12-dobby-relay-tick": "cdae864ff89c8010d124b997936785c1f7380ea3bd0f55e5ec8834aeeb54e086",
+        "10-slack-cli": "f27fe64e69cfdafc715956c8d4423a2f389e6a8a425d8e9d50433dd4354c5790",
+        "11-orch-relay-presence": "577fd33f39f70f4372ee95366db5915561efd3b600731ce6aa68b0b0929a83e4",
+        "12-dobby-relay-tick": "84343ae9e8b66f7ff95ae2ccf337143b253e497ff6482269d5134b55fd20d343",
         "13-anchor-relay-restart": "8f34d80a66bfdb3155f9b5851f4be189bddd6c2efaa29412e716e21310e5c6d9",
         "14-orch-role-slack": "4a4dae59193f1395a56fbf49c3ad5304f562ba13d3d5c5612a3eeebd8e5266cb"
       },
@@ -374,8 +374,32 @@
       "spawnedAt": "2026-11-05T18:55:30Z",
       "sessionId": "92259c87-a13c-4393-84cc-c0c85e3379b0",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "10-slack-cli",
+        "status": "done",
+        "head_sha": "c7ac4f4340c7b86adce9615459fd795ed188a2cf",
+        "deviations": [
+          "internal/beamcli/dobbydeps.go",
+          "internal/fabriccli/anchor.go",
+          "internal/orchengine/prompt.go",
+          "internal/orchengine/resumecontext_test.go",
+          "internal/orchengine/seam_enforcement_test.go",
+          "internal/slackcli/cli.go",
+          "internal/slackcli/pane.go",
+          "internal/slackcli/wiring.go"
+        ]
+      },
+      "cardShas": [
+        "c7ac4f4340c7b86adce9615459fd795ed188a2cf"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-relay/92259c87-a13c-4393-84cc-c0c85e3379b0/subagents/agent-afdf4a164effd7dd0.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-relay/92259c87-a13c-4393-84cc-c0c85e3379b0/subagents/agent-afdf4a164effd7dd0.jsonl"
+      ]
     },
     "6": {
       "slug": "slackengine-api",
@@ -425,6 +449,7 @@
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-relay/92259c87-a13c-4393-84cc-c0c85e3379b0/subagents/agent-ae025356bd65419fa.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-relay/92259c87-a13c-4393-84cc-c0c85e3379b0/subagents/agent-a75f1df690edcfba9.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-relay/92259c87-a13c-4393-84cc-c0c85e3379b0/subagents/agent-a75f1df690edcfba9.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-relay/92259c87-a13c-4393-84cc-c0c85e3379b0/subagents/agent-afdf4a164effd7dd0.jsonl"
   ]
 }

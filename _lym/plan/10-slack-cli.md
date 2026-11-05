@@ -2,18 +2,18 @@
 
 **Create:**
 - `internal/slackcli/doc.go`
-- `plan:internal/slackcli#Command` -> `func Command() *cobra.Command`
-- `plan:internal/slackcli#RunCLI` -> `func RunCLI(out io.Writer, args []string) int`
-- `plan:internal/slackcli#RunCLIIn` -> `func RunCLIIn(cwd string, out io.Writer, args []string) int`
-- `plan:internal/slackcli#slackCLI` -> `type slackCLI struct`
-- `plan:internal/slackcli#slackCLI.command` -> `func (c *slackCLI) command() *cobra.Command`
-- `plan:internal/slackcli#slackCLI.preRun` -> `func (c *slackCLI) preRun(cmd *cobra.Command, args []string) error`
-- `plan:internal/slackcli#paneRefusal` -> `func paneRefusal(caller paneCaller, allowOrch bool, wayForward string) error`
-- `plan:internal/slackcli#paneCaller` -> `type paneCaller struct`
-- `plan:internal/slackcli#programMailbox` -> `type programMailbox struct`
+- `internal/slackcli#Command`
+- `internal/slackcli#RunCLI`
+- `internal/slackcli#RunCLIIn`
+- `internal/slackcli#slackCLI`
+- `internal/slackcli#slackCLI.command`
+- `internal/slackcli#slackCLI.preRun`
+- `internal/slackcli#paneRefusal`
+- `internal/slackcli#paneCaller`
+- `internal/slackcli#programMailbox`
 - `internal/slackcli/testmain_test.go`
 - `internal/slackcli/cli_test.go`
-- `plan:internal/slackcli#TestSlackCLI` -> `func TestSlackCLI(t *testing.T)`
+- `internal/slackcli#TestSlackCLI`
 
 **Edit:**
 - `cmd/lym#newRoot`

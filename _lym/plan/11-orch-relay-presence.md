@@ -1,9 +1,9 @@
 # Card 11 — orch-relay-presence
 
 **Create:**
-- `plan:internal/orchengine#WithPresence` -> `func WithPresence(p Paths, pointer string) string`
-- `plan:internal/orchcli#orchCLI.startRelayStep` -> `func (c *orchCLI) startRelayStep(report *BeamUpReport)`
-- `plan:internal/orchcli#relayStarter` -> `func relayStarter(location *lymcwd.Location, beam bool) func() (slackengine.StartOutcome, error)`
+- `internal/orchengine#WithPresence`
+- `internal/orchcli#orchCLI.startRelayStep`
+- `internal/orchcli#relayStarter`
 
 **Edit:**
 - `internal/orchengine#Paths`
