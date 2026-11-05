@@ -373,6 +373,12 @@ In the darn writer's, the writer acts on the entry's findings itself; in Webster
 
 Rationale: The writer never saw the expectation; now it reads it and meets the check in its own session.
 
+### Added after Discussion (parent, 2026-11-05): Old drift chairs end through the strand table
+
+Decision: Live chairs of the removed roles drift-baseline and drift-verify are ended through a Deps.EndRoles seam over reed's strand table, as conflictSessionStopper does, stopping only this worktree's strands whose role is exactly drift-baseline or drift-verify; this replaces D4's runproc.EndRole.
+
+Rationale: No seat chair is registered in internal/runproc under its seat role, so runproc.EndRole would end nothing; the strand table reaches the live panes, with the same effect D4 wanted: no pane keeps the old stencil.
+
 ## Constraints
 
 - `PATTERN-sole-parsers`: `expected.yaml` and `judgement.yaml` each have one parser; consumers read its model.
