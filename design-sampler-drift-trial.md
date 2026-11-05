@@ -21,6 +21,13 @@ The sampler fell back to running the hub's capture and compare commands by hand,
 That proved the repository's harness, but none of lym's own drift stages: the Drift-Baseline agent's scope choice, `accept` and `withdraw` taking effect in the drift records, and the interactive Drift-Verify session.
 The first real test of those stages is now a production task with drift full.
 
+## Built since (tidy, 2026-11-05)
+
+`drift-rework` (`3882070d`) reworked drift, so the stages and verbs named above are gone or changed.
+- Removed: the `scope`, `accept`, `withdraw`, `waive` and `compare` verbs, `capture --side`, the skip file and the Drift-Baseline and Drift-Verify agents; the scope now comes from `drift.scope` config, not an agent's choice.
+- New: a `Drift-Expect` row (an agent writes and seals an expectation), a code diff of the capture against it, a judge agent at `Drift-Verify` and `Drift-Recheck`, and the verbs `lym drift check` and `lym drift amend`.
+- The landing's own notes say this note's trial assumes the removed verbs and is revisited after landing: the wanted trial would now exercise the expectation, the diff and the judge, not scope, accept and withdraw. Whether the new verbs refuse in a sampler session as the old ones did was not checked.
+
 ## Wanted
 
 A way to trial drift in a sampler, the recipe meant for trying things with the operator.

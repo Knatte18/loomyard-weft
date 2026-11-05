@@ -95,7 +95,8 @@ The 33-of-101 serial turns the turn audit found are still there, so the ideas ab
 The one rule (read in one message, decide every edit, make them in one message, one gate run) is now the shipped heddle entry `lym-plan-edits-before-gate`, rendered after `lym-batching`.
 Its effect on agent behaviour is not measured; `agent-turns-effect` measures it.
 Task `turn-savings-measure` (`3207d97e`, 2026-11-04) has since measured project `agent-turns` as a whole in `docs/research/turns/turn-savings-measure-2026-11-04/report.md`, over the 20 most recent darn runs and 4 tapestry runs: the darn writer issues 2.05 calls a turn against 1.08, and shell edits fall from 339 calls to 21.
-The report covers darn and Webster, not the Plan writer's serial lookups, so those stay unmeasured here; the rule's own effect on edit chains is the open question of note `batching-hook-remeasure`.
+The report covers darn and Webster, not the Plan writer's serial lookups, so those stay unmeasured here.
+Task `batching-hook-remeasure` (`d05c8d75`, 2026-11-05, `docs/research/turns/batching-hook-remeasure-2026-11-05/report.md`) has since measured the rule's effect on edit chains: edit follows rose from 4.2% to 6.9% of context, all mid-round and none after a failed gate, so the rule does not stop mid-round edit splitting; its one open question is the hook's live gap, note `batching-hook-live-gap`.
 `plan-reviewer-batching` (`5227aeaa`) added a wave structure for the fanned Plan reviewer's pre-read in `burler-fork-reading.md`; it too is unmeasured.
 
 ## Writer lookups measured (landed 2026-11-04)
@@ -105,7 +106,8 @@ Task `planner-fork-lookups` (`482c05d4`, `docs/research/turns/writer-lookups-mea
 - Exploration is 46% of the writers' cost ($11.03 of $23.76); 15% of it is paid above 200k context, every chain above 200k is in a Plan session after its one batch, and 3 of the 6 are single-call serial lookups.
 - Moving every search turn to subagents would save at most about $4.7, one fifth of writer spend; for the short late chains, batching in the writer saves more.
 - The report recommends no bench of the excerpt cut below and no stronger stencil now, and a re-run once more tapestry runs have landed.
-Task `batching-hook-reach` (`119c1c05`, 2026-11-04) made the batching nudge hook count read-only Bash lookups and reach subagents and forks, so the writer's serial `grep` and `sed -n` chains are now what it nudges; its effect is the question of note `batching-hook-remeasure`.
+Task `batching-hook-reach` (`119c1c05`, 2026-11-04) made the batching nudge hook count read-only Bash lookups and reach subagents and forks, so the writer's serial `grep` and `sed -n` chains are what it nudges.
+Task `batching-hook-remeasure` (`d05c8d75`, 2026-11-05) measured it on 22 runs: the hook fired 13 times, about 2.5% of the breach turns it was built for, the breach shares did not fall where it reaches, and the report recommends removing it; the live gap is note `batching-hook-live-gap`.
 
 ## Split writing built and benched (landed 2026-11-01)
 
