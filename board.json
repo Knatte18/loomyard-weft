@@ -154,7 +154,7 @@
       "isolated": false,
       "brief": "Orchs of different hubs mail each other; the sending daemon confirms the sender, and a hub obeys only the orchs of hubs it lists as trusted",
       "body": "## Seen (operator, 2026-10-30)\n\nThe operator sometimes has the orch write straight into another repository, such as Scribe or Quarry, and would rather let the orchs of the hubs talk to each other, which is how lym is meant to be used.\nCreel has no support for this today.\nOne daemon serves one hub, its socket is named from the hub path, and the hub a call reaches is the hub of the directory it runs from.\nA process outside the hub's strands is `EXTERNAL`, shown with a terminal and parent-process envelope, and its replies reach only a waiting `post --wait-reply`.\n`EXTERNAL` is the wrong sender for this: the receiver must see the real strand that sent the message.\n\nSeen again 2026-11-05: the loomyard orch could not steer trial run `codex-greet` in the sandbox hub `lyt` out of PR-Review, since lyt's reviewer and `lyt:orch` refused its mail as `EXTERNAL`, so the operator was asked to type in a sandbox hub's pane, which they never want to do.\n\n## Verifying the sender (operator, 2026-10-30)\n\nAny process of the same user can claim any sender, so a prompt-injected agent could claim to be `ly:orch`.\nThe sending daemon, which reads the caller from `SO_PEERCRED` as it does today, vouches for what it sent, and the receiving daemon asks it to confirm:\n\n1. The receiver derives the sending hub's socket name from its hub path, as `creel-\u003cshortname\u003e-\u003chash\u003e.sock`.\n2. The receiver sends one call in creel's JSON-lines protocol, such as `confirm`, with the message id, the receiver and a hash of the text.\n3. The sender's daemon looks in its own journal for a message from that strand to that receiver with that hash, and answers yes or no, never the text.\n4. Only on yes does the receiver show the sender as that strand; otherwise the message shows as unverified.\n\nThis is a call and not a signature, since a signature needs a secret and every agent of the same user can read a secret file.\nA message can be confirmed once, so a replayed message is refused.\nThe receiver confirms when the message arrives, within the journal's retention.\nA sending daemon that is down is started as a client starts it today, or the message stays unverified.\nThe check works only within one user, since the sockets do.\n\n## Proposals (orch, agreed by the operator 2026-11-05)\n\nStarting points for the Discussion, not final:\n\n- Transport: the sending daemon delivers straight to the receiving hub's socket, then the receiver confirms as above; an inbox folder (the operator's first idea, 2026-10-30) is needed only if a receiver cannot be started, so the Discussion weighs whether to keep it at all.\n- Addressing by hub shortname, such as `lyt:orch` or `cs:orch`, through a record on the machine that maps a shortname to a hub path, written when a hub is created or opened.\n- Replies: `lym creel post --reply \u003cid\u003e` works across the hub border by the same route, back to the strand that sent.\n- Trust per hub, in the hub's config, such as `trusted_hubs: [ly]`:\n  - Verified mail from the orch of a trusted hub carries the authority mail from the hub's own orch carries today.\n  - Verified mail from any other strand, or from a hub not listed, is data to weigh, never an instruction.\n  - Unverified mail shows as unverified and is data only.\n- Trust runs one way: loomyard steers the sandbox hubs `lyt` and `cs`, which list `ly`; loomyard lists neither, since the sandboxes run untrusted code and Codex and a prompt-injected sandbox orch must gain no hold on the main repository.\n  The sender check stops a forged sender; it cannot stop a trusted orch that is itself prompt-injected, which is why trust is not mutual.\n- Roles and the creel note in the shuttle hooks learn the new sender kinds, so an agent obeys verified trusted-orch mail and refuses the rest as today.\n\n## Not in this round\n\n- Another machine: a synced directory reaching a hub on Neve.\n- How this fits a closed area for lym's process tree (research note `sandboxing-options-2026-10-30`).\n\n## Trial at the end\n\nA darn `docs` task in which the loomyard orch drives a run in `lyt` from start to landing through creel alone, the operator doing nothing, and records the result in `docs/research/`.\n",
-      "status": "running · Raddle-File",
+      "status": "done",
       "created": "2026-10-30T08:36:02Z",
       "revised": "2026-11-05T17:23:40Z",
       "discussed": true
@@ -645,6 +645,30 @@
       "body": "## Seen (orch, 2026-11-05, twice)\n\nPromoting a Sketch gives the same entry recipe raddle under the same slug.\nFor `reed-slack-relay` and again for `creel-cross-hub-mail`, dobby could not start the raddle run: battencli reported the slug `has already completed` and named `lym batten cleanup --apply`, since the motif run that made the Sketch left its run directory under `_lym/shed/\u003cslug\u003e`.\nThe orch ran the cleanup each time and released the task again.\n\n## Idea\n\nThe promotion of a Sketch to raddle, or batten at Seed of a raddle run, clears the finished motif run's directory of that slug, as the cleanup does, so the raddle run starts with no hand step.\n",
       "created": "2026-11-05T17:24:17Z",
       "revised": "2026-11-05T17:24:17Z"
+    },
+    {
+      "id": 1146,
+      "handle": "T2",
+      "slug": "creel-cross-hub-build",
+      "title": "Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "creel",
+        "orch"
+      ],
+      "issues": [],
+      "recipe": "tapestry",
+      "depends_on": [
+        "slack-relay"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `creel-cross-hub-mail`.\n\nTakes: creel's journal, fold, delivery seam and verbs, and the orch role, as slack-relay leaves them, with its \u003cshortname\u003e:SLACK program sender and its orch-role rules on whose mail carries the operator's authority; fabricengine.ReadShortname, hubgeom.CreelGeometry, internal/state and internal/lock as they stand\nDelivers: the per-user hubs.json machine record written by each creel daemon at start; posts and replies from a strand to another hub's strand, queued in the sending journal, delivered daemon to daemon and confirmed with the sending daemon, with drops journaled and noticed to the orch; the creel config module with trusted_hubs; the sender stamp on every rendering of mail from another hub; the trust sentence, parent directive and orch role reading the stamps; lym creel hubs; the PATTERN-agent-addressing change; and the board note creel-cross-hub-trial\nExports: hubregistry's record and lookup by shortname, creelconfig's trusted_hubs loader, the deliver and confirm verbs of the creel socket protocol, and the lym creel hubs verb\n\nThe part changes these packages:\n\n- internal/creelengine (about 2500 changed lines)\n- internal/creelcli (about 300 changed lines)\n- internal/hubregistry (about 300 changed lines)\n- internal/creelconfig (about 120 changed lines)\n- internal/configreg (about 5 changed lines)\n- internal/shuttleengine (about 5 changed lines)\n- internal/shuttleengine/claudeengine (about 5 changed lines)\n- contracts/stencils (about 10 changed lines)\n- contracts/orchrole (about 15 changed lines)\n- cmd/lym (about 10 changed lines)\n- pattern (about 10 changed lines)\n",
+      "created": "2026-11-05T18:00:31Z",
+      "revised": "2026-11-05T18:00:31Z",
+      "profile": "solid",
+      "discussed": true
     }
   ],
   "prime_owner": "neve",
