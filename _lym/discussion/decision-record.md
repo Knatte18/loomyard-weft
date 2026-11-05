@@ -182,6 +182,13 @@ Rationale: Round 3's only design-wrong finding, F1 (relay-restart-cap-unreachabl
 
 - The employer's Slack workspace may require admin approval of every app ("Only allow pre-approved apps", slack.com/help/articles/222386767); the relay cannot run until the operator has the app installed. This blocks no part of the build.
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/plan/round-3-review.md; fixer report: _lym/reviews/plan/round-3-fixer-report.md.
+  - relay-restart-cap-unreachable (class design, severity BLOCKING, open in rounds 1, 2, 3)
+  - setpresence-beams-error-outcome-unassigned (class scope, severity MEDIUM, open in rounds 3)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - D1, D4: with a fake Slack API, a top-level message from the configured operator in the hub's channel reaches the prime orch's creel mailbox as a `[slack]` message from `<shortname>:SLACK`; a message from another user, a bot message, a thread reply and a message with a subtype reach no mailbox.
