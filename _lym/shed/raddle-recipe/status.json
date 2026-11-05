@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Burler-Fix",
+  "current_producer": "Plan-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Burler-Fix",
-    "last": "Plan-Burler-Review → bounced to Plan-Burler-Fix",
+    "now": "Plan-Bouncer",
+    "last": "Plan-Burler-Fix → bounced to Plan-Bouncer",
     "wait": ""
   },
   "history": [
@@ -424,6 +424,58 @@
       ],
       "budget_exempt": true,
       "routed_to": "Plan-Burler-Fix"
+    },
+    {
+      "producer": "Plan-Burler-Fix",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-11-05T11:46:44Z",
+      "gate_attempts": 3,
+      "gate_spans": [
+        {
+          "gate": "plan",
+          "kind": "gate",
+          "start": "2026-11-05T11:44:28.033700756Z",
+          "end": "2026-11-05T11:44:34.760720256Z"
+        },
+        {
+          "gate": "plan",
+          "kind": "rework",
+          "start": "2026-11-05T11:44:35.164148097Z",
+          "end": "2026-11-05T11:46:07.416065934Z"
+        },
+        {
+          "gate": "plan",
+          "kind": "gate",
+          "start": "2026-11-05T11:46:07.442944777Z",
+          "end": "2026-11-05T11:46:14.30598196Z"
+        },
+        {
+          "gate": "plan",
+          "kind": "rework",
+          "start": "2026-11-05T11:46:14.728313109Z",
+          "end": "2026-11-05T11:46:21.734396742Z"
+        },
+        {
+          "gate": "plan",
+          "kind": "gate",
+          "start": "2026-11-05T11:46:21.759686993Z",
+          "end": "2026-11-05T11:46:28.550308885Z"
+        },
+        {
+          "gate": "plan",
+          "kind": "rework",
+          "start": "2026-11-05T11:46:28.945633003Z",
+          "end": "2026-11-05T11:46:36.972531596Z"
+        },
+        {
+          "gate": "plan",
+          "kind": "gate",
+          "start": "2026-11-05T11:46:36.998019336Z",
+          "end": "2026-11-05T11:46:43.89670515Z"
+        }
+      ],
+      "routed_to": "Plan-Bouncer"
     }
   ],
   "product": {
