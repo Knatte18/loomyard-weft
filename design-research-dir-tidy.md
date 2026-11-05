@@ -2,6 +2,8 @@
 
 `research-dir-tidy` · Task · enhancement · draft
 
+Depends on: [`readme-refresh`](design-readme-refresh.md)
+
 ## Seen (readme-refresh sampler, 2026-11-05)
 
 `docs/research` is hard to find one's way in:

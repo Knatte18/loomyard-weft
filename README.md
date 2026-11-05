@@ -91,7 +91,7 @@ Not released; nothing starts it until its status is cleared.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light |  | 4d<br>18h | fabric |
-| T6 | `draft` **docs/research gets an index and loses its design notes**<br>• docs/research mixes layouts, near-duplicate series and design notes with no index; three options from an index alone to topic folders | [`research-dir-tidy`](design-research-dir-tidy.md) | darn · docs |  | 1m<br>0m |  |
+| T6 | `draft` **docs/research gets an index and loses its design notes**<br>• docs/research mixes layouts, near-duplicate series and design notes with no index; three options from an index alone to topic folders | [`research-dir-tidy`](design-research-dir-tidy.md) | darn · docs | T3 | 1m<br>0m |  |
 
 ### Notes (24)
 
