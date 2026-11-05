@@ -1,0 +1,17 @@
+{
+  "current_producer": "",
+  "state": "running",
+  "error": "",
+  "pause_requested": false,
+  "activity": {
+    "now": "",
+    "last": "",
+    "wait": ""
+  },
+  "history": [],
+  "product": {
+    "slug": "pattern-distill",
+    "parent": "main",
+    "start_sha": null
+  }
+}
