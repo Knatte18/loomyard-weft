@@ -1,6 +1,6 @@
 # fabric clone --reset removes the hub before refusing a mismatched --shortname
 
-`clone-reset-deletes-first` · Task · bug, fabric · running · Open-Window
+`clone-reset-deletes-first` · Task · bug, fabric · running · Darn-Write
 
 Imported from [issue #67](https://github.com/Knatte18/loomyard/issues/67).
 
