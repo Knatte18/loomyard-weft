@@ -45,8 +45,11 @@
 - `internal/driftengine#writeProfileFile`
 - `internal/driftengine#stageAcceptance`
 - `internal/driftengine#keptOutput`
+- `internal/driftengine#verifyFixture.captureForAcceptance`
 - `internal/driftengine#verifyFixture.agentAccept`
 - `internal/driftengine#verifyFixture.sessionAccept`
+- `internal/driftengine#CountedCapture`
+- `internal/driftengine#TestCountedCapture`
 - `internal/driftengine/skiplist_test.go`
 - `internal/driftcli#TestVerbStatus_OperatorSession`
 
@@ -63,6 +66,7 @@
 - `internal/driftengine#newBaselineFixture`
 - `internal/driftengine#TestDriftVerify`
 - `internal/driftengine#TestRunCapture`
+- `internal/driftengine#TestLoadConfig`
 - `internal/driftengine/doc.go`
 - `internal/driftcli#worktree.verbStatus`
 - `internal/driftcli/doc.go`
@@ -81,9 +85,9 @@
 
 - `accepted.go` keeps only `copyFile`, which the judge snapshot uses; its acceptance and profile functions go.
 - `verbs.go` loses scope recording, accept, withdraw, waive, the run count and the verify-row check; `VerbStatus` drops `AgentSession` and `OperatorSession` and their methods, and `worktree.verbStatus` stops reading the agent-session mark.
-- `records.go` loses `runs.json`'s record and functions, whose session mark lives in `scope.json`'s `expect_session` and `judge_session` since cards 12 and 16, and `ScopeRecord.Unruled`; the old acceptance, compare and waiver fields and the `partial` scope stay readable for the verdict and D3's in-flight rule.
+- `records.go` loses `runs.json`'s record and functions, whose session mark lives in `scope.json`'s `expect_session` and `judge_session` since cards 12 and 16, `ScopeRecord.Unruled`, and `CountedCapture`, whose last callers were the old Drift-Verify (card 16 reads the count from the tracked record alone) and `Waive`, with `TestCountedCapture` and the package doc's `CountedCapture` line; the old acceptance, compare and waiver fields and the `partial` scope stay readable for the verdict and D3's in-flight rule.
 - `capture.go` loses the side and acceptance captures and `captureInto`; `missingDirRefusal` drops their sites; `compare.go` loses `SkipList`.
-- `Paths` drops `SideDir`, `AcceptedDir`, `AcceptingDir`, `AcceptLock`, `AcceptedTestsDir` and `Runs`, so nothing names `.lym/drift/`'s `accepting`, `accepted-tests` or `accept.lock`.
-- `statusAt` drops its `agentSession` parameter with the field, and every call of it, in `TestDeferWaive`, card 19's `TestAmend`, `TestDriftAwait`, `TestDriftBaseline`, `newBaselineFixture` and `TestDriftVerify`, drops the argument; `TestDeferWaive` drops its waive rows and `TestRunCapture` its side and acceptance rows; the package doc drops the `# Verbs` acceptance text, the run counter and the accepted profile.
+- `Paths` drops `SideDir`, `AcceptedDir`, `AcceptingDir`, `AcceptLock`, `AcceptedTestsDir` and `Runs`, so nothing names `.lym/drift/`'s `accepting`, `accepted-tests` or `accept.lock`; `TestLoadConfig`'s subtest "the durable paths lie under DirRel" drops `SideDir` and `Runs` from its ephemeral map.
+- `statusAt` drops its `agentSession` parameter with the field, and every call of it, in `TestDeferWaive`, card 19's `TestAmend`, `TestDriftAwait`, `TestDriftBaseline`, `newBaselineFixture` and `TestDriftVerify`, drops the argument; `TestDeferWaive` drops its waive rows and `TestRunCapture` its side and acceptance rows; `verifyFixture`'s `captureForAcceptance`, `agentAccept` and `sessionAccept`, which card 16 left in place, go; the package doc drops the `# Verbs` acceptance text, the run counter and the accepted profile.
 
 **ImpactSummary:** Deletes engine functions whose last callers left in cards 16, 22 and 23; one driftcli wiring method stops reading a removed mark; no other package reads them.

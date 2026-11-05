@@ -26,14 +26,15 @@
 - `internal/loomcli#TestRenderChecklist`
 - `internal/loomrecipe#TestRecipeEngines_ReportsExactlyLoomsOwnEngineSet`
 - `internal/loomrecipe/testdata/tapestry-rows-before-motif.yaml`
+- `internal/loomrecipe/doc.go`
 
 **Uses:**
 - `internal/loomshed#TestInterruptPolicies_ClosedVocabulary`
-- `internal/loomrecipe/doc.go`
 
 **Intent:** Put Drift-Expect into both recipes (D4): in tapestry after Drift-Await and before Webster, in darn after Drift-Await and before Darn-Write, so its agent writes against the counted capture's real cases and identities.
 
 The row: `name: Drift-Expect`, `engine: DriftExpect`, `entry_gate: drift.enabled`, no `on_stuck`, `config: {subject: decision-record, gates: [{name: expectation, attempts: 3}]}`, Drift-Await's `on_done` naming it and its own `on_done` naming the writer.
+The `loomrecipe` package doc's row orders of both recipes gain Drift-Expect after Drift-Await.
 Both recipe headers name the row in the main line, list it among the rows whose Stuck halts the run, and say a run parked before it reaches it while one already past it has no seal and is checked against an empty expectation (D4, D6).
 
 `NameDriftExpect` joins the drift row names, and `InterruptPolicies` gives it `InterruptPolicyReinvoke` like the other drift rows.

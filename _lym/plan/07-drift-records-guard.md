@@ -35,7 +35,6 @@
 **Uses:**
 - `internal/loomcli#TestWire_BeamRecipe`
 - `internal/battencli#TestWire_EverySeamFilled`
-- `internal/loomcli#TestWire_DarnRecipe`
 - `internal/loomcli#TestWire_EverySeamFilled`
 - `internal/loomcli#TestWire_SamplerRecipe`
 - `internal/testkit/envkit#TestFullEnv_FillsEverySeam`
@@ -48,7 +47,7 @@
 
 **Intent:** Add D6's guard over the drift records, `scope.json` and the new `judged.json`, and the record fields every later card writes; no row uses them yet.
 
-- `Paths` gains `Judged` (`_lym/drift/judged.json`), `Expected` (`_lym/drift/expected.yaml`) and `Judgement` (`_lym/drift/judgement.yaml`), declared in `NewPaths` beside the others.
+- `Paths` gains `Judged` (`_lym/drift/judged.json`), `Expected` (`_lym/drift/expected.yaml`) and `Judgement` (`_lym/drift/judgement.yaml`, the file the judge writes, outside the records guard), declared in `NewPaths` beside the others.
 - `ScopeRecord` gains, all `omitempty` and tolerant (`PATTERN-tolerant-records`): `ScopeSource` (the config key that set `off`, D3), `Diff` and `KeyPatterns` (recorded once, D3), `ExpectSession` and `JudgeSession` (`SessionMark`: `Open`, `OpenedAt`, `SpawnID`, D6, D9), `Amendments` (`Amendment`: `By`, `At`, `Kind` `entries`, `restore` or `discard`, and `Entries`, the amended YAML, D11), `LastCheck` (`CheckResult`: the warp `Head` checked, `Passed`, `At`, `Mode`, the counts and lists D13 renders, the compare's exit and log under `command`), `LastPassHead` and `LastPassAmendments` (the head of the last passing check and the amendment count then, D4), `Unsealed` (D6) and `SnapshotLost` (D9).
   The old fields stay readable.
 - `JudgedRecord` holds `Tuples` (`JudgedTuple`: case, identity, kind, old, new, ruling, reason, strand, at, D10), `Ranges` (`JudgedRange`: case, range, the covering entry's `why`, checked, strand, at, replaced by a later listing of the same range, so the verdict renders the `why` without reading the expectation) and `Cases` (`JudgedCase`: warp head, case, ruling, reason, strand, at, for `command` mode, D2).

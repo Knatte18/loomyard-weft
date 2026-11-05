@@ -27,7 +27,7 @@ It writes no tracked record: only its scratch capture directory (D8).
 Bound: it decides nothing; Drift-Verify repeats the check.
 
 `TestCheck_PrintsTheFindings` (tier1, the package's hub fixture and `lymRun` helper, a capture command writing fixed files) seeds, as the anchor test seeds its run: a darn seed, so `Rows` is darn's order; a run status at Drift-Verify, past Drift-Expect; a scope record with scope `full`, `awaited_at` set and `diff: lines`; a passed `capture.json`; and a baseline directory holding a case file; with no seal commit and no `expected.yaml`, the expectation is empty.
-It covers: the capture command writing a changed value prints it with case, identity, old and new value; the same run with the status at Drift-Await, before Drift-Expect, prints that nothing is sealed yet and runs no capture; the run with the baseline directory removed reports the missing baseline naming `lym drift defer` without failing and runs no capture; no tracked file changes.
+It covers: the capture command writing a changed value prints it with case, identity, old and new value; the same run with the status at Drift-Await, before Drift-Expect, and a scope record with no `awaited_at`, the state a real run holds there, prints that nothing is sealed yet and runs no capture; the run with the baseline directory removed reports the missing baseline naming `lym drift defer` without failing and runs no capture; no tracked file changes.
 The package doc lists `check`.
 
 **ImpactSummary:** Adds one verb to the `lym drift` tree and one wiring method; existing verbs are untouched.

@@ -43,7 +43,7 @@
 - `DriftAwait.await` writes `awaited_at` through `WriteRecords` with the extra trailer `Drift-Baseline: <BaselineDigest of the baseline directory>`, so the digest lives in a weft commit made before the writer (D7); the capture log is still committed on its way out.
 - The `docs` profile's `darn` block in `internal/runprofile/template.yaml` sets `drift: {scope: off}` (D3).
 - The recipe headers and Drift-Baseline's comment say the row records the scope from config with no agent; the darn header's note on a run that passed Drift-Baseline before Drift-Await names `lym drift defer` at Drift-Verify in place of `lym drift waive` (D12).
-  Both headers add that a run parked at an old Drift-Verify halt whose reason names `lym drift accept`, `withdraw` or `waive`, verbs card 22 removes, goes on with `lym loom resume`, which checks it under the new Drift.
+  Both headers add that a run parked at a Drift-Verify halt from before this change goes on with `lym loom resume`, which checks it under the new Drift; the note names none of the verbs card 22 removes (D14).
 
 `TestDriftBaseline` rows: `drift.scope: off` records `off` with its source and takes no capture; an unset scope records `full` with the config's `diff` and patterns; a config `partial` records `full` (the Warn is not asserted, since the logger's output is process-global); an existing record survives a config change; no agent is spawned; a live chair of either removed role is ended before the scope is recorded; each scope write is one commit carrying `Drift-Records`.
 `TestDriftAwait` gains a row: the counted capture's commit carries `Drift-Baseline` equal to the baseline directory's digest.

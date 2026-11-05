@@ -23,6 +23,7 @@
 - `internal/driftcli_test#TestDrift_RunsInTheAnchoredDirectory`
 - `internal/driftcli_test#TestCapture_OutlivesCaller`
 - `internal/driftcli/doc.go`
+- `docs/overview.md`
 
 **Uses:**
 - `internal/driftcli_test#statusBody`
@@ -34,5 +35,6 @@
 `TestDrift_RunsInTheAnchoredDirectory` runs `check` where it ran `compare` and `capture --side`, still asserting the command ran in the anchored directory; so that `check` reaches its capture, the test seeds, beside its tapestry seed, a status at Drift-Verify, past Drift-Expect, a scope record with scope `full`, `awaited_at` set and `diff: lines`, a passed `capture.json` and a baseline directory holding one case file, with no seal and no `expected.yaml`.
 `TestCapture_OutlivesCaller` drops its `compare` steps, keeps the detached capture's checks, and asserts its `status` body carries `compare_ignored: true` under the template's `lines`.
 The package doc lists the verbs that remain and drops the `# Runs` and `# Accept` sections.
+`docs/overview.md`'s `internal/driftcli/` line lists the remaining verbs `check`, `amend`, `capture`, `defer`, `status` and the hidden `capture-child`, and its drift paragraph places Drift-Expect after Drift-Await, gives Drift-Recheck the DriftVerify engine with no route back to Drift-Verify, drops the accepted profile, and has Drift-Baseline record the scope from config with no agent; its sentence beginning "A second embedded recipe, `contracts/recipes/darn-recipe.yaml`" names Drift-Expect between Drift-Await and Darn-Write and the `drift` gate entry on Darn-Write, has its `Drift-Baseline` row record the scope from config with no agent and start the baseline capture, and has `Drift-Verify` and `Drift-Recheck` check containment by code and the judge, where it says they compare.
 
 **ImpactSummary:** Removes six verbs and their helpers from the `lym drift` tree; the CLI tree tests walk the tree and need no list change; two integration tests move to `check`.

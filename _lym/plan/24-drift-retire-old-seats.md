@@ -57,11 +57,17 @@
 - `contracts/stencils#TestStencils_NoEditRuleRestatement`
 - `contracts/stencils#TestStencils_NoUnboundedAskOperator`
 - `contracts/stencils#TestParentDirectiveScans_SyntheticRows`
+- `internal/driftengine#TestLoadConfig`
+- `internal/driftengine#baselineFixture.seedScopeRecord`
+- `internal/driftengine#TestDriftBaseline`
+- `internal/driftengine#TestDriftAwait`
+- `internal/driftengine#TestDriftVerify`
+- `internal/driftengine#newVerifyFixture`
+- `internal/loomcli#TestWire_DarnRecipe`
 
 **Uses:**
 - `internal/loomcli#TestWire_BeamRecipe`
 - `internal/battencli#TestWire_EverySeamFilled`
-- `internal/loomcli#TestWire_DarnRecipe`
 - `internal/loomcli#TestWire_EverySeamFilled`
 - `internal/loomcli#TestWire_SamplerRecipe`
 - `internal/testkit/envkit#TestFullEnv_FillsEverySeam`
@@ -74,6 +80,8 @@
   The Drift-Verify seat's language skills and PATTERN implementer directive go with `VerifyTable`.
 - `Deps` drops `BaselineTable`, `VerifyTable` and `CompareAccepted`; `loomcli`'s `driftDeps` drops their wiring and `driftTables` its `languageSkills`, which `wire` no longer passes; `envkit` and `battencli`'s `intentionallyNil` drop them.
 - `Paths` drops `BaselineReport` and `VerifyReport`, so no code names `baseline.md` or `verify-report.md`.
+  `TestLoadConfig`'s subtest "the durable paths lie under DirRel" drops both from its durable map; `baselineFixture.seedScopeRecord` drops its `report` parameter and its write of `baseline.md`, and its callers in `TestDriftBaseline`, `TestDriftAwait`, `TestDriftVerify` and `newVerifyFixture` drop the argument wherever card 16's rewrite kept the call.
+- `TestWire_DarnRecipe`'s sub-run that reads `c.env.Drift.BaselineTable("")` reads `c.env.Drift.ExpectTable("")` instead, still asserting that `subject_reading` holds the decision record path and no `lym board get`.
 - `CompareRequest` drops `ProfileDir`, which only the accepted profile used; `RunCompare` renders `{baseline_dir}` as the baseline directory always, and `TestRunCompare` drops its profile-directory row.
 - The stencils `drift-template-baseline` and `drift-template-verify`, their embed vars, `entries` rows, `roleOpeningStencils` rows and marker rows go.
 - `PATTERN-parent-directive.md`'s example of the Drift-Verify seat names the judge seat instead, and so does `parentdirective_test.go`'s file header comment, which names the Drift-Verify seat under `verify_interactive`: it names the judge seat under `judge_interactive`. The header is no member's, so the card lists every member of the file, as `edit-test-file`'s way forward asks for a header-only change; no member's body changes.

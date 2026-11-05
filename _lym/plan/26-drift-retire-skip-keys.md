@@ -21,12 +21,16 @@
 - `internal/driftengine#DriftAwait.await`
 - `internal/driftengine#DriftBaseline.captureAgain`
 - `internal/driftengine#TestLoadConfig`
+- `internal/driftengine#templateConfig`
+- `internal/driftengine#TestSeatTables`
 - `internal/driftengine#TestRunCapture`
 - `internal/driftengine#TestRunCompare`
 - `plan:internal/driftengine#TestCaptureCurrent`
 - `internal/driftengine#TestFailedCaptureError`
 - `internal/driftengine#TestDriftAwait`
 - `internal/driftengine#TestDriftBaseline`
+- `internal/driftengine#baselineFixture`
+- `internal/driftengine#newBaselineFixture`
 - `internal/driftengine/doc.go`
 - `internal/loomcli#driftDeps`
 - `internal/driftcli#runCaptureChild`
@@ -64,6 +68,6 @@
   The capture record's `skip` field stays readable for a capture taken before this lands.
 - `noFileReason` no longer names skipped tests, and `awaitWaysForward` loses its rescope branch, whose ways forward named the removed `lym drift scope`; `emptyUnderSkips` and `rescopeWaysForward` go, and `FailedCaptureError`, `DriftAwait.await` and `DriftBaseline.captureAgain` call the narrowed forms.
 
-Tests: `TestLoadConfig` drops the skip and `verify_max_runs` rows and gains one where `skip` and `verify_max_runs` in a local layer load with the keys dropped; `TestRunCapture` and `TestRunCompare` gain a row where a command holding `{skip_file}` is refused naming the edit, with the slot free and the baseline untouched after it, and drop the skip-file rows; `TestCaptureCurrent` gains a row where such a command is `Passed` false with the refusal as its reason; `TestFailedCaptureError`, `TestDriftAwait` and `TestDriftBaseline` drop their rescope rows; `TestPrepareRunSettings` gains a row where `{"drift": {"skip": ["t"], "verify_max_runs": 3}}` seeds; `TestModules_EveryTemplateKeyClassified`'s drift local keys drop both; `TestDispatchHubWideBoard`'s drift rows change `judge_model` where they changed `verify_max_runs`; the driftcli fixtures stop seeding `verify_max_runs`.
+Tests: `TestLoadConfig` drops the skip and `verify_max_runs` rows and gains one where `skip` and `verify_max_runs` in a local layer load with the keys dropped; `templateConfig` and `TestSeatTables` drop the `VerifyMaxRuns` they set; `TestRunCapture` and `TestRunCompare` gain a row where a command holding `{skip_file}` is refused naming the edit, with the slot free and the baseline untouched after it, and drop the skip-file rows; `TestCaptureCurrent` gains a row where such a command is `Passed` false with the refusal as its reason; `TestFailedCaptureError`, `TestDriftAwait` and `TestDriftBaseline` drop their rescope rows; `newBaselineFixture` stops setting `Config.Skip`, so `baselineFixture`'s `configSkip` field and the `TestDriftBaseline` row that sets it go; `TestPrepareRunSettings` gains a row where `{"drift": {"skip": ["t"], "verify_max_runs": 3}}` seeds; `TestModules_EveryTemplateKeyClassified`'s drift local keys drop both; `TestDispatchHubWideBoard`'s drift rows change `judge_model` where they changed `verify_max_runs`; the driftcli fixtures stop seeding `verify_max_runs`.
 
 **ImpactSummary:** Removes two keys and a placeholder from drift's config and runners; three wiring sites drop the skip list; a hub command still holding `{skip_file}` is now refused at run time with the edit named, as D15's notice warned.

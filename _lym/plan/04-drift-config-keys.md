@@ -10,6 +10,9 @@
 - `internal/driftengine#VerifyTable`
 - `internal/driftengine#TestLoadConfig`
 - `internal/driftengine#TestSeatTables`
+- `internal/driftengine#templateConfig`
+- `internal/driftengine#newVerifyFixture`
+- `internal/driftengine#TestDriftVerify`
 - `internal/driftengine/doc.go`
 - `internal/configreg#Modules`
 - `internal/configreg#PrepareRunSettings`
@@ -40,7 +43,7 @@
 
 - `template.yaml`: add `diff: lines` (`lines` or `command`, read per D2) and `key_patterns` holding D1's two defaults, a `name = value` and a `name: value` regular expression with named groups `key` and `value`; rename `baseline_model` to `expect_model`, `verify_model` to `judge_model` and `verify_interactive` to `judge_interactive`, each comment rewritten for the expect agent and the judge; `compare`'s comment says it runs only under `diff: command`.
 - `Config` and `configFile`: `BaselineModel`, `VerifyModel` and `VerifyInteractive` become `ExpectModel`, `JudgeModel` and `JudgeInteractive`; add `Diff string` and `KeyPatterns []string`.
-  `BaselineTable` and `VerifyTable` read the renamed fields, which leaves their behavior as it is until card 24 removes them; `TestSeatTables` and `TestLoadConfig` move to the new names.
+  `BaselineTable` and `VerifyTable` read the renamed fields, which leaves their behavior as it is until card 24 removes them; `TestSeatTables` and `TestLoadConfig` move to the new names, as do the test members that set or read them: `templateConfig` (`BaselineModel`, `VerifyModel`), `newVerifyFixture` (`VerifyInteractive`) and `TestDriftVerify` (`VerifyInteractive`).
 - `LoadConfig` refuses, through `refuseKey`, a `diff` other than `lines` or `command`, a `key_patterns` entry `CompileKeyPatterns` refuses, and `diff: command` with no `compare` declared, naming `compare` as the key to set (D2).
 - `ConfigSpec` classifies `expect_model`, `judge_model` and `judge_interactive` as `CategoryNone` and `diff` and `key_patterns` as `CategoryGuard`, so a local layer cannot set them, and fills the new `configengine.Spec` field `HubOnlyWayForward` for `diff` and `key_patterns` with `set it in the hub's drift.yaml with lym config drift --set <key>=<value> from the prime`.
 - `configengine.Spec` gains `HubOnlyWayForward map[string]string`, keys a task's run settings may not carry, each with its way forward.
