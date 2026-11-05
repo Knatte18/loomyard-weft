@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T7 | **Lock files live in .lym, never beside a tracked file in _lym or Bolt**<br>• Locks for _lym and Bolt files sit beside them, hidden only by *.lock excludes; move them under .lym | [`locks-out-of-tracked-trees`](design-locks-out-of-tracked-trees.md) | darn · solid | Code-Burler-Fix | neve | 17h<br>16h | fabric, loom |
-| T9 | **A test leaves an empty /tmp/.git, which breaks go VCS stamping**<br>• An empty /tmp/.git appeared during a tier1 run and failed TestPrebuildLym; find the leaker and guard against writes outside t.TempDir | [`tmp-git-leak`](design-tmp-git-leak.md) | darn · light | Code-Burler-Fix | neve | 16h<br>50m | testkit, gate |
+| T9 | **A test leaves an empty /tmp/.git, which breaks go VCS stamping**<br>• An empty /tmp/.git appeared during a tier1 run and failed TestPrebuildLym; find the leaker and guard against writes outside t.TempDir | [`tmp-git-leak`](design-tmp-git-leak.md) | darn · light | Code-Bouncer | neve | 16h<br>50m | testkit, gate |
 
 ### Ready (0)
 
@@ -64,7 +64,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B2 |  | **A weft push holds the remote-refs lock over its whole transfer, so board claims queue behind it**<br>• Bolt and every weft share one remote-refs lock; a slow push stalls every claim and weft fetch for its whole send-pack | [`push-holds-remote-refs`](design-push-holds-remote-refs.md) | 16h<br>16h |  |
 | B3 |  | **An opened Codex session never reads idle, so creel types nothing into it**<br>• SessionIdle judges a strand with no run record by the hub default engine, so a Codex pane reads as no input box | [`opened-codex-never-idle`](design-opened-codex-never-idle.md) | 31m<br>31m | shuttle, creel, codex |
 | B4 |  | **lym shuttle state keeps a Codex run asking after Codex exits**<br>• After /exit the pane is dead and the loop ends died, while the session state still reads asking | [`codex-state-asking-after-exit`](design-codex-state-asking-after-exit.md) | 31m<br>31m | shuttle, codex |
-| B5 |  | **A Codex session cannot reach the creel daemon from its workspace-write sandbox**<br>• lym creel read and post fail inside Codex: connect to the daemon socket is not permitted and the daemon log is read-only | [`codex-sandbox-no-creel-socket`](design-codex-sandbox-no-creel-socket.md) | 30m<br>30m | codex, creel, shuttle |
+| B5 |  | **A Codex session cannot reach the creel daemon from its workspace-write sandbox**<br>• lym creel read and post fail inside Codex: connect to the daemon socket is not permitted and the daemon log is read-only | [`codex-sandbox-no-creel-socket`](design-codex-sandbox-no-creel-socket.md) | 31m<br>31m | codex, creel, shuttle |
 | B6 |  | **Quiet notice ignores gate fixers and the gate run**<br>• Dobby quiet notice fires while gate-fixer sessions or the run gate work, since it reads only the writer strand | [`quiet-notice-ignores-fixers`](design-quiet-notice-ignores-fixers.md) | 26m<br>26m | dobby |
 
 ### Enhancements (5)
