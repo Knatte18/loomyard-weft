@@ -32,23 +32,15 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Re-measure the batching hook and the edit-round rule a week after the hook reaches forks**<br>• run-all.sh on a fresh sample: firing rate, batching after a firing, edit chains split by gate fix against mid-round | [`batching-hook-remeasure`](design-batching-hook-remeasure.md) | 1d<br>1d | tools, claude |
 
-## [P2 Codexengine: every task, trial and note about the Codex engine](project-codex-engine-trial.md) (3)
+## [P2 Codexengine: every task, trial and note about the Codex engine](project-codex-engine-trial.md) (2)
 
 [`codex-engine-trial`](design-codex-engine-trial.md) · Age 1d · Owner `neve`
 
 Real Codex launches through lym shuttle check home, sandbox, hooks, guards, pane, skills and load
 
-### Tasks (1)
+### Tasks (0)
 
 Concrete and claimable; only a task can run.
-
-#### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **Live trial: creel mail reaches Codex sessions through the new hooks**<br>• Real Codex sessions in lyt get mail at tool boundary, turn end and idle wake, and answer it | [`codex-creel-trial`](design-codex-creel-trial.md) | darn · docs | Finalize | neve | 41m<br>41m | codex, creel |
 
 #### Ready (0)
 
@@ -71,6 +63,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 2d<br>6h | shuttle, codex, loom |
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T8 | **Live trial: creel mail reaches Codex sessions through the new hooks**<br>• Real Codex sessions in lyt get mail at tool boundary, turn end and idle wake, and answer it | [`codex-creel-trial`](design-codex-creel-trial.md) | 41m<br>41m | codex, creel |
 
 ## [P0 Root: entries under no project](project-root.md) (24)
 
