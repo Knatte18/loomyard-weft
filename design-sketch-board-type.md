@@ -1,6 +1,6 @@
 # A Sketch is a board type of its own
 
-`sketch-board-type` · Task · feature, board, loom · running · Code-Burler-Review
+`sketch-board-type` · Task · feature, board, loom · running · Code-Burler-Fix
 
 ## Idea (operator, 2026-11-05)
 
