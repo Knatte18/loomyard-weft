@@ -1,0 +1,573 @@
+{
+  "runGuid": "b471ab6ebb58c52dbd90e8a30a5db76c",
+  "planFingerprint": "5595ce630b1049b376afb6e3b2227a46b1f558c7d5e3fc7fbd4ea96f398eaf66",
+  "planFileHashes": {
+    "00-overview.md": "b0cc34ff0f42e655e76b14bdd2cb4cf096a6287b90d695f47e87f5cc98340a7d",
+    "01-shed-retired-rows.md": "307629e53510db3b8276171d4e833096a5403b438e592c25e98c878f8867a33d",
+    "02-landing-record.md": "b23dac7b898076c917869a1e439bf26b5b8b37fd3d2d7a399e392678ffb68fff",
+    "03-pr-merge-state.md": "be3311cac6b618682639d5f7c3ccc5cb155ea4d1fd86a3a8ee05418a148e37cb",
+    "04-describe-function.md": "22214bb2b71e6b6e88a83e02abac4da5c9714599478bc1dbad2ce1e524f558a3",
+    "05-pawl-rows.md": "bbb53785182b051c12385f9c866aa64814575d6902396c1fe6a8dfb90bc5065b",
+    "06-remove-reopen.md": "f79c5904330a0f138f332585fab78c03a8fa4bdb8b9e7ec6c23b6b98ab37728c",
+    "07-ready-beam-starts-no-member.md": "24108c83d18a3cce148fdfcba98eb6cf9f2f55cd6ab2e36a61e032c39c127fbb",
+    "08-retired-move-pawl.md": "d8e7bdf93b1c474d72243671c424d1c9b87c97af63bc82da24b1c26abab203d0",
+    "09-await-survives-loop-exit.md": "45df646a89c7f353ad9edce4b37b7014947b87575606a02bb946773ea3b0da8e",
+    "10-beam-await-entry.md": "4bdac0d4a63d44c5ada14e7f49aa950aad932b1813ed547e0158d575f1252175",
+    "11-finalize-beam-record.md": "4b405399b0f34bf21bbceacda2a77858d48b9c096c5628737edd13937747c6bb",
+    "12-beam-describe-verb.md": "8db2f7b91fefa7bb2b16ec4195bf873f8e731f75968465b51f806d8df6892271",
+    "13-beam-pr-open-update.md": "025654f8a88ea2e1156b72fb26798ca100b1c1943e90a9fa8cffa3e6d25de7c1",
+    "14-beam-pr-status-close.md": "e578a53d3c41050462f9b7d6ce0b11a0e477296fee9fb0a0ad08f6489164afa9",
+    "15-beam-ready-refusals.md": "5914d038fa3ee199dabcf951de5fd0b3937256b33670095b01a543ade19ac40b",
+    "16-member-landing-notice.md": "d8d099ac2e8598a74dbba3ce02b1401c9b9c774de13b8851197eecee39a41dff",
+    "17-beam-start-in-landing.md": "fff9c7dce1a348e23586fb24db44de60ee4a0c3d66d2bf61050beab966142ef7",
+    "18-orch-role-landing.md": "51279520e21e0f4dcf8aa092409ee5102499506784f8e282b67037d1df6eabd7"
+  },
+  "planOverviewFrameHash": "9ff23756f9f5eabb371f797c1f102784697043384ecc2507aa2e23d71fe466a2",
+  "partition": [
+    {
+      "cards": [
+        "01-shed-retired-rows",
+        "02-landing-record",
+        "03-pr-merge-state",
+        "04-describe-function"
+      ],
+      "profile": "wide",
+      "estimate": 225900,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54808,
+        "read_union": 43604,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 432,
+            "reads": {
+              "file:internal/shedbuild/doc.go": 876,
+              "file:internal/shedengine/doc.go": 2508,
+              "package:internal/shedbuild": 2000,
+              "package:internal/shedengine": 2000,
+              "tests:internal/shedbuild": 2000,
+              "tests:internal/shedengine": 2000
+            },
+            "messages": 91.5,
+            "written": 27882
+          },
+          {
+            "card": 2,
+            "card_text": 420,
+            "reads": {
+              "file:internal/pawlengine/doc.go": 336,
+              "package:internal/loomengine": 2000,
+              "package:internal/pawlengine": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/pawlengine": 2000
+            },
+            "messages": 76.5,
+            "written": 23370
+          },
+          {
+            "card": 3,
+            "card_text": 624,
+            "reads": {
+              "file:internal/pairteardown/doc.go": 2232,
+              "file:internal/pullrequest/doc.go": 240,
+              "package:internal/landingshed": 2000,
+              "package:internal/pairteardown": 2000,
+              "package:internal/pullrequest": 2000,
+              "package:internal/testkit/prkit": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/pairteardown": 2000,
+              "tests:internal/pullrequest": 2000,
+              "tests:internal/testkit/prkit": 2000
+            },
+            "messages": 199.5,
+            "written": 60474
+          },
+          {
+            "card": 4,
+            "card_text": 312,
+            "reads": {
+              "file:internal/landingshed/doc.go": 3624,
+              "package:internal/landingshed": 2000,
+              "tests:internal/landingshed": 2000
+            },
+            "messages": 51.5,
+            "written": 15762
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-pawl-rows"
+      ],
+      "profile": "wide",
+      "estimate": 258888,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61808,
+        "read_union": 62356,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 924,
+            "reads": {
+              "file:contracts/recipes/pawl-recipe.yaml": 1068,
+              "file:internal/beamcli/doc.go": 2040,
+              "file:internal/boardengine/doc.go": 4572,
+              "file:internal/landingshed/beamdescribe.go": 2484,
+              "file:internal/landingshed/doc.go": 3624,
+              "file:internal/loomcli/doc.go": 4764,
+              "file:internal/loomrecipe/doc.go": 852,
+              "file:internal/pawlengine/doc.go": 336,
+              "file:internal/shedrecipe/doc.go": 1692,
+              "package:contracts/recipes": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/beamcli": 2000,
+              "package:internal/boardengine": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/pawlengine": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/pawlengine": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 446,
+            "written": 134724
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-remove-reopen"
+      ],
+      "profile": "wide",
+      "estimate": 254322,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68808,
+        "read_union": 60264,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 900,
+            "reads": {
+              "file:docs/overview.md": 11004,
+              "file:internal/beamcli/doc.go": 2040,
+              "file:internal/landingshed/doc.go": 3624,
+              "file:internal/loomcli/doc.go": 4764,
+              "file:internal/loomshed/doc.go": 1596,
+              "file:internal/pawlengine/doc.go": 336,
+              "package:docs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/beamcli": 2000,
+              "package:internal/hubgeom": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/pawlengine": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/pawlengine": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 414.5,
+            "written": 125250
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-ready-beam-starts-no-member",
+        "08-retired-move-pawl",
+        "09-await-survives-loop-exit"
+      ],
+      "profile": "wide",
+      "estimate": 286430,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75808,
+        "read_union": 54904,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 552,
+            "reads": {
+              "file:internal/beamcli/doc.go": 2040,
+              "file:internal/dobbyengine/doc.go": 2256,
+              "package:internal/battencli": 2000,
+              "package:internal/beamcli": 2000,
+              "package:internal/dobbyengine": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/dobbyengine": 2000
+            },
+            "messages": 165.5,
+            "written": 50202
+          },
+          {
+            "card": 8,
+            "card_text": 516,
+            "reads": {
+              "file:internal/loomcli/doc.go": 4764,
+              "file:internal/pawlengine/doc.go": 336,
+              "package:internal/loomcli": 2000,
+              "package:internal/pawlengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/pawlengine": 2000
+            },
+            "messages": 126.5,
+            "written": 38466
+          },
+          {
+            "card": 9,
+            "card_text": 600,
+            "reads": {
+              "file:internal/arbiterstop/doc.go": 276,
+              "file:internal/loomshed/doc.go": 1596,
+              "file:internal/sheddriver/doc.go": 1236,
+              "file:internal/shedrun/doc.go": 732,
+              "package:internal/arbiterstop": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/sheddriver": 2000,
+              "package:internal/shedrun": 2000,
+              "tests:internal/arbiterstop": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/sheddriver": 2000,
+              "tests:internal/shedrun": 2000
+            },
+            "messages": 221.5,
+            "written": 67050
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-beam-await-entry",
+        "11-finalize-beam-record"
+      ],
+      "profile": "wide",
+      "estimate": 264924,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82808,
+        "read_union": 36412,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 744,
+            "reads": {
+              "file:internal/pawlengine/doc.go": 336,
+              "file:internal/shedrecipe/doc.go": 1692,
+              "package:internal/loomcli": 2000,
+              "package:internal/pawlengine": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/pawlengine": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 210,
+            "written": 63744
+          },
+          {
+            "card": 11,
+            "card_text": 960,
+            "reads": {
+              "file:PATTERN.md": 1056,
+              "file:internal/landingshed/doc.go": 3624,
+              "package:.": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:.": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 270,
+            "written": 81960
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "12-beam-describe-verb",
+        "13-beam-pr-open-update"
+      ],
+      "profile": "wide",
+      "estimate": 298068,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89808,
+        "read_union": 64692,
+        "cards": [
+          {
+            "card": 12,
+            "card_text": 660,
+            "reads": {
+              "file:internal/beamcli/doc.go": 2040,
+              "file:internal/fabricengine/doc.go": 20388,
+              "file:internal/loomcli/beamwiring.go": 1344,
+              "file:internal/loomcli/beamwiring_integration_test.go": 708,
+              "file:internal/loomcli/doc.go": 4764,
+              "file:internal/loomcli/pawlwiring.go": 3900,
+              "package:internal/beamcli": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 311.5,
+            "written": 94110
+          },
+          {
+            "card": 13,
+            "card_text": 708,
+            "reads": {
+              "file:PATTERN.md": 1056,
+              "file:internal/beamcli/doc.go": 2040,
+              "file:internal/githubclient/doc.go": 1500,
+              "file:internal/landingshed/doc.go": 3624,
+              "package:.": 2000,
+              "package:internal/beamcli": 2000,
+              "package:internal/githubclient": 2000,
+              "package:internal/landingshed": 2000,
+              "tests:.": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/githubclient": 2000,
+              "tests:internal/landingshed": 2000
+            },
+            "messages": 162.5,
+            "written": 49458
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "14-beam-pr-status-close",
+        "15-beam-ready-refusals",
+        "16-member-landing-notice",
+        "17-beam-start-in-landing",
+        "18-orch-role-landing"
+      ],
+      "profile": "wide",
+      "estimate": 268720,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 96808,
+        "read_union": 47856,
+        "cards": [
+          {
+            "card": 14,
+            "card_text": 528,
+            "reads": {
+              "file:internal/beamcli/doc.go": 2040,
+              "package:internal/beamcli": 2000,
+              "tests:internal/beamcli": 2000
+            },
+            "messages": 96,
+            "written": 29328
+          },
+          {
+            "card": 15,
+            "card_text": 612,
+            "reads": {
+              "file:internal/beamcli/doc.go": 2040,
+              "package:internal/beamcli": 2000,
+              "tests:internal/beamcli": 2000
+            },
+            "messages": 94,
+            "written": 28812
+          },
+          {
+            "card": 16,
+            "card_text": 456,
+            "reads": {
+              "file:internal/beamcli/doc.go": 2040,
+              "file:internal/dobbyengine/doc.go": 2256,
+              "file:internal/hubgeom/doc.go": 636,
+              "package:internal/beamcli": 2000,
+              "package:internal/dobbyengine": 2000,
+              "package:internal/hubgeom": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/dobbyengine": 2000,
+              "tests:internal/hubgeom": 2000
+            },
+            "messages": 103.5,
+            "written": 31506
+          },
+          {
+            "card": 17,
+            "card_text": 480,
+            "reads": {
+              "file:internal/beamcli/doc.go": 2040,
+              "file:internal/orchcli/doc.go": 1884,
+              "package:internal/beamcli": 2000,
+              "package:internal/orchcli": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/orchcli": 2000
+            },
+            "messages": 100.5,
+            "written": 30630
+          },
+          {
+            "card": 18,
+            "card_text": 180,
+            "reads": {
+              "file:contracts/orchrole/orch-role.md": 3780,
+              "file:docs/overview.md": 11004,
+              "package:contracts/orchrole": 2000,
+              "package:docs": 2000,
+              "tests:contracts/orchrole": 2000,
+              "tests:docs": 2000
+            },
+            "messages": 12,
+            "written": 3780
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "2b7ad68dfc2bff4c8746024aef1dc184",
+  "masterSessionId": "14aaf21f-1ca1-409b-81b1-3c72c8062a73",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "shed-retired-rows",
+      "cards": [
+        "01-shed-retired-rows",
+        "02-landing-record",
+        "03-pr-merge-state",
+        "04-describe-function"
+      ],
+      "cardHashes": {
+        "01-shed-retired-rows": "307629e53510db3b8276171d4e833096a5403b438e592c25e98c878f8867a33d",
+        "02-landing-record": "b23dac7b898076c917869a1e439bf26b5b8b37fd3d2d7a399e392678ffb68fff",
+        "03-pr-merge-state": "be3311cac6b618682639d5f7c3ccc5cb155ea4d1fd86a3a8ee05418a148e37cb",
+        "04-describe-function": "22214bb2b71e6b6e88a83e02abac4da5c9714599478bc1dbad2ce1e524f558a3"
+      },
+      "startSha": "b261d82cc53793cdd1613b2d75e719eecaeadbdc",
+      "kind": "fork",
+      "spawnedAt": "2026-11-05T08:55:19Z",
+      "sessionId": "14aaf21f-1ca1-409b-81b1-3c72c8062a73",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
