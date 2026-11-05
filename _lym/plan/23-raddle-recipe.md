@@ -2,19 +2,19 @@
 
 **Create:**
 - `contracts/recipes/raddle-recipe.yaml`
-- `plan:contracts/recipes#RaddleRecipe` -> `var RaddleRecipe []byte`
-- `plan:internal/loomshed#NameRaddleWrite` -> `const NameRaddleWrite = "Raddle-Write"`
-- `plan:internal/loomshed#NameRaddleFile` -> `const NameRaddleFile = "Raddle-File"`
-- `plan:internal/shedrecipe#RaddleWriteEnv` -> `type RaddleWriteEnv struct`
-- `plan:internal/shedrecipe#raddleWriteEntry` -> `func raddleWriteEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/shedrecipe#raddleFileEntry` -> `func raddleFileEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/shedrecipe#TestRaddleEntries` -> `func TestRaddleEntries(t *testing.T)`
-- `plan:internal/loomrecipe#TestRaddleRecipe` -> `func TestRaddleRecipe(t *testing.T)`
-- `plan:internal/loomcli#raddleWriteEnv` -> `func raddleWriteEnv(location *lymcwd.Location, cfg loomengine.Config, stencilsDir, specsDir string, reg modelspec.Registry, slug string, setting func(module, key string) (any, error)) shedrecipe.RaddleWriteEnv`
-- `plan:internal/loomcli#raddleFileDeps` -> `func raddleFileDeps(location *lymcwd.Location, slug string) loomshed.RaddleFileDeps`
-- `plan:internal/loomcli#createBeamFromParent` -> `func createBeamFromParent(location *lymcwd.Location, project string, run func(dir string, args ...string) error) error`
-- `plan:internal/loomcli#TestCreateBeamFromParent` -> `func TestCreateBeamFromParent(t *testing.T)`
-- `plan:internal/battencli#TestChildRecipeSupported` -> `func TestChildRecipeSupported(t *testing.T)`
+- `contracts/recipes#RaddleRecipe`
+- `internal/loomshed#NameRaddleWrite`
+- `internal/loomshed#NameRaddleFile`
+- `internal/shedrecipe#RaddleWriteEnv`
+- `internal/shedrecipe#raddleWriteEntry`
+- `internal/shedrecipe#raddleFileEntry`
+- `internal/shedrecipe#TestRaddleEntries`
+- `internal/loomrecipe#TestRaddleRecipe`
+- `internal/loomcli#raddleWriteEnv`
+- `internal/loomcli#raddleFileDeps`
+- `internal/loomcli#createBeamFromParent`
+- `internal/loomcli#TestCreateBeamFromParent`
+- `internal/battencli#TestChildRecipeSupported`
 
 **Edit:**
 - `internal/shedrun#RecipeNames`
