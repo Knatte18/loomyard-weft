@@ -1,0 +1,1034 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 9b6be138..7f02492c 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -432,7 +432,7 @@ User-facing modules each get one `lym <module>` namespace:
+   defaults to `bug`.
+   Callable from any sandbox agent context with no config. ✅ Implemented.
+ - **reed** — **the window to the world**: tmux overlay + **strand** bookkeeping + render (`internal/reedcli` + `internal/reedengine` + `internal/reedengine/render`). Hosts every managed process as a strand in a window of its own or its group's, persists to `.lym/reed.json` (`lym reed up|add|remove|status|list|attach|switch|resume|watchdog|down`); `lym reed add` places a strand `--anchor own-window` by default. Every strand carries a hierarchical full name (see the `internal/agentname` package documentation), mirrored into its pane title and Claude session name and exported to its process as `LYM_STRAND_NAME` and `LYM_PARENT`, with the watchdog repairing drift; `list` is the hub-wide name directory. Built on what its proof-of-concept, `muxpoc`, proved first (env hygiene, native `--resume`); `muxpoc` has since been deleted, its job done. `reed attach` and `reed watchdog` are this module's two registered interactive-handoff exceptions ([PATTERN-cli-cobra](../pattern/PATTERN-cli-cobra.md)): `attach` hands the operator's stdio to a `tmux attach-session` child in place, pre-flighting through checking tmux's floor version, booting the session if cold and checking server/session liveness, and `watchdog` is the detached per-hub name-repair and reap daemon that blocks for its process lifetime — in both cases every fallible step runs pre-flight, on the envelope, and only the terminal-handover/daemon tail itself is exempt from emitting JSON. `add` and `attach` boot this worktree's session when none is up, with `up`'s own semantics — a bare substrate, with no persisted strand relaunched — instead of refusing; every other reed verb still refuses on a cold worktree. ✅ Implemented. See the `internal/reedengine` package documentation.
+-- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengine/codexengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await|await-forks`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits, and each repeatable `--skill` is loaded in its one first turn; in a hub an opened Claude session carries creel's hook delivery and the creel trust sentence as a run session does, so mail reaches it through its hooks, and an opened Codex session runs under the lym Codex home with no shell guard and no creel hooks; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository; its cap defaults to the caller role's keep-warm cap from `claude.yaml`. `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine: a reviewer, fixer or writer that waits inside it takes every fork's result in one turn instead of waking once per fork. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into the outcomes `done`/`died`/`timeout` and `api-error`. A spec with `APIErrorRetries` re-sends a turn the provider's API ended on an error that many times, then ends the run `api-error`; a turn end the engine reads as a model the provider does not know, Claude's `model_not_found`, ends the run `api-error` at once. Any other turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run holds at once with an output file missing, a gated run with every output file present counts done once they pass the shell wait bound after telling the agent to read them, and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane; the exception is a handle whose own `Stop` removed the strand, which ends `died` and is recorded as stopped unless the files show the run done. No guardrail denies the in-process `Agent` tool: a subagent or fork shows in the session's own pane and lym reads its transcript under the session's `subagents` directory. A `PreToolUse` guardrail denies `AskUserQuestion` when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode, a version check included (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and to a package-scoped compile check the hub's `refuse_raw` does not refuse, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write, and a fifth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a headless `claude` launch with `-p` or `--print`, whose work shows in no pane, steering the session to a subagent through the `Agent` tool; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one and follows `[creel]` mail from its hooks. Every settings document the Claude engine writes, a run's and an opened session's alike, sets Claude Code's `attribution` to empty commit and pull-request texts, so no session lym launches credits itself in a commit or pull request and a landing's credit block stays the one credit. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). `claude.yaml`'s `keep_warm_cap` (template 250s) and `keep_warm_cap_roles` set the per-role keep-warm cap beside them. While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Bash`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups (a Bash call with a read-only lookup command such as `grep`, `find` or a git read counting as one), a sliced read of a short or already-read file, or a chain of edit-only messages; a subagent's or fork's call is judged against that agent's own transcript, context and nudge count; it never denies a call, and the block's switches and thresholds are config. The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, or per run by a model-spec naming it. Two engines are registered: `claude`, and `codex`, which drives the Codex CLI's TUI under one shared lym Codex home (`codex.yaml`'s `home`, linked to the operator's own login and sessions, its folder trust rendered by lym), with `-a never -s workspace-write` and, as writable roots, the records checkout it is told through its config dirs (none outside a hub), the checkout's git dir and the common git dir it links to, so a session in a linked worktree can commit, and the folders of `codex.yaml`'s `writable_roots` that exist (template: the Go build cache); it loads skills as SKILL.md files the model reads by absolute path under `codex.yaml`'s `skill_roots`, and installs the shell guard rows of the `shellguard` table as `PreToolUse` hooks matching `Bash` with Codex's own steer and notice texts (`apply_patch` in place of Read, Edit and Write), the python and publish rows following their switches and the refuse-raw row a non-empty `refuse_raw` list; a Codex run in a hub carries creel's hook delivery, the mail handed over as a hook block after a tool call and at a turn end, an idle session woken by its async waiter hook through `codex queue`, and the creel trust sentence in its prompt file, while an opened Codex session stays a pane-mail strand; it has no fork audit, and the model registry's `sol`, `astra` and `luna` aliases name it. `lym shuttle run --model` takes the model spec `lym shuttle open` takes, so an alias picks its engine from the model registry and the bracket the effort; the model and effort are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). A prompt deferred behind the skill-load turn is typed again at a held turn end, or when `Attach` takes over the run, while no turn start carries it, so an agent that sat idle without its task gets it. Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
++- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengine/codexengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await|await-forks`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits, and each repeatable `--skill` is loaded in its one first turn; in a hub an opened Claude session carries creel's hook delivery and the creel trust sentence as a run session does, so mail reaches it through its hooks, and an opened Codex session runs under the lym Codex home with no shell guard and no creel hooks; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository; its cap defaults to the caller role's keep-warm cap from `claude.yaml`. `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine: a reviewer, fixer or writer that waits inside it takes every fork's result in one turn instead of waking once per fork. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into the outcomes `done`/`died`/`timeout` and `api-error`. A spec with `APIErrorRetries` re-sends a turn the provider's API ended on an error that many times, then ends the run `api-error`; a turn end the engine reads as a model the provider does not know, Claude's `model_not_found`, ends the run `api-error` at once. Any other turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run holds at once with an output file missing, a gated run with every output file present counts done once they pass the shell wait bound after telling the agent to read them, and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane; the exception is a handle whose own `Stop` removed the strand, which ends `died` and is recorded as stopped unless the files show the run done. No guardrail denies the in-process `Agent` tool: a subagent or fork shows in the session's own pane and lym reads its transcript under the session's `subagents` directory. A `PreToolUse` guardrail denies `AskUserQuestion` when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode, a version check included (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and to a package-scoped compile check the hub's `refuse_raw` does not refuse, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write, and a fifth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a headless `claude` launch with `-p` or `--print`, whose work shows in no pane, steering the session to a subagent through the `Agent` tool; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one and follows `[creel]` mail from its hooks. Every settings document the Claude engine writes, a run's and an opened session's alike, sets Claude Code's `attribution` to empty commit and pull-request texts, so no session lym launches credits itself in a commit or pull request and a landing's credit block stays the one credit. While `claude.yaml`'s `session_scope` block is on, the same documents scope what each session loads, over the user's and the repository's settings: an installed plugin is on only when the session preloads one of its skills, so the orch and the board session get the `ly` plugin in every hub and a writer does not, claude.ai connectors, Claude Code's bundled skills and the block's `skills_off` list are off, a plugin that is on keeps only its preloaded skills but for `ly`, which keeps all of them, and every session but the orch's gets no auto-memory and no `ListAgents` tool. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). `claude.yaml`'s `keep_warm_cap` (template 250s) and `keep_warm_cap_roles` set the per-role keep-warm cap beside them. While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Bash`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups (a Bash call with a read-only lookup command such as `grep`, `find` or a git read counting as one), a sliced read of a short or already-read file, or a chain of edit-only messages; a subagent's or fork's call is judged against that agent's own transcript, context and nudge count; it never denies a call, and the block's switches and thresholds are config. The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, or per run by a model-spec naming it. Two engines are registered: `claude`, and `codex`, which drives the Codex CLI's TUI under one shared lym Codex home (`codex.yaml`'s `home`, linked to the operator's own login and sessions, its folder trust rendered by lym), with `-a never -s workspace-write` and, as writable roots, the records checkout it is told through its config dirs (none outside a hub), the checkout's git dir and the common git dir it links to, so a session in a linked worktree can commit, and the folders of `codex.yaml`'s `writable_roots` that exist (template: the Go build cache); it loads skills as SKILL.md files the model reads by absolute path under `codex.yaml`'s `skill_roots`, and installs the shell guard rows of the `shellguard` table as `PreToolUse` hooks matching `Bash` with Codex's own steer and notice texts (`apply_patch` in place of Read, Edit and Write), the python and publish rows following their switches and the refuse-raw row a non-empty `refuse_raw` list; a Codex run in a hub carries creel's hook delivery, the mail handed over as a hook block after a tool call and at a turn end, an idle session woken by its async waiter hook through `codex queue`, and the creel trust sentence in its prompt file, while an opened Codex session stays a pane-mail strand; it has no fork audit, and the model registry's `sol`, `astra` and `luna` aliases name it. `lym shuttle run --model` takes the model spec `lym shuttle open` takes, so an alias picks its engine from the model registry and the bracket the effort; the model and effort are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). A prompt deferred behind the skill-load turn is typed again at a held turn end, or when `Attach` takes over the run, while no turn start carries it, so an agent that sat idle without its task gets it. Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
+ - **orch** — the hub orchestrator hosted as an interactive Claude session in a reed strand of the prime worktree or of a beam, cycled before its context fills (`internal/orchcli` + `internal/orchengine`; `lym orch stop|status|refresh|distill|withdraw|rules`, in the prime and in any beam). `lym beam start` first ensures the worktree's `runs` strand, which runs `lym batten overview` as the beam's window, named `beam: prime` or `beam: <slug>` opened with the beam's board handle as in `P1: beam: <slug>`, and `stop` leaves it; ensuring it adds the runs strand beside a `loom-status` strand a pawl run's `lym loom start` put in an overview window first, as the session's first overview window, and a failure to add, replace or record it is a warning on the bring-up report naming `lym beam start`, never a stop; the orchestrator has a window of its own, and the session's windows run the beam window, agents, shell. A detached watcher has the session write a note, then clears it and resumes it from that note (`refresh`) or compacts it in place (`distill`), never clearing or compacting without one. ✅ Implemented. See the `internal/orchengine` package documentation.- **webster** — the implementer module: one long-lived Master session that reads the plan and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool), each fork reading its cards' code itself, instead of spawning a fresh reed/tmux strand per batch;
+   bracket verbs (`begin-batch`/`record-batch`) drive each in-session fork (Master ends its turn while a backgrounded fork works and records the batch on the fork's completion notification, shuttle reading that turn end as waiting rather than done), and a genuine model escalation (recovery after a stuck/report-less fork) spawns a cold strand.
+   Consumes the flat card-list plan (pinned in the plan-format blocks `contracts/stencils/loom/loom-block-plan-*.md`, which `contracts/stencils/loom/loom-template-plan.md`, the Plan producer's own stencil, includes) via its own sole parser, `internal/planparser`, groups cards into execution batches via `internal/batcher`, a separate config-selected registry module webster consumes (profiles in `batcher.yaml`, the `wide` cost profile by default), then runs those batches in card order, refusing a backward dependency derived from the cards' own `Targets`/`Uses` refs, records the partition in `state.json` at first init, and carries the plan's `## verify:` command as a must-pass gate on Merriam's strand: a failure is rerun once (a pass on the rerun records the identities as flaky;
+diff --git a/internal/reedengine/config_test.go b/internal/reedengine/config_test.go
+index 2c053d77..779f2fe7 100644
+--- a/internal/reedengine/config_test.go
++++ b/internal/reedengine/config_test.go
+@@ -113,7 +113,7 @@ func TestLoadConfig_TemplateDefaultsResolve(t *testing.T) {
+ 		{Label: "code", Run: "lym ide spawn {slug}"},
+ 		{Label: "terminal", Run: "lym reed window {worktree} --title {slug}"},
+ 		{Label: "agent", Run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]'", Ask: "Agent name:", AskDefault: "agent"},
+-		{Label: "board", Run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]' --skill ly:board-policy --skill ly:board", Ask: "Board agent name:", AskDefault: "board"},
++		{Label: "board", Run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]' --skill scribe:prose --skill scribe:conversation --skill ly:board-policy --skill ly:board", Ask: "Board agent name:", AskDefault: "board"},
+ 		{Label: "distill", Run: "lym orch distill", Confirm: "Distill the orch?"},
+ 		{Label: "refresh", Run: "lym orch refresh", Confirm: "Refresh the orch?"},
+ 	}
+diff --git a/internal/reedengine/template_posix.yaml b/internal/reedengine/template_posix.yaml
+index 72b86542..183f256e 100644
+--- a/internal/reedengine/template_posix.yaml
++++ b/internal/reedengine/template_posix.yaml
+@@ -67,7 +67,7 @@ buttons:  # status-bar buttons in the groups task, beam and prime; an entry has
+     - label: board
+       ask: "Board agent name:"
+       ask_default: board
+-      run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]' --skill ly:board-policy --skill ly:board"
++      run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]' --skill scribe:prose --skill scribe:conversation --skill ly:board-policy --skill ly:board"
+     - label: distill
+       run: lym orch distill
+       confirm: Distill the orch?
+diff --git a/internal/reedengine/template_windows.yaml b/internal/reedengine/template_windows.yaml
+index f3e7b15e..79cc4c4e 100644
+--- a/internal/reedengine/template_windows.yaml
++++ b/internal/reedengine/template_windows.yaml
+@@ -67,7 +67,7 @@ buttons:  # status-bar buttons in the groups task, beam and prime; an entry has
+     - label: board
+       ask: "Board agent name:"
+       ask_default: board
+-      run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]' --skill ly:board-policy --skill ly:board"
++      run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]' --skill scribe:prose --skill scribe:conversation --skill ly:board-policy --skill ly:board"
+     - label: distill
+       run: lym orch distill
+       confirm: Distill the orch?
+diff --git a/internal/shuttleengine/claudeengine/claudeengine.go b/internal/shuttleengine/claudeengine/claudeengine.go
+index 6564a3f8..ed1e4d47 100644
+--- a/internal/shuttleengine/claudeengine/claudeengine.go
++++ b/internal/shuttleengine/claudeengine/claudeengine.go
+@@ -47,6 +47,8 @@ type Claude struct {
+ 	submitRedrawSettleMS int
+ 	// nameReads is a pointer so a copy of the struct shares one set; nil warns on every failure.
+ 	nameReads *nameReadWarnings
++	// claudeDir is Claude Code's config directory the installed plugins are read from; empty resolves it from the environment when a session starts.
++	claudeDir string
+ }
+ 
+ // New returns a Claude engine with the default submit settle.
+@@ -106,6 +108,7 @@ func validateSessionID(id string) error {
+ // A spec that names skills carries the skill-load message on the launch line instead and returns the pointer as Launch.PromptLine, for shuttle to send after the skills load.
+ // It loads claude.yaml and the hub's gate config, whose refuse_raw list the run's shell guard installs and whose failure to load refuses the spawn, then validates spec.Effort, spec.Model, spec.PermissionMode, spec.ResumeSessionID, the prompt-cache TTL config, the keep-warm caps and the batching nudge before writing any artifacts.
+ // With the batching nudge on it also seeds the nudge's state file beside the settings.
++// The settings carry the session's scope, resolved from claude.yaml's session_scope, spec.Skills and spec.Role.
+ func (c *Claude) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengine.Config) (shuttleengine.Launch, error) {
+ 	claude, err := loadConfigOrRefuse(c.dirs)
+ 	if err != nil {
+@@ -205,7 +208,8 @@ func (c *Claude) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengi
+ 		return shuttleengine.Launch{}, err
+ 	}
+ 
+-	settingsJSON, err := buildSettings(eventsPathForHook, spec.Interactive, cfg, claude, spec.ForkSubagents, spec.DenyPublish, spec.ContextAfterCompaction, creelFlagDirForHook)
++	scope := c.sessionScopeFor(claude.SessionScope, spec.Skills, spec.Role)
++	settingsJSON, err := buildSettings(eventsPathForHook, spec.Interactive, cfg, claude, spec.ForkSubagents, spec.DenyPublish, spec.ContextAfterCompaction, creelFlagDirForHook, scope)
+ 	if err != nil {
+ 		return shuttleengine.Launch{}, fmt.Errorf("build settings: %w", err)
+ 	}
+diff --git a/internal/shuttleengine/claudeengine/command.go b/internal/shuttleengine/claudeengine/command.go
+index 3ae4afbe..5e5edf4d 100644
+--- a/internal/shuttleengine/claudeengine/command.go
++++ b/internal/shuttleengine/claudeengine/command.go
+@@ -401,7 +401,7 @@ func buildOpenCmd(sh shell.Shell, bin, firstTurn, sessionID, model, effort, sett
+ 
+ // OpenLaunch returns the launch of a named interactive session with no prompt.
+ // It loads claude.yaml, validates the effort and the permission mode and resolves the model and version into a model id before anything else, mints a session id, and returns the fresh line as Cmd.
+-// An engine told a hub board directory then creates dir and writes into it settings.json, holding creel's hook delivery and the empty attribution and nothing else, and the append-system-prompt file, holding the creel trust sentence alone;
++// An engine told a hub board directory then creates dir and writes into it settings.json, holding creel's hook delivery, the empty attribution and the session's scope for spec.Skills and nothing else, and the append-system-prompt file, holding the creel trust sentence alone;
+ // both lines name the two files, and the launch is marked CreelHooks, so the session gets its mail through its hooks as a run session does.
+ // A failure after it creates dir removes dir.
+ // An engine told no board directory writes nothing, leaves dir uncreated and marks nothing.
+@@ -449,7 +449,8 @@ func (c *Claude) OpenLaunch(dir string, spec shuttleengine.OpenSpec, cfg shuttle
+ 	}
+ 	settingsPath, appendPromptPath := "", ""
+ 	if creelFlagDirForHook != "" {
+-		settingsPath, appendPromptPath, err = writeOpenFiles(dir, creelFlagDirForHook)
++		scope := c.sessionScopeFor(claude.SessionScope, spec.Skills, spec.Role)
++		settingsPath, appendPromptPath, err = writeOpenFiles(dir, creelFlagDirForHook, scope)
+ 		if err != nil {
+ 			return shuttleengine.Launch{}, err
+ 		}
+@@ -461,10 +462,10 @@ func (c *Claude) OpenLaunch(dir string, spec shuttleengine.OpenSpec, cfg shuttle
+ 	return shuttleengine.Launch{Cmd: fresh, ResumeCmd: sh.OrElse(resumeLine, fresh), SessionID: sessionID, CreelHooks: creelFlagDirForHook != ""}, nil
+ }
+ 
+-// writeOpenFiles creates dir and writes an opened session's settings.json, holding creel's hook delivery over the flag directory creelFlagDirPosix and the empty attribution, and its append-system-prompt file, holding the creel trust sentence.
++// writeOpenFiles creates dir and writes an opened session's settings.json, holding creel's hook delivery over the flag directory creelFlagDirPosix, the empty attribution and scope, and its append-system-prompt file, holding the creel trust sentence.
+ // It returns the two files' absolute paths.
+ // A failure after the directory is created removes it, so a failed launch leaves nothing behind.
+-func writeOpenFiles(dir, creelFlagDirPosix string) (settingsPath, appendPromptPath string, err error) {
++func writeOpenFiles(dir, creelFlagDirPosix string, scope sessionScope) (settingsPath, appendPromptPath string, err error) {
+ 	absDir, err := filepath.Abs(dir)
+ 	if err != nil {
+ 		return "", "", fmt.Errorf("resolve the open session directory: %w", err)
+@@ -477,7 +478,7 @@ func writeOpenFiles(dir, creelFlagDirPosix string) (settingsPath, appendPromptPa
+ 			_ = os.RemoveAll(absDir)
+ 		}
+ 	}()
+-	settingsJSON, err := buildOpenSettings(creelFlagDirPosix)
++	settingsJSON, err := buildOpenSettings(creelFlagDirPosix, scope)
+ 	if err != nil {
+ 		return "", "", fmt.Errorf("build open settings: %w", err)
+ 	}
+diff --git a/internal/shuttleengine/claudeengine/config.go b/internal/shuttleengine/claudeengine/config.go
+index e5a9bba1..aadee7c2 100644
+--- a/internal/shuttleengine/claudeengine/config.go
++++ b/internal/shuttleengine/claudeengine/config.go
+@@ -19,7 +19,7 @@ func ConfigTemplate() string {
+ 	return configTemplate
+ }
+ 
+-// Config is the resolved claude.yaml: the Claude binary, the tool denies, the prompt-cache lifetimes, the keep-warm caps and the batching nudge.
++// Config is the resolved claude.yaml: the Claude binary, the tool denies, the prompt-cache lifetimes, the keep-warm caps, the batching nudge and the session scope.
+ type Config struct {
+ 	// Binary is the path to the claude executable; empty falls back to "claude" on PATH.
+ 	Binary string `yaml:"binary"`
+@@ -35,6 +35,8 @@ type Config struct {
+ 	KeepWarmCapRoles map[string]string `yaml:"keep_warm_cap_roles"`
+ 	// BatchingNudge switches and tunes the after-tool-call hook that nudges a session back to batching its calls; ValidateBatchingNudge checks it, not LoadConfig.
+ 	BatchingNudge BatchingNudgeConfig `yaml:"batching_nudge"`
++	// SessionScope switches the scope lym writes into every session's settings and names the skills it turns off.
++	SessionScope ScopeConfig `yaml:"session_scope"`
+ }
+ 
+ // ConfigOpenMaps returns the claude.yaml keys whose entries are the operator's own, which configengine carries whole through reconcile and --set.
+@@ -62,6 +64,7 @@ func ConfigSpec() configengine.Spec {
+ 			"keep_warm_cap":          configengine.CategoryNone,
+ 			"keep_warm_cap_roles":    configengine.CategoryNone,
+ 			batchingNudgeKey:         configengine.CategoryNone,
++			sessionScopeKey:          configengine.CategoryNone,
+ 		},
+ 		RetiredKeys:       map[string]configengine.Category{retiredAgentDenyKey: configengine.CategoryGuard},
+ 		RetiredWayForward: map[string]string{retiredAgentDenyKey: retiredAgentDenyWayForward},
+diff --git a/internal/shuttleengine/claudeengine/config_test.go b/internal/shuttleengine/claudeengine/config_test.go
+index 5792a5bb..80a0caa5 100644
+--- a/internal/shuttleengine/claudeengine/config_test.go
++++ b/internal/shuttleengine/claudeengine/config_test.go
+@@ -58,6 +58,24 @@ func TestLoadConfig(t *testing.T) {
+ 				SliceLines:    2000,
+ 				MaxNudges:     5,
+ 			},
++			SessionScope: ScopeConfig{
++				Enabled: true,
++				SkillsOff: []string{
++					"anthropic-skills:built-in-browser",
++					"anthropic-skills:chrome-browser",
++					"anthropic-skills:computer-use",
++					"anthropic-skills:deep-research",
++					"anthropic-skills:docs",
++					"anthropic-skills:docx",
++					"anthropic-skills:google-workspace",
++					"anthropic-skills:import-memory",
++					"anthropic-skills:morning",
++					"anthropic-skills:pdf",
++					"anthropic-skills:pptx",
++					"anthropic-skills:skill-creator",
++					"anthropic-skills:xlsx",
++				},
++			},
+ 		}
+ 		if !reflect.DeepEqual(cfg, want) {
+ 			t.Errorf("LoadConfig() = %+v; want %+v", cfg, want)
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index ab0e758c..d5159b47 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -62,7 +62,7 @@
+ // A color outside the palette answers no inputs.
+ //
+ // The engine owns a layered config module, `claude.yaml`, declared in config.go:
+-// `binary`, `deny_ask_user_question`, `prompt_cache_ttl`, `prompt_cache_ttl_roles`, `keep_warm_cap`, `keep_warm_cap_roles` and the `batching_nudge` block.
++// `binary`, `deny_ask_user_question`, `prompt_cache_ttl`, `prompt_cache_ttl_roles`, `keep_warm_cap`, `keep_warm_cap_roles` and the `batching_nudge` and `session_scope` blocks.
+ // The retired `deny_agent_tool` key is read out of every layer, and a local override setting it is refused with the way forward of deleting it.
+ // LoadConfig resolves it through the degrading loader, stacking the template, the repo default, the worktree file and the local override,
+ // and a local override may set every key but the binary and the tool denies.
+@@ -310,12 +310,23 @@
+ // Its line carries the session id and the strand-name reference, and adds `--model` and `--effort` only when set.
+ // An open naming skills puts their load message after the binary on the fresh line as the session's first turn; the resume line carries none.
+ // An engine told no board directory passes no `--settings`, so the session takes the worktree's own settings.
+-// An engine told one writes, into the directory Runner.Open names for the session, a settings.json holding creel's hook delivery and the run document's empty `attribution` and nothing else, and the append-system-prompt file holding the creel trust sentence; both lines name the two files, and the launch is marked CreelHooks.
++// An engine told one writes, into the directory Runner.Open names for the session, a settings.json holding creel's hook delivery, the run document's empty `attribution` and the session scope below and nothing else, and the append-system-prompt file holding the creel trust sentence; both lines name the two files, and the launch is marked CreelHooks.
+ // The settings' PostToolUse mail hook and idle waiter are a run's; its Stop delivery is the merged command without the recording, since an opened session has no events file: it exits 0 whatever the delivery printed, so an echo reaches the operator.
+ // Claude Code stacks `--settings` over the worktree's own settings, so every other setting stays the worktree's.
+ // It carries `--dangerously-skip-permissions` unless the open's permission mode is `prompt`, on the fresh and the resume line alike, and an unknown mode refuses the open.
+ // Its resume line falls back to a fresh start under the same id, because Claude Code keeps no transcript for a session that never took a turn and `--resume` then fails.
+ //
++// The session scope (scope.go) decides what a session loads besides lym's own text, from `claude.yaml`'s `session_scope` block.
++// With `enabled` on, Prepare writes it into every run's settings, and OpenLaunch into an opened session's settings in a hub, as the documents' last keys;
++// Claude Code's `--settings` layer outranks the user's and the repository's settings, so the scope holds whatever those say.
++// Each plugin Claude Code's `plugins/installed_plugins.json` names, under `CLAUDE_CONFIG_DIR` or else `~/.claude`, is on in `enabledPlugins` exactly when the session preloads a skill listed under the plugin's name, and off otherwise.
++// `disableClaudeAiConnectors` and `disableBundledSkills` are true, and `skillOverrides` turns off each skill of `skills_off` the session does not preload.
++// Each plugin that is on also has every skill but the preloaded ones turned off, read from the `skills` directory of each install path, except the `ly` plugin, whose skills the operator types as slash commands and which keeps all of them.
++// A session whose strand role is the orch's alone keeps its auto-memory and the `ListAgents` tool; every other session, run or opened, has `autoMemoryEnabled` false and `ListAgents` in its `permissions.deny`.
++// A config directory or plugins file the engine cannot read is logged and names no plugin, so the session's other settings decide its plugins.
++// An opened session outside a hub writes no settings and gets no scope.
++// Bound: the setting names are Claude Code 2.1.318's, and no launch has yet shown that `skillOverrides` turns off a plugin's skill or a claude.ai skill.
++//
+ // A replay corpus of real turn ends lives under testdata/corpus, one directory per case:
+ // transcript.jsonl holds the source transcript's lines the parsers read, trimmed to the fields they read;
+ // events.jsonl is the run's events file, or one rebuilt from the transcript's turn ends when the run directory is gone;
+diff --git a/internal/shuttleengine/claudeengine/hookcmd_integration_test.go b/internal/shuttleengine/claudeengine/hookcmd_integration_test.go
+index cfd6ca45..903edad4 100644
+--- a/internal/shuttleengine/claudeengine/hookcmd_integration_test.go
++++ b/internal/shuttleengine/claudeengine/hookcmd_integration_test.go
+@@ -29,7 +29,7 @@ func recordingHookCommands(t *testing.T, eventsPath string) map[string]string {
+ 	t.Helper()
+ 	commands := map[string]string{}
+ 	for _, interactive := range []bool{false, true} {
+-		data, err := buildSettings(eventsPath, interactive, shuttleengine.Config{}, Config{}, false, false, "", "")
++		data, err := buildSettings(eventsPath, interactive, shuttleengine.Config{}, Config{}, false, false, "", "", sessionScope{})
+ 		if err != nil {
+ 			t.Fatalf("buildSettings() error: %v", err)
+ 		}
+diff --git a/internal/shuttleengine/claudeengine/prepare_test.go b/internal/shuttleengine/claudeengine/prepare_test.go
+index 13cec8c1..ffe37b60 100644
+--- a/internal/shuttleengine/claudeengine/prepare_test.go
++++ b/internal/shuttleengine/claudeengine/prepare_test.go
+@@ -60,6 +60,7 @@ func templateConfig(t testing.TB) Config {
+ }
+ 
+ // engineWithAnchor returns an engine that loads its claude.yaml from the temp anchor it returns alongside.
++// Its Claude Code config directory is an empty temp directory, so the scope it writes names no plugin of the machine running the test.
+ func engineWithAnchor(t testing.TB) (*Claude, string) {
+ 	t.Helper()
+ 	shuttleCfg, err := shuttleengine.LoadConfig(configengine.Dirs{Anchor: t.TempDir()}, "shuttle")
+@@ -67,7 +68,9 @@ func engineWithAnchor(t testing.TB) (*Claude, string) {
+ 		t.Fatalf("load the shipped shuttle template: %v", err)
+ 	}
+ 	anchor := t.TempDir()
+-	return NewFromConfig(shuttleCfg, configengine.Dirs{Anchor: anchor}), anchor
++	engine := NewFromConfig(shuttleCfg, configengine.Dirs{Anchor: anchor})
++	engine.claudeDir = t.TempDir()
++	return engine, anchor
+ }
+ 
+ // engineWith returns an engine whose claude.yaml is claude, written as the worktree layer of a temp anchor.
+diff --git a/internal/shuttleengine/claudeengine/scope.go b/internal/shuttleengine/claudeengine/scope.go
+new file mode 100644
+index 00000000..1473d86b
+--- /dev/null
++++ b/internal/shuttleengine/claudeengine/scope.go
+@@ -0,0 +1,228 @@
++// scope.go decides a Claude session's scope: the plugins, skills, connectors, memory and tools the session gets.
++// It reads claude.yaml's session_scope block, the skills the session preloads and the plugins Claude Code has installed.
++// It also declares the settings fields that carry the scope.
++
++package claudeengine
++
++import (
++	"encoding/json"
++	"errors"
++	"fmt"
++	"io/fs"
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// lyPluginName is the name of the ly plugin, whose skills are the slash commands the operator types by hand.
++const lyPluginName = "ly"
++
++// sessionScopeKey is claude.yaml's key of the session_scope block.
++const sessionScopeKey = "session_scope"
++
++// ScopeConfig is claude.yaml's session_scope block: whether lym scopes what each session loads, and the skills it turns off in every session.
++type ScopeConfig struct {
++	// Enabled writes the scope into every session's settings; off, a session's plugins, skills, connectors and memory follow its other settings layers.
++	Enabled bool `yaml:"enabled"`
++	// SkillsOff names the skills turned off in every session that does not preload them, as Claude Code lists them.
++	SkillsOff []string `yaml:"skills_off"`
++}
++
++// skillOff is the skillOverrides value that turns a skill off.
++const skillOff = "off"
++
++// listAgentsTool is the Claude Code tool every session but the orch is denied: it lists the sessions a session can message, and their messages go through creel.
++const listAgentsTool = "ListAgents"
++
++// claudeConfigDirEnv names the variable that moves Claude Code's config directory away from claudeConfigDirName under the home directory.
++const claudeConfigDirEnv = "CLAUDE_CONFIG_DIR"
++
++// claudeConfigDirName is Claude Code's config directory under the home directory.
++const claudeConfigDirName = ".claude"
++
++// installedPluginsPath is the file, relative to Claude Code's config directory, that names each installed plugin and its install paths.
++var installedPluginsPath = filepath.Join("plugins", "installed_plugins.json")
++
++// pluginSkillsDirName is the directory of a plugin's install path that holds one directory per skill, named as the skill.
++const pluginSkillsDirName = "skills"
++
++// installedPlugin is one plugin Claude Code has installed.
++type installedPlugin struct {
++	// id is the plugin's `<name>@<marketplace>` key, the key Claude Code's enabledPlugins setting takes.
++	id string
++	// skills are the plugin's skills as Claude Code lists them, `<name>:<skill>`, sorted.
++	skills []string
++}
++
++// sessionScope is the part of a settings document that scopes what a session loads.
++// Every field is omitted when zero, so a document built without a scope carries none of it and leaves each to the session's other settings layers.
++type sessionScope struct {
++	// EnabledPlugins switches each installed plugin on or off by its id.
++	EnabledPlugins map[string]bool `json:"enabledPlugins,omitempty"`
++	// SkillOverrides maps a skill's listed name to skillOff.
++	SkillOverrides map[string]string `json:"skillOverrides,omitempty"`
++	// DisableClaudeAiConnectors keeps the account's claude.ai connectors out of the session.
++	DisableClaudeAiConnectors bool `json:"disableClaudeAiConnectors,omitempty"`
++	// DisableBundledSkills keeps the skills shipped inside Claude Code out of the session.
++	DisableBundledSkills bool `json:"disableBundledSkills,omitempty"`
++	// AutoMemoryEnabled, when set, switches the session's auto-memory; nil leaves it to the other layers.
++	AutoMemoryEnabled *bool `json:"autoMemoryEnabled,omitempty"`
++	// Permissions, when set, carries the tools the session is denied.
++	Permissions *scopePermissions `json:"permissions,omitempty"`
++}
++
++// scopePermissions is the permissions object of a scoped settings document: the tools it denies, which Claude Code adds to the deny rules of the other layers.
++type scopePermissions struct {
++	Deny []string `json:"deny"`
++}
++
++// resolveSessionScope returns the scope of a session that preloads the skills preloaded, given the plugins Claude Code has installed.
++// A disabled cfg returns the zero scope.
++// Otherwise an installed plugin is on exactly when the session preloads a skill listed under the plugin's name, and off otherwise;
++// claude.ai connectors and bundled skills are off, and every skill of cfg.SkillsOff the session does not preload is off.
++// A plugin that is on has every skill but the preloaded ones off, except the ly plugin, whose skills the operator types as slash commands and which keeps all of them.
++// The orch session alone keeps its auto-memory and the ListAgents tool; every other session has auto-memory off and the tool denied.
++func resolveSessionScope(cfg ScopeConfig, installed []installedPlugin, preloaded []string, orch bool) sessionScope {
++	if !cfg.Enabled {
++		return sessionScope{}
++	}
++	loaded := map[string]bool{}
++	namespaces := map[string]bool{}
++	for _, skill := range preloaded {
++		loaded[skill] = true
++		if namespace, _, qualified := strings.Cut(skill, ":"); qualified {
++			namespaces[namespace] = true
++		}
++	}
++
++	plugins := map[string]bool{}
++	overrides := map[string]string{}
++	for _, plugin := range installed {
++		name, _, _ := strings.Cut(plugin.id, "@")
++		on := namespaces[name]
++		plugins[plugin.id] = on
++		if !on || name == lyPluginName {
++			continue
++		}
++		for _, skill := range plugin.skills {
++			if !loaded[skill] {
++				overrides[skill] = skillOff
++			}
++		}
++	}
++	for _, skill := range cfg.SkillsOff {
++		if !loaded[skill] {
++			overrides[skill] = skillOff
++		}
++	}
++
++	scope := sessionScope{DisableClaudeAiConnectors: true, DisableBundledSkills: true}
++	if len(plugins) > 0 {
++		scope.EnabledPlugins = plugins
++	}
++	if len(overrides) > 0 {
++		scope.SkillOverrides = overrides
++	}
++	if !orch {
++		memory := false
++		scope.AutoMemoryEnabled = &memory
++		scope.Permissions = &scopePermissions{Deny: []string{listAgentsTool}}
++	}
++	return scope
++}
++
++// sessionScopeFor returns the scope of a session of strand role role that preloads skills, reading the installed plugins from the engine's Claude Code config directory.
++// A directory or plugins file it cannot read is logged and names no plugin, so the scope still turns off the connectors, the bundled skills and cfg's skills.
++func (c *Claude) sessionScopeFor(cfg ScopeConfig, skills []string, role string) sessionScope {
++	if !cfg.Enabled {
++		return sessionScope{}
++	}
++	installed, err := c.installedPlugins()
++	if err != nil {
++		logger.Warn("claudeengine: the session's scope names no installed plugin", "err", err)
++	}
++	return resolveSessionScope(cfg, installed, skills, agentname.MatchesRole(role, agentname.RoleOrch))
++}
++
++// installedPlugins reads the plugins installed under the engine's Claude Code config directory, resolved from the environment when the engine holds none.
++func (c *Claude) installedPlugins() ([]installedPlugin, error) {
++	dir := c.claudeDir
++	if dir == "" {
++		resolved, err := claudeConfigDir()
++		if err != nil {
++			return nil, err
++		}
++		dir = resolved
++	}
++	return readInstalledPlugins(dir)
++}
++
++// claudeConfigDir returns Claude Code's config directory: the directory claudeConfigDirEnv names, else claudeConfigDirName under the home directory.
++func claudeConfigDir() (string, error) {
++	if dir := os.Getenv(claudeConfigDirEnv); dir != "" {
++		return dir, nil
++	}
++	home, err := claudeHomeDir()
++	if err != nil {
++		return "", fmt.Errorf("resolve the home directory: %w", err)
++	}
++	return filepath.Join(home, claudeConfigDirName), nil
++}
++
++// readInstalledPlugins returns the plugins Claude Code's config directory configDir names as installed, sorted by id.
++// Each plugin carries the skills found under the skills directories of its install paths.
++// An absent plugins file names none, and a plugin whose install paths hold no readable skills directory has no skills.
++func readInstalledPlugins(configDir string) ([]installedPlugin, error) {
++	path := filepath.Join(configDir, installedPluginsPath)
++	data, err := os.ReadFile(path)
++	if errors.Is(err, fs.ErrNotExist) {
++		return nil, nil
++	}
++	if err != nil {
++		return nil, fmt.Errorf("read installed plugins: %w", err)
++	}
++	var file struct {
++		Plugins map[string][]struct {
++			InstallPath string `json:"installPath"`
++		} `json:"plugins"`
++	}
++	if err := json.Unmarshal(data, &file); err != nil {
++		return nil, fmt.Errorf("parse installed plugins %s: %w", path, err)
++	}
++
++	ids := make([]string, 0, len(file.Plugins))
++	for id := range file.Plugins {
++		ids = append(ids, id)
++	}
++	slices.Sort(ids)
++	plugins := make([]installedPlugin, 0, len(ids))
++	for _, id := range ids {
++		name, _, _ := strings.Cut(id, "@")
++		skills := map[string]bool{}
++		for _, install := range file.Plugins[id] {
++			if install.InstallPath == "" {
++				continue
++			}
++			entries, err := os.ReadDir(filepath.Join(install.InstallPath, pluginSkillsDirName))
++			if err != nil {
++				continue
++			}
++			for _, entry := range entries {
++				if entry.IsDir() {
++					skills[name+":"+entry.Name()] = true
++				}
++			}
++		}
++		plugin := installedPlugin{id: id}
++		for skill := range skills {
++			plugin.skills = append(plugin.skills, skill)
++		}
++		slices.Sort(plugin.skills)
++		plugins = append(plugins, plugin)
++	}
++	return plugins, nil
++}
+diff --git a/internal/shuttleengine/claudeengine/scope_test.go b/internal/shuttleengine/claudeengine/scope_test.go
+new file mode 100644
+index 00000000..c66e484c
+--- /dev/null
++++ b/internal/shuttleengine/claudeengine/scope_test.go
+@@ -0,0 +1,350 @@
++// scope_test.go covers the session scope: the scope keys each kind of session gets in its settings document, the reading of Claude Code's installed plugins, and the scope reaching the settings Prepare and OpenLaunch write.
++
++package claudeengine
++
++import (
++	"encoding/json"
++	"os"
++	"path/filepath"
++	"reflect"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// scopeSettingsKeys are the settings keys a session scope writes.
++var scopeSettingsKeys = []string{"enabledPlugins", "skillOverrides", "disableClaudeAiConnectors", "disableBundledSkills", "autoMemoryEnabled", "permissions"}
++
++// scopeKeysOf returns the scope keys a settings document holds, with their values.
++func scopeKeysOf(t *testing.T, data []byte) map[string]any {
++	t.Helper()
++	doc := parseSettings(t, data)
++	got := map[string]any{}
++	for _, key := range scopeSettingsKeys {
++		if value, ok := doc[key]; ok {
++			got[key] = value
++		}
++	}
++	return got
++}
++
++// writeInstalledPlugins writes a Claude Code config directory whose plugins file names each plugin of skills, with an install path holding one directory per listed skill, and returns the directory.
++func writeInstalledPlugins(t *testing.T, skills map[string][]string) string {
++	t.Helper()
++	installPaths := map[string][]string{}
++	for id, names := range skills {
++		installPaths[id] = []string{makeSkillsDir(t, names, nil)}
++	}
++	return writePluginsFile(t, installPaths)
++}
++
++// writePluginsFile writes a Claude Code config directory whose plugins file names each plugin of installPaths with one install per listed path, and returns the directory.
++func writePluginsFile(t *testing.T, installPaths map[string][]string) string {
++	t.Helper()
++	configDir := t.TempDir()
++	plugins := map[string][]map[string]string{}
++	for id, paths := range installPaths {
++		for _, path := range paths {
++			plugins[id] = append(plugins[id], map[string]string{"scope": "user", "installPath": path})
++		}
++	}
++	data, err := json.Marshal(map[string]any{"version": 2, "plugins": plugins})
++	if err != nil {
++		t.Fatalf("marshal installed plugins: %v", err)
++	}
++	path := filepath.Join(configDir, installedPluginsPath)
++	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++		t.Fatalf("MkdirAll: %v", err)
++	}
++	if err := os.WriteFile(path, data, 0o644); err != nil {
++		t.Fatalf("write installed plugins: %v", err)
++	}
++	return configDir
++}
++
++// writeMalformedPlugins writes a Claude Code config directory whose plugins file is not valid JSON, and returns the directory.
++func writeMalformedPlugins(t *testing.T) string {
++	t.Helper()
++	configDir := t.TempDir()
++	if err := os.MkdirAll(filepath.Join(configDir, filepath.Dir(installedPluginsPath)), 0o755); err != nil {
++		t.Fatalf("MkdirAll: %v", err)
++	}
++	if err := os.WriteFile(filepath.Join(configDir, installedPluginsPath), []byte("{"), 0o644); err != nil {
++		t.Fatalf("write: %v", err)
++	}
++	return configDir
++}
++
++// makeSkillsDir creates an install path holding a skills directory with one directory per name and one plain file per fileName, and returns the install path.
++func makeSkillsDir(t *testing.T, names, fileNames []string) string {
++	t.Helper()
++	installPath := t.TempDir()
++	skillsDir := filepath.Join(installPath, pluginSkillsDirName)
++	for _, name := range names {
++		if err := os.MkdirAll(filepath.Join(skillsDir, name), 0o755); err != nil {
++			t.Fatalf("MkdirAll: %v", err)
++		}
++	}
++	for _, name := range fileNames {
++		if err := os.MkdirAll(skillsDir, 0o755); err != nil {
++			t.Fatalf("MkdirAll: %v", err)
++		}
++		if err := os.WriteFile(filepath.Join(skillsDir, name), []byte("x"), 0o644); err != nil {
++			t.Fatalf("write: %v", err)
++		}
++	}
++	return installPath
++}
++
++// TestSessionScope_WrittenSettingsPerRole pins the scope keys of the settings document each kind of session gets:
++// the orch, which keeps its memory and the ListAgents tool, an opened session with no skills, the board session with the ly plugin and scribe skills, a darn writer with its language's skills, and a scope switched off.
++func TestSessionScope_WrittenSettingsPerRole(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	installed := []installedPlugin{
++		{id: "ly@loomyard", skills: []string{"ly:board", "ly:board-policy", "ly:distill"}},
++		{id: "mill@millhouse", skills: []string{"mill:mill-go"}},
++		{id: "prowler@scribe", skills: []string{"prowler:prowler"}},
++		{id: "scribe@scribe", skills: []string{"scribe:conversation", "scribe:golang-testing", "scribe:prose", "scribe:python-testing"}},
++	}
++	enabled := ScopeConfig{Enabled: true, SkillsOff: []string{"anthropic-skills:docx", "scribe:prose"}}
++	tests := []struct {
++		name      string
++		cfg       ScopeConfig
++		preloaded []string
++		orch      bool
++		want      string
++	}{
++		{
++			name:      "Orch",
++			cfg:       enabled,
++			preloaded: []string{"scribe:prose", "scribe:conversation", "ly:board", "ly:board-policy"},
++			orch:      true,
++			want:      `{"enabledPlugins":{"ly@loomyard":true,"mill@millhouse":false,"prowler@scribe":false,"scribe@scribe":true},"skillOverrides":{"anthropic-skills:docx":"off","scribe:golang-testing":"off","scribe:python-testing":"off"},"disableClaudeAiConnectors":true,"disableBundledSkills":true}`,
++		},
++		{
++			name: "OpenedSessionWithoutSkills",
++			cfg:  enabled,
++			want: `{"enabledPlugins":{"ly@loomyard":false,"mill@millhouse":false,"prowler@scribe":false,"scribe@scribe":false},"skillOverrides":{"anthropic-skills:docx":"off","scribe:prose":"off"},"disableClaudeAiConnectors":true,"disableBundledSkills":true,"autoMemoryEnabled":false,"permissions":{"deny":["ListAgents"]}}`,
++		},
++		{
++			name:      "BoardSession",
++			cfg:       enabled,
++			preloaded: []string{"scribe:prose", "scribe:conversation", "ly:board-policy", "ly:board"},
++			want:      `{"enabledPlugins":{"ly@loomyard":true,"mill@millhouse":false,"prowler@scribe":false,"scribe@scribe":true},"skillOverrides":{"anthropic-skills:docx":"off","scribe:golang-testing":"off","scribe:python-testing":"off"},"disableClaudeAiConnectors":true,"disableBundledSkills":true,"autoMemoryEnabled":false,"permissions":{"deny":["ListAgents"]}}`,
++		},
++		{
++			name:      "DarnWriter",
++			cfg:       enabled,
++			preloaded: []string{"scribe:prose", "scribe:golang-testing"},
++			want:      `{"enabledPlugins":{"ly@loomyard":false,"mill@millhouse":false,"prowler@scribe":false,"scribe@scribe":true},"skillOverrides":{"anthropic-skills:docx":"off","scribe:conversation":"off","scribe:python-testing":"off"},"disableClaudeAiConnectors":true,"disableBundledSkills":true,"autoMemoryEnabled":false,"permissions":{"deny":["ListAgents"]}}`,
++		},
++		{
++			name:      "ScopeOff",
++			preloaded: []string{"scribe:prose"},
++			want:      `{}`,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			scope := resolveSessionScope(tt.cfg, installed, tt.preloaded, tt.orch)
++			data, err := buildSettings("/c/run/events.jsonl", tt.orch, shuttleengine.Config{}, Config{}, false, false, "", "", scope)
++			if err != nil {
++				t.Fatalf("buildSettings() error: %v", err)
++			}
++			var want map[string]any
++			if err := json.Unmarshal([]byte(tt.want), &want); err != nil {
++				t.Fatalf("unmarshal want: %v", err)
++			}
++			if got := scopeKeysOf(t, data); !reflect.DeepEqual(got, want) {
++				t.Errorf("scope keys = %v; want %v", got, want)
++			}
++		})
++	}
++}
++
++// TestReadInstalledPlugins pins the reading of Claude Code's plugins file:
++// each plugin with the skill directories of its installs merged, no skill for an empty install path or a plain file under skills, none for an absent file, and an error for a malformed one.
++func TestReadInstalledPlugins(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	malformed := writeMalformedPlugins(t)
++	tests := []struct {
++		name      string
++		configDir string
++		want      []installedPlugin
++		wantErr   bool
++	}{
++		{
++			name:      "NamesEachPluginWithItsSkills",
++			configDir: writeInstalledPlugins(t, map[string][]string{"scribe@scribe": {"testing", "prose"}, "bare@market": nil}),
++			want:      []installedPlugin{{id: "bare@market"}, {id: "scribe@scribe", skills: []string{"scribe:prose", "scribe:testing"}}},
++		},
++		{
++			name:      "FileUnderSkillsIsNotASkill",
++			configDir: writePluginsFile(t, map[string][]string{"p@m": {makeSkillsDir(t, []string{"real"}, []string{"notes.md"})}}),
++			want:      []installedPlugin{{id: "p@m", skills: []string{"p:real"}}},
++		},
++		{
++			name: "SeveralInstallsMergeTheirSkills",
++			configDir: writePluginsFile(t, map[string][]string{"p@m": {
++				makeSkillsDir(t, []string{"shared", "first"}, nil),
++				makeSkillsDir(t, []string{"shared", "second"}, nil),
++			}}),
++			want: []installedPlugin{{id: "p@m", skills: []string{"p:first", "p:second", "p:shared"}}},
++		},
++		{name: "AbsentFileNamesNone", configDir: t.TempDir()},
++		{name: "MalformedFileIsAnError", configDir: malformed, wantErr: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, err := readInstalledPlugins(tt.configDir)
++			if (err != nil) != tt.wantErr {
++				t.Fatalf("readInstalledPlugins() error = %v; want error %v", err, tt.wantErr)
++			}
++			if !reflect.DeepEqual(got, tt.want) && !(len(got) == 0 && len(tt.want) == 0) {
++				t.Errorf("readInstalledPlugins() = %+v; want %+v", got, tt.want)
++			}
++		})
++	}
++}
++
++// TestReadInstalledPlugins_EmptyInstallPathIgnoresWorkingDirectory pins that an empty install path names no skills, even when a skills directory sits in the working directory the empty path would resolve against.
++func TestReadInstalledPlugins_EmptyInstallPathIgnoresWorkingDirectory(t *testing.T) {
++	tiergate.Require(t, 0)
++	workdir := t.TempDir()
++	if err := os.MkdirAll(filepath.Join(workdir, pluginSkillsDirName, "stray"), 0o755); err != nil {
++		t.Fatalf("MkdirAll: %v", err)
++	}
++	configDir := writePluginsFile(t, map[string][]string{"p@m": {""}})
++	// t.Chdir changes process-global state, so this test is not parallel.
++	t.Chdir(workdir)
++	got, err := readInstalledPlugins(configDir)
++	if err != nil {
++		t.Fatalf("readInstalledPlugins() error: %v", err)
++	}
++	if want := []installedPlugin{{id: "p@m"}}; !reflect.DeepEqual(got, want) {
++		t.Errorf("readInstalledPlugins() = %+v; want %+v", got, want)
++	}
++}
++
++// TestClaudeConfigDir pins the config directory's resolution: the directory CLAUDE_CONFIG_DIR names, else .claude under the home directory.
++func TestClaudeConfigDir(t *testing.T) {
++	tiergate.Require(t, 0)
++	home := t.TempDir()
++	override := t.TempDir()
++	tests := []struct {
++		name     string
++		override string
++		want     string
++	}{
++		{"EnvironmentOverride", override, override},
++		{"HomeDefault", "", filepath.Join(home, claudeConfigDirName)},
++	}
++	for _, tt := range tests {
++		// t.Setenv changes process-global state, so these subtests are not parallel.
++		t.Run(tt.name, func(t *testing.T) {
++			t.Setenv("HOME", home)
++			t.Setenv(claudeConfigDirEnv, tt.override)
++			got, err := claudeConfigDir()
++			if err != nil {
++				t.Fatalf("claudeConfigDir() error: %v", err)
++			}
++			if got != tt.want {
++				t.Errorf("claudeConfigDir() = %q; want %q", got, tt.want)
++			}
++		})
++	}
++}
++
++// TestSessionScope_ReachesWrittenSettings pins that Prepare and OpenLaunch write the scope the shipped claude.yaml turns on:
++// a run's and an opened session's plugins follow their preloaded skills and their auto-memory is off, an opened orch session's auto-memory is left alone,
++// and a plugins file Prepare cannot read leaves connectors and bundled skills off with no plugin named.
++func TestSessionScope_ReachesWrittenSettings(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	installed := map[string][]string{"ly@loomyard": {"board"}, "scribe@scribe": {"prose"}}
++
++	t.Run("Prepare", func(t *testing.T) {
++		t.Parallel()
++		engine, _ := engineWithAnchor(t)
++		engine.claudeDir = writeInstalledPlugins(t, installed)
++		runDir := t.TempDir()
++		if _, err := engine.Prepare(runDir, shuttleengine.Spec{Prompt: "do the thing", Skills: []string{"scribe:prose"}}, shuttleengine.Config{}); err != nil {
++			t.Fatalf("Prepare() error: %v", err)
++		}
++		data, err := os.ReadFile(filepath.Join(runDir, settingsFileName))
++		if err != nil {
++			t.Fatalf("read settings.json: %v", err)
++		}
++		got := scopeKeysOf(t, data)
++		if want := map[string]any{"ly@loomyard": false, "scribe@scribe": true}; !reflect.DeepEqual(got["enabledPlugins"], want) {
++			t.Errorf("enabledPlugins = %v; want %v", got["enabledPlugins"], want)
++		}
++		if got["autoMemoryEnabled"] != false {
++			t.Errorf("autoMemoryEnabled = %v; want false for an autonomous run", got["autoMemoryEnabled"])
++		}
++	})
++
++	t.Run("PrepareWithUnreadablePluginsFile", func(t *testing.T) {
++		t.Parallel()
++		engine, _ := engineWithAnchor(t)
++		engine.claudeDir = writeMalformedPlugins(t)
++		runDir := t.TempDir()
++		if _, err := engine.Prepare(runDir, shuttleengine.Spec{Prompt: "do the thing", Skills: []string{"scribe:prose"}}, shuttleengine.Config{}); err != nil {
++			t.Fatalf("Prepare() error: %v", err)
++		}
++		data, err := os.ReadFile(filepath.Join(runDir, settingsFileName))
++		if err != nil {
++			t.Fatalf("read settings.json: %v", err)
++		}
++		got := scopeKeysOf(t, data)
++		for _, key := range []string{"disableClaudeAiConnectors", "disableBundledSkills"} {
++			if got[key] != true {
++				t.Errorf("%s = %v; want true", key, got[key])
++			}
++		}
++		if _, ok := got["enabledPlugins"]; ok {
++			t.Errorf("enabledPlugins = %v; want it absent when no plugin is known", got["enabledPlugins"])
++		}
++	})
++
++	openLaunchTests := []struct {
++		name string
++		role string
++		// wantDenied is whether the settings turn auto-memory off and deny ListAgents.
++		wantDenied bool
++	}{
++		{"OpenLaunch", "board", true},
++		{"OpenLaunchOrch", "orch", false},
++	}
++	for _, tt := range openLaunchTests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			engine, _ := engineWithAnchor(t)
++			engine.claudeDir = writeInstalledPlugins(t, installed)
++			engine.dirs.Board = t.TempDir()
++			dir := filepath.Join(t.TempDir(), "open")
++			if _, err := engine.OpenLaunch(dir, shuttleengine.OpenSpec{Role: tt.role, Skills: []string{"ly:board"}}, shuttleengine.Config{}); err != nil {
++				t.Fatalf("OpenLaunch() error: %v", err)
++			}
++			data, err := os.ReadFile(filepath.Join(dir, settingsFileName))
++			if err != nil {
++				t.Fatalf("read settings.json: %v", err)
++			}
++			got := scopeKeysOf(t, data)
++			if want := map[string]any{"ly@loomyard": true, "scribe@scribe": false}; !reflect.DeepEqual(got["enabledPlugins"], want) {
++				t.Errorf("enabledPlugins = %v; want %v", got["enabledPlugins"], want)
++			}
++			if _, ok := got["autoMemoryEnabled"]; ok != tt.wantDenied {
++				t.Errorf("autoMemoryEnabled present = %v; want %v for role %q", ok, tt.wantDenied, tt.role)
++			}
++			if _, ok := got["permissions"]; ok != tt.wantDenied {
++				t.Errorf("permissions present = %v; want %v for role %q", ok, tt.wantDenied, tt.role)
++			}
++		})
++	}
++}
+diff --git a/internal/shuttleengine/claudeengine/settings.go b/internal/shuttleengine/claudeengine/settings.go
+index 6bb50f6a..f4a1c3a5 100644
+--- a/internal/shuttleengine/claudeengine/settings.go
++++ b/internal/shuttleengine/claudeengine/settings.go
+@@ -19,6 +19,7 @@
+ // The styled read is what lets a hand-added session's suggestion read as empty.
+ // Every document, the run document and the creel-only one alike, sets Claude Code's `attribution` to empty commit and pull-request texts,
+ // so no session lym launches credits itself in a commit or pull request it makes.
++// Every document also carries the session's scope (scope.go) as its last keys, none of them when the scope is off.
+ 
+ package claudeengine
+ 
+@@ -181,17 +182,18 @@ type attributionSettings struct {
+ }
+ 
+ // openSettingsDoc is the settings document OpenLaunch writes for a session opened in a hub.
+-// It carries hooks and the attribution alone, so every other setting of the session stays the worktree's own.
++// It carries hooks, the attribution and the session's scope alone, so every other setting of the session stays the worktree's own.
+ // Attribution has no omitempty and buildOpenSettings leaves it zero, so the document credits no session.
+ type openSettingsDoc struct {
+ 	Hooks       openSettingsHooks   `json:"hooks"`
+ 	Attribution attributionSettings `json:"attribution"`
++	sessionScope
+ }
+ 
+ // buildOpenSettings marshals an opened session's settings document over the creel flag directory creelFlagDirPosix, a git-bash POSIX path:
+-// the PostToolUse creel mail hook, and on Stop creel's turn-end delivery followed by the idle waiter.
++// the PostToolUse creel mail hook, on Stop creel's turn-end delivery followed by the idle waiter, and scope.
+ // It records nothing, since an opened session has no events file.
+-func buildOpenSettings(creelFlagDirPosix string) ([]byte, error) {
++func buildOpenSettings(creelFlagDirPosix string, scope sessionScope) ([]byte, error) {
+ 	quotedFlagDir := shQuote(creelFlagDirPosix)
+ 	doc := openSettingsDoc{Hooks: openSettingsHooks{
+ 		Stop: []hookEntry{
+@@ -199,7 +201,7 @@ func buildOpenSettings(creelFlagDirPosix string) ([]byte, error) {
+ 			creelWaitHookEntry(),
+ 		},
+ 		PostToolUse: []hookEntry{{Hooks: []hookCommand{{Type: "command", Command: creelMailHookCommand(quotedFlagDir)}}}},
+-	}}
++	}, sessionScope: scope}
+ 	data, err := json.Marshal(doc)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("marshal open settings: %w", err)
+@@ -211,10 +213,12 @@ func buildOpenSettings(creelFlagDirPosix string) ([]byte, error) {
+ // PromptSuggestionEnabled has no omitempty and buildSettings leaves it false, so every document carries `"promptSuggestionEnabled": false`.
+ // The styled read is what lets a hand-added session, which this document does not configure, have its suggestion read as an empty box.
+ // Attribution has no omitempty and buildSettings leaves it zero, so the document credits no session.
++// The session's scope follows as the last keys.
+ type settingsDoc struct {
+ 	Hooks                   settingsHooks       `json:"hooks"`
+ 	PromptSuggestionEnabled bool                `json:"promptSuggestionEnabled"`
+ 	Attribution             attributionSettings `json:"attribution"`
++	sessionScope
+ }
+ 
+ // shQuote wraps s in POSIX shell single quotes, escaping embedded quotes with the standard sh idiom (close, emit escaped quote, reopen).
+@@ -375,7 +379,8 @@ func activityStampHook(eventsPathPosix string) []hookEntry {
+ // A non-empty creelFlagDirPosix is a git-bash POSIX path like eventsPathPosix.
+ // It adds the PostToolUse creel mail hook, after the stamp and the batching hook, testing the strand's flag in that directory, replaces the Stop recording with the command that merges it with creel's turn-end delivery, and adds creel's idle waiter as a second Stop entry.
+ // Empty adds none of them and keeps the plain Stop recording.
+-func buildSettings(eventsPathPosix string, interactive bool, cfg shuttleengine.Config, claude Config, forkSubagents, denyPublish bool, contextAfterCompaction, creelFlagDirPosix string) ([]byte, error) {
++// scope is the session's scope, carried as the document's last keys; the zero scope adds none.
++func buildSettings(eventsPathPosix string, interactive bool, cfg shuttleengine.Config, claude Config, forkSubagents, denyPublish bool, contextAfterCompaction, creelFlagDirPosix string, scope sessionScope) ([]byte, error) {
+ 	quotedEventsPath := shQuote(eventsPathPosix)
+ 	recordingHook := func(hookEventName string, alwaysSucceeds bool) []hookEntry {
+ 		command := recordingCommand(hookEventName, quotedEventsPath)
+@@ -397,6 +402,7 @@ func buildSettings(eventsPathPosix string, interactive bool, cfg shuttleengine.C
+ 			PreCompact:        activityStampHook(eventsPathPosix),
+ 			PostCompact:       activityStampHook(eventsPathPosix),
+ 		},
++		sessionScope: scope,
+ 	}
+ 
+ 	if contextAfterCompaction == "" {
+diff --git a/internal/shuttleengine/claudeengine/settings_test.go b/internal/shuttleengine/claudeengine/settings_test.go
+index 18cccad8..6b7dcaec 100644
+--- a/internal/shuttleengine/claudeengine/settings_test.go
++++ b/internal/shuttleengine/claudeengine/settings_test.go
+@@ -56,7 +56,7 @@ func TestBuildSettings_PromptSuggestionOff(t *testing.T) {
+ 	}
+ 	for _, tt := range cases {
+ 		t.Run(tt.name, func(t *testing.T) {
+-			data, err := buildSettings("/c/run/events.jsonl", tt.interactive, shuttleengine.Config{}, Config{}, tt.fork, false, "", "")
++			data, err := buildSettings("/c/run/events.jsonl", tt.interactive, shuttleengine.Config{}, Config{}, tt.fork, false, "", "", sessionScope{})
+ 			if err != nil {
+ 				t.Fatalf("buildSettings() error: %v", err)
+ 			}
+@@ -76,7 +76,7 @@ func TestBuildSettings_PromptSuggestionOff(t *testing.T) {
+ func TestBuildSettings_CreditNoSessionInAHub(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+-	data, err := buildSettings("/c/run/events.jsonl", true, shuttleengine.Config{}, Config{}, false, false, "", "/c/hub/flags")
++	data, err := buildSettings("/c/run/events.jsonl", true, shuttleengine.Config{}, Config{}, false, false, "", "/c/hub/flags", sessionScope{})
+ 	if err != nil {
+ 		t.Fatalf("buildSettings() error: %v", err)
+ 	}
+@@ -116,7 +116,7 @@ func TestBuildSettings_RecordingHooks(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 
+-			data, err := buildSettings(tt.eventsPath, false, shuttleengine.Config{}, Config{}, false, false, "", "")
++			data, err := buildSettings(tt.eventsPath, false, shuttleengine.Config{}, Config{}, false, false, "", "", sessionScope{})
+ 			if err != nil {
+ 				t.Fatalf("buildSettings() error: %v", err)
+ 			}
+@@ -187,7 +187,7 @@ func TestBuildSettings_SessionStartHook(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			data, err := buildSettings("/c/run/events.jsonl", false, shuttleengine.Config{}, Config{}, false, false, tt.command, "")
++			data, err := buildSettings("/c/run/events.jsonl", false, shuttleengine.Config{}, Config{}, false, false, tt.command, "", sessionScope{})
+ 			if err != nil {
+ 				t.Fatalf("buildSettings() error: %v", err)
+ 			}
+@@ -284,7 +284,7 @@ func TestBuildSettings_CreelMailHook(t *testing.T) {
+ 		{"Standalone", "", []string{"touch '/c/run/activity-stamp'; true"}, []stopHook{{command: recordingCommand(hookEventStop, quotedEventsPath)}}},
+ 	}
+ 	for _, tt := range tests {
+-		data, err := buildSettings(eventsPath, false, shuttleengine.Config{}, Config{}, false, false, "", tt.flagDir)
++		data, err := buildSettings(eventsPath, false, shuttleengine.Config{}, Config{}, false, false, "", tt.flagDir, sessionScope{})
+ 		if err != nil {
+ 			t.Fatalf("buildSettings(%s) error: %v", tt.name, err)
+ 		}
+@@ -356,7 +356,7 @@ func TestBuildSettings_DenyToggleMatrix(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			cfg := shuttleengine.Config{DenyPython: tt.pythonDeny}
+ 			claude := Config{DenyAskUserQuestion: tt.askUserDeny}
+-			data, err := buildSettings("/c/run/events.jsonl", tt.interactive, cfg, claude, tt.fork, tt.denyPublish, "", "")
++			data, err := buildSettings("/c/run/events.jsonl", tt.interactive, cfg, claude, tt.fork, tt.denyPublish, "", "", sessionScope{})
+ 			if err != nil {
+ 				t.Fatalf("buildSettings() error: %v", err)
+ 			}
+@@ -542,7 +542,7 @@ func TestBuildSettings_NoAgentHookAndForkGuard(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 
+-			data, err := buildSettings("/c/run/events.jsonl", tt.interactive, shuttleengine.Config{}, tt.claude, tt.fork, false, "", "")
++			data, err := buildSettings("/c/run/events.jsonl", tt.interactive, shuttleengine.Config{}, tt.claude, tt.fork, false, "", "", sessionScope{})
+ 			if err != nil {
+ 				t.Fatalf("buildSettings() error: %v", err)
+ 			}
+@@ -908,7 +908,7 @@ func TestBuildDenyNotice_MatchesInstalledDenies(t *testing.T) {
+ 				for _, fork := range []bool{false, true} {
+ 					cfg := shuttleengine.Config{DenyPython: pythonDeny, RefuseRaw: sampleRefuseRaw}
+ 					claude := Config{DenyAskUserQuestion: askUserDeny}
+-					data, err := buildSettings("/c/run/events.jsonl", interactive, cfg, claude, fork, false, "", "")
++					data, err := buildSettings("/c/run/events.jsonl", interactive, cfg, claude, fork, false, "", "", sessionScope{})
+ 					if err != nil {
+ 						t.Fatalf("buildSettings() error: %v", err)
+ 					}
+@@ -1008,7 +1008,7 @@ func TestBuildSettings_MatchesGolden(t *testing.T) {
+ 			t.Errorf("golden lacks %q", label)
+ 			continue
+ 		}
+-		settings, err := buildSettings("/c/run/events.jsonl", interactive, cfg, claude, fork, false, "", "")
++		settings, err := buildSettings("/c/run/events.jsonl", interactive, cfg, claude, fork, false, "", "", sessionScope{})
+ 		if err != nil {
+ 			t.Fatalf("buildSettings(%s): %v", label, err)
+ 		}
+diff --git a/internal/shuttleengine/claudeengine/template.yaml b/internal/shuttleengine/claudeengine/template.yaml
+index 46b4094d..8e0d2145 100644
+--- a/internal/shuttleengine/claudeengine/template.yaml
++++ b/internal/shuttleengine/claudeengine/template.yaml
+@@ -17,3 +17,19 @@ batching_nudge:  # the after-tool-call hook that adds one line to the calling ch
+   edit_run: 2  # the number of consecutive edit-only messages that fires; at least 1
+   slice_lines: 2000  # the line count under which a sliced Read of a file fires; at least 1
+   max_nudges: 5  # the most nudges one run's session, and each of its subagents and forks, gets, so a session that ignores the line is not nagged on every turn; at least 1
++session_scope:  # what every Claude session lym launches loads besides lym's own text, written into the settings it passes with --settings, over the user's and the repository's settings; read when a session starts
++  enabled: true  # write the scope: an installed plugin is on only when the session preloads one of its skills, claude.ai connectors and bundled skills are off, a plugin that is on keeps only its preloaded skills but for the ly plugin, which keeps all of them, and every session but the orch's gets no auto-memory and no ListAgents tool; false leaves all of it to the other settings
++  skills_off:  # skills turned off in every session that does not preload them, named as Claude Code lists them; the operator's own list
++    - anthropic-skills:built-in-browser
++    - anthropic-skills:chrome-browser
++    - anthropic-skills:computer-use
++    - anthropic-skills:deep-research
++    - anthropic-skills:docs
++    - anthropic-skills:docx
++    - anthropic-skills:google-workspace
++    - anthropic-skills:import-memory
++    - anthropic-skills:morning
++    - anthropic-skills:pdf
++    - anthropic-skills:pptx
++    - anthropic-skills:skill-creator
++    - anthropic-skills:xlsx
