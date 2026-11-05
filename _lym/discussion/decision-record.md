@@ -236,6 +236,21 @@ Rationale: The review showed the dobby's persisted land episode stops it from re
 
 - Issue #47's push lock: the entry asks that "a push lock whose holder died before a restart is taken as stale", but such a lock is already free (Constraints); the wait #47 saw was a live holder, likely a push the restart left running. This record changes nothing there. Question for the parent: should lym stop a live push left from before a restart, and by which rule, or does this point drop?
 
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-1-review.md; fixer report: _lym/reviews/discussion/round-1-fixer-report.md.
+  - F1 (class design, severity BLOCKING, open in rounds 1)
+  - F7 (class decision, severity MEDIUM, open in rounds 1; answered since by: Issue #47's push-lock point drops; Beam-Await's entry re-checks a standing ready record itself (D10, D11))
+  - d11-d10-dobby-land-rewrite-premise (class design, severity BLOCKING, open in rounds 1)
+  - d11-repair-cap-unbounded (class design, severity MEDIUM, open in rounds 1)
+  - d13-tracked-changes-no-commit (class consistency, severity MEDIUM, open in rounds 1)
+  - finalize-pr-refusal-classes (class design, severity MEDIUM, open in rounds 1)
+  - hand-member-run-into-ready-beam (class design, severity MEDIUM, open in rounds 1)
+  - merged-pr-older-head-passes-ready (class design, severity MEDIUM, open in rounds 1)
+  - pawl-finalize-scratch-pr-orphaned (class design, severity MEDIUM, open in rounds 1)
+  - push-lock-point-parent-decision (class decision, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - D1: the pawl recipe builds with the rows Preflight, Record-Write, Beam-Up, Beam-Await, Finalize, Beam-Down, Beam-Await's `on_done` is Finalize, and no recipe row names BeamDescribe.
