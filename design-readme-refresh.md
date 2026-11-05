@@ -1,6 +1,6 @@
 # Bring README.md up to date
 
-`readme-refresh` · Task · enhancement · running · Record-Write
+`readme-refresh` · Task · enhancement · running · Sampler-Session
 
 ## Wanted (operator, 2026-11-05)
 
