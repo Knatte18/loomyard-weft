@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-05 17:03 UTC; every age below is as of then.
+Rendered 2026-11-05 17:04 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -78,7 +78,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Find what sessions load at start that they do not need, to cut start tokens**<br>• Measure the start context of the orch and two spawned roles by source, and name what can be left out<br>• `darn: writer opus` | [`startup-token-trim`](design-startup-token-trim.md) | darn · docs | Worktree-Create | neve | 0m<br>0m | claude, orch, shuttle, stencil |
+| T3 | **Find what sessions load at start that they do not need, to cut start tokens**<br>• Measure the start context of the orch and two spawned roles by source, and name what can be left out<br>• `darn: writer opus` | [`startup-token-trim`](design-startup-token-trim.md) | darn · docs | Seed-Child | neve | 0m<br>0m | claude, orch, shuttle, stencil |
 | T7 | **Drift compares changed values in code against a sealed expectation, with a separate judge**<br>• General Drift rework: code-side diff of any hub capture keyed by line key or number, structured sealed expectation, containment by code, a judge per changed value | [`drift-rework`](design-drift-rework.md)<br>[Sketch](decision-drift-rework.md) | tapestry · solid | Webster | neve | 1d<br>3h | drift, loom, darn, stencil, config |
 
 #### Ready (0)
