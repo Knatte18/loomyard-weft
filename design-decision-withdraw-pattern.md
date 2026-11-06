@@ -1,6 +1,6 @@
 # A parent cannot withdraw a PATTERN change the decision record declares
 
-`decision-withdraw-pattern` · Task · bug, loom, parsers, pattern · running · Seed-IDE
+`decision-withdraw-pattern` · Task · bug, loom, parsers, pattern · running · Open-IDE
 
 Depends on: [`raddle-motif-finish-clean`](design-raddle-motif-finish-clean.md)
 
