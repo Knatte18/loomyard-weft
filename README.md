@@ -22,7 +22,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **What makes runs slow and what would make them faster: deep analysis**<br>• Account for where run time goes, rank the causes and the changes that would cut it, from recorded data<br>• `darn: writer fable[high]` | [`repo-size-run-time`](design-repo-size-run-time.md) | darn · docs | Darn-Write | neve | 7m<br>5m | report, loom |
+| T1 | **What makes runs slow and what would make them faster: deep analysis**<br>• Account for where run time goes, rank the causes and the changes that would cut it, from recorded data<br>• `darn: writer fable[high]` | [`repo-size-run-time`](design-repo-size-run-time.md) | darn · docs | Darn-Write | neve | 8m<br>5m | report, loom |
 
 #### Ready (0)
 
@@ -81,7 +81,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | Webster | neve | 16h<br>16h | creel, orch |
-| T3 | **Trial the session-scope settings in a real launch and re-measure start load**<br>• Check each lever ly-plugin-off-in-other-hubs writes works in Claude Code, and measure one spawned role's and the orch's start load after it | [`session-scope-launch-trial`](design-session-scope-launch-trial.md) | darn · docs | blocked · Worktree-Create | neve | 14h<br>0m | claude, shuttle |
+| T3 | **Trial the session-scope settings in a real launch and re-measure start load**<br>• Check each lever ly-plugin-off-in-other-hubs writes works in Claude Code, and measure one spawned role's and the orch's start load after it | [`session-scope-launch-trial`](design-session-scope-launch-trial.md) | darn · docs | Worktree-Create | neve | 14h<br>0m | claude, shuttle |
 
 #### Ready (0)
 
