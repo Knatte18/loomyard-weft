@@ -26,4 +26,22 @@ Run 1, `begin-batch-wrong-conflict-kind` (`b93a0a52`), darn light, `astra[medium
 - Time: Astra ran 11:22:27 to 11:24:36, in parallel; the Chair ended at 11:25:35, so at most a small wait on the wall clock.
   `round-<n>-usage.yaml` records no time or tokens for the assistant.
 
-One run is no verdict.
+Run 2, part 1 of `codex-assist-fan-trial` (`2c4864bb`), one hand-composed `astra[medium]` run on `b93a0a52` with the three `review-code` lenses; report at `docs/research/codex/review/assist-fan-trial-2026-11-06/report.md`:
+
+- All three lenses started and returned, and the review passed `lym burler validate-review`.
+- Three MEDIUM findings, each checked against the tree and real, no false finding, 266 s, about 126,000 fresh input plus output tokens.
+- Two wording points in `contracts/stencils/engine/codex/assist-fan.md`, neither blocking: it says `wait` where Astra used `wait_agent`, and "all in one go" where Astra spawned over 29 s.
+  The run's change description says these were filed as notes; no such note exists, so they stand here.
+
+Run 3, part 2 of the same task, the real composed seat beside a `sonnet[medium]` Chair with no lenses, on the report's diff, `review-code` fan asked for:
+
+- The seat did not fan: no `spawn_agent` call, no lens report.
+  It reported an instruction conflict and worked solo; see note `assist-fan-seat-work-alone`.
+  So a real fanned seat has still never run.
+- Two LOW findings, both real and both fixed in the landing, neither false; the Chair kept both and added a third LOW of its own.
+- Time: 212 s from 13:00:44, in parallel; the Chair ended at 13:05:36, so no wait on the wall clock.
+- Tokens from the Codex session: 1,326,656 in all, 1,223,680 of them cached, 5,766 out.
+
+Billing: the weekly Codex meter moved from 0 % to 1 % during run 2 and stayed at 1 % through run 3, so the runs count against the ChatGPT plan's window and show no API billing.
+
+Three runs are no verdict.
