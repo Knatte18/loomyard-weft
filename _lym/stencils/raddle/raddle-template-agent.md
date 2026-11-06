@@ -8,7 +8,7 @@
      parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective).
      return_note is the one optional marker: empty on a first session, and the reason of a returned filing with the path to start from after a return.
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=9b3c1167d74beb59b35fb1e8d38a9e225eee5cf41e4c931eb603fda3ceea72d5 build=257ab79a41b92014532f0a0431cf7d7032b222e9 time=2026-11-05T13:43:32Z -->
+lym-stencil: sha256=e6b860920405e2812e13c240ceb2fc6d13e981cfd15b35a7d3225b8277158131 build=5d1311415826613950e92e66a84e09e0b201cd6b time=2026-11-06T09:39:24Z -->
 
 # Raddle — split a Sketch into the entries the operator approves
 
@@ -44,6 +44,7 @@ Put no design question to the operator before the proposal passes the spec's che
 
 - A tapestry's large fixed start cost often makes fewer, larger parts, or one tapestry, cheaper than many small tasks. Weigh that against what the cost report shows for each recipe and profile.
 - Order the parts by what each takes from the others, and keep two parts with no order between them off the same package.
+- When a live `PATTERN.md` entry absorbs a PATTERN change the Sketch declares, map the change with the part's `pattern_clusters`, so the part's record declares the live entry; a contract line that folds it in is not enough.
 - Weigh the next-best split too, since the proposal states its cost beside the chosen one.
 - Write each cost line so it says when a cell it rests on reads "too few runs", and never guess a figure for such a cell.
 
