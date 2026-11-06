@@ -72,8 +72,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **The python guard refuses without saying why or what to do when a task needs Python**<br>• An OCR repository on lym hits the guard: the refusal gives no reason and no way forward | [`python-guard-gives-no-reason`](design-python-guard-gives-no-reason.md) | darn · light | Drift-Verify | neve | 43m<br>38m | shuttle |
-| T2 | **A skill load stopped by an API error counts as skipped, and the prompt is sent into the outage**<br>• Shuttle skips unloaded skills with only a log line; an API outage leaves a seat stalled or running without them | [`skill-load-timeout-sends-prompt`](design-skill-load-timeout-sends-prompt.md) | darn · light | Darn-Write | neve | 15m<br>13m | shuttle |
+| T1 | **The python guard refuses without saying why or what to do when a task needs Python**<br>• An OCR repository on lym hits the guard: the refusal gives no reason and no way forward | [`python-guard-gives-no-reason`](design-python-guard-gives-no-reason.md) | darn · light | Code-Bouncer | neve | 43m<br>38m | shuttle |
+| T2 | **A skill load stopped by an API error counts as skipped, and the prompt is sent into the outage**<br>• Shuttle skips unloaded skills with only a log line; an API outage leaves a seat stalled or running without them | [`skill-load-timeout-sends-prompt`](design-skill-load-timeout-sends-prompt.md) | darn · light | Darn-Write | neve | 16m<br>13m | shuttle |
 
 #### Ready (0)
 
