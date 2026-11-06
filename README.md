@@ -50,7 +50,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 2h<br>10m | codex, shuttle |
+| R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 2h<br>11m | codex, shuttle |
 
 #### Features (1)
 
@@ -73,8 +73,8 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | Code-Bouncer | neve | 18h<br>18h | creel, orch |
-| T3 | **Measure what the session scope fix gives in a real launch**<br>• Two real launches in lyt: first-request tokens against the launch trial, Workflow gone, preloaded skills kept | [`session-scope-fix-measure`](design-session-scope-fix-measure.md) | darn · docs | Worktree-Create | neve | 29m<br>29m | claude, shuttle |
-| T5 | **A fanned assistant seat is told to work alone, and ran without its lenses**<br>• The composed prompt forbids what the fan asks for; the real seat went solo and no record flagged it<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`assist-fan-seat-work-alone`](design-assist-fan-seat-work-alone.md) | darn · light | Darn-Write | neve | 10m<br>4m | burler, stencil, codex |
+| T3 | **Measure what the session scope fix gives in a real launch**<br>• Two real launches in lyt: first-request tokens against the launch trial, Workflow gone, preloaded skills kept | [`session-scope-fix-measure`](design-session-scope-fix-measure.md) | darn · docs | Seed-Child | neve | 30m<br>30m | claude, shuttle |
+| T5 | **A fanned assistant seat is told to work alone, and ran without its lenses**<br>• The composed prompt forbids what the fan asks for; the real seat went solo and no record flagged it<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`assist-fan-seat-work-alone`](design-assist-fan-seat-work-alone.md) | darn · light | Darn-Write | neve | 11m<br>4m | burler, stencil, codex |
 
 #### Ready (0)
 
@@ -149,4 +149,4 @@ Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T1 | **Try the Codex assistant reviewer with its lens fan**<br>• A Claude darn docs writer spawns Astra with lenses on a real commit, and the run review then uses the real fanned seat: does the fan work, and what does it cost<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]`<br>• `loom: code_max_bounces 1` | [`codex-assist-fan-trial`](design-codex-assist-fan-trial.md) | 33m<br>33m | codex, shuttle |
+| T1 | **Try the Codex assistant reviewer with its lens fan**<br>• A Claude darn docs writer spawns Astra with lenses on a real commit, and the run review then uses the real fanned seat: does the fan work, and what does it cost<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]`<br>• `loom: code_max_bounces 1` | [`codex-assist-fan-trial`](design-codex-assist-fan-trial.md) | 34m<br>34m | codex, shuttle |
