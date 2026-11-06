@@ -1,6 +1,6 @@
 # A fanned assistant seat is told to work alone, and ran without its lenses
 
-`assist-fan-seat-work-alone` · Task · bug, burler, stencil, codex · running · Drift-Baseline
+`assist-fan-seat-work-alone` · Task · bug, burler, stencil, codex · running · Drift-Expect
 
 ## Seen
 
