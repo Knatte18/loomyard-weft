@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | Webster | neve | 17h<br>17h | creel, orch |
-| T5 | **Drift: lym record writes, a gone snapshot, capture provenance and a retired placeholder halt runs**<br>• Four drift bugs that halt Models hub runs at Drift-Verify and Drift-Recheck<br>• `drift: scope off` | [`drift-halts-bundle`](design-drift-halts-bundle.md) | darn · solid | Code-Burler-Fix | neve | 2h<br>1h | drift, loom, config, reconcile |
+| T5 | **Drift: lym record writes, a gone snapshot, capture provenance and a retired placeholder halt runs**<br>• Four drift bugs that halt Models hub runs at Drift-Verify and Drift-Recheck<br>• `drift: scope off` | [`drift-halts-bundle`](design-drift-halts-bundle.md) | darn · solid | Code-Bouncer | neve | 2h<br>1h | drift, loom, config, reconcile |
 
 ### Ready (0)
 
