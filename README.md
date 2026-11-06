@@ -52,7 +52,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 3d<br>15h | shuttle, codex, loom |
 
-## [P0 Root: entries under no project](project-root.md) (31)
+## [P0 Root: entries under no project](project-root.md) (32)
 
 Owner `neve`
 
@@ -93,7 +93,7 @@ Not released; nothing starts it until its status is cleared.
 | T2 | `draft` **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid |  | 14h<br>14h | creel, orch |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light |  | 5d<br>19h | fabric |
 
-### Notes (25)
+### Notes (26)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -105,7 +105,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R2 |  | **Re-measure writer exploration and the carry of lookup results after the Discussion stencil change**<br>• Re-run the writer-lookups measurement on 10 tapestry runs, pricing the carry saved by early explore subagents | [`writer-lookups-remeasure`](design-writer-lookups-remeasure.md) | 1d<br>15h | loom, stencil |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>13h | loom, stencil |
 
-#### Bugs (6)
+#### Bugs (7)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -115,6 +115,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 15h<br>15h | reed, orch |
 | B5 |  | **drift: Drift-Recheck halts on a capture's provenance file even when the compare command passed** | [`drift-capture-provenance-halt`](design-drift-capture-provenance-halt.md) | 0m<br>0m | drift, config |
 | B6 |  | **drift: config reconcile leaves the retired {skip_file} placeholder in capture and compare commands** | [`drift-retired-skip-file-kept`](design-drift-retired-skip-file-kept.md) | 0m<br>0m | drift, config, reconcile |
+| B7 |  | **webster begin-batch reports a delete-before-reference plan ordering finding as plan_conflict: tree_moved** | [`begin-batch-wrong-conflict-kind`](design-begin-batch-wrong-conflict-kind.md) | 0m<br>0m | webster |
 
 #### Enhancements (4)
 
