@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=38239afe1084d720e29258c33709e98fb846e5197b46aaa2353ea9056cff2691 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+<!-- lym-stencil: sha256=7e47127b01a3e5e795058b97e409c79879f1cafd1d1eb49de58b638f57eb885c build=77e7a9c7596b21a9365de716da58550c73a2ab9b time=2026-11-06T13:02:35Z -->
 
 # Lens report spec — what a lens review's writer saves of each lens fork's report
 
@@ -33,5 +33,5 @@ A `no report` file ends at the block.
 
 ## Readers
 
-No Go code parses a lens report.
 Its readers are audits and reviews of the lenses, which read it from the run records.
+Go reads one thing of it: `internal/lensreport`'s `Returned` tells a report whose `outcome` is `reported` from any other file, so a round can record a lens that returned nothing.
