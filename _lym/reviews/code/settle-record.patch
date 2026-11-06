@@ -1,0 +1,969 @@
+diff --git a/contracts/specs/twill-lens-report-spec.md b/contracts/specs/twill-lens-report-spec.md
+index 7d987bc3..41c39eb3 100644
+--- a/contracts/specs/twill-lens-report-spec.md
++++ b/contracts/specs/twill-lens-report-spec.md
+@@ -31,5 +31,5 @@ A `no report` file ends at the block.
+ 
+ ## Readers
+ 
+-No Go code parses a lens report.
+ Its readers are audits and reviews of the lenses, which read it from the run records.
++Go reads one thing of it: `internal/lensreport`'s `Returned` tells a report whose `outcome` is `reported` from any other file, so a round can record a lens that returned nothing.
+diff --git a/contracts/stencils/burler/burler-assist-cluster-fan.md b/contracts/stencils/burler/burler-assist-cluster-fan.md
+index b019d645..42050c92 100644
+--- a/contracts/stencils/burler/burler-assist-cluster-fan.md
++++ b/contracts/stencils/burler/burler-assist-cluster-fan.md
+@@ -19,7 +19,7 @@ While the subagents run, YOU (the handler) do your own HOLISTIC review: what no
+ Write nothing to your report while any subagent is outstanding: consolidate only once the last one has returned, with every finding in view.
+ 
+ Once the last subagent has returned, and before you consolidate, save each subagent's final message verbatim to `{{.lens_report_path}}`, with its lens name for `<lens>`, in the format `{{.lens_report_spec_path}}` defines; a subagent that returned no report gets its file too.
+-These lens reports are part of your write surface, beside your report, and are the one exception to the "nothing else" of the write-surface rules in your prompt.
++These lens reports are part of your write surface, beside your report, as the write-surface rules in your prompt name them.
+ 
+ Consolidation: judge every subagent finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an `origin:` key (`lens:<name>` or `handler`), move false positives to a `## Rejected` prose section below the frontmatter with a one-line reason each, and order kept findings by severity.
+ The consolidated report is your ONE report, and the review is complete once it is fully written to disk.
+diff --git a/contracts/stencils/burler/burler-template-assist-reviewer-fanned.md b/contracts/stencils/burler/burler-template-assist-reviewer-fanned.md
+new file mode 100644
+index 00000000..7de1e039
+--- /dev/null
++++ b/contracts/stencils/burler/burler-template-assist-reviewer-fanned.md
+@@ -0,0 +1,36 @@
++<!-- This is the burler fanned assistant reviewer seat stencil: the assistant seat of an assisted review round whose assistant runs a lens fan, on the engine its model-spec names, beside the reviewer chair.
++     It is burler-template-assist-reviewer with the lens reports on the write surface and the seat-directive-assistant-fanned include; a solo assistant keeps burler-template-assist-reviewer and its bytes.
++     It is shipped as an embedded default in the top-level stencils package (stencils/stencils.go), seeded to the Bolt checkout's `_lym/stencils/burler/` and read
++     from there at call time, then filled by internal/seatengine from the seat's value map.
++     Every marker below is a top-level {{.X}} substitution.
++     The reserved markers it uses, which the seats engine fills, are parent_directive, in its no-parent variant, and edit_directive, in the assistant engine's own wording;
++     its includes use seat_name and output_files;
++     the seat values it uses, which the assistant's seat gives it, are instruction_1_path, instruction_2_path, review_path and lens_report_path.
++     The reading directions come from the engine-assist-reading engine block of the assistant's engine.
++     There are no {{if}}/{{range}} conditionals anywhere in this file. -->
++
++# Burler — assistant review
++
++{{.parent_directive}}
++{{.edit_directive}}
++You are a burler assistant reviewer: one session, with one subagent per lens of your own, reviewing ONE round over an artifact beside the round's reviewer, who reads your report as one more report and decides the verdict.
++Your one job is to form your OWN independent judgment of the target, judged AGAINST the fasit, hunt for defects, and write your findings to your report with a verdict.
++
++## What you may write (BLOCKING)
++
++Your write surface is your report `{{.review_path}}` and your lens reports `{{.lens_report_path}}`, one per lens, and nothing else.
++You never edit, create, or delete a target file or any other file, you never fix a finding, and you run no mutating git command.
++Findings are recorded as you find them, never fixed on sight.
++
++## Your two instruction files
++
++Read and execute each of the following files in turn, in this order — never preview a later file's content early:
++
++1. `{{.instruction_1_path}}` — step 1: explore the target and understand what you are judging it against.
++2. `{{.instruction_2_path}}` — step 2: the lens subagents you run, the cluster/review rules and where the review-file format is. Write your report to `{{.review_path}}`.
++
++{{template "engine-assist-reading"}}
++
++Your work is done once every lens report is saved and `{{.review_path}}` is fully written on disk and passes the format's strict rules.
++
++{{template "seat-directive-assistant-fanned"}}
+diff --git a/contracts/stencils/markers_test.go b/contracts/stencils/markers_test.go
+index f58daec4..2c65e9ad 100644
+--- a/contracts/stencils/markers_test.go
++++ b/contracts/stencils/markers_test.go
+@@ -48,6 +48,7 @@ func TestStencils_TopLevelMarkers(t *testing.T) {
+ 		{"seat-directive-writer", SeatDirectiveWriter, []string{"chair_name", "output_files", "seat_name"}},
+ 		{"seat-directive-writer-chair", SeatDirectiveWriterChair, []string{"advisor_names", "inputs", "output_files"}},
+ 		{"seat-directive-assistant", SeatDirectiveAssistant, []string{"output_files", "seat_name"}},
++		{"seat-directive-assistant-fanned", SeatDirectiveAssistantFanned, []string{"output_files", "seat_name"}},
+ 		{"seat-directive-assistant-chair", SeatDirectiveAssistantChair, []string{"assistants"}},
+ 		{"burler-assist-consolidation", BurlerAssistConsolidation, []string{"assist_origin"}},
+ 		{"burler-assist-cluster-fan", BurlerAssistClusterFan, []string{"lens_list", "lens_report_path", "lens_report_spec_path"}},
+diff --git a/contracts/stencils/seat/seat-directive-assistant-fanned.md b/contracts/stencils/seat/seat-directive-assistant-fanned.md
+new file mode 100644
+index 00000000..23ea0eb2
+--- /dev/null
++++ b/contracts/stencils/seat/seat-directive-assistant-fanned.md
+@@ -0,0 +1,18 @@
++<!-- This is the fanned assistant's seat directive: the block a fanned assistant seat's stencil pulls in with the bare {{template "seat-directive-assistant-fanned"}}, with no pipeline, in place of seat-directive-assistant.
++     The fill hands it the seat's value map, so it declares two required markers:
++     {{.seat_name}} and {{.output_files}}, which for a fanned assistant lists its outputs and then each subagent report.
++     internal/seatengine fills them for each assistant seat; the assistant runs the subagents its instructions name, writes those files and nothing else, and the chair waits on the end marker lym writes for it. -->
++
++## You are an assistant in this step
++
++Your seat is {{.seat_name}}.
++You work alone: no other session works with you.
++The subagents your instructions tell you to run are part of your own work and are no other session, so this rule never stops you running them: run every one of them.
++
++These are the only files you write, your report first and then one report for each subagent:
++
++{{.output_files}}
++
++- You send no message to any session, and no session messages you.
++  Ignore any line in your pane that starts with `[creel]`: it is not addressed to you, and you neither act on it nor answer it.
++- Write your files once your task is done; lym then checks your report and tells the chair your work has ended.
+diff --git a/contracts/stencils/stencils.go b/contracts/stencils/stencils.go
+index 51d6877b..2d5e6b01 100644
+--- a/contracts/stencils/stencils.go
++++ b/contracts/stencils/stencils.go
+@@ -546,6 +546,11 @@ var SeatDirectiveWriterChair []byte
+ //go:embed seat/seat-directive-assistant.md
+ var SeatDirectiveAssistant []byte
+ 
++// SeatDirectiveAssistantFanned is the fanned assistant seat block's shipped default: the rules an assistant that runs subagents works under, writing its outputs and their reports and nothing else, pulled into its stencil as an include in place of the assistant seat block.
++//
++//go:embed seat/seat-directive-assistant-fanned.md
++var SeatDirectiveAssistantFanned []byte
++
+ // SeatDirectiveAssistantChair is the assistant chair seat block's shipped default: how the lead of a table of assistant seats waits for each assistant's end marker, pulled into its stencil as an include in place of the advisor chair's block.
+ //
+ //go:embed seat/seat-directive-assistant-chair.md
+@@ -561,6 +566,11 @@ var BurlerTemplateReviewerAssisted []byte
+ //go:embed burler/burler-template-assist-reviewer.md
+ var BurlerTemplateAssistReviewer []byte
+ 
++// BurlerTemplateAssistReviewerFanned is the burler assistant reviewer seat stencil of a round whose assistant runs a lens fan: the assistant reviewer stencil with the lens reports on its write surface and the fanned assistant's block.
++//
++//go:embed burler/burler-template-assist-reviewer-fanned.md
++var BurlerTemplateAssistReviewerFanned []byte
++
+ // BurlerAssistConsolidation is the review step's part of an assisted round: the chair waits for the assistant and judges its findings as one more report.
+ //
+ //go:embed burler/burler-assist-consolidation.md
+@@ -673,6 +683,7 @@ var entries = []registryEntry{
+ 	{"burler-template-reviewer", &BurlerTemplateReviewer},
+ 	{"burler-template-reviewer-assisted", &BurlerTemplateReviewerAssisted},
+ 	{"burler-template-assist-reviewer", &BurlerTemplateAssistReviewer},
++	{"burler-template-assist-reviewer-fanned", &BurlerTemplateAssistReviewerFanned},
+ 	{"burler-assist-consolidation", &BurlerAssistConsolidation},
+ 	{"burler-assist-cluster-fan", &BurlerAssistClusterFan},
+ 	{"burler-template-fixer", &BurlerTemplateFixer},
+@@ -742,6 +753,7 @@ var entries = []registryEntry{
+ 	{"seat-directive-writer", &SeatDirectiveWriter},
+ 	{"seat-directive-writer-chair", &SeatDirectiveWriterChair},
+ 	{"seat-directive-assistant", &SeatDirectiveAssistant},
++	{"seat-directive-assistant-fanned", &SeatDirectiveAssistantFanned},
+ 	{"seat-directive-assistant-chair", &SeatDirectiveAssistantChair},
+ 	{"engine/claude/assist-fan", &EngineClaudeAssistFan},
+ 	{"engine/codex/assist-fan", &EngineCodexAssistFan},
+@@ -773,7 +785,7 @@ var roleOpeningStencils = map[string][]string{
+ 	"plan-fixer":           {"webster-template-plan-fix"},
+ 	"gate-fixer":           {"gatefix-frame-cold"},
+ 	"burler-review":        {"burler-template-reviewer", "burler-template-reviewer-assisted"},
+-	"burler-review-assist": {"burler-template-assist-reviewer"},
++	"burler-review-assist": {"burler-template-assist-reviewer", "burler-template-assist-reviewer-fanned"},
+ 	"burler-fix":           {"burler-template-fixer"},
+ 	"conflict":             {"landing-template-conflict"},
+ 	"fixer":                {"landing-template-fixer"},
+diff --git a/internal/burlerengine/assist.go b/internal/burlerengine/assist.go
+index 10853cf0..a37c7081 100644
+--- a/internal/burlerengine/assist.go
++++ b/internal/burlerengine/assist.go
+@@ -10,6 +10,8 @@ import (
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fsx"
++	"github.com/Knatte18/loomyard/internal/lenses"
++	"github.com/Knatte18/loomyard/internal/lensreport"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/seatengine"
+@@ -19,12 +21,13 @@ import (
+ // AssistSeatName is the name of the review table's assistant seat, so its strand role is the review role followed by -assist.
+ const AssistSeatName = "assist"
+ 
+-// The stencils an assisted round reads: the chair's stencil, the assistant's own, the chair's consolidation part and the assistant's fanned cluster rules.
++// The stencils an assisted round reads: the chair's stencil, the solo and the fanned assistant's own, the chair's consolidation part and the assistant's fanned cluster rules.
+ const (
+-	assistedReviewerStencil  = "burler-template-reviewer-assisted"
+-	assistReviewerStencil    = "burler-template-assist-reviewer"
+-	assistConsolidateStencil = "burler-assist-consolidation"
+-	assistClusterFanStencil  = "burler-assist-cluster-fan"
++	assistedReviewerStencil     = "burler-template-reviewer-assisted"
++	assistReviewerStencil       = "burler-template-assist-reviewer"
++	assistFannedReviewerStencil = "burler-template-assist-reviewer-fanned"
++	assistConsolidateStencil    = "burler-assist-consolidation"
++	assistClusterFanStencil     = "burler-assist-cluster-fan"
+ )
+ 
+ // assistRulesMarker is the review step's optional marker an assisted round fills with the chair's consolidation part.
+@@ -32,11 +35,13 @@ const assistRulesMarker = "assist_rules"
+ 
+ // AssistOutcome is what became of one assistant seat of a review round.
+ // Ending is the text of its end marker, empty when none was written; Report is its own report and Copy the copy beside the review, set only when Ending is done.
++// MissingLenses names, in fan order, each lens of a done fanned assistant that returned no lens report, so a solo run of a fanned seat cannot pass as a fanned one.
+ type AssistOutcome struct {
+-	Seat   string
+-	Ending string
+-	Report string
+-	Copy   string
++	Seat          string
++	Ending        string
++	Report        string
++	Copy          string
++	MissingLenses []string
+ }
+ 
+ // assisted reports whether opts names an assistant: a model choice with a model.
+@@ -73,9 +78,27 @@ func assistProfile(p *Profile, report, fan string) Profile {
+ 	return assist
+ }
+ 
++// assistLensNames returns the lens names of the assistant's fan in fan order.
++// A solo assistant has none, and so has a fan the lens library does not define, which keeps the assistant from starting.
++func (e *Engine) assistLensNames(fan string) []string {
++	if fan == "" {
++		return nil
++	}
++	resolved, err := lenses.ResolveFan(e.cfg, fan)
++	if err != nil {
++		return nil
++	}
++	names := make([]string, len(resolved))
++	for i, lens := range resolved {
++		names[i] = lens.Name
++	}
++	return names
++}
++
+ // assistSeat returns the assistant seat of p's review under opts, or nil when opts names none.
+ // files are the assistant's instruction file paths, and values its stencil values; the caller composes both, or passes a probe's.
+ // skipReason, when set, keeps the seat from starting, its end marker naming the reason.
++// A fanned assistant runs the fanned stencil, and its lens reports are its subagent reports, so its directive and write surface name them.
+ func (e *Engine) assistSeat(p *Profile, opts RunOpts, files reviewFilePaths, skills []string, skipReason string) *seatengine.Seat {
+ 	if !opts.assisted() {
+ 		return nil
+@@ -85,7 +108,7 @@ func (e *Engine) assistSeat(p *Profile, opts RunOpts, files reviewFilePaths, ski
+ 	if opts.AssistSkip != "" && skipReason == "" {
+ 		skipReason = opts.AssistSkip
+ 	}
+-	return &seatengine.Seat{
++	seat := &seatengine.Seat{
+ 		Name:        AssistSeatName,
+ 		Stencil:     assistReviewerStencil,
+ 		ModelChoice: opts.Assist,
+@@ -99,6 +122,14 @@ func (e *Engine) assistSeat(p *Profile, opts RunOpts, files reviewFilePaths, ski
+ 		SkipReason:  skipReason,
+ 		Timeout:     opts.AssistTimeout,
+ 	}
++	for _, lens := range e.assistLensNames(opts.AssistFan) {
++		seat.SubagentReports = append(seat.SubagentReports, lensreport.Path(report, lens))
++	}
++	if len(seat.SubagentReports) > 0 {
++		seat.Stencil = assistFannedReviewerStencil
++		seat.Values["lens_report_path"] = lensreport.PathPattern(report)
++	}
++	return seat
+ }
+ 
+ // withAssistant returns table with seat added as its assistant: the chair runs the assisted stencil and reads the assistant's report as an input.
+@@ -172,7 +203,8 @@ func assistRulesBlock(stencilsDir, engine string, opts RunOpts) (string, error)
+ // keepAssistReports reads every assistant seat's end marker in seats and copies the report of one whose marker reads done beside the review file, returning what became of each.
+ // Any other ending, gate failed included, copies nothing.
+ // A failed read or copy is logged and leaves that assistant's Copy empty, since the assistant never gates the round.
+-func keepAssistReports(reviewPath string, seats []seatengine.SeatResult) []AssistOutcome {
++// lensNames are the lenses the assistant's fan asked of it; each a done assistant returned no lens report for is named on its outcome and logged, and never fails the round.
++func keepAssistReports(reviewPath string, seats []seatengine.SeatResult, lensNames []string) []AssistOutcome {
+ 	var outcomes []AssistOutcome
+ 	for _, seat := range seats {
+ 		if !seat.Assistant {
+@@ -189,12 +221,27 @@ func keepAssistReports(reviewPath string, seats []seatengine.SeatResult) []Assis
+ 		outcome.Ending = ending
+ 		if ending == seatengine.EndingDone && outcome.Report != "" {
+ 			outcome.Copy = copyAssistReport(outcome.Report, AssistCopyPath(reviewPath, seat.Name))
++			outcome.MissingLenses = missingLensReports(outcome.Report, lensNames)
++		}
++		if len(outcome.MissingLenses) > 0 {
++			logger.Warn("burler: the assistant was asked to fan and returned no report for these lenses", "seat", seat.Name, "lenses", outcome.MissingLenses)
+ 		}
+ 		outcomes = append(outcomes, outcome)
+ 	}
+ 	return outcomes
+ }
+ 
++// missingLensReports returns the names in lensNames whose lens report beside report says its lens returned nothing, or does not exist.
++func missingLensReports(report string, lensNames []string) []string {
++	var missing []string
++	for _, lens := range lensNames {
++		if !lensreport.Returned(lensreport.Path(report, lens)) {
++			missing = append(missing, lens)
++		}
++	}
++	return missing
++}
++
+ // copyAssistReport copies the report at from to to and returns to, or "" when the copy failed, which it logs.
+ func copyAssistReport(from, to string) string {
+ 	content, err := os.ReadFile(from)
+diff --git a/internal/burlerengine/assist_test.go b/internal/burlerengine/assist_test.go
+index c6fd64d8..35a73fa7 100644
+--- a/internal/burlerengine/assist_test.go
++++ b/internal/burlerengine/assist_test.go
+@@ -12,6 +12,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/lenses"
++	"github.com/Knatte18/loomyard/internal/lensreport"
+ 	"github.com/Knatte18/loomyard/internal/seatengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -270,6 +271,60 @@ func TestEngine_Review_AssistedRound(t *testing.T) {
+ 	}
+ }
+ 
++// TestEngine_Review_AssistantPromptFollowsItsFan proves a fanned assistant's composed prompt names every lens report on its write surface, with the reports kept off its outputs, and that a solo assistant's prompt names none.
++// It also proves Review names the fan's lenses that returned no report in the assistant's outcome, in fan order, and none for a solo assistant.
++func TestEngine_Review_AssistantPromptFollowsItsFan(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name     string
++		fan      string
++		wantLens bool
++	}{
++		{name: "a fanned assistant", fan: "standard", wantLens: true},
++		{name: "a solo assistant"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			root, p := newAssistProfile(t)
++			opts := assistOpts()
++			opts.AssistFan = tt.fan
++			shuttle := newAssistShuttle(halfScript{result: shuttleengine.Result{Outcome: shuttleengine.OutcomeDone}})
++			geom := Geometry{WorktreeRoot: root, AnchorPath: root, Shortname: "tst", Slug: "slug", DefaultEngine: "claude"}
++			e := New(shuttle, geom, clusterTestConfig, newTestStencilsDir(t), "", nil)
++			report, _ := assistPaths(root, p.ReviewPath, opts.Round, AssistSeatName)
++
++			got, err := e.Review(p, opts)
++			if err != nil {
++				t.Fatalf("Review() = %v; want nil error", err)
++			}
++
++			assist := shuttle.specs[assistRole]
++			if !slices.Equal(assist.OutputFiles, []string{report}) {
++				t.Errorf("assistant spec outputs = %v; want the report alone, [%s]", assist.OutputFiles, report)
++			}
++			lensPaths := []string{lensreport.PathPattern(report), lensreport.Path(report, "style")}
++			for _, path := range lensPaths {
++				if holds := strings.Contains(assist.Prompt, path); holds != tt.wantLens {
++					t.Errorf("assistant prompt holds %q = %v; want %v:\n%s", path, holds, tt.wantLens, assist.Prompt)
++				}
++			}
++			var wantMissing []string
++			if tt.wantLens {
++				wantMissing = e.assistLensNames(tt.fan)
++				if len(wantMissing) == 0 {
++					t.Fatalf("assistLensNames(%q) = none; want the fan's lenses", tt.fan)
++				}
++			}
++			if len(got.Assists) != 1 || !slices.Equal(got.Assists[0].MissingLenses, wantMissing) {
++				t.Errorf("Assists = %+v; want one outcome missing lenses %v, since the shuttle wrote no lens report", got.Assists, wantMissing)
++			}
++		})
++	}
++}
++
+ // TestEngine_Review_AssistantThatDoesNotStart proves an assistant that is skipped, whose engine has no assist-reading block, or whose fan the lens library does not define, never starts and its end marker says so.
+ // The chair is started and the review half returns its accepted review.
+ func TestEngine_Review_AssistantThatDoesNotStart(t *testing.T) {
+@@ -353,7 +408,7 @@ func TestKeepAssistReports(t *testing.T) {
+ 				{Name: AssistSeatName, Assistant: true, Outputs: []string{report}, EndMarker: marker},
+ 			}
+ 
+-			got := keepAssistReports(reviewPath, seats)
++			got := keepAssistReports(reviewPath, seats, nil)
+ 
+ 			if len(got) != 1 || got[0].Seat != AssistSeatName || got[0].Report != report || got[0].Ending != tt.marker {
+ 				t.Fatalf("keepAssistReports() = %+v; want one outcome of %q with report %q and ending %q", got, AssistSeatName, report, tt.marker)
+@@ -373,6 +428,50 @@ func TestKeepAssistReports(t *testing.T) {
+ 	}
+ }
+ 
++// TestKeepAssistReports_MissingLenses proves a done assistant's outcome names each lens of its fan with no returned lens report, in fan order, and that an assistant that did not end done names none, since its ending already says so.
++func TestKeepAssistReports_MissingLenses(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const reported = "```yaml\nlens: x\noutcome: reported\n```\n\nThe message.\n"
++	const noReport = "```yaml\nlens: x\noutcome: no report\n```\n"
++	tests := []struct {
++		name    string
++		ending  string
++		reports map[string]string
++		want    []string
++	}{
++		{name: "every lens returned", ending: seatengine.EndingDone, reports: map[string]string{"a": reported, "b": reported}},
++		{name: "a seat that ran solo", ending: seatengine.EndingDone, want: []string{"a", "b"}},
++		{name: "one lens file absent", ending: seatengine.EndingDone, reports: map[string]string{"b": reported}, want: []string{"a"}},
++		{name: "one lens returned nothing", ending: seatengine.EndingDone, reports: map[string]string{"a": reported, "b": noReport}, want: []string{"b"}},
++		{name: "an assistant that did not end done", ending: seatengine.EndingStopped},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			report, marker := filepath.Join(dir, "report.md"), filepath.Join(dir, "report.end")
++			files := map[string]string{report: "the report", marker: tt.ending + "\n"}
++			for lens, content := range tt.reports {
++				files[lensreport.Path(report, lens)] = content
++			}
++			for path, content := range files {
++				if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
++					t.Fatalf("WriteFile(%s) = %v; want nil", path, err)
++				}
++			}
++			seats := []seatengine.SeatResult{{Name: AssistSeatName, Assistant: true, Outputs: []string{report}, EndMarker: marker}}
++
++			got := keepAssistReports(filepath.Join(dir, "review.md"), seats, []string{"a", "b"})
++
++			if len(got) != 1 || !slices.Equal(got[0].MissingLenses, tt.want) {
++				t.Errorf("keepAssistReports() = %+v; want one outcome missing lenses %v", got, tt.want)
++			}
++		})
++	}
++}
++
+ // TestEngine_ProbeReview_AssistantSeat proves ProbeReview probes a table holding the assistant seat when its RunOpts name one, and only the chair when they name none.
+ func TestEngine_ProbeReview_AssistantSeat(t *testing.T) {
+ 	tiergate.Require(t, 0)
+diff --git a/internal/burlerengine/doc.go b/internal/burlerengine/doc.go
+index 408d017f..3bea2258 100644
+--- a/internal/burlerengine/doc.go
++++ b/internal/burlerengine/doc.go
+@@ -66,9 +66,10 @@
+ // A round with no assistant keeps burler-template-reviewer and the review step's bytes.
+ // The assistant runs burler-template-assist-reviewer, which carries the engine-assist-reading block of its engine, and reads its own explore and review steps, composed a second time for its engine and its report path, with the same fasit, rubric, PATTERN directive, focus and prior rounds the chair reads.
+ // RunOpts.AssistFan fans it out through its engine's own subagents inside its one turn, by burler-assist-cluster-fan and the engine-assist-fan block; the seat authorizes no fork, so no lym fork audit covers them.
++// A fanned assistant runs burler-template-assist-reviewer-fanned in place of burler-template-assist-reviewer, whose write surface and seat directive name its lens reports and say its subagents are its own work, since a prompt that told it to work alone and write its report and nothing else kept the real seat from fanning.
+ // Its report and end marker sit under the anchor's .lym at the review path's subpath, named from the review's stem, the attempt token RunOpts.Round and the seat, so a retry never shares the first attempt's files.
+ // Its gate is the review-parse entry on its report, and its run is bounded by RunOpts.AssistTimeout; RunOpts.AssistSkip, or an assistant whose files cannot be composed, keeps it from starting with the reason in its marker.
+-// Once the chair has ended, fresh or resumed, the report of an assistant whose marker reads done is copied beside the review as AssistCopyPath names it, and ReviewResult.Assists says what became of each; no verdict or finding reads it.
++// Once the chair has ended, fresh or resumed, the report of an assistant whose marker reads done is copied beside the review as AssistCopyPath names it, and ReviewResult.Assists says what became of each, naming each lens a done fanned assistant returned no lens report for; no verdict or finding reads it.
+ // ProbeReview and ResumeReview build the same table from the same RunOpts, so the caller passes the recorded token and assistant.
+ //
+ // # The fix half
+diff --git a/internal/burlerengine/review.go b/internal/burlerengine/review.go
+index e7873e3c..3ec30172 100644
+--- a/internal/burlerengine/review.go
++++ b/internal/burlerengine/review.go
+@@ -239,7 +239,7 @@ func (e *Engine) concludeReview(p *Profile, opts RunOpts, seats seatengine.Resul
+ 	logger.Info("burler: review joined", "round", opts.Round, "reviewOutcome", reviewer.Outcome)
+ 
+ 	result := reviewResultOf(p, reviewer)
+-	result.Assists = keepAssistReports(p.ReviewPath, seats.Advisors)
++	result.Assists = keepAssistReports(p.ReviewPath, seats.Advisors, e.assistLensNames(opts.AssistFan))
+ 	if reviewer.Outcome != shuttleengine.OutcomeDone {
+ 		return result, nil
+ 	}
+diff --git a/internal/lensreport/doc.go b/internal/lensreport/doc.go
+index 3097f72d..cfdafb0d 100644
+--- a/internal/lensreport/doc.go
++++ b/internal/lensreport/doc.go
+@@ -1,6 +1,6 @@
+ // Package lensreport names the files a lens review's writer saves each lens fork's report in, so an audit reads every report from the run records.
+ // A report sits beside the record the writer records its lens review in, named from the record's stem: `<stem>.lens-<lens>.md`.
+-// PathPattern renders that name for a prompt, and IsReportName tells a record's reports from the other files in its directory.
+-// The writer session, not Go, writes each report, in the format the `twill-lens-report-spec` spec defines; SpecName names that spec.
++// PathPattern renders that name for a prompt, Path renders it for one lens, and IsReportName tells a record's reports from the other files in its directory.
++// The writer session, not Go, writes each report, in the format the `twill-lens-report-spec` spec defines; SpecName names that spec, and Returned reads a report's outcome, the one part of it Go reads.
+ // It imports the standard library only, so every lens review host and every check of a record's directory can share the naming.
+ package lensreport
+diff --git a/internal/lensreport/lensreport.go b/internal/lensreport/lensreport.go
+index e811289c..8d9142d1 100644
+--- a/internal/lensreport/lensreport.go
++++ b/internal/lensreport/lensreport.go
+@@ -1,8 +1,9 @@
+-// lensreport.go declares the lens report file name rule: PathPattern for a prompt, IsReportName for a directory check.
++// lensreport.go declares the lens report file name rule, PathPattern for a prompt, Path for one lens and IsReportName for a directory check, and reads a report's outcome with Returned.
+ 
+ package lensreport
+ 
+ import (
++	"os"
+ 	"path/filepath"
+ 	"strings"
+ )
+@@ -19,10 +20,24 @@ const reportInfix = ".lens-"
+ // reportExt is every report's extension.
+ const reportExt = ".md"
+ 
++// blockFence opens and closes a report's opening yaml block.
++const blockFence = "```"
++
++// outcomeKey is the key of the opening block's line that says whether the lens returned a final message.
++const outcomeKey = "outcome:"
++
++// outcomeReported is the outcome value of a lens that returned a final message.
++const outcomeReported = "reported"
++
+ // PathPattern returns the path a writer saves a lens fork's report at beside recordPath, with `<lens>` standing for the lens name.
+ // The record's extension is dropped, so `x/lens-review.md` gives `x/lens-review.lens-<lens>.md`.
+ func PathPattern(recordPath string) string {
+-	return reportStem(recordPath) + reportInfix + lensPlaceholder + reportExt
++	return Path(recordPath, lensPlaceholder)
++}
++
++// Path returns the path a writer saves the report of the lens named lens at beside recordPath.
++func Path(recordPath, lens string) string {
++	return reportStem(recordPath) + reportInfix + lens + reportExt
+ }
+ 
+ // IsReportName reports whether name is the file name of a lens report beside a record whose file name is recordName.
+@@ -36,6 +51,30 @@ func IsReportName(recordName, name string) bool {
+ 	return ok && lens != ""
+ }
+ 
++// Returned reports whether the lens report at path says its lens returned a report.
++// It reads the outcome line of the file's opening fenced yaml block alone.
++// An unreadable file, an absent one included, a file with no well-formed opening block and a report whose outcome is `no report` did not.
++func Returned(path string) bool {
++	content, err := os.ReadFile(path)
++	if err != nil {
++		return false
++	}
++	lines := strings.Split(string(content), "\n")
++	if !strings.HasPrefix(strings.TrimSpace(lines[0]), blockFence) {
++		return false
++	}
++	for _, line := range lines[1:] {
++		line = strings.TrimSpace(line)
++		if line == blockFence {
++			return false
++		}
++		if value, ok := strings.CutPrefix(line, outcomeKey); ok {
++			return strings.TrimSpace(value) == outcomeReported
++		}
++	}
++	return false
++}
++
+ // reportStem returns path without its extension.
+ func reportStem(path string) string {
+ 	return strings.TrimSuffix(path, filepath.Ext(path))
+diff --git a/internal/lensreport/lensreport_test.go b/internal/lensreport/lensreport_test.go
+index 4fb1c405..b573d21e 100644
+--- a/internal/lensreport/lensreport_test.go
++++ b/internal/lensreport/lensreport_test.go
+@@ -1,8 +1,9 @@
+-// lensreport_test.go pins the lens report path pattern and the report file name test.
++// lensreport_test.go pins the lens report path pattern, the report file name test and the outcome read.
+ 
+ package lensreport_test
+ 
+ import (
++	"os"
+ 	"path/filepath"
+ 	"testing"
+ 
+@@ -32,6 +33,59 @@ func TestPathPattern(t *testing.T) {
+ 	}
+ }
+ 
++func TestPath_NamesOneLensReportTheNameTestAccepts(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	record := filepath.Join("runs", "round-2-review.md")
++	want := filepath.Join("runs", "round-2-review.lens-code-tests.md")
++
++	got := lensreport.Path(record, "code-tests")
++
++	if got != want {
++		t.Errorf("Path(%q, code-tests) = %q; want %q", record, got, want)
++	}
++	if !lensreport.IsReportName(filepath.Base(record), filepath.Base(got)) {
++		t.Errorf("IsReportName(%q, %q) = false; want true", filepath.Base(record), filepath.Base(got))
++	}
++}
++
++func TestReturned(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name    string
++		content string
++		want    bool
++	}{
++		{"Reported", "```yaml\nlens: code-tests\noutcome: reported\n```\n\nThe final message.\n", true},
++		{"NoReport", "```yaml\nlens: code-tests\noutcome: no report\n```\n", false},
++		{"NoBlock", "A final message pasted with no block.\n", false},
++		{"CRLFLineEndings", "```yaml\r\nlens: code-tests\r\noutcome: reported\r\n```\r\n\r\nThe final message.\r\n", true},
++		{"TrailingWhitespace", "```yaml\nlens: code-tests\noutcome: reported  \n```\n", true},
++		{"NoBlockWhoseMessageHoldsTheLine", "A final message.\noutcome: reported\n", false},
++		{"LineAfterTheBlockCloses", "```yaml\nlens: code-tests\n```\n\noutcome: reported\n", false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			path := filepath.Join(t.TempDir(), "review.lens-code-tests.md")
++			if err := os.WriteFile(path, []byte(tt.content), 0o644); err != nil {
++				t.Fatalf("WriteFile() = %v; want nil", err)
++			}
++			if got := lensreport.Returned(path); got != tt.want {
++				t.Errorf("Returned(%q) = %v; want %v", tt.content, got, tt.want)
++			}
++		})
++	}
++
++	t.Run("AbsentFile", func(t *testing.T) {
++		t.Parallel()
++		if lensreport.Returned(filepath.Join(t.TempDir(), "absent.md")) {
++			t.Error("Returned(absent file) = true; want false")
++		}
++	})
++}
++
+ func TestIsReportName(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/seatengine/assistant.go b/internal/seatengine/assistant.go
+index 4570f4fa..7ca3d439 100644
+--- a/internal/seatengine/assistant.go
++++ b/internal/seatengine/assistant.go
+@@ -8,6 +8,7 @@ import (
+ 	"io/fs"
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fsx"
+@@ -81,14 +82,14 @@ func writeEnding(path, ending string) error {
+ 	return nil
+ }
+ 
+-// clearAssistantFiles removes each assistant's end marker and outputs a previous run left, so the chair of a fresh run never reads a stale one.
++// clearAssistantFiles removes each assistant's end marker, outputs and subagent reports a previous run left, so neither the chair nor a caller of a fresh run ever reads a stale one.
+ // A file already absent is no error.
+ func (e *Engine) clearAssistantFiles(table Table) error {
+ 	for _, seat := range table.Seats {
+ 		if !seat.Assistant {
+ 			continue
+ 		}
+-		for _, path := range e.absolute(append([]string{seat.EndMarker}, seat.Outputs...)) {
++		for _, path := range e.absolute(slices.Concat([]string{seat.EndMarker}, seat.Outputs, seat.SubagentReports)) {
+ 			if err := os.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
+ 				return fmt.Errorf("seatengine: seat %q: remove stale file %q: %w", table.seatLabel(seat), path, err)
+ 			}
+diff --git a/internal/seatengine/doc.go b/internal/seatengine/doc.go
+index a9cbeaf0..934ed3c2 100644
+--- a/internal/seatengine/doc.go
++++ b/internal/seatengine/doc.go
+@@ -109,10 +109,12 @@
+ // # Assistants
+ //
+ // A Seat marked Assistant writes its outputs and nothing else: it gets no up line and no mail, sends none, and so never needs creel.
+-// A table holds assistants only after the lead, the lead's stencil includes seat-directive-assistant-chair and every assistant's seat-directive-assistant, which tells it to ignore `[creel]` text in its pane.
++// A table holds assistants only after the lead, the lead's stencil includes seat-directive-assistant-chair and a solo assistant's seat-directive-assistant, which tells it to ignore `[creel]` text in its pane; a fanned assistant's stencil includes seat-directive-assistant-fanned instead, as below.
+ // Each assistant carries an EndMarker, a path no other seat's marker or output shares, which the engine writes once the assistant's run ends, whatever the ending, or when it does not start.
+ // The marker's text names the ending: done, only once the seat gate has passed; gate failed for a done run whose gate failed; died, timeout or stopped; the wait error; not started with its reason; not found.
+-// A fresh Run removes every assistant's stale marker and outputs before the chair starts.
++// An assistant that runs subagents names the files it saves their reports in as SubagentReports: its stencil includes seat-directive-assistant-fanned in place of seat-directive-assistant, which says the subagents are its own work and no other session, and the output_files marker lists those files after its outputs.
++// They are no outputs, so no run waits on one and no chair reads one.
++// A fresh Run removes every assistant's stale marker, outputs and subagent reports before the chair starts.
+ // An assistant whose SkipReason is set, whose start fails, or whose engine lacks an engine block its stencil includes does not start: its marker reads not started with the reason, a Warn names it, and the step goes on; Validate and CheckMarkers pass such a missing block over for an assistant alone.
+ // Its parent directive is the no-parent variant and its edit directive its engine's own copy, read through editdirective.EngineDirective.
+ // An assistant is never required and never ends the step: its held turn end stays quiet, the chair's hold deferral counts an unended one that reads mid-turn, and the engine stops every assistant when the chair ends, marking a stopped one stopped.
+diff --git a/internal/seatengine/engine.go b/internal/seatengine/engine.go
+index 658df9f8..57c88afe 100644
+--- a/internal/seatengine/engine.go
++++ b/internal/seatengine/engine.go
+@@ -241,7 +241,7 @@ func (e *Engine) endMarkerOf(seat Seat) string {
+ }
+ 
+ // Run starts table's seats fresh and returns once the chair has ended.
+-// Before the chair starts it removes every assistant's stale end marker and outputs.
++// Before the chair starts it removes every assistant's stale end marker, outputs and subagent reports.
+ // It starts the chair first, then the other seats in table order, and tells the chair of each advisor once its start ends: up, or never started; a writer gets no up line, since its done line is what the chair waits for, and an assistant gets none, since the chair waits on its end marker.
+ // A chair that fails to start starts no other seat and returns the error, which wraps shuttleengine.ErrNotStarted when the provider never came up.
+ // An advisor that fails to start is recorded and the step goes on without it.
+diff --git a/internal/seatengine/engine_test.go b/internal/seatengine/engine_test.go
+index 182b58c9..619a9194 100644
+--- a/internal/seatengine/engine_test.go
++++ b/internal/seatengine/engine_test.go
+@@ -483,7 +483,9 @@ func TestEngine_Run_AssistantRemovesStaleFilesBeforeTheChairStarts(t *testing.T)
+ 	engine, geom := engineFixture(t, shuttle)
+ 	table := assistantTable(geom.WorktreeRoot, 1)
+ 	marker, output := table.Seats[1].EndMarker, table.Seats[1].Outputs[0]
+-	for path, content := range map[string]string{marker: "done\n", output: "an old report"} {
++	subagentReport := filepath.Join(geom.WorktreeRoot, "advisor-1.lens-x.md")
++	table.Seats[1].Stencil, table.Seats[1].SubagentReports = "seat-test-fanned-assistant", []string{subagentReport}
++	for path, content := range map[string]string{marker: "done\n", output: "an old report", subagentReport: "an old lens report"} {
+ 		if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+ 			t.Fatalf("write the stale file: %v", err)
+ 		}
+@@ -492,7 +494,7 @@ func TestEngine_Run_AssistantRemovesStaleFilesBeforeTheChairStarts(t *testing.T)
+ 	ended := runAsync(engine, table)
+ 	// Nothing else removes a file, so a file gone once the chair has started was removed before it started.
+ 	shuttle.awaitStarts(1)
+-	for _, path := range []string{marker, output} {
++	for _, path := range []string{marker, output, subagentReport} {
+ 		if _, err := os.Stat(path); !errors.Is(err, os.ErrNotExist) {
+ 			t.Errorf("stat %s after the chair started = %v, want the stale file removed", path, err)
+ 		}
+diff --git a/internal/seatengine/prompt.go b/internal/seatengine/prompt.go
+index ee34da96..abf949d2 100644
+--- a/internal/seatengine/prompt.go
++++ b/internal/seatengine/prompt.go
+@@ -89,7 +89,7 @@ func seatValues(geom Geometry, table Table, seat Seat, names map[string]string)
+ 	values["assistants"] = assistantList(geom, table, names)
+ 	values["inputs"] = joinLines(seat.Inputs)
+ 	values["outputs"] = joinLines(seat.Outputs)
+-	values["output_files"] = joinLines(seat.Outputs)
++	values["output_files"] = joinLines(slices.Concat(seat.Outputs, seat.SubagentReports))
+ 	values["worktree_root"] = geom.WorktreeRoot
+ 	values["anchor_path"] = geom.AnchorPath
+ 	values["stencils_dir"] = geom.StencilsDir
+diff --git a/internal/seatengine/prompt_test.go b/internal/seatengine/prompt_test.go
+index 8f354071..3c2abd48 100644
+--- a/internal/seatengine/prompt_test.go
++++ b/internal/seatengine/prompt_test.go
+@@ -326,6 +326,23 @@ func TestPrompts_AssistantTable(t *testing.T) {
+ 		})
+ 	}
+ 
++	t.Run("AFannedAssistantListsItsSubagentReportsAfterItsOutputs", func(t *testing.T) {
++		t.Parallel()
++		fanned := assistantTable("", 1)
++		seat := &fanned.Seats[1]
++		seat.Stencil, seat.SubagentReports = "seat-test-fanned-assistant", []string{"/w/advisor-1.lens-x.md", "/w/advisor-1.lens-y.md"}
++
++		got, err := Prompts(geom, fanned)
++		if err != nil {
++			t.Fatalf("Prompts() = %v; want nil error", err)
++		}
++
++		prompt := got[seat.Name]
++		if want := seat.Outputs[0] + "\n/w/advisor-1.lens-x.md\n/w/advisor-1.lens-y.md\n"; !strings.Contains(prompt, want) {
++			t.Errorf("Prompts()[%q] lacks %q:\n%s", seat.Name, want, prompt)
++		}
++	})
++
+ 	t.Run("AnAdvisorTableListsNoAssistant", func(t *testing.T) {
+ 		t.Parallel()
+ 		advisors := promptTable()
+diff --git a/internal/seatengine/table.go b/internal/seatengine/table.go
+index 4360aefb..cc8f2333 100644
+--- a/internal/seatengine/table.go
++++ b/internal/seatengine/table.go
+@@ -32,9 +32,12 @@ const writerDirectiveBlock = "seat-directive-writer"
+ // assistantChairDirectiveBlock is the shipped block that tells the lead how to wait for its assistants, which the lead's stencil of an assistant table includes in place of chairDirectiveBlock.
+ const assistantChairDirectiveBlock = "seat-directive-assistant-chair"
+ 
+-// assistantDirectiveBlock is the shipped block that tells an assistant it writes its outputs and nothing else, which every assistant seat's stencil includes.
++// assistantDirectiveBlock is the shipped block that tells an assistant it writes its outputs and nothing else, which the stencil of an assistant with no subagent reports includes.
+ const assistantDirectiveBlock = "seat-directive-assistant"
+ 
++// fannedAssistantDirectiveBlock is the shipped block that tells an assistant running subagents that they are its own work and which files it writes, which the stencil of an assistant with subagent reports includes in place of assistantDirectiveBlock.
++const fannedAssistantDirectiveBlock = "seat-directive-assistant-fanned"
++
+ // reservedMarkers are the marker names the seat engine fills itself, sorted.
+ // A table or seat value may not use one of them.
+ var reservedMarkers = []string{
+@@ -110,6 +113,9 @@ type Seat struct {
+ 	Assistant bool
+ 	// EndMarker is an assistant's end-marker path, whose text names how its run ended; only an assistant carries one.
+ 	EndMarker string
++	// SubagentReports are the files an assistant saves its subagents' reports in, one per subagent; empty for an assistant that runs none.
++	// They are on its write surface but are no outputs, so a run that leaves one unwritten still ends done: the caller judges what a missing report means.
++	SubagentReports []string
+ 	// SkipReason, when set on an assistant, keeps it from starting: its end marker then reads not started with this reason.
+ 	SkipReason string
+ 	// Timeout bounds this seat's run; zero takes the table's Timeout.
+@@ -129,6 +135,14 @@ func (s Seat) stencilEngine(defaultEngine string) string {
+ 	return defaultEngine
+ }
+ 
++// assistantDirective returns the directive block this assistant's stencil includes: the fanned assistant's when it has subagent reports.
++func (s Seat) assistantDirective() string {
++	if len(s.SubagentReports) > 0 {
++		return fannedAssistantDirectiveBlock
++	}
++	return assistantDirectiveBlock
++}
++
+ // endsStep reports whether an end of this seat's run that its gate and Accept do not pass ends the step: a required advisor or a writer.
+ func (s Seat) endsStep() bool {
+ 	return s.Required || s.Writer
+@@ -214,7 +228,7 @@ func (t Table) Outputs() []string {
+ // defaultEngine is the engine a seat whose model choice names none runs on; an engine block its seat's engine has no copy of is refused naming the block, the engine and the file.
+ // An assistant is the exception: the missing block keeps it from starting instead, so the step goes on without it.
+ // The lead's stencil of an advisor table of more than one seat includes seat-directive-chair, the lead's stencil of a writer table includes seat-directive-writer-chair in its place, and the lead's stencil of an assistant table seat-directive-assistant-chair.
+-// A writer seat's stencil includes seat-directive-writer, and an assistant seat's seat-directive-assistant.
++// A writer seat's stencil includes seat-directive-writer, and an assistant seat's seat-directive-assistant, or seat-directive-assistant-fanned when the seat has subagent reports.
+ // A table or seat value neither collides with a reserved marker nor is blank, except a table value named in Optional, which may be blank; an Optional name may not be a reserved marker.
+ func (t Table) Validate(stencilsDir, defaultEngine string) error {
+ 	if err := agentname.ValidateRole(t.RolePrefix); err != nil {
+@@ -258,8 +272,8 @@ func (t Table) Validate(stencilsDir, defaultEngine string) error {
+ 		if seat.Writer && !slices.Contains(blocks, writerDirectiveBlock) {
+ 			return fmt.Errorf("seatengine: seat %q: the stencil %q does not include %s, which a writer needs; include %s in the writer's stencil", label, seat.Stencil, writerDirectiveBlock, writerDirectiveBlock)
+ 		}
+-		if seat.Assistant && !slices.Contains(blocks, assistantDirectiveBlock) {
+-			return fmt.Errorf("seatengine: seat %q: the stencil %q does not include %s, which an assistant needs; include %s in the assistant's stencil", label, seat.Stencil, assistantDirectiveBlock, assistantDirectiveBlock)
++		if directive := seat.assistantDirective(); seat.Assistant && !slices.Contains(blocks, directive) {
++			return fmt.Errorf("seatengine: seat %q: the stencil %q does not include %s, which this assistant needs; include %s in the assistant's stencil", label, seat.Stencil, directive, directive)
+ 		}
+ 	}
+ 	return nil
+diff --git a/internal/seatengine/table_test.go b/internal/seatengine/table_test.go
+index 4268dcc2..680ab06f 100644
+--- a/internal/seatengine/table_test.go
++++ b/internal/seatengine/table_test.go
+@@ -26,6 +26,7 @@ const (
+ 	assistantChairStencilBody = "Assistant chair of {{.seat_name}}.\n{{template \"seat-directive-assistant-chair\"}}\n"
+ 	assistantStencilBody      = "Assistant {{.seat_name}}.\n{{.parent_directive}}\n{{.edit_directive}}\n{{template \"seat-directive-assistant\"}}\n"
+ 	enginedAssistantBody      = "Assistant {{.seat_name}}.\n{{template \"seat-directive-assistant\"}}\n{{template \"engine-test-words\"}}\n"
++	fannedAssistantBody       = "Assistant {{.seat_name}}.\n{{.parent_directive}}\n{{.edit_directive}}\n{{template \"seat-directive-assistant-fanned\"}}\n"
+ )
+ 
+ // writeStencil writes body as the stencil name under dir, in the family folder stencilstore reads it from.
+@@ -51,6 +52,7 @@ func seatedStencils(t *testing.T) string {
+ 	writeStencil(t, dir, "seat-test-assistant-chair", assistantChairStencilBody)
+ 	writeStencil(t, dir, "seat-test-assistant", assistantStencilBody)
+ 	writeStencil(t, dir, "seat-test-engined-assistant", enginedAssistantBody)
++	writeStencil(t, dir, "seat-test-fanned-assistant", fannedAssistantBody)
+ 	writeStencil(t, dir, "seat-test-engined-chair", "Chair of {{.seat_name}}.\n{{template \"seat-directive-chair\"}}\n{{template \"engine-test-words\"}}\n")
+ 	writeStencil(t, dir, "seat-test-engined-advisor", "Advisor {{.seat_name}}.\n{{template \"seat-directive-advisor\"}}\n{{template \"engine-test-words\"}}\n")
+ 	writeStencil(t, dir, stencilstore.EngineBlockName("claude", "test-words"), "Claude words.\n")
+@@ -194,6 +196,18 @@ func TestTable_Validate(t *testing.T) {
+ 			asAssistants(tb)
+ 			tb.Seats[2].Stencil = "seat-test-advisor"
+ 		}, wantErr: `seat "multi-advisor-2": the stencil "seat-test-advisor" does not include seat-directive-assistant`},
++		{name: "an assistant with subagent reports whose stencil holds the solo directive", mutate: func(tb *Table) {
++			asAssistants(tb)
++			tb.Seats[2].SubagentReports = []string{"/w/a2.lens-x.md"}
++		}, wantErr: `seat "multi-advisor-2": the stencil "seat-test-assistant" does not include seat-directive-assistant-fanned`},
++		{name: "an assistant with no subagent reports whose stencil holds the fanned directive", mutate: func(tb *Table) {
++			asAssistants(tb)
++			tb.Seats[2].Stencil = "seat-test-fanned-assistant"
++		}, wantErr: `seat "multi-advisor-2": the stencil "seat-test-fanned-assistant" does not include seat-directive-assistant,`},
++		{name: "an assistant with subagent reports on the fanned directive is accepted", mutate: func(tb *Table) {
++			asAssistants(tb)
++			tb.Seats[2].Stencil, tb.Seats[2].SubagentReports = "seat-test-fanned-assistant", []string{"/w/a2.lens-x.md"}
++		}},
+ 		{name: "an assistant whose engine lacks an engine block its stencil includes", mutate: func(tb *Table) {
+ 			asAssistants(tb)
+ 			tb.Seats[1].Stencil, tb.Seats[1].Engine = "seat-test-engined-assistant", "gemini"
+diff --git a/internal/shedadapters/burlerreview.go b/internal/shedadapters/burlerreview.go
+index 6789aa60..a4420efe 100644
+--- a/internal/shedadapters/burlerreview.go
++++ b/internal/shedadapters/burlerreview.go
+@@ -422,6 +422,12 @@ func (p *BurlerReviewProducer) acceptedExit(ctx context.Context, round int, resu
+ 	half := reviewHalfUsage(review, result.Review)
+ 	err := mergeRoundUsage(p.runDir, round, p.now, func(u *roundUsage) {
+ 		u.Lenses, u.Review = result.Lenses, &half
++		// Cleared first so a later attempt that ran no assistant never keeps an earlier attempt's ending.
++		u.AssistEnding, u.AssistLensesMissing = "", nil
++		// A review table holds one assistant at most.
++		for _, assist := range result.Assists {
++			u.AssistEnding, u.AssistLensesMissing = assist.Ending, assist.MissingLenses
++		}
+ 	})
+ 	if err != nil {
+ 		logger.Warn("shedadapters: burler review's usage record was not written", "producer", p.name, "engine", burlerReviewEngineLabel, "round", round, "error", err)
+diff --git a/internal/shedadapters/burlerreview_assist_test.go b/internal/shedadapters/burlerreview_assist_test.go
+index cea06367..44f5193d 100644
+--- a/internal/shedadapters/burlerreview_assist_test.go
++++ b/internal/shedadapters/burlerreview_assist_test.go
+@@ -165,6 +165,52 @@ func TestBurlerReviewProducer_Call_RecordsAttempt(t *testing.T) {
+ 	})
+ }
+ 
++// TestBurlerReviewProducer_Call_RecordsAssistOutcome proves an accepted round's usage record says how its assistant ended and which lenses it returned no report for, and that a round with no assistant records neither.
++func TestBurlerReviewProducer_Call_RecordsAssistOutcome(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name         string
++		assists      []burlerengine.AssistOutcome
++		wantEnding   string
++		wantMissing  []string
++		staleEnding  string
++		staleMissing []string
++	}{
++		{name: "a fan that returned every lens", assists: []burlerengine.AssistOutcome{{Seat: "assist", Ending: "done"}}, wantEnding: "done"},
++		{name: "a fanned seat that went solo", assists: []burlerengine.AssistOutcome{{Seat: "assist", Ending: "done", MissingLenses: []string{"a", "b"}}}, wantEnding: "done", wantMissing: []string{"a", "b"}},
++		{name: "an assistant that timed out", assists: []burlerengine.AssistOutcome{{Seat: "assist", Ending: "timeout"}}, wantEnding: "timeout"},
++		{name: "no assistant"},
++		{name: "a later attempt with no assistant clears an earlier attempt's outcome", staleEnding: "done", staleMissing: []string{"a"}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			runDir := t.TempDir()
++			if tt.staleEnding != "" {
++				stale := roundUsage{AssistEnding: tt.staleEnding, AssistLensesMissing: tt.staleMissing}
++				if err := writeRoundUsage(runDir, 1, stale); err != nil {
++					t.Fatalf("writeRoundUsage: %v", err)
++				}
++			}
++			result := reviewDone("d")
++			result.Assists = tt.assists
++			runner := &shedfake.BurlerHalfRunner{ReviewResults: []burlerengine.ReviewResult{result}}
++			p := newReviewProducer(t, runDir, runner, newHalfSpec())
++
++			shedfake.CallOK(t, p)
++
++			usage, err := readRoundUsage(runDir, 1)
++			if err != nil {
++				t.Fatalf("readRoundUsage() = %v; want nil", err)
++			}
++			if usage.AssistEnding != tt.wantEnding || !reflect.DeepEqual(usage.AssistLensesMissing, tt.wantMissing) {
++				t.Errorf("record assist ending %q, lenses missing %v; want %q and %v", usage.AssistEnding, usage.AssistLensesMissing, tt.wantEnding, tt.wantMissing)
++			}
++		})
++	}
++}
++
+ // TestBurlerReviewProducer_Call_ProbeFromAttemptRecord proves the probe builds its options from the round's usage record, never from the deps' current assistant settings.
+ // A recorded retry token and assistant are probed as recorded, and a record without the attempt key, as an older binary wrote it, is probed as the bare round with no assistant.
+ func TestBurlerReviewProducer_Call_ProbeFromAttemptRecord(t *testing.T) {
+diff --git a/internal/shedadapters/doc.go b/internal/shedadapters/doc.go
+index 36ae79df..2d3412c8 100644
+--- a/internal/shedadapters/doc.go
++++ b/internal/shedadapters/doc.go
+@@ -244,6 +244,7 @@
+ // Round 1 runs the whole fan and drops a focus file's excludes, and an excluded lens returns only with a new generation, since an archived generation moves the whole run directory aside.
+ // Every completed round, solo and fanned, also leaves round-<N>-usage.yaml beside them:
+ // the fan and lenses the round ran, the fixer fan and, for a twill fixer, its `fix_lenses` and `fix_forks`, and each half's engine and model, run times, wall time and tokens, forks included, with an unknown reading left unknown rather than zero.
++// An assisted round also records the assistant's `assist_fan`, the ending its end marker read as `assist_ending`, and as `assist_lenses_missing` each lens a done fanned assistant returned no lens report for, so a seat that went solo reads as one.
+ // The record also carries the Bouncer's `seed` and `judge` lists, one entry per pass in the same half shape.
+ // The Bouncer appends an entry for every pass whose result reached the Call, a judgment the guard refuses included, so a re-judged round lists every pass it took;
+ // a pass whose run errored, and a judgment a later Call settles from disk, record nothing, and a failed write only logs a warning.
+diff --git a/internal/shedadapters/roundusage.go b/internal/shedadapters/roundusage.go
+index 84c53183..3d321196 100644
+--- a/internal/shedadapters/roundusage.go
++++ b/internal/shedadapters/roundusage.go
+@@ -59,6 +59,10 @@ type roundUsage struct {
+ 	Attempt   string        `yaml:"attempt,omitempty"`
+ 	Assist    *assistRecord `yaml:"assist,omitempty"`
+ 	AssistFan string        `yaml:"assist_fan,omitempty"`
++	// AssistEnding is the assistant's end marker text once the round is accepted, and AssistLensesMissing names each lens of a done fanned assistant that returned no lens report.
++	// A round whose AssistEnding reads done and that names no lens ran its whole fan, so AssistFan alone never says the fan ran.
++	AssistEnding        string   `yaml:"assist_ending,omitempty"`
++	AssistLensesMissing []string `yaml:"assist_lenses_missing,omitempty"`
+ }
+ 
+ // assistRecord is the assistant model choice a round's review table spawned with.
+diff --git a/pattern/PATTERN-sole-parsers.md b/pattern/PATTERN-sole-parsers.md
+index 053e9308..44ded816 100644
+--- a/pattern/PATTERN-sole-parsers.md
++++ b/pattern/PATTERN-sole-parsers.md
+@@ -12,6 +12,7 @@ Each on-disk format has one parser; consumers read only its model.
+ - The halt note: `internal/haltnote`.
+ - The drift expectation and judgement: `internal/driftengine`.
+ - The raddle proposal: `internal/raddleparser`.
++- The lens report's outcome: `internal/lensreport`.
+ 
+ A format another task adds joins this list with its sole parser.
+ 
+@@ -72,6 +73,10 @@ Both files are agent-written, so both parsers are strict and refuse an unknown k
+ It imports the standard library and `internal/discussionparser` only, and reads the Sketch's decision record through `internal/discussionparser` alone.
+ Consumers read only the `raddleparser.Proposal` model and the findings its checks return.
+ 
++## Lens report outcome (`internal/lensreport`)
++
++`internal/lensreport`'s `Returned` is the sole Go reader of a lens report, in the format `contracts/specs/twill-lens-report-spec.md` pins, and it reads the `outcome` key alone.
++
+ ## Fixer report format (`internal/landingshed`)
+ 
+ `internal/landingshed`'s `ParseFixerReport` is the sole parser of the merge fixer's report format, which `contracts/specs/landing-fixer-report-spec.md` defines.
