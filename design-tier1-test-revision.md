@@ -1,6 +1,6 @@
 # Revise tier 1: what makes it slow, and which tests to change, fold or cut
 
-`tier1-test-revision` · Task · research, fabric · running · Code-Bouncer
+`tier1-test-revision` · Task · research, fabric · running · Drift-Recheck
 
 ## Decision (operator, 2026-11-06)
 
