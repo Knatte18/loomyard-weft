@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-06 11:45 UTC; every age below is as of then.
+Rendered 2026-11-06 11:47 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -50,7 +50,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 1h<br>5m | codex, shuttle |
+| R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 1h<br>7m | codex, shuttle |
 
 #### Features (1)
 
@@ -58,11 +58,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 3d<br>18h | shuttle, codex, loom |
 
-## [P0 Root: entries under no project](project-root.md) (25)
+## [P0 Root: entries under no project](project-root.md) (26)
 
 Owner `neve`
 
-### Tasks (5)
+### Tasks (6)
 
 Concrete and claimable; only a task can run.
 
@@ -90,12 +90,13 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T7 | **Shorten the orch role file, the largest single start cost**<br>• role.md costs 19,390 tokens per read: shorten it, or move rarely used parts to a file the orch reads on demand<br>• `drift: scope off` | [`orch-role-shorter`](design-orch-role-shorter.md) | darn · solid | T2 | 15h<br>1h | orch |
 
-#### Draft (1)
+#### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
+| T1 | `draft` **Try the Codex assistant reviewer with its lens fan**<br>• A Claude darn docs writer spawns Astra with lenses on a real commit, and the run review then uses the real fanned seat: does the fan work, and what does it cost<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]`<br>• `loom: code_max_bounces 1` | [`codex-assist-fan-trial`](design-codex-assist-fan-trial.md) | darn · docs |  | 0m<br>0m | codex, shuttle |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light |  | 5d<br>22h | fabric |
 
 ### Notes (20)
