@@ -658,6 +658,25 @@
       },
       "profile": "solid",
       "notify_on_land": true
+    },
+    {
+      "id": 1170,
+      "handle": "B3",
+      "slug": "plugin-skilloverrides-ignored",
+      "title": "session scope: skillOverrides off does not hide a plugin's skills",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "claude",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Claude Code 2.1.319 still lists scribe skills the scope sets off",
+      "body": "A spawned role launched in the sandbox hub with the scope on (settings file written by claudeengine, skillOverrides naming scribe:python-testing, scribe:conversation and ten more as off) still lists all fourteen scribe skills in its skill listing. The anthropic-skills listing is gone, but that is not isolated from disableClaudeAiConnectors. The binary reads plugin skills overrides only through the synced-skill path, as the trial predicted. Evidence and numbers: docs/research/tokens/session-scope-launch-2026-11-06/report.md. A fix is another lever for plugin skills, or dropping the plugin skill names from skill_scope output.",
+      "created": "2026-11-06T10:11:19Z",
+      "revised": "2026-11-06T10:11:19Z"
     }
   ],
   "prime_owner": "neve",
