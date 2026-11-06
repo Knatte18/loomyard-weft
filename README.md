@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-06 10:12 UTC; every age below is as of then.
+Rendered 2026-11-06 10:13 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -22,7 +22,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **What makes runs slow and what would make them faster: deep analysis**<br>• Account for where run time goes, rank the causes and the changes that would cut it, from recorded data<br>• `darn: writer fable[high]` | [`repo-size-run-time`](design-repo-size-run-time.md) | darn · docs | Darn-Write | neve | 16m<br>13m | report, loom |
+| T1 | **What makes runs slow and what would make them faster: deep analysis**<br>• Account for where run time goes, rank the causes and the changes that would cut it, from recorded data<br>• `darn: writer fable[high]` | [`repo-size-run-time`](design-repo-size-run-time.md) | darn · docs | Darn-Write | neve | 17m<br>14m | report, loom |
 
 #### Ready (0)
 
@@ -58,7 +58,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 8m<br>2m | codex, shuttle |
+| R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 9m<br>3m | codex, shuttle |
 
 #### Features (1)
 
@@ -121,11 +121,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 | L | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• The Slack reminder ping while a PR-Review waits has landed; only the silence in status views remains, which the operator chose not to build | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 2d<br>31m | landing, loom, batten |
+| B1 | L | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• The Slack reminder ping while a PR-Review waits has landed; only the silence in status views remains, which the operator chose not to build | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 2d<br>32m | landing, loom, batten |
 | B2 |  | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | 14h<br>14h | tools, claude |
-| B3 |  | **session scope: skillOverrides off does not hide a plugin's skills**<br>• Claude Code 2.1.319 still lists scribe skills the scope sets off | [`plugin-skilloverrides-ignored`](design-plugin-skilloverrides-ignored.md) | 1m<br>1m | claude, shuttle |
+| B3 |  | **session scope: skillOverrides off does not hide a plugin's skills**<br>• Claude Code 2.1.319 still lists scribe skills the scope sets off | [`plugin-skilloverrides-ignored`](design-plugin-skilloverrides-ignored.md) | 2m<br>2m | claude, shuttle |
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 17h<br>17h | reed, orch |
-| B5 |  | **session scope: scoped sessions load a Workflow tool schema about 5,800 tokens larger**<br>• With the scope on, the Workflow tool carries its authoring reference, giving back most of what the scope saves | [`scope-enlarges-workflow-schema`](design-scope-enlarges-workflow-schema.md) | 1m<br>1m | claude, shuttle |
+| B5 |  | **session scope: scoped sessions load a Workflow tool schema about 5,800 tokens larger**<br>• With the scope on, the Workflow tool carries its authoring reference, giving back most of what the scope saves | [`scope-enlarges-workflow-schema`](design-scope-enlarges-workflow-schema.md) | 2m<br>2m | claude, shuttle |
 
 #### Enhancements (3)
 
@@ -151,11 +151,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>17h | burler, shed, orch, quarry, report |
 | F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 1d<br>1d | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 1d<br>1d | batten, board, fabric, workspaces |
-
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T3 | **Trial the session-scope settings in a real launch and re-measure start load**<br>• Check each lever ly-plugin-off-in-other-hubs writes works in Claude Code, and measure one spawned role's and the orch's start load after it | [`session-scope-launch-trial`](design-session-scope-launch-trial.md) | 15h<br>8m | claude, shuttle |

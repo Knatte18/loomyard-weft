@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-06 10:12 UTC; every age below is as of then.
+Rendered 2026-11-06 10:13 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -59,11 +59,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 | L | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• The Slack reminder ping while a PR-Review waits has landed; only the silence in status views remains, which the operator chose not to build | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 2d<br>31m | landing, loom, batten |
+| B1 | L | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• The Slack reminder ping while a PR-Review waits has landed; only the silence in status views remains, which the operator chose not to build | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 2d<br>32m | landing, loom, batten |
 | B2 |  | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | 14h<br>14h | tools, claude |
-| B3 |  | **session scope: skillOverrides off does not hide a plugin's skills**<br>• Claude Code 2.1.319 still lists scribe skills the scope sets off | [`plugin-skilloverrides-ignored`](design-plugin-skilloverrides-ignored.md) | 1m<br>1m | claude, shuttle |
+| B3 |  | **session scope: skillOverrides off does not hide a plugin's skills**<br>• Claude Code 2.1.319 still lists scribe skills the scope sets off | [`plugin-skilloverrides-ignored`](design-plugin-skilloverrides-ignored.md) | 2m<br>2m | claude, shuttle |
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 17h<br>17h | reed, orch |
-| B5 |  | **session scope: scoped sessions load a Workflow tool schema about 5,800 tokens larger**<br>• With the scope on, the Workflow tool carries its authoring reference, giving back most of what the scope saves | [`scope-enlarges-workflow-schema`](design-scope-enlarges-workflow-schema.md) | 1m<br>1m | claude, shuttle |
+| B5 |  | **session scope: scoped sessions load a Workflow tool schema about 5,800 tokens larger**<br>• With the scope on, the Workflow tool carries its authoring reference, giving back most of what the scope saves | [`scope-enlarges-workflow-schema`](design-scope-enlarges-workflow-schema.md) | 2m<br>2m | claude, shuttle |
 
 ### Enhancements (3)
 
@@ -89,11 +89,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>17h | burler, shed, orch, quarry, report |
 | F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 1d<br>1d | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 1d<br>1d | batten, board, fabric, workspaces |
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T3 | **Trial the session-scope settings in a real launch and re-measure start load**<br>• Check each lever ly-plugin-off-in-other-hubs writes works in Claude Code, and measure one spawned role's and the orch's start load after it | [`session-scope-launch-trial`](design-session-scope-launch-trial.md) | 15h<br>8m | claude, shuttle |
