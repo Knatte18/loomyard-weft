@@ -2,8 +2,6 @@
 
 `decision-withdraw-pattern` · Task · bug, loom, parsers, pattern · running · Darn-Write
 
-Depends on: [`raddle-motif-finish-clean`](design-raddle-motif-finish-clean.md)
-
 ## Seen (orch, 2026-11-05)
 
 The `slack-relay` record, filed by raddle, declared `PATTERN-reap-children` (changes) and `PATTERN-slack-boundary` (adds), while its Delivers line folded both into the live clusters `PATTERN-child-processes` and `PATTERN-agent-addressing`.
