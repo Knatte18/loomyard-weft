@@ -73,7 +73,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | Code-Bouncer | neve | 18h<br>18h | creel, orch |
-| T3 | **Measure what the session scope fix gives in a real launch**<br>• Two real launches in lyt: first-request tokens against the launch trial, Workflow gone, preloaded skills kept | [`session-scope-fix-measure`](design-session-scope-fix-measure.md) | darn · docs | Seed-Child | neve | 30m<br>30m | claude, shuttle |
+| T3 | **Measure what the session scope fix gives in a real launch**<br>• Two real launches in lyt: first-request tokens against the launch trial, Workflow gone, preloaded skills kept | [`session-scope-fix-measure`](design-session-scope-fix-measure.md) | darn · docs | Open-Window | neve | 30m<br>30m | claude, shuttle |
 | T5 | **A fanned assistant seat is told to work alone, and ran without its lenses**<br>• The composed prompt forbids what the fan asks for; the real seat went solo and no record flagged it<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`assist-fan-seat-work-alone`](design-assist-fan-seat-work-alone.md) | darn · light | Darn-Write | neve | 11m<br>4m | burler, stencil, codex |
 
 #### Ready (0)
