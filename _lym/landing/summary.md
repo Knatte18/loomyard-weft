@@ -1,25 +1,32 @@
-# Report the first run of the Codex assistant reviewer with its lens fan
+# Report the first Codex assistant review run with its lens fan
 
-The assistant reviewer ran solo on Codex once before, and the fan variant, `code_assist_reviewer_fan`, had never run.
-This change adds `docs/research/codex/review/assist-fan-trial-2026-11-06/report.md` and its `data/`, and changes no source.
+Adds a research report and its data under `docs/research/codex/review/assist-fan-trial-2026-11-06/`; no source or contract changes.
+The assistant reviewer had run solo on Codex, but the fan (`code_assist_reviewer_fan`) never had, and no lym fork audit covers the subagents the Codex `assist-fan` stencil has Codex spawn with `spawn_agent`.
+This trial answers whether Astra with lenses works.
 
-## What changes
+One `lym shuttle run --model "astra[medium]"` reviewed the landed commit `b93a0a52` with the three lenses of the `review-code` fan.
+The report records:
 
-- One `lym shuttle run --model "astra[medium]"` reviewed landed commit `b93a0a52` with the three `review-code` lenses, from a prompt built by hand out of the stencils an assistant reads.
-  There was no retry and no headless launch.
-- The report records that a subagent started for each lens, all three returned, and Astra waited for them inside its one turn.
-  The consolidated review passes `lym burler validate-review`, the check `ReviewGateEntry` names.
-- It gives the wall time (266 s), the tokens from Codex's session records, and the three `MEDIUM` findings, each checked against the tree and found real.
-- It compares them with `round-1-review.md` and the solo assistant report at weft commit `327f541d1d`, and says the comparison is rough: those read the code before its fixes.
-- `data/` holds the prompt, the review and the three lens reports verbatim.
+- The fan worked: one subagent started per lens, all three returned, and the assistant waited for them with `wait_agent` inside its one turn.
+- The consolidated review passes `lym burler validate-review`.
+- The turn took about 266 s; token figures for the handler and each lens come from Codex's own session records.
+- It returned three `MEDIUM` findings, each checked against the tree and found real.
+  The report compares them with the earlier review of the same change, and says the comparison is rough because that review read the code before its fixes.
+
+`data/` holds the prompt, the review and the three lens reports verbatim.
+
+Closes: none; the task has no linked issue.
 
 ## Design decisions
 
-- The prompt was composed by hand, since no verb composes an assistant prompt outside a round, so the report lists that as a limit; the real composition is tested by the task's Code-Review seat.
-- Part 2 of the board entry, the real composed seat, is not done by the writer: the report names it as still to come, as the entry asks.
-- The two wording differences found in the Codex `assist-fan` block (`wait` against `wait_agent`, spawns not issued in one go) are reported, not changed, because the entry bounds the task to no code change and neither broke the run.
+- The prompt was composed by hand from the stencils an assistant reads, since no verb composes it outside a round.
+  The rubric is a four-line stand-in.
+  The report names this as a limit.
+- Two wording points in the Codex `assist-fan` block are filed as notes, not fixed: the block says `wait` where Codex's tool is `wait_agent`, and says to spawn "all in one go" where Astra issued the spawns as separate calls over 29 s.
+  Neither broke the run.
 
-## Testing
+## To check by hand
 
-No code changed, so no test applies.
-`lym burler validate-review` accepts the saved review.
+- Part 2 of the task, the real composed seat, is not in this change: this task's `run_settings` run Code-Review with the assistant fanned, and the report names that part as still to come.
+- The report could not check that the subagent prompts held only the boilerplate and the lens text, since they are encrypted in the session record.
+- One run on one commit: the report makes no claim that the fan finds this much on a typical diff or twice in a row.
