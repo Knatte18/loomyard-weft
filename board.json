@@ -662,6 +662,27 @@
       "created": "2026-11-06T10:03:49Z",
       "revised": "2026-11-06T10:03:49Z",
       "project": "codex-engine-trial"
+    },
+    {
+      "id": 1169,
+      "handle": "B3",
+      "slug": "drift-judge-scope-record-halt",
+      "title": "drift: the judge guard halts on lym's own scope.json write",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "drift",
+        "loom"
+      ],
+      "issues": [
+        74
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #74](https://github.com/Knatte18/loomyard/issues/74).\n\nSeen: after a judge snapshot was gone, 'lym loom resume' halted again at once: 'the judge session changed what it may not: records: src/csharp/NORCE.Models/_lym/drift/scope.json was changed'. The only change to scope.json is lym's own removal of \"snapshot_lost\": true.\n\nCause: internal/driftengine/verify.go, resumeJudgeSession, takes the new snapshot with TakeJudgeSnapshot first and then clears scope.SnapshotLost with WriteRecords. That record write lands after the snapshot, so judgeSessionChanged names scope.json as a change the judge made. The designed way to recover a lost snapshot therefore always halts.\n\nWorkaround used: set the snapshot's records head in snapshot.json to the records checkout's current HEAD, then 'lym loom resume'.\n\nExpected: clear SnapshotLost before taking the snapshot, or exempt the drift records lym writes itself (scope.json, judged.json) from the judge's write guard. Related: #72, #73.\n",
+      "created": "2026-11-06T10:03:55Z",
+      "revised": "2026-11-06T10:03:55Z"
     }
   ],
   "prime_owner": "neve",
