@@ -603,7 +603,7 @@
       "id": 1168,
       "handle": "R1",
       "slug": "codex-assist-review-trial",
-      "title": "Same real change written by a Codex and a Claude writer, time, cost and quality compared",
+      "title": "Codex as assistant Code-Review reviewer on real darn runs",
       "kind": "note",
       "labels": [
         "research",
@@ -613,10 +613,10 @@
       "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "Two darn runs of one real lym bug, one writer each; land the better, cancel the other",
-      "body": "## Idea\n\nThe only darn run end to end with a Codex writer was `codex-greet`, a toy change in the sandbox hub `lyt`, whose repository holds 9 files; it says nothing of time or quality on real work.\nThe runtime report `task-runtime-before-after-2026-11-06` also names the same task run twice as the fair test.\n\nProposed: run one real bug of this hub twice as darn light, the same body, one with the default Claude writer and one with `luna[high]`, each held before Finalize, then compare time, cost, review findings and the diff, land the better and cancel the other.\n\nThe operator approved the comparison on 2026-11-06; where it runs and on which bug is open.",
+      "brief": "Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer",
+      "body": "## Decision (operator, 2026-11-06)\n\nCodex is used for review first, or as a support reviewer, not as a writer: the operator does not trust that it writes in the same tone as Claude.\nThe earlier idea of a writer comparison is dropped.\n\n## Idea\n\n already has : an extra reviewer beside the Code-Review reviewer, whose report the reviewer consolidates and which never gates the round.\nSet it per task through , as , on real darn runs, and read afterwards what Codex found that the Claude reviewer did not, its false findings, and the time it added.\nThe benches  and  found Codex no stand-in for the Claude fan but with real findings of its own, which fits a support role.\nFirst input proposed: the Webster bug B7 , as darn light.",
       "created": "2026-11-06T10:03:49Z",
-      "revised": "2026-11-06T10:03:49Z",
+      "revised": "2026-11-06T10:09:31Z",
       "project": "codex-engine-trial"
     },
     {

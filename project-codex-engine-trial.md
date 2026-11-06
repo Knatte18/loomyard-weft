@@ -57,7 +57,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Same real change written by a Codex and a Claude writer, time, cost and quality compared**<br>• Two darn runs of one real lym bug, one writer each; land the better, cancel the other | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 5m<br>5m | codex, shuttle |
+| R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 5m<br>0m | codex, shuttle |
 
 ### Features (1)
 
