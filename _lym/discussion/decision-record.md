@@ -200,6 +200,14 @@ Rationale: Operator, 2026-11-05: forged mail must never reach an agent. If a gen
   - identical-message-after-id-restart-stored-nowhere (class design, severity MEDIUM, open in rounds 3)
 <!-- /lym:carry-over Discussion-Review -->
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/plan/round-2-review.md; fixer report: _lym/reviews/plan/round-2-fixer-report.md.
+  - card1-none-refusal-way-forward-false-for-hubs (class consistency, severity MEDIUM, open in rounds 2)
+  - card8-neither-word-answer-and-test-inputs-unnamed (class scope, severity MEDIUM, open in rounds 2)
+  - extends-used-where-card-rewrites-lines (class consistency, severity MEDIUM, open in rounds 2)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - D1: a daemon's start records its hub, drops entries whose hub path is gone or whose Bolt shortname reads another valid shortname, and keeps an entry whose shortname record cannot be read; a lookup by shortname answers the one matching hub, refuses an unknown shortname naming `lym creel inbox` in that hub, and refuses a shortname two hubs share naming both paths; two daemons recording at once both stay in the record; a test's record lives in its own directory.
