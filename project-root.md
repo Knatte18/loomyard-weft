@@ -56,8 +56,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B1 | L | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• A Slack reminder ping while a PR-Review waits is now task T6; only the silence in status views remains | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 2d<br>13h | landing, loom, batten |
 | B2 |  | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | 13h<br>13h | tools, claude |
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 16h<br>16h | reed, orch |
-| B5 |  | **drift: Drift-Recheck halts on a capture's provenance file even when the compare command passed** | [`drift-capture-provenance-halt`](design-drift-capture-provenance-halt.md) | 24m<br>24m | drift, config |
-| B6 |  | **drift: config reconcile leaves the retired {skip_file} placeholder in capture and compare commands** | [`drift-retired-skip-file-kept`](design-drift-retired-skip-file-kept.md) | 24m<br>24m | drift, config, reconcile |
+| B5 |  | **drift: Drift-Recheck halts on a capture's provenance file even when the compare command passed** | [`drift-capture-provenance-halt`](design-drift-capture-provenance-halt.md) | 25m<br>25m | drift, config |
+| B6 |  | **drift: config reconcile leaves the retired {skip_file} placeholder in capture and compare commands** | [`drift-retired-skip-file-kept`](design-drift-retired-skip-file-kept.md) | 25m<br>24m | drift, config, reconcile |
 | B7 |  | **webster begin-batch reports a delete-before-reference plan ordering finding as plan_conflict: tree_moved** | [`begin-batch-wrong-conflict-kind`](design-begin-batch-wrong-conflict-kind.md) | 24m<br>24m | webster |
 
 ### Enhancements (4)
