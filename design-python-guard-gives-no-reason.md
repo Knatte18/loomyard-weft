@@ -1,6 +1,6 @@
 # The python guard refuses without saying why or what to do when a task needs Python
 
-`python-guard-gives-no-reason` · Task · enhancement, shuttle
+`python-guard-gives-no-reason` · Task · enhancement, shuttle · running · Worktree-Create
 
 ## Seen
 
