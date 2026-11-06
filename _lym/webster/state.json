@@ -1,13 +1,13 @@
 {
   "runGuid": "c9d1faf2e6f9444f9ab230128527b9a0",
-  "planFingerprint": "37b5195857a7d0cb3823ab6dab30831dd6e467582be12a9838ee9568d480aee7",
+  "planFingerprint": "8fb82583130c6b004eb8335b9113258409b8542017d3753766e9e95f8f5204ab",
   "planFileHashes": {
     "00-overview.md": "7eda65004b68b6712e29af7ab6f09ed332aa95fd2490fe2e7c2611b24f865b44",
-    "01-hub-registry.md": "bb78ed1994ce93f034411394201d22d0347a3f3230e7debee4d2dab6b93e6b0a",
-    "02-creel-config.md": "34fe0df7e60856fe4138aaee72224042a284e13c1770cfa886f813edfc1b3fad",
-    "03-cross-hub-records.md": "c4384f082045e7b12fded4737fcfbf9dcf015519aa4ca8e4bd8497b0ddabe1a6",
-    "04-hub-directory.md": "a39412baf88f9b1a48a268fad6a1b9f8a595ed5fb1808443066c46c013105368",
-    "05-hubs-verb.md": "7094a429e5a2d2c55669f6bb174c1eeb752b2fd8d1df59fee50fe574e74848ad",
+    "01-hub-registry.md": "21d868a93ac820f6c34464200d3973964b9a6e20423faa95bda24ef566949d7b",
+    "02-creel-config.md": "aa6865fb8d151aab4d3ca20cb70c3315a39a3d4ad40c44e684c0e680de7b5e8f",
+    "03-cross-hub-records.md": "3ad2f8bf0ab49df714c8c45be2de384aff2caa4dd54c321df54be9860c6891f1",
+    "04-hub-directory.md": "864ade2d6ca9864907f4b6f6eee3ae42c9939c2862a9b8214ba90772e6e08248",
+    "05-hubs-verb.md": "8d3d21ea182a7ddf24cd2372d4b560206d28983ab37e058a9561ceb37d23bb36",
     "06-post-to-another-hub.md": "99c590dee2d890552a440a0a820ad15e108cd0f5821acf226dd8920799b702ff",
     "07-receive-and-confirm.md": "f0b58a4ad36f21fe9f59b16a8cd8ffc3cd593d3ba95918387756214114c368bf",
     "08-outbound-worker.md": "030d6ff4387c7704285758c7649ac8664ee251bbd59d698b788306a1e2784177",
@@ -272,7 +272,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "a5ae1976d1b919da7f49bf886c2eeaa5",
   "masterSessionId": "6682a1ac-6e57-4c27-90a2-fa70984b8bff",
   "masterEngine": "claude",
@@ -285,17 +285,42 @@
         "03-cross-hub-records"
       ],
       "cardHashes": {
-        "01-hub-registry": "bb78ed1994ce93f034411394201d22d0347a3f3230e7debee4d2dab6b93e6b0a",
-        "02-creel-config": "34fe0df7e60856fe4138aaee72224042a284e13c1770cfa886f813edfc1b3fad",
-        "03-cross-hub-records": "c4384f082045e7b12fded4737fcfbf9dcf015519aa4ca8e4bd8497b0ddabe1a6"
+        "01-hub-registry": "21d868a93ac820f6c34464200d3973964b9a6e20423faa95bda24ef566949d7b",
+        "02-creel-config": "aa6865fb8d151aab4d3ca20cb70c3315a39a3d4ad40c44e684c0e680de7b5e8f",
+        "03-cross-hub-records": "3ad2f8bf0ab49df714c8c45be2de384aff2caa4dd54c321df54be9860c6891f1"
       },
       "startSha": "c2ea74fed6df42cef27882a4913a8985a5986fe2",
       "kind": "fork",
       "spawnedAt": "2026-11-06T09:51:34Z",
       "sessionId": "6682a1ac-6e57-4c27-90a2-fa70984b8bff",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-hub-registry",
+        "status": "done",
+        "head_sha": "25a01542d42b51cedc49a6676ce3423652f4dcb8",
+        "deviations": [
+          "internal/creelcli/cli.go",
+          "internal/creelconfig/config.go",
+          "internal/creelengine/fold.go",
+          "internal/creelengine/journal_test.go",
+          "internal/creelengine/verbs_test.go",
+          "internal/hubregistry/hubregistry.go"
+        ]
+      },
+      "cardShas": [
+        "25a01542d42b51cedc49a6676ce3423652f4dcb8"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-cross-hub-build/6682a1ac-6e57-4c27-90a2-fa70984b8bff/subagents/agent-a240a7dc8f83a24f4.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-cross-hub-build/6682a1ac-6e57-4c27-90a2-fa70984b8bff/subagents/agent-a240a7dc8f83a24f4.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-cross-hub-build/6682a1ac-6e57-4c27-90a2-fa70984b8bff/subagents/agent-a240a7dc8f83a24f4.jsonl"
+  ]
 }

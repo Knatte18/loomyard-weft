@@ -11,8 +11,8 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/hubregistry#Live`
-- `plan:internal/creelconfig#LoadConfig`
+- `internal/hubregistry#Live`
+- `internal/creelconfig#LoadConfig`
 - `internal/hubgeom#CreelGeometry`
 - `internal/creelcli#clientSeam`
 

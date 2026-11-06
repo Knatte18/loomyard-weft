@@ -1,11 +1,11 @@
 # Card 2 — creel-config
 
 **Create:**
-- `plan:internal/creelconfig#ConfigTemplate` -> `func ConfigTemplate() string`
-- `plan:internal/creelconfig#Config` -> `type Config struct`
-- `plan:internal/creelconfig#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
-- `plan:internal/creelconfig#LoadConfig` -> `func LoadConfig(dirs configengine.Dirs) (Config, error)`
-- `plan:internal/creelconfig_test#TestLoadConfig` -> `func TestLoadConfig(t *testing.T)`
+- `internal/creelconfig#ConfigTemplate`
+- `internal/creelconfig#Config`
+- `internal/creelconfig#ConfigSpec`
+- `internal/creelconfig#LoadConfig`
+- `internal/creelconfig_test#TestLoadConfig`
 - `internal/creelconfig/template.yaml`
 - `internal/creelconfig/doc.go`
 - `internal/creelconfig/config_test.go`

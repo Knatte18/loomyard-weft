@@ -50,12 +50,12 @@
 - `internal/creelcli/doc.go`
 
 **Uses:**
-- `plan:internal/hubregistry#Record`
-- `plan:internal/hubregistry#Lookup`
-- `plan:internal/hubregistry#ErrUnresolved`
-- `plan:internal/creelconfig#LoadConfig`
+- `internal/hubregistry#Record`
+- `internal/hubregistry#Lookup`
+- `internal/hubregistry#ErrUnresolved`
+- `internal/creelconfig#LoadConfig`
 - `internal/hubgeom#CreelGeometry`
-- `plan:internal/standalonestate#UserStateDir`
+- `internal/standalonestate#UserStateDir`
 - `internal/fabricengine#BoltDir`
 
 **Intent:** Give the engine the one told seam every cross-hub step goes through, and record the hub when its daemon starts (D1, and `PATTERN-cwd-resolution`: creelengine stays told).

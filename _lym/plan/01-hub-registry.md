@@ -1,17 +1,17 @@
 # Card 1 — hub-registry
 
 **Create:**
-- `plan:internal/standalonestate#UserStateDir` -> `func UserStateDir() (string, error)`
-- `plan:internal/standalonestate#stateRootFor` -> `func stateRootFor(goos, localAppData, xdgStateHome, home string) (string, error)`
-- `plan:internal/standalonestate#TestUserStateDir` -> `func TestUserStateDir(t *testing.T)`
-- `plan:internal/hubregistry#RecordFileName` -> `const RecordFileName = "hubs.json"`
-- `plan:internal/hubregistry#Entry` -> `type Entry struct`
-- `plan:internal/hubregistry#Record` -> `func Record(dir, hubPath, shortname string, now time.Time) error`
-- `plan:internal/hubregistry#Lookup` -> `func Lookup(dir, shortname string) (string, error)`
-- `plan:internal/hubregistry#Live` -> `func Live(dir string) ([]Entry, error)`
-- `plan:internal/hubregistry_test#TestRecord` -> `func TestRecord(t *testing.T)`
-- `plan:internal/hubregistry_test#TestLookup` -> `func TestLookup(t *testing.T)`
-- `plan:internal/hubregistry#ErrUnresolved` -> `var ErrUnresolved error`
+- `internal/standalonestate#UserStateDir`
+- `internal/standalonestate#stateRootFor`
+- `internal/standalonestate#TestUserStateDir`
+- `internal/hubregistry#RecordFileName`
+- `internal/hubregistry#Entry`
+- `internal/hubregistry#Record`
+- `internal/hubregistry#Lookup`
+- `internal/hubregistry#Live`
+- `internal/hubregistry_test#TestRecord`
+- `internal/hubregistry_test#TestLookup`
+- `internal/hubregistry#ErrUnresolved`
 - `internal/hubregistry/doc.go`
 - `internal/hubregistry/hubregistry_test.go`
 - `internal/hubregistry/testmain_test.go`
