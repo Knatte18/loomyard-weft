@@ -16,6 +16,20 @@ It had to create the project under P2 and the task split under it, and the opera
 A beam is meant to land and disappear. A project a beam's motif spins out often belongs beside the beam, not inside it, and keeping it inside blocks the beam's landing.
 The operator gave the order in the beam's orch session, where the discussion happened, and had to repeat it in the prime.
 
-## Expected
+## Decision (operator, 2026-11-06)
 
-An operator-ordered board write from a beam orch can target the root (or another project), e.g. with an explicit flag or owner field, or lym names the way: "ask the prime orch" with the exact payload to post.
+The boundary stays: a beam orch writes only under its own beam, since each orch keeps order in its own part of the board.
+No flag lets a beam orch write outside it.
+
+Instead the beam orch passes the wish to its parent orch itself, through creel, so the operator gives the order once:
+
+- It goes to the beam's own parent, not to the prime: a nested beam asks its parent, which passes it upward when the work belongs higher up.
+- It is a wish, not a finished order: it says what should be made and why.
+- The parent decides the placement from what only it sees: its running tasks and their overlap, `depends_on`, whether the work is a project of its own or belongs under an existing one, and how many runs it has.
+  It may place the work differently, and it tells the operator when something collides.
+
+## Wanted
+
+- One rule in the orch role saying the above.
+  `orch-role-shorter` rewrites that file, so this waits for it through `depends_on`.
+- The refusal names this way forward. Where the refusal sits in the code is still to be found.
