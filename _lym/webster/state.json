@@ -272,7 +272,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "a5ae1976d1b919da7f49bf886c2eeaa5",
   "masterSessionId": "6682a1ac-6e57-4c27-90a2-fa70984b8bff",
   "masterEngine": "claude",
@@ -318,6 +318,28 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-cross-hub-build/6682a1ac-6e57-4c27-90a2-fa70984b8bff/subagents/agent-a240a7dc8f83a24f4.jsonl"
       ]
+    },
+    "4": {
+      "slug": "hub-directory",
+      "cards": [
+        "04-hub-directory",
+        "05-hubs-verb",
+        "06-post-to-another-hub",
+        "07-receive-and-confirm"
+      ],
+      "cardHashes": {
+        "04-hub-directory": "864ade2d6ca9864907f4b6f6eee3ae42c9939c2862a9b8214ba90772e6e08248",
+        "05-hubs-verb": "8d3d21ea182a7ddf24cd2372d4b560206d28983ab37e058a9561ceb37d23bb36",
+        "06-post-to-another-hub": "99c590dee2d890552a440a0a820ad15e108cd0f5821acf226dd8920799b702ff",
+        "07-receive-and-confirm": "f0b58a4ad36f21fe9f59b16a8cd8ffc3cd593d3ba95918387756214114c368bf"
+      },
+      "startSha": "25a01542d42b51cedc49a6676ce3423652f4dcb8",
+      "kind": "fork",
+      "spawnedAt": "2026-11-06T10:02:38Z",
+      "sessionId": "6682a1ac-6e57-4c27-90a2-fa70984b8bff",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
