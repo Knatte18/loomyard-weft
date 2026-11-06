@@ -16,19 +16,13 @@ Token savings by cutting agent turns, above all late turns at large context
 
 Concrete and claimable; only a task can run.
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-#### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **What makes runs slow and what would make them faster: deep analysis**<br>• Account for where run time goes, rank the causes and the changes that would cut it, from recorded data<br>• `darn: writer fable[high]` | [`repo-size-run-time`](design-repo-size-run-time.md) | darn · docs |  | 2m<br>0m | report, loom |
+| T1 | **What makes runs slow and what would make them faster: deep analysis**<br>• Account for where run time goes, rank the causes and the changes that would cut it, from recorded data<br>• `darn: writer fable[high]` | [`repo-size-run-time`](design-repo-size-run-time.md) | darn · docs |  | 2m<br>0m | report, loom |
 
 ### Notes (0)
 
