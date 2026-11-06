@@ -1,0 +1,700 @@
+diff --git a/internal/beamcli/cli.go b/internal/beamcli/cli.go
+index fd0d0970..62de66f4 100644
+--- a/internal/beamcli/cli.go
++++ b/internal/beamcli/cli.go
+@@ -247,10 +247,12 @@ func mergeParentCmd() *cobra.Command {
+ parent branch into the beam: its writer runs "lym fabric merge-in <parent branch>"
+ in the task's own worktree, settles the conflicts and the gate failures, and its
+ Code-Review perch, turned on through the task's run_settings, reviews the merge
+-alone. The task's landing brings the merge into the beam. The beam's dobby starts
+-it as any member, at any time. The orch runs it before "lym beam ready", which
+-refuses while the parent holds commits the beam lacks; Finalize merges the parent
+-in again at landing.
++alone. The task's landing brings the merge into the beam as a true merge, with no
++pull request, whatever the beam's pull_request mode, so the beam keeps the parent's
++commit as an ancestor; the beam's own pull request reviews the merge again. The
++beam's dobby starts it as any member, at any time. The orch runs it before
++"lym beam ready", which refuses while the parent holds commits the beam lacks;
++Finalize merges the parent in again at landing.
+ 
+ The task's slug is the beam's slug and "-merge-in", numbered from -2 when that slug
+ is taken, and it carries the beam's labels.
+diff --git a/internal/beamcli/doc.go b/internal/beamcli/doc.go
+index acde9a67..1e8c0bea 100644
+--- a/internal/beamcli/doc.go
++++ b/internal/beamcli/doc.go
+@@ -128,6 +128,7 @@
+ // A merge task is found by its project and its slug's `-merge-in` suffix, with an optional number; the new one takes the first free slug of that shape, the beam's slug cut to fit the board's slug length.
+ // It carries the beam's labels, so the board's type-label rule holds, and a body the decision record carries as the goal of both the darn writer and the Code-Review perch: the writer runs `lym fabric merge-in`, settles the conflicts, makes the gate pass and changes nothing else, and the perch reviews the merge alone.
+ // Its `run_settings` turn the perch on: loom's `code_max_bounces` is the hub's resolved Code-Review budget, at least one round, and `code_hard_max_bounces` stays above it.
++// Its `pull_request` field is `merge-in`, so it lands with no pull request by a true merge, and the parent's commit stays an ancestor of the beam for the beam's own pull request.
+ // The beam's dobby starts it as any member, so it runs at any time; pawl neither starts one nor waits for one.
+ // The orch runs it before `ready`, which refuses while the parent holds commits the beam lacks, and Finalize brings the parent in again at the landing.
+ //
+diff --git a/internal/beamcli/mergeparent.go b/internal/beamcli/mergeparent.go
+index dd436a14..53fbf565 100644
+--- a/internal/beamcli/mergeparent.go
++++ b/internal/beamcli/mergeparent.go
+@@ -4,21 +4,15 @@ package beamcli
+ 
+ import (
+ 	"fmt"
+-	"regexp"
+ 	"strconv"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/darnengine"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/reviewbudget"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ )
+ 
+-// mergeParentSuffix ends the slug of every merge task `lym beam merge-parent` files, before the number a second one takes.
+-const mergeParentSuffix = "-merge-in"
+-
+-// mergeTaskSlugPattern matches the slug of a merge task: the suffix, then an optional number.
+-var mergeTaskSlugPattern = regexp.MustCompile(regexp.QuoteMeta(mergeParentSuffix) + `(-[0-9]+)?$`)
+-
+ // mergeParentMinRounds is the fewest Code-Review rounds a merge task runs, so its perch is on whatever the hub's budget.
+ const mergeParentMinRounds = 1
+ 
+@@ -26,6 +20,7 @@ const mergeParentMinRounds = 1
+ // It refuses what `land`'s entry check refuses, a beam whose origin record names no parent branch, and a beam that holds an open merge task already.
+ // The task is a released darn task in the beam's project, carrying the beam's labels, so the beam's dobby starts it as any member.
+ // Its run settings set the Code-Review budget to the hub's, or to mergeParentMinRounds when the hub's is lower, with a hard cap above it.
++// Its pull_request field lands it with no pull request, by a true merge, so the beam keeps the parent's commit as an ancestor.
+ func mergeParent(deps landDeps, slug string) (map[string]any, error) {
+ 	const verb = "lym beam merge-parent"
+ 	owners, err := deps.ReadOwners()
+@@ -65,13 +60,14 @@ func mergeParent(deps landDeps, slug string) (map[string]any, error) {
+ 
+ 	taskSlug := freeMergeTaskSlug(tasks, slug)
+ 	fields := map[string]any{
+-		"slug":    taskSlug,
+-		"title":   fmt.Sprintf("Merge %s into the beam %s", origin.ParentBranch, slug),
+-		"kind":    boardengine.KindTask,
+-		"project": slug,
+-		"recipe":  shedrun.RecipeDarn,
+-		"labels":  labels,
+-		"body":    mergeParentBody(slug, origin.ParentBranch),
++		"slug":         taskSlug,
++		"title":        fmt.Sprintf("Merge %s into the beam %s", origin.ParentBranch, slug),
++		"kind":         boardengine.KindTask,
++		"project":      slug,
++		"recipe":       shedrun.RecipeDarn,
++		"labels":       labels,
++		"body":         mergeParentBody(slug, origin.ParentBranch),
++		"pull_request": boardengine.PullRequestMergeIn,
+ 		"run_settings": map[string]any{
+ 			"loom": map[string]any{
+ 				reviewbudget.SoftKey(perch): rounds,
+@@ -93,7 +89,7 @@ func mergeParent(deps landDeps, slug string) (map[string]any, error) {
+ // openMergeTask returns the slug of a merge task of beam that is not done, found by its project and its slug's suffix.
+ func openMergeTask(tasks []boardengine.Task, beam string) (string, bool) {
+ 	for _, task := range tasks {
+-		if task.Kind == boardengine.KindTask && task.Project == beam && !boardengine.IsDoneStatus(task.Status) && mergeTaskSlugPattern.MatchString(task.Slug) {
++		if task.Kind == boardengine.KindTask && task.Project == beam && !boardengine.IsDoneStatus(task.Status) && darnengine.IsMergeTaskSlug(task.Slug) {
+ 			return task.Slug, true
+ 		}
+ 	}
+@@ -108,7 +104,7 @@ func freeMergeTaskSlug(tasks []boardengine.Task, beam string) string {
+ 		taken[task.Slug] = true
+ 	}
+ 	for number := 1; ; number++ {
+-		tail := mergeParentSuffix
++		tail := darnengine.MergeTaskSuffix
+ 		if number > 1 {
+ 			tail += "-" + strconv.Itoa(number)
+ 		}
+@@ -126,7 +122,7 @@ func freeMergeTaskSlug(tasks []boardengine.Task, beam string) string {
+ // The decision record carries it as the task's goal, so it instructs both the darn writer and the Code-Review perch.
+ func mergeParentBody(beam, parentBranch string) string {
+ 	return fmt.Sprintf(`Merge in from parent: bring the parent branch %[2]s into the beam %[1]s.
+-This task's branch forks from the beam, so its landing carries the merge into the beam.
++This task's branch forks from the beam, so its landing carries the merge into the beam, as a true merge with no pull request.
+ Filed by `+"`lym beam merge-parent %[1]s`"+`.
+ 
+ - Run `+"`lym fabric merge-in %[2]s`"+` in this task's worktree.
+diff --git a/internal/beamcli/mergeparent_test.go b/internal/beamcli/mergeparent_test.go
+index bedd31b1..dd77f4df 100644
+--- a/internal/beamcli/mergeparent_test.go
++++ b/internal/beamcli/mergeparent_test.go
+@@ -8,6 +8,7 @@ import (
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/darnengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/reviewbudget"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -65,7 +66,7 @@ func TestMergeParent(t *testing.T) {
+ 				w.pairs[longBeam] = true
+ 				w.origins[longBeam] = fabricengine.Origin{Beam: true, ParentBranch: "main"}
+ 			},
+-			wantTask: longBeam[:boardengine.MaxSlugLength-len(mergeParentSuffix)] + mergeParentSuffix, wantRounds: 1, wantHard: 2,
++			wantTask: longBeam[:boardengine.MaxSlugLength-len(darnengine.MergeTaskSuffix)] + darnengine.MergeTaskSuffix, wantRounds: 1, wantHard: 2,
+ 		},
+ 	}
+ 	for _, tt := range tests {
+@@ -106,6 +107,9 @@ func TestMergeParent(t *testing.T) {
+ 			if fields["slug"] != tt.wantTask || fields["kind"] != boardengine.KindTask || fields["project"] != tt.slug || fields["recipe"] != "darn" || !reflect.DeepEqual(fields["run_settings"], wantSettings) {
+ 				t.Errorf("mergeParent(%q) filed %v; want slug %q, a darn task in project %q with run settings %v", tt.slug, fields, tt.wantTask, tt.slug, wantSettings)
+ 			}
++			if fields["pull_request"] != boardengine.PullRequestMergeIn {
++				t.Errorf("mergeParent(%q) pull_request = %v; want %q", tt.slug, fields["pull_request"], boardengine.PullRequestMergeIn)
++			}
+ 			if body, _ := fields["body"].(string); !strings.Contains(body, "lym fabric merge-in main") || !strings.Contains(body, "reviews the merge alone") {
+ 				t.Errorf("mergeParent(%q) body = %q; want it to name `lym fabric merge-in main` and the perch's review of the merge alone", tt.slug, body)
+ 			}
+diff --git a/internal/boardcli/cli.go b/internal/boardcli/cli.go
+index a7645377..6b83af3f 100644
+--- a/internal/boardcli/cli.go
++++ b/internal/boardcli/cli.go
+@@ -544,9 +544,9 @@ Optional fields:
+   "issues"     array  — hub issue numbers
+   "created"    string — RFC 3339 creation
+   "revised"    string — RFC 3339 scope change
+-  "run_settings" object — module name to config keys for the pair's local config; {} clears it
++  "run_settings" object — module name to config keys; {} clears it
+   "profile"    string — a "lym board profiles" name; "" clears it
+-  "pull_request" string — "on" or "off" overrides beam.yaml; "" clears it
++  "pull_request" string — "on", "off" or "merge-in" (a true merge, no PR) overrides beam.yaml; "" clears it
+   "notify_on_land" bool — tell the orch when the run lands, at once if it has
+   "owner_machine" string — the effective owner only; "lym adopt" moves it
+   "project"    string — slug of the open project holding the entry; "" leaves none
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index 6c278f74..38e43139 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -227,7 +227,8 @@
+ //
+ // # Pull request
+ //
+-// A task or project may carry a `pull_request` override, "on" or "off", and any other non-empty value is refused; empty means none and stores no key.
++// A task or project may carry a `pull_request` override, "on", "off" or "merge-in", and any other non-empty value is refused; empty means none and stores no key.
++// "merge-in" marks a merge task, which lands with no pull request by a true merge.
+ // The field is scope for the run lock, so a held entry takes no change to it.
+ // A landing reads it against the parent's beam.yaml `pull_request` mode to decide whether the landing goes through a pull request.
+ //
+diff --git a/internal/boardengine/task.go b/internal/boardengine/task.go
+index 7ae9bc96..5024b6c3 100644
+--- a/internal/boardengine/task.go
++++ b/internal/boardengine/task.go
+@@ -42,7 +42,7 @@ type Task struct {
+ 	RunSettings map[string]any `json:"run_settings,omitempty"`
+ 	// Profile names the hub run profile whose settings lie under RunSettings at seeding; empty means none.
+ 	Profile string `json:"profile,omitempty"`
+-	// PullRequest overrides the receiving branch's beam.yaml pull_request mode for this entry's landing: "on" or "off"; empty means no override.
++	// PullRequest overrides the receiving branch's beam.yaml pull_request mode for this entry's landing: "on", "off" or PullRequestMergeIn; empty means no override.
+ 	PullRequest string `json:"pull_request,omitempty"`
+ 	// NotifyOnLand asks the dobby that drives the entry's run for a creel line once the run lands or ends without landing; the dobby clears it once the line went out, and a note never carries it.
+ 	NotifyOnLand bool `json:"notify_on_land,omitempty"`
+@@ -272,8 +272,11 @@ const (
+ 	PriorityLow    = "low"
+ )
+ 
++// PullRequestMergeIn is the pull_request value of an entry that merges its parent's parent branch into its parent: it lands with no pull request, whatever the parent's mode, by a true merge that keeps the merged commit as a parent.
++const PullRequestMergeIn = "merge-in"
++
+ // normalizeTask stores a normal priority and an empty run settings object as the empty value, clears the owner of every entry but a beam project and stores the dates in whole UTC seconds, then checks that the Kind is one of the three kinds, the Priority one of the accepted values and a task without one.
+-// A PullRequest other than empty, on and off is refused for a task and a project alike.
++// A PullRequest other than empty, on, off and PullRequestMergeIn is refused for a task and a project alike.
+ // A note carrying NotifyOnLand is refused.
+ // A project carries none of depends_on, profile, run_settings or priority, and a recipe only when it is the project recipe; only a project carries order or beam, and only a project carries the project recipe.
+ func normalizeTask(t *Task) error {
+@@ -300,8 +303,8 @@ func normalizeTask(t *Task) error {
+ 		return fmt.Errorf("task %q has priority %q, and only a note carries a priority: set %q to clear it, or make a note a task with \"lym board promote\", which clears it",
+ 			t.Slug, t.Priority, PriorityNormal)
+ 	}
+-	if t.PullRequest != "" && t.PullRequest != "on" && t.PullRequest != "off" {
+-		return fmt.Errorf("entry %q has pull_request %q, and pull_request is on, off or empty: correct it, or set \"\" to clear it", t.Slug, t.PullRequest)
++	if t.PullRequest != "" && t.PullRequest != "on" && t.PullRequest != "off" && t.PullRequest != PullRequestMergeIn {
++		return fmt.Errorf("entry %q has pull_request %q, and pull_request is on, off, %s or empty: correct it, or set \"\" to clear it", t.Slug, t.PullRequest, PullRequestMergeIn)
+ 	}
+ 	if t.Kind == KindNote && t.NotifyOnLand {
+ 		return fmt.Errorf("note %q has notify_on_land, and only a task or a project runs and lands: set it to false, or make the note a task with \"lym board promote\"", t.Slug)
+diff --git a/internal/boardengine/task_test.go b/internal/boardengine/task_test.go
+index 722c0b9d..57395ac1 100644
+--- a/internal/boardengine/task_test.go
++++ b/internal/boardengine/task_test.go
+@@ -265,8 +265,8 @@ func TestNewTask(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("pull_request on and off round-trip in the JSON, empty stores no key and an unknown value is refused", func(t *testing.T) {
+-		for _, value := range []string{"on", "off"} {
++	t.Run("pull_request on, off and merge-in round-trip in the JSON, empty stores no key and an unknown value is refused", func(t *testing.T) {
++		for _, value := range []string{"on", "off", boardengine.PullRequestMergeIn} {
+ 			task, err := boardengine.NewTask(map[string]any{"slug": "my-task", "pull_request": value}, 1)
+ 			if err != nil {
+ 				t.Fatalf("NewTask(pull_request %q) error = %v; want nil", value, err)
+@@ -296,7 +296,7 @@ func TestNewTask(t *testing.T) {
+ 		if err == nil {
+ 			t.Fatalf("NewTask(pull_request maybe) error = nil; want a refusal")
+ 		}
+-		if !strings.Contains(err.Error(), "pull_request is on, off or empty") {
++		if !strings.Contains(err.Error(), "pull_request is on, off, merge-in or empty") {
+ 			t.Errorf("refusal %q does not name the accepted values", err.Error())
+ 		}
+ 	})
+diff --git a/internal/darnengine/doc.go b/internal/darnengine/doc.go
+index b759eddc..f47a2e71 100644
+--- a/internal/darnengine/doc.go
++++ b/internal/darnengine/doc.go
+@@ -10,6 +10,9 @@
+ // The module is hub-wide, so a task cannot weaken `tree_scope` through its own tree, and `lym config darn --set` writes it from the prime.
+ // LoadConfig loads the file strictly and validates the `writer` model-spec at load time, leaving `verify_attempts` to its reader.
+ //
++// A merge task is the darn task that brings a beam's parent branch into the beam, known by the `-merge-in` suffix of its slug with an optional number.
++// IsMergeTaskWriter names its writer from the strand name alone, so a guard that reads nothing else can let that session run the merge verbs its work needs.
++//
+ // Tree scope lets a diff wholly under the hub's non-production trees run each darn verify site's own gate key over the touched trees' targets, in place of the key's scope.
+ // `tree_scope` maps a worktree-relative tree path to the test target the tree contributes, an empty target meaning the tree has no tests of its own.
+ // Tree scope is on exactly when `tree_scope` holds a tree, and removing every tree turns it off.
+diff --git a/internal/darnengine/mergetask.go b/internal/darnengine/mergetask.go
+new file mode 100644
+index 00000000..0fdd0ab2
+--- /dev/null
++++ b/internal/darnengine/mergetask.go
+@@ -0,0 +1,25 @@
++// mergetask.go recognizes a merge task, the darn task that brings a beam's parent branch into the beam, by its slug, and that task's writer by its strand name.
++
++package darnengine
++
++import (
++	"regexp"
++
++	"github.com/Knatte18/loomyard/internal/agentname"
++)
++
++// MergeTaskSuffix ends the slug of every merge task, before the number a second one takes.
++const MergeTaskSuffix = "-merge-in"
++
++// mergeTaskSlugPattern matches the slug of a merge task: the suffix, then an optional number.
++var mergeTaskSlugPattern = regexp.MustCompile(regexp.QuoteMeta(MergeTaskSuffix) + `(-[0-9]+)?$`)
++
++// IsMergeTaskSlug reports whether slug has the shape of a merge task's slug.
++func IsMergeTaskSlug(slug string) bool {
++	return mergeTaskSlugPattern.MatchString(slug)
++}
++
++// IsMergeTaskWriter reports whether strand names the darn writer of a merge task, the one task session whose work is a merge of the parent branch.
++func IsMergeTaskWriter(strand agentname.Name) bool {
++	return agentname.MatchesRole(strand.Role, darnRole) && IsMergeTaskSlug(strand.Slug)
++}
+diff --git a/internal/darnengine/mergetask_test.go b/internal/darnengine/mergetask_test.go
+new file mode 100644
+index 00000000..b2b3d2d4
+--- /dev/null
++++ b/internal/darnengine/mergetask_test.go
+@@ -0,0 +1,36 @@
++// mergetask_test.go pins which slugs read as a merge task's and which strand names as its writer's.
++
++package darnengine_test
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/darnengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestIsMergeTaskWriter(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name   string
++		strand agentname.Name
++		want   bool
++	}{
++		{"FirstMergeTask", agentname.Name{Slug: "beam-merge-in", Role: "darn"}, true},
++		{"NumberedMergeTask", agentname.Name{Slug: "beam-merge-in-2", Role: "darn"}, true},
++		{"NumberedRole", agentname.Name{Slug: "beam-merge-in", Role: "darn-2"}, true},
++		{"OtherRoleOfAMergeTask", agentname.Name{Slug: "beam-merge-in", Role: "code-fix"}, false},
++		{"WriterOfAnotherTask", agentname.Name{Slug: "beam-task", Role: "darn"}, false},
++		{"SuffixInsideTheSlug", agentname.Name{Slug: "beam-merge-in-notes", Role: "darn"}, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := darnengine.IsMergeTaskWriter(tt.strand); got != tt.want {
++				t.Errorf("IsMergeTaskWriter(%+v) = %v; want %v", tt.strand, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/fabriccli/doc.go b/internal/fabriccli/doc.go
+index 64092ef0..b92f50f6 100644
+--- a/internal/fabriccli/doc.go
++++ b/internal/fabriccli/doc.go
+@@ -127,6 +127,7 @@
+ // A `--continue` refused because some conflicts remain lists them in an `unresolved` array, a key separate from `conflicts`, so a script keeps telling a conflict result from a hard failure by the `conflicts` key alone.
+ // `merge-in` and `merge` continue and abort the same way, but only `merge-in` resolves conflicts in its own worktree;
+ // `merge` self-aborts on a conflict with a `fabricengine.ErrMergeInRequired` naming the source branch.
++// The sandboxed-role guard refuses these verbs from a task session, bar a merge task's darn writer, which may run `merge-in`, `merge-stage`, `merge --continue` and `merge --abort` in its own worktree since that merge is its task; `merge <branch>` stays refused.
+ //
+ // The Webster warning on `merge-in` exists because `lym webster record-batch` tolerates a clean parent merge commit after a fork's commit, but refuses a fast-forward past it and a merge whose conflicts were resolved by hand.
+ // An already-up-to-date `merge-in` and a hard failure carry no `warnings` key.
+diff --git a/internal/fabriccli/roleguard.go b/internal/fabriccli/roleguard.go
+index fa5a81ac..3c575792 100644
+--- a/internal/fabriccli/roleguard.go
++++ b/internal/fabriccli/roleguard.go
+@@ -1,5 +1,5 @@
+ // roleguard.go refuses the mutating `lym fabric` verbs from a sandboxed task-session role.
+-// It classifies each subcommand as a reader a sandboxed role may run or a verb it may not.
++// It classifies each subcommand as a reader a sandboxed role may run or a verb it may not, and lets a merge task's writer run the merge verbs.
+ // It also builds the refusal text addWeftVerbs's pre-run writes.
+ 
+ package fabriccli
+@@ -9,10 +9,25 @@ import (
+ 	"slices"
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/darnengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/spf13/cobra"
+ )
+ 
++// mergeTaskVerb reports whether this invocation of cmd is one a merge task's writer needs in its own worktree: merge-in, merge-stage, and merge in its --continue and --abort forms.
++// The merge form that takes a branch stays Finalize's.
++func mergeTaskVerb(cmd *cobra.Command) bool {
++	switch cmd.Name() {
++	case "merge-in", "merge-stage":
++		return true
++	case "merge":
++		concludes, _ := cmd.Flags().GetBool("continue")
++		aborts, _ := cmd.Flags().GetBool("abort")
++		return concludes || aborts
++	}
++	return false
++}
++
+ // readerVerb reports whether this invocation of cmd only reads, so a sandboxed role may run it.
+ // A verb is a reader when fabricengine names it one and its arguments keep it so:
+ // shortname with no argument, prune and cleanup without --apply.
+@@ -37,6 +52,7 @@ func readerVerb(cmd *cobra.Command) bool {
+ // The detached push child every commit spawns carries a hidden bypass flag and inherits the strand name, so a push with a bypass flag passes;
+ // a bypass flag on any other subcommand is refused.
+ // The hidden teardown child a removal spawns inherits the strand name the same way, so it passes too.
++// A merge task's writer passes on the verbs its work is, since the merge of the parent branch is that task.
+ // The guard reads the strand name and nothing else, so it stops a mistaken call, not a session that rewrites the variable.
+ func sandboxedRoleRefusal(cmd *cobra.Command, strandName string) string {
+ 	name, err := agentname.Parse(strandName)
+@@ -57,7 +73,7 @@ func sandboxedRoleRefusal(cmd *cobra.Command, strandName string) string {
+ 		}
+ 		return fmt.Sprintf("lym fabric %s refuses the path flags that only a detached push passes, from the task session %s", cmd.Name(), strandName)
+ 	}
+-	if readerVerb(cmd) {
++	if readerVerb(cmd) || (darnengine.IsMergeTaskWriter(name) && mergeTaskVerb(cmd)) {
+ 		return ""
+ 	}
+ 	return fmt.Sprintf("lym fabric %s is refused from the task session %s; build a scratch hub as a hubforge test fixture instead, and when the work itself needs this verb, stop and report status: FAILED so the run ends stuck and the orch runs it", cmd.Name(), strandName)
+diff --git a/internal/fabriccli/roleguard_test.go b/internal/fabriccli/roleguard_test.go
+index 56ab3b9c..602e7d2f 100644
+--- a/internal/fabriccli/roleguard_test.go
++++ b/internal/fabriccli/roleguard_test.go
+@@ -156,6 +156,33 @@ func TestSandboxedRoleGuard(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a merge task's writer runs the merge verbs and no other mutating form", func(t *testing.T) {
++		mergeVerbs := [][]string{{"merge-in", "main"}, {"merge-stage", "path"}, {"merge", "--continue"}, {"merge", "--abort"}}
++		refusedForms := [][]string{{"merge", "branch"}, {"push"}, {"commit"}}
++
++		for _, strand := range []string{"ly:beam-merge-in:darn", "ly:beam-merge-in-2:darn"} {
++			t.Setenv(agentname.StrandNameEnv, strand)
++			for _, args := range mergeVerbs {
++				if _, out := runUnderParent(t, args...); strings.Contains(out, refusalMarker) {
++					t.Errorf("%v under %s was refused: %s", args, strand, out)
++				}
++			}
++			for _, args := range refusedForms {
++				if code, out := runUnderParent(t, args...); code != 1 || !strings.Contains(out, refusalMarker) {
++					t.Errorf("%v under %s = %d, output %s; want a guard refusal", args, strand, code, out)
++				}
++			}
++		}
++		for _, strand := range []string{"ly:beam-task:darn", "ly:beam-merge-in:code-fix"} {
++			t.Setenv(agentname.StrandNameEnv, strand)
++			for _, args := range mergeVerbs {
++				if code, out := runUnderParent(t, args...); code != 1 || !strings.Contains(out, refusalMarker) {
++					t.Errorf("%v under %s = %d, output %s; want a guard refusal", args, strand, code, out)
++				}
++			}
++		}
++	})
++
+ 	t.Run("a bypass flag passes only on push", func(t *testing.T) {
+ 		t.Setenv(agentname.StrandNameEnv, webster)
+ 		if _, out := runUnderParent(t, "push", "--weft-path", t.TempDir()); strings.Contains(out, refusalMarker) {
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index 366798c3..036a5436 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -38,9 +38,11 @@
+ // A nil seam, an empty record path and a cancelled context are errors.
+ //
+ // ResolvePullRequest is the one decision of whether a landing goes through a pull request, so PR-Review and Finalize cannot disagree.
+-// It takes the receiving branch's beam.yaml `pull_request` (`on`, `off`, `required` or `merge`), the landing entry's `pull_request` field (empty, `on` or `off`), the origin facts and whether the task branch has commits beyond its parent, and reads no file: its callers read the parent's beam.yaml, the entry and the task branch through git and tell the values.
++// It takes the receiving branch's beam.yaml `pull_request` (`on`, `off`, `required` or `merge`), the landing entry's `pull_request` field (empty, `on`, `off` or `merge-in`), the origin facts and whether the task branch has commits beyond its parent, and reads no file: its callers read the parent's beam.yaml, the entry and the task branch through git and tell the values.
+ // A required or merge parent wants a pull request whatever the field says, an on parent wants one unless the field is off, and an off parent wants one only when the field is on.
+ // A merge parent's yes is marked MergeAtOnce: the parent is one the remote takes only through a pull request, with no approval or check to wait for, so the pull request is opened and squash-merged at once.
++// A `merge-in` field, a merge task's, is a no under every parent and GitHub rule, marked TrueMerge: PR-Review passes at once and Finalize's parent-side merge does not squash, so the beam keeps the parent's commit as an ancestor, and the beam's own pull request reviews the merge.
++// A push the remote refuses then is Stuck as for any landing with no pull request.
+ // beam.yaml's `pull_request` set at the default layer marks every branch of the hub, and at a worktree's layer that worktree's branch.
+ // A wanted pull request needs an origin on github.com that the owner and repository parse from, an upstream for the parent and no push skip.
+ // A wanted pull request on a task branch with no commit beyond its parent is a no, before any origin fact is judged, since GitHub opens none on an empty branch; both rows then take the no path, and Finalize's parent-side merge commits nothing.
+@@ -283,7 +285,7 @@
+ // interface with a permanently-nil implementation is exactly the hypothetical-requirement design this
+ // codebase avoids.
+ //
+-// Finalize's parent-side merge squashes by default (landing.yaml's squash key, defaulting to true):
++// Finalize's parent-side merge squashes by default (landing.yaml's squash key, defaulting to true), bar a landing the resolver marks TrueMerge:
+ // one commit per merged task branch was the goal, weighed against the accepted cost that a squashed
+ // branch carries no merge commit linking it to its target, so "was this branch merged?" becomes
+ // unanswerable from git history alone afterward. The commit noise an ordinary merge would leave behind
+diff --git a/internal/landingshed/finalize.go b/internal/landingshed/finalize.go
+index 41488a42..fa4d639b 100644
+--- a/internal/landingshed/finalize.go
++++ b/internal/landingshed/finalize.go
+@@ -176,6 +176,7 @@ func NewFinalize(deps Deps) (*Finalize, error) {
+ // a closed pull request whose record carries the operator's ending is reopened and merged on GitHub like an open one, and a merged one lands through the already-landed path.
+ // An open pull request is merged on GitHub just before the parent-side merge, with the pushed task head as its expected head, and the parent pair is fast-forwarded to the merge, so the parent-side merge then finds the parent holding the task's work.
+ // A parent whose beam.yaml pull_request is merge needs no record: Finalize opens the pull request itself at that point and squash-merges it with no review.
++// A no marked TrueMerge never squashes the parent-side merge, so the parent's history keeps the task branch's merge commits.
+ // A parent push the remote refuses as a protected branch is Stuck naming that setting, unless the landing already went through it.
+ //
+ // Finalize is idempotent over an already-landed parent: when the parent already contains the task's
+@@ -308,7 +309,7 @@ func (fz *Finalize) landUnderLock(ctx context.Context, front bool, title, body,
+ 
+ 	// landed ends the pass once the parent-side merge is done: it pushes the parent and, for a beam whose recorded pull request is spent, drops that record after the push answered Done, since the landing has happened by then.
+ 	landed := func() (shedengine.Outcome, shedengine.OutputPointer, error, bool) {
+-		outcome, out, err := fz.pushParent(ctx, parentHandle, notice, landing.atOnce)
++		outcome, out, err := fz.pushParent(ctx, parentHandle, notice, landing.atOnce || landing.trueMerge)
+ 		if err == nil && outcome == shedengine.Done && landing.dropBeamRecord {
+ 			fz.dropBeamRecord()
+ 		}
+@@ -346,7 +347,8 @@ func (fz *Finalize) landUnderLock(ctx context.Context, front bool, title, body,
+ 	// whether or not Config.Squash is true -- it is the conclude-commit message for both merge
+ 	// shapes, so gating it on Squash would leave the non-squash landing commit with an unset message.
+ 	// A parent that takes its pull request at once always squashes on GitHub, so the parent-side merge squashes too, whatever landing.yaml says.
+-	mergeOpts := fabricengine.MergeOptions{Squash: fz.deps.Config.Squash || landing.atOnce, Message: landingMessage}
++	// A true merge never squashes, since a squash would drop the merged commit from the parent's history.
++	mergeOpts := fabricengine.MergeOptions{Squash: (fz.deps.Config.Squash || landing.atOnce) && !landing.trueMerge, Message: landingMessage}
+ 	_, mergeErr := parentHandle.Merge(fz.deps.TaskBranch, mergeOpts)
+ 	if mergeErr == nil {
+ 		fz.markTaskDone()
+@@ -666,7 +668,7 @@ func (fz *Finalize) keepParentHead(parentHandle parentMerger) {
+ // Deps.PushSkipped suppresses the push.
+ //
+ // A push the remote refuses as a protected branch carries protectedParentWayForward alone, in place of any class's way forward and the repair note.
+-// parentMerges is true when the landing went through a parent that takes its pull request at once, so that way forward leaves out the advice to set that mode.
++// parentMerges is true when setting a parent to take its pull request at once would change nothing, because the landing went through such a parent or is a true merge, so that way forward leaves out the advice to set that mode.
+ // On its Done return only, a non-empty notice is queued through Deps.Notify, and a failure there is a logged warning that never changes the verdict.
+ // The push is the parent branch's own, whether the landing went through a pull request merged on GitHub or not.
+ func (fz *Finalize) pushParent(ctx context.Context, parentHandle parentMerger, notice string, parentMerges bool) (shedengine.Outcome, shedengine.OutputPointer, error) {
+@@ -720,7 +722,7 @@ func protectedBranchRefusal(err error) bool {
+ }
+ 
+ // protectedParentWayForward is the way forward of a parent push refused as a protected branch, for task landing on parent.
+-// It names beam.yaml's pull_request=merge, at the parent's worktree or the hub's default layer, unless parentMerges says the parent already has it, and the hand landing of the work the local parent alone holds.
++// It names beam.yaml's pull_request=merge, at the parent's worktree or the hub's default layer, unless parentMerges says that setting would change nothing, and the hand landing of the work the local parent alone holds.
+ func protectedParentWayForward(task, parent string, parentMerges bool) string {
+ 	handLanding := fmt.Sprintf(`this run's work is on the local parent only, so merge task branch %q into %q through a pull request on GitHub by hand, then run "git fetch origin" and "git reset --keep origin/%s" in the parent's worktree, then "lym loom resume" in the task worktree, which finds the work on the parent and ends the landing`, task, parent, parent)
+ 	if parentMerges {
+diff --git a/internal/landingshed/finalize_pr.go b/internal/landingshed/finalize_pr.go
+index 929487c7..dea6ee4a 100644
+--- a/internal/landingshed/finalize_pr.go
++++ b/internal/landingshed/finalize_pr.go
+@@ -28,6 +28,8 @@ type prLanding struct {
+ 	open bool
+ 	// atOnce marks a parent that takes its pull request with no review, which always squash-merges.
+ 	atOnce bool
++	// trueMerge marks a landing whose parent-side merge keeps the task branch's history, whatever landing.yaml's squash says.
++	trueMerge bool
+ 	// reopen marks a landing whose closed recorded pull request mergeOnGitHub reopens just before it merges.
+ 	reopen bool
+ 	// dropBeamRecord marks the landing of a beam whose recorded pull request is spent: Finalize drops it from the beam's landing record once the parent-side landing completed.
+@@ -216,7 +218,9 @@ func (fz *Finalize) pullRequestLanding(ctx context.Context) (prLanding, shedengi
+ 	if beam == BeamWithPullRequest {
+ 		return fz.recordedBeamLanding(ctx, mode, beamPullRequest, origin, hasCommits, decision, rec, found)
+ 	}
+-	return fz.landingForDecision(ctx, decision, origin, rec, found)
++	landing, outcome, out, err, stop := fz.landingForDecision(ctx, decision, origin, rec, found)
++	landing.trueMerge = decision.TrueMerge
++	return landing, outcome, out, err, stop
+ }
+ 
+ // prStopped adapts a Finalize stop, which carries no landing, to the stop return of pullRequestLanding.
+diff --git a/internal/landingshed/finalize_pr_test.go b/internal/landingshed/finalize_pr_test.go
+index 639cbb44..848f75d5 100644
+--- a/internal/landingshed/finalize_pr_test.go
++++ b/internal/landingshed/finalize_pr_test.go
+@@ -84,6 +84,10 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 		parentPushErr error
+ 		// wantSquashedMerges asserts every parent-side merge was asked to squash.
+ 		wantSquashedMerges bool
++		// entryField is what Deps.PullRequest.EntryField answers.
++		entryField string
++		// wantTrueMerges asserts no parent-side merge was asked to squash.
++		wantTrueMerges bool
+ 		// parentOwnedElsewhere makes the owner checks find the parent owned by another machine.
+ 		parentOwnedElsewhere bool
+ 		// wantRecord is the pull request record the landing must leave behind.
+@@ -221,6 +225,16 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 			wantOutcome:   shedengine.Stuck, wantMerges: 1, wantReason: []string{"protected branch hook declined", `"git reset --keep origin/main"`},
+ 			wantNotInReason: []string{"lym config beam"}, wantCalls: []string{"Status 7", wantGitHubMerge},
+ 		},
++		{
++			name: "AMergeInEntryLandsByATrueMergeWithNoPullRequestAndNoRuleReadUnderARequiredParent", parentMode: "required", entryField: "merge-in",
++			wantOutcome: shedengine.Done, wantMerges: 1, wantTrueMerges: true, wantOrder: "merge,mark,push",
++		},
++		{
++			name: "AProtectedParentPushRefusalOfAMergeInEntryOmitsTheSettingAdvice", parentMode: "off", entryField: "merge-in",
++			parentPushErr: errors.New("gitrepo: push rejected: ! [remote rejected] main -> main (protected branch hook declined)"),
++			wantOutcome:   shedengine.Stuck, wantMerges: 1, wantTrueMerges: true, wantReason: []string{"protected branch hook declined", `"git reset --keep origin/main"`},
++			wantNotInReason: []string{"lym config beam"},
++		},
+ 		{
+ 			name: "AFailedReopenHaltsNamingGitHubsMessageAndMergesNothing", parentMode: "on", record: recorded(reviewEnded),
+ 			scripts:     map[string][]scriptedCall{"Status": {closed}, "Reopen": {{err: errors.New("state cannot be changed")}}},
+@@ -464,7 +478,7 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 				},
+ 				EntryField: func() (string, error) {
+ 					entryFieldCalls++
+-					return "", nil
++					return tt.entryField, nil
+ 				},
+ 				CommitsMissing: func(string, string) ([]string, error) {
+ 					order = append(order, "commits-missing")
+@@ -553,6 +567,9 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 				if tt.wantSquashedMerges && !call.opts.Squash {
+ 					t.Errorf("parent-side merge %d Squash = false; want true", i)
+ 				}
++				if tt.wantTrueMerges && call.opts.Squash {
++					t.Errorf("parent-side merge %d Squash = true; want false", i)
++				}
+ 			}
+ 			if tt.wantRecord != nil {
+ 				got, found, rerr := pullrequest.ReadRecord(deps.PullRequest.RecordPath, deps.PullRequest.RecordLockPath)
+diff --git a/internal/landingshed/pullrequestmode.go b/internal/landingshed/pullrequestmode.go
+index 3b408367..b9d69228 100644
+--- a/internal/landingshed/pullrequestmode.go
++++ b/internal/landingshed/pullrequestmode.go
+@@ -7,6 +7,7 @@ import (
+ 	"fmt"
+ 	"strings"
+ 
++	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/githubclient"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ )
+@@ -14,12 +15,13 @@ import (
+ // githubHost is the one host a landing opens a pull request on.
+ const githubHost = "github.com"
+ 
+-// Pull-request modes of the receiving branch's beam.yaml and the landing entry's field; merge is beam.yaml's alone.
++// Pull-request modes of the receiving branch's beam.yaml and the landing entry's field; merge is beam.yaml's alone, and merge-in the field's alone.
+ const (
+ 	pullRequestOn       = "on"
+ 	pullRequestOff      = "off"
+ 	pullRequestRequired = "required"
+ 	pullRequestMerge    = "merge"
++	pullRequestMergeIn  = boardengine.PullRequestMergeIn
+ )
+ 
+ // Origin holds the facts about the origin a pull request needs.
+@@ -38,6 +40,8 @@ type PullRequestDecision struct {
+ 	Open bool
+ 	// MergeAtOnce reports whether Finalize opens the pull request itself and squash-merges it on GitHub at once, with no review, as a parent whose beam.yaml pull_request is merge asks.
+ 	MergeAtOnce bool
++	// TrueMerge reports whether the landing keeps the task branch's history, a fast-forward or a merge commit and never a squash, so a merge of the parent's own parent stays an ancestor of the parent.
++	TrueMerge bool
+ 	// Reason names the values the decision read.
+ 	Reason string
+ 	// Halt is a Stuck reason with its way forward, non-empty only when the landing must stop.
+@@ -65,7 +69,8 @@ type BeamPullRequest struct {
+ }
+ 
+ // ResolvePullRequest decides whether a landing goes through a pull request.
+-// parentMode is the receiving branch's beam.yaml pull_request (on, off, required or merge) and entryField the landing entry's pull_request (empty, on or off); slug is the landing run's slug.
++// parentMode is the receiving branch's beam.yaml pull_request (on, off, required or merge) and entryField the landing entry's pull_request (empty, on, off or merge-in); slug is the landing run's slug.
++// A merge-in field wants none whatever the parent's mode and GitHub's rules say, and marks the no TrueMerge: a pull request squashes away the merged commit, and the merge is reviewed again in the beam's own pull request.
+ // parentRuleRequired reports whether GitHub's rules for the parent branch require a pull request, and counts as a required parent whatever beam.yaml says, since GitHub refuses the direct push a landing with no pull request ends in.
+ // A required or merge parent wants one whatever the field says, an on parent wants one unless the field is off, and an off parent wants one only when the field is on.
+ // A merge parent's yes is marked MergeAtOnce.
+@@ -81,6 +86,9 @@ func ResolvePullRequest(slug, parentMode, entryField string, beam BeamRecord, pa
+ 	if isBeam {
+ 		entryField = ""
+ 	}
++	if entryField == pullRequestMergeIn {
++		return PullRequestDecision{TrueMerge: true, Reason: fmt.Sprintf("no pull request: the entry's pull_request is %s, so the task lands by a true merge whatever the parent's beam.yaml pull_request, %s, says", pullRequestMergeIn, parentMode)}
++	}
+ 	mergeAtOnce := parentMode == pullRequestMerge || isBeam
+ 	required := parentMode == pullRequestRequired || parentMode == pullRequestMerge || parentRuleRequired
+ 	if required && entryField == pullRequestOff {
+@@ -140,7 +148,7 @@ func ResolvePullRequest(slug, parentMode, entryField string, beam BeamRecord, pa
+ }
+ 
+ // resolveWithParentRule asks ResolvePullRequest for the run deps tells, and asks it again with GitHub's rules for the parent branch when its answer is a no that would land a non-empty task by direct push to an origin a pull request could be opened on.
+-// The rules are read only then, so a landing beam.yaml or the entry already sends through a pull request, and one that never reaches GitHub, makes no extra call.
++// The rules are read only then, so a landing beam.yaml or the entry already sends through a pull request, a no marked TrueMerge, which no rule changes, and one that never reaches GitHub, make no extra call.
+ // A cancelled context and a transient failure of the read are errors the driver re-steps.
+ // beam is what the beam's landing record holds, NotABeam for a landing that is no beam's.
+ // recordFound reports whether the run already holds a pull request record, which shows the rule applied when the pull request was opened.
+@@ -148,7 +156,7 @@ func ResolvePullRequest(slug, parentMode, entryField string, beam BeamRecord, pa
+ // Otherwise any failure of the read, an unusable token included, logs one Warn and reads as no rule, so the landing goes as beam.yaml and the entry say.
+ func resolveWithParentRule(ctx context.Context, name string, deps Deps, parentMode, entryField string, beam BeamRecord, origin Origin, taskHasCommits, recordFound bool) (PullRequestDecision, error) {
+ 	decision := ResolvePullRequest(deps.Slug, parentMode, entryField, beam, false, origin, taskHasCommits)
+-	if decision.Open || decision.Halt != "" || !taskHasCommits {
++	if decision.Open || decision.TrueMerge || decision.Halt != "" || !taskHasCommits {
+ 		return decision, nil
+ 	}
+ 	if _, _, missing, _ := checkOrigin(origin); missing != "" {
+diff --git a/internal/landingshed/pullrequestmode_test.go b/internal/landingshed/pullrequestmode_test.go
+index 0745ca84..c5fbcb75 100644
+--- a/internal/landingshed/pullrequestmode_test.go
++++ b/internal/landingshed/pullrequestmode_test.go
+@@ -49,6 +49,20 @@ func TestResolvePullRequest(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("MergeInFieldWantsNoPullRequestUnderAnyParentOrRule", func(t *testing.T) {
++		for _, parent := range []string{"on", "off", "required", "merge"} {
++			for _, rule := range []bool{false, true} {
++				got := ResolvePullRequest("slug", parent, "merge-in", NotABeam, rule, githubOrigin, true)
++				if got.Open || got.MergeAtOnce || got.Halt != "" || !got.TrueMerge || got.Reason == "" {
++					t.Errorf("ResolvePullRequest(%q, merge-in, rule %v) = %+v; want a no marked TrueMerge, with a reason", parent, rule, got)
++				}
++			}
++		}
++		if got := ResolvePullRequest("slug", "required", "merge-in", BeamWithoutPullRequest, false, githubOrigin, true); got.TrueMerge || !got.Open {
++			t.Errorf("ResolvePullRequest(required, merge-in, beam) = %+v; want a beam to ignore the field", got)
++		}
++	})
++
+ 	t.Run("ParentRule", func(t *testing.T) {
+ 		const ruleDemand = "GitHub's rules for the parent branch require a pull request"
+ 		local := Origin{URL: "/srv/hub.git", Upstream: true}
+diff --git a/internal/landingshed/seam_enforcement_test.go b/internal/landingshed/seam_enforcement_test.go
+index 9d174033..19326a0a 100644
+--- a/internal/landingshed/seam_enforcement_test.go
++++ b/internal/landingshed/seam_enforcement_test.go
+@@ -18,6 +18,7 @@ import (
+ // landingshedAllowedImports are the only non-stdlib import paths production code in this package
+ // may use.
+ var landingshedAllowedImports = []string{
++	"github.com/Knatte18/loomyard/internal/boardengine", // names the merge-in pull_request value
+ 	"github.com/Knatte18/loomyard/internal/fabricengine",
+ 	"github.com/Knatte18/loomyard/internal/gateslot",
+ 	"github.com/Knatte18/loomyard/internal/githubclient",
+diff --git a/pattern/PATTERN-landing.md b/pattern/PATTERN-landing.md
+index dcaf0989..c0d6fc95 100644
+--- a/pattern/PATTERN-landing.md
++++ b/pattern/PATTERN-landing.md
+@@ -9,3 +9,4 @@ Rule: Moving, merging into or landing on a local parent branch, or merging a run
+ ## Pull request mode
+ 
+ Rule: Deciding if a landing uses a pull request: only landingshed's one resolver, from the receiving `beam.pull_request`, the entry's `pull_request` or a beam's pull-request record, the parent's GitHub rules, origin and task commits; no run setting carries it; a yes merges on GitHub.
++An entry whose `pull_request` is `merge-in` is a no under every parent and rule, and its parent-side merge never squashes.
