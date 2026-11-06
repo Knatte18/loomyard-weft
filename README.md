@@ -74,7 +74,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **The python guard refuses without saying why or what to do when a task needs Python**<br>• An OCR repository on lym hits the guard: the refusal gives no reason and no way forward | [`python-guard-gives-no-reason`](design-python-guard-gives-no-reason.md) | darn · light | Darn-Write | neve | 36m<br>31m | shuttle |
 | T2 | **A skill load stopped by an API error counts as skipped, and the prompt is sent into the outage**<br>• Shuttle skips unloaded skills with only a log line; an API outage leaves a seat stalled or running without them | [`skill-load-timeout-sends-prompt`](design-skill-load-timeout-sends-prompt.md) | darn · light | Darn-Write | neve | 9m<br>6m | shuttle |
-| T7 | **Shorten the orch role file, the largest single start cost**<br>• role.md costs 19,390 tokens per read: shorten it, or move rarely used parts to a file the orch reads on demand<br>• `drift: scope off` | [`orch-role-shorter`](design-orch-role-shorter.md) | darn · solid | Drift-Recheck | neve | 16h<br>2h | orch |
+| T7 | **Shorten the orch role file, the largest single start cost**<br>• role.md costs 19,390 tokens per read: shorten it, or move rarely used parts to a file the orch reads on demand<br>• `drift: scope off` | [`orch-role-shorter`](design-orch-role-shorter.md) | darn · solid | Describe | neve | 16h<br>2h | orch |
 
 #### Ready (0)
 
