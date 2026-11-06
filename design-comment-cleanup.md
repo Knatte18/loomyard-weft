@@ -1,6 +1,6 @@
 # Comment cleanup: parallel agents fix stale comments across the repository
 
-`comment-cleanup` · Task · enhancement, fabric · running · Worktree-Create
+`comment-cleanup` · Task · enhancement, fabric · running · Seed-Child
 
 ## Seen (operator and hub orch, 2026-10-31)
 
