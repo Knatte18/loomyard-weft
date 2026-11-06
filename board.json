@@ -646,6 +646,27 @@
       "body": "## Seen\n\nReport `docs/research/tokens/startup-context-2026-11-05/report.md`: `.lym/orch/role.md`, 54,443 characters, costs 19,390 tokens each time it is read, which is every orch start. It is the largest single source in an orch start, larger than everything Claude Code itself loads.\n\n## Idea\n\nShorten `contracts/orchrole`, or move the parts the orch reads only for a rare verb or event (such as intake, beams, landing halts) into a skill or a file it reads on demand. The command list alone is a large share and repeats what `lym \u003ccommand\u003e --help` gives.",
       "created": "2026-11-05T20:18:23Z",
       "revised": "2026-11-05T20:18:23Z"
+    },
+    {
+      "id": 1163,
+      "handle": "B3",
+      "slug": "drift-judge-usage-record-halt",
+      "title": "drift: every judge halts on lym's own usage record, and resume loops",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "drift",
+        "loom"
+      ],
+      "issues": [
+        73
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #73](https://github.com/Knatte18/loomyard/issues/73).\n\nFollow-up to #72, with what is known now. #72's workaround does not work.\n\nSeen: every drift judge in the Models hub halts at Drift-Verify or Drift-Recheck with 'decision halt: the judge session changed what it may not: records: src/csharp/NORCE.Models/_lym/usage/session-\u003cuuid\u003e.json was added'. Sometimes '_lym/drift/judgement-\u003cstamp\u003e.yaml was added' is named too. Three runs are blocked now: cuttings-fitted-rheology (Drift-Recheck), api-density-coefficients (Drift-Verify) and baseline-provenance-outside (its judge will hit it).\n\nCause: internal/driftengine/judgesnapshot.go, Changes, exempts only judgement.yaml and the loomRecordsDirs entries (internal/loomcli/driftwiring.go loomRecordsDirs: the run directory under _lym/shed and _lym/loom/friction). Every judge session writes lym's own usage record under shedrun.UsageDirRel() (_lym/usage/session-\u003cid\u003e.json), which is not exempt.\n\nNo way out: deleting the usage record and running 'lym loom resume' re-captures and re-judges with a new session, which writes a new usage record and halts again. No lym verb gets a run past it.\n\nExpected: the judge's snapshot check exempts lym's own records: add the anchored shedrun.UsageDirRel() to loomRecordsDirs, and exempt the judgement-\u003cstamp\u003e.yaml copies beside judgement.yaml. A judge that changed nothing never halts.\n",
+      "created": "2026-11-06T08:55:32Z",
+      "revised": "2026-11-06T08:55:32Z"
     }
   ],
   "prime_owner": "neve",
