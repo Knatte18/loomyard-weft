@@ -22,7 +22,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Measure whether tasks run faster since turn-savings, darn and tapestry apart**<br>• Before-and-after run time from recorded data, Sketch-fed tapestry runs compared like for like | [`task-runtime-before-after`](design-task-runtime-before-after.md) | darn · docs | Open-Window | neve | 1m<br>1m | report, loom |
+| T5 | **Measure whether tasks run faster since turn-savings, darn and tapestry apart**<br>• Before-and-after run time from recorded data, Sketch-fed tapestry runs compared like for like | [`task-runtime-before-after`](design-task-runtime-before-after.md) | darn · docs | Preflight | neve | 1m<br>1m | report, loom |
 
 #### Ready (0)
 
@@ -113,8 +113,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B2 |  | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | 13h<br>13h | tools, claude |
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 16h<br>16h | reed, orch |
 | B5 |  | **drift: Drift-Recheck halts on a capture's provenance file even when the compare command passed** | [`drift-capture-provenance-halt`](design-drift-capture-provenance-halt.md) | 25m<br>25m | drift, config |
-| B6 |  | **drift: config reconcile leaves the retired {skip_file} placeholder in capture and compare commands** | [`drift-retired-skip-file-kept`](design-drift-retired-skip-file-kept.md) | 25m<br>24m | drift, config, reconcile |
-| B7 |  | **webster begin-batch reports a delete-before-reference plan ordering finding as plan_conflict: tree_moved** | [`begin-batch-wrong-conflict-kind`](design-begin-batch-wrong-conflict-kind.md) | 24m<br>24m | webster |
+| B6 |  | **drift: config reconcile leaves the retired {skip_file} placeholder in capture and compare commands** | [`drift-retired-skip-file-kept`](design-drift-retired-skip-file-kept.md) | 25m<br>25m | drift, config, reconcile |
+| B7 |  | **webster begin-batch reports a delete-before-reference plan ordering finding as plan_conflict: tree_moved** | [`begin-batch-wrong-conflict-kind`](design-begin-batch-wrong-conflict-kind.md) | 25m<br>25m | webster |
 
 #### Enhancements (4)
 
