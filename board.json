@@ -585,6 +585,28 @@
       "body": "## Seen\n\nIn the Code-Review of `assist-fan-seat-work-alone` on 2026-11-06, the Codex assistant seat's trace logged `shuttle: skill skipped ... cause=\"not loaded\"` for all five skills at 13:29:48, after both load turns, with the network up.\nIts rollout, `~/.codex/sessions/2026/11/06/rollout-2026-11-06T13-29-27-01a1b0d5-*.jsonl`, shows an `exec` `custom_tool_call` naming `SKILL.md` at 12:29:33Z, so the seat seems to have read its skills and the warning looks false.\n\n`custom_tool_call` is among `toolCallPayloads` in `internal/shuttleengine/codexengine/skillload.go`, so the payload kind alone is not the cause.\nThe cause is not found: the classifier may miss the skill tail inside the `exec` input, or the turn it reads may not be the one holding the call.\n\n## Why it matters\n\nA false warning hides a true one, and the task `skill-load-timeout-sends-prompt` leans on the same load reports.\n\n## Wanted\n\nFind why the classifier read these skills as not loaded, and make it read a Codex load correctly, or show that the skills were in fact not loaded.\n",
       "created": "2026-11-06T13:04:39Z",
       "revised": "2026-11-06T13:04:39Z"
+    },
+    {
+      "id": 1178,
+      "handle": "T3",
+      "slug": "tier1-test-revision",
+      "title": "Revise tier 1: what makes it slow, and which tests to change, fold or cut",
+      "kind": "task",
+      "labels": [
+        "research",
+        "fabric"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Ranked report on tier 1, fabricengine first; tier 2 stays in the gate keys",
+      "body": "## Decision (operator, 2026-11-06)\n\nTier 2 stays in the `darn-write` and `code-burler-fix` gate keys.\nTier 1 is what is slow, the `internal/fabricengine` suite above all, and the tests are due a revision.\n\n## Wanted\n\nA report at `docs/research/speed/tier1-test-revision-2026-11-06/report.md` that says what to change in tier 1, ranked by the time it takes off a gate pass.\nIt changes no code, test or config, and files no task.\n\nBuild on `docs/research/speed/fabric-test-speed-survey-2026-11-03.md` and `docs/research/speed/run-slowness-causes-2026-11-06/report.md`, and do not repeat their measuring where it still holds.\n\nAnswer:\n\n1. Where a tier 1 pass goes now: seconds per package, the packages that set its wall, and how much is test time against binary start, build and vet.\n   `lym gate report` and the gate's logs hold real passes; prefer them to new runs.\n2. `internal/fabricengine`: which of the survey's levers still stand at today's tree, what each is worth now, and the order to take them in.\n   Say what the pair templates cost to build, since the survey gives only what they save.\n3. The same for the other slow packages: their costliest tests and fixtures, and what makes them slow.\n4. Which tests can go or fold: overlapping tests, tests that pin nothing another test does not, and tests of tier 1 that need no real git or could sit in tier 0.\n   Use `cmd/testtiming`'s redundancy report and read the costliest tests, and name what each candidate alone pins, so a fold keeps it.\n5. What the whole would give: a darn run's gate before and after, alone and beside two other runs.\n\nEnd with follow-up tasks, ranked, each with its expected saving, its size and its risk to coverage.\n\n## Bounds\n\nAt most three whole-repository tier 1 runs and two tier 1 runs of `internal/fabricengine`, all through `lym gate test`.\nNo run on the other machine; state what carries over to it by reasoning, as the survey did.\n",
+      "status": "draft",
+      "created": "2026-11-06T13:17:33Z",
+      "revised": "2026-11-06T13:17:33Z",
+      "profile": "docs",
+      "notify_on_land": true
     }
   ],
   "prime_owner": "neve",
