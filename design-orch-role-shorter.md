@@ -2,8 +2,6 @@
 
 `orch-role-shorter` · Task · enhancement, orch · running · Darn-Write
 
-Depends on: [`creel-cross-hub-build`](design-creel-cross-hub-build.md)
-
 ## Seen
 
 Report `docs/research/tokens/startup-context-2026-11-05/report.md`: `.lym/orch/role.md`, 54,443 characters, costs 19,390 tokens each time it is read, which is every orch start.

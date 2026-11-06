@@ -451,29 +451,6 @@
       "revised": "2026-11-05T17:11:50Z"
     },
     {
-      "id": 1146,
-      "handle": "T2",
-      "slug": "creel-cross-hub-build",
-      "title": "Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "creel",
-        "orch"
-      ],
-      "issues": [],
-      "recipe": "tapestry",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `creel-cross-hub-mail`.\n\nTakes: creel's journal, fold, delivery seam and verbs, and the orch role, as slack-relay leaves them, with its \u003cshortname\u003e:SLACK program sender and its orch-role rules on whose mail carries the operator's authority; fabricengine.ReadShortname, hubgeom.CreelGeometry, internal/state and internal/lock as they stand\nDelivers: the per-user hubs.json machine record written by each creel daemon at start; posts and replies from a strand to another hub's strand, queued in the sending journal, delivered daemon to daemon and confirmed with the sending daemon, with drops journaled and noticed to the orch; the creel config module with trusted_hubs; the sender stamp on every rendering of mail from another hub; the trust sentence, parent directive and orch role reading the stamps; lym creel hubs; the PATTERN-agent-addressing change; and the board note creel-cross-hub-trial\nExports: hubregistry's record and lookup by shortname, creelconfig's trusted_hubs loader, the deliver and confirm verbs of the creel socket protocol, and the lym creel hubs verb\n\nThe part changes these packages:\n\n- internal/creelengine (about 2500 changed lines)\n- internal/creelcli (about 300 changed lines)\n- internal/hubregistry (about 300 changed lines)\n- internal/creelconfig (about 120 changed lines)\n- internal/configreg (about 5 changed lines)\n- internal/shuttleengine (about 5 changed lines)\n- internal/shuttleengine/claudeengine (about 5 changed lines)\n- contracts/stencils (about 10 changed lines)\n- contracts/orchrole (about 15 changed lines)\n- cmd/lym (about 10 changed lines)\n- pattern (about 10 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-05T18:00:31Z",
-      "revised": "2026-11-05T18:00:31Z",
-      "profile": "solid",
-      "discussed": true
-    },
-    {
       "id": 1160,
       "handle": "B2",
       "slug": "batching-hook-live-gap",
@@ -523,9 +500,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "creel-cross-hub-build"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "role.md costs 19,390 tokens per read: shorten it, or move rarely used parts to a file the orch reads on demand",
       "body": "## Seen\n\nReport `docs/research/tokens/startup-context-2026-11-05/report.md`: `.lym/orch/role.md`, 54,443 characters, costs 19,390 tokens each time it is read, which is every orch start.\nIt is the largest single source in an orch start, larger than everything Claude Code itself loads.\nThe operator finds it far too long and sloppily written (2026-11-06).\n\n## Wanted\n\nRewrite `contracts/orchrole/orch-role.md` so it is much shorter and well written, with about half its tokens or fewer as the aim.\n\n- Keep every rule that binds the orch, in force and meaning: a shorter sentence, never a weaker rule.\n  Where two passages say the same thing, keep one; where they disagree, keep what the code does and name it in the change description.\n- Move what the orch needs only for a rare verb or event, such as intake, making and landing a beam, landing halts, hibernate or Slack, into files it reads on demand, with one line in the role saying when to read which.\n  Prefer files rendered beside the role over a new skill, so no other session sees them.\n- The command list repeats what `lym \u003ccommand\u003e --help` and `lym help index` give: find how it is produced, and cut it to what the orch cannot get otherwise, keeping the rule that the orch uses only the commands open to it.\n- Follow `scribe:prose`: point first, one rule stated once, no history, no padding.\n  Read the role from the top as a new orch would, and order it by what the orch does: the run loop first, then stops and escalations, then the board.\n\nAnything that reads, renders or tests the role moves with it, including the place it is copied to under `.lym/orch/` and any test that pins its text.\nNo other session's stencils change, and lym's behaviour does not change.\n\n## Review\n\nThe risk is a rule that disappears without notice, so the change description lists each passage dropped, and each passage moved with where it went.\nCode-Review checks that list against the old file, and states the start cost in tokens before and after, measured with `docs/research/tokens/startup-context-2026-11-05/measure.sh` or by the same count.\n",
@@ -558,35 +533,6 @@
       "created": "2026-11-06T10:03:49Z",
       "revised": "2026-11-06T12:10:16Z",
       "project": "codex-engine-trial"
-    },
-    {
-      "id": 1171,
-      "handle": "T1",
-      "slug": "codex-assist-fan-trial",
-      "title": "Try the Codex assistant reviewer with its lens fan",
-      "kind": "task",
-      "labels": [
-        "research",
-        "codex",
-        "shuttle"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A Claude darn docs writer spawns Astra with lenses on a real commit, and the run review then uses the real fanned seat: does the fan work, and what does it cost",
-      "body": "## Seen\n\nThe assistant reviewer ran solo on Codex in one real darn run, and note `codex-assist-review-trial` holds the result.\nThe fan, `code_assist_reviewer_fan`, has never run: `contracts/stencils/engine/codex/assist-fan.md` has Codex spawn one subagent per lens with `spawn_agent` inside its one turn, and no lym fork audit covers them.\n\n## Wanted\n\nFind out whether Astra with lenses works, in two parts, and report what happened in `docs/research/codex/review/assist-fan-trial-2026-11-06/report.md`.\n\n### 1. The writer spawns Astra with the fan on real code\n\nRun exactly one `lym shuttle run --model \"astra[medium]\"` from this worktree, with one retry only after a launch fault that has nothing to do with the fan.\nIt reviews the landed commit `b93a0a52`, read through `git show`, and changes no source.\nBuild its prompt from the stencils an assistant reads, `burler-template-assist-reviewer`, `burler-assist-cluster-fan` and the Codex `assist-reading` and `assist-fan` blocks, with the lenses of the `review-code` fan in `lenses.yaml`.\n`internal/burlerengine/assist.go` shows how they fit together.\n\nReport:\n\n- Whether a subagent started for each lens, whether every one returned, and whether the assistant waited for them all inside its turn.\n- Whether the report parses as a review, by the check `ReviewGateEntry` names.\n- The wall time, and the tokens where Codex's records give them.\n- What it found, against `round-1-review.md` and the assistant's solo report of that run, at `_lym/reviews/code/` in weft commit `327f541d1d`.\n  That review read the code before its fixes, so the comparison is rough, and the report says so.\n\n### 2. The real seat\n\nThis task's `run_settings` turn on Code-Review with the assistant fanned, so the review of this report is the real composed seat on a small diff.\nThe writer does nothing for this part and names it in the report as still to come.\n\n## Bounds\n\n- At most the one run and one retry above, and no headless launch.\n- No code change: if the fan fails, the report states what failed and where, and the fix becomes a note.\n",
-      "status": "done",
-      "created": "2026-11-06T11:47:11Z",
-      "revised": "2026-11-06T11:47:11Z",
-      "run_settings": {
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]",
-          "code_max_bounces": 1
-        }
-      },
-      "profile": "docs"
     },
     {
       "id": 1172,
