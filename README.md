@@ -58,7 +58,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Same real change written by a Codex and a Claude writer, time, cost and quality compared**<br>• Two darn runs of one real lym bug, one writer each; land the better, cancel the other | [`codex-claude-writer-compare`](design-codex-claude-writer-compare.md) | 0m<br>0m | codex, shuttle |
+| R1 |  | **Same real change written by a Codex and a Claude writer, time, cost and quality compared**<br>• Two darn runs of one real lym bug, one writer each; land the better, cancel the other | [`codex-claude-writer-compare`](design-codex-claude-writer-compare.md) | 1m<br>1m | codex, shuttle |
 
 #### Features (1)
 
@@ -81,7 +81,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | Webster | neve | 16h<br>16h | creel, orch |
-| T3 | **Trial the session-scope settings in a real launch and re-measure start load**<br>• Check each lever ly-plugin-off-in-other-hubs writes works in Claude Code, and measure one spawned role's and the orch's start load after it | [`session-scope-launch-trial`](design-session-scope-launch-trial.md) | darn · docs | Drift-Baseline | neve | 14h<br>1m | claude, shuttle |
+| T3 | **Trial the session-scope settings in a real launch and re-measure start load**<br>• Check each lever ly-plugin-off-in-other-hubs writes works in Claude Code, and measure one spawned role's and the orch's start load after it | [`session-scope-launch-trial`](design-session-scope-launch-trial.md) | darn · docs | Drift-Await | neve | 14h<br>1m | claude, shuttle |
 
 #### Ready (0)
 

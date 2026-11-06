@@ -57,7 +57,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Same real change written by a Codex and a Claude writer, time, cost and quality compared**<br>• Two darn runs of one real lym bug, one writer each; land the better, cancel the other | [`codex-claude-writer-compare`](design-codex-claude-writer-compare.md) | 0m<br>0m | codex, shuttle |
+| R1 |  | **Same real change written by a Codex and a Claude writer, time, cost and quality compared**<br>• Two darn runs of one real lym bug, one writer each; land the better, cancel the other | [`codex-claude-writer-compare`](design-codex-claude-writer-compare.md) | 1m<br>1m | codex, shuttle |
 
 ### Features (1)
 
