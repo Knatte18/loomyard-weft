@@ -556,7 +556,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #68](https://github.com/Knatte18/loomyard/issues/68).\n\n**What happened**\n`lym webster begin-batch 20` was refused. The refusal text names a blocking finding `delete-before-reference/22-driftcli-retire-verbs`: card 22 deletes a symbol that a later card (26) still references. The way forward it gives is to edit the plan, run `lym webster rebaseline --card NN` for each edited card, then run begin-batch again.\nThe refusal note is classified `plan_conflict: tree_moved`.\n\n**Why it is abnormal**\n- The finding is a plan-internal ordering defect (a delete card placed before a card that still references the symbol), not a tree that moved. The `tree_moved` classification points the reader at the wrong cause.\n- The ordering defect exists in the plan from the start. It surfaced only at begin-batch of batch 20, after earlier batches had run, so plan validation or earlier re-resolution did not catch it.\n\n**What to do**\n- Check why a `delete-before-reference` finding is classified `tree_moved` and give it a classification that names a plan-ordering conflict.\n- Consider running the delete-before-reference check when the plan is accepted or rebaselined, so the conflict is refused before earlier batches are spent.\n\nProvenance: task slug `drift-rework`; note file `webster-refusal-begin-batch.md`.",
-      "status": "running · Code-Bouncer",
+      "status": "running · Code-Burler-Review",
       "created": "2026-11-06T08:55:48Z",
       "revised": "2026-11-06T10:11:30Z",
       "run_settings": {
