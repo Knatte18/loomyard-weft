@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-06 12:11 UTC; every age below is as of then.
+Rendered 2026-11-06 12:12 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -72,7 +72,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | Code-Bouncer | neve | 18h<br>18h | creel, orch |
+| T2 | **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | Code-Burler-Review | neve | 18h<br>18h | creel, orch |
 
 #### Ready (0)
 
@@ -116,7 +116,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B1 | L | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• The Slack reminder ping while a PR-Review waits has landed; only the silence in status views remains, which the operator chose not to build | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 2d<br>2h | landing, loom, batten |
 | B2 |  | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | 16h<br>16h | tools, claude |
 | B3 |  | **A fanned assistant seat is told to work alone, and ran without its lenses**<br>• The composed prompt forbids what the fan asks for; the real seat went solo and no record flagged it | [`assist-fan-seat-work-alone`](design-assist-fan-seat-work-alone.md) | 1m<br>1m | burler, stencil, codex |
-| B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 18h<br>18h | reed, orch |
+| B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 19h<br>19h | reed, orch |
 
 #### Enhancements (3)
 
@@ -140,7 +140,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 2w<br>19h | loom, board, batten, workspaces |
 | F16 |  | **Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | 3d<br>16h | drift, shed |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>19h | burler, shed, orch, quarry, report |
-| F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 1d<br>12m | board, orch, workspaces |
+| F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 1d<br>13m | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 1d<br>1d | batten, board, fabric, workspaces |
 
 ### Done (1)
@@ -149,4 +149,4 @@ Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T1 | **Try the Codex assistant reviewer with its lens fan**<br>• A Claude darn docs writer spawns Astra with lenses on a real commit, and the run review then uses the real fanned seat: does the fan work, and what does it cost<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]`<br>• `loom: code_max_bounces 1` | [`codex-assist-fan-trial`](design-codex-assist-fan-trial.md) | 24m<br>24m | codex, shuttle |
+| T1 | **Try the Codex assistant reviewer with its lens fan**<br>• A Claude darn docs writer spawns Astra with lenses on a real commit, and the run review then uses the real fanned seat: does the fan work, and what does it cost<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]`<br>• `loom: code_max_bounces 1` | [`codex-assist-fan-trial`](design-codex-assist-fan-trial.md) | 25m<br>25m | codex, shuttle |
