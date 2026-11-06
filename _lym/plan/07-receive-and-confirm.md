@@ -19,7 +19,7 @@
 - `plan:internal/creelengine_test#hubPair.startReceiving` -> `func (p *hubPair) startReceiving()`
 - `plan:internal/creelengine_test#hubPair.unpark` -> `func (p *hubPair) unpark()`
 - `plan:internal/creelengine_test#hubFake` -> `type hubFake struct`
-- `plan:internal/creelengine_test#listenHubFake` -> `func listenHubFake(t *testing.T, r *rig, answer func(req creelengine.Request) creelengine.Response) *hubFake`
+- `plan:internal/creelengine_test#listenHubFake` -> `func listenHubFake(t *testing.T, r *rig, answer func(req creelengine.Request) (creelengine.Response, string)) *hubFake`
 - `plan:internal/creelengine_test#TestDaemon_CrossHubDeliver` -> `func TestDaemon_CrossHubDeliver(t *testing.T)`
 
 **Edit:**
@@ -86,7 +86,8 @@ A notice that fails to store is logged and undoes nothing.
 `hubPair` holds two rigs with shortnames `ly` and `lyt`, each with a `creelfake.Hubs` holding both, each test-process sender set up as `newRig` does, and the `running` handle of each daemon it started.
 `newHubPair` starts nothing, so a row writes journal lines first, starts a side with `startSending` and `startReceiving`, stops it through its handle, or binds `listenHubFake` on a side's socket instead.
 `newHubPair` also sets a geometry error for the receiving hub in the sending rig's `Hubs`, which parks card 8's worker on its retry wait, so a row's hand-sent `deliver` never races it; `unpark` clears it.
-`listenHubFake` serves that socket with `answer`, which may block until the row releases it, writes the `Response` with the rig's hub path, and counts the requests by verb.
+`listenHubFake` serves that socket with `answer`, which may block until the row releases it, and counts the requests by verb.
+`answer` returns a `Response` and a raw line: a non-empty raw line is written verbatim with a line end in place of the `Response`, so a row can reach the client's JSON decoder, and otherwise the fake writes the `Response` with the `HubPath` the answer set, or the rig's hub path when the answer left it empty.
 
 `TestDaemon_CrossHubDeliver` is tier0 over real sockets, as `TestDaemon_Protocol` is, and each row posts on the sending rig and sends the `deliver` by hand through `rawExchange`.
 Rows:

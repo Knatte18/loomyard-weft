@@ -16,8 +16,6 @@
 - `internal/configreg#TestModules_SeedOnlyAndHubWideFlags`
 - `internal/configreg#TestModules_LocalLayerRefusals`
 - `cmd/lym#configStrictnessDegradingSet`
-
-**Extends:**
 - `pattern/PATTERN-config-layers.md`
 - `docs/overview.md`
 

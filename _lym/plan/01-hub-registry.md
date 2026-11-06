@@ -48,12 +48,12 @@ Its name is the one constant `RecordFileName`, and its lock file is a second nam
   An entry whose record reads not found, and one whose hub path a stat answers with anything but not-exist, is kept.
 - `Lookup` reads the file through `state.ReadJSON`, reads each entry's Bolt shortname record and keeps the entries that read `shortname`.
   With one it answers that hub path.
-  With none it refuses: `creel: no hub with the shortname "<s>" is recorded on this machine; way forward: run any lym creel verb, such as lym creel inbox, in that hub once`.
+  With none it refuses: `creel: no hub with the shortname "<s>" is recorded on this machine; way forward: run lym creel inbox in that hub once`.
   With several it refuses, opening with that mail across hubs needs distinct shortnames, then the way forward of removing the extra clone, since a recorded shortname never changes, and then every hub path, so the 200-byte cut of D2's notice loses only paths.
   A file that is absent reads as no entries, and so reaches the none refusal.
   The none and several refusals wrap `ErrUnresolved`, so a caller tells them from a record that cannot be read.
 - `Live` answers the entries whose Bolt shortname record reads the entry's own shortname, in shortname order.
-- A record `state` cannot decode is refused by `Lookup`, `Live` and `Record` alike with the file's path and the way forward of removing the file by its path, after which any `lym creel` verb in each hub records it again (card 4).
+- A record `state` cannot decode is refused by `Lookup`, `Live` and `Record` alike with the file's path and the way forward of removing the file by its path, after which `lym creel inbox` in each hub, a minute on, records it again (card 4).
 
 `TestRecord` and `TestLookup` are in `internal/hubregistry/hubregistry_test.go`, which is tier0: its hubs are temporary directories holding only `_bolt/.lym-shortname`, so it spawns nothing.
 `internal/hubregistry/testmain_test.go` is untagged and calls `tmuxkit.Main`.

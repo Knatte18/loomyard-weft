@@ -69,8 +69,9 @@ Production always passes a seam.
 
 `Run` calls `recordHub` right after it takes its single-instance lock, and calls `store.SetHubs` once the store is open.
 A failed record logs one Warn per episode and the daemon serves on, since a hub that cannot be addressed must not lose its own mail; a daemon that lost the lock returns `ErrDaemonRunning` first and records nothing.
-`daemon.serve` also calls `recordHub` after each locally resolved verb, and it records at most once per named `hubRecordInterval`, a minute, on the daemon's clock.
-This makes D1's way forward true for a hub whose daemon already runs: a live daemon whose entry was lost, by a failed record or a removed file, records it again at the next `lym creel` verb past the interval.
+`daemon.serve` also calls `recordHub` after each locally resolved verb.
+After a record that succeeded, `recordHub` records at most once per named `hubRecordInterval`, a minute, on the daemon's clock; after one that failed it skips the interval and records at the next such verb.
+This makes D1's way forward true for a hub whose daemon already runs: a live daemon whose last record failed records the hub at the next locally resolved verb, and a live daemon whose file was removed after a record that succeeded records it again at the first such verb past `hubRecordInterval`, which is why card 1's corrupt-record way forward waits a minute.
 A record is one short file-locked write, and a nil seam skips it.
 
 `hubDirectory` in `internal/creelcli/hubdirectory.go` implements the seam: `Record` and `Lookup` over `internal/hubregistry` in the told `registryDir`, with `seam.clock.Now()`; `Lookup` maps `hubregistry.ErrUnresolved` onto an error with the same text that matches `creelengine.ErrHubUnresolved`; `Geometry` through `hubgeom.CreelGeometry` under `tempRoot`; `Spawn` through `seam.spawn`, so `spawnDaemon` logs and reaps each start; `TrustedHubs` through `creelconfig.LoadConfig` with `configengine.Dirs{Board: fabricengine.BoltDir(hubPath)}`, read at each call, so a changed list applies with no daemon restart.
@@ -83,7 +84,7 @@ A `registryDir` that fails is kept as `registryErr`: `Record` and `Lookup` then 
 With nothing set, `Spawn` answers an error and starts nothing, `Geometry` of an unknown path answers an error, and `TrustedHubs` answers an empty list.
 `rig` gains `hubs *creelfake.Hubs` and `goos string`, and `rig.options` passes them when set, so a nil `hubs` leaves every existing daemon test as it was.
 
-`TestDaemon_Lifecycle` rows: a start records once, after the lock; a second daemon that loses the lock records nothing; a failing record still serves; after a failed record a verb past the interval, by the fake clock, records again, and a verb inside it does not.
+`TestDaemon_Lifecycle` rows: a start records once, after the lock; a second daemon that loses the lock records nothing; a failing record still serves; after a failed record the next verb records again with the fake clock unmoved; after a record that succeeded a verb inside the interval does not record, and a verb past it, by the fake clock, does.
 `TestHubDirectory` is in `internal/creelcli/hubdirectory_test.go`, which is tier0: its hubs are temporary directories with only a shortname record and a board `creel.yaml`, and `registryDir` is `t.TempDir()`.
 Its rows: an unknown shortname's error matches `creelengine.ErrHubUnresolved` and a corrupt record's does not; `Geometry` names the other hub's socket; a rewritten base file reads the new list on the next `TrustedHubs` with no restart; `Spawn` hands `seam.spawn` the hub path and log path; `daemonHubs` with a failing `registryDir` answers `Lookup` and `Record` naming the cause.
 

@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -39,9 +39,21 @@ The cards build upward: the machine record and the `creel` config, the journal a
 
 ### Decision: d1-way-forward-holds-for-a-live-daemon
 
-- **Decision:** beside its start, a daemon records its hub at most once a minute on a served local verb.
+- **Decision:** beside its start, a daemon records its hub on a served local verb: at most once a minute after a record that succeeded, and at the next such verb after one that failed.
 - **Rationale:** D1 names `lym creel inbox` in that hub as the way forward, and a verb against a live daemon starts none, so a lost entry would otherwise stay lost until the daemon restarts.
 - **Applies to:** card 4
+
+### Decision: d1-none-refusal-names-inbox-alone
+
+- **Decision:** D1's none refusal names `lym creel inbox` alone, not D1's "any `lym creel` verb".
+- **Rationale:** `lym creel hubs` starts no daemon and writes no record, so running it in a hub records nothing; D1's acceptance criterion needs only `lym creel inbox` named.
+- **Applies to:** card 1
+
+### Decision: d2-unusable-answer-is-a-code
+
+- **Decision:** an answer the sending daemon cannot use (undecodable, for a foreign hub path, or with neither `accepted` nor `refused`) gives the code `bad-answer`, though D2 quotes an answer of the receiving daemon.
+- **Rationale:** such an answer is not known to come from the receiving daemon, or carries no reason to quote, and the return notice is `CREEL` mail an agent follows, so none of its text reaches the notice.
+- **Applies to:** card 8
 
 ### Decision: no-drop-for-a-held-message
 
