@@ -7,11 +7,14 @@
 Not a problem as things stand: the operator does not want a status line or orch notice built for it now.
 If it is solved, it is built only as a reminder ping to the operator on Slack, such as "this has waited 30 minutes for you", repeated at an interval while the wait lasts.
 
-## Built since (tidy, 2026-11-05)
+## Built since (tidy, 2026-11-06)
 
 The Slack relay this waited on has landed (`slack-relay`): `lym slack`, the `<shortname>:SLACK` mailbox, presence and the `slack.remind_after_min` config key.
-The reminder ping itself is the task `slack-wait-reminders` (T6), running now.
-What stays open here is only the silence outside Slack: a PR-Review wait still shows nowhere in `lym loom status` or `lym batten status`.
+The reminder ping itself has landed as task `slack-wait-reminders` (`71e3bb4c`).
+While presence is `slack`, each worktree's dobby posts a reminder line to `<shortname>:SLACK` once a run's wait at PR-Review or Sampler-Session reaches `remind_after_min` (default 30), and again every further interval; the line names the slug, the row and the minutes waited.
+That is the whole of the operator's call above.
+What is left is only the silence outside Slack: a PR-Review wait still shows nowhere in `lym loom status` or `lym batten status`, which the operator chose not to build.
+Not run end to end: a live reminder to a real Slack channel.
 
 ## Seen
 
