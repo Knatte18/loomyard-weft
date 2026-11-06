@@ -72,7 +72,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Revise tier 1: what makes it slow, and which tests to change, fold or cut**<br>• Ranked report on tier 1, fabricengine first; tier 2 stays in the gate keys | [`tier1-test-revision`](design-tier1-test-revision.md) | darn · docs | Describe | neve | 54m<br>48m | fabric |
+| T3 | **Revise tier 1: what makes it slow, and which tests to change, fold or cut**<br>• Ranked report on tier 1, fabricengine first; tier 2 stays in the gate keys | [`tier1-test-revision`](design-tier1-test-revision.md) | darn · docs | PR-Review | neve | 54m<br>48m | fabric |
 | T4 | **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | Darn-Write | neve | 5d<br>21m | fabric |
 
 #### Ready (0)
