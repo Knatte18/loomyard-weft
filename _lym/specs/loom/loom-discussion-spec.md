@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=95a07a3bd25cee25e1f9cf5553b87a4499c6baa78f10f392db1d48232306773e build=fb1b33a44c8c9ab4490f983285088908a4de53ce time=2026-11-03T12:14:35Z -->
+<!-- lym-stencil: sha256=798ce7ee9237f22915c2222b3b00e82de53e18af7ac37bdeb40af3aa8f2d7adc build=5d1311415826613950e92e66a84e09e0b201cd6b time=2026-11-06T09:39:24Z -->
 
 # Discussion spec — the decision record, the support log and the relevant list
 
@@ -41,6 +41,8 @@ The discussion check refuses that line, as a `pattern-change-over-cap` finding, 
 the cap is the same number whatever the entry's name, and `lym loom decision add --pattern-text` applies it when the decision is recorded;
 detail that does not fit belongs in the entry's background file.
 `lym loom decision add` appends a bullet with the suffix ` — added after Discussion (<by>, <date>)`.
+`lym loom decision add --pattern-action withdraws` takes a declared change back: it strikes the entry's bullet, the Discussion's or an appended one, and closes its `### Added after Discussion` entry with the line `` Withdraws: `PATTERN-<id>` ``, in one commit.
+It strikes the bullet alone, so the heading stays when the last bullet goes, and it never touches `PATTERN.md`.
 A record without the section is valid.
 
 ### Decision ids and acceptance coverage
@@ -103,6 +105,7 @@ The Discussion-Write and Discussion-Burler-Fix gates halt on a quarry outage as 
 - A `## PATTERN changes` bullet carrying the ` — added after Discussion (<by>, <date>)` suffix is appended only by `lym loom decision add`.
   A writer never edits or removes one, and a record that drops a bullet its history held fails the format check wherever the check for dropped `### Added after Discussion` entries runs.
   That check runs on every loom record, after the section check is clean: in the discussion gates, in Darn-Write's post-session guard and in `lym loom validate-discussion`, which commits nothing.
+  An ID a `Withdraws:` line of an `### Added after Discussion` entry names is exempt from it for good.
 - `<!-- lym:carry-over … -->` blocks under `## Open risks` are written only by Go.
   A writer never authors, edits or removes one.
 
