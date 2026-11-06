@@ -468,7 +468,7 @@
       "isolated": false,
       "brief": "lym loom decision add only appends PATTERN bullets; a declared id the parent drops needs a hand edit of the record",
       "body": "## Seen (orch, 2026-11-05)\n\nThe `slack-relay` record, filed by raddle, declared `PATTERN-reap-children` (changes) and `PATTERN-slack-boundary` (adds), while its Delivers line folded both into the live clusters `PATTERN-child-processes` and `PATTERN-agent-addressing`.\nThe parent recorded the two cluster changes with `lym loom decision add`, but the plan gate (`internal/loomshed/patternplan.go`: `pattern-line-unprescribed`, `pattern-changes-mismatch`) still demanded lines for the old ids, since `decision add` only appends and a `removes` action means removing a PATTERN.md entry.\nWith the operator's leave the orch deleted the two bullets from the record by hand, committed in the weft and ran `lym loom decision store`.\n\n## Idea\n\nA `lym loom decision add` option that withdraws a declared PATTERN change, striking its bullet in the same commit as the decision that says so; and raddle, when it maps a Sketch id onto a live cluster, writes the part record's `## PATTERN changes` under the cluster ids, so the conflict never reaches Plan.\n",
-      "status": "running · Drift-Verify",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-05T17:24:02Z",
       "revised": "2026-11-05T19:00:25Z",
       "profile": "light"
