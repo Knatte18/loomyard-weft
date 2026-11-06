@@ -1,47 +1,35 @@
-# Tell a fanned assistant to run its lenses, and record when it did not
+# Let a fanned assistant seat run its lenses, and record a silent solo run
 
-The first real fanned assistant seat, Code-Review of `codex-assist-fan-trial`, ran no lenses and nothing flagged it.
-Its composed prompt contradicted itself: the seat directive said to work alone and write the report and nothing else, the write surface said the same, and the cluster rules asked for subagents and lens reports.
-The assistant followed the top-level restriction, and `round-1-usage.yaml` still read `assist_fan: review-code`.
+A review round with an assistant fan (`code_assist_reviewer_fan`) composed a prompt that contradicted itself.
+The seat directive and the write-surface line told the assistant to work alone and write its report "and nothing else", while the fan rules asked for subagents and lens reports.
+In the first real fanned seat the assistant followed the restriction, ran no lenses, and nothing in the round showed it.
 
-## The prompt
+## What changes
 
-A fanned assistant now runs its own opening stencil and seat directive:
-
-- `burler-template-assist-reviewer-fanned` names the lens reports on the write surface.
-- `seat-directive-assistant-fanned` says "work alone" means no other session, says the subagents are the assistant's own work, and lists every file it writes.
-- `burler-assist-cluster-fan` no longer calls the lens reports an exception to the write-surface rules.
-
-A solo assistant keeps `burler-template-assist-reviewer`, `seat-directive-assistant` and their bytes.
-
-`seatengine.Seat` gains `SubagentReports`, which `assistSeat` fills with one concrete path per lens.
-The `output_files` marker lists them after the outputs, and a fresh run removes stale ones with the assistant's other files.
-`Table.Validate` requires the fanned directive of an assistant that has them, and the solo directive of one that has none.
-
-## The record
-
-An accepted round's `round-<N>-usage.yaml` gains `assist_ending`, the assistant's end marker text, and `assist_lenses_missing`, each lens a done fanned assistant returned no report for.
-A lens counts as missing when its file is absent or its report's outcome is `no report`.
-A round whose `assist_ending` reads `done` and that lists no lens ran its whole fan.
-A missing lens is also logged at Warn, and it never fails the round, since an assistant never gates one.
+- A fanned assistant now runs a fanned seat stencil, `burler-template-assist-reviewer-fanned`, and a fanned directive block, `seat-directive-assistant-fanned`.
+  "Work alone" there means no other session, and running the lens subagents is named as part of the seat's own work.
+  The write surface and `output_files` list the report and then one lens report per lens.
+  A solo assistant keeps its stencil and directive unchanged.
+- `burler-assist-cluster-fan` no longer calls the lens reports an exception to "nothing else", since the write-surface rules now name them.
+- `internal/burlerengine` picks the fanned stencil when the assistant's fan resolves to lenses, and gives the seat a `SubagentReports` path per lens (new `Seat` field in `internal/seatengine`).
+  Those files are cleared before a fresh run like the other assistant files.
+- `internal/lensreport` gains `Path` and `Returned`.
+  `Returned` reads only the outcome line of a report's opening yaml block, so a missing file, a malformed block and `no report` all count as not returned.
+  `twill-lens-report-spec.md` and `PATTERN-sole-parsers.md` are updated to say Go reads that one thing.
+- A done fanned assistant that left lens reports unreturned is named on `AssistOutcome.MissingLenses` and logged as a warning.
+  The round's usage record (`round-N-usage.yaml`) gains `assist_ending` and `assist_lenses_missing`, reset on each accepted round, so `assist_fan` alone no longer passes for a fan that ran.
 
 ## Design decisions
 
-- **The lens reports are not `Outputs`.**
-  Shuttle waits for every output, and every output of a later seat must be a chair input, so a seat that skipped a lens would never read as done and the chair would be handed files it has no use for.
-  The record is what reports the gap.
-- **Two stencils, not a conditional.**
-  Stencils carry no conditionals and Go carries no prompt text, so the fanned wording lives in its own files, as `burler-template-reviewer-assisted` already does for the chair.
-- **`internal/lensreport` now reads one part of a lens report.**
-  `Returned` reads the `outcome` key alone, which changes the spec's "No Go code parses" line, and `PATTERN-sole-parsers` lists it as that format's parser.
-- **A not-done assistant lists no missing lens.**
-  Its `assist_ending` already says what happened, and a stopped or timed-out seat's lens files prove nothing either way.
+- Lens reports are write-surface files but not outputs, so a missing one does not fail the assistant or the round.
+  The record flags it and the caller judges.
+- The fanned variant is a separate stencil, not a conditional in the solo one, because the stencils carry no `{{if}}`, and it keeps the solo bytes unchanged.
+- A fan the lens library does not define resolves to no lenses, so the seat stays solo and uses the solo stencil.
 
-## Not yet proven
+## To check
 
-The board entry asks for one real fanned seat in which every lens starts and returns.
-This change does not give that proof: a review of this branch runs the binary and stencils from before it lands, so the proof needs a fanned round after landing.
-The stated cause is itself a likely one, resting on one run each of a seat that fanned and a seat that did not.
-That round's `assist_ending` and `assist_lenses_missing` will show the result.
-
-Lens reports of an assistant stay under the anchor's `.lym`, since only its report is copied beside the review, so an audit of a real fan reads them there.
+- Not run: the proof the task asked for, one real fanned seat in which every lens starts and returns.
+  The prompt fix is the likely cause of the solo run, not a proven one, so run a real fanned assistant round and confirm each lens report is saved with `outcome: reported`.
+- `assist-record-keys-stale-across-attempts` (design, MEDIUM): `assist_ending` and `assist_lenses_missing` in `internal/shedadapters/burlerreview.go` and `roundusage.go` are reset on each accepted round; check that a later attempt cannot keep an earlier attempt's values.
+- `fan-wiring-to-keep-assist-reports-unpinned` (design, MEDIUM): the lens names passed to `keepAssistReports` in `internal/burlerengine/assist.go` come from the fan wiring; check that the fan passed there is the one the seat was built with.
+- `stencil-prose-asserted-in-tests` (consistency, BLOCKING): tests in `internal/seatengine` and `internal/burlerengine` assert stencil prose; check that none remain that break on a wording change.
