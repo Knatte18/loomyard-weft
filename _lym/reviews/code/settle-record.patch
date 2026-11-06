@@ -1,0 +1,1186 @@
+diff --git a/contracts/orchrole/orch-role.md b/contracts/orchrole/orch-role.md
+index 72793490..b8129a85 100644
+--- a/contracts/orchrole/orch-role.md
++++ b/contracts/orchrole/orch-role.md
+@@ -233,7 +233,7 @@ The mechanics of reading and writing the board are in the `ly:board` skill, and
+   - A decision on a task a run holds is recorded with `lym loom decision add <slug> --by parent`.
+     A change of a beam project's scope, from its run's Record-Write on, is recorded the same way on the beam, `lym loom decision add <beam-slug> --by parent`, run by the beam's own orch, to which any other orch passes the call: the board refuses an edit of the project's body once its project record exists, and the verb's notice reaches the live agents of every member run under the beam.
+     The project record holds only what binds the whole project, its goal, bounds and constraints every member follows; it is no log of what landed, so a member landing never touches it.
+-    A decision that adds, changes or removes a PATTERN entry also passes `--pattern-entry`, `--pattern-action` and, for `adds` or `changes`, `--pattern-text`, as `lym loom decision add --help` says.
++    A decision that adds, changes or removes a PATTERN entry, or `withdraws` a declared change, also passes `--pattern-entry`, `--pattern-action` and, for `adds` or `changes`, `--pattern-text`, as `lym loom decision add --help` says.
+     Several decisions taken together go in one call with `--from <file>`, a JSON array of entries, so they land in one commit and one notice.
+     Once the plan is approved, the parent also passes `--amends-plan`.
+   - When that verb refuses because the run has no decision record (batten's pre-loom rows such as `running · Worktree-Create` and `Preflight`, or a halt before Discussion-Write), the decision becomes a board note of its own through `lym board upsert` with kind note, titled `{{.decision_note_title}} <the decision>`, with the held task's slug in place of `<slug>`.
+diff --git a/contracts/specs/loom-discussion-spec.md b/contracts/specs/loom-discussion-spec.md
+index 77012f1f..d32767b5 100644
+--- a/contracts/specs/loom-discussion-spec.md
++++ b/contracts/specs/loom-discussion-spec.md
+@@ -39,6 +39,8 @@ The discussion check refuses that line, as a `pattern-change-over-cap` finding,
+ the cap is the same number whatever the entry's name, and `lym loom decision add --pattern-text` applies it when the decision is recorded;
+ detail that does not fit belongs in the entry's background file.
+ `lym loom decision add` appends a bullet with the suffix ` — added after Discussion (<by>, <date>)`.
++`lym loom decision add --pattern-action withdraws` takes a declared change back: it strikes the entry's bullet, the Discussion's or an appended one, and closes its `### Added after Discussion` entry with the line `` Withdraws: `PATTERN-<id>` ``, in one commit.
++It strikes the bullet alone, so the heading stays when the last bullet goes, and it never touches `PATTERN.md`.
+ A record without the section is valid.
+ 
+ ### Decision ids and acceptance coverage
+@@ -101,6 +103,7 @@ The Discussion-Write and Discussion-Burler-Fix gates halt on a quarry outage as
+ - A `## PATTERN changes` bullet carrying the ` — added after Discussion (<by>, <date>)` suffix is appended only by `lym loom decision add`.
+   A writer never edits or removes one, and a record that drops a bullet its history held fails the format check wherever the check for dropped `### Added after Discussion` entries runs.
+   That check runs on every loom record, after the section check is clean: in the discussion gates, in Darn-Write's post-session guard and in `lym loom validate-discussion`, which commits nothing.
++  An ID a `Withdraws:` line of an `### Added after Discussion` entry names is exempt from it for good.
+ - `<!-- lym:carry-over … -->` blocks under `## Open risks` are written only by Go.
+   A writer never authors, edits or removes one.
+ 
+diff --git a/contracts/specs/raddle-proposal-spec.md b/contracts/specs/raddle-proposal-spec.md
+index 24cc83e5..c83c1127 100644
+--- a/contracts/specs/raddle-proposal-spec.md
++++ b/contracts/specs/raddle-proposal-spec.md
+@@ -38,7 +38,10 @@ A part holds:
+ - `contract` — `{takes, delivers, exports}`, each a text.
+ - `depends_on` — part slugs or board slugs.
+ - `open_risks` and `criteria` — the Sketch's Open risks and Acceptance criteria bullets the part carries, each the bullet's whole text as the decision record holds it.
+-- `pattern_changes` — the PATTERN entry ids the part carries.
++- `pattern_changes` — the PATTERN entry ids the part carries, as the Sketch's record names them.
++- `pattern_clusters` — optional, a list of `{sketch_id, entry, text}`, one per carried change a live `PATTERN.md` entry absorbs: `sketch_id` is the carried id, `entry` the live entry's id and `text` its whole new text.
++  Raddle-File writes every record it files with that change as the bullet `` - `<entry>` — changes: <text> ``, whatever the Sketch's action was, so the Sketch's id never reaches the plan gate.
++  The Sketch's own record keeps its bullets.
+ - `expected_cost_usd` — a number, or null when a cell the figure rests on reads "too few runs".
+ - `cost_line` — one line saying what the figure rests on.
+ 
+@@ -64,6 +67,9 @@ The gate, `raddle-propose` and `raddle-approve` run the checks of the proposal a
+ - `criterion-unknown`, `risk-unknown` — a bullet a part carries that the record does not hold.
+ - `pattern-uncarried`, `pattern-shared` — a PATTERN change of the record that no part carries, or that two parts carry.
+ - `pattern-unknown` — a PATTERN id a part carries that the record's PATTERN changes do not hold.
++- `pattern-cluster-invalid` — a `pattern_clusters` mapping of an id its part does not carry, a second mapping of one id, or a `text` that is empty, spans lines or runs past the PATTERN rule-text cap.
++- `pattern-cluster-unknown` — a mapping whose `entry` the worktree's `PATTERN.md` does not hold.
++- `pattern-cluster-shared` — a mapping whose `entry` another mapping or another declared change claims.
+ - `criteria-miss-decision` — a part whose carried criteria do not name every decision id it builds, so its record would fail the discussion check.
+ - `carried-decision-unbuilt` — a carried criterion or risk that names a decision id neither the part nor a part on its `depends_on` path builds.
+ - `board-unchecked` — an open task or project, other than the run's own entry, that carries a module label the Sketch carries and is absent from `board_checked`.
+diff --git a/contracts/stencils/raddle/raddle-template-agent.md b/contracts/stencils/raddle/raddle-template-agent.md
+index 46735166..d43c2422 100644
+--- a/contracts/stencils/raddle/raddle-template-agent.md
++++ b/contracts/stencils/raddle/raddle-template-agent.md
+@@ -43,6 +43,7 @@ Put no design question to the operator before the proposal passes the spec's che
+ 
+ - A tapestry's large fixed start cost often makes fewer, larger parts, or one tapestry, cheaper than many small tasks. Weigh that against what the cost report shows for each recipe and profile.
+ - Order the parts by what each takes from the others, and keep two parts with no order between them off the same package.
++- When a live `PATTERN.md` entry absorbs a PATTERN change the Sketch declares, map the change with the part's `pattern_clusters`, so the part's record declares the live entry; a contract line that folds it in is not enough.
+ - Weigh the next-best split too, since the proposal states its cost beside the chosen one.
+ - Write each cost line so it says when a cell it rests on reads "too few runs", and never guess a figure for such a cell.
+ 
+diff --git a/docs/overview.md b/docs/overview.md
+index ee2849bc..4e543276 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -593,6 +593,7 @@ User-facing modules each get one `lym <module>` namespace:
+   It also checks the record's history for dropped `Added after Discussion` entries and appended PATTERN bullets on every loom record, and commits nothing.
+   A run whose record row is Discussion-Write also gets the citation check and the relevant list check when it exists; a Record-Write run never reads the relevant list.
+   `decision add [<slug>] --by parent|operator --title <t> --decision <d> --rationale <r> [--amends-plan]` appends one design call made after the Discussion to the decision record under an `Added after Discussion` heading, re-runs the discussion check (restoring the record on a finding) and commits the record.
++  `--pattern-entry <id> --pattern-action adds|changes|removes|withdraws` also writes the entry's `## PATTERN changes` bullet, or, for `withdraws`, strikes it in the same commit.
+   `--from <file>` in place of the per-entry flags records a JSON array of such calls in one write and one commit, and each live agent gets one notice naming the new headings, with every entry's text inline only for webster's Merriam, which reads no record.
+   The verb also works on a Record-Write run once Record-Write has committed the record, under three checks: the record equals its committed copy, it holds every `Added after Discussion` entry its history held, and the committed record holds the appended entry afterwards; each refusal names its way forward by the run's current row.
+   `--amends-plan` marks a decision that amends the approved plan: the call also appends the title of each entry to the plan amendment record, committed with the entries, and is refused on a recipe with no Plan-Write row and for a plan that is not approved.
+diff --git a/internal/discussionparser/append.go b/internal/discussionparser/append.go
+index 647e429d..e3f7abec 100644
+--- a/internal/discussionparser/append.go
++++ b/internal/discussionparser/append.go
+@@ -33,6 +33,9 @@ type AddedDecision struct {
+ 	// PatternChange, when set, is a PATTERN entry the decision adds, changes or removes.
+ 	// AppendDecision declares it as a bullet of the record's `## PATTERN changes` section in the same write as the decision's entry.
+ 	PatternChange *PatternChange
++	// WithdrawnPattern, when set, is the entry ID of a declared PATTERN change the decision takes back.
++	// AppendDecision strikes its bullet in the same write as the decision's entry, which names the ID, and it is never set beside PatternChange.
++	WithdrawnPattern string
+ }
+ 
+ // AppendDecision adds d as the last entry of the decision record's `## Decisions` section and then
+@@ -41,6 +44,8 @@ type AddedDecision struct {
+ // A bullet the section already holds for the change's entry ID is replaced in place, since the section holds one bullet per ID.
+ // Otherwise the bullet goes after the section's last bullet, and the section is created when the record has none.
+ // The bullet carries the suffix ` — added after Discussion (<by>, <date>)`, and a bullet of the wrong shape comes back as a finding like any other.
++// With d.WithdrawnPattern set it instead strikes that entry's bullet, leaving the section's heading, and closes the entry with a `Withdraws:` line naming the ID, which keeps the strike from reading as a dropped bullet.
++// A record with no bullet for that ID is an error wrapping ErrPatternBulletAbsent, and nothing is written.
+ //
+ // It reads decisionRecordPath first; a missing file comes back as an error wrapping os.ErrNotExist,
+ // so the caller can refuse with its own way forward.
+@@ -100,8 +105,8 @@ func AppendDecisions(decisionRecordPath, supportLogPath string, ds []AddedDecisi
+ 	return findings, err
+ }
+ 
+-// insertDecision returns content with d's entry added at the end of its `## Decisions` section and, when d.PatternChange is set, d's bullet written to its `## PATTERN changes` section.
+-// An empty field of d after trimming and content with no `## Decisions` heading are errors.
++// insertDecision returns content with d's entry added at the end of its `## Decisions` section and, when d.PatternChange or d.WithdrawnPattern is set, d's bullet written to or struck from its `## PATTERN changes` section.
++// An empty field of d after trimming, content with no `## Decisions` heading and a withdrawal of a bullet content lacks are errors.
+ func insertDecision(content string, d AddedDecision) (string, error) {
+ 	by, title := strings.TrimSpace(d.By), strings.TrimSpace(d.Title)
+ 	decision, rationale := strings.TrimSpace(d.Decision), strings.TrimSpace(d.Rationale)
+@@ -122,18 +127,33 @@ func insertDecision(content string, d AddedDecision) (string, error) {
+ 		entry = "\n" + entry
+ 	}
+ 
+-	if d.PatternChange == nil {
++	var patternAt, patternEnd int
++	var insertion string
++	switch withdrawn := strings.TrimSpace(d.WithdrawnPattern); {
++	case withdrawn != "":
++		var found bool
++		patternAt, patternEnd, found = patternBulletRange(content, withdrawn)
++		if !found {
++			return "", fmt.Errorf("%w: %s", ErrPatternBulletAbsent, withdrawn)
++		}
++		if patternEnd < len(content) {
++			patternEnd++
++		}
++		entry += "\nWithdraws: `" + withdrawn + "`\n"
++	case d.PatternChange != nil:
++		bullet := patternChangeAppendedBullet(*d.PatternChange, by, d.Date)
++		var replace bool
++		patternAt, patternEnd, replace = patternBulletRange(content, strings.TrimSpace(d.PatternChange.ID))
++		insertion = bullet
++		if !replace {
++			var needHeading bool
++			patternAt, needHeading = patternChangesInsertOffset(content)
++			patternEnd = patternAt
++			insertion = patternChangesInsertion(content, patternAt, needHeading, bullet)
++		}
++	default:
+ 		return content[:at] + entry + content[at:], nil
+ 	}
+-	bullet := patternChangeAppendedBullet(*d.PatternChange, by, d.Date)
+-	patternAt, patternEnd, replace := patternBulletRange(content, strings.TrimSpace(d.PatternChange.ID))
+-	insertion := bullet
+-	if !replace {
+-		var needHeading bool
+-		patternAt, needHeading = patternChangesInsertOffset(content)
+-		patternEnd = patternAt
+-		insertion = patternChangesInsertion(content, patternAt, needHeading, bullet)
+-	}
+ 	if patternAt >= at {
+ 		return content[:at] + entry + content[at:patternAt] + insertion + content[patternEnd:], nil
+ 	}
+@@ -199,6 +219,7 @@ const checkAddedDecisionDropped = "added-decision-dropped"
+ //
+ // It then returns one pattern-change-dropped Finding per entry ID of an appended `## PATTERN changes` bullet some of versions holds for which record holds no appended bullet, in the same order and with a Detail that names the bullet and says to restore it.
+ // The ID alone is the key, because AppendDecision replaces the bullet it finds for an ID with one carrying the new call's author and date.
++// An ID a `Withdraws:` line of an added-decision entry of record names is no finding, since that call struck the bullet; such a line exempts the ID for good, so a bullet re-added after the withdrawal is not held to the record either.
+ //
+ // A record whose added-decision heading does not parse is one finding carrying the parse error, because the writer can fix it.
+ // A version whose heading does not parse contributes no entries: only `lym loom decision add` writes these headings, and a garbled historical copy must not block the run.
+@@ -221,7 +242,7 @@ func checkDroppedPatternBullets(record []byte, versions [][]byte) []Finding {
+ 	if len(problems) > 0 {
+ 		return nil
+ 	}
+-	seen := make(map[string]bool, len(keptBullets))
++	seen := withdrawnPatternIDs(record)
+ 	for _, c := range keptBullets {
+ 		if c.By != "" {
+ 			seen[c.ID] = true
+@@ -249,6 +270,22 @@ func checkDroppedPatternBullets(record []byte, versions [][]byte) []Finding {
+ 	return findings
+ }
+ 
++// withdrawnPatternIDs returns the entry IDs the `Withdraws:` lines of record's added-decision entries name, outside fenced blocks.
++func withdrawnPatternIDs(record []byte) map[string]bool {
++	lines := strings.Split(string(record), "\n")
++	fenced := fencedLines(lines)
++	withdrawn := map[string]bool{}
++	_, spans := addedDecisionSpans(lines, fenced)
++	for _, span := range spans {
++		for i := span.first; i <= span.last; i++ {
++			if match := patternWithdrawalLine.FindStringSubmatch(strings.TrimRight(lines[i], " \t\r")); match != nil && !fenced[i] {
++				withdrawn[match[1]] = true
++			}
++		}
++	}
++	return withdrawn
++}
++
+ // checkDroppedAddedDecisions returns the added-decision-dropped findings for the entries of versions that kept lacks.
+ func checkDroppedAddedDecisions(kept []AddedDecision, versions [][]byte) []Finding {
+ 	type entryKey struct{ by, date, title string }
+diff --git a/internal/discussionparser/append_test.go b/internal/discussionparser/append_test.go
+index 4d7e144d..38c5ce41 100644
+--- a/internal/discussionparser/append_test.go
++++ b/internal/discussionparser/append_test.go
+@@ -187,6 +187,88 @@ func TestAppendDecision_AppendsAtEndOfDecisionsSection(t *testing.T) {
+ 	}
+ }
+ 
++// TestAppendDecision_WithdrawnPatternStrikesBullet asserts a withdrawal strikes the entry's bullet, the Discussion's or an appended one, in the write that adds its entry, and that the record then counts as keeping its history.
++// A withdrawal of an ID the section holds no bullet for is an error that writes nothing.
++func TestAppendDecision_WithdrawnPatternStrikesBullet(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const (
++		discussionBullet = "- `PATTERN-old` — removes\n"
++		appendedBullet   = "- `PATTERN-new` — adds: Rule. — added after Discussion (operator, 2026-03-01)\n"
++		notes            = "\n## Notes for the plan writer\n\nhint.\n"
++	)
++	section := func(bullets string) string {
++		return allSectionsContent() + "## PATTERN changes\n\n" + bullets + notes
++	}
++	// withEntry returns record with the entry withdrawing id placed after its Decisions section's body.
++	withEntry := func(record, id string) string {
++		return strings.Replace(record, "## Decisions\n\nbody text.\n", "## Decisions\n\nbody text.\n"+wantEntry+"\nWithdraws: `"+id+"`\n", 1)
++	}
++
++	// beforeDecisions returns the record with its PATTERN changes section, holding bullets, placed ahead of `## Decisions`.
++	beforeDecisions := func(bullets string) string {
++		return strings.Replace(allSectionsContent(), "## Decisions\n", "## PATTERN changes\n\n"+bullets+"\n## Decisions\n", 1)
++	}
++	unterminated := allSectionsContent() + "## PATTERN changes\n\n" + strings.TrimSuffix(appendedBullet, "\n")
++
++	tests := []struct {
++		name  string
++		prior string
++		id    string
++		want  string
++	}{
++		{"SectionBeforeDecisions", beforeDecisions(appendedBullet), "PATTERN-new", withEntry(beforeDecisions(""), "PATTERN-new")},
++		{"BulletOnTheLastLineWithoutANewline", unterminated, "PATTERN-new", withEntry(allSectionsContent()+"## PATTERN changes\n\n", "PATTERN-new")},
++		{"DiscussionBullet", section(discussionBullet + appendedBullet), "PATTERN-old", withEntry(section(appendedBullet), "PATTERN-old")},
++		{"AppendedBullet", section(discussionBullet + appendedBullet), "PATTERN-new", withEntry(section(discussionBullet), "PATTERN-new")},
++		{"LastBulletKeepsTheHeading", section(appendedBullet), "PATTERN-new", withEntry(section(""), "PATTERN-new")},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			decisionPath, supportPath := writeFixture(t, t.TempDir(), tt.prior, "log")
++			d := addedDecision()
++			d.WithdrawnPattern = tt.id
++
++			findings, err := AppendDecision(decisionPath, supportPath, d)
++			if err != nil || len(findings) != 0 {
++				t.Fatalf("AppendDecision() = %v, %v; want no findings and nil error", findings, err)
++			}
++			got := readFile(t, decisionPath)
++			if got != tt.want {
++				t.Errorf("record =\n%q\nwant\n%q", got, tt.want)
++			}
++			if dropped := CheckAddedDecisionsKept([]byte(got), [][]byte{[]byte(tt.prior)}); len(dropped) != 0 {
++				t.Errorf("CheckAddedDecisionsKept() = %+v; want no finding for a withdrawn bullet", dropped)
++			}
++		})
++	}
++
++	absent := []struct {
++		name  string
++		prior string
++	}{
++		{"NoSection", allSectionsContent()},
++		{"NoBulletForTheID", section(discussionBullet)},
++	}
++	for _, tt := range absent {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			decisionPath, supportPath := writeFixture(t, t.TempDir(), tt.prior, "log")
++			d := addedDecision()
++			d.WithdrawnPattern = "PATTERN-new"
++
++			if _, err := AppendDecision(decisionPath, supportPath, d); !errors.Is(err, ErrPatternBulletAbsent) {
++				t.Errorf("AppendDecision() error = %v; want one wrapping ErrPatternBulletAbsent", err)
++			}
++			if got := readFile(t, decisionPath); got != tt.prior {
++				t.Errorf("record changed:\n%q", got)
++			}
++		})
++	}
++}
++
+ func TestAppendDecision_EmptyFieldWritesNothing(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -473,6 +555,23 @@ func TestCheckAddedDecisionsKept(t *testing.T) {
+ 			record:   withSection("- `PATTERN-a` — adds: Shorter. — added after Discussion (bob, 2026-03-05)"),
+ 			versions: [][]byte{withSection(appended)},
+ 		},
++		{
++			name:     "an appended bullet a later call withdrew",
++			record:   []byte("## Decisions\n\n### Added after Discussion (bob, 2026-03-05): Drop it\n\nDecision: d.\n\nRationale: r.\n\nWithdraws: `PATTERN-a`\n"),
++			versions: [][]byte{withSection(appended)},
++		},
++		{
++			name:        "a withdrawal line inside a fenced block of an added entry withdraws nothing",
++			record:      []byte("## Decisions\n\n### Added after Discussion (bob, 2026-03-05): Drop it\n\nDecision: d.\n\nRationale: r.\n\n```\nWithdraws: `PATTERN-a`\n```\n"),
++			versions:    [][]byte{withSection(appended)},
++			wantBullets: []string{"PATTERN-a"},
++		},
++		{
++			name:        "a withdrawal line outside an added entry withdraws nothing",
++			record:      []byte("## Decisions\n\nWithdraws: `PATTERN-a`\n"),
++			versions:    [][]byte{withSection(appended)},
++			wantBullets: []string{"PATTERN-a"},
++		},
+ 		{
+ 			name:        "a record holding the ID only as a bullet without the suffix",
+ 			record:      withSection("- `PATTERN-a` — removes"),
+diff --git a/internal/discussionparser/doc.go b/internal/discussionparser/doc.go
+index af1f97af..1de716a8 100644
+--- a/internal/discussionparser/doc.go
++++ b/internal/discussionparser/doc.go
+@@ -3,6 +3,7 @@
+ // CheckRelevant checks a present relevant list, the Discussion-Write lead's list of the code it read, apart from the decision record's check.
+ // AppendDecision adds a post-Discussion design call to the record's `## Decisions` section, and also writes a PATTERN change to the `## PATTERN changes` section when the call carries one.
+ // That change replaces the section's bullet for the same entry ID when there is one and is appended otherwise.
++// A call can instead withdraw a declared change: it strikes the entry's bullet and closes its added entry with a `Withdraws:` line, which CheckAddedDecisionsKept reads as a strike rather than a drop.
+ // AppendDecisions adds several such calls to the record in one write and one discussion check.
+ // CheckDecisionIDs checks the record's decision headings and their acceptance coverage: each H3 under `## Decisions` reads `### D<n> — <title>` with a unique id, and each id appears as a whole word in an `## Acceptance criteria` bullet.
+ // It runs beside Validate in the discussion gates and `validate-discussion`, never inside it, and not from AppendDecision, so a record whose decision headings predate it is still appended to.
+@@ -13,6 +14,7 @@
+ // IdentityText returns the record without the carry-over blocks and added-decision entries those two paths write, so a review segment's re-entry tells a changed record from one that only gained them.
+ // SectionBullets returns the top-level bullets of one H2 section, each with its continuation lines, outside fenced blocks and carry-over blocks.
+ // SplicePart cuts the record of one part out of the Sketch's record: the decisions the part builds with every added entry, the constraints and assumptions whole, the risks, criteria and PATTERN entries the part carries, and the goal and scope the caller renders.
++// MapPatternChanges rewrites declared PATTERN changes as `changes` bullets of the live entries that absorb them, for a record filed from the Sketch's.
+ // CheckAddedDecisionsKept reports the added-decision entries and appended PATTERN change bullets a record dropped that any earlier version of it held, read from told bytes.
+ // The record may carry an optional `## PATTERN changes` section listing the PATTERN entries the task adds, changes or removes.
+ // Validate checks its bullets through ParsePatternChanges and refuses an `adds` or `changes` bullet whose rule text, the entry text without a trailing `(test)` or background link, would run past the PATTERN format checker's rule-text cap,
+diff --git a/internal/discussionparser/partsplice_test.go b/internal/discussionparser/partsplice_test.go
+index bbc72478..31677682 100644
+--- a/internal/discussionparser/partsplice_test.go
++++ b/internal/discussionparser/partsplice_test.go
+@@ -102,6 +102,49 @@ func TestSectionBullets(t *testing.T) {
+ 	}
+ }
+ 
++// TestMapPatternChanges covers a mapped bullet rewritten in place as a `changes` bullet whatever its action, no mapping leaving the record as it is, and the refusal of a Sketch id the record lacks.
++func TestMapPatternChanges(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name     string
++		mappings []PatternClusterMapping
++		want     string
++		wantErr  string
++	}{
++		{
++			name:     "AddsBulletBecomesChanges",
++			mappings: []PatternClusterMapping{{SketchID: "PATTERN-one", Entry: "PATTERN-live", Text: " Live rule. "}},
++			want:     strings.Replace(spliceRecord, "- `PATTERN-one` — adds: One rule.", "- `PATTERN-live` — changes: Live rule.", 1),
++		},
++		{name: "NoMapping", want: spliceRecord},
++		{
++			name:     "SketchIDTheRecordLacks",
++			mappings: []PatternClusterMapping{{SketchID: "PATTERN-nine", Entry: "PATTERN-live", Text: "Live rule."}},
++			wantErr:  "PATTERN-nine",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, err := MapPatternChanges([]byte(spliceRecord), tt.mappings)
++			if tt.wantErr != "" {
++				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
++					t.Fatalf("MapPatternChanges() error = %v; want one naming %q", err, tt.wantErr)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("MapPatternChanges() error = %v; want nil", err)
++			}
++			if string(got) != tt.want {
++				t.Errorf("MapPatternChanges() =\n%s\nwant\n%s", got, tt.want)
++			}
++		})
++	}
++}
++
+ // TestSplicePart covers the spliced record's content, that it passes the decision-id and heading checks, and the refusal of an id, bullet or PATTERN entry the record lacks.
+ func TestSplicePart(t *testing.T) {
+ 	tiergate.Require(t, 0)
+diff --git a/internal/discussionparser/patternchanges.go b/internal/discussionparser/patternchanges.go
+index 712e1eb9..41c2031e 100644
+--- a/internal/discussionparser/patternchanges.go
++++ b/internal/discussionparser/patternchanges.go
+@@ -22,6 +22,10 @@ const checkPatternChangeMalformed = "pattern-change-malformed"
+ // The caller can refuse with its own way forward.
+ var ErrPatternChangesInvalid = errors.New("decision record's PATTERN changes section is malformed")
+ 
++// ErrPatternBulletAbsent reports a withdrawal of an entry the record's `## PATTERN changes` section holds no bullet for.
++// The caller can refuse with its own way forward.
++var ErrPatternBulletAbsent = errors.New("decision record's \"## PATTERN changes\" section holds no bullet to withdraw")
++
+ // The actions a PATTERN change bullet declares.
+ const (
+ 	patternActionAdds    = "adds"
+@@ -29,6 +33,13 @@ const (
+ 	patternActionRemoves = "removes"
+ )
+ 
++// PatternActionWithdraws is the action a `lym loom decision add` call names to strike a declared bullet.
++// It is no bullet action, since a withdrawal leaves no bullet behind.
++const PatternActionWithdraws = "withdraws"
++
++// patternWithdrawalLine matches the line closing an added-decision entry that withdrew a bullet, capturing the entry ID.
++var patternWithdrawalLine = regexp.MustCompile("^Withdraws: `(PATTERN-[a-z0-9-]+)`$")
++
+ // patternBulletHead matches the start of a bullet: the backticked entry ID and the em dash, capturing the ID and the rest of the line.
+ var patternBulletHead = regexp.MustCompile("^- `(PATTERN-[a-z0-9-]+)` — (.+)$")
+ 
+@@ -186,6 +197,36 @@ func patternOverCapFindings(changes []PatternChange) []Finding {
+ 	return findings
+ }
+ 
++// PatternTextOverCap reports whether the rule text of the entry text is longer than a PATTERN.md entry's rule text may be.
++func PatternTextOverCap(text string) bool {
++	return len([]rune(patternRuleText(text))) > patternEntryTextCap
++}
++
++// PatternClusterMapping moves one declared PATTERN change onto the live entry that absorbs it.
++type PatternClusterMapping struct {
++	// SketchID is the entry ID the record's bullet names.
++	SketchID string
++	// Entry is the live entry's ID, and Text its whole new text.
++	Entry string
++	Text  string
++}
++
++// MapPatternChanges returns record with each mapping's bullet rewritten in place as a `changes` bullet of its live entry, so a record cut for a part declares the entry the plan gate and PATTERN.md know.
++// Every other byte stays, and no mappings return record unchanged.
++// A SketchID the `## PATTERN changes` section holds no bullet for is an error naming it.
++func MapPatternChanges(record []byte, mappings []PatternClusterMapping) ([]byte, error) {
++	content := string(record)
++	for _, mapping := range mappings {
++		start, end, found := patternBulletRange(content, mapping.SketchID)
++		if !found {
++			return nil, fmt.Errorf("the decision record's %q section holds no bullet for %s", patternChangesHeading, mapping.SketchID)
++		}
++		change := PatternChange{ID: mapping.Entry, Action: patternActionChanges, Text: strings.TrimSpace(mapping.Text)}
++		content = content[:start] + change.Bullet() + content[end:]
++	}
++	return []byte(content), nil
++}
++
+ // notesHeading is the optional H2 heading a new PATTERN changes section is placed before.
+ const notesHeading = "## Notes for the plan writer"
+ 
+diff --git a/internal/loomcli/arbiterprompt.go b/internal/loomcli/arbiterprompt.go
+index 98f6837e..7946b3c3 100644
+--- a/internal/loomcli/arbiterprompt.go
++++ b/internal/loomcli/arbiterprompt.go
+@@ -17,7 +17,7 @@ const arbiterAbsentPath = "none"
+ const arbiterRepairVerbs = "Its repair verbs, run with `<slug>` the task named above:" +
+ 	" at a review escalation exactly one of `lym loom circling accept <slug>` or `lym loom circling continue <slug>`;" +
+ 	" `lym loom decision add <slug> --by arbiter --title … --decision … --rationale … [--amends-plan]` to record a design call." +
+-	" A decision that adds, changes or removes a PATTERN entry also passes `--pattern-entry`, `--pattern-action` and, for `adds` or `changes`, `--pattern-text`, as `lym loom decision add --help` says."
++	" A decision that adds, changes or removes a PATTERN entry, or `withdraws` a declared change, also passes `--pattern-entry`, `--pattern-action` and, for `adds` or `changes`, `--pattern-text`, as `lym loom decision add --help` says."
+ 
+ // arbiterRecipeDescription returns the description of recipe the arbiter stencil's recipe marker carries: what the run is and the repair verbs the arbiter may run.
+ // A loom recipe with a Sampler-Session row is described as a task's result made with the operator in one interactive session.
+diff --git a/internal/loomcli/decision.go b/internal/loomcli/decision.go
+index e96aaa33..13714735 100644
+--- a/internal/loomcli/decision.go
++++ b/internal/loomcli/decision.go
+@@ -10,6 +10,7 @@
+ // A sampler run adds a third: the strand its Sampler-Session row has recorded as its session, while the run stands at that row, which passes only `--by operator`, since it records only what the operator settled in its pane.
+ // The check reads only the exported strand name, the parent orch's name and the recorded sampler strand, so it guards a mistaken call, not a session that clears or forges the variable, and `--by` stays an unverified label.
+ // That is bounded by each entry being append-only, under an `Added after Discussion` heading with the claimed label and the date, in the call's one committed diff.
++// The one strike is a withdrawal, `--pattern-action withdraws`, which removes a declared `## PATTERN changes` bullet in the commit whose entry names it.
+ //
+ // On a run whose recipe has a Record-Write row the verb works once that row has written and committed the record.
+ // The caller rule and the append-only, labelled, committed entry are unchanged.
+@@ -94,7 +95,8 @@ const (
+ 	decisionWayFindings  = `way forward: the record is restored; fix the named section and re-run the verb`
+ 	decisionWayArbiter   = `way forward: the "arbiter" label is the run's own arbiter's; pass --by parent from the run's parent, or --by operator from the operator's own shell`
+ 	decisionWaySampler   = `way forward: pass --by operator for a call the operator settled in the pane, or ask the run's parent to record its own call`
+-	decisionWayPattern   = `way forward: pass --pattern-entry and --pattern-action together, and --pattern-text for adds or changes`
++	decisionWayPattern   = `way forward: pass --pattern-entry and --pattern-action together, and --pattern-text for adds or changes, never for withdraws`
++	decisionWayWithdraw  = `way forward: read the record's "## PATTERN changes" section, then re-run the verb naming an entry it declares, or without the withdrawal when the entry was never declared`
+ 
+ 	decisionWayRecordStart     = `the record exists once Record-Write has run; way forward: run "lym loom start", then re-run the verb once the run passed Record-Write`
+ 	decisionWayRecordResume    = `the record exists once Record-Write has run; way forward: run "lym loom resume", then re-run the verb`
+@@ -105,7 +107,7 @@ const (
+ 
+ 	decisionWayFromAlone = `way forward: put every entry's fields in the --from file and drop --title, --decision, --rationale and the --pattern-* flags`
+ 	decisionWayFromFile  = `way forward: write the --from file as a non-empty JSON array of objects with the keys title, decision, rationale and, for a PATTERN change, pattern_entry, pattern_action and pattern_text, then re-run the verb`
+-	decisionWayFromKeys  = `way forward: set pattern_entry and pattern_action together, and pattern_text for adds or changes, then re-run the verb`
++	decisionWayFromKeys  = `way forward: set pattern_entry and pattern_action together, and pattern_text for adds or changes, never for withdraws, then re-run the verb`
+ 	decisionWayFromTwice = `way forward: give each entry of the --from file its own title and its own PATTERN entry, or record the second in a later call`
+ 
+ 	decisionWayFabricCommit    = `way forward: run "lym fabric commit" to commit the record; a session lym refuses the verb from reports status: FAILED and the orch runs it`
+@@ -154,6 +156,12 @@ type decisionEntry struct {
+ 	PatternText   string `json:"pattern_text"`
+ }
+ 
++// patternFormBroken reports whether the PATTERN-change fields of one entry are partial, or carry text beside a withdrawal.
++func patternFormBroken(entry, action, text string) bool {
++	return (entry != "") != (action != "") || (entry == "" && text != "") ||
++		(strings.TrimSpace(action) == discussionparser.PatternActionWithdraws && text != "")
++}
++
+ // decisionEntries returns the entries input carries, or the refusal text when they are not a well-formed set.
+ // A one-entry call refuses an empty field or a partial PATTERN-change form.
+ // A --from call refuses any per-entry flag beside it and a file that is unreadable, not one JSON array of objects, followed by more data, empty, or carrying a key no entry has.
+@@ -165,7 +173,7 @@ func decisionEntries(input decisionInput) ([]decisionEntry, string) {
+ 				return nil, fmt.Sprintf("--%s is empty; way forward: pass --%s with the text to record", flag.name, flag.name)
+ 			}
+ 		}
+-		if (input.patternEntry != "") != (input.patternAction != "") || (input.patternEntry == "" && input.patternText != "") {
++		if patternFormBroken(input.patternEntry, input.patternAction, input.patternText) {
+ 			return nil, "--pattern-entry, --pattern-action and --pattern-text are one form; " + decisionWayPattern
+ 		}
+ 		return []decisionEntry{{
+@@ -210,7 +218,7 @@ func decisionEntries(input decisionInput) ([]decisionEntry, string) {
+ 				return nil, fmt.Sprintf("entry %d of the --from file has an empty %s; %s", n, field.name, decisionWayFromFile)
+ 			}
+ 		}
+-		if (entry.PatternEntry != "") != (entry.PatternAction != "") || (entry.PatternEntry == "" && entry.PatternText != "") {
++		if patternFormBroken(entry.PatternEntry, entry.PatternAction, entry.PatternText) {
+ 			return nil, fmt.Sprintf("entry %d of the --from file: pattern_entry, pattern_action and pattern_text are one form; %s", n, decisionWayFromKeys)
+ 		}
+ 		title := strings.TrimSpace(entry.Title)
+@@ -672,7 +680,8 @@ func planApprovedReader(anchorPath string) func() (bool, error) {
+ // It is refused on a recipe with no Plan-Write row and for a plan that is not approved, and a failed append or commit puts both records back.
+ // The optional PATTERN-change form appends one bullet of the record's PATTERN-change shape beside its entry, in the same write.
+ // It passes through the verb's existing checks and its --by parent|operator|arbiter caller guards, so only the run's parent, the operator's own shell or the run's own arbiter declares a change after Discussion.
+-// The form rewrites only the record's bullet for the same entry ID, which its new bullet replaces, and removes nothing.
++// The form rewrites only the record's bullet for the same entry ID, which its new bullet replaces.
++// Its `withdraws` action strikes that bullet instead, and is refused when the record declares none.
+ func decisionVerb(out io.Writer, slug string, deps decisionDeps, input decisionInput) int {
+ 	refuse := func(format string, args ...any) int {
+ 		return output.Err(out, fmt.Sprintf("loom: %s add: ", decisionGroup)+fmt.Sprintf(format, args...))
+@@ -774,6 +783,7 @@ func decisionVerb(out io.Writer, slug string, deps decisionDeps, input decisionI
+ 	titles := make([]string, 0, len(entries))
+ 	headings := make([]string, 0, len(entries))
+ 	patternBullets := []string{}
++	withdrawn := []string{}
+ 	for _, entry := range entries {
+ 		d := discussionparser.AddedDecision{
+ 			By:        input.by,
+@@ -782,12 +792,12 @@ func decisionVerb(out io.Writer, slug string, deps decisionDeps, input decisionI
+ 			Rationale: entry.Rationale,
+ 			Date:      date,
+ 		}
+-		if entry.PatternEntry != "" {
+-			change := discussionparser.PatternChange{
+-				ID:     strings.TrimSpace(entry.PatternEntry),
+-				Action: strings.TrimSpace(entry.PatternAction),
+-				Text:   strings.TrimSpace(entry.PatternText),
+-			}
++		switch id, action := strings.TrimSpace(entry.PatternEntry), strings.TrimSpace(entry.PatternAction); {
++		case action == discussionparser.PatternActionWithdraws:
++			d.WithdrawnPattern = id
++			withdrawn = append(withdrawn, id)
++		case id != "":
++			change := discussionparser.PatternChange{ID: id, Action: action, Text: strings.TrimSpace(entry.PatternText)}
+ 			d.PatternChange = &change
+ 			patternBullets = append(patternBullets, change.Bullet())
+ 		}
+@@ -822,6 +832,8 @@ func decisionVerb(out io.Writer, slug string, deps decisionDeps, input decisionI
+ 		return refuse("the run has no decision record at %s; %s", deps.recordPath, decisionWayNoRecord)
+ 	case errors.Is(err, discussionparser.ErrNoDecisionsHeading):
+ 		return refuse("%s; %s", err, decisionWayNoHeading)
++	case errors.Is(err, discussionparser.ErrPatternBulletAbsent):
++		return refuse("%s; %s", err, decisionWayWithdraw)
+ 	case err != nil:
+ 		return refuse("%s; %s", err, decisionWayRetry)
+ 	case len(findings) > 0:
+@@ -861,6 +873,9 @@ func decisionVerb(out io.Writer, slug string, deps decisionDeps, input decisionI
+ 	if len(patternBullets) > 0 {
+ 		result["pattern_changes"] = patternBullets
+ 	}
++	if len(withdrawn) > 0 {
++		result["pattern_withdrawn"] = withdrawn
++	}
+ 	if len(added) == 1 {
+ 		result["heading"] = headings[0]
+ 		if len(patternBullets) == 1 {
+@@ -1243,38 +1258,37 @@ Example:
+ 		Short:       "append decisions to the decision record and commit them",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `add appends an entry under an "Added after Discussion" heading, carrying the
+---by label and today's date, to the decision record's Decisions section,
+-re-runs the discussion check (restoring the record on a finding) and commits.
+-It changes neither the support log nor the plan. On a run
+-past its Discussion approval it also copies the committed record onto the run's
+-board entry; a failed copy never fails the verb and is reported as
+-"record_store_error". It then notifies the run's other live agents
+-("notified", "notice_errors").
+-
+---by is parent, operator or arbiter, the last only from the run's own arbiter
+-strand. --title, --decision and --rationale are required unless --from is
+-passed. A named session other than the run's parent orch, arbiter or, on a
+-sampler run, its sampler session (--by operator only) is refused. It is refused while Discussion-Write runs, and, on a Record-Write recipe,
+-until it has committed the record.
++--by label and today's date, to the record's Decisions section, re-runs the
++discussion check (restoring the record on a finding) and commits.
++It changes neither the support log nor the plan. Past Discussion approval it
++also copies the record onto the run's board entry; a failed copy is reported
++as "record_store_error", never fails the verb. It then notifies the run's other
++live agents ("notified", "notice_errors").
++
++--by is parent, operator or arbiter (the last only from the run's arbiter
++strand). --title, --decision and --rationale are required without --from. A named session other than the run's parent orch, arbiter or sampler
++session (--by operator only) is refused, as is any call while Discussion-Write
++runs or, on a Record-Write recipe, before it has committed the record.
+ 
+ --amends-plan marks a decision that amends the approved plan: the call also
+ appends the title to the plan amendment record in the same commit. It is
+ refused on a recipe with no Plan-Write row and with no approved plan.
+-Afterwards the parent runs
+-"lym loom goto --to Plan-Burler-Review" and "lym loom resume".
++Afterwards the parent runs "lym loom goto --to Plan-Burler-Review" and
++"lym loom resume".
+ 
+ A decision on a PATTERN entry also passes --pattern-entry <PATTERN-id>,
+ --pattern-action adds|changes|removes and, for adds or changes, --pattern-text
+ <new entry text>, which writes its bullet to the "## PATTERN changes" section.
++--pattern-action withdraws strikes the entry's declared bullet in the same
++commit, takes no --pattern-text and is refused when the record declares none.
+ 
+---from <file> records several decisions in place of the per-entry flags: a
+-JSON array of objects with the keys title, decision, rationale and optional
+-pattern_entry, pattern_action, pattern_text. --by and --amends-plan apply to
+-every entry. All land in one commit or none does, the notice names the
+-headings, and two entries may not share a title or a PATTERN entry.
++--from <file> records several decisions from a JSON array of objects with the
++keys title, decision, rationale and optional pattern_entry, pattern_action,
++pattern_text. --by and --amends-plan apply to every entry. All land in one
++commit or none does; no two share a title or a PATTERN entry.
+ 
+ Example:
+-  lym loom decision add <slug> --by parent --title "Keep the cache" --decision "Keep the cache per run." --rationale "A shared cache races."`,
++  lym loom decision add <slug> --by parent --title "Keep cache" --decision "Per run." --rationale "Shared races."`,
+ 		Args: cobra.MaximumNArgs(1),
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+@@ -1288,8 +1302,8 @@ Example:
+ 	add.Flags().StringVar(&st.input.title, "title", "", "the decision's heading title")
+ 	add.Flags().StringVar(&st.input.decision, "decision", "", "what was decided")
+ 	add.Flags().StringVar(&st.input.rationale, "rationale", "", "why it was decided")
+-	add.Flags().StringVar(&st.input.patternEntry, "pattern-entry", "", "the PATTERN entry the decision adds, changes or removes, as PATTERN-<id>")
+-	add.Flags().StringVar(&st.input.patternAction, "pattern-action", "", "what the decision does to the entry: adds, changes or removes")
++	add.Flags().StringVar(&st.input.patternEntry, "pattern-entry", "", "the PATTERN entry the decision adds, changes, removes or withdraws, as PATTERN-<id>")
++	add.Flags().StringVar(&st.input.patternAction, "pattern-action", "", "what the decision does to the entry: adds, changes, removes or withdraws")
+ 	add.Flags().StringVar(&st.input.patternText, "pattern-text", "", "the entry's new text, for adds or changes")
+ 	add.Flags().StringVar(&st.input.from, "from", "", "a JSON file of several decisions to record in one call, in place of the per-entry flags")
+ 	add.Flags().BoolVar(&st.input.amendsPlan, "amends-plan", false, "the decision amends the approved plan: also record it in the plan amendment record")
+diff --git a/internal/loomcli/decision_test.go b/internal/loomcli/decision_test.go
+index 8dc71d2b..cb2d681b 100644
+--- a/internal/loomcli/decision_test.go
++++ b/internal/loomcli/decision_test.go
+@@ -343,10 +343,16 @@ func TestDecisionVerb_AppendsAndCommits(t *testing.T) {
+ 		recordRow bool
+ 		// pattern sets the three PATTERN-change flags.
+ 		pattern bool
++		// withdraw sets the PATTERN-change flags of a withdrawal.
++		withdraw bool
++		// fromFile passes the withdrawal in a --from file of one entry instead of the flags.
++		fromFile bool
+ 		// programNameFails makes the LOOM program name resolver fail.
+ 		programNameFails bool
+ 	}{
++		{name: "parent label withdrawing a PATTERN change through a --from file", by: "parent", withdraw: true, fromFile: true},
+ 		{name: "parent label with the PATTERN-change form", by: "parent", pattern: true},
++		{name: "parent label withdrawing a PATTERN change", by: "parent", withdraw: true},
+ 		{name: "Record-Write record from an unnamed shell", by: "parent", recordRow: true},
+ 		{name: "Record-Write record from the recorded parent", by: "parent", strandName: "hub:orch", parentName: "hub:orch", recordRow: true},
+ 		{name: "Record-Write record with the PATTERN-change form", by: "parent", recordRow: true, pattern: true},
+@@ -379,12 +385,26 @@ func TestDecisionVerb_AppendsAndCommits(t *testing.T) {
+ 			if tc.pattern {
+ 				input.patternEntry, input.patternAction, input.patternText = "PATTERN-x", "adds", "New rule."
+ 			}
++			if tc.withdraw && !tc.fromFile {
++				input.patternEntry, input.patternAction = "PATTERN-x", "withdraws"
++			}
++			if tc.fromFile {
++				input = decisionInput{by: by, from: writeDecisionBatch(t, `[{"title": "Keep the cache", "decision": "Keep it per run.", "rationale": "A shared cache races.", "pattern_entry": "PATTERN-x", "pattern_action": "withdraws"}]`)}
++			}
+ 			var out bytes.Buffer
+ 			if code := decisionVerb(&out, "task-a", f.deps(), input); code != 0 {
+ 				t.Fatalf("exit = %d, out %s; want 0", code, out.String())
+ 			}
+ 
+ 			data := envelope.RequireOK(t, out.String()).Raw
++			if tc.withdraw {
++				if f.lastAdded.WithdrawnPattern != "PATTERN-x" {
++					t.Errorf("appended WithdrawnPattern = %q; want PATTERN-x", f.lastAdded.WithdrawnPattern)
++				}
++				if got := fmt.Sprint(data["pattern_withdrawn"]); got != "[PATTERN-x]" {
++					t.Errorf("envelope pattern_withdrawn = %s; want the entry ID", got)
++				}
++			}
+ 			if tc.pattern {
+ 				want := discussionparser.PatternChange{ID: "PATTERN-x", Action: "adds", Text: "New rule."}
+ 				if got := f.lastAdded.PatternChange; got == nil || *got != want {
+@@ -731,6 +751,29 @@ func TestDecisionVerb_Refusals(t *testing.T) {
+ 			},
+ 			want: []string{"discussion check flags the record", "pattern-change-malformed: line 12", "way forward:", "the record is restored"},
+ 		},
++		{
++			name: "pattern text beside a withdrawal",
++			setup: func(_ *decisionFake, in *decisionInput) {
++				in.patternEntry, in.patternAction, in.patternText = "PATTERN-x", "withdraws", "New rule."
++			},
++			inputRefusal: true,
++			want:         []string{"one form", "way forward:", "never for withdraws"},
++		},
++		{
++			name:         "from entry with text beside a withdrawal",
++			from:         `[{"title": "a", "decision": "d", "rationale": "r", "pattern_entry": "PATTERN-x", "pattern_action": "withdraws", "pattern_text": "t"}]`,
++			inputRefusal: true,
++			noDarnReads:  true,
++			want:         []string{"entry 1 of the --from file", "one form", "way forward:", "never for withdraws"},
++		},
++		{
++			name: "withdrawal of an entry the record does not declare",
++			setup: func(f *decisionFake, in *decisionInput) {
++				in.patternEntry, in.patternAction = "PATTERN-x", "withdraws"
++				f.appendErr = fmt.Errorf("%w: PATTERN-x", discussionparser.ErrPatternBulletAbsent)
++			},
++			want: []string{"holds no bullet to withdraw: PATTERN-x", "way forward:", "naming an entry it declares"},
++		},
+ 		{
+ 			name: "no Decisions heading",
+ 			setup: func(f *decisionFake, _ *decisionInput) {
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index cbe22ee6..7a64d9e2 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -342,6 +342,7 @@
+ // `lym loom decision add --from <file>` reads a JSON array of objects with the keys `title`, `decision`, `rationale` and optionally `pattern_entry`, `pattern_action` and `pattern_text`.
+ // `--by` and `--amends-plan` apply to every entry, and all entries land in one write and one commit, or none does.
+ // Each live agent gets one notice naming the headings (`headings`), and two entries may not share a title or a PATTERN entry.
++// `pattern_action` `withdraws`, like `--pattern-action withdraws`, strikes a declared `## PATTERN changes` bullet in the entry's commit, and the envelope names the ID under `pattern_withdrawn`.
+ //
+ // # Decision amends-plan
+ //
+diff --git a/internal/loomcli/raddlecontext.go b/internal/loomcli/raddlecontext.go
+index 0eb447d1..c8d34149 100644
+--- a/internal/loomcli/raddlecontext.go
++++ b/internal/loomcli/raddlecontext.go
+@@ -1,9 +1,12 @@
+-// raddlecontext.go builds the board context every raddle check reads: the run's Sketch, the board's entries, the raddle store's slugs, the board's type labels and the run profiles.
++// raddlecontext.go builds the board context every raddle check reads: the run's Sketch, the board's entries, the raddle store's slugs, the board's type labels, the run profiles and the live PATTERN.md entries.
+ 
+ package loomcli
+ 
+ import (
++	"errors"
+ 	"fmt"
++	"io/fs"
++	"os"
+ 	"slices"
+ 	"time"
+ 
+@@ -12,6 +15,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/loomshed"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/pattern"
+ 	"github.com/Knatte18/loomyard/internal/raddleparser"
+ 	"github.com/Knatte18/loomyard/internal/runprofile"
+ )
+@@ -19,6 +23,7 @@ import (
+ // raddleBoardContext builds the raddleparser.BoardContext of the raddle run at location.
+ // The Sketch is the run's own entry, whose slug is the worktree's, and its module labels are its labels that are not type labels.
+ // Entries are every entry of the hub's board, Store the slugs the raddle store holds, TypeLabels the board config's type labels and Profiles the profile names that hold a block for each recipe a part may name.
++// LivePattern answers from the worktree's PATTERN.md, and a worktree with none holds no live entry.
+ // filing is told to the context unchanged.
+ // A board with no entry for the run is an error naming the way forward.
+ func raddleBoardContext(location *lymcwd.Location, filing bool) (raddleparser.BoardContext, error) {
+@@ -40,6 +45,10 @@ func raddleBoardContext(location *lymcwd.Location, filing bool) (raddleparser.Bo
+ 	if err != nil {
+ 		return raddleparser.BoardContext{}, err
+ 	}
++	overview, err := os.ReadFile(pattern.File(location.WorktreePath()))
++	if err != nil && !errors.Is(err, fs.ErrNotExist) {
++		return raddleparser.BoardContext{}, fmt.Errorf("read PATTERN.md: %w", err)
++	}
+ 
+ 	vocabulary := boardConfig.Vocabulary()
+ 	sketch := seedSlug(location.WorktreeName)
+@@ -50,6 +59,10 @@ func raddleBoardContext(location *lymcwd.Location, filing bool) (raddleparser.Bo
+ 		TypeLabels: vocabulary.Types,
+ 		Profiles:   map[string][]string{},
+ 		Filing:     filing,
++		LivePattern: func(id string) bool {
++			_, live := pattern.EntryBullet(overview, id)
++			return live
++		},
+ 	}
+ 	found := false
+ 	for _, task := range tasks {
+diff --git a/internal/loomcli/raddlecontext_integration_test.go b/internal/loomcli/raddlecontext_integration_test.go
+index a42bdbb6..77c70adc 100644
+--- a/internal/loomcli/raddlecontext_integration_test.go
++++ b/internal/loomcli/raddlecontext_integration_test.go
+@@ -12,6 +12,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/pattern"
+ 	"github.com/Knatte18/loomyard/internal/raddleparser"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+@@ -42,6 +43,9 @@ func TestRaddleBoardContext(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("ResolveWorktree() error = %v; want nil", err)
+ 	}
++	if err := os.WriteFile(pattern.File(location.WorktreePath()), []byte("# PATTERN\n\n- `PATTERN-live` — A rule.\n"), 0o644); err != nil {
++		t.Fatalf("write PATTERN.md: %v", err)
++	}
+ 
+ 	got, err := raddleBoardContext(location, true)
+ 	if err != nil {
+@@ -51,6 +55,20 @@ func TestRaddleBoardContext(t *testing.T) {
+ 	if got.Sketch != "the-sketch" || got.Entry != "the-sketch" || !got.Filing {
+ 		t.Errorf("context = sketch %q, entry %q, filing %v; want the run's own entry and filing", got.Sketch, got.Entry, got.Filing)
+ 	}
++	if !got.LivePattern("PATTERN-live") || got.LivePattern("PATTERN-gone") {
++		t.Errorf("LivePattern(PATTERN-live), LivePattern(PATTERN-gone) = %v, %v; want true, false", got.LivePattern("PATTERN-live"), got.LivePattern("PATTERN-gone"))
++	}
++	if err := os.Remove(pattern.File(location.WorktreePath())); err != nil {
++		t.Fatalf("remove PATTERN.md: %v", err)
++	}
++	withoutPattern, err := raddleBoardContext(location, true)
++	if err != nil {
++		t.Fatalf("raddleBoardContext() without PATTERN.md error = %v; want nil", err)
++	}
++	if withoutPattern.LivePattern("PATTERN-live") {
++		t.Error("LivePattern(PATTERN-live) = true without a PATTERN.md; want false")
++	}
++
+ 	if want := []string{"mod-a"}; !slices.Equal(got.ModuleLabels, want) {
+ 		t.Errorf("ModuleLabels = %v; want %v, the Sketch's labels that are not type labels", got.ModuleLabels, want)
+ 	}
+diff --git a/internal/loomshed/raddlefile.go b/internal/loomshed/raddlefile.go
+index 768e4e42..49752ddf 100644
+--- a/internal/loomshed/raddlefile.go
++++ b/internal/loomshed/raddlefile.go
+@@ -267,9 +267,14 @@ func (p *raddleFile) stage(data, record []byte, hash string, entry RaddleRunEntr
+ }
+ 
+ // writeRecords writes step 2's part records: the Sketch's record whole for the project and for the tapestry shape's one part, and a record cut by SplicePart for every other part.
++// Every record declares a mapped PATTERN change under its live entry, so the Sketch's id never reaches the plan gate; the store keeps the Sketch's own record.
+ // A record whose hash file already holds the proposal's hash is left as it is.
+ // A SplicePart error is returned naming the part.
+ func (p *raddleFile) writeRecords(proposal raddleparser.Proposal, record []byte, hash string) error {
++	record, err := discussionparser.MapPatternChanges(record, raddlePatternMappings(proposal))
++	if err != nil {
++		return fmt.Errorf("map the PATTERN changes onto their live entries: %w", err)
++	}
+ 	if proposal.Project != nil {
+ 		if err := p.writeRecord(proposal.Project.Slug, record, hash); err != nil {
+ 			return err
+@@ -284,7 +289,7 @@ func (p *raddleFile) writeRecords(proposal raddleparser.Proposal, record []byte,
+ 				Decisions:      part.Decisions,
+ 				OpenRisks:      part.OpenRisks,
+ 				Criteria:       part.Criteria,
+-				PatternChanges: part.PatternChanges,
++				PatternChanges: part.PatternEntryIDs(),
+ 			})
+ 			if err != nil {
+ 				return fmt.Errorf("cut the decision record of the part %s: %w", part.Slug, err)
+@@ -298,6 +303,17 @@ func (p *raddleFile) writeRecords(proposal raddleparser.Proposal, record []byte,
+ 	return nil
+ }
+ 
++// raddlePatternMappings returns every part's pattern_clusters mapping, in the proposal's order.
++func raddlePatternMappings(proposal raddleparser.Proposal) []discussionparser.PatternClusterMapping {
++	var mappings []discussionparser.PatternClusterMapping
++	for _, part := range proposal.Parts {
++		for _, cluster := range part.PatternClusters {
++			mappings = append(mappings, discussionparser.PatternClusterMapping{SketchID: cluster.SketchID, Entry: cluster.Entry, Text: cluster.Text})
++		}
++	}
++	return mappings
++}
++
+ // writeRecord writes the record of the entry slug and the hash file beside it, the hash last, unless the hash file already holds hash and the record exists.
+ func (p *raddleFile) writeRecord(slug string, content []byte, hash string) error {
+ 	path := p.deps.PartRecordPath(slug)
+diff --git a/internal/loomshed/raddlefile_test.go b/internal/loomshed/raddlefile_test.go
+index 706681fc..f6ca0e10 100644
+--- a/internal/loomshed/raddlefile_test.go
++++ b/internal/loomshed/raddlefile_test.go
+@@ -215,6 +215,35 @@ func TestRaddleFile(t *testing.T) {
+ 
+ 	moved := []raddleparser.Finding{{Check: raddleparser.CheckRevisedMoved, Detail: `the entry "other" was revised`}}
+ 
++	t.Run("MappedPatternChangeIsFiledUnderItsLiveEntry", func(t *testing.T) {
++		t.Parallel()
++		for _, shape := range []string{raddleparser.ShapeTapestry, raddleparser.ShapeTasks, raddleparser.ShapeProject} {
++			t.Run(shape, func(t *testing.T) {
++				t.Parallel()
++				proposal := raddleFileProposal(shape)
++				proposal.Parts[0].PatternClusters = []raddleparser.PatternCluster{{SketchID: "PATTERN-a", Entry: "PATTERN-live", Text: "Live rule."}}
++				f := newRaddleFileFixture(t, proposal, loomshed.RaddleModeAuto, false)
++
++				outcome, _, err := f.call()
++				requireDone(t, outcome, err)
++
++				recordSlugs := []string{"part-a"}
++				if proposal.Project != nil {
++					recordSlugs = append(recordSlugs, proposal.Project.Slug)
++				}
++				for _, slug := range recordSlugs {
++					record := f.read(f.deps.PartRecordPath(slug))
++					if !strings.Contains(record, "- `PATTERN-live` — changes: Live rule.\n") || strings.Contains(record, "PATTERN-a") {
++						t.Errorf("record of %s =\n%s\nwant the live entry's bullet in place of PATTERN-a", slug, record)
++					}
++				}
++				if got := string(f.filings[0].SketchRecord); got != raddleFileRecord {
++					t.Errorf("stored Sketch record =\n%s\nwant the Sketch's own record", got)
++				}
++			})
++		}
++	})
++
+ 	t.Run("EachShapeFilesOnceWithItsStepsInOrder", func(t *testing.T) {
+ 		t.Parallel()
+ 		inOrder := []string{"commit", "file", "notify", "end_entry"}
+diff --git a/internal/raddleparser/check.go b/internal/raddleparser/check.go
+index 7976a258..2901333a 100644
+--- a/internal/raddleparser/check.go
++++ b/internal/raddleparser/check.go
+@@ -22,6 +22,9 @@ const (
+ 	CheckPatternUncarried       = "pattern-uncarried"
+ 	CheckPatternShared          = "pattern-shared"
+ 	CheckPatternUnknown         = "pattern-unknown"
++	CheckPatternClusterInvalid  = "pattern-cluster-invalid"
++	CheckPatternClusterUnknown  = "pattern-cluster-unknown"
++	CheckPatternClusterShared   = "pattern-cluster-shared"
+ 	CheckCriteriaMissDecision   = "criteria-miss-decision"
+ 	CheckCarriedDecisionUnbuilt = "carried-decision-unbuilt"
+ 	CheckBoardUnchecked         = "board-unchecked"
+@@ -74,6 +77,7 @@ type BoardEntry struct {
+ // Store holds the slugs the raddle store keeps, as Sketch slug or filed slug, and TypeLabels the board's type labels.
+ // Profiles maps each part recipe to the profiles of `profiles.yaml` that hold a block for it.
+ // Filing is true at Raddle-File's run, where a dependency on an entry gone from the board is dropped.
++// LivePattern reports whether the run's PATTERN.md holds the entry id.
+ type BoardContext struct {
+ 	Sketch       string
+ 	Entry        string
+@@ -83,6 +87,7 @@ type BoardContext struct {
+ 	TypeLabels   []string
+ 	Profiles     map[string][]string
+ 	Filing       bool
++	LivePattern  func(id string) bool
+ }
+ 
+ // decisionIDPattern matches a decision id as a whole word; a longer id such as D10 is matched whole.
+@@ -183,6 +188,44 @@ func (c *checker) coverage() []Finding {
+ 			}
+ 		}
+ 	}
++	return append(findings, c.patternClusters(changes)...)
++}
++
++// patternClusters reports a pattern_clusters mapping the filing could not write: one of a change its part does not carry, a change mapped twice or a text that is no one-line entry text within the cap, one onto an entry PATTERN.md does not hold, and one onto an entry another declared change or mapping already claims.
++func (c *checker) patternClusters(changes []discussionparser.PatternChange) []Finding {
++	claimedBy := make(map[string]string, len(changes))
++	for _, change := range changes {
++		claimedBy[change.ID] = change.ID
++	}
++	mapped := map[string]bool{}
++	var findings []Finding
++	for _, part := range c.proposal.Parts {
++		for _, cluster := range part.PatternClusters {
++			invalid := func(problem string) {
++				findings = append(findings, Finding{Check: CheckPatternClusterInvalid, Part: part.Slug, Detail: fmt.Sprintf("the mapping of %s %s", cluster.SketchID, problem)})
++			}
++			text := strings.TrimSpace(cluster.Text)
++			switch {
++			case !slices.Contains(part.PatternChanges, cluster.SketchID):
++				invalid("names a change this part does not carry; way forward: list the id in the part's pattern_changes, or drop the mapping")
++			case mapped[cluster.SketchID]:
++				invalid("is written twice; way forward: keep one mapping per id")
++			case text == "" || strings.Contains(text, "\n"):
++				invalid("needs its entry's whole new text on one line; way forward: write it in text")
++			case discussionparser.PatternTextOverCap(text):
++				invalid("carries a rule text over the cap of a PATTERN.md entry; way forward: shorten the text and move its detail to the entry's background file")
++			}
++			mapped[cluster.SketchID] = true
++
++			if !c.board.LivePattern(cluster.Entry) {
++				findings = append(findings, Finding{Check: CheckPatternClusterUnknown, Part: part.Slug, Detail: fmt.Sprintf("maps %s onto %s, which PATTERN.md does not hold; way forward: name a live entry, or keep the change under its own id", cluster.SketchID, cluster.Entry)})
++			}
++			if claimant, claimed := claimedBy[cluster.Entry]; claimed && claimant != cluster.SketchID {
++				findings = append(findings, Finding{Check: CheckPatternClusterShared, Part: part.Slug, Detail: fmt.Sprintf("maps %s onto %s, which %s already claims; way forward: fold both changes into one mapping's text, since a record declares an entry once", cluster.SketchID, cluster.Entry, claimant)})
++			}
++			claimedBy[cluster.Entry] = cluster.SketchID
++		}
++	}
+ 	return findings
+ }
+ 
+diff --git a/internal/raddleparser/check_test.go b/internal/raddleparser/check_test.go
+index 9a0625fb..a05be950 100644
+--- a/internal/raddleparser/check_test.go
++++ b/internal/raddleparser/check_test.go
+@@ -4,6 +4,7 @@ package raddleparser
+ 
+ import (
+ 	"slices"
++	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -15,12 +16,41 @@ func TestCheck(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
++	// mapped is a mapping of the first part's change onto the board's live entry.
++	mapped := PatternCluster{SketchID: "PATTERN-a", Entry: "PATTERN-live", Text: "Live rule."}
++	withText := func(text string) PatternCluster {
++		cluster := mapped
++		cluster.Text = text
++		return cluster
++	}
++
+ 	tests := []struct {
+ 		name   string
+ 		mutate func(p *Proposal, b *BoardContext)
+ 		want   []string
+ 	}{
+ 		{"ValidProposalPasses", func(*Proposal, *BoardContext) {}, nil},
++		{"ChangeMappedOntoALiveEntryPasses", func(p *Proposal, _ *BoardContext) { p.Parts[0].PatternClusters = []PatternCluster{mapped} }, nil},
++		{"ClusterOfAChangeThePartDoesNotCarry", func(p *Proposal, _ *BoardContext) { p.Parts[1].PatternClusters = []PatternCluster{mapped} }, []string{CheckPatternClusterInvalid}},
++		{"ClusterWrittenTwice", func(p *Proposal, _ *BoardContext) { p.Parts[0].PatternClusters = []PatternCluster{mapped, mapped} }, []string{CheckPatternClusterInvalid}},
++		{"ClusterWithNoText", func(p *Proposal, _ *BoardContext) { p.Parts[0].PatternClusters = []PatternCluster{withText(" ")} }, []string{CheckPatternClusterInvalid}},
++		{"ClusterTextOfTwoLines", func(p *Proposal, _ *BoardContext) {
++			p.Parts[0].PatternClusters = []PatternCluster{withText("One.\nTwo.")}
++		}, []string{CheckPatternClusterInvalid}},
++		{"ClusterTextOverTheCap", func(p *Proposal, _ *BoardContext) {
++			p.Parts[0].PatternClusters = []PatternCluster{withText(strings.Repeat("x", 300))}
++		}, []string{CheckPatternClusterInvalid}},
++		{"ClusterOntoAnEntryPatternMdLacks", func(p *Proposal, _ *BoardContext) {
++			p.Parts[0].PatternClusters = []PatternCluster{{SketchID: "PATTERN-a", Entry: "PATTERN-ghost", Text: "Rule."}}
++		}, []string{CheckPatternClusterUnknown}},
++		{"TwoPartsMapOntoOneEntry", func(p *Proposal, _ *BoardContext) {
++			p.Parts[0].PatternClusters = []PatternCluster{mapped}
++			p.Parts[1].PatternClusters = []PatternCluster{{SketchID: "PATTERN-b", Entry: "PATTERN-live", Text: "Rule."}}
++		}, []string{CheckPatternClusterShared}},
++		{"ClusterOntoAnotherDeclaredEntry", func(p *Proposal, b *BoardContext) {
++			b.LivePattern = func(string) bool { return true }
++			p.Parts[0].PatternClusters = []PatternCluster{{SketchID: "PATTERN-a", Entry: "PATTERN-b", Text: "Rule."}}
++		}, []string{CheckPatternClusterShared}},
+ 		{"DecisionUnbuilt", func(p *Proposal, _ *BoardContext) { p.Parts[1].Decisions = nil }, []string{CheckCarriedDecisionUnbuilt, CheckDecisionUnbuilt}},
+ 		{"DecisionUnknown", func(p *Proposal, _ *BoardContext) { p.Parts[0].Decisions = append(p.Parts[0].Decisions, "D9") }, []string{CheckDecisionUnknown}},
+ 		{"CriterionUncarried", func(p *Proposal, _ *BoardContext) { p.Parts[1].Criteria = nil }, []string{CheckCriteriaMissDecision, CheckCriterionUncarried}},
+diff --git a/internal/raddleparser/doc.go b/internal/raddleparser/doc.go
+index 466e1201..f2df1766 100644
+--- a/internal/raddleparser/doc.go
++++ b/internal/raddleparser/doc.go
+@@ -7,5 +7,6 @@
+ // Hash is the approval hash, the hex SHA-256 of the file's bytes.
+ //
+ // Check is pure: it judges a Proposal against the decision record's bytes and a BoardContext the caller builds, and returns one Finding per broken rule of the spec.
++// A part's `pattern_clusters` map a PATTERN change of the Sketch onto the live entry that absorbs it: Check refuses a mapping the filing could not write, and Part.PatternEntryIDs names the ids the part's record declares.
+ // RecheckBoard is the second look at the board at approval and at filing, which fails a moved or incomplete board and names the weighed entries that have landed.
+ package raddleparser
+diff --git a/internal/raddleparser/fixture_test.go b/internal/raddleparser/fixture_test.go
+index 568afd59..d109aee6 100644
+--- a/internal/raddleparser/fixture_test.go
++++ b/internal/raddleparser/fixture_test.go
+@@ -68,8 +68,9 @@ func validBoard() BoardContext {
+ 			{Slug: "sketch-x", Kind: KindTask, Labels: []string{"mod-a", "sketch"}, Open: true, Revised: "2026-11-01T09:00:00Z"},
+ 			{Slug: "other-open", Kind: KindTask, Labels: []string{"mod-z"}, Open: true, Revised: "2026-11-01T10:00:00Z"},
+ 		},
+-		TypeLabels: []string{"feature", "fix", "sketch"},
+-		Profiles:   map[string][]string{RecipeTapestry: {"standard"}, RecipeDarn: {"quick"}},
++		TypeLabels:  []string{"feature", "fix", "sketch"},
++		Profiles:    map[string][]string{RecipeTapestry: {"standard"}, RecipeDarn: {"quick"}},
++		LivePattern: func(id string) bool { return id == "PATTERN-live" },
+ 	}
+ }
+ 
+diff --git a/internal/raddleparser/proposal.go b/internal/raddleparser/proposal.go
+index 4a7b1ad4..a218066c 100644
+--- a/internal/raddleparser/proposal.go
++++ b/internal/raddleparser/proposal.go
+@@ -60,20 +60,41 @@ type BoardCheck struct {
+ // Part is one entry the proposal files.
+ // ExpectedCostUSD is nil when a cell the figure rests on reads "too few runs".
+ type Part struct {
+-	Slug            string    `json:"slug"`
+-	Title           string    `json:"title"`
+-	Type            string    `json:"type"`
+-	Recipe          string    `json:"recipe"`
+-	Profile         string    `json:"profile"`
+-	Decisions       []string  `json:"decisions"`
+-	Packages        []Package `json:"packages"`
+-	Contract        Contract  `json:"contract"`
+-	DependsOn       []string  `json:"depends_on"`
+-	OpenRisks       []string  `json:"open_risks"`
+-	Criteria        []string  `json:"criteria"`
+-	PatternChanges  []string  `json:"pattern_changes"`
+-	ExpectedCostUSD *float64  `json:"expected_cost_usd"`
+-	CostLine        string    `json:"cost_line"`
++	Slug           string    `json:"slug"`
++	Title          string    `json:"title"`
++	Type           string    `json:"type"`
++	Recipe         string    `json:"recipe"`
++	Profile        string    `json:"profile"`
++	Decisions      []string  `json:"decisions"`
++	Packages       []Package `json:"packages"`
++	Contract       Contract  `json:"contract"`
++	DependsOn      []string  `json:"depends_on"`
++	OpenRisks      []string  `json:"open_risks"`
++	Criteria       []string  `json:"criteria"`
++	PatternChanges []string  `json:"pattern_changes"`
++	// PatternClusters maps the carried PATTERN changes a live entry absorbs onto that entry.
++	PatternClusters []PatternCluster `json:"pattern_clusters,omitempty"`
++	ExpectedCostUSD *float64         `json:"expected_cost_usd"`
++	CostLine        string           `json:"cost_line"`
++}
++
++// PatternCluster moves one PATTERN change of the Sketch onto the live PATTERN.md entry that absorbs it, so the part's record declares that entry.
++// Text is the live entry's whole new text.
++type PatternCluster struct {
++	SketchID string `json:"sketch_id"`
++	Entry    string `json:"entry"`
++	Text     string `json:"text"`
++}
++
++// PatternEntryIDs returns the entry ids the part's record declares: its PatternChanges in order, each one a cluster maps replaced by that cluster's entry.
++func (p Part) PatternEntryIDs() []string {
++	ids := slices.Clone(p.PatternChanges)
++	for _, cluster := range p.PatternClusters {
++		if i := slices.Index(ids, cluster.SketchID); i >= 0 {
++			ids[i] = cluster.Entry
++		}
++	}
++	return ids
+ }
+ 
+ // Package is a package a part changes and the rough number of changed lines.
+diff --git a/internal/raddleparser/proposal_test.go b/internal/raddleparser/proposal_test.go
+index 1cfbf3d1..6bd549fc 100644
+--- a/internal/raddleparser/proposal_test.go
++++ b/internal/raddleparser/proposal_test.go
+@@ -28,6 +28,7 @@ func TestParse(t *testing.T) {
+ 		{"ValidProposal", string(valid), nil},
+ 		{"UnknownTopLevelKey", `{"sketch":"s","colour":"red"}`, []string{`"colour"`, "way forward"}},
+ 		{"UnknownKeyInAPart", `{"parts":[{"slug":"a","priority":1}]}`, []string{`"priority"`, "parts[0]", "way forward"}},
++		{"UnknownKeyInAPatternCluster", `{"parts":[{"slug":"a","pattern_clusters":[{"sketch_id":"PATTERN-a","colour":"red"}]}]}`, []string{`"colour"`, "parts[0].pattern_clusters[0]", "way forward"}},
+ 		{"MalformedFile", `{"sketch":`, []string{"not valid JSON", "way forward"}},
+ 		{"ValueOfTheWrongType", `{"sketch":3}`, []string{"does not fit", "way forward"}},
+ 		{"NotAnObject", `[]`, []string{"does not fit", "way forward"}},
+@@ -57,6 +58,22 @@ func TestParse(t *testing.T) {
+ 	}
+ }
+ 
++// TestParse_PatternClusters pins the JSON form of a part's pattern_clusters, which the other tests build as Go literals.
++func TestParse_PatternClusters(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const data = `{"parts":[{"slug":"a","pattern_clusters":[{"sketch_id":"PATTERN-a","entry":"PATTERN-live","text":"Live rule."}]}]}`
++	got, err := Parse([]byte(data))
++	if err != nil {
++		t.Fatalf("Parse() error = %v; want nil", err)
++	}
++	want := []PatternCluster{{SketchID: "PATTERN-a", Entry: "PATTERN-live", Text: "Live rule."}}
++	if len(got.Parts) != 1 || !reflect.DeepEqual(got.Parts[0].PatternClusters, want) {
++		t.Errorf("Parse() parts = %+v; want one part with the clusters %+v", got.Parts, want)
++	}
++}
++
+ // TestHash pins the approval hash to the hex SHA-256 of the bytes.
+ func TestHash(t *testing.T) {
+ 	tiergate.Require(t, 0)
