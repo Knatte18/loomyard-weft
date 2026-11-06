@@ -2,7 +2,7 @@
      internal/burlerengine's clusterRulesBlock (prompt.go) reads and fills it in place of burler-cluster-fan for the assistant, and the result becomes the review step's cluster_rules marker value.
      The spawn, the subagents' inherited context and the in-turn wait come from the engine-assist-fan engine block of the assistant's engine.
      It declares three required markers: {{.lens_list}}, the round's lenses as one bullet per lens in fan order, {{.lens_report_path}}, the path each subagent's report is saved at, and {{.lens_report_spec_path}}, the deployed spec of that report's format.
-lym-stencil: sha256=5190d2193d100da8f136f90f84ed4b31a010c5833bf769ee6592d846e245dc82 build=935fb407d46b918a520439401a144eb28d3de274 time=2026-11-03T17:43:20Z -->
+lym-stencil: sha256=ed36e9aaf5bbcfd8b7f3ffb99bcd401ec9fd0294bc8e95eb93f56227a55b5ec6 build=77e7a9c7596b21a9365de716da58550c73a2ab9b time=2026-11-06T13:02:35Z -->
 This is a cluster round: after exploring the target fully, run one subagent per lens listed here, inside this one turn.
 
 Lenses for this round:
@@ -20,7 +20,7 @@ While the subagents run, YOU (the handler) do your own HOLISTIC review: what no 
 Write nothing to your report while any subagent is outstanding: consolidate only once the last one has returned, with every finding in view.
 
 Once the last subagent has returned, and before you consolidate, save each subagent's final message verbatim to `{{.lens_report_path}}`, with its lens name for `<lens>`, in the format `{{.lens_report_spec_path}}` defines; a subagent that returned no report gets its file too.
-These lens reports are part of your write surface, beside your report, and are the one exception to the "nothing else" of the write-surface rules in your prompt.
+These lens reports are part of your write surface, beside your report, as the write-surface rules in your prompt name them.
 
 Consolidation: judge every subagent finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an `origin:` key (`lens:<name>` or `handler`), move false positives to a `## Rejected` prose section below the frontmatter with a one-line reason each, and order kept findings by severity.
 The consolidated report is your ONE report, and the review is complete once it is fully written to disk.
