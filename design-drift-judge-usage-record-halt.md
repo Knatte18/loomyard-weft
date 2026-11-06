@@ -1,6 +1,6 @@
 # drift: every judge halts on lym's own usage record, and resume loops
 
-`drift-judge-usage-record-halt` · Task · bug, drift, loom
+`drift-judge-usage-record-halt` · Task · bug, drift, loom · running · Worktree-Create
 
 Imported from [issue #73](https://github.com/Knatte18/loomyard/issues/73).
 
