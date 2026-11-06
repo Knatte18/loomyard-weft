@@ -535,21 +535,30 @@
     },
     {
       "id": 1162,
-      "handle": "E1",
+      "handle": "T7",
       "slug": "orch-role-shorter",
       "title": "Shorten the orch role file, the largest single start cost",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "orch"
       ],
       "issues": [],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "creel-cross-hub-build"
+      ],
       "isolated": false,
       "brief": "role.md costs 19,390 tokens per read: shorten it, or move rarely used parts to a file the orch reads on demand",
-      "body": "## Seen\n\nReport `docs/research/tokens/startup-context-2026-11-05/report.md`: `.lym/orch/role.md`, 54,443 characters, costs 19,390 tokens each time it is read, which is every orch start. It is the largest single source in an orch start, larger than everything Claude Code itself loads.\n\n## Idea\n\nShorten `contracts/orchrole`, or move the parts the orch reads only for a rare verb or event (such as intake, beams, landing halts) into a skill or a file it reads on demand. The command list alone is a large share and repeats what `lym \u003ccommand\u003e --help` gives.",
+      "body": "## Seen\n\nReport `docs/research/tokens/startup-context-2026-11-05/report.md`: `.lym/orch/role.md`, 54,443 characters, costs 19,390 tokens each time it is read, which is every orch start.\nIt is the largest single source in an orch start, larger than everything Claude Code itself loads.\nThe operator finds it far too long and sloppily written (2026-11-06).\n\n## Wanted\n\nRewrite `contracts/orchrole/orch-role.md` so it is much shorter and well written, with about half its tokens or fewer as the aim.\n\n- Keep every rule that binds the orch, in force and meaning: a shorter sentence, never a weaker rule.\n  Where two passages say the same thing, keep one; where they disagree, keep what the code does and name it in the change description.\n- Move what the orch needs only for a rare verb or event, such as intake, making and landing a beam, landing halts, hibernate or Slack, into files it reads on demand, with one line in the role saying when to read which.\n  Prefer files rendered beside the role over a new skill, so no other session sees them.\n- The command list repeats what `lym \u003ccommand\u003e --help` and `lym help index` give: find how it is produced, and cut it to what the orch cannot get otherwise, keeping the rule that the orch uses only the commands open to it.\n- Follow `scribe:prose`: point first, one rule stated once, no history, no padding.\n  Read the role from the top as a new orch would, and order it by what the orch does: the run loop first, then stops and escalations, then the board.\n\nAnything that reads, renders or tests the role moves with it, including the place it is copied to under `.lym/orch/` and any test that pins its text.\nNo other session's stencils change, and lym's behaviour does not change.\n\n## Review\n\nThe risk is a rule that disappears without notice, so the change description lists each passage dropped, and each passage moved with where it went.\nCode-Review checks that list against the old file, and states the start cost in tokens before and after, measured with `docs/research/tokens/startup-context-2026-11-05/measure.sh` or by the same count.\n",
       "created": "2026-11-05T20:18:23Z",
-      "revised": "2026-11-05T20:18:23Z"
+      "revised": "2026-11-06T10:11:31Z",
+      "run_settings": {
+        "drift": {
+          "scope": "off"
+        }
+      },
+      "profile": "solid"
     },
     {
       "id": 1166,
@@ -569,9 +578,15 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #68](https://github.com/Knatte18/loomyard/issues/68).\n\n**What happened**\n`lym webster begin-batch 20` was refused. The refusal text names a blocking finding `delete-before-reference/22-driftcli-retire-verbs`: card 22 deletes a symbol that a later card (26) still references. The way forward it gives is to edit the plan, run `lym webster rebaseline --card NN` for each edited card, then run begin-batch again.\nThe refusal note is classified `plan_conflict: tree_moved`.\n\n**Why it is abnormal**\n- The finding is a plan-internal ordering defect (a delete card placed before a card that still references the symbol), not a tree that moved. The `tree_moved` classification points the reader at the wrong cause.\n- The ordering defect exists in the plan from the start. It surfaced only at begin-batch of batch 20, after earlier batches had run, so plan validation or earlier re-resolution did not catch it.\n\n**What to do**\n- Check why a `delete-before-reference` finding is classified `tree_moved` and give it a classification that names a plan-ordering conflict.\n- Consider running the delete-before-reference check when the plan is accepted or rebaselined, so the conflict is refused before earlier batches are spent.\n\nProvenance: task slug `drift-rework`; note file `webster-refusal-begin-batch.md`.",
-      "status": "draft",
       "created": "2026-11-06T08:55:48Z",
-      "revised": "2026-11-06T10:11:30Z"
+      "revised": "2026-11-06T10:11:30Z",
+      "run_settings": {
+        "loom": {
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "light",
+      "notify_on_land": true
     },
     {
       "id": 1167,
