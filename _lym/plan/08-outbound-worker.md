@@ -1,19 +1,19 @@
 # Card 8 — outbound-worker
 
 **Create:**
-- `plan:internal/creelengine#outboundWorker` -> `type outboundWorker struct`
-- `plan:internal/creelengine#outboundWorker.run` -> `func (w *outboundWorker) run()`
-- `plan:internal/creelengine#outboundWorker.attempt` -> `func (w *outboundWorker) attempt(entry outboundEntry) (answer deliverOutcome)`
-- `plan:internal/creelengine#deliverOutcome` -> `type deliverOutcome struct`
-- `plan:internal/creelengine#Scheduler.wakeOutbound` -> `func (s *Scheduler) wakeOutbound(hubPath string)`
-- `plan:internal/creelengine#Store.SetOutboundHook` -> `func (s *Store) SetOutboundHook(hook func(hubPath string))`
-- `plan:internal/creelengine#Store.pendingOutbound` -> `func (s *Store) pendingOutbound(hubPath string) []outboundEntry`
-- `plan:internal/creelengine#Store.outboundHubs` -> `func (s *Store) outboundHubs() []string`
-- `plan:internal/creelengine#Store.settleDelivered` -> `func (s *Store) settleDelivered(id, remoteID int64) error`
-- `plan:internal/creelengine#Store.settleReturned` -> `func (s *Store) settleReturned(id int64, reason string) error`
-- `plan:internal/creelengine#quoteAnswer` -> `func quoteAnswer(text string) string`
-- `plan:internal/creelengine#daemonRefusal` -> `type daemonRefusal struct`
-- `plan:internal/creelengine_test#TestScheduler_Outbound` -> `func TestScheduler_Outbound(t *testing.T)`
+- `internal/creelengine#outboundWorker`
+- `internal/creelengine#outboundWorker.run`
+- `internal/creelengine#outboundWorker.attempt`
+- `internal/creelengine#deliverOutcome`
+- `internal/creelengine#Scheduler.wakeOutbound`
+- `internal/creelengine#Store.SetOutboundHook`
+- `internal/creelengine#Store.pendingOutbound`
+- `internal/creelengine#Store.outboundHubs`
+- `internal/creelengine#Store.settleDelivered`
+- `internal/creelengine#Store.settleReturned`
+- `internal/creelengine#quoteAnswer`
+- `internal/creelengine#daemonRefusal`
+- `internal/creelengine_test#TestScheduler_Outbound`
 
 **Edit:**
 - `internal/creelengine#Scheduler`

@@ -1,6 +1,6 @@
 {
   "runGuid": "c9d1faf2e6f9444f9ab230128527b9a0",
-  "planFingerprint": "dc186ffe2bebac4d94ac99cc08fc13146fd094b46cb5d52063f6c3ca68d2867f",
+  "planFingerprint": "bf2c67478d6c375adac6bda7ddcb66f0d3cfe636d7b7b643c7eafead1c28e01e",
   "planFileHashes": {
     "00-overview.md": "7eda65004b68b6712e29af7ab6f09ed332aa95fd2490fe2e7c2611b24f865b44",
     "01-hub-registry.md": "21d868a93ac820f6c34464200d3973964b9a6e20423faa95bda24ef566949d7b",
@@ -10,8 +10,8 @@
     "05-hubs-verb.md": "336b9ec14dff0395584f5a0af74247a7d61125e90db31a5ddfb2e3a32615e550",
     "06-post-to-another-hub.md": "8c86139cb6c9e3ca1c2d6b2da22c34ab1d0b146393668ed5cec31d74d84f2ea6",
     "07-receive-and-confirm.md": "711689f39c792709cca3a074e677fe86775a3925ebf8fc2ac2889ee6079e019b",
-    "08-outbound-worker.md": "bd0fe73b765d17da7d5d86dc2fecfcb084588f32e9b6b715bfc9324237a3df36",
-    "09-replies-across-hubs.md": "69a2c283ec406fbc9462dadb7f32107e37a50d8a9a04bca8555a953961d12135",
+    "08-outbound-worker.md": "d6a3e9b93f745d18359f626b894db1107441e6759f151891b76c96716a9c1cf4",
+    "09-replies-across-hubs.md": "c88c560b9d88334ca1931ca60c6a1846ab6545691ddea2a8b18fec195df854da",
     "10-agent-instructions-and-trial.md": "41ef7ad38e1c1a2c792d006119235fb95100322a4b7bb204ed1ca4c03b069a5f"
   },
   "planOverviewFrameHash": "2817237e6a17aaed2e6adedf41ed5b321072a1835199bbf024183bfd17a31d9c",
@@ -272,7 +272,7 @@
       }
     }
   ],
-  "currentBatch": 8,
+  "currentBatch": 0,
   "masterStrand": "a5ae1976d1b919da7f49bf886c2eeaa5",
   "masterSessionId": "6682a1ac-6e57-4c27-90a2-fa70984b8bff",
   "masterEngine": "claude",
@@ -372,8 +372,8 @@
         "10-agent-instructions-and-trial"
       ],
       "cardHashes": {
-        "08-outbound-worker": "bd0fe73b765d17da7d5d86dc2fecfcb084588f32e9b6b715bfc9324237a3df36",
-        "09-replies-across-hubs": "69a2c283ec406fbc9462dadb7f32107e37a50d8a9a04bca8555a953961d12135",
+        "08-outbound-worker": "d6a3e9b93f745d18359f626b894db1107441e6759f151891b76c96716a9c1cf4",
+        "09-replies-across-hubs": "c88c560b9d88334ca1931ca60c6a1846ab6545691ddea2a8b18fec195df854da",
         "10-agent-instructions-and-trial": "41ef7ad38e1c1a2c792d006119235fb95100322a4b7bb204ed1ca4c03b069a5f"
       },
       "startSha": "703ac5587dd6859b847880d481f9c5d6c32d7a4a",
@@ -381,19 +381,38 @@
       "spawnedAt": "2026-11-06T10:20:02Z",
       "sessionId": "6682a1ac-6e57-4c27-90a2-fa70984b8bff",
       "engine": "claude",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "08-outbound-worker",
+        "status": "done",
+        "head_sha": "8c7179dda21d2cc5489ef8915b046fc67b628863",
+        "deviations": [
+          "internal/creelcli/cli.go",
+          "internal/creelengine/client.go",
+          "internal/creelengine/crosshub_test.go",
+          "internal/creelengine/deliver_test.go",
+          "internal/creelengine/outbound.go",
+          "internal/creelengine/outbound_test.go"
+        ]
+      },
+      "cardShas": [
+        "8c7179dda21d2cc5489ef8915b046fc67b628863"
+      ],
       "forkTranscripts": [
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-cross-hub-build/6682a1ac-6e57-4c27-90a2-fa70984b8bff/subagents/agent-a2d8adad5ecdfc75b.jsonl"
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-cross-hub-build/6682a1ac-6e57-4c27-90a2-fa70984b8bff/subagents/agent-a2d8adad5ecdfc75b.jsonl",
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-cross-hub-build/6682a1ac-6e57-4c27-90a2-fa70984b8bff/subagents/agent-ade7c51375390d03b.jsonl"
       ],
       "bracketTranscripts": [
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-cross-hub-build/6682a1ac-6e57-4c27-90a2-fa70984b8bff/subagents/agent-a2d8adad5ecdfc75b.jsonl"
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-cross-hub-build/6682a1ac-6e57-4c27-90a2-fa70984b8bff/subagents/agent-a2d8adad5ecdfc75b.jsonl",
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-cross-hub-build/6682a1ac-6e57-4c27-90a2-fa70984b8bff/subagents/agent-ade7c51375390d03b.jsonl"
       ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-cross-hub-build/6682a1ac-6e57-4c27-90a2-fa70984b8bff/subagents/agent-a240a7dc8f83a24f4.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-cross-hub-build/6682a1ac-6e57-4c27-90a2-fa70984b8bff/subagents/agent-a10f851a9735127e5.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-cross-hub-build/6682a1ac-6e57-4c27-90a2-fa70984b8bff/subagents/agent-a2d8adad5ecdfc75b.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-cross-hub-build/6682a1ac-6e57-4c27-90a2-fa70984b8bff/subagents/agent-a2d8adad5ecdfc75b.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-cross-hub-build/6682a1ac-6e57-4c27-90a2-fa70984b8bff/subagents/agent-ade7c51375390d03b.jsonl"
   ]
 }

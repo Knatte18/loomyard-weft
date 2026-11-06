@@ -14,7 +14,7 @@
 - `internal/creelengine_test#TestStore_Mail`
 - `internal/creelengine_test#TestSweep_RemovedHolders`
 - `internal/creelengine_test#TestScheduler_Chases`
-- `plan:internal/creelengine_test#TestScheduler_Outbound`
+- `internal/creelengine_test#TestScheduler_Outbound`
 - `internal/creelengine_test#TestDaemon_CrossHubDeliver`
 - `internal/creelcli#TestCreelCLI`
 - `internal/creelcli#rig.startDaemon`
