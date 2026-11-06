@@ -585,8 +585,7 @@
           "code_max_bounces": 1
         }
       },
-      "profile": "docs",
-      "notify_on_land": true
+      "profile": "docs"
     },
     {
       "id": 1172,
