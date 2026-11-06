@@ -1,6 +1,6 @@
 # A parent cannot withdraw a PATTERN change the decision record declares
 
-`decision-withdraw-pattern` · Task · bug, loom, parsers, pattern · running · PR-Review
+`decision-withdraw-pattern` · Task · bug, loom, parsers, pattern · running · Finalize
 
 ## Seen (orch, 2026-11-05)
 
