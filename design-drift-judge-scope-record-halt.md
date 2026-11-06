@@ -24,3 +24,19 @@ Why abnormal: the guard treats lym-owned record files under _lym/ as forbidden j
 What to do: exclude lym-written record paths (_lym/usage/, _lym/drift/) from the judge-change comparison, or snapshot and compare them in a way that ignores lym's own writes. Also consider not halting for paths lym itself touched during the judge session.
 
 Provenance: task api-density-coefficients; notes loom-halt-2.md, loom-halt-3.md, loom-halt-4.md, loom-halt-6.md.
+
+## From issue #77
+
+Imported from [issue #77](https://github.com/Knatte18/loomyard/issues/77).
+
+**What happened**
+Five Drift-Recheck halts (anomaly escalation-to-human) came from the judge-session guard reporting 'the judge session changed what it may not'. Every changed path was one lym itself writes: `_lym/usage/session-<id>.json` (added, then changed on a resumed judge), `_lym/drift/judgement-<timestamp>.yaml` (added) and `_lym/drift/scope.json` (changed).
+Each halt required the parent or operator to restore or delete those paths by hand before `lym loom resume`, and the next resume tripped on the next lym-written record.
+
+**Why it is abnormal**
+The guard treats the judge's own usage record, its judgement file and the drift scope file as forbidden edits. The judge cannot avoid producing them, so the Drift-Recheck step cannot pass.
+
+**What to do**
+Exclude lym-written records (usage session files, the judgement yaml, drift scope.json) from the judge-session change check, or snapshot and compare only the paths the judge is forbidden to touch. A resumed judge should also not re-trip on the usage file of the session it resumes.
+
+Provenance: task cuttings-fitted-rheology; notes loom-halt-3.md, loom-halt-4.md, loom-halt-5.md, loom-halt-6.md, loom-halt-7.md, loom-halt-9.md
