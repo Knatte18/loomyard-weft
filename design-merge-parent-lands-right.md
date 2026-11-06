@@ -1,6 +1,6 @@
 # beam merge-parent: the merge-in task can merge, lands as a merge and needs no pull request
 
-`merge-parent-lands-right` · Task · bug, pawl, darn, landing, fabric · running · Finalize
+`merge-parent-lands-right` · Task · bug, pawl, darn, landing, fabric · done
 
 ## From note merge-in-writer-refused
 
