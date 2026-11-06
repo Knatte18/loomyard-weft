@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | Webster | neve | 16h<br>16h | creel, orch |
-| T3 | **Trial the session-scope settings in a real launch and re-measure start load**<br>• Check each lever ly-plugin-off-in-other-hubs writes works in Claude Code, and measure one spawned role's and the orch's start load after it | [`session-scope-launch-trial`](design-session-scope-launch-trial.md) | darn · docs | Drift-Recheck | neve | 14h<br>8m | claude, shuttle |
+| T3 | **Trial the session-scope settings in a real launch and re-measure start load**<br>• Check each lever ly-plugin-off-in-other-hubs writes works in Claude Code, and measure one spawned role's and the orch's start load after it | [`session-scope-launch-trial`](design-session-scope-launch-trial.md) | darn · docs | Describe | neve | 15h<br>8m | claude, shuttle |
 | T5 | **Drift: lym record writes, a gone snapshot, capture provenance and a retired placeholder halt runs**<br>• Four drift bugs that halt Models hub runs at Drift-Verify and Drift-Recheck<br>• `drift: scope off` | [`drift-halts-bundle`](design-drift-halts-bundle.md) | darn · solid | Darn-Write | neve | 1h<br>6m | drift, loom, config, reconcile |
 | T6 | **webster begin-batch reports a delete-before-reference plan ordering finding as plan_conflict: tree_moved**<br>• `loom: code_assist_reviewer_model astra[medium]` | [`begin-batch-wrong-conflict-kind`](design-begin-batch-wrong-conflict-kind.md) | darn · light | Darn-Write | neve | 1h<br>0m | webster |
 
@@ -62,9 +62,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B1 | L | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• The Slack reminder ping while a PR-Review waits has landed; only the silence in status views remains, which the operator chose not to build | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 2d<br>31m | landing, loom, batten |
 | B2 |  | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | 14h<br>14h | tools, claude |
-| B3 |  | **session scope: skillOverrides off does not hide a plugin's skills**<br>• Claude Code 2.1.319 still lists scribe skills the scope sets off | [`plugin-skilloverrides-ignored`](design-plugin-skilloverrides-ignored.md) | 0m<br>0m | claude, shuttle |
+| B3 |  | **session scope: skillOverrides off does not hide a plugin's skills**<br>• Claude Code 2.1.319 still lists scribe skills the scope sets off | [`plugin-skilloverrides-ignored`](design-plugin-skilloverrides-ignored.md) | 1m<br>1m | claude, shuttle |
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 17h<br>17h | reed, orch |
-| B5 |  | **session scope: scoped sessions load a Workflow tool schema about 5,800 tokens larger**<br>• With the scope on, the Workflow tool carries its authoring reference, giving back most of what the scope saves | [`scope-enlarges-workflow-schema`](design-scope-enlarges-workflow-schema.md) | 0m<br>0m | claude, shuttle |
+| B5 |  | **session scope: scoped sessions load a Workflow tool schema about 5,800 tokens larger**<br>• With the scope on, the Workflow tool carries its authoring reference, giving back most of what the scope saves | [`scope-enlarges-workflow-schema`](design-scope-enlarges-workflow-schema.md) | 1m<br>1m | claude, shuttle |
 
 ### Enhancements (3)
 
