@@ -1,0 +1,14 @@
+{
+  "session_id": "462bfefd-debf-4eff-a1a6-693933f4b271",
+  "row": "Parent-Align",
+  "role": "fixer",
+  "model": "claude-opus-5-5",
+  "engine": "claude",
+  "input_tokens": 40,
+  "cache_write_tokens": 100893,
+  "cache_read_tokens": 1134867,
+  "output_tokens": 14406,
+  "cost_usd": 1.0197184000000001,
+  "started": "2026-11-06T12:08:37Z",
+  "ended": "2026-11-06T12:11:40Z"
+}
