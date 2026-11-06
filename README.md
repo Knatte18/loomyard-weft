@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-06 13:35 UTC; every age below is as of then.
+Rendered 2026-11-06 13:36 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -50,7 +50,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 3h<br>30m | codex, shuttle |
+| R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 3h<br>31m | codex, shuttle |
 
 #### Features (1)
 
@@ -78,7 +78,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Revise tier 1: what makes it slow, and which tests to change, fold or cut**<br>• Ranked report on tier 1, fabricengine first; tier 2 stays in the gate keys | [`tier1-test-revision`](design-tier1-test-revision.md) | darn · docs |  | 17m<br>11m | fabric |
+| T3 | `draft` **Revise tier 1: what makes it slow, and which tests to change, fold or cut**<br>• Ranked report on tier 1, fabricengine first; tier 2 stays in the gate keys | [`tier1-test-revision`](design-tier1-test-revision.md) | darn · docs |  | 18m<br>12m | fabric |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light |  | 5d<br>1d | fabric |
 
 ### Notes (22)
@@ -99,7 +99,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B1 | L | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• The Slack reminder ping while a PR-Review waits has landed; only the silence in status views remains, which the operator chose not to build | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 2d<br>3h | landing, loom, batten |
 | B2 |  | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | 18h<br>18h | tools, claude |
-| B3 |  | **A Codex seat that read its skills is logged as not having loaded them**<br>• All five skills logged not loaded though the rollout shows SKILL.md read; cause not found | [`codex-skill-load-false-missing`](design-codex-skill-load-false-missing.md) | 30m<br>30m | shuttle, codex |
+| B3 |  | **A Codex seat that read its skills is logged as not having loaded them**<br>• All five skills logged not loaded though the rollout shows SKILL.md read; cause not found | [`codex-skill-load-false-missing`](design-codex-skill-load-false-missing.md) | 31m<br>31m | shuttle, codex |
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 20h<br>20h | reed, orch |
 
 #### Enhancements (3)
@@ -126,11 +126,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>20h | burler, shed, orch, quarry, report |
 | F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 1d<br>1h | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 1d<br>1d | batten, board, fabric, workspaces |
-
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T2 | **A skill load stopped by an API error counts as skipped, and the prompt is sent into the outage**<br>• Shuttle skips unloaded skills with only a log line; an API outage leaves a seat stalled or running without them | [`skill-load-timeout-sends-prompt`](design-skill-load-timeout-sends-prompt.md) | 37m<br>34m | shuttle |
