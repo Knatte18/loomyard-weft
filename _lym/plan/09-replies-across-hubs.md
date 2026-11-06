@@ -4,8 +4,8 @@
 - `internal/creelengine#Store.Reply`
 - `internal/creelengine#Store.Forward`
 - `internal/creelengine#Store.releaseGoneHolder`
-- `plan:internal/creelengine#Store.Deliver`
-- `plan:internal/creelengine#Store.storeInboundLocked`
+- `internal/creelengine#Store.Deliver`
+- `internal/creelengine#Store.storeInboundLocked`
 - `internal/creelcli#forwardCmd`
 - `internal/reportengine#ComputeReplies`
 - `internal/reportengine#RoleReplies`
@@ -15,7 +15,7 @@
 - `internal/creelengine_test#TestSweep_RemovedHolders`
 - `internal/creelengine_test#TestScheduler_Chases`
 - `plan:internal/creelengine_test#TestScheduler_Outbound`
-- `plan:internal/creelengine_test#TestDaemon_CrossHubDeliver`
+- `internal/creelengine_test#TestDaemon_CrossHubDeliver`
 - `internal/creelcli#TestCreelCLI`
 - `internal/creelcli#rig.startDaemon`
 - `internal/reportengine#TestComputeReplies`
@@ -24,10 +24,10 @@
 - `internal/creelcli/doc.go`
 
 **Uses:**
-- `plan:internal/testkit/creelfake#Hubs`
+- `internal/testkit/creelfake#Hubs`
 - `internal/creelengine#Store.checkReceiverLocked`
-- `plan:internal/creelcli#daemonHubs`
-- `plan:internal/creelcli#rig.addHub`
+- `internal/creelcli#daemonHubs`
+- `internal/creelcli#rig.addHub`
 
 **Intent:** Carry replies back over the same route, and settle the local rules of a message from another hub (D4).
 

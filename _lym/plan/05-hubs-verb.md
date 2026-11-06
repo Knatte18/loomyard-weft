@@ -1,8 +1,8 @@
 # Card 5 — hubs-verb
 
 **Create:**
-- `plan:internal/creelcli#hubsCmd` -> `func hubsCmd() *cobra.Command`
-- `plan:internal/creelcli#rig.addHub` -> `func (r *rig) addHub(t *testing.T, shortname string) *rig`
+- `internal/creelcli#hubsCmd`
+- `internal/creelcli#rig.addHub`
 
 **Edit:**
 - `internal/creelcli#Command`

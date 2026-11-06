@@ -21,7 +21,7 @@
 - `internal/creelengine#Scheduler.Start`
 - `internal/creelengine#Store`
 - `internal/creelengine#Store.do`
-- `plan:internal/creelengine#Store.postOtherHub`
+- `internal/creelengine#Store.postOtherHub`
 - `internal/creelengine#Client.exchange`
 - `cmd/lym#unboundedWaitFiles`
 
@@ -30,14 +30,14 @@
 - `pattern/PATTERN-daemon-wakeups.md`
 
 **Uses:**
-- `plan:internal/creelengine#HubDirectory`
+- `internal/creelengine#HubDirectory`
 - `internal/creelengine#NewClient`
-- `plan:internal/creelengine_test#hubPair`
-- `plan:internal/creelengine_test#newHubPair`
-- `plan:internal/creelengine_test#hubPair.unpark`
-- `plan:internal/creelengine_test#listenHubFake`
+- `internal/creelengine_test#hubPair`
+- `internal/creelengine_test#newHubPair`
+- `internal/creelengine_test#hubPair.unpark`
+- `internal/creelengine_test#listenHubFake`
 - `internal/creelengine_test#newEnv`
-- `plan:internal/testkit/creelfake#Hubs`
+- `internal/testkit/creelfake#Hubs`
 
 **Intent:** Deliver what card 6 queues: the sending daemon's outbound worker, with its retries, its start cap, the hour's return and the `CREEL` notice (D2's delivery half).
 

@@ -1,26 +1,26 @@
 # Card 7 — receive-and-confirm
 
 **Create:**
-- `plan:internal/creelengine#VerbDeliver` -> `const VerbDeliver = "deliver"`
-- `plan:internal/creelengine#VerbConfirm` -> `const VerbConfirm = "confirm"`
-- `plan:internal/creelengine#HubMail` -> `type HubMail struct`
-- `plan:internal/creelengine#DeliverAnswer` -> `type DeliverAnswer struct`
-- `plan:internal/creelengine#Store.Deliver` -> `func (s *Store) Deliver(mail HubMail) (DeliverAnswer, error)`
-- `plan:internal/creelengine#Store.Confirm` -> `func (s *Store) Confirm(mail HubMail) bool`
-- `plan:internal/creelengine#Store.heldLocked` -> `func (s *Store) heldLocked(sendingHub string, mail HubMail) (held *Message, clash string)`
-- `plan:internal/creelengine#Store.storeInboundLocked` -> `func (s *Store) storeInboundLocked(sendingHub string, mail HubMail, trusted bool) (int64, error)`
-- `plan:internal/creelengine#Store.dropLocked` -> `func (s *Store) dropLocked(shortname, sendingHub string, mail HubMail, reason string) error`
-- `plan:internal/creelengine#Store.trustedSender` -> `func (s *Store) trustedSender(sender string) bool`
-- `plan:internal/creelengine#dropWindow` -> `type dropWindow struct`
-- `plan:internal/creelengine#daemon.serveHubCall` -> `func (d *daemon) serveHubCall(conn net.Conn, req Request) error`
-- `plan:internal/creelengine_test#hubPair` -> `type hubPair struct`
-- `plan:internal/creelengine_test#newHubPair` -> `func newHubPair(t *testing.T) *hubPair`
-- `plan:internal/creelengine_test#hubPair.startSending` -> `func (p *hubPair) startSending()`
-- `plan:internal/creelengine_test#hubPair.startReceiving` -> `func (p *hubPair) startReceiving()`
-- `plan:internal/creelengine_test#hubPair.unpark` -> `func (p *hubPair) unpark()`
-- `plan:internal/creelengine_test#hubFake` -> `type hubFake struct`
-- `plan:internal/creelengine_test#listenHubFake` -> `func listenHubFake(t *testing.T, r *rig, answer func(req creelengine.Request) (creelengine.Response, string)) *hubFake`
-- `plan:internal/creelengine_test#TestDaemon_CrossHubDeliver` -> `func TestDaemon_CrossHubDeliver(t *testing.T)`
+- `internal/creelengine#VerbDeliver`
+- `internal/creelengine#VerbConfirm`
+- `internal/creelengine#HubMail`
+- `internal/creelengine#DeliverAnswer`
+- `internal/creelengine#Store.Deliver`
+- `internal/creelengine#Store.Confirm`
+- `internal/creelengine#Store.heldLocked`
+- `internal/creelengine#Store.storeInboundLocked`
+- `internal/creelengine#Store.dropLocked`
+- `internal/creelengine#Store.trustedSender`
+- `internal/creelengine#dropWindow`
+- `internal/creelengine#daemon.serveHubCall`
+- `internal/creelengine_test#hubPair`
+- `internal/creelengine_test#newHubPair`
+- `internal/creelengine_test#hubPair.startSending`
+- `internal/creelengine_test#hubPair.startReceiving`
+- `internal/creelengine_test#hubPair.unpark`
+- `internal/creelengine_test#hubFake`
+- `internal/creelengine_test#listenHubFake`
+- `internal/creelengine_test#TestDaemon_CrossHubDeliver`
 
 **Edit:**
 - `internal/creelengine#Request`
@@ -31,7 +31,7 @@
 - `internal/creelengine/doc.go`
 
 **Uses:**
-- `plan:internal/testkit/creelfake#Hubs`
+- `internal/testkit/creelfake#Hubs`
 - `internal/creelengine_test#newRig`
 - `internal/creelengine_test#rig`
 - `internal/creelengine_test#rig.start`

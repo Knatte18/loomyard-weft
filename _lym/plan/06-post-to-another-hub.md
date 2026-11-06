@@ -1,11 +1,11 @@
 # Card 6 — post-to-another-hub
 
 **Create:**
-- `plan:internal/creelengine#Store.otherHub` -> `func (s *Store) otherHub(name string) (string, bool)`
-- `plan:internal/creelengine#Store.refuseOtherHub` -> `func (s *Store) refuseOtherHub(receiver, verb string) error`
-- `plan:internal/creelengine#Store.postOtherHub` -> `func (s *Store) postOtherHub(sender Sender, receiver, shortname, body string, opts PostOptions) (int64, *Waiter, error)`
-- `plan:internal/creelengine#widestStampedLine` -> `func widestStampedLine(from, body string) string`
-- `plan:internal/creelengine#validateStampedLine` -> `func validateStampedLine(from, body string) error`
+- `internal/creelengine#Store.otherHub`
+- `internal/creelengine#Store.refuseOtherHub`
+- `internal/creelengine#Store.postOtherHub`
+- `internal/creelengine#widestStampedLine`
+- `internal/creelengine#validateStampedLine`
 
 **Edit:**
 - `internal/creelengine#Store.post`
@@ -26,8 +26,8 @@
 - `internal/creelcli/doc.go`
 
 **Uses:**
-- `plan:internal/testkit/creelfake#Hubs`
-- `plan:internal/creelengine#HubDirectory`
+- `internal/testkit/creelfake#Hubs`
+- `internal/creelengine#HubDirectory`
 - `internal/creelengine_test#env.writeJournal`
 - `internal/creelengine_test#env.reopen`
 

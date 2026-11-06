@@ -1,34 +1,34 @@
 # Card 4 — hub-directory
 
 **Create:**
-- `plan:internal/creelengine#HubDirectory` -> `type HubDirectory interface`
-- `plan:internal/creelengine#ErrHubUnresolved` -> `var ErrHubUnresolved error`
-- `plan:internal/creelengine#Store.SetHubs` -> `func (s *Store) SetHubs(hubs HubDirectory, goos string)`
-- `plan:internal/creelengine#daemon.recordHub` -> `func (d *daemon) recordHub()`
-- `plan:internal/creelcli#hubDirectory` -> `type hubDirectory struct`
-- `plan:internal/creelcli#newHubDirectory` -> `func newHubDirectory(hubPath, shortname, tempRoot, registryDir string, registryErr error) *hubDirectory`
-- `plan:internal/creelcli#daemonHubs` -> `func daemonHubs(hubPath, shortname, tempRoot string) *hubDirectory`
-- `plan:internal/creelcli#hubDirectory.Record` -> `func (d *hubDirectory) Record() error`
-- `plan:internal/creelcli#hubDirectory.Lookup` -> `func (d *hubDirectory) Lookup(shortname string) (string, error)`
-- `plan:internal/creelcli#hubDirectory.Geometry` -> `func (d *hubDirectory) Geometry(hubPath string) (creelengine.Geometry, error)`
-- `plan:internal/creelcli#hubDirectory.Spawn` -> `func (d *hubDirectory) Spawn(hubPath, logPath string) (creelengine.Spawn, error)`
-- `plan:internal/creelcli#hubDirectory.TrustedHubs` -> `func (d *hubDirectory) TrustedHubs() ([]string, error)`
-- `plan:internal/creelcli#TestHubDirectory` -> `func TestHubDirectory(t *testing.T)`
-- `plan:internal/testkit/creelfake#Hubs` -> `type Hubs struct`
-- `plan:internal/testkit/creelfake#NewHubs` -> `func NewHubs() *Hubs`
-- `plan:internal/testkit/creelfake#Hubs.Add` -> `func (h *Hubs) Add(shortname string, geom creelengine.Geometry)`
-- `plan:internal/testkit/creelfake#Hubs.SetSpawn` -> `func (h *Hubs) SetSpawn(fn func(hubPath string) (creelengine.Spawn, error))`
-- `plan:internal/testkit/creelfake#Hubs.SetTrusted` -> `func (h *Hubs) SetTrusted(shortnames []string, err error)`
-- `plan:internal/testkit/creelfake#Hubs.SetRecordError` -> `func (h *Hubs) SetRecordError(err error)`
-- `plan:internal/testkit/creelfake#Hubs.SetLookupError` -> `func (h *Hubs) SetLookupError(shortname string, err error)`
-- `plan:internal/testkit/creelfake#Hubs.SetGeometryError` -> `func (h *Hubs) SetGeometryError(hubPath string, err error)`
-- `plan:internal/testkit/creelfake#Hubs.Records` -> `func (h *Hubs) Records() int`
-- `plan:internal/testkit/creelfake#Hubs.Spawns` -> `func (h *Hubs) Spawns(hubPath string) int`
-- `plan:internal/testkit/creelfake#Hubs.Record` -> `func (h *Hubs) Record() error`
-- `plan:internal/testkit/creelfake#Hubs.Lookup` -> `func (h *Hubs) Lookup(shortname string) (string, error)`
-- `plan:internal/testkit/creelfake#Hubs.Geometry` -> `func (h *Hubs) Geometry(hubPath string) (creelengine.Geometry, error)`
-- `plan:internal/testkit/creelfake#Hubs.Spawn` -> `func (h *Hubs) Spawn(hubPath, logPath string) (creelengine.Spawn, error)`
-- `plan:internal/testkit/creelfake#Hubs.TrustedHubs` -> `func (h *Hubs) TrustedHubs() ([]string, error)`
+- `internal/creelengine#HubDirectory`
+- `internal/creelengine#ErrHubUnresolved`
+- `internal/creelengine#Store.SetHubs`
+- `internal/creelengine#daemon.recordHub`
+- `internal/creelcli#hubDirectory`
+- `internal/creelcli#newHubDirectory`
+- `internal/creelcli#daemonHubs`
+- `internal/creelcli#hubDirectory.Record`
+- `internal/creelcli#hubDirectory.Lookup`
+- `internal/creelcli#hubDirectory.Geometry`
+- `internal/creelcli#hubDirectory.Spawn`
+- `internal/creelcli#hubDirectory.TrustedHubs`
+- `internal/creelcli#TestHubDirectory`
+- `internal/testkit/creelfake#Hubs`
+- `internal/testkit/creelfake#NewHubs`
+- `internal/testkit/creelfake#Hubs.Add`
+- `internal/testkit/creelfake#Hubs.SetSpawn`
+- `internal/testkit/creelfake#Hubs.SetTrusted`
+- `internal/testkit/creelfake#Hubs.SetRecordError`
+- `internal/testkit/creelfake#Hubs.SetLookupError`
+- `internal/testkit/creelfake#Hubs.SetGeometryError`
+- `internal/testkit/creelfake#Hubs.Records`
+- `internal/testkit/creelfake#Hubs.Spawns`
+- `internal/testkit/creelfake#Hubs.Record`
+- `internal/testkit/creelfake#Hubs.Lookup`
+- `internal/testkit/creelfake#Hubs.Geometry`
+- `internal/testkit/creelfake#Hubs.Spawn`
+- `internal/testkit/creelfake#Hubs.TrustedHubs`
 - `internal/creelcli/hubdirectory_test.go`
 
 **Edit:**
