@@ -1,0 +1,1046 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 85b09482..dac3895a 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -522,6 +522,7 @@ User-facing modules each get one `lym <module>` namespace:
+   `login` stores the app's bot token in a machine credential file and `setup` records the hub's channel and its one operator, each after Slack confirms it; only the operator's terminal may run them, and an orch's pane may run `start`, `stop`, `away` and `back`.
+   The relay forwards the operator's top-level channel messages to the hub's orchs as `[slack]` creel mail from `<shortname>:SLACK`, answers `away`, `back` and `status` in the channel, and posts the mail the orchs and programs leave for `SLACK` to the channel, at least once and never twice for one acknowledged read.
+   It starts through a double fork, so no pane's tree holds it, and its files sit in the hub's `.lym/slack/` directory.
++  While the presence is `slack`, each worktree's dobby leaves `SLACK` one line for a run waiting at PR-Review or Sampler-Session, every `remind_after_min` minutes of the wait.
+   ✅ Implemented. See the `internal/slackengine` and `internal/slackcli` package documentation.
+ - **gate** — the tier runner: `lym gate test` runs the numbered tiers the hub declares in `gate.yaml` over explicit targets or `--all`, each tier taking the hub-wide gate slots it asks for, bounded by its `timeout_min`, counted by its `go-json` or `vstest` counter, and logged with a summary line and a run record under the board; a `--card` scope under the `go` scoper also vets the card's packages under each other tier tag that adds a file to one of them, so a tag-set compile break fails at the card; a failing tier stops no later tier, vet or guard run, the gate key's lint steps run after the tiers, a failure report lists every failure with its package, test and first lines, the files the change touches and each failed run's log, a closing line names every failed run, and the call exits with the first failing run's code. A call from an agent strand without `--wait` runs in a detached runner it starts or joins, answers `done: false` and exits 75, which is no failure, when the caller's keep-warm cap passes before the run ended, and the same command again prints the run's result once it ended; `--wait`, and a call with no strand, run in-process and block until the slots free and the tiers end (`internal/gatecli`; `lym gate test [-C <dir>] [--gate <key>] [--tier N]... [--all] [--guards] [--wait] [<targets>...] [-- <args>]`; `--gate <key>` runs the tiers and scope `gate.yaml`'s gate key names, and with `--guards` the verb also runs every `//lym:guard` test of the module under the command of the tier its file belongs to). `lym gate card-verify <card id>` runs a plan card's `**Verify:**` line through the shared `internal/cardverify` runner and exits with the line's code. A run inside a slot an enclosing gate run holds takes no second one, and a git worktree outside every hub runs unslotted under its own `gate.yaml`. A Go test binary that keeps a core busy past `busy_quit_sec` gets one SIGQUIT, so its goroutine stacks reach the log long before the tier's own timeout.
+   The `dotnet` scoper narrows a C# hub's computed, `--base` and `--card` scopes to the test projects and classes that name a changed type, rendered into the tier's `{filter}` placeholder (`internal/dotnetimpact`), and a hub's `build` step runs once per call inside the slots of the first tier that sets `shared_build`, with its own summary line and run record.
+diff --git a/internal/beamcli/dobbydeps.go b/internal/beamcli/dobbydeps.go
+index 9c5d6d1a..19dac6a7 100644
+--- a/internal/beamcli/dobbydeps.go
++++ b/internal/beamcli/dobbydeps.go
+@@ -22,6 +22,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/battenrecipe"
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/creelcli"
+ 	"github.com/Knatte18/loomyard/internal/dobbyengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/fronttask"
+@@ -29,6 +30,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
++	"github.com/Knatte18/loomyard/internal/loomshed"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/machinename"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
+@@ -170,7 +172,8 @@ func hubDobbyDeps(prime *lymcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 			coverage, err := pauserecord.ReadCoverage(pause.RecordPath, slug, time.Now())
+ 			return coverage.Covered, err
+ 		},
+-		RunNotices: battencli.DobbyRunNotices(prime, pause.RecordPath, quiet),
++		RunNotices:    battencli.DobbyRunNotices(prime, pause.RecordPath, quiet),
++		WaitReminders: waitReminderDeps(prime, worktree, geom.Slug, pause.RecordPath, dirs),
+ 		ClearNotifyOnLand: func(slug string) error {
+ 			board, err := boardengine.OpenHub(prime.HubPath)
+ 			if err != nil {
+@@ -233,6 +236,51 @@ func hubDobbyDeps(prime *lymcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 	return deps, nil
+ }
+ 
++// waitReminderDeps fills the wait reminder seams of the dobby of worktree, whose beam slug is slug, over the hub of prime.
++// The rows are the ones of loomshed.OperatorWaitRows that wait on the operator alone: Beam-Await waits on the beam's members too.
++// The Slack geometry resolves at each read, so a hub it fails for loses its reminders and never its dobby.
++func waitReminderDeps(prime, worktree *lymcwd.Location, slug, pauseRecordPath string, dirs configengine.Dirs) dobbyengine.WaitReminderDeps {
++	return dobbyengine.WaitReminderDeps{
++		Rows: []string{loomshed.NamePRReview, loomshed.NameSamplerSession},
++		LatestResume: func(slug string) (time.Time, error) {
++			record, err := pauserecord.Read(pauseRecordPath)
++			if err != nil {
++				return time.Time{}, err
++			}
++			entry, _ := record.LatestResumed(slug)
++			return entry.ResumedAt, nil
++		},
++		Away: func() (bool, error) {
++			geometry, err := hubgeom.SlackGeometry(prime.HubPath)
++			if err != nil {
++				return false, err
++			}
++			presence, err := slackengine.ReadPresence(geometry.PresencePath)
++			return presence == slackengine.PresenceSlack, err
++		},
++		Interval: func() (time.Duration, error) {
++			config, err := slackengine.LoadConfig(dirs)
++			return time.Duration(config.RemindAfterMin) * time.Minute, err
++		},
++		Post: func(_ context.Context, line string) error {
++			geometry, err := hubgeom.SlackGeometry(prime.HubPath)
++			if err != nil {
++				return err
++			}
++			relay, err := agentname.FormatProgram(geometry.Shortname, slackengine.SlackProgram)
++			if err != nil {
++				return err
++			}
++			client, err := creelcli.NewScopedProgramClient(worktree, slug, dobbyProgram)
++			if err != nil {
++				return err
++			}
++			_, err = client.Post(relay, line)
++			return err
++		},
++	}
++}
++
+ // beamLandingsSince reads the head of the beam pair at beam and the landings on its first-parent line past from.
+ // The line is measured from the parent branch the pair's origin record names.
+ func beamLandingsSince(prime, beam *lymcwd.Location, slug, from string) (string, []string, error) {
+diff --git a/internal/beamcli/dobbydeps_integration_test.go b/internal/beamcli/dobbydeps_integration_test.go
+index 40646b35..28635b1c 100644
+--- a/internal/beamcli/dobbydeps_integration_test.go
++++ b/internal/beamcli/dobbydeps_integration_test.go
+@@ -3,32 +3,42 @@
+ package beamcli
+ 
+ import (
++	"cmp"
++	"context"
+ 	"errors"
+ 	"io/fs"
+ 	"os"
+ 	"os/exec"
+ 	"path/filepath"
++	"slices"
+ 	"strings"
+ 	"testing"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/creelcli"
++	"github.com/Knatte18/loomyard/internal/creelengine"
+ 	"github.com/Knatte18/loomyard/internal/dobbyengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/hibernatecli"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
++	"github.com/Knatte18/loomyard/internal/loomshed"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
++	"github.com/Knatte18/loomyard/internal/lymtemp"
+ 	"github.com/Knatte18/loomyard/internal/machinename"
++	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/pawlengine"
++	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/slackengine"
+ 	"github.com/Knatte18/loomyard/internal/state"
+ 	"github.com/Knatte18/loomyard/internal/testkit/boardkit"
++	"github.com/Knatte18/loomyard/internal/testkit/creelfake"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -170,6 +180,172 @@ func TestHubDobbyDeps_PrimeTickEnsuresRelay(t *testing.T) {
+ 	}
+ }
+ 
++// TestHubDobbyDeps_WaitReminders pins that every dobby gets the wait reminder seams, and what they read over a hub: the reminded rows, the presence, the template's interval and the pause record's latest resume.
++func TestHubDobbyDeps_WaitReminders(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPair(t, h, "task1")
++	prime := h.Location
++	primeGeom, err := hubgeom.DobbyGeometry(prime, prime.WorktreeName)
++	if err != nil {
++		t.Fatalf("DobbyGeometry(prime) = %v; want nil", err)
++	}
++	primeDeps, err := hubDobbyDeps(prime, primeGeom)
++	if err != nil {
++		t.Fatalf("hubDobbyDeps(prime) = %v; want nil", err)
++	}
++	beamGeom, err := hubgeom.DobbyGeometry(prime, "task1")
++	if err != nil {
++		t.Fatalf("DobbyGeometry(task1) = %v; want nil", err)
++	}
++	beamDeps, err := hubDobbyDeps(prime, beamGeom)
++	if err != nil {
++		t.Fatalf("hubDobbyDeps(beam) = %v; want nil", err)
++	}
++	if beamDeps.WaitReminders.Post == nil || primeDeps.WaitReminders.Post == nil {
++		t.Error("WaitReminders.Post is nil on a dobby; want it set on the prime's and a beam's")
++	}
++
++	reminders := primeDeps.WaitReminders
++	if want := []string{loomshed.NamePRReview, loomshed.NameSamplerSession}; !slices.Equal(reminders.Rows, want) {
++		t.Errorf("Rows = %q; want %q", reminders.Rows, want)
++	}
++	if interval, err := reminders.Interval(); interval != 30*time.Minute || err != nil {
++		t.Errorf("Interval() = %v, %v; want the template's 30m and nil", interval, err)
++	}
++
++	if away, err := reminders.Away(); away || err != nil {
++		t.Errorf("Away() with no presence record = %v, %v; want false, nil", away, err)
++	}
++	slack, err := hubgeom.SlackGeometry(prime.HubPath)
++	if err != nil {
++		t.Fatalf("SlackGeometry = %v; want nil", err)
++	}
++	if _, err := slackengine.WritePresence(slack.PresencePath, slackengine.PresenceSlack, time.Now()); err != nil {
++		t.Fatalf("WritePresence(slack) = %v", err)
++	}
++	if away, err := reminders.Away(); !away || err != nil {
++		t.Errorf("Away() with presence slack = %v, %v; want true, nil", away, err)
++	}
++
++	if resumed, err := reminders.LatestResume("task1"); !resumed.IsZero() || err != nil {
++		t.Errorf("LatestResume() with no pause record = %v, %v; want zero, nil", resumed, err)
++	}
++	pause, err := hubgeom.PauseGeometry(prime)
++	if err != nil {
++		t.Fatalf("PauseGeometry = %v; want nil", err)
++	}
++	resumedAt := time.Date(2026, 10, 25, 12, 0, 0, 0, time.UTC)
++	if _, err := pauserecord.Update(pause.RecordPath, resumedAt, func(record *pauserecord.Record) error {
++		record.Resumed = append(record.Resumed, pauserecord.Entry{Scope: "task1", PausedAt: resumedAt.Add(-time.Minute), ResumedAt: resumedAt})
++		return nil
++	}); err != nil {
++		t.Fatalf("Update() = %v; want nil", err)
++	}
++	if resumed, err := reminders.LatestResume("task1"); !resumed.Equal(resumedAt) || err != nil {
++		t.Errorf("LatestResume() = %v, %v; want %v, nil", resumed, err, resumedAt)
++	}
++}
++
++// startCreelDaemon runs creel's daemon in process for the hub over a fake delivery that holds receiver as a live strand, so a client built over the hub connects to it and spawns no daemon of its own.
++func startCreelDaemon(t *testing.T, h *hubforge.Hub, receiver string) {
++	t.Helper()
++	root, err := lymtemp.ProcessRoot()
++	if err != nil {
++		t.Fatalf("ProcessRoot() = %v; want nil", err)
++	}
++	geometry, err := hubgeom.CreelGeometry(h.Path, root.Path())
++	if err != nil {
++		t.Fatalf("CreelGeometry() = %v; want nil", err)
++	}
++	delivery := creelfake.NewDelivery()
++	delivery.SetStrands(creelfake.LiveStrand(receiver))
++	epoch := time.Date(2026, 10, 1, 12, 0, 0, 0, time.UTC)
++	ready := make(chan struct{})
++	ctx, cancel := context.WithCancel(context.Background())
++	done := make(chan error, 1)
++	go func() {
++		done <- creelengine.Run(ctx, creelengine.Options{
++			Geometry: geometry, Delivery: delivery, Clock: creelfake.NewClock(epoch), PollClock: creelfake.NewClock(epoch),
++			ParentPID: proc.ParentPID, Ready: func() { close(ready) },
++		})
++	}()
++	t.Cleanup(func() {
++		cancel()
++		<-done
++	})
++	select {
++	case <-ready:
++	case err := <-done:
++		t.Fatalf("the creel daemon ended before it listened: %v", err)
++	case <-time.After(10 * time.Second):
++		t.Fatal("the creel daemon did not listen")
++	}
++}
++
++// TestHubDobbyDeps_WaitReminderPostReachesTheSlackRelaySignedAsTheDobby pins that the wait reminder line of a beam's dobby and of the prime's dobby is posted to the hub's Slack relay, signed DOBBY in the dobby's own scope.
++func TestHubDobbyDeps_WaitReminderPostReachesTheSlackRelaySignedAsTheDobby(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPair(t, h, "task1")
++	prime := h.Location
++	slack, err := hubgeom.SlackGeometry(prime.HubPath)
++	if err != nil {
++		t.Fatalf("SlackGeometry = %v; want nil", err)
++	}
++	relayName := slack.Shortname + ":" + slackengine.SlackProgram
++	startCreelDaemon(t, h, relayName)
++
++	tests := []struct {
++		name string
++		slug string
++		line string
++	}{
++		{"Prime", "", "prime: waiting at PR-Review for 30 minutes"},
++		{"Beam", "task1", "task1: waiting at PR-Review for 30 minutes"},
++	}
++	for _, tt := range tests {
++		geom, err := hubgeom.DobbyGeometry(prime, cmp.Or(tt.slug, prime.WorktreeName))
++		if err != nil {
++			t.Fatalf("%s: DobbyGeometry = %v; want nil", tt.name, err)
++		}
++		deps, err := hubDobbyDeps(prime, geom)
++		if err != nil {
++			t.Fatalf("%s: hubDobbyDeps = %v; want nil", tt.name, err)
++		}
++		if err := deps.WaitReminders.Post(t.Context(), tt.line); err != nil {
++			t.Fatalf("%s: WaitReminders.Post = %v; want nil", tt.name, err)
++		}
++	}
++
++	reader, err := creelcli.NewProgramClient(prime, "CHECK")
++	if err != nil {
++		t.Fatalf("NewProgramClient(CHECK) = %v; want nil", err)
++	}
++	entries, err := reader.Log(creelengine.LogFilter{})
++	if err != nil {
++		t.Fatalf("Log() = %v; want nil", err)
++	}
++	type mail struct{ from, to, body string }
++	var got []mail
++	for _, entry := range entries {
++		if entry.Event == "posted" {
++			got = append(got, mail{entry.From, entry.To, entry.Subject})
++		}
++	}
++	want := []mail{
++		{slack.Shortname + ":DOBBY", relayName, tests[0].line},
++		{slack.Shortname + ":task1:DOBBY", relayName, tests[1].line},
++	}
++	if !slices.Equal(got, want) {
++		t.Errorf("the posted mails = %q; want %q", got, want)
++	}
++}
++
+ // landingHub returns a hubforge hub holding the beam b, owned by this machine, whose pawl run waits at Beam-Await, and the seam set of b's dobby over it.
+ func landingHub(t *testing.T) (*hubforge.Hub, dobbyengine.Deps) {
+ 	t.Helper()
+diff --git a/internal/beamcli/doc.go b/internal/beamcli/doc.go
+index acde9a67..d7958ea6 100644
+--- a/internal/beamcli/doc.go
++++ b/internal/beamcli/doc.go
+@@ -203,6 +203,7 @@
+ //   - the pass spawn of `lym batten run`, started in the prime's anchor;
+ //   - the owner pause and the parent lock release through `tendercli` and `battencli`;
+ //   - the notice through `orchcli.NotifyFromScoped`, signed `ly:DOBBY` for the prime and `ly:<slug>:DOBBY` for a beam;
++//   - the wait reminders of every dobby through `waitReminderDeps`: the rows PR-Review and Sampler-Session of `loomshed`, the latest resume through `pauserecord`, the presence and `remind_after_min` through `slackengine`, and the post as creel mail to `<shortname>:SLACK`, signed as the notice is;
+ //   - `beam.yaml` through `dobbyengine.LoadConfig`, and the binary check through `internal/selfexec`;
+ //   - each log line appended to `dobby.log` in the worktree's `.lym/beam/` directory by its own open, through `dobbyengine.AppendLog`, while the process's raw standard output and error, which `dobbyengine.SpawnDetached` points at `dobby.out` there, go to that other file;
+ //   - the board-tidy agent's shuttle runner from the worktree's own reed geometry, its model `sonnet[medium]` resolved through the model registry, and the stencils directory;
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index 208cd2a2..4bdd1ac2 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -160,6 +160,20 @@
+ //   - A failed read is logged once per episode and sends nothing.
+ //   - Bound: while an anchor change stands no notice goes, and a machine that takes a run over dates the child's since from its own first sight, so a driver-dead notice the other machine sent can go once more, after the start grace counted from that first sight.
+ //
++// The wait reminders:
++//
++//   - Every dobby, the prime's included, checks at most once a minute, riding its ticks with no wait of its own, the child of each listed run whose batten state is running with no cancel marker, through Deps.RunNotices' child and pause reads.
++//     A nil WaitReminders.Post or RunNotices.ReadChild checks nothing.
++//   - A child running at a row of WaitReminders.Rows with no pause covering it is in a wait, kept as RunState.OperatorWait, whatever the presence: its row, and as its start the first check that read it there.
++//     The hub wiring names PR-Review and Sampler-Session; Beam-Await is not among them, since it waits on the beam's members as well as the operator.
++//     WaitReminders.LatestResume moves the start to a later resume of a pause covering the child, so a pause and resume the dobby did not read, between two checks or while it was down, restarts the wait too.
++//     The wait is cleared when the child leaves the row, stops running or a pause covers it, and when its run's batten state stops being running.
++//   - While WaitReminders.Away reads true, a wait as old as WaitReminders.Interval gets one line through WaitReminders.Post, `<slug>: waiting at <row> for <n> minutes`, and another each further interval.
++//     A post that fails is logged at Warn and tried at the next check.
++//   - The last reminder's time is in memory only, and is forgotten when the wait ends and while the operator is not away, so a return to away reminds at once of a wait past the interval.
++//   - A read that fails is logged once per episode: a child's leaves its wait as recorded and gets no reminder, and the presence's or the interval's sends none.
++//   - Bound: while an anchor change stands no wait is checked, and a restarted dobby keeps the start but may remind once early; a child that leaves the row and returns between two checks with no pause keeps its wait.
++//
+ // The landing notice:
+ //
+ //   - Each tick with no anchor change standing, after the run notices, dobby remembers in the state record every listed run ahead of its Land row, with whether its board entry carries `notify_on_land`, refreshed while the entry is on the board.
+diff --git a/internal/dobbyengine/loop.go b/internal/dobbyengine/loop.go
+index d462ec38..115d8f47 100644
+--- a/internal/dobbyengine/loop.go
++++ b/internal/dobbyengine/loop.go
+@@ -119,6 +119,8 @@ type Deps struct {
+ 	NearestOrch func() (string, error)
+ 	// RunNotices are the seams the run notices of the runs this dobby drives read; a nil RunNotices.ReadChild sends none.
+ 	RunNotices RunNoticeDeps
++	// WaitReminders are the seams the reminders of a child waiting on the operator read; a nil WaitReminders.Post sends none.
++	WaitReminders WaitReminderDeps
+ 	// CanLand reads whether the beam of this dobby is flagged ready with nothing working under it, and who owns its parent.
+ 	// A nil CanLand takes no landing step; the prime's dobby takes none whatever it returns.
+ 	CanLand func() (LandReading, error)
+@@ -336,6 +338,12 @@ type daemon struct {
+ 	deliveries map[string]*noticeDelivery
+ 	// noticeFailures guards each run notice read by its slug and seam: Warn at the first failure, Debug while it repeats, Info at recovery.
+ 	noticeFailures logger.EpisodeSet
++	// lastWaitCheck is when the waits were last checked.
++	lastWaitCheck time.Time
++	// lastReminders holds when each wait was last reminded of, by slug, in memory only.
++	lastReminders map[string]time.Time
++	// waitFailures guards the wait check's reads, by slug or by a `|`-prefixed name of the read: Warn at the first failure, Debug while it repeats, Info at recovery.
++	waitFailures logger.EpisodeSet
+ }
+ 
+ // releaseLock releases the dobby lock when it is held.
+@@ -600,6 +608,7 @@ func (d *daemon) tick(ctx context.Context, now time.Time) error {
+ 			return err
+ 		}
+ 		d.runNotices(ctx, now)
++		d.waitReminders(ctx, now)
+ 		d.landNotices(ctx, now, d.listedRuns)
+ 		d.settleFronts(ctx)
+ 		if err := d.startReady(ctx, now); err != nil {
+diff --git a/internal/dobbyengine/state.go b/internal/dobbyengine/state.go
+index f5519249..5474f3ed 100644
+--- a/internal/dobbyengine/state.go
++++ b/internal/dobbyengine/state.go
+@@ -77,6 +77,8 @@ type RunState struct {
+ 	Noticed []string `json:"noticed,omitempty"`
+ 	// Notice is the memory of the run notices of the run's child.
+ 	Notice RunNoticeState `json:"notice,omitzero"`
++	// OperatorWait is the wait of the run's child on the operator, zero while it is in none.
++	OperatorWait OperatorWaitState `json:"operator_wait,omitzero"`
+ }
+ 
+ // StartState is dobby's record of one task it tries to start.
+diff --git a/internal/dobbyengine/waitreminder.go b/internal/dobbyengine/waitreminder.go
+new file mode 100644
+index 00000000..35108f76
+--- /dev/null
++++ b/internal/dobbyengine/waitreminder.go
+@@ -0,0 +1,195 @@
++// waitreminder.go implements the wait reminders: it keeps the start of each child's wait on the operator in the state record, and posts one reminder line per interval to the hub's Slack program while the operator is away.
++
++package dobbyengine
++
++import (
++	"context"
++	"fmt"
++	"maps"
++	"slices"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// waitCheckInterval is the shortest gap between two checks of the waits.
++const waitCheckInterval = time.Minute
++
++// WaitReminderDeps is every seam the wait reminders read besides the child and pause reads of RunNoticeDeps, told by the hub wiring.
++// A nil Post, or a nil RunNoticeDeps.ReadChild, keeps no wait and sends no reminder.
++type WaitReminderDeps struct {
++	// Rows are the child rows that wait on the operator alone.
++	Rows []string
++	// LatestResume reads when the latest resumed pause entry covering slug resumed, zero when the record holds none.
++	LatestResume func(slug string) (time.Time, error)
++	// Away reports whether the hub's presence says the operator is in Slack.
++	Away func() (bool, error)
++	// Interval reads the reminder interval.
++	Interval func() (time.Duration, error)
++	// Post leaves one line for the hub's Slack program.
++	Post func(ctx context.Context, line string) error
++}
++
++// OperatorWaitState is one child's wait on the operator, kept in the run's entry of the state record so a restarted dobby keeps its start.
++// The zero value means the child is in no wait.
++type OperatorWaitState struct {
++	// Row is the row the child waits at.
++	Row string `json:"row,omitempty"`
++	// Since is when the wait started.
++	Since time.Time `json:"since,omitzero"`
++}
++
++// waitReminders checks the waits at most once per waitCheckInterval: it updates each wait whatever the presence, then reminds of the ones due.
++// A failure is logged once per episode and never fails the tick.
++func (d *daemon) waitReminders(ctx context.Context, now time.Time) {
++	if d.deps.WaitReminders.Post == nil || d.deps.RunNotices.ReadChild == nil {
++		return
++	}
++	if !d.lastWaitCheck.IsZero() && now.Sub(d.lastWaitCheck) < waitCheckInterval {
++		return
++	}
++	d.lastWaitCheck = now
++	current, _, err := ReadState(d.geom.StatePath)
++	if err != nil {
++		d.waitFailures.Fail("|state", "dobbyengine: the state record is unreadable; no wait check this minute", "error", err)
++		return
++	}
++	d.waitFailures.Recover("|state", "dobbyengine: the state record reads again for the wait check")
++	waits, unread := d.readWaits(now, current.Runs)
++	d.recordWaits(current.Runs, waits, unread)
++	d.remindOfWaits(ctx, now, waits)
++}
++
++// readWaits returns the wait of each run whose batten state is running with no cancel marker, by slug, and the slugs whose reading failed, which stand as recorded and get no reminder.
++// A run in no wait has no key in the waits.
++func (d *daemon) readWaits(now time.Time, recorded map[string]RunState) (waits map[string]OperatorWaitState, unread map[string]bool) {
++	waits, unread = map[string]OperatorWaitState{}, map[string]bool{}
++	for _, run := range d.runs {
++		if run.State != runStateRunning || run.CancelMarker {
++			continue
++		}
++		wait, err := d.readWait(now, run.Slug, recorded[run.Slug].OperatorWait)
++		if err != nil {
++			d.waitFailures.Fail(run.Slug, "dobbyengine: the wait of the run is unreadable; it stands as recorded", "slug", run.Slug, "error", err)
++			unread[run.Slug] = true
++			continue
++		}
++		d.waitFailures.Recover(run.Slug, "dobbyengine: the wait of the run reads again", "slug", run.Slug)
++		if wait != (OperatorWaitState{}) {
++			waits[run.Slug] = wait
++		}
++	}
++	return waits, unread
++}
++
++// readWait returns the wait of the child of slug at now, given the one recorded: zero unless the child runs at a reminded row with no pause covering it.
++// A wait starts at the first such reading of its row, and a later resume of a pause covering the child moves its start to that resume, so a pause and resume no check saw restarts it too.
++func (d *daemon) readWait(now time.Time, slug string, recorded OperatorWaitState) (OperatorWaitState, error) {
++	child, found, err := d.deps.RunNotices.ReadChild(slug)
++	if err != nil {
++		return OperatorWaitState{}, err
++	}
++	if !found || child.State != childStateRunning || !slices.Contains(d.deps.WaitReminders.Rows, child.CurrentProducer) {
++		return OperatorWaitState{}, nil
++	}
++	pause, err := d.deps.RunNotices.Pause(slug)
++	if err != nil {
++		return OperatorWaitState{}, err
++	}
++	if pause.Covered {
++		return OperatorWaitState{}, nil
++	}
++	resumed, err := d.deps.WaitReminders.LatestResume(slug)
++	if err != nil {
++		return OperatorWaitState{}, err
++	}
++	wait := recorded
++	if wait.Row != child.CurrentProducer {
++		wait = OperatorWaitState{Row: child.CurrentProducer, Since: now}
++	}
++	if resumed.After(wait.Since) {
++		wait.Since = resumed
++	}
++	return wait, nil
++}
++
++// recordWaits writes every wait that differs from the record's, clearing the wait of each recorded run in none, and forgets the last reminder of every wait that ended.
++// The slugs in unread stay as they are.
++// A write failure is a Warn: a lost start only delays a reminder.
++func (d *daemon) recordWaits(recorded map[string]RunState, waits map[string]OperatorWaitState, unread map[string]bool) {
++	changes := map[string]OperatorWaitState{}
++	for slug, run := range recorded {
++		if !unread[slug] && waits[slug] != run.OperatorWait {
++			changes[slug] = waits[slug]
++		}
++	}
++	for slug, wait := range waits {
++		if _, known := recorded[slug]; !known {
++			changes[slug] = wait
++		}
++	}
++	maps.DeleteFunc(d.lastReminders, func(slug string, _ time.Time) bool {
++		_, waiting := waits[slug]
++		return !waiting && !unread[slug]
++	})
++	if len(changes) == 0 {
++		return
++	}
++	err := UpdateState(d.geom.StatePath, func(s *State) error {
++		if s.Runs == nil {
++			s.Runs = map[string]RunState{}
++		}
++		for slug, wait := range changes {
++			run := s.Runs[slug]
++			run.OperatorWait = wait
++			s.Runs[slug] = run
++		}
++		return nil
++	})
++	if err != nil {
++		logger.Warn("dobbyengine: the waits could not be recorded", "error", err)
++	}
++}
++
++// remindOfWaits posts one line for each wait at least an interval old whose last reminder is an interval old or absent, while the operator is away.
++// A presence other than away forgets every last reminder, so a return reminds at once of a wait past the interval.
++// A post that fails is logged at Warn and tried at the next check.
++func (d *daemon) remindOfWaits(ctx context.Context, now time.Time, waits map[string]OperatorWaitState) {
++	seams := d.deps.WaitReminders
++	away, err := seams.Away()
++	if err != nil {
++		d.waitFailures.Fail("|presence", "dobbyengine: the presence is unreadable; no wait reminder", "error", err)
++		return
++	}
++	d.waitFailures.Recover("|presence", "dobbyengine: the presence reads again")
++	if !away {
++		clear(d.lastReminders)
++		return
++	}
++	if len(waits) == 0 {
++		return
++	}
++	interval, err := seams.Interval()
++	if err != nil {
++		d.waitFailures.Fail("|interval", "dobbyengine: the reminder interval is unreadable; no wait reminder", "error", err)
++		return
++	}
++	d.waitFailures.Recover("|interval", "dobbyengine: the reminder interval reads again")
++	for _, slug := range slices.Sorted(maps.Keys(waits)) {
++		wait := waits[slug]
++		waited := now.Sub(wait.Since)
++		last, reminded := d.lastReminders[slug]
++		if waited < interval || (reminded && now.Sub(last) < interval) {
++			continue
++		}
++		line := fmt.Sprintf("%s: waiting at %s for %d minutes", slug, wait.Row, int(waited.Minutes()))
++		if err := seams.Post(ctx, line); err != nil {
++			logger.Warn("dobbyengine: a wait reminder was not posted; the next check tries again", "slug", slug, "row", wait.Row, "error", err)
++			continue
++		}
++		if d.lastReminders == nil {
++			d.lastReminders = map[string]time.Time{}
++		}
++		d.lastReminders[slug] = now
++	}
++}
+diff --git a/internal/dobbyengine/waitreminder_test.go b/internal/dobbyengine/waitreminder_test.go
+new file mode 100644
+index 00000000..71c4cc33
+--- /dev/null
++++ b/internal/dobbyengine/waitreminder_test.go
+@@ -0,0 +1,321 @@
++// waitreminder_test.go pins the wait reminders over a fake child reading and fake presence, interval and post seams: which waits are reminded, when, and what restarts them.
++
++package dobbyengine
++
++import (
++	"context"
++	"errors"
++	"os"
++	"path/filepath"
++	"slices"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// reminderFake is what the wait reminder seams of one test read, and what they posted.
++type reminderFake struct {
++	away        bool
++	awayErr     error
++	awayReads   int
++	intervalErr error
++	resumed     time.Time
++	resumeErr   error
++	postErr     error
++	posts       []string
++}
++
++// newReminderHarness returns a notice harness whose child waits at PR-Review with the operator away and a thirty-minute interval, and the fake its reminder seams read.
++func newReminderHarness(t *testing.T) (*passHarness, *noticeFake, *reminderFake) {
++	t.Helper()
++	h, f := newNoticeHarness(t)
++	f.child.CurrentProducer = "PR-Review"
++	r := &reminderFake{away: true}
++	h.d.deps.WaitReminders = WaitReminderDeps{
++		Rows:         []string{"PR-Review", "Sampler-Session"},
++		LatestResume: func(string) (time.Time, error) { return r.resumed, r.resumeErr },
++		Away: func() (bool, error) {
++			r.awayReads++
++			return r.away, r.awayErr
++		},
++		Interval: func() (time.Duration, error) { return 30 * time.Minute, r.intervalErr },
++		Post: func(_ context.Context, line string) error {
++			if r.postErr != nil {
++				return r.postErr
++			}
++			r.posts = append(r.posts, line)
++			return nil
++		},
++	}
++	return h, f, r
++}
++
++// minutes runs n ticks one minute apart, each one wait check.
++func (h *passHarness) minutes(n int) {
++	h.t.Helper()
++	for range n {
++		h.advance(50 * time.Second)
++		h.tick(false)
++	}
++}
++
++func TestWaitReminders(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	waited := func(minutes ...string) []string {
++		var lines []string
++		for _, count := range minutes {
++			lines = append(lines, "task: waiting at PR-Review for "+count+" minutes")
++		}
++		return lines
++	}
++
++	tests := []struct {
++		name string
++		// setup runs before the first check, and act after it.
++		setup func(h *passHarness, f *noticeFake, r *reminderFake)
++		act   func(h *passHarness, f *noticeFake, r *reminderFake)
++		want  []string
++	}{
++		{
++			name: "NoneBeforeTheInterval",
++			act:  func(h *passHarness, _ *noticeFake, _ *reminderFake) { h.minutes(29) },
++		},
++		{
++			name: "OneLinePerIntervalWhileTheWaitLasts",
++			act:  func(h *passHarness, _ *noticeFake, _ *reminderFake) { h.minutes(65) },
++			want: waited("30", "60"),
++		},
++		{
++			name:  "SamplerSessionIsReminded",
++			setup: func(_ *passHarness, f *noticeFake, _ *reminderFake) { f.child.CurrentProducer = "Sampler-Session" },
++			act:   func(h *passHarness, _ *noticeFake, _ *reminderFake) { h.minutes(30) },
++			want:  []string{"task: waiting at Sampler-Session for 30 minutes"},
++		},
++		{
++			name:  "ARowOutsideTheListIsNot",
++			setup: func(_ *passHarness, f *noticeFake, _ *reminderFake) { f.child.CurrentProducer = "Beam-Await" },
++			act:   func(h *passHarness, _ *noticeFake, _ *reminderFake) { h.minutes(61) },
++		},
++		{
++			name:  "TerminalPresenceGetsNoneAndReturningRemindsAtOnceOfAWaitPastTheInterval",
++			setup: func(_ *passHarness, _ *noticeFake, r *reminderFake) { r.away = false },
++			act: func(h *passHarness, _ *noticeFake, r *reminderFake) {
++				h.minutes(45)
++				r.away = true
++				h.minutes(1)
++			},
++			want: waited("46"),
++		},
++		{
++			name: "AReturnToSlackRemindsAtOnceWhateverTheLastReminder",
++			act: func(h *passHarness, _ *noticeFake, r *reminderFake) {
++				h.minutes(35)
++				r.away = false
++				h.minutes(1)
++				r.away = true
++				h.minutes(1)
++			},
++			want: waited("30", "37"),
++		},
++		{
++			name: "APauseTheDobbyReadRestartsTheWait",
++			act: func(h *passHarness, f *noticeFake, _ *reminderFake) {
++				h.minutes(20)
++				f.pause.Covered = true
++				h.minutes(5)
++				f.pause.Covered = false
++				h.minutes(31)
++			},
++			want: waited("30"),
++		},
++		{
++			name: "APauseAndResumeNoCheckSawRestartsTheWaitAndItsReminders",
++			act: func(h *passHarness, _ *noticeFake, r *reminderFake) {
++				h.minutes(31)
++				r.resumed = h.clock.now()
++				h.minutes(30)
++			},
++			want: waited("30", "30"),
++		},
++		{
++			name: "AResumeBeforeTheWaitBeganMovesNothing",
++			setup: func(h *passHarness, _ *noticeFake, r *reminderFake) {
++				r.resumed = h.clock.now().Add(-time.Hour)
++			},
++			act:  func(h *passHarness, _ *noticeFake, _ *reminderFake) { h.minutes(30) },
++			want: waited("30"),
++		},
++		{
++			name: "ARunWithACancelMarkerIsSkippedAndRecordsNoWait",
++			setup: func(h *passHarness, _ *noticeFake, _ *reminderFake) {
++				h.fake.runs[0].CancelMarker = true
++			},
++			act: func(h *passHarness, _ *noticeFake, _ *reminderFake) {
++				h.minutes(31)
++				if got := h.state().OperatorWait; got != (OperatorWaitState{}) {
++					h.t.Errorf("OperatorWait of a cancel-marked run = %+v; want none", got)
++				}
++			},
++		},
++		{
++			name: "AStandingAnchorChangeStopsTheWaitCheck",
++			setup: func(h *passHarness, _ *noticeFake, _ *reminderFake) {
++				record := filepath.Join(h.t.TempDir(), "anchor-move.json")
++				if err := os.WriteFile(record, []byte("{}"), 0o644); err != nil {
++					h.t.Fatalf("WriteFile(%s) = %v; want nil", record, err)
++				}
++				h.d.geom.MoveRecords = []string{record}
++			},
++			act: func(h *passHarness, _ *noticeFake, r *reminderFake) {
++				h.minutes(31)
++				if r.awayReads != 0 {
++					h.t.Errorf("wait checks under a standing anchor change = %d; want 0", r.awayReads)
++				}
++			},
++		},
++		{
++			name: "LeavingTheRowEndsTheWait",
++			act: func(h *passHarness, f *noticeFake, _ *reminderFake) {
++				h.minutes(20)
++				f.child.CurrentProducer = "Finalize"
++				h.minutes(1)
++				f.child.CurrentProducer = "PR-Review"
++				h.minutes(29)
++			},
++		},
++		{
++			name: "MovingToTheOtherRowStartsANewWait",
++			act: func(h *passHarness, f *noticeFake, _ *reminderFake) {
++				h.minutes(20)
++				f.child.CurrentProducer = "Sampler-Session"
++				h.minutes(31)
++			},
++			want: []string{"task: waiting at Sampler-Session for 30 minutes"},
++		},
++		{
++			name: "AChildThatStopsRunningEndsTheWait",
++			act: func(h *passHarness, f *noticeFake, _ *reminderFake) {
++				h.minutes(20)
++				f.child.State = "blocked"
++				h.minutes(1)
++				f.child.State = childStateRunning
++				h.minutes(29)
++			},
++		},
++		{
++			name: "ARunBattenStoppedEndsTheWait",
++			act: func(h *passHarness, _ *noticeFake, _ *reminderFake) {
++				h.minutes(20)
++				h.fake.runs[0].State = "blocked"
++				h.minutes(1)
++				h.fake.runs[0].State = runStateRunning
++				h.minutes(29)
++			},
++		},
++		{
++			name: "APostThatFailsIsTriedAtTheNextCheck",
++			act: func(h *passHarness, _ *noticeFake, r *reminderFake) {
++				r.postErr = errors.New("creel refused")
++				h.minutes(30)
++				r.postErr = nil
++				h.minutes(1)
++			},
++			want: waited("31"),
++		},
++		{
++			name: "ARestartKeepsTheStartAndMayRemindOnceEarly",
++			act: func(h *passHarness, _ *noticeFake, _ *reminderFake) {
++				h.minutes(20)
++				h.restartDobby()
++				h.minutes(15)
++				h.restartDobby()
++				h.minutes(1)
++			},
++			want: waited("30", "36"),
++		},
++		{
++			name: "AChildThatDoesNotReadKeepsItsWaitAndGetsNoReminder",
++			act: func(h *passHarness, f *noticeFake, _ *reminderFake) {
++				h.minutes(29)
++				f.childErr = errors.New("unreadable")
++				h.minutes(5)
++				f.childErr = nil
++				h.minutes(1)
++			},
++			want: waited("35"),
++		},
++		{
++			name: "AResumeThatDoesNotReadKeepsTheWaitAndGetsNoReminder",
++			act: func(h *passHarness, _ *noticeFake, r *reminderFake) {
++				h.minutes(29)
++				r.resumeErr = errors.New("unreadable")
++				h.minutes(5)
++				r.resumeErr = nil
++				h.minutes(1)
++			},
++			want: waited("35"),
++		},
++		{
++			name:  "APresenceThatDoesNotReadGetsNone",
++			setup: func(_ *passHarness, _ *noticeFake, r *reminderFake) { r.awayErr = errors.New("unreadable") },
++			act:   func(h *passHarness, _ *noticeFake, _ *reminderFake) { h.minutes(31) },
++		},
++		{
++			name:  "AnIntervalThatDoesNotReadGetsNone",
++			setup: func(_ *passHarness, _ *noticeFake, r *reminderFake) { r.intervalErr = errors.New("unreadable") },
++			act:   func(h *passHarness, _ *noticeFake, _ *reminderFake) { h.minutes(31) },
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			h, f, r := newReminderHarness(t)
++			if tt.setup != nil {
++				tt.setup(h, f, r)
++			}
++			h.tick(false)
++			tt.act(h, f, r)
++			if !slices.Equal(r.posts, tt.want) {
++				t.Errorf("posts = %q; want %q", r.posts, tt.want)
++			}
++		})
++	}
++}
++
++func TestWaitReminders_CheckAtMostOnceAMinute(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	h, _, r := newReminderHarness(t)
++
++	for range 6 {
++		h.tick(false)
++	}
++	if r.awayReads != 1 {
++		t.Errorf("checks over six ticks ten seconds apart = %d; want 1", r.awayReads)
++	}
++	h.tick(false)
++	if r.awayReads != 2 {
++		t.Errorf("checks once a minute passed = %d; want 2", r.awayReads)
++	}
++}
++
++func TestWaitReminders_RecordTheWaitInTheStateRecord(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	h, f, _ := newReminderHarness(t)
++
++	h.tick(false)
++	started := h.clock.now()
++	h.minutes(2)
++	if got := h.state().OperatorWait; got.Row != "PR-Review" || !got.Since.Equal(started) {
++		t.Errorf("OperatorWait = %+v; want PR-Review since %s", got, started)
++	}
++
++	f.pause.Covered = true
++	h.minutes(1)
++	if got := h.state().OperatorWait; got != (OperatorWaitState{}) {
++		t.Errorf("OperatorWait under a pause = %+v; want none", got)
++	}
++}
+diff --git a/internal/pauserecord/doc.go b/internal/pauserecord/doc.go
+index be7d4448..eed57f3d 100644
+--- a/internal/pauserecord/doc.go
++++ b/internal/pauserecord/doc.go
+@@ -16,6 +16,7 @@
+ // `HoldCaller` is the fixed `Caller` of every pause entry that holds a run, or a released task, that `lym adopt` took over until its subject's adopt check is green.
+ // `Coverage.Held` is set when a live entry of the slug's own scope carries it.
+ // A dobby's owner-pause lift and the hibernate wake judge only `OwnerCaller`, so neither treats a hold-caller entry as theirs.
++// LatestResumed finds the resumed entry covering a slug that resumed last, so a reader that was away can tell a pause it never saw restarted what it measures.
+ // ClaimSession records one session in the oldest live entry covering a slug, so that entry's resume gives the session its line; an uncovered slug and a session a live entry already owns record nothing.
+ //
+ // Excluded measures how much of a time span the covered intervals took, so overlapping pauses are subtracted once.
+diff --git a/internal/pauserecord/record.go b/internal/pauserecord/record.go
+index 1ee4a964..2b226b73 100644
+--- a/internal/pauserecord/record.go
++++ b/internal/pauserecord/record.go
+@@ -158,6 +158,20 @@ func (r Record) Covering(slug string) (Entry, bool) {
+ 	return oldest, found
+ }
+ 
++// LatestResumed returns the resumed entry covering slug that resumed last.
++// It lets a reader that was away learn of a pause it never saw, within Retention.
++func (r Record) LatestResumed(slug string) (Entry, bool) {
++	var latest Entry
++	found := false
++	for _, entry := range r.Resumed {
++		if entry.covers(slug) && (!found || entry.ResumedAt.After(latest.ResumedAt)) {
++			latest = entry
++			found = true
++		}
++	}
++	return latest, found
++}
++
+ // Owner returns the live entry whose sessions include guid.
+ func (r Record) Owner(guid string) (Entry, bool) {
+ 	for _, entry := range r.Live {
+diff --git a/internal/pauserecord/record_test.go b/internal/pauserecord/record_test.go
+index 4d962b5d..43c6e923 100644
+--- a/internal/pauserecord/record_test.go
++++ b/internal/pauserecord/record_test.go
+@@ -268,6 +268,39 @@ func TestOwner(t *testing.T) {
+ 	}
+ }
+ 
++func TestLatestResumed(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	own := Entry{Scope: "a", PausedAt: epoch, ResumedAt: epoch.Add(time.Minute)}
++	hub := Entry{Scope: ScopeHub, PausedAt: epoch, ResumedAt: epoch.Add(2 * time.Minute)}
++	other := Entry{Scope: "b", PausedAt: epoch, ResumedAt: epoch.Add(3 * time.Minute)}
++	live := Entry{Scope: "a", PausedAt: epoch.Add(4 * time.Minute)}
++
++	tests := []struct {
++		name      string
++		record    Record
++		slug      string
++		want      Entry
++		wantFound bool
++	}{
++		{"ALaterHubEntryCoversTheSlug", Record{Resumed: []Entry{own, hub}}, "a", hub, true},
++		{"TheOrderOfTheEntriesDoesNotMatter", Record{Resumed: []Entry{hub, own}}, "a", hub, true},
++		{"AnEntryOfAnotherSlugDoesNotCover", Record{Resumed: []Entry{own, other}}, "a", own, true},
++		{"ALiveEntryHasNotResumed", Record{Live: []Entry{live}}, "a", Entry{}, false},
++		{"AnEmptySlugIsCoveredByAHubEntryOnly", Record{Resumed: []Entry{own, hub}}, "", hub, true},
++		{"AnEmptyRecordHoldsNone", Record{}, "a", Entry{}, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, found := tt.record.LatestResumed(tt.slug)
++			if found != tt.wantFound || !got.ResumedAt.Equal(tt.want.ResumedAt) || got.Scope != tt.want.Scope {
++				t.Errorf("LatestResumed(%q) = %+v, %v; want %+v, %v", tt.slug, got, found, tt.want, tt.wantFound)
++			}
++		})
++	}
++}
++
+ func TestCoverageOf(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/slackengine/config.go b/internal/slackengine/config.go
+index 635ebf5e..504c5d9d 100644
+--- a/internal/slackengine/config.go
++++ b/internal/slackengine/config.go
+@@ -21,12 +21,12 @@ func ConfigTemplate() string {
+ // configModule is the config module name slack.yaml is loaded under.
+ const configModule = "slack"
+ 
+-// remindAfterMinKey is the key holding the minutes between the orch's reminders while presence is slack.
++// remindAfterMinKey is the key holding the minutes between dobby's reminders of a run waiting on the operator while presence is slack.
+ const remindAfterMinKey = "remind_after_min"
+ 
+ // Config represents the resolved slack.yaml configuration.
+ type Config struct {
+-	// RemindAfterMin is the minutes between the orch's reminders while presence is slack.
++	// RemindAfterMin is the minutes between dobby's reminders of a run waiting on the operator while presence is slack.
+ 	RemindAfterMin int `yaml:"remind_after_min"`
+ }
+ 
+diff --git a/internal/slackengine/doc.go b/internal/slackengine/doc.go
+index f497912e..57081304 100644
+--- a/internal/slackengine/doc.go
++++ b/internal/slackengine/doc.go
+@@ -10,7 +10,7 @@
+ // A directory the package creates is private to the user, and so is each file it writes.
+ //
+ // The package is told its `Geometry` and derives no path of its own; `hubgeom.SlackGeometry` builds it, and the package imports no `*cli` package.
+-// The package also owns the hub-wide `slack` config module, whose one key, `remind_after_min`, is the minutes between the orch's reminders while presence is slack; the channel, the operator and the token are never config.
++// The package also owns the hub-wide `slack` config module, whose one key, `remind_after_min`, is the minutes between dobby's reminders of a run waiting on the operator while presence is slack; the channel, the operator and the token are never config.
+ // `RequireConfigured` refuses a hub with no token or no setup file, naming the `lym slack` verb that writes it.
+ //
+ // `API` is the Web API client, over `net/http` alone.
+diff --git a/internal/slackengine/template.yaml b/internal/slackengine/template.yaml
+index 4f71c969..4c080801 100644
+--- a/internal/slackengine/template.yaml
++++ b/internal/slackengine/template.yaml
+@@ -1 +1 @@
+-remind_after_min: 30  # minutes between the orch's reminders while presence is slack; the channel, the operator and the token are never config, since `lym slack setup` and `lym slack login` write them
++remind_after_min: 30  # minutes between dobby's reminders of a run waiting on the operator while presence is slack; the channel, the operator and the token are never config, since `lym slack setup` and `lym slack login` write them
