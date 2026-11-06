@@ -69,7 +69,7 @@ Held by a run; its scope is locked until the run ends.
 | T1 | **beam merge-parent: the merge-in task can merge, lands as a merge and needs no pull request** | [`merge-parent-lands-right`](design-merge-parent-lands-right.md) | darn · solid | Darn-Write | neve | 13h<br>13h | pawl, darn, landing, fabric |
 | T3 | **drift: every judge halts on lym's own usage record, and resume loops**<br>• `drift: scope off` | [`drift-judge-usage-record-halt`](design-drift-judge-usage-record-halt.md) | darn · light | Darn-Write | neve | 2m<br>1m | drift, loom |
 | T6 | **Dobby reminds the operator on Slack of a run waiting at PR-Review or Sampler-Session** | [`slack-wait-reminders`](design-slack-wait-reminders.md)<br>[Sketch](decision-slack-wait-reminders.md) | darn · light | Code-Bouncer | neve | 16h<br>16h | reed |
-| T11 | **A parent cannot withdraw a PATTERN change the decision record declares**<br>• lym loom decision add only appends PATTERN bullets; a declared id the parent drops needs a hand edit of the record | [`decision-withdraw-pattern`](design-decision-withdraw-pattern.md) | darn · light | Open-IDE | neve | 15h<br>13h | loom, parsers, pattern |
+| T11 | **A parent cannot withdraw a PATTERN change the decision record declares**<br>• lym loom decision add only appends PATTERN bullets; a declared id the parent drops needs a hand edit of the record | [`decision-withdraw-pattern`](design-decision-withdraw-pattern.md) | darn · light | Record-Write | neve | 15h<br>13h | loom, parsers, pattern |
 
 #### Ready (0)
 
@@ -105,9 +105,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B1 | L | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• A Slack reminder ping while a PR-Review waits is now task T6; only the silence in status views remains | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 2d<br>12h | landing, loom, batten |
 | B2 |  | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | 13h<br>13h | tools, claude |
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 15h<br>15h | reed, orch |
-| B5 |  | **drift: Drift-Recheck halts on a capture's provenance file even when the compare command passed** | [`drift-capture-provenance-halt`](design-drift-capture-provenance-halt.md) | 1m<br>1m | drift, config |
-| B6 |  | **drift: config reconcile leaves the retired {skip_file} placeholder in capture and compare commands** | [`drift-retired-skip-file-kept`](design-drift-retired-skip-file-kept.md) | 1m<br>1m | drift, config, reconcile |
-| B7 |  | **webster begin-batch reports a delete-before-reference plan ordering finding as plan_conflict: tree_moved** | [`begin-batch-wrong-conflict-kind`](design-begin-batch-wrong-conflict-kind.md) | 1m<br>1m | webster |
+| B5 |  | **drift: Drift-Recheck halts on a capture's provenance file even when the compare command passed** | [`drift-capture-provenance-halt`](design-drift-capture-provenance-halt.md) | 2m<br>2m | drift, config |
+| B6 |  | **drift: config reconcile leaves the retired {skip_file} placeholder in capture and compare commands** | [`drift-retired-skip-file-kept`](design-drift-retired-skip-file-kept.md) | 2m<br>2m | drift, config, reconcile |
+| B7 |  | **webster begin-batch reports a delete-before-reference plan ordering finding as plan_conflict: tree_moved** | [`begin-batch-wrong-conflict-kind`](design-begin-batch-wrong-conflict-kind.md) | 2m<br>2m | webster |
 
 #### Enhancements (4)
 
