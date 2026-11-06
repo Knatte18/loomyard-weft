@@ -83,20 +83,21 @@ Held by a run; its scope is locked until the run ends.
 | T2 | **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | Webster | neve | 16h<br>16h | creel, orch |
 | T3 | **Trial the session-scope settings in a real launch and re-measure start load**<br>• Check each lever ly-plugin-off-in-other-hubs writes works in Claude Code, and measure one spawned role's and the orch's start load after it | [`session-scope-launch-trial`](design-session-scope-launch-trial.md) | darn · docs | Darn-Write | neve | 14h<br>1m | claude, shuttle |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T5 | **Drift: lym record writes, a gone snapshot, capture provenance and a retired placeholder halt runs**<br>• Four drift bugs that halt Models hub runs at Drift-Verify and Drift-Recheck<br>• `drift: scope off` | [`drift-halts-bundle`](design-drift-halts-bundle.md) | darn · solid |  | 1h<br>0m | drift, loom, config, reconcile |
 
-#### Draft (2)
+#### Draft (1)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light |  | 5d<br>20h | fabric |
-| T5 | `draft` **Drift: lym record writes, a gone snapshot, capture provenance and a retired placeholder halt runs**<br>• Four drift bugs that halt Models hub runs at Drift-Verify and Drift-Recheck<br>• `drift: scope off` | [`drift-halts-bundle`](design-drift-halts-bundle.md) | darn · solid |  | 1h<br>0m | drift, loom, config, reconcile |
 
 ### Notes (22)
 
