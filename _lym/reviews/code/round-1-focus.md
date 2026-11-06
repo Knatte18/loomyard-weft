@@ -1,0 +1,15 @@
+---
+round: 1
+focus:
+  - "internal/shuttleengine/loadturn.go `loadSkillTurn` timeout path: the Goal says a load turn that timed out through an API error is not a skipped skill. Settle whether a timeout with no turn end and no API-error signal read (a turn still open, or no turn start read at all) is still skipped and the prompt typed into a failing API, as in the 13:42 incident, or is held."
+  - "`loadTurnOpenBound` (15 minutes from turn start) in `loadSkillTurn`: settle whether the open-turn extension is licensed by the Goal's wanted behavior, and what happens to the prompt when the bound passes while the API is still failing."
+  - "`loadSkillTurn` and `readLoadTurn` against `loadSkillsThenPrompt` and `settleLoadTurn` in run.go: settle whether the second (retry) load turn, the unverified path and the skipped-skill path still behave as the Goal's decision keeps them (skill not installed or missing is skipped with a warning and never stops the session), and whether an API-error hold in the first turn spends the retry or corrupts the evidence the verify step reads."
+  - "Run offset handling in `readLoadTurn` and `loadSkillTurn`: settle whether the offset moved past events read during a hold, past a re-typed load message's own turn start and end, leaves the later prompt offset and `Wait` reading correct."
+  - "Back-off hold in `loadSkillTurn`: settle the retype path for an unbounded loop's failure modes: the busy-session branch, a pause covering the send, a send error other than ErrSessionBusy, a dead pane, and the run deadline moved by `endLoadHold` (does the deadline stay consistent on every return path, including the model-rejected error)."
+  - "Scope against the Goal: `loadModelRejectedError`/`abandonLoad` (Result.APIError, OutcomeAPIError), the parent notifier line in `noticeLoadHold`, and the `doc.go` claim about attach delivering a pending prompt. Settle whether each is licensed by the Goal's Wanted list or the Decision, and whether `abandonLoad` is correct when every output file already exists."
+  - "Test coverage in startup_test.go and fakes_test.go: settle which new behaviors lack a test (timeout-through-API-error, transcript-marker turn ends, turn start during the back-off, busy retype, rejected model, deadline shift, notifier) and whether any new test duplicates an existing shuttleengine test."
+  - "Repository rules: `pattern/PATTERN-daemon-wakeups.md` entry states a 30 second start for the back-off, check it against `apiErrorRetryBackoff`; check the `cmd/lym/daemonwakeups_test.go` unboundedWaitFiles entry and the new `PATTERN-reed-panes.md` section against the repo's constraints document; check doc comments follow the Go comment conventions."
+  - "Commit message and the doc.go/spec.go/engine.go prose: settle whether any claim (at most two load turns the API does not fail, the 2 minute default, the notifier skipped for interactive runs) is borne out by the code."
+---
+
+Seed focus from the decision record's Goal and the committed diff: the central question is whether every path by which the prompt reached a failing API in the incident, a timeout with no readable API error, now holds.
