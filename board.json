@@ -689,6 +689,28 @@
       "body": "Imported from [issue #71](https://github.com/Knatte18/loomyard/issues/71).\n\nSeen: task run cuttings-fitted-rheology (hub Models, diff: lines) blocked at Drift-Recheck after compare_passed: true, with 'the code changed what the expectation does not cover: changed in case \"_source.txt\" at key \"commit\" ... at key \"captured_at\"'. The hub's baseline harness writes _source.txt (commit SHA and capture time) beside the captured cases; it differs in every capture of a new commit, so every task run with an empty expectation halts here.\n\nWorkaround: the parent ran 'lym drift amend \u003cslug\u003e --entries' with keys commit and captured_at of case _source.txt, then 'lym loom resume'. Every drift run in the hub needs the same amend.\n\nExpected: a way to declare volatile capture files or keys hub-wide in drift.yaml (an ignore list), or the line diff skips them, so provenance never reads as drift.",
       "created": "2026-11-06T08:55:38Z",
       "revised": "2026-11-06T08:55:38Z"
+    },
+    {
+      "id": 1165,
+      "handle": "B6",
+      "slug": "drift-retired-skip-file-kept",
+      "title": "drift: config reconcile leaves the retired {skip_file} placeholder in capture and compare commands",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "drift",
+        "config",
+        "reconcile"
+      ],
+      "issues": [
+        70
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #70](https://github.com/Knatte18/loomyard/issues/70).\n\nSeen: after drift stopped rendering {skip_file}, a hub whose default-layer drift.yaml held '-e NORCE_BASELINE_SKIP_FILE={skip_file}' in capture.command and compare.command blocked a task run at Drift-Recheck with 'the drift current capture command holds {skip_file}, which drift no longer renders'. 'lym config reconcile --layer default --apply' from the prime did not remove the placeholder.\n\nWorkaround: the prime orch rewrote both commands without the placeholder with 'lym config drift --layer default --set', then the blocked run was resumed with 'lym loom resume'.\n\nExpected: reconcile (or the upgrade that retired the placeholder) migrates or strips {skip_file} from existing drift commands, so no run blocks on it; and the Drift-Recheck error names a way forward that works from the session that receives it (a beam orch is refused hub-wide config writes).",
+      "created": "2026-11-06T08:55:42Z",
+      "revised": "2026-11-06T08:55:42Z"
     }
   ],
   "prime_owner": "neve",
