@@ -1,0 +1,5 @@
+# session scope: scoped sessions load a Workflow tool schema about 5,800 tokens larger
+
+`scope-enlarges-workflow-schema` · Note · bug, claude, shuttle
+
+In Claude Code 2.1.319 the Workflow tool schema is 22,339 characters in a session launched with the scope on and 5,384 without it, in a spawned role and in the orch alike. At the first request this offsets about 5,800 of the roughly 7,500 tokens the scope drops from listings, memory and ListAgents. The cause is not established; one lead is that the unscoped sessions carry claude.ai connectors as deferred tools and the full schema appears only without them. Find which setting triggers it and whether Workflow can be denied in permissions.deny, which would also drop its schema. Evidence: docs/research/tokens/session-scope-launch-2026-11-06/report.md.
