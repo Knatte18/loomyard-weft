@@ -1,6 +1,6 @@
 # Shorten the orch role file, the largest single start cost
 
-`orch-role-shorter` · Task · enhancement, orch · running · Finalize
+`orch-role-shorter` · Task · enhancement, orch · done
 
 ## Seen
 
