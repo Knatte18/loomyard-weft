@@ -1,0 +1,348 @@
+diff --git a/contracts/specs/loom-plan-checks-spec.md b/contracts/specs/loom-plan-checks-spec.md
+index e4c5d9f6..1afa76a6 100644
+--- a/contracts/specs/loom-plan-checks-spec.md
++++ b/contracts/specs/loom-plan-checks-spec.md
+@@ -110,6 +110,7 @@ Under `language: none` the glyph checks are skipped: `bare-symbol-target`, `dire
+   It does not see a caller in a file an earlier card creates, nor an interface break at an assignment site when a re-signed method stops satisfying it.
+ - `delete-before-reference` *(planglyph)* — a deleted member glyph or package self glyph that a later card's `Edit` or `Extends` code still references; blocking per line, informational for a method matched by name alone.
+   Way forward: move the delete after the editing card.
++  A plan gate reads the tree as it stands, so a reference an earlier card writes during the run, or one inside an Edit target that is still a handle, is first reported at dispatch, by the first `begin-batch` after it lands.
+ - `delete-target-gone` *(planglyph)* — informational, at dispatch only once a batch has begun: a pending card's `Delete` target is already gone, in place of its `path-missing` or `glyph-not-found`.
+ - `uses-later-target` — a card's `Uses:` entry that a later card targets, matched as exact trimmed strings; one finding per consumer, producer and entry, on the consumer.
+ 
+diff --git a/contracts/stencils/webster/webster-template-master.md b/contracts/stencils/webster/webster-template-master.md
+index a78bbb4a..793e396a 100644
+--- a/contracts/stencils/webster/webster-template-master.md
++++ b/contracts/stencils/webster/webster-template-master.md
+@@ -233,10 +233,15 @@ They are answers your parent already gave, often to an earlier stop of this run:
+ 
+ {{.parent_decisions}}
+ 
+-## A plan conflict goes to the plan fixer first; a plan drift ends your run as stuck
++## A plan defect goes to the plan fixer first; a plan-order conflict or a plan drift ends your run as stuck
+ 
+-If `begin-batch` refuses with `{"plan_conflict": "<cause>"}`, the cause being `plan_defect` or `tree_moved`, that means `begin-batch`'s own re-resolution of the plan against the current tree — run immediately before it would have written the fork prompt — found that the plan contradicts the tree.
+-Most often an earlier batch renamed or moved a target a later card still names, and a small plan fixer matches the cards to the tree:
++If `begin-batch` refuses with `{"plan_conflict": "<cause>"}`, the cause being `plan_defect`, `tree_moved` or `plan_order`, that means `begin-batch`'s own re-resolution of the plan against the current tree — run immediately before it would have written the fork prompt — found that the plan contradicts the tree.
++For `plan_defect` and `tree_moved`, most often an earlier batch renamed or moved a target a later card still names, and a small plan fixer matches the cards to the tree.
++`plan_order` means a card deletes a symbol a later card's Edit code still references, so the delete must move after that card.
++The plan fixer cannot do that, since moving a delete reshapes the cards and belongs to the plan writer.
++A `plan_order` refusal therefore skips the rung below: write `outcome: stuck` to `{{.outcome_path}}` right away, with a `stuck_reason` quoting the refusal's message verbatim, then stop.
++
++For `plan_defect` and `tree_moved`:
+ 
+ 1. Keep the refusal's message: a stuck run quotes it.
+ 2. Run `lym webster fix-plan` as a **backgrounded** Bash command and end your turn, exactly as after a backgrounded `recover-batch`: no polling, no `sleep`, no file checks while it runs.
+@@ -261,7 +266,7 @@ The batch's own mechanical done-checks run against the worktree's real post-batc
+ They find declared work missing: a Create target that still does not resolve, a Delete target that still does, or a `plan:` handle that bound to nothing.
+ A symbol the batch removed that a later card names, with no rename in the report, first comes back once as `{"later_target_removed": true}`, handled by its rung of the failure ladder above.
+ Every other finding about a later card (drift, a symbol this batch's cards delete that a later card still references, or a removal still unanswered after the hand-back) comes back on the envelope's `warnings` and the batch still records;
+-that later card's own `begin-batch` refuses it, naming "edit the plan so the named cards match the tree, run "lym webster rebaseline --card NN" naming each card you edited, then begin-batch NN again".
++that later card's own `begin-batch` refuses it with a `plan_conflict` refusal that names the way forward.
+ A done-check failure comes back as `{"batch_failed": true}`, handled by the `batch_failed` rung of the failure ladder above.
+ The batch is already terminal-failed and its report archived, so you never retry `record-batch` and never edit a target file yourself (see "What you never do" below).
+ 
+diff --git a/contracts/stencils/webster/webster-template-plan-fix.md b/contracts/stencils/webster/webster-template-plan-fix.md
+index 9ef94a9c..53d239ab 100644
+--- a/contracts/stencils/webster/webster-template-plan-fix.md
++++ b/contracts/stencils/webster/webster-template-plan-fix.md
+@@ -1,4 +1,4 @@
+-<!-- This is the cold plan fixer's prompt, filled by RenderPlanFixPrompt (render.go) via internal/stencil and handed to the separate strand `lym webster fix-plan` spawns at the master role after begin-batch refuses with plan_conflict.
++<!-- This is the cold plan fixer's prompt, filled by RenderPlanFixPrompt (render.go) via internal/stencil and handed to the separate strand `lym webster fix-plan` spawns at the master role after begin-batch refuses with plan_conflict of the cause plan_defect or tree_moved.
+      {{.record_path}}, {{.reply_path}}, {{.worktree_root}}, {{.plan_dir}} and {{.specs_dir}} are required markers.
+      {{.friction_directive}} and parent_directive are optional (filled via stencil.FillOptional) and render as nothing when inactive.
+      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
+diff --git a/internal/planglyph/deleteorder.go b/internal/planglyph/deleteorder.go
+index 95143d75..a2d8dfa7 100644
+--- a/internal/planglyph/deleteorder.go
++++ b/internal/planglyph/deleteorder.go
+@@ -16,6 +16,7 @@ import (
+ 	"sort"
+ 	"strings"
+ 
++	"github.com/Knatte18/loomyard/internal/planindex"
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/quarry/glyph"
+ 	"github.com/Knatte18/quarry/quarry"
+@@ -256,7 +257,7 @@ func deleteOrderFindings(subjects []coverageSubject, resolved, nameOnly []map[st
+ 					continue
+ 				}
+ 				findings = append(findings, Finding{
+-					Check: "delete-before-reference",
++					Check: planindex.CheckDeleteBeforeReference,
+ 					Card:  subject.card.ID(),
+ 					Detail: fmt.Sprintf(
+ 						"card %d deletes %q, but card %s still references it at %s:%d in its Edit code — move the delete to a card after card %d",
+@@ -290,7 +291,7 @@ func deleteOrderFindings(subjects []coverageSubject, resolved, nameOnly []map[st
+ 		}
+ 		if len(sites) > 0 {
+ 			findings = append(findings, Finding{
+-				Check: "delete-before-reference",
++				Check: planindex.CheckDeleteBeforeReference,
+ 				Card:  subject.card.ID(),
+ 				Detail: fmt.Sprintf(
+ 					"card %d deletes %q, but its name follows a dot in %s, in the Edit code of card %s, and the receiver could not be resolved — if one is a call, move the delete to a card after card %d",
+@@ -371,7 +372,7 @@ func laterImportFindings(plan *planparser.Plan, deleting []planparser.Card, regi
+ 						}
+ 						reported[key] = true
+ 						findings = append(findings, Finding{
+-							Check: "delete-before-reference",
++							Check: planindex.CheckDeleteBeforeReference,
+ 							Card:  c.ID(),
+ 							Detail: fmt.Sprintf(
+ 								"card %d deletes %q, but card %s still references it at %s:%d in its Edit code — move the delete to a card after card %d",
+diff --git a/internal/planglyph/deleteorder_test.go b/internal/planglyph/deleteorder_test.go
+index 8da20201..59c34ea6 100644
+--- a/internal/planglyph/deleteorder_test.go
++++ b/internal/planglyph/deleteorder_test.go
+@@ -9,6 +9,7 @@ import (
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/planindex"
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+@@ -237,7 +238,7 @@ func TestLaterDeleteReferences(t *testing.T) {
+ 				t.Errorf("LaterDeleteReferences(%s) sites = %q; want %q", tc.name, sites, tc.wantRefs)
+ 			}
+ 			for _, f := range got {
+-				if f.Check != "delete-before-reference" || f.Card != tc.deleting.ID() {
++				if f.Check != planindex.CheckDeleteBeforeReference || f.Card != tc.deleting.ID() {
+ 					t.Errorf("finding %+v; want a delete-before-reference on card %s", f, tc.deleting.ID())
+ 				}
+ 				for _, want := range []string{tc.later.ID(), tc.deleting.TargetGroups[0].Refs[0]} {
+diff --git a/internal/planglyph/doc.go b/internal/planglyph/doc.go
+index 6e602aac..105cd9e2 100644
+--- a/internal/planglyph/doc.go
++++ b/internal/planglyph/doc.go
+@@ -58,6 +58,7 @@
+ //     The delete-order edit regions cover Extends groups as they cover Edit groups.
+ //     It is computed by callerCoverageFindings (callercoverage.go) through planGatePass at the plan gates, from the reference computation caller-uncovered shares, and by LaterDeleteReferences (deleteorder.go) scan-only at ValidateDispatch and for Webster.
+ //     Only Go files outside the directories the go tool ignores are searched; a package self glyph Delete keeps its quoted import-path match, over Go regions only.
++//     A plan gate reads the tree as it stands, so a reference an earlier card writes during the run, or one inside a later card's Edit target that is still a handle, is first seen at ValidateDispatch.
+ //     A member reference that an Edit target of the deleting card or an earlier card also covers is not reported, since that card rewrites the code before the later card runs; the quoted import-path match keeps no such exemption.
+ //     glyph-rejected is additionally its own fail-closed arm of LaterDeleteReferences, for a Delete or Edit member whose answer it cannot read.
+ //     A member partitioned by build constraints is looked up through its candidates, which are its declarations.
+diff --git a/internal/planglyph/planfixture_helper_test.go b/internal/planglyph/planfixture_helper_test.go
+index 4749bb31..dff4b5ce 100644
+--- a/internal/planglyph/planfixture_helper_test.go
++++ b/internal/planglyph/planfixture_helper_test.go
+@@ -12,6 +12,7 @@ import (
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/planindex"
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/loomyard/internal/testkit/plankit"
+ )
+@@ -103,7 +104,7 @@ var (
+ func deleteOrderSites(findings []Finding) []string {
+ 	var sites []string
+ 	for _, f := range findings {
+-		if f.Check != "delete-before-reference" {
++		if f.Check != planindex.CheckDeleteBeforeReference {
+ 			continue
+ 		}
+ 		pattern := blockingDeleteOrderSite
+diff --git a/internal/planindex/planindex.go b/internal/planindex/planindex.go
+index cde8d168..3adec557 100644
+--- a/internal/planindex/planindex.go
++++ b/internal/planindex/planindex.go
+@@ -25,6 +25,9 @@ const (
+ 	SeverityInformational Severity = "informational"
+ )
+ 
++// CheckDeleteBeforeReference is the Check of a finding that a card deletes a symbol a later card's Edit code still references.
++const CheckDeleteBeforeReference = "delete-before-reference"
++
+ // Finding is the plan gates' own finding type: the same Check, Card and Detail fields planparser.ValidationError carries, plus a Severity every converted planparser finding is stamped with.
+ // Ref is the raw plan ref a per-ref finding reports, empty for a finding that is not about one ref.
+ // File is the worktree-relative file a finding concerns, empty for a finding about no file.
+diff --git a/internal/webstercli/beginbatch.go b/internal/webstercli/beginbatch.go
+index 5eb6ba64..56359c76 100644
+--- a/internal/webstercli/beginbatch.go
++++ b/internal/webstercli/beginbatch.go
+@@ -90,8 +90,9 @@ prompt (carrying the previous batch's own persisted digest), and returns the
+ prompt path Master forwards to its Agent-tool fork call verbatim.
+ 
+ A refusal because the plan's re-resolution against the tree found a blocking
+-defect carries "plan_conflict" with its cause: "plan_defect" when no batch is
+-begun, "tree_moved" when one is.
++defect carries "plan_conflict" with its cause: "plan_order" when every finding
++is a delete a later card's Edit code still references, otherwise "plan_defect"
++when no batch is begun and "tree_moved" when one is.
+ 
+ Under a pause that covers the pair it refuses first, claiming Master into it.
+ 
+diff --git a/internal/websterengine/beginbatch.go b/internal/websterengine/beginbatch.go
+index adcf2304..f34b7eda 100644
+--- a/internal/websterengine/beginbatch.go
++++ b/internal/websterengine/beginbatch.go
+@@ -90,17 +90,19 @@ func cardNumberOf(name string) string {
+ // Dispatching a fork on a re-resolve that failed is strictly worse than not dispatching.
+ var ErrPlanConflict = errors.New("webster: plan re-resolution at begin-batch reported a blocking finding")
+ 
+-// The two causes a PlanConflictError carries, and the only values its Cause takes.
++// The three causes a PlanConflictError carries, and the only values its Cause takes.
+ const (
+ 	// ConflictCausePlanDefect is a conflict found while no batch was begun: the approved plan contradicts the tree before any work started.
+ 	ConflictCausePlanDefect = "plan_defect"
+ 	// ConflictCauseTreeMoved is a conflict found after a batch was begun: the tree moved under the plan.
+ 	ConflictCauseTreeMoved = "tree_moved"
++	// ConflictCausePlanOrder is a conflict whose every blocking finding is a delete a later card's Edit code still references, begun batches or not: the cards run in the wrong order, and moving the delete settles it.
++	ConflictCausePlanOrder = "plan_order"
+ )
+ 
+ // PlanConflictError is the refusal BeginBatch returns when the dispatch-boundary re-resolution reports blocking findings.
+ // Batch is the batch whose begin was refused.
+-// Cause is ConflictCausePlanDefect or ConflictCauseTreeMoved.
++// Cause is ConflictCausePlanDefect, ConflictCauseTreeMoved or ConflictCausePlanOrder.
+ // Findings is every blocking finding as Finding.Error renders it, in the order the re-resolution reported them.
+ type PlanConflictError struct {
+ 	Batch    int
+@@ -110,7 +112,11 @@ type PlanConflictError struct {
+ 
+ // Error renders the refusal with its class and cause, the findings and the way forward.
+ func (e *PlanConflictError) Error() string {
+-	return fmt.Sprintf("%s (plan_conflict: %s): %s; way forward: edit the plan so the named cards match the tree, run \"lym webster rebaseline --card NN\" naming each card you edited, then begin-batch %02d again", ErrPlanConflict.Error(), e.Cause, strings.Join(e.Findings, "; "), e.Batch)
++	planEdit := "edit the plan so the named cards match the tree"
++	if e.Cause == ConflictCausePlanOrder {
++		planEdit = "move each named delete to a card after the card that still references it"
++	}
++	return fmt.Sprintf("%s (plan_conflict: %s): %s; way forward: %s, run \"lym webster rebaseline --card NN\" naming each card you edited, then begin-batch %02d again", ErrPlanConflict.Error(), e.Cause, strings.Join(e.Findings, "; "), planEdit, e.Batch)
+ }
+ 
+ // Unwrap returns ErrPlanConflict, so errors.Is identifies the refusal.
+@@ -490,17 +496,23 @@ func BeginBatch(deps BeginDeps, batchNumber int) (*BeginResult, error) {
+ 	}
+ 	var blocking []string
+ 	var advisories []string
++	orderOnly := true
+ 	for _, f := range resolveFindings {
+ 		if f.Severity == planindex.SeverityBlocking {
+ 			blocking = append(blocking, f.Error())
++			orderOnly = orderOnly && f.Check == planindex.CheckDeleteBeforeReference
+ 		} else {
+ 			advisories = append(advisories, f.Error())
+ 		}
+ 	}
+ 	if len(blocking) > 0 {
+ 		// begun is computed before this call records its batch, so a first begin of batch 1 has none begun (plan_defect) and a re-begin of a recorded batch has it begun (tree_moved).
++		// A set holding any other finding keeps those two causes, since moving a delete would not settle it.
+ 		cause := ConflictCauseTreeMoved
+-		if len(begun) == 0 {
++		switch {
++		case orderOnly:
++			cause = ConflictCausePlanOrder
++		case len(begun) == 0:
+ 			cause = ConflictCausePlanDefect
+ 		}
+ 		return nil, &PlanConflictError{Batch: batchNumber, Cause: cause, Findings: blocking}
+diff --git a/internal/websterengine/beginbatch_test.go b/internal/websterengine/beginbatch_test.go
+index f88df49f..ddd8a70c 100644
+--- a/internal/websterengine/beginbatch_test.go
++++ b/internal/websterengine/beginbatch_test.go
+@@ -18,6 +18,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/batcher"
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/planglyph"
++	"github.com/Knatte18/loomyard/internal/planindex"
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/loomyard/internal/testkit/plankit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -802,6 +803,69 @@ func TestBeginBatch_ReResolvesPlanAtDispatch(t *testing.T) {
+ 	})
+ }
+ 
++// dispatchFindingsIndex is a planindex.Index whose ValidateDispatch answers findings.
++type dispatchFindingsIndex struct {
++	planindex.Index
++	findings []planindex.Finding
++}
++
++func (i dispatchFindingsIndex) ValidateDispatch(*planparser.Plan, string, []planparser.Card, []planparser.Card) ([]planindex.Finding, error) {
++	return i.findings, nil
++}
++
++// TestBeginBatch_ConflictCauseNamesAPlanOrderConflict proves a refusal whose every blocking finding is delete-before-reference is plan_order and tells the reader to move the delete, begun batches or not.
++// A set holding any other blocking finding keeps its plan_defect or tree_moved cause and the way forward to match the tree; an informational delete-before-reference does not count.
++func TestBeginBatch_ConflictCauseNamesAPlanOrderConflict(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const (
++		moveDelete = "way forward: move each named delete to a card after the card that still references it, run \"lym webster rebaseline --card NN\""
++		matchTree  = "way forward: edit the plan so the named cards match the tree, run \"lym webster rebaseline --card NN\""
++	)
++	deleteOrder := planindex.Finding{Check: planindex.CheckDeleteBeforeReference, Card: "01-json-flag", Severity: planindex.SeverityBlocking}
++	deleteOrderAdvisory := planindex.Finding{Check: planindex.CheckDeleteBeforeReference, Card: "01-json-flag", Severity: planindex.SeverityInformational}
++	notFound := planindex.Finding{Check: "glyph-not-found", Card: "02-list-tests", Severity: planindex.SeverityBlocking}
++
++	tests := []struct {
++		name           string
++		findings       []planindex.Finding
++		begun          bool
++		wantCause      string
++		wantWayForward string
++	}{
++		{"DeleteOrderAfterABatchIsBegun", []planindex.Finding{deleteOrder}, true, websterengine.ConflictCausePlanOrder, moveDelete},
++		{"DeleteOrderWithNoBatchBegun", []planindex.Finding{deleteOrder}, false, websterengine.ConflictCausePlanOrder, moveDelete},
++		{"MixedFindingsAfterABatchIsBegun", []planindex.Finding{deleteOrder, notFound}, true, websterengine.ConflictCauseTreeMoved, matchTree},
++		{"MixedFindingsWithNoBatchBegun", []planindex.Finding{notFound, deleteOrder}, false, websterengine.ConflictCausePlanDefect, matchTree},
++		{"InformationalDeleteOrderBesideABlockingFinding", []planindex.Finding{deleteOrderAdvisory, notFound}, true, websterengine.ConflictCauseTreeMoved, matchTree},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			fx := newBeginFixture(t)
++			fx.Deps.Geom.Index = dispatchFindingsIndex{Index: fx.Deps.Geom.Index, findings: tt.findings}
++			batchNumber := 1
++			if tt.begun {
++				batchNumber = 2
++				fx.Deps.State.Batches = map[int]*websterengine.BatchState{1: {Slug: "json-flag", Kind: "fork"}}
++			}
++
++			_, err := websterengine.BeginBatch(fx.Deps, batchNumber)
++			var conflict *websterengine.PlanConflictError
++			if !errors.As(err, &conflict) {
++				t.Fatalf("BeginBatch() error = %v; want errors.As to a *PlanConflictError", err)
++			}
++			if conflict.Cause != tt.wantCause {
++				t.Errorf("Cause = %q; want %q", conflict.Cause, tt.wantCause)
++			}
++			if !strings.Contains(err.Error(), tt.wantWayForward) {
++				t.Errorf("error %q; want it to hold %q", err.Error(), tt.wantWayForward)
++			}
++		})
++	}
++}
++
+ // TestBeginBatch_AlreadyBuiltCardsAreNotReResolved proves the dispatch-boundary re-resolution is
+ // scoped to work that has not landed. A plan describes intended change, so a card already built
+ // contradicts the tree by design: its Create target now exists, which the Create inversion reports
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index 3e582124..aca41035 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -157,7 +157,9 @@
+ // A forthcoming card's Create targets and Rename New sides are excluded from the status check, so a later card that Uses one passes while the fork has landed nothing yet.
+ // A terminal batch's cards are never forthcoming: its done-checks proved its targets present.
+ // With no begun card, validate runs the whole-plan check set, approval gate included.
+-// begin-batch's blocking refusal is a PlanConflictError, the `plan_conflict` class: its cause is `plan_defect` when begun is empty and `tree_moved` otherwise.
++// begin-batch's blocking refusal is a PlanConflictError, the `plan_conflict` class: its cause is `plan_order` when every blocking finding is delete-before-reference, and otherwise `plan_defect` when begun is empty and `tree_moved` when it is not.
++// A delete-before-reference conflict can first appear mid-run, because the reference may be code an earlier card wrote, which no plan gate could read.
++// Every begin-batch checks all pending cards, so the first begin-batch after that code lands reports it, and a rebaseline needs no check of its own: the next begin-batch runs the same one before any fork.
+ //
+ // The bound: drift in a begun, non-terminal card's own targets is reported by none of the three sites.
+ // That card was fully validated at its first begin-batch, its bytes stay pinned by its recorded CardHashes, and record-batch and recover-batch still run its done-checks and drift detection.
+@@ -579,7 +581,8 @@
+ //
+ // # The plan fixer
+ //
+-// A `plan_conflict` refusal of begin-batch goes to a cold plan fixer before Master ends stuck:
++// A `plan_conflict` refusal of begin-batch with the cause `plan_defect` or `tree_moved` goes to a cold plan fixer before Master ends stuck;
++// one with the cause `plan_order` goes to none, since moving a delete reshapes cards, and Master ends stuck at once quoting the refusal:
+ // Merriam runs `lym webster fix-plan` backgrounded, ends its turn, and on the verb's completion calls begin-batch again for the same batch on verdict `fixed`, and otherwise writes `outcome: stuck` quoting the begin-batch refusal, so a tapestry run still reroutes to plan review through the conflict record, which nothing but the next begin-batch removes.
+ // A `plan_drifted` refusal gets no fixer.
+ // FixPlanSpawnOrAttach reads the conflict record (ReadConflictRecord) and spawns the fixer as its own strand, role `plan-fixer`, at RoleMaster's model choice with recovery_timeout_min as its timeout, with RenderPlanFixPrompt's prompt carrying the parent, edit and friction directives.
