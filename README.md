@@ -50,7 +50,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 1h<br>4m | codex, shuttle |
+| R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 1h<br>5m | codex, shuttle |
 
 #### Features (1)
 
@@ -73,7 +73,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | Webster | neve | 17h<br>17h | creel, orch |
-| T3 | **Session scope: drop the larger Workflow schema and hide plugin skills that are set off**<br>• Two faults the launch trial found, proved in real launches | [`session-scope-fix`](design-session-scope-fix.md) | darn · light | Code-Bouncer | neve | 1h<br>1h | claude, shuttle |
+| T3 | **Session scope: drop the larger Workflow schema and hide plugin skills that are set off**<br>• Two faults the launch trial found, proved in real launches | [`session-scope-fix`](design-session-scope-fix.md) | darn · light | Drift-Recheck | neve | 1h<br>1h | claude, shuttle |
 | T5 | **Drift: lym record writes, a gone snapshot, capture provenance and a retired placeholder halt runs**<br>• Four drift bugs that halt Models hub runs at Drift-Verify and Drift-Recheck<br>• `drift: scope off` | [`drift-halts-bundle`](design-drift-halts-bundle.md) | darn · solid | Code-Burler-Fix | neve | 2h<br>1h | drift, loom, config, reconcile |
 
 #### Ready (0)
