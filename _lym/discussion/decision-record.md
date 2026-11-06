@@ -42,6 +42,12 @@ Decision: Before the fan-out, cut each Haiku worker's scope so its peak context 
 
 Rationale: The task body sets the 100k bound because Haiku 5.5 is cheap below it (operator, 2026-11-04). What a worker reads to check a comment counts toward its context, so source size alone underestimates it.
 
+### Added after Discussion (operator, 2026-11-06): A worker over 100k tokens is a cost, not a failure
+
+Decision: Size Haiku workers to stay under 100k tokens, but a worker that goes over it now and then needs no rerun and no stop: keep its work and go on.
+
+Rationale: Operator, 2026-11-06: going over is no crisis, but Haiku 5.5 is very cheap under 100k context and much dearer above it.
+
 ## Constraints
 
 ## Auto-mode assumptions
