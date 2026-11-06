@@ -1,6 +1,6 @@
 # P1 Fewer agent turns, fewer tokens
 
-Rendered 2026-11-06 09:51 UTC; every age below is as of then.
+Rendered 2026-11-06 09:56 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `turn-savings` · Age 4d · Owner `neve`
@@ -20,6 +20,12 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (0)
+## Notes (1)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Research (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| R3 |  | **Does the repository size slow runs, and where did the added fixed cost per run go**<br>• Split the rise in darn run time by row, parallel load and repository size, from transcripts of landed runs | [`repo-size-run-time`](design-repo-size-run-time.md) | 0m<br>0m | report, loom |

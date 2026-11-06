@@ -611,6 +611,26 @@
       "body": "Imported from [issue #68](https://github.com/Knatte18/loomyard/issues/68).\n\n**What happened**\n`lym webster begin-batch 20` was refused. The refusal text names a blocking finding `delete-before-reference/22-driftcli-retire-verbs`: card 22 deletes a symbol that a later card (26) still references. The way forward it gives is to edit the plan, run `lym webster rebaseline --card NN` for each edited card, then run begin-batch again.\nThe refusal note is classified `plan_conflict: tree_moved`.\n\n**Why it is abnormal**\n- The finding is a plan-internal ordering defect (a delete card placed before a card that still references the symbol), not a tree that moved. The `tree_moved` classification points the reader at the wrong cause.\n- The ordering defect exists in the plan from the start. It surfaced only at begin-batch of batch 20, after earlier batches had run, so plan validation or earlier re-resolution did not catch it.\n\n**What to do**\n- Check why a `delete-before-reference` finding is classified `tree_moved` and give it a classification that names a plan-ordering conflict.\n- Consider running the delete-before-reference check when the plan is accepted or rebaselined, so the conflict is refused before earlier batches are spent.\n\nProvenance: task slug `drift-rework`; note file `webster-refusal-begin-batch.md`.",
       "created": "2026-11-06T08:55:48Z",
       "revised": "2026-11-06T08:55:48Z"
+    },
+    {
+      "id": 1167,
+      "handle": "R3",
+      "slug": "repo-size-run-time",
+      "title": "Does the repository size slow runs, and where did the added fixed cost per run go",
+      "kind": "note",
+      "labels": [
+        "research",
+        "report",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Split the rise in darn run time by row, parallel load and repository size, from transcripts of landed runs",
+      "body": "## Seen\n\n`docs/research/speed/task-runtime-before-after-2026-11-06` found darn code runs slower since 2026-11-01: active time 31.7 to 45.0 min on average, with the fitted fixed cost per run up from 27 to 41 min.\nIt could not name the cause.\nThe operator suspects the repository's own size: Claude takes longer to search and change a larger code base.\n\nGo source on main grew from 28.3 MB in 3116 files (2026-10-27) to 34.7 MB in 3664 files (2026-11-06), about 23%, and markdown from 4.0 to 5.4 MB.\n\nA first look at the report's `runs.tsv`, median darn code run per day, does not show the writer following that growth: write is 20 to 23 min on 2026-10-27 and 28, and 16 to 20 min on 2026-11-03 to 05.\nReview rises from about 8 min to 13 to 18 min from 2026-11-03.\nGate wall time rose from 12.1 to 18.3 min per run, which more tests can explain.\n\n## Idea\n\nMeasure from the transcripts of landed runs whether size costs time per unit of work, with turns and calls held apart from the task's size:\n\n- greps, reads and lines read per changed line, and grep hits per call, by the repository's size at the run's start;\n- context tokens at the first edit, and the time per turn;\n- the load each role takes at start from files that grow with the repository, PATTERN and the instruction files among them;\n- gate wall time against test count.\n\nThen split the 14 minutes of added fixed cost by row, Record-Write and Drift-Recheck among them, against parallel runs (1.8 to 3.4 in flight) and repository size.\nThe cap on runs and the choice of sample are set when it is promoted.\n",
+      "created": "2026-11-06T09:56:17Z",
+      "revised": "2026-11-06T09:56:17Z",
+      "project": "turn-savings"
     }
   ],
   "prime_owner": "neve",
