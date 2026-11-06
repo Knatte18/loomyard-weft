@@ -1,6 +1,6 @@
 # What makes runs slow and what would make them faster: deep analysis
 
-`repo-size-run-time` · Task · research, report, loom · running · Open-IDE
+`repo-size-run-time` · Task · research, report, loom · running · Preflight
 
 ## Question
 
