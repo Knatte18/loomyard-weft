@@ -36,20 +36,17 @@ Run 2, part 1 of `codex-assist-fan-trial` (`2c4864bb`), one hand-composed `astra
 Run 3, part 2 of the same task, the real composed seat beside a `sonnet[medium]` Chair with no lenses, on the report's diff, `review-code` fan asked for:
 
 - The seat did not fan: no `spawn_agent` call, no lens report.
-  It reported an instruction conflict and worked solo; see note `assist-fan-seat-work-alone`.
-  So a real fanned seat has still never run.
+  It reported an instruction conflict and worked solo: the composed prompt told it to work alone and write its report "and nothing else", while the fan rules asked for lens reports.
 - Two LOW findings, both real and both fixed in the landing, neither false; the Chair kept both and added a third LOW of its own.
 - Time: 212 s from 13:00:44, in parallel; the Chair ended at 13:05:36, so no wait on the wall clock.
 - Tokens from the Codex session: 1,326,656 in all, 1,223,680 of them cached, 5,766 out.
 
-Run 4, Code-Review of `assist-fan-seat-work-alone` (`77e7a9c7`), which fixed run 3's conflict, on real code, `astra[medium]` with `review-code` asked for, beside a Chair with its three lenses:
+Billing: the weekly Codex meter moved from 0 % to 1 % during run 2 and stayed at 1 % through run 3, so the runs count against the ChatGPT plan's window and show no API billing.
 
-- The seat again ran no lenses and named the same conflict: the run's review used the stencils from before its own fix.
-  So the fix's proof, one real fanned seat in which every lens starts and returns, is still to come.
-- One BLOCKING and one MEDIUM finding, both on real weaknesses.
-  The Chair kept the wiring gap behind the BLOCKING under a finding of its lenses and rejected its rule claim and its fix, and it lowered the MEDIUM to LOW.
-- Time: 187 s. Tokens from the Codex session: 1,399,755 in all, 1,295,104 of them cached, 4,969 out.
+Three runs are no verdict.
 
-Billing: the weekly Codex meter moved from 0 % to 1 % during run 2 and to 2 % by run 4, so the runs count against the ChatGPT plan's window and show no API billing.
+## Built since (tidy, 2026-11-06)
 
-Four runs are no verdict.
+Task `assist-fan-seat-work-alone` (`77e7a9c7`) fixed run 3's conflict: a fanned assistant now gets a fanned seat stencil and directive, whose write surface and `output_files` name the lens reports, and "work alone" there means no other session.
+A done fanned seat that returned no lens report is named in the log, and `round-<n>-usage.yaml` records `assist_ending` and `assist_lenses_missing` beside `assist_fan`, so a silent solo seat can no longer pass as a fanned one.
+The fix is built but unproved: no real fanned seat has run since, so a real composed fanned seat, with every lens started and returned, is still wanted.
