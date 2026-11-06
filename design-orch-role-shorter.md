@@ -1,6 +1,6 @@
 # Shorten the orch role file, the largest single start cost
 
-`orch-role-shorter` · Task · enhancement, orch · running · Worktree-Create
+`orch-role-shorter` · Task · enhancement, orch · running · Seed-Child
 
 Depends on: [`creel-cross-hub-build`](design-creel-cross-hub-build.md)
 
