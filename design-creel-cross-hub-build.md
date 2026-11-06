@@ -1,6 +1,6 @@
 # Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp
 
-`creel-cross-hub-build` · Task · feature, creel, orch · running · Plan-Burler-Review
+`creel-cross-hub-build` · Task · feature, creel, orch · running · Plan-Burler-Fix
 
 Filed from the Sketch `creel-cross-hub-mail`.
 
