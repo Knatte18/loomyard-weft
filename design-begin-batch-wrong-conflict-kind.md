@@ -1,6 +1,6 @@
 # webster begin-batch reports a delete-before-reference plan ordering finding as plan_conflict: tree_moved
 
-`begin-batch-wrong-conflict-kind` · Task · bug, webster · running · Finalize
+`begin-batch-wrong-conflict-kind` · Task · bug, webster · done
 
 Imported from [issue #68](https://github.com/Knatte18/loomyard/issues/68).
 
