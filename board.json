@@ -564,8 +564,7 @@
           "code_assist_reviewer_model": "astra[medium]"
         }
       },
-      "profile": "light",
-      "notify_on_land": true
+      "profile": "light"
     },
     {
       "id": 1167,
