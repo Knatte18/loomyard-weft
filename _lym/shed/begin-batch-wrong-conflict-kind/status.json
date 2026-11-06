@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -141,6 +141,21 @@
       "output": "",
       "at": "2026-11-06T10:31:11Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/begin-batch-wrong-conflict-kind/_lym/landing/summary.md",
+      "at": "2026-11-06T11:34:14Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-06T11:34:13.808167437Z",
+          "end": "2026-11-06T11:34:13.808228371Z"
+        }
+      ]
     }
   ],
   "product": {
