@@ -1,6 +1,6 @@
 # Drift: lym record writes, a gone snapshot, capture provenance and a retired placeholder halt runs
 
-`drift-halts-bundle` · Task · bug, drift, loom, config, reconcile · running · Open-IDE
+`drift-halts-bundle` · Task · bug, drift, loom, config, reconcile · running · Preflight
 
 Four bugs that halt drifting runs in the Models hub (`cuttings-fitted-rheology`, `api-density-coefficients`, `baseline-provenance-outside`).
 `98bf70b0` fixed the judge guard for `_lym/usage/` and the archived `judgement-<timestamp>.yaml` only; the issues predate it or report the same runs.
