@@ -1,0 +1,301 @@
+{
+  "runGuid": "c9d1faf2e6f9444f9ab230128527b9a0",
+  "planFingerprint": "37b5195857a7d0cb3823ab6dab30831dd6e467582be12a9838ee9568d480aee7",
+  "planFileHashes": {
+    "00-overview.md": "7eda65004b68b6712e29af7ab6f09ed332aa95fd2490fe2e7c2611b24f865b44",
+    "01-hub-registry.md": "bb78ed1994ce93f034411394201d22d0347a3f3230e7debee4d2dab6b93e6b0a",
+    "02-creel-config.md": "34fe0df7e60856fe4138aaee72224042a284e13c1770cfa886f813edfc1b3fad",
+    "03-cross-hub-records.md": "c4384f082045e7b12fded4737fcfbf9dcf015519aa4ca8e4bd8497b0ddabe1a6",
+    "04-hub-directory.md": "a39412baf88f9b1a48a268fad6a1b9f8a595ed5fb1808443066c46c013105368",
+    "05-hubs-verb.md": "7094a429e5a2d2c55669f6bb174c1eeb752b2fd8d1df59fee50fe574e74848ad",
+    "06-post-to-another-hub.md": "99c590dee2d890552a440a0a820ad15e108cd0f5821acf226dd8920799b702ff",
+    "07-receive-and-confirm.md": "f0b58a4ad36f21fe9f59b16a8cd8ffc3cd593d3ba95918387756214114c368bf",
+    "08-outbound-worker.md": "030d6ff4387c7704285758c7649ac8664ee251bbd59d698b788306a1e2784177",
+    "09-replies-across-hubs.md": "ca20dab062301afb2b3657b345b6269318b76cf8f4521f97ddc253f4052abff3",
+    "10-agent-instructions-and-trial.md": "41ef7ad38e1c1a2c792d006119235fb95100322a4b7bb204ed1ca4c03b069a5f"
+  },
+  "planOverviewFrameHash": "2817237e6a17aaed2e6adedf41ed5b321072a1835199bbf024183bfd17a31d9c",
+  "partition": [
+    {
+      "cards": [
+        "01-hub-registry",
+        "02-creel-config",
+        "03-cross-hub-records"
+      ],
+      "profile": "wide",
+      "estimate": 263768,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54748,
+        "read_union": 61648,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 840,
+            "reads": {
+              "file:docs/overview.md": 11220,
+              "file:internal/standalonestate/doc.go": 372,
+              "file:pattern/PATTERN-test-isolation.md": 1296,
+              "package:docs": 2000,
+              "package:internal/hubregistry": 2000,
+              "package:internal/standalonestate": 2000,
+              "package:internal/testkit/tmuxkit": 2000,
+              "package:pattern": 2000,
+              "tests:docs": 2000,
+              "tests:internal/hubregistry": 2000,
+              "tests:internal/standalonestate": 2000,
+              "tests:internal/testkit/tmuxkit": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 133,
+            "written": 40740
+          },
+          {
+            "card": 2,
+            "card_text": 528,
+            "reads": {
+              "file:docs/overview.md": 11220,
+              "file:internal/configreg/doc.go": 348,
+              "file:pattern/PATTERN-config-layers.md": 1092,
+              "package:cmd/lym": 2000,
+              "package:docs": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/creelconfig": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:docs": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/creelconfig": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 125,
+            "written": 38028
+          },
+          {
+            "card": 3,
+            "card_text": 1104,
+            "reads": {
+              "file:internal/creelcli/doc.go": 804,
+              "file:internal/creelengine/doc.go": 4044,
+              "package:internal/creelcli": 2000,
+              "package:internal/creelengine": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:internal/creelengine": 2000
+            },
+            "messages": 225,
+            "written": 68604
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-hub-directory",
+        "05-hubs-verb",
+        "06-post-to-another-hub",
+        "07-receive-and-confirm"
+      ],
+      "profile": "wide",
+      "estimate": 293388,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61748,
+        "read_union": 35704,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 1092,
+            "reads": {
+              "file:internal/creelcli/doc.go": 804,
+              "file:internal/creelengine/doc.go": 4044,
+              "package:internal/creelcli": 2000,
+              "package:internal/creelengine": 2000,
+              "package:internal/testkit/creelfake": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:internal/testkit/creelfake": 2000
+            },
+            "messages": 281,
+            "written": 85392
+          },
+          {
+            "card": 5,
+            "card_text": 408,
+            "reads": {
+              "file:docs/overview.md": 11220,
+              "file:internal/creelcli/doc.go": 804,
+              "package:docs": 2000,
+              "package:internal/creelcli": 2000,
+              "tests:docs": 2000,
+              "tests:internal/creelcli": 2000
+            },
+            "messages": 48.5,
+            "written": 14958
+          },
+          {
+            "card": 6,
+            "card_text": 756,
+            "reads": {
+              "file:internal/creelcli/doc.go": 804,
+              "file:internal/creelengine/doc.go": 4044,
+              "package:internal/creelcli": 2000,
+              "package:internal/creelengine": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:internal/creelengine": 2000
+            },
+            "messages": 131,
+            "written": 40056
+          },
+          {
+            "card": 7,
+            "card_text": 1380,
+            "reads": {
+              "file:internal/creelengine/doc.go": 4044,
+              "package:internal/creelengine": 2000,
+              "tests:internal/creelengine": 2000
+            },
+            "messages": 180.5,
+            "written": 55530
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-outbound-worker",
+        "09-replies-across-hubs",
+        "10-agent-instructions-and-trial"
+      ],
+      "profile": "wide",
+      "estimate": 262144,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68748,
+        "read_union": 74596,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 1284,
+            "reads": {
+              "file:internal/creelengine/doc.go": 4044,
+              "file:pattern/PATTERN-daemon-wakeups.md": 864,
+              "package:cmd/lym": 2000,
+              "package:internal/creelengine": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 188.5,
+            "written": 57834
+          },
+          {
+            "card": 9,
+            "card_text": 828,
+            "reads": {
+              "file:internal/creelcli/doc.go": 804,
+              "file:internal/creelengine/doc.go": 4044,
+              "file:internal/reportengine/doc.go": 2616,
+              "package:internal/creelcli": 2000,
+              "package:internal/creelengine": 2000,
+              "package:internal/reportengine": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:internal/reportengine": 2000
+            },
+            "messages": 137.5,
+            "written": 42078
+          },
+          {
+            "card": 10,
+            "card_text": 588,
+            "reads": {
+              "file:PATTERN.md": 660,
+              "file:contracts/orchrole/orch-role.md": 4248,
+              "file:contracts/stencils/parent/parent-directive-parent.md": 252,
+              "file:docs/overview.md": 11220,
+              "file:internal/shuttleengine/doc.go": 6960,
+              "file:pattern/PATTERN-agent-addressing.md": 228,
+              "package:.": 2000,
+              "package:contracts/orchrole": 2000,
+              "package:contracts/stencils/parent": 2000,
+              "package:docs": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:contracts/orchrole": 2000,
+              "tests:contracts/stencils/parent": 2000,
+              "tests:docs": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 61,
+            "written": 18888
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "a5ae1976d1b919da7f49bf886c2eeaa5",
+  "masterSessionId": "6682a1ac-6e57-4c27-90a2-fa70984b8bff",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "hub-registry",
+      "cards": [
+        "01-hub-registry",
+        "02-creel-config",
+        "03-cross-hub-records"
+      ],
+      "cardHashes": {
+        "01-hub-registry": "bb78ed1994ce93f034411394201d22d0347a3f3230e7debee4d2dab6b93e6b0a",
+        "02-creel-config": "34fe0df7e60856fe4138aaee72224042a284e13c1770cfa886f813edfc1b3fad",
+        "03-cross-hub-records": "c4384f082045e7b12fded4737fcfbf9dcf015519aa4ca8e4bd8497b0ddabe1a6"
+      },
+      "startSha": "c2ea74fed6df42cef27882a4913a8985a5986fe2",
+      "kind": "fork",
+      "spawnedAt": "2026-11-06T09:51:34Z",
+      "sessionId": "6682a1ac-6e57-4c27-90a2-fa70984b8bff",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
