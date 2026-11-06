@@ -1,68 +1,65 @@
-# Drift: four false halts of Models hub runs are gone
+# Drift: stop lym's own writes and leftovers halting runs
 
-Four bugs halted drifting runs in the Models hub at Drift-Verify and Drift-Recheck.
-Each was checked against `internal/driftengine` as it stands after `98bf70b0`, and each still held.
+Four causes halted drifting runs in the Models hub at Drift-Verify and Drift-Recheck.
+Each is fixed in `internal/driftengine`, with the preflight wiring in `internal/preflightshed` and `internal/loomcli`.
 
-## The judge guard read lym's own writes as the judge's (issues 74, 75, 77)
+## What changes
 
-`resumeJudgeSession` took the new snapshot and then cleared `snapshot_lost`, so the guard named that write as the judge's and the designed recovery always halted.
-It now clears the mark first and then takes the snapshot.
+- **The judge guard no longer halts on lym's own records.**
+  `resumeJudgeSession` cleared `scope.SnapshotLost` after taking the snapshot, so the snapshot-versus-checkout comparison named that write as the judge's.
+  It now clears the mark first and then takes the snapshot.
+  `openJudgeSession` likewise takes the snapshot before it opens the session mark, so an open mark always has a snapshot.
+  `JudgeSnapshot.Changes` also exempts the drift logs, and `scope.json` and `judged.json` while both match their newest Drift-Records commit.
+  A hand edit of either record, a task file or any other record still halts.
+- **A gone snapshot no longer halts a resume that guards nothing.**
+  An open session whose snapshot is gone and whose judge chair is not live is marked lost and gets a fresh snapshot, as the halt text already promised.
+  Under a live chair the halt stays, and its text says what cannot be told.
+  `TakeJudgeSnapshot` clears only the untracked copies and replaces the record atomically, so a reader never finds the snapshot missing while one is taken.
+  The guard halt's way forward no longer tells anyone to delete the snapshot directory, which is what lost it; it says to keep that directory, and names only the current capture's scratch directory for deletion.
+- **Volatile capture provenance is ignored.**
+  `drift.yaml` gains the hub-wide lists `volatile_files` (globs, matched against the file name at any depth, or the whole path when the glob holds a `/`) and `volatile_keys` (line keys as the `key_patterns` read them).
+  Under `diff: lines` the diff drops those cells and listings before it classifies them.
+  Both are guard keys, refused to a task's run settings, and documented in the template.
+  A run records the lists in its scope record and keeps them.
+  A blank entry or an invalid glob is refused at config load.
+- **A retired `{skip_file}` is migrated out and found early.**
+  `lym config reconcile --layer default --apply` removes the whole `-e NAME={skip_file}` argument (also `--env NAME=…` and `--env=NAME=…`, quoted or not) from the `capture` and `compare` commands.
+  Any other use of the placeholder stays for the operator, as does an argument that ends a quoted shell string such as `sh -c '… -e A={skip_file}'`.
+  A new `driftengine.CheckRetiredPlaceholders` runs as a Preflight check for recipes with Drift rows, so a leftover stops the run before its first agent.
+  The refusal now names a way forward that works from a run session: the operator or hub orch runs the reconcile from the prime worktree, then `lym loom resume`.
 
-The order alone would leave the same halt behind other writes: a `lym drift amend` or a recorded check while a session mark is open, and each compare log a check under `diff: command` adds.
-`JudgeSnapshot.Changes` therefore exempts what lym writes:
+## What the Models hub must set
 
-- `_lym/drift/logs/`, and
-- `scope.json` and `judged.json`, while both match their newest `Drift-Records` commit.
+Add the provenance file to the hub's `drift.yaml`:
 
-Every lym write of those two records lands in such a commit, so the digest tells lym's write from an edit.
-A hand edit, or a commit without the trailer, still halts naming the file, and the next entry then halts on the records mismatch with `lym drift amend <slug> --restore`.
-
-## A gone snapshot halted the run (issues 76, 78)
-
-- The neighbouring halt told the reader to delete `the changed scratch directory`, which was read as the snapshot directory.
-  The text now names the scratch directory by its path and says to keep the snapshot directory, which the resume compares against.
-- An entry that finds the snapshot gone probes the judge's chair.
-  With no live chair it records the snapshot lost and goes on, so the resume takes a new one under the recorded spawn id.
-  Under a live chair the halt stays and says the session's changes cannot be told, and so does a snapshot that went while the judge ran.
-- `TakeJudgeSnapshot` no longer removes the whole directory first.
-  It clears only the untracked copies, and one atomic write replaces the record, so a reader never finds the snapshot gone while one is taken.
-- `openJudgeSession` takes the snapshot before it opens the mark, so an open mark always has a snapshot.
-
-## Capture provenance read as drift (issues 71, 79)
-
-`drift.yaml` gains two hub-wide guard keys, documented in the template, and lym hard-codes no name:
-
-- `volatile_files`: globs of capture files the diff leaves out whole, matched against a file's name at any depth, or against its whole path when the entry holds a `/`.
-- `volatile_keys`: line keys the diff leaves out of every file.
-
-`LoadConfig` refuses a blank entry and an invalid glob, and a task's `run_settings` are refused both keys.
-A run records the lists with its diff mode, so a later config change never moves it.
-Check drops their cells after the diff, and the expect agent's listing leaves them out so it writes no expectation of them.
-The baseline digest still covers these files, and under `diff: command` the declared compare decides alone.
-
-**What the Models hub must set**, from the prime worktree:
-
-```
-lym config drift --set 'volatile_files=[_source.txt]'
+```yaml
+volatile_files: [_source.txt]
+volatile_keys: []
 ```
 
-That covers `commit`, `captured_at` and everything else in the file.
-A run whose scope record already holds a diff mode keeps its empty lists, so an in-flight run still needs its `lym drift amend`.
+Use `volatile_keys` (for example `[commit, captured_at]`) instead if the keys, not the whole file, differ in every capture and other keys in `_source.txt` should still count.
+Then run `lym config reconcile --layer default --apply` once to drop the `NORCE_BASELINE_SKIP_FILE={skip_file}` arguments from `capture.command` and `compare.command`.
 
-## A retired `{skip_file}` stayed in hub config (issues 69, 70, 79)
+## Design decisions
 
-- `MigrateConfig` now removes each whole argument that hands the placeholder to a variable, in the forms `-e NAME={skip_file}`, `--env NAME={skip_file}` and `--env=NAME={skip_file}`, quoted or not, from `capture.command` and `compare.command`.
-  It runs at `lym config reconcile --layer default --apply` and in the hub walk of a new build, so the Models hub's file clears itself.
-  This is a migration and not a reinterpretation: the placeholder's meaning already changed, and a reinterpretation's marker would also keep it from running at an operator's reconcile.
-- Any other use of the placeholder stays, since lym cannot tell what the command means by it.
-  `CheckRetiredPlaceholders` finds such a leftover at the Preflight row of a recipe with Drift rows, through a new `Drift` check, before any agent runs.
-  It checks only while drift is enabled, and checks the compare only under `diff: command`, the one mode that runs it.
-- `LoadConfig` does not refuse the placeholder.
-  A refusal there would fail the load check of every `lym config drift --set`, so a hub with both steps holding it could not fix one step at a time.
-- The refusal's way forward now hands the reconcile and the step's edit to the operator or the hub orch, since a beam orch or task session is refused hub-wide config writes.
+- lym hard-codes no provenance file name; the file belongs to the hub's harness, so the lists live in the hub's config.
+- The lists are guard keys: they decide what counts as drift, so a task may not widen them.
+- The `{skip_file}` migration removes only the `-e NAME={skip_file}` argument form, since lym cannot tell what any other use of the placeholder means.
+- Exempting `scope.json` and `judged.json` is conditional on matching their newest Drift-Records commit, because every lym write lands in such a commit.
 
-## Worth a reviewer's eye
+Closes #69
+Closes #70
+Closes #71
+Closes #74
+Closes #75
+Closes #76
+Closes #77
+Closes #78
+Closes #79
 
-- The exemption of the drift logs is a bound: a judge's edit under `_lym/drift/logs/` goes unseen. They hold no code, no expectation and neither record; the package doc states it.
-- The two drift `{skip_file}` constants became one, and `encodeDocument` is shared by the two `drift.yaml` rewrites.
-- The stencils and drift Preflight checks share `prefixedFailure`, so the stencils failure's log line now reads `a check failed` with a `check` field.
+## To check by hand
+
+Nothing here ran against a real Models hub.
+
+- In the Models hub, run a drifting task through a lost-snapshot resume and a new capture of a new commit, and confirm neither halts.
+- Run `lym config reconcile --layer default --apply` against the hub's `drift.yaml` and confirm both `-e NORCE_BASELINE_SKIP_FILE={skip_file}` arguments are gone and the rest of each command is intact.
