@@ -382,11 +382,18 @@
       "sessionId": "6682a1ac-6e57-4c27-90a2-fa70984b8bff",
       "engine": "claude",
       "terminal": false,
-      "status": ""
+      "status": "",
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-cross-hub-build/6682a1ac-6e57-4c27-90a2-fa70984b8bff/subagents/agent-a2d8adad5ecdfc75b.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-cross-hub-build/6682a1ac-6e57-4c27-90a2-fa70984b8bff/subagents/agent-a2d8adad5ecdfc75b.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-cross-hub-build/6682a1ac-6e57-4c27-90a2-fa70984b8bff/subagents/agent-a240a7dc8f83a24f4.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-cross-hub-build/6682a1ac-6e57-4c27-90a2-fa70984b8bff/subagents/agent-a10f851a9735127e5.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-cross-hub-build/6682a1ac-6e57-4c27-90a2-fa70984b8bff/subagents/agent-a10f851a9735127e5.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-cross-hub-build/6682a1ac-6e57-4c27-90a2-fa70984b8bff/subagents/agent-a2d8adad5ecdfc75b.jsonl"
   ]
 }
