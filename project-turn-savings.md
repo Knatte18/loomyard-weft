@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Measure whether tasks run faster since turn-savings, darn and tapestry apart**<br>• Before-and-after run time from recorded data, Sketch-fed tapestry runs compared like for like | [`task-runtime-before-after`](design-task-runtime-before-after.md) | darn · docs | Drift-Expect | neve | 2m<br>2m | report, loom |
+| T5 | **Measure whether tasks run faster since turn-savings, darn and tapestry apart**<br>• Before-and-after run time from recorded data, Sketch-fed tapestry runs compared like for like | [`task-runtime-before-after`](design-task-runtime-before-after.md) | darn · docs | Darn-Write | neve | 2m<br>2m | report, loom |
 
 ### Ready (0)
 
