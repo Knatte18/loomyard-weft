@@ -1,6 +1,6 @@
 # A fanned assistant seat is told to work alone, and ran without its lenses
 
-`assist-fan-seat-work-alone` · Note · bug, burler, stencil, codex
+`assist-fan-seat-work-alone` · Task · bug, burler, stencil, codex · draft
 
 ## Seen
 
