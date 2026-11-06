@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-06 12:28 UTC; every age below is as of then.
+Rendered 2026-11-06 12:29 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -72,7 +72,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **A fanned assistant seat is told to work alone, and ran without its lenses**<br>• The composed prompt forbids what the fan asks for; the real seat went solo and no record flagged it<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`assist-fan-seat-work-alone`](design-assist-fan-seat-work-alone.md) | darn · light | Code-Bouncer | neve | 18m<br>12m | burler, stencil, codex |
+| T5 | **A fanned assistant seat is told to work alone, and ran without its lenses**<br>• The composed prompt forbids what the fan asks for; the real seat went solo and no record flagged it<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`assist-fan-seat-work-alone`](design-assist-fan-seat-work-alone.md) | darn · light | Code-Burler-Review | neve | 18m<br>12m | burler, stencil, codex |
 | T7 | **Shorten the orch role file, the largest single start cost**<br>• role.md costs 19,390 tokens per read: shorten it, or move rarely used parts to a file the orch reads on demand<br>• `drift: scope off` | [`orch-role-shorter`](design-orch-role-shorter.md) | darn · solid | Darn-Write | neve | 16h<br>2h | orch |
 
 #### Ready (0)
@@ -131,7 +131,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 2w<br>19h | loom, board, batten, workspaces |
 | F16 |  | **Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | 3d<br>16h | drift, shed |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>19h | burler, shed, orch, quarry, report |
-| F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 1d<br>29m | board, orch, workspaces |
+| F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 1d<br>30m | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 1d<br>1d | batten, board, fabric, workspaces |
 
 ### Done (1)
