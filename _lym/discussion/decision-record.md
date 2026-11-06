@@ -78,6 +78,12 @@ Related: Knatte18/loomyard#64, where the same task's writer is refused the merge
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-06): The merge-in keeps the PR-Review row, which passes at once
+
+Decision: Accept the deviation from the entry's 'no PR-Review row': the darn recipe keeps the PR-Review row for a merge-in task, the row passes at once with no pull request and no operator wait, and Describe still runs. No code change for finding F1.
+
+Rationale: The entry's aim is that the operator never reads an empty pull request and the merge lands straight into the beam; a row that passes at once meets that. A separate recipe shape to drop one instant row costs more than the row, and Describe's text is what the landing commit carries.
+
 ## Constraints
 
 ## Auto-mode assumptions
