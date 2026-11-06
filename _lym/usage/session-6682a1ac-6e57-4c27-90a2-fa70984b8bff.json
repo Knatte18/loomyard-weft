@@ -1,0 +1,32 @@
+{
+  "session_id": "6682a1ac-6e57-4c27-90a2-fa70984b8bff",
+  "row": "Webster",
+  "role": "webster",
+  "model": "claude-sonnet-5-5",
+  "engine": "claude",
+  "input_tokens": 446,
+  "cache_write_tokens": 1227503,
+  "cache_read_tokens": 44486232,
+  "output_tokens": 346370,
+  "cost_usd": 15.663803900000003,
+  "started": "2026-11-06T09:51:10Z",
+  "ended": "2026-11-06T12:04:47Z",
+  "models": [
+    {
+      "model": "\u003csynthetic\u003e",
+      "input_tokens": 0,
+      "cache_write_tokens": 0,
+      "cache_read_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0
+    },
+    {
+      "model": "claude-sonnet-5-5",
+      "input_tokens": 446,
+      "cache_write_tokens": 1227503,
+      "cache_read_tokens": 44486232,
+      "output_tokens": 346370,
+      "cost_usd": 15.663803900000003
+    }
+  ]
+}
