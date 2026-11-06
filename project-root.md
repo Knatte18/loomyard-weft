@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-06 13:46 UTC; every age below is as of then.
+Rendered 2026-11-06 13:51 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Revise tier 1: what makes it slow, and which tests to change, fold or cut**<br>• Ranked report on tier 1, fabricengine first; tier 2 stays in the gate keys | [`tier1-test-revision`](design-tier1-test-revision.md) | darn · docs | Darn-Write | neve | 28m<br>22m | fabric |
+| T3 | **Revise tier 1: what makes it slow, and which tests to change, fold or cut**<br>• Ranked report on tier 1, fabricengine first; tier 2 stays in the gate keys | [`tier1-test-revision`](design-tier1-test-revision.md) | darn · docs | Darn-Write | neve | 33m<br>27m | fabric |
 
 ### Ready (0)
 
@@ -32,7 +32,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light |  | 5d<br>1d | fabric |
+| T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light |  | 5d<br>0m | fabric |
 
 ## Notes (22)
 
@@ -52,7 +52,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B1 | L | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• The Slack reminder ping while a PR-Review waits has landed; only the silence in status views remains, which the operator chose not to build | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 2d<br>4h | landing, loom, batten |
 | B2 |  | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | 18h<br>18h | tools, claude |
-| B3 |  | **A Codex seat that read its skills is logged as not having loaded them**<br>• All five skills logged not loaded though the rollout shows SKILL.md read; cause not found | [`codex-skill-load-false-missing`](design-codex-skill-load-false-missing.md) | 41m<br>41m | shuttle, codex |
+| B3 |  | **A Codex seat that read its skills is logged as not having loaded them**<br>• All five skills logged not loaded though the rollout shows SKILL.md read; cause not found | [`codex-skill-load-false-missing`](design-codex-skill-load-false-missing.md) | 46m<br>46m | shuttle, codex |
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 20h<br>20h | reed, orch |
 
 ### Enhancements (3)

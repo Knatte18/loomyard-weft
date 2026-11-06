@@ -23,7 +23,7 @@ A comment-cleanup campaign over the whole repository.
 - Every Haiku 5.5 worker is scoped to modules so that its context stays under 100k tokens, since below that Haiku 5.5 is cheap (operator, 2026-11-04): one package per worker, a large package split by file groups, small packages grouped while the sum stays under the bound.
   The writer sizes each worker's scope before it spawns it.
 - No review step of its own: most comments are assumed sound, and this run is itself the check on them; the darn's usual Code-Review is enough.
-- The run starts once every other running entry has landed, the `codex-engine` beam included, so it reads settled code (operator, 2026-11-03).
+- The run may start beside `tier1-test-revision`, which only writes a report (operator, 2026-11-06).
 
 ## Workers (hub orch, 2026-11-03)
 
