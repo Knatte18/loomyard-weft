@@ -1,4 +1,4 @@
-# A skill load that times out still sends the prompt, and the session runs without its skills
+# A skill load stopped by an API error counts as skipped, and the prompt is sent into the outage
 
 `skill-load-timeout-sends-prompt` · Note · bug, shuttle
 
@@ -16,11 +16,12 @@ An unverified turn goes on the same way.
 A skipped skill reaches only the log, so the session's agent, the run and the orch never learn it.
 The default timeout is 2 minutes (`defaultSkillLoadTimeout`), shorter than a usual network drop.
 
-## Idea
+## Decision (operator, 2026-11-06)
 
-Shuttle sends the prompt only after the load turn is verified.
+Going on past a failed load is right only when the skill is not installed or is missing: that keeps today's skip with its warning, and the session never stops for it.
+An API error is a different case: it says nothing about the skill, so the load has not failed.
 
-- A load turn that timed out or ended on an API error is retried once the API answers, and the prompt waits for that, as a pause already holds a send.
-- When skills are still missing after the retries, the seat stops and says so, instead of running without them.
+## Wanted
 
-A skill unknown to the session is a separate case, and whether it keeps today's skip is a call for the task.
+- A load turn that ended on or timed out through an API error is not a skipped skill: shuttle waits until the API answers, runs the load turn again, and sends the prompt only after it, as a pause already holds a send.
+- The prompt line is not typed into a session whose API is failing.
