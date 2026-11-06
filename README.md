@@ -58,7 +58,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 17m<br>11m | codex, shuttle |
+| R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 17m<br>12m | codex, shuttle |
 
 #### Features (1)
 
@@ -82,7 +82,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | Webster | neve | 16h<br>16h | creel, orch |
 | T5 | **Drift: lym record writes, a gone snapshot, capture provenance and a retired placeholder halt runs**<br>• Four drift bugs that halt Models hub runs at Drift-Verify and Drift-Recheck<br>• `drift: scope off` | [`drift-halts-bundle`](design-drift-halts-bundle.md) | darn · solid | Darn-Write | neve | 1h<br>16m | drift, loom, config, reconcile |
-| T6 | **webster begin-batch reports a delete-before-reference plan ordering finding as plan_conflict: tree_moved**<br>• `loom: code_assist_reviewer_model astra[medium]` | [`begin-batch-wrong-conflict-kind`](design-begin-batch-wrong-conflict-kind.md) | darn · light | Drift-Verify | neve | 1h<br>10m | webster |
+| T6 | **webster begin-batch reports a delete-before-reference plan ordering finding as plan_conflict: tree_moved**<br>• `loom: code_assist_reviewer_model astra[medium]` | [`begin-batch-wrong-conflict-kind`](design-begin-batch-wrong-conflict-kind.md) | darn · light | Code-Bouncer | neve | 1h<br>10m | webster |
 
 #### Ready (0)
 
