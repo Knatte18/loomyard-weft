@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=6ee608452a6de4f60377c49ccef201945894b2ad0a59f5f2a3494beca53a7059 build=49e96993dbdd7779d9b97db5c0c4bafe9e52bb7c time=2026-11-05T14:04:15Z -->
+<!-- lym-stencil: sha256=795492f9f7b192ca85a885d721408801471ff0ed6ed6cdf569de04d329819823 build=b93a0a52b204b178bc6306a1480ff2bced4c4a7a time=2026-11-06T11:37:39Z -->
 
 # Loom plan-checks spec — the plan gate's validation checks
 
@@ -112,6 +112,7 @@ Under `language: none` the glyph checks are skipped: `bare-symbol-target`, `dire
   It does not see a caller in a file an earlier card creates, nor an interface break at an assignment site when a re-signed method stops satisfying it.
 - `delete-before-reference` *(planglyph)* — a deleted member glyph or package self glyph that a later card's `Edit` or `Extends` code still references; blocking per line, informational for a method matched by name alone.
   Way forward: move the delete after the editing card.
+  A plan gate reads the tree as it stands, so a reference an earlier card writes during the run, or one inside an Edit target that is still a handle, is first reported at dispatch, by the first `begin-batch` after it lands.
 - `delete-target-gone` *(planglyph)* — informational, at dispatch only once a batch has begun: a pending card's `Delete` target is already gone, in place of its `path-missing` or `glyph-not-found`.
 - `uses-later-target` — a card's `Uses:` entry that a later card targets, matched as exact trimmed strings; one finding per consumer, producer and entry, on the consumer.
 
