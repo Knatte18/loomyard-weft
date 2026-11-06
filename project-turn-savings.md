@@ -1,6 +1,6 @@
 # P1 Fewer agent turns, fewer tokens
 
-Rendered 2026-11-06 09:45 UTC; every age below is as of then.
+Rendered 2026-11-06 09:46 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `turn-savings` · Age 4d · Owner `neve`
@@ -23,11 +23,3 @@ _None._
 ## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T5 | **Measure whether tasks run faster since turn-savings, darn and tapestry apart**<br>• Before-and-after run time from recorded data, Sketch-fed tapestry runs compared like for like | [`task-runtime-before-after`](design-task-runtime-before-after.md) | 26m<br>26m | report, loom |
