@@ -1,0 +1,973 @@
+diff --git a/cmd/lym/daemonwakeups_test.go b/cmd/lym/daemonwakeups_test.go
+index b5139d1d..53dd00e9 100644
+--- a/cmd/lym/daemonwakeups_test.go
++++ b/cmd/lym/daemonwakeups_test.go
+@@ -37,6 +37,7 @@ var unboundedWaitFiles = []string{
+ 	"internal/driftengine/wait.go",
+ 	"internal/pauserecord/hold.go",
+ 	"internal/shuttleengine/wait.go",
++	"internal/shuttleengine/loadturn.go",
+ 	"internal/verifytree/verify.go",
+ 	"internal/websterengine/poll.go",
+ 	"internal/shedverbs/status.go",
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index e68c6b8c..5a25eccd 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -181,7 +181,7 @@
+ //
+ // # Awake deadline
+ //
+-// The run deadline counts awake, unpaused time.
++// The run deadline counts awake, unpaused time, and no time a start's skill-load turn is held on an API error.
+ // A Clock that is also an AwakeClock feeds the run's sleep watch each tick, and the deadline moves later by the union of the detected sleeps and the coverage's paused intervals since the run was created.
+ // A clock without Awake detects no sleep.
+ //
+@@ -318,16 +318,26 @@
+ // Skill loading: Spec.Skills names provider-neutral skills that shuttle loads into a fresh session, all in one turn, before the prompt.
+ // It needs the optional SkillLoader capability, and a spec that names skills on an engine without it is refused before any run directory exists.
+ // An engine that realizes skills carries its one load message for the whole list on the launch line, so the first load turn is the session's first turn and is never typed, and returns the prompt pointer as Launch.PromptLine;
+-// once the provider is ready, shuttle polls until the first turn end reaches the events file or Spec.SkillLoadTimeout passes (zero means the engine's DefaultSkillLoadTimeout), measured from the end of the startup probe.
+-// The launch-carried message skips the verified send's landing check; a turn end in the events file proves it landed, and a turn that never starts or ends is bounded by the timeout.
++// once the provider is ready, shuttle polls until the first turn end reaches the events file or Spec.SkillLoadTimeout passes with no turn start read (zero means the engine's DefaultSkillLoadTimeout), measured from the first poll.
++// The launch-carried message skips the verified send's landing check; a turn end in the events file proves it landed, and a turn that never starts is bounded by the timeout.
+ // The color follows the first turn, then any retry turn, then the prompt.
+ // The engine classifies that turn end into a SkillLoadReport: each unknown skill is skipped at once with a logged warning,
+ // and the missing ones are asked for once more in a second, typed load turn naming only them,
+ // whose still-missing skills are skipped with a logged warning.
+ // A turn whose evidence the engine could not read is confirmed unverified with one logged warning and no retry,
+-// and a turn that never ends skips its skills at the timeout with no retry.
+-// So a launch runs at most two load turns, each bounded by the timeout,
+-// and a skipped skill never fails or hangs it.
++// and a turn no turn start is read for skips its skills with no retry at the timeout.
++// A turn start read with no turn end after it is awaited until its end, the pane's death or the run's deadline, since a provider retries a failing API inside the turn for minutes;
++// a deadline passing first ends the start as timeout with the prompt never typed.
++// An open turn an engine with SessionProber reads as interrupted skips its skills at once with no retry, since an interrupt writes no turn end.
++// So a launch runs at most two load turns the API does not fail,
++// and a skipped skill never fails or hangs it, which only a turn still open at the run's deadline does.
++// A load turn that ends on an API error, by the signal or by the transcript's marker on a turn end, skips nothing and spends no retry, since the error says nothing about the skills.
++// Shuttle holds the launch as a pause holds a send: it waits a back-off that starts at apiErrorRetryBackoff and doubles to loadHoldBackoffCeiling, then types the same load message through the verified send path, and goes on so until a load turn ends, since that typed turn is the only probe of the API a session has.
++// So the prompt line is never typed into a session whose load turn the API failed.
++// A turn start read during the back-off takes the place of the typed line, a busy session moves the line to the next back-off, and a pane that dies ends the hold as a died startup.
++// The hold has no bound of its own and moves the run's deadline later by its length; at the second API error it sends the run's parent one notifier line, skipped for an interactive run.
++// A turn end the engine marks ModelRejected ends the start at once, api-error with Result.APIError naming the error, as no further turn changes the model.
++// Bound: an attached run delivers a pending prompt without judging the API, so a driver that died during a hold has its prompt typed by the attach.
+ // Then PromptLine goes out through the verified send path.
+ // Every verified send first waits for an idle session, for at most `send_ready_timeout_s` and never past the run's deadline, and types nothing until then.
+ // For an engine with the optional SessionCycler idle reading, every poll takes the readiness reading, built on the hook-derived session state.
+diff --git a/internal/shuttleengine/engine.go b/internal/shuttleengine/engine.go
+index a8da27d0..8f0ee8a0 100644
+--- a/internal/shuttleengine/engine.go
++++ b/internal/shuttleengine/engine.go
+@@ -30,8 +30,9 @@ const (
+ 	OutcomeDied Outcome = "died"
+ 	// OutcomeTimeout: wall-clock Timeout elapsed before output files written.
+ 	// A provider crash behind a still-live pane shell that nothing proves, such as an engine without liveness probing, also ends here.
++	// So does a start whose skill-load turn is still open when the run's deadline passes.
+ 	OutcomeTimeout Outcome = "timeout"
+-	// OutcomeAPIError: the provider's API ended the agent's turn on an error past the re-sends Spec.APIErrorRetries allows, or at once on a model the provider rejected, before output files were written.
++	// OutcomeAPIError: the provider's API ended the agent's turn on an error past the re-sends Spec.APIErrorRetries allows, or at once on a model the provider rejected, a skill-load turn's included, before output files were written.
+ 	OutcomeAPIError Outcome = "api-error"
+ )
+ 
+diff --git a/internal/shuttleengine/fakes_test.go b/internal/shuttleengine/fakes_test.go
+index f6bd9d7d..8c168757 100644
+--- a/internal/shuttleengine/fakes_test.go
++++ b/internal/shuttleengine/fakes_test.go
+@@ -568,6 +568,10 @@ type skillFakeEngine struct {
+ 	Reports []SkillLoadReport
+ 	// HookState makes skillStartFixtureWith run the start over a hookStateSkillEngine, with a SessionStart(startup) line already in the events file.
+ 	HookState bool
++	// APIErrorLine is the turn end line the hookStateSkillEngine's transcript marks as an API error.
++	APIErrorLine string
++	// Interrupted makes the hookStateSkillEngine read every turn start as interrupted by the operator.
++	Interrupted bool
+ 	// OnClassify, when set, runs after ClassifySkillLoad picked its report, once the load turn's end has been read.
+ 	OnClassify func()
+ 
+@@ -622,10 +626,14 @@ func (e *hookStateSkillEngine) ParseSessionSignals(data []byte) ([]SessionSignal
+ 	return e.hooks.ParseSessionSignals(data)
+ }
+ 
++func (e *hookStateSkillEngine) TurnEndActivity(turnEnd Event) TurnEndActivity {
++	return e.hooks.TurnEndActivity(turnEnd)
++}
++
+ func (e *hookStateSkillEngine) ProcessLiveness(string) Liveness { return LivenessAlive }
+ 
+ func (e *hookStateSkillEngine) TurnStartInterrupt(SessionSignal) (time.Time, bool) {
+-	return time.Time{}, false
++	return time.Time{}, e.Interrupted
+ }
+ 
+ func (e *hookStateSkillEngine) ContextTokens(Event) ContextReading { return ContextReading{} }
+@@ -645,6 +653,7 @@ var (
+ 	_ SessionProber       = (*hookStateSkillEngine)(nil)
+ 	_ SessionCycler       = (*hookStateSkillEngine)(nil)
+ 	_ SkillLoader         = (*hookStateSkillEngine)(nil)
++	_ ActivityReader      = (*hookStateSkillEngine)(nil)
+ )
+ 
+ // skillReed is a fakeReed whose pane capture echoes the load message the launch line carried, as the pane does, and every text typed into it,
+@@ -663,6 +672,16 @@ type skillReed struct {
+ 	Dies       map[int]bool
+ 	// LateEnds maps a turn to the number of Status calls before its turn end is appended.
+ 	LateEnds map[int]int
++	// TurnEnds maps a turn to the line that ends it in place of a plain turn end, such as an API error's.
++	TurnEnds map[int]string
++	// OpenTurns makes a hanging or late turn write its turn start at once, as a provider does for a turn it is still working on.
++	OpenTurns bool
++	// Carries maps a turn to the turn the operator starts and ends on their own after it, in place of the load the shuttle would type again.
++	Carries map[int]carriedTurn
++	// LoadSendErrs is consumed FIFO by each typed "LOAD:<list>", ahead of the typing: a non-nil entry fails that send and types nothing, a nil entry types it.
++	LoadSendErrs []error
++	// Notifier, when set, is the runner's notifier.
++	Notifier func(line string) error
+ 	// ColorErr, when set, fails every "COLOR:<name>" typed, after the call is recorded.
+ 	ColorErr error
+ 	// Screen, when set, is the first line of every capture, ahead of the sent texts.
+@@ -680,9 +699,17 @@ type skillReed struct {
+ }
+ 
+ // lateTurnEnd is a turn end waiting for statusLeft more Status calls before it is appended.
++// A raw one is appended as the line stands, with no turn start before it.
+ type lateTurnEnd struct {
+ 	line       string
+ 	statusLeft int
++	raw        bool
++}
++
++// carriedTurn is a turn the operator starts after startAfter Status calls and ends after endAfter.
++// The calls count from the turn it follows is played, and the startup probe takes the first, so a startAfter of 2 lands the turn start in the load poll's first call.
++type carriedTurn struct {
++	startAfter, endAfter int
+ }
+ 
+ func (r *skillReed) AddStrand(spec reedengine.AddSpec) (reedengine.Strand, error) {
+@@ -700,6 +727,13 @@ func (r *skillReed) AddStrand(spec reedengine.AddSpec) (reedengine.Strand, error
+ }
+ 
+ func (r *skillReed) SendText(guid, text string, submit bool) error {
++	if strings.HasPrefix(text, "LOAD:") && len(r.LoadSendErrs) > 0 {
++		scripted := r.LoadSendErrs[0]
++		r.LoadSendErrs = r.LoadSendErrs[1:]
++		if scripted != nil {
++			return scripted
++		}
++	}
+ 	if err := r.fakeReed.SendText(guid, text, submit); err != nil {
+ 		return err
+ 	}
+@@ -726,11 +760,26 @@ func (r *skillReed) playLoad(list string) error {
+ 		r.deathIn = 2
+ 		return nil
+ 	}
++	wait, late := r.LateEnds[turn]
++	if r.OpenTurns && (late || r.Hangs[turn]) {
++		if err := r.appendEvents("START\n"); err != nil {
++			return err
++		}
++	}
+ 	if r.Hangs[turn] {
+ 		return nil
+ 	}
+ 	line := "STOP:loaded " + list
+-	if wait, late := r.LateEnds[turn]; late {
++	if end, scripted := r.TurnEnds[turn]; scripted {
++		line = end
++	}
++	if carried, ok := r.Carries[turn]; ok {
++		r.lateEnds = append(r.lateEnds,
++			lateTurnEnd{line: "START\n", statusLeft: carried.startAfter, raw: true},
++			lateTurnEnd{line: "STOP:carried on\n", statusLeft: carried.endAfter, raw: true},
++		)
++	}
++	if late {
+ 		r.lateEnds = append(r.lateEnds, lateTurnEnd{line: line, statusLeft: wait})
+ 		return nil
+ 	}
+@@ -738,19 +787,25 @@ func (r *skillReed) playLoad(list string) error {
+ }
+ 
+ func (r *skillReed) appendTurnEnd(line string) error {
+-	f, err := os.OpenFile(r.EventsPath(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+-	if err != nil {
+-		return err
+-	}
+-	defer f.Close()
+ 	// A real turn's hooks write its start before its end, which the hook fold needs to read the pane idle afterwards.
+-	if _, err := f.WriteString("START\n" + line + "\n"); err != nil {
++	if err := r.appendEvents("START\n" + line + "\n"); err != nil {
+ 		return err
+ 	}
+ 	r.ends++
+ 	return nil
+ }
+ 
++// appendEvents appends text to the run's events file.
++func (r *skillReed) appendEvents(text string) error {
++	f, err := os.OpenFile(r.EventsPath(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
++	if err != nil {
++		return err
++	}
++	defer f.Close()
++	_, err = f.WriteString(text)
++	return err
++}
++
+ func (r *skillReed) Status() (reedengine.StatusResult, error) {
+ 	if r.deathIn > 0 {
+ 		r.deathIn--
+@@ -763,7 +818,11 @@ func (r *skillReed) Status() (reedengine.StatusResult, error) {
+ 			pending = append(pending, late)
+ 			continue
+ 		}
+-		if err := r.appendTurnEnd(late.line); err != nil {
++		appendLate := r.appendTurnEnd
++		if late.raw {
++			appendLate = r.appendEvents
++		}
++		if err := appendLate(late.line); err != nil {
+ 			return reedengine.StatusResult{}, err
+ 		}
+ 	}
+diff --git a/internal/shuttleengine/loadturn.go b/internal/shuttleengine/loadturn.go
+new file mode 100644
+index 00000000..f76232ec
+--- /dev/null
++++ b/internal/shuttleengine/loadturn.go
+@@ -0,0 +1,272 @@
++// loadturn.go runs one skill-load turn of a starting run and holds it through an API error.
++// An API error says nothing about the skills, so such a turn is no skipped skill: the load runs again once a back-off has passed, and the prompt waits behind it.
++// The typed load line is the probe, since a session has no other way of asking whether its API answers.
++
++package shuttleengine
++
++import (
++	"errors"
++	"fmt"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++const (
++	// loadHoldBackoffCeiling is the longest wait between two load turns of a hold; the wait starts at apiErrorRetryBackoff and doubles with each API error.
++	loadHoldBackoffCeiling = 5 * time.Minute
++	// loadHoldNoticeErrors is the API-error count at which the parent is told of the hold, so a passing error sends no notice.
++	loadHoldNoticeErrors = 2
++)
++
++// loadModelRejectedError ends a start whose load turn the provider ended on a model it does not know, which no further turn changes.
++type loadModelRejectedError struct {
++	// text is the provider's error text.
++	text string
++}
++
++func (e *loadModelRejectedError) Error() string {
++	return "shuttle: the provider rejected the session's model in a skill-load turn: " + e.text
++}
++
++// loadDeadlineError ends a start whose load turn was still open when the run's deadline passed.
++type loadDeadlineError struct{}
++
++func (e *loadDeadlineError) Error() string {
++	return "shuttle: a skill-load turn was still open at the run's deadline"
++}
++
++// loadTurnWatch is what one load turn keeps across its polls.
++type loadTurnWatch struct {
++	// began is when the turn being awaited began: the call's entry, or the latest turn after an API error.
++	began time.Time
++	// open is true while a turn start read has no turn end after it.
++	open bool
++	// turnStart is the newest turn start signal read, which an engine reads an interrupt marker of.
++	turnStart SessionSignal
++	// errors counts the API-error turn ends read, and since is when the first was read.
++	errors int
++	since  time.Time
++	// pending is true while the newest turn signal read is an API-error turn end, whose load runs again at retypeAt.
++	pending  bool
++	retypeAt time.Time
++	// backoff is the wait the next API error gets.
++	backoff time.Duration
++	// rejected is true when the pending turn end is one the provider marked ModelRejected, and text is the newest error's text.
++	rejected bool
++	text     string
++	// noticed is true once the parent was told of the hold.
++	noticed bool
++}
++
++// heldDeadline returns deadline moved later by the hold that preceded the turn being awaited, which is the time from the first API error to that turn's start.
++func (w *loadTurnWatch) heldDeadline(deadline time.Time) time.Time {
++	if w.errors == 0 {
++		return deadline
++	}
++	return deadline.Add(w.began.Sub(w.since))
++}
++
++// apiErrorRead records an API-error turn end read at now and schedules the load's next turn.
++func (w *loadTurnWatch) apiErrorRead(text string, rejected bool, now time.Time) {
++	if w.errors == 0 {
++		w.since, w.backoff = now, apiErrorRetryBackoff
++	}
++	w.errors++
++	w.open, w.pending, w.rejected, w.text = false, true, rejected, text
++	w.retypeAt = now.Add(w.backoff)
++	w.backoff = min(2*w.backoff, loadHoldBackoffCeiling)
++}
++
++// turnStartRead records a turn start read at now, which ends a pending API error: the operator, a revive or a typed load line started the turn awaited from now on.
++func (w *loadTurnWatch) turnStartRead(signal SessionSignal, now time.Time) {
++	w.open, w.pending, w.turnStart = true, false, signal
++	if w.errors > 0 {
++		w.began = now
++	}
++}
++
++// loadSkillTurn is one load turn: when typed, it sends the engine's load message for skills through the verified send path; otherwise the launch line already carried the message.
++// It then polls the events file until the first turn end past the run's offset, which it returns, the pane dies, or the wait ends as described below.
++// timeout is measured from the call's entry and ends only a turn no turn start was read for, such as one of an engine that reads no turn starts.
++// A provider retries a failing API inside a turn for minutes before it ends the turn on the error, so a turn start read with no turn end after it is awaited until its end, the pane's death, the run's deadline, which fails with a *loadDeadlineError, or the engine's reading of it as interrupted.
++// ended is false on a timeout and on an interrupted turn.
++// died is true when the strand's pane is no longer live.
++// The run's offset moves past every event read.
++//
++// A turn that ends on an API error, by the engine's signal or by the transcript's marker on a turn end, returns nothing.
++// The poll sleeps out a back-off from apiErrorRetryBackoff doubling to loadHoldBackoffCeiling, and the load message goes out again through the verified send path, as many times as the API fails, with no bound of its own: it ends when a turn ends, the pane dies or a send fails.
++// A turn start read meanwhile takes the place of that line, since the operator or a revive may have carried the session on, and a busy session only moves the line to the next back-off.
++// A turn end the engine marks ModelRejected fails with a *loadModelRejectedError, since no further turn changes the model.
++// The hold moves the run's deadline later by its length, as a pause does.
++func (run *Run) loadSkillTurn(loader SkillLoader, skills []string, timeout time.Duration, typed bool) (turnEnd Event, ended, died bool, err error) {
++	reed := run.runner.reed
++	guid := run.state.StrandGUID
++	if typed {
++		if err := run.sendThroughPause(run.newSendContext(), loader.SkillLoadMessage(skills)); err != nil {
++			return Event{}, false, false, fmt.Errorf("shuttle: load skills %v: %w", skills, err)
++		}
++	}
++	watch := loadTurnWatch{began: run.clock.Now()}
++	defer run.endLoadHold(&watch)
++	interval := pollInterval(run.runner.cfg)
++	for {
++		if turnEnd, read := run.readLoadTurn(&watch, skills); read {
++			return turnEnd, true, false, nil
++		}
++		if watch.rejected {
++			return Event{}, false, false, &loadModelRejectedError{text: watch.text}
++		}
++		run.noticeLoadHold(&watch)
++
++		if status, serr := reed.Status(); serr == nil {
++			if strand, tracked := strandStatusByGUID(status.Strands, guid); !tracked || !strand.Live {
++				return Event{}, false, true, nil
++			}
++		}
++		now := run.clock.Now()
++		if watch.pending {
++			if now.Before(watch.retypeAt) {
++				run.clock.Sleep(watch.retypeAt.Sub(now))
++				continue
++			}
++			err := run.sendThroughPause(run.newSendContext(), loader.SkillLoadMessage(skills))
++			switch {
++			case errors.Is(err, ErrSessionBusy):
++				logger.Info("shuttle: load turn after an API error not typed, session busy; trying again after the back-off", "strandGUID", guid, "error", err)
++				watch.retypeAt = run.clock.Now().Add(watch.backoff)
++				continue
++			case err != nil:
++				return Event{}, false, false, fmt.Errorf("shuttle: load skills %v after an API error: %w", skills, err)
++			}
++			logger.Info("shuttle: load turn typed again after an API error", "strandGUID", guid, "skills", skills, "apiErrors", watch.errors)
++			watch.pending, watch.began = false, run.clock.Now()
++		} else if watch.open {
++			if run.loadTurnInterrupted(&watch) {
++				return Event{}, false, false, nil
++			}
++			if !now.Before(watch.heldDeadline(run.deadline)) {
++				return Event{}, false, false, &loadDeadlineError{}
++			}
++		} else if !now.Before(watch.began.Add(timeout)) {
++			return Event{}, false, false, nil
++		}
++		run.clock.Sleep(interval)
++	}
++}
++
++// readLoadTurn reads the events past the run's offset into watch, and returns the first turn end that is the load turn's own.
++// A turn end the transcript marks an API error counts as an API-error turn end.
++// An unreadable file and a failed parse read nothing and leave the offset where it was.
++func (run *Run) readLoadTurn(watch *loadTurnWatch, skills []string) (Event, bool) {
++	data, newOffset, err := readEventsFrom(run.state.EventsPath, run.offset)
++	if err != nil || len(data) == 0 {
++		return Event{}, false
++	}
++	events, err := run.engine.ParseEvents(data)
++	if err != nil {
++		return Event{}, false
++	}
++	run.offset = newOffset
++	errorsBefore := watch.errors
++	now := run.clock.Now()
++	if parser, ok := run.engine.(SessionSignalParser); ok {
++		signals, _ := parser.ParseSessionSignals(data)
++		for _, signal := range signals {
++			switch signal.Kind {
++			case SessionSignalTurnStart:
++				watch.turnStartRead(signal, now)
++			case SessionSignalTurnEnd, SessionSignalSessionStart:
++				watch.open = false
++			case SessionSignalAPIErrorTurnEnd:
++				watch.apiErrorRead(signal.ErrorText, signal.ModelRejected, now)
++			}
++		}
++	}
++	reader, canRead := run.engine.(ActivityReader)
++	var turnEnd Event
++	found := false
++	for _, event := range events {
++		if event.Kind != EventStop && event.Kind != EventWaiting {
++			continue
++		}
++		if canRead {
++			if activity := reader.TurnEndActivity(event); activity.APIError {
++				watch.apiErrorRead(activity.APIErrorText, false, now)
++				continue
++			}
++		}
++		turnEnd, found = event, true
++		break
++	}
++	if watch.errors > errorsBefore && !found {
++		logger.Warn("shuttle: load turn ended on an API error; the prompt waits until the load runs through", "strandGUID", run.state.StrandGUID, "skills", skills, "apiErrors", watch.errors, "error", watch.text, "retypeAt", watch.retypeAt)
++	}
++	return turnEnd, found
++}
++
++// loadTurnInterrupted reports whether the engine reads the open load turn as interrupted by the operator, a turn that no turn end ever follows.
++// An engine that cannot read an interrupt reads every open turn as running.
++func (run *Run) loadTurnInterrupted(watch *loadTurnWatch) bool {
++	prober, ok := run.engine.(SessionProber)
++	if !ok {
++		return false
++	}
++	_, interrupted := prober.TurnStartInterrupt(watch.turnStart)
++	return interrupted
++}
++
++// noticeLoadHold tells the parent once that the API keeps failing the load, for an autonomous run on a runner with a notifier, since a start held on a lasting error shows nowhere else.
++// A notifier error is only logged.
++func (run *Run) noticeLoadHold(watch *loadTurnWatch) {
++	notify := run.runner.notifier
++	if watch.noticed || watch.errors < loadHoldNoticeErrors || notify == nil || run.spec.Interactive {
++		return
++	}
++	watch.noticed = true
++	strandName := run.state.StrandName
++	if strandName == "" {
++		strandName = run.state.StrandGUID
++	}
++	line := fmt.Sprintf("agent %s is held at its skill-load turn: the provider's API keeps failing it, so its prompt is not typed yet. The load runs again by itself and the prompt follows once the API answers, so nothing is needed unless the error is one that will not pass.", strandName)
++	if err := notify(line); err != nil {
++		logger.Warn("shuttle: load hold notice failed", "strandGUID", run.state.StrandGUID, "error", err)
++	}
++}
++
++// endLoadHold moves the run's deadline later by the length of the hold watch kept, so the deadline counts no time spent waiting on the API.
++func (run *Run) endLoadHold(watch *loadTurnWatch) {
++	if watch.errors == 0 {
++		return
++	}
++	held := run.clock.Now().Sub(watch.since)
++	run.deadline = run.deadline.Add(held)
++	logger.Info("shuttle: load turn hold over", "strandGUID", run.state.StrandGUID, "apiErrors", watch.errors, "held", held)
++}
++
++// abandonLoad ends a start whose load turn failed with err.
++// A rejected model ends it OutcomeAPIError with Result.APIError naming the error, and a turn still open at the run's deadline ends it OutcomeTimeout;
++// either returns the run instead when every output file exists, as a start past its gates.
++// Any other failure ends it OutcomeDied.
++func (run *Run) abandonLoad(err error) (Result, error) {
++	var rejected *loadModelRejectedError
++	var expired *loadDeadlineError
++	var expiredOutcome Outcome
++	switch {
++	case errors.As(err, &rejected):
++		expiredOutcome = OutcomeAPIError
++	case errors.As(err, &expired):
++		expiredOutcome = OutcomeTimeout
++	default:
++		return run.abandonStartup(OutcomeDied, err)
++	}
++	outcome := run.classifyDeadlineExpiry(expiredOutcome)
++	if outcome == OutcomeDone {
++		return Result{}, nil
++	}
++	result, startErr := run.abandonStartup(outcome, err)
++	if rejected != nil {
++		result.APIError = rejected.text
++	}
++	return result, startErr
++}
+diff --git a/internal/shuttleengine/run.go b/internal/shuttleengine/run.go
+index c757d66a..d198f471 100644
+--- a/internal/shuttleengine/run.go
++++ b/internal/shuttleengine/run.go
+@@ -53,7 +53,7 @@ type Runner struct {
+ 	// run's reconstructed deadline, since Attach returns a Result rather than a *Run for a test to
+ 	// patch run.clock on afterwards.
+ 	clock Clock
+-	// notifier receives the notice line of each held turn end of an autonomous run; nil, the default, holds silently.
++	// notifier receives the notice line of each held turn end of an autonomous run and the notice of a start held at its skill-load turn; nil, the default, holds silently.
+ 	notifier func(line string) error
+ 	// sessionEnd receives the report of each ended session; nil, the default, calls nothing.
+ 	sessionEnd func(SessionEnd)
+@@ -90,7 +90,7 @@ func (r *Runner) holdFor(guid string) *turnStartHold {
+ 	return hold
+ }
+ 
+-// SetNotifier sets the function Wait calls once with a notice line for each held turn end of an autonomous run.
++// SetNotifier sets the function Wait calls once with a notice line for each held turn end of an autonomous run, and a start calls once when its skill-load turn is held on a lasting API error.
+ // A nil notify, the default, holds silently.
+ // A notify error is logged and never ends the run.
+ func (r *Runner) SetNotifier(notify func(line string) error) {
+@@ -343,7 +343,7 @@ type Run struct {
+ 	// offset is the byte offset already consumed from state.EventsPath.
+ 	offset int64
+ 	// deadline is the wall-clock time after which a run is classified OutcomeTimeout.
+-	// Wait moves it later by the sleeps and pauses seen since createdAt.
++	// Wait moves it later by the sleeps and pauses seen since createdAt, and endLoadHold by the time a skill-load turn was held on an API error.
+ 	deadline time.Time
+ 	// createdAt is the run clock's time when the run was built, the start of the span whose sleeps and pauses move deadline.
+ 	createdAt time.Time
+@@ -789,9 +789,11 @@ func (run *Run) typeStartupColor(color segmentcolor.Color) {
+ // The launch line carries the first load turn of spec.Skills, so it awaits that turn and types nothing for it.
+ // It then types color when non-empty, retries the skills the model did not load once with a typed load message, and delivers promptLine through the verified send path.
+ // A spec with no skills types the color and then the prompt.
+-// A skill the provider does not know, one still missing after the retry and one whose turn timed out are skipped with a logged warning,
++// A skill the provider does not know, one still missing after the retry, one whose turn no turn start was read for in time and one whose open turn was interrupted are skipped with a logged warning,
+ // and an unreadable turn is confirmed unverified.
+ // None of these fails or hangs the launch.
++// A turn still open when the run's deadline passes fails the start as OutcomeTimeout with no prompt typed.
++// A load turn the provider's API fails skips nothing: loadSkillTurn holds it, and the prompt waits, until a load turn ends.
+ // The run's events offset and the persisted prompt offset are the events file's size at the moment before the prompt is sent.
+ // That lies past every load turn end, the retry's included, and past any line appended after them.
+ // So Wait never reads one as a held turn end of the run's own.
+@@ -821,7 +823,7 @@ func (run *Run) loadSkillsThenPrompt(promptLine string, color segmentcolor.Color
+ 			}
+ 		}
+ 		if err != nil {
+-			return run.abandonStartup(OutcomeDied, err)
++			return run.abandonLoad(err)
+ 		}
+ 		if died {
+ 			return run.abandonStartup(OutcomeDied, nil)
+@@ -944,48 +946,6 @@ func (run *Run) settleLoadTurn(loader SkillLoader, skills []string, timeout time
+ 	return nil, false, nil
+ }
+ 
+-// loadSkillTurn is one load turn: when typed, it sends the engine's load message for skills through the verified send path; otherwise the launch line already carried the message.
+-// It then polls the events file until the first turn end past the run's offset, which it returns, the pane dies, or timeout passes.
+-// timeout is measured from the call's entry.
+-// ended is false on a timeout,
+-// and died is true when the strand's pane is no longer live.
+-// The run's offset moves past every event read.
+-func (run *Run) loadSkillTurn(loader SkillLoader, skills []string, timeout time.Duration, typed bool) (turnEnd Event, ended, died bool, err error) {
+-	reed := run.runner.reed
+-	guid := run.state.StrandGUID
+-	if typed {
+-		if err := run.sendThroughPause(run.newSendContext(), loader.SkillLoadMessage(skills)); err != nil {
+-			return Event{}, false, false, fmt.Errorf("shuttle: load skills %v: %w", skills, err)
+-		}
+-	}
+-	deadline := run.clock.Now().Add(timeout)
+-	interval := pollInterval(run.runner.cfg)
+-	for {
+-		data, newOffset, err := readEventsFrom(run.state.EventsPath, run.offset)
+-		if err == nil && len(data) > 0 {
+-			events, perr := run.engine.ParseEvents(data)
+-			if perr == nil {
+-				run.offset = newOffset
+-				for _, ev := range events {
+-					if ev.Kind == EventStop || ev.Kind == EventWaiting {
+-						return ev, true, false, nil
+-					}
+-				}
+-			}
+-		}
+-
+-		if status, serr := reed.Status(); serr == nil {
+-			if strand, tracked := strandStatusByGUID(status.Strands, guid); !tracked || !strand.Live {
+-				return Event{}, false, true, nil
+-			}
+-		}
+-		if !run.clock.Now().Before(deadline) {
+-			return Event{}, false, false, nil
+-		}
+-		run.clock.Sleep(interval)
+-	}
+-}
+-
+ // checkResume runs engine's SessionResumer check for a spec that resumes an existing session, against the runner's pane cwd.
+ // It returns the check's warning, empty for a spec with no ResumeSessionID.
+ // An engine without the capability is an error, so no run resumes a session unchecked.
+diff --git a/internal/shuttleengine/spec.go b/internal/shuttleengine/spec.go
+index f64c940a..5eeb0475 100644
+--- a/internal/shuttleengine/spec.go
++++ b/internal/shuttleengine/spec.go
+@@ -137,6 +137,7 @@ type Spec struct {
+ 	// validate does not inspect it.
+ 	Skills []string
+ 	// SkillLoadTimeout bounds how long shuttle waits for one load turn to end, the first and the retry each, before skipping its skills.
++	// A turn still open at the timeout is awaited until it ends or the run's deadline passes, which fails the start as timeout, and a turn the provider's API fails is run again however long that takes, so neither skips a skill at this bound.
+ 	// Zero defers to the engine's DefaultSkillLoadTimeout; validate does not inspect it.
+ 	SkillLoadTimeout time.Duration
+ 	// ContextAfterCompaction, when non-empty, is a shell command whose standard output the provider adds to the session's context right after every compaction.
+diff --git a/internal/shuttleengine/startup_test.go b/internal/shuttleengine/startup_test.go
+index 265418a7..0c3a0cd8 100644
+--- a/internal/shuttleengine/startup_test.go
++++ b/internal/shuttleengine/startup_test.go
+@@ -1452,10 +1452,16 @@ func skillStartFixtureWith(t *testing.T, strand reedengine.Strand, spec Spec, re
+ 				t.Errorf("seed the events file: %v", err)
+ 			}
+ 		}
+-		used = &hookStateSkillEngine{skillFakeEngine: engine}
++		hooked := &hookStateSkillEngine{skillFakeEngine: engine}
++		hooked.hooks.apiErrorLine = engine.APIErrorLine
++		hooked.Interrupted = engine.Interrupted
++		used = hooked
+ 	}
+ 	fx := newFixture(t, reed, used, withConfig(fastConfig), withClock(fc))
+ 	reed.EventsPath = func() string { return filepath.Join(soleStartupRunDir(t, fastConfig, fx.Anchor), eventsFileName) }
++	if reed.Notifier != nil {
++		fx.Runner.SetNotifier(reed.Notifier)
++	}
+ 	spec.Prompt = "x"
+ 	spec.OutputFiles = []string{filepath.Join(t.TempDir(), "out.md")}
+ 	start := fc.Now()
+@@ -1686,6 +1692,288 @@ func TestStartup_SkillLoadTurns(t *testing.T) {
+ 	}
+ }
+ 
++// TestStartup_LoadTurnAPIError does not call t.Parallel: it asserts on the logger output,
++// which is process-global.
++func TestStartup_LoadTurnAPIError(t *testing.T) {
++	tiergate.Require(t, 0)
++	const (
++		failed = "APIERR:overloaded"
++		marked = "STOP:API Error"
++	)
++	loaded := func(skills ...string) SkillLoadReport { return SkillLoadReport{Verified: true, Loaded: skills} }
++	tests := []struct {
++		name         string
++		spec         Spec
++		reports      []SkillLoadReport
++		turnEnds     map[int]string
++		lateEnds     map[int]int
++		carries      map[int]carriedTurn
++		loadSendErrs []error
++		notifyErr    error
++		interrupted  bool
++		hangs        []int
++		dies         []int
++		apiErrorLine string
++		wantTyped    string
++		wantSkips    int
++		// wantHeld is the least virtual time the start took and the run's deadline moved, zero for a start that fails.
++		wantHeld time.Duration
++		// wantHeldAtMost is the most virtual time a start that succeeds took, zero for no limit.
++		wantHeldAtMost  time.Duration
++		wantNotices     int
++		wantFailed      bool
++		wantOutcome     string
++		wantFailedAfter time.Duration
++		wantHoldOver    bool
++	}{
++		{
++			name:      "a turn the API ended runs again after the back-off and the prompt follows it",
++			spec:      Spec{Skills: []string{"a"}},
++			reports:   []SkillLoadReport{loaded("a")},
++			turnEnds:  map[int]string{0: failed},
++			wantTyped: "LOAD:a|do the task",
++			wantHeld:  apiErrorRetryBackoff,
++		},
++		{
++			name:      "a turn past its timeout that then ends on an API error skips nothing",
++			spec:      Spec{Skills: []string{"a"}, SkillLoadTimeout: 50 * time.Millisecond},
++			reports:   []SkillLoadReport{loaded("a")},
++			turnEnds:  map[int]string{0: failed},
++			lateEnds:  map[int]int{0: 8},
++			wantTyped: "LOAD:a|do the task",
++			wantHeld:  apiErrorRetryBackoff,
++		},
++		{
++			name:         "a turn end the transcript marks an API error counts as one",
++			spec:         Spec{Skills: []string{"a"}},
++			reports:      []SkillLoadReport{loaded("a")},
++			turnEnds:     map[int]string{0: marked},
++			apiErrorLine: marked,
++			wantTyped:    "LOAD:a|do the task",
++			wantHeld:     apiErrorRetryBackoff,
++		},
++		{
++			name:        "each further API error doubles the wait and the parent hears once",
++			spec:        Spec{Skills: []string{"a"}},
++			reports:     []SkillLoadReport{loaded("a")},
++			turnEnds:    map[int]string{0: failed, 1: failed, 2: failed},
++			wantTyped:   "LOAD:a|LOAD:a|LOAD:a|do the task",
++			wantHeld:    7 * apiErrorRetryBackoff,
++			wantNotices: 1,
++		},
++		{
++			name:        "a retry turn the API ended spends no retry",
++			spec:        Spec{Skills: []string{"a", "b"}},
++			reports:     []SkillLoadReport{{Verified: true, Loaded: []string{"a"}, Missing: []string{"b"}}, loaded("b")},
++			turnEnds:    map[int]string{1: failed},
++			wantTyped:   "LOAD:b|LOAD:b|do the task",
++			wantHeld:    apiErrorRetryBackoff,
++			wantNotices: 0,
++		},
++		{
++			name:         "a pane that dies during the hold is a died startup",
++			spec:         Spec{Skills: []string{"a"}},
++			turnEnds:     map[int]string{0: failed},
++			dies:         []int{1},
++			wantTyped:    "LOAD:a",
++			wantFailed:   true,
++			wantOutcome:  "died",
++			wantHoldOver: true,
++		},
++		{
++			name:            "an open turn that never ends fails the start at the run deadline and types no prompt",
++			spec:            Spec{Skills: []string{"a"}, SkillLoadTimeout: 50 * time.Millisecond},
++			hangs:           []int{0},
++			wantFailed:      true,
++			wantOutcome:     "timeout",
++			wantFailedAfter: time.Hour,
++		},
++		{
++			name:        "an open turn the operator interrupted is skipped at once and the prompt follows",
++			spec:        Spec{Skills: []string{"a"}, SkillLoadTimeout: 50 * time.Millisecond},
++			hangs:       []int{0},
++			interrupted: true,
++			wantTyped:   "do the task",
++			wantSkips:   1,
++		},
++		{
++			name:      "a turn start read during the back-off takes the place of the typed load",
++			spec:      Spec{Skills: []string{"a"}},
++			reports:   []SkillLoadReport{loaded("a")},
++			turnEnds:  map[int]string{0: failed},
++			carries:   map[int]carriedTurn{0: {startAfter: 2, endAfter: 3}},
++			wantTyped: "do the task",
++			wantHeld:  apiErrorRetryBackoff,
++		},
++		{
++			name:         "a busy session moves the typed load to the next doubled back-off",
++			spec:         Spec{Skills: []string{"a"}},
++			reports:      []SkillLoadReport{loaded("a")},
++			turnEnds:     map[int]string{0: failed},
++			loadSendErrs: []error{fmt.Errorf("held: %w", ErrSessionBusy)},
++			wantTyped:    "LOAD:a|do the task",
++			wantHeld:     3 * apiErrorRetryBackoff,
++		},
++		{
++			name:         "a typed load that fails for another reason is a died startup",
++			spec:         Spec{Skills: []string{"a"}},
++			turnEnds:     map[int]string{0: failed},
++			loadSendErrs: []error{errors.New("reed is gone")},
++			wantTyped:    "",
++			wantFailed:   true,
++			wantOutcome:  "died",
++			wantHoldOver: true,
++		},
++		{
++			name:           "the wait stops doubling at the ceiling",
++			spec:           Spec{Skills: []string{"a"}},
++			reports:        []SkillLoadReport{loaded("a")},
++			turnEnds:       map[int]string{0: failed, 1: failed, 2: failed, 3: failed, 4: failed, 5: failed},
++			wantTyped:      "LOAD:a|LOAD:a|LOAD:a|LOAD:a|LOAD:a|LOAD:a|do the task",
++			wantHeld:       apiErrorRetryBackoff*(1+2+4+8) + 2*loadHoldBackoffCeiling,
++			wantHeldAtMost: 25 * time.Minute,
++			wantNotices:    1,
++		},
++		{
++			name:        "an interactive run holds with no notice",
++			spec:        Spec{Skills: []string{"a"}, Interactive: true},
++			reports:     []SkillLoadReport{loaded("a")},
++			turnEnds:    map[int]string{0: failed, 1: failed},
++			wantTyped:   "LOAD:a|LOAD:a|do the task",
++			wantHeld:    3 * apiErrorRetryBackoff,
++			wantNotices: 0,
++		},
++		{
++			name:        "a notifier that fails does not fail the start",
++			spec:        Spec{Skills: []string{"a"}},
++			reports:     []SkillLoadReport{loaded("a")},
++			turnEnds:    map[int]string{0: failed, 1: failed},
++			notifyErr:   errors.New("queue full"),
++			wantTyped:   "LOAD:a|LOAD:a|do the task",
++			wantHeld:    3 * apiErrorRetryBackoff,
++			wantNotices: 1,
++		},
++		{
++			name:         "a turn end marking the model rejected ends the start with no load typed again",
++			spec:         Spec{Skills: []string{"a"}},
++			turnEnds:     map[int]string{0: "REJECT:model_not_found"},
++			wantTyped:    "",
++			wantFailed:   true,
++			wantOutcome:  "api-error",
++			wantHoldOver: true,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			buf := logcapture.CaptureVerbose(t)
++			var notices []string
++			tt.spec.Timeout = time.Hour
++			run, reed, elapsed, err := skillStartFixtureWith(t, reedengine.Strand{GUID: "strand-1"}, tt.spec, tt.reports, tt.hangs, tt.dies, func(reed *skillReed, engine *skillFakeEngine) {
++				reed.Screen = "the ready screen"
++				reed.TurnEnds = tt.turnEnds
++				reed.LateEnds = tt.lateEnds
++				reed.Carries = tt.carries
++				reed.LoadSendErrs = tt.loadSendErrs
++				reed.OpenTurns = true
++				reed.Notifier = func(line string) error {
++					notices = append(notices, line)
++					return tt.notifyErr
++				}
++				engine.HookState = true
++				engine.Interrupted = tt.interrupted
++				engine.APIErrorLine = tt.apiErrorLine
++			})
++			if got := strings.Join(typedTexts(reed), "|"); got != tt.wantTyped {
++				t.Errorf("typed = %q; want %q", got, tt.wantTyped)
++			}
++			if got := strings.Count(buf.String(), "skill skipped"); got != tt.wantSkips {
++				t.Errorf("skill skipped warnings = %d; want %d; log:\n%s", got, tt.wantSkips, buf.String())
++			}
++			if len(notices) != tt.wantNotices {
++				t.Errorf("notices = %q; want %d", notices, tt.wantNotices)
++			}
++			if tt.wantFailed {
++				if !errors.Is(err, ErrNotStarted) {
++					t.Fatalf("Start() error = %v; want one wrapping ErrNotStarted", err)
++				}
++				if want := `outcome "` + tt.wantOutcome + `"`; !strings.Contains(err.Error(), want) {
++					t.Errorf("Start() error = %v; want it to name %s", err, want)
++				}
++				if elapsed < tt.wantFailedAfter {
++					t.Errorf("virtual elapsed = %s; want at least %s", elapsed, tt.wantFailedAfter)
++				}
++				if got := strings.Contains(buf.String(), "load turn hold over"); got != tt.wantHoldOver {
++					t.Errorf("log holds the hold-over line = %v; want %v; log:\n%s", got, tt.wantHoldOver, buf.String())
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("Start() error = %v", err)
++			}
++			if elapsed < tt.wantHeld {
++				t.Errorf("virtual elapsed = %s; want at least %s", elapsed, tt.wantHeld)
++			}
++			if tt.wantHeldAtMost > 0 && elapsed > tt.wantHeldAtMost {
++				t.Errorf("virtual elapsed = %s; want at most %s", elapsed, tt.wantHeldAtMost)
++			}
++			if moved := run.deadline.Sub(run.createdAt) - tt.spec.Timeout; moved < tt.wantHeld {
++				t.Errorf("deadline moved %s; want at least %s", moved, tt.wantHeld)
++			}
++			// The prompt offset lies past every load turn, the re-typed ones included.
++			// So Wait never reads one of them as the prompt's turn.
++			info, err := os.Stat(run.state.EventsPath)
++			if err != nil {
++				t.Fatal(err)
++			}
++			if run.offset != info.Size() || run.offset == 0 {
++				t.Errorf("offset = %d; want the events file's size %d", run.offset, info.Size())
++			}
++			persisted, _, err := loadRunState(run.runDir)
++			if err != nil {
++				t.Fatal(err)
++			}
++			if persisted.PromptOffset != run.offset {
++				t.Errorf("persisted PromptOffset = %d; want %d", persisted.PromptOffset, run.offset)
++			}
++		})
++	}
++}
++
++func TestRun_LoadTurnModelRejectedEndsTheStart(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	base := &fakeReed{AddStrandResult: reedengine.Strand{GUID: "strand-1"}, StatusQueue: liveStrandStatus(true)}
++	engine := &skillFakeEngine{
++		fakeEngine: &fakeEngine{
++			PrepareLaunch: Launch{Cmd: "cmd", SessionID: "session-1", PromptLine: "do the task"},
++			StartupScript: []StartupState{StartupReady},
++		},
++		Timeout: time.Minute,
++	}
++	engine.PrepareHook = func(runDir string) {
++		if err := os.WriteFile(filepath.Join(runDir, eventsFileName), []byte("SESSIONSTART:startup\n"), 0o644); err != nil {
++			t.Errorf("seed the events file: %v", err)
++		}
++	}
++	reed := &skillReed{fakeReed: base, Hangs: map[int]bool{}, Dies: map[int]bool{}, TurnEnds: map[int]string{0: "REJECT:model_not_found"}}
++	fx := newFixture(t, reed, &hookStateSkillEngine{skillFakeEngine: engine}, withConfig(fastConfig), withClock(newFakeClock(time.Now())))
++	reed.EventsPath = func() string { return filepath.Join(soleStartupRunDir(t, fastConfig, fx.Anchor), eventsFileName) }
++
++	result, err := fx.Runner.Run(Spec{Prompt: "x", OutputFiles: []string{filepath.Join(t.TempDir(), "out.md")}, Skills: []string{"a"}})
++	if err != nil {
++		t.Fatalf("Run() error = %v", err)
++	}
++	if result.Outcome != OutcomeAPIError || result.APIError != "model_not_found" || !result.NotStarted {
++		t.Errorf("Run() outcome, API error, not started = %q, %q, %v; want %q, %q, true", result.Outcome, result.APIError, result.NotStarted, OutcomeAPIError, "model_not_found")
++	}
++	if got := typedTexts(reed); len(got) != 0 {
++		t.Errorf("typed = %q; want nothing", got)
++	}
++	if len(base.RemoveStrandCalls) != 1 {
++		t.Errorf("RemoveStrand calls = %d; want 1", len(base.RemoveStrandCalls))
++	}
++}
++
+ func TestStartup_SkillsRefusedWithoutSkillLoader(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	reed := &fakeReed{AddStrandResult: reedengine.Strand{GUID: "strand-1"}, StatusQueue: liveStrandStatus(true)}
+diff --git a/pattern/PATTERN-daemon-wakeups.md b/pattern/PATTERN-daemon-wakeups.md
+index aa62cc7b..6de57bf9 100644
+--- a/pattern/PATTERN-daemon-wakeups.md
++++ b/pattern/PATTERN-daemon-wakeups.md
+@@ -22,6 +22,7 @@ An unbounded wait is a loop that lives as long as a run or a session and has no
+ - the current capture's lock wait in `internal/driftengine/capture.go`, which polls the capture lock from one second, takes it once free and doubles to thirty seconds while the lock stays held,
+ - the pause hold in `internal/pauserecord/hold.go`, which polls from one second and doubles to five seconds while the covering entry is unchanged,
+ - shuttle's `Wait`,
++- the load turn's API-error hold in `internal/shuttleengine/loadturn.go`, which wakes once per back-off, from 30 seconds doubling to five minutes while the API keeps failing the load, and between turns every `pollInterval` to read the events file and reed's status, floored at one second like every poll,
+ - webster's long poll,
+ - `lym shed status --watch`,
+ - the gate test's CPU watchdog in `internal/gatecli/watchdog.go`, which samples once per period, 5 seconds in production, for as long as go test runs and spawns nothing,
+diff --git a/pattern/PATTERN-reed-panes.md b/pattern/PATTERN-reed-panes.md
+index b42da471..b720aa6c 100644
+--- a/pattern/PATTERN-reed-panes.md
++++ b/pattern/PATTERN-reed-panes.md
+@@ -93,6 +93,20 @@ Typing a line into a session a pause covers: shuttle's send refuses with `ErrPau
+ 
+ Review discipline and the shuttle runner's send tests; no scan enforces it.
+ 
++### An API error holds the prompt
++
++Rule: A start's own prompt line is not typed behind a skill-load turn the API failed: the load runs again after a back-off until a load turn ends. (test)
++
++A start's prompt line is not typed behind a skill-load turn the provider's API failed: shuttle runs the load again after a back-off until a load turn ends, and only then types the prompt.
++
++- A skipped skill stays what the skill's own state says: not installed, or still missing after the retry. An API error says nothing about the skill.
++- The typed load line is the probe of the API, and goes through the same verified send, so a pause holds it too.
++- Bound: an attach delivers a pending prompt without judging the API.
++
++#### Enforcement
++
++`TestStartup_LoadTurnAPIError` in `internal/shuttleengine`.
++
+ ### The orch pane
+ 
+ Only creel types into the orch session from Go, through its `Delivery` seam.
