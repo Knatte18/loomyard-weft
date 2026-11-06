@@ -72,8 +72,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **The python guard refuses without saying why or what to do when a task needs Python**<br>• An OCR repository on lym hits the guard: the refusal gives no reason and no way forward | [`python-guard-gives-no-reason`](design-python-guard-gives-no-reason.md) | darn · light | Worktree-Create | neve | 4m<br>0m | shuttle |
-| T5 | **A fanned assistant seat is told to work alone, and ran without its lenses**<br>• The composed prompt forbids what the fan asks for; the real seat went solo and no record flagged it<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`assist-fan-seat-work-alone`](design-assist-fan-seat-work-alone.md) | darn · light | Code-Burler-Fix | neve | 25m<br>18m | burler, stencil, codex |
+| T1 | **The python guard refuses without saying why or what to do when a task needs Python**<br>• An OCR repository on lym hits the guard: the refusal gives no reason and no way forward | [`python-guard-gives-no-reason`](design-python-guard-gives-no-reason.md) | darn · light | Seed-Child | neve | 4m<br>0m | shuttle |
+| T5 | **A fanned assistant seat is told to work alone, and ran without its lenses**<br>• The composed prompt forbids what the fan asks for; the real seat went solo and no record flagged it<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`assist-fan-seat-work-alone`](design-assist-fan-seat-work-alone.md) | darn · light | Code-Burler-Fix | neve | 25m<br>19m | burler, stencil, codex |
 | T7 | **Shorten the orch role file, the largest single start cost**<br>• role.md costs 19,390 tokens per read: shorten it, or move rarely used parts to a file the orch reads on demand<br>• `drift: scope off` | [`orch-role-shorter`](design-orch-role-shorter.md) | darn · solid | Darn-Write | neve | 16h<br>2h | orch |
 
 #### Ready (0)
