@@ -602,6 +602,24 @@
       },
       "profile": "light",
       "notify_on_land": true
+    },
+    {
+      "id": 1175,
+      "handle": "E1",
+      "slug": "python-guard-gives-no-reason",
+      "title": "The python guard refuses without saying why or what to do when a task needs Python",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "An OCR repository on lym hits the guard: the refusal gives no reason and no way forward",
+      "body": "## Seen\n\nIn another repository on lym, with OCR processing, agents reach for Python and are refused by the python guard without learning why (operator, 2026-11-06).\n\nThe guard's texts sit in `internal/shellguard/rows.go`: `noticePythonDeny` goes into the system prompt of a lym-spawned session, and `steerPythonDeny` is the refusal.\nNo Heddle entry states the rule, so nothing reaches `CLAUDE.local.md`.\nBoth say Python is refused, and the steer gives routes for parsing and editing only.\nNeither says why, what to do when the task needs Python itself, as OCR does, or that `deny_python` in `shuttle.yaml` exists for such a repository.\n\n## Idea\n\nThe refusal states why Python is refused and gives a way forward for work that needs it: the agent says so to the operator or its parent, who can set `deny_python: false` for the hub, and the agent never works round the guard.\nThe steer must stay free of quotes and backslashes, which `rows.go` checks at init, and the Codex steer changes with it.\n",
+      "created": "2026-11-06T12:30:57Z",
+      "revised": "2026-11-06T12:30:57Z"
     }
   ],
   "prime_owner": "neve",
