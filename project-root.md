@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-06 11:50 UTC; every age below is as of then.
+Rendered 2026-11-06 11:51 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -21,11 +21,13 @@ Held by a run; its scope is locked until the run ends.
 | T2 | **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | Webster | neve | 17h<br>17h | creel, orch |
 | T5 | **Drift: lym record writes, a gone snapshot, capture provenance and a retired placeholder halt runs**<br>• Four drift bugs that halt Models hub runs at Drift-Verify and Drift-Recheck<br>• `drift: scope off` | [`drift-halts-bundle`](design-drift-halts-bundle.md) | darn · solid | Code-Burler-Review | neve | 2h<br>1h | drift, loom, config, reconcile |
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Try the Codex assistant reviewer with its lens fan**<br>• A Claude darn docs writer spawns Astra with lenses on a real commit, and the run review then uses the real fanned seat: does the fan work, and what does it cost<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]`<br>• `loom: code_max_bounces 1` | [`codex-assist-fan-trial`](design-codex-assist-fan-trial.md) | darn · docs |  | 4m<br>4m | codex, shuttle |
 
 ### Layer A (1)
 
@@ -35,13 +37,12 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T7 | **Shorten the orch role file, the largest single start cost**<br>• role.md costs 19,390 tokens per read: shorten it, or move rarely used parts to a file the orch reads on demand<br>• `drift: scope off` | [`orch-role-shorter`](design-orch-role-shorter.md) | darn · solid | T2 | 15h<br>1h | orch |
 
-### Draft (2)
+### Draft (1)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Try the Codex assistant reviewer with its lens fan**<br>• A Claude darn docs writer spawns Astra with lenses on a real commit, and the run review then uses the real fanned seat: does the fan work, and what does it cost<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]`<br>• `loom: code_max_bounces 1` | [`codex-assist-fan-trial`](design-codex-assist-fan-trial.md) | darn · docs |  | 3m<br>3m | codex, shuttle |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light |  | 5d<br>22h | fabric |
 
 ## Notes (20)
