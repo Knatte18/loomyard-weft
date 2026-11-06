@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-06 09:56 UTC; every age below is as of then.
+Rendered 2026-11-06 09:59 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Token savings by cutting agent turns, above all late turns at large context
 
-### Tasks (0)
+### Tasks (1)
 
 Concrete and claimable; only a task can run.
 
@@ -22,15 +22,17 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (1)
+#### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | `draft` **What makes runs slow and what would make them faster: deep analysis**<br>• Account for where run time goes, rank the causes and the changes that would cut it, from recorded data<br>• `darn: writer fable[high]` | [`repo-size-run-time`](design-repo-size-run-time.md) | darn · docs |  | 2m<br>0m | report, loom |
+
+### Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-#### Research (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| R3 |  | **Does the repository size slow runs, and where did the added fixed cost per run go**<br>• Split the rise in darn run time by row, parallel load and repository size, from transcripts of landed runs | [`repo-size-run-time`](design-repo-size-run-time.md) | 0m<br>0m | report, loom |
 
 ## [P2 Codexengine: every task, trial and note about the Codex engine](project-codex-engine-trial.md) (1)
 
@@ -104,7 +106,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 | L | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• The Slack reminder ping while a PR-Review waits has landed; only the silence in status views remains, which the operator chose not to build | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 2d<br>15m | landing, loom, batten |
+| B1 | L | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• The Slack reminder ping while a PR-Review waits has landed; only the silence in status views remains, which the operator chose not to build | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 2d<br>18m | landing, loom, batten |
 | B2 |  | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | 14h<br>14h | tools, claude |
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 16h<br>16h | reed, orch |
 | B5 |  | **drift: Drift-Recheck halts on a capture's provenance file even when the compare command passed** | [`drift-capture-provenance-halt`](design-drift-capture-provenance-halt.md) | 1h<br>1h | drift, config |
