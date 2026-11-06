@@ -604,7 +604,7 @@
       "isolated": false,
       "brief": "Two real launches in lyt: first-request tokens against the launch trial, Workflow gone, preloaded skills kept",
       "body": "## Seen\n\n`c6b5ca66` made the session scope write `disableWorkflows: true`, to drop the `Workflow` tool and its larger schema.\nIts change description says the proof asked for was never run: a real launch with the first-request tokens stated against the 37,330 of `docs/research/tokens/session-scope-launch-2026-11-06/report.md`.\n\n## Wanted\n\nMeasure what the fix gives, in a real launch, and report it in `docs/research/tokens/session-scope-fix-launch-2026-11-06/report.md`.\n\nUse the method and the role of the launch trial's report, from a `lym` that holds `c6b5ca66`, in the sandbox hub `lyt`.\nRun exactly two launches with `lym shuttle open`: one spawned role and one orch, both with the scope on, and no headless launch.\n\nReport:\n\n- The first-request tokens of each, against the trial's 37,330 for the spawned role and 34,383 for the orch.\n- Whether the `Workflow` tool is gone from the session.\n- Whether a skill the session preloads is still there.\n- Which plugin skills stay listed, as the fix now states they do.\n\n## Bounds\n\nNo code change: if the fix does not hold, the report states what was seen and the fix becomes a note.\n",
-      "status": "running · Preflight",
+      "status": "running · Record-Write",
       "created": "2026-11-06T11:51:16Z",
       "revised": "2026-11-06T11:51:16Z",
       "profile": "docs",

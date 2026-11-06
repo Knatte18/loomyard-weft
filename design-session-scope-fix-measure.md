@@ -1,6 +1,6 @@
 # Measure what the session scope fix gives in a real launch
 
-`session-scope-fix-measure` · Task · research, claude, shuttle · running · Preflight
+`session-scope-fix-measure` · Task · research, claude, shuttle · running · Record-Write
 
 ## Seen
 
