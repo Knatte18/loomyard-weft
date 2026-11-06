@@ -50,6 +50,12 @@ Bound: a pause or a resume restarts the wait's clock, and a restarted dobby keep
 
 - `pr-review-wait-silent` asks for D8's PR-Review reminder; once this task lands, the parent should mark that note covered or remove it.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - wait-reminder-post-seam-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D8: with presence `slack`, a child at PR-Review or Sampler-Session for the reminder interval, counted from the time dobby first read it running at the row with no pause covering it, gets one reminder per interval to `<shortname>:SLACK`; a child paused and resumed at PR-Review, whether or not dobby read the pause, gets no reminder before a full interval after the resume; a child at Beam-Await, and any child while presence is `terminal`, gets none.
