@@ -447,7 +447,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `reed-slack-relay`.\n\nTakes: slack-relay's presence reader, remind_after_min loader and SLACK program mailbox; dobby's probe-tick child readings and its tolerant state record; pauserecord's resumed entries\nDelivers: a once-a-minute check in every worktree's dobby that keeps each PR-Review or Sampler-Session wait's start in dobby's state record and posts one reminder line per interval to \u003cshortname\u003e:SLACK while presence is slack\nExports: pauserecord's latest-resumed-entry lookup for a slug\n\nThe part changes these packages:\n\n- internal/dobbyengine (about 250 changed lines)\n- internal/beamcli (about 40 changed lines)\n- internal/pauserecord (about 40 changed lines)\n- internal/slackengine (about 20 changed lines)\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Drift-Recheck",
       "created": "2026-11-05T16:26:32Z",
       "revised": "2026-11-05T16:26:32Z",
       "profile": "light",
