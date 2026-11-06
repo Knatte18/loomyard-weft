@@ -642,6 +642,26 @@
       },
       "profile": "docs",
       "project": "turn-savings"
+    },
+    {
+      "id": 1168,
+      "handle": "R1",
+      "slug": "codex-claude-writer-compare",
+      "title": "Same real change written by a Codex and a Claude writer, time, cost and quality compared",
+      "kind": "note",
+      "labels": [
+        "research",
+        "codex",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Two darn runs of one real lym bug, one writer each; land the better, cancel the other",
+      "body": "## Idea\n\nThe only darn run end to end with a Codex writer was `codex-greet`, a toy change in the sandbox hub `lyt`, whose repository holds 9 files; it says nothing of time or quality on real work.\nThe runtime report `task-runtime-before-after-2026-11-06` also names the same task run twice as the fair test.\n\nProposed: run one real bug of this hub twice as darn light, the same body, one with the default Claude writer and one with `luna[high]`, each held before Finalize, then compare time, cost, review findings and the diff, land the better and cancel the other.\n\nThe operator approved the comparison on 2026-11-06; where it runs and on which bug is open.",
+      "created": "2026-11-06T10:03:49Z",
+      "revised": "2026-11-06T10:03:49Z",
+      "project": "codex-engine-trial"
     }
   ],
   "prime_owner": "neve",

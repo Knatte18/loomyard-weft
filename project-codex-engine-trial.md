@@ -49,9 +49,15 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (1)
+## Notes (2)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Research (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| R1 |  | **Same real change written by a Codex and a Claude writer, time, cost and quality compared**<br>• Two darn runs of one real lym bug, one writer each; land the better, cancel the other | [`codex-claude-writer-compare`](design-codex-claude-writer-compare.md) | 0m<br>0m | codex, shuttle |
 
 ### Features (1)
 
