@@ -62,7 +62,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Owner `neve`
 
-### Tasks (3)
+### Tasks (4)
 
 Concrete and claimable; only a task can run.
 
@@ -81,15 +81,16 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (1)
+#### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
+| T1 | `draft` **The python guard refuses without saying why or what to do when a task needs Python**<br>• An OCR repository on lym hits the guard: the refusal gives no reason and no way forward | [`python-guard-gives-no-reason`](design-python-guard-gives-no-reason.md) | darn |  | 4m<br>0m | shuttle |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light |  | 5d<br>23h | fabric |
 
-### Notes (22)
+### Notes (21)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -109,11 +110,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B2 |  | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | 17h<br>17h | tools, claude |
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 19h<br>19h | reed, orch |
 
-#### Enhancements (4)
+#### Enhancements (3)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **The python guard refuses without saying why or what to do when a task needs Python**<br>• An OCR repository on lym hits the guard: the refusal gives no reason and no way forward | [`python-guard-gives-no-reason`](design-python-guard-gives-no-reason.md) | 4m<br>0m | shuttle |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 9d<br>17h | batten, stencil, config |
 | E7 |  | **Each part agent plans and builds its own part, instead of joining the parts into one plan** | [`parts-plan-and-build`](design-parts-plan-and-build.md) | 3d<br>19h | loom |
 | E9 |  | **An interactive agent idle for a set time gets its session compacted**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 5d<br>2d | shed, shuttle, batten |
