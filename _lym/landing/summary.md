@@ -1,84 +1,70 @@
-# Orch role: under half the start read, rare events in files beside it
+# Shorten the orch role to under half its size, rare events to files
 
-`.lym/orch/role.md` was the largest single source in an orch start.
-This change rewrites `contracts/orchrole/orch-role.md`, ordered by what the orch does: the run loop, stops and escalations, the board, then standing rules.
-It drops the rendered command index and moves what only a rarer event needs into files rendered beside the role.
+The orch role was the largest single source in an orch start: 54,443 characters, 19,390 tokens, read on every orch start.
+This rewrites `contracts/orchrole/orch-role.md` to about 25,800 characters, 47% of the old rendered size, and moves what only a rare event needs into files the orch reads on demand.
+No rule is weakened, and lym's behaviour does not change beyond what the role file says and how it is rendered.
 
-## Start cost
+## What changes
 
-The measured cost of one read was 19,390 tokens for 54,443 characters, about 2.81 characters per token.
-No live orch start has run this role yet, so the "after" figures use that ratio on the rendered text rather than a `measure.sh` transcript.
+- The role is rewritten in the order the orch works: the run loop, then notices, stops and escalations, then fixing a run, landing, the board, and messaging.
+  Duplicated passages are stated once, and history is cut.
+- The command list is gone.
+  It was the rendered `lym help index`, about 15,600 characters of the old file.
+  The role keeps the rule that the orch uses only the commands open to it, and points at `lym help index` and `lym <command> --help`.
+- Five on-demand files render beside the role, each named in the role with one line saying when to read it:
+  - `role-beams.md`: making a beam, landing a beam, and a project that ran as a task run.
+  - `role-landing-halts.md`: any halt at Parent-Align or Finalize.
+  - `role-intake.md`: when the operator asks for intake.
+  - `role-hibernate.md`: when the operator asks to hibernate the machine.
+  - `role-slack.md`: mail from `<shortname>:SLACK`, and while the presence is `slack`.
+- No skill is added, so no other session sees these files.
+  `orchrole.OnDemand` embeds them, and `RenderRoleFile` writes them beside the role before the role itself, so a role the session reads never names a file that is not there yet.
 
-| Read | Characters | Tokens at the report's ratio |
-|---|---:|---:|
-| `role.md` before (current render, command index 19,259 of it) | 56,623 | ~20,160 |
-| `role.md` after | 25,073 | ~8,930 |
-| `role-beams.md`, on demand | 3,474 | ~1,240 |
-| `role-intake.md`, on demand | 2,571 | ~915 |
-| `role-landing-halts.md`, on demand | 2,427 | ~865 |
-| `role-slack.md`, on demand | 1,297 | ~460 |
-| `role-hibernate.md`, on demand | 775 | ~275 |
+## Code that moves with the role
 
-## What changed in the code
-
-- `contracts/orchrole` embeds the five `role-*.md` texts as `OnDemand`, keyed by rendered file name.
-  `RenderRoleFile` writes them beside the role on every render, so every path that renders the role carries them, and no other session sees them.
-- The role's `command_index` marker is gone, and with it everything that existed only to fill it: the `index` argument of `RenderRoleFile`, `ResumeContext` and `NewWatcher`, `BeamUpOptions.Index`, and `internal/orchcli/index.go`.
-  The role now says `lym help index` lists every command open to the orch, and that it uses no other.
-- Stencil scans read the on-demand files through `fixedStencils`, so they meet the same guards as the role.
-  A new test pins that each file renders beside the role and that the role names it.
-- The watcher's role-render failure tests now break the role path, since the index source they failed through is gone.
-
-## Design decisions
-
-- **The index plumbing is deleted, not redirected to a file.** `lym help index` prints the same list, so a rendered copy would hold nothing the orch cannot get.
-  One failure mode goes with it: a bring-up or a context cycle no longer stops because the index could not be read, for example when the strand's recorded `lym` path is gone.
-  This is the one change of behaviour, and it follows from dropping the list.
-- **The presence line is unchanged.** It still says "the orch role's Slack rules", which now sit in `role-slack.md`; the role's file list sends the orch there while the presence is `slack`.
-- **`Never run intake on your own` stays in the role**, under Where a finding goes, because a file read only when the operator asks could not hold it.
-
-## Disagreements settled by the code
-
-- `arras` is no recipe: `contracts/recipes` has none, and the old text listed "tapestry, arras, darn or sampler" in two places while item 1 said "tapestry, motif, darn or sampler".
-  Both now say `motif`.
-- The old Bouncer bullet said a goto "gives the whole segment a fresh budget", against "a goto keeps the spent budget".
-  `internal/shedengine` keeps the budget on a goto, so the bullet now gives only the reason the code bears out: the goto runs a new review round over an approved artifact.
-- The old Notices list left out dobby's line about landings into a beam, which `internal/dobbyengine/announce.go` sends. It is now listed.
-
-## Passages moved
-
-| Old section | Where it went |
-|---|---|
-| Commands | One line after the intro; the list itself is `lym help index` |
-| Making a beam | `role-beams.md` |
-| Landing a beam, including telling a beam from a project that ran as a task run | `role-beams.md` |
-| Landing halts | `role-landing-halts.md`, except "After a run lands, amend the board entries it superseded", now in After landing |
-| Escalations: "Never a goto to Plan-Bouncer" | `role-landing-halts.md` |
-| Intake | `role-intake.md`, except the rule that it runs only when the operator asks, now in Where a finding goes |
-| Acting without asking: hibernate | `role-hibernate.md` |
-| Slack | `role-slack.md` |
-| Acting without asking: the rest | Working rules; "only design questions" stays once, in Escalations |
-| Run loop item 4: mail delivery, stamps, `EXTERNAL`, `lym creel read` | Messaging |
-| Intro: `--adopt-local` | Working rules |
-| Status reports | Working rules |
-| Scratch and notes, Orch rules | Notes and orch rules |
-| Landing halts opening: "A task run lands with no orch turn" | After landing |
+- `RenderRoleFile` no longer takes an index, and the `command_index` marker is gone; only `decision_note_title` remains.
+  `ResumeContext`, `NewWatcher`, `startOrch`, `BeamUpOptions` and `beamcli`'s start drop the index parameter and source.
+- `internal/orchcli/index.go` is deleted, with `indexRunner` and the watcher's index source.
+  A role render can no longer fail because the orch strand recorded no `lym` binary or a stale path, so the watcher's idle-with-reason case for that is gone, along with its tests.
+- Tests that pinned the old text or the index move with the change: `contracts/stencils` marker and registry tests, `orchengine` prompt, resume-context and watcher tests, and `orchcli` start, watch and smoke tests.
+- Docs follow: `docs/overview.md`, `PATTERN-stencil-ownership.md` (the on-demand files share the role's exception), and the `doc.go` of `orchcli`, `orchengine` and `helpcli`.
+- No other session's stencils change.
 
 ## Passages dropped
 
-Each is a repeat, a reason, or history; none binds the orch beyond what stays.
+- `## Commands` and its `{{.command_index}}`: replaced by the pointer to `lym help index`.
+- The `_lym/orch/rules.md` paragraph in `## Orch rules`: history of a file that is no longer read.
+- `## Acting without asking` as a section: its rules are in `## Working rules`.
+  Its sentence "Ask the operator only design questions…" repeated `Escalations from a child`, and the go-ahead part stays in "A question is never a go-ahead".
+- "each is handled as under Investigating a stop" after the notice lines: the section's lead sentence says it once.
+- The sentence in the design-call bullet that a review escalation never takes it and follows the hand-on bullet or the fault paragraph: the bullet still says it covers an escalation that is not a review escalation.
+- "never by a card edit" in the same bullet: `Fixing a run` keeps "never edit a card yourself".
+- "The repository is its own state:" in Intake: the next sentence carries the point.
+- In `## Orch rules`, the phrases "after lym's own sentences" and "heddle delivers every entry aimed at its `orch-prompt` target to an orch session, and to no other session": the shortened text keeps that the rules arrive appended to the system prompt, in an orch session and no other.
 
-- The command list itself, which `lym help index` prints.
-- "A rules file kept at `_lym/orch/rules.md` … is no longer read" and its carry-over: history, and `lym orch rules --help` still says it.
-- "This role is the same for every orch in every repository": says nothing the orch acts on.
-- "heddle delivers every entry aimed at its `orch-prompt` target", shortened to "in an orch session and no other".
-- "A landing needs nothing more from you than these steps": padding before the list.
-- "A landing-stop halt at Parent-Align or Finalize: see Landing halts below": replaced by the file list.
-- "A `[batten notice]` naming a Land or Worktree-Teardown failure is a stop": stated in Notices.
-- "a review escalation never takes this bullet and follows the hand-on bullet or the fault paragraph": the bullet already says it is not a review escalation, and the fault paragraph follows.
-- "A design call that amends the approved plan … never by a card edit" in Escalations: now a pointer to Fixing a run, which states it.
-- "Settle it as a hand-on question" under cause `decision`: the bullet says it arrives as a hand-on, and the hand-on bullet governs.
-- "since it tells each live agent of the run and a producer that starts later reads the record", on the Record-Write case: a reason; "with no message of your own" stays.
-- "so a report that arrives after a context cycle meets the same re-check": a reason; the re-check rule stays.
-- "The repository is its own state", in intake: its consequence stays.
-- "A goto … gives the whole segment a fresh budget": see Disagreements.
+## Passages moved
+
+- `## Making a beam`, `## Landing a beam`, and the project-ran-as-a-task-run paragraphs go to `role-beams.md`.
+  The role's `Notices` section names landings into a beam.
+- `## Landing halts` goes to `role-landing-halts.md`.
+  The rule against a goto to Plan-Bouncer went with it.
+  "After a run lands, amend the board entries it superseded" moved to `After landing` in the role.
+- `## Intake` goes to `role-intake.md`.
+  The rule that intake runs only when the operator asks stays in the role, under `Where a finding goes`.
+- The hibernate paragraphs of `## Acting without asking` go to `role-hibernate.md`.
+- `## Slack` goes to `role-slack.md`.
+- The wake-up and creel-mail mechanics of run loop item 4, and the other-hub stamp and `EXTERNAL` rules, move into `## Messaging`.
+- The "A landing that succeeds sends nothing" sentence moves from `Notices` to `After landing`.
+- `## Status reports` and `## Scratch and notes` fold into `## Working rules` and `## Notes and orch rules`.
+- `Never pass --adopt-local to lym fabric add` moves from the opening to `## Working rules`.
+
+## Disagreements settled
+
+- The old role named the inner runs "tapestry, arras, darn or sampler"; the rewrite says "tapestry, motif, darn or sampler", the name the run loop item already used.
+  Check this against the recipe names the code accepts.
+
+## To check by hand
+
+- Start cost in tokens before and after, measured with `docs/research/tokens/startup-context-2026-11-05/measure.sh`; the character counts above are not a token count, and the on-demand files are read only on their event.
+- Each passage in the two lists above against the old file (`git show b30cccce:contracts/orchrole/orch-role.md`).
+- A fresh orch start: the role renders, and the `role-*.md` files appear beside it under `.lym/orch/`.
