@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -41,6 +41,39 @@
       "output": "",
       "at": "2026-11-06T08:56:58Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/drift-judge-usage-record-halt/_lym/landing/summary.md",
+      "at": "2026-11-06T09:03:59Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-06T08:59:30.492360434Z",
+          "end": "2026-11-06T08:59:30.504606721Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-06T08:59:30.591817819Z",
+          "end": "2026-11-06T09:03:36.090876223Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-06T09:03:36.127065776Z",
+          "end": "2026-11-06T09:03:36.2873615Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-06T09:03:36.328017087Z",
+          "end": "2026-11-06T09:03:36.329458158Z"
+        }
+      ]
     }
   ],
   "product": {
