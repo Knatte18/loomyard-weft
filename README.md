@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-06 11:38 UTC; every age below is as of then.
+Rendered 2026-11-06 11:39 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -82,7 +82,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | Webster | neve | 17h<br>17h | creel, orch |
 | T3 | **Session scope: drop the larger Workflow schema and hide plugin skills that are set off**<br>• Two faults the launch trial found, proved in real launches | [`session-scope-fix`](design-session-scope-fix.md) | darn · light | Darn-Write | neve | 1h<br>1h | claude, shuttle |
-| T5 | **Drift: lym record writes, a gone snapshot, capture provenance and a retired placeholder halt runs**<br>• Four drift bugs that halt Models hub runs at Drift-Verify and Drift-Recheck<br>• `drift: scope off` | [`drift-halts-bundle`](design-drift-halts-bundle.md) | darn · solid | Code-Bouncer | neve | 2h<br>1h | drift, loom, config, reconcile |
+| T5 | **Drift: lym record writes, a gone snapshot, capture provenance and a retired placeholder halt runs**<br>• Four drift bugs that halt Models hub runs at Drift-Verify and Drift-Recheck<br>• `drift: scope off` | [`drift-halts-bundle`](design-drift-halts-bundle.md) | darn · solid | Code-Burler-Review | neve | 2h<br>1h | drift, loom, config, reconcile |
 
 #### Ready (0)
 
