@@ -1,6 +1,6 @@
 # Revise tier 1: what makes it slow, and which tests to change, fold or cut
 
-`tier1-test-revision` · Task · research, fabric · running · Open-Window
+`tier1-test-revision` · Task · research, fabric · running · Open-IDE
 
 ## Decision (operator, 2026-11-06)
 
