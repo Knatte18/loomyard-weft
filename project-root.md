@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **beam merge-parent: the merge-in task can merge, lands as a merge and needs no pull request** | [`merge-parent-lands-right`](design-merge-parent-lands-right.md) | darn · solid | Darn-Write | neve | 13h<br>13h | pawl, darn, landing, fabric |
-| T3 | **drift: every judge halts on lym's own usage record, and resume loops**<br>• `drift: scope off` | [`drift-judge-usage-record-halt`](design-drift-judge-usage-record-halt.md) | darn · speed | Seed-Child | neve | 0m<br>0m | drift, loom |
+| T3 | **drift: every judge halts on lym's own usage record, and resume loops**<br>• `drift: scope off` | [`drift-judge-usage-record-halt`](design-drift-judge-usage-record-halt.md) | darn · light | Drift-Baseline | neve | 1m<br>0m | drift, loom |
 | T6 | **Dobby reminds the operator on Slack of a run waiting at PR-Review or Sampler-Session** | [`slack-wait-reminders`](design-slack-wait-reminders.md)<br>[Sketch](decision-slack-wait-reminders.md) | darn · light | Darn-Write | neve | 16h<br>16h | reed |
 | T8 | **Raddle and motif runs start and finish without the orch** | [`raddle-motif-finish-clean`](design-raddle-motif-finish-clean.md) | darn · solid | Finalize | neve | 15h<br>13h | batten, dobby, loom, board, orch |
 
@@ -65,7 +65,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B1 | L | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• A Slack reminder ping while a PR-Review waits is now task T6; only the silence in status views remains | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 2d<br>12h | landing, loom, batten |
 | B2 |  | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | 13h<br>13h | tools, claude |
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 15h<br>15h | reed, orch |
-| B5 |  | **drift: Drift-Recheck halts on a capture's provenance file even when the compare command passed** | [`drift-capture-provenance-halt`](design-drift-capture-provenance-halt.md) | 0m<br>0m | drift, config |
+| B5 |  | **drift: Drift-Recheck halts on a capture's provenance file even when the compare command passed** | [`drift-capture-provenance-halt`](design-drift-capture-provenance-halt.md) | 1m<br>1m | drift, config |
 | B6 |  | **drift: config reconcile leaves the retired {skip_file} placeholder in capture and compare commands** | [`drift-retired-skip-file-kept`](design-drift-retired-skip-file-kept.md) | 0m<br>0m | drift, config, reconcile |
 | B7 |  | **webster begin-batch reports a delete-before-reference plan ordering finding as plan_conflict: tree_moved** | [`begin-batch-wrong-conflict-kind`](design-begin-batch-wrong-conflict-kind.md) | 0m<br>0m | webster |
 
