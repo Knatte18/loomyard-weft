@@ -1,6 +1,6 @@
 # Try the Codex assistant reviewer with its lens fan
 
-`codex-assist-fan-trial` · Task · research, codex, shuttle · running · Describe
+`codex-assist-fan-trial` · Task · research, codex, shuttle · running · PR-Review
 
 ## Seen
 
