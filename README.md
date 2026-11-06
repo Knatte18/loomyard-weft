@@ -6,13 +6,13 @@ Prime owner: `neve`.
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## [P1 Fewer agent turns, fewer tokens](project-turn-savings.md) (0)
+## [P1 Fewer agent turns, fewer tokens](project-turn-savings.md) (1)
 
 `turn-savings` · Age 4d · Owner `neve`
 
 Token savings by cutting agent turns, above all late turns at large context
 
-### Tasks (0)
+### Tasks (1)
 
 Concrete and claimable; only a task can run.
 
@@ -21,6 +21,14 @@ Concrete and claimable; only a task can run.
 Waits on nothing open; can start now.
 
 _None._
+
+#### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T5 | `draft` **Measure whether tasks run faster since turn-savings, darn and tapestry apart**<br>• Before-and-after run time from recorded data, Sketch-fed tapestry runs compared like for like | [`task-runtime-before-after`](design-task-runtime-before-after.md) | darn · docs |  | 0m<br>0m | report, loom |
 
 ### Notes (0)
 
@@ -68,7 +76,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **beam merge-parent: the merge-in task can merge, lands as a merge and needs no pull request** | [`merge-parent-lands-right`](design-merge-parent-lands-right.md) | darn · solid | Code-Burler-Fix | neve | 14h<br>14h | pawl, darn, landing, fabric |
 | T2 | **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | Plan-Write | neve | 15h<br>15h | creel, orch |
-| T3 | **drift: every judge halts on lym's own usage record, and resume loops**<br>• `drift: scope off` | [`drift-judge-usage-record-halt`](design-drift-judge-usage-record-halt.md) | darn · light | Finalize | neve | 22m<br>22m | drift, loom |
+| T3 | **drift: every judge halts on lym's own usage record, and resume loops**<br>• `drift: scope off` | [`drift-judge-usage-record-halt`](design-drift-judge-usage-record-halt.md) | darn · light | Finalize | neve | 23m<br>22m | drift, loom |
 | T11 | **A parent cannot withdraw a PATTERN change the decision record declares**<br>• lym loom decision add only appends PATTERN bullets; a declared id the parent drops needs a hand edit of the record | [`decision-withdraw-pattern`](design-decision-withdraw-pattern.md) | darn · light | Darn-Write | neve | 15h<br>14h | loom, parsers, pattern |
 
 #### Ready (0)
@@ -104,9 +112,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B1 | L | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• A Slack reminder ping while a PR-Review waits is now task T6; only the silence in status views remains | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 2d<br>13h | landing, loom, batten |
 | B2 |  | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | 13h<br>13h | tools, claude |
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 16h<br>16h | reed, orch |
-| B5 |  | **drift: Drift-Recheck halts on a capture's provenance file even when the compare command passed** | [`drift-capture-provenance-halt`](design-drift-capture-provenance-halt.md) | 22m<br>22m | drift, config |
-| B6 |  | **drift: config reconcile leaves the retired {skip_file} placeholder in capture and compare commands** | [`drift-retired-skip-file-kept`](design-drift-retired-skip-file-kept.md) | 22m<br>22m | drift, config, reconcile |
-| B7 |  | **webster begin-batch reports a delete-before-reference plan ordering finding as plan_conflict: tree_moved** | [`begin-batch-wrong-conflict-kind`](design-begin-batch-wrong-conflict-kind.md) | 22m<br>22m | webster |
+| B5 |  | **drift: Drift-Recheck halts on a capture's provenance file even when the compare command passed** | [`drift-capture-provenance-halt`](design-drift-capture-provenance-halt.md) | 23m<br>23m | drift, config |
+| B6 |  | **drift: config reconcile leaves the retired {skip_file} placeholder in capture and compare commands** | [`drift-retired-skip-file-kept`](design-drift-retired-skip-file-kept.md) | 23m<br>23m | drift, config, reconcile |
+| B7 |  | **webster begin-batch reports a delete-before-reference plan ordering finding as plan_conflict: tree_moved** | [`begin-batch-wrong-conflict-kind`](design-begin-batch-wrong-conflict-kind.md) | 23m<br>23m | webster |
 
 #### Enhancements (4)
 
