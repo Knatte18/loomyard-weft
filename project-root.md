@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-06 12:00 UTC; every age below is as of then.
+Rendered 2026-11-06 12:01 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -8,19 +8,18 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (6)
+## Tasks (5)
 
 Concrete and claimable; only a task can run.
 
-### Running (3)
+### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Try the Codex assistant reviewer with its lens fan**<br>• A Claude darn docs writer spawns Astra with lenses on a real commit, and the run review then uses the real fanned seat: does the fan work, and what does it cost<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]`<br>• `loom: code_max_bounces 1` | [`codex-assist-fan-trial`](design-codex-assist-fan-trial.md) | darn · docs | Code-Burler-Review | neve | 13m<br>13m | codex, shuttle |
-| T2 | **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | Webster | neve | 17h<br>17h | creel, orch |
-| T5 | **Drift: lym record writes, a gone snapshot, capture provenance and a retired placeholder halt runs**<br>• Four drift bugs that halt Models hub runs at Drift-Verify and Drift-Recheck<br>• `drift: scope off` | [`drift-halts-bundle`](design-drift-halts-bundle.md) | darn · solid | Finalize | neve | 3h<br>1h | drift, loom, config, reconcile |
+| T1 | **Try the Codex assistant reviewer with its lens fan**<br>• A Claude darn docs writer spawns Astra with lenses on a real commit, and the run review then uses the real fanned seat: does the fan work, and what does it cost<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]`<br>• `loom: code_max_bounces 1` | [`codex-assist-fan-trial`](design-codex-assist-fan-trial.md) | darn · docs | Code-Burler-Review | neve | 14m<br>14m | codex, shuttle |
+| T2 | **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | Webster | neve | 18h<br>18h | creel, orch |
 
 ### Ready (0)
 
@@ -54,7 +53,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R2 |  | **Re-measure writer exploration and the carry of lookup results after the Discussion stencil change**<br>• Re-run the writer-lookups measurement on 10 tapestry runs, pricing the carry saved by early explore subagents | [`writer-lookups-remeasure`](design-writer-lookups-remeasure.md) | 1d<br>18h | loom, stencil |
-| R3 |  | **Trial creel mail across hubs**<br>• A darn docs run in which the loomyard orch drives a run in lyt from start to landing through creel alone | [`creel-cross-hub-trial`](design-creel-cross-hub-trial.md) | 2m<br>2m |  |
+| R3 |  | **Trial creel mail across hubs**<br>• A darn docs run in which the loomyard orch drives a run in lyt from start to landing through creel alone | [`creel-cross-hub-trial`](design-creel-cross-hub-trial.md) | 3m<br>3m |  |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>16h | loom, stencil |
 
 ### Bugs (3)
@@ -87,5 +86,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 2w<br>18h | loom, board, batten, workspaces |
 | F16 |  | **Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | 3d<br>16h | drift, shed |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>18h | burler, shed, orch, quarry, report |
-| F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 1d<br>1m | board, orch, workspaces |
+| F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 1d<br>2m | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 1d<br>1d | batten, board, fabric, workspaces |
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T5 | **Drift: lym record writes, a gone snapshot, capture provenance and a retired placeholder halt runs**<br>• Four drift bugs that halt Models hub runs at Drift-Verify and Drift-Recheck<br>• `drift: scope off` | [`drift-halts-bundle`](design-drift-halts-bundle.md) | 3h<br>1h | drift, loom, config, reconcile |
