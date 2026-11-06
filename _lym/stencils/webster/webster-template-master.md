@@ -3,7 +3,7 @@
      It is filled by `run`'s engine core via internal/stencil and handed to the shuttle as the Master session's entire instruction set for one whole plan run: the long-lived session that reads the plan's overview and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lym/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. verify_fix_prompt_path is the Go-rendered verify-gate fixer fork prompt file. parent_decisions is every added-decision entry of the task's decision record, verbatim, or the literal `none`. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive. parent_directive is a third optional marker, rendered by internal/parentdirective. edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lym-stencil: sha256=349ccdd9941ba39c9d2016fee08b91b5b7c9bca1a6a2adfb9f7cde7326f45e77 build=3882070d44bf054c10c7061bc06653a990712cee time=2026-11-05T19:27:52Z -->
+lym-stencil: sha256=66393b74df566b1fd55db3c2d82ae92f1681103b1062053ce18e07076d9bc33c build=b93a0a52b204b178bc6306a1480ff2bced4c4a7a time=2026-11-06T11:37:39Z -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
@@ -234,10 +234,15 @@ They are answers your parent already gave, often to an earlier stop of this run:
 
 {{.parent_decisions}}
 
-## A plan conflict goes to the plan fixer first; a plan drift ends your run as stuck
+## A plan defect goes to the plan fixer first; a plan-order conflict or a plan drift ends your run as stuck
 
-If `begin-batch` refuses with `{"plan_conflict": "<cause>"}`, the cause being `plan_defect` or `tree_moved`, that means `begin-batch`'s own re-resolution of the plan against the current tree — run immediately before it would have written the fork prompt — found that the plan contradicts the tree.
-Most often an earlier batch renamed or moved a target a later card still names, and a small plan fixer matches the cards to the tree:
+If `begin-batch` refuses with `{"plan_conflict": "<cause>"}`, the cause being `plan_defect`, `tree_moved` or `plan_order`, that means `begin-batch`'s own re-resolution of the plan against the current tree — run immediately before it would have written the fork prompt — found that the plan contradicts the tree.
+For `plan_defect` and `tree_moved`, most often an earlier batch renamed or moved a target a later card still names, and a small plan fixer matches the cards to the tree.
+`plan_order` means a card deletes a symbol a later card's Edit code still references, so the delete must move after that card.
+The plan fixer cannot do that, since moving a delete reshapes the cards and belongs to the plan writer.
+A `plan_order` refusal therefore skips the rung below: write `outcome: stuck` to `{{.outcome_path}}` right away, with a `stuck_reason` quoting the refusal's message verbatim, then stop.
+
+For `plan_defect` and `tree_moved`:
 
 1. Keep the refusal's message: a stuck run quotes it.
 2. Run `lym webster fix-plan` as a **backgrounded** Bash command and end your turn, exactly as after a backgrounded `recover-batch`: no polling, no `sleep`, no file checks while it runs.
@@ -262,7 +267,7 @@ The batch's own mechanical done-checks run against the worktree's real post-batc
 They find declared work missing: a Create target that still does not resolve, a Delete target that still does, or a `plan:` handle that bound to nothing.
 A symbol the batch removed that a later card names, with no rename in the report, first comes back once as `{"later_target_removed": true}`, handled by its rung of the failure ladder above.
 Every other finding about a later card (drift, a symbol this batch's cards delete that a later card still references, or a removal still unanswered after the hand-back) comes back on the envelope's `warnings` and the batch still records;
-that later card's own `begin-batch` refuses it, naming "edit the plan so the named cards match the tree, run "lym webster rebaseline --card NN" naming each card you edited, then begin-batch NN again".
+that later card's own `begin-batch` refuses it with a `plan_conflict` refusal that names the way forward.
 A done-check failure comes back as `{"batch_failed": true}`, handled by the `batch_failed` rung of the failure ladder above.
 The batch is already terminal-failed and its report archived, so you never retry `record-batch` and never edit a target file yourself (see "What you never do" below).
 
