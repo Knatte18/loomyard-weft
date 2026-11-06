@@ -66,7 +66,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 3d<br>17h | shuttle, codex, loom |
 
-## [P0 Root: entries under no project](project-root.md) (28)
+## [P0 Root: entries under no project](project-root.md) (29)
 
 Owner `neve`
 
@@ -97,7 +97,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light |  | 5d<br>20h | fabric |
 
-### Notes (25)
+### Notes (26)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -108,7 +108,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R2 |  | **Re-measure writer exploration and the carry of lookup results after the Discussion stencil change**<br>• Re-run the writer-lookups measurement on 10 tapestry runs, pricing the carry saved by early explore subagents | [`writer-lookups-remeasure`](design-writer-lookups-remeasure.md) | 1d<br>17h | loom, stencil |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>14h | loom, stencil |
 
-#### Bugs (7)
+#### Bugs (8)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -119,6 +119,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B5 |  | **drift: Drift-Recheck halts on a capture's provenance file even when the compare command passed** | [`drift-capture-provenance-halt`](design-drift-capture-provenance-halt.md) | 1h<br>1h | drift, config |
 | B6 |  | **drift: config reconcile leaves the retired {skip_file} placeholder in capture and compare commands** | [`drift-retired-skip-file-kept`](design-drift-retired-skip-file-kept.md) | 1h<br>1h | drift, config, reconcile |
 | B7 |  | **webster begin-batch reports a delete-before-reference plan ordering finding as plan_conflict: tree_moved** | [`begin-batch-wrong-conflict-kind`](design-begin-batch-wrong-conflict-kind.md) | 1h<br>1h | webster |
+| B8 |  | **drift: a judge snapshot gone between resumes halts the run for a hand check** | [`drift-judge-snapshot-gone`](design-drift-judge-snapshot-gone.md) | 0m<br>0m | drift, loom |
 
 #### Enhancements (4)
 

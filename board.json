@@ -683,6 +683,27 @@
       "body": "Imported from [issue #74](https://github.com/Knatte18/loomyard/issues/74).\n\nSeen: after a judge snapshot was gone, 'lym loom resume' halted again at once: 'the judge session changed what it may not: records: src/csharp/NORCE.Models/_lym/drift/scope.json was changed'. The only change to scope.json is lym's own removal of \"snapshot_lost\": true.\n\nCause: internal/driftengine/verify.go, resumeJudgeSession, takes the new snapshot with TakeJudgeSnapshot first and then clears scope.SnapshotLost with WriteRecords. That record write lands after the snapshot, so judgeSessionChanged names scope.json as a change the judge made. The designed way to recover a lost snapshot therefore always halts.\n\nWorkaround used: set the snapshot's records head in snapshot.json to the records checkout's current HEAD, then 'lym loom resume'.\n\nExpected: clear SnapshotLost before taking the snapshot, or exempt the drift records lym writes itself (scope.json, judged.json) from the judge's write guard. Related: #72, #73.\n",
       "created": "2026-11-06T10:03:55Z",
       "revised": "2026-11-06T10:03:55Z"
+    },
+    {
+      "id": 1170,
+      "handle": "B8",
+      "slug": "drift-judge-snapshot-gone",
+      "title": "drift: a judge snapshot gone between resumes halts the run for a hand check",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "drift",
+        "loom"
+      ],
+      "issues": [
+        76
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #76](https://github.com/Knatte18/loomyard/issues/76).\n\nWhat happened: Drift-Verify halted blocked with 'the snapshot of both checkouts the judge was spawned under is gone, so what its session changed cannot be told'. The snapshot lives under the hub's _bolt/.lym/drift-judge/\u003ctask\u003e directory, which earlier halts in the same run pointed to as the restore source.\n\nWhy abnormal: the snapshot disappeared between consecutive resumes of the same run, likely removed by the operator's or parent's cleanup step ('deletes ... the changed scratch directory' in the way-forward text of the earlier halts) while the next judge was already spawning, or by lym itself. A resume then has no baseline and halts again, forcing a manual check of both checkouts.\n\nWhat to do: make the way-forward cleanup and the snapshot lifecycle not race with a resume; take a fresh snapshot automatically on resume when the old one is gone instead of halting, as the halt text itself says resume would do.\n\nProvenance: task api-density-coefficients; note loom-halt-5.md.",
+      "created": "2026-11-06T10:03:58Z",
+      "revised": "2026-11-06T10:03:58Z"
     }
   ],
   "prime_owner": "neve",
