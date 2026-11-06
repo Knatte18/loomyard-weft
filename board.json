@@ -614,9 +614,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer",
-      "body": "## Decision (operator, 2026-11-06)\n\nCodex is used for review first, or as a support reviewer, not as a writer: the operator does not trust that it writes in the same tone as Claude.\nThe earlier idea of a writer comparison is dropped.\n\n## Idea\n\n already has : an extra reviewer beside the Code-Review reviewer, whose report the reviewer consolidates and which never gates the round.\nSet it per task through , as , on real darn runs, and read afterwards what Codex found that the Claude reviewer did not, its false findings, and the time it added.\nThe benches  and  found Codex no stand-in for the Claude fan but with real findings of its own, which fits a support role.\nFirst input proposed: the Webster bug B7 , as darn light.",
+      "body": "## Decision (operator, 2026-11-06)\n\nCodex is used for review first, or as a support reviewer, not as a writer: the operator does not trust that it writes in the same tone as Claude.\nThe earlier idea of a writer comparison is dropped.\n\n## Idea\n\n`loom.yaml` already has `code_assist_reviewer_model`: an extra reviewer beside the Code-Review reviewer, whose report the reviewer consolidates and which never gates the round.\nSet it per task through `run_settings`, as `{\"loom\":{\"code_assist_reviewer_model\":\"astra[medium]\"}}`, on real darn runs, and read afterwards what Codex found that the Claude reviewer did not, its false findings, and the time it added.\n\nThe benches `docs/research/codex/review/codex-code-review-bench-2026-10-28` and `codex-review-yardstick-2026-10-28` found Codex no stand-in for the Claude fan but with real findings of its own, which fits a support role.\n\nFirst input proposed: the Webster bug B7 `begin-batch-wrong-conflict-kind`, as darn light.\n",
       "created": "2026-11-06T10:03:49Z",
-      "revised": "2026-11-06T10:09:31Z",
+      "revised": "2026-11-06T10:09:41Z",
       "project": "codex-engine-trial"
     },
     {
