@@ -489,32 +489,6 @@
       "revised": "2026-11-05T20:17:22Z"
     },
     {
-      "id": 1162,
-      "handle": "T7",
-      "slug": "orch-role-shorter",
-      "title": "Shorten the orch role file, the largest single start cost",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "orch"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "role.md costs 19,390 tokens per read: shorten it, or move rarely used parts to a file the orch reads on demand",
-      "body": "## Seen\n\nReport `docs/research/tokens/startup-context-2026-11-05/report.md`: `.lym/orch/role.md`, 54,443 characters, costs 19,390 tokens each time it is read, which is every orch start.\nIt is the largest single source in an orch start, larger than everything Claude Code itself loads.\nThe operator finds it far too long and sloppily written (2026-11-06).\n\n## Wanted\n\nRewrite `contracts/orchrole/orch-role.md` so it is much shorter and well written, with about half its tokens or fewer as the aim.\n\n- Keep every rule that binds the orch, in force and meaning: a shorter sentence, never a weaker rule.\n  Where two passages say the same thing, keep one; where they disagree, keep what the code does and name it in the change description.\n- Move what the orch needs only for a rare verb or event, such as intake, making and landing a beam, landing halts, hibernate or Slack, into files it reads on demand, with one line in the role saying when to read which.\n  Prefer files rendered beside the role over a new skill, so no other session sees them.\n- The command list repeats what `lym \u003ccommand\u003e --help` and `lym help index` give: find how it is produced, and cut it to what the orch cannot get otherwise, keeping the rule that the orch uses only the commands open to it.\n- Follow `scribe:prose`: point first, one rule stated once, no history, no padding.\n  Read the role from the top as a new orch would, and order it by what the orch does: the run loop first, then stops and escalations, then the board.\n\nAnything that reads, renders or tests the role moves with it, including the place it is copied to under `.lym/orch/` and any test that pins its text.\nNo other session's stencils change, and lym's behaviour does not change.\n\n## Review\n\nThe risk is a rule that disappears without notice, so the change description lists each passage dropped, and each passage moved with where it went.\nCode-Review checks that list against the old file, and states the start cost in tokens before and after, measured with `docs/research/tokens/startup-context-2026-11-05/measure.sh` or by the same count.\n",
-      "status": "done",
-      "created": "2026-11-05T20:18:23Z",
-      "revised": "2026-11-06T10:11:31Z",
-      "run_settings": {
-        "drift": {
-          "scope": "off"
-        }
-      },
-      "profile": "solid"
-    },
-    {
       "id": 1168,
       "handle": "R1",
       "slug": "codex-assist-review-trial",
@@ -550,35 +524,6 @@
       "body": "A darn `docs` run in which the loomyard orch drives a run in `lyt` from start to landing through creel alone, with the operator doing nothing, recording the result under `docs/research/`.\n\nSetup before the first cross-hub post:\n\n- `trusted_hubs: [ly]` in the `creel` config of `lyt` and of `cs`, set by the operator in those hubs.\n- A deployed binary carrying creel-cross-hub-build.\n- A restart, right after the deploy, of every session of the machine's hubs launched before it. Until a session restarts, an orch strand of another hub reaches it under the old trust sentence.",
       "created": "2026-11-06T11:57:40Z",
       "revised": "2026-11-06T11:57:40Z"
-    },
-    {
-      "id": 1174,
-      "handle": "T5",
-      "slug": "assist-fan-seat-work-alone",
-      "title": "A fanned assistant seat is told to work alone, and ran without its lenses",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "burler",
-        "stencil",
-        "codex"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The composed prompt forbids what the fan asks for; the real seat went solo and no record flagged it",
-      "body": "## Seen\n\nThe first real fanned assistant seat, Code-Review of `codex-assist-fan-trial` (`2c4864bb`, `code_assist_reviewer_fan: review-code`, `astra[medium]`), ran no lenses.\nIts report says so under \"Instruction conflict\": \"The top-level task says to work alone and permits writing only this report; instruction 2 asks for subagents and additional lens files. I followed the top-level restriction\".\nIts Codex session holds no `spawn_agent` call and no subagent rollout.\n`round-1-usage.yaml` still records `assist_fan: review-code`, and nothing in the round flagged the missing fan: the Chair put the note under Rejected as no defect of the diff.\n\n## Cause\n\nThe composed prompt contradicts itself:\n\n- `contracts/stencils/seat/seat-directive-assistant.md` says \"You work alone: you write your output and nothing else\", and \"Your output is the only file set you write\", with `output_files` naming the report alone.\n- `contracts/stencils/burler/burler-template-assist-reviewer.md:20` says the write surface is the report \"and nothing else\".\n- `contracts/stencils/burler/burler-assist-cluster-fan.md` asks for subagents and lens reports, and calls those reports \"the one exception\".\n\nThe hand-composed prompt of the same trial's part 1 kept the \"work alone\" block, but its write-surface line named the lens reports, and Astra fanned there.\nThat is one run each, so this difference is the likely cause and not a proven one.\n\n## Idea\n\n- When the seat is fanned, the seat directive and the write surface say so: \"work alone\" means no other session, not no subagents, and `output_files` and the write-surface line name the lens reports.\n- A round whose assistant was asked to fan and returned no lens report says so in its record, so a silent solo seat cannot pass as a fanned one.\n\nProof wanted: one real fanned seat in which every lens starts and returns.\n",
-      "status": "done",
-      "created": "2026-11-06T12:10:16Z",
-      "revised": "2026-11-06T12:16:42Z",
-      "run_settings": {
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "light"
     },
     {
       "id": 1175,
