@@ -1,27 +1,36 @@
-# drift: the judge snapshot exempts lym's usage and judgement records
+# drift: the judge snapshot ignores lym's usage and archived judgements
 
-Every drift judge halted at Drift-Verify or Drift-Recheck with `the judge session changed what it may not`, naming files lym wrote itself.
-A resume could not clear it, because each new judge session wrote a new usage record and halted again.
-A judge that changed nothing now passes the snapshot check.
+Every drift judge halted at Drift-Verify or Drift-Recheck with `the judge session changed what it may not`, naming a new `_lym/usage/session-<id>.json` and sometimes a `_lym/drift/judgement-<stamp>.yaml`.
+Both files are lym's own bookkeeping, not edits by the judge.
+Deleting them and running `lym loom resume` re-ran the judge, which wrote new ones and halted again, so no verb got a run past the halt.
+A judge that changes nothing no longer halts.
 
-## What changed
+Closes #73
+Closes #72
 
-- `loomRecordsDirs` in `internal/loomcli/driftwiring.go` now holds the anchored `shedrun.UsageDirRel()`, so `_lym/usage/session-<id>.json` is exempt on the records checkout, in a subdirectory-anchored hub too.
-- `JudgeSnapshot.Changes` in `internal/driftengine/judgesnapshot.go` now exempts the timestamped siblings of `judgement.yaml`, on both checkouts, as it already did `judgement.yaml` itself.
-  The seat producer's stale-output archive renames an earlier judge's file to `judgement-<stamp>.yaml`, or `judgement-<stamp>-<n>.yaml` on a same-second collision, after the snapshot is taken.
+## What changes
+
+- `loomRecordsDirs` in `internal/loomcli/driftwiring.go` now holds the usage directory (`shedrun.UsageDirRel()`) under the location's anchor, so the records-checkout check leaves out the usage record of every session of the run.
+- `JudgeSnapshot.Changes` in `internal/driftengine/judgesnapshot.go` leaves out the timestamped copies of `judgement.yaml` beside it, on both the code and the records checkout.
+  The copies are what lym keeps of an earlier judge's file when the next judge starts.
+- The `driftengine` doc comments describe both exemptions.
 
 ## Design decisions
 
-- The new `isJudgementPath` matches only a sibling in the same directory with the same extension whose name carries the archive stamp, read through `shedadapters.ArchivedRunDirSegment`.
-  A plain `judgement-` prefix in `loomRecordsDirs` would also have exempted any other file a judge wrote under that name, such as `judgement-notes.yaml`, which stays a named change.
-- `ArchivedRunDirSegment` carries a run-directory name but holds the one pattern for the archive stamp, so it is reused for a file name with its extension trimmed rather than copied.
-
-## Bound
-
-An edit the judge session makes under `_lym/usage` or to an archived judgement goes unseen, like one under the other exempt paths.
-Neither holds code, the expectation or the drift records.
+- The archived-judgement test is `isJudgementPath`.
+  A path is exempt only in the judgement file's own directory, with its extension, and with a base name that `shedadapters.ArchivedRunDirSegment` reads as an archive of `judgement`.
+  That reuses lym's own archive naming, including the numbered `-1` form, instead of a looser prefix match.
+  A neighbour such as `judgement-notes.yaml`, a `.txt` copy, a copy in a subdirectory or a differently named file is still reported as a change.
+- The usage directory is exempt as a whole on the records checkout, like the other loom records paths, and is anchored the same way, so it also matches under a subdirectory anchor such as `src/backend/_lym/usage`.
+- Stated bound: an edit the judge makes under an exempt path goes unseen.
+  The paths are lym's run bookkeeping and hold no code, expectation or judgement record.
 
 ## Tests
 
-- `TestJudgeSnapshot` gains a row for the archived judgement, with and without the collision suffix, and a row for files beside it that stay named.
-- `TestLoomRecordsDirs_HoldTheUsageDirectoryUnderTheAnchor` pins the usage path for a root anchor and a subdirectory anchor.
+- `TestJudgeSnapshot` has rows for archived judgements, plain and numbered, on the records checkout and on the code checkout, and a row that still names the look-alike files above.
+- `TestLoomRecordsDirs_HoldTheUsageDirectoryUnderTheAnchor` checks the usage directory at the root anchor and at a subdirectory anchor.
+
+## To check by hand
+
+Not run: a live drift judge in a hub, to confirm that a Drift-Verify or Drift-Recheck passes with the usage record and an archived judgement present.
+The blocked runs named in the issue (`cuttings-fitted-rheology`, `api-density-coefficients`, `baseline-provenance-outside`) can be resumed with `lym loom resume` once this lands.
