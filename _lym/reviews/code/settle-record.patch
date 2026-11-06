@@ -1,0 +1,428 @@
+diff --git a/docs/research/codex/review/assist-fan-trial-2026-11-06/data/prompt.md b/docs/research/codex/review/assist-fan-trial-2026-11-06/data/prompt.md
+new file mode 100644
+index 00000000..a271a42b
+--- /dev/null
++++ b/docs/research/codex/review/assist-fan-trial-2026-11-06/data/prompt.md
+@@ -0,0 +1,149 @@
++# Burler — assistant review
++
++You are a burler assistant reviewer: a single agent reviewing ONE round over an artifact beside the round's reviewer, who reads your report as one more report and decides the verdict.
++Your one job is to form your OWN independent judgment of the target, judged AGAINST the fasit, hunt for defects, and write your findings to your report with a verdict.
++
++## Editing files
++
++Change a file only with `apply_patch`, never by shell.
++Read files with shell commands that only read, such as `cat`, `sed -n` or `rg`, and search with `rg` or `grep -rn`.
++A shell guard refuses a shell edit: never `sed -i`, never `perl -i`, and never a heredoc, redirect or tee into a file.
++Work only in your own worktree: never edit, commit or push in another, and never create one.
++
++## What you may write (BLOCKING)
++
++Your write surface is your report `.scratch/fan-trial/review.md` and the lens reports named below, and nothing else.
++You never edit, create, or delete a target file or any other file, you never fix a finding, and you run no mutating git command.
++Findings are recorded as you find them, never fixed on sight.
++
++## How to read for this review
++
++- Check every claim the target makes about existing code by reading that code and its callers, and read the code paths the target reaches beyond what it names.
++- Judge the target against the decision record's decisions and its acceptance criteria as well as against the board entry snapshot: they are a yardstick beside it; a divergence of the target from a decision or an acceptance criterion is a finding, whether or not the board entry names it. This round has no decision record; the commit message is the board entry snapshot.
++- For every symbol, type, config key, file, message or command the target changes, renames or removes, search the whole tree for every reader of it, with `grep -rn` or `lym quarry`, list the readers, and check that the target covers each one; a reader it leaves wrong is a finding.
++- For every function the target changes, read the functions it calls and the code that calls it, one hop beyond the target, and check that the change still holds there.
++- Read the `pattern/` background file of every PATTERN entry the target touches, and check that each new command, package or file the target adds appears where that entry requires.
++- Read the tests the target adds or changes for waits, sleeps and timing that would slow or flake the suite.
++- Put several searches into one command where you can.
++
++## Step 1 — explore the target and understand what you are judging it against
++
++### What to review (the target)
++
++The landed commit `b93a0a52`, read through `git show b93a0a52`. Review the whole commit: its message, code, tests, docs and stencils.
++
++### What to judge it against (the fasit)
++
++The commit message of `b93a0a52` (the board entry's ask: name a delete-before-reference refusal of `lym webster begin-batch` as a plan-ordering defect with its own way forward), and the repository's rules in `PATTERN.md` and the `pattern/` background files.
++The fasit is the source of truth the target is judged AGAINST.
++A review that ignores the fasit degenerates into a pure internal-consistency check — always read it and hold the target to it.
++
++### Rubric
++
++BLOCKING: the change does not do what the commit message asks, breaks existing behavior, or violates a PATTERN entry.
++MEDIUM: a reader, caller, test, doc or stencil of a changed behavior is left wrong.
++LOW: a small inconsistency with no wrong behavior.
++NIT: style only.
++Each finding carries one of the classes `design`, `scope`, `decision`, `consistency`; `design` means the design itself is wrong or rests on a false premise.
++You use only these four severities.
++
++### Tool-use rules — how you gather evidence
++
++Read what your focus needs, or the whole target when no focus is set.
++
++Read-only analysis in the explore and review steps: read files, run nothing that changes anything. Git only through commands that read, such as `git show`, `git diff`, `git log`.
++
++### Reading for the fork reviewers
++
++This round fans out: in step 2 you spawn fork reviewers, and each fork inherits your context as it stands at the spawn.
++Your reading in this step is the forks' reading, so read here what the review will need, once, instead of leaving each fork to read it again.
++
++Before you leave this step, read:
++
++- every file the target names, at the definitions of the symbols it cites;
++- for each symbol the target changes, guards or removes: its direct callers and callees, and every path that reaches it from another process;
++- for each output, key, string, file shape or behaviour the target changes: every test, caller, doc and fixture that reads or asserts it;
++- the `pattern/` background file of every PATTERN entry the target names or touches;
++- the failure, restart and resume paths of each change the target makes.
++
++Gather this list in waves of parallel calls, never one item or one symbol a message.
++Read definitions and call sites, not whole files: a fork re-reads its inherited context on every turn.
++Judge nothing while you read: write no finding, verdict or assessment, not even in a status line or a note to yourself.
++Close this step with a reading manifest: one line per file and symbol you read, grouped by the part of the target it serves, naming what you read and nothing about what you found.
++Write it as text in the same turn and go straight on to step 2: the manifest never ends your turn.
++
++## Step 2 — the cluster rules, and where the review-file format is
++
++### Cluster rules
++
++This is a cluster round: after exploring the target fully, run one subagent per lens listed here, inside this one turn.
++
++Lenses for this round:
++
++- code-correctness: Own the correctness of the code the diff changes. For each function,
++  branch and error path the diff adds or changes, take one concrete input,
++  including an empty, nil, zero or boundary value and a failure of each call
++  it makes, and run the code step by step with the data each step is handed.
++  A wrong result, a swallowed or misreported error and a state left
++  inconsistent on a failure path are findings, as the rubric's "Finding
++  class" defines `design`. Your list: each function or branch, the case you
++  ran, correct or not.
++- code-affected-set: Own what the diff's changes force outside the lines it touches. For each
++  signature, output, key, message, file shape or behaviour the diff changes,
++  find everything that calls, reads or asserts it, callers, tests, docs,
++  stencils, fixtures and the repository's rule documents that describe it,
++  the PATTERN.md entries and pattern/ background files where the repository
++  has a PATTERN.md, otherwise the rules its CLAUDE.md files state, from the
++  definitions your context holds and a search for what it lacks. A member of
++  the set the diff leaves wrong is a finding. Apply the rubric's "Stencil
++  wording", "The repository's own rules", "Declared PATTERN changes landed"
++  and "Commit messages and departures" where this round's rubric carries
++  them. Your list: per change, the set you found, covered or not.
++- code-tests: Own the tests of the diff. For each behaviour the diff adds or changes,
++  find the test row that would fail if it were broken; a behaviour with no
++  such row is a finding, a stencil's static prose exempt. Your list: per
++  behaviour, the test that pins it, or none.
++
++Spawn the subagents with `spawn_agent`, one per lens, each with `fork_turns: "all"` so it inherits everything you have read, all in one go, as soon as your exploration is done.
++Then wait for every subagent with `wait` inside this same turn, and keep waiting until the last one has returned: never end your turn while a subagent runs, since a turn you end leaves your report unwritten.
++
++Each subagent's prompt is the boilerplate below, then the line `Your lens: <name>` and that lens's text, and nothing else: never add your own direction, hint, suspicion or reading list to a subagent's prompt.
++
++Boilerplate:
++
++> You are one lens reviewer of this round, and you own one lens; the other subagents own the other lenses, and the handler reviews holistically. Review from the target, the rules and the code the handler read. Work your lens's procedure, and start your final message with the list your lens asks for. Report every finding your lens's procedure produces and nothing outside it. You may make at most 20 tool calls, each only for something your procedure needs that you have not read; end your final message with one line per tool call: what you read and why. You are READ-ONLY: never write, edit or delete any file, run only git commands that read, such as `git diff`, `git log` or `git show`, and never one that changes the repository, its index, its refs or its working tree, never touch the round's output files, and never start a subagent of your own. Return your findings ONLY as your final message, each with a severity, a class, a location, a one-line summary and the file and line of the evidence you read.
++
++While the subagents run, YOU (the handler) do your own HOLISTIC review: what no lens owns, such as the target against its fasit, architecture and PATTERN-fit, reading further only where your review needs it.
++Write nothing to your report while any subagent is outstanding: consolidate only once the last one has returned, with every finding in view.
++
++Once the last subagent has returned, and before you consolidate, save each subagent's final message verbatim to `.scratch/fan-trial/review.lens-<lens>.md`, with its lens name for `<lens>`, in the format `contracts/specs/twill-lens-report-spec.md` defines; a subagent that returned no report gets its file too.
++These lens reports are part of your write surface, beside your report, and are the one exception to the "nothing else" of the write-surface rules in your prompt.
++
++Consolidation: judge every subagent finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an `origin:` key (`lens:<name>` or `handler`), move false positives to a `## Rejected` prose section below the frontmatter with a one-line reason each, and order kept findings by severity.
++The consolidated report is your ONE report, and the review is complete once it is fully written to disk.
++
++### The review file
++
++Write the review to `.scratch/fan-trial/review.md`, in the format `.scratch/fan-trial/review-format.md` describes.
++Read that file before you write.
++The review is complete once it is fully written to disk and passes the format's strict rules.
++
++### Source-grounding rule
++
++Never fabricate file contents.
++Read the actual files before you describe or judge them — every claim in your review must be grounded in something you actually read.
++
++### Prior rounds
++
++This is the first round: no prior review exists.
++
++Your work is done once `.scratch/fan-trial/review.md` is fully written on disk and passes the format's strict rules.
++
++## You are an assistant in this step
++
++Your seat is assist.
++You work alone: you write your output and nothing else.
++
++- Your output is the only file set you write: `.scratch/fan-trial/review.md`
++- You send no message to any session, and no session messages you.
++- Write your output once your task is done.
+diff --git a/docs/research/codex/review/assist-fan-trial-2026-11-06/data/review.lens-code-affected-set.md b/docs/research/codex/review/assist-fan-trial-2026-11-06/data/review.lens-code-affected-set.md
+new file mode 100644
+index 00000000..e36884be
+--- /dev/null
++++ b/docs/research/codex/review/assist-fan-trial-2026-11-06/data/review.lens-code-affected-set.md
+@@ -0,0 +1,31 @@
++```yaml
++lens: code-affected-set
++outcome: reported
++```
++
++Affected-set list:
++
++- New `plan_order` cause: `BeginBatch`, `PlanConflictError.Error`, CLI envelope, conflict-record writer, shed rerouting, engine tests, package docs, and master stencil. Code consumers preserve or ignore the cause appropriately; retry instructions and external documentation are not fully covered.
++- Delete-specific way forward: error rendering and new engine test rows are covered; the master’s record-batch paragraph no longer quotes the generic remedy.
++- `CheckDeleteBeforeReference`: three finding producers, the dispatch classifier, and planglyph test readers use the constant. No changed wire value or uncovered production reader found.
++- Plan-fixer bypass: initial master routing and plan-fix stencil header are covered; the retry branch and general Webster documentation retain unconditional routing.
++- Current-tree check documentation: `planGatePass`, `callerCoverageFindings`, `ValidateDispatch`, `LaterDeleteReferences`, rebaseline, and handle exclusion support the stated distinction. No additional affected-set defect found.
++- PATTERN requirements: named vocabulary, dependency direction, refusal guidance, stencil ownership, and test conventions were checked against the inherited backgrounds. No additional violation found.
++
++Findings:
++
++1. **MEDIUM — scope — `contracts/stencils/webster/webster-template-master.md:251`**  
++   **Summary:** The post-fixer retry still sends every new plan conflict directly back to the fixer.  
++   The `fixed` branch tells Merriam to retry `begin-batch`, then “run this rung again from step 1” for any `plan_conflict`. A repaired stale Edit target can expose a delete-before-reference conflict, changing the cause to `plan_order`; this instruction sends that refusal to step 2’s fixer instead of the new immediate-stuck route. Replace the unconditional retry instruction with cause dispatch: repeat the rung only for `plan_defect` or `tree_moved`, and apply the immediate-stuck instruction for `plan_order`.  
++   **Evidence:** `contracts/stencils/webster/webster-template-master.md:242`, `:244`, `:247`, `:250–251`; `contracts/stencils/webster/webster-template-plan-fix.md:31–36`.
++
++2. **MEDIUM — scope — `docs/overview.md:448`**  
++   **Summary:** Webster’s public documentation still routes every plan conflict through the cold fixer.  
++   The overview explicitly says every `plan_conflict` goes first to `fix-plan`, and its rerouting description assumes the fixer could not clear the conflict. The root CLI help similarly sends any begin-batch plan conflict to the fixer, and the CLI package documentation retains the unqualified route. These readers contradict the new `plan_order` bypass and the commit’s explicit request to check for remaining unconditional routes. Qualify these descriptions with `plan_defect`/`tree_moved` and describe `plan_order` as immediately stuck, retaining the conflict record for plan review.  
++   **Evidence:** `docs/overview.md:448`, `:645`; `internal/webstercli/cli.go:239–240`; `internal/webstercli/doc.go:62`; `contracts/stencils/webster/webster-template-master.md:238–244`.
++
++Tool calls:
++
++1. Searched changed cause names, message wording, and check constants across code, contracts, and rules to enumerate readers and assertions.
++2. Read retry routing, fixer help, CLI documentation, and shed conflict handling; searched repository documentation for remaining unconditional fixer routes.
++3. Read root CLI help, overview routing passages, fixer scope, and tapestry review instructions to establish the documentation mismatch and verify the downstream plan-review route.
+diff --git a/docs/research/codex/review/assist-fan-trial-2026-11-06/data/review.lens-code-correctness.md b/docs/research/codex/review/assist-fan-trial-2026-11-06/data/review.lens-code-correctness.md
+new file mode 100644
+index 00000000..8398dbcd
+--- /dev/null
++++ b/docs/research/codex/review/assist-fan-trial-2026-11-06/data/review.lens-code-correctness.md
+@@ -0,0 +1,27 @@
++```yaml
++lens: code-correctness
++outcome: reported
++```
++
++- `BeginBatch`, empty or nil findings: `orderOnly` remains true, but `len(blocking) == 0` skips refusal; normal dispatch continues. Correct.
++- `BeginBatch`, informational delete-before-reference alone: finding enters advisories, never blocking; normal dispatch continues. Correct.
++- `BeginBatch`, blocking delete-before-reference with no begun cards: blocking is nonempty and `orderOnly` stays true; cause is `plan_order`. Correct.
++- `BeginBatch`, blocking delete-before-reference after a batch began: the order-only branch takes precedence over begun state; cause remains `plan_order`. Correct.
++- `BeginBatch`, multiple blocking delete-before-reference findings: each preserves `orderOnly`; all blocking details are retained. Correct.
++- `BeginBatch`, blocking delete-before-reference plus an unrelated informational finding: informational findings do not change `orderOnly`; cause remains `plan_order`. Correct.
++- `BeginBatch`, mixed blocking checks in either order: the first non-order check makes `orderOnly` false permanently; cause is `plan_defect` without begun cards and `tree_moved` otherwise. Correct.
++- `BeginBatch`, informational delete-before-reference plus a different blocking check: only the other check participates in classification; the existing cause is preserved. Correct.
++- `BeginBatch`, a blocking finding with an empty check: it is not recognized as delete-before-reference and preserves the existing cause selection. Correct.
++- `BeginBatch`, `ValidateDispatch` failure: the existing restamp attempt runs, then the resolution error returns before classification; no plan-order error masks infrastructure failure. Correct.
++- `BeginBatch`, restamp failure with successful resolution: the restamp error returns before classification; no batch is recorded. When both calls fail, the resolution error retains precedence. Correct.
++- `PlanConflictError.Error`, `plan_order`: substitutes the move-delete instruction while preserving the class, findings, rebaseline instruction, and requested batch number. Correct.
++- `PlanConflictError.Error`, either existing cause or an empty cause: retains the previous match-tree wording. Empty findings join to an empty string, and batch zero renders as `00`, preserving existing formatting behavior. Correct.
++- `deleteOrderFindings`, resolved reference: the new constant has exactly the previous literal value, so its blocking finding is unchanged. Correct.
++- `deleteOrderFindings`, name-only method reference: the same constant preserves the informational finding. Empty subjects or no matching references still produce no findings. Correct.
++- `laterImportFindings`, matching package import: the constant preserves the previous blocking check value. Empty deleting cards, missing files, and unreadable-file errors follow unchanged paths. Correct.
++- `dispatchFindingsIndex.ValidateDispatch`: returns its supplied findings, including nil, with nil error; its use does not alter the wrapped index’s other operations. Correct.
++- `deleteOrderSites` and `TestLaterDeleteReferences`: replacing the identical check literal with the shared constant preserves their filtering and assertions. Correct.
++
++No findings.
++
++Tool calls: none; the inherited diff, definitions, callers, and failure paths supplied the evidence required for this lens.
+diff --git a/docs/research/codex/review/assist-fan-trial-2026-11-06/data/review.lens-code-tests.md b/docs/research/codex/review/assist-fan-trial-2026-11-06/data/review.lens-code-tests.md
+new file mode 100644
+index 00000000..c57b3185
+--- /dev/null
++++ b/docs/research/codex/review/assist-fan-trial-2026-11-06/data/review.lens-code-tests.md
+@@ -0,0 +1,26 @@
++```yaml
++lens: code-tests
++outcome: reported
++```
++
++Behavior-to-test list:
++
++- Delete-only blocking findings become `plan_order` before any batch begins: `TestBeginBatch_ConflictCauseNamesAPlanOrderConflict/DeleteOrderWithNoBatchBegun` (`internal/websterengine/beginbatch_test.go:838`).
++- Delete-only blocking findings become `plan_order` after a batch begins: the `DeleteOrderAfterABatchIsBegun` row (`:837`).
++- Mixed blocking findings retain `tree_moved` or `plan_defect`: the two `MixedFindings` rows (`:839–840`), covering both finding orders.
++- An informational delete-order finding does not change another blocking finding’s cause: `InformationalDeleteOrderBesideABlockingFinding` (`:841`).
++- An unrelated informational finding does not prevent otherwise delete-only blocking findings from becoming `plan_order`: **none**.
++- The `plan_order` message names moving the delete and retains the rebaseline step: both delete-order rows assert `moveDelete` through the error message (`:823`, `:862–864`).
++- Other causes retain the match-tree remedy: mixed and informational rows assert `matchTree` (`:824`, `:839–841`, `:862–864`).
++- Empty and informational-only findings allow dispatch: existing clean-plan and informational-only subtests in `TestBeginBatch_ReResolvesPlanAtDispatch` (`:705`, `:778`).
++- Replacing the check literal with `CheckDeleteBeforeReference` preserves resolved, method-name-only, and package-import findings: `TestLaterDeleteReferences`, including its check/card assertion (`internal/planglyph/deleteorder_test.go:38`, `:241`); typed plan-gate and scan-only dispatch findings are also checked by `TestGlyphChain_CallerCoverageTyped` (`internal/planglyph/glyphchain_integration_test.go:308`).
++- Master’s immediate stuck outcome for `plan_order`, and the revised stencil recovery wording: static prose, exempt from test requirements.
++- Current-tree timing documentation: describes existing validation behavior; adds no executable branch.
++
++Finding:
++
++- **MEDIUM — scope — `internal/websterengine/beginbatch_test.go:837` — No test pins that unrelated informational findings preserve `plan_order`.** The contract classifies the whole **blocking** set, but all successful `plan_order` rows contain only a blocking delete-order finding. The informational row combines an informational delete-order finding with an unrelated blocker, so it cannot detect incorrectly including unrelated advisories in `orderOnly`. Moving the `orderOnly` update outside the severity guard would break this behavior while every added row still passes. Add a row containing a blocking `CheckDeleteBeforeReference` finding and an informational finding with another check, expecting `ConflictCausePlanOrder` and `moveDelete`. Evidence: severity-scoped accumulation at `internal/websterengine/beginbatch.go:500–506`; complete new row set at `internal/websterengine/beginbatch_test.go:837–841`.
++
++Tool calls:
++
++1. Searched engine and CLI tests for `plan_order`, its constant, and the injected-findings fixture; read the new classification table and additional delete-reference test rows to map changed behavior to assertions and confirm the missing advisory case.
+diff --git a/docs/research/codex/review/assist-fan-trial-2026-11-06/data/review.md b/docs/research/codex/review/assist-fan-trial-2026-11-06/data/review.md
+new file mode 100644
+index 00000000..4345892d
+--- /dev/null
++++ b/docs/research/codex/review/assist-fan-trial-2026-11-06/data/review.md
+@@ -0,0 +1,45 @@
++---
++verdict: APPROVED
++findings:
++  - id: F1
++    severity: MEDIUM
++    class: scope
++    origin: lens:code-affected-set
++    location: contracts/stencils/webster/webster-template-master.md:251
++    summary: The post-fixer retry unconditionally re-enters the fixer rung for a new plan conflict
++    fix: In the fixed-verdict branch at line 251, repeat steps 1–3 only when the retried begin-batch returns plan_defect or tree_moved; explicitly send plan_order to the immediate-stuck instruction at line 242 and quote the new refusal verbatim.
++  - id: F2
++    severity: MEDIUM
++    class: scope
++    origin: lens:code-affected-set
++    location: docs/overview.md:448
++    summary: Public documentation still routes every plan conflict through the cold fixer
++    fix: Qualify the fixer route in docs/overview.md at lines 448 and 645, internal/webstercli/cli.go at lines 239–240, and internal/webstercli/doc.go at line 62 with plan_defect or tree_moved. State that plan_order ends Merriam stuck immediately, preserving the conflict record for the existing plan-review route.
++  - id: F3
++    severity: MEDIUM
++    class: scope
++    origin: lens:code-tests
++    location: internal/websterengine/beginbatch_test.go:837
++    summary: No test pins that unrelated informational findings preserve plan_order
++    fix: Add a row to TestBeginBatch_ConflictCauseNamesAPlanOrderConflict containing a blocking CheckDeleteBeforeReference finding and an informational finding with a different check, expecting ConflictCausePlanOrder and moveDelete. Use the existing fixture and assertions.
++---
++
++### [MEDIUM] Reclassify the refusal after a fixer retry
++
++**Location:** contracts/stencils/webster/webster-template-master.md:251
++
++**Issue:** The initial routing explicitly skips the fixer for `plan_order` at line 242, but the fixed-verdict branch subsequently directs every `plan_conflict` back to step 1, whose next step runs the fixer. Repairing a stale Edit target can expose a previously unresolved reference and produce `plan_order` on the retry. These instructions conflict at that transition, contrary to the commit's requirement that a plan-order refusal ends stuck immediately. The plan-fix stencil at lines 31–36 limits the fixer to mechanical target edits.
++
++### [MEDIUM] Document the plan-order bypass at the remaining readers
++
++**Location:** docs/overview.md:448
++
++**Issue:** The overview still says a begin-batch plan conflict goes first to the cold fixer, and line 645 describes plan-review rerouting only after the fixer could not clear it. The root CLI help at internal/webstercli/cli.go:239 and package documentation at internal/webstercli/doc.go:62 retain the same unqualified route. The new master stencil sends `plan_order` directly to a stuck outcome, and internal/shedadapters/webster.go:106 claims its conflict record without requiring a fixer attempt. These descriptions leave readers with the recovery route the commit explicitly intended to replace for this cause.
++
++### [MEDIUM] Cover an unrelated advisory beside a blocking order finding
++
++**Location:** internal/websterengine/beginbatch_test.go:837
++
++**Issue:** Both successful `plan_order` rows contain only a blocking delete-order finding. The informational row instead places an informational delete-order finding beside another blocking check. None pins the requirement that an unrelated advisory must not prevent `plan_order`. Moving the orderOnly update outside the severity guard at internal/websterengine/beginbatch.go:500–506 would violate that requirement while the new table still passed.
++
++The engine's classification and error rendering match the commit's requested behavior on inspection. No BLOCKING finding was identified. This was a read-only source review; no tests were executed. All three lens reports are saved alongside this report.
+diff --git a/docs/research/codex/review/assist-fan-trial-2026-11-06/report.md b/docs/research/codex/review/assist-fan-trial-2026-11-06/report.md
+new file mode 100644
+index 00000000..005a4e51
+--- /dev/null
++++ b/docs/research/codex/review/assist-fan-trial-2026-11-06/report.md
+@@ -0,0 +1,114 @@
++# Astra with the Code-Review lens fan as an assistant reviewer: one real run on a landed commit
++
++Trial of 2026-11-06, the first run of the assistant fan, `code_assist_reviewer_fan`.
++One `lym shuttle run --model "astra[medium]"` from this worktree (`gpt-6-astra`, Codex, medium effort), launched by the writer through the interactive shuttle, no headless launch, no retry.
++Nothing in `internal/` or `contracts/` changed.
++Part 2, the real composed seat, is still to come and is named at the end.
++
++## Conclusion
++
++The fan works as the Codex assist-fan stencil describes it.
++Astra spawned one subagent per lens with `spawn_agent`, waited for all three with `wait_agent` inside its one turn, saved three lens reports, and wrote a consolidated review that `lym burler validate-review` accepts.
++The run took 266 s of turn time and returned three `MEDIUM` findings, all of which I checked against the code and found real.
++
++Two details differ from the stencil's text, neither of which broke the run: Codex's wait tool is `wait_agent`, not `wait`, and the three `spawn_agent` calls were issued one after another over 29 s, not in one go.
++
++## Inputs
++
++- Target: landed commit `b93a0a52` (`webster begin-batch: name a delete-before-reference refusal plan_order`), read through `git show`.
++- Prompt: `data/prompt.md`, written by hand from the stencils an assistant reads, since no verb composes it outside a round: `burler-template-assist-reviewer`, the Codex `assist-reading` and `edit-directive` blocks, the explore and review steps (`burler-step-1-explore`, `burler-step-review`) with the fork-reading part, `burler-assist-cluster-fan` with the Codex `assist-fan` block, and the `seat-directive-assistant` block.
++  The lenses are the `review-code` fan of `internal/lenses/template.yaml`: `code-correctness`, `code-affected-set`, `code-tests`, with their texts verbatim.
++  The fasit is the commit message plus `PATTERN.md`; no decision record exists for the target, so the stencil's decision-record lines are kept with a note saying so.
++  The rubric is a four-line stand-in, since the real round's rubric lives in the Code-Review profile.
++- Output files: the review at `.scratch/fan-trial/review.md` as the run's one `--output-file`; the lens reports sit beside it as the stencil directs.
++- Data: `data/` holds the prompt, the review and the three lens reports verbatim.
++  The Codex session records read for the numbers below are `~/.codex/sessions/2026/11/06/rollout-2026-11-06T12-53-12-01a1b0b4-*.jsonl` and the three subagent rollouts beside it.
++
++## 1. Did the fan run
++
++| Lens | Subagent started | Returned | Tool calls it reports | Findings |
++|---|---|---|---|---|
++| `code-correctness` | 11:54:32Z | 11:54:57Z | none | none (18 cases walked, all correct) |
++| `code-affected-set` | 11:54:44Z | 11:55:55Z | 3 | 2 `MEDIUM` |
++| `code-tests` | 11:55:01Z | 11:55:37Z | 1 | 1 `MEDIUM` |
++
++- A subagent started for each lens and every one returned a final message.
++  Each lens report file opens with the spec's `lens:` and `outcome: reported` block and is a plain report, none is `no report`.
++- The assistant waited inside its turn.
++  The parent record holds one `task_started` and one `task_complete`; three `wait_agent` calls (10 s timeouts) sit between the last spawn and the consolidation, and the report was written after the last subagent returned.
++- The subagent prompts are encrypted in the session record, so whether each was exactly the boilerplate and the lens text, with no hint added, cannot be checked from the records.
++  The lens reports answer in the form each lens text asks for ("Your list: ..."), which is consistent with the lens text arriving as given.
++- `fork_turns: "all"` was set on all three spawns.
++
++## The report as a review
++
++`lym burler validate-review` on `data/review.md` prints `ok`: the frontmatter carries `verdict: APPROVED` and three findings with `origin:` keys, and the body has one `### [MEDIUM]` block per finding.
++The review has no `## Rejected` section: no subagent finding was dropped, and the three findings are the lens findings unmerged (`F1`, `F2` from `code-affected-set`, `F3` from `code-tests`).
++It adds no `handler` finding of its own, and says so: "The engine's classification and error rendering match the commit's requested behavior on inspection."
++
++## Time and tokens
++
++| Session | Wall time | Fresh input | Cached input | Output | Total |
++|---|---|---|---|---|---|
++| Handler | 265.8 s (`task_complete`) | 91,095 | 1,377,792 | 7,301 | 1,476,188 |
++| `code-correctness` | 25 s | 1,201 | 90,624 | 712 | 92,537 |
++| `code-affected-set` | 71 s | 17,719 | 383,872 | 1,542 | 403,133 |
++| `code-tests` | 36 s | 5,780 | 184,064 | 992 | 190,836 |
++
++- The handler rollout starts at 11:53:12Z (by its file name); the 265.8 s turn time from `task_complete` is the only timing claim made for the handler.
++- Each subagent's total includes the context it inherited, so the four totals do not add up to a cost: fresh input plus output is the comparable figure, about 98,000 for the handler and about 28,000 in all for the lenses.
++- For scale, the Claude reviewer of `round-1-usage.yaml` at weft commit `327f541d1d` used 111,975 fresh tokens in 196 s, with three forks at 17,752 fresh in all.
++  That round ran different code and a different reviewer, so the two are one data point each, not a measured ratio.
++
++## What it found
++
++All three findings are against code that already holds the fixes of the earlier review, so they are new, and each reads true in the tree:
++
++- `F1`, `MEDIUM`, `contracts/stencils/webster/webster-template-master.md:251`: after the plan fixer returns `fixed`, the stencil says that a `plan_conflict` on the retried `begin-batch` runs the rung again from step 1.
++  The stencil now sends `plan_order` straight to stuck at line 242, but the retry line sends any new conflict back to the fixer, so a retry that surfaces `plan_order` goes to a fixer that cannot clear it.
++  Confirmed by reading lines 242 and 249-252.
++- `F2`, `MEDIUM`, `docs/overview.md:448`: the overview, `internal/webstercli/cli.go:239`, and `internal/webstercli/doc.go:62` still route every begin-batch plan conflict to the cold plan fixer; overview line 645 says Merriam reroutes to plan review only when the fixer could not clear the conflict.
++  Confirmed at all four places.
++- `F3`, `MEDIUM`, `internal/websterengine/beginbatch_test.go:837`: no test row pins a blocking delete-order finding beside an unrelated informational finding.
++  Confirmed in `beginbatch_test.go:836-842`: the only informational row puts the advisory on the delete-order check and a different blocker beside it, so moving `orderOnly` out of the severity guard at `beginbatch.go:500-506` would pass every row.
++
++### Against the earlier review
++
++`round-1-review.md` and the assistant's solo report (`round-1-review.assist-assist.md`) at weft commit `327f541d1d` read the code before its fixes, so this comparison is rough: the same findings could not recur.
++
++| Earlier finding | Earlier source | State in `b93a0a52` |
++|---|---|---|
++| Master stencil routes `plan_order` through the plan fixer (`MEDIUM`) | Claude lens `code-affected-set` | Fixed at line 242; `F1` here is the retry branch beside it |
++| Stencil quotes the old way forward (`MEDIUM`) | Claude lens `code-affected-set` | Fixed; the quote is gone |
++| Two planglyph test readers keep the check literal (`LOW`; `BLOCKING` in the solo report) | Solo Astra assistant | Fixed; the commit's stat lists both files |
++
++- Astra's fan found none of the three again, because none remained.
++  What it found instead is the next layer of the same two themes: the fixer route still stated unconditionally in the retry line and four documents (`F1`, `F2`), and a test gap in the new table (`F3`).
++- The old chair review rejected a code-correctness finding and a code-tests finding as false; Astra's `code-correctness` lens found nothing, and its `code-tests` lens found a real gap the earlier tests lens did not name.
++  That comparison is of two different code states, so it does not show that Astra reads better than the Claude fan.
++- Severity: the earlier solo report called the literal `BLOCKING`, the chair demoted it to `LOW`.
++  Astra's fan returned `MEDIUM` for all three and `APPROVED`; every finding is a stale reader or a missing row, none a wrong behavior, so `MEDIUM` reads right.
++- No false finding: all three were checked against the tree.
++
++## Limits
++
++- One run, one commit, one reader of the result.
++  A fan that finds three real findings once does not show it does so on a typical diff or twice in a row.
++- The prompt was composed by hand from the stencils, not by `composeAssist`; a divergence from the real composed prompt (the rubric, the focus directive, the explore and review steps' markers) would change what Astra reads.
++  Part 2 runs the real composition.
++- Subagent prompts are encrypted in the session record, so the "no hint added" rule is unchecked.
++- The numbers are the Codex records' own: `total_token_usage` of the last `token_count` event of each session, and `task_complete.duration_ms`.
++
++## Findings of the trial for the fan's stencils
++
++No failure, so nothing is filed as a note from this part.
++Two wording points for the owners of the Codex `assist-fan` block, neither blocking:
++
++- The block says to wait "with `wait`"; Codex's tool is `wait_agent`, which Astra used without trouble.
++- The block says to spawn "all in one go"; Astra issued the three spawns as separate calls over 29 s, and the subagents ran meanwhile, so the cost of that is wall time only.
++
++## Part 2: the real seat
++
++Still to come.
++This task's `run_settings` turn on Code-Review with the assistant fanned, so the review of this report is the real composed seat on a small diff.
++The writer did nothing for this part.
