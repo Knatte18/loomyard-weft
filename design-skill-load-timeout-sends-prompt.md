@@ -1,6 +1,6 @@
 # A skill load stopped by an API error counts as skipped, and the prompt is sent into the outage
 
-`skill-load-timeout-sends-prompt` · Task · bug, shuttle · running · PR-Review
+`skill-load-timeout-sends-prompt` · Task · bug, shuttle · running · Finalize
 
 ## Seen
 

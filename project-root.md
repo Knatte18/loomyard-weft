@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **A skill load stopped by an API error counts as skipped, and the prompt is sent into the outage**<br>• Shuttle skips unloaded skills with only a log line; an API outage leaves a seat stalled or running without them | [`skill-load-timeout-sends-prompt`](design-skill-load-timeout-sends-prompt.md) | darn · light | PR-Review | neve | 33m<br>30m | shuttle |
+| T2 | **A skill load stopped by an API error counts as skipped, and the prompt is sent into the outage**<br>• Shuttle skips unloaded skills with only a log line; an API outage leaves a seat stalled or running without them | [`skill-load-timeout-sends-prompt`](design-skill-load-timeout-sends-prompt.md) | darn · light | Finalize | neve | 33m<br>30m | shuttle |
 
 ### Ready (0)
 
