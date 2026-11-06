@@ -36,6 +36,12 @@ Related: note `hardener` is another autonomous campaign run by an orchestrating 
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-06): Size Haiku workers by peak context, under 100k tokens
+
+Decision: Before the fan-out, cut each Haiku worker's scope so its peak context stays under 100k tokens. The three pilot Haiku workers peaked at 218,860, 219,497 and 269,342 tokens, so the 200 KB scope bound does not hold. Measure a worker by its peak context in its transcript, not by the size of its source files, and check the first workers of the new size before starting the rest.
+
+Rationale: The task body sets the 100k bound because Haiku 5.5 is cheap below it (operator, 2026-11-04). What a worker reads to check a comment counts toward its context, so source size alone underestimates it.
+
 ## Constraints
 
 ## Auto-mode assumptions
