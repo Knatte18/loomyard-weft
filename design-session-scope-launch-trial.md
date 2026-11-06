@@ -1,6 +1,6 @@
 # Trial the session-scope settings in a real launch and re-measure start load
 
-`session-scope-launch-trial` · Task · research, claude, shuttle · running · Describe
+`session-scope-launch-trial` · Task · research, claude, shuttle · running · Finalize
 
 ## Seen
 

@@ -19,9 +19,9 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Creel mail between hubs: a machine record of hubs, confirmed daemon-to-daemon delivery and replies, per-hub trust and the sender stamp** | [`creel-cross-hub-build`](design-creel-cross-hub-build.md)<br>[Sketch](decision-creel-cross-hub-build.md) | tapestry · solid | Webster | neve | 16h<br>16h | creel, orch |
-| T3 | **Trial the session-scope settings in a real launch and re-measure start load**<br>• Check each lever ly-plugin-off-in-other-hubs writes works in Claude Code, and measure one spawned role's and the orch's start load after it | [`session-scope-launch-trial`](design-session-scope-launch-trial.md) | darn · docs | Describe | neve | 15h<br>8m | claude, shuttle |
-| T5 | **Drift: lym record writes, a gone snapshot, capture provenance and a retired placeholder halt runs**<br>• Four drift bugs that halt Models hub runs at Drift-Verify and Drift-Recheck<br>• `drift: scope off` | [`drift-halts-bundle`](design-drift-halts-bundle.md) | darn · solid | Darn-Write | neve | 1h<br>6m | drift, loom, config, reconcile |
-| T6 | **webster begin-batch reports a delete-before-reference plan ordering finding as plan_conflict: tree_moved**<br>• `loom: code_assist_reviewer_model astra[medium]` | [`begin-batch-wrong-conflict-kind`](design-begin-batch-wrong-conflict-kind.md) | darn · light | Darn-Write | neve | 1h<br>0m | webster |
+| T3 | **Trial the session-scope settings in a real launch and re-measure start load**<br>• Check each lever ly-plugin-off-in-other-hubs writes works in Claude Code, and measure one spawned role's and the orch's start load after it | [`session-scope-launch-trial`](design-session-scope-launch-trial.md) | darn · docs | Finalize | neve | 15h<br>8m | claude, shuttle |
+| T5 | **Drift: lym record writes, a gone snapshot, capture provenance and a retired placeholder halt runs**<br>• Four drift bugs that halt Models hub runs at Drift-Verify and Drift-Recheck<br>• `drift: scope off` | [`drift-halts-bundle`](design-drift-halts-bundle.md) | darn · solid | Darn-Write | neve | 1h<br>7m | drift, loom, config, reconcile |
+| T6 | **webster begin-batch reports a delete-before-reference plan ordering finding as plan_conflict: tree_moved**<br>• `loom: code_assist_reviewer_model astra[medium]` | [`begin-batch-wrong-conflict-kind`](design-begin-batch-wrong-conflict-kind.md) | darn · light | Darn-Write | neve | 1h<br>1m | webster |
 
 ### Ready (0)
 
