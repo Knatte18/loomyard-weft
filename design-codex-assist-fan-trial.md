@@ -1,6 +1,6 @@
 # Try the Codex assistant reviewer with its lens fan
 
-`codex-assist-fan-trial` · Task · research, codex, shuttle · running · Code-Burler-Review
+`codex-assist-fan-trial` · Task · research, codex, shuttle · running · Code-Burler-Fix
 
 ## Seen
 
