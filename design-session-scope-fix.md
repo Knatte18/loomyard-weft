@@ -1,6 +1,6 @@
 # Session scope: drop the larger Workflow schema and hide plugin skills that are set off
 
-`session-scope-fix` · Task · bug, claude, shuttle · running · Darn-Write
+`session-scope-fix` · Task · bug, claude, shuttle · running · Drift-Verify
 
 Two faults in the session scope, found by the launch trial `docs/research/tokens/session-scope-launch-2026-11-06/report.md` on Claude Code 2.1.319.
 The scope lives in `internal/shuttleengine/claudeengine/scope.go` and `claude.yaml`'s `session_scope`.
