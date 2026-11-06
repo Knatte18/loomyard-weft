@@ -1,6 +1,6 @@
 # P2 Codexengine: every task, trial and note about the Codex engine
 
-Rendered 2026-11-06 10:05 UTC; every age below is as of then.
+Rendered 2026-11-06 10:06 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`codex-engine-trial`](design-codex-engine-trial.md) · Age 2d · Owner `neve`
@@ -57,7 +57,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Same real change written by a Codex and a Claude writer, time, cost and quality compared**<br>• Two darn runs of one real lym bug, one writer each; land the better, cancel the other | [`codex-claude-writer-compare`](design-codex-claude-writer-compare.md) | 1m<br>1m | codex, shuttle |
+| R1 |  | **Same real change written by a Codex and a Claude writer, time, cost and quality compared**<br>• Two darn runs of one real lym bug, one writer each; land the better, cancel the other | [`codex-claude-writer-compare`](design-codex-claude-writer-compare.md) | 2m<br>2m | codex, shuttle |
 
 ### Features (1)
 
