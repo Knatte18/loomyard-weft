@@ -1,53 +1,42 @@
-# Shuttle: hold the prompt while the API fails a skill-load turn
+# shuttle: hold a skill-load turn the API failed, don't type the prompt
 
-A skill-load turn that an API error stops no longer counts as a skipped skill, and the prompt is no longer typed into the outage.
-Shuttle waits, runs the load again, and types the prompt only after a load turn has ended.
-A skill that is not installed, or is still missing after the retry, keeps today's skip and warning.
+A start whose skill-load turn ended or timed out through an API error no longer counts the skills as skipped, and no longer types the prompt line into the failing session.
+During the network drop of 2026-11-06 a judge launched with `scribe:prose`: its load turn hit an API error, shuttle logged `skill skipped ... cause=timeout`, typed the prompt into the same failing API, and the session stood idle until the operator typed `fortsett`.
+An API error says nothing about the skill, so the load has not failed.
+A skill that is not installed or is missing keeps today's skip with its warning.
 
-## Why
+## Behavior
 
-During the network drop of 2026-11-06, a Code-Bouncer judge's load turn started at 12:40:20 UTC.
-Shuttle's 2-minute timeout fired at 12:42:21 and logged the skill as skipped, while Claude Code was still retrying inside the turn.
-The turn ended on an API error at 12:43:21, the prompt went in less than a second later and hit the same error, and the session stood idle until the operator typed by hand.
-Another session in the same outage took about seven minutes to end its turn on the error, so a load timeout alone cannot tell a failing API from a slow turn.
+The load turn now lives in `internal/shuttleengine/loadturn.go`.
 
-## What changes
-
-`loadSkillTurn` moves from `run.go` to the new `internal/shuttleengine/loadturn.go`.
-
-- **API error at a turn end.** A turn counts as failed by the API on the `SessionSignalAPIErrorTurnEnd` signal, or on a turn end the transcript marks as an API error.
-  Shuttle sleeps a back-off of 30 seconds, doubling to five minutes, then types the same load message through the verified send, so a pause holds it too.
-  This repeats until a load turn ends, and spends neither the one retry for missing skills nor a skip.
-- **Open turn at the timeout.** For an engine that reads turn starts, a turn still open at the timeout is awaited up to `loadTurnOpenBound`, 15 minutes from its start.
-  That is what catches the case above.
-  An engine with no signal reading, and a turn that never started, still skip at the timeout.
-- **A turn another party starts.** A turn start read during the back-off replaces the typed line, so a dobby revive or an operator's line carries the load on, and its turn end is classified as the load's.
+- A load turn that ends on an API error, by the engine's signal or by the transcript's marker on a turn end, skips nothing and spends no retry.
+  Shuttle waits a back-off from `apiErrorRetryBackoff` doubling to `loadHoldBackoffCeiling` (5 minutes), types the same load message through the verified send path, and repeats until a load turn ends.
+  The typed load line is the only probe of the API a session has, and the prompt follows only after a load turn ends.
+- The send path is the pause-aware one, so a pause holds the re-typed load too.
   A busy session moves the line to the next back-off.
-- **Deadline.** The run's deadline moves later by the length of the hold, as it does for a pause.
+  A turn start read during the back-off takes the place of the typed line.
+  A pane that dies ends the hold as a died startup.
+- A turn start read with no turn end after it is awaited until its end, the pane's death or the run's deadline, since a provider retries a failing API inside a turn for minutes.
+  `SkillLoadTimeout` now ends only a turn no turn start was read for.
+  A turn still open at the run's deadline fails the start as `OutcomeTimeout` with no prompt typed.
+  An engine with `SessionProber` that reads the open turn as interrupted skips its skills at once with no retry, since an interrupt writes no turn end.
+- The hold has no bound of its own and moves the run's deadline later by its length, as a pause does.
+  At the second API error it sends the run's parent one notifier line, skipped for an interactive run.
+- A turn end the engine marks `ModelRejected` ends the start at once as `OutcomeAPIError` with `Result.APIError` naming the error, since no further turn changes the model.
+- Bound: an attached run delivers a pending prompt without judging the API, so a driver that died during a hold has its prompt typed by the attach.
+
+`doc.go`, `engine.go`, `spec.go`, `run.go` comments, `PATTERN-reed-panes.md` (new rule "An API error holds the prompt") and `PATTERN-daemon-wakeups.md` (the hold listed as an unbounded wait, with `loadturn.go` added to `unboundedWaitFiles`) describe the new behavior.
 
 ## Design decisions
 
-- **The typed load line is the probe.** A session has no other way to ask whether its API answers, and the decision record asks for the load to run again anyway.
-  Each failed attempt adds a line and an error entry to the session's context, which is why the back-off has a five-minute ceiling rather than a shorter one.
-- **The hold has no bound of its own**, matching how a pause holds a send.
-  An error that will not pass, such as a failed login, holds the start until it is stopped.
-  So the second API error sends the parent one notifier line, skipped for an interactive run.
-  The decision record did not ask for this notice; it is there so a lasting hold shows somewhere other than the log.
-- **A rejected model ends the start at once.** No further turn changes the model, so a turn end marked `ModelRejected` ends the start `api-error`, with `Result.APIError` naming the error and nothing typed.
-  It goes through the `OutcomeDone` check first, and is not relaunched by `start_retries`.
-  The decision record does not name this case; holding it would hang forever.
-- **A hung turn now takes longer to fail.** A load turn that stays open with no API error used to reach the prompt send after the timeout; it now waits out `loadTurnOpenBound` first.
-  An operator's interrupt during a load turn writes no turn end, so it waits the same bound unless the operator types.
+- The typed load line is the probe rather than a separate API check, because a session offers no other way to ask whether its API answers.
+- The hold is unbounded by design: a bounded hold would put back the skip-and-type-anyway behavior for a long outage.
+  The run's deadline moves later by the hold so an outage does not time the run out.
+- An open turn is awaited past `SkillLoadTimeout`, since the timeout was shorter than a usual network drop and a provider keeps retrying inside the turn.
 
-## Known limit
+## To check by hand
 
-`Run.DeliverPendingPrompt` does not judge the API, so a driver that dies during a hold has its prompt typed by the attach, even if the API is still failing.
-The second wanted point therefore holds for the start path only.
-The bound is stated in the package doc and in `PATTERN-reed-panes`.
+Nothing was run by hand, and no regression check ran for this task.
 
-## Docs and tests
-
-- The package doc's skill-loading section, `Spec.SkillLoadTimeout` and `OutcomeAPIError` describe the new behavior.
-- `PATTERN-reed-panes` gains the rule, and `PATTERN-daemon-wakeups` and the scan in `cmd/lym/daemonwakeups_test.go` list the new wait.
-- `TestStartup_LoadTurnAPIError` covers both API-error forms, a timeout followed by an API error, the doubling back-off, the single notice, the spared retry, the moved deadline, a pane dying during the hold, and an open turn reaching its bound.
-  `TestRun_LoadTurnModelRejectedEndsTheStart` covers the rejected model.
+- `hold-behaviors-lack-pinning-rows`: confirm the rows of `TestStartup_LoadTurnAPIError` in `internal/shuttleengine/startup_test.go` pin every hold behavior above (back-off doubling and ceiling, busy session, turn start during the back-off, dying pane, failed send, notice once and none when interactive, notifier failure, model rejected, open turn at the deadline, interrupted turn).
+- `open-load-turn-skips-and-types-prompt`: confirm in `loadSkillTurn` (`internal/shuttleengine/loadturn.go`) that an open load turn past the timeout neither skips its skills nor lets the prompt be typed, and that `TestStartup_LoadTurnAPIError` pins it.
