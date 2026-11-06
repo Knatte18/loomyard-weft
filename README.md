@@ -96,7 +96,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | `draft` **Measure what the session scope fix gives in a real launch**<br>• Two real launches in lyt: first-request tokens against the launch trial, Workflow gone, preloaded skills kept | [`session-scope-fix-measure`](design-session-scope-fix-measure.md) | darn · docs |  | 25m<br>25m | claude, shuttle |
 | T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light |  | 5d<br>23h | fabric |
-| T5 | `draft` **A fanned assistant seat is told to work alone, and ran without its lenses**<br>• The composed prompt forbids what the fan asks for; the real seat went solo and no record flagged it | [`assist-fan-seat-work-alone`](design-assist-fan-seat-work-alone.md) | darn |  | 6m<br>0m | burler, stencil, codex |
+| T5 | `draft` **A fanned assistant seat is told to work alone, and ran without its lenses**<br>• The composed prompt forbids what the fan asks for; the real seat went solo and no record flagged it<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`assist-fan-seat-work-alone`](design-assist-fan-seat-work-alone.md) | darn · light |  | 6m<br>0m | burler, stencil, codex |
 
 ### Notes (21)
 
