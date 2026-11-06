@@ -1,0 +1,2057 @@
+diff --git a/internal/configreg/runsettings_test.go b/internal/configreg/runsettings_test.go
+index 19b0a60c..fd641557 100644
+--- a/internal/configreg/runsettings_test.go
++++ b/internal/configreg/runsettings_test.go
+@@ -274,6 +274,20 @@ func TestPrepareRunSettings(t *testing.T) {
+ 			wantModule:  "drift",
+ 			wantInvalid: true,
+ 		},
++		{
++			name:        "a drift volatile_files is refused naming the hub's drift.yaml",
++			settings:    map[string]any{"drift": map[string]any{"volatile_files": []any{"_source.txt"}}},
++			wantRefusal: "key \"volatile_files\" of module \"drift\" is set only in the hub's config; way forward: set it in the hub's drift.yaml",
++			wantModule:  "drift",
++			wantInvalid: true,
++		},
++		{
++			name:        "a drift volatile_keys is refused naming the hub's drift.yaml",
++			settings:    map[string]any{"drift": map[string]any{"volatile_keys": []any{"captured_at"}}},
++			wantRefusal: "key \"volatile_keys\" of module \"drift\" is set only in the hub's config; way forward: set it in the hub's drift.yaml",
++			wantModule:  "drift",
++			wantInvalid: true,
++		},
+ 		{
+ 			name:     "a retired drift verify_model is renamed to judge_model by drift's Migrate",
+ 			settings: map[string]any{"drift": map[string]any{"verify_model": "opus"}},
+diff --git a/internal/driftengine/baseline.go b/internal/driftengine/baseline.go
+index 1475a89d..5142506e 100644
+--- a/internal/driftengine/baseline.go
++++ b/internal/driftengine/baseline.go
+@@ -129,7 +129,7 @@ func (p *DriftBaseline) recordScope(cfg Config) (ScopeRecord, error) {
+ 	if d.Now != nil {
+ 		now = d.Now
+ 	}
+-	scope := ScopeRecord{Scope: ScopeFull, Diff: cfg.Diff, KeyPatterns: cfg.KeyPatterns, RecordedAt: stamp(now())}
++	scope := ScopeRecord{Scope: ScopeFull, Diff: cfg.Diff, KeyPatterns: cfg.KeyPatterns, Volatile: cfg.Volatile, RecordedAt: stamp(now())}
+ 	switch {
+ 	case cfg.Scope == ScopeOff:
+ 		scope = ScopeRecord{Scope: ScopeOff, ScopeSource: driftScopeKey, RecordedAt: stamp(now())}
+diff --git a/internal/driftengine/baseline_test.go b/internal/driftengine/baseline_test.go
+index a31c4761..13c2718c 100644
+--- a/internal/driftengine/baseline_test.go
++++ b/internal/driftengine/baseline_test.go
+@@ -66,7 +66,7 @@ func newBaselineFixture(t *testing.T) *baselineFixture {
+ 		if f.configErr != nil {
+ 			return Config{}, f.configErr
+ 		}
+-		cfg := Config{Enabled: !f.disabled, Scope: f.configScope, ScopeWasPartial: f.configWasPartial, Diff: DiffLines, KeyPatterns: []string{keyValuePattern}}
++		cfg := Config{Enabled: !f.disabled, Scope: f.configScope, ScopeWasPartial: f.configWasPartial, Diff: DiffLines, KeyPatterns: []string{keyValuePattern}, Volatile: Volatile{Keys: []string{"captured_at"}}}
+ 		if f.declared {
+ 			cfg.Capture = CommandStep{Command: "capture {baseline_dir}", Dir: ".", TimeoutMin: 1}
+ 		}
+@@ -151,12 +151,12 @@ func (f *baselineFixture) holdCaptureLock() (release func()) {
+ 	return release
+ }
+ 
+-// checkRecordedScope fails t unless the scope record holds want's scope, source, diff mode and key patterns.
++// checkRecordedScope fails t unless the scope record holds want's scope, source, diff mode, key patterns and volatile keys.
+ func checkRecordedScope(t *testing.T, f *baselineFixture, want ScopeRecord) {
+ 	t.Helper()
+ 	got, found, err := ReadScope(f.paths)
+-	if err != nil || !found || got.Scope != want.Scope || got.ScopeSource != want.ScopeSource || got.Diff != want.Diff || !slices.Equal(got.KeyPatterns, want.KeyPatterns) {
+-		t.Errorf("ReadScope() = %+v, %v, %v; want scope %q from %q, diff %q, patterns %q", got, found, err, want.Scope, want.ScopeSource, want.Diff, want.KeyPatterns)
++	if err != nil || !found || got.Scope != want.Scope || got.ScopeSource != want.ScopeSource || got.Diff != want.Diff || !slices.Equal(got.KeyPatterns, want.KeyPatterns) || !slices.Equal(got.Volatile.Keys, want.Volatile.Keys) {
++		t.Errorf("ReadScope() = %+v, %v, %v; want scope %q from %q, diff %q, patterns %q, volatile keys %q", got, found, err, want.Scope, want.ScopeSource, want.Diff, want.KeyPatterns, want.Volatile.Keys)
+ 	}
+ }
+ 
+@@ -182,7 +182,7 @@ func TestDriftBaseline(t *testing.T) {
+ 
+ 	whole := []string{DirRel()}
+ 	haltWays := []string{CaptureHaltPrefix + DeferHaltPrefix, "lym drift capture", "lym drift defer", "lym loom resume"}
+-	fullFromConfig := ScopeRecord{Scope: ScopeFull, Diff: DiffLines, KeyPatterns: []string{keyValuePattern}}
++	fullFromConfig := ScopeRecord{Scope: ScopeFull, Diff: DiffLines, KeyPatterns: []string{keyValuePattern}, Volatile: Volatile{Keys: []string{"captured_at"}}}
+ 
+ 	tests := []struct {
+ 		name       string
+diff --git a/internal/driftengine/capture_test.go b/internal/driftengine/capture_test.go
+index f16b5457..0a3cf89a 100644
+--- a/internal/driftengine/capture_test.go
++++ b/internal/driftengine/capture_test.go
+@@ -284,7 +284,7 @@ func TestCaptureCurrent(t *testing.T) {
+ 		{
+ 			name:       "a command holding the retired skip file placeholder is a refusal naming the edit",
+ 			command:    "cat {skip_file}",
+-			wantReason: []string{"the drift current capture command holds {skip_file}, which drift no longer renders", "remove it from capture in the hub's drift.yaml with lym config drift --set from the prime"},
++			wantReason: []string{"the drift current capture command holds {skip_file}, which drift no longer renders", "the operator or the hub orch runs lym config reconcile --layer default --apply from the hub's prime worktree", "any other use of it from capture"},
+ 		},
+ 	}
+ 	for _, tt := range failures {
+@@ -613,7 +613,7 @@ func TestRunCapture(t *testing.T) {
+ 		}
+ 
+ 		rec, err := RunCapture(context.Background(), f.req)
+-		for _, want := range []string{"the drift capture command holds {skip_file}, which drift no longer renders", "remove it from capture in the hub's drift.yaml with lym config drift --set from the prime"} {
++		for _, want := range []string{"the drift capture command holds {skip_file}, which drift no longer renders", "the operator or the hub orch runs lym config reconcile --layer default --apply from the hub's prime worktree", "any other use of it from capture"} {
+ 			if err == nil || !strings.Contains(err.Error(), want) {
+ 				t.Errorf("RunCapture() = %v; want an error naming %q", err, want)
+ 			}
+diff --git a/internal/driftengine/check.go b/internal/driftengine/check.go
+index 69a5a6a1..459221ea 100644
+--- a/internal/driftengine/check.go
++++ b/internal/driftengine/check.go
+@@ -82,7 +82,7 @@ func (r CheckReport) Unexpected() []ClassifiedCell {
+ // a capture that never counted, a missing baseline directory and a changed baseline digest are a baseline fault;
+ // a records mismatch is a records fault and the check goes on over the committed copies;
+ // a failed seal check is a seal fault and the check goes on against the sealed copy, or an empty expectation when there is none.
+-// Under DiffLines it takes a current capture, whose failure is a capture fault, diffs it against the baseline and classifies each cell by the merged expectation.
++// Under DiffLines it takes a current capture, whose failure is a capture fault, diffs it against the baseline, drops the cells of the volatile lists and classifies each cell left by the merged expectation.
+ // Under DiffCommand it runs the declared compare and takes no capture.
+ // Whether the capture counted is read from the tracked scope record alone, never from the capture record.
+ func Check(ctx context.Context, d Deps) (CheckReport, error) {
+@@ -98,13 +98,13 @@ func Check(ctx context.Context, d Deps) (CheckReport, error) {
+ 		return report, nil
+ 	}
+ 
+-	mode, patterns := rec.Scope.Diff, rec.Scope.KeyPatterns
++	mode, patterns, volatile := rec.Scope.Diff, rec.Scope.KeyPatterns, rec.Scope.Volatile
+ 	if mode == "" {
+ 		cfg, err := d.Config()
+ 		if err != nil {
+ 			return report, fmt.Errorf("drift: load the drift config for the check: %w", err)
+ 		}
+-		mode, patterns = cfg.Diff, cfg.KeyPatterns
++		mode, patterns, volatile = cfg.Diff, cfg.KeyPatterns, cfg.Volatile
+ 	}
+ 	report.Mode = mode
+ 	compiled, err := CompileKeyPatterns(patterns)
+@@ -163,7 +163,7 @@ func Check(ctx context.Context, d Deps) (CheckReport, error) {
+ 
+ 	switch mode {
+ 	case DiffLines:
+-		return report, classifyCurrent(ctx, d, rec.Scope, compiled, baselineListings, &report)
++		return report, classifyCurrent(ctx, d, rec.Scope, compiled, volatile, baselineListings, &report)
+ 	case DiffCommand:
+ 		if err := requireSeams("the drift check under diff command", seam{"Compare", d.Compare != nil}); err != nil {
+ 			return report, err
+@@ -227,9 +227,9 @@ func sealedAndAmended(sealed []byte, amendments []Amendment, mode string, baseli
+ 	return expectation, nil
+ }
+ 
+-// classifyCurrent takes the current capture, diffs it against the baseline and classifies each cell into report.
++// classifyCurrent takes the current capture, diffs it against the baseline and classifies each cell volatile does not name into report.
+ // A capture that did not pass is a capture fault and ends the check with no error.
+-func classifyCurrent(ctx context.Context, d Deps, scope ScopeRecord, patterns []*regexp.Regexp, baseline []CaseListing, report *CheckReport) error {
++func classifyCurrent(ctx context.Context, d Deps, scope ScopeRecord, patterns []*regexp.Regexp, volatile Volatile, baseline []CaseListing, report *CheckReport) error {
+ 	if err := requireSeams("the drift check under diff lines", seam{"CaptureCurrent", d.CaptureCurrent != nil}); err != nil {
+ 		return err
+ 	}
+@@ -253,6 +253,7 @@ func classifyCurrent(ctx context.Context, d Deps, scope ScopeRecord, patterns []
+ 	if err != nil {
+ 		return err
+ 	}
++	cells = volatile.withoutCells(cells)
+ 	current, err := ListCaptures(capture.Dir, patterns)
+ 	if err != nil {
+ 		return err
+diff --git a/internal/driftengine/check_test.go b/internal/driftengine/check_test.go
+index c4320b41..ed3ad7de 100644
+--- a/internal/driftengine/check_test.go
++++ b/internal/driftengine/check_test.go
+@@ -400,6 +400,52 @@ func TestCheck(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name: "a volatile file and key the record names leave no cell",
++			setup: func(f *checkFixture) {
++				scope := countedScope()
++				scope.Volatile = Volatile{Files: []string{"_source.txt"}, Keys: []string{"captured_at"}}
++				f.seed(scope, map[string]string{"_source.txt": "commit=a\n", "a.txt": "x=1\ncaptured_at=1\n"})
++				f.current = map[string]string{"_source.txt": "commit=b\n", "a.txt": "x=1\ncaptured_at=2\n"}
++			},
++			gatePasses: true,
++			check: func(t *testing.T, f *checkFixture, report CheckReport) {
++				if len(report.Cells) != 0 {
++					t.Errorf("Check() cells = %+v; want none", report.Cells)
++				}
++			},
++		},
++		{
++			name: "a change beside the volatile ones stays unexpected",
++			setup: func(f *checkFixture) {
++				scope := countedScope()
++				scope.Volatile = Volatile{Files: []string{"_source.txt"}}
++				f.seed(scope, map[string]string{"_source.txt": "commit=a\n", "a.txt": "x=1\n"})
++				f.current = map[string]string{"_source.txt": "commit=b\n", "a.txt": "x=2\n"}
++			},
++			check: func(t *testing.T, f *checkFixture, report CheckReport) {
++				unexpected := report.Unexpected()
++				if len(report.Cells) != 1 || len(unexpected) != 1 || unexpected[0].Cell.Case != "a.txt" {
++					t.Errorf("Check() cells = %+v; want the one unexpected cell of a.txt", report.Cells)
++				}
++			},
++		},
++		{
++			name: "a record with no diff reads the config's volatile lists",
++			setup: func(f *checkFixture) {
++				scope := countedScope()
++				scope.Diff, scope.KeyPatterns = "", nil
++				f.config.Volatile = Volatile{Files: []string{"_source.txt"}}
++				f.seed(scope, map[string]string{"_source.txt": "commit=a\n"})
++				f.current = map[string]string{"_source.txt": "commit=b\n"}
++			},
++			gatePasses: true,
++			check: func(t *testing.T, f *checkFixture, report CheckReport) {
++				if len(report.Cells) != 0 {
++					t.Errorf("Check() cells = %+v; want none", report.Cells)
++				}
++			},
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/driftengine/compare_test.go b/internal/driftengine/compare_test.go
+index 3337028c..d97bfd6e 100644
+--- a/internal/driftengine/compare_test.go
++++ b/internal/driftengine/compare_test.go
+@@ -80,7 +80,7 @@ func TestRunCompare(t *testing.T) {
+ 		t.Parallel()
+ 		req, pool := newCompareFixture(t, "cat {skip_file}")
+ 		_, err := RunCompare(context.Background(), req)
+-		for _, want := range []string{"the drift compare command holds {skip_file}, which drift no longer renders", "remove it from compare in the hub's drift.yaml with lym config drift --set from the prime"} {
++		for _, want := range []string{"the drift compare command holds {skip_file}, which drift no longer renders", "the operator or the hub orch runs lym config reconcile --layer default --apply from the hub's prime worktree", "any other use of it from compare"} {
+ 			if err == nil || !strings.Contains(err.Error(), want) {
+ 				t.Errorf("RunCompare() = %v; want an error naming %q", err, want)
+ 			}
+diff --git a/internal/driftengine/config.go b/internal/driftengine/config.go
+index b90df681..3b373ebb 100644
+--- a/internal/driftengine/config.go
++++ b/internal/driftengine/config.go
+@@ -8,6 +8,7 @@ package driftengine
+ import (
+ 	_ "embed"
+ 	"fmt"
++	"path"
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+@@ -74,6 +75,8 @@ type Config struct {
+ 	Diff string
+ 	// KeyPatterns are the regular expressions, tried in order, that key a captured line; each holds the named groups `key` and `value`.
+ 	KeyPatterns []string
++	// Volatile is what the diff ignores under DiffLines, from the keys `volatile_files` and `volatile_keys`.
++	Volatile Volatile
+ 	// ExpectModel is the model-spec of the expect agent.
+ 	ExpectModel string
+ 	// JudgeModel is the model-spec of the judge.
+@@ -94,6 +97,8 @@ type configFile struct {
+ 	Compare          stepFile `yaml:"compare"`
+ 	Diff             string   `yaml:"diff"`
+ 	KeyPatterns      []string `yaml:"key_patterns"`
++	VolatileFiles    []string `yaml:"volatile_files"`
++	VolatileKeys     []string `yaml:"volatile_keys"`
+ 	ExpectModel      string   `yaml:"expect_model"`
+ 	JudgeModel       string   `yaml:"judge_model"`
+ 	JudgeInteractive bool     `yaml:"judge_interactive"`
+@@ -115,7 +120,7 @@ func ConfigOpenMaps() []string {
+ 
+ // ConfigSpec returns drift's layered-load spec.
+ // capture and compare run commands, so they are executable keys and closed to the local layer.
+-// diff and key_patterns decide what counts as drift, so they are guard keys, and a task's run settings are refused them with the hub's drift.yaml as the way forward.
++// diff, key_patterns, volatile_files and volatile_keys decide what counts as drift, so they are guard keys, and a task's run settings are refused them with the hub's drift.yaml as the way forward.
+ // Both steps carry the shape their decode gives them, so `--set` writes a step whole, such as `capture={command: ..., timeout_min: 30}`, or reaches one key inside it, such as `capture.env.NAME`, and refuses a key a step lacks.
+ // skip and verify_max_runs are retired keys: a task's run settings that still carry one seed, the load drops it, and a reconcile prunes it from a hub base.
+ func ConfigSpec() configengine.Spec {
+@@ -134,6 +139,8 @@ func ConfigSpec() configengine.Spec {
+ 			stepCompare:         configengine.CategoryExecutable,
+ 			"diff":              configengine.CategoryGuard,
+ 			"key_patterns":      configengine.CategoryGuard,
++			"volatile_files":    configengine.CategoryGuard,
++			"volatile_keys":     configengine.CategoryGuard,
+ 			"expect_model":      configengine.CategoryNone,
+ 			"judge_model":       configengine.CategoryNone,
+ 			"judge_interactive": configengine.CategoryNone,
+@@ -144,8 +151,10 @@ func ConfigSpec() configengine.Spec {
+ 			"skip":            configengine.CategoryNone,
+ 		},
+ 		HubOnlyWayForward: map[string]string{
+-			"diff":         hubOnlyWayForward,
+-			"key_patterns": hubOnlyWayForward,
++			"diff":           hubOnlyWayForward,
++			"key_patterns":   hubOnlyWayForward,
++			"volatile_files": hubOnlyWayForward,
++			"volatile_keys":  hubOnlyWayForward,
+ 		},
+ 	}
+ }
+@@ -155,6 +164,7 @@ func ConfigSpec() configengine.Spec {
+ // an all-empty step is undeclared and loads as the zero CommandStep.
+ // A scope must be empty, off, partial or full; a stored partial reads as full and sets ScopeWasPartial.
+ // A diff must be lines or command, every key_patterns entry must compile with the named groups key and value, and diff command needs a declared compare.
++// Every volatile_files entry must be a valid glob and no volatile_files or volatile_keys entry may be blank.
+ // Every refusal names the key and lym config drift as the way forward.
+ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+ 	resolved, err := configengine.Load(dirs, ConfigSpec())
+@@ -187,6 +197,9 @@ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+ 	if file.Diff == DiffCommand && compare.Command == "" {
+ 		return Config{}, refuseKey(stepCompare, "not declared under diff: command; want the command that compares a capture with the baseline")
+ 	}
++	if err := checkVolatile(file.VolatileFiles, file.VolatileKeys); err != nil {
++		return Config{}, err
++	}
+ 	for key, spec := range map[string]string{"expect_model": file.ExpectModel, "judge_model": file.JudgeModel} {
+ 		if _, err := modelspec.Parse(spec); err != nil {
+ 			return Config{}, refuseKey(key, err.Error())
+@@ -207,6 +220,7 @@ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+ 		Compare:          compare,
+ 		Diff:             file.Diff,
+ 		KeyPatterns:      file.KeyPatterns,
++		Volatile:         Volatile{Files: file.VolatileFiles, Keys: file.VolatileKeys},
+ 		ExpectModel:      file.ExpectModel,
+ 		JudgeModel:       file.JudgeModel,
+ 		JudgeInteractive: file.JudgeInteractive,
+@@ -218,6 +232,24 @@ func refuseKey(key, want string) error {
+ 	return fmt.Errorf("drift config key %q: %s; way forward: fix it with lym config drift", key, want)
+ }
+ 
++// checkVolatile refuses a blank entry of either list and a file pattern that is no valid glob.
++func checkVolatile(files, keys []string) error {
++	for _, pattern := range files {
++		if strings.TrimSpace(pattern) == "" {
++			return refuseKey("volatile_files", "holds a blank entry; want a file name or a glob")
++		}
++		if _, err := path.Match(pattern, ""); err != nil {
++			return refuseKey("volatile_files", fmt.Sprintf("%q: %v; want a file name or a glob", pattern, err))
++		}
++	}
++	for _, key := range keys {
++		if strings.TrimSpace(key) == "" {
++			return refuseKey("volatile_keys", "holds a blank entry; want a key the key_patterns read")
++		}
++	}
++	return nil
++}
++
+ // checkScope refuses a scope other than empty, off, partial or full.
+ // A stored partial passes, since LoadConfig reads it as full.
+ // The refusal names the key and its ways forward, the task's run_settings among them, since a task sets its scope there.
+@@ -271,6 +303,26 @@ func CheckDirs(dirs configengine.Dirs, worktreeRoot, anchorDir string) error {
+ 	return nil
+ }
+ 
++// CheckRetiredPlaceholders loads the drift config under dirs and, while drift is enabled, refuses a step a run executes that still holds the retired {skip_file} placeholder, with the refusal the step itself would meet.
++// Preflight runs it, so a leftover the reconcile could not remove stops a run before its first agent and not at a Drift row.
++// The compare runs only under diff command, so under diff lines its command is left alone.
++func CheckRetiredPlaceholders(dirs configengine.Dirs) error {
++	cfg, err := LoadConfig(dirs)
++	if err != nil {
++		return err
++	}
++	if !cfg.Enabled {
++		return nil
++	}
++	if err := refuseSkipFilePlaceholder(siteCapture, stepCapture, cfg.Capture.Command); err != nil {
++		return err
++	}
++	if cfg.Diff != DiffCommand {
++		return nil
++	}
++	return refuseSkipFilePlaceholder(siteCompare, stepCompare, cfg.Compare.Command)
++}
++
+ // Step returns the declared capture or compare step.
+ // An undeclared step is refused with the way to declare it, so no row or verb runs an empty command.
+ func (c Config) Step(name string) (CommandStep, error) {
+diff --git a/internal/driftengine/config_test.go b/internal/driftengine/config_test.go
+index 15af6d76..a5dde874 100644
+--- a/internal/driftengine/config_test.go
++++ b/internal/driftengine/config_test.go
+@@ -174,6 +174,66 @@ func TestCheckDirs(t *testing.T) {
+ 	}
+ }
+ 
++// TestCheckRetiredPlaceholders pins that an enabled drift config refuses a step a run executes that holds {skip_file}, with a way forward a task or beam session can hand on, and passes every other config.
++func TestCheckRetiredPlaceholders(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const (
++		leftoverCapture = `capture: {command: "p {baseline_dir} {skip_file}", timeout_min: 1}`
++		leftoverCompare = `compare: {command: "c {baseline_dir} {skip_file}", timeout_min: 1}`
++		cleanCompare    = `compare: {command: "c {baseline_dir}", timeout_min: 1}`
++	)
++	tests := []struct {
++		name  string
++		lines map[string]string
++		// wantErr are the texts the refusal names; empty when the config passes.
++		wantErr []string
++	}{
++		{name: "AnEnabledCleanConfigPasses", lines: map[string]string{"enabled": "enabled: true"}},
++		{name: "ALeftoverWithDriftOffPasses", lines: map[string]string{"capture": leftoverCapture}},
++		{
++			name:    "ALeftoverInTheCaptureIsRefused",
++			lines:   map[string]string{"enabled": "enabled: true", "capture": leftoverCapture},
++			wantErr: []string{"the drift capture command holds {skip_file}", "the operator or the hub orch runs lym config reconcile --layer default --apply", "way forward"},
++		},
++		{
++			name:  "ALeftoverInACompareThatNeverRunsPasses",
++			lines: map[string]string{"enabled": "enabled: true", "compare": leftoverCompare},
++		},
++		{
++			name:    "ALeftoverInTheCompareUnderDiffCommandIsRefused",
++			lines:   map[string]string{"enabled": "enabled: true", "diff": "diff: command", "compare": leftoverCompare},
++			wantErr: []string{"the drift compare command holds {skip_file}", "any other use of it from compare"},
++		},
++		{
++			name:  "ACleanCompareUnderDiffCommandPasses",
++			lines: map[string]string{"enabled": "enabled: true", "diff": "diff: command", "compare": cleanCompare},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			board := t.TempDir()
++			seedDriftConfig(t, board, withKeys(t, tt.lines))
++
++			err := CheckRetiredPlaceholders(configengine.Dirs{Board: board})
++
++			if len(tt.wantErr) == 0 {
++				if err != nil {
++					t.Errorf("CheckRetiredPlaceholders() = %v; want nil", err)
++				}
++				return
++			}
++			for _, want := range tt.wantErr {
++				if err == nil || !strings.Contains(err.Error(), want) {
++					t.Errorf("CheckRetiredPlaceholders() = %v; want an error naming %q", err, want)
++				}
++			}
++		})
++	}
++}
++
+ // withKey returns the template with the line of key replaced by line.
+ func withKey(t *testing.T, key, line string) string {
+ 	t.Helper()
+@@ -221,7 +281,7 @@ func seedLocalDrift(t *testing.T, local string) configengine.Dirs {
+ 
+ // templateConfig returns the Config the embedded template loads as, changed by mutate.
+ func templateConfig(mutate func(*Config)) Config {
+-	cfg := Config{Diff: DiffLines, KeyPatterns: defaultTestKeyPatterns, ExpectModel: "sonnet[medium]", JudgeModel: "opus[high]"}
++	cfg := Config{Diff: DiffLines, KeyPatterns: defaultTestKeyPatterns, Volatile: Volatile{Files: []string{}, Keys: []string{}}, ExpectModel: "sonnet[medium]", JudgeModel: "opus[high]"}
+ 	mutate(&cfg)
+ 	return cfg
+ }
+@@ -282,6 +342,28 @@ func TestLoadConfig(t *testing.T) {
+ 			contents: withKey(t, "key_patterns", `key_patterns: ['^(?P<key>\w+)$']`),
+ 			wantErr:  []string{`"key_patterns"`, "pattern 0", `no named group "value"`, "lym config drift"},
+ 		},
++		{
++			name: "volatile lists load", seed: true,
++			contents: withKeys(t, map[string]string{"volatile_files": "volatile_files: [_source.txt, 'meta/*.txt']", "volatile_keys": "volatile_keys: [captured_at]"}),
++			want: templateConfig(func(c *Config) {
++				c.Volatile = Volatile{Files: []string{"_source.txt", "meta/*.txt"}, Keys: []string{"captured_at"}}
++			}),
++		},
++		{
++			name: "a volatile file that is no valid glob", seed: true,
++			contents: withKey(t, "volatile_files", "volatile_files: ['[']"),
++			wantErr:  []string{`"volatile_files"`, `"["`, "lym config drift"},
++		},
++		{
++			name: "a blank volatile file", seed: true,
++			contents: withKey(t, "volatile_files", "volatile_files: [' ']"),
++			wantErr:  []string{`"volatile_files"`, "blank", "lym config drift"},
++		},
++		{
++			name: "a blank volatile key", seed: true,
++			contents: withKey(t, "volatile_keys", "volatile_keys: ['']"),
++			wantErr:  []string{`"volatile_keys"`, "blank", "lym config drift"},
++		},
+ 		{
+ 			name: "diff command with no compare declared", seed: true,
+ 			contents: withKey(t, "diff", "diff: command"),
+diff --git a/internal/driftengine/diff.go b/internal/driftengine/diff.go
+index 14ce519a..677bda1f 100644
+--- a/internal/driftengine/diff.go
++++ b/internal/driftengine/diff.go
+@@ -7,8 +7,10 @@ import (
+ 	"fmt"
+ 	"io/fs"
+ 	"os"
++	"path"
+ 	"path/filepath"
+ 	"regexp"
++	"slices"
+ 	"sort"
+ 	"strings"
+ )
+@@ -91,6 +93,50 @@ type CaseListing struct {
+ 	Lines []ListedLine
+ }
+ 
++// Volatile names what a hub's capture writes that differs between captures whatever the code does, such as provenance, so it is no drift.
++// The zero Volatile names nothing.
++type Volatile struct {
++	// Files are the glob patterns of the cases left out whole: a pattern with no slash matches a case's file name at any depth, and one with a slash its whole path.
++	Files []string `json:"files,omitempty"`
++	// Keys are the line keys left out of every case.
++	Keys []string `json:"keys,omitempty"`
++}
++
++// holdsCase reports whether name is a case the list leaves out whole.
++// The patterns were checked when the config loaded, so a match cannot fail.
++func (v Volatile) holdsCase(name string) bool {
++	return slices.ContainsFunc(v.Files, func(pattern string) bool {
++		target := name
++		if !strings.Contains(pattern, "/") {
++			target = path.Base(name)
++		}
++		matched, _ := path.Match(pattern, target)
++		return matched
++	})
++}
++
++// withoutCells returns cells with every cell of a volatile case or key removed.
++func (v Volatile) withoutCells(cells []Cell) []Cell {
++	return slices.DeleteFunc(cells, func(cell Cell) bool {
++		return v.holdsCase(cell.Case) || slices.Contains(v.Keys, cell.Identity.Key)
++	})
++}
++
++// withoutListed returns listings with every volatile case and every line of a volatile key removed.
++func (v Volatile) withoutListed(listings []CaseListing) []CaseListing {
++	kept := make([]CaseListing, 0, len(listings))
++	for _, listing := range listings {
++		if v.holdsCase(listing.Case) {
++			continue
++		}
++		listing.Lines = slices.DeleteFunc(listing.Lines, func(line ListedLine) bool {
++			return slices.Contains(v.Keys, line.Identity.Key)
++		})
++		kept = append(kept, listing)
++	}
++	return kept
++}
++
+ // ListCaptures reads every regular file under dir, at any depth, as a case named by its slash-separated path relative to dir, sorted by name.
+ // It normalises CRLF to LF and drops the empty line a trailing newline leaves.
+ // The first pattern that matches a line with a non-empty `key` group keys it by that group, with the `value` group as its value; a line no pattern keys that way is unkeyed.
+diff --git a/internal/driftengine/diff_test.go b/internal/driftengine/diff_test.go
+index 67e57477..a8207d6d 100644
+--- a/internal/driftengine/diff_test.go
++++ b/internal/driftengine/diff_test.go
+@@ -207,3 +207,71 @@ func TestDiffCaptures(t *testing.T) {
+ 		}
+ 	})
+ }
++
++// TestVolatile covers which cells the volatile lists drop, and that the expect agent's listing leaves out what they name under diff lines alone.
++func TestVolatile(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	t.Run("WithoutCells", func(t *testing.T) {
++		t.Parallel()
++		tests := []struct {
++			name     string
++			volatile Volatile
++			cell     Cell
++			dropped  bool
++		}{
++			{"AFileNameAtTheTop", Volatile{Files: []string{"_source.txt"}}, Cell{Case: "_source.txt", Kind: CellChanged}, true},
++			{"AFileNameAtAnyDepth", Volatile{Files: []string{"_source.txt"}}, Cell{Case: "deep/er/_source.txt", Kind: CellAddedCase}, true},
++			{"AGlobOverTheFileName", Volatile{Files: []string{"*.stamp"}}, Cell{Case: "deep/a.stamp", Kind: CellRemovedCase}, true},
++			{"APathPatternOverItsOwnDirectory", Volatile{Files: []string{"meta/*.txt"}}, Cell{Case: "meta/a.txt"}, true},
++			{"APathPatternLeavesAnotherDirectory", Volatile{Files: []string{"meta/*.txt"}}, Cell{Case: "other/a.txt"}, false},
++			{"AnotherFile", Volatile{Files: []string{"_source.txt"}}, Cell{Case: "a.txt"}, false},
++			{"AKeyInAnyCase", Volatile{Keys: []string{"captured_at"}}, Cell{Case: "a.txt", Identity: Identity{Key: "captured_at", N: 1}}, true},
++			{"AnotherKey", Volatile{Keys: []string{"captured_at"}}, Cell{Case: "a.txt", Identity: Identity{Key: "x", N: 1}}, false},
++			{"AnUnkeyedLineUnderAKeyList", Volatile{Keys: []string{"captured_at"}}, Cell{Case: "a.txt", Identity: Identity{Line: 1}}, false},
++			{"NoList", Volatile{}, Cell{Case: "_source.txt"}, false},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				got := tt.volatile.withoutCells([]Cell{tt.cell})
++				if dropped := len(got) == 0; dropped != tt.dropped {
++					t.Errorf("withoutCells(%+v) = %+v; want dropped %v", tt.cell, got, tt.dropped)
++				}
++			})
++		}
++	})
++
++	t.Run("TheListingLeavesThemOutUnderLinesAlone", func(t *testing.T) {
++		t.Parallel()
++		patterns, err := CompileKeyPatterns(defaultTestKeyPatterns)
++		if err != nil {
++			t.Fatalf("CompileKeyPatterns error = %v", err)
++		}
++		baseline := writeCaptureTree(t, map[string]string{"_source.txt": "commit = abc\n", "a.txt": "x = 1\ncaptured_at = now\n"})
++		volatile := Volatile{Files: []string{"_source.txt"}, Keys: []string{"captured_at"}}
++		tests := []struct {
++			mode        string
++			wantSource  bool
++			wantCapture bool
++		}{
++			{DiffLines, false, false},
++			{DiffCommand, true, false},
++		}
++		for _, tt := range tests {
++			listing := filepath.Join(t.TempDir(), "listing.yaml")
++			if err := writeListing(listing, tt.mode, baseline, patterns, volatile); err != nil {
++				t.Fatalf("writeListing(%s) = %v; want nil", tt.mode, err)
++			}
++			data, err := os.ReadFile(listing)
++			if err != nil {
++				t.Fatal(err)
++			}
++			text := string(data)
++			if strings.Contains(text, "_source.txt") != tt.wantSource || strings.Contains(text, "captured_at") != tt.wantCapture || !strings.Contains(text, "a.txt") {
++				t.Errorf("listing under %s = %q; want _source.txt listed %v, captured_at listed %v and a.txt listed", tt.mode, text, tt.wantSource, tt.wantCapture)
++			}
++		}
++	})
++}
+diff --git a/internal/driftengine/diffmode.go b/internal/driftengine/diffmode.go
+index 1b992b81..0c7f9d80 100644
+--- a/internal/driftengine/diffmode.go
++++ b/internal/driftengine/diffmode.go
+@@ -1,9 +1,10 @@
+-// diffmode.go — the drift.yaml rewrites that carry a hub across the diff rework: the rename of the model keys, and the flags for the values whose meaning changed.
++// diffmode.go — the drift.yaml rewrites that carry a hub across the diff rework: the rename of the model keys, the removal of the arguments that passed the retired skip file, and the flags for the values whose meaning changed.
+ 
+ package driftengine
+ 
+ import (
+ 	"fmt"
++	"regexp"
+ 	"strings"
+ 
+ 	"gopkg.in/yaml.v3"
+@@ -22,23 +23,93 @@ var renamedKeys = []yamlengine.KeyRename{
+ 	{From: "verify_interactive", To: "judge_interactive"},
+ }
+ 
+-// Values the rework retired; FlagDiffMode names them in a hub's file without reading their old meaning from the code.
+-const (
+-	retiredSkipFilePlaceholder = "{skip_file}"
+-	retiredPartialScope        = "partial"
+-)
++// retiredPartialScope is the scope value the rework retired, which FlagDiffMode names in a hub's file.
++const retiredPartialScope = "partial"
++
++// skipFileArgument matches one argument that hands the retired placeholder to a variable, `-e NAME={skip_file}`, `--env NAME={skip_file}` or `--env=NAME={skip_file}` with the assignment quoted or not, and the whitespace before it.
++// A quote around the assignment is part of the match only when both quotes are there, so the quote that closes an enclosing `sh -c '...'` string is never taken and an argument that ends such a string stays.
++// Its first group holds the whitespace before the argument and its second what ends the argument.
++var skipFileArgument = regexp.MustCompile(`(^|\s+)(?:-e|--env)(?:\s+|=)(?:"` + skipFileAssignment + `"|'` + skipFileAssignment + `'|` + skipFileAssignment + `)(\s|$)`)
+ 
+-// MigrateConfig renames the retired model keys of a drift.yaml document, keeping each value:
+-// baseline_model to expect_model, verify_model to judge_model and verify_interactive to judge_interactive.
+-// A document already holding the new key keeps it and drops the old one, and a document without a retired key is returned unchanged.
+-// It returns one line per rename.
++// skipFileAssignment is the pattern of one variable assignment handing over the retired placeholder.
++var skipFileAssignment = `\w+=` + regexp.QuoteMeta(skipFilePlaceholder)
++
++// MigrateConfig carries a drift.yaml document across what the rework retired.
++// It renames the retired model keys, keeping each value: baseline_model to expect_model, verify_model to judge_model and verify_interactive to judge_interactive.
++// A document already holding the new key keeps it and drops the old one.
++// It removes each whole argument of a capture or compare command that hands {skip_file} to a variable, which nothing fills any more; any other use of the placeholder stays for the operator, since lym cannot tell what the command means by it, and so does an argument that ends a quoted shell string, as in `sh -c 'docker run -e A={skip_file}'`, since the quote that closes the string follows it.
++// A document with none of these is returned unchanged.
++// It returns one line per rename and per command it rewrote.
+ // A document that does not parse, or whose root is not a mapping, returns an error marked configengine.ErrInvalid.
+ func MigrateConfig(existing []byte) ([]byte, []string, error) {
+ 	migrated, lines, err := yamlengine.RenameKeys([]byte(ConfigTemplate()), existing, renamedKeys)
+ 	if err != nil {
+ 		return nil, nil, configengine.MarkInvalid(fmt.Errorf("migrate drift config: %w", err))
+ 	}
+-	return migrated, lines, nil
++	migrated, dropped, err := dropSkipFileArguments(migrated)
++	if err != nil {
++		return nil, nil, err
++	}
++	return migrated, append(lines, dropped...), nil
++}
++
++// dropSkipFileArguments removes the skip file arguments from the capture and compare commands of a drift.yaml document, and returns it, rewritten only when a command changed, with one line per command changed.
++func dropSkipFileArguments(existing []byte) ([]byte, []string, error) {
++	var document yaml.Node
++	if err := yaml.Unmarshal(existing, &document); err != nil {
++		return nil, nil, configengine.MarkInvalid(fmt.Errorf("migrate drift config: unmarshal yaml: %w", err))
++	}
++	if document.Kind != yaml.DocumentNode || len(document.Content) == 0 {
++		return existing, nil, nil
++	}
++	var lines []string
++	for _, step := range []string{stepCapture, stepCompare} {
++		command := scalarAt(document.Content[0], step, "command")
++		if command == nil {
++			continue
++		}
++		kept := withoutSkipFileArguments(command.Value)
++		if kept == command.Value {
++			continue
++		}
++		command.Value = kept
++		lines = append(lines, fmt.Sprintf("%s.command: removed the argument handing over %s, which nothing fills", step, skipFilePlaceholder))
++	}
++	if len(lines) == 0 {
++		return existing, nil, nil
++	}
++	encoded, err := encodeDocument(&document, "migrate drift config")
++	if err != nil {
++		return nil, nil, err
++	}
++	return encoded, lines, nil
++}
++
++// withoutSkipFileArguments returns command with every skip file argument removed.
++// One pass consumes the whitespace between two adjacent arguments, so it repeats until nothing matches.
++func withoutSkipFileArguments(command string) string {
++	for {
++		kept := skipFileArgument.ReplaceAllStringFunc(command, argumentRemainder)
++		if kept == command {
++			return command
++		}
++		command = kept
++	}
++}
++
++// argumentRemainder returns what stays of one matched skip file argument.
++// An argument on its own line of a backslash-continued command keeps the line break that led to it and drops what followed, so the continuation before it stays whole;
++// any other argument keeps what ended it, which is the single space between its neighbours.
++func argumentRemainder(match string) string {
++	parts := skipFileArgument.FindStringSubmatch(match)
++	lead, end := parts[1], parts[2]
++	if !strings.Contains(lead, "\n") {
++		return end
++	}
++	if end == "\n" {
++		return lead + end
++	}
++	return lead
+ }
+ 
+ // FlagDiffMode flags the values of a hub drift.yaml whose meaning changed, one line each, and rewrites nothing.
+@@ -62,8 +133,8 @@ func FlagDiffMode(existing []byte, worktreeRoot, anchorDir string) (rewritten []
+ 		flagged = append(flagged, "compare is set while diff is not: compare now runs only under diff: command, and the default diff: lines needs a capture of files of lines the key_patterns read; way forward: lym config drift --set diff=command to keep the compare, or lym config drift --set diff=lines once the capture meets that contract")
+ 	}
+ 	for _, step := range []string{stepCapture, stepCompare} {
+-		if command := scalarAt(root, step, "command"); command != nil && strings.Contains(command.Value, retiredSkipFilePlaceholder) {
+-			flagged = append(flagged, fmt.Sprintf("%s.command holds %s, which is no longer filled; way forward: drop %s from the command with lym config drift --set '%s={command: ..., timeout_min: N}'", step, retiredSkipFilePlaceholder, retiredSkipFilePlaceholder, step))
++		if command := scalarAt(root, step, "command"); command != nil && strings.Contains(command.Value, skipFilePlaceholder) {
++			flagged = append(flagged, fmt.Sprintf("%s.command holds %s, which is no longer filled; way forward: drop %s from the command with lym config drift --set '%s={command: ..., timeout_min: N}'", step, skipFilePlaceholder, skipFilePlaceholder, step))
+ 		}
+ 	}
+ 	if scope := scalarAt(root, "scope"); scope != nil && scope.Value == retiredPartialScope {
+diff --git a/internal/driftengine/diffmode_test.go b/internal/driftengine/diffmode_test.go
+index 5dcb5e21..6d03edd7 100644
+--- a/internal/driftengine/diffmode_test.go
++++ b/internal/driftengine/diffmode_test.go
+@@ -71,6 +71,76 @@ func TestMigrateConfig(t *testing.T) {
+ 	}
+ }
+ 
++// TestMigrateConfig_SkipFileArgument pins that each form of an argument handing {skip_file} to a variable leaves both commands whole, and that any other use of the placeholder stays.
++func TestMigrateConfig_SkipFileArgument(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name    string
++		command string
++		want    string
++	}{
++		{"BetweenOtherArguments", "run --rm -e NORCE_BASELINE_SKIP_FILE={skip_file} -v {baseline_dir}:/out img", "run --rm -v {baseline_dir}:/out img"},
++		{"AtTheEnd", "run {baseline_dir} -e A={skip_file}", "run {baseline_dir}"},
++		{"TwoSideBySide", "run -e A={skip_file} -e B={skip_file} {baseline_dir}", "run {baseline_dir}"},
++		{"TheLongFlag", "run --env A={skip_file} {baseline_dir}", "run {baseline_dir}"},
++		{"TheLongFlagWithAnEqualsSign", "run --env=A={skip_file} {baseline_dir}", "run {baseline_dir}"},
++		{"AQuotedAssignment", `run -e "A={skip_file}" {baseline_dir}`, "run {baseline_dir}"},
++		{"AnotherVariableStays", "run -e KEEP=1 -e A={skip_file} {baseline_dir}", "run -e KEEP=1 {baseline_dir}"},
++		{"ABackslashContinuedCommandKeepsItsContinuations", "run \\\n  -e A={skip_file} \\\n  -v {baseline_dir}:/out img", "run \\\n  \\\n  -v {baseline_dir}:/out img"},
++		{"AnEnclosingSingleQuotedShellStringStaysWhole", "sh -c 'docker run -e A={skip_file}'", "sh -c 'docker run -e A={skip_file}'"},
++		{"AnEnclosingDoubleQuotedShellStringStaysWhole", `sh -c "docker run -e A={skip_file}"`, `sh -c "docker run -e A={skip_file}"`},
++		{"AnArgumentInsideAQuotedShellStringIsRemoved", "sh -c 'docker run -e A={skip_file} img'", "sh -c 'docker run img'"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			step := map[string]any{"command": tt.command, "timeout_min": 1}
++			existing, err := yaml.Marshal(map[string]any{"capture": step, "compare": step})
++			if err != nil {
++				t.Fatalf("yaml.Marshal() = %v; want nil", err)
++			}
++
++			got, lines, err := MigrateConfig(existing)
++			if err != nil {
++				t.Fatalf("MigrateConfig error = %v", err)
++			}
++
++			var decoded struct {
++				Capture stepFile `yaml:"capture"`
++				Compare stepFile `yaml:"compare"`
++			}
++			if err := yaml.Unmarshal(got, &decoded); err != nil {
++				t.Fatalf("migrated document does not parse: %v", err)
++			}
++			if decoded.Capture.Command != tt.want || decoded.Compare.Command != tt.want {
++				t.Errorf("commands = %q and %q; want both %q", decoded.Capture.Command, decoded.Compare.Command, tt.want)
++			}
++			if tt.want == tt.command {
++				if len(lines) != 0 {
++					t.Errorf("MigrateConfig lines = %v; want none for a command left whole", lines)
++				}
++				return
++			}
++			if len(lines) != 2 || !strings.HasPrefix(lines[0], "capture.command") || !strings.HasPrefix(lines[1], "compare.command") {
++				t.Errorf("MigrateConfig lines = %v; want one naming each command", lines)
++			}
++		})
++	}
++
++	for _, command := range []string{"cat {skip_file} > {baseline_dir}/out", "run -e A=x{skip_file} {baseline_dir}", "run {baseline_dir}"} {
++		t.Run("LeftAlone_"+command, func(t *testing.T) {
++			t.Parallel()
++			existing := "capture:\n  command: '" + command + "'\n  timeout_min: 1\n"
++			got, lines, err := MigrateConfig([]byte(existing))
++			if err != nil || string(got) != existing || len(lines) != 0 {
++				t.Errorf("MigrateConfig() = %q, %v, %v; want the document unchanged with no line", got, lines, err)
++			}
++		})
++	}
++}
++
+ // TestFlagDiffMode pins each flag, a base that needs none, and that the document is never rewritten.
+ func TestFlagDiffMode(t *testing.T) {
+ 	tiergate.Require(t, 0)
+diff --git a/internal/driftengine/dirbase.go b/internal/driftengine/dirbase.go
+index a75483b5..e54a6960 100644
+--- a/internal/driftengine/dirbase.go
++++ b/internal/driftengine/dirbase.go
+@@ -59,16 +59,25 @@ func RebaseDirsOntoRoot(existing []byte, worktreeRoot, anchorDir string) (rewrit
+ 		return existing, nil, flagged, nil
+ 	}
+ 
++	encoded, err := encodeDocument(&document, "rebase drift dirs")
++	if err != nil {
++		return nil, nil, nil, err
++	}
++	return encoded, rewrote, flagged, nil
++}
++
++// encodeDocument renders a rewritten drift.yaml document, and an encoder failure as an error marked configengine.ErrInvalid that opens with action.
++func encodeDocument(document *yaml.Node, action string) ([]byte, error) {
+ 	var out bytes.Buffer
+ 	encoder := yaml.NewEncoder(&out)
+ 	encoder.SetIndent(2)
+-	if err := encoder.Encode(&document); err != nil {
+-		return nil, nil, nil, configengine.MarkInvalid(fmt.Errorf("rebase drift dirs: encode yaml: %w", err))
++	if err := encoder.Encode(document); err != nil {
++		return nil, configengine.MarkInvalid(fmt.Errorf("%s: encode yaml: %w", action, err))
+ 	}
+ 	if err := encoder.Close(); err != nil {
+-		return nil, nil, nil, configengine.MarkInvalid(fmt.Errorf("rebase drift dirs: encode yaml: %w", err))
++		return nil, configengine.MarkInvalid(fmt.Errorf("%s: encode yaml: %w", action, err))
+ 	}
+-	return out.Bytes(), rewrote, flagged, nil
++	return out.Bytes(), nil
+ }
+ 
+ // scalarAt returns the scalar node at the key path under mapping, or nil when a key is absent, a node on the way is no mapping or the leaf is no scalar.
+diff --git a/internal/driftengine/doc.go b/internal/driftengine/doc.go
+index 606e4813..710262dc 100644
+--- a/internal/driftengine/doc.go
++++ b/internal/driftengine/doc.go
+@@ -1,12 +1,13 @@
+ // Package driftengine owns regression around a task: the hub-wide `drift` config module, the drift paths, and the records and runs the Drift rows read and write.
+ // Regression is no test tier: it records a profile of the suite's behavior on the task's branch point and compares the task's code against it, and `lym gate test` never runs it.
+ //
+-// `drift.yaml` is a hub-wide config module with these keys: `enabled`, which switches the Drift rows on through their entry gate; `capture` and `compare`, each a command step written whole as `{command, dir, env, timeout_min}`, the compare running only under `diff: command`; `diff`, `lines` or `command`, how a run compares a capture with the baseline; `key_patterns`, the regular expressions with the named groups `key` and `value` that key a captured line, which with `diff` only the hub's file sets and a task's run settings are refused; `expect_model` and `judge_model`, the model-specs of the expect agent and the judge; `judge_interactive`, which makes the judge a session with the operator in its pane;
++// `drift.yaml` is a hub-wide config module with these keys: `enabled`, which switches the Drift rows on through their entry gate; `capture` and `compare`, each a command step written whole as `{command, dir, env, timeout_min}`, the compare running only under `diff: command`; `diff`, `lines` or `command`, how a run compares a capture with the baseline; `key_patterns`, the regular expressions with the named groups `key` and `value` that key a captured line; `volatile_files` and `volatile_keys`, the capture files and line keys the diff ignores, since a hub's harness may write provenance that differs in every capture, and lym hard-codes no name of it; these four only the hub's file sets and a task's run settings are refused; `expect_model` and `judge_model`, the model-specs of the expect agent and the judge; `judge_interactive`, which makes the judge a session with the operator in its pane;
+ // and `scope`, a task's regression scope, which a task sets in its board entry's `run_settings`.
+ // `skip` and `verify_max_runs` are retired keys: ConfigSpec lists them in RetiredKeys, so a board entry whose `run_settings` still carries one seeds and the load drops it, and `lym config reconcile` prunes them from a hub base.
+ // LoadConfig refuses a scope other than empty, `off`, `partial` or `full`; it reads a stored `partial` as `full` and sets Config.ScopeWasPartial, so a base not yet edited still loads.
+ // A declared command holds the placeholder `{baseline_dir}`, the directory the capture writes its profile files to and the compare reads them from.
+-// A command still holding the retired `{skip_file}` placeholder is refused when it runs, naming the edit of that step in the hub's `drift.yaml`.
++// A command still holding the retired `{skip_file}` placeholder is refused when it runs, and CheckRetiredPlaceholders, which the Preflight row of a recipe with Drift rows runs, refuses the same command before the run starts while drift is enabled.
++// The refusal hands the operator or the hub orch `lym config reconcile --layer default --apply` and the edit of that step, since a task or beam session is refused hub-wide config writes.
+ // A step's `dir` resolves by gateslot.ResolveCommandDir, so it means the directory a gate tier's `dir` means: relative to the worktree root, absolute as written, and the worktree's anchored directory when unset; every drift run is told both directories.
+ // Before a step's command starts, a `dir` that is no existing directory fails naming the resolved path, the `drift.yaml` key and, as the way forward, `lym config drift --set <step>.dir=<dir>` from the prime, then `lym drift capture` and `lym loom resume` for the capture and `lym loom resume` for the compare.
+ // CheckDirs refuses the same `dir` over the loaded config against a told worktree, which a hub-wide `lym config drift` write runs against the prime.
+@@ -16,7 +17,7 @@
+ // Once a step is declared, `--set` also changes one of its keys alone, as in `--set capture.env.NAME=1` or `--set compare.timeout_min=10`, and refuses a key a step lacks;
+ // a step left with keys but no command fails the load check, so a first declaration sets `command` and `timeout_min` together.
+ // LoadConfig loads the file strictly and refuses a declared step without `{baseline_dir}` or with a `timeout_min` below 1 and a model-spec that fails its grammar, each naming the key, and likewise a `diff` other than `lines` or `command`, a `key_patterns` entry CompileKeyPatterns refuses, and `diff: command` with no `compare` declared, which names `compare` as the key to set.
+-// MigrateConfig renames `baseline_model`, `verify_model` and `verify_interactive` to `expect_model`, `judge_model` and `judge_interactive`, keeping each value, and drift's registration runs it for a hub base at reconcile and for a task's run settings with a Warn.
++// MigrateConfig renames `baseline_model`, `verify_model` and `verify_interactive` to `expect_model`, `judge_model` and `judge_interactive`, keeping each value, and removes each whole `-e NAME={skip_file}` argument, in its `--env` forms too, from the capture and compare commands, and leaves one that ends a quoted shell string, as in `sh -c 'docker run -e A={skip_file}'`, since the quote that closes the string follows it, for FlagDiffMode to name; drift's registration runs it for a hub base at reconcile, the walk of a new build included, and for a task's run settings with a Warn.
+ // FlagDiffMode, the module's reinterpretation DiffModeReinterpretation, rewrites nothing and flags a `compare` set with no `diff`, a command holding `{skip_file}` and `scope: partial`, each with its way forward.
+ // Config.Step returns a declared step and refuses an undeclared one, so every row and verb that runs a command goes through it.
+ // Config.StepWithHubEnv, which every row and verb that runs a command calls, adds the env config module's variables beneath the step's own `env`, so a command runs with the inherited environment, then the hub's and this machine's variables, then the step's, each replacing the one before.
+@@ -66,6 +67,8 @@
+ // Key and occurrence are separate fields, so a key such as `Test #3` reads unambiguously, and a unique key keeps its cell when a keyed line is inserted before it.
+ // A Cell is a case added or removed, or a line changed, added or removed, with the baseline's value as Old and the current one as New.
+ // DiffCaptures returns the cells in case order and then file order, and skips a case it is told to leave out on both sides, which serves a run whose scope record skipped tests.
++// Volatile holds the `volatile_files` and `volatile_keys` lists: a file entry is a glob over a case's file name at any depth, or over its whole path when it holds a slash, and a key entry names a line key in every case.
++// Check drops their cells after the diff and the expect agent's listing leaves them out; the baseline digest still covers them, and under `diff: command` the declared compare decides alone.
+ //
+ // # Expectation
+ //
+@@ -91,15 +94,17 @@
+ // Drift-Verify writes the JudgeRequest, `.lym/drift/judge-request.json`, through WriteJudgeRequest before each spawn:
+ // the spawn id, the mode, the cells with their exact old and new value and covering why, the open ranges covering a judged cell or, under `command`, the compare's log, and the expectation and amendments as text.
+ // TakeJudgeSnapshot records under Deps.JudgeSnapshotDir both checkouts' HEAD, a content hash of every changed tracked path and every untracked path with a copy of each untracked file, and the hash of every file of the current capture's scratch directory; ReadJudgeSnapshot reads it back, found false when it is gone.
++// A new snapshot clears only the copies and replaces the record in one atomic write, so a reader never finds the snapshot gone while one is taken.
+ // JudgeSnapshot.Changes names what the judge session changed since: a moved code HEAD, each changed, added or deleted path of either checkout and each changed scratch file, judged by content so a later commit of content that was already there is no change.
+-// judgement.yaml and its timestamped siblings, which keep an earlier judge's file when the next judge starts, are exempt, and so, on the records checkout, is every path under a Deps.LoomRecordsDirs directory or starting with one of its prefixes, which are the records paths loom writes during a row, the usage records of its sessions among them.
++// judgement.yaml and its timestamped siblings, which keep an earlier judge's file when the next judge starts, are exempt, and so, on the records checkout, is what lym writes itself around a session:
++// every path under a Deps.LoomRecordsDirs directory or starting with one of its prefixes, which are the records paths loom writes during a row, the usage records of its sessions among them; the drift logs, which a check under `command` adds to; and `scope.json` and `judged.json` while both match their newest `Drift-Records` commit, since every lym write of them lands in such a commit, so a hand edit or an unstamped commit of either is still the judge's.
+ // A moved records HEAD counts only through the paths Deps.RecordsChangedSince names since the snapshot's head, so loom's own commits are never read as the judge's edits.
+-// Bound: an edit the judge session makes under the exempt loom paths goes unseen; they are loom's own run bookkeeping and hold no code, no expectation and neither record.
++// Bound: an edit the judge session makes under the exempt loom paths or the drift logs goes unseen; they are lym's own run bookkeeping and hold no code, no expectation and neither record.
+ //
+ // # Records
+ //
+ // Two durable records are guarded: `scope.json` and `judged.json`, the judge's stored rulings as exact tuples of case, identity, kind, old value, new value, ruling and reason, its notes on open ranges with the covering entry's why, and under `command` its rulings per case and code head.
+-// `scope.json` also holds what the checks record: the config's `diff` and `key_patterns` as first seen, the source of a scope `off`, the two agent-session marks, the parent's amendments, the last check's result, the head and amendment count of the last passing check, and the `unsealed` and `snapshot_lost` marks; every one is optional, so a record written before it existed still reads.
++// `scope.json` also holds what the checks record: the config's `diff`, `key_patterns` and volatile lists as first seen, the source of a scope `off`, the two agent-session marks, the parent's amendments, the last check's result, the head and amendment count of the last passing check, and the `unsealed` and `snapshot_lost` marks; every one is optional, so a record written before it existed still reads.
+ // WriteRecords is the one writer: it starts from the copies ReadRecords returns, applies the caller's change, writes both files and commits both at once through Deps.CommitWithTrailers with the trailer `Drift-Records: <RecordsDigest of the written files>` and any extra trailer the caller names.
+ // ReadRecords finds the newest records commit carrying that trailer and returns both files as that commit holds them, with Mismatch set when the files on disk digest differently, which a hand edit or a write interrupted before its commit causes; the committed copy is returned either way.
+ // With no such commit it returns the files as they are, so a run seeded before the guard existed reads its records unguarded until its first write.
+@@ -126,7 +131,7 @@
+ // A records mismatch sets RecordsFault naming `lym drift amend <slug> --restore` and the check goes on over the committed copies;
+ // a failed CheckSeal against the baseline's code head sets SealFault and the check goes on against the sealed copy, or an empty expectation when there is none.
+ // The sealed bytes and every amendment that adds entries are parsed by ParseExpectation under the mode and merged.
+-// The mode and key patterns are the scope record's, or the config's when the record holds none yet.
++// The mode, key patterns and volatile lists are the scope record's, or the config's when the record holds no mode yet, so a run keeps the lists it started with and a run started before they were set still needs `lym drift amend`.
+ // Under `lines` the current capture is taken through Deps.CaptureCurrent, and one that did not pass sets CaptureFault naming its log and the way forward;
+ // the diff leaves out the cases of the scope record's skipped tests when its scope is the old `partial`, and each cell is classified by Expectation.Cover, with Expectation.Uncovering listing the entries no cell uses.
+ // Under `command` Deps.Compare runs the declared compare and the report carries its exit and log.
+@@ -177,7 +182,7 @@
+ // A drift config that fails to load there is a Stuck naming `lym loom resume`.
+ // DriftBaseline spawns no agent and writes no `baseline.md`.
+ // It first ends, through Deps.EndRoles, every live strand of the removed `drift-baseline` and `drift-verify` agents, so no pane keeps an old stencil, and then records the scope once through WriteRecords when none is recorded:
+-// `off` when `drift.scope` is `off`, with ScopeSource `drift.scope`, and `full` otherwise, with the config's `diff` and `key_patterns`.
++// `off` when `drift.scope` is `off`, with ScopeSource `drift.scope`, and `full` otherwise, with the config's `diff`, `key_patterns` and volatile lists.
+ // A config scope read from `partial` is recorded `full` with one Warn naming the key.
+ // A recorded scope, `off`, `full` or an old `partial`, is kept, and a later config change changes neither it nor the recorded mode and patterns.
+ // Scope off, a set awaited_at and a passed capture take no capture; a capture holding the lock is left running.
+@@ -196,10 +201,10 @@
+ // the last two record `unsealed` first, so containment reads the empty expectation.
+ // A capture that never counted, a baseline that is missing or no longer matches its digest, and a code HEAD other than the capture's head, which the scope record's `baseline_head` names and capture.json names when the record holds none, are each a Stuck for the run's parent.
+ // Each opens with shedadapters.DecisionHaltPrefix and then DeferHaltPrefix and names `lym drift defer`; the moved HEAD also lists the commits since and names the operator's reset of the run's code branch to the capture's head as the other way forward.
+-// A scope record with no diff mode records the config's `diff` and `key_patterns` first, which keeps them for the run.
++// A scope record with no diff mode records the config's `diff`, `key_patterns` and volatile lists first, which keeps them for the run.
+ // A pass that goes on to write over records differing from their newest records commit is a Stuck for the run's parent opening with shedadapters.DecisionHaltPrefix and naming `lym drift amend <slug> --restore`, which Amend admits at the blocked row for `--restore` alone.
+ // A closed `expect_session` mark that kept its `opened_at`, which an agent return without an error leaves and which records an ended session, with an expected.yaml that validates is sealed with no spawn; an open mark, a mark never opened or closed after an error, or a file that does not validate, runs the agent, resuming a live chair.
+-// The pass writes the listing before the agent runs: every baseline case's lines with their identities and text under `diff: lines`, the case names alone under `diff: command`; an occurrence `n` is written only for a key that repeats in its case.
++// The pass writes the listing before the agent runs: every baseline case's lines with their identities and text under `diff: lines`, past the recorded volatile lists, the case names alone under `diff: command`; an occurrence `n` is written only for a key that repeats in its case.
+ // The agent's table is gated by the row's `expectation` entry, NewExpectationGate, which parses expected.yaml with ParseExpectation under the recorded mode against the baseline's cases and re-prompts the agent with the parser's message; a missing file fails asking for it.
+ // The session's return closes the mark, a Done seals the file through SealExpectation with the baseline's digest as a second trailer when no commit recorded it yet, and an exhausted entry is the shed's Stuck, whose resume spawns the agent again.
+ //
+@@ -221,17 +226,18 @@
+ // DriftVerify is the containment check and the judge: it checks the code's captured changes against the sealed expectation and has one judge rule on the expected changes no stored ruling covers.
+ // It first ends, through Deps.EndRoles, every live strand of the removed `drift-baseline` and `drift-verify` agents, so no pane keeps an old stencil, and then runs these steps in order:
+ // no scope record, scope off, a deferred capture and a waiver are Done, and a records mismatch is a Stuck naming `lym drift amend <slug> --restore`;
+-// a scope record with no diff mode records the config's `diff` and `key_patterns` and keeps them;
++// a scope record with no diff mode records the config's `diff`, `key_patterns` and volatile lists and keeps them;
+ // a capture that never counted, a missing baseline directory and an edited baseline are a Stuck naming `lym drift defer`, the first read from the tracked scope record alone;
+ // a head equal to the last passing check's with the same number of amendments is Done;
+-// an open `judge_session` mark is settled before anything else: a gone snapshot is recorded as lost and is a Stuck, a change JudgeSnapshot.Changes names is a Stuck, and an intact session goes on to be resumed;
++// an open `judge_session` mark is settled before anything else: a change JudgeSnapshot.Changes names is a Stuck, a gone snapshot is recorded as lost and is a Stuck only under a live chair, whose changes cannot be told, and a session that is intact, or whose snapshot is gone with no live chair, goes on to be resumed;
+ // a run past Drift-Expect with neither a seal commit nor an expected.yaml records `unsealed` once;
+ // then Check runs, and a seal fault, a failed current capture and any cell the expectation does not cover are a Stuck;
+ // each cell whose exact tuple has a stored ruling reuses it, a stored `does not match` is a Stuck, and with no cell left to judge the pass is recorded and Done.
+ //
+-// Otherwise one judge is spawned: Drift-Verify removes a stale judgement.yaml, writes the JudgeRequest under a fresh spawn id, opens the session mark through WriteRecords, takes the snapshot and runs the judge through the seat engine, its table gated by the row's `judgement` entry.
+-// A session an earlier entry left open keeps its spawn id and its snapshot: the request is written again under the recorded id, a live chair is resumed and none is respawned, and a snapshot recorded lost is taken anew first.
+-// On the session's return, before the mark closes, a change to either checkout or to the scratch directory and a baseline that no longer matches its digest are a Stuck that leaves the mark open.
++// Otherwise one judge is spawned: Drift-Verify removes a stale judgement.yaml, writes the JudgeRequest under a fresh spawn id, takes the snapshot, opens the session mark through WriteRecords and runs the judge through the seat engine, its table gated by the row's `judgement` entry.
++// A session an earlier entry left open keeps its spawn id and its snapshot: the request is written again under the recorded id, a live chair is resumed and none is respawned, and a snapshot recorded lost has its mark cleared and is then taken anew first.
++// On the session's return, before the mark closes, a change to either checkout or to the scratch directory, a snapshot gone while the judge ran and a baseline that no longer matches its digest are a Stuck that leaves the mark open.
++// The way forward of a changed checkout names the scratch directory by its path and keeps the snapshot directory, which the resume compares against.
+ // The rulings are stored in judged.json as exact tuples with the judge's strand and time, each listed open range with the covering entry's why and the judge's sentence, replacing an earlier listing of the same range; the mark closes and the last check is recorded in the same write, and judgement.yaml is removed after it.
+ // A ruling of `does not match` is a Stuck naming the cells and their reasons, and all `matches` records the pass and is Done.
+ //
+diff --git a/internal/driftengine/expect.go b/internal/driftengine/expect.go
+index 1551674d..e8aaa8d3 100644
+--- a/internal/driftengine/expect.go
++++ b/internal/driftengine/expect.go
+@@ -122,13 +122,13 @@ func (p *DriftExpect) pass(ctx context.Context) (shedengine.Outcome, shedengine.
+ 			return "", shedengine.OutputPointer{}, fmt.Errorf("drift: %s: load the drift config: %w", p.name, err)
+ 		}
+ 		err = WriteRecords(d, func(scope *ScopeRecord, _ *JudgedRecord) error {
+-			scope.Diff, scope.KeyPatterns = cfg.Diff, cfg.KeyPatterns
++			scope.Diff, scope.KeyPatterns, scope.Volatile = cfg.Diff, cfg.KeyPatterns, cfg.Volatile
+ 			return nil
+ 		})
+ 		if err != nil {
+ 			return "", shedengine.OutputPointer{}, err
+ 		}
+-		rec.Scope.Diff, rec.Scope.KeyPatterns = cfg.Diff, cfg.KeyPatterns
++		rec.Scope.Diff, rec.Scope.KeyPatterns, rec.Scope.Volatile = cfg.Diff, cfg.KeyPatterns, cfg.Volatile
+ 	}
+ 
+ 	if session := rec.Scope.ExpectSession; !session.Open && session.OpenedAt != "" {
+@@ -218,7 +218,7 @@ func (p *DriftExpect) runAgent(ctx context.Context, scope ScopeRecord, unguarded
+ 	if err != nil {
+ 		return "", shedengine.OutputPointer{}, fmt.Errorf("drift: %s: %w", p.name, err)
+ 	}
+-	if err := writeListing(d.Paths.Listing, scope.Diff, d.Paths.BaselineDir, patterns); err != nil {
++	if err := writeListing(d.Paths.Listing, scope.Diff, d.Paths.BaselineDir, patterns, scope.Volatile); err != nil {
+ 		return "", shedengine.OutputPointer{}, err
+ 	}
+ 	openedAt := scope.ExpectSession.OpenedAt
+@@ -351,11 +351,15 @@ type listingFile struct {
+ }
+ 
+ // writeListing writes the listing of every case under baselineDir to path: each line's identity and text under diff lines, the case names alone under diff command.
+-func writeListing(path, mode, baselineDir string, patterns []*regexp.Regexp) error {
++// Under diff lines it leaves out what volatile names, which the diff ignores, so the agent writes no expectation of it.
++func writeListing(path, mode, baselineDir string, patterns []*regexp.Regexp, volatile Volatile) error {
+ 	listings, err := ListCaptures(baselineDir, patterns)
+ 	if err != nil {
+ 		return fmt.Errorf("drift: list the baseline for the expect agent: %w", err)
+ 	}
++	if mode == DiffLines {
++		listings = volatile.withoutListed(listings)
++	}
+ 	file := listingFile{Mode: mode, Cases: make([]listingCase, 0, len(listings))}
+ 	for _, listing := range listings {
+ 		listed := listingCase{Case: listing.Case}
+diff --git a/internal/driftengine/expect_test.go b/internal/driftengine/expect_test.go
+index 8ae0584e..48fda7fe 100644
+--- a/internal/driftengine/expect_test.go
++++ b/internal/driftengine/expect_test.go
+@@ -547,14 +547,15 @@ func TestDriftExpect(t *testing.T) {
+ 		t.Parallel()
+ 		f := newExpectFixture(t)
+ 		f.agentFile = validExpectation
++		f.cfg.Volatile = Volatile{Files: []string{"_source.txt"}, Keys: []string{"captured_at"}}
+ 		f.seed(func(s *ScopeRecord) { s.Diff, s.KeyPatterns = "", nil })
+ 
+ 		outcome, _, err := f.call()
+ 
+ 		requireExpectDone(t, outcome, err)
+ 		scope := f.records().Scope
+-		if scope.Diff != f.cfg.Diff || !reflect.DeepEqual(scope.KeyPatterns, f.cfg.KeyPatterns) {
+-			t.Errorf("recorded diff %q and patterns %q; want the config's %q and %q", scope.Diff, scope.KeyPatterns, f.cfg.Diff, f.cfg.KeyPatterns)
++		if scope.Diff != f.cfg.Diff || !reflect.DeepEqual(scope.KeyPatterns, f.cfg.KeyPatterns) || !reflect.DeepEqual(scope.Volatile, f.cfg.Volatile) {
++			t.Errorf("recorded diff %q, patterns %q and volatile %+v; want the config's %q, %q and %+v", scope.Diff, scope.KeyPatterns, scope.Volatile, f.cfg.Diff, f.cfg.KeyPatterns, f.cfg.Volatile)
+ 		}
+ 	})
+ 
+diff --git a/internal/driftengine/judgesnapshot.go b/internal/driftengine/judgesnapshot.go
+index 08faadf5..4f072c13 100644
+--- a/internal/driftengine/judgesnapshot.go
++++ b/internal/driftengine/judgesnapshot.go
+@@ -128,6 +128,7 @@ func judgeSnapshotLock(d Deps) string {
+ // TakeJudgeSnapshot records the state of both checkouts and of scratchDir under Deps.JudgeSnapshotDir, replacing an earlier snapshot.
+ // The record holds each checkout's HEAD, a content hash of every changed tracked path and of every untracked path, and the path and hash of every file under scratchDir;
+ // a copy of each untracked file lies beside the record.
++// Only the copies are cleared first: the earlier record stays until one atomic write replaces it, so a reader never finds the snapshot gone while one is taken.
+ func TakeJudgeSnapshot(d Deps, scratchDir string) (JudgeSnapshot, error) {
+ 	err := requireSeams("the judge snapshot",
+ 		seam{"Checkouts", d.Checkouts != nil},
+@@ -140,11 +141,11 @@ func TakeJudgeSnapshot(d Deps, scratchDir string) (JudgeSnapshot, error) {
+ 	if err != nil {
+ 		return JudgeSnapshot{}, fmt.Errorf("drift: read both checkouts for the judge snapshot: %w", err)
+ 	}
+-	if err := os.RemoveAll(d.JudgeSnapshotDir); err != nil {
+-		return JudgeSnapshot{}, fmt.Errorf("drift: clear the judge snapshot directory %s: %w", d.JudgeSnapshotDir, err)
++	copies := filepath.Join(d.JudgeSnapshotDir, judgeSnapshotUntrackedDir)
++	if err := os.RemoveAll(copies); err != nil {
++		return JudgeSnapshot{}, fmt.Errorf("drift: clear the judge snapshot's copies %s: %w", copies, err)
+ 	}
+ 
+-	copies := filepath.Join(d.JudgeSnapshotDir, judgeSnapshotUntrackedDir)
+ 	snapshot := JudgeSnapshot{ScratchDir: scratchDir}
+ 	if snapshot.Code, err = snapshotCheckout(code, filepath.Join(copies, "code")); err != nil {
+ 		return JudgeSnapshot{}, err
+@@ -179,13 +180,16 @@ func ReadJudgeSnapshot(d Deps) (JudgeSnapshot, bool, error) {
+ 
+ // Changes compares both checkouts and the scratch directory with the snapshot and names each change the judge session made, sorted within each part.
+ // It names a moved code HEAD, and each changed, added or deleted tracked or untracked path of either checkout outside the exempt ones, and each changed, added or deleted scratch file; a scratch directory that is gone is left out.
+-// The exempt paths are judgement.yaml, which the judge writes, its timestamped siblings, which keep an earlier judge's file when the next judge starts, and, on the records checkout, every path under a Deps.LoomRecordsDirs directory or starting with one of its prefixes, which loom writes itself during a row.
++// The exempt paths are judgement.yaml, which the judge writes, its timestamped siblings, which keep an earlier judge's file when the next judge starts, and, on the records checkout, what lym writes itself around a session:
++// every path under a Deps.LoomRecordsDirs directory or starting with one of its prefixes, the drift logs, and scope.json and judged.json while both hold what their newest Drift-Records commit wrote, so a hand edit of either is still a change.
+ // A path is judged by content: one the snapshot recorded is a change only when its content now differs from the recorded one, so a later commit of content that was already there, and a deletion that was already uncommitted and is still absent, are no change.
+ // A moved records HEAD is a change only through the paths Deps.RecordsChangedSince names since the snapshot's head, minus the exempt and the unchanged.
+ func (s JudgeSnapshot) Changes(d Deps) ([]string, error) {
+ 	err := requireSeams("the judge snapshot",
+ 		seam{"Checkouts", d.Checkouts != nil},
+ 		seam{"RecordsChangedSince", d.RecordsChangedSince != nil},
++		seam{"TrailerCommit", d.TrailerCommit != nil},
++		seam{"FileAt", d.FileAt != nil},
+ 	)
+ 	if err != nil {
+ 		return nil, err
+@@ -194,11 +198,14 @@ func (s JudgeSnapshot) Changes(d Deps) ([]string, error) {
+ 	if err != nil {
+ 		return nil, fmt.Errorf("drift: read both checkouts for the judge snapshot: %w", err)
+ 	}
+-	judgementRel, err := filepath.Rel(d.WorktreeRoot, d.Paths.Judgement)
++	judgementRel, err := worktreeRel(d, d.Paths.Judgement)
++	if err != nil {
++		return nil, err
++	}
++	lymWritten, err := lymWrittenRecords(d)
+ 	if err != nil {
+-		return nil, fmt.Errorf("drift: relate the judgement file to the worktree: %w", err)
++		return nil, err
+ 	}
+-	judgementRel = filepath.ToSlash(judgementRel)
+ 
+ 	var changes []string
+ 	if code.Head != s.Code.Head {
+@@ -217,7 +224,7 @@ func (s JudgeSnapshot) Changes(d Deps) ([]string, error) {
+ 		}
+ 	}
+ 	recordsExempt := func(rel string) bool {
+-		return isJudgementPath(judgementRel, rel) || isLoomRecordsPath(d.LoomRecordsDirs, rel)
++		return isJudgementPath(judgementRel, rel) || isLoomRecordsPath(lymWritten, rel)
+ 	}
+ 	recordsChanges, err := checkoutChanges("records", s.Records, records, committed, recordsExempt)
+ 	if err != nil {
+@@ -232,6 +239,41 @@ func (s JudgeSnapshot) Changes(d Deps) ([]string, error) {
+ 	return append(changes, scratchChanges...), nil
+ }
+ 
++// worktreeRel returns path relative to the worktree root, slash-separated, the form a checkout's listed paths take.
++func worktreeRel(d Deps, path string) (string, error) {
++	rel, err := filepath.Rel(d.WorktreeRoot, path)
++	if err != nil {
++		return "", fmt.Errorf("drift: relate %s to the worktree: %w", path, err)
++	}
++	return filepath.ToSlash(rel), nil
++}
++
++// lymWrittenRecords returns the records paths lym writes itself around a judge session, in the form of Deps.LoomRecordsDirs: those entries, the drift logs and, while both match their newest Drift-Records commit, the two guarded records.
++// Every lym write of a guarded record lands in such a commit, so a guarded record that differs from it is no write of lym's and is left out.
++func lymWrittenRecords(d Deps) ([]string, error) {
++	logs, err := worktreeRel(d, d.Paths.LogsDir)
++	if err != nil {
++		return nil, err
++	}
++	written := append(slices.Clone(d.LoomRecordsDirs), logs)
++
++	records, err := ReadRecords(d)
++	if err != nil {
++		return nil, err
++	}
++	if !records.Committed || records.Mismatch {
++		return written, nil
++	}
++	for _, guarded := range []string{d.Paths.Scope, d.Paths.Judged} {
++		rel, err := worktreeRel(d, guarded)
++		if err != nil {
++			return nil, err
++		}
++		written = append(written, rel)
++	}
++	return written, nil
++}
++
+ // isJudgementPath reports whether rel is the judgement file at judgementRel or a timestamped sibling of it, in the same directory with the same extension.
+ func isJudgementPath(judgementRel, rel string) bool {
+ 	if rel == judgementRel {
+diff --git a/internal/driftengine/judgesnapshot_test.go b/internal/driftengine/judgesnapshot_test.go
+index 69260ecd..d6879790 100644
+--- a/internal/driftengine/judgesnapshot_test.go
++++ b/internal/driftengine/judgesnapshot_test.go
+@@ -52,6 +52,10 @@ func newJudgeFixture(t *testing.T) *judgeFixture {
+ 			f.sinceRevs = append(f.sinceRevs, rev)
+ 			return f.recordsChanged, nil
+ 		},
++		TrailerCommit: func(string, bool) (fabricengine.TrailerCommit, bool, error) {
++			return fabricengine.TrailerCommit{}, false, nil
++		},
++		FileAt: func(string, string) ([]byte, bool, error) { return nil, false, nil },
+ 	}
+ 	return f
+ }
+@@ -201,6 +205,24 @@ func TestJudgeSnapshot(t *testing.T) {
+ 				"records: _lym/drift/other-20261106T083132Z.yaml was added",
+ 			},
+ 		},
++		{
++			"DriftLogIsNoChange",
++			func(*testing.T, *judgeFixture) {},
++			func(t *testing.T, f *judgeFixture) {
++				writeTestFile(t, f.records.Root, "_lym/drift/logs/compare-1.log", "exit 1")
++				f.records.Untracked = []string{"_lym/drift/logs/compare-1.log"}
++			},
++			nil,
++		},
++		{
++			"GuardedRecordNoRecordsCommitWroteIsNamed",
++			func(*testing.T, *judgeFixture) {},
++			func(t *testing.T, f *judgeFixture) {
++				writeTestFile(t, f.records.Root, "_lym/drift/scope.json", "{}")
++				f.records.Changed = []string{"_lym/drift/scope.json"}
++			},
++			[]string{"records: _lym/drift/scope.json was changed"},
++		},
+ 		{
+ 			"StatusCommitIsNoChange",
+ 			func(*testing.T, *judgeFixture) {},
+@@ -355,4 +377,47 @@ func TestJudgeSnapshot(t *testing.T) {
+ 			t.Errorf("ReadJudgeSnapshot() after the directory is gone = _, %v, %v; want found false", found, err)
+ 		}
+ 	})
++
++	t.Run("a new snapshot replaces the record and its copies", func(t *testing.T) {
++		t.Parallel()
++		f := newJudgeFixture(t)
++		writeTestFile(t, f.code.Root, "old.txt", "old")
++		f.code.Untracked = []string{"old.txt"}
++		if _, err := TakeJudgeSnapshot(f.deps, f.scratch); err != nil {
++			t.Fatalf("TakeJudgeSnapshot() = _, %v; want nil error", err)
++		}
++
++		f.code.Untracked = nil
++		if _, err := TakeJudgeSnapshot(f.deps, f.scratch); err != nil {
++			t.Fatalf("second TakeJudgeSnapshot() = _, %v; want nil error", err)
++		}
++
++		snapshot, found, err := ReadJudgeSnapshot(f.deps)
++		if err != nil || !found || len(snapshot.Code.Untracked) != 0 {
++			t.Errorf("ReadJudgeSnapshot() = %+v, %v, %v; want the new snapshot with no untracked path", snapshot, found, err)
++		}
++		if _, err := os.Stat(filepath.Join(f.deps.JudgeSnapshotDir, "untracked", "code", "old.txt")); !os.IsNotExist(err) {
++			t.Errorf("stat of the earlier copy = %v; want it gone", err)
++		}
++	})
++
++	t.Run("a snapshot that fails partway leaves the earlier record readable", func(t *testing.T) {
++		t.Parallel()
++		f := newJudgeFixture(t)
++		if _, err := TakeJudgeSnapshot(f.deps, f.scratch); err != nil {
++			t.Fatalf("TakeJudgeSnapshot() = _, %v; want nil error", err)
++		}
++
++		if err := os.Mkdir(filepath.Join(f.code.Root, "unreadable"), 0o755); err != nil {
++			t.Fatal(err)
++		}
++		f.code.Untracked = []string{"unreadable"}
++		if _, err := TakeJudgeSnapshot(f.deps, f.scratch); err == nil {
++			t.Fatal("TakeJudgeSnapshot() over a path that is no file = _, nil; want an error")
++		}
++
++		if _, found, err := ReadJudgeSnapshot(f.deps); err != nil || !found {
++			t.Errorf("ReadJudgeSnapshot() = _, %v, %v; want the earlier snapshot still found", found, err)
++		}
++	})
+ }
+diff --git a/internal/driftengine/records.go b/internal/driftengine/records.go
+index 36c8a02a..b57ad9c8 100644
+--- a/internal/driftengine/records.go
++++ b/internal/driftengine/records.go
+@@ -107,6 +107,8 @@ type ScopeRecord struct {
+ 	Diff string `json:"diff,omitempty"`
+ 	// KeyPatterns are the config's key patterns, recorded with Diff.
+ 	KeyPatterns []string `json:"key_patterns,omitempty"`
++	// Volatile is what the config's diff ignores, recorded with Diff.
++	Volatile Volatile `json:"volatile,omitzero"`
+ 	// ExpectSession marks the expect agent's session.
+ 	ExpectSession SessionMark `json:"expect_session,omitzero"`
+ 	// JudgeSession marks the judge's session.
+diff --git a/internal/driftengine/steprun.go b/internal/driftengine/steprun.go
+index 317ff245..57f0518f 100644
+--- a/internal/driftengine/steprun.go
++++ b/internal/driftengine/steprun.go
+@@ -309,13 +309,14 @@ func renderCommand(run stepRun) (string, error) {
+ // skipFilePlaceholder is the retired placeholder that once rendered the file naming the skipped tests.
+ const skipFilePlaceholder = "{skip_file}"
+ 
+-// refuseSkipFilePlaceholder returns the stepRefusal of a command of the told site that still holds the retired {skip_file} placeholder, naming the edit of the told step that clears it.
++// refuseSkipFilePlaceholder returns the stepRefusal of a command of the told site that still holds the retired {skip_file} placeholder, naming the reconcile and the edit of the told step that clear it.
++// Both are hub-wide writes, refused from a task or beam session, so the way forward hands them to the operator or the hub orch.
+ // It returns nil for a command holding none.
+ func refuseSkipFilePlaceholder(site, step, command string) error {
+ 	if !strings.Contains(command, skipFilePlaceholder) {
+ 		return nil
+ 	}
+-	return &stepRefusal{cause: fmt.Errorf("drift: the %s command holds %s, which drift no longer renders; way forward: remove it from %s in the hub's drift.yaml with lym config drift --set from the prime", site, skipFilePlaceholder, step)}
++	return &stepRefusal{cause: fmt.Errorf("drift: the %s command holds %s, which drift no longer renders; way forward: the operator or the hub orch runs lym config reconcile --layer default --apply from the hub's prime worktree, which removes an -e NAME=%s argument, and removes any other use of it from %s with lym config drift --set, since a hub-wide config write is refused from any other session, then lym loom resume", site, skipFilePlaceholder, skipFilePlaceholder, step)}
+ }
+ 
+ // renderEnv returns env as KEY=VALUE entries in key order.
+diff --git a/internal/driftengine/template.yaml b/internal/driftengine/template.yaml
+index 33a0d00d..2ef8762e 100644
+--- a/internal/driftengine/template.yaml
++++ b/internal/driftengine/template.yaml
+@@ -3,6 +3,8 @@ capture: {}  # the command that records the regression baseline, written whole a
+ compare: {}  # the command that compares the branch against the baseline, run only under diff: command, written whole as {command, dir, env, timeout_min}; {} declares none; dir resolves as capture's does; the command must hold {baseline_dir} and exits 0 when nothing drifted; write it with lym config drift --set 'compare={command: "...", timeout_min: 30}'; once declared, change one key alone with lym config drift --set compare.timeout_min=45
+ diff: lines  # how a run compares the capture with the baseline: lines diffs the two capture directories line by line in Go and checks the changed values against the expectation the expect agent writes, which needs a capture of files of lines the key_patterns read; command runs the compare command; lines or command, set only in the hub's drift.yaml
+ key_patterns: ['^\s*(?P<key>[^=:]+?)\s*=\s*(?P<value>.*?)\s*$', '^\s*(?P<key>[^=:]+?)\s*:\s*(?P<value>.*?)\s*$']  # the regular expressions, tried in order, that key a captured line: the named group key names the quantity and the named group value holds its value, the first match wins, and a line none matches is told apart by its position; the defaults read name = value and name: value; set only in the hub's drift.yaml
++volatile_files: []  # capture files that differ in every capture whatever the code does, such as a provenance file the capture harness writes, which the diff under diff: lines leaves out whole; each entry is a glob, matched against a file's name at any depth, or against its whole path when it holds a /; a run keeps the list it started with; set only in the hub's drift.yaml, with lym config drift --set 'volatile_files=[_source.txt]'
++volatile_keys: []  # line keys, as the key_patterns read them, that differ in every capture whatever the code does, which the diff under diff: lines leaves out of every file; a run keeps the list it started with; set only in the hub's drift.yaml, with lym config drift --set 'volatile_keys=[captured_at]'
+ expect_model: sonnet[medium]  # model-spec for the expect agent, which writes the expectation of what the task changes in the capture (see contracts/specs/llm-model-spec.md)
+ judge_model: opus[high]  # model-spec for the judge, which rules on each expected value against its old and new value (see contracts/specs/llm-model-spec.md)
+ judge_interactive: false  # true runs the judge as a session with the operator in its pane, who decides each ruling, so an operator must be present; false, the default, runs it autonomously
+diff --git a/internal/driftengine/verify.go b/internal/driftengine/verify.go
+index 6fe67f59..a161db33 100644
+--- a/internal/driftengine/verify.go
++++ b/internal/driftengine/verify.go
+@@ -31,6 +31,7 @@ const (
+ const (
+ 	recordsMismatchReason = "the drift records on disk differ from their newest committed copy; way forward: the parent runs lym drift amend <slug> --restore, then lym loom resume"
+ 	neverCountedReason    = "the baseline capture never counted, so there is no baseline to check against; way forward: the parent runs lym drift defer, then lym loom resume"
++	snapshotGoneReason    = "the snapshot of both checkouts the judge was spawned under went while its session was live, so what that session changed cannot be told; way forward: the parent or the operator checks both checkouts for the judge's edits, then runs lym loom resume, which takes a new snapshot and resumes the judge"
+ )
+ 
+ // DriftVerify is the Drift-Verify ShedProducer; the Drift-Recheck row runs the same engine.
+@@ -54,7 +55,8 @@ func NewDriftVerify(name string, row Row, judgement shuttleengine.GateEntry, dep
+ // Otherwise it first ends the live chairs of the removed drift-baseline and drift-verify agents, and then runs these steps in order, each ending the pass when it answers:
+ // no scope record, scope off, a deferred capture, a waiver and a head already checked with no amendment since are Done;
+ // a records mismatch, a capture that never counted and a baseline that is missing or edited are a Stuck for the run's parent;
+-// an open judge session whose snapshot is gone or whose checkouts changed since is a Stuck, and one that is intact is resumed;
++// an open judge session whose checkouts changed since, or whose snapshot is gone under a live chair, is a Stuck;
++// one whose snapshot is gone with no live chair takes a new snapshot and is resumed, and so is one that is intact;
+ // a failed current capture, a seal fault and any change the expectation does not cover are a Stuck;
+ // a change whose exact old and new value has a stored ruling reuses it, and a stored ruling of does not match is a Stuck.
+ // With no change left to judge the check passes; otherwise one judge rules on the rest, and its rulings are stored.
+@@ -152,13 +154,16 @@ func (p *DriftVerify) pass(ctx context.Context) (shedengine.Outcome, shedengine.
+ 	}
+ 
+ 	if rec.Scope.JudgeSession.Open && !rec.Scope.SnapshotLost {
+-		reason, err := p.judgeSessionChanged()
++		reason, err := p.settleOpenSession()
+ 		if err != nil {
+ 			return "", shedengine.OutputPointer{}, err
+ 		}
+ 		if reason != "" {
+ 			return haltForParent(reason)
+ 		}
++		if rec, err = ReadRecords(d); err != nil {
++			return "", shedengine.OutputPointer{}, err
++		}
+ 	}
+ 	if err := p.recordUnsealed(rec); err != nil {
+ 		return "", shedengine.OutputPointer{}, err
+@@ -179,7 +184,7 @@ func (p *DriftVerify) pass(ctx context.Context) (shedengine.Outcome, shedengine.
+ 	return p.checkAndJudge(ctx, rec, head)
+ }
+ 
+-// recordDiffMode records the config's diff mode and key patterns in a scope record that holds none, which keeps them for the run, and returns the records as written.
++// recordDiffMode records the config's diff mode, key patterns and volatile lists in a scope record that holds no mode, which keeps them for the run, and returns the records as written.
+ func (p *DriftVerify) recordDiffMode() (Records, error) {
+ 	d := p.deps
+ 	cfg, err := d.Config()
+@@ -187,7 +192,7 @@ func (p *DriftVerify) recordDiffMode() (Records, error) {
+ 		return Records{}, fmt.Errorf("drift: %s: load the drift config: %w", p.name, err)
+ 	}
+ 	err = WriteRecords(d, func(scope *ScopeRecord, _ *JudgedRecord) error {
+-		scope.Diff, scope.KeyPatterns = cfg.Diff, cfg.KeyPatterns
++		scope.Diff, scope.KeyPatterns, scope.Volatile = cfg.Diff, cfg.KeyPatterns, cfg.Volatile
+ 		return nil
+ 	})
+ 	if err != nil {
+@@ -372,7 +377,7 @@ func (p *DriftVerify) now() time.Time {
+ }
+ 
+ // judge spawns the judge on cells, which no stored ruling covers, and stores its rulings.
+-// A fresh session removes a stale judgement.yaml, writes the request under a new spawn id, opens the session mark and takes the snapshot of both checkouts.
++// A fresh session removes a stale judgement.yaml, writes the request under a new spawn id, takes the snapshot of both checkouts and opens the session mark.
+ // A session an earlier entry left open keeps its spawn id and its snapshot, and takes a new snapshot only when the records say the old one was lost.
+ func (p *DriftVerify) judge(ctx context.Context, rec Records, report CheckReport, cells []ClassifiedCell, reused int, head string) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	mark := rec.Scope.JudgeSession
+@@ -491,7 +496,8 @@ func amendmentsText(amendments []Amendment) string {
+ 	return text.String()
+ }
+ 
+-// openJudgeSession starts a judge session: it removes a stale judgement.yaml, writes the request, opens the session mark and takes the snapshot of both checkouts and of scratchDir.
++// openJudgeSession starts a judge session: it removes a stale judgement.yaml, writes the request, takes the snapshot of both checkouts and of scratchDir and opens the session mark.
++// The snapshot comes first, so an open mark always has one and a pass that dies between the two leaves no session to recover.
+ func (p *DriftVerify) openJudgeSession(request JudgeRequest, scratchDir string) error {
+ 	d := p.deps
+ 	if err := p.removeJudgement(); err != nil {
+@@ -500,18 +506,16 @@ func (p *DriftVerify) openJudgeSession(request JudgeRequest, scratchDir string)
+ 	if err := WriteJudgeRequest(d.Paths, request); err != nil {
+ 		return err
+ 	}
+-	err := WriteRecords(d, func(scope *ScopeRecord, _ *JudgedRecord) error {
++	if _, err := TakeJudgeSnapshot(d, scratchDir); err != nil {
++		return err
++	}
++	return WriteRecords(d, func(scope *ScopeRecord, _ *JudgedRecord) error {
+ 		scope.JudgeSession = SessionMark{Open: true, OpenedAt: stamp(p.now()), SpawnID: request.SpawnID}
+ 		return nil
+ 	})
+-	if err != nil {
+-		return err
+-	}
+-	_, err = TakeJudgeSnapshot(d, scratchDir)
+-	return err
+ }
+ 
+-// resumeJudgeSession rewrites the request of a session an earlier entry left open and, when the records say its snapshot was lost, takes a new one and clears that mark.
++// resumeJudgeSession rewrites the request of a session an earlier entry left open and, when the records say its snapshot was lost, clears that mark and then takes a new one, so the snapshot holds the write that cleared it.
+ func (p *DriftVerify) resumeJudgeSession(rec Records, request JudgeRequest, scratchDir string) error {
+ 	d := p.deps
+ 	if err := WriteJudgeRequest(d.Paths, request); err != nil {
+@@ -520,13 +524,15 @@ func (p *DriftVerify) resumeJudgeSession(rec Records, request JudgeRequest, scra
+ 	if !rec.Scope.SnapshotLost {
+ 		return nil
+ 	}
+-	if _, err := TakeJudgeSnapshot(d, scratchDir); err != nil {
+-		return err
+-	}
+-	return WriteRecords(d, func(scope *ScopeRecord, _ *JudgedRecord) error {
++	err := WriteRecords(d, func(scope *ScopeRecord, _ *JudgedRecord) error {
+ 		scope.SnapshotLost = false
+ 		return nil
+ 	})
++	if err != nil {
++		return err
++	}
++	_, err = TakeJudgeSnapshot(d, scratchDir)
++	return err
+ }
+ 
+ // removeJudgement removes judgement.yaml, which is no record, and is content with it already gone.
+@@ -537,25 +543,60 @@ func (p *DriftVerify) removeJudgement() error {
+ 	return nil
+ }
+ 
+-// judgeSessionChanged returns why the checkouts no longer match the snapshot the judge was spawned under, and empty when they match.
+-// A snapshot that is gone is recorded as lost first, so the parent's resume takes a new one.
+-// The reason names each change, the directory the snapshot's copies are in and the way to restore.
+-func (p *DriftVerify) judgeSessionChanged() (string, error) {
++// settleOpenSession returns why a session an earlier entry left open may not go on, and empty when it may.
++// A snapshot that is gone guards nothing once no chair is live, so it is recorded as lost and the pass goes on to take a new one;
++// under a live chair what that session changes cannot be told, which is the Stuck snapshotGoneReason words.
++func (p *DriftVerify) settleOpenSession() (string, error) {
+ 	d := p.deps
+ 	snapshot, found, err := ReadJudgeSnapshot(d)
+ 	if err != nil {
+ 		return "", err
+ 	}
++	if found {
++		return p.changedSince(snapshot)
++	}
++	table, err := p.tableFor()
++	if err != nil {
++		return "", err
++	}
++	live, err := d.Seats.Probe(table)
++	if err != nil {
++		return "", fmt.Errorf("drift: %s: probe the judge's chair: %w", p.name, err)
++	}
++	if err := p.recordSnapshotLost(); err != nil {
++		return "", err
++	}
++	if live.Chair != nil {
++		return snapshotGoneReason, nil
++	}
++	return "", nil
++}
++
++// judgeSessionChanged returns why the checkouts no longer match the snapshot the judge that just ended was spawned under, and empty when they match.
++// A snapshot that went while that judge ran is recorded as lost, so the parent's resume takes a new one.
++func (p *DriftVerify) judgeSessionChanged() (string, error) {
++	snapshot, found, err := ReadJudgeSnapshot(p.deps)
++	if err != nil {
++		return "", err
++	}
+ 	if !found {
+-		err := WriteRecords(d, func(scope *ScopeRecord, _ *JudgedRecord) error {
+-			scope.SnapshotLost = true
+-			return nil
+-		})
+-		if err != nil {
+-			return "", err
+-		}
+-		return "the snapshot of both checkouts the judge was spawned under is gone, so what its session changed cannot be told; way forward: the parent or the operator checks both checkouts for the judge's edits, then runs lym loom resume, which takes a new snapshot and resumes the judge", nil
++		return snapshotGoneReason, p.recordSnapshotLost()
+ 	}
++	return p.changedSince(snapshot)
++}
++
++// recordSnapshotLost marks the session's snapshot lost, so the next judge step takes a new one.
++func (p *DriftVerify) recordSnapshotLost() error {
++	return WriteRecords(p.deps, func(scope *ScopeRecord, _ *JudgedRecord) error {
++		scope.SnapshotLost = true
++		return nil
++	})
++}
++
++// changedSince returns why the checkouts no longer match snapshot, and empty when they match.
++// The reason names each change, the directory the snapshot's copies are in and the way to restore, which keeps that directory, since the resume compares against it.
++func (p *DriftVerify) changedSince(snapshot JudgeSnapshot) (string, error) {
++	d := p.deps
+ 	changes, err := snapshot.Changes(d)
+ 	if err != nil {
+ 		return "", err
+@@ -563,7 +604,11 @@ func (p *DriftVerify) judgeSessionChanged() (string, error) {
+ 	if len(changes) == 0 {
+ 		return "", nil
+ 	}
+-	return fmt.Sprintf("the judge session changed what it may not: %s; the snapshot taken before it ran, with a copy of each untracked file, is in %s; way forward: the parent or the operator resets a moved branch to its snapshot HEAD, restores a changed tracked file from its HEAD and an untracked path from the snapshot's copy, deletes an added path and the changed scratch directory, then runs lym loom resume", strings.Join(changes, "; "), d.JudgeSnapshotDir), nil
++	deletes := "an added path"
++	if snapshot.ScratchDir != "" {
++		deletes += " and the current capture's scratch directory " + snapshot.ScratchDir
++	}
++	return fmt.Sprintf("the judge session changed what it may not: %s; the snapshot taken before it ran, with a copy of each untracked file, is in %s; way forward: the parent or the operator resets a moved branch to its snapshot HEAD, restores a changed tracked file from its HEAD and an untracked path from the snapshot's copy, deletes %s, keeps the snapshot directory, which the resume compares against, then runs lym loom resume", strings.Join(changes, "; "), d.JudgeSnapshotDir, deletes), nil
+ }
+ 
+ // tableFor builds the judge's table over the request file, gated by the row's judgement entry.
+diff --git a/internal/driftengine/verify_test.go b/internal/driftengine/verify_test.go
+index b46a0324..eb9d0822 100644
+--- a/internal/driftengine/verify_test.go
++++ b/internal/driftengine/verify_test.go
+@@ -4,6 +4,7 @@ package driftengine
+ 
+ import (
+ 	"context"
++	"errors"
+ 	"fmt"
+ 	"maps"
+ 	"os"
+@@ -141,7 +142,9 @@ type verifyFixture struct {
+ 	liveChair bool
+ 	// codeCheckout and recordsCheckout are the two fake checkouts, and recordsChanged is what RecordsChangedSince answers.
+ 	codeCheckout, recordsCheckout fabricengine.CheckoutState
+-	recordsChanged                []string
++	// checkoutsErr, when set, is what the checkouts read fails with, so taking the judge snapshot fails.
++	checkoutsErr   error
++	recordsChanged []string
+ 	// rulings is the ruling the scripted judge gives each cell by "<case> <key>", matches when absent, and rangeChecked the sentence it notes under an open range.
+ 	rulings      map[string]Ruling
+ 	rangeChecked string
+@@ -210,7 +213,7 @@ func newVerifyFixture(t *testing.T) *verifyFixture {
+ 	d.JudgeSnapshotDir = filepath.Join(t.TempDir(), "snapshot")
+ 	d.LoomRecordsDirs = []string{testRunDirRel, testFrictionRel, testFrictionPrefix}
+ 	d.Checkouts = func() (fabricengine.CheckoutState, fabricengine.CheckoutState, error) {
+-		return f.codeCheckout, f.recordsCheckout, nil
++		return f.codeCheckout, f.recordsCheckout, f.checkoutsErr
+ 	}
+ 	d.RecordsChangedSince = func(string) ([]string, error) { return f.recordsChanged, nil }
+ 	d.EndRoles = func(roles []string) error {
+@@ -703,6 +706,22 @@ func TestDriftVerify(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a snapshot that fails on a fresh judge session leaves no session mark open", func(t *testing.T) {
++		t.Parallel()
++		f := newVerifyFixture(t)
++		f.seedChanged(expectsY)
++		f.checkoutsErr = errors.New("checkouts unreadable")
++
++		_, _, err := f.call()
++
++		if err == nil {
++			t.Fatalf("Call() error = nil; want the snapshot failure")
++		}
++		if f.scope().JudgeSession.Open || f.seats.Calls != 0 {
++			t.Errorf("mark %+v and %d runs after the failed snapshot; want no open mark and no judge", f.scope().JudgeSession, f.seats.Calls)
++		}
++	})
++
+ 	t.Run("a judge ruling does not match stops naming the cell and stores the ruling", func(t *testing.T) {
+ 		t.Parallel()
+ 		f := newVerifyFixture(t)
+@@ -778,20 +797,21 @@ func TestDriftVerify(t *testing.T) {
+ 		scope.Diff, scope.KeyPatterns = "", nil
+ 		f.seed(scope, verifyBaseline)
+ 		f.current = verifyBaseline
++		f.config.Volatile = Volatile{Files: []string{"_source.txt"}}
+ 
+ 		requireDone(f)
+ 
+ 		recorded := f.scope()
+-		if recorded.Diff != DiffLines || !slices.Equal(recorded.KeyPatterns, []string{keyValuePattern}) {
+-			t.Fatalf("scope diff %q and patterns %q; want the config's %q and %q", recorded.Diff, recorded.KeyPatterns, DiffLines, keyValuePattern)
++		if recorded.Diff != DiffLines || !slices.Equal(recorded.KeyPatterns, []string{keyValuePattern}) || !slices.Equal(recorded.Volatile.Files, f.config.Volatile.Files) {
++			t.Fatalf("scope diff %q, patterns %q and volatile %+v; want the config's %q, %q and %+v", recorded.Diff, recorded.KeyPatterns, recorded.Volatile, DiffLines, keyValuePattern, f.config.Volatile)
+ 		}
+ 
+-		f.config.Diff, f.config.KeyPatterns = DiffCommand, []string{`^(?P<key>\w+):(?P<value>.*)$`}
++		f.config.Diff, f.config.KeyPatterns, f.config.Volatile = DiffCommand, []string{`^(?P<key>\w+):(?P<value>.*)$`}, Volatile{}
+ 		f.moveHead("code-head-1")
+ 		requireDone(f)
+ 
+-		if again := f.scope(); again.Diff != DiffLines || !slices.Equal(again.KeyPatterns, recorded.KeyPatterns) {
+-			t.Errorf("scope diff %q and patterns %q after the config changed; want %q and %q kept", again.Diff, again.KeyPatterns, DiffLines, recorded.KeyPatterns)
++		if again := f.scope(); again.Diff != DiffLines || !slices.Equal(again.KeyPatterns, recorded.KeyPatterns) || !slices.Equal(again.Volatile.Files, recorded.Volatile.Files) {
++			t.Errorf("scope diff %q, patterns %q and volatile %+v after the config changed; want %q, %q and %+v kept", again.Diff, again.KeyPatterns, again.Volatile, DiffLines, recorded.KeyPatterns, recorded.Volatile)
+ 		}
+ 	})
+ 
+@@ -983,6 +1003,9 @@ func TestDriftVerify(t *testing.T) {
+ 			}{
+ 				{"TheRowsStatusCommit", testStatusRel},
+ 				{"AFrictionNoteCommit", testFrictionRel + "/halt.md"},
++				{"AScopeRecordCommit", "_lym/drift/scope.json"},
++				{"AJudgedRecordCommit", "_lym/drift/judged.json"},
++				{"ACompareLog", "_lym/drift/logs/compare-1.log"},
+ 			}
+ 			for _, tt := range tests {
+ 				t.Run(tt.name, func(t *testing.T) {
+@@ -1002,18 +1025,14 @@ func TestDriftVerify(t *testing.T) {
+ 			}
+ 		})
+ 
+-		t.Run("a gone snapshot stops recording it lost, and the next entry takes a new snapshot and resumes", func(t *testing.T) {
++		t.Run("a gone snapshot with no live chair takes a new one and goes on under the recorded spawn id", func(t *testing.T) {
+ 			t.Parallel()
+ 			f := newVerifyFixture(t)
+ 			f.seedChanged(expectsY)
+ 			f.seedMark("judge-recorded", false)
+-
+-			outcome, pointer, err := f.call()
+-
+-			requireStuck(t, outcome, pointer, err, true, "snapshot", "lym loom resume")
+-			requireDeferPrefix(t, pointer.Reason, false)
+-			if !f.scope().SnapshotLost || !f.untouched() {
+-				t.Fatalf("snapshot lost %v, judge untouched %v; want it recorded lost and no judge", f.scope().SnapshotLost, f.untouched())
++			f.recordsCheckout.Root = f.store.root
++			f.onArrival = func() {
++				f.recordsCheckout.Head, f.recordsChanged = "records-2", []string{"_lym/drift/scope.json", "_lym/drift/judged.json"}
+ 			}
+ 
+ 			requireDone(f)
+@@ -1025,6 +1044,53 @@ func TestDriftVerify(t *testing.T) {
+ 				t.Errorf("scope = lost %v, mark %+v; requests %+v; want the flag cleared, the mark closed and the recorded spawn id kept", f.scope().SnapshotLost, f.scope().JudgeSession, f.requests)
+ 			}
+ 		})
++
++		t.Run("a gone snapshot under a live chair stops recording it lost, and the next entry takes a new snapshot and resumes", func(t *testing.T) {
++			t.Parallel()
++			f := newVerifyFixture(t)
++			f.seedChanged(expectsY)
++			f.seedMark("judge-recorded", false)
++			f.liveChair = true
++
++			outcome, pointer, err := f.call()
++
++			requireStuck(t, outcome, pointer, err, true, "while its session was live", "cannot be told", "lym loom resume")
++			requireDeferPrefix(t, pointer.Reason, false)
++			if !f.scope().SnapshotLost || f.seats.Calls+f.seats.ResumeCalls != 0 {
++				t.Fatalf("snapshot lost %v, %d runs and %d resumes; want it recorded lost and no judge", f.scope().SnapshotLost, f.seats.Calls, f.seats.ResumeCalls)
++			}
++
++			requireDone(f)
++
++			if f.seats.ResumeCalls != 1 || f.scope().SnapshotLost || f.scope().JudgeSession.Open {
++				t.Errorf("%d resumes, lost %v, mark %+v; want the chair resumed, the flag cleared and the mark closed", f.seats.ResumeCalls, f.scope().SnapshotLost, f.scope().JudgeSession)
++			}
++		})
++
++		t.Run("a snapshot gone while the judge ran stops, and the next entry takes a new one", func(t *testing.T) {
++			t.Parallel()
++			f := newVerifyFixture(t)
++			f.seedChanged(expectsY)
++			f.onArrival = func() {
++				if err := os.RemoveAll(f.deps.JudgeSnapshotDir); err != nil {
++					t.Fatal(err)
++				}
++			}
++
++			outcome, pointer, err := f.call()
++
++			requireStuck(t, outcome, pointer, err, true, "while its session was live", "lym loom resume")
++			if !f.scope().SnapshotLost || !f.scope().JudgeSession.Open {
++				t.Fatalf("snapshot lost %v, mark %+v; want it recorded lost and the mark left open", f.scope().SnapshotLost, f.scope().JudgeSession)
++			}
++
++			f.onArrival = nil
++			requireDone(f)
++
++			if f.scope().SnapshotLost || f.scope().JudgeSession.Open {
++				t.Errorf("lost %v, mark %+v; want the flag cleared and the mark closed", f.scope().SnapshotLost, f.scope().JudgeSession)
++			}
++		})
+ 	})
+ 
+ 	t.Run("a change the judge session makes stops the pass, and a resume stops again until it is undone", func(t *testing.T) {
+@@ -1047,18 +1113,6 @@ func TestDriftVerify(t *testing.T) {
+ 				},
+ 				fragment: "code: a.go was changed",
+ 			},
+-			{
+-				name: "TheScopeRecord",
+-				edit: func(t *testing.T, f *verifyFixture) {
+-					writeTestFile(t, f.recordsCheckout.Root, "_lym/drift/scope.json", "{}")
+-					f.recordsCheckout.Changed = []string{"_lym/drift/scope.json"}
+-				},
+-				undo: func(t *testing.T, f *verifyFixture) {
+-					removeTestFile(t, f.recordsCheckout.Root, "_lym/drift/scope.json")
+-					f.recordsCheckout.Changed = nil
+-				},
+-				fragment: "records: _lym/drift/scope.json was changed",
+-			},
+ 			{
+ 				name: "AnAddedUntrackedFile",
+ 				edit: func(t *testing.T, f *verifyFixture) {
+@@ -1099,7 +1153,7 @@ func TestDriftVerify(t *testing.T) {
+ 
+ 				outcome, pointer, err := f.call()
+ 
+-				requireStuck(t, outcome, pointer, err, true, tt.fragment, f.deps.JudgeSnapshotDir, "lym loom resume")
++				requireStuck(t, outcome, pointer, err, true, tt.fragment, f.deps.JudgeSnapshotDir, f.captureDir, "keeps the snapshot directory", "lym loom resume")
+ 				requireDeferPrefix(t, pointer.Reason, false)
+ 				if !f.scope().JudgeSession.Open || len(f.records().Judged.Tuples) != 0 {
+ 					t.Fatalf("scope mark %+v and %d tuples; want the mark left open and nothing stored", f.scope().JudgeSession, len(f.records().Judged.Tuples))
+@@ -1123,6 +1177,37 @@ func TestDriftVerify(t *testing.T) {
+ 			})
+ 		}
+ 
++		for _, name := range []string{scopeFileName, judgedFileName} {
++			t.Run("AHandEditOf_"+name+"_StopsAndClearsWithARestore", func(t *testing.T) {
++				t.Parallel()
++				f := newVerifyFixture(t)
++				f.seedChanged(expectsY)
++				rel := durableRel(name)
++				f.onArrival = func() {
++					// An empty judged record serializes as {}, so the edit must differ from that to be a hand edit.
++					writeTestFile(t, f.store.root, rel, `{"hand_edit": true}`)
++					writeTestFile(t, f.recordsCheckout.Root, rel, `{"hand_edit": true}`)
++					f.recordsCheckout.Changed = []string{rel}
++				}
++
++				outcome, pointer, err := f.call()
++
++				requireStuck(t, outcome, pointer, err, true, "records: "+rel+" was changed")
++
++				f.onArrival = nil
++				outcome, pointer, err = f.call()
++
++				requireStuck(t, outcome, pointer, err, true, "lym drift amend <slug> --restore")
++
++				if err := RestoreRecords(f.deps); err != nil {
++					t.Fatalf("RestoreRecords() = %v; want nil", err)
++				}
++				removeTestFile(t, f.recordsCheckout.Root, rel)
++				f.recordsCheckout.Changed = nil
++				requireDone(f)
++			})
++		}
++
+ 		t.Run("AChangeMadeBeforeTheSpawnIsNoJudgeEdit", func(t *testing.T) {
+ 			t.Parallel()
+ 			f := newVerifyFixture(t)
+diff --git a/internal/hubreconcile/reinterpret_integration_test.go b/internal/hubreconcile/reinterpret_integration_test.go
+index 216bd941..320ce028 100644
+--- a/internal/hubreconcile/reinterpret_integration_test.go
++++ b/internal/hubreconcile/reinterpret_integration_test.go
+@@ -132,6 +132,32 @@ func TestEnsure_DriftDirsOnAnAnchoredHubAreRewrittenOnceAndMailed(t *testing.T)
+ 	}
+ }
+ 
++// It does not call t.Parallel: it installs the process-global notifier and swaps the package-global detached board sync.
++func TestEnsure_SkipFileArgumentLeavesTheHubBase(t *testing.T) {
++	tiergate.Require(t, 1)
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	board := h.BoardDir()
++	gitkit.CommitFile(t, board, configengine.ConfigFileRel("drift"),
++		"diff: lines\ncapture:\n  command: \"run -e NORCE_BASELINE_SKIP_FILE={skip_file} -v {baseline_dir}:/out img\"\n  timeout_min: 30\n",
++		"fixture: a capture holding the retired placeholder")
++	recordBoardSyncs(t)
++	recordNotices(t)
++
++	if err := hubreconcile.Ensure(geometryOf(h), hubreconcile.Options{}); err != nil {
++		t.Fatalf("Ensure: %v", err)
++	}
++
++	cfg, err := driftengine.LoadConfig(configengine.Dirs{Board: board})
++	if err != nil {
++		t.Fatalf("driftengine.LoadConfig over the board: %v", err)
++	}
++	if want := "run -v {baseline_dir}:/out img"; cfg.Capture.Command != want {
++		t.Errorf("capture command = %q after the walk; want %q", cfg.Capture.Command, want)
++	}
++	assertClean(t, board)
++}
++
+ // It does not call t.Parallel: it installs the process-global notifier and swaps the package-global detached board sync.
+ func TestEnsure_ReinterpretationMarkerIsCommittedAndMailsOnlyAFlaggedValue(t *testing.T) {
+ 	tiergate.Require(t, 1)
+diff --git a/internal/loomcli/arm.go b/internal/loomcli/arm.go
+index afdb0771..9be9e12c 100644
+--- a/internal/loomcli/arm.go
++++ b/internal/loomcli/arm.go
+@@ -332,6 +332,7 @@ const (
+ 	partsWriteEngine      = "PartsWrite"
+ 	partsPlanWriteEngine  = "PartsPlanWrite"
+ 	darnWriteEngine       = "DarnWrite"
++	driftBaselineEngine   = "DriftBaseline"
+ 	samplerSessionEngine  = "SamplerSession"
+ 	treeScopeVerifySource = "tree_scope"
+ )
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index 0f2332a0..f144d893 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -670,6 +670,17 @@ func (c *loomCLI) wire(location *lymcwd.Location, cwd string) error {
+ 		}
+ 	}
+ 
++	// Preflight checks drift.yaml for a recipe with Drift rows, so a command a Drift row would refuse fails the first row.
++	var preflightDrift func() error
++	holdsDrift, err := loomrecipe.HasEngine(c.recipe, driftBaselineEngine)
++	if err != nil {
++		return err
++	}
++	if holdsDrift {
++		configDirs := fabricengine.ConfigDirs(location)
++		preflightDrift = func() error { return driftengine.CheckRetiredPlaceholders(configDirs) }
++	}
++
+ 	recordEngine, err := loomrecipe.RecordEngine(c.recipe)
+ 	if err != nil {
+ 		return err
+@@ -687,6 +698,7 @@ func (c *loomCLI) wire(location *lymcwd.Location, cwd string) error {
+ 
+ 	c.env = shedrecipe.Env{
+ 		PreflightBatcher: preflightBatcher,
++		PreflightDrift:   preflightDrift,
+ 		Cwd:              cwd,
+ 		AnchorPath:       anchorPath,
+ 		ConfigDirs:       fabricengine.ConfigDirs(location),
+diff --git a/internal/loomcli/wiring_test.go b/internal/loomcli/wiring_test.go
+index a5312247..7451ecfc 100644
+--- a/internal/loomcli/wiring_test.go
++++ b/internal/loomcli/wiring_test.go
+@@ -20,6 +20,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/burlerengine"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/driftengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/landingshed"
+@@ -192,6 +193,23 @@ func TestWire_DefaultConfig(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a tapestry seed tells Preflight the drift check", func(t *testing.T) {
++		if c.env.PreflightDrift == nil {
++			t.Fatal("c.env.PreflightDrift = nil; want the drift config check for a recipe with a Drift-Baseline row")
++		}
++		// drift.yaml is hub-wide and has no embedded fallback on load, so the default config is seeded from the template.
++		configDir := filepath.Join(fabricengine.BoardDir(loc.HubPath), "_lym", "config")
++		if err := os.MkdirAll(configDir, 0o755); err != nil {
++			t.Fatalf("MkdirAll(%q) = %v; want nil", configDir, err)
++		}
++		if err := os.WriteFile(filepath.Join(configDir, "drift.yaml"), []byte(driftengine.ConfigTemplate()), 0o644); err != nil {
++			t.Fatalf("WriteFile drift.yaml = %v; want nil", err)
++		}
++		if err := c.env.PreflightDrift(); err != nil {
++			t.Errorf("c.env.PreflightDrift() = %v; want nil over the default config", err)
++		}
++	})
++
+ 	t.Run("webster deps are fully populated", func(t *testing.T) {
+ 		deps := c.runDeps
+ 		if deps.Starter == nil {
+diff --git a/internal/preflightshed/doc.go b/internal/preflightshed/doc.go
+index 66d79562..9f3e844b 100644
+--- a/internal/preflightshed/doc.go
++++ b/internal/preflightshed/doc.go
+@@ -18,6 +18,7 @@
+ // any other load fault names the fix-and-re-step one.
+ // A recipe whose writer row runs a seat table gets a stencils check, which composes the writer's table and refuses a stencil marker no value fills, as after a version skew where a newer binary refreshed the stencils mid-run, or when a value is blank;
+ // the reason carries the check's own way forward, a re-step with a binary that fills them or text for the blank value.
++// A recipe that holds a Drift-Baseline row gets a drift check, which loads `drift.yaml` and refuses a command a Drift row would refuse, and the reason carries that refusal's way forward.
+ //
+ // It declares its own unexported entryErr/cancelErr helpers (ctx.go) for the same
+ // deliberate-duplication reason internal/loomshed/doc.go and internal/landingshed/ctx.go already
+diff --git a/internal/preflightshed/preflight.go b/internal/preflightshed/preflight.go
+index a9974baa..5cd73777 100644
+--- a/internal/preflightshed/preflight.go
++++ b/internal/preflightshed/preflight.go
+@@ -66,6 +66,8 @@ type Checks struct {
+ 	Batcher func() error
+ 	// Stencils composes the recipe's seat tables and refuses a stencil marker no value fills, or a table that cannot be built; its failure is Stuck with the stencils reason and the way forward its error carries.
+ 	Stencils func() error
++	// Drift loads drift.yaml and refuses a command a run would be refused at a Drift row; its failure is Stuck with the drift reason and the way forward its error carries.
++	Drift func() error
+ }
+ 
+ // preflightProducer is the general Preflight producer: it wraps preflight.Check, mapping its
+@@ -91,6 +93,9 @@ const retiredKeyWayForward = ", then re-step"
+ // stencilsReasonPrefix leads the Stuck reason of a failed stencils check; the error text, which carries its own way forward, follows.
+ const stencilsReasonPrefix = "seat stencils check failed: "
+ 
++// driftReasonPrefix leads the Stuck reason of a failed drift check; the error text, which carries its own way forward, follows.
++const driftReasonPrefix = "drift config check failed: "
++
+ // NewPreflight returns a shedengine.ShedProducer that validates cwd via preflight.Check.
+ //
+ // name is told rather than hardcoded because a second product names this row independently.
+@@ -101,7 +106,7 @@ func NewPreflight(name, cwd string) shedengine.ShedProducer {
+ }
+ 
+ // NewPreflightWithChecks returns the Preflight producer with the optional checks.
+-// They run after the hub reconcile and before preflight.Check, so a broken batcher.yaml or a stencil the running binary cannot fill stops the run before any agent spends tokens.
++// They run after the hub reconcile and before preflight.Check, so a broken batcher.yaml, a stencil the running binary cannot fill or a drift command a Drift row would refuse stops the run before any agent spends tokens.
+ func NewPreflightWithChecks(name, cwd string, checks Checks) shedengine.ShedProducer {
+ 	return &preflightProducer{name: name, cwd: cwd, checks: checks}
+ }
+@@ -136,18 +141,30 @@ func (p *preflightProducer) batcherFailure(ctx context.Context) (string, error)
+ // stencilsFailure runs the told stencils check and returns the Stuck reason for its failure, or "" when it passed or none is told.
+ // A cancelled context wins over the failure and comes back as the error.
+ func (p *preflightProducer) stencilsFailure(ctx context.Context) (string, error) {
+-	if p.checks.Stencils == nil {
++	return p.prefixedFailure(ctx, p.checks.Stencils, stencilsReasonPrefix)
++}
++
++// driftFailure runs the told drift check and returns the Stuck reason for its failure, or "" when it passed or none is told.
++// A cancelled context wins over the failure and comes back as the error.
++func (p *preflightProducer) driftFailure(ctx context.Context) (string, error) {
++	return p.prefixedFailure(ctx, p.checks.Drift, driftReasonPrefix)
++}
++
++// prefixedFailure runs check, when told, and returns prefix and its error's text, which carries its own way forward, logging the failure; it returns "" when the check passed.
++// A cancelled context wins over the failure and comes back as the error.
++func (p *preflightProducer) prefixedFailure(ctx context.Context, check func() error, prefix string) (string, error) {
++	if check == nil {
+ 		return "", nil
+ 	}
+-	serr := p.checks.Stencils()
+-	if serr == nil {
++	failure := check()
++	if failure == nil {
+ 		return "", nil
+ 	}
+ 	if cerr := cancelErr(ctx, p.name); cerr != nil {
+ 		return "", cerr
+ 	}
+-	logger.Warn("preflightshed: seat stencils check failed", "producer", p.name, "cwd", p.cwd, "cause", serr)
+-	return stencilsReasonPrefix + serr.Error(), nil
++	logger.Warn("preflightshed: a check failed", "producer", p.name, "cwd", p.cwd, "check", strings.TrimSuffix(prefix, ": "), "cause", failure)
++	return prefix + failure.Error(), nil
+ }
+ 
+ // reconcileHub reconciles the hub's config when the build stamp is stale, and does nothing for a repository outside a hub.
+@@ -182,7 +199,7 @@ func (p *preflightProducer) Call(ctx context.Context) (shedengine.Outcome, shede
+ 		return "", shedengine.OutputPointer{}, cerr
+ 	}
+ 
+-	for _, check := range []func(context.Context) (string, error){p.batcherFailure, p.stencilsFailure} {
++	for _, check := range []func(context.Context) (string, error){p.batcherFailure, p.stencilsFailure, p.driftFailure} {
+ 		reason, err := check(ctx)
+ 		if err != nil {
+ 			return "", shedengine.OutputPointer{}, err
+diff --git a/internal/preflightshed/preflight_test.go b/internal/preflightshed/preflight_test.go
+index 876a527e..556b4acf 100644
+--- a/internal/preflightshed/preflight_test.go
++++ b/internal/preflightshed/preflight_test.go
+@@ -150,9 +150,9 @@ func TestPreflight_BatcherCheck(t *testing.T) {
+ 	}
+ }
+ 
+-// TestPreflight_StencilsCheck covers the optional stencils check of NewPreflightWithChecks over a temporary non-repository cwd.
+-// A failing check is Stuck with the stencils reason followed by the error's own text, and is logged with the row's name and the error.
+-// A failing batcher check runs first and wins over a failing stencils check.
++// TestPreflight_StencilsCheck covers the optional stencils and drift checks of NewPreflightWithChecks over a temporary non-repository cwd.
++// A failing check is Stuck with its reason followed by the error's own text, and is logged with the row's name and the error.
++// A failing batcher check runs first and wins over a failing stencils check, which wins over a failing drift check.
+ // A check that cancels the context before failing yields the cancellation error and no verdict.
+ // A passing check never yields the stencils reason.
+ // It does not call t.Parallel, because logcapture.Capture redirects the process-global logger output.
+@@ -160,6 +160,7 @@ func TestPreflight_StencilsCheck(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	stencilsErr := errors.New("stencil darn-template-write has marker(s) subagent_model that no value fills")
+ 	batcherErr := errors.New("unknown batchifier bogus")
++	driftErr := errors.New("drift: the drift capture command holds {skip_file}")
+ 	failWith := func(err error) func() error { return func() error { return err } }
+ 
+ 	tests := []struct {
+@@ -185,6 +186,20 @@ func TestPreflight_StencilsCheck(t *testing.T) {
+ 			failure:    batcherErr,
+ 			wantReason: batchifierReasonPrefix + batcherErr.Error() + batchifierWayForward,
+ 		},
++		{
++			name:       "FailingDriftCheckIsStuckWithTheDriftReason",
++			checks:     func(context.CancelFunc) Checks { return Checks{Drift: failWith(driftErr)} },
++			failure:    driftErr,
++			wantReason: driftReasonPrefix + driftErr.Error(),
++		},
++		{
++			name: "FailingStencilsCheckWinsOverTheDriftCheck",
++			checks: func(context.CancelFunc) Checks {
++				return Checks{Stencils: failWith(stencilsErr), Drift: failWith(driftErr)}
++			},
++			failure:    stencilsErr,
++			wantReason: stencilsReasonPrefix + stencilsErr.Error(),
++		},
+ 		{
+ 			name: "CancelledContextWinsOverTheFailure",
+ 			checks: func(cancel context.CancelFunc) Checks {
+diff --git a/internal/shedrecipe/entries_simple.go b/internal/shedrecipe/entries_simple.go
+index 28a3474e..350df6a7 100644
+--- a/internal/shedrecipe/entries_simple.go
++++ b/internal/shedrecipe/entries_simple.go
+@@ -14,7 +14,7 @@ import (
+ )
+ 
+ // preflightEntry is the Constructor for the "Preflight" registry row: it validates Env.Cwd and
+-// returns preflightshed.NewPreflightWithChecks(name, env.Cwd, checks), the checks being env.PreflightBatcher and env.PreflightStencils.
++// returns preflightshed.NewPreflightWithChecks(name, env.Cwd, checks), the checks being env.PreflightBatcher, env.PreflightStencils and env.PreflightDrift.
+ func preflightEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error) {
+ 	if err := configRejectUnknown(cfg); err != nil {
+ 		return nil, err
+@@ -22,7 +22,7 @@ func preflightEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProduc
+ 	if err := requireAbsRoot("Preflight", "Cwd", env.Cwd); err != nil {
+ 		return nil, err
+ 	}
+-	return preflightshed.NewPreflightWithChecks(row.Name, env.Cwd, preflightshed.Checks{Batcher: env.PreflightBatcher, Stencils: env.PreflightStencils}), nil
++	return preflightshed.NewPreflightWithChecks(row.Name, env.Cwd, preflightshed.Checks{Batcher: env.PreflightBatcher, Stencils: env.PreflightStencils, Drift: env.PreflightDrift}), nil
+ }
+ 
+ // landingRowDeps returns a copy of env.Landing whose GateKey is the key the row's optional "gate_key" string names, else the row name in lower case.
+diff --git a/internal/shedrecipe/entries_simple_test.go b/internal/shedrecipe/entries_simple_test.go
+index 73226b97..a6a6a075 100644
+--- a/internal/shedrecipe/entries_simple_test.go
++++ b/internal/shedrecipe/entries_simple_test.go
+@@ -283,6 +283,20 @@ func TestSimpleEntries_HappyPath(t *testing.T) {
+ 		}
+ 	})
+ 
++	// The Preflight row hands Env.PreflightDrift to its producer, so a failing check halts the row.
++	t.Run("Preflight forwards the drift check", func(t *testing.T) {
++		env := newTestEnv(t)
++		env.PreflightDrift = func() error { return errors.New("the capture holds a retired placeholder") }
++		producer, err := preflightEntry(RowIdentity{Name: "Preflight"}, Config{}, env)
++		if err != nil {
++			t.Fatalf("preflightEntry() error = %v; want nil", err)
++		}
++		outcome, pointer, err := producer.Call(context.Background())
++		if err != nil || outcome != shedengine.Stuck || !strings.Contains(pointer.Reason, "drift config check failed: the capture holds a retired placeholder") {
++			t.Errorf("Call() = %q, %q, %v; want stuck with the drift reason, nil", outcome, pointer.Reason, err)
++		}
++	})
++
+ 	// The landing rows run the gate key their config or row name picks, read from the producer's told Deps.
+ 	landingRows := []struct {
+ 		name    string
+diff --git a/internal/shedrecipe/recipe.go b/internal/shedrecipe/recipe.go
+index 8cf5ad05..5063d59d 100644
+--- a/internal/shedrecipe/recipe.go
++++ b/internal/shedrecipe/recipe.go
+@@ -87,6 +87,8 @@ type Env struct {
+ 	// PreflightStencils is the seat stencils check Preflight runs, set by the wiring for a recipe with a Darn-Write row, nil otherwise.
+ 	// It checks only the Darn-Write writer table, since the other seat tables are built from call-time values Preflight does not have.
+ 	PreflightStencils func() error
++	// PreflightDrift is the drift config check Preflight runs, set by the wiring for a recipe with a Drift-Baseline row, nil otherwise.
++	PreflightDrift func() error
+ 	// AnchorPath is the told anchor path, read by Webster, Bouncer and the gate resolver's "plan" gate.
+ 	AnchorPath string
+ 	// ConfigDirs is the told geometry of a layered config load, read by Webster, which loads batcher through it.
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index 4ab9e665..39e4998c 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -58,6 +58,7 @@ var nilLegal = map[string]bool{
+ 	"WebsterRecord":                    true,
+ 	"PreflightBatcher":                 true,
+ 	"PreflightStencils":                true,
++	"PreflightDrift":                   true,
+ 	"Pawl.Watch":                       true,
+ 	"Sampler.Watch":                    true,
+ 	"NotifyParent":                     true,
