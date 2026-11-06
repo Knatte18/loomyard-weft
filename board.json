@@ -602,7 +602,7 @@
     {
       "id": 1168,
       "handle": "R1",
-      "slug": "codex-claude-writer-compare",
+      "slug": "codex-assist-review-trial",
       "title": "Same real change written by a Codex and a Claude writer, time, cost and quality compared",
       "kind": "note",
       "labels": [

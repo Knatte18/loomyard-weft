@@ -1,6 +1,6 @@
 # Same real change written by a Codex and a Claude writer, time, cost and quality compared
 
-`codex-claude-writer-compare` · Note · research, codex, shuttle
+`codex-assist-review-trial` · Note · research, codex, shuttle
 
 ## Idea
 
