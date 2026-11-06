@@ -552,51 +552,6 @@
       "revised": "2026-11-05T20:18:23Z"
     },
     {
-      "id": 1164,
-      "handle": "B5",
-      "slug": "drift-capture-provenance-halt",
-      "title": "drift: Drift-Recheck halts on a capture's provenance file even when the compare command passed",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "drift",
-        "config"
-      ],
-      "issues": [
-        71,
-        79
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #71](https://github.com/Knatte18/loomyard/issues/71).\n\nSeen: task run cuttings-fitted-rheology (hub Models, diff: lines) blocked at Drift-Recheck after compare_passed: true, with 'the code changed what the expectation does not cover: changed in case \"_source.txt\" at key \"commit\" ... at key \"captured_at\"'. The hub's baseline harness writes _source.txt (commit SHA and capture time) beside the captured cases; it differs in every capture of a new commit, so every task run with an empty expectation halts here.\n\nWorkaround: the parent ran 'lym drift amend \u003cslug\u003e --entries' with keys commit and captured_at of case _source.txt, then 'lym loom resume'. Every drift run in the hub needs the same amend.\n\nExpected: a way to declare volatile capture files or keys hub-wide in drift.yaml (an ignore list), or the line diff skips them, so provenance never reads as drift.\n\n## From issue #79\n\nImported from [issue #79](https://github.com/Knatte18/loomyard/issues/79).\n\n**What happened**\nTwo Drift-Recheck halts at the start of the run:\n1. 'drift: the drift current capture command holds {skip_file}, which drift no longer renders', with the way forward to remove it via `lym config drift --set` from the prime. The hub's drift.yaml still carried a placeholder that a newer lym no longer renders.\n2. 'the code changed what the expectation does not cover': the only differences were the `commit` and `captured_at` keys in the case `_source.txt`, which record where and when the capture ran.\n\n**Why it is abnormal**\n(1) A config key that lym dropped support for was left in an existing hub config, so a run blocks on stale config with no migration. (2) `_source.txt` is lym's own capture provenance and changes on every capture, so any recheck after a new commit reports an unexpected change; `lym drift amend` cannot sensibly expect a value that changes each run.\n\n**What to do**\n(1) Migrate or warn about unrenderable placeholders at config load, before a run starts. (2) Exclude the `_source.txt` provenance keys (`commit`, `captured_at`) from the drift comparison.\n\nProvenance: task cuttings-fitted-rheology; notes loom-halt.md, loom-halt-2.md",
-      "created": "2026-11-06T08:55:38Z",
-      "revised": "2026-11-06T10:04:09Z"
-    },
-    {
-      "id": 1165,
-      "handle": "B6",
-      "slug": "drift-retired-skip-file-kept",
-      "title": "drift: config reconcile leaves the retired {skip_file} placeholder in capture and compare commands",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "drift",
-        "config",
-        "reconcile"
-      ],
-      "issues": [
-        70,
-        69
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #70](https://github.com/Knatte18/loomyard/issues/70).\n\nSeen: after drift stopped rendering {skip_file}, a hub whose default-layer drift.yaml held '-e NORCE_BASELINE_SKIP_FILE={skip_file}' in capture.command and compare.command blocked a task run at Drift-Recheck with 'the drift current capture command holds {skip_file}, which drift no longer renders'. 'lym config reconcile --layer default --apply' from the prime did not remove the placeholder.\n\nWorkaround: the prime orch rewrote both commands without the placeholder with 'lym config drift --layer default --set', then the blocked run was resumed with 'lym loom resume'.\n\nExpected: reconcile (or the upgrade that retired the placeholder) migrates or strips {skip_file} from existing drift commands, so no run blocks on it; and the Drift-Recheck error names a way forward that works from the session that receives it (a beam orch is refused hub-wide config writes).\n\n## From issue #69\n\nImported from [issue #69](https://github.com/Knatte18/loomyard/issues/69).\n\nSeen: in the NORCE Models hub, drift.yaml (default layer) held capture.command and compare.command with `-e NORCE_BASELINE_SKIP_FILE={skip_file}`, written when drift rendered that placeholder. Drift no longer renders {skip_file}, so every drifting run blocked at Drift-Recheck. `lym config reconcile --layer default` reported no change for drift, so it did not migrate the placeholder away.\n\nWorkaround: removed the placeholder by hand from the prime with `lym config drift --layer default --set 'capture.command=...'` and the same for compare.command. A beam orch cannot do this, since a hub-wide config write is refused there, so the beam's members waited on the prime orch.\n\nExpected: when a drift placeholder is retired, `lym config reconcile` (or drift's config load) strips or rewrites it in existing hub configs, or drift renders a retired placeholder as empty with a warning instead of blocking the run.",
-      "created": "2026-11-06T08:55:42Z",
-      "revised": "2026-11-06T08:55:45Z"
-    },
-    {
       "id": 1166,
       "handle": "B7",
       "slug": "begin-batch-wrong-conflict-kind",
@@ -666,48 +621,42 @@
     },
     {
       "id": 1169,
-      "handle": "B3",
-      "slug": "drift-judge-scope-record-halt",
-      "title": "drift: the judge guard halts on lym's own scope.json write",
-      "kind": "note",
+      "handle": "T5",
+      "slug": "drift-halts-bundle",
+      "title": "Drift: lym record writes, a gone snapshot, capture provenance and a retired placeholder halt runs",
+      "kind": "task",
       "labels": [
         "bug",
         "drift",
-        "loom"
+        "loom",
+        "config",
+        "reconcile"
       ],
       "issues": [
         74,
         75,
-        77
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #74](https://github.com/Knatte18/loomyard/issues/74).\n\nSeen: after a judge snapshot was gone, 'lym loom resume' halted again at once: 'the judge session changed what it may not: records: src/csharp/NORCE.Models/_lym/drift/scope.json was changed'. The only change to scope.json is lym's own removal of \"snapshot_lost\": true.\n\nCause: internal/driftengine/verify.go, resumeJudgeSession, takes the new snapshot with TakeJudgeSnapshot first and then clears scope.SnapshotLost with WriteRecords. That record write lands after the snapshot, so judgeSessionChanged names scope.json as a change the judge made. The designed way to recover a lost snapshot therefore always halts.\n\nWorkaround used: set the snapshot's records head in snapshot.json to the records checkout's current HEAD, then 'lym loom resume'.\n\nExpected: clear SnapshotLost before taking the snapshot, or exempt the drift records lym writes itself (scope.json, judged.json) from the judge's write guard. Related: #72, #73.\n\n\n## From issue #75\n\nImported from [issue #75](https://github.com/Knatte18/loomyard/issues/75).\n\nWhat happened: the Drift-Verify step halted blocked four times in a row (anomaly escalation-to-human) with 'the judge session changed what it may not: records: ...'. The paths named were lym's own bookkeeping: a per-session file under _lym/usage/ (reported once as added, twice as changed) and _lym/drift/scope.json (changed). The judge session writes these through lym's own machinery (usage accounting, drift scope), not by editing task files.\n\nWhy abnormal: the guard treats lym-owned record files under _lym/ as forbidden judge edits, so a normal judge run cannot pass. Each halt needs the operator to restore or delete the paths and run lym loom resume, and the same halt recurs on the next judge run.\n\nWhat to do: exclude lym-written record paths (_lym/usage/, _lym/drift/) from the judge-change comparison, or snapshot and compare them in a way that ignores lym's own writes. Also consider not halting for paths lym itself touched during the judge session.\n\nProvenance: task api-density-coefficients; notes loom-halt-2.md, loom-halt-3.md, loom-halt-4.md, loom-halt-6.md.\n\n## From issue #77\n\nImported from [issue #77](https://github.com/Knatte18/loomyard/issues/77).\n\n**What happened**\nFive Drift-Recheck halts (anomaly escalation-to-human) came from the judge-session guard reporting 'the judge session changed what it may not'. Every changed path was one lym itself writes: `_lym/usage/session-\u003cid\u003e.json` (added, then changed on a resumed judge), `_lym/drift/judgement-\u003ctimestamp\u003e.yaml` (added) and `_lym/drift/scope.json` (changed).\nEach halt required the parent or operator to restore or delete those paths by hand before `lym loom resume`, and the next resume tripped on the next lym-written record.\n\n**Why it is abnormal**\nThe guard treats the judge's own usage record, its judgement file and the drift scope file as forbidden edits. The judge cannot avoid producing them, so the Drift-Recheck step cannot pass.\n\n**What to do**\nExclude lym-written records (usage session files, the judgement yaml, drift scope.json) from the judge-session change check, or snapshot and compare only the paths the judge is forbidden to touch. A resumed judge should also not re-trip on the usage file of the session it resumes.\n\nProvenance: task cuttings-fitted-rheology; notes loom-halt-3.md, loom-halt-4.md, loom-halt-5.md, loom-halt-6.md, loom-halt-7.md, loom-halt-9.md",
-      "created": "2026-11-06T10:03:55Z",
-      "revised": "2026-11-06T10:04:03Z"
-    },
-    {
-      "id": 1170,
-      "handle": "B8",
-      "slug": "drift-judge-snapshot-gone",
-      "title": "drift: a judge snapshot gone between resumes halts the run for a hand check",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "drift",
-        "loom"
-      ],
-      "issues": [
+        77,
         76,
-        78
+        78,
+        71,
+        79,
+        70,
+        69
       ],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #76](https://github.com/Knatte18/loomyard/issues/76).\n\nWhat happened: Drift-Verify halted blocked with 'the snapshot of both checkouts the judge was spawned under is gone, so what its session changed cannot be told'. The snapshot lives under the hub's _bolt/.lym/drift-judge/\u003ctask\u003e directory, which earlier halts in the same run pointed to as the restore source.\n\nWhy abnormal: the snapshot disappeared between consecutive resumes of the same run, likely removed by the operator's or parent's cleanup step ('deletes ... the changed scratch directory' in the way-forward text of the earlier halts) while the next judge was already spawning, or by lym itself. A resume then has no baseline and halts again, forcing a manual check of both checkouts.\n\nWhat to do: make the way-forward cleanup and the snapshot lifecycle not race with a resume; take a fresh snapshot automatically on resume when the old one is gone instead of halting, as the halt text itself says resume would do.\n\nProvenance: task api-density-coefficients; note loom-halt-5.md.\n\n## From issue #78\n\nImported from [issue #78](https://github.com/Knatte18/loomyard/issues/78).\n\n**What happened**\nDrift-Recheck halted with 'the snapshot of both checkouts the judge was spawned under is gone, so what its session changed cannot be told'. The snapshot directory under the hub's `_bolt/.lym/drift-judge/\u003cslug\u003e` had been removed, apparently between the previous halt and the resume, while the operator was cleaning up after earlier judge-guard halts.\n\n**Why it is abnormal**\nThe way forward (check both checkouts by hand, then `lym loom resume`) puts the burden on a human to audit for edits lym can no longer detect, and the snapshot's deletion follows from the documented recovery of the neighbouring halt ('deletes ... the changed scratch directory').\n\n**What to do**\nDo not tell the operator to delete the snapshot directory in the judge-guard halt's way forward, or keep the snapshot outside the paths that recovery tells them to delete, so a resume can still compare against it.\n\nProvenance: task cuttings-fitted-rheology; notes loom-halt-8.md (context: loom-halt-7.md, loom-halt-9.md)",
-      "created": "2026-11-06T10:03:58Z",
-      "revised": "2026-11-06T10:04:06Z"
+      "brief": "Four drift bugs that halt Models hub runs at Drift-Verify and Drift-Recheck",
+      "body": "Four bugs that halt drifting runs in the Models hub (`cuttings-fitted-rheology`, `api-density-coefficients`, `baseline-provenance-outside`).\n`98bf70b0` fixed the judge guard for `_lym/usage/` and the archived `judgement-\u003ctimestamp\u003e.yaml` only; the issues predate it or report the same runs.\nCheck each case against today's `internal/driftengine` before changing it.\n\n## 1. The judge guard halts on `_lym/drift/scope.json` (issues 74, 75, 77)\n\nThe guard reports `the judge session changed what it may not: records: .../_lym/drift/scope.json was changed`.\nThe change is lym's own: `resumeJudgeSession` in `internal/driftengine/verify.go` takes the new snapshot with `TakeJudgeSnapshot` and then clears `scope.SnapshotLost` with `WriteRecords`, so `judgeSessionChanged` names that write as the judge's.\nThe designed recovery of a lost snapshot therefore always halts.\n\nFixed when no record lym writes itself during or around a judge session reads as a judge's edit, `scope.json` and `judged.json` included, and a resumed judge does not trip on them.\nFix the order in `resumeJudgeSession`, and exempt what lym writes, so the next such record does not cause the next halt.\nA judge that edits a task file or a record it may not touch must still halt.\n\n## 2. A gone snapshot halts the run (issues 76, 78)\n\nDrift-Verify and Drift-Recheck halt with `the snapshot of both checkouts the judge was spawned under is gone, so what its session changed cannot be told`, and the way forward asks for a hand check of both checkouts.\nThe snapshot lives under `_bolt/.lym/drift-judge/\u003ctask\u003e`.\nIt went because the neighbouring guard halt's way forward tells the reader to delete `the changed scratch directory`.\n\n- No halt text tells anyone to delete the snapshot directory, or the recovery it names keeps the snapshot a resume compares against.\n- A resume with the snapshot gone takes a fresh one and goes on, as the halt text itself says resume would do, when no judge session is live that the lost snapshot was guarding; where a live session's changes cannot be told, keep the halt and say so.\n- The snapshot's lifecycle does not race a resume.\n\n## 3. Capture provenance reads as drift (issues 71, 79)\n\nDrift-Recheck blocks after `compare_passed: true` with `the code changed what the expectation does not cover: changed in case \"_source.txt\" at key \"commit\" ... at key \"captured_at\"`.\nThe Models hub's baseline harness writes `_source.txt` beside the captured cases, so it differs in every capture of a new commit, and every run with an empty expectation halts; each needs a `lym drift amend`.\n\nThe file belongs to the hub's harness, so lym hard-codes no name: add a hub-wide list in `drift.yaml` of volatile capture files or keys that the diff ignores, documented in the template.\nReport in the change description what the Models hub must set.\n\n## 4. A retired `{skip_file}` stays in hub config and blocks runs (issues 69, 70, 79)\n\nA hub's `drift.yaml` with `-e NORCE_BASELINE_SKIP_FILE={skip_file}` in `capture.command` and `compare.command` blocks at Drift-Recheck with `the drift current capture command holds {skip_file}, which drift no longer renders`, and `lym config reconcile --layer default --apply` does not remove it.\n\n- Reconcile migrates the retired placeholder out of existing drift commands, the whole `-e NAME={skip_file}` argument with it.\n- A leftover placeholder is found at config load or preflight, before a run starts, rather than at Drift-Recheck.\n- The error names a way forward that works from the session that gets it; a beam orch is refused hub-wide config writes.\n",
+      "status": "draft",
+      "created": "2026-11-06T08:55:38Z",
+      "revised": "2026-11-06T10:05:28Z",
+      "run_settings": {
+        "drift": {
+          "scope": "off"
+        }
+      },
+      "profile": "solid"
     }
   ],
   "prime_owner": "neve",
