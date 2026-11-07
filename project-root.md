@@ -53,7 +53,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B7 |  | **The gate fixer loads only the language skills, not prose or code-quality**<br>• Every code role but the gate fixer starts from scribe:prose, code-quality and testing | [`gate-fixer-no-prose-skills`](design-gate-fixer-no-prose-skills.md) | 2h<br>2h | gate, loom |
 | B8 |  | **lym shuttle open sessions write a 1h prompt cache instead of their role's 5m**<br>• The open path seems not to set CLAUDE_CODE_PROMPT_CACHE_TTL | [`shuttle-open-cache-ttl`](design-shuttle-open-cache-ttl.md) | 2h<br>2h | shuttle, claude |
 | B9 |  | **Subagents spawned without an effort run at xhigh, not the medium settings name**<br>• Haiku workers with no effort in the Agent call ran at xhigh | [`subagent-default-effort-xhigh`](design-subagent-default-effort-xhigh.md) | 1h<br>1h | shuttle, claude, stencil |
-| B10 |  | **fabric clone leaves the prime without heddle's rendered files**<br>• Made fires before the config reconcile and its warning is dropped | [`clone-prime-heddle-unrendered`](design-clone-prime-heddle-unrendered.md) | 1m<br>1m | fabric, heddle |
+| B10 |  | **fabric clone leaves the prime without heddle's rendered files**<br>• Made fires before the config reconcile and its warning is dropped | [`clone-prime-heddle-unrendered`](design-clone-prime-heddle-unrendered.md) | 2m<br>2m | fabric, heddle |
 | B11 |  | **Defects the comment cleanup found but left: stale headings, dead helper, stencil paths, joint edits** | [`comment-cleanup-leftovers`](design-comment-cleanup-leftovers.md) | 1m<br>1m | config, cwd, stencil, docs |
 
 ### Enhancements (6)
