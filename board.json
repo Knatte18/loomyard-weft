@@ -486,7 +486,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge-registered-templates' registration and fabric-test-folds' runCell\nDelivers: each verb's arrange split into a build registered per verb and anchor and a derivation from the copy's Hub, arranges that place a directory outside the hub left whole, and the newMergePairFixture layers whose branch commits repeat at least three times moved\nExports: nothing\n\nThe part changes these packages:\n\n- internal/fabricengine (about 200 changed lines)\n",
-      "status": "running · PR-Review",
+      "status": "running · Finalize",
       "created": "2026-11-07T14:15:14Z",
       "revised": "2026-11-07T14:15:14Z",
       "profile": "light",
