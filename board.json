@@ -628,7 +628,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: dotgit's FindRoot and Read, fabricengine.List's porcelain parse, and websterengine's otherWorktrees\nDelivers: a stdlib-only dotgit worktree reader matching git worktree list --porcelain, with a named refusal of a non-files ref storage; List and otherWorktrees read through it and fall back to porcelain on that refusal; the PATTERN-leaf-packages background lists the worktree entries and refs dotgit parses\nExports: the dotgit worktree reader, its entry type and its ref-storage error\n\nThe part changes these packages:\n\n- internal/dotgit (about 650 changed lines)\n- internal/fabricengine (about 100 changed lines)\n- internal/websterengine (about 30 changed lines)\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Drift-Recheck",
       "created": "2026-11-07T14:15:14Z",
       "revised": "2026-11-07T14:15:14Z",
       "profile": "solid",
