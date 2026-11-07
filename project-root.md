@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (7)
+## Tasks (8)
 
 Concrete and claimable; only a task can run.
 
@@ -19,10 +19,10 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Drift fails runs on capture noise such as _source.txt that is no part of the results** | [`drift-provenance-stops-runs`](design-drift-provenance-stops-runs.md) | darn · solid | Finalize | neve | 1h<br>1h | drift, loom |
-| T3 | **Claude sessions: a slash command sent with a leading space, and open sessions caching 1h**<br>• Two claudeengine bugs: /compact as a prompt, and shuttle open without the 5m TTL | [`claude-session-fixes`](design-claude-session-fixes.md) | darn · light | Finalize | neve | 3h<br>44m | shuttle, claude |
-| T4 | **fabric clone leaves the prime without heddle's rendered files**<br>• Made fires before the config reconcile and its warning is dropped | [`clone-prime-heddle-unrendered`](design-clone-prime-heddle-unrendered.md) | darn · light | Code-Burler-Fix | neve | 51m<br>44m | fabric, heddle |
-| T6 | **A Codex seat that read its skills is logged as not having loaded them**<br>• All five skills logged not loaded though the rollout shows SKILL.md read; cause not found | [`codex-skill-load-false-missing`](design-codex-skill-load-false-missing.md) | darn · light | Finalize | neve | 23h<br>44m | shuttle, codex |
-| T7 | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | darn · light | Finalize | neve | 1d<br>44m | tools, claude |
+| T3 | **Claude sessions: a slash command sent with a leading space, and open sessions caching 1h**<br>• Two claudeengine bugs: /compact as a prompt, and shuttle open without the 5m TTL | [`claude-session-fixes`](design-claude-session-fixes.md) | darn · light | Finalize | neve | 3h<br>45m | shuttle, claude |
+| T4 | **fabric clone leaves the prime without heddle's rendered files**<br>• Made fires before the config reconcile and its warning is dropped | [`clone-prime-heddle-unrendered`](design-clone-prime-heddle-unrendered.md) | darn · light | Code-Burler-Fix | neve | 51m<br>45m | fabric, heddle |
+| T6 | **A Codex seat that read its skills is logged as not having loaded them**<br>• All five skills logged not loaded though the rollout shows SKILL.md read; cause not found | [`codex-skill-load-false-missing`](design-codex-skill-load-false-missing.md) | darn · light | Finalize | neve | 23h<br>45m | shuttle, codex |
+| T7 | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | darn · light | Finalize | neve | 1d<br>45m | tools, claude |
 
 ### Ready (0)
 
@@ -38,15 +38,16 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Heddle renders .claude/settings.local.json in every hub: no co-author, lym's plugins and tool deny list**<br>• Attribution off and lym model/effort defaults, in session settings and by an operator-run setup verb | [`machine-claude-defaults`](design-machine-claude-defaults.md) | darn · solid | T4 | 37m<br>2m | claude, config, heddle, fabric |
 
-### Draft (1)
+### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T8 | `draft` **Skills and effort for every role and subagent come from config**<br>• Skills per role in config, gate fixer included; subagents load fitting skills; every effort explicit | [`agent-skills-and-effort`](design-agent-skills-and-effort.md) | darn · solid | T3<br>T1 | 3h<br>2m | shuttle, stencil, claude, gate, loom |
+| T9 | `draft` **The gate builds and starts test binaries for packages with no test of the tier**<br>• Pass only the packages holding a test of the tier to go test; weighs most under Cortex XDR | [`gate-tier-binaries-only`](design-gate-tier-binaries-only.md) | darn |  | 4h<br>1h | gate |
 
-## Notes (25)
+## Notes (24)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -67,11 +68,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 1d<br>1d | reed, orch |
 
-### Enhancements (6)
+### Enhancements (5)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **The gate builds and starts test binaries for packages with no test of the tier**<br>• Pass only the packages holding a test of the tier to go test; weighs most under Cortex XDR | [`gate-tier-binaries-only`](design-gate-tier-binaries-only.md) | 4h<br>1h | gate |
 | E2 |  | **git worktree list is 15 percent of tier 1 git processes and only reads .git/worktrees**<br>• Serve the list from dotgit, with a parity test against git | [`worktree-list-through-dotgit`](design-worktree-list-through-dotgit.md) | 4h<br>4h | fabric |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 10d<br>1d | batten, stencil, config |
 | E4 |  | **trusted_hubs lists shortnames, which neither say which repository is meant nor identify it**<br>• List trusted hubs by full repository name instead of shortname | [`creel-trust-by-repo-name`](design-creel-trust-by-repo-name.md) | 4h<br>4h | creel |
@@ -101,4 +101,4 @@ Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T5 | **Defects the comment cleanup found but left: stale headings, dead helper, stencil paths, joint edits** | [`comment-cleanup-leftovers`](design-comment-cleanup-leftovers.md) | 50m<br>44m | config, cwd, stencil, docs |
+| T5 | **Defects the comment cleanup found but left: stale headings, dead helper, stencil paths, joint edits** | [`comment-cleanup-leftovers`](design-comment-cleanup-leftovers.md) | 50m<br>45m | config, cwd, stencil, docs |
