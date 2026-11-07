@@ -90,7 +90,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Slack relay reposts a sent message: chat.postMessage answer fails to decode** | [`slack-post-decode-repost`](design-slack-post-decode-repost.md) | darn · light | Darn-Write | neve | 18m<br>18m | slack |
+| T2 | **Slack relay reposts a sent message: chat.postMessage answer fails to decode** | [`slack-post-decode-repost`](design-slack-post-decode-repost.md) | darn · light | Drift-Verify | neve | 18m<br>18m | slack |
 
 #### Ready (0)
 
