@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-fabric-livestate-merge-templates.md)
 
-Depends on: [`fabric-anchor-origin-templates`](design-fabric-anchor-origin-templates.md)
-
 Filed from the Sketch `fabric-test-speed`.
 
 Takes: hubforge-registered-templates' registration and fabric-test-folds' runCell

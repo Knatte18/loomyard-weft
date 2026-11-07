@@ -491,31 +491,6 @@
       "discussed": true
     },
     {
-      "id": 1212,
-      "handle": "T14",
-      "slug": "fabric-anchor-origin-templates",
-      "title": "internal/fabricengine anchor and origin fixtures onto registered templates",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "fabric",
-        "testkit",
-        "git"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge-registered-templates' registration and fabric-test-folds' folded tests\nDelivers: newAnchorHub and newOriginHub, with originPair and endedHub where a fixed slug set repeats at least three times, built by registrations; originBoard runs on the copy\nExports: nothing\n\nThe part changes these packages:\n\n- internal/fabricengine (about 150 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-07T14:15:14Z",
-      "revised": "2026-11-07T14:15:14Z",
-      "profile": "light",
-      "project": "fabric-test-speed-work",
-      "discussed": true
-    },
-    {
       "id": 1213,
       "handle": "T15",
       "slug": "fabric-livestate-merge-templates",
@@ -529,9 +504,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "fabric-anchor-origin-templates"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge-registered-templates' registration and fabric-test-folds' runCell\nDelivers: each verb's arrange split into a build registered per verb and anchor and a derivation from the copy's Hub, arranges that place a directory outside the hub left whole, and the newMergePairFixture layers whose branch commits repeat at least three times moved\nExports: nothing\n\nThe part changes these packages:\n\n- internal/fabricengine (about 200 changed lines)\n",
