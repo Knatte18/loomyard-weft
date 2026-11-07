@@ -2,8 +2,6 @@
 
 `drift-provenance-stops-runs` · Task · bug, drift, loom · running · Darn-Write
 
-Depends on: [`comment-cleanup`](design-comment-cleanup.md)
-
 Imported from [issue #81](https://github.com/Knatte18/loomyard/issues/81); follows #71.
 
 ## Seen
