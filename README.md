@@ -90,7 +90,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Slack relay reposts a sent message: chat.postMessage answer fails to decode** | [`slack-post-decode-repost`](design-slack-post-decode-repost.md) | darn · light | Code-Burler-Review | neve | 18m<br>18m | slack |
+| T2 | **Slack relay reposts a sent message: chat.postMessage answer fails to decode** | [`slack-post-decode-repost`](design-slack-post-decode-repost.md) | darn · light | Code-Burler-Review | neve | 19m<br>19m | slack |
 
 #### Ready (0)
 
@@ -122,13 +122,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **lym slack login waits silently for end of input and echoes the token** | [`slack-login-prompt`](design-slack-login-prompt.md) | 26m<br>26m | slack |
+| B1 |  | **lym slack login waits silently for end of input and echoes the token** | [`slack-login-prompt`](design-slack-login-prompt.md) | 27m<br>27m | slack |
 
 #### Enhancements (3)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 47m<br>47m | heddle |
+| E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 48m<br>48m | heddle |
 | E7 |  | **Each part agent plans and builds its own part, instead of joining the parts into one plan** | [`parts-plan-and-build`](design-parts-plan-and-build.md) | 4d<br>2d | loom |
 | E9 |  | **An interactive agent idle for a set time gets its session compacted**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 7d<br>4d | shed, shuttle, batten |
 

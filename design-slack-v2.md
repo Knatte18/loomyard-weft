@@ -19,7 +19,8 @@
   Every orch posts to the one address `<hub>:SLACK` as today; lym looks up the channel of the mail's sending orch, so no orch knows its channel (operator, 2026-11-07).
   The operator never removes a channel by hand: lym archives each beam channel itself, so the sidebar does not fill up.
   The bot makes each channel itself when it is first needed, invites the operator, and removes it when the relay stops, so the operator makes no channel by hand (operator, 2026-11-07).
-  A bot token can archive a channel but not delete it; an archived channel keeps its name, so a channel made again under the same name needs the archived one renamed first, or unarchived where the token allows it.
+  A bot token can archive a channel but not delete it, and an archived channel keeps its name.
+  When an orch whose channel was archived needs Slack again, lym reopens that same channel with its history (operator, 2026-11-07); the Discussion checks that a bot token may unarchive, and if not, how to keep the history in reach.
 - Messages reach the orch within about a second: Socket Mode or another push route in place of polling, with the extra token it needs stored as the bot token is.
 - Each orch's posts show its name, and an icon if cheap, through `chat:write.customize`.
 - The app manifest lym documents lists every scope this needs.
