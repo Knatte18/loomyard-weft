@@ -1,34 +1,37 @@
-# fabric clone: render the prime later and print a failed render
+# fabric clone: render the prime after its configs, report a failed render
 
-`lym fabric clone` told heddle's worktree seam that the prime was made right after wiring its junctions.
-That was before `configsync.ReconcileAll` wrote the prime's per-worktree module configs and before their commit.
-It also dropped the warning text `fabricengine.NotifyWorktreeMade` returns, so a failed render showed only in the log at Warn.
+`lym fabric clone` fired the worktree "made" event for the prime before the per-worktree module configs were written and committed.
+It also dropped the warning text the event returns, so a failed render of heddle's files into the prime showed only in the log.
+An added worktree fires the event last and was unaffected.
 
-## What changes
+Changes:
 
-- `fabriccli.CloneAndWire` now fires the made event once the per-worktree module configs are committed.
+- `fabriccli.CloneAndWire` now fires `NotifyWorktreeMade` after the module configs are committed, before the hub walk.
   The prime is then set up as an added pair is when its seam fires.
-  The event still fires before the `hubreconcile.Ensure` walk, so a walk failure that fails the clone still leaves the prime rendered.
-- The event's warning is kept in the new `fabricengine.CloneResult.SeamWarning`.
-  `lym fabric clone` prints it as the envelope's `seam_warning` field, which is always present and empty when the render succeeded.
-  The warning names the prime and the way forward, `run lym heddle render in that worktree`.
-  The readable terminal summary shows it, since it prints every key ending in `warning`.
-- `hubforge.RegisterTeardown` is exported, so a test that calls `CloneAndWire` by hand tears down the junctions it wired.
+- A failed render never fails the clone.
+  Its warning is returned as `CloneResult.SeamWarning` and printed as `seam_warning` in the clone envelope (always present, empty when none).
+  The warning names `lym heddle render` in the prime as the way forward.
+- When the hub walk fails after a failed render, the failure envelope has no field for the warning, so the walk's error carries it instead.
+- `heddleengine.Seam.Made` now returns an error naming the render's warnings when a target's text stayed unwritten and no file was written.
+  Before, such a render (for example, exclude lines missing) only logged, so no caller could surface it.
+  `heddleengine.Report` gains `Unwritten` to carry this.
+  `TookIn` behaviour is unchanged.
+- `hubforge.RegisterTeardown` is now exported so the seam tests can tear down hubs they clone themselves.
+- Docs in `fabriccli`, `fabricengine` and `hubforge` follow the new order and field.
 
-## Design decisions
+Design notes:
 
-- The event fires before the walk rather than last.
-  The walk's board push is handed to a detached sync, and a render that waits on the Bolt checkout gains nothing by running beside it.
-  Firing before the walk also keeps a walk failure from leaving the prime unrendered.
-- The clone carries the seam warning in its own field, as `fabric pull` does with `seam_warning`, rather than folding it into `warning`, which holds the shortname warning.
+- The render reads only the Bolt checkout's heddle store and the shipped layer, so it needs nothing the walk writes.
+  A test pins that the event fires before the walk's build stamp exists.
+- The `Made` error fires only when no file was written, so a partial render stays a logged warning.
+- Which of the two differences left the prime unrendered in the operator's report was not confirmed.
+  The new test with the real heddle seam shows a clone now leaves `CLAUDE.local.md` rendered in the prime.
 
-## Open risks
+Tests: new cases in `worktreeseam_integration_test.go` cover a failing seam on clone, a failing seam followed by a walk failure, a clone rendered by the real heddle seam, and the `seam_warning` envelope field for failing and healthy seams.
+`seam_test.go` covers `Made` with no exclude lines.
 
-- The cause the operator hit is not confirmed: no clone log holding a seam warning was found on this machine.
-  Both differences the entry names are fixed.
-  A render that ends with warnings, such as a target missing from the warp exclude list, still returns no error from `heddleengine.Seam.Made`.
-  Those warnings reach only the log, so a clone that hits one still prints no `seam_warning`.
+To check by hand:
 
-## Tests
-
-A new subtest of `TestWorktreeSeam_Events` in `internal/fabricengine` clones with a failing seam and asserts that the clone succeeds and that `CloneResult.SeamWarning` names the prime and `lym heddle render`.
+- `clone-envelope-seam-warning-untested`, `clone-reorder-unproven-render`, `made-event-position-unpinned`, `render-warnings-only-logged` and `walk-failure-drops-seam-warning` were open review findings, addressed by the tests and code above; confirm each is covered.
+- Run `lym fabric clone` on a real hub and confirm the prime has heddle's files.
+- Nothing ran the integration suite for this change.
