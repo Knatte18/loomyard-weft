@@ -1,6 +1,6 @@
 # worktree list read in-process through internal/dotgit
 
-`dotgit-worktree-reader` · Task · enhancement, fabric, testkit, git · running · Darn-Write
+`dotgit-worktree-reader` · Task · enhancement, fabric, testkit, git · running · Drift-Verify
 
 Filed from the Sketch `fabric-test-speed`.
 
