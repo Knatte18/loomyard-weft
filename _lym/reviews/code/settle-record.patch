@@ -1,0 +1,575 @@
+diff --git a/internal/fabricengine/anchorchange_integration_test.go b/internal/fabricengine/anchorchange_integration_test.go
+index 3c3b8734..7ea32f91 100644
+--- a/internal/fabricengine/anchorchange_integration_test.go
++++ b/internal/fabricengine/anchorchange_integration_test.go
+@@ -28,14 +28,21 @@ import (
+ // anchorKill is what the kill hook panics with, standing in for a process that dies in the middle of a change.
+ type anchorKill struct{ afterCommit bool }
+ 
+-// newAnchorHub builds a "." hub whose prime warp tracks sub/ and other/ before any pair is added.
++// anchorTemplate is the "." hub whose prime warp tracks sub/ and other/ in unpushed commits, with no pair added.
++var anchorTemplate = hubforge.Registration{
++	Key:  "fabricengine-anchor",
++	Base: hubforge.Shape{Anchor: "."},
++	Build: func(tb testing.TB, h *hubforge.Hub) {
++		gitkit.CommitFile(tb, h.PrimeWorktree(), "sub/.keep", "", "track sub")
++		gitkit.CommitFile(tb, h.PrimeWorktree(), "other/.keep", "", "track other")
++	},
++}
++
++// newAnchorHub returns a copy of anchorTemplate.
+ func newAnchorHub(t *testing.T) *hubforge.Hub {
+ 	t.Helper()
+ 
+-	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	gitkit.CommitFile(t, h.PrimeWorktree(), "sub/.keep", "", "track sub")
+-	gitkit.CommitFile(t, h.PrimeWorktree(), "other/.keep", "", "track other")
+-	return h
++	return hubforge.CopyRegistered(t, &anchorTemplate)
+ }
+ 
+ // beginAnchorChange begins the change of slug's anchor to target from the anchor the hub records for slug.
+diff --git a/internal/fabricengine/originreconcile_integration_test.go b/internal/fabricengine/originreconcile_integration_test.go
+index 5e29aaa4..b24a6552 100644
+--- a/internal/fabricengine/originreconcile_integration_test.go
++++ b/internal/fabricengine/originreconcile_integration_test.go
+@@ -63,19 +63,58 @@ type originHub struct {
+ 	primeRecords     string
+ }
+ 
+-func newOriginHub(t *testing.T) *originHub {
+-	t.Helper()
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	recordsBranch := gitkit.CurrentBranch(t, hub.PrimeRecords())
+-	gitkit.Git(t, hub.PrimeRecords(), "push", "--set-upstream", "origin", recordsBranch)
++// originTemplate is the "." hub with the prime's records branch published.
++var originTemplate = hubforge.Registration{
++	Key:   "fabricengine-origin",
++	Base:  hubforge.Shape{Anchor: "."},
++	Build: publishPrimeRecords,
++}
++
++// originTaskTemplate is originTemplate's hub with the pair "task" added and its code branch's upstream set.
++var originTaskTemplate = hubforge.Registration{
++	Key:   "fabricengine-origin-task",
++	Base:  hubforge.Shape{Anchor: "."},
++	Build: buildOriginTask,
++}
++
++// publishPrimeRecords pushes the prime's records branch with its upstream set.
++func publishPrimeRecords(tb testing.TB, h *hubforge.Hub) {
++	tb.Helper()
++	publishBranch(tb, h.PrimeRecords())
++}
++
++// buildOriginTask publishes the prime's records branch and adds the pair "task" with its upstream set.
++func buildOriginTask(tb testing.TB, h *hubforge.Hub) {
++	tb.Helper()
++	publishPrimeRecords(tb, h)
++	originPair(tb, originHubOf(tb, h), "task")
++}
++
++// originHubOf returns h with the prime's branch names and records path read from it.
++func originHubOf(tb testing.TB, h *hubforge.Hub) *originHub {
++	tb.Helper()
+ 	return &originHub{
+-		Hub:              hub,
+-		primeBranch:      gitkit.CurrentBranch(t, hub.PrimeWorktree()),
+-		primeRecordsPath: hub.PrimeRecords(),
+-		primeRecords:     recordsBranch,
++		Hub:              h,
++		primeBranch:      gitkit.CurrentBranch(tb, h.PrimeWorktree()),
++		primeRecordsPath: h.PrimeRecords(),
++		primeRecords:     gitkit.CurrentBranch(tb, h.PrimeRecords()),
+ 	}
+ }
+ 
++// newOriginHub returns a copy of originTemplate.
++func newOriginHub(t *testing.T) *originHub {
++	t.Helper()
++	return originHubOf(t, hubforge.CopyRegistered(t, &originTemplate))
++}
++
++// newOriginTaskHub returns a copy of originTaskTemplate with the code worktree and branch of its pair "task".
++func newOriginTaskHub(t *testing.T) (hub *originHub, worktree, branch string) {
++	t.Helper()
++	hub = originHubOf(t, hubforge.CopyRegistered(t, &originTaskTemplate))
++	worktree = hub.PairCodeWorktree("task")
++	return hub, worktree, gitkit.CurrentBranch(t, worktree)
++}
++
+ // otherMachine clones bare at branch, as a second machine working on the same remote.
+ func otherMachine(t *testing.T, bare, branch string) string {
+ 	t.Helper()
+@@ -85,12 +124,12 @@ func otherMachine(t *testing.T, bare, branch string) string {
+ }
+ 
+ // originPair adds the pair slug, with its upstream set, and returns its code worktree and branch.
+-func originPair(t *testing.T, hub *originHub, slug string) (worktree, branch string) {
+-	t.Helper()
+-	hubforge.AddPair(t, hub.Hub, slug)
++func originPair(tb testing.TB, hub *originHub, slug string) (worktree, branch string) {
++	tb.Helper()
++	hubforge.AddPair(tb, hub.Hub, slug)
+ 	worktree = hub.PairCodeWorktree(slug)
+-	branch = gitkit.CurrentBranch(t, worktree)
+-	gitkit.Git(t, worktree, "branch", "--set-upstream-to=origin/"+branch)
++	branch = gitkit.CurrentBranch(tb, worktree)
++	gitkit.Git(tb, worktree, "branch", "--set-upstream-to=origin/"+branch)
+ 	return worktree, branch
+ }
+ 
+@@ -162,14 +201,14 @@ func refsOf(t *testing.T, dir string) string {
+ }
+ 
+ // writeStatus gives slug a batten run record at the prime, naming producer as its current row.
+-func writeStatus(t *testing.T, hub *originHub, slug, producer string) {
+-	t.Helper()
++func writeStatus(tb testing.TB, hub *originHub, slug, producer string) {
++	tb.Helper()
+ 	path := shedrun.StatusFile(hub.Location, slug)
+ 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+-		t.Fatalf("mkdir for %s: %v", path, err)
++		tb.Fatalf("mkdir for %s: %v", path, err)
+ 	}
+ 	if err := os.WriteFile(path, []byte(`{"current_producer":"`+producer+`"}`), 0o644); err != nil {
+-		t.Fatalf("write %s: %v", path, err)
++		tb.Fatalf("write %s: %v", path, err)
+ 	}
+ }
+ 
+@@ -233,8 +272,7 @@ func TestReconcileOrigin_Judge(t *testing.T) {
+ 	})
+ 
+ 	t.Run("An origin that moved nothing is read by two ls-remote calls and no fetch", func(t *testing.T) {
+-		hub := newOriginHub(t)
+-		originPair(t, hub, "task")
++		hub, _, _ := newOriginTaskHub(t)
+ 
+ 		var calls callLog
+ 		t.Cleanup(fabricengine.SetOriginCallHookForTest(calls.record))
+@@ -333,8 +371,7 @@ func TestReconcileOrigin_Judge(t *testing.T) {
+ 	})
+ 
+ 	t.Run("A code branch both sides moved reads diverged and names the merge that settles it", func(t *testing.T) {
+-		hub := newOriginHub(t)
+-		pairCode, pairBranch := originPair(t, hub, "task")
++		hub, pairCode, pairBranch := newOriginTaskHub(t)
+ 		for _, row := range []struct {
+ 			name, worktree, branch, bare string
+ 			prime                        bool
+@@ -420,8 +457,7 @@ func TestReconcileOrigin_Judge(t *testing.T) {
+ 	}
+ 
+ 	t.Run("A branch whose origin head lies below an earlier tracking value and shares no commit with the local tip reads diverged", func(t *testing.T) {
+-		hub := newOriginHub(t)
+-		pairCode, branch := originPair(t, hub, "task")
++		hub, pairCode, branch := newOriginTaskHub(t)
+ 		parent := gitkit.RevParse(t, pairCode, "HEAD")
+ 		kept := gitkit.CommitFile(t, pairCode, "one.txt", "one", "one")
+ 		earlier := gitkit.CommitFile(t, pairCode, "two.txt", "two", "two")
+@@ -437,8 +473,7 @@ func TestReconcileOrigin_Judge(t *testing.T) {
+ 	})
+ 
+ 	t.Run("A code branch origin replaced with a history no earlier value holds reads rewritten", func(t *testing.T) {
+-		hub := newOriginHub(t)
+-		pairCode, pairBranch := originPair(t, hub, "task")
++		hub, pairCode, pairBranch := newOriginTaskHub(t)
+ 		for _, row := range []struct{ name, worktree, branch string }{
+ 			{"task branch", pairCode, pairBranch},
+ 			{"prime branch", hub.PrimeWorktree(), hub.primeBranch},
+@@ -464,8 +499,7 @@ func TestReconcileOrigin_Judge(t *testing.T) {
+ 	})
+ 
+ 	t.Run("A deleted upstream reads gone and its summary follows the way forward with the cleanup re-entry", func(t *testing.T) {
+-		hub := newOriginHub(t)
+-		pairCode, branch := originPair(t, hub, "task")
++		hub, pairCode, branch := newOriginTaskHub(t)
+ 		gitkit.Git(t, hub.CodeBare, "branch", "-D", branch)
+ 
+ 		report := reconcile(t, hub, fabricengine.ReconcileScope{}, fabricengine.ReconcileOptions{})
+@@ -681,8 +715,7 @@ func TestReconcileOrigin_Judge(t *testing.T) {
+ 		// with it the directory is deleted and the registration is left for prune.
+ 		absentHub := func(t *testing.T, staleRegistration bool) *originHub {
+ 			t.Helper()
+-			hub := newOriginHub(t)
+-			originPair(t, hub, "task")
++			hub, _, _ := newOriginTaskHub(t)
+ 			writeStatus(t, hub, "task", "Implementer")
+ 			if staleRegistration {
+ 				if err := os.RemoveAll(hub.PairCodeWorktree("task")); err != nil {
+@@ -768,8 +801,7 @@ type rewoundBranch struct {
+ // With withLocal the pair also holds one commit that was never pushed.
+ func newRewoundBranch(t *testing.T, withLocal bool) rewoundBranch {
+ 	t.Helper()
+-	hub := newOriginHub(t)
+-	worktree, branch := originPair(t, hub, "task")
++	hub, worktree, branch := newOriginTaskHub(t)
+ 	base := gitkit.RevParse(t, worktree, "HEAD")
+ 	first := gitkit.CommitFile(t, worktree, "one.txt", "one", "one")
+ 	second := gitkit.CommitFile(t, worktree, "two.txt", "two", "two")
+diff --git a/internal/fabricengine/originreconcileended_integration_test.go b/internal/fabricengine/originreconcileended_integration_test.go
+index 795f296a..cf1de5cc 100644
+--- a/internal/fabricengine/originreconcileended_integration_test.go
++++ b/internal/fabricengine/originreconcileended_integration_test.go
+@@ -18,6 +18,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/testkit/boardkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+@@ -55,12 +56,12 @@ func tagMutation(hub *originHub, tag string) fabricengine.MutationRecord {
+ }
+ 
+ // publishBoard commits a board holding entries at the board checkout, pushes it and returns the Bolt branch.
+-func publishBoard(t *testing.T, hub *originHub, entries ...boardengine.Task) string {
+-	t.Helper()
++func publishBoard(tb testing.TB, hub *originHub, entries ...boardengine.Task) string {
++	tb.Helper()
+ 	board := hub.BoardDir()
+-	branch := gitkit.CurrentBranch(t, board)
+-	gitkit.CommitFile(t, board, "board.json", boardFileOf(t, entries...), "base board")
+-	gitkit.Git(t, board, "push", "origin", branch)
++	branch := gitkit.CurrentBranch(tb, board)
++	gitkit.CommitFile(tb, board, "board.json", boardFileOf(tb, entries...), "base board")
++	gitkit.Git(tb, board, "push", "origin", branch)
+ 	return branch
+ }
+ 
+@@ -82,21 +83,36 @@ func writePairStatus(t *testing.T, hub *originHub, slug, producer string, histor
+ 	}
+ }
+ 
+-// endedHub is a hub with the pair slugs, each holding a batten run record at the prime before its Finalize.
+-// Origin's board marks each of those runs done.
+-func endedHub(t *testing.T, slugs ...string) (*originHub, string) {
+-	t.Helper()
+-	hub := newOriginHub(t)
+-	var live, done []boardengine.Task
++// endedTemplate is originTemplate's hub with the pair "task" and a published board that holds "task" as a live entry.
++// The pair holds a batten run record at the prime before its Finalize.
++var endedTemplate = hubforge.Registration{
++	Key:  "fabricengine-origin-ended",
++	Base: hubforge.Shape{Anchor: "."},
++	Build: func(tb testing.TB, h *hubforge.Hub) {
++		publishPrimeRecords(tb, h)
++		arrangeEnded(tb, originHubOf(tb, h), "task")
++	},
++}
++
++// arrangeEnded adds the pair slugs to hub, each holding a batten run record at the prime before its Finalize.
++// It publishes a board holding each slug as a live entry and returns the Bolt branch.
++func arrangeEnded(tb testing.TB, hub *originHub, slugs ...string) string {
++	tb.Helper()
++	var live []boardengine.Task
+ 	for _, slug := range slugs {
+-		originPair(t, hub, slug)
+-		writeStatus(t, hub, slug, "Implementer")
++		originPair(tb, hub, slug)
++		writeStatus(tb, hub, slug, "Implementer")
+ 		live = append(live, boardEntry(slug))
+-		done = append(done, boardEntry(slug, withBoardStatus("done")))
+ 	}
+-	branch := publishBoard(t, hub, live...)
+-	originBoard(t, hub, branch, done...)
+-	return hub, branch
++	return publishBoard(tb, hub, live...)
++}
++
++// endedHub returns a copy of endedTemplate whose origin board marks the run of "task" done.
++func endedHub(t *testing.T) *originHub {
++	t.Helper()
++	hub := originHubOf(t, hubforge.CopyRegistered(t, &endedTemplate))
++	originBoard(t, hub, gitkit.CurrentBranch(t, hub.BoardDir()), boardEntry("task", withBoardStatus("done")))
++	return hub
+ }
+ 
+ // TestReconcileOrigin_Ended covers the origin reconcile's handling of runs origin has ended.
+@@ -107,7 +123,7 @@ func TestReconcileOrigin_Ended(t *testing.T) {
+ 	boardkit.InstallReplay(t)
+ 
+ 	t.Run("An entry done on origin with a local pair is handed to the teardown seam once and reported ended as landed", func(t *testing.T) {
+-		hub, _ := endedHub(t, "task")
++		hub := endedHub(t)
+ 		recorder := &teardownRecorder{reply: func(fabricengine.EndedTeardown) (fabricengine.TeardownReport, error) {
+ 			return fabricengine.TeardownReport{MutationRecord: tagMutation(hub, "set-aside/task/abc"), Tags: []string{"set-aside/task/abc"}, Kept: []string{"branch task: unlanded"}}, nil
+ 		}}
+@@ -167,7 +183,7 @@ func TestReconcileOrigin_Ended(t *testing.T) {
+ 	})
+ 
+ 	t.Run("A hub reconcile ends a pair at Finalize before its parent merge although it fast-forwards the parent", func(t *testing.T) {
+-		hub, _ := endedHub(t, "task")
++		hub := endedHub(t)
+ 		writePairStatus(t, hub, "task", "Finalize")
+ 		gitkit.CommitFile(t, hub.PairCodeWorktree("task"), "feature.txt", "task work\n", "task work")
+ 		originCommitFile(t, hub.CodeBare, hub.primeBranch, "moved.txt", "moved")
+@@ -184,7 +200,7 @@ func TestReconcileOrigin_Ended(t *testing.T) {
+ 	})
+ 
+ 	t.Run("A pair whose Finalize passed its parent merge is not ended", func(t *testing.T) {
+-		hub, _ := endedHub(t, "task")
++		hub := endedHub(t)
+ 		writePairStatus(t, hub, "task", "Land", "Finalize")
+ 		recorder := &teardownRecorder{}
+ 
+@@ -197,7 +213,7 @@ func TestReconcileOrigin_Ended(t *testing.T) {
+ 	})
+ 
+ 	t.Run("A raddle run standing at Raddle-File is not ended by the entry its own row ended", func(t *testing.T) {
+-		hub, _ := endedHub(t, "task")
++		hub := endedHub(t)
+ 		writePairStatus(t, hub, "task", "Raddle-File", "Raddle-Write")
+ 		recorder := &teardownRecorder{}
+ 
+@@ -210,7 +226,7 @@ func TestReconcileOrigin_Ended(t *testing.T) {
+ 	})
+ 
+ 	t.Run("A raddle run a return sent back to Raddle-Write is ended", func(t *testing.T) {
+-		hub, _ := endedHub(t, "task")
++		hub := endedHub(t)
+ 		writePairStatus(t, hub, "task", "Raddle-Write", "Raddle-File")
+ 		recorder := &teardownRecorder{}
+ 
+@@ -222,8 +238,7 @@ func TestReconcileOrigin_Ended(t *testing.T) {
+ 	})
+ 
+ 	t.Run("A raddle run standing at Raddle-File whose done entry origin then pruned is not ended", func(t *testing.T) {
+-		hub := newOriginHub(t)
+-		originPair(t, hub, "task")
++		hub, _, _ := newOriginTaskHub(t)
+ 		writeStatus(t, hub, "task", "Implementer")
+ 		writePairStatus(t, hub, "task", "Raddle-File", "Raddle-Write")
+ 		branch := publishBoard(t, hub, boardEntry("task"), boardEntry("keep"))
+@@ -240,8 +255,7 @@ func TestReconcileOrigin_Ended(t *testing.T) {
+ 	})
+ 
+ 	t.Run("A raddle run standing at Raddle-File whose entry origin removed is ended as removed", func(t *testing.T) {
+-		hub := newOriginHub(t)
+-		originPair(t, hub, "task")
++		hub, _, _ := newOriginTaskHub(t)
+ 		writeStatus(t, hub, "task", "Implementer")
+ 		writePairStatus(t, hub, "task", "Raddle-File", "Raddle-Write")
+ 		branch := publishBoard(t, hub, boardEntry("task"), boardEntry("keep"))
+@@ -260,8 +274,7 @@ func TestReconcileOrigin_Ended(t *testing.T) {
+ 	})
+ 
+ 	t.Run("An entry removed from origin's board is ended as removed", func(t *testing.T) {
+-		hub := newOriginHub(t)
+-		originPair(t, hub, "task")
++		hub, _, _ := newOriginTaskHub(t)
+ 		writeStatus(t, hub, "task", "Implementer")
+ 		branch := publishBoard(t, hub, boardEntry("task"), boardEntry("keep"))
+ 		originBoard(t, hub, branch, boardEntry("keep"))
+@@ -287,7 +300,7 @@ func TestReconcileOrigin_Ended(t *testing.T) {
+ 			{"lock", fabricengine.BusyOnLock, []string{"lock", "lym cleanup --apply"}},
+ 		} {
+ 			t.Run(row.name, func(t *testing.T) {
+-				hub, _ := endedHub(t, "task")
++				hub := endedHub(t)
+ 				recorder := &teardownRecorder{reply: func(fabricengine.EndedTeardown) (fabricengine.TeardownReport, error) {
+ 					return fabricengine.TeardownReport{Busy: true, BusyOn: row.busyOn}, nil
+ 				}}
+@@ -308,7 +321,9 @@ func TestReconcileOrigin_Ended(t *testing.T) {
+ 	})
+ 
+ 	t.Run("A teardown failing with another error is ended with the error and a second entry is still handed to the seam", func(t *testing.T) {
+-		hub, _ := endedHub(t, "task", "two")
++		hub := newOriginHub(t)
++		branch := arrangeEnded(t, hub, "task", "two")
++		originBoard(t, hub, branch, boardEntry("task", withBoardStatus("done")), boardEntry("two", withBoardStatus("done")))
+ 		recorder := &teardownRecorder{reply: func(request fabricengine.EndedTeardown) (fabricengine.TeardownReport, error) {
+ 			if request.Slug == "task" {
+ 				return fabricengine.TeardownReport{}, errors.New("boom")
+@@ -381,7 +396,7 @@ func TestReconcileOrigin_Ended(t *testing.T) {
+ 			{"a parent the run's own Finalize merged into is the re-entry after its done mark", true, false},
+ 		} {
+ 			t.Run(row.name, func(t *testing.T) {
+-				hub, _ := endedHub(t, "task")
++				hub := endedHub(t)
+ 				writePairStatus(t, hub, "task", "Finalize")
+ 				gitkit.CommitFile(t, hub.PairCodeWorktree("task"), "feature.txt", "task work\n", "task work")
+ 				if row.merged {
+@@ -403,7 +418,7 @@ func TestReconcileOrigin_Ended(t *testing.T) {
+ 	})
+ 
+ 	t.Run("A judge-only reconcile reports the teardown it would run and calls none", func(t *testing.T) {
+-		hub, _ := endedHub(t, "task")
++		hub := endedHub(t)
+ 		recorder := &teardownRecorder{}
+ 
+ 		report := moveReconcile(t, hub, fabricengine.ReconcileScope{JudgeOnly: true}, recorder.seams())
+@@ -421,7 +436,7 @@ func TestReconcileOrigin_Ended(t *testing.T) {
+ 	})
+ 
+ 	t.Run("An earlier snapshot tag sets EarlierSnapshot on the request", func(t *testing.T) {
+-		hub, _ := endedHub(t, "task")
++		hub := endedHub(t)
+ 		weftRoot, err := fabricengine.RecordsRepoRoot(hub.Location)
+ 		if err != nil {
+ 			t.Fatalf("RecordsRepoRoot: %v", err)
+diff --git a/internal/fabricengine/originreconcilemoves_integration_test.go b/internal/fabricengine/originreconcilemoves_integration_test.go
+index 2f874994..c981e97c 100644
+--- a/internal/fabricengine/originreconcilemoves_integration_test.go
++++ b/internal/fabricengine/originreconcilemoves_integration_test.go
+@@ -18,6 +18,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/gitrepo"
++	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/testkit/boardkit"
+@@ -44,10 +45,10 @@ func moveReconcile(t *testing.T, hub *originHub, scope fabricengine.ReconcileSco
+ }
+ 
+ // publishBranch pushes the branch checked out at dir with an upstream and returns its name.
+-func publishBranch(t *testing.T, dir string) string {
+-	t.Helper()
+-	branch := gitkit.CurrentBranch(t, dir)
+-	gitkit.Git(t, dir, "push", "--set-upstream", "origin", branch)
++func publishBranch(tb testing.TB, dir string) string {
++	tb.Helper()
++	branch := gitkit.CurrentBranch(tb, dir)
++	gitkit.Git(tb, dir, "push", "--set-upstream", "origin", branch)
+ 	return branch
+ }
+ 
+@@ -115,13 +116,31 @@ type movesPair struct {
+ 	recordsName string
+ }
+ 
++// movesTemplate is originTaskTemplate's hub with a batten run record for "task" at the prime naming Land,
++// and the pair's records branch published.
++var movesTemplate = hubforge.Registration{
++	Key:  "fabricengine-origin-moves",
++	Base: hubforge.Shape{Anchor: "."},
++	Build: func(tb testing.TB, h *hubforge.Hub) {
++		buildOriginTask(tb, h)
++		writeStatus(tb, originHubOf(tb, h), "task", "Land")
++		publishBranch(tb, h.PairRecordsSibling("task"))
++	},
++}
++
++// newMovesPair returns a copy of movesTemplate with the paths and branch names of its pair "task".
+ func newMovesPair(t *testing.T) *movesPair {
+ 	t.Helper()
+-	hub := newOriginHub(t)
+-	code, codeBranch := originPair(t, hub, "task")
++	hub := originHubOf(t, hubforge.CopyRegistered(t, &movesTemplate))
++	code := hub.PairCodeWorktree("task")
+ 	records := hub.PairRecordsSibling("task")
+-	writeStatus(t, hub, "task", "Land")
+-	return &movesPair{originHub: hub, code: code, codeBranch: codeBranch, records: records, recordsName: publishBranch(t, records)}
++	return &movesPair{
++		originHub:   hub,
++		code:        code,
++		codeBranch:  gitkit.CurrentBranch(t, code),
++		records:     records,
++		recordsName: gitkit.CurrentBranch(t, records),
++	}
+ }
+ 
+ // TestReconcileOrigin_Moves covers the origin reconcile's moves: what it fast-forwards or replays.
+@@ -621,7 +640,7 @@ func TestReconcileOrigin_Moves(t *testing.T) {
+ 	})
+ 
+ 	t.Run("An ended entry owned elsewhere reports ended, a nil OwnerOf reads it active, an OwnerOf error is the reconcile's error and a hub with no Bolt origin head asks nothing", func(t *testing.T) {
+-		hub, _ := endedHub(t, "task")
++		hub := endedHub(t)
+ 		torn := &teardownRecorder{}
+ 		seams := torn.seams()
+ 		seams.OwnerOf = func(string, []byte, string) (string, string, bool, error) { return "other-machine", "task", true, nil }
+@@ -637,8 +656,7 @@ func TestReconcileOrigin_Moves(t *testing.T) {
+ 			t.Errorf("ReconcileOrigin error = %v; want the seam's error", err)
+ 		}
+ 
+-		bare := newOriginHub(t)
+-		originPair(t, bare, "task")
++		bare, _, _ := newOriginTaskHub(t)
+ 		writeStatus(t, bare, "task", "Land")
+ 		gitkit.Git(t, bare.BoardDir(), "update-ref", "-d", "refs/remotes/origin/"+gitkit.CurrentBranch(t, bare.BoardDir()))
+ 		asked := false
+diff --git a/internal/fabricengine/replay_integration_test.go b/internal/fabricengine/replay_integration_test.go
+index 1c307515..bae41a36 100644
+--- a/internal/fabricengine/replay_integration_test.go
++++ b/internal/fabricengine/replay_integration_test.go
+@@ -166,8 +166,8 @@ func withBoardCreated(created time.Time) func(*boardengine.Task) {
+ }
+ 
+ // boardFileOf encodes entries as a board.json, numbering them by position.
+-func boardFileOf(t *testing.T, entries ...boardengine.Task) string {
+-	t.Helper()
++func boardFileOf(tb testing.TB, entries ...boardengine.Task) string {
++	tb.Helper()
+ 	for i := range entries {
+ 		entries[i].ID = i
+ 	}
+@@ -176,7 +176,7 @@ func boardFileOf(t *testing.T, entries ...boardengine.Task) string {
+ 		Entries []boardengine.Task `json:"entries"`
+ 	}{1, entries})
+ 	if err != nil {
+-		t.Fatalf("marshal board.json: %v", err)
++		tb.Fatalf("marshal board.json: %v", err)
+ 	}
+ 	return string(data)
+ }
+diff --git a/internal/fabricengine/worktreeseam_integration_test.go b/internal/fabricengine/worktreeseam_integration_test.go
+index 6ef207f8..ad440633 100644
+--- a/internal/fabricengine/worktreeseam_integration_test.go
++++ b/internal/fabricengine/worktreeseam_integration_test.go
+@@ -181,6 +181,16 @@ func TestWorktreeSeam_Events(t *testing.T) {
+ 		}
+ 	})
+ 
++	// Every later subtest's template copy is taken before the seam is installed:
++	// a template's first build must not run under the fake seam.
++	// The reconcile fixtures copy the "." shape inside buildReconcileFixture, so one copy here builds that template first.
++	boardkit.InstallReplay(t)
++	hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	boltOnlyOrigin := newOriginHub(t)
++	failingPullOrigin := newOriginHub(t)
++	parentPairOrigin := newOriginHub(t)
++	reconcilePair := newMovesPair(t)
++
+ 	seam := &fakeWorktreeSeam{t: t}
+ 	t.Cleanup(fabricengine.InstallWorktreeSeam(seam))
+ 
+@@ -377,7 +387,7 @@ func TestWorktreeSeam_Events(t *testing.T) {
+ 	})
+ 
+ 	t.Run("A Bolt pull and a weft-only fast-forward fire nothing", func(t *testing.T) {
+-		origin := newOriginHub(t)
++		origin := boltOnlyOrigin
+ 		originCommitFile(t, origin.RecordsBare, "main", "moved.txt", "moved")
+ 		originCommitFile(t, origin.RecordsBare, origin.primeRecords, "moved.txt", "moved")
+ 
+@@ -397,7 +407,7 @@ func TestWorktreeSeam_Events(t *testing.T) {
+ 	})
+ 
+ 	t.Run("A failing seam never fails a pull, and its warning reaches the result, the log, the verb's output and the hub pull's line", func(t *testing.T) {
+-		origin := newOriginHub(t)
++		origin := failingPullOrigin
+ 		prime := locationOf(t, origin.PrimeWorktree())
+ 		seam.failWithin(origin.Path)
+ 		t.Cleanup(func() { seam.failWithin("") })
+@@ -462,7 +472,7 @@ func TestWorktreeSeam_Events(t *testing.T) {
+ 	})
+ 
+ 	t.Run("The parent-pair fast-forward fires one took-in event, and a failing seam still returns the new head", func(t *testing.T) {
+-		origin := newOriginHub(t)
++		origin := parentPairOrigin
+ 		fab := hubforge.OpenFabric(t, origin.Hub)
+ 		head := originCommitFile(t, origin.CodeBare, origin.primeBranch, "AGENTS.md", "moved")
+ 
+@@ -487,8 +497,7 @@ func TestWorktreeSeam_Events(t *testing.T) {
+ 	})
+ 
+ 	t.Run("A reconcile that fast-forwards a pair's code branch fires one took-in event while its records branch and Bolt fire none, and a failing seam sets the outcome's warning", func(t *testing.T) {
+-		boardkit.InstallReplay(t)
+-		pair := newMovesPair(t)
++		pair := reconcilePair
+ 		originCommitFile(t, pair.CodeBare, pair.codeBranch, "moved/code.txt", "moved")
+ 		originCommitFile(t, pair.RecordsBare, pair.recordsName, "moved/records.txt", "moved")
+ 		originCommitFile(t, pair.RecordsBare, "main", "moved/bolt.txt", "moved")
