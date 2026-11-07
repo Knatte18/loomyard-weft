@@ -1,6 +1,6 @@
 # fabric clone leaves the prime without heddle's rendered files
 
-`clone-prime-heddle-unrendered` · Task · bug, fabric, heddle · running · Finalize
+`clone-prime-heddle-unrendered` · Task · bug, fabric, heddle · done
 
 ## Seen
 
