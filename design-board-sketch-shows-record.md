@@ -1,6 +1,6 @@
 # A Sketch opened from the board shows only its brief, with no link to its decision record
 
-`board-sketch-shows-record` · Task · bug, board · running · Code-Burler-Review
+`board-sketch-shows-record` · Task · bug, board · running · Code-Burler-Fix
 
 ## Seen (operator, 2026-11-07)
 
