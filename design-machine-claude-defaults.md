@@ -16,6 +16,15 @@ A Claude session not started by lym, or lym sessions on a machine running an old
 
 `~/.claude/settings.json` sets `effortLevel` per model under `modelSettings`, yet subagents with no `effort` ran at `xhigh` in `comment-cleanup`; whether a setting reaches a subagent's default is what `agent-skills-and-effort` checks.
 
+## Two kinds of settings (operator, 2026-11-07)
+
+- What lym needs: a repository initialized as a lym hub is developed only through lym, so lym's needs hold for every session in its worktrees.
+  Everything in loomyard's checked-in `.claude/settings.json` but `mill@millhouse` is of this kind: `ly@loomyard` on, and the `permissions.deny` list of tools lym never uses.
+  These ship with lym as heddle's shipped entries, and loomyard's checked-in `.claude/settings.json` is removed once they render.
+  `scribe@scribe` is on in this machine's `~/.claude/settings.json` and lym's roles preload its skills, so check whether it belongs among the shipped entries too.
+- What one machine needs: `mill@millhouse: false` is this machine's, not lym's.
+  `~/.claude/settings.json` on this machine already sets it false, with `ly@loomyard` false too, so the repository line is redundant; machine settings stay in the user's own `~/.claude/settings.json`, and heddle carries no machine layer.
+
 ## Wanted (operator, 2026-11-07)
 
 - Heddle renders `.claude/settings.local.json` in every worktree, as it renders `CLAUDE.local.md`, so the operator can read what lym sets and every Claude session in the worktree gets it, one the operator starts by hand included.
