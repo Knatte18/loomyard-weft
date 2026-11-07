@@ -4,6 +4,9 @@
 
 Imported from [issue #82](https://github.com/Knatte18/loomyard/issues/82).
 
+> Built by task `drift-provenance-stops-runs`: capture provenance now goes to a `{meta_dir}` sibling that drift never compares, the expectation takes a `metadata` block of file globs and keys, and a failure whose cells no code change can move ends the gate at once as a Terminal failure, with no re-prompt.
+> Check whether this note still names a gap before building anything from it.
+
 ## What happened
 
 The drift gate reported the `_source.txt` keys `commit` and `captured_at` as unexpected cells on two consecutive rounds after the squash commit.
@@ -15,7 +18,7 @@ The producer `Darn-Write` then ran out its verify budget: the run halted `blocke
 
 The gate fails on values that are non-deterministic by construction, so the loop cannot converge and consumes the verify budget regardless of the agent's work.
 
-## What to do
+## What to do (original proposal)
 
 Either make the drift check skip capture-metadata keys such as `commit` and `captured_at`, or let the sealed expectation declare keys whose values are exempt from comparison.
 
