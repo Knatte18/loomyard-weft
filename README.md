@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-07 13:57 UTC; every age below is as of then.
+Rendered 2026-11-07 13:58 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -58,11 +58,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 4d<br>1d | shuttle, codex, loom |
 
-## [P0 Root: entries under no project](project-root.md) (23)
+## [P0 Root: entries under no project](project-root.md) (24)
 
 Owner `neve`
 
-### Tasks (3)
+### Tasks (4)
 
 Concrete and claimable; only a task can run.
 
@@ -72,8 +72,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes** | [`fabric-test-speed`](design-fabric-test-speed.md)<br>[Sketch](decision-fabric-test-speed.md) | raddle | Raddle-Write | neve | 5h<br>0m | fabric, testkit, git |
-| T4 | **Tests wait real time and repeat builds every tier 1 pass** | [`test-real-time-waits`](design-test-real-time-waits.md) | darn · light | Code-Burler-Fix | neve | 43m<br>33m | git, gate, termwindow, process |
+| T1 | **Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes** | [`fabric-test-speed`](design-fabric-test-speed.md)<br>[Sketch](decision-fabric-test-speed.md) | raddle | Raddle-Write | neve | 5h<br>1m | fabric, testkit, git |
+| T4 | **Tests wait real time and repeat builds every tier 1 pass** | [`test-real-time-waits`](design-test-real-time-waits.md) | darn · light | Code-Burler-Fix | neve | 45m<br>35m | git, gate, termwindow, process |
 | T8 | **Skills and effort for every role and subagent come from config**<br>• Skills per role in config, gate fixer included; subagents load fitting skills; every effort explicit | [`agent-skills-and-effort`](design-agent-skills-and-effort.md) | darn · solid | Darn-Write | neve | 4h<br>1h | shuttle, stencil, claude, gate, loom |
 
 #### Ready (0)
@@ -81,6 +81,14 @@ Held by a run; its scope is locked until the run ends.
 Waits on nothing open; can start now.
 
 _None._
+
+#### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T2 | `draft` **A Sketch opened from the board shows only its brief, with no link to its decision record** | [`board-sketch-shows-record`](design-board-sketch-shows-record.md) | darn · light |  | 0m<br>0m | board |
 
 ### Notes (20)
 
@@ -98,7 +106,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Drift gate re-prompts on per-commit capture metadata keys** | [`drift-capture-keys-reprompt`](design-drift-capture-keys-reprompt.md) | 49m<br>28m | drift, loom |
+| B1 |  | **Drift gate re-prompts on per-commit capture metadata keys** | [`drift-capture-keys-reprompt`](design-drift-capture-keys-reprompt.md) | 50m<br>30m | drift, loom |
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 1d<br>1d | reed, orch |
 
 #### Enhancements (4)
