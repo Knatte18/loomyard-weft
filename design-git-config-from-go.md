@@ -1,6 +1,6 @@
 # gitkit and hubforge initialisers write their per-repository git config from Go
 
-`git-config-from-go` · Task · enhancement, fabric, testkit, git · running · Code-Bouncer
+`git-config-from-go` · Task · enhancement, fabric, testkit, git · running · Drift-Recheck
 
 Decision record: [Sketch](decision-git-config-from-go.md)
 
