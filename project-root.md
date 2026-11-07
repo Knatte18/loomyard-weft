@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-07 13:53 UTC; every age below is as of then.
+Rendered 2026-11-07 13:55 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Heddle renders .claude/settings.local.json in every hub: no co-author, lym's plugins and tool deny list**<br>• Attribution off and lym model/effort defaults, in session settings and by an operator-run setup verb | [`machine-claude-defaults`](design-machine-claude-defaults.md) | darn · solid | Finalize | neve | 1h<br>1h | claude, config, heddle, fabric |
-| T4 | **Tests wait real time and repeat builds every tier 1 pass** | [`test-real-time-waits`](design-test-real-time-waits.md) | darn · light | Code-Burler-Review | neve | 40m<br>30m | git, gate, termwindow, process |
+| T4 | **Tests wait real time and repeat builds every tier 1 pass** | [`test-real-time-waits`](design-test-real-time-waits.md) | darn · light | Code-Burler-Review | neve | 41m<br>31m | git, gate, termwindow, process |
 
 ### Ready (0)
 
@@ -43,7 +43,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S1 |  | **Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes** | [`fabric-test-speed`](design-fabric-test-speed.md)<br>[Sketch](decision-fabric-test-speed.md) | 5h<br>0m | fabric, testkit, git |
+| S1 |  | **Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes** | [`fabric-test-speed`](design-fabric-test-speed.md)<br>[Sketch](decision-fabric-test-speed.md) | 5h<br>1m | fabric, testkit, git |
 
 ### Research (3)
 
@@ -57,7 +57,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Drift gate re-prompts on per-commit capture metadata keys** | [`drift-capture-keys-reprompt`](design-drift-capture-keys-reprompt.md) | 46m<br>25m | drift, loom |
+| B1 |  | **Drift gate re-prompts on per-commit capture metadata keys** | [`drift-capture-keys-reprompt`](design-drift-capture-keys-reprompt.md) | 47m<br>26m | drift, loom |
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 1d<br>1d | reed, orch |
 
 ### Enhancements (4)
