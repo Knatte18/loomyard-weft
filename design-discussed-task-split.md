@@ -26,6 +26,8 @@ Since 2026-11-05 an entry that holds a motif run's record is also a Sketch on th
   Runs already past Discussion are not backfilled.
 - Built (2026-11-03): task `readme-shows-discussed` (`1bbcc3b1`).
   The board README and every project file link a discussed entry's record as `Sketch` under its slug, Done entries included.
+- Built (2026-11-07, `c5e44a93`): the design page of every discussed entry also carries a `Decision record: [Sketch](decision-<slug>.md)` line under its metadata line, so a reader who opens the page from the board reaches the record.
+  `RenderToDisk` renders a discussed entry whose record file is missing as undiscussed, so no page links a missing record.
 - Built (2026-11-03): task `shed-sub-run-block` adds the block row and the recipe `motif` (tapestry's Discussion rows).
 - Built (2026-11-03): task `tapestry-motif-block`.
   Tapestry defines Discussion once, in `motif-recipe.yaml`, and runs it through a block row named `Motif`.
