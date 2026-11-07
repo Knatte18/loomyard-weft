@@ -203,8 +203,7 @@
       "status": "done",
       "created": "2026-10-31T16:29:05Z",
       "revised": "2026-11-06T13:51:08Z",
-      "profile": "light",
-      "notify_on_land": true
+      "profile": "light"
     },
     {
       "id": 948,
