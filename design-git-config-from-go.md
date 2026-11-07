@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-git-config-from-go.md)
 
-Depends on: [`hubforge-slim-copy`](design-hubforge-slim-copy.md)
-
 Filed from the Sketch `fabric-test-speed`.
 
 Takes: gitkit's initRepo and initBareRemote, and hubforge's initScratchRepo and initBareRepo
