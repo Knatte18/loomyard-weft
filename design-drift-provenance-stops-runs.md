@@ -1,6 +1,6 @@
 # Drift fails runs on capture noise such as _source.txt that is no part of the results
 
-`drift-provenance-stops-runs` · Task · bug, drift, loom · running · Worktree-Create
+`drift-provenance-stops-runs` · Task · bug, drift, loom · running · Seed-Child
 
 Depends on: [`comment-cleanup`](design-comment-cleanup.md)
 
