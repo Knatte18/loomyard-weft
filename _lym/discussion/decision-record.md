@@ -29,6 +29,12 @@ A copy's board keeps the working tree its build left, with HEAD equal to its ups
 
 Rationale: copies are about 13 percent of the package's serial time, and the walk and the loose objects are most of each copy.
 
+### Added after Discussion (parent, 2026-11-07): Template repack keeps --cruft
+
+Decision: packRepositories keeps 'git repack -d --cruft' where D3 names 'git repack -ad'; D3's command is read as its aim, a template with no loose object, and nothing further changes for review finding F2 of round 1.
+
+Rationale: 'repack -ad' drops unreachable packed objects and leaves unreachable loose ones loose; --cruft packs them into one cruft pack, so no object a fixture may rely on is lost and none stays loose.
+
 ## Constraints
 
 - `PATTERN-leaf-packages`: the D1 reader keeps `internal/dotgit` standard-library only and spawning nothing; the background's list of what `dotgit` parses gains the worktree entries and refs.
