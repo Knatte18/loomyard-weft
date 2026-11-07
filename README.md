@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-07 13:08 UTC; every age below is as of then.
+Rendered 2026-11-07 13:09 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -72,7 +72,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Heddle renders .claude/settings.local.json in every hub: no co-author, lym's plugins and tool deny list**<br>• Attribution off and lym model/effort defaults, in session settings and by an operator-run setup verb | [`machine-claude-defaults`](design-machine-claude-defaults.md) | darn · solid | Worktree-Create | neve | 57m<br>22m | claude, config, heddle, fabric |
+| T1 | **Heddle renders .claude/settings.local.json in every hub: no co-author, lym's plugins and tool deny list**<br>• Attribution off and lym model/effort defaults, in session settings and by an operator-run setup verb | [`machine-claude-defaults`](design-machine-claude-defaults.md) | darn · solid | Seed-Child | neve | 57m<br>22m | claude, config, heddle, fabric |
 | T2 | **Drift fails runs on capture noise such as _source.txt that is no part of the results** | [`drift-provenance-stops-runs`](design-drift-provenance-stops-runs.md) | darn · solid | Finalize | neve | 2h<br>2h | drift, loom |
 | T5 | **The skill-load hold landed with two checks by hand left open** | [`skill-load-hold-unchecked`](design-skill-load-hold-unchecked.md) | darn · light | Code-Burler-Fix | neve | 1h<br>18m | shuttle |
 | T7 | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | darn · light | Finalize | neve | 1d<br>1h | tools, claude |
@@ -108,7 +108,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Drift gate re-prompts on per-commit capture metadata keys** | [`drift-capture-keys-reprompt`](design-drift-capture-keys-reprompt.md) | 0m<br>0m | drift, loom |
+| B1 |  | **Drift gate re-prompts on per-commit capture metadata keys** | [`drift-capture-keys-reprompt`](design-drift-capture-keys-reprompt.md) | 1m<br>1m | drift, loom |
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 1d<br>1d | reed, orch |
 
 #### Enhancements (5)
