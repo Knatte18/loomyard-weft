@@ -1,6 +1,6 @@
 # Batching hook fires on replay but almost never live
 
-`batching-hook-live-gap` · Task · bug, tools, claude · running · Darn-Write
+`batching-hook-live-gap` · Task · bug, tools, claude · running · Drift-Verify
 
 ## Seen
 
