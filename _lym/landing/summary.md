@@ -1,43 +1,44 @@
-# Raddle files drafts, orders by the record, and shows dependencies
+# raddle: file tasks as drafts, order chains by the record, show deps
 
-Raddle had three faults, now fixed:
-it released the tasks it filed,
-it chained parts that share a package against the order the Sketch's decision record states, without saying so,
-and the table it showed for approval had no dependencies column.
+Raddle's proposal could hide its own order, and its filing released work the operator had not released.
+In the `fabric-test-speed` run three things went wrong:
 
-## Filed tasks stay draft
+- The agent chained parts on one `internal/fabricengine` package against the Sketch's own order, and named neither the departure nor its cost.
+- The table shown to the operator had no dependencies, so the order could not be read from it.
+- Filing released the tasks of the `tasks`, `tapestry` and `project` shapes, so the dobby started them before the operator could make the project a beam.
 
-Raddle-File no longer releases anything.
-`boardengine.RaddleFiling` loses its `Release` flag, and `FileRaddle` files every part as a draft, whatever the shape.
-The beam shape's release step and the `Release` seam of `loomshed.RaddleFileDeps` are gone, and so is `Board.ReleaseTasks`, whose only caller was that step.
-The release stays with the operator, through `lym board set-status`, so a project can be made a beam before any of its tasks starts.
-The filed notice to the parent now says that every filed task waits as a draft until the operator releases it.
-The board and loomshed package docs and the weaving glossary's `draft` rows are updated to match.
+This change fixes all three.
 
-## Order and departures
+## What changes
 
-The raddle stencil's Step 3 now orders a chain of parts that share a package by the Sketch's own order first.
-A part the record says waits for nothing goes first in its chain.
-Where the record states no order, the part with the largest stated saving, or the one the others gain from earliest, goes first.
-
-The proposal has a new optional key, `order_departures`, a list of `{parts, record_order, cost}`.
-It has one entry for each place the proposal's order departs from an order the record states.
-`internal/raddleparser` declares it as `OrderDeparture`, and `raddle-proposal-spec.md` pins it.
-
-## The approval table
-
-In interactive mode the mode rules have the agent show the parts as a table with a column of each part's dependencies, by part slug.
-The agent names each listed order departure with its cost,
-and says that every task lands on the board as a draft for the operator to release.
+- **Chain order.** The raddle stencil (`raddle-template-agent.md`) now says how to order parts that share a package and must be chained.
+  The Sketch's own order comes first, and a part the record says waits for nothing goes first in its chain.
+  Where the record states no order, the part with the largest stated saving goes first, or the one the others gain from earliest.
+- **Order departures.** The proposal has an optional `order_departures` key, a list of `{parts, record_order, cost}`.
+  The agent lists each place its order departs from an order the record states.
+  `raddleparser.Proposal` carries it as `OrderDepartures`, and `raddle-proposal-spec.md` describes it.
+  It is optional, so an existing proposal parses unchanged.
+- **Approval prompt.** In interactive mode (`raddleModeRules` in `loomengine`) the agent shows the parts as a table with a column of each part's dependencies, by slug.
+  It names each order departure with its cost.
+  It says that every task lands as a draft, released with `lym board set-status`.
+- **Drafts only.** Filing no longer releases anything.
+  `RaddleFiling.Release`, `Board.ReleaseTasks`, `RaddleFileDeps.Release` and the `raddleFiled` mutation result are removed.
+  `FileRaddle` leaves every task draft, project members included, and the parent notice says the tasks wait as drafts for the operator's release.
+  The beam shape already filed drafts; it now differs from the others only in the `CreateBeam` step.
+  `RaddleFile` loses its release step, so its remaining steps renumber.
 
 ## Design decisions
 
-- `ReleaseTasks` is deleted rather than kept unused: nothing else releases a set of tasks, and `lym board set-status` covers the operator's release.
-- The departure list is written by the agent and not checked by Go: no parser can tell from the record's prose which order it states, so it has no check.
-- The approval table is drawn by the agent from the mode rules and not rendered by Go, because the agent already writes the rest of the proposal as plain text in the pane.
+- Release is removed, not made optional.
+  Approving a proposal is not a release, and no caller wants the old behavior.
+- `order_departures` is a proposal key, not prose in the table.
+  This keeps departures in the proposal file the operator approves, where the checker can later read them.
+- The dependency column and the departure listing are instructions to the agent in the mode rules.
+  Neither is enforced in code.
 
-## Tests
+## To check by hand
 
-- `TestFileRaddle` asserts that every filed task is draft in each shape, and the redundant beam row and `TestReleaseTasks` are removed.
-- `TestRaddleFile` drops the release step from the beam shape's step order, and asserts that the filed notice says the tasks wait as drafts.
-- `TestParse_OptionalKeys` replaces `TestParse_PatternClusters` and pins the JSON form of both optional keys, `pattern_clusters` and `order_departures`.
+- Run a raddle session in interactive mode and confirm that the pane table shows the dependency column, the departures and the draft notice.
+  Only the prompt text and stencil changed, so no test covers the agent's behavior.
+- Confirm that a filed project's tasks all read `draft` on the board, and that `lym board set-status` releases them.
+- Run the `battencli` and `shedrecipe` tests, which pin the `RaddleFile` seam lists that lose `Release`.
