@@ -76,11 +76,11 @@ _None._
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-## [P0 Root: entries under no project](project-root.md) (19)
+## [P0 Root: entries under no project](project-root.md) (20)
 
 Owner `neve`
 
-### Tasks (1)
+### Tasks (2)
 
 Concrete and claimable; only a task can run.
 
@@ -90,13 +90,21 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Slack relay reposts a sent message: chat.postMessage answer fails to decode** | [`slack-post-decode-repost`](design-slack-post-decode-repost.md) | darn · light | Open-Window | neve | 4m<br>4m | slack |
+| T2 | **Slack relay reposts a sent message: chat.postMessage answer fails to decode** | [`slack-post-decode-repost`](design-slack-post-decode-repost.md) | darn · light | Drift-Baseline | neve | 4m<br>4m | slack |
 
 #### Ready (0)
 
 Waits on nothing open; can start now.
 
 _None._
+
+#### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | `draft` **Slack v2: one bot, one channel per orch, push in place of polling** | [`slack-v2`](design-slack-v2.md) | motif |  | 0m<br>0m | slack, creel, orch |
 
 ### Notes (18)
 
