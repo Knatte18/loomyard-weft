@@ -1,0 +1,857 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 90fd5f40..a39a6834 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -673,7 +673,7 @@ User-facing modules each get one `lym <module>` namespace:
+   While `claude.yaml`'s `session_scope` block is on, the same documents scope what each session loads, over the user's and the repository's settings:
+   an installed plugin is on only when the session preloads one of its skills, so the orch and the board session get the `ly` plugin in every hub and a writer does not, claude.ai connectors, Claude Code's bundled skills, its `Workflow` tool and the block's `skills_off` list are off, a plugin that is on lists all of its skills, since no setting hides one skill of it,
+   and every session but the orch's gets no auto-memory and no `ListAgents` tool.
+-  The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role).
++  The engine sets the prompt-cache TTL per role on launch, resume and open from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role).
+   `claude.yaml`'s `keep_warm_cap` (template 250s) and `keep_warm_cap_roles` set the per-role keep-warm cap beside them.
+   While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Bash`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups (a Bash call with a read-only lookup command such as `grep`, `find` or a git read counting as one), a sliced read of a short or already-read file, or a chain of edit-only messages;
+   a subagent's or fork's call is judged against that agent's own transcript, context and nudge count;
+diff --git a/internal/creelcli/delivery.go b/internal/creelcli/delivery.go
+index 2b3d8cab..ec60f809 100644
+--- a/internal/creelcli/delivery.go
++++ b/internal/creelcli/delivery.go
+@@ -457,6 +457,8 @@ func (d *hubDelivery) Interrupt(strand creelengine.Strand) error {
+ // A send that failed after the paste maps onto creelengine.ErrNotLanded instead.
+ // Its text sits in the operator's draft or among foreign text in the input box.
+ // Requeueing such an inject would type it again, whereas ErrBusy means nothing was typed.
++// A command the provider took as a prompt passes through as a failed send:
++// it never ran, so creel requeues it and types it again once the session is idle.
+ func mapDeliveryError(err error) error {
+ 	switch {
+ 	case errors.Is(err, shuttleengine.ErrSentTextInDraft), errors.Is(err, shuttleengine.ErrForeignBoxText):
+diff --git a/internal/creelcli/delivery_test.go b/internal/creelcli/delivery_test.go
+index dfe73b1e..d4bf1d0e 100644
+--- a/internal/creelcli/delivery_test.go
++++ b/internal/creelcli/delivery_test.go
+@@ -452,10 +452,12 @@ func TestHubDelivery(t *testing.T) {
+ 		hub, prime, _ := newHub(t)
+ 		strand := creelengine.Strand{Name: "ly:orch", GUID: "guid-orch", Worktree: prime}
+ 		other := errors.New("boom")
++		takenAsPrompt := fmt.Errorf("wrapped: %w", shuttleengine.ErrCommandTakenAsPrompt)
+ 		for _, sentinel := range []struct {
+ 			in   error
+ 			want error
+ 		}{
++			{takenAsPrompt, takenAsPrompt},
+ 			{fmt.Errorf("wrapped: %w", shuttleengine.ErrSessionBusy), creelengine.ErrBusy},
+ 			{fmt.Errorf("wrapped: %w", shuttleengine.ErrPaused), creelengine.ErrBusy},
+ 			{fmt.Errorf("wrapped: %w", shuttleengine.ErrSubmissionNotLanded), creelengine.ErrNotLanded},
+diff --git a/internal/creelcli/doc.go b/internal/creelcli/doc.go
+index 5e426214..39e20cf7 100644
+--- a/internal/creelcli/doc.go
++++ b/internal/creelcli/doc.go
+@@ -147,6 +147,8 @@
+ // The commands are clear, reload-plugins, compact, color and load-skills.
+ // The argument is the focus for compact, the segment color for color, and the space-separated skills for load-skills.
+ // Shuttle's busy and not-confirmed answers map onto the engine's ErrBusy and ErrNotLanded, as they do for a typed line.
++// A command the provider took as a prompt fails as a plain send error.
++// Creel then requeues the inject and types it again once the session is idle.
+ // A send that failed after the paste maps onto ErrNotLanded as well.
+ // It failed because its text was found in the operator's draft or foreign text stood in the input box.
+ // ErrBusy means nothing was typed, and a requeue would type the line again.
+diff --git a/internal/creelengine/doc.go b/internal/creelengine/doc.go
+index 86f7ab65..a3fe66bd 100644
+--- a/internal/creelengine/doc.go
++++ b/internal/creelengine/doc.go
+@@ -410,6 +410,8 @@
+ // The engine knows no slash spelling or key name;
+ // the Delivery seam's Command operation maps the name onto the provider.
+ // It has the same ErrBusy and ErrNotLanded contract as the typing of a line.
++// A command the provider took as a prompt fails as a plain send error.
++// Creel then requeues the inject and types it again once the session is idle.
+ // compact takes a one-line focus, color a segment color, and load-skills a space-separated skill list.
+ // clear and reload-plugins take no argument.
+ // Store.InjectCommand queues one under every rule of a text inject:
+diff --git a/internal/shuttleengine/claudeengine/command.go b/internal/shuttleengine/claudeengine/command.go
+index d9a8d73b..ccd45f51 100644
+--- a/internal/shuttleengine/claudeengine/command.go
++++ b/internal/shuttleengine/claudeengine/command.go
+@@ -14,6 +14,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/shell"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ )
+@@ -379,7 +380,8 @@ func buildLaunchCmd(sh shell.Shell, bin, pointer, settingsPath, sessionID, model
+ // Reed replays the resume line verbatim, so a resume without the flag would bring a bypass session back prompting.
+ // A non-empty settingsPath adds --settings naming it, which Claude Code stacks over the worktree's own settings.
+ // A non-empty appendPromptPath adds --append-system-prompt-file naming it.
+-// It passes no environment assignment, so the line is one pipeline that OrElse may join.
++// It passes no environment assignment, so the line is one pipeline that OrElse may join;
++// the caller exports the environment once in front of the joined lines.
+ func buildOpenCmd(sh shell.Shell, bin, firstTurn, sessionID, model, effort, settingsPath, appendPromptPath string, skipPermissions, resume bool) string {
+ 	sessionFlag := " --session-id "
+ 	if resume {
+@@ -409,7 +411,11 @@ func buildOpenCmd(sh shell.Shell, bin, firstTurn, sessionID, model, effort, sett
+ }
+ 
+ // OpenLaunch returns the launch of a named interactive session with no prompt.
+-// It validates the effort, the permission mode and the model before it writes anything.
++// It validates the effort, the permission mode and the model before it writes anything,
++// and it resolves the prompt-cache TTL before then too.
++// The TTL is spec.Role's from claude.yaml, as for a run, and an invalid TTL anywhere in claude.yaml refuses the open.
++// Both lines open with a statement that exports it as CLAUDE_CODE_PROMPT_CACHE_TTL,
++// so the resume line and its fresh fallback both run under it, in either shell dialect.
+ // With a hub board directory, it creates dir and writes two files into it:
+ // settings.json holds creel's hook delivery, the empty attribution and the session's scope for spec.Skills alone.
+ // The append-system-prompt file holds the creel trust sentence.
+@@ -445,6 +451,11 @@ func (c *Claude) OpenLaunch(dir string, spec shuttleengine.OpenSpec, cfg shuttle
+ 	if err != nil {
+ 		return shuttleengine.Launch{}, err
+ 	}
++	promptCacheTTL, err := resolvePromptCacheTTL(spec.Role, claude)
++	if err != nil {
++		return shuttleengine.Launch{}, err
++	}
++	logger.Info("claudeengine: resolved the prompt-cache TTL of an opened session", "role", spec.Role, "ttl", promptCacheTTL)
+ 	skillLoadMessage := ""
+ 	if len(spec.Skills) > 0 {
+ 		skillLoadMessage = c.SkillLoadMessage(spec.Skills)
+@@ -475,7 +486,13 @@ func (c *Claude) OpenLaunch(dir string, spec shuttleengine.OpenSpec, cfg shuttle
+ 	bin := claudeBinary(claude)
+ 	fresh := buildOpenCmd(sh, bin, skillLoadMessage, sessionID, resolvedModel, spec.Effort, settingsPath, appendPromptPath, skipPermissions, false)
+ 	resumeLine := buildOpenCmd(sh, bin, "", sessionID, resolvedModel, spec.Effort, settingsPath, appendPromptPath, skipPermissions, true)
+-	return shuttleengine.Launch{Cmd: fresh, ResumeCmd: sh.OrElse(resumeLine, fresh), SessionID: sessionID, CreelHooks: creelFlagDirForHook != ""}, nil
++	exportTTL := sh.ExportEnv(promptCacheTTLEnvKey, promptCacheTTL)
++	return shuttleengine.Launch{
++		Cmd:        sh.Chain(exportTTL, fresh),
++		ResumeCmd:  sh.Chain(exportTTL, sh.OrElse(resumeLine, fresh)),
++		SessionID:  sessionID,
++		CreelHooks: creelFlagDirForHook != "",
++	}, nil
+ }
+ 
+ // writeOpenFiles creates dir and writes an opened session's two files into it.
+diff --git a/internal/shuttleengine/claudeengine/command_test.go b/internal/shuttleengine/claudeengine/command_test.go
+index 1927877a..ea6df3fe 100644
+--- a/internal/shuttleengine/claudeengine/command_test.go
++++ b/internal/shuttleengine/claudeengine/command_test.go
+@@ -338,8 +338,23 @@ func TestBuildLaunchCmd(t *testing.T) {
+ 	}
+ }
+ 
++// openLines returns an open launch's fresh and resume lines with their leading export of the prompt-cache TTL stripped.
++// It fails the test unless both lines open with that export at ttl.
++func openLines(t *testing.T, sh shell.Shell, launch shuttleengine.Launch, ttl string) (fresh, resume string) {
++	t.Helper()
++	const marker = "|"
++	lead := strings.TrimSuffix(sh.Chain(sh.ExportEnv(promptCacheTTLEnvKey, ttl), marker), marker)
++	fresh, freshFound := strings.CutPrefix(launch.Cmd, lead)
++	resume, resumeFound := strings.CutPrefix(launch.ResumeCmd, lead)
++	if !freshFound || !resumeFound {
++		t.Fatalf("launch = %+v; want both lines to open with %q", launch, lead)
++	}
++	return fresh, resume
++}
++
+ // TestOpenLaunch pins the open launch: the fresh line with the name reference and optional model flags;
+-// the resume line that falls back to the fresh one; and the refusals made before a session id is minted.
++// the resume line that falls back to the fresh one; the export of the role's prompt-cache TTL ahead of both;
++// and the refusals made before a session id is minted.
+ func TestOpenLaunch(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -348,6 +363,11 @@ func TestOpenLaunch(t *testing.T) {
+ 	tests := []struct {
+ 		name string
+ 		spec shuttleengine.OpenSpec
++		// defaultTTL and ttlRoles replace the template's prompt-cache TTL fields when set.
++		defaultTTL string
++		ttlRoles   map[string]string
++		// wantTTL is the TTL both lines export; empty means the template's default.
++		wantTTL string
+ 		// invalidConfig makes the engine load a claude.yaml the loader refuses.
+ 		invalidConfig bool
+ 		// board gives the engine a hub board directory, so the launch writes creel's files into the open directory.
+@@ -356,95 +376,111 @@ func TestOpenLaunch(t *testing.T) {
+ 		// so the write of that file fails after the directory and settings.json exist.
+ 		obstructAppendPrompt bool
+ 		wantErr              string
+-		check                func(t *testing.T, launch shuttleengine.Launch)
++		// check gets the launch and its two lines with the TTL export stripped.
++		check func(t *testing.T, launch shuttleengine.Launch, fresh, resume string)
+ 	}{
++		{
++			name:       "the role's mapped TTL is exported ahead of both lines",
++			spec:       shuttleengine.OpenSpec{Role: "orch"},
++			defaultTTL: "1h",
++			ttlRoles:   map[string]string{"orch": "5m"},
++			wantTTL:    "5m",
++			check: func(t *testing.T, _ shuttleengine.Launch, fresh, resume string) {
++				resumeLine := strings.Replace(fresh, "--session-id", "--resume", 1)
++				if want := sh.OrElse(resumeLine, fresh); resume != want {
++					t.Errorf("resume line = %q; want %q, both under the one export", resume, want)
++				}
++			},
++		},
++		{name: "an unmapped role exports the default TTL", spec: shuttleengine.OpenSpec{Role: "explore"}, defaultTTL: "1h", wantTTL: "1h"},
++		{name: "an invalid TTL is refused", spec: shuttleengine.OpenSpec{Role: "explore"}, defaultTTL: "1H", wantErr: `prompt_cache_ttl "1H"`},
+ 		{name: "a failed append-prompt write removes the directory", spec: shuttleengine.OpenSpec{Role: "explore"}, board: true, obstructAppendPrompt: true, wantErr: "write open append system prompt"},
+ 		{name: "a board writes the creel settings and the append prompt", spec: shuttleengine.OpenSpec{Role: "explore"}, board: true},
+ 		{name: "a board refusal creates nothing", spec: shuttleengine.OpenSpec{Role: "explore", PermissionMode: "auto"}, board: true, wantErr: "invalid permission mode"},
+ 		{
+ 			name: "fresh line",
+ 			spec: shuttleengine.OpenSpec{Role: "explore", ModelChoice: shuttleengine.ModelChoice{Model: "opus", Effort: "high"}},
+-			check: func(t *testing.T, launch shuttleengine.Launch) {
++			check: func(t *testing.T, launch shuttleengine.Launch, fresh, resume string) {
+ 				for _, want := range []string{"--session-id " + sh.Quote(launch.SessionID), nameRef, "--model " + sh.Quote("opus"), "--effort " + sh.Quote("high")} {
+-					if !strings.Contains(launch.Cmd, want) {
+-						t.Errorf("Cmd = %q; want it to hold %q", launch.Cmd, want)
++					if !strings.Contains(fresh, want) {
++						t.Errorf("fresh line = %q; want it to hold %q", fresh, want)
+ 					}
+ 				}
+-				if !strings.HasPrefix(launch.Cmd, sh.Invoke("claude")) {
+-					t.Errorf("Cmd = %q; want it to start with the invoked binary", launch.Cmd)
++				if !strings.HasPrefix(fresh, sh.Invoke("claude")) {
++					t.Errorf("fresh line = %q; want it to start with the invoked binary", fresh)
+ 				}
+ 				for _, banned := range []string{"--settings", "Read "} {
+-					if strings.Contains(launch.Cmd, banned) {
+-						t.Errorf("Cmd = %q; want no %q", launch.Cmd, banned)
++					if strings.Contains(fresh, banned) {
++						t.Errorf("fresh line = %q; want no %q", fresh, banned)
+ 					}
+ 				}
+-				if got := strings.Count(launch.ResumeCmd, "--dangerously-skip-permissions"); got != 2 {
+-					t.Errorf("ResumeCmd = %q holds --dangerously-skip-permissions %d times; want 2, the empty mode's bypass default", launch.ResumeCmd, got)
++				if got := strings.Count(resume, "--dangerously-skip-permissions"); got != 2 {
++					t.Errorf("resume line = %q holds --dangerously-skip-permissions %d times; want 2, the empty mode's bypass default", resume, got)
+ 				}
+ 			},
+ 		},
+ 		{
+ 			name: "bypass skips permissions on every line",
+ 			spec: shuttleengine.OpenSpec{Role: "explore", PermissionMode: "bypass"},
+-			check: func(t *testing.T, launch shuttleengine.Launch) {
++			check: func(t *testing.T, _ shuttleengine.Launch, fresh, resume string) {
+ 				const flag = "--dangerously-skip-permissions"
+-				if !strings.Contains(launch.Cmd, flag) {
+-					t.Errorf("Cmd = %q; want it to hold %q", launch.Cmd, flag)
++				if !strings.Contains(fresh, flag) {
++					t.Errorf("fresh line = %q; want it to hold %q", fresh, flag)
+ 				}
+-				resumeLine := strings.Replace(launch.Cmd, "--session-id", "--resume", 1)
+-				if want := sh.OrElse(resumeLine, launch.Cmd); launch.ResumeCmd != want {
+-					t.Errorf("ResumeCmd = %q; want %q", launch.ResumeCmd, want)
++				resumeLine := strings.Replace(fresh, "--session-id", "--resume", 1)
++				if want := sh.OrElse(resumeLine, fresh); resume != want {
++					t.Errorf("resume line = %q; want %q", resume, want)
+ 				}
+-				if got := strings.Count(launch.ResumeCmd, flag); got != 2 {
+-					t.Errorf("ResumeCmd = %q holds %q %d times; want 2", launch.ResumeCmd, flag, got)
++				if got := strings.Count(resume, flag); got != 2 {
++					t.Errorf("resume line = %q holds %q %d times; want 2", resume, flag, got)
+ 				}
+ 			},
+ 		},
+ 		{
+ 			name: "prompt adds no permission flag",
+ 			spec: shuttleengine.OpenSpec{Role: "explore", PermissionMode: "prompt"},
+-			check: func(t *testing.T, launch shuttleengine.Launch) {
+-				for _, line := range []string{launch.Cmd, launch.ResumeCmd} {
++			check: func(t *testing.T, _ shuttleengine.Launch, fresh, resume string) {
++				for _, line := range []string{fresh, resume} {
+ 					if strings.Contains(line, "--dangerously-skip-permissions") {
+ 						t.Errorf("line = %q; want no --dangerously-skip-permissions", line)
+ 					}
+ 				}
+-				resumeLine := strings.Replace(launch.Cmd, "--session-id", "--resume", 1)
+-				if want := sh.OrElse(resumeLine, launch.Cmd); launch.ResumeCmd != want {
+-					t.Errorf("ResumeCmd = %q; want %q", launch.ResumeCmd, want)
++				resumeLine := strings.Replace(fresh, "--session-id", "--resume", 1)
++				if want := sh.OrElse(resumeLine, fresh); resume != want {
++					t.Errorf("resume line = %q; want %q", resume, want)
+ 				}
+ 			},
+ 		},
+ 		{
+ 			name: "resume falls back to a fresh start",
+ 			spec: shuttleengine.OpenSpec{Role: "explore", ModelChoice: shuttleengine.ModelChoice{Model: "opus"}},
+-			check: func(t *testing.T, launch shuttleengine.Launch) {
+-				resumeLine := strings.Replace(launch.Cmd, "--session-id", "--resume", 1)
+-				if want := sh.OrElse(resumeLine, launch.Cmd); launch.ResumeCmd != want {
+-					t.Errorf("ResumeCmd = %q; want %q", launch.ResumeCmd, want)
++			check: func(t *testing.T, _ shuttleengine.Launch, fresh, resume string) {
++				resumeLine := strings.Replace(fresh, "--session-id", "--resume", 1)
++				if want := sh.OrElse(resumeLine, fresh); resume != want {
++					t.Errorf("resume line = %q; want %q", resume, want)
+ 				}
+ 			},
+ 		},
+ 		{
+ 			name: "no model or effort adds neither flag",
+ 			spec: shuttleengine.OpenSpec{Role: "explore"},
+-			check: func(t *testing.T, launch shuttleengine.Launch) {
+-				if strings.Contains(launch.Cmd, "--model") || strings.Contains(launch.Cmd, "--effort") {
+-					t.Errorf("Cmd = %q; want neither --model nor --effort", launch.Cmd)
++			check: func(t *testing.T, _ shuttleengine.Launch, fresh, _ string) {
++				if strings.Contains(fresh, "--model") || strings.Contains(fresh, "--effort") {
++					t.Errorf("fresh line = %q; want neither --model nor --effort", fresh)
+ 				}
+ 			},
+ 		},
+ 		{
+ 			name: "skills ride the fresh line as the first turn and no resume line",
+ 			spec: shuttleengine.OpenSpec{Role: "board", Skills: []string{"ly:board-policy", "ly:board"}},
+-			check: func(t *testing.T, launch shuttleengine.Launch) {
++			check: func(t *testing.T, _ shuttleengine.Launch, fresh, resume string) {
+ 				message := " " + sh.Quote(new(Claude).SkillLoadMessage([]string{"ly:board-policy", "ly:board"}))
+-				if want := sh.Invoke("claude") + message + " --session-id "; !strings.HasPrefix(launch.Cmd, want) {
+-					t.Errorf("Cmd = %q; want it to start with %q", launch.Cmd, want)
++				if want := sh.Invoke("claude") + message + " --session-id "; !strings.HasPrefix(fresh, want) {
++					t.Errorf("fresh line = %q; want it to start with %q", fresh, want)
+ 				}
+-				resumeLine := strings.Replace(strings.Replace(launch.Cmd, message, "", 1), "--session-id", "--resume", 1)
+-				if want := sh.OrElse(resumeLine, launch.Cmd); launch.ResumeCmd != want {
+-					t.Errorf("ResumeCmd = %q; want %q", launch.ResumeCmd, want)
++				resumeLine := strings.Replace(strings.Replace(fresh, message, "", 1), "--session-id", "--resume", 1)
++				if want := sh.OrElse(resumeLine, fresh); resume != want {
++					t.Errorf("resume line = %q; want %q", resume, want)
+ 				}
+ 			},
+ 		},
+@@ -457,7 +493,7 @@ func TestOpenLaunch(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			engine := engineWith(t, templateConfig(t))
++			engine := engineWith(t, ttlConfig(t, tt.defaultTTL, tt.ttlRoles))
+ 			if tt.invalidConfig {
+ 				engine = engineWithInvalidConfig(t)
+ 			}
+@@ -498,6 +534,11 @@ func TestOpenLaunch(t *testing.T) {
+ 			if strings.ContainsAny(launch.Cmd+launch.ResumeCmd, "\r\n") {
+ 				t.Errorf("launch = %+v; want single-line commands", launch)
+ 			}
++			wantTTL := tt.wantTTL
++			if wantTTL == "" {
++				wantTTL = templateConfig(t).PromptCacheTTL
++			}
++			fresh, resume := openLines(t, sh, launch, wantTTL)
+ 			if tt.board {
+ 				checkOpenCreelFiles(t, launch, dir, boardDir, sh)
+ 				return
+@@ -514,7 +555,9 @@ func TestOpenLaunch(t *testing.T) {
+ 			if _, statErr := os.Stat(dir); !os.IsNotExist(statErr) {
+ 				t.Errorf("Stat(%s) error = %v; want the directory uncreated without a board", dir, statErr)
+ 			}
+-			tt.check(t, launch)
++			if tt.check != nil {
++				tt.check(t, launch, fresh, resume)
++			}
+ 		})
+ 	}
+ }
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index c003d17a..e4484c4c 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -100,6 +100,8 @@
+ // Prepare validates the whole configured set to `5m` or `1h` (exact, case-sensitive) before any artifact is written.
+ // It logs the resolved value with the role.
+ // The value is fixed for the session's life, since a resume line is never rebuilt.
++// OpenLaunch resolves the TTL from `OpenSpec.Role` the same way and refuses an invalid set the same way.
++// Its two lines open with a statement exporting the variable, since its resume line falls back to its fresh line.
+ // PromptCacheLifetime answers the same resolved value as a duration,
+ // so a caller can keep an idle session's cache warm inside it.
+ // `keep_warm_cap` and the per-role `keep_warm_cap_roles` set the longest single wait an agent of a role blocks on.
+@@ -416,6 +418,8 @@
+ // ClearInputSequence is one `C-u`, which deletes from the caret to the start of the line.
+ // It empties a one-line draft without interrupting a running turn.
+ // It serves sent text and a lone stray-character candidate alike, since both are one line with the caret at its end.
++// It also empties whitespace the box may hold before a session command is pasted:
++// a box of whitespace reads as empty, and Claude Code takes a command behind it as a prompt.
+ // RestoredPromptClearSequence clears the prompt an interrupt restored into the box.
+ // It is sized from the box capture: n `C-u` with one `BSpace` between each pair, for n box lines.
+ // One `C-u` deletes only the caret's row, and a `BSpace` at a row's start joins it to the row above.
+@@ -584,6 +588,7 @@
+ //
+ // The open launch (Claude.OpenLaunch) starts a named interactive session with no prompt.
+ // Its line carries the session id and the strand-name reference, and adds `--model` and `--effort` only when set.
++// It exports `CLAUDE_CODE_PROMPT_CACHE_TTL` at the role's TTL ahead of both lines.
+ // An open naming skills puts their load message after the binary on the fresh line as the session's first turn;
+ // the resume line carries none.
+ // An engine told no board directory passes no `--settings`, so the session takes the worktree's own settings.
+diff --git a/internal/shuttleengine/claudeengine/session.go b/internal/shuttleengine/claudeengine/session.go
+index 0df1112e..c1aee9bf 100644
+--- a/internal/shuttleengine/claudeengine/session.go
++++ b/internal/shuttleengine/claudeengine/session.go
+@@ -381,7 +381,7 @@ func isBlankBoxInterior(line string) bool {
+ }
+ 
+ // ClearSessionSequence returns /clear and its Enter, with no leading Escape.
+-// The caller has just proved the input box empty, so there is nothing to clear,
++// The caller has just read the input box empty and empties any whitespace in it before the paste,
+ // and an Escape landing right after another Escape opens Claude's rewind menu instead.
+ // There is no pause between the text and the Enter: the paste path submits them in one tmux invocation.
+ func (c *Claude) ClearSessionSequence() []shuttleengine.PaneInput {
+@@ -392,7 +392,8 @@ func (c *Claude) ClearSessionSequence() []shuttleengine.PaneInput {
+ }
+ 
+ // CompactSessionSequence returns /compact and its Enter, followed by focus when it is non-empty.
+-// It has no leading Escape, because the caller has just proved the input box empty.
++// It has no leading Escape:
++// the caller has just read the input box empty and empties any whitespace in it before the paste.
+ // There is no pause between the text and the Enter: the paste path submits them in one tmux invocation.
+ func (c *Claude) CompactSessionSequence(focus string) []shuttleengine.PaneInput {
+ 	text := "/compact"
+@@ -406,7 +407,8 @@ func (c *Claude) CompactSessionSequence(focus string) []shuttleengine.PaneInput
+ }
+ 
+ // ReloadPluginsSequence returns /reload-plugins and its Enter.
+-// It has no leading Escape, because the caller has just proved the input box empty.
++// It has no leading Escape:
++// the caller has just read the input box empty and empties any whitespace in it before the paste.
+ // The command rebuilds the skill list the Skill tool reads and ends no turn.
+ // There is no pause between the text and the Enter: the paste path submits them in one tmux invocation.
+ func (c *Claude) ReloadPluginsSequence() []shuttleengine.PaneInput {
+diff --git a/internal/shuttleengine/claudeengine/template.yaml b/internal/shuttleengine/claudeengine/template.yaml
+index 940fc6c8..eb45e9c3 100644
+--- a/internal/shuttleengine/claudeengine/template.yaml
++++ b/internal/shuttleengine/claudeengine/template.yaml
+@@ -1,7 +1,7 @@
+ binary: ${env:LYM_SHUTTLE_CLAUDE:-}  # path to the claude executable; empty falls back to "claude" on PATH — prefer an explicit path, PATH aliases can hit the 0-byte WindowsApps stub; the binary must be the engine or exec it, since a wrapper that does not exec leaves its shell in the foreground and reed reads the strand dead
+ deny_ask_user_question: true  # emit a PreToolUse deny for the AskUserQuestion tool (autonomous runs only)
+-prompt_cache_ttl: 5m  # prompt-cache TTL for every role without an entry in prompt_cache_ttl_roles; Claude Code's own values, validated when a run starts, and the refusal names the accepted ones
+-prompt_cache_ttl_roles:  # prompt-cache TTL per role, keyed by a strand's role segment (Spec.Role); the operator's own map, replacing the template's whole when present, so leaving a role out drops it to the default; values are Claude Code's, validated when a run starts, and the refusal names the accepted ones
++prompt_cache_ttl: 5m  # prompt-cache TTL for every role without an entry in prompt_cache_ttl_roles; Claude Code's own values, validated when a run starts or a session opens, and the refusal names the accepted ones
++prompt_cache_ttl_roles:  # prompt-cache TTL per role, keyed by a strand's role segment (Spec.Role); the operator's own map, replacing the template's whole when present, so leaving a role out drops it to the default; values are Claude Code's, validated when a run starts or a session opens, and the refusal names the accepted ones
+   driver: 5m
+   webster: 1h
+   orch: 1h
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 3c7eefda..3df2f10d 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -451,6 +451,14 @@
+ // Runner.ClearSession, Runner.CompactSession and Runner.ReloadPlugins send their slash commands through the same path.
+ // A draft in the box or an active operator holds them with ErrSessionBusy,
+ // so a caller's earlier idle probe never lets them type.
++// The idle reading takes a box of whitespace as empty, and a provider takes a command behind whitespace as a prompt,
++// so an engine with InputBoxClearer gets its clear right before the paste of a command or the color.
++// The clear goes only into a box that reads blank or unreadable with no operator active.
++// Text typed since the idle reading holds the command.
++// A command's text starts no turn.
++// A turn start past the paste with no instruction, or the command's text as one, means the provider took it as a prompt.
++// The send then fails with ErrCommandTakenAsPrompt instead of confirming.
++// A turn start with another instruction, such as an operator's prompt, is no signal for a command.
+ // Runner.ClearSession and Runner.CompactSession confirm on a session-start line the provider writes for their command.
+ // The line has source clear or compact and lies past the events offset taken before the paste.
+ // An empty box does not confirm them early.
+diff --git a/internal/shuttleengine/engine.go b/internal/shuttleengine/engine.go
+index 4b7c5840..cd46e585 100644
+--- a/internal/shuttleengine/engine.go
++++ b/internal/shuttleengine/engine.go
+@@ -416,7 +416,8 @@ type InputBoxReader interface {
+ // InputBoxClearer is an optional capability an engine may implement:
+ // the provider's way of emptying its input box.
+ // The caller sends the clear only into a box its latest read shows:
+-// a box holding exactly its own text, or exactly one stray-character candidate its guard reading found.
++// a box holding exactly its own text, or exactly one stray-character candidate its guard reading found,
++// or a box read empty right before a command that starts no turn is pasted, which may still hold whitespace.
+ // The choreography never uses a key that interrupts a running turn.
+ type InputBoxClearer interface {
+ 	// ClearInputSequence returns the key choreography that empties the input box without interrupting a running turn.
+diff --git a/internal/shuttleengine/send.go b/internal/shuttleengine/send.go
+index 0a03cfb2..54f6d304 100644
+--- a/internal/shuttleengine/send.go
++++ b/internal/shuttleengine/send.go
+@@ -59,7 +59,9 @@ const (
+ // sendContext is what one verified send needs: the pane it types into; the run's record, directory and events file;
+ // the config; and the clock its timed waits read.
+ // A zero deadline means none, and a nil hold starts the idle wait's turn-start hold afresh.
+-// startsNoTurn marks a send whose text starts no turn, such as a slash command, so no turn start reads as its landing.
++// startsNoTurn marks a send whose text starts no turn, such as a slash command:
++// its paste follows a clear of the box,
++// and a turn start past the paste with no instruction or its text as one fails it as a command taken for a prompt.
+ // landingStart is the session-start source whose line confirms a send that starts no turn;
+ // it is empty for every other send.
+ // keepUnlanded marks a send that never clears a text that did not land, leaving it in the input box.
+@@ -588,6 +590,14 @@ var ErrSentTextInDraft = fmt.Errorf("%w: the sent text sits in the operator's dr
+ // Nothing was submitted, cleared or edited.
+ var ErrForeignBoxText = fmt.Errorf("%w: the input box holds text that is not this send's", ErrSessionBusy)
+ 
++// ErrCommandTakenAsPrompt marks a pasted command, a send that starts no turn, whose paste started a turn.
++// That turn start has no instruction, or the command's text as one.
++// The provider took the text as a prompt, so the command never ran.
++// A provider does this to a slash command behind leading whitespace.
++// The agent got the text as an instruction and nothing else was typed;
++// the caller may send the command again once the session is idle.
++var ErrCommandTakenAsPrompt = errors.New("shuttle: the command reached the agent as a prompt and did not run")
++
+ // IsDraftHold reports whether err is a send held by text in the input box:
+ // a *SessionBusyError whose hold is a draft, or an error wrapping ErrSentTextInDraft or ErrForeignBoxText.
+ func IsDraftHold(err error) bool {
+@@ -602,6 +612,7 @@ func IsDraftHold(err error) bool {
+ // The paste carries its trailing Enter when the provider's Enter submits a paste;
+ // otherwise the box is settled first, so the guarded Enter lands on a redrawn box.
+ // The send's window opens before the paste and is cut to the send's deadline.
++// A send that starts no turn clears the box right before its paste.
+ // A send into a strand with no run record keeps no pending-send record, since it has no run directory.
+ func pasteVerified(sc sendContext, paster TextPaster, reader InputBoxReader, text string) error {
+ 	closeAt := sc.clock.Now().Add(submitConfirmTimeout(sc.cfg))
+@@ -611,6 +622,11 @@ func pasteVerified(sc sendContext, paster TextPaster, reader InputBoxReader, tex
+ 	if windowClosed(sc.clock, closeAt) {
+ 		return withPaneTail(fmt.Errorf("%w: the submit window, cut to the send's deadline, had closed before the paste; nothing was pasted", ErrSubmissionNotLanded), "", sc)
+ 	}
++	if sc.startsNoTurn {
++		if err := clearBoxBeforeCommand(sc, reader); err != nil {
++			return err
++		}
++	}
+ 	sentAt := eventsSize(sc.eventsPath)
+ 	if err := sc.reed.PasteSubmit(sc.guid, text, paster.PasteSubmits()); err != nil {
+ 		return fmt.Errorf("shuttle: paste text: %w", err)
+@@ -624,6 +640,32 @@ func pasteVerified(sc sendContext, paster TextPaster, reader InputBoxReader, tex
+ 	return err
+ }
+ 
++// clearBoxBeforeCommand plays the engine's input-box clear, for an engine that has one, right before a command's paste.
++// The idle reading takes a box holding only whitespace as empty,
++// and a provider takes a command pasted behind that whitespace as a prompt.
++// The clear goes only into a box that reads blank or unreadable.
++// No operator may have been active in the pane within the quiet window.
++// Text typed since the idle reading holds the send with a *SessionBusyError, and nothing is cleared or pasted.
++// A failed key fails the send before anything is pasted.
++func clearBoxBeforeCommand(sc sendContext, reader InputBoxReader) error {
++	clearer, ok := sc.engine.(InputBoxClearer)
++	if !ok {
++		return nil
++	}
++	if boxText, readable := readInputBox(sc, reader); readable && normalizePaneText(boxText) != "" {
++		reason := fmt.Sprintf("the input box holds %q", strings.TrimSpace(boxText))
++		busy := fmt.Errorf("%w: strand %q: %s; nothing was cleared or pasted", ErrSessionBusy, sc.guid, reason)
++		return &SessionBusyError{Reason: reason, Draft: true, Err: withPaneTail(busy, "", sc)}
++	}
++	if hold := operatorActivityHold(sc.reed, sc.guid, sc.activityFailures); hold != "" {
++		return &SessionBusyError{Reason: hold, Err: fmt.Errorf("%w: strand %q: %s; nothing was cleared or pasted; retry once the operator is idle", ErrSessionBusy, sc.guid, hold)}
++	}
++	if err := playInputs(sc.reed, sc.guid, clearer.ClearInputSequence()); err != nil {
++		return fmt.Errorf("shuttle: clear the input box before the command; nothing was pasted: %w", err)
++	}
++	return nil
++}
++
+ // settleAndConfirmPasted runs what follows a paste.
+ // The box settles first when the paste carries no Enter;
+ // then confirmPasted reads the box until the send lands or the window closes.
+@@ -648,8 +690,8 @@ func sequenceText(inputs []PaneInput) string {
+ // sendSequence sends a choreography into sc's pane as one guarded write.
+ // An empty choreography, a provider's no-command answer, returns nil before the guard:
+ // no idle wait, no activity query and no paste.
+-// An engine that takes pastes sends the choreography's text as a verified send,
+-// so a slash command is pasted once and confirmed by the box reading empty.
++// An engine that takes pastes sends the choreography's text as a verified send that starts no turn,
++// so a slash command is pasted once into a cleared box and confirmed by the box reading empty.
+ // Any other engine waits for an idle session and then plays its own keys.
+ // A held write returns an error wrapping ErrSessionBusy and writes nothing.
+ func sendSequence(sc sendContext, inputs []PaneInput) error {
+@@ -701,6 +743,11 @@ func retryLanded(sc sendContext, text string) bool {
+ // The input box is read first after reader.SubmitSettle(), then at a doubling interval capped at confirmBackoffCap.
+ // The window closeAt cuts the last interval short.
+ // A turn start past sentAt means the paste landed.
++// For a send that starts no turn, only a turn start whose instruction is empty or the pasted text counts:
++// a provider records no instruction for a slash command it took as a prompt,
++// and the send fails with ErrCommandTakenAsPrompt.
++// A turn start with another instruction, such as an operator's prompt, is no signal for such a send;
++// the checks below decide it.
+ // When landingStart is set and the engine parses session signals, a session start of that source past sentAt does too.
+ // For such a send, an empty box does not end the reads: the Enter is taken as sent, and later reads send no key.
+ // The reads go on until a landing shows, or the window or read cap runs out; then the send returns nil.
+@@ -720,7 +767,11 @@ func confirmPasted(sc sendContext, paster TextPaster, reader InputBoxReader, tex
+ 	for read := 1; ; read++ {
+ 		wait := min(interval, closeAt.Sub(sc.clock.Now()))
+ 		sc.clock.Sleep(max(wait, settle))
+-		if turnStartedSince(sc.engine, sc.eventsPath, sentAt) {
++		if sc.startsNoTurn {
++			if commandTurnStartedSince(sc.engine, sc.eventsPath, sentAt, text) {
++				return withPaneTail(fmt.Errorf("%w: a turn started after the paste of %q", ErrCommandTakenAsPrompt, text), "", sc)
++			}
++		} else if turnStartedSince(sc.engine, sc.eventsPath, sentAt) {
+ 			return nil
+ 		}
+ 		_, parsesSignals := sc.engine.(SessionSignalParser)
+@@ -926,6 +977,17 @@ func promptTurnStartedSince(engine Engine, eventsPath string, offset int64, prom
+ 	return turnStartMatchedSince(engine, eventsPath, offset, func(signal SessionSignal) bool { return signal.Instruction == instruction })
+ }
+ 
++// commandTurnStartedSince reports whether the events file holds a turn start past byte offset.
++// Its instruction must be empty or command, trimmed.
++// A provider records no instruction for a slash command it took as a prompt, and a turn an operator typed carries one.
++// An engine that cannot parse session signals, or an unreadable events file, reports false.
++func commandTurnStartedSince(engine Engine, eventsPath string, offset int64, command string) bool {
++	instruction := strings.TrimSpace(command)
++	return turnStartMatchedSince(engine, eventsPath, offset, func(signal SessionSignal) bool {
++		return signal.Instruction == "" || signal.Instruction == instruction
++	})
++}
++
+ // turnStartMatchedSince reports whether the events file holds a turn start past byte offset that match accepts.
+ // An engine that cannot parse session signals, or an unreadable events file, reports false.
+ func turnStartMatchedSince(engine Engine, eventsPath string, offset int64, match func(SessionSignal) bool) bool {
+diff --git a/internal/shuttleengine/session_test.go b/internal/shuttleengine/session_test.go
+index 2152a79c..9b144a30 100644
+--- a/internal/shuttleengine/session_test.go
++++ b/internal/shuttleengine/session_test.go
+@@ -515,13 +515,18 @@ type slashPasteEngine struct {
+ 
+ func (e *slashPasteEngine) ProcessLiveness(string) Liveness { return LivenessAlive }
+ 
+-// ParseSessionSignals adds the "SESSIONSTART:<source>" lines, after the scripted engine's own signals.
++// ParseSessionSignals adds the "SESSIONSTART:<source>" and "START:<text>" lines after the scripted engine's own.
++// A "START:<text>" line is a turn start carrying <text> as its instruction.
+ func (e *slashPasteEngine) ParseSessionSignals(data []byte) ([]SessionSignal, int) {
+ 	signals, end := e.scriptedPasteEngine.ParseSessionSignals(data)
+ 	for _, line := range strings.Split(string(data), "\n") {
+-		if source, found := strings.CutPrefix(strings.TrimSpace(line), "SESSIONSTART:"); found {
++		trimmed := strings.TrimSpace(line)
++		if source, found := strings.CutPrefix(trimmed, "SESSIONSTART:"); found {
+ 			signals = append(signals, SessionSignal{Kind: SessionSignalSessionStart, Source: SessionStartSource(source)})
+ 		}
++		if instruction, found := strings.CutPrefix(trimmed, "START:"); found {
++			signals = append(signals, SessionSignal{Kind: SessionSignalTurnStart, Instruction: instruction})
++		}
+ 	}
+ 	return signals, end
+ }
+@@ -577,40 +582,67 @@ func (e *slashPasteEngine) ColorSequence(color segmentcolor.Color) []PaneInput {
+ }
+ 
+ // parserlessPasteEngine is a paste-path engine with no SessionSignalParser:
+-// it exposes only the Engine, TextPaster, InputBoxReader and SessionCycler capabilities of the engine it wraps.
++// it exposes only the capabilities of the engine it wraps that the paste path reads.
++// Those are Engine, TextPaster, InputBoxReader, InputBoxClearer and SessionCycler.
+ type parserlessPasteEngine struct {
++	Engine
++	TextPaster
++	InputBoxReader
++	InputBoxClearer
++	SessionCycler
++}
++
++// clearlessPasteEngine is a paste-path engine with no InputBoxClearer.
++type clearlessPasteEngine struct {
+ 	Engine
+ 	TextPaster
+ 	InputBoxReader
+ 	SessionCycler
+ }
+ 
++// pasteEngineShape names which capabilities of the slash paste engine a test hides from the runner.
++type pasteEngineShape int
++
++const (
++	// fullPasteEngine hides nothing.
++	fullPasteEngine pasteEngineShape = iota
++	// parserlessPasteShape hides the session-signal parsing.
++	parserlessPasteShape
++	// clearlessPasteShape hides the input-box clear.
++	clearlessPasteShape
++)
++
+ // newSlashPasteRunner returns a runner over a live strand "strand-1" on a paste-path engine.
+ // Its input box reads box, and its pane shows an operator when active is set.
+ // The returned reed is the one the runner drives.
+ func newSlashPasteRunner(t *testing.T, box string, active, noColor bool) (*Runner, *fakeReed, string) {
+ 	t.Helper()
+-	runner, reed, runDir, _ := newSlashPasteRunnerAppending(t, box, active, noColor, "", false, nil)
++	runner, reed, runDir, _ := newSlashPasteRunnerAppending(t, box, active, noColor, "", fullPasteEngine, nil)
+ 	return runner, reed, runDir
+ }
+ 
+ // newSlashPasteRunnerAppending returns a runner over a live strand "strand-1" on a paste-path engine.
+ // Every paste appends pasteLine to the events file, and the runner's clock is returned as well.
+ // A non-nil afterPaste replaces the box's answers once the paste is made, so the reads that confirm the send see it.
+-// parserless hides the engine's session-signal parsing behind parserlessPasteEngine.
+-func newSlashPasteRunnerAppending(t *testing.T, box string, active, noColor bool, pasteLine string, parserless bool, afterPaste []inputBoxAnswer) (*Runner, *fakeReed, string, *fakeClock) {
++// shape hides capabilities of the engine from the runner.
++// The input box reads box at the idle wait, then each of afterIdleBoxes in turn, the last answer sticking:
++// the first of those is what the clear before a command reads.
++func newSlashPasteRunnerAppending(t *testing.T, box string, active, noColor bool, pasteLine string, shape pasteEngineShape, afterPaste []inputBoxAnswer, afterIdleBoxes ...inputBoxAnswer) (*Runner, *fakeReed, string, *fakeClock) {
+ 	t.Helper()
+ 	reed := &fakeReed{StatusQueue: liveStrandStatus(true), CaptureQueue: []string{"IDLE"}, ActiveQueue: []bool{active}}
+ 	appending := &pasteLineReed{fakeReed: reed, line: pasteLine}
+ 	clock := newFakeClock(time.Now())
+-	boxes := &inputBoxEngine{fakeEngine: readyAgentEngine(), boxes: []inputBoxAnswer{{box, true}}, settle: 100 * time.Millisecond}
++	boxes := &inputBoxEngine{fakeEngine: readyAgentEngine(), boxes: append([]inputBoxAnswer{{box, true}}, afterIdleBoxes...), settle: 100 * time.Millisecond}
+ 	if afterPaste != nil {
+ 		appending.onPaste = func() { boxes.boxes = afterPaste }
+ 	}
+ 	slash := &slashPasteEngine{scriptedPasteEngine: &scriptedPasteEngine{clearableBoxEngine: &clearableBoxEngine{inputBoxEngine: boxes}, pasteSubmits: true}, noColor: noColor}
+ 	var engine Engine = slash
+-	if parserless {
+-		engine = parserlessPasteEngine{Engine: slash, TextPaster: slash, InputBoxReader: slash, SessionCycler: slash}
++	switch shape {
++	case parserlessPasteShape:
++		engine = parserlessPasteEngine{Engine: slash, TextPaster: slash, InputBoxReader: slash, InputBoxClearer: slash, SessionCycler: slash}
++	case clearlessPasteShape:
++		engine = clearlessPasteEngine{Engine: slash, TextPaster: slash, InputBoxReader: slash, SessionCycler: slash}
+ 	}
+ 	cfg := Config{SubmitSettleMS: 100, SubmitConfirmTimeoutS: 30, SendReadyTimeoutS: 60}
+ 	fx := newFixture(t, appending, engine, withConfig(cfg), withStrand("strand-1"), withClock(clock))
+@@ -636,7 +668,7 @@ func newSlashPasteRunnerAppending(t *testing.T, box string, active, noColor bool
+ // A box that reads empty after the paste stays confirmed when it then holds other text.
+ // The same holds when an operator types during a compaction, when the box holds sentText, or when it cannot be read.
+ // Other text before any empty read fails the send with ErrForeignBoxText.
+-// No row sends a key after the paste.
++// Every row's one key is the clear right before the paste, and no row sends a key after it.
+ func checkLandingStartConfirmation(t *testing.T, landing, other SessionStartSource, sentText string, call func(*Runner) error) {
+ 	t.Helper()
+ 	window := submitConfirmTimeout(Config{SubmitConfirmTimeoutS: 30})
+@@ -662,15 +694,17 @@ func checkLandingStartConfirmation(t *testing.T, landing, other SessionStartSour
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			runner, reed, runDir, clock := newSlashPasteRunnerAppending(t, "", false, false, tt.pasteLine, tt.parserless, tt.afterPaste)
++			shape := fullPasteEngine
++			if tt.parserless {
++				shape = parserlessPasteShape
++			}
++			runner, reed, runDir, clock := newSlashPasteRunnerAppending(t, "", false, false, tt.pasteLine, shape, tt.afterPaste)
+ 			if tt.priorLine != "" {
+ 				appendEventsLine(t, filepath.Join(runDir, eventsFileName), tt.priorLine)
+ 			}
+ 			start := clock.Now()
+ 			err := call(runner)
+-			if keys := sentCalls(reed); len(keys) != 0 {
+-				t.Errorf("sent calls = %v, want none after the paste", keys)
+-			}
++			checkClearBeforePaste(t, reed)
+ 			if tt.wantErr != nil {
+ 				if !errors.Is(err, tt.wantErr) {
+ 					t.Errorf("error = %v, want one wrapping %v", err, tt.wantErr)
+@@ -693,28 +727,54 @@ func checkLandingStartConfirmation(t *testing.T, landing, other SessionStartSour
+ 
+ // checkPastedSessionCommand drives call, one of Runner's session commands or its color step, over a paste-path engine.
+ // Each row is a state of the pane that the caller's own idle probe would have passed.
+-// An empty box gets the command as one paste-submit of wantText and no typed text.
++// An empty box gets the clear key and then the command as one paste-submit of wantText, and no typed text.
+ // A box holding a draft and an operator active in the pane each hold the command:
+ // it fails wrapping ErrSessionBusy and writes nothing.
++// So do a draft or an operator that shows only after the idle reading, when the clear is about to go.
++// A failed clear key fails the send and pastes nothing.
++// An engine with no input-box clear pastes the command once and sends no key.
+ // A pending record of the command with a turn started since is another turn, so the command is still pasted.
++// A turn start the paste writes with no instruction fails the send with ErrCommandTakenAsPrompt.
++// That is how a slash command read as a prompt is recorded.
++// A turn start with another instruction is no signal, and the empty box confirms the command.
+ func checkPastedSessionCommand(t *testing.T, wantText string, call func(*Runner) error) {
+ 	t.Helper()
++	otherTurn := "START:an unrelated prompt"
++	keyErr := errors.New("tmux send-keys failed")
+ 	tests := []struct {
+-		name     string
+-		box      string
+-		active   bool
+-		pending  bool
+-		wantHeld bool
++		name          string
++		box           string
++		boxAtClear    []inputBoxAnswer
++		afterPaste    []inputBoxAnswer
++		active        bool
++		activeAtClear bool
++		keyErr        error
++		shape         pasteEngineShape
++		pending       bool
++		pasteLine     string
++		wantHeld      bool
++		wantErr       error
+ 	}{
+ 		{name: "an empty box pastes the command once"},
+ 		{name: "a drafted box holds the command", box: "a half-written draft", wantHeld: true},
+ 		{name: "an active operator holds the command", active: true, wantHeld: true},
++		{name: "a draft typed after the idle reading holds the command", boxAtClear: []inputBoxAnswer{{"a half-written draft", true}}, wantHeld: true},
++		{name: "an operator active only at the clear holds the command", activeAtClear: true, wantHeld: true},
++		{name: "a box that cannot be read at the clear still gets the clear", boxAtClear: []inputBoxAnswer{{"", false}}, afterPaste: []inputBoxAnswer{{"", true}}},
++		{name: "a failed clear key pastes nothing", keyErr: keyErr, wantErr: keyErr},
++		{name: "an engine with no input-box clear pastes the command once with no key", shape: clearlessPasteShape},
+ 		{name: "a pending record of the command with a turn started since pastes it afresh", pending: true},
++		{name: "a turn the paste started with no instruction fails the command as taken for a prompt", pasteLine: "START", wantErr: ErrCommandTakenAsPrompt},
++		{name: "a turn the paste started with another instruction leaves the command confirmed", pasteLine: otherTurn},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			runner, reed, runDir := newSlashPasteRunner(t, tt.box, tt.active, false)
++			runner, reed, runDir, _ := newSlashPasteRunnerAppending(t, tt.box, tt.active, false, tt.pasteLine, tt.shape, tt.afterPaste, tt.boxAtClear...)
++			if tt.activeAtClear {
++				reed.ActiveQueue = []bool{false, true}
++			}
++			reed.SendKeyErr = tt.keyErr
+ 			if tt.pending {
+ 				if err := savePendingSend(runDir, pendingSend{Text: wantText}); err != nil {
+ 					t.Fatalf("savePendingSend: %v", err)
+@@ -724,25 +784,60 @@ func checkPastedSessionCommand(t *testing.T, wantText string, call func(*Runner)
+ 			if len(reed.SendTextCalls) != 0 {
+ 				t.Errorf("SendText calls = %+v, want none on the paste path", reed.SendTextCalls)
+ 			}
++			if tt.keyErr != nil {
++				if !errors.Is(err, tt.keyErr) {
++					t.Errorf("error = %v, want one wrapping %v", err, tt.keyErr)
++				}
++				if len(reed.PasteSubmitCalls) != 0 {
++					t.Errorf("PasteSubmit calls = %+v, want none after a failed clear", reed.PasteSubmitCalls)
++				}
++				return
++			}
+ 			if tt.wantHeld {
+ 				if !errors.Is(err, ErrSessionBusy) {
+ 					t.Errorf("error = %v, want one wrapping ErrSessionBusy", err)
+ 				}
+-				if len(reed.PasteSubmitCalls) != 0 {
+-					t.Errorf("PasteSubmit calls = %+v, want none for a held command", reed.PasteSubmitCalls)
++				if len(reed.PasteSubmitCalls) != 0 || len(sentCalls(reed)) != 0 {
++					t.Errorf("PasteSubmit calls = %+v, sent calls = %v, want none for a held command", reed.PasteSubmitCalls, sentCalls(reed))
+ 				}
+ 				return
+ 			}
+-			if err != nil {
+-				t.Fatalf("error = %v, want the command confirmed", err)
++			if tt.shape == clearlessPasteShape {
++				if sent := sentCalls(reed); len(sent) != 0 {
++					t.Errorf("sent calls = %v, want none for an engine with no clear", sent)
++				}
++			} else {
++				checkClearBeforePaste(t, reed)
+ 			}
+ 			if len(reed.PasteSubmitCalls) != 1 || reed.PasteSubmitCalls[0].Text != wantText {
+ 				t.Errorf("PasteSubmit calls = %+v, want one of %q", reed.PasteSubmitCalls, wantText)
+ 			}
++			if tt.wantErr != nil {
++				if !errors.Is(err, tt.wantErr) {
++					t.Errorf("error = %v, want one wrapping %v", err, tt.wantErr)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("error = %v, want the command confirmed", err)
++			}
+ 		})
+ 	}
+ }
+ 
++// checkClearBeforePaste asserts that reed's only key is one C-u, the engine's box clear, sent right before its one paste.
++func checkClearBeforePaste(t *testing.T, reed *fakeReed) {
++	t.Helper()
++	if got, want := sentCalls(reed), []string{"SendKey:C-u"}; !reflect.DeepEqual(got, want) {
++		t.Errorf("sent calls = %v, want %v", got, want)
++	}
++	for i, call := range reed.CallLog {
++		if call == "SendKey:C-u" && (i+1 >= len(reed.CallLog) || !strings.HasPrefix(reed.CallLog[i+1], "paste:")) {
++			t.Errorf("call log = %v, want the C-u right before the paste", reed.CallLog)
++		}
++	}
++}
++
+ func TestRunner_ClearSession_PlaysScriptedSequence(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
