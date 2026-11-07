@@ -1,42 +1,42 @@
-# Read `worktree list` in-process through `internal/dotgit`
+# Read the worktree list in-process through internal/dotgit
 
-`fabricengine.List` and webster's sibling-worktree read no longer start `git worktree list --porcelain`.
-They read the repository's files through a new `dotgit.ListWorktrees`.
-`lym` calls `List` three or more times in each `Add` and `Remove`, and the spawn was about 15 percent of `internal/fabricengine`'s git processes.
+`fabricengine.List` and the worktree read in `websterengine` no longer start `git worktree list --porcelain`.
+That call is about 15 percent of `internal/fabricengine`'s git processes and about 5 s of the package's wall,
+and `lym` calls `List` three or more times in each `Add` and `Remove`.
 
-## The reader
+## What changes
 
-`dotgit.ListWorktrees(dir)` returns `[]dotgit.Worktree` (path, HEAD SHA, full branch ref, locked, prunable) in the order git 2.43 through 2.53 prints:
-
-- It finds the repository by walking up from any directory inside a worktree through `FindRoot`. A `dir` that does not exist is an error with no walk-up, so the `List` fallbacks in `junction.go` and `scratchlink.go` still fire on a gone pair path.
-- The main worktree comes first, its path being the common dir resolved through symlinks, less `.git`.
-- Linked worktrees come from `worktrees/<id>/`: `gitdir`, `HEAD` and `locked`. They are sorted by path, compared case-folded when `core.ignorecase` is true.
-- A relative `gitdir` (git 2.48+) resolves against its admin entry. An absolute one is taken as written.
-- An entry whose `gitdir` is missing, unreadable or empty is left out. An entry with no `HEAD` is detached at the all-zero SHA.
-- An unlocked entry whose `.git` is gone is prunable. A locked one never is, and file age plays no part.
-- HEAD resolves through loose refs, then `packed-refs`, in the common dir. A branch with no ref yet gives the all-zero SHA, 64 digits for a sha256 repository.
-- A bare repository stays an error.
-- A repository whose `extensions.refStorage` is not `files` returns the new `dotgit.ErrRefStorage`.
-
-The package stays standard-library only and spawns nothing.
-It reads only the `core` and `extensions` settings it needs from the repository's `config`, and follows no include.
-
-## Callers
-
-- `fabricengine.List` maps the entries onto `WorktreeEntry` unchanged: branch short name or `(detached)`, `Main` on the first entry. On `ErrRefStorage` it falls back to its existing porcelain parse.
-- `websterengine`'s `otherWorktrees` reads the roots through `dotgit`. On `ErrRefStorage` it falls back to its existing scan of the `worktree` lines.
-
-## Tests
-
-- `internal/dotgit/worktrees_test.go` (tier 0) is one table over hand-laid repositories. It covers each rule above, the refusals and a symlinked start.
-- `internal/dotgit/worktrees_git_test.go` (tier 1) compares the reader with git's own porcelain on a repository git wrote, from the main worktree, through a symlink and from a linked worktree's subdirectory. That repository holds packed-only and loose branches, detached, locked with and without a reason, prunable, gitdir-removed and HEAD-removed entries. A second test covers a relative `gitdir` and skips below git 2.48, naming the version.
-- `fabricengine`'s `TestList_RefStorage` and `websterengine`'s `TestOtherWorktrees` read a files-backed repository with `PATH` emptied, which proves no git process starts. They read a reftable repository through the fallback, skipping below git 2.45. `TestList_RefStorage` also checks that `List` from a subdirectory equals `List` from the root.
-- `TestList_NotAGitRepo` became `TestList_Errors`, which adds a missing directory inside a repository. The old not-a-repository row now matches `dotgit`'s error text, not git's stderr.
-- `dotgit`'s `TestMain` moved to the external test package and calls `gitkit.HermeticGitEnv`, because `gitkit` reaches `dotgit` through `lymcwd`.
-- `gitkit.SkipBelowGitVersion` is the shared version skip.
+- `internal/dotgit` gains `ListWorktrees`, with the `Worktree` entry type and the `ErrRefStorage` error.
+  It takes any directory inside a worktree, finds the repository by walking up as git does, and returns the main worktree first,
+  then each `worktrees/<id>/` entry.
+  Per entry it reads `gitdir`, `HEAD` and `locked`, and resolves `HEAD` through the loose ref, then `packed-refs`.
+  It stays standard-library only and spawns nothing.
+- `fabricengine.List` reads through `ListWorktrees`; its `WorktreeEntry` result and callers are unchanged.
+- `websterengine`'s `otherWorktrees` reads through `ListWorktrees` via a new `worktreeRoots`.
+- `PATTERN-leaf-packages` lists the worktree entries, refs and config keys `dotgit` now parses.
+- `gitkit` gains `SkipBelowGitVersion`, which the relative-`gitdir` parity test uses.
 
 ## Design decisions
 
-- Bare detection checks whether the start directory is itself a git dir before walking up, so `List` on a bare repository's directory still says "bare repositories are not supported".
-- A symbolic-ref chain follows up to five links, as git does, and the branch reported is the last ref of the chain, as git's resolver names it.
-- `PATTERN-leaf-packages`' `internal/dotgit` background now lists the worktree entries, refs and config keys `dotgit` parses. The `PATTERN.md` index line keeps its wording, as the record's `## PATTERN changes` gives it.
+The reader matches `git worktree list --porcelain` as git 2.53.0 prints it, and behaves the same at the git 2.43.0 floor except for relative `gitdir`:
+
+- The main worktree's path is resolved through symlinks; a linked path is the directory of the `.git` its `gitdir` names.
+- Linked worktrees follow the main one sorted by path, case-folded where `core.ignorecase` is true.
+- A relative `gitdir` (git 2.48 and later) resolves against its `worktrees/<id>/` directory.
+- An entry whose `gitdir` is missing or unreadable is left out.
+- An entry is prunable when it is not locked and its `gitdir` names a `.git` that does not exist; age plays no part.
+- An entry with no `HEAD` file is listed detached with the all-zero SHA, and `List` never fails on it.
+- A detached `HEAD` gives `List` the branch value `(detached)`; a branch whose ref does not exist yet gives the all-zero SHA.
+- A bare main repository stays an error.
+- A directory that does not exist is an error with no walk-up,
+  so the fallbacks in `fabricengine/junction.go` and `fabricengine/scratchlink.go` still fire on a pair path that is gone.
+
+A repository whose `extensions.refStorage` is not `files` has no ref files to read.
+`ListWorktrees` refuses it with `ErrRefStorage`, and `List` and `worktreeRoots` fall back to `git worktree list --porcelain`.
+The porcelain path stays in both callers for that case alone.
+
+## To check by hand
+
+No regression check or integration suite ran for this task.
+Run the `internal/dotgit`, `internal/fabricengine`, `internal/websterengine` and `internal/gitkit` tests.
+The relative-`gitdir` parity test skips below git 2.48, so run it once under 2.48 or later.
