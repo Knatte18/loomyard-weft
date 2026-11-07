@@ -72,7 +72,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Heddle renders .claude/settings.local.json in every hub: no co-author, lym's plugins and tool deny list**<br>• Attribution off and lym model/effort defaults, in session settings and by an operator-run setup verb | [`machine-claude-defaults`](design-machine-claude-defaults.md) | darn · solid | Code-Bouncer | neve | 1h<br>42m | claude, config, heddle, fabric |
+| T1 | **Heddle renders .claude/settings.local.json in every hub: no co-author, lym's plugins and tool deny list**<br>• Attribution off and lym model/effort defaults, in session settings and by an operator-run setup verb | [`machine-claude-defaults`](design-machine-claude-defaults.md) | darn · solid | Code-Burler-Review | neve | 1h<br>42m | claude, config, heddle, fabric |
 | T3 | **Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes** | [`fabric-test-speed`](design-fabric-test-speed.md) | motif | Discussion-Burler-Review | neve | 4h<br>14m | fabric, testkit, git |
 | T4 | **Tests wait real time and repeat builds every tier 1 pass** | [`test-real-time-waits`](design-test-real-time-waits.md) | darn · light | Darn-Write | neve | 14m<br>4m | git, gate, termwindow, process |
 
