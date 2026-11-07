@@ -1,6 +1,6 @@
 # Settings shared by every session of a worktree come only from the heddle-rendered file; per-session ones stay per session
 
-`claude-settings-model-effort` · Task · enhancement, claude, config, shuttle · running · Code-Bouncer
+`claude-settings-model-effort` · Task · enhancement, claude, config, shuttle · running · Drift-Recheck
 
 ## Seen (board tidy and orch, 2026-11-07)
 
