@@ -43,6 +43,12 @@ The split files the re-measure as a board note.
 
 Rationale: two runs answer whether the package fell below the 35 s at which the other packages set the wall.
 
+### Added after Discussion (parent, 2026-11-07): The writer runs both timed passes itself
+
+Decision: Run the two passes the record names yourself, each once, in the foreground with the Bash tool timeout 3600000: 'lym gate test --tier 1 --all -- -count=1' and 'lym gate test --tier 1 ./internal/fabricengine -- -count=1'. This decision overrides the darn prompt's ban on lym gate test for this run: a docs run exists to run measurements, and the orch never runs one. Before each pass record the load average and the runs in flight from 'lym beam status', and state in the report that neve was not quiet, so the numbers are read against W1 with that noise named. Also report whether this hub's gate.yaml tiers carry {test_targets}. Commit the report; file no board note in place of the measurement.
+
+Rationale: Trials run as darn docs runs in this hub (operator); waiting for a quiet machine has no end while the pipeline runs, and a timing with its load stated is still worth comparing.
+
 ## Constraints
 
 - `PATTERN-leaf-packages`: the D1 reader keeps `internal/dotgit` standard-library only and spawning nothing; the background's list of what `dotgit` parses gains the worktree entries and refs.
