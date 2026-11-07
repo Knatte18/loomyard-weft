@@ -14,6 +14,8 @@ Items 7 and 9 of `docs/research/speed/tier1-test-revision-2026-11-06/report.md`,
 
 ## Wanted
 
-- Shorten each real-time wait, through an injected clock or a shorter bound, keeping a margin that does not flake on a loaded machine; each package's comments name its margins.
+- Take real time out of each wait through an injected clock, or by waiting on the event itself instead of a fixed sleep; never by a shorter bound.
+  A bound that covers a process or binary start keeps its length: on OSL-1046 Cortex XDR holds each new binary about 10 s on its first start, and those bounds were widened because a held binary read as a failure (operator, 2026-11-07).
+  Check each wait's history in git before changing it, and leave alone any wait whose only fix would be a shorter bound.
 - Have `TestBuildInto_UnwritableDirReturnsError` fail before building, and keep `TestCrossCompileLinux` and the dotnet build in the whole pass while a card or scoped gate runs them only when a file they guard changes, such as a `_linux.go` file.
 - No test loses what it pins.
