@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-07 16:27 UTC; every age below is as of then.
+Rendered 2026-11-07 16:28 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -72,7 +72,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T15 | **internal/fabricengine live-state arranges and merge-pair layers onto registered templates** | [`fabric-livestate-merge-templates`](design-fabric-livestate-merge-templates.md)<br>[Sketch](decision-fabric-livestate-merge-templates.md) | darn · light | Darn-Write | neve | 2h<br>2h | fabric, testkit, git |
+| T15 | **internal/fabricengine live-state arranges and merge-pair layers onto registered templates** | [`fabric-livestate-merge-templates`](design-fabric-livestate-merge-templates.md)<br>[Sketch](decision-fabric-livestate-merge-templates.md) | darn · light | Drift-Verify | neve | 2h<br>2h | fabric, testkit, git |
 
 #### Ready (0)
 
@@ -114,7 +114,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **trusted_hubs lists shortnames, which neither say which repository is meant nor identify it**<br>• List trusted hubs by full repository name instead of shortname | [`creel-trust-by-repo-name`](design-creel-trust-by-repo-name.md) | darn · solid | Code-Burler-Fix | neve | 7h<br>25m | creel |
+| T2 | **trusted_hubs lists shortnames, which neither say which repository is meant nor identify it**<br>• List trusted hubs by full repository name instead of shortname | [`creel-trust-by-repo-name`](design-creel-trust-by-repo-name.md) | darn · solid | Code-Burler-Fix | neve | 7h<br>26m | creel |
 
 #### Ready (0)
 
