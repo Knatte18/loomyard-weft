@@ -1,0 +1,919 @@
+diff --git a/internal/fabricengine/livestate_doc_test.go b/internal/fabricengine/livestate_doc_test.go
+index ac9e2ea1..b4ceccd9 100644
+--- a/internal/fabricengine/livestate_doc_test.go
++++ b/internal/fabricengine/livestate_doc_test.go
+@@ -8,7 +8,9 @@
+ // both backed by real bare git repositories on disk.
+ // It does not use hand-assembled fixtures.
+ // A named hostile-state matrix plants dirty, stale, or otherwise hostile on-disk conditions before a verb runs.
+-// A verb table lists the topology verbs under test, each with its own Arrange step and permitted removal roots.
++// A verb table lists the topology verbs under test, each with its own fixture steps and permitted removal roots.
++// A verb's Build steps run once per anchor in a registered hubforge template, which each cell copies;
++// its Arrange derives the rest of the fixture from the copy.
+ // The cross product of the two runs, and every cell asserts survival: the cell names what may change,
+ // and any change outside that is a failure.
+ // Defects of this kind surface only when real git runs against a real filesystem in hostile or dirty state.
+@@ -98,7 +100,7 @@
+ //     With all three disabled, that test fails: Cleanup reports the primary weft branch "main-weft" as handled.
+ //     The clean/Cleanup/"." cell covers the same protection.
+ //     It also covers Cleanup's ordinary orphan deletion, through the branch cleanupCase deliberately orphans.
+-//     Its Arrange moves the prime pair off the hub's default branch.
++//     Its Build moves the prime pair off the hub's default branch.
+ //     Its Effect asserts that the primary weft branch still exists afterward.
+ //   - (5) dirtyWarpUntracked x Prune x "." checks that Prune does not remove a path git has just refused.
+ //     This cell cannot prove that on its own.
+@@ -142,7 +144,7 @@
+ //   - Reconcile omits all four structural states: reconcile.go contains no pathRequest call,
+ //     so no structural state, of any shape, names a path that Reconcile's pre-flight (scopeAll on the board) inspects.
+ //   - Cleanup additionally omits dirtyWeftTracked, dirtyWeftUntracked and bothDirty.
+-//     Its Arrange tears down the pair's weft worktree by hand before the state is applied.
++//     Its Build tears down the pair's weft worktree by hand before the state is applied.
+ //     This mirrors cleanup's orphan-branch precondition.
+ //     So no weft-targeted dirtiness state has a live checkout to plant into.
+ //   - Remove omits foreignDirAtFabricOwnedPath and unrelatedGitCloneAtWeftNamedPath.
+diff --git a/internal/fabricengine/livestate_matrix_test.go b/internal/fabricengine/livestate_matrix_test.go
+index fef9cfed..932fdb8e 100644
+--- a/internal/fabricengine/livestate_matrix_test.go
++++ b/internal/fabricengine/livestate_matrix_test.go
+@@ -40,6 +40,41 @@ func mainVerbs() []VerbCase {
+ 	return out
+ }
+ 
++// verbTemplates holds, per anchor, the registered template of each Verbs case that has a Build, keyed by verbTemplateKey.
++var verbTemplates = registerVerbTemplates()
++
++// registerVerbTemplates returns one registration per anchor for each Verbs case that has a Build:
++// the anchor's bare hub with the case's Build run on it.
++func registerVerbTemplates() map[string]*hubforge.Registration {
++	templates := map[string]*hubforge.Registration{}
++	for _, vc := range Verbs {
++		if vc.Build == nil {
++			continue
++		}
++		for _, anchor := range anchors {
++			key := verbTemplateKey(vc.Name, anchor)
++			templates[key] = &hubforge.Registration{Key: key, Base: hubforge.Shape{Anchor: anchor}, Build: vc.Build}
++		}
++	}
++	return templates
++}
++
++// verbTemplateKey returns the template key of the verb case verbName at anchor.
++func verbTemplateKey(verbName, anchor string) string {
++	return "fabricengine-livestate-" + verbName + "-" + anchor
++}
++
++// copyVerbHub returns a hub the test owns for vc at anchor, before vc's Arrange runs.
++// It is a copy of vc's registered template when vc has a Build, and of the anchor's bare hub otherwise.
++func copyVerbHub(t *testing.T, vc VerbCase, anchor string) *hubforge.Hub {
++	t.Helper()
++
++	if vc.Build == nil {
++		return hubforge.CopyHub(t, hubforge.Shape{Anchor: anchor})
++	}
++	return hubforge.CopyRegistered(t, verbTemplates[verbTemplateKey(vc.Name, anchor)])
++}
++
+ // cloneHubResetVerbs returns the VerbCase entries of the CloneHub{Reset: true} column.
+ func cloneHubResetVerbs() []VerbCase {
+ 	var out []VerbCase
+@@ -223,11 +258,11 @@ func assertArrangePreconditions(t *testing.T, fixture VerbFixture) {
+ func runCell(t *testing.T, anchor string, state State, vc VerbCase) {
+ 	t.Helper()
+ 
+-	// Build: the factory clones a fresh hub at the cell's anchor.
++	// Build: a copy of the verb's template at the cell's anchor.
+ 	// Every cell owns its hub, so pushes across parallel cells never race.
+-	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: anchor})
++	h := copyVerbHub(t, vc, anchor)
+ 
+-	// Arrange: the verb's own fixture.
++	// Arrange: the rest of the verb's own fixture, derived from the copy.
+ 	fixture := vc.Arrange(t, h)
+ 	assertArrangePreconditions(t, fixture)
+ 
+diff --git a/internal/fabricengine/livestate_verbs_selftest_test.go b/internal/fabricengine/livestate_verbs_selftest_test.go
+index a2172261..6f972c5a 100644
+--- a/internal/fabricengine/livestate_verbs_selftest_test.go
++++ b/internal/fabricengine/livestate_verbs_selftest_test.go
+@@ -6,7 +6,6 @@ package fabricengine_test
+ import (
+ 	"testing"
+ 
+-	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -39,7 +38,7 @@ func TestVerbCases_ArrangeSetsItsPreconditionField(t *testing.T) {
+ 			if vc == nil {
+ 				t.Fatalf("Verbs has no %s case", tt.verb)
+ 			}
+-			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++			h := copyVerbHub(t, *vc, ".")
+ 
+ 			if got := tt.field(vc.Arrange(t, h)); got == "" {
+ 				t.Errorf("%s Arrange left its precondition field empty", tt.verb)
+diff --git a/internal/fabricengine/livestate_verbs_test.go b/internal/fabricengine/livestate_verbs_test.go
+index 5b93e2fa..068e6cdb 100644
+--- a/internal/fabricengine/livestate_verbs_test.go
++++ b/internal/fabricengine/livestate_verbs_test.go
+@@ -1,5 +1,6 @@
+ // verbs.go builds the verb table for the gate-reaching verbs.
+-// Each verb has its own Arrange fixture, Run call, and Expect function, which derives a per-state Expectation.
++// Each verb has its own Build and Arrange fixture steps, Run call, and Expect function.
++// The Expect function derives a per-state Expectation.
+ // The file also holds the hostile-input cases and the omission table of excluded verb/state pairs.
+ //
+ // # The verified dirtiness-scope table
+@@ -181,6 +182,10 @@ type Expectation struct {
+ // Arrange is a required field, not a convenience: most verbs need a fixture no state builds.
+ // Folding that work into Run would be a correctness bug.
+ // The before-manifest is captured before Run, so a mutation folded into Run would show up as an unpermitted change.
++// Build is optional and holds the fixture steps a hubforge template build can run, such as adding a pair.
++// It runs once per anchor in a registered template, and each cell copies that template.
++// Arrange then derives the fixture from the copy's Hub.
++// It keeps only the steps a build cannot run, such as placing a directory outside the hub.
+ // States is an optional restriction.
+ // Empty means the case inherits every state in the package-level States slice, which ordinary verbs use.
+ // So a newly appended verb gets the full matrix automatically.
+@@ -193,6 +198,7 @@ type Expectation struct {
+ // Discarding the typed result would leave nothing for a cell to cross-check against the manifest diff.
+ type VerbCase struct {
+ 	Name    string
++	Build   func(tb testing.TB, h *hubforge.Hub)
+ 	Arrange func(tb testing.TB, h *hubforge.Hub) VerbFixture
+ 	Run     func(tb testing.TB, h *hubforge.Hub, f VerbFixture) (fabricengine.Mutations, error)
+ 	States  []string
+@@ -234,11 +240,11 @@ var Omissions = []Omission{
+ 	{Verb: "Reconcile", State: "foreignDirAtFabricOwnedPath", Reason: "Reconcile has no path-executor gate call (reconcile.go contains no pathRequest); its own pre-flight is scopeAll on the board, not a per-path check"},
+ 	{Verb: "Reconcile", State: "unrelatedGitCloneAtWeftNamedPath", Reason: "Reconcile has no path-executor gate call (reconcile.go contains no pathRequest); its own pre-flight is scopeAll on the board, not a per-path check"},
+ 
+-	// Cleanup's Arrange removes the pair's weft worktree by hand before the state is applied.
++	// Cleanup's Build removes the pair's weft worktree by hand before the state is applied.
+ 	// No weft-targeted dirtiness state can plant into a checkout that no longer exists.
+-	{Verb: "Cleanup", State: "dirtyWeftTracked", Reason: "Cleanup's Arrange removes the pair's weft worktree before the state is applied, mirroring cleanup's own orphan-branch precondition; the checkout a weft dirtiness state would plant into does not exist"},
+-	{Verb: "Cleanup", State: "dirtyWeftUntracked", Reason: "Cleanup's Arrange removes the pair's weft worktree before the state is applied, mirroring cleanup's own orphan-branch precondition; the checkout a weft dirtiness state would plant into does not exist"},
+-	{Verb: "Cleanup", State: "bothDirty", Reason: "Cleanup's Arrange removes the pair's weft worktree before the state is applied, mirroring cleanup's own orphan-branch precondition; the checkout bothDirty's weft half would plant into does not exist"},
++	{Verb: "Cleanup", State: "dirtyWeftTracked", Reason: "Cleanup's Build removes the pair's weft worktree before the state is applied, mirroring cleanup's own orphan-branch precondition; the checkout a weft dirtiness state would plant into does not exist"},
++	{Verb: "Cleanup", State: "dirtyWeftUntracked", Reason: "Cleanup's Build removes the pair's weft worktree before the state is applied, mirroring cleanup's own orphan-branch precondition; the checkout a weft dirtiness state would plant into does not exist"},
++	{Verb: "Cleanup", State: "bothDirty", Reason: "Cleanup's Build removes the pair's weft worktree before the state is applied, mirroring cleanup's own orphan-branch precondition; the checkout bothDirty's weft half would plant into does not exist"},
+ 
+ 	// Remove's own path-executor gate calls target only the pair's registered worktree and its own wired junctions.
+ 	// No ownership check reaches an independent foreign directory or unrelated clone at another path.
+@@ -384,6 +390,7 @@ func assertExists(tb testing.TB, path string) {
+ // A clean-state Run therefore returns the launcher error.
+ // It leaves the hub as it was before Run, apart from the blocker.
+ // That is add.go's documented rollback contract, so this case expects RefusedBefore rather than Proceeds.
++// The case has no Build: the blocker is one directory and no git step, so a template would only add a build.
+ func addCase() VerbCase {
+ 	return VerbCase{
+ 		Name: "Add",
+@@ -467,13 +474,15 @@ func addCase() VerbCase {
+ // removeCase builds Topology.Remove's VerbCase.
+ // Its dirty-refusal cells declare no permitted roots, because a correctly-refusing cell changes nothing.
+ func removeCase() VerbCase {
++	const slug = "verb-remove-owner"
+ 	return VerbCase{
+ 		Name: "Remove",
+-		Arrange: func(tb testing.TB, h *hubforge.Hub) VerbFixture {
++		Build: func(tb testing.TB, h *hubforge.Hub) {
+ 			tb.Helper()
+-
+-			slug := "verb-remove-owner"
+ 			hubforge.AddPair(tb, h, slug)
++		},
++		Arrange: func(tb testing.TB, h *hubforge.Hub) VerbFixture {
++			tb.Helper()
+ 			return VerbFixture{
+ 				Slug: slug,
+ 				Target: StateTarget{
+@@ -510,7 +519,7 @@ func removeCase() VerbCase {
+ 			default:
+ 				return Expectation{
+ 					Kind:           KindProceeds,
+-					PermittedRoots: slugPermittedRoots("verb-remove-owner"),
++					PermittedRoots: slugPermittedRoots(slug),
+ 					Effect: func(tb testing.TB, h *hubforge.Hub, f VerbFixture) {
+ 						tb.Helper()
+ 						assertGone(tb, h.PairCodeWorktree(f.Slug))
+@@ -524,19 +533,22 @@ func removeCase() VerbCase {
+ }
+ 
+ // pruneCase builds Topology.Prune's VerbCase.
+-// Arrange produces a stale pair: the warp worktree directory is removed by hand, bypassing fabric,
++// Build produces a stale pair: the warp worktree directory is removed by hand, bypassing fabric,
+ // so the weft sibling and warp's worktree registration stay behind, as an operator's manual `rm -rf` would.
+ func pruneCase() VerbCase {
++	const slug = "verb-prune-owner"
+ 	return VerbCase{
+ 		Name: "Prune",
+-		Arrange: func(tb testing.TB, h *hubforge.Hub) VerbFixture {
++		Build: func(tb testing.TB, h *hubforge.Hub) {
+ 			tb.Helper()
+ 
+-			slug := "verb-prune-owner"
+ 			hubforge.AddPair(tb, h, slug)
+ 			if err := os.RemoveAll(h.PairCodeWorktree(slug)); err != nil {
+ 				tb.Fatalf("remove warp worktree %s to stage a stale pair: %v", h.PairCodeWorktree(slug), err)
+ 			}
++		},
++		Arrange: func(tb testing.TB, h *hubforge.Hub) VerbFixture {
++			tb.Helper()
+ 			return VerbFixture{
+ 				Slug: slug,
+ 				Target: StateTarget{
+@@ -564,7 +576,7 @@ func pruneCase() VerbCase {
+ 				// What matters is that the protected entry survives untouched.
+ 				return Expectation{
+ 					Kind:           KindProceeds,
+-					PermittedRoots: slugPermittedRoots("verb-prune-owner"),
++					PermittedRoots: slugPermittedRoots(slug),
+ 					Effect: func(tb testing.TB, h *hubforge.Hub, f VerbFixture) {
+ 						tb.Helper()
+ 						assertExists(tb, h.PairRecordsSibling(f.Slug))
+@@ -574,7 +586,7 @@ func pruneCase() VerbCase {
+ 			default:
+ 				return Expectation{
+ 					Kind:           KindProceeds,
+-					PermittedRoots: slugPermittedRoots("verb-prune-owner"),
++					PermittedRoots: slugPermittedRoots(slug),
+ 					Effect: func(tb testing.TB, h *hubforge.Hub, f VerbFixture) {
+ 						tb.Helper()
+ 						assertGone(tb, h.PairRecordsSibling(f.Slug))
+@@ -587,11 +599,11 @@ func pruneCase() VerbCase {
+ }
+ 
+ // cleanupCase builds Topology.Cleanup's VerbCase.
+-// Arrange produces an orphan managed branch.
++// Build produces an orphan managed branch.
+ // It creates a pair and tears down its warp side (worktree and branch) by hand.
+ // That leaves the weft branch with no live warp sibling.
+-// Arrange also moves the prime pair off the hub's default branch.
+-// The hub's Bolt checkout stays on the original branch.
++// Build also moves the prime pair off the hub's default branch.
++// The hub's Bolt checkout stays on the original branch, so Arrange reads the original branch there.
+ // fabricengine.primaryWeftBranch reads that to find the repo's primary weft line (cleanup.go:206).
+ // It alone still records the primary after the move.
+ // Without the move, branch-space liveness alone would still protect the primary weft branch:
+@@ -603,14 +615,12 @@ func pruneCase() VerbCase {
+ // Cleanup's force parameter is reserved and no gate consults it, so apply alone deletes an orphan branch.
+ // The argument is kept as it was; this cell's clean-state effect does not depend on it.
+ func cleanupCase() VerbCase {
++	const slug = "verb-cleanup-owner"
+ 	return VerbCase{
+ 		Name: "Cleanup",
+-		Arrange: func(tb testing.TB, h *hubforge.Hub) VerbFixture {
++		Build: func(tb testing.TB, h *hubforge.Hub) {
+ 			tb.Helper()
+ 
+-			original := gitkit.CurrentBranch(tb, h.PrimeWorktree())
+-
+-			slug := "verb-cleanup-owner"
+ 			hubforge.AddPair(tb, h, slug)
+ 			mustGit(h.PrimeWorktree(), "worktree", "remove", "--force", h.PairCodeWorktree(slug))
+ 			mustGit(h.PrimeWorktree(), "branch", "-D", slug)
+@@ -624,10 +634,12 @@ func cleanupCase() VerbCase {
+ 			// the condition under which Cleanup's primaryWeft carve-out is load-bearing.
+ 			mustGit(h.PrimeWorktree(), "checkout", "-b", "verb-cleanup-alt")
+ 			mustGit(h.PrimeRecords(), "checkout", "-b", fabricengine.RecordsBranchName("verb-cleanup-alt"))
+-
++		},
++		Arrange: func(tb testing.TB, h *hubforge.Hub) VerbFixture {
++			tb.Helper()
+ 			return VerbFixture{
+ 				Slug:           slug,
+-				OriginalBranch: original,
++				OriginalBranch: gitkit.CurrentBranch(tb, h.BoardDir()),
+ 				Target: StateTarget{
+ 					WarpCheckout: h.PrimeWorktree(),
+ 					WeftCheckout: h.PairRecordsSibling(slug),
+@@ -649,7 +661,7 @@ func cleanupCase() VerbCase {
+ 						tb.Errorf("Cleanup left orphan branch %q behind", orphan)
+ 					}
+ 					// The clean-state effect: orphan managed branches are gone, and the primary weft branch stays intact.
+-					// Arrange moves the prime pair off f.OriginalBranch,
++					// Build moves the prime pair off f.OriginalBranch,
+ 					// so no live pair or checked-out weft worktree holds the primary weft branch.
+ 					primary := fabricengine.RecordsBranchName(f.OriginalBranch)
+ 					if !gitkit.BranchExists(tb, h.PrimeRecords(), primary) {
+@@ -668,26 +680,27 @@ func checkoutPermittedRoots() []string {
+ }
+ 
+ // checkoutCase builds Topology.Checkout's VerbCase.
+-// Arrange adds a pair, and Run passes that pair's own warp branch.
++// Build adds a pair, and Run passes that pair's own warp branch.
+ // Without the pair, the cells are vacuous.
+ // A factory-built hub carries only the clone's own branch, and Checkout on that branch is a no-op.
+ func checkoutCase() VerbCase {
++	const slug = "verb-checkout-owner"
+ 	return VerbCase{
+ 		Name: "Checkout",
+-		Arrange: func(tb testing.TB, h *hubforge.Hub) VerbFixture {
++		Build: func(tb testing.TB, h *hubforge.Hub) {
+ 			tb.Helper()
+ 
+-			slug := "verb-checkout-owner"
+ 			hubforge.AddPair(tb, h, slug)
+ 			// Remove the pair's own worktrees, never its branches, so both branches are free for the prime pair to switch onto.
+-			// Without this, `git switch` refuses: the branch is still checked out at the pair worktree this Arrange created.
++			// Without this, `git switch` refuses: the branch is still checked out at the pair worktree this Build created.
+ 			mustGit(h.PrimeWorktree(), "worktree", "remove", "--force", h.PairCodeWorktree(slug))
+ 			mustGit(h.PrimeRecords(), "worktree", "remove", "--force", h.PairRecordsSibling(slug))
+-			original := gitkit.CurrentBranch(tb, h.PrimeWorktree())
+-
++		},
++		Arrange: func(tb testing.TB, h *hubforge.Hub) VerbFixture {
++			tb.Helper()
+ 			return VerbFixture{
+ 				Slug:           slug,
+-				OriginalBranch: original,
++				OriginalBranch: gitkit.CurrentBranch(tb, h.PrimeWorktree()),
+ 				CheckoutBranch: slug,
+ 				Target: StateTarget{
+ 					WarpCheckout: h.PrimeWorktree(),
+@@ -804,15 +817,17 @@ func reconcileCase() VerbCase {
+ }
+ 
+ // unwireJunctionsCase builds fabricengine.UnwireJunctions' VerbCase.
+-// Arrange adds a pair; clean-state effect: junctions gone, worktree intact.
++// Build adds a pair; clean-state effect: junctions gone, worktree intact.
+ func unwireJunctionsCase() VerbCase {
++	const slug = "verb-unwire-owner"
+ 	return VerbCase{
+ 		Name: "UnwireJunctions",
+-		Arrange: func(tb testing.TB, h *hubforge.Hub) VerbFixture {
++		Build: func(tb testing.TB, h *hubforge.Hub) {
+ 			tb.Helper()
+-
+-			slug := "verb-unwire-owner"
+ 			hubforge.AddPair(tb, h, slug)
++		},
++		Arrange: func(tb testing.TB, h *hubforge.Hub) VerbFixture {
++			tb.Helper()
+ 			return VerbFixture{
+ 				Slug: slug,
+ 				Target: StateTarget{
+@@ -842,9 +857,9 @@ func unwireJunctionsCase() VerbCase {
+ 			// so both anchor variants of both names are permitted unconditionally, which is harmless when one goes unused.
+ 			var permitted []string
+ 			for _, anchor := range []string{".", "backend"} {
+-				loc := &lymcwd.Location{WorktreeName: "verb-unwire-owner", AnchorRel: anchor}
++				loc := &lymcwd.Location{WorktreeName: slug, AnchorRel: anchor}
+ 				for _, name := range []string{lymdirs.LymDirName, lymdirs.DotLymDirName} {
+-					permitted = append(permitted, filepath.ToSlash(fabricengine.WarpJunctions(loc, "verb-unwire-owner", []string{name})[0].Link))
++					permitted = append(permitted, filepath.ToSlash(fabricengine.WarpJunctions(loc, slug, []string{name})[0].Link))
+ 				}
+ 			}
+ 
+diff --git a/internal/fabricengine/mergecrucible_integration_test.go b/internal/fabricengine/mergecrucible_integration_test.go
+index 0a4d2b61..df11b231 100644
+--- a/internal/fabricengine/mergecrucible_integration_test.go
++++ b/internal/fabricengine/mergecrucible_integration_test.go
+@@ -43,9 +43,7 @@ func TestMergeCrucible_DetachedHeadRefused(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h, f, commitOnWarpBranch, commitOnWeftBranch, _, _ := newMergePairFixture(t, ".")
+-	commitOnWarpBranch("feature", "feature.txt", "feature\n", "feature: warp")
+-	commitOnWeftBranch("feature-weft", "feature.txt", "feature\n", "feature: weft")
++	h, f, _, _, _, _ := newMergeLayerFixture(t, &featureBothSidesLayer)
+ 
+ 	gitkit.MustRun(t, h.PrimeWorktree(), "git", "checkout", "-q", "--detach", "HEAD")
+ 
+@@ -77,9 +75,7 @@ func TestMergeCrucible_WeftDetachedDoesNotRefuse(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h, f, commitOnWarpBranch, commitOnWeftBranch, _, _ := newMergePairFixture(t, ".")
+-	commitOnWarpBranch("feature", "feature.txt", "feature\n", "feature: warp")
+-	commitOnWeftBranch("feature-weft", "feature.txt", "feature\n", "feature: weft")
++	h, f, _, _, _, _ := newMergeLayerFixture(t, &featureBothSidesLayer)
+ 
+ 	gitkit.MustRun(t, h.PrimeRecords(), "git", "checkout", "-q", "--detach", "HEAD")
+ 
+@@ -110,9 +106,7 @@ func TestMergeCrucible_ContinueRefusesAttemptThatNeverReachedBothSides(t *testin
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h, f, commitOnWarpBranch, commitOnWeftBranch, commitOnWarpCurrent, commitOnWeftCurrent := newMergePairFixture(t, ".")
+-	commitOnWarpBranch("feature", "feature.txt", "feature\n", "feature: warp")
+-	commitOnWeftBranch("feature-weft", "feature.txt", "feature\n", "feature: weft")
++	h, f, _, _, commitOnWarpCurrent, commitOnWeftCurrent := newMergeLayerFixture(t, &featureBothSidesLayer)
+ 	// Diverge the target branches so the reconstructed attempt stages rather than fast-forwards:
+ 	// a fast-forward moves HEAD, and the crash window this test reconstructs is the staged one.
+ 	commitOnWarpCurrent("target.txt", "target\n", "target: warp")
+@@ -176,9 +170,7 @@ func TestMergeCrucible_ResultFlagsDescribeWhatHappened(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	t.Run("FastForwardBothSidesFabricatesNoCommit", func(t *testing.T) {
+-		h, f, commitOnWarpBranch, commitOnWeftBranch, _, _ := newMergePairFixture(t, ".")
+-		commitOnWarpBranch("feature", "feature.txt", "feature\n", "feature: warp")
+-		commitOnWeftBranch("feature-weft", "feature.txt", "feature\n", "feature: weft")
++		h, f, _, _, _, _ := newMergeLayerFixture(t, &featureBothSidesLayer)
+ 
+ 		res, err := f.MergeIn("feature")
+ 		if err != nil {
+@@ -197,9 +189,7 @@ func TestMergeCrucible_ResultFlagsDescribeWhatHappened(t *testing.T) {
+ 	})
+ 
+ 	t.Run("SecondCallReportsAlreadyUpToDateNotCommitted", func(t *testing.T) {
+-		_, f, commitOnWarpBranch, commitOnWeftBranch, commitOnWarpCurrent, commitOnWeftCurrent := newMergePairFixture(t, ".")
+-		commitOnWarpBranch("feature", "feature.txt", "feature\n", "feature: warp")
+-		commitOnWeftBranch("feature-weft", "feature.txt", "feature\n", "feature: weft")
++		_, f, _, _, commitOnWarpCurrent, commitOnWeftCurrent := newMergeLayerFixture(t, &featureBothSidesLayer)
+ 		commitOnWarpCurrent("target.txt", "target\n", "target: warp")
+ 		commitOnWeftCurrent("target.txt", "target\n", "target: weft")
+ 
+diff --git a/internal/fabricengine/mergein_integration_test.go b/internal/fabricengine/mergein_integration_test.go
+index 322a3d0d..cb9305fb 100644
+--- a/internal/fabricengine/mergein_integration_test.go
++++ b/internal/fabricengine/mergein_integration_test.go
+@@ -26,8 +26,98 @@ import (
+ // so the checkout MergeIn runs against stays on its original branch.
+ func newMergePairFixture(t *testing.T, anchor string) (h *hubforge.Hub, f *fabricengine.Fabric, commitOnWarpBranch, commitOnWeftBranch func(branch, filename, content, msg string), commitOnWarpCurrent, commitOnWeftCurrent func(filename, content, msg string)) {
+ 	t.Helper()
++	return mergePairFixtureOf(t, hubforge.CopyHub(t, hubforge.Shape{Anchor: anchor}))
++}
++
++// newMergeLayerFixture copies layer, a "." hub template whose build already made a merge scenario's commits.
++// It returns the copy's Hub and the Fabric opened over its prime warp and weft worktrees.
++// The commitOnWarpBranch and commitOnWeftBranch closures commit on a named branch and switch back,
++// so the checkout MergeIn runs against stays on its original branch.
++func newMergeLayerFixture(t *testing.T, layer *hubforge.Registration) (h *hubforge.Hub, f *fabricengine.Fabric, commitOnWarpBranch, commitOnWeftBranch func(branch, filename, content, msg string), commitOnWarpCurrent, commitOnWeftCurrent func(filename, content, msg string)) {
++	t.Helper()
++	return mergePairFixtureOf(t, hubforge.CopyRegistered(t, layer))
++}
++
++// The merge layers: "." hubs whose prime pair carries a merge scenario's branch commits.
++// Each holds a start state that at least three tests share.
++var (
++	// conflictLayer's warp branch "feature" conflicts with the current branch on conflict.txt,
++	// and its weft branch "feature-weft" is at the weft's HEAD.
++	conflictLayer = hubforge.Registration{
++		Key:   "fabricengine-merge-conflict",
++		Base:  hubforge.Shape{Anchor: "."},
++		Build: conflictingFeature("conflict.txt"),
++	}
++	// clashLayer is conflictLayer's scenario with the conflict on clash.txt.
++	clashLayer = hubforge.Registration{
++		Key:   "fabricengine-merge-clash",
++		Base:  hubforge.Shape{Anchor: "."},
++		Build: conflictingFeature("clash.txt"),
++	}
++	// nonFastForwardLayer's warp branch "feature" adds warp-branch.txt, the current branch has since added warp-current.txt,
++	// and its weft branch "feature-weft" is at the weft's HEAD.
++	nonFastForwardLayer = hubforge.Registration{
++		Key:   "fabricengine-merge-nonff",
++		Base:  hubforge.Shape{Anchor: "."},
++		Build: nonFastForwardFeature("warp-branch.txt", "warp-current.txt"),
++	}
++	// warpProgressLayer is nonFastForwardLayer's scenario with other files.
++	// Its branch adds feature.txt, and its current branch adds warp-progress.txt.
++	warpProgressLayer = hubforge.Registration{
++		Key:   "fabricengine-merge-warp-progress",
++		Base:  hubforge.Shape{Anchor: "."},
++		Build: nonFastForwardFeature("feature.txt", "warp-progress.txt"),
++	}
++	// featureBothSidesLayer has "feature" and "feature-weft" each one commit adding feature.txt past the current branches.
++	featureBothSidesLayer = hubforge.Registration{
++		Key:  "fabricengine-merge-feature-both-sides",
++		Base: hubforge.Shape{Anchor: "."},
++		Build: func(tb testing.TB, h *hubforge.Hub) {
++			tb.Helper()
++			commitOnBranch(tb, h.PrimeWorktree(), "feature", "feature.txt", "feature\n", "feature: warp")
++			commitOnBranch(tb, h.PrimeRecords(), "feature-weft", "feature.txt", "feature\n", "feature: weft")
++		},
++	}
++	// cleanMergeableLayer has "feature" and "feature-weft" each one commit past the current branches.
++	// Both merge without conflict.
++	cleanMergeableLayer = hubforge.Registration{
++		Key:  "fabricengine-merge-clean",
++		Base: hubforge.Shape{Anchor: "."},
++		Build: func(tb testing.TB, h *hubforge.Hub) {
++			tb.Helper()
++			commitOnBranch(tb, h.PrimeWorktree(), "feature", "clean-warp.txt", "clean\n", "warp: clean branch")
++			commitOnBranch(tb, h.PrimeRecords(), "feature-weft", "_lym/clean-weft.txt", "clean\n", "weft: clean branch")
++		},
++	}
++)
++
++// conflictingFeature returns a layer build for a conflict on filename.
++// The build makes the warp branch "feature" conflict with the current branch on that file.
++// It branches "feature-weft" at the weft's HEAD.
++func conflictingFeature(filename string) func(tb testing.TB, h *hubforge.Hub) {
++	return func(tb testing.TB, h *hubforge.Hub) {
++		tb.Helper()
++		setupConflictingDivergence(tb, h.PrimeWorktree(), "feature", filename)
++		branchAtCurrentHEAD(tb, h.PrimeRecords(), "feature-weft")
++	}
++}
++
++// nonFastForwardFeature returns a layer build whose warp branch "feature" adds branchFile.
++// The current branch advances past the branch point by adding currentFile.
++// It branches "feature-weft" at the weft's HEAD.
++func nonFastForwardFeature(branchFile, currentFile string) func(tb testing.TB, h *hubforge.Hub) {
++	return func(tb testing.TB, h *hubforge.Hub) {
++		tb.Helper()
++		setupCleanNonFastForward(tb, h.PrimeWorktree(), "feature", branchFile, currentFile)
++		branchAtCurrentHEAD(tb, h.PrimeRecords(), "feature-weft")
++	}
++}
++
++// mergePairFixtureOf returns h, the Fabric opened over its prime warp and weft worktrees,
++// and the commit closures over them.
++func mergePairFixtureOf(t *testing.T, h *hubforge.Hub) (_ *hubforge.Hub, f *fabricengine.Fabric, commitOnWarpBranch, commitOnWeftBranch func(branch, filename, content, msg string), commitOnWarpCurrent, commitOnWeftCurrent func(filename, content, msg string)) {
++	t.Helper()
+ 
+-	h = hubforge.CopyHub(t, hubforge.Shape{Anchor: anchor})
+ 	f = hubforge.OpenFabric(t, h)
+ 
+ 	warpDir, weftDir := h.PrimeWorktree(), h.PrimeRecords()
+@@ -48,37 +138,37 @@ func newMergePairFixture(t *testing.T, anchor string) (h *hubforge.Hub, f *fabri
+ 
+ // commitOnBranch checks out branch in dir, creating it off the current checkout when it does not exist yet.
+ // It writes filename with content, commits msg, and switches back to the previous branch.
+-func commitOnBranch(t *testing.T, dir, branch, filename, content, msg string) {
+-	t.Helper()
++func commitOnBranch(tb testing.TB, dir, branch, filename, content, msg string) {
++	tb.Helper()
+ 
+-	current := gitkit.CurrentBranch(t, dir)
+-	if gitkit.BranchExists(t, dir, branch) {
+-		gitkit.MustRun(t, dir, "git", "checkout", "-q", branch)
++	current := gitkit.CurrentBranch(tb, dir)
++	if gitkit.BranchExists(tb, dir, branch) {
++		gitkit.MustRun(tb, dir, "git", "checkout", "-q", branch)
+ 	} else {
+-		gitkit.MustRun(t, dir, "git", "checkout", "-q", "-b", branch)
++		gitkit.MustRun(tb, dir, "git", "checkout", "-q", "-b", branch)
+ 	}
+ 
+-	gitkit.CommitFile(t, dir, filename, content, msg)
++	gitkit.CommitFile(tb, dir, filename, content, msg)
+ 
+-	gitkit.MustRun(t, dir, "git", "checkout", "-q", current)
++	gitkit.MustRun(tb, dir, "git", "checkout", "-q", current)
+ }
+ 
+ // branchAtCurrentHEAD creates branch in dir at the current HEAD, without checking it out or adding a commit.
+ // Merging it reports already up to date.
+-func branchAtCurrentHEAD(t *testing.T, dir, branch string) {
+-	t.Helper()
+-	gitkit.MustRun(t, dir, "git", "branch", branch)
++func branchAtCurrentHEAD(tb testing.TB, dir, branch string) {
++	tb.Helper()
++	gitkit.MustRun(tb, dir, "git", "branch", branch)
+ }
+ 
+ // setupConflictingDivergence commits filename on dir's current branch.
+ // It then writes different content to filename on branch and on the current branch.
+ // Merging branch into the current branch then conflicts on filename.
+-func setupConflictingDivergence(t *testing.T, dir, branch, filename string) {
+-	t.Helper()
++func setupConflictingDivergence(tb testing.TB, dir, branch, filename string) {
++	tb.Helper()
+ 
+-	gitkit.CommitFile(t, dir, filename, "seed content\n", "seed "+filename)
+-	commitOnBranch(t, dir, branch, filename, "branch content\n", "diverge "+filename+" on "+branch)
+-	gitkit.CommitFile(t, dir, filename, "current content\n", "diverge "+filename+" on current")
++	gitkit.CommitFile(tb, dir, filename, "seed content\n", "seed "+filename)
++	commitOnBranch(tb, dir, branch, filename, "branch content\n", "diverge "+filename+" on "+branch)
++	gitkit.CommitFile(tb, dir, filename, "current content\n", "diverge "+filename+" on current")
+ }
+ 
+ // setupCleanFastForward creates branch off dir's current HEAD with one commit adding filename.
+@@ -90,10 +180,10 @@ func setupCleanFastForward(t *testing.T, dir, branch, filename string) {
+ 
+ // setupCleanNonFastForward creates branch off dir's current HEAD with a commit adding branchFile.
+ // It then advances the current branch with a commit adding currentFile, so merging branch is not a fast-forward.
+-func setupCleanNonFastForward(t *testing.T, dir, branch, branchFile, currentFile string) {
+-	t.Helper()
+-	commitOnBranch(t, dir, branch, branchFile, "clean branch content\n", "clean "+branchFile+" on "+branch)
+-	gitkit.CommitFile(t, dir, currentFile, "current progress\n", "progress current past "+branch)
++func setupCleanNonFastForward(tb testing.TB, dir, branch, branchFile, currentFile string) {
++	tb.Helper()
++	commitOnBranch(tb, dir, branch, branchFile, "clean branch content\n", "clean "+branchFile+" on "+branch)
++	gitkit.CommitFile(tb, dir, currentFile, "current progress\n", "progress current past "+branch)
+ }
+ 
+ // TestMergeIn_BothSidesClean covers the both-sides-clean scenario.
+@@ -291,10 +381,7 @@ func TestMergeContinue_ResolvedConflictsConclude(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h, f, _, _, _, _ := newMergePairFixture(t, ".")
+-
+-	setupConflictingDivergence(t, h.PrimeWorktree(), "feature", "conflict.txt")
+-	branchAtCurrentHEAD(t, h.PrimeRecords(), "feature-weft")
++	h, f, _, _, _, _ := newMergeLayerFixture(t, &conflictLayer)
+ 
+ 	res, err := f.MergeIn("feature")
+ 	if err != nil {
+@@ -333,10 +420,7 @@ func TestMergeContinue_UnresolvedConflictsRefuse(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h, f, _, _, _, _ := newMergePairFixture(t, ".")
+-
+-	setupConflictingDivergence(t, h.PrimeWorktree(), "feature", "conflict.txt")
+-	branchAtCurrentHEAD(t, h.PrimeRecords(), "feature-weft")
++	_, f, _, _, _, _ := newMergeLayerFixture(t, &conflictLayer)
+ 
+ 	if _, err := f.MergeIn("feature"); err != nil {
+ 		t.Fatalf("MergeIn(feature) error = %v", err)
+@@ -359,12 +443,9 @@ func TestMergeAbort_AfterConflict(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h, f, _, _, _, _ := newMergePairFixture(t, ".")
+-
+-	setupConflictingDivergence(t, h.PrimeWorktree(), "feature", "conflict.txt")
+-	branchAtCurrentHEAD(t, h.PrimeRecords(), "feature-weft")
++	h, f, _, _, _, _ := newMergeLayerFixture(t, &conflictLayer)
+ 
+-	// Captured after the divergence commits above land: these are the pre-merge SHAs
++	// Captured after the layer's divergence commits: these are the pre-merge SHAs
+ 	// MergeIn's own record captures and MergeAbort must restore — not the SHAs from before this fixture's own setup ran.
+ 	warpStartSHA := fabricengine.CurrentSHAForTest(t, h.PrimeWorktree())
+ 	weftStartSHA := fabricengine.CurrentSHAForTest(t, h.PrimeRecords())
+diff --git a/internal/fabricengine/mergein_recovery_integration_test.go b/internal/fabricengine/mergein_recovery_integration_test.go
+index bd245975..6c03e697 100644
+--- a/internal/fabricengine/mergein_recovery_integration_test.go
++++ b/internal/fabricengine/mergein_recovery_integration_test.go
+@@ -95,10 +95,7 @@ func TestMergeAbort_FreshHandle_RecoversConflictedRecord(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h, f, _, _, _, _ := newMergePairFixture(t, ".")
+-
+-	setupConflictingDivergence(t, h.PrimeWorktree(), "feature", "conflict.txt")
+-	branchAtCurrentHEAD(t, h.PrimeRecords(), "feature-weft")
++	h, f, _, _, _, _ := newMergeLayerFixture(t, &conflictLayer)
+ 
+ 	warpStartSHA := fabricengine.CurrentSHAForTest(t, h.PrimeWorktree())
+ 	weftStartSHA := fabricengine.CurrentSHAForTest(t, h.PrimeRecords())
+@@ -188,13 +185,10 @@ func TestMergeContinue_ConcludeFailureThenRetryConcludes(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h, f, _, _, _, _ := newMergePairFixture(t, ".")
+-
+-	// setupCleanNonFastForward forks the branch off the pre-divergence HEAD and advances current separately.
++	// The layer forks the branch off the pre-divergence HEAD and advances current separately.
+ 	// The target is a genuine non-fast-forward merge, so it lands a real conclude commit.
+ 	// A fast-forward would make concludeMergeSides skip the conclude commit.
+-	setupCleanNonFastForward(t, h.PrimeWorktree(), "feature", "warp-branch.txt", "warp-current.txt")
+-	branchAtCurrentHEAD(t, h.PrimeRecords(), "feature-weft")
++	h, f, _, _, _, _ := newMergeLayerFixture(t, &nonFastForwardLayer)
+ 
+ 	installFailingPreCommitHook(t, h.PrimeWorktree())
+ 
+@@ -519,10 +513,7 @@ func TestMergeContinue_InvisibleLandedConclude_AdoptsInsteadOfSticking(t *testin
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h, f, _, _, _, _ := newMergePairFixture(t, ".")
+-
+-	setupConflictingDivergence(t, h.PrimeWorktree(), "feature", "clash.txt")
+-	branchAtCurrentHEAD(t, h.PrimeRecords(), "feature-weft")
++	h, f, _, _, _, _ := newMergeLayerFixture(t, &clashLayer)
+ 
+ 	res, err := f.MergeIn("feature")
+ 	if err != nil {
+@@ -605,10 +596,7 @@ func TestMergeContinue_UnrelatedCommitWhileRecordLive_IsNeverAdopted(t *testing.
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h, f, _, _, _, _ := newMergePairFixture(t, ".")
+-
+-	setupConflictingDivergence(t, h.PrimeWorktree(), "feature", "clash.txt")
+-	branchAtCurrentHEAD(t, h.PrimeRecords(), "feature-weft")
++	h, f, _, _, _, _ := newMergeLayerFixture(t, &clashLayer)
+ 
+ 	res, err := f.MergeIn("feature")
+ 	if err != nil {
+@@ -665,10 +653,7 @@ func TestMergeContinue_MergeOfSourceOntoWrongBase_IsNeverAdopted(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h, f, _, _, _, _ := newMergePairFixture(t, ".")
+-
+-	setupConflictingDivergence(t, h.PrimeWorktree(), "feature", "clash.txt")
+-	branchAtCurrentHEAD(t, h.PrimeRecords(), "feature-weft")
++	h, f, _, _, _, _ := newMergeLayerFixture(t, &clashLayer)
+ 
+ 	res, err := f.MergeIn("feature")
+ 	if err != nil {
+@@ -735,10 +720,7 @@ func TestMergeContinue_MergeOfWrongSourceOntoStart_IsNeverAdopted(t *testing.T)
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h, f, _, _, _, _ := newMergePairFixture(t, ".")
+-
+-	setupConflictingDivergence(t, h.PrimeWorktree(), "feature", "clash.txt")
+-	branchAtCurrentHEAD(t, h.PrimeRecords(), "feature-weft")
++	h, f, _, _, _, _ := newMergeLayerFixture(t, &clashLayer)
+ 
+ 	// A decoy branch off the current warp HEAD, carrying one non-conflicting commit.
+ 	commitOnBranch(t, h.PrimeWorktree(), "decoy", "decoy.txt", "nothing to do with feature\n", "decoy commit")
+@@ -1149,10 +1131,7 @@ func TestMergeContinue_SquashConcludeLandedByHand_IsNeverAdopted(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h, f, _, _, _, _ := newMergePairFixture(t, ".")
+-
+-	setupCleanNonFastForward(t, h.PrimeWorktree(), "feature", "warp-branch.txt", "warp-current.txt")
+-	branchAtCurrentHEAD(t, h.PrimeRecords(), "feature-weft")
++	h, f, _, _, _, _ := newMergeLayerFixture(t, &nonFastForwardLayer)
+ 
+ 	// Sabotage the warp conclude so Merge stops with the record retained and warp_outcome staged —
+ 	// the state a crash between `git merge --squash` and the conclude commit leaves.
+@@ -1301,10 +1280,7 @@ func TestMergeContinue_SquashRecordCarryingATwoParentMerge_IsNeverAdopted(t *tes
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h, f, _, _, _, _ := newMergePairFixture(t, ".")
+-
+-	setupCleanNonFastForward(t, h.PrimeWorktree(), "feature", "warp-branch.txt", "warp-current.txt")
+-	branchAtCurrentHEAD(t, h.PrimeRecords(), "feature-weft")
++	h, f, _, _, _, _ := newMergeLayerFixture(t, &nonFastForwardLayer)
+ 
+ 	// Sabotage the warp conclude so Merge stops with the record retained, squash recorded, and the
+ 	// warp side staged with no conclude SHA.
+diff --git a/internal/fabricengine/mergelock_integration_test.go b/internal/fabricengine/mergelock_integration_test.go
+index 07987657..f15b0337 100644
+--- a/internal/fabricengine/mergelock_integration_test.go
++++ b/internal/fabricengine/mergelock_integration_test.go
+@@ -29,9 +29,7 @@ import (
+ func setupResolvedConflictedMergeIn(t *testing.T) (*hubforge.Hub, *fabricengine.Fabric) {
+ 	t.Helper()
+ 
+-	h, f, _, _, _, _ := newMergePairFixture(t, ".")
+-	setupConflictingDivergence(t, h.PrimeWorktree(), "feature", "clash.txt")
+-	branchAtCurrentHEAD(t, h.PrimeRecords(), "feature-weft")
++	h, f, _, _, _, _ := newMergeLayerFixture(t, &clashLayer)
+ 
+ 	res, err := f.MergeIn("feature")
+ 	if err != nil {
+@@ -210,9 +208,7 @@ func TestMerge_RecordAppearingWhileWaitingForLock_RefusesInsteadOfOverwriting(t
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	_, f, commitOnWarpBranch, commitOnWeftBranch, _, _ := newMergePairFixture(t, ".")
+-	commitOnWarpBranch("feature", "clean-warp.txt", "clean\n", "warp: clean branch")
+-	commitOnWeftBranch("feature-weft", "_lym/clean-weft.txt", "clean\n", "weft: clean branch")
++	_, f, _, _, _, _ := newMergeLayerFixture(t, &cleanMergeableLayer)
+ 
+ 	held, done := launchBlockedOnLock(t, f, func() error {
+ 		_, mergeErr := f.Merge("feature", fabricengine.MergeOptions{})
+@@ -297,9 +293,7 @@ func TestMergeIn_StartsAreReReadUnderLock(t *testing.T) {
+ func newCleanMergeablePair(t *testing.T) (*hubforge.Hub, *fabricengine.Fabric) {
+ 	t.Helper()
+ 
+-	h, f, commitOnWarpBranch, commitOnWeftBranch, _, _ := newMergePairFixture(t, ".")
+-	commitOnWarpBranch("feature", "clean-warp.txt", "clean\n", "warp: clean branch")
+-	commitOnWeftBranch("feature-weft", "_lym/clean-weft.txt", "clean\n", "weft: clean branch")
++	h, f, _, _, _, _ := newMergeLayerFixture(t, &cleanMergeableLayer)
+ 	return h, f
+ }
+ 
+diff --git a/internal/fabricengine/mergestage_integration_test.go b/internal/fabricengine/mergestage_integration_test.go
+index bb7f7b39..e6ff8609 100644
+--- a/internal/fabricengine/mergestage_integration_test.go
++++ b/internal/fabricengine/mergestage_integration_test.go
+@@ -59,10 +59,7 @@ func TestMergeStageResolved_ResolvedConflictsStageThenContinueSucceeds(t *testin
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h, f, _, _, _, _ := newMergePairFixture(t, ".")
+-
+-	setupConflictingDivergence(t, h.PrimeWorktree(), "feature", "conflict.txt")
+-	branchAtCurrentHEAD(t, h.PrimeRecords(), "feature-weft")
++	h, f, _, _, _, _ := newMergeLayerFixture(t, &conflictLayer)
+ 
+ 	res, err := f.MergeIn("feature")
+ 	if err != nil {
+@@ -100,10 +97,7 @@ func TestMergeStageResolved_PathNotConflictedOnEitherSide(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h, f, _, _, _, _ := newMergePairFixture(t, ".")
+-
+-	setupConflictingDivergence(t, h.PrimeWorktree(), "feature", "conflict.txt")
+-	branchAtCurrentHEAD(t, h.PrimeRecords(), "feature-weft")
++	_, f, _, _, _, _ := newMergeLayerFixture(t, &conflictLayer)
+ 
+ 	if _, err := f.MergeIn("feature"); err != nil {
+ 		t.Fatalf("MergeIn(feature) error = %v", err)
+diff --git a/internal/fabricengine/mergeweftlocal_integration_test.go b/internal/fabricengine/mergeweftlocal_integration_test.go
+index 8b893440..31dcf9fc 100644
+--- a/internal/fabricengine/mergeweftlocal_integration_test.go
++++ b/internal/fabricengine/mergeweftlocal_integration_test.go
+@@ -185,10 +185,7 @@ func TestMergeWeftLocal_MergeIn_WarpConflictReachesUnifyConflictPaths(t *testing
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h, f, _, _, _, _ := newMergePairFixture(t, ".")
+-
+-	setupConflictingDivergence(t, h.PrimeWorktree(), "feature", "clash.txt")
+-	branchAtCurrentHEAD(t, h.PrimeRecords(), "feature-weft")
++	h, f, _, _, _, _ := newMergeLayerFixture(t, &clashLayer)
+ 
+ 	res, err := f.MergeIn("feature")
+ 	if err != nil {
+diff --git a/internal/fabricengine/midmerge_integration_test.go b/internal/fabricengine/midmerge_integration_test.go
+index c050b40b..0e1fe483 100644
+--- a/internal/fabricengine/midmerge_integration_test.go
++++ b/internal/fabricengine/midmerge_integration_test.go
+@@ -38,9 +38,7 @@ func TestMidMerge_FabricParkedWithConflicts_Parked(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h, f, _, _, _, _ := newMergePairFixture(t, ".")
+-	setupConflictingDivergence(t, h.PrimeWorktree(), "feature", "clash.txt")
+-	branchAtCurrentHEAD(t, h.PrimeRecords(), "feature-weft")
++	h, f, _, _, _, _ := newMergeLayerFixture(t, &clashLayer)
+ 	wantStartSHA := gitkit.RevParse(t, h.PrimeWorktree(), "HEAD")
+ 	wantSourceSHA := gitkit.RevParse(t, h.PrimeWorktree(), "feature")
+ 
+diff --git a/internal/fabricengine/weftguards_integration_test.go b/internal/fabricengine/weftguards_integration_test.go
+index bbe7d8a3..2e8399a1 100644
+--- a/internal/fabricengine/weftguards_integration_test.go
++++ b/internal/fabricengine/weftguards_integration_test.go
+@@ -23,9 +23,7 @@ func TestWeftGuards_DirtyWeftDoesNotRefuseWarpDirtyStillDoes(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h1, f1, _, _, _, _ := newMergePairFixture(t, ".")
+-	setupCleanNonFastForward(t, h1.PrimeWorktree(), "feature", "feature.txt", "warp-progress.txt")
+-	branchAtCurrentHEAD(t, h1.PrimeRecords(), "feature-weft")
++	h1, f1, _, _, _, _ := newMergeLayerFixture(t, &warpProgressLayer)
+ 	if err := os.WriteFile(filepath.Join(h1.PrimeWorktree(), "dirty.txt"), []byte("uncommitted\n"), 0o644); err != nil {
+ 		t.Fatalf("write dirty.txt: %v", err)
+ 	}
+@@ -34,9 +32,7 @@ func TestWeftGuards_DirtyWeftDoesNotRefuseWarpDirtyStillDoes(t *testing.T) {
+ 	_, err := f1.MergeIn("feature")
+ 	assertSoleGuardReason(t, "MergeIn(feature) [warp dirty]", err, "worktree dirty")
+ 
+-	h2, f2, _, _, _, _ := newMergePairFixture(t, ".")
+-	setupCleanNonFastForward(t, h2.PrimeWorktree(), "feature", "feature.txt", "warp-progress.txt")
+-	branchAtCurrentHEAD(t, h2.PrimeRecords(), "feature-weft")
++	h2, f2, _, _, _, _ := newMergeLayerFixture(t, &warpProgressLayer)
+ 	weftBefore2 := fabricengine.CurrentSHAForTest(t, h2.PrimeRecords())
+ 	if err := os.WriteFile(filepath.Join(h2.PrimeRecords(), "dirty.txt"), []byte("uncommitted\n"), 0o644); err != nil {
+ 		t.Fatalf("write dirty.txt: %v", err)
+@@ -65,9 +61,7 @@ func TestWeftGuards_DetachedWeftDoesNotRefuseWarpDetachedStillDoes(t *testing.T)
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h1, f1, commitOnWarpBranch1, commitOnWeftBranch1, _, _ := newMergePairFixture(t, ".")
+-	commitOnWarpBranch1("feature", "feature.txt", "feature\n", "feature: warp")
+-	commitOnWeftBranch1("feature-weft", "feature.txt", "feature\n", "feature: weft")
++	h1, f1, _, _, _, _ := newMergeLayerFixture(t, &featureBothSidesLayer)
+ 	gitkit.MustRun(t, h1.PrimeWorktree(), "git", "checkout", "-q", "--detach", "HEAD")
+ 
+ 	_, err := f1.MergeIn("feature")
+@@ -77,9 +71,7 @@ func TestWeftGuards_DetachedWeftDoesNotRefuseWarpDetachedStillDoes(t *testing.T)
+ 		t.Errorf("detached-warp guard error carries Checkout %q and DirtyPaths %q; want both empty beside no dirty reason", detachedErr.Checkout, detachedErr.DirtyPaths)
+ 	}
+ 
+-	h2, f2, commitOnWarpBranch2, commitOnWeftBranch2, _, _ := newMergePairFixture(t, ".")
+-	commitOnWarpBranch2("feature", "feature.txt", "feature\n", "feature: warp")
+-	commitOnWeftBranch2("feature-weft", "feature.txt", "feature\n", "feature: weft")
++	h2, f2, _, _, _, _ := newMergeLayerFixture(t, &featureBothSidesLayer)
+ 	gitkit.MustRun(t, h2.PrimeRecords(), "git", "checkout", "-q", "--detach", "HEAD")
+ 	weftBefore2 := fabricengine.CurrentSHAForTest(t, h2.PrimeRecords())
+ 
+@@ -142,9 +134,7 @@ func TestWeftGuards_DirtyAndDetachedWeftTogetherStillMerges(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h, f, _, _, _, _ := newMergePairFixture(t, ".")
+-	setupCleanNonFastForward(t, h.PrimeWorktree(), "feature", "feature.txt", "warp-progress.txt")
+-	branchAtCurrentHEAD(t, h.PrimeRecords(), "feature-weft")
++	h, f, _, _, _, _ := newMergeLayerFixture(t, &warpProgressLayer)
+ 
+ 	gitkit.MustRun(t, h.PrimeRecords(), "git", "checkout", "-q", "--detach", "HEAD")
+ 	if err := os.WriteFile(filepath.Join(h.PrimeRecords(), "dirty.txt"), []byte("uncommitted\n"), 0o644); err != nil {
+@@ -178,9 +168,7 @@ func TestWeftGuards_EveryRecordThisBinaryWritesIsResumable(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h, f, _, _, _, _ := newMergePairFixture(t, ".")
+-	setupConflictingDivergence(t, h.PrimeWorktree(), "feature", "conflict.txt")
+-	branchAtCurrentHEAD(t, h.PrimeRecords(), "feature-weft")
++	_, f, _, _, _, _ := newMergeLayerFixture(t, &conflictLayer)
+ 
+ 	res, err := f.MergeIn("feature")
+ 	if err != nil {
+@@ -219,9 +207,7 @@ func TestWeftGuards_AbortLeavesWeftCommitsDuringAttemptWindowIntact(t *testing.T
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h, f, _, _, _, _ := newMergePairFixture(t, ".")
+-	setupConflictingDivergence(t, h.PrimeWorktree(), "feature", "conflict.txt")
+-	branchAtCurrentHEAD(t, h.PrimeRecords(), "feature-weft")
++	h, f, _, _, _, _ := newMergeLayerFixture(t, &conflictLayer)
+ 
+ 	warpStartSHA := fabricengine.CurrentSHAForTest(t, h.PrimeWorktree())
+ 
