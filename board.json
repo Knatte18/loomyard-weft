@@ -676,6 +676,24 @@
       "body": "## Seen\n\nThe gate fixer, the cold session lym spawns after a failed gate, loads only the hub's language skills, `scribe:golang-comments` and `scribe:golang-testing` in this hub.\n`internal/loomcli/gatefixer.go` and `internal/gatecli/detachfixer.go` pass `languageconfig.AppendSkills(nil, ...)`, so it gets no `scribe:prose` or `scribe:code-quality`.\nEvery other code role starts from `scribe:prose`, `scribe:code-quality` and `scribe:testing`: the darn writer (`darnSkills`), the Webster roles (`roleSkills`), the Burler seats, the merge fixer and the conflict session.\nIn the transcripts of `creel-cross-hub-build`, `python-guard-gives-no-reason` and `drift-halts-bundle`, gate fixers loaded the two Go skills and nothing else, and edited Go files (2 to 20 edits a session).\n\n## Idea\n\nGive the gate fixer the same own list as the other code roles.\n",
       "created": "2026-11-07T09:18:02Z",
       "revised": "2026-11-07T09:18:02Z"
+    },
+    {
+      "id": 1185,
+      "handle": "E5",
+      "slug": "comment-lint-line-length",
+      "title": "Comment lint: bound a // comment line to 120 characters of text",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "lint-comments checks only line breaks; add a length limit on added or changed comment lines",
+      "body": "## Seen\n\n`lym loom lint-comments` (`internal/commentlint`) checks only where a `//` comment line breaks.\nNothing bounds a comment line's length, so a one-sentence-per-line comment can run very long.\nRequested by the `comment-cleanup` writer, which reports the operator approved it (2026-11-07).\n\n## Wanted\n\n- A `//` comment line the diff adds or changes holds at most 120 characters of text after the `//`; indentation is not counted.\n- A line whose URL, code span or identifier alone passes the limit is exempt.\n- A finding fails the gate as the existing break findings do.\n\nThe same rule goes into `scribe:prose`, in the Scribe hub.\n",
+      "created": "2026-11-07T09:23:05Z",
+      "revised": "2026-11-07T09:23:05Z"
     }
   ],
   "prime_owner": "neve",
