@@ -48,6 +48,12 @@ Decision: Size Haiku workers to stay under 100k tokens, but a worker that goes o
 
 Rationale: Operator, 2026-11-06: going over is no crisis, but Haiku 5.5 is very cheap under 100k context and much dearer above it.
 
+### Added after Discussion (operator, 2026-11-07): No Code-Review, and no code may change
+
+Decision: This run skips Code-Review: code_max_bounces is 0. Since no review follows, the writer itself proves the rule that code stays as it was: before the run leaves Darn-Write, the whole diff of .go files against the branch point holds only whole-line comment changes, with every other changed line reverted, and the gate is green.
+
+Rationale: Operator, 2026-11-06/07: a Code-Review of a diff this size is not realistic, and the code itself must not change.
+
 ## Constraints
 
 ## Auto-mode assumptions
