@@ -1,6 +1,6 @@
 # P3 Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes
 
-Rendered 2026-11-07 16:52 UTC; every age below is as of then.
+Rendered 2026-11-07 16:53 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`fabric-test-speed-work`](design-fabric-test-speed-work.md) · Age 2h · Owner `neve`
@@ -31,11 +31,3 @@ _None._
 ## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T16 | **CopyHub in the NewHub fixtures of fabricengine and adoptcli, and the hook without dirname and basename** | [`copyhub-fixtures-and-hook`](design-copyhub-fixtures-and-hook.md)<br>[Sketch](decision-copyhub-fixtures-and-hook.md) | 2h<br>2h | fabric, testkit, git |

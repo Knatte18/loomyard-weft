@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-fabric-test-speed-remeasure.md)
 
-Depends on: [`copyhub-fixtures-and-hook`](design-copyhub-fixtures-and-hook.md)
-
 Filed from the Sketch `fabric-test-speed`.
 
 Takes: every other part landed on main, and the report's W1 figures of 75.0 s and 57.0 s
