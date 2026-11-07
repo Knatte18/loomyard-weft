@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-07 15:53 UTC; every age below is as of then.
+Rendered 2026-11-07 15:54 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -123,7 +123,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Settings shared by every session of a worktree come only from the heddle-rendered file; per-session ones stay per session** | [`claude-settings-model-effort`](design-claude-settings-model-effort.md) | darn · light | Code-Bouncer | neve | 56m<br>28m | claude, config, shuttle |
+| T1 | **Settings shared by every session of a worktree come only from the heddle-rendered file; per-session ones stay per session** | [`claude-settings-model-effort`](design-claude-settings-model-effort.md) | darn · light | Code-Burler-Review | neve | 56m<br>29m | claude, config, shuttle |
 
 #### Ready (0)
 
