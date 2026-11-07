@@ -12,21 +12,20 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (1)
+### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Bench tier 1 with {test_targets} switched on** | [`test-targets-bench`](design-test-targets-bench.md) | darn · docs | Darn-Write | neve | 3m<br>3m | gate, testkit |
+| T2 | **HEDDLE.md is rendered when missing or stale, not only on a heddle write** | [`heddle-md-initial-render`](design-heddle-md-initial-render.md) | darn · light | Worktree-Create | neve | 0m<br>0m | heddle |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T2 | **HEDDLE.md is rendered when missing or stale, not only on a heddle write** | [`heddle-md-initial-render`](design-heddle-md-initial-render.md) | darn · light |  | 0m<br>0m | heddle |
+_None._
 
 ## Notes (17)
 

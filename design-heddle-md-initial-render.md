@@ -1,6 +1,6 @@
 # HEDDLE.md is rendered when missing or stale, not only on a heddle write
 
-`heddle-md-initial-render` · Task · bug, heddle
+`heddle-md-initial-render` · Task · bug, heddle · running · Worktree-Create
 
 ## Seen (operator and orch, 2026-11-07)
 
