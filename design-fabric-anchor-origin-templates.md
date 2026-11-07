@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-fabric-anchor-origin-templates.md)
 
-Depends on: [`fabric-test-folds`](design-fabric-test-folds.md)
-
 Filed from the Sketch `fabric-test-speed`.
 
 Takes: hubforge-registered-templates' registration and fabric-test-folds' folded tests
