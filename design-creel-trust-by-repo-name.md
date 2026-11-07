@@ -1,6 +1,6 @@
 # trusted_hubs lists shortnames, which neither say which repository is meant nor identify it
 
-`creel-trust-by-repo-name` · Task · enhancement, creel · running · Drift-Expect
+`creel-trust-by-repo-name` · Task · enhancement, creel · running · Darn-Write
 
 ## Seen
 
