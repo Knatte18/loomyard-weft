@@ -1,6 +1,6 @@
 # trusted_hubs lists shortnames, which neither say which repository is meant nor identify it
 
-`creel-trust-by-repo-name` · Task · enhancement, creel · running · Code-Burler-Fix
+`creel-trust-by-repo-name` · Task · enhancement, creel · running · Code-Bouncer
 
 ## Seen
 
