@@ -26,6 +26,12 @@ One gate pass on OSL-1046 with `lym gate report`'s launch times would show the h
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-07): Opt-in {test_targets}; the doc example shows this hub's tiers after the switch
+
+Decision: Keep {test_targets} opt-in in the code. The gatecli/doc.go example shows loomyard's gate.yaml tier0 to tier2 as they read once switched to {test_targets}; the landing names that hub step (lym config gate --set for tier0, tier1 and tier2), and the parent relays it to the operator.
+
+Rationale: Tier commands are each hub's own; lym cannot rewrite a hub's go test command, and the hub's current tiers already match the example but for {test_targets}.
+
 ## Constraints
 
 ## Auto-mode assumptions
