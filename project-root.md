@@ -12,13 +12,19 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (1)
+### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Time every internal/fabricengine test one by one on a quiet machine** | [`fabricengine-per-test-times`](design-fabricengine-per-test-times.md) | darn · docs | Worktree-Create | neve | 13m<br>13m | fabric, testkit |
+
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Time every internal/fabricengine test one by one on a quiet machine** | [`fabricengine-per-test-times`](design-fabricengine-per-test-times.md) | darn · docs |  | 13m<br>13m | fabric, testkit |
+_None._
 
 ## Notes (17)
 
