@@ -1,35 +1,28 @@
-# hubreconcile tests on a registered template, held-lock test at tier 0
+# hubreconcile tests: registered stale hub, CopyHub, tier-0 lock test
 
-The `internal/hubreconcile` tests now build their stale hub once per test binary and copy it per test.
-They also stop cloning fresh hubs where a copy does the same job.
+Speeds up the `internal/hubreconcile` tests.
+The change is test-only; no production code is touched.
 
-## Changes
+## What changes
 
-- `staleHub` is a package-level `hubforge.Registration` with base shape `.` and the pair `pair-a`.
-  Its build runs the steps `newStaleHub` ran after its copy, unchanged and in the same order:
-  the pre-migration file set and the retired key, committed in the prime's and the pair's records worktrees.
-  `newStaleHub(t)` returns `hubforge.CopyRegistered(t, staleHub)`.
-  The slug parameter is gone, since every caller passed `pair-a`.
-- The build commits only in the records worktrees and never on the board, so the board stays at its upstream tip as the registration requires.
-  It sets no env, makes no temp dir and installs no seam.
-  The helpers it calls (`commitPreMigrationFiles`, `seedRetiredKey`, `replaceOnce`) now take `testing.TB`.
-- `TestEnsure_BoardWithNoRemoteCommitsHubWideConfigAndWritesStamp`, `TestEnsure_CarriesATemplateChangeIntoASeedOnlyConfigFile`, and `arrangeUnpushedHubWide` used `hubforge.NewHub(t, ".")`.
-  They now take `hubforge.CopyHub` of the `.` shape.
-  None of these tests is about the clone or its wiring, so D5's rule keeps no `NewHub` site in this package.
-- A test that installs a process-global seam now takes its copies before installing it, so no template build runs under the seam:
-  - `TestEnsure_UnpushedHubWideCommitOverMovedUpstreamLeavesStampAbsent` copies both subtests' hubs before `boardkit.InstallReplay`, and `arrangeUnpushedHubWide` takes the hub as a parameter.
-  - `TestEnsureOrWarn_WarnsWithTheWayForward` and `TestEnsure_UnreachableBoardRemoteSkipsHubWideConfigAndLeavesStampAbsent` start `logcapture.Capture` after their copy.
-- `TestEnsure_HeldLockTimesOutWithoutStamping` moves from `ensure_integration_test.go` to `stamp_test.go` and runs at tier 0.
-  Its geometry is two temp dirs with no hub and no git.
-  An absent stamp sends `Ensure` straight to the lock, which another holder keeps.
-  It keeps both assertions: the error is a `*LockTimeoutError` naming the lock path, and no stamp is written.
+- `newStaleHub` is now built once per test binary from a `hubforge.Registration` (`staleHub`) and each test takes its own copy with `hubforge.CopyRegistered`.
+  The template holds the `pair-a` pair, the pre-migration file sets with the retired key committed, and no stamp.
+  The build steps are the old fixture's, moved as they were, so the start state is unchanged.
+  `newStaleHub` loses its `slug` parameter, since every caller passed `pair-a`.
+- The remaining `hubforge.NewHub` sites in `ensure_integration_test.go` take `hubforge.CopyHub` of the same anchor.
+  None of those tests is about the clone or the wiring, so no site keeps `NewHub`.
+- `TestEnsure_HeldLockTimesOutWithoutStamping` moves to `stamp_test.go` at tier 0.
+  It runs on a `Geometry` over temp directories instead of a hub, with its assertions kept.
+  The no-stamp check reads the stamp through `readStamp`.
+- `seedRetiredKey`, `replaceOnce` and `commitPreMigrationFiles` take `testing.TB`, since the registration's build receives a `testing.TB`.
 
 ## Design decisions
 
-- `pair-a` stays a literal in the registration, matching the literal every test in the file already uses for the pair.
-- The held-lock test sits in the internal-package `stamp_test.go`, the tier 0 file that already covers the lock path, and reads the stamp through `readStamp`.
+- The registration's build commits only in the records worktrees, so the board stays at its upstream tip.
+- Tests that install a process-global seam take their copies first.
+  `TestEnsure_UnpushedHubWideCommitOverMovedUpstreamLeavesStampAbsent` takes both hubs before `boardkit.InstallReplay`, and `arrangeUnpushedHubWide` now receives the hub.
+  The two tests that capture the process-global log likewise take their hub before `logcapture.Capture`.
 
-## Testing
+## To check
 
-`go vet ./internal/hubreconcile` passes.
-The tests keep their assertions; the verify gate runs tiers 0 and 1.
+- Nothing was run by hand beyond the package's own tests.
