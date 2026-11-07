@@ -564,31 +564,6 @@
       "discussed": true
     },
     {
-      "id": 1210,
-      "handle": "T12",
-      "slug": "battencli-templates",
-      "title": "internal/battencli beamHub onto a registered template",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "fabric",
-        "testkit",
-        "git"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge-registered-templates' registration\nDelivers: battencli's own beamHub, a beam, a member and a plain pair, built by a registration; notices_integration_test.go untouched\nExports: nothing\n\nThe part changes these packages:\n\n- internal/battencli (about 50 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-07T14:15:14Z",
-      "revised": "2026-11-07T14:15:14Z",
-      "profile": "light",
-      "project": "fabric-test-speed-work",
-      "discussed": true
-    },
-    {
       "id": 1211,
       "handle": "T13",
       "slug": "fabric-test-folds",
@@ -709,8 +684,7 @@
       "depends_on": [
         "copyhub-fixtures-and-hook",
         "git-config-from-go",
-        "hubreconcile-templates",
-        "battencli-templates"
+        "hubreconcile-templates"
       ],
       "isolated": false,
       "brief": "",
