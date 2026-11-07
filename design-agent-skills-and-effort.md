@@ -2,7 +2,7 @@
 
 `agent-skills-and-effort` · Task · bug, shuttle, stencil, claude, gate, loom · draft
 
-Depends on: [`claude-session-fixes`](design-claude-session-fixes.md), [`comment-cleanup-leftovers`](design-comment-cleanup-leftovers.md)
+Depends on: [`claude-session-fixes`](design-claude-session-fixes.md), [`comment-cleanup-leftovers`](design-comment-cleanup-leftovers.md), [`machine-claude-defaults`](design-machine-claude-defaults.md)
 
 Three bugs bundled by the operator (2026-11-07): which skills and which effort an agent runs with is decided in lym's config, for every role lym starts and for every subagent such a role spawns.
 
@@ -22,4 +22,4 @@ Three bugs bundled by the operator (2026-11-07): which skills and which effort a
   The stencils and the briefs lym writes say so, and the way the parent learns its own list is one place, not restated per stencil.
 - **Effort controlled.** Every session lym launches gets an explicit effort, from config by role and model where its model-spec names none.
   Every subagent a role spawns gets an explicit `effort` in its Agent call, from the same config, so no subagent falls to Claude Code's default.
-  Check whether a Claude Code setting or environment variable pins a subagent's default effort, and set it as a backstop if one exists.
+  Check whether a Claude Code setting or environment variable pins a subagent's default effort, and set it as a backstop if one exists, through the `.claude/settings.local.json` heddle renders where it is a setting.

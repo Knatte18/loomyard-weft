@@ -62,7 +62,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Owner `neve`
 
-### Tasks (7)
+### Tasks (8)
 
 Concrete and claimable; only a task can run.
 
@@ -85,15 +85,23 @@ Waits on nothing open; can start now.
 
 _None._
 
+#### Layer A (1)
+
+Waits only on Running, Ready or Draft entries.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Heddle renders .claude/settings.local.json: no co-author, lym's model and effort defaults**<br>• Attribution off and lym model/effort defaults, in session settings and by an operator-run setup verb | [`machine-claude-defaults`](design-machine-claude-defaults.md) | darn · solid | T4 | 35m<br>0m | claude, config, heddle, fabric |
+
 #### Draft (1)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | `draft` **Skills and effort for every role and subagent come from config**<br>• Skills per role in config, gate fixer included; subagents load fitting skills; every effort explicit | [`agent-skills-and-effort`](design-agent-skills-and-effort.md) | darn · solid | T3<br>T5 | 3h<br>41m | shuttle, stencil, claude, gate, loom |
+| T8 | `draft` **Skills and effort for every role and subagent come from config**<br>• Skills per role in config, gate fixer included; subagents load fitting skills; every effort explicit | [`agent-skills-and-effort`](design-agent-skills-and-effort.md) | darn · solid | T3<br>T5<br>T1 | 3h<br>0m | shuttle, stencil, claude, gate, loom |
 
-### Notes (26)
+### Notes (25)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -114,7 +122,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 1d<br>1d | reed, orch |
 
-#### Enhancements (7)
+#### Enhancements (6)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -122,7 +130,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E2 |  | **git worktree list is 15 percent of tier 1 git processes and only reads .git/worktrees**<br>• Serve the list from dotgit, with a parity test against git | [`worktree-list-through-dotgit`](design-worktree-list-through-dotgit.md) | 4h<br>4h | fabric |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 10d<br>1d | batten, stencil, config |
 | E4 |  | **trusted_hubs lists shortnames, which neither say which repository is meant nor identify it**<br>• List trusted hubs by full repository name instead of shortname | [`creel-trust-by-repo-name`](design-creel-trust-by-repo-name.md) | 4h<br>4h | creel |
-| E5 |  | **Heddle renders .claude/settings.local.json: no co-author, lym's model and effort defaults**<br>• Attribution off and lym model/effort defaults, in session settings and by an operator-run setup verb | [`machine-claude-defaults`](design-machine-claude-defaults.md) | 34m<br>0m | claude, config, heddle, fabric |
 | E7 |  | **Each part agent plans and builds its own part, instead of joining the parts into one plan** | [`parts-plan-and-build`](design-parts-plan-and-build.md) | 4d<br>1d | loom |
 | E9 |  | **An interactive agent idle for a set time gets its session compacted**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 6d<br>3d | shed, shuttle, batten |
 

@@ -1,6 +1,8 @@
 # Heddle renders .claude/settings.local.json: no co-author, lym's model and effort defaults
 
-`machine-claude-defaults` · Note · enhancement, claude, config, heddle, fabric
+`machine-claude-defaults` · Task · enhancement, claude, config, heddle, fabric
+
+Depends on: [`clone-prime-heddle-unrendered`](design-clone-prime-heddle-unrendered.md)
 
 ## Seen
 
