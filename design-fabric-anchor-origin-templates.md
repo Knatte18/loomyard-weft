@@ -1,6 +1,6 @@
 # internal/fabricengine anchor and origin fixtures onto registered templates
 
-`fabric-anchor-origin-templates` · Task · enhancement, fabric, testkit, git · running · PR-Review
+`fabric-anchor-origin-templates` · Task · enhancement, fabric, testkit, git · running · Finalize
 
 Decision record: [Sketch](decision-fabric-anchor-origin-templates.md)
 
