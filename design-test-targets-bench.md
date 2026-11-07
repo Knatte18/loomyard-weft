@@ -1,6 +1,6 @@
 # Bench tier 1 with {test_targets} switched on
 
-`test-targets-bench` · Task · research, gate, testkit · running · Drift-Verify
+`test-targets-bench` · Task · research, gate, testkit · running · Code-Bouncer
 
 ## Why (operator, 2026-11-07)
 
