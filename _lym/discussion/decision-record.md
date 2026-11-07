@@ -23,6 +23,12 @@ The point: what lym sets in Claude's settings is steered from one place per kind
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-07): Heddle renders HEDDLE.md in Bolt
+
+Decision: Scope is widened (operator, 2026-11-07): every heddle write also renders HEDDLE.md in the Bolt checkout, beside heddle.json, as board writes render README.md. It is a pure render of what heddle holds: every entry, the shipped ones and the hub's own, each with its name, its targets, where it comes from (shipped or hub) and its text, grouped by target, in clean readable markdown. A JSON-object entry for the claude-settings target shows its object as a fenced json block. It adds no state of its own and is rewritten whole at each render.
+
+Rationale: The operator wants to read in one place everything heddle sets, the Claude settings included, without reading heddle.json or the binary's shipped entries.
+
 ## Constraints
 
 ## Auto-mode assumptions
