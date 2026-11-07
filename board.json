@@ -488,24 +488,6 @@
       "profile": "light"
     },
     {
-      "id": 1180,
-      "handle": "E2",
-      "slug": "worktree-list-through-dotgit",
-      "title": "git worktree list is 15 percent of tier 1 git processes and only reads .git/worktrees",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "fabric"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Serve the list from dotgit, with a parity test against git",
-      "body": "## Seen\n\n`git worktree list --porcelain` is about 15 percent of all git processes in tier 1: 14,744 in an `internal/fabricengine` run and 22,636 in a whole pass (`docs/research/speed/tier1-test-revision-2026-11-06/report.md`).\nIt only reads `.git/worktrees/`, and `lym` calls it several times in each `Add` and `Remove`.\nIts call sites are `internal/fabricengine/worktreelist.go` and `internal/websterengine/gitwrap.go`.\n\n## Idea\n\nRead `.git/worktrees/*/{gitdir,HEAD,locked}` in `internal/dotgit` behind `fabricengine.List` and the `websterengine` call.\nA test checks the reader against `git worktree list --porcelain` on a repository with a detached, a locked and a prunable worktree, since that parity is the new behaviour to pin.\n\nExpected: about 5 s off a tier 1 pass, and fewer processes in every `lym` verb that lists worktrees.\n\nWait for `comment-cleanup` to land before starting this (operator, 2026-11-07).\n",
-      "created": "2026-11-07T08:36:35Z",
-      "revised": "2026-11-07T08:36:35Z"
-    },
-    {
       "id": 1181,
       "handle": "E4",
       "slug": "creel-trust-by-repo-name",
@@ -658,6 +640,28 @@
       "body": "Imported from [issue #82](https://github.com/Knatte18/loomyard/issues/82).\n\n## What happened\n\nThe drift gate reported the `_source.txt` keys `commit` and `captured_at` as unexpected cells on two consecutive rounds after the squash commit.\nBoth values change with every commit and every capture, so no code fix can return them to the baseline, and the sealed expectation written by `Drift-Expect` cannot list a value that is unknown before the commit exists.\nEach re-prompt was a fix round with nothing to fix.\nThe producer `Darn-Write` then ran out its verify budget: the run halted `blocked` with anomaly `escalation-to-human` after \"gate did not pass after 3 attempts\".\n\n## Why it is abnormal\n\nThe gate fails on values that are non-deterministic by construction, so the loop cannot converge and consumes the verify budget regardless of the agent's work.\n\n## What to do\n\nEither make the drift check skip capture-metadata keys such as `commit` and `captured_at`, or let the sealed expectation declare keys whose values are exempt from comparison.\n\nProvenance: task `support-for-dop-rheology-in`; notes `Darn-Write.md`, `loom-halt.md`.\n",
       "created": "2026-11-07T13:07:58Z",
       "revised": "2026-11-07T13:07:58Z"
+    },
+    {
+      "id": 1199,
+      "handle": "T3",
+      "slug": "fabric-test-speed",
+      "title": "Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "testkit",
+        "git"
+      ],
+      "issues": [],
+      "recipe": "motif",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "A Motif (operator, 2026-11-07): settle how to take `internal/fabricengine`'s tier 1 time down, and split the work into darn tasks in an order that keeps every test's coverage.\nThe operator wants tests faster as a priority: a darn run's Finalize gate spends minutes on tier 1, most of it in one package.\n\n## Seen\n\n`docs/research/speed/tier1-test-revision-2026-11-06/report.md`, read in full before Discussion:\n\n- A whole tier 1 pass takes 75 s on a quiet neve and a median of 111 s beside other gates; `internal/fabricengine` is 57 s of the 75 s, about 77 percent of the wall.\n- The package makes 98,760 git processes a run, 63 percent of its serial time.\n- None of the levers of `docs/research/speed/fabric-test-speed-survey-2026-11-03.md` has landed.\n- Starting only a tier's test binaries is the report's item 1 and is `gate-tier-binaries-only`, in flight; this Motif leaves it out.\n\n## In scope: the report's ranked items 2 to 6, 8 and 10\n\n- **`worktree list` through `dotgit`** (item 2): read `.git/worktrees/*/{gitdir,HEAD,locked}` in `internal/dotgit` behind `fabricengine.List` and the call in `internal/websterengine/gitwrap.go`, with a test that checks the reader against `git worktree list --porcelain` on a repository with a detached, a locked and a prunable worktree. About 5 s, and fewer processes in every `lym` verb that lists worktrees.\n- **Registered hub templates** (item 3): a `hubforge` entry that takes a key and a build function, builds the template once per test binary under a lock per key and copies it as a shape does; then the largest fixtures move onto it (`newAnchorHub`, `newOriginHub` and its layers, `newMergePairFixture`, the live-state arrange, `newStaleHub`, `beamHub`, `newBadReedUpFixture`), one package per task. 9 to 11 s. The tests that exercise `Add` keep building their pairs.\n- **Folds of overlapping rows** (item 4), such as `TestVerbCases_CleanState` into the cross product, each fold keeping what its row alone pins. About 2.5 s.\n- **A slimmer `CopyHub`** (item 5): no fingerprint walk per copy, a packed template, no `amend` and `push --force` per copy; the fingerprint stays on `SharedHub`. 1.5 to 3 s.\n- **Quiet git config written from Go** in the `gitkit` and `hubforge` initialisers (item 6), after checking every test binary runs under `HermeticGitEnv`. About 2 s.\n- **`CopyHub` in the `NewHub` fixtures, and the hook script without `dirname` and `basename`** (item 8). About 2 s.\n- **Tier 1 tests that run no git move to tier 0** (item 10), as each is touched.\n\n## Wanted\n\n- The decision record states each change, the packages it touches, what it may cost a test in coverage and how that is guarded, and the order of the tasks with their dependencies.\n- Each task is sized for one darn run; the template moves are one package per task.\n- The record names the saving to re-measure after the tasks land, with at most one whole tier 1 pass and one `internal/fabricengine` pass through `lym gate test`.\n",
+      "status": "draft",
+      "created": "2026-11-07T08:36:35Z",
+      "revised": "2026-11-07T13:13:37Z"
     }
   ],
   "prime_owner": "neve",
