@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (2)
+## Tasks (3)
 
 Concrete and claimable; only a task can run.
 
@@ -26,6 +26,14 @@ Waits on nothing open; can start now.
 
 _None._
 
+### Layer A (1)
+
+Waits only on Running, Ready or Draft entries.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T2 | **Drift fails runs on capture noise such as _source.txt that is no part of the results** | [`drift-provenance-stops-runs`](design-drift-provenance-stops-runs.md) | darn · solid | T4 | 0m<br>0m | drift, loom |
+
 ### Draft (1)
 
 Not released; nothing starts it until its status is cleared.
@@ -34,7 +42,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Comment lint: enforce scribe:prose line-length rule on // comment lines**<br>• lint-comments enforces the line-length rule scribe:prose sets, once it lands | [`comment-lint-line-length`](design-comment-lint-line-length.md) | darn · light |  | 1h<br>1h | loom |
 
-## Notes (31)
+## Notes (30)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -46,7 +54,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Trial creel mail across hubs**<br>• A darn docs run in which the loomyard orch drives a run in lyt from start to landing through creel alone | [`creel-cross-hub-trial`](design-creel-cross-hub-trial.md) | 23h<br>23h |  |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>1d | loom, stencil |
 
-### Bugs (10)
+### Bugs (9)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -59,7 +67,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B7 |  | **The gate fixer loads only the language skills, not prose or code-quality**<br>• Every code role but the gate fixer starts from scribe:prose, code-quality and testing | [`gate-fixer-no-prose-skills`](design-gate-fixer-no-prose-skills.md) | 1h<br>1h | gate, loom |
 | B8 |  | **lym shuttle open sessions write a 1h prompt cache instead of their role's 5m**<br>• The open path seems not to set CLAUDE_CODE_PROMPT_CACHE_TTL | [`shuttle-open-cache-ttl`](design-shuttle-open-cache-ttl.md) | 1h<br>1h | shuttle, claude |
 | B9 |  | **Subagents spawned without an effort run at xhigh, not the medium settings name**<br>• Haiku workers with no effort in the Agent call ran at xhigh | [`subagent-default-effort-xhigh`](design-subagent-default-effort-xhigh.md) | 1h<br>1h | shuttle, claude, stencil |
-| B10 |  | **Drift fails runs on capture noise such as _source.txt that is no part of the results** | [`drift-provenance-stops-runs`](design-drift-provenance-stops-runs.md) | 0m<br>0m | drift |
 
 ### Enhancements (6)
 
