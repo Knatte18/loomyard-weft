@@ -1,6 +1,6 @@
 # Tool schemas are three quarters of a spawned role's start; drop the tools a role never calls
 
-`role-tool-schemas` · Task · research, shuttle, claude · running · Darn-Write
+`role-tool-schemas` · Task · research, shuttle, claude · running · Drift-Verify
 
 ## Seen
 
