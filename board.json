@@ -631,7 +631,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge-registered-templates' registration\nDelivers: battencli's own beamHub, a beam, a member and a plain pair, built by a registration; notices_integration_test.go untouched\nExports: nothing\n\nThe part changes these packages:\n\n- internal/battencli (about 50 changed lines)\n",
-      "status": "running · PR-Review",
+      "status": "running · Finalize",
       "created": "2026-11-07T14:15:14Z",
       "revised": "2026-11-07T14:15:14Z",
       "profile": "light",
