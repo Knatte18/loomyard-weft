@@ -1,34 +1,33 @@
-# Reed reuses only its own hidden windows and logs every window it opens
+# reedengine: reuse only hidden windows and log every window opened
 
-The stray `bash` window seen in the prime reed session has no source in reed's code.
-Every `new-window` reed issues names its window with `-n`, which turns `automatic-rename` off,
-so no reed window ends up named after its shell.
-A fresh boot's `new-session` window does start named `bash`,
-but the same operation splits Selvage into it, reaps the boot pane and renames the window `shell`.
-The stray pane `%1984` was the last pane created before the overview's `%1985`,
-so no Selvage split followed it, which rules out a boot.
-The session pins `default-command` to the configured shell (`/usr/bin/bash`),
-so a window opened by hand, through `prefix c` or the status bar's right-click "New After", gives exactly the window that was seen.
-A hand window at the end of the list is then moved ahead of `shell` by the shell-window check,
-which matches its place at index 1, right after the overview.
+A stray idle `bash` window appeared in the prime's reed session at a prime bring-up, bound to no strand, and no log named it.
+No path in the code leaves a window with no command.
+This change narrows what reed may touch and makes every window it opens traceable.
 
 ## What changes
 
-- `OpenWindow`'s same-name lookup (`findWindowLocked` in `internal/reedengine/window.go`) now reads only windows carrying `@lym_hidden`, the marker every window it opens carries.
-  Before, it skipped only `@lym_own` windows, so a dead window the operator opened by hand under the same name was killed and replaced.
-  Reconcile already ended only `@lym_own` windows, so reed now closes or reuses only windows it opened itself.
-- A fresh boot logs its first window at Info as `reed: opened the session's first window`, with window id, pane id and name, read by one `display-message` after the session comes up.
-  A failed read logs at Debug and never fails the boot.
-- The `reed: opened own window` and `reed: moved a strand pane out of the shell window` lines now carry the window name.
-  `reed: opened window` already did.
-  With these, every window reed opens leaves an Info line naming its window and pane, so a window without one came from outside reed.
+- `OpenWindow` in `internal/reedengine/window.go` now looks up an existing window by name only among windows carrying `@lym_hidden`.
+  Before, the lookup skipped only `@lym_own` windows, so a window the operator opened by hand under the same name could be adopted, or killed if its pane was dead.
+  Now a hand-opened window of that name stays, and a new hidden window opens beside it.
+  `windowListFormat` reads `@lym_hidden` instead of `@lym_own` for this.
+- A fresh boot logs one Info line, `reed: opened the session's first window`, naming the window id, pane id and window name.
+  It comes from the new `logBootWindowLocked` in `lifecycle.go`; a failed or malformed read logs at Debug and never fails the boot.
+- The "opened own window" and "moved a strand pane out of the shell window" Info lines now also carry the window name.
+  Together with the existing detached-window line, every window reed opens in the session is named in the trace log.
+- `doc.go` records which window opens come from which reed step.
+  A window named after its shell outside a fresh boot came from no reed step.
+  The session's `default-command` is the configured shell, so a window the operator opens by hand with `prefix c` runs that shell.
 
 ## Design decisions
 
-- The fallback the task names was taken: no code path was found, so the change adds the trace lines rather than a fix at a guessed site.
-- The `reedengine` package doc's window-order section records the trace lines, the shell `default-command` that a hand window inherits, and the rule that a hand window stays.
+- The stray window's cause is not settled.
+  The code review found no `new-window` before a `respawn-pane` that a race or failure could leave behind.
+  A hand-opened tmux window fits the evidence, so the fix is the guard on what reed reuses plus the trace lines, as the task allowed.
+- Hidden windows are the only ones the name lookup reads, since every window `OpenWindow` opens carries `@lym_hidden`.
+  Reed ends only a window carrying `@lym_own` and reuses only one carrying `@lym_hidden`.
 
-## Tests
+## To check by hand
 
-`TestOpenWindow` in `internal/reedengine/window_test.go` now marks hidden windows in its listing rows.
-A new row pins that a dead, unhidden window of the same name stays and a new window opens.
+- `logBootWindowLocked` is covered by `TestLogBootWindow_NamesTheFirstWindowAndLogsNoInfoLineOnAFailedRead` against the scripted fake tmux only.
+  Confirm on a live tmux server that a fresh prime boot writes the first-window Info line with the expected id, pane and name.
+- Read `TestOpenWindow` in `window_test.go`: the live and dead cases now distinguish hidden from unhidden windows, and the old own-window case became the unhidden-window case.
