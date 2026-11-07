@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **A Sketch opened from the board shows only its brief, with no link to its decision record** | [`board-sketch-shows-record`](design-board-sketch-shows-record.md) | darn · light | Darn-Write | neve | 23m<br>23m | board |
-| T3 | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | darn · light | Drift-Verify | neve | 1d<br>11m | reed, orch |
+| T3 | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | darn · light | Code-Bouncer | neve | 1d<br>11m | reed, orch |
 | T8 | **Skills and effort for every role and subagent come from config**<br>• Skills per role in config, gate fixer included; subagents load fitting skills; every effort explicit | [`agent-skills-and-effort`](design-agent-skills-and-effort.md) | darn · solid | Darn-Write | neve | 5h<br>1h | shuttle, stencil, claude, gate, loom |
 
 ### Ready (0)
