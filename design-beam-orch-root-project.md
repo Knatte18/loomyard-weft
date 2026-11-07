@@ -31,5 +31,5 @@ Instead the beam orch passes the wish to its parent orch itself, through creel, 
 ## Wanted
 
 - One rule in the orch role saying the above.
-  `orch-role-shorter` rewrites that file, so this waits for it through `depends_on`.
+  `orch-role-shorter` has landed and rewrote `contracts/orchrole/orch-role.md`, so the rule goes into the shortened role, most likely under `## Messaging` or `## Working rules`; the beam material now sits in `role-beams.md`.
 - The refusal names this way forward. Where the refusal sits in the code is still to be found.
