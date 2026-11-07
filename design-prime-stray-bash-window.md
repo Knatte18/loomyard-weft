@@ -1,6 +1,6 @@
 # A stray bash window appeared in the prime reed session at a prime bring-up
 
-`prime-stray-bash-window` · Task · bug, reed, orch · running · Preflight
+`prime-stray-bash-window` · Task · bug, reed, orch · running · Drift-Await
 
 ## Seen (operator and orch, 2026-11-05)
 
