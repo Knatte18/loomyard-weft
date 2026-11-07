@@ -556,6 +556,343 @@
       "created": "2026-11-07T14:14:34Z",
       "revised": "2026-11-07T14:14:34Z",
       "profile": "light"
+    },
+    {
+      "id": 1203,
+      "handle": "P3",
+      "slug": "fabric-test-speed-work",
+      "title": "Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes",
+      "kind": "project",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "testkit",
+        "git"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Groups the entries filed from the Sketch `fabric-test-speed`: hubforge-registered-templates, hubforge-slim-copy, git-config-from-go, dotgit-worktree-reader, hubreconcile-templates, loomcli-templates, battencli-templates, fabric-test-folds, fabric-anchor-origin-templates, fabric-livestate-merge-templates, copyhub-fixtures-and-hook, fabric-test-speed-remeasure.\n",
+      "created": "2026-11-07T14:15:14Z",
+      "revised": "2026-11-07T14:15:14Z",
+      "discussed": true
+    },
+    {
+      "id": 1204,
+      "handle": "T5",
+      "slug": "hubforge-registered-templates",
+      "title": "Registered hub templates in hubforge, built once per test binary",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "testkit",
+        "git"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge's shape templates, relocation and copy in internal/hubforge/template.go\nDelivers: a registration of key, base Shape and build function, built once per binary under a lock per key with a refusing testing.TB and the upstream-tip check, and a copy call that takes it; the PATTERN-test-isolation background gains the registered template\nExports: the registration type and its copy call in internal/hubforge\n\nThe part changes these packages:\n\n- internal/hubforge (about 450 changed lines)\n",
+      "created": "2026-11-07T14:15:14Z",
+      "revised": "2026-11-07T14:15:14Z",
+      "profile": "solid",
+      "project": "fabric-test-speed-work",
+      "discussed": true
+    },
+    {
+      "id": 1205,
+      "handle": "T6",
+      "slug": "hubforge-slim-copy",
+      "title": "A slimmer hubforge.CopyHub: packed templates, no walk per copy, two-process binding fold",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "testkit",
+        "git"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "hubforge-registered-templates"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge-registered-templates' build path in internal/hubforge/template.go\nDelivers: CopyHub without the fingerprint walk, SharedHub keeping it, repack and pack-refs at build time for shapes and registrations, and commitRelocatedBinding without its git add\nExports: nothing new\n\nThe part changes these packages:\n\n- internal/hubforge (about 120 changed lines)\n",
+      "created": "2026-11-07T14:15:14Z",
+      "revised": "2026-11-07T14:15:14Z",
+      "profile": "light",
+      "project": "fabric-test-speed-work",
+      "discussed": true
+    },
+    {
+      "id": 1206,
+      "handle": "T7",
+      "slug": "git-config-from-go",
+      "title": "gitkit and hubforge initialisers write their per-repository git config from Go",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "testkit",
+        "git"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "hubforge-slim-copy"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: gitkit's initRepo and initBareRemote, and hubforge's initScratchRepo and initBareRepo\nDelivers: one Go write of today's keys and values into each new repository's config after git init, in place of one git config process per key\nExports: a gitkit helper that writes the keys, which hubforge calls\n\nThe part changes these packages:\n\n- internal/gitkit (about 90 changed lines)\n- internal/hubforge (about 60 changed lines)\n",
+      "created": "2026-11-07T14:15:14Z",
+      "revised": "2026-11-07T14:15:14Z",
+      "profile": "light",
+      "project": "fabric-test-speed-work",
+      "discussed": true
+    },
+    {
+      "id": 1207,
+      "handle": "T9",
+      "slug": "dotgit-worktree-reader",
+      "title": "worktree list read in-process through internal/dotgit",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "testkit",
+        "git"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: dotgit's FindRoot and Read, fabricengine.List's porcelain parse, and websterengine's otherWorktrees\nDelivers: a stdlib-only dotgit worktree reader matching git worktree list --porcelain, with a named refusal of a non-files ref storage; List and otherWorktrees read through it and fall back to porcelain on that refusal; the PATTERN-leaf-packages background lists the worktree entries and refs dotgit parses\nExports: the dotgit worktree reader, its entry type and its ref-storage error\n\nThe part changes these packages:\n\n- internal/dotgit (about 650 changed lines)\n- internal/fabricengine (about 100 changed lines)\n- internal/websterengine (about 30 changed lines)\n",
+      "created": "2026-11-07T14:15:14Z",
+      "revised": "2026-11-07T14:15:14Z",
+      "profile": "solid",
+      "project": "fabric-test-speed-work",
+      "discussed": true
+    },
+    {
+      "id": 1208,
+      "handle": "T10",
+      "slug": "hubreconcile-templates",
+      "title": "internal/hubreconcile fixtures onto registered templates and CopyHub, with the held-lock test at tier 0",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "testkit",
+        "git"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "hubforge-registered-templates"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge-registered-templates' registration\nDelivers: newStaleHub with pair-a built by a registration, the package's hubforge.NewHub sites on hubforge.CopyHub per D5's rule, and TestEnsure_HeldLockTimesOutWithoutStamping rewritten onto in-memory inputs at tier 0\nExports: nothing\n\nThe part changes these packages:\n\n- internal/hubreconcile (about 120 changed lines)\n",
+      "created": "2026-11-07T14:15:14Z",
+      "revised": "2026-11-07T14:15:14Z",
+      "profile": "light",
+      "project": "fabric-test-speed-work",
+      "discussed": true
+    },
+    {
+      "id": 1209,
+      "handle": "T11",
+      "slug": "loomcli-templates",
+      "title": "internal/loomcli beamHub and newBadReedUpFixture onto registered templates",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "testkit",
+        "git"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "hubforge-registered-templates"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge-registered-templates' registration\nDelivers: beamHub built by a registration, and newBadReedUpFixture's base, the hub with the corrupted reed line and the pair, as a template with each site's seed run on its copy\nExports: nothing\n\nThe part changes these packages:\n\n- internal/loomcli (about 80 changed lines)\n",
+      "created": "2026-11-07T14:15:14Z",
+      "revised": "2026-11-07T14:15:14Z",
+      "profile": "light",
+      "project": "fabric-test-speed-work",
+      "discussed": true
+    },
+    {
+      "id": 1210,
+      "handle": "T12",
+      "slug": "battencli-templates",
+      "title": "internal/battencli beamHub onto a registered template",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "testkit",
+        "git"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "hubforge-registered-templates"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge-registered-templates' registration\nDelivers: battencli's own beamHub, a beam, a member and a plain pair, built by a registration; notices_integration_test.go untouched\nExports: nothing\n\nThe part changes these packages:\n\n- internal/battencli (about 50 changed lines)\n",
+      "created": "2026-11-07T14:15:14Z",
+      "revised": "2026-11-07T14:15:14Z",
+      "profile": "light",
+      "project": "fabric-test-speed-work",
+      "discussed": true
+    },
+    {
+      "id": 1211,
+      "handle": "T13",
+      "slug": "fabric-test-folds",
+      "title": "Fold the overlapping internal/fabricengine tests the tier 1 report read",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "testkit",
+        "git"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "dotgit-worktree-reader"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: today's fixtures and the report's section 4 rows with their alone-pins column\nDelivers: TestVerbCases_CleanState's preconditions in runCell, and the TestAnchorChange, TestStoreHousekeeping, TestReconcileOrigin_Moves, TestPushFailureClasses and TestBolt_PullThenCommitWritten folds, each commit naming the assertions its folded row alone made\nExports: nothing\n\nThe part changes these packages:\n\n- internal/fabricengine (about 500 changed lines)\n",
+      "created": "2026-11-07T14:15:14Z",
+      "revised": "2026-11-07T14:15:14Z",
+      "profile": "light",
+      "project": "fabric-test-speed-work",
+      "discussed": true
+    },
+    {
+      "id": 1212,
+      "handle": "T14",
+      "slug": "fabric-anchor-origin-templates",
+      "title": "internal/fabricengine anchor and origin fixtures onto registered templates",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "testkit",
+        "git"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "hubforge-registered-templates",
+        "fabric-test-folds"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge-registered-templates' registration and fabric-test-folds' folded tests\nDelivers: newAnchorHub and newOriginHub, with originPair and endedHub where a fixed slug set repeats at least three times, built by registrations; originBoard runs on the copy\nExports: nothing\n\nThe part changes these packages:\n\n- internal/fabricengine (about 150 changed lines)\n",
+      "created": "2026-11-07T14:15:14Z",
+      "revised": "2026-11-07T14:15:14Z",
+      "profile": "light",
+      "project": "fabric-test-speed-work",
+      "discussed": true
+    },
+    {
+      "id": 1213,
+      "handle": "T15",
+      "slug": "fabric-livestate-merge-templates",
+      "title": "internal/fabricengine live-state arranges and merge-pair layers onto registered templates",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "testkit",
+        "git"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "hubforge-registered-templates",
+        "fabric-test-folds",
+        "fabric-anchor-origin-templates"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge-registered-templates' registration and fabric-test-folds' runCell\nDelivers: each verb's arrange split into a build registered per verb and anchor and a derivation from the copy's Hub, arranges that place a directory outside the hub left whole, and the newMergePairFixture layers whose branch commits repeat at least three times moved\nExports: nothing\n\nThe part changes these packages:\n\n- internal/fabricengine (about 200 changed lines)\n",
+      "created": "2026-11-07T14:15:14Z",
+      "revised": "2026-11-07T14:15:14Z",
+      "profile": "light",
+      "project": "fabric-test-speed-work",
+      "discussed": true
+    },
+    {
+      "id": 1214,
+      "handle": "T16",
+      "slug": "copyhub-fixtures-and-hook",
+      "title": "CopyHub in the NewHub fixtures of fabricengine and adoptcli, and the hook without dirname and basename",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "testkit",
+        "git"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "fabric-livestate-merge-templates"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: newRecordsFixture, the adoptcli hubforge.NewHub sites, post-checkout.sh and hook.go's chainedHookPreamble\nDelivers: hubforge.CopyHub of the same anchor at each site whose test is not about the clone or wiring, and shell parameter expansion in the hook and chain wrapper, falling back to . when $0 holds no slash\nExports: nothing\n\nThe part changes these packages:\n\n- internal/fabricengine (about 25 changed lines)\n- internal/adoptcli (about 15 changed lines)\n",
+      "created": "2026-11-07T14:15:14Z",
+      "revised": "2026-11-07T14:15:14Z",
+      "profile": "light",
+      "project": "fabric-test-speed-work",
+      "discussed": true
+    },
+    {
+      "id": 1215,
+      "handle": "T17",
+      "slug": "fabric-test-speed-remeasure",
+      "title": "Re-measure tier 1 and internal/fabricengine after the fabric test speed tasks land",
+      "kind": "task",
+      "labels": [
+        "research",
+        "fabric",
+        "testkit",
+        "git"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "copyhub-fixtures-and-hook",
+        "dotgit-worktree-reader",
+        "git-config-from-go",
+        "hubreconcile-templates",
+        "loomcli-templates",
+        "battencli-templates"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: every other part landed on main, and the report's W1 figures of 75.0 s and 57.0 s\nDelivers: one lym gate test --tier 1 --all -- -count=1 pass and one lym gate test --tier 1 ./internal/fabricengine -- -count=1 pass on a quiet neve, read against W1 and the expected 36 s, 56 s and 48 s, filed as a board note naming the two commands, the expected times and whether the hub's tiers carry {test_targets}\nExports: nothing\n\nThe part changes these packages:\n\n- docs/research/speed (about 60 changed lines)\n",
+      "created": "2026-11-07T14:15:14Z",
+      "revised": "2026-11-07T14:15:14Z",
+      "profile": "docs",
+      "project": "fabric-test-speed-work",
+      "discussed": true
     }
   ],
   "prime_owner": "neve",
