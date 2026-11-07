@@ -26,14 +26,18 @@ Lym cannot pick an account per worktree today.
 Claude Code is believed to keep an account's login in a config directory that the `CLAUDE_CONFIG_DIR` environment variable selects.
 That is not verified: check it against the Claude Code documentation before anything is built.
 
-## Built since (landed 2026-11-03)
+## Built since
 
-`lym config env` (`0d155d1a`) holds per-machine environment variables that lym exports to every process it starts for the hub: gate tiers, Drift steps and agent session panes.
+`lym config env` (`0d155d1a`, landed 2026-11-03) holds per-machine environment variables that lym exports to every process it starts for the hub: gate tiers, Drift steps and agent session panes.
 A pane receives them through the `PaneEnv` closure on reed's geometry, exported ahead of the strand's launch command and read afresh at each launch.
 It refuses `PATH` and any `LYM_` name, and `CLAUDE_CONFIG_DIR` is allowed.
 
 So a machine-wide `CLAUDE_CONFIG_DIR` can be set today, which moves every session to one other account.
-It is one value for the whole hub: the per-worktree pick, the weights and the headroom check below are still unbuilt, and a per-worktree value needs a source beside this module's fixed map.
+It is one value for the whole hub: the per-worktree pick, the weights and the headroom check below are still unbuilt.
+
+Heddle's `claude-settings` target (`72390eb3`, landed 2026-11-07) renders `.claude/settings.local.json` in every hub worktree.
+It is a per-worktree file lym writes, and a candidate source for the per-worktree account value, in place of a new source beside the `env` module's fixed map (operator and orch, 2026-11-07).
+Whether a settings file can select the account, or only the environment can, is to be checked against Claude Code's documentation.
 
 ## Design questions for a Discussion
 
