@@ -1,0 +1,329 @@
+{
+  "sketch": "fabric-test-speed",
+  "shape": "project",
+  "project": {"slug": "fabric-test-speed-work", "title": "Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes", "type": "enhancement"},
+  "board_checked": [
+    {"slug": "test-real-time-waits", "revised": "2026-11-07T13:23:39Z"}
+  ],
+  "parts": [
+    {
+      "slug": "fabric-test-folds",
+      "title": "Fold the overlapping internal/fabricengine tests the tier 1 report read",
+      "type": "enhancement",
+      "recipe": "darn",
+      "profile": "light",
+      "decisions": ["D6"],
+      "packages": [{"path": "internal/fabricengine", "size": 500}],
+      "contract": {
+        "takes": "today's fixtures and the report's section 4 rows with their alone-pins column",
+        "delivers": "TestVerbCases_CleanState's preconditions in runCell, and the TestAnchorChange, TestStoreHousekeeping, TestReconcileOrigin_Moves, TestPushFailureClasses and TestBolt_PullThenCommitWritten folds, each commit naming the assertions its folded row alone made",
+        "exports": "nothing"
+      },
+      "depends_on": ["dotgit-worktree-reader"],
+      "open_risks": [],
+      "criteria": [
+        "D6: Review: each fold's commit names the assertions its folded row alone made, and each stands in the remaining test."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "the darn light cell with a stored record reads too few runs (1 run)"
+    },
+    {
+      "slug": "hubforge-registered-templates",
+      "title": "Registered hub templates in hubforge, built once per test binary",
+      "type": "enhancement",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D2"],
+      "packages": [{"path": "internal/hubforge", "size": 450}],
+      "contract": {
+        "takes": "hubforge's shape templates, relocation and copy in internal/hubforge/template.go",
+        "delivers": "a registration of key, base Shape and build function, built once per binary under a lock per key with a refusing testing.TB and the upstream-tip check, and a copy call that takes it; the PATTERN-test-isolation background gains the registered template",
+        "exports": "the registration type and its copy call in internal/hubforge"
+      },
+      "depends_on": [],
+      "open_risks": [
+        "D2's builds by key at once raise the load at a binary's start, where several templates build together; the gain assumes those builds no longer queue."
+      ],
+      "criteria": [
+        "D2: two registered templates of different keys build concurrently, each exactly once per binary, under parallel first callers.",
+        "D2: a copy of a registered template holds the build function's commits and pairs, and a write to the copy leaves the template unchanged.",
+        "D2: a build that fails fails every later caller naming the key; a build function that calls `Cleanup`, `Setenv`, `TempDir`, `Chdir` or `ArtifactDir`, or leaves the board's HEAD unequal to its branch's tip in the records bare, fails naming the key.",
+        "D2: a build that, after the board's push, pushes a commit into the records bare from a clone inside the template root fails naming the key.",
+        "D2: two different registrations with one key fail naming the key."
+      ],
+      "pattern_changes": ["PATTERN-test-isolation"],
+      "expected_cost_usd": null,
+      "cost_line": "lym report cost holds no darn solid cell with a stored record, so the figure rests on no runs"
+    },
+    {
+      "slug": "hubforge-slim-copy",
+      "title": "A slimmer hubforge.CopyHub: packed templates, no walk per copy, two-process binding fold",
+      "type": "enhancement",
+      "recipe": "darn",
+      "profile": "light",
+      "decisions": ["D3"],
+      "packages": [{"path": "internal/hubforge", "size": 120}],
+      "contract": {
+        "takes": "hubforge-registered-templates' build path in internal/hubforge/template.go",
+        "delivers": "CopyHub without the fingerprint walk, SharedHub keeping it, repack and pack-refs at build time for shapes and registrations, and commitRelocatedBinding without its git add",
+        "exports": "nothing new"
+      },
+      "depends_on": ["hubforge-registered-templates"],
+      "open_risks": [],
+      "criteria": [
+        "D3: a copy's board HEAD equals its upstream with its history as built, the copy's records bare's branch tip is the board's HEAD, and the tracking ref's newest reflog entry names that SHA.\nThe board of a copy of a shape, or of a registration whose build commits what it writes, is also clean.",
+        "D3: a write by a `hubforge.SharedHub` test poisons the template at cleanup, and a later `hubforge.CopyHub` of it fails.",
+        "D3: a template's repositories hold no loose objects after the build, and a `hubforge.SharedHub` taken right after the build sees no change."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "the darn light cell with a stored record reads too few runs (1 run)"
+    },
+    {
+      "slug": "git-config-from-go",
+      "title": "gitkit and hubforge initialisers write their per-repository git config from Go",
+      "type": "enhancement",
+      "recipe": "darn",
+      "profile": "light",
+      "decisions": ["D4"],
+      "packages": [
+        {"path": "internal/gitkit", "size": 90},
+        {"path": "internal/hubforge", "size": 60}
+      ],
+      "contract": {
+        "takes": "gitkit's initRepo and initBareRemote, and hubforge's initScratchRepo and initBareRepo",
+        "delivers": "one Go write of today's keys and values into each new repository's config after git init, in place of one git config process per key",
+        "exports": "a gitkit helper that writes the keys, which hubforge calls"
+      },
+      "depends_on": ["hubforge-slim-copy"],
+      "open_risks": [],
+      "criteria": [
+        "D4: a repository from each initialiser reads the keys that initialiser writes today, at today's values, through `git config --get`."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "the darn light cell with a stored record reads too few runs (1 run)"
+    },
+    {
+      "slug": "fabric-anchor-origin-templates",
+      "title": "internal/fabricengine anchor and origin fixtures onto registered templates",
+      "type": "enhancement",
+      "recipe": "darn",
+      "profile": "light",
+      "decisions": ["D7"],
+      "packages": [{"path": "internal/fabricengine", "size": 150}],
+      "contract": {
+        "takes": "hubforge-registered-templates' registration and fabric-test-folds' folded tests",
+        "delivers": "newAnchorHub and newOriginHub, with originPair and endedHub where a fixed slug set repeats at least three times, built by registrations; originBoard runs on the copy",
+        "exports": "nothing"
+      },
+      "depends_on": ["hubforge-registered-templates", "fabric-test-folds"],
+      "open_risks": [],
+      "criteria": [
+        "D7: each moved package's tests pass with the same assertions, and the tests that exercise `Add` still add their pairs.",
+        "D7: Review: no registration's build calls `os.Setenv`, `os.MkdirTemp` or `git config --global`, keeps the TB's `Context()` past the build, calls a package-global seam setter or once-only registration, or reaches code whose result a once-only registration changes.",
+        "D7: Review: each test that installs a process-global seam takes its copies before installing it."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "the darn light cell with a stored record reads too few runs (1 run)"
+    },
+    {
+      "slug": "fabric-livestate-merge-templates",
+      "title": "internal/fabricengine live-state arranges and merge-pair layers onto registered templates",
+      "type": "enhancement",
+      "recipe": "darn",
+      "profile": "light",
+      "decisions": ["D7"],
+      "packages": [{"path": "internal/fabricengine", "size": 200}],
+      "contract": {
+        "takes": "hubforge-registered-templates' registration and fabric-test-folds' runCell",
+        "delivers": "each verb's arrange split into a build registered per verb and anchor and a derivation from the copy's Hub, arranges that place a directory outside the hub left whole, and the newMergePairFixture layers whose branch commits repeat at least three times moved",
+        "exports": "nothing"
+      },
+      "depends_on": ["hubforge-registered-templates", "fabric-test-folds", "fabric-anchor-origin-templates"],
+      "open_risks": [],
+      "criteria": [
+        "D7: each moved package's tests pass with the same assertions, and the tests that exercise `Add` still add their pairs.",
+        "D7: Review: no registration's build calls `os.Setenv`, `os.MkdirTemp` or `git config --global`, keeps the TB's `Context()` past the build, calls a package-global seam setter or once-only registration, or reaches code whose result a once-only registration changes.",
+        "D7: Review: each test that installs a process-global seam takes its copies before installing it."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "the darn light cell with a stored record reads too few runs (1 run)"
+    },
+    {
+      "slug": "dotgit-worktree-reader",
+      "title": "worktree list read in-process through internal/dotgit",
+      "type": "enhancement",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D1"],
+      "packages": [
+        {"path": "internal/dotgit", "size": 650},
+        {"path": "internal/fabricengine", "size": 100},
+        {"path": "internal/websterengine", "size": 30}
+      ],
+      "contract": {
+        "takes": "dotgit's FindRoot and Read, fabricengine.List's porcelain parse, and websterengine's otherWorktrees",
+        "delivers": "a stdlib-only dotgit worktree reader matching git worktree list --porcelain, with a named refusal of a non-files ref storage; List and otherWorktrees read through it and fall back to porcelain on that refusal; the PATTERN-leaf-packages background lists the worktree entries and refs dotgit parses",
+        "exports": "the dotgit worktree reader, its entry type and its ref-storage error"
+      },
+      "depends_on": [],
+      "open_risks": [],
+      "criteria": [
+        "D1: on a repository with a main worktree, a branch worktree, a detached one, a locked one with a reason, a locked one without, and a prunable one, the reader's entries equal what `git worktree list --porcelain` reports: path, HEAD SHA, branch or detached, and prunable, in the same order.",
+        "D1: the same parity holds when the repository is reached through a symlinked path.",
+        "D1: an entry with its `gitdir` file removed is left out, and an entry with its `HEAD` file removed is listed detached with the all-zero SHA, as git reports both.",
+        "D1: a linked worktree whose `gitdir` holds a relative path resolves to the same path git reports, under git 2.48 or later; the test skips below it, naming the version.",
+        "D1: a branch worktree whose branch ref sits only in `packed-refs` resolves to its SHA.",
+        "D1: a repository with `extensions.refStorage` set to `reftable` gets `List`'s result and the `internal/websterengine` sibling read's result through the porcelain fallback.",
+        "D1: `fabricengine.List` and the `internal/websterengine` sibling read start no git process on a files-backend repository.",
+        "D1: `List` from a subdirectory of a worktree equals `List` from its root, and `List` on a directory that does not exist returns an error."
+      ],
+      "pattern_changes": ["PATTERN-leaf-packages"],
+      "expected_cost_usd": null,
+      "cost_line": "lym report cost holds no darn solid cell with a stored record, so the figure rests on no runs"
+    },
+    {
+      "slug": "copyhub-fixtures-and-hook",
+      "title": "CopyHub in the NewHub fixtures of fabricengine and adoptcli, and the hook without dirname and basename",
+      "type": "enhancement",
+      "recipe": "darn",
+      "profile": "light",
+      "decisions": ["D5"],
+      "packages": [
+        {"path": "internal/fabricengine", "size": 25},
+        {"path": "internal/adoptcli", "size": 15}
+      ],
+      "contract": {
+        "takes": "newRecordsFixture, the adoptcli hubforge.NewHub sites, post-checkout.sh and hook.go's chainedHookPreamble",
+        "delivers": "hubforge.CopyHub of the same anchor at each site whose test is not about the clone or wiring, and shell parameter expansion in the hook and chain wrapper, falling back to . when $0 holds no slash",
+        "exports": "nothing"
+      },
+      "depends_on": ["fabric-livestate-merge-templates"],
+      "open_risks": [],
+      "criteria": [
+        "D5: the post-checkout hook still warns on a warp and weft branch mismatch and stays silent when they match; the chain wrapper still runs `post-checkout.user` when it is executable.",
+        "D5: Review: each `hubforge.NewHub` site kept names the clone or wiring behavior that needs it."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "the darn light cell with a stored record reads too few runs (1 run)"
+    },
+    {
+      "slug": "hubreconcile-templates",
+      "title": "internal/hubreconcile fixtures onto registered templates and CopyHub, with the held-lock test at tier 0",
+      "type": "enhancement",
+      "recipe": "darn",
+      "profile": "light",
+      "decisions": ["D5", "D7", "D8"],
+      "packages": [{"path": "internal/hubreconcile", "size": 120}],
+      "contract": {
+        "takes": "hubforge-registered-templates' registration",
+        "delivers": "newStaleHub with pair-a built by a registration, the package's hubforge.NewHub sites on hubforge.CopyHub per D5's rule, and TestEnsure_HeldLockTimesOutWithoutStamping rewritten onto in-memory inputs at tier 0",
+        "exports": "nothing"
+      },
+      "depends_on": ["hubforge-registered-templates"],
+      "open_risks": [],
+      "criteria": [
+        "D5: Review: each `hubforge.NewHub` site kept names the clone or wiring behavior that needs it.",
+        "D7: each moved package's tests pass with the same assertions, and the tests that exercise `Add` still add their pairs.",
+        "D7: Review: no registration's build calls `os.Setenv`, `os.MkdirTemp` or `git config --global`, keeps the TB's `Context()` past the build, calls a package-global seam setter or once-only registration, or reaches code whose result a once-only registration changes.",
+        "D7: Review: each test that installs a process-global seam takes its copies before installing it.",
+        "D8: each moved test runs at tier 0 with its assertions kept."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "the darn light cell with a stored record reads too few runs (1 run)"
+    },
+    {
+      "slug": "loomcli-templates",
+      "title": "internal/loomcli beamHub and newBadReedUpFixture onto registered templates",
+      "type": "enhancement",
+      "recipe": "darn",
+      "profile": "light",
+      "decisions": ["D7"],
+      "packages": [{"path": "internal/loomcli", "size": 80}],
+      "contract": {
+        "takes": "hubforge-registered-templates' registration",
+        "delivers": "beamHub built by a registration, and newBadReedUpFixture's base, the hub with the corrupted reed line and the pair, as a template with each site's seed run on its copy",
+        "exports": "nothing"
+      },
+      "depends_on": ["hubforge-registered-templates"],
+      "open_risks": [],
+      "criteria": [
+        "D7: each moved package's tests pass with the same assertions, and the tests that exercise `Add` still add their pairs.",
+        "D7: Review: no registration's build calls `os.Setenv`, `os.MkdirTemp` or `git config --global`, keeps the TB's `Context()` past the build, calls a package-global seam setter or once-only registration, or reaches code whose result a once-only registration changes.",
+        "D7: Review: each test that installs a process-global seam takes its copies before installing it."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "the darn light cell with a stored record reads too few runs (1 run)"
+    },
+    {
+      "slug": "battencli-templates",
+      "title": "internal/battencli beamHub onto a registered template",
+      "type": "enhancement",
+      "recipe": "darn",
+      "profile": "light",
+      "decisions": ["D7"],
+      "packages": [{"path": "internal/battencli", "size": 50}],
+      "contract": {
+        "takes": "hubforge-registered-templates' registration",
+        "delivers": "battencli's own beamHub, a beam, a member and a plain pair, built by a registration; notices_integration_test.go untouched",
+        "exports": "nothing"
+      },
+      "depends_on": ["hubforge-registered-templates"],
+      "open_risks": [],
+      "criteria": [
+        "D7: each moved package's tests pass with the same assertions, and the tests that exercise `Add` still add their pairs.",
+        "D7: Review: no registration's build calls `os.Setenv`, `os.MkdirTemp` or `git config --global`, keeps the TB's `Context()` past the build, calls a package-global seam setter or once-only registration, or reaches code whose result a once-only registration changes.",
+        "D7: Review: each test that installs a process-global seam takes its copies before installing it."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "the darn light cell with a stored record reads too few runs (1 run)"
+    },
+    {
+      "slug": "fabric-test-speed-remeasure",
+      "title": "Re-measure tier 1 and internal/fabricengine after the fabric test speed tasks land",
+      "type": "research",
+      "recipe": "darn",
+      "profile": "docs",
+      "decisions": ["D9", "D10"],
+      "packages": [{"path": "docs/research/speed", "size": 60}],
+      "contract": {
+        "takes": "every other part landed on main, and the report's W1 figures of 75.0 s and 57.0 s",
+        "delivers": "one lym gate test --tier 1 --all -- -count=1 pass and one lym gate test --tier 1 ./internal/fabricengine -- -count=1 pass on a quiet neve, read against W1 and the expected 36 s, 56 s and 48 s, filed as a board note naming the two commands, the expected times and whether the hub's tiers carry {test_targets}",
+        "exports": "nothing"
+      },
+      "depends_on": ["copyhub-fixtures-and-hook", "dotgit-worktree-reader", "git-config-from-go", "hubreconcile-templates", "loomcli-templates", "battencli-templates"],
+      "open_risks": [
+        "`gate-tier-binaries-only` landed on `main` as `3aca2e50`, with `{test_targets}` opt-in and the hub's tiers not yet switched; the D10 pass depends on whether the hub's tier commands carry `{test_targets}`, and D10 gives both expectations."
+      ],
+      "criteria": [
+        "D9: Review: the split's darn tasks match the order and dependencies of D9.",
+        "D10: Review: the split files the re-measure note, naming the two commands and the expected times."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "lym report cost holds no darn docs cell with a stored record, so the figure rests on no runs"
+    }
+  ],
+  "cost": {
+    "expected_usd": null,
+    "line": "twelve darn parts, nine on light, two on solid and one on docs; every cell with a stored record reads too few runs (light, 1 run) or holds no runs (solid, docs), so no figure is given",
+    "next_best": {
+      "split": "the same eleven code tasks with the re-measure folded into copyhub-fixtures-and-hook, which then waits for every other part",
+      "expected_usd": null,
+      "line": "eleven darn parts on the same cells; the darn light cell with a stored record reads too few runs (1 run) and the solid one holds no runs"
+    },
+    "cells": [
+      {"recipe": "darn", "profile": "light", "stored_record": true},
+      {"recipe": "darn", "profile": "solid", "stored_record": true},
+      {"recipe": "darn", "profile": "docs", "stored_record": true}
+    ]
+  }
+}
