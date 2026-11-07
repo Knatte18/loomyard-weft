@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -41,6 +41,39 @@
       "output": "",
       "at": "2026-11-07T14:16:14Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/dotgit-worktree-reader/_lym/landing/summary.md",
+      "at": "2026-11-07T14:34:09Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-07T14:26:18.612542326Z",
+          "end": "2026-11-07T14:26:18.623417457Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-07T14:26:18.690524062Z",
+          "end": "2026-11-07T14:33:17.297601587Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-07T14:33:17.441154667Z",
+          "end": "2026-11-07T14:33:17.9867943Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-07T14:33:18.093714571Z",
+          "end": "2026-11-07T14:33:18.098941045Z"
+        }
+      ]
     }
   ],
   "product": {
