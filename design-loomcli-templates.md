@@ -1,10 +1,8 @@
 # internal/loomcli beamHub and newBadReedUpFixture onto registered templates
 
-`loomcli-templates` · Task · enhancement, fabric, testkit, git · running · Preflight
+`loomcli-templates` · Task · enhancement, fabric, testkit, git · running · Record-Write
 
 Decision record: [Sketch](decision-loomcli-templates.md)
-
-Depends on: [`hubforge-registered-templates`](design-hubforge-registered-templates.md)
 
 Filed from the Sketch `fabric-test-speed`.
 

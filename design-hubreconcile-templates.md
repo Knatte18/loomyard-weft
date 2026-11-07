@@ -1,10 +1,8 @@
 # internal/hubreconcile fixtures onto registered templates and CopyHub, with the held-lock test at tier 0
 
-`hubreconcile-templates` · Task · enhancement, fabric, testkit, git · running · Preflight
+`hubreconcile-templates` · Task · enhancement, fabric, testkit, git · running · Record-Write
 
 Decision record: [Sketch](decision-hubreconcile-templates.md)
-
-Depends on: [`hubforge-registered-templates`](design-hubforge-registered-templates.md)
 
 Filed from the Sketch `fabric-test-speed`.
 

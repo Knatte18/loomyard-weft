@@ -1,10 +1,8 @@
 # A slimmer hubforge.CopyHub: packed templates, no walk per copy, two-process binding fold
 
-`hubforge-slim-copy` · Task · enhancement, fabric, testkit, git · running · Open-IDE
+`hubforge-slim-copy` · Task · enhancement, fabric, testkit, git · running · Preflight
 
 Decision record: [Sketch](decision-hubforge-slim-copy.md)
-
-Depends on: [`hubforge-registered-templates`](design-hubforge-registered-templates.md)
 
 Filed from the Sketch `fabric-test-speed`.
 

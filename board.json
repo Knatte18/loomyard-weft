@@ -513,31 +513,6 @@
       "discussed": true
     },
     {
-      "id": 1204,
-      "handle": "T5",
-      "slug": "hubforge-registered-templates",
-      "title": "Registered hub templates in hubforge, built once per test binary",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "fabric",
-        "testkit",
-        "git"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge's shape templates, relocation and copy in internal/hubforge/template.go\nDelivers: a registration of key, base Shape and build function, built once per binary under a lock per key with a refusing testing.TB and the upstream-tip check, and a copy call that takes it; the PATTERN-test-isolation background gains the registered template\nExports: the registration type and its copy call in internal/hubforge\n\nThe part changes these packages:\n\n- internal/hubforge (about 450 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-07T14:15:14Z",
-      "revised": "2026-11-07T14:15:14Z",
-      "profile": "solid",
-      "project": "fabric-test-speed-work",
-      "discussed": true
-    },
-    {
       "id": 1205,
       "handle": "T6",
       "slug": "hubforge-slim-copy",
@@ -551,13 +526,11 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "hubforge-registered-templates"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge-registered-templates' build path in internal/hubforge/template.go\nDelivers: CopyHub without the fingerprint walk, SharedHub keeping it, repack and pack-refs at build time for shapes and registrations, and commitRelocatedBinding without its git add\nExports: nothing new\n\nThe part changes these packages:\n\n- internal/hubforge (about 120 changed lines)\n",
-      "status": "running · Open-IDE",
+      "status": "running · Preflight",
       "created": "2026-11-07T14:15:14Z",
       "revised": "2026-11-07T14:15:14Z",
       "profile": "light",
@@ -604,13 +577,11 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "hubforge-registered-templates"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge-registered-templates' registration\nDelivers: newStaleHub with pair-a built by a registration, the package's hubforge.NewHub sites on hubforge.CopyHub per D5's rule, and TestEnsure_HeldLockTimesOutWithoutStamping rewritten onto in-memory inputs at tier 0\nExports: nothing\n\nThe part changes these packages:\n\n- internal/hubreconcile (about 120 changed lines)\n",
-      "status": "running · Preflight",
+      "status": "running · Record-Write",
       "created": "2026-11-07T14:15:14Z",
       "revised": "2026-11-07T14:15:14Z",
       "profile": "light",
@@ -631,13 +602,11 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "hubforge-registered-templates"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge-registered-templates' registration\nDelivers: beamHub built by a registration, and newBadReedUpFixture's base, the hub with the corrupted reed line and the pair, as a template with each site's seed run on its copy\nExports: nothing\n\nThe part changes these packages:\n\n- internal/loomcli (about 80 changed lines)\n",
-      "status": "running · Preflight",
+      "status": "running · Record-Write",
       "created": "2026-11-07T14:15:14Z",
       "revised": "2026-11-07T14:15:14Z",
       "profile": "light",
@@ -658,13 +627,11 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "hubforge-registered-templates"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge-registered-templates' registration\nDelivers: battencli's own beamHub, a beam, a member and a plain pair, built by a registration; notices_integration_test.go untouched\nExports: nothing\n\nThe part changes these packages:\n\n- internal/battencli (about 50 changed lines)\n",
-      "status": "running · Record-Write",
+      "status": "running · Drift-Baseline",
       "created": "2026-11-07T14:15:14Z",
       "revised": "2026-11-07T14:15:14Z",
       "profile": "light",
@@ -711,7 +678,6 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "hubforge-registered-templates",
         "fabric-test-folds"
       ],
       "isolated": false,
@@ -738,7 +704,6 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "hubforge-registered-templates",
         "fabric-test-folds",
         "fabric-anchor-origin-templates"
       ],

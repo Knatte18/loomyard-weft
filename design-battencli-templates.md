@@ -1,10 +1,8 @@
 # internal/battencli beamHub onto a registered template
 
-`battencli-templates` · Task · enhancement, fabric, testkit, git · running · Record-Write
+`battencli-templates` · Task · enhancement, fabric, testkit, git · running · Drift-Baseline
 
 Decision record: [Sketch](decision-battencli-templates.md)
-
-Depends on: [`hubforge-registered-templates`](design-hubforge-registered-templates.md)
 
 Filed from the Sketch `fabric-test-speed`.
 
