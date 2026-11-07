@@ -1,12 +1,12 @@
 # Board
 
-Rendered 2026-11-07 11:35 UTC; every age below is as of then.
+Rendered 2026-11-07 11:36 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## [P1 Fewer agent turns, fewer tokens](project-turn-savings.md) (0)
+## [P1 Fewer agent turns, fewer tokens](project-turn-savings.md) (1)
 
 `turn-savings` · Age 5d · Owner `neve`
 
@@ -22,9 +22,15 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (0)
+### Notes (1)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+#### Enhancements (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| E5 |  | **Tool schemas are three quarters of a spawned role's start; drop the tools a role never calls**<br>• 21,947 of 29,087 start tokens are tool schemas | [`role-tool-schemas`](design-role-tool-schemas.md) | 0m<br>0m | shuttle, claude |
 
 ## [P2 Codexengine: every task, trial and note about the Codex engine](project-codex-engine-trial.md) (2)
 
@@ -72,8 +78,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Comment lint: enforce scribe:prose line-length rule on // comment lines**<br>• lint-comments enforces the line-length rule scribe:prose sets, once it lands | [`comment-lint-line-length`](design-comment-lint-line-length.md) | darn · light | Seed-Child | neve | 2h<br>31m | loom |
-| T2 | **Drift fails runs on capture noise such as _source.txt that is no part of the results** | [`drift-provenance-stops-runs`](design-drift-provenance-stops-runs.md) | darn · solid | Open-IDE | neve | 33m<br>27m | drift, loom |
+| T1 | **Comment lint: enforce scribe:prose line-length rule on // comment lines**<br>• lint-comments enforces the line-length rule scribe:prose sets, once it lands | [`comment-lint-line-length`](design-comment-lint-line-length.md) | darn · light | Preflight | neve | 2h<br>32m | loom |
+| T2 | **Drift fails runs on capture noise such as _source.txt that is no part of the results** | [`drift-provenance-stops-runs`](design-drift-provenance-stops-runs.md) | darn · solid | Drift-Await | neve | 33m<br>27m | drift, loom |
 
 #### Ready (0)
 

@@ -1,6 +1,6 @@
 # Drift fails runs on capture noise such as _source.txt that is no part of the results
 
-`drift-provenance-stops-runs` · Task · bug, drift, loom · running · Open-IDE
+`drift-provenance-stops-runs` · Task · bug, drift, loom · running · Drift-Await
 
 Depends on: [`comment-cleanup`](design-comment-cleanup.md)
 

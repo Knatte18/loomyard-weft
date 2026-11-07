@@ -695,7 +695,7 @@
       "isolated": false,
       "brief": "lint-comments enforces the line-length rule scribe:prose sets, once it lands",
       "body": "## Seen\n\n`lym loom lint-comments` (`internal/commentlint`) checks only where a `//` comment line breaks.\nNothing bounds a comment line's length.\n\n## Wanted\n\n`scribe:prose` decides how prose is written; `internal/commentlint` only enforces its rules mechanically (operator, 2026-11-07).\nScribe's task `prose-line-length-rule` adds a line-length rule under \"Line breaks\".\nOnce that rule has landed and is deployed, make the lint check `//` comment lines the diff adds or changes against it, as the skill words it: the limit, what is counted and what is exempt.\nA finding fails the gate as the existing break findings do.\nWhere the skill's rule cannot be checked mechanically, check the part that can and state the rest in the package's `doc.go`.\n\nRequested by the `comment-cleanup` writer on the operator's word (2026-11-07).\nScribe's rule landed as `6f061ba8f4bc` and is deployed (2026-11-07); read it from `scribe:prose`, under \"Line breaks\".\n",
-      "status": "running · Seed-Child",
+      "status": "running · Preflight",
       "created": "2026-11-07T09:23:05Z",
       "revised": "2026-11-07T11:03:56Z",
       "profile": "light"
@@ -760,10 +760,30 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #81](https://github.com/Knatte18/loomyard/issues/81); follows #71.\n\n## Seen\n\nTask run `support-for-dop-rheology-in` (hub Models, darn, `diff: lines`) failed the Darn-Write `drift` gate three times on the same two cells: keys `commit` and `captured_at` in case `_source.txt`, which the baseline harness writes on every capture.\nNo numerical cell moved.\nThe hub's `drift.yaml` had no `volatile_files`, because the fix for #71 made the ignore list opt-in.\n\n- The writer could not fix the cells, so each re-prompt was a wasted round, and the writer had to message the parent.\n- `lym drift amend` was refused while Darn-Write ran (\"admitted only at its halt\"), so the parent had to wait for the gate to use up its attempts before amending.\n- After the halt, the driver also sent the parent the same question.\n- A run keeps the volatile list it started with, so setting `volatile_files` during the run did not help that run.\n\nThe operator (2026-11-07): `_source.txt` is noise and is no part of the drift check; drift also reacts to much else that is irrelevant.\n\n## Wanted\n\nDrift checks only what the code's results are.\nA capture's provenance and other cells that differ between two captures of the same code never fail a gate, never re-prompt a writer and never reach the parent, with no `drift.yaml` entry needed.\n\n- Lym writes no `_source.txt`: the Models hub's capture harness writes it into `{baseline_dir}` beside the results, the one directory drift compares.\n  A capture command gets a second directory for metadata, such as a `{meta_dir}` placeholder, apart from `{baseline_dir}` (operator, 2026-11-07).\n  Drift keeps it with the capture but never lists, compares or shows it to an agent as drift; the template and `drift init` say provenance goes there.\n  The Models hub then moves its `_source.txt` there, a change in that hub's harness, which this run names in its landing.\n  The baseline directory holds drift files only, the files that are compared; a metadata file such as the commit that made the baseline is kept, outside it (operator, 2026-11-07).\n  The capture record already holds the HEAD a capture ran at; the landing's `## Regression check` names that commit, so a harness needs no provenance file of its own.\n- The agent that decides what drift is acceptable tells metadata from results itself (operator, 2026-11-07): a capture's provenance, such as `_source.txt` with its commit SHA and capture time, timestamps, run ids and host names are metadata, not results.\n  No hub lists them: `volatile_files` and `volatile_keys` are not the way, and no hub's `drift.yaml` needs them for metadata.\n- Whatever agent sees the capture first, under `diff: lines` and `diff: command` alike, marks each metadata file and key, the run records the marks in its scope record, and no later listing, expectation, check or gate shows them to an agent or fails on them.\n- The marks are named in the landing's `## Regression check`, so the operator sees what was left out.\n- A gate failure that consists only of cells the writer cannot change ends the gate at once instead of re-prompting, and the parent gets one question, not one from the gate and one from the driver.\n- Agents never call a noise cell \"not equal\": no stencil, listing or prompt shows one to them.\n",
-      "status": "running · Open-IDE",
+      "status": "running · Drift-Await",
       "created": "2026-11-07T11:02:29Z",
       "revised": "2026-11-07T11:08:48Z",
       "profile": "solid"
+    },
+    {
+      "id": 1189,
+      "handle": "E5",
+      "slug": "role-tool-schemas",
+      "title": "Tool schemas are three quarters of a spawned role's start; drop the tools a role never calls",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shuttle",
+        "claude"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "21,947 of 29,087 start tokens are tool schemas",
+      "body": "## Seen\n\n`docs/research/tokens/session-scope-fix-launch-2026-11-06/report.md`: a spawned role's first request is 29,087 tokens with the session scope on, and its tool schemas alone are 21,947 of them, about three quarters.\nThe role's tools are `Agent`, `Artifact`, `Bash`, `Edit`, `Read`, `ReportFindings`, `ScheduleWakeup`, `SendFeedback`, `Skill`, `ToolSearch`, `Write` and `advisor`.\nSeveral are of no use to a darn writer or a reviewer, such as `Artifact`, `ScheduleWakeup`, `SendFeedback` and `advisor`.\nThe orch's tool schemas are 9,927 tokens; why a role's are more than twice that is not known.\nThe operator finds about 30k tokens at start too much (2026-11-07).\n\n## Idea\n\nMeasure each tool's schema size in a role's request, then drop from each role the tools it never calls, through the session scope.\nCheck first which way of dropping a tool removes its schema from the request, `--disallowedTools` on the launch line or `permissions.deny` in the settings, since a deny rule that only refuses the call saves nothing.\n",
+      "created": "2026-11-07T11:36:02Z",
+      "revised": "2026-11-07T11:36:02Z",
+      "project": "turn-savings"
     }
   ],
   "prime_owner": "neve",
