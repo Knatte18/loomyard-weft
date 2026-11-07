@@ -1,6 +1,6 @@
 # Defects the comment cleanup found but left: stale headings, dead helper, stencil paths, joint edits
 
-`comment-cleanup-leftovers` · Task · bug, config, cwd, stencil, docs · running · Drift-Expect
+`comment-cleanup-leftovers` · Task · bug, config, cwd, stencil, docs · running · Darn-Write
 
 ## Seen
 
