@@ -467,6 +467,24 @@
       "created": "2026-11-07T17:05:01Z",
       "revised": "2026-11-07T17:05:01Z",
       "profile": "light"
+    },
+    {
+      "id": 1206,
+      "handle": "E1",
+      "slug": "heddle-md-readability",
+      "title": "A sampler that iterates the rendering of HEDDLE.md until it reads well",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "heddle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (operator, 2026-11-07)\n\n`HEDDLE.md` in the Bolt checkout, which `e25dcf34` renders, is hard to read.\nIt groups entries by target and gives each a From, Order and Targets list and its full text in a fenced block, so the reader scrolls through every shipped entry's whole text, and what lym sets cannot be told from what this repository sets without reading each entry's From line.\nEmpty targets each take a heading and a \"No entry.\" line.\n\n## Idea\n\nA sampler run that iterates the rendering of `HEDDLE.md` with the operator: it renders this hub's real heddle store, shows the result, takes the operator's comments and renders again until the operator approves a layout, which is then built.\n\nPoints to try in it, none decided:\n\n- Separate what lym ships, what this repository sets, and what is derived from the hub's config (such as `agents.yaml`), and show a hub override of a shipped entry plainly.\n- An overview table first, one row per entry with its source, target and a one-line summary, before any full text.\n- Leave out targets with no entry.\n- For `claude-settings`, the merged result the worktree file gets, beside or instead of each entry's object.\n",
+      "created": "2026-11-07T17:10:10Z",
+      "revised": "2026-11-07T17:10:10Z"
     }
   ],
   "prime_owner": "neve",
