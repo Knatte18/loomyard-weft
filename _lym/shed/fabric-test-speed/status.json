@@ -1,14 +1,21 @@
 {
-  "current_producer": "Record-Write",
+  "current_producer": "Raddle-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Record-Write",
-    "last": "",
+    "now": "Raddle-Write",
+    "last": "Record-Write → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Record-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/fabric-test-speed/_lym/discussion/decision-record.md",
+      "at": "2026-11-07T13:57:30Z"
+    }
+  ],
   "product": {
     "slug": "fabric-test-speed",
     "parent": "main",
