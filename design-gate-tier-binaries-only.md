@@ -1,6 +1,6 @@
 # The gate builds and starts test binaries for packages with no test of the tier
 
-`gate-tier-binaries-only` · Task · enhancement, gate · running · Finalize
+`gate-tier-binaries-only` · Task · enhancement, gate · done
 
 ## Seen
 
