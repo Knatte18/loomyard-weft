@@ -1,6 +1,6 @@
 # The skill-load hold landed with two checks by hand left open
 
-`skill-load-hold-unchecked` · Task · bug, shuttle
+`skill-load-hold-unchecked` · Task · bug, shuttle · running · Worktree-Create
 
 ## Seen
 

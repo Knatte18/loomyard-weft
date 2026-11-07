@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (6)
+### Running (7)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -21,17 +21,16 @@ Held by a run; its scope is locked until the run ends.
 | T2 | **Drift fails runs on capture noise such as _source.txt that is no part of the results** | [`drift-provenance-stops-runs`](design-drift-provenance-stops-runs.md) | darn · solid | Finalize | neve | 1h<br>1h | drift, loom |
 | T3 | **Claude sessions: a slash command sent with a leading space, and open sessions caching 1h**<br>• Two claudeengine bugs: /compact as a prompt, and shuttle open without the 5m TTL | [`claude-session-fixes`](design-claude-session-fixes.md) | darn · light | Finalize | neve | 3h<br>46m | shuttle, claude |
 | T4 | **fabric clone leaves the prime without heddle's rendered files**<br>• Made fires before the config reconcile and its warning is dropped | [`clone-prime-heddle-unrendered`](design-clone-prime-heddle-unrendered.md) | darn · light | Code-Bouncer | neve | 52m<br>46m | fabric, heddle |
+| T5 | **The skill-load hold landed with two checks by hand left open** | [`skill-load-hold-unchecked`](design-skill-load-hold-unchecked.md) | darn · light | Worktree-Create | neve | 51m<br>0m | shuttle |
 | T6 | **A Codex seat that read its skills is logged as not having loaded them**<br>• All five skills logged not loaded though the rollout shows SKILL.md read; cause not found | [`codex-skill-load-false-missing`](design-codex-skill-load-false-missing.md) | darn · light | Finalize | neve | 23h<br>46m | shuttle, codex |
 | T7 | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | darn · light | Finalize | neve | 1d<br>46m | tools, claude |
 | T9 | **The gate builds and starts test binaries for packages with no test of the tier**<br>• Pass only the packages holding a test of the tier to go test; weighs most under Cortex XDR | [`gate-tier-binaries-only`](design-gate-tier-binaries-only.md) | darn · light | Darn-Write | neve | 4h<br>1m | gate |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T5 | **The skill-load hold landed with two checks by hand left open** | [`skill-load-hold-unchecked`](design-skill-load-hold-unchecked.md) | darn · light |  | 51m<br>0m | shuttle |
+_None._
 
 ### Layer A (1)
 
