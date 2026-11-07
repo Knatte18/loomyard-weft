@@ -35,9 +35,8 @@ It refuses `PATH` and any `LYM_` name, and `CLAUDE_CONFIG_DIR` is allowed.
 So a machine-wide `CLAUDE_CONFIG_DIR` can be set today, which moves every session to one other account.
 It is one value for the whole hub: the per-worktree pick, the weights and the headroom check below are still unbuilt.
 
-Heddle's `claude-settings` target (`72390eb3`, landed 2026-11-07) renders `.claude/settings.local.json` in every hub worktree.
-It is a per-worktree file lym writes, and a candidate source for the per-worktree account value, in place of a new source beside the `env` module's fixed map (operator and orch, 2026-11-07).
-Whether a settings file can select the account, or only the environment can, is to be checked against Claude Code's documentation.
+Heddle's `claude-settings` target (`72390eb3`) is no source for the account: its entries live in the Bolt, which is pushed to GitHub, and account details never go into a file pushed to GitHub (operator, 2026-11-07); it also renders one file for every worktree, and the account must be chosen before Claude starts, through its environment.
+The accounts and the pick stay machine-local.
 
 ## Design questions for a Discussion
 
