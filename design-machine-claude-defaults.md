@@ -1,4 +1,4 @@
-# Heddle renders .claude/settings.local.json: no co-author, lym's model and effort defaults
+# Heddle renders .claude/settings.local.json in every hub: no co-author, lym's plugins and tool deny list
 
 `machine-claude-defaults` · Task · enhancement, claude, config, heddle, fabric
 
