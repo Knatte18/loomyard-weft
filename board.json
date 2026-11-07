@@ -485,6 +485,30 @@
       "body": "## Seen (operator, 2026-11-07)\n\n`HEDDLE.md` in the Bolt checkout, which `e25dcf34` renders, is hard to read.\nIt groups entries by target and gives each a From, Order and Targets list and its full text in a fenced block, so the reader scrolls through every shipped entry's whole text, and what lym sets cannot be told from what this repository sets without reading each entry's From line.\nEmpty targets each take a heading and a \"No entry.\" line.\n\n## Idea\n\nA sampler run that iterates the rendering of `HEDDLE.md` with the operator: it renders this hub's real heddle store, shows the result, takes the operator's comments and renders again until the operator approves a layout, which is then built.\n\nPoints to try in it, none decided:\n\n- Separate what lym ships, what this repository sets, and what is derived from the hub's config (such as `agents.yaml`), and show a hub override of a shipped entry plainly.\n- An overview table first, one row per entry with its source, target and a one-line summary, before any full text.\n- Leave out targets with no entry.\n- For `claude-settings`, the merged result the worktree file gets, beside or instead of each entry's object.\n",
       "created": "2026-11-07T17:10:10Z",
       "revised": "2026-11-07T17:10:10Z"
+    },
+    {
+      "id": 1207,
+      "handle": "T1",
+      "slug": "fabricengine-per-test-times",
+      "title": "Time every internal/fabricengine test one by one on a quiet machine",
+      "kind": "task",
+      "labels": [
+        "research",
+        "fabric",
+        "testkit"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "heddle-md-initial-render"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "## Why (operator, 2026-11-07)\n\nEleven tasks of project `fabric-test-speed-work` cut `internal/fabricengine` from 57 s to about 42-44 s, short of the 36 s its Sketch expected (`docs/research/speed/fabric-test-speed-remeasure-2026-11-07.md`, `docs/research/speed/test-targets-bench-2026-11-07.md`).\nNo one has measured which of its tests take the time now.\nThe operator wants every test of the package timed one by one, on a quiet machine, to see which are slow.\n\n## Quiet machine\n\n- Before each pass, check `/proc/loadavg` and `lym loom peers`: no other run may be in flight and the one-minute load must be below 1.0.\n  If not, wait and check again, up to 30 minutes in all; past that, run anyway and state the load in the report.\n- Record the load and runs in flight before each pass.\n\n## Runs (exact cap)\n\nRun each once, in the foreground with the Bash tool timeout 3600000, and no other run:\n\n1. `lym gate test --tier 0 ./internal/fabricengine -- -count=1 -run . -parallel=1`\n2. `lym gate test --tier 1 ./internal/fabricengine -- -count=1 -run . -parallel=1`\n3. `lym gate test --tier 2 ./internal/fabricengine -- -count=1 -run . -parallel=1`\n\n`-parallel=1` makes each test's elapsed time its own work, not time spent waiting for other parallel tests.\n`-run .` keeps the gate from carrying an earlier green record over the unchanged tree.\nRead each test's elapsed time from the `go test -json` events the gate records (`lym gate report` or the run's JSON log).\n\n## Report\n\nWrite `docs/research/speed/fabricengine-per-test-times-2026-11-07.md`:\n\n- Every test and subtest of the package with its tier and elapsed time, sorted slowest first, and the package wall time of each pass.\n- The share of the package time the slowest ten tests take.\n- For each of the slowest fifteen, from reading its code: what it spends the time on, such as hub builds, git processes, binary starts or fixed waits.\n\nCommit the report and no code.\n",
+      "status": "draft",
+      "created": "2026-11-07T17:14:54Z",
+      "revised": "2026-11-07T17:14:54Z",
+      "profile": "docs"
     }
   ],
   "prime_owner": "neve",
