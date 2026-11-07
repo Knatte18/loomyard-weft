@@ -29,4 +29,14 @@ A failed render on clone is printed with its way forward, `lym heddle render` in
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - clone-envelope-seam-warning-untested (class design, severity MEDIUM, open in rounds 1)
+  - clone-reorder-unproven-render (class design, severity MEDIUM, open in rounds 1)
+  - made-event-position-unpinned (class design, severity MEDIUM, open in rounds 1)
+  - render-warnings-only-logged (class design, severity MEDIUM, open in rounds 1)
+  - walk-failure-drops-seam-warning (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
