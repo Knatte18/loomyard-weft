@@ -1,10 +1,8 @@
 # CopyHub in the NewHub fixtures of fabricengine and adoptcli, and the hook without dirname and basename
 
-`copyhub-fixtures-and-hook` · Task · enhancement, fabric, testkit, git · running · Drift-Await
+`copyhub-fixtures-and-hook` · Task · enhancement, fabric, testkit, git · running · Darn-Write
 
 Decision record: [Sketch](decision-copyhub-fixtures-and-hook.md)
-
-Depends on: [`fabric-livestate-merge-templates`](design-fabric-livestate-merge-templates.md)
 
 Filed from the Sketch `fabric-test-speed`.
 

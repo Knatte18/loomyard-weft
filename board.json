@@ -469,31 +469,6 @@
       "discussed": true
     },
     {
-      "id": 1213,
-      "handle": "T15",
-      "slug": "fabric-livestate-merge-templates",
-      "title": "internal/fabricengine live-state arranges and merge-pair layers onto registered templates",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "fabric",
-        "testkit",
-        "git"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge-registered-templates' registration and fabric-test-folds' runCell\nDelivers: each verb's arrange split into a build registered per verb and anchor and a derivation from the copy's Hub, arranges that place a directory outside the hub left whole, and the newMergePairFixture layers whose branch commits repeat at least three times moved\nExports: nothing\n\nThe part changes these packages:\n\n- internal/fabricengine (about 200 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-07T14:15:14Z",
-      "revised": "2026-11-07T14:15:14Z",
-      "profile": "light",
-      "project": "fabric-test-speed-work",
-      "discussed": true
-    },
-    {
       "id": 1214,
       "handle": "T16",
       "slug": "copyhub-fixtures-and-hook",
@@ -507,13 +482,11 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "fabric-livestate-merge-templates"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: newRecordsFixture, the adoptcli hubforge.NewHub sites, post-checkout.sh and hook.go's chainedHookPreamble\nDelivers: hubforge.CopyHub of the same anchor at each site whose test is not about the clone or wiring, and shell parameter expansion in the hook and chain wrapper, falling back to . when $0 holds no slash\nExports: nothing\n\nThe part changes these packages:\n\n- internal/fabricengine (about 25 changed lines)\n- internal/adoptcli (about 15 changed lines)\n",
-      "status": "running · Drift-Await",
+      "status": "running · Darn-Write",
       "created": "2026-11-07T14:15:14Z",
       "revised": "2026-11-07T14:15:14Z",
       "profile": "light",
