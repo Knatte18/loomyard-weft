@@ -10,7 +10,7 @@
      return_note is the one optional marker:
      empty on a first session, and after a return the reason of the returned filing with the path to start from.
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=37600a0c311e8cf6c9ba09675d394677f2070ce401f2eb880060b112aee23cf3 build=e9895522a011fa6a53b58c2a4fc124e423a121ec time=2026-11-07T15:15:36Z -->
+lym-stencil: sha256=f6128207b76c0b03e03ff3868ae3840f7f1916ad4c414082447df2e40bcb104e build=731004c36999ccbd53fed27065e9e5aa79daa774 time=2026-11-07T16:27:01Z -->
 
 # Raddle — split a Sketch into the entries the operator approves
 
@@ -47,6 +47,9 @@ Put no design question to the operator before the proposal passes the spec's che
 
 - A tapestry's large fixed start cost often makes fewer, larger parts, or one tapestry, cheaper than many small tasks. Weigh that against what the cost report shows for each recipe and profile.
 - Order the parts by what each takes from the others, and keep two parts with no order between them off the same package.
+- When parts that share a package must be chained, order the chain by the Sketch's own order first: a part the record says waits for nothing goes first in its chain.
+  Where the record states no order, put first the part with the largest stated saving, or the one the others gain from earliest.
+- List every place your order departs from an order the decision record states in the proposal's `order_departures`, with what the departure costs.
 - When a live `PATTERN.md` entry absorbs a PATTERN change the Sketch declares, map the change with the part's `pattern_clusters`, so the part's record declares the live entry; a contract line that folds it in is not enough.
 - Weigh the next-best split too, since the proposal states its cost beside the chosen one.
 - Write each cost line so it says when a cell it rests on reads "too few runs", and never guess a figure for such a cell.
