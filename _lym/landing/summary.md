@@ -1,29 +1,25 @@
 # loomcli: beamHub and the bad-reed fixture onto registered templates
 
-Two `internal/loomcli` fixtures built their whole start state on every call.
-Each now copies a `hubforge.Registration` template, built once per test binary.
+`internal/loomcli`'s two repeated test hubs, `beamHub` and `newBadReedUpFixture`, are now built once per test binary by a `hubforge` registration.
+Each test copies the registered template instead of forging the hub again.
+This cuts the forge time the `fabric-test-speed` work targets, with no change to what any test asserts.
 
-- `beamHub` (`projectrecord_integration_test.go`), used by six tests and subtests, copies `beamHubRegistration`.
-  Its build is the fixture's former steps, moved unchanged: the beam pair `the-beam`, two pairs forked from it, and the uncommitted `board.json` and shortname record on the board.
-- `newBadReedUpFixture` (`smoke_helpers_test.go`), used by four sites, copies `badReedUpRegistration`.
-  The base is the template: the providerless config seed with the corrupted `mouse:` reed line, then the pair `loom-smoke-task`.
-  Each site's seed function still runs on its own copy, after `lymcwd.Resolve`.
+## Changes
 
-Because the builds are the former steps moved as they were, each test starts from the same state and keeps its assertions unchanged.
+- `projectrecord_integration_test.go`: `beamHub` calls `hubforge.CopyRegistered` on `beamHubRegistration`.
+  The registration's build holds the former steps unchanged: the beam pair, the two forked pairs, the hand-written board file and the shortname record.
+- `smoke_helpers_test.go`: `newBadReedUpFixture` calls `hubforge.CopyRegistered` on `badReedUpRegistration`.
+  The template holds the hub with the corrupted `mouse:` reed line, the seeded configs and the pair `badReedUpSlug`.
+  Each site's `seed` still runs on its own copy, and the pair slug is now the constant `badReedUpSlug`.
 
 ## Design decisions
 
-- Both builds start from the `.` shape with no pairs.
-  `SeedConfig` must commit on the prime records before the pair is added, so the pair forks from the seeded config.
-  For that reason the pair is added in the build and not listed in `Base.Pairs`, which `hubforge` adds before `Build` runs.
-- `newWiredPairFixture` stays on `CopyHub`.
-  It has two sites, below the three-site threshold the decision record sets.
-- Neither build makes a process-wide call.
-  Both write only inside the template root and push only what `AddPair` pushes on the board.
-  `TestRunOwnerVerdict` registers the board's Bolt replayer in parallel with these builds.
-  A replayer runs only after a rejected push, and nothing else pushes into a template's own bares.
+- Build steps moved as they were, so each start state is the same by construction.
+- Both builds take a `testing.TB` and avoid process-wide calls, as the registration contract requires.
+- `seed` stays outside the template because it differs per site.
 
 ## To check by hand
 
-- Compare the tier 1 time of `internal/loomcli` against `main`.
-  The gain is the build steps the six `beamHub` sites and four `newBadReedUpFixture` sites no longer repeat.
+- Run the `internal/loomcli` tests, including the integration tier, which was not run for this description.
+- Confirm neither build calls `os.Setenv`, `os.MkdirTemp` or `git config --global`, keeps the `TB`'s `Context()` past the build, or calls a package-global seam setter.
+- Confirm each test that installs a process-global seam takes its copies before installing it.
