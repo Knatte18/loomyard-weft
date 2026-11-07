@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -41,6 +41,57 @@
       "output": "",
       "at": "2026-11-07T15:34:41Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/git-config-from-go/_lym/landing/summary.md",
+      "at": "2026-11-07T15:46:31Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-07T15:36:49.092315958Z",
+          "end": "2026-11-07T15:36:49.104599543Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-07T15:40:47.984567165Z",
+          "end": "2026-11-07T15:40:47.997331489Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-07T15:36:49.154358059Z",
+          "end": "2026-11-07T15:40:34.43997299Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-07T15:40:34.909223822Z",
+          "end": "2026-11-07T15:40:47.949649067Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-07T15:40:48.0710779Z",
+          "end": "2026-11-07T15:45:50.053479315Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-07T15:45:50.111734861Z",
+          "end": "2026-11-07T15:45:50.339414996Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-07T15:45:50.393313519Z",
+          "end": "2026-11-07T15:45:50.394865263Z"
+        }
+      ]
     }
   ],
   "product": {
