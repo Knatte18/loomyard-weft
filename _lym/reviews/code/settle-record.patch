@@ -1,0 +1,426 @@
+diff --git a/cmd/lym/crosscompile_test.go b/cmd/lym/crosscompile_test.go
+index cf5fa785..2a183b59 100644
+--- a/cmd/lym/crosscompile_test.go
++++ b/cmd/lym/crosscompile_test.go
+@@ -2,7 +2,7 @@
+ // It runs the real `go` toolchain with GOOS=linux and fails if any package in the module does not build.
+ // That includes every `_linux.go` file, which a native `go test` on Windows never compiles.
+ // It is the mechanical proof that the whole module cross-compiles for Linux.
+-// The test runs in the Tier 2 (`-tags integration`) run.
++// The test runs at tier1, never in the offline tier0 run.
+ // A whole-module `GOOS=linux go build ./...` does not belong in the offline loop (Test Tier Purity Invariant).
+ // The per-batch `GOOS=linux go build` development gates mirror it.
+ //
+diff --git a/cmd/lym/destructiveguard_test.go b/cmd/lym/destructiveguard_test.go
+index 84098e55..78708acd 100644
+--- a/cmd/lym/destructiveguard_test.go
++++ b/cmd/lym/destructiveguard_test.go
+@@ -62,10 +62,10 @@ var destructiveGuardScanPackages = []string{
+ }
+ 
+ // destructiveGuardBannedTokens are the raw substrings a non-test .go file in the scanned packages may not contain.
+-// A file on destructiveGuardAllowlist is exempt.
+ // They name the destructive calls and the reset, replay and remote-branch primitives.
+ // They also name the literals that construct the gate's tokens.
+ // The token literals are banned because this guard, not the type system, keeps the tokens unforgeable.
++// A file on destructiveGuardAllowlist is exempt.
+ var destructiveGuardBannedTokens = []string{
+ 	"RemoveAll(",
+ 	"os.Remove(",
+@@ -126,8 +126,8 @@ var destructiveGuardExcludedDirs = map[string]string{}
+ 
+ // destructiveGuardRecordingExecutors lists the destroy.go executors that must take a leading `rec *Mutations` parameter.
+ // Each row pairs the executor with the raw declaration-line prefix the guard matches against the source.
+-// repointLink has no row: it records nothing of its own, since there is no link_repointed kind,
+-// and it passes rec straight through to removeLink, so it needs no row and is not an exemption.
++// repointLink records nothing of its own, since there is no link_repointed kind;
++// its row pins the leading rec parameter it passes straight through to removeLink.
+ var destructiveGuardRecordingExecutors = []struct {
+ 	name       string
+ 	declPrefix string
+diff --git a/cmd/lym/exitcode_test.go b/cmd/lym/exitcode_test.go
+index ae236769..8d742c8b 100644
+--- a/cmd/lym/exitcode_test.go
++++ b/cmd/lym/exitcode_test.go
+@@ -1,5 +1,5 @@
+ // exitcode_test.go asserts the exit-code contract for the lym cobra root via the run() seam.
+-// It covers help (exit 0), unknown command (exit 1, cobra text), and handler failure (exit 1, JSON envelope).
++// It covers help (exit 0), unknown command (exit 1, JSON envelope), and handler failure (exit 1, JSON envelope).
+ // It also confirms that help paths never emit a JSON error envelope.
+ 
+ package main
+diff --git a/cmd/lym/hermeticenv_test.go b/cmd/lym/hermeticenv_test.go
+index 03ea1786..3af4df5e 100644
+--- a/cmd/lym/hermeticenv_test.go
++++ b/cmd/lym/hermeticenv_test.go
+@@ -69,9 +69,9 @@ type pkgHermeticStatus struct {
+ // It fails for each package that spawns git and lacks the hermetic presence token.
+ // A git-spawn token counts directly or via the gitkit fixture helpers.
+ // A package on the allowedNonHermetic allowlist is exempt.
+-// The walk includes files behind a build constraint.
+-// The git-spawning set is almost exactly the integration-tagged set.
+-// So skipping tagged files would make this guard vacuous.
++// The walk reads every test file, whatever its tier or build constraint.
++// The git-spawning set is almost exactly the tier1 set.
++// So skipping the tiered files would make this guard vacuous.
+ //
+ //lym:guard
+ func TestHermeticGitEnv_GitSpawningPackagesHaveTestMain(t *testing.T) {
+diff --git a/cmd/lym/main_integration_test.go b/cmd/lym/main_integration_test.go
+index 8bd2796f..bf2e1c8b 100644
+--- a/cmd/lym/main_integration_test.go
++++ b/cmd/lym/main_integration_test.go
+@@ -1,6 +1,6 @@
+ // main_integration_test.go holds the module-dispatcher tests.
+ // They seed a real git repo with gitkit.Git(t, cwd, "init") so lymcwd.Resolve succeeds;
+-// the file is integration-tagged per the Test Tier Purity Invariant.
++// its tests run at tier1 per the Test Tier Purity Invariant.
+ 
+ package main
+ 
+diff --git a/cmd/lym/main_test.go b/cmd/lym/main_test.go
+index 70b0c6ef..bcb69145 100644
+--- a/cmd/lym/main_test.go
++++ b/cmd/lym/main_test.go
+@@ -4,7 +4,7 @@
+ // It covers module routing from an uninitialized repo, and that the root hook mints nothing under test.
+ // It also checks that a run without -v keeps the init-time log level.
+ // Help paths and unknown modules live in exitcode_test.go.
+-// The tests that seed a real git repo by spawning gitexec's RunGit(["init"], …) live in main_integration_test.go.
++// The tests that seed a real git repo by running `git init` live in main_integration_test.go.
+ // That placement follows the Test Tier Purity Invariant.
+ 
+ package main
+diff --git a/cmd/lym/pathrules_test.go b/cmd/lym/pathrules_test.go
+index e3c14d63..712c0ada 100644
+--- a/cmd/lym/pathrules_test.go
++++ b/cmd/lym/pathrules_test.go
+@@ -57,7 +57,7 @@ type pathRule struct {
+ // They are tautological with respect to anchoring,
+ // so they cannot catch a production call site that passes the wrong root.
+ // That proof lives in the subpath-anchored PlanTable case in internal/loomengine/plan_test.go.
+-// The other half is the subpath-anchored PersistentPreRunE case in internal/webstercli/verbs_test.go.
++// That proof also lives in the subpath-anchored PersistentPreRunE case in internal/webstercli/verbs_test.go.
+ // pattern.File has no row: the overview sits at the worktree root, not in `_lym` content.
+ // The worktree-root subtest of `TestPlanTable` in internal/loomengine/plan_test.go proves its call site's root.
+ var pathRules = []pathRule{
+diff --git a/cmd/lym/spawnobservability_test.go b/cmd/lym/spawnobservability_test.go
+index 8072c482..8dd75a0a 100644
+--- a/cmd/lym/spawnobservability_test.go
++++ b/cmd/lym/spawnobservability_test.go
+@@ -6,7 +6,7 @@
+ // A raw-substring scan would count doc prose that mentions exec.Command as a spawn.
+ // Detection is file-level import presence.
+ // A file that imports the logger for an unrelated line and spawns unlogged still passes.
+-// Only the spawn half is guarded.
++// Only the spawn half is guarded, not the hard-error returns of outcome switches.
+ // A new unlogged exec.Command is nearly always a real miss.
+ // A new outcome-switch branch may legitimately return normally for the caller to branch on,
+ // so a file-level check on it would fire on correct code.
+diff --git a/cmd/lym/stencilseed.go b/cmd/lym/stencilseed.go
+index 6813882a..13c774cb 100644
+--- a/cmd/lym/stencilseed.go
++++ b/cmd/lym/stencilseed.go
+@@ -122,8 +122,8 @@ func seedStencilsAt(hub, worktree string, mode stencilstore.Mode, running buildv
+ 	// sourceDir exists only to drive the port-back drift warning, which serves an authoring workflow specs do not have;
+ 	// the loomyard-side file is the single source of truth,
+ 	// and a deployed copy is never authored.
+-	// A per-name source mapping is not built either: the travelling docs live in different directories.
+-	// Also, one's basename differs from its registered name, so no single sourceDir shape fits.
++	// A per-name source mapping is not built either: the travelling docs live in different directories,
++	// and one's basename differs from its registered name, so no single sourceDir shape fits.
+ 	if write, due := seedSubtree(fabricengine.SpecsDir(hub), fabricengine.SpecsSubtreeRel(), specs.Registry(), mode, fabricengine.StencilSource(worktree, "", running), "specs"); due {
+ 		writes = append(writes, write)
+ 	}
+diff --git a/cmd/lym/verifiedtree_test.go b/cmd/lym/verifiedtree_test.go
+index b70286bf..b2a21a00 100644
+--- a/cmd/lym/verifiedtree_test.go
++++ b/cmd/lym/verifiedtree_test.go
+@@ -119,8 +119,8 @@ func TestVerifiedTree_NoRetiredMarker(t *testing.T) {
+ 	scankit.RequireFloor(t, scanned, 20, "verified-tree retired-marker scan")
+ }
+ 
+-// TestVerifiedTree_ScanHelpersFireOnOffendingStayQuietOnCompliant proves the scan helpers fire on an offending source,
+-// and they stay quiet on a compliant or commented one.
++// TestVerifiedTree_ScanHelpersFireOnOffendingStayQuietOnCompliant proves the scan helpers fire on offending source.
++// It also proves they stay quiet on compliant or commented source.
+ //
+ //testtiming:keep proves the scan helpers of the TestVerifiedTree_* guards fire on an offending source and stay quiet on a compliant or commented one
+ func TestVerifiedTree_ScanHelpersFireOnOffendingStayQuietOnCompliant(t *testing.T) {
+diff --git a/docs/overview.md b/docs/overview.md
+index 90fd5f40..2d0b226f 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -78,8 +78,8 @@ the module that constructs each of those owns it.
+ 
+ - `Getwd()` — the only permitted call to `os.Getwd` outside `cmd/lym/main.go`.
+ - `Resolve(cwd)` → `*Location` — resolves the current cwd into a legal worktree's coordinates, applying the strict cwd gate.
+-- `ResolveWithAnchor(cwd, anchor)` / `ResolveWorktree(root)` — the ungated variants.
+-  They serve callers that hold something other than an acting cwd; see `docs/shared-libs/lymcwd.md`.
++- `ResolveWorktree(root)` — the ungated variant.
++  It serves callers that hold a worktree root rather than an acting cwd; see `docs/shared-libs/lymcwd.md`.
+ - `NamedWorktree(hubPath, name)` → `*Location` — the coordinates of another worktree of the hub, at that worktree's own anchor.
+ 
+ `Location` carries `RepoName`, `HubPath`, `WorktreeName` and `AnchorRel`, plus the derived accessors `WorktreePath()` and `AnchorPath()`.
+diff --git a/docs/shared-libs/configengine.md b/docs/shared-libs/configengine.md
+index 47f6d6c1..b08c1c71 100644
+--- a/docs/shared-libs/configengine.md
++++ b/docs/shared-libs/configengine.md
+@@ -6,15 +6,12 @@ It is the one place that knows the `_lym/` layout, and it enforces strict valida
+ ## Layout
+ 
+ ```
+-<cwd>/                  ← where `lym init` was run (the current working directory)
+-├── _lym/               git-TRACKED config Hub
+-│   ├── config/         git-TRACKED config files (only source of live values)
+-│   │   ├── loom.yaml       (must match loom module template)
+-│   │   └── worktree.yaml   (must match worktree module template)
+-│   ├── discussion.md    lym task discussion (artifact)
+-│   ├── plan.md         lym task plan (artifact)
+-│   └── reviews/        lym code reviews (artifact directory)
+-├── .env                git-IGNORED — local env values (KEY=value)
++<anchor>/
++├── _lym/
++│   └── config/         git-TRACKED: the worktree layer's files, one <module>.yaml each
++├── .lym/
++│   └── config/         git-IGNORED: the local layer's <module>.local.yaml files
++├── .env                git-IGNORED: local env values (KEY=value)
+ 
+ <hub>/_bolt/_lym/config/
+ └── <module>.yaml       hub-wide: one per hub (must match the module's template)
+@@ -126,7 +123,7 @@ Each caller unmarshals this into its own config struct;
+ a strict caller reads through `Load`, and a degrading caller reads through `LoadOrTemplate`.
+ Callers never see raw YAML or unexpanded tokens.
+ 
+-## Migration from old format
++## Reconciling config files
+ 
+ `lym config reconcile --apply` from the code worktree reconciles all module configs against their templates.
+ The code worktree's `_lym` is a directory junction into its records sibling's `_lym`,
+@@ -135,17 +132,17 @@ no separate command in the records sibling is needed.
+ The files under the hub's board dir, the hub-wide modules' files and the per-worktree repo defaults,
+ are reconciled by `lym config reconcile --layer default`, applied from the hub's prime, and by the hub reconcile the first start verb after a binary change runs.
+ 
+-## Exported functions
+-
+-### `LymDirName` (not exported here)
++## The `_lym` token
+ 
+ [`internal/lymdirs` is the sole declarer](../../PATTERN.md) of the `"_lym"` token (`lymdirs.LymDirName`);
+-`internal/configengine` itself uses `lymdirs.LymDirName` like every other caller and does not declare or export the literal.
++`internal/configengine` uses `lymdirs.LymDirName` like every other caller and does not declare or export the literal.
+ Every module joins its own private relative-path constant onto a `baseDir` directly (e.g. `filepath.Join(baseDir, lymdirs.LymDirName, "plan")`), never onto a fused `"_lym/..."` literal — see the per-segment join rule in [PATTERN-cwd-resolution](../../pattern/PATTERN-cwd-resolution.md).
+ 
++## Exported functions
++
+ ### `ConfigDir(baseDir string) string`
+ 
+-Returns `filepath.Join(baseDir, LymDirName, "config")` — the directory where module configuration YAML files are stored.
++Returns `filepath.Join(baseDir, lymdirs.LymDirName, "config")` — the directory where module configuration YAML files are stored.
+ 
+ ### `ConfigFile(baseDir, module string) string`
+ 
+@@ -153,11 +150,11 @@ Returns `filepath.Join(ConfigDir(baseDir), module+".yaml")` — the path to a sp
+ 
+ ### `StagingFile(baseDir, module string) string`
+ 
+-Returns `filepath.Join(baseDir, DotLymDirName, "config", module+".yaml")` — the ephemeral `.lym` counterpart of `ConfigFile` at the mirrored subpath, where an interactive edit works on a copy that is never tracked.
++Returns `filepath.Join(baseDir, lymdirs.DotLymDirName, "config", module+".yaml")` — the ephemeral `.lym` counterpart of `ConfigFile` at the mirrored subpath, where an interactive edit works on a copy that is never tracked.
+ 
+ ### `ConfigFileRel(module string) string`
+ 
+-Returns `filepath.Join(LymDirName, "config", module+".yaml")` — the anchor-relative form used to build records commit pathspecs, as opposed to `ConfigFile`'s base-joined absolute form.
++Returns `filepath.Join(lymdirs.LymDirName, "config", module+".yaml")` — the anchor-relative form used to build records commit pathspecs, as opposed to `ConfigFile`'s base-joined absolute form.
+ 
+ ### `FindBaseDir(cwd string) (string, error)`
+ 
+@@ -184,9 +181,9 @@ Do not conflate:
+ - Raw `FindBaseDir` error: `not initialized: _lym/ directory not found`
+ - Strict-caller rewrapped: `not initialized here; run "lym fabric reconcile"`
+ 
+-### `Load(baseDir, module string, template []byte) ([]byte, error)`
++### `Load(dirs Dirs, spec Spec) ([]byte, error)`
+ 
+-Loads and resolves a module's configuration from its layer stack under `dirs`; the current signature is `Load(dirs Dirs, spec Spec) ([]byte, error)`.
++Loads and resolves a module's configuration from its layer stack under `dirs`.
+ 
+ **Behavior:** Implements the six-step flow described in the Resolution model section above:
+ check the base layer's `_lym/` exists, read the base file, merge the layers and fill missing template keys, build the environment, and resolve env vars.
+@@ -207,7 +204,7 @@ All error messages include the file path and context to guide the user.
+ **Returns:** On success, the resolved YAML bytes.
+ On error, nil bytes and an error message.
+ 
+-### `LoadOrTemplate(baseDir, module string, template []byte) ([]byte, error)`
++### `LoadOrTemplate(dirs Dirs, spec Spec) ([]byte, error)`
+ 
+ Takes the same arguments and returns the same results as `Load`.
+ A provably-absent base-layer `_lym/` directory or base file resolves the spec's template through `envsource.Build` then `yamlengine.Resolve` instead of erroring — see the "degrading path" in the Resolution model section above.
+@@ -221,11 +218,10 @@ A fallback-path error is keyed on the module, not on a config-file path that doe
+ **Returns:** On success, the resolved YAML bytes (either the on-disk config, or the resolved template on proven absence).
+ On error, nil bytes and an error message.
+ 
+-### `Set(baseDir, module, template string, pairs []yamlengine.KV) ([]string, error)`
++### `Set(dirs Dirs, spec Spec, layer Layer, pairs []yamlengine.KV) ([]string, error)`
+ 
+ Writes an explicit list of key=value pairs into one layer of a module's config.
+ It is the non-interactive path of the `lym config <module> --set key=value` CLI — no editor is invoked and there is no validation loop.
+-The current signature is `Set(dirs Dirs, spec Spec, layer Layer, pairs []yamlengine.KV) ([]string, error)`.
+ 
+ **Behavior:**
+ 
+@@ -247,15 +243,14 @@ The current signature is `Set(dirs Dirs, spec Spec, layer Layer, pairs []yamleng
+ - **Unknown config key(s):** Returns error `unknown config key(s): <requested keys> (known: <template's known keys>)`.
+ - **Read/write failure:** Propagates the underlying filesystem error.
+ 
+-**Returns:** On success, the sorted list of pre-existing top-level config keys not present in `template` that were preserved verbatim rather than dropped (see `internal/yamlengine`'s `SetValues` documentation for the full preservation mechanism),
++**Returns:** On success, the sorted list of pre-existing top-level config keys not present in the spec's template that were preserved verbatim rather than dropped (see `internal/yamlengine`'s `SetValues` documentation for the full preservation mechanism),
+ and a nil error.
+ This list is nil/empty when no such orphaned key was present.
+ On any error return, the returned `[]string` is always nil.
+ 
+-### `Edit(baseDir, module, template string, edit EditorFunc) error`
++### `Edit(dirs Dirs, spec Spec, layer Layer, edit EditorFunc) error`
+ 
+ Opens one layer's file of a module in an editor, validates the YAML syntax, and loops on a validation failure.
+-The current signature is `Edit(dirs Dirs, spec Spec, layer Layer, edit EditorFunc) error`.
+ An absent base layer is scaffolded first:
+ the header for a hub's sparse base, the template for a standalone or seed-only one;
+ an absent layer above the base is scaffolded empty.
+diff --git a/docs/shared-libs/lymcwd.md b/docs/shared-libs/lymcwd.md
+index 6ba011e7..c308d9dc 100644
+--- a/docs/shared-libs/lymcwd.md
++++ b/docs/shared-libs/lymcwd.md
+@@ -56,16 +56,6 @@ On failure, one of two errors:
+ `Resolve` does NOT check for `_lym/`;
+ that stays in `internal/configengine`.
+ 
+-### `ResolveWithAnchor(cwd, anchor string) (*Location, error)`
+-
+-Builds a `Location` as `Resolve` does, but takes the anchor as a parameter instead of reading the recorded marker.
+-It applies NO cwd gate.
+-
+-**This is a bypass, not a general-purpose resolver.**
+-A caller reaching for `ResolveWithAnchor` to escape a gate failure is misusing it — the correct fix is to stand in the anchored directory.
+-It stays ungated because its callers stand somewhere the strict gate would reject.
+-For example, a fresh clone passes the new worktree root while the anchor may be a non-`"."` subpath.
+-
+ ### The recorded anchor
+ 
+ A worktree's anchor is read in this order:
+diff --git a/internal/adoptcli/deps_test.go b/internal/adoptcli/deps_test.go
+index 19d467ab..26293333 100644
+--- a/internal/adoptcli/deps_test.go
++++ b/internal/adoptcli/deps_test.go
+@@ -1,5 +1,5 @@
+-// deps_test.go covers the hub-only pause reading and the adopt check start's guard under go test;
+-// its alive skip, its liveness reading, and the adopt gate tiers it carries.
++// deps_test.go covers the hub-only pause reading and the adopt check start's guard under go test.
++// It also covers the start's alive skip, its liveness reading, and the adopt gate tiers it carries.
+ 
+ package adoptcli
+ 
+diff --git a/internal/adoptcli/doc.go b/internal/adoptcli/doc.go
+index 3ab8af9a..6066d215 100644
+--- a/internal/adoptcli/doc.go
++++ b/internal/adoptcli/doc.go
+@@ -311,7 +311,8 @@
+ // At the end it reads `adopt check of <subject> green` or `adopt check of <subject> failed` with every tier it ran.
+ // A failure before any tier ended reads as a failure naming `lym beam status`.
+ // `primeMark` shows the mark joined, by ` | `, with the mark of each other running subject.
+-// The marks are sorted by subject, and the state is running while any joined record runs.
++// The other marks follow the subject's own, sorted by subject.
++// The state is running while any joined record runs.
+ // A post or mark that fails is logged and changes nothing.
+ // Bound: a check killed before its end leaves its last running mark, with its seconds still growing.
+ // The mark stays until the next check sets one or the prime's session ends.
+diff --git a/internal/lymcwd/gate_test.go b/internal/lymcwd/gate_test.go
+index cc2a6bd9..38b89a40 100644
+--- a/internal/lymcwd/gate_test.go
++++ b/internal/lymcwd/gate_test.go
+@@ -1,5 +1,6 @@
+ // gate_test.go covers the strict cwd anchor gate (checkCwdAnchorGate) and its path comparator (samePath) as pure path-math tables — no git spawning, no fixture trees.
+-// It also pins ResolveWithAnchor and ResolveWorktree as permanently ungated at each of the gate's own rejection triples, so a later "consistency" change cannot quietly gate either bypass and break clone/gitkit.
++// It also pins ResolveWorktree as ungated at each triple the gate rejects,
++// so a later "consistency" change cannot gate the bypass its callers rely on.
+ // Every test here is parallel: none touches process-global state.
+ 
+ package lymcwd
+@@ -15,9 +16,11 @@ import (
+ )
+ 
+ // TestCheckCwdAnchorGate covers the (cwd, anchorRel, worktreePath) triple space: exact match resolves, a subdirectory errors, a parent errors, and a sibling errors.
+-// At every triple the gate rejects, it also pins ResolveWithAnchor and ResolveWorktree as permanently ungated: buildLocation with applyGate=false, the shared body both entry points route through with git-spawning already done, must still succeed with the anchorRel as given.
+-// That guards clone, whose freshly-cloned worktree root sits above a non-"." subpath anchor, and gitkit's synthetic-hub anchor injection, so a later "consistency" change cannot quietly gate either bypass.
+-// buildLocation is exercised directly rather than the two exported entry points, so the file stays untagged with no git spawned; they are one-line wrappers over this same applyGate=false path.
++// At every triple the gate rejects, it also pins ResolveWorktree as ungated:
++// buildLocation with applyGate=false must still succeed with the anchorRel as given.
++// A ResolveWorktree caller holds a worktree root, which sits above a subpath anchor the gate would reject.
++// buildLocation is exercised directly, so the file spawns no git and stays untagged;
++// ResolveWorktree reaches the same applyGate=false path after finding the worktree root.
+ //
+ //testtiming:keep pins the gate's accept and reject verdicts per triple as pure path math, which the resolution scenario covering its blocks only reaches through a real checkout
+ func TestCheckCwdAnchorGate(t *testing.T) {
+diff --git a/internal/lymcwd/lymcwd.go b/internal/lymcwd/lymcwd.go
+index c925e179..28c6795b 100644
+--- a/internal/lymcwd/lymcwd.go
++++ b/internal/lymcwd/lymcwd.go
+@@ -93,15 +93,6 @@ func ResolveWorktree(worktreeRoot string) (*Location, error) {
+ 	return resolveCore(worktreeRoot, false)
+ }
+ 
+-// ResolveWithAnchor builds a Location as Resolve does, but takes the anchor as a parameter.
+-// It applies no cwd gate.
+-// It is not a general resolver: a caller that uses it to escape a gate failure is misusing it,
+-// and the fix is to stand in the anchored directory.
+-// Its callers, such as a fresh clone, stand where the gate would reject them, so it must stay ungated.
+-func ResolveWithAnchor(cwd, anchor string) (*Location, error) {
+-	return resolveWithAnchorCore(cwd, anchor, false)
+-}
+-
+ // NamedWorktree builds the Location of the worktree called name in the hub at hubPath.
+ // AnchorRel is that worktree's own recorded anchor, with the hub-wide fallback and then "." when none is recorded.
+ // It applies no cwd gate, spawns no git, and needs neither the worktree nor its records sibling to exist.
+@@ -152,18 +143,6 @@ func resolveCore(cwd string, applyGate bool) (*Location, error) {
+ 	return buildLocation(cwd, workTreeRoot, hubPath, anchorRel, applyGate)
+ }
+ 
+-// resolveWithAnchorCore is the shared body behind ResolveWithAnchor.
+-// It finds the worktree root from cwd and takes anchor as a parameter instead of reading the recorded marker.
+-func resolveWithAnchorCore(cwd, anchor string, applyGate bool) (*Location, error) {
+-	workTreeRoot, err := gitWorktreeRoot(cwd)
+-	if err != nil {
+-		return nil, err
+-	}
+-
+-	hubPath := filepath.Dir(workTreeRoot)
+-	return buildLocation(cwd, workTreeRoot, hubPath, anchor, applyGate)
+-}
+-
+ // gitWorktreeRoot finds the worktree root at or above cwd in-process, as `git rev-parse --show-toplevel` does.
+ // It resolves the symlinks in cwd first, so the walk climbs the real parent directories.
+ // A cwd reached through a symlinked path then gets the same hub path and reed socket key as through its real path.
+diff --git a/internal/websterengine/render.go b/internal/websterengine/render.go
+index 6e629337..55acbd1b 100644
+--- a/internal/websterengine/render.go
++++ b/internal/websterengine/render.go
+@@ -8,8 +8,9 @@
+ // so the implementer reads its own card in its own turn.
+ // Each Render*Prompt takes a notePath for the friction directive.
+ // A friction.Directive error is logged and swallowed rather than returned.
+-// RenderForkPrompt and RenderRecoveryPrompt require specsDir and gateTiers.
+-// A blank specsDir would reproduce a dead cross-repository reference in the agent's instructions.
++// RenderForkPrompt and RenderRecoveryPrompt require a non-blank specsDir for the required specs_dir marker.
++// The fill refuses a blank one, which would leave a dead cross-repository reference in the agent's instructions.
++// A blank gateTiers renders "none".
+ 
+ package websterengine
+ 
+@@ -198,7 +199,7 @@ func RenderForkPrompt(batch batcher.Batch, cardGates, batchGate, prevDigest, rep
+ 
+ // RenderRecoveryPrompt fills RecoveryTemplate for one batch's cold-start recovery strand, read from stencilsDir.
+ // The recovery strand inherits nothing;
+-// its prompt orients from plan/overview.md and from any PATTERN entries before the shared implementer-job body runs.
++// its prompt orients from plan/00-overview.md and from any PATTERN entries before the shared implementer-job body runs.
+ // {{.worktree_root}} is filled from the caller-supplied promptWorktreeRoot, the pane's own cwd;
+ // the card pointers are spelled relative to it.
+ // repoRoot is the repository's worktree root holding PATTERN.md, and it feeds pattern.Directive alone.
