@@ -573,7 +573,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge's shape templates, relocation and copy in internal/hubforge/template.go\nDelivers: a registration of key, base Shape and build function, built once per binary under a lock per key with a refusing testing.TB and the upstream-tip check, and a copy call that takes it; the PATTERN-test-isolation background gains the registered template\nExports: the registration type and its copy call in internal/hubforge\n\nThe part changes these packages:\n\n- internal/hubforge (about 450 changed lines)\n",
-      "status": "running · Code-Burler-Review",
+      "status": "running · Code-Burler-Fix",
       "created": "2026-11-07T14:15:14Z",
       "revised": "2026-11-07T14:15:14Z",
       "profile": "solid",
