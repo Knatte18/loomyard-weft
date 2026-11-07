@@ -422,7 +422,6 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nReport `docs/research/turns/batching-hook-remeasure-2026-11-05` (d05c8d75): the hook fired 13 times in 22 runs; 156 edit follows met 2 edit firings, while a replay of the hook on one recorded edit follow fires. Edit follows rose from 4.2% to 6.9% of context (Webster forks 6.9% to 11.2%), all mid-round, none after a failed gate. The report recommends removing the hook and names the live gap as its one open question.\n\n## Idea\n\nFind why the hook does not fire live on edit follows before deciding to remove it: either fix the live gap and measure again, or remove the hook. Mid-round edit splitting is where the edit-round rule fails, so a fix there is what matters.",
-      "status": "draft",
       "created": "2026-11-05T19:23:48Z",
       "revised": "2026-11-07T12:03:46Z",
       "profile": "light"
@@ -680,6 +679,7 @@
       "isolated": false,
       "brief": "Made fires before the config reconcile and its warning is dropped",
       "body": "## Seen\n\nThe operator (2026-11-07): after `lym fabric clone`, heddle's files are not rendered in the prime worktree, while a worktree that fabric adds gets them.\n\nIn code the clone does tell heddle: `internal/fabriccli/clone.go` calls `fabricengine.NotifyWorktreeMade(l)` for the prime right after `WireJunctionsWith`, and `heddleengine.Seam.Made` renders every target.\nTwo things differ from the add path, which calls it last in `Topology.add`:\n\n- The clone fires it before `configsync.ReconcileAll` writes the per-worktree module configs and before their commit, so a render that reads config may find none yet.\n- The clone discards the warning text `NotifyWorktreeMade` returns, so a failed render shows only in the log at Warn and the operator is never told; the add path's handling is not checked.\n\nWhich of the two, or what else, leaves the prime unrendered is not confirmed; the clone's log holds the seam warning if the render failed.\n\n## Wanted\n\nA `lym fabric clone` leaves the prime with heddle's files rendered, as a worktree fabric adds has them.\nA failed render on clone is printed with its way forward, `lym heddle render` in the prime, not only logged.\n",
+      "status": "running · Worktree-Create",
       "created": "2026-11-07T11:57:26Z",
       "revised": "2026-11-07T12:03:45Z",
       "profile": "light"
