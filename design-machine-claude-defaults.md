@@ -22,7 +22,8 @@ A Claude session not started by lym, or lym sessions on a machine running an old
   It holds the hub-wide keys: `attribution` empty, and the model and effort defaults from lym's config.
 - Fabric triggers it through the worktree seam, on a worktree it adds and on the prime at `fabric clone`, which `clone-prime-heddle-unrendered` makes work.
 - Heddle is the one place every per-worktree file lym seeds is declared, so a new one is a new heddle target.
-- Claude Code writes the permissions the operator approves into `settings.local.json`, so heddle merges its own keys into the file and keeps every other key; it never overwrites the file whole.
+- Heddle owns the file whole, as it owns `CLAUDE.local.md`: no file is there before lym, and none exists in this machine's worktrees (operator, 2026-11-07).
+  Claude Code writes a permission approved with "don't ask again" into `settings.local.json`, and heddle's next render drops it; lym sessions run with permissions bypassed, so this rarely matters.
   The file stays untracked, through the warp exclude list as `CLAUDE.local.md` does: fabric's `warp_exclude` key (`internal/fabricengine/template.yaml`, today `CLAUDE.local.md AGENTS.override.md .heddle`) gains `.claude/settings.local.json`, and fabric writes the list into the warp repository's `.git/info/exclude` before the seam fires, so heddle writes only after the line is in place.
   A hub whose `fabric.yaml` sets its own `warp_exclude` gets the new path through the config reconcile.
   Check whether heddle's targets should declare the paths they write, with fabric reading them from heddle, so a new target needs no second edit in fabric's config.
