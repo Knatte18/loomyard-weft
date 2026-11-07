@@ -564,31 +564,6 @@
       "discussed": true
     },
     {
-      "id": 1209,
-      "handle": "T11",
-      "slug": "loomcli-templates",
-      "title": "internal/loomcli beamHub and newBadReedUpFixture onto registered templates",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "fabric",
-        "testkit",
-        "git"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge-registered-templates' registration\nDelivers: beamHub built by a registration, and newBadReedUpFixture's base, the hub with the corrupted reed line and the pair, as a template with each site's seed run on its copy\nExports: nothing\n\nThe part changes these packages:\n\n- internal/loomcli (about 80 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-07T14:15:14Z",
-      "revised": "2026-11-07T14:15:14Z",
-      "profile": "light",
-      "project": "fabric-test-speed-work",
-      "discussed": true
-    },
-    {
       "id": 1210,
       "handle": "T12",
       "slug": "battencli-templates",
@@ -735,7 +710,6 @@
         "copyhub-fixtures-and-hook",
         "git-config-from-go",
         "hubreconcile-templates",
-        "loomcli-templates",
         "battencli-templates"
       ],
       "isolated": false,

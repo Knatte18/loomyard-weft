@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-fabric-test-speed-remeasure.md)
 
-Depends on: [`copyhub-fixtures-and-hook`](design-copyhub-fixtures-and-hook.md), [`git-config-from-go`](design-git-config-from-go.md), [`hubreconcile-templates`](design-hubreconcile-templates.md), [`loomcli-templates`](design-loomcli-templates.md), [`battencli-templates`](design-battencli-templates.md)
+Depends on: [`copyhub-fixtures-and-hook`](design-copyhub-fixtures-and-hook.md), [`git-config-from-go`](design-git-config-from-go.md), [`hubreconcile-templates`](design-hubreconcile-templates.md), [`battencli-templates`](design-battencli-templates.md)
 
 Filed from the Sketch `fabric-test-speed`.
 
