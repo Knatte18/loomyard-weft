@@ -42,7 +42,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **Settings shared by every session of a worktree come only from the heddle-rendered file; per-session ones stay per session** | [`claude-settings-model-effort`](design-claude-settings-model-effort.md) | 23m<br>1m | claude, config, shuttle |
+| E1 |  | **Settings shared by every session of a worktree come only from the heddle-rendered file; per-session ones stay per session** | [`claude-settings-model-effort`](design-claude-settings-model-effort.md) | 24m<br>1m | claude, config, shuttle |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 11d<br>1d | batten, stencil, config |
 | E4 |  | **trusted_hubs lists shortnames, which neither say which repository is meant nor identify it**<br>• List trusted hubs by full repository name instead of shortname | [`creel-trust-by-repo-name`](design-creel-trust-by-repo-name.md) | 6h<br>6h | creel |
 | E7 |  | **Each part agent plans and builds its own part, instead of joining the parts into one plan** | [`parts-plan-and-build`](design-parts-plan-and-build.md) | 4d<br>1d | loom |

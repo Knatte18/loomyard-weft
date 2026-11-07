@@ -10,11 +10,11 @@ Groups the entries filed from the Sketch `fabric-test-speed`: hubforge-registere
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (10)
+## Tasks (9)
 
 Concrete and claimable; only a task can run.
 
-### Running (5)
+### Running (4)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -22,7 +22,6 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **A slimmer hubforge.CopyHub: packed templates, no walk per copy, two-process binding fold** | [`hubforge-slim-copy`](design-hubforge-slim-copy.md)<br>[Sketch](decision-hubforge-slim-copy.md) | darn · light | Code-Burler-Fix | neve | 1h<br>1h | fabric, testkit, git |
 | T10 | **internal/hubreconcile fixtures onto registered templates and CopyHub, with the held-lock test at tier 0** | [`hubreconcile-templates`](design-hubreconcile-templates.md)<br>[Sketch](decision-hubreconcile-templates.md) | darn · light | Describe | neve | 1h<br>1h | fabric, testkit, git |
-| T11 | **internal/loomcli beamHub and newBadReedUpFixture onto registered templates** | [`loomcli-templates`](design-loomcli-templates.md)<br>[Sketch](decision-loomcli-templates.md) | darn · light | Finalize | neve | 1h<br>1h | fabric, testkit, git |
 | T12 | **internal/battencli beamHub onto a registered template** | [`battencli-templates`](design-battencli-templates.md)<br>[Sketch](decision-battencli-templates.md) | darn · light | Finalize | neve | 1h<br>1h | fabric, testkit, git |
 | T13 | **Fold the overlapping internal/fabricengine tests the tier 1 report read** | [`fabric-test-folds`](design-fabric-test-folds.md)<br>[Sketch](decision-fabric-test-folds.md) | darn · light | Code-Bouncer | neve | 1h<br>1h | fabric, testkit, git |
 
@@ -63,8 +62,16 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T17 | **Re-measure tier 1 and internal/fabricengine after the fabric test speed tasks land** | [`fabric-test-speed-remeasure`](design-fabric-test-speed-remeasure.md)<br>[Sketch](decision-fabric-test-speed-remeasure.md) | darn · docs | T16<br>T7<br>T10<br>T11<br>T12 | 1h<br>1h | fabric, testkit, git |
+| T17 | **Re-measure tier 1 and internal/fabricengine after the fabric test speed tasks land** | [`fabric-test-speed-remeasure`](design-fabric-test-speed-remeasure.md)<br>[Sketch](decision-fabric-test-speed-remeasure.md) | darn · docs | T16<br>T7<br>T10<br>T12 | 1h<br>1h | fabric, testkit, git |
 
 ## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T11 | **internal/loomcli beamHub and newBadReedUpFixture onto registered templates** | [`loomcli-templates`](design-loomcli-templates.md)<br>[Sketch](decision-loomcli-templates.md) | 1h<br>1h | fabric, testkit, git |

@@ -58,15 +58,15 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 4d<br>1d | shuttle, codex, loom |
 
-## [P3 Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes](project-fabric-test-speed-work.md) (10)
+## [P3 Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes](project-fabric-test-speed-work.md) (9)
 
 [`fabric-test-speed-work`](design-fabric-test-speed-work.md) · Age 1h · Owner `neve`
 
-### Tasks (10)
+### Tasks (9)
 
 Concrete and claimable; only a task can run.
 
-#### Running (5)
+#### Running (4)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -74,7 +74,6 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **A slimmer hubforge.CopyHub: packed templates, no walk per copy, two-process binding fold** | [`hubforge-slim-copy`](design-hubforge-slim-copy.md)<br>[Sketch](decision-hubforge-slim-copy.md) | darn · light | Code-Burler-Fix | neve | 1h<br>1h | fabric, testkit, git |
 | T10 | **internal/hubreconcile fixtures onto registered templates and CopyHub, with the held-lock test at tier 0** | [`hubreconcile-templates`](design-hubreconcile-templates.md)<br>[Sketch](decision-hubreconcile-templates.md) | darn · light | Describe | neve | 1h<br>1h | fabric, testkit, git |
-| T11 | **internal/loomcli beamHub and newBadReedUpFixture onto registered templates** | [`loomcli-templates`](design-loomcli-templates.md)<br>[Sketch](decision-loomcli-templates.md) | darn · light | Finalize | neve | 1h<br>1h | fabric, testkit, git |
 | T12 | **internal/battencli beamHub onto a registered template** | [`battencli-templates`](design-battencli-templates.md)<br>[Sketch](decision-battencli-templates.md) | darn · light | Finalize | neve | 1h<br>1h | fabric, testkit, git |
 | T13 | **Fold the overlapping internal/fabricengine tests the tier 1 report read** | [`fabric-test-folds`](design-fabric-test-folds.md)<br>[Sketch](decision-fabric-test-folds.md) | darn · light | Code-Bouncer | neve | 1h<br>1h | fabric, testkit, git |
 
@@ -115,11 +114,19 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T17 | **Re-measure tier 1 and internal/fabricengine after the fabric test speed tasks land** | [`fabric-test-speed-remeasure`](design-fabric-test-speed-remeasure.md)<br>[Sketch](decision-fabric-test-speed-remeasure.md) | darn · docs | T16<br>T7<br>T10<br>T11<br>T12 | 1h<br>1h | fabric, testkit, git |
+| T17 | **Re-measure tier 1 and internal/fabricengine after the fabric test speed tasks land** | [`fabric-test-speed-remeasure`](design-fabric-test-speed-remeasure.md)<br>[Sketch](decision-fabric-test-speed-remeasure.md) | darn · docs | T16<br>T7<br>T10<br>T12 | 1h<br>1h | fabric, testkit, git |
 
 ### Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T11 | **internal/loomcli beamHub and newBadReedUpFixture onto registered templates** | [`loomcli-templates`](design-loomcli-templates.md)<br>[Sketch](decision-loomcli-templates.md) | 1h<br>1h | fabric, testkit, git |
 
 ## [P0 Root: entries under no project](project-root.md) (20)
 
@@ -159,7 +166,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **Settings shared by every session of a worktree come only from the heddle-rendered file; per-session ones stay per session** | [`claude-settings-model-effort`](design-claude-settings-model-effort.md) | 23m<br>1m | claude, config, shuttle |
+| E1 |  | **Settings shared by every session of a worktree come only from the heddle-rendered file; per-session ones stay per session** | [`claude-settings-model-effort`](design-claude-settings-model-effort.md) | 24m<br>1m | claude, config, shuttle |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 11d<br>1d | batten, stencil, config |
 | E4 |  | **trusted_hubs lists shortnames, which neither say which repository is meant nor identify it**<br>• List trusted hubs by full repository name instead of shortname | [`creel-trust-by-repo-name`](design-creel-trust-by-repo-name.md) | 6h<br>6h | creel |
 | E7 |  | **Each part agent plans and builds its own part, instead of joining the parts into one plan** | [`parts-plan-and-build`](design-parts-plan-and-build.md) | 4d<br>1d | loom |
