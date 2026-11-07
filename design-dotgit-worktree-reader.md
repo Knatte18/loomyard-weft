@@ -2,6 +2,8 @@
 
 `dotgit-worktree-reader` · Task · enhancement, fabric, testkit, git · running · Describe
 
+Decision record: [Sketch](decision-dotgit-worktree-reader.md)
+
 Filed from the Sketch `fabric-test-speed`.
 
 Takes: dotgit's FindRoot and Read, fabricengine.List's porcelain parse, and websterengine's otherWorktrees
