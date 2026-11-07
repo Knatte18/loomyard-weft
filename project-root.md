@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-07 09:47 UTC; every age below is as of then.
+Rendered 2026-11-07 10:00 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | Darn-Write | neve | 6d<br>19h | fabric |
+| T4 | **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | Darn-Write | neve | 6d<br>20h | fabric |
 
 ### Ready (0)
 
@@ -32,9 +32,9 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Comment lint: enforce scribe:prose line-length rule on // comment lines**<br>• lint-comments enforces the line-length rule scribe:prose sets, once it lands | [`comment-lint-line-length`](design-comment-lint-line-length.md) | darn · light |  | 24m<br>12m | loom |
+| T1 | `draft` **Comment lint: enforce scribe:prose line-length rule on // comment lines**<br>• lint-comments enforces the line-length rule scribe:prose sets, once it lands | [`comment-lint-line-length`](design-comment-lint-line-length.md) | darn · light |  | 37m<br>25m | loom |
 
-## Notes (29)
+## Notes (30)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -43,10 +43,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R2 |  | **Re-measure writer exploration and the carry of lookup results after the Discussion stencil change**<br>• Re-run the writer-lookups measurement on 10 tapestry runs, pricing the carry saved by early explore subagents | [`writer-lookups-remeasure`](design-writer-lookups-remeasure.md) | 2d<br>1d | loom, stencil |
-| R3 |  | **Trial creel mail across hubs**<br>• A darn docs run in which the loomyard orch drives a run in lyt from start to landing through creel alone | [`creel-cross-hub-trial`](design-creel-cross-hub-trial.md) | 21h<br>21h |  |
+| R3 |  | **Trial creel mail across hubs**<br>• A darn docs run in which the loomyard orch drives a run in lyt from start to landing through creel alone | [`creel-cross-hub-trial`](design-creel-cross-hub-trial.md) | 22h<br>22h |  |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>1d | loom, stencil |
 
-### Bugs (8)
+### Bugs (9)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -54,10 +54,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B2 |  | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | 1d<br>1d | tools, claude |
 | B3 |  | **A Codex seat that read its skills is logged as not having loaded them**<br>• All five skills logged not loaded though the rollout shows SKILL.md read; cause not found | [`codex-skill-load-false-missing`](design-codex-skill-load-false-missing.md) | 20h<br>20h | shuttle, codex |
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 1d<br>1d | reed, orch |
-| B5 |  | **A session cycle sent /compact with a leading space, so it reached the orch as a plain prompt**<br>• A space in the input box reads as empty, and the slash command then fails silently | [`compact-leading-space`](design-compact-leading-space.md) | 50m<br>50m | shuttle, orch |
-| B6 |  | **Subagents spawned by a writer load no language skills, so their comments miss the scribe rules**<br>• Language skills reach the roles lym starts, not the subagents those roles spawn | [`subagents-skip-language-skills`](design-subagents-skip-language-skills.md) | 45m<br>45m | shuttle, stencil |
-| B7 |  | **The gate fixer loads only the language skills, not prose or code-quality**<br>• Every code role but the gate fixer starts from scribe:prose, code-quality and testing | [`gate-fixer-no-prose-skills`](design-gate-fixer-no-prose-skills.md) | 29m<br>29m | gate, loom |
-| B8 |  | **lym shuttle open sessions write a 1h prompt cache instead of their role's 5m**<br>• The open path seems not to set CLAUDE_CODE_PROMPT_CACHE_TTL | [`shuttle-open-cache-ttl`](design-shuttle-open-cache-ttl.md) | 1m<br>0m | shuttle, claude |
+| B5 |  | **A session cycle sent /compact with a leading space, so it reached the orch as a plain prompt**<br>• A space in the input box reads as empty, and the slash command then fails silently | [`compact-leading-space`](design-compact-leading-space.md) | 1h<br>1h | shuttle, orch |
+| B6 |  | **Subagents spawned by a writer load no language skills, so their comments miss the scribe rules**<br>• Language skills reach the roles lym starts, not the subagents those roles spawn | [`subagents-skip-language-skills`](design-subagents-skip-language-skills.md) | 58m<br>58m | shuttle, stencil |
+| B7 |  | **The gate fixer loads only the language skills, not prose or code-quality**<br>• Every code role but the gate fixer starts from scribe:prose, code-quality and testing | [`gate-fixer-no-prose-skills`](design-gate-fixer-no-prose-skills.md) | 42m<br>42m | gate, loom |
+| B8 |  | **lym shuttle open sessions write a 1h prompt cache instead of their role's 5m**<br>• The open path seems not to set CLAUDE_CODE_PROMPT_CACHE_TTL | [`shuttle-open-cache-ttl`](design-shuttle-open-cache-ttl.md) | 14m<br>13m | shuttle, claude |
+| B9 |  | **Subagents spawned without an effort run at xhigh, not the medium settings name**<br>• Haiku workers with no effort in the Agent call ran at xhigh | [`subagent-default-effort-xhigh`](design-subagent-default-effort-xhigh.md) | 0m<br>0m | shuttle, claude, stencil |
 
 ### Enhancements (6)
 
@@ -74,7 +75,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 5w<br>10d | burler |
+| F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 5w<br>11d | burler |
 | F2 |  | **Slack presence follows where the operator writes, with a reed toggle**<br>• lym switches presence on an operator Slack message or pane line, tells operator lines from its own injects, and shows a slack on/off toggle in reed | [`slack-presence-auto`](design-slack-presence-auto.md) | 1d<br>1d | reed, shuttle |
 | F8 |  | **fabric reset: reset warp to a SHA and re-anchor the weft trailers**<br>• The post-conclude undo the merge surface does not ship: reset to a warp SHA, resolve the paired weft SHA through the correspondence index, gate both sides | [`fabric-reset-to-sha`](design-fabric-reset-to-sha.md) | 4w<br>4d | fabric |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 8d<br>1d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
@@ -84,7 +85,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 2w<br>1d | loom, board, batten, workspaces |
 | F16 |  | **Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | 4d<br>1d | drift, shed |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>1d | burler, shed, orch, quarry, report |
-| F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 2d<br>21h | board, orch, workspaces |
+| F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 2d<br>22h | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 2d<br>2d | batten, board, fabric, workspaces |
 
 ## Done (1)
