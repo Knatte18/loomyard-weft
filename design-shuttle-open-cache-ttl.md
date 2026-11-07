@@ -4,7 +4,8 @@
 
 ## Seen
 
-Reported by the `comment-cleanup` writer (2026-11-07), not yet checked by the hub orch.
+Reported by the `comment-cleanup` writer (2026-11-07), and confirmed in code by the hub orch: `buildOpenCmd` in `internal/shuttleengine/claudeengine/command.go` takes no TTL and sets no `CLAUDE_CODE_PROMPT_CACHE_TTL`, while `buildLaunchCmd` and `buildResumeCmd` do.
+Which other lym windows launch through `OpenLaunch` besides `lym shuttle open` is not checked.
 Sessions opened with `lym shuttle open` write their prompt cache with a 1h TTL: their transcripts show `ephemeral_1h_input_tokens`.
 `claude.yaml` resolves `prompt_cache_ttl` to 5m for their role.
 Sessions started by `lym shuttle run`, and their subagents, write 5m.
