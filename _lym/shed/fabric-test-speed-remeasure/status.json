@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -41,6 +41,39 @@
       "output": "",
       "at": "2026-11-07T16:52:58Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/fabric-test-speed-remeasure/_lym/landing/summary.md",
+      "at": "2026-11-07T16:57:38Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-07T16:57:15.114448494Z",
+          "end": "2026-11-07T16:57:15.124215219Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-07T16:57:15.166284954Z",
+          "end": "2026-11-07T16:57:15.180478187Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-07T16:57:15.226205963Z",
+          "end": "2026-11-07T16:57:15.426090039Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-07T16:57:15.470074425Z",
+          "end": "2026-11-07T16:57:15.470201072Z"
+        }
+      ]
     }
   ],
   "product": {
