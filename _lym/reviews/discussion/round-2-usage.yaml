@@ -7,6 +7,12 @@ lenses:
     - existing-paths
     - bound-breaker
     - walkthrough
+fix_lenses:
+    - fix-consistency
+    - fix-claims
+    - fix-proposal
+    - fix-way-forward
+fix_forks: 4
 review:
     engine: claude
     model: opus
@@ -21,4 +27,14 @@ review:
     fork_fresh_tokens: 116833
     fork_cache_read_tokens: 2432196
     fork_fresh_share: 0.32220637998030904
+fix:
+    engine: claude
+    model: opus
+    effort: medium
+    start: 2026-11-07T13:49:16Z
+    end: 2026-11-07T14:53:29.90168308+01:00
+    wall_seconds: 253.90168308
+    tokens_known: true
+    fresh_tokens: 141536
+    cache_read_tokens: 1289104
 attempt: "2"
