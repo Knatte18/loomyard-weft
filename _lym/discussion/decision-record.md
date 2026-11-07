@@ -27,6 +27,12 @@ Commit the report and no code.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-07): One extra package pass with -run .
+
+Decision: Run 'lym gate test --tier 1 ./internal/fabricengine -- -count=1 -shuffle=off -run .' once, in the foreground with the Bash tool timeout 3600000, as the package measurement in place of the carried run 2; record its load and runs in flight as for the others. The cap rises by this one run and no other. Report run 2 as carried and why.
+
+Rationale: The carry defeated the package pass; '-run .' selects every test, so it measures the same work under a different argument list.
+
 ## Constraints
 
 ## Auto-mode assumptions
