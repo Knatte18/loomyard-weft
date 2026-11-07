@@ -24,8 +24,9 @@ The operator (2026-11-07): `_source.txt` is noise and is no part of the drift ch
 Drift checks only what the code's results are.
 A capture's provenance and other cells that differ between two captures of the same code never fail a gate, never re-prompt a writer and never reach the parent, with no `drift.yaml` entry needed.
 
-- Drift-Baseline captures twice on the branch point, the same code. Every file and every cell that differs between the two captures is noise: the run records it beside the volatile lists in its scope record, and no listing, expectation, check or gate sees it. A file present in one capture only counts as noise too.
-- The recorded noise is named in the landing's `## Regression check`, so the operator sees what was left out.
-- `volatile_files` and `volatile_keys` stay, for noise two captures in a row do not show.
+- The agent that decides what drift is acceptable tells metadata from results itself (operator, 2026-11-07): a capture's provenance, such as `_source.txt` with its commit SHA and capture time, timestamps, run ids and host names are metadata, not results.
+  No hub lists them: `volatile_files` and `volatile_keys` are not the way, and no hub's `drift.yaml` needs them for metadata.
+- Whatever agent sees the capture first, under `diff: lines` and `diff: command` alike, marks each metadata file and key, the run records the marks in its scope record, and no later listing, expectation, check or gate shows them to an agent or fails on them.
+- The marks are named in the landing's `## Regression check`, so the operator sees what was left out.
 - A gate failure that consists only of cells the writer cannot change ends the gate at once instead of re-prompting, and the parent gets one question, not one from the gate and one from the driver.
 - Agents never call a noise cell "not equal": no stencil, listing or prompt shows one to them.

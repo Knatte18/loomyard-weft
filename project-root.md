@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-07 11:03 UTC; every age below is as of then.
+Rendered 2026-11-07 11:06 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -32,8 +32,8 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Comment lint: enforce scribe:prose line-length rule on // comment lines**<br>• lint-comments enforces the line-length rule scribe:prose sets, once it lands | [`comment-lint-line-length`](design-comment-lint-line-length.md) | darn · light | T4 | 1h<br>0m | loom |
-| T2 | **Drift fails runs on capture noise such as _source.txt that is no part of the results** | [`drift-provenance-stops-runs`](design-drift-provenance-stops-runs.md) | darn · solid | T4 | 1m<br>0m | drift, loom |
+| T1 | **Comment lint: enforce scribe:prose line-length rule on // comment lines**<br>• lint-comments enforces the line-length rule scribe:prose sets, once it lands | [`comment-lint-line-length`](design-comment-lint-line-length.md) | darn · light | T4 | 1h<br>2m | loom |
+| T2 | **Drift fails runs on capture noise such as _source.txt that is no part of the results** | [`drift-provenance-stops-runs`](design-drift-provenance-stops-runs.md) | darn · solid | T4 | 4m<br>0m | drift, loom |
 
 ## Notes (30)
 
@@ -53,7 +53,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B1 | L | `draft` **A PR-Review waiting on the operator shows nowhere**<br>• The Slack reminder ping while a PR-Review waits has landed; only the silence in status views remains, which the operator chose not to build | [`pr-review-wait-silent`](design-pr-review-wait-silent.md) | 3d<br>1d | landing, loom, batten |
 | B2 |  | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | 1d<br>1d | tools, claude |
-| B3 |  | **A Codex seat that read its skills is logged as not having loaded them**<br>• All five skills logged not loaded though the rollout shows SKILL.md read; cause not found | [`codex-skill-load-false-missing`](design-codex-skill-load-false-missing.md) | 21h<br>21h | shuttle, codex |
+| B3 |  | **A Codex seat that read its skills is logged as not having loaded them**<br>• All five skills logged not loaded though the rollout shows SKILL.md read; cause not found | [`codex-skill-load-false-missing`](design-codex-skill-load-false-missing.md) | 22h<br>22h | shuttle, codex |
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 1d<br>1d | reed, orch |
 | B5 |  | **A session cycle sent /compact with a leading space, so it reached the orch as a plain prompt**<br>• A space in the input box reads as empty, and the slash command then fails silently | [`compact-leading-space`](design-compact-leading-space.md) | 2h<br>2h | shuttle, orch |
 | B6 |  | **Subagents spawned by a writer load no language skills, so their comments miss the scribe rules**<br>• Language skills reach the roles lym starts, not the subagents those roles spawn | [`subagents-skip-language-skills`](design-subagents-skip-language-skills.md) | 2h<br>2h | shuttle, stencil |
