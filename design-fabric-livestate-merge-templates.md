@@ -1,6 +1,6 @@
 # internal/fabricengine live-state arranges and merge-pair layers onto registered templates
 
-`fabric-livestate-merge-templates` · Task · enhancement, fabric, testkit, git · running · Open-IDE
+`fabric-livestate-merge-templates` · Task · enhancement, fabric, testkit, git · running · Preflight
 
 Decision record: [Sketch](decision-fabric-livestate-merge-templates.md)
 
