@@ -24,6 +24,10 @@ The operator (2026-11-07): `_source.txt` is noise and is no part of the drift ch
 Drift checks only what the code's results are.
 A capture's provenance and other cells that differ between two captures of the same code never fail a gate, never re-prompt a writer and never reach the parent, with no `drift.yaml` entry needed.
 
+- Lym writes no `_source.txt`: the Models hub's capture harness writes it into `{baseline_dir}` beside the results, the one directory drift compares.
+  A capture command gets a second directory for metadata, such as a `{meta_dir}` placeholder, apart from `{baseline_dir}` (operator, 2026-11-07).
+  Drift keeps it with the capture but never lists, compares or shows it to an agent as drift; the template and `drift init` say provenance goes there.
+  The Models hub then moves its `_source.txt` there, a change in that hub's harness, which this run names in its landing.
 - The agent that decides what drift is acceptable tells metadata from results itself (operator, 2026-11-07): a capture's provenance, such as `_source.txt` with its commit SHA and capture time, timestamps, run ids and host names are metadata, not results.
   No hub lists them: `volatile_files` and `volatile_keys` are not the way, and no hub's `drift.yaml` needs them for metadata.
 - Whatever agent sees the capture first, under `diff: lines` and `diff: command` alike, marks each metadata file and key, the run records the marks in its scope record, and no later listing, expectation, check or gate shows them to an agent or fails on them.
