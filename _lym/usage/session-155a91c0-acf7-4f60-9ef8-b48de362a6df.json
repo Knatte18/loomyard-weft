@@ -1,0 +1,14 @@
+{
+  "session_id": "155a91c0-acf7-4f60-9ef8-b48de362a6df",
+  "row": "Code-Bouncer",
+  "role": "code-bouncer-seed",
+  "model": "claude-sonnet-5-5",
+  "engine": "claude",
+  "input_tokens": 20,
+  "cache_write_tokens": 21964,
+  "cache_read_tokens": 160228,
+  "output_tokens": 1884,
+  "cost_usd": 0.1058356,
+  "started": "2026-11-07T16:46:40Z",
+  "ended": "2026-11-07T16:47:02Z"
+}
