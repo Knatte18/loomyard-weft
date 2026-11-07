@@ -1,0 +1,1886 @@
+diff --git a/contracts/recipes/darn-recipe.yaml b/contracts/recipes/darn-recipe.yaml
+index 98dca225..6a3bb4ef 100644
+--- a/contracts/recipes/darn-recipe.yaml
++++ b/contracts/recipes/darn-recipe.yaml
+@@ -131,7 +131,8 @@ producers:
+         # The drift gate runs the drift check over the committed code against the sealed expectation and
+         # fails on a change nothing expects or a current capture that did not pass, with no fixer: the
+         # writer fixes the code or leaves an intended change for the parent's amendment at Drift-Verify.
+-        # Drift-Verify repeats the check as the guarantee.
++        # A failure whose changes no code change can move, such as capture metadata, ends the gate at once
++        # with no re-prompt and goes to the parent. Drift-Verify repeats the check as the guarantee.
+         - name: drift
+           attempts: 3
+         - name: description
+diff --git a/contracts/stencils/drift/drift-template-expect.md b/contracts/stencils/drift/drift-template-expect.md
+index 580286c3..b8ebc2a9 100644
+--- a/contracts/stencils/drift/drift-template-expect.md
++++ b/contracts/stencils/drift/drift-template-expect.md
+@@ -30,6 +30,12 @@ The baseline capture of the task's branch point is in `{{.baseline_dir}}`.
+ The listing of its cases is `{{.listing_path}}`, with the identity each value is named by.
+ Read the capture files the task's change can reach, and the code that writes them, to judge which values the change moves.
+ 
++Tell metadata from results.
++A capture's provenance is metadata, not a result: a file such as `_source.txt` with the commit the capture ran at and its capture time, and any timestamp, run id or host name.
++Such a value differs between two captures of the same code, so it says nothing about the task's change.
++Mark every file and key that holds metadata under `metadata` in Step 3, whatever the listing calls it.
++lym leaves what you mark out of every later listing, check and gate, and the landing names it.
++
+ ## Step 3 — Write the expectation
+ 
+ Write what you expect the task to change in the captured output, and why, to `{{.expected_path}}`, as diff mode `{{.diff_mode}}` reads it.
+@@ -39,7 +45,7 @@ Write what you expect the task to change in the captured output, and why, to `{{
+ State what you expect and why, never what may be accepted: write no tolerance under which a change passes.
+ A later check lists every value that changed and finds each one in your file, so a value you leave out is a change nothing explains, and an entry that no changed value matches is reported as unmatched.
+ Judging whether a changed value matches its entry belongs to the judge and the run's parent.
+-Under a stated output invariant, or when the task moves no captured value, write an empty expectation: `cases: {}`.
++Under a stated output invariant, or when the task moves no captured value, write an empty expectation, `cases: {}`, beside any `metadata` marks.
+ 
+ ## Step 4 — End your turn
+ 
+diff --git a/internal/driftengine/capture.go b/internal/driftengine/capture.go
+index d24d3491..6d99c8fa 100644
+--- a/internal/driftengine/capture.go
++++ b/internal/driftengine/capture.go
+@@ -72,8 +72,10 @@ func lockHeldRefusal(lockPath string) error {
+ // A command that fails, times out or writes no file under the baseline directory yields a failed record.
+ // That record carries no error;
+ // its reason names the directory the command ran in and the command's last output lines, or that it printed nothing.
+-// An existing non-empty baseline directory is first moved to the first free numbered backup beside it,
+-// so no baseline is deleted or overwritten.
++// An existing non-empty baseline directory is first moved to a numbered backup beside it.
++// The backup is the first number whose directory and metadata directory are both free.
++// Its metadata directory moves with it, so no baseline is deleted or overwritten.
++// A leftover metadata directory beside an empty baseline directory is removed.
+ // Once the command ran, the final record is handed to OnEnd under the capture lock.
+ func RunCapture(ctx context.Context, req CaptureRequest) (CaptureRecord, error) {
+ 	if err := refuseSkipFilePlaceholder(siteCapture, stepCapture, req.Step.Command); err != nil {
+@@ -90,6 +92,7 @@ func RunCapture(ctx context.Context, req CaptureRequest) (CaptureRecord, error)
+ 		InheritedSlot: req.InheritedSlot,
+ 		Site:          siteCapture,
+ 		BaselineDir:   p.BaselineDir,
++		MetaDir:       p.BaselineMetaDir,
+ 		Timeout:       req.Timeout,
+ 		Now:           req.Now,
+ 	}
+@@ -195,18 +198,38 @@ func timeoutMinutes(timeout time.Duration) string {
+ 	return strconv.FormatFloat(timeout.Minutes(), 'f', -1, 64)
+ }
+ 
+-// backUpBaseline moves a non-empty baseline directory to the first free numbered backup beside it.
++// backUpBaseline moves a non-empty baseline directory to a numbered backup beside it.
++// The backup is the first number whose directory and metadata directory are both free.
++// The baseline's metadata directory, when it exists, moves to the backup's metadata directory;
++// when that move fails, the baseline directory moves back so the pair stays together.
++// When the move back fails too, both errors are returned and the pair stays split.
+ // It leaves an empty baseline directory in place.
++// It removes the metadata directory beside an empty baseline, which describes no baseline.
+ func backUpBaseline(baselineDir string) error {
+ 	entries, err := os.ReadDir(baselineDir)
+ 	if err != nil && !errors.Is(err, os.ErrNotExist) {
+ 		return fmt.Errorf("drift: read the baseline directory: %w", err)
+ 	}
++	if len(entries) == 0 {
++		if err := os.RemoveAll(metaDirFor(baselineDir)); err != nil {
++			return fmt.Errorf("drift: remove the metadata of the empty baseline: %w", err)
++		}
++	}
+ 	if len(entries) > 0 {
+-		backup := nextFree(filepath.Dir(baselineDir), filepath.Base(baselineDir)+".")
++		backup := nextFreeBackup(baselineDir)
+ 		if err := os.Rename(baselineDir, backup); err != nil {
+ 			return fmt.Errorf("drift: move the existing baseline to %s: %w", backup, err)
+ 		}
++		err := os.Rename(metaDirFor(baselineDir), metaDirFor(backup))
++		if err != nil && !errors.Is(err, os.ErrNotExist) {
++			// The baseline moves back so the pair stays together:
++			// an absent baseline would make the next capture delete the metadata left behind.
++			moveErr := fmt.Errorf("drift: move the existing baseline's metadata to %s: %w", metaDirFor(backup), err)
++			if rollbackErr := os.Rename(backup, baselineDir); rollbackErr != nil {
++				return errors.Join(moveErr, fmt.Errorf("drift: move the backup %s back to %s: %w", backup, baselineDir, rollbackErr))
++			}
++			return moveErr
++		}
+ 	}
+ 	if err := os.MkdirAll(baselineDir, 0o755); err != nil {
+ 		return fmt.Errorf("drift: create the baseline directory: %w", err)
+@@ -214,11 +237,16 @@ func backUpBaseline(baselineDir string) error {
+ 	return nil
+ }
+ 
+-// nextFree returns the path in dir named prefix and the lowest positive number that does not exist yet.
+-func nextFree(dir, prefix string) string {
++// nextFreeBackup returns the backup path of baselineDir with the lowest positive number.
++// Neither the backup nor its metadata directory may exist yet.
++func nextFreeBackup(baselineDir string) string {
++	exists := func(path string) bool {
++		_, err := os.Lstat(path)
++		return !errors.Is(err, os.ErrNotExist)
++	}
+ 	for n := 1; ; n++ {
+-		candidate := filepath.Join(dir, prefix+strconv.Itoa(n))
+-		if _, err := os.Lstat(candidate); errors.Is(err, os.ErrNotExist) {
++		candidate := baselineDir + "." + strconv.Itoa(n)
++		if !exists(candidate) && !exists(metaDirFor(candidate)) {
+ 			return candidate
+ 		}
+ 	}
+@@ -247,6 +275,8 @@ func holdsFile(dir string) (bool, error) {
+ type CurrentCapture struct {
+ 	// Dir is the fresh directory under the current-capture directory that the command wrote to.
+ 	Dir string
++	// MetaDir is the sibling of Dir the command's {meta_dir} renders to, which no check compares.
++	MetaDir string
+ 	// Log is the command's log file, a sibling of Dir so the log never counts as a captured file.
+ 	Log string
+ 	// Passed is true when the command exited 0 within its timeout and wrote at least one file.
+@@ -271,7 +301,7 @@ func CaptureCurrent(ctx context.Context, req CaptureRequest) (CurrentCapture, er
+ 	if err != nil {
+ 		return CurrentCapture{}, err
+ 	}
+-	result := CurrentCapture{Dir: dir, Log: dir + ".log"}
++	result := CurrentCapture{Dir: dir, MetaDir: metaDirFor(dir), Log: dir + ".log"}
+ 	if err := refuseSkipFilePlaceholder(siteCurrentCapture, stepCapture, req.Step.Command); err != nil {
+ 		result.Reason = err.Error()
+ 		return result, nil
+@@ -286,6 +316,7 @@ func CaptureCurrent(ctx context.Context, req CaptureRequest) (CurrentCapture, er
+ 		InheritedSlot: req.InheritedSlot,
+ 		Site:          siteCurrentCapture,
+ 		BaselineDir:   dir,
++		MetaDir:       result.MetaDir,
+ 		LogPath:       result.Log,
+ 		Timeout:       req.Timeout,
+ 		Now:           req.Now,
+diff --git a/internal/driftengine/capture_test.go b/internal/driftengine/capture_test.go
+index a2c327a9..079a1b78 100644
+--- a/internal/driftengine/capture_test.go
++++ b/internal/driftengine/capture_test.go
+@@ -256,6 +256,25 @@ func TestCaptureCurrent(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a command writing to the meta dir lands beside the capture directory, not in it", func(t *testing.T) {
++		t.Parallel()
++		f := newCaptureFixture(t, "echo meta > {meta_dir}/provenance.json; echo profile > {baseline_dir}/p.json")
++
++		got, err := CaptureCurrent(context.Background(), f.req)
++		if err != nil || !got.Passed {
++			t.Fatalf("CaptureCurrent() = %+v, %v; want a passed capture", got, err)
++		}
++		if got.MetaDir != got.Dir+".meta" {
++			t.Errorf("CaptureCurrent() meta dir = %q; want %q", got.MetaDir, got.Dir+".meta")
++		}
++		if text := readFile(t, filepath.Join(got.MetaDir, "provenance.json")); text != "meta\n" {
++			t.Errorf("meta dir provenance.json = %q; want %q", text, "meta\n")
++		}
++		if _, err := os.Stat(filepath.Join(got.Dir, "provenance.json")); !errors.Is(err, os.ErrNotExist) {
++			t.Errorf("the meta file is under the capture directory; want it only in the meta dir")
++		}
++	})
++
+ 	failures := []struct {
+ 		name    string
+ 		command string
+@@ -276,6 +295,11 @@ func TestCaptureCurrent(t *testing.T) {
+ 			command:    "true",
+ 			wantReason: []string{"exit 0 but wrote no file to {dir}"},
+ 		},
++		{
++			name:       "exit 0 with only a meta file does not pass and names the directory",
++			command:    "echo meta > {meta_dir}/provenance.json",
++			wantReason: []string{"exit 0 but wrote no file to {dir}"},
++		},
+ 		{
+ 			name:       "a step whose dir is no directory is a refusal naming the dir write",
+ 			command:    "true",
+@@ -340,6 +364,10 @@ func TestRunCapture(t *testing.T) {
+ 			command: "true", wantState: CaptureFailed, wantReason: "exit 0 but wrote no file to ", wantWroteNoFile: true,
+ 			wantEnds: "; it ran in {dir} and printed nothing",
+ 		},
++		{
++			name:    "exit 0 with only a meta file fails as a capture that wrote no file",
++			command: "echo meta > {meta_dir}/provenance.json", wantState: CaptureFailed, wantReason: "exit 0 but wrote no file to ", wantWroteNoFile: true,
++		},
+ 		{name: "a non-zero exit fails", command: "exit 3", wantState: CaptureFailed, wantReason: "exit 3"},
+ 		{
+ 			name:    "a non-zero exit after several lines quotes the directory and only the last three non-empty lines",
+@@ -527,6 +555,80 @@ func TestRunCapture(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a command writing to the meta dir lands in the baseline's meta dir, not in the baseline", func(t *testing.T) {
++		t.Parallel()
++		f := newCaptureFixture(t, "echo meta > {meta_dir}/provenance.json; echo profile > {baseline_dir}/p.json")
++		p := f.req.Paths
++
++		if rec, err := RunCapture(context.Background(), f.req); err != nil || rec.State != CapturePassed {
++			t.Fatalf("RunCapture() = %+v, %v; want a passed record", rec, err)
++		}
++		if p.BaselineMetaDir != p.BaselineDir+".meta" {
++			t.Errorf("BaselineMetaDir = %q; want %q", p.BaselineMetaDir, p.BaselineDir+".meta")
++		}
++		if text := readFile(t, filepath.Join(p.BaselineMetaDir, "provenance.json")); text != "meta\n" {
++			t.Errorf("meta dir provenance.json = %q; want %q", text, "meta\n")
++		}
++		if _, err := os.Stat(filepath.Join(p.BaselineDir, "provenance.json")); !errors.Is(err, os.ErrNotExist) {
++			t.Errorf("the meta file is under the baseline directory; want it only in the meta dir")
++		}
++	})
++
++	t.Run("a backup moves the baseline's meta dir to the backup's meta dir", func(t *testing.T) {
++		t.Parallel()
++		f := newCaptureFixture(t, "echo new > {baseline_dir}/p.json; echo new > {meta_dir}/provenance.json")
++		p := f.req.Paths
++		writeTree(t, p.BaselineDir, map[string]string{"old.json": "old"})
++		writeTree(t, p.BaselineMetaDir, map[string]string{"provenance.json": "old"})
++
++		if rec, err := RunCapture(context.Background(), f.req); err != nil || rec.State != CapturePassed {
++			t.Fatalf("RunCapture() = %+v, %v; want a passed record", rec, err)
++		}
++		if text := readFile(t, p.BaselineDir+".1.meta/provenance.json"); text != "old" {
++			t.Errorf("baseline.1.meta/provenance.json = %q; want the kept old metadata", text)
++		}
++		if text := readFile(t, filepath.Join(p.BaselineMetaDir, "provenance.json")); text != "new\n" {
++			t.Errorf("meta dir provenance.json = %q; want the new capture's metadata", text)
++		}
++	})
++
++	t.Run("a backup skips a number whose meta dir is taken and keeps what is there", func(t *testing.T) {
++		t.Parallel()
++		f := newCaptureFixture(t, "echo new > {baseline_dir}/p.json")
++		p := f.req.Paths
++		writeTree(t, p.BaselineDir, map[string]string{"old.json": "old"})
++		writeTree(t, p.BaselineMetaDir, map[string]string{"provenance.json": "old"})
++		writeTree(t, p.BaselineDir+".1.meta", map[string]string{"keep.json": "kept"})
++
++		if rec, err := RunCapture(context.Background(), f.req); err != nil || rec.State != CapturePassed {
++			t.Fatalf("RunCapture() = %+v, %v; want a passed record", rec, err)
++		}
++		if text := readFile(t, p.BaselineDir+".1.meta/keep.json"); text != "kept" {
++			t.Errorf("baseline.1.meta/keep.json = %q; want the taken meta dir untouched", text)
++		}
++		if text := readFile(t, p.BaselineDir+".2/old.json"); text != "old" {
++			t.Errorf("baseline.2/old.json = %q; want the old baseline under the next free number", text)
++		}
++		if text := readFile(t, p.BaselineDir+".2.meta/provenance.json"); text != "old" {
++			t.Errorf("baseline.2.meta/provenance.json = %q; want the old metadata beside its baseline", text)
++		}
++	})
++
++	t.Run("a meta dir beside an empty baseline is cleared before the capture", func(t *testing.T) {
++		t.Parallel()
++		f := newCaptureFixture(t, "echo new > {baseline_dir}/p.json")
++		p := f.req.Paths
++		writeTree(t, p.BaselineDir, nil)
++		writeTree(t, p.BaselineMetaDir, map[string]string{"stale.json": "stale"})
++
++		if rec, err := RunCapture(context.Background(), f.req); err != nil || rec.State != CapturePassed {
++			t.Fatalf("RunCapture() = %+v, %v; want a passed record", rec, err)
++		}
++		if _, err := os.Stat(filepath.Join(p.BaselineMetaDir, "stale.json")); !errors.Is(err, os.ErrNotExist) {
++			t.Errorf("the stale metadata is still beside the new baseline; want it cleared")
++		}
++	})
++
+ 	t.Run("a capture lock held past LockRetry refuses, and one held briefly inside it does not", func(t *testing.T) {
+ 		t.Parallel()
+ 		f := newCaptureFixture(t, "echo x > {baseline_dir}/p.json")
+diff --git a/internal/driftengine/check.go b/internal/driftengine/check.go
+index 957185ea..3426a573 100644
+--- a/internal/driftengine/check.go
++++ b/internal/driftengine/check.go
+@@ -37,6 +37,9 @@ type ClassifiedCell struct {
+ 	Expected bool
+ 	// Repeated is true when the cell's key occurs more than once in its case, so a listing names the occurrence.
+ 	Repeated bool
++	// Unchangeable is true for a cell no expectation covers and no code change can move, which the drift gate found.
++	// Such a cell is capture metadata the run did not mark, and it is no unexpected cell.
++	Unchangeable bool
+ }
+ 
+ // CheckReport is what a drift check found.
+@@ -64,19 +67,37 @@ type CheckReport struct {
+ 	// Compared is true when the declared compare ran, under DiffCommand, and Compare is how it ended.
+ 	Compared bool
+ 	Compare  CompareResult
++	// Metadata is the run's metadata marks: the scope record's joined with the expectation's.
++	// Their cells are left out of Cells, and under DiffCommand a case they name is no drift.
++	Metadata Volatile
++
++	// patterns and leaveOut are what the diff of the current capture ran with, so a second capture is diffed alike.
++	patterns []*regexp.Regexp
++	leaveOut []string
+ }
+ 
+-// Unexpected returns the cells no entry of the expectation covers.
++// Unexpected returns the cells no entry of the expectation covers, bar the unchangeable ones.
+ func (r CheckReport) Unexpected() []ClassifiedCell {
+ 	var unexpected []ClassifiedCell
+ 	for _, cell := range r.Cells {
+-		if !cell.Expected {
++		if !cell.Expected && !cell.Unchangeable {
+ 			unexpected = append(unexpected, cell)
+ 		}
+ 	}
+ 	return unexpected
+ }
+ 
++// unchangeable returns the cells marked Unchangeable.
++func (r CheckReport) unchangeable() []ClassifiedCell {
++	var cells []ClassifiedCell
++	for _, cell := range r.Cells {
++		if cell.Unchangeable {
++			cells = append(cells, cell)
++		}
++	}
++	return cells
++}
++
+ // Check runs the drift check and returns what it found; it ends at the first step that ends the check.
+ // No scope record, scope off, a deferred capture and a waiver skip it.
+ // A run not past Drift-Expect skips it before any baseline check.
+@@ -86,7 +107,8 @@ func (r CheckReport) Unexpected() []ClassifiedCell {
+ // A failed seal check is a seal fault;
+ // the check goes on against the sealed copy, or an empty expectation when there is none.
+ // Under DiffLines it takes a current capture, whose failure is a capture fault.
+-// It diffs the capture against the baseline and drops the cells of the volatile lists.
++// It diffs the capture against the baseline and drops the cells of the volatile lists and of the metadata marks.
++// The marks are the scope record's joined with the merged expectation's.
+ // It then classifies each cell left by the merged expectation.
+ // Under DiffCommand it runs the declared compare and takes no capture.
+ // Whether the capture counted is read from the tracked scope record alone, never from the capture record.
+@@ -165,10 +187,11 @@ func Check(ctx context.Context, d Deps) (CheckReport, error) {
+ 	if report.Expectation, err = sealedAndAmended(seal.Sealed, rec.Scope.Amendments, mode, baselineListings); err != nil {
+ 		return report, err
+ 	}
++	report.Metadata = rec.Scope.Metadata.union(report.Expectation.Metadata)
+ 
+ 	switch mode {
+ 	case DiffLines:
+-		return report, classifyCurrent(ctx, d, rec.Scope, compiled, volatile, baselineListings, &report)
++		return report, classifyCurrent(ctx, d, rec.Scope, compiled, volatile.union(report.Metadata), baselineListings, &report)
+ 	case DiffCommand:
+ 		if err := requireSeams("the drift check under diff command", seam{"Compare", d.Compare != nil}); err != nil {
+ 			return report, err
+@@ -236,9 +259,9 @@ func sealedAndAmended(sealed []byte, amendments []Amendment, mode string, baseli
+ }
+ 
+ // classifyCurrent takes the current capture and diffs it against the baseline.
+-// It classifies each cell that volatile does not name into report.
++// It classifies each cell that ignored does not name into report.
+ // A capture that did not pass is a capture fault and ends the check with no error.
+-func classifyCurrent(ctx context.Context, d Deps, scope ScopeRecord, patterns []*regexp.Regexp, volatile Volatile, baseline []CaseListing, report *CheckReport) error {
++func classifyCurrent(ctx context.Context, d Deps, scope ScopeRecord, patterns []*regexp.Regexp, ignored Volatile, baseline []CaseListing, report *CheckReport) error {
+ 	if err := requireSeams("the drift check under diff lines", seam{"CaptureCurrent", d.CaptureCurrent != nil}); err != nil {
+ 		return err
+ 	}
+@@ -258,11 +281,12 @@ func classifyCurrent(ctx context.Context, d Deps, scope ScopeRecord, patterns []
+ 			return err
+ 		}
+ 	}
++	report.patterns, report.leaveOut = patterns, leaveOut
+ 	cells, err := DiffCaptures(d.Paths.BaselineDir, capture.Dir, patterns, leaveOut)
+ 	if err != nil {
+ 		return err
+ 	}
+-	cells = volatile.withoutCells(cells)
++	cells = ignored.withoutCells(cells)
+ 	current, err := ListCaptures(capture.Dir, patterns)
+ 	if err != nil {
+ 		return err
+@@ -325,16 +349,7 @@ func (r CheckReport) Findings() string {
+ 	if r.Skip != "" {
+ 		lines = append(lines, "skipped: "+r.Skip)
+ 	}
+-	for _, fault := range []struct{ label, text string }{
+-		{"baseline fault", r.BaselineFault},
+-		{"records fault", r.RecordsFault},
+-		{"seal fault", r.SealFault},
+-		{"capture fault", r.CaptureFault},
+-	} {
+-		if fault.text != "" {
+-			lines = append(lines, fault.label+": "+fault.text)
+-		}
+-	}
++	lines = append(lines, r.faultLines()...)
+ 	unexpected := r.Unexpected()
+ 	for _, cell := range unexpected {
+ 		lines = append(lines, "unexpected cell: "+describeCell(cell))
+@@ -348,6 +363,22 @@ func (r CheckReport) Findings() string {
+ 	return strings.Join(lines, "\n")
+ }
+ 
++// faultLines renders each fault the report holds as one labelled line, in the order the check finds them.
++func (r CheckReport) faultLines() []string {
++	var lines []string
++	for _, fault := range []struct{ label, text string }{
++		{"baseline fault", r.BaselineFault},
++		{"records fault", r.RecordsFault},
++		{"seal fault", r.SealFault},
++		{"capture fault", r.CaptureFault},
++	} {
++		if fault.text != "" {
++			lines = append(lines, fault.label+": "+fault.text)
++		}
++	}
++	return lines
++}
++
+ // describeCell names a cell by its kind, case, identity, old value and new value.
+ func describeCell(c ClassifiedCell) string {
+ 	cell := c.Cell
+@@ -369,26 +400,139 @@ func identityText(identity Identity, repeated bool) string {
+ 	return fmt.Sprintf("key %q", identity.Key)
+ }
+ 
++// unchangeableWayForward is the way forward of a drift gate that ends on unchangeable cells alone.
++const unchangeableWayForward = "way forward: the parent marks them as metadata with lym drift amend <slug> --entries <file>, " +
++	"whose file holds metadata: {files: [<case>], keys: [<key>]}"
++
++// minCommitAbbrev is the shortest hex run a captured value names a commit by.
++const minCommitAbbrev = 7
++
++// settleUnchangeable marks each unexpected cell of report that no code change can move as Unchangeable.
++// A cell is unchangeable when its old value names the commit the baseline was captured at.
++// Its new value must name the code HEAD.
++// It is also unchangeable when a second current capture of the same code gives it another value or none.
++// The second capture runs only when a cell is left after the first rule, and one that does not pass marks nothing.
++func settleUnchangeable(ctx context.Context, d Deps, report *CheckReport) error {
++	if err := requireSeams("the drift gate", seam{"Head", d.Head != nil}); err != nil {
++		return err
++	}
++	baseHead, err := baselineHead(d)
++	if err != nil {
++		return err
++	}
++	head, err := d.Head()
++	if err != nil {
++		return fmt.Errorf("drift: read the code HEAD for the drift gate: %w", err)
++	}
++	left := false
++	for i := range report.Cells {
++		cell := &report.Cells[i]
++		if cell.Expected {
++			continue
++		}
++		if baseHead != head && namesCommit(cell.Cell.Old, baseHead) && namesCommit(cell.Cell.New, head) {
++			cell.Unchangeable = true
++			continue
++		}
++		left = true
++	}
++	if !left {
++		return nil
++	}
++
++	second, err := d.CaptureCurrent(ctx)
++	if err != nil {
++		return fmt.Errorf("drift: take a second current capture for the drift gate: %w", err)
++	}
++	if !second.Passed {
++		return nil
++	}
++	cells, err := DiffCaptures(d.Paths.BaselineDir, second.Dir, report.patterns, report.leaveOut)
++	if err != nil {
++		return err
++	}
++	type cellAt struct {
++		caseName string
++		identity Identity
++	}
++	again := make(map[cellAt]Cell, len(cells))
++	for _, cell := range cells {
++		again[cellAt{cell.Case, cell.Identity}] = cell
++	}
++	for i := range report.Cells {
++		cell := &report.Cells[i]
++		if cell.Expected || cell.Unchangeable {
++			continue
++		}
++		repeat, found := again[cellAt{cell.Cell.Case, cell.Cell.Identity}]
++		if !found || repeat.Kind != cell.Cell.Kind || repeat.New != cell.Cell.New {
++			cell.Unchangeable = true
++		}
++	}
++	return nil
++}
++
++// namesCommit reports whether value holds commit, whole or as an abbreviation of at least minCommitAbbrev hex digits.
++func namesCommit(value, commit string) bool {
++	if commit == "" {
++		return false
++	}
++	commit = strings.ToLower(commit)
++	isHex := func(r rune) bool { return strings.ContainsRune("0123456789abcdefABCDEF", r) }
++	for _, run := range strings.FieldsFunc(value, func(r rune) bool { return !isHex(r) }) {
++		if len(run) >= minCommitAbbrev && strings.HasPrefix(commit, strings.ToLower(run)) {
++			return true
++		}
++	}
++	return false
++}
++
++// unchangeableFindings renders the findings of a drift gate that ends on unchangeable cells alone, for the run's parent.
++// A records or seal fault found beside the cells leads the findings.
++func (r CheckReport) unchangeableFindings() string {
++	cells := r.unchangeable()
++	described := make([]string, len(cells))
++	for i, cell := range cells {
++		described[i] = describeCell(cell)
++	}
++	return strings.Join(append(r.faultLines(), fmt.Sprintf("the drift gate ended without asking the writer again: every change it found is capture metadata no code change can move, "+
++		"since it names the commit its capture ran at or differs between two captures of the same code: %s; %s",
++		strings.Join(described, "; "), unchangeableWayForward)), "\n")
++}
++
+ // NewDriftGate returns the gate the `drift` entry of a writer's gate list runs:
+ // it runs Check over d and judges the report.
+ // It passes on a skip and on a baseline fault, which no writer session can clear.
+ // Under `DiffCommand` it passes whatever the compare's exit.
+ // Findings that remain on a pass are logged at Info.
+-// It fails on a capture fault and, under `DiffLines`, on any unexpected cell.
++// It fails on a capture fault.
++// Under `DiffLines` it first marks the unexpected cells no code change can move, and fails on any unexpected cell left.
+ // The failure carries the report's findings, which also name a records or seal fault found beside them.
+-// It writes no tracked record, only the current capture's scratch directory.
++// It never names an unchangeable cell to the writer.
++// When the unexpected cells were all unchangeable, the failure is Terminal:
++// the run ends the gate at once, and its findings go to the run's parent with the way to mark the cells as metadata.
++// It writes no tracked record, only the current captures' scratch directories.
+ func NewDriftGate(d Deps) shuttleengine.Gate {
+ 	return func() (shuttleengine.GateResult, error) {
+-		report, err := Check(context.Background(), d)
++		ctx := context.Background()
++		report, err := Check(ctx, d)
+ 		if err != nil {
+ 			return shuttleengine.GateResult{}, fmt.Errorf("drift: the drift gate: %w", err)
+ 		}
+-		findings := report.Findings()
+ 		clearable := report.Skip == "" && report.BaselineFault == ""
+-		if clearable && (report.CaptureFault != "" || len(report.Unexpected()) > 0) {
+-			return shuttleengine.GateResult{Findings: findings}, nil
++		if clearable && report.CaptureFault != "" {
++			return shuttleengine.GateResult{Findings: report.Findings()}, nil
++		}
++		if clearable && len(report.Unexpected()) > 0 {
++			if err := settleUnchangeable(ctx, d, &report); err != nil {
++				return shuttleengine.GateResult{}, fmt.Errorf("drift: the drift gate: %w", err)
++			}
++			if len(report.Unexpected()) > 0 {
++				return shuttleengine.GateResult{Findings: report.Findings()}, nil
++			}
++			return shuttleengine.GateResult{Findings: report.unchangeableFindings(), Terminal: true}, nil
+ 		}
+-		if findings != "" {
++		if findings := report.Findings(); findings != "" {
+ 			logger.Info("drift: the drift gate passed with findings no writer session can clear", "findings", findings)
+ 		}
+ 		return shuttleengine.GateResult{Passed: true}, nil
+diff --git a/internal/driftengine/check_test.go b/internal/driftengine/check_test.go
+index 179d0f7c..891541d5 100644
+--- a/internal/driftengine/check_test.go
++++ b/internal/driftengine/check_test.go
+@@ -8,6 +8,7 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"slices"
++	"strconv"
+ 	"strings"
+ 	"testing"
+ 
+@@ -22,6 +23,9 @@ const keyValuePattern = `^(?P<key>\w+)=(?P<value>.*)$`
+ // expectsY is an expectation covering the key `y` of `a.txt`.
+ const expectsY = "cases:\n  a.txt:\n    keys:\n      - key: y\n        why: tuned the setting\n"
+ 
++// expectsMetadata is an expectation that marks the file `_source.txt` and the key `captured_at` as metadata.
++const expectsMetadata = "metadata:\n  files: [_source.txt]\n  keys: [captured_at]\n"
++
+ // expectsCommandCase is an expectation under diff command for the case `a.txt`.
+ const expectsCommandCase = "cases:\n  a.txt:\n    why: the compare is expected to differ\n"
+ 
+@@ -167,7 +171,48 @@ func TestCheck(t *testing.T) {
+ 	partial := countedScope()
+ 	partial.Scope, partial.Skip = ScopePartial, []string{"skipped"}
+ 
++	marked := Volatile{Files: []string{"_source.txt"}, Keys: []string{"captured_at"}}
++	metadataBaseline := map[string]string{"_source.txt": "commit=a\n", "a.txt": "x=1\ncaptured_at=1\n"}
++	metadataCurrent := map[string]string{"_source.txt": "commit=b\n", "a.txt": "x=1\ncaptured_at=2\n"}
++	leavesNoCell := func(t *testing.T, f *checkFixture, report CheckReport) {
++		if len(report.Cells) != 0 || !slices.Equal(report.Metadata.Files, marked.Files) || !slices.Equal(report.Metadata.Keys, marked.Keys) {
++			t.Errorf("Check() = %+v; want no cell and the metadata marks %+v", report, marked)
++		}
++	}
++
+ 	tests := []checkScenario{
++		{
++			name: "a sealed expectation's metadata file and key leave no cell",
++			setup: func(f *checkFixture) {
++				f.seed(countedScope(), metadataBaseline)
++				f.seal(expectsMetadata)
++				f.current = metadataCurrent
++			},
++			check:      leavesNoCell,
++			gatePasses: true,
++		},
++		{
++			name: "a scope record's metadata file and key leave no cell",
++			setup: func(f *checkFixture) {
++				scope := countedScope()
++				scope.Metadata = marked
++				f.seed(scope, metadataBaseline)
++				f.current = metadataCurrent
++			},
++			check:      leavesNoCell,
++			gatePasses: true,
++		},
++		{
++			name: "an amendment's metadata file and key leave no cell",
++			setup: func(f *checkFixture) {
++				scope := countedScope()
++				scope.Amendments = []Amendment{{By: "parent", At: "2026-01-02T00:00:00Z", Kind: amendmentKindEntries, Entries: expectsMetadata}}
++				f.seed(scope, metadataBaseline)
++				f.current = metadataCurrent
++			},
++			check:      leavesNoCell,
++			gatePasses: true,
++		},
+ 		{
+ 			name:  "an unexpected cell is listed with case, identity, old and new value",
+ 			setup: func(f *checkFixture) { f.seed(countedScope(), baseline); f.current = changed },
+@@ -480,3 +525,210 @@ func TestCheck(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestNamesCommit covers which values name a commit: the whole hash or an abbreviation of at least seven hex digits.
++func TestNamesCommit(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const commit = "abcdef1234567890"
++	tests := []struct {
++		name   string
++		value  string
++		commit string
++		want   bool
++	}{
++		{"TheWholeHash", commit, commit, true},
++		{"AnAbbreviationOfSevenDigits", "abcdef1", commit, true},
++		{"AnAbbreviationOfSixDigits", "abcdef", commit, false},
++		{"ARunAfterANonHexSeparator", "commit=abcdef1", commit, true},
++		{"UpperCaseDigits", "ABCDEF1", commit, true},
++		{"ARunSplitByANonHexLetter", "abcdefg1234567", commit, false},
++		{"ARunOfOtherDigits", "abcdef2", commit, false},
++		{"ARunLongerThanTheCommit", "abcdef1234567890ab", commit, false},
++		{"AnEmptyCommit", "abcdef1", "", false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := namesCommit(tt.value, tt.commit); got != tt.want {
++				t.Errorf("namesCommit(%q, %q) = %v; want %v", tt.value, tt.commit, got, tt.want)
++			}
++		})
++	}
++}
++
++// TestDriftGateUnchangeableCells covers the drift gate's marking of unexpected cells no code change can move.
++// A cell that names the baseline's capture head and the code HEAD is unchangeable.
++// So is a cell a second capture of the same code gives another value.
++// The gate ends Terminal when every unexpected cell is unchangeable, and fails as before when one is left.
++func TestDriftGateUnchangeableCells(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const (
++		baselineHead = "abcdef1234567890"
++		codeHead     = "0123456789abcdef"
++	)
++	tests := []struct {
++		name     string
++		baseline map[string]string
++		// current is the files the capture with the given call number, counted from 1, writes.
++		current func(call int) map[string]string
++		// secondCaptureFails makes the capture with call number 2 not pass.
++		secondCaptureFails bool
++		// sameHead puts the code HEAD where the baseline was captured.
++		sameHead bool
++		// prepare, when set, runs after the baseline is seeded and before the code HEAD moves.
++		prepare      func(f *checkFixture)
++		wantTerminal bool
++		wantCaptures int
++		want         []string
++		wantNot      []string
++	}{
++		{
++			name:         "a value naming the baseline's capture head and the code HEAD ends the gate terminal",
++			baseline:     map[string]string{"a.txt": "commit=abcdef1\nx=1\n"},
++			current:      func(int) map[string]string { return map[string]string{"a.txt": "commit=0123456\nx=1\n"} },
++			wantTerminal: true,
++			wantCaptures: 1,
++			want:         []string{`key "commit"`, "lym drift amend", "metadata:"},
++		},
++		{
++			name:         "a value that differs between the gate's two captures ends the gate terminal",
++			baseline:     map[string]string{"a.txt": "x=0\n"},
++			current:      func(call int) map[string]string { return map[string]string{"a.txt": "x=" + strconv.Itoa(call) + "\n"} },
++			wantTerminal: true,
++			wantCaptures: 2,
++			want:         []string{`key "x"`, "lym drift amend", "metadata:"},
++		},
++		{
++			name:     "a stable unexpected change beside a changing one fails without naming the changing one",
++			baseline: map[string]string{"a.txt": "x=0\ny=0\n"},
++			current: func(call int) map[string]string {
++				return map[string]string{"a.txt": "x=" + strconv.Itoa(call) + "\ny=7\n"}
++			},
++			wantCaptures: 2,
++			want:         []string{`key "y"`},
++			wantNot:      []string{`key "x"`, "metadata:"},
++		},
++		{
++			name:               "a second capture that does not pass marks nothing and fails without terminal",
++			baseline:           map[string]string{"a.txt": "x=0\n"},
++			current:            func(int) map[string]string { return map[string]string{"a.txt": "x=1\n"} },
++			secondCaptureFails: true,
++			wantCaptures:       2,
++			want:               []string{`key "x"`},
++			wantNot:            []string{"metadata:"},
++		},
++		{
++			name:     "a cell the second capture does not hold ends the gate terminal",
++			baseline: map[string]string{"a.txt": "x=0\n"},
++			current: func(call int) map[string]string {
++				if call == 1 {
++					return map[string]string{"a.txt": "x=1\n"}
++				}
++				return map[string]string{"a.txt": "x=0\n"}
++			},
++			wantTerminal: true,
++			wantCaptures: 2,
++			want:         []string{`key "x"`, "metadata:"},
++		},
++		{
++			name:     "a cell of another kind in the second capture ends the gate terminal",
++			baseline: map[string]string{"a.txt": "x=0\n"},
++			current: func(call int) map[string]string {
++				if call == 1 {
++					return map[string]string{"a.txt": "x=\n"}
++				}
++				return map[string]string{"a.txt": ""}
++			},
++			wantTerminal: true,
++			wantCaptures: 2,
++			want:         []string{`key "x"`, "metadata:"},
++		},
++		{
++			name:         "a value naming a commit with the code HEAD still at the baseline's head fails without terminal",
++			baseline:     map[string]string{"a.txt": "commit=abcdef1\n"},
++			current:      func(int) map[string]string { return map[string]string{"a.txt": "commit=abcdef12\n"} },
++			sameHead:     true,
++			wantCaptures: 2,
++			want:         []string{`key "commit"`},
++			wantNot:      []string{"metadata:"},
++		},
++		{
++			name:     "a records fault found beside unchangeable cells is named in the terminal findings",
++			baseline: map[string]string{"a.txt": "commit=abcdef1\nx=1\n"},
++			current:  func(int) map[string]string { return map[string]string{"a.txt": "commit=0123456\nx=1\n"} },
++			prepare: func(f *checkFixture) {
++				scope := countedScope()
++				scope.Amendments = []Amendment{{By: "parent", At: "2026-01-02T00:00:00Z", Kind: amendmentKindEntries, Entries: expectsX}}
++				if err := WriteRecords(f.deps, func(s *ScopeRecord, _ *JudgedRecord) error { *s = scope; return nil }); err != nil {
++					f.t.Fatalf("WriteRecords() = %v; want nil", err)
++				}
++				f.edit(f.deps.Paths.Scope, `{"scope":"full","awaited_at":"2026-01-01T00:00:00Z","diff":"lines"}`)
++			},
++			wantTerminal: true,
++			wantCaptures: 1,
++			want:         []string{"records fault", "--restore", `key "commit"`, "metadata:"},
++		},
++		{
++			name:     "a seal fault found beside unchangeable cells is named in the terminal findings",
++			baseline: map[string]string{"a.txt": "commit=abcdef1\nx=1\n"},
++			current:  func(int) map[string]string { return map[string]string{"a.txt": "commit=0123456\nx=1\n"} },
++			prepare: func(f *checkFixture) {
++				f.seal(expectsX)
++				f.edit(f.deps.Paths.Expected, "cases: {}\n")
++			},
++			wantTerminal: true,
++			wantCaptures: 1,
++			want:         []string{"seal fault", "--restore", `key "commit"`, "metadata:"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			f := newCheckFixture(t)
++			f.store.codeHead = baselineHead
++			f.seed(countedScope(), tt.baseline)
++			if tt.prepare != nil {
++				tt.prepare(f)
++			}
++			f.store.codeHead = codeHead
++			if tt.sameHead {
++				f.store.codeHead = baselineHead
++			}
++			calls := 0
++			f.deps.CaptureCurrent = func(context.Context) (CurrentCapture, error) {
++				calls++
++				if tt.secondCaptureFails && calls == 2 {
++					return CurrentCapture{Log: "/logs/current.log", Reason: "exit 3"}, nil
++				}
++				dir := t.TempDir()
++				writeTree(t, dir, tt.current(calls))
++				return CurrentCapture{Dir: dir, Log: "/logs/current.log", Passed: true}, nil
++			}
++
++			result, err := NewDriftGate(f.deps)()
++			if err != nil {
++				t.Fatalf("NewDriftGate()() = _, %v; want nil", err)
++			}
++			if result.Passed || result.Terminal != tt.wantTerminal {
++				t.Errorf("NewDriftGate()() = %+v; want a failure with terminal %v", result, tt.wantTerminal)
++			}
++			if calls != tt.wantCaptures {
++				t.Errorf("NewDriftGate()() took %d captures; want %d", calls, tt.wantCaptures)
++			}
++			for _, want := range tt.want {
++				if !strings.Contains(result.Findings, want) {
++					t.Errorf("NewDriftGate()() findings = %q; want it to name %q", result.Findings, want)
++				}
++			}
++			for _, unwanted := range tt.wantNot {
++				if strings.Contains(result.Findings, unwanted) {
++					t.Errorf("NewDriftGate()() findings = %q; want no %q", result.Findings, unwanted)
++				}
++			}
++		})
++	}
++}
+diff --git a/internal/driftengine/compare.go b/internal/driftengine/compare.go
+index 3dfcf254..465588f8 100644
+--- a/internal/driftengine/compare.go
++++ b/internal/driftengine/compare.go
+@@ -85,6 +85,7 @@ func RunCompare(ctx context.Context, req CompareRequest) (CompareResult, error)
+ 		WaitDir:     req.WaitDir,
+ 		Site:        siteCompare,
+ 		BaselineDir: p.BaselineDir,
++		MetaDir:     p.BaselineMetaDir,
+ 		LogPath:     result.Log,
+ 		Timeout:     req.Timeout,
+ 		Now:         req.Now,
+diff --git a/internal/driftengine/compare_test.go b/internal/driftengine/compare_test.go
+index 8774309c..4df78fb8 100644
+--- a/internal/driftengine/compare_test.go
++++ b/internal/driftengine/compare_test.go
+@@ -78,6 +78,18 @@ func TestRunCompare(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("the command sees the baseline's meta directory, which exists before it runs", func(t *testing.T) {
++		t.Parallel()
++		req, _ := newCompareFixture(t, "echo {meta_dir} > seen.txt; test -d {meta_dir}")
++		if got, err := RunCompare(context.Background(), req); err != nil || !got.Passed {
++			t.Fatalf("RunCompare() = %+v, %v; want a pass", got, err)
++		}
++		want := req.Paths.BaselineMetaDir + "\n"
++		if text := readFile(t, filepath.Join(req.AnchorDir, "seen.txt")); text != want {
++			t.Errorf("seen.txt = %q; want %q", text, want)
++		}
++	})
++
+ 	t.Run("a command holding the retired skip file placeholder is refused naming the edit, with the slot and the marker free", func(t *testing.T) {
+ 		t.Parallel()
+ 		req, pool := newCompareFixture(t, "cat {skip_file}")
+diff --git a/internal/driftengine/config.go b/internal/driftengine/config.go
+index df65b579..434fae62 100644
+--- a/internal/driftengine/config.go
++++ b/internal/driftengine/config.go
+@@ -34,6 +34,10 @@ const configModule = "drift"
+ // A capture writes that directory, and a compare reads it.
+ const baselineDirPlaceholder = "{baseline_dir}"
+ 
++// metaDirPlaceholder is the optional placeholder a declared command holds for the capture's metadata directory.
++// A capture writes its provenance there, such as the commit it ran at and its capture time, and drift never compares it.
++const metaDirPlaceholder = "{meta_dir}"
++
+ // Step names of the two command steps.
+ const (
+ 	stepCapture = "capture"
+@@ -54,7 +58,7 @@ const hubOnlyWayForward = "set it in the hub's drift.yaml with lym config drift
+ // CommandStep is one declared drift command: the shell command, its run directory and the environment it runs with.
+ // The zero CommandStep is an undeclared step.
+ type CommandStep struct {
+-	// Command is the shell command the step runs, holding the {baseline_dir} placeholder.
++	// Command is the shell command the step runs, holding the {baseline_dir} placeholder and optionally {meta_dir}.
+ 	Command string `yaml:"command"`
+ 	// Dir is the run directory, absolute or relative to the worktree root; empty means the worktree's anchored directory.
+ 	Dir string `yaml:"dir"`
+diff --git a/internal/driftengine/diff.go b/internal/driftengine/diff.go
+index 86bc7c4a..e5eec547 100644
+--- a/internal/driftengine/diff.go
++++ b/internal/driftengine/diff.go
+@@ -95,15 +95,32 @@ type CaseListing struct {
+ 	Lines []ListedLine
+ }
+ 
+-// Volatile names what a hub's capture writes that differs between captures whatever the code does, such as provenance,
++// Volatile names what a capture writes that differs between captures whatever the code does, such as provenance,
+ // so it is no drift.
++// It holds a hub's `volatile_files` and `volatile_keys` lists, and the metadata marks an agent sets on a run's capture.
+ // The zero Volatile names nothing.
+ type Volatile struct {
+ 	// Files are the glob patterns of the cases left out whole:
+ 	// a pattern with no slash matches a case's file name at any depth, and one with a slash its whole path.
+-	Files []string `json:"files,omitempty"`
++	Files []string `json:"files,omitempty" yaml:"files"`
+ 	// Keys are the line keys left out of every case.
+-	Keys []string `json:"keys,omitempty"`
++	Keys []string `json:"keys,omitempty" yaml:"keys"`
++}
++
++// union returns the receiver's files and keys followed by those of more it does not already hold.
++func (v Volatile) union(more Volatile) Volatile {
++	joined := Volatile{Files: slices.Clone(v.Files), Keys: slices.Clone(v.Keys)}
++	for _, file := range more.Files {
++		if !slices.Contains(joined.Files, file) {
++			joined.Files = append(joined.Files, file)
++		}
++	}
++	for _, key := range more.Keys {
++		if !slices.Contains(joined.Keys, key) {
++			joined.Keys = append(joined.Keys, key)
++		}
++	}
++	return joined
+ }
+ 
+ // holdsCase reports whether name is a case the list leaves out whole.
+diff --git a/internal/driftengine/doc.go b/internal/driftengine/doc.go
+index b75d0266..219c77d2 100644
+--- a/internal/driftengine/doc.go
++++ b/internal/driftengine/doc.go
+@@ -14,7 +14,8 @@
+ // `expect_model` and `judge_model`, the model-specs of the expect agent and the judge;
+ // `judge_interactive`, which makes the judge a session with the operator in its pane;
+ // and `scope`, a task's regression scope, which a task sets in its board entry's `run_settings`.
+-// A hub's harness may write provenance that differs in every capture, and lym hard-codes no name of it.
++// A capture's provenance needs no `volatile_files` or `volatile_keys` entry, and lym hard-codes no name of it:
++// a harness writes it to `{meta_dir}`, and the expect agent marks any it finds among the results as metadata.
+ // `diff`, `key_patterns`, `volatile_files` and `volatile_keys` are guard keys:
+ // only the hub's file sets take them, and a task's run settings are refused them.
+ // `skip` and `verify_max_runs` are retired keys that ConfigSpec lists in RetiredKeys.
+@@ -24,6 +25,9 @@
+ // it reads a stored `partial` as `full` and sets Config.ScopeWasPartial, so a base not yet edited still loads.
+ // A declared command holds the placeholder `{baseline_dir}`:
+ // the directory the capture writes its profile files to and the compare reads them from.
++// It may hold `{meta_dir}`, the capture's metadata directory, a sibling of the capture directory named with `.meta`.
++// A capture writes its provenance there, such as the commit it ran at and its capture time.
++// Drift keeps that directory with the capture but never lists, compares or shows it to an agent.
+ // A command holding the retired `{skip_file}` placeholder is refused when it runs.
+ // CheckRetiredPlaceholders refuses the same command before the run starts while drift is enabled,
+ // and the Preflight row of a recipe with Drift rows runs it.
+@@ -78,7 +82,7 @@
+ // It also holds the judgement file and the logs of every run.
+ // The ephemeral directory `.lym/drift/` holds the expect agent's identity listing and the judge request.
+ // It also holds the capture record, the capture lock and the compare marker.
+-// The baseline and current-capture directories live there too.
++// The baseline and current-capture directories live there too, the baseline's metadata directory beside the baseline.
+ // A profile file holds a test's profile when its path relative to its profile directory is the test's name.
+ // The path may omit its last extension.
+ // A dotfile has no extension to drop, so its whole name is the test's name.
+@@ -94,9 +98,11 @@
+ // the scope and, for `off`, its source;
+ // a deferred capture, saying no compare ran;
+ // for a legacy `partial` record, the cases its skip list left out;
++// the commit the counted baseline was captured at, from the oldest `Drift-Baseline` commit;
+ // the diff mode, and under `command` that containment was the judge's;
+ // the last check's counts of changed, expected, matching, reused and unexpected cells;
+ // each expectation entry that covered no cell;
++// the files and keys marked as metadata, which no check compared;
+ // each open range with its `why` and the judge's sentence;
+ // and each amendment with who made it.
+ // A record with no last check renders its legacy compare, acceptance and waiver fields.
+@@ -117,8 +123,10 @@
+ // It takes its slot, then the capture lock with a bounded non-blocking retry that rides out a reader's probe.
+ // Under the lock it runs the caller's precondition,
+ // and it writes a `running` capture record naming the HEAD that precondition checked.
+-// It moves a non-empty baseline directory to the first free numbered backup beside it.
+-// It then runs the declared command in its shell, with `{baseline_dir}` rendered as a quoted path.
++// It moves a non-empty baseline directory, with its metadata directory, to a numbered backup beside it.
++// The backup is the first number whose directory and metadata directory are both free.
++// Beside an empty baseline directory it removes a leftover metadata directory.
++// It then runs the declared command in its shell, with `{baseline_dir}` and `{meta_dir}` rendered as quoted paths.
+ // The command's stdout and stderr go to the open log file.
+ // A timeout, counted from the command's start, kills the command's whole tree.
+ // The record ends `passed` for exit 0 with a file under the baseline directory, else `failed` with the reason.
+@@ -143,6 +151,7 @@
+ // a lock holder already holds its slot.
+ // It polls the lock through the request's Sleep from one second, doubling to thirty while the lock stays held.
+ // It runs the declared command with `{baseline_dir}` rendered as that directory while it holds the lock.
++// `{meta_dir}` renders as that directory's `.meta` sibling.
+ // It releases the lock and the slot on return.
+ // It writes no capture record and never touches the baseline directory or its backups.
+ // Its log is a sibling of the fresh directory.
+@@ -184,10 +193,10 @@
+ // Old holds the baseline's value and New the current one.
+ // DiffCaptures returns the cells in case order and then file order.
+ // It skips a case it is told to leave out on both sides, which serves a run whose scope record skipped tests.
+-// Volatile holds the `volatile_files` and `volatile_keys` lists:
++// Volatile holds the `volatile_files` and `volatile_keys` lists, and the metadata marks of a run:
+ // a file entry is a glob over a case's file name at any depth, or over its whole path when it holds a slash;
+ // a key entry names a line key in every case.
+-// Check drops their cells after the diff, and the expect agent's listing leaves them out.
++// Check drops the cells of both after the diff, and the expect agent's listing leaves out the volatile lists.
+ // The baseline digest still covers them.
+ // Under `diff: command` the declared compare decides alone.
+ //
+@@ -201,11 +210,13 @@
+ // Each of `lines` has a `range` of `12`, `12-20` or the open `12-` and a `why`.
+ // `added` and `removed` are lists of a `case` and a `why`.
+ // Under `diff: command` a case holds one `why` and nothing else.
+-// Every `why` must be non-blank, and a case, key and occurrence are checked against the baseline's listings.
++// Under both, `metadata` marks the capture files and line keys that hold metadata, such as provenance, and no results:
++// `files` are globs as the volatile lists read them, and `keys` line keys, which `diff: command` refuses.
++// Every `why` must be non-blank, and a case, key, occurrence and mark are checked against the baseline's listings.
+ // The expect agent's `expectation` entry re-prompts on the refusal's text.
+ // Expectation.Cover returns the entry covering a cell and whether it is an open range.
+ // Expectation.Uncovering names the entries that cover no cell.
+-// Expectation.Merge reads the sealed file and every amendment as one expectation.
++// Expectation.Merge reads the sealed file and every amendment as one expectation, joining their metadata marks.
+ //
+ // # Judgement
+ //
+@@ -269,6 +280,7 @@
+ // Under `command` it also holds the judge's rulings per case and code head.
+ // `scope.json` also holds what the checks record:
+ // the config's `diff`, `key_patterns` and volatile lists as first seen;
++// the metadata marks of the sealed expectation;
+ // the source of a scope `off`;
+ // the agent-session marks;
+ // the parent's amendments;
+@@ -333,11 +345,12 @@
+ // The sealed bytes and every amendment that adds entries are parsed by ParseExpectation under the mode and merged.
+ // The mode, key patterns and volatile lists are the scope record's, or the config's when the record holds no mode yet.
+ // A run thus keeps the lists it started with.
+-// A run started before they were set still needs `lym drift amend`.
++// The metadata marks are the scope record's joined with the merged expectation's, and CheckReport.Metadata holds them.
+ // Under `lines` the current capture is taken through Deps.CaptureCurrent.
+ // A capture that did not pass sets CaptureFault naming its log and the way forward;
+ // the diff leaves out the cases of the scope record's skipped tests when its scope is the legacy `partial`;
+-// each cell is classified by Expectation.Cover, with Expectation.Uncovering listing the entries no cell uses.
++// the cells of the volatile lists and the metadata marks are dropped;
++// each cell left is classified by Expectation.Cover, with Expectation.Uncovering listing the entries no cell uses.
+ // Under `command` Deps.Compare runs the declared compare and the report carries its exit and log.
+ // CheckReport.Findings renders the report:
+ // one line per unexpected cell with its case, identity, old and new value, and each fault with its way forward.
+@@ -346,9 +359,16 @@
+ // It passes on a skip and on a baseline fault, which no writer session can clear.
+ // Under `command` it passes whatever the compare's exit.
+ // It logs the findings it passes with at Info.
+-// It fails on a capture fault and, under `lines`, on any unexpected cell.
++// It fails on a capture fault.
++// Under `lines` it first marks each unexpected cell no code change can move as unchangeable.
++// One kind is a cell whose old value names the baseline's commit and whose new value names the code HEAD.
++// The other is a cell a second current capture of the same code gives another value.
++// It fails on any unexpected cell left, with findings that name no unchangeable cell.
+ // The failure carries the findings, which also name a records or seal fault found beside them.
+-// Its only write is the current capture's scratch directory, and Drift-Verify repeats the check as the guarantee.
++// When every unexpected cell was unchangeable, the failure is Terminal, and the writer is not asked again.
++// The findings go to the run's parent.
++// They name `lym drift amend <slug> --entries` with `metadata` marks as the way forward.
++// Its only writes are the current captures' scratch directories, and Drift-Verify repeats the check as the guarantee.
+ //
+ // # Compare
+ //
+@@ -356,7 +376,8 @@
+ // It takes the compare marker, an OS lock, before it waits for its gate slot, and holds it until it ends.
+ // A compare queued for a slot thus reads as activity, and a marker a dead compare left reads as none.
+ // A marker still held after a bounded retry, which rides out a reader's probe, is refused.
+-// It holds one slot as a non-tier holder and renders `{baseline_dir}` as the baseline directory.
++// It holds one slot as a non-tier holder.
++// It renders `{baseline_dir}` as the baseline directory and `{meta_dir}` as the baseline's metadata directory.
+ // It kills the command's tree at its timeout.
+ // The result carries the exit code, the log and whether the compare passed, which means exit 0 within the timeout.
+ // A compare that did not pass carries a reason naming the directory and the last output, as a failed capture's does.
+@@ -481,8 +502,10 @@
+ // The agent's table is gated by the row's `expectation` entry, NewExpectationGate.
+ // The gate parses expected.yaml with ParseExpectation under the recorded mode against the baseline's cases,
+ // and it re-prompts the agent with the parser's message; a missing file fails asking for it.
++// The stencil has the agent tell metadata from results and mark each file and key of metadata under `metadata`.
+ // The session's return closes the mark.
+-// A Done seals the file through SealExpectation when no commit recorded it yet.
++// A Done records the marks of a validating file in the scope record through WriteRecords.
++// It then seals the file through SealExpectation when no commit recorded it yet.
+ // The seal carries the baseline's digest as a second trailer.
+ // An exhausted entry is the shed's Stuck, whose resume spawns the agent again.
+ //
+@@ -555,6 +578,7 @@
+ // a nonzero exit at a code head whose stored case rulings in `judged.json` include a `does not match` or an `unexpected`, with no amendment recorded since they were stored, is a Stuck naming them, with no new judge;
+ // otherwise one judge is spawned under the same snapshot guard, its request carrying the compare's log, the sealed expectation and every amendment as text, and its `judgement` entry checks the `command` form, so a judge that rules no case after a failing compare is refused.
+ // A ruling of `matches` is not stored; each `does not match` and `unexpected` ruling is stored as a case ruling keyed by code head and case with its reason, and any of them is a Stuck naming the cases, their reasons, the parent's `lym drift amend <slug>` and the route that fixes code.
++// A ruling on a case the metadata marks name counts as `matches`, and a stored ruling on such a case is no Stuck.
+ // All `matches` records the pass, which counts as passing for the skip of a head already checked.
+ // Bound: `command` gives up containment by code, and a drifted case the log does not show goes unjudged.
+ //
+diff --git a/internal/driftengine/expect.go b/internal/driftengine/expect.go
+index fdf61ed7..5423ca17 100644
+--- a/internal/driftengine/expect.go
++++ b/internal/driftengine/expect.go
+@@ -136,7 +136,7 @@ func (p *DriftExpect) pass(ctx context.Context) (shedengine.Outcome, shedengine.
+ 	}
+ 
+ 	if session := rec.Scope.ExpectSession; !session.Open && session.OpenedAt != "" {
+-		present, findings, err := checkExpectationFile(d)
++		present, _, findings, err := readExpectationFile(d)
+ 		if err != nil {
+ 			return "", shedengine.OutputPointer{}, err
+ 		}
+@@ -261,10 +261,24 @@ func (p *DriftExpect) runAgent(ctx context.Context, scope ScopeRecord, unguarded
+ 	return p.seal(unguarded)
+ }
+ 
+-// seal commits expected.yaml with its seal trailer.
++// seal records the metadata marks of a validating expected.yaml in the scope record, when it holds any.
++// It then commits expected.yaml with its seal trailer.
+ // When unguarded is true, no commit has recorded the baseline digest yet, so it is added as a second trailer.
+ func (p *DriftExpect) seal(unguarded bool) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	d := p.deps
++	_, expectation, _, err := readExpectationFile(d)
++	if err != nil {
++		return "", shedengine.OutputPointer{}, err
++	}
++	if marks := expectation.Metadata; len(marks.Files)+len(marks.Keys) > 0 {
++		err := WriteRecords(d, func(scope *ScopeRecord, _ *JudgedRecord) error {
++			scope.Metadata = marks
++			return nil
++		})
++		if err != nil {
++			return "", shedengine.OutputPointer{}, err
++		}
++	}
+ 	var extra []fabricengine.Trailer
+ 	if unguarded {
+ 		digest, err := BaselineDigest(d.Paths.BaselineDir)
+@@ -286,7 +300,7 @@ func (p *DriftExpect) seal(unguarded bool) (shedengine.Outcome, shedengine.Outpu
+ // A missing file fails the gate asking for it.
+ func NewExpectationGate(d Deps) shuttleengine.Gate {
+ 	return func() (shuttleengine.GateResult, error) {
+-		present, findings, err := checkExpectationFile(d)
++		present, _, findings, err := readExpectationFile(d)
+ 		if err != nil {
+ 			return shuttleengine.GateResult{}, fmt.Errorf("drift: the expectation gate: %w", err)
+ 		}
+@@ -300,41 +314,43 @@ func NewExpectationGate(d Deps) shuttleengine.Gate {
+ 	}
+ }
+ 
+-// checkExpectationFile reports whether expected.yaml exists and, when it does, the parser's refusal of it, empty when it validates.
+-func checkExpectationFile(d Deps) (present bool, findings string, err error) {
++// readExpectationFile reports whether expected.yaml exists and, when it does, parses it.
++// findings is the parser's refusal of the file, empty when it validates.
++func readExpectationFile(d Deps) (present bool, expectation Expectation, findings string, err error) {
+ 	if err := requireSeams("the expectation check", seam{"Config", d.Config != nil}); err != nil {
+-		return false, "", err
++		return false, Expectation{}, "", err
+ 	}
+ 	data, present, err := readRecordFile(d.Paths.Expected)
+ 	if err != nil || !present {
+-		return false, "", err
++		return false, Expectation{}, "", err
+ 	}
+ 	rec, err := ReadRecords(d)
+ 	if err != nil {
+-		return true, "", err
++		return true, Expectation{}, "", err
+ 	}
+ 	mode, patterns := rec.Scope.Diff, rec.Scope.KeyPatterns
+ 	if mode == "" {
+ 		cfg, err := d.Config()
+ 		if err != nil {
+-			return true, "", fmt.Errorf("load the drift config: %w", err)
++			return true, Expectation{}, "", fmt.Errorf("load the drift config: %w", err)
+ 		}
+ 		mode, patterns = cfg.Diff, cfg.KeyPatterns
+ 	}
+ 	compiled, err := CompileKeyPatterns(patterns)
+ 	if err != nil {
+-		return true, "", err
++		return true, Expectation{}, "", err
+ 	}
+ 	var baseline []CaseListing
+ 	if mode == DiffLines {
+ 		if baseline, err = ListCaptures(d.Paths.BaselineDir, compiled); err != nil {
+-			return true, "", err
++			return true, Expectation{}, "", err
+ 		}
+ 	}
+-	if _, err := ParseExpectation(data, mode, baseline); err != nil {
+-		return true, err.Error(), nil
++	expectation, err = ParseExpectation(data, mode, baseline)
++	if err != nil {
++		return true, Expectation{}, err.Error(), nil
+ 	}
+-	return true, "", nil
++	return true, expectation, "", nil
+ }
+ 
+ // listingLine is one line of a listed case; N is written only for a key that occurs more than once in its case.
+diff --git a/internal/driftengine/expect_test.go b/internal/driftengine/expect_test.go
+index aacdedb4..3e595f73 100644
+--- a/internal/driftengine/expect_test.go
++++ b/internal/driftengine/expect_test.go
+@@ -271,6 +271,24 @@ func TestDriftExpect(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("TheSealRecordsTheMetadataMarksInTheScopeRecord", func(t *testing.T) {
++		t.Parallel()
++		f := newExpectFixture(t)
++		f.agentFile = validExpectation + "metadata:\n  files: [b.txt]\n  keys: [gamma]\n"
++		f.seed(nil)
++
++		outcome, _, err := f.call()
++
++		requireExpectDone(t, outcome, err)
++		want := Volatile{Files: []string{"b.txt"}, Keys: []string{"gamma"}}
++		if got := f.records().Scope.Metadata; !reflect.DeepEqual(got, want) {
++			t.Errorf("scope record metadata = %+v after the seal; want %+v", got, want)
++		}
++		if got := len(f.commitsWith(SealTrailerKey)); got != 1 {
++			t.Errorf("%d seal commits; want 1", got)
++		}
++	})
++
+ 	t.Run("TheListingNamesEveryBaselineCase", func(t *testing.T) {
+ 		t.Parallel()
+ 		tests := []struct {
+diff --git a/internal/driftengine/expectation.go b/internal/driftengine/expectation.go
+index 579d45c7..769d1c82 100644
+--- a/internal/driftengine/expectation.go
++++ b/internal/driftengine/expectation.go
+@@ -8,6 +8,8 @@ import (
+ 	"errors"
+ 	"fmt"
+ 	"io"
++	"path"
++	"slices"
+ 	"sort"
+ 	"strconv"
+ 	"strings"
+@@ -24,6 +26,9 @@ type Expectation struct {
+ 	Added []CaseEntry
+ 	// Removed lists the cases only the baseline capture is expected to hold.
+ 	Removed []CaseEntry
++	// Metadata marks the capture files and line keys that hold metadata, such as provenance, and no results.
++	// Their cells are no drift.
++	Metadata Volatile
+ }
+ 
+ // ExpectedCase is what is expected of one case.
+@@ -88,9 +93,10 @@ type rawCase struct {
+ 
+ // rawExpectation is expected.yaml as it is spelled, before validation.
+ type rawExpectation struct {
+-	Cases   map[string]rawCase `yaml:"cases"`
+-	Added   []CaseEntry        `yaml:"added"`
+-	Removed []CaseEntry        `yaml:"removed"`
++	Cases    map[string]rawCase `yaml:"cases"`
++	Added    []CaseEntry        `yaml:"added"`
++	Removed  []CaseEntry        `yaml:"removed"`
++	Metadata Volatile           `yaml:"metadata"`
+ }
+ 
+ // lineRange is a parsed range of unkeyed line positions; an open range has no upper bound.
+@@ -134,6 +140,10 @@ func (r lineRange) holds(position int) bool {
+ // Under DiffLines it also refuses a range that is not `N`, `N-M` or `N-`, and a case-level `why`.
+ // Under DiffCommand it refuses a `keys` or `lines` entry and checks no case name against baseline.
+ // Under both it refuses a blank `why`, an `n` below 1 and an unknown key.
++// It refuses a blank `metadata` entry and a `metadata.files` entry that is no valid glob.
++// Under DiffLines a `metadata.files` glob must match a case of the baseline,
++// and a `metadata.keys` entry must be a key of one.
++// Under DiffCommand it refuses `metadata.keys`, since the compare keys no line.
+ // Each refusal names the entry and the rule.
+ func ParseExpectation(data []byte, mode string, baseline []CaseListing) (Expectation, error) {
+ 	if mode != DiffLines && mode != DiffCommand {
+@@ -162,7 +172,11 @@ func ParseExpectation(data []byte, mode string, baseline []CaseListing) (Expecta
+ 		return Expectation{}, err
+ 	}
+ 
+-	expectation := Expectation{Added: raw.Added, Removed: raw.Removed}
++	if err := checkMetadata(raw.Metadata, mode, baseline); err != nil {
++		return Expectation{}, err
++	}
++
++	expectation := Expectation{Added: raw.Added, Removed: raw.Removed, Metadata: raw.Metadata}
+ 	names := make([]string, 0, len(raw.Cases))
+ 	for name := range raw.Cases {
+ 		names = append(names, name)
+@@ -181,6 +195,37 @@ func ParseExpectation(data []byte, mode string, baseline []CaseListing) (Expecta
+ 	return expectation, nil
+ }
+ 
++// checkMetadata checks the `metadata` marks under mode against the baseline's listings.
++func checkMetadata(marks Volatile, mode string, baseline []CaseListing) error {
++	for _, pattern := range marks.Files {
++		if strings.TrimSpace(pattern) == "" {
++			return fmt.Errorf("expected.yaml: metadata.files holds a blank entry; want a case's name or a glob")
++		}
++		if _, err := path.Match(pattern, ""); err != nil {
++			return fmt.Errorf("expected.yaml: metadata.files entry %q is no valid glob: %w", pattern, err)
++		}
++		matcher := Volatile{Files: []string{pattern}}
++		if mode == DiffLines && !slices.ContainsFunc(baseline, func(listing CaseListing) bool { return matcher.holdsCase(listing.Case) }) {
++			return fmt.Errorf("expected.yaml: metadata.files entry %q matches no case of the baseline", pattern)
++		}
++	}
++	for _, key := range marks.Keys {
++		if strings.TrimSpace(key) == "" {
++			return fmt.Errorf("expected.yaml: metadata.keys holds a blank entry; want a key the listing holds")
++		}
++		if mode == DiffCommand {
++			return fmt.Errorf("expected.yaml: metadata.keys entry %q is refused under diff %q, which keys no line; mark the case under metadata.files", key, DiffCommand)
++		}
++		keyed := func(listing CaseListing) bool {
++			return slices.ContainsFunc(listing.Lines, func(line ListedLine) bool { return line.Identity.Key == key })
++		}
++		if !slices.ContainsFunc(baseline, keyed) {
++			return fmt.Errorf("expected.yaml: metadata.keys entry %q is not a key of any case of the baseline", key)
++		}
++	}
++	return nil
++}
++
+ // checkCaseEntries checks each entry of an `added` or `removed` list and returns the case names it holds.
+ // Its errors name the list.
+ // When against is not nil, every named case must be one of its listings.
+@@ -276,11 +321,12 @@ func checkKeyEntry(caseName string, entry rawKeyEntry, occurrences map[string]in
+ 
+ // Merge returns the receiver's entries followed by more's.
+ // It lets containment read the sealed file and every amendment as one expectation.
+-// A case in both keeps the receiver's why when it has one.
++// A case in both keeps the receiver's why when it has one, and the metadata marks are joined.
+ func (e Expectation) Merge(more Expectation) Expectation {
+ 	merged := Expectation{
+-		Added:   append(append([]CaseEntry(nil), e.Added...), more.Added...),
+-		Removed: append(append([]CaseEntry(nil), e.Removed...), more.Removed...),
++		Added:    append(append([]CaseEntry(nil), e.Added...), more.Added...),
++		Removed:  append(append([]CaseEntry(nil), e.Removed...), more.Removed...),
++		Metadata: e.Metadata.union(more.Metadata),
+ 	}
+ 	if len(e.Cases)+len(more.Cases) > 0 {
+ 		merged.Cases = map[string]ExpectedCase{}
+diff --git a/internal/driftengine/expectation_test.go b/internal/driftengine/expectation_test.go
+index 597ff03c..c3e5e6b8 100644
+--- a/internal/driftengine/expectation_test.go
++++ b/internal/driftengine/expectation_test.go
+@@ -83,6 +83,24 @@ func TestParseExpectation(t *testing.T) {
+ 		{name: "CommandKeysEntry", mode: DiffCommand, data: "cases:\n  anything:\n    keys:\n      - {key: k, why: a}\n", wantErr: "holds keys or lines"},
+ 		{name: "CommandLinesEntry", mode: DiffCommand, data: "cases:\n  anything:\n    lines:\n      - {range: 1, why: a}\n", wantErr: "holds keys or lines"},
+ 		{name: "CommandEmptyWhy", mode: DiffCommand, data: "cases:\n  anything:\n    why: ''\n", wantErr: "has an empty why"},
++		{
++			name: "MetadataFilesAndKeys",
++			mode: DiffLines,
++			data: "metadata:\n  files: [plain.txt]\n  keys: [other]\n",
++			want: Expectation{Metadata: Volatile{Files: []string{"plain.txt"}, Keys: []string{"other"}}},
++		},
++		{
++			name: "CommandMetadataFileNeedsNoBaselineCase",
++			mode: DiffCommand,
++			data: "metadata:\n  files: [anything]\n",
++			want: Expectation{Metadata: Volatile{Files: []string{"anything"}}},
++		},
++		{name: "MetadataBlankFile", mode: DiffLines, data: "metadata:\n  files: ['  ']\n", wantErr: "metadata.files holds a blank entry"},
++		{name: "MetadataBlankKey", mode: DiffLines, data: "metadata:\n  keys: ['']\n", wantErr: "metadata.keys holds a blank entry"},
++		{name: "MetadataInvalidGlob", mode: DiffLines, data: "metadata:\n  files: ['[a']\n", wantErr: `metadata.files entry "[a" is no valid glob`},
++		{name: "MetadataFileMatchingNoBaselineCase", mode: DiffLines, data: "metadata:\n  files: [missing.txt]\n", wantErr: `metadata.files entry "missing.txt" matches no case of the baseline`},
++		{name: "MetadataKeyOfNoBaselineCase", mode: DiffLines, data: "metadata:\n  keys: [nokey]\n", wantErr: `metadata.keys entry "nokey" is not a key of any case of the baseline`},
++		{name: "CommandMetadataKeys", mode: DiffCommand, data: "metadata:\n  keys: [k]\n", wantErr: `metadata.keys entry "k" is refused under diff "command"`},
+ 		{name: "UnknownMode", mode: "other", data: "", wantErr: `mode "other"`},
+ 	}
+ 	for _, tt := range tests {
+@@ -178,6 +196,16 @@ func TestExpectationCover(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("MergeJoinsMetadataMarksWithoutDuplicates", func(t *testing.T) {
++		t.Parallel()
++		sealed := Expectation{Metadata: Volatile{Files: []string{"a", "b"}, Keys: []string{"k"}}}
++		amendment := Expectation{Metadata: Volatile{Files: []string{"b", "c"}, Keys: []string{"k", "m"}}}
++		want := Volatile{Files: []string{"a", "b", "c"}, Keys: []string{"k", "m"}}
++		if diff := cmp.Diff(want, sealed.Merge(amendment).Metadata); diff != "" {
++			t.Errorf("Merge().Metadata mismatch (-want +got):\n%s", diff)
++		}
++	})
++
+ 	t.Run("UncoveringListsEntriesWithNoCell", func(t *testing.T) {
+ 		t.Parallel()
+ 		cells := []Cell{keyed("all", 1), unkeyed(2), {Case: "new.txt", Kind: CellAddedCase}}
+diff --git a/internal/driftengine/paths.go b/internal/driftengine/paths.go
+index dfcd7454..d7742e30 100644
+--- a/internal/driftengine/paths.go
++++ b/internal/driftengine/paths.go
+@@ -47,6 +47,8 @@ type Paths struct {
+ 	JudgeRequest string
+ 	// BaselineDir is the directory the capture writes its profile files to.
+ 	BaselineDir string
++	// BaselineMetaDir is the directory the capture writes its metadata to, such as its provenance; drift never compares it.
++	BaselineMetaDir string
+ 	// CurrentDir holds the directory and log of every current capture a check ran.
+ 	CurrentDir string
+ }
+@@ -55,22 +57,29 @@ type Paths struct {
+ func NewPaths(anchorRoot string) Paths {
+ 	durable := filepath.Join(anchorRoot, lymdirs.LymDirName, driftDirName)
+ 	ephemeral := filepath.Join(anchorRoot, lymdirs.DotLymDirName, driftDirName)
++	baselineDir := filepath.Join(ephemeral, "baseline")
+ 	return Paths{
+-		Scope:         filepath.Join(durable, scopeFileName),
+-		Judged:        filepath.Join(durable, judgedFileName),
+-		Expected:      filepath.Join(durable, expectedFileName),
+-		Judgement:     filepath.Join(durable, judgementFileName),
+-		LogsDir:       filepath.Join(durable, "logs"),
+-		Capture:       filepath.Join(ephemeral, "capture.json"),
+-		CaptureLock:   filepath.Join(ephemeral, "capture.lock"),
+-		CompareMarker: filepath.Join(ephemeral, "compare.lock"),
+-		Listing:       filepath.Join(ephemeral, "listing.yaml"),
+-		JudgeRequest:  filepath.Join(ephemeral, "judge-request.json"),
+-		BaselineDir:   filepath.Join(ephemeral, "baseline"),
+-		CurrentDir:    filepath.Join(ephemeral, "current"),
++		Scope:           filepath.Join(durable, scopeFileName),
++		Judged:          filepath.Join(durable, judgedFileName),
++		Expected:        filepath.Join(durable, expectedFileName),
++		Judgement:       filepath.Join(durable, judgementFileName),
++		LogsDir:         filepath.Join(durable, "logs"),
++		Capture:         filepath.Join(ephemeral, "capture.json"),
++		CaptureLock:     filepath.Join(ephemeral, "capture.lock"),
++		CompareMarker:   filepath.Join(ephemeral, "compare.lock"),
++		Listing:         filepath.Join(ephemeral, "listing.yaml"),
++		JudgeRequest:    filepath.Join(ephemeral, "judge-request.json"),
++		BaselineDir:     baselineDir,
++		BaselineMetaDir: metaDirFor(baselineDir),
++		CurrentDir:      filepath.Join(ephemeral, "current"),
+ 	}
+ }
+ 
++// metaDirFor returns the metadata directory of the capture directory dir: a sibling, so no capture lists its files.
++func metaDirFor(dir string) string {
++	return dir + ".meta"
++}
++
+ // DirRel returns the durable drift directory relative to the anchor root, always forward-slashed.
+ // It is `_lym/drift`, the form a commit pathspec takes.
+ func DirRel() string {
+diff --git a/internal/driftengine/records.go b/internal/driftengine/records.go
+index 6af6054c..e74d17a5 100644
+--- a/internal/driftengine/records.go
++++ b/internal/driftengine/records.go
+@@ -110,6 +110,9 @@ type ScopeRecord struct {
+ 	KeyPatterns []string `json:"key_patterns,omitempty"`
+ 	// Volatile is what the config's diff ignores, recorded with Diff.
+ 	Volatile Volatile `json:"volatile,omitzero"`
++	// Metadata is the capture files and line keys the expect agent marked as metadata, not results, recorded at the seal.
++	// No later listing, check or gate shows them, and the landing names them.
++	Metadata Volatile `json:"metadata,omitzero"`
+ 	// ExpectSession marks the expect agent's session.
+ 	ExpectSession SessionMark `json:"expect_session,omitzero"`
+ 	// JudgeSession marks the judge's session.
+diff --git a/internal/driftengine/seats.go b/internal/driftengine/seats.go
+index accbb75a..44b3b7b1 100644
+--- a/internal/driftengine/seats.go
++++ b/internal/driftengine/seats.go
+@@ -64,8 +64,12 @@ const (
+ 		"removed:\n" +
+ 		"  - case: <a case only the baseline holds and the task removes>\n" +
+ 		"    why: <why>\n" +
++		"metadata:\n" +
++		"  files: [<a case that holds metadata and no result, by name or glob>]\n" +
++		"  keys: [<a key whose value is metadata in every case>]\n" +
+ 		"```\n\n" +
+-		"Every entry needs a non-empty `why`, and a case or key must be one the listing holds unless it is marked as added."
++		"Every entry needs a non-empty `why`, and a case or key must be one the listing holds unless it is marked as added.\n" +
++		"A `metadata` file must match a case of the listing, and a `metadata` key must be a key the listing holds."
+ 	commandExpectationFormat = "The listing holds `mode: command`: the case names of the baseline alone, since the declared compare command, not lym, compares the captures.\n" +
+ 		"Write expected.yaml as a mapping with these keys, each optional:\n\n" +
+ 		"```yaml\n" +
+@@ -78,8 +82,11 @@ const (
+ 		"removed:\n" +
+ 		"  - case: <a case only the baseline holds and the task removes>\n" +
+ 		"    why: <why>\n" +
++		"metadata:\n" +
++		"  files: [<a case that holds metadata and no result, by name or glob>]\n" +
+ 		"```\n\n" +
+-		"A case holds one `why` and no `keys` or `lines`, and every entry needs a non-empty `why`."
++		"A case holds one `why` and no `keys` or `lines`, and every entry needs a non-empty `why`.\n" +
++		"`metadata` takes `files` alone, since the compare keys no line."
+ )
+ 
+ // subjectFields are the told values the task's subject is read from.
+diff --git a/internal/driftengine/steprun.go b/internal/driftengine/steprun.go
+index 2f633c62..a0d91406 100644
+--- a/internal/driftengine/steprun.go
++++ b/internal/driftengine/steprun.go
+@@ -60,6 +60,8 @@ type stepRun struct {
+ 	Site string
+ 	// BaselineDir is the path the command's {baseline_dir} placeholder renders to.
+ 	BaselineDir string
++	// MetaDir is the path the command's {meta_dir} placeholder renders to, created before the command starts.
++	MetaDir string
+ 	// LogPath is the file the command's stdout and stderr go to.
+ 	LogPath string
+ 	// Timeout bounds the command from its start, on the monotonic clock.
+@@ -111,6 +113,9 @@ func runStep(ctx context.Context, run stepRun) (stepOutcome, error) {
+ 	if err := os.MkdirAll(filepath.Dir(run.LogPath), 0o755); err != nil {
+ 		return stepOutcome{}, fmt.Errorf("drift: create the log directory: %w", err)
+ 	}
++	if err := os.MkdirAll(run.MetaDir, 0o755); err != nil {
++		return stepOutcome{}, fmt.Errorf("drift: create the metadata directory: %w", err)
++	}
+ 	run.OnSlot(run.Now())
+ 
+ 	logFile, err := os.OpenFile(run.LogPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
+@@ -307,7 +312,7 @@ func acquireSlot(ctx context.Context, run stepRun) (heldSlot, error) {
+ 	return heldSlot{lease: lease, limits: limits, release: release}, nil
+ }
+ 
+-// renderCommand returns the step's command with {baseline_dir} replaced by the quoted baseline directory.
++// renderCommand returns the step's command with {baseline_dir} and {meta_dir} replaced by their quoted directories.
+ // A command holding the {skip_file} placeholder is refused, since nothing fills it.
+ func renderCommand(run stepRun) (string, error) {
+ 	if err := refuseSkipFilePlaceholder(run.Site, run.Name, run.Step.Command); err != nil {
+@@ -317,7 +322,11 @@ func renderCommand(run stepRun) (string, error) {
+ 	if err != nil {
+ 		return "", fmt.Errorf("drift: quote the baseline directory: %w", err)
+ 	}
+-	return strings.ReplaceAll(run.Step.Command, baselineDirPlaceholder, baseline), nil
++	meta, err := verifyrun.QuoteArg(runtime.GOOS, run.MetaDir)
++	if err != nil {
++		return "", fmt.Errorf("drift: quote the metadata directory: %w", err)
++	}
++	return strings.NewReplacer(baselineDirPlaceholder, baseline, metaDirPlaceholder, meta).Replace(run.Step.Command), nil
+ }
+ 
+ // skipFilePlaceholder is the {skip_file} placeholder, which drift does not render, so a command holding it is refused.
+diff --git a/internal/driftengine/template.yaml b/internal/driftengine/template.yaml
+index 2ef8762e..fe5a3815 100644
+--- a/internal/driftengine/template.yaml
++++ b/internal/driftengine/template.yaml
+@@ -1,10 +1,10 @@
+ enabled: false  # true turns on the regression rows Drift-Baseline, Drift-Await, Drift-Verify and Drift-Recheck in the tapestry and darn recipes; false leaves them out
+-capture: {}  # the command that records the regression baseline, written whole as {command, dir, env, timeout_min}; {} declares none; dir is absolute or relative to the worktree root, the base gate.yaml's dir uses too, no dir runs in the worktree's anchor, and a hub write refuses a dir that is no existing directory in the prime; the command must hold {baseline_dir}, where it writes its profile files; write it with lym config drift --set 'capture={command: "...", timeout_min: 30}'; once declared, change one key alone with lym config drift --set capture.timeout_min=45
+-compare: {}  # the command that compares the branch against the baseline, run only under diff: command, written whole as {command, dir, env, timeout_min}; {} declares none; dir resolves as capture's does; the command must hold {baseline_dir} and exits 0 when nothing drifted; write it with lym config drift --set 'compare={command: "...", timeout_min: 30}'; once declared, change one key alone with lym config drift --set compare.timeout_min=45
++capture: {}  # the command that records the regression baseline, written whole as {command, dir, env, timeout_min}; {} declares none; dir is absolute or relative to the worktree root, the base gate.yaml's dir uses too, no dir runs in the worktree's anchor, and a hub write refuses a dir that is no existing directory in the prime; the command must hold {baseline_dir}, where it writes its result files, the only files drift compares; it may hold {meta_dir}, where it writes the capture's provenance, such as the commit it ran at and its capture time, which drift keeps beside the capture and never compares; write it with lym config drift --set 'capture={command: "...", timeout_min: 30}'; once declared, change one key alone with lym config drift --set capture.timeout_min=45
++compare: {}  # the command that compares the branch against the baseline, run only under diff: command, written whole as {command, dir, env, timeout_min}; {} declares none; dir resolves as capture's does; the command must hold {baseline_dir} and exits 0 when nothing drifted, and {meta_dir} names the baseline's provenance directory; write it with lym config drift --set 'compare={command: "...", timeout_min: 30}'; once declared, change one key alone with lym config drift --set compare.timeout_min=45
+ diff: lines  # how a run compares the capture with the baseline: lines diffs the two capture directories line by line in Go and checks the changed values against the expectation the expect agent writes, which needs a capture of files of lines the key_patterns read; command runs the compare command; lines or command, set only in the hub's drift.yaml
+ key_patterns: ['^\s*(?P<key>[^=:]+?)\s*=\s*(?P<value>.*?)\s*$', '^\s*(?P<key>[^=:]+?)\s*:\s*(?P<value>.*?)\s*$']  # the regular expressions, tried in order, that key a captured line: the named group key names the quantity and the named group value holds its value, the first match wins, and a line none matches is told apart by its position; the defaults read name = value and name: value; set only in the hub's drift.yaml
+-volatile_files: []  # capture files that differ in every capture whatever the code does, such as a provenance file the capture harness writes, which the diff under diff: lines leaves out whole; each entry is a glob, matched against a file's name at any depth, or against its whole path when it holds a /; a run keeps the list it started with; set only in the hub's drift.yaml, with lym config drift --set 'volatile_files=[_source.txt]'
+-volatile_keys: []  # line keys, as the key_patterns read them, that differ in every capture whatever the code does, which the diff under diff: lines leaves out of every file; a run keeps the list it started with; set only in the hub's drift.yaml, with lym config drift --set 'volatile_keys=[captured_at]'
++volatile_files: []  # capture files that differ in every capture whatever the code does, which the diff under diff: lines leaves out whole; a capture's provenance needs no entry, since it goes to {meta_dir} and the expect agent marks any it finds as metadata; each entry is a glob, matched against a file's name at any depth, or against its whole path when it holds a /; a run keeps the list it started with; set only in the hub's drift.yaml, with lym config drift --set 'volatile_files=[<glob>]'
++volatile_keys: []  # line keys, as the key_patterns read them, that differ in every capture whatever the code does, which the diff under diff: lines leaves out of every file; a timestamp, run id or host name needs no entry, since the expect agent marks it as metadata; a run keeps the list it started with; set only in the hub's drift.yaml, with lym config drift --set 'volatile_keys=[<key>]'
+ expect_model: sonnet[medium]  # model-spec for the expect agent, which writes the expectation of what the task changes in the capture (see contracts/specs/llm-model-spec.md)
+ judge_model: opus[high]  # model-spec for the judge, which rules on each expected value against its old and new value (see contracts/specs/llm-model-spec.md)
+ judge_interactive: false  # true runs the judge as a session with the operator in its pane, who decides each ruling, so an operator must be present; false, the default, runs it autonomously
+diff --git a/internal/driftengine/verdict.go b/internal/driftengine/verdict.go
+index 0cc89b23..be15c015 100644
+--- a/internal/driftengine/verdict.go
++++ b/internal/driftengine/verdict.go
+@@ -13,7 +13,8 @@ const verdictHeading = "## Regression check"
+ 
+ // Verdict renders the task's regression check as a markdown section from its drift records,
+ // so a hand edit of a record never reaches the landing, and it runs no capture.
+-// The section names the scope, the last check's counts and the expectation entries no cell used.
++// The section names the scope, the commit the counted baseline was captured at, and the last check's counts.
++// It names the expectation entries no cell used and the capture files and keys marked as metadata.
+ // It also names the open ranges the judge looked into and the parent's amendments.
+ // It returns "" when no scope record exists,
+ // so a task no Drift row recorded a scope for carries no section, and it creates no directory.
+@@ -25,11 +26,20 @@ func Verdict(d Deps) (string, error) {
+ 	if !records.ScopeFound {
+ 		return "", nil
+ 	}
+-	return renderVerdict(records), nil
++	baseline, found, err := d.TrailerCommit(BaselineTrailerKey, false)
++	if err != nil {
++		return "", fmt.Errorf("drift: find the oldest %s commit for the verdict: %w", BaselineTrailerKey, err)
++	}
++	baseHead := ""
++	if found {
++		baseHead = baseline.CodeHead
++	}
++	return renderVerdict(records, baseHead), nil
+ }
+ 
+ // renderVerdict renders rec as the markdown regression check section.
+-func renderVerdict(rec Records) string {
++// baseHead is the commit the counted baseline was captured at, empty when no commit recorded one.
++func renderVerdict(rec Records, baseHead string) string {
+ 	scope := rec.Scope
+ 	lines := []string{verdictHeading, "", "- Scope: " + scopeText(scope)}
+ 	if scope.Scope == ScopeOff {
+@@ -43,16 +53,42 @@ func renderVerdict(rec Records) string {
+ 		if mode == "" {
+ 			mode = scope.Diff
+ 		}
++		if baseHead != "" {
++			lines = append(lines, fmt.Sprintf("- Baseline: captured at `%s`, the task's branch point.", baseHead))
++		}
+ 		lines = append(lines, "- Diff: "+diffText(mode))
+ 		lines = append(lines, checkLines(scope.LastCheck)...)
+ 	default:
+ 		lines = append(lines, oldCheckLines(scope)...)
+ 	}
++	lines = append(lines, metadataLines(scope.Metadata)...)
+ 	lines = append(lines, rangeLines(rec.Judged.Ranges)...)
+ 	lines = append(lines, amendmentLines(scope.Amendments)...)
+ 	return strings.Join(lines, "\n")
+ }
+ 
++// metadataLines renders the capture files and line keys marked as metadata, which no check compared.
++func metadataLines(marks Volatile) []string {
++	if len(marks.Files)+len(marks.Keys) == 0 {
++		return nil
++	}
++	quote := func(items []string) string {
++		quoted := make([]string, len(items))
++		for i, item := range items {
++			quoted[i] = "`" + item + "`"
++		}
++		return strings.Join(quoted, ", ")
++	}
++	var parts []string
++	if len(marks.Files) > 0 {
++		parts = append(parts, "files "+quote(marks.Files))
++	}
++	if len(marks.Keys) > 0 {
++		parts = append(parts, "keys "+quote(marks.Keys))
++	}
++	return []string{"- Left out as capture metadata, not results: " + strings.Join(parts, "; ") + "."}
++}
++
+ // scopeText renders the scope line's value.
+ func scopeText(scope ScopeRecord) string {
+ 	switch scope.Scope {
+diff --git a/internal/driftengine/verdict_test.go b/internal/driftengine/verdict_test.go
+index 12150a04..8393a5a9 100644
+--- a/internal/driftengine/verdict_test.go
++++ b/internal/driftengine/verdict_test.go
+@@ -8,16 +8,17 @@ import (
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// writeVerdictRecords commits scope and judged as the records of d.
+-func writeVerdictRecords(t *testing.T, d Deps, scope ScopeRecord, judged JudgedRecord) {
++// writeVerdictRecords commits scope and judged as the records of d, with trailers on the records commit.
++func writeVerdictRecords(t *testing.T, d Deps, scope ScopeRecord, judged JudgedRecord, trailers ...fabricengine.Trailer) {
+ 	t.Helper()
+ 	err := WriteRecords(d, func(s *ScopeRecord, j *JudgedRecord) error {
+ 		*s, *j = scope, judged
+ 		return nil
+-	})
++	}, trailers...)
+ 	if err != nil {
+ 		t.Fatalf("WriteRecords() error = %v; want nil", err)
+ 	}
+@@ -149,6 +150,27 @@ func TestVerdict(t *testing.T) {
+ 		})
+ 	}
+ 
++	t.Run("BaselineLineAndMetadataMarksFrameTheLastCheck", func(t *testing.T) {
++		t.Parallel()
++		store := newCommitStore(t)
++		d := store.deps(NewPaths(store.root))
++		scope := ScopeRecord{
++			Scope:     ScopeFull,
++			Diff:      DiffLines,
++			LastCheck: CheckResult{Head: "head2", Passed: true, At: "2026-01-02T03:04:05Z", Mode: DiffLines},
++			Metadata:  Volatile{Files: []string{"_source.txt", "b.txt"}, Keys: []string{"captured_at"}},
++		}
++		writeVerdictRecords(t, d, scope, JudgedRecord{}, fabricengine.Trailer{Key: BaselineTrailerKey, Value: "digest"})
++		want := strings.Join([]string{"## Regression check", "", "- Scope: full.",
++			"- Baseline: captured at `code-head-0`, the task's branch point.",
++			"- Diff: lines.",
++			"- Last check: passed at `head2`. 0 changed cells, 0 expected, 0 judged as matching, 0 reused from stored rulings, 0 unexpected.",
++			"- Left out as capture metadata, not results: files `_source.txt`, `b.txt`; keys `captured_at`."}, "\n")
++		if got, err := Verdict(d); err != nil || got != want {
++			t.Errorf("Verdict() = %q, %v; want %q, nil", got, err, want)
++		}
++	})
++
+ 	t.Run("HandEditedScopeRecordRendersTheCommittedCopy", func(t *testing.T) {
+ 		t.Parallel()
+ 		store := newCommitStore(t)
+diff --git a/internal/driftengine/verify.go b/internal/driftengine/verify.go
+index b932d2e1..9f125a03 100644
+--- a/internal/driftengine/verify.go
++++ b/internal/driftengine/verify.go
+@@ -817,7 +817,7 @@ func (p *DriftVerify) passCommand(ctx context.Context, rec Records, report Check
+ 		}
+ 		return doneBecause("the check passed: the compare exited 0")
+ 	}
+-	if stored := storedCaseRulings(rec, head); len(stored) > 0 {
++	if stored := storedCaseRulings(rec, head, report.Metadata); len(stored) > 0 {
+ 		if err := p.recordCheck(p.commandResult(report, head, false), nil); err != nil {
+ 			return "", shedengine.OutputPointer{}, err
+ 		}
+@@ -869,13 +869,14 @@ func describeCaseRuling(caseName string, ruling Ruling, reason string) string {
+ }
+ 
+ // storedCaseRulings returns each stored non-matching ruling at head that no amendment was recorded after.
++// A ruling on a case the metadata marks name is left out, since such a case is no drift.
+ // Each string names the case, its ruling and its reason.
+ // Rulings and amendments both carry UTC stamps, so their strings order by time;
+ // an amendment stamped in the same second as a ruling counts as after it.
+-func storedCaseRulings(rec Records, head string) []string {
++func storedCaseRulings(rec Records, head string, metadata Volatile) []string {
+ 	var ruled []string
+ 	for _, stored := range rec.Judged.Cases {
+-		if stored.CodeHead != head || stored.Ruling == RulingMatches {
++		if stored.CodeHead != head || stored.Ruling == RulingMatches || metadata.holdsCase(stored.Case) {
+ 			continue
+ 		}
+ 		amended := slices.ContainsFunc(rec.Scope.Amendments, func(amendment Amendment) bool { return amendment.At >= stored.At })
+@@ -888,8 +889,9 @@ func storedCaseRulings(rec Records, head string) []string {
+ 
+ // storeCaseRulings stores the judge's rulings on the cases of the failing compare.
+ // It closes the session mark and records the check in one write; then it removes judgement.yaml.
+-// A ruling of matches is not stored, and drops an earlier stored ruling of the same case at head;
+-// each other ruling is stored as a JudgedCase keyed by head and case.
++// A ruling of matches, and any ruling on a case the report's metadata marks name, is not stored.
++// It drops an earlier stored ruling of the same case at head.
++// Each other ruling is stored as a JudgedCase keyed by head and case.
+ // Any ruling other than matches is a Stuck naming the cases and their reasons;
+ // all matches records the pass and is Done.
+ func (p *DriftVerify) storeCaseRulings(report CheckReport, session *judgeSession, head string) (shedengine.Outcome, shedengine.OutputPointer, error) {
+@@ -897,7 +899,7 @@ func (p *DriftVerify) storeCaseRulings(report CheckReport, session *judgeSession
+ 	var ruled []JudgedCase
+ 	var matching, notMatching []string
+ 	for _, ruling := range session.Judgement.Cases {
+-		if ruling.Ruling == RulingMatches {
++		if ruling.Ruling == RulingMatches || report.Metadata.holdsCase(ruling.Case) {
+ 			matching = append(matching, ruling.Case)
+ 			continue
+ 		}
+diff --git a/internal/driftengine/verify_test.go b/internal/driftengine/verify_test.go
+index e7028ca4..525ec004 100644
+--- a/internal/driftengine/verify_test.go
++++ b/internal/driftengine/verify_test.go
+@@ -952,6 +952,45 @@ func TestDriftVerify(t *testing.T) {
+ 				t.Errorf("%d judge runs and stored cases %+v; want one judge and the old ruling dropped once the case matches", f.seats.Calls, f.records().Judged.Cases)
+ 			}
+ 		})
++
++		t.Run("a case the metadata marks is no drift: a stored ruling on it stops nothing and a judge's ruling on it counts as matches", func(t *testing.T) {
++			t.Parallel()
++			tests := []struct {
++				name string
++				// stored says a non-matching ruling on the marked case is already stored at the code head.
++				stored bool
++				// ruling is what the judge gives the marked case.
++				ruling Ruling
++			}{
++				{"AStoredRulingStopsNothing", true, RulingMatches},
++				{"AJudgeRulingOfDoesNotMatchCountsAsMatches", false, RulingNoMatch},
++			}
++			for _, tt := range tests {
++				t.Run(tt.name, func(t *testing.T) {
++					t.Parallel()
++					f := newVerifyFixture(t)
++					f.seedCommand()
++					err := WriteRecords(f.deps, func(scope *ScopeRecord, judged *JudgedRecord) error {
++						scope.Metadata = Volatile{Files: []string{"a.txt"}}
++						if tt.stored {
++							judged.Cases = []JudgedCase{{CodeHead: "code-head-0", Case: "a.txt", Ruling: RulingNoMatch, Reason: "wrong direction", At: "2026-01-01T06:00:00Z"}}
++						}
++						return nil
++					})
++					if err != nil {
++						t.Fatalf("WriteRecords() = %v; want nil", err)
++					}
++					f.caseRulings = map[string]Ruling{"a.txt": tt.ruling}
++
++					requireDone(f)
++
++					scope := f.scope()
++					if f.seats.Calls != 1 || len(f.records().Judged.Cases) != 0 || !scope.LastCheck.Passed || scope.LastCheck.Matched != 1 {
++						t.Errorf("%d judge runs, stored cases %+v, last check %+v; want one judge, no stored ruling and a pass with one matched case", f.seats.Calls, f.records().Judged.Cases, scope.LastCheck)
++					}
++				})
++			}
++		})
+ 	})
+ 
+ 	t.Run("the Drift-Recheck row runs the same pass", func(t *testing.T) {
+diff --git a/internal/shedrecipe/entries_drift_test.go b/internal/shedrecipe/entries_drift_test.go
+index 54aedf8e..ea2ba164 100644
+--- a/internal/shedrecipe/entries_drift_test.go
++++ b/internal/shedrecipe/entries_drift_test.go
+@@ -109,6 +109,10 @@ func TestDriftEntries(t *testing.T) {
+ 		{"VerifyNilCompare", driftVerifyEntry, verifyCfg(verifyGate), func(e *Env) { e.Drift.Compare = nil }, nil, "Drift.Compare"},
+ 		{"VerifyNilRecordsChangedSince", driftVerifyEntry, verifyCfg(verifyGate), func(e *Env) { e.Drift.RecordsChangedSince = nil }, nil, "Drift.RecordsChangedSince"},
+ 		{"VerifyNilEndRoles", driftVerifyEntry, verifyCfg(verifyGate), func(e *Env) { e.Drift.EndRoles = nil }, nil, "Drift.EndRoles"},
++		{"BaselineNilHead", driftBaselineEntry, Config{"subject": "decision-record"}, func(e *Env) { e.Drift.Head = nil }, nil, "Drift.Head"},
++		{"ExpectNilHead", driftExpectEntry, expectCfg, func(e *Env) { e.Drift.Head = nil }, nil, "Drift.Head"},
++		{"AwaitNilHead", driftAwaitEntry, Config{}, func(e *Env) { e.Drift.Head = nil }, nil, "Drift.Head"},
++		{"VerifyNilHead", driftVerifyEntry, verifyCfg(verifyGate), func(e *Env) { e.Drift.Head = nil }, nil, "Drift.Head"},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/shedrecipe/entries_gate.go b/internal/shedrecipe/entries_gate.go
+index c01ae40f..176cc346 100644
+--- a/internal/shedrecipe/entries_gate.go
++++ b/internal/shedrecipe/entries_gate.go
+@@ -50,7 +50,7 @@ var gateEntryKeys = []string{"name", "attempts", "pass_on_cap"}
+ // env.VerifyTreeScope alone selects the darn form;
+ // it requires env.VerifyMergeBase, the base of both lints in that form;
+ // otherwise env.VerifyMergeBase is the base of the headroom lint;
+-// "drift" requires the env.Drift seams Config, Status, CaptureCurrent, TrailerCommit, FileAt and Compare;
++// "drift" requires the env.Drift seams Config, Status, Head, CaptureCurrent, TrailerCommit, FileAt and Compare;
+ // it returns driftengine.NewDriftGate over them;
+ // "expectation" requires the env.Drift seams Config, TrailerCommit and FileAt;
+ // it returns driftengine.NewExpectationGate over them;
+@@ -279,6 +279,7 @@ func resolvePlainGateClosure(entry, row, gateKey string, index int, name string,
+ 		err := requireDriftSeams(entry, driftSeams{
+ 			{"Drift.Config", d.Config},
+ 			{"Drift.Status", d.Status},
++			{"Drift.Head", d.Head},
+ 			{"Drift.CaptureCurrent", d.CaptureCurrent},
+ 			{"Drift.TrailerCommit", d.TrailerCommit},
+ 			{"Drift.FileAt", d.FileAt},
+diff --git a/internal/shedrecipe/entries_gate_test.go b/internal/shedrecipe/entries_gate_test.go
+index 1293bd97..e9107b24 100644
+--- a/internal/shedrecipe/entries_gate_test.go
++++ b/internal/shedrecipe/entries_gate_test.go
+@@ -264,6 +264,7 @@ func TestResolveGateSpec_Rejections(t *testing.T) {
+ 		{"PartsNilSetting", gatesCfg("parts", 1), "Setting"},
+ 		{"PartsMaxBelowOne", gatesCfg("parts", 1), "tapestry.parts_max"},
+ 		{"DriftNilCaptureCurrent", gatesCfg("drift", 1), "Drift.CaptureCurrent"},
++		{"DriftNilHead", gatesCfg("drift", 1), "Drift.Head"},
+ 		{"FixerOnARowThatReadsNone", Config{"gates": []any{map[string]any{"name": "plan", "attempts": 1, "fixer": "tapestry.plan_gate_fixer"}}}, "fixer"},
+ 	}
+ 	for _, tt := range tests {
+@@ -289,6 +290,8 @@ func TestResolveGateSpec_Rejections(t *testing.T) {
+ 				env.Setting = partsMaxSetting(0)
+ 			case "DriftNilCaptureCurrent":
+ 				env.Drift.CaptureCurrent = nil
++			case "DriftNilHead":
++				env.Drift.Head = nil
+ 			}
+ 			_, err := resolveGateSpec("TheRow", tt.cfg, env)
+ 			assertErrContains(t, err, "TheRow")
+diff --git a/internal/shedrecipe/fixture_test.go b/internal/shedrecipe/fixture_test.go
+index cb319aa4..19cb5e8e 100644
+--- a/internal/shedrecipe/fixture_test.go
++++ b/internal/shedrecipe/fixture_test.go
+@@ -287,6 +287,7 @@ func newTestEnv(t *testing.T) Env {
+ 		Drift: driftengine.Deps{
+ 			Config: func() (driftengine.Config, error) { return driftengine.Config{}, nil },
+ 			Status: func() (shedengine.Status, error) { return shedengine.Status{}, nil },
++			Head:   func() (string, error) { return "head", nil },
+ 			CaptureCurrent: func(context.Context) (driftengine.CurrentCapture, error) {
+ 				return driftengine.CurrentCapture{Passed: true}, nil
+ 			},
