@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Bench tier 1 with {test_targets} switched on** | [`test-targets-bench`](design-test-targets-bench.md) | darn · docs | Code-Bouncer | neve | 4m<br>4m | gate, testkit |
+| T1 | **Bench tier 1 with {test_targets} switched on** | [`test-targets-bench`](design-test-targets-bench.md) | darn · docs | Drift-Recheck | neve | 4m<br>4m | gate, testkit |
 | T2 | **HEDDLE.md is rendered when missing or stale, not only on a heddle write** | [`heddle-md-initial-render`](design-heddle-md-initial-render.md) | darn · light | Darn-Write | neve | 1m<br>1m | heddle |
 
 ### Ready (0)
