@@ -515,30 +515,6 @@
       "discussed": true
     },
     {
-      "id": 1200,
-      "handle": "T4",
-      "slug": "test-real-time-waits",
-      "title": "Tests wait real time and repeat builds every tier 1 pass",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "git",
-        "gate",
-        "termwindow",
-        "process"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "The operator wants tests faster as a priority (2026-11-07).\nItems 7 and 9 of `docs/research/speed/tier1-test-revision-2026-11-06/report.md`, read before starting.\n\n## Seen\n\n- Tests wait real time: `internal/gitexec`'s `TestRun_RemoteBounds` waits real deadlines and a literal `sleep 2` (3.5 s of the package); `internal/gatecli`'s `TestGateTest_DetachedRun` has stand-in delays of 2 to 5 s and leases of 3 s; `internal/termwindow` has a 3 s row; `internal/verifyrun` has 1 s expiries.\n- Tests repeat builds every pass: `TestBuildInto_UnwritableDirReturnsError` builds a binary only to fail writing it (2.3 s); `TestCrossCompileLinux` and the dotnet fixture build cost about 5 s of `cmd/lym`.\n\n## Wanted\n\n- Take real time out of each wait through an injected clock, or by waiting on the event itself instead of a fixed sleep; never by a shorter bound.\n  A bound that covers a process or binary start keeps its length: on OSL-1046 Cortex XDR holds each new binary about 10 s on its first start, and those bounds were widened because a held binary read as a failure (operator, 2026-11-07).\n  Check each wait's history in git before changing it, and leave alone any wait whose only fix would be a shorter bound.\n- Have `TestBuildInto_UnwritableDirReturnsError` fail before building, and keep `TestCrossCompileLinux` and the dotnet build in the whole pass while a card or scoped gate runs them only when a file they guard changes, such as a `_linux.go` file.\n- No test loses what it pins.\n",
-      "status": "done",
-      "created": "2026-11-07T13:13:37Z",
-      "revised": "2026-11-07T13:23:39Z",
-      "profile": "light"
-    },
-    {
       "id": 1201,
       "handle": "T2",
       "slug": "board-sketch-shows-record",
