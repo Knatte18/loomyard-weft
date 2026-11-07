@@ -74,7 +74,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Heddle renders .claude/settings.local.json in every hub: no co-author, lym's plugins and tool deny list**<br>• Attribution off and lym model/effort defaults, in session settings and by an operator-run setup verb | [`machine-claude-defaults`](design-machine-claude-defaults.md) | darn · solid | Darn-Write | neve | 1h<br>41m | claude, config, heddle, fabric |
 | T3 | **Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes** | [`fabric-test-speed`](design-fabric-test-speed.md) | motif | Discussion-Burler-Review | neve | 4h<br>13m | fabric, testkit, git |
-| T4 | **Tests wait real time and repeat builds every tier 1 pass** | [`test-real-time-waits`](design-test-real-time-waits.md) | darn · light | Drift-Baseline | neve | 13m<br>3m | git, gate, termwindow, process |
+| T4 | **Tests wait real time and repeat builds every tier 1 pass** | [`test-real-time-waits`](design-test-real-time-waits.md) | darn · light | Drift-Await | neve | 13m<br>3m | git, gate, termwindow, process |
 
 #### Ready (0)
 
