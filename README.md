@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-07 16:21 UTC; every age below is as of then.
+Rendered 2026-11-07 16:22 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -114,7 +114,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **trusted_hubs lists shortnames, which neither say which repository is meant nor identify it**<br>• List trusted hubs by full repository name instead of shortname | [`creel-trust-by-repo-name`](design-creel-trust-by-repo-name.md) | darn · solid | Darn-Write | neve | 7h<br>19m | creel |
+| T2 | **trusted_hubs lists shortnames, which neither say which repository is meant nor identify it**<br>• List trusted hubs by full repository name instead of shortname | [`creel-trust-by-repo-name`](design-creel-trust-by-repo-name.md) | darn · solid | Code-Bouncer | neve | 7h<br>19m | creel |
 | T4 | **Raddle releases the tasks it files, chains shared-package parts against the record order, and shows no dependencies** | [`raddle-order-and-deps-table`](design-raddle-order-and-deps-table.md) | darn · light | Code-Bouncer | neve | 2h<br>2h | loom, stencil |
 
 #### Ready (0)
