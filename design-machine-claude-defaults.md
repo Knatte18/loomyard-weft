@@ -21,6 +21,7 @@ A Claude session not started by lym, or lym sessions on a machine running an old
 - What lym needs: a repository initialized as a lym hub is developed only through lym, so lym's needs hold for every session in its worktrees.
   Everything in loomyard's checked-in `.claude/settings.json` but `mill@millhouse` is of this kind: `ly@loomyard` on, and the `permissions.deny` list of tools lym never uses.
   These ship with lym as heddle's shipped entries, and loomyard's checked-in `.claude/settings.json` is removed once they render.
+  Every hub lym initializes gets the deny list, so its sessions save what this hub's do (operator, 2026-11-07): `docs/research/tokens/role-tool-schemas-2026-11-07/report.md` measured a role's first request at 13,449 tokens here against 29,087 in `lyt`, which lacks the list, and found no session on this machine that called `Artifact`, `ReportFindings`, `ScheduleWakeup`, `SendFeedback`, `advisor` or `Workflow`.
   `scribe@scribe` is on in this machine's `~/.claude/settings.json` and lym's roles preload its skills, so it ships too: the shipped entries set `enabledPlugins` `scribe@scribe` on and declare the marketplace under `extraKnownMarketplaces` (`scribe`, source GitHub `Knatte18/scribe`), as this machine's user settings do.
   Check in a launch that Claude Code offers to install a marketplace and plugin declared in `settings.local.json`, as it does for one declared in a project's settings.
   A machine that also declares `scribe` in its user settings with the same source gets the same result.
