@@ -1,24 +1,33 @@
-# Codex skill load: count a skill read through a built path as loaded
+# codexengine: read a skill loaded when a tool output holds its SKILL.md
 
-## Cause
+A Codex seat that read its skills through a path it built at run time was logged `skill skipped ... cause="not loaded"`.
+The classifier only looked for the `skills/<name>/SKILL.md` tail in the tool calls' payloads.
+A seat that runs a loop such as `` `cat .../skills/${name}/SKILL.md` `` in one `exec` call never writes the tail out, so the call payload does not name it.
+The warning was false, and it hid a true one.
 
-The Codex seat in the `assist-fan-seat-work-alone` Code-Review did load its skills.
-In both load turns of rollout `rollout-2026-11-06T13-29-27-01a1b0d5-*.jsonl`, the model made one `exec` `custom_tool_call` whose script loops over the skill names and runs ``cat …/skills/${name}/SKILL.md``.
-The matching `custom_tool_call_output` holds every SKILL.md in full.
-`ClassifySkillLoad` counted a skill loaded only when a call's payload held the literal `skills/<name>/SKILL.md` tail.
-The template literal never holds that tail, so all five skills read as missing after the retry and were logged `cause="not loaded"`.
-The payload kind and the turn boundary were both read correctly.
+`ClassifySkillLoad` in `internal/shuttleengine/codexengine/skillload.go` now also reads a skill as loaded when a tool call output of the load turn holds the whole of its SKILL.md.
+Both `function_call_output` and `custom_tool_call_output` count, whether the output is a string or a list of text blocks.
+The name-in-a-call test is unchanged and still decides first.
 
-## Change
+## Design decisions
 
-`internal/shuttleengine/codexengine/skillload.go` now also collects the tool call outputs after the latest load message (`function_call_output` and `custom_tool_call_output`, as an output string or joined text blocks).
-A skill counts as loaded when a call names its tail, or when one output holds the whole of its resolved SKILL.md, with surrounding whitespace trimmed.
-A partial read through a built path still counts as missing, and an output before the load message does not count.
-The package doc states the second way a skill reads loaded.
+- The file is read from the path `skillPath` resolves under codex.yaml's `skill_roots`, and its content is matched with surrounding whitespace trimmed.
+  An empty or unreadable file is never read as printed.
+- A partial output does not load a skill, so a model that printed only the head of the file stays reported missing.
+- Only calls and outputs after the latest load message count, as before.
+  A repeated load message restarts both.
+- `loadTurnCalls` becomes `readLoadTurn`, which returns a `loadTurn` holding the calls and the outputs.
+  The text-block decoding that `messageText` used is shared with the output decoding.
+- `doc.go` and the `skillload.go` comments describe the second way a skill reads as loaded.
 
 ## Tests
 
-`TestClassifySkillLoad` gains a `ReadThroughABuiltPath` row modelled on the real rollout:
-a script call with `${name}` in its path, a block output holding one file whole and a string output holding part of another.
-The `ReadBeforeTheMessage` row now also has an output before the load message.
-The fixture skill files hold more than a heading, so a partial output differs from the whole file.
+`TestClassifySkillLoad` gains cases for a read through a built path (string output and split text-block output) and for a partial output.
+The existing before-the-message and repeated-message cases now also carry an output, so they pin that an earlier output does not load a skill.
+
+## To check by hand
+
+- The original report's rollout, `~/.codex/sessions/2026/11/06/rollout-2026-11-06T13-29-27-01a1b0d5-*.jsonl`, was not used.
+  Its `exec` input was not shown to hold a built path, so the cause fits that rollout but is not confirmed against it.
+  Run the classifier on it and check that the five skills read as loaded.
+- No integration or live Codex run was done.
