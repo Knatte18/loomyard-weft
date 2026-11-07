@@ -1,6 +1,6 @@
 # Tests wait real time and repeat builds every tier 1 pass
 
-`test-real-time-waits` · Task · enhancement, git, gate, termwindow, process · draft
+`test-real-time-waits` · Task · enhancement, git, gate, termwindow, process
 
 Depends on: [`gate-tier-binaries-only`](design-gate-tier-binaries-only.md)
 
