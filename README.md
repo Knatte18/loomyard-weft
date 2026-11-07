@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-07 17:28 UTC; every age below is as of then.
+Rendered 2026-11-07 17:29 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -90,7 +90,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Time every internal/fabricengine test one by one on a quiet machine** | [`fabricengine-per-test-times`](design-fabricengine-per-test-times.md) | darn · docs | Seed-Child | neve | 14m<br>14m | fabric, testkit |
+| T1 | **Time every internal/fabricengine test one by one on a quiet machine** | [`fabricengine-per-test-times`](design-fabricengine-per-test-times.md) | darn · docs | Drift-Baseline | neve | 14m<br>14m | fabric, testkit |
 
 #### Ready (0)
 
@@ -140,4 +140,4 @@ Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T2 | **HEDDLE.md is rendered when missing or stale, not only on a heddle write** | [`heddle-md-initial-render`](design-heddle-md-initial-render.md) | 23m<br>23m | heddle |
+| T2 | **HEDDLE.md is rendered when missing or stale, not only on a heddle write** | [`heddle-md-initial-render`](design-heddle-md-initial-render.md) | 24m<br>24m | heddle |
