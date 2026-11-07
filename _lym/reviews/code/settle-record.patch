@@ -1,0 +1,1429 @@
+diff --git a/.claude/settings.json b/.claude/settings.json
+deleted file mode 100644
+index 45a0836e..00000000
+--- a/.claude/settings.json
++++ /dev/null
+@@ -1,24 +0,0 @@
+-{
+-  "enabledPlugins": {
+-    "ly@loomyard": true,
+-    "mill@millhouse": false
+-  },
+-  "permissions": {
+-    "deny": [
+-      "Artifact",
+-      "Workflow",
+-      "ReportFindings",
+-      "ScheduleWakeup",
+-      "SendFeedback",
+-      "CronCreate",
+-      "CronDelete",
+-      "CronList",
+-      "RemoteTrigger",
+-      "DesignSync",
+-      "NotebookEdit",
+-      "EnterWorktree",
+-      "ExitWorktree",
+-      "Skill(dataviz)"
+-    ]
+-  }
+-}
+diff --git a/docs/overview.md b/docs/overview.md
+index 7cf8cd4c..7fbce514 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -340,7 +340,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/darnengine/          the darn recipe's hub-wide `darn.yaml` config and the verify command every darn verify reads
+ ├── internal/desktophook/         the hub-wide `desktop.yaml` config and the machine's window command, run after `lym reed window` and `lym ide` open a window, and the machine's added status-bar buttons
+ ├── internal/samplerengine/       the sampler recipe's hub-wide `sampler.yaml` config
+-├── internal/heddleengine/        heddle's instruction layers, the one lym ships in its binary and the repository's `heddle.json`, their rendering into a worktree's CLAUDE and AGENTS files and a session's system prompt, and the hub-wide `heddle.yaml` that turns the hub's overrides of shipped entries on
++├── internal/heddleengine/        heddle's instruction layers, the one lym ships in its binary and the repository's `heddle.json`, their rendering into a worktree's CLAUDE and AGENTS files, its `.claude/settings.local.json` and a session's system prompt, and the hub-wide `heddle.yaml` that turns the hub's overrides of shipped entries on
+ ├── internal/driftengine/         regression around a task: the hub-wide `drift.yaml` config, the drift paths and records, the capture and compare runs and the Drift rows' producers
+ ├── internal/driftcli/            the `lym drift` commands (`check`, `amend`, `capture`, `defer`, `status` and the hidden `capture-child`) and their worktree wiring over `internal/driftengine`
+ ├── internal/envconfig/           the hub-wide `env.yaml` config: the environment variables lym exports to gate tiers and the shared build, Drift capture and compare, and agent sessions, with a machine layer that wins name by name
+diff --git a/internal/configreg/configreg.go b/internal/configreg/configreg.go
+index 41337ab8..d3bd4831 100644
+--- a/internal/configreg/configreg.go
++++ b/internal/configreg/configreg.go
+@@ -153,7 +153,7 @@ func Modules() []Module {
+ 		{Name: "desktop", Template: desktophook.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(desktophook.LoadConfig), Spec: desktophook.ConfigSpec},
+ 		{Name: "drift", Template: driftengine.ConfigTemplate, OpenMaps: driftengine.ConfigOpenMaps(), HubWide: true, Migrate: driftengine.MigrateConfig, CheckLoad: checkLoad(driftengine.LoadConfig), CheckDirs: driftengine.CheckDirs, Reinterpretations: []Reinterpretation{{ID: driftengine.DirBaseReinterpretation, Rewrite: driftengine.RebaseDirsOntoRoot}, {ID: driftengine.DiffModeReinterpretation, Rewrite: driftengine.FlagDiffMode}}, Spec: driftengine.ConfigSpec},
+ 		{Name: "env", Template: envconfig.ConfigTemplate, PerNameMaps: envconfig.ConfigPerNameMaps(), HubWide: true, CheckLoad: checkLoad(envconfig.LoadConfig), Spec: envconfig.ConfigSpec},
+-		{Name: "fabric", Template: fabricengine.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(fabricengine.LoadConfig), Spec: fabricengine.ConfigSpec},
++		{Name: "fabric", Template: fabricengine.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(fabricengine.LoadConfig), Reinterpretations: []Reinterpretation{{ID: heddleengine.SettingsExcludeReinterpretation, Rewrite: fabricengine.AppendExcludePaths(heddleengine.ClaudeSettingsFile)}}, Spec: fabricengine.ConfigSpec},
+ 		{Name: "gate", Template: gateslot.ConfigTemplate, OpenMaps: gateslot.ConfigOpenMaps(), PerNameMaps: gateslot.ConfigPerNameMaps(), HubWide: true, Migrate: gateslot.MigrateConfig, MigrateHubBase: gateslot.SeedAdoptGate, CheckLoad: checkLoad(gateslot.LoadConfig), CheckDirs: gateslot.CheckDirs, Spec: gateslot.ConfigSpec},
+ 		{Name: "heddle", Template: heddleengine.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(heddleengine.LoadConfig), Spec: heddleengine.ConfigSpec},
+ 		{Name: "hibernate", Template: hibernateconfig.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(hibernateconfig.LoadConfig), Spec: hibernateconfig.ConfigSpec},
+diff --git a/internal/fabricengine/config.go b/internal/fabricengine/config.go
+index 9082c766..54868dba 100644
+--- a/internal/fabricengine/config.go
++++ b/internal/fabricengine/config.go
+@@ -13,6 +13,9 @@ import (
+ 	"gopkg.in/yaml.v3"
+ )
+ 
++// ExcludeListKey is fabric.yaml's key holding the warp exclude list.
++const ExcludeListKey = "warp_exclude"
++
+ // Config holds the settings every pair shares: the warp branch prefix, the weft-sync pathspec and the warp exclude list.
+ type Config struct {
+ 	BranchPrefix string `yaml:"branch_prefix"`
+@@ -42,7 +45,7 @@ func ConfigSpec() configengine.Spec {
+ 		Categories: map[string]configengine.Category{
+ 			"branch_prefix": configengine.CategoryCrossPair,
+ 			"pathspec":      configengine.CategoryCrossPair,
+-			"warp_exclude":  configengine.CategoryCrossPair,
++			ExcludeListKey:  configengine.CategoryCrossPair,
+ 		},
+ 	}
+ }
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 7ec48e29..c279d1b0 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -509,10 +509,11 @@
+ // A concurrent reader sees either the whole old file or the whole new one.
+ //
+ // The warp exclude list is `fabric.yaml`'s `warp_exclude` key.
+-// It names paths under a warp worktree's anchor that lym's instruction files occupy.
++// It names paths under a warp worktree's anchor that lym's rendered files occupy.
+ // Wiring seeds each as a root-anchored `/<anchor>/<path>` line (`/<path>` for anchor `.`) into the same `info/exclude`.
+ // It never removes one, since every worktree shares the file.
+ // `SeedWarpExclude` seeds it on demand, and `ExcludeWayForward` is the refusal text for a path off the list.
++// `AppendExcludePaths` is the hub reconcile's rewrite that adds a path lym starts rendering to a hub's own list.
+ // The list is separate from `pathspec`.
+ // It is never folded into the wired junction names, so health and drift checks never ask for a junction of it.
+ //
+diff --git a/internal/fabricengine/template.yaml b/internal/fabricengine/template.yaml
+index 057382df..9de970dc 100644
+--- a/internal/fabricengine/template.yaml
++++ b/internal/fabricengine/template.yaml
+@@ -1,3 +1,3 @@
+ branch_prefix: ${env:LYM_BRANCH_PREFIX:-}  # prefix prepended to the slug of each new pair (e.g. "hanf/"); a pair keeps the branch name it was made with, so the value can change while pairs are live; empty = branch == slug
+ pathspec: ""  # OPTIONAL per-repo directory path(s) relative to worktree root, whitespace-separated; _lym and .lym are structural and injected in code by internal/fabricengine, never read from here
+-warp_exclude: CLAUDE.local.md AGENTS.override.md .heddle  # OPTIONAL paths relative to a warp worktree's anchor, whitespace-separated, excluded through the warp repository's info/exclude; separate from pathspec and never wired as a junction
++warp_exclude: CLAUDE.local.md AGENTS.override.md .heddle .claude/settings.local.json  # OPTIONAL paths relative to a warp worktree's anchor, whitespace-separated, excluded through the warp repository's info/exclude; separate from pathspec and never wired as a junction
+diff --git a/internal/fabricengine/template_test.go b/internal/fabricengine/template_test.go
+index 170f52f3..5ce290cc 100644
+--- a/internal/fabricengine/template_test.go
++++ b/internal/fabricengine/template_test.go
+@@ -22,10 +22,10 @@ import (
+ // _lym and .lym are structural and injected in code, so the key never supplies them;
+ // an empty default leaves pathspec free to name only the optional per-repo directories the operator adds.
+ // The resolved value is whitespace-split and compared name by name, so a splitting bug cannot pass silently;
+-// warp_exclude resolves to exactly CLAUDE.local.md, AGENTS.override.md and .heddle;
++// warp_exclude resolves to exactly CLAUDE.local.md, AGENTS.override.md, .heddle and .claude/settings.local.json;
+ // and an empty pathspec leaves the routing set and the wired-name set at their structural sets alone.
+ //
+-//testtiming:keep the config template being valid YAML with its three keys, resolving to an empty branch prefix, an empty pathspec and the three default warp exclude paths, and degrading to the structural sets alone; coverage of its blocks by other tests does not show an assertion of this
++//testtiming:keep the config template being valid YAML with its three keys, resolving to an empty branch prefix, an empty pathspec and the default warp exclude paths, and degrading to the structural sets alone; coverage of its blocks by other tests does not show an assertion of this
+ func TestConfigTemplate(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -77,7 +77,7 @@ func TestConfigTemplate(t *testing.T) {
+ 		t.Fatalf("resolved YAML does not unmarshal into Config: %v", err)
+ 	}
+ 
+-	if got, want := cfg.WarpExcludePaths(), []string{"CLAUDE.local.md", "AGENTS.override.md", ".heddle"}; !reflect.DeepEqual(got, want) {
++	if got, want := cfg.WarpExcludePaths(), []string{"CLAUDE.local.md", "AGENTS.override.md", ".heddle", ".claude/settings.local.json"}; !reflect.DeepEqual(got, want) {
+ 		t.Errorf("cfg.WarpExcludePaths() = %v; want %v", got, want)
+ 	}
+ 
+diff --git a/internal/fabricengine/warpexclude.go b/internal/fabricengine/warpexclude.go
+index a673db8d..eb600147 100644
+--- a/internal/fabricengine/warpexclude.go
++++ b/internal/fabricengine/warpexclude.go
+@@ -5,11 +5,16 @@
+ package fabricengine
+ 
+ import (
++	"bytes"
+ 	"fmt"
+ 	"path"
+ 	"path/filepath"
++	"slices"
+ 	"strings"
+ 
++	"gopkg.in/yaml.v3"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ )
+ 
+@@ -68,6 +73,58 @@ func SeedWarpExclude(l *lymcwd.Location) ([]string, error) {
+ 	return paths, nil
+ }
+ 
++// AppendExcludePaths returns a hub config reinterpretation's rewrite that adds paths to a hub's own warp exclude list.
++// A fabric.yaml that sets warp_exclude gains each path its list lacks, appended in order, and one line naming them.
++// A file that leaves the key unset takes the template's list, so it comes back unchanged, as does one listing every path.
++// The rewrite ignores the worktree root and anchored directory it is handed.
++// A document that does not parse returns an error marked configengine.ErrInvalid.
++func AppendExcludePaths(paths ...string) func(existing []byte, worktreeRoot, anchorDir string) (rewritten []byte, rewrote, flagged []string, err error) {
++	return func(existing []byte, _, _ string) ([]byte, []string, []string, error) {
++		var document yaml.Node
++		if err := yaml.Unmarshal(existing, &document); err != nil {
++			return nil, nil, nil, configengine.MarkInvalid(fmt.Errorf("extend %s: unmarshal yaml: %w", ExcludeListKey, err))
++		}
++		if document.Kind != yaml.DocumentNode || len(document.Content) == 0 || document.Content[0].Kind != yaml.MappingNode {
++			return existing, nil, nil, nil
++		}
++		mapping := document.Content[0]
++		var value *yaml.Node
++		for i := 0; i+1 < len(mapping.Content); i += 2 {
++			if mapping.Content[i].Value == ExcludeListKey && mapping.Content[i+1].Kind == yaml.ScalarNode {
++				value = mapping.Content[i+1]
++			}
++		}
++		if value == nil {
++			return existing, nil, nil, nil
++		}
++		listed := strings.Fields(value.Value)
++		var added []string
++		for _, missing := range paths {
++			if !slices.Contains(listed, missing) {
++				listed = append(listed, missing)
++				added = append(added, missing)
++			}
++		}
++		if len(added) == 0 {
++			return existing, nil, nil, nil
++		}
++		value.Value = strings.Join(listed, " ")
++		value.Tag = "!!str"
++
++		var out bytes.Buffer
++		encoder := yaml.NewEncoder(&out)
++		encoder.SetIndent(2)
++		if err := encoder.Encode(&document); err != nil {
++			return nil, nil, nil, configengine.MarkInvalid(fmt.Errorf("extend %s: encode yaml: %w", ExcludeListKey, err))
++		}
++		if err := encoder.Close(); err != nil {
++			return nil, nil, nil, configengine.MarkInvalid(fmt.Errorf("extend %s: encode yaml: %w", ExcludeListKey, err))
++		}
++		line := fmt.Sprintf("%s gained %s, a file lym now renders into every worktree; lym config fabric --set %s=<paths> from the prime sets another list", ExcludeListKey, strings.Join(added, " "), ExcludeListKey)
++		return out.Bytes(), []string{line}, nil, nil
++	}
++}
++
+ // ExcludeWayForward returns the refusal text for a path the warp exclude list does not name:
+ // the path cannot be written because git would show it as untracked,
+ // and it joins the list through the `warp_exclude` key in `lym config fabric`.
+diff --git a/internal/fabricengine/warpexclude_integration_test.go b/internal/fabricengine/warpexclude_integration_test.go
+index c4f3ddf0..9fb4bba0 100644
+--- a/internal/fabricengine/warpexclude_integration_test.go
++++ b/internal/fabricengine/warpexclude_integration_test.go
+@@ -16,7 +16,7 @@ import (
+ )
+ 
+ // warpExcludeLines are the anchored exclude lines the template's default warp_exclude list yields.
+-var warpExcludeLines = []string{"/CLAUDE.local.md", "/AGENTS.override.md", "/.heddle"}
++var warpExcludeLines = []string{"/CLAUDE.local.md", "/AGENTS.override.md", "/.heddle", "/.claude/settings.local.json"}
+ 
+ // countLine returns how many of lines trim to want.
+ func countLine(lines []string, want string) int {
+@@ -68,7 +68,7 @@ func TestSeedWarpExclude_SeedsWarpOnlyOnce(t *testing.T) {
+ 		if err != nil {
+ 			t.Fatalf("SeedWarpExclude: %v", err)
+ 		}
+-		if got, want := strings.Join(paths, " "), "CLAUDE.local.md AGENTS.override.md .heddle"; got != want {
++		if got, want := strings.Join(paths, " "), "CLAUDE.local.md AGENTS.override.md .heddle .claude/settings.local.json"; got != want {
+ 			t.Errorf("SeedWarpExclude() = %q; want %q", got, want)
+ 		}
+ 		for i := 0; i < 2; i++ {
+diff --git a/internal/fabricengine/warpexclude_test.go b/internal/fabricengine/warpexclude_test.go
+new file mode 100644
+index 00000000..f3cd4646
+--- /dev/null
++++ b/internal/fabricengine/warpexclude_test.go
+@@ -0,0 +1,82 @@
++// warpexclude_test.go — tier 0 unit tests for AppendExcludePaths over in-memory fabric.yaml bytes; no hub, no git spawn.
++
++package fabricengine_test
++
++import (
++	"errors"
++	"strings"
++	"testing"
++
++	"gopkg.in/yaml.v3"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestAppendExcludePaths pins the rewrite that adds a path to a hub's own warp exclude list:
++// a list lacking the path gains it with its comment and the other keys kept, and one line names it.
++// A file leaving the key unset, or already listing the path, comes back unchanged with no line.
++// An unparseable document is an ErrInvalid error, and a second run over a result changes nothing.
++func TestAppendExcludePaths(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	rewrite := fabricengine.AppendExcludePaths("new/file.json")
++	tests := []struct {
++		name string
++		yaml string
++		// wantList is the list the result declares; empty wants the bytes back unchanged.
++		wantList string
++		wantErr  bool
++	}{
++		{name: "KeyUnsetKeepsTheTemplateList", yaml: "branch_prefix: x\n"},
++		{name: "ListHoldingThePathIsKept", yaml: "warp_exclude: A.md new/file.json\n"},
++		{name: "ListLackingThePathGainsIt", yaml: "branch_prefix: x\nwarp_exclude: A.md .heddle # mine\n", wantList: "A.md .heddle new/file.json"},
++		{name: "EmptyListGainsThePath", yaml: "warp_exclude: \"\"\n", wantList: "new/file.json"},
++		{name: "UnparseableIsInvalid", yaml: "warp_exclude: [x\n", wantErr: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			rewritten, rewrote, flagged, err := rewrite([]byte(tt.yaml), "/root", "/root")
++			if tt.wantErr {
++				if !errors.Is(err, configengine.ErrInvalid) {
++					t.Errorf("rewrite(%q) error = %v; want one marked ErrInvalid", tt.yaml, err)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("rewrite(%q) = %v", tt.yaml, err)
++			}
++			if len(flagged) != 0 {
++				t.Errorf("rewrite(%q) flagged %v; want none", tt.yaml, flagged)
++			}
++			if tt.wantList == "" {
++				if string(rewritten) != tt.yaml || len(rewrote) != 0 {
++					t.Errorf("rewrite(%q) = %q, %v; want the bytes back unchanged and no line", tt.yaml, rewritten, rewrote)
++				}
++				return
++			}
++			var cfg fabricengine.Config
++			if err := yaml.Unmarshal(rewritten, &cfg); err != nil {
++				t.Fatalf("rewritten %q does not decode: %v", rewritten, err)
++			}
++			if cfg.WarpExclude != tt.wantList {
++				t.Errorf("warp_exclude = %q; want %q", cfg.WarpExclude, tt.wantList)
++			}
++			if strings.Contains(tt.yaml, "branch_prefix") && cfg.BranchPrefix != "x" {
++				t.Errorf("branch_prefix = %q; want it kept as x", cfg.BranchPrefix)
++			}
++			if strings.Contains(tt.yaml, "# mine") && !strings.Contains(string(rewritten), "# mine") {
++				t.Errorf("rewritten %q lost the line comment", rewritten)
++			}
++			if len(rewrote) != 1 || !strings.Contains(rewrote[0], "new/file.json") {
++				t.Errorf("rewrote = %v; want one line naming new/file.json", rewrote)
++			}
++			again, rewroteAgain, _, err := rewrite(rewritten, "/root", "/root")
++			if err != nil || string(again) != string(rewritten) || len(rewroteAgain) != 0 {
++				t.Errorf("second rewrite = %q, %v, %v; want the bytes back unchanged and no line", again, rewroteAgain, err)
++			}
++		})
++	}
++}
+diff --git a/internal/heddlecli/doc.go b/internal/heddlecli/doc.go
+index a92b86e5..73d28ef8 100644
+--- a/internal/heddlecli/doc.go
++++ b/internal/heddlecli/doc.go
+@@ -20,6 +20,7 @@
+ // and `remove` drops an override whatever the setting holds.
+ // `set` takes `--text-file <path>` (`-` reads stdin), `--order <n>` and `--targets <a,b>`.
+ // It changes only the fields given; a new entry needs all three.
++// An entry aimed at `claude-settings` holds one JSON object and names no text target beside it.
+ // Both take the Bolt write lock, load the store, apply the change, save it and release the lock.
+ // Then they start the board's detached Bolt sync, which commits what is dirty under that lock and pushes.
+ // A refused change saves nothing and starts no sync.
+diff --git a/internal/heddlecli/verbs.go b/internal/heddlecli/verbs.go
+index c2cadb8e..c0b81295 100644
+--- a/internal/heddlecli/verbs.go
++++ b/internal/heddlecli/verbs.go
+@@ -175,11 +175,15 @@ slug lym ships is refused: shipped entries change only with a lym release.
+                        slug instead; it takes --text-file alone, and only a hub
+                        whose heddle.yaml sets lym_override takes it
+ 
++An entry aimed at claude-settings holds one JSON object and no other target;
++every render merges it into the worktree's .claude/settings.local.json.
++
+ The change is saved under the Bolt write lock, and the board's detached Bolt
+ sync then commits and pushes it. A refused change saves nothing.
+ 
+ Examples:
+   lym heddle set house-rules --text-file rules.md --order 10 --targets claude-file,claude-prompt
++  lym heddle set house-deny --text-file deny.json --order 20 --targets claude-settings
+   lym heddle set lym-batching --layer lym --text-file tuned.md`,
+ 		Args: cobra.ExactArgs(1),
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+diff --git a/internal/heddleengine/doc.go b/internal/heddleengine/doc.go
+index fa330471..e3906dd6 100644
+--- a/internal/heddleengine/doc.go
++++ b/internal/heddleengine/doc.go
+@@ -2,13 +2,27 @@
+ // Two layers hold entries of instruction text, each aimed at targets of a table that is this package's code.
+ // The shipped layer is lym's own: shipped.json, embedded in the binary, read-only and changed only by a lym release.
+ // The repository layer is heddle.json at the Bolt checkout's root, which the `lym heddle` verbs write.
++// The file targets are the one place a per-worktree file lym seeds is declared, so a new such file is a new target.
+ // A file target is rendered into a git-excluded file at a worktree's anchor.
+ // The file sits beside the repository's own CLAUDE and AGENTS files.
+ // The shipped entries come first under a level-one heading of their own, and the repository's after under theirs.
+-// Each shipped entry opens with a level-two heading, so the file skips no heading level.
++// Each shipped entry of a text target opens with a level-two heading, so the file skips no heading level.
+ // The codex-file target opens with the anchor's AGENTS.md, else its CLAUDE.md.
+ // It carries every repository entry aimed at claude-file, so a Codex session gets what a Claude session gets.
+ // Shipped entries stay on claude-file alone, and a render that names claude-file renders codex-file too.
++//
++// The claude-settings target is a JSON-object target, rendered into the anchor's `.claude/settings.local.json`:
++// the settings every Claude session started in the worktree loads, one started by hand included.
++// Each of its entries holds one JSON object, and an entry aimed at it names no text target.
++// A render folds the entries in render order.
++// Objects merge key by key at every depth, a later scalar replaces an earlier one, and lists join without repeats.
++// The folded object merges into the file by the same rules, so a key the file holds that heddle never set stays.
++// The render records the folded object in the scratch directory's heddle directory,
++// and the next render takes out of the file what that record holds and no entry sets any more.
++// The file holds no marker: heddle merges into whatever file is there, and leaves alone one holding no JSON object.
++// The shipped layer sets lym's hub-wide Claude settings: no attribution, lym's plugins and the tools lym denies.
++// A setting that differs per session or role stays in the settings document a session is launched with.
++//
+ // A prompt target is read as passages appended to a session's system prompt, the shipped ones first.
+ // A prompt target reaches the sessions its row names by engine, by strand role, or both:
+ // `claude-prompt` reaches every Claude session and `orch-prompt` every orch session,
+diff --git a/internal/heddleengine/override.go b/internal/heddleengine/override.go
+index fb2c44b5..65eb9782 100644
+--- a/internal/heddleengine/override.go
++++ b/internal/heddleengine/override.go
+@@ -30,14 +30,20 @@ func SaveOverrides(boltDir string, s Store) error {
+ }
+ 
+ // SetOverride stores text as the override of the shipped entry slug.
+-// It refuses a slug the shipped layer does not hold and an empty text, changing nothing.
++// It refuses a slug the shipped layer does not hold and an empty text.
++// It also refuses a text that is no JSON object, for an entry aimed at a JSON-object target.
++// A refusal changes nothing.
+ func (s *Store) SetOverride(slug, text string) error {
+-	if _, found := shippedStore.Get(slug); !found {
++	shipped, found := shippedStore.Get(slug)
++	if !found {
+ 		return fmt.Errorf("no shipped entry %q to override; way forward: run `lym heddle list` for the shipped slugs, or drop --layer %s to set a repository entry", slug, OverrideLayer)
+ 	}
+ 	if strings.TrimSpace(text) == "" {
+ 		return fmt.Errorf("the override of %q has an empty text; way forward: give a non-empty --text-file", slug)
+ 	}
++	if err := validateObjectEntry(slug, shipped.Targets, text); err != nil {
++		return err
++	}
+ 	entries := slices.Clone(s.Entries)
+ 	if index := slices.IndexFunc(entries, func(entry Entry) bool { return entry.Slug == slug }); index >= 0 {
+ 		entries[index].Text = text
+diff --git a/internal/heddleengine/override_test.go b/internal/heddleengine/override_test.go
+index 629fde3d..95ea7815 100644
+--- a/internal/heddleengine/override_test.go
++++ b/internal/heddleengine/override_test.go
+@@ -25,6 +25,7 @@ func TestOverrides(t *testing.T) {
+ 		}{
+ 			{"UnshippedSlug", "house-rules", "t", "drop --layer " + OverrideLayer},
+ 			{"EmptyText", shipped, "  \n", "--text-file"},
++			{"SettingsOverrideIsNoObject", "lym-tool-deny", "deny everything", "one JSON object"},
+ 		}
+ 		for _, tt := range tests {
+ 			t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/heddleengine/render.go b/internal/heddleengine/render.go
+index 81fd48db..711d3613 100644
+--- a/internal/heddleengine/render.go
++++ b/internal/heddleengine/render.go
+@@ -70,6 +70,7 @@ type Renderer struct {
+ // Two renders of one worktree therefore serialize, and the last one's text stands whole.
+ // A target with no entry loses its marked file.
+ // A target the exclude list does not cover, or whose file lacks the marker, is left alone with a warning.
++// A JSON-object target's entries merge into the keys its file already holds, so that file needs no marker.
+ // A render whose Only names claude-file renders codex-file too,
+ // so a worktree that already exists takes a changed repository entry at its next render.
+ // The lock wait running out fails the render before it writes anything.
+@@ -108,6 +109,12 @@ func (r Renderer) Render(req RenderRequest) (Report, error) {
+ 		if target.Delivery != DeliveryFile || (len(only) > 0 && !slices.Contains(only, target.Name)) {
+ 			continue
+ 		}
++		if target.JSONObject {
++			if err := renderObjectTarget(&report, req, target, entries, blocked); err != nil {
++				return report, err
++			}
++			continue
++		}
+ 		text, held, err := fileText(target, req.Anchor, entries)
+ 		if err != nil {
+ 			return report, err
+@@ -140,7 +147,7 @@ func (r Renderer) Render(req RenderRequest) (Report, error) {
+ 			report.warn(fmt.Sprintf("%s exists and was not rendered by heddle, so it is left untouched; way forward: move or remove it, then run `%s`", path, renderVerb))
+ 			report.Unwritten = append(report.Unwritten, target.File)
+ 		default:
+-			if err := writeRendered(tempDir, target.File, path, text); err != nil {
++			if err := writeRendered(tempDir, target.Name, path, text); err != nil {
+ 				return report, err
+ 			}
+ 			report.Written = append(report.Written, target.File)
+@@ -218,9 +225,13 @@ func tempDirBlocked(dir string) (bool, error) {
+ }
+ 
+ // writeRendered writes text to tempDir/<name>.tmp, overwriting a leftover, and renames it onto path.
++// name is the target's name, so the staged file sits directly in tempDir whatever directory path lies in.
++// It creates path's directory when it is missing.
+ func writeRendered(tempDir, name, path, text string) error {
+-	if err := os.MkdirAll(tempDir, 0o755); err != nil {
+-		return fmt.Errorf("create %s: %w", tempDir, err)
++	for _, dir := range []string{tempDir, filepath.Dir(path)} {
++		if err := os.MkdirAll(dir, 0o755); err != nil {
++			return fmt.Errorf("create %s: %w", dir, err)
++		}
+ 	}
+ 	tempPath := filepath.Join(tempDir, name+tempSuffix)
+ 	if err := os.WriteFile(tempPath, []byte(text), 0o644); err != nil {
+@@ -327,6 +338,7 @@ func fileExists(path string) bool {
+ // Show returns the text the named target renders to for the worktree anchor, from the shipped layer and the store.
+ // It writes nothing.
+ // A prompt target gives its passages joined by blank lines, and a target with no entry gives no text.
++// A JSON-object target gives the object its entries fold to, before any merge into the file.
+ func (r Renderer) Show(boltDir, target, anchor string) (string, error) {
+ 	named, ok := LookupTarget(target)
+ 	if !ok {
+@@ -339,6 +351,13 @@ func (r Renderer) Show(boltDir, target, anchor string) (string, error) {
+ 	if named.Delivery == DeliveryPrompt {
+ 		return strings.Join(passagesOf(layers, named.Name), "\n\n"), nil
+ 	}
++	if named.JSONObject {
++		folded, held, _, _ := foldObjects(named, layers.Ordered())
++		if !held {
++			return "", nil
++		}
++		return encodeObject(folded)
++	}
+ 	text, _, err := fileText(named, anchor, layers.Ordered())
+ 	return text, err
+ }
+diff --git a/internal/heddleengine/render_integration_test.go b/internal/heddleengine/render_integration_test.go
+index 2e84b44c..fee629af 100644
+--- a/internal/heddleengine/render_integration_test.go
++++ b/internal/heddleengine/render_integration_test.go
+@@ -16,9 +16,9 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestRender_WritesAtTheAnchorAndLeavesNoUntrackedFile renders both file targets into a hub's prime.
++// TestRender_WritesAtTheAnchorAndLeavesNoUntrackedFile renders every file target into a hub's prime.
+ // Its event is the one fabricengine builds.
+-// It expects both files at the prime's anchor, none at its root when the two differ, and git to see nothing untracked.
++// It expects every file at the prime's anchor, none at its root when the two differ, and git to see nothing untracked.
+ func TestRender_WritesAtTheAnchorAndLeavesNoUntrackedFile(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+@@ -51,15 +51,16 @@ func TestRender_WritesAtTheAnchorAndLeavesNoUntrackedFile(t *testing.T) {
+ 			if err != nil {
+ 				t.Fatalf("Render() = %v", err)
+ 			}
+-			if want := []string{"CLAUDE.local.md", "AGENTS.override.md"}; !slices.Equal(report.Written, want) || len(report.Warnings) != 0 {
+-				t.Errorf("Render() report = %+v; want %v written and no warnings", report, want)
++			files := []string{"CLAUDE.local.md", "AGENTS.override.md", heddleengine.ClaudeSettingsFile}
++			if !slices.Equal(report.Written, files) || len(report.Warnings) != 0 {
++				t.Errorf("Render() report = %+v; want %v written and no warnings", report, files)
+ 			}
+-			for _, name := range []string{"CLAUDE.local.md", "AGENTS.override.md"} {
+-				if _, err := os.Stat(filepath.Join(hub.Location.AnchorPath(), name)); err != nil {
++			for _, name := range files {
++				if _, err := os.Stat(filepath.Join(hub.Location.AnchorPath(), filepath.FromSlash(name))); err != nil {
+ 					t.Errorf("%s was not rendered at the anchor: %v", name, err)
+ 				}
+ 				if tt.anchor != "." {
+-					if _, err := os.Stat(filepath.Join(hub.PrimeWorktree(), name)); err == nil {
++					if _, err := os.Stat(filepath.Join(hub.PrimeWorktree(), filepath.FromSlash(name))); err == nil {
+ 						t.Errorf("%s was rendered at the worktree's root", name)
+ 					}
+ 				}
+diff --git a/internal/heddleengine/render_test.go b/internal/heddleengine/render_test.go
+index 9dc24043..aced117f 100644
+--- a/internal/heddleengine/render_test.go
++++ b/internal/heddleengine/render_test.go
+@@ -35,7 +35,7 @@ func newRenderFixture(t *testing.T, store Store) renderFixture {
+ 		anchor:   t.TempDir(),
+ 		scratch:  t.TempDir(),
+ 		bolt:     t.TempDir(),
+-		excluded: []string{"CLAUDE.local.md", "AGENTS.override.md", ".heddle"},
++		excluded: []string{"CLAUDE.local.md", "AGENTS.override.md", ".heddle", ClaudeSettingsFile},
+ 	}
+ 	saveStore(t, fixture.bolt, store)
+ 	return fixture
+@@ -240,7 +240,7 @@ func TestRender(t *testing.T) {
+ 		if want := Marker + "\n\none\n\ntwo\n"; f.readAnchor(t, "AGENTS.override.md") != want {
+ 			t.Errorf("AGENTS.override.md = %q; want %q", f.readAnchor(t, "AGENTS.override.md"), want)
+ 		}
+-		if want := []string{"CLAUDE.local.md", "AGENTS.override.md"}; !slices.Equal(report.Written, want) || len(report.Warnings) != 0 {
++		if want := []string{"CLAUDE.local.md", "AGENTS.override.md", ClaudeSettingsFile}; !slices.Equal(report.Written, want) || len(report.Warnings) != 0 {
+ 			t.Errorf("report = %+v; want %v written", report, want)
+ 		}
+ 		if f.anchorHas(".heddle") {
+@@ -310,8 +310,8 @@ func TestRender(t *testing.T) {
+ 		if want := claudeFileWant(""); f.readAnchor(t, "CLAUDE.local.md") != want {
+ 			t.Errorf("CLAUDE.local.md = %q; want %q", f.readAnchor(t, "CLAUDE.local.md"), want)
+ 		}
+-		if !slices.Equal(report.Written, []string{"CLAUDE.local.md"}) || f.anchorHas("AGENTS.override.md") {
+-			t.Errorf("report = %+v; want only CLAUDE.local.md written", report)
++		if !slices.Equal(report.Written, []string{"CLAUDE.local.md", ClaudeSettingsFile}) || f.anchorHas("AGENTS.override.md") {
++			t.Errorf("report = %+v; want CLAUDE.local.md and the settings file written, and no AGENTS.override.md", report)
+ 		}
+ 	})
+ 
+@@ -509,7 +509,7 @@ func TestRender(t *testing.T) {
+ 	t.Run("LeftoverTempFileIsOverwritten", func(t *testing.T) {
+ 		t.Parallel()
+ 		f := newRenderFixture(t, claudeStore)
+-		f.writeAnchor(t, ".heddle/CLAUDE.local.md.tmp", "half a render")
++		f.writeAnchor(t, ".heddle/claude-file.tmp", "half a render")
+ 		mustRender(t, f)
+ 		if !strings.HasPrefix(f.readAnchor(t, "CLAUDE.local.md"), Marker) || f.anchorHas(".heddle") {
+ 			t.Error("leftover temp file not overwritten, or .heddle left behind")
+diff --git a/internal/heddleengine/seam_integration_test.go b/internal/heddleengine/seam_integration_test.go
+index 98fa18a4..c7fbcebb 100644
+--- a/internal/heddleengine/seam_integration_test.go
++++ b/internal/heddleengine/seam_integration_test.go
+@@ -77,7 +77,7 @@ func TestSeam_PullTakeIn(t *testing.T) {
+ 	pullBolt(t, hub)
+ 	t.Cleanup(fabricengine.InstallWorktreeSeam(heddleengine.Seam{}))
+ 
+-	excluded := []string{"CLAUDE.local.md", "AGENTS.override.md", ".heddle"}
++	excluded := []string{"CLAUDE.local.md", "AGENTS.override.md", ".heddle", heddleengine.ClaudeSettingsFile}
+ 	stripExcludeLines(t, hub.PrimeWorktree(), excluded)
+ 	gitkit.CommitFile(t, second.PrimeWorktree(), "AGENTS.md", "new rules\n", "change AGENTS.md")
+ 	gitkit.Git(t, second.PrimeWorktree(), "push", "origin", "HEAD")
+diff --git a/internal/heddleengine/settings.go b/internal/heddleengine/settings.go
+new file mode 100644
+index 00000000..e580780a
+--- /dev/null
++++ b/internal/heddleengine/settings.go
+@@ -0,0 +1,307 @@
++// settings.go renders the JSON-object file targets, such as a worktree's local Claude Code settings.
++// It folds a target's entries into one object, merges that object into the file, and records what it set.
++
++package heddleengine
++
++import (
++	"bytes"
++	"encoding/json"
++	"errors"
++	"fmt"
++	"io"
++	"maps"
++	"os"
++	"path/filepath"
++	"reflect"
++	"slices"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/fsx"
++	"github.com/Knatte18/loomyard/internal/lymdirs"
++)
++
++// recordSuffix ends the name of the record of the object a JSON-object target's last render set.
++// The record sits in the scratch directory's heddle directory, beside the render lock.
++const recordSuffix = ".rendered.json"
++
++// validateObjectEntry refuses an entry that names a JSON-object target unless every target it names is one.
++// Such an entry's text must also be one JSON object.
++// An entry naming no JSON-object target passes.
++func validateObjectEntry(slug string, targets []string, text string) error {
++	objects := objectTargetCount(targets)
++	switch {
++	case objects == 0:
++		return nil
++	case objects != len(targets):
++		return fmt.Errorf("entry %q names a JSON-object target beside a text target, and one text cannot serve both; way forward: aim it at %s alone, and give the text targets an entry of their own", slug, strings.Join(objectTargetNames(), ", "))
++	}
++	if _, ok := decodeObject(text); !ok {
++		return fmt.Errorf("entry %q is aimed at %s, so its text must be one JSON object; way forward: give a --text-file holding one object, such as {\"permissions\": {\"deny\": [\"Workflow\"]}}", slug, strings.Join(targets, ", "))
++	}
++	return nil
++}
++
++// decodeObject decodes text as exactly one JSON object, keeping its numbers exact.
++// It reports false for any other text.
++func decodeObject(text string) (map[string]any, bool) {
++	decoder := json.NewDecoder(strings.NewReader(text))
++	decoder.UseNumber()
++	var object map[string]any
++	if err := decoder.Decode(&object); err != nil || object == nil {
++		return nil, false
++	}
++	if _, err := decoder.Token(); !errors.Is(err, io.EOF) {
++		return nil, false
++	}
++	return object, true
++}
++
++// encodeObject encodes object indented by two spaces and ending in a newline, with no HTML escaping.
++func encodeObject(object map[string]any) (string, error) {
++	var out bytes.Buffer
++	encoder := json.NewEncoder(&out)
++	encoder.SetEscapeHTML(false)
++	encoder.SetIndent("", "  ")
++	if err := encoder.Encode(object); err != nil {
++		return "", err
++	}
++	return out.String(), nil
++}
++
++// foldObjects folds the objects of the layered entries that name target, in render order, and reports whether any does.
++// An entry whose text holds no JSON object is left out with a warning, and invalid reports whether any was;
++// only a hand-edited store or override file can hold one, since every write validates the text.
++func foldObjects(target Target, entries []LayeredEntry) (folded map[string]any, held, invalid bool, warnings []string) {
++	folded = map[string]any{}
++	for _, entry := range entries {
++		if !slices.Contains(entry.Targets, target.Name) {
++			continue
++		}
++		held = true
++		object, ok := decodeObject(entry.Text)
++		if !ok {
++			invalid = true
++			warnings = append(warnings, fmt.Sprintf("the text of entry %q holds no JSON object, so %s leaves it out; way forward: give it one with `lym heddle set %s --text-file <path>`, adding `--layer %s` for an override", entry.Slug, target.File, entry.Slug, OverrideLayer))
++			continue
++		}
++		folded = mergeJSON(folded, object).(map[string]any)
++	}
++	return folded, held, invalid, warnings
++}
++
++// mergeJSON returns over merged onto base.
++// Two objects merge key by key at every depth, and two lists join, the items of over that base lacks appended.
++// Any other pair yields over, so a scalar of over replaces base's.
++// Neither input is changed.
++func mergeJSON(base, over any) any {
++	switch overValue := over.(type) {
++	case map[string]any:
++		baseObject, ok := base.(map[string]any)
++		if !ok {
++			return overValue
++		}
++		merged := make(map[string]any, len(baseObject)+len(overValue))
++		maps.Copy(merged, baseObject)
++		for key, value := range overValue {
++			if held, found := merged[key]; found {
++				merged[key] = mergeJSON(held, value)
++			} else {
++				merged[key] = value
++			}
++		}
++		return merged
++	case []any:
++		baseList, ok := base.([]any)
++		if !ok {
++			return overValue
++		}
++		merged := slices.Clone(baseList)
++		for _, item := range overValue {
++			if !containsJSON(merged, item) {
++				merged = append(merged, item)
++			}
++		}
++		return merged
++	}
++	return over
++}
++
++// dropStale returns current with what previous set and next no longer sets taken out.
++// It also reports whether anything of current is left to keep.
++// An object loses the members, and a list the items, that previous holds and next lacks, at every depth.
++// A scalar previous set is taken out only while current still holds it, so a value changed since stays.
++// A container the taking out empties is not kept; one that was empty already is.
++// inNext reports whether next is present at all.
++// Neither input is changed.
++func dropStale(current, previous, next any, inNext bool) (any, bool) {
++	switch previousValue := previous.(type) {
++	case map[string]any:
++		currentObject, ok := current.(map[string]any)
++		if !ok {
++			return current, true
++		}
++		nextObject, _ := next.(map[string]any)
++		kept := maps.Clone(currentObject)
++		for key, previousMember := range previousValue {
++			currentMember, found := kept[key]
++			if !found {
++				continue
++			}
++			nextMember, memberInNext := nextObject[key]
++			if remaining, keep := dropStale(currentMember, previousMember, nextMember, memberInNext); keep {
++				kept[key] = remaining
++			} else {
++				delete(kept, key)
++			}
++		}
++		return kept, len(kept) > 0 || len(currentObject) == 0
++	case []any:
++		currentList, ok := current.([]any)
++		if !ok {
++			return current, true
++		}
++		nextList, _ := next.([]any)
++		kept := []any{}
++		for _, item := range currentList {
++			if !containsJSON(previousValue, item) || containsJSON(nextList, item) {
++				kept = append(kept, item)
++			}
++		}
++		return kept, len(kept) > 0 || len(currentList) == 0
++	}
++	return current, inNext || !reflect.DeepEqual(current, previous)
++}
++
++// containsJSON reports whether list holds a value equal to item.
++func containsJSON(list []any, item any) bool {
++	return slices.ContainsFunc(list, func(held any) bool { return reflect.DeepEqual(held, item) })
++}
++
++// readObjectFile reads the JSON object in the file at path and reports whether the file exists.
++// An absent or blank file gives an empty object, and a file holding anything but one JSON object gives nil.
++func readObjectFile(path string) (map[string]any, bool, error) {
++	data, err := os.ReadFile(path)
++	if errors.Is(err, os.ErrNotExist) {
++		return map[string]any{}, false, nil
++	}
++	if err != nil {
++		return nil, false, fmt.Errorf("read %s: %w", path, err)
++	}
++	if len(bytes.TrimSpace(data)) == 0 {
++		return map[string]any{}, true, nil
++	}
++	object, ok := decodeObject(string(data))
++	if !ok {
++		return nil, true, nil
++	}
++	return object, true, nil
++}
++
++// readRecord reads the object a JSON-object target's last render set.
++// It gives nil when no render recorded one, or when the record holds no object.
++func readRecord(path string) (map[string]any, error) {
++	object, exists, err := readObjectFile(path)
++	if err != nil || !exists {
++		return nil, err
++	}
++	return object, nil
++}
++
++// removeRecord removes the record at path, and an absent record is no error.
++func removeRecord(path string) error {
++	if err := os.Remove(path); err != nil && !errors.Is(err, os.ErrNotExist) {
++		return fmt.Errorf("remove %s: %w", path, err)
++	}
++	return nil
++}
++
++// objectRefusal returns the warning that keeps a JSON-object target's file at path unwritten, and whether one does.
++// current is the file's object, nil when the file holds no JSON object.
++// A blocked staging directory refuses with no warning of its own, since the render already warned of it.
++func objectRefusal(req RenderRequest, target Target, path string, current map[string]any, blocked bool) (string, bool) {
++	switch {
++	case blocked:
++		return "", true
++	case !slices.Contains(req.Excluded, target.File):
++		return fabricengine.ExcludeWayForward(target.File), true
++	case !slices.Contains(req.Excluded, tempDirName):
++		return fabricengine.ExcludeWayForward(tempDirName), true
++	case current == nil:
++		return fmt.Sprintf("%s holds no JSON object, so it is left untouched; way forward: fix or remove it, then run `%s`", path, renderVerb), true
++	}
++	return "", false
++}
++
++// renderObjectTarget merges the entries aimed at the JSON-object target into its file at req's anchor.
++// It notes the outcome in report.
++// It takes out of the file what the last render set and no entry sets now, then merges the folded entries in.
++// A key the file holds that heddle never set stays, and a scalar heddle sets replaces the file's.
++// It records the folded object for the next render, and drops the record once the file no longer holds what it names.
++// With no entry and no record it touches nothing; with no entry it removes a file the taking out empties.
++// While an entry holds no JSON object nothing is taken out, and the record keeps naming what the last render set.
++func renderObjectTarget(report *Report, req RenderRequest, target Target, entries []LayeredEntry, blocked bool) error {
++	folded, held, invalid, warnings := foldObjects(target, entries)
++	for _, warning := range warnings {
++		report.warn(warning)
++	}
++	recordPath := filepath.Join(req.ScratchDir, lymdirs.HeddleDirName, target.Name+recordSuffix)
++	previous, err := readRecord(recordPath)
++	if err != nil {
++		return err
++	}
++	if !held && previous == nil {
++		return nil
++	}
++	path := filepath.Join(req.Anchor, filepath.FromSlash(target.File))
++	current, exists, err := readObjectFile(path)
++	if err != nil {
++		return err
++	}
++	if warning, refused := objectRefusal(req, target, path, current, blocked); refused {
++		if warning != "" {
++			report.warn(warning)
++		}
++		if held {
++			report.Unwritten = append(report.Unwritten, target.File)
++		}
++		return nil
++	}
++
++	var remaining any = current
++	recorded := folded
++	if invalid {
++		recorded = mergeJSON(previous, folded).(map[string]any)
++	} else {
++		remaining, _ = dropStale(current, previous, folded, true)
++	}
++	merged := mergeJSON(remaining, folded).(map[string]any)
++	if !held && len(merged) == 0 {
++		if exists {
++			if err := os.Remove(path); err != nil {
++				return fmt.Errorf("remove %s: %w", path, err)
++			}
++			report.Removed = append(report.Removed, target.File)
++		}
++		return removeRecord(recordPath)
++	}
++	text, err := encodeObject(merged)
++	if err != nil {
++		return fmt.Errorf("encode %s: %w", target.File, err)
++	}
++	if err := writeRendered(filepath.Join(req.Anchor, tempDirName), target.Name, path, text); err != nil {
++		return err
++	}
++	report.Written = append(report.Written, target.File)
++	if !held {
++		return removeRecord(recordPath)
++	}
++	record, err := encodeObject(recorded)
++	if err != nil {
++		return fmt.Errorf("encode the record %s: %w", recordPath, err)
++	}
++	if err := fsx.AtomicWriteBytes(recordPath, []byte(record)); err != nil {
++		return fmt.Errorf("write %s: %w", recordPath, err)
++	}
++	return nil
++}
+diff --git a/internal/heddleengine/settings_test.go b/internal/heddleengine/settings_test.go
+new file mode 100644
+index 00000000..0072cf28
+--- /dev/null
++++ b/internal/heddleengine/settings_test.go
+@@ -0,0 +1,250 @@
++// settings_test.go drives the claude-settings target:
++// folding its entries, merging them into the file and taking out what no entry sets any more.
++
++package heddleengine
++
++import (
++	"encoding/json"
++	"fmt"
++	"os"
++	"path/filepath"
++	"reflect"
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/lymdirs"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// settingsStore returns a repository store holding one claude-settings entry per text, in order, each set through Set.
++func settingsStore(t *testing.T, texts ...string) Store {
++	t.Helper()
++	var store Store
++	for i, text := range texts {
++		slug := fmt.Sprintf("settings-%d", i)
++		if err := store.Set(slug, Patch{Text: textOf(text), Order: orderOf(i), Targets: []string{claudeSettingsTarget}}); err != nil {
++			t.Fatalf("Set(%s) = %v", slug, err)
++		}
++	}
++	return store
++}
++
++// requireJSON fails unless got and want decode to the same JSON value.
++func requireJSON(t *testing.T, label, got, want string) {
++	t.Helper()
++	var gotValue, wantValue any
++	if err := json.Unmarshal([]byte(got), &gotValue); err != nil {
++		t.Fatalf("%s = %q does not decode: %v", label, got, err)
++	}
++	if err := json.Unmarshal([]byte(want), &wantValue); err != nil {
++		t.Fatalf("want %q does not decode: %v", want, err)
++	}
++	if !reflect.DeepEqual(gotValue, wantValue) {
++		t.Errorf("%s = %s; want %s", label, got, want)
++	}
++}
++
++// TestRenderClaudeSettings is not parallel: it replaces shippedStore, which every render reads.
++func TestRenderClaudeSettings(t *testing.T) {
++	tiergate.Require(t, 0)
++	const shipped = `{"entries": [{"slug": "ship-settings", "order": 1, "targets": ["claude-settings"],
++  "text": "{\"permissions\": {\"deny\": [\"Workflow\"]}, \"attribution\": {\"commit\": \"\"}}"}]}`
++	const noShipped = `{"entries": []}`
++
++	tests := []struct {
++		name    string
++		shipped string
++		// file is the settings file present before the first render; empty leaves none.
++		file string
++		// earlier holds the entry texts of a render before the checked one; nil renders once.
++		earlier []string
++		// editBetween replaces the settings file after the earlier render; empty leaves it.
++		editBetween string
++		// recordOverwrite replaces the record after the earlier render; empty leaves it.
++		recordOverwrite string
++		// invalidText replaces the repository's entries with one whose text holds no JSON object at the checked render.
++		invalidText string
++		// texts are the repository's claude-settings entry texts at the checked render.
++		texts []string
++		// excluded replaces the fixture's exclude list when not nil.
++		excluded []string
++		// want is the file after the checked render; empty wants no file.
++		want                                    string
++		wantWritten, wantRemoved, wantUnwritten bool
++		// wantWarning is a text one warning holds; empty wants no warning.
++		wantWarning string
++	}{
++		{
++			name: "NoFileTakesTheEntriesFoldedInOrder", shipped: shipped,
++			texts: []string{`{"permissions": {"deny": ["Artifact", "Workflow"]}}`, `{"attribution": {"commit": "Made by us"}, "permissions": {"deny": ["Artifact"]}}`},
++			want:  `{"permissions": {"deny": ["Workflow", "Artifact"]}, "attribution": {"commit": "Made by us"}}`, wantWritten: true,
++		},
++		{
++			name: "FileKeysStayAndHeddleScalarsWin", shipped: shipped,
++			file: `{"model": "opus", "permissions": {"allow": ["Bash"], "deny": ["Mine"]}, "attribution": {"commit": "old", "pr": "old"}}`,
++			want: `{"model": "opus", "permissions": {"allow": ["Bash"], "deny": ["Mine", "Workflow"]}, "attribution": {"commit": "", "pr": "old"}}`, wantWritten: true,
++		},
++		{
++			name: "WhatNoEntrySetsAnyMoreIsTakenOut", shipped: shipped,
++			file:    `{"permissions": {"allow": ["Bash"]}}`,
++			earlier: []string{`{"permissions": {"deny": ["Artifact"]}, "env": {"A": "1"}}`},
++			want:    `{"permissions": {"allow": ["Bash"], "deny": ["Workflow"]}, "attribution": {"commit": ""}}`, wantWritten: true,
++		},
++		{
++			name: "NoEntryLeftRemovesTheFileTheTakingOutEmpties", shipped: noShipped,
++			earlier: []string{`{"env": {"A": "1"}}`}, wantRemoved: true,
++		},
++		{
++			name: "NoEntryLeftKeepsTheKeysHeddleNeverSet", shipped: noShipped,
++			file:    `{"model": "opus"}`,
++			earlier: []string{`{"env": {"A": "1"}}`},
++			want:    `{"model": "opus"}`, wantWritten: true,
++		},
++		{
++			name: "ScalarChangedSinceStaysWhenNoEntrySetsIt", shipped: noShipped,
++			earlier:     []string{`{"attribution": {"commit": ""}}`},
++			editBetween: `{"attribution": {"commit": "mine"}}`,
++			want:        `{"attribution": {"commit": "mine"}}`, wantWritten: true,
++		},
++		{
++			name: "UserItemInAListHeddleOwnsStaysWhenTheEntryGoes", shipped: noShipped,
++			file:    `{"permissions": {"deny": ["Mine"]}}`,
++			earlier: []string{`{"permissions": {"deny": ["Artifact"]}}`},
++			want:    `{"permissions": {"deny": ["Mine"]}}`, wantWritten: true,
++		},
++		{
++			name: "NoEntryAndNoRecordTouchesNothing", shipped: noShipped,
++			file: `{"model": "opus"}`, want: `{"model": "opus"}`,
++		},
++		{
++			name: "BlankFileTakesTheEntries", shipped: shipped,
++			file: "  \n",
++			want: `{"permissions": {"deny": ["Workflow"]}, "attribution": {"commit": ""}}`, wantWritten: true,
++		},
++		{
++			name: "RecordHoldingNoObjectTakesNothingOut", shipped: shipped,
++			earlier:         []string{`{"env": {"A": "1"}}`},
++			recordOverwrite: `["not", "an", "object"]`,
++			want:            `{"env": {"A": "1"}, "permissions": {"deny": ["Workflow"]}, "attribution": {"commit": ""}}`, wantWritten: true,
++		},
++		{
++			name: "EntryHoldingNoObjectKeepsWhatTheLastRenderSet", shipped: noShipped,
++			earlier:     []string{`{"env": {"A": "1"}}`},
++			invalidText: "not json",
++			want:        `{"env": {"A": "1"}}`, wantWritten: true, wantWarning: "holds no JSON object",
++		},
++		{
++			name: "FileHoldingNoObjectIsLeftAlone", shipped: shipped,
++			file: `["not", "an", "object"]`, want: `["not", "an", "object"]`,
++			wantUnwritten: true, wantWarning: "holds no JSON object",
++		},
++		{
++			name: "OffExcludedFileIsNotWritten", shipped: shipped,
++			excluded:      []string{"CLAUDE.local.md", ".heddle"},
++			wantUnwritten: true, wantWarning: fabricengine.ExcludeWayForward(ClaudeSettingsFile),
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			useShippedLayer(t, tt.shipped)
++			f := newRenderFixture(t, settingsStore(t, tt.earlier...))
++			if tt.excluded != nil {
++				f.excluded = tt.excluded
++			}
++			if tt.file != "" {
++				f.writeAnchor(t, ClaudeSettingsFile, tt.file)
++			}
++			if tt.earlier != nil {
++				mustRender(t, f)
++			}
++			if tt.editBetween != "" {
++				f.writeAnchor(t, ClaudeSettingsFile, tt.editBetween)
++			}
++			if tt.recordOverwrite != "" {
++				recordPath := filepath.Join(f.scratch, lymdirs.HeddleDirName, claudeSettingsTarget+recordSuffix)
++				if err := os.WriteFile(recordPath, []byte(tt.recordOverwrite), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++			store := settingsStore(t, tt.texts...)
++			if tt.invalidText != "" {
++				store = Store{Entries: []Entry{entryFor("settings-bad", tt.invalidText, 0, claudeSettingsTarget)}}
++			}
++			saveStore(t, f.bolt, store)
++
++			report := mustRender(t, f)
++
++			if tt.want == "" {
++				if f.anchorHas(ClaudeSettingsFile) {
++					t.Errorf("%s = %q; want no file", ClaudeSettingsFile, f.readAnchor(t, ClaudeSettingsFile))
++				}
++			} else {
++				requireJSON(t, ClaudeSettingsFile, f.readAnchor(t, ClaudeSettingsFile), tt.want)
++			}
++			if got := slices.Contains(report.Written, ClaudeSettingsFile); got != tt.wantWritten {
++				t.Errorf("written %v; want the settings file written: %v", report.Written, tt.wantWritten)
++			}
++			if got := slices.Contains(report.Removed, ClaudeSettingsFile); got != tt.wantRemoved {
++				t.Errorf("removed %v; want the settings file removed: %v", report.Removed, tt.wantRemoved)
++			}
++			if got := slices.Contains(report.Unwritten, ClaudeSettingsFile); got != tt.wantUnwritten {
++				t.Errorf("unwritten %v; want the settings file unwritten: %v", report.Unwritten, tt.wantUnwritten)
++			}
++			if tt.wantWarning == "" {
++				if len(report.Warnings) != 0 {
++					t.Errorf("warnings = %v; want none", report.Warnings)
++				}
++			} else if !slices.ContainsFunc(report.Warnings, func(warning string) bool { return strings.Contains(warning, tt.wantWarning) }) {
++				t.Errorf("warnings = %v; want one holding %q", report.Warnings, tt.wantWarning)
++			}
++		})
++	}
++}
++
++// TestRenderClaudeSettingsDropsTheRecordWithTheLastEntry is not parallel:
++// it replaces shippedStore, which every render reads.
++func TestRenderClaudeSettingsDropsTheRecordWithTheLastEntry(t *testing.T) {
++	tiergate.Require(t, 0)
++	useShippedLayer(t, `{"entries": []}`)
++	f := newRenderFixture(t, settingsStore(t, `{"env": {"A": "1"}}`))
++	f.writeAnchor(t, ClaudeSettingsFile, `{"model": "opus"}`)
++	mustRender(t, f)
++	saveStore(t, f.bolt, Store{})
++	mustRender(t, f)
++	requireJSON(t, ClaudeSettingsFile, f.readAnchor(t, ClaudeSettingsFile), `{"model": "opus"}`)
++
++	f.writeAnchor(t, ClaudeSettingsFile, `{"model": "opus", "env": {"A": "1"}}`)
++	saveStore(t, f.bolt, settingsStore(t, `{"attribution": {"commit": "x"}}`))
++	mustRender(t, f)
++
++	requireJSON(t, ClaudeSettingsFile, f.readAnchor(t, ClaudeSettingsFile),
++		`{"model": "opus", "env": {"A": "1"}, "attribution": {"commit": "x"}}`)
++}
++
++// TestShippedClaudeSettings pins the Claude settings the shipped layer sets in every worktree,
++// and that a first render writes them as Show prints them.
++func TestShippedClaudeSettings(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	f := newRenderFixture(t, Store{})
++
++	shown, err := Renderer{}.Show(f.bolt, claudeSettingsTarget, f.anchor)
++	if err != nil {
++		t.Fatalf("Show(%s) = %v", claudeSettingsTarget, err)
++	}
++	requireJSON(t, "Show("+claudeSettingsTarget+")", shown, `{
++  "attribution": {"commit": "", "pr": ""},
++  "enabledPlugins": {"ly@loomyard": true, "scribe@scribe": true},
++  "extraKnownMarketplaces": {"scribe": {"source": {"source": "github", "repo": "Knatte18/scribe"}}},
++  "permissions": {"deny": ["Artifact", "Workflow", "ReportFindings", "ScheduleWakeup", "SendFeedback",
++    "CronCreate", "CronDelete", "CronList", "RemoteTrigger", "DesignSync", "NotebookEdit",
++    "EnterWorktree", "ExitWorktree", "Skill(dataviz)"]}
++}`)
++
++	mustRender(t, f)
++	if got := f.readAnchor(t, ClaudeSettingsFile); got != shown {
++		t.Errorf("%s = %q; want the text Show printed, %q", ClaudeSettingsFile, got, shown)
++	}
++}
+diff --git a/internal/heddleengine/shipped.json b/internal/heddleengine/shipped.json
+index e59b81ed..7fdb5041 100644
+--- a/internal/heddleengine/shipped.json
++++ b/internal/heddleengine/shipped.json
+@@ -15,6 +15,30 @@
+       "targets": [
+         "claude-file"
+       ]
++    },
++    {
++      "slug": "lym-no-attribution",
++      "text": "{\"attribution\": {\"commit\": \"\", \"pr\": \"\"}}",
++      "order": 100,
++      "targets": [
++        "claude-settings"
++      ]
++    },
++    {
++      "slug": "lym-plugins",
++      "text": "{\"enabledPlugins\": {\"ly@loomyard\": true, \"scribe@scribe\": true}, \"extraKnownMarketplaces\": {\"scribe\": {\"source\": {\"source\": \"github\", \"repo\": \"Knatte18/scribe\"}}}}",
++      "order": 110,
++      "targets": [
++        "claude-settings"
++      ]
++    },
++    {
++      "slug": "lym-tool-deny",
++      "text": "{\"permissions\": {\"deny\": [\"Artifact\", \"Workflow\", \"ReportFindings\", \"ScheduleWakeup\", \"SendFeedback\", \"CronCreate\", \"CronDelete\", \"CronList\", \"RemoteTrigger\", \"DesignSync\", \"NotebookEdit\", \"EnterWorktree\", \"ExitWorktree\", \"Skill(dataviz)\"]}}",
++      "order": 120,
++      "targets": [
++        "claude-settings"
++      ]
+     }
+   ]
+ }
+diff --git a/internal/heddleengine/store.go b/internal/heddleengine/store.go
+index ccd69bc0..6775030a 100644
+--- a/internal/heddleengine/store.go
++++ b/internal/heddleengine/store.go
+@@ -312,6 +312,7 @@ func (s *Store) Remove(slug string) error {
+ 
+ // ValidateEntry refuses an entry that cannot be rendered.
+ // It refuses a slug off the slug rule, an empty text, no target, or a target the table does not hold.
++// It also refuses an entry aimed at a JSON-object target beside a text target, or one whose text is no JSON object.
+ // Each message names the way forward.
+ func ValidateEntry(e Entry) error {
+ 	if !slugRule.MatchString(e.Slug) {
+@@ -328,5 +329,5 @@ func ValidateEntry(e Entry) error {
+ 			return fmt.Errorf("entry %q names the unknown target %q; way forward: use one of %s", e.Slug, name, strings.Join(TargetNames(), ", "))
+ 		}
+ 	}
+-	return nil
++	return validateObjectEntry(e.Slug, e.Targets, e.Text)
+ }
+diff --git a/internal/heddleengine/store_test.go b/internal/heddleengine/store_test.go
+index 4b2d15db..c64a6521 100644
+--- a/internal/heddleengine/store_test.go
++++ b/internal/heddleengine/store_test.go
+@@ -148,6 +148,9 @@ func TestStore(t *testing.T) {
+ 			{"NewWithoutTargets", "x", Patch{Text: textOf("t"), Order: orderOf(1)}, "--targets"},
+ 			{"ExistingWithEmptyTargets", "a", Patch{Targets: []string{}}, "--targets"},
+ 			{"ShippedSlug", shippedStore.Ordered()[0].Slug, Patch{Text: textOf("t"), Order: orderOf(1), Targets: []string{"claude-file"}}, "--layer " + OverrideLayer},
++			{"SettingsTextIsNoObject", "x", Patch{Text: textOf("deny Workflow"), Order: orderOf(1), Targets: []string{"claude-settings"}}, "one JSON object"},
++			{"SettingsTextIsAList", "x", Patch{Text: textOf(`["Workflow"]`), Order: orderOf(1), Targets: []string{"claude-settings"}}, "one JSON object"},
++			{"SettingsBesideATextTarget", "x", Patch{Text: textOf(`{"a": 1}`), Order: orderOf(1), Targets: []string{"claude-settings", "claude-file"}}, "alone"},
+ 		}
+ 		for _, tt := range tests {
+ 			t.Run(tt.name, func(t *testing.T) {
+@@ -170,14 +173,18 @@ func TestStore(t *testing.T) {
+ 	t.Run("ShippedEntriesArePinned", func(t *testing.T) {
+ 		t.Parallel()
+ 		// The rows are the shipped layer in render order.
+-		// wantHeading is the entry's first line: a level-two heading of its own.
++		// wantHeading is a text entry's first line: a level-two heading of its own, and empty for a JSON-object entry.
+ 		// Level two keeps the rendered file stepping from the shipped section's level-one heading with no skip.
+ 		tests := []struct {
+ 			slug        string
++			target      string
+ 			wantHeading string
+ 		}{
+-			{"lym-batching", "## Batch your calls"},
+-			{"lym-plan-edits-before-gate", "## Make every round of edits in this order"},
++			{"lym-batching", "claude-file", "## Batch your calls"},
++			{"lym-plan-edits-before-gate", "claude-file", "## Make every round of edits in this order"},
++			{"lym-no-attribution", "claude-settings", ""},
++			{"lym-plugins", "claude-settings", ""},
++			{"lym-tool-deny", "claude-settings", ""},
+ 		}
+ 		ordered := shippedStore.Ordered()
+ 		if len(ordered) != len(tests) {
+@@ -185,8 +192,11 @@ func TestStore(t *testing.T) {
+ 		}
+ 		for i, tt := range tests {
+ 			got := ordered[i]
+-			if got.Slug != tt.slug || len(got.Targets) != 1 || got.Targets[0] != "claude-file" {
+-				t.Errorf("shipped entry %d = %+v; want slug %s aimed at claude-file alone", i, got, tt.slug)
++			if got.Slug != tt.slug || len(got.Targets) != 1 || got.Targets[0] != tt.target {
++				t.Errorf("shipped entry %d = %+v; want slug %s aimed at %s alone", i, got, tt.slug, tt.target)
++			}
++			if tt.wantHeading == "" {
++				continue
+ 			}
+ 			if heading, _, _ := strings.Cut(got.Text, "\n"); heading != tt.wantHeading {
+ 				t.Errorf("shipped entry %s opens with %q; want %q", tt.slug, heading, tt.wantHeading)
+diff --git a/internal/heddleengine/target.go b/internal/heddleengine/target.go
+index afd5a8e4..feb592b7 100644
+--- a/internal/heddleengine/target.go
++++ b/internal/heddleengine/target.go
+@@ -19,32 +19,45 @@ const (
+ // OrchPromptTarget is the prompt target whose passages reach an orch session alone, the home of a repository's orch rules.
+ const OrchPromptTarget = "orch-prompt"
+ 
++// ClaudeSettingsFile is the anchor-relative file the claude-settings target renders into:
++// the local Claude Code settings every Claude session started in the worktree loads.
++const ClaudeSettingsFile = ".claude/settings.local.json"
++
++// SettingsExcludeReinterpretation names the reconcile change that adds ClaudeSettingsFile to a hub's exclude list.
++// A hub whose fabric.yaml sets that list would otherwise leave the file unwritten.
++const SettingsExcludeReinterpretation = "heddle-claude-settings-excluded"
++
+ const (
+ 	// claudeFileTarget is the file target rendered into CLAUDE.local.md, the instructions a Claude session reads.
+ 	claudeFileTarget = "claude-file"
+ 	// codexFileTarget is the file target rendered into AGENTS.override.md, the instructions a Codex session reads.
+ 	codexFileTarget = "codex-file"
++	// claudeSettingsTarget is the JSON-object file target merged into ClaudeSettingsFile.
++	claudeSettingsTarget = "claude-settings"
+ )
+ 
+ // Target is one place an entry's text is delivered to.
+ // File is the anchor-relative path of a file target and empty for a prompt target.
+ // ReRender lists the anchor-relative paths whose change re-renders a file target.
++// JSONObject marks a file target whose entries each hold one JSON object, merged into the file in place of joined text.
+ // Engine and Role narrow the sessions a prompt target reaches.
+ // Engine must equal the session's engine, and Role must match the session's role or a numbered sibling of it;
+ // an empty field narrows nothing.
+ type Target struct {
+-	Name     string
+-	Delivery string
+-	File     string
+-	ReRender []string
+-	Engine   string
+-	Role     string
++	Name       string
++	Delivery   string
++	File       string
++	ReRender   []string
++	JSONObject bool
++	Engine     string
++	Role       string
+ }
+ 
+ // targetTable holds one row per target; a further target is one new row.
+ var targetTable = []Target{
+ 	{Name: claudeFileTarget, Delivery: DeliveryFile, File: "CLAUDE.local.md", ReRender: []string{"CLAUDE.local.md", "AGENTS.md", "CLAUDE.md", ".claude/AGENTS.md", ".claude/CLAUDE.md"}},
+ 	{Name: codexFileTarget, Delivery: DeliveryFile, File: "AGENTS.override.md", ReRender: []string{"AGENTS.md", "CLAUDE.md", "AGENTS.override.md"}},
++	{Name: claudeSettingsTarget, Delivery: DeliveryFile, File: ClaudeSettingsFile, JSONObject: true},
+ 	{Name: "claude-prompt", Delivery: DeliveryPrompt, Engine: "claude"},
+ 	{Name: "codex-prompt", Delivery: DeliveryPrompt, Engine: "codex"},
+ 	{Name: OrchPromptTarget, Delivery: DeliveryPrompt, Role: agentname.RoleOrch},
+@@ -70,6 +83,28 @@ func TargetNames() []string {
+ 	return names
+ }
+ 
++// objectTargetNames returns the names of the JSON-object targets in table order.
++func objectTargetNames() []string {
++	var names []string
++	for _, target := range targetTable {
++		if target.JSONObject {
++			names = append(names, target.Name)
++		}
++	}
++	return names
++}
++
++// objectTargetCount returns how many of names are JSON-object targets.
++func objectTargetCount(names []string) int {
++	count := 0
++	for _, name := range names {
++		if target, ok := LookupTarget(name); ok && target.JSONObject {
++			count++
++		}
++	}
++	return count
++}
++
+ // promptTargetsFor returns the names of the prompt targets that reach a session of engine whose strand role is role.
+ func promptTargetsFor(engine, role string) []string {
+ 	var names []string
+diff --git a/internal/hubreconcile/reinterpret_integration_test.go b/internal/hubreconcile/reinterpret_integration_test.go
+index 25bc7f52..2d7519ba 100644
+--- a/internal/hubreconcile/reinterpret_integration_test.go
++++ b/internal/hubreconcile/reinterpret_integration_test.go
+@@ -14,7 +14,9 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/driftengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/heddleengine"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/hubreconcile"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -136,6 +138,49 @@ func TestEnsure_DriftDirsOnAnAnchoredHubAreRewrittenOnceAndMailed(t *testing.T)
+ 	}
+ }
+ 
++// TestEnsure_OwnExcludeListGainsTheSettingsFileOnce does not call t.Parallel:
++// it installs the process-global notifier and swaps the package-global detached board sync.
++func TestEnsure_OwnExcludeListGainsTheSettingsFileOnce(t *testing.T) {
++	tiergate.Require(t, 1)
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	geom := geometryOf(h)
++	board := h.BoardDir()
++	removeReinterpretationMarkers(t, board)
++	gitkit.Git(t, board, "commit", "-q", "--allow-empty", "-m", "fixture: a board no reinterpretation was applied to")
++	gitkit.CommitFile(t, board, configengine.ConfigFileRel("fabric"), fabricengine.ExcludeListKey+": A.md\n", "fixture: a hub with its own exclude list")
++	recordBoardSyncs(t)
++	recordNotices(t)
++	fabricPath := configengine.ConfigFile(board, "fabric")
++	markerRel := filepath.ToSlash(configengine.ReinterpretedMarkerRel(heddleengine.SettingsExcludeReinterpretation))
++
++	if err := hubreconcile.Ensure(geom, hubreconcile.Options{}); err != nil {
++		t.Fatalf("Ensure: %v", err)
++	}
++
++	first, err := os.ReadFile(fabricPath)
++	if err != nil {
++		t.Fatalf("read the board's fabric.yaml: %v", err)
++	}
++	if want := fabricengine.ExcludeListKey + ": A.md " + heddleengine.ClaudeSettingsFile; !strings.Contains(string(first), want) {
++		t.Errorf("board fabric.yaml = %q after the walk; want it to hold %q", first, want)
++	}
++	if !slices.Contains(gitkit.LsFiles(t, board), markerRel) {
++		t.Errorf("the board does not track %s after the walk", markerRel)
++	}
++	assertClean(t, board)
++
++	if err := os.Remove(geom.StampPath()); err != nil {
++		t.Fatalf("remove the stamp: %v", err)
++	}
++	if err := hubreconcile.Ensure(geom, hubreconcile.Options{}); err != nil {
++		t.Fatalf("second Ensure: %v", err)
++	}
++	if second, err := os.ReadFile(fabricPath); err != nil || string(second) != string(first) {
++		t.Errorf("board fabric.yaml = %q, %v after the second walk; want it unchanged", second, err)
++	}
++}
++
+ // TestEnsure_SkipFileArgumentLeavesTheHubBase does not call t.Parallel:
+ // it installs the process-global notifier and swaps the package-global detached board sync.
+ func TestEnsure_SkipFileArgumentLeavesTheHubBase(t *testing.T) {
+diff --git a/pattern/PATTERN-heddle-instructions.md b/pattern/PATTERN-heddle-instructions.md
+index 2a1d34da..3402065e 100644
+--- a/pattern/PATTERN-heddle-instructions.md
++++ b/pattern/PATTERN-heddle-instructions.md
+@@ -23,6 +23,12 @@ Heddle's instruction text is stored once per layer and rendered from those store
+   It does so through fabric's worktree seam or `lym heddle render`.
+ - It renders a session's appended system prompt through shuttle's prompt seam.
+ - Fabric hands heddle paths and events and names no heddle file.
++- Heddle's file targets are the one place a per-worktree file lym seeds is declared, so a new such file is a new target.
++  Its path joins the exclude list in fabric's config template,
++  and a hub that sets its own list gains the path through a config reinterpretation.
++- Claude Code's worktree settings, `.claude/settings.local.json`, render from the `claude-settings` target.
++  The shipped layer holds lym's hub-wide Claude settings there, and a repository's entries add to them.
++  A setting that differs per session or role stays in the `--settings` document a session is launched with.
+ 
+ ## Lym instructions in code
+ 
