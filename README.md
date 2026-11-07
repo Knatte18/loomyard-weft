@@ -78,7 +78,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Comment lint: enforce scribe:prose line-length rule on // comment lines**<br>• lint-comments enforces the line-length rule scribe:prose sets, once it lands | [`comment-lint-line-length`](design-comment-lint-line-length.md) | darn · light | Preflight | neve | 2h<br>32m | loom |
+| T1 | **Comment lint: enforce scribe:prose line-length rule on // comment lines**<br>• lint-comments enforces the line-length rule scribe:prose sets, once it lands | [`comment-lint-line-length`](design-comment-lint-line-length.md) | darn · light | Record-Write | neve | 2h<br>32m | loom |
 | T2 | **Drift fails runs on capture noise such as _source.txt that is no part of the results** | [`drift-provenance-stops-runs`](design-drift-provenance-stops-runs.md) | darn · solid | Drift-Await | neve | 33m<br>27m | drift, loom |
 
 #### Ready (0)
