@@ -756,6 +756,43 @@
       "body": "## Seen\n\nThe `comment-cleanup` landing (`f7465bd8`, 2026-11-07) edited comments and prose only, and lists what its workers found but left:\n\n- Stale headings in the `configengine` doc.\n- `lymcwd.ResolveWithAnchor` has no non-test caller.\n- Stencil paths under `{{.specs_dir}}/loom/` name no existing folder.\n- Comment claims kept as written because a worker could not confirm them against the code.\n- Boundary fragments where two workers' spans met.\n- Files edited by more than one worker at once, among them tests in `cmd/lym`, `internal/adoptcli` and `internal/websterengine/render.go`; the commit asks a reviewer to read their diffs whole.\n\n## Idea\n\nOne darn run settles the list: fix the stale headings and stencil paths, remove `ResolveWithAnchor` or give it its caller, confirm or correct each kept claim, and read the jointly edited files whole for broken or doubled comments.\nThe commit body of `f7465bd8` names where each was found.\n",
       "created": "2026-11-07T11:58:20Z",
       "revised": "2026-11-07T11:58:20Z"
+    },
+    {
+      "id": 1192,
+      "handle": "R4",
+      "slug": "skill-load-hold-unchecked",
+      "title": "The skill-load hold landed with two checks by hand left open",
+      "kind": "note",
+      "labels": [
+        "research",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nThe landing of `skill-load-timeout-sends-prompt` (`23518a94`) holds a session whose skill-load turn the API failed, instead of typing its prompt.\nNothing was run by hand and no regression check ran; its commit lists two checks left open:\n\n- `hold-behaviors-lack-pinning-rows`: whether the rows of `TestStartup_LoadTurnAPIError` in `internal/shuttleengine/startup_test.go` pin every hold behavior: back-off doubling and ceiling, busy session, turn start during the back-off, dying pane, failed send, notice once and none when interactive, notifier failure, model rejected, open turn at the deadline, interrupted turn.\n- `open-load-turn-skips-and-types-prompt`: whether `loadSkillTurn` in `internal/shuttleengine/loadturn.go` neither skips its skills nor lets the prompt be typed for an open load turn past the timeout, and whether that test pins it.\n\n## Idea\n\nRead the two against the code and add a row for any behavior left unpinned; no real launch is needed for these two.\n",
+      "created": "2026-11-07T11:58:20Z",
+      "revised": "2026-11-07T11:58:20Z"
+    },
+    {
+      "id": 1193,
+      "handle": "R5",
+      "slug": "python-guard-live-unchecked",
+      "title": "The Python guard's new refusal text was never seen in a real session",
+      "kind": "note",
+      "labels": [
+        "research",
+        "shuttle",
+        "claude"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nThe landing of `python-guard-gives-no-reason` (`b002ca9a`) states in the refusal and in the appended system prompt why Python is refused and how to lift it.\nOnly tests and the settings golden file cover the wording; no real lym-spawned session was run to see the refusal and the system prompt read as intended.\n\n## Idea\n\nIn the sandbox hub `lyt`, open one lym-spawned session, have it try `python3 --version`, and record the refusal it gets and the system prompt line it carries.\n",
+      "created": "2026-11-07T11:58:20Z",
+      "revised": "2026-11-07T11:58:20Z"
     }
   ],
   "prime_owner": "neve",
