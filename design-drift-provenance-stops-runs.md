@@ -1,6 +1,6 @@
 # Drift fails runs on capture noise such as _source.txt that is no part of the results
 
-`drift-provenance-stops-runs` · Task · bug, drift, loom · running · Code-Bouncer
+`drift-provenance-stops-runs` · Task · bug, drift, loom · running · Drift-Recheck
 
 Imported from [issue #81](https://github.com/Knatte18/loomyard/issues/81); follows #71.
 
