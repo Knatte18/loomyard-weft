@@ -606,7 +606,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge-registered-templates' registration\nDelivers: beamHub built by a registration, and newBadReedUpFixture's base, the hub with the corrupted reed line and the pair, as a template with each site's seed run on its copy\nExports: nothing\n\nThe part changes these packages:\n\n- internal/loomcli (about 80 changed lines)\n",
-      "status": "running · Describe",
+      "status": "running · PR-Review",
       "created": "2026-11-07T14:15:14Z",
       "revised": "2026-11-07T14:15:14Z",
       "profile": "light",
