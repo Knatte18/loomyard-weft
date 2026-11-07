@@ -741,7 +741,7 @@
       "id": 1188,
       "handle": "B10",
       "slug": "drift-provenance-stops-runs",
-      "title": "drift: a capture's provenance file still stops runs by default and needs the parent to settle it",
+      "title": "Drift fails runs on capture noise such as _source.txt that is no part of the results",
       "kind": "note",
       "labels": [
         "bug",
@@ -753,9 +753,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "Imported from [issue #81](https://github.com/Knatte18/loomyard/issues/81).\n\n## Seen\n\nTask run `support-for-dop-rheology-in` (hub Models, darn, `diff: lines`) failed the Darn-Write `drift` gate three times on the same two cells: keys `commit` and `captured_at` in case `_source.txt`, which the baseline harness writes on every capture.\nNo numerical cell moved.\nThe hub's `drift.yaml` had no `volatile_files`, because the fix for #71 made the ignore list opt-in.\n\n- The writer could not fix the cells, so each re-prompt was a wasted round, and the writer had to message the parent.\n- `lym drift amend` was refused while Darn-Write ran (\"admitted only at its halt\"), so the parent had to wait for the gate to use up its attempts before amending.\n- After the halt, the driver also sent the parent the same question.\n- A run keeps the volatile list it started with, so setting `volatile_files` during the run did not help that run.\n\n## Workaround\n\nSet `lym config drift --set 'volatile_files=[_source.txt]'` from the prime for later runs.\nFor the run already going: wait for the Darn-Write halt, then `lym drift amend \u003cslug\u003e --entries` with keys `commit` and `captured_at` of case `_source.txt`, then `lym loom resume`.\n\n## Expected\n\nProvenance never reaches the parent:\n\n- Drift detects a capture file whose only changes are commit and timestamp metadata, or ships `_source.txt`-style provenance as a default volatile entry.\n- A gate failure that consists only of cells the writer cannot change ends the gate at once instead of re-prompting.\n- `drift init` or `Drift-Baseline` warns when a capture holds a file that differs between two captures of the same code.\n",
+      "body": "Imported from [issue #81](https://github.com/Knatte18/loomyard/issues/81); follows #71.\n\n## Seen\n\nTask run `support-for-dop-rheology-in` (hub Models, darn, `diff: lines`) failed the Darn-Write `drift` gate three times on the same two cells: keys `commit` and `captured_at` in case `_source.txt`, which the baseline harness writes on every capture.\nNo numerical cell moved.\nThe hub's `drift.yaml` had no `volatile_files`, because the fix for #71 made the ignore list opt-in.\n\n- The writer could not fix the cells, so each re-prompt was a wasted round, and the writer had to message the parent.\n- `lym drift amend` was refused while Darn-Write ran (\"admitted only at its halt\"), so the parent had to wait for the gate to use up its attempts before amending.\n- After the halt, the driver also sent the parent the same question.\n- A run keeps the volatile list it started with, so setting `volatile_files` during the run did not help that run.\n\nThe operator (2026-11-07): `_source.txt` is noise and is no part of the drift check; drift also reacts to much else that is irrelevant.\n\n## Wanted\n\nDrift checks only what the code's results are.\nA capture's provenance and other cells that differ between two captures of the same code never fail a gate, never re-prompt a writer and never reach the parent, with no `drift.yaml` entry needed.\n\n- A gate failure that consists only of cells the writer cannot change ends the gate at once instead of re-prompting.\n- How drift tells noise from results is open; see the operator's choice, to be written here.\n",
       "created": "2026-11-07T11:02:29Z",
-      "revised": "2026-11-07T11:02:29Z"
+      "revised": "2026-11-07T11:02:58Z"
     }
   ],
   "prime_owner": "neve",

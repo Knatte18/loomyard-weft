@@ -1,8 +1,8 @@
-# drift: a capture's provenance file still stops runs by default and needs the parent to settle it
+# Drift fails runs on capture noise such as _source.txt that is no part of the results
 
 `drift-provenance-stops-runs` · Note · bug, drift
 
-Imported from [issue #81](https://github.com/Knatte18/loomyard/issues/81).
+Imported from [issue #81](https://github.com/Knatte18/loomyard/issues/81); follows #71.
 
 ## Seen
 
@@ -15,15 +15,12 @@ The hub's `drift.yaml` had no `volatile_files`, because the fix for #71 made the
 - After the halt, the driver also sent the parent the same question.
 - A run keeps the volatile list it started with, so setting `volatile_files` during the run did not help that run.
 
-## Workaround
+The operator (2026-11-07): `_source.txt` is noise and is no part of the drift check; drift also reacts to much else that is irrelevant.
 
-Set `lym config drift --set 'volatile_files=[_source.txt]'` from the prime for later runs.
-For the run already going: wait for the Darn-Write halt, then `lym drift amend <slug> --entries` with keys `commit` and `captured_at` of case `_source.txt`, then `lym loom resume`.
+## Wanted
 
-## Expected
+Drift checks only what the code's results are.
+A capture's provenance and other cells that differ between two captures of the same code never fail a gate, never re-prompt a writer and never reach the parent, with no `drift.yaml` entry needed.
 
-Provenance never reaches the parent:
-
-- Drift detects a capture file whose only changes are commit and timestamp metadata, or ships `_source.txt`-style provenance as a default volatile entry.
 - A gate failure that consists only of cells the writer cannot change ends the gate at once instead of re-prompting.
-- `drift init` or `Drift-Baseline` warns when a capture holds a file that differs between two captures of the same code.
+- How drift tells noise from results is open; see the operator's choice, to be written here.

@@ -59,7 +59,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B7 |  | **The gate fixer loads only the language skills, not prose or code-quality**<br>• Every code role but the gate fixer starts from scribe:prose, code-quality and testing | [`gate-fixer-no-prose-skills`](design-gate-fixer-no-prose-skills.md) | 1h<br>1h | gate, loom |
 | B8 |  | **lym shuttle open sessions write a 1h prompt cache instead of their role's 5m**<br>• The open path seems not to set CLAUDE_CODE_PROMPT_CACHE_TTL | [`shuttle-open-cache-ttl`](design-shuttle-open-cache-ttl.md) | 1h<br>1h | shuttle, claude |
 | B9 |  | **Subagents spawned without an effort run at xhigh, not the medium settings name**<br>• Haiku workers with no effort in the Agent call ran at xhigh | [`subagent-default-effort-xhigh`](design-subagent-default-effort-xhigh.md) | 1h<br>1h | shuttle, claude, stencil |
-| B10 |  | **drift: a capture's provenance file still stops runs by default and needs the parent to settle it** | [`drift-provenance-stops-runs`](design-drift-provenance-stops-runs.md) | 0m<br>0m | drift |
+| B10 |  | **Drift fails runs on capture noise such as _source.txt that is no part of the results** | [`drift-provenance-stops-runs`](design-drift-provenance-stops-runs.md) | 0m<br>0m | drift |
 
 ### Enhancements (6)
 
