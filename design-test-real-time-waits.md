@@ -1,6 +1,6 @@
 # Tests wait real time and repeat builds every tier 1 pass
 
-`test-real-time-waits` · Task · enhancement, git, gate, termwindow, process · running · PR-Review
+`test-real-time-waits` · Task · enhancement, git, gate, termwindow, process · running · Finalize
 
 The operator wants tests faster as a priority (2026-11-07).
 Items 7 and 9 of `docs/research/speed/tier1-test-revision-2026-11-06/report.md`, read before starting.

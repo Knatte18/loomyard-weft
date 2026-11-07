@@ -73,7 +73,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes** | [`fabric-test-speed`](design-fabric-test-speed.md)<br>[Sketch](decision-fabric-test-speed.md) | raddle | Raddle-Write | neve | 5h<br>8m | fabric, testkit, git |
-| T4 | **Tests wait real time and repeat builds every tier 1 pass** | [`test-real-time-waits`](design-test-real-time-waits.md) | darn · light | PR-Review | neve | 52m<br>42m | git, gate, termwindow, process |
+| T4 | **Tests wait real time and repeat builds every tier 1 pass** | [`test-real-time-waits`](design-test-real-time-waits.md) | darn · light | Finalize | neve | 52m<br>42m | git, gate, termwindow, process |
 | T8 | **Skills and effort for every role and subagent come from config**<br>• Skills per role in config, gate fixer included; subagents load fitting skills; every effort explicit | [`agent-skills-and-effort`](design-agent-skills-and-effort.md) | darn · solid | Darn-Write | neve | 5h<br>1h | shuttle, stencil, claude, gate, loom |
 
 #### Ready (0)
@@ -88,7 +88,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **A Sketch opened from the board shows only its brief, with no link to its decision record** | [`board-sketch-shows-record`](design-board-sketch-shows-record.md) | darn · light |  | 6m<br>6m | board |
+| T2 | `draft` **A Sketch opened from the board shows only its brief, with no link to its decision record** | [`board-sketch-shows-record`](design-board-sketch-shows-record.md) | darn · light |  | 7m<br>7m | board |
 
 ### Notes (20)
 
