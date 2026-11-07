@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Slack relay reposts a sent message: chat.postMessage answer fails to decode** | [`slack-post-decode-repost`](design-slack-post-decode-repost.md) | darn · light | Drift-Recheck | neve | 25m<br>25m | slack |
+| T2 | **Slack relay reposts a sent message: chat.postMessage answer fails to decode** | [`slack-post-decode-repost`](design-slack-post-decode-repost.md) | darn · light | Describe | neve | 25m<br>25m | slack |
 
 ### Ready (0)
 
