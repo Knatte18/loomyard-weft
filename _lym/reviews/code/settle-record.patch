@@ -1,0 +1,363 @@
+diff --git a/internal/shuttlecli/hookbatching_test.go b/internal/shuttlecli/hookbatching_test.go
+index d783373a..b4a6c34c 100644
+--- a/internal/shuttlecli/hookbatching_test.go
++++ b/internal/shuttlecli/hookbatching_test.go
+@@ -80,7 +80,7 @@ func TestHookBatchingVerb(t *testing.T) {
+ 		{name: "NoBreachPrintsNothing", engine: "claude", calls: []string{"Bash", "Grep"}},
+ 		{name: "UnknownEngineIsReportedAndExitsZero", engine: "no-such-engine", calls: []string{"Grep"}, input: "{}", wantStderr: `the engine "no-such-engine" has no batching nudge`},
+ 		{name: "MalformedInputIsReportedAndExitsZero", engine: "claude", calls: []string{"Grep"}, input: "{not json", wantStderr: "parse the batching hook input"},
+-		{name: "CorruptStateIsReportedAndExitsZero", engine: "claude", calls: []string{"Grep"}, state: "{not json", wantStderr: "update the batching nudge state"},
++		{name: "CorruptStateIsReportedAndExitsZero", engine: "claude", calls: []string{"Grep"}, state: "{not json", wantStderr: "the batching nudge state"},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/shuttleengine/claudeengine/batchingnudge.go b/internal/shuttleengine/claudeengine/batchingnudge.go
+index c0d1584e..29978b2d 100644
+--- a/internal/shuttleengine/claudeengine/batchingnudge.go
++++ b/internal/shuttleengine/claudeengine/batchingnudge.go
+@@ -99,6 +99,30 @@ func batchingNudgeHookCommand(quotedStatePath string) string {
+ // batchingTailBytes bounds the transcript tail the judgment reads, so a call at a large context costs one bounded read.
+ const batchingTailBytes = 4 << 20
+ 
++// batchingTranscriptWait bounds the judgment's wait for the call it judges to reach the calling chain's transcript.
++// Claude Code writes a message's lines to the transcript only after its calls start,
++// so a fast call such as a Read or an Edit runs its after-tool-call hook before its own message is there to judge.
++// The judgment rereads the transcript every tick, at most attempts times, while the file grows.
++type batchingTranscriptWait struct {
++	tick     time.Duration
++	attempts int
++	// sleep pauses between attempts; a test passes one that changes the transcript instead of waiting.
++	sleep func(time.Duration)
++}
++
++// The production tick and attempts bound the wait for a call to reach the transcript.
++// The wait covers the write delay after a message ends.
++// It leaves out only the early calls of a message still being written.
++const (
++	batchingTranscriptTick     = 25 * time.Millisecond
++	batchingTranscriptAttempts = 80
++)
++
++// defaultBatchingTranscriptWait returns the production wait for a call to reach the transcript.
++func defaultBatchingTranscriptWait() batchingTranscriptWait {
++	return batchingTranscriptWait{tick: batchingTranscriptTick, attempts: batchingTranscriptAttempts, sleep: time.Sleep}
++}
++
+ // The nudge lines, one per breach; each names the breach and quotes the rule it breaks.
+ const (
+ 	lookupChainNudge = "[lym batching] Your last %d messages each made one lookup and nothing else. The rule: list every question, then send every grep and read for all of them in one message; wait for a result only to choose the next call, then send every call it unlocks and every call you know in one message."
+@@ -206,6 +230,11 @@ func (in batchingHookInput) sliced() bool {
+ // BatchingNudge judges the tool call a PostToolUse input describes and returns the hook output that adds one nudge line to the calling chain's context, or nil when no nudge is due.
+ // A call from a subagent or fork is judged against that agent's own transcript, context reading and nudge count, under the same settings as the main session.
+ // A Bash call whose command is no read-only lookup, a run with no state file, a chain below the context threshold, a chain past its nudge cap and a message already nudged get none.
++// Claude Code writes a call's message to the transcript after the call starts,
++// so a call whose message the transcript does not hold yet is waited for a bounded time;
++// a call still missing at the bound gets none.
++// The context threshold is read from the first tail, which lacks the call's own message while the call is waited for,
++// so the one call whose message first reaches the threshold gets none.
+ // The judgment and the count update hold the state file's lock, so the parallel calls of one message nudge at most once.
+ // A transcript that cannot be read gets no nudge and no error, since its format is a Claude Code internal; a malformed input or state file is an error.
+ func (c *Claude) BatchingNudge(statePath string, payload []byte) ([]byte, error) {
+@@ -225,30 +254,32 @@ func (c *Claude) BatchingNudge(statePath string, payload []byte) ([]byte, error)
+ 		return nil, nil
+ 	}
+ 	sidechain := input.AgentID != ""
+-	if _, err := os.Stat(statePath); err != nil {
+-		if os.IsNotExist(err) {
+-			return nil, nil
+-		}
+-		return nil, fmt.Errorf("claudeengine: stat the batching nudge state %s: %w", statePath, err)
++	// The state is read before the wait, so a run with no state file and a chain past its cap never wait for the transcript.
++	seeded, found, err := state.ReadJSON[batchingNudgeState](statePath, batchingNudgeLockPath(statePath))
++	if err != nil {
++		return nil, fmt.Errorf("claudeengine: read the batching nudge state %s: %w", statePath, err)
++	}
++	if !found || seeded.count(input.AgentID).Nudges >= seeded.Settings.MaxNudges {
++		return nil, nil
++	}
++	tail, ok := c.awaitCallInTranscript(transcript, input.ToolUseID, sidechain, seeded.Settings.ContextTokens)
++	if !ok {
++		return nil, nil
+ 	}
+ 
+ 	var line string
+-	err := state.UpdateJSON(statePath, batchingNudgeLockPath(statePath), func(cur batchingNudgeState, found bool) (batchingNudgeState, error) {
++	err = state.UpdateJSON(statePath, batchingNudgeLockPath(statePath), func(cur batchingNudgeState, found bool) (batchingNudgeState, error) {
+ 		count := cur.count(input.AgentID)
+ 		if !found || count.Nudges >= cur.Settings.MaxNudges {
+ 			return cur, errNoNudge
+ 		}
+-		tail, err := readTranscriptTail(transcript, batchingTailBytes)
+-		if err != nil {
+-			return cur, errNoNudge
+-		}
+ 		reading, _ := latestReading(tail, sidechain)
+ 		if !reading.Known || reading.Tokens < cur.Settings.ContextTokens {
+ 			return cur, errNoNudge
+ 		}
+ 		messages := tailMessages(tail, sidechain)
+ 		current := messageHolding(messages, input.ToolUseID)
+-		if current < 0 || messages[current].id == count.NudgedMessage {
++		if messages[current].id == count.NudgedMessage {
+ 			return cur, errNoNudge
+ 		}
+ 		line = judgeBatching(cur.Settings, messages, current, input)
+@@ -266,6 +297,45 @@ func (c *Claude) BatchingNudge(statePath string, payload []byte) ([]byte, error)
+ 	return hookContext(hookEventPostToolUse, line)
+ }
+ 
++// awaitCallInTranscript waits for a message of the chain to hold the call toolUseID.
++// It returns the tail of the transcript at transcriptPath once one does.
++// It reports false when none does within the wait's bound.
++// It reports false at once for a transcript that cannot be read.
++// It also reports false at once for a chain whose context is below contextTokens by the first tail's latest reading.
++// While the call's message is not in the transcript yet, that reading is the previous message's,
++// so the one call whose message first reaches contextTokens is left silent.
++// A chain the judgment would leave silent therefore never waits.
++// It rereads the tail only when the file's size changed since the last read.
++func (c *Claude) awaitCallInTranscript(transcriptPath, toolUseID string, sidechain bool, contextTokens int) ([]byte, bool) {
++	wait := c.transcriptWait
++	readSize := int64(-1)
++	for attempt := 0; ; attempt++ {
++		info, err := os.Stat(transcriptPath)
++		if err != nil {
++			return nil, false
++		}
++		if info.Size() != readSize {
++			readSize = info.Size()
++			tail, err := readTranscriptTail(transcriptPath, batchingTailBytes)
++			if err != nil {
++				return nil, false
++			}
++			if attempt == 0 {
++				if reading, _ := latestReading(tail, sidechain); !reading.Known || reading.Tokens < contextTokens {
++					return nil, false
++				}
++			}
++			if messageHolding(tailMessages(tail, sidechain), toolUseID) >= 0 {
++				return tail, true
++			}
++		}
++		if attempt >= wait.attempts {
++			return nil, false
++		}
++		wait.sleep(wait.tick)
++	}
++}
++
+ // readTranscriptTail returns the complete lines of the last budget bytes of the transcript at transcriptPath, the whole file when it is smaller.
+ // The window's first line is dropped unless the window starts the file, since it may be cut.
+ func readTranscriptTail(transcriptPath string, budget int64) ([]byte, error) {
+diff --git a/internal/shuttleengine/claudeengine/batchingnudge_test.go b/internal/shuttleengine/claudeengine/batchingnudge_test.go
+index 8112ca56..f3975206 100644
+--- a/internal/shuttleengine/claudeengine/batchingnudge_test.go
++++ b/internal/shuttleengine/claudeengine/batchingnudge_test.go
+@@ -1,5 +1,6 @@
+ // batchingnudge_test.go pins the batching nudge: which breach a transcript tail fires, and what holds it back.
+ // It covers the main session and subagents' transcripts, the state file's counts, and the transcript tail read.
++// It also covers the wait for a call to reach the transcript.
+ // It also covers the bounds of claude.yaml's batching_nudge block and the hook and state file Prepare installs from it.
+ 
+ package claudeengine
+@@ -58,6 +59,9 @@ func firstNudgeCall(message []string) string {
+ // nudgeAgentID is the agent id of the fixture subagent.
+ const nudgeAgentID = "fork-1"
+ 
++// nudgeWaitAttempts is the fixture engine's bound on its waits for a call to reach the transcript.
++const nudgeWaitAttempts = 3
++
+ // nudgeAgentTranscript returns the path of agent agentID's transcript beside the fixture session transcript in dir.
+ func nudgeAgentTranscript(dir, agentID string) string {
+ 	return filepath.Join(dir, "transcript", subagentsDirName, subagentTranscriptPrefix+agentID+".jsonl")
+@@ -163,6 +167,7 @@ func writeNudgeFile(t *testing.T, dir, name string, lines int, modified time.Tim
+ // It also pins what holds a nudge back.
+ // A fired nudge counts in the state file under its chain, the main session's or the subagent's.
+ // It records its message there; a silent call leaves the state file as it was.
++// A call its transcript does not hold yet is waited for, up to the bound, unless the chain would be silent anyway.
+ func TestBatchingNudge(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -194,6 +199,15 @@ func TestBatchingNudge(t *testing.T) {
+ 		input func(dir string, hookInput map[string]any)
+ 		// payload replaces the hook input outright.
+ 		payload []byte
++		// late leaves the last message out of the chain's transcript until the engine's lateAfter-th wait.
++		// That is how Claude Code writes a message: after its calls start.
++		late bool
++		// lateAfter is the number of the wait at which a late message reaches the transcript; zero means the first.
++		// Each earlier wait grows the transcript by one more sidechain message, which holds no call.
++		// A main-chain transcript skips those lines, so a row with a lateAfter is a main-session row.
++		lateAfter int
++		// wantSleeps is how many times the engine waits for the call to reach the transcript.
++		wantSleeps int
+ 		// nudgedMessage is the message id a fired nudge records; empty means the last message's.
+ 		nudgedMessage string
+ 		wantErr       bool
+@@ -281,7 +295,30 @@ func TestBatchingNudge(t *testing.T) {
+ 			name: "UnreadableTranscriptIsSilent", tokens: 200000, messages: lookupChain,
+ 			input: func(dir string, in map[string]any) { in["transcript_path"] = filepath.Join(dir, "missing.jsonl") },
+ 		},
+-		{name: "ToolUseIDAbsentFromTheTailIsSilent", tokens: 200000, messages: lookupChain, input: func(_ string, in map[string]any) { in["tool_use_id"] = "call-absent" }},
++		{
++			name: "ToolUseIDAbsentFromTheTailIsSilentAfterTheBoundedWait", tokens: 200000, messages: lookupChain,
++			input: func(_ string, in map[string]any) { in["tool_use_id"] = "call-absent" }, wantSleeps: nudgeWaitAttempts,
++		},
++		{
++			name: "EditReachingTheTranscriptDuringTheWaitFires", tokens: 200000, messages: [][]string{{"Edit:short.go"}, {"Write:long.go"}}, late: true, wantSleeps: 1,
++			want: func(string) string { return fmt.Sprintf(editChainNudge, 2) },
++		},
++		{name: "LateCallBelowTheContextThresholdIsSilentWithoutWaiting", tokens: 100000, messages: lookupChain, late: true},
++		{name: "LateCallPastTheNudgeCapIsSilentWithoutWaiting", tokens: 200000, messages: lookupChain, late: true, before: func(s *batchingNudgeState) { s.Nudges = 2 }},
++		{name: "NoStateFileIsSilentWithoutWaitingForALateCall", tokens: 200000, messages: lookupChain, late: true, noState: true},
++		{
++			name: "SubagentPastItsOwnCapIsSilentWithoutWaitingForALateCall", tokens: 200000, messages: lookupChain, late: true, agentID: nudgeAgentID,
++			before: func(s *batchingNudgeState) { *s = s.withCount(nudgeAgentID, batchingNudgeCount{Nudges: 2}) },
++		},
++		{
++			name: "SubagentEditReachingTheTranscriptDuringTheWaitFires", tokens: 200000, messages: [][]string{{"Edit:short.go"}, {"Write:long.go"}},
++			late: true, agentID: nudgeAgentID, wantSleeps: 1, want: func(string) string { return fmt.Sprintf(editChainNudge, 2) },
++		},
++		{name: "SubagentWithNoReadingYetIsSilentWithoutWaiting", tokens: 200000, messages: [][]string{{"Grep"}}, late: true, agentID: nudgeAgentID},
++		{
++			name: "EditReachingTheTranscriptAfterSeveralRereadsFires", tokens: 200000, messages: [][]string{{"Edit:short.go"}, {"Write:long.go"}},
++			late: true, lateAfter: 2, wantSleeps: 2, want: func(string) string { return fmt.Sprintf(editChainNudge, 2) },
++		},
+ 		{name: "CorruptStateFileIsAnError", tokens: 200000, messages: lookupChain, corruptState: true, wantErr: true},
+ 	}
+ 	for _, tt := range tests {
+@@ -295,12 +332,16 @@ func TestBatchingNudge(t *testing.T) {
+ 				t.Fatalf("write unterminated.go: %v", err)
+ 			}
+ 			transcript := filepath.Join(dir, "transcript.jsonl")
+-			if tt.agentID == "" {
+-				writeNudgeTranscript(t, dir, transcript, tt.tokens, false, tt.messages)
+-			} else {
++			chainTranscript, chainSidechain := transcript, false
++			if tt.agentID != "" {
+ 				writeNudgeTranscript(t, dir, transcript, 200000, false, [][]string{{"Bash"}})
+-				writeNudgeTranscript(t, dir, nudgeAgentTranscript(dir, tt.agentID), tt.tokens, true, tt.messages)
++				chainTranscript, chainSidechain = nudgeAgentTranscript(dir, tt.agentID), true
++			}
++			written := tt.messages
++			if tt.late {
++				written = tt.messages[:len(tt.messages)-1]
+ 			}
++			writeNudgeTranscript(t, dir, chainTranscript, tt.tokens, chainSidechain, written)
+ 			statePath := filepath.Join(dir, batchingNudgeStateFileName)
+ 			before := batchingNudgeState{Settings: settings}
+ 			if tt.before != nil {
+@@ -340,7 +381,27 @@ func TestBatchingNudge(t *testing.T) {
+ 				}
+ 			}
+ 
+-			got, err := New().BatchingNudge(statePath, payload)
++			lateAfter := max(tt.lateAfter, 1)
++			sleeps := 0
++			engine := New()
++			engine.transcriptWait = batchingTranscriptWait{tick: time.Millisecond, attempts: nudgeWaitAttempts, sleep: func(time.Duration) {
++				sleeps++
++				switch {
++				case !tt.late:
++				case sleeps < lateAfter:
++					grown := slices.Clone(written)
++					for range sleeps {
++						grown = append(grown, []string{nudgeSidechain})
++					}
++					writeNudgeTranscript(t, dir, chainTranscript, tt.tokens, chainSidechain, grown)
++				case sleeps == lateAfter:
++					writeNudgeTranscript(t, dir, chainTranscript, tt.tokens, chainSidechain, tt.messages)
++				}
++			}}
++			got, err := engine.BatchingNudge(statePath, payload)
++			if sleeps != tt.wantSleeps {
++				t.Errorf("BatchingNudge() waited %d times; want %d", sleeps, tt.wantSleeps)
++			}
+ 			if tt.wantErr {
+ 				if err == nil {
+ 					t.Errorf("BatchingNudge() error = nil; want an error")
+@@ -394,6 +455,35 @@ func TestBatchingNudge(t *testing.T) {
+ 	}
+ }
+ 
++// TestEngineConstructorsSetTheTranscriptWait pins that both constructors give the engine the production wait.
++// A zero wait never waits, which would return the hook to judging a call before its message reaches the transcript.
++func TestEngineConstructorsSetTheTranscriptWait(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name   string
++		engine *Claude
++	}{
++		{name: "New", engine: New()},
++		{name: "NewFromConfig", engine: NewFromConfig(shuttleengine.Config{}, configengine.Dirs{})},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			wait := tt.engine.transcriptWait
++			if wait.tick != batchingTranscriptTick {
++				t.Errorf("transcriptWait.tick = %v; want %v", wait.tick, batchingTranscriptTick)
++			}
++			if wait.attempts != batchingTranscriptAttempts {
++				t.Errorf("transcriptWait.attempts = %d; want %d", wait.attempts, batchingTranscriptAttempts)
++			}
++			if wait.sleep == nil {
++				t.Errorf("transcriptWait.sleep = nil; want a sleep function")
++			}
++		})
++	}
++}
++
+ // TestReadTranscriptTail pins the window of the transcript the nudge reads.
+ // A file under the budget is read whole, and a larger one is cut to its complete lines.
+ // A window holding no line end yields nothing.
+diff --git a/internal/shuttleengine/claudeengine/claudeengine.go b/internal/shuttleengine/claudeengine/claudeengine.go
+index ed1e4d47..8afb366e 100644
+--- a/internal/shuttleengine/claudeengine/claudeengine.go
++++ b/internal/shuttleengine/claudeengine/claudeengine.go
+@@ -49,17 +49,23 @@ type Claude struct {
+ 	nameReads *nameReadWarnings
+ 	// claudeDir is Claude Code's config directory the installed plugins are read from; empty resolves it from the environment when a session starts.
+ 	claudeDir string
++	// transcriptWait bounds the batching nudge's wait for the call it judges to reach the transcript.
++	// The zero value never waits.
++	transcriptWait batchingTranscriptWait
+ }
+ 
+ // New returns a Claude engine with the default submit settle.
+ func New() *Claude {
+-	return &Claude{now: time.Now, submitSettleMS: defaultSubmitSettleMS, submitRedrawSettleMS: defaultSubmitRedrawSettleMS, nameReads: &nameReadWarnings{}}
++	return &Claude{now: time.Now, submitSettleMS: defaultSubmitSettleMS, submitRedrawSettleMS: defaultSubmitRedrawSettleMS, nameReads: &nameReadWarnings{}, transcriptWait: defaultBatchingTranscriptWait()}
+ }
+ 
+ // NewFromConfig returns a Claude engine whose submit settle is cfg.SubmitSettleMS and whose redraw settle is cfg.SubmitRedrawSettleMS.
+ // The engine reads claude.yaml from the layers dirs locate.
+ func NewFromConfig(cfg shuttleengine.Config, dirs configengine.Dirs) *Claude {
+-	return &Claude{dirs: dirs, now: time.Now, submitSettleMS: cfg.SubmitSettleMS, submitRedrawSettleMS: cfg.SubmitRedrawSettleMS, nameReads: &nameReadWarnings{}}
++	return &Claude{
++		dirs: dirs, now: time.Now, submitSettleMS: cfg.SubmitSettleMS, submitRedrawSettleMS: cfg.SubmitRedrawSettleMS, nameReads: &nameReadWarnings{},
++		transcriptWait: defaultBatchingTranscriptWait(),
++	}
+ }
+ 
+ // loadConfigOrRefuse loads claude.yaml from dirs.
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index c003d17a..b96218ce 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -297,6 +297,15 @@
+ // On Windows the state file takes the git-bash POSIX path of the events file's directory;
+ // git-bash converts it back for the native lym.
+ // The judgment reads the call's own input and the tail of the calling chain's transcript, `batchingTailBytes` long.
++// Claude Code writes a message's lines to the transcript only after its calls start,
++// so a fast call such as a Read or an Edit runs the hook before its own message is in the transcript.
++// The judgment therefore rereads the tail until a message holds the call.
++// It rereads every `batchingTranscriptTick` for at most `batchingTranscriptAttempts` ticks.
++// A call still missing then is left silent, as is the early call of a parallel message still being written.
++// It waits only for a chain with a state file and under its nudge cap.
++// It also waits only while the tail's first reading is at or above `context_tokens`.
++// While the call's message is not in the transcript yet, that reading is the previous message's,
++// so the one call whose message first reaches `context_tokens` is left silent.
+ // It groups the tail's assistant lines by message id, so the parallel calls of one message count as one message.
+ // A main-session call reads the session's transcript and its main-chain lines.
+ // A call carrying an agent id, from a subagent or fork, reads the sidechain lines of that agent's own transcript:
