@@ -33,7 +33,8 @@ A Claude session not started by lym, or lym sessions on a machine running an old
 ## Wanted (operator, 2026-11-07)
 
 - Heddle renders `.claude/settings.local.json` in every worktree, as it renders `CLAUDE.local.md`, so the operator can read what lym sets and every Claude session in the worktree gets it, one the operator starts by hand included.
-  It holds the hub-wide keys: `attribution` empty, and the model and effort defaults from lym's config.
+  It holds the hub-wide keys: `attribution` empty, the plugins and the deny list above.
+  The model and effort defaults are left to `agent-skills-and-effort`, which builds the config they come from and may render them through this target.
 - Fabric triggers it through the worktree seam, on a worktree it adds and on the prime at `fabric clone`, which `clone-prime-heddle-unrendered` makes work.
 - Heddle is the one place every per-worktree file lym seeds is declared, so a new one is a new heddle target.
 - Heddle merges into the file (operator, 2026-11-07): a key heddle sets overwrites the same key already there, and every other key stays, such as a permission Claude Code wrote on a "don't ask again".
