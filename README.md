@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-07 15:21 UTC; every age below is as of then.
+Rendered 2026-11-07 15:22 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -73,7 +73,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **A slimmer hubforge.CopyHub: packed templates, no walk per copy, two-process binding fold** | [`hubforge-slim-copy`](design-hubforge-slim-copy.md)<br>[Sketch](decision-hubforge-slim-copy.md) | darn · light | Code-Burler-Fix | neve | 1h<br>1h | fabric, testkit, git |
-| T10 | **internal/hubreconcile fixtures onto registered templates and CopyHub, with the held-lock test at tier 0** | [`hubreconcile-templates`](design-hubreconcile-templates.md)<br>[Sketch](decision-hubreconcile-templates.md) | darn · light | PR-Review | neve | 1h<br>1h | fabric, testkit, git |
+| T10 | **internal/hubreconcile fixtures onto registered templates and CopyHub, with the held-lock test at tier 0** | [`hubreconcile-templates`](design-hubreconcile-templates.md)<br>[Sketch](decision-hubreconcile-templates.md) | darn · light | Finalize | neve | 1h<br>1h | fabric, testkit, git |
 | T12 | **internal/battencli beamHub onto a registered template** | [`battencli-templates`](design-battencli-templates.md)<br>[Sketch](decision-battencli-templates.md) | darn · light | Finalize | neve | 1h<br>1h | fabric, testkit, git |
 | T13 | **Fold the overlapping internal/fabricengine tests the tier 1 report read** | [`fabric-test-folds`](design-fabric-test-folds.md)<br>[Sketch](decision-fabric-test-folds.md) | darn · light | Code-Burler-Review | neve | 1h<br>1h | fabric, testkit, git |
 
