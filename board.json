@@ -776,20 +776,21 @@
       "id": 1216,
       "handle": "E1",
       "slug": "claude-settings-model-effort",
-      "title": "Model and effort defaults on the claude-settings heddle target",
+      "title": "Lym sessions take every static Claude setting from the heddle-rendered file, model and effort defaults included",
       "kind": "note",
       "labels": [
         "enhancement",
         "claude",
-        "config"
+        "config",
+        "shuttle"
       ],
       "issues": [],
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "## Seen (board tidy and orch, 2026-11-07)\n\nHeddle's `claude-settings` target (`72390eb3`) renders `.claude/settings.local.json` in every hub worktree, and left model and effort defaults to be added to it later.\n`agent-skills-and-effort` (running when this note was written) builds effort per role and subagent from `agents.yaml`; its scope was not widened to the new target.\n\n## Wanted\n\n- Once `agent-skills-and-effort` lands, decide whether the machine-wide model and effort defaults belong as entries on the `claude-settings` target, beside or in place of what `agents.yaml` sets, so one source holds each value.\n- Planned to follow that landing; the operator agreed on 2026-11-07 to take it as its own entry rather than in the running task.\n",
+      "body": "## Seen (board tidy and orch, 2026-11-07)\n\nHeddle's `claude-settings` target (`72390eb3`) renders `.claude/settings.local.json` in every hub worktree, so a session the operator starts by hand gets lym's settings.\nLym's own sessions still get the same static settings a second time through the `--settings` document `internal/shuttleengine/claudeengine` writes per session (`settings.go`, `scope.go`): `attribution`, `promptSuggestionEnabled`, and per role `enabledPlugins` and a `permissions.deny`.\nThat commit also left model and effort defaults to be added to the target later.\n\n## Wanted (operator, 2026-11-07)\n\n- The heddle-rendered file is the one source of every setting that is the same for each session of a hub; lym's per-session `--settings` document stops carrying any of them.\n  `promptSuggestionEnabled: false` and every other static key the per-session document sets today move to shipped heddle entries.\n- The `--settings` document keeps only what cannot be the same in every worktree: hooks that name a run's own paths (the events file, creel's flag directory) and anything else bound to one session.\n- Per-role differences in `enabledPlugins` and `permissions.deny` are checked against the operator's rule that every agent keeps the same tool set; a difference that rule removes goes, and one that must stay is named in the landing with why.\n- The machine-wide model and effort defaults are rendered into the target from the `agents.yaml` that `agent-skills-and-effort` builds, so each value has one source; per-role effort stays on the launch.\n- Planned to follow the landing of `agent-skills-and-effort`, which changes the same launch code.\n",
       "created": "2026-11-07T14:57:36Z",
-      "revised": "2026-11-07T14:57:36Z"
+      "revised": "2026-11-07T15:07:50Z"
     }
   ],
   "prime_owner": "neve",
