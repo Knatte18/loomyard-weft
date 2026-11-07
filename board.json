@@ -720,21 +720,22 @@
       "id": 1196,
       "handle": "E5",
       "slug": "machine-claude-defaults",
-      "title": "Lym sets the Claude Code defaults it needs: no co-author, its own model and effort defaults",
+      "title": "Heddle renders .claude/settings.local.json: no co-author, lym's model and effort defaults",
       "kind": "note",
       "labels": [
         "enhancement",
         "claude",
         "config",
-        "shuttle"
+        "heddle",
+        "fabric"
       ],
       "issues": [],
       "depends_on": [],
       "isolated": false,
       "brief": "Attribution off and lym model/effort defaults, in session settings and by an operator-run setup verb",
-      "body": "## Seen\n\nThe operator (2026-11-07) wants lym to set up, on the machine it runs on, the Claude Code settings lym needs to work as the operator wants:\n\n1. No Claude co-author or session link in commits and pull requests; LoomYard has its own credit lines.\n2. Model defaults that match lym's own, so no session or subagent runs at an effort lym did not choose, such as `xhigh`.\n\nToday lym writes no `.claude/settings.json` into any worktree.\nIt writes a settings document per session and passes it with `--settings` (`internal/shuttleengine/claudeengine/settings.go`), and every such document already sets `attribution` to empty commit and pull-request texts (`780b1db4`), for run sessions and sessions opened in a hub alike.\nA checked-in `.claude/settings.json` is the repository's own, which is why another machine's repositories differ.\nA Claude session not started by lym, or lym sessions on a machine running an older lym, get none of this.\n\n`~/.claude/settings.json` sets `effortLevel` per model under `modelSettings`, yet subagents with no `effort` ran at `xhigh` in `comment-cleanup`; whether a setting reaches a subagent's default is what `agent-skills-and-effort` checks.\n\n## Idea\n\n- Lym sessions: keep everything in the per-session settings document, which reaches every session lym launches without writing a file into the user's repository; add the model and effort defaults from lym's config there.\n- Sessions outside lym: a lym verb the operator runs on a machine, such as `lym setup claude`, writes the same keys into `~/.claude/settings.json`, showing the diff and asking first; lym never edits the user's global settings unasked.\n",
+      "body": "## Seen\n\nThe operator (2026-11-07) wants lym to set up, on the machine it runs on, the Claude Code settings lym needs to work as the operator wants:\n\n1. No Claude co-author or session link in commits and pull requests; LoomYard has its own credit lines.\n2. Model defaults that match lym's own, so no session or subagent runs at an effort lym did not choose, such as `xhigh`.\n\nToday lym writes no `.claude/settings.json` into any worktree.\nIt writes a settings document per session and passes it with `--settings` (`internal/shuttleengine/claudeengine/settings.go`), and every such document already sets `attribution` to empty commit and pull-request texts (`780b1db4`), for run sessions and sessions opened in a hub alike.\nA checked-in `.claude/settings.json` is the repository's own, which is why another machine's repositories differ.\nA Claude session not started by lym, or lym sessions on a machine running an older lym, get none of this.\n\n`~/.claude/settings.json` sets `effortLevel` per model under `modelSettings`, yet subagents with no `effort` ran at `xhigh` in `comment-cleanup`; whether a setting reaches a subagent's default is what `agent-skills-and-effort` checks.\n\n## Wanted (operator, 2026-11-07)\n\n- Heddle renders `.claude/settings.local.json` in every worktree, as it renders `CLAUDE.local.md`, so the operator can read what lym sets and every Claude session in the worktree gets it, one the operator starts by hand included.\n  It holds the hub-wide keys: `attribution` empty, and the model and effort defaults from lym's config.\n- Fabric triggers it through the worktree seam, on a worktree it adds and on the prime at `fabric clone`, which `clone-prime-heddle-unrendered` makes work.\n- Heddle is the one place every per-worktree file lym seeds is declared, so a new one is a new heddle target.\n- Claude Code writes the permissions the operator approves into `settings.local.json`, so heddle merges its own keys into the file and keeps every other key; it never overwrites the file whole.\n  The file stays untracked, through the warp exclude list as `CLAUDE.local.md` does.\n- What differs per session or role stays in the `--settings` document: the hooks with a run's paths, the session scope and creel's hooks.\n",
       "created": "2026-11-07T12:11:05Z",
-      "revised": "2026-11-07T12:11:05Z"
+      "revised": "2026-11-07T12:16:04Z"
     },
     {
       "id": 1197,

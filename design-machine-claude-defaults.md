@@ -1,6 +1,6 @@
-# Lym sets the Claude Code defaults it needs: no co-author, its own model and effort defaults
+# Heddle renders .claude/settings.local.json: no co-author, lym's model and effort defaults
 
-`machine-claude-defaults` · Note · enhancement, claude, config, shuttle
+`machine-claude-defaults` · Note · enhancement, claude, config, heddle, fabric
 
 ## Seen
 
@@ -16,7 +16,12 @@ A Claude session not started by lym, or lym sessions on a machine running an old
 
 `~/.claude/settings.json` sets `effortLevel` per model under `modelSettings`, yet subagents with no `effort` ran at `xhigh` in `comment-cleanup`; whether a setting reaches a subagent's default is what `agent-skills-and-effort` checks.
 
-## Idea
+## Wanted (operator, 2026-11-07)
 
-- Lym sessions: keep everything in the per-session settings document, which reaches every session lym launches without writing a file into the user's repository; add the model and effort defaults from lym's config there.
-- Sessions outside lym: a lym verb the operator runs on a machine, such as `lym setup claude`, writes the same keys into `~/.claude/settings.json`, showing the diff and asking first; lym never edits the user's global settings unasked.
+- Heddle renders `.claude/settings.local.json` in every worktree, as it renders `CLAUDE.local.md`, so the operator can read what lym sets and every Claude session in the worktree gets it, one the operator starts by hand included.
+  It holds the hub-wide keys: `attribution` empty, and the model and effort defaults from lym's config.
+- Fabric triggers it through the worktree seam, on a worktree it adds and on the prime at `fabric clone`, which `clone-prime-heddle-unrendered` makes work.
+- Heddle is the one place every per-worktree file lym seeds is declared, so a new one is a new heddle target.
+- Claude Code writes the permissions the operator approves into `settings.local.json`, so heddle merges its own keys into the file and keeps every other key; it never overwrites the file whole.
+  The file stays untracked, through the warp exclude list as `CLAUDE.local.md` does.
+- What differs per session or role stays in the `--settings` document: the hooks with a run's paths, the session scope and creel's hooks.
