@@ -1,0 +1,559 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 042add56..90fd5f40 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -396,7 +396,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/friction/            the Tier 2 friction-note directive leaf, consumed by webster, burler, and loom
+ ├── internal/shell/               provider-invariant pane-shell mechanics leaf (pwsh + posix)
+ ├── internal/shellguard/          the one neutral table of the guards lym installs against shell commands, rendered by each engine
+-├── internal/commentlint/        the comment line-break lint: fixed-column wraps in the `//` comment blocks a diff creates, over a told worktree and base
++├── internal/commentlint/        the comment line lint: fixed-column wraps and over-long lines in the `//` comment blocks a diff creates, over a told worktree and base
+ ├── internal/patternlint/        the PATTERN headroom lint: growth of the overview past its headroom line, over a told worktree and base
+ ├── internal/impactset/          the impacted-set command a gate key's `diff` scope runs: the packages a diff reaches over the import graph, plus the `//lym:guard` tests, or a fallback reason to run the full verify
+ ├── internal/dotnetimpact/       the `dotnet` scoper's derivation: the test projects and test classes a C# diff or a card's targets reach, by type-name closure over the source, or a fallback reason to run the tier whole
+@@ -1142,7 +1142,7 @@ User-facing modules each get one `lym <module>` namespace:
+   `validate-description` runs the same checks the `Describe` row's `description` gate runs, standalone.
+   It checks `_lym/landing/summary.md`, with the same exit-code and findings-envelope contract.
+   `lint-comments [--base <commit>]` runs `internal/commentlint` over the worktree:
+-  it reports the fixed-column-wrapped breaks in `//` comment blocks that the working tree creates.
++  it reports the fixed-column-wrapped breaks and the over-long lines in `//` comment blocks that the working tree creates.
+   With `--base` it reports those that the range from `--base` to HEAD creates.
+   `lint-pattern [--base <commit>]` runs `internal/patternlint` over the worktree:
+   it compares `PATTERN.md` at HEAD with the working tree's, or at `--base` with HEAD's.
+diff --git a/internal/commentlint/doc.go b/internal/commentlint/doc.go
+index e01add1e..160e9b27 100644
+--- a/internal/commentlint/doc.go
++++ b/internal/commentlint/doc.go
+@@ -1,4 +1,7 @@
+-// Package commentlint finds fixed-column-wrapped line breaks in the `//` comment blocks a diff touches.
++// Package commentlint checks the `//` comment lines a diff touches against two line rules:
++// a line breaks only at a sentence or clause boundary, never at a fixed-column wrap,
++// and a line's text stays under LineLengthLimit characters.
++// Each finding names the rule it breaks.
+ //
+ // Lint is told the worktree and the base and resolves no cwd.
+ // With an empty base it diffs the working tree against HEAD, untracked `.go` files included;
+@@ -44,4 +47,17 @@
+ // A plural noun read as a verb (`, and the gate tests`) passes.
+ // A clause whose subject the opener set misses (`, and nothing runs`) is flagged and joined.
+ // A comment's line breaks are never a review finding.
++//
++// The line-length rule checks a line of a comment block only when it is new or changed:
++// a line whose text stands unchanged in a comment block of the base text is skipped.
++// It counts the characters, not bytes, of the text after `//` without the line's indentation or a list item's marker.
++// A line whose counted text is LineLengthLimit characters or more is a finding.
++// A heading, a blockquote (`>`) or a table row (`|`) is exempt.
++// A line holding a URL, code span or other unbroken word that alone reaches the limit is exempt too.
++// Directive comments, end-of-line comments and generated files are not checked.
++//
++// Bound: the line-length rule also asks where an over-long line is split.
++// The split goes at a semicolon, a colon or a comma before a clause-opening conjunction, never mid-phrase;
++// with no such place, the line is rewritten as shorter sentences.
++// That choice is not checked here; the wrapped-break check only judges the break a split leaves.
+ package commentlint
+diff --git a/internal/commentlint/linelength.go b/internal/commentlint/linelength.go
+new file mode 100644
+index 00000000..b5fdb8ed
+--- /dev/null
++++ b/internal/commentlint/linelength.go
+@@ -0,0 +1,74 @@
++// linelength.go declares the check of a `//` comment line's text length against the prose line-length limit.
++
++package commentlint
++
++import (
++	"regexp"
++	"strings"
++	"unicode/utf8"
++)
++
++// LineLengthLimit is the number of characters of comment text at which a `//` comment line becomes a finding.
++// A line one character shorter passes.
++const LineLengthLimit = 120
++
++var (
++	// codeSpanPattern matches one backticked code span.
++	codeSpanPattern = regexp.MustCompile("`[^`]*`")
++	// anyLevelHeadingPattern matches a markdown heading of any level, one to six `#`.
++	anyLevelHeadingPattern = regexp.MustCompile(`^#{1,6}(\s|$)`)
++)
++
++// countedText returns the text of a comment line that its length is measured on:
++// the text after `//`, without its indentation or a list item's marker.
++func countedText(line commentLine) string {
++	return listItemPattern.ReplaceAllString(strings.TrimLeft(line.raw(), " \t"), "")
++}
++
++// isExemptFromLength reports whether a line's counted text may run past the limit:
++// it is a heading, a blockquote or a table row,
++// or it holds a URL, code span or other unbroken word that alone reaches the limit.
++func isExemptFromLength(text string) bool {
++	if anyLevelHeadingPattern.MatchString(text) || strings.HasPrefix(text, ">") || strings.HasPrefix(text, "|") {
++		return true
++	}
++	for _, span := range codeSpanPattern.FindAllString(text, -1) {
++		if utf8.RuneCountInString(span) >= LineLengthLimit {
++			return true
++		}
++	}
++	for _, word := range strings.Fields(text) {
++		if utf8.RuneCountInString(word) >= LineLengthLimit {
++			return true
++		}
++	}
++	return false
++}
++
++// findNewLongLines returns the comment lines of path's new text whose counted text reaches LineLengthLimit.
++// A line that stands unchanged in a comment block of baseText is not new and is skipped.
++// Each occurrence of a line in the base excuses one occurrence in the new text.
++func findNewLongLines(path, baseText, newText string) []Finding {
++	known := map[string]int{}
++	for _, block := range commentBlocks(baseText) {
++		for _, line := range block {
++			known[strings.TrimSpace(line.literal)]++
++		}
++	}
++	var findings []Finding
++	for _, block := range commentBlocks(newText) {
++		for _, line := range block {
++			text := countedText(line)
++			literal := strings.TrimSpace(line.literal)
++			if known[literal] > 0 {
++				known[literal]--
++				continue
++			}
++			if utf8.RuneCountInString(text) < LineLengthLimit || isExemptFromLength(text) {
++				continue
++			}
++			findings = append(findings, Finding{File: path, Line: line.number, Rule: RuleLineLength, Text: literal})
++		}
++	}
++	return findings
++}
+diff --git a/internal/commentlint/lint.go b/internal/commentlint/lint.go
+index 1ab13aa3..dab5bf36 100644
+--- a/internal/commentlint/lint.go
++++ b/internal/commentlint/lint.go
+@@ -1,24 +1,44 @@
+-// lint.go declares Lint and the classification of a comment block's line breaks over a base and a new text of one file.
++// lint.go declares Lint, its Finding, and the classification of a comment block's line breaks over two texts of one file.
+ 
+ package commentlint
+ 
+ import (
++	"fmt"
+ 	"go/scanner"
+ 	"go/token"
+ 	"regexp"
++	"slices"
+ 	"strings"
+ )
+ 
+-// Finding is one line of a `//` comment block that ends at a fixed-column wrap.
++// Rule names the comment line rule a Finding breaks.
++type Rule string
++
++// The comment line rules Lint checks.
++const (
++	// RuleWrappedBreak is a line that ends at a fixed-column wrap instead of a sentence or clause boundary.
++	RuleWrappedBreak Rule = "wrapped break"
++	// RuleLineLength is a line whose text reaches LineLengthLimit characters.
++	RuleLineLength Rule = "line length"
++)
++
++// Finding is one line of a `//` comment block that breaks a comment line rule.
+ type Finding struct {
+ 	// File is the slash-separated path relative to the worktree.
+ 	File string
+ 	// Line is the 1-based line number in the new text.
+ 	Line int
++	// Rule is the rule the line breaks.
++	Rule Rule
+ 	// Text is the comment line, `//` included, without surrounding whitespace.
+ 	Text string
+ }
+ 
++// String renders the finding as `file:line: rule: text`.
++func (f Finding) String() string {
++	return fmt.Sprintf("%s:%d: %s: %s", f.File, f.Line, f.Rule, f.Text)
++}
++
+ var (
+ 	generatedPattern   = regexp.MustCompile(`(?m)^// Code generated .* DO NOT EDIT\.?\s*$`)
+ 	directivePattern   = regexp.MustCompile(`^(go:|lym:|testtiming:|nolint\b)`)
+@@ -39,7 +59,9 @@ func wordSet(words ...string) map[string]bool {
+ 	return set
+ }
+ 
+-// Lint returns the new fixed-column-wrapped breaks in `//` comment blocks of the `.go` files that differ in worktree.
++// Lint returns the comment line findings of the `.go` files that differ in worktree:
++// the new fixed-column-wrapped breaks in their `//` comment blocks,
++// and the new or changed comment lines whose text reaches LineLengthLimit.
+ // An empty base compares the working tree, untracked files included, against HEAD;
+ // a base commit compares it against HEAD.
+ // Findings are ordered by file path, then line.
+@@ -54,11 +76,22 @@ func Lint(worktree, base string) ([]Finding, error) {
+ 		if err != nil {
+ 			return nil, err
+ 		}
+-		findings = append(findings, findNewWrappedBreaks(change.path, baseText, newText)...)
++		findings = append(findings, findFileFindings(change.path, baseText, newText)...)
+ 	}
+ 	return findings, nil
+ }
+ 
++// findFileFindings returns the findings of every rule in path's new text against its base text, ordered by line.
++// It returns nil for a generated file.
++func findFileFindings(path, baseText, newText string) []Finding {
++	if generatedPattern.MatchString(newText) {
++		return nil
++	}
++	findings := append(findNewWrappedBreaks(path, baseText, newText), findNewLongLines(path, baseText, newText)...)
++	slices.SortStableFunc(findings, func(a, b Finding) int { return a.Line - b.Line })
++	return findings
++}
++
+ // commentLine is one `//` line of a comment block.
+ type commentLine struct {
+ 	number int
+@@ -285,11 +318,7 @@ func isFiniteVerbCandidate(word string) bool {
+ 
+ // findNewWrappedBreaks returns the lines of path's new text that end at a break:
+ // a break that is not semantic and does not carry over from baseText.
+-// It returns nil for a generated file.
+ func findNewWrappedBreaks(path, baseText, newText string) []Finding {
+-	if generatedPattern.MatchString(newText) {
+-		return nil
+-	}
+ 	known := newBaseBreaks(baseText)
+ 	var findings []Finding
+ 	for _, block := range commentBlocks(newText) {
+@@ -302,7 +331,7 @@ func findNewWrappedBreaks(path, baseText, newText string) []Finding {
+ 				if endsSemanticBreak(before, after) || known.carriesOver(before, after) {
+ 					continue
+ 				}
+-				findings = append(findings, Finding{File: path, Line: before.number, Text: strings.TrimSpace(before.literal)})
++				findings = append(findings, Finding{File: path, Line: before.number, Rule: RuleWrappedBreak, Text: strings.TrimSpace(before.literal)})
+ 			}
+ 		}
+ 	}
+diff --git a/internal/commentlint/lint_test.go b/internal/commentlint/lint_test.go
+index 461616a0..dfa16d7a 100644
+--- a/internal/commentlint/lint_test.go
++++ b/internal/commentlint/lint_test.go
+@@ -1,4 +1,4 @@
+-// lint_test.go drives the break classification over base and new text pairs.
++// lint_test.go drives the break classification and the line-length check over base and new text pairs.
+ 
+ package commentlint
+ 
+@@ -15,15 +15,22 @@ func source(commentLines ...string) string {
+ 	return "package p\n\n" + strings.Join(commentLines, "\n") + "\nfunc F() {}\n"
+ }
+ 
+-// flaggedLines returns the line numbers of newText that the wrapped-break check flags.
+-func flaggedLines(baseText, newText string) []int {
++// flaggedLines returns the line numbers of newText that rule flags.
++func flaggedLines(rule Rule, baseText, newText string) []int {
+ 	var lines []int
+-	for _, finding := range findNewWrappedBreaks("p.go", baseText, newText) {
+-		lines = append(lines, finding.Line)
++	for _, finding := range findFileFindings("p.go", baseText, newText) {
++		if finding.Rule == rule {
++			lines = append(lines, finding.Line)
++		}
+ 	}
+ 	return lines
+ }
+ 
++// proseOfLength returns a sentence of n characters made of short words; n is at least five.
++func proseOfLength(n int) string {
++	return strings.Repeat("y", n%5) + strings.Repeat(" word", n/5)[1:] + "."
++}
++
+ func TestFindNewWrappedBreaks(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -121,13 +128,106 @@ func TestFindNewWrappedBreaks(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 
+-			if got := flaggedLines(tt.base, tt.new); !slices.Equal(got, tt.want) {
++			if got := flaggedLines(RuleWrappedBreak, tt.base, tt.new); !slices.Equal(got, tt.want) {
+ 				t.Errorf("flagged lines = %v; want %v", got, tt.want)
+ 			}
+ 		})
+ 	}
+ }
+ 
++func TestFindNewLongLines(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	atLimit := "// " + proseOfLength(LineLengthLimit)
++	longURL := "https://example.com/" + strings.Repeat("a", LineLengthLimit)
++	longSpan := "`" + proseOfLength(LineLengthLimit) + "`"
++
++	tests := []struct {
++		name string
++		base string
++		new  string
++		want []int
++	}{
++		{"a new line one character under the limit, the space after the slashes uncounted, passes", "", source("// " + proseOfLength(LineLengthLimit-1)), nil},
++		{"a new line at the limit is flagged", "", source(atLimit), []int{3}},
++		{"indentation and a list marker are not counted", "", source("//   - " + proseOfLength(LineLengthLimit-1)), nil},
++		{"a list item at the limit is flagged", "", source("//   - " + proseOfLength(LineLengthLimit)), []int{3}},
++		{"an indented code line at the limit is flagged", "", source("//\t" + proseOfLength(LineLengthLimit)), []int{3}},
++		{"characters are counted, not bytes", "", source("// " + strings.Repeat("é", LineLengthLimit-1)), nil},
++		{"a line carried over unchanged is not flagged", source(atLimit), source("// a new first line.", atLimit), nil},
++		{"a line an edit changes is flagged", source(atLimit), source(atLimit + "!"), []int{3}},
++		{"a second copy of a long line the base holds once is flagged", source(atLimit), source(atLimit, atLimit), []int{4}},
++		{"a long line moved within the file is not flagged", source(atLimit, "// a."), source("// a.", atLimit), nil},
++		{"a heading is exempt", "", source("// # " + proseOfLength(LineLengthLimit)), nil},
++		{"a level-two heading is exempt", "", source("// ## " + proseOfLength(LineLengthLimit)), nil},
++		{"a blockquote is exempt", "", source("// > " + proseOfLength(LineLengthLimit)), nil},
++		{"a table row is exempt", "", source("// | " + proseOfLength(LineLengthLimit) + " |"), nil},
++		{"a URL that alone reaches the limit is exempt", "", source("// See " + longURL + " for it."), nil},
++		{"a code span that alone reaches the limit is exempt", "", source("// Run " + longSpan + " once."), nil},
++		{"a directive line is not checked", "", source("//lym:" + proseOfLength(LineLengthLimit)), nil},
++		{"an end-of-line comment is not checked", "", "package p\n\nvar x = 1 // " + proseOfLength(LineLengthLimit) + "\n", nil},
++		{"a generated file is never flagged", "", "// Code generated by tool. DO NOT EDIT.\n\n" + source(atLimit), nil},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			if got := flaggedLines(RuleLineLength, tt.base, tt.new); !slices.Equal(got, tt.want) {
++				t.Errorf("flagged lines = %v; want %v", got, tt.want)
++			}
++		})
++	}
++}
++
++func TestFindFileFindingsOrdersByLine(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	atLimit := "// " + proseOfLength(LineLengthLimit)
++	tests := []struct {
++		name string
++		new  string
++		want []Finding
++	}{
++		{
++			"a long line before a wrapped break comes first",
++			source(atLimit, "// a wrapped", "// line."),
++			[]Finding{
++				{File: "p.go", Line: 3, Rule: RuleLineLength, Text: atLimit},
++				{File: "p.go", Line: 4, Rule: RuleWrappedBreak, Text: "// a wrapped"},
++			},
++		},
++		{
++			"a wrapped break before a long line comes first",
++			source("// a wrapped", "// line.", atLimit),
++			[]Finding{
++				{File: "p.go", Line: 3, Rule: RuleWrappedBreak, Text: "// a wrapped"},
++				{File: "p.go", Line: 5, Rule: RuleLineLength, Text: atLimit},
++			},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			if got := findFileFindings("p.go", "", tt.new); !slices.Equal(got, tt.want) {
++				t.Errorf("findFileFindings() = %+v; want %+v", got, tt.want)
++			}
++		})
++	}
++}
++
++func TestFindingString(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	finding := Finding{File: "a/b.go", Line: 7, Rule: RuleLineLength, Text: "// text"}
++	if got, want := finding.String(), "a/b.go:7: line length: // text"; got != want {
++		t.Errorf("Finding.String() = %q; want %q", got, want)
++	}
++}
++
+ func TestParseNameStatus(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/gatecli/failurereport.go b/internal/gatecli/failurereport.go
+index 8a009062..d207aa2e 100644
+--- a/internal/gatecli/failurereport.go
++++ b/internal/gatecli/failurereport.go
+@@ -38,7 +38,7 @@ const (
+ 
+ // lintWayForward is the fix each lint step's findings call for.
+ var lintWayForward = map[string]string{
+-	gateslot.LintComments: "break each such comment at its sentence boundaries, one sentence per line",
++	gateslot.LintComments: "break each wrapped comment at its sentence boundaries, one sentence per line, and split each over-long one into shorter sentences",
+ 	gateslot.LintPattern:  patternlint.WayForward,
+ }
+ 
+@@ -117,7 +117,7 @@ func runLints(root string, names []string) []failedRun {
+ 			var found []commentlint.Finding
+ 			found, err = commentlint.Lint(root, "")
+ 			for _, finding := range found {
+-				findings = append(findings, fmt.Sprintf("%s:%d: %s", finding.File, finding.Line, finding.Text))
++				findings = append(findings, finding.String())
+ 			}
+ 		case gateslot.LintPattern:
+ 			finding, found, lintErr := patternlint.Lint(root, "")
+diff --git a/internal/gatecli/test_integration_test.go b/internal/gatecli/test_integration_test.go
+index 05690b80..947c082e 100644
+--- a/internal/gatecli/test_integration_test.go
++++ b/internal/gatecli/test_integration_test.go
+@@ -1458,7 +1458,7 @@ func TestGateTest_Scenario(t *testing.T) {
+ 		}
+ 		for _, want := range []string{
+ 			"lint comments (1 finding); way forward: " + lintWayForward[gateslot.LintComments] + ":",
+-			"  wrapped.go:3: // a fresh comment that wraps in the",
++			"  wrapped.go:3: wrapped break: // a fresh comment that wraps in the",
+ 			gateslot.FailedRunsPrefix + "lint comments (1 finding); the exit code is lint comments's",
+ 		} {
+ 			if !strings.Contains(stdout, want) {
+diff --git a/internal/gateslot/template.yaml b/internal/gateslot/template.yaml
+index b86c9034..652a59a4 100644
+--- a/internal/gateslot/template.yaml
++++ b/internal/gateslot/template.yaml
+@@ -14,7 +14,7 @@ tiers: {}
+ # Gate key to the tiers that site runs and the scope it runs them over, written {tiers: [<n>...], scope: card|diff|all}.
+ # The keys lym reads: card and batch (scope card, the card's own packages), webster, parent-align, finalize and adopt (scope all, the whole tree), and webster-fix, darn-write, code-burler-fix and pr-review (scope diff, the diff from the merge base).
+ # The scope card is only for the card and batch keys.
+-# A key may also hold lints, the lint steps its call runs after the tiers against HEAD: comments (fixed-column-wrapped breaks in // comments) and pattern (PATTERN.md grown past its headroom line).
++# A key may also hold lints, the lint steps its call runs after the tiers against HEAD: comments (fixed-column-wrapped breaks and over-long lines in // comments) and pattern (PATTERN.md grown past its headroom line).
+ # The card key alone may also hold fixer, a model-spec such as sonnet[medium]: the cold fixer an agent's red lym gate test --gate card call hands its failures to; "" turns it off.
+ # No tier list may be empty, and a tier a key names must be declared above when the gate runs.
+ gates:
+diff --git a/internal/gateslot/tiers.go b/internal/gateslot/tiers.go
+index 001503d2..24639d36 100644
+--- a/internal/gateslot/tiers.go
++++ b/internal/gateslot/tiers.go
+@@ -104,7 +104,8 @@ const (
+ 
+ // Lint step names a gate key's lints may hold.
+ const (
+-	// LintComments is the comment line-break lint: it flags fixed-column wraps added to `//` blocks versus HEAD.
++	// LintComments is the comment line lint.
++	// It flags fixed-column wraps and over-long lines added to `//` blocks versus HEAD.
+ 	LintComments = "comments"
+ 	// LintPattern is the PATTERN headroom lint: it flags PATTERN.md growth past its headroom line versus HEAD.
+ 	LintPattern = "pattern"
+diff --git a/internal/loomcli/lintcomments.go b/internal/loomcli/lintcomments.go
+index 7856c1c4..71b12be7 100644
+--- a/internal/loomcli/lintcomments.go
++++ b/internal/loomcli/lintcomments.go
+@@ -1,22 +1,20 @@
+-// lintcomments.go implements the `lint-comments` loom verb: a lint of the comment line breaks in the current change.
++// lintcomments.go implements the `lint-comments` loom verb: a lint of the comment lines in the current change.
+ // It calls `commentlint.Lint`, the check the gate's `comments` lint step also runs inside `lym gate test`.
+ 
+ package loomcli
+ 
+ import (
+-	"fmt"
+-
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/commentlint"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/spf13/cobra"
+ )
+ 
+-// renderCommentFindings renders each finding as `file:line: text`, the payload under the envelope's "findings" key.
++// renderCommentFindings renders each finding as `file:line: rule: text`, the payload under the envelope's "findings" key.
+ func renderCommentFindings(findings []commentlint.Finding) []string {
+ 	rendered := make([]string, 0, len(findings))
+ 	for _, f := range findings {
+-		rendered = append(rendered, fmt.Sprintf("%s:%d: %s", f.File, f.Line, f.Text))
++		rendered = append(rendered, f.String())
+ 	}
+ 	return rendered
+ }
+@@ -28,15 +26,16 @@ func (c *loomCLI) lintCommentsCmd() *cobra.Command {
+ 
+ 	cmd := &cobra.Command{
+ 		Use:         "lint-comments",
+-		Short:       "find fixed-column-wrapped line breaks in the comments the current change creates",
++		Short:       "find fixed-column-wrapped breaks and over-long lines in the comments the current change creates",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `lint-comments runs commentlint.Lint over the current worktree -- the check
+ a gate key's comments lint step also runs inside lym gate test -- and reports the result as one JSON
+ envelope. Without --base it lints the working tree against HEAD, untracked Go
+ files included; with --base it lints that commit against HEAD. A finding is
+ a line of a // comment block that a new break leaves ending in the middle of
+-a sentence; the envelope lists each as file:line: text. It takes no
+-arguments.
++a sentence, or a new or changed line whose text reaches the comment
++line-length limit; the envelope lists each as file:line: rule: text. It
++takes no arguments.
+ 
+ Example:
+   lym loom lint-comments
+@@ -54,7 +53,7 @@ Example:
+ 				return nil
+ 			}
+ 			if len(findings) > 0 {
+-				clihelp.SetExit(cmd.Context(), output.ErrFields(out, "loom: comments break a sentence at a fixed column", map[string]any{
++				clihelp.SetExit(cmd.Context(), output.ErrFields(out, "loom: comment lines wrap at a fixed column or run past the line-length limit", map[string]any{
+ 					"findings": renderCommentFindings(findings),
+ 				}))
+ 				return nil
+diff --git a/internal/loomcli/lintcomments_integration_test.go b/internal/loomcli/lintcomments_integration_test.go
+index 4f3dc3b3..5fbeff17 100644
+--- a/internal/loomcli/lintcomments_integration_test.go
++++ b/internal/loomcli/lintcomments_integration_test.go
+@@ -64,7 +64,7 @@ func TestLintCommentsCmd_OverARepository(t *testing.T) {
+ 			t.Fatalf("exit code = %d, ok = %v; want 1, false", exitCode, env.OK)
+ 		}
+ 		findings, _ := env.Raw["findings"].([]any)
+-		if want := []any{"wrapped.go:3: // a comment that wraps in the"}; !slices.Equal(findings, want) {
++		if want := []any{"wrapped.go:3: wrapped break: // a comment that wraps in the"}; !slices.Equal(findings, want) {
+ 			t.Errorf("findings = %v; want %v", findings, want)
+ 		}
+ 	})
+diff --git a/internal/loomshed/verifygate.go b/internal/loomshed/verifygate.go
+index 6c882696..cdb59b28 100644
+--- a/internal/loomshed/verifygate.go
++++ b/internal/loomshed/verifygate.go
+@@ -130,7 +130,7 @@ func NewVerifyGate(worktreeRoot, verifyDir, siteLabel string, command, mergeBase
+ 				return shuttleengine.GateResult{}, fmt.Errorf("loomshed: verify gate: lint the comments: %w", err)
+ 			}
+ 			if len(commentFindings) > 0 {
+-				logger.Warn("loomshed: verify gate found fixed-column comment wraps", "gate", siteLabel, "attempt", attempt, "count", len(commentFindings))
++				logger.Warn("loomshed: verify gate found comment line findings", "gate", siteLabel, "attempt", attempt, "count", len(commentFindings))
+ 				return shuttleengine.GateResult{Passed: false, Findings: commentLintFindings(commentFindings)}, nil
+ 			}
+ 		}
+@@ -183,9 +183,11 @@ func headroomFindings(f pattern.Finding) string {
+ // commentLintFindings renders the comment lint's findings as one line each, file and line first.
+ func commentLintFindings(findings []commentlint.Finding) string {
+ 	var b strings.Builder
+-	b.WriteString("The round added fixed-column-wrapped comment lines, so no test ran. Break each comment at sentence boundaries, one sentence per line:\n\n")
++	fmt.Fprintf(&b, "The round added comment lines that wrap at a fixed column or reach %d characters, so no test ran. "+
++		"Break each wrapped comment at sentence boundaries, one sentence per line, "+
++		"and split each over-long line at a clause boundary or rewrite it as shorter sentences:\n\n", commentlint.LineLengthLimit)
+ 	for _, f := range findings {
+-		fmt.Fprintf(&b, "%s:%d: %s\n", f.File, f.Line, f.Text)
++		fmt.Fprintln(&b, f.String())
+ 	}
+ 	return b.String()
+ }
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index a145a0fe..ffdee33d 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -116,7 +116,7 @@
+ // The prompt carries it as one step, `lym gate test --gate card --card <card id>`, from `gateslot.Config.AgentGateCall`.
+ // The call carries no `--wait` since an agent runs it.
+ // The call itself runs the lint steps the hub's `card` key lists:
+-// the template's are the comment line-break lint and the PATTERN headroom lint.
++// the template's are the comment line lint and the PATTERN headroom lint.
+ // The gate call computes the card's packages and runs the guard step itself.
+ // Go therefore renders no package list and scans for no guard test.
+ // The batch gate is the hub's `batch` gate call, `lym gate test --gate batch`.
