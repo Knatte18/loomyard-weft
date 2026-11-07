@@ -1,26 +1,26 @@
-# shuttle: bound the skill-load hold's back-off and pin two open turns
+# Pin the skill-load hold's open-turn and back-off behavior in tests
 
-The landing of `skill-load-timeout-sends-prompt` (`23518a94`) left two checks open.
-They covered whether `TestStartup_LoadTurnAPIError` in `internal/shuttleengine/startup_test.go` pins every hold behavior of `loadSkillTurn`,
-and whether an open load turn past `SkillLoadTimeout` can skip its skills or let the prompt be typed.
-Read against `internal/shuttleengine/loadturn.go`, most behaviors already had a pinning row:
-busy session, turn start during the back-off, dying pane, failed send, one notice, no notice for an interactive run, notifier failure, model rejected, interrupted turn, and an open turn that never ends.
-This change closes the gaps it found, in the test alone; no production code changes.
+The skill-load hold landed with two checks left open: whether `TestStartup_LoadTurnAPIError` in `internal/shuttleengine/startup_test.go` pins every hold behavior, and whether an open load turn past the timeout neither skips its skills nor lets the prompt be typed.
+Reading the table against `loadSkillTurn` in `internal/shuttleengine/loadturn.go` found two unpinned behaviors and a back-off that was checked only from below.
+This change adds rows and bounds; it changes no production code.
 
-## Behavior pinned
+## What changes
 
-- **Back-off from above.**
-  The table checked the start's virtual time only from below.
-  A back-off that tripled instead of doubling, or one that overshot `loadHoldBackoffCeiling` while staying under the loose 25-minute bound, still passed.
-  Every row whose start succeeds now also takes less than `wantHeld` plus one `apiErrorRetryBackoff`.
-  This pins the doubling, the ceiling and the busy session's next back-off exactly.
-  The per-row `wantHeldAtMost` field it replaces is gone.
-- **An open turn past its timeout that then ends normally** loads its skills: no skill is skipped and the prompt follows.
-  Before, only an open turn that ended on an API error past the timeout had a row.
-- **An open turn after a hold** fails the start as `timeout` only at the run's deadline moved by the hold, at least one hour plus one back-off.
-  Before, the deadline row had no preceding API error, so the move the hold applies to the deadline went unchecked.
+- A new row covers an open turn past its timeout that then ends.
+  The skills load and the prompt follows, so the turn is neither skipped nor does the prompt get typed early.
+- A new row covers an open turn after a hold.
+  The start fails with a timeout at the deadline the hold moved (`time.Hour + apiErrorRetryBackoff`), and the hold-over line is logged.
+- A start that succeeds must now take less than `wantHeld` plus one `apiErrorRetryBackoff`.
+  A back-off longer than the scheduled one fails the row.
+  This replaces the per-row `wantHeldAtMost` field, which only the ceiling row used.
+- A failing start with `wantFailedAfter` set is bounded from above by the same margin.
 
 ## Design decisions
 
-- One shared upper bound replaces per-row limits, because every succeeding row's wait is predictable from its back-off schedule.
-  The slack of one back-off covers the poll intervals between turns.
+- One shared upper bound in the test body replaces a hand-set maximum per row, so each new row is bounded without extra fields.
+- The remaining behaviors from the first check (busy session, turn start during the back-off, dying pane, failed send, notice once, no notice when interactive, notifier failure, rejected model, interrupted turn) already had rows and are unchanged.
+
+## To check
+
+- Nothing was launched for real, as the task specified.
+  The rows run against the fake clock and pane in `TestStartup_LoadTurnAPIError`.
