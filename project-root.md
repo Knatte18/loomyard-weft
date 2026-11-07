@@ -23,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 | T4 | **fabric clone leaves the prime without heddle's rendered files**<br>• Made fires before the config reconcile and its warning is dropped | [`clone-prime-heddle-unrendered`](design-clone-prime-heddle-unrendered.md) | darn · light | Darn-Write | neve | 31m<br>24m | fabric, heddle |
 | T5 | **Defects the comment cleanup found but left: stale headings, dead helper, stencil paths, joint edits** | [`comment-cleanup-leftovers`](design-comment-cleanup-leftovers.md) | darn · light | Drift-Recheck | neve | 30m<br>24m | config, cwd, stencil, docs |
 | T6 | **A Codex seat that read its skills is logged as not having loaded them**<br>• All five skills logged not loaded though the rollout shows SKILL.md read; cause not found | [`codex-skill-load-false-missing`](design-codex-skill-load-false-missing.md) | darn · light | Darn-Write | neve | 23h<br>24m | shuttle, codex |
-| T7 | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | darn · light | Drift-Verify | neve | 1d<br>24m | tools, claude |
+| T7 | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | darn · light | Code-Bouncer | neve | 1d<br>24m | tools, claude |
 
 ### Ready (0)
 
