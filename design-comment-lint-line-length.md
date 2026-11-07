@@ -19,4 +19,3 @@ Where the skill's rule cannot be checked mechanically, check the part that can a
 
 Requested by the `comment-cleanup` writer on the operator's word (2026-11-07).
 Scribe's rule landed as `6f061ba8f4bc` and is deployed (2026-11-07); read it from `scribe:prose`, under "Line breaks".
-Release only after `comment-cleanup` has landed.

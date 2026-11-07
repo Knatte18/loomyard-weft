@@ -694,9 +694,9 @@
       ],
       "isolated": false,
       "brief": "lint-comments enforces the line-length rule scribe:prose sets, once it lands",
-      "body": "## Seen\n\n`lym loom lint-comments` (`internal/commentlint`) checks only where a `//` comment line breaks.\nNothing bounds a comment line's length.\n\n## Wanted\n\n`scribe:prose` decides how prose is written; `internal/commentlint` only enforces its rules mechanically (operator, 2026-11-07).\nScribe's task `prose-line-length-rule` adds a line-length rule under \"Line breaks\".\nOnce that rule has landed and is deployed, make the lint check `//` comment lines the diff adds or changes against it, as the skill words it: the limit, what is counted and what is exempt.\nA finding fails the gate as the existing break findings do.\nWhere the skill's rule cannot be checked mechanically, check the part that can and state the rest in the package's `doc.go`.\n\nRequested by the `comment-cleanup` writer on the operator's word (2026-11-07).\nScribe's rule landed as `6f061ba8f4bc` and is deployed (2026-11-07); read it from `scribe:prose`, under \"Line breaks\".\nRelease only after `comment-cleanup` has landed.\n",
+      "body": "## Seen\n\n`lym loom lint-comments` (`internal/commentlint`) checks only where a `//` comment line breaks.\nNothing bounds a comment line's length.\n\n## Wanted\n\n`scribe:prose` decides how prose is written; `internal/commentlint` only enforces its rules mechanically (operator, 2026-11-07).\nScribe's task `prose-line-length-rule` adds a line-length rule under \"Line breaks\".\nOnce that rule has landed and is deployed, make the lint check `//` comment lines the diff adds or changes against it, as the skill words it: the limit, what is counted and what is exempt.\nA finding fails the gate as the existing break findings do.\nWhere the skill's rule cannot be checked mechanically, check the part that can and state the rest in the package's `doc.go`.\n\nRequested by the `comment-cleanup` writer on the operator's word (2026-11-07).\nScribe's rule landed as `6f061ba8f4bc` and is deployed (2026-11-07); read it from `scribe:prose`, under \"Line breaks\".\n",
       "created": "2026-11-07T09:23:05Z",
-      "revised": "2026-11-07T11:03:50Z",
+      "revised": "2026-11-07T11:03:56Z",
       "profile": "light"
     },
     {
