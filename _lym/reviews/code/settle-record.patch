@@ -1,0 +1,288 @@
+diff --git a/internal/shuttleengine/codexengine/doc.go b/internal/shuttleengine/codexengine/doc.go
+index a4c01d28..d38f8e61 100644
+--- a/internal/shuttleengine/codexengine/doc.go
++++ b/internal/shuttleengine/codexengine/doc.go
+@@ -72,9 +72,11 @@
+ // a hook that fails to run fails open in Codex, so a guard is a guardrail and not a barrier.
+ //
+ // A skill `<plugin>:<name>` is a file the model reads:
+-// the load line names the newest version's skills/<name>/SKILL.md under codex.yaml's skill_roots by absolute path,
+-// and a tool call of the load turn naming that tail in the rollout reads the skill loaded;
+-// a skill under no root is reported unknown.
++// the load line names the newest version's skills/<name>/SKILL.md under codex.yaml's skill_roots by absolute path.
++// A tool call of the load turn that names that tail in the rollout reads the skill loaded.
++// So does a tool call output that holds the whole file.
++// A read through a path the model built in a loop leaves such an output.
++// A skill under no root is reported unknown.
+ //
+ // A run whose engine is told a hub board directory carries creel's hook delivery and is marked CreelHooks;
+ // so creel hands its mail over at the session's boundaries and wakes it when idle.
+diff --git a/internal/shuttleengine/codexengine/skillload.go b/internal/shuttleengine/codexengine/skillload.go
+index bb89d8a2..429013d3 100644
+--- a/internal/shuttleengine/codexengine/skillload.go
++++ b/internal/shuttleengine/codexengine/skillload.go
+@@ -1,5 +1,5 @@
+ // skillload.go implements Codex's one-turn skill load: the model reads and follows each SKILL.md by absolute path,
+-// and the rollout that the turn end names says which of those files a tool call of that turn named.
++// and the rollout that the turn end names says which of those files a tool call of that turn named or printed.
+ // A skill is a file the model reads, since Codex's own skill discovery outside a repository is untested,
+ // and a typed `$` opens a popup that takes the next Enter.
+ 
+@@ -50,12 +50,14 @@ func skillLoadOver(skills, roots []string) string {
+ }
+ 
+ // ClassifySkillLoad sorts skills into loaded, missing and unknown, from the rollout turnEnd's transcript_path names.
+-// The latest user message that is a load message starts the turn, and only the tool calls after it count;
++// The latest user message that is a load message starts the turn, and only the tool calls and outputs after it count;
+ // a load message is recognised by its fixed text, not by the paths it names,
+ // so a skill file that appeared after the launch does not hide it.
+-// A skill is unknown when no skill root holds it;
+-// it is loaded when a call names its skills/<name>/SKILL.md tail;
+-// otherwise it is missing.
++// A skill is unknown when no skill root holds it.
++// It is loaded when a call names its skills/<name>/SKILL.md tail.
++// It is also loaded when the calls' outputs hold the whole of its SKILL.md.
++// A read through a path built in a loop leaves such an output.
++// Otherwise it is missing.
+ // The report is unverified when the rollout cannot be read or holds no load message.
+ func (c *Codex) ClassifySkillLoad(turnEnd shuttleengine.Event, skills []string) shuttleengine.SkillLoadReport {
+ 	data, err := os.ReadFile(payloadField(turnEnd.Raw, payloadTranscriptPath))
+@@ -63,17 +65,17 @@ func (c *Codex) ClassifySkillLoad(turnEnd shuttleengine.Event, skills []string)
+ 		return shuttleengine.SkillLoadReport{}
+ 	}
+ 	roots := c.skillRoots()
+-	calls, found := loadTurnCalls(data)
++	turn, found := readLoadTurn(data)
+ 	if !found {
+ 		return shuttleengine.SkillLoadReport{}
+ 	}
+ 	report := shuttleengine.SkillLoadReport{Verified: true}
+ 	for _, skill := range skills {
+-		tail := skillFileTail(skill)
++		file := skillPath(skill, roots)
+ 		switch {
+-		case skillPath(skill, roots) == "":
++		case file == "":
+ 			report.Unknown = append(report.Unknown, skill)
+-		case slices.ContainsFunc(calls, func(call string) bool { return strings.Contains(call, tail) }):
++		case turn.namesPath(skillFileTail(skill)) || turn.printedFile(file):
+ 			report.Loaded = append(report.Loaded, skill)
+ 		default:
+ 			report.Missing = append(report.Missing, skill)
+@@ -235,11 +237,39 @@ const (
+ // toolCallPayloads are the response item types that carry a tool call and its arguments.
+ var toolCallPayloads = []string{"function_call", "custom_tool_call", "local_shell_call"}
+ 
+-// loadTurnCalls returns the raw payload of every tool call after the latest load message in the rollout data.
++// toolOutputPayloads are the response item types that carry what a tool call printed.
++var toolOutputPayloads = []string{"function_call_output", "custom_tool_call_output"}
++
++// loadTurn is the tool traffic of a rollout after its latest load message.
++type loadTurn struct {
++	// calls holds the raw payload of every tool call.
++	calls []string
++	// outputs holds the text of every tool call output.
++	outputs []string
++}
++
++// namesPath reports whether a tool call of the turn names tail anywhere in its payload.
++func (turn loadTurn) namesPath(tail string) bool {
++	return slices.ContainsFunc(turn.calls, func(call string) bool { return strings.Contains(call, tail) })
++}
++
++// printedFile reports whether one tool call output of the turn holds the whole of the file at the path file.
++// The file's content is matched with its surrounding whitespace trimmed;
++// an empty or unreadable file is never printed.
++func (turn loadTurn) printedFile(file string) bool {
++	data, err := os.ReadFile(file)
++	content := strings.TrimSpace(string(data))
++	if err != nil || content == "" {
++		return false
++	}
++	return slices.ContainsFunc(turn.outputs, func(output string) bool { return strings.Contains(output, content) })
++}
++
++// readLoadTurn returns the tool calls and outputs after the latest load message in the rollout data.
+ // The second result reports whether such a message was found.
+ // A user message is a response item of role user, its text blocks joined, or a user_message event.
+-func loadTurnCalls(data []byte) ([]string, bool) {
+-	var calls []string
++func readLoadTurn(data []byte) (loadTurn, bool) {
++	var turn loadTurn
+ 	found := false
+ 	for _, line := range strings.Split(string(data), "\n") {
+ 		var item struct {
+@@ -260,32 +290,63 @@ func loadTurnCalls(data []byte) ([]string, bool) {
+ 		switch {
+ 		case item.Type == rolloutEventMessage && payload.Type == payloadUserMessage:
+ 			if isSkillLoadMessage(strings.TrimSpace(payload.Message)) {
+-				calls, found = nil, true
++				turn, found = loadTurn{}, true
+ 			}
+ 		case item.Type == rolloutResponseItem && payload.Type == payloadMessage && payload.Role == roleUser:
+ 			if isSkillLoadMessage(strings.TrimSpace(messageText(item.Payload))) {
+-				calls, found = nil, true
++				turn, found = loadTurn{}, true
+ 			}
+ 		case item.Type == rolloutResponseItem && found && slices.Contains(toolCallPayloads, payload.Type):
+-			calls = append(calls, string(item.Payload))
++			turn.calls = append(turn.calls, string(item.Payload))
++		case item.Type == rolloutResponseItem && found && slices.Contains(toolOutputPayloads, payload.Type):
++			turn.outputs = append(turn.outputs, toolOutputText(item.Payload))
+ 		}
+ 	}
+-	return calls, found
++	return turn, found
++}
++
++// textBlock is one block of a rollout message's content or of a tool call's output.
++type textBlock struct {
++	Text string `json:"text"`
++}
++
++// joinedText returns the text of blocks joined with nothing between them.
++func joinedText(blocks []textBlock) string {
++	var text strings.Builder
++	for _, block := range blocks {
++		text.WriteString(block.Text)
++	}
++	return text.String()
+ }
+ 
+ // messageText returns the joined text blocks of a message payload, or "" when its content is no list of blocks.
+ func messageText(payload json.RawMessage) string {
+ 	var message struct {
+-		Content []struct {
+-			Text string `json:"text"`
+-		} `json:"content"`
++		Content []textBlock `json:"content"`
+ 	}
+ 	if json.Unmarshal(payload, &message) != nil {
+ 		return ""
+ 	}
+-	var text strings.Builder
+-	for _, block := range message.Content {
+-		text.WriteString(block.Text)
++	return joinedText(message.Content)
++}
++
++// toolOutputText returns what a tool call output payload printed:
++// its output string, or its output's text blocks joined.
++// It returns "" when the output is neither.
++func toolOutputText(payload json.RawMessage) string {
++	var item struct {
++		Output json.RawMessage `json:"output"`
+ 	}
+-	return text.String()
++	if json.Unmarshal(payload, &item) != nil {
++		return ""
++	}
++	var text string
++	if json.Unmarshal(item.Output, &text) == nil {
++		return text
++	}
++	var blocks []textBlock
++	if json.Unmarshal(item.Output, &blocks) != nil {
++		return ""
++	}
++	return joinedText(blocks)
+ }
+diff --git a/internal/shuttleengine/codexengine/skillload_test.go b/internal/shuttleengine/codexengine/skillload_test.go
+index 244d4786..96a4aa44 100644
+--- a/internal/shuttleengine/codexengine/skillload_test.go
++++ b/internal/shuttleengine/codexengine/skillload_test.go
+@@ -15,14 +15,20 @@ import (
+ )
+ 
+ // writeSkill writes the SKILL.md of a plugin's skill at version under root's marketplace folder and returns its path.
++// The file holds skillBody(name).
+ func writeSkill(t *testing.T, root, marketplace, plugin, version, name string) string {
+ 	t.Helper()
+ 	file := filepath.Join(root, marketplace, plugin, version, skillsDirName, name, skillFileName)
+ 	mkdirAll(t, filepath.Dir(file))
+-	writeFile(t, file, "# "+name)
++	writeFile(t, file, skillBody(name))
+ 	return file
+ }
+ 
++// skillBody returns the content of the SKILL.md writeSkill writes for the skill name.
++func skillBody(name string) string {
++	return "# " + name + "\n\nThe rules of " + name + ".\n"
++}
++
+ // skillEngine returns an engine whose codex.yaml names root as its one skill root.
+ func skillEngine(t *testing.T, root string) *Codex {
+ 	t.Helper()
+@@ -57,6 +63,28 @@ func rolloutExecCall(command string) string {
+ 	return rolloutToolCall("function_call", command)
+ }
+ 
++// rolloutScriptCall returns the rollout line of a custom_tool_call exec whose input is script.
++func rolloutScriptCall(script string) string {
++	data, _ := json.Marshal(map[string]any{"type": "response_item", "payload": map[string]any{"type": "custom_tool_call", "name": "exec", "input": script}})
++	return string(data)
++}
++
++// rolloutStringOutput returns the rollout line of a function_call_output whose output is the string text.
++func rolloutStringOutput(text string) string {
++	data, _ := json.Marshal(map[string]any{"type": "response_item", "payload": map[string]any{"type": "function_call_output", "output": text}})
++	return string(data)
++}
++
++// rolloutBlocksOutput returns the rollout line of a custom_tool_call_output whose output is one text block per text.
++func rolloutBlocksOutput(texts ...string) string {
++	var blocks []map[string]string
++	for _, text := range texts {
++		blocks = append(blocks, map[string]string{"type": "input_text", "text": text})
++	}
++	data, _ := json.Marshal(map[string]any{"type": "response_item", "payload": map[string]any{"type": "custom_tool_call_output", "output": blocks}})
++	return string(data)
++}
++
+ // TestSkillPath pins that the lookup returns the newest version under the first root holding the skill.
+ // It returns none for a skill no root holds or one that names no plugin.
+ // The newest is the highest number field by field;
+@@ -156,6 +184,8 @@ func TestSkillLoadMessage_WarnsOnceWhenCodexYamlDoesNotLoad(t *testing.T) {
+ // TestClassifySkillLoad pins the classification from a rollout.
+ // A tool call of any call payload type after the load message naming a skill's tail loads it,
+ // and a call before the message does not.
++// A tool call output after the message holding the whole SKILL.md loads it too, as a read through a built path leaves;
++// one holding part of the file, or one before the message, does not.
+ // A repeated load message restarts the count, and a truncated line is skipped.
+ // A skill no root holds is unknown, and an unreadable rollout or one without the load message is unverified.
+ func TestClassifySkillLoad(t *testing.T) {
+@@ -181,9 +211,24 @@ func TestClassifySkillLoad(t *testing.T) {
+ 		},
+ 		{
+ 			name:  "ReadBeforeTheMessage",
+-			lines: []string{rolloutExecCall("cat " + testingSkill), rolloutUserEvent(message), rolloutExecCall("cat " + prose)},
++			lines: []string{rolloutExecCall("cat " + testingSkill), rolloutStringOutput(skillBody("testing")), rolloutUserEvent(message), rolloutExecCall("cat " + prose)},
+ 			want:  shuttleengine.SkillLoadReport{Verified: true, Loaded: []string{"scribe:prose"}, Unknown: []string{"scribe:absent"}, Missing: []string{"scribe:testing"}},
+ 		},
++		{
++			name: "ReadThroughABuiltPath",
++			lines: []string{
++				rolloutUserItem(message),
++				rolloutScriptCall("for (const name of [\"prose\",\"testing\"]) { await tools.exec_command({cmd: `cat " + root + "/market/scribe/1.0.0/skills/${name}/SKILL.md`}); }"),
++				rolloutBlocksOutput("Script completed\nOutput:\n# pro", "se\n\nThe rules of prose.\n"),
++				rolloutStringOutput(skillBody("testing")),
++			},
++			want: shuttleengine.SkillLoadReport{Verified: true, Loaded: []string{"scribe:prose", "scribe:testing"}, Unknown: []string{"scribe:absent"}},
++		},
++		{
++			name:  "PartialOutputDoesNotLoad",
++			lines: []string{rolloutUserItem(message), rolloutStringOutput("# testing\n")},
++			want:  shuttleengine.SkillLoadReport{Verified: true, Unknown: []string{"scribe:absent"}, Missing: []string{"scribe:prose", "scribe:testing"}},
++		},
+ 		{
+ 			name:  "CustomToolAndLocalShellCalls",
+ 			lines: []string{rolloutUserItem(message), rolloutToolCall("custom_tool_call", "cat "+prose), rolloutToolCall("local_shell_call", "cat "+testingSkill)},
+@@ -191,7 +236,7 @@ func TestClassifySkillLoad(t *testing.T) {
+ 		},
+ 		{
+ 			name:  "RepeatedLoadMessageRestartsTheCount",
+-			lines: []string{rolloutUserItem(message), rolloutExecCall("cat " + prose), rolloutUserEvent(message), rolloutExecCall("cat " + testingSkill)},
++			lines: []string{rolloutUserItem(message), rolloutExecCall("cat " + prose), rolloutStringOutput(skillBody("prose")), rolloutUserEvent(message), rolloutExecCall("cat " + testingSkill)},
+ 			want:  shuttleengine.SkillLoadReport{Verified: true, Loaded: []string{"scribe:testing"}, Unknown: []string{"scribe:absent"}, Missing: []string{"scribe:prose"}},
+ 		},
+ 		{
