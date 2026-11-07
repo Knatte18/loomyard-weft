@@ -532,7 +532,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: gitkit's initRepo and initBareRemote, and hubforge's initScratchRepo and initBareRepo\nDelivers: one Go write of today's keys and values into each new repository's config after git init, in place of one git config process per key\nExports: a gitkit helper that writes the keys, which hubforge calls\n\nThe part changes these packages:\n\n- internal/gitkit (about 90 changed lines)\n- internal/hubforge (about 60 changed lines)\n",
-      "status": "running · Seed-Child",
+      "status": "running · Open-Window",
       "created": "2026-11-07T14:15:14Z",
       "revised": "2026-11-07T14:15:14Z",
       "profile": "light",
