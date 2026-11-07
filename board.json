@@ -556,7 +556,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge-registered-templates' registration\nDelivers: newStaleHub with pair-a built by a registration, the package's hubforge.NewHub sites on hubforge.CopyHub per D5's rule, and TestEnsure_HeldLockTimesOutWithoutStamping rewritten onto in-memory inputs at tier 0\nExports: nothing\n\nThe part changes these packages:\n\n- internal/hubreconcile (about 120 changed lines)\n",
-      "status": "running · Finalize",
+      "status": "done",
       "created": "2026-11-07T14:15:14Z",
       "revised": "2026-11-07T14:15:14Z",
       "profile": "light",
