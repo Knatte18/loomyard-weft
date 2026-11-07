@@ -69,6 +69,11 @@ A Sketch with no stored record is refused, naming `motif`.
 - Interactive by default: the operator approves the proposal in the agent's pane (`lym loom raddle-approve`), may question it and have it revise first.
   The loom key `raddle_auto_approve` files with no operator input; it stays off until the splits are tuned well enough.
 - Raddle-File re-checks the board, then files every entry in one write, each with its part of the record stored and `discussed` set, creates the beam for shape `beam` and hands the Sketch slug and proposal to the beam's orch in Beam-Up.
+  Built (2026-11-07, `731004c3`): filing releases nothing.
+  Every filed task, project members included, stays `draft` until the operator releases it with `lym board set-status`; the earlier release step is removed.
+  The proposal carries an optional `order_departures` list (`{parts, record_order, cost}`) naming each place its chain order departs from an order the Sketch states, and the interactive approval table shows a dependencies column, the departures and the draft notice.
+  The stencil orders parts that share a package by the Sketch's own order first.
+  The table, the departures and the draft notice are instructions to the agent, not enforced in code.
   A moved board, an invalid proposal or an approval-hash mismatch returns to Raddle-Write; the third return halts the run.
 - The stencil carries the rule that a tapestry's fixed start cost often favours fewer, larger parts.
   The cost figures come from the hub's own runs: every agent session is recorded as `_lym/usage/<session>.json`, `lym report cost` gives the fixed-plus-per-size fit per recipe and profile, and `lym report raddle` compares each proposal's predicted cost with its landed parts, so the prompt can be tuned.
