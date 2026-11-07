@@ -1,0 +1,130 @@
+diff --git a/internal/adoptcli/adopt_integration_test.go b/internal/adoptcli/adopt_integration_test.go
+index 8bdc48f8..673eb7a9 100644
+--- a/internal/adoptcli/adopt_integration_test.go
++++ b/internal/adoptcli/adopt_integration_test.go
+@@ -55,7 +55,7 @@ func TestAdoptIntegration_SecondCloneTakesOver(t *testing.T) {
+ 	t.Parallel()
+ 	boardkit.InstallReplay(t)
+ 
+-	first := hubforge.NewHub(t, ".")
++	first := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 	hubforge.AddPair(t, first, taskSlug)
+ 
+ 	board, err := boardengine.OpenHub(first.Path)
+@@ -213,7 +213,7 @@ func TestCommand_RunsFromABeam(t *testing.T) {
+ 	t.Parallel()
+ 	boardkit.InstallReplay(t)
+ 
+-	h := hubforge.NewHub(t, ".")
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 	hubforge.AddPairWith(t, h, "b", fabricengine.AddOptions{Beam: true})
+ 	hubforge.AddPairWith(t, h, "p", fabricengine.AddOptions{})
+ 	primeName, err := fabricengine.PrimeName(h.Location)
+@@ -236,7 +236,7 @@ func TestCheckCmd_FromABeamExitsZeroWhileOneRuns(t *testing.T) {
+ 	t.Parallel()
+ 	boardkit.InstallReplay(t)
+ 
+-	h := hubforge.NewHub(t, ".")
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 	hubforge.AddPairWith(t, h, "b", fabricengine.AddOptions{Beam: true})
+ 	scratch := filepath.Join(fabricengine.AdoptScratchDir(h.Path), "root")
+ 	if err := os.MkdirAll(scratch, 0o755); err != nil {
+diff --git a/internal/adoptcli/check_integration_test.go b/internal/adoptcli/check_integration_test.go
+index ac2b37ad..9b9543be 100644
+--- a/internal/adoptcli/check_integration_test.go
++++ b/internal/adoptcli/check_integration_test.go
+@@ -27,7 +27,7 @@ func TestHubCheckDeps_StaleStampRunsTheTunedFinalizeTiers(t *testing.T) {
+ 	t.Parallel()
+ 	boardkit.InstallReplay(t)
+ 
+-	h := hubforge.NewHub(t, ".")
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 	tier := map[string]any{"command": "true", "all_targets": ".", "timeout_min": 1, "counter": "go-json"}
+ 	hubFile, err := yaml.Marshal(map[string]any{
+ 		"slots":  1,
+diff --git a/internal/adoptcli/deploy_integration_test.go b/internal/adoptcli/deploy_integration_test.go
+index c4bd4c90..5beb6349 100644
+--- a/internal/adoptcli/deploy_integration_test.go
++++ b/internal/adoptcli/deploy_integration_test.go
+@@ -75,7 +75,7 @@ func TestReadDeployState(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			h := hubforge.NewHub(t, ".")
++			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 			prime := h.PrimeWorktree()
+ 			branch := gitkit.CurrentBranch(t, prime)
+ 			old := gitkit.RevParse(t, prime, "HEAD")
+diff --git a/internal/fabricengine/hook.go b/internal/fabricengine/hook.go
+index a3bea83c..d0ecd6c8 100644
+--- a/internal/fabricengine/hook.go
++++ b/internal/fabricengine/hook.go
+@@ -36,11 +36,15 @@ const hookSentinel = "FABRIC_SENTINEL: post-checkout drift warning"
+ // The executable test around the chained call keeps the operator's own enable or disable decision.
+ // git ignores a non-executable hook; a hook disabled with chmod -x must stay disabled once fabric moves it aside.
+ // Invoking it anyway would print a "Permission denied" line on every checkout.
++// The wrapper finds its own directory by parameter expansion on $0, so a checkout spawns no dirname process.
+ const chainedHookPreamble = `#!/bin/sh
+ # post-checkout — user hook chain wrapper written by fabric.
+ # The original hook was moved to post-checkout.user and is invoked first.
+ 
+-SCRIPT_DIR="$(dirname "$0")"
++case "$0" in
++    */*) SCRIPT_DIR="${0%/*}" ;;
++    *) SCRIPT_DIR=. ;;
++esac
+ if [ -x "$SCRIPT_DIR/post-checkout.user" ]; then
+     "$SCRIPT_DIR/post-checkout.user" "$@"
+ fi
+diff --git a/internal/fabricengine/hook_test.go b/internal/fabricengine/hook_test.go
+index f8856cc1..7dc2d609 100644
+--- a/internal/fabricengine/hook_test.go
++++ b/internal/fabricengine/hook_test.go
+@@ -148,6 +148,17 @@ func TestInstallPostCheckoutHook_ChainIdempotent(t *testing.T) {
+ 	if string(firstChainContent) != string(secondChainContent) {
+ 		t.Errorf("chained hook changed on re-install; first=%q second=%q", firstChainContent, secondChainContent)
+ 	}
++
++	// A branch checkout fires the wrapper, which must find and run the executable user hook beside it.
++	cmd := exec.Command("git", "checkout", "-b", "hook-chain-probe")
++	cmd.Dir = hub
++	out, err := cmd.CombinedOutput()
++	if err != nil {
++		t.Fatalf("git checkout -b hook-chain-probe: %v (%s)", err, out)
++	}
++	if !strings.Contains(string(out), "user\n") {
++		t.Errorf("checkout output = %q; want the chained user hook's output", out)
++	}
+ }
+ 
+ // TestInstallPostCheckoutHook_WeftResolution_Prime verifies that the hook resolves the prime worktree's weft sibling.
+diff --git a/internal/fabricengine/post-checkout.sh b/internal/fabricengine/post-checkout.sh
+index 90136258..ab8681b7 100644
+--- a/internal/fabricengine/post-checkout.sh
++++ b/internal/fabricengine/post-checkout.sh
+@@ -30,8 +30,10 @@ if [ -z "$WORKTREE_ROOT" ]; then
+ fi
+ 
+ # Derive the weft sibling path: parent-dir/<basename>-weft.
+-PARENT="$(dirname "$WORKTREE_ROOT")"
+-BASE="$(basename "$WORKTREE_ROOT")"
++# git answers an absolute path with no trailing slash, so parameter expansion splits it as dirname and basename would,
++# without spawning either on every checkout.
++PARENT="${WORKTREE_ROOT%/*}"
++BASE="${WORKTREE_ROOT##*/}"
+ WEFT_WORKTREE="${PARENT}/${BASE}-weft"
+ 
+ # If the weft worktree does not exist, nothing to compare — exit silently.
+diff --git a/internal/fabricengine/replay_integration_test.go b/internal/fabricengine/replay_integration_test.go
+index 65230606..e3d9160c 100644
+--- a/internal/fabricengine/replay_integration_test.go
++++ b/internal/fabricengine/replay_integration_test.go
+@@ -36,7 +36,7 @@ func newRecordsFixture(t *testing.T) *recordsFixture {
+ 	t.Helper()
+ 	boardkit.InstallReplay(t)
+ 	registerHeddleReplayer()
+-	return &recordsFixture{t: t, hub: hubforge.NewHub(t, ".")}
++	return &recordsFixture{t: t, hub: hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})}
+ }
+ 
+ var registerHeddleReplayerOnce sync.Once
