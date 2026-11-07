@@ -36,6 +36,13 @@ The package doc `internal/shuttleengine/codexengine/doc.go` is the spec; each pa
 Task `codex-creel-hooks` (`e3aedbc5`) gave Codex strands creel delivery through hooks, as Claude strands have: mail reaches a running session at the end of a tool call through `PostToolUse`, at a turn end through `Stop`, and an idle session through `codex queue` run by the strand's `hook-wait` waiter. So part 5's "the only one a Codex strand has" holds only for a strand opened without a prompt file (`OpenLaunch`, a standalone run), which stays a pane-mail strand.
 Task `codex-creel-trial` (`afa2cf2e`, `docs/research/codex/engine-trial/codex-creel-trial-2026-11-05.md`) trialed it on real sessions in `lyt` and found one fault, filed as note `codex-idle-wake-extra-reminder`.
 
+## Built since (tidy, 2026-11-07)
+
+Task `codex-skill-load-false-missing` (`0e02aaad`) fixed a false `skill skipped ... cause="not loaded"` in part 6's load check.
+`ClassifySkillLoad` now also reads a skill as loaded when a tool call output of the load turn holds the whole of its `SKILL.md`, so a seat that reads its skills through a path built at run time (a `cat .../skills/${name}/SKILL.md` loop) is no longer reported missing.
+A partial output still leaves a skill missing.
+The fix is checked against unit cases only: the original rollout and a live Codex run were not used, so part 6 should still see the load on a real session.
+
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
