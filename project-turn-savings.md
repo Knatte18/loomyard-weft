@@ -14,13 +14,19 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (1)
+### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Tool schemas are three quarters of a spawned role's start; drop the tools a role never calls**<br>• 21,947 of 29,087 start tokens are tool schemas | [`role-tool-schemas`](design-role-tool-schemas.md) | darn · docs | Worktree-Create | neve | 23m<br>0m | shuttle, claude |
+
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Tool schemas are three quarters of a spawned role's start; drop the tools a role never calls**<br>• 21,947 of 29,087 start tokens are tool schemas | [`role-tool-schemas`](design-role-tool-schemas.md) | darn · docs |  | 23m<br>0m | shuttle, claude |
+_None._
 
 ## Notes (0)
 
