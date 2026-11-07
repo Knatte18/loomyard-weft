@@ -1,6 +1,6 @@
 # A Sketch opened from the board shows only its brief, with no link to its decision record
 
-`board-sketch-shows-record` · Task · bug, board · running · Darn-Write
+`board-sketch-shows-record` · Task · bug, board · running · Drift-Verify
 
 ## Seen (operator, 2026-11-07)
 

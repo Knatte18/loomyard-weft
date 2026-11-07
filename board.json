@@ -507,7 +507,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-11-07)\n\nOpening a Sketch from the board, as `S1` `fabric-test-speed`, shows its design page, `design-\u003cslug\u003e.md` in the Bolt checkout, which holds only the entry's body: the brief the Motif started from, 31 lines.\nThe decision record the Motif approved, the substance of a Sketch, sits beside it as `decision-\u003cslug\u003e.md` (288 lines) and nothing on the board's README or the design page links to it.\nThe operator found the Sketch \"very short\" and could not reach the record from the board.\n\nThe design and decision file names are in `internal/boardengine/replay.go`.\n\n## Wanted\n\n- A discussed entry's design page links to its decision record, near the top, and the README row of a discussed entry links to it as well, so a Sketch's record is one tap away on a phone.\n- The same holds for any discussed task, not only a Sketch, and for a task a Sketch is promoted to.\n- A link to a record file that is missing is not rendered.\n",
-      "status": "running · Darn-Write",
+      "status": "running · Drift-Verify",
       "created": "2026-11-07T13:58:55Z",
       "revised": "2026-11-07T13:58:55Z",
       "profile": "light"
