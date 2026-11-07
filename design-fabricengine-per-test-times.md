@@ -1,6 +1,6 @@
 # Time every internal/fabricengine test one by one on a quiet machine
 
-`fabricengine-per-test-times` · Task · research, fabric, testkit · draft
+`fabricengine-per-test-times` · Task · research, fabric, testkit
 
 Depends on: [`heddle-md-initial-render`](design-heddle-md-initial-render.md)
 

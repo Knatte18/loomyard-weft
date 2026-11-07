@@ -98,13 +98,13 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (1)
+#### Layer A (1)
 
-Not released; nothing starts it until its status is cleared.
+Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Time every internal/fabricengine test one by one on a quiet machine** | [`fabricengine-per-test-times`](design-fabricengine-per-test-times.md) | darn · docs | T2 | 0m<br>0m | fabric, testkit |
+| T1 | **Time every internal/fabricengine test one by one on a quiet machine** | [`fabricengine-per-test-times`](design-fabricengine-per-test-times.md) | darn · docs | T2 | 0m<br>0m | fabric, testkit |
 
 ### Notes (18)
 
