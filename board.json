@@ -624,7 +624,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nThe `comment-cleanup` landing (`f7465bd8`, 2026-11-07) edited comments and prose only, and lists what its workers found but left:\n\n- Stale headings in the `configengine` doc.\n- `lymcwd.ResolveWithAnchor` has no non-test caller.\n- Stencil paths under `{{.specs_dir}}/loom/` name no existing folder.\n- Comment claims kept as written because a worker could not confirm them against the code.\n- Boundary fragments where two workers' spans met.\n- Files edited by more than one worker at once, among them tests in `cmd/lym`, `internal/adoptcli` and `internal/websterengine/render.go`; the commit asks a reviewer to read their diffs whole.\n\n## Idea\n\nOne darn run settles the list: fix the stale headings and stencil paths, remove `ResolveWithAnchor` or give it its caller, confirm or correct each kept claim, and read the jointly edited files whole for broken or doubled comments.\nThe commit body of `f7465bd8` names where each was found.\n",
-      "status": "running · Finalize",
+      "status": "done",
       "created": "2026-11-07T11:58:20Z",
       "revised": "2026-11-07T12:03:45Z",
       "profile": "light"
