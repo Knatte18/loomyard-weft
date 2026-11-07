@@ -1,18 +1,25 @@
-<!-- This is the loom Plan producer's autonomous prompt. It is shipped as an embedded default in the
-     top-level stencils package (stencils/stencils.go), seeded to the Bolt checkout's `_lym/stencils/loom/`
-     and read from there at call time by internal/seatengine, which fills it from the lead's value map that loomengine.PlanTable builds (plan.go),
+<!-- This is the loom Plan producer's autonomous prompt.
+     It ships as an embedded default in the stencils package (contracts/stencils/stencils.go),
+     seeded to the Bolt checkout's `_lym/stencils/loom/`.
+     internal/seatengine reads it from there at call time and fills it from the lead's value map that loomengine.PlanTable builds (plan.go),
      then hands it to shuttle as the plan agent's entire instruction set.
-     The stencil includes the four plan-format blocks loom-block-plan-glyphs, loom-block-plan-format, loom-block-plan-overview and loom-block-plan-cards with the bare {{template "<name>"}}; specs_dir and gate_tiers reach them through the same value map.
+     The stencil includes the four plan-format blocks loom-block-plan-glyphs, loom-block-plan-format,
+     loom-block-plan-overview and loom-block-plan-cards with the bare {{template "<name>"}}.
+     specs_dir and gate_tiers reach them through the same value map.
      gate_tiers is a required marker filled by loomengine.PlanTable from the hub's gate.yaml; a hub declaring no tier renders it as none.
-     Every marker below is a top-level {{.X}} substitution;
-     stencil.FillOptional requires the three original ones non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
-     parent_directive is a third optional marker, rendered by internal/parentdirective.
-     twill_directive is a fourth optional marker, rendered by internal/twilldirective through internal/loomengine;
+     Every marker is a top-level {{.X}} substitution, and the file has no {{if}}/{{range}} conditionals.
+     A required marker inside a conditional branch would render silently blank when present-but-empty (see internal/stencil/stencil.go).
+     stencil.FillOptional requires every required marker non-empty.
+     pattern_directive and friction_directive are optional markers, each filled via stencil.FillOptional.
+     Each renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
+     parent_directive is an optional marker, rendered by internal/parentdirective.
+     twill_directive is an optional marker, rendered by internal/twilldirective through internal/loomengine;
      it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-     self_check is a required marker, the body of Step 5, filled by internal/loomengine's PlanTable with the fragment that has the writer run the validator or, when the row's gate has a cold fixer, the one that has it run none.
+     self_check is a required marker, the body of Step 5, filled by internal/loomengine's PlanTable.
+     It carries the fragment that has the writer run the validator or, when the row's gate has a cold fixer, the one that has it run none.
      subagent_model is a required marker, filled from loom.yaml's subagent_model.
-lym-stencil: sha256=20e8ef6b07bdc91526e086adddc4008db69174843502a2886f827f2d0cbcf3bf build=fe753d409cad46ac575d6ca5c96b51058567644d time=2026-11-02T19:09:15Z -->
+lym-stencil: sha256=cb5fed560389727630773ce19c1cf04d5c18a7c0ec69922fdf6fa2175db15f1a build=e9895522a011fa6a53b58c2a4fc124e423a121ec time=2026-11-07T15:15:36Z -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -55,6 +62,7 @@ A follow-up a card files goes on the board as a note, never as a task, and no ca
 Before planning, start from the code the relevant list names, then read the other relevant parts of the codebase: check recent commits, and follow existing patterns and any PATTERN entries in this prompt rather than inventing new ones.
 
 Hand a batch of independent lookups, such as where a symbol is used or which files follow a pattern, to fresh subagents through the Agent tool, each with `subagent_type: "general-purpose"` and `model: "{{.subagent_model}}"`, all launched together in one message.
+Give each Agent call the `effort` that the subagent passage of your system prompt names.
 A fresh subagent sees none of this session, so each prompt carries its whole question and asks for a short answer naming files and members.
 Keep in this session the reading the plan's design needs: the decision record, the relevant list and the code your cards change.
 

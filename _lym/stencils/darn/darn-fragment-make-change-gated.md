@@ -1,12 +1,15 @@
-<!-- This is the darn writer's Step 4 list for a run whose verify gate has a cold fixer: the writer and its subagents run no gate, and the writer acts only on what the fixer leaves.
-     internal/darnengine's DarnTable fills its one marker, {{.subagent_model}}, from loom.yaml's subagent_model, then fills the result whole into darn-template-write's make_change marker.
-lym-stencil: sha256=412c0c9d0003a43fc5b7cb3cb0ed3b6ce6999096fc82c705386a05c748734165 build=5abbc19f9748291a3e0c64fa275e2570ea197eb4 time=2026-11-03T11:32:09Z -->
+<!-- This is the darn writer's Step 4 list for a run whose verify gate has a cold fixer:
+     the writer and its subagents run no gate, and the writer acts only on what the fixer leaves.
+     internal/darnengine's DarnTable fills its one marker, {{.subagent_model}}, from loom.yaml's subagent_model,
+     then fills the result whole into darn-template-write's make_change marker.
+lym-stencil: sha256=8980cff9fe38be4df5bd6d7673db111cc66ab6863abccb1b0f0605af87885ab1 build=e9895522a011fa6a53b58c2a4fc124e423a121ec time=2026-11-07T15:15:36Z -->
 
 1. Edit the repository to make the change.
    Follow the existing patterns, and the PATTERN entries in this prompt.
    Each commit is one change, with its own reads and edits.
 2. Hand work that needs no overview of the change to fresh subagents through the Agent tool, each with `subagent_type: "general-purpose"` and `model: "{{.subagent_model}}"`: a batch of lookups, and per-package work whose edits you have already decided, one subagent per package, each owning its own files.
    Launch every subagent of a batch together in one message.
+   Give each Agent call the `effort`, and each prompt the skills, that the subagent passage of your system prompt names.
    A fresh subagent sees none of this session, so each prompt names the files the subagent owns and the edits to make, and tells the subagent to run no `lym gate test`.
    Keep in this session the work that needs the overview: the design, a change that spans packages, the commits and the change description.
 3. Run no `lym gate test` yourself.

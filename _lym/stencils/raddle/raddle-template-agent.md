@@ -1,14 +1,16 @@
 <!-- This is the raddle agent's entire instruction set.
-     It ships as an embedded default in contracts/stencils/stencils.go,
-     is seeded to the hub's stencils directory,
-     and is read from there at call time via internal/stencilstore, filled by internal/seatengine from the table loomengine.RaddleTable builds for the Raddle-Write row.
-     Every marker below is a top-level {{.X}} substitution and every one but return_note must be non-empty:
-     slug, specs_dir, decision_record_path, proposal_path, subagent_model,
-     mode_rules (the mode's text, filled by Go),
-     parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective).
-     return_note is the one optional marker: empty on a first session, and the reason of a returned filing with the path to start from after a return.
+     It ships as an embedded default in contracts/stencils/stencils.go and is seeded to the hub's stencils directory.
+     It is read from there at call time via internal/stencilstore.
+     internal/seatengine fills it from the table loomengine.RaddleTable builds for the Raddle-Write row.
+     Every marker below is a top-level {{.X}} substitution, and every one but return_note must be non-empty:
+     slug, specs_dir, decision_record_path, proposal_path and subagent_model;
+     mode_rules, the mode's text filled by Go;
+     parent_directive, rendered by internal/parentdirective;
+     and edit_directive, rendered unconditionally by internal/editdirective.
+     return_note is the one optional marker:
+     empty on a first session, and after a return the reason of the returned filing with the path to start from.
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=e6b860920405e2812e13c240ceb2fc6d13e981cfd15b35a7d3225b8277158131 build=5d1311415826613950e92e66a84e09e0b201cd6b time=2026-11-06T09:39:24Z -->
+lym-stencil: sha256=37600a0c311e8cf6c9ba09675d394677f2070ce401f2eb880060b112aee23cf3 build=e9895522a011fa6a53b58c2a4fc124e423a121ec time=2026-11-07T15:15:36Z -->
 
 # Raddle — split a Sketch into the entries the operator approves
 
@@ -35,6 +37,7 @@ Read no more of the code than that.
 
 Start with explore subagents.
 List every question the reading raises, such as where a symbol is used or which package owns a concern, and send the independent ones as one batch to fresh subagents through the Agent tool, each with `subagent_type: "general-purpose"` and `model: "{{.subagent_model}}"`, all launched together in one message.
+Give each Agent call the `effort` that the subagent passage of your system prompt names.
 A fresh subagent sees none of this session, so each prompt carries its whole question and asks for a short answer naming files and spans.
 A fork does not serve here: it inherits this session's whole context.
 

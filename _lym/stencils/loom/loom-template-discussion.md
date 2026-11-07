@@ -1,22 +1,29 @@
 <!-- This is the loom Discussion producer's interview prompt.
-     It ships as an embedded default in contracts/stencils/stencils.go,
-     is seeded to the hub's stencils directory,
-     and is read from there at call time via internal/stencil.
-     The loom-template-discussion-chair stencil includes this one whole, and internal/seatengine fills it through stencil.FillWith as its second filler, from the lead's value map,
-     which loomengine.DiscussionTable builds for recipe row 3.
-     Every marker below is a top-level {{.X}} substitution;
-     specs_dir is a required marker, naming the directory the discussion format spec is deployed to;
-     stencil.FillOptional requires the four original markers non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
-     parent_directive is a third optional marker, rendered by internal/parentdirective.
-     project_directive is a further optional marker, rendered by internal/loomengine.ProjectRecordDirective for a run under a beam;
+     It ships as an embedded default in contracts/stencils/stencils.go and is seeded to the hub's stencils directory.
+     It is read from there at call time via internal/stencil.
+     The loom-template-discussion-chair stencil includes this one whole.
+     internal/seatengine fills it through stencil.FillWith from the lead's value map.
+     internal/loomengine's DiscussionTable builds that map.
+     Every marker below is a top-level {{.X}} substitution, and each must be non-empty unless the table's Optional list names it.
+     The file holds no {{if}}/{{range}} conditional,
+     since a required marker inside a conditional branch would render silently blank when present-but-empty;
+     see internal/stencil/stencil.go.
+     specs_dir is a required marker naming the directory the discussion format spec is deployed to.
+     pattern_directive and friction_directive are optional markers.
+     Each renders as nothing when its own tier is inactive: PATTERN for pattern_directive, Tier 2 for friction_directive.
+     parent_directive is rendered by internal/parentdirective.
+     project_directive is an optional marker rendered by internal/loomengine.ProjectRecordDirective for a run under a beam;
      it shares the pattern directive's line, so an empty value leaves the prompt's bytes unchanged.
-     twill_directive is a fourth optional marker, rendered by internal/twilldirective through internal/loomengine;
-     it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
+     twill_directive is an optional marker rendered by internal/twilldirective through internal/loomengine;
+     it sits on the line that would otherwise be blank, so an empty value leaves the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-     self_check is a required marker, the body of Step 6 up to its closing two lines, filled by internal/loomengine's DiscussionTable with the fragment that has the writer run the validator or, when the row's gate has a cold fixer, the one that has it run none.
+     self_check is a required marker: the body of Step 6 up to its closing two lines.
+     DiscussionTable fills it with the fragment that has the writer run the validator or,
+     when the gate has a cold fixer, the one that has it run none.
      subagent_model is a required marker, filled from loom.yaml's subagent_model.
-     The literal `{` / `}` characters around {{.slug}} in the board-read example below are ordinary JSON punctuation, not template syntax — only `{{` begins a template action.
-lym-stencil: sha256=e6ecc102258a28a377e6312a78f50cdf0272b13bd528b87a821381b6e43ed711 build=3085f4517b9c37cf79a8fd179a2f981e715e3c23 time=2026-11-05T05:35:11Z -->
+     The literal `{` / `}` characters around {{.slug}} in the board-read example below are ordinary JSON punctuation, not template syntax;
+     only `{{` begins a template action.
+lym-stencil: sha256=17f36b16cebde984b368bc1c5237014a9c344aa2c2277eef0a721adb8ddff370 build=e9895522a011fa6a53b58c2a4fc124e423a121ec time=2026-11-07T15:15:36Z -->
 
 # Discussion — interview, then write the decision record
 
@@ -64,6 +71,7 @@ You MUST NOT gather exact signatures, `file:line` citations, interface shapes, o
 Start the exploration with explore subagents, before you read code in this session.
 Once Step 1 has shown you the task, list every question the exploration raises, such as where a symbol is used, which module owns a concern or how a flow runs today.
 Send the independent ones as one batch to fresh subagents through the Agent tool, each with `subagent_type: "general-purpose"` and `model: "{{.subagent_model}}"`, all launched together in one message.
+Give each Agent call the `effort` that the subagent passage of your system prompt names.
 A fresh subagent sees none of this session, so each prompt carries its whole question, keeps to the bounds above, and asks for a short answer naming files and spans.
 A subagent returns only what bears on its question, so every later turn of this session carries its short answer instead of the code it read.
 Once the batch returns, read in this session only the code you need to see yourself, and send the reads and searches of each turn together.
