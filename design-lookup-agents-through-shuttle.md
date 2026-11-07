@@ -37,6 +37,13 @@ So the gain a lookup agent on another engine can add is small against what the C
 Task `discussion-explore-agents-first` (`3085f451`) changed the Discussion-Write stencil: the writer now opens Step 2 with one batch of explore subagents on `subagent_model`, sent together through the Agent tool, before it reads code itself.
 Both writer roles now delegate early to Claude subagents, so the gain left for a lookup agent on another engine is smaller still; note `writer-lookups-remeasure` re-measures it.
 
+## Built since (tidy, 2026-11-07)
+
+Task `agent-skills-and-effort` (`e9895522`) moved every role's skill list and effort into the hub config `_lym/config/agents.yaml`.
+A launch whose model spec names no effort now gets an explicit one from its `efforts` table, so the `effort: medium` the registry gives the Codex aliases applies only where the spec and `agents.yaml` name none.
+A shuttle-spawned lookup agent would take its skills by role from the `skills` key.
+Every Claude session's system prompt now tells it which `effort` each Agent-tool subagent call takes, by model, and to name its own fitting skills in the brief.
+
 ## Open
 
 - How the writer asks for a shuttle-spawned lookup and gets its answer back: a `lym` verb that spawns the agent and waits for its reply, much as a fork returns only what is relevant (task `planner-fork-lookups`, landed 2026-11-04 as the measure above).
