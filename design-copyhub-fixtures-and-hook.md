@@ -1,6 +1,6 @@
 # CopyHub in the NewHub fixtures of fabricengine and adoptcli, and the hook without dirname and basename
 
-`copyhub-fixtures-and-hook` · Task · enhancement, fabric, testkit, git · running · Open-IDE
+`copyhub-fixtures-and-hook` · Task · enhancement, fabric, testkit, git · running · Record-Write
 
 Decision record: [Sketch](decision-copyhub-fixtures-and-hook.md)
 
