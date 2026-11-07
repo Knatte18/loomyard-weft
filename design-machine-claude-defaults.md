@@ -2,8 +2,6 @@
 
 `machine-claude-defaults` · Task · enhancement, claude, config, heddle, fabric · running · Darn-Write
 
-Depends on: [`clone-prime-heddle-unrendered`](design-clone-prime-heddle-unrendered.md)
-
 ## Seen
 
 The operator (2026-11-07) wants lym to set up, on the machine it runs on, the Claude Code settings lym needs to work as the operator wants:
