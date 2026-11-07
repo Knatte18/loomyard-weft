@@ -47,6 +47,12 @@ Rationale: about 6 s of the package's serial time, about 2 s of wall, with no as
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - housekeeping-fold-loses-nil-probe-packing-pin (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D6: Review: each fold's commit names the assertions its folded row alone made, and each stands in the remaining test.
