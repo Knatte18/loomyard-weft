@@ -14,21 +14,20 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (1)
+### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| T5 | **Registered hub templates in hubforge, built once per test binary** | [`hubforge-registered-templates`](design-hubforge-registered-templates.md)<br>[Sketch](decision-hubforge-registered-templates.md) | darn · solid | Worktree-Create | neve | 0m<br>0m | fabric, testkit, git |
 | T9 | **worktree list read in-process through internal/dotgit** | [`dotgit-worktree-reader`](design-dotgit-worktree-reader.md)<br>[Sketch](decision-dotgit-worktree-reader.md) | darn · solid | Worktree-Create | neve | 0m<br>0m | fabric, testkit, git |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Registered hub templates in hubforge, built once per test binary** | [`hubforge-registered-templates`](design-hubforge-registered-templates.md)<br>[Sketch](decision-hubforge-registered-templates.md) | darn · solid |  | 0m<br>0m | fabric, testkit, git |
+_None._
 
 ### Layer A (5)
 
