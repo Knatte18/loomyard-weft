@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-07 16:05 UTC; every age below is as of then.
+Rendered 2026-11-07 16:06 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -123,8 +123,8 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Settings shared by every session of a worktree come only from the heddle-rendered file; per-session ones stay per session** | [`claude-settings-model-effort`](design-claude-settings-model-effort.md) | darn · light | Code-Burler-Fix | neve | 1h<br>41m | claude, config, shuttle |
-| T2 | **trusted_hubs lists shortnames, which neither say which repository is meant nor identify it**<br>• List trusted hubs by full repository name instead of shortname | [`creel-trust-by-repo-name`](design-creel-trust-by-repo-name.md) | darn · solid | Darn-Write | neve | 7h<br>3m | creel |
-| T4 | **Raddle releases the tasks it files, chains shared-package parts against the record order, and shows no dependencies** | [`raddle-order-and-deps-table`](design-raddle-order-and-deps-table.md) | darn · light | Open-Window | neve | 1h<br>1h | loom, stencil |
+| T2 | **trusted_hubs lists shortnames, which neither say which repository is meant nor identify it**<br>• List trusted hubs by full repository name instead of shortname | [`creel-trust-by-repo-name`](design-creel-trust-by-repo-name.md) | darn · solid | Darn-Write | neve | 7h<br>4m | creel |
+| T4 | **Raddle releases the tasks it files, chains shared-package parts against the record order, and shows no dependencies** | [`raddle-order-and-deps-table`](design-raddle-order-and-deps-table.md) | darn · light | Drift-Await | neve | 1h<br>1h | loom, stencil |
 
 #### Ready (0)
 
