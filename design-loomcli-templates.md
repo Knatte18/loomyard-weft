@@ -1,6 +1,6 @@
 # internal/loomcli beamHub and newBadReedUpFixture onto registered templates
 
-`loomcli-templates` · Task · enhancement, fabric, testkit, git · running · Open-IDE
+`loomcli-templates` · Task · enhancement, fabric, testkit, git · running · Preflight
 
 Decision record: [Sketch](decision-loomcli-templates.md)
 
