@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-fabric-test-speed-remeasure.md)
 
-Depends on: [`copyhub-fixtures-and-hook`](design-copyhub-fixtures-and-hook.md), [`git-config-from-go`](design-git-config-from-go.md)
+Depends on: [`copyhub-fixtures-and-hook`](design-copyhub-fixtures-and-hook.md)
 
 Filed from the Sketch `fabric-test-speed`.
 

@@ -108,14 +108,6 @@ Starts when every entry it names under After is done.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T7 | **gitkit and hubforge initialisers write their per-repository git config from Go** | [`git-config-from-go`](design-git-config-from-go.md)<br>[Sketch](decision-git-config-from-go.md) | 1h<br>1h | fabric, testkit, git |
-
 ## [P0 Root: entries under no project](project-root.md) (20)
 
 Owner `neve`
