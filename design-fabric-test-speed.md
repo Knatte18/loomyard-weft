@@ -1,6 +1,6 @@
 # Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes
 
-`fabric-test-speed` · Task · sketch, fabric, testkit, git · running · Worktree-Create
+`fabric-test-speed` · Task · sketch, fabric, testkit, git · running · Seed-Child
 
 A Motif (operator, 2026-11-07): settle how to take `internal/fabricengine`'s tier 1 time down, and split the work into darn tasks in an order that keeps every test's coverage.
 The operator wants tests faster as a priority: a darn run's Finalize gate spends minutes on tier 1, most of it in one package.
