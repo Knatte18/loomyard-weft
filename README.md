@@ -78,11 +78,13 @@ Held by a run; its scope is locked until the run ends.
 | T6 | **A Codex seat that read its skills is logged as not having loaded them**<br>• All five skills logged not loaded though the rollout shows SKILL.md read; cause not found | [`codex-skill-load-false-missing`](design-codex-skill-load-false-missing.md) | darn · light | Finalize | neve | 23h<br>45m | shuttle, codex |
 | T7 | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | darn · light | Finalize | neve | 1d<br>45m | tools, claude |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T9 | **The gate builds and starts test binaries for packages with no test of the tier**<br>• Pass only the packages holding a test of the tier to go test; weighs most under Cortex XDR | [`gate-tier-binaries-only`](design-gate-tier-binaries-only.md) | darn · light |  | 4h<br>0m | gate |
 
 #### Layer A (1)
 
@@ -92,14 +94,13 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Heddle renders .claude/settings.local.json in every hub: no co-author, lym's plugins and tool deny list**<br>• Attribution off and lym model/effort defaults, in session settings and by an operator-run setup verb | [`machine-claude-defaults`](design-machine-claude-defaults.md) | darn · solid | T4 | 37m<br>2m | claude, config, heddle, fabric |
 
-#### Draft (2)
+#### Draft (1)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T8 | `draft` **Skills and effort for every role and subagent come from config**<br>• Skills per role in config, gate fixer included; subagents load fitting skills; every effort explicit | [`agent-skills-and-effort`](design-agent-skills-and-effort.md) | darn · solid | T3<br>T1 | 3h<br>2m | shuttle, stencil, claude, gate, loom |
-| T9 | `draft` **The gate builds and starts test binaries for packages with no test of the tier**<br>• Pass only the packages holding a test of the tier to go test; weighs most under Cortex XDR | [`gate-tier-binaries-only`](design-gate-tier-binaries-only.md) | darn |  | 4h<br>1h | gate |
 
 ### Notes (24)
 
