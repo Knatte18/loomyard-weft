@@ -1,6 +1,6 @@
 # internal/battencli beamHub onto a registered template
 
-`battencli-templates` · Task · enhancement, fabric, testkit, git · running · Open-Window
+`battencli-templates` · Task · enhancement, fabric, testkit, git · running · Record-Write
 
 Decision record: [Sketch](decision-battencli-templates.md)
 
