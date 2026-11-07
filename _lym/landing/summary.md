@@ -1,58 +1,39 @@
-# Clear the box before slash commands; give open sessions the role's TTL
+# claudeengine: 5m cache TTL on open, and no slash command behind a space
 
-Two fixes in shuttle's Claude path.
+Two fixes in `internal/shuttleengine`, `claudeengine` and the verified-send path.
 
-## A slash command sent behind a space
+## Open sessions use the role's cache TTL
 
-On 2026-11-07 at 08:53:53Z the hub orch's session got ` /compact Keep every run ...` as a prompt, and no compaction ran.
-The records show what happened:
+`buildOpenCmd` set no `CLAUDE_CODE_PROMPT_CACHE_TTL`, so a session from `lym shuttle open` wrote its prompt cache at Claude Code's 1h default.
+`Claude.OpenLaunch` now resolves the TTL for `OpenSpec.Role` from `claude.yaml`, as a run does.
+An invalid TTL anywhere in `claude.yaml` refuses the open before any file is written.
+The fresh line and the resume line both start with a statement exporting the variable.
+The resume line falls back to the fresh line, so the export sits in front of the joined pair.
+It uses `sh.ExportEnv` and `sh.Chain`, which keeps both shell dialects covered.
+Every window launched through `OpenLaunch` gets the TTL, not only `lym shuttle open`.
 
-- The orch's events file holds a `UserPromptSubmit` for that text, and its prompt opens with an ASCII space.
-  The orch's 53 successful `/compact` sends fire no `UserPromptSubmit`; nor do `/reload-plugins` or `/clear`.
-- Creel journaled inject 860 as `injected` 0.4 s after it started sending.
-  `confirmPasted` counted any turn start past the paste as a landing.
-  So the prompt's turn start confirmed the command, and the cycle only went on when the session compacted 4.5 minutes later.
-- lym did not write the space.
-  `CompactSessionSequence` has no space, reed loads the paste buffer verbatim from standard input,
-  and the paste went in as one bracketed paste.
-  The space was already in the input box.
-  The idle reading counts whitespace as blank, so it read the box as empty.
-  Nothing records what typed the space, so its source is still unknown.
+## A slash command is not pasted behind whitespace
 
-The fix stops whitespace in the box from turning a command into a prompt, whatever typed it,
-and stops a command that ran as a prompt from passing as a success:
+`isBlankBoxInterior` counts whitespace as an empty box, so a stray space passed the idle check and sat in front of the pasted `/compact`, `/clear` or `/reload-plugins`.
+Claude Code took the result as an ordinary prompt and the command silently did not run.
+The source of the stray space was not found; the fix does not depend on it.
 
-- `pasteVerified` plays the engine's `InputBoxClearer` keys right before the paste of a send that starts no turn.
-  For Claude that is one `C-u`.
-  This covers `/clear`, `/compact`, `/reload-plugins` and `/color`.
-  The clear goes only into a box the guard has just read as empty, after the operator-activity hold,
-  and C-u interrupts no turn.
-  `InputBoxClearer`'s contract now lists this third case.
-- `confirmPasted` fails such a send with the new `ErrCommandTakenAsPrompt` when a turn starts after the paste.
-  `mapDeliveryError` passes the error through as a failed send.
-  Creel then requeues the inject and types it again once the session is idle.
-  It no longer journals the inject as `injected`, or as `unconfirmed`, which the orch watcher would have waited out to its handoff timeout.
+- A send that starts no turn now clears the box right before its paste, using the engine's `InputBoxClearer`.
+  The clear goes only into a box that reads blank or unreadable, with no operator active in the pane.
+  Text typed since the idle reading holds the send with `ErrSessionBusy`, and nothing is cleared or pasted.
+- A turn start after the paste, with an empty instruction or the command's text as the instruction, fails the send with the new `ErrCommandTakenAsPrompt`.
+  A turn start with another instruction, such as an operator's prompt, is not taken as a signal.
+- `creelcli` passes `ErrCommandTakenAsPrompt` through as a plain send error, so creel requeues the inject and types it again once the session is idle.
 
-## `lym shuttle open` sessions cached for 1h
+Docs and the `claude.yaml` template comments are updated to match.
 
-`OpenLaunch` set no `CLAUDE_CODE_PROMPT_CACHE_TTL`, so opened sessions wrote their cache at Claude Code's 1h default.
-It now resolves the TTL from `OpenSpec.Role` through `claude.yaml` with the same resolver `Prepare` uses.
-It logs the value, and it refuses an invalid TTL set before it writes anything.
-Both launch lines open with one `ExportEnv` statement.
-A per-command `WithEnv` prefix would not work here:
-on POSIX it would cover only the resume half of `resume || fresh`,
-and on pwsh it would split the `||` chain.
-`Runner.Open` has one caller, `lym shuttle open`, so no other window launches through this path.
+## To check by hand
 
-## Tests
-
-- `checkPastedSessionCommand`, run for clear, compact, reload-plugins and color, pins the `C-u` sent right before the paste.
-  It also pins that a held command sends no key.
-  A new row pins that a turn start the paste causes fails the command with `ErrCommandTakenAsPrompt`.
-- `checkLandingStartConfirmation` now expects that one clear key before the paste, and no key after it.
-- `TestOpenLaunch` checks every line after the TTL export.
-  New rows pin a mapped role's TTL, an unmapped role's default and the refusal of an invalid TTL.
-
-```yaml
-pattern_departures: none
-```
+- `clearBoxBeforeCommand` clears before the command with no activity check once the box reads blank.
+  The activity query runs, but a turn started between the idle reading and the clear is not excluded.
+  Confirm that is acceptable (`internal/shuttleengine/send.go`).
+- `confirmPasted` fails a command send on any turn start with an empty or matching instruction, whatever turn that is.
+  A turn that begins for another reason with no recorded instruction would fail a command that did run, and creel would retype it.
+  Confirm that cannot happen in practice (`internal/shuttleengine/send.go`).
+- Run `lym shuttle open` and check the new session's transcript shows `ephemeral_5m_input_tokens`, not `ephemeral_1h_input_tokens`.
+  A real compact on a session with a space in the box was not run either.
