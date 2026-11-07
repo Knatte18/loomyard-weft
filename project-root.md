@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-07 12:38 UTC; every age below is as of then.
+Rendered 2026-11-07 12:39 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -21,9 +21,9 @@ Held by a run; its scope is locked until the run ends.
 | T2 | **Drift fails runs on capture noise such as _source.txt that is no part of the results** | [`drift-provenance-stops-runs`](design-drift-provenance-stops-runs.md) | darn · solid | Finalize | neve | 1h<br>1h | drift, loom |
 | T3 | **Claude sessions: a slash command sent with a leading space, and open sessions caching 1h**<br>• Two claudeengine bugs: /compact as a prompt, and shuttle open without the 5m TTL | [`claude-session-fixes`](design-claude-session-fixes.md) | darn · light | Code-Burler-Fix | neve | 3h<br>35m | shuttle, claude |
 | T4 | **fabric clone leaves the prime without heddle's rendered files**<br>• Made fires before the config reconcile and its warning is dropped | [`clone-prime-heddle-unrendered`](design-clone-prime-heddle-unrendered.md) | darn · light | Code-Burler-Fix | neve | 41m<br>35m | fabric, heddle |
-| T5 | **Defects the comment cleanup found but left: stale headings, dead helper, stencil paths, joint edits** | [`comment-cleanup-leftovers`](design-comment-cleanup-leftovers.md) | darn · light | Finalize | neve | 40m<br>35m | config, cwd, stencil, docs |
+| T5 | **Defects the comment cleanup found but left: stale headings, dead helper, stencil paths, joint edits** | [`comment-cleanup-leftovers`](design-comment-cleanup-leftovers.md) | darn · light | Finalize | neve | 41m<br>35m | config, cwd, stencil, docs |
 | T6 | **A Codex seat that read its skills is logged as not having loaded them**<br>• All five skills logged not loaded though the rollout shows SKILL.md read; cause not found | [`codex-skill-load-false-missing`](design-codex-skill-load-false-missing.md) | darn · light | Finalize | neve | 23h<br>35m | shuttle, codex |
-| T7 | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | darn · light | Code-Bouncer | neve | 1d<br>35m | tools, claude |
+| T7 | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | darn · light | Drift-Recheck | neve | 1d<br>35m | tools, claude |
 
 ### Ready (0)
 
@@ -37,7 +37,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | `draft` **Skills and effort for every role and subagent come from config**<br>• Skills per role in config, gate fixer included; subagents load fitting skills; every effort explicit | [`agent-skills-and-effort`](design-agent-skills-and-effort.md) | darn · solid | T3<br>T5 | 3h<br>34m | shuttle, stencil, claude, gate, loom |
+| T8 | `draft` **Skills and effort for every role and subagent come from config**<br>• Skills per role in config, gate fixer included; subagents load fitting skills; every effort explicit | [`agent-skills-and-effort`](design-agent-skills-and-effort.md) | darn · solid | T3<br>T5 | 3h<br>35m | shuttle, stencil, claude, gate, loom |
 
 ## Notes (26)
 
@@ -49,10 +49,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R2 |  | **Re-measure writer exploration and the carry of lookup results after the Discussion stencil change**<br>• Re-run the writer-lookups measurement on 10 tapestry runs, pricing the carry saved by early explore subagents | [`writer-lookups-remeasure`](design-writer-lookups-remeasure.md) | 2d<br>1d | loom, stencil |
 | R3 |  | **Trial creel mail across hubs**<br>• A darn docs run in which the loomyard orch drives a run in lyt from start to landing through creel alone | [`creel-cross-hub-trial`](design-creel-cross-hub-trial.md) | 1d<br>1d |  |
-| R4 |  | **The skill-load hold landed with two checks by hand left open** | [`skill-load-hold-unchecked`](design-skill-load-hold-unchecked.md) | 40m<br>40m | shuttle |
-| R5 |  | **The Python guard's new refusal text was never seen in a real session** | [`python-guard-live-unchecked`](design-python-guard-live-unchecked.md) | 40m<br>40m | shuttle, claude |
+| R4 |  | **The skill-load hold landed with two checks by hand left open** | [`skill-load-hold-unchecked`](design-skill-load-hold-unchecked.md) | 41m<br>41m | shuttle |
+| R5 |  | **The Python guard's new refusal text was never seen in a real session** | [`python-guard-live-unchecked`](design-python-guard-live-unchecked.md) | 41m<br>41m | shuttle, claude |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>1d | loom, stencil |
-| R7 |  | **Re-measure the batching hook once its transcript wait has landed**<br>• Count firings against edit follows and lookup chains again, now that the hook waits for its call to reach the transcript | [`batching-hook-remeasure-wait`](design-batching-hook-remeasure-wait.md) | 27m<br>27m | claude, shuttle |
+| R7 |  | **Re-measure the batching hook once its transcript wait has landed**<br>• Count firings against edit follows and lookup chains again, now that the hook waits for its call to reach the transcript | [`batching-hook-remeasure-wait`](design-batching-hook-remeasure-wait.md) | 28m<br>28m | claude, shuttle |
 
 ### Bugs (1)
 
@@ -67,8 +67,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E1 |  | **The gate builds and starts test binaries for packages with no test of the tier**<br>• Pass only the packages holding a test of the tier to go test; weighs most under Cortex XDR | [`gate-tier-binaries-only`](design-gate-tier-binaries-only.md) | 4h<br>1h | gate |
 | E2 |  | **git worktree list is 15 percent of tier 1 git processes and only reads .git/worktrees**<br>• Serve the list from dotgit, with a parity test against git | [`worktree-list-through-dotgit`](design-worktree-list-through-dotgit.md) | 4h<br>4h | fabric |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 10d<br>1d | batten, stencil, config |
-| E4 |  | **trusted_hubs lists shortnames, which neither say which repository is meant nor identify it**<br>• List trusted hubs by full repository name instead of shortname | [`creel-trust-by-repo-name`](design-creel-trust-by-repo-name.md) | 3h<br>3h | creel |
-| E5 |  | **Heddle renders .claude/settings.local.json: no co-author, lym's model and effort defaults**<br>• Attribution off and lym model/effort defaults, in session settings and by an operator-run setup verb | [`machine-claude-defaults`](design-machine-claude-defaults.md) | 27m<br>1m | claude, config, heddle, fabric |
+| E4 |  | **trusted_hubs lists shortnames, which neither say which repository is meant nor identify it**<br>• List trusted hubs by full repository name instead of shortname | [`creel-trust-by-repo-name`](design-creel-trust-by-repo-name.md) | 4h<br>4h | creel |
+| E5 |  | **Heddle renders .claude/settings.local.json: no co-author, lym's model and effort defaults**<br>• Attribution off and lym model/effort defaults, in session settings and by an operator-run setup verb | [`machine-claude-defaults`](design-machine-claude-defaults.md) | 28m<br>1m | claude, config, heddle, fabric |
 | E7 |  | **Each part agent plans and builds its own part, instead of joining the parts into one plan** | [`parts-plan-and-build`](design-parts-plan-and-build.md) | 4d<br>1d | loom |
 | E9 |  | **An interactive agent idle for a set time gets its session compacted**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 6d<br>3d | shed, shuttle, batten |
 
