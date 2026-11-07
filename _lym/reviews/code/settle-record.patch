@@ -1,0 +1,302 @@
+diff --git a/internal/heddlecli/cli_integration_test.go b/internal/heddlecli/cli_integration_test.go
+index fda88f6c..96546010 100644
+--- a/internal/heddlecli/cli_integration_test.go
++++ b/internal/heddlecli/cli_integration_test.go
+@@ -501,8 +501,10 @@ func TestHeddleCLI(t *testing.T) {
+ 		if head := git(t, boltDir, "rev-parse", "HEAD"); head != headBefore {
+ 			t.Errorf("Bolt HEAD = %s; want %s, no foreground commit", head, headBefore)
+ 		}
+-		if status := git(t, boltDir, "status", "--porcelain", "--untracked-files=no"); status != boltStatusBefore {
+-			t.Errorf("Bolt tracked status = %q; want %q", status, boltStatusBefore)
++		// The save renders the committed overview beside the store and leaves it for the board sync to commit.
++		wantBoltStatus := boltStatusBefore + " M " + heddleengine.OverviewFileName + "\n"
++		if status := git(t, boltDir, "status", "--porcelain", "--untracked-files=no"); status != wantBoltStatus {
++			t.Errorf("Bolt tracked status = %q; want %q", status, wantBoltStatus)
+ 		}
+ 		if status := git(t, cwd, "status", "--porcelain"); status != primeStatusBefore {
+ 			t.Errorf("prime status = %q; want %q, no worktree file changed", status, primeStatusBefore)
+diff --git a/internal/heddleengine/doc.go b/internal/heddleengine/doc.go
+index e044f928..5970dc3a 100644
+--- a/internal/heddleengine/doc.go
++++ b/internal/heddleengine/doc.go
+@@ -35,6 +35,7 @@
+ // Each shows its source, order, targets and text, a JSON-object entry's object as a json block.
+ // The `lym heddle` write path renders it under the Bolt write lock after each save,
+ // and the Bolt replayer claims it and renders it afresh after each replay, so it holds no state of its own.
++// The hub config reconcile a new lym build runs renders it too, so a missing file or one a release made stale is renewed.
+ //
+ // A prompt target is read as passages appended to a session's system prompt, the shipped ones first.
+ // A prompt target reaches the sessions its row names by engine, by strand role, or both:
+diff --git a/internal/hubreconcile/doc.go b/internal/hubreconcile/doc.go
+index fe14d6d5..6b1c8f8b 100644
+--- a/internal/hubreconcile/doc.go
++++ b/internal/hubreconcile/doc.go
+@@ -37,6 +37,11 @@
+ // A pair registered while the walk ran is therefore walked before the stamp is written.
+ // The board commit carries the per-worktree repo defaults beside the hub-wide files.
+ // Each worktree's applied files are committed in that worktree.
++// The board write also renders the heddle overview, HEDDLE.md, afresh in the Bolt checkout, under the Bolt write lock.
++// A hub therefore gets the file, or a file the shipped entries of a new build made stale renewed, with no hand step.
++// A render that changes no byte adds nothing to the commit.
++// A failed render is logged and leaves the file as it was, and the config reconcile goes on.
++// A failed board write restores the overview with the config files.
+ // The board's push goes to the detached `lym board sync` every board write spawns.
+ // That sync carries the board commit and any an earlier run left unpushed.
+ // The walk spawns it and returns at once.
+diff --git a/internal/hubreconcile/ensure_integration_test.go b/internal/hubreconcile/ensure_integration_test.go
+index 3939c709..3cba6d99 100644
+--- a/internal/hubreconcile/ensure_integration_test.go
++++ b/internal/hubreconcile/ensure_integration_test.go
+@@ -21,6 +21,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/configreg"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/heddleengine"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/hubreconcile"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+@@ -905,6 +906,116 @@ func TestEnsure_MergeBeginningBeforeCommitRestoresTheFiles(t *testing.T) {
+ 	assertClean(t, h.PairRecordsSibling("pair-a"))
+ }
+ 
++func TestEnsure_HubWideWalkRendersAndCommitsTheHeddleOverview(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	landingRel := filepath.ToSlash(configengine.ConfigFileRel("landing"))
++	tests := []struct {
++		name string
++		// seed leaves the board's overview and heddle.json in the state the row walks, in board commits.
++		seed func(t *testing.T, h *hubforge.Hub)
++		// failedWriteFirst runs a walk whose board write fails first, and expects it to restore the overview.
++		failedWriteFirst bool
++		// renderFails marks a heddle.json that does not load, so the render fails and the walk goes on.
++		renderFails bool
++		// wantOverviewCommitted is whether the walk's board commit names the overview.
++		wantOverviewCommitted bool
++		// wantLandingCommitted is whether the walk's board commit names the landing config the seed changed.
++		wantLandingCommitted bool
++	}{
++		{
++			name: "missing overview",
++			seed: func(t *testing.T, h *hubforge.Hub) {
++				gitkit.Git(t, h.BoardDir(), "rm", "-q", "--ignore-unmatch", "--", heddleengine.OverviewFileName)
++				gitkit.Git(t, h.BoardDir(), "commit", "-q", "--allow-empty", "-m", "fixture: no heddle overview")
++			},
++			failedWriteFirst:      true,
++			wantOverviewCommitted: true,
++		},
++		{
++			name: "stale overview",
++			seed: func(t *testing.T, h *hubforge.Hub) {
++				gitkit.CommitFile(t, h.BoardDir(), heddleengine.OverviewFileName, "# Heddle\n\nstale\n", "fixture: stale heddle overview")
++			},
++			failedWriteFirst:      true,
++			wantOverviewCommitted: true,
++		},
++		{
++			name: "overview already current",
++			seed: func(t *testing.T, h *hubforge.Hub) {
++				if changed, err := heddleengine.RenderOverview(h.BoardDir()); err != nil {
++					t.Fatalf("RenderOverview: %v", err)
++				} else if changed {
++					gitkit.Git(t, h.BoardDir(), "add", "--", heddleengine.OverviewFileName)
++					gitkit.Git(t, h.BoardDir(), "commit", "-q", "-m", "fixture: current heddle overview")
++				}
++				seedRetiredHubWideKey(t, h)
++			},
++			wantLandingCommitted: true,
++		},
++		{
++			name: "heddle store that does not load",
++			seed: func(t *testing.T, h *hubforge.Hub) {
++				gitkit.CommitFile(t, h.BoardDir(), heddleengine.FileName, "{not json", "fixture: broken heddle.json")
++				seedRetiredHubWideKey(t, h)
++			},
++			renderFails:          true,
++			wantLandingCommitted: true,
++		},
++	}
++	for _, tc := range tests {
++		t.Run(tc.name, func(t *testing.T) {
++			t.Parallel()
++
++			h := newStaleHub(t)
++			geom := geometryOf(h)
++			tc.seed(t, h)
++			overview := filepath.Join(h.BoardDir(), heddleengine.OverviewFileName)
++			before, beforeErr := os.ReadFile(overview)
++			statusBefore := gitkit.GitStatusPorcelain(t, h.BoardDir())
++
++			if tc.failedWriteFirst {
++				if err := hubreconcile.EnsureFailingAfterHubWideWrite(geom, hubreconcile.Options{}, errors.New("fixture: failure after the hub-wide write")); err == nil {
++					t.Fatalf("EnsureFailingAfterHubWideWrite = nil; want the fixture failure")
++				}
++				after, afterErr := os.ReadFile(overview)
++				if string(after) != string(before) || errors.Is(afterErr, os.ErrNotExist) != errors.Is(beforeErr, os.ErrNotExist) {
++					t.Errorf("overview after a failed board write = %q (err %v); want it restored to %q (err %v)", after, afterErr, before, beforeErr)
++				}
++				if got := gitkit.GitStatusPorcelain(t, h.BoardDir()); got != statusBefore {
++					t.Errorf("board status after a failed board write = %q; want %q", got, statusBefore)
++				}
++			}
++
++			if err := hubreconcile.Ensure(geom, hubreconcile.Options{}); err != nil {
++				t.Fatalf("Ensure: %v", err)
++			}
++			committed := strings.Split(gitkit.Git(t, h.BoardDir(), "log", "-1", "--name-only", "--format="), "\n")
++			if got := slices.Contains(committed, heddleengine.OverviewFileName); got != tc.wantOverviewCommitted {
++				t.Errorf("the walk's board commit holds %q; want %s committed: %v", committed, heddleengine.OverviewFileName, tc.wantOverviewCommitted)
++			}
++			if got := slices.Contains(committed, landingRel); got != tc.wantLandingCommitted {
++				t.Errorf("the walk's board commit holds %q; want %s committed: %v", committed, landingRel, tc.wantLandingCommitted)
++			}
++			after, afterErr := os.ReadFile(overview)
++			if tc.renderFails {
++				if string(after) != string(before) || errors.Is(afterErr, os.ErrNotExist) != errors.Is(beforeErr, os.ErrNotExist) {
++					t.Errorf("overview after a failed render = %q (err %v); want it left as %q (err %v)", after, afterErr, before, beforeErr)
++				}
++				if _, err := heddleengine.RenderOverview(h.BoardDir()); err == nil {
++					t.Errorf("RenderOverview = nil error; want the broken heddle.json to still fail")
++				}
++			} else if changed, err := heddleengine.RenderOverview(h.BoardDir()); err != nil || changed {
++				t.Errorf("RenderOverview after the walk = (%v, %v); want (false, nil), the walk having rendered what heddle holds", changed, err)
++			}
++			if got := gitkit.GitStatusPorcelain(t, h.BoardDir()); got != statusBefore {
++				t.Errorf("board status after the walk = %q; want %q, the overview committed", got, statusBefore)
++			}
++		})
++	}
++}
++
+ // commitTemplate commits module's template as its config file in the records worktree at recordsRoot.
+ func commitTemplate(t *testing.T, recordsRoot, module string) {
+ 	t.Helper()
+diff --git a/internal/hubreconcile/seam_enforcement_test.go b/internal/hubreconcile/seam_enforcement_test.go
+index 06c6e5b8..900afd21 100644
+--- a/internal/hubreconcile/seam_enforcement_test.go
++++ b/internal/hubreconcile/seam_enforcement_test.go
+@@ -19,6 +19,7 @@ var hubreconcileAllowedImports = []string{
+ 	"github.com/Knatte18/loomyard/internal/configsync",
+ 	"github.com/Knatte18/loomyard/internal/fabricengine",
+ 	"github.com/Knatte18/loomyard/internal/fsx",
++	"github.com/Knatte18/loomyard/internal/heddleengine",
+ 	"github.com/Knatte18/loomyard/internal/lock",
+ 	"github.com/Knatte18/loomyard/internal/logger",
+ }
+diff --git a/internal/hubreconcile/walk.go b/internal/hubreconcile/walk.go
+index 7db7dec4..9908fc00 100644
+--- a/internal/hubreconcile/walk.go
++++ b/internal/hubreconcile/walk.go
+@@ -18,6 +18,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/configsync"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/fsx"
++	"github.com/Knatte18/loomyard/internal/heddleengine"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ )
+@@ -202,8 +203,9 @@ var spawnBoardSync = boardengine.SpawnSync
+ // A seed-only module's template base that the pass wrote joins the commit beside its file.
+ // A registered reinterpretation whose board marker is absent is judged against the prime and applied.
+ // Its marker joins the commit.
++// The heddle overview is rendered afresh from what heddle holds, and joins the commit when its bytes changed.
+ // The board is pulled first: when it cannot be brought up to date, nothing is written and skipped is true.
+-// A reconcile or commit failure restores the board's config files to their prior bytes.
++// A reconcile or commit failure restores the board's config files and the overview to their prior bytes.
+ // It also removes a marker or template base the pass wrote.
+ // Once the commit lands, the hub's orch is mailed what the reinterpretations rewrote or flagged.
+ // It is also mailed what the seed-only files took from their template or kept against it.
+@@ -223,6 +225,9 @@ func reconcileHubWide(boardDir string, prime fabricengine.CodeWorktree, label st
+ 			if err != nil {
+ 				return nil, err
+ 			}
++			if err := snapshotFile(prior, filepath.Join(boardDir, heddleengine.OverviewFileName)); err != nil {
++				return nil, err
++			}
+ 			markedBefore := fileExists(configengine.BaseSparseMarker(boardDir))
+ 			results, err := configsync.ReconcileHubWideAt(boardDir, prime.Anchor, configsync.HubWideOptions{Apply: true, SeedDefaults: true, StripBase: true})
+ 			if err != nil {
+@@ -256,6 +261,9 @@ func reconcileHubWide(boardDir string, prime fabricengine.CodeWorktree, label st
+ 				}
+ 			}
+ 			notices = lines
++			if renderHeddleOverview(boardDir) {
++				written = append(written, heddleengine.OverviewFileName)
++			}
+ 			if hooks.afterHubWideWrite != nil {
+ 				if err := hooks.afterHubWideWrite(); err != nil {
+ 					return nil, err
+@@ -279,6 +287,21 @@ func reconcileHubWide(boardDir string, prime fabricengine.CodeWorktree, label st
+ 	return false, nil
+ }
+ 
++// renderHeddleOverview renders the heddle overview in boardDir afresh and reports whether its bytes changed.
++// The shipped entries it lists change with a lym build while heddle.json stays as it is,
++// so the walk a new build runs is what renews it.
++// A failed render is logged and leaves the file as it was,
++// so a heddle store that does not load never blocks the config reconcile.
++func renderHeddleOverview(boardDir string) bool {
++	changed, err := heddleengine.RenderOverview(boardDir)
++	if err != nil {
++		logger.Warn("hubreconcile: the heddle overview was not rendered and stays as it was", "board", boardDir, "file", heddleengine.OverviewFileName, "error", err,
++			"way_forward", "fix the cause the error names; the next `lym heddle set` or `lym heddle remove` renders it")
++		return false
++	}
++	return changed
++}
++
+ // reconcileWorktree reconciles and commits one code worktree's config.
+ // It reports skipped when a merge in progress keeps the worktree from being written or committed.
+ // A skipped worktree leaves the build stamp stale.
+@@ -504,19 +527,28 @@ func snapshotConfig(anchor string) (map[string][]byte, error) {
+ 		}
+ 	}
+ 	for _, path := range paths {
+-		data, err := os.ReadFile(path)
+-		if errors.Is(err, fs.ErrNotExist) {
+-			prior[path] = nil
+-			continue
++		if err := snapshotFile(prior, path); err != nil {
++			return nil, err
+ 		}
+-		if err != nil {
+-			return nil, fmt.Errorf("snapshot %s: %w", path, err)
+-		}
+-		prior[path] = data
+ 	}
+ 	return prior, nil
+ }
+ 
++// snapshotFile records in prior the bytes of the file at path, or nil when it is absent.
++// Any read failure other than absence is returned naming the path.
++func snapshotFile(prior map[string][]byte, path string) error {
++	data, err := os.ReadFile(path)
++	if errors.Is(err, fs.ErrNotExist) {
++		prior[path] = nil
++		return nil
++	}
++	if err != nil {
++		return fmt.Errorf("snapshot %s: %w", path, err)
++	}
++	prior[path] = data
++	return nil
++}
++
+ // restoreConfig writes every file of a snapshot back to its prior bytes, removing the files it recorded as absent.
+ // It attempts every file and returns the failures joined, so one failed write does not skip the rest.
+ func restoreConfig(prior map[string][]byte) error {
+diff --git a/pattern/PATTERN-heddle-instructions.md b/pattern/PATTERN-heddle-instructions.md
+index 3d9a28de..76782d87 100644
+--- a/pattern/PATTERN-heddle-instructions.md
++++ b/pattern/PATTERN-heddle-instructions.md
+@@ -32,7 +32,8 @@ Heddle's instruction text is stored once per layer and rendered from those store
+   A setting every session of a worktree shares lives only there;
+   a setting that differs per session or role lives only in the `--settings` document a session is launched with.
+ - `HEDDLE.md` at the Bolt checkout's root shows every entry heddle holds.
+-  Only `heddleengine.RenderOverview` writes it: the `lym heddle` write path after each save, and heddle's Bolt replayer after each replay.
++  Only `heddleengine.RenderOverview` writes it: the `lym heddle` write path after each save, heddle's Bolt replayer after each replay,
++  and the hub config reconcile's board write once per lym build.
+ 
+ ## Lym instructions in code
+ 
