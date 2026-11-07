@@ -422,7 +422,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nReport `docs/research/turns/batching-hook-remeasure-2026-11-05` (d05c8d75): the hook fired 13 times in 22 runs; 156 edit follows met 2 edit firings, while a replay of the hook on one recorded edit follow fires. Edit follows rose from 4.2% to 6.9% of context (Webster forks 6.9% to 11.2%), all mid-round, none after a failed gate. The report recommends removing the hook and names the live gap as its one open question.\n\n## Idea\n\nFind why the hook does not fire live on edit follows before deciding to remove it: either fix the live gap and measure again, or remove the hook. Mid-round edit splitting is where the edit-round rule fails, so a fix there is what matters.",
-      "status": "running · Worktree-Create",
+      "status": "running · Seed-Child",
       "created": "2026-11-05T19:23:48Z",
       "revised": "2026-11-07T12:03:46Z",
       "profile": "light"
@@ -500,7 +500,7 @@
       "isolated": false,
       "brief": "All five skills logged not loaded though the rollout shows SKILL.md read; cause not found",
       "body": "## Seen\n\nIn the Code-Review of `assist-fan-seat-work-alone` on 2026-11-06, the Codex assistant seat's trace logged `shuttle: skill skipped ... cause=\"not loaded\"` for all five skills at 13:29:48, after both load turns, with the network up.\nIts rollout, `~/.codex/sessions/2026/11/06/rollout-2026-11-06T13-29-27-01a1b0d5-*.jsonl`, shows an `exec` `custom_tool_call` naming `SKILL.md` at 12:29:33Z, so the seat seems to have read its skills and the warning looks false.\n\n`custom_tool_call` is among `toolCallPayloads` in `internal/shuttleengine/codexengine/skillload.go`, so the payload kind alone is not the cause.\nThe cause is not found: the classifier may miss the skill tail inside the `exec` input, or the turn it reads may not be the one holding the call.\n\n## Why it matters\n\nA false warning hides a true one, and the task `skill-load-timeout-sends-prompt` leans on the same load reports.\n\n## Wanted\n\nFind why the classifier read these skills as not loaded, and make it read a Codex load correctly, or show that the skills were in fact not loaded.\n",
-      "status": "running · Seed-Child",
+      "status": "running · Open-IDE",
       "created": "2026-11-06T13:04:39Z",
       "revised": "2026-11-07T12:03:46Z",
       "profile": "light"
@@ -558,64 +558,6 @@
       "body": "## Seen\n\n`trusted_hubs` in `creel.yaml` lists hub shortnames, and `trustedSender` in `internal/creelengine/receive.go` matches the sender's shortname against that list.\nA shortname says little to a reader: `ly`, `cs` and `scr` do not show which repository is trusted.\nIt is also not an identity.\n`creel.yaml` sits in the Bolt, so the list follows the hub to every machine, while shortnames resolve per machine through the machine record.\nA hub on another machine, or a later hub that takes a freed shortname, is trusted by the same line.\nTwo hubs sharing a shortname on one machine are refused, which is safe.\n\n## Idea\n\nList trusted hubs by the repository's full name, such as `Knatte18/loomyard`, read from its origin, and show that name in `lym creel hubs` and in the trust stamp.\nA hub with no remote needs a stated answer.\n\n## Limit\n\nThis makes the list clearer and closes the shortname reuse, but it is no barrier against a process of the same user, which can edit `creel.yaml` directly.\nOnly the closed area in `sandbox-closed-area-build` could give that.\n",
       "created": "2026-11-07T08:38:49Z",
       "revised": "2026-11-07T08:38:49Z"
-    },
-    {
-      "id": 1183,
-      "handle": "B6",
-      "slug": "subagents-skip-language-skills",
-      "title": "Subagents spawned by a writer load no language skills, so their comments miss the scribe rules",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "shuttle",
-        "stencil"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Language skills reach the roles lym starts, not the subagents those roles spawn",
-      "body": "## Seen\n\nThe operator found that many workers in this repository's history did not load the scribe skills, and that many docstrings are poor for it (2026-11-07).\nIn `comment-cleanup`, all 502 subagents so far made no Skill call: neither the worker brief nor the lead brief named a skill.\n`skills` in `internal/languageconfig/template.yaml` loads language skills for the code-writing and code-reviewing roles lym starts, such as the darn writer and the Webster master.\nA subagent such a role spawns through the Agent tool is outside that list, so it gets a skill only if its brief says so.\nWhich earlier workers wrote without the skills, and through which route, is not traced.\n\n## Idea\n\nHave every agent that writes code or comments load the language skills, a spawned subagent included, through the stencils that tell a role to spawn one or through a hook at subagent start.\n\n## Wanted\n\nTrace which roles and subagents wrote without the skills, then close that route.\n",
-      "created": "2026-11-07T09:02:20Z",
-      "revised": "2026-11-07T09:02:20Z"
-    },
-    {
-      "id": 1184,
-      "handle": "B7",
-      "slug": "gate-fixer-no-prose-skills",
-      "title": "The gate fixer loads only the language skills, not prose or code-quality",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "gate",
-        "loom"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Every code role but the gate fixer starts from scribe:prose, code-quality and testing",
-      "body": "## Seen\n\nThe gate fixer, the cold session lym spawns after a failed gate, loads only the hub's language skills, `scribe:golang-comments` and `scribe:golang-testing` in this hub.\n`internal/loomcli/gatefixer.go` and `internal/gatecli/detachfixer.go` pass `languageconfig.AppendSkills(nil, ...)`, so it gets no `scribe:prose` or `scribe:code-quality`.\nEvery other code role starts from `scribe:prose`, `scribe:code-quality` and `scribe:testing`: the darn writer (`darnSkills`), the Webster roles (`roleSkills`), the Burler seats, the merge fixer and the conflict session.\nIn the transcripts of `creel-cross-hub-build`, `python-guard-gives-no-reason` and `drift-halts-bundle`, gate fixers loaded the two Go skills and nothing else, and edited Go files (2 to 20 edits a session).\n\n## Idea\n\nGive the gate fixer the same own list as the other code roles.\n",
-      "created": "2026-11-07T09:18:02Z",
-      "revised": "2026-11-07T09:18:02Z"
-    },
-    {
-      "id": 1187,
-      "handle": "B9",
-      "slug": "subagent-default-effort-xhigh",
-      "title": "Subagents spawned without an effort run at xhigh, not the medium settings name",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "shuttle",
-        "claude",
-        "stencil"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Haiku workers with no effort in the Agent call ran at xhigh",
-      "body": "## Seen\n\nIn `comment-cleanup` (2026-11-07), Haiku 5.5 workers spawned through the Agent tool with no `effort` ran at `xhigh`: about 36,000 transcript records carry `\"effort\":\"xhigh\"`.\nWorkers spawned with `effort: medium` ran at medium.\n`~/.claude/settings.json` sets `effortLevel` medium for `claude-haiku-5-5` under `modelSettings`, and the operator never sets xhigh, so a subagent's default effort ignores that setting.\nlym passes no effort to a subagent: the writer and the leads spawned theirs from their own briefs.\n\n## Idea\n\nEvery stencil or brief that tells an agent to spawn subagents has it pass `effort` explicitly, and lym's own subagent spawns do the same.\nCheck whether the default is Claude Code's for subagents, and whether a setting can pin it.\n",
-      "created": "2026-11-07T10:00:50Z",
-      "revised": "2026-11-07T10:00:50Z"
     },
     {
       "id": 1188,
@@ -681,7 +623,7 @@
       "isolated": false,
       "brief": "Made fires before the config reconcile and its warning is dropped",
       "body": "## Seen\n\nThe operator (2026-11-07): after `lym fabric clone`, heddle's files are not rendered in the prime worktree, while a worktree that fabric adds gets them.\n\nIn code the clone does tell heddle: `internal/fabriccli/clone.go` calls `fabricengine.NotifyWorktreeMade(l)` for the prime right after `WireJunctionsWith`, and `heddleengine.Seam.Made` renders every target.\nTwo things differ from the add path, which calls it last in `Topology.add`:\n\n- The clone fires it before `configsync.ReconcileAll` writes the per-worktree module configs and before their commit, so a render that reads config may find none yet.\n- The clone discards the warning text `NotifyWorktreeMade` returns, so a failed render shows only in the log at Warn and the operator is never told; the add path's handling is not checked.\n\nWhich of the two, or what else, leaves the prime unrendered is not confirmed; the clone's log holds the seam warning if the render failed.\n\n## Wanted\n\nA `lym fabric clone` leaves the prime with heddle's files rendered, as a worktree fabric adds has them.\nA failed render on clone is printed with its way forward, `lym heddle render` in the prime, not only logged.\n",
-      "status": "running · Open-Window",
+      "status": "running · Preflight",
       "created": "2026-11-07T11:57:26Z",
       "revised": "2026-11-07T12:03:45Z",
       "profile": "light"
@@ -705,7 +647,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nThe `comment-cleanup` landing (`f7465bd8`, 2026-11-07) edited comments and prose only, and lists what its workers found but left:\n\n- Stale headings in the `configengine` doc.\n- `lymcwd.ResolveWithAnchor` has no non-test caller.\n- Stencil paths under `{{.specs_dir}}/loom/` name no existing folder.\n- Comment claims kept as written because a worker could not confirm them against the code.\n- Boundary fragments where two workers' spans met.\n- Files edited by more than one worker at once, among them tests in `cmd/lym`, `internal/adoptcli` and `internal/websterengine/render.go`; the commit asks a reviewer to read their diffs whole.\n\n## Idea\n\nOne darn run settles the list: fix the stale headings and stencil paths, remove `ResolveWithAnchor` or give it its caller, confirm or correct each kept claim, and read the jointly edited files whole for broken or doubled comments.\nThe commit body of `f7465bd8` names where each was found.\n",
-      "status": "running · Worktree-Create",
+      "status": "running · Seed-IDE",
       "created": "2026-11-07T11:58:20Z",
       "revised": "2026-11-07T12:03:45Z",
       "profile": "light"
@@ -764,10 +706,35 @@
       "isolated": false,
       "brief": "Two claudeengine bugs: /compact as a prompt, and shuttle open without the 5m TTL",
       "body": "Two bugs in `internal/shuttleengine/claudeengine`, bundled by the operator (2026-11-07).\n\n## 1. A slash command sent with a leading space\n\n### Seen\n\nOn 2026-11-07, after the orch note for a context cycle was written, the hub orch's session received ` /compact Keep every run in flight ...` as an ordinary prompt, with a leading space, so Claude Code ran no compact and the cycle did not happen.\n\n`CompactSessionSequence` in `session.go` builds the text with no leading space and relies on the caller having proved the input box empty.\n`isBlankBoxInterior` in the same file counts whitespace as blank.\nSo a likely cause is a space left in the input box, which reads as empty and sits in front of the pasted text.\nThat is not proved: where the space came from is unknown, and the prompt was seen only in the transcript.\n\n`/clear` and `/reload-plugins` go the same way, and a slash command with a leading space fails with no error, reaching the agent as a prompt it cannot act on.\n\n### Wanted\n\nFind where the space came from, and have the sequence clear the box first or check that the command ran, so a cycle does not silently fail.\n\n## 2. `lym shuttle open` sessions cache 1h\n\n### Seen\n\n`buildOpenCmd` in `command.go` takes no TTL and sets no `CLAUDE_CODE_PROMPT_CACHE_TTL`, while `buildLaunchCmd` and `buildResumeCmd` do.\nSessions opened with `lym shuttle open` write their prompt cache with a 1h TTL: their transcripts show `ephemeral_1h_input_tokens`.\n`claude.yaml` resolves `prompt_cache_ttl` to 5m for their role, and sessions started by `lym shuttle run`, and their subagents, write 5m.\nWhich other lym windows launch through `OpenLaunch` besides `lym shuttle open` is not checked.\n\n### Wanted\n\nA session from `lym shuttle open`, and any other window launched through the open path, writes its cache at the TTL `claude.yaml` resolves for its role, as a `lym shuttle run` session does.\nThe operator wants 5m for these sessions.\n",
-      "status": "running · Open-Window",
+      "status": "running · Record-Write",
       "created": "2026-11-07T08:57:16Z",
       "revised": "2026-11-07T12:03:45Z",
       "profile": "light"
+    },
+    {
+      "id": 1195,
+      "handle": "T8",
+      "slug": "agent-skills-and-effort",
+      "title": "Skills and effort for every role and subagent come from config",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "shuttle",
+        "stencil",
+        "claude",
+        "gate",
+        "loom"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Skills per role in config, gate fixer included; subagents load fitting skills; every effort explicit",
+      "body": "Three bugs bundled by the operator (2026-11-07): which skills and which effort an agent runs with is decided in lym's config, for every role lym starts and for every subagent such a role spawns.\n\n## Seen\n\n- Skills per role are Go lists: `darnSkills`, `roleSkills` (Webster), `burlerSkills`, `fixerSkills` and `conflictSkills`, each `scribe:prose`, `scribe:code-quality` and `scribe:testing`, joined with `skills` from `language.yaml` through `languageconfig.AppendSkills`.\n  The gate fixer has no list of its own: `internal/loomcli/gatefixer.go` and `internal/gatecli/detachfixer.go` pass `AppendSkills(nil, ...)`, so it loads only the language skills, with no `scribe:prose` or `scribe:code-quality`, and edits Go files (seen in `creel-cross-hub-build`, `python-guard-gives-no-reason` and `drift-halts-bundle`).\n- A subagent a role spawns through the Agent tool gets a skill only if its brief names one: in `comment-cleanup` none of the 502 subagents made a Skill call, and the comments the repository's earlier workers wrote missed the scribe rules for it.\n- A subagent spawned with no `effort` ran at `xhigh`: in `comment-cleanup` Haiku 5.5 workers carry about 36,000 records with `\"effort\":\"xhigh\"`, though `~/.claude/settings.json` sets `effortLevel` medium for `claude-haiku-5-5` under `modelSettings` and the operator never sets xhigh.\n  Lym passes `--effort` to a session it launches only when a model-spec names one, and passes nothing for a subagent.\n\n## Wanted\n\n- **Skills in config.** One config lists the skills each role lym starts loads, by role, the gate fixer included, in place of the Go lists; `language.yaml`'s `skills` stays the hub's language layer on top.\n  A role missing from the config is a refusal at load, so no role starts with no list.\n- **Subagents inherit.** A role that spawns subagents through the Agent tool tells each to load the skills from its own list that fit the subagent's work: a subagent that writes or reviews code or comments loads the prose, code-quality and language skills.\n  The stencils and the briefs lym writes say so, and the way the parent learns its own list is one place, not restated per stencil.\n- **Effort controlled.** Every session lym launches gets an explicit effort, from config by role and model where its model-spec names none.\n  Every subagent a role spawns gets an explicit `effort` in its Agent call, from the same config, so no subagent falls to Claude Code's default.\n  Check whether a Claude Code setting or environment variable pins a subagent's default effort, and set it as a backstop if one exists.\n",
+      "status": "draft",
+      "created": "2026-11-07T09:02:20Z",
+      "revised": "2026-11-07T12:04:15Z",
+      "profile": "solid"
     }
   ],
   "prime_owner": "neve",

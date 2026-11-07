@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Tool schemas are three quarters of a spawned role's start; drop the tools a role never calls**<br>• 21,947 of 29,087 start tokens are tool schemas | [`role-tool-schemas`](design-role-tool-schemas.md) | darn · docs | Darn-Write | neve | 28m<br>4m | shuttle, claude |
+| T1 | **Tool schemas are three quarters of a spawned role's start; drop the tools a role never calls**<br>• 21,947 of 29,087 start tokens are tool schemas | [`role-tool-schemas`](design-role-tool-schemas.md) | darn · docs | Darn-Write | neve | 28m<br>5m | shuttle, claude |
 
 ### Ready (0)
 

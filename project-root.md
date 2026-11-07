@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (6)
+## Tasks (7)
 
 Concrete and claimable; only a task can run.
 
@@ -19,11 +19,11 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Drift fails runs on capture noise such as _source.txt that is no part of the results** | [`drift-provenance-stops-runs`](design-drift-provenance-stops-runs.md) | darn · solid | Code-Burler-Fix | neve | 1h<br>55m | drift, loom |
-| T3 | **Claude sessions: a slash command sent with a leading space, and open sessions caching 1h**<br>• Two claudeengine bugs: /compact as a prompt, and shuttle open without the 5m TTL | [`claude-session-fixes`](design-claude-session-fixes.md) | darn · light | Open-Window | neve | 3h<br>0m | shuttle, claude |
-| T4 | **fabric clone leaves the prime without heddle's rendered files**<br>• Made fires before the config reconcile and its warning is dropped | [`clone-prime-heddle-unrendered`](design-clone-prime-heddle-unrendered.md) | darn · light | Open-Window | neve | 6m<br>0m | fabric, heddle |
-| T5 | **Defects the comment cleanup found but left: stale headings, dead helper, stencil paths, joint edits** | [`comment-cleanup-leftovers`](design-comment-cleanup-leftovers.md) | darn · light | Worktree-Create | neve | 5m<br>0m | config, cwd, stencil, docs |
-| T6 | **A Codex seat that read its skills is logged as not having loaded them**<br>• All five skills logged not loaded though the rollout shows SKILL.md read; cause not found | [`codex-skill-load-false-missing`](design-codex-skill-load-false-missing.md) | darn · light | Seed-Child | neve | 22h<br>0m | shuttle, codex |
-| T7 | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | darn · light | Worktree-Create | neve | 1d<br>0m | tools, claude |
+| T3 | **Claude sessions: a slash command sent with a leading space, and open sessions caching 1h**<br>• Two claudeengine bugs: /compact as a prompt, and shuttle open without the 5m TTL | [`claude-session-fixes`](design-claude-session-fixes.md) | darn · light | Record-Write | neve | 3h<br>0m | shuttle, claude |
+| T4 | **fabric clone leaves the prime without heddle's rendered files**<br>• Made fires before the config reconcile and its warning is dropped | [`clone-prime-heddle-unrendered`](design-clone-prime-heddle-unrendered.md) | darn · light | Preflight | neve | 6m<br>0m | fabric, heddle |
+| T5 | **Defects the comment cleanup found but left: stale headings, dead helper, stencil paths, joint edits** | [`comment-cleanup-leftovers`](design-comment-cleanup-leftovers.md) | darn · light | Seed-IDE | neve | 5m<br>0m | config, cwd, stencil, docs |
+| T6 | **A Codex seat that read its skills is logged as not having loaded them**<br>• All five skills logged not loaded though the rollout shows SKILL.md read; cause not found | [`codex-skill-load-false-missing`](design-codex-skill-load-false-missing.md) | darn · light | Open-IDE | neve | 22h<br>0m | shuttle, codex |
+| T7 | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | darn · light | Seed-Child | neve | 1d<br>0m | tools, claude |
 
 ### Ready (0)
 
@@ -31,7 +31,15 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (27)
+### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T8 | `draft` **Skills and effort for every role and subagent come from config**<br>• Skills per role in config, gate fixer included; subagents load fitting skills; every effort explicit | [`agent-skills-and-effort`](design-agent-skills-and-effort.md) | darn · solid |  | 3h<br>0m | shuttle, stencil, claude, gate, loom |
+
+## Notes (24)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -45,14 +53,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R5 |  | **The Python guard's new refusal text was never seen in a real session** | [`python-guard-live-unchecked`](design-python-guard-live-unchecked.md) | 5m<br>5m | shuttle, claude |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>1d | loom, stencil |
 
-### Bugs (4)
+### Bugs (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B4 |  | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | 1d<br>1d | reed, orch |
-| B6 |  | **Subagents spawned by a writer load no language skills, so their comments miss the scribe rules**<br>• Language skills reach the roles lym starts, not the subagents those roles spawn | [`subagents-skip-language-skills`](design-subagents-skip-language-skills.md) | 3h<br>3h | shuttle, stencil |
-| B7 |  | **The gate fixer loads only the language skills, not prose or code-quality**<br>• Every code role but the gate fixer starts from scribe:prose, code-quality and testing | [`gate-fixer-no-prose-skills`](design-gate-fixer-no-prose-skills.md) | 2h<br>2h | gate, loom |
-| B9 |  | **Subagents spawned without an effort run at xhigh, not the medium settings name**<br>• Haiku workers with no effort in the Agent call ran at xhigh | [`subagent-default-effort-xhigh`](design-subagent-default-effort-xhigh.md) | 2h<br>2h | shuttle, claude, stencil |
 
 ### Enhancements (6)
 
