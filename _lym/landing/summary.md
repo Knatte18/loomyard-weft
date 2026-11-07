@@ -1,40 +1,45 @@
-# fabricengine tests: live-state and merge-layer fixtures onto templates
+# fabricengine tests: build live-state and merge layers once as templates
 
-The `internal/fabricengine` cross-product cells and merge tests now build their repeated start states once per test binary and copy them, instead of rebuilding them in every cell or test.
-Only test files change; there is no production code change and no new export.
+The `internal/fabricengine` tests rebuilt the same start states for every cell and test.
+They now build each start state once as a registered `hubforge` template, and every test copies it.
+The start state is the same by construction: each template's build is the fixture's former build steps, moved unchanged.
+The change is test-only and exports nothing.
+It speeds up the test pass.
 
-## Live-state cross product
+## Live-state matrix
 
-- `VerbCase` gains an optional `Build`, which holds the fixture steps a hubforge template build can run.
-  `Arrange` now derives the fixture value from the copied hub, and keeps only the steps a build cannot run.
-- `registerVerbTemplates` registers one template per anchor for each case with a `Build`, keyed `fabricengine-livestate-<verb>-<anchor>`.
-  `copyVerbHub` copies it in `runCell` and in `TestVerbCases_ArrangeSetsItsPreconditionField`, and copies the bare anchor shape for a case without a `Build`.
-- Remove, Prune, Cleanup, Checkout and UnwireJunctions move their pair setup into `Build` unchanged, so each start state is the same by construction.
-  Cleanup's `Arrange` reads the original branch from the Bolt checkout, which its `Build` never moves; before, it read the prime worktree's branch before the move.
-- Pull, the UnwireJunctions hostile case and the CloneHub{Reset} non-hub target keep their `Arrange` whole, because each places a directory outside the hub.
-- The live-state harness docs and the Cleanup omission reasons now name `Build` where they named `Arrange`.
+- `VerbCase` gains an optional `Build`, which holds the fixture steps a template build can run, such as adding a pair.
+- `registerVerbTemplates` registers one template per anchor for each verb with a `Build`, keyed by `verbTemplateKey`.
+  `runCell` takes its hub from `copyVerbHub`: a copy of the verb's template, or of the anchor's bare hub when the verb has no `Build`.
+- `Arrange` now derives the verb's fixture from the copy's `Hub`.
+  The Remove, Prune, Cleanup, Checkout and UnwireJunctions cases move their pair setup into `Build`.
+  Cleanup and Checkout read the original branch from the copy.
+- The Add case has no `Build`, so its `Arrange` stays whole.
+  Its blocker is a single directory and no git step, so a template would only add a build.
+- The Cleanup omission reasons now name `Build`, where the weft worktree is removed.
 
-## Merge-pair layers
+## Merge layers
 
-- `newMergeLayerFixture` copies a registered layer and returns the same values as `newMergePairFixture`; both now share `mergePairFixtureOf`.
-- Six layers, each repeated at three or more sites, move into registrations in `mergein_integration_test.go`:
-  - `conflictLayer` and `clashLayer`: "feature" conflicts on `conflict.txt` or `clash.txt`, with "feature-weft" at the weft's HEAD.
-  - `nonFastForwardLayer` and `warpProgressLayer`: a non-fast-forward "feature" with "feature-weft" at the weft's HEAD.
-  - `featureBothSidesLayer`: `feature.txt` committed on "feature" and "feature-weft".
-  - `cleanMergeableLayer`: the clean pair `newCleanMergeablePair` and the Merge lock test share.
-- Sites whose branch commits differ, or that read state before the layer's commits, keep their own steps.
-- `commitOnBranch`, `branchAtCurrentHEAD`, `setupConflictingDivergence` and `setupCleanNonFastForward` take `testing.TB`, so a build can call them.
+- `newMergePairFixture` stays a plain copy for tests that need no scenario commits.
+  It now delegates to `mergePairFixtureOf`, which opens the Fabric and the commit closures over a given hub.
+- `newMergeLayerFixture` does the same over a copy of a registered layer.
+- Six layers cover the branch-commit scenarios that at least three tests repeated:
+  `conflictLayer` and `clashLayer` (a conflict on `conflict.txt` or `clash.txt`),
+  `nonFastForwardLayer` and `warpProgressLayer`, `featureBothSidesLayer`, and `cleanMergeableLayer`.
+  The conflict and non-fast-forward layers share the builders `conflictingFeature` and `nonFastForwardFeature`.
+- The helpers a build calls (`commitOnBranch`, `branchAtCurrentHEAD`, `setupConflictingDivergence`, `setupCleanNonFastForward`) now take `testing.TB`.
+- The merge, merge-recovery, merge-lock, merge-stage, merge-weft-local, mid-merge and weft-guard integration tests use the layers in place of their inline setup.
 
 ## Design decisions
 
-- `addCase` has no `Build`.
-  Its arrange plants one directory and runs no git step, so a template would add a build and save nothing.
-  This departs from the record's "each verb's arrange splits".
-- `newMergePairFixture` itself stays a plain copy, as the record says; only the layers above it move.
-- No build calls `os.Setenv`, `os.MkdirTemp` or `git config --global`, keeps the TB's `Context()` past the build, or calls a seam setter or once-only registration.
-  No test that installs a process-global seam copies one of these templates.
+- No build calls `os.Setenv`, `os.MkdirTemp` or `git config --global`.
+  No build keeps the TB's `Context()` past the build, calls a package-global seam setter or a once-only registration, or reaches code whose result a once-only registration changes.
+- An arrange that places a directory outside the hub stays whole in the test, since a build cannot place a path outside the hub.
+- Tests that install a process-global seam take their copies before installing it.
+- Tests that exercise `Add` still add their pairs.
 
-## To check by hand
+## To check
 
-- Run `lym gate test ./internal/fabricengine` and confirm `TestCrossProduct`'s cell tally and the merge tests' assertions match the previous run; none was run for this description.
-- `cleanup-original-branch` (design): in `cleanupCase`, confirm the Bolt checkout's branch equals the prime's branch before the move at both anchors, since the clean-state Effect asserts the primary weft branch survives.
+- Run `lym gate test ./internal/fabricengine` for the integration tier.
+  The assertions are unchanged, so the same tests should pass.
+  No run of it is recorded for this change.
