@@ -1,6 +1,6 @@
 # Batching hook fires on replay but almost never live
 
-`batching-hook-live-gap` · Task · bug, tools, claude · running · Open-IDE
+`batching-hook-live-gap` · Task · bug, tools, claude · running · Record-Write
 
 ## Seen
 
