@@ -1,6 +1,6 @@
 # The gate builds and starts test binaries for packages with no test of the tier
 
-`gate-tier-binaries-only` · Task · enhancement, gate · running · Drift-Recheck
+`gate-tier-binaries-only` · Task · enhancement, gate · running · Describe
 
 ## Seen
 
