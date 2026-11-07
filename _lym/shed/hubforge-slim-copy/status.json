@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -141,6 +141,21 @@
       "output": "",
       "at": "2026-11-07T15:23:22Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/hubforge-slim-copy/_lym/landing/summary.md",
+      "at": "2026-11-07T15:23:46Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-07T15:23:45.758072131Z",
+          "end": "2026-11-07T15:23:45.758110843Z"
+        }
+      ]
     }
   ],
   "product": {
