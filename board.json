@@ -466,6 +466,24 @@
       "created": "2026-11-07T17:14:54Z",
       "revised": "2026-11-07T17:14:54Z",
       "profile": "docs"
+    },
+    {
+      "id": 1208,
+      "handle": "B1",
+      "slug": "slack-login-prompt",
+      "title": "lym slack login waits silently for end of input and echoes the token",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "slack"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (operator, 2026-11-07)\n\n`lym slack login` in a terminal printed nothing and seemed to hang: `internal/slackcli/cli.go` reads the token with `io.ReadAll` on standard input, so it waits for end of input (Ctrl+D) with no prompt, and the pasted token shows on screen.\n\n## Wanted\n\n- On a terminal, `login` prints a prompt naming what to paste, reads one line with echo off, and goes on at Enter.\n- Piped input keeps working as today, so a script can pass the token on standard input.\n",
+      "created": "2026-11-07T17:31:08Z",
+      "revised": "2026-11-07T17:31:08Z"
     }
   ],
   "prime_owner": "neve",
