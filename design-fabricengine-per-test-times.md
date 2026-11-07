@@ -1,6 +1,6 @@
 # Time every internal/fabricengine test one by one on a quiet machine
 
-`fabricengine-per-test-times` · Task · research, fabric, testkit · running · PR-Review
+`fabricengine-per-test-times` · Task · research, fabric, testkit · running · Finalize
 
 ## Why (operator, 2026-11-07)
 
