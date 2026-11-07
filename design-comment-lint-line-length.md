@@ -1,17 +1,19 @@
-# Comment lint: bound a // comment line to 120 characters of text
+# Comment lint: enforce scribe:prose line-length rule on // comment lines
 
 `comment-lint-line-length` · Task · enhancement, loom · draft
 
 ## Seen
 
 `lym loom lint-comments` (`internal/commentlint`) checks only where a `//` comment line breaks.
-Nothing bounds a comment line's length, so a one-sentence-per-line comment can run very long.
-Requested by the `comment-cleanup` writer, which reports the operator approved it (2026-11-07).
+Nothing bounds a comment line's length.
 
 ## Wanted
 
-- A `//` comment line the diff adds or changes holds at most 120 characters of text after the `//`; indentation is not counted.
-- A line whose URL, code span or identifier alone passes the limit is exempt.
-- A finding fails the gate as the existing break findings do.
+`scribe:prose` decides how prose is written; `internal/commentlint` only enforces its rules mechanically (operator, 2026-11-07).
+Scribe's task `prose-line-length-rule` adds a line-length rule under "Line breaks".
+Once that rule has landed and is deployed, make the lint check `//` comment lines the diff adds or changes against it, as the skill words it: the limit, what is counted and what is exempt.
+A finding fails the gate as the existing break findings do.
+Where the skill's rule cannot be checked mechanically, check the part that can and state the rest in the package's `doc.go`.
 
-The same rule goes into `scribe:prose`, in the Scribe hub.
+Requested by the `comment-cleanup` writer on the operator's word (2026-11-07).
+Release only after `comment-cleanup` has landed and Scribe's rule is deployed.

@@ -681,7 +681,7 @@
       "id": 1185,
       "handle": "T1",
       "slug": "comment-lint-line-length",
-      "title": "Comment lint: bound a // comment line to 120 characters of text",
+      "title": "Comment lint: enforce scribe:prose line-length rule on // comment lines",
       "kind": "task",
       "labels": [
         "enhancement",
@@ -691,11 +691,11 @@
       "recipe": "darn",
       "depends_on": [],
       "isolated": false,
-      "brief": "lint-comments checks only line breaks; add a length limit on added or changed comment lines",
-      "body": "## Seen\n\n`lym loom lint-comments` (`internal/commentlint`) checks only where a `//` comment line breaks.\nNothing bounds a comment line's length, so a one-sentence-per-line comment can run very long.\nRequested by the `comment-cleanup` writer, which reports the operator approved it (2026-11-07).\n\n## Wanted\n\n- A `//` comment line the diff adds or changes holds at most 120 characters of text after the `//`; indentation is not counted.\n- A line whose URL, code span or identifier alone passes the limit is exempt.\n- A finding fails the gate as the existing break findings do.\n\nThe same rule goes into `scribe:prose`, in the Scribe hub.\n",
+      "brief": "lint-comments enforces the line-length rule scribe:prose sets, once it lands",
+      "body": "## Seen\n\n`lym loom lint-comments` (`internal/commentlint`) checks only where a `//` comment line breaks.\nNothing bounds a comment line's length.\n\n## Wanted\n\n`scribe:prose` decides how prose is written; `internal/commentlint` only enforces its rules mechanically (operator, 2026-11-07).\nScribe's task `prose-line-length-rule` adds a line-length rule under \"Line breaks\".\nOnce that rule has landed and is deployed, make the lint check `//` comment lines the diff adds or changes against it, as the skill words it: the limit, what is counted and what is exempt.\nA finding fails the gate as the existing break findings do.\nWhere the skill's rule cannot be checked mechanically, check the part that can and state the rest in the package's `doc.go`.\n\nRequested by the `comment-cleanup` writer on the operator's word (2026-11-07).\nRelease only after `comment-cleanup` has landed and Scribe's rule is deployed.\n",
       "status": "draft",
       "created": "2026-11-07T09:23:05Z",
-      "revised": "2026-11-07T09:25:07Z",
+      "revised": "2026-11-07T09:27:09Z",
       "profile": "light"
     }
   ],
