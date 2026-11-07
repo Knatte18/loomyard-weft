@@ -12,19 +12,20 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Settings shared by every session of a worktree come only from the heddle-rendered file; per-session ones stay per session** | [`claude-settings-model-effort`](design-claude-settings-model-effort.md) | darn · light |  | 27m<br>0m | claude, config, shuttle |
 
-### Draft (2)
+### Draft (1)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Settings shared by every session of a worktree come only from the heddle-rendered file; per-session ones stay per session** | [`claude-settings-model-effort`](design-claude-settings-model-effort.md) | darn |  | 27m<br>5m | claude, config, shuttle |
 | T4 | `draft` **Raddle releases the tasks it files, chains shared-package parts against the record order, and shows no dependencies** | [`raddle-order-and-deps-table`](design-raddle-order-and-deps-table.md) | darn · light |  | 1h<br>1h | loom, stencil |
 
 ## Notes (18)
