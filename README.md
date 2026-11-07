@@ -90,7 +90,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Bench tier 1 with {test_targets} switched on** | [`test-targets-bench`](design-test-targets-bench.md) | darn · docs | Drift-Baseline | neve | 0m<br>0m | gate, testkit |
+| T1 | **Bench tier 1 with {test_targets} switched on** | [`test-targets-bench`](design-test-targets-bench.md) | darn · docs | Darn-Write | neve | 0m<br>0m | gate, testkit |
 
 #### Ready (0)
 
