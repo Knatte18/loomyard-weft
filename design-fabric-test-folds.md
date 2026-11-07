@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-fabric-test-folds.md)
 
-Depends on: [`dotgit-worktree-reader`](design-dotgit-worktree-reader.md)
-
 Filed from the Sketch `fabric-test-speed`.
 
 Takes: today's fixtures and the report's section 4 rows with their alone-pins column
