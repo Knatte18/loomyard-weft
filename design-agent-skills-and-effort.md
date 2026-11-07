@@ -1,6 +1,6 @@
 # Skills and effort for every role and subagent come from config
 
-`agent-skills-and-effort` · Task · bug, shuttle, stencil, claude, gate, loom · running · Darn-Write
+`agent-skills-and-effort` · Task · bug, shuttle, stencil, claude, gate, loom · running · Drift-Verify
 
 Three bugs bundled by the operator (2026-11-07): which skills and which effort an agent runs with is decided in lym's config, for every role lym starts and for every subagent such a role spawns.
 
