@@ -1,36 +1,32 @@
 # fabricengine tests: anchor and origin fixtures onto registered templates
 
-The anchor-change and origin-reconcile tests of `internal/fabricengine` now copy registered `hubforge` templates instead of building their hub on every call.
-Each template is built once per test binary; a test takes its own copy through `hubforge.CopyRegistered`.
-The change is test-only, and no assertion changes.
+The `internal/fabricengine` integration tests now build their anchor and origin hubs once per package and copy them per test, instead of rebuilding them at every site.
+This cuts the per-pass cost of the fixtures that three or more sites repeated.
+Only test files change; no production code and no export changes.
 
-## What changes
-
-- `anchorTemplate` holds the "." hub whose prime warp tracks `sub/` and `other/` in two unpushed commits.
-  `newAnchorHub` returns a copy of it.
-- `originTemplate` holds the "." hub with the prime's records branch published.
-  `newOriginHub` returns a copy of it, with the branch names read from the copy by `originHubOf`.
-- `originTaskTemplate` adds the pair "task" with its code branch's upstream set, as `originPair` does.
-  `newOriginTaskHub` returns a copy with the pair's code worktree and branch.
-  It replaces every `newOriginHub` plus `originPair(t, hub, "task")` site; sites that add other slugs keep `originPair`.
-- `movesTemplate` adds the "task" run record at the prime naming Land and publishes the pair's records branch.
-  `newMovesPair` returns a copy of it.
-- `endedTemplate` adds "task" with its run record and publishes a board holding it as a live entry.
-  `endedHub` takes no slugs now: it copies the template and runs `originBoard` on the copy,
-  since that push into the records bare goes through a clone outside the hub and leaves the board behind its upstream.
-  The one test that ended two pairs builds them on a `newOriginHub` copy through `arrangeEnded`, the template's own build step.
-- `originPair`, `writeStatus`, `publishBoard`, `publishBranch` and `boardFileOf` take `testing.TB`, so build functions can call them.
+- `newAnchorHub` copies `anchorTemplate`, the "." hub whose prime warp tracks `sub/` and `other/`.
+- `newOriginHub` copies `originTemplate`, the "." hub with the prime's records branch published.
+- `newOriginTaskHub` copies `originTaskTemplate`, which adds the pair `task` with its upstream set.
+  It replaces the `newOriginHub` plus `originPair(…, "task")` sequence that repeated across the Judge and Ended tests.
+- `newMovesPair` copies `movesTemplate`: the `task` pair, a `Land` run record at the prime, and the pair's records branch published.
+- `endedHub` copies `endedTemplate`: the `task` pair with a run record and a published board that holds `task` live.
+  The origin board's done mark (`originBoard`) runs on the copy, since it pushes into the records bare through a clone outside the hub.
+- Each template's build is the fixture's former build steps moved unchanged, so the start state is the same by construction.
+- Helpers a build calls (`originPair`, `writeStatus`, `publishBranch`, `publishBoard`, `boardFileOf`) take `testing.TB` instead of `*testing.T`.
 
 ## Design decisions
 
-- Each build function holds the former fixture's steps in the same order, so every start state is the same by construction.
-  No build calls `os.Setenv`, `os.MkdirTemp`, `git config --global` or a seam setter, and none keeps the TB past the build.
-- `TestReconcileOrigin_Judge`, `_Moves` and `_Ended` keep `boardkit.InstallReplay` at their top, before the copies.
-  No build reaches a Bolt replay: the replay runs only on a board both ahead of and behind its upstream,
-  and every build leaves the board at its upstream tip, which the template build itself checks.
-  The hooks these tests install per subtest, `SetOriginCallHookForTest` and `SetAnchorFailHookForTest` among them, still follow the copy.
-- Only slug sets that repeat at least three times got a template, so the "first"/"second", "stopped"/"active"/"unrecorded", "mine" and "plain" sites still add their pairs in the test.
+- `endedHub` no longer takes slugs: its fixed slug is `task`.
+  The one test that needs `task` and `two` builds from `newOriginHub` and calls `arrangeEnded` directly, because its slug set is not repeated.
+- Tests that exercise `Add` still add their pairs, and a pair whose slug a test picks per row is still added in the test.
+- No build calls `os.Setenv`, `os.MkdirTemp` or `git config --global`, keeps the TB's `Context()` past the build, or calls a package-global seam setter or once-only registration.
+- `TestWorktreeSeam_Events` installs a process-global worktree seam.
+  It now takes every template copy it needs before installing the seam, so a template's first build never runs under the fake seam.
+  The "." shape is copied once first, because the reconcile fixtures copy it inside `buildReconcileFixture`.
+  `boardkit.InstallReplay` moved up with those copies.
 
-## To check
+## To check by hand
 
-- The `internal/fabricengine` tier-1 tests were not run in this change; the verify gate runs them.
+- `seam-installed-before-template-copies` (design, blocking in review): `TestWorktreeSeam_Events` in `internal/fabricengine/worktreeseam_integration_test.go`.
+  Confirm every later subtest's template copy, direct or inside a fixture builder, is taken before `InstallWorktreeSeam`, and that the pre-copied hubs are not mutated by an earlier subtest.
+- Run the package's integration tests, such as `lym gate test ./internal/fabricengine`, and compare the assertions with the previous ones; none was run for this description.
