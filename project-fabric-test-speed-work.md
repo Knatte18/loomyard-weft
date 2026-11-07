@@ -1,6 +1,6 @@
 # P3 Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes
 
-Rendered 2026-11-07 15:32 UTC; every age below is as of then.
+Rendered 2026-11-07 15:34 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`fabric-test-speed-work`](design-fabric-test-speed-work.md) · Age 1h · Owner `neve`
@@ -10,32 +10,32 @@ Groups the entries filed from the Sketch `fabric-test-speed`: hubforge-registere
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (7)
+## Tasks (6)
 
 Concrete and claimable; only a task can run.
 
-### Running (2)
+### Running (1)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **A slimmer hubforge.CopyHub: packed templates, no walk per copy, two-process binding fold** | [`hubforge-slim-copy`](design-hubforge-slim-copy.md)<br>[Sketch](decision-hubforge-slim-copy.md) | darn · light | Finalize | neve | 1h<br>1h | fabric, testkit, git |
 | T13 | **Fold the overlapping internal/fabricengine tests the tier 1 report read** | [`fabric-test-folds`](design-fabric-test-folds.md)<br>[Sketch](decision-fabric-test-folds.md) | darn · light | Finalize | neve | 1h<br>1h | fabric, testkit, git |
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T7 | **gitkit and hubforge initialisers write their per-repository git config from Go** | [`git-config-from-go`](design-git-config-from-go.md)<br>[Sketch](decision-git-config-from-go.md) | darn · light |  | 1h<br>1h | fabric, testkit, git |
 
-### Layer A (2)
+### Layer A (1)
 
 Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **gitkit and hubforge initialisers write their per-repository git config from Go** | [`git-config-from-go`](design-git-config-from-go.md)<br>[Sketch](decision-git-config-from-go.md) | darn · light | T6 | 1h<br>1h | fabric, testkit, git |
 | T14 | **internal/fabricengine anchor and origin fixtures onto registered templates** | [`fabric-anchor-origin-templates`](design-fabric-anchor-origin-templates.md)<br>[Sketch](decision-fabric-anchor-origin-templates.md) | darn · light | T13 | 1h<br>1h | fabric, testkit, git |
 
 ### Layer B (1)
@@ -65,3 +65,11 @@ Starts when every entry it names under After is done.
 ## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T6 | **A slimmer hubforge.CopyHub: packed templates, no walk per copy, two-process binding fold** | [`hubforge-slim-copy`](design-hubforge-slim-copy.md)<br>[Sketch](decision-hubforge-slim-copy.md) | 1h<br>1h | fabric, testkit, git |
