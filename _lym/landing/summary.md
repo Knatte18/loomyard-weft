@@ -1,49 +1,44 @@
-# Drift keeps capture metadata such as _source.txt out of every check
+# Drift: keep capture metadata out of the check and end unfixable gates
 
-A capture's provenance, such as a `_source.txt` holding the commit the capture ran at and its capture time, differs in every capture whatever the code does.
-Drift compared it as a result, so a darn run failed its `drift` gate three times on cells no writer could change, and the parent got the same question twice.
-After this change, drift compares only a capture's results, and no hub needs a `drift.yaml` entry for its metadata.
+A capture's provenance, such as `_source.txt` with its commit and capture time, no longer fails the drift gate, re-prompts the writer or reaches the parent twice.
+Drift now compares only what the code's results are, with no `volatile_files` or `volatile_keys` entry needed.
+
+Closes #81
 
 ## What changes
 
-- **A metadata directory for the capture.**
-  A capture or compare command may hold the new `{meta_dir}` placeholder beside `{baseline_dir}`.
-  It renders as a `.meta` sibling of the capture directory: `.lym/drift/baseline.meta` for the baseline, `<scratch>.meta` for a check's current capture.
-  Drift creates it, moves it with the baseline to `baseline.N.meta` when a new capture backs the baseline up, and never lists, compares or shows it to an agent.
-  The `drift.yaml` template says provenance goes there.
-- **The expect agent marks metadata.**
-  `expected.yaml` takes a top-level `metadata: {files: [...], keys: [...]}` under both diff modes.
-  The expect stencil has the agent tell metadata from results itself: provenance, timestamps, run ids and host names.
-  `ParseExpectation` checks each mark against the baseline, and refuses `keys` under `diff: command`.
-  Drift-Expect records the marks in the scope record's new `metadata` field when it seals.
-  `Check` drops the cells of every mark, from the scope record, the sealed file and any `lym drift amend --entries` amendment.
-  Under `diff: command`, a judge's ruling on a marked case counts as `matches`, and a stored ruling on one stops nothing.
-- **The `drift` gate stops at once on cells no code change can move.**
-  Before it fails on unexpected cells, the gate marks a cell as unchangeable when either holds:
-  - its old value names the baseline's capture commit and its new value the code HEAD;
-  - a second current capture of the same code gives it another value.
-  The writer's findings never name an unchangeable cell.
-  When every unexpected cell is unchangeable, the gate returns a `Terminal` failure: the writer is not re-prompted, and the run's parent gets one stop.
-  That stop names the cells and the way forward, `lym drift amend <slug> --entries <file>` with `metadata` marks.
-  The gate now needs the `Head` seam, which `shedrecipe` requires for the `drift` entry.
-- **The landing names what was left out.**
-  The `## Regression check` section gains a `Baseline: captured at` line, from the oldest `Drift-Baseline` commit.
-  It also gains a line naming the files and keys marked as metadata.
-  A harness thus needs no provenance file of its own.
+- A capture command may use a `{meta_dir}` placeholder.
+  It renders to the `.meta` sibling of the capture directory, which drift keeps with the capture and never lists, compares or shows to an agent.
+  `drift init`, the template and `internal/driftengine/doc.go` say provenance goes there.
+  The baseline directory holds the compared files only.
+- A baseline backup moves its metadata directory with it, and a leftover metadata directory beside an empty baseline is removed.
+  When the metadata move fails, the baseline moves back so the pair is never half-moved.
+  When that move back fails too, both errors are returned and the pair stays split.
+- The expect agent tells metadata from results.
+  The stencil (`drift-template-expect.md`) and the expectation file take a `metadata` block with `files` globs and `keys`, checked against the baseline's listings.
+  `diff: command` refuses `metadata.keys`, since that compare keys no line.
+- The marks are recorded in the scope record at the seal and joined with the sealed expectation and its amendments.
+  The check drops their cells after the diff, so no later listing, expectation, check or gate shows them or fails on them.
+  A ruling on a case the marks name counts as `matches`.
+- A drift failure whose unexpected cells no code change can move ends the gate at once as a Terminal failure, with no re-prompt.
+  The findings go to the parent once, with `lym drift amend <slug> --entries <file>` carrying `metadata` marks as the way forward.
+  They name no such cell to the writer.
+- A cell is unchangeable in two cases.
+  One is a cell whose old value names the baseline's commit and whose new value names the code HEAD.
+  The other is a cell a second current capture of the same code gives another value or none.
 
-## Design decisions
+## Design decisions to review
 
-- `volatile_files` and `volatile_keys` stay as hub keys for other noise, but their template text no longer suggests them for provenance.
-  Retiring them would need a reinterpretation and a migration of recorded scope records, which the board entry does not ask for.
-- The board entry says the template and `drift init` name the metadata directory.
-  No `drift init` verb exists, so the `drift.yaml` template and the package doc carry that text.
-- The second capture runs only when a failing gate has an unexpected cell that the commit rule leaves.
-  A gate that passes, or one that fails on a capture fault, takes one capture as before.
-- Drift-Verify keeps stopping on an unexpected cell, unchangeable or not.
-  The parent's `lym drift amend --entries` with `metadata` marks clears such a cell.
+- Lym hard-codes no provenance name such as `_source.txt`; the expect agent marks what it finds, so the marks live in the run, not in a hub's `drift.yaml`.
+- Commit detection takes a hex run of at least `minCommitAbbrev` digits, whole or abbreviated, as a naming of a commit.
+- The second capture of the same code runs only when a cell is left after the commit rule, and one that does not pass marks nothing.
+- The `diff: command` mode marks whole cases, since it has no line keys.
 
-## Follow-up outside this repository
+## To check or run by hand
 
-- The Models hub's capture harness writes `_source.txt` into `{baseline_dir}`.
-  It should take `{meta_dir}` in its `capture.command` and write `_source.txt` there.
-  Until it does, the expect agent marks `_source.txt` as metadata in each run, and the gate's commit rule catches the `commit` cell.
+- No regression check ran for this task.
+- The Models hub's capture harness is outside this repository and still writes `_source.txt` into `{baseline_dir}`.
+  It must move that file to `{meta_dir}`, or the expect agent marks it as metadata on each run.
+  Neither this change nor the Models hub's `drift.yaml` needs a `volatile_files` entry for it.
+- The capture record already holds the HEAD a capture ran at, and the landing's `## Regression check` should name that commit and the metadata marks.
+  Check on the first landing of a drift run that both appear there.
