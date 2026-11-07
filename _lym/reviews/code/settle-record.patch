@@ -1,0 +1,719 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 299840b0..d1ccf66e 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -867,7 +867,7 @@ User-facing modules each get one `lym <module>` namespace:
+   `login` stores the app's bot token in a machine credential file and `setup` records the hub's channel and its one operator, each after Slack confirms it;
+   only the operator's terminal may run them,
+   and an orch's pane may run `start`, `stop`, `away` and `back`.
+-  The relay forwards the operator's top-level channel messages to the hub's orchs as `[slack]` creel mail from `<shortname>:SLACK`, answers `away`, `back` and `status` in the channel, and posts the mail the orchs and programs leave for `SLACK` to the channel, at least once and never twice for one acknowledged read.
++  The relay forwards the operator's top-level channel messages to the hub's orchs as `[slack]` creel mail from `<shortname>:SLACK`, answers `away`, `back` and `status` in the channel, and posts the mail the orchs and programs leave for `SLACK` to the channel, at least once, and a message Slack accepted is not posted again within one relay process.
+   It starts through a double fork, so no pane's tree holds it, and its files sit in the hub's `.lym/slack/` directory.
+   While the presence is `slack`, each worktree's dobby leaves `SLACK` one line for a run waiting at PR-Review or Sampler-Session, every `remind_after_min` minutes of the wait.
+   ✅ Implemented. See the `internal/slackengine` and `internal/slackcli` package documentation.
+diff --git a/internal/slackengine/api.go b/internal/slackengine/api.go
+index 213241cf..7e772584 100644
+--- a/internal/slackengine/api.go
++++ b/internal/slackengine/api.go
+@@ -97,60 +97,78 @@ func (e *RateLimitError) Error() string {
+ 	return fmt.Sprintf("slack: %s rate limited; retry after %s", e.Method, e.RetryAfter)
+ }
+ 
+-// response is the part of a Slack answer the client reads, whatever the method.
+-type response struct {
+-	OK               bool          `json:"ok"`
+-	Error            string        `json:"error"`
+-	Messages         []Message     `json:"messages"`
+-	HasMore          bool          `json:"has_more"`
+-	Channel          ChannelInfo   `json:"channel"`
+-	ResponseMetadata responseCurse `json:"response_metadata"`
+-}
+-
+-// responseCurse holds the cursor of the next page of a paginated answer.
+-type responseCurse struct {
++// envelope is the part of every Slack answer that says whether Slack accepted the call.
++type envelope struct {
++	OK    bool   `json:"ok"`
++	Error string `json:"error"`
++}
++
++// conversationInfoAnswer is the part of a conversations.info answer the client reads.
++type conversationInfoAnswer struct {
++	Channel ChannelInfo `json:"channel"`
++}
++
++// historyAnswer is the part of a conversations.history answer the client reads: one page and the cursor of the next.
++type historyAnswer struct {
++	Messages         []Message      `json:"messages"`
++	HasMore          bool           `json:"has_more"`
++	ResponseMetadata responseCursor `json:"response_metadata"`
++}
++
++// responseCursor holds the cursor of the next page of a paginated answer.
++type responseCursor struct {
+ 	NextCursor string `json:"next_cursor"`
+ }
+ 
+-// call posts form to method and decodes Slack's answer.
++// call posts form to method and returns the body of Slack's answer once Slack accepted the call.
++// It reads only the answer's `ok` and `error`, so a call Slack accepted never fails on the shape of the rest.
+ // An HTTP 429 and an ok-false `ratelimited` are a *RateLimitError.
+ // Any other ok false is an *APIError, and a transport failure, a 5xx or an unreadable answer is a plain error.
+ // No error carries the token.
+-func (a *API) call(ctx context.Context, method string, form url.Values) (response, error) {
++func (a *API) call(ctx context.Context, method string, form url.Values) ([]byte, error) {
+ 	ctx, cancel := context.WithTimeout(ctx, requestTimeout)
+ 	defer cancel()
+ 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, a.baseURL+method, strings.NewReader(form.Encode()))
+ 	if err != nil {
+-		return response{}, fmt.Errorf("slack: build the %s request: %w", method, err)
++		return nil, fmt.Errorf("slack: build the %s request: %w", method, err)
+ 	}
+ 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+ 	request.Header.Set("Authorization", "Bearer "+a.token)
+ 	httpResponse, err := a.client.Do(request)
+ 	if err != nil {
+-		return response{}, fmt.Errorf("slack: call %s: %w", method, err)
++		return nil, fmt.Errorf("slack: call %s: %w", method, err)
+ 	}
+ 	defer httpResponse.Body.Close()
+ 	switch {
+ 	case httpResponse.StatusCode == http.StatusTooManyRequests:
+-		return response{}, &RateLimitError{Method: method, RetryAfter: retryAfter(httpResponse)}
++		return nil, &RateLimitError{Method: method, RetryAfter: retryAfter(httpResponse)}
+ 	case httpResponse.StatusCode >= http.StatusInternalServerError:
+-		return response{}, fmt.Errorf("slack: %s answered HTTP %d", method, httpResponse.StatusCode)
++		return nil, fmt.Errorf("slack: %s answered HTTP %d", method, httpResponse.StatusCode)
+ 	}
+ 	body, err := io.ReadAll(httpResponse.Body)
+ 	if err != nil {
+-		return response{}, fmt.Errorf("slack: read the %s answer: %w", method, err)
++		return nil, fmt.Errorf("slack: read the %s answer: %w", method, err)
+ 	}
+-	var decoded response
+-	if err := json.Unmarshal(body, &decoded); err != nil {
+-		return response{}, fmt.Errorf("slack: decode the %s answer: %w", method, err)
++	answer, err := decodeAnswer[envelope](method, body)
++	if err != nil {
++		return nil, err
+ 	}
+-	if decoded.OK {
+-		return decoded, nil
++	if answer.OK {
++		return body, nil
+ 	}
+-	if decoded.Error == rateLimitedCode {
+-		return response{}, &RateLimitError{Method: method, RetryAfter: retryAfter(httpResponse)}
++	if answer.Error == rateLimitedCode {
++		return nil, &RateLimitError{Method: method, RetryAfter: retryAfter(httpResponse)}
+ 	}
+-	return response{}, &APIError{Method: method, Code: decoded.Error}
++	return nil, &APIError{Method: method, Code: answer.Error}
++}
++
++// decodeAnswer decodes body, the answer Slack gave to method, into the shape T.
++func decodeAnswer[T any](method string, body []byte) (T, error) {
++	var answer T
++	if err := json.Unmarshal(body, &answer); err != nil {
++		return answer, fmt.Errorf("slack: decode the %s answer: %w", method, err)
++	}
++	return answer, nil
+ }
+ 
+ // retryAfter reads the Retry-After header of httpResponse in seconds;
+@@ -172,7 +190,12 @@ func (a *API) AuthTest(ctx context.Context) error {
+ 
+ // ConversationInfo reads the channel with conversations.info.
+ func (a *API) ConversationInfo(ctx context.Context, channel string) (ChannelInfo, error) {
+-	answer, err := a.call(ctx, "conversations.info", url.Values{"channel": {channel}})
++	const method = "conversations.info"
++	body, err := a.call(ctx, method, url.Values{"channel": {channel}})
++	if err != nil {
++		return ChannelInfo{}, err
++	}
++	answer, err := decodeAnswer[conversationInfoAnswer](method, body)
+ 	if err != nil {
+ 		return ChannelInfo{}, err
+ 	}
+@@ -195,7 +218,7 @@ func (a *API) History(ctx context.Context, channel, oldest string) ([]Message, e
+ 		if cursor != "" {
+ 			form.Set("cursor", cursor)
+ 		}
+-		page, err := a.call(ctx, "conversations.history", form)
++		page, err := a.history(ctx, form)
+ 		if err != nil {
+ 			return nil, err
+ 		}
+@@ -211,7 +234,7 @@ func (a *API) History(ctx context.Context, channel, oldest string) ([]Message, e
+ 
+ // Latest returns the timestamp of the channel's newest message, and reports found false for an empty channel.
+ func (a *API) Latest(ctx context.Context, channel string) (string, bool, error) {
+-	page, err := a.call(ctx, "conversations.history", url.Values{"channel": {channel}, "limit": {"1"}})
++	page, err := a.history(ctx, url.Values{"channel": {channel}, "limit": {"1"}})
+ 	if err != nil {
+ 		return "", false, err
+ 	}
+@@ -221,7 +244,19 @@ func (a *API) Latest(ctx context.Context, channel string) (string, bool, error)
+ 	return page.Messages[0].TS, true, nil
+ }
+ 
++// history reads one page of conversations.history for form.
++func (a *API) history(ctx context.Context, form url.Values) (historyAnswer, error) {
++	const method = "conversations.history"
++	body, err := a.call(ctx, method, form)
++	if err != nil {
++		return historyAnswer{}, err
++	}
++	return decodeAnswer[historyAnswer](method, body)
++}
++
+ // PostMessage posts text to the channel with chat.postMessage.
++// It returns nil once Slack accepted the post and reads nothing more of the answer,
++// so a post Slack accepted never reads as a failure that would post it again.
+ func (a *API) PostMessage(ctx context.Context, channel, text string) error {
+ 	_, err := a.call(ctx, "chat.postMessage", url.Values{"channel": {channel}, "text": {text}})
+ 	return err
+diff --git a/internal/slackengine/api_test.go b/internal/slackengine/api_test.go
+index 5f7fa65a..a36fb1c7 100644
+--- a/internal/slackengine/api_test.go
++++ b/internal/slackengine/api_test.go
+@@ -69,19 +69,124 @@ func answerJSON(w http.ResponseWriter, body string) {
+ 	_, _ = w.Write([]byte(body))
+ }
+ 
++// documentedAnswers holds, by request path, the example answer Slack's API reference shows for each method lym calls.
++// The answers keep Slack's shapes.
++// chat.postMessage sends `channel` as an id string, while conversations.info sends it as an object.
++var documentedAnswers = map[string]string{
++	"/auth.test": `{
++		"ok": true,
++		"url": "https://subarachnoid.slack.com/",
++		"team": "Subarachnoid Workspace",
++		"user": "grace",
++		"team_id": "T12345678",
++		"user_id": "W12345678"
++	}`,
++	"/conversations.info": `{
++		"ok": true,
++		"channel": {
++			"id": "C012AB3CD",
++			"name": "general",
++			"is_channel": true,
++			"is_group": false,
++			"is_im": false,
++			"is_mpim": false,
++			"is_private": false,
++			"created": 1654868334,
++			"is_archived": false,
++			"is_general": true,
++			"unlinked": 0,
++			"name_normalized": "general",
++			"is_shared": false,
++			"is_org_shared": false,
++			"is_pending_ext_shared": false,
++			"pending_shared": [],
++			"context_team_id": "T123ABCDEF",
++			"updated": 1723215202803,
++			"parent_conversation": null,
++			"creator": "U123ABCDEF",
++			"is_ext_shared": false,
++			"shared_team_ids": ["T123ABCDEF"],
++			"pending_connected_team_ids": [],
++			"is_member": true,
++			"last_read": "1723215190.639619",
++			"topic": {"value": "", "creator": "", "last_set": 0},
++			"purpose": {"value": "This is the one channel that will always include everyone.", "creator": "U123ABCDEF", "last_set": 1654868334},
++			"previous_names": []
++		}
++	}`,
++	"/conversations.history": `{
++		"ok": true,
++		"messages": [
++			{"type": "message", "user": "U123ABC456", "text": "I find you punny and would like to smell your nose letter", "ts": "1512085950.000216"},
++			{"type": "message", "user": "U222BBB222", "text": "What, you want to smell my shoes better?", "ts": "1512104434.000490"}
++		],
++		"has_more": true,
++		"pin_count": 0,
++		"response_metadata": {"next_cursor": "bmV4dF90czoxNTEyMDg1ODYxMDAwNTQz"}
++	}`,
++	"/users.info": `{
++		"ok": true,
++		"user": {
++			"id": "W012A3CDE",
++			"team_id": "T012AB3C4",
++			"name": "spengler",
++			"deleted": false,
++			"color": "9f69e7",
++			"real_name": "Egon Spengler",
++			"tz": "America/Los_Angeles",
++			"tz_label": "Pacific Daylight Time",
++			"tz_offset": -25200,
++			"profile": {
++				"avatar_hash": "ge3b51ca72de",
++				"status_text": "Print is dead",
++				"status_emoji": ":books:",
++				"real_name": "Egon Spengler",
++				"display_name": "spengler",
++				"real_name_normalized": "Egon Spengler",
++				"display_name_normalized": "spengler",
++				"email": "spengler@ghostbusters.example.com",
++				"team": "T012AB3C4"
++			},
++			"is_admin": true,
++			"is_owner": false,
++			"is_primary_owner": false,
++			"is_restricted": false,
++			"is_ultra_restricted": false,
++			"is_bot": false,
++			"updated": 1502138686,
++			"is_app_user": false,
++			"has_2fa": false
++		}
++	}`,
++	"/chat.postMessage": `{
++		"ok": true,
++		"channel": "C123ABC456",
++		"ts": "1503435956.000247",
++		"message": {
++			"text": "Here's a message for you",
++			"username": "ecto1",
++			"bot_id": "B123ABC456",
++			"attachments": [{"text": "This is an attachment", "id": 1, "fallback": "This is an attachment's fallback"}],
++			"type": "message",
++			"subtype": "bot_message",
++			"ts": "1503435956.000247"
++		}
++	}`,
++}
++
+ func TestAPI(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 	ctx := context.Background()
+ 
+-	t.Run("EachMethodSendsItsPathBearerAndFormFields", func(t *testing.T) {
++	t.Run("EachMethodSendsItsRequestAndDecodesSlacksDocumentedAnswer", func(t *testing.T) {
+ 		t.Parallel()
+ 		fake := newFakeSlackAPI(t, func(request recordedRequest, w http.ResponseWriter) {
+-			if request.path == "/conversations.info" {
+-				answerJSON(w, `{"ok":true,"channel":{"id":"C1","name":"ops","is_member":true,"is_private":true}}`)
++			if request.form.Get("cursor") != "" {
++				answerJSON(w, `{"ok":true,"messages":[],"has_more":false}`)
+ 				return
+ 			}
+-			answerJSON(w, `{"ok":true,"messages":[{"ts":"5.000001"}]}`)
++			answerJSON(w, documentedAnswers[request.path])
+ 		})
+ 		api := fake.api()
+ 		if err := api.AuthTest(ctx); err != nil {
+@@ -91,7 +196,7 @@ func TestAPI(t *testing.T) {
+ 		if err != nil {
+ 			t.Fatalf("ConversationInfo = %v", err)
+ 		}
+-		if want := (slackengine.ChannelInfo{ID: "C1", Name: "ops", IsMember: true, IsPrivate: true}); info != want {
++		if want := (slackengine.ChannelInfo{ID: "C012AB3CD", Name: "general", IsMember: true}); info != want {
+ 			t.Errorf("ConversationInfo = %+v; want %+v", info, want)
+ 		}
+ 		if err := api.UserInfo(ctx, "U1"); err != nil {
+@@ -100,15 +205,27 @@ func TestAPI(t *testing.T) {
+ 		if err := api.PostMessage(ctx, "C1", "hello"); err != nil {
+ 			t.Fatalf("PostMessage = %v", err)
+ 		}
+-		if _, err := api.History(ctx, "C1", "4.0"); err != nil {
++		messages, err := api.History(ctx, "C1", "4.0")
++		if err != nil {
+ 			t.Fatalf("History = %v", err)
+ 		}
++		wantMessages := []slackengine.Message{
++			{TS: "1512085950.000216", User: "U123ABC456", Text: "I find you punny and would like to smell your nose letter"},
++			{TS: "1512104434.000490", User: "U222BBB222", Text: "What, you want to smell my shoes better?"},
++		}
++		if diff := cmp.Diff(wantMessages, messages); diff != "" {
++			t.Errorf("History() mismatch (-want +got):\n%s", diff)
++		}
++		historyForm := url.Values{"channel": {"C1"}, "oldest": {"4.0"}, "limit": {"200"}}
+ 		want := []recordedRequest{
+ 			{path: "/auth.test", form: url.Values{}},
+ 			{path: "/conversations.info", form: url.Values{"channel": {"C1"}}},
+ 			{path: "/users.info", form: url.Values{"user": {"U1"}}},
+ 			{path: "/chat.postMessage", form: url.Values{"channel": {"C1"}, "text": {"hello"}}},
+-			{path: "/conversations.history", form: url.Values{"channel": {"C1"}, "oldest": {"4.0"}, "limit": {"200"}}},
++			{path: "/conversations.history", form: historyForm},
++			{path: "/conversations.history", form: url.Values{
++				"channel": {"C1"}, "oldest": {"4.0"}, "limit": {"200"}, "cursor": {"bmV4dF90czoxNTEyMDg1ODYxMDAwNTQz"},
++			}},
+ 		}
+ 		got := fake.recorded()
+ 		if len(got) != len(want) {
+diff --git a/internal/slackengine/doc.go b/internal/slackengine/doc.go
+index 599410ad..83439e59 100644
+--- a/internal/slackengine/doc.go
++++ b/internal/slackengine/doc.go
+@@ -24,6 +24,9 @@
+ //
+ // `API` is the Web API client, over `net/http` alone.
+ // Each call posts a form to the method's URL with the bot token as a bearer header and a bounded timeout.
++// Every answer is read first for its `ok` and `error` alone;
++// each method then decodes only the fields it uses, in the shape that method's answer has.
++// `PostMessage` reads nothing past `ok`, so a post Slack accepted never reads as a failure.
+ // No error or log line carries the token.
+ // A call Slack refused for its rate limit is a `*RateLimitError` carrying the wait Slack asked for.
+ // Any other `ok: false` is an `*APIError` carrying Slack's code.
+@@ -39,9 +42,12 @@
+ // The relay then answers in Slack and moves past it.
+ //
+ // The outbound read waits on the relay's own mailbox and posts mail from the hub's orchs and programs to the channel.
+-// Posting is at least once and never twice for one acknowledged read.
++// Posting is at least once, and a message Slack accepted is not posted again.
+ // An outbox record keeps each message already posted.
+ // It also keeps the count of stale mail whose line is not yet posted, until creel confirms the acknowledgement.
++// A record that fails to write stays in memory in the file's place:
++// the read still acknowledges the mail, and the relay log names the failed write.
++// That record is lost when the relay process ends, so a restart before a good write can post that mail again.
+ // A read stops posting before creel's acknowledgement window ends and releases the rest.
+ // Mail over a day old is acknowledged unposted.
+ // A message Slack refuses with an error code five times is dropped with a line that names it.
+diff --git a/internal/slackengine/outbound.go b/internal/slackengine/outbound.go
+index e2ce90ac..5567a914 100644
+--- a/internal/slackengine/outbound.go
++++ b/internal/slackengine/outbound.go
+@@ -1,5 +1,6 @@
+ // outbound.go is the relay's read of its own mailbox: it posts the orchs' and programs' mail to the channel.
+-// Each message for `<shortname>:SLACK` is posted at least once, and never twice for one acknowledged read.
++// Each message for `<shortname>:SLACK` is posted at least once.
++// Once Slack accepted a message, the relay posts it no more within one relay process.
+ 
+ package slackengine
+ 
+@@ -8,6 +9,7 @@ import (
+ 	"context"
+ 	"errors"
+ 	"fmt"
++	"maps"
+ 	"slices"
+ 	"strings"
+ 	"time"
+@@ -34,9 +36,6 @@ const (
+ // creel then releases the read with the rest unposted.
+ var errReadBudget = errors.New("slack: the posting budget of one read ended; the rest waits for the next read")
+ 
+-// errOutboxWrite marks a failed write of the outbox file.
+-var errOutboxWrite = errors.New("slack: write the outbox file")
+-
+ // outboxRecord is the outbox file's content.
+ // Handled holds the IDs of the messages a read has handled and not yet acknowledged.
+ // Refusals counts how often Slack refused each message that is not yet handled.
+@@ -54,6 +53,11 @@ type outbound struct {
+ 	slack   SlackClient
+ 	clock   Clock
+ 	wait    *loopWait
++	// unsaved is the outbox record a failed write left unstored;
++	// while set it stands in for the file, so a message Slack accepted is not posted again.
++	unsaved *outboxRecord
++	// saveFault is the first failed write of the outbox record in the current read.
++	saveFault error
+ }
+ 
+ func newOutbound(geom Geometry, mailbox Mailbox, slack SlackClient, clock Clock, floor *sharedFloor) *outbound {
+@@ -66,6 +70,8 @@ func newOutbound(geom Geometry, mailbox Mailbox, slack SlackClient, clock Clock,
+ // The mail is acknowledged only when creel confirms it.
+ // Until then the outbox record keeps each handled message, so a redelivered read posts nothing twice.
+ // A failed post returns its error with the read released; the record stays until a confirmed acknowledgement clears it.
++// A post Slack accepted counts as done whatever fails after it.
++// A record that fails to write stays in memory in the file's place, and the read returns the write's error once it ends.
+ func (out *outbound) read(ctx context.Context) (time.Duration, error) {
+ 	setup, found, err := ReadSetup(out.geom.SetupPath)
+ 	if err != nil {
+@@ -74,6 +80,7 @@ func (out *outbound) read(ctx context.Context) (time.Duration, error) {
+ 	if !found {
+ 		return out.wait.afterIdle(), fmt.Errorf("slack: the setup file %s is gone; way forward: run `lym slack setup --channel <id> --operator <user-id>` from the operator's terminal", out.geom.SetupPath)
+ 	}
++	out.saveFault = nil
+ 	handlerRan := false
+ 	err = out.mailbox.ReadWait(outboundReadTimeout, func(messages []creelengine.Message) error {
+ 		handlerRan = true
+@@ -81,12 +88,14 @@ func (out *outbound) read(ctx context.Context) (time.Duration, error) {
+ 	})
+ 	switch {
+ 	case err == nil:
+-		return out.wait.afterActivity(), writeOutbox(out.geom, outboxRecord{})
++		out.save(outboxRecord{})
++		return out.wait.afterActivity(), out.saveFault
+ 	case errors.Is(err, errReadBudget):
+-		return out.wait.afterActivity(), nil
++		return out.wait.afterActivity(), out.saveFault
+ 	case errors.Is(err, creelengine.ErrWaitTimeout) && !handlerRan:
+ 		return out.wait.afterIdle(), nil
+ 	}
++	err = errors.Join(err, out.saveFault)
+ 	if limit, ok := isRateLimit(err); ok {
+ 		return out.wait.afterRateLimit(limit), err
+ 	}
+@@ -102,15 +111,14 @@ func (out *outbound) read(ctx context.Context) (time.Duration, error) {
+ // so the line survives a failed read.
+ // A line that fails to post stays counted in the record for the next read;
+ // its failure is returned only when the messages themselves posted.
+-// The line waits for the next read when the read ended on a rate limit, a further call only prolonging it;
+-// it also waits when the record failed to write, since that would let the line post twice.
++// The line waits for the next read when the read ended on a rate limit, a further call only prolonging it.
+ func (out *outbound) post(ctx context.Context, setup Setup, messages []creelengine.Message) error {
+-	record, err := readOutbox(out.geom)
++	record, err := out.loadOutbox()
+ 	if err != nil {
+ 		return err
+ 	}
+ 	postErr := out.postMessages(ctx, setup, &record, messages)
+-	if _, limited := isRateLimit(postErr); limited || errors.Is(postErr, errOutboxWrite) {
++	if _, limited := isRateLimit(postErr); limited {
+ 		return postErr
+ 	}
+ 	reportErr := out.reportStale(ctx, setup, &record)
+@@ -123,7 +131,7 @@ func (out *outbound) post(ctx context.Context, setup Setup, messages []creelengi
+ 	return reportErr
+ }
+ 
+-// reportStale posts the line naming the stale mail the record counts, then clears the count in the record and writes it.
++// reportStale posts the line naming the stale mail the record counts, then clears the count in the record and saves it.
+ // It posts nothing when the record counts none, and on a failed post leaves the count in place.
+ func (out *outbound) reportStale(ctx context.Context, setup Setup, record *outboxRecord) error {
+ 	if record.Stale == 0 {
+@@ -134,12 +142,13 @@ func (out *outbound) reportStale(ctx context.Context, setup Setup, record *outbo
+ 		return fmt.Errorf("slack: post the line about stale mail: %w", err)
+ 	}
+ 	record.Stale = 0
+-	return writeOutbox(out.geom, *record)
++	out.save(*record)
++	return nil
+ }
+ 
+-// postMessages posts each message not yet in record, oldest first, and writes the record after each one it handles.
++// postMessages posts each message not yet in record, oldest first, and saves the record after each one it handles.
+ // Mail older than staleMailAge is counted in the record instead of posted.
+-// It returns errReadBudget once the posting budget ends, and the error of a failed post or write.
++// It returns errReadBudget once the posting budget ends, and the error of a failed post.
+ func (out *outbound) postMessages(ctx context.Context, setup Setup, record *outboxRecord, messages []creelengine.Message) error {
+ 	messages = slices.Clone(messages)
+ 	slices.SortFunc(messages, func(a, b creelengine.Message) int { return cmp.Compare(a.ID, b.ID) })
+@@ -163,14 +172,12 @@ func (out *outbound) postMessages(ctx context.Context, setup Setup, record *outb
+ 		}
+ 		record.Handled = append(record.Handled, message.ID)
+ 		delete(record.Refusals, message.ID)
+-		if err := writeOutbox(out.geom, *record); err != nil {
+-			return err
+-		}
++		out.save(*record)
+ 	}
+ 	return nil
+ }
+ 
+-// refused counts Slack's refusal of message in the record and writes it.
++// refused counts Slack's refusal of message in the record and saves it.
+ // Once the count reaches refusalCap, it posts one line naming the message and reports whether it drops the message.
+ // A failure that is no refusal, a transport failure, a server error or a rate limit, counts toward no cap;
+ // otherwise it returns err so the read is released with the message queued.
+@@ -183,9 +190,7 @@ func (out *outbound) refused(ctx context.Context, setup Setup, record *outboxRec
+ 	}
+ 	record.Refusals[message.ID]++
+ 	if record.Refusals[message.ID] < refusalCap {
+-		if writeErr := writeOutbox(out.geom, *record); writeErr != nil {
+-			return false, errors.Join(err, writeErr)
+-		}
++		out.save(*record)
+ 		return false, err
+ 	}
+ 	line := fmt.Sprintf("message %d from %s was refused by Slack %d times and is dropped; read it with `lym creel log --to %s`", message.ID, message.From, refusalCap, out.relayName())
+@@ -235,19 +240,34 @@ func programSlug(from, shortname, name string) string {
+ 	return slug
+ }
+ 
+-// readOutbox returns the outbox record, empty when none is written.
+-func readOutbox(geom Geometry) (outboxRecord, error) {
+-	record, _, err := state.ReadJSON[outboxRecord](geom.OutboxPath, recordLockPath(geom.OutboxPath))
++// loadOutbox returns the outbox record: the one a failed write left in memory, otherwise the file's.
++func (out *outbound) loadOutbox() (outboxRecord, error) {
++	if out.unsaved != nil {
++		return cloneOutbox(*out.unsaved), nil
++	}
++	record, _, err := state.ReadJSON[outboxRecord](out.geom.OutboxPath, recordLockPath(out.geom.OutboxPath))
+ 	if err != nil {
+-		return outboxRecord{}, fmt.Errorf("slack: read the outbox file %s: %w", geom.OutboxPath, err)
++		return outboxRecord{}, fmt.Errorf("slack: read the outbox file %s: %w", out.geom.OutboxPath, err)
+ 	}
+ 	return record, nil
+ }
+ 
+-// writeOutbox stores record in the outbox file.
+-func writeOutbox(geom Geometry, record outboxRecord) error {
+-	if err := state.WriteJSON(geom.OutboxPath, recordLockPath(geom.OutboxPath), record); err != nil {
+-		return fmt.Errorf("%w %s: %w", errOutboxWrite, geom.OutboxPath, err)
++// save stores record in the outbox file.
++// A failed write keeps a copy of record in memory in the file's place and keeps the error for the read to return,
++// so the write never turns a message Slack accepted into one to post again.
++func (out *outbound) save(record outboxRecord) {
++	if err := state.WriteJSON(out.geom.OutboxPath, recordLockPath(out.geom.OutboxPath), record); err != nil {
++		unsaved := cloneOutbox(record)
++		out.unsaved = &unsaved
++		if out.saveFault == nil {
++			out.saveFault = fmt.Errorf("slack: write the outbox file %s; the relay keeps the record in memory: %w", out.geom.OutboxPath, err)
++		}
++		return
+ 	}
+-	return nil
++	out.unsaved = nil
++}
++
++// cloneOutbox returns a copy of record that shares no slice or map with it.
++func cloneOutbox(record outboxRecord) outboxRecord {
++	return outboxRecord{Handled: slices.Clone(record.Handled), Refusals: maps.Clone(record.Refusals), Stale: record.Stale}
+ }
+diff --git a/internal/slackengine/outbound_test.go b/internal/slackengine/outbound_test.go
+index 0f670b48..3d307354 100644
+--- a/internal/slackengine/outbound_test.go
++++ b/internal/slackengine/outbound_test.go
+@@ -257,6 +257,146 @@ func TestOutboundRead(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("OutboxWriteFailingAfterAnAcceptedPostAcknowledgesTheMailAndNeverRepostsIt", func(t *testing.T) {
++		t.Parallel()
++		tests := []struct {
++			name string
++			// ackRefused makes creel refuse the first read's acknowledgement, so the batch is delivered again.
++			ackRefused bool
++		}{
++			{"AcknowledgementConfirmed", false},
++			{"AcknowledgementRefusedAndTheBatchRedelivered", true},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				h := newOutboundHarness(t)
++				// A directory in the outbox file's place makes every write of the record fail once Slack accepted the post.
++				h.slack.onPost = func() {
++					if err := os.MkdirAll(h.geom.OutboxPath, 0o700); err != nil {
++						t.Errorf("MkdirAll = %v", err)
++					}
++				}
++				batch := []creelengine.Message{h.mailFrom(1, "ly:orch", "once")}
++				steps := []readStep{{messages: batch}}
++				if tt.ackRefused {
++					steps = []readStep{{messages: batch, ackErr: errors.New("daemon refused")}, {messages: batch}}
++				}
++				h.mailbox.scriptReadWait(steps...)
++				for i := range steps {
++					if _, err := h.read(); err == nil || !strings.Contains(err.Error(), "outbox file") {
++						t.Errorf("Read #%d = %v; want the failed write of the outbox file", i+1, err)
++					}
++				}
++				h.wantAnswers("[ly:orch] once")
++				h.wantAcks([]int64{1})
++			})
++		}
++	})
++
++	t.Run("StaleMailLineIsPostedOnceWhenTheOutboxWriteFails", func(t *testing.T) {
++		t.Parallel()
++		h := newOutboundHarness(t)
++		// The directory appears at the first post, before any write, so every write of the record fails.
++		h.slack.onPost = func() {
++			if err := os.MkdirAll(h.geom.OutboxPath, 0o700); err != nil {
++				t.Errorf("MkdirAll = %v", err)
++			}
++		}
++		old1, old2 := h.mailFrom(2, "ly:orch", "old"), h.mailFrom(3, "ly:orch", "older")
++		old1.Posted, old2.Posted = h.clock.Now().Add(-25*time.Hour), h.clock.Now().Add(-48*time.Hour)
++		batch := []creelengine.Message{h.mailFrom(1, "ly:orch", "fresh"), old1, old2}
++		h.mailbox.scriptReadWait(readStep{messages: batch, ackErr: errors.New("daemon refused")}, readStep{messages: batch})
++		for i := range 2 {
++			if _, err := h.read(); err == nil || !strings.Contains(err.Error(), "outbox file") {
++				t.Errorf("Read #%d = %v; want the failed write of the outbox file", i+1, err)
++			}
++		}
++		lines := 0
++		for _, text := range h.slack.texts() {
++			if strings.Contains(text, "2 messages") && strings.Contains(text, "lym creel log --to ly:SLACK") {
++				lines++
++			}
++		}
++		if lines != 1 {
++			t.Errorf("count lines = %d in %q; want 1", lines, h.slack.texts())
++		}
++		h.wantAcks([]int64{1, 2, 3})
++	})
++
++	t.Run("OutboxWriteFailureRidesAlongWithAFailedPostAndWithTheEndedBudget", func(t *testing.T) {
++		t.Parallel()
++		slackDown := errors.New("slack down")
++		tests := []struct {
++			name string
++			// advance is how far each post moves the clock.
++			advance time.Duration
++			// failures are the answers of the first posts.
++			failures []error
++			// wantPostFailure is whether the read's error must also carry the failed post.
++			wantPostFailure bool
++		}{
++			{"FailedPost", 0, []error{nil, slackDown}, true},
++			{"PostingBudgetEnded", 15 * time.Second, nil, false},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				h := newOutboundHarness(t)
++				h.slack.onPost = func() {
++					h.clock.Advance(tt.advance)
++					if err := os.MkdirAll(h.geom.OutboxPath, 0o700); err != nil {
++						t.Errorf("MkdirAll = %v", err)
++					}
++				}
++				h.slack.failPosts(tt.failures...)
++				batch := []creelengine.Message{h.mailFrom(1, "ly:orch", "one"), h.mailFrom(2, "ly:orch", "two"), h.mailFrom(3, "ly:orch", "three")}
++				h.mailbox.scriptReadWait(readStep{messages: batch})
++				_, err := h.read()
++				if err == nil || !strings.Contains(err.Error(), "outbox file") {
++					t.Fatalf("Read = %v; want the failed write of the outbox file", err)
++				}
++				if tt.wantPostFailure && !errors.Is(err, slackDown) {
++					t.Errorf("Read = %v; want it to carry the failed post too", err)
++				}
++			})
++		}
++	})
++
++	t.Run("OutboxFileWritableAgainStandsInPlaceOfTheRecordHeldInMemory", func(t *testing.T) {
++		t.Parallel()
++		h := newOutboundHarness(t)
++		h.slack.onPost = func() {
++			if err := os.MkdirAll(h.geom.OutboxPath, 0o700); err != nil {
++				t.Errorf("MkdirAll = %v", err)
++			}
++		}
++		rest := []creelengine.Message{h.mailFrom(2, "ly:orch", "two"), h.mailFrom(3, "ly:orch", "three"), h.mailFrom(4, "ly:orch", "four")}
++		h.mailbox.scriptReadWait(
++			readStep{messages: []creelengine.Message{h.mailFrom(1, "ly:orch", "one")}},
++			readStep{messages: rest},
++			readStep{messages: rest},
++		)
++		if _, err := h.read(); err == nil {
++			t.Fatalf("Read = nil; want the failed write of the outbox file")
++		}
++		if err := os.Remove(h.geom.OutboxPath); err != nil {
++			t.Fatalf("Remove = %v", err)
++		}
++		// The second read ends on the posting budget, so it leaves the record in the file instead of clearing it.
++		h.slack.onPost = func() { h.clock.Advance(15 * time.Second) }
++		if _, err := h.read(); err != nil {
++			t.Fatalf("Read = %v; want nil once the file is writable again", err)
++		}
++		record, err := os.ReadFile(h.geom.OutboxPath)
++		if err != nil || !strings.Contains(string(record), "handled") {
++			t.Errorf("outbox record = %q, %v; want the file to hold the handled messages", record, err)
++		}
++		// With the file standing in for memory again, the third read skips the messages the second one handled.
++		h.mustRead()
++		h.wantAnswers("[ly:orch] one", "[ly:orch] two", "[ly:orch] three", "[ly:orch] four")
++	})
++
+ 	t.Run("RefusedAcknowledgementKeepsTheRecordSoNothingIsRepostedTwice", func(t *testing.T) {
+ 		t.Parallel()
+ 		h := newOutboundHarness(t)
