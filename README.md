@@ -90,7 +90,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Slack relay reposts a sent message: chat.postMessage answer fails to decode** | [`slack-post-decode-repost`](design-slack-post-decode-repost.md) | darn · light | Finalize | neve | 25m<br>25m | slack |
+| T2 | **Slack relay reposts a sent message: chat.postMessage answer fails to decode** | [`slack-post-decode-repost`](design-slack-post-decode-repost.md) | darn · light | Finalize | neve | 26m<br>26m | slack |
 
 #### Ready (0)
 
@@ -104,7 +104,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Slack v2: one bot, one channel per orch, push in place of polling** | [`slack-v2`](design-slack-v2.md) | motif |  | 21m<br>2m | slack, creel, orch |
+| T1 | `draft` **Slack v2: one bot, one channel per orch, push in place of polling** | [`slack-v2`](design-slack-v2.md) | motif |  | 22m<br>0m | slack, creel, orch |
 
 ### Notes (18)
 

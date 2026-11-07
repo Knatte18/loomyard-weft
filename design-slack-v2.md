@@ -31,9 +31,8 @@
 - Socket Mode with several hubs on one machine: Slack is believed to hand each event to one of an app's open connections, not to all, so relays for two hubs on one machine, each with its own connection, could get each other's events.
   The Discussion checks this against Slack's documentation and settles the route, such as one connection per machine that serves every hub there and passes each event to the hub owning its channel; the operator wants no polling wait and low CPU and network use when idle (operator, 2026-11-07).
 
-- The channel name scheme: hub, orch (prime or beam slug), and whether the machine is part of it, which it must be when one hub runs on two machines at once, each with its own prime orch.
-  The operator wants each repository's channels apart from the others, and under one repository each machine's apart (operator, 2026-11-07).
-  A bot cannot set up a user's sidebar sections, so the names do the grouping: repository first, then machine, then orch, such as `ly-neve-prime`, so the alphabetical sort keeps them together.
+- The exact channel name scheme.
+  Settled: a name holds repository, machine and orch, in that order, such as `ly-neve-prime`, so each machine's app owns its own channels and two apps never write to one channel; and since a bot cannot set up a user's sidebar sections, the alphabetical sort keeps each repository's channels together and each machine's apart under it (operator, 2026-11-07).
 - Whether the prime's channel is removed at relay stop like a beam's, or stays, so its history is at hand.
 - Whether the prime's orch uses the bot's direct message instead of a channel.
 - How presence works with many channels: one presence for the hub, or one per orch.
