@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-07 14:42 UTC; every age below is as of then.
+Rendered 2026-11-07 14:46 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,8 +18,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **A Sketch opened from the board shows only its brief, with no link to its decision record** | [`board-sketch-shows-record`](design-board-sketch-shows-record.md) | darn · light | Finalize | neve | 43m<br>43m | board |
-| T8 | **Skills and effort for every role and subagent come from config**<br>• Skills per role in config, gate fixer included; subagents load fitting skills; every effort explicit | [`agent-skills-and-effort`](design-agent-skills-and-effort.md) | darn · solid | Code-Burler-Fix | neve | 5h<br>1h | shuttle, stencil, claude, gate, loom |
+| T2 | **A Sketch opened from the board shows only its brief, with no link to its decision record** | [`board-sketch-shows-record`](design-board-sketch-shows-record.md) | darn · light | Finalize | neve | 47m<br>47m | board |
+| T8 | **Skills and effort for every role and subagent come from config**<br>• Skills per role in config, gate fixer included; subagents load fitting skills; every effort explicit | [`agent-skills-and-effort`](design-agent-skills-and-effort.md) | darn · solid | Code-Burler-Fix | neve | 5h<br>2h | shuttle, stencil, claude, gate, loom |
 
 ### Ready (0)
 
@@ -33,7 +33,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Raddle releases the tasks it files, chains shared-package parts against the record order, and shows no dependencies** | [`raddle-order-and-deps-table`](design-raddle-order-and-deps-table.md) | darn · light |  | 28m<br>25m | loom, stencil |
+| T4 | `draft` **Raddle releases the tasks it files, chains shared-package parts against the record order, and shows no dependencies** | [`raddle-order-and-deps-table`](design-raddle-order-and-deps-table.md) | darn · light |  | 32m<br>29m | loom, stencil |
 
 ## Notes (18)
 
