@@ -69,7 +69,16 @@ Two git facts the bound-breaker raised were settled on the scratch repository fi
 
 ## Review rounds
 
-_No rounds yet._
+### Round 2
+
+Five findings, all fixed as proposed.
+
+- F1, MEDIUM, D2's upstream check read the tracking ref and missed `endedHub`'s commit into the records bare: D2 reads the tip of the board's branch from the bare, D7 keeps a step that pushes into a bare from elsewhere in the test, and a D2 criterion covers it.
+- F2, MEDIUM, D1 did not say how the reader finds the repository from a caller's directory: it walks up from any directory inside a worktree, a missing directory errors with no walk-up, and two D1 criteria cover both.
+- F3, MEDIUM, a build inherits its first caller's process-global seams: D2's Bound forbids seam setters and once-only registrations in a build, a test takes its copies before installing a seam, and the D7 review checks both.
+- F4, LOW, loomcli's `beamHub` leaves its board dirty: D3's Bound keeps the build's working tree, and the clean-board criterion is limited to builds that commit what they write.
+- F5, LOW, `gate-tier-binaries-only` landed as `3aca2e50`: Scope, D10 and Open risks say so.
+- Self-check: `originBoard` pushes through a clone outside the hub, not straight into the bare, and the D2 criterion's commit comes from a clone inside the template root; the upstream tip names the board's branch; a build reaches no code a once-only registration changes.
 
 ## Question ledger
 
