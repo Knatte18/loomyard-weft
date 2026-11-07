@@ -1,0 +1,258 @@
+diff --git a/internal/reedengine/bootwindowlog_test.go b/internal/reedengine/bootwindowlog_test.go
+new file mode 100644
+index 00000000..c2a80bd8
+--- /dev/null
++++ b/internal/reedengine/bootwindowlog_test.go
+@@ -0,0 +1,59 @@
++// bootwindowlog_test.go pins the Info line that names the first window of a fresh boot.
++// It runs against the scripted fake tmux and needs no live server.
++
++package reedengine
++
++import (
++	"errors"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestLogBootWindow_NamesTheFirstWindowAndLogsNoInfoLineOnAFailedRead pins the boot-window Info line.
++// A readable answer logs the window id, pane id and name.
++// A failed or malformed read logs no Info line.
++// It reads the logger's output through logcapture, which is process-global, so it does not call t.Parallel.
++func TestLogBootWindow_NamesTheFirstWindowAndLogsNoInfoLineOnAFailedRead(t *testing.T) {
++	tiergate.Require(t, 0)
++	const infoLine = "reed: opened the session's first window"
++	tests := []struct {
++		name string
++		out  string
++		err  error
++		want []string
++	}{
++		{"ThreeFieldsAreLogged", "@0 %1 bash\n", nil, []string{"window=@0", "pane=%1", "name=bash"}},
++		{"ANameWithSpacesStaysOneField", "@0 %1 my shell\n", nil, []string{"window=@0", "pane=%1", `name="my shell"`}},
++		{"AFailedReadLogsNoInfoLine", "@0 %1 bash\n", errors.New("display-message failed"), nil},
++		{"ASingleTokenLogsNoInfoLine", "@0\n", nil, nil},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			logs := logcapture.CaptureVerbose(t)
++			e := newTestEngine(t)
++			fake := installFakeTmux(t, e)
++			fake.answerFormat(bootWindowFormat, tt.out, tt.err)
++
++			e.logBootWindowLocked()
++
++			got := logs.String()
++			if tt.want == nil {
++				if strings.Contains(got, infoLine) {
++					t.Errorf("logBootWindowLocked() logged %q for answer %q, err %v; want no Info line\nlogs: %s", infoLine, tt.out, tt.err, got)
++				}
++				return
++			}
++			if !strings.Contains(got, infoLine) {
++				t.Fatalf("logBootWindowLocked() logs lack %q\nlogs: %s", infoLine, got)
++			}
++			for _, field := range tt.want {
++				if !strings.Contains(got, field) {
++					t.Errorf("logBootWindowLocked() logs lack %s\nlogs: %s", field, got)
++				}
++			}
++		})
++	}
++}
+diff --git a/internal/reedengine/doc.go b/internal/reedengine/doc.go
+index 68e17c26..fa5edf14 100644
+--- a/internal/reedengine/doc.go
++++ b/internal/reedengine/doc.go
+@@ -660,8 +660,15 @@
+ // With nothing to place against, the plain form `-t '=<session>:'` is used.
+ // A placed new-window the multiplexer refuses on Windows (psmux) logs at Debug and is retried once in the plain form,
+ // so the order is best-effort there and nothing fails.
++// Every window reed opens logs one Info line naming its window id and name, and its pane id where the open reports one:
++// the boot's first window, an own window, a strand pane broken out of the shell window, and a detached window.
++// An own window, a break-out and a detached window are each opened with a name.
++// The boot's first window starts named after its shell and the shell-window step renames it shell,
++// so a window named after its shell outside that boot came from no reed step.
++// The session's default-command is the configured shell, so a window the operator opens by hand runs that shell.
++// Reed ends only a window carrying @lym_own and reuses only one carrying @lym_hidden; a window opened by hand stays.
+ // The shell window is the window of the recorded console pane (Selvage), named shell with automatic-rename off.
+-// A fresh boot names its one window that way.
++// A fresh boot's one window ends up named that way.
+ // ensureShellWindowLocked brings a session booted by an older lym into that order.
+ // It runs wherever a window opens, once the boot marks the strands' window and at the head of every attach pre-flight.
+ // It runs also when no client size is known.
+@@ -701,10 +708,10 @@
+ // Tmux answers for a window that has already closed, as when its command exited at once.
+ // The answer is exit 0, an empty id and the global value;
+ // a failed read or a reply from any other window counts as the window being gone, never as a mismatch.
+-// A window of the same name whose pane is live is returned as existing and nothing is started;
++// A hidden window of the same name whose pane is live is returned as existing and nothing is started;
+ // one whose pane is dead is killed and replaced.
+-// A window carrying @lym_own is skipped by that lookup.
+-// OpenWindow therefore never adopts, kills or replaces an own window of the same name.
++// That lookup reads only windows carrying @lym_hidden.
++// OpenWindow therefore never adopts, kills or replaces an own window or a window the operator opened by hand.
+ // The command line is composed in panebin.go from the pane-binary prelude, so `lym` resolves to the spawning binary.
+ // Bound: the op only chooses where a command runs;
+ // the window lives as long as the reed session, and the session's other windows keep remain-on-exit on.
+diff --git a/internal/reedengine/lifecycle.go b/internal/reedengine/lifecycle.go
+index a94328f8..a76ff7b3 100644
+--- a/internal/reedengine/lifecycle.go
++++ b/internal/reedengine/lifecycle.go
+@@ -542,6 +542,7 @@ func (e *Engine) ensureServerAndSessionLocked() (booted bool, strippedKeys []str
+ 	}
+ 
+ 	e.touchDiscoverSignal()
++	e.logBootWindowLocked()
+ 
+ 	if runtime.GOOS != "windows" {
+ 		if err := e.guardBootSessionLocked(identityBefore, tmuxConf); err != nil {
+@@ -556,6 +557,23 @@ func (e *Engine) ensureServerAndSessionLocked() (booted bool, strippedKeys []str
+ 	return true, stripped, nil
+ }
+ 
++// bootWindowFormat is the display-message format that names a freshly booted session's one window:
++// the window id, the pane id, then the window name.
++const bootWindowFormat = "#{window_id} #{pane_id} #{window_name}"
++
++// logBootWindowLocked logs at Info the window a fresh boot's new-session opened, by window id, pane id and name,
++// so every window in a session traces to the reed step that opened it.
++// A failed or unparsable read logs at Debug and never fails the boot.
++func (e *Engine) logBootWindowLocked() {
++	out, err := e.tmux.output("display-message", "-p", "-t", exactSessionWindowTarget(e.SessionName()), bootWindowFormat)
++	fields := strings.SplitN(strings.TrimSpace(out), " ", 3)
++	if err != nil || len(fields) != 3 {
++		logger.Debug("reed: could not read the booted session's first window", "socket", e.Socket(), "session", e.SessionName(), "answer", strings.TrimSpace(out), "err", err)
++		return
++	}
++	logger.Info("reed: opened the session's first window", "socket", e.Socket(), "session", e.SessionName(), "window", fields[0], "pane", fields[1], "name", fields[2])
++}
++
+ // pinBootOptionsLocked pins the options a fresh boot sets on the server and session it just spawned.
+ // The `remain-on-exit` and `mouse` pins are correctness dependencies and fail the boot;
+ // the geometry pins, which include the `window-resized` unpin, are non-fatal.
+diff --git a/internal/reedengine/ownwindow.go b/internal/reedengine/ownwindow.go
+index 0c80ab94..3626dbae 100644
+--- a/internal/reedengine/ownwindow.go
++++ b/internal/reedengine/ownwindow.go
+@@ -436,7 +436,7 @@ func (e *Engine) moveShellWindowStrandsLocked(st *ReedState, shellWindow string,
+ 		s.Display.Anchor = render.AnchorOwnWindow
+ 		s.Display.Window = ""
+ 		moved = true
+-		logger.Info("reed: moved a strand pane out of the shell window", "socket", e.Socket(), "session", e.SessionName(), "strand", s.GUID, "window", fields[0], "pane", paneID)
++		logger.Info("reed: moved a strand pane out of the shell window", "socket", e.Socket(), "session", e.SessionName(), "strand", s.GUID, "window", fields[0], "pane", paneID, "name", strandLabel(s.Name))
+ 	}
+ 	return moved
+ }
+diff --git a/internal/reedengine/spawn.go b/internal/reedengine/spawn.go
+index aeff7792..22945482 100644
+--- a/internal/reedengine/spawn.go
++++ b/internal/reedengine/spawn.go
+@@ -325,7 +325,7 @@ func (e *Engine) openOwnWindowLocked(st *ReedState, s *Strand, name, group strin
+ 		}
+ 	}
+ 
+-	logger.Info("reed: opened own window", "socket", e.Socket(), "session", e.SessionName(), "strand", s.GUID, "window", windowID, "pane", paneID)
++	logger.Info("reed: opened own window", "socket", e.Socket(), "session", e.SessionName(), "strand", s.GUID, "window", windowID, "pane", paneID, "name", name)
+ 	return paneID, nil
+ }
+ 
+diff --git a/internal/reedengine/window.go b/internal/reedengine/window.go
+index 68e55e3a..abe6c4c3 100644
+--- a/internal/reedengine/window.go
++++ b/internal/reedengine/window.go
+@@ -41,8 +41,8 @@ const temporaryWindowNamePrefix = "lym-opening-"
+ var temporaryWindowCounter atomic.Uint64
+ 
+ // windowListFormat is the session-wide listing format that finds a named window:
+-// window id, pane id, pane dead flag, the own-window flag, then the window name.
+-const windowListFormat = "#{window_id} #{pane_id} #{pane_dead} #{?#{@lym_own},1,0} #{window_name}"
++// window id, pane id, pane dead flag, the hidden-window flag, then the window name.
++const windowListFormat = "#{window_id} #{pane_id} #{pane_dead} #{?#{@lym_hidden},1,0} #{window_name}"
+ 
+ // windowReadBackFormat reads back a window's remain-on-exit option: the answering window's id, then the value.
+ // The id is needed because tmux answers a target window that has already closed from another scope.
+@@ -55,8 +55,9 @@ const windowReadBackFormat = "#{window_id} #{remain-on-exit}"
+ // It opens after the highest-index window, so every hidden window sits behind the shell window.
+ // When the session predates the window order, the shell window is first renamed and moved into place.
+ //
+-// A window of that exact name whose pane is live is returned as existing and nothing is started;
++// A hidden window of that exact name whose pane is live is returned as existing and nothing is started;
+ // one whose pane is dead is killed and replaced.
++// A window of that name without the hidden marker, such as one the operator opened by hand, is left as it is.
+ // It returns an error wrapping ErrNoSession when the worktree has no reed session, and creates nothing;
+ // a *CapabilityError when the multiplexer lacks new-window;
+ // ErrNewWindowFailed wrapping the multiplexer's error when it refuses the window;
+@@ -154,9 +155,10 @@ type namedWindow struct {
+ 	paneDead bool
+ }
+ 
+-// findWindowLocked returns the window of this session named exactly name, or nil when there is none.
++// findWindowLocked returns the hidden window of this session named exactly name, or nil when there is none.
+ // It reads the session-wide pane listing and compares names itself, since a window-name target that matches nothing falls back to the current window.
+-// A window carrying the own-window marker is skipped, so an own window of the same name is never adopted, killed or replaced.
++// Only a window carrying @lym_hidden, the marker every window this op opens carries, is considered.
++// An own window or a window the operator opened by hand is therefore never adopted, killed or replaced.
+ func (e *Engine) findWindowLocked(name string) (*namedWindow, error) {
+ 	out, err := e.tmux.output("list-panes", "-s", "-t", exactSessionTarget(e.SessionName()), "-F", windowListFormat)
+ 	if err != nil {
+@@ -164,7 +166,7 @@ func (e *Engine) findWindowLocked(name string) (*namedWindow, error) {
+ 	}
+ 	for _, line := range strings.Split(out, "\n") {
+ 		fields := strings.SplitN(strings.TrimSpace(line), " ", 5)
+-		if len(fields) != 5 || fields[3] == "1" || fields[4] != name {
++		if len(fields) != 5 || fields[3] != "1" || fields[4] != name {
+ 			continue
+ 		}
+ 		return &namedWindow{windowID: fields[0], paneID: fields[1], paneDead: fields[2] == "1"}, nil
+diff --git a/internal/reedengine/window_test.go b/internal/reedengine/window_test.go
+index 04efe4d7..29e9330f 100644
+--- a/internal/reedengine/window_test.go
++++ b/internal/reedengine/window_test.go
+@@ -61,14 +61,14 @@ func TestOpenWindow(t *testing.T) {
+ 		{
+ 			name: "ALiveWindowOfThatNameIsReportedAndNothingStarts",
+ 			script: func(f *fakeTmux) {
+-				f.answer(sessionListVerb, "@0 %1 0 0 tmux\n@4 %9 0 0 "+name+"\n", nil)
++				f.answer(sessionListVerb, "@0 %1 0 0 tmux\n@4 %9 0 1 "+name+"\n", nil)
+ 			},
+ 			want: WindowResult{WindowID: "@4", Name: name, Existing: true},
+ 		},
+ 		{
+-			name: "ALiveOwnWindowOfThatNameIsNeitherReturnedNorKilledAndANewWindowOpens",
++			name: "ALiveUnhiddenWindowOfThatNameIsNeitherReturnedNorKilledAndANewWindowOpens",
+ 			script: func(f *fakeTmux) {
+-				f.answer(sessionListVerb, "@4 %9 0 1 "+name+"\n", nil)
++				f.answer(sessionListVerb, "@4 %9 0 0 "+name+"\n", nil)
+ 				f.answer("new-window", "@8\n", nil)
+ 				f.answerFormat(windowReadBackFormat, "@8 off\n", nil)
+ 			},
+@@ -76,7 +76,7 @@ func TestOpenWindow(t *testing.T) {
+ 			wantNewCalls: 1,
+ 		},
+ 		{
+-			name: "ADeadWindowOfThatNameIsKilledAndReplaced",
++			name: "ADeadUnhiddenWindowOfThatNameStaysAndANewWindowOpens",
+ 			script: func(f *fakeTmux) {
+ 				f.answer(sessionListVerb, "@4 %9 1 0 "+name+"\n", nil)
+ 				f.answer("new-window", "@8\n", nil)
+@@ -84,6 +84,16 @@ func TestOpenWindow(t *testing.T) {
+ 			},
+ 			want:         WindowResult{WindowID: "@8", Name: name},
+ 			wantNewCalls: 1,
++		},
++		{
++			name: "ADeadWindowOfThatNameIsKilledAndReplaced",
++			script: func(f *fakeTmux) {
++				f.answer(sessionListVerb, "@4 %9 1 1 "+name+"\n", nil)
++				f.answer("new-window", "@8\n", nil)
++				f.answerFormat(windowReadBackFormat, "@8 off\n", nil)
++			},
++			want:         WindowResult{WindowID: "@8", Name: name},
++			wantNewCalls: 1,
+ 			wantKilled:   []string{"%9"},
+ 		},
+ 		{
