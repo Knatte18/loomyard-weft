@@ -1,6 +1,6 @@
 # Fold the overlapping internal/fabricengine tests the tier 1 report read
 
-`fabric-test-folds` · Task · enhancement, fabric, testkit, git · running · Drift-Recheck
+`fabric-test-folds` · Task · enhancement, fabric, testkit, git · running · Describe
 
 Decision record: [Sketch](decision-fabric-test-folds.md)
 
