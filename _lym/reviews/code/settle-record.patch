@@ -1,0 +1,691 @@
+diff --git a/contracts/specs/raddle-proposal-spec.md b/contracts/specs/raddle-proposal-spec.md
+index e30e900e..c20d9fbc 100644
+--- a/contracts/specs/raddle-proposal-spec.md
++++ b/contracts/specs/raddle-proposal-spec.md
+@@ -26,6 +26,11 @@ The proposal holds these keys:
+ - `board_checked` — a list of `{slug, revised}`, one per board entry the agent weighed.
+   `revised` is the entry's `revised` stamp in RFC 3339, as `lym board list` prints it.
+ - `parts` — a list of parts.
++- `order_departures` — optional, a list of `{parts, record_order, cost}`,
++  one per place the parts' order departs from an order the Sketch's decision record states.
++  `parts` holds the slugs of the parts concerned, `record_order` the order the record states with the decision id that states it,
++  and `cost` what the departure costs, such as a saving that lands later.
++  It is absent or empty when the order follows every order the record states.
+ - `cost` — the proposal's cost.
+ 
+ A part holds:
+diff --git a/contracts/stencils/raddle/raddle-template-agent.md b/contracts/stencils/raddle/raddle-template-agent.md
+index 88ce9fbe..e70c3d7b 100644
+--- a/contracts/stencils/raddle/raddle-template-agent.md
++++ b/contracts/stencils/raddle/raddle-template-agent.md
+@@ -46,6 +46,9 @@ Put no design question to the operator before the proposal passes the spec's che
+ 
+ - A tapestry's large fixed start cost often makes fewer, larger parts, or one tapestry, cheaper than many small tasks. Weigh that against what the cost report shows for each recipe and profile.
+ - Order the parts by what each takes from the others, and keep two parts with no order between them off the same package.
++- When parts that share a package must be chained, order the chain by the Sketch's own order first: a part the record says waits for nothing goes first in its chain.
++  Where the record states no order, put first the part with the largest stated saving, or the one the others gain from earliest.
++- List every place your order departs from an order the decision record states in the proposal's `order_departures`, with what the departure costs.
+ - When a live `PATTERN.md` entry absorbs a PATTERN change the Sketch declares, map the change with the part's `pattern_clusters`, so the part's record declares the live entry; a contract line that folds it in is not enough.
+ - Weigh the next-best split too, since the proposal states its cost beside the chosen one.
+ - Write each cost line so it says when a cell it rests on reads "too few runs", and never guess a figure for such a cell.
+diff --git a/docs/reference/weaving-glossary.md b/docs/reference/weaving-glossary.md
+index c125f132..5cfcaec3 100644
+--- a/docs/reference/weaving-glossary.md
++++ b/docs/reference/weaving-glossary.md
+@@ -104,7 +104,7 @@ Agent nouns name the one who does the work.
+ |---|---|---|---|---|---|
+ | weaver | vever, veverske | sv vävare; da væver; fr tisserand; de Weber | works the loom | agent role | Taken: `Weaver`, a board note (F13) for a cold-start implementer beside Webster, a fresh agent per batch that escalates its model when an agent fails. Webster itself is the fork-based implementer loop. |
+ | warper | renner † | sv varpare †; fr ourdisseur; de Schärer | prepares the warp | agent role | – |
+-| drafter | mønstertegner † | sv mönsterritare †; fr dessinateur; de Musterzeichner | draws the pattern draft | agent role | Close: `draft`, the board status of a task that is not released: every new task takes it, bar a task a write releases, such as the raddle promotion and a raddle filing's released parts, and a draft entry holds no run lock. |
++| drafter | mønstertegner † | sv mönsterritare †; fr dessinateur; de Musterzeichner | draws the pattern draft | agent role | Close: `draft`, the board status of a task that is not released: every new task takes it, bar a task a write releases, such as the raddle promotion, and a draft entry holds no run lock. |
+ | threader | – † | fr rentreur | draws the warp through heddles and reed | agent role | – |
+ | spinner | spinner, spinnerske | sv spinnare; fr fileur; de Spinner | spins yarn | agent role | – |
+ | carder | – † | fr cardeur; de Kardierer | cards fibre | agent role | Close: a plan `card`, as above. |
+@@ -148,7 +148,7 @@ Agent nouns name the one who does the work.
+ | English | Norwegian | Other | Meaning | Fits | In lym |
+ |---|---|---|---|---|---|
+ | design | mønster †, utkast † | sv mönster; fr dessin; de Entwurf | the pattern to be woven | artifact | – |
+-| draft | opptegning † | sv uppritning †; fr mise en carte; de Patrone | the written weaving pattern: threading, tie-up, treadling | artifact | Taken: `draft`, the board status of a task that is not released: every new task takes it, bar a task a write releases, such as the raddle promotion and a raddle filing's released parts, and a draft entry holds no run lock. The board layer `Draft` lists such tasks. |
++| draft | opptegning † | sv uppritning †; fr mise en carte; de Patrone | the written weaving pattern: threading, tie-up, treadling | artifact | Taken: `draft`, the board status of a task that is not released: every new task takes it, bar a task a write releases, such as the raddle promotion, and a draft entry holds no run lock. The board layer `Draft` lists such tasks. |
+ | cartoon | kartong | sv kartong; fr carton; de Karton | the full-size drawing placed behind the warp | artifact | Taken: `cartoon`, kept for a later Plan block by the shed-sub-run-block task. |
+ | sample, swatch | prøve, vevprøve † | sv provlapp; fr échantillon; de Muster, Probe | a small piece woven to test a design | artifact | Close: `sampler`, the recipe and agent role described above. |
+ | motif | motiv | sv motiv; fr motif; de Motiv | a repeated unit of a design | artifact, recipe | Taken: `motif`, a recipe a board task may name, which runs Discussion alone, and which tapestry runs inline as its Motif block, a shed block that runs a whole sub-recipe as one producer. |
+diff --git a/internal/battencli/wire_seams_test.go b/internal/battencli/wire_seams_test.go
+index 2d61a828..9b1cbd87 100644
+--- a/internal/battencli/wire_seams_test.go
++++ b/internal/battencli/wire_seams_test.go
+@@ -151,7 +151,6 @@ var intentionallyNil = map[string]string{
+ 	"RaddleFile.AlreadyFiled":             "raddle-only seam, batten runs no raddle row",
+ 	"RaddleFile.File":                     "raddle-only seam, batten runs no raddle row",
+ 	"RaddleFile.CreateBeam":               "raddle-only seam, batten runs no raddle row",
+-	"RaddleFile.Release":                  "raddle-only seam, batten runs no raddle row",
+ 	"RaddleFile.Notify":                   "raddle-only seam, batten runs no raddle row",
+ 	"RaddleFile.EndEntry":                 "raddle-only seam, batten runs no raddle row",
+ 	"RaddleFile.Commit":                   "raddle-only seam, batten runs no raddle row",
+diff --git a/internal/boardengine/board.go b/internal/boardengine/board.go
+index 3dab626e..3fa4df6e 100644
+--- a/internal/boardengine/board.go
++++ b/internal/boardengine/board.go
+@@ -139,11 +139,6 @@ func (b *Board) boardCriticalSection(fn func(store *Store) (any, error), afterSa
+ 		}
+ 		result = p.task
+ 	}
+-	// A filing's released parts are released in the filing's own write; the filing returns no result.
+-	if filed, ok := result.(raddleFiled); ok {
+-		released = filed.released
+-		result = nil
+-	}
+ 	// A renamed slug is the same entry, so the loaded entries are judged under the new slug.
+ 	renamedFrom, renamedTo := "", ""
+ 	if r, ok := result.(RenameResult); ok {
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index aeae39c4..568432e5 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -460,7 +460,7 @@
+ // So does an upsert setting `status` to null on a task, and so does a merge whose `set_status` sets null.
+ // An empty string written to a task whose loaded status differs is `draft`, not a release.
+ // A write may release the tasks it makes: the draft rule skips the slugs it is told.
+-// Those are the promoted task of a promotion with recipe `raddle` and the released parts of a raddle filing.
++// That is the promoted task of a promotion with recipe `raddle`.
+ // The owner write and the replay of a local commit run no draft rule:
+ // the first never makes a task, and the second copies entries a critical-section write already normalised.
+ //
+@@ -606,11 +606,9 @@
+ // After the save it writes the store directory with store.json last, so the write leaves its own done marker.
+ // The filing's Project is the Sketch's own project field, so every filed entry's parent beam equals the Sketch's;
+ // the parts are members of the new project when the shape files one.
+-// The parts are draft unless the filing says to release them in the write, through the draft rule's released list.
++// The parts are filed draft, so a release stays the operator's.
+ // The run's own entry stays open.
+ // A part's dependency on the run's entry, or on a slug no longer on the board, is dropped.
+-// ReleaseTasks releases the named tasks that are still open and draft.
+-// It writes nothing when none is left, which is the done marker of that step.
+ // EndRaddleEntry marks the run's entry done and clears its notify_on_land.
+ // The run lock admits both changes, since neither is scope.
+ // It writes nothing for an absent or done entry.
+diff --git a/internal/boardengine/raddlefile.go b/internal/boardengine/raddlefile.go
+index fb200e17..68f62147 100644
+--- a/internal/boardengine/raddlefile.go
++++ b/internal/boardengine/raddlefile.go
+@@ -1,5 +1,5 @@
+ // raddlefile.go holds the board writes of a raddle run.
+-// It files a Sketch's approved entries with the raddle store, releases the filed parts, and ends the run's entry.
++// It files a Sketch's approved entries, its tasks as drafts, with the raddle store, and ends the run's entry.
+ 
+ package boardengine
+ 
+@@ -60,8 +60,6 @@ type RaddleFiling struct {
+ 	ProjectEntry *RaddleEntry
+ 	// Parts are the filed tasks, in dependency order: a part depends only on entries on the board or filed before it.
+ 	Parts []RaddleEntry
+-	// Release is whether the parts are released in the filing's own write; otherwise they are draft.
+-	Release bool
+ 	// Proposal, ColdProposal and SketchRecord are the staged files.
+ 	// They are stored as proposal.yaml, cold-proposal.yaml and decision-record.md.
+ 	Proposal     []byte
+@@ -71,11 +69,6 @@ type RaddleFiling struct {
+ 	Check func(tasks []Task, store RaddleStore) error
+ }
+ 
+-// raddleFiled is the mutation result of a filing: the parts the write leaves released.
+-type raddleFiled struct {
+-	released []string
+-}
+-
+ // FileRaddle files the entries of f and its raddle store in one write under the board lock.
+ // It writes nothing when the store already holds a directory for the Sketch with the filing's created stamp and hash.
+ // That record is the done marker of the filing.
+@@ -86,7 +79,7 @@ type raddleFiled struct {
+ // It then adds the project and the parts as discussed entries.
+ // Each entry's decision-<slug>.md is written before board.json is saved.
+ // After the save it writes the store directory, store.json last, so the write leaves its own done marker.
+-// The parts are released in the same write when f.Release is set and are draft otherwise; the run's entry stays open.
++// The parts are filed draft, so a release stays the operator's; the run's entry stays open.
+ func (b *Board) FileRaddle(f RaddleFiling) error {
+ 	var recordFiles []string
+ 	var filed []string
+@@ -102,13 +95,7 @@ func (b *Board) FileRaddle(f RaddleFiling) error {
+ 		getTask := func(slug string) (Task, bool) { return store.GetTask(slug) }
+ 		if slugs := raddleFilingSlugs(f); raddleFilingHeld(getTask, f.Sketch, slugs) {
+ 			filed = slugs
+-			var released []string
+-			if f.Release {
+-				for _, part := range f.Parts {
+-					released = append(released, part.Slug)
+-				}
+-			}
+-			return raddleFiled{released: released}, nil
++			return nil, nil
+ 		}
+ 		if f.Check != nil {
+ 			if err := f.Check(store.Tasks(), held); err != nil {
+@@ -124,17 +111,13 @@ func (b *Board) FileRaddle(f RaddleFiling) error {
+ 			filed = append(filed, f.ProjectEntry.Slug)
+ 			partProject = f.ProjectEntry.Slug
+ 		}
+-		var released []string
+ 		for _, part := range f.Parts {
+ 			if err := b.fileRaddleEntry(store, f, part, partProject, &recordFiles); err != nil {
+ 				return nil, err
+ 			}
+ 			filed = append(filed, part.Slug)
+-			if f.Release {
+-				released = append(released, part.Slug)
+-			}
+ 		}
+-		return raddleFiled{released: released}, nil
++		return nil, nil
+ 	}, func() error {
+ 		saved = true
+ 		return b.writeRaddleStore(f, filed)
+@@ -276,28 +259,6 @@ func (b *Board) HoldsRaddleFiling(sketch string, slugs []string) (bool, error) {
+ 	return true, nil
+ }
+ 
+-// ReleaseTasks clears the status of each task of slugs that is on the board, not done, and draft, in one write.
+-// Tasks that are absent, done or not draft are skipped.
+-// It writes nothing when no task is released.
+-func (b *Board) ReleaseTasks(slugs []string) error {
+-	_, err := b.boardCriticalSection(func(store *Store) (any, error) {
+-		releasedAny := false
+-		for _, slug := range slugs {
+-			i, found := store.index(slug)
+-			if !found || isDone(store.tasks[i]) || !isDraft(store.tasks[i]) {
+-				continue
+-			}
+-			store.tasks[i].Status = nil
+-			releasedAny = true
+-		}
+-		if !releasedAny {
+-			return noWrite{}, nil
+-		}
+-		return nil, nil
+-	}, nil)
+-	return err
+-}
+-
+ // EndRaddleEntry marks the entry slug done and clears its notify_on_land in one write.
+ // The run lock admits the write since neither field is scope.
+ // It writes nothing for an absent or done entry.
+diff --git a/internal/boardengine/raddlefile_test.go b/internal/boardengine/raddlefile_test.go
+index 8f8c54dd..3c656a3a 100644
+--- a/internal/boardengine/raddlefile_test.go
++++ b/internal/boardengine/raddlefile_test.go
+@@ -1,4 +1,5 @@
+-// raddlefile_test.go — the board writes of a raddle run: FileRaddle's one write with the raddle store, ReleaseTasks and EndRaddleEntry.
++// raddlefile_test.go — the board writes of a raddle run:
++// FileRaddle's one write with the raddle store, and EndRaddleEntry.
+ 
+ package boardengine
+ 
+@@ -97,42 +98,30 @@ func TestFileRaddle(t *testing.T) {
+ 		groupingProject string
+ 		projectEntry    *RaddleEntry
+ 		parts           []RaddleEntry
+-		release         bool
+ 		// wantProjectOf maps each filed slug to the project it belongs to.
+ 		wantProjectOf map[string]string
+-		wantDraft     []string
+ 		wantDependsOn map[string][]string
+ 	}{
+ 		{
+-			name: "TapestryShapeFilesOneReleasedTask", parts: []RaddleEntry{raddlePart("plan-t")}, release: true,
++			name: "TapestryShapeFilesOneDraftTask", parts: []RaddleEntry{raddlePart("plan-t")},
+ 			wantProjectOf: map[string]string{"plan-t": ""},
+ 		},
+ 		{
+-			name:          "TasksShapeFilesReleasedPartsAndDropsAGoneDependency",
++			name:          "TasksShapeFilesDraftPartsAndDropsAGoneDependency",
+ 			parts:         []RaddleEntry{raddlePart("plan-a"), raddlePart("plan-b", "plan-a", "gone", "plan")},
+-			release:       true,
+ 			wantProjectOf: map[string]string{"plan-a": "", "plan-b": ""},
+ 			wantDependsOn: map[string][]string{"plan-b": {"plan-a"}},
+ 		},
+ 		{
+-			name:          "ProjectShapeFilesTheProjectAndReleasedParts",
++			name:          "ProjectShapeFilesTheProjectAndDraftParts",
+ 			projectEntry:  raddleProject("plan-proj"),
+ 			parts:         []RaddleEntry{raddlePart("plan-a"), raddlePart("plan-b")},
+-			release:       true,
+ 			wantProjectOf: map[string]string{"plan-proj": "", "plan-a": "plan-proj", "plan-b": "plan-proj"},
+ 		},
+-		{
+-			name:          "BeamShapeFilesTheProjectAndDraftParts",
+-			projectEntry:  raddleProject("plan-proj"),
+-			parts:         []RaddleEntry{raddlePart("plan-a"), raddlePart("plan-b")},
+-			wantProjectOf: map[string]string{"plan-proj": "", "plan-a": "plan-proj", "plan-b": "plan-proj"},
+-			wantDraft:     []string{"plan-a", "plan-b"},
+-		},
+ 		{
+ 			name:            "SketchInAGroupingProjectFilesTasksInThatProject",
+ 			groupingProject: "grouping",
+ 			parts:           []RaddleEntry{raddlePart("plan-a")},
+-			release:         true,
+ 			wantProjectOf:   map[string]string{"plan-a": "grouping"},
+ 		},
+ 		{
+@@ -140,7 +129,6 @@ func TestFileRaddle(t *testing.T) {
+ 			groupingProject: "grouping",
+ 			projectEntry:    raddleProject("plan-proj"),
+ 			parts:           []RaddleEntry{raddlePart("plan-a")},
+-			release:         true,
+ 			wantProjectOf:   map[string]string{"plan-proj": "grouping", "plan-a": "plan-proj"},
+ 		},
+ 	}
+@@ -155,7 +143,7 @@ func TestFileRaddle(t *testing.T) {
+ 			checks := 0
+ 			filing := RaddleFiling{
+ 				Sketch: "plan", Created: run.Created, Project: tt.groupingProject, Hash: "hash-1", RunEntry: "plan",
+-				ProjectEntry: tt.projectEntry, Parts: tt.parts, Release: tt.release,
++				ProjectEntry: tt.projectEntry, Parts: tt.parts,
+ 				Proposal: []byte("proposal\n"), ColdProposal: []byte("cold\n"), SketchRecord: []byte("sketch record\n"),
+ 				Check: func([]Task, RaddleStore) error { checks++; return nil },
+ 			}
+@@ -180,11 +168,8 @@ func TestFileRaddle(t *testing.T) {
+ 				if entry.Kind == KindProject && !slices.Contains(entry.Labels, "enhancement") {
+ 					t.Errorf("project %q labels = %v; want the proposal's type label enhancement", slug, entry.Labels)
+ 				}
+-				if entry.Kind == KindTask {
+-					draft := entry.Status != nil && *entry.Status == StatusDraft
+-					if draft != slices.Contains(tt.wantDraft, slug) || (!draft && entry.Status != nil) {
+-						t.Errorf("entry %q status = %v; want draft = %t, otherwise released", slug, entry.Status, slices.Contains(tt.wantDraft, slug))
+-					}
++				if entry.Kind == KindTask && (entry.Status == nil || *entry.Status != StatusDraft) {
++					t.Errorf("entry %q status = %v; want draft", slug, entry.Status)
+ 				}
+ 			}
+ 			for slug, wantDeps := range tt.wantDependsOn {
+@@ -238,7 +223,7 @@ func TestFileRaddle(t *testing.T) {
+ 		run := startRaddleRun(t, b, "plan", "")
+ 		checks := 0
+ 		filing := RaddleFiling{
+-			Sketch: "plan", Created: run.Created, Hash: "hash-1", RunEntry: "plan", Parts: []RaddleEntry{raddlePart("plan-a")}, Release: true,
++			Sketch: "plan", Created: run.Created, Hash: "hash-1", RunEntry: "plan", Parts: []RaddleEntry{raddlePart("plan-a")},
+ 			Proposal: []byte("proposal\n"), ColdProposal: []byte("cold\n"), SketchRecord: []byte("sketch record\n"),
+ 			Check: func([]Task, RaddleStore) error {
+ 				checks++
+@@ -293,7 +278,7 @@ func TestFileRaddle(t *testing.T) {
+ 				b, boardPath := newRaddleTestBoard(t)
+ 				run := startRaddleRun(t, b, "plan", "")
+ 				filing := RaddleFiling{
+-					Sketch: "plan", Created: run.Created, Hash: "hash-1", RunEntry: "plan", Parts: []RaddleEntry{raddlePart("plan-a")}, Release: true,
++					Sketch: "plan", Created: run.Created, Hash: "hash-1", RunEntry: "plan", Parts: []RaddleEntry{raddlePart("plan-a")},
+ 					Proposal: []byte("proposal\n"), ColdProposal: []byte("cold\n"), SketchRecord: []byte("sketch record\n"),
+ 				}
+ 				if err := b.FileRaddle(filing); err != nil {
+@@ -322,7 +307,7 @@ func TestFileRaddle(t *testing.T) {
+ 		b, boardPath := newRaddleTestBoard(t)
+ 		run := startRaddleRun(t, b, "plan", "")
+ 		filing := RaddleFiling{
+-			Sketch: "plan", Created: run.Created, Hash: "hash-1", RunEntry: "plan", Parts: []RaddleEntry{raddlePart("plan-a")}, Release: true,
++			Sketch: "plan", Created: run.Created, Hash: "hash-1", RunEntry: "plan", Parts: []RaddleEntry{raddlePart("plan-a")},
+ 			Proposal: []byte("proposal\n"), SketchRecord: []byte("sketch record\n"),
+ 			Check: func([]Task, RaddleStore) error { return errors.New("another entry took the slug") },
+ 		}
+@@ -351,7 +336,7 @@ func TestHoldsRaddleFiling(t *testing.T) {
+ 	run := startRaddleRun(t, b, "plan", "")
+ 	filing := RaddleFiling{
+ 		Sketch: "plan", Created: run.Created, Hash: "hash-1", RunEntry: "plan", ProjectEntry: raddleProject("plan-proj"),
+-		Parts: []RaddleEntry{raddlePart("plan-a")}, Release: true,
++		Parts:    []RaddleEntry{raddlePart("plan-a")},
+ 		Proposal: []byte("proposal\n"), ColdProposal: []byte("cold\n"), SketchRecord: []byte("sketch record\n"),
+ 	}
+ 	if err := b.FileRaddle(filing); err != nil {
+@@ -381,54 +366,6 @@ func TestHoldsRaddleFiling(t *testing.T) {
+ 	}
+ }
+ 
+-func TestReleaseTasks(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-
+-	tests := []struct {
+-		name  string
+-		slugs []string
+-		// wantReleased lists the slugs that read released afterwards, and wantWrite whether the call writes board.json.
+-		wantReleased []string
+-		wantWrite    bool
+-	}{
+-		{"TwoDraftPartsAreReleased", []string{"part-a", "part-b"}, []string{"part-a", "part-b"}, true},
+-		{"AbsentAndDoneAreSkipped", []string{"gone", "part-done", "part-b"}, []string{"part-b"}, true},
+-		{"NoneLeftWritesNothing", []string{"gone", "part-done"}, nil, false},
+-	}
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			t.Parallel()
+-			b, boardPath := newRaddleTestBoard(t)
+-			for _, slug := range []string{"part-a", "part-b", "part-done"} {
+-				upsertForRaddle(t, b, map[string]any{"slug": slug, "title": slug, "kind": "task", "labels": []string{"bug"}})
+-			}
+-			done := StatusDone
+-			if err := b.SetStatus("part-done", &done); err != nil {
+-				t.Fatalf("SetStatus() error = %v; want nil", err)
+-			}
+-			old := backdateBoardFile(t, boardPath)
+-
+-			if err := b.ReleaseTasks(tt.slugs); err != nil {
+-				t.Fatalf("ReleaseTasks() error = %v; want nil", err)
+-			}
+-
+-			if written := boardFileWritten(t, boardPath, old); written != tt.wantWrite {
+-				t.Errorf("ReleaseTasks wrote board.json = %t; want %t", written, tt.wantWrite)
+-			}
+-			for _, slug := range []string{"part-a", "part-b"} {
+-				entry := entryForRaddle(t, b, slug)
+-				if released := entry.Status == nil; released != slices.Contains(tt.wantReleased, slug) {
+-					t.Errorf("entry %q status = %v; want released = %t", slug, entry.Status, !released)
+-				}
+-			}
+-			if entry := entryForRaddle(t, b, "part-done"); entry.Status == nil || *entry.Status != StatusDone {
+-				t.Errorf("done entry status = %v; want it left done", entry.Status)
+-			}
+-		})
+-	}
+-}
+-
+ func TestEndRaddleEntry(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/loomcli/raddlewiring.go b/internal/loomcli/raddlewiring.go
+index 1338edc5..43b3104f 100644
+--- a/internal/loomcli/raddlewiring.go
++++ b/internal/loomcli/raddlewiring.go
+@@ -206,13 +206,6 @@ func raddleFileDeps(location *lymcwd.Location, slug string) loomshed.RaddleFileD
+ 			return board.FileRaddle(filing)
+ 		},
+ 		CreateBeam: func(project string) error { return createBeamFromParent(location, project, runLymChild) },
+-		Release: func(slugs []string) error {
+-			board, err := openHubBoard(location)
+-			if err != nil {
+-				return err
+-			}
+-			return board.ReleaseTasks(slugs)
+-		},
+ 		// Notify names the run first, since the orch reads the notices of every run of the hub.
+ 		Notify: func(line string) error {
+ 			_, err := orchcli.NotifyParent(location, loomProgram, fmt.Sprintf("loom %s: %s", slug, line))
+diff --git a/internal/loomengine/raddletable.go b/internal/loomengine/raddletable.go
+index ab72196d..98a4bc03 100644
+--- a/internal/loomengine/raddletable.go
++++ b/internal/loomengine/raddletable.go
+@@ -25,7 +25,9 @@ const raddleStencil = "raddle-template-agent"
+ 
+ // raddleModeRules returns the {{.mode_rules}} block of the raddle agent.
+ // In auto mode the agent ends on the complete proposal file with no operator present.
+-// In interactive mode it checks the proposal, puts it to the operator and records the operator's approval.
++// In interactive mode it checks the proposal and puts it to the operator:
++// a table of the parts with their dependencies, the order departures with their costs, and that the tasks land as drafts.
++// It then records the operator's approval.
+ func raddleModeRules(interactive bool, proposalPath string) string {
+ 	if !interactive {
+ 		return "This session is running in auto mode: no operator is present. " +
+@@ -34,7 +36,11 @@ func raddleModeRules(interactive bool, proposalPath string) string {
+ 	}
+ 	return "This session is running interactively: an operator is present at the pane. " +
+ 		"Once the proposal is complete, run `lym loom raddle-propose`, which checks the file and tells your parent that a proposal waits. " +
+-		"Then put the proposal to the operator in the pane as plain text, and revise the file while the operator questions or corrects the split, the order, the recipes or the profiles; run `lym loom raddle-propose` again after each revision. " +
++		"Then put the proposal to the operator in the pane as plain text. " +
++		"Show the parts as a table with a column of each part's dependencies, by part slug, so the order reads from the table alone. " +
++		"Name each order departure the proposal lists, with its cost. " +
++		"Say that every task lands on the board as a draft, which the operator releases with `lym board set-status`, so a project can be made a beam before any of its tasks starts. " +
++		"Revise the file while the operator questions or corrects the split, the order, the recipes or the profiles; run `lym loom raddle-propose` again after each revision. " +
+ 		"Run `lym loom raddle-approve` only on the operator's explicit approval, never without it, and then end your turn."
+ }
+ 
+diff --git a/internal/loomshed/doc.go b/internal/loomshed/doc.go
+index 9aad194f..fa5312f1 100644
+--- a/internal/loomshed/doc.go
++++ b/internal/loomshed/doc.go
+@@ -257,7 +257,8 @@
+ // Raddle-File deletes its stage and part records and counts a return.
+ // The failure after two returns halts the run for its parent.
+ // Its steps are staging the store files, writing the part records and filing the entries in one board write.
+-// Further steps make the project a beam and release its parts for the beam shape.
++// Every filed task is draft, so a release stays the operator's.
++// A further step makes the project a beam for the beam shape.
+ // The last steps notify the parent once and end the run's entry.
+ // A step whose outputs carry the hash of the proposal now approved is skipped,
+ // so a retry after a crash finishes the steps it missed.
+diff --git a/internal/loomshed/raddlefile.go b/internal/loomshed/raddlefile.go
+index 3e9f4f75..b62cf440 100644
+--- a/internal/loomshed/raddlefile.go
++++ b/internal/loomshed/raddlefile.go
+@@ -80,8 +80,6 @@ type RaddleFileDeps struct {
+ 	File func(boardengine.RaddleFiling) error
+ 	// CreateBeam makes the filed project a beam; it is passed the project's slug.
+ 	CreateBeam func(project string) error
+-	// Release releases the filed tasks that are still draft.
+-	Release func(slugs []string) error
+ 	// Notify tells the run's parent what was filed.
+ 	Notify func(line string) error
+ 	// EndEntry ends the run's own board entry.
+@@ -114,9 +112,10 @@ func NewRaddleFile(name string, deps RaddleFileDeps) shedengine.ShedProducer {
+ // Step 1 stages the store files, step 2 writes the part records and commits, and step 3 files the entries.
+ // A step whose outputs carry the hash of the proposal now approved is skipped,
+ // so a retry after a crash finishes the steps it missed.
+-// Steps 4 and 5 make the project a beam and release its parts, both for the beam shape;
+-// step 6 notifies the parent once, and step 7 ends the run's entry, leaving the row Done.
+-// A failure of steps 4 to 7 is Stuck with Halt naming the step and the resume that re-runs the row.
++// Every filed task is draft, so a release stays the operator's.
++// Step 4 makes the project a beam for the beam shape;
++// step 5 notifies the parent once, and step 6 ends the run's entry, leaving the row Done.
++// A failure of steps 4 to 6 is Stuck with Halt naming the step and the resume that re-runs the row.
+ func (p *raddleFile) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	if err := entryErr(ctx, p.name); err != nil {
+ 		return "", shedengine.OutputPointer{}, err
+@@ -395,7 +394,6 @@ func (p *raddleFile) filing(proposal raddleparser.Proposal, hash string, entry R
+ 		Project:      entry.Project,
+ 		Hash:         hash,
+ 		RunEntry:     entry.Slug,
+-		Release:      proposal.Shape != raddleparser.ShapeBeam,
+ 		Proposal:     staged[stageProposalFile],
+ 		ColdProposal: staged[stageColdFile],
+ 		SketchRecord: staged[stageRecordFile],
+@@ -496,22 +494,15 @@ func dependencyOrder(parts []raddleparser.Part) []raddleparser.Part {
+ 	return ordered
+ }
+ 
+-// finish runs steps 4 to 7 over the filed entries.
++// finish runs steps 4 to 6 over the filed entries.
+ // Each is skipped when its result is there:
+-// the beam and the release are idempotent calls, the notice is marked in the state,
++// the beam is an idempotent call, the notice is marked in the state,
+ // and the entry's end is the last write.
+ func (p *raddleFile) finish(ctx context.Context, current RaddleState, proposal raddleparser.Proposal, landed []string) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	if proposal.Shape == raddleparser.ShapeBeam {
+ 		if err := p.deps.CreateBeam(proposal.Project.Slug); err != nil {
+ 			return p.halt(ctx, "make the project a beam", err)
+ 		}
+-		slugs := make([]string, len(proposal.Parts))
+-		for i, part := range dependencyOrder(proposal.Parts) {
+-			slugs[i] = part.Slug
+-		}
+-		if err := p.deps.Release(slugs); err != nil {
+-			return p.halt(ctx, "release the filed parts", err)
+-		}
+ 	}
+ 
+ 	if !current.NoticeSent {
+@@ -545,10 +536,11 @@ func raddleFiledSlugs(proposal raddleparser.Proposal) []string {
+ }
+ 
+ // raddleFiledNotice renders the line that tells the parent what the run filed:
+-// the slugs of the filed entries, then the entries the proposal weighed that landed meanwhile, when any did.
++// the slugs of the filed entries, and that its tasks wait as drafts for the operator's release.
++// When any entries the proposal weighed landed meanwhile, it names them too.
+ func raddleFiledNotice(proposal raddleparser.Proposal, landed []string) string {
+ 	slugs := raddleFiledSlugs(proposal)
+-	line := fmt.Sprintf("raddle: filed %d entries from the Sketch %s as the %s shape: %s", len(slugs), proposal.Sketch, proposal.Shape, strings.Join(slugs, ", "))
++	line := fmt.Sprintf("raddle: filed %d entries from the Sketch %s as the %s shape: %s; every filed task is draft until the operator releases it with lym board set-status", len(slugs), proposal.Sketch, proposal.Shape, strings.Join(slugs, ", "))
+ 	if len(landed) > 0 {
+ 		line += "; entries the proposal weighed that landed meanwhile: " + strings.Join(landed, ", ")
+ 	}
+diff --git a/internal/loomshed/raddlefile_test.go b/internal/loomshed/raddlefile_test.go
+index f6ca0e10..ab5c6fc1 100644
+--- a/internal/loomshed/raddlefile_test.go
++++ b/internal/loomshed/raddlefile_test.go
+@@ -57,7 +57,6 @@ type raddleFileFixture struct {
+ 	findings []raddleparser.Finding
+ 	recheck  raddleparser.Recheck
+ 	filings  []boardengine.RaddleFiling
+-	released []string
+ 	notices  []string
+ 
+ 	stored     bool
+@@ -107,10 +106,6 @@ func newRaddleFileFixture(t *testing.T, proposal raddleparser.Proposal, mode loo
+ 			return nil
+ 		},
+ 		CreateBeam: func(string) error { return f.seam("create_beam") },
+-		Release: func(slugs []string) error {
+-			f.released = slugs
+-			return f.seam("release")
+-		},
+ 		Notify: func(line string) error {
+ 			if err := f.seam("notify"); err != nil {
+ 				return err
+@@ -247,7 +242,7 @@ func TestRaddleFile(t *testing.T) {
+ 	t.Run("EachShapeFilesOnceWithItsStepsInOrder", func(t *testing.T) {
+ 		t.Parallel()
+ 		inOrder := []string{"commit", "file", "notify", "end_entry"}
+-		beamOrder := []string{"commit", "file", "create_beam", "release", "notify", "end_entry"}
++		beamOrder := []string{"commit", "file", "create_beam", "notify", "end_entry"}
+ 		for _, tt := range []struct {
+ 			shape string
+ 			want  []string
+@@ -267,11 +262,11 @@ func TestRaddleFile(t *testing.T) {
+ 					t.Fatalf("steps = %v; want %v", got, tt.want)
+ 				}
+ 				filing := f.filings[0]
+-				if filing.Release != (tt.shape != raddleparser.ShapeBeam) || filing.Project != "grouping" || filing.RunEntry != "sketch-x" || filing.Hash != raddleparser.Hash(marshalRaddleProposal(t, f.proposal)) {
+-					t.Errorf("filing release/project/run entry/hash = %v/%q/%q/%q; want release off only for a beam, the Sketch's project, the run's entry and the proposal's hash", filing.Release, filing.Project, filing.RunEntry, filing.Hash)
++				if filing.Project != "grouping" || filing.RunEntry != "sketch-x" || filing.Hash != raddleparser.Hash(marshalRaddleProposal(t, f.proposal)) {
++					t.Errorf("filing project/run entry/hash = %q/%q/%q; want the Sketch's project, the run's entry and the proposal's hash", filing.Project, filing.RunEntry, filing.Hash)
+ 				}
+-				if tt.shape == raddleparser.ShapeBeam && !slices.Equal(f.released, []string{"part-a", "part-b"}) {
+-					t.Errorf("released = %v; want both parts", f.released)
++				if len(f.notices) != 1 || !strings.Contains(f.notices[0], "every filed task is draft until the operator releases it") {
++					t.Errorf("notices = %q; want one saying the filed tasks wait as drafts for the operator", f.notices)
+ 				}
+ 				if got := f.state(); !got.NoticeSent {
+ 					t.Errorf("state = %+v; want the notice marked sent", got)
+@@ -415,7 +410,6 @@ func TestRaddleFile(t *testing.T) {
+ 			wantNotify int
+ 		}{
+ 			{"create_beam", "make the project a beam", 1},
+-			{"release", "release the filed parts", 1},
+ 			{"notify", "notify the parent", 2},
+ 			{"end_entry", "end the run's board entry", 1},
+ 		} {
+diff --git a/internal/raddleparser/proposal.go b/internal/raddleparser/proposal.go
+index ce3fa3d0..d4b033f2 100644
+--- a/internal/raddleparser/proposal.go
++++ b/internal/raddleparser/proposal.go
+@@ -42,7 +42,18 @@ type Proposal struct {
+ 	Project      *Project     `json:"project,omitempty"`
+ 	BoardChecked []BoardCheck `json:"board_checked"`
+ 	Parts        []Part       `json:"parts"`
+-	Cost         Cost         `json:"cost"`
++	// OrderDepartures lists every place the parts' order departs from an order the Sketch's decision record states.
++	OrderDepartures []OrderDeparture `json:"order_departures,omitempty"`
++	Cost            Cost             `json:"cost"`
++}
++
++// OrderDeparture is one place the proposal orders parts against an order the Sketch's decision record states:
++// the slugs of the parts concerned, the order the record states, and what the departure costs.
++// The operator reads it before approving the proposal.
++type OrderDeparture struct {
++	Parts       []string `json:"parts"`
++	RecordOrder string   `json:"record_order"`
++	Cost        string   `json:"cost"`
+ }
+ 
+ // Project is the project a `project` or `beam` shape files:
+diff --git a/internal/raddleparser/proposal_test.go b/internal/raddleparser/proposal_test.go
+index d9ac27af..c9b30542 100644
+--- a/internal/raddleparser/proposal_test.go
++++ b/internal/raddleparser/proposal_test.go
+@@ -58,19 +58,38 @@ func TestParse(t *testing.T) {
+ 	}
+ }
+ 
+-// TestParse_PatternClusters pins the JSON form of a part's pattern_clusters, which the Go-literal fixtures leave unset.
+-func TestParse_PatternClusters(t *testing.T) {
++// TestParse_OptionalKeys pins the JSON form of the optional keys, which the Go-literal fixtures leave unset.
++func TestParse_OptionalKeys(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+-	const data = `{"parts":[{"slug":"a","pattern_clusters":[{"sketch_id":"PATTERN-a","entry":"PATTERN-live","text":"Live rule."}]}]}`
+-	got, err := Parse([]byte(data))
+-	if err != nil {
+-		t.Fatalf("Parse() error = %v; want nil", err)
++	tests := []struct {
++		name string
++		data string
++		want Proposal
++	}{
++		{
++			"PatternClusters",
++			`{"parts":[{"slug":"a","pattern_clusters":[{"sketch_id":"PATTERN-a","entry":"PATTERN-live","text":"Live rule."}]}]}`,
++			Proposal{Parts: []Part{{Slug: "a", PatternClusters: []PatternCluster{{SketchID: "PATTERN-a", Entry: "PATTERN-live", Text: "Live rule."}}}}},
++		},
++		{
++			"OrderDepartures",
++			`{"order_departures":[{"parts":["a","b"],"record_order":"D9: b waits for nothing","cost":"b's saving lands one run later"}]}`,
++			Proposal{OrderDepartures: []OrderDeparture{{Parts: []string{"a", "b"}, RecordOrder: "D9: b waits for nothing", Cost: "b's saving lands one run later"}}},
++		},
+ 	}
+-	want := []PatternCluster{{SketchID: "PATTERN-a", Entry: "PATTERN-live", Text: "Live rule."}}
+-	if len(got.Parts) != 1 || !reflect.DeepEqual(got.Parts[0].PatternClusters, want) {
+-		t.Errorf("Parse() parts = %+v; want one part with the clusters %+v", got.Parts, want)
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, err := Parse([]byte(tt.data))
++			if err != nil {
++				t.Fatalf("Parse() error = %v; want nil", err)
++			}
++			if !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("Parse() = %+v; want %+v", got, tt.want)
++			}
++		})
+ 	}
+ }
+ 
+diff --git a/internal/shedrecipe/entries_raddle.go b/internal/shedrecipe/entries_raddle.go
+index eec6697f..2d574e13 100644
+--- a/internal/shedrecipe/entries_raddle.go
++++ b/internal/shedrecipe/entries_raddle.go
+@@ -121,7 +121,6 @@ func raddleFileEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProdu
+ 		{"RaddleFile.AlreadyFiled", deps.AlreadyFiled},
+ 		{"RaddleFile.File", deps.File},
+ 		{"RaddleFile.CreateBeam", deps.CreateBeam},
+-		{"RaddleFile.Release", deps.Release},
+ 		{"RaddleFile.Notify", deps.Notify},
+ 		{"RaddleFile.EndEntry", deps.EndEntry},
+ 		{"RaddleFile.Commit", deps.Commit},
+diff --git a/internal/shedrecipe/fixture_test.go b/internal/shedrecipe/fixture_test.go
+index 19cb5e8e..394b7805 100644
+--- a/internal/shedrecipe/fixture_test.go
++++ b/internal/shedrecipe/fixture_test.go
+@@ -149,7 +149,6 @@ func validRaddleFileDeps(dir string) loomshed.RaddleFileDeps {
+ 		AlreadyFiled:   func(string, []string) (bool, error) { return false, nil },
+ 		File:           func(boardengine.RaddleFiling) error { return nil },
+ 		CreateBeam:     func(string) error { return nil },
+-		Release:        func([]string) error { return nil },
+ 		Notify:         func(string) error { return nil },
+ 		EndEntry:       func() error { return nil },
+ 		Commit:         func() error { return nil },
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index 90dfe0fe..b0825214 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -361,7 +361,6 @@ func raddleFileDeps(dir string) loomshed.RaddleFileDeps {
+ 		AlreadyFiled:   func(string, []string) (bool, error) { return false, nil },
+ 		File:           func(boardengine.RaddleFiling) error { return nil },
+ 		CreateBeam:     func(string) error { return nil },
+-		Release:        func([]string) error { return nil },
+ 		Notify:         func(string) error { return nil },
+ 		EndEntry:       func() error { return nil },
+ 		Commit:         func() error { return nil },
