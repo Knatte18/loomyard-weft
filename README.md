@@ -6,23 +6,15 @@ Prime owner: `neve`.
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## [P1 Fewer agent turns, fewer tokens](project-turn-savings.md) (1)
+## [P1 Fewer agent turns, fewer tokens](project-turn-savings.md) (0)
 
 `turn-savings` · Age 5d · Owner `neve`
 
 Token savings by cutting agent turns, above all late turns at large context
 
-### Tasks (1)
+### Tasks (0)
 
 Concrete and claimable; only a task can run.
-
-#### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Tool schemas are three quarters of a spawned role's start; drop the tools a role never calls**<br>• 21,947 of 29,087 start tokens are tool schemas | [`role-tool-schemas`](design-role-tool-schemas.md) | darn · docs | Finalize | neve | 33m<br>10m | shuttle, claude |
 
 #### Ready (0)
 
@@ -33,6 +25,14 @@ _None._
 ### Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T1 | **Tool schemas are three quarters of a spawned role's start; drop the tools a role never calls**<br>• 21,947 of 29,087 start tokens are tool schemas | [`role-tool-schemas`](design-role-tool-schemas.md) | 33m<br>10m | shuttle, claude |
 
 ## [P2 Codexengine: every task, trial and note about the Codex engine](project-codex-engine-trial.md) (2)
 
@@ -82,8 +82,8 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Drift fails runs on capture noise such as _source.txt that is no part of the results** | [`drift-provenance-stops-runs`](design-drift-provenance-stops-runs.md) | darn · solid | Code-Burler-Fix | neve | 1h<br>1h | drift, loom |
 | T3 | **Claude sessions: a slash command sent with a leading space, and open sessions caching 1h**<br>• Two claudeengine bugs: /compact as a prompt, and shuttle open without the 5m TTL | [`claude-session-fixes`](design-claude-session-fixes.md) | darn · light | Darn-Write | neve | 3h<br>5m | shuttle, claude |
-| T4 | **fabric clone leaves the prime without heddle's rendered files**<br>• Made fires before the config reconcile and its warning is dropped | [`clone-prime-heddle-unrendered`](design-clone-prime-heddle-unrendered.md) | darn · light | Darn-Write | neve | 11m<br>5m | fabric, heddle |
-| T5 | **Defects the comment cleanup found but left: stale headings, dead helper, stencil paths, joint edits** | [`comment-cleanup-leftovers`](design-comment-cleanup-leftovers.md) | darn · light | Darn-Write | neve | 10m<br>5m | config, cwd, stencil, docs |
+| T4 | **fabric clone leaves the prime without heddle's rendered files**<br>• Made fires before the config reconcile and its warning is dropped | [`clone-prime-heddle-unrendered`](design-clone-prime-heddle-unrendered.md) | darn · light | Darn-Write | neve | 12m<br>5m | fabric, heddle |
+| T5 | **Defects the comment cleanup found but left: stale headings, dead helper, stencil paths, joint edits** | [`comment-cleanup-leftovers`](design-comment-cleanup-leftovers.md) | darn · light | Darn-Write | neve | 11m<br>5m | config, cwd, stencil, docs |
 | T6 | **A Codex seat that read its skills is logged as not having loaded them**<br>• All five skills logged not loaded though the rollout shows SKILL.md read; cause not found | [`codex-skill-load-false-missing`](design-codex-skill-load-false-missing.md) | darn · light | Darn-Write | neve | 23h<br>5m | shuttle, codex |
 | T7 | **Batching hook fires on replay but almost never live** | [`batching-hook-live-gap`](design-batching-hook-live-gap.md) | darn · light | Darn-Write | neve | 1d<br>5m | tools, claude |
 
@@ -99,7 +99,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | `draft` **Skills and effort for every role and subagent come from config**<br>• Skills per role in config, gate fixer included; subagents load fitting skills; every effort explicit | [`agent-skills-and-effort`](design-agent-skills-and-effort.md) | darn · solid | T3<br>T5 | 3h<br>4m | shuttle, stencil, claude, gate, loom |
+| T8 | `draft` **Skills and effort for every role and subagent come from config**<br>• Skills per role in config, gate fixer included; subagents load fitting skills; every effort explicit | [`agent-skills-and-effort`](design-agent-skills-and-effort.md) | darn · solid | T3<br>T5 | 3h<br>5m | shuttle, stencil, claude, gate, loom |
 
 ### Notes (24)
 
@@ -111,8 +111,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R2 |  | **Re-measure writer exploration and the carry of lookup results after the Discussion stencil change**<br>• Re-run the writer-lookups measurement on 10 tapestry runs, pricing the carry saved by early explore subagents | [`writer-lookups-remeasure`](design-writer-lookups-remeasure.md) | 2d<br>1d | loom, stencil |
 | R3 |  | **Trial creel mail across hubs**<br>• A darn docs run in which the loomyard orch drives a run in lyt from start to landing through creel alone | [`creel-cross-hub-trial`](design-creel-cross-hub-trial.md) | 1d<br>1d |  |
-| R4 |  | **The skill-load hold landed with two checks by hand left open** | [`skill-load-hold-unchecked`](design-skill-load-hold-unchecked.md) | 10m<br>10m | shuttle |
-| R5 |  | **The Python guard's new refusal text was never seen in a real session** | [`python-guard-live-unchecked`](design-python-guard-live-unchecked.md) | 10m<br>10m | shuttle, claude |
+| R4 |  | **The skill-load hold landed with two checks by hand left open** | [`skill-load-hold-unchecked`](design-skill-load-hold-unchecked.md) | 11m<br>11m | shuttle |
+| R5 |  | **The Python guard's new refusal text was never seen in a real session** | [`python-guard-live-unchecked`](design-python-guard-live-unchecked.md) | 11m<br>11m | shuttle, claude |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>1d | loom, stencil |
 
 #### Bugs (1)
