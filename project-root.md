@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-07 14:37 UTC; every age below is as of then.
+Rendered 2026-11-07 14:38 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,8 +18,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **A Sketch opened from the board shows only its brief, with no link to its decision record** | [`board-sketch-shows-record`](design-board-sketch-shows-record.md) | darn · light | Describe | neve | 38m<br>38m | board |
-| T3 | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | darn · light | Finalize | neve | 1d<br>27m | reed, orch |
+| T2 | **A Sketch opened from the board shows only its brief, with no link to its decision record** | [`board-sketch-shows-record`](design-board-sketch-shows-record.md) | darn · light | PR-Review | neve | 39m<br>39m | board |
+| T3 | **A stray bash window appeared in the prime reed session at a prime bring-up**<br>• An unbound bash window opened 37 seconds before the prime overview and orch relaunched; no lym log names it | [`prime-stray-bash-window`](design-prime-stray-bash-window.md) | darn · light | Finalize | neve | 1d<br>28m | reed, orch |
 | T8 | **Skills and effort for every role and subagent come from config**<br>• Skills per role in config, gate fixer included; subagents load fitting skills; every effort explicit | [`agent-skills-and-effort`](design-agent-skills-and-effort.md) | darn · solid | Darn-Write | neve | 5h<br>1h | shuttle, stencil, claude, gate, loom |
 
 ### Ready (0)
@@ -34,7 +34,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Raddle releases the tasks it files, chains shared-package parts against the record order, and shows no dependencies** | [`raddle-order-and-deps-table`](design-raddle-order-and-deps-table.md) | darn · light |  | 23m<br>20m | loom, stencil |
+| T4 | `draft` **Raddle releases the tasks it files, chains shared-package parts against the record order, and shows no dependencies** | [`raddle-order-and-deps-table`](design-raddle-order-and-deps-table.md) | darn · light |  | 23m<br>21m | loom, stencil |
 
 ## Notes (18)
 
@@ -70,5 +70,5 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 2w<br>1d | loom, board, batten, workspaces |
 | F16 |  | **Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | 4d<br>1d | drift, shed |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>1d | burler, shed, orch, quarry, report |
-| F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 2d<br>2h | board, orch, workspaces |
+| F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 2d<br>3h | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 2d<br>2d | batten, board, fabric, workspaces |
