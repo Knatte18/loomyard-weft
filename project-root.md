@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (7)
+## Tasks (8)
 
 Concrete and claimable; only a task can run.
 
@@ -30,13 +30,14 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Draft (2)
+### Draft (3)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | `draft` **Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes** | [`fabric-test-speed`](design-fabric-test-speed.md) | motif |  | 4h<br>0m | fabric, testkit, git |
+| T4 | `draft` **Tests wait real time and repeat builds every tier 1 pass** | [`test-real-time-waits`](design-test-real-time-waits.md) | darn · light | T9 | 0m<br>0m | git, gate, termwindow, process |
 | T8 | `draft` **Skills and effort for every role and subagent come from config**<br>• Skills per role in config, gate fixer included; subagents load fitting skills; every effort explicit | [`agent-skills-and-effort`](design-agent-skills-and-effort.md) | darn · solid | T1 | 4h<br>27m | shuttle, stencil, claude, gate, loom |
 
 ## Notes (21)
