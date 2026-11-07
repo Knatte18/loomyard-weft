@@ -22,7 +22,9 @@ A Claude session not started by lym, or lym sessions on a machine running an old
   Everything in loomyard's checked-in `.claude/settings.json` but `mill@millhouse` is of this kind: `ly@loomyard` on, and the `permissions.deny` list of tools lym never uses.
   These ship with lym as heddle's shipped entries, and loomyard's checked-in `.claude/settings.json` is removed once they render.
   `scribe@scribe` is on in this machine's `~/.claude/settings.json` and lym's roles preload its skills, so it ships too: the shipped entries set `enabledPlugins` `scribe@scribe` on and declare the marketplace under `extraKnownMarketplaces` (`scribe`, source GitHub `Knatte18/scribe`), as this machine's user settings do.
-  Check in a launch that Claude Code offers to install a marketplace and plugin declared in `settings.local.json`, as it does for one declared in a project's settings, and that `ly@loomyard`'s marketplace can be declared the same way.
+  Check in a launch that Claude Code offers to install a marketplace and plugin declared in `settings.local.json`, as it does for one declared in a project's settings.
+  A machine that also declares `scribe` in its user settings with the same source gets the same result.
+- `ly@loomyard` is only switched on, with no marketplace declared: its skills call the `lym` binary, so the plugin is installed together with that binary by lym's own install, never alone from a marketplace prompt (operator, 2026-11-07), and a declared source would also override this machine's `directory` marketplace that `update-plugins.sh` fills.
   A lym session whose preloaded skills are not installed already names the skill missing; lym also tells at hub start which plugin to install and how.
 - What one machine needs: `mill@millhouse: false` is this machine's, not lym's.
   `~/.claude/settings.json` on this machine already sets it false, with `ly@loomyard` false too, so the repository line is redundant; machine settings stay in the user's own `~/.claude/settings.json`, and heddle carries no machine layer.
