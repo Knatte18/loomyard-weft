@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=425866b083a0631aabc3b0203e9e01d3a83cf32e850b549ba149f24c91aeb837 build=fe753d409cad46ac575d6ca5c96b51058567644d time=2026-11-02T19:09:15Z -->
+<!-- lym-stencil: sha256=ff89e27ce41687b2cdb81f0aa5970bf92d323edfe2c2b8fc689995eda7ce0b06 build=f7465bd86b31478590683d0377771fca4647c425 time=2026-11-07T11:35:39Z -->
 
 # Webster implementer job — read your cards, implement, commit, report
 
@@ -144,7 +144,7 @@ Once your parent has taken the step, the batch resumes from your commits.
 
 Your LAST action of this session — after every card above is committed (or you have given up per the bound above, or stopped on a step only your parent can take) — is writing the batch-report YAML file to `{{.report_path}}`.
 Nothing you do after this file exists is read by anyone: write it last, and write it exactly once, unless your parent hands the batch back (see "A batch handed back" below).
-The report is deliberately minimal — `record-batch` reads ONLY these fields:
+The report is minimal — `record-batch` reads ONLY these fields:
 
 ```yaml
 status: OK | FAILED | NEEDS_PARENT
