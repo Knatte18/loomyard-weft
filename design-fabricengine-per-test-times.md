@@ -1,6 +1,6 @@
 # Time every internal/fabricengine test one by one on a quiet machine
 
-`fabricengine-per-test-times` · Task · research, fabric, testkit · running · Drift-Recheck
+`fabricengine-per-test-times` · Task · research, fabric, testkit · running · Describe
 
 ## Why (operator, 2026-11-07)
 
