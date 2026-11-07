@@ -10,6 +10,8 @@ That commit also left model and effort defaults to be added to the target later.
 
 ## Wanted (operator, 2026-11-07)
 
+The point: heddle renders `.claude/settings.local.json` in every worktree, triggered by fabric, so what lym sets in Claude's settings is steered from one place and can be read in one file.
+
 - The heddle-rendered file is the one source of every setting that is the same for each session of a hub; lym's per-session `--settings` document stops carrying any of them.
   `promptSuggestionEnabled: false` and every other static key the per-session document sets today move to shipped heddle entries.
 - The `--settings` document keeps only what cannot be the same in every worktree: hooks that name a run's own paths (the events file, creel's flag directory) and anything else bound to one session.
