@@ -91,7 +91,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Bench tier 1 with {test_targets} switched on** | [`test-targets-bench`](design-test-targets-bench.md) | darn · docs | Darn-Write | neve | 3m<br>3m | gate, testkit |
-| T2 | **HEDDLE.md is rendered when missing or stale, not only on a heddle write** | [`heddle-md-initial-render`](design-heddle-md-initial-render.md) | darn · light | Drift-Baseline | neve | 0m<br>0m | heddle |
+| T2 | **HEDDLE.md is rendered when missing or stale, not only on a heddle write** | [`heddle-md-initial-render`](design-heddle-md-initial-render.md) | darn · light | Darn-Write | neve | 0m<br>0m | heddle |
 
 #### Ready (0)
 
