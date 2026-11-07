@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-07 14:49 UTC; every age below is as of then.
+Rendered 2026-11-07 14:53 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -58,28 +58,29 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 4d<br>1d | shuttle, codex, loom |
 
-## [P3 Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes](project-fabric-test-speed-work.md) (12)
+## [P3 Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes](project-fabric-test-speed-work.md) (11)
 
-[`fabric-test-speed-work`](design-fabric-test-speed-work.md) · Age 34m · Owner `neve`
+[`fabric-test-speed-work`](design-fabric-test-speed-work.md) · Age 37m · Owner `neve`
 
-### Tasks (12)
+### Tasks (11)
 
 Concrete and claimable; only a task can run.
 
-#### Running (2)
+#### Running (1)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Registered hub templates in hubforge, built once per test binary** | [`hubforge-registered-templates`](design-hubforge-registered-templates.md)<br>[Sketch](decision-hubforge-registered-templates.md) | darn · solid | Finalize | neve | 34m<br>34m | fabric, testkit, git |
-| T9 | **worktree list read in-process through internal/dotgit** | [`dotgit-worktree-reader`](design-dotgit-worktree-reader.md)<br>[Sketch](decision-dotgit-worktree-reader.md) | darn · solid | Finalize | neve | 34m<br>34m | fabric, testkit, git |
+| T5 | **Registered hub templates in hubforge, built once per test binary** | [`hubforge-registered-templates`](design-hubforge-registered-templates.md)<br>[Sketch](decision-hubforge-registered-templates.md) | darn · solid | Finalize | neve | 37m<br>37m | fabric, testkit, git |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T13 | **Fold the overlapping internal/fabricengine tests the tier 1 report read** | [`fabric-test-folds`](design-fabric-test-folds.md)<br>[Sketch](decision-fabric-test-folds.md) | darn · light |  | 37m<br>37m | fabric, testkit, git |
 
 #### Layer A (5)
 
@@ -87,11 +88,11 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **A slimmer hubforge.CopyHub: packed templates, no walk per copy, two-process binding fold** | [`hubforge-slim-copy`](design-hubforge-slim-copy.md)<br>[Sketch](decision-hubforge-slim-copy.md) | darn · light | T5 | 34m<br>34m | fabric, testkit, git |
-| T10 | **internal/hubreconcile fixtures onto registered templates and CopyHub, with the held-lock test at tier 0** | [`hubreconcile-templates`](design-hubreconcile-templates.md)<br>[Sketch](decision-hubreconcile-templates.md) | darn · light | T5 | 34m<br>34m | fabric, testkit, git |
-| T11 | **internal/loomcli beamHub and newBadReedUpFixture onto registered templates** | [`loomcli-templates`](design-loomcli-templates.md)<br>[Sketch](decision-loomcli-templates.md) | darn · light | T5 | 34m<br>34m | fabric, testkit, git |
-| T12 | **internal/battencli beamHub onto a registered template** | [`battencli-templates`](design-battencli-templates.md)<br>[Sketch](decision-battencli-templates.md) | darn · light | T5 | 34m<br>34m | fabric, testkit, git |
-| T13 | **Fold the overlapping internal/fabricengine tests the tier 1 report read** | [`fabric-test-folds`](design-fabric-test-folds.md)<br>[Sketch](decision-fabric-test-folds.md) | darn · light | T9 | 34m<br>34m | fabric, testkit, git |
+| T6 | **A slimmer hubforge.CopyHub: packed templates, no walk per copy, two-process binding fold** | [`hubforge-slim-copy`](design-hubforge-slim-copy.md)<br>[Sketch](decision-hubforge-slim-copy.md) | darn · light | T5 | 37m<br>37m | fabric, testkit, git |
+| T10 | **internal/hubreconcile fixtures onto registered templates and CopyHub, with the held-lock test at tier 0** | [`hubreconcile-templates`](design-hubreconcile-templates.md)<br>[Sketch](decision-hubreconcile-templates.md) | darn · light | T5 | 37m<br>37m | fabric, testkit, git |
+| T11 | **internal/loomcli beamHub and newBadReedUpFixture onto registered templates** | [`loomcli-templates`](design-loomcli-templates.md)<br>[Sketch](decision-loomcli-templates.md) | darn · light | T5 | 37m<br>37m | fabric, testkit, git |
+| T12 | **internal/battencli beamHub onto a registered template** | [`battencli-templates`](design-battencli-templates.md)<br>[Sketch](decision-battencli-templates.md) | darn · light | T5 | 37m<br>37m | fabric, testkit, git |
+| T14 | **internal/fabricengine anchor and origin fixtures onto registered templates** | [`fabric-anchor-origin-templates`](design-fabric-anchor-origin-templates.md)<br>[Sketch](decision-fabric-anchor-origin-templates.md) | darn · light | T5<br>T13 | 37m<br>37m | fabric, testkit, git |
 
 #### Layer B (2)
 
@@ -99,8 +100,8 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **gitkit and hubforge initialisers write their per-repository git config from Go** | [`git-config-from-go`](design-git-config-from-go.md)<br>[Sketch](decision-git-config-from-go.md) | darn · light | T6 | 34m<br>34m | fabric, testkit, git |
-| T14 | **internal/fabricengine anchor and origin fixtures onto registered templates** | [`fabric-anchor-origin-templates`](design-fabric-anchor-origin-templates.md)<br>[Sketch](decision-fabric-anchor-origin-templates.md) | darn · light | T5<br>T13 | 34m<br>34m | fabric, testkit, git |
+| T7 | **gitkit and hubforge initialisers write their per-repository git config from Go** | [`git-config-from-go`](design-git-config-from-go.md)<br>[Sketch](decision-git-config-from-go.md) | darn · light | T6 | 37m<br>37m | fabric, testkit, git |
+| T15 | **internal/fabricengine live-state arranges and merge-pair layers onto registered templates** | [`fabric-livestate-merge-templates`](design-fabric-livestate-merge-templates.md)<br>[Sketch](decision-fabric-livestate-merge-templates.md) | darn · light | T5<br>T13<br>T14 | 37m<br>37m | fabric, testkit, git |
 
 #### Layer C (1)
 
@@ -108,7 +109,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T15 | **internal/fabricengine live-state arranges and merge-pair layers onto registered templates** | [`fabric-livestate-merge-templates`](design-fabric-livestate-merge-templates.md)<br>[Sketch](decision-fabric-livestate-merge-templates.md) | darn · light | T5<br>T13<br>T14 | 34m<br>34m | fabric, testkit, git |
+| T16 | **CopyHub in the NewHub fixtures of fabricengine and adoptcli, and the hook without dirname and basename** | [`copyhub-fixtures-and-hook`](design-copyhub-fixtures-and-hook.md)<br>[Sketch](decision-copyhub-fixtures-and-hook.md) | darn · light | T15 | 37m<br>37m | fabric, testkit, git |
 
 #### Layer D (1)
 
@@ -116,19 +117,19 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T16 | **CopyHub in the NewHub fixtures of fabricengine and adoptcli, and the hook without dirname and basename** | [`copyhub-fixtures-and-hook`](design-copyhub-fixtures-and-hook.md)<br>[Sketch](decision-copyhub-fixtures-and-hook.md) | darn · light | T15 | 34m<br>34m | fabric, testkit, git |
-
-#### Layer E (1)
-
-Starts when every entry it names under After is done.
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T17 | **Re-measure tier 1 and internal/fabricengine after the fabric test speed tasks land** | [`fabric-test-speed-remeasure`](design-fabric-test-speed-remeasure.md)<br>[Sketch](decision-fabric-test-speed-remeasure.md) | darn · docs | T16<br>T9<br>T7<br>T10<br>T11<br>T12 | 34m<br>34m | fabric, testkit, git |
+| T17 | **Re-measure tier 1 and internal/fabricengine after the fabric test speed tasks land** | [`fabric-test-speed-remeasure`](design-fabric-test-speed-remeasure.md)<br>[Sketch](decision-fabric-test-speed-remeasure.md) | darn · docs | T16<br>T7<br>T10<br>T11<br>T12 | 37m<br>37m | fabric, testkit, git |
 
 ### Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T9 | **worktree list read in-process through internal/dotgit** | [`dotgit-worktree-reader`](design-dotgit-worktree-reader.md)<br>[Sketch](decision-dotgit-worktree-reader.md) | 37m<br>37m | fabric, testkit, git |
 
 ## [P0 Root: entries under no project](project-root.md) (20)
 
@@ -158,7 +159,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Raddle releases the tasks it files, chains shared-package parts against the record order, and shows no dependencies** | [`raddle-order-and-deps-table`](design-raddle-order-and-deps-table.md) | darn · light |  | 34m<br>32m | loom, stencil |
+| T4 | `draft` **Raddle releases the tasks it files, chains shared-package parts against the record order, and shows no dependencies** | [`raddle-order-and-deps-table`](design-raddle-order-and-deps-table.md) | darn · light |  | 38m<br>36m | loom, stencil |
 
 ### Notes (18)
 
@@ -191,7 +192,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 4w<br>3d | board, ide, orch |
 | F12 |  | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md) | 5d<br>3d | claude, shuttle, config |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 3w<br>1d | webster |
-| F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 2w<br>0m | loom, board, batten, workspaces |
+| F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 2w<br>4m | loom, board, batten, workspaces |
 | F16 |  | **Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | 4d<br>1d | drift, shed |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>1d | burler, shed, orch, quarry, report |
 | F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 2d<br>3h | board, orch, workspaces |
