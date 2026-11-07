@@ -2,8 +2,6 @@
 
 `agent-skills-and-effort` · Task · bug, shuttle, stencil, claude, gate, loom · running · Darn-Write
 
-Depends on: [`machine-claude-defaults`](design-machine-claude-defaults.md)
-
 Three bugs bundled by the operator (2026-11-07): which skills and which effort an agent runs with is decided in lym's config, for every role lym starts and for every subagent such a role spawns.
 
 ## Seen
