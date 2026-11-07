@@ -1,6 +1,6 @@
 # A stray bash window appeared in the prime reed session at a prime bring-up
 
-`prime-stray-bash-window` · Task · bug, reed, orch · running · Code-Burler-Fix
+`prime-stray-bash-window` · Task · bug, reed, orch · running · Code-Bouncer
 
 ## Seen (operator and orch, 2026-11-05)
 
