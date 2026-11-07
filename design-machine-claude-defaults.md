@@ -1,6 +1,6 @@
 # Heddle renders .claude/settings.local.json in every hub: no co-author, lym's plugins and tool deny list
 
-`machine-claude-defaults` · Task · enhancement, claude, config, heddle, fabric · running · Darn-Write
+`machine-claude-defaults` · Task · enhancement, claude, config, heddle, fabric · running · Drift-Verify
 
 ## Seen
 
