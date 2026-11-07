@@ -203,7 +203,8 @@
       "status": "running · Darn-Write",
       "created": "2026-10-31T16:29:05Z",
       "revised": "2026-11-06T13:51:08Z",
-      "profile": "light"
+      "profile": "light",
+      "notify_on_land": true
     },
     {
       "id": 948,
@@ -580,6 +581,24 @@
       "isolated": false,
       "brief": "Pass only the packages holding a test of the tier to go test; weighs most under Cortex XDR",
       "body": "## Seen\n\nA whole tier 1 pass starts 196 test binaries, and 130 of them hold no tier 1 test (`docs/research/speed/tier1-test-revision-2026-11-06/report.md`).\nGo still compiles and links each before it finds nothing to run.\nOn neve, starting only the 66 with a tier 1 test takes the floor from 20.5 s to 12.4 s, about 8 s off every pass, with no test lost.\n\nOn OSL-1046 it should weigh far more, since Cortex XDR holds a binary it has not seen for about ten seconds.\nAt four binaries at a time that is 65 s a pass if a fifth of the 130 are held and about 325 s if all are; neither figure is measured.\nWhether a rebuilt binary counts as new depends on whether Cortex keys on content or on path, and `go test` puts each binary in a new temporary directory.\n\n## Idea\n\nThe gate derives, per tier, the packages that hold a test of that tier, and passes only those to `go test`.\nIt applies to every tier, not tier 1 alone (operator, 2026-11-07).\nThe list is derived, so a package gaining its first test of a tier enters without a hand edit.\n\n## To settle\n\nOne gate pass on OSL-1046 with `lym gate report`'s launch times would show the holds.\n\nWait for `comment-cleanup` to land before starting this (operator, 2026-11-07).\n",
+      "created": "2026-11-07T08:36:35Z",
+      "revised": "2026-11-07T08:36:35Z"
+    },
+    {
+      "id": 1180,
+      "handle": "E2",
+      "slug": "worktree-list-through-dotgit",
+      "title": "git worktree list is 15 percent of tier 1 git processes and only reads .git/worktrees",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Serve the list from dotgit, with a parity test against git",
+      "body": "## Seen\n\n`git worktree list --porcelain` is about 15 percent of all git processes in tier 1: 14,744 in an `internal/fabricengine` run and 22,636 in a whole pass (`docs/research/speed/tier1-test-revision-2026-11-06/report.md`).\nIt only reads `.git/worktrees/`, and `lym` calls it several times in each `Add` and `Remove`.\nIts call sites are `internal/fabricengine/worktreelist.go` and `internal/websterengine/gitwrap.go`.\n\n## Idea\n\nRead `.git/worktrees/*/{gitdir,HEAD,locked}` in `internal/dotgit` behind `fabricengine.List` and the `websterengine` call.\nA test checks the reader against `git worktree list --porcelain` on a repository with a detached, a locked and a prunable worktree, since that parity is the new behaviour to pin.\n\nExpected: about 5 s off a tier 1 pass, and fewer processes in every `lym` verb that lists worktrees.\n\nWait for `comment-cleanup` to land before starting this (operator, 2026-11-07).\n",
       "created": "2026-11-07T08:36:35Z",
       "revised": "2026-11-07T08:36:35Z"
     }
