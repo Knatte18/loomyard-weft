@@ -557,7 +557,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge-registered-templates' registration and fabric-test-folds' folded tests\nDelivers: newAnchorHub and newOriginHub, with originPair and endedHub where a fixed slug set repeats at least three times, built by registrations; originBoard runs on the copy\nExports: nothing\n\nThe part changes these packages:\n\n- internal/fabricengine (about 150 changed lines)\n",
-      "status": "running · Worktree-Create",
+      "status": "running · Seed-Child",
       "created": "2026-11-07T14:15:14Z",
       "revised": "2026-11-07T14:15:14Z",
       "profile": "light",
