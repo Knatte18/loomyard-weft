@@ -660,6 +660,27 @@
       "body": "## Seen\n\nThe report `docs/research/turns/batching-hook-remeasure-2026-11-05` found the hook fired on 2 of 156 edit follows, while a replay of a recorded one fired. Task `batching-hook-live-gap` traced the gap: Claude Code writes a message to the transcript only after its calls start, so the hook of a fast Read, Grep, Glob or Edit call read a transcript that did not hold its own message yet. The hook now waits for the call, up to two seconds.\n\n## Idea\n\nRun the scripts of that report again over the runs landed after the fix: firings by breach and by tool, firings against breach turns, and the next message batched. Decide from those figures whether to keep the hook or remove it as the report recommended. Also price what the wait adds per call above `context_tokens`.",
       "created": "2026-11-07T12:11:06Z",
       "revised": "2026-11-07T12:11:06Z"
+    },
+    {
+      "id": 1198,
+      "handle": "B1",
+      "slug": "drift-capture-keys-reprompt",
+      "title": "Drift gate re-prompts on per-commit capture metadata keys",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "drift",
+        "loom"
+      ],
+      "issues": [
+        82
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #82](https://github.com/Knatte18/loomyard/issues/82).\n\n## What happened\n\nThe drift gate reported the `_source.txt` keys `commit` and `captured_at` as unexpected cells on two consecutive rounds after the squash commit.\nBoth values change with every commit and every capture, so no code fix can return them to the baseline, and the sealed expectation written by `Drift-Expect` cannot list a value that is unknown before the commit exists.\nEach re-prompt was a fix round with nothing to fix.\nThe producer `Darn-Write` then ran out its verify budget: the run halted `blocked` with anomaly `escalation-to-human` after \"gate did not pass after 3 attempts\".\n\n## Why it is abnormal\n\nThe gate fails on values that are non-deterministic by construction, so the loop cannot converge and consumes the verify budget regardless of the agent's work.\n\n## What to do\n\nEither make the drift check skip capture-metadata keys such as `commit` and `captured_at`, or let the sealed expectation declare keys whose values are exempt from comparison.\n\nProvenance: task `support-for-dop-rheology-in`; notes `Darn-Write.md`, `loom-halt.md`.\n",
+      "created": "2026-11-07T13:07:58Z",
+      "revised": "2026-11-07T13:07:58Z"
     }
   ],
   "prime_owner": "neve",

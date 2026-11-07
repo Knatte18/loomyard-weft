@@ -1,0 +1,22 @@
+# Drift gate re-prompts on per-commit capture metadata keys
+
+`drift-capture-keys-reprompt` · Note · bug, drift, loom
+
+Imported from [issue #82](https://github.com/Knatte18/loomyard/issues/82).
+
+## What happened
+
+The drift gate reported the `_source.txt` keys `commit` and `captured_at` as unexpected cells on two consecutive rounds after the squash commit.
+Both values change with every commit and every capture, so no code fix can return them to the baseline, and the sealed expectation written by `Drift-Expect` cannot list a value that is unknown before the commit exists.
+Each re-prompt was a fix round with nothing to fix.
+The producer `Darn-Write` then ran out its verify budget: the run halted `blocked` with anomaly `escalation-to-human` after "gate did not pass after 3 attempts".
+
+## Why it is abnormal
+
+The gate fails on values that are non-deterministic by construction, so the loop cannot converge and consumes the verify budget regardless of the agent's work.
+
+## What to do
+
+Either make the drift check skip capture-metadata keys such as `commit` and `captured_at`, or let the sealed expectation declare keys whose values are exempt from comparison.
+
+Provenance: task `support-for-dop-rheology-in`; notes `Darn-Write.md`, `loom-halt.md`.
