@@ -32,7 +32,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Comment lint: bound a // comment line to 120 characters of text**<br>• lint-comments checks only line breaks; add a length limit on added or changed comment lines | [`comment-lint-line-length`](design-comment-lint-line-length.md) | darn |  | 2m<br>2m | loom |
+| T1 | `draft` **Comment lint: bound a // comment line to 120 characters of text**<br>• lint-comments checks only line breaks; add a length limit on added or changed comment lines | [`comment-lint-line-length`](design-comment-lint-line-length.md) | darn · light |  | 2m<br>0m | loom |
 
 ## Notes (28)
 
