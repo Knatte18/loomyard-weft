@@ -4,7 +4,7 @@ refuse_raw: ["go test"]
 tiers:
     tier0:
         about: unit tests
-        command: "go test -json {targets} {args}"
+        command: go test -json {test_targets} {args}
         all_targets: ./...
         env: {GOFLAGS: "-trimpath -p={parallel}", LYM_TEST_TIER: "0"}
         counter: go-json
@@ -12,7 +12,7 @@ tiers:
         timeout_min: 10
     tier1:
         about: integration tests with build and vet first
-        command: "go build ./... && go vet {targets} && go test -json {targets} {args}"
+        command: go build ./... && go vet {targets} && go test -json {test_targets} {args}
         all_targets: ./...
         env:
             GOFLAGS: "-trimpath -p={parallel} -timeout=20m"
@@ -23,7 +23,7 @@ tiers:
         prebuilt_lym: true
     tier2:
         about: tmux tests
-        command: "go test -json {targets} {args}"
+        command: go test -json {test_targets} {args}
         all_targets: ./...
         env: {GOFLAGS: "-trimpath -p={parallel}", LYM_TEST_TIER: "2"}
         counter: go-json
