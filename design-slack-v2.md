@@ -11,7 +11,9 @@
 
 ## Wanted (operator, 2026-11-07)
 
-- One Slack app and one bot for the hub, never one per agent.
+- One Slack workspace for every use of lym: every hub, every repository and every machine the operator works on, Models included, since switching workspaces is a chore (operator, 2026-11-07).
+- One Slack app and one bot for that workspace, shared by every hub, never one per agent or hub; each machine stores the same bot token through `lym slack login`.
+- Channel names tell hub and orch apart across that one workspace, and two hubs or two machines never relay one channel.
 - One channel per orch: the prime's orch and each beam's orch.
   What the operator writes in a channel reaches that channel's orch, and that orch's posts go to its channel.
   lym makes the channel when the beam is made and archives it when the beam is torn down, so the operator makes no channel by hand; the channel names show the hub and beam.
