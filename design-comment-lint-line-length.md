@@ -2,6 +2,8 @@
 
 `comment-lint-line-length` · Task · enhancement, loom · draft
 
+Depends on: [`comment-cleanup`](design-comment-cleanup.md)
+
 ## Seen
 
 `lym loom lint-comments` (`internal/commentlint`) checks only where a `//` comment line breaks.
