@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Registered hub templates in hubforge, built once per test binary** | [`hubforge-registered-templates`](design-hubforge-registered-templates.md)<br>[Sketch](decision-hubforge-registered-templates.md) | darn · solid | Code-Bouncer | neve | 20m<br>20m | fabric, testkit, git |
+| T5 | **Registered hub templates in hubforge, built once per test binary** | [`hubforge-registered-templates`](design-hubforge-registered-templates.md)<br>[Sketch](decision-hubforge-registered-templates.md) | darn · solid | Code-Burler-Review | neve | 20m<br>20m | fabric, testkit, git |
 | T9 | **worktree list read in-process through internal/dotgit** | [`dotgit-worktree-reader`](design-dotgit-worktree-reader.md)<br>[Sketch](decision-dotgit-worktree-reader.md) | darn · solid | Code-Burler-Review | neve | 20m<br>20m | fabric, testkit, git |
 
 ### Ready (0)
