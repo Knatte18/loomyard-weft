@@ -1,53 +1,49 @@
-# Take real time out of test waits; narrowed gates skip unwatched tests
+# Take real-time waits and repeated builds out of tier 1 tests
 
-Tier 1 tests spent seconds on fixed sleeps, real deadlines and builds that repeat on every pass.
-This change takes the real time out of those waits through injected seams or by waiting on the event itself, never by a shorter bound.
-It also adds a `//lym:watch` marker so a narrowed gate runs a build test only when a file it guards changes.
+Tier 1 tests waited out real deadlines, sleeps and leases, and rebuilt the same binary on every pass.
+This change removes that time without shortening any bound that covers a process or binary start.
+On OSL-1046, Cortex XDR holds each new binary about 10 s on its first start, so those bounds keep their length.
+Items 7 and 9 of `docs/research/speed/tier1-test-revision-2026-11-06/report.md` are the source.
 
-## Real-time waits
+## What changes
 
-- `internal/gitexec`: `TestRun_RemoteBounds` waited out a real 1 s remote deadline in four rows and ran a local `sleep 2` alias.
-  The remote deadline now goes through `armDeadline`, a seam beside the existing stall-timer seam.
-  `SetDeadlineForTest` ends an attempt once the ext:: script has started, and the reported `Timeout` is still the configured deadline.
-  The local row asserts that a local command arms no deadline, instead of outliving one.
-- `internal/termwindow`: `attachLineWaiting` takes a poll count and interval.
-  Production keeps 30 polls of one second, and the removed-worktree row polls every 50 ms within the same 3 s bound.
-- `internal/verifyrun`: the cancellation test cancels once the child prints, not after a fixed sleep.
-  The expiry test expires its context once the backgrounded descendant has written its pid file, not after a fixed 1 s.
-- `internal/gatecli`: the detached-run stand-ins and card lines that slept 4 to 5 s now wait for a release file the test creates.
-  The front's lock and claim poll and the runner's lease read are `detachSeams` fields, one second in production,
-  so the tests set them in milliseconds through the helper's environment.
-- `internal/testkit/lymbin`: `BuildInto` creates its output directory before building.
-  `TestBuildInto_UnwritableDirReturnsError` now fails on that directory's `*fs.PathError` without running `go build`.
-
-## Watched tests
-
-A top-level test marked `//lym:watch <pattern>...` guards only the files its patterns name.
-`path.Match` matches a pattern holding a `/` against the worktree-relative path, and any other against the base name.
-Under the `go` scoper, a narrowed computed or `--base` share and a `--card` scope skip such a test,
-unless a changed file matches one of its patterns or its own file changed.
-
-- `impactset.FindWatchedTests` parses the marker, with the same placement rules and `*GuardScanError` kinds as the guard and seam markers,
-  plus `WatchMalformed` for a marker with no pattern or a malformed one.
-  `DeriveTargets` fills `Targets.Unwatched` for packages in the set and drops unwatched tests from `Guards`.
-- A `--card` scope reads its changes as the diff from the merge base with the parent branch.
-  With no parent branch, or an unreadable diff, it skips nothing.
-- A skipping tier gets `-skip '^(<names>)$'` after the words from `--`, and a stderr line names the skipped tests.
-  The skip is left off when the caller's words carry a filter flag, or when the tier command holds no `{args}`.
-- The empty-tier check does not count a skipped test.
-  In the green record, a whole pass with empty args covers a skipping run, and a skipping run never covers a whole one.
-- A whole gate skips nothing, so `TestCrossCompileLinux` and `TestCSharpFixtures_CompileWithDotnet` still run in every whole pass.
-  `TestCrossCompileLinux` watches `*_linux.go` and `*_unix.go`, and `TestCSharpFixtures_CompileWithDotnet` watches `*.cs`.
-
-`PATTERN-test-speed` gains a section for the marker, and `PATTERN.md`'s entry names it.
+- `internal/gitexec`: `TestRun_RemoteBounds` no longer sits out the remote deadline or a literal `sleep 2`.
+  A new `armDeadline` hook in `gitexec.go` builds each remote attempt's context.
+  The test replaces it, ends the attempt once its remote is ready, and records the deadlines armed.
+  A new test pins the production deadline.
+- `internal/gatecli`: the detached-run front and runner take their poll period and lease read period from `detachSeams` (`pollPeriod`, `leaseReadPeriod`).
+  Production passes `frontPollPeriod` and `leaseReadPeriod`, and a zero value falls back to them.
+  `TestGateTest_DetachedRun` and the scope tests use short periods instead of 2 to 5 s stand-in delays and 3 s leases.
+- `internal/termwindow`: `attachLineWaiting` takes a poll count and a poll interval, and `attachLine` passes 30 polls of one second.
+  The 3 s test row now uses a short interval.
+- `internal/verifyrun`: the 1 s expiry tests wait on the event instead of a fixed sleep, and the sleep starts before the first write.
+- `internal/testkit/lymbin`: `compile` creates the output directory before it builds.
+  `TestBuildInto_UnwritableDirReturnsError` now fails before the build, which saves the 2.3 s binary build.
+- New `//lym:watch <pattern>...` marker, parsed by `internal/impactset/watches.go`:
+  - A marked test runs in a narrowed gate only when a changed file matches a pattern or the test's own file changed.
+  - A whole gate always runs it.
+  - A diff-scoped key narrows over its diff, and a `card` key over the diff from the merge base with the parent branch.
+    With no parent branch or an unreadable diff, a `card` run skips nothing.
+  - The skipped tests reach `go test` as `-skip '^(<names>)$'` after the caller's own args, with a line on stderr naming them.
+    No skip is added when the caller's args carry a filter flag or the tier command has no `{args}`.
+  - The guard step drops a watched guard test that no changed file concerns.
+  - A misplaced or malformed marker refuses the gate with its file, line and way forward.
+- `TestCrossCompileLinux` carries `//lym:watch *_linux.go *_unix.go`, and the dotnet fixture build carries its own marker.
+  Both stay in every whole pass.
+- `PATTERN.md` and `pattern/PATTERN-test-speed.md` document the marker.
 
 ## Design decisions
 
-- No bound was shortened.
-  Waits left as they were include the bounds that cover a process start, such as the keep-warm caps, claim bounds and pid-file waits.
-  So are the rows whose assertion is that time passed, such as a call outlasting a short cap.
-  The termwindow rows that let the full wait run out, so the shell is kept, also keep their bound.
-- The watch skip is keyed by test name, because `go test -skip` cannot name a package.
-  A test with the same name in another package of the same run is skipped too; `PATTERN-test-speed` states this bound.
-- The card scope uses the branch diff rather than the card's own files.
-  The card's file list names directories and refs, not changed paths, and the branch diff never skips a test a change could reach.
+- Every wait is removed by an injected period or by waiting on the event, never by a shorter bound.
+- `armDeadline` is a package-level variable rather than a seam field, so the tests that replace it run serially.
+  `PATTERN-test-speed` names this as an exception for `internal/gitexec`'s remote-attempt bounds.
+- The `-skip` filter matches by test name.
+  A test of the same name in another package of the run is skipped too, and the pattern notes this bound.
+
+## To check
+
+- `armDeadline` in `internal/gitexec/gitexec.go` is a package-level variable, which departs from "Time is injectable".
+  Decide whether the documented exception is acceptable or the hook should move into a parameter.
+- The `card` scope's watch skip (`computeScope` and `cardChanges` in `internal/gatecli/scope.go`) has no test that runs it end to end.
+- The guard step's drop of a watched guard test (`scanGuards` in `internal/gatecli/scope.go`) has no test that runs it end to end.
+- Run `lym gate test` over a whole pass once, to confirm `TestCrossCompileLinux` and the dotnet build still run there and the timings fall.
