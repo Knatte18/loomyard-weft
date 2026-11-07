@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=b7cb5d37a7e17fd790c8886531b97df2b1b4821b4c84d519e84e5a1fc6aa493a build=61e42505c2de95169af0036a15fc1e3f025f81fe time=2026-11-01T07:33:14Z -->
+<!-- lym-stencil: sha256=c408f51f5702acd8c70066bea33dd954cb1d9a5f77ea3a6afcab69464d33bea3 build=f7465bd86b31478590683d0377771fca4647c425 time=2026-11-07T11:35:39Z -->
 
 # Landing fix review spec — what the fix review writes
 
@@ -8,23 +8,28 @@
 
 The fix review is the solo session Finalize spawns when the merge fixer's change is over the caps.
 It reads only the fixer's commits and ends by writing one report, a markdown file at the path its prompt names.
-An approval lets Finalize land; a rejection hands the report's findings to the merge fixer, which fixes them in place, and the fix review then judges the fixed change again.
-Once `finalize_fix_review_rounds` reviews have not approved, Finalize halts for the operator with the last report's findings open.
+An approval lets Finalize land;
+a rejection hands the report's findings to the merge fixer, which fixes them in place,
+and the fix review then judges the fixed change again.
+After `finalize_fix_review_rounds` reviews without an approval, Finalize halts for the operator with the findings open.
 
 ## Format
 
 The first line is the verdict, exactly `verdict: approved` or `verdict: rejected`.
-One section follows, opened by the heading `## Findings`: one bullet per finding, each naming the commit or file and what is wrong with it.
+One section follows, opened by the heading `## Findings`:
+one bullet per finding, each naming the commit or file and what is wrong with it.
 A bullet is a line opening with `- `.
 
 ## Verdicts
 
 - `approved` — the change fixes the failure and keeps every test's meaning; the `## Findings` section may be empty.
-- `rejected` — the change weakens or dodges a test, or is wrong in itself; the `## Findings` section holds at least one bullet.
+- `rejected` — the change weakens or dodges a test, or is wrong in itself;
+  the `## Findings` section holds at least one bullet.
   A `rejected` report with no finding is invalid.
 
 ## Sole parser
 
-`internal/landingshed` is the sole parser of the format, through `ParseFixReviewReport`; consumers read only the `FixReviewReport` it returns.
+`internal/landingshed` is the sole parser of the format, through `ParseFixReviewReport`;
+consumers read only the `FixReviewReport` it returns.
 A missing report is an error wrapping `fs.ErrNotExist`.
-A first line that is no known verdict, and a `rejected` report without a finding, are errors naming the line and this spec.
+An unknown first-line verdict and a `rejected` report without a finding are errors naming the line and this spec.
