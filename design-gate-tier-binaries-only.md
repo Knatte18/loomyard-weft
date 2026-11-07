@@ -21,5 +21,3 @@ The list is derived, so a package gaining its first test of a tier enters withou
 ## To settle
 
 One gate pass on OSL-1046 with `lym gate report`'s launch times would show the holds.
-
-Wait for `comment-cleanup` to land before starting this (operator, 2026-11-07).
