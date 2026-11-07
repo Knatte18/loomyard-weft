@@ -2,8 +2,6 @@
 
 `test-real-time-waits` · Task · enhancement, git, gate, termwindow, process · running · Darn-Write
 
-Depends on: [`gate-tier-binaries-only`](design-gate-tier-binaries-only.md)
-
 The operator wants tests faster as a priority (2026-11-07).
 Items 7 and 9 of `docs/research/speed/tier1-test-revision-2026-11-06/report.md`, read before starting.
 
