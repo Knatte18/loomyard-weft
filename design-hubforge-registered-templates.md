@@ -2,8 +2,6 @@
 
 `hubforge-registered-templates` · Task · enhancement, fabric, testkit, git · running · Finalize
 
-Decision record: [Sketch](decision-hubforge-registered-templates.md)
-
 Filed from the Sketch `fabric-test-speed`.
 
 Takes: hubforge's shape templates, relocation and copy in internal/hubforge/template.go

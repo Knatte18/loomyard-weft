@@ -2,8 +2,6 @@
 
 `fabric-test-folds` · Task · enhancement, fabric, testkit, git · running · Darn-Write
 
-Decision record: [Sketch](decision-fabric-test-folds.md)
-
 Filed from the Sketch `fabric-test-speed`.
 
 Takes: today's fixtures and the report's section 4 rows with their alone-pins column

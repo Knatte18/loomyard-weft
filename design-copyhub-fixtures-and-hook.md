@@ -2,8 +2,6 @@
 
 `copyhub-fixtures-and-hook` · Task · enhancement, fabric, testkit, git
 
-Decision record: [Sketch](decision-copyhub-fixtures-and-hook.md)
-
 Depends on: [`fabric-livestate-merge-templates`](design-fabric-livestate-merge-templates.md)
 
 Filed from the Sketch `fabric-test-speed`.

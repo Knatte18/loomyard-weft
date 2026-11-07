@@ -2,8 +2,6 @@
 
 `git-config-from-go` · Task · enhancement, fabric, testkit, git
 
-Decision record: [Sketch](decision-git-config-from-go.md)
-
 Depends on: [`hubforge-slim-copy`](design-hubforge-slim-copy.md)
 
 Filed from the Sketch `fabric-test-speed`.

@@ -2,8 +2,6 @@
 
 `hubreconcile-templates` · Task · enhancement, fabric, testkit, git
 
-Decision record: [Sketch](decision-hubreconcile-templates.md)
-
 Depends on: [`hubforge-registered-templates`](design-hubforge-registered-templates.md)
 
 Filed from the Sketch `fabric-test-speed`.

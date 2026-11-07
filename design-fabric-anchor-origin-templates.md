@@ -2,8 +2,6 @@
 
 `fabric-anchor-origin-templates` · Task · enhancement, fabric, testkit, git
 
-Decision record: [Sketch](decision-fabric-anchor-origin-templates.md)
-
 Depends on: [`hubforge-registered-templates`](design-hubforge-registered-templates.md), [`fabric-test-folds`](design-fabric-test-folds.md)
 
 Filed from the Sketch `fabric-test-speed`.
