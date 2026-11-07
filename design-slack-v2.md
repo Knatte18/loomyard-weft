@@ -16,13 +16,16 @@
 - Channel names tell hub and orch apart across that one workspace, and two hubs or two machines never relay one channel.
 - One channel per orch: the prime's orch and each beam's orch.
   What the operator writes in a channel reaches that channel's orch, and that orch's posts go to its channel.
-  lym makes the channel when the beam is made and archives it when the beam is torn down, so the operator makes no channel by hand; the channel names show the hub and beam.
+  The bot makes each channel itself when it is first needed, invites the operator, and removes it when the relay stops, so the operator makes no channel by hand (operator, 2026-11-07).
+  A bot token can archive a channel but not delete it; an archived channel keeps its name, so a channel made again under the same name needs the archived one renamed first, or unarchived where the token allows it.
 - Messages reach the orch within about a second: Socket Mode or another push route in place of polling, with the extra token it needs stored as the bot token is.
 - Each orch's posts show its name, and an icon if cheap, through `chat:write.customize`.
 - The app manifest lym documents lists every scope this needs.
 
 ## Open for the Discussion
 
+- The channel name scheme: hub, orch (prime or beam slug), and whether the machine is part of it, which it must be when one hub runs on two machines at once, each with its own prime orch.
+- Whether the prime's channel is removed at relay stop like a beam's, or stays, so its history is at hand.
 - Whether the prime's orch uses the bot's direct message instead of a channel.
 - How presence works with many channels: one presence for the hub, or one per orch.
 - What happens to a beam channel's history at teardown, and to mail queued for a channel that no longer exists.
