@@ -1,6 +1,6 @@
 # Slack relay reposts a sent message: chat.postMessage answer fails to decode
 
-`slack-post-decode-repost` · Task · bug, slack · running · Code-Burler-Fix
+`slack-post-decode-repost` · Task · bug, slack · running · Code-Bouncer
 
 ## Seen (operator and orch, 2026-11-07, first live Slack test)
 
