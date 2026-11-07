@@ -601,6 +601,24 @@
       "body": "## Seen\n\n`git worktree list --porcelain` is about 15 percent of all git processes in tier 1: 14,744 in an `internal/fabricengine` run and 22,636 in a whole pass (`docs/research/speed/tier1-test-revision-2026-11-06/report.md`).\nIt only reads `.git/worktrees/`, and `lym` calls it several times in each `Add` and `Remove`.\nIts call sites are `internal/fabricengine/worktreelist.go` and `internal/websterengine/gitwrap.go`.\n\n## Idea\n\nRead `.git/worktrees/*/{gitdir,HEAD,locked}` in `internal/dotgit` behind `fabricengine.List` and the `websterengine` call.\nA test checks the reader against `git worktree list --porcelain` on a repository with a detached, a locked and a prunable worktree, since that parity is the new behaviour to pin.\n\nExpected: about 5 s off a tier 1 pass, and fewer processes in every `lym` verb that lists worktrees.\n\nWait for `comment-cleanup` to land before starting this (operator, 2026-11-07).\n",
       "created": "2026-11-07T08:36:35Z",
       "revised": "2026-11-07T08:36:35Z"
+    },
+    {
+      "id": 1181,
+      "handle": "E4",
+      "slug": "creel-trust-by-repo-name",
+      "title": "trusted_hubs lists shortnames, which neither say which repository is meant nor identify it",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "creel"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "List trusted hubs by full repository name instead of shortname",
+      "body": "## Seen\n\n`trusted_hubs` in `creel.yaml` lists hub shortnames, and `trustedSender` in `internal/creelengine/receive.go` matches the sender's shortname against that list.\nA shortname says little to a reader: `ly`, `cs` and `scr` do not show which repository is trusted.\nIt is also not an identity.\n`creel.yaml` sits in the Bolt, so the list follows the hub to every machine, while shortnames resolve per machine through the machine record.\nA hub on another machine, or a later hub that takes a freed shortname, is trusted by the same line.\nTwo hubs sharing a shortname on one machine are refused, which is safe.\n\n## Idea\n\nList trusted hubs by the repository's full name, such as `Knatte18/loomyard`, read from its origin, and show that name in `lym creel hubs` and in the trust stamp.\nA hub with no remote needs a stated answer.\n\n## Limit\n\nThis makes the list clearer and closes the shortname reuse, but it is no barrier against a process of the same user, which can edit `creel.yaml` directly.\nOnly the closed area in `sandbox-closed-area-build` could give that.\n",
+      "created": "2026-11-07T08:38:49Z",
+      "revised": "2026-11-07T08:38:49Z"
     }
   ],
   "prime_owner": "neve",
