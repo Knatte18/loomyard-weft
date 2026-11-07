@@ -1,64 +1,47 @@
 # creel: trust hubs by repository name, not shortname
 
-`trusted_hubs` in `creel.yaml` now lists repository names, such as `Knatte18/loomyard`, instead of hub shortnames.
-A shortname doesn't say which repository is meant, and it is not an identity.
-It resolves per machine, while the list travels with the Bolt, so a hub on another machine or a later hub that takes a freed shortname was trusted by the same line.
+`trusted_hubs` in `creel.yaml` now lists the full GitHub repository name of a trusted hub, such as `Knatte18/loomyard`, in place of its shortname.
+A shortname is not an identity.
+`creel.yaml` travels with the hub to every machine, while shortnames resolve per machine through the machine record,
+so a hub on another machine, or a later hub that took a freed shortname, was trusted by the same line.
+The repository name is read from the sending hub's origin remote, so it names the same repository everywhere.
 
 ## What changes
 
-- **Identity.** `hubregistry.RepositoryName` reads a hub's name from the origin remote of its prime worktree, through the new `fabricengine.HubOriginURL`, and parses it with `githubclient.ParseOwnerRepo`.
-  A hub with no readable origin remote, or one whose origin is not a GitHub repository, has no name and is refused with the reason.
-- **Trust decision.** `creelengine.HubDirectory` gains `RepositoryName(hubPath)`.
-  After the sending daemon confirms a deliver, the receiving daemon reads the sending hub's name.
-  `trustedSender` trusts the orch only when that name is non-empty and `trusted_hubs` lists it.
-  The match ignores case, as GitHub does, and goes through the new shared `creelengine.ListsRepository`.
-  A hub with no name is never trusted.
-- **Display.** The name is journaled on the inbound record (`sending_repository`, omitted when empty) and carried through retention.
-  `Message.HubStamp` puts it before the stamp, so a line reads `"ly:orch" Knatte18/loomyard (other hub, trusted orch)`.
-  The stamp text itself is unchanged, so `CreelTrustSentence` and the parent directive still match it.
-  `read --envelope` adds `sending_repository`.
-- **`lym creel hubs`.** Each entry carries `repository`, or `no_repository` with the reason when the hub has none, and `trusted` follows the repository match.
-- **Carrying existing lists across.** The `creel` module registers the config reinterpretation `creel-trusted-hubs-repository`.
-  `creelconfig.RewriteShortnamesToRepositories` rewrites each shortname entry to the repository it resolves to on the machine that runs the walk, through this machine's hub record.
-  It drops an entry that resolves to none, with a line naming it, its reason and the way forward.
-  An entry containing `/` is already a repository name and is kept, and a repository listed twice is kept once.
-  `hubreconcile` applies it once per hub and mails the lines to the orch, as with the other reinterpretations.
-  `configreg` builds the resolver from `standalonestate.UserStateDir` and `hubregistry.LookupRepository`, so `creelconfig` imports neither git nor the machine record.
-
-Docs updated to match: the `creelengine`, `creelcli`, `creelconfig` and `hubregistry` package docs, the `creel.yaml` template comment, `PATTERN-agent-addressing`, and the orch role's paragraph on mail from other hubs.
+- `creelengine` reads the sending hub's repository name on delivery and matches it against `trusted_hubs`, ignoring case as GitHub does.
+  A hub with no repository name is never trusted; its mail is stored untrusted and the reason is logged at Debug.
+- The sending repository is journalled with the inbound record and survives replay and retention carry.
+- The trust stamp on a cross-hub line leads with the repository name when the sender has one.
+  The widest-line check that bounds a post uses the longest possible repository name, so a stamped line still fits one hook delivery.
+- `lym creel hubs` shows `repository` beside `shortname`.
+  A hub with none shows `no_repository` with the reason instead, and `trusted` is false for it.
+- `hubregistry.RepositoryName` reads the origin remote of the hub's prime worktree through the new `fabricengine.HubOriginURL`, which spawns no git process.
+  It refuses a missing remote, a non-GitHub origin, and an owner or repository outside GitHub's character and length rules, including `.` and `..`.
+  `hubregistry.LookupRepository` resolves a shortname to its hub's repository for the rewrite below.
+- A config reconcile reinterpretation, `creel-trusted-hubs-repository` in `creelconfig`, migrates an existing list with no hand step.
+  Each shortname becomes the repository of the hub it resolves to on the machine that runs the reconcile.
+  An entry holding a `/` is already a repository name and is kept.
+  A shortname that resolves to none is dropped, with a line naming it and the way forward.
+  A duplicate repository is kept once.
+- The docs of `creelcli`, `creelconfig`, `creelengine` and `hubregistry`, `contracts/orchrole/orch-role.md` and `pattern/PATTERN-agent-addressing.md` describe the new key.
 
 ## Design decisions
 
-- **GitHub repositories only.** A hub's name is the `owner/repo` of a GitHub origin.
-  A non-GitHub origin yields no name, so that hub can't be trusted.
-  A generic host and path parse would turn local-path or self-hosted origins into names that a reader can't check at a glance.
-  The rest of lym's remote handling is GitHub-only as well.
-- **The prime is found by the hub's name.** `HubOriginURL` reads `<hub>/<name>` for a hub `<name>-LYMHUB`, the layout `fabricengine`'s clone creates.
-  It doesn't read the hub's recorded `.lym-warp` binding, because the task asks for the origin remote.
-  It reads the repository's local config and starts no git process.
-- **Failed resolutions are dropped, not kept.** Whatever the cause (unknown shortname, shared shortname, no origin, an unreadable machine record), the rewrite drops that entry.
-  Losing trust is the safe direction, and the mailed line names the way to add the repository back.
-- **The name is read after the confirm and only for confirmed mail**, so an unconfirmed claim never costs an origin read.
-  A hub with no name is logged at Debug, since that's an ordinary state.
+- The rewrite drops an entry only when the resolver reports the shortname as unresolvable (`creelconfig.ErrShortnameUnresolvable`).
+  Any other resolver error, such as a failure to read the machine state, ends the rewrite and drops nothing,
+  so a transient failure cannot silently remove a trusted hub.
+- `HubDirectory` gains `RepositoryName`, so the engine reads the repository through the same seam as the other per-hub lookups and tests fake it in `testkit/creelfake`.
+- Repository names are validated on read, so a forged or odd origin URL cannot produce a name that matches a trust entry by accident.
 
 ## Limit
 
-This makes the list clearer and closes shortname reuse.
-It is no barrier against another process of the same user, which can edit `creel.yaml`, or a hub's origin remote, directly.
+This makes the list clearer and closes the shortname reuse.
+It is no barrier against a process of the same user, which can edit `creel.yaml` directly.
+Only the closed area in `sandbox-closed-area-build` could give that.
 
-## Tests
+## To check by hand
 
-- `creelengine` cross-hub rows pin these cases:
-  - the repository leads the stamp in `HubStamp` and `MessageLine`;
-  - a list change takes effect at the next arrival;
-  - a hub with no repository name arrives untrusted with the bare stamp;
-  - a list entry that differs only in case is trusted, and a list naming the shortname is not.
-- `creelcli`'s `hubs` row pins a trusted hub with a GitHub origin, an untrusted hub with a local-path origin, and an untrusted hub with no origin, each with its reason.
-- `creelconfig`'s new `TestRewriteShortnamesToRepositories` pins these cases:
-  - a shortname is rewritten;
-  - an unresolved shortname is dropped with its reason;
-  - a repository name is kept;
-  - duplicates are kept once;
-  - an unchanged file stays byte-identical;
-  - a second run is a no-op;
-  - a malformed file is refused as invalid.
+- Run the config reconcile on a hub whose `creel.yaml` lists shortnames, including one that resolves to no hub on the machine,
+  and confirm the rewritten list and the dropped-entry line.
+- Run `lym creel hubs` with a hub that has no origin remote and confirm `no_repository` and `trusted: false`.
+- Send cross-hub mail from a trusted hub and confirm the stamp shows the repository name.
