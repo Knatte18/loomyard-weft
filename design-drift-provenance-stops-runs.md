@@ -22,5 +22,8 @@ The operator (2026-11-07): `_source.txt` is noise and is no part of the drift ch
 Drift checks only what the code's results are.
 A capture's provenance and other cells that differ between two captures of the same code never fail a gate, never re-prompt a writer and never reach the parent, with no `drift.yaml` entry needed.
 
-- A gate failure that consists only of cells the writer cannot change ends the gate at once instead of re-prompting.
-- How drift tells noise from results is open; see the operator's choice, to be written here.
+- Drift-Baseline captures twice on the branch point, the same code. Every file and every cell that differs between the two captures is noise: the run records it beside the volatile lists in its scope record, and no listing, expectation, check or gate sees it. A file present in one capture only counts as noise too.
+- The recorded noise is named in the landing's `## Regression check`, so the operator sees what was left out.
+- `volatile_files` and `volatile_keys` stay, for noise two captures in a row do not show.
+- A gate failure that consists only of cells the writer cannot change ends the gate at once instead of re-prompting, and the parent gets one question, not one from the gate and one from the driver.
+- Agents never call a noise cell "not equal": no stencil, listing or prompt shows one to them.
