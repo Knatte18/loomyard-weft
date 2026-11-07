@@ -12,7 +12,8 @@
 ## Wanted (operator, 2026-11-07)
 
 - One Slack workspace for every use of lym: every hub, every repository and every machine the operator works on, Models included, since switching workspaces is a chore (operator, 2026-11-07).
-- One Slack app and one bot for that workspace, shared by every hub, never one per agent or hub; each machine stores the same bot token through `lym slack login`.
+- The workspace is the operator's alone; anyone else using lym makes a workspace of their own (operator, 2026-11-07).
+- One Slack app and bot per machine, such as `lym-neve` and `lym-osl`, shared by every hub on that machine, never one per agent or hub; each machine stores its own app's tokens through `lym slack login` (operator, 2026-11-07).
 - Channel names tell hub and orch apart across that one workspace, and two hubs or two machines never relay one channel.
 - One channel per orch: the prime's orch and each beam's orch.
   What the operator writes in a channel reaches that channel's orch, and that orch's posts go to its channel.
@@ -27,8 +28,8 @@
 
 ## Open for the Discussion
 
-- Socket Mode and one shared app: Slack allows about ten open Socket Mode connections per app and hands each event to one of them, not to all, so with relays for several hubs or machines open at once an event can reach a relay that does not own its channel.
-  The Discussion checks this against Slack's documentation and settles the route: one connection per machine that serves every hub there and forwards events to the right hub, one app per machine, or another way; the operator wants no polling wait and low CPU and network use when idle (operator, 2026-11-07).
+- Socket Mode with several hubs on one machine: Slack is believed to hand each event to one of an app's open connections, not to all, so relays for two hubs on one machine, each with its own connection, could get each other's events.
+  The Discussion checks this against Slack's documentation and settles the route, such as one connection per machine that serves every hub there and passes each event to the hub owning its channel; the operator wants no polling wait and low CPU and network use when idle (operator, 2026-11-07).
 
 - The channel name scheme: hub, orch (prime or beam slug), and whether the machine is part of it, which it must be when one hub runs on two machines at once, each with its own prime orch.
   The operator wants each repository's channels apart from the others, and under one repository each machine's apart (operator, 2026-11-07).
@@ -38,4 +39,4 @@
 - How presence works with many channels: one presence for the hub, or one per orch.
 - What happens to a beam channel's history at teardown, and to mail queued for a channel that no longer exists.
 - Whether `slack-presence-auto` (the presence switch by where the operator writes, and the reed toggle) joins this design.
-- What else a revision should settle: other machines' hubs in one workspace, a second operator, files and images, threads.
+- What else a revision should settle: files and images, threads.
