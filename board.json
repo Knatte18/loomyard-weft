@@ -539,31 +539,6 @@
       "discussed": true
     },
     {
-      "id": 1208,
-      "handle": "T10",
-      "slug": "hubreconcile-templates",
-      "title": "internal/hubreconcile fixtures onto registered templates and CopyHub, with the held-lock test at tier 0",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "fabric",
-        "testkit",
-        "git"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge-registered-templates' registration\nDelivers: newStaleHub with pair-a built by a registration, the package's hubforge.NewHub sites on hubforge.CopyHub per D5's rule, and TestEnsure_HeldLockTimesOutWithoutStamping rewritten onto in-memory inputs at tier 0\nExports: nothing\n\nThe part changes these packages:\n\n- internal/hubreconcile (about 120 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-07T14:15:14Z",
-      "revised": "2026-11-07T14:15:14Z",
-      "profile": "light",
-      "project": "fabric-test-speed-work",
-      "discussed": true
-    },
-    {
       "id": 1211,
       "handle": "T13",
       "slug": "fabric-test-folds",
@@ -683,8 +658,7 @@
       "recipe": "darn",
       "depends_on": [
         "copyhub-fixtures-and-hook",
-        "git-config-from-go",
-        "hubreconcile-templates"
+        "git-config-from-go"
       ],
       "isolated": false,
       "brief": "",
