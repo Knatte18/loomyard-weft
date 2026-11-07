@@ -16,6 +16,8 @@
 - Channel names tell hub and orch apart across that one workspace, and two hubs or two machines never relay one channel.
 - One channel per orch: the prime's orch and each beam's orch.
   What the operator writes in a channel reaches that channel's orch, and that orch's posts go to its channel.
+  Every orch posts to the one address `<hub>:SLACK` as today; lym looks up the channel of the mail's sending orch, so no orch knows its channel (operator, 2026-11-07).
+  The operator never removes a channel by hand: lym archives each beam channel itself, so the sidebar does not fill up.
   The bot makes each channel itself when it is first needed, invites the operator, and removes it when the relay stops, so the operator makes no channel by hand (operator, 2026-11-07).
   A bot token can archive a channel but not delete it; an archived channel keeps its name, so a channel made again under the same name needs the archived one renamed first, or unarchived where the token allows it.
 - Messages reach the orch within about a second: Socket Mode or another push route in place of polling, with the extra token it needs stored as the bot token is.
@@ -27,7 +29,6 @@
 - The channel name scheme: hub, orch (prime or beam slug), and whether the machine is part of it, which it must be when one hub runs on two machines at once, each with its own prime orch.
   The operator wants each repository's channels apart from the others, and under one repository each machine's apart (operator, 2026-11-07).
   A bot cannot set up a user's sidebar sections, so the names do the grouping: repository first, then machine, then orch, such as `ly-neve-prime`, so the alphabetical sort keeps them together.
-- How the relay picks the channel for an orch's post: by the sending strand of the creel mail to `<hub>:SLACK`, by a reply's original message, or by an address per channel; today every post goes to the hub's one channel.
 - Whether the prime's channel is removed at relay stop like a beam's, or stays, so its history is at hand.
 - Whether the prime's orch uses the bot's direct message instead of a channel.
 - How presence works with many channels: one presence for the hub, or one per orch.
