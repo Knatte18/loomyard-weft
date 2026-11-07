@@ -467,28 +467,6 @@
       "project": "codex-engine-trial"
     },
     {
-      "id": 1177,
-      "handle": "T6",
-      "slug": "codex-skill-load-false-missing",
-      "title": "A Codex seat that read its skills is logged as not having loaded them",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "shuttle",
-        "codex"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "All five skills logged not loaded though the rollout shows SKILL.md read; cause not found",
-      "body": "## Seen\n\nIn the Code-Review of `assist-fan-seat-work-alone` on 2026-11-06, the Codex assistant seat's trace logged `shuttle: skill skipped ... cause=\"not loaded\"` for all five skills at 13:29:48, after both load turns, with the network up.\nIts rollout, `~/.codex/sessions/2026/11/06/rollout-2026-11-06T13-29-27-01a1b0d5-*.jsonl`, shows an `exec` `custom_tool_call` naming `SKILL.md` at 12:29:33Z, so the seat seems to have read its skills and the warning looks false.\n\n`custom_tool_call` is among `toolCallPayloads` in `internal/shuttleengine/codexengine/skillload.go`, so the payload kind alone is not the cause.\nThe cause is not found: the classifier may miss the skill tail inside the `exec` input, or the turn it reads may not be the one holding the call.\n\n## Why it matters\n\nA false warning hides a true one, and the task `skill-load-timeout-sends-prompt` leans on the same load reports.\n\n## Wanted\n\nFind why the classifier read these skills as not loaded, and make it read a Codex load correctly, or show that the skills were in fact not loaded.\n",
-      "status": "done",
-      "created": "2026-11-06T13:04:39Z",
-      "revised": "2026-11-07T12:03:46Z",
-      "profile": "light"
-    },
-    {
       "id": 1179,
       "handle": "T9",
       "slug": "gate-tier-binaries-only",
