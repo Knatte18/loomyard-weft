@@ -1,6 +1,6 @@
 # gitkit and hubforge initialisers write their per-repository git config from Go
 
-`git-config-from-go` · Task · enhancement, fabric, testkit, git
+`git-config-from-go` · Task · enhancement, fabric, testkit, git · running · Worktree-Create
 
 Decision record: [Sketch](decision-git-config-from-go.md)
 
