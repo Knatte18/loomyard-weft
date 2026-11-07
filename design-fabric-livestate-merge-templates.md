@@ -2,6 +2,8 @@
 
 `fabric-livestate-merge-templates` · Task · enhancement, fabric, testkit, git
 
+Decision record: [Sketch](decision-fabric-livestate-merge-templates.md)
+
 Depends on: [`hubforge-registered-templates`](design-hubforge-registered-templates.md), [`fabric-test-folds`](design-fabric-test-folds.md), [`fabric-anchor-origin-templates`](design-fabric-anchor-origin-templates.md)
 
 Filed from the Sketch `fabric-test-speed`.
