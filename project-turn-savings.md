@@ -1,6 +1,6 @@
 # P1 Fewer agent turns, fewer tokens
 
-Rendered 2026-11-07 11:58 UTC; every age below is as of then.
+Rendered 2026-11-07 11:59 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `turn-savings` · Age 5d · Owner `neve`
@@ -28,4 +28,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E5 |  | **Tool schemas are three quarters of a spawned role's start; drop the tools a role never calls**<br>• 21,947 of 29,087 start tokens are tool schemas | [`role-tool-schemas`](design-role-tool-schemas.md) | 22m<br>22m | shuttle, claude |
+| E5 |  | **Tool schemas are three quarters of a spawned role's start; drop the tools a role never calls**<br>• 21,947 of 29,087 start tokens are tool schemas | [`role-tool-schemas`](design-role-tool-schemas.md) | 23m<br>0m | shuttle, claude |
