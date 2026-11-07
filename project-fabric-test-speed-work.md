@@ -1,6 +1,6 @@
 # P3 Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes
 
-Rendered 2026-11-07 15:38 UTC; every age below is as of then.
+Rendered 2026-11-07 15:46 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`fabric-test-speed-work`](design-fabric-test-speed-work.md) · Age 1h · Owner `neve`
@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **gitkit and hubforge initialisers write their per-repository git config from Go** | [`git-config-from-go`](design-git-config-from-go.md)<br>[Sketch](decision-git-config-from-go.md) | darn · light | Darn-Write | neve | 1h<br>1h | fabric, testkit, git |
+| T7 | **gitkit and hubforge initialisers write their per-repository git config from Go** | [`git-config-from-go`](design-git-config-from-go.md)<br>[Sketch](decision-git-config-from-go.md) | darn · light | Drift-Verify | neve | 1h<br>1h | fabric, testkit, git |
 | T14 | **internal/fabricengine anchor and origin fixtures onto registered templates** | [`fabric-anchor-origin-templates`](design-fabric-anchor-origin-templates.md)<br>[Sketch](decision-fabric-anchor-origin-templates.md) | darn · light | Darn-Write | neve | 1h<br>1h | fabric, testkit, git |
 
 ### Ready (0)
