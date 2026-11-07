@@ -2,8 +2,6 @@
 
 `fabricengine-per-test-times` · Task · research, fabric, testkit · running · Darn-Write
 
-Depends on: [`heddle-md-initial-render`](design-heddle-md-initial-render.md)
-
 ## Why (operator, 2026-11-07)
 
 Eleven tasks of project `fabric-test-speed-work` cut `internal/fabricengine` from 57 s to about 42-44 s, short of the 36 s its Sketch expected (`docs/research/speed/fabric-test-speed-remeasure-2026-11-07.md`, `docs/research/speed/test-targets-bench-2026-11-07.md`).
