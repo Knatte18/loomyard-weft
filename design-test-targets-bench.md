@@ -1,6 +1,6 @@
 # Bench tier 1 with {test_targets} switched on
 
-`test-targets-bench` · Task · research, gate, testkit · running · Open-Window
+`test-targets-bench` · Task · research, gate, testkit · running · Drift-Baseline
 
 ## Why (operator, 2026-11-07)
 
