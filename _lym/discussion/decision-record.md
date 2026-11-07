@@ -54,6 +54,12 @@ Decision: This run skips Code-Review: code_max_bounces is 0. Since no review fol
 
 Rationale: Operator, 2026-11-06/07: a Code-Review of a diff this size is not realistic, and the code itself must not change.
 
+### Added after Discussion (parent, 2026-11-07): Goal: all docstrings and doc files follow the five scribe skills
+
+Decision: Operator, 2026-11-07: the campaign's goal is wider than stale comments. Many workers in this repository's history did not load the scribe skills, so many docstrings are poor. All docstrings, doc.go files and doc files shall be brought in line with scribe:prose, scribe:code-quality, scribe:testing, scribe:golang-comments and scribe:golang-testing, which state in detail what is written. Every agent that writes in this run, each worker included, loads all five with the Skill tool before it reads its scope. A true comment that breaks these skills is rewritten, so the worker brief's 'never restyle, reword, reflow, re-wrap, shorten or improve' rule and 'fix only what is defective' go, and every file already covered is covered again. The fixes made so far stay. Code still must not change, the comment-only proof stands, stencils keep the brief's limits, and the aim of about 75k context stands. Start no new worker on the old brief: change .scratch/worker-brief.md first, run a few scopes as a pilot, and check in their transcripts that all five skills loaded and what the context peaks were before fanning out.
+
+Rationale: The operator's point with this run was prose that follows the skills; the entry's body named only stale comments, and all 502 workers so far loaded no skill.
+
 ## Constraints
 
 ## Auto-mode assumptions
