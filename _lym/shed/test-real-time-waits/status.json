@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -41,6 +41,57 @@
       "output": "",
       "at": "2026-11-07T13:27:35Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/test-real-time-waits/_lym/landing/summary.md",
+      "at": "2026-11-07T13:52:46Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-07T13:39:00.609129581Z",
+          "end": "2026-11-07T13:39:00.617201385Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-07T13:47:36.602288311Z",
+          "end": "2026-11-07T13:47:36.613168989Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-07T13:39:00.67435209Z",
+          "end": "2026-11-07T13:47:20.078190102Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-07T13:47:20.51645327Z",
+          "end": "2026-11-07T13:47:36.571768221Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-07T13:47:36.667063102Z",
+          "end": "2026-11-07T13:52:12.951497827Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-07T13:52:13.008718617Z",
+          "end": "2026-11-07T13:52:13.369652106Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-07T13:52:13.425696818Z",
+          "end": "2026-11-07T13:52:13.433572389Z"
+        }
+      ]
     }
   ],
   "product": {
