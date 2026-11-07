@@ -1,0 +1,1594 @@
+diff --git a/internal/dotgit/doc.go b/internal/dotgit/doc.go
+index f0d3f514..76b82834 100644
+--- a/internal/dotgit/doc.go
++++ b/internal/dotgit/doc.go
+@@ -1,5 +1,6 @@
+-// Package dotgit reads a directory's `.git` entry in-process.
+-// It yields the git dir, the common dir, whether they form a usable repository, and the worktree root above a path.
++// Package dotgit reads a directory's `.git` entry, and a repository's worktree list, in-process.
++// It yields the git dir, the common dir, whether they form a usable repository, the worktree root above a path,
++// and the worktrees `git worktree list --porcelain` reports.
+ // It is the one `.git` parser and imports the standard library alone.
+ //
+ // It is a separate package because `gitrepo`'s in-package test imports `gitkit`.
+@@ -17,4 +18,12 @@
+ // FindRoot walks up like `git rev-parse --show-toplevel`:
+ // an empty or broken `.git` directory is skipped;
+ // a gitfile whose target is missing or not a repository ends the walk and is refused, never resolved outward.
++//
++// ListWorktrees matches `git worktree list --porcelain` from git 2.43 on and starts no git process.
++// It reads the common dir.
++// Per `worktrees/<id>/` entry it reads the `gitdir`, `HEAD` and `locked` files.
++// A HEAD resolves through the loose refs and `packed-refs`.
++// The `core` and `extensions` settings come from the repository's `config`.
++// A repository whose `extensions.refStorage` is not `files` keeps no ref files.
++// ListWorktrees refuses it with ErrRefStorage, and the caller asks git.
+ package dotgit
+diff --git a/internal/dotgit/testmain_test.go b/internal/dotgit/testmain_test.go
+index a6d26d57..c8e6afab 100644
+--- a/internal/dotgit/testmain_test.go
++++ b/internal/dotgit/testmain_test.go
+@@ -1,15 +1,18 @@
+-// testmain_test.go runs the package's tests under tmuxkit.Main.
++// testmain_test.go runs the package's tests under tmuxkit.Main, after gitkit.HermeticGitEnv for the tests that spawn git.
+ // Their temp files live in the process run directory and go with it.
++// It sits in the external test package because gitkit reaches dotgit through lymcwd.
+ 
+-package dotgit
++package dotgit_test
+ 
+ import (
+ 	"os"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
+ )
+ 
+ func TestMain(m *testing.M) {
++	gitkit.HermeticGitEnv()
+ 	os.Exit(tmuxkit.Main(m))
+ }
+diff --git a/internal/dotgit/worktrees.go b/internal/dotgit/worktrees.go
+new file mode 100644
+index 00000000..566fece7
+--- /dev/null
++++ b/internal/dotgit/worktrees.go
+@@ -0,0 +1,408 @@
++// worktrees.go lists a repository's worktrees from its common dir, as `git worktree list --porcelain` reports them.
++// It reads the admin entries under `worktrees/`, the loose refs and `packed-refs`, and the repository's `config`.
++
++package dotgit
++
++import (
++	"errors"
++	"fmt"
++	"io/fs"
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++	"syscall"
++)
++
++// Worktree is one worktree of a repository, as `git worktree list --porcelain` reports it.
++type Worktree struct {
++	// Path is the worktree's root directory.
++	Path string
++	// Head is the commit HEAD resolves to.
++	// It is all zeros when the HEAD file is missing or names a branch with no commit yet.
++	Head string
++	// Branch is the full ref HEAD names, such as `refs/heads/main`, and empty when HEAD is detached or missing.
++	Branch string
++	// Locked reports whether a linked worktree carries a lock.
++	Locked bool
++	// Prunable reports whether an unlocked linked worktree's `.git` no longer exists.
++	Prunable bool
++}
++
++// ErrRefStorage is returned for a repository whose `extensions.refStorage` is not `files`.
++// It is wrapped with the common dir and its backend.
++// Such a repository's refs are no files this package can read.
++var ErrRefStorage = errors.New("dotgit: ref storage is not files")
++
++// maxSymrefDepth bounds a chain of symbolic refs, as git bounds it.
++const maxSymrefDepth = 5
++
++// asciiSpace is the set of characters git trims from the end of a `gitdir` file.
++const asciiSpace = " \t\n\v\f\r"
++
++// ListWorktrees lists the worktrees of the repository holding dir, as `git worktree list --porcelain` does.
++// dir must be absolute and may be any directory inside a worktree; the repository is found by walking up from it.
++// The main worktree comes first, its path resolved through symlinks.
++// The linked worktrees follow, sorted by path, compared case-folded when the repository's `core.ignorecase` is true.
++// A linked worktree whose `gitdir` file is missing, unreadable or empty is left out, as git leaves it out.
++// A dir that does not exist is an error with no walk-up, and so are a bare repository and a dir in no repository.
++// A repository whose refs are not files is ErrRefStorage, so a caller can ask git instead.
++func ListWorktrees(dir string) ([]Worktree, error) {
++	if err := requireDir(dir); err != nil {
++		return nil, fmt.Errorf("dotgit: list worktrees from %s: %w", dir, err)
++	}
++	commonDir, err := findCommonDir(dir)
++	if err != nil {
++		return nil, err
++	}
++	config, err := readRepositoryConfig(commonDir)
++	if err != nil {
++		return nil, err
++	}
++	switch {
++	case config.refStorage != "" && config.refStorage != "files":
++		return nil, fmt.Errorf("%w: %s uses %q", ErrRefStorage, commonDir, config.refStorage)
++	case config.bare:
++		return nil, fmt.Errorf("dotgit: %s: bare repositories are not supported", commonDir)
++	}
++
++	refs := &refReader{commonDir: commonDir, zero: config.zeroSHA()}
++	main, err := readMainWorktree(commonDir, refs)
++	if err != nil {
++		return nil, err
++	}
++	linked, err := readLinkedWorktrees(commonDir, refs)
++	if err != nil {
++		return nil, err
++	}
++	slices.SortStableFunc(linked, func(a, b Worktree) int { return comparePaths(a.Path, b.Path, config.ignoreCase) })
++	return append([]Worktree{main}, linked...), nil
++}
++
++// findCommonDir returns the common dir of the repository holding dir.
++// dir is that common dir itself when it is a repository's git dir, as a bare repository's directory is.
++func findCommonDir(dir string) (string, error) {
++	if IsRepository(Geometry{GitDir: dir, CommonDir: dir}) {
++		return dir, nil
++	}
++	_, g, err := FindRoot(dir)
++	if err != nil {
++		return "", err
++	}
++	return g.CommonDir, nil
++}
++
++// readMainWorktree reads the main worktree: the common dir resolved through symlinks, less its `.git`.
++func readMainWorktree(commonDir string, refs *refReader) (Worktree, error) {
++	resolved, err := filepath.EvalSymlinks(commonDir)
++	if err != nil {
++		return Worktree{}, fmt.Errorf("dotgit: resolve %s: %w", commonDir, err)
++	}
++	head, branch, err := refs.readHead(commonDir)
++	if err != nil {
++		return Worktree{}, err
++	}
++	return Worktree{Path: stripDotGit(resolved), Head: head, Branch: branch}, nil
++}
++
++// readLinkedWorktrees reads each linked worktree from its admin entry under the common dir's `worktrees`, unsorted.
++func readLinkedWorktrees(commonDir string, refs *refReader) ([]Worktree, error) {
++	adminRoot := filepath.Join(commonDir, "worktrees")
++	entries, err := os.ReadDir(adminRoot)
++	if errors.Is(err, fs.ErrNotExist) {
++		return nil, nil
++	}
++	if err != nil {
++		return nil, fmt.Errorf("dotgit: read %s: %w", adminRoot, err)
++	}
++
++	var worktrees []Worktree
++	for _, entry := range entries {
++		if !entry.IsDir() {
++			continue
++		}
++		adminDir := filepath.Join(adminRoot, entry.Name())
++		dotGit, ok := readAdminGitdir(adminDir)
++		if !ok {
++			continue
++		}
++		head, branch, err := refs.readHead(adminDir)
++		if err != nil {
++			return nil, err
++		}
++		locked := exists(filepath.Join(adminDir, "locked"))
++		worktrees = append(worktrees, Worktree{
++			Path:     stripDotGit(dotGit),
++			Head:     head,
++			Branch:   branch,
++			Locked:   locked,
++			Prunable: !locked && !exists(dotGit),
++		})
++	}
++	return worktrees, nil
++}
++
++// readAdminGitdir returns the `.git` path an admin entry's `gitdir` file names, and false when git would skip the entry.
++// An absolute path is taken as written.
++// A relative one, which git 2.48 and later write, resolves against the admin entry as git resolves it:
++// symlinks are resolved as far as the path exists.
++func readAdminGitdir(adminDir string) (string, bool) {
++	content, err := os.ReadFile(filepath.Join(adminDir, "gitdir"))
++	if err != nil {
++		return "", false
++	}
++	dotGit := strings.TrimRight(string(content), asciiSpace)
++	if dotGit == "" {
++		return "", false
++	}
++	if filepath.IsAbs(dotGit) {
++		return dotGit, true
++	}
++	base, err := filepath.EvalSymlinks(adminDir)
++	if err != nil {
++		base = adminDir
++	}
++	return resolveExistingPrefix(filepath.Join(base, dotGit)), true
++}
++
++// resolveExistingPrefix returns path with symlinks resolved in its longest existing prefix and the rest appended.
++func resolveExistingPrefix(path string) string {
++	var tail []string
++	current := filepath.Clean(path)
++	for {
++		if resolved, err := filepath.EvalSymlinks(current); err == nil {
++			return filepath.Join(append([]string{resolved}, tail...)...)
++		}
++		parent := filepath.Dir(current)
++		if parent == current {
++			return filepath.Clean(path)
++		}
++		tail = append([]string{filepath.Base(current)}, tail...)
++		current = parent
++	}
++}
++
++// stripDotGit removes a trailing `.git` component from path, as git does to name a worktree from its `.git`.
++func stripDotGit(path string) string {
++	if trimmed, ok := strings.CutSuffix(path, "/.git"); ok {
++		return trimmed
++	}
++	return strings.TrimSuffix(path, string(filepath.Separator)+".git")
++}
++
++// comparePaths orders two worktree paths as git's path compare does: bytewise, or ASCII case-folded under ignoreCase.
++func comparePaths(a, b string, ignoreCase bool) int {
++	if !ignoreCase {
++		return strings.Compare(a, b)
++	}
++	for i := 0; i < len(a) && i < len(b); i++ {
++		if diff := int(lowerASCII(a[i])) - int(lowerASCII(b[i])); diff != 0 {
++			return diff
++		}
++	}
++	return len(a) - len(b)
++}
++
++func lowerASCII(c byte) byte {
++	if 'A' <= c && c <= 'Z' {
++		return c + 'a' - 'A'
++	}
++	return c
++}
++
++func exists(path string) bool {
++	_, err := os.Stat(path)
++	return err == nil
++}
++
++// refReader resolves refs from a common dir's loose ref files and its `packed-refs`, reading `packed-refs` once.
++type refReader struct {
++	commonDir string
++	// zero is the all-zero commit of the repository's object format.
++	zero   string
++	packed map[string]string
++}
++
++// readHead returns the commit and the branch ref of the HEAD file in gitDir.
++// A missing HEAD file is detached at the all-zero commit, as git lists a worktree still being added.
++func (r *refReader) readHead(gitDir string) (head, branch string, err error) {
++	path := filepath.Join(gitDir, "HEAD")
++	content, err := os.ReadFile(path)
++	if errors.Is(err, fs.ErrNotExist) {
++		return r.zero, "", nil
++	}
++	if err != nil {
++		return "", "", fmt.Errorf("dotgit: read %s: %w", path, err)
++	}
++	value := strings.TrimSpace(string(content))
++	target, symbolic := strings.CutPrefix(value, "ref:")
++	if !symbolic {
++		return value, "", nil
++	}
++	return r.resolve(strings.TrimSpace(target))
++}
++
++// resolve follows ref through symbolic refs and returns its commit and the last ref of the chain.
++// A ref that does not exist resolves to the all-zero commit.
++func (r *refReader) resolve(ref string) (commit, finalRef string, err error) {
++	for range maxSymrefDepth {
++		value, found, err := r.readLoose(ref)
++		if err != nil {
++			return "", "", err
++		}
++		if !found {
++			packed, err := r.readPacked(ref)
++			if err != nil {
++				return "", "", err
++			}
++			if packed == "" {
++				return r.zero, ref, nil
++			}
++			return packed, ref, nil
++		}
++		target, symbolic := strings.CutPrefix(value, "ref:")
++		if !symbolic {
++			return value, ref, nil
++		}
++		ref = strings.TrimSpace(target)
++	}
++	return "", "", fmt.Errorf("dotgit: %s: symbolic refs nest deeper than %d", ref, maxSymrefDepth)
++}
++
++// readLoose returns the content of ref's loose file in the common dir, and false when there is no such file.
++func (r *refReader) readLoose(ref string) (value string, found bool, err error) {
++	path := filepath.Join(r.commonDir, filepath.FromSlash(ref))
++	content, err := os.ReadFile(path)
++	switch {
++	case err == nil:
++		return strings.TrimSpace(string(content)), true, nil
++	case errors.Is(err, fs.ErrNotExist), errors.Is(err, syscall.ENOTDIR), errors.Is(err, syscall.EISDIR):
++		return "", false, nil
++	}
++	return "", false, fmt.Errorf("dotgit: read ref %s: %w", path, err)
++}
++
++// readPacked returns ref's commit in the common dir's `packed-refs`, or "" when it holds none.
++func (r *refReader) readPacked(ref string) (string, error) {
++	if r.packed == nil {
++		packed, err := parsePackedRefs(filepath.Join(r.commonDir, "packed-refs"))
++		if err != nil {
++			return "", err
++		}
++		r.packed = packed
++	}
++	return r.packed[ref], nil
++}
++
++// parsePackedRefs maps each ref in the `packed-refs` file at path to its commit; a missing file maps none.
++// The header and the peeled `^` lines carry no ref and are skipped.
++func parsePackedRefs(path string) (map[string]string, error) {
++	packed := map[string]string{}
++	content, err := os.ReadFile(path)
++	if errors.Is(err, fs.ErrNotExist) {
++		return packed, nil
++	}
++	if err != nil {
++		return nil, fmt.Errorf("dotgit: read %s: %w", path, err)
++	}
++	for _, line := range strings.Split(string(content), "\n") {
++		line = strings.TrimRight(line, "\r")
++		if line == "" || line[0] == '#' || line[0] == '^' {
++			continue
++		}
++		if commit, ref, ok := strings.Cut(line, " "); ok {
++			packed[ref] = commit
++		}
++	}
++	return packed, nil
++}
++
++// repositoryConfig holds the settings of a repository's `config` file that decide how its worktrees are read.
++type repositoryConfig struct {
++	bare         bool
++	ignoreCase   bool
++	refStorage   string
++	objectFormat string
++}
++
++// zeroSHA returns the all-zero commit of the repository's object format.
++func (c repositoryConfig) zeroSHA() string {
++	if c.objectFormat == "sha256" {
++		return strings.Repeat("0", 64)
++	}
++	return strings.Repeat("0", 40)
++}
++
++// readRepositoryConfig reads the settings repositoryConfig holds from commonDir's `config` file.
++// A missing file leaves every setting unset.
++// It reads `key = value` lines under `[core]` and `[extensions]`, the last assignment winning, and follows no include.
++func readRepositoryConfig(commonDir string) (repositoryConfig, error) {
++	var config repositoryConfig
++	path := filepath.Join(commonDir, "config")
++	content, err := os.ReadFile(path)
++	if errors.Is(err, fs.ErrNotExist) {
++		return config, nil
++	}
++	if err != nil {
++		return config, fmt.Errorf("dotgit: read %s: %w", path, err)
++	}
++
++	section := ""
++	for _, line := range strings.Split(string(content), "\n") {
++		line = strings.TrimSpace(stripConfigComment(line))
++		if rest, ok := strings.CutPrefix(line, "["); ok {
++			header, after, closed := strings.Cut(rest, "]")
++			if !closed {
++				section = ""
++				continue
++			}
++			// A subsection header such as `remote "origin"` keeps its quoted part, so it names no section read here.
++			section = strings.ToLower(strings.TrimSpace(header))
++			line = strings.TrimSpace(after)
++		}
++		if line == "" {
++			continue
++		}
++		key, value, hasValue := strings.Cut(line, "=")
++		value = strings.ToLower(strings.Trim(strings.TrimSpace(value), `"`))
++		switch section + "." + strings.ToLower(strings.TrimSpace(key)) {
++		case "core.bare":
++			config.bare = configBool(value, hasValue)
++		case "core.ignorecase":
++			config.ignoreCase = configBool(value, hasValue)
++		case "extensions.refstorage":
++			config.refStorage = value
++		case "extensions.objectformat":
++			config.objectFormat = value
++		}
++	}
++	return config, nil
++}
++
++// stripConfigComment cuts line at the first `#` or `;` outside double quotes.
++func stripConfigComment(line string) string {
++	quoted := false
++	for i := 0; i < len(line); i++ {
++		switch line[i] {
++		case '"':
++			quoted = !quoted
++		case '#', ';':
++			if !quoted {
++				return line[:i]
++			}
++		}
++	}
++	return line
++}
++
++// configBool reads a lower-cased git boolean; a key with no `=` is true, as git reads it.
++func configBool(value string, hasValue bool) bool {
++	if !hasValue {
++		return true
++	}
++	switch value {
++	case "true", "yes", "on", "1":
++		return true
++	}
++	return false
++}
+diff --git a/internal/dotgit/worktrees_git_test.go b/internal/dotgit/worktrees_git_test.go
+new file mode 100644
+index 00000000..8d7e8f1f
+--- /dev/null
++++ b/internal/dotgit/worktrees_git_test.go
+@@ -0,0 +1,142 @@
++// worktrees_git_test.go checks ListWorktrees against `git worktree list --porcelain` on repositories git itself wrote.
++
++package dotgit_test
++
++import (
++	"os"
++	"path/filepath"
++	"runtime"
++	"strings"
++	"testing"
++
++	"github.com/google/go-cmp/cmp"
++
++	"github.com/Knatte18/loomyard/internal/dotgit"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// porcelainWorktrees parses `git worktree list --porcelain`, run in dir, into the entries ListWorktrees returns.
++func porcelainWorktrees(t *testing.T, dir string) []dotgit.Worktree {
++	t.Helper()
++	var worktrees []dotgit.Worktree
++	for _, block := range strings.Split(gitkit.Git(t, dir, "worktree", "list", "--porcelain"), "\n\n") {
++		var worktree dotgit.Worktree
++		for _, line := range strings.Split(strings.TrimSpace(block), "\n") {
++			key, value, _ := strings.Cut(line, " ")
++			switch key {
++			case "worktree":
++				worktree.Path = value
++			case "HEAD":
++				worktree.Head = value
++			case "branch":
++				worktree.Branch = value
++			case "locked":
++				worktree.Locked = true
++			case "prunable":
++				worktree.Prunable = true
++			case "bare":
++				t.Fatalf("git worktree list in %s reports a bare repository", dir)
++			}
++		}
++		worktrees = append(worktrees, worktree)
++	}
++	return worktrees
++}
++
++// newRepository initialises a repository at root/repo with one commit and returns its path.
++// root is resolved through symlinks first, so the paths git prints and the ones the test spells agree.
++func newRepository(t *testing.T) (root, repo string) {
++	t.Helper()
++	root, err := filepath.EvalSymlinks(t.TempDir())
++	if err != nil {
++		t.Fatalf("resolve temp dir: %v", err)
++	}
++	repo = filepath.Join(root, "repo")
++	gitkit.Git(t, root, "init", "repo")
++	gitkit.CommitFile(t, repo, "a.txt", "one", "first")
++	return root, repo
++}
++
++// TestListWorktrees_MatchesGitPorcelain lists one repository from its main worktree, a symlink to it,
++// and a subdirectory of a linked worktree, each time equal to git's own list.
++// The repository holds a branch worktree whose ref is only in packed-refs and one with a loose ref.
++// It holds a detached one, a locked one with a reason and its directory gone, and a locked one without.
++// It holds a prunable one, one whose gitdir file is removed and one whose HEAD file is removed.
++func TestListWorktrees_MatchesGitPorcelain(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	root, repo := newRepository(t)
++	worktree := func(name string) string { return filepath.Join(root, name) }
++	gitkit.Git(t, repo, "worktree", "add", "-b", "packed", worktree("packed"))
++	gitkit.Git(t, repo, "pack-refs", "--all")
++	gitkit.Git(t, repo, "worktree", "add", "-b", "loose", worktree("loose"))
++	gitkit.CommitFile(t, worktree("loose"), "b.txt", "two", "second")
++	for _, name := range []string{"detached", "locked-reason", "locked", "prunable", "no-gitdir", "no-head"} {
++		gitkit.Git(t, repo, "worktree", "add", "--detach", worktree(name))
++	}
++	gitkit.Git(t, repo, "worktree", "lock", "--reason", "moved away", worktree("locked-reason"))
++	gitkit.Git(t, repo, "worktree", "lock", worktree("locked"))
++	for _, path := range []string{
++		worktree("locked-reason"),
++		worktree("prunable"),
++		filepath.Join(repo, ".git", "worktrees", "no-gitdir", "gitdir"),
++		filepath.Join(repo, ".git", "worktrees", "no-head", "HEAD"),
++	} {
++		if err := os.RemoveAll(path); err != nil {
++			t.Fatalf("remove %s: %v", path, err)
++		}
++	}
++	subdirectory := filepath.Join(worktree("loose"), "sub")
++	if err := os.MkdirAll(subdirectory, 0o755); err != nil {
++		t.Fatalf("mkdir %s: %v", subdirectory, err)
++	}
++
++	starts := []string{repo, subdirectory}
++	if runtime.GOOS != "windows" {
++		link := filepath.Join(root, "link")
++		if err := os.Symlink(repo, link); err != nil {
++			t.Fatalf("symlink %s: %v", link, err)
++		}
++		starts = append(starts, link)
++	}
++
++	for _, start := range starts {
++		got, err := dotgit.ListWorktrees(start)
++		if err != nil {
++			t.Fatalf("ListWorktrees(%s): %v", start, err)
++		}
++		if diff := cmp.Diff(porcelainWorktrees(t, start), got); diff != "" {
++			t.Errorf("ListWorktrees(%s) mismatch with git (-git +got):\n%s", start, diff)
++		}
++	}
++}
++
++// TestListWorktrees_RelativeGitdirMatchesGit lists a linked worktree whose gitdir file holds a relative path.
++// Only git 2.48 and later write one.
++// The test expects the path git reports.
++func TestListWorktrees_RelativeGitdirMatchesGit(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	gitkit.SkipBelowGitVersion(t, "2.48", "a relative worktree gitdir")
++
++	root, repo := newRepository(t)
++	gitkit.Git(t, repo, "worktree", "add", "--relative-paths", "--detach", filepath.Join(root, "relative"))
++	gitdirFile := filepath.Join(repo, ".git", "worktrees", "relative", "gitdir")
++	content, err := os.ReadFile(gitdirFile)
++	if err != nil {
++		t.Fatalf("read %s: %v", gitdirFile, err)
++	}
++	if filepath.IsAbs(strings.TrimSpace(string(content))) {
++		t.Fatalf("%s holds the absolute path %q; want a relative one", gitdirFile, content)
++	}
++
++	got, err := dotgit.ListWorktrees(repo)
++	if err != nil {
++		t.Fatalf("ListWorktrees(%s): %v", repo, err)
++	}
++	if diff := cmp.Diff(porcelainWorktrees(t, repo), got); diff != "" {
++		t.Errorf("ListWorktrees(%s) mismatch with git (-git +got):\n%s", repo, diff)
++	}
++}
+diff --git a/internal/dotgit/worktrees_test.go b/internal/dotgit/worktrees_test.go
+new file mode 100644
+index 00000000..190637d9
+--- /dev/null
++++ b/internal/dotgit/worktrees_test.go
+@@ -0,0 +1,383 @@
++// worktrees_test.go covers ListWorktrees on hand-laid repositories:
++// entry order, HEAD and ref resolution, locked and prunable entries, the entries git leaves out, and the refusals.
++
++package dotgit
++
++import (
++	"errors"
++	"fmt"
++	"io/fs"
++	"os"
++	"path/filepath"
++	"runtime"
++	"strings"
++	"testing"
++
++	"github.com/google/go-cmp/cmp"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++const (
++	commitA = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
++	commitB = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
++)
++
++var zeroCommit = strings.Repeat("0", 40)
++
++// mainRepository lays out a main worktree at dir on refs/heads/main at commitA, its `.git` config holding config.
++// It returns the common dir.
++func mainRepository(t *testing.T, dir, config string) string {
++	t.Helper()
++	commonDir := filepath.Join(dir, ".git")
++	writeFile(t, filepath.Join(commonDir, "config"), config)
++	writeFile(t, filepath.Join(commonDir, "HEAD"), "ref: refs/heads/main\n")
++	writeFile(t, filepath.Join(commonDir, "refs", "heads", "main"), commitA+"\n")
++	mkdirs(t, filepath.Join(commonDir, "objects"))
++	return commonDir
++}
++
++// addLinked lays out the admin entry id under commonDir for a worktree at worktreeDir, with an absolute `gitdir`.
++// It writes head to the entry's HEAD when head is not empty, and creates the worktree's `.git` when created is true.
++// It returns the admin entry.
++func addLinked(t *testing.T, commonDir, id, worktreeDir, head string, created bool) string {
++	t.Helper()
++	adminDir := filepath.Join(commonDir, "worktrees", id)
++	writeFile(t, filepath.Join(adminDir, "gitdir"), filepath.Join(worktreeDir, ".git")+"\n")
++	writeFile(t, filepath.Join(adminDir, "commondir"), "../..\n")
++	if head != "" {
++		writeFile(t, filepath.Join(adminDir, "HEAD"), head+"\n")
++	}
++	if created {
++		writeFile(t, filepath.Join(worktreeDir, ".git"), "gitdir: "+adminDir+"\n")
++	}
++	return adminDir
++}
++
++func TestListWorktrees(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// build lays out the repository under root and returns the directory to list from and the wanted entries.
++		build          func(t *testing.T, root string) (start string, want []Worktree)
++		needsSymlink   bool
++		wantErrIs      error
++		wantErrContain string
++	}{
++		{
++			name: "main worktree alone",
++			build: func(t *testing.T, root string) (string, []Worktree) {
++				mainRepository(t, filepath.Join(root, "repo"), "")
++				return filepath.Join(root, "repo"), []Worktree{
++					{Path: filepath.Join(root, "repo"), Head: commitA, Branch: "refs/heads/main"},
++				}
++			},
++		},
++		{
++			name: "linked worktrees follow sorted by path with branch, detached, locked and prunable entries",
++			build: func(t *testing.T, root string) (string, []Worktree) {
++				commonDir := mainRepository(t, filepath.Join(root, "repo"), "")
++				writeFile(t, filepath.Join(commonDir, "refs", "heads", "task"), commitB+"\n")
++				addLinked(t, commonDir, "z", filepath.Join(root, "b-branch"), "ref: refs/heads/task", true)
++				addLinked(t, commonDir, "a", filepath.Join(root, "c-detached"), commitB, true)
++				locked := addLinked(t, commonDir, "m", filepath.Join(root, "a-locked"), "ref: refs/heads/main", false)
++				writeFile(t, filepath.Join(locked, "locked"), "moved\n")
++				addLinked(t, commonDir, "p", filepath.Join(root, "d-gone"), commitA, false)
++				return filepath.Join(root, "repo"), []Worktree{
++					{Path: filepath.Join(root, "repo"), Head: commitA, Branch: "refs/heads/main"},
++					{Path: filepath.Join(root, "a-locked"), Head: commitA, Branch: "refs/heads/main", Locked: true},
++					{Path: filepath.Join(root, "b-branch"), Head: commitB, Branch: "refs/heads/task"},
++					{Path: filepath.Join(root, "c-detached"), Head: commitB},
++					{Path: filepath.Join(root, "d-gone"), Head: commitA, Prunable: true},
++				}
++			},
++		},
++		{
++			name: "a branch only in packed-refs resolves to its commit",
++			build: func(t *testing.T, root string) (string, []Worktree) {
++				commonDir := mainRepository(t, filepath.Join(root, "repo"), "")
++				writeFile(t, filepath.Join(commonDir, "packed-refs"),
++					"# pack-refs with: peeled fully-peeled sorted\n"+commitB+" refs/heads/packed\n^"+commitA+"\n")
++				addLinked(t, commonDir, "packed", filepath.Join(root, "packed"), "ref: refs/heads/packed", true)
++				return filepath.Join(root, "repo"), []Worktree{
++					{Path: filepath.Join(root, "repo"), Head: commitA, Branch: "refs/heads/main"},
++					{Path: filepath.Join(root, "packed"), Head: commitB, Branch: "refs/heads/packed"},
++				}
++			},
++		},
++		{
++			name: "a branch with no commit yet is the all-zero commit",
++			build: func(t *testing.T, root string) (string, []Worktree) {
++				commonDir := mainRepository(t, filepath.Join(root, "repo"), "")
++				writeFile(t, filepath.Join(commonDir, "HEAD"), "ref: refs/heads/unborn\n")
++				return filepath.Join(root, "repo"), []Worktree{
++					{Path: filepath.Join(root, "repo"), Head: zeroCommit, Branch: "refs/heads/unborn"},
++				}
++			},
++		},
++		{
++			name: "a sha256 repository's all-zero commit has 64 digits",
++			build: func(t *testing.T, root string) (string, []Worktree) {
++				commonDir := mainRepository(t, filepath.Join(root, "repo"), "[extensions]\n\tobjectFormat = sha256\n")
++				writeFile(t, filepath.Join(commonDir, "HEAD"), "ref: refs/heads/unborn\n")
++				return filepath.Join(root, "repo"), []Worktree{
++					{Path: filepath.Join(root, "repo"), Head: strings.Repeat("0", 64), Branch: "refs/heads/unborn"},
++				}
++			},
++		},
++		{
++			name: "an entry whose gitdir file is missing or empty is left out",
++			build: func(t *testing.T, root string) (string, []Worktree) {
++				commonDir := mainRepository(t, filepath.Join(root, "repo"), "")
++				missing := addLinked(t, commonDir, "missing", filepath.Join(root, "missing"), commitA, true)
++				if err := os.Remove(filepath.Join(missing, "gitdir")); err != nil {
++					t.Fatalf("remove gitdir: %v", err)
++				}
++				empty := addLinked(t, commonDir, "empty", filepath.Join(root, "empty"), commitA, true)
++				writeFile(t, filepath.Join(empty, "gitdir"), " \n")
++				return filepath.Join(root, "repo"), []Worktree{
++					{Path: filepath.Join(root, "repo"), Head: commitA, Branch: "refs/heads/main"},
++				}
++			},
++		},
++		{
++			name: "an entry without a HEAD file is detached at the all-zero commit",
++			build: func(t *testing.T, root string) (string, []Worktree) {
++				commonDir := mainRepository(t, filepath.Join(root, "repo"), "")
++				addLinked(t, commonDir, "adding", filepath.Join(root, "adding"), "", true)
++				return filepath.Join(root, "repo"), []Worktree{
++					{Path: filepath.Join(root, "repo"), Head: commitA, Branch: "refs/heads/main"},
++					{Path: filepath.Join(root, "adding"), Head: zeroCommit},
++				}
++			},
++		},
++		{
++			name: "a relative gitdir resolves against its admin entry",
++			build: func(t *testing.T, root string) (string, []Worktree) {
++				commonDir := mainRepository(t, filepath.Join(root, "repo"), "")
++				adminDir := addLinked(t, commonDir, "rel", filepath.Join(root, "rel"), commitB, true)
++				writeFile(t, filepath.Join(adminDir, "gitdir"), "../../../../rel/.git\n")
++				return filepath.Join(root, "repo"), []Worktree{
++					{Path: filepath.Join(root, "repo"), Head: commitA, Branch: "refs/heads/main"},
++					{Path: filepath.Join(root, "rel"), Head: commitB},
++				}
++			},
++		},
++		{
++			name:         "a relative gitdir reached through a symlinked admin entry resolves against the real entry",
++			needsSymlink: true,
++			build: func(t *testing.T, root string) (string, []Worktree) {
++				commonDir := mainRepository(t, filepath.Join(root, "repo"), "")
++				adminDir := addLinked(t, commonDir, "rel", filepath.Join(root, "rel"), commitB, true)
++				writeFile(t, filepath.Join(adminDir, "gitdir"), "../../../../rel/.git\n")
++				mkdirs(t, filepath.Join(root, "deep"))
++				if err := os.Symlink(filepath.Join(root, "repo"), filepath.Join(root, "deep", "link")); err != nil {
++					t.Fatalf("symlink: %v", err)
++				}
++				return filepath.Join(root, "deep", "link"), []Worktree{
++					{Path: filepath.Join(root, "repo"), Head: commitA, Branch: "refs/heads/main"},
++					{Path: filepath.Join(root, "rel"), Head: commitB},
++				}
++			},
++		},
++		{
++			name:         "a relative gitdir whose target does not exist resolves its existing prefix and is prunable",
++			needsSymlink: true,
++			build: func(t *testing.T, root string) (string, []Worktree) {
++				commonDir := mainRepository(t, filepath.Join(root, "repo"), "")
++				adminDir := addLinked(t, commonDir, "gone", filepath.Join(root, "gone"), commitB, false)
++				writeFile(t, filepath.Join(adminDir, "gitdir"), "../../../../linkdir/gone/.git\n")
++				mkdirs(t, filepath.Join(root, "real"))
++				if err := os.Symlink(filepath.Join(root, "real"), filepath.Join(root, "linkdir")); err != nil {
++					t.Fatalf("symlink: %v", err)
++				}
++				return filepath.Join(root, "repo"), []Worktree{
++					{Path: filepath.Join(root, "repo"), Head: commitA, Branch: "refs/heads/main"},
++					{Path: filepath.Join(root, "real", "gone"), Head: commitB, Prunable: true},
++				}
++			},
++		},
++		{
++			name: "a plain file under worktrees is skipped",
++			build: func(t *testing.T, root string) (string, []Worktree) {
++				commonDir := mainRepository(t, filepath.Join(root, "repo"), "")
++				writeFile(t, filepath.Join(commonDir, "worktrees", "stray"), "not an admin entry\n")
++				return filepath.Join(root, "repo"), []Worktree{
++					{Path: filepath.Join(root, "repo"), Head: commitA, Branch: "refs/heads/main"},
++				}
++			},
++		},
++		{
++			name: "an explicit files ref storage lists normally",
++			build: func(t *testing.T, root string) (string, []Worktree) {
++				mainRepository(t, filepath.Join(root, "repo"), "[extensions]\n\trefStorage = files\n")
++				return filepath.Join(root, "repo"), []Worktree{
++					{Path: filepath.Join(root, "repo"), Head: commitA, Branch: "refs/heads/main"},
++				}
++			},
++		},
++		{
++			name: "a symbolic ref chain of five links resolves to the last ref of the chain",
++			build: func(t *testing.T, root string) (string, []Worktree) {
++				commonDir := mainRepository(t, filepath.Join(root, "repo"), "")
++				writeFile(t, filepath.Join(commonDir, "HEAD"), "ref: refs/heads/link1\n")
++				for link := 1; link <= 4; link++ {
++					writeFile(t, filepath.Join(commonDir, "refs", "heads", fmt.Sprintf("link%d", link)),
++						fmt.Sprintf("ref: refs/heads/link%d\n", link+1))
++				}
++				writeFile(t, filepath.Join(commonDir, "refs", "heads", "link5"), commitB+"\n")
++				return filepath.Join(root, "repo"), []Worktree{
++					{Path: filepath.Join(root, "repo"), Head: commitB, Branch: "refs/heads/link5"},
++				}
++			},
++		},
++		{
++			name: "a symbolic ref chain of six links is an error",
++			build: func(t *testing.T, root string) (string, []Worktree) {
++				commonDir := mainRepository(t, filepath.Join(root, "repo"), "")
++				writeFile(t, filepath.Join(commonDir, "HEAD"), "ref: refs/heads/link1\n")
++				for link := 1; link <= 5; link++ {
++					writeFile(t, filepath.Join(commonDir, "refs", "heads", fmt.Sprintf("link%d", link)),
++						fmt.Sprintf("ref: refs/heads/link%d\n", link+1))
++				}
++				writeFile(t, filepath.Join(commonDir, "refs", "heads", "link6"), commitA+"\n")
++				return filepath.Join(root, "repo"), nil
++			},
++			wantErrContain: "symbolic refs nest deeper",
++		},
++		{
++			name: "a ref below a loose ref file falls through to packed-refs",
++			build: func(t *testing.T, root string) (string, []Worktree) {
++				commonDir := mainRepository(t, filepath.Join(root, "repo"), "")
++				writeFile(t, filepath.Join(commonDir, "HEAD"), "ref: refs/heads/a/b\n")
++				writeFile(t, filepath.Join(commonDir, "refs", "heads", "a"), commitA+"\n")
++				writeFile(t, filepath.Join(commonDir, "packed-refs"), commitB+" refs/heads/a/b\n")
++				return filepath.Join(root, "repo"), []Worktree{
++					{Path: filepath.Join(root, "repo"), Head: commitB, Branch: "refs/heads/a/b"},
++				}
++			},
++		},
++		{
++			name: "linked paths sort bytewise without core.ignorecase",
++			build: func(t *testing.T, root string) (string, []Worktree) {
++				commonDir := mainRepository(t, filepath.Join(root, "repo"), "[core]\n\tignorecase = false\n")
++				addLinked(t, commonDir, "lower", filepath.Join(root, "a-wt"), commitA, true)
++				addLinked(t, commonDir, "upper", filepath.Join(root, "B-wt"), commitB, true)
++				return filepath.Join(root, "repo"), []Worktree{
++					{Path: filepath.Join(root, "repo"), Head: commitA, Branch: "refs/heads/main"},
++					{Path: filepath.Join(root, "B-wt"), Head: commitB},
++					{Path: filepath.Join(root, "a-wt"), Head: commitA},
++				}
++			},
++		},
++		{
++			name: "linked paths sort case-folded under core.ignorecase",
++			build: func(t *testing.T, root string) (string, []Worktree) {
++				commonDir := mainRepository(t, filepath.Join(root, "repo"), "[core]\n\tignorecase = true ; folded\n")
++				addLinked(t, commonDir, "lower", filepath.Join(root, "a-wt"), commitA, true)
++				addLinked(t, commonDir, "upper", filepath.Join(root, "B-wt"), commitB, true)
++				return filepath.Join(root, "repo"), []Worktree{
++					{Path: filepath.Join(root, "repo"), Head: commitA, Branch: "refs/heads/main"},
++					{Path: filepath.Join(root, "a-wt"), Head: commitA},
++					{Path: filepath.Join(root, "B-wt"), Head: commitB},
++				}
++			},
++		},
++		{
++			name: "a subdirectory of a linked worktree lists the whole repository",
++			build: func(t *testing.T, root string) (string, []Worktree) {
++				commonDir := mainRepository(t, filepath.Join(root, "repo"), "")
++				addLinked(t, commonDir, "task", filepath.Join(root, "task"), commitB, true)
++				mkdirs(t, filepath.Join(root, "task", "src"))
++				return filepath.Join(root, "task", "src"), []Worktree{
++					{Path: filepath.Join(root, "repo"), Head: commitA, Branch: "refs/heads/main"},
++					{Path: filepath.Join(root, "task"), Head: commitB},
++				}
++			},
++		},
++		{
++			name:         "a symlinked path to the main worktree lists its resolved path",
++			needsSymlink: true,
++			build: func(t *testing.T, root string) (string, []Worktree) {
++				mainRepository(t, filepath.Join(root, "repo"), "")
++				if err := os.Symlink(filepath.Join(root, "repo"), filepath.Join(root, "link")); err != nil {
++					t.Fatalf("symlink: %v", err)
++				}
++				return filepath.Join(root, "link"), []Worktree{
++					{Path: filepath.Join(root, "repo"), Head: commitA, Branch: "refs/heads/main"},
++				}
++			},
++		},
++		{
++			name: "a reftable repository is ErrRefStorage",
++			build: func(t *testing.T, root string) (string, []Worktree) {
++				mainRepository(t, filepath.Join(root, "repo"), "[core]\n\tbare = false\n[extensions]\n\trefStorage = reftable\n")
++				return filepath.Join(root, "repo"), nil
++			},
++			wantErrIs: ErrRefStorage,
++		},
++		{
++			name: "a directory that does not exist is an error with no walk-up",
++			build: func(t *testing.T, root string) (string, []Worktree) {
++				mainRepository(t, filepath.Join(root, "repo"), "")
++				return filepath.Join(root, "repo", "gone"), nil
++			},
++			wantErrIs: fs.ErrNotExist,
++		},
++		{
++			name: "a directory in no repository is ErrNotRepository",
++			build: func(t *testing.T, root string) (string, []Worktree) {
++				mkdirs(t, filepath.Join(root, "plain"))
++				return filepath.Join(root, "plain"), nil
++			},
++			wantErrIs: ErrNotRepository,
++		},
++		{
++			name: "a bare repository is refused",
++			build: func(t *testing.T, root string) (string, []Worktree) {
++				bare := filepath.Join(root, "bare.git")
++				writeFile(t, filepath.Join(bare, "config"), "[core]\n\tbare = true\n")
++				writeFile(t, filepath.Join(bare, "HEAD"), "ref: refs/heads/main\n")
++				mkdirs(t, filepath.Join(bare, "objects"), filepath.Join(bare, "refs"))
++				return bare, nil
++			},
++			wantErrContain: "bare repositories are not supported",
++		},
++	}
++
++	for _, tt := range tests {
++		if tt.needsSymlink && runtime.GOOS == "windows" {
++			continue
++		}
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			root, err := filepath.EvalSymlinks(t.TempDir())
++			if err != nil {
++				t.Fatalf("resolve temp dir: %v", err)
++			}
++			start, want := tt.build(t, root)
++
++			got, err := ListWorktrees(start)
++			switch {
++			case tt.wantErrIs != nil:
++				if !errors.Is(err, tt.wantErrIs) {
++					t.Fatalf("ListWorktrees(%s) error = %v; want %v", start, err, tt.wantErrIs)
++				}
++				return
++			case tt.wantErrContain != "":
++				if err == nil || !strings.Contains(err.Error(), tt.wantErrContain) {
++					t.Fatalf("ListWorktrees(%s) error = %v; want one containing %q", start, err, tt.wantErrContain)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("ListWorktrees(%s): %v", start, err)
++			}
++			if diff := cmp.Diff(want, got); diff != "" {
++				t.Errorf("ListWorktrees(%s) mismatch (-want +got):\n%s", start, diff)
++			}
++		})
++	}
++}
+diff --git a/internal/fabricengine/commit_integration_test.go b/internal/fabricengine/commit_integration_test.go
+index afd9e4f1..3ed91c1f 100644
+--- a/internal/fabricengine/commit_integration_test.go
++++ b/internal/fabricengine/commit_integration_test.go
+@@ -285,7 +285,7 @@ func TestCommit_InvokesPushRecorder(t *testing.T) {
+ 	t.Run("UnresolvablePrimeFailsBeforeCommitting", func(t *testing.T) {
+ 		f, warpPath, _ := fabricengine.NewCommitFixtureForTest(t)
+ 		recorder := fabricengine.SwapPushRecorderForTest(t)
+-		// An anchor naming a subdirectory absent from the worktree makes `git worktree list` fail in the anchor path.
++		// An anchor naming a subdirectory absent from the worktree makes the worktree list read fail in the anchor path.
+ 		writeFabricAnchor(t, warpPath, "absent/subdir")
+ 		headBefore := gitkit.RevParse(t, warpPath, "HEAD")
+ 		fabricengine.WriteWarpFileForTest(t, warpPath, "README", "warp change")
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index c279d1b0..3ac160e7 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -1255,7 +1255,11 @@
+ // The verb-level `RemoteSkippedReason` on `CleanupResult` and `RemoveResult` carries it, not a per-branch error field.
+ // `cleanup` and `remove` therefore give the same verdict for the same configuration.
+ //
+-// `Reconcile` reads `git worktree list` once, before its per-pair loop,
++// `List` reads the worktree list in-process through `internal/dotgit` and starts no git process.
++// `dotgit` refuses a repository whose refs are not files, such as a reftable one,
++// and `List` then parses `git worktree list --porcelain` instead.
++//
++// `Reconcile` reads the worktree list once, before its per-pair loop,
+ // so a concurrent `remove` or `prune` can delete a pair's directory before the loop reaches it.
+ // `ReconcileActionVanishedMidWalk` names that race and sets no `Error`, because nothing failed to reconcile:
+ // the pair stopped existing.
+diff --git a/internal/fabricengine/worktreelist.go b/internal/fabricengine/worktreelist.go
+index aff5f4d9..41246924 100644
+--- a/internal/fabricengine/worktreelist.go
++++ b/internal/fabricengine/worktreelist.go
+@@ -1,12 +1,15 @@
+-// worktreelist.go parses `git worktree list --porcelain` into structured entries for fabric's worktree lookups.
++// worktreelist.go lists a repository's worktrees for fabric's worktree lookups:
++// in-process through dotgit, or from `git worktree list --porcelain` for a repository whose refs are not files.
+ 
+ package fabricengine
+ 
+ import (
++	"errors"
+ 	"fmt"
+ 	"path/filepath"
+ 	"strings"
+ 
++	"github.com/Knatte18/loomyard/internal/dotgit"
+ 	"github.com/Knatte18/loomyard/internal/gitexec"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/weftname"
+@@ -15,7 +18,7 @@ import (
+ // detachedBranch is the branch name recorded for a worktree whose HEAD is detached.
+ const detachedBranch = "(detached)"
+ 
+-// WorktreeEntry represents a single git worktree in the output of `git worktree list`.
++// WorktreeEntry represents a single worktree of a repository, as `git worktree list` reports it.
+ type WorktreeEntry struct {
+ 	Path     string `json:"path"`
+ 	Head     string `json:"head"`
+@@ -24,15 +27,43 @@ type WorktreeEntry struct {
+ 	Prunable bool   `json:"prunable"`
+ }
+ 
+-// List returns every worktree of the repository at sourceDir.
+-// The first block of the porcelain output, the main worktree, is marked Main=true;
+-// all others have Main=false.
++// List returns every worktree of the repository holding sourceDir, an absolute path anywhere inside a worktree.
++// The main worktree comes first with Main=true; all others have Main=false.
++// It reads the repository's files and starts no git process.
++// A repository whose refs are not files is the exception: it lists through `git worktree list --porcelain`.
++// A sourceDir that does not exist, a bare repository and a directory in no repository are errors.
+ func List(sourceDir string) ([]WorktreeEntry, error) {
+-	stdout, err := gitexec.Run([]string{"worktree", "list", "--porcelain"}, sourceDir)
++	worktrees, err := dotgit.ListWorktrees(sourceDir)
++	if errors.Is(err, dotgit.ErrRefStorage) {
++		return listFromPorcelain(sourceDir)
++	}
+ 	if err != nil {
+ 		return nil, fmt.Errorf("list git worktrees in %q: %w", sourceDir, err)
+ 	}
+ 
++	entries := make([]WorktreeEntry, len(worktrees))
++	for i, worktree := range worktrees {
++		branch := detachedBranch
++		if worktree.Branch != "" {
++			branch = strings.TrimPrefix(worktree.Branch, "refs/heads/")
++		}
++		entries[i] = WorktreeEntry{
++			Path:     worktree.Path,
++			Head:     worktree.Head,
++			Branch:   branch,
++			Main:     i == 0,
++			Prunable: worktree.Prunable,
++		}
++	}
++	return entries, nil
++}
++
++// listFromPorcelain lists the worktrees of the repository holding sourceDir through `git worktree list --porcelain`.
++func listFromPorcelain(sourceDir string) ([]WorktreeEntry, error) {
++	stdout, err := gitexec.Run([]string{"worktree", "list", "--porcelain"}, sourceDir)
++	if err != nil {
++		return nil, fmt.Errorf("list git worktrees in %q: %w", sourceDir, err)
++	}
+ 	return parseWorktreePorcelain(stdout)
+ }
+ 
+@@ -135,8 +166,8 @@ func OpenParent(l *lymcwd.Location, parentBranch string) (*Fabric, error) {
+ 	return f, nil
+ }
+ 
+-// PrimeName returns the base name of l's main worktree, the Main entry of `git worktree list --porcelain`.
+-// It runs git on every call, so a caller resolves the name when it needs it.
++// PrimeName returns the base name of l's main worktree, the Main entry List returns.
++// It reads the worktree list on every call, so a caller resolves the name when it needs it.
+ func PrimeName(l *lymcwd.Location) (string, error) {
+ 	entries, err := List(l.AnchorPath())
+ 	if err != nil {
+diff --git a/internal/fabricengine/worktreelist_test.go b/internal/fabricengine/worktreelist_test.go
+index 72203143..145a7aab 100644
+--- a/internal/fabricengine/worktreelist_test.go
++++ b/internal/fabricengine/worktreelist_test.go
+@@ -1,15 +1,20 @@
+-// worktreelist_test.go covers the porcelain worktree-list parser.
+-// It covers the bare-repo rejection and the Main-on-first-entry behavior.
++// worktreelist_test.go covers List: the Main-on-first-entry behavior and prunable entries.
++// It also covers the bare-repo rejection and the errors.
++// It covers the read with no git process beside the porcelain fallback for a reftable repository.
+ 
+ package fabricengine_test
+ 
+ import (
++	"errors"
+ 	"fmt"
++	"io/fs"
+ 	"os"
+ 	"path/filepath"
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/google/go-cmp/cmp"
++
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+@@ -160,30 +165,118 @@ func TestList_ParsesPrunable(t *testing.T) {
+ 	}
+ }
+ 
+-// TestList_NotAGitRepo asserts that List fails on a directory outside any git repository.
+-// The error carries local context (the source directory and git's exit code) and git's own explanation.
+-// The local context says where the failure happened, and git's own explanation says why.
++// TestList_Errors asserts that List fails on two directories.
++// One is outside any repository, and one does not exist inside one.
++// The error names the source directory and why.
+ //
+-//testtiming:keep List outside any git repository failing with both the local context and git's own explanation; coverage of its blocks by other tests does not show an assertion of this
+-func TestList_NotAGitRepo(t *testing.T) {
++//testtiming:keep List failing with the source directory and the reason in its error; coverage of its blocks by other tests does not show an assertion of this
++func TestList_Errors(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	notARepo := t.TempDir()
+-
+-	entries, err := fabricengine.List(notARepo)
+-	if err == nil {
+-		t.Fatalf("List(%q) error = nil; want error (not a git repository)", notARepo)
++	tests := []struct {
++		name string
++		// sourceDir returns the directory List is given.
++		sourceDir func(t *testing.T) string
++		// wantReason is the error text naming why, empty when wantErrIs names it.
++		wantReason string
++		wantErrIs  error
++	}{
++		{
++			name:       "OutsideAnyRepository",
++			sourceDir:  func(t *testing.T) string { return t.TempDir() },
++			wantReason: "not a git repository",
++		},
++		{
++			name: "MissingDirectoryInsideARepository",
++			sourceDir: func(t *testing.T) string {
++				repo := t.TempDir()
++				gitkit.Git(t, repo, "init")
++				return filepath.Join(repo, "gone")
++			},
++			wantErrIs: fs.ErrNotExist,
++		},
+ 	}
+-	wantSubstr := fmt.Sprintf("%q", notARepo)
+-	if !strings.Contains(err.Error(), wantSubstr) {
+-		t.Errorf("List(%q) error = %q; want substring %q (source dir)", notARepo, err.Error(), wantSubstr)
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			sourceDir := tt.sourceDir(t)
++
++			entries, err := fabricengine.List(sourceDir)
++			if err == nil {
++				t.Fatalf("List(%q) error = nil; want an error", sourceDir)
++			}
++			if want := fmt.Sprintf("%q", sourceDir); !strings.Contains(err.Error(), want) {
++				t.Errorf("List(%q) error = %q; want substring %q", sourceDir, err.Error(), want)
++			}
++			if tt.wantReason != "" && !strings.Contains(err.Error(), tt.wantReason) {
++				t.Errorf("List(%q) error = %q; want substring %q", sourceDir, err.Error(), tt.wantReason)
++			}
++			if tt.wantErrIs != nil && !errors.Is(err, tt.wantErrIs) {
++				t.Errorf("List(%q) error = %v; want one wrapping %v", sourceDir, err, tt.wantErrIs)
++			}
++			if entries != nil {
++				t.Errorf("List(%q) entries = %v; want nil", sourceDir, entries)
++			}
++		})
+ 	}
+-	if !strings.Contains(err.Error(), "not a git repository") {
+-		t.Errorf("List(%q) error = %q; want git's own explanation included, not just an exit code",
+-			notARepo, err.Error())
++}
++
++// TestList_RefStorage lists a repository with one linked worktree from its root and from a subdirectory.
++// A files-backed repository is read with no git on PATH, so List starts no git process;
++// a reftable repository is listed through `git worktree list --porcelain`.
++// It runs serially: the files-backed row empties PATH, which is process-global.
++func TestList_RefStorage(t *testing.T) {
++	tiergate.Require(t, 1)
++
++	tests := []struct {
++		name string
++		// initArgs are the `git init` arguments that create the repository.
++		initArgs []string
++		// noGit empties PATH before List runs.
++		noGit bool
++		// minimumGit is the oldest git that can create the repository, empty for any.
++		minimumGit string
++	}{
++		{name: "FilesBackendStartsNoGit", initArgs: []string{"init"}, noGit: true},
++		{name: "ReftableBackendFallsBackToGit", initArgs: []string{"init", "--ref-format=reftable"}, minimumGit: "2.45"},
+ 	}
+-	if entries != nil {
+-		t.Errorf("List(%q) entries = %v; want nil", notARepo, entries)
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			if tt.minimumGit != "" {
++				gitkit.SkipBelowGitVersion(t, tt.minimumGit, "git init --ref-format=reftable")
++			}
++			root, err := filepath.EvalSymlinks(t.TempDir())
++			if err != nil {
++				t.Fatalf("resolve temp dir: %v", err)
++			}
++			repo := filepath.Join(root, "repo")
++			gitkit.Git(t, root, append(tt.initArgs, repo)...)
++			head := gitkit.CommitFile(t, repo, "a.txt", "one", "first")
++			branch := gitkit.CurrentBranch(t, repo)
++			side := filepath.Join(root, "side")
++			gitkit.Git(t, repo, "worktree", "add", "-b", "side", side)
++			subdirectory := filepath.Join(side, "sub")
++			if err := os.MkdirAll(subdirectory, 0o755); err != nil {
++				t.Fatalf("mkdir %s: %v", subdirectory, err)
++			}
++			if tt.noGit {
++				t.Setenv("PATH", "")
++			}
++
++			want := []fabricengine.WorktreeEntry{
++				{Path: repo, Head: head, Branch: branch, Main: true},
++				{Path: side, Head: head, Branch: "side"},
++			}
++			for _, sourceDir := range []string{repo, subdirectory} {
++				got, err := fabricengine.List(sourceDir)
++				if err != nil {
++					t.Fatalf("List(%q) error = %v; want nil", sourceDir, err)
++				}
++				if diff := cmp.Diff(want, got); diff != "" {
++					t.Errorf("List(%q) mismatch (-want +got):\n%s", sourceDir, diff)
++				}
++			}
++		})
+ 	}
+ }
+diff --git a/internal/gitkit/query.go b/internal/gitkit/query.go
+index d54b5897..eca03d83 100644
+--- a/internal/gitkit/query.go
++++ b/internal/gitkit/query.go
+@@ -122,6 +122,46 @@ func CommitFileOnBranch(tb testing.TB, dir, branch, rel, content, msg string) st
+ 	return CommitFile(tb, dir, rel, content, msg)
+ }
+ 
++// SkipBelowGitVersion skips tb when the git on PATH is older than minimum, a dotted version such as "2.48".
++// The skip names the version found, minimum and needs, the feature that wants it.
++func SkipBelowGitVersion(tb testing.TB, minimum, needs string) {
++	tb.Helper()
++
++	found := parseGitVersion(Git(tb, tb.TempDir(), "version"))
++	if compareDottedVersions(found, minimum) < 0 {
++		tb.Skipf("git %s is below %s, which %s needs", found, minimum, needs)
++	}
++}
++
++// parseGitVersion returns the dotted numeric version in `git version` output, without any vendor suffix.
++// "git version 2.47.1.windows.1" yields "2.47.1" and "git version 2.39.5 (Apple Git-154)" yields "2.39.5".
++func parseGitVersion(output string) string {
++	found := strings.TrimPrefix(strings.TrimSpace(output), "git version ")
++	if end := strings.IndexFunc(found, func(r rune) bool { return r != '.' && (r < '0' || r > '9') }); end >= 0 {
++		found = found[:end]
++	}
++	return strings.TrimRight(found, ".")
++}
++
++// compareDottedVersions compares two dotted numeric versions component by component, a missing component counting as 0.
++func compareDottedVersions(a, b string) int {
++	as, bs := strings.Split(a, "."), strings.Split(b, ".")
++	for i := range max(len(as), len(bs)) {
++		if diff := dottedComponent(as, i) - dottedComponent(bs, i); diff != 0 {
++			return diff
++		}
++	}
++	return 0
++}
++
++func dottedComponent(parts []string, i int) int {
++	if i >= len(parts) {
++		return 0
++	}
++	n, _ := strconv.Atoi(parts[i])
++	return n
++}
++
+ // nonBlankLines splits s into lines and drops the blank ones.
+ func nonBlankLines(s string) []string {
+ 	var lines []string
+diff --git a/internal/gitkit/query_test.go b/internal/gitkit/query_test.go
+new file mode 100644
+index 00000000..eb0ecb40
+--- /dev/null
++++ b/internal/gitkit/query_test.go
+@@ -0,0 +1,40 @@
++// query_test.go covers the git version parsing behind SkipBelowGitVersion.
++
++package gitkit
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestGitVersionGate(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name        string
++		output      string
++		wantVersion string
++		minimum     string
++		wantBelow   bool
++	}{
++		{"Plain", "git version 2.53.0\n", "2.53.0", "2.48", false},
++		{"WindowsSuffix", "git version 2.47.1.windows.1\n", "2.47.1", "2.48", true},
++		{"AppleSuffix", "git version 2.39.5 (Apple Git-154)\n", "2.39.5", "2.48", true},
++		{"ExactMinimum", "git version 2.48.0\n", "2.48.0", "2.48", false},
++		{"NumericNotLexical", "git version 2.100.0\n", "2.100.0", "2.48", false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got := parseGitVersion(tt.output)
++			if got != tt.wantVersion {
++				t.Errorf("parseGitVersion(%q) = %q; want %q", tt.output, got, tt.wantVersion)
++			}
++			if below := compareDottedVersions(got, tt.minimum) < 0; below != tt.wantBelow {
++				t.Errorf("compareDottedVersions(%q, %q) < 0 = %t; want %t", got, tt.minimum, below, tt.wantBelow)
++			}
++		})
++	}
++}
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index ffdee33d..7ee18912 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -1195,6 +1195,8 @@
+ // commit existence and ancestry, ignore rules, linked worktrees and blobs.
+ // Geometry.Git carries it, and nil means the real repository,
+ // so no production caller sets it and the helpers in gitwrap.go stay the one place webster runs git.
++// The linked-worktree read goes through internal/dotgit.
++// It runs git only for a repository whose refs are not files, such as a reftable one.
+ // A test that asserts on webster's own records, warnings and verdicts sets a fake and spawns nothing;
+ // a test whose behavior is git itself builds a real scratch repository under the `integration` tag.
+ // Such behavior includes merge commits, ignore rules, blobs and the verify gate.
+diff --git a/internal/websterengine/gitwrap.go b/internal/websterengine/gitwrap.go
+index 479744ab..8a5db185 100644
+--- a/internal/websterengine/gitwrap.go
++++ b/internal/websterengine/gitwrap.go
+@@ -1,6 +1,7 @@
+ // gitwrap.go holds webster's git queries: HEAD, merge-state, parent-merge and suspect-path checks.
+ // Helpers here go through gitrepo.Repo, except dirty and the probes gitrepo has no method for.
+ // Those wrap the checked gitexec.Run directly, and they stay in this file so no other webster file runs git.
++// The worktree list is read through dotgit, and through git only for a repository whose refs are not files.
+ 
+ package websterengine
+ 
+@@ -12,6 +13,7 @@ import (
+ 	"sort"
+ 	"strings"
+ 
++	"github.com/Knatte18/loomyard/internal/dotgit"
+ 	"github.com/Knatte18/loomyard/internal/gitexec"
+ 	"github.com/Knatte18/loomyard/internal/gitrepo"
+ )
+@@ -325,17 +327,13 @@ func otherWorktrees(worktree string) ([]string, error) {
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	stdout, err := gitexec.Run([]string{"worktree", "list", "--porcelain"}, worktree)
++	roots, err := worktreeRoots(worktree)
+ 	if err != nil {
+-		return nil, fmt.Errorf("websterengine: list worktrees of %s: %w", worktree, err)
++		return nil, err
+ 	}
+ 	var others []string
+-	for _, line := range strings.Split(stdout, "\n") {
+-		path, ok := strings.CutPrefix(strings.TrimRight(line, "\r"), "worktree ")
+-		if !ok {
+-			continue
+-		}
+-		canon, err := canonicalPath(path)
++	for _, root := range roots {
++		canon, err := canonicalPath(root)
+ 		if err != nil {
+ 			return nil, err
+ 		}
+@@ -346,6 +344,38 @@ func otherWorktrees(worktree string) ([]string, error) {
+ 	return others, nil
+ }
+ 
++// worktreeRoots returns the root of every worktree of worktree's repository, read in-process with no git process.
++// A repository whose refs are not files is read from `git worktree list --porcelain` instead.
++func worktreeRoots(worktree string) ([]string, error) {
++	worktrees, err := dotgit.ListWorktrees(worktree)
++	if errors.Is(err, dotgit.ErrRefStorage) {
++		return porcelainWorktreeRoots(worktree)
++	}
++	if err != nil {
++		return nil, fmt.Errorf("websterengine: list worktrees of %s: %w", worktree, err)
++	}
++	roots := make([]string, len(worktrees))
++	for i, listed := range worktrees {
++		roots[i] = listed.Path
++	}
++	return roots, nil
++}
++
++// porcelainWorktreeRoots returns the path of each `worktree` line of `git worktree list --porcelain` run in worktree.
++func porcelainWorktreeRoots(worktree string) ([]string, error) {
++	stdout, err := gitexec.Run([]string{"worktree", "list", "--porcelain"}, worktree)
++	if err != nil {
++		return nil, fmt.Errorf("websterengine: list worktrees of %s: %w", worktree, err)
++	}
++	var roots []string
++	for _, line := range strings.Split(stdout, "\n") {
++		if path, ok := strings.CutPrefix(strings.TrimRight(line, "\r"), "worktree "); ok {
++			roots = append(roots, path)
++		}
++	}
++	return roots, nil
++}
++
+ // worktreePathDiffers reports whether path differs from base in worktree: a changed tracked file or an untracked new one.
+ // `git diff --quiet` exits 1 to answer "differs", so that exit is the answer rather than an error;
+ // any other nonzero exit is a failure.
+diff --git a/internal/websterengine/gitwrap_test.go b/internal/websterengine/gitwrap_test.go
+index 9585e956..f41a4236 100644
+--- a/internal/websterengine/gitwrap_test.go
++++ b/internal/websterengine/gitwrap_test.go
+@@ -34,11 +34,64 @@ func gitwrapNewScratchRepo(t *testing.T) string {
+ 	return dir
+ }
+ 
++// TestOtherWorktrees names, from either side of a worktree pair, the one other worktree of the repository.
++// A files-backed repository is read with no git on PATH, so the read starts no git process;
++// a reftable repository is read through `git worktree list --porcelain`.
++// It runs serially: the files-backed row empties PATH, which is process-global.
++func TestOtherWorktrees(t *testing.T) {
++	tiergate.Require(t, 1)
++
++	tests := []struct {
++		name string
++		// initArgs are the `git init` arguments that create the repository.
++		initArgs []string
++		// noGit empties PATH before the read.
++		noGit bool
++		// minimumGit is the oldest git that can create the repository, empty for any.
++		minimumGit string
++	}{
++		{name: "files backend read with no git process", initArgs: []string{"init"}, noGit: true},
++		{name: "reftable backend falls back to git", initArgs: []string{"init", "--ref-format=reftable"}, minimumGit: "2.45"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			if tt.minimumGit != "" {
++				gitkit.SkipBelowGitVersion(t, tt.minimumGit, "git init --ref-format=reftable")
++			}
++			dir := t.TempDir()
++			gitkit.Git(t, dir, tt.initArgs...)
++			gitkit.CommitFile(t, dir, "a.txt", "one", "first")
++			added := filepath.Join(t.TempDir(), "added")
++			gitkit.Git(t, dir, "worktree", "add", added)
++			mainCanon, err := canonicalPath(dir)
++			if err != nil {
++				t.Fatal(err)
++			}
++			addedCanon, err := canonicalPath(added)
++			if err != nil {
++				t.Fatal(err)
++			}
++			if tt.noGit {
++				t.Setenv("PATH", "")
++			}
++
++			for _, side := range []struct{ from, want string }{{dir, addedCanon}, {added, mainCanon}} {
++				got, err := otherWorktrees(side.from)
++				if err != nil {
++					t.Fatalf("otherWorktrees(%s): %v", side.from, err)
++				}
++				if !slices.Equal(got, []string{side.want}) {
++					t.Errorf("otherWorktrees(%s) = %v; want [%s]", side.from, got, side.want)
++				}
++			}
++		})
++	}
++}
++
+ // TestRepositoryProbes walks one scratch repository through the real-git probes:
+-// headSHA returns the commit just made; dirty is false on a clean tree and true once an untracked file appears;
+-// otherWorktrees names, from either side, the one other worktree of the repository.
++// headSHA returns the commit just made; dirty is false on a clean tree and true once an untracked file appears.
+ //
+-//testtiming:keep pins the real-git head, dirty and worktree-list probes' own return values, an untracked file counting as dirty, and both sides of a worktree pair; the covering verb tests observe them only through verb outcomes
++//testtiming:keep pins the real-git head and dirty probes' own return values and an untracked file counting as dirty; the covering verb tests observe them only through verb outcomes
+ func TestRepositoryProbes(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+@@ -66,28 +119,6 @@ func TestRepositoryProbes(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("otherWorktrees names the other side", func(t *testing.T) {
+-		added := filepath.Join(t.TempDir(), "added")
+-		gitkit.Git(t, dir, "worktree", "add", added)
+-		mainCanon, err := canonicalPath(dir)
+-		if err != nil {
+-			t.Fatal(err)
+-		}
+-		addedCanon, err := canonicalPath(added)
+-		if err != nil {
+-			t.Fatal(err)
+-		}
+-		for _, side := range []struct{ from, want string }{{dir, addedCanon}, {added, mainCanon}} {
+-			got, err := otherWorktrees(side.from)
+-			if err != nil {
+-				t.Fatalf("otherWorktrees(%s): %v", side.from, err)
+-			}
+-			if len(got) != 1 || got[0] != side.want {
+-				t.Errorf("otherWorktrees(%s) = %v; want [%s]", side.from, got, side.want)
+-			}
+-		}
+-	})
+-
+ 	t.Run("commitsNamedBy matches commit object names only", func(t *testing.T) {
+ 		blob := strings.TrimSpace(gitkit.Git(t, dir, "rev-parse", "HEAD:a.txt"))
+ 		for _, tt := range []struct {
+diff --git a/pattern/PATTERN-leaf-packages.md b/pattern/PATTERN-leaf-packages.md
+index 8c0b94b6..e3b571a3 100644
+--- a/pattern/PATTERN-leaf-packages.md
++++ b/pattern/PATTERN-leaf-packages.md
+@@ -100,7 +100,12 @@ It spawns no process: each caller runs `journalctl` itself and wraps the clause
+ 
+ Imports only the standard library.
+ It is the sole `.git` parser: git dir, common dir, the repository test and the walk-up to a worktree root.
++It also parses a repository's worktree list:
++each `worktrees/<id>/` entry's `gitdir`, `HEAD` and `locked` files,
++the loose refs and `packed-refs` a `HEAD` resolves through,
++and the `core.bare`, `core.ignorecase`, `extensions.refStorage` and `extensions.objectFormat` settings of its `config`.
+ It parses in-process and spawns nothing.
++A repository whose ref storage is not `files` is refused with a named error, and its callers ask git instead.
+ It is its own package because `gitrepo`'s in-package test imports `gitkit`, which reaches `lymcwd`.
+ A `lymcwd` import of `gitrepo` would therefore close a cycle.
+ 
