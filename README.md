@@ -84,13 +84,19 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Ready (1)
+#### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Bench tier 1 with {test_targets} switched on** | [`test-targets-bench`](design-test-targets-bench.md) | darn · docs | Worktree-Create | neve | 0m<br>0m | gate, testkit |
+
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Bench tier 1 with {test_targets} switched on** | [`test-targets-bench`](design-test-targets-bench.md) | darn · docs |  | 0m<br>0m | gate, testkit |
+_None._
 
 ### Notes (17)
 
