@@ -1,8 +1,6 @@
 # worktree list read in-process through internal/dotgit
 
-`dotgit-worktree-reader` · Task · enhancement, fabric, testkit, git · running · Describe
-
-Decision record: [Sketch](decision-dotgit-worktree-reader.md)
+`dotgit-worktree-reader` · Task · enhancement, fabric, testkit, git · running · PR-Review
 
 Filed from the Sketch `fabric-test-speed`.
 

@@ -2,8 +2,6 @@
 
 `fabric-test-folds` · Task · enhancement, fabric, testkit, git
 
-Decision record: [Sketch](decision-fabric-test-folds.md)
-
 Depends on: [`dotgit-worktree-reader`](design-dotgit-worktree-reader.md)
 
 Filed from the Sketch `fabric-test-speed`.

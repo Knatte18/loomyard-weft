@@ -2,8 +2,6 @@
 
 `hubforge-slim-copy` · Task · enhancement, fabric, testkit, git
 
-Decision record: [Sketch](decision-hubforge-slim-copy.md)
-
 Depends on: [`hubforge-registered-templates`](design-hubforge-registered-templates.md)
 
 Filed from the Sketch `fabric-test-speed`.
