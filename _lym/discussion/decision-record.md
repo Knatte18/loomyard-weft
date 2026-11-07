@@ -60,6 +60,12 @@ Decision: Operator, 2026-11-07: the campaign's goal is wider than stale comments
 
 Rationale: The operator's point with this run was prose that follows the skills; the entry's body named only stale comments, and all 502 workers so far loaded no skill.
 
+### Added after Discussion (parent, 2026-11-07): Three skills, not five
+
+Decision: Operator, 2026-11-07: this corrects 'Goal: all docstrings and doc files follow the five scribe skills'. Only the skills that dictate prose, docstrings and doc.go files are needed: scribe:prose, scribe:golang-comments and scribe:code-quality. scribe:testing and scribe:golang-testing are not loaded. The rest of that decision stands. The operator talks to this run directly.
+
+Rationale: The operator narrowed the list to the skills that govern this text.
+
 ## Constraints
 
 ## Auto-mode assumptions
