@@ -1,6 +1,6 @@
 # internal/hubreconcile fixtures onto registered templates and CopyHub, with the held-lock test at tier 0
 
-`hubreconcile-templates` · Task · enhancement, fabric, testkit, git · running · Drift-Verify
+`hubreconcile-templates` · Task · enhancement, fabric, testkit, git · running · Code-Bouncer
 
 Decision record: [Sketch](decision-hubreconcile-templates.md)
 
