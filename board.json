@@ -467,23 +467,6 @@
       "project": "codex-engine-trial"
     },
     {
-      "id": 1173,
-      "handle": "R3",
-      "slug": "creel-cross-hub-trial",
-      "title": "Trial creel mail across hubs",
-      "kind": "note",
-      "labels": [
-        "research"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A darn docs run in which the loomyard orch drives a run in lyt from start to landing through creel alone",
-      "body": "A darn `docs` run in which the loomyard orch drives a run in `lyt` from start to landing through creel alone, with the operator doing nothing, recording the result under `docs/research/`.\n\nSetup before the first cross-hub post:\n\n- `trusted_hubs: [ly]` in the `creel` config of `lyt` and of `cs`, set by the operator in those hubs.\n- A deployed binary carrying creel-cross-hub-build.\n- A restart, right after the deploy, of every session of the machine's hubs launched before it. Until a session restarts, an orch strand of another hub reaches it under the old trust sentence.",
-      "created": "2026-11-06T11:57:40Z",
-      "revised": "2026-11-06T11:57:40Z"
-    },
-    {
       "id": 1177,
       "handle": "T6",
       "slug": "codex-skill-load-false-missing",
