@@ -636,6 +636,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: hubforge-registered-templates' registration\nDelivers: beamHub built by a registration, and newBadReedUpFixture's base, the hub with the corrupted reed line and the pair, as a template with each site's seed run on its copy\nExports: nothing\n\nThe part changes these packages:\n\n- internal/loomcli (about 80 changed lines)\n",
+      "status": "running · Worktree-Create",
       "created": "2026-11-07T14:15:14Z",
       "revised": "2026-11-07T14:15:14Z",
       "profile": "light",
@@ -804,6 +805,25 @@
       "profile": "docs",
       "project": "fabric-test-speed-work",
       "discussed": true
+    },
+    {
+      "id": 1216,
+      "handle": "E1",
+      "slug": "claude-settings-model-effort",
+      "title": "Model and effort defaults on the claude-settings heddle target",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "claude",
+        "config"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (board tidy and orch, 2026-11-07)\n\nHeddle's `claude-settings` target (`72390eb3`) renders `.claude/settings.local.json` in every hub worktree, and left model and effort defaults to be added to it later.\n`agent-skills-and-effort` (running when this note was written) builds effort per role and subagent from `agents.yaml`; its scope was not widened to the new target.\n\n## Wanted\n\n- Once `agent-skills-and-effort` lands, decide whether the machine-wide model and effort defaults belong as entries on the `claude-settings` target, beside or in place of what `agents.yaml` sets, so one source holds each value.\n- Planned to follow that landing; the operator agreed on 2026-11-07 to take it as its own entry rather than in the running task.\n",
+      "created": "2026-11-07T14:57:36Z",
+      "revised": "2026-11-07T14:57:36Z"
     }
   ],
   "prime_owner": "neve",

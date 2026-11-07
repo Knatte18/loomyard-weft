@@ -34,7 +34,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | `draft` **Raddle releases the tasks it files, chains shared-package parts against the record order, and shows no dependencies** | [`raddle-order-and-deps-table`](design-raddle-order-and-deps-table.md) | darn · light |  | 43m<br>40m | loom, stencil |
 
-## Notes (18)
+## Notes (19)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -46,10 +46,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>1d | loom, stencil |
 | R7 |  | **Re-measure the batching hook once its transcript wait has landed**<br>• Count firings against edit follows and lookup chains again, now that the hook waits for its call to reach the transcript | [`batching-hook-remeasure-wait`](design-batching-hook-remeasure-wait.md) | 2h<br>2h | claude, shuttle |
 
-### Enhancements (4)
+### Enhancements (5)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
+| E1 |  | **Model and effort defaults on the claude-settings heddle target** | [`claude-settings-model-effort`](design-claude-settings-model-effort.md) | 0m<br>0m | claude, config |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 10d<br>1d | batten, stencil, config |
 | E4 |  | **trusted_hubs lists shortnames, which neither say which repository is meant nor identify it**<br>• List trusted hubs by full repository name instead of shortname | [`creel-trust-by-repo-name`](design-creel-trust-by-repo-name.md) | 6h<br>6h | creel |
 | E7 |  | **Each part agent plans and builds its own part, instead of joining the parts into one plan** | [`parts-plan-and-build`](design-parts-plan-and-build.md) | 4d<br>1d | loom |
