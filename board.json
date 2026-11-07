@@ -443,7 +443,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator and orch, 2026-11-07)\n\n`e25dcf34` renders `HEDDLE.md` beside `heddle.json` in the Bolt checkout, but only when `lym heddle set` or `lym heddle remove` writes the store, or heddle's Bolt replayer replays one.\nThis hub had no heddle write after the landing, so it has no `HEDDLE.md`; `lym heddle render` writes only the worktree's file targets and does not render it.\n`HEDDLE.md` also lists the shipped entries, which change with a lym update while `heddle.json` stays as it is, so an existing file goes stale with no heddle write to renew it.\n\n## Wanted\n\n- A hub whose `HEDDLE.md` is missing, or no longer matches what heddle holds, gets it rendered and committed with no hand step: after the landing of this change, and after a lym update that changes the shipped entries.\n  Find the hook that already runs at such a time, such as the landing deploy, the config reconcile or the Bolt sync, and render it there under the Bolt write lock; a render that would write identical bytes commits nothing.\n- `lym heddle set` and `lym heddle remove` keep rendering it as today.\n",
-      "status": "running · PR-Review",
+      "status": "running · Finalize",
       "created": "2026-11-07T17:05:01Z",
       "revised": "2026-11-07T17:05:01Z",
       "profile": "light"

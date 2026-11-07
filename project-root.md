@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **HEDDLE.md is rendered when missing or stale, not only on a heddle write** | [`heddle-md-initial-render`](design-heddle-md-initial-render.md) | darn · light | PR-Review | neve | 20m<br>20m | heddle |
+| T2 | **HEDDLE.md is rendered when missing or stale, not only on a heddle write** | [`heddle-md-initial-render`](design-heddle-md-initial-render.md) | darn · light | Finalize | neve | 20m<br>20m | heddle |
 
 ### Ready (0)
 
