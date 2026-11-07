@@ -27,6 +27,9 @@
 
 ## Open for the Discussion
 
+- Socket Mode and one shared app: Slack allows about ten open Socket Mode connections per app and hands each event to one of them, not to all, so with relays for several hubs or machines open at once an event can reach a relay that does not own its channel.
+  The Discussion checks this against Slack's documentation and settles the route: one connection per machine that serves every hub there and forwards events to the right hub, one app per machine, or another way; the operator wants no polling wait and low CPU and network use when idle (operator, 2026-11-07).
+
 - The channel name scheme: hub, orch (prime or beam slug), and whether the machine is part of it, which it must be when one hub runs on two machines at once, each with its own prime orch.
   The operator wants each repository's channels apart from the others, and under one repository each machine's apart (operator, 2026-11-07).
   A bot cannot set up a user's sidebar sections, so the names do the grouping: repository first, then machine, then orch, such as `ly-neve-prime`, so the alphabetical sort keeps them together.
