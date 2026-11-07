@@ -1,6 +1,6 @@
 # Registered hub templates in hubforge, built once per test binary
 
-`hubforge-registered-templates` · Task · enhancement, fabric, testkit, git · running · Code-Bouncer
+`hubforge-registered-templates` · Task · enhancement, fabric, testkit, git · running · Drift-Recheck
 
 Decision record: [Sketch](decision-hubforge-registered-templates.md)
 

@@ -72,7 +72,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Registered hub templates in hubforge, built once per test binary** | [`hubforge-registered-templates`](design-hubforge-registered-templates.md)<br>[Sketch](decision-hubforge-registered-templates.md) | darn · solid | Code-Bouncer | neve | 33m<br>33m | fabric, testkit, git |
+| T5 | **Registered hub templates in hubforge, built once per test binary** | [`hubforge-registered-templates`](design-hubforge-registered-templates.md)<br>[Sketch](decision-hubforge-registered-templates.md) | darn · solid | Drift-Recheck | neve | 33m<br>33m | fabric, testkit, git |
 | T9 | **worktree list read in-process through internal/dotgit** | [`dotgit-worktree-reader`](design-dotgit-worktree-reader.md)<br>[Sketch](decision-dotgit-worktree-reader.md) | darn · solid | Finalize | neve | 33m<br>33m | fabric, testkit, git |
 
 #### Ready (0)
@@ -158,7 +158,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Raddle releases the tasks it files, chains shared-package parts against the record order, and shows no dependencies** | [`raddle-order-and-deps-table`](design-raddle-order-and-deps-table.md) | darn · light |  | 33m<br>31m | loom, stencil |
+| T4 | `draft` **Raddle releases the tasks it files, chains shared-package parts against the record order, and shows no dependencies** | [`raddle-order-and-deps-table`](design-raddle-order-and-deps-table.md) | darn · light |  | 34m<br>31m | loom, stencil |
 
 ### Notes (18)
 
