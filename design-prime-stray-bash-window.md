@@ -1,6 +1,6 @@
 # A stray bash window appeared in the prime reed session at a prime bring-up
 
-`prime-stray-bash-window` · Note · bug, reed, orch
+`prime-stray-bash-window` · Task · bug, reed, orch · draft
 
 ## Seen (operator and orch, 2026-11-05)
 
@@ -9,6 +9,8 @@ Its shell started at 16:17:38 UTC; the prime overview `beam: prime` (`%1985`) an
 No trace log under `.lym/logs` names the pane; a hand `prefix c` in tmux would give the same window, so the cause is not settled.
 The orch closed it on the operator's word.
 
-## Idea
+## Wanted
 
-Find which path opens a window with no command at a prime bring-up or a relaunch of the overview or orch, such as a `new-window` before a `respawn-pane` that a race or failure leaves behind, and have reed close or reuse it; a reconcile could also close any unbound plain-shell window other than the shell window.
+- Find the path that can leave a window with no command at a prime bring-up or at a relaunch of the overview or the orch, such as a `new-window` before a `respawn-pane` that a race or failure leaves behind, and fix it there.
+- Reed closes or reuses only windows it opened itself; a window the operator opened by hand stays.
+- If no such path exists in the code, the run says so in its landing and adds a trace line naming every window reed opens in the prime, so a recurrence shows its source.
