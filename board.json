@@ -513,7 +513,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: newRecordsFixture, the adoptcli hubforge.NewHub sites, post-checkout.sh and hook.go's chainedHookPreamble\nDelivers: hubforge.CopyHub of the same anchor at each site whose test is not about the clone or wiring, and shell parameter expansion in the hook and chain wrapper, falling back to . when $0 holds no slash\nExports: nothing\n\nThe part changes these packages:\n\n- internal/fabricengine (about 25 changed lines)\n- internal/adoptcli (about 15 changed lines)\n",
-      "status": "running · Worktree-Create",
+      "status": "running · Seed-Child",
       "created": "2026-11-07T14:15:14Z",
       "revised": "2026-11-07T14:15:14Z",
       "profile": "light",
