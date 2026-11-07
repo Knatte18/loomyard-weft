@@ -1,6 +1,6 @@
 # Registered hub templates in hubforge, built once per test binary
 
-`hubforge-registered-templates` · Task · enhancement, fabric, testkit, git · running · Drift-Await
+`hubforge-registered-templates` · Task · enhancement, fabric, testkit, git · running · Darn-Write
 
 Filed from the Sketch `fabric-test-speed`.
 

@@ -1,6 +1,6 @@
 # P3 Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes
 
-Rendered 2026-11-07 14:15 UTC; every age below is as of then.
+Rendered 2026-11-07 14:16 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`fabric-test-speed-work`](design-fabric-test-speed-work.md) · Age 0m · Owner `neve`
@@ -20,8 +20,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Registered hub templates in hubforge, built once per test binary** | [`hubforge-registered-templates`](design-hubforge-registered-templates.md)<br>[Sketch](decision-hubforge-registered-templates.md) | darn · solid | Drift-Await | neve | 0m<br>0m | fabric, testkit, git |
-| T9 | **worktree list read in-process through internal/dotgit** | [`dotgit-worktree-reader`](design-dotgit-worktree-reader.md)<br>[Sketch](decision-dotgit-worktree-reader.md) | darn · solid | Record-Write | neve | 0m<br>0m | fabric, testkit, git |
+| T5 | **Registered hub templates in hubforge, built once per test binary** | [`hubforge-registered-templates`](design-hubforge-registered-templates.md)<br>[Sketch](decision-hubforge-registered-templates.md) | darn · solid | Darn-Write | neve | 0m<br>0m | fabric, testkit, git |
+| T9 | **worktree list read in-process through internal/dotgit** | [`dotgit-worktree-reader`](design-dotgit-worktree-reader.md)<br>[Sketch](decision-dotgit-worktree-reader.md) | darn · solid | Drift-Await | neve | 0m<br>0m | fabric, testkit, git |
 
 ### Ready (0)
 
