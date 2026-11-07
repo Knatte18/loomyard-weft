@@ -712,7 +712,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `fabric-test-speed`.\n\nTakes: today's fixtures and the report's section 4 rows with their alone-pins column\nDelivers: TestVerbCases_CleanState's preconditions in runCell, and the TestAnchorChange, TestStoreHousekeeping, TestReconcileOrigin_Moves, TestPushFailureClasses and TestBolt_PullThenCommitWritten folds, each commit naming the assertions its folded row alone made\nExports: nothing\n\nThe part changes these packages:\n\n- internal/fabricengine (about 500 changed lines)\n",
-      "status": "running · Open-Window",
+      "status": "running · Seed-IDE",
       "created": "2026-11-07T14:15:14Z",
       "revised": "2026-11-07T14:15:14Z",
       "profile": "light",
