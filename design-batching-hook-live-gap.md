@@ -1,6 +1,6 @@
 # Batching hook fires on replay but almost never live
 
-`batching-hook-live-gap` · Note · bug, tools, claude
+`batching-hook-live-gap` · Task · bug, tools, claude · draft
 
 ## Seen
 
