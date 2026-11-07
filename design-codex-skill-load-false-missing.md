@@ -1,6 +1,6 @@
 # A Codex seat that read its skills is logged as not having loaded them
 
-`codex-skill-load-false-missing` · Task · bug, shuttle, codex · running · Drift-Verify
+`codex-skill-load-false-missing` · Task · bug, shuttle, codex · running · Code-Bouncer
 
 ## Seen
 
