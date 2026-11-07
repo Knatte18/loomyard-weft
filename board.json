@@ -735,6 +735,27 @@
       "body": "## Seen\n\nThe operator (2026-11-07): after `lym fabric clone`, heddle's files are not rendered in the prime worktree, while a worktree that fabric adds gets them.\n\nIn code the clone does tell heddle: `internal/fabriccli/clone.go` calls `fabricengine.NotifyWorktreeMade(l)` for the prime right after `WireJunctionsWith`, and `heddleengine.Seam.Made` renders every target.\nTwo things differ from the add path, which calls it last in `Topology.add`:\n\n- The clone fires it before `configsync.ReconcileAll` writes the per-worktree module configs and before their commit, so a render that reads config may find none yet.\n- The clone discards the warning text `NotifyWorktreeMade` returns, so a failed render shows only in the log at Warn and the operator is never told; the add path's handling is not checked.\n\nWhich of the two, or what else, leaves the prime unrendered is not confirmed; the clone's log holds the seam warning if the render failed.\n\n## Wanted\n\nA `lym fabric clone` leaves the prime with heddle's files rendered, as a worktree fabric adds has them.\nA failed render on clone is printed with its way forward, `lym heddle render` in the prime, not only logged.\n",
       "created": "2026-11-07T11:57:26Z",
       "revised": "2026-11-07T11:57:26Z"
+    },
+    {
+      "id": 1191,
+      "handle": "B11",
+      "slug": "comment-cleanup-leftovers",
+      "title": "Defects the comment cleanup found but left: stale headings, dead helper, stencil paths, joint edits",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "config",
+        "cwd",
+        "stencil",
+        "docs"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nThe `comment-cleanup` landing (`f7465bd8`, 2026-11-07) edited comments and prose only, and lists what its workers found but left:\n\n- Stale headings in the `configengine` doc.\n- `lymcwd.ResolveWithAnchor` has no non-test caller.\n- Stencil paths under `{{.specs_dir}}/loom/` name no existing folder.\n- Comment claims kept as written because a worker could not confirm them against the code.\n- Boundary fragments where two workers' spans met.\n- Files edited by more than one worker at once, among them tests in `cmd/lym`, `internal/adoptcli` and `internal/websterengine/render.go`; the commit asks a reviewer to read their diffs whole.\n\n## Idea\n\nOne darn run settles the list: fix the stale headings and stencil paths, remove `ResolveWithAnchor` or give it its caller, confirm or correct each kept claim, and read the jointly edited files whole for broken or doubled comments.\nThe commit body of `f7465bd8` names where each was found.\n",
+      "created": "2026-11-07T11:58:20Z",
+      "revised": "2026-11-07T11:58:20Z"
     }
   ],
   "prime_owner": "neve",
