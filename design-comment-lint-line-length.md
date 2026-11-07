@@ -1,6 +1,6 @@
 # Comment lint: enforce scribe:prose line-length rule on // comment lines
 
-`comment-lint-line-length` · Task · enhancement, loom · running · Drift-Baseline
+`comment-lint-line-length` · Task · enhancement, loom · running · Drift-Await
 
 Depends on: [`comment-cleanup`](design-comment-cleanup.md)
 
