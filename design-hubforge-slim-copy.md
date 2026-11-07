@@ -1,6 +1,6 @@
 # A slimmer hubforge.CopyHub: packed templates, no walk per copy, two-process binding fold
 
-`hubforge-slim-copy` · Task · enhancement, fabric, testkit, git · running · Code-Bouncer
+`hubforge-slim-copy` · Task · enhancement, fabric, testkit, git · running · Code-Burler-Review
 
 Decision record: [Sketch](decision-hubforge-slim-copy.md)
 
