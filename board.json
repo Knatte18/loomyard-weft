@@ -603,7 +603,7 @@
       "isolated": false,
       "brief": "Made fires before the config reconcile and its warning is dropped",
       "body": "## Seen\n\nThe operator (2026-11-07): after `lym fabric clone`, heddle's files are not rendered in the prime worktree, while a worktree that fabric adds gets them.\n\nIn code the clone does tell heddle: `internal/fabriccli/clone.go` calls `fabricengine.NotifyWorktreeMade(l)` for the prime right after `WireJunctionsWith`, and `heddleengine.Seam.Made` renders every target.\nTwo things differ from the add path, which calls it last in `Topology.add`:\n\n- The clone fires it before `configsync.ReconcileAll` writes the per-worktree module configs and before their commit, so a render that reads config may find none yet.\n- The clone discards the warning text `NotifyWorktreeMade` returns, so a failed render shows only in the log at Warn and the operator is never told; the add path's handling is not checked.\n\nWhich of the two, or what else, leaves the prime unrendered is not confirmed; the clone's log holds the seam warning if the render failed.\n\n## Wanted\n\nA `lym fabric clone` leaves the prime with heddle's files rendered, as a worktree fabric adds has them.\nA failed render on clone is printed with its way forward, `lym heddle render` in the prime, not only logged.\n",
-      "status": "running · Drift-Recheck",
+      "status": "running · Describe",
       "created": "2026-11-07T11:57:26Z",
       "revised": "2026-11-07T12:03:45Z",
       "profile": "light"
@@ -624,29 +624,10 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nThe landing of `skill-load-timeout-sends-prompt` (`23518a94`) holds a session whose skill-load turn the API failed, instead of typing its prompt.\nNothing was run by hand and no regression check ran; its commit lists two checks left open:\n\n- `hold-behaviors-lack-pinning-rows`: whether the rows of `TestStartup_LoadTurnAPIError` in `internal/shuttleengine/startup_test.go` pin every hold behavior: back-off doubling and ceiling, busy session, turn start during the back-off, dying pane, failed send, notice once and none when interactive, notifier failure, model rejected, open turn at the deadline, interrupted turn.\n- `open-load-turn-skips-and-types-prompt`: whether `loadSkillTurn` in `internal/shuttleengine/loadturn.go` neither skips its skills nor lets the prompt be typed for an open load turn past the timeout, and whether that test pins it.\n\n## Idea\n\nRead the two against the code and add a row for any behavior left unpinned; no real launch is needed for these two.\n",
-      "status": "running · Drift-Await",
+      "status": "running · Darn-Write",
       "created": "2026-11-07T11:58:20Z",
       "revised": "2026-11-07T12:50:13Z",
       "profile": "light"
-    },
-    {
-      "id": 1193,
-      "handle": "R5",
-      "slug": "python-guard-live-unchecked",
-      "title": "The Python guard's new refusal text was never seen in a real session",
-      "kind": "note",
-      "labels": [
-        "research",
-        "shuttle",
-        "claude"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nThe landing of `python-guard-gives-no-reason` (`b002ca9a`) states in the refusal and in the appended system prompt why Python is refused and how to lift it.\nOnly tests and the settings golden file cover the wording; no real lym-spawned session was run to see the refusal and the system prompt read as intended.\n\n## Idea\n\nIn the sandbox hub `lyt`, open one lym-spawned session, have it try `python3 --version`, and record the refusal it gets and the system prompt line it carries.\n",
-      "created": "2026-11-07T11:58:20Z",
-      "revised": "2026-11-07T11:58:20Z"
     },
     {
       "id": 1194,
