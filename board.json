@@ -619,6 +619,25 @@
       "body": "## Seen\n\n`trusted_hubs` in `creel.yaml` lists hub shortnames, and `trustedSender` in `internal/creelengine/receive.go` matches the sender's shortname against that list.\nA shortname says little to a reader: `ly`, `cs` and `scr` do not show which repository is trusted.\nIt is also not an identity.\n`creel.yaml` sits in the Bolt, so the list follows the hub to every machine, while shortnames resolve per machine through the machine record.\nA hub on another machine, or a later hub that takes a freed shortname, is trusted by the same line.\nTwo hubs sharing a shortname on one machine are refused, which is safe.\n\n## Idea\n\nList trusted hubs by the repository's full name, such as `Knatte18/loomyard`, read from its origin, and show that name in `lym creel hubs` and in the trust stamp.\nA hub with no remote needs a stated answer.\n\n## Limit\n\nThis makes the list clearer and closes the shortname reuse, but it is no barrier against a process of the same user, which can edit `creel.yaml` directly.\nOnly the closed area in `sandbox-closed-area-build` could give that.\n",
       "created": "2026-11-07T08:38:49Z",
       "revised": "2026-11-07T08:38:49Z"
+    },
+    {
+      "id": 1182,
+      "handle": "B5",
+      "slug": "compact-leading-space",
+      "title": "A session cycle sent /compact with a leading space, so it reached the orch as a plain prompt",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle",
+        "orch"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A space in the input box reads as empty, and the slash command then fails silently",
+      "body": "## Seen\n\nOn 2026-11-07, after the orch note for a context cycle was written, the hub orch's session received ` /compact Keep every run in flight ...` as an ordinary prompt, with a leading space, so Claude Code ran no compact and the cycle did not happen.\n\n`CompactSessionSequence` in `internal/shuttleengine/claudeengine/session.go` builds the text with no leading space and relies on the caller having proved the input box empty.\n`isBlankBoxInterior` in the same file counts whitespace as blank.\nSo a likely cause is a space left in the input box, which reads as empty and sits in front of the pasted text.\nThat is not proved: where the space came from is unknown, and the prompt was seen only in the transcript.\n\n## Why it matters\n\n`/clear` and `/reload-plugins` go the same way, and a slash command with a leading space fails with no error, reaching the agent as a prompt it cannot act on.\n\n## Wanted\n\nFind where the space came from, and have the sequence clear the box first or check that the command ran, so a cycle does not silently fail.\n",
+      "created": "2026-11-07T08:57:16Z",
+      "revised": "2026-11-07T08:57:16Z"
     }
   ],
   "prime_owner": "neve",
