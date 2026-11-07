@@ -1,6 +1,6 @@
 # Claude sessions: a slash command sent with a leading space, and open sessions caching 1h
 
-`claude-session-fixes` · Task · bug, shuttle, claude · running · Describe
+`claude-session-fixes` · Task · bug, shuttle, claude · running · PR-Review
 
 Two bugs in `internal/shuttleengine/claudeengine`, bundled by the operator (2026-11-07).
 
