@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-07 11:31 UTC; every age below is as of then.
+Rendered 2026-11-07 11:35 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -8,32 +8,18 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (3)
+## Tasks (2)
 
 Concrete and claimable; only a task can run.
 
-### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | Finalize | neve | 6d<br>21h | fabric |
-
-### Ready (0)
+### Ready (2)
 
 Waits on nothing open; can start now.
 
-_None._
-
-### Layer A (2)
-
-Waits only on Running, Ready or Draft entries.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Comment lint: enforce scribe:prose line-length rule on // comment lines**<br>• lint-comments enforces the line-length rule scribe:prose sets, once it lands | [`comment-lint-line-length`](design-comment-lint-line-length.md) | darn · light | T4 | 2h<br>27m | loom |
-| T2 | **Drift fails runs on capture noise such as _source.txt that is no part of the results** | [`drift-provenance-stops-runs`](design-drift-provenance-stops-runs.md) | darn · solid | T4 | 28m<br>22m | drift, loom |
+| T1 | **Comment lint: enforce scribe:prose line-length rule on // comment lines**<br>• lint-comments enforces the line-length rule scribe:prose sets, once it lands | [`comment-lint-line-length`](design-comment-lint-line-length.md) | darn · light |  | 2h<br>31m | loom |
+| T2 | **Drift fails runs on capture noise such as _source.txt that is no part of the results** | [`drift-provenance-stops-runs`](design-drift-provenance-stops-runs.md) | darn · solid |  | 33m<br>26m | drift, loom |
 
 ## Notes (30)
 
@@ -89,10 +75,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 2d<br>23h | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 2d<br>2d | batten, board, fabric, workspaces |
 
-## Done (1)
+## Done (2)
 
 Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
 | T3 | **Revise tier 1: what makes it slow, and which tests to change, fold or cut**<br>• Ranked report on tier 1, fabricengine first; tier 2 stays in the gate keys | [`tier1-test-revision`](design-tier1-test-revision.md) | 22h<br>22h | fabric |
+| T4 | **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | 6d<br>21h | fabric |
