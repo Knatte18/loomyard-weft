@@ -638,6 +638,25 @@
       "body": "## Seen\n\nOn 2026-11-07, after the orch note for a context cycle was written, the hub orch's session received ` /compact Keep every run in flight ...` as an ordinary prompt, with a leading space, so Claude Code ran no compact and the cycle did not happen.\n\n`CompactSessionSequence` in `internal/shuttleengine/claudeengine/session.go` builds the text with no leading space and relies on the caller having proved the input box empty.\n`isBlankBoxInterior` in the same file counts whitespace as blank.\nSo a likely cause is a space left in the input box, which reads as empty and sits in front of the pasted text.\nThat is not proved: where the space came from is unknown, and the prompt was seen only in the transcript.\n\n## Why it matters\n\n`/clear` and `/reload-plugins` go the same way, and a slash command with a leading space fails with no error, reaching the agent as a prompt it cannot act on.\n\n## Wanted\n\nFind where the space came from, and have the sequence clear the box first or check that the command ran, so a cycle does not silently fail.\n",
       "created": "2026-11-07T08:57:16Z",
       "revised": "2026-11-07T08:57:16Z"
+    },
+    {
+      "id": 1183,
+      "handle": "B6",
+      "slug": "subagents-skip-language-skills",
+      "title": "Subagents spawned by a writer load no language skills, so their comments miss the scribe rules",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Language skills reach the roles lym starts, not the subagents those roles spawn",
+      "body": "## Seen\n\nThe operator found that many workers in this repository's history did not load the scribe skills, and that many docstrings are poor for it (2026-11-07).\nIn `comment-cleanup`, all 502 subagents so far made no Skill call: neither the worker brief nor the lead brief named a skill.\n`skills` in `internal/languageconfig/template.yaml` loads language skills for the code-writing and code-reviewing roles lym starts, such as the darn writer and the Webster master.\nA subagent such a role spawns through the Agent tool is outside that list, so it gets a skill only if its brief says so.\nWhich earlier workers wrote without the skills, and through which route, is not traced.\n\n## Idea\n\nHave every agent that writes code or comments load the language skills, a spawned subagent included, through the stencils that tell a role to spawn one or through a hook at subagent start.\n\n## Wanted\n\nTrace which roles and subagents wrote without the skills, then close that route.\n",
+      "created": "2026-11-07T09:02:20Z",
+      "revised": "2026-11-07T09:02:20Z"
     }
   ],
   "prime_owner": "neve",
