@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=630a8415af6eaf631c5e29e201a4a4ea62dcf7e1a107cafbc47e8aec52f4d0c8 build=f7465bd86b31478590683d0377771fca4647c425 time=2026-11-07T11:35:39Z -->
+<!-- lym-stencil: sha256=844e3fd30cc3dfa4930b9613a3230aac7715433dd5e77147d193c46c99cea696 build=731004c36999ccbd53fed27065e9e5aa79daa774 time=2026-11-07T16:27:01Z -->
 
 # Raddle proposal-spec — how a Sketch splits into filed entries
 
@@ -28,6 +28,11 @@ The proposal holds these keys:
 - `board_checked` — a list of `{slug, revised}`, one per board entry the agent weighed.
   `revised` is the entry's `revised` stamp in RFC 3339, as `lym board list` prints it.
 - `parts` — a list of parts.
+- `order_departures` — optional, a list of `{parts, record_order, cost}`,
+  one per place the parts' order departs from an order the Sketch's decision record states.
+  `parts` holds the slugs of the parts concerned, `record_order` the order the record states with the decision id that states it,
+  and `cost` what the departure costs, such as a saving that lands later.
+  It is absent or empty when the order follows every order the record states.
 - `cost` — the proposal's cost.
 
 A part holds:
