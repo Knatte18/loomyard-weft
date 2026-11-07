@@ -1,6 +1,6 @@
 # Skills and effort for every role and subagent come from config
 
-`agent-skills-and-effort` · Task · bug, shuttle, stencil, claude, gate, loom · running · Seed-IDE
+`agent-skills-and-effort` · Task · bug, shuttle, stencil, claude, gate, loom · running · Preflight
 
 Depends on: [`machine-claude-defaults`](design-machine-claude-defaults.md)
 
