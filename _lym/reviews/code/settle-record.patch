@@ -1,0 +1,357 @@
+diff --git a/internal/hubforge/doc.go b/internal/hubforge/doc.go
+index 1b9a66ca..7f4a23d8 100644
+--- a/internal/hubforge/doc.go
++++ b/internal/hubforge/doc.go
+@@ -30,6 +30,10 @@
+ // It runs on a goroutine of its own, under a testing.TB that records failures,
+ // and that fails the build on Cleanup, Setenv, TempDir, Chdir, ArtifactDir or a skip.
+ // After the build the board's HEAD must be its branch's tip in the records bare, read from the bare.
++// Every repository of the template is then packed with `git repack -d --cruft` and `git pack-refs --all`.
++// That happens before the fingerprint is taken.
++// A copy therefore copies a few pack files in place of loose objects;
++// no pack and no packed-refs file names a template path.
+ // Each key builds under its own lock, so templates of different keys build at once.
+ // A build that fails fails its caller with the build's error, and every later caller naming the key, without a rebuild.
+ // Two different registrations with one key fail the second caller naming the key.
+@@ -43,7 +47,8 @@
+ // Each link is recreated with its rewritten target.
+ // The copy is verified to name the template root nowhere.
+ // The board's tracked `.lym-warp` binding is among the rewritten files.
+-// A copy therefore amends it into the board's HEAD commit and force-pushes that to the copy's own records bare.
++// A copy therefore amends the board's HEAD commit with that one file and force-pushes it to the copy's own records bare:
++// two git processes, which write the reflog entries of HEAD, the branch and the tracking ref.
+ // That leaves every checkout of the copy clean, as a fresh hub's is.
+ // A link keeps its one-hop target, so a chain of links stays a chain.
+ // A copy's Mutations are the template's, unrewritten.
+@@ -63,11 +68,14 @@
+ // A write is anything that may change a file under the hub.
+ // Writes include a fabric mutating verb, SeedConfig and AddPair.
+ // They also include any run of the lym binary, any in-process CLI verb and any spawned git subcommand.
+-// Both entry points compare the template's fingerprint with the one taken at build time.
++// SharedHub compares the template's fingerprint with the one taken at build time.
+ // The fingerprint is the digest of every regular file's relative path, size and modification time.
+ // A mismatch, or a template already marked poisoned, fails the test naming the fixture.
+ // A SharedHub test's cleanup takes the fingerprint again.
+ // On a change it marks the template poisoned and fails naming the fixture; the blame may land on a parallel sharer.
++// CopyHub and CopyRegistered take no fingerprint and fail only on a template already marked poisoned.
++// A stray write by a SharedHub test therefore reaches the copies taken before its cleanup poisons the template;
++// copies taken after fail.
+ //
+ // Seeding contract: SeedConfig overrides one or more modules' config.
+ // It writes into the anchor-joined h.WeftBase and commits at the weft worktree root h.PrimeRecords().
+diff --git a/internal/hubforge/hub_test.go b/internal/hubforge/hub_test.go
+index 7b53179d..4d6efd7d 100644
+--- a/internal/hubforge/hub_test.go
++++ b/internal/hubforge/hub_test.go
+@@ -520,6 +520,7 @@ func TestNewHub_TeardownSurvivesCorruptHub(t *testing.T) {
+ 
+ // TestCopyHub copies the "." shape with its one pair and asserts the copy is a working hub of its own:
+ // fabric status is clean on its prime, every worktree git lists resolves, and the pair's launcher directory resolves.
++// The board has the relocated binding folded into its HEAD and pushed.
+ // No `_portals` directory exists, and no file or link names the template root.
+ func TestCopyHub(t *testing.T) {
+ 	tiergate.Require(t, 1)
+@@ -538,14 +539,10 @@ func TestCopyHub(t *testing.T) {
+ 	if changes, _ := status.Raw["changes"].([]any); len(changes) != 0 {
+ 		t.Errorf("fabric status changes on the copy = %v; want none", changes)
+ 	}
+-	for _, dir := range []string{h.BoardDir(), h.PrimeRecords()} {
+-		if porcelain := gitkit.Git(t, dir, "status", "--porcelain"); porcelain != "" {
+-			t.Errorf("git status in the copy's %s = %q; want a clean checkout, as a fresh hub's is", dir, porcelain)
+-		}
+-	}
+-	if ahead := gitkit.Git(t, h.BoardDir(), "rev-list", "--count", "@{upstream}..HEAD"); ahead != "0" {
+-		t.Errorf("the copy's board is %s commits ahead of its upstream; want the relocated binding pushed", ahead)
++	if porcelain := gitkit.GitStatusPorcelain(t, h.PrimeRecords()); porcelain != "" {
++		t.Errorf("git status in the copy's %s = %q; want a clean checkout, as a fresh hub's is", h.PrimeRecords(), porcelain)
+ 	}
++	assertBindingFoldedAndPushed(t, h)
+ 
+ 	listing := gitkit.Git(t, h.PrimeWorktree(), "worktree", "list", "--porcelain")
+ 	worktrees := 0
+diff --git a/internal/hubforge/template.go b/internal/hubforge/template.go
+index 9652f1fc..7ffcac32 100644
+--- a/internal/hubforge/template.go
++++ b/internal/hubforge/template.go
+@@ -3,7 +3,9 @@
+ // a shape of the closed Shapes set, or a Registration a test package declares.
+ // CopyHub and CopyRegistered relocate a template into a test's own temp directory.
+ // SharedHub returns a shape's template itself for a test that only reads it.
+-// The fingerprint taken at build time catches a write to a shared template.
++// The build packs every repository of the template, so a copy copies a few pack files.
++// SharedHub compares the fingerprint taken at build time to catch a write to a shared template;
++// a copy checks only whether such a write was already seen.
+ 
+ package hubforge
+ 
+@@ -189,7 +191,7 @@ func buildTemplate(tb testing.TB, registration *Registration) (*hubTemplate, []s
+ 
+ // buildTemplateIn builds registration's template in its own lymtemp root, never from a copy of another template.
+ // It copies the bares, clones the hub, adds the base shape's pairs and runs Build.
+-// It then checks the board against its upstream tip and takes the fingerprint.
++// It then checks the board against its upstream tip, packs every repository and takes the fingerprint.
+ func buildTemplateIn(tb testing.TB, registration *Registration) *hubTemplate {
+ 	tb.Helper()
+ 
+@@ -226,6 +228,7 @@ func buildTemplateIn(tb testing.TB, registration *Registration) *hubTemplate {
+ 		registration.Build(tb, hub)
+ 	}
+ 	requireBoardAtUpstreamTip(tb, hub)
++	packRepositories(tb, root)
+ 
+ 	built, err := fingerprint(root)
+ 	if err != nil {
+@@ -251,6 +254,46 @@ func requireBoardAtUpstreamTip(tb testing.TB, h *Hub) {
+ 	}
+ }
+ 
++// packRepositories packs every repository under root, so it holds no loose object and no loose branch ref.
++// A copy then copies a few pack files in place of the loose objects.
++// No pack and no packed-refs file names a template path, so relocation rewrites neither.
++// Unreachable objects go into a cruft pack: a repack of the reachable ones alone would leave them loose.
++func packRepositories(tb testing.TB, root string) {
++	tb.Helper()
++
++	gitDirs, err := gitDirsUnder(root)
++	if err != nil {
++		tb.Fatalf("find the template's repositories: %v", err)
++	}
++	for _, gitDir := range gitDirs {
++		gitkit.Git(tb, gitDir, "repack", "-d", "--cruft", "--quiet")
++		gitkit.Git(tb, gitDir, "pack-refs", "--all")
++	}
++}
++
++// gitDirsUnder returns every git directory under root, bare or not:
++// a directory holding a HEAD file and an objects directory.
++// It follows no link and does not descend into a git directory it found.
++func gitDirsUnder(root string) ([]string, error) {
++	var gitDirs []string
++	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
++		if err != nil {
++			return err
++		}
++		if !d.IsDir() {
++			return nil
++		}
++		head, headErr := os.Stat(filepath.Join(path, "HEAD"))
++		objects, objectsErr := os.Stat(filepath.Join(path, "objects"))
++		if headErr != nil || objectsErr != nil || !head.Mode().IsRegular() || !objects.IsDir() {
++			return nil
++		}
++		gitDirs = append(gitDirs, path)
++		return filepath.SkipDir
++	})
++	return gitDirs, err
++}
++
+ // templateBuildTB is the testing.TB a template build runs under, on a goroutine of its own.
+ // A failure is recorded instead of reported, and a fatal one ends the build's goroutine.
+ // A call that would tie template state to the calling test, or reach a path outside the template root, fails the build:
+@@ -348,14 +391,21 @@ func (b *templateBuildTB) recordedFailures() []string {
+ 	return append([]string(nil), b.failures...)
+ }
+ 
+-// requireIntact fails tb, naming the fixture, when an earlier write poisoned the template.
+-// It also fails when the tree no longer matches the build-time fingerprint.
+-func (template *hubTemplate) requireIntact(tb testing.TB) {
++// requireUnpoisoned fails tb, naming the fixture, when an earlier write poisoned the template.
++func (template *hubTemplate) requireUnpoisoned(tb testing.TB) {
+ 	tb.Helper()
+ 
+ 	if template.poisoned.Load() {
+ 		tb.Fatalf("hubforge: fixture %q was written to by an earlier test and is poisoned; take CopyHub or CopyRegistered in the test that writes", template.name)
+ 	}
++}
++
++// requireIntact fails tb, naming the fixture, when an earlier write poisoned the template.
++// It also fails, and poisons the template, when the tree no longer matches the build-time fingerprint.
++func (template *hubTemplate) requireIntact(tb testing.TB) {
++	tb.Helper()
++
++	template.requireUnpoisoned(tb)
+ 	current, err := fingerprint(template.root)
+ 	if err != nil {
+ 		tb.Fatalf("hubforge: fixture %q: fingerprint: %v", template.name, err)
+@@ -370,7 +420,8 @@ func (template *hubTemplate) requireIntact(tb testing.TB) {
+ // It is the shape's template relocated into tb's temp directory, with every path inside it rewritten to the copy's.
+ // Every checkout of the copy is clean against its HEAD and upstream, as a fresh hub's is.
+ // A write to the copy touches nothing shared.
+-// It fails tb, naming the fixture, when the template failed to build, is poisoned or changed since it was built.
++// It fails tb, naming the fixture, when the template failed to build or is poisoned.
++// It takes no fingerprint, so a write to the shared template is caught only once its SharedHub test ends.
+ func CopyHub(tb testing.TB, shape Shape) *Hub {
+ 	tb.Helper()
+ 
+@@ -385,7 +436,7 @@ func CopyHub(tb testing.TB, shape Shape) *Hub {
+ // A write to the copy touches nothing shared.
+ // It fails tb, naming the key, when the template failed to build, for this caller or an earlier one.
+ // It also fails when another registration holds the key.
+-// It also fails when the template is poisoned or changed since it was built.
++// It also fails when the template is poisoned.
+ func CopyRegistered(tb testing.TB, registration *Registration) *Hub {
+ 	tb.Helper()
+ 
+@@ -393,11 +444,11 @@ func CopyRegistered(tb testing.TB, registration *Registration) *Hub {
+ }
+ 
+ // copyTemplate relocates template into tb's temp directory and returns the copy's Hub.
+-// It fails tb, naming the fixture, when the template is poisoned or its tree changed since it was built.
++// It fails tb, naming the fixture, when the template is poisoned.
+ func copyTemplate(tb testing.TB, template *hubTemplate) *Hub {
+ 	tb.Helper()
+ 
+-	template.requireIntact(tb)
++	template.requireUnpoisoned(tb)
+ 
+ 	root, err := filepath.EvalSymlinks(tb.TempDir())
+ 	if err != nil {
+@@ -417,11 +468,12 @@ func copyTemplate(tb testing.TB, template *hubTemplate) *Hub {
+ // The committed blob, compressed in the object store, still names the template's warp bare.
+ // Amending the commit leaves the board clean against its HEAD and upstream.
+ // It keeps the board's history as long as the template's.
++// The amend names the binding file, so it stages the file itself.
++// Git writes the reflog entries of HEAD, the branch and the tracking ref as for any commit and push.
+ func commitRelocatedBinding(tb testing.TB, boardDir string) {
+ 	tb.Helper()
+ 
+-	gitkit.Git(tb, boardDir, "add", fabricengine.WarpBindingFileName)
+-	gitkit.Git(tb, boardDir, "commit", "--amend", "--no-edit", "--quiet")
++	gitkit.Git(tb, boardDir, "commit", "--amend", "--no-edit", "--quiet", "--", fabricengine.WarpBindingFileName)
+ 	gitkit.Git(tb, boardDir, "push", "--force", "--quiet", "origin", "HEAD")
+ }
+ 
+diff --git a/internal/hubforge/template_test.go b/internal/hubforge/template_test.go
+index 2086d808..5fbac089 100644
+--- a/internal/hubforge/template_test.go
++++ b/internal/hubforge/template_test.go
+@@ -1,5 +1,5 @@
+ // template_test.go tests registered templates.
+-// It covers concurrent builds by key and what a copy holds.
++// It covers concurrent builds by key, what a copy holds and the packing of a built template.
+ // It also covers the failures a build, its refused TB calls, its upstream tip check and a shared key raise.
+ 
+ package hubforge
+@@ -97,12 +97,14 @@ var buildStateRegistration = &Registration{
+ }
+ 
+ // TestCopyRegistered_CopyHoldsTheBuildAndIsolatesWrites asserts that a copy holds the build's commit and every pair.
++// Its board's history is as long as the template's, with the relocated binding folded into its HEAD and pushed.
+ // It writes and pushes into that copy, and asserts the template is unchanged and a later copy holds none of the write.
+ func TestCopyRegistered_CopyHoldsTheBuildAndIsolatesWrites(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+ 	h := CopyRegistered(t, buildStateRegistration)
++	template := templateFor(t, buildStateRegistration)
+ 
+ 	if got, err := os.ReadFile(filepath.Join(h.BoardDir(), "built.txt")); err != nil || string(got) != "built\n" {
+ 		t.Errorf("the copy's board built.txt = %q, %v; want %q", got, err, "built\n")
+@@ -110,9 +112,11 @@ func TestCopyRegistered_CopyHoldsTheBuildAndIsolatesWrites(t *testing.T) {
+ 	if subjects := gitkit.Git(t, h.BoardDir(), "log", "--format=%s"); !strings.Contains(subjects, "hubforge test: build commit") {
+ 		t.Errorf("the copy's board log = %q; want the build's commit in it", subjects)
+ 	}
+-	if ahead := gitkit.RevListCount(t, h.BoardDir(), "@{upstream}..HEAD"); ahead != 0 {
+-		t.Errorf("the copy's board is %d commits ahead of its upstream; want 0", ahead)
++	copyHistory := gitkit.RevListCount(t, h.BoardDir(), "HEAD")
++	if built := gitkit.RevListCount(t, template.hub.BoardDir(), "HEAD"); copyHistory != built {
++		t.Errorf("the copy's board history holds %d commits; want the template's %d", copyHistory, built)
+ 	}
++	assertBindingFoldedAndPushed(t, h)
+ 	for _, slug := range []string{TemplatePairSlug, buildStateSlug} {
+ 		if _, err := os.Stat(h.PairCodeWorktree(slug)); err != nil {
+ 			t.Errorf("pair %s's code worktree in the copy: %v", slug, err)
+@@ -125,7 +129,6 @@ func TestCopyRegistered_CopyHoldsTheBuildAndIsolatesWrites(t *testing.T) {
+ 	gitkit.CommitFile(t, h.BoardDir(), "written.txt", "written\n", "hubforge test: write to the copy")
+ 	gitkit.Git(t, h.BoardDir(), "push", "--quiet", "origin", "HEAD")
+ 
+-	template := templateFor(t, buildStateRegistration)
+ 	if current, err := fingerprint(template.root); err != nil || current != template.fingerprint {
+ 		t.Errorf("the template's fingerprint after a write to its copy = %s, %v; want the build-time %s", current, err, template.fingerprint)
+ 	}
+@@ -135,6 +138,85 @@ func TestCopyRegistered_CopyHoldsTheBuildAndIsolatesWrites(t *testing.T) {
+ 	}
+ }
+ 
++// assertBindingFoldedAndPushed asserts that the copy's board is clean and its HEAD is its upstream.
++// The HEAD is also its branch's tip in the copy's records bare, and the tracking ref's newest reflog entry names it.
++func assertBindingFoldedAndPushed(t *testing.T, h *Hub) {
++	t.Helper()
++
++	board := h.BoardDir()
++	if porcelain := gitkit.GitStatusPorcelain(t, board); porcelain != "" {
++		t.Errorf("git status in the copy's board = %q; want a clean checkout, as a fresh hub's is", porcelain)
++	}
++	head := gitkit.RevParse(t, board, "HEAD")
++	if upstream := gitkit.RevParse(t, board, "@{upstream}"); upstream != head {
++		t.Errorf("the copy's board upstream = %s; want its HEAD %s, with the relocated binding pushed", upstream, head)
++	}
++	branch := gitkit.CurrentBranch(t, board)
++	if tip := gitkit.RevParse(t, h.RecordsBare, "refs/heads/"+branch); tip != head {
++		t.Errorf("the tip of %s in the copy's records bare = %s; want the board's HEAD %s", branch, tip, head)
++	}
++	trackingRef := gitkit.Git(t, board, "rev-parse", "--symbolic-full-name", "@{upstream}")
++	if newest := gitkit.Git(t, board, "reflog", "show", "-n", "1", "--format=%H", trackingRef); newest != head {
++		t.Errorf("the newest reflog entry of %s = %q; want the board's HEAD %s", trackingRef, newest, head)
++	}
++}
++
++// TestSharedHub_PackedTemplateHoldsNoLooseObject takes a shape's template no other test takes.
++// It asserts that the SharedHub sees no change since the build,
++// and that no repository of the template holds a loose object or a loose branch ref.
++func TestSharedHub_PackedTemplateHoldsNoLooseObject(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	shape := Shape{Anchor: "backend", Pairs: []string{TemplatePairSlug}}
++	SharedHub(t, shape)
++	root := templateFor(t, shapeRegistration(t, shape)).root
++
++	repositories := 0
++	var loose, looseRefs []string
++	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
++		if err != nil {
++			return err
++		}
++		relative, err := filepath.Rel(root, path)
++		if err != nil {
++			return err
++		}
++		slashed := "/" + filepath.ToSlash(relative)
++		isBranchRef := strings.Contains(slashed, "/refs/heads/") || strings.Contains(slashed, "/refs/remotes/")
++		isRemoteHead := strings.Contains(slashed, "/refs/remotes/") && d.Name() == "HEAD"
++		// A remote's HEAD is a symbolic ref, which stays loose after pack-refs.
++		if d.Type().IsRegular() && isBranchRef && !isRemoteHead && !strings.Contains(slashed, "/logs/refs/") {
++			looseRefs = append(looseRefs, path)
++		}
++		parent := filepath.Dir(path)
++		if d.IsDir() && d.Name() == "objects" {
++			if _, err := os.Stat(filepath.Join(parent, "HEAD")); err == nil {
++				repositories++
++			}
++			return nil
++		}
++		fanout := filepath.Base(parent)
++		isFanout := len(fanout) == 2 && strings.Trim(fanout, "0123456789abcdef") == ""
++		if d.Type().IsRegular() && isFanout && filepath.Base(filepath.Dir(parent)) == "objects" {
++			loose = append(loose, path)
++		}
++		return nil
++	})
++	if err != nil {
++		t.Fatalf("walk the template %s: %v", root, err)
++	}
++	if repositories == 0 {
++		t.Fatalf("found no repository under the template %s; want its bares and clones", root)
++	}
++	if len(loose) != 0 {
++		t.Errorf("loose objects in the template = %v; want every object packed at build time", loose)
++	}
++	if len(looseRefs) != 0 {
++		t.Errorf("loose branch refs in the template = %v; want every ref packed at build time", looseRefs)
++	}
++}
++
+ // failingBuild is a registration whose build fails, with the count of its builds.
+ type failingBuild struct {
+ 	name         string
