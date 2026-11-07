@@ -735,6 +735,25 @@
       "body": "## Seen\n\nThe operator (2026-11-07) wants lym to set up, on the machine it runs on, the Claude Code settings lym needs to work as the operator wants:\n\n1. No Claude co-author or session link in commits and pull requests; LoomYard has its own credit lines.\n2. Model defaults that match lym's own, so no session or subagent runs at an effort lym did not choose, such as `xhigh`.\n\nToday lym writes no `.claude/settings.json` into any worktree.\nIt writes a settings document per session and passes it with `--settings` (`internal/shuttleengine/claudeengine/settings.go`), and every such document already sets `attribution` to empty commit and pull-request texts (`780b1db4`), for run sessions and sessions opened in a hub alike.\nA checked-in `.claude/settings.json` is the repository's own, which is why another machine's repositories differ.\nA Claude session not started by lym, or lym sessions on a machine running an older lym, get none of this.\n\n`~/.claude/settings.json` sets `effortLevel` per model under `modelSettings`, yet subagents with no `effort` ran at `xhigh` in `comment-cleanup`; whether a setting reaches a subagent's default is what `agent-skills-and-effort` checks.\n\n## Idea\n\n- Lym sessions: keep everything in the per-session settings document, which reaches every session lym launches without writing a file into the user's repository; add the model and effort defaults from lym's config there.\n- Sessions outside lym: a lym verb the operator runs on a machine, such as `lym setup claude`, writes the same keys into `~/.claude/settings.json`, showing the diff and asking first; lym never edits the user's global settings unasked.\n",
       "created": "2026-11-07T12:11:05Z",
       "revised": "2026-11-07T12:11:05Z"
+    },
+    {
+      "id": 1197,
+      "handle": "R7",
+      "slug": "batching-hook-remeasure-wait",
+      "title": "Re-measure the batching hook once its transcript wait has landed",
+      "kind": "note",
+      "labels": [
+        "research",
+        "claude",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Count firings against edit follows and lookup chains again, now that the hook waits for its call to reach the transcript",
+      "body": "## Seen\n\nThe report `docs/research/turns/batching-hook-remeasure-2026-11-05` found the hook fired on 2 of 156 edit follows, while a replay of a recorded one fired. Task `batching-hook-live-gap` traced the gap: Claude Code writes a message to the transcript only after its calls start, so the hook of a fast Read, Grep, Glob or Edit call read a transcript that did not hold its own message yet. The hook now waits for the call, up to two seconds.\n\n## Idea\n\nRun the scripts of that report again over the runs landed after the fix: firings by breach and by tool, firings against breach turns, and the next message batched. Decide from those figures whether to keep the hook or remove it as the report recommended. Also price what the wait adds per call above `context_tokens`.",
+      "created": "2026-11-07T12:11:06Z",
+      "revised": "2026-11-07T12:11:06Z"
     }
   ],
   "prime_owner": "neve",

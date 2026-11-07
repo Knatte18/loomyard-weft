@@ -39,11 +39,11 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T8 | `draft` **Skills and effort for every role and subagent come from config**<br>• Skills per role in config, gate fixer included; subagents load fitting skills; every effort explicit | [`agent-skills-and-effort`](design-agent-skills-and-effort.md) | darn · solid | T3<br>T5 | 3h<br>6m | shuttle, stencil, claude, gate, loom |
 
-## Notes (25)
+## Notes (26)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Research (5)
+### Research (6)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -52,6 +52,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R4 |  | **The skill-load hold landed with two checks by hand left open** | [`skill-load-hold-unchecked`](design-skill-load-hold-unchecked.md) | 12m<br>12m | shuttle |
 | R5 |  | **The Python guard's new refusal text was never seen in a real session** | [`python-guard-live-unchecked`](design-python-guard-live-unchecked.md) | 12m<br>12m | shuttle, claude |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>1d | loom, stencil |
+| R7 |  | **Re-measure the batching hook once its transcript wait has landed**<br>• Count firings against edit follows and lookup chains again, now that the hook waits for its call to reach the transcript | [`batching-hook-remeasure-wait`](design-batching-hook-remeasure-wait.md) | 0m<br>0m | claude, shuttle |
 
 ### Bugs (1)
 
