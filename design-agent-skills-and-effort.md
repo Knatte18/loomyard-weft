@@ -2,7 +2,7 @@
 
 `agent-skills-and-effort` · Task · bug, shuttle, stencil, claude, gate, loom · draft
 
-Depends on: [`claude-session-fixes`](design-claude-session-fixes.md), [`comment-cleanup-leftovers`](design-comment-cleanup-leftovers.md), [`machine-claude-defaults`](design-machine-claude-defaults.md)
+Depends on: [`claude-session-fixes`](design-claude-session-fixes.md), [`machine-claude-defaults`](design-machine-claude-defaults.md)
 
 Three bugs bundled by the operator (2026-11-07): which skills and which effort an agent runs with is decided in lym's config, for every role lym starts and for every subagent such a role spawns.
 
