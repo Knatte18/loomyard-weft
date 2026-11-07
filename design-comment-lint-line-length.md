@@ -16,4 +16,5 @@ A finding fails the gate as the existing break findings do.
 Where the skill's rule cannot be checked mechanically, check the part that can and state the rest in the package's `doc.go`.
 
 Requested by the `comment-cleanup` writer on the operator's word (2026-11-07).
-Release only after `comment-cleanup` has landed and Scribe's rule is deployed.
+Scribe's rule landed as `6f061ba8f4bc` and is deployed (2026-11-07); read it from `scribe:prose`, under "Line breaks".
+Release only after `comment-cleanup` has landed.
