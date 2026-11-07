@@ -29,6 +29,12 @@ Decision: Scope is widened (operator, 2026-11-07): every heddle write also rende
 
 Rationale: The operator wants to read in one place everything heddle sets, the Claude settings included, without reading heddle.json or the binary's shipped entries.
 
+### Added after Discussion (parent, 2026-11-07): Only the effort default is rendered
+
+Decision: Review finding F1 of round 1: the heddle file renders the effort default from agents.yaml and no model default. agents.yaml holds no model key, and this run adds none; the board entry's 'model and effort defaults' rested on a false premise. No follow-up is filed for a model key.
+
+Rationale: Lym sets each role's model through its own model spec at launch, and a session the operator starts by hand keeps the model the operator picks, so a hub-wide model default has no caller that needs it.
+
 ## Constraints
 
 ## Auto-mode assumptions
