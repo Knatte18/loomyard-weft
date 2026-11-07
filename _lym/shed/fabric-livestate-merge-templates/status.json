@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -159,6 +159,21 @@
       "output": "",
       "at": "2026-11-07T16:36:45Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/fabric-livestate-merge-templates/_lym/landing/summary.md",
+      "at": "2026-11-07T16:37:11Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-07T16:37:10.902700005Z",
+          "end": "2026-11-07T16:37:10.902734669Z"
+        }
+      ]
     }
   ],
   "product": {
