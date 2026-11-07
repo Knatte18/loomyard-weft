@@ -1,6 +1,6 @@
 # Raddle releases the tasks it files, chains shared-package parts against the record order, and shows no dependencies
 
-`raddle-order-and-deps-table` · Task · bug, loom, stencil · running · PR-Review
+`raddle-order-and-deps-table` · Task · bug, loom, stencil · running · Finalize
 
 ## Seen (operator and orch, 2026-11-07, raddle of `fabric-test-speed`)
 
