@@ -1,6 +1,6 @@
 # Comment lint: bound a // comment line to 120 characters of text
 
-`comment-lint-line-length` · Note · enhancement, loom
+`comment-lint-line-length` · Task · enhancement, loom · draft
 
 ## Seen
 
