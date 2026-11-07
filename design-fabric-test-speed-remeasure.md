@@ -1,6 +1,6 @@
 # Re-measure tier 1 and internal/fabricengine after the fabric test speed tasks land
 
-`fabric-test-speed-remeasure` · Task · research, fabric, testkit, git · running · Darn-Write
+`fabric-test-speed-remeasure` · Task · research, fabric, testkit, git · running · Drift-Verify
 
 Decision record: [Sketch](decision-fabric-test-speed-remeasure.md)
 
