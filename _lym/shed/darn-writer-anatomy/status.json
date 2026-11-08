@@ -1,13 +1,13 @@
 {
   "current_producer": "Friction-Reflect",
-  "state": "failed",
-  "error": "shedverbs: step Friction-Reflect interrupted (loop-exited); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lym shed step darn-writer-anatomy --until-stop",
+  "state": "running",
+  "error": "",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Friction-Reflect",
     "last": "Finalize → done",
-    "wait": "shedverbs: step Friction-Reflect interrupted (loop-exited); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lym shed step darn-writer-anatomy --until-stop"
+    "wait": ""
   },
   "history": [
     {
