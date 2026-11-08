@@ -1,40 +1,28 @@
-# Gate Go runs use -count=1, so go test writes no test logs to the cache
+# Gate: run go test with -count=1 so the cache stops filling with logs
 
-## Why
+Gate runs of `go test` filled `~/.cache/go-build` with hundreds of GB of test logs a day; the cache on neve reached about 750 GB.
+With test caching on, Go logs every environment variable a test reads and every file it opens or stats, to judge whether a cached result still holds.
+lym's tests build whole hubs with git repositories under fresh random temp directories, so one log reaches about 700 MB and no cached result is ever reused.
+The gate already carries a green record over an unchanged tree, so the test result cache adds nothing to gate runs.
 
-With test caching on, `go test` keeps a log beside each cached result.
-The log lists every environment variable the test read and every file it opened or stat'ed.
-lym's tests build whole hubs and git repositories under fresh temp directories, so one log reaches hundreds of MB.
-Gate runs wrote 60 to 275 GB of them a day into `~/.cache/go-build`.
-The temp directories get new names every run, so no cached result is ever reused,
-and the gate's own green record already carries a pass over an unchanged tree.
+Every tier command and every non-tier slot holder's child now gets `-count=1` first in its GOFLAGS.
+`go test` then neither reads nor writes its test result cache, so it writes no test log.
+The build cache is untouched, and `-trimpath` still lets a fresh worktree reuse it.
+No hub config changes and no reconcile of existing tier commands is needed.
 
-## What changes
+## Design decisions
 
-- `gateslot.TestCacheOffFlag` (`-count=1`) is the flag that turns the test result cache off.
-  `gateslot.WithTestCacheOff` returns an environment whose single GOFLAGS entry opens with it,
-  followed by the value the child would otherwise have seen.
-- `runTier` in `internal/gatecli/tierrun.go` runs every tier command under `WithTestCacheOff`.
-  That covers each tier, the guard step and the vet step.
-- `gateslot.HolderEnv` puts the flag first in the GOFLAGS of every non-tier slot holder's child:
-  card-verify lines, drift steps, `cmd/testtiming` and planglyph's `go list` loads.
-- The flag goes first, so a hub's own `-count` in a tier's GOFLAGS, or `-- -count=N` on the call, still wins.
-- No hub config or reconcile is needed, and the build cache is untouched.
-  `go build`, `go vet` and `go list` ignore a GOFLAGS flag they do not define.
-- The `-trimpath` note keeps naming the GOFLAGS the hub and environment set, without the added flag.
-- The package docs of `gateslot` and `gatecli` now say a fresh worktree reuses the build cache, not the test cache.
-  `gatecli`'s doc gains a "Test result cache" section.
+- `gateslot.TestCacheOffFlag` holds the flag, and `gateslot.WithTestCacheOff` puts it ahead of an environment's last GOFLAGS entry.
+  The result holds one GOFLAGS entry, and the input slice is left as it was.
+  The GOFLAGS key match is case-insensitive, as in `HolderEnv`.
+- `runTier` in `internal/gatecli` applies `WithTestCacheOff` to the environment of every tier invocation.
+- `gateslot.HolderEnv` now orders GOFLAGS as `-count=1`, the base's value, `-p=<n>`, `-trimpath`.
+  `internal/planglyph`'s `loadEnv` takes this through `HolderEnv`, so its `go list` loads carry the flag too.
+- The flag comes first on purpose: a hub's own `-count` in GOFLAGS, or one in the words after `--`, still wins.
+- The `gatecli` and `gateslot` docs now say a fresh worktree reuses the build cache, not "the build and test cache".
+  `gatecli` gains a "Test result cache" section.
 
-## Confirming it writes no test log
+## To check by hand
 
-In the Go 1.26 toolchain source, `cmd/go/internal/test/testflag.go` injects a GOFLAGS `-count` as `-test.count=1`.
-`test.go` then finds `-test.count` outside its cacheable flag list and sets `disableCache`,
-and it passes `-test.testlogfile` to the test binary only when `disableCache` is false,
-so a run under the gate's GOFLAGS writes no test log.
-
-## Tests
-
-- `TestLeaseEnv` in `internal/gateslot/pool_test.go` pins the new `HolderEnv` GOFLAGS values.
-  It also gains `WithTestCacheOff` rows: no GOFLAGS, the last of several entries winning, and an empty value.
-- The gatecli integration tests that read the stand-in's GOFLAGS now expect `-count=1 -trimpath -p=3`.
-- planglyph's `loadEnv` integration test now expects `-count=1 -mod=readonly -p=3 -trimpath`.
+- Confirm with one real run that `-count=1` writes no test log: after a `lym gate test` run, no new large `*-d` file appears under `~/.cache/go-build`.
+  That run was not made.
