@@ -1,13 +1,14 @@
-<!-- This is the PR-Review session's entire instruction set. It is shipped as an embedded
-     default in the top-level stencils package (stencils/stencils.go), seeded to
-     the Bolt checkout's `_lym/stencils/landing/`, and read from there at call time through internal/stencilstore,
-     which landingshed's PR-Review row fills and hands to shuttle as the session's first prompt, for the tapestry, darn, pawl and sampler recipes alike.
-     Every marker below is a top-level {{.X}} substitution and stencil.FillWith requires every marker non-empty:
-     slug, pr_url, task_worktree, task_branch, parent_branch, description_path, run_material (the paths the run has among the decision record and the plan directory, one per line),
+<!-- This is the PR-Review session's entire instruction set.
+     It ships as an embedded default in contracts/stencils/stencils.go,
+     is seeded to the Bolt checkout's `_lym/stencils/landing/`, and is read from there at call time through internal/stencilstore.
+     landingshed's PR-Review row fills it and hands it to shuttle as the session's first prompt, for every recipe alike.
+     Every marker below is a top-level {{.X}} substitution, and stencil.FillWith requires every marker non-empty:
+     slug, pr_url, task_worktree, task_branch, parent_branch, description_path,
+     run_material (the paths the run has among the decision record and the plan directory, one per line),
      drift_verdict (the regression check's section, or a line saying none ran),
-     parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective).
+     parent_directive (rendered by internal/parentdirective) and edit_directive (rendered by internal/editdirective).
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=b8364c0db828c44a1ea1d2d53813f4f544645ac97ab0d4924dbaab3ed5e478df build=8ef911f736ffa194364ad8c86c65c78211cafd3b time=2026-11-04T13:39:27Z -->
+lym-stencil: sha256=04a01f371462272225c50682128cb881a9c97008f6f0421ed9a64d9d0430008c build=639e4fab72574405a035dff301755716a83bc608 time=2026-11-08T16:52:23Z -->
 
 # PR-Review — discuss the pull request with the operator
 
@@ -45,6 +46,15 @@ Answer from it, and never ask the operator to run a regression compare it settle
 - Never push, and never approve, merge, close or reopen the pull request; your settings deny them too.
 
 The run ends on the pull request's state, not on this session, so after each answer you wait for the operator's next message.
+
+## Your parent's review
+
+Your parent orch may review the pull request.
+lym asks it on its own when the hub or the task turns `pr_review_ask_parent` on;
+otherwise ask it only when the operator asks you to, with `lym creel post --parent --expect-reply`, naming the pull request.
+Its answer arrives as creel mail: either that it is satisfied, or its findings.
+Fix the findings as you would the operator's requests, commit, and tell the operator in this pane what you changed.
+Then ask your parent to look again with `lym creel post --parent --expect-reply`, naming your commits, until it is satisfied.
 
 ## The operator's ending
 
