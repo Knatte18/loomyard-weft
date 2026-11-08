@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (2)
+### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -20,14 +20,13 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **A test binary pinned as a tmux job re-runs its own suite and fork-bombs the machine**<br>• Guard every command lym pins from os.Executable so a test binary is never launched by tmux | [`test-binary-fork-guard`](design-test-binary-fork-guard.md) | darn · solid | Finalize | neve | 1h<br>47m | reed, gate, testkit |
 | T3 | **Which internal/fabricengine tier 1 tests protect nothing other tests do not: a coverage study** | [`fabric-test-redundancy`](design-fabric-test-redundancy.md) | darn · docs | Darn-Write | neve | 6m<br>5m | fabric, testkit |
+| T9 | **PR-Review asks the parent orch for a review on its own, behind a hub and task setting** | [`dobby-pr-open-notice`](design-dobby-pr-open-notice.md) | darn · light | Worktree-Create | neve | 1h<br>0m | loom, burler, orch, config |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T9 | **PR-Review asks the parent orch for a review on its own, behind a hub and task setting** | [`dobby-pr-open-notice`](design-dobby-pr-open-notice.md) | darn · light |  | 1h<br>0m | loom, burler, orch, config |
+_None._
 
 ### Layer A (1)
 
