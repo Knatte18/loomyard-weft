@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-08 09:07 UTC; every age below is as of then.
+Rendered 2026-11-08 09:08 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -90,7 +90,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Slack v2: one bot, one channel per orch, push in place of polling** | [`slack-v2`](design-slack-v2.md) | motif | Discussion-Bouncer | neve | 15h<br>15h | slack, creel, orch |
+| T1 | **Slack v2: one bot, one channel per orch, push in place of polling** | [`slack-v2`](design-slack-v2.md) | motif | awaiting · Discussion-Bouncer | neve | 15h<br>15h | slack, creel, orch |
 | T2 | **Measure where a Webster run spends its time, from recorded runs** | [`webster-time-analysis`](design-webster-time-analysis.md) | darn · docs | Darn-Write | neve | 25m<br>25m | webster |
 
 #### Ready (0)
