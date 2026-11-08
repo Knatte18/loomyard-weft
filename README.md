@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-08 12:59 UTC; every age below is as of then.
+Rendered 2026-11-08 13:00 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -90,9 +90,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Slack messages to the orch say Slack twice: sender ly:SLACK and a [slack] body prefix**<br>• `loom: code_assist_reviewer_model astra[medium]` | [`slack-forward-prefix`](design-slack-forward-prefix.md) | darn · light | Code-Burler-Review | neve | 4h<br>7m | slack |
-| T3 | **Reed gives the Codex assist reviewer pane a fixed width instead of half beside Claude**<br>• The Codex assistant reviewer pane keeps a fixed column width; it should split the width evenly with the Claude reviewer pane<br>• `loom: code_assist_reviewer_model astra[medium]` | [`reed-assist-pane-width`](design-reed-assist-pane-width.md) | darn · light | Finalize | neve | 1h<br>28m | reed, codex |
-| T5 | **Arras: one recipe that runs Motif and raddle in a row, with a perch on the split**<br>• Discussion, raddle split and a split perch in one run; the operator only releases the filed tasks | [`motif-raddle-recipe`](design-motif-raddle-recipe.md) | motif | Discussion-Burler-Review | neve | 1h<br>28m | shed, loom, burler, arbiter, board |
+| T1 | **Slack messages to the orch say Slack twice: sender ly:SLACK and a [slack] body prefix**<br>• `loom: code_assist_reviewer_model astra[medium]` | [`slack-forward-prefix`](design-slack-forward-prefix.md) | darn · light | Code-Burler-Fix | neve | 4h<br>8m | slack |
+| T3 | **Reed gives the Codex assist reviewer pane a fixed width instead of half beside Claude**<br>• The Codex assistant reviewer pane keeps a fixed column width; it should split the width evenly with the Claude reviewer pane<br>• `loom: code_assist_reviewer_model astra[medium]` | [`reed-assist-pane-width`](design-reed-assist-pane-width.md) | darn · light | Finalize | neve | 1h<br>29m | reed, codex |
+| T5 | **Arras: one recipe that runs Motif and raddle in a row, with a perch on the split**<br>• Discussion, raddle split and a split perch in one run; the operator only releases the filed tasks | [`motif-raddle-recipe`](design-motif-raddle-recipe.md) | motif | Discussion-Burler-Review | neve | 1h<br>29m | shed, loom, burler, arbiter, board |
 
 #### Ready (0)
 
