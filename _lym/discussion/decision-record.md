@@ -417,6 +417,44 @@ Decision: The three findings open at the round-3 hard cap stand answered by the 
 
 Rationale: Each fix reuses an existing wake (the outbound read's wait or the holder's ping), so no loop is added and scope does not widen; the round-3 fixer report and the record's D1, D2, D5, D10, Constraints and acceptance criteria show each in place.
 
+### Added after Discussion (operator, 2026-11-08): Two tokens, a dated rename before the archive, and no reopen
+
+Decision:
+This entry overrides D3, D5, D6, D8, D10, the Constraints and the Auto-mode assumptions wherever they differ.
+
+- No operator user token (`xoxp-`).
+  Each machine stores two tokens in `slack.json`: the bot token (`xoxb-`) under its `token` key, and the app-level token (`xapp-`) with the app id D3's login reads for it.
+  `lym slack login` asks for both in one run, reads each as `slack-login-prompt` reads a token, and files each by its prefix.
+  It refuses any other prefix, or a run that does not give one token of each kind, naming the two kinds, and then writes nothing.
+  It confirms the bot token with `auth.test` and the app-level token as D3 says.
+  It writes both only when the app-level token's app id is the bot token's, which `bots.info` gives.
+  `RequireConfigured`, the relay's missing-token check and its notice name whichever of the two kinds is missing.
+- The bot joins a channel by itself with `conversations.join`, under the bot scope `channels:join`:
+  after a post, a start read or a resync read refused with `not_in_channel`,
+  and after a `name_taken` adoption of a live channel it is not a member of.
+  D3's map test applies to the join and the adoption as it applied to the user token's calls,
+  with the same fail-closed reads and the same notices.
+  The operator never adds the bot to a channel by hand.
+- A channel is archived only when its orch retires: when its beam is no longer listed, the beam gone and its project done (D6).
+  `lym slack stop` archives nothing.
+- Before archiving, the bot renames the channel with `conversations.rename` to its name with the suffix `-<UTC date>`, such as `ly-neve-<beam>-2026-11-08`.
+  The name is cut as D4 cuts one, so the whole fits 80 characters.
+  A rename refused with `name_taken` tries again with `-2`, `-3` and on after the date.
+  The rename frees the D4 name, and the archived channel keeps its history under the new name.
+  A rename or an archive that Slack refused is retried as D6 retries an archive.
+- An archived channel is never reopened, and lym never calls `conversations.unarchive`.
+  When D5 ensures an orch whose entry is archived, it makes a new channel under the D4 name, and the new entry replaces the archived one.
+  On `name_taken`, an archived channel of that name is refused as one another bot created is, the notice naming renaming that channel in Slack.
+  A post refused with `is_archived` marks the entry archived, ensures a new channel (D5) and posts again,
+  counting once toward `refusalCap` as D8 says.
+- The D10 manifest drops the user scope `channels:write` and adds the bot scope `channels:join`.
+  The `PATTERN-agent-addressing` background's Slack boundary rule names the bot and app-level tokens and drops the user-token sentence.
+
+Rationale:
+The operator wants no user token on the machine (the entry body's "Changed after the Discussion (operator, 2026-11-08)").
+A bot can join a public channel but cannot unarchive one (D3), so an archived channel stays archived, and the dated rename frees its name for a new channel.
+Orchs are long-lived, so a relay's stop is no reason to archive.
+
 ## Constraints
 
 - `PATTERN-agent-addressing`: the overview line keeps its text; its background's Slack boundary rule changes to:
@@ -512,23 +550,21 @@ None.
   A later reply to that thread is forwarded, and no earlier reply in it is.
 - D2: a channel adopted on `name_taken` forwards no reply written before the adoption at the next start.
 - D2: concurrent map writes never move a cursor backwards.
-- D3: `lym slack login` prompts naming the three kinds and files an `xoxb-`, `xapp-` or `xoxp-` token under its kind after Slack confirms it.
-  It refuses any other prefix, naming the three, and keeps the bot token under the `token` key.
-- D3: login refuses a user token of another team or an app-level token of another app than the stored bot token's.
-  A bot token of another app replaces the stored one and removes the tokens it does not match, naming them.
-- D3: a machine missing any token is refused before any spawn by `lym slack start`, `lym slack away` and `RequireConfigured`,
+- D3: `lym slack login` asks for the bot and app-level tokens in one run and files the `xoxb-` and the `xapp-` token each under its kind after Slack confirms it.
+  It refuses any other prefix, or a run without one token of each kind, naming the two kinds, and keeps the bot token under the `token` key.
+- D3: login refuses an app-level token of another app than the bot token given with it, and writes neither token.
+- D3: a machine missing either token is refused before any spawn by `lym slack start`, `lym slack away` and `RequireConfigured`,
   naming `lym slack login` and the missing kind.
   `EnsureRelay` answers `OutcomeNotConfigured` with no error for it.
 - D3: a relay started with only a bot token takes its lock and makes its first creel read,
-  then mails the hub's orch one notice naming the missing kinds and `lym slack login`,
+  then mails the hub's orch one notice naming the missing kind and `lym slack login`,
   posts the same line to the prime's channel when the map holds it, and exits.
   A relay re-exec'd from an older binary's state, with no map, posts the line to the old setup channel.
-- D3: only the unarchive and the bot's invite to a reopened channel, one adopted without the bot,
-  or one whose post, start read or resync read was refused with `not_in_channel` use the user token.
-  Neither is made for a channel another orch's entry in a live hub's map holds,
+- D3: lym stores and reads no user token and never calls `conversations.unarchive`.
+  The bot joins a channel with `conversations.join` only after a post, start read or resync read refused with `not_in_channel`,
+  or a `name_taken` adoption of a live channel it is not a member of.
+  Neither the join nor the adoption is made for a channel another orch's entry in a live hub's map holds,
   or while a live hub's map or the live-hub list cannot be read.
-- D3: an app-level or user token logged in with no bot token stored is refused, naming the bot token first,
-  and a bot-token login after an app-level token matches against the app id login stored.
 - D3: a login that changes a stored token ends every live relay of the machine's live hubs and names each such hub with `lym slack start`.
 - D4: names come out as `ly-neve-prime` and `ly-neve-<slug>`, and a slug `prime` gives `ly-neve-prime_beam`.
 - D4: a machine name with characters outside Slack's grammar is mapped onto it, and a name over 80 characters ends in the hash suffix at 80.
@@ -541,16 +577,18 @@ None.
   An invite Slack refuses mails the hub's orch one notice per episode naming `lym slack setup --operator <user-id>`.
   Two ensures of one channel in one relay run one after the other, and the second makes no Slack call to create or adopt.
 - D5: the map entry is written before the operator's invite, so a message written at once in a new channel is forwarded.
-- D5: on `name_taken`, an archived channel of that name is reopened and a live one is adopted, the bot invited first when it is not a member.
-  A reopen on `name_taken` with no map entry forwards no message written before the reopen.
+- D5: on `name_taken`, a live channel of that name is adopted, the bot joining first with `conversations.join` when it is not a member.
+  An archived channel of that name is never unarchived; it is refused with one notice naming renaming it in Slack.
   A channel another hub's or orch's entry holds is refused, with one notice to the hub's orch.
-  An archived channel of the D4 name that another bot created is not unarchived.
   A refused prime's channel is ensured again when the outbound read's wait ends.
-- D6: a beam no longer listed has its channel archived at the next wake, and a failed beams read archives nothing.
-  An archive Slack refused is retried when the outbound read's wait ends, never at a file event.
-  `lym slack stop` ends the relay, then archives every open beam channel.
+- D6: a beam no longer listed has its channel renamed with the archive's date suffix, such as `ly-neve-<slug>-2026-11-08`, and archived at the next wake,
+  and a failed beams read renames and archives nothing.
+  A rename refused with `name_taken` tries the next numbered suffix.
+  A rename or archive Slack refused is retried when the outbound read's wait ends, never at a file event.
+  `lym slack stop` archives nothing.
   The prime's channel is never archived.
-- D6: an archived beam channel ensured again is reopened through the user token with the bot invited back (`already_in_channel` counts as done), and the cursors of an entry the map held are kept.
+- D6: an orch whose channel is archived gets a new channel under its D4 name when D5 ensures it, the new entry replaces the archived one,
+  and the archived channel is never unarchived.
 - D6: mail from a sender whose beam is no longer listed posts to the prime's channel under the sender's name.
   While the beams read fails, a beam's mail posts to its open channel, and mail of a beam with no open channel waits.
 - D7: a message in a beam's channel reaches that beam's orch, and an `@<slug>` prefix is forwarded as plain text.
@@ -562,14 +600,14 @@ None.
 - D8: mail from a beam orch or beam program posts to that beam's channel, and mail from the hub's orch or a hub program to the prime's.
   Each carries the sender's name as `username` and its kind's `icon_emoji`, with no `[<sender>]` prefix.
 - D8: the relay's dropped and refused lines post to the message's channel, and its stale line to the prime's channel.
-- D8: a post refused with `is_archived` reopens the channel and posts again, one refused with `not_in_channel` invites the bot back and posts again,
+- D8: a post refused with `is_archived` ensures a new channel and posts again, one refused with `not_in_channel` joins the bot with `conversations.join` and posts again,
   and one refused with `channel_not_found` ensures the channel anew and posts again.
-  A start or resync read refused with `not_in_channel` invites the bot back and reads again.
+  A start or resync read refused with `not_in_channel` joins the bot and reads again.
 - D9: a presence change still notifies the hub's orch and every beam orch once.
 - D10: `lym slack setup --operator <id>` writes the operator after `users.info` confirms it.
   A `setup.json` with an old channel key is read without error, and `status` lists the map's channels.
-- Review: D10: `docs/slack-app.md` (new) carries a manifest with the app name, Socket Mode, the `message.channels` event, and every bot, user and app-level scope D10 lists.
-- Review: D10: the `docs/overview.md` slack bullet and the `internal/slackengine` and `internal/slackcli` package documentation describe the push route, the channel per orch and the three tokens.
+- Review: D10: `docs/slack-app.md` (new) carries a manifest with the app name, Socket Mode, the `message.channels` event, every bot scope D10 lists with `channels:join` added, and the app-level scope, with no user scope.
+- Review: D10: the `docs/overview.md` slack bullet and the `internal/slackengine` and `internal/slackcli` package documentation describe the push route, the channel per orch and the two tokens.
 - D11: the Socket Mode client reads a `hello`, an `events_api` envelope and a `disconnect` from an `httptest` server, and acknowledges by `envelope_id`.
 
 ## PATTERN changes
