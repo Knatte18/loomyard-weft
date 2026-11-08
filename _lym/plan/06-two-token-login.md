@@ -1,15 +1,15 @@
 # Card 6 — two-token-login
 
 **Create:**
-- `plan:internal/slackengine#LiveHubs` -> `type LiveHubs func() ([]Geometry, error)`
-- `plan:internal/slackcli#slackCLI.readTokens` -> `func (c *slackCLI) readTokens(in io.Reader) ([]string, error)`
-- `plan:internal/slackcli#fileTokens` -> `func fileTokens(tokens []string) (slackengine.Credentials, error)`
-- `plan:internal/slackcli#liveHubGeometries` -> `func liveHubGeometries() ([]slackengine.Geometry, error)`
-- `plan:internal/slackcli#fakeLoginSocket` -> `type fakeLoginSocket struct`
-- `plan:internal/slackcli#fakeLoginSocket.Read` -> `func (s *fakeLoginSocket) Read(context.Context) (slackengine.Envelope, error)`
-- `plan:internal/slackcli#fakeLoginSocket.Ack` -> `func (s *fakeLoginSocket) Ack(context.Context, string) error`
-- `plan:internal/slackcli#fakeLoginSocket.Ping` -> `func (s *fakeLoginSocket) Ping(context.Context) error`
-- `plan:internal/slackcli#fakeLoginSocket.Close` -> `func (s *fakeLoginSocket) Close() error`
+- `internal/slackengine#LiveHubs`
+- `internal/slackcli#slackCLI.readTokens`
+- `internal/slackcli#fileTokens`
+- `internal/slackcli#liveHubGeometries`
+- `internal/slackcli#fakeLoginSocket`
+- `internal/slackcli#fakeLoginSocket.Read`
+- `internal/slackcli#fakeLoginSocket.Ack`
+- `internal/slackcli#fakeLoginSocket.Ping`
+- `internal/slackcli#fakeLoginSocket.Close`
 - `docs/slack-app.md`
 
 **Delete:**

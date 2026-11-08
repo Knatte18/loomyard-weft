@@ -42,7 +42,7 @@
 - `internal/slackengine#Socket`
 - `internal/slackengine#Envelope`
 - `internal/slackengine#Dialer`
-- `plan:internal/slackengine#LiveHubs`
+- `internal/slackengine#LiveHubs`
 - `internal/slackengine#ReadChannelMap`
 - `internal/slackengine#ChannelMap.OrchOf`
 - `internal/slackengine#updateRelayState`

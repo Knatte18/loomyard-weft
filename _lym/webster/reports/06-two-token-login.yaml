@@ -1,0 +1,6 @@
+status: OK
+head_sha: 89dcc40b3a6127d6fea2661b73bebb211f8358cc
+renames:
+  - old: internal/slackengine#conversationInfoAnswer
+    new: internal/slackengine#createChannelAnswer
+    reason: card 7 deletes the type, but CreateChannel still decodes a conversations.create answer of that shape

@@ -31,7 +31,7 @@
 - `internal/slackengine#ChannelEntry`
 - `internal/slackengine#ReadChannelMap`
 - `internal/slackengine#UpdateChannelMap`
-- `plan:internal/slackengine#LiveHubs`
+- `internal/slackengine#LiveHubs`
 - `internal/slackengine#ReadSetup`
 - `internal/slackengine#orchName`
 - `internal/slackengine#isAPIError`

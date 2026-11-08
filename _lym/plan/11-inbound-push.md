@@ -71,7 +71,7 @@
 - `internal/slackengine#ChannelEntry.ThreadStart`
 - `internal/slackengine#ChannelEntry.PruneThreads`
 - `plan:internal/slackengine#resyncHint`
-- `plan:internal/slackcli#liveHubGeometries`
+- `internal/slackcli#liveHubGeometries`
 - `internal/hubgeom/doc.go`
 - `internal/slackengine#inboundText`
 - `internal/slackengine#slackTimestamp`

@@ -1,7 +1,7 @@
 # Card 7 — setup-operator-status
 
 **Create:**
-- `plan:internal/slackengine#SetOperator` -> `func SetOperator(path, operator string) error`
+- `internal/slackengine#SetOperator`
 
 **Delete:**
 - `internal/slackcli#channelRefusal`

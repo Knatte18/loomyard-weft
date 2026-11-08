@@ -1,19 +1,19 @@
 # Card 8 — slack-client-surface
 
 **Create:**
-- `plan:internal/slackengine_test#slackCall` -> `type slackCall struct`
-- `plan:internal/slackengine_test#fakeSlack.PostAs` -> `func (s *fakeSlack) PostAs(_ context.Context, channel, text string, sender slackengine.Sender) error`
-- `plan:internal/slackengine_test#fakeSlack.Replies` -> `func (s *fakeSlack) Replies(_ context.Context, channel, thread, oldest string) ([]slackengine.Message, error)`
-- `plan:internal/slackengine_test#fakeSlack.CreateChannel` -> `func (s *fakeSlack) CreateChannel(_ context.Context, name string) (slackengine.ChannelInfo, error)`
-- `plan:internal/slackengine_test#fakeSlack.FindChannel` -> `func (s *fakeSlack) FindChannel(_ context.Context, name string) (slackengine.ChannelInfo, bool, error)`
-- `plan:internal/slackengine_test#fakeSlack.Join` -> `func (s *fakeSlack) Join(_ context.Context, channel string) error`
-- `plan:internal/slackengine_test#fakeSlack.Invite` -> `func (s *fakeSlack) Invite(_ context.Context, channel, user string) error`
-- `plan:internal/slackengine_test#fakeSlack.Rename` -> `func (s *fakeSlack) Rename(_ context.Context, channel, name string) error`
-- `plan:internal/slackengine_test#fakeSlack.Archive` -> `func (s *fakeSlack) Archive(_ context.Context, channel string) error`
-- `plan:internal/slackengine_test#fakeSlack.AuthTest` -> `func (s *fakeSlack) AuthTest(context.Context) (slackengine.Identity, error)`
-- `plan:internal/slackengine_test#fakeSlack.failNext` -> `func (s *fakeSlack) failNext(method string, errs ...error)`
-- `plan:internal/slackengine_test#fakeSlack.logged` -> `func (s *fakeSlack) logged(method string) []slackCall`
-- `plan:internal/slackengine_test#fakeSlack.seedChannel` -> `func (s *fakeSlack) seedChannel(info slackengine.ChannelInfo)`
+- `internal/slackengine_test#slackCall`
+- `internal/slackengine_test#fakeSlack.PostAs`
+- `internal/slackengine_test#fakeSlack.Replies`
+- `internal/slackengine_test#fakeSlack.CreateChannel`
+- `internal/slackengine_test#fakeSlack.FindChannel`
+- `internal/slackengine_test#fakeSlack.Join`
+- `internal/slackengine_test#fakeSlack.Invite`
+- `internal/slackengine_test#fakeSlack.Rename`
+- `internal/slackengine_test#fakeSlack.Archive`
+- `internal/slackengine_test#fakeSlack.AuthTest`
+- `internal/slackengine_test#fakeSlack.failNext`
+- `internal/slackengine_test#fakeSlack.logged`
+- `internal/slackengine_test#fakeSlack.seedChannel`
 
 **Delete:**
 - `internal/slackengine#API.PostMessage`
