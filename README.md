@@ -90,7 +90,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Slack v2: one bot, one channel per orch, push in place of polling** | [`slack-v2`](design-slack-v2.md) | motif | Worktree-Create | neve | 14h<br>14h | slack, creel, orch |
+| T1 | **Slack v2: one bot, one channel per orch, push in place of polling** | [`slack-v2`](design-slack-v2.md) | motif | Open-IDE | neve | 14h<br>14h | slack, creel, orch |
 | T2 | **Gate go test runs fill the Go cache with test logs, hundreds of GB a day** | [`go-test-cache-disk`](design-go-test-cache-disk.md) | darn · light | Worktree-Create | neve | 1m<br>0m | gate |
 
 #### Ready (0)
