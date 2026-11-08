@@ -40,6 +40,12 @@ The connection toggle reads `slack`, the presence toggle `away`.
 
 ## Decisions
 
+### Added after Discussion (operator, 2026-11-08): Slack sender names carry the machine
+
+Decision: When lym posts to Slack under a sender's name, the name carries the machine in the cross-machine address form <machine>::<sender>, such as neve::ly:orch, so the operator sees which machine wrote. The same :: form is the address for cross-machine creel mail (slack-machine-bridge).
+
+Rationale: Operator, 2026-11-08: the app showed ly:orch with no machine; :: was chosen earlier over @ (looks like e-mail) and brackets (shell globbing).
+
 ## Constraints
 
 ## Auto-mode assumptions
