@@ -1,6 +1,6 @@
 {
   "runGuid": "9b0afecf89b7e981871614ee103485ff",
-  "planFingerprint": "8e505550a3db3c48ce461cc54cc1ec39d60fa63d01da6b8366f19e7aae4490d9",
+  "planFingerprint": "c789d178db3ec09abe8873d600b75d4a08437faf873941fd2feba294b5f34265",
   "planFileHashes": {
     "00-overview.md": "56ca1876a5b09a496c3dedb0a3e0ae827c799d5d41de9bdec0d9344e88ee0519",
     "01-api-web-methods.md": "bc125e1252fea748ca040f329c8955d9215a837134d61cf603eaee48a0c8c93c",
@@ -15,7 +15,7 @@
     "10-channel-keeper.md": "45627f11f01391f379a743e82092c2ee0101d99e1bba696b57bdb8d476e3ee79",
     "11-inbound-push.md": "ecf548a60d793b36c999c3d5994ebac007e852648febcf7c67b2c0a0fb3d6c0f",
     "12-outbound-routing.md": "b13e5e75c5a4852b9081a8fc29b3ec7377ee980c13560813ffe09d1e05243769",
-    "13-relay-push-loop.md": "730ad965826b72f2732c837f9ceb886a1cf5aec3c2d7ce8a49fd004592ea2dcb"
+    "13-relay-push-loop.md": "42b0de0878b7202cd1449b74f210bbd2c93411033eacf1cc7e68c22927a3e78f"
   },
   "planOverviewFrameHash": "3344e696d0d3ca613953f9338ea17354d94f35ca6fe15285fd61ae64aee6e7d3",
   "partition": [
@@ -334,7 +334,7 @@
       }
     }
   ],
-  "currentBatch": 13,
+  "currentBatch": 0,
   "masterStrand": "120da68ec31d8d5018b442b5778f2567",
   "masterSessionId": "f167a2fe-30a4-4232-9464-fc50a2be4955",
   "masterEngine": "claude",
@@ -434,15 +434,34 @@
         "13-relay-push-loop"
       ],
       "cardHashes": {
-        "13-relay-push-loop": "730ad965826b72f2732c837f9ceb886a1cf5aec3c2d7ce8a49fd004592ea2dcb"
+        "13-relay-push-loop": "42b0de0878b7202cd1449b74f210bbd2c93411033eacf1cc7e68c22927a3e78f"
       },
       "startSha": "b7415eea8591b905e92e408ab376b36bce0fa606",
       "kind": "fork",
       "spawnedAt": "2026-11-08T11:56:25Z",
       "sessionId": "f167a2fe-30a4-4232-9464-fc50a2be4955",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "13-relay-push-loop",
+        "status": "done",
+        "head_sha": "321e2094b82f6d35c73a80522ff5e0d70492e6b1",
+        "deviations": [
+          "internal/slackengine/export_test.go",
+          "internal/slackengine/relay.go",
+          "internal/slackengine/relay_test.go"
+        ]
+      },
+      "cardShas": [
+        "321e2094b82f6d35c73a80522ff5e0d70492e6b1"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-push-channels/f167a2fe-30a4-4232-9464-fc50a2be4955/subagents/agent-a10faf5c3518a9818.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-push-channels/f167a2fe-30a4-4232-9464-fc50a2be4955/subagents/agent-a10faf5c3518a9818.jsonl"
+      ]
     },
     "6": {
       "slug": "two-token-login",
@@ -541,6 +560,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-push-channels/f167a2fe-30a4-4232-9464-fc50a2be4955/subagents/agent-a9e5c640fe537547d.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-push-channels/f167a2fe-30a4-4232-9464-fc50a2be4955/subagents/agent-a809ad202c784214e.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-push-channels/f167a2fe-30a4-4232-9464-fc50a2be4955/subagents/agent-a0d48d081f1a6bc80.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-push-channels/f167a2fe-30a4-4232-9464-fc50a2be4955/subagents/agent-a4d734aa56e770b10.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-push-channels/f167a2fe-30a4-4232-9464-fc50a2be4955/subagents/agent-a4d734aa56e770b10.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-push-channels/f167a2fe-30a4-4232-9464-fc50a2be4955/subagents/agent-a10faf5c3518a9818.jsonl"
   ]
 }

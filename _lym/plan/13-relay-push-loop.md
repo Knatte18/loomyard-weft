@@ -1,17 +1,17 @@
 # Card 13 — relay-push-loop
 
 **Create:**
-- `plan:internal/slackengine#wakeLoop` -> `type wakeLoop struct`
-- `plan:internal/slackengine#wakeLoop.run` -> `func (w *wakeLoop) run(ctx context.Context) error`
-- `plan:internal/slackengine#wakeLoop.wake` -> `func (w *wakeLoop) wake(ctx context.Context, fromOutbound bool)`
-- `plan:internal/slackengine#wakeLoop.watch` -> `func (w *wakeLoop) watch() (<-chan struct{}, func(), error)`
-- `plan:internal/slackengine#wakeLoop.diskCheck` -> `func (w *wakeLoop) diskCheck() bool`
-- `plan:internal/slackengine#relayStart` -> `func relayStart(ctx context.Context, geom Geometry, keeper *channelKeeper, in *inbound, hub Hub) bool`
-- `plan:internal/slackengine#missingTokenExit` -> `func missingTokenExit(ctx context.Context, geom Geometry, deps RelayDeps, err error) error`
-- `plan:internal/slackengine#holderRun` -> `type holderRun struct`
-- `plan:internal/slackengine#holderRun.start` -> `func (r *holderRun) start(ctx context.Context)`
-- `plan:internal/slackengine#holderRun.stop` -> `func (r *holderRun) stop()`
-- `plan:internal/slackengine#wakeFloor` -> `const wakeFloor = time.Second`
+- `internal/slackengine#wakeLoop`
+- `internal/slackengine#wakeLoop.run`
+- `internal/slackengine#wakeLoop.wake`
+- `internal/slackengine#wakeLoop.watch`
+- `internal/slackengine#wakeLoop.diskCheck`
+- `internal/slackengine#relayStart`
+- `internal/slackengine#missingTokenExit`
+- `internal/slackengine#holderRun`
+- `internal/slackengine#holderRun.start`
+- `internal/slackengine#holderRun.stop`
+- `internal/slackengine#wakeFloor`
 
 **Delete:**
 - `internal/slackengine#runInbound`
