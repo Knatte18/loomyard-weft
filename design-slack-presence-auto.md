@@ -1,6 +1,8 @@
 # Slack in reed: a connection toggle and a presence toggle, presence per machine and switching by itself
 
-`slack-presence-auto` · Task · feature, reed, shuttle, slack · draft
+`slack-presence-auto` · Task · feature, reed, shuttle, slack
+
+Depends on: [`slack-forward-prefix`](design-slack-forward-prefix.md)
 
 ## Seen
 
