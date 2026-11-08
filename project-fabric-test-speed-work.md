@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Second fabricengine test cut, from the coverage study's removable set** | [`fabric-test-cuts-2`](design-fabric-test-cuts-2.md) | darn · solid | Darn-Write | neve | 25m<br>1m | fabric, testkit |
+| T1 | **Second fabricengine test cut, from the coverage study's removable set** | [`fabric-test-cuts-2`](design-fabric-test-cuts-2.md) | darn · solid | Darn-Write | neve | 25m<br>2m | fabric, testkit |
 
 ### Ready (0)
 
