@@ -1,13 +1,13 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
 # Plan: Slack relay with one push-woken channel per orch
 
 Replace the per-hub Slack relay's single polled channel with one channel per orch, woken by Socket Mode push over one connection per machine.
-The cards build the client calls and the Socket Mode client first, then the channel names and map, the two-token login and the operator-only setup,
+The cards build the client calls and the Socket Mode client first, then the channel names and map, the credential record, the two-token login and the operator-only setup,
 then the relay's engine pieces (the socket holder, the channel keeper, the inbound and outbound sides), and last the relay loop that wires them together with its docs.
 The decision record's operator-added entry governs where it differs from D3, D5, D6, D8 and D10: no user token, the bot joins by itself, and a retired channel is renamed with a date and archived, never reopened.
 
@@ -17,14 +17,15 @@ The decision record's operator-added entry governs where it differs from D3, D5,
 2 — socket-mode-client — add the Socket Mode client over `github.com/coder/websocket` behind a `Socket` seam
 3 — channel-names — name each orch's channel and a retired channel's dated name
 4 — channel-map-geometry — add the hub's channel map with forward-only cursors and the push route's paths
-5 — two-token-login — store the bot and app-level tokens and log both in through one run
-6 — setup-operator-status — reduce setup to the operator and list the map's channels in status
-7 — slack-client-surface — widen the relay's Slack seam and stamp the last-healthy time per outbound read
-8 — socket-holder — hold the machine's one Socket Mode connection and write wake hints into each hub's inbox
-9 — channel-keeper — make, adopt, join, invite and retire the hub's channels
-10 — inbound-push — read each channel after its cursor on a hint, a resync or the start, routed by channel
-11 — outbound-routing — post each message to its sender's channel under the sender's name and icon
-12 — relay-push-loop — run the relay on push with its wakes, retries and docs
+5 — credentials-record — store the machine's bot token, app-level token and app id as one credential record and refuse a machine missing either token
+6 — two-token-login — log the bot and app-level tokens in through one run
+7 — setup-operator-status — reduce setup to the operator and list the map's channels in status
+8 — slack-client-surface — widen the relay's Slack seam and stamp the last-healthy time per outbound read
+9 — socket-holder — hold the machine's one Socket Mode connection and write wake hints into each hub's inbox
+10 — channel-keeper — make, adopt, join, invite and retire the hub's channels
+11 — inbound-push — read each channel after its cursor on a hint, a resync or the start, routed by channel
+12 — outbound-routing — post each message to its sender's channel under the sender's name and icon
+13 — relay-push-loop — run the relay on push with its wakes, retries and docs
 
 ## Shared Decisions
 
@@ -35,7 +36,7 @@ The decision record's operator-added entry governs where it differs from D3, D5,
 - The channel map is keyed by the orch's creel name, `<shortname>:orch` for the prime and `<shortname>:<slug>:orch` for a beam.
 - The relay builds one channel keeper, which its inbound, its outbound and its wake loop share.
 - The Socket Mode dial reads the `hello` within `HelloTimeout`, ten seconds, a parameter of `NewDialer` so a test passes a short bound.
-- Pattern-Departure: `PATTERN-lym-files` puts temp files under `lymtemp`, while card 8's hint write creates its temp file in the hub's `.lym/slack/`, outside the inbox.
+- Pattern-Departure: `PATTERN-lym-files` puts temp files under `lymtemp`, while card 9's hint write creates its temp file in the hub's `.lym/slack/`, outside the inbox.
   D1 names that placement, and it keeps the rename into the inbox on one filesystem, so a hint appears whole or not at all.
 
 ## PATTERN changes

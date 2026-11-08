@@ -45,7 +45,7 @@ The map is `ChannelMap{Channels map[string]ChannelEntry}`, keyed by the orch's c
 A `ChannelEntry` holds `ID`, `Name`, `Cursor` (the newest top-level timestamp handled), `Threads` (thread timestamp to newest reply handled),
 `ThreadFloor`, `Operator` (the operator it invited, empty for none) and `Archived`.
 `ReadChannelMap` reads the file through `internal/state`; a missing file reads as an empty map, and a decode failure is an error naming the file and wrapping `state.ErrDecode`.
-That error's way forward is moving the file aside, after which the relay ensures the hub's channels anew and adopts its own channels on `name_taken` (card 9).
+That error's way forward is moving the file aside, after which the relay ensures the hub's channels anew and adopts its own channels on `name_taken` (card 10).
 `UpdateChannelMap` is the one writer: a read-modify-write under the map's `internal/state` lock, so a key an older binary does not know survives, and no caller makes a Slack call inside `mutate`.
 `OrchOf` returns the orch whose entry holds the channel id, archived or not.
 

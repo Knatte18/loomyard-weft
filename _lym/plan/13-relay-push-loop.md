@@ -1,4 +1,4 @@
-# Card 12 — relay-push-loop
+# Card 13 — relay-push-loop
 
 **Create:**
 - `plan:internal/slackengine#wakeLoop` -> `type wakeLoop struct`
@@ -84,6 +84,10 @@ A failed exec retakes the relay lock as today and starts the holder again, which
 `relay.go`'s file header, `backoff.go`'s and `sharedFloor`'s comment describe the outbound loop and the wake loop in place of the two polling loops.
 
 Docs: `internal/slackengine`'s and `internal/slackcli`'s package documentation and `docs/overview.md`'s slack bullet and package lines describe the push route, one channel per orch named by hub, machine and orch, the two tokens and the app manifest in `docs/slack-app.md`, and that `stop` archives nothing.
+`internal/slackengine/doc.go` drops its sentences on `WriteToken` and `ReadToken`, the inbound cursor, the bearer header as the bot token alone, `PostMessage` and the inbound poll with its five-second floor;
+in their place it names `ReadCredentials` and `WriteCredentials`, the channel map, `PostAs`, and the app-level token for `OpenConnection`.
+Its setup file holds the operator alone, no channel, and the outbound read posts each message to its sender's channel, not to the channel.
+`internal/slackcli/doc.go` drops `setup` recording the hub's channel, and its `login` sentences name the two tokens, read as two hidden lines on a terminal, in place of the one bot token and its one line.
 `contracts/orchrole/role-slack.md` says each orch's posts reach its own channel under its own name and the operator answers in that channel or a thread of it, in place of the `@<slug>` answer hint.
 `pattern/PATTERN-daemon-wakeups.md`'s Slack bullet lists the loops this card leaves:
 the outbound read with the binary check and the retried work after it, from five seconds doubling to sixty;
@@ -91,10 +95,11 @@ the holder in `internal/slackengine/holder.go`, its lock wait blocking without w
 and the inbox and presence watch, never within a second of the previous wake's start, with its on-disk fallback from one second to sixty.
 `relay.go` stays on `unboundedWaitFiles`.
 
-Tests, tier0. `newRelayRun`'s mailbox answers each outbound read at once with no mail, in place of blocking, since the binary check follows the read; `relayRun` gains a `fakeDialer`, a real `Watch` and card 8's `manualClock` in place of `fakeClock`, and `stop` ends the run from a wait.
+Tests, tier0. `newRelayRun`'s mailbox answers each outbound read at once with no mail, in place of blocking, since the binary check follows the read; `relayRun` gains a `fakeDialer`, a real `Watch` and card 9's `manualClock` in place of `fakeClock`, and `stop` ends the run from a wait.
 Under `manualClock` each loop blocks at its wait until the row advances the time, so a row reads the pending waits of the loop it asserts at a quiescent point, and no retry window or prune drifts while another loop spins.
 `TestRunRelay` rows:
 - `HubWithNoTokenOrNoSetupIsRefusedAndTakesNoLock` becomes: a relay with a bot token alone takes the lock, makes its first creel read, mails one notice naming the app-level token, `lym slack login` and `lym slack start`, posts the same line to the prime's channel, and exits; with no map and a `setup.json` holding `channel_id` `C7` it posts the line to `C7`;
+  a relay with an app-level token and no bot token mails one notice naming the bot token, `lym slack login` and `lym slack start`, makes no `chat.postMessage` call, both with a map holding the prime's channel and with no map and a `setup.json` holding `channel_id` `C7`, and exits;
   a relay with both tokens and no `setup.json` mails one notice naming `lym slack setup --operator <user-id>` and `lym slack start`, and exits;
 - with an owed read failing on a server error at every outbound wake and no mail, the outbound loop's pending waits run 10, 20, 40, 60 and 60 seconds; a refused operator invite at every outbound wake leaves the same sequence;
 - a prime ensure failing on a transport error at start is made at the next outbound wake;

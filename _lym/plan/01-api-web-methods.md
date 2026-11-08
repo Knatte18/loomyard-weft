@@ -46,7 +46,7 @@ No caller outside the client uses the new methods yet; later cards wire them.
 - `Rename` calls `conversations.rename` with `channel` and `name`; `Archive` calls `conversations.archive`, and answers nil for `already_archived`.
 - `Replies` calls `conversations.replies` with `channel`, `ts` and `oldest`, paginated like `History`, oldest first.
 - `PostAs` calls `chat.postMessage` with `channel` and `text`, plus `username` and `icon_emoji` when `Sender` (fields `Username`, `IconEmoji`) sets them; like `PostMessage` it reads nothing past `ok`.
-  `PostMessage` stays until card 7 moves its callers onto `PostAs`.
+  `PostMessage` stays until card 8 moves its callers onto `PostAs`.
 - `OpenConnection` calls `apps.connections.open` and returns the answer's `url`; the API it runs on is built with the app-level token.
 - `Message` gains `LatestReply` (`latest_reply`) and `Files []File` (`files`, `File` holding `Name` from `name`).
 - `ChannelInfo` gains `Creator` (`creator`) and `IsArchived` (`is_archived`).

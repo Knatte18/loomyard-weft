@@ -1,4 +1,4 @@
-# Card 7 — slack-client-surface
+# Card 8 — slack-client-surface
 
 **Create:**
 - `plan:internal/slackengine_test#slackCall` -> `type slackCall struct`
@@ -54,7 +54,7 @@ Widen the relay's `SlackClient` seam to every call the push route makes, and sta
 
 `recordingSlack` goes: `RunRelay` hands `deps.Slack` to the loops directly.
 `runOutbound` calls `afterRead` after each read, before its wait; `RunRelay` passes a closure that stamps `RelayState.LastSlackOK` with the clock's now and logs a failed stamp under `relay-state`.
-So every relay stamps at the end of each outbound read, whatever the read found, and card 8's holder also stamps at each pong (D1).
+So every relay stamps at the end of each outbound read, whatever the read found, and card 9's holder also stamps at each pong (D1).
 `RelayState.LastSlackOK`'s, `lifetime`'s and `starter.ensure`'s comments name the last-healthy time; the restart cap's logic stays, as the record's notes ask.
 `RelayDeps.Slack`'s comment drops the recording.
 

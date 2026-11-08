@@ -1,4 +1,4 @@
-# Card 9 — channel-keeper
+# Card 10 — channel-keeper
 
 **Create:**
 - `plan:internal/slackengine#channelKeeper` -> `type channelKeeper struct`
@@ -42,7 +42,7 @@
 
 **Intent:**
 Make, adopt, join, invite and retire the hub's channels (D5, D6 and the D3 map test, as the operator-added entry amends them), in a new file `internal/slackengine/keeper.go`.
-The relay wires the keeper in cards 10 to 12; no Slack call is made while a map lock is held, and every map write goes through `UpdateChannelMap`.
+The relay wires the keeper in cards 11 to 12; no Slack call is made while a map lock is held, and every map write goes through `UpdateChannelMap`.
 
 `ensure(orch)` runs under a per-orch mutex of the keeper, so one relay ensures one orch's channel at a time.
 Holding it, it reads the map again: an open entry is a held channel, for which it only invites the setup's operator when the entry records another operator or none (`inviteOperator`) and returns the entry.
@@ -61,19 +61,19 @@ On `name_taken`, `adopt` reads `conversations.list` for that name (D5 step 2).
 Each refusal returns an error wrapping `errChannelRefused`, so callers tell it from a transient failure.
 
 `heldElsewhere(orch, id)` reads this hub's map and every map `LiveHubs` lists, and answers the orch or hub path holding the channel for another orch.
-A nil `LiveHubs` lists the keeper's own hub alone; the relay's wiring always sets it.
+`newChannelKeeper` panics on a nil `LiveHubs`, a wiring guard; the relay's wiring always sets it.
 A map that cannot be read or decoded, or a failed `LiveHubs` read, fails closed: no join or adopt is made, and the hub's orch gets one notice naming the map's path, with moving that file aside as the way forward,
-or naming the hubs record, with moving it aside and `lym creel inbox` in each hub a minute on as the way forward.
+or carrying the `LiveHubs` error as it is, which names the hubs record or the failing hub, and the way forward when the error carries one.
 `join(orch)` is the D8 recovery after a `not_in_channel`: it calls `conversations.join` for the orch's open entry only when `heldElsewhere` clears it.
 The bound: the map test sees only the hubs the live-hub list names, so a hub missing from it is unseen until it records itself.
 
-`inviteOperators` invites the setup's operator into every open entry that records another operator or none, recording it in each entry once the invite stands; card 12 calls it at each wake from the outbound read's wait.
+`inviteOperators` invites the setup's operator into every open entry that records another operator or none, recording it in each entry once the invite stands; card 13 calls it at each wake from the outbound read's wait.
 `retire(beams)` takes each open beam entry, never the prime's (`ly:orch`), whose slug `beams` does not list;
 it renames the channel with `conversations.rename` to `ArchivedName(name, now, n)`, trying n 1, 2 and on while Slack answers `name_taken`, and records the new name in the entry as soon as the rename stands;
 it then archives it with `conversations.archive` and marks the entry archived.
 An entry whose name is already its dated name is not renamed again, so a retry after a refused archive goes straight to the archive.
 A rename Slack refuses with another code, or an archive it refuses, leaves the entry open, returns the error and marks the orch refused in the keeper's memory;
-a later call skips a refused orch unless `retryRefused` is set, which card 12 sets only at a wake from the outbound read's wait (D6).
+a later call skips a refused orch unless `retryRefused` is set, which card 13 sets only at a wake from the outbound read's wait (D6).
 The caller calls `retire` only after a `Hub.Beams` read that stood.
 
 `export_test.go` exposes the keeper as `ChannelKeeper` with `NewChannelKeeper`, `Ensure`, `Join`, `InviteOperators` and `Retire`.
@@ -86,7 +86,7 @@ Tests, tier0, `TestChannelKeeper` over `keeperHarness`: `newHarness`'s hub plus 
 - `name_taken` on a live channel of `UBOT` where the bot is no member joins, then adopts with cursor and floor at its newest message;
 - `name_taken` on an archived channel of that name makes no join or adopt and one notice naming renaming it in Slack; so does one created by another user;
 - `name_taken` on a channel the second hub's map holds is refused with a notice naming the extra clone; one another orch of this hub holds is refused too;
-- with the second hub's map holding `{`, and with `LiveHubs` failing, neither adopt nor `Join` reaches Slack and one notice names the path;
+- with the second hub's map holding `{`, and with `LiveHubs` failing on a scripted error carrying the hubs record's path, neither adopt nor `Join` reaches Slack and one notice names the path;
 - an archived entry gets a new channel under its D4 name that replaces it; no method of the seam can unarchive;
 - an entry recording `U0` is invited for `U1` by `InviteOperators`, a refused invite mails one notice naming `lym slack setup --operator <user-id>` across two calls, and the next call that stands records `U1`;
 - `Retire` with no beams listed over an open `payments` entry renames it to `ly-neve-payments-2026-11-05` and archives it; a `name_taken` rename goes on to `-2`; the prime's entry is never renamed;

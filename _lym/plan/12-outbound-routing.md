@@ -1,9 +1,10 @@
-# Card 11 — outbound-routing
+# Card 12 — outbound-routing
 
 **Create:**
 - `plan:internal/slackengine#outboundRoute` -> `func outboundRoute(shortname string, message creelengine.Message) (string, Sender, bool)`
 - `plan:internal/slackengine#outbound.channelFor` -> `func (out *outbound) channelFor(ctx context.Context, orch string) (ChannelEntry, string, error)`
 - `plan:internal/slackengine#outbound.postTo` -> `func (out *outbound) postTo(ctx context.Context, record *outboxRecord, message creelengine.Message, orch, text string, sender Sender) error`
+- `plan:internal/slackengine#outbound.postRecovered` -> `func (out *outbound) postRecovered(ctx context.Context, orch, text string, sender Sender) error`
 - `plan:internal/slackengine#errNoOpenChannel` -> `var errNoOpenChannel = errors.New("slack: the beam has no open channel while its listing is unread")`
 - `plan:internal/slackengine#orchIcon` -> `const orchIcon = ":robot_face:"`
 - `plan:internal/slackengine#programIcon` -> `const programIcon = ":gear:"`
@@ -58,14 +59,15 @@ The signatures drop `setup`, since no channel comes from it: `post`, `postMessag
 The line about a dropped message posts to that message's channel, or, when its ensure was refused so it has none, to the prime's channel;
 with the prime's channel refused too, the relay mails the hub's orch one `[slack relay]` notice carrying the line, which names the message and `lym creel log --to <shortname>:SLACK`.
 `outbound.go`'s file header says it posts each message to its sender's channel.
-The outbound uses the one keeper `RunRelay` builds (card 10).
+The outbound uses the one keeper `RunRelay` builds (card 11).
 
-`postTo` posts with `PostAs` and recovers once from three refusals:
+`postRecovered` posts with `PostAs` and recovers once from three refusals:
 `is_archived` marks the entry archived, ensures a new channel and posts again; `not_in_channel` joins the bot through the keeper and posts again;
 `channel_not_found` drops the map entry, ensures the channel anew and posts again.
-Each post Slack refuses with a code counts once toward `refusalCap` through `refused`, and a refused reopen, join or ensure after it adds no second count;
+`postTo` posts a message through `postRecovered`, and each message post Slack refuses with a code counts once toward `refusalCap` through `refused`, and a refused join or ensure after it adds no second count;
 a transport error, a server error or a rate limit counts toward no cap, as a post's does today.
 The stale line, one count of the hub's stale mail, posts to the prime's channel.
+The stale line (`reportStale`) and the dropped-message line (`refused`) post through `postRecovered` under the relay's own name `<shortname>:SLACK` with `programIcon`, so a refusal of either counts toward no message's `refusalCap`.
 `read`'s missing-setup error names `lym slack setup --operator <user-id>`.
 `RunRelay` builds the outbound with its keeper and hub.
 
@@ -77,6 +79,8 @@ Tests, tier0, rows of `TestOutboundRead` over `newOutboundHarness`, whose keeper
 - with the beams read failing, a batch of `ly:other:orch`, `ly:orch` and `ly:payments:orch` mail posts the second to `C1` and the third to `C2`, leaves the first unposted and the read unacknowledged, and the redelivered batch posts nothing twice;
 - a post refused with `is_archived` creates a new channel and posts there, `not_in_channel` joins `C2` and posts again, and `channel_not_found` drops the entry, creates the channel anew and posts again, each read acknowledging the message;
 - a refusal followed by a refused join counts one toward the cap;
+- the stale line's post to `C1` refused once with `not_in_channel` joins `C1` and posts the line, clearing the record's stale count;
+- a read with `setup.json` removed returns an error naming the setup path and `lym slack setup --operator <user-id>`, and posts nothing;
 - a listed beam whose ensure is refused, its name held by a seeded channel of another bot, counts one refusal per read and, at the fifth, drops the message with the line posted to `C1`; with the prime's ensure refused too, the line reaches the hub's orch as a `[slack relay]` notice;
 - a listed beam whose ensure fails on a transport error releases the read, counts no refusal and posts at the next read once the ensure stands.
 `MessageSlackRefusesFiveTimesIsDroppedWhetherOrNotTheReplacementLinePosts` asserts that the line posts to `C1`, the message's channel, and counts the `chat.postMessage` calls `logged` gives in place of `callCount`;
