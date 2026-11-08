@@ -18,11 +18,11 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Ship the rule: a tapestry-sized note runs as a Motif, then raddle**<br>• Move the Motif-first rule from the hub heddle entry into the shipped board policy and orch instructions of lym<br>• `loom: code_assist_reviewer_model astra[medium]` | [`motif-before-tapestry`](design-motif-before-tapestry.md) | darn · light | Describe | neve | 43m<br>43m | orch, board |
+| T1 | **Ship the rule: a tapestry-sized note runs as a Motif, then raddle**<br>• Move the Motif-first rule from the hub heddle entry into the shipped board policy and orch instructions of lym<br>• `loom: code_assist_reviewer_model astra[medium]` | [`motif-before-tapestry`](design-motif-before-tapestry.md) | darn · light | PR-Review | neve | 43m<br>43m | orch, board |
 | T2 | **Slack relay: one Socket Mode connection per machine, one channel per orch, two tokens** | [`slack-push-channels`](design-slack-push-channels.md)<br>[Sketch](decision-slack-push-channels.md) | tapestry · solid | Code-Burler-Fix | neve | 2h<br>2h | slack, creel, orch |
 | T3 | **Reed gives the Codex assist reviewer pane a fixed width instead of half beside Claude**<br>• The Codex assistant reviewer pane keeps a fixed column width; it should split the width evenly with the Claude reviewer pane<br>• `loom: code_assist_reviewer_model astra[medium]` | [`reed-assist-pane-width`](design-reed-assist-pane-width.md) | darn · light | Darn-Write | neve | 41m<br>3m | reed, codex |
 | T4 | **Measure darn cost per run and per 1000 lines, and a darn family against a tapestry**<br>• Read records of darn and tapestry runs landed since 2026-10-25 and price each darn phase, for the arras recipe | [`darn-cost-measure`](design-darn-cost-measure.md) | darn · docs | Darn-Write | neve | 3m<br>3m | loom |
-| T5 | **Arras: one recipe that runs Motif and raddle in a row, with a perch on the split**<br>• Discussion, raddle split and a split perch in one run; the operator only releases the filed tasks | [`motif-raddle-recipe`](design-motif-raddle-recipe.md) | motif | Discussion-Write | neve | 34m<br>2m | shed, loom, burler, arbiter, board |
+| T5 | **Arras: one recipe that runs Motif and raddle in a row, with a perch on the split**<br>• Discussion, raddle split and a split perch in one run; the operator only releases the filed tasks | [`motif-raddle-recipe`](design-motif-raddle-recipe.md) | motif | Discussion-Write | neve | 34m<br>3m | shed, loom, burler, arbiter, board |
 
 ### Ready (0)
 
