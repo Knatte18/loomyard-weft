@@ -26,7 +26,7 @@ _None._
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-## [P2 Codexengine: every task, trial and note about the Codex engine](project-codex-engine-trial.md) (2)
+## [P2 Codexengine: every task, trial and note about the Codex engine](project-codex-engine-trial.md) (3)
 
 [`codex-engine-trial`](design-codex-engine-trial.md) · Age 4d · Owner `neve`
 
@@ -42,7 +42,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (2)
+### Notes (3)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -51,6 +51,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 2d<br>1d | codex, shuttle |
+
+#### Bugs (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| B3 |  | **Codex engine: the forced workspace-write sandbox fails where bubblewrap cannot create user namespaces** | [`codex-sandbox-mode`](design-codex-sandbox-mode.md) | 0m<br>0m | codex, shuttle, preflight |
 
 #### Features (1)
 
@@ -76,7 +82,7 @@ _None._
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-## [P0 Root: entries under no project](project-root.md) (23)
+## [P0 Root: entries under no project](project-root.md) (22)
 
 Owner `neve`
 
@@ -100,7 +106,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (20)
+### Notes (19)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -110,13 +116,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>2d | loom, stencil |
 
-#### Bugs (3)
+#### Bugs (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Beam reed session gets the task button group instead of beam** | [`beam-reed-task-buttons`](design-beam-reed-task-buttons.md) | 0m<br>0m | reed, pawl |
 | B2 |  | **Burler fix round: decision-class rule conflicts with parent ruling mail, fixer has no outlet to parent** | [`fixer-parent-ruling`](design-fixer-parent-ruling.md) | 0m<br>0m | burler, stencil |
-| B3 |  | **Codex engine: the forced workspace-write sandbox fails where bubblewrap cannot create user namespaces** | [`codex-sandbox-mode`](design-codex-sandbox-mode.md) | 0m<br>0m | codex, shuttle, preflight |
 
 #### Enhancements (4)
 
