@@ -1,6 +1,6 @@
 # The orch writes the beam PR description under lym instructions; beam describe validates and pushes it
 
-`beam-describe-no-decision-log` · Task · enhancement, landing, workspaces, orch · running · Record-Write
+`beam-describe-no-decision-log` · Task · enhancement, landing, workspaces, orch · running · Drift-Baseline
 
 Imported from [issue #90](https://github.com/Knatte18/loomyard/issues/90).
 
