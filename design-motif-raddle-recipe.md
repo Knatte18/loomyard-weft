@@ -1,6 +1,6 @@
 # Arras: one recipe that runs Motif and raddle in a row, with a perch on the split
 
-`motif-raddle-recipe` · Task · sketch, shed, loom, burler, arbiter, board · running · Open-Window
+`motif-raddle-recipe` · Task · sketch, shed, loom, burler, arbiter, board · running · Raddle-Write
 
 Decision record: [Sketch](decision-motif-raddle-recipe.md)
 
