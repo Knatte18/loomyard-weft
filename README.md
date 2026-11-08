@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-08 15:30 UTC; every age below is as of then.
+Rendered 2026-11-08 15:31 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -90,7 +90,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **The orch writes the beam PR description under lym instructions; beam describe validates and pushes it**<br>• Orch-written beam description: end result plus member PRs, no decision log | [`beam-describe-no-decision-log`](design-beam-describe-no-decision-log.md) | darn · solid | Code-Burler-Review | neve | 21m<br>18m | landing, workspaces, orch |
+| T1 | **The orch writes the beam PR description under lym instructions; beam describe validates and pushes it**<br>• Orch-written beam description: end result plus member PRs, no decision log | [`beam-describe-no-decision-log`](design-beam-describe-no-decision-log.md) | darn · solid | Code-Burler-Fix | neve | 22m<br>18m | landing, workspaces, orch |
 | T2 | **Slack in reed: a connection toggle and a presence toggle, presence per machine and switching by itself**<br>• lym switches presence on an operator Slack message or pane line, tells operator lines from its own injects, and shows a slack on/off toggle in reed | [`slack-presence-auto`](design-slack-presence-auto.md) | darn · solid | Code-Bouncer | neve | 2d<br>2h | reed, shuttle, slack |
 
 #### Ready (0)
@@ -120,7 +120,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **A test binary pinned as a tmux job re-runs its own suite and fork-bombs the machine**<br>• Guard every command lym pins from os.Executable so a test binary is never launched by tmux | [`test-binary-fork-guard`](design-test-binary-fork-guard.md) | 39m<br>39m | reed, gate, testkit |
-| B2 |  | **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | 21m<br>21m | shed, friction |
+| B2 |  | **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | 22m<br>22m | shed, friction |
 
 #### Enhancements (3)
 
