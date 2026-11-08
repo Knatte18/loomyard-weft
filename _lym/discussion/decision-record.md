@@ -46,6 +46,12 @@ Decision: When lym posts to Slack under a sender's name, the name carries the ma
 
 Rationale: Operator, 2026-11-08: the app showed ly:orch with no machine; :: was chosen earlier over @ (looks like e-mail) and brackets (shell globbing).
 
+### Added after Discussion (parent, 2026-11-08): The Slack state job must never run the test binary: it froze the machine twice
+
+Decision: Commit 4aa372a7 pins a tmux status job built by composeSlackStateCommand from executablePath(), the absolute path of the running binary. Under go test that binary is reedengine.test, so every tmux session a reedengine test creates runs 'reedengine.test slack bar' on each status refresh; the test binary ignores the arguments and runs the whole suite again, which creates more sessions with the same job. That fork bomb (hundreds of reedengine.test, tmux and bash processes, load above 800) froze Neve at 14:37 and again at 15:40 on 2026-11-08. Before any further gate or test run: (1) the status job and the toggle click must never invoke a test binary: tests inject an executablePath stub that returns a harmless command or none, and production resolves the lym binary as the other reed buttons do; (2) add a guard so a reedengine.test started with unexpected non-test arguments exits at once (TestMain), and a test that proves a pinned status job in a test session does not launch the test binary; (3) check every other place this change pins a command from executablePath (slack toggle click, hooks in claudeengine settings) for the same loop. Run only targeted package tests until (1) and (2) are in.
+
+Rationale: Journal memsample on Neve, boots -2 and -1: by_program reedengine.test(125) at 14:36:46 rising to 537, and 176 to 517 at 15:40-15:41; both starts minutes after this run's writer committed or resumed.
+
 ## Constraints
 
 ## Auto-mode assumptions
