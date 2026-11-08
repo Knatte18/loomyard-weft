@@ -1,6 +1,6 @@
 # Slack v2: one bot, one channel per orch, push in place of polling
 
-`slack-v2` · Task · feature, slack, creel, orch · running · Discussion-Burler-Fix
+`slack-v2` · Task · feature, slack, creel, orch · running · Discussion-Bouncer
 
 ## Seen (operator and orch, 2026-11-07, first live Slack test)
 

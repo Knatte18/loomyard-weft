@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-08 09:03 UTC; every age below is as of then.
+Rendered 2026-11-08 09:07 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,8 +18,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Slack v2: one bot, one channel per orch, push in place of polling** | [`slack-v2`](design-slack-v2.md) | motif | Discussion-Burler-Fix | neve | 15h<br>14h | slack, creel, orch |
-| T2 | **Measure where a Webster run spends its time, from recorded runs** | [`webster-time-analysis`](design-webster-time-analysis.md) | darn · docs | Darn-Write | neve | 20m<br>20m | webster |
+| T1 | **Slack v2: one bot, one channel per orch, push in place of polling** | [`slack-v2`](design-slack-v2.md) | motif | Discussion-Bouncer | neve | 15h<br>15h | slack, creel, orch |
+| T2 | **Measure where a Webster run spends its time, from recorded runs** | [`webster-time-analysis`](design-webster-time-analysis.md) | darn · docs | Darn-Write | neve | 25m<br>25m | webster |
 
 ### Ready (0)
 
@@ -44,8 +44,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 15h<br>15h | heddle |
-| E2 |  | **Batcher groups cards by the dependency graph, not only contiguous runs of card order** | [`batcher-dag-order`](design-batcher-dag-order.md) | 35m<br>35m | webster |
-| E3 |  | **Slack messages to the orch say Slack twice: sender ly:SLACK and a [slack] body prefix** | [`slack-forward-prefix`](design-slack-forward-prefix.md) | 4m<br>4m | slack |
+| E2 |  | **Batcher groups cards by the dependency graph, not only contiguous runs of card order** | [`batcher-dag-order`](design-batcher-dag-order.md) | 40m<br>40m | webster |
+| E3 |  | **Slack messages to the orch say Slack twice: sender ly:SLACK and a [slack] body prefix** | [`slack-forward-prefix`](design-slack-forward-prefix.md) | 9m<br>9m | slack |
 | E7 |  | **Each part agent plans and builds its own part, instead of joining the parts into one plan** | [`parts-plan-and-build`](design-parts-plan-and-build.md) | 5d<br>2d | loom |
 | E9 |  | **An interactive agent idle for a set time gets its session compacted**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 7d<br>4d | shed, shuttle, batten |
 
