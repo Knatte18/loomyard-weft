@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Cut and fold fabricengine tier 1 tests the coverage study found redundant** | [`fabric-test-cuts`](design-fabric-test-cuts.md) | darn · solid | Drift-Recheck | neve | 32m<br>30m | fabric, testkit |
+| T1 | **Cut and fold fabricengine tier 1 tests the coverage study found redundant** | [`fabric-test-cuts`](design-fabric-test-cuts.md) | darn · solid | Describe | neve | 32m<br>31m | fabric, testkit |
 
 ### Ready (0)
 
