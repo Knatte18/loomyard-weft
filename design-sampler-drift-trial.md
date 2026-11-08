@@ -1,39 +1,20 @@
-# Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages
+# The sampler carries drift rows, off by default and switched on per task
 
-`sampler-drift-trial` · Note · feature, drift, shed
+`sampler-drift-trial` · Note · feature, drift, shed, loom
 
 Imported from [issue #28](https://github.com/Knatte18/loomyard/issues/28).
 
-## What happened
+## Seen
 
-A `sampler` run in the Models hub (`drift-numerical-baseline`) had one job: trial the drift flow with the operator before drift is trusted on real tasks.
-Every `lym drift` verb refused in the sampler worktree, because each verb is gated on the run's stage and the sampler recipe has no drift rows:
+A `sampler` run cannot reach drift: every `lym drift` verb runs only inside a tapestry or darn run's worktree (`internal/driftcli/doc.go`), and the sampler recipe has no drift rows.
+So drift's own stages (Drift-Baseline, Drift-Expect with its sealed expectation, the capture diff and the judge at Drift-Verify and Drift-Recheck, `lym drift check` and `lym drift amend`) can only be tried for the first time on a production task.
 
-```
-drift capture refused: the run is at Sampler-Session (running), and a main capture runs only at Drift-Baseline or at a Drift-Await halt
-capture --side: the run is at Sampler-Session (running), and the verb runs only at Drift-Verify
-compare: the run is at Sampler-Session (running), and the verb runs only at Drift-Verify
-drift accept refused: the run is at Sampler-Session (running), and the verb runs only at Drift-Verify
-withdraw: same as accept
-```
+## Decision (operator, 2026-11-08)
 
-The sampler fell back to running the hub's capture and compare commands by hand, and mimicked accept and withdraw with the skip file.
-That proved the repository's harness, but none of lym's own drift stages: the Drift-Baseline agent's scope choice, `accept` and `withdraw` taking effect in the drift records, and the interactive Drift-Verify session.
-The first real test of those stages is now a production task with drift full.
+The sampler recipe gets the drift rows tapestry and darn carry, switched off by default.
+A sampler task can switch them on, so the operator can try the whole drift flow on a deliberate change before trusting it on real tasks.
+With the rows off, a sampler runs as now.
+The drift verbs run in a sampler worktree whose drift rows are on.
+The stage gates of tapestry and darn stay as they are.
 
-## Built since (tidy, 2026-11-05)
-
-`drift-rework` (`3882070d`) reworked drift, so the stages and verbs named above are gone or changed.
-- Removed: the `scope`, `accept`, `withdraw`, `waive` and `compare` verbs, `capture --side`, the skip file and the Drift-Baseline and Drift-Verify agents; the scope now comes from `drift.scope` config, not an agent's choice.
-- New: a `Drift-Expect` row (an agent writes and seals an expectation), a code diff of the capture against it, a judge agent at `Drift-Verify` and `Drift-Recheck`, and the verbs `lym drift check` and `lym drift amend`.
-- The landing's own notes say this note's trial assumes the removed verbs and is revisited after landing: the wanted trial would now exercise the expectation, the diff and the judge, not scope, accept and withdraw. Whether the new verbs refuse in a sampler session as the old ones did was not checked.
-
-## Wanted
-
-A way to trial drift in a sampler, the recipe meant for trying things with the operator.
-For example, either:
-
-- the drift verbs run in a sampler session, against a sampler-local drift record, so scope, capture, compare, accept and withdraw can be exercised end to end; or
-- a sampler variant (or option) that carries the Drift-Baseline, Drift-Await and Drift-Verify rows, so the interactive Drift-Verify session can be reached with a deliberate change.
-
-The stage gates stay as they are for tapestry and darn, where they keep an agent from re-baselining mid-task.
+Open for Discussion: the switch itself, preferably the existing `drift.scope` in the task's `run_settings` with the sampler's default `off`, rather than a new key.

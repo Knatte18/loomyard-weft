@@ -230,12 +230,13 @@
       "id": 1041,
       "handle": "F16",
       "slug": "sampler-drift-trial",
-      "title": "Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages",
+      "title": "The sampler carries drift rows, off by default and switched on per task",
       "kind": "note",
       "labels": [
         "feature",
         "drift",
-        "shed"
+        "shed",
+        "loom"
       ],
       "issues": [
         28
@@ -243,9 +244,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "Imported from [issue #28](https://github.com/Knatte18/loomyard/issues/28).\n\n## What happened\n\nA `sampler` run in the Models hub (`drift-numerical-baseline`) had one job: trial the drift flow with the operator before drift is trusted on real tasks.\nEvery `lym drift` verb refused in the sampler worktree, because each verb is gated on the run's stage and the sampler recipe has no drift rows:\n\n```\ndrift capture refused: the run is at Sampler-Session (running), and a main capture runs only at Drift-Baseline or at a Drift-Await halt\ncapture --side: the run is at Sampler-Session (running), and the verb runs only at Drift-Verify\ncompare: the run is at Sampler-Session (running), and the verb runs only at Drift-Verify\ndrift accept refused: the run is at Sampler-Session (running), and the verb runs only at Drift-Verify\nwithdraw: same as accept\n```\n\nThe sampler fell back to running the hub's capture and compare commands by hand, and mimicked accept and withdraw with the skip file.\nThat proved the repository's harness, but none of lym's own drift stages: the Drift-Baseline agent's scope choice, `accept` and `withdraw` taking effect in the drift records, and the interactive Drift-Verify session.\nThe first real test of those stages is now a production task with drift full.\n\n## Built since (tidy, 2026-11-05)\n\n`drift-rework` (`3882070d`) reworked drift, so the stages and verbs named above are gone or changed.\n- Removed: the `scope`, `accept`, `withdraw`, `waive` and `compare` verbs, `capture --side`, the skip file and the Drift-Baseline and Drift-Verify agents; the scope now comes from `drift.scope` config, not an agent's choice.\n- New: a `Drift-Expect` row (an agent writes and seals an expectation), a code diff of the capture against it, a judge agent at `Drift-Verify` and `Drift-Recheck`, and the verbs `lym drift check` and `lym drift amend`.\n- The landing's own notes say this note's trial assumes the removed verbs and is revisited after landing: the wanted trial would now exercise the expectation, the diff and the judge, not scope, accept and withdraw. Whether the new verbs refuse in a sampler session as the old ones did was not checked.\n\n## Wanted\n\nA way to trial drift in a sampler, the recipe meant for trying things with the operator.\nFor example, either:\n\n- the drift verbs run in a sampler session, against a sampler-local drift record, so scope, capture, compare, accept and withdraw can be exercised end to end; or\n- a sampler variant (or option) that carries the Drift-Baseline, Drift-Await and Drift-Verify rows, so the interactive Drift-Verify session can be reached with a deliberate change.\n\nThe stage gates stay as they are for tapestry and darn, where they keep an agent from re-baselining mid-task.\n",
+      "body": "Imported from [issue #28](https://github.com/Knatte18/loomyard/issues/28).\n\n## Seen\n\nA `sampler` run cannot reach drift: every `lym drift` verb runs only inside a tapestry or darn run's worktree (`internal/driftcli/doc.go`), and the sampler recipe has no drift rows.\nSo drift's own stages (Drift-Baseline, Drift-Expect with its sealed expectation, the capture diff and the judge at Drift-Verify and Drift-Recheck, `lym drift check` and `lym drift amend`) can only be tried for the first time on a production task.\n\n## Decision (operator, 2026-11-08)\n\nThe sampler recipe gets the drift rows tapestry and darn carry, switched off by default.\nA sampler task can switch them on, so the operator can try the whole drift flow on a deliberate change before trusting it on real tasks.\nWith the rows off, a sampler runs as now.\nThe drift verbs run in a sampler worktree whose drift rows are on.\nThe stage gates of tapestry and darn stay as they are.\n\nOpen for Discussion: the switch itself, preferably the existing `drift.scope` in the task's `run_settings` with the sampler's default `off`, rather than a new key.\n",
       "created": "2026-11-03T09:16:18Z",
-      "revised": "2026-11-05T19:30:55Z"
+      "revised": "2026-11-08T17:04:38Z"
     },
     {
       "id": 1073,
