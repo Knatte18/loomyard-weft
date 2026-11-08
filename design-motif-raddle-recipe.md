@@ -17,10 +17,12 @@ On 2026-11-08 the first raddle proposal for `slack-v2` missed the operator's cha
 - The operator only releases the filed tasks.
 - The recipe is called `arras` (operator, 2026-11-08). `cartoon` stays reserved for a later Plan block, since a cartoon is an artifact, the drawing the weaver follows, not the way to it; the weaving glossary (`docs/reference/weaving-glossary.md`) lists `arras` as free and is updated with it.
 - `arras` is the default for a tapestry-sized note; Motif alone stays for a design decided now but split later, on code still changing, such as `slack-machine-bridge` waiting for `slack-push-channels`.
+- The shipped rule that a tapestry-sized note runs as a Motif, then raddle (in the `ly:board-policy` skill and the orch text) is rewritten to name `arras`.
 - Size: shed, raddle, Burler and arbiter, so a Motif of its own.
 
 ## When an arras run ends (operator, 2026-11-08)
 
 - One task: the split files a single task, drafted, carrying the decision record; the arras entry itself is done and pruned.
 - A family of tasks: the split files them into a new project named after the arras entry's slug, so the board shows they are the result of that arras run; each task carries its `depends_on` and its part of the decision record, and the project lists their order.
+- Each task of a family is an ordinary darn or tapestry with its own perch and its own landing on `main`; the operator weighed a closed project with one perch at the end and kept the per-task runs, since a darn is cheaper, more local and tested on its own before the next starts (operator, 2026-11-08).
 - Open: whether releasing the project releases all its tasks at once, in their `depends_on` order, and whether the project keeps the whole decision record for later reading.
