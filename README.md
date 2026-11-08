@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-08 18:43 UTC; every age below is as of then.
+Rendered 2026-11-08 18:44 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -76,14 +76,6 @@ _None._
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T1 | **Second fabricengine test cut, from the coverage study's removable set** | [`fabric-test-cuts-2`](design-fabric-test-cuts-2.md) | 58m<br>34m | fabric, testkit |
-
 ## [P4 Arras: one recipe that runs Motif and raddle in a row, with a perch on the split](project-arras-recipe.md) (5)
 
 [`arras-recipe`](design-arras-recipe.md) · Age 2h · Owner `neve`
@@ -128,7 +120,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **A mechanical way to find redundant tests: package-scoped coverage, a map per package, a check on a diff** | [`redundant-test-finder`](design-redundant-test-finder.md)<br>[Sketch](decision-redundant-test-finder.md) | raddle | Raddle-Write | neve | 1h<br>7m | testkit, gate |
+| T2 | **A mechanical way to find redundant tests: package-scoped coverage, a map per package, a check on a diff** | [`redundant-test-finder`](design-redundant-test-finder.md)<br>[Sketch](decision-redundant-test-finder.md) | raddle | Raddle-Write | neve | 1h<br>8m | testkit, gate |
 
 #### Ready (0)
 
