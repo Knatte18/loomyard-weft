@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Verify",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Verify",
-    "last": "Darn-Write → done",
+    "now": "Code-Bouncer",
+    "last": "Drift-Verify → skipped",
     "wait": ""
   },
   "history": [
@@ -74,6 +74,13 @@
           "end": "2026-11-08T11:36:16.822151388Z"
         }
       ]
+    },
+    {
+      "producer": "Drift-Verify",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-08T11:36:59Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
