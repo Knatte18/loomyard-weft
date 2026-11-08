@@ -1,6 +1,6 @@
 {
   "runGuid": "9b0afecf89b7e981871614ee103485ff",
-  "planFingerprint": "7ac7fc44699f663739ac42f5a210c4d0e779e42b88bc23468b0797d1775527c0",
+  "planFingerprint": "d15a45849621d0e9cd201831e354da0b516f2d718b5a9143bfb0d51800ce0a59",
   "planFileHashes": {
     "00-overview.md": "56ca1876a5b09a496c3dedb0a3e0ae827c799d5d41de9bdec0d9344e88ee0519",
     "01-api-web-methods.md": "bc125e1252fea748ca040f329c8955d9215a837134d61cf603eaee48a0c8c93c",
@@ -11,11 +11,11 @@
     "06-two-token-login.md": "8e878009558199ee95ea5d4f4917aa05bc35939df46fb3606e3cce75765c3eaa",
     "07-setup-operator-status.md": "d5d24d69b632c8ca53f3096886bb3773fbc518157bdd418ea1b4db491c85ed6e",
     "08-slack-client-surface.md": "3753691922e305904b22a4e43acb879bbb1542a61fe88fcc6ada47f9253a8b47",
-    "09-socket-holder.md": "fc55dd1272ba95716f79e2ec66d4af4c79f13b33b67917fc22d2a1fda5da202d",
-    "10-channel-keeper.md": "4ad794a4cad2680096e0e1e43d4b7cce429ea648cfa49c035e833849a5df15d7",
-    "11-inbound-push.md": "0c08b78bb7104dbf0467aebfe5d5e550cab76c8a09348d2a02739e43fef2be39",
-    "12-outbound-routing.md": "82723c98e5eb3ee019c6404cc714ab0a9ad2a7d17a4b85d4b6262d8373377244",
-    "13-relay-push-loop.md": "dab55053e8e2eaafa157cc78b67c73c88a4a0cdd844c17ae7f63be04a0af91f8"
+    "09-socket-holder.md": "64d32521399455c4eff26a5a6588adf5eef5cfb3944588425571f68a5f184c85",
+    "10-channel-keeper.md": "45627f11f01391f379a743e82092c2ee0101d99e1bba696b57bdb8d476e3ee79",
+    "11-inbound-push.md": "5c17cb84d835918119bda389a21b109b77d922e0f1199b0c549c75c2605a88a2",
+    "12-outbound-routing.md": "b8a663a7d0e8c34b4eb6fd98030786f6f25ed23ce805c2988e8b71f1837f0d66",
+    "13-relay-push-loop.md": "702ac2e1640c9ee5ca228a3b6a1557169c71198ad339c9f268ca1081803d2fb2"
   },
   "planOverviewFrameHash": "3344e696d0d3ca613953f9338ea17354d94f35ca6fe15285fd61ae64aee6e7d3",
   "partition": [
@@ -334,7 +334,7 @@
       }
     }
   ],
-  "currentBatch": 9,
+  "currentBatch": 0,
   "masterStrand": "120da68ec31d8d5018b442b5778f2567",
   "masterSessionId": "f167a2fe-30a4-4232-9464-fc50a2be4955",
   "masterEngine": "claude",
@@ -445,20 +445,45 @@
         "10-channel-keeper"
       ],
       "cardHashes": {
-        "09-socket-holder": "fc55dd1272ba95716f79e2ec66d4af4c79f13b33b67917fc22d2a1fda5da202d",
-        "10-channel-keeper": "4ad794a4cad2680096e0e1e43d4b7cce429ea648cfa49c035e833849a5df15d7"
+        "09-socket-holder": "64d32521399455c4eff26a5a6588adf5eef5cfb3944588425571f68a5f184c85",
+        "10-channel-keeper": "45627f11f01391f379a743e82092c2ee0101d99e1bba696b57bdb8d476e3ee79"
       },
       "startSha": "89dcc40b3a6127d6fea2661b73bebb211f8358cc",
       "kind": "fork",
       "spawnedAt": "2026-11-08T11:16:43Z",
       "sessionId": "f167a2fe-30a4-4232-9464-fc50a2be4955",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "09-socket-holder",
+        "status": "done",
+        "head_sha": "07f62be76e97bd981c4ce1a72ab7e3d87c66ca08",
+        "deviations": [
+          "internal/slackengine/export_test.go",
+          "internal/slackengine/holder.go",
+          "internal/slackengine/holder_test.go",
+          "internal/slackengine/keeper.go",
+          "internal/slackengine/keeper_test.go"
+        ],
+        "departures": [
+          "9: socket-holder: PATTERN-lym-files — the hint's temp file is created in the hub's Slack directory, outside lymtemp, so the rename into the inbox stays on one filesystem"
+        ]
+      },
+      "cardShas": [
+        "07f62be76e97bd981c4ce1a72ab7e3d87c66ca08"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-push-channels/f167a2fe-30a4-4232-9464-fc50a2be4955/subagents/agent-a0d48d081f1a6bc80.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-push-channels/f167a2fe-30a4-4232-9464-fc50a2be4955/subagents/agent-a0d48d081f1a6bc80.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-push-channels/f167a2fe-30a4-4232-9464-fc50a2be4955/subagents/agent-a9e5c640fe537547d.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-push-channels/f167a2fe-30a4-4232-9464-fc50a2be4955/subagents/agent-a809ad202c784214e.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-push-channels/f167a2fe-30a4-4232-9464-fc50a2be4955/subagents/agent-a809ad202c784214e.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-push-channels/f167a2fe-30a4-4232-9464-fc50a2be4955/subagents/agent-a0d48d081f1a6bc80.jsonl"
   ]
 }

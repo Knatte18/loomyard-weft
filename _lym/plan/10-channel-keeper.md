@@ -1,28 +1,28 @@
 # Card 10 — channel-keeper
 
 **Create:**
-- `plan:internal/slackengine#channelKeeper` -> `type channelKeeper struct`
-- `plan:internal/slackengine#newChannelKeeper` -> `func newChannelKeeper(geom Geometry, slack SlackClient, liveHubs LiveHubs, mailbox Mailbox, clock Clock) *channelKeeper`
-- `plan:internal/slackengine#channelKeeper.ensure` -> `func (k *channelKeeper) ensure(ctx context.Context, orch string) (ChannelEntry, error)`
-- `plan:internal/slackengine#channelKeeper.create` -> `func (k *channelKeeper) create(ctx context.Context, orch string) (ChannelEntry, error)`
-- `plan:internal/slackengine#channelKeeper.adopt` -> `func (k *channelKeeper) adopt(ctx context.Context, orch, name string) (ChannelEntry, error)`
-- `plan:internal/slackengine#channelKeeper.heldElsewhere` -> `func (k *channelKeeper) heldElsewhere(orch, channelID string) (string, error)`
-- `plan:internal/slackengine#channelKeeper.join` -> `func (k *channelKeeper) join(ctx context.Context, orch string) error`
-- `plan:internal/slackengine#channelKeeper.inviteOperator` -> `func (k *channelKeeper) inviteOperator(ctx context.Context, orch string) error`
-- `plan:internal/slackengine#channelKeeper.inviteOperators` -> `func (k *channelKeeper) inviteOperators(ctx context.Context) error`
-- `plan:internal/slackengine#channelKeeper.retire` -> `func (k *channelKeeper) retire(ctx context.Context, beams []string, retryRefused bool) error`
-- `plan:internal/slackengine#channelKeeper.botUser` -> `func (k *channelKeeper) botUser(ctx context.Context) (string, error)`
-- `plan:internal/slackengine#channelKeeper.notice` -> `func (k *channelKeeper) notice(key, line string)`
-- `plan:internal/slackengine#errChannelRefused` -> `var errChannelRefused = errors.New("slack: the channel was refused")`
-- `plan:internal/slackengine#ChannelKeeper` -> `type ChannelKeeper = channelKeeper`
-- `plan:internal/slackengine#NewChannelKeeper` -> `func NewChannelKeeper(geom Geometry, slack SlackClient, liveHubs LiveHubs, mailbox Mailbox, clock Clock) *ChannelKeeper`
-- `plan:internal/slackengine#channelKeeper.Ensure` -> `func (k *channelKeeper) Ensure(ctx context.Context, orch string) (ChannelEntry, error)`
-- `plan:internal/slackengine#channelKeeper.Join` -> `func (k *channelKeeper) Join(ctx context.Context, orch string) error`
-- `plan:internal/slackengine#channelKeeper.InviteOperators` -> `func (k *channelKeeper) InviteOperators(ctx context.Context) error`
-- `plan:internal/slackengine#channelKeeper.Retire` -> `func (k *channelKeeper) Retire(ctx context.Context, beams []string, retryRefused bool) error`
-- `plan:internal/slackengine_test#keeperHarness` -> `type keeperHarness struct`
-- `plan:internal/slackengine_test#newKeeperHarness` -> `func newKeeperHarness(t *testing.T) *keeperHarness`
-- `plan:internal/slackengine_test#TestChannelKeeper` -> `func TestChannelKeeper(t *testing.T)`
+- `internal/slackengine#channelKeeper`
+- `internal/slackengine#newChannelKeeper`
+- `internal/slackengine#channelKeeper.ensure`
+- `internal/slackengine#channelKeeper.create`
+- `internal/slackengine#channelKeeper.adopt`
+- `internal/slackengine#channelKeeper.heldElsewhere`
+- `internal/slackengine#channelKeeper.join`
+- `internal/slackengine#channelKeeper.inviteOperator`
+- `internal/slackengine#channelKeeper.inviteOperators`
+- `internal/slackengine#channelKeeper.retire`
+- `internal/slackengine#channelKeeper.botUser`
+- `internal/slackengine#channelKeeper.notice`
+- `internal/slackengine#errChannelRefused`
+- `internal/slackengine#ChannelKeeper`
+- `internal/slackengine#NewChannelKeeper`
+- `internal/slackengine#channelKeeper.Ensure`
+- `internal/slackengine#channelKeeper.Join`
+- `internal/slackengine#channelKeeper.InviteOperators`
+- `internal/slackengine#channelKeeper.Retire`
+- `internal/slackengine_test#keeperHarness`
+- `internal/slackengine_test#newKeeperHarness`
+- `internal/slackengine_test#TestChannelKeeper`
 
 **Uses:**
 - `internal/slackengine#ChannelName`

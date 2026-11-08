@@ -61,16 +61,16 @@
 - `internal/slackengine_test#TestRunRelay`
 
 **Uses:**
-- `plan:internal/slackengine#ChannelKeeper`
-- `plan:internal/slackengine#channelKeeper.join`
-- `plan:internal/slackengine#newChannelKeeper`
+- `internal/slackengine#ChannelKeeper`
+- `internal/slackengine#channelKeeper.join`
+- `internal/slackengine#newChannelKeeper`
 - `internal/slackengine#ReadChannelMap`
 - `internal/slackengine#UpdateChannelMap`
 - `internal/slackengine#ChannelEntry.Advance`
 - `internal/slackengine#ChannelEntry.AdvanceThread`
 - `internal/slackengine#ChannelEntry.ThreadStart`
 - `internal/slackengine#ChannelEntry.PruneThreads`
-- `plan:internal/slackengine#resyncHint`
+- `internal/slackengine#resyncHint`
 - `internal/slackcli#liveHubGeometries`
 - `internal/hubgeom/doc.go`
 - `internal/slackengine#inboundText`

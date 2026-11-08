@@ -1,39 +1,39 @@
 # Card 9 — socket-holder
 
 **Create:**
-- `plan:internal/slackengine#socketHolder` -> `type socketHolder struct`
-- `plan:internal/slackengine#newSocketHolder` -> `func newSocketHolder(geom Geometry, dial Dialer, liveHubs LiveHubs, mailbox Mailbox, slack SlackClient, clock Clock) *socketHolder`
-- `plan:internal/slackengine#socketHolder.run` -> `func (h *socketHolder) run(ctx context.Context)`
-- `plan:internal/slackengine#socketHolder.serve` -> `func (h *socketHolder) serve(ctx context.Context, socket Socket) error`
-- `plan:internal/slackengine#socketHolder.route` -> `func (h *socketHolder) route(envelope Envelope) bool`
-- `plan:internal/slackengine#socketHolder.readLive` -> `func (h *socketHolder) readLive(ctx context.Context) ([]Geometry, bool)`
-- `plan:internal/slackengine#socketHolder.payOwed` -> `func (h *socketHolder) payOwed()`
-- `plan:internal/slackengine#socketHolder.notice` -> `func (h *socketHolder) notice(ctx context.Context, key, line string)`
-- `plan:internal/slackengine#writeHint` -> `func writeHint(geom Geometry, name string) error`
-- `plan:internal/slackengine#hintName` -> `func hintName(envelope Envelope) string`
-- `plan:internal/slackengine#resyncHint` -> `const resyncHint = "resync"`
-- `plan:internal/slackengine#pingInterval` -> `const pingInterval = 30 * time.Second`
-- `plan:internal/slackengine#pongTimeout` -> `const pongTimeout = 10 * time.Second`
-- `plan:internal/slackengine#envelopeLimit` -> `const envelopeLimit = 10 * time.Second`
-- `plan:internal/slackengine#reconnectFloor` -> `const reconnectFloor = time.Second`
-- `plan:internal/slackengine#stableConnection` -> `const stableConnection = time.Minute`
-- `plan:internal/slackengine#SocketHolder` -> `type SocketHolder = socketHolder`
-- `plan:internal/slackengine#NewSocketHolder` -> `func NewSocketHolder(geom Geometry, dial Dialer, liveHubs LiveHubs, mailbox Mailbox, slack SlackClient, clock Clock, write func(Geometry, string) error) *SocketHolder`
-- `plan:internal/slackengine#socketHolder.Run` -> `func (h *socketHolder) Run(ctx context.Context)`
-- `plan:internal/slackengine_test#fakeSocket` -> `type fakeSocket struct`
-- `plan:internal/slackengine_test#fakeSocket.Read` -> `func (s *fakeSocket) Read(ctx context.Context) (slackengine.Envelope, error)`
-- `plan:internal/slackengine_test#fakeSocket.Ack` -> `func (s *fakeSocket) Ack(_ context.Context, envelopeID string) error`
-- `plan:internal/slackengine_test#fakeSocket.Ping` -> `func (s *fakeSocket) Ping(context.Context) error`
-- `plan:internal/slackengine_test#fakeSocket.Close` -> `func (s *fakeSocket) Close() error`
-- `plan:internal/slackengine_test#fakeDialer` -> `type fakeDialer struct`
-- `plan:internal/slackengine_test#fakeDialer.dial` -> `func (d *fakeDialer) dial(ctx context.Context) (slackengine.Socket, string, error)`
-- `plan:internal/slackengine_test#manualClock` -> `type manualClock struct`
-- `plan:internal/slackengine_test#newManualClock` -> `func newManualClock() *manualClock`
-- `plan:internal/slackengine_test#manualClock.Now` -> `func (c *manualClock) Now() time.Time`
-- `plan:internal/slackengine_test#manualClock.After` -> `func (c *manualClock) After(d time.Duration) <-chan time.Time`
-- `plan:internal/slackengine_test#manualClock.Advance` -> `func (c *manualClock) Advance(d time.Duration)`
-- `plan:internal/slackengine_test#manualClock.pending` -> `func (c *manualClock) pending() []time.Duration`
-- `plan:internal/slackengine_test#TestSocketHolder` -> `func TestSocketHolder(t *testing.T)`
+- `internal/slackengine#socketHolder`
+- `internal/slackengine#newSocketHolder`
+- `internal/slackengine#socketHolder.run`
+- `internal/slackengine#socketHolder.serve`
+- `internal/slackengine#socketHolder.route`
+- `internal/slackengine#socketHolder.readLive`
+- `internal/slackengine#socketHolder.payOwed`
+- `internal/slackengine#socketHolder.notice`
+- `internal/slackengine#writeHint`
+- `internal/slackengine#hintName`
+- `internal/slackengine#resyncHint`
+- `internal/slackengine#pingInterval`
+- `internal/slackengine#pongTimeout`
+- `internal/slackengine#envelopeLimit`
+- `internal/slackengine#reconnectFloor`
+- `internal/slackengine#stableConnection`
+- `internal/slackengine#SocketHolder`
+- `internal/slackengine#NewSocketHolder`
+- `internal/slackengine#socketHolder.Run`
+- `internal/slackengine_test#fakeSocket`
+- `internal/slackengine_test#fakeSocket.Read`
+- `internal/slackengine_test#fakeSocket.Ack`
+- `internal/slackengine_test#fakeSocket.Ping`
+- `internal/slackengine_test#fakeSocket.Close`
+- `internal/slackengine_test#fakeDialer`
+- `internal/slackengine_test#fakeDialer.dial`
+- `internal/slackengine_test#manualClock`
+- `internal/slackengine_test#newManualClock`
+- `internal/slackengine_test#manualClock.Now`
+- `internal/slackengine_test#manualClock.After`
+- `internal/slackengine_test#manualClock.Advance`
+- `internal/slackengine_test#manualClock.pending`
+- `internal/slackengine_test#TestSocketHolder`
 
 **Extends:**
 - `cmd/lym#unboundedWaitFiles`

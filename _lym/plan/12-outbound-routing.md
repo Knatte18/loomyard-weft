@@ -26,12 +26,12 @@
 - `internal/slackengine_test#TestOutboundRead`
 
 **Uses:**
-- `plan:internal/slackengine#channelKeeper.ensure`
-- `plan:internal/slackengine#channelKeeper.join`
+- `internal/slackengine#channelKeeper.ensure`
+- `internal/slackengine#channelKeeper.join`
 - `internal/slackengine#UpdateChannelMap`
 - `internal/slackengine#ReadChannelMap`
-- `plan:internal/slackengine#errChannelRefused`
-- `plan:internal/slackengine#NewChannelKeeper`
+- `internal/slackengine#errChannelRefused`
+- `internal/slackengine#NewChannelKeeper`
 - `internal/slackengine#programSlug`
 - `internal/slackengine#orchName`
 - `internal/slackengine#slackEscape`

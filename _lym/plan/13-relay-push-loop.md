@@ -34,20 +34,20 @@
 - `pattern/PATTERN-daemon-wakeups.md`
 
 **Uses:**
-- `plan:internal/slackengine#newSocketHolder`
-- `plan:internal/slackengine#socketHolder.run`
-- `plan:internal/slackengine#newChannelKeeper`
-- `plan:internal/slackengine#channelKeeper.ensure`
-- `plan:internal/slackengine#channelKeeper.inviteOperators`
-- `plan:internal/slackengine#channelKeeper.retire`
+- `internal/slackengine#newSocketHolder`
+- `internal/slackengine#socketHolder.run`
+- `internal/slackengine#newChannelKeeper`
+- `internal/slackengine#channelKeeper.ensure`
+- `internal/slackengine#channelKeeper.inviteOperators`
+- `internal/slackengine#channelKeeper.retire`
 - `plan:internal/slackengine#inbound.start`
 - `plan:internal/slackengine#inbound.drain`
 - `plan:internal/slackengine#inbound.retryOwed`
 - `internal/slackengine#NewDialer`
 - `internal/slackengine#ReadCredentials`
-- `plan:internal/slackengine_test#fakeDialer`
-- `plan:internal/slackengine_test#fakeSocket`
-- `plan:internal/slackengine_test#manualClock`
+- `internal/slackengine_test#fakeDialer`
+- `internal/slackengine_test#fakeSocket`
+- `internal/slackengine_test#manualClock`
 - `internal/slackengine#HelloTimeout`
 - `internal/slackengine#firstRead`
 - `internal/slackengine#takeRelayLock`
