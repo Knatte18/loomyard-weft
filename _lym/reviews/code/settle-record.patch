@@ -1,0 +1,250 @@
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 60e6d348..2ac52528 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -540,7 +540,7 @@
+ // # Trimpath
+ //
+ // A hub's tiers set `-trimpath` in their GOFLAGS, as the example below does,
+-// so a fresh worktree reuses the build and test cache.
++// so a fresh worktree reuses the build cache.
+ // Under it `runtime.Caller` reports module-relative file paths,
+ // so a test that locates its repository from one fails, though a raw `go test` passes.
+ // The verb writes a line when a tier's last GOFLAGS entry, inherited or the tier's own, holds an enabled `-trimpath`.
+@@ -550,6 +550,16 @@
+ // It goes to stderr just before the tier's summary line, so it sits beside a failing run's verdict.
+ // A tier with an empty scope runs no command and gets no such line, and a refused tier prints only its JSON envelope.
+ //
++// # Test result cache
++//
++// Every tier command runs with `gateslot.TestCacheOffFlag`, `-count=1`, first in its GOFLAGS.
++// It comes ahead of the inherited or tier-set value, which the trimpath line names without it.
++// `go test` therefore keeps no test result cache.
++// It writes no test log into the build cache either.
++// No hub config is needed.
++// The green record carries a pass over an unchanged tree.
++// A hub's own `-count` in GOFLAGS, or one in the words after `--`, still wins.
++//
+ // # Child lifetime
+ //
+ // A tier's shell runs through `internal/proc`'s tied child.
+diff --git a/internal/gatecli/test_integration_test.go b/internal/gatecli/test_integration_test.go
+index 2b2002bd..2f40b1a2 100644
+--- a/internal/gatecli/test_integration_test.go
++++ b/internal/gatecli/test_integration_test.go
+@@ -1090,8 +1090,8 @@ func TestGateTest_Scenario(t *testing.T) {
+ 		if want := []string{"./pkg", "-run", "X"}; !slices.Equal(record.Args, want) {
+ 			t.Errorf("tier args = %q; want %q", record.Args, want)
+ 		}
+-		if record.GoFlags != "-trimpath -p=3" || filepath.Dir(record.Slot) != pool.Dir {
+-			t.Errorf("tier environment GOFLAGS = %q, %s = %q; want the tier's own GOFLAGS and a slot of %s", record.GoFlags, gateslot.InheritEnv, record.Slot, pool.Dir)
++		if record.GoFlags != "-count=1 -trimpath -p=3" || filepath.Dir(record.Slot) != pool.Dir {
++			t.Errorf("tier environment GOFLAGS = %q, %s = %q; want the cache-off flag before the tier's own GOFLAGS and a slot of %s", record.GoFlags, gateslot.InheritEnv, record.Slot, pool.Dir)
+ 		}
+ 		if record.Cwd != prime {
+ 			t.Errorf("tier cwd = %q; want the tier's dir under the worktree root %q", record.Cwd, prime)
+@@ -1904,7 +1904,7 @@ func TestGateTest_Scenario(t *testing.T) {
+ 			t.Fatalf("exit code = %d, stdout %q; want 0", code, g.stdout.String())
+ 		}
+ 		record := g.standIn(t)
+-		if record.BuildMark != "from-env-module" || record.GoFlags != "-trimpath -p=3" {
++		if record.BuildMark != "from-env-module" || record.GoFlags != "-count=1 -trimpath -p=3" {
+ 			t.Errorf("tier BUILD_MARK %q, GOFLAGS %q; want the env module's BUILD_MARK over the inherited one and the tier's own GOFLAGS over the env module's", record.BuildMark, record.GoFlags)
+ 		}
+ 	})
+@@ -1929,7 +1929,7 @@ func TestGateTest_Scenario(t *testing.T) {
+ 			t.Fatalf("exit code = %d, stdout %q; want 0", code, g.stdout.String())
+ 		}
+ 		record := g.standIn(t)
+-		if record.Slot != "" || record.GoFlags != "-trimpath -p=3" || record.Cwd != worktree || record.Strand != "" {
++		if record.Slot != "" || record.GoFlags != "-count=1 -trimpath -p=3" || record.Cwd != worktree || record.Strand != "" {
+ 			t.Errorf("tier slot %q, GOFLAGS %q, cwd %q, strand %q; want no slot, the tier's GOFLAGS, %q and no strand", record.Slot, record.GoFlags, record.Cwd, record.Strand, worktree)
+ 		}
+ 		if !strings.Contains(g.stderr.String(), "no hub bound applies") {
+diff --git a/internal/gatecli/tierrun.go b/internal/gatecli/tierrun.go
+index 61a252ee..ed7f7c03 100644
+--- a/internal/gatecli/tierrun.go
++++ b/internal/gatecli/tierrun.go
+@@ -63,6 +63,7 @@ type tierResult struct {
+ // env is the environment every command gets, before the tier's own env is added.
+ // When the resulting GOFLAGS carries `-trimpath`, it logs a line saying so before the first command,
+ // and it returns that line for the caller to print.
++// Every command's GOFLAGS then opens with gateslot.TestCacheOffFlag, so `go test` keeps no test result cache.
+ // A run with no invocation passes at once with nothing discovered.
+ func runTier(ctx context.Context, out io.Writer, run tierRun, env []string, request testRequest) tierResult {
+ 	started := time.Now()
+@@ -86,7 +87,7 @@ func runTier(ctx context.Context, out io.Writer, run tierRun, env []string, requ
+ 	if trimpathNote != "" {
+ 		logBuffer.WriteString(trimpathNote + "\n")
+ 	}
+-	exit, commands, refusal := runInvocations(tierCtx, run, counter, tierEnv, request)
++	exit, commands, refusal := runInvocations(tierCtx, run, counter, gateslot.WithTestCacheOff(tierEnv), request)
+ 	if refusal != "" {
+ 		return tierResult{refusal: refusal}
+ 	}
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index 32b95369..26082a8e 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -38,7 +38,7 @@
+ //
+ // A slot's environment is Lease.InheritEnv for a tier run and HolderEnv for a non-tier holder.
+ // `-trimpath` makes builds from two checkouts byte-identical and their cache keys independent of the checkout path.
+-// A fresh worktree therefore hits the build and test cache.
++// A fresh worktree therefore hits the build cache.
+ // A host scanner that holds each unseen executable then sees known hashes.
+ // It also makes `runtime.Caller` report module-relative file paths.
+ // No code a gate run builds can therefore locate the repo root from them alone.
+@@ -50,6 +50,9 @@
+ // No GOFLAGS is appended, since a tier's command and env set its own parallelism.
+ // HolderEnv returns the environment of a non-tier slot holder's child.
+ // GOFLAGS gets `-trimpath` and, when the holder passes a tier0 parallel above 0, `-p=<n>`.
++// It opens with TestCacheOffFlag, `-count=1`, which WithTestCacheOff also puts first in a tier run's GOFLAGS.
++// `go test` then keeps no test result cache, and so writes none of the per-test logs of touched files it keys one by;
++// the gate's own green record carries a pass over an unchanged tree instead.
+ // A non-nil lease sets InheritEnv.
+ // Limits.Tier0Parallel carries `tier0`'s effective parallel, this machine's override included.
+ // It is 0 when the hub declares no `tier0`, and a holder reads it from the pool's Limits at its acquire.
+diff --git a/internal/gateslot/pool.go b/internal/gateslot/pool.go
+index 8e3eba9e..766db774 100644
+--- a/internal/gateslot/pool.go
++++ b/internal/gateslot/pool.go
+@@ -429,8 +429,37 @@ func (l *Lease) Release() error {
+ 	return errors.Join(errs...)
+ }
+ 
++// TestCacheOffFlag is the go flag that makes `go test` neither read nor write its test result cache.
++// The gate puts it first in the GOFLAGS of every tier command it runs and every non-tier slot holder's child.
++// A cacheable test run logs every file and environment variable its test touches into the build cache.
++// A gate run's tests touch fresh temp directories, so that log grows large and its result is never reused;
++// the gate's own green record already carries a pass over an unchanged tree.
++// The build cache is unaffected, and a later `-count` in GOFLAGS or on the command line wins.
++const TestCacheOffFlag = "-count=1"
++
++// WithTestCacheOff returns a copy of env whose GOFLAGS opens with TestCacheOffFlag.
++// The rest of the value is that of env's last GOFLAGS entry, the one a child sees; env with none gets the flag alone.
++// The copy holds one GOFLAGS entry, last.
++func WithTestCacheOff(env []string) []string {
++	flags := []string{TestCacheOffFlag}
++	kept := make([]string, 0, len(env)+1)
++	existingFlags := ""
++	for _, entry := range env {
++		key, value, _ := strings.Cut(entry, "=")
++		if !strings.EqualFold(key, goFlagsEnvName) {
++			kept = append(kept, entry)
++			continue
++		}
++		existingFlags = value
++	}
++	if existingFlags != "" {
++		flags = append(flags, existingFlags)
++	}
++	return append(kept, goFlagsEnvName+"="+strings.Join(flags, " "))
++}
++
+ // HolderEnv returns a copy of base for a non-tier slot holder's child.
+-// GOFLAGS is the base's value, when it has one, followed by `-p=<tier0Parallel>` and `-trimpath`.
++// GOFLAGS is TestCacheOffFlag, then the base's value when it has one, then `-p=<tier0Parallel>` and `-trimpath`.
+ // The `-p` flag is added only when tier0Parallel is above 0.
+ // A non-nil lease also sets InheritEnv to its first slot's lock path,
+ // so a gate run inside the child runs without acquiring.
+@@ -447,13 +476,14 @@ func HolderEnv(base []string, lease *Lease, tier0Parallel int) []string {
+ 			env = append(env, entry)
+ 		}
+ 	}
+-	flags := []string{"-trimpath"}
+-	if tier0Parallel > 0 {
+-		flags = []string{"-p=" + strconv.Itoa(tier0Parallel), "-trimpath"}
+-	}
++	flags := []string{TestCacheOffFlag}
+ 	if existingFlags != "" {
+-		flags = append([]string{existingFlags}, flags...)
++		flags = append(flags, existingFlags)
++	}
++	if tier0Parallel > 0 {
++		flags = append(flags, "-p="+strconv.Itoa(tier0Parallel))
+ 	}
++	flags = append(flags, "-trimpath")
+ 	env = append(env, goFlagsEnvName+"="+strings.Join(flags, " "))
+ 	if lease != nil {
+ 		env = append(env, InheritEnv+"="+lease.slots[0].lockPath)
+diff --git a/internal/gateslot/pool_test.go b/internal/gateslot/pool_test.go
+index d4be3ce1..31b519c1 100644
+--- a/internal/gateslot/pool_test.go
++++ b/internal/gateslot/pool_test.go
+@@ -533,11 +533,11 @@ func TestLeaseEnv(t *testing.T) {
+ 		tier0Parallel int
+ 		want          []string
+ 	}{
+-		{"tier0 parallel above 0 adds -p and -trimpath", []string{"A=1"}, nil, 3, []string{"A=1", "GOFLAGS=-p=3 -trimpath"}},
+-		{"tier0 parallel 0 adds -trimpath alone", []string{"A=1"}, nil, 0, []string{"A=1", "GOFLAGS=-trimpath"}},
+-		{"existing GOFLAGS is kept ahead of the added flags", []string{"GOFLAGS=-count=1", "A=1"}, nil, 2, []string{"A=1", "GOFLAGS=-count=1 -p=2 -trimpath"}},
+-		{"a lease sets the inheritance variable over an older one", []string{"LYM_GATE_SLOT=old", "A=1"}, lease, 0, []string{"A=1", "GOFLAGS=-trimpath", "LYM_GATE_SLOT=" + slotPath}},
+-		{"no lease leaves an inherited slot variable alone", []string{"LYM_GATE_SLOT=old", "A=1"}, nil, 0, []string{"LYM_GATE_SLOT=old", "A=1", "GOFLAGS=-trimpath"}},
++		{"tier0 parallel above 0 adds the cache-off flag, -p and -trimpath", []string{"A=1"}, nil, 3, []string{"A=1", "GOFLAGS=-count=1 -p=3 -trimpath"}},
++		{"tier0 parallel 0 adds the cache-off flag and -trimpath alone", []string{"A=1"}, nil, 0, []string{"A=1", "GOFLAGS=-count=1 -trimpath"}},
++		{"existing GOFLAGS sits between the cache-off flag and the added flags", []string{"GOFLAGS=-mod=readonly", "A=1"}, nil, 2, []string{"A=1", "GOFLAGS=-count=1 -mod=readonly -p=2 -trimpath"}},
++		{"a lease sets the inheritance variable over an older one", []string{"LYM_GATE_SLOT=old", "A=1"}, lease, 0, []string{"A=1", "GOFLAGS=-count=1 -trimpath", "LYM_GATE_SLOT=" + slotPath}},
++		{"no lease leaves an inherited slot variable alone", []string{"LYM_GATE_SLOT=old", "A=1"}, nil, 0, []string{"LYM_GATE_SLOT=old", "A=1", "GOFLAGS=-count=1 -trimpath"}},
+ 	}
+ 	for _, tc := range holderTests {
+ 		t.Run("HolderEnv "+tc.name, func(t *testing.T) {
+@@ -551,6 +551,28 @@ func TestLeaseEnv(t *testing.T) {
+ 		})
+ 	}
+ 
++	cacheOffTests := []struct {
++		name string
++		base []string
++		want []string
++	}{
++		{"no GOFLAGS gets the cache-off flag alone", []string{"A=1"}, []string{"A=1", "GOFLAGS=-count=1"}},
++		{"the last GOFLAGS follows the cache-off flag in one entry", []string{"GOFLAGS=-inherited", "A=1", "GOFLAGS=-trimpath -p=3"}, []string{"A=1", "GOFLAGS=-count=1 -trimpath -p=3"}},
++		{"an empty GOFLAGS gets the cache-off flag alone", []string{"GOFLAGS="}, []string{"GOFLAGS=-count=1"}},
++		{"a lowercase goflags entry is replaced", []string{"goflags=-trimpath"}, []string{"GOFLAGS=-count=1 -trimpath"}},
++	}
++	for _, tc := range cacheOffTests {
++		t.Run("WithTestCacheOff "+tc.name, func(t *testing.T) {
++			base := slices.Clone(tc.base)
++			if got := WithTestCacheOff(base); !slices.Equal(got, tc.want) {
++				t.Errorf("WithTestCacheOff(%v) = %v; want %v", tc.base, got, tc.want)
++			}
++			if !slices.Equal(base, tc.base) {
++				t.Errorf("WithTestCacheOff changed its base to %v; want it left as %v", base, tc.base)
++			}
++		})
++	}
++
+ 	t.Run("InheritEnv sets only the inheritance variable", func(t *testing.T) {
+ 		base := []string{"GOFLAGS=-count=1", "LYM_GATE_SLOT=old", "A=1"}
+ 		want := []string{"GOFLAGS=-count=1", "A=1", "LYM_GATE_SLOT=" + slotPath}
+diff --git a/internal/planglyph/glyphchain_integration_test.go b/internal/planglyph/glyphchain_integration_test.go
+index 917c6c44..58de3256 100644
+--- a/internal/planglyph/glyphchain_integration_test.go
++++ b/internal/planglyph/glyphchain_integration_test.go
+@@ -657,8 +657,8 @@ func TestGlyphChain_CallerCoverageTyped(t *testing.T) {
+ 		if err != nil {
+ 			t.Fatalf("loadEnv(nil) returned error: %v", err)
+ 		}
+-		if want := "GOFLAGS=-mod=readonly -p=3 -trimpath"; !slices.Contains(env, want) {
+-			t.Errorf("loadEnv(nil) holds no %q; want -mod=readonly ahead of the appended flags", want)
++		if want := "GOFLAGS=-count=1 -mod=readonly -p=3 -trimpath"; !slices.Contains(env, want) {
++			t.Errorf("loadEnv(nil) holds no %q; want -mod=readonly between the cache-off flag and the appended flags", want)
+ 		}
+ 		if !slices.Contains(env, "GOPROXY=off") {
+ 			t.Error("loadEnv(nil) holds no GOPROXY=off; want the load offline")
+diff --git a/internal/planglyph/typesload.go b/internal/planglyph/typesload.go
+index 7c3216a4..0c68c4b6 100644
+--- a/internal/planglyph/typesload.go
++++ b/internal/planglyph/typesload.go
+@@ -99,7 +99,9 @@ func (l goListLoader) load(root string, dirs []string) ([]*packages.Package, err
+ }
+ 
+ // loadEnv returns the environment of one go list load: the process environment with the proxy off and `-mod=readonly` in GOFLAGS.
+-// With a slot pool it appends the flags gateslot.HolderEnv sets for a non-tier holder, `-trimpath` and `-p` from the pool's tier0 parallel, after `-mod=readonly`, and names lease as the slot the load inherits.
++// With a slot pool it applies the flags gateslot.HolderEnv sets for a non-tier holder:
++// `-count=1` ahead of `-mod=readonly`, then `-p` from the pool's tier0 parallel and `-trimpath` after it.
++// It also names lease as the slot the load inherits.
+ func (l goListLoader) loadEnv(lease *gateslot.Lease) ([]string, error) {
+ 	env := append(os.Environ(), "GOPROXY=off", "GOFLAGS=-mod=readonly")
+ 	if l.slots == nil {
