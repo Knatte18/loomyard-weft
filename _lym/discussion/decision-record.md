@@ -469,6 +469,14 @@ Rationale: Each fix reuses an existing wake (the outbound read's wait or the hol
 
 None.
 
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-3-review.md; fixer report: _lym/reviews/discussion/round-3-fixer-report.md.
+  - failed-hinted-read-never-retried (class design, severity BLOCKING, open in rounds 3)
+  - live-hub-list-read-unbounded (class design, severity MEDIUM, open in rounds 2, 3)
+  - operator-invite-never-retried (class design, severity MEDIUM, open in rounds 2, 3)
+<!-- /lym:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - D1: with two hubs' relays on one machine, only the lock holder opens a connection.
