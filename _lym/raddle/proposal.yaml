@@ -1,0 +1,94 @@
+{
+  "sketch": "slack-v2",
+  "shape": "tapestry",
+  "board_checked": [
+    {"slug": "slack-forward-prefix", "revised": "2026-11-08T08:58:28Z"},
+    {"slug": "slack-machine-bridge", "revised": "2026-11-08T09:24:22Z"},
+    {"slug": "slack-presence-auto", "revised": "2026-11-05T20:17:22Z"}
+  ],
+  "parts": [
+    {
+      "slug": "slack-push-channels",
+      "title": "Slack relay: one Socket Mode connection per machine, one channel per orch, two tokens",
+      "type": "feature",
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11"],
+      "packages": [
+        {"path": "internal/slackengine", "size": 4500},
+        {"path": "internal/slackcli", "size": 700},
+        {"path": "internal/hubgeom", "size": 40},
+        {"path": "cmd/lym", "size": 20},
+        {"path": "pattern", "size": 20},
+        {"path": "docs", "size": 110}
+      ],
+      "contract": {
+        "takes": "the per-hub relay of internal/slackengine as it stands, hubregistry.Live, hubgeom.SlackGeometry, fswatch.Watch's names filter, machinename and the slack-login-prompt token read landed as fd159ff2",
+        "delivers": "a relay that wakes on a Socket Mode hint and reads Slack after each channel's cursor; a channel map with one channel per orch that lym creates, and that the bot renames with a date suffix and archives only when its beam is gone, never reopening an archived channel and never unarchiving one on name_taken, so an orch needing Slack under a freed name gets a new channel; a bot that joins a channel by itself with conversations.join after not_in_channel or a name_taken adoption; inbound routing by channel and outbound routing by sender; a login that asks for the bot token (xoxb-) and the app-level token (xapp-) in one run, with no user token; lym slack stop archiving nothing; setup reduced to the operator; docs/slack-app.md; and the PATTERN-agent-addressing and PATTERN-daemon-wakeups backgrounds rewritten for the push route",
+        "exports": "the live-hubs seam and the Socket Mode connection seam on slackengine.RelayDeps, the channel map record, the two-token credential record, RequireConfigured's missing-kind refusal, and the relay state's last-healthy stamp read by EnsureRelayWhileAway's restart cap; EnsureRelay and EnsureRelayWhileAway keep their signatures for orchcli, fabriccli and beamcli"
+      },
+      "depends_on": [],
+      "open_risks": [],
+      "criteria": [
+        "D1: with two hubs' relays on one machine, only the lock holder opens a connection.\nAn event for a channel in hub B's map, read by hub A's holder, writes a hint into B's inbox, and B forwards the message Slack returns.",
+        "D1: an envelope is acknowledged only after its hint write stood.\nA failed hint write, or one past the ten-second limit, is acknowledged and owes that hub a resync hint,\nwritten at each ping until it stands, while the other hubs' events go on.\nAn event no live hub maps is acknowledged and dropped while every map reads, and left unacknowledged while one cannot be read.\nEvery event is left unacknowledged while the `hubregistry.Live` read fails,\nand once it reads again each listed hub gets a resync hint, as does a hub newly listed.",
+        "D1: a failing `hubregistry.Live` read mails the holder hub's orch one notice naming the hubs record's path,\nposted first to the prime's channel when the holder's map holds it.\nThe holder reads the list again at each ping, so a read that stands after the repair ends the episode with no new event.",
+        "D1: a hint file holding text is never forwarded as text; a hint only triggers a read from Slack.",
+        "D1: when the holder's relay ends, a waiting relay takes the lock and opens a connection.",
+        "D1: a `disconnect` envelope, a read error or a pong missing 10 seconds after a ping opens a new connection.\nReconnects back off from one second to sixty, and the wait resets only after a connection that lasted a minute.",
+        "D1: a connection Slack refuses or disables mails the holder hub's orch one `[slack relay]` notice per episode naming `lym slack login`.",
+        "D1: a relay idle for over ten minutes, then ended, does not count as a young death toward the restart cap.",
+        "D2: a hint written into the inbox directory wakes the relay through its file event alone,\nand the relay forwards the operator message under an injected clock with no further wait.",
+        "D2: the relay's writes to its relay state, outbox and channel map and its log wake nothing.\nAn event inside a second of the previous wake's start wakes the relay at that second's end.",
+        "D2: a hint naming a channel outside the relay's map reads nothing from Slack and is removed.",
+        "D2: a hint written while its channel's read is in flight is read at the next wake.",
+        "D2: a hinted read that fails on a transport error, a server error or a rate limit is made again when the outbound read's wait ends,\nwith no new hint, and forwards the operator message once it stands.\nA failed start or resync read is made again the same way, its thread scan included.",
+        "D2: a lost hint for one message is covered by the read for the next, and a message both hinted and caught up is forwarded once.",
+        "D2: a relay's start, and a resync hint after a reconnect, forward the top-level messages after each cursor.\nThey also forward the replies to the last 24 hours' messages past each thread cursor.",
+        "D2: a thread cursor with no reply for 24 hours is pruned from the map, and the thread floor rises to 24 hours before the prune.\nA later reply to that thread is forwarded, and no earlier reply in it is.",
+        "D2: a channel adopted on `name_taken` forwards no reply written before the adoption at the next start.",
+        "D2: concurrent map writes never move a cursor backwards.",
+        "D3: `lym slack login` asks for the bot and app-level tokens in one run and files the `xoxb-` and the `xapp-` token each under its kind after Slack confirms it.\nIt refuses any other prefix, or a run without one token of each kind, naming the two kinds, and keeps the bot token under the `token` key.",
+        "D3: login refuses an app-level token of another app than the bot token given with it, and writes neither token.",
+        "D3: a machine missing either token is refused before any spawn by `lym slack start`, `lym slack away` and `RequireConfigured`,\nnaming `lym slack login` and the missing kind.\n`EnsureRelay` answers `OutcomeNotConfigured` with no error for it.",
+        "D3: a relay started with only a bot token takes its lock and makes its first creel read,\nthen mails the hub's orch one notice naming the missing kind and `lym slack login`,\nposts the same line to the prime's channel when the map holds it, and exits.\nA relay re-exec'd from an older binary's state, with no map, posts the line to the old setup channel.",
+        "D3: lym stores and reads no user token and never calls `conversations.unarchive`.\nThe bot joins a channel with `conversations.join` only after a post, start read or resync read refused with `not_in_channel`,\nor a `name_taken` adoption of a live channel it is not a member of.\nNeither the join nor the adoption is made for a channel another orch's entry in a live hub's map holds,\nor while a live hub's map or the live-hub list cannot be read.",
+        "D3: a login that changes a stored token ends every live relay of the machine's live hubs and names each such hub with `lym slack start`.",
+        "D4: names come out as `ly-neve-prime` and `ly-neve-<slug>`, and a slug `prime` gives `ly-neve-prime_beam`.",
+        "D4: a machine name with characters outside Slack's grammar is mapped onto it, and a name over 80 characters ends in the hash suffix at 80.",
+        "D5: the prime's channel is ensured at relay start.\nA beam's is ensured at the first outbound mail routed to it, from its orch or a beam program.\nEvery listed beam's is ensured by a relay `lym slack away` starts, by a relay restarted while presence is already `slack`,\nand at a wake that reads presence `slack` after `terminal`.\nAn operator invite that failed is retried when the outbound read's wait ends.\nA changed operator is invited into every open channel at the next such wake, with the relay still running.\nAn invite Slack refuses mails the hub's orch one notice per episode naming `lym slack setup --operator <user-id>`.\nTwo ensures of one channel in one relay run one after the other, and the second makes no Slack call to create or adopt.",
+        "D5: the map entry is written before the operator's invite, so a message written at once in a new channel is forwarded.",
+        "D5: on `name_taken`, a live channel of that name is adopted, the bot joining first with `conversations.join` when it is not a member.\nAn archived channel of that name is never unarchived; it is refused with one notice naming renaming it in Slack.\nA channel another hub's or orch's entry holds is refused, with one notice to the hub's orch.\nA refused prime's channel is ensured again when the outbound read's wait ends.",
+        "D6: a beam no longer listed has its channel renamed with the archive's date suffix, such as `ly-neve-<slug>-2026-11-08`, and archived at the next wake,\nand a failed beams read renames and archives nothing.\nA rename refused with `name_taken` tries the next numbered suffix.\nA rename or archive Slack refused is retried when the outbound read's wait ends, never at a file event.\n`lym slack stop` archives nothing.\nThe prime's channel is never archived.",
+        "D6: an orch whose channel is archived gets a new channel under its D4 name when D5 ensures it, the new entry replaces the archived one,\nand the archived channel is never unarchived.",
+        "D6: mail from a sender whose beam is no longer listed posts to the prime's channel under the sender's name.\nWhile the beams read fails, a beam's mail posts to its open channel, and mail of a beam with no open channel waits.",
+        "D7: a message in a beam's channel reaches that beam's orch, and an `@<slug>` prefix is forwarded as plain text.\nNo outbound post carries an answer hint.",
+        "D7: `away`, `back` and `status` in a beam's channel set or read the hub's presence and are answered in that channel.",
+        "D7: an operator thread reply and a `thread_broadcast` are forwarded to the channel's orch.\nA `thread_broadcast` is forwarded once, whether its channel hint or a start read that takes its channel and its thread finds it.\nA `file_share` message forwards its text and one `(file not relayed: <name>)` line per file, and other subtypes are skipped.",
+        "D8: mail from a beam orch or beam program posts to that beam's channel, and mail from the hub's orch or a hub program to the prime's.\nEach carries the sender's name as `username` and its kind's `icon_emoji`, with no `[<sender>]` prefix.",
+        "D8: the relay's dropped and refused lines post to the message's channel, and its stale line to the prime's channel.",
+        "D8: a post refused with `is_archived` ensures a new channel and posts again, one refused with `not_in_channel` joins the bot with `conversations.join` and posts again,\nand one refused with `channel_not_found` ensures the channel anew and posts again.\nA start or resync read refused with `not_in_channel` joins the bot and reads again.",
+        "D9: a presence change still notifies the hub's orch and every beam orch once.",
+        "D10: `lym slack setup --operator <id>` writes the operator after `users.info` confirms it.\nA `setup.json` with an old channel key is read without error, and `status` lists the map's channels.",
+        "Review: D10: `docs/slack-app.md` (new) carries a manifest with the app name, Socket Mode, the `message.channels` event, every bot scope D10 lists with `channels:join` added, and the app-level scope, with no user scope.",
+        "Review: D10: the `docs/overview.md` slack bullet and the `internal/slackengine` and `internal/slackcli` package documentation describe the push route, the channel per orch and the two tokens.",
+        "D11: the Socket Mode client reads a `hello`, an `events_api` envelope and a `disconnect` from an `httptest` server, and acknowledges by `envelope_id`."
+      ],
+      "pattern_changes": ["PATTERN-agent-addressing"],
+      "expected_cost_usd": null,
+      "cost_line": "one tapestry part on profile solid with a stored record; that cell reads too few runs (2 runs), so no figure is given"
+    }
+  ],
+  "cost": {
+    "expected_usd": null,
+    "line": "one tapestry, profile solid, stored record: the tapestry/solid/stored cell reads too few runs, so no figure; it pays the tapestry start cost once for about 5,400 changed lines centred on internal/slackengine",
+    "next_best": {
+      "split": "three chained tapestry tasks on internal/slackengine: tokens and setup (D3, D9, D10), then channels and routing (D4 to D8), then the Socket Mode push (D1, D2, D11)",
+      "expected_usd": null,
+      "line": "three tapestry parts on profile solid with a stored record; the same cell reads too few runs, so no figure, but it pays the tapestry start cost three times and runs the parts one after another, since all three change internal/slackengine and D1, D2 and D3 each read D5's channel map"
+    },
+    "cells": [
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true}
+    ]
+  }
+}

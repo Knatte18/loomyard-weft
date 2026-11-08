@@ -1,0 +1,14 @@
+{
+  "mode": "interactive",
+  "cold_stored": true,
+  "session": 1,
+  "proposed_session": 1,
+  "notice_session": 1,
+  "approval": {
+    "hash": "36ed4c5933980e7ed720cd95524a605b2c2ad8100ff88edc28a5364e45257676",
+    "session": 1
+  },
+  "returns": 0,
+  "entry_position": 0,
+  "notice_sent": false
+}
