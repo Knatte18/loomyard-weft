@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -41,6 +41,39 @@
       "output": "",
       "at": "2026-11-08T11:24:56Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/beam-reed-task-buttons/_lym/landing/summary.md",
+      "at": "2026-11-08T11:36:54Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-08T11:28:10.007284173Z",
+          "end": "2026-11-08T11:28:10.018084648Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-08T11:28:10.08149139Z",
+          "end": "2026-11-08T11:36:16.099299458Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-08T11:36:16.149117514Z",
+          "end": "2026-11-08T11:36:16.363332079Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-08T11:36:16.405733555Z",
+          "end": "2026-11-08T11:36:16.407219572Z"
+        }
+      ]
     }
   ],
   "product": {
