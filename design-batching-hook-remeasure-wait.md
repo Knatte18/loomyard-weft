@@ -1,6 +1,6 @@
 # Re-measure the batching hook once its transcript wait has landed
 
-`batching-hook-remeasure-wait` · Task · research, claude, shuttle · running · Drift-Verify
+`batching-hook-remeasure-wait` · Task · research, claude, shuttle · running · Code-Bouncer
 
 ## Seen
 
