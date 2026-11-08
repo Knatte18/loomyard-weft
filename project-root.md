@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Measure where a Webster run spends its time, from recorded runs** | [`webster-time-analysis`](design-webster-time-analysis.md) | darn · docs | Code-Bouncer | neve | 28m<br>28m | webster |
+| T2 | **Measure where a Webster run spends its time, from recorded runs** | [`webster-time-analysis`](design-webster-time-analysis.md) | darn · docs | Drift-Recheck | neve | 28m<br>28m | webster |
 
 ### Ready (0)
 
@@ -34,7 +34,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S1 |  | **Slack v2: one bot, one channel per orch, push in place of polling** | [`slack-v2`](design-slack-v2.md)<br>[Sketch](decision-slack-v2.md) | 15h<br>1m | slack, creel, orch |
+| S1 |  | **Slack v2: one bot, one channel per orch, push in place of polling** | [`slack-v2`](design-slack-v2.md)<br>[Sketch](decision-slack-v2.md) | 15h<br>2m | slack, creel, orch |
 
 ### Research (3)
 
@@ -42,7 +42,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R2 |  | **Re-measure writer exploration and the carry of lookup results after the Discussion stencil change**<br>• Re-run the writer-lookups measurement on 10 tapestry runs, pricing the carry saved by early explore subagents | [`writer-lookups-remeasure`](design-writer-lookups-remeasure.md) | 3d<br>2d | loom, stencil |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>2d | loom, stencil |
-| R7 |  | **Re-measure the batching hook once its transcript wait has landed**<br>• Count firings against edit follows and lookup chains again, now that the hook waits for its call to reach the transcript | [`batching-hook-remeasure-wait`](design-batching-hook-remeasure-wait.md) | 20h<br>20h | claude, shuttle |
+| R7 |  | **Re-measure the batching hook once its transcript wait has landed**<br>• Count firings against edit follows and lookup chains again, now that the hook waits for its call to reach the transcript | [`batching-hook-remeasure-wait`](design-batching-hook-remeasure-wait.md) | 21h<br>21h | claude, shuttle |
 
 ### Enhancements (5)
 
