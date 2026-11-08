@@ -6,14 +6,22 @@
 
 Neve froze twice on 2026-11-08, at 14:37 and 15:40, and needed a hard restart each time.
 The journal's memory samples show a fork bomb of `reedengine.test`, `tmux` and `bash` processes: from 125 to 537 test processes in four minutes, load above 800, memory and swap full.
-The cause was in the running task `slack-presence-auto` (commit `4aa372a7`): a reed status job built from the running binary's own path (`composeSlackStateCommand`, `internal/reedengine/panebin.go`).
+The cause was a reed status job built from the running binary's own path (`composeSlackStateCommand`, `internal/reedengine/panebin.go`) in the Slack toggles change.
 Under `go test` that path is the test binary, so each tmux session a test made ran the test binary again, which ran the suite and made more sessions.
-That run carries a parent decision to fix its own code.
 
-## Idea
+## Fixed already (`3aaa98cc`)
 
-Guard against the whole class, not only this job:
+- `slackLineExecutable` refuses the running test binary, so the Slack state job and toggle click are pinned only for a real `lym`.
+- `reedengine`'s `TestMain` exits 2 on any positional argument (`testmain_guard_test.go`).
+- The `claudeengine` hook commands name `lym` through `PATH`.
 
-- Every package whose code pins a command built from `os.Executable` into tmux (status jobs, click bindings, hooks) gets a `TestMain` that exits at once when the test binary starts with arguments that are not test flags.
-- Or one shared helper resolves "this binary" and refuses to return a test binary's path, so production code can never pin one.
-- The gate could also cap the processes a test run may spawn, so a loop fails the gate instead of freezing the machine.
+## Change (operator, 2026-11-08)
+
+Guard the whole class across lym, not only reed's Slack lines:
+
+1. Audit every place that pins a command built from `os.Executable` (or a stand-in such as `executablePath`) into tmux or another process that runs it unattended: status jobs, key and mouse bindings, hooks, watchdogs.
+   Packages to read include `reedengine`, `reedcli`, `loomcli`, `battencli` and `adoptcli`; grep for the rest.
+   Fix each one that could run a test binary.
+2. One shared helper resolves "this lym binary" and never returns a test binary's path; every such pin uses it.
+3. Every package whose tests reach such a pin gets the `TestMain` guard that exits at once on non-test arguments, with a test proving it, as `reedengine` has.
+4. `lym gate test` caps the processes a test run may spawn, so a runaway loop fails the gate instead of freezing the machine.
