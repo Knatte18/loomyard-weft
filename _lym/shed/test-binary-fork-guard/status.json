@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -236,6 +236,21 @@
       "output": "",
       "at": "2026-11-08T16:25:23Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/test-binary-fork-guard/_lym/landing/summary.md",
+      "at": "2026-11-08T16:25:58Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-08T16:25:57.648046024Z",
+          "end": "2026-11-08T16:25:57.648105005Z"
+        }
+      ]
     }
   ],
   "product": {
