@@ -2,6 +2,8 @@
 
 `redundant-test-finder` · Task · enhancement, testkit, gate · running · Discussion-Bouncer
 
+Decision record: [Sketch](decision-redundant-test-finder.md)
+
 ## Seen (orch, 2026-11-08)
 
 `PATTERN-test-speed` ("Test economy") forbids a test that covers no behaviour another test does not, and counts a redundant test as a finding.
