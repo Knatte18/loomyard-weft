@@ -40,9 +40,9 @@
 - `internal/slackengine#channelKeeper.ensure`
 - `internal/slackengine#channelKeeper.inviteOperators`
 - `internal/slackengine#channelKeeper.retire`
-- `plan:internal/slackengine#inbound.start`
-- `plan:internal/slackengine#inbound.drain`
-- `plan:internal/slackengine#inbound.retryOwed`
+- `internal/slackengine#inbound.start`
+- `internal/slackengine#inbound.drain`
+- `internal/slackengine#inbound.retryOwed`
 - `internal/slackengine#NewDialer`
 - `internal/slackengine#ReadCredentials`
 - `internal/slackengine_test#fakeDialer`

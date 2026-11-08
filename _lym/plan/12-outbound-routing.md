@@ -1,13 +1,13 @@
 # Card 12 — outbound-routing
 
 **Create:**
-- `plan:internal/slackengine#outboundRoute` -> `func outboundRoute(shortname string, message creelengine.Message) (string, Sender, bool)`
-- `plan:internal/slackengine#outbound.channelFor` -> `func (out *outbound) channelFor(ctx context.Context, orch string) (ChannelEntry, string, error)`
-- `plan:internal/slackengine#outbound.postTo` -> `func (out *outbound) postTo(ctx context.Context, record *outboxRecord, message creelengine.Message, orch, text string, sender Sender) error`
-- `plan:internal/slackengine#outbound.postRecovered` -> `func (out *outbound) postRecovered(ctx context.Context, orch, text string, sender Sender) error`
-- `plan:internal/slackengine#errNoOpenChannel` -> `var errNoOpenChannel = errors.New("slack: the beam has no open channel while its listing is unread")`
-- `plan:internal/slackengine#orchIcon` -> `const orchIcon = ":robot_face:"`
-- `plan:internal/slackengine#programIcon` -> `const programIcon = ":gear:"`
+- `internal/slackengine#outboundRoute`
+- `internal/slackengine#outbound.channelFor`
+- `internal/slackengine#outbound.postTo`
+- `internal/slackengine#outbound.postRecovered`
+- `internal/slackengine#errNoOpenChannel`
+- `internal/slackengine#orchIcon`
+- `internal/slackengine#programIcon`
 
 **Delete:**
 - `internal/slackengine#outboundText`

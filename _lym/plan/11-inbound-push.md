@@ -1,22 +1,22 @@
 # Card 11 — inbound-push
 
 **Create:**
-- `plan:internal/slackengine#inbound.start` -> `func (in *inbound) start()`
-- `plan:internal/slackengine#inbound.drain` -> `func (in *inbound) drain(ctx context.Context) (bool, error)`
-- `plan:internal/slackengine#inbound.retryOwed` -> `func (in *inbound) retryOwed(ctx context.Context) bool`
-- `plan:internal/slackengine#inbound.readChannel` -> `func (in *inbound) readChannel(ctx context.Context, setup Setup, orch string, scan bool) (bool, error)`
-- `plan:internal/slackengine#inbound.readThread` -> `func (in *inbound) readThread(ctx context.Context, setup Setup, orch, thread string) (bool, error)`
-- `plan:internal/slackengine#owedRead` -> `type owedRead struct`
-- `plan:internal/slackengine#parseHint` -> `func parseHint(name string) (channel, thread string, ok bool)`
-- `plan:internal/slackengine#fileLines` -> `func fileLines(files []File) string`
-- `plan:internal/slackengine#inbound.Start` -> `func (in *inbound) Start()`
-- `plan:internal/slackengine#inbound.Drain` -> `func (in *inbound) Drain(ctx context.Context) (bool, error)`
-- `plan:internal/slackengine#inbound.RetryOwed` -> `func (in *inbound) RetryOwed(ctx context.Context) bool`
-- `plan:internal/slackengine_test#harness.hint` -> `func (h *harness) hint(name string)`
-- `plan:internal/slackengine_test#harness.sayIn` -> `func (h *harness) sayIn(channel, ts, text string)`
-- `plan:internal/slackengine_test#harness.drain` -> `func (h *harness) drain() (bool, error)`
-- `plan:internal/slackengine_test#harness.mustDrain` -> `func (h *harness) mustDrain() bool`
-- `plan:internal/slackengine_test#TestInboundRead` -> `func TestInboundRead(t *testing.T)`
+- `internal/slackengine#inbound.start`
+- `internal/slackengine#inbound.drain`
+- `internal/slackengine#inbound.retryOwed`
+- `internal/slackengine#inbound.readChannel`
+- `internal/slackengine#inbound.readThread`
+- `internal/slackengine#owedRead`
+- `internal/slackengine#parseHint`
+- `internal/slackengine#fileLines`
+- `internal/slackengine#inbound.Start`
+- `internal/slackengine#inbound.Drain`
+- `internal/slackengine#inbound.RetryOwed`
+- `internal/slackengine_test#harness.hint`
+- `internal/slackengine_test#harness.sayIn`
+- `internal/slackengine_test#harness.drain`
+- `internal/slackengine_test#harness.mustDrain`
+- `internal/slackengine_test#TestInboundRead`
 
 **Delete:**
 - `internal/slackengine#inbound.poll`
