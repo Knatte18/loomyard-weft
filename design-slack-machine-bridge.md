@@ -17,4 +17,4 @@ Creel today carries mail between the hubs of one machine only: a name `<hub>:<st
 - The receiving relay delivers it as inbound mail from `neve::ly:orch`, never as the operator, and creel journals it as it journals mail from another hub.
 - Proof of sender: the message came from the bot of a known machine's app (its app id); only the orch of a machine the operator approved is trusted, and the receiver weighs it as cross-hub mail, never as an operator instruction.
 - Size: Slack and creel together, so a Motif with its own Discussion.
-- Built after `slack-push-channels` lands; the operator wants it later, not now.
+- `slack-push-channels` has landed (`92280f7e`: Socket Mode push, one channel per orch, two tokens), so the groundwork is there; the operator still wants this later, not now.
