@@ -21,6 +21,8 @@ Per writer session, at API list price, and summed over the sample:
 - Cost by activity: turns before the first edit (research), editing turns, turns spent on gate runs and their fixes, and the lookup subagents.
 - Gate waits: each tool call that ran a gate or test, its duration, and whether the turn after it paid a cache write of the whole context (a gap past the cache lifetime); the cost of those re-writes in total and per darn.
 - Gate failures: how many verify-gate rounds a darn needs, how often the existing cold gate fixer (`gate_fixer`, `internal/darnengine/template.yaml`) ran and what it cleared, and how many writer turns gate fixes still took.
+- The writer's wait while the gate and the cold gate fixer run: its length, and whether the writer's turn after the fixer paid a cache write of its whole context; the cost of those re-writes, apart from the re-writes after a plain gate run.
+- The cache lifetime the writer sessions actually get (5 minutes or longer), read from the transcripts' cache fields.
 
 ## Questions to answer
 
