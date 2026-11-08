@@ -661,6 +661,26 @@
       "status": "running · Discussion-Burler-Review",
       "created": "2026-11-08T17:12:18Z",
       "revised": "2026-11-08T17:18:39Z"
+    },
+    {
+      "id": 1244,
+      "handle": "E4",
+      "slug": "fabric-test-cuts-2",
+      "title": "Second fabricengine test cut, from the package-scoped redundancy tool",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "testkit"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (orch, 2026-11-08)\n\nThe first cut (`f2ac2bf7`) dropped 6 `internal/fabricengine` tests and added 8 tier 0 tests: 760 tests before, 762 after, and no time measured.\nIts body told the writer to confirm each drop against the module-wide `go run ./cmd/testtiming -redundancy` check,\nwhich counts the fixture packages' blocks too and lists almost no fabricengine test as contained, so it vetoed nearly every drop.\nThe package-scoped study (`docs/research/speed/fabric-test-redundancy-2026-11-08/`) found 267 unmarked tests that can go together.\n\n## Idea (operator, 2026-11-08: build the map first)\n\nA second cut runs once the redundancy tool from `redundant-test-finder` has landed with package-scoped coverage.\nIt drops from that tool's removable set for `internal/fabricengine`, not from the module-wide check.\nEach test is still read before it goes; one guarding data is kept with `//testtiming:keep \u003creason\u003e`.\nSlowest first; the writer delegates batches by file to subagents, never two on one file.\nThe package's tier 1 time in a gate pass is measured before and after, and both numbers stand in the PR.\n",
+      "created": "2026-11-08T17:44:48Z",
+      "revised": "2026-11-08T17:44:48Z",
+      "project": "fabric-test-speed-work"
     }
   ],
   "prime_owner": "neve",

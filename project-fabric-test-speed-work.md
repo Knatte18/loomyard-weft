@@ -20,6 +20,12 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (0)
+## Notes (1)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Enhancements (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| E4 |  | **Second fabricengine test cut, from the package-scoped redundancy tool** | [`fabric-test-cuts-2`](design-fabric-test-cuts-2.md) | 0m<br>0m | fabric, testkit |
