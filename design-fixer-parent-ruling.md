@@ -1,6 +1,6 @@
 # Burler fix round: decision-class rule conflicts with parent ruling mail, fixer has no outlet to parent
 
-`fixer-parent-ruling` · Task · bug, burler, stencil · running · Drift-Recheck
+`fixer-parent-ruling` · Task · bug, burler, stencil · running · Describe
 
 Imported from [issue #84](https://github.com/Knatte18/loomyard/issues/84).
 
