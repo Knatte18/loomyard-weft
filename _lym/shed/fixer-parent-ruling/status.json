@@ -1,0 +1,21 @@
+{
+  "current_producer": "Worktree-Create",
+  "state": "blocked",
+  "error": "battencli: claim the board entry of \"fixer-parent-ruling\": board: a held board lock deferred the push of the owner commit, and the board is still ahead of origin: run `lym board sync`, then re-run the verb",
+  "pause_requested": false,
+  "activity": {
+    "now": "Worktree-Create",
+    "last": "Worktree-Create → stuck",
+    "wait": "battencli: claim the board entry of \"fixer-parent-ruling\": board: a held board lock deferred the push of the owner commit, and the board is still ahead of origin: run `lym board sync`, then re-run the verb"
+  },
+  "history": [
+    {
+      "producer": "Worktree-Create",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-11-08T11:24:37Z",
+      "budget_exempt": true,
+      "machine": "neve"
+    }
+  ]
+}
