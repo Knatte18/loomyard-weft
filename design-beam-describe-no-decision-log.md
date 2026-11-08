@@ -1,6 +1,6 @@
 # beam describe: drop the project-decision log from the beam PR description
 
-`beam-describe-no-decision-log` · Note · enhancement, pawl, workspaces
+`beam-describe-no-decision-log` · Note · enhancement, landing, workspaces
 
 Imported from [issue #90](https://github.com/Knatte18/loomyard/issues/90).
 
