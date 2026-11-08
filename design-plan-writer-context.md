@@ -95,7 +95,7 @@ The one rule (read in one message, decide every edit, make them in one message, 
 Its effect on agent behaviour is not measured; `agent-turns-effect` measures it.
 Task `turn-savings-measure` (`3207d97e`, 2026-11-04) has since measured project `agent-turns` as a whole in `docs/research/turns/turn-savings-measure-2026-11-04/report.md`, over the 20 most recent darn runs and 4 tapestry runs: the darn writer issues 2.05 calls a turn against 1.08, and shell edits fall from 339 calls to 21.
 The report covers darn and Webster, not the Plan writer's serial lookups, so those stay unmeasured here.
-Task `batching-hook-remeasure` (`d05c8d75`, 2026-11-05, `docs/research/turns/batching-hook-remeasure-2026-11-05/report.md`) has since measured the rule's effect on edit chains: edit follows rose from 4.2% to 6.9% of context, all mid-round and none after a failed gate, so the rule does not stop mid-round edit splitting; its one open question is the hook's live gap, note `batching-hook-live-gap`.
+Task `batching-hook-remeasure` (`d05c8d75`, 2026-11-05, `docs/research/turns/batching-hook-remeasure-2026-11-05/report.md`) has since measured the rule's effect on edit chains: edit follows rose from 4.2% to 6.9% of context, all mid-round and none after a failed gate, so the rule does not stop mid-round edit splitting; its one open question was the hook's live gap, which `batching-hook-remeasure-wait` has since closed (see the 2026-11-08 section below).
 `plan-reviewer-batching` (`5227aeaa`) added a wave structure for the fanned Plan reviewer's pre-read in `burler-fork-reading.md`; it too is unmeasured.
 
 ## Writer lookups measured (landed 2026-11-04)
@@ -104,9 +104,29 @@ Task `planner-fork-lookups` (`482c05d4`, `docs/research/turns/writer-lookups-mea
 - The 3 Plan writers each handed one batch of 3 or 4 `sonnet` lookup subagents to the Agent tool in one message; 1 of 3 full Discussion sessions did.
 - Exploration is 46% of the writers' cost ($11.03 of $23.76); 15% of it is paid above 200k context, every chain above 200k is in a Plan session after its one batch, and 3 of the 6 are single-call serial lookups.
 - Moving every search turn to subagents would save at most about $4.7, one fifth of writer spend; for the short late chains, batching in the writer saves more.
-- The report recommends no bench of the excerpt cut below and no stronger stencil now, and a re-run once more tapestry runs have landed.
+- The report recommends no bench of the excerpt cut below and no stronger stencil now, and a re-run once more tapestry runs have landed; that re-run landed on 2026-11-08 (see below).
 Task `batching-hook-reach` (`119c1c05`, 2026-11-04) made the batching nudge hook count read-only Bash lookups and reach subagents and forks, so the writer's serial `grep` and `sed -n` chains are what it nudges.
-Task `batching-hook-remeasure` (`d05c8d75`, 2026-11-05) measured it on 22 runs: the hook fired 13 times, about 2.5% of the breach turns it was built for, the breach shares did not fall where it reaches, and the report recommends removing it; the live gap is note `batching-hook-live-gap`.
+Task `batching-hook-remeasure` (`d05c8d75`, 2026-11-05) measured it on 22 runs: the hook fired 13 times, about 2.5% of the breach turns it was built for, the breach shares did not fall where it reaches, and the report recommended removing it.
+That recommendation is superseded by `batching-hook-remeasure-wait` (2026-11-08, below).
+
+## Writer lookups and Plan cost re-measured (landed 2026-11-08)
+
+Task `writer-cost-remeasure` (`5c7a821a`, `docs/research/loom/writer-cost-remeasure-2026-11-08/report.md`) re-measured on the five tapestry runs landed after `3085f451`, from their transcripts, with no agent run.
+- All 3 Discussion-Write sessions now send one batch of lookup subagents at turn 6 or 7, where 1 of 3 did; 4 of 5 Plan-Write sessions send theirs by turn 12.
+  The lookup carry in Discussion fell from $1.37 to $0.84 a session, but the subagents cost $0.80, so the session cost is level ($3.05 against $3.06).
+  The most the lookup context kept out of the writers could be worth is $5.95 of $46.94 over the 8 sessions.
+- The Plan phase has not fallen per run (writer plus forks $17.05 against $17.24), but the sample's tasks are 2.9 times as large by changed lines: $1.73 per 1000 lines against $5.11, $0.84 per plan card against $1.21.
+  Plan rounds rose from 2.2 to 3.2; review and fix are 51% of the phase.
+- Against the ideas on this note: the figures support the review-cost and excerpt ideas as the larger pools, give no cost case for sub-planners, and carry no solo-writer arm.
+
+## Batching hook re-measured after its wait (landed 2026-11-08)
+
+Task `batching-hook-remeasure-wait` (`b1f70926`, `docs/research/turns/batching-hook-remeasure-wait-2026-11-08/report.md`) reran the 2026-11-05 scripts on 28 darn runs with sessions after the hook's transcript wait (`7c77e08d`).
+- The delivery gap is closed: the hook fires on 10 of 13 edit follows, where it fired on 2 of 156 before, and 1.21 times a run against 0.59.
+- The next message batched after 8 of 19 nudged lookup and edit breach turns and 4 of 18 silent ones: too few to call an effect, so the report keeps the hook and asks for a larger window, with tapestry runs, before a verdict.
+- The wait adds no tokens; it adds about 2.8 seconds a run of result latency, and half of the calls above the line (268 of 544) run to the two second bound unjudged.
+  A shorter bound for a call of a multi-call message is named as the one cost to look at; none is filed.
+- The 2026-11-05 recommendation to remove the hook is superseded.
 
 ## Split writing built and benched (landed 2026-11-01)
 
