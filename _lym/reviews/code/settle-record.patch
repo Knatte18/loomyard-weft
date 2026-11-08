@@ -1,0 +1,406 @@
+diff --git a/cmd/lym/boardguard_test.go b/cmd/lym/boardguard_test.go
+index 5dd7539a..4cec0799 100644
+--- a/cmd/lym/boardguard_test.go
++++ b/cmd/lym/boardguard_test.go
+@@ -40,8 +40,11 @@ const boardGuardMinScannedFiles = 5
+ // it also fails when a file shells out to `git` via exec.Command or exec.CommandContext.
+ // The boardtest subdirectory is skipped.
+ // Its integration tests legitimately spawn git via hubforge.NewHub, so the ban does not apply to them.
++// A narrowed gate runs it only when a file under internal/boardengine or scankit changes; a whole gate always runs it.
+ //
+ //lym:guard
++//lym:watch internal/boardengine/*.go internal/boardengine/*/*.go internal/boardengine/*/*/*.go
++//lym:watch internal/testkit/scankit/*.go
+ func TestBoardGuard_NoRawGitImportOrShellOut(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	const dir = "internal/boardengine"
+diff --git a/cmd/lym/cwdmutation_test.go b/cmd/lym/cwdmutation_test.go
+index bc0d5b0d..2eaf8fa0 100644
+--- a/cmd/lym/cwdmutation_test.go
++++ b/cmd/lym/cwdmutation_test.go
+@@ -49,8 +49,12 @@ var cwdMutationAllowlist = []scankit.Entry{
+ 
+ // TestCwdMutation_MigratedFilesStayChdirFree walks the module tree and fails on any file in cwdMutationSubjectFiles:
+ // a raw t.Chdir( or os.Chdir( substring fails the test unless the file is on cwdMutationAllowlist.
++// A narrowed gate runs it only when a subject-set file or scankit changes; a whole gate always runs it.
+ //
+ //lym:guard
++//lym:watch internal/fabriccli/cli_test.go internal/configcli/configcli_integration_test.go
++//lym:watch internal/webstercli/verbs_test.go internal/idecli/cli_test.go internal/reedcli/cli_integration_test.go
++//lym:watch internal/fabricengine/coalesce_integration_test.go internal/testkit/scankit/*.go
+ func TestCwdMutation_MigratedFilesStayChdirFree(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	subjects := scankit.NewAllowlist(cwdMutationSubjectFiles)
+@@ -101,9 +105,11 @@ func firstCwdMutationToken(content string) (string, bool) {
+ // TestCwdMutationGuard_NotVacuous proves the matcher fires: a planted violation trips firstCwdMutationToken,
+ // and the one allowlisted file, read fresh from disk, still contains a banned token,
+ // so its silence comes from the allowlist branch.
++// A narrowed gate runs it only when the allowlisted file or scankit changes; a whole gate always runs it.
+ //
+ //testtiming:keep proves the TestCwdMutation_MigratedFilesStayChdirFree guard fires on a planted violation and stays silent for its allowlisted file
+ //lym:guard
++//lym:watch internal/fabricengine/coalesce_integration_test.go internal/testkit/scankit/*.go
+ func TestCwdMutationGuard_NotVacuous(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	planted := "func TestPlanted(t *testing.T) {\n\tt.Chdir(t.TempDir())\n}\n"
+diff --git a/cmd/lym/destructiveguard_test.go b/cmd/lym/destructiveguard_test.go
+index 78708acd..5b8bd6b1 100644
+--- a/cmd/lym/destructiveguard_test.go
++++ b/cmd/lym/destructiveguard_test.go
+@@ -192,8 +192,10 @@ var destructiveGuardReadOnlyResultTypes = []struct {
+ // TestNoDestructiveBypass_FabricengineProductionSource walks internal/fabricengine's non-test .go files.
+ // It fails if any of them, other than an allowlisted file, contains one of destructiveGuardBannedTokens.
+ // Each token marks a destructive call or token construction reached outside the gate.
++// A narrowed gate runs it only when a file under internal/fabricengine or scankit changes; a whole gate always runs it.
+ //
+ //lym:guard
++//lym:watch internal/fabricengine/*.go internal/fabricengine/*/*.go internal/testkit/scankit/*.go
+ func TestNoDestructiveBypass_FabricengineProductionSource(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	allow := scankit.NewAllowlist(destructiveGuardAllowlist)
+@@ -240,9 +242,11 @@ func TestNoDestructiveBypass_FabricengineProductionSource(t *testing.T) {
+ //
+ // It inspects declarations only,
+ // so it does not prove that an executor appends to rec or that what it appends is correct.
++// A narrowed gate runs it only when a file of internal/fabricengine or scankit changes; a whole gate always runs it.
+ //
+ //testtiming:keep internal/fabricengine/doc.go names this test as the Mutation Record Invariant's guard
+ //lym:guard
++//lym:watch internal/fabricengine/*.go internal/testkit/scankit/*.go
+ func TestMutationRecord_FabricengineProductionSource(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	moduleRoot := scankit.Root(t)
+diff --git a/cmd/lym/gitrepoboundary_test.go b/cmd/lym/gitrepoboundary_test.go
+index e596470f..31c9097d 100644
+--- a/cmd/lym/gitrepoboundary_test.go
++++ b/cmd/lym/gitrepoboundary_test.go
+@@ -70,8 +70,10 @@ const gitrepoBoundaryMinScannedFiles = 5
+ // Such methods, for example `StageAndCommit` and `CommitEmpty`, need their diffs reviewed by hand.
+ // The second assertion catches a bare gitexec call written directly in a method.
+ // Such a call would satisfy the first assertion while still violating the CLI/go-git boundary.
++// A narrowed gate runs it only when a file of internal/gitrepo or scankit changes; a whole gate always runs it.
+ //
+ //lym:guard
++//lym:watch internal/gitrepo/*.go internal/testkit/scankit/*.go
+ func TestGitrepoBoundary_PinnedRunCallSites(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	const dir = "internal/gitrepo"
+diff --git a/cmd/lym/norecoverydeny_test.go b/cmd/lym/norecoverydeny_test.go
+index 9ca932f9..367486b5 100644
+--- a/cmd/lym/norecoverydeny_test.go
++++ b/cmd/lym/norecoverydeny_test.go
+@@ -143,9 +143,15 @@ func scanDeniedRecoveryGoFile(t *testing.T, root, path string) []deniedRecoveryH
+ }
+ 
+ // TestNoDeniedRecovery_ScannedSurfaceHasNone fails, naming file and line, for every denied form the scanned surface offers.
++// A narrowed gate runs it only when a scanned file, the shell guard table or scankit changes;
++// a whole gate always runs it.
+ //
+ //testtiming:keep pins that no refusal, stencil or spec names a denied recovery command, the guard itself of PATTERN-refusal-way-forward
+ //lym:guard
++//lym:watch contracts/specs/* contracts/specs/*/* plugins/ly/skills/* plugins/ly/skills/*/* plugins/ly/skills/*/*/*
++//lym:watch contracts/stencils/* contracts/stencils/*/* contracts/stencils/*/*/* contracts/stencils/*/*/*/*
++//lym:watch internal/webster*/*.go internal/webster*/*/*.go internal/shed*/*.go internal/shed*/*/*.go
++//lym:watch internal/loom*/*.go internal/loom*/*/*.go internal/shellguard/*.go internal/testkit/scankit/*.go
+ func TestNoDeniedRecovery_ScannedSurfaceHasNone(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	root := scankit.Root(t)
+diff --git a/cmd/lym/rawgitmutation_test.go b/cmd/lym/rawgitmutation_test.go
+index 1c3e88e3..00cc61e0 100644
+--- a/cmd/lym/rawgitmutation_test.go
++++ b/cmd/lym/rawgitmutation_test.go
+@@ -43,8 +43,10 @@ const rawGitMutationMinScannedFiles = 4
+ // TestNoRawGitMutation_WebsterProductionSource walks the non-test .go files of internal/websterengine.
+ // It fails if one contains the raw substring "gitrepo.New(" or "gitexec.Run(" and is not allowlisted.
+ // Those two tokens are the construction and call forms a raw, fabric-bypassing git mutation carries.
++// A narrowed gate runs it only when a file under internal/websterengine or scankit changes; a whole gate always runs it.
+ //
+ //lym:guard
++//lym:watch internal/websterengine/*.go internal/websterengine/*/*.go internal/testkit/scankit/*.go
+ func TestNoRawGitMutation_WebsterProductionSource(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	allow := scankit.NewAllowlist(rawGitMutationAllowlist)
+diff --git a/cmd/lym/remoterefslock_test.go b/cmd/lym/remoterefslock_test.go
+index 1718efb0..9a4da2ef 100644
+--- a/cmd/lym/remoterefslock_test.go
++++ b/cmd/lym/remoterefslock_test.go
+@@ -28,8 +28,10 @@ const remoteRefsLockMinScannedFiles = 20
+ // TestRemoteRefsLock_FabricengineFetchesWritingTrackingRefsGoThroughGitrepo fails on each violating fetch.
+ // A violation is an argument list holding "fetch" without "--refmap=" and outside the allowlist.
+ // The scan covers the non-test source of internal/fabricengine.
++// A narrowed gate runs it only when a file of internal/fabricengine or scankit changes; a whole gate always runs it.
+ //
+ //lym:guard
++//lym:watch internal/fabricengine/*.go internal/testkit/scankit/*.go
+ func TestRemoteRefsLock_FabricengineFetchesWritingTrackingRefsGoThroughGitrepo(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	allowlist := scankit.NewAllowlist(remoteRefsLockFetchAllowlist)
+diff --git a/cmd/lym/sandbox_coverage_test.go b/cmd/lym/sandbox_coverage_test.go
+index 86f79ad0..e23c9b62 100644
+--- a/cmd/lym/sandbox_coverage_test.go
++++ b/cmd/lym/sandbox_coverage_test.go
+@@ -66,9 +66,13 @@ var excludedModules = []scankit.Entry{
+ }
+ 
+ // TestSandboxCoverage_AllModulesCoveredOrExcluded asserts every module is covered or excluded.
++// A narrowed gate runs it only when a suite file, the root command or a module's CLI package changes;
++// a whole gate always runs it.
+ //
+ //testtiming:keep pins that every registered module is covered by the sandbox suite or excluded with a reason, a guard no covering test asserts
+ //lym:guard
++//lym:watch tools/sandbox/*SUITE.md cmd/lym/main.go internal/*cli/*.go internal/shortcutcli/*
++//lym:watch internal/testkit/scankit/*.go
+ func TestSandboxCoverage_AllModulesCoveredOrExcluded(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	// Collect the module names registered on the live cobra root.
+diff --git a/cmd/lym/uncontainedwrite_test.go b/cmd/lym/uncontainedwrite_test.go
+index 765d536b..88217037 100644
+--- a/cmd/lym/uncontainedwrite_test.go
++++ b/cmd/lym/uncontainedwrite_test.go
+@@ -90,8 +90,10 @@ const uncontainedWriteMinScannedFiles = 30
+ // It fails when a file outside the allowlist holds a banned token.
+ // A raw write must route through an os.Root rooted at the hub, the write-side containment chokepoint.
+ // Otherwise its file needs a reasoned allowlist entry.
++// A narrowed gate runs it only when a file under internal/fabricengine or scankit changes; a whole gate always runs it.
+ //
+ //lym:guard
++//lym:watch internal/fabricengine/*.go internal/fabricengine/*/*.go internal/testkit/scankit/*.go
+ func TestNoUncontainedWrite_FabricengineProductionSource(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	allow := scankit.NewAllowlist(uncontainedWriteAllowlist)
+diff --git a/cmd/lym/verifiedtree_test.go b/cmd/lym/verifiedtree_test.go
+index b2a21a00..49a02359 100644
+--- a/cmd/lym/verifiedtree_test.go
++++ b/cmd/lym/verifiedtree_test.go
+@@ -56,8 +56,11 @@ func callsAny(data []byte, token string) bool {
+ // TestVerifiedTree_PlanVerifySitesCallVerify fails when a plan-verify site does not call or hold verifytree.Verify.
+ // It also fails a site whose code lines contain neither `Hold:` nor `.Hold =`,
+ // so a site that drops its pause hold trips it.
++// A narrowed gate runs it only when a plan-verify site or scankit changes; a whole gate always runs it.
+ //
+ //lym:guard
++//lym:watch internal/websterengine/verifygate.go internal/loomshed/verifygate.go internal/webstercli/verify.go
++//lym:watch internal/landingshed/verifygate.go internal/testkit/scankit/*.go
+ func TestVerifiedTree_PlanVerifySitesCallVerify(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	seen := map[string]bool{}
+diff --git a/cmd/lym/websterretiredsteps_test.go b/cmd/lym/websterretiredsteps_test.go
+index df837109..17b4def0 100644
+--- a/cmd/lym/websterretiredsteps_test.go
++++ b/cmd/lym/websterretiredsteps_test.go
+@@ -87,9 +87,14 @@ func scanRetiredStepsGoFile(t *testing.T, root, path string) []deniedRecoveryHit
+ 
+ // TestWebsterRetiredSteps_ScannedSurfaceHasNone fails for every retired step the scanned surface names.
+ // The failure names the file and line of each hit.
++// A narrowed gate runs it only when a scanned file, the shared token matcher or scankit changes;
++// a whole gate always runs it.
+ //
+ //testtiming:keep pins that no webster refusal, stencil or spec names git reset --keep or a reset followed by run --fresh, the retirement of both routes
+ //lym:guard
++//lym:watch contracts/specs/* contracts/specs/*/* contracts/stencils/webster/* contracts/stencils/webster/*/*
++//lym:watch internal/webster*/*.go internal/webster*/*/*.go cmd/lym/norecoverydeny_test.go
++//lym:watch internal/testkit/scankit/*.go
+ func TestWebsterRetiredSteps_ScannedSurfaceHasNone(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	root := scankit.Root(t)
+diff --git a/contracts/stencils/govalues_test.go b/contracts/stencils/govalues_test.go
+index 60fe3aaf..d7c2fd35 100644
+--- a/contracts/stencils/govalues_test.go
++++ b/contracts/stencils/govalues_test.go
+@@ -32,8 +32,13 @@ func yamlKey(t *testing.T, field string) string {
+ 
+ // TestStencils_NameGoValues asserts each stencil names the value Go declares for it.
+ // Renaming either side without the other fails the test.
++// A narrowed gate runs it only when a stencil, the orch role or a package declaring a value changes;
++// a whole gate always runs it.
+ //
+ //lym:guard
++//lym:watch contracts/stencils/*.go contracts/stencils/*.md contracts/stencils/*/*.md contracts/stencils/*/*/*.md
++//lym:watch contracts/stencils/*/*/*/*.md contracts/orchrole/* internal/stencil/*.go internal/stencilstore/*.go
++//lym:watch internal/gatecli/*.go internal/shuttleengine/*.go internal/shedrun/*.go internal/websterengine/*.go
+ func TestStencils_NameGoValues(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -70,8 +75,11 @@ func TestStencils_NameGoValues(t *testing.T) {
+ 
+ // TestTwillStencils_HostNeutral asserts no twill stencil names a host-specific value,
+ // so another host can render it with its own values.
++// A narrowed gate runs it only when a stencil or the stencil registry changes; a whole gate always runs it.
+ //
+ //lym:guard
++//lym:watch contracts/stencils/*.go contracts/stencils/*.md contracts/stencils/*/*.md contracts/stencils/*/*/*.md
++//lym:watch contracts/stencils/*/*/*/*.md contracts/orchrole/* internal/stencil/*.go internal/stencilstore/*.go
+ func TestTwillStencils_HostNeutral(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -99,8 +107,11 @@ func TestTwillStencils_HostNeutral(t *testing.T) {
+ 
+ // TestHubGenericStencils_NameNoGoTiers asserts the planning and implementer stencils name no Go verify-tier command,
+ // so a hub declaring no tier gets none; a hub with tiers gets them through the gate_tiers marker.
++// A narrowed gate runs it only when a stencil or the stencil registry changes; a whole gate always runs it.
+ //
+ //lym:guard
++//lym:watch contracts/stencils/*.go contracts/stencils/*.md contracts/stencils/*/*.md contracts/stencils/*/*/*.md
++//lym:watch contracts/stencils/*/*/*/*.md contracts/orchrole/* internal/stencil/*.go internal/stencilstore/*.go
+ func TestHubGenericStencils_NameNoGoTiers(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/contracts/stencils/parentdirective_test.go b/contracts/stencils/parentdirective_test.go
+index 2728d6d6..9561b2c9 100644
+--- a/contracts/stencils/parentdirective_test.go
++++ b/contracts/stencils/parentdirective_test.go
+@@ -113,9 +113,13 @@ func registeredBodies(t *testing.T) map[string]string {
+ 
+ // TestStencils_OpeningStencilsRenderParentDirective fails when a role's opening stencil is unregistered;
+ // it also fails when that stencil lacks the parent directive marker.
++// A narrowed gate runs it only when a stencil, the orch role or a package it reads changes; a whole gate always runs it.
+ //
+ //testtiming:keep pins PATTERN-stencil-ownership's parent-directive marker on every role's opening stencil, a guard that fires which no other test asserts
+ //lym:guard
++//lym:watch contracts/stencils/*.go contracts/stencils/*.md contracts/stencils/*/*.md contracts/stencils/*/*/*.md
++//lym:watch contracts/stencils/*/*/*/*.md contracts/orchrole/* internal/stencil/*.go internal/stencilstore/*.go
++//lym:watch internal/parentdirective/*.go internal/editdirective/*.go
+ func TestStencils_OpeningStencilsRenderParentDirective(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -127,9 +131,13 @@ func TestStencils_OpeningStencilsRenderParentDirective(t *testing.T) {
+ 
+ // TestStencils_OpeningStencilsRenderEditDirective fails when a role's opening stencil is unregistered;
+ // it also fails when that stencil lacks the edit directive marker.
++// A narrowed gate runs it only when a stencil, the orch role or a package it reads changes; a whole gate always runs it.
+ //
+ //testtiming:keep pins PATTERN-stencil-ownership's parent-directive marker on every role's opening stencil, a guard that fires which no other test asserts
+ //lym:guard
++//lym:watch contracts/stencils/*.go contracts/stencils/*.md contracts/stencils/*/*.md contracts/stencils/*/*/*.md
++//lym:watch contracts/stencils/*/*/*/*.md contracts/orchrole/* internal/stencil/*.go internal/stencilstore/*.go
++//lym:watch internal/parentdirective/*.go internal/editdirective/*.go
+ func TestStencils_OpeningStencilsRenderEditDirective(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -140,9 +148,12 @@ func TestStencils_OpeningStencilsRenderEditDirective(t *testing.T) {
+ }
+ 
+ // TestStencils_NoEditRuleRestatement fails when a stencil besides edit-directive restates the edit rule in a sentence.
++// A narrowed gate runs it only when a stencil, the orch role or a package it reads changes; a whole gate always runs it.
+ //
+ //testtiming:keep pins the rule that only the edit-directive stencil states the edit rule, a guard that fires which no other test asserts
+ //lym:guard
++//lym:watch contracts/stencils/*.go contracts/stencils/*.md contracts/stencils/*/*.md contracts/stencils/*/*/*.md
++//lym:watch contracts/stencils/*/*/*/*.md contracts/orchrole/* internal/stencil/*.go internal/stencilstore/*.go
+ func TestStencils_NoEditRuleRestatement(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -160,9 +171,12 @@ func TestStencils_NoEditRuleRestatement(t *testing.T) {
+ 
+ // TestStencils_NoUnboundedAskOperator fails for any registered stencil outside the orch family.
+ // Such a stencil fails when one of its sentences tells the agent to ask the operator and carries no prohibition word.
++// A narrowed gate runs it only when a stencil, the orch role or a package it reads changes; a whole gate always runs it.
+ //
+ //testtiming:keep pins PATTERN-stencil-ownership's parent-directive ban on an unbounded ask-the-operator sentence in a spawned role's stencil, a guard that fires which no other test asserts
+ //lym:guard
++//lym:watch contracts/stencils/*.go contracts/stencils/*.md contracts/stencils/*/*.md contracts/stencils/*/*/*.md
++//lym:watch contracts/stencils/*/*/*/*.md contracts/orchrole/* internal/stencil/*.go internal/stencilstore/*.go
+ func TestStencils_NoUnboundedAskOperator(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/contracts/stencils/roleskills_test.go b/contracts/stencils/roleskills_test.go
+index 9ed33702..d5cad67e 100644
+--- a/contracts/stencils/roleskills_test.go
++++ b/contracts/stencils/roleskills_test.go
+@@ -46,9 +46,12 @@ func skillLoadViolations(body string) []string {
+ 
+ // TestStencils_NoSkillLoadInstructions fails for every stencil whose agent-facing body tells an agent to load a skill.
+ // A stencil that names the Skill tool fails too.
++// A narrowed gate runs it only when a stencil, the orch role or a package it reads changes; a whole gate always runs it.
+ //
+ //testtiming:keep pins PATTERN-stencil-ownership's parent-directive ban on a stencil telling an agent to load a skill that lym delivers, or naming the Skill tool, a guard that fires which no other test asserts
+ //lym:guard
++//lym:watch contracts/stencils/*.go contracts/stencils/*.md contracts/stencils/*/*.md contracts/stencils/*/*/*.md
++//lym:watch contracts/stencils/*/*/*/*.md contracts/orchrole/* internal/stencil/*.go internal/stencilstore/*.go
+ func TestStencils_NoSkillLoadInstructions(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/cliwire/bannedecl_enforcement_test.go b/internal/cliwire/bannedecl_enforcement_test.go
+index a0b7d093..f02189fa 100644
+--- a/internal/cliwire/bannedecl_enforcement_test.go
++++ b/internal/cliwire/bannedecl_enforcement_test.go
+@@ -63,8 +63,11 @@ var bannedWiringDeclarations = map[string]bool{
+ // It inspects each top-level declaration and flags any whose name is banned.
+ // The match is on the AST, never on raw text, so a doc comment naming a function cannot trip it.
+ // _test.go files are skipped: the invariant is about production wiring, and a test helper is not a second copy of it.
++// A narrowed gate runs it only when a policed package or scankit changes; a whole gate always runs it.
+ //
+ //lym:guard
++//lym:watch internal/webstercli/*.go internal/webstercli/*/*.go internal/burlercli/*.go internal/burlercli/*/*.go
++//lym:watch internal/testkit/scankit/*.go
+ func TestBannedDeclarations_CliPackagesCallIntoCliwire(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	var failures []string
+diff --git a/internal/planparser/shape_enforcement_test.go b/internal/planparser/shape_enforcement_test.go
+index 91fb4b71..dc709916 100644
+--- a/internal/planparser/shape_enforcement_test.go
++++ b/internal/planparser/shape_enforcement_test.go
+@@ -221,8 +221,11 @@ func offside(raw string) bool {
+ 
+ // TestRefKindScan_RealTreeClean checks every production file in internal/planparser and internal/planglyph.
+ // Only classify.go and shape.go may name classifyRef, the refKind type, or one of its declared constants.
++// A narrowed gate runs it only when a scanned package or scankit changes; a whole gate always runs it.
+ //
+ //lym:guard
++//lym:watch internal/planparser/*.go internal/planparser/*/*.go internal/planglyph/*.go internal/planglyph/*/*.go
++//lym:watch internal/testkit/scankit/*.go
+ func TestRefKindScan_RealTreeClean(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -253,8 +256,11 @@ func TestRefKindScan_RealTreeClean(t *testing.T) {
+ // TestPlanOpScan_RealTreeClean checks every production file in internal/planparser and internal/planglyph.
+ // Only classify.go, shape.go and internal/planparser/handle.go may open-code "plan:" string surgery.
+ // internal/planglyph/handle.go is not exempt, though it shares a basename with internal/planparser/handle.go.
++// A narrowed gate runs it only when a scanned package or scankit changes; a whole gate always runs it.
+ //
+ //lym:guard
++//lym:watch internal/planparser/*.go internal/planparser/*/*.go internal/planglyph/*.go internal/planglyph/*/*.go
++//lym:watch internal/testkit/scankit/*.go
+ func TestPlanOpScan_RealTreeClean(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/testkit/enforcement_test.go b/internal/testkit/enforcement_test.go
+index 10efe096..5cfb4cc3 100644
+--- a/internal/testkit/enforcement_test.go
++++ b/internal/testkit/enforcement_test.go
+@@ -78,7 +78,11 @@ func TestEnforcement_TestkitInvariant(t *testing.T) {
+ 	}
+ }
+ 
++// TestEnforcement_ScankitStdlibOnly fails when a non-test scankit file imports a package outside the standard library.
++// A narrowed gate runs it only when a scankit file changes; a whole gate always runs it.
++//
+ //lym:guard
++//lym:watch internal/testkit/scankit/*.go
+ func TestEnforcement_ScankitStdlibOnly(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	scankit.AssertImportAllowlist(t, "internal/testkit/scankit")
+diff --git a/pattern/PATTERN-test-speed.md b/pattern/PATTERN-test-speed.md
+index 934779e8..54bae0ce 100644
+--- a/pattern/PATTERN-test-speed.md
++++ b/pattern/PATTERN-test-speed.md
+@@ -153,12 +153,19 @@ Bound: a forged value misleads only an ungated raw run, since `lym gate test` se
+ 
+ - A test that guards only some files, such as a cross-compile or a fixture build, carries `//lym:watch <pattern>...`.
+   `path.Match` matches a pattern holding a `/` against the worktree-relative path, and any other against the base name.
++- A `//lym:guard` test whose scan reads a bounded set of files carries the marker too.
++  Its patterns cover every file that can change its outcome:
++  the files it scans, a package declaring a value it names, and a helper in another file, `scankit` included.
++  A recursive walk's patterns reach one directory level below the deepest file it scans today.
++- A guard that scans all the Go code of the module, or of `internal/` and `cmd/`, stays unmarked.
++  So does one whose inputs no pattern set bounds, such as a link check whose targets come from the link text.
+ - A narrowed gate runs the test only when a changed file matches a pattern or the test's own file changed.
+   A diff-scoped key narrows over its diff, and a `card` key over the diff from the merge base with the parent branch.
+ - A whole gate always runs it.
+ - The marker stacks with `//lym:guard`, `//lym:seam` and `//testtiming:keep` lines in any order.
+ - A misplaced marker, or one with no pattern or a malformed one, refuses the gate.
+ - Bound: the skip matches by test name, so a test of the same name in another package of the run is skipped too.
++- Bound: a file nested deeper than a guard's patterns reach does not run it in a narrowed gate; a whole gate does.
+ 
+ ## Time is injectable
+ 
