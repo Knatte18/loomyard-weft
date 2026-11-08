@@ -1,0 +1,24 @@
+round: 2
+fan: review-discussion
+fix_fan: fix-discussion
+fans_recorded: true
+lenses:
+    - interactions
+    - existing-paths
+    - bound-breaker
+    - walkthrough
+review:
+    engine: claude
+    model: opus
+    effort: medium
+    start: 2026-11-08T12:56:41Z
+    end: 2026-11-08T14:03:04.965608516+01:00
+    wall_seconds: 383.965608516
+    tokens_known: true
+    fresh_tokens: 279197
+    cache_read_tokens: 3790025
+    forks: 4
+    fork_fresh_tokens: 84627
+    fork_cache_read_tokens: 2137533
+    fork_fresh_share: 0.3031085577567094
+attempt: "2"
