@@ -334,7 +334,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 11,
   "masterStrand": "120da68ec31d8d5018b442b5778f2567",
   "masterSessionId": "f167a2fe-30a4-4232-9464-fc50a2be4955",
   "masterEngine": "claude",
@@ -387,6 +387,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-push-channels/f167a2fe-30a4-4232-9464-fc50a2be4955/subagents/agent-a9e5c640fe537547d.jsonl"
       ]
+    },
+    "11": {
+      "slug": "inbound-push",
+      "cards": [
+        "11-inbound-push",
+        "12-outbound-routing"
+      ],
+      "cardHashes": {
+        "11-inbound-push": "5c17cb84d835918119bda389a21b109b77d922e0f1199b0c549c75c2605a88a2",
+        "12-outbound-routing": "b8a663a7d0e8c34b4eb6fd98030786f6f25ed23ce805c2988e8b71f1837f0d66"
+      },
+      "startSha": "07f62be76e97bd981c4ce1a72ab7e3d87c66ca08",
+      "kind": "fork",
+      "spawnedAt": "2026-11-08T11:36:54Z",
+      "sessionId": "f167a2fe-30a4-4232-9464-fc50a2be4955",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "6": {
       "slug": "two-token-login",
