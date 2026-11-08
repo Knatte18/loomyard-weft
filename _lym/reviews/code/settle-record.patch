@@ -1,0 +1,2567 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index 5f0d8426..07b80af4 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -46,7 +46,7 @@
+ 
+ ## Processes and waits
+ 
+-- `PATTERN-child-processes` — Starting or ending a process: log the spawn via `internal/logger`; its starter waits on it, bar a double fork's intermediate, which exits at once; a run's processes register in `internal/runproc` and end only through it. — [background](pattern/PATTERN-child-processes.md)
++- `PATTERN-child-processes` — Starting or ending a process: log the spawn via `internal/logger`; its starter waits on it, bar a double fork's intermediate; a run's processes register in `internal/runproc` and end only through it; a pinned or spawned lym command names its binary via `selfexec.LymBinary`. — [background](pattern/PATTERN-child-processes.md)
+ - `PATTERN-daemon-wakeups` — Waiting: an unbounded wait wakes at most once a second and backs off while idle; a wait an agent blocks on takes its cap from the keep-warm resolver. (test) — [background](pattern/PATTERN-daemon-wakeups.md)
+ 
+ ## Testing
+diff --git a/cmd/lym/hermeticenv_test.go b/cmd/lym/hermeticenv_test.go
+index 119d17a3..3af4df5e 100644
+--- a/cmd/lym/hermeticenv_test.go
++++ b/cmd/lym/hermeticenv_test.go
+@@ -32,7 +32,6 @@ var allowedNonHermetic = []scankit.Entry{
+ 	{Key: "tools/sandbox/pathresolve_guard_test.go", Why: "contains the banned `exec.Command`/`exec.CommandContext` token strings as its own scan data (Dev/Prod Binary Separation guard)"},
+ 	{Key: "internal/testkit/tmuxkit/", Why: "its tests spawn the tmux binary against the kit's own sockets, never git"},
+ 	{Key: "internal/reedengine/attachgeometry_integration_test.go", Why: "spawns a real tmux/pty client process via exec.Command to prove the attach handover — a real non-git process, not a git spawn"},
+-	{Key: "internal/reedengine/testmain_guard_test.go", Why: "re-executes the test binary itself with a positional argument to prove TestMain's guard refuses it — a non-git process, not a git spawn"},
+ 	{Key: "internal/termwindow/termwindow_integration_test.go", Why: "spawns bash over the window's shell line with a stub executable standing in for lym — a real non-git process, not a git spawn"},
+ }
+ 
+diff --git a/docs/overview.md b/docs/overview.md
+index be881746..19db2fd9 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -365,7 +365,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/buildvcs/            the running binary's VCS identity, a stdlib-only leaf
+ ├── internal/standalonestate/     target-path-to-hash8-and-state-directory derivation, a stdlib-only leaf
+ ├── internal/segmentcolor/        the loom segments, lym's color palette and its tmux colors, a stdlib-only leaf
+-├── internal/selfexec/            the self-re-exec helper a long-lived pane process calls on a changed binary, a leaf over the standard library and `internal/logger`
++├── internal/selfexec/            the self-re-exec helper a long-lived pane process calls on a changed binary, and `LymBinary`, the one lookup of the running lym binary for a pinned or spawned command, which refuses a test binary; a leaf over the standard library and `internal/logger`
+ ├── internal/runproc/             the owner record of a run's detached and long-lived processes, one file per process under the run's slug or the hub scope, and the one sequence that ends them, a leaf over the standard library, `internal/proc`, `internal/state` and `internal/logger`
+ ├── internal/fswatch/             the one file-change event source over fsnotify, a leaf
+ ├── internal/configengine/        shared config resolution
+diff --git a/internal/adoptcli/deps.go b/internal/adoptcli/deps.go
+index 0af7c4ea..cb674063 100644
+--- a/internal/adoptcli/deps.go
++++ b/internal/adoptcli/deps.go
+@@ -26,6 +26,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/pairteardown"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/tendercli"
+@@ -237,7 +238,7 @@ func startSuite(dir, outPath, subject string) (int, error) {
+ 	if testing.Testing() {
+ 		return 0, errors.New("the adopt check is not started under go test")
+ 	}
+-	executable, err := os.Executable()
++	executable, err := selfexec.LymBinary()
+ 	if err != nil {
+ 		return 0, fmt.Errorf("locate the lym executable: %w", err)
+ 	}
+@@ -343,7 +344,7 @@ func resumeChild(pairPath string) error {
+ 	if testing.Testing() {
+ 		return errors.New("resuming a child spawns the lym binary, which a test binary must not re-exec")
+ 	}
+-	executable, err := os.Executable()
++	executable, err := selfexec.LymBinary()
+ 	if err != nil {
+ 		return err
+ 	}
+diff --git a/internal/battencli/arm.go b/internal/battencli/arm.go
+index aeb2e950..23cb11ef 100644
+--- a/internal/battencli/arm.go
++++ b/internal/battencli/arm.go
+@@ -26,6 +26,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/machinename"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/runproc"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ 	"github.com/Knatte18/loomyard/internal/shedadapters"
+ 	"github.com/Knatte18/loomyard/internal/sheddriver"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+@@ -468,7 +469,7 @@ func (c *battenCLI) specFor(verb string) shedverbs.Spec {
+ // OnStart registers the loop process in the hub's owner record under slug with the role loop;
+ // a failed registration is logged and the loop runs on.
+ func battenLoopSpec(location *lymcwd.Location, slug string) shedverbs.LoopSpec {
+-	executable, err := os.Executable()
++	executable, err := selfexec.LymBinary()
+ 	if err != nil {
+ 		logger.Warn("battencli: could not resolve the running binary, so the loop has no executable", "error", err.Error())
+ 	}
+diff --git a/internal/battencli/cli.go b/internal/battencli/cli.go
+index 4ac105bf..1593197d 100644
+--- a/internal/battencli/cli.go
++++ b/internal/battencli/cli.go
+@@ -165,7 +165,6 @@ import (
+ 	"errors"
+ 	"fmt"
+ 	"io"
+-	"os"
+ 	"os/exec"
+ 	"testing"
+ 
+@@ -179,6 +178,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/orchcli"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ 	"github.com/Knatte18/loomyard/internal/shedbuild"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrecipe"
+@@ -608,7 +608,7 @@ func spawnDetachedPass(dir string, args []string) (int, error) {
+ 	if testing.Testing() {
+ 		return 0, errors.New("battencli: pass not spawned under test")
+ 	}
+-	executable, err := os.Executable()
++	executable, err := selfexec.LymBinary()
+ 	if err != nil {
+ 		return 0, fmt.Errorf("locate the lym executable: %w", err)
+ 	}
+diff --git a/internal/battencli/wire.go b/internal/battencli/wire.go
+index 643bb577..f46fb429 100644
+--- a/internal/battencli/wire.go
++++ b/internal/battencli/wire.go
+@@ -48,6 +48,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/runproc"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ 	"github.com/Knatte18/loomyard/internal/shedadapters"
+ 	"github.com/Knatte18/loomyard/internal/shedbuild"
+ 	"github.com/Knatte18/loomyard/internal/sheddriver"
+@@ -1456,7 +1457,7 @@ func (c *battenCLI) wire(location *lymcwd.Location, slug string) error {
+ 				if err != nil {
+ 					return err
+ 				}
+-				exe, err := os.Executable()
++				exe, err := selfexec.LymBinary()
+ 				if err != nil {
+ 					return err
+ 				}
+diff --git a/internal/boardengine/spawn.go b/internal/boardengine/spawn.go
+index d5331118..c453f02f 100644
+--- a/internal/boardengine/spawn.go
++++ b/internal/boardengine/spawn.go
+@@ -4,7 +4,6 @@
+ package boardengine
+ 
+ import (
+-	"os"
+ 	"os/exec"
+ 	"path/filepath"
+ 	"testing"
+@@ -13,6 +12,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/runproc"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ )
+ 
+ // DeferrableSyncFlag is the hidden flag that marks a detached board sync as deferrable:
+@@ -29,7 +29,7 @@ func SpawnSync(boardPath string) error {
+ }
+ 
+ // syncExecutable names the binary spawnSync launches; a test points it at a harmless one.
+-var syncExecutable = os.Executable
++var syncExecutable = selfexec.LymBinary
+ 
+ // spawnSync launches `lym board sync --deferrable` as a detached, windowless process in the board directory:
+ // it registers the process under the hub owner.
+diff --git a/internal/creelcli/spawn.go b/internal/creelcli/spawn.go
+index 326590f0..23786a58 100644
+--- a/internal/creelcli/spawn.go
++++ b/internal/creelcli/spawn.go
+@@ -14,6 +14,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/creelengine"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ )
+ 
+ // daemonLogCap is the size above which a spawn truncates the daemon log before appending to it.
+@@ -58,7 +59,7 @@ func spawnDaemon(hubPath, logPath string) (creelengine.Spawn, error) {
+ 	if testing.Testing() {
+ 		return creelengine.Spawn{}, errors.New("creel: the daemon is not spawned under go test")
+ 	}
+-	exe, err := os.Executable()
++	exe, err := selfexec.LymBinary()
+ 	if err != nil {
+ 		return creelengine.Spawn{}, fmt.Errorf("creel: resolve this binary: %w", err)
+ 	}
+diff --git a/internal/driftcli/cli.go b/internal/driftcli/cli.go
+index e1d5b6a7..5545d916 100644
+--- a/internal/driftcli/cli.go
++++ b/internal/driftcli/cli.go
+@@ -8,7 +8,6 @@ import (
+ 	"errors"
+ 	"fmt"
+ 	"io"
+-	"os"
+ 	"testing"
+ 	"time"
+ 
+@@ -21,6 +20,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ )
+ 
+ // The bounds a capture start and a capture child's lock take, in production.
+@@ -197,7 +197,7 @@ func startMainCapture(w *worktree) (any, error) {
+ 	if testing.Testing() {
+ 		return nil, errors.New("drift: the capture child is not spawned under go test")
+ 	}
+-	executable, err := os.Executable()
++	executable, err := selfexec.LymBinary()
+ 	if err != nil {
+ 		return nil, fmt.Errorf("drift: resolve this binary: %w", err)
+ 	}
+diff --git a/internal/fabriccli/anchordeps.go b/internal/fabriccli/anchordeps.go
+index d85b5364..279f8a0c 100644
+--- a/internal/fabriccli/anchordeps.go
++++ b/internal/fabriccli/anchordeps.go
+@@ -33,6 +33,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/runproc"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/slackengine"
+@@ -331,7 +332,7 @@ func beamStartChild(prime *lymcwd.Location) func(label string) ([]byte, error) {
+ 		if testing.Testing() {
+ 			return nil, errors.New("fabriccli: `lym beam start` not run under test")
+ 		}
+-		executable, err := os.Executable()
++		executable, err := selfexec.LymBinary()
+ 		if err != nil {
+ 			return nil, fmt.Errorf("locate the lym executable: %w", err)
+ 		}
+diff --git a/internal/fabricengine/remoteteardown.go b/internal/fabricengine/remoteteardown.go
+index c0b8b1b3..c1a4b217 100644
+--- a/internal/fabricengine/remoteteardown.go
++++ b/internal/fabricengine/remoteteardown.go
+@@ -15,7 +15,6 @@ import (
+ 	"encoding/json"
+ 	"fmt"
+ 	"io"
+-	"os"
+ 	"os/exec"
+ 	"path/filepath"
+ 	"strings"
+@@ -29,6 +28,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/runproc"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ )
+ 
+ // The hidden fabric verb and flags that start the teardown child.
+@@ -272,7 +272,7 @@ func (t *Topology) holdTeardown(lockRec, rec *Mutations, l *lymcwd.Location, slu
+ 		}
+ 		return &inProcessHold{rec: rec, location: l, release: release, sleep: t.archiveSleep}, nil
+ 	}
+-	exe, err := os.Executable()
++	exe, err := selfexec.LymBinary()
+ 	if err != nil {
+ 		return nil, fmt.Errorf("start the teardown child of %q: %w", slug, err)
+ 	}
+diff --git a/internal/fabricengine/spawn.go b/internal/fabricengine/spawn.go
+index 754c104f..9127c421 100644
+--- a/internal/fabricengine/spawn.go
++++ b/internal/fabricengine/spawn.go
+@@ -17,6 +17,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/parentlock"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/runproc"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ )
+ 
+ const (
+@@ -72,7 +73,7 @@ func SpawnDetachedPush(req PushSpawn) error {
+ 		return ErrSpawnUnderTest
+ 	}
+ 
+-	exe, err := os.Executable()
++	exe, err := selfexec.LymBinary()
+ 	if err != nil {
+ 		return err
+ 	}
+diff --git a/internal/fronttask/hub.go b/internal/fronttask/hub.go
+index a0923b1a..12f2e08a 100644
+--- a/internal/fronttask/hub.go
++++ b/internal/fronttask/hub.go
+@@ -21,6 +21,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/machinename"
+ 	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ )
+ 
+@@ -107,7 +108,7 @@ func HubSettleDeps(prime *lymcwd.Location, beam string) (SettleDeps, error) {
+ 		},
+ 		RecordPath: recordPathOf(prime.HubPath),
+ 		RunAction: func(key, subject string) error {
+-			return startAction(prime, key, subject, startDetached)
++			return startAction(prime, key, subject, selfexec.LymBinary, startDetached)
+ 		},
+ 	}, nil
+ }
+@@ -127,14 +128,15 @@ func startDetached(command *exec.Cmd) (int, error) {
+ }
+ 
+ // startAction builds the lym command of the action table's row key for subject and starts it through start.
+-// The command runs in the prime's anchor, with its output appended to a file in the front-task directory.
++// The command names the binary lymBinary resolves.
++// It runs in the prime's anchor, with its output appended to a file in the front-task directory.
+ // It logs the spawn with the executable, arguments, directory, pid and output file, and logs a failed start.
+-func startAction(prime *lymcwd.Location, key, subject string, start func(*exec.Cmd) (int, error)) error {
++func startAction(prime *lymcwd.Location, key, subject string, lymBinary func() (string, error), start func(*exec.Cmd) (int, error)) error {
+ 	row, known := actions[key]
+ 	if !known {
+ 		return fmt.Errorf("the action %q is not in the action table", key)
+ 	}
+-	executable, err := os.Executable()
++	executable, err := lymBinary()
+ 	if err != nil {
+ 		return fmt.Errorf("locate the lym executable: %w", err)
+ 	}
+diff --git a/internal/fronttask/hub_test.go b/internal/fronttask/hub_test.go
+index 2b63dd2c..879ac637 100644
+--- a/internal/fronttask/hub_test.go
++++ b/internal/fronttask/hub_test.go
+@@ -32,6 +32,7 @@ func TestStartAction(t *testing.T) {
+ 		name         string
+ 		key          string
+ 		startErr     error
++		lookupErr    error
+ 		wantErr      string
+ 		wantStarted  bool
+ 		wantLogParts []string
+@@ -50,6 +51,12 @@ func TestStartAction(t *testing.T) {
+ 			wantStarted:  true,
+ 			wantLogParts: []string{"did not start", "fork failed"},
+ 		},
++		{
++			name:      "UnresolvedBinaryIsRefusedWithoutStarting",
++			key:       ActionAdoptCheck,
++			lookupErr: errors.New("test binary"),
++			wantErr:   "locate the lym executable",
++		},
+ 		{
+ 			name:    "KeyOutsideTheTableIsRefusedWithoutStarting",
+ 			key:     "nonsense",
+@@ -64,7 +71,13 @@ func TestStartAction(t *testing.T) {
+ 			prime := &lymcwd.Location{HubPath: hub, WorktreeName: "prime"}
+ 
+ 			var started *exec.Cmd
+-			err := startAction(prime, tt.key, "alpha", func(command *exec.Cmd) (int, error) {
++			standInBinary := func() (string, error) {
++				if tt.lookupErr != nil {
++					return "", tt.lookupErr
++				}
++				return "/stand-in/lym", nil
++			}
++			err := startAction(prime, tt.key, "alpha", standInBinary, func(command *exec.Cmd) (int, error) {
+ 				started = command
+ 				return 4242, tt.startErr
+ 			})
+diff --git a/internal/gatecli/cli.go b/internal/gatecli/cli.go
+index 777f8076..1f25db5f 100644
+--- a/internal/gatecli/cli.go
++++ b/internal/gatecli/cli.go
+@@ -209,6 +209,9 @@ type testRequest struct {
+ 	observer TierObserver
+ 	// phase, when set, hears where the call stands as each tier waits for slots and runs; only a detached runner sets it.
+ 	phase func(runPhase)
++	// processCapFor builds the process cap over a tier run's marker; nil means newProcessCap.
++	// A test replaces it so the cap trips without a runaway.
++	processCapFor func(marker string, period time.Duration) processCap
+ }
+ 
+ // absoluteDir returns the directory a request runs in: dir made absolute against cwd, or cwd when dir is empty.
+diff --git a/internal/gatecli/detachfront.go b/internal/gatecli/detachfront.go
+index 003b27fd..9fde4fc0 100644
+--- a/internal/gatecli/detachfront.go
++++ b/internal/gatecli/detachfront.go
+@@ -35,6 +35,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/runproc"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengines"
+ 	"github.com/Knatte18/loomyard/internal/state"
+@@ -155,7 +156,7 @@ func launchRunner(spawn runnerSpawn) (int, error) {
+ 	if testing.Testing() {
+ 		return 0, errors.New("gate: the detached runner is not started under go test")
+ 	}
+-	exe, err := os.Executable()
++	exe, err := selfexec.LymBinary()
+ 	if err != nil {
+ 		return 0, fmt.Errorf("resolve this binary: %w", err)
+ 	}
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 0c502f6c..39f017de 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -607,6 +607,19 @@
+ // a verify run holds a slot and passes it to a verify command whose `lym gate test` call is the outermost gate run.
+ // It watches `.test` processes only, so a `vstest` tier is bounded by its `timeout_min` alone.
+ //
++// # Process cap
++//
++// While a tier's command runs, the verb also lists, once per period, every process carrying the run's entry.
++// The entry is `LYM_GATE_TEST_PID` in the process's environment, and `proc.PIDsWithEnv` does the listing.
++// A tmux server a test starts and its panes keep that entry after they leave the command's tree, so they count too.
++// When the list passes `runProcessCap`, the verb kills every listed process with SIGKILL.
++// It kills again at each later period until the command ends.
++// The tier then fails with a line naming the cap and the way forward, and it is never rerun as a resource shortage.
++// The cap guards against a test binary that a pinned tmux job or child runs again, re-running its own suite.
++// A nested `lym gate test` sets its own entry, so its processes count toward its own cap.
++// The nested run itself counts once toward the outer one.
++// Off Linux `proc.PIDsWithEnv` reports `errors.ErrUnsupported`, and the cap logs that none applies and ends.
++//
+ // # Example
+ //
+ // loomyard declares tiers and a go scoper; this block shows its `gate.yaml` tier section.
+diff --git a/internal/gatecli/processcap.go b/internal/gatecli/processcap.go
+new file mode 100644
+index 00000000..6284470d
+--- /dev/null
++++ b/internal/gatecli/processcap.go
+@@ -0,0 +1,102 @@
++// processcap.go caps the processes a tier command's run may hold at once,
++// so a runaway spawn loop fails the gate instead of freezing the machine.
++
++package gatecli
++
++import (
++	"context"
++	"errors"
++	"fmt"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/proc"
++)
++
++// runProcessCap is the most processes carrying a tier run's marker that may live at once.
++// A tier's test binaries, compilers, git, tmux servers and panes together stay far below it.
++// A test binary that re-runs its own suite from a tmux job passes it within minutes.
++const runProcessCap = 1024
++
++// processCap kills every process of a tier run once their count passes limit.
++type processCap struct {
++	limit  int
++	period time.Duration
++	// marker is the environment entry every process of the run carries.
++	marker string
++	// list returns the pids whose environment holds marker.
++	list func(marker string) ([]int, error)
++	// kill sends SIGKILL to pid.
++	kill  func(pid int) error
++	after func(time.Duration) <-chan time.Time
++}
++
++// newProcessCap returns the production cap over the processes carrying marker.
++// It scans /proc, kills with SIGKILL and waits on the real clock.
++func newProcessCap(marker string, period time.Duration) processCap {
++	return processCap{
++		limit:  runProcessCap,
++		period: period,
++		marker: marker,
++		list:   proc.PIDsWithEnv,
++		kill:   func(pid int) error { return proc.SignalProcess(pid, true) },
++		after:  time.After,
++	}
++}
++
++// run lists the run's processes once per period until ctx ends, and returns processCapLine once the cap tripped.
++// It returns "" when the cap never tripped.
++// The first list longer than limit trips the cap and kills every listed process.
++// Each later list is killed whole too, so a loop that spawns faster than one kill is still ended.
++// A platform that cannot list processes ends run after one log line.
++func (c processCap) run(ctx context.Context) string {
++	line := ""
++	for ctx.Err() == nil {
++		select {
++		case <-ctx.Done():
++			return line
++		case <-c.after(c.period):
++		}
++		pids, err := c.list(c.marker)
++		if errors.Is(err, errors.ErrUnsupported) {
++			logger.Info("gate test: no process cap applies on this platform")
++			return line
++		}
++		if err != nil {
++			logger.Debug("gate test: the process cap could not list the run's processes", "cause", err)
++			continue
++		}
++		if line == "" && len(pids) <= c.limit {
++			continue
++		}
++		if line == "" {
++			line = processCapLine(len(pids), c.limit)
++			logger.Warn("gate test: the run passed the process cap; killing its processes", "processes", len(pids), "cap", c.limit)
++		}
++		for _, pid := range pids {
++			if err := c.kill(pid); err != nil {
++				logger.Debug("gate test: the process cap could not kill a process", "pid", pid, "cause", err)
++			}
++		}
++	}
++	return line
++}
++
++// processCapLine is the line a tier run that passed the process cap prints and logs.
++func processCapLine(processes, limit int) string {
++	return fmt.Sprintf("gate test: the run held %d processes at once, over the cap of %d, so every process it started was killed and the run fails; "+
++		"a test likely hands this test binary to tmux or a child as if it were lym, and the binary re-runs its own suite; "+
++		"way forward: name the binary in that command through selfexec.LymBinary, then re-run the same command", processes, limit)
++}
++
++// runMarker returns the entry of env that marks every process of a tier run, empty when env sets none.
++func runMarker(env []string) string {
++	marker := ""
++	for _, entry := range env {
++		if strings.HasPrefix(entry, enclosingGateEnv+"=") {
++			marker = entry
++		}
++	}
++	return marker
++}
+diff --git a/internal/gatecli/processcap_test.go b/internal/gatecli/processcap_test.go
+new file mode 100644
+index 00000000..65c22618
+--- /dev/null
++++ b/internal/gatecli/processcap_test.go
+@@ -0,0 +1,121 @@
++// processcap_test.go covers the process cap's kill decisions over a scripted process list,
++// and the run marker it watches.
++
++package gatecli
++
++import (
++	"context"
++	"errors"
++	"slices"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// capSample is what the fake process list returns on one call.
++type capSample struct {
++	pids []int
++	err  error
++}
++
++// runScriptedCap runs a cap of limit over script and returns its line and the pids it killed, in order.
++// It returns once the script's last list has been taken.
++func runScriptedCap(limit int, script []capSample) (string, []int) {
++	ctx, cancel := context.WithCancel(context.Background())
++	defer cancel()
++	var killed []int
++	taken := 0
++	c := processCap{
++		limit:  limit,
++		period: time.Second,
++		marker: "LYM_GATE_TEST_PID=7",
++		list: func(string) ([]int, error) {
++			next := script[taken]
++			taken++
++			if taken == len(script) {
++				cancel()
++			}
++			return next.pids, next.err
++		},
++		kill: func(pid int) error {
++			killed = append(killed, pid)
++			return nil
++		},
++		after: func(time.Duration) <-chan time.Time {
++			elapsed := make(chan time.Time, 1)
++			elapsed <- time.Time{}
++			return elapsed
++		},
++	}
++	return c.run(ctx), killed
++}
++
++func TestProcessCap(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const limit = 3
++	tests := []struct {
++		name       string
++		script     []capSample
++		wantLine   string
++		wantKilled []int
++	}{
++		{
++			name:   "AtTheCapNothingIsKilled",
++			script: []capSample{{pids: []int{1, 2}}, {pids: []int{1, 2, 3}}},
++		},
++		{
++			name:       "OverTheCapEveryListedProcessIsKilledThenAndAfter",
++			script:     []capSample{{pids: []int{1, 2}}, {pids: []int{1, 2, 3, 4}}, {pids: []int{5}}},
++			wantLine:   processCapLine(4, limit),
++			wantKilled: []int{1, 2, 3, 4, 5},
++		},
++		{
++			name:       "AFailedListIsSkipped",
++			script:     []capSample{{err: errors.New("proc unreadable")}, {pids: []int{1, 2, 3, 4}}},
++			wantLine:   processCapLine(4, limit),
++			wantKilled: []int{1, 2, 3, 4},
++		},
++		{
++			name:   "AnUnsupportedPlatformEndsTheCap",
++			script: []capSample{{err: errors.ErrUnsupported}, {pids: []int{1, 2, 3, 4}}},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			line, killed := runScriptedCap(limit, tt.script)
++
++			if line != tt.wantLine {
++				t.Errorf("processCap.run() = %q; want %q", line, tt.wantLine)
++			}
++			if !slices.Equal(killed, tt.wantKilled) {
++				t.Errorf("processCap.run() killed %v; want %v", killed, tt.wantKilled)
++			}
++		})
++	}
++}
++
++func TestRunMarker(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name string
++		env  []string
++		want string
++	}{
++		{"NoMarker", []string{"HOME=/home/u"}, ""},
++		{"OneMarker", []string{"HOME=/home/u", enclosingGateEnv + "=12"}, enclosingGateEnv + "=12"},
++		{"TheLastMarkerWins", []string{enclosingGateEnv + "=12", enclosingGateEnv + "=34"}, enclosingGateEnv + "=34"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := runMarker(tt.env); got != tt.want {
++				t.Errorf("runMarker(%q) = %q; want %q", tt.env, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/gatecli/testtargets_test.go b/internal/gatecli/testtargets_test.go
+index 02c6c705..3d11c76f 100644
+--- a/internal/gatecli/testtargets_test.go
++++ b/internal/gatecli/testtargets_test.go
+@@ -121,7 +121,7 @@ func TestRunInvocationsTestTargets(t *testing.T) {
+ 			}
+ 			request := testRequest{goBinary: defaultGoBinary, root: moduleDir, stderr: &stderr, pipeWaitDelay: defaultPipeWaitDelay}
+ 
+-			exit, _, refusal := runInvocations(context.Background(), run, counter, nil, request)
++			exit, _, _, refusal := runInvocations(context.Background(), run, counter, nil, request)
+ 			if err := counter.Flush(); err != nil {
+ 				t.Fatal(err)
+ 			}
+diff --git a/internal/gatecli/tierrun.go b/internal/gatecli/tierrun.go
+index ed7f7c03..c5049aed 100644
+--- a/internal/gatecli/tierrun.go
++++ b/internal/gatecli/tierrun.go
+@@ -48,6 +48,8 @@ type tierResult struct {
+ 	shortage string
+ 	// crash is the signal of a tier that crashed its test runner in its run and again in its rerun; empty otherwise.
+ 	crash string
++	// processCapped is set when the process cap killed the run's processes; such a run is never rerun.
++	processCapped bool
+ 	// failures, causes and unparsed feed the failure report: failed tests, lines the verb states, and unparsed output.
+ 	failures []runFailure
+ 	causes   []string
+@@ -87,7 +89,7 @@ func runTier(ctx context.Context, out io.Writer, run tierRun, env []string, requ
+ 	if trimpathNote != "" {
+ 		logBuffer.WriteString(trimpathNote + "\n")
+ 	}
+-	exit, commands, refusal := runInvocations(tierCtx, run, counter, gateslot.WithTestCacheOff(tierEnv), request)
++	exit, commands, capLine, refusal := runInvocations(tierCtx, run, counter, gateslot.WithTestCacheOff(tierEnv), request)
+ 	if refusal != "" {
+ 		return tierResult{refusal: refusal}
+ 	}
+@@ -104,6 +106,14 @@ func runTier(ctx context.Context, out io.Writer, run tierRun, env []string, requ
+ 		printLine(request.stderr, line)
+ 		causes = append(causes, line)
+ 	}
++	if capLine != "" {
++		if exit == 0 {
++			exit = 1
++		}
++		logBuffer.WriteString(capLine + "\n")
++		printLine(request.stderr, capLine)
++		causes = append(causes, capLine)
++	}
+ 
+ 	if exit == 0 {
+ 		if line := emptyTierFailure(run, request.root, counter.TestsRun(), request.args); line != "" {
+@@ -132,7 +142,7 @@ func runTier(ctx context.Context, out io.Writer, run tierRun, env []string, requ
+ 	record.Launches = counter.Launches()
+ 	failures := counter.Failures()
+ 	record.Failures = testFailures(failures)
+-	return tierResult{record: record, log: logBuffer.Bytes(), trimpathNote: trimpathNote, failures: failures, causes: causes, unparsed: counter.Unparsed()}
++	return tierResult{record: record, log: logBuffer.Bytes(), trimpathNote: trimpathNote, processCapped: capLine != "", failures: failures, causes: causes, unparsed: counter.Unparsed()}
+ }
+ 
+ // testFailures returns the failed tests of failures as the run record carries them.
+@@ -170,9 +180,10 @@ func resourceShortage(log []byte) string {
+ }
+ 
+ // failedOnShortage returns the resource-shortage marker of a tier run that ran to a failing exit without timing out.
+-// It returns "" for any other result.
++// It returns "" for any other result, a run the process cap killed included:
++// its shortage is the runaway's own, which a rerun would only repeat.
+ func failedOnShortage(result tierResult) string {
+-	if result.refusal != "" || result.buildFailed || result.record.ExitCode == 0 || result.record.TimedOut {
++	if result.refusal != "" || result.buildFailed || result.record.ExitCode == 0 || result.record.TimedOut || result.processCapped {
+ 		return ""
+ 	}
+ 	return resourceShortage(result.log)
+@@ -254,18 +265,20 @@ func retryTier(ctx context.Context, stderr io.Writer, tier string, delay time.Du
+ // For a command holding {test_targets} it first narrows each invocation's targets.
+ // It keeps the packages holding a test of the tier.
+ // An invocation left with no package runs no command, and a line on request.stderr says so.
+-// It returns that exit code, the commands it rendered and a refusal when a command could not be run at all.
+-func runInvocations(ctx context.Context, run tierRun, counter counter, env []string, request testRequest) (exit int, commands []string, refusal string) {
++// While a command runs, the process cap watches every process carrying env's run marker, when env sets one.
++// It returns that exit code, the commands it rendered, the process cap's line when the cap killed the run,
++// and a refusal when a command could not be run at all.
++func runInvocations(ctx context.Context, run tierRun, counter counter, env []string, request testRequest) (exit int, commands []string, capLine, refusal string) {
+ 	if len(run.invocations) == 0 {
+-		return 0, nil, ""
++		return 0, nil, "", ""
+ 	}
+ 	if run.tier.PrebuiltLym {
+ 		bin, cleanup, err := prebuildLym(ctx, request.goBinary, request.root, run.tier.Parallel, request.prebuiltStore)
+ 		if err != nil {
+ 			if ctx.Err() != nil {
+-				return 1, nil, ""
++				return 1, nil, "", ""
+ 			}
+-			return 0, nil, fmt.Sprintf("gate test: cannot build lym for the tier: %v; way forward: fix the build, then re-run the same command", err)
++			return 0, nil, "", fmt.Sprintf("gate test: cannot build lym for the tier: %v; way forward: fix the build, then re-run the same command", err)
+ 		}
+ 		defer cleanup()
+ 		if bin != "" {
+@@ -274,6 +287,11 @@ func runInvocations(ctx context.Context, run tierRun, counter counter, env []str
+ 	}
+ 
+ 	shellName, shellFlag := verifyrun.ShellFor(runtime.GOOS)
++	marker := runMarker(env)
++	capFor := request.processCapFor
++	if capFor == nil {
++		capFor = newProcessCap
++	}
+ 	for _, invocation := range run.invocations {
+ 		dir := resolveRunDir(request.root, invocation.dir)
+ 		testTargets := invocation.targets
+@@ -286,7 +304,7 @@ func runInvocations(ctx context.Context, run tierRun, counter counter, env []str
+ 		}
+ 		command, err := renderTierCommand(run.number, run.tier, invocation.targets, testTargets, invocation.terms, run.args)
+ 		if err != nil {
+-			return 0, commands, err.Error()
++			return 0, commands, "", err.Error()
+ 		}
+ 		commands = append(commands, command)
+ 
+@@ -299,6 +317,13 @@ func runInvocations(ctx context.Context, run tierRun, counter counter, env []str
+ 		watchCtx, stopWatching := context.WithCancel(ctx)
+ 		var watchdogDone sync.WaitGroup
+ 		runErr := runTiedChild(cmd, request.pipeWaitDelay, func(pid int) {
++			if marker != "" && request.samplePeriod > 0 {
++				watchdogDone.Add(1)
++				go func() {
++					defer watchdogDone.Done()
++					capLine = capFor(marker, request.samplePeriod).run(watchCtx)
++				}()
++			}
+ 			if !request.watching {
+ 				return
+ 			}
+@@ -313,13 +338,13 @@ func runInvocations(ctx context.Context, run tierRun, counter counter, env []str
+ 		exit = tierExitCodeOf(runErr)
+ 		logger.Info("gate test: tier command ended", "tier", tierName(run.number), "exit", exit, "error", runErr)
+ 		if cmd.Process == nil && ctx.Err() == nil {
+-			return 0, commands, fmt.Sprintf("gate test: could not start the shell for %s in %s: %v; way forward: make the tier's dir an existing directory and put the platform shell on PATH, then re-run the same command", tierName(run.number), dir, runErr)
++			return 0, commands, "", fmt.Sprintf("gate test: could not start the shell for %s in %s: %v; way forward: make the tier's dir an existing directory and put the platform shell on PATH, then re-run the same command", tierName(run.number), dir, runErr)
+ 		}
+-		if exit != 0 || ctx.Err() != nil {
+-			return exit, commands, ""
++		if exit != 0 || ctx.Err() != nil || capLine != "" {
++			return exit, commands, capLine, ""
+ 		}
+ 	}
+-	return 0, commands, ""
++	return 0, commands, "", ""
+ }
+ 
+ // tierTestTargets returns the packages of targets in the module at moduleDir that hold a test run's tier executes.
+diff --git a/internal/gatecli/tierrun_test.go b/internal/gatecli/tierrun_test.go
+index 0f301ffc..964abe9b 100644
+--- a/internal/gatecli/tierrun_test.go
++++ b/internal/gatecli/tierrun_test.go
+@@ -9,7 +9,12 @@ import (
+ 	"context"
+ 	"fmt"
+ 	"io"
++	"os"
++	"path/filepath"
++	"runtime"
++	"slices"
+ 	"strings"
++	"sync/atomic"
+ 	"syscall"
+ 	"testing"
+ 	"time"
+@@ -126,6 +131,101 @@ func TestRetryTier(t *testing.T) {
+ 	}
+ }
+ 
++// TestRunTierProcessCap pins the tier run's wiring of the process cap.
++// A tripped cap fails a command that exited 0 and marks the result so no rerun follows.
++// A run whose environment carries no run marker starts no cap.
++func TestRunTierProcessCap(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	if runtime.GOOS == "windows" {
++		t.Skip("the tier command is a POSIX shell loop")
++	}
++
++	const shortage = "resource temporarily unavailable"
++	tests := []struct {
++		name string
++		// marked is whether the run's environment carries the run marker.
++		marked bool
++		// wait is whether the command waits for the stand-in cap to trip before it exits 0.
++		wait       bool
++		wantCapped bool
++		wantStarts int32
++	}{
++		{name: "TrippedCapFailsACommandThatExitedZero", marked: true, wait: true, wantCapped: true, wantStarts: 1},
++		{name: "NoRunMarkerStartsNoCap", wantCapped: false, wantStarts: 0},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			tripped := filepath.Join(dir, "tripped")
++			command := "echo " + shortage
++			if tt.wait {
++				command = fmt.Sprintf("until [ -f %q ]; do sleep 0.01; done; echo %s", tripped, shortage)
++			}
++			env := []string{"PATH=" + os.Getenv("PATH")}
++			if tt.marked {
++				env = append(env, enclosingGateEnv+"=1")
++			}
++			var starts atomic.Int32
++			var stderr bytes.Buffer
++			request := testRequest{
++				root: dir, stderr: &stderr, samplePeriod: time.Millisecond, timeoutUnit: 30 * time.Second, pipeWaitDelay: defaultPipeWaitDelay,
++				processCapFor: func(marker string, period time.Duration) processCap {
++					starts.Add(1)
++					return processCap{
++						limit:  1,
++						period: period,
++						marker: marker,
++						list: func(string) ([]int, error) {
++							return []int{1, 2}, os.WriteFile(tripped, nil, 0o644)
++						},
++						kill: func(int) error { return nil },
++						after: func(time.Duration) <-chan time.Time {
++							elapsed := make(chan time.Time, 1)
++							elapsed <- time.Time{}
++							return elapsed
++						},
++					}
++				},
++			}
++			run := tierRun{
++				number:      0,
++				tier:        gateslot.Tier{Command: command, Counter: counterGoJSON, TimeoutMin: 1},
++				invocations: []invocation{{dir: dir}},
++			}
++
++			result := runTier(context.Background(), io.Discard, run, env, request)
++
++			if got := starts.Load(); got != tt.wantStarts {
++				t.Errorf("runTier() started the process cap %d times; want %d", got, tt.wantStarts)
++			}
++			if result.processCapped != tt.wantCapped {
++				t.Errorf("runTier() processCapped = %v; want %v", result.processCapped, tt.wantCapped)
++			}
++			if !tt.wantCapped {
++				if result.record.ExitCode != 0 || stderr.Len() != 0 {
++					t.Errorf("runTier() exit = %d, stderr = %q; want exit 0 and no stderr", result.record.ExitCode, stderr.String())
++				}
++				return
++			}
++			capLine := processCapLine(2, 1)
++			if result.record.ExitCode != 1 {
++				t.Errorf("runTier() exit = %d; want 1 for a command that exited 0 under a tripped cap", result.record.ExitCode)
++			}
++			if !slices.Contains(result.causes, capLine) || !strings.Contains(stderr.String(), capLine) {
++				t.Errorf("runTier() causes = %q, stderr = %q; want the cap line in both", result.causes, stderr.String())
++			}
++			if resourceShortage(result.log) == "" {
++				t.Fatalf("runTier() log = %q; want it to hold the shortage marker the command printed", result.log)
++			}
++			if got := failedOnShortage(result); got != "" {
++				t.Errorf("failedOnShortage() = %q; want none, so a capped run is never rerun", got)
++			}
++		})
++	}
++}
++
+ func TestFailedRunLabel(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/gitkit/hermetic.go b/internal/gitkit/hermetic.go
+index 61542f22..be14977a 100644
+--- a/internal/gitkit/hermetic.go
++++ b/internal/gitkit/hermetic.go
+@@ -17,14 +17,12 @@ var hermeticGitEnvOnce sync.Once
+ // HermeticGitEnv makes every git process spawned by this test binary ignore the operator's global and system git config.
+ // It replaces that config with a neutral one.
+ // Call it as the first line of TestMain, before m.Run().
+-// It also runs the CLI-reexec refusal guard before anything else.
+ // The neutral config file lives in the process run directory of internal/lymtemp.
+ // tmuxkit.Main removes that directory after the run.
+ //
+ // The bare function name HermeticGitEnv is the presence token that cmd/lym's hermetic guard scans test files for;
+ // do not rename it without updating the guard.
+ func HermeticGitEnv() {
+-	refuseCLIReexec()
+ 	hermeticGitEnvOnce.Do(func() {
+ 		// Neutral config content: fsmonitor/maintenance/gc keys mirror Layer A.
+ 		// Raw `git init` and `git clone` calls inside tests are quiet too.
+diff --git a/internal/gitkit/reexecguard.go b/internal/gitkit/reexecguard.go
+deleted file mode 100644
+index 554cd254..00000000
+--- a/internal/gitkit/reexecguard.go
++++ /dev/null
+@@ -1,35 +0,0 @@
+-// reexecguard.go holds the guard that stops a Go test binary from running its whole suite.
+-// It backstops any spawn point that hands os.Executable() to a child while the binary runs under go test.
+-// A child that re-executes the test binary with a leading positional argument would otherwise run it unfiltered:
+-// Go's flag parsing stops at the first non-flag argument and ignores the rest.
+-// Only the first argument is inspected, because a leading non-flag argument cannot be a flag's value.
+-// Later positional-looking arguments stay allowed, because they can be two-token flag values.
+-// For example, `./pkg.test -test.run Foo` passes Foo as the value of -test.run.
+-
+-package gitkit
+-
+-import (
+-	"fmt"
+-	"os"
+-	"strings"
+-)
+-
+-// cliReexecArg returns the leading positional argument in args (or empty string and false).
+-func cliReexecArg(args []string) (string, bool) {
+-	if len(args) == 0 || strings.HasPrefix(args[0], "-") {
+-		return "", false
+-	}
+-	return args[0], true
+-}
+-
+-// refuseCLIReexec exits the test binary with status 2 when its first argument is not a flag.
+-func refuseCLIReexec() {
+-	if arg, ok := cliReexecArg(os.Args[1:]); ok {
+-		fmt.Fprintf(os.Stderr,
+-			"gitkit: this test binary was invoked with positional argument %q — it is a Go test suite, not a CLI; "+
+-				"refusing to run the full suite (a spawned child re-executing os.Executable() under go test reaches "+
+-				"this path — see PATTERN-child-processes and the 2026-07-30 header "+
+-				"re-exec incident)\n", arg)
+-		os.Exit(2)
+-	}
+-}
+diff --git a/internal/gitkit/reexecguard_test.go b/internal/gitkit/reexecguard_test.go
+deleted file mode 100644
+index 9f91654f..00000000
+--- a/internal/gitkit/reexecguard_test.go
++++ /dev/null
+@@ -1,51 +0,0 @@
+-// reexecguard_test.go covers cliReexecArg's classification of a test binary's argv tail.
+-// Only a leading non-flag argument marks a CLI-style re-exec;
+-// flag-led argv, including two-token flag values, stays allowed.
+-
+-package gitkit
+-
+-import "testing"
+-
+-import "github.com/Knatte18/loomyard/internal/testkit/tiergate"
+-
+-func TestCLIReexecArg(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	tests := []struct {
+-		name    string
+-		args    []string
+-		wantArg string
+-		wantOK  bool
+-	}{
+-		{
+-			name:   "Empty",
+-			args:   nil,
+-			wantOK: false,
+-		},
+-		{
+-			name:    "HeaderPaneReexec",
+-			args:    []string{"reed", "header", "--blocking"},
+-			wantArg: "reed",
+-			wantOK:  true,
+-		},
+-		{
+-			name:   "GoTestFlagsOnly",
+-			args:   []string{"-test.run=TestFoo", "-test.v"},
+-			wantOK: false,
+-		},
+-		{
+-			name: "TwoTokenFlagValueAllowed",
+-			// Only the leading argument is classified.
+-			// A later positional-looking token can be a flag's value.
+-			args:   []string{"-test.run", "TestFoo"},
+-			wantOK: false,
+-		},
+-	}
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			arg, ok := cliReexecArg(tt.args)
+-			if arg != tt.wantArg || ok != tt.wantOK {
+-				t.Errorf("cliReexecArg(%q) = (%q, %v), want (%q, %v)", tt.args, arg, ok, tt.wantArg, tt.wantOK)
+-			}
+-		})
+-	}
+-}
+diff --git a/internal/ideengine/spawn.go b/internal/ideengine/spawn.go
+index e6aa6cdb..6d804c94 100644
+--- a/internal/ideengine/spawn.go
++++ b/internal/ideengine/spawn.go
+@@ -18,6 +18,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/ideconfig"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ 	"github.com/Knatte18/loomyard/internal/vscode"
+ )
+ 
+@@ -30,6 +31,11 @@ var CodeLauncher = vscode.Launch
+ // It is exported so that tests in other packages can point it at a temporary file.
+ var KeybindingsPath = vscode.UserKeybindingsPath
+ 
++// LymBinary resolves the absolute lym path that Spawn and Seed stamp into a worktree's .vscode/ config.
++// It defaults to `selfexec.LymBinary`, which refuses a test binary.
++// It is exported so that tests can point it at a stand-in lym path.
++var LymBinary = selfexec.LymBinary
++
+ // Spawn writes the worktree slug's window title, colours and .vscode/ config, and seeds the user's lym key bindings.
+ // It then launches VS Code and runs the machine's desktop window command.
+ // A task slug launches its bare folder <hub>/<slug>/<its own anchor>.
+@@ -222,7 +228,7 @@ func placeWindow(l *lymcwd.Location, windowDir string) {
+ // writeWorktreeConfig writes slug's .vscode/ config at own's anchor, stamping in the absolute lym path.
+ // The path is the empty string on error, so the config writer's bare-name fallback applies.
+ func writeWorktreeConfig(own *lymcwd.Location, worktreeDir, slug string, look vscode.Look, renderMarkdown bool) error {
+-	lymPath, _ := os.Executable()
++	lymPath, _ := LymBinary()
+ 	return writeVSCodeConfig(own, worktreeDir, slug, look, renderMarkdown, lymPath)
+ }
+ 
+diff --git a/internal/ideengine/testmain_test.go b/internal/ideengine/testmain_test.go
+index 2e98364b..bb483339 100644
+--- a/internal/ideengine/testmain_test.go
++++ b/internal/ideengine/testmain_test.go
+@@ -19,6 +19,7 @@ import (
+ 
+ // TestMain runs HermeticGitEnv before spawning git tests.
+ // It points KeybindingsPath at a temporary directory for the whole package run.
++// It points LymBinary at a stand-in path in that directory, since the test binary is no lym.
+ // It then runs the tests under tmuxkit.Main.
+ // KeybindingsPath is process-global state, so no test writes the operator's real keybindings.json.
+ func TestMain(m *testing.M) {
+@@ -29,6 +30,7 @@ func TestMain(m *testing.M) {
+ 		os.Exit(1)
+ 	}
+ 	KeybindingsPath = func() (string, error) { return filepath.Join(dir, "keybindings.json"), nil }
++	LymBinary = func() (string, error) { return filepath.Join(dir, "lym"), nil }
+ 	code := tmuxkit.Main(m)
+ 	os.RemoveAll(dir)
+ 	os.Exit(code)
+diff --git a/internal/loomcli/arm.go b/internal/loomcli/arm.go
+index 9919c409..f3286e93 100644
+--- a/internal/loomcli/arm.go
++++ b/internal/loomcli/arm.go
+@@ -441,7 +441,7 @@ func (c *loomCLI) specFor(verb string) shedverbs.Spec {
+ 		spec.ScratchDir = shedrun.ScratchDir(c.location, c.runID)
+ 		spec.StepsDir = shedrun.StepsDir(c.location, c.runID)
+ 		spec.RunID = shedrun.ResolveRunID(c.location, c.runID)
+-		spec.Loop = loopSpecFor(c.location, c.runID, c.stepIdleTimeout, agentActivityFor(c.location, c.runID, c.shuttleCfg))
++		spec.Loop = loopSpecFor(c.location, c.runID, c.loopExecutable(), c.stepIdleTimeout, agentActivityFor(c.location, c.runID, c.shuttleCfg))
+ 		spec.Loop.OnWatchdogKill = watchdogKillNote(c.stopStepRuns, spec.StepsDir)
+ 		locks := &parentlock.Store{Dir: parentlock.Dir(fabricengine.BoltDir(c.location.HubPath))}
+ 		self := selfLockOwner(c.location, c.runID)
+diff --git a/internal/loomcli/cli.go b/internal/loomcli/cli.go
+index e90d4b17..e187ea8a 100644
+--- a/internal/loomcli/cli.go
++++ b/internal/loomcli/cli.go
+@@ -6,7 +6,6 @@ package loomcli
+ 
+ import (
+ 	"io"
+-	"os"
+ 	"testing"
+ 	"time"
+ 
+@@ -21,6 +20,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ 	"github.com/Knatte18/loomyard/internal/shedbuild"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrecipe"
+@@ -71,6 +71,9 @@ type loomCLI struct {
+ 	// wire takes it from the reed geometry's origin record; it is empty when the worktree has no resolvable parent.
+ 	// Every role loom wires renders its parent directive from it.
+ 	parentName string
++	// lymBinary resolves this lym binary for the loop's step children; nil means selfexec.LymBinary.
++	// A test sets it to a stand-in path, since selfexec.LymBinary refuses a test binary.
++	lymBinary func() (string, error)
+ 	// endFixers, when set, is what an admitted goto calls to end the pair's gate fixers; nil means endRunFixers.
+ 	// Tests set it to record the call.
+ 	endFixers func() error
+@@ -189,7 +192,7 @@ func newLoomCLI() *loomCLI {
+ 	}
+ 	c.spawnGoDriverFrom = func(executable string) (int, error) { return spawnDetachedDrive(c.location, executable) }
+ 	c.spawnGoDriver = func() (int, error) {
+-		executable, err := os.Executable()
++		executable, err := selfexec.LymBinary()
+ 		if err != nil {
+ 			return 0, err
+ 		}
+diff --git a/internal/loomcli/cli_test.go b/internal/loomcli/cli_test.go
+index 7b8d4158..b28bb96d 100644
+--- a/internal/loomcli/cli_test.go
++++ b/internal/loomcli/cli_test.go
+@@ -6,6 +6,7 @@ package loomcli
+ 
+ import (
+ 	"bytes"
++	"errors"
+ 	"os"
+ 	"path/filepath"
+ 	"strings"
+@@ -324,7 +325,8 @@ func TestSpecFor_ScratchAndFrictionDir(t *testing.T) {
+ 	})
+ 
+ 	t.Run("LoopArmedForALocatedReceiver", func(t *testing.T) {
+-		c := &loomCLI{location: loc, runID: "self", stepIdleTimeout: 7 * time.Minute}
++		standInBinary := func() (string, error) { return "/stand-in/lym", nil }
++		c := &loomCLI{location: loc, runID: "self", stepIdleTimeout: 7 * time.Minute, lymBinary: standInBinary}
+ 		spec := c.specFor("step")
+ 		loop := spec.Loop
+ 
+@@ -350,6 +352,19 @@ func TestSpecFor_ScratchAndFrictionDir(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("LoopExecutableEmptyWhenTheLookupFails", func(t *testing.T) {
++		c := &loomCLI{lymBinary: func() (string, error) { return "", errors.New("no executable") }}
++		if got := c.loopExecutable(); got != "" {
++			t.Errorf("loopExecutable() = %q; want empty when the lookup fails", got)
++		}
++	})
++
++	t.Run("LoopExecutableEmptyUnderGoTestWithTheDefaultLookup", func(t *testing.T) {
++		if got := (&loomCLI{}).loopExecutable(); got != "" {
++			t.Errorf("loopExecutable() with the default lookup = %q; want empty, since the default refuses the test binary", got)
++		}
++	})
++
+ 	t.Run("LoopLeftZeroForANilLocation", func(t *testing.T) {
+ 		spec := (&loomCLI{runID: "self"}).specFor("step")
+ 		if spec.Loop.EnvelopePath != "" || spec.Loop.Activity != nil || spec.Loop.OnExit != nil || spec.Loop.OnWake != nil || spec.Hooks.AfterInterrupt != nil {
+diff --git a/internal/loomcli/driftwiring.go b/internal/loomcli/driftwiring.go
+index 4a4a2ac7..88a09c93 100644
+--- a/internal/loomcli/driftwiring.go
++++ b/internal/loomcli/driftwiring.go
+@@ -24,6 +24,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/seatengine"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/state"
+@@ -208,7 +209,7 @@ func driftDeps(location *lymcwd.Location, statusPath, statusLockPath string, tab
+ 			return fabricengine.RecordsPathsChangedSince(location, rev)
+ 		},
+ 		StartCapture: func() error {
+-			executable, err := os.Executable()
++			executable, err := selfexec.LymBinary()
+ 			if err != nil {
+ 				return fmt.Errorf("drift: resolve this binary: %w", err)
+ 			}
+diff --git a/internal/loomcli/looparm.go b/internal/loomcli/looparm.go
+index 217dda63..a6e7ef71 100644
+--- a/internal/loomcli/looparm.go
++++ b/internal/loomcli/looparm.go
+@@ -22,6 +22,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/runproc"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ 	"github.com/Knatte18/loomyard/internal/shedadapters"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+@@ -36,14 +37,11 @@ import (
+ // The loop's files and job name come from shedrun over the resolved run-id.
+ // The step children run the same binary from the same cwd as the loop,
+ // so they share its trace directory, and the loop lists a child's trace files there.
++// executable is the lym binary the loop's step children run; it is empty when none resolved.
+ // idle is the watchdog window, zero disarming it, and activity is the reading of the run's agent activity.
+ // The watchdog reads the pause record of loc's hub for loc's slug;
+ // when the geometry or the record cannot be read, it reads the run uncovered.
+-func loopSpecFor(loc *lymcwd.Location, runID string, idle time.Duration, activity func() (time.Time, bool, error)) shedverbs.LoopSpec {
+-	executable, err := os.Executable()
+-	if err != nil {
+-		logger.Warn("loom: could not resolve the running binary, so the loop has no executable", "error", err.Error())
+-	}
++func loopSpecFor(loc *lymcwd.Location, runID, executable string, idle time.Duration, activity func() (time.Time, bool, error)) shedverbs.LoopSpec {
+ 	return shedverbs.LoopSpec{
+ 		LockPath:     shedrun.LoopLock(loc, runID),
+ 		PIDPath:      shedrun.LoopPIDFile(loc, runID),
+@@ -70,6 +68,19 @@ func loopSpecFor(loc *lymcwd.Location, runID string, idle time.Duration, activit
+ 	}
+ }
+ 
++// loopExecutable returns the lym binary the loop's step children run, or "" with a Warn when none resolves.
++func (c *loomCLI) loopExecutable() string {
++	resolve := c.lymBinary
++	if resolve == nil {
++		resolve = selfexec.LymBinary
++	}
++	executable, err := resolve()
++	if err != nil {
++		logger.Warn("loom: could not resolve the running binary, so the loop has no executable", "error", err.Error())
++	}
++	return executable
++}
++
+ // registerRunProcess registers the calling process in the hub's owner record under owner with the given role.
+ // A failure is logged at Warn and never fails the role, since the record only lets a teardown find the process.
+ func registerRunProcess(loc *lymcwd.Location, owner, role string) {
+diff --git a/internal/loomcli/looparm_test.go b/internal/loomcli/looparm_test.go
+index b664c80d..a6b94253 100644
+--- a/internal/loomcli/looparm_test.go
++++ b/internal/loomcli/looparm_test.go
+@@ -31,7 +31,7 @@ func TestRegisterRunProcess(t *testing.T) {
+ 		role     string
+ 		register func(loc *lymcwd.Location)
+ 	}{
+-		{"Loop", runproc.RoleLoop, func(loc *lymcwd.Location) { loopSpecFor(loc, loc.WorktreeName, 0, nil).OnStart() }},
++		{"Loop", runproc.RoleLoop, func(loc *lymcwd.Location) { loopSpecFor(loc, loc.WorktreeName, "", 0, nil).OnStart() }},
+ 		{"Driver", runproc.RoleDriver, func(loc *lymcwd.Location) { registerRunProcess(loc, loc.WorktreeName, runproc.RoleDriver) }},
+ 	}
+ 	for _, tt := range roles {
+diff --git a/internal/loomcli/raddlewiring.go b/internal/loomcli/raddlewiring.go
+index 43b3104f..965f0bda 100644
+--- a/internal/loomcli/raddlewiring.go
++++ b/internal/loomcli/raddlewiring.go
+@@ -8,7 +8,6 @@ import (
+ 	"errors"
+ 	"fmt"
+ 	"io/fs"
+-	"os"
+ 	"os/exec"
+ 	"path/filepath"
+ 	"strings"
+@@ -25,6 +24,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/orchcli"
+ 	"github.com/Knatte18/loomyard/internal/raddleparser"
+ 	"github.com/Knatte18/loomyard/internal/seatengine"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrecipe"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+@@ -243,7 +243,7 @@ func createBeamFromParent(location *lymcwd.Location, project string, run func(di
+ 
+ // runLymChild runs this binary with args in dir and waits for it, returning its output in the error when it fails.
+ func runLymChild(dir string, args ...string) error {
+-	executable, err := os.Executable()
++	executable, err := selfexec.LymBinary()
+ 	if err != nil {
+ 		return fmt.Errorf("find the lym binary: %w", err)
+ 	}
+diff --git a/internal/loomcli/sharedbootstrap.go b/internal/loomcli/sharedbootstrap.go
+index 454859df..f7fd7a74 100644
+--- a/internal/loomcli/sharedbootstrap.go
++++ b/internal/loomcli/sharedbootstrap.go
+@@ -22,6 +22,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/runproc"
+ 	"github.com/Knatte18/loomyard/internal/runprofile"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ 	"github.com/Knatte18/loomyard/internal/sheddriver"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+@@ -338,7 +339,7 @@ func (c *loomCLI) ensureStatusStrand() error {
+ 	if strandAction == statusStrandKeep {
+ 		return nil
+ 	}
+-	exe, err := os.Executable()
++	exe, err := selfexec.LymBinary()
+ 	if err != nil {
+ 		return err
+ 	}
+diff --git a/internal/orchcli/cli.go b/internal/orchcli/cli.go
+index c0f2493b..0800585f 100644
+--- a/internal/orchcli/cli.go
++++ b/internal/orchcli/cli.go
+@@ -22,6 +22,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/runproc"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengines"
+ 	"github.com/Knatte18/loomyard/internal/slackengine"
+@@ -248,7 +249,7 @@ func wireCLI(c *orchCLI, location *lymcwd.Location) error {
+ 	c.startLockWait = stopStartLockWait
+ 	c.sleep = time.Sleep
+ 	c.reapInherited = reapInheritedChildren
+-	c.executable = os.Executable
++	c.executable = selfexec.LymBinary
+ 	c.currentBuild = statuspane.CurrentBuild
+ 	c.reconcile = func() (fabricengine.OriginReport, error) { return reconcileHub(location) }
+ 	c.readBeamFacts = func() (beamFacts, error) { return readBeamFacts(location, beam) }
+diff --git a/internal/orchcli/spawn.go b/internal/orchcli/spawn.go
+index 258afe95..9538851b 100644
+--- a/internal/orchcli/spawn.go
++++ b/internal/orchcli/spawn.go
+@@ -12,16 +12,17 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ )
+ 
+ // spawnWatcherProcess starts `<lym> orch watch` detached, with its output appended to the watch log.
+ // The child runs from the prime's anchor so its own cwd resolution finds the prime.
+-// It is a no-op under `go test`, since re-executing os.Executable() there would run the test binary.
++// It is a no-op under `go test`, since the running binary there is the test binary.
+ func (c *orchCLI) spawnWatcherProcess() error {
+ 	if testing.Testing() {
+ 		return nil
+ 	}
+-	exe, err := os.Executable()
++	exe, err := selfexec.LymBinary()
+ 	if err != nil {
+ 		return fmt.Errorf("orch: resolve executable: %w", err)
+ 	}
+diff --git a/internal/proc/doc.go b/internal/proc/doc.go
+index 7421c0d5..29fc87e5 100644
+--- a/internal/proc/doc.go
++++ b/internal/proc/doc.go
+@@ -29,10 +29,11 @@
+ // ListProcesses lists every process with its start time, exe and cwd links and command line.
+ // ListStats lists every process with its parent, group, start time and zombie state, read from its stat alone.
+ // It also lists a process whose links the caller cannot read.
++// PIDsWithEnv lists every process whose environment holds a given `NAME=value` entry.
+ // SignalProcess and SignalGroup send SIGTERM, or SIGKILL when asked, to one pid or to one process group.
+ // They return the raw syscall error.
+ // All of these read /proc or signal by pid, so they work on Linux only.
+-// On Windows TreeCPU, ListProcesses and ListStats return errors.ErrUnsupported and IsAncestor is false;
++// On Windows TreeCPU, ListProcesses, ListStats and PIDsWithEnv return errors.ErrUnsupported and IsAncestor is false;
+ // SignalProcess only kills, and SignalGroup returns ErrNoProcessGroup.
+ // CreationTime is the exception: it reads a process's creation time by pid on Windows, where StartTime is unreadable.
+ // Elsewhere it is always the zero time and false.
+diff --git a/internal/proc/envmarker_linux.go b/internal/proc/envmarker_linux.go
+new file mode 100644
+index 00000000..c29bec25
+--- /dev/null
++++ b/internal/proc/envmarker_linux.go
+@@ -0,0 +1,41 @@
++// envmarker_linux.go finds processes by an entry of their environment, read from /proc.
++
++package proc
++
++import (
++	"bytes"
++	"fmt"
++	"os"
++	"strconv"
++)
++
++// PIDsWithEnv returns every process whose environment holds entry, a whole `NAME=value` string.
++// A process keeps the environment it started with, so a marker set for a run follows each of its processes.
++// That includes one that left the run's process tree, such as a tmux server's panes.
++// A process whose environment the caller may not read, or that ends during the scan, is skipped;
++// an unreadable /proc is an error.
++func PIDsWithEnv(entry string) ([]int, error) {
++	entries, err := os.ReadDir("/proc")
++	if err != nil {
++		return nil, fmt.Errorf("proc: list /proc: %w", err)
++	}
++	want := []byte(entry)
++	var pids []int
++	for _, dirEntry := range entries {
++		pid, err := strconv.Atoi(dirEntry.Name())
++		if err != nil {
++			continue
++		}
++		environ, err := os.ReadFile("/proc/" + dirEntry.Name() + "/environ")
++		if err != nil {
++			continue
++		}
++		for field := range bytes.SplitSeq(environ, []byte{0}) {
++			if bytes.Equal(field, want) {
++				pids = append(pids, pid)
++				break
++			}
++		}
++	}
++	return pids, nil
++}
+diff --git a/internal/proc/envmarker_linux_test.go b/internal/proc/envmarker_linux_test.go
+new file mode 100644
+index 00000000..d3eb9105
+--- /dev/null
++++ b/internal/proc/envmarker_linux_test.go
+@@ -0,0 +1,41 @@
++// envmarker_linux_test.go pins that PIDsWithEnv finds a process by a whole entry of its environment.
++
++package proc
++
++import (
++	"os"
++	"os/exec"
++	"slices"
++	"strconv"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestPIDsWithEnv_FindsTheProcessCarryingTheEntry(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	entry := "PROC_ENVMARKER_TEST=" + strconv.Itoa(os.Getpid())
++	marked := exec.Command("sleep", "60")
++	marked.Env = append(os.Environ(), entry)
++	unmarked := exec.Command("sleep", "60")
++	unmarked.Env = append(os.Environ(), entry+"0")
++	for _, cmd := range []*exec.Cmd{marked, unmarked} {
++		if err := cmd.Start(); err != nil {
++			t.Fatalf("start sleep: %v", err)
++		}
++		t.Cleanup(func() {
++			_ = cmd.Process.Kill()
++			_ = cmd.Wait()
++		})
++	}
++
++	pids, err := PIDsWithEnv(entry)
++
++	if err != nil {
++		t.Fatalf("PIDsWithEnv(%q) error = %v", entry, err)
++	}
++	if want := []int{marked.Process.Pid}; !slices.Equal(pids, want) {
++		t.Errorf("PIDsWithEnv(%q) = %v; want %v, the one process whose entry matches whole", entry, pids, want)
++	}
++}
+diff --git a/internal/proc/envmarker_windows.go b/internal/proc/envmarker_windows.go
+new file mode 100644
+index 00000000..eee75db1
+--- /dev/null
++++ b/internal/proc/envmarker_windows.go
+@@ -0,0 +1,10 @@
++// envmarker_windows.go gives Windows no lookup of processes by their environment.
++
++package proc
++
++import "errors"
++
++// PIDsWithEnv reports errors.ErrUnsupported on Windows, where no process's environment is readable by pid.
++func PIDsWithEnv(string) ([]int, error) {
++	return nil, errors.ErrUnsupported
++}
+diff --git a/internal/reedcli/cli.go b/internal/reedcli/cli.go
+index 97b287ce..3de09894 100644
+--- a/internal/reedcli/cli.go
++++ b/internal/reedcli/cli.go
+@@ -39,7 +39,7 @@ type reedCLI struct {
+ 
+ 	// suppressWatchdogSpawn, when true, makes the watchdog spawn a no-op.
+ 	// Command sets it from testing.Testing().
+-	// Spawning os.Executable() from a test binary would run the whole suite recursively.
++	// Spawning the test binary would run the whole suite recursively.
+ 	// An in-package test clears it to drive the real spawn path.
+ 	suppressWatchdogSpawn bool
+ 
+@@ -54,6 +54,10 @@ type reedCLI struct {
+ 	// openTerminal is the test seam for the window verb; nil means termwindow.Resolve then Launcher.OpenAttach.
+ 	openTerminal func(dir, title, lymPath string) error
+ 
++	// lymBinary is the test seam for the lookup of this lym binary that the window verb hands the launcher.
++	// nil means selfexec.LymBinary, which refuses a test binary.
++	lymBinary func() (string, error)
++
+ 	// placeWindow is the test seam for the placement the window verb runs after it opens a window.
+ 	// nil means placeTerminalWindow.
+ 	placeWindow func(dir string) error
+diff --git a/internal/reedcli/remove.go b/internal/reedcli/remove.go
+index 77def506..3449c5a9 100644
+--- a/internal/reedcli/remove.go
++++ b/internal/reedcli/remove.go
+@@ -16,6 +16,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ 	"github.com/spf13/cobra"
+ )
+ 
+@@ -55,12 +56,12 @@ func waitParentExit(waitPID int) error {
+ // The child runs outside the strand's own process tree,
+ // and it removes only once this process, the pane's descendant, is gone.
+ // It is a no-op under a test binary, where `suppressWatchdogSpawn` is set.
+-// Re-exec'ing os.Executable() there would run the whole suite.
++// Re-exec'ing the test binary there would run the whole suite.
+ func (c *reedCLI) spawnDetachedRemove(guid string, recursive bool) error {
+ 	if c.suppressWatchdogSpawn {
+ 		return nil
+ 	}
+-	exe, err := os.Executable()
++	exe, err := selfexec.LymBinary()
+ 	if err != nil {
+ 		return fmt.Errorf("resolve this binary: %w", err)
+ 	}
+diff --git a/internal/reedcli/window.go b/internal/reedcli/window.go
+index f446574d..531a8268 100644
+--- a/internal/reedcli/window.go
++++ b/internal/reedcli/window.go
+@@ -17,6 +17,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/output"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ 	"github.com/Knatte18/loomyard/internal/termwindow"
+ 	"github.com/spf13/cobra"
+ )
+@@ -80,7 +81,11 @@ Example:
+ 			if windowTitle == "" {
+ 				windowTitle = filepath.Base(dir)
+ 			}
+-			lymPath, err := os.Executable()
++			resolveLym := c.lymBinary
++			if resolveLym == nil {
++				resolveLym = selfexec.LymBinary
++			}
++			lymPath, err := resolveLym()
+ 			if err != nil {
+ 				clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("window: resolve the running lym: %v", err)))
+ 				return nil
+diff --git a/internal/reedcli/window_test.go b/internal/reedcli/window_test.go
+index d3c4fc5e..070191dd 100644
+--- a/internal/reedcli/window_test.go
++++ b/internal/reedcli/window_test.go
+@@ -23,6 +23,7 @@ func TestWindowCmd_OpensATerminalAttachedToTheToldWorktree(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
++	const standInLym = "/stand-in/lym"
+ 	existing := t.TempDir()
+ 	tests := []struct {
+ 		name string
+@@ -30,10 +31,12 @@ func TestWindowCmd_OpensATerminalAttachedToTheToldWorktree(t *testing.T) {
+ 		// openErr is what the launcher seam returns.
+ 		openErr error
+ 		// placeErr is what the window-command seam returns.
+-		placeErr  error
+-		wantCode  int
+-		wantTitle string
+-		wantCalls int
++		placeErr error
++		// defaultLookup leaves lymBinary nil, so the production lookup runs and refuses the test binary.
++		defaultLookup bool
++		wantCode      int
++		wantTitle     string
++		wantCalls     int
+ 		// wantErr must appear in the error envelope; empty means an ok envelope.
+ 		wantErr string
+ 	}{
+@@ -41,6 +44,7 @@ func TestWindowCmd_OpensATerminalAttachedToTheToldWorktree(t *testing.T) {
+ 		{name: "DefaultTitleIsTheBaseName", args: []string{existing}, wantTitle: filepath.Base(existing), wantCalls: 1},
+ 		{name: "MissingDirectoryRunsNoLauncher", args: []string{filepath.Join(existing, "absent")}, wantCode: 1, wantErr: "absent"},
+ 		{name: "LauncherErrorIsCarried", args: []string{existing}, openErr: errors.New("no terminal window launcher known here"), wantCode: 1, wantTitle: filepath.Base(existing), wantCalls: 1, wantErr: "no terminal window launcher"},
++		{name: "DefaultLookupRefusesTheTestBinaryAndRunsNoLauncher", args: []string{existing}, defaultLookup: true, wantCode: 1, wantErr: "window: resolve the running lym"},
+ 		{name: "WindowCommandFailureOnlyWarns", args: []string{existing}, placeErr: errors.New("window command failed"), wantTitle: filepath.Base(existing), wantCalls: 1},
+ 	}
+ 	for _, tt := range tests {
+@@ -58,6 +62,9 @@ func TestWindowCmd_OpensATerminalAttachedToTheToldWorktree(t *testing.T) {
+ 					return tt.placeErr
+ 				},
+ 			}
++			if !tt.defaultLookup {
++				c.lymBinary = func() (string, error) { return standInLym, nil }
++			}
+ 			var out bytes.Buffer
+ 
+ 			code := clihelp.Execute(c.windowCmd(), &out, tt.args)
+@@ -83,8 +90,8 @@ func TestWindowCmd_OpensATerminalAttachedToTheToldWorktree(t *testing.T) {
+ 			if tt.wantCalls == 0 {
+ 				return
+ 			}
+-			if got := calls[0]; got.dir != existing || got.title != tt.wantTitle || got.lymPath == "" {
+-				t.Errorf("launcher call = %+v; want dir %q, title %q and a non-empty lym path", got, existing, tt.wantTitle)
++			if got := calls[0]; got.dir != existing || got.title != tt.wantTitle || got.lymPath != standInLym {
++				t.Errorf("launcher call = %+v; want dir %q, title %q and lym path %q", got, existing, tt.wantTitle, standInLym)
+ 			}
+ 			if tt.wantErr == "" && !strings.Contains(out.String(), `"title"`) {
+ 				t.Errorf("output = %q; want it to carry the title", out.String())
+diff --git a/internal/reedengine/bindings_test.go b/internal/reedengine/bindings_test.go
+index 21738dff..0d69394d 100644
+--- a/internal/reedengine/bindings_test.go
++++ b/internal/reedengine/bindings_test.go
+@@ -241,7 +241,7 @@ func TestPinGlobalLineLocked(t *testing.T) {
+ // It also pins the click's toggle branch.
+ // A resolved socket, tmux binary and executable pin the toggle click line and the state line and bind the toggle branch.
+ // Any one failing to resolve unsets both lines and binds no toggle branch.
+-// An executable that resolves to this test binary unsets both lines too, yet the button line stays pinned.
++// An executable that resolves to this test binary unsets both lines too and pins no button line.
+ func TestPinBindingsLocked_PinsTheSlackLinesOnlyWhenEverythingResolves(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -260,7 +260,7 @@ func TestPinBindingsLocked_PinsTheSlackLinesOnlyWhenEverythingResolves(t *testin
+ 		{"Resolved", func() (string, error) { return exe, nil }, socketPath, true, true},
+ 		{"UnresolvableExecutable", func() (string, error) { return "", errors.New("no executable") }, socketPath, false, false},
+ 		{"UnreadableSocketPath", func() (string, error) { return exe, nil }, "", false, false},
+-		{"TestBinaryExecutable", os.Executable, socketPath, false, true},
++		{"TestBinaryExecutable", os.Executable, socketPath, false, false},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -300,6 +300,21 @@ func TestPinBindingsLocked_PinsTheSlackLinesOnlyWhenEverythingResolves(t *testin
+ 			if buttonPinned != tt.wantButtonPinned {
+ 				t.Errorf("pinBindingsLocked set-option calls = %q; button line pinned = %v, want %v", setOptions, buttonPinned, tt.wantButtonPinned)
+ 			}
++			followPinned := slices.ContainsFunc(setOptions, func(call []string) bool {
++				return len(call) == 4 && call[1] == "-g" && call[2] == followCommandOption
++			})
++			if followPinned != tt.wantResolved {
++				t.Errorf("pinBindingsLocked set-option calls = %q; follow line pinned = %v, want %v", setOptions, followPinned, tt.wantResolved)
++			}
++			var boundKeys []string
++			for _, argv := range fake.ArgvFor("bind-key") {
++				boundKeys = append(boundKeys, argv[2])
++			}
++			for _, key := range []string{"M-Left", "M-Right"} {
++				if got := slices.Contains(boundKeys, key); got != tt.wantResolved {
++					t.Errorf("pinBindingsLocked bound keys = %q; %s bound = %v, want %v", boundKeys, key, got, tt.wantResolved)
++				}
++			}
+ 			joinedClick := strings.Join(clickArgv(t, fake.ArgvFor("bind-key")), " ")
+ 			if got := strings.Contains(joinedClick, "#{E:"+slackToggleCommandOption+"}"); got != tt.wantResolved {
+ 				t.Errorf("click binding %q holds the Slack toggle branch = %v; want %v", joinedClick, got, tt.wantResolved)
+diff --git a/internal/reedengine/buttonclick.go b/internal/reedengine/buttonclick.go
+index 5bc378ce..f84597bd 100644
+--- a/internal/reedengine/buttonclick.go
++++ b/internal/reedengine/buttonclick.go
+@@ -16,6 +16,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ 	"github.com/Knatte18/loomyard/internal/shell"
+ )
+ 
+@@ -67,7 +68,7 @@ type buttonDeps struct {
+ func RunButton(req ButtonRequest, anchorOf func(dir string) (string, error)) {
+ 	runButtonVia(newTmuxCmdForSocketPath(req.TmuxPath, req.SocketPath), req, buttonDeps{
+ 		run:            runButtonScript,
+-		executablePath: os.Executable,
++		executablePath: selfexec.LymBinary,
+ 		anchorOf:       anchorOf,
+ 		sh:             shell.ForGOOS(),
+ 	})
+@@ -152,7 +153,7 @@ func runButtonVia(cmd TmuxCmd, req ButtonRequest, deps buttonDeps) {
+ 		return
+ 	}
+ 	if asking || (entry.Confirm != "" && !req.Confirmed) {
+-		exe, err := deps.executablePath()
++		exe, err := selfexec.ResolveLymBinary(deps.executablePath)
+ 		if err != nil {
+ 			logger.Warn("reed: could not resolve this binary, raising no button prompt", "label", entry.Label, "err", err)
+ 			say("lym: " + entry.Label + " could not raise its prompt; see the lym log in " + runDir + "/.lym/logs")
+diff --git a/internal/reedengine/buttonclick_test.go b/internal/reedengine/buttonclick_test.go
+index 895e3222..a05ffd01 100644
+--- a/internal/reedengine/buttonclick_test.go
++++ b/internal/reedengine/buttonclick_test.go
+@@ -59,21 +59,23 @@ func TestRunButtonVia(t *testing.T) {
+ 	}
+ 
+ 	tests := []struct {
+-		name        string
+-		entry       buttonSpecEntry
+-		rawSpec     *string
+-		specErr     error
+-		rangeName   string
+-		confirmed   bool
+-		answered    bool
+-		hash        string
+-		strand      string
+-		answer      string
+-		strandRead  string
+-		strandErr   error
+-		answerRead  string
+-		answerErr   error
+-		exeErr      error
++		name       string
++		entry      buttonSpecEntry
++		rawSpec    *string
++		specErr    error
++		rangeName  string
++		confirmed  bool
++		answered   bool
++		hash       string
++		strand     string
++		answer     string
++		strandRead string
++		strandErr  error
++		answerRead string
++		answerErr  error
++		exeErr     error
++		// testBinary hands the running test binary in as the lym executable.
++		testBinary  bool
+ 		runOut      string
+ 		runCode     int
+ 		runErr      error
+@@ -85,7 +87,9 @@ func TestRunButtonVia(t *testing.T) {
+ 		wantRun     bool
+ 		wantRunText string
+ 		wantMessage string
+-		wantPrompt  func(dir string) []string
++		// wantLog must appear in the captured log; empty means no check.
++		wantLog    string
++		wantPrompt func(dir string) []string
+ 	}{
+ 		{name: "PlainEntryRunsWithTheSpecsShellFlagAndDirectory", entry: plain, wantRun: true, wantRunText: "echo hi"},
+ 		{name: "RangeWithNoEntryAtItsIndexShowsTheChangedMessage", entry: plain, rangeName: "lymbtn7", wantMessage: "lym: the buttons changed; click again"},
+@@ -98,6 +102,7 @@ func TestRunButtonVia(t *testing.T) {
+ 		{name: "StrandEntryWithAFailedReadRunsNothing", entry: stranded, strandErr: errors.New("no client"), wantMessage: "lym: go needs the agent's name, which this pane lacks; reattach the session with lym reed attach and click again"},
+ 		{name: "ConfirmEntryRaisesThePromptAndRunsNothing", entry: confirming, wantPrompt: promptFor(confirming, "drop it? (y/n)", nil)},
+ 		{name: "ConfirmEntryWithAnUnresolvableExecutableRaisesNothing", entry: confirming, exeErr: errors.New("no exe"), anchorMoved: true, wantMessage: "lym: go could not raise its prompt; see the lym log in ANCHOR/.lym/logs"},
++		{name: "ConfirmEntryHandedTheTestBinaryRaisesNothing", entry: confirming, testBinary: true, anchorMoved: true, wantMessage: "lym: go could not raise its prompt; see the lym log in ANCHOR/.lym/logs", wantLog: "could not resolve this binary"},
+ 		{name: "ConfirmedCallWithTheMatchingHashRuns", entry: confirming, confirmed: true, hash: buttonRunHash(confirming.Run), wantRun: true, wantRunText: "rm x"},
+ 		{name: "ConfirmedCallWithAnotherHashRunsNothing", entry: confirming, confirmed: true, hash: "other", wantMessage: "lym: the buttons changed since go asked; click again"},
+ 		{name: "ConfirmedStrandThatIsNoNameRunsNothing", entry: strandedConfirming, confirmed: true, hash: buttonRunHash(strandedConfirming.Run), strand: "not a name", wantMessage: "lym: go: the strand name not a name is not a strand name; click the button again from the agent pane"},
+@@ -175,7 +180,12 @@ func TestRunButtonVia(t *testing.T) {
+ 					runs = append(runs, buttonRunCall{shellPath, flag, script, runDir})
+ 					return tt.runOut, tt.runCode, tt.runErr
+ 				},
+-				executablePath: func() (string, error) { return exe, tt.exeErr },
++				executablePath: func() (string, error) {
++					if tt.testBinary {
++						return os.Executable()
++					}
++					return exe, tt.exeErr
++				},
+ 				anchorOf: func(specDir string) (string, error) {
+ 					if specDir != dir {
+ 						t.Errorf("anchorOf(%q), want it asked for the rendered directory %q", specDir, dir)
+@@ -235,6 +245,9 @@ func TestRunButtonVia(t *testing.T) {
+ 				}
+ 			}
+ 
++			if tt.wantLog != "" && !strings.Contains(logs.String(), tt.wantLog) {
++				t.Errorf("log = %q, want it to hold %q", logs.String(), tt.wantLog)
++			}
+ 			if tt.messageErr && logs.String() != "" {
+ 				t.Errorf("log = %q, want a failed message logged below Warn", logs.String())
+ 			}
+diff --git a/internal/reedengine/doc.go b/internal/reedengine/doc.go
+index 56dea177..afec631e 100644
+--- a/internal/reedengine/doc.go
++++ b/internal/reedengine/doc.go
+@@ -396,7 +396,11 @@
+ // Selvage's pane and the new-session first pane are out of scope.
+ // The detached `lym` window OpenWindow opens composes its command in panebin.go with the same prelude.
+ // Every key binding that runs `lym` names the pinning binary's absolute path.
+-// The path comes from the same executable-path lookup, an engine field New sets to os.Executable.
++// The path comes from the same executable-path lookup, an engine field New sets to selfexec.LymBinary.
++// Every pin passes that lookup through selfexec.ResolveLymBinary.
++// SpawnWatchdog calls selfexec.LymBinary directly, since it takes no injectable lookup.
++// No prelude, binding, button or Slack line therefore names the running test binary.
++// That holds even when a test hands the engine os.Executable.
+ // Each `#` in it is doubled for run-shell's format expansion.
+ // The detached `lym loom run` and watchdog daemon spawns are outside the rule:
+ // both are spawned from the executable path and never resolve `lym` from PATH.
+diff --git a/internal/reedengine/lock.go b/internal/reedengine/lock.go
+index 90e78040..af0f9635 100644
+--- a/internal/reedengine/lock.go
++++ b/internal/reedengine/lock.go
+@@ -14,6 +14,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/buildvcs"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ )
+ 
+ // reedLockFileName names the reed operation lock file, in the directory stateDir returns under Geometry.AnchorPath.
+@@ -51,7 +52,8 @@ type Engine struct {
+ 	ensureServerGone func(serverPID int) error
+ 	// paneAge reports the elapsed time of a pane's first process; New sets it to paneProcessAge and a test sets a stub.
+ 	paneAge func(pid int) (time.Duration, bool)
+-	// executablePath resolves the running lym binary's path; under go test that is the test binary, so tests stub it.
++	// executablePath resolves the running lym binary's path.
++	// Under go test it refuses the test binary, so a test that wants a pinned line stubs it.
+ 	executablePath func() (string, error)
+ }
+ 
+@@ -72,7 +74,7 @@ func New(cfg Config, geom Geometry, scrub EnvScrub) *Engine {
+ 		warnOut:        os.Stderr,
+ 		build:          buildvcs.Running(),
+ 		paneAge:        paneProcessAge,
+-		executablePath: os.Executable,
++		executablePath: selfexec.LymBinary,
+ 	}
+ }
+ 
+diff --git a/internal/reedengine/panebin.go b/internal/reedengine/panebin.go
+index 1adc1a56..490f55e8 100644
+--- a/internal/reedengine/panebin.go
++++ b/internal/reedengine/panebin.go
+@@ -12,17 +12,16 @@
+ package reedengine
+ 
+ import (
+-	"errors"
+ 	"maps"
+ 	"os"
+ 	"path/filepath"
+ 	"slices"
+ 	"strings"
+-	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ 	"github.com/Knatte18/loomyard/internal/shell"
+ )
+ 
+@@ -94,7 +93,7 @@ func buildServerExports(sh shell.Shell) string {
+ // composePaneLaunchLine returns the launch script's content:
+ // the pane-binary prelude, the build-server exports, the name exports, then launchCmd, on sh's dialect.
+ // It reads the running process's own path via executablePath.
+-// On error it logs a named logger.Warn and drops the prelude,
++// When the path does not resolve, or names the running test binary, it logs a named logger.Warn and drops the prelude,
+ // so the pane launches with no prelude rather than failing the strand launch.
+ // The build-server and name exports do not depend on that lookup and stay either way.
+ // Because Chain drops empty parts, an empty launchCmd yields the statements alone.
+@@ -102,7 +101,7 @@ func buildServerExports(sh shell.Shell) string {
+ // It also returns the executable path the prelude exports, empty when the lookup failed and the prelude was dropped.
+ func composePaneLaunchLine(sh shell.Shell, executablePath func() (string, error), launchCmd, strandGUID, name, parent string) (line, exe string) {
+ 	prelude := ""
+-	exe, err := executablePath()
++	exe, err := selfexec.ResolveLymBinary(executablePath)
+ 	if err != nil {
+ 		exe = ""
+ 		logger.Warn("reed: could not resolve this binary, launching strand pane with no lym-bin prelude", "strand", strandGUID, "err", err)
+@@ -115,11 +114,11 @@ func composePaneLaunchLine(sh shell.Shell, executablePath func() (string, error)
+ // composeWindowCommand returns the shell line a detached reed window runs:
+ // the pane-binary prelude, then `lym` invoked with lymArgs, each quoted, on sh's dialect.
+ // No strand name exports, since a window is not a strand.
+-// An unresolvable executable path logs a named logger.Warn and drops the prelude,
+-// so the window opens with no prelude.
++// An executable path that does not resolve, or names the running test binary, logs a named logger.Warn.
++// The window then opens with no prelude.
+ func composeWindowCommand(sh shell.Shell, executablePath func() (string, error), lymArgs []string) string {
+ 	prelude := ""
+-	exe, err := executablePath()
++	exe, err := selfexec.ResolveLymBinary(executablePath)
+ 	if err != nil {
+ 		logger.Warn("reed: could not resolve this binary, opening window with no lym-bin prelude", "err", err)
+ 	} else {
+@@ -141,9 +140,10 @@ func composeWindowCommand(sh shell.Shell, executablePath func() (string, error),
+ // Every pinned token is quoted once and then has each # doubled.
+ // The doubling keeps run-shell's format expansion at key press from touching the pinned tokens.
+ // #{q:client_name} is the one value left for that expansion, as its own unquoted word.
+-// An unresolvable executable path logs a named logger.Warn and returns false, so the caller pins no switch binding.
++// An executable path that does not resolve, or names the running test binary, logs a named logger.Warn.
++// It then returns false, so the caller pins no switch binding.
+ func composeSwitchCommand(sh shell.Shell, executablePath func() (string, error), next bool, socketPath, tmuxPath string) (string, bool) {
+-	exe, err := executablePath()
++	exe, err := selfexec.ResolveLymBinary(executablePath)
+ 	if err != nil {
+ 		logger.Warn("reed: could not resolve this binary, pinning no session-switch binding", "err", err)
+ 		return "", false
+@@ -172,9 +172,10 @@ func composeSwitchCommand(sh shell.Shell, executablePath func() (string, error),
+ // and the doubling keeps that expansion from touching the pinned tokens.
+ // #{q:session_name} is the one value left for that expansion, as its own unquoted word,
+ // so the session reaches the verb as one quoted argument.
+-// An unresolvable executable path logs a named logger.Warn and returns false, so the caller pins no follow jump.
++// An executable path that does not resolve, or names the running test binary, logs a named logger.Warn.
++// It then returns false, so the caller pins no follow jump.
+ func composeFollowCommand(sh shell.Shell, executablePath func() (string, error), socketPath, tmuxPath string) (string, bool) {
+-	exe, err := executablePath()
++	exe, err := selfexec.ResolveLymBinary(executablePath)
+ 	if err != nil {
+ 		logger.Warn("reed: could not resolve this binary, pinning no follow jump", "err", err)
+ 		return "", false
+@@ -201,9 +202,10 @@ func composeFollowCommand(sh shell.Shell, executablePath func() (string, error),
+ // #{q:session_name}, #{q:mouse_status_range} and #{q:client_name} are left for that expansion, each as its own word.
+ // The output of the directory change and of the verb is discarded,
+ // and the line ends with status zero, so tmux opens no view mode whatever either does, a gone run directory included.
+-// An unresolvable executable path logs a named logger.Warn and returns false, so the caller pins no button click.
++// An executable path that does not resolve, or names the running test binary, logs a named logger.Warn.
++// It then returns false, so the caller pins no button click.
+ func composeButtonCommand(sh shell.Shell, executablePath func() (string, error), socketPath, tmuxPath string) (string, bool) {
+-	exe, err := executablePath()
++	exe, err := selfexec.ResolveLymBinary(executablePath)
+ 	if err != nil {
+ 		logger.Warn("reed: could not resolve this binary, pinning no button click", "err", err)
+ 		return "", false
+@@ -227,10 +229,10 @@ func composeButtonCommand(sh shell.Shell, executablePath func() (string, error),
+ // Every pinned token is quoted once and then has each # doubled, since the click format-expands the line.
+ // #{q:mouse_status_range} and #{q:client_name} are left for that expansion, each as its own word.
+ // The output of both steps is discarded and the line ends with status zero, so tmux opens no view mode.
+-// An executable path that does not resolve, or resolves to a running test binary, logs a named logger.Warn.
++// An executable path that does not resolve, or names the running test binary, logs a named logger.Warn.
+ // It then returns false, so the caller pins no toggle click.
+ func composeSlackToggleCommand(sh shell.Shell, executablePath func() (string, error), socketPath, tmuxPath string) (string, bool) {
+-	exe, err := slackLineExecutable(executablePath)
++	exe, err := selfexec.ResolveLymBinary(executablePath)
+ 	if err != nil {
+ 		logger.Warn("reed: could not resolve this binary, pinning no Slack toggle click", "err", err)
+ 		return "", false
+@@ -248,10 +250,10 @@ func composeSlackToggleCommand(sh shell.Shell, executablePath func() (string, er
+ // composeSlackStateCommand returns the shell line the Slack toggles' state job runs, on sh's dialect:
+ // the absolute path of this binary with `slack bar`, which prints the machine's Slack state.
+ // The line rides the option the job's format reads, and an option's value is not expanded again, so no # is doubled.
+-// An executable path that does not resolve, or resolves to a running test binary, logs a named logger.Warn.
++// An executable path that does not resolve, or names the running test binary, logs a named logger.Warn.
+ // It then returns false, so both toggles stay unlit.
+ func composeSlackStateCommand(sh shell.Shell, executablePath func() (string, error)) (string, bool) {
+-	exe, err := slackLineExecutable(executablePath)
++	exe, err := selfexec.ResolveLymBinary(executablePath)
+ 	if err != nil {
+ 		logger.Warn("reed: could not resolve this binary, pinning no Slack state line", "err", err)
+ 		return "", false
+@@ -259,25 +261,6 @@ func composeSlackStateCommand(sh shell.Shell, executablePath func() (string, err
+ 	return sh.Invoke(exe) + " slack bar", true
+ }
+ 
+-// errSlackLineTestBinary refuses a Slack line that would run the running test binary.
+-var errSlackLineTestBinary = errors.New("the binary is the running test binary, which a Slack line must never run")
+-
+-// slackLineExecutable resolves the binary a Slack line runs through executablePath.
+-// Under go test it refuses the running test binary, and refuses any path when that binary's own path does not resolve.
+-// tmux runs the state job at every redraw, and a test binary given `slack bar` runs its whole suite;
+-// each session that run boots would pin the same job again, without end.
+-func slackLineExecutable(executablePath func() (string, error)) (string, error) {
+-	exe, err := executablePath()
+-	if err != nil || !testing.Testing() {
+-		return exe, err
+-	}
+-	self, err := os.Executable()
+-	if err != nil || exe == self {
+-		return "", errSlackLineTestBinary
+-	}
+-	return exe, nil
+-}
+-
+ // The flags a button's prompt re-enters the click verb with.
+ // buttonStageAnswered is passed after the ask prompt, and buttonStageConfirmed after a yes to the confirm prompt.
+ const (
+diff --git a/internal/reedengine/panebin_test.go b/internal/reedengine/panebin_test.go
+index 7482aba3..d992b7c8 100644
+--- a/internal/reedengine/panebin_test.go
++++ b/internal/reedengine/panebin_test.go
+@@ -205,6 +205,42 @@ func TestComposePaneLaunchLine(t *testing.T) {
+ 	}
+ }
+ 
++// TestComposeLines_DropThePreludeForTheTestBinary pins the pane launch line and the window command.
++// Both drop the lym-bin prelude when the executable lookup answers the running test binary.
++// It captures the process-global logger, so it does not run in parallel.
++func TestComposeLines_DropThePreludeForTheTestBinary(t *testing.T) {
++	tiergate.Require(t, 0)
++
++	tests := []struct {
++		name    string
++		compose func(sh shell.Shell) string
++	}{
++		{"PaneLaunchLine", func(sh shell.Shell) string {
++			line, _ := composePaneLaunchLine(sh, os.Executable, "claude --continue", "guid", "tst:wt:driver", "")
++			return line
++		}},
++		{"WindowCommand", func(sh shell.Shell) string {
++			return composeWindowCommand(sh, os.Executable, []string{"reed", "attach"})
++		}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			for _, sh := range launchScriptDialects() {
++				logs := logcapture.CaptureVerbose(t)
++
++				got := tt.compose(sh)
++
++				if strings.Contains(got, agentname.LymBinEnv) {
++					t.Errorf("%s = %q; want no %s prelude", tt.name, got, agentname.LymBinEnv)
++				}
++				if !strings.Contains(logs.String(), "could not resolve this binary") {
++					t.Errorf("log = %q; want the named warning that the prelude is dropped", logs.String())
++				}
++			}
++		})
++	}
++}
++
+ // TestPaneEnvExports pins per dialect that a strand pane exports the geometry's PaneEnv variables in name order.
+ // It also pins that no PaneEnv, an empty answer and a failed read each export nothing;
+ // the failure is logged, naming the strand.
+diff --git a/internal/reedengine/slacktoggle_integration_test.go b/internal/reedengine/slacktoggle_integration_test.go
+index 10c7c85c..bd7fdd90 100644
+--- a/internal/reedengine/slacktoggle_integration_test.go
++++ b/internal/reedengine/slacktoggle_integration_test.go
+@@ -1,7 +1,7 @@
+ //go:build !windows
+ 
+ // slacktoggle_integration_test.go boots a real tmux server from this test binary.
+-// It reads back that no Slack line was pinned.
++// It reads back that neither Slack line nor the follow line was pinned.
+ 
+ package reedengine
+ 
+@@ -12,10 +12,11 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestSlackLines_RealTmuxBootByATestBinaryPinsNeither pins that a server booted by this test binary holds no Slack line.
++// TestPinnedLines_RealTmuxBootByATestBinaryPinsNone pins that a server booted by this test binary holds no lym line.
+ // The engine resolves its executable to this binary.
+-// A pinned state job would run `<this binary> slack bar`, and with it the whole suite, at every redraw.
+-func TestSlackLines_RealTmuxBootByATestBinaryPinsNeither(t *testing.T) {
++// A pinned state job would run `<this binary> slack bar`, and with it the whole suite, at every redraw;
++// a pinned follow or toggle line would do the same at a click.
++func TestPinnedLines_RealTmuxBootByATestBinaryPinsNone(t *testing.T) {
+ 	tiergate.Require(t, 2)
+ 	t.Parallel()
+ 
+@@ -24,7 +25,7 @@ func TestSlackLines_RealTmuxBootByATestBinaryPinsNeither(t *testing.T) {
+ 		t.Fatalf("Up(): %v", err)
+ 	}
+ 
+-	for _, option := range []string{slackStateCommandOption, slackToggleCommandOption} {
++	for _, option := range []string{slackStateCommandOption, slackToggleCommandOption, followCommandOption} {
+ 		got, err := e.tmux.output("show-options", "-gqv", option)
+ 		if err != nil {
+ 			t.Fatalf("show-options -gqv %s: %v", option, err)
+@@ -33,11 +34,4 @@ func TestSlackLines_RealTmuxBootByATestBinaryPinsNeither(t *testing.T) {
+ 			t.Errorf("show-options -gqv %s after a boot by the test binary = %q; want it unset", option, got)
+ 		}
+ 	}
+-	follow, err := e.tmux.output("show-options", "-gqv", followCommandOption)
+-	if err != nil {
+-		t.Fatalf("show-options -gqv %s: %v", followCommandOption, err)
+-	}
+-	if strings.TrimSpace(follow) == "" {
+-		t.Errorf("show-options -gqv %s after a boot by the test binary is unset; want the other lines still pinned", followCommandOption)
+-	}
+ }
+diff --git a/internal/reedengine/spawnwatchdog.go b/internal/reedengine/spawnwatchdog.go
+index 5e362512..0e19ace4 100644
+--- a/internal/reedengine/spawnwatchdog.go
++++ b/internal/reedengine/spawnwatchdog.go
+@@ -17,6 +17,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/selfexec"
+ )
+ 
+ // SpawnWatchdog attempts to spawn the per-hub watchdog daemon detached, best-effort.
+@@ -48,7 +49,7 @@ func SpawnWatchdog(hubPath, tmuxPath, shellPath string, suppress bool) {
+ 		return
+ 	}
+ 
+-	exe, err := os.Executable()
++	exe, err := selfexec.LymBinary()
+ 	if err != nil {
+ 		logger.Warn("reed: could not resolve this binary, skipping watchdog spawn", "hub", hubPath, "err", err)
+ 		return
+diff --git a/internal/reedengine/testmain_guard_test.go b/internal/reedengine/testmain_guard_test.go
+deleted file mode 100644
+index bee6abf0..00000000
+--- a/internal/reedengine/testmain_guard_test.go
++++ /dev/null
+@@ -1,49 +0,0 @@
+-// testmain_guard_test.go pins the TestMain guard that refuses a positional argument.
+-// A tmux job that names the test binary would otherwise run the whole suite again and pin the same job in each session.
+-
+-package reedengine
+-
+-import (
+-	"bytes"
+-	"errors"
+-	"os"
+-	"os/exec"
+-	"strings"
+-	"testing"
+-
+-	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+-)
+-
+-// guardChildEnv marks the test binary this test starts, which skips the test so that a missing guard cannot recurse.
+-const guardChildEnv = "REEDENGINE_TESTMAIN_GUARD_CHILD"
+-
+-func TestTestMain_ExitsTwoWithoutRunningTheSuiteOnAPositionalArgument(t *testing.T) {
+-	tiergate.Require(t, 1)
+-	if os.Getenv(guardChildEnv) != "" {
+-		t.Skip("the child of the guard test never starts another")
+-	}
+-	t.Parallel()
+-
+-	executable, err := os.Executable()
+-	if err != nil {
+-		t.Fatalf("os.Executable() error = %v", err)
+-	}
+-	var stdout, stderr bytes.Buffer
+-	cmd := exec.Command(executable, "slack-bar-state")
+-	cmd.Env = append(os.Environ(), guardChildEnv+"=1")
+-	cmd.Stdout = &stdout
+-	cmd.Stderr = &stderr
+-
+-	err = cmd.Run()
+-
+-	var exitErr *exec.ExitError
+-	if !errors.As(err, &exitErr) || exitErr.ExitCode() != 2 {
+-		t.Fatalf("test binary with a positional argument: error = %v; want exit status 2", err)
+-	}
+-	if stdout.Len() != 0 {
+-		t.Errorf("test binary with a positional argument wrote stdout %q; want none, as no test ran", stdout.String())
+-	}
+-	if !strings.Contains(stderr.String(), "refusing the non-test arguments") {
+-		t.Errorf("test binary with a positional argument wrote stderr %q; want the refusal", stderr.String())
+-	}
+-}
+diff --git a/internal/reedengine/testmain_test.go b/internal/reedengine/testmain_test.go
+index 70556049..6929c357 100644
+--- a/internal/reedengine/testmain_test.go
++++ b/internal/reedengine/testmain_test.go
+@@ -4,23 +4,12 @@
+ package reedengine
+ 
+ import (
+-	"flag"
+-	"fmt"
+ 	"os"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
+ )
+ 
+-// TestMain runs the tests under tmuxkit.Main.
+-// It first exits with status 2 on a positional argument, which no test run passes.
+-// A tmux job or binding that names this binary, such as `slack bar`, would otherwise run the whole suite again,
+-// and each session that run boots could pin the same job.
+ func TestMain(m *testing.M) {
+-	flag.Parse()
+-	if flag.NArg() > 0 {
+-		fmt.Fprintf(os.Stderr, "reedengine.test: refusing the non-test arguments %q\n", flag.Args())
+-		os.Exit(2)
+-	}
+ 	os.Exit(tmuxkit.Main(m))
+ }
+diff --git a/internal/selfexec/binary.go b/internal/selfexec/binary.go
+new file mode 100644
+index 00000000..b6ff6fb5
+--- /dev/null
++++ b/internal/selfexec/binary.go
+@@ -0,0 +1,39 @@
++// binary.go resolves the path of the running lym binary for a command that another process runs later.
++
++package selfexec
++
++import (
++	"errors"
++	"os"
++	"testing"
++)
++
++// ErrTestBinary refuses a resolved path that names the running test binary.
++var ErrTestBinary = errors.New("selfexec: the binary is the running go test binary, which no pinned or spawned lym command may run")
++
++// LymBinary returns the path of the running lym binary.
++// It serves a command that a pane, a tmux job, a binding or a detached process runs later.
++// Under go test it returns ErrTestBinary, since the running binary is then a test binary.
++// A test binary handed a lym verb runs its whole suite.
++// Each tmux session or process that suite starts may run the same command again, without end.
++func LymBinary() (string, error) {
++	return ResolveLymBinary(os.Executable)
++}
++
++// ResolveLymBinary returns the path executable resolves.
++// It refuses the path with ErrTestBinary when it names the running test binary.
++// Under go test, a path equal to the test binary's own is refused.
++// So is every path when the test binary's own path does not resolve.
++// A resolve error is returned as it is.
++// It lets a caller with an injectable path lookup keep the refusal, while a test's stand-in path passes.
++func ResolveLymBinary(executable func() (string, error)) (string, error) {
++	path, err := executable()
++	if err != nil || !testing.Testing() {
++		return path, err
++	}
++	self, err := os.Executable()
++	if err != nil || path == self {
++		return "", ErrTestBinary
++	}
++	return path, nil
++}
+diff --git a/internal/selfexec/binary_test.go b/internal/selfexec/binary_test.go
+new file mode 100644
+index 00000000..cb142d04
+--- /dev/null
++++ b/internal/selfexec/binary_test.go
+@@ -0,0 +1,50 @@
++// binary_test.go pins that the lym binary lookup never hands out the running test binary.
++
++package selfexec_test
++
++import (
++	"errors"
++	"os"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/selfexec"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestLymBinary_RefusesTheRunningTestBinary(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	path, err := selfexec.LymBinary()
++
++	if path != "" || !errors.Is(err, selfexec.ErrTestBinary) {
++		t.Errorf("LymBinary() = %q, %v; want \"\", ErrTestBinary", path, err)
++	}
++}
++
++func TestResolveLymBinary(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	lookupErr := errors.New("no executable")
++	tests := []struct {
++		name       string
++		executable func() (string, error)
++		wantPath   string
++		wantErr    error
++	}{
++		{"StandInPath", func() (string, error) { return "/opt/lym/bin/lym", nil }, "/opt/lym/bin/lym", nil},
++		{"LookupError", func() (string, error) { return "", lookupErr }, "", lookupErr},
++		{"TestBinaryPath", os.Executable, "", selfexec.ErrTestBinary},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			path, err := selfexec.ResolveLymBinary(tt.executable)
++
++			if path != tt.wantPath || !errors.Is(err, tt.wantErr) {
++				t.Errorf("ResolveLymBinary() = %q, %v; want %q, %v", path, err, tt.wantPath, tt.wantErr)
++			}
++		})
++	}
++}
+diff --git a/internal/selfexec/doc.go b/internal/selfexec/doc.go
+index 5d8f9b16..3428569a 100644
+--- a/internal/selfexec/doc.go
++++ b/internal/selfexec/doc.go
+@@ -1,6 +1,16 @@
+ // doc.go carries the package-level doc comment for internal/selfexec.
+ 
+-// Package selfexec is the self-re-exec helper a long-lived process calls when its binary has been replaced on disk.
++// Package selfexec resolves and re-execs the running lym binary.
++// A long-lived process calls its Watcher when its binary has been replaced on disk,
++// and every command lym builds for another process to run later names its binary through LymBinary.
++//
++// LymBinary is the one lookup of "this lym binary".
++// A pane's launch line, a tmux job or binding, a hook and a detached or child lym process all use it.
++// Under go test it refuses with ErrTestBinary instead of returning the test binary's path.
++// A test binary handed a lym verb runs its whole suite,
++// and a tmux job that suite pins runs it again in every session it starts, without end.
++// ResolveLymBinary applies the same refusal to an injectable lookup, so a test's stand-in path still passes.
++// A lookup that only reads the binary, such as a build identity or a commit label, calls os.Executable itself.
+ //
+ // New resolves the process's executable path once and records that path with the file's identity:
+ // device, inode, size and modification time.
+diff --git a/internal/testkit/tmuxkit/reexecguard.go b/internal/testkit/tmuxkit/reexecguard.go
+new file mode 100644
+index 00000000..a22008f9
+--- /dev/null
++++ b/internal/testkit/tmuxkit/reexecguard.go
+@@ -0,0 +1,36 @@
++// reexecguard.go holds Main's refusal of a test binary started with a positional first argument.
++
++package tmuxkit
++
++import (
++	"fmt"
++	"io"
++	"strings"
++)
++
++// refusedReexecExit is the exit status Main returns for a test binary started with a positional first argument.
++const refusedReexecExit = 2
++
++// positionalFirstArg returns the first of args when it is not a flag.
++// Only the first word is read, since a later word may be a flag's value, as in `-test.run Foo`.
++func positionalFirstArg(args []string) (string, bool) {
++	if len(args) == 0 || strings.HasPrefix(args[0], "-") {
++		return "", false
++	}
++	return args[0], true
++}
++
++// refusesReexec reports whether args, a test binary's arguments after its path, open with a positional word.
++// It writes the refusal to stderr when they do.
++// A pane, tmux job, binding or child that names a test binary in place of lym hands it a lym verb such as `slack bar`.
++// Go's flag parsing stops at that word, so the binary would run its whole suite,
++// and each session that suite starts could run the same command again, without end.
++func refusesReexec(stderr io.Writer, args []string) bool {
++	arg, ok := positionalFirstArg(args)
++	if !ok {
++		return false
++	}
++	fmt.Fprintf(stderr, "tmuxkit: refusing the non-test arguments %q: this is a go test binary, not lym, "+
++		"so it runs no suite for a command that names it in place of lym (PATTERN-child-processes)\n", append([]string{arg}, args[1:]...))
++	return true
++}
+diff --git a/internal/testkit/tmuxkit/reexecguard_integration_test.go b/internal/testkit/tmuxkit/reexecguard_integration_test.go
+new file mode 100644
+index 00000000..14b29e07
+--- /dev/null
++++ b/internal/testkit/tmuxkit/reexecguard_integration_test.go
+@@ -0,0 +1,61 @@
++// reexecguard_integration_test.go pins that a test binary started with a lym verb exits at Main without running a test.
++// Every package's TestMain calls Main, so this one binary proves the guard for them all.
++
++package tmuxkit
++
++import (
++	"bytes"
++	"errors"
++	"os"
++	"os/exec"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// guardChildEnv marks the test binary this test starts, which skips the test so that a missing guard cannot recurse.
++const guardChildEnv = "TMUXKIT_REEXEC_GUARD_CHILD"
++
++func TestMain_ExitsTwoWithoutRunningTheSuiteOnAPositionalArgument(t *testing.T) {
++	tiergate.Require(t, 1)
++	if os.Getenv(guardChildEnv) != "" {
++		t.Skip("the child of the guard test never starts another")
++	}
++	t.Parallel()
++
++	executable, err := os.Executable()
++	if err != nil {
++		t.Fatalf("os.Executable() error = %v", err)
++	}
++	var stdout, stderr bytes.Buffer
++	cmd := exec.Command(executable, "slack", "bar")
++	childTemp := t.TempDir()
++	cmd.Env = append(os.Environ(), guardChildEnv+"=1", "TMPDIR="+childTemp)
++	cmd.Stdout = &stdout
++	cmd.Stderr = &stderr
++
++	err = cmd.Run()
++
++	var exitErr *exec.ExitError
++	if !errors.As(err, &exitErr) || exitErr.ExitCode() != refusedReexecExit {
++		t.Fatalf("test binary started with `slack bar`: error = %v; want exit status %d", err, refusedReexecExit)
++	}
++	if stdout.Len() != 0 {
++		t.Errorf("test binary started with `slack bar` wrote stdout %q; want none, as no test ran", stdout.String())
++	}
++	if !strings.Contains(stderr.String(), `refusing the non-test arguments ["slack" "bar"]`) {
++		t.Errorf("test binary started with `slack bar` wrote stderr %q; want the refusal naming both words", stderr.String())
++	}
++	roots, err := os.ReadDir(childTemp)
++	if err != nil {
++		t.Fatalf("ReadDir(%q) error = %v", childTemp, err)
++	}
++	for _, root := range roots {
++		left, err := os.ReadDir(filepath.Join(childTemp, root.Name()))
++		if err != nil || len(left) != 0 {
++			t.Errorf("refused test binary left %v in %s (read error %v); want its run directory removed", left, root.Name(), err)
++		}
++	}
++}
+diff --git a/internal/testkit/tmuxkit/reexecguard_test.go b/internal/testkit/tmuxkit/reexecguard_test.go
+new file mode 100644
+index 00000000..f9341500
+--- /dev/null
++++ b/internal/testkit/tmuxkit/reexecguard_test.go
+@@ -0,0 +1,40 @@
++// reexecguard_test.go pins which arguments make Main refuse to run the suite.
++
++package tmuxkit
++
++import (
++	"bytes"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestRefusesReexec(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name        string
++		args        []string
++		wantRefused bool
++	}{
++		{"NoArguments", nil, false},
++		{"TestFlagsOnly", []string{"-test.run=TestFoo", "-test.v"}, false},
++		{"TwoTokenFlagValue", []string{"-test.run", "TestFoo"}, false},
++		{"LymVerb", []string{"slack", "bar"}, true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			var stderr bytes.Buffer
++
++			refused := refusesReexec(&stderr, tt.args)
++
++			if refused != tt.wantRefused {
++				t.Errorf("refusesReexec(%q) = %v; want %v", tt.args, refused, tt.wantRefused)
++			}
++			if wrote := stderr.Len() != 0; wrote != tt.wantRefused {
++				t.Errorf("refusesReexec(%q) wrote stderr %q; want a refusal only when it refuses", tt.args, stderr.String())
++			}
++		})
++	}
++}
+diff --git a/internal/testkit/tmuxkit/testmain_test.go b/internal/testkit/tmuxkit/testmain_test.go
+index 6d824532..f3b8d3b9 100644
+--- a/internal/testkit/tmuxkit/testmain_test.go
++++ b/internal/testkit/tmuxkit/testmain_test.go
+@@ -3,8 +3,15 @@ package tmuxkit
+ import (
+ 	"os"
+ 	"testing"
++
++	"github.com/Knatte18/loomyard/internal/lymtemp"
+ )
+ 
+ func TestMain(m *testing.M) {
++	// A package whose TestMain sets up git has made the process run directory before it calls Main.
++	// This one makes it directly, so a refused re-exec has a directory to remove.
++	if _, err := lymtemp.Dir(); err != nil {
++		panic(err)
++	}
+ 	os.Exit(Main(m))
+ }
+diff --git a/internal/testkit/tmuxkit/tmuxkit.go b/internal/testkit/tmuxkit/tmuxkit.go
+index 1d3a5094..f074c2ce 100644
+--- a/internal/testkit/tmuxkit/tmuxkit.go
++++ b/internal/testkit/tmuxkit/tmuxkit.go
+@@ -1,5 +1,11 @@
+ // Package tmuxkit gives each test package one isolated tmux socket directory.
+ //
++// Main first refuses a test binary started with a positional first argument: it writes the refusal and returns 2.
++// A pane, tmux job, binding or child that names the test binary in place of lym starts it that way,
++// and the binary would otherwise run its whole suite, which could start the same command again in every session.
++// Only the first argument is read, since a later word may be a flag's value.
++// A package's TestMain dispatches its own helper roles before it calls Main.
++//
+ // A package's TestMain calls Main, which points `TMUX_TMPDIR` at a private directory,
+ // so no test reaches the caller's own tmux server or leaves a socket in the default directory.
+ // Socket hands a single test a unique `-L` key and, when the test ends, kills its server and removes its socket file.
+@@ -102,7 +108,15 @@ const (
+ // Off Windows the run directory is also the isolated tmux socket directory.
+ // A package calls it as `os.Exit(tmuxkit.Main(m))` after its own setup.
+ // On Windows (psmux) the tests run unchanged, apart from the temp variables pointing at the run directory.
++// A binary started with a positional first argument runs no test and returns 2.
++// It first removes the run directory its TestMain's setup made, so a refused process leaves nothing behind.
+ func Main(m *testing.M) int {
++	if refusesReexec(os.Stderr, os.Args[1:]) {
++		if err := lymtemp.Remove(); err != nil {
++			fmt.Fprintf(os.Stderr, "tmuxkit: %v\n", err)
++		}
++		return refusedReexecExit
++	}
+ 	dir, err := lymtemp.Dir()
+ 	if err != nil {
+ 		fmt.Fprintf(os.Stderr, "tmuxkit: %v\n", err)
+diff --git a/pattern/PATTERN-child-processes.md b/pattern/PATTERN-child-processes.md
+index d3bceb1d..eae3ca48 100644
+--- a/pattern/PATTERN-child-processes.md
++++ b/pattern/PATTERN-child-processes.md
+@@ -13,6 +13,14 @@ The level is `Info` for a lifecycle spawn and `Debug` for a spawn inside a polli
+ - A site structurally barred from importing `internal/logger` is exempt, and carries a written reason wherever the exemption is recorded.
+ - Test-fixture machinery, standalone harnesses and dev tooling under `tools/` are outside this rule, not exemptions to it.
+ - Never re-exec `os.Executable()` under `go test`.
++  A command that names this lym binary for a pane, a tmux job or binding, a hook or a lym child or detached process
++  resolves it through `selfexec.LymBinary`, or `selfexec.ResolveLymBinary` over an injectable lookup,
++  which refuses the running test binary.
++  Only a read of the binary itself, such as a build identity or a commit label, calls `os.Executable` directly.
++  Two kinds of site also call it directly.
++  The drive wiring in `internal/loomcli` and the wire in `internal/battencli` each resolve the path once at wiring.
++  The geometry builders in `internal/hubgeom` hand the path to a spawner that refuses to start under `go test`.
++  `tmuxkit.Main` exits 2 on a positional first argument, so a pin that slips past still never runs a suite.
+ - A retry loop around a real spawn caps attempt COUNT, not only elapsed time.
+ 
+ ### Log levels
+diff --git a/pattern/PATTERN-leaf-packages.md b/pattern/PATTERN-leaf-packages.md
+index 0582560b..d2f8478a 100644
+--- a/pattern/PATTERN-leaf-packages.md
++++ b/pattern/PATTERN-leaf-packages.md
+@@ -66,6 +66,8 @@ Imports only the standard library.
+ 
+ Imports only the standard library and `internal/logger`.
+ `internal/logger` is admitted because the helper logs its stat, exec and replace outcomes.
++It owns `LymBinary`, the one lookup of the running lym binary that every command pinned into tmux or a process goes through,
++so every package that pins one can import it.
+ 
+ ## `internal/pattern`
+ 
+diff --git a/pattern/PATTERN-test-isolation.md b/pattern/PATTERN-test-isolation.md
+index b6199529..b6e8e684 100644
+--- a/pattern/PATTERN-test-isolation.md
++++ b/pattern/PATTERN-test-isolation.md
+@@ -19,6 +19,9 @@ A test package never reaches the operator's global gitconfig or default tmux soc
+   starting tmux has no static shape, so every package carries the one call;
+   it costs one run directory per test binary.
+ - In a `tier0` run the entry point spawns nothing.
++- The entry point exits 2 without running a test when the binary's first argument is not a flag,
++  so a command that names a test binary in place of `lym` never runs its suite.
++  A `TestMain` that serves helper roles of its own dispatches them before it calls the entry point.
+ - A package whose `TestMain` cannot call the entry point is admitted by an allowlist entry.
+   The entry's reason names that obstacle; "does not start tmux" is not a reason.
+   That `TestMain` removes the process run directory after `m.Run` through `lymtemp.Remove`.
