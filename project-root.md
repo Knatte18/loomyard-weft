@@ -20,19 +20,13 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Slack relay: one Socket Mode connection per machine, one channel per orch, two tokens** | [`slack-push-channels`](design-slack-push-channels.md)<br>[Sketch](decision-slack-push-channels.md) | tapestry · solid | Code-Burler-Fix | neve | 2h<br>2h | slack, creel, orch |
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Ship the rule: a tapestry-sized note runs as a Motif, then raddle**<br>• Move the Motif-first rule from the hub heddle entry into the shipped board policy and orch instructions of lym<br>• `loom: code_assist_reviewer_model astra[medium]` | [`motif-before-tapestry`](design-motif-before-tapestry.md) | darn · light |  | 35m<br>35m | orch, board |
+| T1 | **Ship the rule: a tapestry-sized note runs as a Motif, then raddle**<br>• Move the Motif-first rule from the hub heddle entry into the shipped board policy and orch instructions of lym<br>• `loom: code_assist_reviewer_model astra[medium]` | [`motif-before-tapestry`](design-motif-before-tapestry.md) | darn · light |  | 35m<br>35m | orch, board |
 
 ## Notes (19)
 
