@@ -490,6 +490,11 @@
       "status": "draft",
       "created": "2026-11-08T11:49:42Z",
       "revised": "2026-11-08T11:49:42Z",
+      "run_settings": {
+        "loom": {
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
       "profile": "light"
     },
     {
