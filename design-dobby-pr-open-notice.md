@@ -1,6 +1,6 @@
 # PR-Review asks the parent orch for a review on its own, behind a hub and task setting
 
-`dobby-pr-open-notice` · Task · feature, loom, burler, orch, config · running · Finalize
+`dobby-pr-open-notice` · Task · feature, loom, burler, orch, config · done
 
 Imported from [issue #86](https://github.com/Knatte18/loomyard/issues/86).
 
