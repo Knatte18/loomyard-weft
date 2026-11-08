@@ -1,6 +1,6 @@
 # lym slack login waits silently for end of input and echoes the token
 
-`slack-login-prompt` · Task · bug, slack · running · Drift-Await
+`slack-login-prompt` · Task · bug, slack · running · Drift-Expect
 
 ## Seen (operator, 2026-11-07)
 
