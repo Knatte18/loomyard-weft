@@ -532,7 +532,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #85](https://github.com/Knatte18/loomyard/issues/85).\n\n## Seen\n\nIn hub DrillOpPlan (shortname dop), the reed session of beam `loomyard-setup` shows the **task** button group (HALT, CANCEL, code, terminal, agent) instead of the **beam** group, so the distill, refresh, merge-in and land buttons are missing.\n\n- `lym config --resolved reed` resolves `buttons.beam` from the template with distill, refresh, merge-in and land; no default, worktree or local layer writes a `buttons` group (the machine layer does not exist for reed).\n- The session's tmux option `@lym_button_spec` holds the task entries with `{slug}` = `loomyard-setup`, and `@lym_button_dir` points at the prime worktree, not the beam worktree.\n- The beam's board project shows `running · Beam-Await`, so the beam runs as a batten run; the session seems to be classified by that run as a task session.\n\n## Workaround\n\nNone applied; the operator runs `lym orch distill` / `lym orch refresh` by hand or asks the orch.\n\n## Expected\n\nA beam's reed session uses the `beam` group (and its worktree as button dir), whether or not the beam runs under batten.\n",
-      "status": "running · Seed-Child",
+      "status": "running · Open-Window",
       "created": "2026-11-08T11:18:41Z",
       "revised": "2026-11-08T11:24:18Z",
       "profile": "light"
@@ -556,7 +556,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #84](https://github.com/Knatte18/loomyard/issues/84).\n\nWhat happened:\nDuring a burler plan fix round, the fixer instructions say a `decision`-class finding goes to the parent, and the fixer neither fixes it nor reports on it.\nMidway through the round, LOOM mail delivered the parent's ruling on that finding and said to act on it.\nThe two instructions conflicted.\nThe fixer followed the mail as the later and more specific instruction and added cards for the ruling.\nThe fixer-report had no section for such work, so it was recorded in a section of its own, outside the dispositions.\n\nThe parent's ruling also asked for something that already exists on HEAD.\nThe fixer cannot message the parent about the review, so the only outlet for that conflict was a deferral in the fixer-report.\n\nWhy it is abnormal:\n- The fix instructions do not say what a fixer does when a parent ruling on a `decision`-class finding arrives mid-round.\n- The fixer-report format has no place for work done on a ruling, so the work sits outside the dispositions.\n- A fixer that finds the parent's ruling mistaken or redundant has no verb to tell the parent, so the conflict surfaces only as a deferral.\n\nWhat to do:\n- Extend the fix instructions to cover a parent ruling on a `decision`-class finding that arrives during the round, and to say it overrides the \"neither fix nor report\" rule.\n- Give the fixer-report a defined section for work done on a ruling.\n- Give the fixer a way to flag a mistaken or redundant ruling to the parent, or document that a deferral is the intended channel.\n\nProvenance: task slug `tests-simulator-seam`; note file `burler-plan-r1.md`.\n",
-      "status": "running · Worktree-Create",
+      "status": "blocked · Worktree-Create",
       "created": "2026-11-08T11:18:43Z",
       "revised": "2026-11-08T11:24:19Z",
       "profile": "light"
