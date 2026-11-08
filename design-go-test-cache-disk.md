@@ -4,7 +4,7 @@
 
 ## Seen (operator, 2026-11-08)
 
-- `~/.cache/go-build` on neve held 620 GB, with the disk 73 % full; another session found the same and traced it.
+- `~/.cache/go-build` on neve held about 750 GB when a session of the operator's traced it, and 620 GB while it was being cleaned; OSL-1046 runs the same gates and is likely hit the same way.
 - The bulk is the test logs `go test` keeps beside each cached test result: with test caching on, Go logs every environment variable a test reads and every file it opens or stats, to judge later whether the cached result still holds.
   lym's tests build whole hubs with git repositories under `/tmp/lym-1000/...`, so every file operation lands in that log, and one log reaches about 700 MB; over a hundred are written a day, 60 to 275 GB a day.
 - The cache never pays back: the temp directories get new random names every run, so no cached test result is ever reused.
