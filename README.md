@@ -120,7 +120,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Slack: a reply is not forwarded when mail waits at turn end, and a forward can reach Slack late** | [`slack-stop-hook-drops-reply`](design-slack-stop-hook-drops-reply.md) | darn · light | PR-Review | neve | 1h<br>51m | slack, claude, creel |
+| T2 | **Slack: a reply is not forwarded when mail waits at turn end, and a forward can reach Slack late** | [`slack-stop-hook-drops-reply`](design-slack-stop-hook-drops-reply.md) | darn · light | Finalize | neve | 1h<br>51m | slack, claude, creel |
 
 #### Ready (0)
 
