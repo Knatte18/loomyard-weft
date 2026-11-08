@@ -1,14 +1,18 @@
-<!-- This is the fixer's instruction: fix every finding, the write-surface/git discipline for the fix, the fixer-report, and the never-push/never-touch-`_lym` rule.
-     It is shipped as an embedded default in the top-level stencils package (stencils/stencils.go),
-     seeded to <hub>/_board/_lym/stencils/burler/ and read from there at call time by composeFixPrompt
-     (prompt.go) via internal/stencil, then read by the fixer only when the fixer stencil
-     (burler-template-fixer.md) directs it here.
+<!-- This is the fixer's instruction:
+     fix every finding, act on a parent ruling that reaches the fixer mid-round, the write surface and git discipline for the fix, the fixer-report,
+     and the never-push and never-touch-`_lym` rule.
+     It is an embedded default in contracts/stencils/stencils.go,
+     seeded to the Bolt checkout's `_lym/stencils/burler/`,
+     and composeFixPrompt in internal/burlerengine/prompt.go reads it from there at call time.
+     The fixer reads it only when burler-template-fixer.md directs it here.
      The friction_directive marker is optional and renders as nothing when the round has no note.
      The self_check marker is optional too, and renders as nothing when the round names no fixer fan;
      it sits directly before the Fixer-report heading with no line of its own, so an empty value adds no byte.
-     Every other marker below is a top-level {{.X}} substitution;
-     stencil.Fill requires them all non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go).
-lym-stencil: sha256=fba4c6cb629d0329e29c89733541dd6c76d88652c1bdb2b779f358487803937d build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+     Every other marker below is a top-level {{.X}} substitution, and stencil.Fill requires each of them non-empty.
+     There are no {{if}}/{{range}} conditionals in this file:
+     a required marker inside a conditional branch would render silently blank when present-but-empty
+     (see internal/stencil/stencil.go).
+lym-stencil: sha256=71c7549f4e974d2bfb03102392ef5da56d4de31f27ff1c7c605ab7aa135e093b build=9c0149af1de444a2ad91d6ebd133a3d2e93fbef5 time=2026-11-08T11:43:14Z -->
 
 {{.friction_directive}}
 
@@ -44,6 +48,26 @@ even then you must say so explicitly, with the specific reason, in the fixer-rep
 Never leave a finding unfixed just because it looked small — small findings are usually the cheapest to fix, not a reason to skip them.
 A fix adds a test only when the finding is a coverage gap; for any other finding it corrects the existing test that asserted the wrong thing.
 
+## Parent ruling rule — a ruling on a `decision`-class finding that reaches you this round
+
+A ruling is a message from your parent, or a decision notice, that settles a `decision`-class finding of this review;
+your parent directive names both kinds of message.
+It overrides the rule that you neither fix nor report the `decision`-class findings your parent holds:
+the ruled finding becomes your work, with the ruling in place of its `fix` key, until you end your turn.
+A ruling that reaches you after you wrote the fixer-report adds its entry to the report.
+
+1. **Carry out the ruling** inside your write surface, with the same git discipline as every other fix.
+   A part that would need to leave your write surface is left undone, with that reason.
+2. **Flag a mistaken or redundant ruling** instead of carrying it out.
+   A ruling is redundant when the target already holds what it asks for, and mistaken when the code you read shows its premise false or the change it asks for breaks a test, caller or `PATTERN` entry.
+   Leave that part undone and tell your parent once, with `lym creel post --parent "<text>"` and no `--expect-reply`, so the round goes on:
+   name the finding id, what the ruling asks, and the cited evidence.
+   With no parent recorded, the fixer-report's entry is the only flag.
+   A ruling you merely disagree with is carried out.
+
+Record every ruling in the fixer-report's `Rulings` section, never under `Disputed` or deferred:
+one entry per ruling, naming the finding id, what the ruling asks, and either the changes you made or the part left undone with its reason and evidence, and whether you told your parent.
+
 ## Fix-scope rules — your write surface and git discipline
 
 {{.fix_scope_rules}}
@@ -51,7 +75,7 @@ A fix adds a test only when the finding is a coverage gap; for any other finding
 {{.self_check}}## Fixer-report rule (write this to `{{.fixer_report_path}}`)
 
 Write `{{.fixer_report_path}}` unconditionally, every round — even when nothing needed fixing, in which case state "nothing fixed".
-Include what you changed, a `Disputed` section (empty if you disputed nothing) and a deferred-with-reason section (empty if nothing was deferred).
+Include what you changed, a `Disputed` section (empty if you disputed nothing), a deferred-with-reason section (empty if nothing was deferred) and a `Rulings` section (empty if no parent ruling reached you).
 The review at `{{.review_path}}` is the reviewer's file: you never write it.
 The round is not done until `{{.fixer_report_path}}` exists on disk — a skipped fixer-report leaves the round looking unfinished.
 

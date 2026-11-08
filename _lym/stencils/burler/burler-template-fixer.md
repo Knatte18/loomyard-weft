@@ -1,15 +1,20 @@
 <!-- This is the burler fixer seat stencil: the only seat of the fix half's one-seat table.
-     It is shipped as an embedded default in the top-level stencils package (stencils/stencils.go), seeded to the Bolt checkout's `_lym/stencils/burler/` and read
-     from there at call time, then filled by internal/seatengine from the seat's value map and handed to the
-     fixer's shuttle run as the agent's entire visible instruction set — the fix step it names
-     below is read only when the fixer reaches it.
+     It is an embedded default in contracts/stencils/stencils.go,
+     seeded to the Bolt checkout's `_lym/stencils/burler/`, read from there at call time,
+     filled by internal/seatengine from the seat's value map,
+     and handed to the fixer's shuttle run as the agent's entire visible instruction set.
+     The fix step it names is read only when the fixer reaches it.
      Every marker below is a top-level {{.X}} substitution.
-     The reserved markers it uses, which the seats engine fills, are parent_directive and edit_directive;
-     the seat values it uses, which fixSeatValues gives it, are review_path, review_format_path and instruction_fix_path.
-     There are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go).
-     It names no reviewer and no channel to one: the fix half is spawned only once the review is accepted on disk, and never waits on or messages the review half.
-     This file deliberately never repeats the review-file format, which lives in the file review_format_path names, nor the fix-everything body, which lives in the fix step.
-lym-stencil: sha256=e6c20de78da62f6d9cb14abe2167d5264d088c404cf223602487cd0c45a668e3 build=1834cebfde57af62a41a58438fcb466c16412d94 time=2026-11-01T16:53:16Z -->
+     The seats engine fills the reserved markers it uses: parent_directive and edit_directive.
+     fixSeatValues supplies review_path, review_format_path and instruction_fix_path.
+     There are no {{if}}/{{range}} conditionals in this file:
+     a required marker inside a conditional branch would render silently blank when present-but-empty
+     (see internal/stencil/stencil.go).
+     It names no reviewer and no channel to one:
+     the fix half is spawned only once the review is accepted on disk, and never waits on or messages the review half.
+     It never repeats the review-file format, which lives in the file review_format_path names,
+     nor the fix-everything body, which lives in the fix step.
+lym-stencil: sha256=adbc1e55298a631254f5beef1d6cfbb97c489a80ed1fb738ec4c9fb705795b70 build=9c0149af1de444a2ad91d6ebd133a3d2e93fbef5 time=2026-11-08T11:43:14Z -->
 
 # Burler — fix
 
@@ -36,4 +41,4 @@ Read the fix step only when its step is reached, never early.
 
 You never write the review file `{{.review_path}}`.
 The only round file you ever write is your fixer-report; the fix step names the rest of your write surface.
-You send no message to any other session about the review.
+You send no message to any other session about the review, but the one flag to your parent the fix step's parent ruling rule names.
