@@ -1,6 +1,6 @@
 # Watch patterns on guard tests so a card gate runs only the guards its change can fail
 
-`guard-watch-patterns` · Task · enhancement, gate, testkit
+`guard-watch-patterns` · Task · enhancement, gate, testkit · running · Worktree-Create
 
 ## Why (operator, 2026-11-08)
 
