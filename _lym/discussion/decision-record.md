@@ -14,6 +14,12 @@ The two reviewer panes share their space evenly and scale together: each takes h
 
 ## Decisions
 
+### Added after Discussion (operator, 2026-11-08): The pane border itself stays put on a window resize
+
+Decision: Observed on Linux: resizing the whole terminal window shrank the Claude reviewer pane while the Codex assist pane kept its width; the border between them moved, the Codex pane did not scale. Both panes must change width together, half each. The fix is in reed's layout handling (for example re-applying even-horizontal on a client or window resize, or a hook that does it), not codexengine's --no-alt-screen, which stays as it is.
+
+Rationale: Operator, 2026-11-08: the Claude pane got smaller while the Codex pane stayed as wide as before.
+
 ## Constraints
 
 ## Auto-mode assumptions
