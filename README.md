@@ -42,7 +42,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Codex engine: the forced workspace-write sandbox fails where bubblewrap cannot create user namespaces** | [`codex-sandbox-mode`](design-codex-sandbox-mode.md) | darn · light | Code-Bouncer | neve | 27m<br>21m | codex, shuttle, preflight |
+| T6 | **Codex engine: the forced workspace-write sandbox fails where bubblewrap cannot create user namespaces** | [`codex-sandbox-mode`](design-codex-sandbox-mode.md) | darn · light | Drift-Recheck | neve | 27m<br>21m | codex, shuttle, preflight |
 
 #### Ready (0)
 
@@ -99,7 +99,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Slack relay: one Socket Mode connection per machine, one channel per orch, two tokens** | [`slack-push-channels`](design-slack-push-channels.md)<br>[Sketch](decision-slack-push-channels.md) | tapestry · solid | Webster | neve | 1h<br>1h | slack, creel, orch |
-| T4 | **Beam reed session gets the task button group instead of beam** | [`beam-reed-task-buttons`](design-beam-reed-task-buttons.md) | darn · light | Finalize | neve | 27m<br>21m | reed, pawl |
+| T4 | **Beam reed session gets the task button group instead of beam** | [`beam-reed-task-buttons`](design-beam-reed-task-buttons.md) | darn · light | Finalize | neve | 27m<br>22m | reed, pawl |
 
 #### Ready (0)
 
