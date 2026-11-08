@@ -23,7 +23,15 @@ Presence also switches by itself:
 - lym tells the operator's own lines from what lym puts in the pane itself: a slash command such as ORCHWATCH's `/compact` and `/color`, a text creel or another lym program injected (creel journals each inject), a task notification Claude Code submits itself, and mail a hook hands the session never switch presence.
   The design names how each kind is recognised, such as matching a submitted prompt against the inject creel journaled for that pane just before it, and tests each kind.
 
+## Reaching the operator while away (operator, 2026-11-08)
+
+The orch need not keep track of presence: lym carries its answers to Slack.
+
+- A Stop hook on every orch session forwards the turn's final reply to that orch's channel while the machine is away; a turn that ends with no text sends nothing.
+  Only the final reply goes, not the text written mid-turn; turns on automated notices, such as a landing, are forwarded too.
+- Inbound Slack mail reaches the orch as creel mail, as today.
+- The orch can still send to Slack on its own through creel, such as when the operator asks for something to be sent there; the shipped orch text keeps one plain line on how, and the rest of `role-slack.md` that a hook now covers is removed.
+
 ## Open
 
-- The two toggles' labels (operator weighing `slack` and `relay`).
-- How an orch keeps to Slack while away, so a compacted or forgetful orch does not answer only in the console. The operator's idea: a hook that catches an orch ending its turn with a console answer while away.
+- The two toggles' labels; the orch proposed `slack` for the connection and `away` for presence.
