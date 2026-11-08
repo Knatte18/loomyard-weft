@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-08 11:25 UTC; every age below is as of then.
+Rendered 2026-11-08 11:26 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -8,21 +8,20 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (5)
+## Tasks (4)
 
 Concrete and claimable; only a task can run.
 
-### Running (5)
+### Running (4)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Run the cmd/lym tests in the Webster batch gate so verify failures surface in the fork**<br>• Batch gate also runs cmd/lym tests, so a break there is fixed by the batch fork instead of a verify-fix round | [`batch-gate-cmd-lym`](design-batch-gate-cmd-lym.md) | darn · light | Finalize | neve | 28m<br>28m | webster, gate |
 | T2 | **Slack relay: one Socket Mode connection per machine, one channel per orch, two tokens** | [`slack-push-channels`](design-slack-push-channels.md)<br>[Sketch](decision-slack-push-channels.md) | tapestry · solid | Webster | neve | 1h<br>1h | slack, creel, orch |
 | T3 | **Re-measure writer lookups and Plan phase cost on the tapestry runs since 3085f451**<br>• One read-only study: early lookup delegation and its carry, and whether the Plan phase cost has fallen since 2026-10-24 | [`writer-cost-remeasure`](design-writer-cost-remeasure.md) | darn · docs | Finalize | neve | 3d<br>26m | loom, stencil |
-| T4 | **Beam reed session gets the task button group instead of beam** | [`beam-reed-task-buttons`](design-beam-reed-task-buttons.md) | darn · light | Darn-Write | neve | 6m<br>1m | reed, pawl |
-| T5 | **Burler fix round: decision-class rule conflicts with parent ruling mail, fixer has no outlet to parent** | [`fixer-parent-ruling`](design-fixer-parent-ruling.md) | darn · light | Darn-Write | neve | 6m<br>1m | burler, stencil |
+| T4 | **Beam reed session gets the task button group instead of beam** | [`beam-reed-task-buttons`](design-beam-reed-task-buttons.md) | darn · light | Darn-Write | neve | 7m<br>1m | reed, pawl |
+| T5 | **Burler fix round: decision-class rule conflicts with parent ruling mail, fixer has no outlet to parent** | [`fixer-parent-ruling`](design-fixer-parent-ruling.md) | darn · light | Darn-Write | neve | 7m<br>1m | burler, stencil |
 
 ### Ready (0)
 
@@ -65,3 +64,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>2d | burler, shed, orch, quarry, report |
 | F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 3d<br>23h | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 3d<br>3d | batten, board, fabric, workspaces |
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T1 | **Run the cmd/lym tests in the Webster batch gate so verify failures surface in the fork**<br>• Batch gate also runs cmd/lym tests, so a break there is fixed by the batch fork instead of a verify-fix round | [`batch-gate-cmd-lym`](design-batch-gate-cmd-lym.md) | 29m<br>29m | webster, gate |
