@@ -41,6 +41,12 @@ The task is not done without them:
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-08): Two timing gate runs by the writer
+
+Decision: The writer runs 'lym gate test --tier 1 ./internal/fabricengine' exactly twice, only to time the package: once before any edit, once after its last commit, both in the foreground with the Bash tool timeout 3600000, repeating the same command in a turn of its own on done: false. Both wall times go in the PR. No other gate run of its own.
+
+Rationale: The task requires before and after times of the package's tier 1 pass, and the darn prompt otherwise forbids the writer a gate run.
+
 ## Constraints
 
 ## Auto-mode assumptions
