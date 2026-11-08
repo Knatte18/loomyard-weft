@@ -67,10 +67,39 @@ Six forks returned reports; every lens returned one. Findings, merged across len
 - Reporting every contained judged test: two tests covering each other would both be flagged.
 - A per-module redundancy test inside the suite: minutes per run and a test binary launching test binaries.
 - Failing the gate on a contained test: block coverage does not see assertions.
+- Taking the weft write lock for a whole refresh: it would hold every landing into the prime for minutes; D5 rechecks each package's file hashes instead.
+- A gate reinterpretation appending `redundancy` to tuned keys: config load already fills the template's `reports` into a tuned `gates` entry.
 
 ## Review rounds
 
-_No rounds yet._
+**Round 1.** Seventeen findings; F1 disputed, the rest fixed in the record:
+
+- F1 (BLOCKING, the step never reaches a hub whose base `gate.yaml` sets the four keys whole): disputed, premise false. `yamlengine.FillMissing` at config load fills a template key a tuned `gates` entry lacks; D7 now states that, and that `reports: []` turns the step off on a key.
+- F2: D7 step 1 reads base text through `fabricengine.CodeFileAt` (new); `AnchoredFileAt` reads the weft, and `Fabric.MergeBase` reads the warp. No parent branch judges nothing.
+- F3, F4, F5, F6: D5 lists skips apart from capped leftovers, treats an untracked file as a skip, rechecks each package's file hashes after its tests, and gives each test the step's timeout; D6 retriggers on capped leftovers only.
+- The fixer's self-check added: a non-`go` scoper judges nothing, an error-bearing report never skips a repeat call, and a dobby stop ends the refresh child.
+- F7 to F14, F16: D7's bound, failure rule, repeat skip, cost, keep escape, drop order, changed-files line and cover order restated.
+- F10: the refresh child registers under `runproc.HubOwner` as `test-map`.
+- F13, F17: D8 never matches a red report and states the map-rebuild bound.
+- F15: the in-place landing moved to Constraints; `merge.go` runs `MergeStart` in the parent's warp checkout under the weft write lock.
+
+**Round 2.** Ten findings, all fixed in the record:
+
+- F1 (BLOCKING, a package with nothing to build had no map and looped D6): D5 maps such a package with no tests and counts it against `--max`.
+  The self-check added that a failed-build map is retried after a HEAD move, listed at exit, and not judged by D7.
+- F2: the prime dobby's stop calls `runproc.EndRole` with `runproc.RoleTestMap`; `EndRole`'s contract spares other roles.
+- F3: the report records every step 1 test's function hash, and D8 matches against that set; file hashes stay per judged package.
+- F4: tests run in their own process group with a bounded wait; builds run under `redundancy_build_timeout_min`; D5's time bound excludes the slot wait.
+- F5: D7 step 1 looks tests up by package and name, so renames take no unchanged test.
+- F6 to F10: D3's ordinal bound, D5's non-Go-file bound, D7's false-cover bound and per-package map age, the spawn scan's move to `internal/testcover`, and the unique criterion restated.
+
+**Round 3.** Five findings, all fixed in the record:
+
+- F1: D7 step 4 takes one gate slot as a non-tier holder, its wait unbounded; `redundancy_budget_min` counts builds from the slot, and no build or test starts once it is spent.
+- F2: D5 writes an exit record with its process ID and the capped count; D6 reads it after the wait, and a killed refresh or an unmatched record counts as none left.
+- F3: the keep scan moves into `internal/testcover` with the spawn scan.
+- F4: D4 hashes the Go files the directory tracks at HEAD.
+- F5: D5's tracked-file and status reads go through `internal/fabricengine`; Constraints name `PATTERN-fabric-boundary`.
 
 ## Question ledger
 
@@ -78,6 +107,6 @@ _No rounds yet._
 - Q2 Keep the module-wide view? — Resolved, auto-pick: as a column from the same run (Turn 3).
 - Q3 How to compare across commits? — Resolved, auto-pick: content-keyed blocks (Turn 4).
 - Q4 Where maps live and who rebuilds them? — Resolved, auto-pick: hub `.lym`, `lym gate testmap` in the prime worktree, prime parent's dobby on a prime HEAD change (Turns 5 and 7).
-- Q5 Which gate keys run the step, and how Code-Review sees it? — Resolved, auto-pick: `reports` list on `webster`, `parent-align`, `darn-write` and `code-burler-fix`; a stencil marker matched by content (Turns 6 and 7).
-- Q6 Limits on the step's cost? — Resolved, auto-pick: `redundancy_max_tests` 40, `redundancy_test_timeout_sec` 120, `redundancy_budget_min` 10 (Turn 7).
-- Q7 Limits on the refresh? — Resolved, auto-pick: `test_map_batch` 5 packages per call, `test_map_max_age_days` 7 (Turn 7).
+- Q5 Which gate keys run the step, and how Code-Review sees it? — Resolved, auto-pick: `reports` list on `webster`, `parent-align`, `darn-write` and `code-burler-fix`; a stencil marker matched by content (Turns 6 and 7); a hub that tunes those keys gets `reports` through config load's template fill (Round 1).
+- Q6 Limits on the step's cost? — Resolved, auto-pick: `redundancy_max_tests` 40, `redundancy_test_timeout_sec` 120, `redundancy_budget_min` 10 (Turn 7), and `redundancy_build_timeout_min` 10 per build, shared with the refresh (Round 2).
+- Q7 Limits on the refresh? — Resolved, auto-pick: `test_map_batch` 5 packages per call, `test_map_max_age_days` 7 (Turn 7), and `redundancy_test_timeout_sec` per test (Round 1), and `redundancy_build_timeout_min` per build (Q6, Round 2).
