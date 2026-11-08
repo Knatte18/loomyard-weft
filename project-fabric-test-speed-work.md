@@ -1,6 +1,6 @@
 # P3 Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes
 
-Rendered 2026-11-08 17:39 UTC; every age below is as of then.
+Rendered 2026-11-08 17:40 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`fabric-test-speed-work`](design-fabric-test-speed-work.md) · Age 1d · Owner `neve`
@@ -23,11 +23,3 @@ _None._
 ## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T1 | **Cut and fold fabricengine tier 1 tests the coverage study found redundant** | [`fabric-test-cuts`](design-fabric-test-cuts.md) | 35m<br>34m | fabric, testkit |
