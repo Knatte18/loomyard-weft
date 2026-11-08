@@ -1,6 +1,6 @@
 # Cut and fold fabricengine tier 1 tests the coverage study found redundant
 
-`fabric-test-cuts` · Task · enhancement, fabric, testkit · running · Seed-Child
+`fabric-test-cuts` · Task · enhancement, fabric, testkit · running · Preflight
 
 ## Seen
 
