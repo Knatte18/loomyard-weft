@@ -54,3 +54,8 @@ The fix is built but unproved: no real fanned seat has run since, so a real comp
 ## Plan (operator, 2026-11-08)
 
 Test it on coming darn tasks: the orch sets `{"loom":{"code_assist_reviewer_model":"astra[medium]"}}` in the `run_settings` of the next two or three darn tasks the operator releases, with the `review-code` fan, so a real composed fanned seat runs; then a darn docs task reads those rounds and reports what Codex added, its false findings and its time.
+
+## Built since (tidy, 2026-11-08)
+
+Task `codex-sandbox-mode` (`539525a0`) added the `sandbox_mode` key to `codex.yaml`, `workspace-write` by default and `danger-full-access` as the one other value, set per machine with `lym config codex --layer machine`.
+It is the machine-level answer to a Codex seat whose sandbox cannot run shell commands (`bwrap: setting up uid map: Permission denied`); a seat that only could not take the gate lock (run 1) is a different fault, and the key is checked by hand only, not yet on a real Codex run.
