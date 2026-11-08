@@ -1,6 +1,6 @@
 # Measure what the darn writer spends on: writing, research, thinking, gate waits
 
-`darn-writer-anatomy` · Task · research, darn, loom · running · Seed-Child
+`darn-writer-anatomy` · Task · research, darn, loom · running · Open-Window
 
 ## Why (operator, 2026-11-08)
 
