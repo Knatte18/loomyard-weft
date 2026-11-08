@@ -1,0 +1,1024 @@
+diff --git a/contracts/orchrole/orch-role.md b/contracts/orchrole/orch-role.md
+index 1ba4a24e..e6041d6d 100644
+--- a/contracts/orchrole/orch-role.md
++++ b/contracts/orchrole/orch-role.md
+@@ -186,6 +186,19 @@ and the arbiter switched off or out of spawns.
+ When the fault is diagnosed and acted on and a question still stands, settle it as a run-level call.
+ Bring it to the operator when it is a design question.
+ 
++## Reviewing a pull request
++
++Mail from `<shortname>:LOOM` that opens `[pr-review request]` asks you to review a run's open pull request.
++lym sends it when a run reaches PR-Review with `pr_review_ask_parent` on, in `loom.yaml` or the task's `run_settings`.
++The operator may also have the run's PR-Review agent ask you, by a message expecting a reply.
++Judge the change against what you know the run needs: its board entry, its decision record and the calls you settled.
++Hand the read of the diff, `gh pr diff <url>`, to a one-shot fork that only reads, and judge its report yourself.
++Answer the PR-Review session the request names with `lym creel post <strand> "<answer>"`,
++or a question from its agent with `lym creel post --reply <id> "<answer>"`:
++say you are satisfied, or give your findings, each naming what to change.
++Its agent fixes your findings, commits and asks you again; answer each round the same way.
++Never approve, merge, close or comment on the pull request: the operator ends the review.
++
+ ## Fixing a run
+ 
+ You diagnose; the run's own agents change the run.
+diff --git a/contracts/stencils/landing/landing-template-pr-review.md b/contracts/stencils/landing/landing-template-pr-review.md
+index 5bf46639..a8ea0911 100644
+--- a/contracts/stencils/landing/landing-template-pr-review.md
++++ b/contracts/stencils/landing/landing-template-pr-review.md
+@@ -46,6 +46,15 @@ Answer from it, and never ask the operator to run a regression compare it settle
+ 
+ The run ends on the pull request's state, not on this session, so after each answer you wait for the operator's next message.
+ 
++## Your parent's review
++
++Your parent orch may review the pull request.
++lym asks it on its own when the hub or the task turns `pr_review_ask_parent` on;
++otherwise ask it only when the operator asks you to, with `lym creel post --parent --expect-reply`, naming the pull request.
++Its answer arrives as creel mail: either that it is satisfied, or its findings.
++Fix the findings as you would the operator's requests, commit, and tell the operator in this pane what you changed.
++Then ask your parent to look again with `lym creel post --parent --expect-reply`, naming your commits, until it is satisfied.
++
+ ## The operator's ending
+ 
+ When the operator says they are satisfied and asks you to continue:
+diff --git a/docs/overview.md b/docs/overview.md
+index be881746..f6da0fbd 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -1244,6 +1244,9 @@ User-facing modules each get one `lym <module>` namespace:
+   It reads the pull request at most once a minute and before each gate.
+   It ends Done when the pull request is merged or approved at the gated head.
+   It also ends Done when the operator's `lym loom pr-continue` ends the review.
++  With `loom.yaml`'s `pr_review_ask_parent` on, the row asks the parent orch to review the open pull request.
++  It asks once per pull request, and the orch answers the row's session, whose agent fixes the findings.
++  The row asks and does not gate: its endings do not wait on the orch's answer.
+   That ending leaves the pull request for `Finalize` to merge on GitHub.
+   Any other ending is Stuck.
+   A pause that covers the run holds it.
+@@ -1324,6 +1327,8 @@ User-facing modules each get one `lym <module>` namespace:
+   An empty list runs the lead alone, deciding each question itself.
+   `raddle` is the raddle agent's model-spec.
+   `raddle_auto_approve` files a raddle proposal once its gate passes, with no operator approval.
++  `pr_review_ask_parent` has PR-Review ask the parent orch to review the open pull request.
++  It is open to the local layer, so a task's `run_settings` sets it for one run.
+   `discussion_lenses` names the `lenses.yaml` fan whose lenses the Discussion-Write lead forks itself for.
+   Empty turns the forks off, and the key is closed to the local layer.
+   `subagent_model` names the model of the fresh subagents that Plan, Discussion-Write and darn writers hand lookups to.
+diff --git a/internal/battencli/wire_seams_test.go b/internal/battencli/wire_seams_test.go
+index 9b1cbd87..7f1701dd 100644
+--- a/internal/battencli/wire_seams_test.go
++++ b/internal/battencli/wire_seams_test.go
+@@ -36,155 +36,157 @@ import (
+ // Seams whose nil is a documented default are already skipped, so only wire's own gaps are listed.
+ // batten wires only its own producers, so every loom seam of shedrecipe.Env stays nil here.
+ var intentionallyNil = map[string]string{
+-	"VerifyCommand":                       "loom-only seam, batten runs no verify gate",
+-	"VerifyHold":                          "loom-only seam, batten runs no verify gate",
+-	"GateFindingsFile":                    "loom-only seam, batten has no gated row that keeps findings",
+-	"Shuttle":                             "loom-only seam, batten drives no agent itself",
+-	"Burler":                              "loom-only seam, batten runs no review round",
+-	"Pawl.SetStatus":                      "loom-only seam, batten runs no pawl row",
+-	"Pawl.EntryProducer":                  "loom-only seam, batten runs no pawl row",
+-	"Pawl.OwnedElsewhere":                 "loom-only seam, batten runs no pawl row",
+-	"Pawl.MarkBeam":                       "loom-only seam, batten runs no pawl row",
+-	"Pawl.SpawnPush":                      "loom-only seam, batten runs no pawl row",
+-	"Pawl.RegenerateWorkspace":            "loom-only seam, batten runs no pawl row",
+-	"Pawl.StopDobby":                      "loom-only seam, batten runs no pawl row",
+-	"Pawl.StartDobby":                     "loom-only seam, batten runs no pawl row",
+-	"Pawl.DobbyLive":                      "loom-only seam, batten runs no pawl row",
+-	"Pawl.Recheck":                        "loom-only seam, batten runs no pawl row",
+-	"Pawl.HandOff":                        "loom-only seam, batten runs no pawl row",
+-	"Pawl.ReadyStands":                    "loom-only seam, batten runs no pawl row",
+-	"Pawl.StampWake":                      "loom-only seam, batten runs no pawl row",
+-	"Pawl.Notify":                         "loom-only seam, batten runs no pawl row",
+-	"Pawl.Down":                           "loom-only seam, batten runs no pawl row",
+-	"Pawl.Now":                            "loom-only seam, batten runs no pawl row",
+-	"Pawl.Sleep":                          "loom-only seam, batten runs no pawl row",
+-	"Seats":                               "loom-only seam, batten runs no seat table",
+-	"Models":                              "loom-only seam, batten resolves no seat model",
+-	"WebsterRun":                          "loom-only seam, batten runs no webster",
+-	"WebsterDeps.Starter":                 "loom-only seam, batten runs no webster",
+-	"WebsterDeps.Stopper":                 "loom-only seam, batten runs no webster",
+-	"WebsterDeps.Engines":                 "loom-only seam, batten runs no webster",
+-	"WebsterDeps.RefMatcher":              "loom-only seam, batten runs no webster",
+-	"WebsterDeps.ReadOnly":                "loom-only seam, batten runs no webster",
+-	"WebsterDeps.Geom.Index":              "loom-only seam, batten runs no webster",
+-	"WebsterDeps.Geom.VerifyHold":         "loom-only seam, batten runs no webster",
+-	"PlanIndex":                           "loom-only seam, batten has no plan segment",
+-	"CommitWebster":                       "loom-only seam, batten runs no webster",
+-	"ApproveDiscussion":                   "loom-only seam, batten has no discussion segment",
+-	"SeedDiscussedRecord":                 "loom-only seam, batten has no Motif block",
+-	"Landing.BaseCommand":                 "loom-only seam, batten lands no branch",
+-	"Landing.VerifyHold":                  "loom-only seam, batten lands no branch",
+-	"Landing.GateTiers":                   "loom-only seam, batten lands no branch",
+-	"Landing.OpenFabric":                  "loom-only seam, batten lands no branch",
+-	"Landing.OpenParentFabric":            "loom-only seam, batten lands no branch",
+-	"Landing.TaskHead":                    "loom-only seam, batten lands no branch",
+-	"Landing.Shuttle":                     "loom-only seam, batten lands no branch",
+-	"Landing.DriftVerdict":                "loom-only seam, batten lands no branch",
+-	"Landing.EnginesRun":                  "loom-only seam, batten lands no branch",
+-	"Landing.Lock.Store":                  "loom-only seam, batten lands no branch",
+-	"Landing.Lock.Owner":                  "loom-only seam, batten lands no branch",
+-	"Landing.Lock.PauseRequested":         "loom-only seam, batten lands no branch",
+-	"Landing.ReadParentTips":              "loom-only seam, batten lands no branch",
+-	"Landing.HoldsWork":                   "loom-only seam, batten lands no branch",
+-	"Landing.ChangedPaths":                "loom-only seam, batten lands no branch",
+-	"Landing.MergeBase":                   "loom-only seam, batten lands no branch",
+-	"Landing.FixerSeats":                  "loom-only seam, batten lands no branch",
+-	"Landing.LineChange":                  "loom-only seam, batten lands no branch",
+-	"Landing.IsTestFile":                  "loom-only seam, batten lands no branch",
+-	"Landing.RowEntry":                    "loom-only seam, batten lands no branch",
+-	"Landing.TaskRemoteTip":               "loom-only seam, batten lands no branch",
+-	"Landing.CodeReviewOff":               "loom-only seam, batten lands no branch",
+-	"Landing.PullRequest.ParentMode":      "loom-only seam, batten lands no branch",
+-	"Landing.PullRequest.EntryField":      "loom-only seam, batten lands no branch",
+-	"Landing.PullRequest.Origin":          "loom-only seam, batten lands no branch",
+-	"Landing.PullRequest.API":             "loom-only seam, batten lands no branch",
+-	"Landing.PullRequest.PushTask":        "loom-only seam, batten lands no branch",
+-	"Landing.PullRequest.CommitsMissing":  "loom-only seam, batten lands no branch",
+-	"Landing.PullRequest.TaskHasCommits":  "loom-only seam, batten lands no branch",
+-	"Landing.PullRequest.DirtyPaths":      "loom-only seam, batten lands no branch",
+-	"Landing.PullRequest.MailAgent":       "loom-only seam, batten lands no branch",
+-	"Landing.PullRequest.PauseCovered":    "loom-only seam, batten lands no branch",
+-	"Landing.PullRequest.Now":             "loom-only seam, batten lands no branch",
+-	"Landing.PullRequest.Sleep":           "loom-only seam, batten lands no branch",
+-	"Landing.PullRequest.RecordChanges":   "loom-only seam, batten lands no branch",
+-	"Landing.PullRequest.Sessions":        "loom-only seam, batten lands no branch",
+-	"Landing.PullRequest.SessionLive":     "loom-only seam, batten lands no branch",
+-	"Landing.PullRequest.RegisterSession": "loom-only seam, batten lands no branch",
+-	"Landing.PullRequest.BeamRecord":      "beam-only seam, batten lands no branch",
+-	"Landing.PullRequest.DropBeamRecord":  "beam-only seam, batten lands no branch",
+-	"DiscussionTable":                     "loom-only seam, batten has no discussion segment",
+-	"CommitDiscussion":                    "loom-only seam, batten has no discussion segment",
+-	"DescribeTable":                       "loom-only seam, batten has no describe segment",
+-	"CommitDescription":                   "loom-only seam, batten has no describe segment",
+-	"PlanTable":                           "loom-only seam, batten has no plan segment",
+-	"CommitPlan":                          "loom-only seam, batten has no plan segment",
+-	"PartsTable":                          "loom-only seam, batten has no plan segment",
+-	"PartsPlanTable":                      "loom-only seam, batten has no plan segment",
+-	"CommitParts":                         "loom-only seam, batten has no plan segment",
+-	"CommitPartsPlan":                     "loom-only seam, batten has no plan segment",
+-	"ApprovePlan":                         "loom-only seam, batten has no plan segment",
+-	"SkipPlanReview":                      "loom-only seam, batten has no plan segment",
+-	"CarryOver":                           "loom-only seam, batten runs no review segment",
+-	"ReflectFriction":                     "loom-only seam, batten has no reflect segment",
+-	"Rework.ReadCommitted":                "loom-only seam, batten has no rework segment",
+-	"Rework.ArchiveWebster":               "loom-only seam, batten has no rework segment",
+-	"DarnTable":                           "darn-only seam, batten has no darn segment",
+-	"Darn.Commit":                         "darn-only seam, batten has no darn segment",
+-	"Darn.LatestOutcome":                  "darn-only seam, batten has no darn segment",
+-	"Darn.CheckRecord":                    "darn-only seam, batten has no darn segment",
+-	"Darn.CommittedRecord":                "darn-only seam, batten has no darn segment",
+-	"DiscussionHistory":                   "loom-only seam, batten wires no loom record",
+-	"RecordWrite.ReadBody":                "loom-only seam, batten wires no loom record",
+-	"RecordWrite.ReadStored":              "loom-only seam, batten wires no loom record",
+-	"RecordWrite.Commit":                  "loom-only seam, batten wires no loom record",
+-	"RaddleWrite.Deps.AutoApprove":        "raddle-only seam, batten runs no raddle row",
+-	"RaddleWrite.Deps.FreshEntry":         "raddle-only seam, batten runs no raddle row",
+-	"RaddleWrite.Deps.StoreCold":          "raddle-only seam, batten runs no raddle row",
+-	"RaddleWrite.Deps.Commit":             "raddle-only seam, batten runs no raddle row",
+-	"RaddleWrite.Table":                   "raddle-only seam, batten runs no raddle row",
+-	"RaddleWrite.Check.Board":             "raddle-only seam, batten runs no raddle row",
+-	"RaddleFile.PartRecordPath":           "raddle-only seam, batten runs no raddle row",
+-	"RaddleFile.Check":                    "raddle-only seam, batten runs no raddle row",
+-	"RaddleFile.Recheck":                  "raddle-only seam, batten runs no raddle row",
+-	"RaddleFile.Entry":                    "raddle-only seam, batten runs no raddle row",
+-	"RaddleFile.StoreDone":                "raddle-only seam, batten runs no raddle row",
+-	"RaddleFile.AlreadyFiled":             "raddle-only seam, batten runs no raddle row",
+-	"RaddleFile.File":                     "raddle-only seam, batten runs no raddle row",
+-	"RaddleFile.CreateBeam":               "raddle-only seam, batten runs no raddle row",
+-	"RaddleFile.Notify":                   "raddle-only seam, batten runs no raddle row",
+-	"RaddleFile.EndEntry":                 "raddle-only seam, batten runs no raddle row",
+-	"RaddleFile.Commit":                   "raddle-only seam, batten runs no raddle row",
+-	"Drift.Config":                        "loom- and darn-only seam, batten has no Drift row",
+-	"Drift.Status":                        "loom- and darn-only seam, batten has no Drift row",
+-	"Drift.Head":                          "loom- and darn-only seam, batten has no Drift row",
+-	"Drift.BranchPoint":                   "loom- and darn-only seam, batten has no Drift row",
+-	"Drift.DirtyPaths":                    "loom- and darn-only seam, batten has no Drift row",
+-	"Drift.Commit":                        "loom- and darn-only seam, batten has no Drift row",
+-	"Drift.CommitWithTrailers":            "loom- and darn-only seam, batten has no Drift row",
+-	"Drift.TrailerCommit":                 "loom- and darn-only seam, batten has no Drift row",
+-	"Drift.FileAt":                        "loom- and darn-only seam, batten has no Drift row",
+-	"Drift.CommitsSince":                  "loom- and darn-only seam, batten has no Drift row",
+-	"Drift.ExpectTable":                   "loom- and darn-only seam, batten has no Drift row",
+-	"Drift.StartCapture":                  "loom- and darn-only seam, batten has no Drift row",
+-	"Drift.RunCapture":                    "loom- and darn-only seam, batten has no Drift row",
+-	"Drift.CaptureCurrent":                "loom- and darn-only seam, batten has no Drift row",
+-	"Drift.Sleep":                         "loom- and darn-only seam, batten has no Drift row",
+-	"Drift.Compare":                       "loom- and darn-only seam, batten has no Drift row",
+-	"Drift.JudgeTable":                    "loom- and darn-only seam, batten has no Drift row",
+-	"Drift.Checkouts":                     "loom- and darn-only seam, batten has no Drift row",
+-	"Drift.RecordsChangedSince":           "loom- and darn-only seam, batten has no Drift row",
+-	"Drift.EndRoles":                      "loom- and darn-only seam, batten has no Drift row",
+-	"Sampler.Spec":                        "sampler-only seam, batten runs no sampler row",
+-	"Sampler.Sessions":                    "sampler-only seam, batten runs no sampler row",
+-	"Sampler.SessionLive":                 "sampler-only seam, batten runs no sampler row",
+-	"Sampler.RegisterSession":             "sampler-only seam, batten runs no sampler row",
+-	"Sampler.Stamp":                       "sampler-only seam, batten runs no sampler row",
+-	"Sampler.DirtyPaths":                  "sampler-only seam, batten runs no sampler row",
+-	"Sampler.CheckRecord":                 "sampler-only seam, batten runs no sampler row",
+-	"Sampler.MailAgent":                   "sampler-only seam, batten runs no sampler row",
+-	"Sampler.PauseCovered":                "sampler-only seam, batten runs no sampler row",
+-	"Sampler.Now":                         "sampler-only seam, batten runs no sampler row",
+-	"Sampler.Sleep":                       "sampler-only seam, batten runs no sampler row",
++	"VerifyCommand":                          "loom-only seam, batten runs no verify gate",
++	"VerifyHold":                             "loom-only seam, batten runs no verify gate",
++	"GateFindingsFile":                       "loom-only seam, batten has no gated row that keeps findings",
++	"Shuttle":                                "loom-only seam, batten drives no agent itself",
++	"Burler":                                 "loom-only seam, batten runs no review round",
++	"Pawl.SetStatus":                         "loom-only seam, batten runs no pawl row",
++	"Pawl.EntryProducer":                     "loom-only seam, batten runs no pawl row",
++	"Pawl.OwnedElsewhere":                    "loom-only seam, batten runs no pawl row",
++	"Pawl.MarkBeam":                          "loom-only seam, batten runs no pawl row",
++	"Pawl.SpawnPush":                         "loom-only seam, batten runs no pawl row",
++	"Pawl.RegenerateWorkspace":               "loom-only seam, batten runs no pawl row",
++	"Pawl.StopDobby":                         "loom-only seam, batten runs no pawl row",
++	"Pawl.StartDobby":                        "loom-only seam, batten runs no pawl row",
++	"Pawl.DobbyLive":                         "loom-only seam, batten runs no pawl row",
++	"Pawl.Recheck":                           "loom-only seam, batten runs no pawl row",
++	"Pawl.HandOff":                           "loom-only seam, batten runs no pawl row",
++	"Pawl.ReadyStands":                       "loom-only seam, batten runs no pawl row",
++	"Pawl.StampWake":                         "loom-only seam, batten runs no pawl row",
++	"Pawl.Notify":                            "loom-only seam, batten runs no pawl row",
++	"Pawl.Down":                              "loom-only seam, batten runs no pawl row",
++	"Pawl.Now":                               "loom-only seam, batten runs no pawl row",
++	"Pawl.Sleep":                             "loom-only seam, batten runs no pawl row",
++	"Seats":                                  "loom-only seam, batten runs no seat table",
++	"Models":                                 "loom-only seam, batten resolves no seat model",
++	"WebsterRun":                             "loom-only seam, batten runs no webster",
++	"WebsterDeps.Starter":                    "loom-only seam, batten runs no webster",
++	"WebsterDeps.Stopper":                    "loom-only seam, batten runs no webster",
++	"WebsterDeps.Engines":                    "loom-only seam, batten runs no webster",
++	"WebsterDeps.RefMatcher":                 "loom-only seam, batten runs no webster",
++	"WebsterDeps.ReadOnly":                   "loom-only seam, batten runs no webster",
++	"WebsterDeps.Geom.Index":                 "loom-only seam, batten runs no webster",
++	"WebsterDeps.Geom.VerifyHold":            "loom-only seam, batten runs no webster",
++	"PlanIndex":                              "loom-only seam, batten has no plan segment",
++	"CommitWebster":                          "loom-only seam, batten runs no webster",
++	"ApproveDiscussion":                      "loom-only seam, batten has no discussion segment",
++	"SeedDiscussedRecord":                    "loom-only seam, batten has no Motif block",
++	"Landing.BaseCommand":                    "loom-only seam, batten lands no branch",
++	"Landing.VerifyHold":                     "loom-only seam, batten lands no branch",
++	"Landing.GateTiers":                      "loom-only seam, batten lands no branch",
++	"Landing.OpenFabric":                     "loom-only seam, batten lands no branch",
++	"Landing.OpenParentFabric":               "loom-only seam, batten lands no branch",
++	"Landing.TaskHead":                       "loom-only seam, batten lands no branch",
++	"Landing.Shuttle":                        "loom-only seam, batten lands no branch",
++	"Landing.DriftVerdict":                   "loom-only seam, batten lands no branch",
++	"Landing.EnginesRun":                     "loom-only seam, batten lands no branch",
++	"Landing.Lock.Store":                     "loom-only seam, batten lands no branch",
++	"Landing.Lock.Owner":                     "loom-only seam, batten lands no branch",
++	"Landing.Lock.PauseRequested":            "loom-only seam, batten lands no branch",
++	"Landing.ReadParentTips":                 "loom-only seam, batten lands no branch",
++	"Landing.HoldsWork":                      "loom-only seam, batten lands no branch",
++	"Landing.ChangedPaths":                   "loom-only seam, batten lands no branch",
++	"Landing.MergeBase":                      "loom-only seam, batten lands no branch",
++	"Landing.FixerSeats":                     "loom-only seam, batten lands no branch",
++	"Landing.LineChange":                     "loom-only seam, batten lands no branch",
++	"Landing.IsTestFile":                     "loom-only seam, batten lands no branch",
++	"Landing.RowEntry":                       "loom-only seam, batten lands no branch",
++	"Landing.TaskRemoteTip":                  "loom-only seam, batten lands no branch",
++	"Landing.CodeReviewOff":                  "loom-only seam, batten lands no branch",
++	"Landing.PullRequest.ParentMode":         "loom-only seam, batten lands no branch",
++	"Landing.PullRequest.EntryField":         "loom-only seam, batten lands no branch",
++	"Landing.PullRequest.Origin":             "loom-only seam, batten lands no branch",
++	"Landing.PullRequest.API":                "loom-only seam, batten lands no branch",
++	"Landing.PullRequest.PushTask":           "loom-only seam, batten lands no branch",
++	"Landing.PullRequest.CommitsMissing":     "loom-only seam, batten lands no branch",
++	"Landing.PullRequest.TaskHasCommits":     "loom-only seam, batten lands no branch",
++	"Landing.PullRequest.DirtyPaths":         "loom-only seam, batten lands no branch",
++	"Landing.PullRequest.MailAgent":          "loom-only seam, batten lands no branch",
++	"Landing.PullRequest.PauseCovered":       "loom-only seam, batten lands no branch",
++	"Landing.PullRequest.ParentReviewWanted": "loom-only seam, batten lands no branch",
++	"Landing.PullRequest.AskParent":          "loom-only seam, batten lands no branch",
++	"Landing.PullRequest.Now":                "loom-only seam, batten lands no branch",
++	"Landing.PullRequest.Sleep":              "loom-only seam, batten lands no branch",
++	"Landing.PullRequest.RecordChanges":      "loom-only seam, batten lands no branch",
++	"Landing.PullRequest.Sessions":           "loom-only seam, batten lands no branch",
++	"Landing.PullRequest.SessionLive":        "loom-only seam, batten lands no branch",
++	"Landing.PullRequest.RegisterSession":    "loom-only seam, batten lands no branch",
++	"Landing.PullRequest.BeamRecord":         "beam-only seam, batten lands no branch",
++	"Landing.PullRequest.DropBeamRecord":     "beam-only seam, batten lands no branch",
++	"DiscussionTable":                        "loom-only seam, batten has no discussion segment",
++	"CommitDiscussion":                       "loom-only seam, batten has no discussion segment",
++	"DescribeTable":                          "loom-only seam, batten has no describe segment",
++	"CommitDescription":                      "loom-only seam, batten has no describe segment",
++	"PlanTable":                              "loom-only seam, batten has no plan segment",
++	"CommitPlan":                             "loom-only seam, batten has no plan segment",
++	"PartsTable":                             "loom-only seam, batten has no plan segment",
++	"PartsPlanTable":                         "loom-only seam, batten has no plan segment",
++	"CommitParts":                            "loom-only seam, batten has no plan segment",
++	"CommitPartsPlan":                        "loom-only seam, batten has no plan segment",
++	"ApprovePlan":                            "loom-only seam, batten has no plan segment",
++	"SkipPlanReview":                         "loom-only seam, batten has no plan segment",
++	"CarryOver":                              "loom-only seam, batten runs no review segment",
++	"ReflectFriction":                        "loom-only seam, batten has no reflect segment",
++	"Rework.ReadCommitted":                   "loom-only seam, batten has no rework segment",
++	"Rework.ArchiveWebster":                  "loom-only seam, batten has no rework segment",
++	"DarnTable":                              "darn-only seam, batten has no darn segment",
++	"Darn.Commit":                            "darn-only seam, batten has no darn segment",
++	"Darn.LatestOutcome":                     "darn-only seam, batten has no darn segment",
++	"Darn.CheckRecord":                       "darn-only seam, batten has no darn segment",
++	"Darn.CommittedRecord":                   "darn-only seam, batten has no darn segment",
++	"DiscussionHistory":                      "loom-only seam, batten wires no loom record",
++	"RecordWrite.ReadBody":                   "loom-only seam, batten wires no loom record",
++	"RecordWrite.ReadStored":                 "loom-only seam, batten wires no loom record",
++	"RecordWrite.Commit":                     "loom-only seam, batten wires no loom record",
++	"RaddleWrite.Deps.AutoApprove":           "raddle-only seam, batten runs no raddle row",
++	"RaddleWrite.Deps.FreshEntry":            "raddle-only seam, batten runs no raddle row",
++	"RaddleWrite.Deps.StoreCold":             "raddle-only seam, batten runs no raddle row",
++	"RaddleWrite.Deps.Commit":                "raddle-only seam, batten runs no raddle row",
++	"RaddleWrite.Table":                      "raddle-only seam, batten runs no raddle row",
++	"RaddleWrite.Check.Board":                "raddle-only seam, batten runs no raddle row",
++	"RaddleFile.PartRecordPath":              "raddle-only seam, batten runs no raddle row",
++	"RaddleFile.Check":                       "raddle-only seam, batten runs no raddle row",
++	"RaddleFile.Recheck":                     "raddle-only seam, batten runs no raddle row",
++	"RaddleFile.Entry":                       "raddle-only seam, batten runs no raddle row",
++	"RaddleFile.StoreDone":                   "raddle-only seam, batten runs no raddle row",
++	"RaddleFile.AlreadyFiled":                "raddle-only seam, batten runs no raddle row",
++	"RaddleFile.File":                        "raddle-only seam, batten runs no raddle row",
++	"RaddleFile.CreateBeam":                  "raddle-only seam, batten runs no raddle row",
++	"RaddleFile.Notify":                      "raddle-only seam, batten runs no raddle row",
++	"RaddleFile.EndEntry":                    "raddle-only seam, batten runs no raddle row",
++	"RaddleFile.Commit":                      "raddle-only seam, batten runs no raddle row",
++	"Drift.Config":                           "loom- and darn-only seam, batten has no Drift row",
++	"Drift.Status":                           "loom- and darn-only seam, batten has no Drift row",
++	"Drift.Head":                             "loom- and darn-only seam, batten has no Drift row",
++	"Drift.BranchPoint":                      "loom- and darn-only seam, batten has no Drift row",
++	"Drift.DirtyPaths":                       "loom- and darn-only seam, batten has no Drift row",
++	"Drift.Commit":                           "loom- and darn-only seam, batten has no Drift row",
++	"Drift.CommitWithTrailers":               "loom- and darn-only seam, batten has no Drift row",
++	"Drift.TrailerCommit":                    "loom- and darn-only seam, batten has no Drift row",
++	"Drift.FileAt":                           "loom- and darn-only seam, batten has no Drift row",
++	"Drift.CommitsSince":                     "loom- and darn-only seam, batten has no Drift row",
++	"Drift.ExpectTable":                      "loom- and darn-only seam, batten has no Drift row",
++	"Drift.StartCapture":                     "loom- and darn-only seam, batten has no Drift row",
++	"Drift.RunCapture":                       "loom- and darn-only seam, batten has no Drift row",
++	"Drift.CaptureCurrent":                   "loom- and darn-only seam, batten has no Drift row",
++	"Drift.Sleep":                            "loom- and darn-only seam, batten has no Drift row",
++	"Drift.Compare":                          "loom- and darn-only seam, batten has no Drift row",
++	"Drift.JudgeTable":                       "loom- and darn-only seam, batten has no Drift row",
++	"Drift.Checkouts":                        "loom- and darn-only seam, batten has no Drift row",
++	"Drift.RecordsChangedSince":              "loom- and darn-only seam, batten has no Drift row",
++	"Drift.EndRoles":                         "loom- and darn-only seam, batten has no Drift row",
++	"Sampler.Spec":                           "sampler-only seam, batten runs no sampler row",
++	"Sampler.Sessions":                       "sampler-only seam, batten runs no sampler row",
++	"Sampler.SessionLive":                    "sampler-only seam, batten runs no sampler row",
++	"Sampler.RegisterSession":                "sampler-only seam, batten runs no sampler row",
++	"Sampler.Stamp":                          "sampler-only seam, batten runs no sampler row",
++	"Sampler.DirtyPaths":                     "sampler-only seam, batten runs no sampler row",
++	"Sampler.CheckRecord":                    "sampler-only seam, batten runs no sampler row",
++	"Sampler.MailAgent":                      "sampler-only seam, batten runs no sampler row",
++	"Sampler.PauseCovered":                   "sampler-only seam, batten runs no sampler row",
++	"Sampler.Now":                            "sampler-only seam, batten runs no sampler row",
++	"Sampler.Sleep":                          "sampler-only seam, batten runs no sampler row",
+ }
+ 
+ //lym:seam internal/agentconfig#Config
+diff --git a/internal/landingshed/deps.go b/internal/landingshed/deps.go
+index f3fb49fa..4d736d9a 100644
+--- a/internal/landingshed/deps.go
++++ b/internal/landingshed/deps.go
+@@ -384,6 +384,12 @@ type PullRequestDeps struct {
+ 	SessionLive func(guid string) (bool, error)
+ 	// RegisterSession registers the process of the session's pane under the run, so a teardown ends it.
+ 	RegisterSession func(guid string) error
++	// ParentReviewWanted reports whether the hub or the task turns on the parent orch's review of the pull request.
++	// It is read at each entry of the row, and nil reads as off.
++	ParentReviewWanted func() (bool, error)
++	// AskParent posts line to the orch the run's agents reach as their parent, and reports whether it posted.
++	// It reports false with no error when no orch is recorded to take the line.
++	AskParent func(line string) (bool, error)
+ 	// BeamRecord reads the pull request the beam's landing record holds and reports whether it holds one.
+ 	// A non-nil BeamRecord marks the landing as a beam's, and is nil on every run but a beam's.
+ 	BeamRecord func() (pullRequest BeamPullRequest, recorded bool, err error)
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index aca7aab1..cc46e8c8 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -76,6 +76,16 @@
+ // The row stops the session at the first wake a pause covers and resumes it at the first uncovered wake.
+ // It also stops the session on every verdict, Stuck and error, and leaves it running when the context is cancelled.
+ // The wait's wakes start no session.
++// With PullRequest.ParentReviewWanted reading true, the row asks the parent orch to review the open pull request.
++// It asks through PullRequest.AskParent once it has the session and before it waits, once per pull request record.
++// The request opens with `[pr-review request]`.
++// It names the slug, the pull request, its branches and the session's strand, which the orch answers;
++// the session's agent fixes the orch's findings.
++// A review started afresh writes a new record and so asks again.
++// An unreadable setting, a failed post, an orch no record names and a failed write of the ask into the record are logged,
++// and the row's next entry asks again.
++// The row asks and does not gate:
++// its endings do not wait on the orch's answer, which reaches the session's agent as creel mail the row never reads.
+ // An operator who closes the window ends the agent until the row is next entered.
+ // The driver strand's wait mark reads `PR #<n>` while the wait runs.
+ // A transient push or GitHub failure is an error the driver re-steps.
+diff --git a/internal/landingshed/prreview.go b/internal/landingshed/prreview.go
+index b29b2caf..448df657 100644
+--- a/internal/landingshed/prreview.go
++++ b/internal/landingshed/prreview.go
+@@ -37,6 +37,7 @@ const (
+ // The pull request's title comes from the change description.
+ // Its body comes from the description's body, the regression check and the credit block.
+ // The row records it, keeps one interactive session for the operator to discuss it in, and waits on it.
++// With the parent review setting on, it asks the parent orch to review the open pull request before it waits.
+ // The wait gates and pushes the agent's commits.
+ // The text is built from the change description, the regression check and the credit block.
+ // When it changes, the wait sets the title and body again.
+@@ -319,9 +320,52 @@ func (p *PRReview) openPullRequest(ctx context.Context, origin Origin) (shedengi
+ 	if rec, err = p.ensureSession(ctx, rec); err != nil {
+ 		return "", shedengine.OutputPointer{}, err
+ 	}
++	p.askParentReview(rec)
+ 	return p.wait(ctx, api, rec, entryStatus, entryReadAt, text)
+ }
+ 
++// parentReviewRequestPrefix opens the request the row mails the parent orch, so the orch knows the line for one.
++const parentReviewRequestPrefix = "[pr-review request]"
++
++// askParentReview asks the parent orch to review the open pull request rec records, when the setting is on.
++// It asks once per record, and the request names the PR-Review session the orch answers.
++// An unreadable setting, a failed post, an orch no record names and a failed write of the ask into the record are logged,
++// and the row's next entry asks again.
++// The row asks and does not gate: the orch's answer reaches the session's agent as creel mail, which the row never reads.
++func (p *PRReview) askParentReview(rec pullrequest.Record) {
++	pr := p.deps.PullRequest
++	if rec.ParentReviewAsked || pr.ParentReviewWanted == nil || pr.AskParent == nil {
++		return
++	}
++	wanted, err := pr.ParentReviewWanted()
++	if err != nil {
++		logger.Warn("landingshed: the parent review setting is unreadable, so the parent orch is not asked", "row", p.name, "cause", err)
++		return
++	}
++	if !wanted {
++		return
++	}
++	posted, err := pr.AskParent(p.parentReviewRequest(rec))
++	if err != nil {
++		logger.Warn("landingshed: could not ask the parent orch for a review of the pull request", "row", p.name, "cause", err)
++		return
++	}
++	if !posted {
++		logger.Info("landingshed: no parent orch is recorded to ask for a review of the pull request", "row", p.name)
++		return
++	}
++	// The request is posted, so a failed write is no reason for the driver to re-step and post it again.
++	if err := p.updateRecord(func(r *pullrequest.Record) { r.ParentReviewAsked = true }); err != nil {
++		logger.Warn("landingshed: could not record that the parent orch was asked for a review of the pull request", "row", p.name, "cause", err)
++	}
++}
++
++// parentReviewRequest is the line that asks the parent orch to review the pull request rec records.
++func (p *PRReview) parentReviewRequest(rec pullrequest.Record) string {
++	return fmt.Sprintf("%s %s: pull request %s, from branch %s into %s, is open for your review; answer the PR-Review session with lym creel post %s \"<answer>\", saying you are satisfied or giving your findings, which its agent fixes before it asks you again",
++		parentReviewRequestPrefix, p.deps.Slug, rec.URL, p.deps.TaskBranch, p.deps.ParentBranch, rec.StrandName)
++}
++
+ // prText is a pull request's title and body.
+ // A title is never empty, so the zero prText stands for a text not known.
+ type prText struct {
+diff --git a/internal/landingshed/prreview_session_test.go b/internal/landingshed/prreview_session_test.go
+index a6e4767c..28339d83 100644
+--- a/internal/landingshed/prreview_session_test.go
++++ b/internal/landingshed/prreview_session_test.go
+@@ -130,6 +130,20 @@ func TestPRReview_Session(t *testing.T) {
+ 		return func(r *pullrequest.Record) { r.StrandGUID, r.SessionID = guid, sessionID }
+ 	}
+ 	cancelAtFirstSleep := 1
++	parentReviewOn := func(_ *testing.T, fx *prReviewFixture, _ *fakePRSessions) {
++		fx.deps.PullRequest.ParentReviewWanted = func() (bool, error) { return true, nil }
++	}
++	// assertAsks fails the test unless the row handed the parent-ask seam wantAsks lines and the record says wantAsked.
++	assertAsks := func(t *testing.T, fx *prReviewFixture, wantAsks int, wantAsked bool) {
++		t.Helper()
++		if len(fx.asks) != wantAsks {
++			t.Errorf("parent asks = %q; want %d", fx.asks, wantAsks)
++		}
++		got, found, err := pullrequest.ReadRecord(fx.deps.PullRequest.RecordPath, fx.deps.PullRequest.RecordLockPath)
++		if err != nil || !found || got.ParentReviewAsked != wantAsked {
++			t.Errorf("ReadRecord() = %+v, %v, %v; want the record with ParentReviewAsked %v", got, found, err, wantAsked)
++		}
++	}
+ 
+ 	tests := []struct {
+ 		name    string
+@@ -187,6 +201,59 @@ func TestPRReview_Session(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name: "ParentReviewOnAsksTheParentOnceNamingTheSlugPullRequestBranchesAndSession", scripts: map[string][]scriptedCall{"Create": {created}, "Status": {mergedAtHead}},
++			setup:       parentReviewOn,
++			wantOutcome: shedengine.Done, wantStarts: 1, wantStops: 1,
++			check: func(t *testing.T, fx *prReviewFixture, _ *fakePRSessions) {
++				assertAsks(t, fx, 1, true)
++				if len(fx.asks) != 1 {
++					return
++				}
++				for _, want := range []string{parentReviewRequestPrefix + " the-slug:", recordedURL, "branch task into main", "lym creel post pr-strand"} {
++					if !strings.Contains(fx.asks[0], want) {
++						t.Errorf("parent ask %q lacks %q", fx.asks[0], want)
++					}
++				}
++			},
++		},
++		{
++			name: "ParentReviewOnWithTheRecordAlreadyAskedAsksNone", record: recordedAtHead(func(r *pullrequest.Record) { r.ParentReviewAsked = true }), scripts: map[string][]scriptedCall{"Status": {open}},
++			setup:         parentReviewOn,
++			cancelAtSleep: cancelAtFirstSleep, wantCanceled: true, wantStarts: 1,
++			check: func(t *testing.T, fx *prReviewFixture, _ *fakePRSessions) { assertAsks(t, fx, 0, true) },
++		},
++		{
++			name: "ParentReviewOffAsksNone", scripts: map[string][]scriptedCall{"Create": {created}, "Status": {mergedAtHead}},
++			wantOutcome: shedengine.Done, wantStarts: 1, wantStops: 1,
++			check: func(t *testing.T, fx *prReviewFixture, _ *fakePRSessions) { assertAsks(t, fx, 0, false) },
++		},
++		{
++			name: "AnUnreadableParentReviewSettingAsksNone", scripts: map[string][]scriptedCall{"Create": {created}, "Status": {mergedAtHead}},
++			setup: func(_ *testing.T, fx *prReviewFixture, _ *fakePRSessions) {
++				fx.deps.PullRequest.ParentReviewWanted = func() (bool, error) { return false, errors.New("loom.yaml refused") }
++			},
++			wantOutcome: shedengine.Done, wantStarts: 1, wantStops: 1,
++			check: func(t *testing.T, fx *prReviewFixture, _ *fakePRSessions) { assertAsks(t, fx, 0, false) },
++		},
++		{
++			name: "AFailedParentAskLeavesTheRecordUnaskedForTheNextEntry", scripts: map[string][]scriptedCall{"Create": {created}, "Status": {mergedAtHead}},
++			setup: func(t *testing.T, fx *prReviewFixture, s *fakePRSessions) {
++				parentReviewOn(t, fx, s)
++				fx.askErr = errors.New("creel down")
++			},
++			wantOutcome: shedengine.Done, wantStarts: 1, wantStops: 1,
++			check: func(t *testing.T, fx *prReviewFixture, _ *fakePRSessions) { assertAsks(t, fx, 1, false) },
++		},
++		{
++			name: "AParentAskNoOrchTakesLeavesTheRecordUnasked", scripts: map[string][]scriptedCall{"Create": {created}, "Status": {mergedAtHead}},
++			setup: func(t *testing.T, fx *prReviewFixture, s *fakePRSessions) {
++				parentReviewOn(t, fx, s)
++				fx.askUnrecorded = true
++			},
++			wantOutcome: shedengine.Done, wantStarts: 1, wantStops: 1,
++			check: func(t *testing.T, fx *prReviewFixture, _ *fakePRSessions) { assertAsks(t, fx, 1, false) },
++		},
+ 		{
+ 			name: "PromptCarriesTheRegressionCheck", scripts: map[string][]scriptedCall{"Create": {created}, "Status": {mergedAtHead}},
+ 			setup: func(_ *testing.T, fx *prReviewFixture, _ *fakePRSessions) {
+diff --git a/internal/landingshed/prreview_test.go b/internal/landingshed/prreview_test.go
+index e2f74e02..e41f87d5 100644
+--- a/internal/landingshed/prreview_test.go
++++ b/internal/landingshed/prreview_test.go
+@@ -581,6 +581,11 @@ type prReviewFixture struct {
+ 	pushes int
+ 	// dirty is what the task worktree's uncommitted-paths seam reports.
+ 	dirty []string
++	// asks are the lines the parent-ask seam was handed.
++	asks []string
++	// askErr is what the parent-ask seam fails with, and askUnrecorded makes it report no orch recorded.
++	askErr        error
++	askUnrecorded bool
+ }
+ 
+ // prReviewFixtureNow is the instant every fake clock of the PR-Review tests starts at.
+@@ -653,7 +658,9 @@ func prReviewTestDeps(t *testing.T, api *fakePullRequestAPI) Deps {
+ 				now = now.Add(d)
+ 				return nil
+ 			},
+-			RecordChanges: func() (<-chan struct{}, func()) { return nil, func() {} },
++			RecordChanges:      func() (<-chan struct{}, func()) { return nil, func() {} },
++			ParentReviewWanted: func() (bool, error) { return false, nil },
++			AskParent:          func(string) (bool, error) { return true, nil },
+ 		},
+ 	}
+ }
+@@ -673,6 +680,10 @@ func newPRReviewFixture(t *testing.T, parentMode string, parentErr error, field
+ 		fx.pushes++
+ 		return pushErr
+ 	}
++	pr.AskParent = func(line string) (bool, error) {
++		fx.asks = append(fx.asks, line)
++		return fx.askErr == nil && !fx.askUnrecorded, fx.askErr
++	}
+ 	if record != nil {
+ 		if err := pullrequest.WriteRecord(pr.RecordPath, pr.RecordLockPath, *record); err != nil {
+ 			t.Fatalf("write record: %v", err)
+diff --git a/internal/loomcli/landingdeps.go b/internal/loomcli/landingdeps.go
+index 4b88b092..73cf596a 100644
+--- a/internal/loomcli/landingdeps.go
++++ b/internal/loomcli/landingdeps.go
+@@ -416,6 +416,14 @@ func pullRequestDepsGuardedBy(check prePushCheck, l *lymcwd.Location, parentBran
+ 			_, err = client.Post(strandName, line)
+ 			return err
+ 		},
++		// ParentReviewWanted reads loom.yaml's pr_review_ask_parent over the pair's layers, the task's run_settings included.
++		ParentReviewWanted: func() (bool, error) {
++			cfg, err := loomengine.LoadConfig(fabricengine.ConfigDirs(l), "loom")
++			return cfg.PRReviewAskParent, err
++		},
++		AskParent: func(line string) (bool, error) {
++			return orchcli.NotifyParent(l, loomProgram, line)
++		},
+ 		// PauseCovered reports whether the pause record covers the slug; an unreadable record covers nothing.
+ 		PauseCovered: func() (bool, error) { return pauseCovered(l)(slug), nil },
+ 		Now:          time.Now,
+diff --git a/internal/loomcli/landingdeps_test.go b/internal/loomcli/landingdeps_test.go
+index f926884d..ad591b62 100644
+--- a/internal/loomcli/landingdeps_test.go
++++ b/internal/loomcli/landingdeps_test.go
+@@ -462,6 +462,49 @@ func TestPRSessionSeams(t *testing.T) {
+ 	}
+ }
+ 
++// TestPullRequestDeps_ParentReviewWantedReadsThePairsLayers asserts what the setting seam reads.
++// It reads pr_review_ask_parent over the pair's layers.
++// It reads false when no layer sets it, and true when the worktree's loom.yaml or the task's local layer does.
++// The local layer is where a task's run_settings land.
++func TestPullRequestDeps_ParentReviewWantedReadsThePairsLayers(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name       string
++		hubValue   string
++		localLayer string
++		wantWanted bool
++	}{
++		{name: "no layer setting it reads false", wantWanted: false},
++		{name: "the worktree's loom.yaml set to true reads true", hubValue: "true", wantWanted: true},
++		{name: "the task's local layer set to true over a loom.yaml of false reads true", hubValue: "false", localLayer: "pr_review_ask_parent: true\n", wantWanted: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			loc := hubLocation(t, "pair", ".")
++			if tt.hubValue != "" {
++				seedLoomConfigWithKeys(t, loc.AnchorPath(), map[string]string{"pr_review_ask_parent": tt.hubValue})
++			}
++			if tt.localLayer != "" {
++				localConfig := configengine.LocalFile(loc.AnchorPath(), "loom")
++				if err := os.MkdirAll(filepath.Dir(localConfig), 0o755); err != nil {
++					t.Fatalf("MkdirAll(%q) = %v; want nil", filepath.Dir(localConfig), err)
++				}
++				if err := os.WriteFile(localConfig, []byte(tt.localLayer), 0o644); err != nil {
++					t.Fatalf("WriteFile(%q) = %v; want nil", localConfig, err)
++				}
++			}
++
++			pullRequest := pullRequestDepsGuardedBy(prePushCheck{}, loc, "main", false, &shuttleengine.Runner{})
++			got, err := pullRequest.ParentReviewWanted()
++			if err != nil || got != tt.wantWanted {
++				t.Errorf("ParentReviewWanted() = %v, %v; want %v, nil", got, err, tt.wantWanted)
++			}
++		})
++	}
++}
++
+ // TestParentLockDeps_PauseAfterTheWaitingRowEndsTheWait writes Publish's status as running and asserts the pause seam.
+ // It reports false with no pause condition, or with pause_after naming another row.
+ // It reports true with pause_after naming Publish, and false with only pause_requested set.
+diff --git a/internal/loomcli/wiring_seams_test.go b/internal/loomcli/wiring_seams_test.go
+index 3058cde8..eb29888d 100644
+--- a/internal/loomcli/wiring_seams_test.go
++++ b/internal/loomcli/wiring_seams_test.go
+@@ -12,124 +12,126 @@ import (
+ // intentionallyNil maps each shedrecipe.Env field path that wire leaves nil to the reason.
+ // Seams whose nil is a documented default are already skipped, so only wire's own gaps are listed.
+ var intentionallyNil = map[string]string{
+-	"Landing.BaseCommand":                 "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.VerifyHold":                  "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.GateTiers":                   "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.OpenFabric":                  "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.OpenParentFabric":            "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.TaskHead":                    "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.Shuttle":                     "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.DriftVerdict":                "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.EnginesRun":                  "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.Lock.Store":                  "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.Lock.Owner":                  "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.Lock.PauseRequested":         "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.ReadParentTips":              "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.HoldsWork":                   "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.ChangedPaths":                "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.MergeBase":                   "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.FixerSeats":                  "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.LineChange":                  "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.IsTestFile":                  "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.RowEntry":                    "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.TaskRemoteTip":               "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.CodeReviewOff":               "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.PullRequest.ParentMode":      "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.PullRequest.EntryField":      "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.PullRequest.Origin":          "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.PullRequest.API":             "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.PullRequest.PushTask":        "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.PullRequest.CommitsMissing":  "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.PullRequest.TaskHasCommits":  "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.PullRequest.DirtyPaths":      "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.PullRequest.MailAgent":       "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.PullRequest.PauseCovered":    "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.PullRequest.Now":             "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.PullRequest.Sleep":           "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.PullRequest.RecordChanges":   "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.PullRequest.Sessions":        "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.PullRequest.SessionLive":     "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.PullRequest.RegisterSession": "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+-	"Landing.PullRequest.BeamRecord":      "beam-only seam, filled by run.go for a recipe with a Beam-Await row",
+-	"Landing.PullRequest.DropBeamRecord":  "beam-only seam, filled by run.go for a recipe with a Beam-Await row",
+-	"DarnTable":                           "darn-only seam, filled by wire for a darn seed",
+-	"Darn.Commit":                         "darn-only seam, filled by wire for a darn seed",
+-	"Darn.LatestOutcome":                  "darn-only seam, filled by wire for a darn seed",
+-	"Darn.CheckRecord":                    "darn-only seam, filled by wire for a darn seed",
+-	"Darn.CommittedRecord":                "darn-only seam, filled by wire for a darn seed",
+-	"CreateWorktree":                      "batten-only seam, filled by battencli",
+-	"ExecutableSetting":                   "no tapestry or darn row is a Command row; battencli alone fills it",
+-	"Command.TaskDir":                     "no tapestry or darn row is a Command row; battencli alone fills it",
+-	"Command.Title":                       "no tapestry or darn row is a Command row; battencli alone fills it",
+-	"Command.LogPath":                     "no tapestry or darn row is a Command row; battencli alone fills it",
+-	"Command.Run":                         "no tapestry or darn row is a Command row; battencli alone fills it",
+-	"InnerRun.Spawn":                      "batten-only seam, filled by battencli",
+-	"InnerRun.ResolveStatus":              "batten-only seam, filled by battencli",
+-	"InnerRun.ReadStatus":                 "batten-only seam, filled by battencli",
+-	"InnerRun.ReadDecision":               "batten-only seam, filled by battencli",
+-	"InnerRun.DriverAlive":                "batten-only seam, filled by battencli",
+-	"InnerRun.DriverStrand":               "batten-only seam, filled by battencli",
+-	"InnerRun.ChildRunLockHeld":           "batten-only seam, filled by battencli",
+-	"InnerRun.ReviveStrands":              "batten-only seam, filled by battencli",
+-	"InnerRun.ArbiterInFlight":            "batten-only seam, filled by battencli",
+-	"InnerRun.PauseRequested":             "batten-only seam, filled by battencli",
+-	"InnerRun.MarkWatched":                "batten-only seam, filled by battencli",
+-	"InnerRun.OrchStrandRecorded":         "batten-only seam, filled by battencli",
+-	"InnerRun.StopReport":                 "batten-only seam, filled by battencli",
+-	"SeedChild.ReadBoardType":             "batten-only seam, filled by battencli",
+-	"SeedChild.ChildDriver":               "batten-only seam, filled by battencli",
+-	"SeedChild.WriteSeed":                 "batten-only seam, filled by battencli",
+-	"SeedChild.CommitSeed":                "batten-only seam, filled by battencli",
+-	"SeedChild.PushSeed":                  "batten-only seam, filled by battencli",
+-	"SeedChild.MarkWatched":               "batten-only seam, filled by battencli",
+-	"SeedChild.ReadRunSettings":           "batten-only seam, filled by battencli",
+-	"SeedChild.PrepareRunSettings":        "batten-only seam, filled by battencli",
+-	"SeedChild.WriteLocalOverride":        "batten-only seam, filled by battencli",
+-	"SeedChild.RemoveLocalOverrides":      "batten-only seam, filled by battencli",
+-	"InnerRun.ParentLock":                 "batten-only seam, filled by battencli",
+-	"Teardown.Shutdown":                   "batten-only seam, filled by battencli",
+-	"Teardown.Remove":                     "batten-only seam, filled by battencli",
+-	"Land.ParentBranch":                   "batten-only seam, filled by battencli",
+-	"Land.PrimeBranch":                    "batten-only seam, filled by battencli",
+-	"Land.PrimeDirty":                     "batten-only seam, filled by battencli",
+-	"Land.Pull":                           "batten-only seam, filled by battencli",
+-	"Land.Landing":                        "batten-only seam, filled by battencli",
+-	"Land.RunDeploy":                      "batten-only seam, filled by battencli",
+-	"Pawl.SetStatus":                      "pawl-only seam, filled by wire for a pawl seed",
+-	"Pawl.EntryProducer":                  "pawl-only seam, filled by wire for a pawl seed",
+-	"Pawl.OwnedElsewhere":                 "pawl-only seam, filled by wire for a pawl seed",
+-	"Pawl.MarkBeam":                       "pawl-only seam, filled by wire for a pawl seed",
+-	"Pawl.SpawnPush":                      "pawl-only seam, filled by wire for a pawl seed",
+-	"Pawl.RegenerateWorkspace":            "pawl-only seam, filled by wire for a pawl seed",
+-	"Pawl.StopDobby":                      "pawl-only seam, filled by wire for a pawl seed",
+-	"Pawl.StartDobby":                     "pawl-only seam, filled by wire for a pawl seed",
+-	"Pawl.DobbyLive":                      "pawl-only seam, filled by wire for a pawl seed",
+-	"Pawl.Recheck":                        "pawl-only seam, filled by wire for a pawl seed",
+-	"Pawl.HandOff":                        "pawl-only seam, filled by wire for a pawl seed",
+-	"Pawl.ReadyStands":                    "pawl-only seam, filled by wire for a pawl seed",
+-	"Pawl.StampWake":                      "pawl-only seam, filled by wire for a pawl seed",
+-	"Pawl.Notify":                         "pawl-only seam, filled by wire for a pawl seed",
+-	"Pawl.Down":                           "pawl-only seam, filled by wire for a pawl seed",
+-	"Pawl.Now":                            "pawl-only seam, filled by wire for a pawl seed",
+-	"Pawl.Sleep":                          "pawl-only seam, filled by wire for a pawl seed",
+-	"Land.ChildLanded":                    "batten-only seam, filled by battencli",
+-	"Land.PruneBoard":                     "batten-only seam, filled by battencli",
+-	"Land.LandLock.Acquire":               "batten-only seam, filled by battencli",
+-	"Land.PauseRequested":                 "batten-only seam, filled by battencli",
+-	"Land.Notices.OrchStrandRecorded":     "batten-only seam, filled by battencli",
+-	"Land.Notices.BattenHistoryLen":       "batten-only seam, filled by battencli",
+-	"PrimeLock.Acquire":                   "batten-only seam, filled by battencli",
+-	"Sampler.Spec":                        "sampler-only seam, filled by wire for a sampler seed",
+-	"Sampler.Sessions":                    "sampler-only seam, filled by wire for a sampler seed",
+-	"Sampler.SessionLive":                 "sampler-only seam, filled by wire for a sampler seed",
+-	"Sampler.RegisterSession":             "sampler-only seam, filled by wire for a sampler seed",
+-	"Sampler.Stamp":                       "sampler-only seam, filled by wire for a sampler seed",
+-	"Sampler.DirtyPaths":                  "sampler-only seam, filled by wire for a sampler seed",
+-	"Sampler.CheckRecord":                 "sampler-only seam, filled by wire for a sampler seed",
+-	"Sampler.MailAgent":                   "sampler-only seam, filled by wire for a sampler seed",
+-	"Sampler.PauseCovered":                "sampler-only seam, filled by wire for a sampler seed",
+-	"Sampler.Now":                         "sampler-only seam, filled by wire for a sampler seed",
+-	"Sampler.Sleep":                       "sampler-only seam, filled by wire for a sampler seed",
++	"Landing.BaseCommand":                    "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.VerifyHold":                     "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.GateTiers":                      "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.OpenFabric":                     "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.OpenParentFabric":               "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.TaskHead":                       "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.Shuttle":                        "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.DriftVerdict":                   "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.EnginesRun":                     "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.Lock.Store":                     "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.Lock.Owner":                     "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.Lock.PauseRequested":            "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.ReadParentTips":                 "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.HoldsWork":                      "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.ChangedPaths":                   "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.MergeBase":                      "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.FixerSeats":                     "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.LineChange":                     "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.IsTestFile":                     "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.RowEntry":                       "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.TaskRemoteTip":                  "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.CodeReviewOff":                  "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.PullRequest.ParentMode":         "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.PullRequest.EntryField":         "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.PullRequest.Origin":             "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.PullRequest.API":                "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.PullRequest.PushTask":           "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.PullRequest.CommitsMissing":     "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.PullRequest.TaskHasCommits":     "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.PullRequest.DirtyPaths":         "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.PullRequest.MailAgent":          "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.PullRequest.PauseCovered":       "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.PullRequest.ParentReviewWanted": "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.PullRequest.AskParent":          "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.PullRequest.Now":                "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.PullRequest.Sleep":              "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.PullRequest.RecordChanges":      "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.PullRequest.Sessions":           "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.PullRequest.SessionLive":        "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.PullRequest.RegisterSession":    "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.PullRequest.BeamRecord":         "beam-only seam, filled by run.go for a recipe with a Beam-Await row",
++	"Landing.PullRequest.DropBeamRecord":     "beam-only seam, filled by run.go for a recipe with a Beam-Await row",
++	"DarnTable":                              "darn-only seam, filled by wire for a darn seed",
++	"Darn.Commit":                            "darn-only seam, filled by wire for a darn seed",
++	"Darn.LatestOutcome":                     "darn-only seam, filled by wire for a darn seed",
++	"Darn.CheckRecord":                       "darn-only seam, filled by wire for a darn seed",
++	"Darn.CommittedRecord":                   "darn-only seam, filled by wire for a darn seed",
++	"CreateWorktree":                         "batten-only seam, filled by battencli",
++	"ExecutableSetting":                      "no tapestry or darn row is a Command row; battencli alone fills it",
++	"Command.TaskDir":                        "no tapestry or darn row is a Command row; battencli alone fills it",
++	"Command.Title":                          "no tapestry or darn row is a Command row; battencli alone fills it",
++	"Command.LogPath":                        "no tapestry or darn row is a Command row; battencli alone fills it",
++	"Command.Run":                            "no tapestry or darn row is a Command row; battencli alone fills it",
++	"InnerRun.Spawn":                         "batten-only seam, filled by battencli",
++	"InnerRun.ResolveStatus":                 "batten-only seam, filled by battencli",
++	"InnerRun.ReadStatus":                    "batten-only seam, filled by battencli",
++	"InnerRun.ReadDecision":                  "batten-only seam, filled by battencli",
++	"InnerRun.DriverAlive":                   "batten-only seam, filled by battencli",
++	"InnerRun.DriverStrand":                  "batten-only seam, filled by battencli",
++	"InnerRun.ChildRunLockHeld":              "batten-only seam, filled by battencli",
++	"InnerRun.ReviveStrands":                 "batten-only seam, filled by battencli",
++	"InnerRun.ArbiterInFlight":               "batten-only seam, filled by battencli",
++	"InnerRun.PauseRequested":                "batten-only seam, filled by battencli",
++	"InnerRun.MarkWatched":                   "batten-only seam, filled by battencli",
++	"InnerRun.OrchStrandRecorded":            "batten-only seam, filled by battencli",
++	"InnerRun.StopReport":                    "batten-only seam, filled by battencli",
++	"SeedChild.ReadBoardType":                "batten-only seam, filled by battencli",
++	"SeedChild.ChildDriver":                  "batten-only seam, filled by battencli",
++	"SeedChild.WriteSeed":                    "batten-only seam, filled by battencli",
++	"SeedChild.CommitSeed":                   "batten-only seam, filled by battencli",
++	"SeedChild.PushSeed":                     "batten-only seam, filled by battencli",
++	"SeedChild.MarkWatched":                  "batten-only seam, filled by battencli",
++	"SeedChild.ReadRunSettings":              "batten-only seam, filled by battencli",
++	"SeedChild.PrepareRunSettings":           "batten-only seam, filled by battencli",
++	"SeedChild.WriteLocalOverride":           "batten-only seam, filled by battencli",
++	"SeedChild.RemoveLocalOverrides":         "batten-only seam, filled by battencli",
++	"InnerRun.ParentLock":                    "batten-only seam, filled by battencli",
++	"Teardown.Shutdown":                      "batten-only seam, filled by battencli",
++	"Teardown.Remove":                        "batten-only seam, filled by battencli",
++	"Land.ParentBranch":                      "batten-only seam, filled by battencli",
++	"Land.PrimeBranch":                       "batten-only seam, filled by battencli",
++	"Land.PrimeDirty":                        "batten-only seam, filled by battencli",
++	"Land.Pull":                              "batten-only seam, filled by battencli",
++	"Land.Landing":                           "batten-only seam, filled by battencli",
++	"Land.RunDeploy":                         "batten-only seam, filled by battencli",
++	"Pawl.SetStatus":                         "pawl-only seam, filled by wire for a pawl seed",
++	"Pawl.EntryProducer":                     "pawl-only seam, filled by wire for a pawl seed",
++	"Pawl.OwnedElsewhere":                    "pawl-only seam, filled by wire for a pawl seed",
++	"Pawl.MarkBeam":                          "pawl-only seam, filled by wire for a pawl seed",
++	"Pawl.SpawnPush":                         "pawl-only seam, filled by wire for a pawl seed",
++	"Pawl.RegenerateWorkspace":               "pawl-only seam, filled by wire for a pawl seed",
++	"Pawl.StopDobby":                         "pawl-only seam, filled by wire for a pawl seed",
++	"Pawl.StartDobby":                        "pawl-only seam, filled by wire for a pawl seed",
++	"Pawl.DobbyLive":                         "pawl-only seam, filled by wire for a pawl seed",
++	"Pawl.Recheck":                           "pawl-only seam, filled by wire for a pawl seed",
++	"Pawl.HandOff":                           "pawl-only seam, filled by wire for a pawl seed",
++	"Pawl.ReadyStands":                       "pawl-only seam, filled by wire for a pawl seed",
++	"Pawl.StampWake":                         "pawl-only seam, filled by wire for a pawl seed",
++	"Pawl.Notify":                            "pawl-only seam, filled by wire for a pawl seed",
++	"Pawl.Down":                              "pawl-only seam, filled by wire for a pawl seed",
++	"Pawl.Now":                               "pawl-only seam, filled by wire for a pawl seed",
++	"Pawl.Sleep":                             "pawl-only seam, filled by wire for a pawl seed",
++	"Land.ChildLanded":                       "batten-only seam, filled by battencli",
++	"Land.PruneBoard":                        "batten-only seam, filled by battencli",
++	"Land.LandLock.Acquire":                  "batten-only seam, filled by battencli",
++	"Land.PauseRequested":                    "batten-only seam, filled by battencli",
++	"Land.Notices.OrchStrandRecorded":        "batten-only seam, filled by battencli",
++	"Land.Notices.BattenHistoryLen":          "batten-only seam, filled by battencli",
++	"PrimeLock.Acquire":                      "batten-only seam, filled by battencli",
++	"Sampler.Spec":                           "sampler-only seam, filled by wire for a sampler seed",
++	"Sampler.Sessions":                       "sampler-only seam, filled by wire for a sampler seed",
++	"Sampler.SessionLive":                    "sampler-only seam, filled by wire for a sampler seed",
++	"Sampler.RegisterSession":                "sampler-only seam, filled by wire for a sampler seed",
++	"Sampler.Stamp":                          "sampler-only seam, filled by wire for a sampler seed",
++	"Sampler.DirtyPaths":                     "sampler-only seam, filled by wire for a sampler seed",
++	"Sampler.CheckRecord":                    "sampler-only seam, filled by wire for a sampler seed",
++	"Sampler.MailAgent":                      "sampler-only seam, filled by wire for a sampler seed",
++	"Sampler.PauseCovered":                   "sampler-only seam, filled by wire for a sampler seed",
++	"Sampler.Now":                            "sampler-only seam, filled by wire for a sampler seed",
++	"Sampler.Sleep":                          "sampler-only seam, filled by wire for a sampler seed",
+ }
+ 
+ // TestWire_EverySeamFilled pins that wire fills every shedrecipe.Env seam, VerifyHold among them.
+diff --git a/internal/loomengine/config.go b/internal/loomengine/config.go
+index 8b346247..e951d793 100644
+--- a/internal/loomengine/config.go
++++ b/internal/loomengine/config.go
+@@ -533,6 +533,10 @@ type Config struct {
+ 	DiscussionAutoAccept     bool `yaml:"discussion_auto_accept"`
+ 	PlanAutoAccept           bool `yaml:"-"`
+ 	CodeAutoAccept           bool `yaml:"code_auto_accept"`
++
++	// PRReviewAskParent makes the PR-Review row ask the parent orch for a review of the run's open pull request.
++	// It is open to the local layer, so a task's run_settings turns it on or off for one run.
++	PRReviewAskParent bool `yaml:"pr_review_ask_parent"`
+ }
+ 
+ // DiscussionAdvisor is one Discussion-Write advisor: Name is its seat name and Model its model-spec.
+@@ -650,6 +654,7 @@ func ConfigSpec() configengine.Spec {
+ 			"driver":                           none,
+ 			"step_idle_timeout_min":            none,
+ 			"review_circling_checkpoint":       none,
++			"pr_review_ask_parent":             none,
+ 		},
+ 		RetiredKeys: map[string]configengine.Category{
+ 			"fan_review": none,
+diff --git a/internal/loomengine/config_test.go b/internal/loomengine/config_test.go
+index d0ac7d49..6b768883 100644
+--- a/internal/loomengine/config_test.go
++++ b/internal/loomengine/config_test.go
+@@ -177,6 +177,11 @@ review_timeout_min: 240
+ 			values: map[string]string{"raddle": "sonnet[high]", "raddle_auto_approve": "true"},
+ 			mutate: func(c *Config) { c.Raddle, c.RaddleAutoApprove = "sonnet[high]", true },
+ 		},
++		{
++			name:   "pr_review_ask_parent overridden",
++			values: map[string]string{"pr_review_ask_parent": "true"},
++			mutate: func(c *Config) { c.PRReviewAskParent = true },
++		},
+ 		{
+ 			name:   "reviewer_model as a per-round list",
+ 			values: map[string]string{"reviewer_model": "\n  - sonnet[low]\n  - opus[high]"},
+diff --git a/internal/loomengine/template.yaml b/internal/loomengine/template.yaml
+index 437766c0..8f8d8e40 100644
+--- a/internal/loomengine/template.yaml
++++ b/internal/loomengine/template.yaml
+@@ -43,3 +43,4 @@ discussion_hard_max_bounces: 0  # hard cap of the Discussion-Review perch: a rou
+ code_hard_max_bounces: 0  # hard cap of the Code-Review perch: a round numbered at or past it is never continued, it is accepted or escalated hard-cap; 0 takes review_hard_max_bounces
+ discussion_auto_accept: false  # true makes the Discussion-Review perch accept a harvested round at a spent budget instead of running the soft-cap rule
+ code_auto_accept: true  # true, the default, makes the Code-Review perch accept a harvested round at a spent budget with its open findings, BLOCKING ones included, instead of running the soft-cap rule; false restores the soft-cap rule
++pr_review_ask_parent: false  # true has the PR-Review row ask the parent orch for a review once the run's pull request is open, naming the slug, the pull request and its branches; the orch answers the PR-Review session, whose agent fixes any findings; false, the default, leaves asking to the operator; settable per run through run_settings
+diff --git a/internal/pullrequest/record.go b/internal/pullrequest/record.go
+index 5d4d914e..099aa5f7 100644
+--- a/internal/pullrequest/record.go
++++ b/internal/pullrequest/record.go
+@@ -38,6 +38,8 @@ type Record struct {
+ 	// In that case the pull request is left for Finalize to merge.
+ 	// The JSON key stays `closed_for_continue`, so a record written by an older build reads the same.
+ 	ReviewEnded bool `json:"closed_for_continue,omitempty"`
++	// ParentReviewAsked records that the PR-Review row asked the parent orch to review this pull request.
++	ParentReviewAsked bool `json:"parent_review_asked,omitempty"`
+ }
+ 
+ // ErrNoRecord is returned when the record's file does not exist.
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index b0825214..3ba69556 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -227,18 +227,20 @@ func LandingDeps(dir string) landingshed.Deps {
+ 			API: func(string) (pullrequest.API, error) {
+ 				return nil, errors.New("envkit: the fixture's landing reaches no GitHub")
+ 			},
+-			PushTask:        func() error { return nil },
+-			CommitsMissing:  func(string, string) ([]string, error) { return nil, nil },
+-			TaskHasCommits:  func() (bool, error) { return true, nil },
+-			DirtyPaths:      func() ([]string, error) { return nil, nil },
+-			MailAgent:       func(string, string) error { return nil },
+-			PauseCovered:    func() (bool, error) { return false, nil },
+-			Now:             time.Now,
+-			Sleep:           func(context.Context, time.Duration) error { return nil },
+-			RecordChanges:   func() (<-chan struct{}, func()) { return nil, func() {} },
+-			Sessions:        noopSessions{},
+-			SessionLive:     func(string) (bool, error) { return false, nil },
+-			RegisterSession: func(string) error { return nil },
++			PushTask:           func() error { return nil },
++			CommitsMissing:     func(string, string) ([]string, error) { return nil, nil },
++			TaskHasCommits:     func() (bool, error) { return true, nil },
++			DirtyPaths:         func() ([]string, error) { return nil, nil },
++			MailAgent:          func(string, string) error { return nil },
++			ParentReviewWanted: func() (bool, error) { return false, nil },
++			AskParent:          func(string) (bool, error) { return false, nil },
++			PauseCovered:       func() (bool, error) { return false, nil },
++			Now:                time.Now,
++			Sleep:              func(context.Context, time.Duration) error { return nil },
++			RecordChanges:      func() (<-chan struct{}, func()) { return nil, func() {} },
++			Sessions:           noopSessions{},
++			SessionLive:        func(string) (bool, error) { return false, nil },
++			RegisterSession:    func(string) error { return nil },
+ 			BeamRecord: func() (landingshed.BeamPullRequest, bool, error) {
+ 				return landingshed.BeamPullRequest{}, false, nil
+ 			},
