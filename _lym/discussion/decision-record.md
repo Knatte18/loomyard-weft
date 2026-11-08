@@ -20,6 +20,12 @@ A batch gate tests only the packages its cards touch, so a change that breaks a 
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-08): Last batch gate adds the module's main packages, derived, no hub config
+
+Decision: Last batch only, as measured. Under the go scoper the last batch's gate adds every package main of the module (found from the module, e.g. go list), so loomyard gets ./cmd/lym with no hub step and the template carries no Go path. No gates.batch.last_packages field and no lym config gate --set step. Other scopers add nothing. The plan-level verify is untouched.
+
+Rationale: Hub rule: a fix must work without a hub filling in config. The go scoper is already Go-specific, so deriving main packages there hard-codes no language in templates; cmd packages are where cross-package breaks surfaced (5 of 8 verify failures).
+
 ## Constraints
 
 ## Auto-mode assumptions
