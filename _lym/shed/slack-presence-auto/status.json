@@ -1,12 +1,13 @@
 {
   "current_producer": "Darn-Write",
-  "state": "blocked",
-  "error": "gate did not pass after 0 attempts; findings: /home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/.lym/shed/slack-presence-auto/gate-findings/Darn-Write.md; way forward: run \"lym loom resume\" in the task worktree, which re-spawns Darn-Write with a fresh verify budget",
+  "state": "paused",
+  "error": "",
   "pause_requested": false,
+  "pause_reason": "re-launched onto Darn-Write",
   "activity": {
     "now": "Darn-Write",
-    "last": "Darn-Write → stuck",
-    "wait": "gate did not pass after 0 attempts; findings: /home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/.lym/shed/slack-presence-auto/gate-findings/Darn-Write.md; way forward: run \"lym loom resume\" in the task worktree, which re-spawns Darn-Write with a fresh verify budget"
+    "last": "Darn-Write → goto",
+    "wait": ""
   },
   "history": [
     {
@@ -58,6 +59,12 @@
       ],
       "budget_exempt": true,
       "by": "shed"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "goto",
+      "output": "",
+      "at": "2026-11-08T14:38:01Z"
     }
   ],
   "product": {
