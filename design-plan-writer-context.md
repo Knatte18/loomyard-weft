@@ -179,4 +179,6 @@ Only the first cut (excerpts from the exploration fan instead of whole-file Read
 ## Darn cost measured (landed 2026-11-08)
 
 Task `darn-cost-measure` (`8a54fbfb`, `docs/research/loom/darn-cost-2026-11-08/report.md`) priced 291 darn runs and 16 tapestry runs from their transcripts, with no agent run.
-- A darn costs $5.45 on average; the writer and its lookups are 580f it, the Code-Review perch 37
+- A darn costs $5.45 on average; the writer and its lookups are 58% of it, the Code-Review perch 37%. An Opus writer priced at Sonnet list price would be 37% cheaper, an estimate only.
+- The 12 darns of the `fabric-test-speed` raddle split cost $58.53 with the Motif and raddle runs, $14.16 per 1000 lines against $11.29 for the tapestry runs; a tapestry fit puts one of the same size at $60.08, so the split saved 3% and moved cost from Plan (42% of a tapestry) to Code-Review (28% against 4%).
+- It bears on this note: the Plan writer cost is avoided, not cut, when raddle splits a Sketch first.
