@@ -1,6 +1,6 @@
 # Second fabricengine test cut, from the coverage study's removable set
 
-`fabric-test-cuts-2` · Task · enhancement, fabric, testkit · running · Code-Bouncer
+`fabric-test-cuts-2` · Task · enhancement, fabric, testkit · running · Code-Burler-Review
 
 ## Seen (orch, 2026-11-08)
 
