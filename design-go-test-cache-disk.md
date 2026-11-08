@@ -1,6 +1,6 @@
 # Gate go test runs fill the Go cache with test logs, hundreds of GB a day
 
-`go-test-cache-disk` · Task · bug, gate · draft
+`go-test-cache-disk` · Task · bug, gate
 
 ## Seen (operator, 2026-11-08)
 
