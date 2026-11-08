@@ -1,68 +1,56 @@
-# Slack: self-switching machine presence, reed toggles, reply forwarding
+# Slack toggles in reed; presence per machine and switching by itself
 
-Presence now belongs to the machine and changes when the operator acts.
-A Slack message from the operator sets it to away, and a line they type in an orch's pane sets it back to terminal.
-While the machine is away, lym forwards each orch's final reply to that orch's Slack channel.
-reed's status bar gains two toggles, `slack` (connection) and `away` (presence).
+Reed's status bar gets two toggles beside `follow`, and Slack presence now follows the operator without a command.
 
 ## What changes
 
-- **Presence and a connection switch per machine.**
-  `slack-presence.json` and the new `slack-switch.json` sit beside the Slack credentials in the per-user lym directory (`hubgeom.SlackMachine`).
-  So away holds for every hub and orch on the machine, and every reader (the dobby's wait reminders, the relay, the orch's resume pointer) follows through `Geometry.PresencePath`.
-  While the switch is off, no relay start spawns a relay; the new outcome is `OutcomeSwitchedOff`.
-  `lym slack start` and `away` switch it back on.
-  `slackengine.Connected` reports whether a relay holds the machine's socket lock.
-- **Notices come from the relays.**
-  `SetPresence` is gone, and writers only call `WritePresence`, which skips an unchanged write.
-  Each running relay reads the presence at its start and mails its own hub's orch and beam orchs a `[slack presence]` notice when it sees a change.
-  So a change made by any route (CLI, Slack text, hook, toggle) gets the same notice.
-  When the beams read fails, the notice goes to the hub's orch alone.
-- **Auto-away.**
-  Before forwarding any operator message that is not `away`/`back`/`status`, the inbound read sets the presence to slack.
-  A failed write is logged and never holds the message.
-- **Auto-back and reply forwarding through a turn hook.**
-  `shuttleengine.Spec.TurnHookCommand` is a new, provider-neutral field.
-  The claude engine pipes the UserPromptSubmit input and the turn-end Stop input to it, with output discarded and the exit statuses unchanged.
-  In the merged creel Stop command it runs only on the path that records a turn end, so a Stop that handed out mail runs no turn hook.
-  `HookInput` gains `Prompt` (via `typedInstruction`, so slash commands and task notifications come back empty) and `Reply` (`last_assistant_message`).
-  The orch spec sets the hook to `lym slack hook`, resolved through PATH.
-  - On a prompt while away, the hook sets terminal unless the line is lym's own: empty, opening `[creel]` (`creelengine.LinePrefix`) or `[lym]`, or matching an inject creel journaled into this strand within two minutes (`LogEntry.TypesInject`).
-  - On a main-thread turn end while away, it posts the reply (cut at 7000 bytes) to `<shortname>:SLACK` as the orch strand, so the relay posts it in that orch's channel.
-    The creel claim limits both paths to a process in the orch's pane.
-- **reed toggles.**
-  Line 3 draws `slack` and `away` after `follow`, lit from the `#()` job `lym slack bar`, which prints `slack-on|off away-on|off`.
-  The job's line lives in `@lym_slack_state_command`.
-  `status-interval` is pinned to 5 s, so a change by any route shows within that interval.
-  A click runs `lym slack toggle <toggle>` from the session's run directory, then redraws the client through `reedengine.ShowToggleOutcome`, which also shows any refusal.
-  - `toggle slack` switches the connection off and ends every live hub's relay, or switches it on and starts this hub's.
-  - `toggle away` flips the presence.
-- **No Slack line runs a test binary** (added after Discussion).
-  Both Slack lines name the binary that pinned them.
-  Under `go test` that is the test binary, and a state job `<pkg>.test slack bar` runs the whole suite at every redraw, whose sessions pin the same job again.
-  `slackLineExecutable` refuses the running test binary, so neither Slack line is pinned then.
-  The two Slack lines are now pinned and unset apart from the switch, follow and button lines, and `bindingArgvs` binds the toggle branch on its own flag.
-  reedengine's `TestMain` exits with status 2 on any positional argument, which no test run passes.
-- **Sender names carry the machine** (added after Discussion).
-  Slack posts go under `agentname.FormatMachineAddress`, `<machine>::<sender>`, such as `neve::ly:orch`.
-- **Orch role text.**
-  `role-slack.md` drops the "post every operator-bound message to SLACK while away" duty that the hook now covers.
-  It keeps one line on sending to Slack on purpose.
+- **`slack` toggle:** lit while the machine's Slack relay is connected.
+  A click starts or stops the relay, so Slack can go off without touching presence.
+  While the machine is switched off, no start of a relay spawns one, so the prime dobby's tick does not revive it.
+- **`away` toggle:** lit while presence is `slack`.
+  A click switches presence either way.
+- **Redraw:** the toggles read a `#()` job running the hidden `lym slack bar`, and the bar redraws every 5 seconds.
+  A change by any route shows within that interval.
+- **Presence is per machine.**
+  The presence, switch and socket-lock files all live in the per-user credential directory (`hubgeom.SlackMachine`).
+  Away holds for every hub and orch on the machine.
+  `WritePresence` leaves an unchanged value unwritten, so a repeat wakes no relay.
+- **The `[slack presence]` notice** is now sent by each running relay when it sees the presence file change, to its own hub's orchs.
+  The writer no longer sends it, so a change by any route (toggle, hook, relay, `lym slack away|back|stop`) is announced once per hub.
+- **An operator message on Slack** sets presence to `slack` before the relay forwards it.
+- **A line the operator types in an orch's pane while away** sets presence back to `terminal`.
+  The new hidden `lym slack hook` verb does it from the `UserPromptSubmit` event.
+  It leaves presence alone for a slash command or a prompt the provider submitted (empty prompt),
+  a line opening `[creel]` or `[lym]`,
+  and a prompt matching an inject creel journaled for that pane within the two minutes before (`LogEntry.TypesInject`).
+- **Final replies reach Slack while away.**
+  The same hook, on Stop, posts the turn's final reply to the orch's channel through creel.
+  A turn with no text sends nothing, and a reply over 7000 bytes is cut.
+  Subagent events do nothing.
+  `orchcli` sets the hook as the orch session's `TurnHookCommand`; `claudeengine` runs it after the existing event recording, with output discarded and the recording's exit status kept.
+- **Shipped orch text:** `role-slack.md` keeps one plain line on sending to Slack through creel and drops what the hook now covers.
+- **Sender names carry the machine.**
+  Posts to Slack under a sender's name use `<machine>::<sender>`, such as `neve::ly:orch`, formed by `agentname.FormatMachineAddress`.
 
 ## Design decisions
 
-- Auto-back reads the prompt in a UserPromptSubmit hook rather than in the orch watcher's event read.
-  The same hook carries the Stop forwarding, so the reply goes out as the orch strand and lands in that orch's channel under its name.
-- The toggles pull their state through a tmux `#()` job instead of having each changer push options to every reed server.
-  So a crashed relay unlights `slack` without anyone writing it.
-- "Connected" means a relay holds the machine's socket lock, which includes a holder that is dialing again.
-- The test-binary refusal sits in production code (`testing.Testing()` plus a path compare), not only in test fixtures.
-  So a test of any package that boots reed through `reedengine.New` cannot pin the job, and a test that stubs the executable to another path still exercises the pinned lines.
+- **Hook, not orch judgment.**
+  Lym sets presence and forwards replies; the orch tracks nothing.
+- **Telling lym's lines from the operator's** is done in the hook by prefix and by matching against creel's journaled injects.
+  Mail a hook hands the session arrives as a `[creel]` line, so it never switches presence.
+- **A test binary must never run a Slack line.**
+  The state job and the toggle click are built from `executablePath()`.
+  Under `go test` that is the test binary, which ignores `slack bar` and runs the whole suite again;
+  each session that suite creates pins the same job, and an earlier version of this change fork-bombed the machine that way.
+  Three guards prevent it:
+  - `slackLineExecutable` refuses the running test binary, so the state job and the click are pinned only for a real `lym`.
+  - `reedengine`'s `TestMain` exits 2 on any positional argument, and `testmain_guard_test.go` proves it.
+  - The hook commands in `claudeengine` name `lym` through `PATH`, not an `executablePath` pin.
+- **A machine with no presence record** reads as `terminal`; a hub's old per-hub record is no longer read.
 
-## Bounds
+## To check by hand
 
-- An older per-hub `presence.json` is not read: after deploy the machine starts at terminal.
-- A hub whose relay is down gets no presence notice. The orchs no longer need one, since the hook reads the presence at each turn end.
-- The codex engine installs no turn hook, so an orch on codex neither auto-switches nor forwards replies.
-- Recognizing an inject relies on its journaled line equalling the submitted prompt within two minutes.
-- A reed server booted under `go test` has unlit Slack toggles and no toggle click.
+- Click `slack` and `away` in a live reed session and watch both toggles redraw, including after `lym slack away` from a shell.
+- With presence `slack` in a real orch pane: type a line (presence returns to `terminal`), then run `/compact` and let a creel inject land (presence stays).
+- With presence `slack`, finish a turn in an orch and confirm its final reply appears in that orch's channel under the `<machine>::` sender name.
+- Run the integration tier for `reedengine`, `slackcli` and `claudeengine` in full; the work ran only targeted package tests.
