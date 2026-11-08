@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-08 17:30 UTC; every age below is as of then.
+Rendered 2026-11-08 17:31 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -72,7 +72,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Cut and fold fabricengine tier 1 tests the coverage study found redundant** | [`fabric-test-cuts`](design-fabric-test-cuts.md) | darn · solid | Code-Burler-Review | neve | 25m<br>24m | fabric, testkit |
+| T1 | **Cut and fold fabricengine tier 1 tests the coverage study found redundant** | [`fabric-test-cuts`](design-fabric-test-cuts.md) | darn · solid | Code-Burler-Fix | neve | 26m<br>25m | fabric, testkit |
 
 #### Ready (0)
 
@@ -128,7 +128,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **A mechanical way to find redundant tests: package-scoped coverage, a map per package, a check on a diff** | [`redundant-test-finder`](design-redundant-test-finder.md) | motif | Discussion-Burler-Review | neve | 18m<br>11m | testkit, gate |
+| T3 | **A mechanical way to find redundant tests: package-scoped coverage, a map per package, a check on a diff** | [`redundant-test-finder`](design-redundant-test-finder.md) | motif | Discussion-Burler-Review | neve | 19m<br>12m | testkit, gate |
 
 #### Ready (0)
 
