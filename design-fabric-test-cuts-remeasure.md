@@ -1,6 +1,6 @@
 # Measure the fabricengine tier 1 time the two test cuts saved
 
-`fabric-test-cuts-remeasure` · Task · research, fabric, testkit · running · Drift-Recheck
+`fabric-test-cuts-remeasure` · Task · research, fabric, testkit · running · Finalize
 
 ## Seen (orch, 2026-11-08)
 
