@@ -1,0 +1,26 @@
+# Relevant files
+
+- `contracts/recipes/motif-recipe.yaml` — the Discussion ring arras runs as its Motif block, and the model for the split perch's rows
+- `contracts/recipes/raddle-recipe.yaml` — the Raddle-Write and Raddle-File rows arras reuses, and their shared-segment return
+- `contracts/recipes/tapestry-recipe.yaml` — the Motif block row with the `undiscussed` gate that arras copies
+- `internal/shedbuild/loomcontract.go` `checkLoomContract`, `recordOnly`, `onlyRowOf` — one record row, so arras holds no Record-Write
+- `internal/shedrun/seed.go` `RecipeMotif`, `RecipeRaddle`, `RecipeNames` — the recipe-name list arras joins
+- `internal/loomrecipe/names.go` — embedded recipe map and recipe engine list
+- `internal/shedcli/table.go` — recipe arming table
+- `internal/battencli/wire.go` — recipes a task worktree may run
+- `internal/battencli/cleanup.go` `ClearMotifRun` — clears a done motif run by recipe name, extended for arras
+- `internal/battencli/land.go` `PruneBoard` — the landing prune that removes a done arras entry
+- `internal/loomcli/wiring.go` `finishesAsSketch`, `sketchFinish` — a recipe with a RaddleFile row never makes a Sketch
+- `internal/loomshed/raddlewrite.go` `raddleWrite.Call` — records auto or interactive mode from `raddle_auto_approve` on the first call
+- `internal/boardengine/raddlefile.go` `FileRaddle`, `fileRaddleEntry`, `EndRaddleEntry`, `raddleFilingHeld` — the filing write D5 and D6 change
+- `internal/boardengine/board.go` `SetRunStatus`, `SetStatus` — run-status writes after filing, and the release D8 extends
+- `internal/boardengine/store.go` `SetStatus`, `Prune` — status validation and the prune of done entries
+- `internal/boardengine/draft.go` `applyDraftRule` — the draft and release rule D8 builds on
+- `internal/boardengine/sketch.go` `endsAsSketch`, `MakeSketch` — the run-lock admission D6 mirrors
+- `internal/dobbyengine/starts.go` `readyToStart` — dobby holds a released task until its dependencies are done
+- `internal/discussionparser/partsplice.go` `SplicePart` — every part's record carries every Added after Discussion entry
+- `internal/loomcli/decision.go` `copyRecordToBoard` — `lym loom decision add` stores the record once past the Discussion approval
+- `contracts/specs/raddle-proposal-spec.md` — the proposal format and checks D5 extends
+- `contracts/stencils/raddle/raddle-template-agent.md` — the raddle stencil whose mode text names the arras outcomes
+- `plugins/ly/skills/board-policy/SKILL.md` — the release rule and the recipe-choice rule D9 rewrites
+- `docs/reference/weaving-glossary.md` — lists `arras` as free
