@@ -1,6 +1,6 @@
 # Ship the rule: a tapestry-sized note runs as a Motif, then raddle
 
-`motif-before-tapestry` · Task · enhancement, orch, board · running · Finalize
+`motif-before-tapestry` · Task · enhancement, orch, board · done
 
 ## Why (operator, 2026-11-08)
 
