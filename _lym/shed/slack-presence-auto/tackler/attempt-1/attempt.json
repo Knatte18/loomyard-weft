@@ -1,0 +1,46 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Darn-Write",
+    "history_length": 6,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "4aa372a7f2aba61514f81ce365acaf757697ff4e",
+    "branch": "slack-presence-auto",
+    "dirty": {
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/agentname/agentname.go": "12a4b84a750356f3229a191617bd189adfaa0bd5fc7ee23a352ee6753fcdec33",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/beamcli/dobbydeps_integration_test.go": "94949ae3df062a6d51f01855e5e45f17b81cfed75093ed432b32fdeaff0e24a9",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/hubgeom/hubgeom_test.go": "1c783a010756870af78a12e76a7c3fcef7cb71d9c6c8caf6fccf7eff61526b3c",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/orchcli/start.go": "9b4bed414343eddb4a736c3341dd14c884c908653b02de646f5e0284cee0daf0",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/reedengine/bar.go": "72d8255c62a1d6b624218181ed1d75df2b0e50ac24b103bffae44095a488ff6e",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/reedengine/bar_test.go": "9b8d92286f58ae738c34edcca8440d74e8d98a6835daab5a4e55dd58eb11cee0",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/reedengine/bindings.go": "9e7d886c6dd7e88d7fb561096b30da020737dce1f3517abb76471f64f1dbfc23",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/reedengine/bindings_test.go": "55c86561f3e3008f74f8e7617138ec7de5f08cf93c4dd8dbc2a2739aeeb7f70b",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/reedengine/doc.go": "6ac7143cae453f280b19650229b0902a90eafd56b89fbc4e49713b42aea0d17c",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/reedengine/panebin.go": "673b0791f6dfdbd56b18bafb12898fdf9317bcdd1f42e9377b671cdcef23d434",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/reedengine/slacktoggle_integration_test.go": "505cebc5187aa9f6b381ba0e77b549650b4f27646471c7cc0634d53eb480fc6f",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/shuttleengine/claudeengine/hookcmd_integration_test.go": "90ac84898da2bc95a37a5d10ff12255e87df9ce8b5553f36840b1ae96955d1da",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/shuttleengine/claudeengine/settings.go": "b84a83c947f31f8345a929c1f4f7d4497a478d265c7f2f635be4f62e1a172954",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/shuttleengine/spec.go": "125ce736ba6166e711243d4d2ad4cb60d0306494f3a8ca7656b8f79a23dd19b5",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/slackcli/cli.go": "561326ee386afbfffdbdc4c82c30fd1e674bfb12ccdc88db0deb501c7aea39da",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/slackcli/cli_test.go": "9ebde112f87822c4c9a4ae6e7e7f3d76ff537d8d5a79f7ddb777fc804c166b21",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/slackcli/doc.go": "29ec5dfcdd1b125e1500a38ebd259c23e9f3fb9cf8643859cc1b467e460ca920",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/slackcli/hook.go": "07342499a270134a3d40707643e13ee72bdffd911563fe0396d9aa7b5e7a6821",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/slackcli/toggle.go": "db2f85eb56b8a214a0bd1a205b6cf332497bbdf8621aa91a42d80b43d48707c1",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/slackengine/doc.go": "c9fb116c962cdfbf2c952e62420b1783811fdee1c0afd80ba514acf67deb7559",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/slackengine/files_test.go": "3aeea0ebe3bf65e521fffb498e655ec5ef854b2d0d45cf547a7d8a9b22e07440",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/slackengine/geometry.go": "25159b404e2c67d125cb45c823e15bad991d50ae149dc4fe544adc75c1f98b10",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/slackengine/outbound_test.go": "0790ccfb209c19da65c570da5e7187a70fc4fa915a79ed9d9a0af587ec0a4b2d",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/slackengine/relay.go": "99ec7477909c013cbceac8a6db4d845c10ebb9f4bc71481c47cd1b91e2ce9049",
+      "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/internal/slackengine/start.go": "9b63dc0039b4ae05676e21bce0cfe967fc27669ec623c763b8dc4ca976eeed27"
+    }
+  },
+  "spawned_at": "2026-11-08T15:37:20.800989762+01:00",
+  "deadline": "2026-11-08T15:47:20.800989762+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/_lym/shed/slack-presence-auto/drive-reports/drive-envelope-20261108-153720-8cc1.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/_lym/shed/slack-presence-auto/drive-reports/drive-report-20261108-153720-075d.md",
+  "strand_guid": "f82b7beb77c7920d86316355d2dc1143"
+}
