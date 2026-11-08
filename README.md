@@ -122,13 +122,19 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Ready (1)
+#### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T2 | **A mechanical way to find redundant tests: package-scoped coverage, a map per package, a check on a diff** | [`redundant-test-finder`](design-redundant-test-finder.md)<br>[Sketch](decision-redundant-test-finder.md) | raddle | Worktree-Create | neve | 1h<br>0m | testkit, gate |
+
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T2 | **A mechanical way to find redundant tests: package-scoped coverage, a map per package, a check on a diff** | [`redundant-test-finder`](design-redundant-test-finder.md)<br>[Sketch](decision-redundant-test-finder.md) | raddle |  | 1h<br>0m | testkit, gate |
+_None._
 
 ### Notes (18)
 
