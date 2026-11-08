@@ -1,0 +1,12 @@
+# Slack messages to the orch say Slack twice: sender ly:SLACK and a [slack] body prefix
+
+`slack-forward-prefix` · Note · enhancement, slack
+
+## Seen (operator, 2026-11-08)
+
+A Slack message reaches the orch as `[creel] #1033 from "ly:SLACK": [slack] OK. ...`: the sender `ly:SLACK` already says it came from Slack, and the body opens with `[slack] ` again (`forwardPrefix` in `internal/slackengine/inbound.go`).
+
+## Idea
+
+Drop the `[slack] ` body prefix, or keep it only where the sender does not show, once checked that no reader keys on it.
+Built with or after the Slack revision `slack-v2`, since the operator holds Slack work until that lands.
