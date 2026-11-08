@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-08 08:12 UTC; every age below is as of then.
+Rendered 2026-11-08 08:16 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -60,7 +60,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 ## [P3 Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes](project-fabric-test-speed-work.md) (0)
 
-[`fabric-test-speed-work`](design-fabric-test-speed-work.md) · Age 17h · Owner `neve`
+[`fabric-test-speed-work`](design-fabric-test-speed-work.md) · Age 18h · Owner `neve`
 
 ### Tasks (0)
 
@@ -91,8 +91,8 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Slack v2: one bot, one channel per orch, push in place of polling** | [`slack-v2`](design-slack-v2.md) | motif | Discussion-Write | neve | 14h<br>14h | slack, creel, orch |
-| T2 | **Gate go test runs fill the Go cache with test logs, hundreds of GB a day** | [`go-test-cache-disk`](design-go-test-cache-disk.md) | darn · light | Darn-Write | neve | 2m<br>0m | gate |
-| T3 | **lym slack login waits silently for end of input and echoes the token** | [`slack-login-prompt`](design-slack-login-prompt.md) | darn · light | Darn-Write | neve | 14h<br>0m | slack |
+| T2 | **Gate go test runs fill the Go cache with test logs, hundreds of GB a day** | [`go-test-cache-disk`](design-go-test-cache-disk.md) | darn · light | Darn-Write | neve | 7m<br>5m | gate |
+| T3 | **lym slack login waits silently for end of input and echoes the token** | [`slack-login-prompt`](design-slack-login-prompt.md) | darn · light | Drift-Verify | neve | 14h<br>5m | slack |
 
 #### Ready (0)
 
