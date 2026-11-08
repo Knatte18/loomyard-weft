@@ -5,7 +5,8 @@
 ### Turn 1 — exploration (autonomous; no operator)
 
 - Board: `slack-v2` (T1) is the task.
-  `slack-presence-auto` (F2, note) and `slack-login-prompt` (T3, running Darn-Write) touch it.
+  `slack-presence-auto` (F2, note) and `slack-login-prompt` (T3) touch it.
+  `slack-login-prompt` has landed on `main` as `fd159ff2`.
   No `Decision for slack-v2:` note exists, and `lym loom peers` lists no parent commits.
 - Three lookup subagents mapped the codebase and Slack's docs:
   - Relay today: one detached relay per hub.
@@ -70,10 +71,10 @@ Every fork returned a report.
 - board-scope 1, icon dropped although cheap: fixed; D8 sets a fixed `icon_emoji` per sender kind.
 - board-scope 2, the login prompt's wording overlapping with `slack-login-prompt`: fixed; D3 states the prompt names the three kinds.
 - leanness 1, the PATTERN change stated three times: fixed.
-  The Constraints line points at the Notes, which hold the rule once, and the bullet stays because the change must be declared.
+  The `PATTERN-agent-addressing` constraint holds the rule once, and the PATTERN changes bullet stays because the change must be declared.
 - leanness 2, rationale arguing against unchosen alternatives: fixed; the clauses in D1, D9 and D11 are cut.
 - leanness 3, leanness 4, Open risks holding non-risks: fixed.
-  Only the archived-name risk stays, and the acknowledgement-deadline fact moves to Constraints.
+  The archived-name risk moves to D5's rationale and the question ledger, and the acknowledgement-deadline fact moves to Constraints.
 - leanness 5, Slack facts restated in Constraints: fixed; only facts no Decision cites stay.
 - leanness 6, assumptions restating Decisions: fixed; each line now names its pick and its D-id.
 - leanness 7, a Notes bullet duplicating D8: fixed; it is cut.
