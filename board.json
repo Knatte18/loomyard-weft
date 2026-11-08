@@ -477,6 +477,27 @@
       "created": "2026-11-08T13:21:01Z",
       "revised": "2026-11-08T13:22:21Z",
       "profile": "docs"
+    },
+    {
+      "id": 1227,
+      "handle": "F2",
+      "slug": "machine-restart-shortcut",
+      "title": "One desktop shortcut brings every lym session of the machine back after a crash or reboot",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "orch",
+        "reed",
+        "termwindow",
+        "shortcut"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A lym verb and a .desktop launcher that start each live hub orch and reopen the reed windows",
+      "body": "## Seen (operator, 2026-11-08)\n\nNeve crashed at about 15:30 and rebooted.\nBringing lym back took the operator several manual steps: starting the hub's orch session by hand, after which the orch and dobby took the runs up again, one by one.\nA run whose step was cut off halts (`slack-presence-auto` at Darn-Write, `loop-exited`) and waits for the orch.\nVS Code needs nothing: on Kubuntu it reopens the windows it had open by itself.\n\n## Idea (operator, 2026-11-08)\n\nOne desktop shortcut brings every lym session of the machine back after a crash or reboot:\n\n- For each hub that was live on the machine, it starts the prime's orch session in its terminal window, as starting it by hand does today; the orch and dobby then take up the runs.\n- It opens the reed terminal windows the operator had open, such as the prime's and each running task's.\n- The shortcut is a `.desktop` launcher lym installs, which runs one `lym` verb; the verb is the part that does the work, so it can also be run from a terminal.\n\nOpen: whether the verb finds the hubs from the machine's hub registry or from a list the operator keeps; whether it opens a reed window for every running task or only the ones that were open; whether interrupted runs are resumed by the verb or left to the orch.\n",
+      "created": "2026-11-08T14:40:16Z",
+      "revised": "2026-11-08T14:40:16Z"
     }
   ],
   "prime_owner": "neve",
