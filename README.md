@@ -90,8 +90,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Measure what the darn writer spends on: writing, research, thinking, gate waits**<br>• Break the darn writer cost down by token kind and activity, with cache re-writes after gate waits and what a cold gate fixer would save | [`darn-writer-anatomy`](design-darn-writer-anatomy.md) | darn · docs | Open-Window | neve | 2m<br>1m | darn, loom |
-| T2 | **Slack in reed: a connection toggle and a presence toggle, presence per machine and switching by itself**<br>• lym switches presence on an operator Slack message or pane line, tells operator lines from its own injects, and shows a slack on/off toggle in reed | [`slack-presence-auto`](design-slack-presence-auto.md) | darn · solid | Darn-Write | neve | 2d<br>21m | reed, shuttle, slack |
+| T1 | **Measure what the darn writer spends on: writing, research, thinking, gate waits**<br>• Break the darn writer cost down by token kind and activity, with cache re-writes after gate waits and what a cold gate fixer would save | [`darn-writer-anatomy`](design-darn-writer-anatomy.md) | darn · docs | Seed-IDE | neve | 2m<br>1m | darn, loom |
+| T2 | **Slack in reed: a connection toggle and a presence toggle, presence per machine and switching by itself**<br>• lym switches presence on an operator Slack message or pane line, tells operator lines from its own injects, and shows a slack on/off toggle in reed | [`slack-presence-auto`](design-slack-presence-auto.md) | darn · solid | Darn-Write | neve | 2d<br>22m | reed, shuttle, slack |
 
 #### Ready (0)
 
