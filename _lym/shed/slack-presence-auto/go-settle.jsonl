@@ -1,3 +1,4 @@
 {"stop_key":{"current_producer":"Darn-Write","history_length":5,"state":"failed"},"settler":"parent","action":"hand-back","outcome":"the tree is not clean for a hand-over","at":"2026-11-08T15:36:27.833655743+01:00"}
 {"stop_key":{"current_producer":"Darn-Write","history_length":6,"state":"blocked"},"settler":"tackler","action":"spawn","outcome":"tackler spawned","at":"2026-11-08T15:38:01.193681717+01:00","target":"attempt-1"}
 {"stop_key":{"current_producer":"Darn-Write","history_length":6,"state":"blocked"},"settler":"tackler","action":"restep","outcome":"tackler resume","at":"2026-11-08T15:38:01.205891264+01:00","target":"Darn-Write"}
+{"stop_key":{"current_producer":"Darn-Write","history_length":7,"state":"failed"},"settler":"go-rule","action":"restep","outcome":"an interrupted step under the reinvoke policy: re-step","at":"2026-11-08T15:47:49.218699182+01:00"}
