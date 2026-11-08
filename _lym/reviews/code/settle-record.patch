@@ -1,0 +1,1698 @@
+diff --git a/internal/fabricengine/dirtiness.go b/internal/fabricengine/dirtiness.go
+index bc187c49..32866598 100644
+--- a/internal/fabricengine/dirtiness.go
++++ b/internal/fabricengine/dirtiness.go
+@@ -68,6 +68,13 @@ func trackedDirtyPaths(dir string) ([]string, error) {
+ 	if err != nil {
+ 		return nil, fmt.Errorf("check for uncommitted changes in %s: %w", dir, err)
+ 	}
++	return parseTrackedDirtyPaths(dir, stdout), nil
++}
++
++// parseTrackedDirtyPaths returns the dirty paths, each joined under dir.
++// Its input is the output of `git status --porcelain -z --untracked-files=no` run in dir.
++// A rename or copy record names its destination and is followed by a record holding its source, which is skipped.
++func parseTrackedDirtyPaths(dir, stdout string) []string {
+ 	var paths []string
+ 	records := strings.Split(stdout, "\x00")
+ 	for i := 0; i < len(records); i++ {
+@@ -80,5 +87,5 @@ func trackedDirtyPaths(dir string) ([]string, error) {
+ 			i++
+ 		}
+ 	}
+-	return paths, nil
++	return paths
+ }
+diff --git a/internal/fabricengine/dirtiness_parse_test.go b/internal/fabricengine/dirtiness_parse_test.go
+new file mode 100644
+index 00000000..fb963a23
+--- /dev/null
++++ b/internal/fabricengine/dirtiness_parse_test.go
+@@ -0,0 +1,47 @@
++// dirtiness_parse_test.go covers, with no git, how `git status --porcelain -z` output becomes dirty tracked paths.
++
++package fabricengine
++
++import (
++	"path/filepath"
++	"testing"
++
++	"github.com/google/go-cmp/cmp"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestParseTrackedDirtyPaths covers the NUL-separated status parse:
++// an empty status lists nothing, a path comes back verbatim under the directory,
++// and a rename or copy record names its destination while its trailing source record is skipped.
++func TestParseTrackedDirtyPaths(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const dir = "/wt"
++	tests := []struct {
++		name   string
++		stdout string
++		want   []string
++	}{
++		{"CleanSource", "", nil},
++		{"ModifiedFile", " M tracked.txt\x00", []string{"/wt/tracked.txt"}},
++		{"StagedAndModifiedFiles", "M  a.txt\x00 M sub/b.txt\x00", []string{"/wt/a.txt", "/wt/sub/b.txt"}},
++		{"PathWithSpaceAndNonASCII", " M a b/æø.txt\x00", []string{"/wt/a b/æø.txt"}},
++		{"RenameSkipsItsSourceRecord", "R  new.txt\x00old.txt\x00 M other.txt\x00", []string{"/wt/new.txt", "/wt/other.txt"}},
++		{"CopySkipsItsSourceRecord", "C  copy.txt\x00orig.txt\x00", []string{"/wt/copy.txt"}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			var want []string
++			for _, path := range tt.want {
++				want = append(want, filepath.FromSlash(path))
++			}
++			if diff := cmp.Diff(want, parseTrackedDirtyPaths(filepath.FromSlash(dir), tt.stdout)); diff != "" {
++				t.Errorf("parseTrackedDirtyPaths(%q) mismatch (-want +got):\n%s", tt.stdout, diff)
++			}
++		})
++	}
++}
+diff --git a/internal/fabricengine/healthreason_integration_test.go b/internal/fabricengine/healthreason_integration_test.go
+index d33d295c..eb387a44 100644
+--- a/internal/fabricengine/healthreason_integration_test.go
++++ b/internal/fabricengine/healthreason_integration_test.go
+@@ -178,6 +178,8 @@ func TestHealthy_ReasonCauses(t *testing.T) {
+ // Its weft primary sits on a branch with no commits; there `git rev-parse --abbrev-ref HEAD` exits 128.
+ // Healthy must classify that state as a verdict, not return a Go error that aborts the preflight.
+ // The pair is still correctly wired and paired.
++//
++//testtiming:keep Healthy returning a healthy verdict, not an error, on an unborn weft branch, which the repo-wide-config test never builds
+ func TestHealthy_UnbornWeftBranchIsAVerdictNotAnAbort(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+diff --git a/internal/fabricengine/junction.go b/internal/fabricengine/junction.go
+index e4c32ea9..e7a70d2b 100644
+--- a/internal/fabricengine/junction.go
++++ b/internal/fabricengine/junction.go
+@@ -549,33 +549,12 @@ func unseedGitExclude(rec *Mutations, l *lymcwd.Location, slug string, names []s
+ 		// The sibling census runs inside the lock.
+ 		// A concurrent wire in another worktree cannot invalidate its answer before the write it feeds.
+ 		wired := namesWiredInSiblingWorktrees(l, slug, names)
+-		stripSet := make(map[string]bool)
+-		for _, j := range WarpJunctions(l, slug, names) {
+-			// Both spellings are stripped when nothing still needs them.
+-			// One is the anchored pattern this binary writes; the other is the legacy bare name an earlier binary wrote.
+-			// Stripping both lets a hub wired by an earlier binary revert cleanly.
+-			// Only worktrees linked at the same anchored path share the anchored line.
+-			// A bare line matches at every depth, so every worktree wiring the name shares it.
+-			if !wired.sameAnchor[j.Name] {
+-				stripSet[excludePatternFor(l.AnchorRel, j.Name)] = true
+-			}
+-			if !wired.anyAnchor[j.Name] {
+-				stripSet[j.Name] = true
+-			}
+-		}
++		stripSet := excludeLinesToStrip(l.AnchorRel, names, wired)
+ 		if len(stripSet) == 0 {
+ 			return content, nil
+ 		}
+ 
+-		lines := strings.Split(content, "\n")
+-		kept := make([]string, 0, len(lines))
+-		for _, line := range lines {
+-			if stripSet[strings.TrimSpace(line)] {
+-				continue
+-			}
+-			kept = append(kept, line)
+-		}
+-		stripped := strings.Join(kept, "\n")
++		stripped := stripExcludeLines(content, stripSet)
+ 		if dryRun {
+ 			wouldChange = stripped != content
+ 			return content, nil
+@@ -594,6 +573,39 @@ func unseedGitExclude(rec *Mutations, l *lymcwd.Location, slug string, names []s
+ 	return changed, nil
+ }
+ 
++// excludeLinesToStrip returns the exclude lines an unwire of names at anchorRel may remove, given the sibling census.
++// Both spellings of a name are stripped when nothing still needs them.
++// One is the anchored pattern this binary writes; the other is the legacy bare name an earlier binary wrote.
++// Stripping both lets a hub wired by an earlier binary revert cleanly.
++// Only worktrees linked at the same anchored path share the anchored line.
++// A bare line matches at every depth, so every worktree wiring the name shares it.
++func excludeLinesToStrip(anchorRel string, names []string, wired siblingWiring) map[string]bool {
++	stripSet := make(map[string]bool)
++	for _, name := range names {
++		if !wired.sameAnchor[name] {
++			stripSet[excludePatternFor(anchorRel, name)] = true
++		}
++		if !wired.anyAnchor[name] {
++			stripSet[name] = true
++		}
++	}
++	return stripSet
++}
++
++// stripExcludeLines returns content without the lines that trim to a key of stripSet.
++// The remaining lines keep their original order and spacing.
++func stripExcludeLines(content string, stripSet map[string]bool) string {
++	lines := strings.Split(content, "\n")
++	kept := make([]string, 0, len(lines))
++	for _, line := range lines {
++		if stripSet[strings.TrimSpace(line)] {
++			continue
++		}
++		kept = append(kept, line)
++	}
++	return strings.Join(kept, "\n")
++}
++
+ // siblingWiring is the census of the names the other warp worktrees of a repo still have linked.
+ type siblingWiring struct {
+ 	// sameAnchor holds the names that another worktree has linked at the same anchored path as this one.
+diff --git a/internal/fabricengine/junction_pattern_integration_test.go b/internal/fabricengine/junction_pattern_integration_test.go
+index 02eef840..c4390cff 100644
+--- a/internal/fabricengine/junction_pattern_integration_test.go
++++ b/internal/fabricengine/junction_pattern_integration_test.go
+@@ -210,6 +210,8 @@ func TestUnwireJunctions_ReportsAndClearsEveryJunction(t *testing.T) {
+ 
+ // TestUnwireJunctions_AlreadyUnwiredIsNoOp checks that unwiring an already unwired worktree is a no-op.
+ // Unwiring returns an empty JunctionsRemoved and a nil error.
++//
++//testtiming:keep a second UnwireJunctions returning an empty JunctionsRemoved, ExcludeChanged false and a nil error, which no other test asserts
+ func TestUnwireJunctions_AlreadyUnwiredIsNoOp(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+diff --git a/internal/fabricengine/livestate_matrix_test.go b/internal/fabricengine/livestate_matrix_test.go
+index 932fdb8e..04fdc0dd 100644
+--- a/internal/fabricengine/livestate_matrix_test.go
++++ b/internal/fabricengine/livestate_matrix_test.go
+@@ -227,24 +227,36 @@ func assertSurvivesIfUnpermitted(t *testing.T, h *hubforge.Hub, abs string, perm
+ 	check()
+ }
+ 
+-// assertArrangePreconditions fails t when an Arrange left a fixture that would make its verb's column vacuous.
+-// Each check keys on a fixture field only the arranging verb sets, so the loop stays free of per-verb branches:
++// assertArrangePreconditions fails t when verb's Arrange left a fixture that would make the verb's column vacuous.
++// Add, Checkout and Pull each need one fixture field set, and an empty one fails as surely as a wrong one:
+ // A launcher blocker that is not a directory lets Add proceed.
+ // A checkout branch equal to the original makes Checkout a no-op.
+ // An unadvanced warp bare makes Pull return before its dirty check.
+-func assertArrangePreconditions(t *testing.T, fixture VerbFixture) {
++func assertArrangePreconditions(t *testing.T, verb string, fixture VerbFixture) {
+ 	t.Helper()
+ 
+-	if fixture.LauncherBlocker != "" {
++	switch verb {
++	case "Add":
++		if fixture.LauncherBlocker == "" {
++			t.Fatalf("Arrange: Add left LauncherBlocker empty")
++		}
+ 		if info, err := os.Lstat(fixture.LauncherBlocker); err != nil || !info.IsDir() {
+ 			t.Errorf("Arrange: launcher blocker %s is not a directory (err %v)", fixture.LauncherBlocker, err)
+ 		}
+-	}
+-	if fixture.CheckoutBranch != "" && fixture.CheckoutBranch == fixture.OriginalBranch {
+-		t.Errorf("Arrange: CheckoutBranch %q is not distinct from the branch already checked out", fixture.CheckoutBranch)
+-	}
+-	if fixture.AdvancedToSHA != "" && fixture.AdvancedFromSHA == fixture.AdvancedToSHA {
+-		t.Errorf("Arrange: warp bare was not advanced (from == to == %s)", fixture.AdvancedFromSHA)
++	case "Checkout":
++		if fixture.CheckoutBranch == "" {
++			t.Fatalf("Arrange: Checkout left CheckoutBranch empty")
++		}
++		if fixture.CheckoutBranch == fixture.OriginalBranch {
++			t.Errorf("Arrange: CheckoutBranch %q is not distinct from the branch already checked out", fixture.CheckoutBranch)
++		}
++	case "Pull":
++		if fixture.AdvancedToSHA == "" {
++			t.Fatalf("Arrange: Pull left AdvancedToSHA empty")
++		}
++		if fixture.AdvancedFromSHA == fixture.AdvancedToSHA {
++			t.Errorf("Arrange: warp bare was not advanced (from == to == %s)", fixture.AdvancedFromSHA)
++		}
+ 	}
+ }
+ 
+@@ -264,7 +276,7 @@ func runCell(t *testing.T, anchor string, state State, vc VerbCase) {
+ 
+ 	// Arrange: the rest of the verb's own fixture, derived from the copy.
+ 	fixture := vc.Arrange(t, h)
+-	assertArrangePreconditions(t, fixture)
++	assertArrangePreconditions(t, vc.Name, fixture)
+ 
+ 	// State: the hostile or dirty condition, planted against the fixture's own resolved target.
+ 	state.Apply(t, h, fixture.Target)
+diff --git a/internal/fabricengine/livestate_states_selftest_test.go b/internal/fabricengine/livestate_states_selftest_test.go
+index 7628b361..4c2b0acc 100644
+--- a/internal/fabricengine/livestate_states_selftest_test.go
++++ b/internal/fabricengine/livestate_states_selftest_test.go
+@@ -1,126 +1,20 @@
+-// livestate_states_selftest_test.go proves each hostile state in States establishes what its doc comment claims.
+-// It applies each state directly to a real hub and asserts on the resulting condition, never by driving a verb,
+-// so the state's own establishment is not confounded with the verb's behaviour.
+-// A dirtyWarpTracked state that dirtied nothing would make every cell using it vacuous while reading like coverage,
+-// so this suite fails loudly against a broken state builder during development.
++// livestate_states_selftest_test.go proves the one per-state claim neither the cross product nor States checks.
++// The claim is that the baseline hub the clean state leaves untouched carries no operator content.
++// Every other state asserts its own establishment inside its Apply.
++// States also refuses a structural state that changes nothing.
+ 
+ package fabricengine_test
+ 
+ import (
+-	"os"
+-	"os/exec"
+-	"path/filepath"
+ 	"strings"
+ 	"testing"
+ 
+-	"github.com/Knatte18/loomyard/internal/fslink"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// structuralStateNames is the set of states this suite also proves against a manifest diff.
+-// Applying one of them and re-capturing must change the manifest,
+-// so a structural state that silently no-ops cannot pass.
+-// Dirtiness states and clean are not listed.
+-// Their porcelain or cleanliness assertions already prove establishment, and clean plants nothing to diff.
+-var structuralStateNames = map[string]bool{
+-	"trackedSymlinkAtWiredPath":        true,
+-	"staleWiredJunction":               true,
+-	"foreignDirAtFabricOwnedPath":      true,
+-	"unrelatedGitCloneAtWeftNamedPath": true,
+-}
+-
+-// resolveStateTarget builds the StateTarget that a cell resolves for stateName against h.
+-// Every dirtiness state resolves to the prime warp and weft checkouts.
+-// A structural state resolves to a fabric-owned path.
+-// The two link states resolve to an existing wired junction link.
+-// The two foreign-entity states resolve to a fresh, not-yet-claimed pair path.
+-// The foreign-entity state unrelatedGitCloneAtWeftNamedPath gets a weft-named sibling path.
+-func resolveStateTarget(t *testing.T, h *hubforge.Hub, stateName string) StateTarget {
+-	t.Helper()
+-
+-	target := StateTarget{
+-		WarpCheckout: h.PrimeWorktree(),
+-		WeftCheckout: h.PrimeRecords(),
+-	}
+-
+-	switch stateName {
+-	case "trackedSymlinkAtWiredPath", "staleWiredJunction":
+-		linkAbs, _ := firstWiredJunction(t, h)
+-		target.StructuralPath = linkAbs
+-	case "foreignDirAtFabricOwnedPath":
+-		target.StructuralPath = h.PairCodeWorktree("states-foreign-owner")
+-	case "unrelatedGitCloneAtWeftNamedPath":
+-		target.StructuralPath = h.PairRecordsSibling("states-clone-owner")
+-	}
+-
+-	return target
+-}
+-
+-// newPorcelainLines returns the porcelain lines present in afterStatus but absent from beforeStatus.
+-// Comparing against that baseline keeps a dirtiness assertion immune to noise a checkout already carried.
+-// A freshly cloned prime weft sibling always carries one such line.
+-// A raw scan of the full output would wrongly blame that line on the state under test.
+-func newPorcelainLines(beforeStatus, afterStatus string) []string {
+-	before := make(map[string]bool)
+-	for _, line := range strings.Split(beforeStatus, "\n") {
+-		if line != "" {
+-			before[line] = true
+-		}
+-	}
+-
+-	var added []string
+-	for _, line := range strings.Split(afterStatus, "\n") {
+-		if line == "" || before[line] {
+-			continue
+-		}
+-		added = append(added, line)
+-	}
+-	return added
+-}
+-
+-// assertOnlyNewShape fails t unless checkout carries at least one porcelain line new since beforeStatus,
+-// and every new line carries wantPrefix.
+-// The prefix check also rejects the other dirtiness shape, so tracked and untracked changes stay distinct.
+-func assertOnlyNewShape(t *testing.T, checkout, beforeStatus, wantPrefix string) {
+-	t.Helper()
+-
+-	newLines := newPorcelainLines(beforeStatus, gitkit.GitStatusPorcelain(t, checkout))
+-	if len(newLines) == 0 {
+-		t.Fatalf("state failed to establish: no new dirt appeared in %s", checkout)
+-	}
+-	for _, line := range newLines {
+-		if !strings.HasPrefix(line, wantPrefix) {
+-			t.Fatalf("state established the wrong dirtiness shape in %s: new line %q; want prefix %q", checkout, line, wantPrefix)
+-		}
+-	}
+-}
+-
+-// assertBothNewShapes fails t unless checkout gains a tracked-modification line and an untracked line.
+-// Requiring both shapes rules out a state that establishes only one of them.
+-func assertBothNewShapes(t *testing.T, checkout, beforeStatus string) {
+-	t.Helper()
+-
+-	newLines := newPorcelainLines(beforeStatus, gitkit.GitStatusPorcelain(t, checkout))
+-
+-	var hasTracked, hasUntracked bool
+-	for _, line := range newLines {
+-		switch {
+-		case strings.HasPrefix(line, " M"):
+-			hasTracked = true
+-		case strings.HasPrefix(line, "??"):
+-			hasUntracked = true
+-		default:
+-			t.Fatalf("unexpected new git status --porcelain line in %s: %q", checkout, line)
+-		}
+-	}
+-	if !hasTracked || !hasUntracked {
+-		t.Fatalf("bothDirty failed to establish both shapes in %s: tracked=%v untracked=%v (new lines: %v)", checkout, hasTracked, hasUntracked, newLines)
+-	}
+-}
+-
+ // assertCleanHubEstablished fails t unless every checkout in h is clean of operator content.
+ //
+ // The warp checkout and the board checkout must carry no git status --porcelain output.
+@@ -155,188 +49,11 @@ func assertCleanHubEstablished(t *testing.T, h *hubforge.Hub) {
+ 	}
+ }
+ 
+-// gitPathIsTracked reports whether relPath is tracked by git in dir.
+-// It asks git through `git ls-files --error-unmatch`.
+-func gitPathIsTracked(t *testing.T, dir, relPath string) bool {
+-	t.Helper()
+-
+-	cmd := exec.Command("git", "ls-files", "--error-unmatch", relPath)
+-	cmd.Dir = dir
+-	return cmd.Run() == nil
+-}
+-
+-// assertTrackedSymlinkEstablished fails t unless target.StructuralPath is a link.
+-// Its raw one-hop target must exist on disk, and the link must be git-tracked in target.WarpCheckout.
+-func assertTrackedSymlinkEstablished(t *testing.T, target StateTarget) {
+-	t.Helper()
+-
+-	isLink, err := fslink.IsLink(target.StructuralPath)
+-	if err != nil {
+-		t.Fatalf("fslink.IsLink(%s): %v", target.StructuralPath, err)
+-	}
+-	if !isLink {
+-		t.Fatalf("state failed to establish: %s is not a link", target.StructuralPath)
+-	}
+-
+-	raw, err := fslink.RawTarget(target.StructuralPath)
+-	if err != nil {
+-		t.Fatalf("fslink.RawTarget(%s): %v", target.StructuralPath, err)
+-	}
+-	if raw == "" {
+-		t.Fatalf("state failed to establish: %s carries an empty raw target", target.StructuralPath)
+-	}
+-	if _, err := os.Stat(raw); err != nil {
+-		t.Errorf("state failed to establish: planted raw target %s does not exist: %v", raw, err)
+-	}
+-
+-	rel, err := filepath.Rel(target.WarpCheckout, target.StructuralPath)
+-	if err != nil {
+-		t.Fatalf("filepath.Rel(%s, %s): %v", target.WarpCheckout, target.StructuralPath, err)
+-	}
+-	if !gitPathIsTracked(t, target.WarpCheckout, rel) {
+-		t.Errorf("state failed to establish: %s is not git-tracked in %s", rel, target.WarpCheckout)
+-	}
+-}
+-
+-// assertStaleJunctionEstablished fails t unless target.StructuralPath is a link.
+-// Its raw one-hop target must not resolve on disk.
+-func assertStaleJunctionEstablished(t *testing.T, target StateTarget) {
+-	t.Helper()
+-
+-	isLink, err := fslink.IsLink(target.StructuralPath)
+-	if err != nil {
+-		t.Fatalf("fslink.IsLink(%s): %v", target.StructuralPath, err)
+-	}
+-	if !isLink {
+-		t.Fatalf("state failed to establish: %s is not a link", target.StructuralPath)
+-	}
+-
+-	raw, err := fslink.RawTarget(target.StructuralPath)
+-	if err != nil {
+-		t.Fatalf("fslink.RawTarget(%s): %v", target.StructuralPath, err)
+-	}
+-	if _, statErr := os.Stat(raw); !os.IsNotExist(statErr) {
+-		t.Errorf("state failed to establish: raw target %s unexpectedly resolves (stat err: %v)", raw, statErr)
+-	}
+-}
+-
+-// assertForeignDirEstablished fails t unless target.StructuralPath is an ordinary directory with its planted content.
+-// The directory must not itself be a git checkout.
+-func assertForeignDirEstablished(t *testing.T, target StateTarget) {
+-	t.Helper()
+-
+-	info, err := os.Stat(target.StructuralPath)
+-	if err != nil {
+-		t.Fatalf("state failed to establish: %s missing: %v", target.StructuralPath, err)
+-	}
+-	if !info.IsDir() {
+-		t.Fatalf("state failed to establish: %s is not a directory", target.StructuralPath)
+-	}
+-
+-	contentPath := filepath.Join(target.StructuralPath, sentinelFileName("foreignDirAtFabricOwnedPath"))
+-	if _, err := os.Stat(contentPath); err != nil {
+-		t.Errorf("state failed to establish: planted content missing at %s: %v", contentPath, err)
+-	}
+-
+-	if _, err := os.Stat(filepath.Join(target.StructuralPath, ".git")); !os.IsNotExist(err) {
+-		t.Errorf("state failed to establish: %s unexpectedly looks like a git checkout", target.StructuralPath)
+-	}
+-}
+-
+-// assertUnrelatedCloneEstablished fails t unless target.StructuralPath is a clean git repository with a commit.
+-// The clean tree keeps the dirty gate silent, so only the ownership gate governs the clone.
+-func assertUnrelatedCloneEstablished(t *testing.T, target StateTarget) {
+-	t.Helper()
+-
+-	if _, err := os.Stat(filepath.Join(target.StructuralPath, ".git")); err != nil {
+-		t.Fatalf("state failed to establish: %s does not look like a git checkout: %v", target.StructuralPath, err)
+-	}
+-
+-	cmd := exec.Command("git", "rev-parse", "HEAD")
+-	cmd.Dir = target.StructuralPath
+-	if err := cmd.Run(); err != nil {
+-		t.Errorf("state failed to establish: %s has no commits: %v", target.StructuralPath, err)
+-	}
+-
+-	if status := gitkit.GitStatusPorcelain(t, target.StructuralPath); status != "" {
+-		t.Errorf("state failed to establish: %s is not clean: %s", target.StructuralPath, status)
+-	}
+-}
+-
+-// assertStateEstablished dispatches to the assertion matching stateName, proving the condition that state claims.
+-// beforeWarp and beforeWeft hold the git status --porcelain output of the warp and weft checkouts.
+-// They are captured before state.Apply ran.
+-// Comparing against them isolates what the state itself changed from any baseline a checkout already carried.
+-func assertStateEstablished(t *testing.T, h *hubforge.Hub, stateName string, target StateTarget, beforeWarp, beforeWeft string) {
+-	t.Helper()
+-
+-	switch stateName {
+-	case "clean":
+-		assertCleanHubEstablished(t, h)
+-	case "dirtyWarpTracked":
+-		assertOnlyNewShape(t, target.WarpCheckout, beforeWarp, " M")
+-	case "dirtyWarpUntracked":
+-		assertOnlyNewShape(t, target.WarpCheckout, beforeWarp, "??")
+-	case "dirtyWeftTracked":
+-		assertOnlyNewShape(t, target.WeftCheckout, beforeWeft, " M")
+-	case "dirtyWeftUntracked":
+-		assertOnlyNewShape(t, target.WeftCheckout, beforeWeft, "??")
+-	case "bothDirty":
+-		assertBothNewShapes(t, target.WarpCheckout, beforeWarp)
+-		assertBothNewShapes(t, target.WeftCheckout, beforeWeft)
+-	case "trackedSymlinkAtWiredPath":
+-		assertTrackedSymlinkEstablished(t, target)
+-	case "staleWiredJunction":
+-		assertStaleJunctionEstablished(t, target)
+-	case "foreignDirAtFabricOwnedPath":
+-		assertForeignDirEstablished(t, target)
+-	case "unrelatedGitCloneAtWeftNamedPath":
+-		assertUnrelatedCloneEstablished(t, target)
+-	default:
+-		t.Fatalf("states_test.go: no establishment assertion registered for state %q — add one alongside its States entry", stateName)
+-	}
+-}
+-
+-// TestStates proves every state in States establishes what it claims, at both anchors.
+-// Each anchor runs on its own freshly built hub.
+-func TestStates(t *testing.T) {
++// TestCleanHubIsClean proves a freshly built nested-anchor hub carries no operator dirt,
++// so the clean control state of the cross product starts from a genuinely clean hub.
++func TestCleanHubIsClean(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	for _, state := range States {
+-		state := state
+-
+-		t.Run(state.Name, func(t *testing.T) {
+-			for _, anchor := range []string{".", "backend"} {
+-				anchor := anchor
+-
+-				t.Run(anchor, func(t *testing.T) {
+-					t.Parallel()
+-
+-					h := hubforge.CopyHub(t, hubforge.Shape{Anchor: anchor})
+-					target := resolveStateTarget(t, h, state.Name)
++	t.Parallel()
+ 
+-					beforeWarp := gitkit.GitStatusPorcelain(t, target.WarpCheckout)
+-					beforeWeft := gitkit.GitStatusPorcelain(t, target.WeftCheckout)
+-
+-					var before Manifest
+-					if structuralStateNames[state.Name] {
+-						before = CaptureManifest(t, h.Path)
+-					}
+-
+-					state.Apply(t, h, target)
+-
+-					assertStateEstablished(t, h, state.Name, target, beforeWarp, beforeWeft)
+-
+-					// A structural state that silently no-ops must not pass this suite by accident:
+-					// the manifest diff is the independent proof that applying the state changed something on disk.
+-					// It is distinct from the state-specific assertion above.
+-					if structuralStateNames[state.Name] {
+-						after := CaptureManifest(t, h.Path)
+-						if changes := DiffManifest(before, after, nil); len(changes) == 0 {
+-							t.Errorf("%s: applying the state produced no manifest diff; want at least one change", state.Name)
+-						}
+-					}
+-				})
+-			}
+-		})
+-	}
++	assertCleanHubEstablished(t, hubforge.CopyHub(t, hubforge.Shape{Anchor: "backend"}))
+ }
+diff --git a/internal/fabricengine/livestate_states_test.go b/internal/fabricengine/livestate_states_test.go
+index 48e1b6ff..5d7beb90 100644
+--- a/internal/fabricengine/livestate_states_test.go
++++ b/internal/fabricengine/livestate_states_test.go
+@@ -6,9 +6,8 @@
+ // a state that dirties or plants at a path the verb never touches asserts nothing about that verb.
+ //
+ // Every state's Apply asserts its own establishment inline, via tb.Fatalf.
+-// states_test.go carries a self-assertion suite for the state builders as well.
+-// The inline check protects every cell run; the suite protects the builders during development.
+-// Neither substitutes for the other.
++// States additionally wraps each structural state so an Apply that changes nothing on disk fails too.
++// Both checks protect every caller of States, the cross product included.
+ 
+ package fabricengine_test
+ 
+@@ -16,6 +15,7 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"strings"
++	"sync"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fslink"
+@@ -52,7 +52,7 @@ type State struct {
+ 
+ // States is the ordered hostile-state matrix every cross-product cell draws from.
+ // The order is stable so a driven failure's cell name is reproducible across runs.
+-var States = []State{
++var States = withVacuityCheck([]State{
+ 	cleanState(),
+ 	dirtyWarpTrackedState(),
+ 	dirtyWarpUntrackedState(),
+@@ -63,6 +63,48 @@ var States = []State{
+ 	foreignDirAtFabricOwnedPathState(),
+ 	unrelatedGitCloneAtWeftNamedPathState(),
+ 	staleWiredJunctionState(),
++})
++
++// structuralStateNames is the set of states whose Apply must change the hub manifest.
++// Dirtiness states and clean are not listed.
++// Their inline porcelain assertions already prove establishment, and clean plants nothing to diff.
++var structuralStateNames = map[string]bool{
++	"trackedSymlinkAtWiredPath":        true,
++	"staleWiredJunction":               true,
++	"foreignDirAtFabricOwnedPath":      true,
++	"unrelatedGitCloneAtWeftNamedPath": true,
++}
++
++// withVacuityCheck returns states with each structural state's Apply wrapped.
++// The wrapper fails tb when the hub manifest is identical before and after the Apply.
++// A structural state that silently no-ops would make every cell using it vacuous while reading like coverage.
++// The check runs on the first Apply of each structural state at each anchor, and later Applies skip it:
++// a manifest capture hashes every file of the hub, so checking every cell would double the captures a cell takes.
++func withVacuityCheck(states []State) []State {
++	wrapped := make([]State, len(states))
++	for i, state := range states {
++		wrapped[i] = state
++		if !structuralStateNames[state.Name] {
++			continue
++		}
++		name, apply := state.Name, state.Apply
++		var checkedAnchors sync.Map
++		wrapped[i].Apply = func(tb testing.TB, h *hubforge.Hub, target StateTarget) {
++			tb.Helper()
++
++			if _, checked := checkedAnchors.LoadOrStore(h.Anchor, true); checked {
++				apply(tb, h, target)
++				return
++			}
++			before := CaptureManifest(tb, h.Path)
++			apply(tb, h, target)
++			after := CaptureManifest(tb, h.Path)
++			if changes := DiffManifest(before, after, nil); len(changes) == 0 {
++				tb.Fatalf("%s at anchor %q: applying the state produced no manifest diff; want at least one change", name, h.Anchor)
++			}
++		}
++	}
++	return wrapped
+ }
+ 
+ // sentinelFileName returns the sentinel file name state stateName plants.
+diff --git a/internal/fabricengine/livestate_verbs_selftest_test.go b/internal/fabricengine/livestate_verbs_selftest_test.go
+index 6f972c5a..9ed01cb3 100644
+--- a/internal/fabricengine/livestate_verbs_selftest_test.go
++++ b/internal/fabricengine/livestate_verbs_selftest_test.go
+@@ -9,44 +9,6 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestVerbCases_ArrangeSetsItsPreconditionField proves that Add, Checkout and Pull each arrange their fixture field.
+-// assertArrangePreconditions checks that field for the verb.
+-// That check skips an empty field.
+-// An Arrange that stopped setting one would leave the verb's column vacuous, unnoticed.
+-func TestVerbCases_ArrangeSetsItsPreconditionField(t *testing.T) {
+-	tiergate.Require(t, 1)
+-	t.Parallel()
+-
+-	tests := []struct {
+-		verb  string
+-		field func(VerbFixture) string
+-	}{
+-		{"Add", func(f VerbFixture) string { return f.LauncherBlocker }},
+-		{"Checkout", func(f VerbFixture) string { return f.CheckoutBranch }},
+-		{"Pull", func(f VerbFixture) string { return f.AdvancedToSHA }},
+-	}
+-	for _, tt := range tests {
+-		t.Run(tt.verb, func(t *testing.T) {
+-			t.Parallel()
+-
+-			var vc *VerbCase
+-			for i := range Verbs {
+-				if Verbs[i].Name == tt.verb {
+-					vc = &Verbs[i]
+-				}
+-			}
+-			if vc == nil {
+-				t.Fatalf("Verbs has no %s case", tt.verb)
+-			}
+-			h := copyVerbHub(t, *vc, ".")
+-
+-			if got := tt.field(vc.Arrange(t, h)); got == "" {
+-				t.Errorf("%s Arrange left its precondition field empty", tt.verb)
+-			}
+-		})
+-	}
+-}
+-
+ // TestVerbCases_StatesRestrictionIsWellFormed proves that every hostile-input and CloneHub{Reset} case
+ // restricts States to exactly ["clean"], and that every ordinary verb leaves States empty.
+ // An empty States inherits the full state matrix.
+diff --git a/internal/fabricengine/parenttips_integration_test.go b/internal/fabricengine/parenttips_integration_test.go
+index d1db5852..54597a29 100644
+--- a/internal/fabricengine/parenttips_integration_test.go
++++ b/internal/fabricengine/parenttips_integration_test.go
+@@ -229,6 +229,8 @@ func TestChangedPaths_NamesExactlyTheCommittedFiles(t *testing.T) {
+ // TestChangedPathsBothSides_NamesRenamesAndRawPaths asserts that a rename is named by both paths.
+ // It also asserts that a non-ASCII path arrives raw and that an empty range names nothing.
+ // An unknown ref is an error naming it.
++//
++//testtiming:keep ChangedPathsBothSides returning a non-ASCII path raw and an empty range as none, which LineChange never asserts
+ func TestChangedPathsBothSides_NamesRenamesAndRawPaths(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+diff --git a/internal/fabricengine/pushrebasefree_integration_test.go b/internal/fabricengine/pushrebasefree_integration_test.go
+index 243afc54..b7c81d5e 100644
+--- a/internal/fabricengine/pushrebasefree_integration_test.go
++++ b/internal/fabricengine/pushrebasefree_integration_test.go
+@@ -23,6 +23,8 @@ import (
+ // and the bare remote advances to the local HEAD.
+ // The returned record contains a KindBranchPushed entry.
+ // The test pins the residue property: no gitrepo.PushLockFileName file is left at the warp worktree root.
++//
++//testtiming:keep PushWarpRebaseFreeAt recording KindBranchPushed and leaving no push-lock file, which TestPushFailureClasses never asserts
+ func TestPushWarpRebaseFreeAt_PushesAndRecordsBranchPush(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+diff --git a/internal/fabricengine/reconcile_stale_registration_test.go b/internal/fabricengine/reconcile_stale_registration_test.go
+index 74710804..2304901d 100644
+--- a/internal/fabricengine/reconcile_stale_registration_test.go
++++ b/internal/fabricengine/reconcile_stale_registration_test.go
+@@ -519,14 +519,19 @@ func TestReconcile_RecreatedWeftIsWiredInTheSamePass(t *testing.T) {
+ 	}
+ }
+ 
+-// TestCleanup_DryRunMatchesApplyVerdict proves a dry run reports what the same flags plus --apply would actually do.
+-// An orphan weft branch is unprotected in both the dry run and the apply, and --apply alone (no --force) deletes it.
+-func TestCleanup_DryRunMatchesApplyVerdict(t *testing.T) {
++// TestCleanup_VerdictIsIndependentOfDryRunAndForce proves a dry run reports what the same flags plus --apply would do,
++// and that Cleanup's force parameter is reserved: it changes no verdict and answers no gate.
++// A reserved flag that no test covers can quietly regrow a gate.
++// `lym fabric cleanup --force` is still accepted and documented as answering no gate, so the test asserts the property.
++// The fixture holds an orphan weft branch beside an unmanaged non-suffixed branch,
++// so both an unprotected and a protected verdict are covered.
++// --apply alone (no --force) deletes the orphan, and --apply with force deletes exactly the orphan.
++func TestCleanup_VerdictIsIndependentOfDryRunAndForce(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	// Serial: t.Setenv("FABRIC_SKIP_PUSH") sets a process-global variable.
+ 	t.Setenv("FABRIC_SKIP_PUSH", "1")
+ 
+-	const slug = "cleanup-dryrun-parity"
++	const slug = "cleanup-verdict-parity"
+ 	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 	l := h.Location
+ 	topology := h.Topology
+@@ -543,6 +548,8 @@ func TestCleanup_DryRunMatchesApplyVerdict(t *testing.T) {
+ 	}
+ 	orphan := fabricengine.RecordsBranchName(slug)
+ 	gitkit.MustRun(t, weftRepoRoot, "git", "branch", orphan)
++	const unmanaged = "legacy-notes"
++	gitkit.MustRun(t, weftRepoRoot, "git", "branch", unmanaged)
+ 
+ 	findEntry := func(t *testing.T, entries []fabricengine.CleanupBranchEntry) fabricengine.CleanupBranchEntry {
+ 		t.Helper()
+@@ -555,16 +562,26 @@ func TestCleanup_DryRunMatchesApplyVerdict(t *testing.T) {
+ 		return fabricengine.CleanupBranchEntry{}
+ 	}
+ 
+-	dry, err := topology.Cleanup(l, false, false, false)
++	// The two dry runs change nothing, so they come first, over the untouched fixture.
++	dryWithoutForce, err := topology.Cleanup(l, false, false, false)
+ 	if err != nil {
+-		t.Fatalf("Cleanup(dry): %v", err)
++		t.Fatalf("Cleanup(dry, force=false): %v", err)
+ 	}
++	dryWithForce, err := topology.Cleanup(l, false, true, false)
++	if err != nil {
++		t.Fatalf("Cleanup(dry, force=true): %v", err)
++	}
++	if diff := cmp.Diff(dryWithoutForce.Entries, dryWithForce.Entries); diff != "" {
++		t.Errorf("Cleanup(dry) entries differ between force=false and force=true (-without +with):\n%s\nforce is reserved and must answer no gate in this verb", diff)
++	}
++
++	// The first apply deletes the orphan, so the force=true apply below re-creates it.
+ 	applied, err := topology.Cleanup(l, true, false, false)
+ 	if err != nil {
+ 		t.Fatalf("Cleanup(apply): %v", err)
+ 	}
+ 
+-	dryEntry := findEntry(t, dry.Entries)
++	dryEntry := findEntry(t, dryWithoutForce.Entries)
+ 	appliedEntry := findEntry(t, applied.Entries)
+ 	if dryEntry.Protected != appliedEntry.Protected {
+ 		t.Errorf("dry-run Protected = %v; --apply Protected = %v; want them to agree",
+@@ -579,51 +596,9 @@ func TestCleanup_DryRunMatchesApplyVerdict(t *testing.T) {
+ 	if gitkit.BranchExists(t, weftRepoRoot, orphan) {
+ 		t.Errorf("orphan branch %q still exists in the weft repo after --apply; want deleted", orphan)
+ 	}
+-}
+-
+-// TestCleanup_ForceIsReservedAndChangesNoVerdict pins that Cleanup's force parameter is reserved:
+-// it changes no verdict and answers no gate.
+-// A reserved flag that no test covers can quietly regrow a gate.
+-// `lym fabric cleanup --force` is still accepted and documented as answering no gate, so the test asserts the property.
+-// It compares the full verdict set from a dry run with force=false against one with force=true over the same fixture:
+-// an unmanaged non-suffixed branch beside a genuine orphan, so both a protected and an unprotected verdict are covered.
+-// It then confirms the apply pass with force=true deletes exactly the orphan.
+-func TestCleanup_ForceIsReservedAndChangesNoVerdict(t *testing.T) {
+-	tiergate.Require(t, 1)
+-	// Serial: t.Setenv("FABRIC_SKIP_PUSH") sets a process-global variable.
+-	t.Setenv("FABRIC_SKIP_PUSH", "1")
+-
+-	const slug = "cleanup-force-reserved"
+-	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	l := h.Location
+-	topology := h.Topology
+-	hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{SkipPush: true})
+-	if _, err := topology.Remove(l, slug, true, false); err != nil {
+-		t.Fatalf("Remove: %v", err)
+-	}
+ 
+-	weftRepoRoot, err := fabricengine.RecordsRepoRoot(l)
+-	if err != nil {
+-		t.Fatalf("RecordsRepoRoot: %v", err)
+-	}
+-	orphan := fabricengine.RecordsBranchName(slug)
+ 	gitkit.MustRun(t, weftRepoRoot, "git", "branch", orphan)
+-	const unmanaged = "legacy-notes"
+-	gitkit.MustRun(t, weftRepoRoot, "git", "branch", unmanaged)
+-
+-	dryWithoutForce, err := topology.Cleanup(l, false, false, false)
+-	if err != nil {
+-		t.Fatalf("Cleanup(dry, force=false): %v", err)
+-	}
+-	dryWithForce, err := topology.Cleanup(l, false, true, false)
+-	if err != nil {
+-		t.Fatalf("Cleanup(dry, force=true): %v", err)
+-	}
+-	if diff := cmp.Diff(dryWithoutForce.Entries, dryWithForce.Entries); diff != "" {
+-		t.Errorf("Cleanup(dry) entries differ between force=false and force=true (-without +with):\n%s\nforce is reserved and must answer no gate in this verb", diff)
+-	}
+-
+-	applied, err := topology.Cleanup(l, true, true, false)
++	applied, err = topology.Cleanup(l, true, true, false)
+ 	if err != nil {
+ 		t.Fatalf("Cleanup(apply, force=true): %v", err)
+ 	}
+diff --git a/internal/fabricengine/scratchlink_integration_test.go b/internal/fabricengine/scratchlink_integration_test.go
+index 7b239344..e82c6006 100644
+--- a/internal/fabricengine/scratchlink_integration_test.go
++++ b/internal/fabricengine/scratchlink_integration_test.go
+@@ -342,52 +342,52 @@ var scratchShapeCases = []scratchShapeCase{
+ }
+ 
+ // TestWireJunctions_ScratchLink pins the scratch step through WireJunctionsWith.
++// Every row runs at the subpath anchor `backend`, the harder path.
++// The repository-root anchor is covered by the other rows.
+ // A link is created or kept, a real directory is adopted, and every leave shape is left as found without failing wiring.
+ func TestWireJunctions_ScratchLink(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	for _, anchor := range []string{".", "backend"} {
+-		t.Run("AbsentRootLinked_Anchor_"+anchor, func(t *testing.T) {
+-			t.Parallel()
++	t.Run("AbsentRootLinked", func(t *testing.T) {
++		t.Parallel()
+ 
+-			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: anchor})
+-			l := h.Location
+-			slug := l.WorktreeName
+-			root, target := scratchPaths(l, slug)
+-			removeRootLink(t, root)
+-			removeTarget(t, target)
++		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "backend"})
++		l := h.Location
++		slug := l.WorktreeName
++		root, target := scratchPaths(l, slug)
++		removeRootLink(t, root)
++		removeTarget(t, target)
+ 
+-			rec := wireWithRecord(t, l, slug)
++		rec := wireWithRecord(t, l, slug)
+ 
+-			if got, want := describeEntry(t, root), "link:"+target; got != want {
+-				t.Fatalf("root .scratch = %q; want %q", got, want)
+-			}
+-			record := rec.Snapshot()
+-			if !hasMutation(record, fabricengine.KindDirCreated, scratchHubRelative(t, l, target), "") {
+-				t.Errorf("record %+v lacks dir_created at the target", record.Entries())
+-			}
+-			if !hasMutation(record, fabricengine.KindLinkCreated, scratchHubRelative(t, l, root), "") {
+-				t.Errorf("record %+v lacks link_created at the root", record.Entries())
+-			}
++		if got, want := describeEntry(t, root), "link:"+target; got != want {
++			t.Fatalf("root .scratch = %q; want %q", got, want)
++		}
++		record := rec.Snapshot()
++		if !hasMutation(record, fabricengine.KindDirCreated, scratchHubRelative(t, l, target), "") {
++			t.Errorf("record %+v lacks dir_created at the target", record.Entries())
++		}
++		if !hasMutation(record, fabricengine.KindLinkCreated, scratchHubRelative(t, l, root), "") {
++			t.Errorf("record %+v lacks link_created at the root", record.Entries())
++		}
+ 
+-			before, err := os.Lstat(root)
+-			if err != nil {
+-				t.Fatalf("Lstat(%s): %v", root, err)
+-			}
+-			if err := os.WriteFile(filepath.Join(root, scratchNoteName), []byte("written through the link"), 0o644); err != nil {
+-				t.Fatalf("write through the link: %v", err)
+-			}
+-			after, err := os.Lstat(root)
+-			if err != nil {
+-				t.Fatalf("Lstat(%s) after the write: %v", root, err)
+-			}
+-			if before.Mode() != after.Mode() || before.Size() != after.Size() || !before.ModTime().Equal(after.ModTime()) {
+-				t.Errorf("root .scratch Lstat changed after a write under it: before %v %d %v, after %v %d %v",
+-					before.Mode(), before.Size(), before.ModTime(), after.Mode(), after.Size(), after.ModTime())
+-			}
+-		})
+-	}
++		before, err := os.Lstat(root)
++		if err != nil {
++			t.Fatalf("Lstat(%s): %v", root, err)
++		}
++		if err := os.WriteFile(filepath.Join(root, scratchNoteName), []byte("written through the link"), 0o644); err != nil {
++			t.Fatalf("write through the link: %v", err)
++		}
++		after, err := os.Lstat(root)
++		if err != nil {
++			t.Fatalf("Lstat(%s) after the write: %v", root, err)
++		}
++		if before.Mode() != after.Mode() || before.Size() != after.Size() || !before.ModTime().Equal(after.ModTime()) {
++			t.Errorf("root .scratch Lstat changed after a write under it: before %v %d %v, after %v %d %v",
++				before.Mode(), before.Size(), before.ModTime(), after.Mode(), after.Size(), after.ModTime())
++		}
++	})
+ 
+ 	t.Run("CorrectLinkRecordsNothing", func(t *testing.T) {
+ 		t.Parallel()
+@@ -424,94 +424,90 @@ func TestWireJunctions_ScratchLink(t *testing.T) {
+ 		}
+ 	})
+ 
+-	for _, anchor := range []string{".", "backend"} {
+-		t.Run("RealDirectoryAdoptedIntoTheTarget_Anchor_"+anchor, func(t *testing.T) {
+-			t.Parallel()
++	t.Run("RealDirectoryAdoptedIntoTheTarget", func(t *testing.T) {
++		t.Parallel()
+ 
+-			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: anchor})
+-			l := h.Location
+-			slug := l.WorktreeName
+-			warp := fabricengine.WorktreePath(l, slug)
+-			root, target := scratchPaths(l, slug)
+-			gitkit.CommitFile(t, warp, ".gitignore", "**/.scratch/\n", "ignore scratch directories")
+-			replaceLinkWithRealDirectory(t, root)
+-			removeTarget(t, target)
+-			writeLegacyScratchExclude(t, l, slug)
++		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "backend"})
++		l := h.Location
++		slug := l.WorktreeName
++		warp := fabricengine.WorktreePath(l, slug)
++		root, target := scratchPaths(l, slug)
++		gitkit.CommitFile(t, warp, ".gitignore", "**/.scratch/\n", "ignore scratch directories")
++		replaceLinkWithRealDirectory(t, root)
++		removeTarget(t, target)
++		writeLegacyScratchExclude(t, l, slug)
+ 
+-			before := CaptureManifest(t, l.HubPath)
+-			rec := wireWithRecord(t, l, slug)
+-			after := CaptureManifest(t, l.HubPath)
++		before := CaptureManifest(t, l.HubPath)
++		rec := wireWithRecord(t, l, slug)
++		after := CaptureManifest(t, l.HubPath)
+ 
+-			if got, want := describeEntry(t, root), "link:"+target; got != want {
+-				t.Fatalf("root .scratch = %q; want %q", got, want)
+-			}
+-			content, err := os.ReadFile(filepath.Join(root, scratchNoteName))
+-			if err != nil || string(content) != "hello" {
+-				t.Errorf("note read through .scratch = %q, %v; want %q", content, err, "hello")
+-			}
++		if got, want := describeEntry(t, root), "link:"+target; got != want {
++			t.Fatalf("root .scratch = %q; want %q", got, want)
++		}
++		content, err := os.ReadFile(filepath.Join(root, scratchNoteName))
++		if err != nil || string(content) != "hello" {
++			t.Errorf("note read through .scratch = %q, %v; want %q", content, err, "hello")
++		}
+ 
+-			record := rec.Snapshot()
+-			if !hasMutation(record, fabricengine.KindPathRenamed, scratchHubRelative(t, l, target), scratchHubRelative(t, l, root)) {
+-				t.Errorf("record %+v lacks path_renamed from the root to the target", record.Entries())
+-			}
+-			if !hasMutation(record, fabricengine.KindLinkCreated, scratchHubRelative(t, l, root), "") {
+-				t.Errorf("record %+v lacks link_created at the root", record.Entries())
+-			}
+-			if !hasMutation(record, fabricengine.KindFileWritten, scratchHubRelative(t, l, excludeFilePath(t, l, slug)), "") {
+-				t.Errorf("record %+v lacks file_written at the exclude file", record.Entries())
+-			}
+-			AssertRecordMatchesDiff(t, record, DiffManifest(before, after, nil))
++		record := rec.Snapshot()
++		if !hasMutation(record, fabricengine.KindPathRenamed, scratchHubRelative(t, l, target), scratchHubRelative(t, l, root)) {
++			t.Errorf("record %+v lacks path_renamed from the root to the target", record.Entries())
++		}
++		if !hasMutation(record, fabricengine.KindLinkCreated, scratchHubRelative(t, l, root), "") {
++			t.Errorf("record %+v lacks link_created at the root", record.Entries())
++		}
++		if !hasMutation(record, fabricengine.KindFileWritten, scratchHubRelative(t, l, excludeFilePath(t, l, slug)), "") {
++			t.Errorf("record %+v lacks file_written at the exclude file", record.Entries())
++		}
++		AssertRecordMatchesDiff(t, record, DiffManifest(before, after, nil))
+ 
+-			lines := gitkit.ExcludeLines(t, warp)
+-			if line := scratchExcludeLine(l); !containsLine(lines, line) || containsLine(lines, line+"/") {
+-				t.Errorf("exclude lines = %v; want %s and no %s/", lines, line, line)
+-			}
+-			if status := gitkit.GitStatusPorcelain(t, warp); strings.Contains(status, ".scratch") {
+-				t.Errorf("git status lists .scratch: %q", status)
+-			}
+-		})
+-	}
++		lines := gitkit.ExcludeLines(t, warp)
++		if line := scratchExcludeLine(l); !containsLine(lines, line) || containsLine(lines, line+"/") {
++			t.Errorf("exclude lines = %v; want %s and no %s/", lines, line, line)
++		}
++		if status := gitkit.GitStatusPorcelain(t, warp); strings.Contains(status, ".scratch") {
++			t.Errorf("git status lists .scratch: %q", status)
++		}
++	})
+ 
+ 	for _, tt := range scratchShapeCases {
+ 		if tt.readOnlyDir && runtime.GOOS == "windows" {
+ 			continue
+ 		}
+-		for _, anchor := range []string{".", "backend"} {
+-			t.Run("Leaves_"+tt.name+"_Anchor_"+anchor, func(t *testing.T) {
+-				t.Parallel()
++		t.Run("Leaves_"+tt.name, func(t *testing.T) {
++			t.Parallel()
+ 
+-				h := hubforge.CopyHub(t, hubforge.Shape{Anchor: anchor})
+-				l := h.Location
+-				slug := l.WorktreeName
+-				root, target := scratchPaths(l, slug)
+-				tt.arrange(t, l, slug)
+-				rootBefore, targetBefore := describeEntry(t, root), describeEntry(t, target)
++			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "backend"})
++			l := h.Location
++			slug := l.WorktreeName
++			root, target := scratchPaths(l, slug)
++			tt.arrange(t, l, slug)
++			rootBefore, targetBefore := describeEntry(t, root), describeEntry(t, target)
+ 
+-				names, err := fabricengine.RepoWiredNames(l)
+-				if err != nil {
+-					t.Fatalf("RepoWiredNames: %v", err)
+-				}
+-				rec := fabricengine.NewMutations(l.HubPath)
+-				if err := fabricengine.WireJunctionsWith(rec, l, slug, names); err != nil {
+-					t.Fatalf("WireJunctionsWith = %v; want nil", err)
+-				}
++			names, err := fabricengine.RepoWiredNames(l)
++			if err != nil {
++				t.Fatalf("RepoWiredNames: %v", err)
++			}
++			rec := fabricengine.NewMutations(l.HubPath)
++			if err := fabricengine.WireJunctionsWith(rec, l, slug, names); err != nil {
++				t.Fatalf("WireJunctionsWith = %v; want nil", err)
++			}
+ 
+-				if tt.leaves {
+-					if got := describeEntry(t, root); got != rootBefore {
+-						t.Errorf("root .scratch = %q; want it left as %q", got, rootBefore)
+-					}
+-					if got := describeEntry(t, target); got != targetBefore {
+-						t.Errorf("target = %q; want it left as %q", got, targetBefore)
+-					}
++			if tt.leaves {
++				if got := describeEntry(t, root); got != rootBefore {
++					t.Errorf("root .scratch = %q; want it left as %q", got, rootBefore)
+ 				}
+-				record := rec.Snapshot()
+-				for _, kind := range []fabricengine.Kind{fabricengine.KindPathRenamed, fabricengine.KindLinkCreated} {
+-					if hasMutation(record, kind, scratchHubRelative(t, l, target), "") || hasMutation(record, kind, scratchHubRelative(t, l, root), "") {
+-						t.Errorf("record %+v holds a %s entry for a left shape", record.Entries(), kind)
+-					}
++				if got := describeEntry(t, target); got != targetBefore {
++					t.Errorf("target = %q; want it left as %q", got, targetBefore)
+ 				}
+-			})
+-		}
++			}
++			record := rec.Snapshot()
++			for _, kind := range []fabricengine.Kind{fabricengine.KindPathRenamed, fabricengine.KindLinkCreated} {
++				if hasMutation(record, kind, scratchHubRelative(t, l, target), "") || hasMutation(record, kind, scratchHubRelative(t, l, root), "") {
++					t.Errorf("record %+v holds a %s entry for a left shape", record.Entries(), kind)
++				}
++			}
++		})
+ 	}
+ }
+ 
+diff --git a/internal/fabricengine/unwire_exclude_test.go b/internal/fabricengine/unwire_exclude_test.go
+new file mode 100644
+index 00000000..c0610d70
+--- /dev/null
++++ b/internal/fabricengine/unwire_exclude_test.go
+@@ -0,0 +1,82 @@
++// unwire_exclude_test.go covers, with no git, which `.git/info/exclude` lines an unwire strips:
++// the lines chosen from the sibling census and their removal from the file content.
++
++package fabricengine
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestExcludeLinesToStrip covers the exclude lines that survive an unwire given which names other worktrees still link.
++// A legacy bare line matches at every depth, so it stays while any worktree wires the name at any anchor;
++// an anchored line stays while another worktree links the same anchored path.
++func TestExcludeLinesToStrip(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name      string
++		anchorRel string
++		// sameAnchor and anyAnchor are the names a sibling still links at the same anchored path and at any anchor.
++		sameAnchor []string
++		anyAnchor  []string
++		content    string
++		want       string
++	}{
++		{
++			name:       "SiblingAtTheSameAnchorKeepsTheAnchoredLine",
++			anchorRel:  ".",
++			sameAnchor: []string{"_lym"},
++			anyAnchor:  []string{"_lym"},
++			content:    "/_lym\n",
++			want:       "/_lym\n",
++		},
++		{
++			name:      "SiblingAtAnotherAnchorKeepsBareAndItsOwnLineAndStripsTheAnchoredOne",
++			anchorRel: "sub",
++			anyAnchor: []string{"_lym"},
++			content:   "/_lym\n/sub/_lym\n_lym\n",
++			want:      "/_lym\n_lym\n",
++		},
++		{
++			name:       "SiblingAtTheSubAnchorKeepsTheSubLine",
++			anchorRel:  "sub",
++			sameAnchor: []string{"_lym"},
++			anyAnchor:  []string{"_lym"},
++			content:    "/sub/_lym\n",
++			want:       "/sub/_lym\n",
++		},
++		{
++			name:      "NoSiblingStripsBothSpellingsAndKeepsOtherLines",
++			anchorRel: "sub",
++			content:   "# header\n/sub/_lym\n_lym\nother\n",
++			want:      "# header\nother\n",
++		},
++		{
++			name:      "LineOfAnotherNameStays",
++			anchorRel: ".",
++			content:   "/_lym\n/_extra\n",
++			want:      "/_extra\n",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			wired := siblingWiring{sameAnchor: map[string]bool{}, anyAnchor: map[string]bool{}}
++			for _, name := range tt.sameAnchor {
++				wired.sameAnchor[name] = true
++			}
++			for _, name := range tt.anyAnchor {
++				wired.anyAnchor[name] = true
++			}
++
++			stripSet := excludeLinesToStrip(tt.anchorRel, []string{"_lym"}, wired)
++			if got := stripExcludeLines(tt.content, stripSet); got != tt.want {
++				t.Errorf("stripExcludeLines(%q) = %q; want %q", tt.content, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/fabricengine/unwire_test.go b/internal/fabricengine/unwire_test.go
+index 259f6969..0761556e 100644
+--- a/internal/fabricengine/unwire_test.go
++++ b/internal/fabricengine/unwire_test.go
+@@ -323,9 +323,9 @@ func TestUnwire_PreservesRepoWideRecords(t *testing.T) {
+ // or every one of them reports untracked dirt in git status and trips Remove's no-force dirty gate.
+ //
+ // Each row unwires one pair of a hub whose prime is at ".", after the rows' pairs are re-anchored.
+-// The row then asserts which exclude lines remain.
+-// A legacy bare line matches at every depth, so it stays while any worktree wires the name at any anchor;
+-// an anchored line stays while another worktree links the same anchored path.
++// The row then asserts that the prime and the kept pair report the same git status as before.
++// It asserts that the kept junction lives.
++// It also asserts that an anchored exclude line no sibling still needs is stripped.
+ func TestUnwire_LeavesSiblingWorktreeUndirtied(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+@@ -339,12 +339,13 @@ func TestUnwire_LeavesSiblingWorktreeUndirtied(t *testing.T) {
+ 		keptAnchor    string
+ 		// plantBareLine writes a legacy bare `_lym` line into the exclude file beside the anchored ones.
+ 		plantBareLine bool
+-		wantKept      []string
+-		wantStripped  []string
++		// wantStripped is the anchored exclude line the unwire must remove because no sibling links that path.
++		// It is empty when no line is stripped.
++		wantStripped string
+ 	}{
+-		{"PairsAtTheHubAnchor", ".", ".", false, []string{"/_lym"}, nil},
+-		{"UnwiredPairAloneAtItsAnchor", "sub", ".", true, []string{"_lym", "/_lym"}, []string{"/sub/_lym"}},
+-		{"KeptPairAtTheSameAnchor", "sub", "sub", false, []string{"/sub/_lym"}, nil},
++		{"PairsAtTheHubAnchor", ".", ".", false, ""},
++		{"UnwiredPairAloneAtItsAnchor", "sub", ".", true, "/sub/_lym"},
++		{"KeptPairAtTheSameAnchor", "sub", "sub", false, ""},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -381,6 +382,12 @@ func TestUnwire_LeavesSiblingWorktreeUndirtied(t *testing.T) {
+ 				}
+ 			}
+ 
++			if tt.wantStripped != "" {
++				if lines := gitkit.ExcludeLines(t, h.PrimeWorktree()); !containsLine(lines, tt.wantStripped) {
++					t.Fatalf("setup: exclude file lacks %q before Unwire: %v", tt.wantStripped, lines)
++				}
++			}
++
+ 			others := []string{h.PrimeWorktree(), keptLayout.WorktreePath()}
+ 			before := make([]string, len(others))
+ 			for i, other := range others {
+@@ -394,21 +401,6 @@ func TestUnwire_LeavesSiblingWorktreeUndirtied(t *testing.T) {
+ 				t.Fatalf("Unwire(%s): %v", unwiredSlug, err)
+ 			}
+ 
+-			content, err := os.ReadFile(excludePath)
+-			if err != nil {
+-				t.Fatalf("read %s: %v", excludePath, err)
+-			}
+-			lines := strings.Split(string(content), "\n")
+-			for _, line := range tt.wantKept {
+-				if !slices.Contains(lines, line) {
+-					t.Errorf("exclude lacks %q after the unwire; want it kept for the worktrees still wiring it\n%s", line, content)
+-				}
+-			}
+-			for _, line := range tt.wantStripped {
+-				if slices.Contains(lines, line) {
+-					t.Errorf("exclude still holds %q after the unwire; want it stripped\n%s", line, content)
+-				}
+-			}
+ 			for i, other := range others {
+ 				if status := worktreeStatusPorcelain(t, other); status != before[i] {
+ 					t.Errorf("git status in %s = %q; want %q — unwiring a sibling stripped its exclude entries", other, status, before[i])
+@@ -417,6 +409,11 @@ func TestUnwire_LeavesSiblingWorktreeUndirtied(t *testing.T) {
+ 			if isLink, err := fslink.IsLink(fabricengine.WarpLymLinkHere(keptLayout)); err != nil || !isLink {
+ 				t.Errorf("kept worktree's _lym junction: isLink=%v err=%v; want it still wired", isLink, err)
+ 			}
++			if tt.wantStripped != "" {
++				if lines := gitkit.ExcludeLines(t, h.PrimeWorktree()); containsLine(lines, tt.wantStripped) {
++					t.Errorf("exclude file still holds %q after Unwire; want the unwired pair's anchored line stripped: %v", tt.wantStripped, lines)
++				}
++			}
+ 		})
+ 	}
+ }
+diff --git a/internal/fabricengine/warpforward_integration_test.go b/internal/fabricengine/warpforward_integration_test.go
+index 98144b81..25626dde 100644
+--- a/internal/fabricengine/warpforward_integration_test.go
++++ b/internal/fabricengine/warpforward_integration_test.go
+@@ -24,6 +24,8 @@ import (
+ 
+ // TestFabricWarp_IsAncestorOrdersWarpCommits proves IsAncestor reaches the warp checkout's history:
+ // an older warp commit is an ancestor of a later one, and not the other way round.
++//
++//testtiming:keep IsAncestor returning true older-to-later and false later-to-older, which BeamCommitsPast never asserts directly
+ func TestFabricWarp_IsAncestorOrdersWarpCommits(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+diff --git a/internal/fabricengine/weftgit_exclude_test.go b/internal/fabricengine/weftgit_exclude_test.go
+index 291339b1..0842cadc 100644
+--- a/internal/fabricengine/weftgit_exclude_test.go
++++ b/internal/fabricengine/weftgit_exclude_test.go
+@@ -179,59 +179,50 @@ func mustWriteFile(t *testing.T, path, content string) {
+ 	}
+ }
+ 
+-// TestCommitWeft_MachineLocalArtifactsNeverEnterWeftTreeAtAnyDepth proves the sync never stages machine-local files.
++// TestCommitWeft_MachineLocalArtifactsNeverEnterWeftTreeAtNestedAnchor proves the sync never stages machine-local files.
+ // Another module's lock file, pause flag, or rendered-prompt directory is one such file.
+ // Those files live under .lym, outside the _lym-scoped pathspec, so no git-exclude pattern is needed.
+ //
+-// The test runs at the weft root and at two nested anchors, each on its own real hub.
+-// Each anchor's Fabric.Commit resolves its own anchor-relative path, so one Fabric cannot stand in for all three.
+-// Each depth also commits a durable state file under _lym next to the .lym artifacts,
++// The test runs on a real hub whose anchor is a nested path with a structural directory above the leaf.
++// Fabric.Commit must therefore resolve the anchor-relative path.
++// It also commits a durable state file under _lym next to the .lym artifacts,
+ // so the test shows the pathspec is exact: real state under _lym is still committed.
+-func TestCommitWeft_MachineLocalArtifactsNeverEnterWeftTreeAtAnyDepth(t *testing.T) {
++func TestCommitWeft_MachineLocalArtifactsNeverEnterWeftTreeAtNestedAnchor(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	for _, anchor := range []string{".", "backend", "wts/some-task"} {
+-		t.Run(anchor, func(t *testing.T) {
+-			// Only the "." and "backend" anchors have a template, so the nested anchor is built with NewHub.
+-			var h *hubforge.Hub
+-			if anchor == "wts/some-task" {
+-				h = hubforge.NewHub(t, anchor)
+-			} else {
+-				h = hubforge.CopyHub(t, hubforge.Shape{Anchor: anchor})
+-			}
+-			f, err := fabricengine.Open(h.Location)
+-			if err != nil {
+-				t.Fatalf("fabricengine.Open: %v", err)
+-			}
+-			weftPath := h.PrimeRecords()
+-			anchorRel := filepath.FromSlash(anchor)
+-
+-			dotLymDir := filepath.Join(weftPath, anchorRel, lymdirs.DotLymDirName)
+-			mustWriteFile(t, filepath.Join(dotLymDir, "webster", "pause"), "")
+-			mustWriteFile(t, filepath.Join(dotLymDir, "webster", "prompts", "01.md"), "prompt")
+-
+-			lymDir := filepath.Join(weftPath, anchorRel, lymdirs.LymDirName)
+-			mustWriteFile(t, filepath.Join(lymDir, "webster", "state.json"), "{}")
+-
+-			pathspec := fabricengine.ScopedPathspec(anchor, []string{lymdirs.LymDirName})
+-			if _, err := f.Commit(pathspec, fabricengine.DefaultCommitMessage, nil, fabricengine.SyncOptions{}); err != nil {
+-				t.Fatalf("Commit(anchor=%q, pathspec=%v): %v", anchor, pathspec, err)
+-			}
+-
+-			tracked := strings.Join(gitkit.LsFiles(t, weftPath), "\n")
+-			lymRel := filepath.ToSlash(filepath.Join(anchorRel, lymdirs.LymDirName))
+-			durable := lymRel + "/webster/state.json"
+-			if !strings.Contains(tracked, durable) {
+-				t.Errorf("git ls-files at anchor=%q does not track durable %q; want it committed\nfull ls-files:\n%s", anchor, durable, tracked)
+-			}
+-
+-			for _, forbidden := range []string{".lock", "pause", "prompts"} {
+-				if strings.Contains(tracked, forbidden) {
+-					t.Errorf("git ls-files tracks a %q-named entry; want none\nfull ls-files:\n%s", forbidden, tracked)
+-				}
+-			}
+-		})
++	const anchor = "wts/some-task"
++	h := hubforge.NewHub(t, anchor)
++	f, err := fabricengine.Open(h.Location)
++	if err != nil {
++		t.Fatalf("fabricengine.Open: %v", err)
++	}
++	weftPath := h.PrimeRecords()
++	anchorRel := filepath.FromSlash(anchor)
++
++	dotLymDir := filepath.Join(weftPath, anchorRel, lymdirs.DotLymDirName)
++	mustWriteFile(t, filepath.Join(dotLymDir, "webster", "pause"), "")
++	mustWriteFile(t, filepath.Join(dotLymDir, "webster", "prompts", "01.md"), "prompt")
++
++	lymDir := filepath.Join(weftPath, anchorRel, lymdirs.LymDirName)
++	mustWriteFile(t, filepath.Join(lymDir, "webster", "state.json"), "{}")
++
++	pathspec := fabricengine.ScopedPathspec(anchor, []string{lymdirs.LymDirName})
++	if _, err := f.Commit(pathspec, fabricengine.DefaultCommitMessage, nil, fabricengine.SyncOptions{}); err != nil {
++		t.Fatalf("Commit(anchor=%q, pathspec=%v): %v", anchor, pathspec, err)
++	}
++
++	tracked := strings.Join(gitkit.LsFiles(t, weftPath), "\n")
++	lymRel := filepath.ToSlash(filepath.Join(anchorRel, lymdirs.LymDirName))
++	durable := lymRel + "/webster/state.json"
++	if !strings.Contains(tracked, durable) {
++		t.Errorf("git ls-files at anchor=%q does not track durable %q; want it committed\nfull ls-files:\n%s", anchor, durable, tracked)
++	}
++
++	for _, forbidden := range []string{".lock", "pause", "prompts"} {
++		if strings.Contains(tracked, forbidden) {
++			t.Errorf("git ls-files tracks a %q-named entry; want none\nfull ls-files:\n%s", forbidden, tracked)
++		}
+ 	}
+ }
+ 
+diff --git a/internal/fabricengine/worktreelist.go b/internal/fabricengine/worktreelist.go
+index 41246924..5d117d1b 100644
+--- a/internal/fabricengine/worktreelist.go
++++ b/internal/fabricengine/worktreelist.go
+@@ -41,6 +41,13 @@ func List(sourceDir string) ([]WorktreeEntry, error) {
+ 		return nil, fmt.Errorf("list git worktrees in %q: %w", sourceDir, err)
+ 	}
+ 
++	return entriesFromWorktrees(worktrees), nil
++}
++
++// entriesFromWorktrees converts dotgit's worktrees into entries.
++// The first worktree is the main one.
++// An empty branch reads as detached, and a branch loses its refs/heads/ prefix.
++func entriesFromWorktrees(worktrees []dotgit.Worktree) []WorktreeEntry {
+ 	entries := make([]WorktreeEntry, len(worktrees))
+ 	for i, worktree := range worktrees {
+ 		branch := detachedBranch
+@@ -55,7 +62,7 @@ func List(sourceDir string) ([]WorktreeEntry, error) {
+ 			Prunable: worktree.Prunable,
+ 		}
+ 	}
+-	return entries, nil
++	return entries
+ }
+ 
+ // listFromPorcelain lists the worktrees of the repository holding sourceDir through `git worktree list --porcelain`.
+diff --git a/internal/fabricengine/worktreelist_parse_test.go b/internal/fabricengine/worktreelist_parse_test.go
+new file mode 100644
+index 00000000..f6ad49ff
+--- /dev/null
++++ b/internal/fabricengine/worktreelist_parse_test.go
+@@ -0,0 +1,138 @@
++// worktreelist_parse_test.go covers, with no git, how worktree records become WorktreeEntry values:
++// the `git worktree list --porcelain` parser and the mapping from dotgit's worktrees.
++
++package fabricengine
++
++import (
++	"strings"
++	"testing"
++
++	"github.com/google/go-cmp/cmp"
++
++	"github.com/Knatte18/loomyard/internal/dotgit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestParseWorktreePorcelain covers the porcelain parser.
++// The first record is Main, and a prunable line with a reason marks the entry prunable.
++// A detached record gets the detached branch name, and a bare record is an error.
++func TestParseWorktreePorcelain(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name    string
++		out     string
++		want    []WorktreeEntry
++		wantErr string
++	}{
++		{
++			name: "SingleWorktreeIsMain",
++			out:  "worktree /hub/main\nHEAD aaa\nbranch refs/heads/main\n\n",
++			want: []WorktreeEntry{{Path: "/hub/main", Head: "aaa", Branch: "main", Main: true}},
++		},
++		{
++			name: "LaterWorktreesAreNotMain",
++			out:  "worktree /hub/main\nHEAD aaa\nbranch refs/heads/main\n\nworktree /hub/wt1\nHEAD bbb\nbranch refs/heads/feature/x\n",
++			want: []WorktreeEntry{
++				{Path: "/hub/main", Head: "aaa", Branch: "main", Main: true},
++				{Path: "/hub/wt1", Head: "bbb", Branch: "feature/x"},
++			},
++		},
++		{
++			name: "DetachedHead",
++			out:  "worktree /hub/main\nHEAD aaa\nbranch refs/heads/main\n\nworktree /hub/wt1\nHEAD bbb\ndetached\n",
++			want: []WorktreeEntry{
++				{Path: "/hub/main", Head: "aaa", Branch: "main", Main: true},
++				{Path: "/hub/wt1", Head: "bbb", Branch: detachedBranch},
++			},
++		},
++		{
++			name: "PrunableWithReason",
++			out:  "worktree /hub/main\nHEAD aaa\nbranch refs/heads/main\n\nworktree /hub/gone\nHEAD bbb\nbranch refs/heads/gone\nprunable gitdir file points to non-existent location\n",
++			want: []WorktreeEntry{
++				{Path: "/hub/main", Head: "aaa", Branch: "main", Main: true},
++				{Path: "/hub/gone", Head: "bbb", Branch: "gone", Prunable: true},
++			},
++		},
++		{
++			name: "EmptyOutputListsNothing",
++			out:  "",
++			want: nil,
++		},
++		{
++			name:    "BareRepositoryIsRejected",
++			out:     "worktree /hub/bare.git\nbare\n\n",
++			wantErr: "bare",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			got, err := parseWorktreePorcelain(tt.out)
++			if tt.wantErr != "" {
++				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
++					t.Fatalf("parseWorktreePorcelain(%q) error = %v; want substring %q", tt.out, err, tt.wantErr)
++				}
++				if got != nil {
++					t.Errorf("parseWorktreePorcelain(%q) entries = %v; want nil", tt.out, got)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("parseWorktreePorcelain(%q) error = %v; want nil", tt.out, err)
++			}
++			if diff := cmp.Diff(tt.want, got); diff != "" {
++				t.Errorf("parseWorktreePorcelain(%q) mismatch (-want +got):\n%s", tt.out, diff)
++			}
++		})
++	}
++}
++
++// TestEntriesFromWorktrees covers the mapping from dotgit's worktrees:
++// the first worktree is Main, a branch loses its refs/heads/ prefix and an empty branch reads as detached.
++func TestEntriesFromWorktrees(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name      string
++		worktrees []dotgit.Worktree
++		want      []WorktreeEntry
++	}{
++		{
++			name:      "SingleWorktreeIsMain",
++			worktrees: []dotgit.Worktree{{Path: "/hub/main", Head: "aaa", Branch: "refs/heads/main"}},
++			want:      []WorktreeEntry{{Path: "/hub/main", Head: "aaa", Branch: "main", Main: true}},
++		},
++		{
++			name: "LaterWorktreesAreNotMainAndCarryPrunable",
++			worktrees: []dotgit.Worktree{
++				{Path: "/hub/main", Head: "aaa", Branch: "refs/heads/main"},
++				{Path: "/hub/gone", Head: "bbb", Branch: "refs/heads/feature/x", Prunable: true},
++			},
++			want: []WorktreeEntry{
++				{Path: "/hub/main", Head: "aaa", Branch: "main", Main: true},
++				{Path: "/hub/gone", Head: "bbb", Branch: "feature/x", Prunable: true},
++			},
++		},
++		{
++			name:      "EmptyBranchIsDetached",
++			worktrees: []dotgit.Worktree{{Path: "/hub/main", Head: "aaa", Branch: "refs/heads/main"}, {Path: "/hub/wt1", Head: "bbb"}},
++			want: []WorktreeEntry{
++				{Path: "/hub/main", Head: "aaa", Branch: "main", Main: true},
++				{Path: "/hub/wt1", Head: "bbb", Branch: detachedBranch},
++			},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			if diff := cmp.Diff(tt.want, entriesFromWorktrees(tt.worktrees)); diff != "" {
++				t.Errorf("entriesFromWorktrees() mismatch (-want +got):\n%s", diff)
++			}
++		})
++	}
++}
+diff --git a/internal/fabricengine/worktreelist_test.go b/internal/fabricengine/worktreelist_test.go
+index 145a7aab..4a5b25b9 100644
+--- a/internal/fabricengine/worktreelist_test.go
++++ b/internal/fabricengine/worktreelist_test.go
+@@ -1,6 +1,7 @@
+-// worktreelist_test.go covers List: the Main-on-first-entry behavior and prunable entries.
+-// It also covers the bare-repo rejection and the errors.
++// worktreelist_test.go covers List against real repositories.
++// It covers the prunable flag of a deleted worktree, the bare-repo rejection and the errors.
+ // It covers the read with no git process beside the porcelain fallback for a reftable repository.
++// The parsing and mapping of worktree records is covered with no git in worktreelist_parse_test.go.
+ 
+ package fabricengine_test
+ 
+@@ -21,106 +22,23 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestList covers the porcelain parser: a fresh repo yields exactly the main worktree,
+-// and additional worktrees appear after it with Main=false.
+-func TestList(t *testing.T) {
++// TestList_RejectsBareRepository asserts that List fails on a bare repository, naming it as bare.
++func TestList_RejectsBareRepository(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	tests := []struct {
+-		name string
+-		// extraWorktrees is the number of additional worktrees created
+-		// alongside the main checkout before listing.
+-		extraWorktrees int
+-		verify         func(t *testing.T, hub string, entries []fabricengine.WorktreeEntry)
+-	}{
+-		{
+-			name:           "SingleWorktree",
+-			extraWorktrees: 0,
+-			verify: func(t *testing.T, hub string, entries []fabricengine.WorktreeEntry) {
+-				if len(entries) != 1 {
+-					t.Fatalf("List() len = %d; want 1", len(entries))
+-				}
+-				e := entries[0]
+-				if !e.Main {
+-					t.Errorf("entries[0].Main = false; want true")
+-				}
+-				if e.Branch != "main" {
+-					t.Errorf("entries[0].Branch = %q; want %q", e.Branch, "main")
+-				}
+-				if e.Head == "" {
+-					t.Error(`entries[0].Head = ""; want non-empty`)
+-				}
+-			},
+-		},
+-		{
+-			name:           "TwoWorktrees",
+-			extraWorktrees: 1,
+-			verify: func(t *testing.T, hub string, entries []fabricengine.WorktreeEntry) {
+-				if len(entries) != 2 {
+-					t.Fatalf("List() len = %d; want 2", len(entries))
+-				}
+-				if !entries[0].Main {
+-					t.Errorf("entries[0].Main = false; want true")
+-				}
+-				// git may emit forward slashes on any platform.
+-				// The main entry's path is normalized before it is compared with the hub path.
+-				gotPath := filepath.FromSlash(entries[0].Path)
+-				if gotPath != hub {
+-					t.Errorf("entries[0].Path = %q; want %q", gotPath, hub)
+-				}
+-				if entries[1].Main {
+-					t.Errorf("entries[1].Main = true; want false")
+-				}
+-			},
+-		},
+-		{
+-			name:           "BareRepoRejection",
+-			extraWorktrees: 0,
+-			verify: func(t *testing.T, hub string, entries []fabricengine.WorktreeEntry) {
+-				// The outer loop handles the BareRepoRejection case itself;
+-				// verify is never called for it.
+-			},
+-		},
+-	}
+-
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			t.Parallel()
+-
+-			// The BareRepoRejection case runs against a bare repository it creates itself.
+-			if tt.name == "BareRepoRejection" {
+-				bareRepo := filepath.Join(t.TempDir(), "bare.git")
+-				gitkit.MustRun(t, t.TempDir(), "git", "init", "--bare", bareRepo)
+-
+-				entries, err := fabricengine.List(bareRepo)
+-				if err == nil {
+-					t.Fatalf("List() error = nil; want error containing 'bare'")
+-				}
+-				if !strings.Contains(err.Error(), "bare") {
+-					t.Errorf("List() error = %q; want error containing 'bare'", err.Error())
+-				}
+-				if entries != nil {
+-					t.Errorf("List() entries = %v; want nil", entries)
+-				}
+-				return
+-			}
+-
+-			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-			hub := h.PrimeWorktree()
+-
+-			for i := 0; i < tt.extraWorktrees; i++ {
+-				wtPath := filepath.Join(filepath.Dir(hub), fmt.Sprintf("wt%d", i+1))
+-				gitkit.MustRun(t, hub, "git", "worktree", "add", wtPath)
+-			}
+-
+-			entries, err := fabricengine.List(hub)
+-			if err != nil {
+-				t.Fatalf("List() error = %v; want nil", err)
+-			}
++	bareRepo := filepath.Join(t.TempDir(), "bare.git")
++	gitkit.MustRun(t, t.TempDir(), "git", "init", "--bare", bareRepo)
+ 
+-			tt.verify(t, hub, entries)
+-		})
++	entries, err := fabricengine.List(bareRepo)
++	if err == nil {
++		t.Fatalf("List() error = nil; want error containing 'bare'")
++	}
++	if !strings.Contains(err.Error(), "bare") {
++		t.Errorf("List() error = %q; want error containing 'bare'", err.Error())
++	}
++	if entries != nil {
++		t.Errorf("List() entries = %v; want nil", entries)
+ 	}
+ }
+ 
