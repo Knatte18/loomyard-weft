@@ -1,6 +1,6 @@
 # A mechanical way to find redundant tests: package-scoped coverage, a map per package, a check on a diff
 
-`redundant-test-finder` · Task · enhancement, testkit, gate
+`redundant-test-finder` · Task · enhancement, testkit, gate · running · Worktree-Create
 
 ## Seen (orch, 2026-11-08)
 
