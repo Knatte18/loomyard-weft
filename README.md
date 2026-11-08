@@ -58,11 +58,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 5d<br>6h | shuttle, codex, loom |
 
-## [P3 Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes](project-fabric-test-speed-work.md) (0)
+## [P3 Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes](project-fabric-test-speed-work.md) (1)
 
 [`fabric-test-speed-work`](design-fabric-test-speed-work.md) · Age 1d · Owner `neve`
 
-### Tasks (0)
+### Tasks (1)
 
 Concrete and claimable; only a task can run.
 
@@ -71,6 +71,14 @@ Concrete and claimable; only a task can run.
 Waits on nothing open; can start now.
 
 _None._
+
+#### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T2 | `draft` **Measure the fabricengine tier 1 time the two test cuts saved** | [`fabric-test-cuts-remeasure`](design-fabric-test-cuts-remeasure.md) | darn · docs |  | 0m<br>0m | fabric, testkit |
 
 ### Notes (0)
 
@@ -108,7 +116,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 ## [P5 Redundant tests found mechanically: a coverage engine, a map per package, a gate report and its review](project-redundancy-check.md) (5)
 
-[`redundancy-check`](design-redundancy-check.md) · Age 0m · Owner `neve`
+[`redundancy-check`](design-redundancy-check.md) · Age 1m · Owner `neve`
 
 ### Tasks (5)
 
@@ -126,11 +134,11 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **internal/testcover: the coverage runner, content block keys and the map record, with testtiming's package-scoped verdict** | [`testcover-engine`](design-testcover-engine.md)<br>[Sketch](decision-testcover-engine.md) | darn · solid |  | 0m<br>0m | testkit, gate |
-| T3 | `draft` **lym gate testmap rebuilds stale coverage maps in the prime parent's worktree** | [`testmap-verb`](design-testmap-verb.md)<br>[Sketch](decision-testmap-verb.md) | darn · solid | T1 | 0m<br>0m | testkit, gate |
-| T9 | `draft` **The prime parent's dobby starts lym gate testmap after every test_map_every landings** | [`testmap-dobby-refresh`](design-testmap-dobby-refresh.md)<br>[Sketch](decision-testmap-dobby-refresh.md) | darn · light | T3 | 0m<br>0m | testkit, gate |
-| T10 | `draft` **An advisory redundancy report step in lym gate test, judging a diff's new tests against the map** | [`gate-redundancy-report`](design-gate-redundancy-report.md)<br>[Sketch](decision-gate-redundancy-report.md) | darn · solid | T3 | 0m<br>0m | testkit, gate |
-| T11 | `draft` **Code review reads the gate's redundancy report, and PATTERN-test-speed names the map, verb and step** | [`review-reads-redundancy`](design-review-reads-redundancy.md)<br>[Sketch](decision-review-reads-redundancy.md) | darn · light | T10 | 0m<br>0m | testkit, gate |
+| T1 | `draft` **internal/testcover: the coverage runner, content block keys and the map record, with testtiming's package-scoped verdict** | [`testcover-engine`](design-testcover-engine.md)<br>[Sketch](decision-testcover-engine.md) | darn · solid |  | 1m<br>1m | testkit, gate |
+| T3 | `draft` **lym gate testmap rebuilds stale coverage maps in the prime parent's worktree** | [`testmap-verb`](design-testmap-verb.md)<br>[Sketch](decision-testmap-verb.md) | darn · solid | T1 | 1m<br>1m | testkit, gate |
+| T9 | `draft` **The prime parent's dobby starts lym gate testmap after every test_map_every landings** | [`testmap-dobby-refresh`](design-testmap-dobby-refresh.md)<br>[Sketch](decision-testmap-dobby-refresh.md) | darn · light | T3 | 1m<br>1m | testkit, gate |
+| T10 | `draft` **An advisory redundancy report step in lym gate test, judging a diff's new tests against the map** | [`gate-redundancy-report`](design-gate-redundancy-report.md)<br>[Sketch](decision-gate-redundancy-report.md) | darn · solid | T3 | 1m<br>1m | testkit, gate |
+| T11 | `draft` **Code review reads the gate's redundancy report, and PATTERN-test-speed names the map, verb and step** | [`review-reads-redundancy`](design-review-reads-redundancy.md)<br>[Sketch](decision-review-reads-redundancy.md) | darn · light | T10 | 1m<br>1m | testkit, gate |
 
 ### Notes (0)
 

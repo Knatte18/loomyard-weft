@@ -10,7 +10,7 @@ Groups the entries filed from the Sketch `fabric-test-speed`: hubforge-registere
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (0)
+## Tasks (1)
 
 Concrete and claimable; only a task can run.
 
@@ -19,6 +19,14 @@ Concrete and claimable; only a task can run.
 Waits on nothing open; can start now.
 
 _None._
+
+### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T2 | `draft` **Measure the fabricengine tier 1 time the two test cuts saved** | [`fabric-test-cuts-remeasure`](design-fabric-test-cuts-remeasure.md) | darn · docs |  | 0m<br>0m | fabric, testkit |
 
 ## Notes (0)
 
