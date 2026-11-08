@@ -1,0 +1,767 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index d1ccf66e..77ba613c 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -510,7 +510,7 @@ User-facing modules each get one `lym <module>` namespace:
+   The embedded template comes first, then the repo default at `<BoltDir>/_lym/config/<module>.yaml`.
+   The worktree's sparse file follows, and the untracked local override at `<anchor>/.lym/config/<module>.local.yaml` is last.
+   See [internal/configengine](../internal/configengine/doc.go).
+-  A hub-wide module's machine keys, such as gate's `slots` and `tier_parallel`, also take a machine override.
++  A module's machine keys, such as gate's `slots` and `tier_parallel` and codex's `sandbox_mode`, also take a machine override.
+   The override lives at `<BoltDir>/.lym/config/<module>.machine.yaml` and is never tracked.
+   It is written from the prime beside the local override.
+   `lym config --layer default|worktree|machine|local` picks the layer a verb addresses,
+@@ -690,7 +690,7 @@ User-facing modules each get one `lym <module>` namespace:
+   The provider is swappable behind an **engine** seam;
+   the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, or per run by a model-spec naming it.
+   The registered engines are `claude` and `codex`.
+-  `codex` drives the Codex CLI's TUI under one shared lym Codex home (`codex.yaml`'s `home`, linked to the operator's own login and sessions, its folder trust rendered by lym), with `-a never -s workspace-write` and, as writable roots, the records checkout it is told through its config dirs (none outside a hub), the checkout's git dir and the common git dir it links to, so a session in a linked worktree can commit, and the folders of `codex.yaml`'s `writable_roots` that exist (template: the Go build cache);
++  `codex` drives the Codex CLI's TUI under one shared lym Codex home (`codex.yaml`'s `home`, linked to the operator's own login and sessions, its folder trust rendered by lym), with `-a never -s` and `codex.yaml`'s `sandbox_mode` (`workspace-write`, or `danger-full-access` for a machine whose bubblewrap cannot create a user namespace, a machine key set in the hub's machine override) and, under `workspace-write`, as writable roots, the records checkout it is told through its config dirs (none outside a hub), the checkout's git dir and the common git dir it links to, so a session in a linked worktree can commit, and the folders of `codex.yaml`'s `writable_roots` that exist (template: the Go build cache);
+   it loads skills as SKILL.md files the model reads by absolute path under `codex.yaml`'s `skill_roots`, and installs the shell guard rows of the `shellguard` table as `PreToolUse` hooks matching `Bash` with Codex's own steer and notice texts (`apply_patch` in place of Read, Edit and Write), the python and publish rows following their switches and the refuse-raw row a non-empty `refuse_raw` list;
+   a Codex run in a hub carries creel's hook delivery, the mail handed over as a hook block after a tool call and at a turn end, an idle session woken by its async waiter hook through `codex queue`, and the creel trust sentence in its prompt file, while an opened Codex session stays a pane-mail strand;
+   it has no fork audit, and the model registry's `sol`, `astra` and `luna` aliases name it.
+diff --git a/internal/configcli/configcli.go b/internal/configcli/configcli.go
+index 6430afe7..2edb4712 100644
+--- a/internal/configcli/configcli.go
++++ b/internal/configcli/configcli.go
+@@ -310,7 +310,7 @@ func setLocal(dirs configDirs, out io.Writer, mod configreg.Module, path string,
+ 	return output.Ok(out, fields)
+ }
+ 
+-// setMachine writes pairs into a hub-wide module's machine override file at path.
++// setMachine writes pairs into a module's machine override file at path.
+ // A machine override is never committed and runs no fabric sync.
+ // A key the machine layer refuses leaves the file as it was.
+ // So does a value the module's loader refuses over the prime's worktree stack.
+@@ -329,7 +329,7 @@ func setMachine(dirs configDirs, out io.Writer, mod configreg.Module, path strin
+ 	return output.Ok(out, fields)
+ }
+ 
+-// editMachine edits a hub-wide module's machine override file at path in the editor.
++// editMachine edits a module's machine override file at path in the editor.
+ // A machine override is never committed and runs no fabric sync.
+ // A saved key the machine layer refuses puts the file back to its previous bytes.
+ // So does a save that leaves the stack newly failing to load.
+@@ -671,7 +671,7 @@ func Command() *cobra.Command {
+ 	configCmd.Flags().Bool("print", false, "print on-disk config as YAML without launching the editor")
+ 	configCmd.Flags().StringArray("set", nil, "set config key=value directly, bypassing the editor (repeatable)")
+ 	configCmd.Flags().Bool("resolved", false, "print the module's resolved config, each unit annotated with the layer it came from")
+-	configCmd.Flags().String("layer", "", "the layer to print or write: default, worktree, machine or local (default: the module's own file); machine is a hub-wide module's never-tracked override of its machine keys under the board dir's .lym, written from the prime")
++	configCmd.Flags().String("layer", "", "the layer to print or write: default, worktree, machine or local (default: the module's own file); machine is a module's never-tracked override of its machine keys under the board dir's .lym, written from the prime")
+ 	// The RunE closure captures configCmd so the --print and --set flags are readable without consulting os.Args.
+ 	configCmd.RunE = func(cmd *cobra.Command, args []string) error {
+ 		if clihelp.ShouldAbort(cmd.Context()) {
+diff --git a/internal/configcli/configcli_test.go b/internal/configcli/configcli_test.go
+index e50afbff..8fbe7c04 100644
+--- a/internal/configcli/configcli_test.go
++++ b/internal/configcli/configcli_test.go
+@@ -1274,7 +1274,7 @@ func TestDispatchSetProfiles(t *testing.T) {
+ // A hub-wide module has no worktree layer.
+ // A local override is written uncommitted and refuses a key the local layer closes.
+ // A machine override is written uncommitted from the prime through the load check,
+-// and it is refused on a module with no machine file.
++// and it is refused on a module with no machine key.
+ // A worktree write under a board is sparse, and --print reads the selected layer.
+ func TestDispatchLayers(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -1563,6 +1563,13 @@ func TestDispatchLayers(t *testing.T) {
+ 				assertFile(t, configengine.MachineFile(fx.board, "gate"), "tier_parallel:\n    tier0: \"8\"\n", false)
+ 			},
+ 		},
++		{
++			name: "machine layer writes a per-worktree module's machine key uncommitted from the prime", module: "codex", layer: "machine",
++			setFlags: []string{"sandbox_mode=danger-full-access"},
++			check: func(t *testing.T, fx hubFixture, out string) {
++				assertFile(t, configengine.MachineFile(fx.board, "codex"), "sandbox_mode: danger-full-access\n", false)
++			},
++		},
+ 		{
+ 			name: "machine layer set is refused by a refusing guard and leaves no file", module: "gate", layer: "machine",
+ 			setFlags: []string{"tier_parallel.tier0=8"}, seedBoard: gateTemplate(), wantCode: 1, wantErr: refused, guard: refusingGuard,
+@@ -1657,7 +1664,7 @@ func TestDispatchLayers(t *testing.T) {
+ 			},
+ 		},
+ 		{
+-			name: "machine layer of a per-worktree module is refused naming the local layer", module: "loom", layer: "machine",
++			name: "machine layer of a per-worktree module with no machine key is refused naming the local layer", module: "loom", layer: "machine",
+ 			setFlags: []string{"review_max_bounces=2"}, seedBoard: loomTemplate(), wantCode: 1, wantErr: "--layer local",
+ 			check: func(t *testing.T, fx hubFixture, out string) {
+ 				assertFile(t, configengine.MachineFile(fx.board, "loom"), "", true)
+diff --git a/internal/configcli/doc.go b/internal/configcli/doc.go
+index 08082485..2921491c 100644
+--- a/internal/configcli/doc.go
++++ b/internal/configcli/doc.go
+@@ -34,14 +34,14 @@
+ // A hub-wide module has no worktree file, so the refusal names two ways forward:
+ // `--layer default` from the prime and `--layer local`.
+ // `--layer machine` addresses `configengine.MachineFile` of the Bolt checkout.
+-// It applies to a hub-wide module with machine keys (`configengine.MachineKeys`).
+-// The file is never tracked and bounds a resource every worktree of the hub on this machine shares.
++// It applies to a module with machine keys (`configengine.MachineKeys`), hub-wide or per-worktree.
++// The file is never tracked and holds a value every worktree of the hub on this machine shares.
+ // It passes the default layer's write guard below, never commits and runs no fabric sync.
+ // It refuses a key the machine layer closes before writing anything.
+ // It checks that the stack still loads over the prime's worktree and puts the file back when it does not.
+-// It is refused on a per-worktree module, naming `--layer local` as the way forward.
+-// It is refused on a hub-wide module with no machine key.
+-// That refusal names `lym config <module>` from the prime as the way forward.
++// It is refused on a module with no machine key.
++// For a per-worktree module the refusal names `--layer local` as the way forward.
++// For a hub-wide module it names `lym config <module>` from the prime.
+ // Both refusals touch no file.
+ // `--layer local` writes `configengine.LocalFile` of the anchor, never commits and runs no fabric sync.
+ // It refuses a key the local layer closes (`configengine.ValidateLocal`) and leaves the file as it was.
+diff --git a/internal/configcli/hubwide.go b/internal/configcli/hubwide.go
+index 19939a4e..22d5ffde 100644
+--- a/internal/configcli/hubwide.go
++++ b/internal/configcli/hubwide.go
+@@ -103,7 +103,7 @@ func (d configDirs) engineDirs() configengine.Dirs {
+ // An empty --layer selects the module's own default.
+ // --layer worktree on a hub-wide module is refused with the ways forward.
+ // A hub-wide module's default with no board is the worktree layer, the one file a standalone worktree has.
+-// --layer machine is refused on a per-worktree module and on a hub-wide module that classifies no machine key.
++// --layer machine is refused on a module that classifies no machine key.
+ func (d configDirs) selectedLayer(module configreg.Module) (configengine.Layer, error) {
+ 	switch {
+ 	case d.layer == "" && module.HubWide && d.board == "":
+@@ -114,8 +114,8 @@ func (d configDirs) selectedLayer(module configreg.Module) (configengine.Layer,
+ 		return configengine.LayerWorktree, nil
+ 	case d.layer == string(configengine.LayerWorktree) && module.HubWide:
+ 		return "", fmt.Errorf("%s is a hub-wide module and has no worktree file; way forward: --layer default from the hub's prime worktree, or --layer local", module.Name)
+-	case d.layer == string(configengine.LayerMachine) && !module.HubWide:
+-		return "", fmt.Errorf("%s is a per-worktree module and has no machine file; way forward: --layer local", module.Name)
++	case d.layer == string(configengine.LayerMachine) && !module.HubWide && len(configengine.MachineKeys(module.Spec())) == 0:
++		return "", fmt.Errorf("%s is a per-worktree module with no machine key, so it has no machine file; way forward: --layer local", module.Name)
+ 	case d.layer == string(configengine.LayerMachine) && len(configengine.MachineKeys(module.Spec())) == 0:
+ 		return "", fmt.Errorf("%s has no machine key; way forward: \"lym config %s\" from the hub's prime worktree", module.Name, module.Name)
+ 	}
+diff --git a/internal/configengine/doc.go b/internal/configengine/doc.go
+index 08aea226..4feebb17 100644
+--- a/internal/configengine/doc.go
++++ b/internal/configengine/doc.go
+@@ -50,9 +50,11 @@
+ //   - the untracked local override, `<Anchor>/.lym/config/<module>.local.yaml`, [LayerLocal].
+ //
+ // A hub-wide module stacks the template, the hub file `<Board>/_lym/config/<module>.yaml` and the local file.
+-// A hub-wide module with a [CategoryMachine] key also stacks, between the hub file and the local file, [LayerMachine]:
++// A module with a [CategoryMachine] key also stacks, below the local file, [LayerMachine]:
+ // the untracked machine override `<Board>/.lym/config/<module>.machine.yaml`.
+-// The stack is then template, hub file, machine, local, so a local value wins over a machine one.
++// A hub-wide module's stack is then template, hub file, machine, local;
++// a per-worktree module's is template, repo default, worktree, machine, local.
++// So a machine value wins over every tracked file, and a local value wins over a machine one.
+ // The machine layer applies only when `Dirs` carries both `Anchor` and `Board`.
+ // So a load that tells `Board` alone, as a hub-file check does, stacks none, and a standalone load never reads one.
+ // It applies whether or not the anchor has a `_lym/`.
+diff --git a/internal/configengine/layers.go b/internal/configengine/layers.go
+index a8d8757a..5de9578e 100644
+--- a/internal/configengine/layers.go
++++ b/internal/configengine/layers.go
+@@ -40,7 +40,7 @@ const (
+ 	// LayerWorktree is the worktree's own tracked file under its anchor.
+ 	LayerWorktree Layer = "worktree"
+ 	// LayerMachine is the untracked machine override file under the board dir's .lym, between the worktree and local layers.
+-	// It applies only to a hub-wide module with a machine key, and only when both Anchor and Board are set.
++	// It applies only to a module with a machine key, and only when both Anchor and Board are set.
+ 	LayerMachine Layer = "machine"
+ 	// LayerLocal is the untracked local override file under the anchor's .lym.
+ 	LayerLocal Layer = "local"
+@@ -121,7 +121,7 @@ func MachineFile(board, module string) string {
+ // LayerFile returns the file of a layer and whether that layer applies under dirs.
+ // The default layer applies when Board is set;
+ // the worktree layer when Anchor is set and the module is not hub-wide or Board is empty;
+-// the machine layer when the module is hub-wide with a [MachineKeys] entry and both Anchor and Board are set,
++// the machine layer when the module has a [MachineKeys] entry and both Anchor and Board are set,
+ // so a load that sets only Board, as a hub-file check does, stacks none;
+ // the local layer when Anchor is set.
+ // The template layer never has a file.
+@@ -136,7 +136,7 @@ func LayerFile(dirs Dirs, spec Spec, layer Layer) (string, bool) {
+ 			return ConfigFile(dirs.Anchor, spec.Name), true
+ 		}
+ 	case LayerMachine:
+-		if spec.HubWide && dirs.Anchor != "" && dirs.Board != "" && len(MachineKeys(spec)) > 0 {
++		if dirs.Anchor != "" && dirs.Board != "" && len(MachineKeys(spec)) > 0 {
+ 			return MachineFile(dirs.Board, spec.Name), true
+ 		}
+ 	case LayerLocal:
+diff --git a/internal/configengine/layers_test.go b/internal/configengine/layers_test.go
+index 3aeb6f32..3ca972ab 100644
+--- a/internal/configengine/layers_test.go
++++ b/internal/configengine/layers_test.go
+@@ -984,6 +984,8 @@ func TestLayerFile(t *testing.T) {
+ 	hubWide := layerSpec()
+ 	hubWide.HubWide = true
+ 	machine := machineSpec()
++	perWorktreeMachine := machineSpec()
++	perWorktreeMachine.HubWide = false
+ 	hub := configengine.Dirs{Anchor: "/a", Board: "/b"}
+ 
+ 	tests := []struct {
+@@ -1004,7 +1006,8 @@ func TestLayerFile(t *testing.T) {
+ 		{"no anchor means no local layer", configengine.Dirs{Board: "/b"}, spec, configengine.LayerLocal, "", false, configengine.LayerDefault},
+ 		{"template has no file", hub, spec, configengine.LayerTemplate, "", false, configengine.LayerDefault},
+ 		{"machine under the board dir's .lym", hub, machine, configengine.LayerMachine, filepath.Join("/b", lymdirs.DotLymDirName, "config", layerModule+".machine.yaml"), true, configengine.LayerDefault},
+-		{"machine does not apply to a per-worktree module", hub, spec, configengine.LayerMachine, "", false, configengine.LayerDefault},
++		{"machine applies to a per-worktree module with a machine key", hub, perWorktreeMachine, configengine.LayerMachine, filepath.Join("/b", lymdirs.DotLymDirName, "config", layerModule+".machine.yaml"), true, configengine.LayerDefault},
++		{"machine does not apply to a per-worktree module with no machine key", hub, spec, configengine.LayerMachine, "", false, configengine.LayerDefault},
+ 		{"machine does not apply to a hub-wide module with no machine key", hub, hubWide, configengine.LayerMachine, "", false, configengine.LayerDefault},
+ 		{"machine does not apply with the board dir alone", configengine.Dirs{Board: "/b"}, machine, configengine.LayerMachine, "", false, configengine.LayerDefault},
+ 		{"machine does not apply with the anchor alone", configengine.Dirs{Anchor: "/a"}, machine, configengine.LayerMachine, "", false, configengine.LayerWorktree},
+diff --git a/internal/configreg/configreg_test.go b/internal/configreg/configreg_test.go
+index fe0224d0..44f2d37b 100644
+--- a/internal/configreg/configreg_test.go
++++ b/internal/configreg/configreg_test.go
+@@ -140,7 +140,7 @@ func TestModules_EveryTemplateKeyClassified(t *testing.T) {
+ 		"batten":   {"open_ide_command", "open_window_command", "seed_ide_command"},
+ 		"beam":     {"pull_request"},
+ 		"claude":   {"binary", "deny_ask_user_question"},
+-		"codex":    {"binary", "writable_roots"},
++		"codex":    {"binary", "sandbox_mode", "writable_roots"},
+ 		"reed":     {"buttons", "debug_log", "mouse", "shell", "tmux", "tmux_conf"},
+ 		"shuttle":  {"deny_python", "run_dir"},
+ 		"loom":     {"code_auto_accept", "code_fixer_fan", "discussion_advisors", "discussion_auto_accept", "discussion_fixer_fan", "discussion_lenses", "discussion_reviewer_fan"},
+@@ -174,9 +174,6 @@ func TestModules_EveryTemplateKeyClassified(t *testing.T) {
+ 			if m.HubWide && len(m.LocalDenied) != 0 || !m.HubWide && len(m.LocalKeys) != 0 {
+ 				t.Errorf("%s LocalKeys = %v, LocalDenied = %v; want only the list of its own kind", m.Name, m.LocalKeys, m.LocalDenied)
+ 			}
+-			if refusal := machineKeyRefusal(m); refusal != "" {
+-				t.Error(refusal)
+-			}
+ 			wantMachineKeys := []string{}
+ 			if m.Name == "gate" {
+ 				wantMachineKeys = []string{"slots", "tier_parallel"}
+@@ -187,42 +184,14 @@ func TestModules_EveryTemplateKeyClassified(t *testing.T) {
+ 			if m.Name == "env" {
+ 				wantMachineKeys = []string{"vars"}
+ 			}
++			if m.Name == "codex" {
++				wantMachineKeys = []string{"sandbox_mode"}
++			}
+ 			if got := configengine.MachineKeys(spec); !slices.Equal(got, wantMachineKeys) {
+ 				t.Errorf("%s MachineKeys = %v; want %v, so no stray machine file is read by a registered loader", m.Name, got, wantMachineKeys)
+ 			}
+ 		})
+ 	}
+-
+-	t.Run("a per-worktree module with a machine key is refused", func(t *testing.T) {
+-		t.Parallel()
+-		synthetic := Module{
+-			Name: "synthetic",
+-			Spec: func() configengine.Spec {
+-				return configengine.Spec{
+-					Name:       "synthetic",
+-					Categories: map[string]configengine.Category{"limit": configengine.CategoryMachine},
+-				}
+-			},
+-		}
+-		if machineKeyRefusal(synthetic) == "" {
+-			t.Error("machineKeyRefusal(per-worktree module with a machine key) = \"\"; want a refusal")
+-		}
+-		synthetic.HubWide = true
+-		if refusal := machineKeyRefusal(synthetic); refusal != "" {
+-			t.Errorf("machineKeyRefusal(hub-wide module with a machine key) = %q; want none", refusal)
+-		}
+-	})
+-}
+-
+-// machineKeyRefusal returns the refusal for a per-worktree module that classifies a key CategoryMachine.
+-// It returns "" for any other module.
+-// Only a hub-wide module reads a machine file, so such a key would be a value no loader reads.
+-func machineKeyRefusal(m Module) string {
+-	machineKeys := configengine.MachineKeys(m.Spec())
+-	if m.HubWide || len(machineKeys) == 0 {
+-		return ""
+-	}
+-	return fmt.Sprintf("module %q is per-worktree but classifies %v as machine keys; only a hub-wide module reads a machine file", m.Name, machineKeys)
+ }
+ 
+ // coveredByEntry reports whether a Categories entry equals path or is an ancestor of it.
+diff --git a/internal/configreg/doc.go b/internal/configreg/doc.go
+index 13760f17..ebc7535c 100644
+--- a/internal/configreg/doc.go
++++ b/internal/configreg/doc.go
+@@ -10,6 +10,7 @@
+ // Its never-tracked machine override is `<BoardDir>/.lym/config/<module>.machine.yaml`.
+ // The override holds only the module's machine keys and never sits in a worktree.
+ // `<BoardDir>/_lym/config/` also holds each per-worktree module's repo default, the base layer of that module's stack.
++// A per-worktree module with machine keys reads the same machine override, above its worktree file.
+ // Module.HubWide tells the two kinds of file apart.
+ // A hub-wide module also reads the reading worktree's local override, restricted to the module's LocalKeys.
+ //
+diff --git a/internal/shuttleengine/codexengine/codexengine.go b/internal/shuttleengine/codexengine/codexengine.go
+index c04ad0b0..f4755836 100644
+--- a/internal/shuttleengine/codexengine/codexengine.go
++++ b/internal/shuttleengine/codexengine/codexengine.go
+@@ -88,7 +88,8 @@ func validateChoice(choice shuttleengine.ModelChoice, permissionMode string, cod
+ // It readies the lym home and writes prompt.md into runDir.
+ // The prompt holds the deny notice, the creel trust sentence, the standing passages and the spec's prompt.
+ // The launch line carries a PreToolUse hook per installed shell guard.
+-// It turns on the sandbox's network access, so the session reaches the creel daemon's socket.
++// It runs codex.yaml's sandbox mode, and under workspace-write it turns on the sandbox's network access,
++// so the session reaches the creel daemon's socket.
+ // Once Codex exits, the launch appends the exit record to the run's events file.
+ // A board directory adds creel's hook delivery and marks the launch CreelHooks.
+ // A spec with skills starts with the skill load as its first turn.
+@@ -139,6 +140,7 @@ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengin
+ 		Cmd: buildLaunchCmd(sh, launchLine{
+ 			bin:           codexBinary(codex),
+ 			home:          home,
++			sandboxMode:   codex.SandboxMode,
+ 			writableRoots: writableRoots,
+ 			model:         spec.Model,
+ 			effort:        spec.Effort,
+@@ -158,7 +160,8 @@ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengin
+ // It refuses under Codex rules before anything is written.
+ // Its line runs Codex with no hooks and no first turn, so the session carries no shell guard and waits at its composer.
+ // When Codex exits, the pane's shell writes the exit marker, asks reed to remove the strand and exits.
+-// The line turns on the sandbox's network access, so an opened session reaches the creel daemon's socket too.
++// The line runs codex.yaml's sandbox mode, and under workspace-write it turns on the sandbox's network access,
++// so an opened session reaches the creel daemon's socket too.
+ // It writes nothing into the directory it is given and names no session id.
+ // It carries no creel hooks, since the session has no prompt file to hold the creel trust sentence.
+ // Codex reads a hook's block as a failed tool call without that sentence, so the strand gets its mail by the pane path.
+@@ -180,6 +183,7 @@ func (c *Codex) OpenLaunch(_ string, spec shuttleengine.OpenSpec, _ shuttleengin
+ 		Cmd: codexCommand(shell.ForGOOS(), launchLine{
+ 			bin:           codexBinary(codex),
+ 			home:          home,
++			sandboxMode:   codex.SandboxMode,
+ 			writableRoots: writableRoots,
+ 			model:         spec.Model,
+ 			effort:        spec.Effort,
+diff --git a/internal/shuttleengine/codexengine/command.go b/internal/shuttleengine/codexengine/command.go
+index d6f2754a..6ae92591 100644
+--- a/internal/shuttleengine/codexengine/command.go
++++ b/internal/shuttleengine/codexengine/command.go
+@@ -46,7 +46,9 @@ type launchLine struct {
+ 	bin string
+ 	// home is the lym Codex home the session runs under.
+ 	home string
+-	// writableRoots are the folders outside the workspace the sandbox lets the session write.
++	// sandboxMode is the Codex sandbox the session runs in, sandboxWorkspaceWrite or sandboxFullAccess.
++	sandboxMode string
++	// writableRoots are the folders outside the workspace the workspace-write sandbox lets the session write.
+ 	writableRoots []string
+ 	// model is the model slug; empty takes Codex's default.
+ 	model string
+@@ -69,18 +71,24 @@ func buildLaunchCmd(sh shell.Shell, line launchLine) string {
+ }
+ 
+ // codexCommand composes the command that starts a Codex session under the lym home.
+-// It runs `-a never -s workspace-write`, so no approval prompt shows.
+-// The sandbox bounds writes to the workspace, the writable roots and the temporary folders.
+-// It turns on the sandbox's network access, so the session's shell commands reach the creel daemon's socket.
++// It runs `-a never`, so no approval prompt shows, and `-s` with the line's sandbox mode.
++// The workspace-write sandbox bounds writes to the workspace, the writable roots and the temporary folders.
++// Under it the command turns on the sandbox's network access.
++// That lets the session's shell commands reach the creel daemon's socket.
++// The danger-full-access mode has no sandbox, so the command sets neither the network access nor the writable roots.
+ // A hook given by `-c` otherwise waits on a review prompt,
+ // so the command passes `--dangerously-bypass-hook-trust` with the hook settings.
+ // It passes the first turn as the positional prompt when there is one,
+ // and it loads CLAUDE.md as the project instructions of a directory with no AGENTS.md.
+ // CODEX_HOME names the lym home as a command-scoped assignment.
+ func codexCommand(sh shell.Shell, line launchLine) string {
+-	cmd := sh.Invoke(line.bin) + " --no-alt-screen -a never -s workspace-write -c " + sh.Quote(sandboxNetworkAccess)
+-	if len(line.writableRoots) > 0 {
+-		cmd += " -c " + sh.Quote("sandbox_workspace_write.writable_roots="+tomlArray(line.writableRoots))
++	// The mode is one of two fixed words the config load admits, so it needs no quoting.
++	cmd := sh.Invoke(line.bin) + " --no-alt-screen -a never -s " + line.sandboxMode
++	if line.sandboxMode == sandboxWorkspaceWrite {
++		cmd += " -c " + sh.Quote(sandboxNetworkAccess)
++		if len(line.writableRoots) > 0 {
++			cmd += " -c " + sh.Quote("sandbox_workspace_write.writable_roots="+tomlArray(line.writableRoots))
++		}
+ 	}
+ 	if line.model != "" {
+ 		cmd += " -m " + sh.Quote(line.model)
+diff --git a/internal/shuttleengine/codexengine/command_test.go b/internal/shuttleengine/codexengine/command_test.go
+index 9a60e622..8e74c81a 100644
+--- a/internal/shuttleengine/codexengine/command_test.go
++++ b/internal/shuttleengine/codexengine/command_test.go
+@@ -11,8 +11,9 @@ import (
+ )
+ 
+ // TestBuildLaunchCmd pins the POSIX launch line.
+-// CODEX_HOME leads, and the spike's flags carry the network access.
++// CODEX_HOME leads, and the spike's flags carry the sandbox mode and, under workspace-write, the network access.
+ // It carries the writable root, model and effort when set, each hook setting, the bypass flag and the first turn.
++// A danger-full-access line carries neither the network access nor the writable roots.
+ // It ends with the exit record appended to the events file, and then the shell exit.
+ // It also pins an opened session's command.
+ // That command has the network access.
+@@ -28,14 +29,19 @@ func TestBuildLaunchCmd(t *testing.T) {
+ 	}{
+ 		{
+ 			name: "EveryInput",
+-			line: launchLine{bin: "codex", home: "/h", writableRoots: []string{"/links"}, model: "gpt-6-luna", effort: "low", hooks: []string{`hooks.Stop=[{hooks=[]}]`}, firstTurn: "Read it", eventsPath: "/run/events.jsonl"},
++			line: launchLine{bin: "codex", home: "/h", sandboxMode: sandboxWorkspaceWrite, writableRoots: []string{"/links"}, model: "gpt-6-luna", effort: "low", hooks: []string{`hooks.Stop=[{hooks=[]}]`}, firstTurn: "Read it", eventsPath: "/run/events.jsonl"},
+ 			want: `CODEX_HOME='/h' 'codex' --no-alt-screen -a never -s workspace-write -c 'sandbox_workspace_write.network_access=true' -c 'sandbox_workspace_write.writable_roots=["/links"]' -m 'gpt-6-luna' -c 'model_reasoning_effort="low"' -c 'project_doc_fallback_filenames=["CLAUDE.md"]' -c 'hooks.Stop=[{hooks=[]}]' --dangerously-bypass-hook-trust 'Read it'; printf '%s\n' '{"hook_event_name":"LymExit"}' >> '/run/events.jsonl'; exit`,
+ 		},
+ 		{
+ 			name: "NoWritableRootModelOrEffort",
+-			line: launchLine{bin: "codex", home: "/h", hooks: []string{`hooks.Stop=[{hooks=[]}]`}, firstTurn: "it's", eventsPath: "/e"},
++			line: launchLine{bin: "codex", home: "/h", sandboxMode: sandboxWorkspaceWrite, hooks: []string{`hooks.Stop=[{hooks=[]}]`}, firstTurn: "it's", eventsPath: "/e"},
+ 			want: `CODEX_HOME='/h' 'codex' --no-alt-screen -a never -s workspace-write -c 'sandbox_workspace_write.network_access=true' -c 'project_doc_fallback_filenames=["CLAUDE.md"]' -c 'hooks.Stop=[{hooks=[]}]' --dangerously-bypass-hook-trust 'it'\''s'; printf '%s\n' '{"hook_event_name":"LymExit"}' >> '/e'; exit`,
+ 		},
++		{
++			name: "DangerFullAccess",
++			line: launchLine{bin: "codex", home: "/h", sandboxMode: sandboxFullAccess, writableRoots: []string{"/links"}, hooks: []string{`hooks.Stop=[{hooks=[]}]`}, firstTurn: "Read it", eventsPath: "/e"},
++			want: `CODEX_HOME='/h' 'codex' --no-alt-screen -a never -s danger-full-access -c 'project_doc_fallback_filenames=["CLAUDE.md"]' -c 'hooks.Stop=[{hooks=[]}]' --dangerously-bypass-hook-trust 'Read it'; printf '%s\n' '{"hook_event_name":"LymExit"}' >> '/e'; exit`,
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -48,7 +54,7 @@ func TestBuildLaunchCmd(t *testing.T) {
+ 	if got := buildResumeCmd(shell.Posix()); got != "exit" {
+ 		t.Errorf("buildResumeCmd() = %q; want exit", got)
+ 	}
+-	opened := launchLine{bin: "codex", home: "/h", model: "gpt-6-luna"}
++	opened := launchLine{bin: "codex", home: "/h", sandboxMode: sandboxWorkspaceWrite, model: "gpt-6-luna"}
+ 	if got, want := codexCommand(shell.Posix(), opened), `CODEX_HOME='/h' 'codex' --no-alt-screen -a never -s workspace-write -c 'sandbox_workspace_write.network_access=true' -m 'gpt-6-luna' -c 'project_doc_fallback_filenames=["CLAUDE.md"]'`; got != want {
+ 		t.Errorf("codexCommand(%+v) = %s; want %s", opened, got, want)
+ 	}
+diff --git a/internal/shuttleengine/codexengine/config.go b/internal/shuttleengine/codexengine/config.go
+index e759b5ad..0c31c446 100644
+--- a/internal/shuttleengine/codexengine/config.go
++++ b/internal/shuttleengine/codexengine/config.go
+@@ -38,13 +38,28 @@ type Config struct {
+ 	Efforts []string `yaml:"efforts"`
+ 	// SkillRoots are the directories a skill is looked up under when a session loads skills.
+ 	SkillRoots []string `yaml:"skill_roots"`
++	// SandboxMode is the Codex sandbox every launch runs in, sandboxWorkspaceWrite or sandboxFullAccess.
++	SandboxMode string `yaml:"sandbox_mode"`
+ 	// WritableRoots are folders outside the workspace that a launch's sandbox lets the session write, such as a build cache;
+ 	// a leading "~/" names the user's home directory.
+ 	WritableRoots []string `yaml:"writable_roots"`
+ }
+ 
++// The Codex sandbox modes codex.yaml's sandbox_mode may name.
++const (
++	// sandboxWorkspaceWrite bounds the session's writes to the workspace, the writable roots and the temporary folders.
++	sandboxWorkspaceWrite = "workspace-write"
++	// sandboxFullAccess runs the session with no sandbox.
++	// It serves a machine where Codex's Linux sandbox cannot start.
++	// Bubblewrap there may not create the user namespace it needs.
++	sandboxFullAccess = "danger-full-access"
++)
++
+ // ConfigSpec returns the layered-load spec of codex.yaml, a per-worktree module.
+ // The local layer may not set the binary or the writable roots, since a writable root widens the sandbox.
++// The sandbox mode is a fact of the machine, whether its bubblewrap can start Codex's sandbox:
++// the machine layer may set it, so one machine runs unsandboxed while the tracked files keep the sandbox for the rest,
++// and the local layer may not.
+ func ConfigSpec() configengine.Spec {
+ 	return configengine.Spec{
+ 		Name:     "codex",
+@@ -55,6 +70,7 @@ func ConfigSpec() configengine.Spec {
+ 			"operator_home":  configengine.CategoryNone,
+ 			"efforts":        configengine.CategoryNone,
+ 			"skill_roots":    configengine.CategoryNone,
++			"sandbox_mode":   configengine.CategoryMachine,
+ 			"writable_roots": configengine.CategoryGuard,
+ 		},
+ 	}
+@@ -62,6 +78,7 @@ func ConfigSpec() configengine.Spec {
+ 
+ // LoadConfig resolves codex.yaml from the layer stack under dirs.
+ // An absent file in every layer resolves the template; a layer file that exists but is invalid is an error.
++// A sandbox_mode other than workspace-write or danger-full-access is invalid.
+ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+ 	resolved, err := configengine.LoadOrTemplate(dirs, ConfigSpec())
+ 	if err != nil {
+@@ -71,6 +88,9 @@ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+ 	if err := yaml.Unmarshal(resolved, &cfg); err != nil {
+ 		return Config{}, configengine.MarkInvalid(fmt.Errorf("unmarshal codex config: %w", err))
+ 	}
++	if cfg.SandboxMode != sandboxWorkspaceWrite && cfg.SandboxMode != sandboxFullAccess {
++		return Config{}, configengine.MarkInvalid(fmt.Errorf("codex.yaml's sandbox_mode %q is neither %s nor %s", cfg.SandboxMode, sandboxWorkspaceWrite, sandboxFullAccess))
++	}
+ 	return cfg, nil
+ }
+ 
+@@ -79,7 +99,7 @@ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+ func loadConfigOrRefuse(dirs configengine.Dirs) (Config, error) {
+ 	codex, err := LoadConfig(dirs)
+ 	if err != nil {
+-		return Config{}, fmt.Errorf("codexengine: %w; way forward: correct or remove the key in the file the error names, with lym config codex --layer <default|worktree|local> (or --set for a value)", err)
++		return Config{}, fmt.Errorf("codexengine: %w; way forward: correct or remove the key in the file the error names, with lym config codex --layer <default|worktree|machine|local> (or --set for a value)", err)
+ 	}
+ 	return codex, nil
+ }
+diff --git a/internal/shuttleengine/codexengine/doc.go b/internal/shuttleengine/codexengine/doc.go
+index d38f8e61..959ea6c9 100644
+--- a/internal/shuttleengine/codexengine/doc.go
++++ b/internal/shuttleengine/codexengine/doc.go
+@@ -14,8 +14,14 @@
+ // After startup the engine reads config.toml back and warns about a root Codex's own write dropped;
+ // the trust prompt's accept is the backstop.
+ //
+-// The launch line runs `-a never -s workspace-write`, so no approval prompt shows;
+-// it adds writable roots, each symlink-resolved as the trusted roots are.
++// The launch line runs `-a never`, so no approval prompt shows, and `-s` with codex.yaml's sandbox_mode.
++// The mode is workspace-write unless a layer sets danger-full-access, which runs the session with no sandbox.
++// That serves a machine whose bubblewrap may not create a user namespace.
++// There every shell command under workspace-write fails and the session writes no output.
++// The key is a machine key: the hub's machine override sets it for one machine, and a local override may not.
++// A value other than the two refuses the load.
++// The rest of this paragraph describes the workspace-write line; a danger-full-access line carries none of it.
++// The line adds writable roots, each symlink-resolved as the trusted roots are.
+ // The records checkout it is told through its Dirs lets the session write under the anchor's `.lym`.
+ // A Claude seat can write there too.
+ // It is kept as told, with a Warn, when it cannot be resolved.
+@@ -106,7 +112,7 @@
+ // it validates the model choice and readies the lym home as Prepare does,
+ // and its line runs Codex with no hooks and no first turn,
+ // so the session carries no shell guard and waits at its composer.
+-// The line keeps the network access, so an opened session reaches creel too.
++// The line keeps the sandbox mode and, under workspace-write, the network access, so an opened session reaches creel too.
+ // It appends no exit record, since an opened session has no events file.
+ // An opened session carries no creel hooks either, since it has no prompt file to hold the creel trust sentence.
+ // It is a pane-mail strand.
+diff --git a/internal/shuttleengine/codexengine/open_test.go b/internal/shuttleengine/codexengine/open_test.go
+index d7bed8f4..b2b2aecc 100644
+--- a/internal/shuttleengine/codexengine/open_test.go
++++ b/internal/shuttleengine/codexengine/open_test.go
+@@ -11,6 +11,7 @@ import (
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/shell"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -32,10 +33,20 @@ func TestOpenLaunch(t *testing.T) {
+ 		spec shuttleengine.OpenSpec
+ 		// setup changes the worktree before OpenLaunch.
+ 		setup func(t *testing.T, anchor string)
++		// wantSandboxMode is the sandbox the launch line carries; empty means sandboxWorkspaceWrite.
++		wantSandboxMode string
+ 		// wantErr holds the texts a refusal must carry; empty means the launch goes ahead.
+ 		wantErr []string
+ 	}{
+ 		{name: "BypassDefault", spec: shuttleengine.OpenSpec{Role: "explore", ModelChoice: shuttleengine.ModelChoice{Engine: "codex", Model: "gpt-6-luna", Effort: "high"}}},
++		{
++			name: "FullAccessSandboxMode",
++			spec: shuttleengine.OpenSpec{Role: "explore"},
++			setup: func(t *testing.T, anchor string) {
++				writeFile(t, configengine.ConfigFile(anchor, "codex"), "writable_roots: []\nsandbox_mode: "+sandboxFullAccess+"\n")
++			},
++			wantSandboxMode: sandboxFullAccess,
++		},
+ 		{name: "PromptPermissionMode", spec: shuttleengine.OpenSpec{Role: "explore", PermissionMode: "prompt"}, wantErr: []string{`permission mode "prompt"`, "way forward"}},
+ 		{name: "EffortOutsideEfforts", spec: shuttleengine.OpenSpec{Role: "explore", ModelChoice: shuttleengine.ModelChoice{Effort: "xhigh"}}, wantErr: []string{`effort "xhigh"`, "way forward"}},
+ 		{
+@@ -78,9 +89,14 @@ func TestOpenLaunch(t *testing.T) {
+ 				t.Fatalf("OpenLaunch() error: %v", err)
+ 			}
+ 
++			wantMode := tt.wantSandboxMode
++			if wantMode == "" {
++				wantMode = sandboxWorkspaceWrite
++			}
+ 			want := shuttleengine.Launch{Cmd: codexCommand(shell.ForGOOS(), launchLine{
+ 				bin:           "codex",
+ 				home:          repo.lymHome,
++				sandboxMode:   wantMode,
+ 				writableRoots: append([]string{records}, repo.wantGitDirs(anchor)...),
+ 				model:         tt.spec.Model,
+ 				effort:        tt.spec.Effort,
+diff --git a/internal/shuttleengine/codexengine/prepare_test.go b/internal/shuttleengine/codexengine/prepare_test.go
+index edf8328e..75bf684e 100644
+--- a/internal/shuttleengine/codexengine/prepare_test.go
++++ b/internal/shuttleengine/codexengine/prepare_test.go
+@@ -41,6 +41,7 @@ func readRecord(t *testing.T, home string) trustRecord {
+ // The writable roots are the told records checkout (none when the engine is told none).
+ // After it come the git dirs of a linked worktree or a plain clone, then the configured roots that exist.
+ // The hooks of the run are carried, with a guard per row that the python switch and the publish guard install.
++// The line runs codex.yaml's sandbox mode, workspace-write unless a layer sets danger-full-access.
+ // The line also carries the prompt pointer.
+ // It also pins the resume line, which exits and records the session start.
+ // An engine told no board gets no creel hooks, and the resume line has no session id.
+@@ -61,6 +62,8 @@ func TestPrepare_Launch(t *testing.T) {
+ 		configuredRoots bool
+ 		// gitDirsThroughLink reports whether the linked worktree reaches its git dir and common dir through a symlink.
+ 		gitDirsThroughLink bool
++		// fullAccess reports whether codex.yaml's worktree layer sets the danger-full-access sandbox mode.
++		fullAccess bool
+ 	}{
+ 		{name: "RecordsTold", toldRecords: true},
+ 		{name: "RecordsToldThroughLink", toldRecords: true, toldThroughLink: true},
+@@ -68,6 +71,7 @@ func TestPrepare_Launch(t *testing.T) {
+ 		{name: "PlainClone", plainClone: true},
+ 		{name: "ConfiguredRoots", toldRecords: true, configuredRoots: true},
+ 		{name: "GitDirsThroughLink", gitDirsThroughLink: true},
++		{name: "DangerFullAccess", toldRecords: true, fullAccess: true},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -102,6 +106,11 @@ func TestPrepare_Launch(t *testing.T) {
+ 				writeWritableRoots(t, anchor, cache+", "+filepath.Join(repo.base, "missing"))
+ 				wantRoots = append(wantRoots, cache)
+ 			}
++			wantMode := sandboxWorkspaceWrite
++			if tt.fullAccess {
++				writeFile(t, configengine.ConfigFile(anchor, "codex"), "writable_roots: []\nsandbox_mode: "+sandboxFullAccess+"\n")
++				wantMode = sandboxFullAccess
++			}
+ 			runDir := t.TempDir()
+ 
+ 			launch, err := engine.Prepare(runDir, shuttleengine.Spec{Prompt: "review the plan", DenyPublish: true, ModelChoice: shuttleengine.ModelChoice{Engine: "codex", Model: "gpt-6-astra", Effort: "medium"}}, shuttleengine.Config{DenyPython: true})
+@@ -116,6 +125,7 @@ func TestPrepare_Launch(t *testing.T) {
+ 				Cmd: buildLaunchCmd(sh, launchLine{
+ 					bin:           "codex",
+ 					home:          repo.lymHome,
++					sandboxMode:   wantMode,
+ 					writableRoots: wantRoots,
+ 					model:         "gpt-6-astra",
+ 					effort:        "medium",
+@@ -164,6 +174,7 @@ func TestPrepare_ExpandsHomeInWritableRoots(t *testing.T) {
+ 	want := buildLaunchCmd(shell.ForGOOS(), launchLine{
+ 		bin:           "codex",
+ 		home:          repo.lymHome,
++		sandboxMode:   sandboxWorkspaceWrite,
+ 		writableRoots: append(repo.wantGitDirs(anchor), cache),
+ 		hooks:         hookSettings(filepath.Join(runDir, "events.jsonl"), installedGuards(nil, guardInputs{}), creelDelivery{}),
+ 		firstTurn:     launchPointer(promptPath),
+@@ -228,6 +239,7 @@ func TestPrepare_InstallsGuardsFromItsInputs(t *testing.T) {
+ 			wantCmd := buildLaunchCmd(shell.ForGOOS(), launchLine{
+ 				bin:           "codex",
+ 				home:          repo.lymHome,
++				sandboxMode:   sandboxWorkspaceWrite,
+ 				writableRoots: repo.wantGitDirs(anchor),
+ 				hooks:         hookSettings(filepath.Join(runDir, "events.jsonl"), guards, creelDelivery{}),
+ 				firstTurn:     launchPointer(promptPath),
+@@ -463,6 +475,13 @@ func TestPrepare_RefusesBeforeWriting(t *testing.T) {
+ 			},
+ 			wantErr: []string{`codex.yaml's writable_roots "cache"`, "way forward"},
+ 		},
++		{
++			name: "UnknownSandboxMode",
++			setup: func(t *testing.T, anchor string) {
++				writeFile(t, configengine.ConfigFile(anchor, "codex"), "writable_roots: []\nsandbox_mode: read-only\n")
++			},
++			wantErr: []string{`codex.yaml's sandbox_mode "read-only"`, "way forward", "--layer <default|worktree|machine|local>"},
++		},
+ 		{
+ 			name: "RulesInWorktree",
+ 			setup: func(t *testing.T, anchor string) {
+@@ -618,7 +637,7 @@ func TestCheckAfterStartup(t *testing.T) {
+ 
+ // TestLoadConfig_Template pins codex.yaml's template:
+ // the codex binary on PATH, the homes under ~/, the efforts low to high;
+-// the Claude plugin cache as the skill root, and the Go build cache as the writable root.
++// the Claude plugin cache as the skill root, the workspace-write sandbox and the Go build cache as the writable root.
+ func TestLoadConfig_Template(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -627,7 +646,7 @@ func TestLoadConfig_Template(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("LoadConfig() error: %v", err)
+ 	}
+-	want := Config{Home: "~/.lym/codex", OperatorHome: "~/.codex", Efforts: []string{"low", "medium", "high"}, SkillRoots: []string{"~/.claude/plugins/cache"}, WritableRoots: []string{"~/.cache/go-build"}}
++	want := Config{Home: "~/.lym/codex", OperatorHome: "~/.codex", Efforts: []string{"low", "medium", "high"}, SkillRoots: []string{"~/.claude/plugins/cache"}, SandboxMode: sandboxWorkspaceWrite, WritableRoots: []string{"~/.cache/go-build"}}
+ 	if !reflect.DeepEqual(got, want) {
+ 		t.Errorf("LoadConfig() = %+v; want %+v", got, want)
+ 	}
+@@ -636,6 +655,63 @@ func TestLoadConfig_Template(t *testing.T) {
+ 	}
+ }
+ 
++// TestLoadConfig_SandboxModeLayers pins which layers set sandbox_mode in a hub.
++// The machine override wins over the worktree file.
++// So one machine runs unsandboxed while the tracked files keep the sandbox.
++// A local override that sets it refuses the load.
++func TestLoadConfig_SandboxModeLayers(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name     string
++		worktree string
++		machine  string
++		local    string
++		want     string
++		// wantErr is a text the load error must hold; empty means the load succeeds.
++		wantErr string
++	}{
++		{name: "MachineOverWorktree", worktree: sandboxWorkspaceWrite, machine: sandboxFullAccess, want: sandboxFullAccess},
++		{name: "WorktreeWithNoMachineFile", worktree: sandboxFullAccess, want: sandboxFullAccess},
++		{name: "LocalRefused", local: sandboxFullAccess, wantErr: `"sandbox_mode"`},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dirs := configengine.Dirs{Anchor: t.TempDir(), Board: t.TempDir()}
++			base := configengine.ConfigFile(dirs.Board, "codex")
++			mkdirAll(t, filepath.Dir(base), filepath.Dir(configengine.ConfigFile(dirs.Anchor, "codex")))
++			writeFile(t, base, configengine.SparseBaseHeader)
++			layers := []struct{ path, mode string }{
++				{configengine.ConfigFile(dirs.Anchor, "codex"), tt.worktree},
++				{configengine.MachineFile(dirs.Board, "codex"), tt.machine},
++				{configengine.LocalFile(dirs.Anchor, "codex"), tt.local},
++			}
++			for _, layer := range layers {
++				if layer.mode != "" {
++					mkdirAll(t, filepath.Dir(layer.path))
++					writeFile(t, layer.path, "sandbox_mode: "+layer.mode+"\n")
++				}
++			}
++
++			got, err := LoadConfig(dirs)
++			if tt.wantErr != "" {
++				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
++					t.Errorf("LoadConfig() error = %v; want one naming %s", err, tt.wantErr)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("LoadConfig() error: %v", err)
++			}
++			if got.SandboxMode != tt.want {
++				t.Errorf("LoadConfig().SandboxMode = %q; want %q", got.SandboxMode, tt.want)
++			}
++		})
++	}
++}
++
+ // TestExpandHomePath pins the home keys' resolution:
+ // a leading ~/ under the user's home, an absolute path kept, and an empty or relative value refused by its key.
+ func TestExpandHomePath(t *testing.T) {
+diff --git a/internal/shuttleengine/codexengine/template.yaml b/internal/shuttleengine/codexengine/template.yaml
+index f08cb9e0..4b750495 100644
+--- a/internal/shuttleengine/codexengine/template.yaml
++++ b/internal/shuttleengine/codexengine/template.yaml
+@@ -3,4 +3,5 @@ home: ~/.lym/codex  # the shared lym Codex home every Codex launch runs under as
+ operator_home: ~/.codex  # the operator's own Codex home, which lym never writes; the lym home links its auth.json and sessions here, so one login and its token refresh serve both
+ efforts: [low, medium, high]  # the reasoning efforts a Codex launch may take; a run whose model-spec names another effort is refused when it starts
+ skill_roots: [~/.claude/plugins/cache]  # the directories a skill <plugin>:<name> is looked up under, newest version first, when a Codex session loads skills; a leading ~/ is the user's home directory
++sandbox_mode: workspace-write  # the sandbox every Codex launch runs in: workspace-write bounds the session's writes to the workspace, the writable roots and the temporary folders; danger-full-access runs it with no sandbox, for a machine whose bubblewrap cannot create a user namespace (every shell command fails with "bwrap: setting up uid map: Permission denied"); set it on one machine with lym config codex --layer machine from the hub's prime worktree; a local override may not set it
+ writable_roots: [~/.cache/go-build]  # folders outside the workspace every Codex session's sandbox may write, such as a build cache, besides the records checkout and the checkout's git dirs lym adds itself; a leading ~/ is the user's home directory, a folder that does not exist is left out, and a local override may not set it
+diff --git a/pattern/PATTERN-config-layers.md b/pattern/PATTERN-config-layers.md
+index 41462aa2..0c5dd006 100644
+--- a/pattern/PATTERN-config-layers.md
++++ b/pattern/PATTERN-config-layers.md
+@@ -41,8 +41,9 @@ A key meeting no category is `CategoryNone` and the local layer may hold it.
+ ### Machine layer
+ 
+ - The open set is `configengine.MachineKeys`, the template keys classified `CategoryMachine`.
+-- The layer applies only for a hub-wide module with a `machine` key.
++- The layer applies only for a module with a `machine` key, hub-wide or per-worktree.
+   It also needs the told `Dirs` to carry both `Board` and `Anchor`.
++  It stacks below the local layer and above every tracked file: the hub file, or a per-worktree module's worktree file.
+   A hub-file check loads `Dirs{Board}` and so never stacks it.
+ - Its file is `<BoltDir>/.lym/config/<module>.machine.yaml`, never tracked.
+ - No reconcile, `hubreconcile.Ensure` included, reads, rewrites or removes the file.
+diff --git a/pattern/PATTERN-lym-files.md b/pattern/PATTERN-lym-files.md
+index 78c4686c..501212ac 100644
+--- a/pattern/PATTERN-lym-files.md
++++ b/pattern/PATTERN-lym-files.md
+@@ -22,7 +22,7 @@ Every never-tracked file lives under `.lym`, at the mirrored subpath of the `_ly
+ - No engine derives its own `.lym` path; each module exposes a scratch accessor beside its durable one.
+ - A module's local config override sits in the mirrored directory, as `.lym/config/<module>.local.yaml`.
+   It never sits at the mirrored file path `.lym/config/<module>.yaml`, which is the editor staging copy's.
+-- A hub-wide module's machine override sits under the board dir's `.lym/config/`, as `.lym/config/<module>.machine.yaml`.
++- A module's machine override sits under the board dir's `.lym/config/`, as `.lym/config/<module>.machine.yaml`.
+ - The split is structural, held in `fabricengine.structuralCommittedDirs` and `structuralNeverCommittedDirs`.
+   It is never read from `fabric.yaml`'s `pathspec`.
+ - Weft content is per-branch and is never a merge participant in either direction.
