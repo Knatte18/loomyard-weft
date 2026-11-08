@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -41,6 +41,57 @@
       "output": "",
       "at": "2026-11-08T15:40:45Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/test-binary-fork-guard/_lym/landing/summary.md",
+      "at": "2026-11-08T16:04:10Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-08T15:54:07.432374664Z",
+          "end": "2026-11-08T15:54:07.441383261Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-08T16:01:32.923197244Z",
+          "end": "2026-11-08T16:01:32.93311055Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-08T15:54:07.487513367Z",
+          "end": "2026-11-08T16:00:58.411504495Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-08T16:00:58.817450996Z",
+          "end": "2026-11-08T16:01:32.894653722Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-08T16:01:32.978256537Z",
+          "end": "2026-11-08T16:03:45.606591269Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-08T16:03:45.654743958Z",
+          "end": "2026-11-08T16:03:45.90104771Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-08T16:03:45.945918301Z",
+          "end": "2026-11-08T16:03:45.946077949Z"
+        }
+      ]
     }
   ],
   "product": {
