@@ -532,7 +532,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #85](https://github.com/Knatte18/loomyard/issues/85).\n\n## Seen\n\nIn hub DrillOpPlan (shortname dop), the reed session of beam `loomyard-setup` shows the **task** button group (HALT, CANCEL, code, terminal, agent) instead of the **beam** group, so the distill, refresh, merge-in and land buttons are missing.\n\n- `lym config --resolved reed` resolves `buttons.beam` from the template with distill, refresh, merge-in and land; no default, worktree or local layer writes a `buttons` group (the machine layer does not exist for reed).\n- The session's tmux option `@lym_button_spec` holds the task entries with `{slug}` = `loomyard-setup`, and `@lym_button_dir` points at the prime worktree, not the beam worktree.\n- The beam's board project shows `running · Beam-Await`, so the beam runs as a batten run; the session seems to be classified by that run as a task session.\n\n## Workaround\n\nNone applied; the operator runs `lym orch distill` / `lym orch refresh` by hand or asks the orch.\n\n## Expected\n\nA beam's reed session uses the `beam` group (and its worktree as button dir), whether or not the beam runs under batten.\n",
-      "status": "running · Drift-Baseline",
+      "status": "running · Drift-Await",
       "created": "2026-11-08T11:18:41Z",
       "revised": "2026-11-08T11:24:18Z",
       "profile": "light"
@@ -581,7 +581,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #83](https://github.com/Knatte18/loomyard/issues/83).\n\nEvery Codex launch from `lym shuttle` passes `-a never -s workspace-write` (hardcoded in `internal/shuttleengine/codexengine/command.go`, the launch line). On Ubuntu with `kernel.apparmor_restrict_unprivileged_userns = 1` and no sudo to add an AppArmor profile for bwrap, that sandbox cannot start: every shell command fails with `bwrap: setting up uid map: Permission denied`, the session stalls (shuttle state `idle-stalled`, cause `no-output`) or dies (`codex-exit`), and no output file is ever written.\n\nThe mode cannot be changed by configuration: `-s` on the command line overrides a `sandbox_mode` in a project `.codex/config.toml`, the codex module has no sandbox key, and `binary` may not be set in a machine or local layer.\n\nCurrent workaround: a wrapper set as `binary` in the worktree layer of `_lym/config/codex.yaml`, which rewrites `-s workspace-write` to `-s danger-full-access` and execs codex.\n\nWanted, either or both:\n- a `sandbox_mode` key in the codex module (workspace-write by default, danger-full-access allowed), settable per machine;\n- a preflight that runs bwrap once and, when it cannot create a user namespace, fails the run at once with that cause and the way forward, instead of a session that stalls without output.\n\nEnvironment: Linux 7.0.0-42-generic (Ubuntu), codex-cli 0.163.0.",
-      "status": "running · Worktree-Create",
+      "status": "running · Open-Window",
       "created": "2026-11-08T11:18:46Z",
       "revised": "2026-11-08T11:24:28Z",
       "profile": "light",
