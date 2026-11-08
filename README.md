@@ -120,7 +120,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Slack: a reply is not forwarded when mail waits at turn end, and a forward can reach Slack late** | [`slack-stop-hook-drops-reply`](design-slack-stop-hook-drops-reply.md) | darn · light | Code-Bouncer | neve | 51m<br>40m | slack, claude, creel |
+| T2 | **Slack: a reply is not forwarded when mail waits at turn end, and a forward can reach Slack late** | [`slack-stop-hook-drops-reply`](design-slack-stop-hook-drops-reply.md) | darn · light | Code-Bouncer | neve | 52m<br>40m | slack, claude, creel |
 | T9 | **PR-Review asks the parent orch for a review on its own, behind a hub and task setting** | [`dobby-pr-open-notice`](design-dobby-pr-open-notice.md) | darn · light | Code-Burler-Review | neve | 1h<br>13m | loom, burler, orch, config |
 
 #### Ready (0)
@@ -171,11 +171,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>2d | burler, shed, orch, quarry, report |
 | F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 3d<br>1d | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 3d<br>3d | batten, board, fabric, workspaces |
-
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T3 | **Which internal/fabricengine tier 1 tests protect nothing other tests do not: a coverage study** | [`fabric-test-redundancy`](design-fabric-test-redundancy.md) | 19m<br>18m | fabric, testkit |
