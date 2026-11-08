@@ -1,12 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Darn-Write → stuck",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -87,6 +86,40 @@
         }
       ],
       "budget_exempt": true,
+      "by": "shed"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/slack-presence-auto/_lym/landing/summary.md",
+      "at": "2026-11-08T15:18:41Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-08T15:09:27.636900751Z",
+          "end": "2026-11-08T15:09:27.647528644Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-08T15:09:27.70101976Z",
+          "end": "2026-11-08T15:18:16.249106425Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-08T15:18:16.31698137Z",
+          "end": "2026-11-08T15:18:16.498856788Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-08T15:18:16.579317326Z",
+          "end": "2026-11-08T15:18:16.579572592Z"
+        }
+      ],
       "by": "shed"
     }
   ],
