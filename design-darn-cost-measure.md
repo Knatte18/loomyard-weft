@@ -1,6 +1,6 @@
 # Measure darn cost per run and per 1000 lines, and a darn family against a tapestry
 
-`darn-cost-measure` · Task · research, loom
+`darn-cost-measure` · Task · research, loom · running · Worktree-Create
 
 ## Why (operator, 2026-11-08)
 
