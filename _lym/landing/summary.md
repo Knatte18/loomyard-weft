@@ -1,46 +1,43 @@
 # PR-Review asks the parent orch for a review behind pr_review_ask_parent
 
-A new loom key, `pr_review_ask_parent`, makes the PR-Review row ask the run's parent orch to review the pull request on its own once the pull request is open.
-Before this, the orch reviewed a run's pull request only when the operator asked for it each time.
-The key is off by default, so PR-Review runs as before unless a hub or a task turns it on.
+The operator finds the parent orch's review of a run's pull request useful, but gets one only by telling the PR-Review agent to ask, or by asking the orch directly.
+A new `loom.yaml` key, `pr_review_ask_parent` (default `false`), makes the PR-Review row ask on its own.
+It is open to the local layer, so a task's `run_settings` turns it on or off for one run.
+With the key off, PR-Review runs as before.
+
+Closes #86
 
 ## What changes
 
-- `loom.yaml` gains `pr_review_ask_parent: false`.
-  It is open to the local layer, so a task's `run_settings` turns it on or off for one run.
-- The PR-Review row asks once it has its interactive session and before it waits.
-  It sends one creel line, signed by the hub's `LOOM` program, to the nearest live orch above the pair.
-  The line opens `[pr-review request]` and names the slug, the pull request URL, the task and parent branches, and the PR-Review session's strand.
-  It tells the orch to answer that strand with `lym creel post <strand> "<answer>"`, saying it is satisfied or giving its findings.
-- The pull request record gains `parent_review_asked`, so a re-entry of the row does not ask again.
-  A review that starts afresh writes a new record, so the orch is asked again.
-- An unreadable setting, a failed post, or no orch recorded to take the line is logged.
-  The record is left unasked, so the row's next entry asks again.
-- The PR-Review stencil gets a "Your parent's review" section.
-  The agent fixes the parent's findings the way it handles the operator's requests, commits, tells the operator what changed, and asks the parent to look again until it is satisfied.
-  When the setting is off, the agent asks its parent only when the operator tells it to, as in today's manual flow.
-- The orch role gets a "Reviewing a pull request" section.
-  The orch hands the diff read to a one-shot fork and judges the result against what it knows the run needs.
-  It answers the session the request names and never approves, merges, closes or comments on the pull request.
+- `internal/loomengine`: `Config.PRReviewAskParent`, the `pr_review_ask_parent` key in `ConfigSpec` and its line in `template.yaml`.
+- `internal/landingshed`: once the row has the open pull request and its session, and before it waits, it mails the parent orch a line opening `[pr-review request]`.
+  The line names the slug, the pull request URL, the task and parent branches, and the PR-Review session's strand, which the orch answers.
+  Two new `PullRequestDeps` seams carry this: `ParentReviewWanted` (nil reads as off) and `AskParent`.
+- `internal/pullrequest`: `Record.ParentReviewAsked` keeps the ask to once per record.
+  A review started afresh writes a new record and so asks again.
+- `internal/loomcli`: `ParentReviewWanted` reads the key over the pair's layers, so `run_settings` applies.
+  `AskParent` goes through `orchcli.NotifyParent`.
+- `contracts/orchrole/orch-role.md`: a "Reviewing a pull request" section tells the orch how to answer a request.
+  It judges the change against what the run needs, answers the named session with satisfied or findings, and never approves, merges, closes or comments.
+- `contracts/stencils/landing/landing-template-pr-review.md`: the PR-Review agent is told that its parent may review.
+  It fixes the orch's findings like the operator's, commits, and asks the orch to look again until it is satisfied.
+- `docs/overview.md` and the `landingshed` package doc describe the setting and the row's behavior.
+- `internal/testkit/envkit` fills the new seams.
+  The large diffs in `internal/battencli/wire_seams_test.go` and `internal/loomcli/wiring_seams_test.go` are gofmt realignment from the longer map key.
 
 ## Design decisions
 
-- The key is in `loom.yaml`, not `landing.yaml`, beside `pr_reviewer`.
-  `landing.yaml` is hub-wide and closed to the local layer, so a task's `run_settings` could not override a key there.
-- The row sends the request itself, not the reviewer agent, so the ask does not depend on the agent's judgment.
-  The orch's answer goes to the reviewer session, which already handles findings.
-- The row's endings do not wait on the orch's answer.
-  The run already waits at PR-Review until the operator ends the review or approves or merges the pull request, so it stays there while the orch reviews.
-  A gate that blocked the operator's own ending until the orch answered could leave a run stuck when no orch answers.
-  The operator stays the one who ends the review.
+- The ask is non-fatal.
+  An unreadable setting, a failed post and an orch no record names are logged, and the next entry of the row asks again.
+  A failed write of `ParentReviewAsked` after a successful post is logged and not returned, so the driver does not re-step and post a second request.
+- The row asks and does not gate.
+  The orch's answer reaches the session's agent as creel mail that the row never reads.
 
-## Testing
+## To check by hand
 
-- `TestPRReview_Session` gains rows for each case:
-  an ask with the setting on, checking every field the request names and the record flag;
-  no ask when the record already holds one;
-  no ask when the setting is off;
-  no ask when the setting cannot be read;
-  and an unasked record after a failed post, or when no orch is recorded to take the line.
-- The loom config test gains a row that loads `pr_review_ask_parent: true` and checks that it is read.
-- The `landingDeps` drift test covers the two new `PullRequestDeps` seams by reflection.
+- The board entry says that with the setting on, the run waits at PR-Review until the orch answers satisfied or sends findings.
+  The row does not do this: a merge, an approval or the operator's `lym loom pr-continue` still ends it whether or not the orch has answered.
+  Decide whether the operator's ending overriding the orch is acceptable, or whether the row must hold until the orch answers.
+  Holding would need the answer recorded in `pullrequest.Record` and `judge` in `internal/landingshed/prreview.go` to wait on it.
+- Run the flow once against a real run with the key on, to see the orch receive the request and the agent act on its reply.
+  No test covers the live exchange.
