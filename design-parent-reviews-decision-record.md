@@ -17,7 +17,8 @@ Example: tests-tier1 met a scope question (whether to fix EFCoreStore's loss of 
 
 A setting, per hub and per task, that makes the run hand its Discussion decision record to the parent orch for review before Plan starts.
 The orch answers approved or sends findings; findings go back to Discussion as a review round does, and Plan starts only on approval.
-It complements #86 (the parent asked for review at PR time) and could replace it for most runs.
+It complements #86 (the parent asked for review at PR time), which has landed (`639e4fab`): the `loom.yaml` key `pr_review_ask_parent`, default `false`, open to a task's `run_settings`, makes the PR-Review row mail the parent orch a `[pr-review request]`.
+This setting could replace it for most runs.
 
 
 ## Issue comment, 2026-11-08
