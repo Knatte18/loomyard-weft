@@ -1,0 +1,18 @@
+---
+round: 1
+focus:
+  - "Pattern completeness per watched guard: for each test the diff marks, read the test body and its helpers and list every file or directory it reads (walk roots, pinned paths, embedded stencils, allowlists, imported helper files); settle whether each such file matches one of its `//lym:watch` patterns, so no change that could fail the test is skipped."
+  - "Walk depth: for each recursive walk, settle whether the patterns reach one level below the deepest file scanned today, and whether `path.Match` semantics (a `/` pattern matches the full relative path, `*` never crosses `/`) make each glob match what the comment says it does."
+  - "`TestNoDeniedRecovery_ScannedSurfaceHasNone` and `TestWebsterRetiredSteps_ScannedSurfaceHasNone` in `cmd/lym`: compare the scanned-surface definition in the test (roots, extensions, file kinds, shared matcher helpers) with the patterns, including the `internal/webster*`, `internal/shed*`, `internal/loom*` globs and the non-Go file kinds under `contracts/specs` and `plugins/ly/skills`."
+  - "`TestSandboxCoverage_AllModulesCoveredOrExcluded`: settle whether the patterns cover every input that decides module registration and coverage (live cobra root construction, each module's command name source, the suite file, the excluded-modules list in the test's own file)."
+  - "`TestStencils_NameGoValues` and the other stencil guards: settle whether the Go packages whose values the test names, the stencil registry, the embed declaration and shared helpers in other `contracts/stencils` test files are all covered, and whether the `internal/parentdirective` and `internal/editdirective` patterns are complete for the two directive tests."
+  - "Pinned-path guards (`TestCwdMutation_*`, `TestVerifiedTree_PlanVerifySitesCallVerify`): settle whether the exact paths match the test's subject lists and allowlists as they stand, and whether any list entry or allowlist path is missing from the patterns."
+  - "`scankit` and other shared helpers: for each marked test, settle whether it depends on a helper package or file beyond `internal/testkit/scankit/*.go` (for example `tiergate`, `shellguard`, `hubforge`, other test files in the package) whose change could alter the outcome."
+  - "Unmarked versus marked classification: check the guards the change description lists as unmarked against the goal, which asks for a marker on every guard whose outcome only a bounded set of files can change; settle whether any listed unmarked guard, or any `//lym:guard` test absent from both lists, scans a bounded set and so should be marked."
+  - "Change description claims: check the stated counts of marked and unmarked guards, the per-test pattern tables and the skip estimate against the diff and the module's `//lym:guard` tests; the goal's report asks for each guard's patterns or reason and an estimate from the 14 runs."
+  - "New doc-comment sentences on each marked test (the `A narrowed gate runs it only when ...` lines): settle whether each names the right trigger set for its patterns, and that the added lines follow the repository's comment conventions and `//lym:` marker placement rules (a misplaced marker refuses the gate)."
+  - "`pattern/PATTERN-test-speed.md`: settle whether the added bullets state the rule accurately against the diff, sit in the section the change description names, and conflict with no neighbouring bullet or `gatecli` doc on watched tests."
+---
+
+Rationale: the whole change is watch markers, so the central risk is a pattern set that omits a file the test reads and so lets a failing change skip the guard.
+The `Do not flag` items (build and test results, answer-key wording) are left out of the focus.
