@@ -34,7 +34,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Re-measure the batching hook once its transcript wait has landed**<br>• Count firings against edit follows and lookup chains again, now that the hook waits for its call to reach the transcript | [`batching-hook-remeasure-wait`](design-batching-hook-remeasure-wait.md) | darn |  | 22h<br>22h | claude, shuttle |
+| T4 | `draft` **Re-measure the batching hook once its transcript wait has landed**<br>• Count firings against edit follows and lookup chains again, now that the hook waits for its call to reach the transcript | [`batching-hook-remeasure-wait`](design-batching-hook-remeasure-wait.md) | darn · docs |  | 22h<br>0m | claude, shuttle |
 
 ## Notes (17)
 
