@@ -8,17 +8,9 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (1)
+## Tasks (0)
 
 Concrete and claimable; only a task can run.
-
-### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **A mechanical way to find redundant tests: package-scoped coverage, a map per package, a check on a diff** | [`redundant-test-finder`](design-redundant-test-finder.md)<br>[Sketch](decision-redundant-test-finder.md) | motif | Discussion-Bouncer | neve | 57m<br>51m | testkit, gate |
 
 ### Ready (0)
 
@@ -26,9 +18,15 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (18)
+## Notes (19)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Sketches (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| S1 |  | **A mechanical way to find redundant tests: package-scoped coverage, a map per package, a check on a diff** | [`redundant-test-finder`](design-redundant-test-finder.md)<br>[Sketch](decision-redundant-test-finder.md) | 57m<br>0m | testkit, gate |
 
 ### Research (1)
 
