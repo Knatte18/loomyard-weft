@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Expect",
+  "current_producer": "Darn-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Expect",
-    "last": "Drift-Await → skipped",
+    "now": "Darn-Write",
+    "last": "Drift-Expect → skipped",
     "wait": ""
   },
   "history": [
@@ -33,6 +33,13 @@
       "outcome": "skipped",
       "output": "",
       "at": "2026-11-08T11:00:52Z",
+      "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Drift-Expect",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-08T11:00:53Z",
       "reason": "drift.enabled = false"
     }
   ],
