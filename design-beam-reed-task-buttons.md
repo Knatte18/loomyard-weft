@@ -1,6 +1,6 @@
 # Beam reed session gets the task button group instead of beam
 
-`beam-reed-task-buttons` · Task · bug, reed, pawl · running · Code-Burler-Review
+`beam-reed-task-buttons` · Task · bug, reed, pawl · running · Code-Burler-Fix
 
 Imported from [issue #85](https://github.com/Knatte18/loomyard/issues/85).
 
