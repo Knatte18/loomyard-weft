@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-08 17:05 UTC; every age below is as of then.
+Rendered 2026-11-08 17:06 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -116,13 +116,19 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Ready (1)
+#### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T2 | **The sampler carries drift rows, off by default and switched on per task** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | darn · solid | Worktree-Create | neve | 5d<br>0m | drift, shed, loom |
+
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T2 | **The sampler carries drift rows, off by default and switched on per task** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | darn · solid |  | 5d<br>0m | drift, shed, loom |
+_None._
 
 ### Notes (18)
 
