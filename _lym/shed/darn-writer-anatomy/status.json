@@ -1,11 +1,11 @@
 {
-  "current_producer": "Run-Shed",
+  "current_producer": "Land",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Run-Shed",
-    "last": "Run-Shed → bounced to Run-Shed",
+    "now": "Land",
+    "last": "Run-Shed → done",
     "wait": ""
   },
   "history": [
@@ -61,6 +61,41 @@
       "at": "2026-11-08T14:36:28Z",
       "budget_exempt": true,
       "routed_to": "Run-Shed",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → failed at Friction-Reflect",
+      "at": "2026-11-08T14:47:49Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "by": "shed",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child failed → running at Friction-Reflect",
+      "at": "2026-11-08T14:47:51Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → done at Friction-Reflect",
+      "at": "2026-11-08T14:52:30Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-08T14:53:01Z",
       "machine": "neve"
     }
   ]
