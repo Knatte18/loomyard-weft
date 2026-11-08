@@ -21,5 +21,12 @@ Cut and fold `internal/fabricengine` tier 1 tests from the report, following its
 - Where a test asserts pure logic through git (`TestList`, `TestSourceDirtyPaths`, `TestUnwire_LeavesSiblingWorktreeUndirtied`), move the assertion to a tier 0 test when the parser or table can take its input without git; keep the git test otherwise.
 - Drop a test whose rarest block count is 2 only with its partner staying.
 
+## How the writer works (operator, 2026-11-08)
+
+The work is too large for the darn writer alone: it must delegate to subagents through the Agent tool.
+Split the tests into batches by source file, one subagent per batch, never two subagents on the same file;
+each reads its tests, decides drop, keep or fold under the rules above, and makes the edits.
+The writer reads their reports, settles anything they flag and runs the gate.
+
 Measure the package's tier 1 time in a gate pass before and after, once each, and state both in the PR.
 No production code changes beyond what a fold or a tier 0 move needs.
