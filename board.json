@@ -498,6 +498,26 @@
       "body": "## Seen (operator, 2026-11-08)\n\nNeve crashed at about 15:30 and rebooted.\nBringing lym back took the operator several manual steps: starting the hub's orch session by hand, after which the orch and dobby took the runs up again, one by one.\nA run whose step was cut off halts (`slack-presence-auto` at Darn-Write, `loop-exited`) and waits for the orch.\nVS Code needs nothing: on Kubuntu it reopens the windows it had open by itself.\n\n## Idea (operator, 2026-11-08)\n\nOne desktop shortcut brings every lym session of the machine back after a crash or reboot:\n\n- For each hub that was live on the machine, it starts the prime's orch session in its terminal window, as starting it by hand does today; the orch and dobby then take up the runs.\n- It opens the reed terminal windows the operator had open, such as the prime's and each running task's.\n- The shortcut is a `.desktop` launcher lym installs, which runs one `lym` verb; the verb is the part that does the work, so it can also be run from a terminal.\n\nOpen: whether the verb finds the hubs from the machine's hub registry or from a list the operator keeps; whether it opens a reed window for every running task or only the ones that were open; whether interrupted runs are resumed by the verb or left to the orch.\n",
       "created": "2026-11-08T14:40:16Z",
       "revised": "2026-11-08T14:40:16Z"
+    },
+    {
+      "id": 1228,
+      "handle": "B1",
+      "slug": "test-binary-fork-guard",
+      "title": "A test binary pinned as a tmux job re-runs its own suite and fork-bombs the machine",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "reed",
+        "gate",
+        "testkit"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Guard every command lym pins from os.Executable so a test binary is never launched by tmux",
+      "body": "## Seen (orch, 2026-11-08)\n\nNeve froze twice on 2026-11-08, at 14:37 and 15:40, and needed a hard restart each time.\nThe journal's memory samples show a fork bomb of `reedengine.test`, `tmux` and `bash` processes: from 125 to 537 test processes in four minutes, load above 800, memory and swap full.\nThe cause was in the running task `slack-presence-auto` (commit `4aa372a7`): a reed status job built from the running binary's own path (`composeSlackStateCommand`, `internal/reedengine/panebin.go`).\nUnder `go test` that path is the test binary, so each tmux session a test made ran the test binary again, which ran the suite and made more sessions.\nThat run carries a parent decision to fix its own code.\n\n## Idea\n\nGuard against the whole class, not only this job:\n\n- Every package whose code pins a command built from `os.Executable` into tmux (status jobs, click bindings, hooks) gets a `TestMain` that exits at once when the test binary starts with arguments that are not test flags.\n- Or one shared helper resolves \"this binary\" and refuses to return a test binary's path, so production code can never pin one.\n- The gate could also cap the processes a test run may spawn, so a loop fails the gate instead of freezing the machine.\n",
+      "created": "2026-11-08T14:51:17Z",
+      "revised": "2026-11-08T14:51:17Z"
     }
   ],
   "prime_owner": "neve",
