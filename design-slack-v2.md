@@ -1,6 +1,6 @@
 # Slack v2: one bot, one channel per orch, push in place of polling
 
-`slack-v2` · Task · sketch, slack, creel, orch · running · Worktree-Create
+`slack-v2` · Task · sketch, slack, creel, orch · running · Seed-Child
 
 Decision record: [Sketch](decision-slack-v2.md)
 
