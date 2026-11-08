@@ -1,14 +1,30 @@
 {
-  "current_producer": "Discussion-Write",
+  "current_producer": "Discussion-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Write",
-    "last": "",
+    "now": "Discussion-Bouncer",
+    "last": "Discussion-Write → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Discussion-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/slack-v2/_lym/discussion/decision-record.md",
+      "at": "2026-11-08T08:25:05Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-11-08T08:24:20.334845247Z",
+          "end": "2026-11-08T08:25:04.902545242Z"
+        }
+      ]
+    }
+  ],
   "product": {
     "slug": "slack-v2",
     "parent": "main",
