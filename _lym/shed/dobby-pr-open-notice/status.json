@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Fix",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Fix",
-    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
+    "now": "Code-Bouncer",
+    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
     "wait": ""
   },
   "history": [
@@ -105,6 +105,65 @@
       ],
       "budget_exempt": true,
       "routed_to": "Code-Burler-Fix"
+    },
+    {
+      "producer": "Code-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/dobby-pr-open-notice/_lym/reviews/code/round-1-review.md",
+      "at": "2026-11-08T16:48:11Z",
+      "gate_attempts": 2,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-08T16:45:23.147906496Z",
+          "end": "2026-11-08T16:45:23.156350622Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-08T16:45:37.841888747Z",
+          "end": "2026-11-08T16:45:37.850670825Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-08T16:45:58.505880972Z",
+          "end": "2026-11-08T16:45:58.515949415Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-08T16:45:23.1984507Z",
+          "end": "2026-11-08T16:45:23.37342019Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-08T16:45:23.769996611Z",
+          "end": "2026-11-08T16:45:37.818776528Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-08T16:45:37.893362528Z",
+          "end": "2026-11-08T16:45:38.026979169Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-08T16:45:38.419645109Z",
+          "end": "2026-11-08T16:45:58.479093562Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-08T16:45:58.560993646Z",
+          "end": "2026-11-08T16:48:10.976688511Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Bouncer"
     }
   ],
   "product": {
