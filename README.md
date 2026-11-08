@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-08 14:40 UTC; every age below is as of then.
+Rendered 2026-11-08 14:41 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -90,7 +90,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Measure what the darn writer spends on: writing, research, thinking, gate waits**<br>• Break the darn writer cost down by token kind and activity, with cache re-writes after gate waits and what a cold gate fixer would save | [`darn-writer-anatomy`](design-darn-writer-anatomy.md) | darn · docs | Darn-Write | neve | 1h<br>1h | darn, loom |
+| T1 | **Measure what the darn writer spends on: writing, research, thinking, gate waits**<br>• Break the darn writer cost down by token kind and activity, with cache re-writes after gate waits and what a cold gate fixer would save | [`darn-writer-anatomy`](design-darn-writer-anatomy.md) | darn · docs | Drift-Verify | neve | 1h<br>1h | darn, loom |
 | T2 | **Slack in reed: a connection toggle and a presence toggle, presence per machine and switching by itself**<br>• lym switches presence on an operator Slack message or pane line, tells operator lines from its own injects, and shows a slack on/off toggle in reed | [`slack-presence-auto`](design-slack-presence-auto.md) | darn · solid | Darn-Write | neve | 2d<br>1h | reed, shuttle, slack |
 
 #### Ready (0)
@@ -128,7 +128,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 5w<br>12d | burler |
-| F2 |  | **One desktop shortcut brings every lym session of the machine back after a crash or reboot**<br>• A lym verb and a .desktop launcher that start each live hub orch and reopen the reed windows | [`machine-restart-shortcut`](design-machine-restart-shortcut.md) | 0m<br>0m | orch, reed, termwindow, shortcut |
+| F2 |  | **One desktop shortcut brings every lym session of the machine back after a crash or reboot**<br>• A lym verb and a .desktop launcher that start each live hub orch and reopen the reed windows | [`machine-restart-shortcut`](design-machine-restart-shortcut.md) | 1m<br>1m | orch, reed, termwindow, shortcut |
 | F3 |  | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md) | 5h<br>1h | slack, creel, orch |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 9d<br>2d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 4w<br>4d | board, ide, orch |
