@@ -1,6 +1,6 @@
 # Measure where a Webster run spends its time, from recorded runs
 
-`webster-time-analysis` · Task · research, webster · running · PR-Review
+`webster-time-analysis` · Task · research, webster · running · Finalize
 
 ## Why (operator, 2026-11-08)
 
