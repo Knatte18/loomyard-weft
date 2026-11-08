@@ -76,11 +76,11 @@ _None._
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-## [P0 Root: entries under no project](project-root.md) (21)
+## [P0 Root: entries under no project](project-root.md) (22)
 
 Owner `neve`
 
-### Tasks (3)
+### Tasks (4)
 
 Concrete and claimable; only a task can run.
 
@@ -93,19 +93,14 @@ Held by a run; its scope is locked until the run ends.
 | T1 | **Ship the rule: a tapestry-sized note runs as a Motif, then raddle**<br>• Move the Motif-first rule from the hub heddle entry into the shipped board policy and orch instructions of lym<br>• `loom: code_assist_reviewer_model astra[medium]` | [`motif-before-tapestry`](design-motif-before-tapestry.md) | darn · light | Code-Burler-Review | neve | 40m<br>40m | orch, board |
 | T2 | **Slack relay: one Socket Mode connection per machine, one channel per orch, two tokens** | [`slack-push-channels`](design-slack-push-channels.md)<br>[Sketch](decision-slack-push-channels.md) | tapestry · solid | Code-Burler-Fix | neve | 2h<br>2h | slack, creel, orch |
 
-#### Ready (0)
+#### Ready (2)
 
 Waits on nothing open; can start now.
 
-_None._
-
-#### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Reed gives the Codex assist reviewer pane a fixed width instead of half beside Claude**<br>• The Codex assistant reviewer pane keeps a fixed column width; it should split the width evenly with the Claude reviewer pane | [`reed-assist-pane-width`](design-reed-assist-pane-width.md) | darn |  | 38m<br>38m | reed, codex |
+| T3 | **Reed gives the Codex assist reviewer pane a fixed width instead of half beside Claude**<br>• The Codex assistant reviewer pane keeps a fixed column width; it should split the width evenly with the Claude reviewer pane<br>• `loom: code_assist_reviewer_model astra[medium]` | [`reed-assist-pane-width`](design-reed-assist-pane-width.md) | darn · light |  | 38m<br>0m | reed, codex |
+| T4 | **Measure darn cost per run and per 1000 lines, and a darn family against a tapestry**<br>• Read records of darn and tapestry runs landed since 2026-10-25 and price each darn phase, for the arras recipe | [`darn-cost-measure`](design-darn-cost-measure.md) | darn · docs |  | 0m<br>0m | loom |
 
 ### Notes (18)
 
