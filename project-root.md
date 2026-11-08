@@ -8,11 +8,11 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (4)
+## Tasks (5)
 
 Concrete and claimable; only a task can run.
 
-### Running (4)
+### Running (5)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -22,6 +22,7 @@ Held by a run; its scope is locked until the run ends.
 | T2 | **Slack relay: one Socket Mode connection per machine, one channel per orch, two tokens** | [`slack-push-channels`](design-slack-push-channels.md)<br>[Sketch](decision-slack-push-channels.md) | tapestry · solid | Code-Burler-Fix | neve | 2h<br>2h | slack, creel, orch |
 | T3 | **Reed gives the Codex assist reviewer pane a fixed width instead of half beside Claude**<br>• The Codex assistant reviewer pane keeps a fixed column width; it should split the width evenly with the Claude reviewer pane<br>• `loom: code_assist_reviewer_model astra[medium]` | [`reed-assist-pane-width`](design-reed-assist-pane-width.md) | darn · light | Worktree-Create | neve | 38m<br>0m | reed, codex |
 | T4 | **Measure darn cost per run and per 1000 lines, and a darn family against a tapestry**<br>• Read records of darn and tapestry runs landed since 2026-10-25 and price each darn phase, for the arras recipe | [`darn-cost-measure`](design-darn-cost-measure.md) | darn · docs | Worktree-Create | neve | 0m<br>0m | loom |
+| T5 | **Arras: one recipe that runs Motif and raddle in a row, with a perch on the split**<br>• Discussion, raddle split and a split perch in one run; the operator only releases the filed tasks | [`motif-raddle-recipe`](design-motif-raddle-recipe.md) | motif | Worktree-Create | neve | 31m<br>0m | shed, loom, burler, arbiter, board |
 
 ### Ready (0)
 
@@ -29,7 +30,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (18)
+## Notes (17)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -48,14 +49,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E7 |  | **Each part agent plans and builds its own part, instead of joining the parts into one plan** | [`parts-plan-and-build`](design-parts-plan-and-build.md) | 5d<br>2d | loom |
 | E9 |  | **An interactive agent idle for a set time gets its session compacted**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 7d<br>4d | shed, shuttle, batten |
 
-### Features (13)
+### Features (12)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 5w<br>12d | burler |
 | F2 |  | **Slack presence follows where the operator writes, with a reed toggle**<br>• lym switches presence on an operator Slack message or pane line, tells operator lines from its own injects, and shows a slack on/off toggle in reed | [`slack-presence-auto`](design-slack-presence-auto.md) | 2d<br>2d | reed, shuttle |
 | F3 |  | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md) | 3h<br>56m | slack, creel, orch |
-| F4 |  | **Arras: one recipe that runs Motif and raddle in a row, with a perch on the split**<br>• Discussion, raddle split and a split perch in one run; the operator only releases the filed tasks | [`motif-raddle-recipe`](design-motif-raddle-recipe.md) | 31m<br>3m | shed, loom, burler, arbiter, board |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 9d<br>2d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 4w<br>4d | board, ide, orch |
 | F12 |  | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md) | 5d<br>19h | claude, shuttle, config |
