@@ -70,7 +70,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B3 |  | **Codex engine: the forced workspace-write sandbox fails where bubblewrap cannot create user namespaces** | [`codex-sandbox-mode`](design-codex-sandbox-mode.md) | 3m<br>3m | codex, shuttle, preflight |
+| B3 |  | **Codex engine: the forced workspace-write sandbox fails where bubblewrap cannot create user namespaces** | [`codex-sandbox-mode`](design-codex-sandbox-mode.md) | 4m<br>4m | codex, shuttle, preflight |
 
 ### Features (1)
 
