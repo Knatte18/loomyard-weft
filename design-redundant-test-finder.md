@@ -1,6 +1,6 @@
 # A mechanical way to find redundant tests: package-scoped coverage, a map per package, a check on a diff
 
-`redundant-test-finder` · Task · sketch, testkit, gate · running · Worktree-Create
+`redundant-test-finder` · Task · sketch, testkit, gate · running · Open-Window
 
 Decision record: [Sketch](decision-redundant-test-finder.md)
 
