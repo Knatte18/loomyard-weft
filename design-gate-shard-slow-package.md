@@ -21,6 +21,9 @@ Measure, once each, on a quiet machine:
 
 1. The share of the package's tier 1 time spent in tests that are not marked parallel, and the longest serial chain, from one `-json` run's events.
 2. The package's wall as one process, and at two and four shards, each shard a `-run` regex over a share of the top-level tests, the shards started together: three runs in all.
+3. During the one-process run of item 2, whether the package is bound by CPU or by waiting: the CPU use across the run (for example `/usr/bin/time -v` or sampled `/proc/stat`), the disk wait, and the count of git processes and hub copies.
+   Most tests already call `t.Parallel()` (55 of the package's test files have none, 9 of them set environment variables), yet the package runs only about three times faster than serial;
+   say whether more parallel tests, shards, or fewer git processes and hub copies would move the wall.
 
 The report lands under `docs/research/speed/` with the scripts beside it, states the machine, and says whether sharding is worth building.
 No code or test changes.
