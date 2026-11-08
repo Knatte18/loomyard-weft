@@ -36,19 +36,19 @@ Real Codex launches through lym shuttle check home, sandbox, hooks, guards, pane
 
 Concrete and claimable; only a task can run.
 
+#### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T6 | **Codex engine: the forced workspace-write sandbox fails where bubblewrap cannot create user namespaces** | [`codex-sandbox-mode`](design-codex-sandbox-mode.md) | darn · light | Worktree-Create | neve | 5m<br>0m | codex, shuttle, preflight |
+
 #### Ready (0)
 
 Waits on nothing open; can start now.
 
 _None._
-
-#### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T6 | `draft` **Codex engine: the forced workspace-write sandbox fails where bubblewrap cannot create user namespaces** | [`codex-sandbox-mode`](design-codex-sandbox-mode.md) | darn · light |  | 5m<br>0m | codex, shuttle, preflight |
 
 ### Notes (2)
 
@@ -100,7 +100,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Run the cmd/lym tests in the Webster batch gate so verify failures surface in the fork**<br>• Batch gate also runs cmd/lym tests, so a break there is fixed by the batch fork instead of a verify-fix round | [`batch-gate-cmd-lym`](design-batch-gate-cmd-lym.md) | darn · light | Finalize | neve | 27m<br>27m | webster, gate |
 | T2 | **Slack relay: one Socket Mode connection per machine, one channel per orch, two tokens** | [`slack-push-channels`](design-slack-push-channels.md)<br>[Sketch](decision-slack-push-channels.md) | tapestry · solid | Webster | neve | 1h<br>1h | slack, creel, orch |
-| T3 | **Re-measure writer lookups and Plan phase cost on the tapestry runs since 3085f451**<br>• One read-only study: early lookup delegation and its carry, and whether the Plan phase cost has fallen since 2026-10-24 | [`writer-cost-remeasure`](design-writer-cost-remeasure.md) | darn · docs | PR-Review | neve | 3d<br>25m | loom, stencil |
+| T3 | **Re-measure writer lookups and Plan phase cost on the tapestry runs since 3085f451**<br>• One read-only study: early lookup delegation and its carry, and whether the Plan phase cost has fallen since 2026-10-24 | [`writer-cost-remeasure`](design-writer-cost-remeasure.md) | darn · docs | Finalize | neve | 3d<br>25m | loom, stencil |
 | T4 | **Beam reed session gets the task button group instead of beam** | [`beam-reed-task-buttons`](design-beam-reed-task-buttons.md) | darn · light | Worktree-Create | neve | 5m<br>0m | reed, pawl |
 | T5 | **Burler fix round: decision-class rule conflicts with parent ruling mail, fixer has no outlet to parent** | [`fixer-parent-ruling`](design-fixer-parent-ruling.md) | darn · light | Worktree-Create | neve | 5m<br>0m | burler, stencil |
 
