@@ -436,6 +436,26 @@
       "status": "running · Discussion-Burler-Fix",
       "created": "2026-11-08T11:58:57Z",
       "revised": "2026-11-08T12:30:26Z"
+    },
+    {
+      "id": 1225,
+      "handle": "E2",
+      "slug": "raddle-darn-sizing",
+      "title": "Raddle cuts darn families for size and concurrency",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shed",
+        "loom",
+        "darn"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once",
+      "body": "## Seen (darn-cost-measure, 2026-11-08)\n\n`docs/research/loom/darn-cost-2026-11-08/report.md`:\n\n- A darn costs about $4.48 fixed plus $1.43 per 1000 changed lines (r 0.31 over 279 darns): the fixed part dominates, so fewer, larger darns cost less per line.\n- The 12 darns of the `fabric-test-speed` raddle split cost $14.16 per 1000 lines against $11.29 for the tapestry runs; 12 fixed costs are about $54 of the family's $58.53.\n- The 12 darns ran 359 awake minutes in 163 calendar minutes, about 2.2 at a time, held back by a dependency chain (`dotgit-worktree-reader` ahead of `fabric-test-folds` and others).\n\n## Decision (operator, 2026-11-08)\n\nA large change runs as `arras`, then a project of darns; a lean tapestry recipe with a solo Opus planner and Sonnet Webster (`satin`) was weighed and dropped, since its planner and Webster cost more than a darn of the same size.\n\n## Idea (operator, 2026-11-08)\n\nTune raddle's split for darn families:\n\n- Size: cut parts as large as one darn session handles well, instead of many small parts, so the family pays fewer fixed costs.\n- Concurrency: cut parts so the `depends_on` chain is short and parts with no dependency between them touch different packages, so more darns run at the same time.\n\nOpen: what part size a darn handles well, and how raddle is told (its stencil, its perch on the split under `arras`, or both); the first `arras` families give the figures.\n",
+      "created": "2026-11-08T13:17:23Z",
+      "revised": "2026-11-08T13:17:23Z"
     }
   ],
   "prime_owner": "neve",
