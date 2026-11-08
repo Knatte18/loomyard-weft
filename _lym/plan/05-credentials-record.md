@@ -1,10 +1,10 @@
 # Card 5 — credentials-record
 
 **Create:**
-- `plan:internal/slackengine#Credentials` -> `type Credentials struct`
-- `plan:internal/slackengine#ReadCredentials` -> `func ReadCredentials(path string) (Credentials, error)`
-- `plan:internal/slackengine#WriteCredentials` -> `func WriteCredentials(path string, creds Credentials) error`
-- `plan:internal/slackengine#Credentials.Missing` -> `func (c Credentials) Missing() []string`
+- `internal/slackengine#Credentials`
+- `internal/slackengine#ReadCredentials`
+- `internal/slackengine#WriteCredentials`
+- `internal/slackengine#Credentials.Missing`
 
 **Delete:**
 - `internal/slackengine#ReadToken`

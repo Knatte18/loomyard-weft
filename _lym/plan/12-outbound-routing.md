@@ -28,8 +28,8 @@
 **Uses:**
 - `plan:internal/slackengine#channelKeeper.ensure`
 - `plan:internal/slackengine#channelKeeper.join`
-- `plan:internal/slackengine#UpdateChannelMap`
-- `plan:internal/slackengine#ReadChannelMap`
+- `internal/slackengine#UpdateChannelMap`
+- `internal/slackengine#ReadChannelMap`
 - `plan:internal/slackengine#errChannelRefused`
 - `plan:internal/slackengine#NewChannelKeeper`
 - `internal/slackengine#programSlug`

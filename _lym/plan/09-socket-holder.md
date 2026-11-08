@@ -39,12 +39,12 @@
 - `cmd/lym#unboundedWaitFiles`
 
 **Uses:**
-- `plan:internal/slackengine#Socket`
-- `plan:internal/slackengine#Envelope`
-- `plan:internal/slackengine#Dialer`
+- `internal/slackengine#Socket`
+- `internal/slackengine#Envelope`
+- `internal/slackengine#Dialer`
 - `plan:internal/slackengine#LiveHubs`
-- `plan:internal/slackengine#ReadChannelMap`
-- `plan:internal/slackengine#ChannelMap.OrchOf`
+- `internal/slackengine#ReadChannelMap`
+- `internal/slackengine#ChannelMap.OrchOf`
 - `internal/slackengine#updateRelayState`
 - `internal/slackengine#relayNoticePrefix`
 - `internal/slackengine#orchName`

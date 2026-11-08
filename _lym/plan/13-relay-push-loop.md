@@ -43,12 +43,12 @@
 - `plan:internal/slackengine#inbound.start`
 - `plan:internal/slackengine#inbound.drain`
 - `plan:internal/slackengine#inbound.retryOwed`
-- `plan:internal/slackengine#NewDialer`
-- `plan:internal/slackengine#ReadCredentials`
+- `internal/slackengine#NewDialer`
+- `internal/slackengine#ReadCredentials`
 - `plan:internal/slackengine_test#fakeDialer`
 - `plan:internal/slackengine_test#fakeSocket`
 - `plan:internal/slackengine_test#manualClock`
-- `plan:internal/slackengine#HelloTimeout`
+- `internal/slackengine#HelloTimeout`
 - `internal/slackengine#firstRead`
 - `internal/slackengine#takeRelayLock`
 - `internal/slackengine#inbound.presenceChanged`

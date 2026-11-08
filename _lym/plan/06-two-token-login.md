@@ -34,14 +34,14 @@
 - `PATTERN.md`
 
 **Uses:**
-- `plan:internal/slackengine#Credentials`
-- `plan:internal/slackengine#ReadCredentials`
-- `plan:internal/slackengine#WriteCredentials`
-- `plan:internal/slackengine#Identity`
-- `plan:internal/slackengine#API.BotAppID`
-- `plan:internal/slackengine#Dialer`
-- `plan:internal/slackengine#NewDialer`
-- `plan:internal/slackengine#HelloTimeout`
+- `internal/slackengine#Credentials`
+- `internal/slackengine#ReadCredentials`
+- `internal/slackengine#WriteCredentials`
+- `internal/slackengine#Identity`
+- `internal/slackengine#API.BotAppID`
+- `internal/slackengine#Dialer`
+- `internal/slackengine#NewDialer`
+- `internal/slackengine#HelloTimeout`
 - `internal/hubregistry#Live`
 - `internal/hubregistry#RecordFileName`
 - `internal/standalonestate#UserStateDir`

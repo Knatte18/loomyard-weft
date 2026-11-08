@@ -1,24 +1,24 @@
 # Card 2 — socket-mode-client
 
 **Create:**
-- `plan:internal/slackengine#Socket` -> `type Socket interface`
-- `plan:internal/slackengine#Envelope` -> `type Envelope struct`
-- `plan:internal/slackengine#Dialer` -> `type Dialer func(ctx context.Context) (Socket, string, error)`
-- `plan:internal/slackengine#NewDialer` -> `func NewDialer(baseURL, appToken string, client *http.Client, helloTimeout time.Duration) Dialer`
-- `plan:internal/slackengine#HelloTimeout` -> `const HelloTimeout = 10 * time.Second`
-- `plan:internal/slackengine#wsSocket` -> `type wsSocket struct`
-- `plan:internal/slackengine#wsSocket.Read` -> `func (s *wsSocket) Read(ctx context.Context) (Envelope, error)`
-- `plan:internal/slackengine#wsSocket.Ack` -> `func (s *wsSocket) Ack(ctx context.Context, envelopeID string) error`
-- `plan:internal/slackengine#wsSocket.Ping` -> `func (s *wsSocket) Ping(ctx context.Context) error`
-- `plan:internal/slackengine#wsSocket.Close` -> `func (s *wsSocket) Close() error`
-- `plan:internal/slackengine_test#TestSocketClient` -> `func TestSocketClient(t *testing.T)`
+- `internal/slackengine#Socket`
+- `internal/slackengine#Envelope`
+- `internal/slackengine#Dialer`
+- `internal/slackengine#NewDialer`
+- `internal/slackengine#HelloTimeout`
+- `internal/slackengine#wsSocket`
+- `internal/slackengine#wsSocket.Read`
+- `internal/slackengine#wsSocket.Ack`
+- `internal/slackengine#wsSocket.Ping`
+- `internal/slackengine#wsSocket.Close`
+- `internal/slackengine_test#TestSocketClient`
 
 **Edit:**
 - `go.mod`
 - `go.sum`
 
 **Uses:**
-- `plan:internal/slackengine#API.OpenConnection`
+- `internal/slackengine#API.OpenConnection`
 - `internal/slackengine#NewAPI`
 - `internal/slackengine_test#answerJSON`
 

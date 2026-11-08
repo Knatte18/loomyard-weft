@@ -1,19 +1,19 @@
 # Card 4 — channel-map-geometry
 
 **Create:**
-- `plan:internal/slackengine#ChannelMapFileName` -> `const ChannelMapFileName = "channels.json"`
-- `plan:internal/slackengine#InboxDirName` -> `const InboxDirName = "inbox"`
-- `plan:internal/slackengine#SocketLockFileName` -> `const SocketLockFileName = "slack-socket.lock"`
-- `plan:internal/slackengine#ChannelMap` -> `type ChannelMap struct`
-- `plan:internal/slackengine#ChannelEntry` -> `type ChannelEntry struct`
-- `plan:internal/slackengine#ReadChannelMap` -> `func ReadChannelMap(path string) (ChannelMap, error)`
-- `plan:internal/slackengine#UpdateChannelMap` -> `func UpdateChannelMap(path string, mutate func(*ChannelMap) error) error`
-- `plan:internal/slackengine#ChannelMap.OrchOf` -> `func (m ChannelMap) OrchOf(channelID string) (string, bool)`
-- `plan:internal/slackengine#ChannelEntry.Advance` -> `func (e *ChannelEntry) Advance(ts string)`
-- `plan:internal/slackengine#ChannelEntry.AdvanceThread` -> `func (e *ChannelEntry) AdvanceThread(thread, ts string)`
-- `plan:internal/slackengine#ChannelEntry.ThreadStart` -> `func (e ChannelEntry) ThreadStart(thread string) string`
-- `plan:internal/slackengine#ChannelEntry.PruneThreads` -> `func (e *ChannelEntry) PruneThreads(now time.Time)`
-- `plan:internal/slackengine_test#TestChannelMap` -> `func TestChannelMap(t *testing.T)`
+- `internal/slackengine#ChannelMapFileName`
+- `internal/slackengine#InboxDirName`
+- `internal/slackengine#SocketLockFileName`
+- `internal/slackengine#ChannelMap`
+- `internal/slackengine#ChannelEntry`
+- `internal/slackengine#ReadChannelMap`
+- `internal/slackengine#UpdateChannelMap`
+- `internal/slackengine#ChannelMap.OrchOf`
+- `internal/slackengine#ChannelEntry.Advance`
+- `internal/slackengine#ChannelEntry.AdvanceThread`
+- `internal/slackengine#ChannelEntry.ThreadStart`
+- `internal/slackengine#ChannelEntry.PruneThreads`
+- `internal/slackengine_test#TestChannelMap`
 
 **Edit:**
 - `internal/slackengine#Geometry`

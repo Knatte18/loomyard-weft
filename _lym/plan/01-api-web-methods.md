@@ -1,19 +1,19 @@
 # Card 1 — api-web-methods
 
 **Create:**
-- `plan:internal/slackengine#Identity` -> `type Identity struct`
-- `plan:internal/slackengine#File` -> `type File struct`
-- `plan:internal/slackengine#Sender` -> `type Sender struct`
-- `plan:internal/slackengine#API.BotAppID` -> `func (a *API) BotAppID(ctx context.Context, botID string) (string, error)`
-- `plan:internal/slackengine#API.CreateChannel` -> `func (a *API) CreateChannel(ctx context.Context, name string) (ChannelInfo, error)`
-- `plan:internal/slackengine#API.FindChannel` -> `func (a *API) FindChannel(ctx context.Context, name string) (ChannelInfo, bool, error)`
-- `plan:internal/slackengine#API.Join` -> `func (a *API) Join(ctx context.Context, channel string) error`
-- `plan:internal/slackengine#API.Invite` -> `func (a *API) Invite(ctx context.Context, channel, user string) error`
-- `plan:internal/slackengine#API.Rename` -> `func (a *API) Rename(ctx context.Context, channel, name string) error`
-- `plan:internal/slackengine#API.Archive` -> `func (a *API) Archive(ctx context.Context, channel string) error`
-- `plan:internal/slackengine#API.Replies` -> `func (a *API) Replies(ctx context.Context, channel, thread, oldest string) ([]Message, error)`
-- `plan:internal/slackengine#API.PostAs` -> `func (a *API) PostAs(ctx context.Context, channel, text string, sender Sender) error`
-- `plan:internal/slackengine#API.OpenConnection` -> `func (a *API) OpenConnection(ctx context.Context) (string, error)`
+- `internal/slackengine#Identity`
+- `internal/slackengine#File`
+- `internal/slackengine#Sender`
+- `internal/slackengine#API.BotAppID`
+- `internal/slackengine#API.CreateChannel`
+- `internal/slackengine#API.FindChannel`
+- `internal/slackengine#API.Join`
+- `internal/slackengine#API.Invite`
+- `internal/slackengine#API.Rename`
+- `internal/slackengine#API.Archive`
+- `internal/slackengine#API.Replies`
+- `internal/slackengine#API.PostAs`
+- `internal/slackengine#API.OpenConnection`
 
 **Edit:**
 - `internal/slackengine#API`

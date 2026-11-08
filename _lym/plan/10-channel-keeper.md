@@ -25,12 +25,12 @@
 - `plan:internal/slackengine_test#TestChannelKeeper` -> `func TestChannelKeeper(t *testing.T)`
 
 **Uses:**
-- `plan:internal/slackengine#ChannelName`
-- `plan:internal/slackengine#ArchivedName`
-- `plan:internal/slackengine#ChannelMap`
-- `plan:internal/slackengine#ChannelEntry`
-- `plan:internal/slackengine#ReadChannelMap`
-- `plan:internal/slackengine#UpdateChannelMap`
+- `internal/slackengine#ChannelName`
+- `internal/slackengine#ArchivedName`
+- `internal/slackengine#ChannelMap`
+- `internal/slackengine#ChannelEntry`
+- `internal/slackengine#ReadChannelMap`
+- `internal/slackengine#UpdateChannelMap`
 - `plan:internal/slackengine#LiveHubs`
 - `internal/slackengine#ReadSetup`
 - `internal/slackengine#orchName`

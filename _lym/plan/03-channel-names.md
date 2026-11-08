@@ -1,10 +1,10 @@
 # Card 3 — channel-names
 
 **Create:**
-- `plan:internal/slackengine#ChannelName` -> `func ChannelName(shortname, machine, slug string) string`
-- `plan:internal/slackengine#ArchivedName` -> `func ArchivedName(name string, day time.Time, n int) string`
-- `plan:internal/slackengine#fitName` -> `func fitName(name string) string`
-- `plan:internal/slackengine_test#TestChannelName` -> `func TestChannelName(t *testing.T)`
+- `internal/slackengine#ChannelName`
+- `internal/slackengine#ArchivedName`
+- `internal/slackengine#fitName`
+- `internal/slackengine_test#TestChannelName`
 
 **Intent:**
 Name each orch's channel as D4 says, and the dated name a retired channel takes before its archive.

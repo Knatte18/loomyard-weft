@@ -1,21 +1,21 @@
 {
   "runGuid": "9b0afecf89b7e981871614ee103485ff",
-  "planFingerprint": "dbb0ec835fa5c7fa1a5376eca575f737a0ff9f5c05a81c6e5f93c00043e18a0e",
+  "planFingerprint": "06d1773de11bd036f303fa130ebcf580a6584258de22f6d4c90e36018b75c987",
   "planFileHashes": {
     "00-overview.md": "56ca1876a5b09a496c3dedb0a3e0ae827c799d5d41de9bdec0d9344e88ee0519",
-    "01-api-web-methods.md": "73e49ce92812d79dfa26c4beedb4d6c385ec2499ece2dda825dfbb066fb5f076",
-    "02-socket-mode-client.md": "0d0753c79b8b462a574e54e8bd8bc0645e93a52535b771279d2b38e3ccd0bc38",
-    "03-channel-names.md": "6248a592ac2e70fa80447c85bcdfedea2e8b220e24bbb1f16be02815cfa21f2a",
-    "04-channel-map-geometry.md": "34f2cec932a92e4a6052d2ebddf4f3b606154c8b0e04aaaf8ff0268626b37705",
-    "05-credentials-record.md": "ece3f286856a731c1d26d6ae54a1e1c3c4aa904916200774c0fac5a962d1df4e",
-    "06-two-token-login.md": "91eab66aac66ce0780576561d8d350b9b03f0ecdf4df58b2be0b0c18a9060c29",
-    "07-setup-operator-status.md": "bcffba0b6116737c5b6ca044051ed73b2c8f61dede0b304e987cad2ee990d3d5",
+    "01-api-web-methods.md": "bc125e1252fea748ca040f329c8955d9215a837134d61cf603eaee48a0c8c93c",
+    "02-socket-mode-client.md": "6b7fdf622cda2d37e27a58776570ae6c326a394d6004b54e3da345cc2bfb6505",
+    "03-channel-names.md": "7bd4b315123ec8b0566d03725ee26c0af67fd214297f57ab8a1bf28a1ba15865",
+    "04-channel-map-geometry.md": "c203bf2c7d2297c8671198d7f7233f55649c543b7b6df32be958e6f5fe72233c",
+    "05-credentials-record.md": "6b8c4b9d19dec8eb44446648d71530063ef2eeb2d1f38444aaddbfc38171a7a6",
+    "06-two-token-login.md": "c6fad208fbcb597c081fb8a5b920bf37970325c7b8197e726c6c9530a00f2e81",
+    "07-setup-operator-status.md": "94b2f4a02f517ee35891da8440fac70d9b3748214a4c93cc6c386ceb745b64be",
     "08-slack-client-surface.md": "6aa56ebdf1593d92aa27a219a0041d272ea76a3ca296cbbf7ac29dac389e6115",
-    "09-socket-holder.md": "0fd6f9e9cefe7231b8f7fde6f8b2085f8db710e144362385c6fb1d7f3eadd474",
-    "10-channel-keeper.md": "f9a2dcd55eb530adf67103bd5e3d4d5c8fb60f870f54711911131f4fb29188a4",
-    "11-inbound-push.md": "450dbf9c8de61ebdbfae35358935e3ec440cc1e69a9a7b0ae2b21988f9b37f22",
-    "12-outbound-routing.md": "e61f2cbde55ccdec9c3c11ffc5a39835d8ab6ab3a43088ebb257398654a03732",
-    "13-relay-push-loop.md": "a353dbb9dbf10d3aabf3d25b84598fde4cf0d5ef18e81798e52aff9ec78df4a4"
+    "09-socket-holder.md": "7193fac3334a9c32da6aa271f6724b70dd2cbb0042d6cca6566e3e20396c1844",
+    "10-channel-keeper.md": "f39a352e7d4fd0b07d687ee6f639eb265a3bc5dde991dd2f651b90a5ad678448",
+    "11-inbound-push.md": "f6e8c90dec6e483aad3a107e714c5f78e3994676e7a0cab3d6c9412001c5f1e3",
+    "12-outbound-routing.md": "82723c98e5eb3ee019c6404cc714ab0a9ad2a7d17a4b85d4b6262d8373377244",
+    "13-relay-push-loop.md": "dab55053e8e2eaafa157cc78b67c73c88a4a0cdd844c17ae7f63be04a0af91f8"
   },
   "planOverviewFrameHash": "3344e696d0d3ca613953f9338ea17354d94f35ca6fe15285fd61ae64aee6e7d3",
   "partition": [
@@ -334,7 +334,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "120da68ec31d8d5018b442b5778f2567",
   "masterSessionId": "f167a2fe-30a4-4232-9464-fc50a2be4955",
   "masterEngine": "claude",
@@ -349,19 +349,47 @@
         "05-credentials-record"
       ],
       "cardHashes": {
-        "01-api-web-methods": "73e49ce92812d79dfa26c4beedb4d6c385ec2499ece2dda825dfbb066fb5f076",
-        "02-socket-mode-client": "0d0753c79b8b462a574e54e8bd8bc0645e93a52535b771279d2b38e3ccd0bc38",
-        "03-channel-names": "6248a592ac2e70fa80447c85bcdfedea2e8b220e24bbb1f16be02815cfa21f2a",
-        "04-channel-map-geometry": "34f2cec932a92e4a6052d2ebddf4f3b606154c8b0e04aaaf8ff0268626b37705",
-        "05-credentials-record": "ece3f286856a731c1d26d6ae54a1e1c3c4aa904916200774c0fac5a962d1df4e"
+        "01-api-web-methods": "bc125e1252fea748ca040f329c8955d9215a837134d61cf603eaee48a0c8c93c",
+        "02-socket-mode-client": "6b7fdf622cda2d37e27a58776570ae6c326a394d6004b54e3da345cc2bfb6505",
+        "03-channel-names": "7bd4b315123ec8b0566d03725ee26c0af67fd214297f57ab8a1bf28a1ba15865",
+        "04-channel-map-geometry": "c203bf2c7d2297c8671198d7f7233f55649c543b7b6df32be958e6f5fe72233c",
+        "05-credentials-record": "6b8c4b9d19dec8eb44446648d71530063ef2eeb2d1f38444aaddbfc38171a7a6"
       },
       "startSha": "d7e06009dbda3fc44e1d1c9598b5ede250fd3c04",
       "kind": "fork",
       "spawnedAt": "2026-11-08T10:45:07Z",
       "sessionId": "f167a2fe-30a4-4232-9464-fc50a2be4955",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-api-web-methods",
+        "status": "done",
+        "head_sha": "1342d37f02cc680e1ccb88f5476963a860e300be",
+        "deviations": [
+          "internal/slackcli/cli.go",
+          "internal/slackcli/cli_test.go",
+          "internal/slackengine/api.go",
+          "internal/slackengine/channelmap.go",
+          "internal/slackengine/channelmap_test.go",
+          "internal/slackengine/channelname.go",
+          "internal/slackengine/channelname_test.go",
+          "internal/slackengine/socket.go",
+          "internal/slackengine/socket_test.go"
+        ]
+      },
+      "cardShas": [
+        "1342d37f02cc680e1ccb88f5476963a860e300be"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-push-channels/f167a2fe-30a4-4232-9464-fc50a2be4955/subagents/agent-a9e5c640fe537547d.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-push-channels/f167a2fe-30a4-4232-9464-fc50a2be4955/subagents/agent-a9e5c640fe537547d.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-push-channels/f167a2fe-30a4-4232-9464-fc50a2be4955/subagents/agent-a9e5c640fe537547d.jsonl"
+  ]
 }

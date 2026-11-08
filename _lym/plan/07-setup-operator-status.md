@@ -28,8 +28,8 @@
 - `internal/slackengine_test#TestCredentialFiles`
 
 **Uses:**
-- `plan:internal/slackengine#ReadChannelMap`
-- `plan:internal/slackengine#ChannelMap`
+- `internal/slackengine#ReadChannelMap`
+- `internal/slackengine#ChannelMap`
 
 **Intent:**
 Reduce `lym slack setup` to the operator and make `lym slack status` list the hub's channels (D10).
