@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-08 08:25 UTC; every age below is as of then.
+Rendered 2026-11-08 08:26 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -8,19 +8,18 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (3)
+## Tasks (2)
 
 Concrete and claimable; only a task can run.
 
-### Running (3)
+### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Slack v2: one bot, one channel per orch, push in place of polling** | [`slack-v2`](design-slack-v2.md) | motif | Discussion-Burler-Review | neve | 14h<br>14h | slack, creel, orch |
-| T2 | **Gate go test runs fill the Go cache with test logs, hundreds of GB a day** | [`go-test-cache-disk`](design-go-test-cache-disk.md) | darn · light | Code-Burler-Fix | neve | 15m<br>14m | gate |
-| T3 | **lym slack login waits silently for end of input and echoes the token** | [`slack-login-prompt`](design-slack-login-prompt.md) | darn · light | Finalize | neve | 14h<br>13m | slack |
+| T2 | **Gate go test runs fill the Go cache with test logs, hundreds of GB a day** | [`go-test-cache-disk`](design-go-test-cache-disk.md) | darn · light | Code-Burler-Fix | neve | 16m<br>15m | gate |
 
 ### Ready (0)
 
@@ -63,3 +62,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>2d | burler, shed, orch, quarry, report |
 | F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 3d<br>20h | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 3d<br>3d | batten, board, fabric, workspaces |
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T3 | **lym slack login waits silently for end of input and echoes the token** | [`slack-login-prompt`](design-slack-login-prompt.md) | 14h<br>14m | slack |
