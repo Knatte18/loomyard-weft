@@ -467,6 +467,7 @@
       "created": "2026-11-08T09:53:09Z",
       "revised": "2026-11-08T09:53:09Z",
       "profile": "solid",
+      "notify_on_land": true,
       "discussed": true
     },
     {
