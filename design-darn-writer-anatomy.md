@@ -7,6 +7,7 @@
 `docs/research/loom/darn-cost-2026-11-08/report.md` found the darn writer and its lookup subagents are 58% of a darn ($3.13 of $5.45).
 The operator asks what in the writer costs: writing, research, thinking, or gate waits.
 A suspected cause: a gate run outlasts the 5-minute prompt cache, so the writer's next turn rewrites its whole context to the cache.
+lym already guards against this: a capped `lym gate test` call answers `done: false` at the caller's keep-warm cap and the agent calls again, and a key whose runs are long gets the long cap (`internal/gatecli/doc.go`, Capped call). The measurement checks whether that guard holds in practice, including while the cold gate fixer runs.
 
 ## Scope
 
