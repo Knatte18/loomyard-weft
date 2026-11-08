@@ -34,7 +34,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | `draft` **Slack: a reply is not forwarded when mail waits at turn end, and a forward can reach Slack late** | [`slack-stop-hook-drops-reply`](design-slack-stop-hook-drops-reply.md) | darn · light | T1 | 32m<br>20m | slack, claude, creel |
 
-## Notes (20)
+## Notes (21)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -51,12 +51,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B2 |  | **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | 1h<br>1h | shed, friction |
 
-### Enhancements (3)
+### Enhancements (4)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 23h<br>23h | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 3h<br>3h | shed, loom, darn |
+| E3 |  | **lym gate test runs a slow package as several processes, each taking a share of its tests** | [`gate-shard-slow-package`](design-gate-shard-slow-package.md) | 0m<br>0m | gate |
 | E9 |  | **An interactive agent idle for a set time gets its session compacted**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 8d<br>4d | shed, shuttle, batten |
 
 ### Features (14)

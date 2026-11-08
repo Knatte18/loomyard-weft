@@ -732,6 +732,24 @@
       "body": "## Seen (orch, 2026-11-08)\n\nThe fabric test speed family (project `fabric-test-speed-work`) cut `internal/fabricengine` tier 1 from 57 s to about 48 s inside a whole pass, against an expected 36 s (`docs/research/speed/fabric-test-speed-remeasure-2026-11-07.md`).\nThe package has about 1500 tier 1 leaf tests at a 60 ms median with no hotspot, 132 s run serially (`docs/research/speed/fabricengine-per-test-times-2026-11-07.md`).\nMost of that time is git processes and hub builds the tests start.\nThe family folded only the overlaps an earlier report had read and confirmed; no one has asked of every test what it protects that no other test does.\n\n## Idea (operator, 2026-11-08: \"we do not need that many tests\")\n\nA measurement, run as darn with profile `docs`, on `internal/fabricengine` tier 1 only:\n\n1. Run each top-level tier 1 test once on its own with `-coverprofile` scoped to `internal/fabricengine` (one coverage run per top-level test, no repeats).\n2. List the tests whose covered blocks are all covered by other tests: candidates to drop or fold.\n   Rank them by their time from the per-test times report.\n3. List the tests that start git or build a hub but whose asserted behaviour is pure logic a tier 0 test could check without git.\n4. For the top candidates of each list, read the test and say what behaviour it asserts that block coverage does not show, so a later task can decide.\n\nThe report lands under `docs/research/speed/` with the scripts beside it.\nIt deletes and moves no test: line coverage is not behaviour, and `fabricengine` manages worktrees and hubs, where a lost test can cost the operator data.\nA later task decides the cuts from the report.\n",
       "created": "2026-11-08T16:21:30Z",
       "revised": "2026-11-08T16:21:30Z"
+    },
+    {
+      "id": 1241,
+      "handle": "E3",
+      "slug": "gate-shard-slow-package",
+      "title": "lym gate test runs a slow package as several processes, each taking a share of its tests",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "gate"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (orch, 2026-11-08)\n\n`internal/fabricengine` tier 1 takes 132 s serially and about 45 to 48 s in a gate pass on a 12-core machine, about three times faster than serial, and it is the wall of every tier 1 pass that includes it.\nIts tests run as one `go test` process, where tests not marked parallel run one after another.\n\n## Idea\n\n`lym gate test` runs a slow package as several processes at once, each taking a share of its top-level tests through `-run`, so the package's wall falls toward its serial time divided by the shard count.\nIt needs no change to the tests and serves any slow package.\nOpen: how a package is chosen (a threshold on its recorded time, or a list); how many shards; how the green record and the failure report merge the shards.\nMeasure first: the share of the package's time spent in tests that are not parallel, and the wall at two and four shards on a quiet machine, once each.\nThe test count study (`fabric-test-redundancy`) runs first, since fewer tests may make this smaller.\n",
+      "created": "2026-11-08T16:21:31Z",
+      "revised": "2026-11-08T16:21:31Z"
     }
   ],
   "prime_owner": "neve",
