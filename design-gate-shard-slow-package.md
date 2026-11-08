@@ -13,4 +13,5 @@ Its tests run as one `go test` process, where tests not marked parallel run one 
 It needs no change to the tests and serves any slow package.
 Open: how a package is chosen (a threshold on its recorded time, or a list); how many shards; how the green record and the failure report merge the shards.
 Measure first: the share of the package's time spent in tests that are not parallel, and the wall at two and four shards on a quiet machine, once each.
-The test count study (`fabric-test-redundancy`) runs first, since fewer tests may make this smaller.
+The test count study (`fabric-test-redundancy`) has landed (`b121cc02`, report under `docs/research/speed/fabric-test-redundancy-2026-11-08/`): of 590 top-level tier 1 tests, 370 cover only blocks another test also covers, as reading candidates and not cuts.
+The cuts themselves are the task `fabric-test-cuts`, still running, so measure after it lands: fewer tests may make this smaller.
