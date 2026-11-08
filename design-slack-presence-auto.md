@@ -32,6 +32,6 @@ The orch need not keep track of presence: lym carries its answers to Slack.
 - Inbound Slack mail reaches the orch as creel mail, as today.
 - The orch can still send to Slack on its own through creel, such as when the operator asks for something to be sent there; the shipped orch text keeps one plain line on how, and the rest of `role-slack.md` that a hook now covers is removed.
 
-## Open
+## Labels (operator, 2026-11-08)
 
-- The two toggles' labels; the orch proposed `slack` for the connection and `away` for presence.
+The connection toggle reads `slack`, the presence toggle `away`.
