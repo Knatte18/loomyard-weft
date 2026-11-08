@@ -544,6 +544,26 @@
       "body": "Imported from [issue #87](https://github.com/Knatte18/loomyard/issues/87).\n\n## Seen\n\nIn hub `dop`, the operator has the run's PR-Review reviewer ask the parent orch for a review, and finds it very useful: the orch knows what the run needs and what the operator wants.\nBut at PR time much is too late to change cheaply.\nThe plan is too large to be a good review point for the parent, and the plan is only meant to realize the Discussion decision record.\nAn older LoomYard version, and millhouse today, let the parent review the Discussion record.\n\nExample: tests-tier1 met a scope question (whether to fix EFCoreStore's loss of SimulationResults) in Plan-Burler-Fix, and the orch had to record a parent decision mid-run; reviewing the record would have settled it before the plan was written.\n\n## Expected\n\nA setting, per hub and per task, that makes the run hand its Discussion decision record to the parent orch for review before Plan starts.\nThe orch answers approved or sends findings; findings go back to Discussion as a review round does, and Plan starts only on approval.\nIt complements #86 (the parent asked for review at PR time) and could replace it for most runs.\n\n\n## Issue comment, 2026-11-08\n\nConstraint from the operator: a parent orch is often very busy with coordination (the LoomYard hub's orch especially), which is why the parent review was dropped before. The design should keep the parent's load small: the review is opt-in per task, so a busy orch's hub leaves it off; the orch can hand the review to a fork of itself, which keeps its knowledge of the run but keeps the review out of the orch's main thread; and a deadline lets the run go on to Plan without the parent's review, recording that it did.",
       "created": "2026-11-08T15:09:16Z",
       "revised": "2026-11-08T15:09:16Z"
+    },
+    {
+      "id": 1233,
+      "handle": "B1",
+      "slug": "slack-stop-hook-drops-reply",
+      "title": "Slack: a reply is not forwarded when mail waits at turn end, and a forward can reach Slack late",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "slack",
+        "claude",
+        "creel"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (orch, 2026-11-08)\n\nThe orch's final reply to an operator message from Slack never reached Slack; the reply to the turn after it did, about 30 seconds late.\nCreel's journal, times UTC:\n\n- 15:47:59.07 the operator's Slack message (#1092) is posted to `ly:orch`; 15:47:59.22 the relay posts `[slack presence] presence is now slack` (#1093), while the orch's turn on #1092 runs.\n- 15:48:02 the orch's Stop hook hands #1093 to the session; no post from `ly:orch` to `ly:SLACK` is logged for the #1092 reply.\n- 15:48:05 the next turn (on #1093) ends and its reply is posted (#1094); the relay reads it only at 15:48:34, when the operator next acted.\n\n## Cause read from the settings\n\nThe orch's Stop hook (claudeengine settings) runs `lym creel hook-read claude \u0026\u0026 exit 0` when the strand's creel flag is set, before it reaches `lym slack hook claude`.\nSo whenever mail is waiting at turn end the hook hands the mail over and exits, and the turn's final reply is never forwarded.\nAn operator message from Slack always brings a presence notice right behind it when presence was `terminal`, so the first reply after switching to Slack is always lost.\n\n## Idea\n\n- Run the Slack forwarding on every Stop, before or regardless of the creel hand-over, so a waiting mail never drops a reply.\n- Find why the relay read #1094 about 30 seconds after it was posted, when #1089 was read in 0.2 seconds; a forward should reach Slack at once.\n- A presence notice caused by the operator's own Slack message need not wake the orch at all.\n",
+      "created": "2026-11-08T15:49:22Z",
+      "revised": "2026-11-08T15:49:22Z"
     }
   ],
   "prime_owner": "neve",
