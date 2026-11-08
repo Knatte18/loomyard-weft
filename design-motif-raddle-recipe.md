@@ -1,4 +1,4 @@
-# One recipe that runs Motif and raddle in a row, with a perch on the split
+# Cartoon: one recipe that runs Motif and raddle in a row, with a perch on the split
 
 `motif-raddle-recipe` · Note · feature, shed, loom, burler, arbiter, board
 
@@ -15,5 +15,6 @@ On 2026-11-08 the first raddle proposal for `slack-v2` missed the operator's cha
 - The split perch reviews the proposal against the Sketch, its decision record and every decision recorded after the Discussion; raddle fixes what it finds; the arbiter settles stops, and only what it cannot settle reaches the orch.
 - Operator decisions made after the Discussion go into the record through `lym loom decision add --by operator`, so the split and its perch see them.
 - The operator only releases the filed tasks.
-- Open: whether a Motif that stops at the Sketch stays as a recipe of its own, and what the combined recipe is called.
+- The recipe is called `cartoon` (operator, 2026-11-08): in weaving, a cartoon is the full-size design a tapestry is woven from.
+- `cartoon` is the default for a tapestry-sized note; Motif alone stays for a design decided now but split later, on code still changing, such as `slack-machine-bridge` waiting for `slack-push-channels`.
 - Size: shed, raddle, Burler and arbiter, so a Motif of its own.

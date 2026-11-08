@@ -515,7 +515,7 @@
       "id": 1224,
       "handle": "F4",
       "slug": "motif-raddle-recipe",
-      "title": "One recipe that runs Motif and raddle in a row, with a perch on the split",
+      "title": "Cartoon: one recipe that runs Motif and raddle in a row, with a perch on the split",
       "kind": "note",
       "labels": [
         "feature",
@@ -529,9 +529,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "Discussion, raddle split and a split perch in one run; the operator only releases the filed tasks",
-      "body": "## Seen (operator and orch, 2026-11-08)\n\nGoing from a note to tasks through Motif and raddle takes three manual steps today: the operator promotes the Sketch to raddle, approves the raddle proposal in the run pane, and releases each filed task.\nMost other steps in lym run on their own, with dedicated checkers instead of the orch: the Burler perches review in rounds and the arbiter settles stops.\nThe raddle approval was manual only while raddle was being tuned (operator, 2026-11-08).\nOn 2026-11-08 the first raddle proposal for `slack-v2` missed the operator's changes made after the Discussion, because they sat in the entry body and not in the decision record; review caught it, the checks did not.\n\n## Idea (operator, 2026-11-08)\n\n- One recipe runs Motif and raddle in a row: Discussion with its perch, then the raddle split, then a perch on the split, then the filed tasks as drafts.\n- The split perch reviews the proposal against the Sketch, its decision record and every decision recorded after the Discussion; raddle fixes what it finds; the arbiter settles stops, and only what it cannot settle reaches the orch.\n- Operator decisions made after the Discussion go into the record through `lym loom decision add --by operator`, so the split and its perch see them.\n- The operator only releases the filed tasks.\n- Open: whether a Motif that stops at the Sketch stays as a recipe of its own, and what the combined recipe is called.\n- Size: shed, raddle, Burler and arbiter, so a Motif of its own.\n",
+      "body": "## Seen (operator and orch, 2026-11-08)\n\nGoing from a note to tasks through Motif and raddle takes three manual steps today: the operator promotes the Sketch to raddle, approves the raddle proposal in the run pane, and releases each filed task.\nMost other steps in lym run on their own, with dedicated checkers instead of the orch: the Burler perches review in rounds and the arbiter settles stops.\nThe raddle approval was manual only while raddle was being tuned (operator, 2026-11-08).\nOn 2026-11-08 the first raddle proposal for `slack-v2` missed the operator's changes made after the Discussion, because they sat in the entry body and not in the decision record; review caught it, the checks did not.\n\n## Idea (operator, 2026-11-08)\n\n- One recipe runs Motif and raddle in a row: Discussion with its perch, then the raddle split, then a perch on the split, then the filed tasks as drafts.\n- The split perch reviews the proposal against the Sketch, its decision record and every decision recorded after the Discussion; raddle fixes what it finds; the arbiter settles stops, and only what it cannot settle reaches the orch.\n- Operator decisions made after the Discussion go into the record through `lym loom decision add --by operator`, so the split and its perch see them.\n- The operator only releases the filed tasks.\n- The recipe is called `cartoon` (operator, 2026-11-08): in weaving, a cartoon is the full-size design a tapestry is woven from.\n- `cartoon` is the default for a tapestry-sized note; Motif alone stays for a design decided now but split later, on code still changing, such as `slack-machine-bridge` waiting for `slack-push-channels`.\n- Size: shed, raddle, Burler and arbiter, so a Motif of its own.\n",
       "created": "2026-11-08T11:58:57Z",
-      "revised": "2026-11-08T11:58:57Z"
+      "revised": "2026-11-08T12:02:32Z"
     }
   ],
   "prime_owner": "neve",
