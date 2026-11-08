@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (2)
+### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -20,14 +20,13 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Slack v2: one bot, one channel per orch, push in place of polling** | [`slack-v2`](design-slack-v2.md) | motif | Discussion-Write | neve | 14h<br>14h | slack, creel, orch |
 | T2 | **Gate go test runs fill the Go cache with test logs, hundreds of GB a day** | [`go-test-cache-disk`](design-go-test-cache-disk.md) | darn · light | Darn-Write | neve | 2m<br>0m | gate |
+| T3 | **lym slack login waits silently for end of input and echoes the token** | [`slack-login-prompt`](design-slack-login-prompt.md) | darn · light | Worktree-Create | neve | 14h<br>0m | slack |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T3 | **lym slack login waits silently for end of input and echoes the token** | [`slack-login-prompt`](design-slack-login-prompt.md) | darn · light |  | 14h<br>0m | slack |
+_None._
 
 ## Notes (17)
 
