@@ -512,6 +512,27 @@
       "created": "2026-11-04T15:28:18Z",
       "revised": "2026-11-08T10:59:12Z",
       "profile": "docs"
+    },
+    {
+      "id": 1219,
+      "handle": "B1",
+      "slug": "beam-reed-task-buttons",
+      "title": "Beam reed session gets the task button group instead of beam",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "reed",
+        "pawl"
+      ],
+      "issues": [
+        85
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #85](https://github.com/Knatte18/loomyard/issues/85).\n\n## Seen\n\nIn hub DrillOpPlan (shortname dop), the reed session of beam `loomyard-setup` shows the **task** button group (HALT, CANCEL, code, terminal, agent) instead of the **beam** group, so the distill, refresh, merge-in and land buttons are missing.\n\n- `lym config --resolved reed` resolves `buttons.beam` from the template with distill, refresh, merge-in and land; no default, worktree or local layer writes a `buttons` group (the machine layer does not exist for reed).\n- The session's tmux option `@lym_button_spec` holds the task entries with `{slug}` = `loomyard-setup`, and `@lym_button_dir` points at the prime worktree, not the beam worktree.\n- The beam's board project shows `running · Beam-Await`, so the beam runs as a batten run; the session seems to be classified by that run as a task session.\n\n## Workaround\n\nNone applied; the operator runs `lym orch distill` / `lym orch refresh` by hand or asks the orch.\n\n## Expected\n\nA beam's reed session uses the `beam` group (and its worktree as button dir), whether or not the beam runs under batten.\n",
+      "created": "2026-11-08T11:18:41Z",
+      "revised": "2026-11-08T11:18:41Z"
     }
   ],
   "prime_owner": "neve",

@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-08 11:15 UTC; every age below is as of then.
+Rendered 2026-11-08 11:18 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,9 +18,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Run the cmd/lym tests in the Webster batch gate so verify failures surface in the fork**<br>• Batch gate also runs cmd/lym tests, so a break there is fixed by the batch fork instead of a verify-fix round | [`batch-gate-cmd-lym`](design-batch-gate-cmd-lym.md) | darn · light | Code-Burler-Fix | neve | 19m<br>19m | webster, gate |
+| T1 | **Run the cmd/lym tests in the Webster batch gate so verify failures surface in the fork**<br>• Batch gate also runs cmd/lym tests, so a break there is fixed by the batch fork instead of a verify-fix round | [`batch-gate-cmd-lym`](design-batch-gate-cmd-lym.md) | darn · light | Code-Burler-Fix | neve | 22m<br>22m | webster, gate |
 | T2 | **Slack relay: one Socket Mode connection per machine, one channel per orch, two tokens** | [`slack-push-channels`](design-slack-push-channels.md)<br>[Sketch](decision-slack-push-channels.md) | tapestry · solid | Webster | neve | 1h<br>1h | slack, creel, orch |
-| T3 | **Re-measure writer lookups and Plan phase cost on the tapestry runs since 3085f451**<br>• One read-only study: early lookup delegation and its carry, and whether the Plan phase cost has fallen since 2026-10-24 | [`writer-cost-remeasure`](design-writer-cost-remeasure.md) | darn · docs | Darn-Write | neve | 3d<br>16m | loom, stencil |
+| T3 | **Re-measure writer lookups and Plan phase cost on the tapestry runs since 3085f451**<br>• One read-only study: early lookup delegation and its carry, and whether the Plan phase cost has fallen since 2026-10-24 | [`writer-cost-remeasure`](design-writer-cost-remeasure.md) | darn · docs | Darn-Write | neve | 3d<br>19m | loom, stencil |
 
 ### Ready (0)
 
@@ -28,7 +28,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (17)
+## Notes (18)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -38,12 +38,18 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>2d | loom, stencil |
 
+### Bugs (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| B1 |  | **Beam reed session gets the task button group instead of beam** | [`beam-reed-task-buttons`](design-beam-reed-task-buttons.md) | 0m<br>0m | reed, pawl |
+
 ### Enhancements (4)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 18h<br>18h | heddle |
-| E3 |  | **Slack messages to the orch say Slack twice: sender ly:SLACK and a [slack] body prefix** | [`slack-forward-prefix`](design-slack-forward-prefix.md) | 2h<br>46m | slack |
+| E3 |  | **Slack messages to the orch say Slack twice: sender ly:SLACK and a [slack] body prefix** | [`slack-forward-prefix`](design-slack-forward-prefix.md) | 2h<br>49m | slack |
 | E7 |  | **Each part agent plans and builds its own part, instead of joining the parts into one plan** | [`parts-plan-and-build`](design-parts-plan-and-build.md) | 5d<br>2d | loom |
 | E9 |  | **An interactive agent idle for a set time gets its session compacted**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 7d<br>4d | shed, shuttle, batten |
 
@@ -53,7 +59,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 5w<br>12d | burler |
 | F2 |  | **Slack presence follows where the operator writes, with a reed toggle**<br>• lym switches presence on an operator Slack message or pane line, tells operator lines from its own injects, and shows a slack on/off toggle in reed | [`slack-presence-auto`](design-slack-presence-auto.md) | 2d<br>2d | reed, shuttle |
-| F3 |  | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md) | 1h<br>46m | slack, creel, orch |
+| F3 |  | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md) | 1h<br>49m | slack, creel, orch |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 9d<br>2d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 4w<br>3d | board, ide, orch |
 | F12 |  | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md) | 5d<br>18h | claude, shuttle, config |
