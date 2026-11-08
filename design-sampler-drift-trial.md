@@ -1,6 +1,6 @@
 # The sampler carries drift rows, off by default and switched on per task
 
-`sampler-drift-trial` · Task · feature, drift, shed, loom · running · Darn-Write
+`sampler-drift-trial` · Task · feature, drift, shed, loom · running · Drift-Verify
 
 Imported from [issue #28](https://github.com/Knatte18/loomyard/issues/28).
 
