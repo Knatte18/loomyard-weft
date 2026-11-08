@@ -1,6 +1,6 @@
 # Slack relay: one Socket Mode connection per machine, one channel per orch, two tokens
 
-`slack-push-channels` · Task · feature, slack, creel, orch · running · Plan-Burler-Review
+`slack-push-channels` · Task · feature, slack, creel, orch · running · Plan-Burler-Fix
 
 Decision record: [Sketch](decision-slack-push-channels.md)
 
