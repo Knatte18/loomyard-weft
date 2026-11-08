@@ -1,6 +1,6 @@
 # Re-measure the batching hook once its transcript wait has landed
 
-`batching-hook-remeasure-wait` · Task · research, claude, shuttle · running · PR-Review
+`batching-hook-remeasure-wait` · Task · research, claude, shuttle · running · Finalize
 
 ## Seen
 
