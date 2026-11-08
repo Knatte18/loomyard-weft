@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-08 13:20 UTC; every age below is as of then.
+Rendered 2026-11-08 13:21 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (2)
+## Tasks (3)
 
 Concrete and claimable; only a task can run.
 
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Slack in reed: a connection toggle and a presence toggle, presence per machine and switching by itself**<br>• lym switches presence on an operator Slack message or pane line, tells operator lines from its own injects, and shows a slack on/off toggle in reed | [`slack-presence-auto`](design-slack-presence-auto.md) | darn · solid | Darn-Write | neve | 2d<br>18m | reed, shuttle, slack |
+| T2 | **Slack in reed: a connection toggle and a presence toggle, presence per machine and switching by itself**<br>• lym switches presence on an operator Slack message or pane line, tells operator lines from its own injects, and shows a slack on/off toggle in reed | [`slack-presence-auto`](design-slack-presence-auto.md) | darn · solid | Darn-Write | neve | 2d<br>19m | reed, shuttle, slack |
 | T5 | **Arras: one recipe that runs Motif and raddle in a row, with a perch on the split**<br>• Discussion, raddle split and a split perch in one run; the operator only releases the filed tasks | [`motif-raddle-recipe`](design-motif-raddle-recipe.md) | motif | awaiting · Discussion-Bouncer | neve | 1h<br>50m | shed, loom, burler, arbiter, board |
 
 ### Ready (0)
@@ -26,6 +26,14 @@ Held by a run; its scope is locked until the run ends.
 Waits on nothing open; can start now.
 
 _None._
+
+### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | `draft` **Measure what the darn writer spends on: writing, research, thinking, gate waits**<br>• Break the darn writer cost down by token kind and activity, with cache re-writes after gate waits and what a cold gate fixer would save | [`darn-writer-anatomy`](design-darn-writer-anatomy.md) | darn · docs |  | 0m<br>0m | darn, loom |
 
 ## Notes (15)
 

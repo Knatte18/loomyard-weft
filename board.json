@@ -456,6 +456,28 @@
       "body": "## Seen (darn-cost-measure, 2026-11-08)\n\n`docs/research/loom/darn-cost-2026-11-08/report.md`:\n\n- A darn costs about $4.48 fixed plus $1.43 per 1000 changed lines (r 0.31 over 279 darns): the fixed part dominates, so fewer, larger darns cost less per line.\n- The 12 darns of the `fabric-test-speed` raddle split cost $14.16 per 1000 lines against $11.29 for the tapestry runs; 12 fixed costs are about $54 of the family's $58.53.\n- The 12 darns ran 359 awake minutes in 163 calendar minutes, about 2.2 at a time, held back by a dependency chain (`dotgit-worktree-reader` ahead of `fabric-test-folds` and others).\n\n## Decision (operator, 2026-11-08)\n\nA large change runs as `arras`, then a project of darns; a lean tapestry recipe with a solo Opus planner and Sonnet Webster (`satin`) was weighed and dropped, since its planner and Webster cost more than a darn of the same size.\n\n## Idea (operator, 2026-11-08)\n\nTune raddle's split for darn families:\n\n- Size: cut parts as large as one darn session handles well, instead of many small parts, so the family pays fewer fixed costs.\n- Concurrency: cut parts so the `depends_on` chain is short and parts with no dependency between them touch different packages, so more darns run at the same time.\n\nOpen: what part size a darn handles well, and how raddle is told (its stencil, its perch on the split under `arras`, or both); the first `arras` families give the figures.\n",
       "created": "2026-11-08T13:17:23Z",
       "revised": "2026-11-08T13:17:23Z"
+    },
+    {
+      "id": 1226,
+      "handle": "T1",
+      "slug": "darn-writer-anatomy",
+      "title": "Measure what the darn writer spends on: writing, research, thinking, gate waits",
+      "kind": "task",
+      "labels": [
+        "research",
+        "darn",
+        "loom"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Break the darn writer cost down by token kind and activity, with cache re-writes after gate waits and what a cold gate fixer would save",
+      "body": "## Why (operator, 2026-11-08)\n\n`docs/research/loom/darn-cost-2026-11-08/report.md` found the darn writer and its lookup subagents are 58% of a darn ($3.13 of $5.45).\nThe operator asks what in the writer costs: writing, research, thinking, or gate waits.\nA suspected cause: a gate run outlasts the 5-minute prompt cache, so the writer's next turn rewrites its whole context to the cache.\n\n## Scope\n\nNo agent run, no test and no gate run: this reads session transcripts, run records and code only, as `tools/tokencount` and the 2026-11-08 report did.\nInputs: the darn writer sessions of every darn run landed from 2026-10-25 to the start of this run.\n\n## Measure\n\nPer writer session, at API list price, and summed over the sample:\n\n- Cost by token kind: cache writes, cache reads, fresh input, output, and of output the thinking share where the transcript shows it.\n- Cost by activity: turns before the first edit (research), editing turns, turns spent on gate runs and their fixes, and the lookup subagents.\n- Gate waits: each tool call that ran a gate or test, its duration, and whether the turn after it paid a cache write of the whole context (a gap past the cache lifetime); the cost of those re-writes in total and per darn.\n- Gate failures: how many verify-gate rounds a darn needs, how often the existing cold gate fixer (`gate_fixer`, `internal/darnengine/template.yaml`) ran and what it cleared, and how many writer turns gate fixes still took.\n\n## Questions to answer\n\n- Which part of the writer is the largest cost.\n- Whether cache re-writes after gate waits are a large share, and what a writer that ends at a finished change, leaving every gate failure to a cold Sonnet fixer, would have saved on these runs (an estimate from the transcripts).\n- The writer runs `opus[medium]` by default; how many sessions ran at another effort or model, and whether effort shows in the cost.\n\n## Report\n\nWrite `docs/research/loom/darn-writer-anatomy-2026-11-08/report.md` with per-run tables, the sample size stated, and the levers in order of what they would save.\nCommit the report and no code.\n",
+      "status": "draft",
+      "created": "2026-11-08T13:21:01Z",
+      "revised": "2026-11-08T13:21:01Z",
+      "profile": "docs"
     }
   ],
   "prime_owner": "neve",
