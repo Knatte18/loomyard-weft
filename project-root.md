@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-08 12:51 UTC; every age below is as of then.
+Rendered 2026-11-08 12:52 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -12,22 +12,21 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (2)
+### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Slack messages to the orch say Slack twice: sender ly:SLACK and a [slack] body prefix**<br>• `loom: code_assist_reviewer_model astra[medium]` | [`slack-forward-prefix`](design-slack-forward-prefix.md) | darn · light | Worktree-Create | neve | 3h<br>0m | slack |
 | T3 | **Reed gives the Codex assist reviewer pane a fixed width instead of half beside Claude**<br>• The Codex assistant reviewer pane keeps a fixed column width; it should split the width evenly with the Claude reviewer pane<br>• `loom: code_assist_reviewer_model astra[medium]` | [`reed-assist-pane-width`](design-reed-assist-pane-width.md) | darn · light | Code-Burler-Fix | neve | 59m<br>21m | reed, codex |
 | T5 | **Arras: one recipe that runs Motif and raddle in a row, with a perch on the split**<br>• Discussion, raddle split and a split perch in one run; the operator only releases the filed tasks | [`motif-raddle-recipe`](design-motif-raddle-recipe.md) | motif | Discussion-Burler-Fix | neve | 53m<br>21m | shed, loom, burler, arbiter, board |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Slack messages to the orch say Slack twice: sender ly:SLACK and a [slack] body prefix**<br>• `loom: code_assist_reviewer_model astra[medium]` | [`slack-forward-prefix`](design-slack-forward-prefix.md) | darn · light |  | 3h<br>0m | slack |
+_None._
 
 ## Notes (15)
 
