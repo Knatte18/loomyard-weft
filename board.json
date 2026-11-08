@@ -474,7 +474,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #86](https://github.com/Knatte18/loomyard/issues/86).\n\n## Seen\n\nIn hub `dop`, the operator finds the parent orch's review of a run's PR very useful, since the orch knows what the run needs.\nToday the orch reviews a PR only when the operator tells the run's PR-Review reviewer to ask its parent orch for a review, as for PR 27 and PR 28, or asks the orch directly, as for PR 25 and PR 26.\nNothing is broken; the operator has to ask each time.\n\n## Change\n\nA setting, per hub and per task (a loom key with a `run_settings` override, beside the PR-Review perch's other keys), that makes the PR-Review step ask the parent orch for a review on its own when the run's PR is open.\nThe request names the slug, the PR URL and the branch.\nWith the setting on, the run waits at PR-Review until the orch answers satisfied or sends findings; findings are handled as the reviewer handles the orch's findings in the flow the operator triggers by hand today.\nWith the setting off, PR-Review runs as now.\nThe orch role gets the instruction for answering such a request.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Drift-Recheck",
       "created": "2026-11-08T15:09:14Z",
       "revised": "2026-11-08T16:27:49Z",
       "profile": "light"
