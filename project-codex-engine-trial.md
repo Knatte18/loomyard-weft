@@ -46,7 +46,7 @@ The fix is checked against unit cases only: the original rollout and a live Code
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (0)
+## Tasks (1)
 
 Concrete and claimable; only a task can run.
 
@@ -56,7 +56,15 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (3)
+### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T6 | `draft` **Codex engine: the forced workspace-write sandbox fails where bubblewrap cannot create user namespaces** | [`codex-sandbox-mode`](design-codex-sandbox-mode.md) | darn |  | 5m<br>5m | codex, shuttle, preflight |
+
+## Notes (2)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -65,12 +73,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 2d<br>1d | codex, shuttle |
-
-### Bugs (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| B3 |  | **Codex engine: the forced workspace-write sandbox fails where bubblewrap cannot create user namespaces** | [`codex-sandbox-mode`](design-codex-sandbox-mode.md) | 5m<br>5m | codex, shuttle, preflight |
 
 ### Features (1)
 
