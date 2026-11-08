@@ -1,0 +1,752 @@
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index 929ff577..52ccb2de 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -281,8 +281,9 @@
+ // Each then reads the hook input once, records it, and pipes it to the turn hook command with `claude` appended.
+ // That runs in a subshell from `$CLAUDE_PROJECT_DIR`, with its output and errors discarded.
+ // The prompt command still exits 0, and the Stop command exits with its recording's status.
+-// In the merged creel Stop command the turn hook runs only on the path that records a turn end,
+-// so a Stop that handed out mail, which the session continues, runs no turn hook.
++// In the merged creel Stop command the turn hook runs first, before creel's delivery,
++// so a Stop that hands out mail, which the session continues, runs it too:
++// an orch's turn reply reaches Slack whether or not mail waited at the turn's end.
+ // The waiter entry runs `lym creel hook-wait claude` from `$CLAUDE_PROJECT_DIR` whether or not a flag stands.
+ // It sets `asyncRewake` true and a timeout of 86400 seconds.
+ // Claude Code therefore runs it in the background and wakes the idle session when it exits 2.
+diff --git a/internal/shuttleengine/claudeengine/hookcmd_integration_test.go b/internal/shuttleengine/claudeengine/hookcmd_integration_test.go
+index a96083d1..1e834275 100644
+--- a/internal/shuttleengine/claudeengine/hookcmd_integration_test.go
++++ b/internal/shuttleengine/claudeengine/hookcmd_integration_test.go
+@@ -407,12 +407,12 @@ func TestTurnHook_LeavesTheCommandsExitStatusToTheRecording(t *testing.T) {
+ 	}
+ }
+ 
+-// TestTurnHook_MergedCreelStopRunsItOnlyWhenATurnEndIsRecorded runs the merged Stop command.
++// TestTurnHook_MergedCreelStopRunsItOnEveryTurnEnd runs the merged Stop command.
+ // The strand's flag is standing.
+ // Mail handed out (the stub `lym` exits 0) continues the turn.
+-// So the command records nothing and the turn hook does not run.
+-// Otherwise the turn end is recorded and the turn hook runs, and the stub `lym` output stays the command's output.
+-func TestTurnHook_MergedCreelStopRunsItOnlyWhenATurnEndIsRecorded(t *testing.T) {
++// So the command records nothing, yet the turn hook runs.
++// Otherwise the turn end is recorded and the turn hook runs too, and the stub `lym` output stays the command's output.
++func TestTurnHook_MergedCreelStopRunsItOnEveryTurnEnd(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+@@ -444,8 +444,8 @@ func TestTurnHook_MergedCreelStopRunsItOnlyWhenATurnEndIsRecorded(t *testing.T)
+ 				t.Errorf("hook stdout = %q, exit = %d; want %q and exit 0", stdout, exitCode, tt.wantStdout)
+ 			}
+ 			_, hookErr := os.Stat(fx.hookArgvPath)
+-			if ran := hookErr == nil; ran != tt.wantRecord {
+-				t.Errorf("turn hook ran = %v; want %v", ran, tt.wantRecord)
++			if hookErr != nil {
++				t.Errorf("the turn hook did not run: %v", hookErr)
+ 			}
+ 			file, _ := os.ReadFile(fx.eventsPath)
+ 			if recorded := len(file) != 0; recorded != tt.wantRecord {
+@@ -570,8 +570,10 @@ func TestCreelMailHook_RunsLymOnlyWhenTheStrandsFlagStands(t *testing.T) {
+ }
+ 
+ // TestCreelStopHook_RecordsATurnEndOnlyWithoutABlock runs the merged Stop command under sh.
+-// A stub `lym` on PATH records the standard input it got, prints a fixed output, and exits as each row says.
++// A stub `lym` on PATH records the standard input each of its verbs got and prints a fixed output.
++// It exits as each row says.
+ // Mail written (the stub exits 0) leaves the events file empty and the output on standard output.
++// A turn hook gets the payload whether or not mail is written, and its output never reaches the hook's.
+ // Otherwise, with the flag absent as well, the file holds the Stop stamp and then the payload byte for byte.
+ // ParseEvents reads that as the payload alone.
+ // An exit 1 that printed an echo alone records the turn end and leaves the printed output as the hook's.
+@@ -598,15 +600,19 @@ func TestCreelStopHook_RecordsATurnEndOnlyWithoutABlock(t *testing.T) {
+ 		wantFailure bool
+ 		// open runs `creelOpenStopHookCommand` in place of the merged command, which records nothing and always exits 0.
+ 		open bool
++		// turnHook gives the merged command the turn hook `lym slack hook`.
++		turnHook bool
+ 	}{
+-		{"FlagStandsAndMailIsWritten", true, "0", mail, "", mail + "\n", false, true, false, false},
+-		{"FlagStandsAndAnEchoAloneIsWritten", true, "1", echo, "", echo + "\n", true, true, false, false},
+-		{"FlagStandsAndNothingIsClaimed", true, "1", "", "", "", true, true, false, false},
+-		{"FlagAbsent", false, "0", mail, "", "", true, false, false, false},
+-		{"UnwritableEventsFile", true, "1", "", "missing-dir", "", false, true, true, false},
+-		{"OpenFlagStandsAndMailIsWritten", true, "0", mail, "", mail + "\n", false, true, false, true},
+-		{"OpenFlagStandsAndAnEchoReachesTheOperator", true, "1", echo, "", echo + "\n", false, true, false, true},
+-		{"OpenFlagAbsent", false, "0", mail, "", "", false, false, false, true},
++		{"FlagStandsAndMailIsWritten", true, "0", mail, "", mail + "\n", false, true, false, false, false},
++		{"FlagStandsAndAnEchoAloneIsWritten", true, "1", echo, "", echo + "\n", true, true, false, false, false},
++		{"FlagStandsAndNothingIsClaimed", true, "1", "", "", "", true, true, false, false, false},
++		{"FlagAbsent", false, "0", mail, "", "", true, false, false, false, false},
++		{"UnwritableEventsFile", true, "1", "", "missing-dir", "", false, true, true, false, false},
++		{"OpenFlagStandsAndMailIsWritten", true, "0", mail, "", mail + "\n", false, true, false, true, false},
++		{"OpenFlagStandsAndAnEchoReachesTheOperator", true, "1", echo, "", echo + "\n", false, true, false, true, false},
++		{"OpenFlagAbsent", false, "0", mail, "", "", false, false, false, true, false},
++		{"TurnHookGetsTheInputWhenMailIsWritten", true, "0", mail, "", mail + "\n", false, true, false, false, true},
++		{"TurnHookGetsTheInputWhenTheTurnEnds", false, "0", mail, "", "", true, false, false, false, true},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -619,8 +625,9 @@ func TestCreelStopHook_RecordsATurnEndOnlyWithoutABlock(t *testing.T) {
+ 					t.Fatal(err)
+ 				}
+ 			}
+-			stdinPath := filepath.Join(root, "stub-stdin")
+-			stub := "#!/bin/sh\ncat > \"$STUB_STDIN\"\n[ -n \"$STUB_OUT\" ] && printf '%s\\n' \"$STUB_OUT\"\nexit \"$STUB_EXIT\"\n"
++			stdinPrefix := filepath.Join(root, "stub-stdin")
++			stdinPath, turnHookStdinPath := stdinPrefix+".creel", stdinPrefix+".slack"
++			stub := "#!/bin/sh\ncat > \"$STUB_STDIN.$1\"\n[ -n \"$STUB_OUT\" ] && printf '%s\\n' \"$STUB_OUT\"\nexit \"$STUB_EXIT\"\n"
+ 			if err := os.WriteFile(filepath.Join(binDir, "lym"), []byte(stub), 0o755); err != nil {
+ 				t.Fatal(err)
+ 			}
+@@ -630,13 +637,17 @@ func TestCreelStopHook_RecordsATurnEndOnlyWithoutABlock(t *testing.T) {
+ 				}
+ 			}
+ 			eventsPath := filepath.Join(root, tt.eventsDir, "events.jsonl")
+-			command := creelStopHookCommand(shQuote(flagDir), shQuote(eventsPath), "")
++			turnHookCommand := ""
++			if tt.turnHook {
++				turnHookCommand = "lym slack hook"
++			}
++			command := creelStopHookCommand(shQuote(flagDir), shQuote(eventsPath), turnHookCommand)
+ 			if tt.open {
+ 				command = creelOpenStopHookCommand(shQuote(flagDir))
+ 			}
+ 			env := []string{
+ 				"PATH=" + binDir + ":/usr/bin:/bin", "CLAUDE_PROJECT_DIR=" + projectDir, agentname.StrandNameEnv + "=" + name,
+-				"STUB_STDIN=" + stdinPath, "STUB_OUT=" + tt.stubOut, "STUB_EXIT=" + tt.stubExit,
++				"STUB_STDIN=" + stdinPrefix, "STUB_OUT=" + tt.stubOut, "STUB_EXIT=" + tt.stubExit,
+ 			}
+ 
+ 			stdout, exitCode := runHookCommand(t, command, payload, env)
+@@ -650,6 +661,13 @@ func TestCreelStopHook_RecordsATurnEndOnlyWithoutABlock(t *testing.T) {
+ 			case !tt.wantStubRun && err == nil:
+ 				t.Errorf("the stub ran with the flag absent")
+ 			}
++			turnHookInput, err := os.ReadFile(turnHookStdinPath)
++			switch {
++			case tt.turnHook && (err != nil || string(turnHookInput) != payload):
++				t.Errorf("the turn hook's standard input = %d bytes (err %v); want the %d-byte payload", len(turnHookInput), err, len(payload))
++			case !tt.turnHook && err == nil:
++				t.Errorf("a turn hook ran with none given")
++			}
+ 
+ 			file, err := os.ReadFile(eventsPath)
+ 			if !tt.wantRecord {
+diff --git a/internal/shuttleengine/claudeengine/settings.go b/internal/shuttleengine/claudeengine/settings.go
+index e9397e2d..d4035177 100644
+--- a/internal/shuttleengine/claudeengine/settings.go
++++ b/internal/shuttleengine/claudeengine/settings.go
+@@ -122,16 +122,21 @@ func creelMailHookCommand(quotedFlagDir string) string {
+ // Claude Code runs an event's hooks in parallel,
+ // so a separate creel hook could not keep the recording from logging a turn end the mail then continues.
+ // The command reads the hook input once.
+-// When the strand's flag stands in the directory at quotedFlagDir, it pipes that input to creel's claim verb.
++// A non-empty turnHookCommand gets that input first, through turnHookStep,
++// so it sees the end of every turn, one whose handed-out mail continues the turn included.
++// When the strand's flag stands in the directory at quotedFlagDir, the command pipes the input to creel's claim verb.
+ // That runs from the session's project directory, and its output is the hook's.
+ // An exit 0 of that step means mail was handed to the session, which continues the turn,
+ // and the command then exits 0 having appended nothing to the events file at quotedEventsPath.
+ // Otherwise, or when the flag is absent, the command appends the Stop stamp and the input as the recording command does.
+ // It exits with that append's status, and what the delivery step printed stays the hook's output.
+ // An echo printed with exit 1 relies on that output to reach the operator.
+-// A non-empty turnHookCommand runs after that append, as recordHeldStop describes.
+ func creelStopHookCommand(quotedFlagDir, quotedEventsPath, turnHookCommand string) string {
+-	return creelStopDelivery(quotedFlagDir) + `; ` + recordHeldStop(quotedEventsPath, turnHookCommand)
++	command := `in=$(cat); `
++	if turnHookCommand != "" {
++		command += turnHookStep(turnHookCommand) + `; `
++	}
++	return command + creelStopDelivery(quotedFlagDir) + `; ` + recordHeldStop(quotedEventsPath, "")
+ }
+ 
+ // turnHookEngineName is the registry name a turn hook command is given as its last argument.
+@@ -163,16 +168,16 @@ func turnHookStep(turnHookCommand string) string {
+ // It always exits 0;
+ // whatever the delivery printed, an echo with exit 1 included, reaches Claude Code as the hook's output.
+ func creelOpenStopHookCommand(quotedFlagDir string) string {
+-	return creelStopDelivery(quotedFlagDir) + `; true`
++	return `in=$(cat); ` + creelStopDelivery(quotedFlagDir) + `; true`
+ }
+ 
+-// creelStopDelivery returns the opening of a creel Stop hook command:
+-// it reads the hook input into $in and forms the strand's flag name.
++// creelStopDelivery returns the delivery step of a creel Stop hook command, over the hook input held in $in:
++// it forms the strand's flag name.
+ // When that flag stands in the directory at quotedFlagDir, it pipes the input to creel's mail command.
+ // The command runs from the session's project directory, and the shell exits 0 when that hands out mail.
+ func creelStopDelivery(quotedFlagDir string) string {
+ 	deliver := `if [ -f ` + quotedFlagDir + `/"$f$n" ]; then cd "${CLAUDE_PROJECT_DIR:-.}" 2>/dev/null; printf '%s' "$in" | ` + creelMailCommand + ` && exit 0; fi`
+-	return `in=$(cat); ` + shuttleengine.StrandFlagNameShell() + `; ` + deliver
++	return shuttleengine.StrandFlagNameShell() + `; ` + deliver
+ }
+ 
+ // creelWaitCommand is the command the idle waiter hook runs.
+@@ -424,7 +429,7 @@ func activityStampHook(eventsPathPosix string) []hookEntry {
+ // A non-empty turnHookCommand reads the hook input once in the UserPromptSubmit and Stop commands.
+ // It runs after their recording on the same input, through turnHookStep;
+ // the prompt command still exits 0, and the Stop command exits with its recording's status.
+-// In a merged creel Stop command it runs only on the path that records a turn end.
++// In a merged creel Stop command it runs first, before creel's delivery, whether or not mail is then handed out.
+ // scope is the session's scope, carried as the document's last keys; the zero scope adds none.
+ func buildSettings(eventsPathPosix string, interactive bool, cfg shuttleengine.Config, claude Config, forkSubagents, denyPublish bool, contextAfterCompaction, turnHookCommand, creelFlagDirPosix string, scope sessionScope) ([]byte, error) {
+ 	quotedEventsPath := shQuote(eventsPathPosix)
+diff --git a/internal/shuttleengine/claudeengine/settings_test.go b/internal/shuttleengine/claudeengine/settings_test.go
+index 6052eef4..4569455c 100644
+--- a/internal/shuttleengine/claudeengine/settings_test.go
++++ b/internal/shuttleengine/claudeengine/settings_test.go
+@@ -352,7 +352,7 @@ func firstHookCommand(t *testing.T, doc map[string]any, event string) string {
+ // TestBuildSettings_TurnHookCommand pins the UserPromptSubmit and Stop commands a turn hook command adds.
+ // Both read the input once and pipe it to the recording, then to the hook step run from the project directory.
+ // The prompt command ends in `; true`; the Stop command exits with the recording's status.
+-// In a hub the merged creel Stop command runs the step only after the recording.
++// In a hub the merged creel Stop command runs the step first, before creel's delivery and the recording.
+ // The commands without a turn hook are pinned by the recording and creel tests.
+ func TestBuildSettings_TurnHookCommand(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -369,7 +369,7 @@ func TestBuildSettings_TurnHookCommand(t *testing.T) {
+ 	}
+ 	wantPrompt := `in=$(cat); ` + record("UserPromptSubmit") + `; ` + step + `; true`
+ 	wantStop := `in=$(cat); ` + record("Stop") + `; s=$?; ` + step + `; exit $s`
+-	wantMergedStop := creelStopDelivery(shQuote(flagDir)) + `; ` + record("Stop") + `; s=$?; ` + step + `; exit $s`
++	wantMergedStop := `in=$(cat); ` + step + `; ` + creelStopDelivery(shQuote(flagDir)) + `; ` + record("Stop")
+ 
+ 	tests := []struct {
+ 		name     string
+diff --git a/internal/shuttleengine/spec.go b/internal/shuttleengine/spec.go
+index 7369f5cb..c1970966 100644
+--- a/internal/shuttleengine/spec.go
++++ b/internal/shuttleengine/spec.go
+@@ -149,7 +149,7 @@ type Spec struct {
+ 	// The engine runs it verbatim inside the provider's hook shell, on no other session event.
+ 	ContextAfterCompaction string
+ 	// TurnHookCommand, when non-empty, is a shell command the engine runs at each prompt submitted to the session.
+-	// It also runs at each turn end of the session's main thread that hands the session no creel mail.
++	// It also runs at each turn end of the session's main thread, whether or not creel mail is handed to the session.
+ 	// The command gets the provider's hook input on standard input and the engine's registry name as its last argument.
+ 	// It runs from the session's project directory.
+ 	// Its output and exit status are discarded, so it never steers the session.
+diff --git a/internal/slackengine/backoff.go b/internal/slackengine/backoff.go
+index e710c813..0bde0ddb 100644
+--- a/internal/slackengine/backoff.go
++++ b/internal/slackengine/backoff.go
+@@ -1,5 +1,7 @@
+-// backoff.go holds the waits the relay's outbound loop takes between reads:
+-// a floor, doubled while a read finds nothing, and raised by a rate limit that the outbound loop or the wake loop meets.
++// backoff.go holds the waits the relay's outbound loop takes between reads.
++// There is none after a long poll that waited out the floor.
++// Otherwise the wait is a floor doubled while a read finds nothing.
++// A rate limit that the outbound loop or the wake loop meets raises it.
+ 
+ package slackengine
+ 
+@@ -61,6 +63,18 @@ func (w *loopWait) afterIdle() time.Duration {
+ 	return w.current
+ }
+ 
++// afterEmptyPoll returns the wait after a long poll that found no mail and lasted elapsed.
++// A poll that lasted the shared floor or longer was the wait itself:
++// the next poll starts at once, so mail posted meanwhile is read when it is posted, and the wait drops back to the floor.
++// A shorter poll backs off as afterIdle does, so a poll that returns early never runs the loop hot.
++func (w *loopWait) afterEmptyPoll(elapsed time.Duration) time.Duration {
++	if elapsed < w.floor.get() {
++		return w.afterIdle()
++	}
++	w.current = w.floor.get()
++	return 0
++}
++
+ // afterRateLimit raises the shared floor and returns the wait limit asks for.
+ func (w *loopWait) afterRateLimit(limit *RateLimitError) time.Duration {
+ 	w.floor.rateLimited()
+diff --git a/internal/slackengine/doc.go b/internal/slackengine/doc.go
+index 01953b74..18f4da6b 100644
+--- a/internal/slackengine/doc.go
++++ b/internal/slackengine/doc.go
+@@ -52,6 +52,8 @@
+ // No writer of the presence mails a notice.
+ // Each running relay mails its own hub's orchs a `[slack presence]` notice when it sees the presence change.
+ // It does so whoever changed it.
++// A notice of slack leaves out the orch that was forwarded the operator's message which turned the presence.
++// That message already woke the orch.
+ // A message that cannot be handled holds the later ones until it succeeds or is five minutes old.
+ // The relay then answers in Slack and moves past it.
+ //
+@@ -72,7 +74,10 @@
+ // `RunRelay` is the relay process: it holds the relay lock and makes its first creel read before any Slack call.
+ // It then checks the tokens and the setup and ensures the hub's channels.
+ // It runs the socket holder, the outbound read and a wake loop.
+-// The outbound read waits from a five-second floor and doubles to sixty while it finds nothing.
++// The outbound read is a long poll of the relay's mailbox, bounded at sixty seconds.
++// A poll that found no mail once it had waited out the five-second floor is followed at once by the next.
++// So mail posted while the relay is idle reaches Slack when it is posted.
++// After mail the read waits the floor, and after a failure, or a poll that found nothing sooner, it doubles to sixty.
+ // The wake loop wakes on a file event in the inbox or on the presence file.
+ // It never wakes within a second of its previous wake.
+ // It also wakes at the end of each outbound read.
+diff --git a/internal/slackengine/export_test.go b/internal/slackengine/export_test.go
+index 81c02834..e0c6ef55 100644
+--- a/internal/slackengine/export_test.go
++++ b/internal/slackengine/export_test.go
+@@ -29,6 +29,9 @@ func (in *inbound) Start() { in.start() }
+ // Drain makes the reads the inbox's hints ask for.
+ func (in *inbound) Drain(ctx context.Context) (bool, error) { return in.drain(ctx) }
+ 
++// TakeAwayFrom returns the orchs forwarded an operator's message that turned the presence, and forgets them.
++func (in *inbound) TakeAwayFrom() map[string]bool { return in.takeAwayFrom() }
++
+ // RetryOwed makes each owed read whose time has come.
+ func (in *inbound) RetryOwed(ctx context.Context) bool { return in.retryOwed(ctx) }
+ 
+diff --git a/internal/slackengine/inbound.go b/internal/slackengine/inbound.go
+index 72536d0c..9503ae60 100644
+--- a/internal/slackengine/inbound.go
++++ b/internal/slackengine/inbound.go
+@@ -136,6 +136,12 @@ type inbound struct {
+ 	presenceKnown bool
+ 	// refusedOrchs holds the orchs whose current episode of a Slack refusal posted its notice.
+ 	refusedOrchs map[string]bool
++	// awayFrom holds the orchs forwarded an operator's message that turned the presence to slack.
++	// It covers the time since takeAwayFrom last ran.
++	awayFrom map[string]bool
++	// awayPending holds the orchs whose operator's message turned the presence and is not posted yet.
++	// A retry of that message finds the presence already slack, so the turn is remembered here until a post stands.
++	awayPending map[string]bool
+ 	// failingKey and failingSince name the message that cannot be handled yet and when it first failed.
+ 	failingKey   string
+ 	failingSince time.Time
+@@ -147,9 +153,21 @@ func newInbound(geom Geometry, mailbox Mailbox, slack SlackClient, hub Hub, cloc
+ 	return &inbound{
+ 		geom: geom, mailbox: mailbox, slack: slack, hub: hub, clock: clock, keeper: keeper,
+ 		refusedOrchs: map[string]bool{},
++		awayFrom:     map[string]bool{},
++		awayPending:  map[string]bool{},
+ 	}
+ }
+ 
++// takeAwayFrom returns the orchs forwarded an operator's message that turned the presence to slack.
++// It covers the time since the previous call, and it forgets them.
++func (in *inbound) takeAwayFrom() map[string]bool {
++	in.mu.Lock()
++	defer in.mu.Unlock()
++	taken := in.awayFrom
++	in.awayFrom = map[string]bool{}
++	return taken
++}
++
+ var (
+ 	// slackLink matches a link Slack wraps in angle brackets, `<url|label>` or `<url>`, whose value is a web or mail address.
+ 	slackLink = regexp.MustCompile(`<((?:https?://|mailto:)[^|>\s]*)(?:\|[^>]*)?>`)
+@@ -183,9 +201,10 @@ func orchName(shortname, slug string) (string, error) {
+ }
+ 
+ // noticePresence mails a `[slack presence]` notice of presence to the hub's orch and to the orch of each beam in beams.
++// An orch in skip is left out.
+ // The notice asks for no reply.
+ // The error joins every failed notice.
+-func noticePresence(geom Geometry, mailbox Mailbox, beams []string, presence Presence) error {
++func noticePresence(geom Geometry, mailbox Mailbox, beams []string, presence Presence, skip map[string]bool) error {
+ 	var failures []error
+ 	notice := fmt.Sprintf("%s presence is now %s", presenceNoticePrefix, presence)
+ 	for _, slug := range append([]string{""}, beams...) {
+@@ -194,6 +213,9 @@ func noticePresence(geom Geometry, mailbox Mailbox, beams []string, presence Pre
+ 			failures = append(failures, err)
+ 			continue
+ 		}
++		if skip[receiver] {
++			continue
++		}
+ 		if _, err := mailbox.Post(receiver, notice); err != nil {
+ 			failures = append(failures, fmt.Errorf("slack: post the presence notice to %s: %w", receiver, err))
+ 		}
+@@ -611,6 +633,8 @@ func (in *inbound) readFailed(orch string, err error) error {
+ // It forwards the setup's operator's message of no subtype, `file_share` or `thread_broadcast`;
+ // any other subtype, a bot's message and anyone else's are skipped.
+ // A message it forwards first sets the presence to slack.
++// When that turned the presence and the message was posted to the orch, the orch is kept for takeAwayFrom;
++// a turn whose post failed is kept for the retry of the message, and one whose message posted nothing is dropped.
+ // An error means the message is not handled yet and the cursor stays before it.
+ func (in *inbound) handle(ctx context.Context, setup Setup, orch, channel string, message Message) (bool, error) {
+ 	forwardedSubtype := message.Subtype == "" || message.Subtype == fileShareSubtype || message.Subtype == threadBroadcastSubtype
+@@ -627,21 +651,35 @@ func (in *inbound) handle(ctx context.Context, setup Setup, orch, channel string
+ 	case "status":
+ 		return in.status(ctx, channel, message)
+ 	}
+-	in.awayOnOperatorMessage()
+-	return in.forward(ctx, orch, channel, message, text)
++	if in.awayOnOperatorMessage() {
++		in.awayPending[orch] = true
++	}
++	handled, posted, err := in.forward(ctx, orch, channel, message, text)
++	switch {
++	case posted:
++		if in.awayPending[orch] {
++			in.awayFrom[orch] = true
++		}
++		delete(in.awayPending, orch)
++	case err == nil:
++		delete(in.awayPending, orch)
++	}
++	return handled, err
+ }
+ 
+ // awayOnOperatorMessage sets the presence to slack before an operator's message is forwarded:
+ // the operator writing in Slack shows they are away.
+-// A presence already slack is left as it is.
++// It reports whether the write turned the presence; a presence already slack is left as it is.
+ // A failed write is logged once per episode and holds no message.
+-func (in *inbound) awayOnOperatorMessage() {
+-	if _, err := WritePresence(in.geom.PresencePath, PresenceSlack, in.clock.Now()); err != nil {
++func (in *inbound) awayOnOperatorMessage() bool {
++	turned, err := WritePresence(in.geom.PresencePath, PresenceSlack, in.clock.Now())
++	if err != nil {
+ 		in.episodes.Fail("presence", "slackengine: an operator's message could not set the presence to slack", "error", err)
+-		return
++		return false
+ 	}
+ 	in.episodes.Recover("presence", "slackengine: the presence is written again")
+ 	in.lastPresence, in.presenceKnown = PresenceSlack, true
++	return turned
+ }
+ 
+ // setPresence sets the presence for an `away` or `back` command and answers in the channel with the resulting state.
+@@ -671,18 +709,23 @@ func (in *inbound) status(ctx context.Context, channel string, message Message)
+ // forward posts a message of the operator to orch, the orch of the channel it was written in.
+ // The text goes as it stands, an `@<slug>` prefix included, followed by a line per attached file.
+ // The body carries no marker of its own: the sender `<shortname>:SLACK` already names Slack as its source.
+-func (in *inbound) forward(ctx context.Context, orch, channel string, message Message, text string) (bool, error) {
+-	posted := strings.TrimPrefix(text+fileLines(message.Files), "\n")
+-	if strings.TrimSpace(posted) == "" {
++// handled reports whether the message is done with, and posted whether the orch was mailed it.
++// A message with no text and no files is handled and not posted.
++// So is a message over the body limit.
++// So is a message given up on after retryWindow.
++func (in *inbound) forward(ctx context.Context, orch, channel string, message Message, text string) (handled, posted bool, err error) {
++	body := strings.TrimPrefix(text+fileLines(message.Files), "\n")
++	if strings.TrimSpace(body) == "" {
+ 		logger.Debug("slackengine: skipped a message with no text and no files", "ts", message.TS)
+-		return true, nil
++		return true, false, nil
+ 	}
+-	if len(posted) > creelBodyLimit {
+-		in.answer(ctx, channel, fmt.Sprintf("that message is %d bytes, over the %d the hub's mail takes; send a shorter one", len(posted), creelBodyLimit))
+-		return true, nil
++	if len(body) > creelBodyLimit {
++		in.answer(ctx, channel, fmt.Sprintf("that message is %d bytes, over the %d the hub's mail takes; send a shorter one", len(body), creelBodyLimit))
++		return true, false, nil
+ 	}
+-	if _, err := in.mailbox.Post(orch, posted); err != nil {
+-		return in.retryOrGiveUp(ctx, channel, message, "your message was not delivered; send it again", err)
++	if _, err := in.mailbox.Post(orch, body); err != nil {
++		handled, err := in.retryOrGiveUp(ctx, channel, message, "your message was not delivered; send it again", err)
++		return handled, false, err
+ 	}
+ 	in.settle()
+ 	paused, err := in.hub.Paused(orch)
+@@ -695,7 +738,7 @@ func (in *inbound) forward(ctx context.Context, orch, channel string, message Me
+ 	default:
+ 		in.episodes.Recover("paused", "slackengine: the pause read succeeds again")
+ 	}
+-	return true, nil
++	return true, true, nil
+ }
+ 
+ // retryOrGiveUp handles a message that could not be handled:
+diff --git a/internal/slackengine/inbound_test.go b/internal/slackengine/inbound_test.go
+index bc91ffb5..5805f9f3 100644
+--- a/internal/slackengine/inbound_test.go
++++ b/internal/slackengine/inbound_test.go
+@@ -118,6 +118,8 @@ type fakeMailbox struct {
+ 	readWaitSteps []readStep
+ 	// blockReadWait, when set, makes ReadWait block until it is closed, as a long poll with no mail does.
+ 	blockReadWait chan struct{}
++	// onReadWait, when set, runs at the start of every ReadWait call, as the time a poll takes passes.
++	onReadWait func()
+ 	// readWaitEntered, when set, is closed by the first ReadWait call before it blocks.
+ 	readWaitEntered chan struct{}
+ 	// acks holds the ids each acknowledged ReadWait covered, and readAllAcks the ids each acknowledged ReadAll covered.
+@@ -171,6 +173,9 @@ func (m *fakeMailbox) ReadAll(handle func([]creelengine.Message) error) error {
+ }
+ 
+ func (m *fakeMailbox) ReadWait(_ time.Duration, handle func([]creelengine.Message) error) error {
++	if m.onReadWait != nil {
++		m.onReadWait()
++	}
+ 	m.mu.Lock()
+ 	m.readWaitCalls++
+ 	if m.readWaitCalls == 1 && m.readWaitEntered != nil {
+@@ -1300,6 +1305,74 @@ func TestInboundRead(t *testing.T) {
+ 		h.wantCursorTS("101.000001")
+ 	})
+ 
++	t.Run("OrchIsKeptForTheNoticeOnlyWhenAnOperatorMessageThatTurnedThePresenceWasPostedToIt", func(t *testing.T) {
++		t.Parallel()
++		tests := []struct {
++			name string
++			run  func(t *testing.T, h *harness)
++			want map[string]bool
++		}{
++			{"PostedMessage", func(t *testing.T, h *harness) {
++				h.say("101.000001", "hello")
++				h.mustReadC1()
++			}, map[string]bool{primeOrch: true}},
++			{"PresenceAlreadySlack", func(t *testing.T, h *harness) {
++				if _, err := slackengine.WritePresence(h.geom.PresencePath, slackengine.PresenceSlack, h.clock.Now()); err != nil {
++					t.Fatalf("WritePresence = %v", err)
++				}
++				h.say("101.000001", "hello")
++				h.mustReadC1()
++			}, map[string]bool{}},
++			{"MessageOverTheBodyLimit", func(t *testing.T, h *harness) {
++				h.say("101.000001", strings.Repeat("x", 4097))
++				h.mustReadC1()
++			}, map[string]bool{}},
++			{"MessageWithNoTextAndNoFiles", func(t *testing.T, h *harness) {
++				h.say("101.000001", " ")
++				h.mustReadC1()
++			}, map[string]bool{}},
++			{"FirstPostFailsAndTheRetryStands", func(t *testing.T, h *harness) {
++				h.say("101.000001", "hello")
++				h.mailbox.setPostErr(errors.New("creel down"))
++				if _, err := h.readC1(); err == nil {
++					t.Fatalf("Drain = nil; want the post error")
++				}
++				if got := h.in.TakeAwayFrom(); len(got) != 0 {
++					t.Errorf("TakeAwayFrom after the failed post = %v; want none", got)
++				}
++				h.mailbox.setPostErr(nil)
++				h.clock.Advance(time.Minute)
++				h.retry()
++			}, map[string]bool{primeOrch: true}},
++			{"MessageGivenUpOnDoesNotMarkALaterOne", func(t *testing.T, h *harness) {
++				h.say("101.000001", "hello")
++				h.mailbox.setPostErr(errors.New("creel down"))
++				if _, err := h.readC1(); err == nil {
++					t.Fatalf("Drain = nil; want the post error")
++				}
++				h.clock.Advance(5 * time.Minute)
++				h.retry()
++				h.mailbox.setPostErr(nil)
++				h.say("102.000001", "later")
++				h.mustReadC1()
++			}, map[string]bool{}},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				h := newHarness(t)
++				h.startAt("100.000000")
++				tt.run(t, h)
++				if diff := cmp.Diff(tt.want, h.in.TakeAwayFrom()); diff != "" {
++					t.Errorf("TakeAwayFrom mismatch (-want +got):\n%s", diff)
++				}
++				if again := h.in.TakeAwayFrom(); len(again) != 0 {
++					t.Errorf("second TakeAwayFrom = %v; want none, the first call forgets", again)
++				}
++			})
++		}
++	})
++
+ 	t.Run("AnswerRefusedWithNotInChannelJoinsTheChannelAndPostsAgain", func(t *testing.T) {
+ 		t.Parallel()
+ 		h := newHarness(t)
+diff --git a/internal/slackengine/outbound.go b/internal/slackengine/outbound.go
+index a0d07a5d..e94c9fa3 100644
+--- a/internal/slackengine/outbound.go
++++ b/internal/slackengine/outbound.go
+@@ -79,7 +79,9 @@ func newOutbound(geom Geometry, mailbox Mailbox, slack SlackClient, clock Clock,
+ 
+ // read waits for mail in the relay's mailbox and posts it to the channels of its senders.
+ // It returns how long to wait before the next read.
+-// The wait is the floor after mail arrived, doubled after a read with none, and a rate limit's retry wait.
++// The wait is the floor after mail arrived and a rate limit's retry wait after a limit.
++// It is none after a poll that found no mail once it had waited out the floor, since that poll was the wait.
++// It doubles after a read that failed or that found no mail sooner.
+ // The mail is acknowledged only when creel confirms it.
+ // Until then the outbox record keeps each handled message, so a redelivered read posts nothing twice.
+ // A failed post returns its error with the read released; the record stays until a confirmed acknowledgement clears it.
+@@ -95,6 +97,7 @@ func (out *outbound) read(ctx context.Context) (time.Duration, error) {
+ 	}
+ 	out.saveFault = nil
+ 	handlerRan := false
++	pollStarted := out.clock.Now()
+ 	err = out.mailbox.ReadWait(outboundReadTimeout, func(messages []creelengine.Message) error {
+ 		handlerRan = true
+ 		return out.post(ctx, messages)
+@@ -106,7 +109,7 @@ func (out *outbound) read(ctx context.Context) (time.Duration, error) {
+ 	case errors.Is(err, errReadBudget):
+ 		return out.wait.afterActivity(), out.saveFault
+ 	case errors.Is(err, creelengine.ErrWaitTimeout) && !handlerRan:
+-		return out.wait.afterIdle(), nil
++		return out.wait.afterEmptyPoll(out.clock.Now().Sub(pollStarted)), nil
+ 	}
+ 	err = errors.Join(err, out.saveFault)
+ 	if limit, ok := isRateLimit(err); ok {
+diff --git a/internal/slackengine/outbound_test.go b/internal/slackengine/outbound_test.go
+index 40636417..b33dc0ce 100644
+--- a/internal/slackengine/outbound_test.go
++++ b/internal/slackengine/outbound_test.go
+@@ -709,6 +709,53 @@ func TestOutboundRead(t *testing.T) {
+ 		h.wantAnswers("once")
+ 	})
+ 
++	t.Run("EmptyPollThatWaitedOutTheFloorIsFollowedAtOnceByTheNext", func(t *testing.T) {
++		t.Parallel()
++		h := newOutboundHarness(t)
++		h.mailbox.onReadWait = func() { h.clock.Advance(slackengine.Ceiling) }
++		for i := range 3 {
++			if wait := h.mustRead(); wait != 0 {
++				t.Errorf("Read #%d wait = %s; want none after a poll that lasted its timeout", i+1, wait)
++			}
++		}
++	})
++
++	t.Run("EmptyPollsBackOffAndAPollThatWaitedItOutResetsTheWaitToTheFloor", func(t *testing.T) {
++		t.Parallel()
++		h := newOutboundHarness(t)
++		var advance time.Duration
++		h.mailbox.onReadWait = func() { h.clock.Advance(advance) }
++		var waits []time.Duration
++		for _, elapsed := range []time.Duration{0, 0, slackengine.Ceiling, 0} {
++			advance = elapsed
++			waits = append(waits, h.mustRead())
++		}
++		want := []time.Duration{2 * slackengine.Floor, 4 * slackengine.Floor, 0, 2 * slackengine.Floor}
++		if !cmp.Equal(waits, want) {
++			t.Errorf("waits = %v; want %v", waits, want)
++		}
++	})
++
++	t.Run("EmptyPollOfExactlyTheRaisedFloorIsFollowedAtOnceByTheNext", func(t *testing.T) {
++		t.Parallel()
++		h := newOutboundHarness(t)
++		batch := []creelengine.Message{h.mailFrom(1, primeOrch, "limited")}
++		h.mailbox.scriptReadWait(readStep{messages: batch}, readStep{messages: batch})
++		h.slack.failPosts(&slackengine.RateLimitError{Method: "chat.postMessage", RetryAfter: time.Second})
++		if _, err := h.read(); err == nil {
++			t.Fatalf("Read = nil; want the rate limit")
++		}
++		h.mustRead()
++		h.mailbox.onReadWait = func() { h.clock.Advance(2 * slackengine.Floor) }
++		if wait := h.mustRead(); wait != 0 {
++			t.Errorf("Read wait after a poll of the raised floor = %s; want none", wait)
++		}
++		h.mailbox.onReadWait = func() { h.clock.Advance(2*slackengine.Floor - time.Nanosecond) }
++		if wait := h.mustRead(); wait != 4*slackengine.Floor {
++			t.Errorf("Read wait after a poll just under the raised floor = %s; want %s", wait, 4*slackengine.Floor)
++		}
++	})
++
+ 	t.Run("TimeoutAfterTheHandlerRanKeepsTheRecordAndReturnsTheFloor", func(t *testing.T) {
+ 		t.Parallel()
+ 		h := newOutboundHarness(t)
+diff --git a/internal/slackengine/relay.go b/internal/slackengine/relay.go
+index 0b684a70..fa5ab319 100644
+--- a/internal/slackengine/relay.go
++++ b/internal/slackengine/relay.go
+@@ -677,8 +677,11 @@ func (w *wakeLoop) wake(ctx context.Context, fromOutbound bool) {
+ // noticePresenceChange mails the hub's orchs a `[slack presence]` notice when presence differs from the noticed one.
+ // With no presence noticed yet it takes presence as noticed and mails nothing.
+ // The notice goes to the hub's orch and to the orch of each beam in beams, which is empty when the beams read failed.
++// A notice of slack leaves out each orch forwarded an operator's message that turned the presence:
++// that message already woke the orch, and a notice behind it would wake it again for nothing.
+ // A failed notice is logged and not sent again.
+ func (w *wakeLoop) noticePresenceChange(presence Presence, beams []string) {
++	awayFrom := w.in.takeAwayFrom()
+ 	if presence == w.noticed {
+ 		return
+ 	}
+@@ -687,7 +690,10 @@ func (w *wakeLoop) noticePresenceChange(presence Presence, beams []string) {
+ 	if !known {
+ 		return
+ 	}
+-	if err := noticePresence(w.geom, w.mailbox, beams, presence); err != nil {
++	if presence != PresenceSlack {
++		awayFrom = nil
++	}
++	if err := noticePresence(w.geom, w.mailbox, beams, presence, awayFrom); err != nil {
+ 		w.log.fail("presence-notice", err)
+ 		return
+ 	}
+diff --git a/internal/slackengine/relay_test.go b/internal/slackengine/relay_test.go
+index f624cf70..6dc4064c 100644
+--- a/internal/slackengine/relay_test.go
++++ b/internal/slackengine/relay_test.go
+@@ -988,6 +988,77 @@ func TestRunRelay(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("OperatorsMessageThatTurnsThePresenceToSlackIsNoticedToEveryOrchButTheOneItWasForwardedTo", func(t *testing.T) {
++		t.Parallel()
++		r := newRelayRun(t)
++		r.startAt("100.000000")
++		r.settle()
++		r.clock.Advance(slackengine.WakeFloor)
++		r.say("200.000001", "hello from slack")
++		r.hint(testChannel)
++		r.awaitForwarded("hello from slack")
++		r.driveUntil("the presence notice to be mailed", func() bool { return len(r.presenceNotices()) >= 1 })
++		want := []mail{{paymentsOrch, "[slack presence] presence is now slack"}}
++		if diff := cmp.Diff(want, r.presenceNotices()); diff != "" {
++			t.Errorf("presence notices mismatch (-want +got):\n%s", diff)
++		}
++	})
++
++	t.Run("PresenceThatTurnedBackBeforeTheNoticeIsNoticedToEveryOrchAndTheKeptOrchesAreForgottenAtEveryWake", func(t *testing.T) {
++		t.Parallel()
++		// The mailbox hook below writes the presence terminal once, as the operator's message reaches the hub's orch,
++		// so the wake that forwards the message also finds the presence changed again.
++		const slackNotice, terminalNotice = "[slack presence] presence is now slack", "[slack presence] presence is now terminal"
++		tests := []struct {
++			name string
++			// run drives the relay from a settled start and returns when the notices of want are mailed.
++			run  func(r *relayRun, turnBack *atomic.Bool)
++			want []mail
++		}{
++			{"NoticeOfTerminalReachesTheOrchTheMessageWasForwardedTo", func(r *relayRun, turnBack *atomic.Bool) {
++				r.setPresence(slackengine.PresenceSlack)
++				r.driveUntil("the slack notices to be mailed", func() bool { return len(r.presenceNotices()) >= 2 })
++				r.setPresence(slackengine.PresenceTerminal)
++				r.say("200.000001", "hello from slack")
++				turnBack.Store(true)
++				r.hint(testChannel)
++				r.driveUntil("the terminal notices to be mailed", func() bool { return len(r.presenceNotices()) >= 4 })
++			}, []mail{
++				{primeOrch, slackNotice}, {paymentsOrch, slackNotice},
++				{primeOrch, terminalNotice}, {paymentsOrch, terminalNotice},
++			}},
++			{"OrchKeptByAWakeThatSentNoNoticeDoesNotSuppressALaterNotice", func(r *relayRun, turnBack *atomic.Bool) {
++				reads := r.beamReads.Load()
++				r.say("200.000001", "hello from slack")
++				turnBack.Store(true)
++				r.hint(testChannel)
++				r.driveUntil("a wake after the forwarding wake", func() bool { return r.beamReads.Load() >= reads+2 })
++				r.setPresence(slackengine.PresenceSlack)
++				r.driveUntil("the slack notices to be mailed", func() bool { return len(r.presenceNotices()) >= 2 })
++			}, []mail{{primeOrch, slackNotice}, {paymentsOrch, slackNotice}}},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				r := newRelayRun(t)
++				r.startAt("100.000000")
++				var turnBack atomic.Bool
++				r.mailbox.onPost = func(receiver string) {
++					if receiver == primeOrch && turnBack.CompareAndSwap(true, false) {
++						if _, err := slackengine.WritePresence(r.geom.PresencePath, slackengine.PresenceTerminal, r.clock.Now()); err != nil {
++							t.Errorf("WritePresence = %v", err)
++						}
++					}
++				}
++				r.settle()
++				tt.run(r, &turnBack)
++				if diff := cmp.Diff(tt.want, r.presenceNotices()); diff != "" {
++					t.Errorf("presence notices mismatch (-want +got):\n%s", diff)
++				}
++			})
++		}
++	})
++
+ 	t.Run("RefusedOperatorInviteIsRetriedAtTheNextOutboundWake", func(t *testing.T) {
+ 		t.Parallel()
+ 		r := newRelayRun(t)
