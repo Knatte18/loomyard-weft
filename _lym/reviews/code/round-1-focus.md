@@ -1,0 +1,16 @@
+---
+round: 1
+focus:
+  - "Operator amendment (two tokens, no user token): in `internal/slackengine` and `internal/slackcli`, does any code still store, read or use an `xoxp-` token or call `conversations.unarchive`, and does `conversations.join` replace every invite-with-user-token path (`not_in_channel` on post, start read and resync read; `name_taken` adoption)?"
+  - "`internal/slackengine/credentials.go` and `internal/slackcli/cli.go`: does `lym slack login` take both tokens in one run, file them by prefix, refuse any other prefix or a run without one of each (writing nothing), match the app id against `bots.info`, and end every live hub's relay when a stored token changes?"
+  - "`internal/slackengine/holder.go` and `socket.go`: is each envelope acknowledged only after its hint write stood, with the ten-second limit, owed resync hints, unacknowledged events while a live map or `hubregistry.Live` read fails, and the ping, reconnect backoff and lock release before re-exec?"
+  - "`internal/slackengine/relay.go` and `inbound.go`: do the hint drain, the removal before the read, the owed-read set retried at each outbound-wait wake, the one-second file-event floor, the on-disk fallback when `fswatch.Watch` fails, and the cursor and thread-floor rules (forward-only, 24-hour prune, `thread_broadcast` handled once) match D2?"
+  - "`internal/slackengine/keeper.go` and `channelmap.go`: channel ensure order (create, map entry, then invite), per-orch lock, `name_taken` handling (creator test, other hub's map, archived channel refused with the rename-in-Slack notice), a new channel replacing an archived entry, and the dated-rename-then-archive retire with the numbered suffix on `name_taken` and no archive at `lym slack stop`."
+  - "`internal/slackengine/outbound.go`: sender-to-channel routing (beam orch or program to its beam, hub orch or program to prime, gone beam to prime), `username` and `icon_emoji` with no `[sender]` prefix, `is_archived`, `not_in_channel` and `channel_not_found` recovery, and each refused post counting once toward `refusalCap`."
+  - "Repository rules: the diff to `pattern/PATTERN-agent-addressing.md` and `pattern/PATTERN-daemon-wakeups.md` against the declared PATTERN change and the amended Slack boundary rule (bot and app-level tokens, no user token); the unbounded-wait declaration in `cmd/lym/daemonwakeups_test.go`; and whether `docs/slack-app.md` and the `docs/overview.md` slack bullet land in the diff with the D10 manifest (bot scopes with `channels:join`, no user scope)."
+  - "Refusal wording: every way forward that named `lym slack setup --channel` now names `lym slack setup --operator <user-id>`, and every scope list names the D10 manifest and `docs/slack-app.md`."
+  - "Test economy and coverage: new tests in `holder_test.go`, `keeper_test.go`, `relay_test.go` and `inbound_test.go` against the existing ones for duplicated coverage, and behaviors the diff adds with no test."
+---
+
+Focus follows the amended decision record, with the operator's two-token amendment winning over D3, D5, D6, D8 and D10 where they differ.
+Check the commit messages of the range for `Pattern-Departure:` trailers and `_lym/landing/summary.md` claims against the diff.
