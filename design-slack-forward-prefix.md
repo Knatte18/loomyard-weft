@@ -1,6 +1,6 @@
 # Slack messages to the orch say Slack twice: sender ly:SLACK and a [slack] body prefix
 
-`slack-forward-prefix` · Task · enhancement, slack · running · Drift-Recheck
+`slack-forward-prefix` · Task · enhancement, slack · running · Describe
 
 ## Seen (operator, 2026-11-08)
 
