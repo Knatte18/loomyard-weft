@@ -24,5 +24,6 @@ On 2026-11-08 the first raddle proposal for `slack-v2` missed the operator's cha
 
 - One task: the split files a single task, drafted, carrying the decision record; the arras entry itself is done and pruned.
 - A family of tasks: the split files them into a new project named after the arras entry's slug, so the board shows they are the result of that arras run; each task carries its `depends_on` and its part of the decision record, and the project lists their order.
-- Each task of a family is an ordinary darn or tapestry with its own perch and its own landing on `main`; the operator weighed a closed project with one perch at the end and kept the per-task runs, since a darn is cheaper, more local and tested on its own before the next starts (operator, 2026-11-08).
+- Each task of a family is an ordinary darn or tapestry with its own perch and its own landing on `main`; a darn is a task of fair size that warrants its own review, cheaper and more local than a tapestry, and tested on its own before the next starts (operator, 2026-11-08).
+  A closed project whose darns skip their perch, with one perch over the whole project at the end, may be tried later; it is not part of this design.
 - Open: whether releasing the project releases all its tasks at once, in their `depends_on` order, and whether the project keeps the whole decision record for later reading.
