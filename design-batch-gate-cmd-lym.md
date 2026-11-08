@@ -1,6 +1,6 @@
 # Run the cmd/lym tests in the Webster batch gate so verify failures surface in the fork
 
-`batch-gate-cmd-lym` · Task · enhancement, webster, gate · running · Code-Burler-Review
+`batch-gate-cmd-lym` · Task · enhancement, webster, gate · running · Code-Burler-Fix
 
 ## Why (operator, 2026-11-08)
 
