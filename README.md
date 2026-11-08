@@ -90,7 +90,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Slack v2: one bot, one channel per orch, push in place of polling** | [`slack-v2`](design-slack-v2.md)<br>[Sketch](decision-slack-v2.md) | raddle | Seed-Child | neve | 15h<br>0m | slack, creel, orch |
+| T1 | **Slack v2: one bot, one channel per orch, push in place of polling** | [`slack-v2`](design-slack-v2.md)<br>[Sketch](decision-slack-v2.md) | raddle | Open-Window | neve | 15h<br>0m | slack, creel, orch |
 
 #### Ready (0)
 
