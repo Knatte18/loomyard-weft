@@ -1,0 +1,265 @@
+diff --git a/internal/reedengine/doc.go b/internal/reedengine/doc.go
+index fa5edf14..e13debe8 100644
+--- a/internal/reedengine/doc.go
++++ b/internal/reedengine/doc.go
+@@ -340,6 +340,7 @@
+ // and a write refuses them before any tmux call, naming the way forward.
+ // Reed arranges no panes in the shell window: it computes no layout, pins no pane height and keeps no resize hook.
+ // The only layout reed issues is the even layout of a group window, in the window_split direction.
++// The only resize hook reed keeps is a group window's own, which issues that layout again.
+ //
+ // The move rule: the head of every reconcile (listReconcilePanesLocked) lists the shell window's panes.
+ // It breaks any pane a strand is bound to out into a window of its own.
+@@ -742,9 +743,14 @@
+ // The shared window stays as it is.
+ // A pane joins the shared window by a detached split in the window_split direction,
+ // so an operator viewing the window keeps the active pane, and the window is then laid out evenly in that direction.
++// Every such layout also pins the window's window-resized hook to issue the same layout after each resize.
++// tmux's own resize of a layout can leave one pane at its old size while the other takes the whole change,
++// and the hook gives every pane of the window an equal share again.
++// The hook skips a zoomed window, so a resize never unzooms it.
++// psmux lacks set-hook, so on Windows no hook is pinned.
+ // Removing an own-window strand moves a viewer on its window to the relevant window before the window ends.
+ // The move never goes to the shell, and it never moves a viewer on another window.
+-// A shared window a strand leaves is laid out again.
++// A shared window a strand leaves is laid out again, and its hook is pinned again.
+ // An invalid window_split or window_share_max never refuses a removal:
+ // the layout is skipped and the key is reported in Removed.ConfigWarning.
+ //
+@@ -847,8 +853,8 @@
+ // requiredSubcommands (probe.go) fails the capability probe on a binary missing any of them.
+ // set-hook is absent from requiredSubcommands.
+ // Gating the capability probe on it would take every reed verb down on a psmux lacking it.
+-// The hooks it serves are the unseen-clear hook and the window-resized unpin.
+-// Both are quality-only and degrade silently.
++// The hooks it serves are the unseen-clear hook, the window-resized unpin and a group window's even-layout hook.
++// All three are quality-only and degrade silently.
+ //
+ // Load-bearing behavioral assumptions, each with the rationale that makes it load-bearing:
+ //
+diff --git a/internal/reedengine/ownwindow.go b/internal/reedengine/ownwindow.go
+index 3626dbae..7ac172dc 100644
+--- a/internal/reedengine/ownwindow.go
++++ b/internal/reedengine/ownwindow.go
+@@ -7,6 +7,7 @@ package reedengine
+ 
+ import (
+ 	"fmt"
++	"runtime"
+ 	"slices"
+ 	"strconv"
+ 	"strings"
+@@ -288,6 +289,7 @@ func ownWindowsLosingPanes(windows []windowPane, kill []string) (ending, left []
+ }
+ 
+ // relayoutSharedWindowsLocked lays out each window in windows evenly in the window_split direction.
++// It also pins each window's resize hook to that layout.
+ // An invalid window config skips every layout and returns the config error's text,
+ // so a removal still completes.
+ // Otherwise it returns the empty string.
+@@ -301,10 +303,33 @@ func (e *Engine) relayoutSharedWindowsLocked(windows []string) string {
+ 		if err := e.tmux.run("select-layout", "-t", window, layout); err != nil {
+ 			logger.Warn("reed: could not lay out a shared window after a strand left it", "window", window, "layout", layout, "err", err)
+ 		}
++		e.pinEvenLayoutOnResizeLocked(window, layout)
+ 	}
+ 	return ""
+ }
+ 
++// evenLayoutResizeHook returns the window-resized hook command that lays a shared window out in layout again.
++// tmux runs it after its own resize of the layout, against the window that fired it,
++// so the window's panes keep equal shares however the terminal grows or shrinks.
++// A zoomed window is left as it is, since a layout would unzoom it.
++func evenLayoutResizeHook(layout string) string {
++	return "if-shell -F '#{?window_zoomed_flag,0,1}' 'select-layout " + layout + "'"
++}
++
++// pinEvenLayoutOnResizeLocked sets the window-resized hook of target's window to evenLayoutResizeHook(layout).
++// target is a pane or window id.
++// The hook replaces the window's earlier one, so every layout of the window leaves one entry naming the current layout.
++// psmux lacks set-hook, so on Windows it sets nothing and a resize keeps whatever split tmux's own resize gives.
++// A failure is logged and never fails the step.
++func (e *Engine) pinEvenLayoutOnResizeLocked(target, layout string) {
++	if runtime.GOOS == "windows" {
++		return
++	}
++	if err := e.tmux.run("set-hook", "-w", "-t", target, windowResizedHookName, evenLayoutResizeHook(layout)); err != nil {
++		logger.Warn("reed: could not pin the shared window's even layout on resize, a resize may leave its panes uneven", "target", target, "layout", layout, "err", err)
++	}
++}
++
+ // pruneWindowGroups deletes every group record that no strand of st names,
+ // so a later instance under the same name records afresh.
+ func pruneWindowGroups(st *ReedState) {
+diff --git a/internal/reedengine/ownwindow_integration_test.go b/internal/reedengine/ownwindow_integration_test.go
+index 25bdefd5..46c149e0 100644
+--- a/internal/reedengine/ownwindow_integration_test.go
++++ b/internal/reedengine/ownwindow_integration_test.go
+@@ -10,6 +10,7 @@ import (
+ 	"path/filepath"
+ 	"runtime"
+ 	"slices"
++	"strconv"
+ 	"strings"
+ 	"testing"
+ 	"time"
+@@ -313,6 +314,18 @@ func TestOwnWindow_RealTmux(t *testing.T) {
+ 		}
+ 		return fields[0], fields[1]
+ 	}
++	numberOf := func(target, format string) int {
++		t.Helper()
++		n, err := strconv.Atoi(display(target, format))
++		if err != nil {
++			t.Fatalf("%s of %s: %v", format, target, err)
++		}
++		return n
++	}
++	panesEven := func(first, second string) bool {
++		difference := numberOf(first, "#{pane_width}") - numberOf(second, "#{pane_width}")
++		return difference >= -1 && difference <= 1
++	}
+ 	// restoreConfig puts the config fields a subtest edits back when the subtest ends.
+ 	restoreConfig := func(t *testing.T) {
+ 		shareMax, split := e.cfg.WindowShareMax, e.cfg.WindowSplit
+@@ -380,6 +393,60 @@ func TestOwnWindow_RealTmux(t *testing.T) {
+ 		}
+ 	})
+ 
++	// psmux lacks set-hook, so the shared window carries no resize hook on Windows and the resize steps are left out there.
++	if runtime.GOOS != "windows" {
++		t.Run("ResizeLaysTheSharedWindowOutEvenlyAgain", func(t *testing.T) {
++			first := addGrouped("ra", "resized", 2, "sleep 300", "")
++			second := addGrouped("rb", "resized", 2, "sleep 300", "")
++			window := windowOfPane(t, e, first.PaneID)
++			if err := e.tmux.run("resize-pane", "-t", first.PaneID, "-x", "10"); err != nil {
++				t.Fatalf("resize-pane: %v", err)
++			}
++			grown := strconv.Itoa(numberOf(window, "#{window_width}") + 40)
++
++			if err := e.tmux.run("resize-window", "-t", window, "-x", grown); err != nil {
++				t.Fatalf("resize-window -x %s: %v", grown, err)
++			}
++
++			waitUntil(t, 10*time.Second, "the resized shared window's panes never took equal widths", func() bool {
++				return panesEven(first.PaneID, second.PaneID)
++			})
++		})
++
++		t.Run("ResizeLeavesAZoomedSharedWindowZoomed", func(t *testing.T) {
++			first := addGrouped("za", "zoomed", 2, "sleep 300", "")
++			addGrouped("zb", "zoomed", 2, "sleep 300", "")
++			window := windowOfPane(t, e, first.PaneID)
++			controlFirst := addGrouped("zc", "zoomed-control", 2, "sleep 300", "")
++			controlSecond := addGrouped("zd", "zoomed-control", 2, "sleep 300", "")
++			control := windowOfPane(t, e, controlFirst.PaneID)
++			if err := e.tmux.run("resize-pane", "-t", controlFirst.PaneID, "-x", "10"); err != nil {
++				t.Fatalf("resize-pane: %v", err)
++			}
++			if err := e.tmux.run("resize-pane", "-Z", "-t", first.PaneID); err != nil {
++				t.Fatalf("resize-pane -Z: %v", err)
++			}
++			grow := func(target string) {
++				t.Helper()
++				grown := strconv.Itoa(numberOf(target, "#{window_width}") + 40)
++				if err := e.tmux.run("resize-window", "-t", target, "-x", grown); err != nil {
++					t.Fatalf("resize-window -x %s: %v", grown, err)
++				}
++			}
++
++			// The control window's hook fires after the zoomed window's, so its even layout shows the zoomed window's hook has run.
++			grow(window)
++			grow(control)
++			waitUntil(t, 10*time.Second, "the control window's panes never took equal widths", func() bool {
++				return panesEven(controlFirst.PaneID, controlSecond.PaneID)
++			})
++
++			if got := display(window, "#{window_zoomed_flag}"); got != "1" {
++				t.Errorf("window_zoomed_flag = %q after the resize, want the window left zoomed", got)
++			}
++		})
++	}
++
+ 	t.Run("GroupOfFiveGivesEachItsOwnWindow", func(t *testing.T) {
+ 		seen := map[string]bool{}
+ 		for _, role := range []string{"fa", "fb", "fc"} {
+@@ -578,19 +645,38 @@ func TestOwnWindow_RealTmux(t *testing.T) {
+ 	})
+ 
+ 	t.Run("LeavingASharedWindowRelaysItOut", func(t *testing.T) {
+-		first := addGrouped("lva", "leaving", 2, "sleep 300", "")
+-		second := addGrouped("lvb", "leaving", 2, "sleep 300", "")
++		restoreConfig(t)
++		e.cfg.WindowShareMax = 3
++		first := addGrouped("lva", "leaving", 3, "sleep 300", "")
++		second := addGrouped("lvb", "leaving", 3, "sleep 300", "")
++		third := addGrouped("lvc", "leaving", 3, "sleep 300", "")
+ 		window := windowOfPane(t, e, first.PaneID)
++		stacked := func() bool {
++			firstLeft, firstTop := paneOrigin(first.PaneID)
++			secondLeft, secondTop := paneOrigin(second.PaneID)
++			return firstLeft == secondLeft && firstTop != secondTop
++		}
++		e.cfg.WindowSplit = "height"
+ 
+-		if _, err := e.RemoveStrand(second.GUID, false); err != nil {
++		if _, err := e.RemoveStrand(third.GUID, false); err != nil {
+ 			t.Fatalf("RemoveStrand: %v", err)
+ 		}
+ 
+-		if panes := windowPanes(window); len(panes) != 1 {
+-			t.Fatalf("shared window panes = %v after one strand left, want one", panes)
++		if panes := windowPanes(window); len(panes) != 2 {
++			t.Fatalf("shared window panes = %v after one strand left, want two", panes)
+ 		}
+-		if width, windowWidth := display(first.PaneID, "#{pane_width}"), display(window, "#{window_width}"); width != windowWidth {
+-			t.Errorf("remaining pane width = %s, want the window's full width %s", width, windowWidth)
++		if !stacked() {
++			t.Errorf("remaining panes are not stacked after the leave under window_split height, want them laid out in that split")
++		}
++		// psmux lacks set-hook, so on Windows the window carries no resize hook to re-pin.
++		if runtime.GOOS != "windows" {
++			grown := strconv.Itoa(numberOf(window, "#{window_width}") + 40)
++			if err := e.tmux.run("resize-window", "-t", window, "-x", grown); err != nil {
++				t.Fatalf("resize-window -x %s: %v", grown, err)
++			}
++			waitUntil(t, 10*time.Second, "the shared window never kept the height split after a resize past the leave", func() bool {
++				return stacked() && numberOf(first.PaneID, "#{pane_width}") == numberOf(window, "#{window_width}")
++			})
+ 		}
+ 	})
+ 
+diff --git a/internal/reedengine/spawn.go b/internal/reedengine/spawn.go
+index 22945482..0fff551f 100644
+--- a/internal/reedengine/spawn.go
++++ b/internal/reedengine/spawn.go
+@@ -170,7 +170,8 @@ func (e *Engine) killReplacedOwnWindowPaneLocked(previousPaneID, newPaneID strin
+ // A grouped strand's placement opens the group's shared window, joins it, or gives it a window of its own.
+ // The group record the placement returns is stored in st, which the caller persists with the strand.
+ // A refusal returns before anything is created.
+-// A shared window is laid out evenly in the window_split direction after a new pane joins or opens it.
++// A shared window is laid out evenly in the window_split direction after a new pane joins or opens it,
++// and its resize hook is pinned to lay it out evenly again whenever the window resizes.
+ func (e *Engine) createOwnWindowPaneLocked(st *ReedState, s *Strand) (string, error) {
+ 	group := s.Display.Window
+ 	if group == "" {
+@@ -213,6 +214,7 @@ func (e *Engine) createOwnWindowPaneLocked(st *ReedState, s *Strand) (string, er
+ 	if err := e.tmux.run("select-layout", "-t", paneID, layout); err != nil {
+ 		logger.Warn("reed: could not lay out the shared window", "strand", s.GUID, "pane", paneID, "layout", layout, "err", err)
+ 	}
++	e.pinEvenLayoutOnResizeLocked(paneID, layout)
+ 	return paneID, nil
+ }
+ 
+diff --git a/internal/reedengine/watchdog.go b/internal/reedengine/watchdog.go
+index 2ab184a1..9dfcd982 100644
+--- a/internal/reedengine/watchdog.go
++++ b/internal/reedengine/watchdog.go
+@@ -47,5 +47,6 @@ func NextWakeCadence(current, base, ceiling time.Duration, changed bool) time.Du
+ }
+ 
+ // windowResizedHookName is the name of the tmux window-resized hook option.
+-// The window-size code removes that hook to unpin the shell window.
++// The window-size code removes that hook to unpin the shell window,
++// and a group's shared window carries one that lays the window out evenly again.
+ const windowResizedHookName = "window-resized"
