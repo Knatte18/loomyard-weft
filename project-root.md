@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-08 12:36 UTC; every age below is as of then.
+Rendered 2026-11-08 12:37 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -19,9 +19,9 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Slack relay: one Socket Mode connection per machine, one channel per orch, two tokens** | [`slack-push-channels`](design-slack-push-channels.md)<br>[Sketch](decision-slack-push-channels.md) | tapestry · solid | Code-Burler-Fix | neve | 2h<br>2h | slack, creel, orch |
-| T3 | **Reed gives the Codex assist reviewer pane a fixed width instead of half beside Claude**<br>• The Codex assistant reviewer pane keeps a fixed column width; it should split the width evenly with the Claude reviewer pane<br>• `loom: code_assist_reviewer_model astra[medium]` | [`reed-assist-pane-width`](design-reed-assist-pane-width.md) | darn · light | Darn-Write | neve | 44m<br>6m | reed, codex |
-| T4 | **Measure darn cost per run and per 1000 lines, and a darn family against a tapestry**<br>• Read records of darn and tapestry runs landed since 2026-10-25 and price each darn phase, for the arras recipe | [`darn-cost-measure`](design-darn-cost-measure.md) | darn · docs | Darn-Write | neve | 6m<br>6m | loom |
-| T5 | **Arras: one recipe that runs Motif and raddle in a row, with a perch on the split**<br>• Discussion, raddle split and a split perch in one run; the operator only releases the filed tasks | [`motif-raddle-recipe`](design-motif-raddle-recipe.md) | motif | Discussion-Write | neve | 37m<br>6m | shed, loom, burler, arbiter, board |
+| T3 | **Reed gives the Codex assist reviewer pane a fixed width instead of half beside Claude**<br>• The Codex assistant reviewer pane keeps a fixed column width; it should split the width evenly with the Claude reviewer pane<br>• `loom: code_assist_reviewer_model astra[medium]` | [`reed-assist-pane-width`](design-reed-assist-pane-width.md) | darn · light | Darn-Write | neve | 45m<br>7m | reed, codex |
+| T4 | **Measure darn cost per run and per 1000 lines, and a darn family against a tapestry**<br>• Read records of darn and tapestry runs landed since 2026-10-25 and price each darn phase, for the arras recipe | [`darn-cost-measure`](design-darn-cost-measure.md) | darn · docs | Darn-Write | neve | 7m<br>7m | loom |
+| T5 | **Arras: one recipe that runs Motif and raddle in a row, with a perch on the split**<br>• Discussion, raddle split and a split perch in one run; the operator only releases the filed tasks | [`motif-raddle-recipe`](design-motif-raddle-recipe.md) | motif | Discussion-Write | neve | 38m<br>7m | shed, loom, burler, arbiter, board |
 
 ### Ready (0)
 
@@ -37,7 +37,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>46m | loom, stencil |
+| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>47m | loom, stencil |
 
 ### Enhancements (4)
 
@@ -64,11 +64,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>2d | burler, shed, orch, quarry, report |
 | F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 3d<br>1d | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 3d<br>3d | batten, board, fabric, workspaces |
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T1 | **Ship the rule: a tapestry-sized note runs as a Motif, then raddle**<br>• Move the Motif-first rule from the hub heddle entry into the shipped board policy and orch instructions of lym<br>• `loom: code_assist_reviewer_model astra[medium]` | [`motif-before-tapestry`](design-motif-before-tapestry.md) | 47m<br>47m | orch, board |
