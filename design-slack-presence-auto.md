@@ -2,8 +2,6 @@
 
 `slack-presence-auto` · Task · feature, reed, shuttle, slack · running · Darn-Write
 
-Depends on: [`slack-forward-prefix`](design-slack-forward-prefix.md)
-
 ## Seen
 
 `slack-relay` landed (`5e9d4ffa`) without the operator's presence decision of 2026-11-05: presence changes only through `lym slack away|back`, the Slack texts and `lym slack stop`.
