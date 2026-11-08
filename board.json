@@ -539,6 +539,28 @@
       "body": "Imported from [issue #90](https://github.com/Knatte18/loomyard/issues/90).\n\n## Seen\n\n`lym beam describe \u003cslug\u003e` writes a \"Project decisions\" section listing every entry `lym loom decision add` added to the project record, each headed \"Added after Discussion (operator|parent, \u003cdate\u003e)\".\nIn hub `dop`, beam `loomyard-setup` (PR NORCE-DrillingAndWells/DrillOpPlan#30), the operator found that list irrelevant to every reader of the pull request: it is a history of what was decided along the way, partly duplicated and partly superseded (two \"No drift baseline\" entries, a CLAUDE.md bound replaced twice).\nWhat a reader needs is the result: what the beam ended up with. The per-member PR list under \"Changes\" is useful and should stay, so a reviewer can follow the change step by step.\n\nThere is no way to leave the section out: the verb owns `summary.md`, and the orch may only change the title and brief.\n\n## Workaround\n\nThe orch rewrote the beam's brief as an outcome summary. The decision log is still in the PR body.\n\n## Expected\n\nThe beam description holds the outcome (title, brief) and the member PR list, without the decision-record log.\nIf the record should feed the description at all, it should be the record's standing result (goal, bounds, constraints as they now stand), never the chronological list of decisions.\n\n\n## Issue comment, 2026-11-08\n\n## Operator's design (hub `dop`, 2026-11-08)\n\nThe operator wants a different design than trimming the generated text:\n\n- The beam's change description is written by the orch alone, not assembled by `lym beam describe` from the record.\n- lym gives the orch clear instructions for how to write it: lead with the result, what the beam ended up with; keep the member PR list so the change can be followed step by step; leave out the history of decisions made along the way.\n- The orch may change the description freely, as the operator directs, without going through the entry's title and brief.\n- `lym beam describe` (or its successor) then validates and records the orch's text, pushes it to the PR and stamps it into the landing record, instead of owning and rewriting the file.\n\nThis replaces the \"Expected\" section above: the point is not a smaller generated description, but an orch-written one under lym's instructions.\n",
       "created": "2026-11-08T15:09:08Z",
       "revised": "2026-11-08T15:09:08Z"
+    },
+    {
+      "id": 1231,
+      "handle": "F4",
+      "slug": "dobby-pr-open-notice",
+      "title": "Dobby: configurable notice to the orch when a run opens its PR",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "dobby",
+        "orch",
+        "config"
+      ],
+      "issues": [
+        86
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #86](https://github.com/Knatte18/loomyard/issues/86).\n\n## Seen\n\nIn hub `dop`, the operator wants the orch to review every run's PR and send findings to the run until satisfied.\nThe orch role forbids a Monitor or polling on runs, so the orch learns of a PR only when the run's PR-Review reviewer strand chooses to mail it.\nThat works today (the pr-reviewer mailed the orch for PR 26 and PR 27), but it depends on the PR-Review perch's own prompt, and the operator cannot see or set it as a guarantee.\n\n## Expected\n\nA setting, per hub and per task (for example in `batten.yaml`, `loom.yaml` or the task's `run_settings`), that makes dobby send the parent orch a `[dobby notice]` when a run opens its PR, naming the slug, PR URL and branch.\nWith it on, the run waits at PR-Review until the orch replies \"satisfied\" or sends findings, as the pr-reviewer flow does now.\n\n## Workaround\n\nNone needed in practice: the orch relies on the pr-reviewer strand's mail.\n\n\n## Issue comment, 2026-11-08\n\nCorrection to Seen: the orch got the pr-reviewer's mail only for PR 27. For PR 25 and PR 26 no mail reached the orch; the operator had to ask the orch to review them. So the orch is not reliably told when a run opens its PR, which is the gap this issue asks to close.\n\n## Issue comment, 2026-11-08\n\nCorrection to my previous comment: nothing is broken. By design the operator tells the PR-Review reviewer to ask its parent orch for a review; that is how PR 27 and PR 28 reached the orch, and PR 25 and PR 26 did not because the operator asked the orch directly instead. The operator finds the parent's review very useful, since the orch knows what the run needs. This issue is the feature request only: a setting, per hub and per task, that makes the PR-Review step ask the parent orch for a review on its own, so the operator does not have to ask each time.",
+      "created": "2026-11-08T15:09:14Z",
+      "revised": "2026-11-08T15:09:14Z"
     }
   ],
   "prime_owner": "neve",
