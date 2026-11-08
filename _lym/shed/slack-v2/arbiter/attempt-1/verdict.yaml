@@ -1,0 +1,8 @@
+verdict: resume
+reason: |-
+  Hard-cap escalation at round 3 with three open design-wrong keys (failed-hinted-read-never-retried, operator-invite-never-retried, live-hub-list-read-unbounded). The round-3 fixer applied each fix to the decision record after the review, and the record now answers every one. D2 holds failed hint, start and resync reads in an in-memory owed set, made again at each wake from the outbound read's wait, with an acceptance row. D5 gains a last ensure trigger at each wake from the outbound read's wait for channels whose entry records another operator or none, reads setup.json at every wake, and D10 says setup --operator takes effect with no restart; acceptance rows name that wake. D1 mails one per-episode notice to the holder hub's orch (posted first to its prime channel) on a failing hubregistry.Live read, and re-reads the list at each ping; acceptance row added. Each fix reuses an existing wake, so scope does not widen. The fix in place answers each finding, so the segment is accepted. The ruling is recorded as an arbiter decision.
+verbs:
+  - |-
+    lym loom decision add slack-v2 --by arbiter --title "Round-3 review findings answered by the round-3 fix" --decision "..." --rationale "..."
+  - |-
+    lym loom circling accept slack-v2
