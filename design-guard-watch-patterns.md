@@ -1,6 +1,6 @@
 # Watch patterns on guard tests so a card gate runs only the guards its change can fail
 
-`guard-watch-patterns` · Task · enhancement, gate, testkit · running · Code-Bouncer
+`guard-watch-patterns` · Task · enhancement, gate, testkit · running · Drift-Recheck
 
 ## Why (operator, 2026-11-08)
 
