@@ -246,7 +246,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #28](https://github.com/Knatte18/loomyard/issues/28).\n\n## Seen\n\nA `sampler` run cannot reach drift: every `lym drift` verb runs only inside a tapestry or darn run's worktree (`internal/driftcli/doc.go`), and the sampler recipe has no drift rows.\nSo drift's own stages (Drift-Baseline, Drift-Expect with its sealed expectation, the capture diff and the judge at Drift-Verify and Drift-Recheck, `lym drift check` and `lym drift amend`) can only be tried for the first time on a production task.\n\n## Decision (operator, 2026-11-08)\n\nThe sampler recipe gets the drift rows tapestry and darn carry, switched off by default.\nA sampler task can switch them on, so the operator can try the whole drift flow on a deliberate change before trusting it on real tasks.\nWith the rows off, a sampler runs as now.\nThe drift verbs run in a sampler worktree whose drift rows are on.\nThe stage gates of tapestry and darn stay as they are.\n\nThe switch is the existing `drift.scope` in the task's `run_settings`, with the sampler's default `off`, rather than a new key.\n",
-      "status": "running · Drift-Baseline",
+      "status": "running · Drift-Await",
       "created": "2026-11-03T09:16:18Z",
       "revised": "2026-11-08T17:05:59Z",
       "profile": "solid"
