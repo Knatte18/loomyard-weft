@@ -9,4 +9,4 @@ A Slack message reaches the orch as `[creel] #1033 from "ly:SLACK": [slack] OK. 
 ## Idea
 
 Drop the `[slack] ` body prefix, or keep it only where the sender does not show, once checked that no reader keys on it.
-Built with or after the Slack revision `slack-v2`, since the operator holds Slack work until that lands.
+The Slack revision `slack-v2` has landed and `forwardPrefix` is still there, so this can be built now.
