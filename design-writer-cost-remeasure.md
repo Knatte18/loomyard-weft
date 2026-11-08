@@ -1,6 +1,6 @@
 # Re-measure writer lookups and Plan phase cost on the tapestry runs since 3085f451
 
-`writer-cost-remeasure` · Task · research, loom, stencil · running · Describe
+`writer-cost-remeasure` · Task · research, loom, stencil · running · PR-Review
 
 ## Why (operator, 2026-11-08)
 
