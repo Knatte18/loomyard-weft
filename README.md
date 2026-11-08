@@ -76,7 +76,7 @@ _None._
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-## [P0 Root: entries under no project](project-root.md) (22)
+## [P0 Root: entries under no project](project-root.md) (23)
 
 Owner `neve`
 
@@ -100,7 +100,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (19)
+### Notes (20)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -110,12 +110,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>2d | loom, stencil |
 
-#### Bugs (2)
+#### Bugs (3)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Beam reed session gets the task button group instead of beam** | [`beam-reed-task-buttons`](design-beam-reed-task-buttons.md) | 0m<br>0m | reed, pawl |
 | B2 |  | **Burler fix round: decision-class rule conflicts with parent ruling mail, fixer has no outlet to parent** | [`fixer-parent-ruling`](design-fixer-parent-ruling.md) | 0m<br>0m | burler, stencil |
+| B3 |  | **Codex engine: the forced workspace-write sandbox fails where bubblewrap cannot create user namespaces** | [`codex-sandbox-mode`](design-codex-sandbox-mode.md) | 0m<br>0m | codex, shuttle, preflight |
 
 #### Enhancements (4)
 
