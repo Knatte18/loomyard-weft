@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -41,6 +41,39 @@
       "output": "",
       "at": "2026-11-08T10:06:42Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/guard-watch-patterns/_lym/landing/summary.md",
+      "at": "2026-11-08T10:19:48Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-08T10:17:08.575989354Z",
+          "end": "2026-11-08T10:17:08.5855716Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-08T10:17:08.64320503Z",
+          "end": "2026-11-08T10:19:23.437222992Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-08T10:19:23.480750126Z",
+          "end": "2026-11-08T10:19:23.674238126Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-08T10:19:23.717251481Z",
+          "end": "2026-11-08T10:19:23.717448519Z"
+        }
+      ]
     }
   ],
   "product": {
