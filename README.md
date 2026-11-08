@@ -72,7 +72,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Cut and fold fabricengine tier 1 tests the coverage study found redundant** | [`fabric-test-cuts`](design-fabric-test-cuts.md) | darn · solid | Drift-Baseline | neve | 1m<br>0m | fabric, testkit |
+| T1 | **Cut and fold fabricengine tier 1 tests the coverage study found redundant** | [`fabric-test-cuts`](design-fabric-test-cuts.md) | darn · solid | Drift-Await | neve | 1m<br>0m | fabric, testkit |
 
 #### Ready (0)
 
@@ -158,7 +158,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 23h<br>23h | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 3h<br>3h | shed, loom, darn |
-| E3 |  | **lym gate test runs a slow package as several processes, each taking a share of its tests** | [`gate-shard-slow-package`](design-gate-shard-slow-package.md) | 44m<br>44m | gate |
+| E3 |  | **lym gate test runs a slow package as several processes, each taking a share of its tests** | [`gate-shard-slow-package`](design-gate-shard-slow-package.md) | 45m<br>45m | gate |
 | E9 |  | **An interactive agent idle for a set time gets its session compacted**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 8d<br>5d | shed, shuttle, batten |
 
 #### Features (12)
