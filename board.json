@@ -461,7 +461,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-11-07)\n\n`lym slack login` in a terminal printed nothing and seemed to hang: `internal/slackcli/cli.go` reads the token with `io.ReadAll` on standard input, so it waits for end of input (Ctrl+D) with no prompt, and the pasted token shows on screen.\n\n## Wanted\n\n- On a terminal, `login` prints a prompt naming what to paste, reads one line with echo off, and goes on at Enter.\n- Piped input keeps working as today, so a script can pass the token on standard input.\n",
-      "status": "running · Drift-Verify",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-07T17:31:08Z",
       "revised": "2026-11-08T08:11:50Z",
       "profile": "light"

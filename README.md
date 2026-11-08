@@ -92,7 +92,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Slack v2: one bot, one channel per orch, push in place of polling** | [`slack-v2`](design-slack-v2.md) | motif | Discussion-Write | neve | 14h<br>14h | slack, creel, orch |
 | T2 | **Gate go test runs fill the Go cache with test logs, hundreds of GB a day** | [`go-test-cache-disk`](design-go-test-cache-disk.md) | darn · light | Darn-Write | neve | 7m<br>5m | gate |
-| T3 | **lym slack login waits silently for end of input and echoes the token** | [`slack-login-prompt`](design-slack-login-prompt.md) | darn · light | Drift-Verify | neve | 14h<br>5m | slack |
+| T3 | **lym slack login waits silently for end of input and echoes the token** | [`slack-login-prompt`](design-slack-login-prompt.md) | darn · light | Code-Bouncer | neve | 14h<br>5m | slack |
 
 #### Ready (0)
 
