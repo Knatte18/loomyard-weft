@@ -4,6 +4,15 @@
 
 Decision record: [Sketch](decision-slack-v2.md)
 
+## Changed after the Discussion (operator, 2026-11-08)
+
+These override the decision record where they differ (D3, D6):
+
+- No operator user token (`xoxp-`): each machine stores two tokens, the bot token (`xoxb-`) and the app-level token (`xapp-`), and `lym slack login` asks for both in one run.
+- A channel is archived only when its orch retires, that is when its beam is gone and its project done; `lym slack stop` archives nothing, since orchs are long-lived.
+- Before archiving, the bot renames the channel with a date suffix, such as `ly-neve-<beam>-2026-11-08`, so its name is free again and its history stays searchable in the archived channel.
+- An archived channel is never reopened: an orch that needs Slack under a freed name gets a new channel.
+
 ## Seen (operator and orch, 2026-11-07, first live Slack test)
 
 - The relay polls `conversations.history`, from every 5 s up to every 60 s when the channel is quiet, so the operator's message reached the orch about 10 s after it was written; the operator finds that too slow.
@@ -20,24 +29,8 @@ Decision record: [Sketch](decision-slack-v2.md)
 - One channel per orch: the prime's orch and each beam's orch.
   What the operator writes in a channel reaches that channel's orch, and that orch's posts go to its channel.
   Every orch posts to the one address `<hub>:SLACK` as today; lym looks up the channel of the mail's sending orch, so no orch knows its channel (operator, 2026-11-07).
-  The operator never removes a channel by hand: lym archives each beam channel itself, so the sidebar does not fill up.
-  The bot makes each channel itself when it is first needed, invites the operator, and removes it when the relay stops, so the operator makes no channel by hand (operator, 2026-11-07).
-  A bot token can archive a channel but not delete it, and an archived channel keeps its name.
-  When an orch whose channel was archived needs Slack again, lym reopens that same channel with its history (operator, 2026-11-07); the Discussion checks that a bot token may unarchive, and if not, how to keep the history in reach.
+  The operator never removes a channel by hand: lym archives a channel itself when its orch retires, as the section above says.
+  The bot makes each channel itself when it is first needed and invites the operator, so the operator makes no channel by hand (operator, 2026-11-07).
 - Messages reach the orch within about a second: Socket Mode or another push route in place of polling, with the extra token it needs stored as the bot token is.
 - Each orch's posts show its name, and an icon if cheap, through `chat:write.customize`.
 - The app manifest lym documents lists every scope this needs.
-
-## Open for the Discussion
-
-- Socket Mode with several hubs on one machine: Slack is believed to hand each event to one of an app's open connections, not to all, so relays for two hubs on one machine, each with its own connection, could get each other's events.
-  The Discussion checks this against Slack's documentation and settles the route, such as one connection per machine that serves every hub there and passes each event to the hub owning its channel; the operator wants no polling wait and low CPU and network use when idle (operator, 2026-11-07).
-
-- The exact channel name scheme.
-  Settled: a name holds repository, machine and orch, in that order, such as `ly-neve-prime`, so each machine's app owns its own channels and two apps never write to one channel; and since a bot cannot set up a user's sidebar sections, the alphabetical sort keeps each repository's channels together and each machine's apart under it (operator, 2026-11-07).
-- Whether the prime's channel is removed at relay stop like a beam's, or stays, so its history is at hand.
-- Whether the prime's orch uses the bot's direct message instead of a channel.
-- How presence works with many channels: one presence for the hub, or one per orch.
-- What happens to a beam channel's history at teardown, and to mail queued for a channel that no longer exists.
-- Whether `slack-presence-auto` (the presence switch by where the operator writes, and the reed toggle) joins this design.
-- What else a revision should settle: files and images, threads.
