@@ -84,13 +84,20 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Ready (2)
+#### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Slack v2: one bot, one channel per orch, push in place of polling** | [`slack-v2`](design-slack-v2.md) | motif | Worktree-Create | neve | 14h<br>14h | slack, creel, orch |
+
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Slack v2: one bot, one channel per orch, push in place of polling** | [`slack-v2`](design-slack-v2.md) | motif |  | 14h<br>14h | slack, creel, orch |
 | T2 | **Gate go test runs fill the Go cache with test logs, hundreds of GB a day** | [`go-test-cache-disk`](design-go-test-cache-disk.md) | darn · light |  | 1m<br>0m | gate |
 
 ### Notes (18)
