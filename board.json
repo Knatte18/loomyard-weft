@@ -491,6 +491,25 @@
       "created": "2026-11-08T11:49:42Z",
       "revised": "2026-11-08T11:49:42Z",
       "profile": "light"
+    },
+    {
+      "id": 1223,
+      "handle": "B1",
+      "slug": "reed-assist-pane-width",
+      "title": "Reed gives the Codex assist reviewer pane a fixed width instead of half beside Claude",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "reed",
+        "codex"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The Codex assistant reviewer pane keeps a fixed column width; it should split the width evenly with the Claude reviewer pane",
+      "body": "## Seen (operator, 2026-11-08)\n\nWhen a Code-Review round runs a Codex assistant reviewer beside the Claude reviewer, reed puts the Codex pane in a column of its own beside the Claude reviewer's pane, and that column keeps a fixed width: it does not follow when the window or the Claude pane is resized.\n\n## Idea\n\nThe two reviewer panes share their space evenly and scale together: each takes half the width, on every layout render and every resize, as other side-by-side strands do.\n",
+      "created": "2026-11-08T11:52:11Z",
+      "revised": "2026-11-08T11:52:11Z"
     }
   ],
   "prime_owner": "neve",
