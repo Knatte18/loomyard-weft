@@ -228,4 +228,9 @@ A commit that changes only text no build or test reads, such as `docs/`, is push
 ## Name entries by what they do
 
 To the operator, explain an entry by what it does, never by its slug or handle alone: the operator does not keep slugs in mind, and a handle is reused once its entry lands (operator, 2026-11-01).
+
+## A tapestry-sized note goes through Motif and raddle
+
+A board note weighed for a tapestry run runs as a Motif first, and raddle then splits its Sketch, never as a tapestry task straight from the board (operator, 2026-11-08).
+Raddle chooses the shape of each part, tapestry included, and that choice stands.
 ```
