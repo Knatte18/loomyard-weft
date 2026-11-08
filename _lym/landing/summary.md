@@ -11,11 +11,11 @@ The plan-level verify is unchanged.
 
 - **`lym gate test --main-packages`.**
   With `--card` under the `go` scoper, the call adds every `package main` package of tier0's module to the card scope.
-  It lists them with the new `impactset.ModuleMainPackages` (`go list -e ./...`).
+  It lists them with the new `impactset.ModuleMainPackages` (`go list -e ./...`), so a main package that fails to build stays listed.
   A main package a card already names is listed once.
   The added packages go through the scope's vet step, watch-skip and guard scan like any card package.
   The `none` and `dotnet` scopers add nothing.
-  `--main-packages` without `--card` is refused before hub resolution, naming `--card <id>` as the way forward.
+  `--main-packages` without `--card` is refused, naming `--card <id>` as the way forward.
   The detached runner's call words carry the flag, so a capped call and its runner agree on the scope.
 - **Webster.**
   begin-batch and recover-batch render the batch gate of the last batch in the execution order through `gateslot.Config.AgentGateCallWithMainPackages`.
@@ -24,7 +24,8 @@ The plan-level verify is unchanged.
 - **Implementer body.**
   A batch gate call that ends with `--main-packages` belongs to the plan's last batch.
   A failure in the packages that flag adds is the last fork's to fix, even when an earlier batch caused it.
-  This is the one exception to the rule that leaves a failure the batch's cards did not cause to the plan-level gate.
+  This is the one exception to the rule that leaves a failure the batch's cards did not cause to the plan-level gate,
+  and it is carried into the self-fix bound and the report's `status` rules.
   `TestStencils_NameGoValues` pins the flag name in the stencil.
 
 ## Design decisions
@@ -39,11 +40,20 @@ The plan-level verify is unchanged.
   On the last batch alone it is about 5 min (14 gates), so it saves about 24 min, roughly 1.7 min per run.
   The saving is an upper bound: the report does not say whether `cmd/lym` was the only failing id in those 5 runs.
 - **Derived, with no config.**
-  Per the parent decision recorded after Discussion, the packages are derived from the module rather than named in `gate.yaml` or `language.yaml`.
+  The packages are derived from the module rather than named in `gate.yaml` or `language.yaml`.
   So loomyard gets `./cmd/lym` without a hub step, and no template carries a Go path.
   The derivation lives in the `go` scoper, which is already Go-specific.
-  Loomyard's main packages also include `cmd/testtiming` and `tools/*`, which cost about 2 s per gate.
 - **Ownership in the stencil, not in Go.**
   The rule that a last-batch failure in a main package is the fork's to fix lives in the implementer body and keys on the rendered flag.
   No prompt text is added in Go, and the body needs no new marker.
   With an older deployed body, the last fork still runs the main packages, but it leaves a failure an earlier batch caused to the plan-level gate.
+- **Overlap runs twice.**
+  A card target such as `./cmd/lym/...` next to the derived `./cmd/lym` leaves both in the scope, so that package runs twice.
+  This costs time only and is left as is.
+
+## To check by hand
+
+- The timing numbers above were not re-derived against the gate run records for this description; confirm them against `.lym/gate/runs/*.json` in the hub.
+- The flag's reach into the last batch is not pinned by a test in `internal/websterengine/beginbatch.go`: nothing asserts that begin-batch passes the last-batch flag.
+- The detached runner's call words for `--main-packages` (`internal/gatecli/detachfront.go`) are not pinned by a test that covers a capped call re-run by its runner.
+- No end-to-end Webster run with a `cmd/lym` break in an earlier batch was done; run one to see the last fork fix it.
