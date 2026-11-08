@@ -12,13 +12,19 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (1)
+### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Slack v2: one bot, one channel per orch, push in place of polling** | [`slack-v2`](design-slack-v2.md)<br>[Sketch](decision-slack-v2.md) | raddle | Worktree-Create | neve | 15h<br>0m | slack, creel, orch |
+
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Slack v2: one bot, one channel per orch, push in place of polling** | [`slack-v2`](design-slack-v2.md)<br>[Sketch](decision-slack-v2.md) | raddle |  | 15h<br>0m | slack, creel, orch |
+_None._
 
 ## Notes (20)
 
