@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Hard-cap escalation at round 3. The four open design-wrong ledger keys are goto-raddle-write-no-rearm (F1), rearm-keeps-generation-record (F2), split-perch-auto-accept-unbounded (F3) and d6-admission-unbounded (F4). The round-3 fixer's changes already in the decision record answer each one, checked against the code:\n- F1: freshRaddleEntry (internal/loomcli/raddlewiring.go:63) does require RoutedTo == Raddle-Write, while shedengine.Goto writes Producer=target, Outcome=goto and no RoutedTo (goto.go:140, :263). D4 now records the correction: the goto branch tests outcome goto with producer Raddle-Write, the test rows are rebuilt, and a criterion is added. Scope In/Out name it.\n- F2: D2 now limits the full-budget re-arm to a perch that settled. It states and accepts the unsettled-goto path: Call clears only a settled generation (bouncer.go:442-470), a Bouncer with no Subject marks no GenerationStart (seedCall), and a goto keeps the spent count (episodeStuckCount skips OutcomeGoto). The fixer was right to drop the proposed budget-halt sentence, since a soft-cap Stuck is BudgetExempt and is skipped.\n- F3: D4's bound now matches designWrongKeys (bouncerfiles.go:282-293): open BLOCKING or MEDIUM entries not tagged mechanical. It names the LOW/NIT and mechanical entries that are filed, and both criteria are reworded.\n- F4: D6's bound now says checkRunLocks reads only before and after, admits any writer, and stays open while the producer half is Raddle-File. It records Call's two own-filing tests as the code has them (StoreDone, or stagedHashIs plus AlreadyFiled over the proposal's slugs, otherwise verify), and decides a halt with `lym batten cancel \u003cslug\u003e` as the way forward. That verb exists. The decision stays inside Scope In (\"the paths after the filing that touch it\").\nThe LOW keys (F5, F6) are tagged mechanical and are fixed too. No open question needs the operator, and nothing widens scope. Accepting therefore ends the segment with the fixes in place.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom circling accept motif-raddle-recipe"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/motif-raddle-recipe/_lym/shed/motif-raddle-recipe/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/motif-raddle-recipe/_lym/shed/motif-raddle-recipe/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step motif-raddle-recipe --until-stop --arbiter-attempt 1"
+}
