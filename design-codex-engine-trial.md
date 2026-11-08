@@ -37,3 +37,9 @@ Task `codex-skill-load-false-missing` (`0e02aaad`) fixed a false `skill skipped 
 `ClassifySkillLoad` now also reads a skill as loaded when a tool call output of the load turn holds the whole of its `SKILL.md`, so a seat that reads its skills through a path built at run time (a `cat .../skills/${name}/SKILL.md` loop) is no longer reported missing.
 A partial output still leaves a skill missing.
 The fix is checked against unit cases only: the original rollout and a live Codex run were not used, so part 6 should still see the load on a real session.
+
+## Built since (tidy, 2026-11-08)
+
+Task `codex-sandbox-mode` (`539525a0`) made part 2's sandbox a machine setting: `codex.yaml` has a `sandbox_mode` key, `workspace-write` by default or `danger-full-access`, set with `lym config codex --layer machine`.
+A `danger-full-access` launch carries no sandbox flags, no network setting and no writable roots, and `OpenLaunch` does the same, so part 2 tests the default mode and, on a machine whose bubblewrap cannot start, the other.
+The change was checked by unit tests only: a real Codex session with `danger-full-access` on a machine where bwrap fails is not yet run.

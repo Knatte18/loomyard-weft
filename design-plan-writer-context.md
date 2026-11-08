@@ -175,3 +175,8 @@ Two cuts remain open: have the first exploration fan answer with the lines neede
 The second cut above, skipping the read-back of the plan files after `fork0`, is rejected.
 The read-back is needed: the writer gets the plan from `fork0` without `fork0`'s reasoning, so it must read the plan to judge it, and the lens forks then review a plan whose reasoning nobody carries, which makes them the more critical check.
 Only the first cut (excerpts from the exploration fan instead of whole-file Reads by the writer) stays open.
+
+## Darn cost measured (landed 2026-11-08)
+
+Task `darn-cost-measure` (`8a54fbfb`, `docs/research/loom/darn-cost-2026-11-08/report.md`) priced 291 darn runs and 16 tapestry runs from their transcripts, with no agent run.
+- A darn costs $5.45 on average; the writer and its lookups are 580f it, the Code-Review perch 37
