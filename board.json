@@ -510,6 +510,28 @@
       "body": "## Seen (operator, 2026-11-08)\n\nWhen a Code-Review round runs a Codex assistant reviewer beside the Claude reviewer, reed puts the Codex pane in a column of its own beside the Claude reviewer's pane, and that column keeps a fixed width: it does not follow when the window or the Claude pane is resized.\n\n## Idea\n\nThe two reviewer panes share their space evenly and scale together: each takes half the width, on every layout render and every resize, as other side-by-side strands do.\n",
       "created": "2026-11-08T11:52:11Z",
       "revised": "2026-11-08T11:52:11Z"
+    },
+    {
+      "id": 1224,
+      "handle": "F4",
+      "slug": "motif-raddle-recipe",
+      "title": "One recipe that runs Motif and raddle in a row, with a perch on the split",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "shed",
+        "loom",
+        "burler",
+        "arbiter",
+        "board"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Discussion, raddle split and a split perch in one run; the operator only releases the filed tasks",
+      "body": "## Seen (operator and orch, 2026-11-08)\n\nGoing from a note to tasks through Motif and raddle takes three manual steps today: the operator promotes the Sketch to raddle, approves the raddle proposal in the run pane, and releases each filed task.\nMost other steps in lym run on their own, with dedicated checkers instead of the orch: the Burler perches review in rounds and the arbiter settles stops.\nThe raddle approval was manual only while raddle was being tuned (operator, 2026-11-08).\nOn 2026-11-08 the first raddle proposal for `slack-v2` missed the operator's changes made after the Discussion, because they sat in the entry body and not in the decision record; review caught it, the checks did not.\n\n## Idea (operator, 2026-11-08)\n\n- One recipe runs Motif and raddle in a row: Discussion with its perch, then the raddle split, then a perch on the split, then the filed tasks as drafts.\n- The split perch reviews the proposal against the Sketch, its decision record and every decision recorded after the Discussion; raddle fixes what it finds; the arbiter settles stops, and only what it cannot settle reaches the orch.\n- Operator decisions made after the Discussion go into the record through `lym loom decision add --by operator`, so the split and its perch see them.\n- The operator only releases the filed tasks.\n- Open: whether a Motif that stops at the Sketch stays as a recipe of its own, and what the combined recipe is called.\n- Size: shed, raddle, Burler and arbiter, so a Motif of its own.\n",
+      "created": "2026-11-08T11:58:57Z",
+      "revised": "2026-11-08T11:58:57Z"
     }
   ],
   "prime_owner": "neve",
