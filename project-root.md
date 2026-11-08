@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Slack: a reply is not forwarded when mail waits at turn end, and a forward can reach Slack late** | [`slack-stop-hook-drops-reply`](design-slack-stop-hook-drops-reply.md) | darn · light | Darn-Write | neve | 50m<br>38m | slack, claude, creel |
-| T3 | **Which internal/fabricengine tier 1 tests protect nothing other tests do not: a coverage study** | [`fabric-test-redundancy`](design-fabric-test-redundancy.md) | darn · docs | Drift-Recheck | neve | 18m<br>17m | fabric, testkit |
+| T3 | **Which internal/fabricengine tier 1 tests protect nothing other tests do not: a coverage study** | [`fabric-test-redundancy`](design-fabric-test-redundancy.md) | darn · docs | Describe | neve | 18m<br>17m | fabric, testkit |
 | T9 | **PR-Review asks the parent orch for a review on its own, behind a hub and task setting** | [`dobby-pr-open-notice`](design-dobby-pr-open-notice.md) | darn · light | Darn-Write | neve | 1h<br>12m | loom, burler, orch, config |
 
 ### Ready (0)
