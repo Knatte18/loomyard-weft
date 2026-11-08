@@ -658,9 +658,157 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (orch, 2026-11-08)\n\n`PATTERN-test-speed` (\"Test economy\") forbids a test that covers no behaviour another test does not, and counts a redundant test as a finding.\nOnly review enforces it.\nIts tool, `go run ./cmd/testtiming -redundancy`, measures coverage over the whole module (`-coverpkg` names every package), so a test's blocks include the fixture packages' blocks and almost every test looks unique: `docs/benchmarks/test-redundancy.md` lists no candidate in `internal/fabricengine`.\nThe coverage study `docs/research/speed/fabric-test-redundancy-2026-11-08/` scoped coverage to the package under test.\nIts scripts (`coverage-runner.sh`, `analyze-coverage.sh`) ran each top-level tier 1 test once on its own, serially, and compared the covered blocks:\n370 of 590 tests were contained, and a greedy walk, slowest first, found 329 that can go together without uncovering a block.\nThe run took about four minutes of standalone test time for that one package.\nThe study also showed the limit of the method: several contained tests guard archive tags, deletes on origin and user content, which block coverage does not see.\n\n## Goal (operator, 2026-11-08)\n\nA mechanical way to find redundant tests, so they stop piling up, at a cost the gates can carry.\nDiscussion settles the design and its stages; the parts below are the orch's proposal, to be weighed, cut or reordered.\n\n## Decision after the Motif (operator, 2026-11-08): D6's trigger\n\nThis replaces D6's trigger in the decision record; the rest of D6 stands.\nThe prime parent's dobby does not refresh maps on every prime HEAD move: rebuilding a large package such as `internal/fabricengine` takes minutes and holds a gate slot that runs need.\nIt refreshes periodically, the way it starts the board tidy: after every `test_map_every` landings, a dobby config key beside `board_tidy_every`, where 0 never refreshes.\nA refresh still runs `lym gate testmap --max \u003ctest_map_batch\u003e` on the packages stale at that moment, and the leftovers the cap left unbuilt wait for the next refresh.\nThe `test_map` on/off key is dropped: `test_map_every: 0` turns the refresh off.\n\n## Proposed parts\n\n1. **Tool scope.** `cmd/testtiming -redundancy` scopes coverage to the package under test, as the study did, and reports the contained tests and the greedy removable set per package.\n   It runs one package at a time (`-pkg`), so each check is scoped to one module.\n   Weigh whether the module-wide view stays as an option, since a cut that survives it is the safer one.\n2. **Coverage map per package.** The tool stores, per package, which blocks each top-level test covers, with the commit it was built from.\n   A change to the package on `main` marks its map stale; other packages' maps stay valid.\n3. **Map maintenance.** One job rebuilds stale maps, one package at a time, outside every gate, for example after landings or on a schedule.\n   That job alone pays the serial cost; no run waits on it.\n   Open: where the job runs (dobby, a hub command, a darn docs task), and where the maps live (tracked, or machine-local under `.lym`).\n4. **Gate check on a diff.** A gate step runs only the tests the diff adds or changes, with coverage, and compares them with the package's map.\n   A test whose package-scoped blocks other tests all cover becomes a finding for Code-Review that names the covering tests; it never fails the gate and deletes nothing.\n   A test carrying `//testtiming:keep \u003creason\u003e` is not flagged.\n   With a stale map for a file the diff touches, the finding says so rather than reporting nothing.\n\n## Constraints and known limits\n\n- Per-test coverage needs the tests to run one at a time: Go's coverage counters (`runtime/coverage`) are process-wide, so tests under `t.Parallel` mix their counts.\n  A test cannot record its own coverage inside the normal parallel tier run, so the map cannot come for free from the gates.\n- A per-module redundancy test inside the suite is ruled out: it would cost every run touching a large package minutes, and a test binary that launches test binaries is the pattern behind the 2026-11-08 tmux fork loop.\n- Block coverage is evidence, not a verdict: no part refuses or deletes a test on its own.\n- Weigh a smaller first stage: part 1 alone, run per module on demand as a darn docs task followed by a cleanup darn, with parts 2 to 4 only if redundant tests keep piling up.\n",
-      "status": "running · Raddle-File",
+      "status": "done",
       "created": "2026-11-08T17:12:18Z",
       "revised": "2026-11-08T18:35:23Z",
+      "discussed": true
+    },
+    {
+      "id": 1244,
+      "handle": "P5",
+      "slug": "redundancy-check",
+      "title": "Redundant tests found mechanically: a coverage engine, a map per package, a gate report and its review",
+      "kind": "project",
+      "labels": [
+        "feature",
+        "testkit",
+        "gate"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Groups the entries filed from the Sketch `redundant-test-finder`: testcover-engine, testmap-verb, testmap-dobby-refresh, gate-redundancy-report, review-reads-redundancy.\n",
+      "created": "2026-11-08T18:46:50Z",
+      "revised": "2026-11-08T18:46:50Z",
+      "discussed": true
+    },
+    {
+      "id": 1245,
+      "handle": "T1",
+      "slug": "testcover-engine",
+      "title": "internal/testcover: the coverage runner, content block keys and the map record, with testtiming's package-scoped verdict",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "testkit",
+        "gate"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `redundant-test-finder`.\n\nTakes: cmd/testtiming's runner, profile parsing, containment and greedy pass, spawn scan and keep scan\nDelivers: internal/testcover holding the moved runner, eligibility rules, spawn scan and keep scan, content block keys (D3), the per-package map record written and read through internal/state at a path internal/lymdirs names (D4); cmd/testtiming judging by the package view with a module-wide column, its flags and -pkg splice unchanged; cmd/lym guard tests re-pointed at the moved files\nExports: the engine's build, run-alone, profile parse, block key, verdict and greedy functions, the spawn and keep scans, and the map record type with its read and write\n\nThe part changes these packages:\n\n- internal/testcover (about 1300 changed lines)\n- cmd/testtiming (about 300 changed lines)\n- cmd/lym (about 10 changed lines)\n- internal/lymdirs (about 10 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-08T18:46:50Z",
+      "revised": "2026-11-08T18:46:50Z",
+      "profile": "solid",
+      "project": "redundancy-check",
+      "discussed": true
+    },
+    {
+      "id": 1246,
+      "handle": "T3",
+      "slug": "testmap-verb",
+      "title": "lym gate testmap rebuilds stale coverage maps in the prime parent's worktree",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "testkit",
+        "gate"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "testcover-engine"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `redundant-test-finder`.\n\nTakes: testcover-engine's runner, block keys and map record\nDelivers: the `lym gate testmap [--max \u003cn\u003e] [\u003cpackage\u003e...]` cobra verb with staleness, dirty and lock skips, mid-package hash check, timeouts with process-group kill and grace, failed-build maps and the exit record; fabricengine.CodeDirAt and CodeFileAt on the warp checkout; gate config keys test_map_max_age_days, redundancy_build_timeout_min and redundancy_test_timeout_sec\nExports: fabricengine.CodeDirAt, fabricengine.CodeFileAt, the exit record type and its read, and the per-tier run-alone with timeout that the gate step reuses\n\nThe part changes these packages:\n\n- internal/gatecli (about 600 changed lines)\n- internal/gateslot (about 80 changed lines)\n- internal/fabricengine (about 80 changed lines)\n- internal/gitrepo (about 40 changed lines)\n- internal/lymdirs (about 10 changed lines)\n- internal/testcover (about 120 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-08T18:46:50Z",
+      "revised": "2026-11-08T18:46:50Z",
+      "profile": "solid",
+      "project": "redundancy-check",
+      "discussed": true
+    },
+    {
+      "id": 1247,
+      "handle": "T9",
+      "slug": "testmap-dobby-refresh",
+      "title": "The prime parent's dobby starts lym gate testmap after every test_map_every landings",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "testkit",
+        "gate"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "testmap-verb"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `redundant-test-finder`.\n\nTakes: testmap-verb's verb\nDelivers: per the operator's decision after the Motif (2026-11-08, in the Sketch's board body), which replaces D6's trigger and supersedes the trigger clauses of the first carried criterion: a dobby tick step on the prime dobby that counts landings as the board tidy does and, after every test_map_every landings, starts `lym gate testmap --max \u003ctest_map_batch\u003e` on the packages stale then, leaving what the cap left unbuilt for the next refresh; no prime-HEAD record and no exit-record trigger; started through a spawn dep registered as runproc.RoleTestMap under runproc.HubOwner, none while a live test-map record exists, a restarted dobby included; the child ended on stop through runproc.EndRole; dobby config keys test_map_every beside board_tidy_every, where 0 never refreshes, and test_map_batch; no test_map on/off key\nExports: runproc.RoleTestMap\n\nThe part changes these packages:\n\n- internal/dobbyengine (about 200 changed lines)\n- internal/beamcli (about 80 changed lines)\n- internal/runproc (about 10 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-08T18:46:50Z",
+      "revised": "2026-11-08T18:46:50Z",
+      "profile": "light",
+      "project": "redundancy-check",
+      "discussed": true
+    },
+    {
+      "id": 1248,
+      "handle": "T10",
+      "slug": "gate-redundancy-report",
+      "title": "An advisory redundancy report step in lym gate test, judging a diff's new tests against the map",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "testkit",
+        "gate"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "testmap-verb"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `redundant-test-finder`.\n\nTakes: testcover-engine's engine and map record; testmap-verb's CodeDirAt, CodeFileAt, timeouts and run-alone\nDelivers: the `reports` list on gate keys with its unknown-name refusal and template entries on webster, parent-align, darn-write and code-burler-fix; the step at the lints' site with merge-base test selection, drops, cap, slot, budget, map covers, greedy pass and the report with its file and test hashes; keys redundancy_max_tests and redundancy_budget_min\nExports: the report reader and the tree match D8 runs on HEAD: D7 step 1 over a revision and the judged packages' file hashes\n\nThe part changes these packages:\n\n- internal/gatecli (about 800 changed lines)\n- internal/gateslot (about 150 changed lines)\n- internal/configengine (about 30 changed lines)\n- internal/testcover (about 120 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-08T18:46:50Z",
+      "revised": "2026-11-08T18:46:50Z",
+      "profile": "solid",
+      "project": "redundancy-check",
+      "discussed": true
+    },
+    {
+      "id": 1249,
+      "handle": "T11",
+      "slug": "review-reads-redundancy",
+      "title": "Code review reads the gate's redundancy report, and PATTERN-test-speed names the map, verb and step",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "testkit",
+        "gate"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "gate-redundancy-report"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `redundant-test-finder`.\n\nTakes: gate-redundancy-report's report reader and HEAD tree match\nDelivers: a Go-filled rubric marker in loom-rubric-code-review, filled through shedadapters.ReadRubric for the Code-Burler-Review and Code-Bouncer call sites with the findings or the no-current-report line; the rubric's test-economy text on contained tests; PATTERN-test-speed's index line and its background's gate and test-economy sections\nExports: nothing new\n\nThe part changes these packages:\n\n- internal/shedadapters (about 60 changed lines)\n- internal/shedrecipe (about 60 changed lines)\n- internal/loomcli (about 40 changed lines)\n- contracts/stencils/loom (about 15 changed lines)\n- pattern (about 30 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-08T18:46:50Z",
+      "revised": "2026-11-08T18:46:50Z",
+      "profile": "light",
+      "project": "redundancy-check",
       "discussed": true
     }
   ],
