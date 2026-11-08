@@ -1,0 +1,206 @@
+{
+  "sketch": "motif-raddle-recipe",
+  "shape": "project",
+  "project": {
+    "slug": "arras-recipe",
+    "title": "Arras: one recipe that runs Motif and raddle in a row, with a perch on the split",
+    "type": "feature"
+  },
+  "board_checked": [
+    {"slug": "raddle-darn-sizing", "revised": "2026-11-08T13:17:23Z"}
+  ],
+  "parts": [
+    {
+      "slug": "project-release-members",
+      "title": "Releasing a project with lym board set-status releases its draft member tasks",
+      "type": "feature",
+      "recipe": "darn",
+      "profile": "light",
+      "decisions": ["D8"],
+      "packages": [
+        {"path": "internal/boardengine", "size": 150},
+        {"path": "internal/boardcli", "size": 80}
+      ],
+      "contract": {
+        "takes": "the board as it is today: Board.SetStatus and Store.SetStatus, validateWrite and the draft rule",
+        "delivers": "a null status from `lym board set-status` on a project with no status releases its direct draft member tasks in one write, validated as each member's own release, refusing as a whole on a failure and refusing a project with a run status or done with each member's release as the way forward; Board.SetStatus, Store.SetStatus, upsert and merge release no member",
+        "exports": "a Board method the set-status verb alone calls to release a project with its draft members"
+      },
+      "depends_on": [],
+      "open_risks": [],
+      "criteria": [
+        "D8: `lym board set-status` with a null status on a project releases its draft member tasks in one write and leaves released, running and done members and nested projects untouched.",
+        "D8: a project release whose member fails validation releases none, and a project with a run status or `done` is refused."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 3.1,
+      "cost_line": "darn light with a stored record: 2.14 fixed plus 0.39 per 100 lines over about 230 lines (10 runs, r 0.73)"
+    },
+    {
+      "slug": "raddle-perch-mode",
+      "title": "Raddle's perch mode: recorded from the recipe's rows, with its outcome checks and refusals",
+      "type": "feature",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D4", "D5", "D7"],
+      "packages": [
+        {"path": "contracts/specs", "size": 30},
+        {"path": "internal/loomshed", "size": 120},
+        {"path": "internal/loomcli", "size": 180},
+        {"path": "internal/raddleparser", "size": 110},
+        {"path": "internal/loomengine", "size": 60},
+        {"path": "internal/shedrecipe", "size": 30}
+      ],
+      "contract": {
+        "takes": "raddle's auto and interactive modes in the raddle state, the raddle gate, raddle-propose, raddle-approve, Raddle-Write and Raddle-File, internal/raddleparser's checks and `lym loom decision add`",
+        "delivers": "the raddle mode `perch`, recorded by Raddle-Write on its first call when the recipe's rows hold a split-perch Bouncer over the proposal, tested with a fixture recipe; in perch mode the gate stores the cold proposal, raddle-approve refuses naming the perch, Raddle-File files with no approval-hash match and a fresh entry moves the last proposal aside; the D5 outcome checks in internal/raddleparser behind a perch option, with the slug-sketch and slug-taken exemption, the spec text and the raddle stencil's perch mode text; `freshRaddleEntry` and its table test corrected for a goto entry; `lym loom decision add` refusing in perch mode from the Raddle-File row on, with its ways forward. A perch-mode project proposal passes the checks here; its filing as the converted entry comes with arras-family-filing",
+        "exports": "the `perch` RaddleMode, the perch option of raddleparser's checks, the rows test that decides perch mode"
+      },
+      "depends_on": [],
+      "open_risks": [],
+      "criteria": [
+        "D4: a `raddle` run keeps its interactive approval when `raddle_auto_approve` is off.",
+        "D5: in `perch` mode a proposal of shape `beam`, of shape `tasks` with two parts, or of shape `project` whose project slug differs from the entry's slug fails its checks, and the fixer's gate run applies the same checks.",
+        "D7: `lym loom decision add` on an arras run at Raddle-File or later refuses with its way forward: before the filing the goto to Raddle-Write, after it the filed slugs and the record step on a released part.",
+        "D7: `lym loom decision add` on a `raddle` run at Raddle-File behaves as it does today."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "darn solid with a stored record reads too few runs (2 runs); about 530 changed lines across the raddle state, verbs, parser and stencil text"
+    },
+    {
+      "slug": "arras-recipe-perch",
+      "title": "The arras recipe and its split perch",
+      "type": "feature",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3"],
+      "packages": [
+        {"path": "contracts/recipes", "size": 140},
+        {"path": "contracts/stencils", "size": 120},
+        {"path": "internal/shedrun", "size": 15},
+        {"path": "internal/loomrecipe", "size": 90},
+        {"path": "internal/loomengine", "size": 150},
+        {"path": "internal/loomcli", "size": 150},
+        {"path": "internal/loomshed", "size": 40},
+        {"path": "internal/shedrecipe", "size": 30},
+        {"path": "internal/shedcli", "size": 20},
+        {"path": "internal/battencli", "size": 40},
+        {"path": "internal/runprofile", "size": 30},
+        {"path": "internal/configsync", "size": 20},
+        {"path": "internal/reviewbudget", "size": 20}
+      ],
+      "contract": {
+        "takes": "raddle-perch-mode's `perch` mode and outcome checks; the motif and raddle recipes and the generic Bouncer, BurlerReview and BurlerFix engines",
+        "delivers": "`contracts/recipes/arras-recipe.yaml` registered wherever motif and raddle are, with its profile blocks and the test pinning `arras` as a former name reversed; the split perch segment with its loom keys, guard-category auto-accept key and the new rubric stencil `loom-rubric-raddle-review.md`; the perch re-arm on a fresh entry into Raddle-Write over a settled verdict; the run-level tests of an arras run through Discussion, the split perch and Raddle-File",
+        "exports": "the `arras` recipe name in shedrun, the split perch's loom keys"
+      },
+      "depends_on": ["raddle-perch-mode"],
+      "open_risks": [
+        "A decision added after the perch's last approving round and before Raddle-File reaches every part's record but is not reviewed against the split's seams."
+      ],
+      "criteria": [
+        "D1: an `arras` task runs Discussion, its perch, Raddle-Write, the split perch and Raddle-File in that order, and the loader accepts the recipe under the loom contract.",
+        "D1: an arras run restarted after its Discussion approval skips Discussion and resumes at Raddle-Write with the stored record.",
+        "D1: `arras` is accepted as a board task's recipe and as a task worktree's run recipe.",
+        "D2: the split perch reviews `_lym/raddle/proposal.yaml`, a fixed proposal that fails the `raddle` gate is not handed to the next round, and decision-class findings reach the run's parent through the Bouncer.",
+        "D2: no split perch round changes the decision record, and `lym loom decision add` still finds the Discussion approval row in an arras run.",
+        "D2: after a Raddle-File return or a goto to Raddle-Write from Raddle-File, the new proposal is reviewed by the perch in a fresh cycle with the segment's full budget before Raddle-File runs.",
+        "D2: after a goto to Raddle-Write from a perch awaiting its parent on an escalation below the hard cap, the perch raises that escalation again, and `lym loom circling continue` then runs the next round over the new proposal.",
+        "D2: with the split perch's auto-accept key off, the Bouncer never settles as an accept a spent-budget round holding an open BLOCKING or MEDIUM ledger entry not tagged `mechanical`: it continues automatically or escalates to the run's parent.",
+        "Review: D3 — the rubric names the decision record and its Added after Discussion entries as the authority and names each judgement D3 lists.",
+        "D4: an arras run records `perch` mode and reaches Raddle-File on the perch's approval with `raddle_auto_approve` off, and `lym loom raddle-approve` on it refuses naming the perch.",
+        "D4: an arras run's Raddle-File finds a stored cold proposal after the perch's approval, also after a return.",
+        "D4: with the split perch's auto-accept key off, a spent-budget round whose open BLOCKING and MEDIUM entries are all tagged `mechanical`, beside an open LOW entry of another tag, is accepted automatically, its decision file marked automatic, and Raddle-File files its proposal.",
+        "D4: after `lym loom goto --to Raddle-Write` on an arras run, the last proposal is moved aside and the seat starts a new session.",
+        "D5: a one-task arras run files one draft task with its record and leaves the arras entry done.",
+        "D7: `lym loom decision add --by operator` during an arras run's Raddle-Write row appends the entry, stores the record on the board, and every filed part's record carries it."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "darn solid with a stored record reads too few runs (2 runs); about 865 changed lines across the recipe, its registration and the perch segment"
+    },
+    {
+      "slug": "arras-family-filing",
+      "title": "An arras family filing turns the run's entry into its project and re-points its dependents",
+      "type": "feature",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D6", "D10"],
+      "packages": [
+        {"path": "internal/boardengine", "size": 220},
+        {"path": "internal/loomshed", "size": 120},
+        {"path": "internal/loomcli", "size": 60},
+        {"path": "internal/battencli", "size": 80},
+        {"path": "internal/shedrun", "size": 30}
+      ],
+      "contract": {
+        "takes": "raddle-perch-mode's `perch` mode and its project outcome whose slug equals the run's entry; the arras recipe of arras-recipe-perch; project-release-members' project release; Board.FileRaddle, checkRunLocks, endsAsSketch and sketchOf, Raddle-File's Call and finish, Board.SetRunStatus and battencli.ClearMotifRun",
+        "delivers": "Raddle-File's filing write turning the arras entry into a discussed project holding the whole record, with the part list body and `order`, admitted by the run lock only for that derived shape while the entry's status names Raddle-File; the restore of the entry's record on a failed write; the filing mark under shedrun.RunDir that makes loom's and batten's status writes skip the entry; the store-done and AlreadyFiled repair paths, the halt over a project not filed from the current proposal, and finish skipping EndEntry for a family; ClearMotifRun clearing a done arras run; every dependent's `depends_on` on the arras slug moved onto the filed parts no other part depends on, with a halt naming a refusing entry",
+        "exports": "the arras-project admission in boardengine's run lock, the filing mark and its reader in shedrun"
+      },
+      "depends_on": ["project-release-members", "raddle-perch-mode", "arras-recipe-perch"],
+      "open_risks": [],
+      "criteria": [
+        "D6: a family arras run leaves the entry as a discussed project under the same slug, holding the whole record, with `order` listing the parts and every part a draft member carrying its `depends_on`.",
+        "D6: a family filing whose board write fails leaves the entry's stored record as it was.",
+        "D6: a write of the converted shape with a changed title or `depends_on`, or made while the entry's run status names a producer other than `Raddle-File`, is refused by the run lock.",
+        "D6: no status write of the arras run after the filing changes the converted project, and a Raddle-File retry after the board write files nothing twice.",
+        "D6: a family filing whose store write fails after the board write, and which then resumes, leaves the converted project with no status and releasable by D8.",
+        "D6: a Raddle-File call over a store-done family filing with no mark writes the mark and leaves the project with no status and not done.",
+        "D6: a Raddle-File call that finds the run's entry already a project not filed from its current proposal files nothing and halts, naming `lym batten cancel` as its way forward.",
+        "D6: `lym beam create` on the converted project clears the done arras run, and the beam run's status writes then reach the entry.",
+        "D8: a family filing leaves every member draft, and a null status written by upsert, merge or batten cancel's claim clear on a converted project releases no member.",
+        "D10: an entry depending on an arras entry depends, after the filing, on the filed task or on the family's last parts, and starts once they have landed.",
+        "D10: a filing whose re-point the board refuses halts the run, naming the refusing entry."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "darn solid with a stored record reads too few runs (2 runs); about 510 changed lines, most in boardengine's run lock and filing write"
+    },
+    {
+      "slug": "arras-shipped-text",
+      "title": "The shipped rule and docs name arras as the recipe for a tapestry-sized note",
+      "type": "feature",
+      "recipe": "darn",
+      "profile": "docs",
+      "decisions": ["D9"],
+      "packages": [
+        {"path": "plugins/ly/skills/board-policy", "size": 30},
+        {"path": "plugins/ly/skills/board", "size": 30},
+        {"path": "contracts/orchrole", "size": 30},
+        {"path": "docs/reference", "size": 20},
+        {"path": "internal/boardcli", "size": 5}
+      ],
+      "contract": {
+        "takes": "the landed arras recipe, perch mode, family filing and project release; main's text of `plugins/ly/skills/board-policy/SKILL.md` after commit c8e43ac4",
+        "delivers": "the board-policy skill and the orch role naming `arras` for a tapestry-sized note, `motif` alone for a split made later, and a project's release as one release; the orch role telling the orch that an operator decision on a running arras entry goes through `lym loom decision add --by operator`, never the entry body (D7's orch text); the board skill describing the arras run; the weaving glossary listing `arras` as the recipe and keeping `cartoon` reserved; `lym board` help naming `arras` among the recipes",
+        "exports": "nothing"
+      },
+      "depends_on": ["project-release-members", "raddle-perch-mode", "arras-recipe-perch", "arras-family-filing"],
+      "open_risks": [],
+      "criteria": [
+        "Review: D9 — the board-policy skill, the board skill, the orch role and the weaving glossary name `arras` as the recipe for a tapestry-sized note and keep `motif` alone for a split made later."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "darn docs with a stored record reads too few runs (1 run); about 115 changed lines of shipped text"
+    }
+  ],
+  "order_departures": [],
+  "cost": {
+    "expected_usd": null,
+    "line": "five darns; project-release-members is about 3.1 on darn light with a record, and the other four rest on darn solid and darn docs cells with a record, which read too few runs",
+    "next_best": {
+      "split": "four darns, with raddle-perch-mode and arras-recipe-perch as one part",
+      "expected_usd": null,
+      "line": "the same darn solid and darn docs cells read too few runs; it saves one darn fixed cost (about 4.5 USD by the darn-cost report) but puts about 1400 lines across 16 packages under one review"
+    },
+    "cells": [
+      {"recipe": "darn", "profile": "light", "stored_record": true},
+      {"recipe": "darn", "profile": "solid", "stored_record": true},
+      {"recipe": "darn", "profile": "docs", "stored_record": true},
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
