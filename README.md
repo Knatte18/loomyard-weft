@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-08 18:39 UTC; every age below is as of then.
+Rendered 2026-11-08 18:40 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -72,7 +72,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Second fabricengine test cut, from the coverage study's removable set** | [`fabric-test-cuts-2`](design-fabric-test-cuts-2.md) | darn · solid | Code-Bouncer | neve | 54m<br>31m | fabric, testkit |
+| T1 | **Second fabricengine test cut, from the coverage study's removable set** | [`fabric-test-cuts-2`](design-fabric-test-cuts-2.md) | darn · solid | Drift-Recheck | neve | 55m<br>31m | fabric, testkit |
 
 #### Ready (0)
 
