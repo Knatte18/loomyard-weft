@@ -1,6 +1,6 @@
 # Measure what the darn writer spends on: writing, research, thinking, gate waits
 
-`darn-writer-anatomy` · Task · research, darn, loom · running · Code-Bouncer
+`darn-writer-anatomy` · Task · research, darn, loom · running · Drift-Recheck
 
 ## Why (operator, 2026-11-08)
 
