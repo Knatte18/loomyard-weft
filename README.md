@@ -84,21 +84,20 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Running (1)
+#### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **The orch writes the beam PR description under lym instructions; beam describe validates and pushes it**<br>• Orch-written beam description: end result plus member PRs, no decision log | [`beam-describe-no-decision-log`](design-beam-describe-no-decision-log.md) | darn · solid | Finalize | neve | 26m<br>23m | landing, workspaces, orch |
+| T3 | **Arras: one recipe that runs Motif and raddle in a row, with a perch on the split**<br>• Discussion, raddle split and a split perch in one run; the operator only releases the filed tasks | [`motif-raddle-recipe`](design-motif-raddle-recipe.md)<br>[Sketch](decision-motif-raddle-recipe.md) | raddle | Worktree-Create | neve | 3h<br>0m | shed, loom, burler, arbiter, board |
 
-#### Ready (1)
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Arras: one recipe that runs Motif and raddle in a row, with a perch on the split**<br>• Discussion, raddle split and a split perch in one run; the operator only releases the filed tasks | [`motif-raddle-recipe`](design-motif-raddle-recipe.md)<br>[Sketch](decision-motif-raddle-recipe.md) | raddle |  | 3h<br>0m | shed, loom, burler, arbiter, board |
+_None._
 
 ### Notes (20)
 
