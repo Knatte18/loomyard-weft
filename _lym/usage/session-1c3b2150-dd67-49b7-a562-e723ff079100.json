@@ -1,0 +1,14 @@
+{
+  "session_id": "1c3b2150-dd67-49b7-a562-e723ff079100",
+  "row": "Darn-Write",
+  "role": "darn",
+  "model": "claude-sonnet-5-5",
+  "engine": "claude",
+  "input_tokens": 64,
+  "cache_write_tokens": 97135,
+  "cache_read_tokens": 1981131,
+  "output_tokens": 33625,
+  "cost_usd": 0.9754417000000001,
+  "started": "2026-11-08T11:00:56Z",
+  "ended": "2026-11-08T11:08:08Z"
+}
