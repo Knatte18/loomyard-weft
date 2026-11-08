@@ -1,6 +1,6 @@
 # Slack: a reply is not forwarded when mail waits at turn end, and a forward can reach Slack late
 
-`slack-stop-hook-drops-reply` · Note · bug, slack, claude, creel
+`slack-stop-hook-drops-reply` · Task · bug, slack, claude, creel · draft
 
 ## Seen (orch, 2026-11-08)
 
