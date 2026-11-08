@@ -1,9 +1,9 @@
 # P3 Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes
 
-Rendered 2026-11-08 09:12 UTC; every age below is as of then.
+Rendered 2026-11-08 09:24 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`fabric-test-speed-work`](design-fabric-test-speed-work.md) · Age 18h · Owner `neve`
+[`fabric-test-speed-work`](design-fabric-test-speed-work.md) · Age 19h · Owner `neve`
 
 Groups the entries filed from the Sketch `fabric-test-speed`: hubforge-registered-templates, hubforge-slim-copy, git-config-from-go, dotgit-worktree-reader, hubreconcile-templates, loomcli-templates, battencli-templates, fabric-test-folds, fabric-anchor-origin-templates, fabric-livestate-merge-templates, copyhub-fixtures-and-hook, fabric-test-speed-remeasure.
 
