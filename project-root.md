@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Measure where a Webster run spends its time, from recorded runs** | [`webster-time-analysis`](design-webster-time-analysis.md) | darn · docs | Drift-Recheck | neve | 28m<br>28m | webster |
+| T2 | **Measure where a Webster run spends its time, from recorded runs** | [`webster-time-analysis`](design-webster-time-analysis.md) | darn · docs | Describe | neve | 28m<br>28m | webster |
 
 ### Ready (0)
 

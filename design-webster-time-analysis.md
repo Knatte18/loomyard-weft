@@ -1,6 +1,6 @@
 # Measure where a Webster run spends its time, from recorded runs
 
-`webster-time-analysis` · Task · research, webster · running · Drift-Recheck
+`webster-time-analysis` · Task · research, webster · running · Describe
 
 ## Why (operator, 2026-11-08)
 
