@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-08 16:27 UTC; every age below is as of then.
+Rendered 2026-11-08 16:28 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -122,7 +122,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **A test binary pinned as a tmux job re-runs its own suite and fork-bombs the machine**<br>• Guard every command lym pins from os.Executable so a test binary is never launched by tmux | [`test-binary-fork-guard`](design-test-binary-fork-guard.md) | darn · solid | Finalize | neve | 1h<br>47m | reed, gate, testkit |
 | T3 | **Which internal/fabricengine tier 1 tests protect nothing other tests do not: a coverage study** | [`fabric-test-redundancy`](design-fabric-test-redundancy.md) | darn · docs | Darn-Write | neve | 6m<br>5m | fabric, testkit |
-| T9 | **PR-Review asks the parent orch for a review on its own, behind a hub and task setting** | [`dobby-pr-open-notice`](design-dobby-pr-open-notice.md) | darn · light | Seed-Child | neve | 1h<br>0m | loom, burler, orch, config |
+| T9 | **PR-Review asks the parent orch for a review on its own, behind a hub and task setting** | [`dobby-pr-open-notice`](design-dobby-pr-open-notice.md) | darn · light | Preflight | neve | 1h<br>0m | loom, burler, orch, config |
 
 #### Ready (0)
 
@@ -136,7 +136,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Slack: a reply is not forwarded when mail waits at turn end, and a forward can reach Slack late** | [`slack-stop-hook-drops-reply`](design-slack-stop-hook-drops-reply.md) | darn · light | T1 | 38m<br>26m | slack, claude, creel |
+| T2 | **Slack: a reply is not forwarded when mail waits at turn end, and a forward can reach Slack late** | [`slack-stop-hook-drops-reply`](design-slack-stop-hook-drops-reply.md) | darn · light | T1 | 38m<br>27m | slack, claude, creel |
 
 ### Notes (19)
 
