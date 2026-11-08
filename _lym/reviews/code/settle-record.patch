@@ -1,0 +1,787 @@
+diff --git a/contracts/stencils/govalues_test.go b/contracts/stencils/govalues_test.go
+index d7c2fd35..85c2fcfa 100644
+--- a/contracts/stencils/govalues_test.go
++++ b/contracts/stencils/govalues_test.go
+@@ -12,6 +12,7 @@ import (
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/gatecli"
++	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -39,6 +40,7 @@ func yamlKey(t *testing.T, field string) string {
+ //lym:watch contracts/stencils/*.go contracts/stencils/*.md contracts/stencils/*/*.md contracts/stencils/*/*/*.md
+ //lym:watch contracts/stencils/*/*/*/*.md contracts/orchrole/* internal/stencil/*.go internal/stencilstore/*.go
+ //lym:watch internal/gatecli/*.go internal/shuttleengine/*.go internal/shedrun/*.go internal/websterengine/*.go
++//lym:watch internal/gateslot/*.go
+ func TestStencils_NameGoValues(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -48,6 +50,7 @@ func TestStencils_NameGoValues(t *testing.T) {
+ 		value   string
+ 	}{
+ 		{"webster-body-implementer", "`" + strconv.Itoa(gatecli.SlotBusyExit) + "`"},
++		{"webster-body-implementer", "`--" + gateslot.MainPackagesFlag + "`"},
+ 		{"orch-role", shuttleengine.MessageTail},
+ 		{"shed-template-driver-notify", shuttleengine.MessageTail},
+ 		{"shed-template-driver-notify-watched", shuttleengine.MessageTail},
+diff --git a/contracts/stencils/webster/webster-body-implementer.md b/contracts/stencils/webster/webster-body-implementer.md
+index 9d6f98bc..bbd665a2 100644
+--- a/contracts/stencils/webster/webster-body-implementer.md
++++ b/contracts/stencils/webster/webster-body-implementer.md
+@@ -103,6 +103,8 @@ The sandbox ban covers mutating `lym fabric` verbs only.
+ 
+ After the last card's commit and its `lym gate card-verify` call, and before writing the report, run the batch gate once, as a foreground Bash call under the gate rule.
+ A failure counts as a gate failure under the self-fix bound below and makes the report `FAILED` once the bound runs out.
++A batch gate call that ends with `--main-packages` belongs to the plan's last batch, and it also runs the packages that flag adds, which the plan-level `webster` gate runs next.
++A failure in those packages is yours to fix under the self-fix bound even when an earlier batch caused it: the one exception to the rules below, in the self-fix bound and in the report's `status`, that leave such a failure to that gate.
+ 
+ ## Slot-busy exits and test runs
+ 
+@@ -126,8 +128,8 @@ The card caused a failure when either holds:
+ - a repo scan or enforcement test flags a file the card wrote.
+ 
+ You fix such a failure under the same `{{.self_fix_cap}}`-attempt bound as any gate failure, and report `status: FAILED` when the bound runs out.
+-A failure the card did not cause is never yours to fix, and it is left to the plan-level `webster` gate.
+-That gate runs after every batch and catches what the card gates do not, so a batch gate step that fails only on failures the batch's cards did not cause, by the two-pronged test above, does not make the report `FAILED`.
++A failure the card did not cause is never yours to fix, bar the last batch's added packages named above, and it is left to the plan-level `webster` gate.
++That gate runs after every batch and catches what the card gates do not, so a batch gate step that fails only on failures the batch's cards did not cause, by the two-pronged test above, does not make the report `FAILED`, except a failure in the packages the last batch's `--main-packages` call adds.
+ A misjudged failure passes the batch and is caught by the `webster` gate, which spawns a fixer when it fails.
+ 
+ ## A step only your parent can take
+@@ -170,4 +172,4 @@ Change nothing else.
+ `NEEDS_PARENT` when you stopped on a step only your parent can take, which `need` names.
+ `head_sha` is your worktree's current HEAD commit SHA — capture it with `git rev-parse HEAD` as your very last read before writing the report, so it reflects every commit you made.
+ Only a failed card gate, a failed `lym gate card-verify` call, a failed batch gate or a test the card broke makes `status` `FAILED`, never a slot-busy exit.
+-A batch gate step that fails only on failures the batch's cards did not cause does not make it `FAILED`.
++A batch gate step that fails only on failures the batch's cards did not cause does not make it `FAILED`, except a failure in the packages the last batch's `--main-packages` call adds.
+diff --git a/internal/gatecli/cli.go b/internal/gatecli/cli.go
+index dc1814dd..777f8076 100644
+--- a/internal/gatecli/cli.go
++++ b/internal/gatecli/cli.go
+@@ -15,6 +15,7 @@ import (
+ 	"github.com/spf13/cobra"
+ 
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/impactset"
+ )
+ 
+@@ -61,7 +62,7 @@ func newCommand(goBinary string, samplePeriod, preTierCeiling, timeoutUnit, reru
+ 	var tiers []int
+ 	var upto int
+ 	var cards []string
+-	var all, guards, wait bool
++	var all, guards, wait, mainPackages bool
+ 	testCmd := &cobra.Command{
+ 		Use:         "test [<targets>...]",
+ 		Short:       "run the hub's test tiers once their gate slots are free",
+@@ -100,7 +101,7 @@ Examples:
+ 			}
+ 			request := testRequest{
+ 				goBinary: goBinary, samplePeriod: samplePeriod, preTierCeiling: preTierCeiling, timeoutUnit: timeoutUnit, rerunDelay: rerunDelay, pipeWaitDelay: pipeWaitDelay,
+-				stderr: cmd.ErrOrStderr(), dir: dir, tags: tags, gate: gate, tiers: tiers, cards: cards, base: base, all: all, guards: guards, targets: args,
++				stderr: cmd.ErrOrStderr(), dir: dir, tags: tags, gate: gate, tiers: tiers, cards: cards, mainPackages: mainPackages, base: base, all: all, guards: guards, targets: args,
+ 				upto: upto, uptoGiven: cmd.Flags().Changed("upto"),
+ 				phase: phaseFrom(cmd.Context()),
+ 			}
+@@ -121,6 +122,7 @@ Examples:
+ 	testCmd.Flags().IntSliceVar(&tiers, "tier", nil, "tier number to run; repeatable, default 0")
+ 	testCmd.Flags().IntVar(&upto, "upto", 0, "run every declared tier numbered 0 through N but the manual ones")
+ 	testCmd.Flags().StringArrayVar(&cards, "card", nil, "plan card id whose packages are the scope; repeatable")
++	testCmd.Flags().BoolVar(&mainPackages, gateslot.MainPackagesFlag, false, "with --card under the go scoper, add every package main of tier0's module to the scope")
+ 	testCmd.Flags().StringVar(&base, "base", "", "revision whose diff to the working tree is the scope")
+ 	testCmd.Flags().BoolVar(&all, "all", false, "run every tier over its all_targets")
+ 	testCmd.Flags().BoolVar(&guards, "guards", false, "after the listed tiers, run every //lym:guard test of the module under the tier its file belongs to")
+@@ -180,6 +182,8 @@ type testRequest struct {
+ 	uptoGiven bool
+ 	// cards are the --card values.
+ 	cards []string
++	// mainPackages is the --main-packages flag: a --card scope under the go scoper adds the module's main packages.
++	mainPackages bool
+ 	// base is the --base revision.
+ 	base string
+ 	// all is the --all flag: every listed tier runs over its all_targets.
+diff --git a/internal/gatecli/cli_test.go b/internal/gatecli/cli_test.go
+index 27874216..7d096925 100644
+--- a/internal/gatecli/cli_test.go
++++ b/internal/gatecli/cli_test.go
+@@ -33,6 +33,7 @@ func TestGateTest_RefusesBeforeResolvingTheHub(t *testing.T) {
+ 		{name: "--gate with --all names --all", args: []string{"test", "--gate", "card", "--all"}, wantError: "drop --all"},
+ 		{name: "--gate with --base names --base", args: []string{"test", "--gate", "card", "--base", "main"}, wantError: "drop --base"},
+ 		{name: "a negative --upto names no tier", args: []string{"test", "--upto", "-1"}, wantError: "--upto -1 names no tier"},
++		{name: "--main-packages without --card names --card", args: []string{"test", "--main-packages"}, wantError: "--card <id>"},
+ 		{name: "-C directory does not exist", args: []string{"test", "-C", missingDir, "./pkg"}, wantError: "does not exist"},
+ 	}
+ 	for _, tc := range tests {
+diff --git a/internal/gatecli/detachfront.go b/internal/gatecli/detachfront.go
+index c2c45c2f..003b27fd 100644
+--- a/internal/gatecli/detachfront.go
++++ b/internal/gatecli/detachfront.go
+@@ -357,6 +357,9 @@ func (r testRequest) words() []string {
+ 	for _, card := range r.cards {
+ 		add("card", card)
+ 	}
++	if r.mainPackages {
++		words = append(words, "--"+gateslot.MainPackagesFlag)
++	}
+ 	if r.base != "" {
+ 		add("base", r.base)
+ 	}
+diff --git a/internal/gatecli/detachfront_test.go b/internal/gatecli/detachfront_test.go
+index c27c26df..1af9c368 100644
+--- a/internal/gatecli/detachfront_test.go
++++ b/internal/gatecli/detachfront_test.go
+@@ -447,6 +447,28 @@ func TestCallKeyDir(t *testing.T) {
+ 	}
+ }
+ 
++func TestTestRequestWords_MainPackages(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name    string
++		request testRequest
++		want    []string
++	}{
++		{"Set", testRequest{cards: []string{"1"}, mainPackages: true}, []string{"--card=1", "--main-packages"}},
++		{"Unset", testRequest{cards: []string{"1"}}, []string{"--card=1"}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := tt.request.words(); !slices.Equal(got, tt.want) {
++				t.Errorf("words() = %q; want %q", got, tt.want)
++			}
++		})
++	}
++}
++
+ func TestWriteNewRun_RecordsTheCallersRole(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 2ac52528..0c502f6c 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -8,7 +8,7 @@
+ //
+ // # Verb
+ //
+-// The form is `lym gate test [-C <dir>] [--gate <key>] [--tier N]... [--upto N] [--card <id>]... [--base <rev>] [--all] [--guards] [--wait] [<targets>...] [-- <args>]`.
++// The form is `lym gate test [-C <dir>] [--gate <key>] [--tier N]... [--upto N] [--card <id>]... [--main-packages] [--base <rev>] [--all] [--guards] [--wait] [<targets>...] [-- <args>]`.
+ // It runs the tiers the hub declares in gate.yaml in ascending tier number.
+ // It then runs the vet step and the guard step below when they are planned.
+ // A run that fails does not stop the call: every later tier, vet and guard run still runs.
+@@ -134,7 +134,8 @@
+ // It says so on stderr.
+ // Flag-shape refusals need no config and run first, before hub resolution:
+ // `--tags`, naming `--tier`; a negative `--upto`; `-C` without explicit targets, naming them;
+-// `--gate` beside `--tier`, `--upto`, `--all` or `--base`; and more than one scope form.
++// `--gate` beside `--tier`, `--upto`, `--all` or `--base`; more than one scope form;
++// and `--main-packages` without `--card`, naming `--card <id>`.
+ //
+ // # Scoper
+ //
+@@ -192,6 +193,10 @@
+ // The diff runs to the working tree.
+ // The scope falls back to whole wherever the derivation does, naming the reason on stderr.
+ // A `--card` scope is the cards' packages.
++// With `--main-packages` it also holds every `package main` package of tier0's module.
++// `impactset.ModuleMainPackages` lists them.
++// A main package a card already names is listed once, and a failed listing refuses the call naming the module.
++// Under the `none` and `dotnet` scopers the flag adds nothing.
+ // A narrower scope runs each listed tier once per module, in that module's directory with its module-relative targets.
+ // One slot hold and one `timeout_min` cover every invocation.
+ // An empty scope, such as a diff of Markdown files only, runs no listed tier's command, bar a tier with `carry: false`:
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index 2f5f8fa8..1f8a3e81 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -333,6 +333,9 @@ func flagShapeRefusal(request testRequest) string {
+ 	if forms > 1 {
+ 		return "gate test: explicit targets, --all, --base and --card are each one scope form, and a call takes one; way forward: keep one scope form, then re-run the same command"
+ 	}
++	if request.mainPackages && len(request.cards) == 0 {
++		return fmt.Sprintf("gate test: --%s adds to a --card scope, and the call names no card; way forward: pass --card <id> once per card, or drop --%s, then re-run the same command", gateslot.MainPackagesFlag, gateslot.MainPackagesFlag)
++	}
+ 	return ""
+ }
+ 
+diff --git a/internal/gatecli/scope.go b/internal/gatecli/scope.go
+index c8b59907..0b8eefc7 100644
+--- a/internal/gatecli/scope.go
++++ b/internal/gatecli/scope.go
+@@ -139,6 +139,7 @@ func withGateScope(cfg gateslot.Config, request testRequest) testRequest {
+ // It leaves the guard tests to the module scan, as a whole tier does.
+ // A set that cannot be narrowed falls back to whole, naming the reason on request.stderr.
+ // A --card scope is the cards' packages per module.
++// With request.mainPackages it also holds every package main of tier0's module, listed once.
+ // It adds the declared tiers whose build tag brings a file into one of those packages.
+ // A narrowed share, and a --card scope, skip the `//lym:watch` tests of their packages that no changed file concerns.
+ // A --card scope reads its changed files as the diff from the merge base with the parent branch.
+@@ -192,11 +193,21 @@ func computeScope(ctx context.Context, cfg gateslot.Config, location *lymcwd.Loc
+ 	}
+ 	if form == scopeCard {
+ 		modules := make([]moduleTargets, len(cardModules))
+-		var dirs []string
+ 		for i, module := range cardModules {
+ 			modules[i] = moduleTargets{dir: module.Dir, targets: module.Packages}
+-			for _, target := range module.Packages {
+-				dir := path.Join(module.Dir, strings.TrimPrefix(target, "./"))
++		}
++		if request.mainPackages {
++			moduleDir := moduleKey(root, tier0.Dir)
++			mains, err := impactset.ModuleMainPackages(ctx, resolveRunDir(root, tier0.Dir))
++			if err != nil {
++				return scope{}, fmt.Errorf("gate test: --%s cannot list the main packages of the module at %s: %w; way forward: fix the module until \"go list ./...\" succeeds there, then re-run the same command", gateslot.MainPackagesFlag, moduleDir, err)
++			}
++			modules = withMainPackages(modules, moduleDir, mains)
++		}
++		var dirs []string
++		for _, module := range modules {
++			for _, target := range module.targets {
++				dir := path.Join(module.dir, strings.TrimPrefix(target, "./"))
+ 				// A card may name a package it has yet to create.
+ 				if info, err := os.Stat(filepath.Join(root, filepath.FromSlash(dir))); err == nil && info.IsDir() {
+ 					dirs = append(dirs, dir)
+@@ -267,6 +278,24 @@ func computeScope(ctx context.Context, cfg gateslot.Config, location *lymcwd.Loc
+ 	return scope{form: form, tiers: shares, guardStep: true, guardDir: ".", guards: guardsByTier(guards)}, nil
+ }
+ 
++// withMainPackages returns modules with mains, the main packages of the module at dir, added to that module's targets.
++// A package the cards already name is not added twice, and a module the cards leave out joins the list last.
++func withMainPackages(modules []moduleTargets, dir string, mains []string) []moduleTargets {
++	if len(mains) == 0 {
++		return modules
++	}
++	index := slices.IndexFunc(modules, func(module moduleTargets) bool { return path.Clean(module.dir) == dir })
++	if index < 0 {
++		return append(modules, moduleTargets{dir: dir, targets: mains})
++	}
++	for _, pkg := range mains {
++		if !slices.Contains(modules[index].targets, pkg) {
++			modules[index].targets = append(modules[index].targets, pkg)
++		}
++	}
++	return modules
++}
++
+ // noneScope returns the computed or --base scope under the none scoper for a hub with inert_paths:
+ // the tiers of a base group whose diff is inert-only get the empty share, and every other tier runs whole.
+ // A call with no inert-only group is the whole scope, and no scope of this scoper plans a guard step.
+diff --git a/internal/gatecli/scope_test.go b/internal/gatecli/scope_test.go
+new file mode 100644
+index 00000000..6f03c4d0
+--- /dev/null
++++ b/internal/gatecli/scope_test.go
+@@ -0,0 +1,70 @@
++// scope_test.go covers how a --card scope joins a module's main packages to the cards' packages.
++// It needs no process and no hub.
++
++package gatecli
++
++import (
++	"reflect"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestWithMainPackages(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name    string
++		modules []moduleTargets
++		dir     string
++		mains   []string
++		want    []moduleTargets
++	}{
++		{
++			name:    "NoMains",
++			modules: []moduleTargets{{dir: ".", targets: []string{"./lib"}}},
++			dir:     ".",
++			want:    []moduleTargets{{dir: ".", targets: []string{"./lib"}}},
++		},
++		{
++			name:    "AddedToTheModuleTheCardsName",
++			modules: []moduleTargets{{dir: ".", targets: []string{"./lib"}}},
++			dir:     ".",
++			mains:   []string{"./tool"},
++			want:    []moduleTargets{{dir: ".", targets: []string{"./lib", "./tool"}}},
++		},
++		{
++			name:    "ListedOnceWhenTheCardsAlreadyNameIt",
++			modules: []moduleTargets{{dir: ".", targets: []string{"./tool", "./lib"}}},
++			dir:     ".",
++			mains:   []string{"./tool", "./cmd/other"},
++			want:    []moduleTargets{{dir: ".", targets: []string{"./tool", "./lib", "./cmd/other"}}},
++		},
++		{
++			name:    "ModuleTheCardsLeaveOutJoinsLast",
++			modules: []moduleTargets{{dir: "nested", targets: []string{"./n"}}},
++			dir:     ".",
++			mains:   []string{"./tool"},
++			want: []moduleTargets{
++				{dir: "nested", targets: []string{"./n"}},
++				{dir: ".", targets: []string{"./tool"}},
++			},
++		},
++		{
++			name:    "ModuleDirMatchedAfterCleaning",
++			modules: []moduleTargets{{dir: "./sub/", targets: []string{"./a"}}},
++			dir:     "sub",
++			mains:   []string{"./b"},
++			want:    []moduleTargets{{dir: "./sub/", targets: []string{"./a", "./b"}}},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := withMainPackages(tt.modules, tt.dir, tt.mains); !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("withMainPackages() = %+v; want %+v", got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/gatecli/scopes_integration_test.go b/internal/gatecli/scopes_integration_test.go
+index 617c8164..cd049da3 100644
+--- a/internal/gatecli/scopes_integration_test.go
++++ b/internal/gatecli/scopes_integration_test.go
+@@ -556,6 +556,36 @@ func TestGateTest_Scopes(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("--card with --main-packages adds the module's main packages to the card's packages", func(t *testing.T) {
++		plankit.WriteTree(t, pair, map[string]string{"tool/main.go": "package main\n\nfunc main() {}\n"})
++		t.Cleanup(func() { _ = os.RemoveAll(filepath.Join(pair, "tool")) })
++		wantArgs(t, gate(t, pair, nil, "--card", "1", "--main-packages"), []string{"./lib", "./tool"}, []string{"."}, guardInvocation)
++	})
++
++	t.Run("--card with --main-packages is refused naming the module and the way forward when go list fails there", func(t *testing.T) {
++		edit(t, "go.mod", "this is not a go.mod\n")
++		wantRefusal(t, gate(t, pair, nil, "--card", "1", "--main-packages"), "--main-packages", "module at .", "way forward")
++	})
++
++	t.Run("--card with --main-packages adds nothing under the none scoper", func(t *testing.T) {
++		writeScoper(t, "none")
++		defer writeScoper(t, "go")
++		plankit.WriteTree(t, pair, map[string]string{"tool/main.go": "package main\n\nfunc main() {}\n"})
++		t.Cleanup(func() { _ = os.RemoveAll(filepath.Join(pair, "tool")) })
++		wantArgs(t, gate(t, pair, nil, "--card", "1", "--main-packages"), []string{"./..."})
++	})
++
++	t.Run("--card with --main-packages adds nothing under dotnet", func(t *testing.T) {
++		writeDotnet(t, nil)
++		defer writeScoper(t, "go")
++		csharpPlan := plan
++		csharpPlan.Language = "csharp"
++		csharpPlan.Cards = []plankit.Card{{Number: 1, Slug: "span", Groups: []plankit.Group{{Label: "Edit", Targets: []string{"Lib#Circle.Area"}}}}}
++		plankit.Write(t, planparser.PlanDir(pair), csharpPlan)
++		t.Cleanup(func() { plankit.Write(t, planparser.PlanDir(pair), plan) })
++		wantArgs(t, gate(t, pair, nil, "--card", "1", "--main-packages"), circleTestsArgs)
++	})
++
+ 	t.Run("a passing --card call leaves a tier a listed tier covers out of the tiers it did not run", func(t *testing.T) {
+ 		edit(t, "docs/note.md", "a dirtying note\n")
+ 		g := gate(t, pair, nil, "--card", "1", "--tier", "1")
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index 26082a8e..69b5651a 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -174,6 +174,7 @@
+ // Config.GateCall renders the `lym gate test --wait --gate <key>` call, with one `--card <id>` per card given.
+ // Its `--wait` form is for a call Go runs.
+ // Config.AgentGateCall renders the same call without `--wait`, the form for a call an agent runs.
++// Config.AgentGateCallWithMainPackages renders the agent call with `--main-packages` last.
+ // An agent strand's capped front answers it with `done: false` and exit 75 when its keep-warm cap passes.
+ // MigrateConfig prunes the retired `gates.publish` list and `guard_tier` key from a gate.yaml document.
+ // It also migrates the retired lists, so reconcile rewrites the hub file:
+diff --git a/internal/gateslot/tiers.go b/internal/gateslot/tiers.go
+index 48934b4e..1dac4d1d 100644
+--- a/internal/gateslot/tiers.go
++++ b/internal/gateslot/tiers.go
+@@ -375,6 +375,20 @@ func (c Config) AgentGateCall(key string, cards ...string) (string, error) {
+ 	return c.renderGateCall(key, false, cards)
+ }
+ 
++// MainPackagesFlag is the `lym gate test` flag, without its dashes, that adds the main packages to a --card scope.
++const MainPackagesFlag = "main-packages"
++
++// AgentGateCallWithMainPackages renders the call an agent runs for the named gate key, as AgentGateCall does.
++// The call ends with MainPackagesFlag, so it also runs the module's main packages.
++// It refuses, with the refusals Gate gives, a key the config cannot run.
++func (c Config) AgentGateCallWithMainPackages(key string, cards ...string) (string, error) {
++	call, err := c.renderGateCall(key, false, cards)
++	if err != nil {
++		return "", err
++	}
++	return call + " --" + MainPackagesFlag, nil
++}
++
+ // renderGateCall renders the gate call for key over cards, with `--wait` when wait is set.
+ func (c Config) renderGateCall(key string, wait bool, cards []string) (string, error) {
+ 	if _, err := c.Gate(key); err != nil {
+diff --git a/internal/impactset/doc.go b/internal/impactset/doc.go
+index e638e1fb..cf0546c0 100644
+--- a/internal/impactset/doc.go
++++ b/internal/impactset/doc.go
+@@ -80,6 +80,10 @@
+ // A seam line whose argument is not a single `<unit>#<Type>` token is a SeamMalformed error.
+ // Whether a glyph names a struct is for the caller to judge.
+ //
++// ModuleMainPackages lists the `package main` packages of a module through `go list -e ./...`.
++// It returns them sorted, as module-relative package arguments.
++// A program's own tests are where a change to the packages it wires shows, and no other package imports a main package.
++//
+ // HoldsTierTest reports whether a package directory holds a test function a run of given tiers executes.
+ // A test function opening with `tiergate.Require(t, N)` counts for tier N alone, and any other for every tier.
+ // The gate's `{test_targets}` keeps a package on it, so a tier run starts only the test binaries with a test to run.
+diff --git a/internal/impactset/mains.go b/internal/impactset/mains.go
+new file mode 100644
+index 00000000..236b1643
+--- /dev/null
++++ b/internal/impactset/mains.go
+@@ -0,0 +1,74 @@
++// mains.go lists the `package main` packages of a module, which a scope adds when it must reach the module's programs.
++
++package impactset
++
++import (
++	"context"
++	"errors"
++	"fmt"
++	"os/exec"
++	"path/filepath"
++	"sort"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// mainPackagesFormat is the `go list -f` template for one NUL-terminated record per package.
++// Each record is the package directory, a tab, the package name, a tab, and the list error, if any.
++const mainPackagesFormat = `{{.Dir}}{{"\t"}}{{.Name}}{{"\t"}}{{with .Error}}{{.Err}}{{end}}{{"\x00"}}`
++
++// ModuleMainPackages returns the `package main` packages of the module at moduleDir, sorted.
++// Each is a module-relative `go` package argument, such as `./cmd/tool`, or `.` for the module root.
++// It lists the packages with `go list -e ./...`, so a package that fails to build stays listed under its name.
++// A failed `go list` run is an error naming moduleDir and the enumeration's own error.
++// So are an entry with no directory and a listed directory outside moduleDir.
++// ctx bounds the run, so a stalled `go list` is killed when it ends.
++func ModuleMainPackages(ctx context.Context, moduleDir string) ([]string, error) {
++	absolute, err := filepath.Abs(moduleDir)
++	if err != nil {
++		return nil, fmt.Errorf("impactset: resolve %s: %w", moduleDir, err)
++	}
++	cmd := exec.CommandContext(ctx, "go", "list", "-e", "-f", mainPackagesFormat, "./...")
++	cmd.Dir = moduleDir
++	logger.Info("impactset: spawning go list for the main packages", "dir", moduleDir)
++	output, err := cmd.Output()
++	logger.Info("impactset: go list for the main packages exited", "dir", moduleDir, "err", err)
++	if err != nil {
++		var exitErr *exec.ExitError
++		if errors.As(err, &exitErr) {
++			return nil, fmt.Errorf("impactset: list the main packages of %s: %w: %s", moduleDir, err, strings.TrimSpace(string(exitErr.Stderr)))
++		}
++		return nil, fmt.Errorf("impactset: list the main packages of %s: %w", moduleDir, err)
++	}
++
++	var mains []string
++	for _, record := range strings.Split(string(output), "\x00") {
++		record = strings.TrimPrefix(record, "\n")
++		if record == "" {
++			continue
++		}
++		fields := strings.SplitN(record, "\t", 3)
++		for len(fields) < 3 {
++			fields = append(fields, "")
++		}
++		dir, name, listError := fields[0], fields[1], fields[2]
++		if dir == "" {
++			return nil, fmt.Errorf("impactset: list the main packages of %s: %s", moduleDir, strings.TrimSpace(listError))
++		}
++		if name != "main" {
++			continue
++		}
++		relative, err := filepath.Rel(absolute, dir)
++		if err != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
++			return nil, fmt.Errorf("impactset: list the main packages of %s: package directory %s lies outside the module directory", absolute, dir)
++		}
++		target := "."
++		if relative != "." {
++			target = "./" + filepath.ToSlash(relative)
++		}
++		mains = append(mains, target)
++	}
++	sort.Strings(mains)
++	return mains, nil
++}
+diff --git a/internal/impactset/mains_integration_test.go b/internal/impactset/mains_integration_test.go
+new file mode 100644
+index 00000000..34e26004
+--- /dev/null
++++ b/internal/impactset/mains_integration_test.go
+@@ -0,0 +1,70 @@
++// mains_integration_test.go drives ModuleMainPackages over real modules, whose package listing spawns `go list`.
++
++package impactset
++
++import (
++	"context"
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestModuleMainPackages(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	t.Run("every main package of the module is listed sorted, and no library or testdata package", func(t *testing.T) {
++		t.Parallel()
++		moduleDir := t.TempDir()
++		writeRepoFile(t, moduleDir, "go.mod", "module example.com/m\n\ngo 1.26\n")
++		writeRepoFile(t, moduleDir, "main.go", "package main\n\nfunc main() {}\n")
++		writeRepoFile(t, moduleDir, "cmd/tool/main.go", "package main\n\nfunc main() {}\n")
++		writeRepoFile(t, moduleDir, "lib/lib.go", "package lib\n")
++		writeRepoFile(t, moduleDir, "lib/testdata/fixture/main.go", "package main\n\nfunc main() {}\n")
++
++		got, err := ModuleMainPackages(context.Background(), moduleDir)
++		if err != nil {
++			t.Fatalf("ModuleMainPackages() error = %v; want nil", err)
++		}
++		if want := []string{".", "./cmd/tool"}; !slices.Equal(got, want) {
++			t.Errorf("ModuleMainPackages() = %q; want %q", got, want)
++		}
++	})
++
++	t.Run("a module with no main package lists none", func(t *testing.T) {
++		t.Parallel()
++		moduleDir := t.TempDir()
++		writeRepoFile(t, moduleDir, "go.mod", "module example.com/m\n\ngo 1.26\n")
++		writeRepoFile(t, moduleDir, "lib/lib.go", "package lib\n")
++
++		got, err := ModuleMainPackages(context.Background(), moduleDir)
++		if err != nil || len(got) != 0 {
++			t.Errorf("ModuleMainPackages() = %q, %v; want no package and nil", got, err)
++		}
++	})
++
++	t.Run("a main package that fails to load stays listed", func(t *testing.T) {
++		t.Parallel()
++		moduleDir := t.TempDir()
++		writeRepoFile(t, moduleDir, "go.mod", "module example.com/m\n\ngo 1.26\n")
++		writeRepoFile(t, moduleDir, "broken/main.go", "package main\n\nimport _ \"embed\"\n\n//go:embed missing.txt\nvar missing string\n\nfunc main() {}\n")
++
++		got, err := ModuleMainPackages(context.Background(), moduleDir)
++		if err != nil {
++			t.Fatalf("ModuleMainPackages() error = %v; want nil", err)
++		}
++		if want := []string{"./broken"}; !slices.Equal(got, want) {
++			t.Errorf("ModuleMainPackages() = %q; want %q", got, want)
++		}
++	})
++
++	t.Run("a directory with no go.mod is an error naming it", func(t *testing.T) {
++		t.Parallel()
++		bare := t.TempDir()
++		if _, err := ModuleMainPackages(context.Background(), bare); err == nil || !strings.Contains(err.Error(), bare) {
++			t.Errorf("ModuleMainPackages(%s) error = %v; want an error naming the directory", bare, err)
++		}
++	})
++}
+diff --git a/internal/websterengine/beginbatch.go b/internal/websterengine/beginbatch.go
+index cbd06631..c22e5b41 100644
+--- a/internal/websterengine/beginbatch.go
++++ b/internal/websterengine/beginbatch.go
+@@ -559,7 +559,7 @@ func BeginBatch(deps BeginDeps, batchNumber int) (*BeginResult, error) {
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	batchGate, err := renderBatchGate(batch.Cards, deps.Gate)
++	batchGate, err := renderBatchGate(batch.Cards, deps.Gate, isLastBatch(deps.Batches, batch))
+ 	if err != nil {
+ 		return nil, err
+ 	}
+diff --git a/internal/websterengine/beginbatch_test.go b/internal/websterengine/beginbatch_test.go
+index 30dcb91c..5d986cbc 100644
+--- a/internal/websterengine/beginbatch_test.go
++++ b/internal/websterengine/beginbatch_test.go
+@@ -419,7 +419,12 @@ func TestBeginBatch_PromptFile(t *testing.T) {
+ 				"  - `lym gate test --gate card --card 1-json-flag`\n",
+ 				"- `lym gate test --gate batch --card 1-json-flag`",
+ 			},
+-			wantNot: []string{"{{.", "## verify:", "-run '^("},
++			wantNot: []string{"{{.", "## verify:", "-run '^(", "--card 1-json-flag --main-packages"},
++		},
++		{
++			name:   "the last batch's gate call ends with --main-packages",
++			number: 2,
++			want:   []string{"- `lym gate test --gate batch --card 2-list-tests --main-packages`"},
+ 		},
+ 	}
+ 	for _, tt := range tests {
+diff --git a/internal/websterengine/cardgate.go b/internal/websterengine/cardgate.go
+index 88ce72a2..625309b4 100644
+--- a/internal/websterengine/cardgate.go
++++ b/internal/websterengine/cardgate.go
+@@ -8,6 +8,7 @@ import (
+ 	"fmt"
+ 	"strings"
+ 
++	"github.com/Knatte18/loomyard/internal/batcher"
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ )
+@@ -42,15 +43,31 @@ func renderCardGates(cards []planparser.Card, planDirDisplay string, gate gatesl
+ }
+ 
+ // renderBatchGate renders the batch's gate as one line: the hub's `batch` gate call over every card of the batch.
++// When last is set the call also runs the module's main packages,
++// so the plan's last fork meets a break there before the plan-level verify does.
+ // It refuses, with the config's way forward, a hub whose `batch` list the config does not hold.
+-func renderBatchGate(cards []planparser.Card, gate gateslot.Config) (string, error) {
++func renderBatchGate(cards []planparser.Card, gate gateslot.Config, last bool) (string, error) {
+ 	ids := make([]string, 0, len(cards))
+ 	for _, c := range cards {
+ 		ids = append(ids, c.ID())
+ 	}
+-	call, err := gate.AgentGateCall("batch", ids...)
++	render := gate.AgentGateCall
++	if last {
++		render = gate.AgentGateCallWithMainPackages
++	}
++	call, err := render("batch", ids...)
+ 	if err != nil {
+ 		return "", err
+ 	}
+ 	return fmt.Sprintf("- `%s`", call), nil
+ }
++
++// isLastBatch reports whether batch is the last of the execution-ordered batches.
++func isLastBatch(batches []batcher.Batch, batch batcher.Batch) bool {
++	if len(batches) == 0 {
++		return false
++	}
++	lastNumber, _ := batchIdentity(batches[len(batches)-1])
++	number, _ := batchIdentity(batch)
++	return number == lastNumber
++}
+diff --git a/internal/websterengine/cardgate_test.go b/internal/websterengine/cardgate_test.go
+index 74d266be..fc7a3d62 100644
+--- a/internal/websterengine/cardgate_test.go
++++ b/internal/websterengine/cardgate_test.go
+@@ -86,7 +86,7 @@ func TestRenderBatchGate(t *testing.T) {
+ 	t.Run("a two-card batch renders one call over every card", func(t *testing.T) {
+ 		t.Parallel()
+ 		cards := []planparser.Card{numberedGateCard(1), numberedGateCard(2)}
+-		got, err := renderBatchGate(cards, gateTestConfig())
++		got, err := renderBatchGate(cards, gateTestConfig(), false)
+ 		if err != nil {
+ 			t.Fatalf("renderBatchGate() error = %v; want nil", err)
+ 		}
+@@ -96,12 +96,14 @@ func TestRenderBatchGate(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("a dangling batch list is refused naming lym config gate", func(t *testing.T) {
++	t.Run("a dangling batch list is refused naming lym config gate, the last batch's call too", func(t *testing.T) {
+ 		t.Parallel()
+ 		config := gateTestConfig()
+ 		delete(config.Gates, "batch")
+-		if _, err := renderBatchGate([]planparser.Card{numberedGateCard(1)}, config); err == nil || !strings.Contains(err.Error(), "lym config gate") {
+-			t.Errorf("renderBatchGate() error = %v; want a refusal naming lym config gate", err)
++		for _, last := range []bool{false, true} {
++			if _, err := renderBatchGate([]planparser.Card{numberedGateCard(1)}, config, last); err == nil || !strings.Contains(err.Error(), "lym config gate") {
++				t.Errorf("renderBatchGate(last %v) error = %v; want a refusal naming lym config gate", last, err)
++			}
+ 		}
+ 	})
+ }
+@@ -109,7 +111,7 @@ func TestRenderBatchGate(t *testing.T) {
+ // TestRenameBoundary_BatchesCheckAndGateTheirOwnTree runs the shape a rename-after-create plan has end to end:
+ // the cost batchifier splits before the rename;
+ // each batch's done-checks read a tree still holding its own targets,
+-// and each batch's gate call names only its own cards.
++// and each batch's gate call names only its own cards, the last batch's call adding the module's main packages.
+ func TestRenameBoundary_BatchesCheckAndGateTheirOwnTree(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -140,7 +142,7 @@ func TestRenameBoundary_BatchesCheckAndGateTheirOwnTree(t *testing.T) {
+ 
+ 	for i, tree := range []struct{ root, wantGate string }{
+ 		{firstTree, "- `lym gate test --gate batch --card 1-gate --card 2-gate`"},
+-		{secondTree, "- `lym gate test --gate batch --card 3-gate`"},
++		{secondTree, "- `lym gate test --gate batch --card 3-gate --main-packages`"},
+ 	} {
+ 		findings, err := planglyph.DoneChecks(plan, batches[i].Cards, tree.root)
+ 		if err != nil {
+@@ -149,7 +151,7 @@ func TestRenameBoundary_BatchesCheckAndGateTheirOwnTree(t *testing.T) {
+ 		if len(findings) != 0 {
+ 			t.Errorf("batch %d: DoneChecks = %+v; want no finding", i+1, findings)
+ 		}
+-		gate, err := renderBatchGate(batches[i].Cards, gateTestConfig())
++		gate, err := renderBatchGate(batches[i].Cards, gateTestConfig(), isLastBatch(batches, batches[i]))
+ 		if err != nil {
+ 			t.Fatalf("batch %d: renderBatchGate() error = %v; want nil", i+1, err)
+ 		}
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index 0e984c0d..362be2a4 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -121,6 +121,9 @@
+ // Go therefore renders no package list and scans for no guard test.
+ // The batch gate is the hub's `batch` gate call, `lym gate test --gate batch`.
+ // It names every card of the batch, `--card <card id>` once per card.
++// The last batch of the execution order adds `--main-packages`, from `gateslot.Config.AgentGateCallWithMainPackages`.
++// Under the `go` scoper that call also runs the module's main packages, which the plan-level gate runs next;
++// the implementer body makes a failure there the last fork's to fix, whichever batch caused it.
+ // Both calls are rendered from `BeginDeps.Gate` and `RecoverDeps.Gate`.
+ // `webstercli` loads them from the hub's `gate.yaml`.
+ // begin-batch and recover-batch refuse before they mutate anything when the config gives no `card` or `batch` list.
+diff --git a/internal/websterengine/recoverbatch.go b/internal/websterengine/recoverbatch.go
+index 90b738b4..9d913f9d 100644
+--- a/internal/websterengine/recoverbatch.go
++++ b/internal/websterengine/recoverbatch.go
+@@ -283,7 +283,7 @@ func recoverSpawn(deps RecoverDeps, batch batcher.Batch, prior *BatchState, prev
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	batchGate, err := renderBatchGate(batch.Cards, deps.Gate)
++	batchGate, err := renderBatchGate(batch.Cards, deps.Gate, isLastBatch(deps.Batches, batch))
+ 	if err != nil {
+ 		return nil, err
+ 	}
+diff --git a/internal/websterengine/recoverbatch_test.go b/internal/websterengine/recoverbatch_test.go
+index c16e258f..32e0f07c 100644
+--- a/internal/websterengine/recoverbatch_test.go
++++ b/internal/websterengine/recoverbatch_test.go
+@@ -1738,7 +1738,7 @@ func TestRecoverSpawnOrAttach(t *testing.T) {
+ 				for _, want := range []string{
+ 					"- rename Go symbols with `gopls rename`\n",
+ 					"  - `lym gate test --gate card --card 1-json-flag`\n",
+-					"- `lym gate test --gate batch --card 1-json-flag`",
++					"- `lym gate test --gate batch --card 1-json-flag --main-packages`",
+ 				} {
+ 					if !strings.Contains(fx.Engine.LastPrompt, want) {
+ 						t.Errorf("recovery prompt does not contain %q; got:\n%s", want, fx.Engine.LastPrompt)
+diff --git a/internal/websterengine/template_test.go b/internal/websterengine/template_test.go
+index eb3ec69f..a1d001a0 100644
+--- a/internal/websterengine/template_test.go
++++ b/internal/websterengine/template_test.go
+@@ -860,7 +860,7 @@ func TestRenderPrompts(t *testing.T) {
+ 					"1. Read the card file.\n   It is your whole instruction for that card.",
+ 					"   Locate them with one `lym quarry resolve <glyph>...` call",
+ 					"`lym loom lint-pattern` and `lym quarry resolve` are always allowed",
+-					"does not make it `FAILED`.\n",
++					"does not make it `FAILED`, except a failure in the packages the last batch's `--main-packages` call adds.\n",
+ 				}}
+ 		}},
+ 		{"recovery reads the card files and locates by quarry", func(t *testing.T) promptCheck {
