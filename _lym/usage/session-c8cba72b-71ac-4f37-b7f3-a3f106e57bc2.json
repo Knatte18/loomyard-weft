@@ -1,0 +1,14 @@
+{
+  "session_id": "c8cba72b-71ac-4f37-b7f3-a3f106e57bc2",
+  "row": "Code-Burler-Fix",
+  "role": "code-burler-fix",
+  "model": "claude-sonnet-5-5",
+  "engine": "claude",
+  "input_tokens": 68,
+  "cache_write_tokens": 64655,
+  "cache_read_tokens": 1163798,
+  "output_tokens": 15217,
+  "cost_usd": 0.5467031,
+  "started": "2026-11-08T11:41:46Z",
+  "ended": "2026-11-08T11:46:02Z"
+}
