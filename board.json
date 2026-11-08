@@ -514,7 +514,7 @@
       "isolated": false,
       "brief": "The Codex assistant reviewer pane keeps a fixed column width; it should split the width evenly with the Claude reviewer pane",
       "body": "## Seen (operator, 2026-11-08)\n\nWhen a Code-Review round runs a Codex assistant reviewer beside the Claude reviewer, reed puts the Codex pane in a column of its own beside the Claude reviewer's pane, and that column keeps a fixed width: it does not follow when the window or the Claude pane is resized.\n\n## Idea\n\nThe two reviewer panes share their space evenly and scale together: each takes half the width, on every layout render and every resize, as other side-by-side strands do.\n",
-      "status": "running · Worktree-Create",
+      "status": "running · Seed-IDE",
       "created": "2026-11-08T11:52:11Z",
       "revised": "2026-11-08T12:30:19Z",
       "run_settings": {
@@ -564,7 +564,7 @@
       "isolated": false,
       "brief": "Read records of darn and tapestry runs landed since 2026-10-25 and price each darn phase, for the arras recipe",
       "body": "## Why (operator, 2026-11-08)\n\nThe coming `arras` recipe splits a large change into a family of darns instead of one tapestry.\nWhether that is cheaper depends on what a darn costs: each darn runs an Opus writer, its own Discussion and its own Code-Review perch, while a tapestry plans once with Opus and implements its cards with Sonnet.\n`docs/research/loom/writer-cost-remeasure-2026-11-08/report.md` priced the tapestry side; this prices the darn side.\n\n## Scope\n\nNo agent run, no test and no gate run: this reads run records, transcripts, `lym report` output and git history only.\nInputs: every darn run landed from 2026-10-25 to the start of this run, and every tapestry run landed in the same span.\n\n## Measure\n\nPer darn run, at API list price:\n\n- Cost of Discussion (with its review), writer, Code-Review perch (reviewers, judge, fixer), gate fixer and anything else, each on its own line.\n- Wall time from `lym report timing`, Code-Review rounds, and changed lines from the landing commit.\n- Group by profile (`docs`, `light`, `solid`, others) and give per-run and per-1000-changed-lines figures.\n\nThen:\n\n- The darns of the fabricengine rewrite, filed by one raddle split, summed as one family, against the tapestry runs of the same span, normalised per 1000 changed lines, with each phase's share.\n- Which of writer and perch is the larger cost in a darn, and what the writer would cost at Sonnet list price for the same tokens, stated as an estimate only.\n\n## Report\n\nWrite `docs/research/loom/darn-cost-2026-11-08/report.md`: per-run tables, the sample size stated, the family-versus-tapestry comparison, and what the figures say for `arras` filing darns.\nCommit the report and no code.\n",
-      "status": "running · Worktree-Create",
+      "status": "running · Seed-Child",
       "created": "2026-11-08T12:30:20Z",
       "revised": "2026-11-08T12:30:20Z",
       "profile": "docs"
