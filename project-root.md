@@ -18,15 +18,9 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (18)
+## Notes (16)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-### Research (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>5h | loom, stencil |
 
 ### Bugs (1)
 
@@ -34,14 +28,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B2 |  | **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | 3h<br>3h | shed, friction |
 
-### Enhancements (4)
+### Enhancements (3)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 1d<br>1d | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 5h<br>5h | shed, loom, darn |
 | E3 |  | **lym gate test runs a slow package as several processes, each taking a share of its tests** | [`gate-shard-slow-package`](design-gate-shard-slow-package.md) | 2h<br>1h | gate |
-| E9 |  | **An interactive agent idle for a set time gets its session compacted**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 8d<br>5d | shed, shuttle, batten |
 
 ### Features (12)
 

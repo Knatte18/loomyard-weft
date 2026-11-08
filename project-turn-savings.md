@@ -20,6 +20,18 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (0)
+## Notes (2)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Research (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>0m | loom, stencil |
+
+### Enhancements (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| E9 |  | **An interactive agent idle for a set time gets its session compacted**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 8d<br>0m | shed, shuttle, batten |
