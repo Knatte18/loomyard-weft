@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=ff89e27ce41687b2cdb81f0aa5970bf92d323edfe2c2b8fc689995eda7ce0b06 build=f7465bd86b31478590683d0377771fca4647c425 time=2026-11-07T11:35:39Z -->
+<!-- lym-stencil: sha256=20e879592c8447206a60096c7b521854d9087b1bbb6537631e79c8aead103965 build=5c7a821ac93f6948e5008ac7440e34cfe9a3d13f time=2026-11-08T11:26:15Z -->
 
 # Webster implementer job — read your cards, implement, commit, report
 
@@ -105,6 +105,8 @@ The sandbox ban covers mutating `lym fabric` verbs only.
 
 After the last card's commit and its `lym gate card-verify` call, and before writing the report, run the batch gate once, as a foreground Bash call under the gate rule.
 A failure counts as a gate failure under the self-fix bound below and makes the report `FAILED` once the bound runs out.
+A batch gate call that ends with `--main-packages` belongs to the plan's last batch, and it also runs the packages that flag adds, which the plan-level `webster` gate runs next.
+A failure in those packages is yours to fix under the self-fix bound even when an earlier batch caused it: the one exception to the rules below, in the self-fix bound and in the report's `status`, that leave such a failure to that gate.
 
 ## Slot-busy exits and test runs
 
@@ -128,8 +130,8 @@ The card caused a failure when either holds:
 - a repo scan or enforcement test flags a file the card wrote.
 
 You fix such a failure under the same `{{.self_fix_cap}}`-attempt bound as any gate failure, and report `status: FAILED` when the bound runs out.
-A failure the card did not cause is never yours to fix, and it is left to the plan-level `webster` gate.
-That gate runs after every batch and catches what the card gates do not, so a batch gate step that fails only on failures the batch's cards did not cause, by the two-pronged test above, does not make the report `FAILED`.
+A failure the card did not cause is never yours to fix, bar the last batch's added packages named above, and it is left to the plan-level `webster` gate.
+That gate runs after every batch and catches what the card gates do not, so a batch gate step that fails only on failures the batch's cards did not cause, by the two-pronged test above, does not make the report `FAILED`, except a failure in the packages the last batch's `--main-packages` call adds.
 A misjudged failure passes the batch and is caught by the `webster` gate, which spawns a fixer when it fails.
 
 ## A step only your parent can take
@@ -172,4 +174,4 @@ Change nothing else.
 `NEEDS_PARENT` when you stopped on a step only your parent can take, which `need` names.
 `head_sha` is your worktree's current HEAD commit SHA — capture it with `git rev-parse HEAD` as your very last read before writing the report, so it reflects every commit you made.
 Only a failed card gate, a failed `lym gate card-verify` call, a failed batch gate or a test the card broke makes `status` `FAILED`, never a slot-busy exit.
-A batch gate step that fails only on failures the batch's cards did not cause does not make it `FAILED`.
+A batch gate step that fails only on failures the batch's cards did not cause does not make it `FAILED`, except a failure in the packages the last batch's `--main-packages` call adds.
