@@ -1,6 +1,6 @@
 # A test binary pinned as a tmux job re-runs its own suite and fork-bombs the machine
 
-`test-binary-fork-guard` · Task · bug, reed, gate, testkit · running · Code-Bouncer
+`test-binary-fork-guard` · Task · bug, reed, gate, testkit · running · Drift-Recheck
 
 ## Seen (orch, 2026-11-08)
 
