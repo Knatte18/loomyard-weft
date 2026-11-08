@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-08 15:34 UTC; every age below is as of then.
+Rendered 2026-11-08 15:35 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -80,7 +80,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Owner `neve`
 
-### Tasks (1)
+### Tasks (2)
 
 Concrete and claimable; only a task can run.
 
@@ -90,23 +90,19 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **The orch writes the beam PR description under lym instructions; beam describe validates and pushes it**<br>• Orch-written beam description: end result plus member PRs, no decision log | [`beam-describe-no-decision-log`](design-beam-describe-no-decision-log.md) | darn · solid | Finalize | neve | 25m<br>22m | landing, workspaces, orch |
+| T1 | **The orch writes the beam PR description under lym instructions; beam describe validates and pushes it**<br>• Orch-written beam description: end result plus member PRs, no decision log | [`beam-describe-no-decision-log`](design-beam-describe-no-decision-log.md) | darn · solid | Finalize | neve | 26m<br>23m | landing, workspaces, orch |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T3 | **Arras: one recipe that runs Motif and raddle in a row, with a perch on the split**<br>• Discussion, raddle split and a split perch in one run; the operator only releases the filed tasks | [`motif-raddle-recipe`](design-motif-raddle-recipe.md)<br>[Sketch](decision-motif-raddle-recipe.md) | raddle |  | 3h<br>0m | shed, loom, burler, arbiter, board |
 
-### Notes (21)
+### Notes (20)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-#### Sketches (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| S1 |  | **Arras: one recipe that runs Motif and raddle in a row, with a perch on the split**<br>• Discussion, raddle split and a split perch in one run; the operator only releases the filed tasks | [`motif-raddle-recipe`](design-motif-raddle-recipe.md)<br>[Sketch](decision-motif-raddle-recipe.md) | 3h<br>2h | shed, loom, burler, arbiter, board |
 
 #### Research (1)
 
@@ -118,8 +114,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **A test binary pinned as a tmux job re-runs its own suite and fork-bombs the machine**<br>• Guard every command lym pins from os.Executable so a test binary is never launched by tmux | [`test-binary-fork-guard`](design-test-binary-fork-guard.md) | 43m<br>43m | reed, gate, testkit |
-| B2 |  | **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | 25m<br>25m | shed, friction |
+| B1 |  | **A test binary pinned as a tmux job re-runs its own suite and fork-bombs the machine**<br>• Guard every command lym pins from os.Executable so a test binary is never launched by tmux | [`test-binary-fork-guard`](design-test-binary-fork-guard.md) | 44m<br>44m | reed, gate, testkit |
+| B2 |  | **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | 26m<br>26m | shed, friction |
 
 #### Enhancements (3)
 
@@ -134,10 +130,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 5w<br>12d | burler |
-| F2 |  | **One desktop shortcut brings every lym session of the machine back after a crash or reboot**<br>• A lym verb and a .desktop launcher that start each live hub orch and reopen the reed windows | [`machine-restart-shortcut`](design-machine-restart-shortcut.md) | 54m<br>54m | orch, reed, termwindow, shortcut |
+| F2 |  | **One desktop shortcut brings every lym session of the machine back after a crash or reboot**<br>• A lym verb and a .desktop launcher that start each live hub orch and reopen the reed windows | [`machine-restart-shortcut`](design-machine-restart-shortcut.md) | 55m<br>55m | orch, reed, termwindow, shortcut |
 | F3 |  | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md) | 6h<br>2h | slack, creel, orch |
-| F4 |  | **Dobby: configurable notice to the orch when a run opens its PR** | [`dobby-pr-open-notice`](design-dobby-pr-open-notice.md) | 25m<br>25m | dobby, orch, config |
-| F5 |  | **Let the parent orch review the Discussion decision record before Plan** | [`parent-reviews-decision-record`](design-parent-reviews-decision-record.md) | 25m<br>25m | loom, orch, config |
+| F4 |  | **Dobby: configurable notice to the orch when a run opens its PR** | [`dobby-pr-open-notice`](design-dobby-pr-open-notice.md) | 26m<br>26m | dobby, orch, config |
+| F5 |  | **Let the parent orch review the Discussion decision record before Plan** | [`parent-reviews-decision-record`](design-parent-reviews-decision-record.md) | 26m<br>26m | loom, orch, config |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 9d<br>2d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 5w<br>4d | board, ide, orch |
 | F12 |  | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md) | 6d<br>22h | claude, shuttle, config |
