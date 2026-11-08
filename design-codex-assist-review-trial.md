@@ -50,3 +50,7 @@ Three runs are no verdict.
 Task `assist-fan-seat-work-alone` (`77e7a9c7`) fixed run 3's conflict: a fanned assistant now gets a fanned seat stencil and directive, whose write surface and `output_files` name the lens reports, and "work alone" there means no other session.
 A done fanned seat that returned no lens report is named in the log, and `round-<n>-usage.yaml` records `assist_ending` and `assist_lenses_missing` beside `assist_fan`, so a silent solo seat can no longer pass as a fanned one.
 The fix is built but unproved: no real fanned seat has run since, so a real composed fanned seat, with every lens started and returned, is still wanted.
+
+## Plan (operator, 2026-11-08)
+
+Test it on coming darn tasks: the orch sets `{"loom":{"code_assist_reviewer_model":"astra[medium]"}}` in the `run_settings` of the next two or three darn tasks the operator releases, with the `review-code` fan, so a real composed fanned seat runs; then a darn docs task reads those rounds and reports what Codex added, its false findings and its time.
