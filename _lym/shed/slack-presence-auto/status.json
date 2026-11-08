@@ -5,7 +5,7 @@
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
-    "last": "Open-IDE → skipped",
+    "last": "Run-Shed → bounced to Run-Shed",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,42 @@
       "output": "",
       "at": "2026-11-08T13:07:06Z",
       "reason": "batten.open_ide = false",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → failed at Darn-Write",
+      "at": "2026-11-08T14:36:27Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child failed → running at Darn-Write",
+      "at": "2026-11-08T14:37:17Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → blocked at Darn-Write",
+      "at": "2026-11-08T14:37:20Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child blocked → running at Darn-Write",
+      "at": "2026-11-08T14:38:01Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
       "machine": "neve"
     }
   ]
