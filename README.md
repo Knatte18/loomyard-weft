@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-08 12:46 UTC; every age below is as of then.
+Rendered 2026-11-08 12:47 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -50,13 +50,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 2d<br>53m | codex, shuttle |
+| R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 2d<br>54m | codex, shuttle |
 
 #### Features (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 5d<br>56m | shuttle, codex, loom |
+| F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 5d<br>57m | shuttle, codex, loom |
 
 ## [P3 Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes](project-fabric-test-speed-work.md) (0)
 
@@ -90,9 +90,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Reed gives the Codex assist reviewer pane a fixed width instead of half beside Claude**<br>• The Codex assistant reviewer pane keeps a fixed column width; it should split the width evenly with the Claude reviewer pane<br>• `loom: code_assist_reviewer_model astra[medium]` | [`reed-assist-pane-width`](design-reed-assist-pane-width.md) | darn · light | Code-Burler-Review | neve | 53m<br>15m | reed, codex |
-| T4 | **Measure darn cost per run and per 1000 lines, and a darn family against a tapestry**<br>• Read records of darn and tapestry runs landed since 2026-10-25 and price each darn phase, for the arras recipe | [`darn-cost-measure`](design-darn-cost-measure.md) | darn · docs | Darn-Write | neve | 15m<br>15m | loom |
-| T5 | **Arras: one recipe that runs Motif and raddle in a row, with a perch on the split**<br>• Discussion, raddle split and a split perch in one run; the operator only releases the filed tasks | [`motif-raddle-recipe`](design-motif-raddle-recipe.md) | motif | Discussion-Burler-Review | neve | 47m<br>15m | shed, loom, burler, arbiter, board |
+| T3 | **Reed gives the Codex assist reviewer pane a fixed width instead of half beside Claude**<br>• The Codex assistant reviewer pane keeps a fixed column width; it should split the width evenly with the Claude reviewer pane<br>• `loom: code_assist_reviewer_model astra[medium]` | [`reed-assist-pane-width`](design-reed-assist-pane-width.md) | darn · light | Code-Burler-Review | neve | 54m<br>16m | reed, codex |
+| T4 | **Measure darn cost per run and per 1000 lines, and a darn family against a tapestry**<br>• Read records of darn and tapestry runs landed since 2026-10-25 and price each darn phase, for the arras recipe | [`darn-cost-measure`](design-darn-cost-measure.md) | darn · docs | Drift-Verify | neve | 16m<br>16m | loom |
+| T5 | **Arras: one recipe that runs Motif and raddle in a row, with a perch on the split**<br>• Discussion, raddle split and a split perch in one run; the operator only releases the filed tasks | [`motif-raddle-recipe`](design-motif-raddle-recipe.md) | motif | Discussion-Burler-Review | neve | 48m<br>16m | shed, loom, burler, arbiter, board |
 
 #### Ready (0)
 
@@ -108,7 +108,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>56m | loom, stencil |
+| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>57m | loom, stencil |
 
 #### Enhancements (3)
 
