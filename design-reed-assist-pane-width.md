@@ -1,6 +1,6 @@
 # Reed gives the Codex assist reviewer pane a fixed width instead of half beside Claude
 
-`reed-assist-pane-width` · Note · bug, reed, codex
+`reed-assist-pane-width` · Task · bug, reed, codex · draft
 
 ## Seen (operator, 2026-11-08)
 

@@ -1,6 +1,6 @@
 # P1 Fewer agent turns, fewer tokens
 
-Rendered 2026-11-08 12:28 UTC; every age below is as of then.
+Rendered 2026-11-08 12:30 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `turn-savings` · Age 6d · Owner `neve`
