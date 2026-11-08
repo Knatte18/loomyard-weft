@@ -50,7 +50,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 2d<br>59m | codex, shuttle |
+| R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 2d<br>1h | codex, shuttle |
 
 #### Features (1)
 
@@ -90,8 +90,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Slack messages to the orch say Slack twice: sender ly:SLACK and a [slack] body prefix**<br>• `loom: code_assist_reviewer_model astra[medium]` | [`slack-forward-prefix`](design-slack-forward-prefix.md) | darn · light | Open-Window | neve | 3h<br>0m | slack |
-| T3 | **Reed gives the Codex assist reviewer pane a fixed width instead of half beside Claude**<br>• The Codex assistant reviewer pane keeps a fixed column width; it should split the width evenly with the Claude reviewer pane<br>• `loom: code_assist_reviewer_model astra[medium]` | [`reed-assist-pane-width`](design-reed-assist-pane-width.md) | darn · light | Code-Burler-Fix | neve | 59m<br>21m | reed, codex |
+| T1 | **Slack messages to the orch say Slack twice: sender ly:SLACK and a [slack] body prefix**<br>• `loom: code_assist_reviewer_model astra[medium]` | [`slack-forward-prefix`](design-slack-forward-prefix.md) | darn · light | Drift-Baseline | neve | 3h<br>0m | slack |
+| T3 | **Reed gives the Codex assist reviewer pane a fixed width instead of half beside Claude**<br>• The Codex assistant reviewer pane keeps a fixed column width; it should split the width evenly with the Claude reviewer pane<br>• `loom: code_assist_reviewer_model astra[medium]` | [`reed-assist-pane-width`](design-reed-assist-pane-width.md) | darn · light | Code-Burler-Fix | neve | 1h<br>21m | reed, codex |
 | T5 | **Arras: one recipe that runs Motif and raddle in a row, with a perch on the split**<br>• Discussion, raddle split and a split perch in one run; the operator only releases the filed tasks | [`motif-raddle-recipe`](design-motif-raddle-recipe.md) | motif | Discussion-Burler-Fix | neve | 53m<br>21m | shed, loom, burler, arbiter, board |
 
 #### Ready (0)
