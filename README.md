@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-08 18:47 UTC; every age below is as of then.
+Rendered 2026-11-08 18:48 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -78,13 +78,19 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Concrete and claimable; only a task can run.
 
-#### Ready (1)
+#### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T2 | **Measure the fabricengine tier 1 time the two test cuts saved** | [`fabric-test-cuts-remeasure`](design-fabric-test-cuts-remeasure.md) | darn · docs | Worktree-Create | neve | 0m<br>0m | fabric, testkit |
+
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Measure the fabricengine tier 1 time the two test cuts saved** | [`fabric-test-cuts-remeasure`](design-fabric-test-cuts-remeasure.md) | darn · docs |  | 0m<br>0m | fabric, testkit |
+_None._
 
 ### Notes (0)
 

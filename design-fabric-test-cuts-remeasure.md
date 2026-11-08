@@ -1,6 +1,6 @@
 # Measure the fabricengine tier 1 time the two test cuts saved
 
-`fabric-test-cuts-remeasure` · Task · research, fabric, testkit
+`fabric-test-cuts-remeasure` · Task · research, fabric, testkit · running · Worktree-Create
 
 ## Seen (orch, 2026-11-08)
 
