@@ -1,66 +1,46 @@
-# Keep test binaries out of lym's pins, and cap a gate run's processes
+# Guard every pinned lym command against launching a test binary
 
-A command lym builds from its own binary path and hands to tmux or another process runs the test binary when the builder runs under `go test`.
-That test binary ignores the lym verb, runs its whole suite, and each tmux session the suite starts can pin the same command again.
-On 2026-11-08 that loop froze the machine twice: hundreds of test binaries, load above 800, memory and swap full.
-`3aaa98cc` closed the one route that did it, reed's Slack lines.
-This change closes the whole class with three independent layers.
+A command that lym pins into tmux or hands to a detached process used to name `os.Executable()`.
+Under `go test` that path is the test binary.
+A test binary given a lym verb such as `slack bar` runs its whole suite, and each tmux session that suite starts runs the same command again.
+On 2026-11-08 this fork bomb froze the development machine twice, with hundreds of `reedengine.test`, `tmux` and `bash` processes.
+An earlier fix covered only reed's Slack lines.
+This change guards the whole class.
 
 ## What changes
 
-- **One lookup of "this lym binary".**
-  `selfexec.LymBinary` resolves the running binary for a command another process runs later, and returns `selfexec.ErrTestBinary` under `go test`.
-  `selfexec.ResolveLymBinary` applies the same refusal to an injectable lookup, so a test's stand-in path still passes while `os.Executable` is refused.
-- **Reed's pins all go through it.**
-  The strand-pane prelude, the detached window command, the session-switch and follow bindings, the button click and its prompt re-entry, both Slack lines and the watchdog spawn.
-  `Engine.executablePath` and the button deps now default to `selfexec.LymBinary`.
-  `slackLineExecutable` is gone; its check now covers every pin.
-- **The other pins and spawns go through it too:**
-  loom's status strand, Go driver spawn, drift capture, raddle's `lym` child and loop spec;
-  orch's runs strand and watcher;
-  batten's loop spec, `loom start` child and detached pass;
-  adopt's check and resume child;
-  fabric's detached push and teardown hold;
-  fabric anchor's `beam start` child; drift's capture child; the front task's land action.
-- **`tmuxkit.Main` refuses a lym verb.**
-  Every package's `TestMain` calls it, and it now returns 2 before any test runs when the binary's first argument is not a flag.
-  A pin that slips past the lookup, in any package, makes the test binary exit at once instead of running its suite.
-  Only the first argument is read, since a later word may be a flag's value.
-  This replaces gitkit's copy of the guard in `HermeticGitEnv` and reedengine's own `TestMain` check.
-  The end-to-end test moves to tmuxkit.
-- **`lym gate test` caps a tier run's processes.**
-  Once per sample period the verb lists every process whose environment carries the run's `LYM_GATE_TEST_PID` entry (`proc.PIDsWithEnv`).
-  A tmux server a test starts keeps that entry in its panes, so processes that left the command's tree still count.
-  Past `runProcessCap` (1024) it SIGKILLs every listed process, and does so again each period until the command ends.
-  The tier fails with a line naming the cap and the way forward, and is never rerun as a resource shortage.
-  Off Linux the cap logs that none applies.
-- **Docs:** `PATTERN-child-processes` and its `PATTERN.md` entry name `selfexec.LymBinary`;
-  `PATTERN-test-isolation` states the `tmuxkit.Main` refusal;
-  `PATTERN-leaf-packages`, the `selfexec`, `reedengine`, `proc` and `gatecli` package docs and the overview row are updated.
+- `internal/selfexec` gains `LymBinary` and `ResolveLymBinary`, the one place that resolves "this lym binary".
+  Under `go test` they return `ErrTestBinary` for the running test binary, and for any path when the test binary's own path does not resolve.
+  `ResolveLymBinary` takes an injectable path lookup, so a test's stand-in path still passes.
+- Every pin or spawn that ran a pinned or detached lym command now resolves through them.
+  The sites are in `reedengine` (pane prelude, window, switch, follow, button and Slack lines, the spawn watchdog), `reedcli`, `loomcli`,
+  `battencli`, `adoptcli`, `boardengine`, `creelcli`, `driftcli`, `fabriccli`, `fabricengine`, `fronttask`, `gatecli`, `ideengine` and `orchcli`.
+  `reedengine`'s private `slackLineExecutable` is removed in favour of the shared helper.
+- `tmuxkit.Main` refuses a test binary started with a positional first argument.
+  It writes the refusal to stderr, removes the run directory, and returns 2.
+  This replaces the guards in `gitkit` (`refuseCLIReexec`) and `reedengine`'s `TestMain`, so every package that calls `tmuxkit.Main` gets it.
+  Only the first argument is read, since a later word may be a flag's value, as in `-test.run Foo`.
+- `lym gate test` caps the processes a tier run may hold.
+  Every process of a run carries the run's enclosing-gate environment marker, and `gatecli` counts them through the new `proc.PIDsWithEnv`, which reads `/proc` on Linux.
+  Past `runProcessCap` (1024) it kills them all with SIGKILL and fails the tier with a line naming `selfexec.LymBinary` as the way forward.
+  A capped run is never rerun as a resource shortage.
+  Other platforms log that no cap applies and run uncapped.
+- `PATTERN.md`, the `pattern/` documents and `docs/overview.md` describe the helper, the `TestMain` guard and the cap.
 
 ## Design decisions
 
-- **The helper lives in `selfexec`, not a new package.**
-  `selfexec` already owns the running binary's path for re-exec and is a leaf every spawning package can import.
-  The name `lymbin` is taken by the testkit that builds `lym`.
-- **One guard in `tmuxkit.Main` rather than one per package.**
-  The board entry asks for a `TestMain` guard and a proving test in every package whose tests reach a pin.
-  `PATTERN-test-isolation`'s enforcement (`cmd/lym/tmuxisolation_test.go`, empty allowlist) already makes every test package call `tmuxkit.Main`.
-  So the guard there covers every package by construction, and one test in tmuxkit proves it,
-  without one subprocess test per package.
-  Every `TestMain` that serves helper roles of its own already dispatches them before calling `tmuxkit.Main`.
-- **Sites left on `os.Executable`:**
-  - Reads of the binary itself: `fabricengine.BinaryLabel`, `statuspane.CurrentBuild`, adopt's running-build read, tender's stale-process match and the VS Code config path.
-  - `hubgeom.DobbyGeometry` and `hubgeom.SlackGeometry`: geometry is built under test in many places, and their spawn sites in `dobbyengine` and `slackengine` already refuse under `go test`.
-  - The resolve-once paths in loom's `goDriverDepsFor` and batten's `wire`: they also feed the on-disk build identity, and a refusal there would fail every wiring test.
-    Their spawns run only in a live driver, and the `tmuxkit.Main` guard backstops them.
-- **The cap is a constant, not a `gate.yaml` key.**
-  Normal tier runs stay far below 1024 marked processes, and the cap exists to stop a runaway, not to tune.
-- **Counting by the environment entry, not the process tree.**
-  The fork bomb ran through a tmux server, which daemonizes out of the tier command's tree, so a tree walk would not see it.
+- The refusal lives in `selfexec` and not in each caller, so a new pin cannot forget it.
+  The injectable form keeps the existing path-lookup parameters of the compose functions, with tests supplying a stand-in path.
+- The guard moved into `tmuxkit.Main` and out of `gitkit.HermeticGitEnv`, because `Main` is the call every test package already makes last.
+  `cmd/lym`'s hermetic guard still scans for the `HermeticGitEnv` token, which is unchanged.
+- The process cap keys on an environment marker and not on the process tree, because tmux server panes leave the run's tree.
+  The cost is a scan of `/proc` once per sample period.
 
 ## To check by hand
 
-- Run `lym gate test --tier 2` for `internal/reedengine`, `internal/loomcli` and `internal/orchcli`.
-  Some tests may have relied on the test binary's path appearing in a pane prelude or binding when `Engine.New`'s default lookup was used.
-- Watch a full gate run's peak count of marked processes (`grep -l LYM_GATE_TEST_PID=<pid> /proc/*/environ | wc -l`) to confirm the cap's headroom on this machine.
+- `os.Executable` is still called directly in `hubgeom`, `fabricengine/stencilcommit.go`, `statuspane`, `loomcli/drivewiring.go`, `tendercli`,
+  `reedcli/watchdog.go` and `selfexec/selfexec.go`.
+  I did not verify that none of these pins a command a tmux job or detached process runs; confirm each is a read-only use, as `selfexec/doc.go` says.
+- The process cap's kill path ran only against fakes in unit tests.
+  Running `lym gate test` against a deliberately looping test on a Linux machine would show it fires and fails the tier before the machine strains.
+  Do this only on a machine you can afford to stress.
