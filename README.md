@@ -72,7 +72,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Second fabricengine test cut, from the coverage study's removable set** | [`fabric-test-cuts-2`](design-fabric-test-cuts-2.md) | darn · solid | Code-Burler-Fix | neve | 50m<br>27m | fabric, testkit |
+| T1 | **Second fabricengine test cut, from the coverage study's removable set** | [`fabric-test-cuts-2`](design-fabric-test-cuts-2.md) | darn · solid | Code-Bouncer | neve | 50m<br>27m | fabric, testkit |
 
 #### Ready (0)
 
@@ -128,7 +128,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **A mechanical way to find redundant tests: package-scoped coverage, a map per package, a check on a diff** | [`redundant-test-finder`](design-redundant-test-finder.md)<br>[Sketch](decision-redundant-test-finder.md) | raddle | Open-Window | neve | 1h<br>0m | testkit, gate |
+| T2 | **A mechanical way to find redundant tests: package-scoped coverage, a map per package, a check on a diff** | [`redundant-test-finder`](design-redundant-test-finder.md)<br>[Sketch](decision-redundant-test-finder.md) | raddle | Raddle-Write | neve | 1h<br>0m | testkit, gate |
 
 #### Ready (0)
 

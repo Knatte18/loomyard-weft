@@ -1,6 +1,6 @@
 # A mechanical way to find redundant tests: package-scoped coverage, a map per package, a check on a diff
 
-`redundant-test-finder` · Task · sketch, testkit, gate · running · Open-Window
+`redundant-test-finder` · Task · sketch, testkit, gate · running · Raddle-Write
 
 Decision record: [Sketch](decision-redundant-test-finder.md)
 
