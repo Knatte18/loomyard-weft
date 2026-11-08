@@ -587,26 +587,6 @@
       "body": "Imported from [issue #87](https://github.com/Knatte18/loomyard/issues/87).\n\n## Seen\n\nIn hub `dop`, the operator has the run's PR-Review reviewer ask the parent orch for a review, and finds it very useful: the orch knows what the run needs and what the operator wants.\nBut at PR time much is too late to change cheaply.\nThe plan is too large to be a good review point for the parent, and the plan is only meant to realize the Discussion decision record.\nAn older LoomYard version, and millhouse today, let the parent review the Discussion record.\n\nExample: tests-tier1 met a scope question (whether to fix EFCoreStore's loss of SimulationResults) in Plan-Burler-Fix, and the orch had to record a parent decision mid-run; reviewing the record would have settled it before the plan was written.\n\n## Expected\n\nA setting, per hub and per task, that makes the run hand its Discussion decision record to the parent orch for review before Plan starts.\nThe orch answers approved or sends findings; findings go back to Discussion as a review round does, and Plan starts only on approval.\nIt complements #86 (the parent asked for review at PR time) and could replace it for most runs.\n\n\n## Issue comment, 2026-11-08\n\nConstraint from the operator: a parent orch is often very busy with coordination (the LoomYard hub's orch especially), which is why the parent review was dropped before. The design should keep the parent's load small: the review is opt-in per task, so a busy orch's hub leaves it off; the orch can hand the review to a fork of itself, which keeps its knowledge of the run but keeps the review out of the orch's main thread; and a deadline lets the run go on to Plan without the parent's review, recording that it did.",
       "created": "2026-11-08T15:09:16Z",
       "revised": "2026-11-08T15:09:16Z"
-    },
-    {
-      "id": 1233,
-      "handle": "F6",
-      "slug": "orch-written-beam-description",
-      "title": "The orch writes a beam PR description under lym instructions; beam describe validates and pushes it",
-      "kind": "note",
-      "labels": [
-        "feature",
-        "landing",
-        "workspaces",
-        "orch"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen (operator, hub `dop`, 2026-11-08, on issue #90)\n\n`lym beam describe` assembles the beam's PR description from the entry and the project record, and owns `summary.md`;\nthe orch can only change the entry's title and brief.\nA generated description cannot follow what the operator wants a reader to see.\n\n## Idea (operator)\n\n- The beam's change description is written by the orch alone, not assembled by `lym beam describe` from the record.\n- lym gives the orch clear instructions for how to write it:\n  lead with the result, what the beam ended up with;\n  keep the member PR list so the change can be followed step by step;\n  leave out the history of decisions made along the way.\n- The orch may change the description freely, as the operator directs, without going through the entry's title and brief.\n- `lym beam describe` (or its successor) validates and records the orch's text, pushes it to the PR and stamps it into the landing record, instead of owning and rewriting the file.\n",
-      "created": "2026-11-08T15:10:19Z",
-      "revised": "2026-11-08T15:10:19Z"
     }
   ],
   "prime_owner": "neve",
