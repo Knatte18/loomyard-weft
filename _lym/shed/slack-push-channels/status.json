@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Baseline",
+  "current_producer": "Parts-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Baseline",
-    "last": "Motif → skipped",
+    "now": "Parts-Write",
+    "last": "Drift-Baseline → skipped",
     "wait": ""
   },
   "history": [
@@ -21,6 +21,13 @@
       "output": "",
       "at": "2026-11-08T09:53:47Z",
       "reason": "the board entry is flagged discussed: its stored decision record is the run's, so the block's Discussion is passed over"
+    },
+    {
+      "producer": "Drift-Baseline",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-08T09:53:50Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
