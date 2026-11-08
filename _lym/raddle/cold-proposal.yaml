@@ -1,0 +1,188 @@
+{
+  "sketch": "redundant-test-finder",
+  "shape": "project",
+  "project": {"slug": "redundancy-check", "title": "Redundant tests found mechanically: a coverage engine, a map per package, a gate report and its review", "type": "feature"},
+  "board_checked": [
+    {"slug": "fabric-test-cuts-2", "revised": "2026-11-08T18:08:30Z"},
+    {"slug": "fabric-test-speed-work", "revised": "2026-11-07T14:15:14Z"},
+    {"slug": "gate-shard-slow-package", "revised": "2026-11-08T17:30:29Z"}
+  ],
+  "parts": [
+    {
+      "slug": "testcover-engine",
+      "title": "internal/testcover: the coverage runner, content block keys and the map record, with testtiming's package-scoped verdict",
+      "type": "feature",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D4"],
+      "packages": [
+        {"path": "internal/testcover", "size": 1300},
+        {"path": "cmd/testtiming", "size": 300},
+        {"path": "cmd/lym", "size": 10},
+        {"path": "internal/lymdirs", "size": 10}
+      ],
+      "contract": {
+        "takes": "cmd/testtiming's runner, profile parsing, containment and greedy pass, spawn scan and keep scan",
+        "delivers": "internal/testcover holding the moved runner, eligibility rules, spawn scan and keep scan, content block keys (D3), the per-package map record written and read through internal/state at a path internal/lymdirs names (D4); cmd/testtiming judging by the package view with a module-wide column, its flags and -pkg splice unchanged; cmd/lym guard tests re-pointed at the moved files",
+        "exports": "the engine's build, run-alone, profile parse, block key, verdict and greedy functions, the spawn and keep scans, and the map record type with its read and write"
+      },
+      "depends_on": [],
+      "open_risks": [],
+      "criteria": [
+        "D1: the same block sets fed to the engine's verdict give the same contained set and removable set whichever caller feeds them.",
+        "D1: a skipped, failed, coverage-free or out-of-process test is never judged, as in today's report.",
+        "D2: given profiles where a test's unique blocks lie only in another package, the tool lists it as a candidate and marks it not contained module-wide.",
+        "D2: a `-pkg` run rewrites only its packages' sections of an existing report.",
+        "D3: a block whose text is unchanged but shifted by lines above it keeps its key; an edited block gets a new key; same-named methods on two receivers get different keys.",
+        "D4: a map written and read back yields the same tests, hashes and block sets; an unknown key in the record is kept, not refused."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "darn/solid with a stored record reads too few runs (2 runs), so no figure; about 1,620 changed lines, most of them moved code"
+    },
+    {
+      "slug": "testmap-verb",
+      "title": "lym gate testmap rebuilds stale coverage maps in the prime parent's worktree",
+      "type": "feature",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D5"],
+      "packages": [
+        {"path": "internal/gatecli", "size": 600},
+        {"path": "internal/gateslot", "size": 80},
+        {"path": "internal/fabricengine", "size": 80},
+        {"path": "internal/gitrepo", "size": 40},
+        {"path": "internal/lymdirs", "size": 10},
+        {"path": "internal/testcover", "size": 120}
+      ],
+      "contract": {
+        "takes": "testcover-engine's runner, block keys and map record",
+        "delivers": "the `lym gate testmap [--max <n>] [<package>...]` cobra verb with staleness, dirty and lock skips, mid-package hash check, timeouts with process-group kill and grace, failed-build maps and the exit record; fabricengine.CodeDirAt and CodeFileAt on the warp checkout; gate config keys test_map_max_age_days, redundancy_build_timeout_min and redundancy_test_timeout_sec",
+        "exports": "fabricengine.CodeDirAt, fabricengine.CodeFileAt, the exit record type and its read, and the per-tier run-alone with timeout that the gate step reuses"
+      },
+      "depends_on": ["testcover-engine"],
+      "open_risks": [],
+      "criteria": [
+        "D5: `lym gate testmap` with no arguments rebuilds only packages with no map, a changed set or content of Go files tracked at HEAD, or a map past the age limit, at most `--max` of them; packages skipped as dirty or locked do not count against `--max`.",
+        "D5: it skips a package with a modified or untracked Go file and one whose lock is held, lists each skipped package with its cause apart from the count the cap left unbuilt, and refuses outside the prime parent's worktree with its way forward.",
+        "D5: as it exits, the verb writes its exit record holding its own process ID and the count of stale packages the cap left unbuilt, zero included.",
+        "D5: a change to a package's own file hashes between its start and the end of its tests discards that package's map, counts against `--max` and reports the package as skipped.\nA HEAD move that leaves them unchanged keeps the map, which records the HEAD read before the package.",
+        "D5: a test past `redundancy_test_timeout_sec` is left out of the map, and the package's other tests are still mapped.",
+        "D5: a package with no test file and one whose coverage build fails each get a map with no tests, the latter naming the failure,\nand the call's exit lists the failure.\nNeither is rebuilt on the next call at the same HEAD while its files are unchanged; the failed one is rebuilt after a HEAD move."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "darn/solid with a stored record reads too few runs (2 runs), so no figure; about 930 changed lines"
+    },
+    {
+      "slug": "testmap-dobby-refresh",
+      "title": "The prime parent's dobby starts lym gate testmap when the prime branch moves",
+      "type": "feature",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D6"],
+      "packages": [
+        {"path": "internal/dobbyengine", "size": 250},
+        {"path": "internal/beamcli", "size": 80},
+        {"path": "internal/runproc", "size": 10}
+      ],
+      "contract": {
+        "takes": "testmap-verb's verb and exit record",
+        "delivers": "a dobby tick step on the prime dobby that records the prime HEAD of its last refresh, starts `lym gate testmap --max <test_map_batch>` through a spawn dep registered as runproc.RoleTestMap under runproc.HubOwner, reads the exit record by process ID, starts none while a live test-map record exists, ends the child on stop through runproc.EndRole; dobby config keys test_map and test_map_batch",
+        "exports": "runproc.RoleTestMap"
+      },
+      "depends_on": ["testmap-verb"],
+      "open_risks": [],
+      "criteria": [
+        "D6: the dobby starts a refresh when the prime HEAD differs from its record, when D5's exit record names the refresh it waited on and a count of stale packages the cap left unbuilt above zero, or on its first tick.\nIt starts none when the prime HEAD is unchanged and the last refresh only skipped packages, none while a live `test-map` record exists, a restarted dobby included, and none when `test_map` is off.\nAt an unchanged prime HEAD it starts none for a refresh that was killed or whose exit record is missing or names another process.",
+        "D6: a dobby stop ends a running refresh through `runproc.EndRole` with `runproc.RoleTestMap` (new)."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "darn/solid with a stored record reads too few runs (2 runs), so no figure; about 340 changed lines"
+    },
+    {
+      "slug": "gate-redundancy-report",
+      "title": "An advisory redundancy report step in lym gate test, judging a diff's new tests against the map",
+      "type": "feature",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D7"],
+      "packages": [
+        {"path": "internal/gatecli", "size": 800},
+        {"path": "internal/gateslot", "size": 150},
+        {"path": "internal/configengine", "size": 30},
+        {"path": "internal/testcover", "size": 120}
+      ],
+      "contract": {
+        "takes": "testcover-engine's engine and map record; testmap-verb's CodeDirAt, CodeFileAt, timeouts and run-alone",
+        "delivers": "the `reports` list on gate keys with its unknown-name refusal and template entries on webster, parent-align, darn-write and code-burler-fix; the step at the lints' site with merge-base test selection, drops, cap, slot, budget, map covers, greedy pass and the report with its file and test hashes; keys redundancy_max_tests and redundancy_budget_min",
+        "exports": "the report reader and the tree match D8 runs on HEAD: D7 step 1 over a revision and the judged packages' file hashes"
+      },
+      "depends_on": ["testmap-verb"],
+      "open_risks": [],
+      "criteria": [
+        "D7: a new test whose blocks are all covered by unchanged map tests is reported contained, naming those tests.",
+        "D7: a test covering a block of an edited function that no map test and no other judged test covers is reported unique.",
+        "D7: a judged test is never its own cover, and a covering map test whose function text changed since the map is not counted.",
+        "D7: two judged tests covering only each other's blocks are never both reported contained.",
+        "D7: a changed test is found by its function text at the merge base, read through `fabricengine.CodeFileAt` (new); a worktree with no parent branch judges nothing and its report says so.\nA test file renamed or moved within its package leaves its unchanged tests untaken, and a deleted test file adds none.",
+        "D7: a `//testtiming:keep` test with its keep reason, a `tier2` test, a test of an undeclared tier, tests past `redundancy_max_tests`, a timed-out test, a test left unrun once `redundancy_budget_min` is spent, and a test that was skipped, failed or covered no block in the step's run are listed as not judged with their reasons.\nOnce the budget is spent no further coverage build starts.",
+        "D7: a package without a map, or whose map records a build failure, is reported as not judged; every judged package's line names its map commit and age,\nand one whose file hashes differ is judged and its line also names the files whose text at the merge base differs from the map.",
+        "D7: a build failure, a failing or timed-out test, an unreadable or corrupt map, an unreadable merge base or a failed `lym` build in the step is a report line and leaves the gate's result as its tiers decided it.\nA failed report write is logged and leaves the result too, and a red tier gives a report that judges nothing.",
+        "D7: a second call on a tree its report matches runs no build and no test, unless the report holds an error line, a package with no map or a failed-build map, or a test past the budget,\nincluding when the diff also changes a `tier2` test.",
+        "D7: an unknown report name in a gate key is refused with the known names.",
+        "D7: a hub base `gate.yaml` that sets `webster` without `reports` loads with the template's `reports: [redundancy]` on it, and one that sets `reports: []` loads with none.",
+        "D7: on a hub whose `scoper` is not `go`, the step judges nothing and its report says so."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "darn/solid with a stored record reads too few runs (2 runs), so no figure; about 1,100 changed lines"
+    },
+    {
+      "slug": "review-reads-redundancy",
+      "title": "Code review reads the gate's redundancy report, and PATTERN-test-speed names the map, verb and step",
+      "type": "feature",
+      "recipe": "darn",
+      "profile": "light",
+      "decisions": ["D8", "D9"],
+      "packages": [
+        {"path": "internal/shedadapters", "size": 60},
+        {"path": "internal/shedrecipe", "size": 60},
+        {"path": "internal/loomcli", "size": 40},
+        {"path": "contracts/stencils/loom", "size": 15},
+        {"path": "pattern", "size": 30}
+      ],
+      "contract": {
+        "takes": "gate-redundancy-report's report reader and HEAD tree match",
+        "delivers": "a Go-filled rubric marker in loom-rubric-code-review, filled through shedadapters.ReadRubric for the Code-Burler-Review and Code-Bouncer call sites with the findings or the no-current-report line; the rubric's test-economy text on contained tests; PATTERN-test-speed's index line and its background's gate and test-economy sections",
+        "exports": "nothing new"
+      },
+      "depends_on": ["gate-redundancy-report"],
+      "open_risks": [],
+      "criteria": [
+        "D8: the marker holds the findings when HEAD's judged packages and changed tests match the report,\nincluding when the diff also changes a `tier2` test and after a commit touching only `_lym/`.\nIt holds the no-report line otherwise, naming the red gate for a report written on a red tier.",
+        "Review: D8's rubric text tells the reviewer to check assertions before filing a fold, delete or keep finding.",
+        "Review: D9's background text states the package-scoped verdict, the map, the verb, the step and their bounds."
+      ],
+      "pattern_changes": ["PATTERN-test-speed"],
+      "expected_cost_usd": 3.25,
+      "cost_line": "darn/light stored-record fit over 10 runs: $2.14 fixed plus $0.39 per 100 lines at about 285 lines (correlation 0.73)"
+    }
+  ],
+  "order_departures": [],
+  "cost": {
+    "expected_usd": null,
+    "line": "five darn parts; four rest on darn/solid with a stored record, which reads too few runs (2 runs), so the total has no figure; only review-reads-redundancy has one, about $3.25 on the darn/light stored-record fit",
+    "next_best": {
+      "split": "one tapestry building D1 to D9, about 4,300 changed lines in one run",
+      "expected_usd": null,
+      "line": "tapestry/solid with a stored record reads too few runs (3 runs), so no figure"
+    },
+    "cells": [
+      {"recipe": "darn", "profile": "solid", "stored_record": true},
+      {"recipe": "darn", "profile": "light", "stored_record": true},
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
