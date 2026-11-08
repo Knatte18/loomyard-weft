@@ -1,0 +1,1 @@
+{"stop_key":{"current_producer":"Run-Shed","history_length":9,"state":"failed"},"settler":"go-rule","action":"restep","outcome":"an interrupted step under the reinvoke policy: re-step","at":"2026-11-08T15:47:47.221946058+01:00"}

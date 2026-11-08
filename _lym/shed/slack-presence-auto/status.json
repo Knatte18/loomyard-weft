@@ -1,8 +1,9 @@
 {
   "current_producer": "Run-Shed",
-  "state": "running",
+  "state": "paused",
   "error": "",
   "pause_requested": false,
+  "pause_reason": "pause requested",
   "activity": {
     "now": "Run-Shed",
     "last": "Run-Shed → bounced to Run-Shed",
@@ -77,6 +78,25 @@
       "outcome": "stuck",
       "output": "child blocked → running at Darn-Write",
       "at": "2026-11-08T14:38:01Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → failed at Darn-Write",
+      "at": "2026-11-08T14:47:49Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "by": "shed",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child failed → running at Darn-Write",
+      "at": "2026-11-08T14:47:50Z",
       "budget_exempt": true,
       "routed_to": "Run-Shed",
       "machine": "neve"
