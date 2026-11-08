@@ -1,6 +1,6 @@
 # Which internal/fabricengine tier 1 tests protect nothing other tests do not: a coverage study
 
-`fabric-test-redundancy` · Task · research, fabric, testkit · running · Open-Window
+`fabric-test-redundancy` · Task · research, fabric, testkit · running · Darn-Write
 
 ## Seen (orch, 2026-11-08)
 
