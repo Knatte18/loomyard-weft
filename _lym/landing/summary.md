@@ -1,45 +1,46 @@
-# Slack: forward a reply when mail waits at turn end, and forward at once
+# Slack: forward every turn's reply, and stop a late or needless wake
 
-An orch's final reply sometimes never reached Slack, and a forward that did could arrive half a minute late.
-This change fixes both, and drops a presence notice that woke the orch for nothing.
+An orch's final reply to an operator's Slack message could be lost, and the next reply could reach Slack about 30 seconds late.
+This change fixes both causes and stops the relay waking an orch that its own forward just woke.
 
-## The reply dropped when mail waits at turn end
+## Why
 
-In a hub, an orch's Stop hook is one merged command (`creelStopHookCommand` in `internal/shuttleengine/claudeengine/settings.go`).
-It ran creel's turn-end delivery first, and when `lym creel hook-read claude` handed out mail, the command exited 0 at once.
-The turn hook, `lym slack hook claude`, ran only on the path that records a turn end, so that turn's reply was never posted to the relay.
-The first reply after the operator writes from Slack always hit this: the message flips the presence to slack, and the relay's `[slack presence]` notice waits behind it at the turn's end.
+The merged creel Stop command in `claudeengine` ran creel's mail delivery first and exited 0 when it handed mail over.
+The turn hook, which forwards the reply to Slack, ran only on the path that recorded a turn end.
+So whenever mail waited at turn end, the reply was never forwarded.
+An operator's Slack message from presence `terminal` always brings a `[slack presence]` notice right behind it,
+so the first reply after switching to Slack was always lost.
 
-The merged command now pipes the hook input to the turn hook first, then delivers creel mail, then records.
-The turn hook's output is still discarded, so it never reaches the hook's output, and a Stop that hands out mail still records nothing.
-`creelStopDelivery` no longer reads the input itself; each Stop command opens with `in=$(cat)`.
+The relay's outbound loop also waited out its floor after a long poll that had already waited that long,
+so mail posted during the wait was read late.
 
-## The late forward
+## What changes
 
-The relay's outbound loop long-polls its creel mailbox for up to sixty seconds.
-After a poll that timed out empty, it waited a further 10, 20, 40, then 60 seconds before polling again, and mail posted during that wait sat unread.
-The new `loopWait.afterEmptyPoll` treats a poll that lasted at least the floor as the wait itself, so the next poll starts at once.
-A poll that comes back empty sooner than the floor still backs off as before, so the loop cannot run hot.
-The five-second wait after a read that found mail, and the backoff after a failure or a rate limit, are unchanged.
-
-## The redundant presence notice
-
-When an operator's Slack message turns the presence to slack, the orch it is forwarded to already knows the operator is in Slack.
-The inbound read now keeps each orch whose forward stood after such a turn, and the wake loop takes that set when it mails the notice.
-A notice of slack leaves those orchs out; every other orch of the hub still gets it, and a notice of terminal goes to every orch as before.
+- `claudeengine/settings.go`: `creelStopHookCommand` now reads the hook input once and runs the turn hook first, through `turnHookStep`.
+  Creel's delivery follows, then the recording.
+  The turn hook sees every turn end, one whose handed-out mail continues the turn included.
+  `creelOpenStopHookCommand` reads its own input, since the shared opening moved out of `creelStopDelivery`.
+  The `doc.go` files and the `Spec.TurnHookCommand` comment state the new behaviour.
+- `slackengine/backoff.go`, `outbound.go`: a long poll that found no mail and lasted the floor or longer is followed by no wait.
+  The next poll starts at once, and the wait drops back to the floor (`afterEmptyPoll`).
+  A shorter empty poll still backs off as before, so a poll that returns early never runs the loop hot.
+- `slackengine/inbound.go`, `relay.go`: the relay remembers each orch it forwarded an operator's message that turned the presence to slack.
+  `noticePresenceChange` leaves those orchs out of the `slack` notice, since the message already woke them.
+  Notices of other presence changes, and to other orchs, are unchanged.
 
 ## Design decisions
 
-- The turn hook runs before creel's delivery rather than after it, so it runs whatever hook-read does, including when it fails.
-- A forward that failed and is retried does not count, so the orch gets the notice as well as the message, not neither.
-- The set of orchs is cleared at every wake, whatever the presence, so a stale entry cannot suppress a later notice.
+- The turn hook runs before creel's delivery rather than after it.
+  Delivery exits the shell on success, so any step placed after it would be skipped on exactly the path that lost the reply.
+- The turn hook runs in a subshell with its output and errors discarded, so running it first cannot change what the Stop hook prints or exits with.
+- A message whose post failed keeps its "turned the presence" mark in `awayPending` until a retry posts it.
+  The retry finds the presence already slack, so without the mark the notice skip would be lost.
+  A message that posts nothing (empty, over the body limit) drops the mark.
 
-## Tests
+## To check by hand
 
-- `TestCreelStopHook_RecordsATurnEndOnlyWithoutABlock` runs the command under `sh` with a stub `lym`.
-  New rows check that the turn hook gets the payload when mail is handed out and when the turn ends.
-- `TestBuildSettings_TurnHookCommand` pins the new order of the merged command.
-- `TestOutboundRead` adds a case where an empty poll lasting its timeout returns no wait.
-  The existing backoff case covers a poll that returns empty at once.
-- `TestRunRelay` adds a case where an operator's message turns the presence to slack.
-  It checks that only the beam's orch gets the notice, not the orch the message went to.
+- Presence-notice skip guards are untested (class design, severity MEDIUM, `internal/slackengine/inbound.go` and `relay.go`).
+  The skip itself and the `awayPending` retry path have tests, but the review left the guards around them open.
+- Not run: a live Slack session.
+  Send a Slack message to an orch while presence is `terminal` and check that the reply reaches Slack, no presence notice wakes the orch,
+  and the next orch reply is read by the relay at once.
