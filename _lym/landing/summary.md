@@ -1,25 +1,38 @@
-# Reed keeps a group window's panes even through a resize
+# reedengine: keep a group window's panes equal after a resize
 
-A window group's shared window, such as a Code-Review round's chair beside its Codex assistant reviewer, was laid out evenly only when a pane joined or left it.
-A later terminal resize was left to tmux's own resize of the layout.
-On Linux that shrank the Claude chair's pane while the Codex pane kept its old width, so the two panes no longer shared the window evenly.
+When two strands of one group share a window, such as a Claude reviewer and a Codex assist reviewer, reed lays the window out evenly.
+After a resize of the terminal window, tmux's own layout resize could leave one pane at its old width while the other took the whole change.
+The Codex pane then kept its width and the Claude pane shrank.
 
-Every even layout of a shared window now also pins the window's `window-resized` hook to issue the same layout again.
-tmux runs the hook after its own resize, against the window that fired it, so the window's panes return to equal shares on every grow or shrink.
-That covers both the layout after a pane joins or opens the window (`createOwnWindowPaneLocked`) and the layout after a strand leaves it (`relayoutSharedWindowsLocked`).
-The hook is `if-shell -F '#{?window_zoomed_flag,0,1}' 'select-layout <layout>'`, so a zoomed window stays zoomed.
-Dragging the border between the panes resizes no window, so a split the operator sets by hand stays until the next resize.
+Reed now pins a `window-resized` hook on each shared group window.
+The hook issues the same even layout again after every resize, so each pane keeps an equal share in the `window_split` direction.
 
 ## Design decisions
 
-- The fix is in reed's layout handling, not in Codex's launch: the operator saw the pane border itself stay put, and `codexengine` keeps `--no-alt-screen`, as the decision record's added entry rules.
-- The hook is window-scoped and takes no `-t` in its command, so it lays out only the window that fired it and never another window.
-  It replaces the window's earlier entry, so each layout leaves one entry naming the current `window_split` direction.
-- The shell window's `window-resized` unpin is unchanged: it clears the shell window's own hook, and a group window's hook is a separate window option.
-- psmux lacks `set-hook`, so on Windows no hook is pinned and a resize keeps whatever split tmux's own resize gives, as before.
-  A failed pin is logged at Warn and never fails the launch or the removal.
+- The hook is set by `pinEvenLayoutOnResizeLocked` in `internal/reedengine/ownwindow.go`.
+  It runs wherever reed lays out a shared window: after a pane joins or opens the window (`createOwnWindowPaneLocked`), and after a strand leaves it (`relayoutSharedWindowsLocked`).
+- The hook replaces the window's earlier one, so each window carries a single entry naming the current layout.
+  After a leave under a changed `window_split`, the hook follows the new direction.
+- The hook skips a zoomed window (`window_zoomed_flag`), since a layout would unzoom it.
+- psmux lacks `set-hook`, so on Windows no hook is pinned and a resize keeps whatever split tmux gives.
+  `set-hook` stays out of `requiredSubcommands`, so the capability probe is unchanged.
+  A failure to set the hook is logged and never fails the step.
+- `windowResizedHookName` is shared with the shell window's unpin code.
+  The shell window is unaffected, since reed still arranges no panes there.
+- `codexengine`'s `--no-alt-screen` is untouched.
+- `internal/reedengine/doc.go` records the new hook.
 
 ## Tests
 
-`TestOwnWindow_RealTmux` gains `ResizeLaysTheSharedWindowOutEvenlyAgain`.
-It opens a group of two, narrows one pane, grows the window and waits until both pane widths are within one column of each other.
+`TestOwnWindow_RealTmux` gains subtests that run against real tmux and are left out on Windows:
+
+- A resized shared window gets equal pane widths again.
+- A resize leaves a zoomed shared window zoomed.
+- The hook is pinned again after a strand leaves, so a resize keeps the `height` split.
+
+## To check by hand
+
+- `os-bound-subtest-registered-on-windows` (`internal/reedengine/ownwindow_integration_test.go`): confirm the resize subtests are not registered on Windows.
+  They are guarded by `runtime.GOOS != "windows"`, but the Windows build was not run.
+- `resize-hook-zoom-skip-untested` (`internal/reedengine/ownwindow_integration_test.go`): confirm `ResizeLeavesAZoomedSharedWindowZoomed` fails without the `window_zoomed_flag` check in `evenLayoutResizeHook`.
+- Resize a real terminal with a Claude reviewer and a Codex assist reviewer side by side, and confirm both panes scale together.
