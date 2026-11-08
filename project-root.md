@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (1)
+## Tasks (2)
 
 Concrete and claimable; only a task can run.
 
@@ -26,7 +26,15 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (22)
+### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | `draft` **beam describe: drop the project-decision log from the beam PR description** | [`beam-describe-no-decision-log`](design-beam-describe-no-decision-log.md) | darn · light |  | 0m<br>0m | landing, workspaces |
+
+## Notes (21)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -49,13 +57,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B1 |  | **A test binary pinned as a tmux job re-runs its own suite and fork-bombs the machine**<br>• Guard every command lym pins from os.Executable so a test binary is never launched by tmux | [`test-binary-fork-guard`](design-test-binary-fork-guard.md) | 18m<br>18m | reed, gate, testkit |
 | B2 |  | **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | 0m<br>0m | shed, friction |
 
-### Enhancements (4)
+### Enhancements (3)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 21h<br>21h | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 1h<br>1h | shed, loom, darn |
-| E3 |  | **beam describe: drop the project-decision log from the beam PR description** | [`beam-describe-no-decision-log`](design-beam-describe-no-decision-log.md) | 0m<br>0m | landing, workspaces |
 | E9 |  | **An interactive agent idle for a set time gets its session compacted**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 8d<br>4d | shed, shuttle, batten |
 
 ### Features (14)
