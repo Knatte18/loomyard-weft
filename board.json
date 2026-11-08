@@ -496,6 +496,27 @@
       "body": "## Seen (orch, 2026-11-08)\n\nNeve froze twice on 2026-11-08, at 14:37 and 15:40, and needed a hard restart each time.\nThe journal's memory samples show a fork bomb of `reedengine.test`, `tmux` and `bash` processes: from 125 to 537 test processes in four minutes, load above 800, memory and swap full.\nThe cause was in the running task `slack-presence-auto` (commit `4aa372a7`): a reed status job built from the running binary's own path (`composeSlackStateCommand`, `internal/reedengine/panebin.go`).\nUnder `go test` that path is the test binary, so each tmux session a test made ran the test binary again, which ran the suite and made more sessions.\nThat run carries a parent decision to fix its own code.\n\n## Idea\n\nGuard against the whole class, not only this job:\n\n- Every package whose code pins a command built from `os.Executable` into tmux (status jobs, click bindings, hooks) gets a `TestMain` that exits at once when the test binary starts with arguments that are not test flags.\n- Or one shared helper resolves \"this binary\" and refuses to return a test binary's path, so production code can never pin one.\n- The gate could also cap the processes a test run may spawn, so a loop fails the gate instead of freezing the machine.\n",
       "created": "2026-11-08T14:51:17Z",
       "revised": "2026-11-08T14:51:17Z"
+    },
+    {
+      "id": 1229,
+      "handle": "B2",
+      "slug": "loop-exit-not-recorded",
+      "title": "A loop that ends without an envelope records no exit status, so its halt cannot be explained",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shed",
+        "friction"
+      ],
+      "issues": [
+        88
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #88](https://github.com/Knatte18/loomyard/issues/88).\n\n## What happened\n\nA `lym shed step ... --until-stop` run halted as `failed` with anomaly `interrupted-stop` at step Darn-Write, the third step to run after Preflight and Record-Write had completed.\nThe halt note reads `loop-exited: loop \u003cid\u003e ended without an envelope` and `loop exit: not recorded`.\nThe only output is the loop log `.lym/shed/\u003crun\u003e/steps/loop.log`, which holds the envelopes of the earlier steps and nothing about Darn-Write.\nThe history held five entries (Preflight, Record-Write, Drift-Baseline, Drift-Await, Drift-Expect) while the loop log carried envelopes for only the first two, so the log and the history disagree.\n\n## Why it is abnormal\n\nThe loop ended with no envelope and no recorded exit code or signal, so neither the operator nor the reflection agent can tell whether the process crashed, was killed, or exited cleanly without emitting an envelope.\nThe halt note names `loop.trace_copy` and `loop.stderr_path` as the way forward, but the note's own `trace_file` points at `loop.log` rather than a per-step trace, so the diagnostic trail is thin.\n\n## What to do\n\nRecord the loop's exit status (code or signal) when the loop ends without an envelope.\nMake the halt note's `trace_file` point at the trace of the interrupted step, and include the `loop.stderr_path` content or location in the note.\nCheck why the loop log lacks envelopes for the Drift-* steps that the history lists.\n\nProvenance: task slug `darn-writer-anatomy`; notes: loom-halt.md",
+      "created": "2026-11-08T15:09:03Z",
+      "revised": "2026-11-08T15:09:03Z"
     }
   ],
   "prime_owner": "neve",
