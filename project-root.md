@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-08 08:31 UTC; every age below is as of then.
+Rendered 2026-11-08 08:32 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -43,7 +43,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 15h<br>15h | heddle |
-| E2 |  | **Batcher groups cards by the dependency graph, not only contiguous runs of card order** | [`batcher-dag-order`](design-batcher-dag-order.md) | 4m<br>4m | webster |
+| E2 |  | **Batcher groups cards by the dependency graph, not only contiguous runs of card order** | [`batcher-dag-order`](design-batcher-dag-order.md) | 5m<br>5m | webster |
 | E7 |  | **Each part agent plans and builds its own part, instead of joining the parts into one plan** | [`parts-plan-and-build`](design-parts-plan-and-build.md) | 5d<br>2d | loom |
 | E9 |  | **An interactive agent idle for a set time gets its session compacted**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 7d<br>4d | shed, shuttle, batten |
 
@@ -62,11 +62,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>2d | burler, shed, orch, quarry, report |
 | F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 3d<br>20h | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 3d<br>3d | batten, board, fabric, workspaces |
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T2 | **Gate go test runs fill the Go cache with test logs, hundreds of GB a day** | [`go-test-cache-disk`](design-go-test-cache-disk.md) | 22m<br>20m | gate |
