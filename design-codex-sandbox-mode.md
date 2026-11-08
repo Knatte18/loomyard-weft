@@ -1,6 +1,6 @@
 # Codex engine: the forced workspace-write sandbox fails where bubblewrap cannot create user namespaces
 
-`codex-sandbox-mode` · Task · bug, codex, shuttle, preflight · running · Open-Window
+`codex-sandbox-mode` · Task · bug, codex, shuttle, preflight · running · Drift-Await
 
 Imported from [issue #83](https://github.com/Knatte18/loomyard/issues/83).
 
