@@ -56,7 +56,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Codex engine: the forced workspace-write sandbox fails where bubblewrap cannot create user namespaces** | [`codex-sandbox-mode`](design-codex-sandbox-mode.md) | darn · light | Drift-Await | neve | 6m<br>0m | codex, shuttle, preflight |
+| T6 | **Codex engine: the forced workspace-write sandbox fails where bubblewrap cannot create user namespaces** | [`codex-sandbox-mode`](design-codex-sandbox-mode.md) | darn · light | Darn-Write | neve | 6m<br>0m | codex, shuttle, preflight |
 
 ### Ready (0)
 
