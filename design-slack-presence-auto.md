@@ -1,6 +1,6 @@
 # Slack in reed: a connection toggle and a presence toggle, presence per machine and switching by itself
 
-`slack-presence-auto` · Task · feature, reed, shuttle, slack · running · Drift-Recheck
+`slack-presence-auto` · Task · feature, reed, shuttle, slack · running · Describe
 
 ## Seen
 
