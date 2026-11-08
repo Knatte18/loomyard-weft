@@ -391,10 +391,10 @@
     },
     {
       "id": 1214,
-      "handle": "E3",
+      "handle": "T1",
       "slug": "slack-forward-prefix",
       "title": "Slack messages to the orch say Slack twice: sender ly:SLACK and a [slack] body prefix",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "slack"
@@ -404,6 +404,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-11-08)\n\nA Slack message reaches the orch as `[creel] #1033 from \"ly:SLACK\": [slack] OK. ...`: the sender `ly:SLACK` already says it came from Slack, and the body opens with `[slack] ` again (`forwardPrefix` in `internal/slackengine/inbound.go`).\n\n## Idea\n\nDrop the `[slack] ` body prefix, or keep it only where the sender does not show, once checked that no reader keys on it.\nBuilt after the Slack relay rebuild `slack-push-channels` lands, since that task rewrites inbound routing in the same package and the operator holds Slack work until then.\n",
+      "status": "draft",
       "created": "2026-11-08T08:58:28Z",
       "revised": "2026-11-08T10:29:11Z"
     },
