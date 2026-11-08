@@ -72,7 +72,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Cut and fold fabricengine tier 1 tests the coverage study found redundant** | [`fabric-test-cuts`](design-fabric-test-cuts.md) | darn · solid | Code-Bouncer | neve | 23m<br>22m | fabric, testkit |
+| T1 | **Cut and fold fabricengine tier 1 tests the coverage study found redundant** | [`fabric-test-cuts`](design-fabric-test-cuts.md) | darn · solid | Code-Bouncer | neve | 24m<br>22m | fabric, testkit |
 
 #### Ready (0)
 
@@ -129,7 +129,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **The sampler carries drift rows, off by default and switched on per task** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | darn · solid | Finalize | neve | 5d<br>22m | drift, shed, loom |
-| T3 | **A mechanical way to find redundant tests: package-scoped coverage, a map per package, a check on a diff** | [`redundant-test-finder`](design-redundant-test-finder.md) | motif | Discussion-Write | neve | 16m<br>9m | testkit, gate |
+| T3 | **A mechanical way to find redundant tests: package-scoped coverage, a map per package, a check on a diff** | [`redundant-test-finder`](design-redundant-test-finder.md) | motif | Discussion-Bouncer | neve | 16m<br>10m | testkit, gate |
 
 #### Ready (0)
 
