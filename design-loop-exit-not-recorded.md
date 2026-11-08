@@ -23,3 +23,24 @@ Make the halt note's `trace_file` point at the trace of the interrupted step, an
 Check why the loop log lacks envelopes for the Drift-* steps that the history lists.
 
 Provenance: task slug `darn-writer-anatomy`; notes: loom-halt.md
+
+## From issue #89
+
+Imported from [issue #89](https://github.com/Knatte18/loomyard/issues/89).
+
+**What happened**
+A darn run reached its last step, Friction-Reflect, after Preflight through Finalize all completed.
+The loom halted as `failed` with anomaly `interrupted-stop`: `loop-exited: loop ... ended without an envelope`.
+The halt note reports `loop exit: not recorded`, and the status error is `shedverbs: step Friction-Reflect interrupted (loop-exited)`.
+The only loop output captured was the earlier steps' JSON envelope lines from `.lym/shed/<run>/steps/loop.log`; nothing explains why the loop ended.
+
+**Why it is abnormal**
+The loop produced no envelope and no exit status, so the halt cannot be told apart from a crash, a kill, or a normal end of the reflection session.
+A run whose every substantive step is done fails at its final bookkeeping step with no recorded cause.
+
+**What to do**
+Record the loop's exit status (or signal) when a loop ends without an envelope, and include it in the halt note.
+Check whether a Friction-Reflect session that ends normally, or is closed after filing, can be reported as an interrupted loop exit.
+If it can, treat a reflection step ending after its report is written as done rather than `failed`.
+
+Provenance: task slug darn-writer-anatomy; notes: loom-halt-2.md
