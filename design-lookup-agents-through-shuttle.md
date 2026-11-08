@@ -35,7 +35,7 @@ So the gain a lookup agent on another engine can add is small against what the C
 ## Built since (tidy, 2026-11-05)
 
 Task `discussion-explore-agents-first` (`3085f451`) changed the Discussion-Write stencil: the writer now opens Step 2 with one batch of explore subagents on `subagent_model`, sent together through the Agent tool, before it reads code itself.
-Both writer roles now delegate early to Claude subagents, so the gain left for a lookup agent on another engine is smaller still; note `writer-lookups-remeasure` re-measures it.
+Both writer roles now delegate early to Claude subagents, so the gain left for a lookup agent on another engine is smaller still.
 
 ## Built since (tidy, 2026-11-07)
 
@@ -43,6 +43,14 @@ Task `agent-skills-and-effort` (`e9895522`) moved every role's skill list and ef
 A launch whose model spec names no effort now gets an explicit one from its `efforts` table, so the `effort: medium` the registry gives the Codex aliases applies only where the spec and `agents.yaml` name none.
 A shuttle-spawned lookup agent would take its skills by role from the `skills` key.
 Every Claude session's system prompt now tells it which `effort` each Agent-tool subagent call takes, by model, and to name its own fitting skills in the brief.
+
+## Measured since (tidy, 2026-11-08)
+
+Task `writer-cost-remeasure` (`5c7a821a`, `docs/research/loom/writer-cost-remeasure-2026-11-08/report.md`) re-measured the writers' lookups on the five tapestry runs landed after `3085f451`, from their transcripts, with no agent run.
+- All 3 Discussion-Write sessions now send one batch of lookup subagents at turn 6 or 7, and 4 of 5 Plan-Write sessions send theirs by turn 12.
+- The lookups do not lower the session cost: Discussion is level at $3.05 against $3.06, as the subagents cost $0.80 and the carry saved is $0.53.
+- The most the lookup context kept out of the writers could be worth is $5.95 of $46.94 over the 8 sessions.
+So the Claude subagent path is in wide use and the gain a lookup agent on another engine could add stays small.
 
 ## Open
 
