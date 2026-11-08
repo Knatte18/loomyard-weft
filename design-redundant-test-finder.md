@@ -20,6 +20,14 @@ The study also showed the limit of the method: several contained tests guard arc
 A mechanical way to find redundant tests, so they stop piling up, at a cost the gates can carry.
 Discussion settles the design and its stages; the parts below are the orch's proposal, to be weighed, cut or reordered.
 
+## Decision after the Motif (operator, 2026-11-08): D6's trigger
+
+This replaces D6's trigger in the decision record; the rest of D6 stands.
+The prime parent's dobby does not refresh maps on every prime HEAD move: rebuilding a large package such as `internal/fabricengine` takes minutes and holds a gate slot that runs need.
+It refreshes periodically, the way it starts the board tidy: after every `test_map_every` landings, a dobby config key beside `board_tidy_every`, where 0 never refreshes.
+A refresh still runs `lym gate testmap --max <test_map_batch>` on the packages stale at that moment, and the leftovers the cap left unbuilt wait for the next refresh.
+The `test_map` on/off key is dropped: `test_map_every: 0` turns the refresh off.
+
 ## Proposed parts
 
 1. **Tool scope.** `cmd/testtiming -redundancy` scopes coverage to the package under test, as the study did, and reports the contained tests and the greedy removable set per package.
