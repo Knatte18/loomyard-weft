@@ -1,0 +1,145 @@
+diff --git a/internal/hubgeom/buttons.go b/internal/hubgeom/buttons.go
+index c475f148..c1586dae 100644
+--- a/internal/hubgeom/buttons.go
++++ b/internal/hubgeom/buttons.go
+@@ -8,6 +8,7 @@ import (
+ 	"fmt"
+ 	"os"
+ 
++	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/desktophook"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+@@ -16,19 +17,18 @@ import (
+ )
+ 
+ // buttonContext returns the function reed calls, at boot and attach only, to learn l's button context.
+-// The place is the prime's when prime is set.
+-// Otherwise it is the beam's when the pair's origin record exists and carries the beam mark, and the task's when not.
++// The place is the prime's when prime is set, the beam's when the pair is a beam, and the task's otherwise.
+ // A failed desktop load is logged and leaves the machine's buttons empty, so the session's own buttons still render.
+ func buttonContext(l *lymcwd.Location, prime bool) func() (reedengine.ButtonContext, error) {
+ 	return func() (reedengine.ButtonContext, error) {
+ 		place := reedengine.ButtonPlacePrime
+ 		if !prime {
+-			origin, found, err := fabricengine.ReadOriginFor(l, l.WorktreeName)
++			beam, err := pairIsBeam(l)
+ 			if err != nil {
+-				return reedengine.ButtonContext{}, fmt.Errorf("hubgeom: read origin record for %q: %w", l.WorktreeName, err)
++				return reedengine.ButtonContext{}, err
+ 			}
+ 			place = reedengine.ButtonPlaceTask
+-			if found && origin.Beam {
++			if beam {
+ 				place = reedengine.ButtonPlaceBeam
+ 			}
+ 		}
+@@ -50,6 +50,32 @@ func buttonContext(l *lymcwd.Location, prime bool) func() (reedengine.ButtonCont
+ 	}
+ }
+ 
++// pairIsBeam reports whether l's pair is a beam.
++// It is when the pair's origin record carries the beam mark.
++// It is also when the local board's entry of the pair's slug is a project with the beam flag.
++// The board flag is read because a beam's pair is made without the mark and its pawl run marks it later.
++// A session booted in between still reads as the beam.
++// A read error from the record or the board is returned.
++func pairIsBeam(l *lymcwd.Location) (bool, error) {
++	origin, found, err := fabricengine.ReadOriginFor(l, l.WorktreeName)
++	if err != nil {
++		return false, fmt.Errorf("hubgeom: read origin record for %q: %w", l.WorktreeName, err)
++	}
++	if found && origin.Beam {
++		return true, nil
++	}
++	tasks, err := boardengine.ReadTasks(fabricengine.BoardDir(l.HubPath))
++	if err != nil {
++		return false, fmt.Errorf("hubgeom: read the board for the beam flag of %q: %w", l.WorktreeName, err)
++	}
++	for _, task := range tasks {
++		if task.Slug == l.WorktreeName {
++			return task.Kind == boardengine.KindProject && task.Beam, nil
++		}
++	}
++	return false, nil
++}
++
+ // buttonBeam returns the function reed calls to resolve the beam directory for a session of the given place.
+ // It is called only when a button's text names {beam}.
+ // The prime and a beam session are their own beam.
+diff --git a/internal/hubgeom/doc.go b/internal/hubgeom/doc.go
+index 00e5b3b7..c0e11bb3 100644
+--- a/internal/hubgeom/doc.go
++++ b/internal/hubgeom/doc.go
+@@ -80,6 +80,9 @@
+ //
+ // ReedGeometry also tells reed a lazy button-context closure (buttons.go).
+ // It carries the place, the placeholder values and desktop's machine buttons.
++// A pair's place is the beam's when its origin record carries the beam mark.
++// It is also the beam's when its board entry is a project with the beam flag.
++// So a beam reads as one before its pawl run marks the pair.
+ // It also carries a {beam} resolver that reads the parent through ParentOf over the prime's location only when called.
+ //
+ // Standalone CLIs do not call hubgeom:
+diff --git a/internal/hubgeom/hubgeom_test.go b/internal/hubgeom/hubgeom_test.go
+index 1d48f181..39bee52b 100644
+--- a/internal/hubgeom/hubgeom_test.go
++++ b/internal/hubgeom/hubgeom_test.go
+@@ -5,6 +5,7 @@
+ package hubgeom
+ 
+ import (
++	"fmt"
+ 	"os"
+ 	"path/filepath"
+ 	"strings"
+@@ -149,30 +150,44 @@ func TestReedGeometry(t *testing.T) {
+ }
+ 
+ // TestReedGeometry_ButtonContext pins how the button-context teller reads the place and the machine's buttons.
+-// The place comes from the pair's origin record, and the buttons come from the desktop machine layer.
++// The place comes from the pair's origin record and its board entry, and the buttons come from the desktop machine layer.
+ func TestReedGeometry_ButtonContext(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
++	// boardWith returns a board file holding the one entry of the given slug with the given kind and beam flag.
++	boardWith := func(slug, kind string, beam bool) string {
++		return fmt.Sprintf(`{"version":1,"entries":[{"id":0,"slug":%q,"title":"Child","kind":%q,"labels":["bug"],"beam":%t}]}`, slug, kind, beam)
++	}
+ 	tests := []struct {
+ 		name      string
+ 		record    string
++		board     string
+ 		wantPlace reedengine.ButtonPlace
+ 		wantErr   bool
+ 	}{
+-		{"BeamMarkReadsBeam", `{"parent_branch":"main","beam":true}`, reedengine.ButtonPlaceBeam, false},
+-		{"NoBeamMarkReadsTask", `{"parent_branch":"main"}`, reedengine.ButtonPlaceTask, false},
+-		{"UnparseableRecordIsAnError", `{`, "", true},
++		{"BeamMarkReadsBeam", `{"parent_branch":"main","beam":true}`, "", reedengine.ButtonPlaceBeam, false},
++		{"NoBeamMarkReadsTask", `{"parent_branch":"main"}`, "", reedengine.ButtonPlaceTask, false},
++		{"BoardBeamFlagReadsBeamBeforeTheMark", `{"parent_branch":"main"}`, boardWith("child-task", "project", true), reedengine.ButtonPlaceBeam, false},
++		{"BoardProjectWithoutBeamFlagReadsTask", `{"parent_branch":"main"}`, boardWith("child-task", "project", false), reedengine.ButtonPlaceTask, false},
++		// Only a hand-edited board holds a beam flag on a non-project entry; the row pins the kind check against it.
++		{"BoardNonProjectWithBeamFlagReadsTask", `{"parent_branch":"main"}`, boardWith("child-task", "task", true), reedengine.ButtonPlaceTask, false},
++		{"BoardBeamOfAnotherSlugReadsTask", `{"parent_branch":"main"}`, boardWith("other-beam", "project", true), reedengine.ButtonPlaceTask, false},
++		{"UnparseableRecordIsAnError", `{`, "", "", true},
++		{"UnparseableBoardIsAnError", `{"parent_branch":"main"}`, `{`, "", true},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			l := hubWithOrigin(t, tt.record)
++			if tt.board != "" {
++				writeFile(t, filepath.Join(fabricengine.BoardDir(l.HubPath), "board.json"), tt.board)
++			}
+ 
+ 			buttons, err := reedGeometry(l, false).Buttons()
+ 			if tt.wantErr {
+ 				if err == nil {
+-					t.Fatal("Buttons() error = nil; want the origin read error")
++					t.Fatal("Buttons() error = nil; want the read error")
+ 				}
+ 				return
+ 			}
