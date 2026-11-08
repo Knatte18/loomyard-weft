@@ -2,8 +2,6 @@
 
 `slack-stop-hook-drops-reply` · Task · bug, slack, claude, creel · running · Darn-Write
 
-Depends on: [`test-binary-fork-guard`](design-test-binary-fork-guard.md)
-
 ## Seen (orch, 2026-11-08)
 
 The orch's final reply to an operator message from Slack never reached Slack; the reply to the turn after it did, about 30 seconds late.

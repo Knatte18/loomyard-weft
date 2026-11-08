@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-08 16:28 UTC; every age below is as of then.
+Rendered 2026-11-08 16:29 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -120,8 +120,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Slack: a reply is not forwarded when mail waits at turn end, and a forward can reach Slack late** | [`slack-stop-hook-drops-reply`](design-slack-stop-hook-drops-reply.md) | darn · light | Darn-Write | neve | 39m<br>27m | slack, claude, creel |
-| T3 | **Which internal/fabricengine tier 1 tests protect nothing other tests do not: a coverage study** | [`fabric-test-redundancy`](design-fabric-test-redundancy.md) | darn · docs | Darn-Write | neve | 7m<br>6m | fabric, testkit |
+| T2 | **Slack: a reply is not forwarded when mail waits at turn end, and a forward can reach Slack late** | [`slack-stop-hook-drops-reply`](design-slack-stop-hook-drops-reply.md) | darn · light | Darn-Write | neve | 40m<br>28m | slack, claude, creel |
+| T3 | **Which internal/fabricengine tier 1 tests protect nothing other tests do not: a coverage study** | [`fabric-test-redundancy`](design-fabric-test-redundancy.md) | darn · docs | Darn-Write | neve | 8m<br>7m | fabric, testkit |
 | T9 | **PR-Review asks the parent orch for a review on its own, behind a hub and task setting** | [`dobby-pr-open-notice`](design-dobby-pr-open-notice.md) | darn · light | Darn-Write | neve | 1h<br>1m | loom, burler, orch, config |
 
 #### Ready (0)
@@ -152,7 +152,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 23h<br>23h | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 3h<br>3h | shed, loom, darn |
-| E3 |  | **lym gate test runs a slow package as several processes, each taking a share of its tests** | [`gate-shard-slow-package`](design-gate-shard-slow-package.md) | 7m<br>7m | gate |
+| E3 |  | **lym gate test runs a slow package as several processes, each taking a share of its tests** | [`gate-shard-slow-package`](design-gate-shard-slow-package.md) | 8m<br>8m | gate |
 | E9 |  | **An interactive agent idle for a set time gets its session compacted**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 8d<br>5d | shed, shuttle, batten |
 
 #### Features (13)
@@ -172,11 +172,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>2d | burler, shed, orch, quarry, report |
 | F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 3d<br>1d | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 3d<br>3d | batten, board, fabric, workspaces |
-
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T1 | **A test binary pinned as a tmux job re-runs its own suite and fork-bombs the machine**<br>• Guard every command lym pins from os.Executable so a test binary is never launched by tmux | [`test-binary-fork-guard`](design-test-binary-fork-guard.md) | 1h<br>48m | reed, gate, testkit |

@@ -432,29 +432,6 @@
       "revised": "2026-11-08T14:40:16Z"
     },
     {
-      "id": 1228,
-      "handle": "T1",
-      "slug": "test-binary-fork-guard",
-      "title": "A test binary pinned as a tmux job re-runs its own suite and fork-bombs the machine",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "reed",
-        "gate",
-        "testkit"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Guard every command lym pins from os.Executable so a test binary is never launched by tmux",
-      "body": "## Seen (orch, 2026-11-08)\n\nNeve froze twice on 2026-11-08, at 14:37 and 15:40, and needed a hard restart each time.\nThe journal's memory samples show a fork bomb of `reedengine.test`, `tmux` and `bash` processes: from 125 to 537 test processes in four minutes, load above 800, memory and swap full.\nThe cause was a reed status job built from the running binary's own path (`composeSlackStateCommand`, `internal/reedengine/panebin.go`) in the Slack toggles change.\nUnder `go test` that path is the test binary, so each tmux session a test made ran the test binary again, which ran the suite and made more sessions.\n\n## Fixed already (`3aaa98cc`)\n\n- `slackLineExecutable` refuses the running test binary, so the Slack state job and toggle click are pinned only for a real `lym`.\n- `reedengine`'s `TestMain` exits 2 on any positional argument (`testmain_guard_test.go`).\n- The `claudeengine` hook commands name `lym` through `PATH`.\n\n## Change (operator, 2026-11-08)\n\nGuard the whole class across lym, not only reed's Slack lines:\n\n1. Audit every place that pins a command built from `os.Executable` (or a stand-in such as `executablePath`) into tmux or another process that runs it unattended: status jobs, key and mouse bindings, hooks, watchdogs.\n   Packages to read include `reedengine`, `reedcli`, `loomcli`, `battencli` and `adoptcli`; grep for the rest.\n   Fix each one that could run a test binary.\n2. One shared helper resolves \"this lym binary\" and never returns a test binary's path; every such pin uses it.\n3. Every package whose tests reach such a pin gets the `TestMain` guard that exits at once on non-test arguments, with a test proving it, as `reedengine` has.\n4. `lym gate test` caps the processes a test run may spawn, so a runaway loop fails the gate instead of freezing the machine.\n",
-      "status": "done",
-      "created": "2026-11-08T14:51:17Z",
-      "revised": "2026-11-08T15:40:22Z",
-      "profile": "solid"
-    },
-    {
       "id": 1229,
       "handle": "B2",
       "slug": "loop-exit-not-recorded",
@@ -538,9 +515,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "test-binary-fork-guard"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Seen (orch, 2026-11-08)\n\nThe orch's final reply to an operator message from Slack never reached Slack; the reply to the turn after it did, about 30 seconds late.\nCreel's journal, times UTC:\n\n- 15:47:59.07 the operator's Slack message (#1092) is posted to `ly:orch`; 15:47:59.22 the relay posts `[slack presence] presence is now slack` (#1093), while the orch's turn on #1092 runs.\n- 15:48:02 the orch's Stop hook hands #1093 to the session; no post from `ly:orch` to `ly:SLACK` is logged for the #1092 reply.\n- 15:48:05 the next turn (on #1093) ends and its reply is posted (#1094); the relay reads it only at 15:48:34, when the operator next acted.\n\n## Cause read from the settings\n\nThe orch's Stop hook (claudeengine settings) runs `lym creel hook-read claude \u0026\u0026 exit 0` when the strand's creel flag is set, before it reaches `lym slack hook claude`.\nSo whenever mail is waiting at turn end the hook hands the mail over and exits, and the turn's final reply is never forwarded.\nAn operator message from Slack always brings a presence notice right behind it when presence was `terminal`, so the first reply after switching to Slack is always lost.\n\n## Idea\n\n- Run the Slack forwarding on every Stop, before or regardless of the creel hand-over, so a waiting mail never drops a reply.\n- Find why the relay read #1094 about 30 seconds after it was posted, when #1089 was read in 0.2 seconds; a forward should reach Slack at once.\n- A presence notice caused by the operator's own Slack message need not wake the orch at all.\n",
