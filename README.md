@@ -66,19 +66,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Concrete and claimable; only a task can run.
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-#### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Cut and fold fabricengine tier 1 tests the coverage study found redundant** | [`fabric-test-cuts`](design-fabric-test-cuts.md) | darn · solid |  | 1m<br>0m | fabric, testkit |
+| T1 | **Cut and fold fabricengine tier 1 tests the coverage study found redundant** | [`fabric-test-cuts`](design-fabric-test-cuts.md) | darn · solid |  | 1m<br>0m | fabric, testkit |
 
 ### Notes (0)
 
@@ -122,19 +116,13 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-#### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **The sampler carries drift rows, off by default and switched on per task** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | darn · solid |  | 5d<br>0m | drift, shed, loom |
+| T2 | **The sampler carries drift rows, off by default and switched on per task** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | darn · solid |  | 5d<br>0m | drift, shed, loom |
 
 ### Notes (18)
 

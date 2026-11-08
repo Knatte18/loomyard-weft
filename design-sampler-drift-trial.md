@@ -1,6 +1,6 @@
 # The sampler carries drift rows, off by default and switched on per task
 
-`sampler-drift-trial` · Task · feature, drift, shed, loom · draft
+`sampler-drift-trial` · Task · feature, drift, shed, loom
 
 Imported from [issue #28](https://github.com/Knatte18/loomyard/issues/28).
 
@@ -17,4 +17,4 @@ With the rows off, a sampler runs as now.
 The drift verbs run in a sampler worktree whose drift rows are on.
 The stage gates of tapestry and darn stay as they are.
 
-Open for Discussion: the switch itself, preferably the existing `drift.scope` in the task's `run_settings` with the sampler's default `off`, rather than a new key.
+The switch is the existing `drift.scope` in the task's `run_settings`, with the sampler's default `off`, rather than a new key.
