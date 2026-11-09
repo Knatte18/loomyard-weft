@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-09 09:23 UTC; every age below is as of then.
+Rendered 2026-11-09 09:25 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -162,7 +162,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T12 | **Fix the adopt check of root on osl-1046** | [`adopt-fix-root-t1`](design-adopt-fix-root-t1.md) | darn · light | Code-Burler-Review | osl-1046 | 24m<br>24m | gate |
+| T12 | **Fix the adopt check of root on osl-1046** | [`adopt-fix-root-t1`](design-adopt-fix-root-t1.md) | darn · light | Code-Burler-Fix | osl-1046 | 26m<br>26m | gate |
 
 #### Ready (0)
 
@@ -201,7 +201,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 5w<br>12d | burler |
 | F2 |  | **One desktop shortcut brings every lym session of the machine back after a crash or reboot**<br>• A lym verb and a .desktop launcher that start each live hub orch and reopen the reed windows | [`machine-restart-shortcut`](design-machine-restart-shortcut.md) | 18h<br>18h | orch, reed, termwindow, shortcut |
-| F3 |  | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md) | 23h<br>20h | slack, creel, orch |
+| F3 |  | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md) | 1d<br>20h | slack, creel, orch |
 | F5 |  | **Let the parent orch review the Discussion decision record before Plan** | [`parent-reviews-decision-record`](design-parent-reviews-decision-record.md) | 18h<br>15h | loom, orch, config |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 9d<br>3d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 5w<br>4d | board, ide, orch |
