@@ -2,7 +2,7 @@
   "current_producer": "Run-Shed",
   "state": "paused",
   "error": "",
-  "pause_requested": true,
+  "pause_requested": false,
   "pause_reason": "pause requested",
   "activity": {
     "now": "Run-Shed",
