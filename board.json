@@ -930,6 +930,118 @@
       "body": "## Seen (orch, 2026-11-09)\n\nNo coverage map exists yet: `_bolt/.lym/testcover` is absent.\nThe module has about 170 packages, and the prime dobby builds at most `test_map_batch` (5) maps per refresh,\nstarting one only after `test_map_every` (5) landings.\nAt those defaults the first full set of maps needs about 170 landings, so the tasks that wait on the maps wait for weeks.\n\nThe decision record of project `redundancy-check` (D6) said the dobby starts a refresh on a tick where the prime HEAD moved,\nor where the last refresh's exit record reported stale packages its `--max` cap left unbuilt.\n`testmap-dobby-refresh` (landed as `f4ed575e`) made the landing count the only trigger,\nso a refresh that leaves packages unbuilt starts no next one.\n`lym gate testmap` already writes that count in its exit record.\n\n## Idea\n\nWhile the last refresh reported stale packages left unbuilt, start the next refresh on the first tick after it ends,\nin batches of `test_map_batch`, so a backlog drains on its own and each refresh still holds the gate slot for at most one batch.\nKeep the landing count as the trigger once nothing is left.\n",
       "created": "2026-11-09T19:37:42Z",
       "revised": "2026-11-09T19:37:42Z"
+    },
+    {
+      "id": 1274,
+      "handle": "P1",
+      "slug": "adopt-takeover",
+      "title": "Adopt as one resumable algorithm that never starts work on its own",
+      "kind": "project",
+      "labels": [
+        "enhancement",
+        "batten",
+        "tender",
+        "dobby",
+        "orch",
+        "fabric",
+        "shortcut"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Groups the entries filed from the Sketch `adopt-robust`: adopt-worker-record, adopt-owner-handover, adopt-here-archives.\n",
+      "created": "2026-11-09T19:45:19Z",
+      "revised": "2026-11-09T19:45:19Z",
+      "discussed": true
+    },
+    {
+      "id": 1275,
+      "handle": "T2",
+      "slug": "adopt-worker-record",
+      "title": "Adopt runs as a detached, step-recorded worker that pauses every adopted run and writes the owner before the deploy",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "batten",
+        "tender",
+        "dobby",
+        "orch",
+        "fabric",
+        "shortcut"
+      ],
+      "issues": [],
+      "recipe": "tapestry",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `adopt-robust`.\n\nTakes: today's adoptcli steps, holds.json hold and green end; testmap-dobby-refresh's landed changes to dobbyengine, beamcli, orchcli and runproc\nDelivers: lym adopt as a hidden detached worker the caller follows; the adopt record adopt.json and adopt.lock under fabricengine.AdoptScratchDir with resume and --discard; the D3 step order with the owner write before the deploy; the adopt pause entry replacing the hold and holds.json; --no-orch and its orch-session default; a green check that only reports; the adopt section of lym beam status\nExports: internal/adoptrecord (the record type, its path and a lock-free read, which neither engine import of adoptcli needs), pauserecord.AdoptCaller, the orch-skip field of orchcli.BeamUpOptions, a runproc adopt role\n\nThe part changes these packages:\n\n- internal/adoptcli (about 1500 changed lines)\n- internal/adoptrecord (about 250 changed lines)\n- internal/pauserecord (about 60 changed lines)\n- internal/tenderengine (about 20 changed lines)\n- internal/orchcli (about 40 changed lines)\n- internal/dobbyengine (about 60 changed lines)\n- internal/beamcli (about 200 changed lines)\n- internal/runproc (about 10 changed lines)\n- pattern (about 30 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-09T19:45:19Z",
+      "revised": "2026-11-09T19:45:19Z",
+      "profile": "solid",
+      "project": "adopt-takeover",
+      "discussed": true
+    },
+    {
+      "id": 1276,
+      "handle": "T4",
+      "slug": "adopt-owner-handover",
+      "title": "The adopting machine's orch and dobby stay up and idle, and the old owner pauses, archives its unpushed tips and exits",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "batten",
+        "tender",
+        "dobby",
+        "orch",
+        "fabric",
+        "shortcut"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "adopt-worker-record"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `adopt-robust`.\n\nTakes: adopt-worker-record's internal/adoptrecord and its record of the subjects whose owner write stood\nDelivers: the under-adopt predicate over the record and hubgeom.ParentOf, handed as a read-only accessor to the orch watcher and the dobby, which keep up and idle under it; the dobby's periodic Bolt pull on its probe; the old owner's owner-pause, archive-owner tag push of each local tip origin lacks, and exit; lym beam start's archive before its foreign-owner refusal\nExports: the under-adopt accessor in internal/adoptrecord, the archive-owner tag name function beside fabricengine.ArchiveTagName, the fabric archive call\n\nThe part changes these packages:\n\n- internal/adoptrecord (about 100 changed lines)\n- internal/orchengine (about 60 changed lines)\n- internal/orchcli (about 160 changed lines)\n- internal/dobbyengine (about 350 changed lines)\n- internal/beamcli (about 150 changed lines)\n- internal/fabricengine (about 350 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-09T19:45:19Z",
+      "revised": "2026-11-09T19:45:19Z",
+      "profile": "light",
+      "project": "adopt-takeover",
+      "discussed": true
+    },
+    {
+      "id": 1277,
+      "handle": "T6",
+      "slug": "adopt-here-archives",
+      "title": "lym adopt --here behind the lym s shortcut, and lym adopt --archives lists the old owner's archives",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "batten",
+        "tender",
+        "dobby",
+        "orch",
+        "fabric",
+        "shortcut"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "adopt-owner-handover"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `adopt-robust`.\n\nTakes: adopt-worker-record's worker, record, follow and resume; adopt-owner-handover's archive-owner tag name function\nDelivers: lym adopt --here with its owned_here outcome and record take-up; the s shortcut as adopt --here --no-orch, beam start, reed attach; lym adopt --archives over a fabric read of archive-owner tags against each repository's origin branch\nExports: the fabric archive-owner tag read\n\nThe part changes these packages:\n\n- internal/adoptcli (about 450 changed lines)\n- internal/shortcutcli (about 10 changed lines)\n- internal/fabricengine (about 150 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-09T19:45:19Z",
+      "revised": "2026-11-09T19:45:19Z",
+      "profile": "light",
+      "project": "adopt-takeover",
+      "discussed": true
     }
   ],
   "prime_owner": "neve",
