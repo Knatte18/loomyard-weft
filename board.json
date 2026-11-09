@@ -794,6 +794,28 @@
       "profile": "light",
       "project": "redundancy-check",
       "discussed": true
+    },
+    {
+      "id": 1250,
+      "handle": "T12",
+      "slug": "adopt-fix-root-t1",
+      "title": "Fix the adopt check of root on osl-1046",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "gate"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "The adopt check of root failed on this machine: tier2.\n\nFailed tests:\n- github.com/Knatte18/loomyard/internal/reedengine TestRunButton_RealTmux/AnswerWithEveryMetacharacterReachesTheFileIntact: buttonclick_integration_test.go:206: the ask entry wrote \"it's \\\"q\\\" \\\\ \\\\$HOME ; ~ #{session_name} a  b\", want \"it's \\\"q\\\" \\\\ $HOME ; ~ #{session_name} a  b\"\n\nExcerpts of the check's suite.log:\n\n```\n=== RUN   TestRunButton_RealTmux\n=== RUN   TestRunButton_RealTmux/AnswerWithEveryMetacharacterReachesTheFileIntact\n    buttonclick_integration_test.go:206: the ask entry wrote \"it's \\\"q\\\" \\\\ \\\\$HOME ; ~ #{session_name} a  b\", want \"it's \\\"q\\\" \\\\ $HOME ; ~ #{session_name} a  b\"\n--- FAIL: TestRunButton_RealTmux/AnswerWithEveryMetacharacterReachesTheFileIntact (0.21s)\n=== RUN   TestRunButton_RealTmux/EscapeRunsNothing\n--- PASS: TestRun_TeardownScenario/EndsTheSessionAndRemovesThePair (1.14s)\n=== RUN   TestRun_TeardownScenario/WaitsForRetiringDriverThenArchivesTheCommittedReport\n--- PASS: TestSmokeDebugLog/RepeatedCrashBootsBoundServerClientAndOutLogs (2.46s)\n--- PASS: TestSmokeDebugLog (3.96s)\n=== RUN   TestSmokeLifecycle\n=== PAUSE TestSmokeLifecycle\n=== RUN   TestSmokeUpRefusesAWorktreeNameTmuxWouldRewrite\n```\n\nDiagnose the failure first. A code failure you fix and land as usual. A machine failure, such as a missing tool, an old version or timing like a security agent holding new binaries, has nothing to commit.\n\nStop condition: the failure is a machine failure. Write a stop report naming the exact steps the operator must take on this machine and, as its way forward, a re-run of lym adopt root once the machine is settled, never lym loom resume.\n",
+      "created": "2026-11-09T08:58:25Z",
+      "revised": "2026-11-09T08:58:25Z",
+      "profile": "light",
+      "front": true,
+      "on_land": "adopt-check"
     }
   ],
   "prime_owner": "osl-1046",

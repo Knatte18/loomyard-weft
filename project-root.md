@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-09 08:48 UTC; every age below is as of then.
+Rendered 2026-11-09 08:58 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `osl-1046`
@@ -8,15 +8,17 @@ Owner `osl-1046`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (1)
+## Tasks (2)
 
 Concrete and claimable; only a task can run.
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T12 | **Fix the adopt check of root on osl-1046** | [`adopt-fix-root-t1`](design-adopt-fix-root-t1.md) | darn · light |  | 0m<br>0m | gate |
 
 ### Draft (1)
 
