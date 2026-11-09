@@ -1,0 +1,1203 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 5d65611ac..9f40e4942 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -358,6 +358,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/lymcwd/              cwd resolution entry gate (the sole owner of cwd resolution, nothing else)
+ ├── internal/dotgit/              the one `.git` parser (git dir, common dir, repository test, walk-up to a worktree root), a stdlib-only leaf
+ ├── internal/durfmt/              the duration formats the status panes and the timing report share, minute-resolution for growing times and second-resolution for closed spans, a stdlib-only leaf
++├── internal/consoletitle/        the one join of a console window's title, `<hub shortname>: <P#>: <T#>: <name>` with a missing part left out, shared by VS Code and terminal windows, a stdlib-only leaf
+ ├── internal/machinename/         this machine's name, its hostname cut at the first dot and lowercased, the sole reader of the hostname, a stdlib-only leaf
+ ├── internal/sleepjournal/        the machine's suspends and hibernates read from systemd-sleep's journal entries, spawning no process, a stdlib-only leaf
+ ├── internal/lymdirs/             the two directory-name tokens (`_lym` durable, `.lym` ephemeral), a zero-import leaf
+@@ -578,10 +579,13 @@ User-facing modules each get one `lym <module>` namespace:
+   The title bar takes the project's colour:
+   green for the prime and a task under it, and a beam's recorded `beam_color` for the beam and a task under it.
+   The activity bar takes the worktree's own colour, which a task picks avoiding its siblings';
+-  `window.title` is the upper-cased hub shortname, a colon and the slug.
++  `window.title` is the console title, read from the board when the config is written:
++  `<hub shortname>: <P#>: <T#>: <slug>` for a task, `<hub shortname>: <P#>: beam` for a beam and `<hub shortname>: prime` for the prime.
++  The shortname is lower case, `<P#>` is the handle of the beam above the task or else of its project, and a part that does not exist is left out.
++  A terminal window `lym reed window` opens takes the same title, but the prime's reads `<hub shortname>: orch` and a beam's `<hub shortname>: <P#>: orch`.
+   A beam's own `<RepoName>-<beam>.code-workspace` carries the beam's settings, as the hub's carries the prime's.
+   Each has the workspace look:
+-  `window.title` names the repository or beam followed by `workspace`,
++  `window.title` names the hub shortname, then the repository or beam followed by `workspace`,
+   and the activity bar takes the workspace's blue-grey, which no worktree takes.
+   `lym ide seed` writes the same config and, for the prime, the hub workspace file, and launches nothing;
+   with no slug it seeds the worktree it runs in, the prime included.
+@@ -1052,7 +1056,7 @@ User-facing modules each get one `lym <module>` namespace:
+   it resolves the recorded parent branch and seeds and commits the status file with the records when it is absent.
+   It ensures the worktree's tmux session is up, and it keeps or adds the status strand.
+   The status strand runs the hidden `lym loom checklist` verb in an overview window named for the run's recipe.
+-  The window is opened with the run's board handle, as in `T4: tapestry`, on either driver.
++  The window is opened with the worktree's console title, the recipe standing where the slug does, as in `ly: P3: T4: tapestry`, on either driver.
+   In a beam's session the window sits right after the `runs` strand's.
+   It then spawns the per-hub watchdog daemon, best-effort.
+   It reads this run's seed and, unless a driver is already alive, spawns the driver the recorded choice selects:
+@@ -1579,8 +1583,8 @@ User-facing modules each get one `lym <module>` namespace:
+   Each runs only when its entry gate's `batten.yaml` setting is on, and a task's `run_settings` may set that setting.
+   `Open-Window` (`open_window`, on by default, command `open_window_command`) opens one desktop terminal window.
+   The window opens on the task worktree through `lym reed window`.
+-  The window is titled `<handle>: <slug>` through the command's `{title}` placeholder.
+-  The title is the slug alone when the board names no handle.
++  The window is titled with the task's console title, `<hub shortname>: <P#>: <T#>: <slug>`, through the command's `{title}` placeholder.
++  A part the hub or board does not give is left out.
+   `Seed-IDE` (`seed_ide`, on, command `seed_ide_command`) runs `lym ide seed`.
+   `lym ide seed` writes the task worktree's VS Code title, colours and `.vscode/` config and the user's key bindings.
+   `lym ide spawn` writes the same.
+@@ -1839,7 +1843,7 @@ See [PATTERN-cwd-resolution](../pattern/PATTERN-cwd-resolution.md) for the rule.
+   It also spawns the per-hub watchdog daemon (best-effort).
+   On either driver it keeps or adds the `lym loom checklist` status strand.
+   The strand sits in an overview window named for the run's recipe.
+-  The window opens with the run's board handle, right after the `runs` strand's in a beam's session.
++  The window opens with the worktree's console title, the recipe standing where the slug does, right after the `runs` strand's in a beam's session.
+   The strand shows one frame of the recipe's rows in order, with their visit lines under them.
+   Then come the state and wait lines.
+   Bootstrap replaces the strand in its slot when the live one was launched from a different `lym` build.
+diff --git a/internal/battencli/commanddeps_test.go b/internal/battencli/commanddeps_test.go
+index 942903e69..e9f8af8f7 100644
+--- a/internal/battencli/commanddeps_test.go
++++ b/internal/battencli/commanddeps_test.go
+@@ -1,5 +1,5 @@
+ // commanddeps_test.go pins the window title that commandDeps hands the Open-Window row:
+-// the slug, prefixed by the task's board handle, or the bare slug when the board holds no handle for it.
++// the task's console title read from the hub's shortname and board, with a part they do not give left out.
+ 
+ package battencli
+ 
+@@ -12,27 +12,39 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestCommandDeps_TitleOpensTheSlugWithTheTasksHandle pins that Title reads the hub's board for the task's handle.
+-// Title falls back to the bare slug when the board names none.
+-func TestCommandDeps_TitleOpensTheSlugWithTheTasksHandle(t *testing.T) {
++// TestCommandDeps_TitleIsTheTasksConsoleTitle pins that Title reads the hub's shortname and board.
++// It gives the task's console title.
++// A part the hub or board does not give is left out of it.
++func TestCommandDeps_TitleIsTheTasksConsoleTitle(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 	tests := []struct {
+ 		name string
+-		// entry is the one board entry the hub's board holds; empty means the hub has no board.
+-		entry string
+-		want  string
++		// shortname is the hub's recorded shortname; empty records none.
++		shortname string
++		// entries are the board entries the hub's board holds; none means the hub has no board.
++		entries []string
++		want    string
+ 	}{
+-		{"TheTasksHandleOpensTheSlug", `{"id":1,"slug":"run","kind":"task","labels":["bug"],"handle":"T4"}`, "T4: run"},
+-		{"AnEntryOfAnotherSlugKeepsTheSlug", `{"id":1,"slug":"other","kind":"task","labels":["bug"],"handle":"T4"}`, "run"},
+-		{"NoBoardKeepsTheSlug", "", "run"},
++		{"TheTasksHandleOpensTheSlug", "", []string{`{"id":1,"slug":"run","kind":"task","labels":["bug"],"handle":"T4"}`}, "T4: run"},
++		{"TheShortnameAndProjectHandleOpenTheTitle", "ly", []string{
++			`{"id":1,"slug":"proj","kind":"project","labels":["bug"],"handle":"P3"}`,
++			`{"id":2,"slug":"run","kind":"task","labels":["bug"],"project":"proj","handle":"T4"}`,
++		}, "ly: P3: T4: run"},
++		{"AnEntryOfAnotherSlugLeavesOutTheHandles", "", []string{`{"id":1,"slug":"other","kind":"task","labels":["bug"],"handle":"T4"}`}, "run"},
++		{"NoBoardLeavesOutTheHandles", "", nil, "run"},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			location := locationkit.Location(t.TempDir(), "main", "")
+-			if tt.entry != "" {
+-				boardkit.WriteBoard(t, fabricengine.BoardDir(location.HubPath), tt.entry)
++			if len(tt.entries) > 0 {
++				boardkit.WriteBoard(t, fabricengine.BoardDir(location.HubPath), tt.entries...)
++			}
++			if tt.shortname != "" {
++				if err := fabricengine.WriteShortname(fabricengine.BoardDir(location.HubPath), tt.shortname); err != nil {
++					t.Fatalf("record the shortname: %v", err)
++				}
+ 			}
+ 			c := &battenCLI{}
+ 
+diff --git a/internal/battencli/wire.go b/internal/battencli/wire.go
+index f46fb4296..e8c5c04b3 100644
+--- a/internal/battencli/wire.go
++++ b/internal/battencli/wire.go
+@@ -977,8 +977,9 @@ func dirtyPathsOutsideRunRecords(taskLocation *lymcwd.Location) ([]string, error
+ 
+ // commandDeps returns the Env.Command facts and runner of the Open-Window, Seed-IDE and Open-IDE rows.
+ // The commands run in the prime, and {task_dir} is the task worktree's anchor path, located when a command holds it.
+-// {title} is the slug opened with the task's board handle, `T4: <slug>`, read from the board when a command holds it.
+-// When the board names no handle, the title is the slug alone.
++// {title} is the console title of the task's terminal window, `<shortname>: <P#>: <T#>: <slug>`.
++// It is read from the hub and its board when a command holds it.
++// A part they do not give is left out.
+ // Each command's output goes to a command-<row>.log under the run's scratch directory.
+ func (c *battenCLI) commandDeps(location *lymcwd.Location, slug, executable string, locateTask func() (*lymcwd.Location, error)) shedadapters.CommandDeps {
+ 	return shedadapters.CommandDeps{
+@@ -992,7 +993,7 @@ func (c *battenCLI) commandDeps(location *lymcwd.Location, slug, executable stri
+ 			return taskLocation.AnchorPath(), nil
+ 		},
+ 		Title: func() string {
+-			return boardengine.TitleWithHandle(fabricengine.BoardDir(location.HubPath), slug, slug)
++			return boardengine.TerminalWindowTitle(location.HubPath, location.WorktreeName, slug)
+ 		},
+ 		Dir: location.WorktreePath(),
+ 		LogPath: func(row string) string {
+diff --git a/internal/battenshed/doc.go b/internal/battenshed/doc.go
+index e40d47ffa..eaf512218 100644
+--- a/internal/battenshed/doc.go
++++ b/internal/battenshed/doc.go
+@@ -148,7 +148,8 @@
+ // `lym config batten --layer default --set <key>=<value>` from the prime changes one,
+ // and a different value in another layer is ignored with a warning.
+ // A command may hold the placeholders {lym}, {slug}, {task_dir} and {title}.
+-// {title} is the slug opened with the task's board handle, `T4: <slug>`, or the slug alone when the board names none;
++// {title} is the console title of the task's terminal window, `<shortname>: <P#>: <T#>: <slug>`.
++// A part the hub or board does not give is left out.
+ // Open-Window's default command titles the window with {title}.
+ // A run resumed past Open-Window runs that command again when no client is attached to the pair's reed session.
+ // That needs batten.open_window on;
+diff --git a/internal/battenshed/template.yaml b/internal/battenshed/template.yaml
+index fd83dfbd7..f960352ab 100644
+--- a/internal/battenshed/template.yaml
++++ b/internal/battenshed/template.yaml
+@@ -1,5 +1,5 @@
+ open_window: true  # the Open-Window row's entry gate: the row runs open_window_command when this is on
+-open_window_command: "{lym} reed window {task_dir} --title {title}"  # the Open-Window row's command, opening a terminal window attached to the task worktree's reed session; placeholders {lym}, {slug}, {task_dir} and {title}, the slug opened with the task's board handle such as `T4: <slug>`; change it with `lym config batten --layer default --set open_window_command=<value>` from the prime
++open_window_command: "{lym} reed window {task_dir} --title {title}"  # the Open-Window row's command, opening a terminal window attached to the task worktree's reed session; placeholders {lym}, {slug}, {task_dir} and {title}, the task's console title such as `ly: P3: T7: <slug>`; change it with `lym config batten --layer default --set open_window_command=<value>` from the prime
+ seed_ide: true  # the Seed-IDE row's entry gate: the row runs seed_ide_command when this is on
+ seed_ide_command: "{lym} ide seed {slug}"  # the Seed-IDE row's command, writing the task worktree's VS Code title, colours and .vscode/ config and the user's key bindings; placeholders {lym}, {slug}, {task_dir} and {title}; change it with `lym config batten --layer default --set seed_ide_command=<value>` from the prime
+ open_ide: false  # the Open-IDE row's entry gate: the row runs open_ide_command when this is on
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index 48688607c..717ca45a1 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -99,8 +99,16 @@
+ // A note's letter cannot be decided when its type label is not configured or the board is path-only.
+ // Such a note keeps its stored handle unless an entry of lower id holds it, which clears it.
+ // A handle is not scope: the run lock and the revised date ignore it.
+-// `TitleWithHandle` opens a window's name with its run's handle, `T4: <name>`, reading the local board file.
++// `TitleWithHandle` opens the name of a run's `runs` window with its run's handle, `T4: <name>`.
++// It reads the local board file.
+ // It leaves the name alone when the board names no handle for the slug or cannot be read.
++// `IDEWindowTitle` and `TerminalWindowTitle` give a console window's title through `internal/consoletitle`.
++// The title reads `<shortname>: <P#>: <T#>: <slug>`, from the hub shortname and the board at the call.
++// <P#> is the handle of the nearest open beam above the entry, else of its project.
++// The prime's and a beam's own windows carry a label in place of the slug.
++// The label is `prime` or `beam` in VS Code, and `orch` in a terminal.
++// `RecipeWindowTitle` gives the title of a run's status window.
++// It is the worktree's console title with the recipe in place of the slug.
+ // Every Board and Store method that takes a selector takes a Handle beside a slug string and a numeric id.
+ // A handle's letter matches case-insensitively.
+ //
+diff --git a/internal/boardengine/handles.go b/internal/boardengine/handles.go
+index 3454604b2..b92439154 100644
+--- a/internal/boardengine/handles.go
++++ b/internal/boardengine/handles.go
+@@ -1,5 +1,6 @@
+ // handles.go — an entry's short handle, such as T4 or B2: its letter, its parse, and its assignment across entries.
+-// It also holds the window title that opens with the handle.
++// It also holds the titles that carry handles:
++// a run window's name, and a console window's title with its project's handle.
+ 
+ package boardengine
+ 
+@@ -11,6 +12,8 @@ import (
+ 	"unicode"
+ 	"unicode/utf8"
+ 
++	"github.com/Knatte18/loomyard/internal/consoletitle"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ )
+ 
+@@ -159,6 +162,69 @@ func TitleWithHandle(boardDir, slug, name string) string {
+ 	return name
+ }
+ 
++// IDEWindowTitle returns the title of the VS Code window on the worktree slug.
++// The worktree is in the hub at hubPath, whose prime is named primeName.
++// The prime's reads `<shortname>: prime` and a beam's `<shortname>: <P#>: beam`.
++// Any other worktree's reads `<shortname>: <P#>: <T#>: <slug>`.
++// The shortname is the hub's recorded one, and the handles are read from the board at the call:
++// <P#> is the handle of the nearest open beam above the entry, else of its project.
++// A part the hub or board does not give is left out.
++// An unreadable board is logged at Warn and titles every worktree but the prime by its slug alone, after the shortname.
++func IDEWindowTitle(hubPath, primeName, slug string) string {
++	return worktreeWindowTitle(hubPath, primeName, slug, slug, consoletitle.PrimeLabel, consoletitle.BeamLabel)
++}
++
++// TerminalWindowTitle returns the title of a desktop terminal window on the reed session of the worktree slug.
++// The worktree is in the hub at hubPath, whose prime is named primeName.
++// The orch runs in the session of the prime or a beam.
++// So the prime's window reads `<shortname>: orch` and a beam's `<shortname>: <P#>: orch`.
++// Any other worktree's reads `<shortname>: <P#>: <T#>: <slug>`.
++// The shortname is the hub's recorded one, and the handles are read from the board at the call:
++// <P#> is the handle of the nearest open beam above the entry, else of its project.
++// A part the hub or board does not give is left out.
++// An unreadable board is logged at Warn and titles every worktree but the prime by its slug alone, after the shortname.
++func TerminalWindowTitle(hubPath, primeName, slug string) string {
++	return worktreeWindowTitle(hubPath, primeName, slug, slug, consoletitle.OrchLabel, consoletitle.OrchLabel)
++}
++
++// RecipeWindowTitle returns the title of the status window a run of recipe opens.
++// The worktree is slug, in the hub at hubPath.
++// The title is its console title with recipe where the slug stands.
++// A task's reads `<shortname>: <P#>: <T#>: <recipe>`, and a beam's reads `<shortname>: <P#>: <recipe>`.
++// The shortname is the hub's recorded one, and the handles are read from the board at the call.
++// A part the hub or board does not give is left out.
++// An unreadable board is logged at Warn and leaves out every handle.
++func RecipeWindowTitle(hubPath, slug, recipe string) string {
++	return worktreeWindowTitle(hubPath, "", slug, recipe, recipe, recipe)
++}
++
++// worktreeWindowTitle returns the console title of the worktree slug, with name where the slug stands.
++// It names the prime primeLabel and a beam beamLabel after the beam's handle.
++func worktreeWindowTitle(hubPath, primeName, slug, name, primeLabel, beamLabel string) string {
++	shortname, _ := fabricengine.ReadShortname(fabricengine.BoltDir(hubPath))
++	if primeName != "" && slug == primeName {
++		return consoletitle.Title(shortname, "", "", primeLabel)
++	}
++	tasks, err := ReadTasks(fabricengine.BoardDir(hubPath))
++	if err != nil {
++		logger.Warn("board: could not read the board for a window title's handles; titling without them", "slug", slug, "cause", err)
++		return consoletitle.Title(shortname, "", "", name)
++	}
++	bySlug := make(map[string]Task, len(tasks))
++	for _, task := range tasks {
++		bySlug[task.Slug] = task
++	}
++	entry := bySlug[slug]
++	if entry.Kind == KindProject && entry.Beam {
++		return consoletitle.Title(shortname, entry.Handle, "", beamLabel)
++	}
++	project := ParentBeam(tasks, slug)
++	if project == "" {
++		project = entry.Project
++	}
++	return consoletitle.Title(shortname, bySlug[project].Handle, entry.Handle, name)
++}
++
+ // compareHandles orders two handles by letter, then by number.
+ // An unparsable or empty handle sorts after every parsable one.
+ func compareHandles(a, b string) int {
+diff --git a/internal/boardengine/handles_test.go b/internal/boardengine/handles_test.go
+index 6ee208d1e..037b1dad6 100644
+--- a/internal/boardengine/handles_test.go
++++ b/internal/boardengine/handles_test.go
+@@ -1,5 +1,5 @@
+ // handles_test.go — tests of entry handles: their assignment on write and load, and the Handle selector.
+-// It also covers the title a handle opens.
++// It also covers the titles that carry handles.
+ 
+ package boardengine_test
+ 
+@@ -10,6 +10,7 @@ import (
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -223,3 +224,124 @@ func TestTitleWithHandle(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestWindowTitles pins the VS Code and terminal window titles of the prime, a beam and a task,
++// and that a part the hub or board does not give is left out.
++func TestWindowTitles(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const prime = "main"
++	const board = `{"version":1,"entries":[` +
++		`{"id":1,"slug":"bm","kind":"project","labels":["bug"],"beam":true,"handle":"P2"},` +
++		`{"id":2,"slug":"proj","kind":"project","labels":["bug"],"handle":"P3"},` +
++		`{"id":3,"slug":"inner","kind":"project","labels":["bug"],"project":"bm","handle":"P6"},` +
++		`{"id":4,"slug":"gate-shard","kind":"task","labels":["bug"],"project":"proj","handle":"T7"},` +
++		`{"id":5,"slug":"adopt","kind":"task","labels":["bug"],"handle":"T12"},` +
++		`{"id":6,"slug":"wellbore","kind":"task","labels":["bug"],"project":"bm","handle":"T4"},` +
++		`{"id":7,"slug":"deep","kind":"task","labels":["bug"],"project":"inner","handle":"T5"},` +
++		`{"id":8,"slug":"closed","kind":"project","labels":["bug"],"beam":true,"status":"done","handle":"P8"},` +
++		`{"id":9,"slug":"after-closed","kind":"task","labels":["bug"],"project":"closed","handle":"T9"},` +
++		`{"id":10,"slug":"orphan","kind":"task","labels":["bug"],"project":"gone","handle":"T10"}]}`
++	tests := []struct {
++		name string
++		// shortname is the hub's recorded shortname; empty records none.
++		shortname string
++		// board is the board.json the board directory holds; empty means none.
++		board string
++		slug  string
++		// noPrime passes an empty primeName, as a caller that cannot resolve the prime does.
++		noPrime      bool
++		wantIDE      string
++		wantTerminal string
++	}{
++		{name: "ThePrime", shortname: "ly", board: board, slug: prime, wantIDE: "ly: prime", wantTerminal: "ly: orch"},
++		{name: "ABeam", shortname: "ly", board: board, slug: "bm", wantIDE: "ly: P2: beam", wantTerminal: "ly: P2: orch"},
++		{name: "ATaskInAProject", shortname: "ly", board: board, slug: "gate-shard", wantIDE: "ly: P3: T7: gate-shard", wantTerminal: "ly: P3: T7: gate-shard"},
++		{name: "ATaskInNoProject", shortname: "ly", board: board, slug: "adopt", wantIDE: "ly: T12: adopt", wantTerminal: "ly: T12: adopt"},
++		{name: "ATaskUnderABeam", shortname: "ly", board: board, slug: "wellbore", wantIDE: "ly: P2: T4: wellbore", wantTerminal: "ly: P2: T4: wellbore"},
++		{name: "ATaskInAProjectUnderABeamTakesTheBeam", shortname: "ly", board: board, slug: "deep", wantIDE: "ly: P2: T5: deep", wantTerminal: "ly: P2: T5: deep"},
++		{name: "ATaskUnderADoneBeamTakesTheBeamsHandle", shortname: "ly", board: board, slug: "after-closed", wantIDE: "ly: P8: T9: after-closed", wantTerminal: "ly: P8: T9: after-closed"},
++		{name: "ATaskWhoseProjectIsMissingLeavesOutTheProject", shortname: "ly", board: board, slug: "orphan", wantIDE: "ly: T10: orphan", wantTerminal: "ly: T10: orphan"},
++		{name: "AWorktreeOffTheBoard", shortname: "ly", board: board, slug: "stray", wantIDE: "ly: stray", wantTerminal: "ly: stray"},
++		{name: "NoShortname", board: board, slug: "gate-shard", wantIDE: "P3: T7: gate-shard", wantTerminal: "P3: T7: gate-shard"},
++		{name: "NoPrimeNameTitlesThePrimesSlugAsATask", shortname: "ly", board: board, slug: prime, noPrime: true, wantIDE: "ly: main", wantTerminal: "ly: main"},
++		{name: "AnUnreadableBoardLeavesOutTheHandles", shortname: "ly", board: `{"version":1,"entries":[`, slug: "gate-shard", wantIDE: "ly: gate-shard", wantTerminal: "ly: gate-shard"},
++		{name: "AnUnreadableBoardTitlesABeamBySlug", shortname: "ly", board: `{"version":1,"entries":[`, slug: "bm", wantIDE: "ly: bm", wantTerminal: "ly: bm"},
++		{name: "NoBoardStillTitlesThePrime", shortname: "ly", slug: prime, wantIDE: "ly: prime", wantTerminal: "ly: orch"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			hub := t.TempDir()
++			boardDir := fabricengine.BoardDir(hub)
++			if err := os.MkdirAll(boardDir, 0o755); err != nil {
++				t.Fatalf("make the board directory: %v", err)
++			}
++			if tt.board != "" {
++				if err := os.WriteFile(filepath.Join(boardDir, "board.json"), []byte(tt.board), 0o644); err != nil {
++					t.Fatalf("write board.json: %v", err)
++				}
++			}
++			if tt.shortname != "" {
++				if err := fabricengine.WriteShortname(boardDir, tt.shortname); err != nil {
++					t.Fatalf("record the shortname: %v", err)
++				}
++			}
++
++			primeName := prime
++			if tt.noPrime {
++				primeName = ""
++			}
++
++			if got := boardengine.IDEWindowTitle(hub, primeName, tt.slug); got != tt.wantIDE {
++				t.Errorf("IDEWindowTitle(%q) = %q; want %q", tt.slug, got, tt.wantIDE)
++			}
++			if got := boardengine.TerminalWindowTitle(hub, primeName, tt.slug); got != tt.wantTerminal {
++				t.Errorf("TerminalWindowTitle(%q) = %q; want %q", tt.slug, got, tt.wantTerminal)
++			}
++		})
++	}
++}
++
++// TestRecipeWindowTitle pins that a run's status window takes the worktree's console title.
++// The recipe stands where the slug does.
++func TestRecipeWindowTitle(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const board = `{"version":1,"entries":[` +
++		`{"id":1,"slug":"bm","kind":"project","labels":["bug"],"beam":true,"handle":"P2"},` +
++		`{"id":2,"slug":"proj","kind":"project","labels":["bug"],"handle":"P3"},` +
++		`{"id":3,"slug":"gate-shard","kind":"task","labels":["bug"],"project":"proj","handle":"T7"}]}`
++	tests := []struct {
++		name string
++		// board is the board.json the board directory holds; empty means none.
++		board string
++		slug  string
++		want  string
++	}{
++		{"ATaskInAProject", board, "gate-shard", "ly: P3: T7: pawl"},
++		{"ABeam", board, "bm", "ly: P2: pawl"},
++		{"AWorktreeOffTheBoard", board, "stray", "ly: pawl"},
++		{"AnUnreadableBoardLeavesOutTheHandles", `{"version":1,"entries":[`, "gate-shard", "ly: pawl"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			hub := t.TempDir()
++			boardDir := fabricengine.BoardDir(hub)
++			if err := os.MkdirAll(boardDir, 0o755); err != nil {
++				t.Fatalf("make the board directory: %v", err)
++			}
++			if err := os.WriteFile(filepath.Join(boardDir, "board.json"), []byte(tt.board), 0o644); err != nil {
++				t.Fatalf("write board.json: %v", err)
++			}
++			if err := fabricengine.WriteShortname(boardDir, "ly"); err != nil {
++				t.Fatalf("record the shortname: %v", err)
++			}
++
++			if got := boardengine.RecipeWindowTitle(hub, tt.slug, "pawl"); got != tt.want {
++				t.Errorf("RecipeWindowTitle(%q, pawl) = %q; want %q", tt.slug, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/consoletitle/consoletitle.go b/internal/consoletitle/consoletitle.go
+new file mode 100644
+index 000000000..b4ed0d785
+--- /dev/null
++++ b/internal/consoletitle/consoletitle.go
+@@ -0,0 +1,40 @@
++// consoletitle.go joins the parts of a console window's title.
++// It also names the labels that stand in a title in place of a slug.
++
++package consoletitle
++
++import "strings"
++
++// separator joins the parts of a title.
++const separator = ": "
++
++// workspaceSuffix follows the name a workspace file's title is named after.
++const workspaceSuffix = " workspace"
++
++// Labels that stand as a title's name in place of a slug.
++const (
++	// PrimeLabel names the prime's own VS Code window.
++	PrimeLabel = "prime"
++	// BeamLabel names a beam's own VS Code window, after the beam's handle.
++	BeamLabel = "beam"
++	// OrchLabel names a terminal window on the reed session an orch runs in, the prime's or a beam's.
++	OrchLabel = "orch"
++)
++
++// Title returns a console window's title: shortname lower-cased, projectHandle, ownHandle and name, joined by ": ".
++// A part that is empty is left out, so a task with no project reads `ly: T12: adopt-fix-root-t1`.
++func Title(shortname, projectHandle, ownHandle, name string) string {
++	var parts []string
++	for _, part := range []string{strings.ToLower(shortname), projectHandle, ownHandle, name} {
++		if part != "" {
++			parts = append(parts, part)
++		}
++	}
++	return strings.Join(parts, separator)
++}
++
++// Workspace returns the title of a VS Code workspace file named after name, a repository or a beam:
++// `<shortname>: <name> workspace`, with an empty shortname left out.
++func Workspace(shortname, name string) string {
++	return Title(shortname, "", "", name+workspaceSuffix)
++}
+diff --git a/internal/consoletitle/consoletitle_test.go b/internal/consoletitle/consoletitle_test.go
+new file mode 100644
+index 000000000..1340a176b
+--- /dev/null
++++ b/internal/consoletitle/consoletitle_test.go
+@@ -0,0 +1,55 @@
++// consoletitle_test.go pins the title forms Title and Workspace give.
++
++package consoletitle_test
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/consoletitle"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestTitle(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name                                           string
++		shortname, projectHandle, ownHandle, titleName string
++		want                                           string
++	}{
++		{"EveryPart", "ly", "P3", "T7", "gate-shard-slow-package", "ly: P3: T7: gate-shard-slow-package"},
++		{"NoProject", "ly", "", "T12", "adopt-fix-root-t1", "ly: T12: adopt-fix-root-t1"},
++		{"ALabelAfterAProject", "mo", "P2", "", consoletitle.OrchLabel, "mo: P2: orch"},
++		{"AnUpperCaseShortnameIsLowered", "LY", "", "", consoletitle.PrimeLabel, "ly: prime"},
++		{"NoShortname", "", "P3", "T7", "slug", "P3: T7: slug"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := consoletitle.Title(tt.shortname, tt.projectHandle, tt.ownHandle, tt.titleName); got != tt.want {
++				t.Errorf("Title(%q, %q, %q, %q) = %q; want %q", tt.shortname, tt.projectHandle, tt.ownHandle, tt.titleName, got, tt.want)
++			}
++		})
++	}
++}
++
++func TestWorkspace(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name            string
++		shortname, base string
++		want            string
++	}{
++		{"AShortnameOpensTheTitle", "LY", "loomyard", "ly: loomyard workspace"},
++		{"NoShortname", "", "bm", "bm workspace"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := consoletitle.Workspace(tt.shortname, tt.base); got != tt.want {
++				t.Errorf("Workspace(%q, %q) = %q; want %q", tt.shortname, tt.base, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/consoletitle/doc.go b/internal/consoletitle/doc.go
+new file mode 100644
+index 000000000..c0bcc51f4
+--- /dev/null
++++ b/internal/consoletitle/doc.go
+@@ -0,0 +1,8 @@
++// Package consoletitle forms the title of a console window the operator sees.
++// That is a VS Code window or a desktop terminal window.
++// The title lets the windows of several hubs and projects open side by side be told apart.
++// A title reads `<hub shortname>: <project handle>: <own handle>: <name>`,
++// and a part that does not exist is left out.
++// The hub shortname is lower case, as `lym creel hubs` prints it.
++// It imports the standard library only.
++package consoletitle
+diff --git a/internal/consoletitle/leaf_enforcement_test.go b/internal/consoletitle/leaf_enforcement_test.go
+new file mode 100644
+index 000000000..44c1866f4
+--- /dev/null
++++ b/internal/consoletitle/leaf_enforcement_test.go
+@@ -0,0 +1,16 @@
++// leaf_enforcement_test.go enforces internal/consoletitle's import cap from PATTERN-leaf-packages:
++// production code in internal/consoletitle imports the standard library alone.
++
++package consoletitle_test
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/scankit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestLeafInvariant_StandardLibraryOnly(t *testing.T) {
++	tiergate.Require(t, 0)
++	scankit.AssertImportAllowlist(t, "internal/consoletitle")
++}
+diff --git a/internal/consoletitle/testmain_test.go b/internal/consoletitle/testmain_test.go
+new file mode 100644
+index 000000000..da8c08bfc
+--- /dev/null
++++ b/internal/consoletitle/testmain_test.go
+@@ -0,0 +1,15 @@
++// testmain_test.go runs the package's tests under tmuxkit.Main,
++// so their temp files live in the process run directory and go with it.
++
++package consoletitle_test
++
++import (
++	"os"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
++)
++
++func TestMain(m *testing.M) {
++	os.Exit(tmuxkit.Main(m))
++}
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 3ac160e7c..efdf8ec2f 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -1659,7 +1659,7 @@
+ // A beam's file splices the beam's own `.vscode/settings.json` when it exists and can be read, and the prime's otherwise.
+ // An unreadable beam settings file logs a Warn.
+ // Each file splices its settings with the workspace look `vscode.WorkspaceSettings` sets.
+-// The title is `<SHORTNAME>: <name> workspace`, named after the repository or the beam,
++// The title is `<shortname>: <name> workspace` through `internal/consoletitle`, named after the repository or the beam,
+ // so a workspace window is told apart from the worktree whose settings it carries.
+ // A regeneration runs under `HubWorkspaceLockPath(hub)`, a leaf lock under the hub scratch directory.
+ // It lists the folders only after taking the lock, so a pair created while the regeneration waits is listed.
+diff --git a/internal/fabricengine/hubworkspace.go b/internal/fabricengine/hubworkspace.go
+index 91c6c52b9..a9cf9dc5d 100644
+--- a/internal/fabricengine/hubworkspace.go
++++ b/internal/fabricengine/hubworkspace.go
+@@ -8,9 +8,9 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"sort"
+-	"strings"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/consoletitle"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+@@ -92,13 +92,10 @@ func beamWorkspaceSettings(l *lymcwd.Location, beam string, primeSettings []byte
+ }
+ 
+ // workspaceWindowTitle returns the window title of the workspace file named after name, a repository or a beam:
+-// "<SHORTNAME>: <name> workspace", or "<name> workspace" when the board at the hub records no shortname.
++// "<shortname>: <name> workspace", or "<name> workspace" when the board at the hub records no shortname.
+ func workspaceWindowTitle(hubPath, name string) string {
+-	title := name + " workspace"
+-	if shortname, found := ReadShortname(BoltDir(hubPath)); found {
+-		return strings.ToUpper(shortname) + ": " + title
+-	}
+-	return title
++	shortname, _ := ReadShortname(BoltDir(hubPath))
++	return consoletitle.Workspace(shortname, name)
+ }
+ 
+ // regenerateAfterVerb regenerates the hub workspace file at the end of a fabric verb that changed the hub's worktrees.
+diff --git a/internal/fabricengine/hubworkspace_integration_test.go b/internal/fabricengine/hubworkspace_integration_test.go
+index 304817893..dcaa901a0 100644
+--- a/internal/fabricengine/hubworkspace_integration_test.go
++++ b/internal/fabricengine/hubworkspace_integration_test.go
+@@ -360,8 +360,8 @@ func TestRegenerateHubWorkspace(t *testing.T) {
+ 		tests := []struct {
+ 			file, source, title, titleBar string
+ 		}{
+-			{path, "prime", "TST: " + h.Location.RepoName + " workspace", vscode.PrimeColor},
+-			{beamPath, "beam", "TST: b workspace", beamColor},
++			{path, "prime", "tst: " + h.Location.RepoName + " workspace", vscode.PrimeColor},
++			{beamPath, "beam", "tst: b workspace", beamColor},
+ 		}
+ 		for _, tt := range tests {
+ 			settings := workspaceSettings(t, tt.file)
+diff --git a/internal/ideengine/look_test.go b/internal/ideengine/look_test.go
+index 61e8c8167..741b3ea89 100644
+--- a/internal/ideengine/look_test.go
++++ b/internal/ideengine/look_test.go
+@@ -1,5 +1,5 @@
+ // look_test.go covers `lookFor` over a hub of plain directories.
+-// It checks the window title from the hub shortname.
++// It checks the window title from the hub shortname and the board handles.
+ // It also checks the project and worktree colours of the prime, of a beam, and of a task.
+ 
+ package ideengine
+@@ -42,11 +42,11 @@ func lookHub(t *testing.T, shortname string) *lymcwd.Location {
+ 		t.Fatal(err)
+ 	}
+ 	boardJSON := `{"version":1,"entries":[` +
+-		`{"id":0,"slug":"bm","title":"BM","kind":"project","labels":["bug"],"beam":true,"beam_color":"` + violet + `"},` +
+-		`{"id":1,"slug":"bn","title":"BN","kind":"project","labels":["bug"],"beam":true},` +
+-		`{"id":2,"slug":"gone","title":"Gone","kind":"project","labels":["bug"],"beam":true,"beam_color":"` + purple + `","status":"done"},` +
+-		`{"id":3,"slug":"t1","title":"T1","kind":"task","labels":["bug"],"project":"bm"},` +
+-		`{"id":4,"slug":"t2","title":"T2","kind":"task","labels":["bug"],"project":"bm"}]}`
++		`{"id":0,"slug":"bm","title":"BM","kind":"project","labels":["bug"],"beam":true,"beam_color":"` + violet + `","handle":"P1"},` +
++		`{"id":1,"slug":"bn","title":"BN","kind":"project","labels":["bug"],"beam":true,"handle":"P2"},` +
++		`{"id":2,"slug":"gone","title":"Gone","kind":"project","labels":["bug"],"beam":true,"beam_color":"` + purple + `","status":"done","handle":"P3"},` +
++		`{"id":3,"slug":"t1","title":"T1","kind":"task","labels":["bug"],"project":"bm","handle":"T1"},` +
++		`{"id":4,"slug":"t2","title":"T2","kind":"task","labels":["bug"],"project":"bm","handle":"T2"}]}`
+ 	if err := os.WriteFile(filepath.Join(board, "board.json"), []byte(boardJSON), 0o644); err != nil {
+ 		t.Fatal(err)
+ 	}
+@@ -84,12 +84,12 @@ func TestLookFor(t *testing.T) {
+ 		slug string
+ 		want vscode.Look
+ 	}{
+-		{"prime", vscode.Look{Title: "TST: prime", ProjectColor: vscode.PrimeColor, WorktreeColor: vscode.PrimeColor}},
+-		{"bm", vscode.Look{Title: "TST: bm", ProjectColor: violet, WorktreeColor: violet}},
+-		{"bn", vscode.Look{Title: "TST: bn", ProjectColor: purple, WorktreeColor: purple}},
+-		{"t1", vscode.Look{Title: "TST: t1", ProjectColor: violet, WorktreeColor: purple}},
+-		{"t3", vscode.Look{Title: "TST: t3", ProjectColor: vscode.PrimeColor, WorktreeColor: blue}},
+-		{"t5", vscode.Look{Title: "TST: t5", ProjectColor: vscode.PrimeColor, WorktreeColor: brown}},
++		{"prime", vscode.Look{Title: "tst: prime", ProjectColor: vscode.PrimeColor, WorktreeColor: vscode.PrimeColor}},
++		{"bm", vscode.Look{Title: "tst: P1: beam", ProjectColor: violet, WorktreeColor: violet}},
++		{"bn", vscode.Look{Title: "tst: P2: beam", ProjectColor: purple, WorktreeColor: purple}},
++		{"t1", vscode.Look{Title: "tst: P1: T1: t1", ProjectColor: violet, WorktreeColor: purple}},
++		{"t3", vscode.Look{Title: "tst: t3", ProjectColor: vscode.PrimeColor, WorktreeColor: blue}},
++		{"t5", vscode.Look{Title: "tst: t5", ProjectColor: vscode.PrimeColor, WorktreeColor: brown}},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.slug, func(t *testing.T) {
+diff --git a/internal/ideengine/spawn.go b/internal/ideengine/spawn.go
+index 6d804c946..10039cd8a 100644
+--- a/internal/ideengine/spawn.go
++++ b/internal/ideengine/spawn.go
+@@ -283,6 +283,7 @@ func resolveSpawnTarget(l, own *lymcwd.Location, slug string) (worktreeDir strin
+ 
+ // lookFor returns the window look of the worktree slug, whose location is own:
+ // its title, its project's colour and its own colour.
++// The title is the VS Code window's console title, with the hub shortname and the board handles read at the call.
+ // The prime takes `vscode.PrimeColor` for both colours, and a beam takes its board-recorded colour for both.
+ // A task takes its parent's colour as its project colour:
+ // the prime's colour under the prime, or the beam's colour under a beam.
+@@ -291,10 +292,7 @@ func resolveSpawnTarget(l, own *lymcwd.Location, slug string) (worktreeDir strin
+ // An empty primeName, an unreadable board or an unresolvable parent reads slug as a task under the prime;
+ // the failure is logged at Warn.
+ func lookFor(l, own *lymcwd.Location, slug, primeName string) vscode.Look {
+-	title := slug
+-	if shortname, found := fabricengine.ReadShortname(fabricengine.BoltDir(l.HubPath)); found {
+-		title = strings.ToUpper(shortname) + ": " + slug
+-	}
++	title := boardengine.IDEWindowTitle(l.HubPath, primeName, slug)
+ 	if primeName != "" && slug == primeName {
+ 		return vscode.Look{Title: title, ProjectColor: vscode.PrimeColor, WorktreeColor: vscode.PrimeColor}
+ 	}
+diff --git a/internal/ideengine/spawn_clean_integration_test.go b/internal/ideengine/spawn_clean_integration_test.go
+index 0c5a6fb9d..d312cbf2d 100644
+--- a/internal/ideengine/spawn_clean_integration_test.go
++++ b/internal/ideengine/spawn_clean_integration_test.go
+@@ -136,8 +136,8 @@ func checkOverwritesTasksKeepsSettings(t *testing.T, h *hubforge.Hub, slug strin
+ 
+ 	assertAttachTaskOnly(t, filepath.Dir(vscodeDir))
+ 	got := readPrimeLook(t, filepath.Join(vscodeDir, "settings.json"))
+-	if got.TabSize != 2 || got.Title != "TST: "+slug || got.Colors["titleBar.activeBackground"] != vscode.PrimeColor || got.Colors["activityBar.background"] == "" || got.Colors["activityBar.background"] == vscode.PrimeColor {
+-		t.Errorf("settings.json = %+v; want tabSize 2 kept, title %q, green title bar and a non-green activity bar", got, "TST: "+slug)
++	if got.TabSize != 2 || got.Title != "tst: "+slug || got.Colors["titleBar.activeBackground"] != vscode.PrimeColor || got.Colors["activityBar.background"] == "" || got.Colors["activityBar.background"] == vscode.PrimeColor {
++		t.Errorf("settings.json = %+v; want tabSize 2 kept, title %q, green title bar and a non-green activity bar", got, "tst: "+slug)
+ 	}
+ }
+ 
+diff --git a/internal/ideengine/spawn_hub_integration_test.go b/internal/ideengine/spawn_hub_integration_test.go
+index 96135a723..9fd7df297 100644
+--- a/internal/ideengine/spawn_hub_integration_test.go
++++ b/internal/ideengine/spawn_hub_integration_test.go
+@@ -335,7 +335,7 @@ func checkBeamOpensBeamWorkspace(t *testing.T, h *hubforge.Hub, slug string) {
+ 	if len(*launched) != 0 {
+ 		t.Errorf("CodeLauncher calls after Seed = %v, want none", *launched)
+ 	}
+-	if want, got := "TST: "+slug+" workspace", readWorkspaceLook(t, beamPath).Title; got != want {
++	if want, got := "tst: "+slug+" workspace", readWorkspaceLook(t, beamPath).Title; got != want {
+ 		t.Errorf("beam workspace window.title = %q, want %q", got, want)
+ 	}
+ 	if err := os.Remove(beamPath); err != nil {
+@@ -531,7 +531,7 @@ func checkPrimeSeedWritesHubWorkspace(t *testing.T, h *hubforge.Hub) {
+ 	if len(*launched) != 0 {
+ 		t.Errorf("CodeLauncher calls = %v, want none", *launched)
+ 	}
+-	want := "TST: " + l.RepoName + " workspace"
++	want := "tst: " + l.RepoName + " workspace"
+ 	if got := readWorkspaceLook(t, fabricengine.HubWorkspacePath(l)).Title; got != want {
+ 		t.Errorf("hub workspace window.title = %q, want %q", got, want)
+ 	}
+@@ -558,14 +558,14 @@ func checkPrimeSplicesSettingsAndRegenerates(t *testing.T, h *hubforge.Hub) {
+ 		t.Fatalf("Spawn with JSONC settings: %v", err)
+ 	}
+ 	settings := readPrimeLook(t, settingsPath)
+-	if settings.TabSize != 2 || settings.Title != "TST: "+prime || settings.Colors["titleBar.activeBackground"] != vscode.PrimeColor || settings.Colors["activityBar.background"] != vscode.PrimeColor {
+-		t.Errorf("prime settings after Spawn = %+v; want tabSize 2 kept, title %q and green on both bars", settings, "TST: "+prime)
++	if settings.TabSize != 2 || settings.Title != "tst: prime" || settings.Colors["titleBar.activeBackground"] != vscode.PrimeColor || settings.Colors["activityBar.background"] != vscode.PrimeColor {
++		t.Errorf("prime settings after Spawn = %+v; want tabSize 2 kept, title %q and green on both bars", settings, "tst: prime")
+ 	}
+ 	first, err := os.ReadFile(wsPath)
+ 	if err != nil {
+ 		t.Fatalf("read workspace: %v", err)
+ 	}
+-	workspaceTitle := "TST: " + l.RepoName + " workspace"
++	workspaceTitle := "tst: " + l.RepoName + " workspace"
+ 	if ws := readWorkspaceLook(t, wsPath); ws.TabSize != 2 || ws.Title != workspaceTitle || ws.Colors["titleBar.activeBackground"] != vscode.PrimeColor || ws.Colors["activityBar.background"] != vscode.WorkspaceColor {
+ 		t.Fatalf("workspace settings = %+v; want the prime's tabSize 2, title %q, green on the title bar and %s on the activity bar", ws, workspaceTitle, vscode.WorkspaceColor)
+ 	}
+diff --git a/internal/loomcli/bootstrap_test.go b/internal/loomcli/bootstrap_test.go
+index c0d48b85c..27acd75ef 100644
+--- a/internal/loomcli/bootstrap_test.go
++++ b/internal/loomcli/bootstrap_test.go
+@@ -712,27 +712,38 @@ func TestStatusStrandSpec_TitlesTheWindowWithTheRunsHandleAndRecipe(t *testing.T
+ 	}
+ }
+ 
+-// TestStatusWindowTitle pins that the status window opens its recipe with the run's board handle.
+-// It also pins that the bare recipe is kept when the board names none.
++// TestStatusWindowTitle pins that the status window opens its recipe with the worktree's console title parts.
++// It also pins that the bare recipe is kept when the hub and board name none.
+ func TestStatusWindowTitle(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 	tests := []struct {
+ 		name string
+-		// entry is the one board entry the hub's board holds; empty means the hub has no board.
+-		entry string
+-		want  string
++		// shortname is the hub's recorded shortname; empty records none.
++		shortname string
++		// entries are the board entries the hub's board holds; none means the hub has no board.
++		entries []string
++		want    string
+ 	}{
+-		{"TheRunsHandleOpensTheRecipe", `{"id":1,"slug":"run","kind":"task","labels":["bug"],"handle":"T4"}`, "T4: tapestry"},
+-		{"AnEntryOfAnotherSlugKeepsTheRecipe", `{"id":1,"slug":"other","kind":"task","labels":["bug"],"handle":"T4"}`, "tapestry"},
+-		{"NoBoardKeepsTheRecipe", "", "tapestry"},
++		{"TheRunsHandleOpensTheRecipe", "", []string{`{"id":1,"slug":"run","kind":"task","labels":["bug"],"handle":"T4"}`}, "T4: tapestry"},
++		{"TheShortnameAndProjectHandleOpenTheRecipe", "ly", []string{
++			`{"id":1,"slug":"proj","kind":"project","labels":["bug"],"handle":"P3"}`,
++			`{"id":2,"slug":"run","kind":"task","labels":["bug"],"project":"proj","handle":"T4"}`,
++		}, "ly: P3: T4: tapestry"},
++		{"AnEntryOfAnotherSlugKeepsTheRecipe", "", []string{`{"id":1,"slug":"other","kind":"task","labels":["bug"],"handle":"T4"}`}, "tapestry"},
++		{"NoBoardKeepsTheRecipe", "", nil, "tapestry"},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			location := locationkit.Location(t.TempDir(), "run", "")
+-			if tt.entry != "" {
+-				boardkit.WriteBoard(t, fabricengine.BoardDir(location.HubPath), tt.entry)
++			if len(tt.entries) > 0 {
++				boardkit.WriteBoard(t, fabricengine.BoardDir(location.HubPath), tt.entries...)
++			}
++			if tt.shortname != "" {
++				if err := fabricengine.WriteShortname(fabricengine.BoardDir(location.HubPath), tt.shortname); err != nil {
++					t.Fatalf("record the shortname: %v", err)
++				}
+ 			}
+ 			if got := statusWindowTitle(location, "tapestry"); got != tt.want {
+ 				t.Errorf("statusWindowTitle(run, tapestry) = %q; want %q", got, tt.want)
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 0fa9f8843..faeee7186 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -159,7 +159,9 @@
+ // It brings up the worktree's tmux session;
+ // it ensures the status strand on either driver, and it spawns the per-hub watchdog daemon best-effort.
+ // The status strand runs the hidden `lym loom checklist` verb in an overview window named for the run's recipe.
+-// The window is opened with the run's board handle as in `T4: tapestry` when the board names one.
++// The window is opened with the worktree's console title, as in `ly: P3: T4: tapestry`.
++// The recipe stands where the slug does.
++// A part the hub or board does not give is left out.
+ // In a beam's session it is placed right after the runs strand's overview window.
+ // The verb draws the checklist frame: the recipe's rows in order, each entry numbered after its box.
+ // A review segment takes one number.
+diff --git a/internal/loomcli/sharedbootstrap.go b/internal/loomcli/sharedbootstrap.go
+index f7fd7a74d..d4eac22b2 100644
+--- a/internal/loomcli/sharedbootstrap.go
++++ b/internal/loomcli/sharedbootstrap.go
+@@ -370,16 +370,18 @@ func (c *loomCLI) ensureStatusStrand() error {
+ 
+ // statusStrandSpec builds the spec for adding or replacing the status strand.
+ // The spec runs the checklist pane command of the lym binary at exe.
+-// Its window is titled for this run's recipe and board handle.
++// Its window is titled with the worktree's console title, the recipe standing where the slug does.
+ func (c *loomCLI) statusStrandSpec(exe string) reedengine.AddSpec {
+ 	return statusStrandAddSpec(statusStrandCmd(shell.ForGOOS(), exe), statusWindowTitle(c.location, c.recipe))
+ }
+ 
+ // statusWindowTitle returns the name of the status strand's window for a run of recipe in the worktree at location.
+-// It reads the board at the call and gives the recipe with the run's board handle, such as `T4: tapestry`.
+-// It gives the recipe alone when the board names no handle for the worktree's slug or cannot be read.
++// It reads the hub's shortname and the board at the call.
++// It gives the recipe the worktree's console title parts, such as `ly: P3: T4: tapestry`.
++// A part the hub or board does not give is left out, so the recipe stands alone when none is given.
++// No prime name is passed, so the prime's own label is never used.
+ func statusWindowTitle(location *lymcwd.Location, recipe string) string {
+-	return boardengine.TitleWithHandle(fabricengine.BoardDir(location.HubPath), location.WorktreeName, recipe)
++	return boardengine.RecipeWindowTitle(location.HubPath, location.WorktreeName, recipe)
+ }
+ 
+ // wireLanding assembles Env.Landing.
+diff --git a/internal/loomcli/smoke_drivingsurface_test.go b/internal/loomcli/smoke_drivingsurface_test.go
+index bd4977b53..3f6604714 100644
+--- a/internal/loomcli/smoke_drivingsurface_test.go
++++ b/internal/loomcli/smoke_drivingsurface_test.go
+@@ -23,6 +23,8 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/consoletitle"
++	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/orchcli"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+@@ -249,8 +251,9 @@ func TestSmokeStatusStrandAcrossDriverSeeds(t *testing.T) {
+ 		if got := display(statusPane, "#{@lym_overview}"); got != "1" {
+ 			t.Errorf("status window @lym_overview = %q; want 1; output: %s", got, out)
+ 		}
+-		if got := display(statusPane, "#{window_name}"); got != shedrun.RecipeTapestry {
+-			t.Errorf("status window name = %q; want %q, the seeded recipe; output: %s", got, shedrun.RecipeTapestry, out)
++		wantName := consoletitle.Title(hubforge.TestShortname, "", "", shedrun.RecipeTapestry)
++		if got := display(statusPane, "#{window_name}"); got != wantName {
++			t.Errorf("status window name = %q; want %q, the hub shortname and the seeded recipe; output: %s", got, wantName, out)
+ 		}
+ 		statusIndex, err := strconv.Atoi(display(statusPane, "#{window_index}"))
+ 		if err != nil {
+diff --git a/internal/reedcli/cli.go b/internal/reedcli/cli.go
+index 3de098946..6a992074a 100644
+--- a/internal/reedcli/cli.go
++++ b/internal/reedcli/cli.go
+@@ -62,6 +62,10 @@ type reedCLI struct {
+ 	// nil means placeTerminalWindow.
+ 	placeWindow func(dir string) error
+ 
++	// windowTitle is the test seam for the title the window verb forms when no --title is told.
++	// nil means terminalWindowTitle.
++	windowTitle func(dir string) string
++
+ 	// watchdogTiming, when non-nil, replaces watchdogDefaultTiming() in watchdogCmd's loop.
+ 	// It lets a test shorten the wait on the daemon; production never sets it.
+ 	watchdogTiming *watchdogTiming
+diff --git a/internal/reedcli/doc.go b/internal/reedcli/doc.go
+index 6dedb2a35..8f16945bf 100644
+--- a/internal/reedcli/doc.go
++++ b/internal/reedcli/doc.go
+@@ -45,7 +45,9 @@
+ //
+ // `window <worktree-dir> [--title <title>]` opens one desktop terminal window through `internal/termwindow`.
+ // Its shell runs `lym reed attach` in that directory, and the verb returns once the launcher process has started.
+-// It reads no location, config or engine; a directory that does not exist is refused before any launcher runs;
++// With no `--title` it titles the window with the console title of the worktree holding the directory.
++// That title is read from the hub's board.
++// It reads no acting location, config or engine; a directory that does not exist is refused before any launcher runs;
+ // a machine with no launcher reports why on the envelope.
+ //
+ // `follow` turns follow on for a session told by `--socket`, `--session` and `--tmux`.
+diff --git a/internal/reedcli/terminalwindowtitle_integration_test.go b/internal/reedcli/terminalwindowtitle_integration_test.go
+new file mode 100644
+index 000000000..c0680b9e5
+--- /dev/null
++++ b/internal/reedcli/terminalwindowtitle_integration_test.go
+@@ -0,0 +1,39 @@
++// terminalwindowtitle_integration_test.go runs terminalWindowTitle against a real hub.
++// It also runs it on a directory outside any worktree.
++
++package reedcli
++
++import (
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestTerminalWindowTitle covers a directory in no worktree, which takes its base name.
++// It also covers the prime worktree, which takes the console title of the orch session.
++func TestTerminalWindowTitle(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	outside := t.TempDir()
++	tests := []struct {
++		name string
++		dir  string
++		want string
++	}{
++		{"DirectoryInNoWorktreeTakesItsBaseName", outside, filepath.Base(outside)},
++		{"ThePrimeWorktreeTakesTheOrchTitle", h.PrimeWorktree(), strings.ToLower(hubforge.TestShortname) + ": orch"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := terminalWindowTitle(tt.dir); got != tt.want {
++				t.Errorf("terminalWindowTitle(%q) = %q; want %q", tt.dir, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/reedcli/window.go b/internal/reedcli/window.go
+index 531a82680..368598a69 100644
+--- a/internal/reedcli/window.go
++++ b/internal/reedcli/window.go
+@@ -3,6 +3,7 @@
+ // It then runs the machine's window command through internal/desktophook.
+ // It runs that command with the config of the worktree holding the told directory.
+ // It needs no acting location or engine, so the root pre-run skips it.
++// With no told title it titles the window from the told directory's worktree and the hub's board.
+ 
+ package reedcli
+ 
+@@ -11,6 +12,7 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 
++	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/desktophook"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+@@ -44,6 +46,22 @@ func placeTerminalWindow(dir string) error {
+ 	return desktophook.AfterWindow(fabricengine.ConfigDirs(l), dir)
+ }
+ 
++// terminalWindowTitle returns the title of a terminal window on dir:
++// the console title of the reed session of the worktree holding dir, or dir's base name when dir is in no worktree.
++// A prime it cannot resolve is logged at Warn, and the worktree is then titled as a task.
++func terminalWindowTitle(dir string) string {
++	l, err := lymcwd.ResolveWorktree(dir)
++	if err != nil {
++		logger.Debug("reed window: the window's directory is in no worktree, titling it with its base name", "dir", dir, "cause", err)
++		return filepath.Base(dir)
++	}
++	primeName, err := fabricengine.PrimeName(l)
++	if err != nil {
++		logger.Warn("reed window: could not resolve the prime, titling the window as a task's", "dir", dir, "cause", err)
++	}
++	return boardengine.TerminalWindowTitle(l.HubPath, primeName, l.WorktreeName)
++}
++
+ // windowCmd builds the `window` subcommand.
+ // It opens a window on any directory the caller names;
+ // the window runs only `lym reed attach` there, which attaches to that worktree's own reed session and nothing else.
+@@ -59,12 +77,17 @@ func (c *reedCLI) windowCmd() *cobra.Command {
+ launcher process has started, so the window outlives this command. When
+ the machine names a window command in desktop.yaml, it runs it next, after
+ the configured wait, and a failure of that command only warns. The
+-title defaults to the directory's base name. A directory that does not
+-exist is refused before any launcher runs, and a machine with no terminal
+-launcher reports why on the envelope.
++title defaults to the console title of the worktree holding the
++directory, read from the hub's board: "<hub shortname>: <P#>: <T#>: <slug>"
++for a task, "<hub shortname>: orch" for the prime and
++"<hub shortname>: <P#>: orch" for a beam, whose sessions hold an orch,
++with a part that does not exist left out. A directory in no worktree
++takes its base name. A directory that does not exist is refused before
++any launcher runs, and a machine with no terminal launcher reports why
++on the envelope.
+ 
+ Example:
+-  lym reed window /path/to/hub/my-task --title my-task`,
++  lym reed window /path/to/hub/my-task`,
+ 		Args: cobra.ExactArgs(1),
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+@@ -79,7 +102,11 @@ Example:
+ 			}
+ 			windowTitle := title
+ 			if windowTitle == "" {
+-				windowTitle = filepath.Base(dir)
++				formTitle := c.windowTitle
++				if formTitle == nil {
++					formTitle = terminalWindowTitle
++				}
++				windowTitle = formTitle(dir)
+ 			}
+ 			resolveLym := c.lymBinary
+ 			if resolveLym == nil {
+@@ -111,7 +138,7 @@ Example:
+ 		},
+ 	}
+ 
+-	cmd.Flags().StringVar(&title, "title", "", "window title (default: the directory's base name)")
++	cmd.Flags().StringVar(&title, "title", "", "window title (default: the worktree's console title, or the directory's base name outside a worktree)")
+ 
+ 	return cmd
+ }
+diff --git a/internal/reedcli/window_test.go b/internal/reedcli/window_test.go
+index 070191ddf..5f0d7cb9a 100644
+--- a/internal/reedcli/window_test.go
++++ b/internal/reedcli/window_test.go
+@@ -24,6 +24,7 @@ func TestWindowCmd_OpensATerminalAttachedToTheToldWorktree(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	const standInLym = "/stand-in/lym"
++	const formedTitle = "ly: P3: T7: task"
+ 	existing := t.TempDir()
+ 	tests := []struct {
+ 		name string
+@@ -41,11 +42,11 @@ func TestWindowCmd_OpensATerminalAttachedToTheToldWorktree(t *testing.T) {
+ 		wantErr string
+ 	}{
+ 		{name: "TitleFlag", args: []string{existing, "--title", "t"}, wantTitle: "t", wantCalls: 1},
+-		{name: "DefaultTitleIsTheBaseName", args: []string{existing}, wantTitle: filepath.Base(existing), wantCalls: 1},
++		{name: "DefaultTitleIsTheFormedTitle", args: []string{existing}, wantTitle: formedTitle, wantCalls: 1},
+ 		{name: "MissingDirectoryRunsNoLauncher", args: []string{filepath.Join(existing, "absent")}, wantCode: 1, wantErr: "absent"},
+-		{name: "LauncherErrorIsCarried", args: []string{existing}, openErr: errors.New("no terminal window launcher known here"), wantCode: 1, wantTitle: filepath.Base(existing), wantCalls: 1, wantErr: "no terminal window launcher"},
++		{name: "LauncherErrorIsCarried", args: []string{existing}, openErr: errors.New("no terminal window launcher known here"), wantCode: 1, wantTitle: formedTitle, wantCalls: 1, wantErr: "no terminal window launcher"},
+ 		{name: "DefaultLookupRefusesTheTestBinaryAndRunsNoLauncher", args: []string{existing}, defaultLookup: true, wantCode: 1, wantErr: "window: resolve the running lym"},
+-		{name: "WindowCommandFailureOnlyWarns", args: []string{existing}, placeErr: errors.New("window command failed"), wantTitle: filepath.Base(existing), wantCalls: 1},
++		{name: "WindowCommandFailureOnlyWarns", args: []string{existing}, placeErr: errors.New("window command failed"), wantTitle: formedTitle, wantCalls: 1},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -61,6 +62,12 @@ func TestWindowCmd_OpensATerminalAttachedToTheToldWorktree(t *testing.T) {
+ 					placed = append(placed, dir)
+ 					return tt.placeErr
+ 				},
++				windowTitle: func(dir string) string {
++					if dir != existing {
++						t.Errorf("window title formed for %q; want %q", dir, existing)
++					}
++					return formedTitle
++				},
+ 			}
+ 			if !tt.defaultLookup {
+ 				c.lymBinary = func() (string, error) { return standInLym, nil }
+diff --git a/internal/reedengine/config_test.go b/internal/reedengine/config_test.go
+index 2d453dfad..916509343 100644
+--- a/internal/reedengine/config_test.go
++++ b/internal/reedengine/config_test.go
+@@ -95,12 +95,12 @@ func TestLoadConfig_TemplateDefaultsResolve(t *testing.T) {
+ 		{Label: "HALT", Run: "lym tender pause {slug}"},
+ 		{Label: "CANCEL", Run: "lym batten cancel {slug}", Confirm: "Cancel {slug}?"},
+ 		{Label: "code", Run: "lym ide spawn {slug}"},
+-		{Label: "terminal", Run: "lym reed window {worktree} --title {slug}"},
++		{Label: "terminal", Run: "lym reed window {worktree}"},
+ 		{Label: "agent", Run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]'", Ask: "Agent name:", AskDefault: "agent"},
+ 	}
+ 	wantBeamButtons := []buttonWant{
+ 		{Label: "code", Run: "lym ide spawn {slug}"},
+-		{Label: "terminal", Run: "lym reed window {worktree} --title {slug}"},
++		{Label: "terminal", Run: "lym reed window {worktree}"},
+ 		{Label: "agent", Run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]'", Ask: "Agent name:", AskDefault: "agent"},
+ 		{Label: "distill", Run: "lym orch distill", Confirm: "Distill the orch?"},
+ 		{Label: "refresh", Run: "lym orch refresh", Confirm: "Refresh the orch?"},
+@@ -112,7 +112,7 @@ func TestLoadConfig_TemplateDefaultsResolve(t *testing.T) {
+ 	// and the board refuses a task write from a slug-carrying session.
+ 	wantPrimeButtons := []buttonWant{
+ 		{Label: "code", Run: "lym ide spawn {slug}"},
+-		{Label: "terminal", Run: "lym reed window {worktree} --title {slug}"},
++		{Label: "terminal", Run: "lym reed window {worktree}"},
+ 		{Label: "agent", Run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]'", Ask: "Agent name:", AskDefault: "agent"},
+ 		{Label: "board", Run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]' --skill scribe:prose --skill scribe:conversation --skill ly:board-policy --skill ly:board", Ask: "Board agent name:", AskDefault: "board"},
+ 		{Label: "distill", Run: "lym orch distill", Confirm: "Distill the orch?"},
+diff --git a/internal/reedengine/template_posix.yaml b/internal/reedengine/template_posix.yaml
+index 183f256eb..fffc70411 100644
+--- a/internal/reedengine/template_posix.yaml
++++ b/internal/reedengine/template_posix.yaml
+@@ -29,7 +29,7 @@ buttons:  # status-bar buttons in the groups task, beam and prime; an entry has
+     - label: code
+       run: lym ide spawn {slug}
+     - label: terminal
+-      run: lym reed window {worktree} --title {slug}
++      run: lym reed window {worktree}
+     - label: agent
+       ask: "Agent name:"
+       ask_default: agent
+@@ -38,7 +38,7 @@ buttons:  # status-bar buttons in the groups task, beam and prime; an entry has
+     - label: code
+       run: lym ide spawn {slug}
+     - label: terminal
+-      run: lym reed window {worktree} --title {slug}
++      run: lym reed window {worktree}
+     - label: agent
+       ask: "Agent name:"
+       ask_default: agent
+@@ -59,7 +59,7 @@ buttons:  # status-bar buttons in the groups task, beam and prime; an entry has
+     - label: code
+       run: lym ide spawn {slug}
+     - label: terminal
+-      run: lym reed window {worktree} --title {slug}
++      run: lym reed window {worktree}
+     - label: agent
+       ask: "Agent name:"
+       ask_default: agent
+diff --git a/internal/reedengine/template_windows.yaml b/internal/reedengine/template_windows.yaml
+index 79cc4c4ec..b0fe3406a 100644
+--- a/internal/reedengine/template_windows.yaml
++++ b/internal/reedengine/template_windows.yaml
+@@ -29,7 +29,7 @@ buttons:  # status-bar buttons in the groups task, beam and prime; an entry has
+     - label: code
+       run: lym ide spawn {slug}
+     - label: terminal
+-      run: lym reed window {worktree} --title {slug}
++      run: lym reed window {worktree}
+     - label: agent
+       ask: "Agent name:"
+       ask_default: agent
+@@ -38,7 +38,7 @@ buttons:  # status-bar buttons in the groups task, beam and prime; an entry has
+     - label: code
+       run: lym ide spawn {slug}
+     - label: terminal
+-      run: lym reed window {worktree} --title {slug}
++      run: lym reed window {worktree}
+     - label: agent
+       ask: "Agent name:"
+       ask_default: agent
+@@ -59,7 +59,7 @@ buttons:  # status-bar buttons in the groups task, beam and prime; an entry has
+     - label: code
+       run: lym ide spawn {slug}
+     - label: terminal
+-      run: lym reed window {worktree} --title {slug}
++      run: lym reed window {worktree}
+     - label: agent
+       ask: "Agent name:"
+       ask_default: agent
+diff --git a/pattern/PATTERN-leaf-packages.md b/pattern/PATTERN-leaf-packages.md
+index d2f8478a7..e849b6d7e 100644
+--- a/pattern/PATTERN-leaf-packages.md
++++ b/pattern/PATTERN-leaf-packages.md
+@@ -84,6 +84,10 @@ Imports only the standard library, `internal/logger`, `internal/stencil` and `in
+ 
+ Imports only the standard library.
+ 
++## `internal/consoletitle`
++
++Imports only the standard library, so `fabricengine`, which learns nothing of the board, forms a workspace title with the same function the board's titles use.
++
+ ## `internal/lensreport`
+ 
+ Imports only the standard library, so every lens review host and `planparser` can share the lens report naming.
