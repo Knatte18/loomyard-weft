@@ -1,0 +1,14 @@
+{
+  "session_id": "8335bbf4-3ebd-4702-b135-db644159811c",
+  "row": "Finalize",
+  "role": "fixer",
+  "model": "claude-opus-5-5",
+  "engine": "claude",
+  "input_tokens": 48,
+  "cache_write_tokens": 72300,
+  "cache_read_tokens": 1090127,
+  "output_tokens": 14797,
+  "cost_usd": 0.8756574,
+  "started": "2026-11-09T20:45:05Z",
+  "ended": "2026-11-09T20:51:02Z"
+}
