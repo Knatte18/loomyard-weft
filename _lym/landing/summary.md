@@ -1,62 +1,36 @@
-# A new loom config key no longer breaks every TestLoadConfig_Loads case
+# Loom config tests: a new key no longer breaks every load case
 
-`TestLoadConfig_Loads` in `internal/loomengine` compared each case against a hard-coded whole `Config`.
-Adding one key with a non-zero default to `loom.yaml` therefore failed every case, about fifty subtests.
-This change makes each case pin only the fields it is about.
-It also makes the one test that pins every module's key set say which key goes where.
+Adding loom config keys failed dozens of tier 0 tests, nearly all of them cases of `TestLoadConfig_Loads` in `internal/loomengine`.
+Each case compared the whole loaded `Config`, so one new key broke every case.
+This change makes those cases assert only what they change, and makes the one test that must fail for an unclassified key say how to fix it.
+Only test files change.
 
 ## What changes
 
-- **`internal/loomengine/config_test.go`**: the hard-coded `templateConfig()` struct is gone.
-  The test loads the shipped template once, and each case's `mutate` changes that loaded value.
-  A case therefore names only the fields its file changes, and every other field must equal the template's own load.
-  The hub-stack subtests use the same base.
-  The template's parsed values are still pinned by a `template defaults` subtest.
-  That subtest compares each field named in a `templateDefaults` map, keyed by `Config` field name.
-  A key added to the template needs no entry, and a renamed field fails, naming the stale entry.
-- **`internal/configreg/configreg_test.go`**: `TestModules_EveryTemplateKeyClassified` stays the one test that pins each module's whole key set.
-  Its messages now name what to do:
-  - An unclassified template unit names the key and the `Categories` map to add it to.
-    The map's owner is the module's `Spec` function, found through `runtime.FuncForPC`, so the message cannot go stale.
-  - A `Categories` entry that names no template path says to drop it, or to add the template line.
-  - A `LocalKeys`, `LocalDenied` or `MachineKeys` mismatch lists the keys to add to and drop from the expected list in the test.
+- `TestLoadConfig_Loads` builds each case's expected `Config` from the template's own load (`loadTemplateConfig`), then applies the case's `mutate`.
+  A key added to the template needs no edit to the table.
+- The `templateConfig()` struct literal is replaced by `templateDefaults`, a map from field name to the value the template's line parses to.
+  A `template defaults` subtest checks each entry against the template load, so the parse of each existing key stays pinned.
+  A key added to the template needs no entry; an entry naming a field `Config` no longer has fails the subtest.
+- `TestModules_EveryTemplateKeyClassified` in `internal/configreg` stays the one test that pins each module's whole key set.
+  Its failures now name the key and where it goes:
+  - an unclassified template unit names the `Categories` map (by its function) to add it to, and the two categories to choose between;
+  - a `Categories` entry with no template path says to drop it or add the template line;
+  - a `LocalKeys`, `LocalDenied` or `MachineKeys` mismatch names the keys to add to or drop from the expected list, via `keyListWayForward`.
+- `TestKeyListWayForward` pins the wording of that helper for add, drop, add-and-drop and order-only cases.
+
+## Other whole-set tests
+
+The task asked to list the other tests that fail for any added key.
+They are `TestLookup` in `internal/configreg`, `TestWire_ReviewKeysReachTheEnv` in `internal/loomcli` and `TestRecipes_KeySet` in `internal/shedcli`.
+This change leaves them as they are: each pins a key set on purpose, so a new key failing them is the intended prompt to register it.
 
 ## Design decisions
 
-- The base each case is compared against is the template's own load, not a struct literal.
-  A case still asserts that nothing beyond its named fields moved.
-  The table no longer restates the default of every key.
-- Template values are pinned field by field through a name map, not a struct literal.
-  So the pin holds for a zero default such as `DiscussionInteractive: false`, and a new field never touches it.
+- The expected value of a case is the template's load, not a fixed literal.
+  A case that changes nothing from the template therefore compares the template load with itself; the `template defaults` subtest is what guards the template's own values.
+- The whole-key-set pin stays in `configreg` rather than being removed, because a key nobody classified must still fail.
 
-## Other tests that pin a whole struct or key list
+## To check by hand
 
-These fail when a key is added. They are listed here and left unchanged, as the board entry asks.
-
-Any key with a non-zero default in that module's template breaks:
-
-- `internal/darnengine/config_test.go` `TestLoadConfig` (`templateConfig()` literal)
-- `internal/driftengine/config_test.go` `TestLoadConfig` (`templateConfig()` literal)
-- `internal/dobbyengine/config_test.go` `TestLoadConfig` (`defaultsWith()` literal)
-- `internal/gateslot/config_test.go` `TestLoadConfig` and `TestTemplateConfigAndLimits` (`templateDefaults` struct, whole `Gates` map included)
-- `internal/websterengine/config_test.go` `TestLoadConfig` (`templateDefaults` and `absentKnobs` literals)
-- `internal/sheddriver/config_test.go` `TestLoadConfig` (`templateDefaults` and full `Config` literals)
-- `internal/samplerengine/config_test.go` `TestLoadConfig`
-- `internal/slackengine/config_test.go` `TestLoadConfig`
-- `internal/reportconfig/config_test.go` `TestLoadConfig`
-- `internal/loomengine/tapestry_test.go` `TestLoadTapestryConfig` (full `TapestryConfig` literal; any `tapestry.yaml` key)
-
-Any key at all, by design:
-
-- `internal/slackengine/config_test.go` `TemplateKeysAreExactlyRemindAfterMin` pins slack's whole key list.
-- `internal/configreg/configreg_test.go` `TestModules_EveryTemplateKeyClassified`, the classification pin kept above.
-
-Only a key of a certain kind:
-
-- `internal/configreg/configreg_test.go` `TestLookup`: a new list-valued loom or tapestry key, through the pinned `OpenMaps` list.
-- `internal/loomcli/wiring_test.go` `TestWire_ReviewKeysReachTheEnv`: a key that adds a review segment or a `SegmentSettings` field, since each segment's entry is pinned whole.
-- `internal/shedcli/table_test.go` `TestRecipes_KeySet`: a new recipe, not a config key.
-- `internal/lenses/config_test.go` `TestConfigTemplate_DecodesAndIsSelfConsistent`: a new lens or fan.
-- `internal/modelspec/template_test.go` `TestConfigTemplate_LoadsWithLiveEntries`: a new model alias.
-
-The `internal/configengine` and `internal/yamlengine` tests were not surveyed.
+Nothing outstanding; the change is tests only and the tier 0 tests for `internal/configreg` and `internal/loomengine` cover it.
