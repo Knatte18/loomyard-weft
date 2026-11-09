@@ -1044,6 +1044,26 @@
       "created": "2026-11-09T18:35:39Z",
       "revised": "2026-11-09T18:36:10Z",
       "project": "codex-engine-trial"
+    },
+    {
+      "id": 1270,
+      "handle": "E4",
+      "slug": "redundancy-sweep-existing",
+      "title": "Cut the existing redundant tests of every package, found by the coverage maps",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "testkit",
+        "gate"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (orch, 2026-11-09)\n\nThe coverage maps (`internal/testcover`, rebuilt by `lym gate testmap`) record, per package, the blocks each tier 0 and tier 1 test covers.\nThe planned gate report judges only the new tests of a diff against the map; nothing yet uses the maps to find redundant tests that already exist.\nThe operator wants the existing ones cut, across the packages, not only kept from growing.\n\n## Idea\n\n1. A candidate list per package: every test whose covered blocks the package's other tests already cover, with its run time, using the same judgment as the gate report.\n   Tests marked `//testtiming:keep` are left out.\n2. Cut tasks on that list, slowest packages first, each run delegating the per-test reading to subagents:\n   a candidate is cut or folded into another test only when its assertions add nothing the covering tests check, since equal coverage does not mean equal checks.\n3. `internal/fabricengine` was swept by hand on 2026-11-08 and is being reworked by its serial-phase tasks, so it comes last or not at all.",
+      "created": "2026-11-09T18:47:33Z",
+      "revised": "2026-11-09T18:47:33Z",
+      "project": "redundancy-check"
     }
   ],
   "prime_owner": "neve",

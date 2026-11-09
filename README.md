@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-09 18:45 UTC; every age below is as of then.
+Rendered 2026-11-09 18:47 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -37,7 +37,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B9 |  | **Codex keeps forcing its bubblewrap sandbox, so astra fails on OSL-1046** | [`codex-bubblewrap-sandbox`](design-codex-bubblewrap-sandbox.md) | 10m<br>9m | codex, shuttle |
+| B9 |  | **Codex keeps forcing its bubblewrap sandbox, so astra fails on OSL-1046** | [`codex-bubblewrap-sandbox`](design-codex-bubblewrap-sandbox.md) | 11m<br>11m | codex, shuttle |
 
 #### Features (1)
 
@@ -73,7 +73,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Fewer git processes in the serial phase of internal/fabricengine tier 1**<br>• About 65 thousand git processes, each slower as more run at once | [`fabric-serial-git-spawns`](design-fabric-serial-git-spawns.md) | darn · solid | T2 | 6h<br>5m | fabric, git, gate |
+| T1 | **Fewer git processes in the serial phase of internal/fabricengine tier 1**<br>• About 65 thousand git processes, each slower as more run at once | [`fabric-serial-git-spawns`](design-fabric-serial-git-spawns.md) | darn · solid | T2 | 6h<br>7m | fabric, git, gate |
 
 ### Notes (0)
 
@@ -114,9 +114,9 @@ Not released; nothing starts it until its status is cleared.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-## [P5 Redundant tests found mechanically: a coverage engine, a map per package, a gate report and its review](project-redundancy-check.md) (3)
+## [P5 Redundant tests found mechanically: a coverage engine, a map per package, a gate report and its review](project-redundancy-check.md) (4)
 
-[`redundancy-check`](design-redundancy-check.md) · Age 23h · Owner `neve`
+[`redundancy-check`](design-redundancy-check.md) · Age 1d · Owner `neve`
 
 ### Tasks (3)
 
@@ -134,13 +134,19 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T9 | `draft` **The prime parent's dobby starts lym gate testmap after every test_map_every landings** | [`testmap-dobby-refresh`](design-testmap-dobby-refresh.md)<br>[Sketch](decision-testmap-dobby-refresh.md) | darn · light |  | 23h<br>23h | testkit, gate |
-| T10 | `draft` **An advisory redundancy report step in lym gate test, judging a diff's new tests against the map** | [`gate-redundancy-report`](design-gate-redundancy-report.md)<br>[Sketch](decision-gate-redundancy-report.md) | darn · solid |  | 23h<br>23h | testkit, gate |
-| T11 | `draft` **Code review reads the gate's redundancy report, and PATTERN-test-speed names the map, verb and step** | [`review-reads-redundancy`](design-review-reads-redundancy.md)<br>[Sketch](decision-review-reads-redundancy.md) | darn · light | T10 | 23h<br>23h | testkit, gate |
+| T9 | `draft` **The prime parent's dobby starts lym gate testmap after every test_map_every landings** | [`testmap-dobby-refresh`](design-testmap-dobby-refresh.md)<br>[Sketch](decision-testmap-dobby-refresh.md) | darn · light |  | 1d<br>1d | testkit, gate |
+| T10 | `draft` **An advisory redundancy report step in lym gate test, judging a diff's new tests against the map** | [`gate-redundancy-report`](design-gate-redundancy-report.md)<br>[Sketch](decision-gate-redundancy-report.md) | darn · solid |  | 1d<br>1d | testkit, gate |
+| T11 | `draft` **Code review reads the gate's redundancy report, and PATTERN-test-speed names the map, verb and step** | [`review-reads-redundancy`](design-review-reads-redundancy.md)<br>[Sketch](decision-review-reads-redundancy.md) | darn · light | T10 | 1d<br>1d | testkit, gate |
 
-### Notes (0)
+### Notes (1)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+#### Enhancements (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| E4 |  | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 0m<br>0m | testkit, gate |
 
 ### Done (1)
 
@@ -148,7 +154,7 @@ Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T3 | **lym gate testmap rebuilds stale coverage maps in the prime parent's worktree** | [`testmap-verb`](design-testmap-verb.md)<br>[Sketch](decision-testmap-verb.md) | 23h<br>23h | testkit, gate |
+| T3 | **lym gate testmap rebuilds stale coverage maps in the prime parent's worktree** | [`testmap-verb`](design-testmap-verb.md)<br>[Sketch](decision-testmap-verb.md) | 1d<br>1d | testkit, gate |
 
 ## [P0 Root: entries under no project](project-root.md) (30)
 
@@ -164,7 +170,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Adopt as one resumable algorithm that never starts work on its own**<br>• Detached, step-recorded adopt that pauses every adopted run, writes the owner early, can skip the orch, and is entered through lym s | [`adopt-robust`](design-adopt-robust.md) | motif | Discussion-Burler-Fix | neve | 36m<br>26m | batten, tender, dobby, orch, fabric, shortcut |
+| T14 | **Adopt as one resumable algorithm that never starts work on its own**<br>• Detached, step-recorded adopt that pauses every adopted run, writes the owner early, can skip the orch, and is entered through lym s | [`adopt-robust`](design-adopt-robust.md) | motif | Discussion-Burler-Fix | neve | 38m<br>28m | batten, tender, dobby, orch, fabric, shortcut |
 
 #### Ready (0)
 
@@ -201,7 +207,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B1 | H | **Tests that compare a measured time to a limit fail on a loaded machine**<br>• TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver took 6.18 s against a 5 s stub delay under load and cost a full gate pass. | [`load-sensitive-timing-tests`](design-load-sensitive-timing-tests.md) | 4h<br>3h | gate, testkit |
 | B2 |  | **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | 1d<br>3h | shed, friction |
 | B3 | H | **The verify gate runs slower tiers after a tier already failed**<br>• A failed tier 0 still ran an 11-minute tier 1; stop at the first failing tier. | [`gate-stop-at-failing-tier`](design-gate-stop-at-failing-tier.md) | 3h<br>3h | gate, darn |
-| B4 | H | **A verify gate scopes to nearly the whole suite; scope it by the coverage map**<br>• A diff in a widely imported package reruns tiers 0 to 2 across the suite, 30 to 40 minutes on OSL-1046. | [`gate-scope-by-coverage-map`](design-gate-scope-by-coverage-map.md) | 3h<br>17m | gate, testkit, darn |
+| B4 | H | **A verify gate scopes to nearly the whole suite; scope it by the coverage map**<br>• A diff in a widely imported package reruns tiers 0 to 2 across the suite, 30 to 40 minutes on OSL-1046. | [`gate-scope-by-coverage-map`](design-gate-scope-by-coverage-map.md) | 3h<br>19m | gate, testkit, darn |
 | B5 | H | **One new loom config key fails dozens of tests that pin the whole struct**<br>• TestLoadConfig_Loads compares the whole struct in every case, so each added key breaks them all. | [`config-struct-test-per-key`](design-config-struct-test-per-key.md) | 3h<br>3h | loom, config, testkit |
 | B6 | H | **The Darn-Write verify gate has no time budget and no notice when it runs long**<br>• verify_attempts bounds attempts, not minutes; a gate stood 35 minutes unannounced. | [`verify-gate-wall-budget`](design-verify-gate-wall-budget.md) | 3h<br>3h | gate, darn |
 | B7 |  | **Gate escalation reports "did not pass after 0 attempts" and blocks the step as escalation-to-human** | [`gate-zero-attempts-halt`](design-gate-zero-attempts-halt.md) | 3h<br>3h | gate, loom, darn |

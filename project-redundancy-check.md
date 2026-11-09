@@ -1,9 +1,9 @@
 # P5 Redundant tests found mechanically: a coverage engine, a map per package, a gate report and its review
 
-Rendered 2026-11-09 18:45 UTC; every age below is as of then.
+Rendered 2026-11-09 18:47 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`redundancy-check`](design-redundancy-check.md) · Age 23h · Owner `neve`
+[`redundancy-check`](design-redundancy-check.md) · Age 1d · Owner `neve`
 
 Groups the entries filed from the Sketch `redundant-test-finder`: testcover-engine, testmap-verb, testmap-dobby-refresh, gate-redundancy-report, review-reads-redundancy.
 
@@ -26,13 +26,19 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T9 | `draft` **The prime parent's dobby starts lym gate testmap after every test_map_every landings** | [`testmap-dobby-refresh`](design-testmap-dobby-refresh.md)<br>[Sketch](decision-testmap-dobby-refresh.md) | darn · light |  | 23h<br>23h | testkit, gate |
-| T10 | `draft` **An advisory redundancy report step in lym gate test, judging a diff's new tests against the map** | [`gate-redundancy-report`](design-gate-redundancy-report.md)<br>[Sketch](decision-gate-redundancy-report.md) | darn · solid |  | 23h<br>23h | testkit, gate |
-| T11 | `draft` **Code review reads the gate's redundancy report, and PATTERN-test-speed names the map, verb and step** | [`review-reads-redundancy`](design-review-reads-redundancy.md)<br>[Sketch](decision-review-reads-redundancy.md) | darn · light | T10 | 23h<br>23h | testkit, gate |
+| T9 | `draft` **The prime parent's dobby starts lym gate testmap after every test_map_every landings** | [`testmap-dobby-refresh`](design-testmap-dobby-refresh.md)<br>[Sketch](decision-testmap-dobby-refresh.md) | darn · light |  | 1d<br>1d | testkit, gate |
+| T10 | `draft` **An advisory redundancy report step in lym gate test, judging a diff's new tests against the map** | [`gate-redundancy-report`](design-gate-redundancy-report.md)<br>[Sketch](decision-gate-redundancy-report.md) | darn · solid |  | 1d<br>1d | testkit, gate |
+| T11 | `draft` **Code review reads the gate's redundancy report, and PATTERN-test-speed names the map, verb and step** | [`review-reads-redundancy`](design-review-reads-redundancy.md)<br>[Sketch](decision-review-reads-redundancy.md) | darn · light | T10 | 1d<br>1d | testkit, gate |
 
-## Notes (0)
+## Notes (1)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Enhancements (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| E4 |  | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 0m<br>0m | testkit, gate |
 
 ## Done (1)
 
@@ -40,4 +46,4 @@ Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T3 | **lym gate testmap rebuilds stale coverage maps in the prime parent's worktree** | [`testmap-verb`](design-testmap-verb.md)<br>[Sketch](decision-testmap-verb.md) | 23h<br>23h | testkit, gate |
+| T3 | **lym gate testmap rebuilds stale coverage maps in the prime parent's worktree** | [`testmap-verb`](design-testmap-verb.md)<br>[Sketch](decision-testmap-verb.md) | 1d<br>1d | testkit, gate |
