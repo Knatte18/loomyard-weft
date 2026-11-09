@@ -85,7 +85,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **The arras recipe and its split perch**<br>• `loom: code_assist_reviewer_model astra[medium]` | [`arras-recipe-perch`](design-arras-recipe-perch.md)<br>[Sketch](decision-arras-recipe-perch.md) | darn · solid | Open-Window | osl-1046 | 22h<br>22h | shed, loom, burler, arbiter, board |
+| T6 | **The arras recipe and its split perch**<br>• `loom: code_assist_reviewer_model astra[medium]` | [`arras-recipe-perch`](design-arras-recipe-perch.md)<br>[Sketch](decision-arras-recipe-perch.md) | darn · solid | Seed-IDE | osl-1046 | 22h<br>22h | shed, loom, burler, arbiter, board |
 
 #### Ready (0)
 
@@ -193,7 +193,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T4 | 29m<br>27m | slack, reed, creel |
+| T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T4 | 30m<br>27m | slack, reed, creel |
 
 ### Notes (17)
 
