@@ -4,181 +4,24 @@
 
 ## Seen
 
-`docs/research/tokens/token-audit-2026-10-22`: the Plan writer is the costliest session type, about $8 per run, $1,306 with its forks over two weeks (18% of all spend).
-It averages 81 turns at a mean context of 223k, holds 153k by its first fork and peaks around 308k, mostly from about 71 raw `sed -n`/`grep` code reads.
-Every `twill-plan` lens fork inherits that context, about 287k per turn; since 2026-10-20 the writer and its forks cost about $18 per run.
+The Plan writer is the costliest session type: about 18% of all spend in the token audit of 2026-10-22 (`docs/research/tokens/token-audit-2026-10-22`).
+The 2026-11-08 re-measure (`docs/research/loom/writer-cost-remeasure-2026-11-08/report.md`, five tapestry runs) finds the Plan phase at $17.05 a run for the writer and its forks, 3.2 Plan rounds a run, and review and fix 51% of the phase, about $5.6 a round.
+Exploration is 46% of the writers' cost, and the lookup subagents cost about what they keep out of the writers' context (`docs/research/turns/writer-lookups-measure-2026-11-04/report.md`).
 
-## Idea (orch, not decided)
+## What stands
 
-Fork the lenses earlier, before the code reads pile up, or hand the writer a digest of the code it needs instead of raw reads.
-Cutting a quarter of the writer's and its forks' cost saves about 4.5% of all spend; quality must be benched first.
+- Raddle splits a Sketch into parts before any plan, and the arras recipe is planned to run Motif and raddle in a row, so the Plan writer cost is avoided, not cut, for work that goes that way.
+  Plan cost grows too slowly with size to need sub-planners per part; that idea is dropped.
+- Discussion stays a separate step; folding it into the Plan writer would add turns to the costliest session (operator, 2026-10-25).
+- A code digest instead of raw reads is rejected, and so are lens forks as fresh agents (that is the perch).
+  The writer's read-back of the plan files after `fork0` is needed and stays.
+- Split writing exists as the opt-in producers `Parts-Write` and `Parts-Plan-Write`, behind the tapestry flag `plan_split`, off by default; the benches (`docs/research/loom/plan-split/`) say keep it off.
+- `relevant.md` works as a floor, not a boundary: 85% of the files it names are read, but only 28% of the files read are named (`docs/research/loom/plan-writer-audit-2026-10-24/`).
 
-## Discussion with the operator (2026-10-22)
+## Still open
 
-- A code digest instead of raw reads is rejected: it is too inexact unless the code itself is read, and the writer would read the source anyway to be sure.
-  Finding what to read is already `relevant.md`'s job; whether the writer uses it is worth measuring (how much of what the writer read the list named).
-- Lens forks as fresh agents are rejected: that is the perch itself.
-- Sub-planners per part were dropped (operator, 2026-11-08): raddle already splits a Sketch into parts before any plan, and `docs/research/loom/writer-cost-remeasure-2026-11-08/report.md` found Plan cost does not grow fast enough with size to need them.
-- Plan review could split per part, since each fresh reviewer rebuilds its context every round (Plan reviewer: 48 turns at 123k mean context, $2.48 per session); the 2026-11-08 re-measure found review and fix are 51% of the Plan phase, about $5.6 a round, at 3.2 rounds a run.
-- Twill-plan versus a solo writer: since the full `twill-plan` fan (2026-10-20), 7 landed loom runs average 2.00 Plan rounds against 2.09 before, while the writer's forks cost about $7 per run and a Plan round about $3.70; too few runs to judge.
-  The operator sees strong signs that the twill writer makes a far better one-shot plan in shorter time, and time counts as well as tokens.
-  Still, test a solo Opus high writer: compare twill, solo Opus high and solo Fable on Plan cost, Plan rounds and Plan wall time (`lym report timing`) per run.
-
-## Split writing: two variants to bench (operator, 2026-10-22)
-
-Discussion-Write and Plan-Write already run as `shedadapters.MultiLLMProducer` over a `seatengine` table, a chair and advisors; advisors only advise, and twill is the chair forking itself, so today one session writes the whole product.
-Two ways to have parts written separately, both benched against each other and against the twill and solo writers before anything reaches production:
-
-1. **Seats with writing assistants.** The chair splits the scope, fixes the interfaces and shared spots, and hands each assistant seat its part; it then joins and checks the parts.
-   A new seat role beside the advisor.
-   Risks: assistants see neither each other's work nor a shared context, so seams fall to the chair and review, and overlapping parts make several seats read the same code.
-2. **Fork-based.** The chair keeps its context lean (scope, split and shared spots only) and forks once per part, so every part writer inherits the same overview without the writer's full reading.
-   Technically still one writer with forks, like twill but forking early.
-
-## Data check (Sonnet agent, 2026-10-24)
-
-Plan writer plus its lens forks, means per run (API list price):
-
-| group | runs | writer+forks | forks | Plan-Write wall | Plan rounds |
-|---|---|---|---|---|---|
-| before 10-15 (solo writer) | 28 | $9.08 | $0.58 | 16.4 min active | 1.3 |
-| 10-15 to 10-19 | 41 | $9.39 | $3.86 | 18.5 min | 1.88 |
-| 10-20 to c62274be5 (full twill-plan fan) | 7 | $18.14 | $7.66 | 23.9 min | 2.00 |
-| after c62274be5 (five lenses) | 3 | $16.64 | $7.40 | 23.9 min | 1.33 |
-
-- The later groups are larger tasks, so the cost rise is not the fan alone; the five-lens group is too small to judge.
-- `relevant.md` use, over 32 runs with a list and a Plan-Write transcript: 85% of named files were read, but only 28% of read files were named (about 3.5 files read per file named, about 7 on large runs). Both shares are lower bounds (directory greps and quarry reads not counted).
-- So `relevant.md` works as a floor, not a boundary; most unnamed reading looks like tests and neighbouring callers, which a per-part split of the list would not remove.
-- Still open: the solo Opus high and Fable writer bench; the split-writing variant has since been built and benched against `Plan-Write` (see the last section).
-- Scripts, baseline tables and `results.md` are in `docs/research/loom/plan-writer-audit-2026-10-24/`; rerun per its README.
-
-## Discussion versus Plan: double reading (Sonnet agent, 2026-10-25)
-
-55 loom runs seeded 2026-10-15 or later with both a `ly:<slug>:discussion` and a `ly:<slug>:plan` transcript on this machine; cost at API list price from the 10-24 tokencount reports, per run:
-
-| | Discussion | Plan |
-|---|---|---|
-| phase total (writer, forks, review, fix) | $8.68 | $18.51 |
-| writer session alone | $2.07 | $6.60 |
-| writer turns / mean context | 39 / 89k tokens | 83 / 183k tokens |
-| repo files read by the writer (pooled) | 1,093 | 3,286 |
-| share read by both | 62% of Discussion's reads re-read by Plan | 21% of Plan's reads read by Discussion |
-| same, without `PATTERN.md`, `CLAUDE.md`, `pattern/`, `docs/` | 64% | 20% |
-
-- Discussion costs 0.47 of Plan for the phase and 0.31 for the writer alone; Discussion was the dearer phase in only 4 of 55 runs.
-- Plan-Write re-reads about 62% of the files Discussion-Write read (mean of per-run shares 62%), so exploration is repeated, but Plan reads about three times as many files and most of its reading (79%) is new.
-- Rough size of the repeat: the Plan-Write reads that Discussion had already made are about 3.3M tokens pooled, about 59k per run (file bytes at current `main` divided by 4; whole files assumed, so an upper bound).
-  That is roughly a third of the Plan writer's mean context, and it is paid again on every later turn through the cache.
-- File-level only: directory greps, globs and `lym quarry` reads are not counted, and a file is the same file by path, not by the lines read.
-- The Discussion phase total holds its review rounds and fixers, which is most of its cost beyond the writer; the segment figures come from the 10-24 tokencount reports, so runs landed since are priced as of then.
-- Rerun: `.scratch/discussion-overlap/reads2.sh <slug> plan|discussion` per run, then `analyze.sh`; both stay in `.scratch` and are not committed.
-- Decision (operator, 2026-10-25): Discussion stays a separate step; folding it into the Plan writer would add turns to the costliest session.
-
-## Turn audit (landed 2026-10-28)
-
-`docs/research/turns/turn-audit-2026-10-28/report.md` (n = 1 loom run, 213 sessions) finds the Plan writer spends 33 of its 101 turns on serial single-call reads and searches, mostly shell `grep` and `sed -n`, which a merged turn would remove.
-It recommends one stencil sentence in `loom-template-plan.md` and in the twill lens directive: issue every search and read you can name in one message.
-This is a cheaper cut than the digest, the earlier fork and the split writing above, and the audit proposes no pre-read for the writer.
-The Plan row rests on one session; the recommendation was later applied and measured, see the next section.
-
-## Batching effect audit (landed 2026-11-01)
-
-The turn audit's recommendation above was applied (the batching sentences of `bf00a043`, 2026-10-28), and `docs/research/turns/batching-effect-audit-2026-11-01/report.md` measured it on 8 runs, 7 landed (5 before, 2 after).
-It finds no batching effect, and the sample cannot show a small one: the Plan writer issued 1.14 calls per turn after against 1.29 before, its single-call turn share was 83% against 75%, and its serial read and search turns were 44% of its turns against 41%.
-The Discussion writer is level on every measure.
-The 33-of-101 serial turns the turn audit found are still there, so the ideas above keep their value.
-
-## Batching moved to heddle (landed 2026-11-01)
-
-`plan-edits-before-gate` (`1834cebf`) removed the batching sentences from the stencils, `loom-template-plan.md`, `loom-template-discussion.md` and `twill-directive.md` among them.
-The one rule (read in one message, decide every edit, make them in one message, one gate run) is now the shipped heddle entry `lym-plan-edits-before-gate`, rendered after `lym-batching`.
-Its effect on agent behaviour is not measured; `agent-turns-effect` measures it.
-Task `turn-savings-measure` (`3207d97e`, 2026-11-04) has since measured project `agent-turns` as a whole in `docs/research/turns/turn-savings-measure-2026-11-04/report.md`, over the 20 most recent darn runs and 4 tapestry runs: the darn writer issues 2.05 calls a turn against 1.08, and shell edits fall from 339 calls to 21.
-The report covers darn and Webster, not the Plan writer's serial lookups, so those stay unmeasured here.
-Task `batching-hook-remeasure` (`d05c8d75`, 2026-11-05, `docs/research/turns/batching-hook-remeasure-2026-11-05/report.md`) has since measured the rule's effect on edit chains: edit follows rose from 4.2% to 6.9% of context, all mid-round and none after a failed gate, so the rule does not stop mid-round edit splitting; its one open question was the hook's live gap, which `batching-hook-remeasure-wait` has since closed (see the 2026-11-08 section below).
-`plan-reviewer-batching` (`5227aeaa`) added a wave structure for the fanned Plan reviewer's pre-read in `burler-fork-reading.md`; it too is unmeasured.
-
-## Writer lookups measured (landed 2026-11-04)
-
-Task `planner-fork-lookups` (`482c05d4`, `docs/research/turns/writer-lookups-measure-2026-11-04/report.md`) measured the Plan and Discussion writers' exploration on 7 sessions of 3 tapestry runs, with no agent run.
-- The 3 Plan writers each handed one batch of 3 or 4 `sonnet` lookup subagents to the Agent tool in one message; 1 of 3 full Discussion sessions did.
-- Exploration is 46% of the writers' cost ($11.03 of $23.76); 15% of it is paid above 200k context, every chain above 200k is in a Plan session after its one batch, and 3 of the 6 are single-call serial lookups.
-- Moving every search turn to subagents would save at most about $4.7, one fifth of writer spend; for the short late chains, batching in the writer saves more.
-- The report recommends no bench of the excerpt cut below and no stronger stencil now, and a re-run once more tapestry runs have landed; that re-run landed on 2026-11-08 (see below).
-Task `batching-hook-reach` (`119c1c05`, 2026-11-04) made the batching nudge hook count read-only Bash lookups and reach subagents and forks, so the writer's serial `grep` and `sed -n` chains are what it nudges.
-Task `batching-hook-remeasure` (`d05c8d75`, 2026-11-05) measured it on 22 runs: the hook fired 13 times, about 2.5% of the breach turns it was built for, the breach shares did not fall where it reaches, and the report recommended removing it.
-That recommendation is superseded by `batching-hook-remeasure-wait` (2026-11-08, below).
-
-## Writer lookups and Plan cost re-measured (landed 2026-11-08)
-
-Task `writer-cost-remeasure` (`5c7a821a`, `docs/research/loom/writer-cost-remeasure-2026-11-08/report.md`) re-measured on the five tapestry runs landed after `3085f451`, from their transcripts, with no agent run.
-- All 3 Discussion-Write sessions now send one batch of lookup subagents at turn 6 or 7, where 1 of 3 did; 4 of 5 Plan-Write sessions send theirs by turn 12.
-  The lookup carry in Discussion fell from $1.37 to $0.84 a session, but the subagents cost $0.80, so the session cost is level ($3.05 against $3.06).
-  The most the lookup context kept out of the writers could be worth is $5.95 of $46.94 over the 8 sessions.
-- The Plan phase has not fallen per run (writer plus forks $17.05 against $17.24), but the sample's tasks are 2.9 times as large by changed lines: $1.73 per 1000 lines against $5.11, $0.84 per plan card against $1.21.
-  Plan rounds rose from 2.2 to 3.2; review and fix are 51% of the phase.
-- Against the ideas on this note: the figures support the review-cost and excerpt ideas as the larger pools, give no cost case for sub-planners, and carry no solo-writer arm.
-
-## Batching hook re-measured after its wait (landed 2026-11-08)
-
-Task `batching-hook-remeasure-wait` (`b1f70926`, `docs/research/turns/batching-hook-remeasure-wait-2026-11-08/report.md`) reran the 2026-11-05 scripts on 28 darn runs with sessions after the hook's transcript wait (`7c77e08d`).
-- The delivery gap is closed: the hook fires on 10 of 13 edit follows, where it fired on 2 of 156 before, and 1.21 times a run against 0.59.
-- The next message batched after 8 of 19 nudged lookup and edit breach turns and 4 of 18 silent ones: too few to call an effect, so the report keeps the hook and asks for a larger window, with tapestry runs, before a verdict.
-- The wait adds no tokens; it adds about 2.8 seconds a run of result latency, and half of the calls above the line (268 of 544) run to the two second bound unjudged.
-  A shorter bound for a call of a multi-call message is named as the one cost to look at; none is filed.
-- The 2026-11-05 recommendation to remove the hook is superseded.
-
-## Split writing built and benched (landed 2026-11-01)
-
-The second variant above exists as two opt-in producers: `Parts-Write` splits the task into parts with contracts and shared spots, and `Parts-Plan-Write` runs one fresh writer session per part under a joining chair.
-Both sit behind the tapestry flag `plan_split` (off by default; `Plan-Write` stays the default), and the joined plan passes the ordinary `plan` gate.
-
-`plan-split-bench` (`989a8b85`, `docs/research/loom/plan-split/plan-split-bench-2026-11-01/`) benched them against `Plan-Write` on replays of `warp-visibility` and `run-verbs-shared`, one Plan-Review round each.
-- `warp-visibility`: the split cost $16.69 against $14.93 and took 15m39s against 25m07s; its largest session peaked at 245k context against 408k.
-  The split plan had 34 cards against 15 and its review found 4 blocking findings against 3.
-- `run-verbs-shared`: the plan arm cost $28.03 with a 674k peak; the split arm failed when reed lost the chair strand (note `reed-loses-parts-chair`), so there is no comparison.
-- The joined split plan passed its gate only after two hand edits to `parts.md`, both defects of `Parts-Write`; the report recommends keeping `plan_split` off.
-
-## Split writers tuned, round 1 (landed 2026-11-02)
-
-Task `plan-split-tune` (`fe753d40`, `docs/research/loom/plan-split/plan-split-tune-2026-11-02/report.md`) landed round 1 with no replay.
-The parts gate and `lym loom validate-parts` now refuse an export that is an existing member or path (`export-existing`) and run the name checks on each `plan:` export, and `Parts-Write` reads the PATTERN entries governing each export's name first.
-
-## Split writers replayed (landed 2026-11-03)
-
-Task `plan-split-replay` (`e9b4c949`, same report, which now covers both tasks) replayed both inputs on the installed `lym`, built after the tuning landed.
-- Both inputs joined their parts into a plan in round 1 and passed their gates with no hand edit of `parts.md` or the part plans, so the loop ended after round 1 of its cap of 2 and no further tuning was made.
-- `warp-visibility`: $18.69 writing cost, 36 cards, one `plan-part` refusal cleared on the gate's re-prompt. `run-verbs-shared`: $29.36, 37 cards, no refusal.
-- Plan-Review found no blocking finding on either plan (8 and 12 findings); the fixer was not run, so those findings stand unresolved.
-- One run per input is a direction, not an effect.
-- Still open: the solo Opus high and Fable writer bench.
-
-## Data point: `cold-gate-fixer` Plan-Write (orch, 2026-11-02)
-
-One loom run, read from the writer's transcript and its subagents' by a read-only agent; the numbers are the writer's own context, by last turn usage.
-
-- The writer made 45 tool calls in about 25 turns before it started `fork0`: 22 Reads (18 whole-file, 4 slices), 16 Bash calls (about 14 single lookups, 2 `cat` of whole files), 5 Agent calls and 2 skill loads.
-- The writer followed the Sonnet-subagent rule: five read-only `general-purpose` agents with `model: sonnet`, launched together at 115k context.
-  Each ended at 39k to 73k and ran 33 to 61 seconds; their answers added little to the writer.
-  The 115k they were started at had already come from the writer's own whole-file Reads and `cat`s, so the subagents did not keep the reading out of the writer's context.
-- `fork0` (Opus) started at 198k, inherited it, ran 17 minutes and ended at 338k; the writer was at 204k when it returned.
-- After `fork0` returned, the writer read all 14 plan files back in one batch, 35k tokens (205k to 240k), the largest jump of the later phase.
-  The five lens forks then started at 243k and added 2k to 20k each; the lens fixes, 8 more files and 24 edits in a row took the writer to 332k.
-- The phase took about 31 minutes: exploration about 3, `fork0` 17, lens review about 3, and about 5 idle waiting on `validate-plan` and the lens forks.
-- No compaction and no threshold event fired.
-
-Reading: the writer must read much to write a joined plan, and `fork0` gets that reading for free by inheriting it, so the cost is the 198k each fork carries, not the reading itself.
-Two cuts remain open: have the first exploration fan answer with the lines needed (sonnet reads, writer gets excerpts) instead of the writer reading whole files after it, and skip the read-back of every plan file when `fork0` has already validated them.
-
-### Correction (operator, 2026-11-02)
-
-The second cut above, skipping the read-back of the plan files after `fork0`, is rejected.
-The read-back is needed: the writer gets the plan from `fork0` without `fork0`'s reasoning, so it must read the plan to judge it, and the lens forks then review a plan whose reasoning nobody carries, which makes them the more critical check.
-Only the first cut (excerpts from the exploration fan instead of whole-file Reads by the writer) stays open.
-
-## Darn cost measured (landed 2026-11-08)
-
-Task `darn-cost-measure` (`8a54fbfb`, `docs/research/loom/darn-cost-2026-11-08/report.md`) priced 291 darn runs and 16 tapestry runs from their transcripts, with no agent run.
-- A darn costs $5.45 on average; the writer and its lookups are 58% of it, the Code-Review perch 37%. An Opus writer priced at Sonnet list price would be 37% cheaper, an estimate only.
-- The 12 darns of the `fabric-test-speed` raddle split cost $58.53 with the Motif and raddle runs, $14.16 per 1000 lines against $11.29 for the tapestry runs; a tapestry fit puts one of the same size at $60.08, so the split saved 3% and moved cost from Plan (42% of a tapestry) to Code-Review (28% against 4%).
-- It bears on this note: the Plan writer cost is avoided, not cut, when raddle splits a Sketch first.
+1. A solo writer against twill-plan: compare twill, solo Opus high and solo Fable on Plan cost, Plan rounds and Plan wall time (`lym report timing`) per run.
+   The operator sees strong signs that the twill writer makes a far better one-shot plan in shorter time, and time counts as well as tokens, so the bench may only confirm it.
+   Too few runs have landed since the full twill fan to judge.
+2. The excerpt cut: the first exploration fan answers with the lines needed, so the writer reads excerpts instead of whole files.
+   The 2026-11-08 re-measure names it, with the review cost, as the larger pool; the most lookup context kept out of the writers could be worth is $5.95 of $46.94 over the 8 sessions measured.

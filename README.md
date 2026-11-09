@@ -1,12 +1,12 @@
 # Board
 
-Rendered 2026-11-09 11:24 UTC; every age below is as of then.
+Rendered 2026-11-09 11:25 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## [P1 Fewer agent turns, fewer tokens](project-turn-savings.md) (1)
+## [P1 Fewer agent turns, fewer tokens](project-turn-savings.md) (0)
 
 `turn-savings` · Age 7d · Owner `osl-1046`
 
@@ -22,15 +22,9 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (1)
+### Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-#### Research (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>16h | loom, stencil |
 
 ## [P2 Codexengine: every task, trial and note about the Codex engine](project-codex-engine-trial.md) (2)
 
@@ -78,7 +72,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Measure whether running fabricengine tier 1 as several shards cuts its wall** | [`gate-shard-slow-package`](design-gate-shard-slow-package.md) | darn · docs | Darn-Write | osl-1046 | 19h<br>2m | gate, fabric |
+| T2 | **Measure whether running fabricengine tier 1 as several shards cuts its wall** | [`gate-shard-slow-package`](design-gate-shard-slow-package.md) | darn · docs | Darn-Write | osl-1046 | 19h<br>3m | gate, fabric |
 
 #### Ready (0)
 
@@ -150,7 +144,7 @@ Not released; nothing starts it until its status is cleared.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-## [P0 Root: entries under no project](project-root.md) (15)
+## [P0 Root: entries under no project](project-root.md) (16)
 
 Owner `osl-1046`
 
@@ -164,9 +158,15 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (15)
+### Notes (16)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+#### Research (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>0m | loom, stencil |
 
 #### Bugs (1)
 

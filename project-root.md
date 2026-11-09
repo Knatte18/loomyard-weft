@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-09 11:24 UTC; every age below is as of then.
+Rendered 2026-11-09 11:25 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `osl-1046`
@@ -18,9 +18,15 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (15)
+## Notes (16)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Research (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>0m | loom, stencil |
 
 ### Bugs (1)
 
