@@ -619,7 +619,8 @@
       "body": "## Seen (orch, 2026-11-09)\n\nThe Darn-Write verify gate scopes a run to nearly the whole suite, tier 0 to 2, whenever the diff touches a widely imported package such as `internal/loomengine` or `internal/configreg`.\n`testmap-verb` and `arras-recipe-perch` each spent 30 to 40 minutes in it on OSL-1046.\nScope today is by importing packages, so one small change to a leaf of the import graph reruns every package above it.\n\n## Idea\n\nScope a verify gate by the coverage map project `redundancy-check` builds: run the tests whose recorded blocks cover the changed code, plus the tests of the changed packages, and everything else only in the landing gate.\nRead first how the computed scope forms today and what the map holds per test, and decide what a map miss, such as a changed file with no recorded test, does: it must widen the scope, never narrow it.\n\n## Built so far\n\nThe map record has landed (`a8d2ae63`): `internal/testcover` writes one `map.json` per package under `\u003chub\u003e/.lym/testcover/\u003cpackage\u003e/`, holding the per-file content hashes, the block key table, and per judged test its tier, duration and covered block indexes.\nBlock keys survive line shifts, and an edit gives a new key no test covers, which reads as a map miss.\nThis work still waits on the map's verb, `testmap-verb`, which rebuilds stale maps.\n",
       "status": "draft",
       "created": "2026-11-09T15:17:11Z",
-      "revised": "2026-11-09T19:06:08Z"
+      "revised": "2026-11-09T20:46:48Z",
+      "project": "test-suite-trim"
     },
     {
       "id": 1263,
@@ -704,7 +705,8 @@
       "brief": "",
       "body": "## Seen (orch, 2026-11-09)\n\nThe coverage maps (`internal/testcover`, rebuilt by `lym gate testmap`) record, per package, the blocks each tier 0 and tier 1 test covers.\nThe gate report (the advisory redundancy step of `lym gate test`, landed as `7f21142e`) judges only the new tests of a diff against the map; nothing yet uses the maps to find redundant tests that already exist.\nThe operator wants the existing ones cut, across the packages, not only kept from growing.\n\n## Idea\n\n1. A candidate list per package: every test whose covered blocks the package's other tests already cover, with its run time, using the same judgment as the gate report.\n   Tests marked `//testtiming:keep` are left out.\n2. Cut tasks on that list, slowest packages first, each run delegating the per-test reading to subagents:\n   a candidate is cut or folded into another test only when its assertions add nothing the covering tests check, since equal coverage does not mean equal checks.\n3. `internal/fabricengine` was swept by hand on 2026-11-08 and is being reworked by its serial-phase tasks, so it comes last or not at all.\n\n## Before it becomes a task\n\nIt needs a full set of coverage maps, one per package; on 2026-11-09 none was built yet.\nNote `testmap-backlog-drain` is about the prime dobby building them only a few per batch of landings.\n",
       "created": "2026-11-09T18:47:33Z",
-      "revised": "2026-11-09T20:44:21Z"
+      "revised": "2026-11-09T20:46:48Z",
+      "project": "test-suite-trim"
     },
     {
       "id": 1272,
@@ -750,7 +752,8 @@
       "brief": "",
       "body": "## Seen (orch, 2026-11-09)\n\nNo coverage map exists yet: `_bolt/.lym/testcover` is absent.\nThe module has about 170 packages, and the prime dobby builds at most `test_map_batch` (5) maps per refresh,\nstarting one only after `test_map_every` (5) landings.\nAt those defaults the first full set of maps needs about 170 landings, so the tasks that wait on the maps wait for weeks.\n\nThe decision record of project `redundancy-check` (D6) said the dobby starts a refresh on a tick where the prime HEAD moved,\nor where the last refresh's exit record reported stale packages its `--max` cap left unbuilt.\n`testmap-dobby-refresh` (landed as `f4ed575e`) made the landing count the only trigger,\nso a refresh that leaves packages unbuilt starts no next one.\n`lym gate testmap` already writes that count in its exit record.\n\n## Idea\n\nWhile the last refresh reported stale packages left unbuilt, start the next refresh on the first tick after it ends,\nin batches of `test_map_batch`, so a backlog drains on its own and each refresh still holds the gate slot for at most one batch.\nKeep the landing count as the trigger once nothing is left.\n",
       "created": "2026-11-09T19:37:42Z",
-      "revised": "2026-11-09T19:37:42Z"
+      "revised": "2026-11-09T20:46:47Z",
+      "project": "test-suite-trim"
     },
     {
       "id": 1274,
@@ -880,7 +883,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (orch, 2026-11-09)\n\n`fabric-serial-git-spawns` landed as `e19a2e86` (\"fabricengine: read committed files and HEAD without a git process\").\nIts landing note says the tier 1 wall and the git process count before and after were not recorded,\nso what it saved is unknown.\nIt names other frequent read-only git calls still spawned in the package, such as `diff --name-only` in `diffNames`.\nThe earlier shard measurement is `docs/research/speed/fabricengine-shards-2026-11-09/report.md`,\nwith its runner `docs/research/speed/fabricengine-shards-2026-11-09/shard-runner.sh`, which sets `GIT_TRACE2_EVENT`.\n\n## This task\n\nMeasure, on this machine, `internal/fabricengine` tier 1 at two commits: `e19a2e86^` (before) and `e19a2e86` (after).\nRun `lym gate test --tier 1 ./internal/fabricengine` with the shard runner's one-process form at each commit:\nexactly one run per commit, two runs in all.\nFor each run, record the tier 1 wall, the total git process count,\nand the count per git subcommand and per production call site in `internal/fabricengine`.\n\nWrite a short report beside the earlier one, under `docs/research/speed/`, holding:\n\n- the wall and the git process count before and after, and the difference;\n- the ten git subcommands and call sites started most often after the change, each marked read-only or writing,\n  as the input for a next task that serves more read-only calls from Go.\n\n## Limits\n\n- No code change: the task lands the report only.\n- Exactly two measured runs; a run that fails is reported as failed, not repeated.\n",
-      "status": "running · Finalize",
+      "status": "done",
       "created": "2026-11-09T20:39:21Z",
       "revised": "2026-11-09T20:39:21Z",
       "profile": "docs",
@@ -904,7 +907,34 @@
       "brief": "",
       "body": "Builds the first full set of coverage maps, settles how they are kept fresh, and uses them to cut the test suite:\ncut existing redundant tests, and scope the verify gate to the tests that cover a diff.\n",
       "created": "2026-11-09T20:46:47Z",
-      "revised": "2026-11-09T20:46:47Z"
+      "revised": "2026-11-09T20:46:48Z",
+      "order": [
+        "testmap-backlog-drain",
+        "testmap-upkeep",
+        "redundancy-sweep-existing",
+        "gate-scope-by-coverage-map"
+      ]
+    },
+    {
+      "id": 1280,
+      "handle": "E5",
+      "slug": "testmap-upkeep",
+      "title": "Decide how the coverage maps are kept fresh: triggers, batch, staleness and sharing across machines",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "testkit",
+        "gate",
+        "dobby"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (orch, 2026-11-09)\n\nThe coverage maps exist as code since project `redundancy-check` landed, but how they are kept fresh was settled piecemeal:\n\n- The prime dobby starts `lym gate testmap --max \u003ctest_map_batch\u003e` (default 5) after every `test_map_every` (default 5) landings, and nothing else starts one.\n- A map is stale when its package's Go files at HEAD changed, when it is older than `test_map_max_age_days` (7), or when it records a failed build at another HEAD.\n  A change to a dependency, or to a non-Go file of the package, does not mark it stale; only the age limit bounds that drift.\n- The maps live under `_bolt/.lym/testcover`, which git excludes, so each machine builds and keeps its own set:\n  a move to another machine, by `lym adopt` or otherwise, starts from no maps.\n- A refresh holds a gate slot while it builds, so runs' gates wait behind it.\n\n## Idea\n\nDecide, as one design, how the maps are kept:\n\n1. What starts a refresh: landings, a prime HEAD move, a leftover backlog, an age sweep, or a mix.\n2. How large a refresh is, against how long it may hold a gate slot.\n3. Whether a dependency change should mark a map stale, and what the age limit is for.\n4. Whether the maps stay per machine or are shared, for instance through the Bolt checkout or the records branch, so a second machine does not rebuild them all.\n5. What a gate or report does when a package it needs has no map or a stale one.\n\nNote `testmap-backlog-drain` is one part of item 1; this note owns the whole policy.\n",
+      "created": "2026-11-09T20:46:47Z",
+      "revised": "2026-11-09T20:46:47Z",
+      "project": "test-suite-trim"
     }
   ],
   "prime_owner": "neve",
