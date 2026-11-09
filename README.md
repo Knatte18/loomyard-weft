@@ -129,13 +129,19 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Concrete and claimable; only a task can run.
 
-#### Ready (1)
+#### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T3 | **lym gate testmap rebuilds stale coverage maps in the prime parent's worktree**<br>• `loom: code_assist_reviewer_model astra[medium]` | [`testmap-verb`](design-testmap-verb.md)<br>[Sketch](decision-testmap-verb.md) | darn · solid | Worktree-Create | osl-1046 | 18h<br>18h | testkit, gate |
+
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T3 | **lym gate testmap rebuilds stale coverage maps in the prime parent's worktree**<br>• `loom: code_assist_reviewer_model astra[medium]` | [`testmap-verb`](design-testmap-verb.md)<br>[Sketch](decision-testmap-verb.md) | darn · solid |  | 18h<br>18h | testkit, gate |
+_None._
 
 #### Layer A (2)
 
