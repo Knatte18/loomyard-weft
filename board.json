@@ -507,7 +507,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `redundant-test-finder`.\n\nTakes: gate-redundancy-report's report reader and HEAD tree match\nDelivers: a Go-filled rubric marker in loom-rubric-code-review, filled through shedadapters.ReadRubric for the Code-Burler-Review and Code-Bouncer call sites with the findings or the no-current-report line; the rubric's test-economy text on contained tests; PATTERN-test-speed's index line and its background's gate and test-economy sections\nExports: nothing new\n\nThe part changes these packages:\n\n- internal/shedadapters (about 60 changed lines)\n- internal/shedrecipe (about 60 changed lines)\n- internal/loomcli (about 40 changed lines)\n- contracts/stencils/loom (about 15 changed lines)\n- pattern (about 30 changed lines)\n",
-      "status": "running · Darn-Write",
+      "status": "running · Drift-Verify",
       "created": "2026-11-08T18:46:50Z",
       "revised": "2026-11-08T18:46:50Z",
       "profile": "light",
