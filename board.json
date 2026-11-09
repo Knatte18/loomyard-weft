@@ -464,30 +464,6 @@
       "discussed": true
     },
     {
-      "id": 1249,
-      "handle": "T11",
-      "slug": "review-reads-redundancy",
-      "title": "Code review reads the gate's redundancy report, and PATTERN-test-speed names the map, verb and step",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "testkit",
-        "gate"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `redundant-test-finder`.\n\nTakes: gate-redundancy-report's report reader and HEAD tree match\nDelivers: a Go-filled rubric marker in loom-rubric-code-review, filled through shedadapters.ReadRubric for the Code-Burler-Review and Code-Bouncer call sites with the findings or the no-current-report line; the rubric's test-economy text on contained tests; PATTERN-test-speed's index line and its background's gate and test-economy sections\nExports: nothing new\n\nThe part changes these packages:\n\n- internal/shedadapters (about 60 changed lines)\n- internal/shedrecipe (about 60 changed lines)\n- internal/loomcli (about 40 changed lines)\n- contracts/stencils/loom (about 15 changed lines)\n- pattern (about 30 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-08T18:46:50Z",
-      "revised": "2026-11-08T18:46:50Z",
-      "profile": "light",
-      "project": "redundancy-check",
-      "discussed": true
-    },
-    {
       "id": 1250,
       "handle": "R2",
       "slug": "codex-support-levels",
@@ -901,7 +877,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (orch, 2026-11-09)\n\n`fabric-serial-git-spawns` landed as `e19a2e86` (\"fabricengine: read committed files and HEAD without a git process\").\nIts landing note says the tier 1 wall and the git process count before and after were not recorded,\nso what it saved is unknown.\nIt names other frequent read-only git calls still spawned in the package, such as `diff --name-only` in `diffNames`.\nThe earlier shard measurement is `docs/research/speed/fabricengine-shards-2026-11-09/report.md`,\nwith its runner `docs/research/speed/fabricengine-shards-2026-11-09/shard-runner.sh`, which sets `GIT_TRACE2_EVENT`.\n\n## This task\n\nMeasure, on this machine, `internal/fabricengine` tier 1 at two commits: `e19a2e86^` (before) and `e19a2e86` (after).\nRun `lym gate test --tier 1 ./internal/fabricengine` with the shard runner's one-process form at each commit:\nexactly one run per commit, two runs in all.\nFor each run, record the tier 1 wall, the total git process count,\nand the count per git subcommand and per production call site in `internal/fabricengine`.\n\nWrite a short report beside the earlier one, under `docs/research/speed/`, holding:\n\n- the wall and the git process count before and after, and the difference;\n- the ten git subcommands and call sites started most often after the change, each marked read-only or writing,\n  as the input for a next task that serves more read-only calls from Go.\n\n## Limits\n\n- No code change: the task lands the report only.\n- Exactly two measured runs; a run that fails is reported as failed, not repeated.\n",
-      "status": "running · Drift-Expect",
+      "status": "running · Darn-Write",
       "created": "2026-11-09T20:39:21Z",
       "revised": "2026-11-09T20:39:21Z",
       "profile": "docs",
