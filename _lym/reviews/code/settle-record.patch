@@ -1,0 +1,423 @@
+diff --git a/internal/boardcli/cli.go b/internal/boardcli/cli.go
+index 1a8362ff7..0016cd2dd 100644
+--- a/internal/boardcli/cli.go
++++ b/internal/boardcli/cli.go
+@@ -674,6 +674,8 @@ Example:
+ 		Short:       "set the status of a task, or release it with null",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `Set the lifecycle status of a task. A new task is "draft"; null releases it, leaving it with no status, and an empty string on a task gives "draft" again.
++Null on a project with no status also releases its draft member tasks in the same write, and the notice names them.
++Null on a project with a run status or done is refused, naming the release of each draft member.
+ 
+ Fields:
+   "slug"   string      — task slug (one of slug, id or handle)
+@@ -702,10 +704,14 @@ Examples:
+ 				status = &s
+ 			}
+ 
+-			if err := board().SetStatus(selector, status); err != nil {
++			released, err := board().SetStatusReleasingProject(selector, status)
++			if err != nil {
+ 				return outputError(out, err.Error())
+ 			}
+-			return outputSuccess(out)
++			if len(released) == 0 {
++				return outputSuccess(out)
++			}
++			return outputSuccessWithNotice(out, "released the project's draft member tasks with it: "+strings.Join(released, ", "))
+ 		}),
+ 	}
+ 
+diff --git a/internal/boardcli/cli_test.go b/internal/boardcli/cli_test.go
+index 5934068c0..452227848 100644
+--- a/internal/boardcli/cli_test.go
++++ b/internal/boardcli/cli_test.go
+@@ -146,6 +146,7 @@ func TestCLI(t *testing.T) {
+ 		{"Profiles", stepProfiles},
+ 		{"SiblingWarning", stepSiblingWarning},
+ 		{"Projects", stepProjects},
++		{"ProjectRelease", stepProjectRelease},
+ 	}
+ 	for _, step := range steps {
+ 		if !t.Run(step.name, func(t *testing.T) {
+diff --git a/internal/boardcli/doc.go b/internal/boardcli/doc.go
+index 8907e7997..9a72dea67 100644
+--- a/internal/boardcli/doc.go
++++ b/internal/boardcli/doc.go
+@@ -110,6 +110,10 @@
+ // the running pair takes it through `lym config <module> --layer local --set` in the pair.
+ // Value semantics, such as a positive integer, stay with the module's load.
+ //
++// `set-status` with a null status on a project whose status is empty releases its draft member tasks in the same write.
++// Its success envelope's `notice` then names the released members.
++// A null status on a project with a run status or done is refused, naming each draft member's release.
++//
+ // `set-deps`, `upsert`, `upsert-batch` and `merge` add the sibling warning to the success envelope's `notice`.
+ // It is joined after a run-settings notice, one line per pair, a batch pair once;
+ // `set-deps` prints `notice` only then.
+diff --git a/internal/boardcli/verbs_test.go b/internal/boardcli/verbs_test.go
+index 0f418b787..61ac6ef9a 100644
+--- a/internal/boardcli/verbs_test.go
++++ b/internal/boardcli/verbs_test.go
+@@ -543,6 +543,21 @@ func stepRemoveCommandParses(t *testing.T, f *cliFixture) {
+ 	}
+ }
+ 
++// stepProjectRelease pins that set-status with a null status on a project releases its draft member task,
++// and that the success envelope's notice names the released member.
++func stepProjectRelease(t *testing.T, f *cliFixture) {
++	mustUpsert(t, `{"slug":"proj","title":"Proj","kind":"project","labels":["bug"]}`)
++	mustUpsert(t, `{"slug":"member","title":"Member","kind":"task","labels":["bug"],"project":"proj"}`)
++
++	result := runJSON(t, 0, "set-status", `{"slug":"proj","status":null}`)
++	if notice, _ := result["notice"].(string); notice != "released the project's draft member tasks with it: member" {
++		t.Errorf("set-status proj null: notice = %q, want it to name member", notice)
++	}
++	if task := runJSON(t, 0, "get", `{"slug":"member"}`)["task"].(map[string]any); task["status"] != nil {
++		t.Errorf("get member after the project release: status = %v, want none", task["status"])
++	}
++}
++
+ // stepProjects drives the project kind through a seeded hub:
+ // list and get carry parent_beam.
+ // It is empty under a grouping project, and it names the beam once the project is hand-marked a beam.
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index 568432e5f..48688607c 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -458,6 +458,12 @@
+ // A task is released by a null status.
+ // `lym board set-status '{"slug":"<slug>","status":null}'` writes it.
+ // So does an upsert setting `status` to null on a task, and so does a merge whose `set_status` sets null.
++// Board.SetStatusReleasingProject, which `lym board set-status` alone calls, also releases a project's family.
++// A null status on a project whose status is empty releases, in the same write, each direct member task in draft.
++// A member already released, run-held or done, a nested project and its members, and every other entry stay as they are.
++// Each member is validated as its own release, and one failing refuses the whole write.
++// A null status on a project whose status is a run status or done is refused, naming each draft member's release.
++// No other write releases a member: Board.SetStatus, an upsert, a batch and a merge release only the entry they name.
+ // An empty string written to a task whose loaded status differs is `draft`, not a release.
+ // A write may release the tasks it makes: the draft rule skips the slugs it is told.
+ // That is the promoted task of a promotion with recipe `raddle`.
+diff --git a/internal/boardengine/projectrelease.go b/internal/boardengine/projectrelease.go
+new file mode 100644
+index 000000000..56ee1c64a
+--- /dev/null
++++ b/internal/boardengine/projectrelease.go
+@@ -0,0 +1,88 @@
++// projectrelease.go — the release of a project together with its draft member tasks, in one write.
++
++package boardengine
++
++import (
++	"encoding/json"
++	"fmt"
++	"strings"
++)
++
++// SetStatusReleasingProject sets or clears the status of the entry idOrSlug names under the write lock.
++// A null status on a project whose status is empty also releases every direct member task in draft.
++// The members are released in the same write, so one release lets the project's whole family start.
++// Each member is validated as its own release would be.
++// One failing member refuses the whole write.
++// A null status on a project whose status is a run status or done is refused.
++// The refusal names the release of each draft member as the way forward.
++// It returns the slugs of the released members in store order, empty for any other write.
++func (b *Board) SetStatusReleasingProject(idOrSlug any, status *string) ([]string, error) {
++	var released []string
++	_, err := b.boardCriticalSection(func(store *Store) (any, error) {
++		var err error
++		released, err = store.setStatusReleasingProject(idOrSlug, status)
++		return nil, err
++	}, nil)
++	return released, err
++}
++
++// setStatusReleasingProject applies the write SetStatusReleasingProject describes to the store, in memory.
++// On an error the store may hold part of the release, so the caller must not save it.
++func (s *Store) setStatusReleasingProject(selector any, status *string) ([]string, error) {
++	current, found := s.GetTask(selector)
++	if !found {
++		return nil, fmt.Errorf("task not found: %v", selector)
++	}
++	if status != nil || current.Kind != KindProject {
++		return nil, s.SetStatus(selector, status)
++	}
++	members := draftMembers(s.tasks, current.Slug)
++	if IsRunStatus(current.Status) || isDone(current) {
++		return nil, projectReleaseRefusal(current, members)
++	}
++	if !IsEmptyStatus(current.Status) {
++		return nil, s.SetStatus(selector, nil)
++	}
++	if err := s.SetStatus(current.Slug, nil); err != nil {
++		return nil, err
++	}
++	for _, slug := range members {
++		if err := s.SetStatus(slug, nil); err != nil {
++			return nil, fmt.Errorf("project %q is not released, nor any of its draft member tasks, since member %q cannot be released: %w", current.Slug, slug, err)
++		}
++	}
++	return members, nil
++}
++
++// draftMembers returns, in store order, the slugs of the tasks in draft whose project is project.
++// A nested project's members are not among them.
++func draftMembers(tasks []Task, project string) []string {
++	var members []string
++	for _, t := range tasks {
++		if t.Project == project && t.Kind == KindTask && isDraft(t) {
++			members = append(members, t.Slug)
++		}
++	}
++	return members
++}
++
++// projectReleaseRefusal is the refusal of a null status on a project whose status is a run status or done.
++// It names the release of each draft member by its slug, or says there is none to release.
++func projectReleaseRefusal(project Task, members []string) error {
++	refusal := fmt.Sprintf("project %q has status %q, and only a project with no status is released with its draft member tasks", project.Slug, *project.Status)
++	if len(members) == 0 {
++		return fmt.Errorf("%s; it has no draft member task to release, so nothing was written", refusal)
++	}
++	commands := make([]string, len(members))
++	for i, slug := range members {
++		commands[i] = releaseCommand(slug)
++	}
++	return fmt.Errorf("%s: release each draft member on its own with %s", refusal, strings.Join(commands, "; "))
++}
++
++// releaseCommand returns the `lym board set-status` command line that releases the entry slug names.
++// The JSON payload is single-quoted for a shell.
++func releaseCommand(slug string) string {
++	payload, _ := json.Marshal(map[string]any{"slug": slug, "status": nil})
++	return "lym board set-status '" + string(payload) + "'"
++}
+diff --git a/internal/boardengine/projectrelease_test.go b/internal/boardengine/projectrelease_test.go
+new file mode 100644
+index 000000000..a229414d7
+--- /dev/null
++++ b/internal/boardengine/projectrelease_test.go
+@@ -0,0 +1,223 @@
++// projectrelease_test.go covers the release of a project with its draft member tasks in projectrelease.go.
++
++package boardengine_test
++
++import (
++	"fmt"
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// newReleaseBoard returns a board holding entries, already marked draft so its first write drafts no released task.
++func newReleaseBoard(t *testing.T, entries ...string) *boardengine.Board {
++	t.Helper()
++	var boardPath string
++	b := newProjectBoard(t, func(cfg *boardengine.Config) { boardPath = cfg.Path })
++	content := `{"version":1,"draft_status":true,"entries":[` + strings.Join(entries, ",") + `]}`
++	if err := os.WriteFile(filepath.Join(boardPath, "board.json"), []byte(content), 0o644); err != nil {
++		t.Fatalf("seed board.json: %v", err)
++	}
++	return b
++}
++
++// statusOf returns the status of the entry slug names, "<none>" when it has none.
++func statusOf(t *testing.T, b *boardengine.Board, slug string) string {
++	t.Helper()
++	task, found, err := b.GetTask(slug)
++	if err != nil || !found {
++		t.Fatalf("GetTask(%s) = found %v, %v; want the entry", slug, found, err)
++	}
++	if task.Status == nil {
++		return "<none>"
++	}
++	return *task.Status
++}
++
++// TestSetStatusReleasingProject_ReleasesDraftMembers pins the release of a project with an empty status.
++// A null status releases the project and its direct draft member tasks, in one write.
++// Released, run-held and done members, a nested project's members and outsiders stay as they were.
++func TestSetStatusReleasingProject_ReleasesDraftMembers(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	b := newReleaseBoard(t,
++		`{"id":0,"slug":"p","title":"P","kind":"project","labels":["bug"],"status":""}`,
++		`{"id":1,"slug":"d1","title":"D1","kind":"task","labels":["bug"],"project":"p","status":"draft"}`,
++		`{"id":2,"slug":"released","title":"R","kind":"task","labels":["bug"],"project":"p"}`,
++		`{"id":3,"slug":"running","title":"Run","kind":"task","labels":["bug"],"project":"p","status":"running · Darn-Write"}`,
++		`{"id":4,"slug":"landed","title":"L","kind":"task","labels":["bug"],"project":"p","status":"done"}`,
++		`{"id":5,"slug":"nested","title":"N","kind":"project","labels":["bug"],"project":"p"}`,
++		`{"id":6,"slug":"nested-member","title":"NM","kind":"task","labels":["bug"],"project":"nested","status":"draft"}`,
++		`{"id":7,"slug":"outsider","title":"O","kind":"task","labels":["bug"],"status":"draft"}`,
++		`{"id":8,"slug":"d2","title":"D2","kind":"task","labels":["bug"],"project":"p","status":"draft"}`,
++	)
++
++	released, err := b.SetStatusReleasingProject("p", nil)
++	if err != nil {
++		t.Fatalf("SetStatusReleasingProject(p, nil) error = %v; want nil", err)
++	}
++	if want := []string{"d1", "d2"}; !slices.Equal(released, want) {
++		t.Errorf("SetStatusReleasingProject(p, nil) = %v; want %v", released, want)
++	}
++	wantStatus := map[string]string{
++		"p":             "<none>",
++		"d1":            "<none>",
++		"d2":            "<none>",
++		"released":      "<none>",
++		"running":       "running · Darn-Write",
++		"landed":        "done",
++		"nested":        "<none>",
++		"nested-member": "draft",
++		"outsider":      "draft",
++	}
++	for slug, want := range wantStatus {
++		if got := statusOf(t, b, slug); got != want {
++			t.Errorf("status of %s = %q; want %q", slug, got, want)
++		}
++	}
++}
++
++// TestSetStatusReleasingProject_Refusals pins that a refused project release writes nothing.
++// A member failing its own release's validation is named in the refusal.
++// A project with a run status or done is refused too.
++// That refusal names each draft member's release as the way forward, or says there is none to release.
++func TestSetStatusReleasingProject_Refusals(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	draftMember := func(id int, slug string) string {
++		return fmt.Sprintf(`{"id":%d,"slug":%q,"title":"T","kind":"task","labels":["bug"],"project":"p","status":"draft"}`, id, slug)
++	}
++	tests := []struct {
++		name string
++		// project is the entry "p"; members and extra follow it on the board, and members stay draft after the refusal.
++		project string
++		members []string
++		extra   []string
++		wantHas []string
++	}{
++		{
++			name:    "MemberFailingValidation",
++			project: `{"id":0,"slug":"p","title":"P","kind":"project","labels":["bug"]}`,
++			members: []string{"d1"},
++			extra:   []string{`{"id":2,"slug":"bad","title":"Bad","kind":"task","labels":["bug"],"project":"p","status":"draft","depends_on":["ghost"]}`},
++			wantHas: []string{`"p"`, `member "bad"`, "dangling dependency"},
++		},
++		{
++			name:    "RunStatusProjectNamesEveryMember",
++			project: `{"id":0,"slug":"p","title":"P","kind":"project","labels":["bug"],"beam":true,"status":"running · Webster"}`,
++			members: []string{"d1", "d2"},
++			wantHas: []string{`"p"`, `lym board set-status '{"slug":"d1","status":null}'; lym board set-status '{"slug":"d2","status":null}'`},
++		},
++		{
++			name:    "DoneProject",
++			project: `{"id":0,"slug":"p","title":"P","kind":"project","labels":["bug"],"status":"done"}`,
++			members: []string{"d1"},
++			wantHas: []string{`"p"`, `lym board set-status '{"slug":"d1","status":null}'`},
++		},
++		{
++			name:    "DoneProjectWithoutDraftMember",
++			project: `{"id":0,"slug":"p","title":"P","kind":"project","labels":["bug"],"status":"done"}`,
++			wantHas: []string{`"p"`, "has no draft member task to release"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			entries := []string{tt.project}
++			for i, slug := range tt.members {
++				entries = append(entries, draftMember(i+1, slug))
++			}
++			b := newReleaseBoard(t, append(entries, tt.extra...)...)
++			wantProjectStatus := statusOf(t, b, "p")
++			released, err := b.SetStatusReleasingProject("p", nil)
++			if err == nil {
++				t.Fatalf("SetStatusReleasingProject(p, nil) = %v, nil; want a refusal", released)
++			}
++			for _, want := range tt.wantHas {
++				if !strings.Contains(err.Error(), want) {
++					t.Errorf("SetStatusReleasingProject(p, nil) error = %q; want it to contain %q", err, want)
++				}
++			}
++			for _, slug := range tt.members {
++				if got := statusOf(t, b, slug); got != "draft" {
++					t.Errorf("status of %s after the refusal = %q; want draft", slug, got)
++				}
++			}
++			if got := statusOf(t, b, "p"); got != wantProjectStatus {
++				t.Errorf("status of p after the refusal = %q; want %q", got, wantProjectStatus)
++			}
++		})
++	}
++}
++
++// TestSetStatusReleasingProject_OtherWritesReleaseNoMember pins which writes release members.
++// Only a null status on a project with an empty status does.
++// A plain status write, an upsert, a non-null status and a null status on a task release none.
++// Nor does a project with a hand-set status.
++func TestSetStatusReleasingProject_OtherWritesReleaseNoMember(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	paused := "paused"
++	writes := []struct {
++		name          string
++		projectStatus string
++		write         func(b *boardengine.Board) ([]string, error)
++		wantProject   string
++		wantD1        string
++		wantD3        string
++	}{
++		{"SetStatus", `""`, func(b *boardengine.Board) ([]string, error) { return nil, b.SetStatus("p", nil) }, "<none>", "draft", "done"},
++		{"UpsertTask", `""`, func(b *boardengine.Board) ([]string, error) {
++			_, err := b.UpsertTask(map[string]any{"slug": "p", "status": nil})
++			return nil, err
++		}, "<none>", "draft", "done"},
++		{"ProjectWithAHandSetStatus", `"paused"`, func(b *boardengine.Board) ([]string, error) {
++			return b.SetStatusReleasingProject("p", nil)
++		}, "<none>", "draft", "done"},
++		{"NonNullStatusOnProject", `""`, func(b *boardengine.Board) ([]string, error) {
++			return b.SetStatusReleasingProject("p", &paused)
++		}, "paused", "draft", "done"},
++		{"NullStatusOnTask", `""`, func(b *boardengine.Board) ([]string, error) {
++			return b.SetStatusReleasingProject("d1", nil)
++		}, "", "<none>", "done"},
++		// A done task is not refused as a done project is: only a project takes the refusal.
++		{"NullStatusOnDoneTask", `""`, func(b *boardengine.Board) ([]string, error) {
++			return b.SetStatusReleasingProject("d3", nil)
++		}, "", "draft", "<none>"},
++	}
++	for _, tt := range writes {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			b := newReleaseBoard(t,
++				`{"id":0,"slug":"p","title":"P","kind":"project","labels":["bug"],"status":`+tt.projectStatus+`}`,
++				`{"id":1,"slug":"d1","title":"D1","kind":"task","labels":["bug"],"project":"p","status":"draft"}`,
++				`{"id":2,"slug":"d2","title":"D2","kind":"task","labels":["bug"],"project":"p","status":"draft"}`,
++				`{"id":3,"slug":"d3","title":"D3","kind":"task","labels":["bug"],"project":"p","status":"done"}`,
++			)
++			released, err := tt.write(b)
++			if err != nil {
++				t.Fatalf("write error = %v; want nil", err)
++			}
++			if len(released) != 0 {
++				t.Errorf("released members = %v; want none", released)
++			}
++			if got := statusOf(t, b, "p"); got != tt.wantProject {
++				t.Errorf("status of p = %q; want %q", got, tt.wantProject)
++			}
++			if got := statusOf(t, b, "d1"); got != tt.wantD1 {
++				t.Errorf("status of d1 = %q; want %q", got, tt.wantD1)
++			}
++			if got := statusOf(t, b, "d2"); got != "draft" {
++				t.Errorf("status of d2 = %q; want draft", got)
++			}
++			if got := statusOf(t, b, "d3"); got != tt.wantD3 {
++				t.Errorf("status of d3 = %q; want %q", got, tt.wantD3)
++			}
++		})
++	}
++}
