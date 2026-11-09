@@ -1,9 +1,9 @@
 # P2 Codexengine: every task, trial and note about the Codex engine
 
-Rendered 2026-11-09 19:10 UTC; every age below is as of then.
+Rendered 2026-11-09 19:12 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`codex-engine-trial`](design-codex-engine-trial.md) · Age 5d · Owner `neve`
+[`codex-engine-trial`](design-codex-engine-trial.md) · Age 6d · Owner `neve`
 
 Real Codex launches through lym shuttle check home, sandbox, hooks, guards, pane, skills and load
 
@@ -77,7 +77,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B9 |  | **Codex keeps forcing its bubblewrap sandbox, so astra fails on OSL-1046** | [`codex-bubblewrap-sandbox`](design-codex-bubblewrap-sandbox.md) | 35m<br>34m | codex, shuttle |
+| B9 |  | **Codex keeps forcing its bubblewrap sandbox, so astra fails on OSL-1046** | [`codex-bubblewrap-sandbox`](design-codex-bubblewrap-sandbox.md) | 36m<br>36m | codex, shuttle |
 
 ### Features (1)
 
