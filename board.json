@@ -961,6 +961,28 @@
       "body": "## Seen (operator, 2026-11-09)\n\nThe Darn-Write verify gate of `arras-recipe-perch` stood at 35 minutes, and that of `testmap-verb` at about 33 to 40.\n`darn.verify_attempts` bounds the number of attempts, but each attempt is a full gate pass, and nothing bounds the time a verify gate may take or tells anyone it is long.\n\n## Idea\n\nGive the verify gate a time budget, and when it is spent, say so to the orch with the gate's failures to date, so the operator sees it before it passes half an hour.\nDecide whether a spent budget stops the attempts, hands the run to the orch, or only raises a notice.\nRead first what a long verify gate shows today and where a time bound would sit: in the recipe, in `darn.verify_attempts` beside it, or in the gate itself.\n",
       "created": "2026-11-09T15:17:11Z",
       "revised": "2026-11-09T15:17:11Z"
+    },
+    {
+      "id": 1265,
+      "handle": "B7",
+      "slug": "gate-zero-attempts-halt",
+      "title": "Gate escalation reports \"did not pass after 0 attempts\" and blocks the step as escalation-to-human",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "gate",
+        "loom",
+        "darn"
+      ],
+      "issues": [
+        92
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #92](https://github.com/Knatte18/loomyard/issues/92).\n\nA step halted as blocked with anomaly `escalation-to-human` and the message `gate did not pass after 0 attempts`, pointing to a gate-findings file and `lym loom resume`.\nIt happened twice at the same producer step (`Darn-Write`), after the step was recorded `stuck` in the history.\nZero gate attempts means the gate never ran, yet the halt reads as a gate failure, so the operator is sent to a findings file for a gate that did not run.\n\nThis is abnormal: either the step went stuck before the verify budget was used and the message should say so, or the attempt counter is not recorded.\nMake the halt message state why the step is stuck when no gate attempt ran, and make the attempt count reflect the attempts actually made.\n\nProvenance: task slug `slack-presence-auto`; notes `loom-halt-2.md`, `loom-halt-4.md`.",
+      "created": "2026-11-09T15:20:28Z",
+      "revised": "2026-11-09T15:20:28Z"
     }
   ],
   "prime_owner": "osl-1046",
