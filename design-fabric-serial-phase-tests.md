@@ -1,6 +1,6 @@
 # Fewer serial top-level tests in internal/fabricengine
 
-`fabric-serial-phase-tests` · Note · enhancement, fabric, testkit
+`fabric-serial-phase-tests` · Task · enhancement, fabric, testkit · draft
 
 ## Seen (orch, 2026-11-09)
 
