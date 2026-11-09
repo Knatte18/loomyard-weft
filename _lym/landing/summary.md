@@ -1,48 +1,37 @@
 # Code review reads the gate's redundancy report
 
-The Code-Review rubric now carries the gate's redundancy report, so a reviewer sees which of the diff's new and changed tests the coverage maps find contained.
-`PATTERN-test-speed` names the coverage map, `lym gate testmap` and the gate's `redundancy` step.
+Code-Review now sees the redundancy report that `lym gate test` writes, so the reviewer can fold or delete redundant tests instead of judging test economy from the diff alone.
 
 ## What changes
 
-- `contracts/stencils/loom/loom-rubric-code-review.md` gets a `## Redundancy report` section with a Go-filled `redundancy_report` marker.
-  Its test-economy text treats each contained test as a candidate.
-  The reviewer checks its assertions against its covering tests.
-  It then files a finding to fold or delete it, naming the covering tests,
-  or a `//testtiming:keep <reason>` finding when it pins what coverage cannot see.
-  A `none` or no-current-report note raises no finding of its own.
-- `internal/shedadapters`: `RubricNotes.RedundancyReport` and `BouncerConfig.RedundancyReport` are `func() string`.
-  `ReadRubric` calls it only for a rubric that carries the marker, since the read matches the report against a commit's tree.
-  A nil or blank answer renders `none`.
-- `internal/shedrecipe`: `Env.RedundancyReport` reaches both call sites, the BurlerReview entry (Code-Burler-Review) and the Bouncer entry (Code-Bouncer).
-- `internal/loomcli`: `redundancyReportNote` reads the worktree's report through `gatecli.ReadRedundancyReport`
-  and matches it against HEAD's SHA through `gatecli.RedundancyReportMatches`.
-  A matching report renders one line per test, with its verdict and either its covering tests or its reason, then one line per error.
-  Any other case renders one line starting `No current redundancy report:` and naming why:
-  no report written; a red tier, naming the gate key; a report that judged nothing, with its note; a failed match; or a report written for another tree.
-  A red or note-only report renders without a match, so it costs no git read.
-- `contracts/stencils/rubric_test.go` allows the new marker and pins that only the Code-Review rubric carries it.
-- `PATTERN.md`'s `PATTERN-test-speed` line now reads "it pins behavior no other test covers, which the gate's redundancy report checks".
-  The background's "Tests run through the gate" section adds `lym gate testmap` and the report step as runs that take a tier's `env` and a gate slot.
-  A new subsection of "Test economy" states the map, the step's package-scoped verdict, its bounds,
-  the match Code-Review reads it under, and that a gate finding is evidence exactly as a report candidate is.
-- `docs/overview.md` and the `loomcli` and `shedrecipe` package docs describe the marker.
+- `loom-rubric-code-review.md` gains a `redundancy_report` marker and a "Redundancy report" section.
+  Go fills the marker for the Code-Burler-Review and Code-Bouncer call sites.
+- The rubric treats each test the report lists as contained as a test-economy candidate.
+  The reviewer checks the candidate's assertions against its covering tests, because coverage blocks do not see assertions.
+  It files a fold-or-delete finding naming the covering tests, or accepts the test with a `//testtiming:keep <reason>` finding when the test pins what coverage cannot see.
+  A test the report lists as unique or not judged raises no finding on that ground.
+- `internal/shedadapters`: `RubricNotes` gets a `RedundancyReport` function, and `BouncerConfig` gets the same field.
+  `ReadRubric` calls it only for a rubric that carries the marker, since reading the report matches it against a commit's tree.
+  A nil function or a blank answer renders `none`, like the other optional markers.
+- `internal/loomcli` (`redundancynote.go`): renders the note and is wired into the recipe's review call sites.
+  When the report matches HEAD's tree, the note holds one line per test and per error.
+  Otherwise it holds one line saying no current report exists and why: none written, a red tier (naming the gate key and time of the call), a report that judged nothing, a read or match error, or a different tree.
+- `internal/shedrecipe`, `internal/testkit/envkit`: wiring and test support.
+- `PATTERN-test-speed`: the index line and the background's "Tests run through the gate" and "Test economy" sections now name `lym gate testmap`, the gate's `redundancy` step, the package-scoped verdict with its module-wide column, the map, and the step's bounds.
+  They also say a gate finding is evidence for Code-Review exactly as a report candidate is.
+  `docs/overview.md` is updated to match.
 
 ## Design decisions
 
-- The note is a `func() string` that never fails, unlike `ReviewBase`.
-  The report is advisory, so a read or match failure becomes the note's own reason line and never blocks a review row's build.
-- The read is lazy, keyed on the rubric's top-level markers.
-  Every Bouncer and BurlerReview row gets the closure, and only the Code-Review rubric carries the marker.
-  So Plan-Review and Discussion-Review never pay for the merge-base diff and tree reads.
-- The rendering lives in `internal/loomcli` beside the wiring.
-  The data and its match stay in `internal/gatecli`.
-- `TestRedundancyStep`'s match subtest commits its stand-in run record as `records/notes.md`, a commit touching no Go file.
-  The fixture pair's `_lym` is a link git cannot add through, and the matcher gives `_lym` no special case,
-  so that commit pins the acceptance case of a commit touching only run records.
-  The fixture's `drops` package already carries a `tier2` test in the matched diff.
+- The match is by content, through `gatecli.ReadRedundancyReport` and `gatecli.RedundancyReportMatches` against the HEAD SHA from `fabricengine`.
+  A report therefore stays valid across commits that touch only run records or code outside the judged packages.
+- A report written on a red tier records no hashes and never matches.
+- The match ignores the map, so a map rebuilt since the report can leave a contained verdict stale.
+  Review reading each finding bounds this.
+- The rubric tells the reviewer to raise no finding about a missing report, so the feature stays advisory.
 
 ## To check by hand
 
-- The rubric's new paragraphs in `## Also flag`'s test-economy bullet and the `## Redundancy report` section, against D8's wording.
-- The new "The coverage map and the gate's redundancy report" subsection of `pattern/PATTERN-test-speed.md`, against D9.
+- Run a Code-Review against a branch with a current report and confirm the rendered rubric lists the report's tests.
+  Then confirm that a commit changing a judged package's Go files turns the note into the no-current-report line.
+- No regression check ran for this task.
