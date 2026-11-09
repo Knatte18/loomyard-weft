@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-09 11:32 UTC; every age below is as of then.
+Rendered 2026-11-09 11:33 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -79,7 +79,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Releasing a project with lym board set-status releases its draft member tasks** | [`project-release-members`](design-project-release-members.md)<br>[Sketch](decision-project-release-members.md) | darn · light | Record-Write | osl-1046 | 19h<br>19h | shed, loom, burler, arbiter, board |
+| T4 | **Releasing a project with lym board set-status releases its draft member tasks** | [`project-release-members`](design-project-release-members.md)<br>[Sketch](decision-project-release-members.md) | darn · light | Darn-Write | osl-1046 | 19h<br>19h | shed, loom, burler, arbiter, board |
 | T5 | **Raddle's perch mode: recorded from the recipe's rows, with its outcome checks and refusals** | [`raddle-perch-mode`](design-raddle-perch-mode.md)<br>[Sketch](decision-raddle-perch-mode.md) | darn · solid | Darn-Write | osl-1046 | 19h<br>19h | shed, loom, burler, arbiter, board |
 
 #### Ready (0)
