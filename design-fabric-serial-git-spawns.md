@@ -1,6 +1,6 @@
 # Fewer git processes in the serial phase of internal/fabricengine tier 1
 
-`fabric-serial-git-spawns` · Task · enhancement, fabric, git, gate · running · Preflight
+`fabric-serial-git-spawns` · Task · enhancement, fabric, git, gate · running · Record-Write
 
 Depends on: [`fabric-serial-phase-tests`](design-fabric-serial-phase-tests.md)
 
