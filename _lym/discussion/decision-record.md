@@ -63,6 +63,15 @@ Only the machine running the prime parent's dobby gets maps; a gate on another m
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - beamdown-skips-refresh-end-when-dobby-dead (class design, severity MEDIUM, open in rounds 1)
+  - starttestmap-endprocess-unregistered-child (class design, severity BLOCKING, open in rounds 1)
+  - starttestmap-untested (class design, severity MEDIUM, open in rounds 1)
+  - testmapstep-error-aborts-tick (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D6: the dobby starts a refresh when the prime HEAD differs from its record, when D5's exit record names the refresh it waited on and a count of stale packages the cap left unbuilt above zero, or on its first tick.
