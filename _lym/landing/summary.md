@@ -1,38 +1,37 @@
-# Reed ask buttons keep a $NAME in a typed answer intact on tmux 3.4
+# Reed ask buttons undo the backslash tmux keeps before $NAME
 
-The adopt check of root failed at tier 2 on osl-1046 in `TestRunButton_RealTmux/AnswerWithEveryMetacharacterReachesTheFileIntact`:
-an answer holding `$HOME` reached `{answer}` as `\$HOME`.
-This is a code failure, not a machine failure.
-The machine runs Ubuntu's tmux 3.4, which is above reed's pinned minimum of 3.3.
+An ask button's answer reached the run text with an extra backslash before a `$` that starts a variable name, as in `\$HOME` instead of `$HOME`.
+The adopt check of root failed on this at tier 2, in `TestRunButton_RealTmux/AnswerWithEveryMetacharacterReachesTheFileIntact`.
 
 ## Cause
 
-An ask entry's `command-prompt` template stores the answer through tmux's `%%%`,
-which escapes every `$` of the answer as `\$` for tmux's own command parser.
-The tmux 3.4 parser drops that backslash when a non-name character follows the `$`,
-but keeps it when a variable name follows, `[A-Za-z_{]`.
-So `"\$HOME"` parses to `\$HOME` while `"\$-"` parses to `$-`.
-The same parse shows up in `set-option`, `display-message` and `set-environment`,
-so it comes from the parser, not from the option store.
+The `command-prompt` template stores the answer through tmux's `%%%`, which escapes every `$` of the answer as `\$`.
+Some tmux builds, 3.4 among them, keep that backslash when a variable name follows, so the stored option holds `\$HOME` where other builds hold `$HOME`.
+The fault is in the code, not the machine: the answer path assumed one tmux behaviour.
 
-## Fix
+## Change
 
-`internal/reedengine/buttonclick.go`:
+In `internal/reedengine/buttonclick.go`:
 
-- The ask template stores an escaped marker, `\$A`, directly before `%%%`.
-  The marker passes through the same parse as the answer,
-  so the stored value shows whether this server kept the backslash.
-- `decodeStoredAnswer` strips the marker.
-  When the marker came back as `\$A`, it also drops the backslash before each `$` that starts a variable name.
-  tmux escapes each backslash the user typed as well,
-  so the backslash directly before such a `$` is always one tmux kept, never one the user typed.
-  For example, a typed `\$HOME` is stored as `\\$HOME` and decodes back to `\$HOME`.
-- When the marker came back as `$A`, from a tmux that unescapes every `\$`, the answer is used as stored.
+- The template now stores the answer behind an escaped marker, `\$A%%%`.
+  The marker goes through the same tmux escaping as the answer, so the stored marker shows whether this server kept the backslash.
+- `decodeStoredAnswer` reads the marker back.
+  A stored `\$A` means the server keeps the backslash, and the decoder drops every backslash directly before a `$` that starts a variable name (`[A-Za-z_{]`).
+  A stored `$A` means it does not, and the answer is used as stored.
+- `buttonAnswer` decodes before it trims and applies the ask default.
 
-## Tests and docs
+`internal/reedengine/doc.go` describes the marker in the ask-button flow.
 
-- `buttonclick_test.go`: the expected ask template carries the marker.
-  The answered-call rows read stored values with the marker in front.
-  Two new rows cover the decode for each parser behavior.
-- The real-tmux integration row that failed is unchanged and pins the fix end to end.
-- `doc.go` describes the marker and the decode.
+## Design notes
+
+- The marker is the way to tell the two behaviours apart without asking for the tmux version.
+  The server's behaviour itself decides, so no version table is needed.
+- In the keeping mode, tmux also escapes each backslash the answer holds, so a kept escape backslash always stands directly before the `$`.
+  A typed `\$HOME` therefore comes back as `\$HOME`, and the decoder never eats a typed backslash.
+- A `$` followed by anything other than a name start, such as `$-`, loses no backslash, because tmux does not keep one there.
+
+## Tests
+
+`TestRunButtonVia` gains two cases for the keeping mode, one where the server unescapes every `$` and one where it keeps the escapes, and the existing ask cases carry the marker.
+The unit tests ran in the task.
+Run `TestRunButton_RealTmux` on a machine with tmux 3.4 to confirm the integration case passes there.
