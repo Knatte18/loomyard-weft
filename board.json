@@ -569,7 +569,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `redundant-test-finder`.\n\nTakes: testmap-verb's verb\nDelivers: per the operator's decision after the Motif (2026-11-08, in the Sketch's board body), which replaces D6's trigger and supersedes the trigger clauses of the first carried criterion: a dobby tick step on the prime dobby that counts landings as the board tidy does and, after every test_map_every landings, starts `lym gate testmap --max \u003ctest_map_batch\u003e` on the packages stale then, leaving what the cap left unbuilt for the next refresh; no prime-HEAD record and no exit-record trigger; started through a spawn dep registered as runproc.RoleTestMap under runproc.HubOwner, none while a live test-map record exists, a restarted dobby included; the child ended on stop through runproc.EndRole; dobby config keys test_map_every beside board_tidy_every, where 0 never refreshes, and test_map_batch; no test_map on/off key\nExports: runproc.RoleTestMap\n\nThe part changes these packages:\n\n- internal/dobbyengine (about 200 changed lines)\n- internal/beamcli (about 80 changed lines)\n- internal/runproc (about 10 changed lines)\n",
-      "status": "running · Code-Burler-Review",
+      "status": "running · Code-Burler-Fix",
       "created": "2026-11-08T18:46:50Z",
       "revised": "2026-11-08T18:46:50Z",
       "profile": "light",
