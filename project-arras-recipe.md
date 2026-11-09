@@ -1,6 +1,6 @@
 # P4 Arras: one recipe that runs Motif and raddle in a row, with a perch on the split
 
-Rendered 2026-11-09 12:45 UTC; every age below is as of then.
+Rendered 2026-11-09 12:46 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`arras-recipe`](design-arras-recipe.md) · Age 20h · Owner `osl-1046`
@@ -55,11 +55,3 @@ Starts when every entry it names under After is done.
 ## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T4 | **Releasing a project with lym board set-status releases its draft member tasks** | [`project-release-members`](design-project-release-members.md)<br>[Sketch](decision-project-release-members.md) | 20h<br>20h | shed, loom, burler, arbiter, board |
