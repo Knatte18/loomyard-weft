@@ -1,6 +1,6 @@
 # lym gate testmap rebuilds stale coverage maps in the prime parent's worktree
 
-`testmap-verb` · Task · feature, testkit, gate · running · Drift-Expect
+`testmap-verb` · Task · feature, testkit, gate · running · Darn-Write
 
 Decision record: [Sketch](decision-testmap-verb.md)
 

@@ -622,7 +622,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `redundant-test-finder`.\n\nTakes: testcover-engine's runner, block keys and map record\nDelivers: the `lym gate testmap [--max \u003cn\u003e] [\u003cpackage\u003e...]` cobra verb with staleness, dirty and lock skips, mid-package hash check, timeouts with process-group kill and grace, failed-build maps and the exit record; fabricengine.CodeDirAt and CodeFileAt on the warp checkout; gate config keys test_map_max_age_days, redundancy_build_timeout_min and redundancy_test_timeout_sec\nExports: fabricengine.CodeDirAt, fabricengine.CodeFileAt, the exit record type and its read, and the per-tier run-alone with timeout that the gate step reuses\n\nThe part changes these packages:\n\n- internal/gatecli (about 600 changed lines)\n- internal/gateslot (about 80 changed lines)\n- internal/fabricengine (about 80 changed lines)\n- internal/gitrepo (about 40 changed lines)\n- internal/lymdirs (about 10 changed lines)\n- internal/testcover (about 120 changed lines)\n",
-      "status": "running · Drift-Expect",
+      "status": "running · Darn-Write",
       "created": "2026-11-08T18:46:50Z",
       "revised": "2026-11-08T18:46:50Z",
       "run_settings": {
