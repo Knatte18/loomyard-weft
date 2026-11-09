@@ -61,8 +61,11 @@ It is the machine-level answer to a Codex seat whose sandbox cannot run shell co
 On OSL-1046 a Codex assist seat read nothing: every command failed with `bwrap: setting up uid map: Permission denied`, and the Chair of `testmap-verb`'s Code-Review waited 19 minutes for the seat's end marker that never came.
 The operator says this happens all the time with Codex.
 
+## Decision (operator, 2026-11-09)
+
+Codex runs on Neve, where its sandbox works, and not on OSL-1046, where `kernel.apparmor_restrict_unprivileged_userns` is `1` and `bwrap` cannot set up its user namespace.
+No task released on OSL-1046 sets `code_assist_reviewer_model`; the settings on `testmap-verb`, `arras-recipe-perch` and `gate-redundancy-report` were removed.
+
 ## Plan (operator, 2026-11-09)
 
-No task sets `code_assist_reviewer_model` from now on, so no Codex assist seat runs until Codex works.
-The settings on `testmap-verb`, `arras-recipe-perch` and `gate-redundancy-report` were removed.
-The trial resumes after Codex's sandbox is fixed on the machine, with the plan of 2026-11-08: the orch sets the setting in the `run_settings` of the next two or three darn tasks the operator releases, with the `review-code` fan, and a darn docs task then reads those rounds.
+The trial continues on Neve with the plan of 2026-11-08: the orch there sets `{"loom":{"code_assist_reviewer_model":"astra[medium]"}}` in the `run_settings` of the next two or three darn tasks the operator releases, with the `review-code` fan, and a darn docs task then reads those rounds.
