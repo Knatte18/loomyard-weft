@@ -1045,6 +1045,24 @@
       "body": "## Seen\n\nOn 2026-11-09 the orch on Neve ran `lym adopt --all` from inside its own session, to take the hub back from osl-1046.\nStep 1's origin reconcile pulled the owner record naming osl-1046 as the prime's owner.\nThe orch watcher on Neve saw the prime owned elsewhere and exited, with `watcher_exit: owned by machine osl-1046`.\nIt took the orch session and its reed window down with it.\nThe adopt command was a child of that session, so it died with SIGKILL during step 5's deploy, in the lym build,\nbefore step 6 wrote this machine as the owner.\nThe prime stayed owned by osl-1046, with no orch and no dobby running on Neve.\nThe operator recovered by running `lym adopt root` from a plain shell.\n\n## Idea\n\nAn adopt in progress must not trip the orch watcher's owner check:\nthe watcher could skip its exit while an adopt of its subject runs on this machine,\nor adopt could write the owner before anything that lets the watcher read a foreign owner.\nUntil then, the orch rules should say to run `lym adopt` from a shell outside the orch session.\n",
       "created": "2026-11-09T18:09:22Z",
       "revised": "2026-11-09T18:09:22Z"
+    },
+    {
+      "id": 1269,
+      "handle": "B10",
+      "slug": "tender-pause-reuses-adopt-hold",
+      "title": "lym tender pause on an adopt-held run adds no pause of its own",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "tender"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nOn 2026-11-09, `lym tender pause \u003cslug\u003e` on a run under an adopt hold answered `already_paused: true` and recorded nothing new.\nThe run started as soon as the adopt check lifted the hold.\n\n## Idea\n\nA pause from another caller records its own entry, so lifting the adopt hold leaves the run paused.",
+      "created": "2026-11-09T18:13:00Z",
+      "revised": "2026-11-09T18:13:00Z"
     }
   ],
   "prime_owner": "neve",

@@ -1,6 +1,6 @@
 # P3 Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes
 
-Rendered 2026-11-09 18:09 UTC; every age below is as of then.
+Rendered 2026-11-09 18:13 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`fabric-test-speed-work`](design-fabric-test-speed-work.md) · Age 2d · Owner `neve`
@@ -26,7 +26,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Make the eight longest serial internal/fabricengine tests parallel**<br>• Move their package-level test state into parameters so the serial phase of tier 1 shrinks | [`fabric-serial-phase-tests`](design-fabric-serial-phase-tests.md) | darn · solid | T3 | 5h<br>5h | fabric, testkit |
+| T2 | `draft` **Make the eight longest serial internal/fabricengine tests parallel**<br>• Move their package-level test state into parameters so the serial phase of tier 1 shrinks | [`fabric-serial-phase-tests`](design-fabric-serial-phase-tests.md) | darn · solid | T3 | 6h<br>5h | fabric, testkit |
 
 ## Notes (1)
 
@@ -36,4 +36,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E4 |  | **Fewer git processes in the serial phase of internal/fabricengine tier 1**<br>• About 65 thousand git processes, each slower as more run at once | [`fabric-serial-git-spawns`](design-fabric-serial-git-spawns.md) | 5h<br>5h | fabric, git |
+| E4 |  | **Fewer git processes in the serial phase of internal/fabricengine tier 1**<br>• About 65 thousand git processes, each slower as more run at once | [`fabric-serial-git-spawns`](design-fabric-serial-git-spawns.md) | 6h<br>6h | fabric, git |
