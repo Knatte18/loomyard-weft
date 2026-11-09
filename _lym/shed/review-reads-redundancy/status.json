@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -41,6 +41,57 @@
       "output": "",
       "at": "2026-11-09T19:58:23Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/review-reads-redundancy/_lym/landing/summary.md",
+      "at": "2026-11-09T20:23:48Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-09T20:04:21.353003703Z",
+          "end": "2026-11-09T20:04:21.363562792Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-09T20:16:16.425037534Z",
+          "end": "2026-11-09T20:16:16.463349392Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-09T20:04:21.415885012Z",
+          "end": "2026-11-09T20:15:46.54179463Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-09T20:15:47.061597332Z",
+          "end": "2026-11-09T20:16:16.302663467Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-09T20:16:16.584692833Z",
+          "end": "2026-11-09T20:22:26.627268441Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-09T20:22:26.807816194Z",
+          "end": "2026-11-09T20:22:27.372442886Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-09T20:22:27.533725096Z",
+          "end": "2026-11-09T20:22:27.537730844Z"
+        }
+      ]
     }
   ],
   "product": {
