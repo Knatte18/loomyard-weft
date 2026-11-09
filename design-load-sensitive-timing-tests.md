@@ -1,6 +1,6 @@
 # Tests that compare a measured time to a limit fail on a loaded machine
 
-`load-sensitive-timing-tests` · Note · bug, gate, testkit
+`load-sensitive-timing-tests` · Task · bug, gate, testkit · draft
 
 ## Seen (orch, 2026-11-09)
 
