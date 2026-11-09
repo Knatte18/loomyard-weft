@@ -1,6 +1,6 @@
 # Machine name from a machine-wide config, not only the hostname
 
-`machine-name-config` · Task · sketch, config, slack · running · Open-Window
+`machine-name-config` · Task · sketch, config, slack · running · Raddle-Write
 
 Decision record: [Sketch](decision-machine-name-config.md)
 
