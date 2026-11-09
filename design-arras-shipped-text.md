@@ -1,6 +1,6 @@
 # The shipped rule and docs name arras as the recipe for a tapestry-sized note
 
-`arras-shipped-text` · Task · feature, shed, loom, burler, arbiter, board · running · Drift-Baseline
+`arras-shipped-text` · Task · feature, shed, loom, burler, arbiter, board · running · Darn-Write
 
 Decision record: [Sketch](decision-arras-shipped-text.md)
 
