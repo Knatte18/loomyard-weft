@@ -1026,6 +1026,25 @@
       "body": "Imported from [issue #94](https://github.com/Knatte18/loomyard/issues/94).\n\n## Seen\n\nIn the DrillOpPlan hub's prime, changing two values of the `docs` profile's darn loom block with `lym config profiles --layer default --set` took three tries.\n\n1. `--set docs.darn.loom.code_max_bounces=0 --set docs.darn.loom.code_hard_max_bounces=1` was refused:\n   `value for docs.darn.loom.code_max_bounces must be a JSON object such as {\"module\": {\"key\": 1}}, got \"0\"`.\n   The message names a value shape that fits a recipe block, not a leaf key.\n2. `--set 'docs.darn={\"darn\":{\"writer\":\"sonnet[medium]\"},\"drift\":{\"scope\":\"off\"},\"loom\":{...}}'`, which is the `{\"module\": {\"key\": 1}}` shape the first message asked for, was refused:\n   `profile \"docs.darn\": recipe \"darn\": module \"writer\" must be a mapping of keys`.\n   The value was read one level deeper than its key.\n3. `--set 'docs={\"darn\":{\"darn\":{\"writer\":\"sonnet[medium]\"},\"drift\":{\"scope\":\"off\"},\"loom\":{\"code_max_bounces\":0,\"code_hard_max_bounces\":1,\"code_reviewer_fan\":\"\"}}}'` worked.\n\n## Workaround\n\nSet the whole profile, keyed by the profile name alone, with every block it holds restated.\n\n## Expected\n\n`--set` reaches a leaf key of a profile, as it does in other modules (`lym config gate --set tiers.tier0.env.X=...`), so `docs.darn.loom.code_max_bounces=0` sets that one value.\nFailing that, the refusal names the key depth `--set` takes and a value shape that is accepted at that key.\n",
       "created": "2026-11-09T15:20:33Z",
       "revised": "2026-11-09T15:20:33Z"
+    },
+    {
+      "id": 1268,
+      "handle": "B9",
+      "slug": "adopt-kills-own-orch",
+      "title": "lym adopt run from the orch is killed when the orch watcher sees the foreign owner",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "orch",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nOn 2026-11-09 the orch on Neve ran `lym adopt --all` from inside its own session, to take the hub back from osl-1046.\nStep 1's origin reconcile pulled the owner record naming osl-1046 as the prime's owner.\nThe orch watcher on Neve saw the prime owned elsewhere and exited, with `watcher_exit: owned by machine osl-1046`.\nIt took the orch session and its reed window down with it.\nThe adopt command was a child of that session, so it died with SIGKILL during step 5's deploy, in the lym build,\nbefore step 6 wrote this machine as the owner.\nThe prime stayed owned by osl-1046, with no orch and no dobby running on Neve.\nThe operator recovered by running `lym adopt root` from a plain shell.\n\n## Idea\n\nAn adopt in progress must not trip the orch watcher's owner check:\nthe watcher could skip its exit while an adopt of its subject runs on this machine,\nor adopt could write the owner before anything that lets the watcher read a foreign owner.\nUntil then, the orch rules should say to run `lym adopt` from a shell outside the orch session.\n",
+      "created": "2026-11-09T18:09:22Z",
+      "revised": "2026-11-09T18:09:22Z"
     }
   ],
   "prime_owner": "neve",
