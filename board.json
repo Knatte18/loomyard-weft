@@ -539,7 +539,6 @@
       "created": "2026-11-08T18:46:50Z",
       "revised": "2026-11-08T18:46:50Z",
       "profile": "solid",
-      "notify_on_land": true,
       "project": "redundancy-check",
       "discussed": true
     },
