@@ -1,6 +1,6 @@
 # One new loom config key fails dozens of tests that pin the whole struct
 
-`config-struct-test-per-key` · Task · bug, loom, config, testkit · running · PR-Review
+`config-struct-test-per-key` · Task · bug, loom, config, testkit · running · Finalize
 
 ## Seen (orch, 2026-11-09)
 
