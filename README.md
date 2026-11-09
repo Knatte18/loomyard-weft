@@ -108,7 +108,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Measure fabricengine tier 1 wall and git spawns before and after e19a2e86** | [`fabric-spawn-measure`](design-fabric-spawn-measure.md) | darn · docs | Drift-Verify | neve | 7m<br>7m | fabric, git, gate |
+| T1 | **Measure fabricengine tier 1 wall and git spawns before and after e19a2e86** | [`fabric-spawn-measure`](design-fabric-spawn-measure.md) | darn · docs | Code-Bouncer | neve | 7m<br>7m | fabric, git, gate |
 
 #### Ready (0)
 
