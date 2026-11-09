@@ -14,13 +14,19 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (1)
+### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T2 | **Measure whether running fabricengine tier 1 as several shards cuts its wall** | [`gate-shard-slow-package`](design-gate-shard-slow-package.md) | darn · docs | Worktree-Create | osl-1046 | 19h<br>0m | gate, fabric |
+
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Measure whether running fabricengine tier 1 as several shards cuts its wall** | [`gate-shard-slow-package`](design-gate-shard-slow-package.md) | darn · docs |  | 19h<br>0m | gate, fabric |
+_None._
 
 ## Notes (0)
 
