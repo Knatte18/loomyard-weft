@@ -44,3 +44,18 @@ Check whether a Friction-Reflect session that ends normally, or is closed after 
 If it can, treat a reflection step ending after its report is written as done rather than `failed`.
 
 Provenance: task slug darn-writer-anatomy; notes: loom-halt-2.md
+
+## From issue #91
+
+Imported from [issue #91](https://github.com/Knatte18/loomyard/issues/91).
+
+A `lym shed step` run halted as failed with anomaly `interrupted-stop`: the loop ended without an envelope and the halt reported `loop exit: not recorded`.
+It happened twice at the same producer step (`Darn-Write`), the second time after a `goto` re-step.
+The halt message points the operator at `loop.trace_copy`, `loop.stderr_path` and `loop.interrupt_policy`, but the note records no cause, so the loop's exit status and reason are lost.
+In the first halt the loop log held only the earlier steps' envelopes, none for the interrupted step; the second halt did name the in-flight trace.
+
+This is abnormal: a loop that dies should record its exit status and a reason, so the halt is diagnosable without reconstructing it from logs.
+Record the loop process exit code or signal when the loop ends without an envelope, and include it in the halt note.
+Also have the halt note name the in-flight trace in every case, as the second halt does.
+
+Provenance: task slug `slack-presence-auto`; notes `loom-halt.md`, `loom-halt-3.md`.
