@@ -849,6 +849,54 @@
       "body": "## Seen (orch, 2026-11-09)\n\nThe darn run of `testmap-verb` spent about 40 minutes in its Darn-Write verify gate: a first pass of 23 minutes over nearly the whole suite (tier 0 to 2), two failing tests, then a second full pass of 9 minutes, then a tier 1 rerun the gate started itself when the second pass ended with `exit_code 1` and no failing test.\nThe computed scope was close to the whole suite because the diff touches widely imported packages, and no coverage map exists yet to narrow it.\n\nWhat exists today (`contracts/recipes/darn-recipe.yaml`, `Darn-Write`): the verify gate re-prompts the live session up to `darn.verify_attempts` times (3), and a cold fixer of `darn.gate_fixer` (`sonnet[medium]`) clears a failing verify gate before the writer hears of it.\nEach attempt runs the gate over its full computed scope again.\nThe gate records each failure with its package, test and first line, and `lym gate test \u003cpackage\u003e -- -run \u003ctest\u003e` runs chosen tests alone.\n\n## Idea\n\nBetween fix attempts, re-run only the tests the last gate run recorded as failed, with `-run`, and hand the fixer only those failures; run the full gate once, after the fixer's changes pass alone.\nThat saves the full pass each failed attempt costs today, about 10 minutes each on this machine.\n\nRead first, before any change: what the fixer and the writer receive on a failed gate (the whole log or the failures), and whether a rerun of failed tests alone is already possible inside the gate.\nA failure with no failing test, such as a crashed runner or a build error, needs its own path, since there is no test to name.\n",
       "created": "2026-11-09T14:30:39Z",
       "revised": "2026-11-09T14:30:39Z"
+    },
+    {
+      "id": 1259,
+      "handle": "T5",
+      "slug": "machine-name-file",
+      "title": "machinename reads the machine name from machine.json before the hostname rule",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "config",
+        "slack"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `machine-name-config`.\n\nTakes: the decision record's D1-D4, D7 and D8 for internal/machinename's tests\nDelivers: machinename.Name reading machine.json from the absolute per-user config directory before the hostname rule, with every name error naming its own way forward; githubclient.CredentialDir delegating to standalonestate.UserConfigDir; battencli.DobbyLandings counting landings under former names; the name-error wrappers in internal/battencli and internal/beamcli rid of their hostname fix\nExports: standalonestate.UserConfigDir, standalonestate.AbsoluteUserConfigDir, machinename.FilePath, machinename.ReadFile, machinename.Names, machinename.CheckName, battencli.DobbyLandings taking this machine's names\n\nThe part changes these packages:\n\n- internal/standalonestate (about 100 changed lines)\n- internal/githubclient (about 15 changed lines)\n- internal/machinename (about 180 changed lines)\n- internal/battencli (about 30 changed lines)\n- internal/beamcli (about 50 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-09T14:52:44Z",
+      "revised": "2026-11-09T14:52:44Z",
+      "profile": "solid",
+      "discussed": true
+    },
+    {
+      "id": 1260,
+      "handle": "T13",
+      "slug": "machine-name-verb",
+      "title": "lym machine name shows and sets the machine name and sweeps owners across a rename",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "config",
+        "slack"
+      ],
+      "issues": [],
+      "recipe": "tapestry",
+      "depends_on": [
+        "machine-name-file"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `machine-name-config`.\n\nTakes: machine-name-file's machinename.FilePath, ReadFile, Names, CheckName and FromHostname; internal/state's WriteJSON; hubregistry.Live; fabricengine.Bolt Pull and HasUnpushed; boardengine.ReadOwners\nDelivers: the module machine with lym machine name showing and setting the name, its collision check across every swept hub, the file write that keeps names, and the per-hub owner sweep with its recovery output; boardengine.OwnerRequest's replace-set field selecting owners after the write's own pull\nExports: machinecli.Command, the replace-set field of boardengine.OwnerRequest\n\nThe part changes these packages:\n\n- internal/boardengine (about 130 changed lines)\n- internal/machinecli (about 800 changed lines)\n- cmd/lym (about 10 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-09T14:52:44Z",
+      "revised": "2026-11-09T14:52:44Z",
+      "profile": "solid",
+      "discussed": true
     }
   ],
   "prime_owner": "osl-1046",
