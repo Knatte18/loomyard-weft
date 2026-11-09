@@ -17,7 +17,6 @@
 - `plan:internal/adoptcli#workerCmd` -> `func workerCmd() *cobra.Command`
 - `plan:internal/adoptcli#world.workerDeps` -> `func (w *world) workerDeps() workerDeps`
 - `plan:internal/adoptcli#TestRunWorker` -> `func TestRunWorker(t *testing.T)`
-- `plan:internal/adoptcli#TestJudgeStanding` -> `func TestJudgeStanding(t *testing.T)`
 
 **Delete:**
 - `internal/adoptcli#adopt`
@@ -62,8 +61,8 @@ The caller runs it too (card 8).
 3. It reads the record and judges it with `judgeStanding` over its `ReadState`.
    - With no record, or a `done` one: verdict fresh.
    - An unfinished record (`running`, `interrupted` or `stopped`) whose request `SameSubjects` the call's: `follow` while its worker reads alive, else `resume`.
-     The worker holding the lock never sees a live other worker, since a live worker holds the lock and one that loses it writes nothing.
-     So a `follow` verdict here is a fail-loud wiring guard in `refusal-spec.md`'s sense, an error naming `lym beam status`, and takes no reaching test.
+     A `follow` verdict here is a transient refusal naming `lym beam status` and `lym adopt --discard`, returned before any step and writing nothing.
+     It is reached whenever the record's worker reads alive while this worker holds the lock, as for a record without start ticks whose pid another process now holds.
    - An unfinished record with other subjects: refused.
      The refusal names the record's subjects, the step it stopped at, its `Request.Command`, and `lym adopt --discard`; it writes nothing.
 4. Fresh: it writes the record `running` at `reconcile`, with the request, the resolved subjects, its pid, start ticks and start, before any step runs.
@@ -73,6 +72,10 @@ The caller runs it too (card 8).
    It runs from `ResumeStep`, or from `reconcile` on `restart`.
 5. It runs `runSteps` with `Save` writing the record, and at the end writes the record with `envelopeOf`'s envelope.
    `envelopeOf` merges the outcome part of every step the record lists as done, an earlier process's steps included, in step order.
+   It then merges the record's `StoppedPart`, when a stop left one, without listing that step as done.
+   A scalar field of a later part replaces an earlier one; `slugs` merges per slug and per field; list fields concatenate.
+   The merged slugs are then rendered as a list in the order `collect` gives, over the record's `Subjects` without `root` that the merged parts hold.
+   So a stop before any step sets a slug field, such as a refused reconcile, lists no slugs, as today's reconcile refusal does.
    It returns the outcome, the final record, and the stop's error.
 
 A resumed step past `owner` reads its inputs from `Inputs`, never from the earlier process.
@@ -88,23 +91,30 @@ A worker that `lym fabric anchor`'s `runproc.EndSparing` ends mid-step leaves th
 `namedEntries` keeps its refusals; its doc says `validateRequest` calls it.
 
 Tests, tier0, over the fake world with the record and lock in `t.TempDir()`:
-- `TestAdopt` drives `runWorker` through `world.workerDeps` in place of `adopt`; its rows are unchanged otherwise.
-- `TestJudgeStanding`: fresh for none and for done; follow for same subjects with a live worker; resume for same subjects and a dead worker, an interrupted record and a stopped one; `--all` matching `--all`; other subjects refused naming the recorded subjects, the step, the re-run and `lym adopt --discard`.
-- `TestRunWorker`, one row per D2 and D3 criterion:
+- `TestAdopt` drives `runWorker` through `world.workerDeps` in place of `adopt`.
+  Its rows are unchanged otherwise, but three gain assertions on the persisted record:
+  - card 6's held-back row reads it `stopped` at `done`, with a way forward naming `--keep-local` and `--drop-local` through `Request.Command`;
+  - card 6's failed-deploy row reads it `stopped` at `deploy`, with `owner` among the done steps;
+  - `ReconcileErrorRefuses` reads it `stopped` at `reconcile`, with no later step in the order.
+    Its faked reconcile returns mutations beside its error, and the envelope keeps the reconcile report and the mutations, with `partial` true.
+- `TestRunWorker`, one row per worker behavior the `TestAdopt` rows do not reach:
   - A fresh run's first `Save`, before the world's order holds any step, writes the record `running`, `InFlight` `reconcile`, with the request and the resolved subjects.
   - A record whose steps run through `owner` with a dead pid, re-run with the same subjects, resumes at `deploy`: the world's order shows no `reconcile`, `addpair:`, `pause` or `owners`, and the record ends `done`.
   - One whose steps run through `pairs`, re-run, runs the reconcile again before its owner write, and the record lists each step once.
-  - A held-back project ends the record `stopped` at `done`, its way forward naming `--keep-local` and `--drop-local` through `Request.Command`, while the other subject reaches `suite:`.
   - A record listing a slug in `Inputs.Paused` whose entry the operator lifted since, re-run from `reconcile`, leaves that slug with no entry.
   - A held lock returns at once and leaves the record unchanged.
   - Other subjects are refused before any step and leave the record unchanged.
+    The refusal names the recorded subjects, the step it stopped at, the re-run and `lym adopt --discard`.
+  - A `running` record of the same subjects whose pid and start ticks are the test process's own is refused before any step, naming `lym beam status` and `lym adopt --discard`, and the record stays unchanged.
+  - A record done through `owner`, re-run while a move record stands in a subject's worktree, is refused before `deploy` naming the move's way forward: the order holds no `deploy`, and the record ends `stopped` at `deploy`.
   - An invalid request (`--keep-local` with `--drop-local`) is refused before the lock and any step.
   - A resume keeps the record's `--no-orch`, seen on every `BeamUp` call.
   - A resume adding `--keep-local` to a record stopped on a held-back project restarts at `reconcile` and ends `done`, its `HeldBack` cleared.
   - A resume adding `--drop-local` to a record with `--keep-local` records `--drop-local` alone.
-  - A refused step (the reconcile error) ends the record `stopped` at `reconcile`, with no later step in the order.
-  - A failed deploy ends it `stopped` at `deploy`, with `owner` among the done steps.
-  - A done record's envelope merges the parts of steps from two processes: a resume after `owner` still carries the earlier `owner` step's per-slug `owner_recorded`.
+  - A done record's envelope merges the parts of steps from two processes: a resume after `owner` still carries the earlier `owner` step's per-slug `owner_recorded`, and the earlier process's reconcile warnings, part of that `owner` step, survive.
 - `TestAdoptIntegration_SecondCloneTakesOver` (tier1) also reads the second clone's `adopt.json` as `done` with every step of `adoptrecord.Steps` listed.
+  The first clone's adopt back returns an error naming `--keep-local` and `--drop-local`, with the record stopped at `done`.
+  The `--drop-local` call resumes it from `reconcile` and ends with the pair-add refusal naming `--keep-local`.
+  The `--keep-local` call then records the prime's owner.
 
 **ImpactSummary:** the in-process `adopt` gives way to `runWorker`, whose callers are `Command`, `AdoptAs` and the tests; the record and lock are new files under the hub's adopt scratch directory, and no package outside adoptcli changes.

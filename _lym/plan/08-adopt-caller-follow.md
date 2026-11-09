@@ -19,7 +19,6 @@
 - `plan:internal/adoptcli#discard` -> `func discard(hubPath string) (removed bool, err error)`
 - `plan:internal/adoptcli#TestFollow` -> `func TestFollow(t *testing.T)`
 - `plan:internal/adoptcli#TestDiscard` -> `func TestDiscard(t *testing.T)`
-- `plan:internal/adoptcli#TestRunsInOrch` -> `func TestRunsInOrch(t *testing.T)`
 - `plan:internal/adoptcli#TestWorkerArgs` -> `func TestWorkerArgs(t *testing.T)`
 
 **Delete:**
@@ -50,7 +49,10 @@
 D1's caller, `--no-orch` and `--discard`.
 `lym adopt` runs no step itself: it validates, starts a detached worker, and follows the record.
 
-`Command` gains `--no-orch` and `--discard`, and its `Long` text gives D3's step order, the worker, the follow and the record.
+`Command` gains `--no-orch` and `--discard`.
+Its `Long` text names the step order in one line and says a hidden worker runs the steps while the call follows the record.
+It names `--no-orch` and `--discard` in one line each, and points to the package doc for the record, the resume and the envelope.
+So the text stays under the CLI-tree walk's `maxLongBytes` cap, and the detail moves to the adoptcli `doc.go` that card 10 rewrites.
 Its `RunE` resolves the prime, builds `hubCallerDeps` and returns `runAdopt`'s exit code, so the tests drive every branch below through `runAdopt` over fake seams.
 `callerDeps` holds the hub path, the caller's strand name, the step deps `validateRequest` reads, the record read, the liveness read, the clock, the sleep, `KeepWarm`, the discard and `Spawn`.
 `Spawn` is `spawnWorker` in production; a fake records its args and returns a pid and an `exited` channel.
@@ -83,6 +85,9 @@ The worker's stdout and stderr go to `adopt.out` beside the record, so a losing 
 - Once `exited` is closed and the record names another pid:
   that worker lost the lock, and `follow` takes the other record when its start is later than `since`, the caller's own start, and its subjects match.
   Other subjects are refused as D2 refuses; a record not started later is not followed.
+- When `exited` is nil, as on the follow verdict, a record naming another pid than `workerPID` ends the follow.
+  It returns an error saying the followed adopt ended and another started, naming `lym beam status` and the re-run of the same `lym adopt`.
+  An absent record under a nil `exited` ends it too, with the error below for an exited worker that left no record.
 - Once `exited` is closed with no such record, it reads once more at the next wake.
   With still none it returns an error naming the re-run of the same `lym adopt`, `lym beam status` and `adopt.out`, where a worker that refused or lost the lock left its envelope; a `--discard` that removed the record ends here.
 - The wake starts at `followWakeFloor`, doubles to `followWakeCeiling` while the record is unchanged, and returns to the floor on a change (`PATTERN-daemon-wakeups`).
@@ -110,19 +115,21 @@ Tests, tier0:
   - a worker that lost the lock to a later-started resuming worker of the same subjects is followed to its end;
   - one that lost it to a later worker of other subjects is refused naming the running adopt's subjects;
   - a record of another pid started before `since` is not followed, and the follow ends as for no record;
+  - following with a nil `exited`, the record turns to another pid's `running` record, and the follow returns the ended-and-another-started error at the next wake;
+    the record removed instead, the follow returns the no-record error at the next wake;
   - an exited worker with no record reads once more, then errors naming the re-run, `lym beam status` and `adopt.out`, as after a `--discard`;
   - at the cap it returns `still running` naming `lym beam status`, and with cap zero it waits on;
   - an unchanged record doubles the wake to the ceiling, and a change returns it to the floor.
 - `TestDiscard` over `t.TempDir()`: removes an interrupted record; removes an undecodable one; refuses while another lock holder holds `adopt.lock`, naming `lym beam status` and leaving the record; leaves a done record; reports nothing removed with no record.
 - `TestRunAdopt`, over fake `callerDeps` and a record in `t.TempDir()`, one row per verb-level branch:
   - `--discard` with a subject is refused naming `lym adopt --discard`, spawning nothing;
-  - a live record of the same subjects spawns nothing and follows it, exiting 0 when it ends `done`;
-  - a record that ends `stopped` exits non-zero with its way forward;
-  - one that reads `interrupted` exits non-zero naming the re-run and `lym adopt --discard`;
+  - a live record of the same subjects spawns nothing and follows it;
+  - a followed end maps to its exit code, `follow` returning a record or an error and never a code: `done` exits 0, and `stopped` and `interrupted` exit non-zero;
+    each row asserts the code and that the envelope or the error reaches the writer, and the `stopped` row also the record's way forward, which `runAdopt` renders;
+    `TestFollow` pins the interrupted text;
   - an unfinished record of other subjects is refused, spawning nothing;
-  - from an orch strand the spawned args carry `--no-orch`, and from an implementer strand they do not;
-  - an empty strand follows uncapped without calling `KeepWarm`, and an agent strand at `KeepWarm`'s cap exits non-zero with `still running`.
-- `TestRunsInOrch`: an orch strand and a numbered orch read true; an implementer strand, an empty name and an unparsable name read false.
+  - the strand rows: from an orch strand and from a numbered orch the spawned args carry `--no-orch`, and from an implementer strand, an empty name and an unparsable name they do not;
+  - an empty strand follows uncapped without calling `KeepWarm`, and an agent strand passes `KeepWarm`'s cap to the follow, exiting non-zero with `still running` at it.
 - `TestWorkerArgs`: each request renders to args that `workerCmd`'s flags parse back to the same request.
 - `TestSpawnersStartNothingUnderTest` replaces `TestStartSuiteStartsNothingUnderTest` with one row per spawner, `startSuite` and `spawnWorker`: each returns an error and starts nothing under the test binary.
 

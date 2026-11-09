@@ -10,8 +10,8 @@
 - `internal/pauserecord#TestCoverageOf`
 - `internal/pauserecord/doc.go`
 - `internal/dobbyengine#RunView`
+- `internal/dobbyengine#planPass`
 - `internal/dobbyengine/doc.go`
-- `internal/beamcli#TestDobbyRuns_PairAtItsOwnAnchor`
 - `internal/hibernateengine#TestSequence`
 
 **Extends:**
@@ -30,11 +30,10 @@ the field comment says both callers set it.
 no pass of any kind, no owner-pause recheck (so the dobby's owner lift never lifts it), and the full pass at the lift.
 A released task under the pause is covered, so `heldByEntry` already starts none until the lift.
 The hibernate wake only adds `OwnerCaller` entries and lifts none, so it leaves the adopt pause standing.
-`RunView.Held`'s comment and the dobbyengine `doc.go` passage on hold-caller entries are reworded to the adopt pause, legacy `adopt-hold` included, lifted only by hand.
+`RunView.Held`'s comment, the hold-caller sentence of `planPass`'s comment and the dobbyengine `doc.go` passage on hold-caller entries are reworded to the adopt pause, legacy `adopt-hold` included, lifted only by hand.
 
 Tests, tier0:
 - `TestCoverageOf` gains rows: an own-scope `AdoptCaller` entry sets `Held` and leaves `OwnerHeld` unset, and an own-scope `HoldCaller` entry still sets `Held`.
-- `TestDobbyRuns_PairAtItsOwnAnchor` gains a row beside `HoldCallerEntryReadsHeldAndOwnerEntryDoesNot`: an `AdoptCaller` entry of the run's own scope reads `Held`.
 - `TestSequence` (tier0) gains a row beside the owned-elsewhere wake row: a live `AdoptCaller` entry of a pair slug stands after the wake, unchanged, beside the wake's own entries.
 
 `lym tender pause` and `lym tender resume` need no code or new row: `Pause` answers `AlreadyPaused` over any live entry of the scope, whatever its caller, and `Resume` lifts every live entry of the slug's scope.

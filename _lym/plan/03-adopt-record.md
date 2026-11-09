@@ -43,8 +43,13 @@
 - `plan:internal/adoptrecord#TestRequestSameSubjects` -> `func TestRequestSameSubjects(t *testing.T)`
 - `plan:internal/adoptrecord#TestRequestCommand` -> `func TestRequestCommand(t *testing.T)`
 
-**Uses:**
+**Edit:**
 - `internal/fabricengine#AdoptScratchDir`
+- `internal/fabricengine/doc.go`
+- `internal/lymdirs#AdoptDirName`
+
+**Uses:**
+- `internal/lymdirs/doc.go`
 
 **Intent:**
 D2's adopt record as its own package, `internal/adoptrecord`, so `beamcli` reads it without the adopt module's code.
@@ -52,6 +57,9 @@ D2's adopt record as its own package, `internal/adoptrecord`, so `beamcli` reads
 
 The file is `adopt.json` directly under `fabricengine.AdoptScratchDir(hubPath)`, beside the subject directories, and `adopt.lock` beside it (`PATTERN-lym-files`: never-tracked, under the hub's scratch directory).
 `Path` and `LockPath` join those names.
+`AdoptScratchDir`'s comment and the fabricengine `doc.go` sentence on it both say the directory also holds the adopt record, its lock and the worker's output.
+`lymdirs.AdoptDirName`, the one declarer of that directory's name, says the same:
+its comment names the adopt record, its lock and the worker's output beside the check files.
 
 `Request` holds the request: `Slugs`, `Root`, `All`, `KeepLocal`, `DropLocal`, `NoOrch`.
 - `SameSubjects` reports whether two requests name the same subjects: two `--all` requests match, whatever set each resolves to; otherwise the same slug set, order-free, and the same `Root`.
@@ -71,7 +79,8 @@ The file is `adopt.json` directly under `fabricengine.AdoptScratchDir(hubPath)`,
 `Paused` (the slugs the `pause` step paused, converted beam slugs included).
 
 `Record` holds the `Request`, the resolved `Subjects` (the beam slugs, `root` when root goes), the worker's `PID`, `StartTicks` and `Start`;
-the `Steps` done with their end times and outcomes, the step in flight (`InFlight`), the `Inputs`, the `State`, and, for a stop, `Error` and `WayForward`;
+the `Steps` done with their end times and outcomes, the step in flight (`InFlight`), the `Inputs` and the `State`;
+for a stop, `Error`, `WayForward` and `StoppedPart`, the part the stopped step gathered before its error (`json.RawMessage`);
 at `done` or a stop, the `Envelope` the worker writes (`map[string]any`).
 Every field carries a JSON tag; unknown keys are tolerated (`PATTERN-tolerant-records`).
 
@@ -80,7 +89,7 @@ Every field carries a JSON tag; unknown keys are tolerated (`PATTERN-tolerant-re
   When that step is `owner` or earlier, it returns `reconcile` instead, so a resumed owner write always follows a fresh reconcile.
 - `ReadState` returns `State`, except `interrupted` for a `running` record whose worker `alive` reads gone: a pid not alive, or alive with other start ticks.
 - `Unfinished` reports whether the state is anything but `done`.
-- `WorkerAlive` is the production `alive`: `proc.IsAlive`, and, when both sides read start ticks, equal ticks; a record without ticks reads alive on the pid alone.
+- `WorkerAlive` is the production `alive`: `proc.IsRunning`, so an exited worker its parent has not reaped yet reads gone, and, when both sides read start ticks, equal ticks; a record without ticks reads alive on the pid alone.
 
 `Read` stats the file first: an absent record reads false and creates no directory or lock file.
 It reads the file without a lock, since `Write` replaces it atomically, and decodes it tolerating unknown keys.
@@ -98,3 +107,5 @@ Tests, all tier0, in `internal/adoptrecord/record_test.go` (tier0), each table-d
 - `TestRequestCommand`: slugs, `root`, `--all` and each flag render in their order.
 
 `internal/adoptrecord/testmain_test.go` (untagged) runs the package's tests under `tmuxkit.Main` with the hermetic git environment, as every package's test main does (`PATTERN-test-isolation`).
+
+**ImpactSummary:** one new package read by adoptcli and beamcli; in fabricengine only the AdoptScratchDir comment and one doc sentence change, and in lymdirs only the AdoptDirName comment, no code.

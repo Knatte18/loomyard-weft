@@ -4,9 +4,10 @@
 - `PATTERN.md`
 - `pattern/PATTERN-dobby-runs.md`
 - `internal/adoptcli/doc.go`
+- `docs/overview.md`
 
 **Intent:**
-The declared `PATTERN-dobby-runs` change, and the adopt module's package doc over cards 4 to 8.
+The declared `PATTERN-dobby-runs` change, and the adopt module's package doc and overview entry over cards 4 to 8.
 
 `PATTERN.md`'s `PATTERN-dobby-runs` line becomes:
 
@@ -25,6 +26,7 @@ The declared `PATTERN-dobby-runs` change, and the adopt module's package doc ove
 `internal/adoptcli/doc.go` is rewritten over what cards 4 to 8 changed:
 - the caller and the detached worker;
 - the record and `adopt.lock` with resume, `--discard` and the subject match;
+- the end envelope, merged from the steps' outcome parts;
 - D3's step order with the owner write before the deploy;
 - the adopt pause in place of the hold and `holds.json`;
 - `--no-orch` and its orch-session default;
@@ -33,6 +35,12 @@ The declared `PATTERN-dobby-runs` change, and the adopt module's package doc ove
 The doc no longer says a green check lifts holds, brings up the dobby and orch, or starts runs.
 The scratch directory's file list drops `holds.json` and names `adopt.json`, `adopt.lock` and `adopt.out` directly under `fabricengine.AdoptScratchDir`.
 
+`docs/overview.md`'s adopt entry is rewritten whole:
+the hidden worker the call follows, the adopt record and its resume;
+the step order with the pause before the owner write and the owner write before the deploy;
+a failed deploy leaving the owner written and the runs paused;
+and the adopt pause, which only `lym tender resume` lifts, in place of the holds.
+
 No test: the line and the docs are prose, which the code review reads (the record's Review criterion).
 
-**ImpactSummary:** one PATTERN overview line, its background and one package doc; no code changes, and the line's rule text stays under the entry cap.
+**ImpactSummary:** one PATTERN overview line, its background, one package doc and the overview's adopt entry; no code changes, and the line's rule text stays under the entry cap.

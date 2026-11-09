@@ -15,7 +15,6 @@
 - `plan:internal/adoptcli#pauseTargets` -> `func pauseTargets(deps adoptDeps, here string, reconciled boardengine.Owners, tasks []boardengine.Task, runs, writing []string, rootGoing bool, outcomes map[string]*slugOutcome) ([]string, error)`
 - `plan:internal/adoptcli#pauseSubject` -> `func pauseSubject(deps adoptDeps, reconciled boardengine.Owners, here, slug string, writing []string, rootGoing bool) (bool, error)`
 - `plan:internal/adoptcli#pauseEntries` -> `func pauseEntries(record *pauserecord.Record, slugs, beams, listed []string, now time.Time) (paused []string, other map[string]string)`
-- `plan:internal/adoptcli#TestPauseEntries` -> `func TestPauseEntries(t *testing.T)`
 - `plan:internal/adoptcli#TestTriesStore` -> `func TestTriesStore(t *testing.T)`
 
 **Delete:**
@@ -32,6 +31,8 @@
 - `internal/adoptcli#removeHolds`
 - `internal/adoptcli#liftOwnerPauses`
 - `internal/adoptcli#heldRun`
+- `internal/adoptcli#runningHereRun`
+- `internal/adoptcli#callerLabel`
 - `internal/adoptcli#world.heldSlugs`
 - `internal/adoptcli#TestHoldEntries`
 - `internal/adoptcli#TestHoldStore`
@@ -74,16 +75,27 @@ No record is persisted yet; card 7 persists the record and resumes from it.
 `stepRun` holds the deps, the request, this machine's name, the resolved slugs and `rootNamed`, the owners read at the start, the outcome under construction, the per-slug outcomes, the mutation record, the origin report, and an `adoptrecord.Record` whose `Inputs` and `Steps` the steps fill.
 It also holds `Save func(adoptrecord.Record) error`, called after each step ends and when a step starts; nil saves nothing.
 `runSteps` runs the steps of `adoptrecord.Steps` from `from` in order.
-Before the first step it seeds an outcome for each slug the record's `Subjects`, `Inputs.Runs` and `Inputs.Paused` name and no outcome holds yet.
+Before the first step it seeds an outcome for each slug that the record's `Subjects` without `root`, `Inputs.Runs` and `Inputs.Paused` name and no outcome holds yet.
 So a step resumed past `owner` in a fresh process never meets a nil outcome, as `runBeamSteps`'s `outcomes[slug]` would.
+`root` gets no outcome, as today, and `envelopeOf` (card 7) names to `collect` only the `Subjects` without `root` that the merged parts hold,
+so the envelope's `slugs` list keeps today's members.
+Then, on every run, resumes included, it reads the local runs with today's `movedRuns` over the owners read at the start and runs today's standing-move refusal (`refuseStandingMove`) over the subjects and those runs.
+A refusal ends the record `stopped` at `from`, with the refusal's way forward and `StoppedPart` cleared, and no step runs.
 Before each step it sets `InFlight`.
-After each it records a `StepRecord` with the step's end time and outcome part: the envelope fields the step set, as JSON.
+After each it records a `StepRecord` with the step's end time and outcome part, as JSON.
+Each step writes into a fresh outcome and fresh per-slug outcomes of its own, which are its part, and `runSteps` merges that part into the run's outcome by `envelopeOf`'s rule (card 7).
+So a part holds the top-level outcome fields that step wrote, plus a `slugs` object keyed by slug holding only the `slugOutcome` fields that step set.
+Its list fields (warnings, mutations, check warnings) hold only the items that step appended.
 A `StepRecord` of the same name already listed, as after a restart at `reconcile`, is replaced in place, so the record lists each step once.
 A step's error ends the record `stopped` at that step, with the error and its way forward, and no later step runs.
+The part that step gathered before its error goes into the record's `StoppedPart`,
+and `runSteps` merges it into the run's outcome as it merges a done step's part, but no `StepRecord` lists the step.
+So a refused reconcile still carries the reconcile report and the mutation record, and a failed deploy its deploy outcome, as today's refusals do.
+A later run of that step that ends without error clears `StoppedPart`, and a later stop replaces it.
 
 The steps, in order (D3):
 1. `stepReconcile` — first it clears every field of `Inputs` but `Paused`, so a restart never carries an earlier run's `HeldBack`, `Adoptable` or `OwnerStood`.
-   Then today's reconcile and its refusals, the moved runs before and after it (`Inputs.LocalRuns`, `Moved`), the reconcile warnings, and the stop decisions of `wouldStop` with `--keep-local` and `--drop-local`.
+   Then today's reconcile and its refusals but the standing-move one, which `runSteps` runs, the moved runs before and after it (`Inputs.LocalRuns`, `Moved`), and the stop decisions of `wouldStop` with `--keep-local` and `--drop-local`.
 2. `stepPairs` — today's takeover of each slug (`takeOverSlug`) and the pair add; it fills `Inputs.Runs`, `Adoptable`, `RootGoing` and `HeldBack`.
    `HeldBack` lists only the projects a local-commit or live-pair stop held back: a `wouldStop` stop, or a `takeOverSlug` outcome with `Stopped` set.
    A project held back by an error, such as a refused pair add, is held back as today, its error naming its own way forward, and joins no `HeldBack`, so `stepDone` never names `--keep-local` for it.
@@ -105,6 +117,10 @@ The steps, in order (D3):
    A failed pause update stops the record at `pause`, naming the re-run.
 4. `stepOwner` — today's `SetOwners` write and the read-back, with `ownerWriteError`'s refusals.
    It fills `Inputs.OwnerStood` and `PrimeRecorded`.
+   At its end, after the read-back when one runs, it calls `reconcileWarnings` over the reconcile report,
+   `Inputs.OwnerStood` as the adopted beams, and the run's merged per-slug outcomes, which carry `stepPairs`' `Stopped` marks.
+   The warnings join the owner step's part, so they still precede the deploy warning.
+   The steps up to `owner` share one process (Shared Decisions), which is why the report and the earlier steps' outcomes are in memory there.
    `resumeSlug` keeps its reporting — the parent warning, owned elsewhere, `none` for no run record, the pause-standing line — and lifts nothing:
    `liftOwnerPauses` and the `Lift` seam go, since adopt lifts no pause (D3).
 5. `stepDeploy` — `deployStale` when `Inputs.RootGoing`, as today.
@@ -125,28 +141,39 @@ The steps, in order (D3):
 A record that ends `stopped` returns an error naming its way forward, so a held-back project no longer ends the call ok.
 `holdStore`, `adoptDeps.Holds`, `holdsFile` and its read and write go: `holds.json` is no longer written or read.
 `slugOutcome.Held` becomes `AdoptPaused` (`adopt_paused`), and `heldRun` becomes `pausedRun`.
+`slugOutcome.PauseLifted` (`pause_lifted`) goes with `liftOwnerPauses`, which was its only writer.
+`runningHereRun` goes with `holdTargets`' live-pair exception, and `callerLabel` with the `Lift` seams of this card and card 4.
+The comment over the run constants says a run is owned elsewhere after the owner write or paused by adopt, dropping the held and running-here outcomes.
 `deployStale`'s and `ownerWriteError`'s texts drop "the holds stay" and "no run was held".
 `holds.go` keeps only the tries file (`triesFile`, `triesFileName`, `readTries`, `writeTries`), and its file comment is rewritten to say so.
-`Command`'s `Long` step list follows D3's order with the pause in place of the hold and a green check that only reports; card 8 rewrites the rest of the text.
+`Command`'s `Long` step list becomes one line naming D3's steps in order, the pause in place of the hold, and a green check that only reports; card 8 rewrites the rest of the text.
+The comments that still say a green check lifts holds, starts runs or resumes the landing are reworded with the edits of their symbols:
+the `adopt.go` file header;
+`resumeSlug`'s doc, since it lifts nothing and starts nothing;
+`runBeamSteps`' and `heldBeamWayForward`'s docs, since the landing resumes by hand with `lym loom resume`, after `lym tender resume` when adopt paused the beam;
+and the `deps.go` file header, which names the adopt pause in place of the pause lift and hold, and only the tries file.
 
 Tests:
-- `TestPauseEntries` (tier0) replaces `TestHoldEntries`, one row each: no entry, an `owner` entry converted keeping its time, an existing `adopt-hold` and an operator entry kept and returned in `other`, a listed slug skipped, a beam's `owner` entry converted, and a beam with no entry left.
+- `TestHoldEntries` goes with no unit test of `pauseEntries`, which `TestAdopt`'s pause rows and `TestRunWorker` (card 7) reach through the steps (`PATTERN-test-speed`).
 - `TestTriesStore` (tier0) keeps `TestHoldStore`'s fix-tries rows.
 - `TestAdopt` (tier0): the world drops its holds files.
   The world's `Reconcile` seam appends `reconcile` to `order` and its `AddPair` appends `addpair:<slug>`, which they do not today, so a row can tell which steps ran.
   The world gains `pauseErr`, which its `UpdatePause` returns before it mutates the record.
   Its `order` shows reconcile, addpair, pause, owners, deploy, beamup and suite in D3's order, which a row pins.
-  The hold rows become pause rows: an `owner` entry turned to `adopt`; another caller's entry kept; a released task paused and a front task not; a live pair under `--keep-local` paused too.
+  The hold rows become pause rows: an `owner` entry turned to `adopt` keeping its pause time; an `adopt-hold` and an operator entry kept; a released task paused and a front task not; a live pair under `--keep-local` paused too.
   A beam row: `alpha`'s own-scope `owner` entry is converted, and the envelope's `runs` shows `alpha` `paused_by_adopt` naming `lym tender resume alpha`.
+  An adopted beam with no moved run and no own-scope entry gets none.
   A failed pause update (`pauseErr`) stops at `pause`, naming the re-run, with no `owners` in the order.
-  A failed deploy row stops at `deploy`, with the owner request recorded and the pause entries standing.
+  A failed deploy row stops at `deploy`, with the owner request recorded, the pause entries standing, and the envelope still naming the deploy outcome.
   A failed `SetOwners` stops at `owner` with no deploy.
   A held-back project row ends with the error naming the re-run, while the other subject reaches `suite:`.
   A refused pair add holds its project back with its own error and no `--keep-local` way forward, and the call ends without the held-back stop.
   A `NoOrch` row passes `noOrch` true to every `BeamUp` call.
-  The pause re-run over a listed slug needs a persisted record, so `TestRunWorker` (card 7) carries it, and `TestPauseEntries`' listed-slug row pins the skip itself.
+  The pause re-run over a listed slug needs a persisted record, so `TestRunWorker` (card 7) carries it.
 - `TestRunCheck` and `TestFailedEnd` drop their uses of `appendHolds` and `holdsFileName` with the holds file; every other assertion stays.
   `hubDepsAs` drops the `Holds` wiring.
 - `TestAdoptIntegration_SecondCloneTakesOver` (tier1) expects the owner entry turned into one `adopt` entry and `adopt_paused`, and no `holds.json`.
+  The first clone's adopt back now ends on the held-back stop, so the test reads its error, naming `--keep-local` and `--drop-local`, in place of failing on it.
+  Its `PauseLifted` assertion goes with the field.
 
 **ImpactSummary:** adoptcli's takeover is restructured into ordered steps and the hold files are gone; `hubDeps` is the one production wiring touched, and the envelope's per-slug `held` field becomes `adopt_paused`.

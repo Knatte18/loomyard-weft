@@ -18,7 +18,7 @@ What the field lets through: the beam comes up with its dobby and no orch.
 Its bound: only adopt sets it, the dobby always starts, and `lym beam start` starts the orch later.
 
 `TestStart_StartsTheDobbiesFirst` gains a `skipOrch` input column, a `wantNoOrch` expectation column and one tier0 row.
-The table today asserts only `wantFirst` and `wantWarning`, so `wantNoOrch` asserts on the calls the test's fake starter records: with it set, no strand launch and no watcher spawn is among them.
+The table today asserts only `wantFirst` and `wantWarning`, so `wantNoOrch` asserts on what the harness records: with it set, no `start` is among the recorded calls and `h.spawns` stays zero.
 With `SkipOrch` set, the dobby seam is called first, and the strand is neither launched nor its watcher spawned.
 The existing rows, with the field unset, still launch the strand, which pins the default half of D7.
 The orchcli `doc.go` gains one sentence on `SkipOrch`.

@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -32,9 +32,11 @@ Every adopted run gets an adopt pause that only the operator lifts, the owner wr
   The dobby's held treatment then applies unchanged, so dobbyengine changes only in comments and its doc.
 - Steps up to `owner` run in one process: a resume whose first step not done is `owner` or earlier restarts at `reconcile`.
   So only the inputs of `deploy` and later persist in the record's `Inputs`, together with `Paused`, which the `pause` step reads on a re-run.
-- Each step's envelope part is the JSON of the outcome fields it set; the end envelope merges the done steps' parts in step order.
+- Each step's envelope part is the JSON of the outcome fields it set;
+  the end envelope merges the done steps' parts in step order, then the part a stopped step gathered before its error.
 - `adoptrecord` holds the record, its path, its lock path and its lock-free read; `adoptcli` alone takes `adopt.lock`.
-- The shared re-run text of every refusal and way forward is `adoptrecord.Request.Command`.
+- `adoptrecord.Request.Command` is the re-run text of every refusal and way forward that the record, the worker, the follow and the stop add;
+  the existing reentry text (`reentry`) that ends the takeover's own refusals and warnings, the reconcile warnings included, stays.
 
 ## PATTERN changes
 

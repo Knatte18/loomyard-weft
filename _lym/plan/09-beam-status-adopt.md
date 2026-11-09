@@ -49,7 +49,8 @@ Tests:
   Stopped names its stop's way forward and `lym adopt --discard`.
   Done gives nil.
 - `TestStatus_PrintsThePrimesDobbyAndEachLocalBeams` (tier1) asserts no `adopt` field with no record.
-  After writing an `adopt.json` that reads `stopped` at `deploy`, it asserts one `adopt` section naming `deploy` and `lym adopt --discard`.
+  After writing an `adopt.json` that reads `stopped` at `deploy`, it asserts one `adopt` section with the record's state and step;
+  `TestAdoptSectionOf` pins the way-forward wording.
   The `check.json` it writes still shows as the one `adopt_checks` item.
   An `adopt.json` that does not decode then fails the verb with an error naming `lym adopt --discard`, while the dobbies and `adopt_checks` still read.
 
