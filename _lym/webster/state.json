@@ -276,7 +276,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "636f3f6da5eb07ee8c6fb49922ae67ab",
   "masterSessionId": "74c8f9ca-77cd-49f5-8245-828a4fcd52c7",
   "masterEngine": "claude",
@@ -314,6 +314,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-adopt-worker-record/74c8f9ca-77cd-49f5-8245-828a4fcd52c7/subagents/agent-ad228120fb6f9dd58.jsonl"
       ]
+    },
+    "4": {
+      "slug": "green-end-reports",
+      "cards": [
+        "04-green-end-reports",
+        "05-run-report-paused-by-adopt"
+      ],
+      "cardHashes": {
+        "04-green-end-reports": "d4429ea563d4ce64a93d2da5981291c98a6329748cc00c12169bab860eae0f18",
+        "05-run-report-paused-by-adopt": "7829b1f21b2a36c9a212a9f8c6db2ee54e4861ec5206cba4a5fdcbf40c9fc789"
+      },
+      "startSha": "345a8f3af45988f810e75cad51376a13f6dce805",
+      "kind": "fork",
+      "spawnedAt": "2026-11-09T20:57:18Z",
+      "sessionId": "74c8f9ca-77cd-49f5-8245-828a4fcd52c7",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
