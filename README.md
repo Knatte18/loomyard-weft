@@ -1,12 +1,12 @@
 # Board
 
-Rendered 2026-11-09 11:25 UTC; every age below is as of then.
+Rendered 2026-11-09 11:28 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## [P2 Codexengine: every task, trial and note about the Codex engine](project-codex-engine-trial.md) (2)
+## [P2 Codexengine: every task, trial and note about the Codex engine](project-codex-engine-trial.md) (3)
 
 [`codex-engine-trial`](design-codex-engine-trial.md) · Age 5d · Owner `osl-1046`
 
@@ -22,15 +22,16 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (2)
+### Notes (3)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-#### Research (1)
+#### Research (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 3d<br>22h | codex, shuttle |
+| R2 |  | **Codex support in levels: review, darn, then the rest of tapestry**<br>• Say lym supports Codex only at a level proven on real runs; the first work is a darn-writer bench | [`codex-support-levels`](design-codex-support-levels.md) | 0m<br>0m | codex, shuttle |
 
 #### Features (1)
 
@@ -52,7 +53,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Measure whether running fabricengine tier 1 as several shards cuts its wall** | [`gate-shard-slow-package`](design-gate-shard-slow-package.md) | darn · docs | Darn-Write | osl-1046 | 19h<br>3m | gate, fabric |
+| T2 | **Measure whether running fabricengine tier 1 as several shards cuts its wall** | [`gate-shard-slow-package`](design-gate-shard-slow-package.md) | darn · docs | Darn-Write | osl-1046 | 19h<br>6m | gate, fabric |
 
 #### Ready (0)
 
@@ -146,7 +147,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>0m | loom, stencil |
+| R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>2m | loom, stencil |
 
 #### Bugs (1)
 
