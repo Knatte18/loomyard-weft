@@ -1,6 +1,6 @@
 # Adopt as one resumable algorithm that never starts work on its own
 
-`adopt-robust` · Task · bug, enhancement, batten, tender, dobby, orch, fabric, shortcut · draft
+`adopt-robust` · Task · bug, enhancement, batten, tender, dobby, orch, fabric, shortcut
 
 ## Goal
 

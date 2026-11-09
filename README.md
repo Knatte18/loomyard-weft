@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-09 18:21 UTC; every age below is as of then.
+Rendered 2026-11-09 18:24 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -158,13 +158,15 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Terminal titles read hub: project: task: slug**<br>• Every console window title reads <hub>: <P#>: <T#>: <slug>, with prime, beam and orch forms. | [`terminal-titles-hub-project`](design-terminal-titles-hub-project.md) | darn · light | Finalize | neve | 4h<br>4h | ide, reed |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T14 | **Adopt as one resumable algorithm that never starts work on its own**<br>• Detached, step-recorded adopt that pauses every adopted run, writes the owner early, can skip the orch, and is entered through lym s | [`adopt-robust`](design-adopt-robust.md) | motif |  | 14m<br>5m | batten, tender, dobby, orch, fabric, shortcut |
 
-#### Draft (5)
+#### Draft (4)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -174,7 +176,6 @@ Not released; nothing starts it until its status is cleared.
 | T5 | `draft` **machinename reads the machine name from machine.json before the hostname rule** | [`machine-name-file`](design-machine-name-file.md)<br>[Sketch](decision-machine-name-file.md) | darn · solid |  | 3h<br>3h | config, slack |
 | T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 4h<br>3h | slack, reed, creel |
 | T13 | `draft` **lym machine name shows and sets the machine name and sweeps owners across a rename** | [`machine-name-verb`](design-machine-name-verb.md)<br>[Sketch](decision-machine-name-verb.md) | tapestry · solid | T5 | 3h<br>3h | config, slack |
-| T14 | `draft` **Adopt as one resumable algorithm that never starts work on its own**<br>• Detached, step-recorded adopt that pauses every adopted run, writes the owner early, can skip the orch, and is entered through lym s | [`adopt-robust`](design-adopt-robust.md) | motif |  | 12m<br>2m | batten, tender, dobby, orch, fabric, shortcut |
 
 ### Notes (25)
 
