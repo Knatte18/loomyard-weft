@@ -2,6 +2,8 @@
 
 `adopt-robust` · Task · bug, enhancement, batten, tender, dobby, orch, fabric, shortcut · running · Discussion-Bouncer
 
+Decision record: [Sketch](decision-adopt-robust.md)
+
 ## Goal
 
 Taking a hub or beam over from another machine is one predictable algorithm that never starts work on its own,
