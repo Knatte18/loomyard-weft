@@ -6,8 +6,7 @@ Prime owner: `neve`.
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-<details open>
-<summary><strong><a href="project-codex-engine-trial.md">P2 Codexengine: every task, trial and note about the Codex engine</a> (4)</strong></summary>
+## [P2 Codexengine: every task, trial and note about the Codex engine](project-codex-engine-trial.md) (4)
 
 [`codex-engine-trial`](design-codex-engine-trial.md) · Age 6d · Owner `neve`
 
@@ -38,7 +37,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B9 |  | **Codex keeps forcing its bubblewrap sandbox, so astra fails on OSL-1046** | [`codex-bubblewrap-sandbox`](design-codex-bubblewrap-sandbox.md) | 48m<br>48m | codex, shuttle |
+| B9 |  | **Codex keeps forcing its bubblewrap sandbox, so astra fails on OSL-1046** | [`codex-bubblewrap-sandbox`](design-codex-bubblewrap-sandbox.md) | 49m<br>48m | codex, shuttle |
 
 #### Features (1)
 
@@ -46,10 +45,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 6d<br>1d | shuttle, codex, loom |
 
-</details>
-
-<details open>
-<summary><strong><a href="project-fabric-test-speed-work.md">P3 Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes</a> (1)</strong></summary>
+## [P3 Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes](project-fabric-test-speed-work.md) (1)
 
 [`fabric-test-speed-work`](design-fabric-test-speed-work.md) · Age 2d · Owner `neve`
 
@@ -83,10 +79,7 @@ Finished, awaiting `lym board prune --apply`.
 | --- | --- | --- | --- | --- |
 | T2 | **Make the eight longest serial internal/fabricengine tests parallel**<br>• Move their package-level test state into parameters so the serial phase of tier 1 shrinks | [`fabric-serial-phase-tests`](design-fabric-serial-phase-tests.md) | 7h<br>6h | fabric, testkit |
 
-</details>
-
-<details open>
-<summary><strong><a href="project-arras-recipe.md">P4 Arras: one recipe that runs Motif and raddle in a row, with a perch on the split</a> (3)</strong></summary>
+## [P4 Arras: one recipe that runs Motif and raddle in a row, with a perch on the split](project-arras-recipe.md) (3)
 
 [`arras-recipe`](design-arras-recipe.md) · Age 1d · Owner `neve`
 
@@ -128,10 +121,7 @@ Starts when every entry it names under After is done.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-</details>
-
-<details open>
-<summary><strong><a href="project-redundancy-check.md">P5 Redundant tests found mechanically: a coverage engine, a map per package, a gate report and its review</a> (3)</strong></summary>
+## [P5 Redundant tests found mechanically: a coverage engine, a map per package, a gate report and its review](project-redundancy-check.md) (3)
 
 [`redundancy-check`](design-redundancy-check.md) · Age 1d · Owner `neve`
 
@@ -146,7 +136,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T9 | **The prime parent's dobby starts lym gate testmap after every test_map_every landings** | [`testmap-dobby-refresh`](design-testmap-dobby-refresh.md)<br>[Sketch](decision-testmap-dobby-refresh.md) | darn · light | Drift-Recheck | neve | 1d<br>1d | testkit, gate |
-| T10 | **An advisory redundancy report step in lym gate test, judging a diff's new tests against the map** | [`gate-redundancy-report`](design-gate-redundancy-report.md)<br>[Sketch](decision-gate-redundancy-report.md) | darn · solid | Darn-Write | neve | 1d<br>1d | testkit, gate |
+| T10 | **An advisory redundancy report step in lym gate test, judging a diff's new tests against the map** | [`gate-redundancy-report`](design-gate-redundancy-report.md)<br>[Sketch](decision-gate-redundancy-report.md) | darn · solid | Drift-Verify | neve | 1d<br>1d | testkit, gate |
 
 #### Ready (0)
 
@@ -166,10 +156,7 @@ Waits only on Running, Ready or Draft entries.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-</details>
-
-<details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (28)</strong></summary>
+## [P0 Root: entries under no project](project-root.md) (28)
 
 Owner `neve`
 
@@ -250,5 +237,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>4d | burler, shed, orch, quarry, report |
 | F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 4d<br>2d | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 4d<br>4d | batten, board, fabric, workspaces |
-
-</details>
