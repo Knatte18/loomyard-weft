@@ -1,6 +1,6 @@
 # An advisory redundancy report step in lym gate test, judging a diff's new tests against the map
 
-`gate-redundancy-report` · Task · feature, testkit, gate · running · Code-Burler-Fix
+`gate-redundancy-report` · Task · feature, testkit, gate · running · Code-Bouncer
 
 Decision record: [Sketch](decision-gate-redundancy-report.md)
 
