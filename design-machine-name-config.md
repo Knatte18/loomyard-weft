@@ -1,6 +1,6 @@
 # Machine name from a machine-wide config, not only the hostname
 
-`machine-name-config` · Task · enhancement, config, slack
+`machine-name-config` · Task · enhancement, config, slack · running · Worktree-Create
 
 ## Seen (operator, 2026-11-09)
 
