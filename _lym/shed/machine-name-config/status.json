@@ -1,14 +1,21 @@
 {
-  "current_producer": "Record-Write",
+  "current_producer": "Raddle-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Record-Write",
-    "last": "",
+    "now": "Raddle-Write",
+    "last": "Record-Write → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Record-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/machine-name-config/_lym/discussion/decision-record.md",
+      "at": "2026-11-09T14:39:46Z"
+    }
+  ],
   "product": {
     "slug": "machine-name-config",
     "parent": "main",
