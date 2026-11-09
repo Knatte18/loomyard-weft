@@ -1,0 +1,3774 @@
+diff --git a/cmd/lym/tierpurity_test.go b/cmd/lym/tierpurity_test.go
+index ff26abe41..60eb0fce1 100644
+--- a/cmd/lym/tierpurity_test.go
++++ b/cmd/lym/tierpurity_test.go
+@@ -30,7 +30,7 @@ var allowedSpawners = []scankit.Entry{
+ 	{Key: "internal/proc/", Why: "process control is the package's subject — its tests must spawn"},
+ 	{Key: "cmd/lym/tierpurity_test.go", Why: "contains the banned token strings as its own test data"},
+ 	{Key: "cmd/lym/llmtier_test.go", Why: "contains the banned `exec.Command` token string as its own fixture data (LLM-tier guard)"},
+-	{Key: "cmd/testtiming/spawnscan_test.go", Why: "contains the banned `exec.Command` token string as fixture source for the spawn scan, which only parses it"},
++	{Key: "internal/testcover/spawnscan_test.go", Why: "contains the banned `exec.Command` token string as fixture source for the spawn scan, which only parses it"},
+ 	{Key: "cmd/lym/hermeticenv_test.go", Why: "contains the banned token strings as its own test data (Hermetic Git Test Environment Invariant guard)"},
+ 	{Key: "tools/sandbox/pathresolve_guard_test.go", Why: "contains the banned `exec.Command`/`exec.CommandContext` token strings as its own scan data (Dev/Prod Binary Separation guard)"},
+ 	{Key: "cmd/lym/ghguard_test.go", Why: "contains the banned `exec.Command`/`exec.CommandContext` token strings as its own scan data (GitHub Auth Invariant guard)"},
+diff --git a/cmd/testtiming/keep.go b/cmd/testtiming/keep.go
+deleted file mode 100644
+index 6a2788940..000000000
+--- a/cmd/testtiming/keep.go
++++ /dev/null
+@@ -1,69 +0,0 @@
+-package main
+-
+-import (
+-	"fmt"
+-	"os"
+-	"path/filepath"
+-	"regexp"
+-	"strings"
+-)
+-
+-const (
+-	keepDirective = "//testtiming:keep"
+-
+-	// lymDirectivePrefix opens a `//lym:` directive line, which may stack between a keep and its func line.
+-	lymDirectivePrefix = "//lym:"
+-)
+-
+-var topLevelTestDecl = regexp.MustCompile(`^func (Test\w*)\(`)
+-
+-// scanKeeps maps each test of the package directory marked with a `//testtiming:keep <reason>` line to its reason.
+-// The directive sits above the test's `func Test…` line, with only `//lym:` directive lines allowed between them.
+-// A directive with an empty reason, or one not placed above a top-level test declaration, is an error.
+-// The error names the file and line.
+-func scanKeeps(dir string) (map[string]string, error) {
+-	files, err := filepath.Glob(filepath.Join(dir, "*_test.go"))
+-	if err != nil {
+-		return nil, err
+-	}
+-	keeps := map[string]string{}
+-	for _, file := range files {
+-		content, err := os.ReadFile(file)
+-		if err != nil {
+-			return nil, err
+-		}
+-		lines := strings.Split(string(content), "\n")
+-		for i, line := range lines {
+-			reason, ok := keepReason(line)
+-			if !ok {
+-				continue
+-			}
+-			where := fmt.Sprintf("%s:%d", file, i+1)
+-			next := i + 1
+-			for next < len(lines) && strings.HasPrefix(lines[next], lymDirectivePrefix) {
+-				next++
+-			}
+-			var test []string
+-			if next < len(lines) {
+-				test = topLevelTestDecl.FindStringSubmatch(lines[next])
+-			}
+-			if test == nil {
+-				return nil, fmt.Errorf("%s: %s is not directly above a top-level test function", where, keepDirective)
+-			}
+-			if reason == "" {
+-				return nil, fmt.Errorf("%s: %s on %s has no reason", where, keepDirective, test[1])
+-			}
+-			keeps[test[1]] = reason
+-		}
+-	}
+-	return keeps, nil
+-}
+-
+-// keepReason returns the trimmed reason of a keep directive line, and reports whether the line is one.
+-func keepReason(line string) (string, bool) {
+-	rest, ok := strings.CutPrefix(line, keepDirective)
+-	if !ok || (rest != "" && rest[0] != ' ' && rest[0] != '\t') {
+-		return "", false
+-	}
+-	return strings.TrimSpace(rest), true
+-}
+diff --git a/cmd/testtiming/keep_test.go b/cmd/testtiming/keep_test.go
+deleted file mode 100644
+index c1a0c3c40..000000000
+--- a/cmd/testtiming/keep_test.go
++++ /dev/null
+@@ -1,101 +0,0 @@
+-package main
+-
+-import (
+-	"os"
+-	"path/filepath"
+-	"reflect"
+-	"strings"
+-	"testing"
+-
+-	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+-)
+-
+-func TestScanKeeps(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-
+-	rows := []struct {
+-		name    string
+-		content string
+-		want    map[string]string
+-		wantErr string
+-	}{
+-		{
+-			name:    "directive directly above a test",
+-			content: "package p\n\n//testtiming:keep pins the error text\nfunc TestA(t *testing.T) {}\n",
+-			want:    map[string]string{"TestA": "pins the error text"},
+-		},
+-		{
+-			name:    "directive below a doc comment",
+-			content: "package p\n\n// TestB checks b.\n//testtiming:keep pins the ordering\nfunc TestB(t *testing.T) {}\n",
+-			want:    map[string]string{"TestB": "pins the ordering"},
+-		},
+-		{
+-			name:    "directive above a guard marker",
+-			content: "package p\n\n//testtiming:keep pins the ordering\n//lym:guard\nfunc TestB2(t *testing.T) {}\n",
+-			want:    map[string]string{"TestB2": "pins the ordering"},
+-		},
+-		{
+-			name:    "guard marker above a directive",
+-			content: "package p\n\n//lym:guard\n//testtiming:keep pins the ordering\nfunc TestB3(t *testing.T) {}\n",
+-			want:    map[string]string{"TestB3": "pins the ordering"},
+-		},
+-		{
+-			name:    "no directive",
+-			content: "package p\n\nfunc TestC(t *testing.T) {}\n",
+-			want:    map[string]string{},
+-		},
+-		{
+-			name:    "empty reason",
+-			content: "package p\n\n//testtiming:keep\nfunc TestD(t *testing.T) {}\n",
+-			wantErr: "x_test.go:3: //testtiming:keep on TestD has no reason",
+-		},
+-		{
+-			name:    "whitespace-only reason",
+-			content: "package p\n\n//testtiming:keep   \t\nfunc TestE(t *testing.T) {}\n",
+-			wantErr: "x_test.go:3: //testtiming:keep on TestE has no reason",
+-		},
+-		{
+-			name:    "directive separated from its test",
+-			content: "package p\n\n//testtiming:keep reason\n\nfunc TestF(t *testing.T) {}\n",
+-			wantErr: "x_test.go:3: //testtiming:keep is not directly above a top-level test function",
+-		},
+-		{
+-			name:    "doubled directive",
+-			content: "package p\n\n//testtiming:keep first\n//testtiming:keep second\nfunc TestG(t *testing.T) {}\n",
+-			wantErr: "x_test.go:3: //testtiming:keep is not directly above a top-level test function",
+-		},
+-		{
+-			name:    "directive above a non-test function",
+-			content: "package p\n\n//testtiming:keep reason\nfunc helper() {}\n",
+-			wantErr: "x_test.go:3: //testtiming:keep is not directly above a top-level test function",
+-		},
+-		{
+-			name:    "directive at end of file",
+-			content: "package p\n\nfunc TestH(t *testing.T) {}\n//testtiming:keep reason",
+-			wantErr: "x_test.go:4: //testtiming:keep is not directly above a top-level test function",
+-		},
+-	}
+-	for _, row := range rows {
+-		t.Run(row.name, func(t *testing.T) {
+-			t.Parallel()
+-			dir := t.TempDir()
+-			if err := os.WriteFile(filepath.Join(dir, "x_test.go"), []byte(row.content), 0o644); err != nil {
+-				t.Fatal(err)
+-			}
+-			got, err := scanKeeps(dir)
+-			if row.wantErr != "" {
+-				if err == nil || !strings.HasSuffix(strings.ReplaceAll(err.Error(), dir+string(filepath.Separator), ""), row.wantErr) {
+-					t.Fatalf("scanKeeps error = %v, want one ending %q", err, row.wantErr)
+-				}
+-				return
+-			}
+-			if err != nil {
+-				t.Fatal(err)
+-			}
+-			if !reflect.DeepEqual(got, row.want) {
+-				t.Fatalf("scanKeeps = %v, want %v", got, row.want)
+-			}
+-		})
+-	}
+-}
+diff --git a/cmd/testtiming/main.go b/cmd/testtiming/main.go
+index bb159573a..b6917da11 100644
+--- a/cmd/testtiming/main.go
++++ b/cmd/testtiming/main.go
+@@ -63,25 +63,22 @@
+ // -pkg takes comma-separated package patterns, each passed to `go` as its own argument.
+ // -tags defaults to tier0,tier1,tier2 in this mode, every tier but tier3.
+ // A run over every package of the module, or with no report at -out yet, writes the whole report.
+-// Any other run splices into the existing report: only the measured packages' sections change.
++// Any other run splices into the existing report.
++// The measured packages' sections change, and the header is rewritten to the current one.
+ // A package with no section yet is inserted in import-path order, and a package that lists no tests loses its section.
+-// The header and every unmeasured section stay byte-identical,
++// Every unmeasured section stays byte-identical,
+ // and a run whose tags differ from the report's header refuses and writes nothing.
+ // A package that fails to list or build keeps its old section,
+ // and the run exits 1 after writing the others.
+-// For each package it runs every top-level test alone under one coverage binary.
+-// Per package it writes the tests whose covered blocks other tests already cover.
++// For each package it runs every top-level test alone through internal/testcover's runner.
++// The one coverage binary per package is instrumented over the whole module.
++// It judges each test by the blocks of its package's own files:
++// per package it writes the tests whose covered blocks other tests of the package already cover.
+ // It also writes the removable set among them, and the tests whose coverage cannot be judged.
+-// Coverage cannot be judged for a test that is skipped or covers nothing.
+-// Nor can it be judged for one that may run this module's code in another process.
+-// The static scan in spawnscan.go decides the last of these.
+-// It excludes a test as out of process when it references the lymbin kit or os.Executable.
+-// It also excludes one that references os.Args[0] or exec.Command("go", ...).
+-// Either reference counts directly or through a followed same-package or testkit call.
+-// It also excludes a test that sits in a tmux-tier file.
+-// A test in a tier0 file is always judged,
+-// and a test above tier0 with a call the scan cannot resolve is excluded as an unclassifiable call.
+-// The scan does not see a hook, alias or helper that a test installs so that git runs module code.
++// Each candidate's row also says whether it is contained over every block of the module, the safer cut.
++// Coverage cannot be judged for a test that is skipped, failed or covers nothing of its package.
++// The same holds for a test that the static spawn scan of internal/testcover marks in one of two ways.
++// Either it may run this module's code in another process, or it makes a call the scan cannot resolve.
+ // Reading each candidate before deleting it is the backstop.
+ // A test the prune keeps carries `//testtiming:keep <reason>` on the line directly above its `func Test…` line.
+ // A test that also carries `//lym:guard` stacks both directives above its `func Test…` line.
+diff --git a/cmd/testtiming/redundancy.go b/cmd/testtiming/redundancy.go
+index bfe0108a5..b7836dea3 100644
+--- a/cmd/testtiming/redundancy.go
++++ b/cmd/testtiming/redundancy.go
+@@ -1,21 +1,17 @@
+ package main
+ 
+ import (
+-	"bufio"
+ 	"bytes"
+ 	"errors"
+ 	"fmt"
+-	"io"
+ 	"os"
+ 	"os/exec"
+ 	"path/filepath"
+-	"regexp"
+-	"slices"
+ 	"sort"
+-	"strconv"
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/lymtemp"
++	"github.com/Knatte18/loomyard/internal/testcover"
+ )
+ 
+ const (
+@@ -24,36 +20,21 @@ const (
+ 	defaultRedundancyPkg  = "./..."
+ )
+ 
+-// Reasons a test is listed under "no coverage" rather than judged for redundancy.
+-const (
+-	reasonSkipped      = "skipped"
+-	reasonOutOfProcess = "out of process"
+-	reasonUnresolved   = "unclassifiable call"
+-	reasonNoBlocks     = "no blocks"
+-	reasonFailed       = "failed"
+-)
+-
+-// testRun is one top-level test run alone under the coverage binary.
+-type testRun struct {
+-	name    string
+-	elapsed float64
+-	action  string // "pass" | "fail" | "skip"
+-	blocks  map[string]struct{}
+-	spawn   spawnVerdict
+-}
+-
+-// eligible reports whether the run passed and covered at least one block;
+-// only an eligible run's blocks count toward coverage.
+-func (r testRun) eligible() bool { return r.action == "pass" && len(r.blocks) > 0 }
+-
+-// verdict is the redundancy classification of one test.
++// verdict is the redundancy classification of one test, judged by the blocks of its own package's files.
+ type verdict struct {
+-	name      string
+-	reason    string   // non-empty: listed under "no coverage"
+-	candidate bool     // every block is covered by other tests of the package
+-	removable bool     // dropped by the greedy pass, so deletable together with the other removable tests
+-	covering  []string // candidates only: tests that together cover its blocks, most overlap first
+-	keep      string   // non-empty: the reason of its //testtiming:keep directive, listed under "Kept"
++	name string
++	// reason is non-empty for a test listed under "no coverage".
++	reason string
++	// candidate is set when other tests of the package cover every block of the package the test covers.
++	candidate bool
++	// removable is set when the greedy pass drops the test, so it is deletable together with the other removable tests.
++	removable bool
++	// covering names, for a candidate, the tests that together cover its blocks, most overlap first.
++	covering []string
++	// moduleContained is set when other tests of the package also cover every block of the module the test covers.
++	moduleContained bool
++	// keep is the reason of the test's //testtiming:keep directive, non-empty for a test listed under "Kept".
++	keep string
+ }
+ 
+ // pkgReport is one package's section of the report.
+@@ -79,160 +60,43 @@ func redundancyTags(full bool, tags string) (string, error) {
+ 	return resolved, nil
+ }
+ 
+-// parseProfile returns the covered blocks of a coverage profile.
+-// A block is a profile line with a non-zero count, keyed by the line text without its count.
+-func parseProfile(r io.Reader) (map[string]struct{}, error) {
+-	blocks := map[string]struct{}{}
+-	sc := bufio.NewScanner(r)
+-	sc.Buffer(make([]byte, 0, 64*1024), 1024*1024)
+-	for sc.Scan() {
+-		line := sc.Text()
+-		if line == "" || strings.HasPrefix(line, "mode:") {
+-			continue
+-		}
+-		cut := strings.LastIndexByte(line, ' ')
+-		if cut < 0 {
+-			return nil, fmt.Errorf("malformed profile line %q", line)
+-		}
+-		count, err := strconv.Atoi(line[cut+1:])
+-		if err != nil {
+-			return nil, fmt.Errorf("malformed profile line %q: %w", line, err)
+-		}
+-		if count != 0 {
+-			blocks[line[:cut]] = struct{}{}
+-		}
+-	}
+-	return blocks, sc.Err()
++// measuredRun is one test run alone under the coverage binary, with the spawn scan's verdict on its function.
++type measuredRun struct {
++	result testcover.RunResult
++	spawn  testcover.SpawnVerdict
+ }
+ 
+-// classify judges every run.
+-// A candidate is covered block for block by the other tests.
+-// The removable set is a greedy pass over the candidates, slowest first.
+-// It re-checks each candidate against the tests still kept.
+-// A test that is skipped, failed, runs module code out of process or cannot be classified is never a candidate.
+-// Nor is a test that covers no block.
+-func classify(runs []testRun) []verdict {
+-	counts := map[string]int{}
+-	for _, r := range runs {
+-		if r.eligible() {
+-			for b := range r.blocks {
+-				counts[b]++
+-			}
+-		}
+-	}
+-	covered := func(r testRun) bool {
+-		for b := range r.blocks {
+-			if counts[b] < 2 {
+-				return false
+-			}
+-		}
+-		return true
+-	}
+-
+-	out := make([]verdict, len(runs))
+-	var candidates []int
+-	for i, r := range runs {
+-		out[i].name = r.name
+-		out[i].reason = noCoverageReason(r)
+-		if out[i].reason == "" && covered(r) {
+-			out[i].candidate = true
+-			candidates = append(candidates, i)
+-		}
+-	}
+-
+-	sort.SliceStable(candidates, func(a, b int) bool {
+-		ra, rb := runs[candidates[a]], runs[candidates[b]]
+-		if ra.elapsed != rb.elapsed {
+-			return ra.elapsed > rb.elapsed
+-		}
+-		return ra.name < rb.name
+-	})
+-	for _, i := range candidates {
+-		if !covered(runs[i]) {
+-			continue
+-		}
+-		out[i].removable = true
+-		for b := range runs[i].blocks {
+-			counts[b]--
+-		}
+-	}
+-
+-	for _, i := range candidates {
+-		kept := func(j int) bool { return runs[j].eligible() && !out[j].removable }
+-		if !out[i].removable {
+-			kept = func(j int) bool { return runs[j].eligible() }
+-		}
+-		out[i].covering = coveringTests(i, runs, kept)
+-	}
+-	return out
+-}
+-
+-func noCoverageReason(r testRun) string {
+-	switch {
+-	case r.action == "skip":
+-		return reasonSkipped
+-	case r.action != "pass":
+-		return reasonFailed
+-	case r.spawn.outOfProcess:
+-		return reasonOutOfProcess
+-	case r.spawn.unresolved:
+-		return reasonUnresolved
+-	case len(r.blocks) == 0:
+-		return reasonNoBlocks
+-	}
+-	return ""
+-}
+-
+-// coveringTests names the tests of the pool that together cover runs[self]'s blocks.
+-// It takes the largest overlap first and skips a test that adds no block still uncovered.
+-func coveringTests(self int, runs []testRun, inPool func(int) bool) []string {
+-	type overlap struct {
+-		idx int
+-		n   int
+-	}
+-	var overlaps []overlap
+-	for j, r := range runs {
+-		if j == self || !inPool(j) {
+-			continue
+-		}
+-		n := 0
+-		for b := range runs[self].blocks {
+-			if _, ok := r.blocks[b]; ok {
+-				n++
+-			}
+-		}
+-		if n > 0 {
+-			overlaps = append(overlaps, overlap{j, n})
+-		}
+-	}
+-	sort.Slice(overlaps, func(a, b int) bool {
+-		if overlaps[a].n != overlaps[b].n {
+-			return overlaps[a].n > overlaps[b].n
+-		}
+-		return runs[overlaps[a].idx].name < runs[overlaps[b].idx].name
+-	})
+-
+-	remaining := map[string]struct{}{}
+-	for b := range runs[self].blocks {
+-		remaining[b] = struct{}{}
+-	}
+-	var names []string
+-	for _, o := range overlaps {
+-		if len(remaining) == 0 {
+-			break
+-		}
+-		hit := false
+-		for b := range remaining {
+-			if _, ok := runs[o.idx].blocks[b]; ok {
+-				delete(remaining, b)
+-				hit = true
+-			}
+-		}
+-		if hit {
+-			names = append(names, runs[o.idx].name)
+-		}
+-	}
+-	return names
++// judgePackage classifies the runs of the package at importPath by the blocks of the package's own files.
++// It marks as well which of them are contained over every block of the module the runs cover.
++// A test named in keeps carries its keep reason, which changes the report only, never the classification.
++func judgePackage(importPath string, runs []measuredRun, keeps map[string]string) []verdict {
++	packageRuns := make([]testcover.Run, len(runs))
++	moduleRuns := make([]testcover.Run, len(runs))
++	for i, m := range runs {
++		moduleRuns[i] = testcover.Run{
++			Name:    m.result.Name,
++			Elapsed: m.result.Elapsed,
++			Action:  m.result.Action,
++			Blocks:  testcover.CoveredPositions(m.result.Profile),
++			Spawn:   m.spawn,
++		}
++		packageRuns[i] = moduleRuns[i]
++		packageRuns[i].Blocks = testcover.CoveredPositions(testcover.PackageBlocks(m.result.Profile, importPath))
++	}
++	moduleVerdicts := testcover.Judge(moduleRuns)
++	verdicts := make([]verdict, len(runs))
++	for i, v := range testcover.Judge(packageRuns) {
++		verdicts[i] = verdict{
++			name:            v.Name,
++			reason:          v.Reason,
++			candidate:       v.Contained,
++			removable:       v.Removable,
++			covering:        v.Covering,
++			moduleContained: moduleVerdicts[i].Contained,
++			keep:            keeps[v.Name],
++		}
++	}
++	return verdicts
+ }
+ 
+ // renderPackage renders one package's section of the report.
+@@ -261,13 +125,9 @@ func renderPackage(r pkgReport) string {
+ 	if len(candidates) == 0 {
+ 		b.WriteString("No candidates.\n\n")
+ 	} else {
+-		b.WriteString("| Test | Covering tests | Removable |\n|---|---|---|\n")
++		b.WriteString("| Test | Covering tests | Removable | Contained module-wide |\n|---|---|---|---|\n")
+ 		for _, v := range candidates {
+-			removable := "no"
+-			if v.removable {
+-				removable = "yes"
+-			}
+-			fmt.Fprintf(&b, "| `%s` | %s | %s |\n", v.name, codeList(v.covering), removable)
++			fmt.Fprintf(&b, "| `%s` | %s | %s | %s |\n", v.name, codeList(v.covering), yesNo(v.removable), yesNo(v.moduleContained))
+ 		}
+ 		b.WriteString("\n")
+ 	}
+@@ -289,6 +149,13 @@ func renderPackage(r pkgReport) string {
+ 	return b.String()
+ }
+ 
++func yesNo(set bool) string {
++	if set {
++		return "yes"
++	}
++	return "no"
++}
++
+ func codeList(names []string) string {
+ 	quoted := make([]string, len(names))
+ 	for i, n := range names {
+@@ -302,7 +169,9 @@ func renderReport(tags string, pkgs []pkgReport) string {
+ 	var b strings.Builder
+ 	b.WriteString("# Test redundancy\n\n")
+ 	fmt.Fprintf(&b, "Generated by `go run ./cmd/testtiming -redundancy` under the tags `%s`.\n", tags)
+-	b.WriteString("Each test ran alone under one coverage binary per package, and a candidate has every covered block also covered by another test of its package.\n")
++	b.WriteString("Each test ran alone under one coverage binary per package, instrumented over the whole module.\n")
++	b.WriteString("A candidate has every covered block of its own package's files also covered by another test of its package.\n")
++	b.WriteString("The last column says whether that holds over every block of the module too; a cut contained under both is the safer one.\n")
+ 	b.WriteString("A candidate is evidence, not a verdict: coverage blocks do not see assertions.\n")
+ 	b.WriteString("Only the removable set may be deleted together; the reading rules are in `pattern/PATTERN-test-speed.md`'s test economy section.\n")
+ 	for _, p := range pkgs {
+@@ -322,7 +191,7 @@ type moduleLayout struct {
+ // runRedundancy writes the redundancy report for the packages matching pkgFlag.
+ // pkgFlag is a comma-separated list of package patterns.
+ // A missing report, or a run over every package of the module, writes the whole report.
+-// Any other run rewrites only its own packages' sections of the existing one.
++// Any other run rewrites the header and its own packages' sections of the existing one.
+ // It must run from the module root.
+ func runRedundancy(tags, pkgFlag, outPath string) error {
+ 	layout, err := loadLayout(tags)
+@@ -354,7 +223,7 @@ func runRedundancy(tags, pkgFlag, outPath string) error {
+ 		if !ok {
+ 			continue
+ 		}
+-		if keeps[importPath], err = scanKeeps(dir); err != nil {
++		if keeps[importPath], err = testcover.ScanKeeps(dir); err != nil {
+ 			return fmt.Errorf("keep directive: %w", err)
+ 		}
+ 	}
+@@ -427,123 +296,41 @@ func runRedundancy(tags, pkgFlag, outPath string) error {
+ }
+ 
+ // measurePackage builds the package's coverage binary, runs each top-level test alone and classifies the runs.
++// A test the spawn scan does not find counts as unclassifiable.
+ // A test named in keeps carries its keep reason on its verdict.
+-// The keep reason changes the report only, never the classification.
+-// env is the environment each test runs under.
++// env is the environment every command runs under.
+ func measurePackage(layout moduleLayout, tags, importPath, coverpkg, tmp string, keeps map[string]string, env []string) ([]verdict, error) {
+ 	dir := layout.dirs[importPath]
+-	names, err := listTests(tags, importPath)
++	toolchain := testcover.Toolchain{Go: "go", Env: env}
++	names, err := toolchain.ListTests(importPath, tags)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+ 	bin := filepath.Join(tmp, "pkg.test")
+-	args := []string{"test", "-c", "-o", bin, "-cover", "-covermode=set", "-coverpkg=" + coverpkg}
+-	if tags != "" {
+-		args = append(args, "-tags", tags)
+-	}
+-	if _, err := goOutput(append(slices.Clone(env), "CGO_ENABLED=1"), args, importPath); err != nil {
+-		return nil, fmt.Errorf("coverage binary: %w", err)
++	if err := toolchain.BuildBinary(importPath, coverpkg, tags, bin); err != nil {
++		return nil, err
+ 	}
+ 	defer os.Remove(bin)
+ 
+-	spawns, err := scanSpawns(layout.path, filepath.Join(layout.dir, "internal", "testkit"), dir)
++	spawns, err := testcover.ScanSpawns(layout.path, filepath.Join(layout.dir, "internal", "testkit"), dir)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("spawn scan: %w", err)
+ 	}
+ 
+-	runs := make([]testRun, 0, len(names))
++	profile := filepath.Join(tmp, "cover.out")
++	runs := make([]measuredRun, 0, len(names))
+ 	for _, name := range names {
+-		run, err := runAlone(bin, dir, tmp, name, env)
++		result, err := toolchain.RunAlone(bin, dir, profile, name)
+ 		if err != nil {
+ 			return nil, err
+ 		}
+-		if v, ok := spawns[name]; ok {
+-			run.spawn = v
+-		} else {
+-			run.spawn = spawnVerdict{unresolved: true}
+-		}
+-		runs = append(runs, run)
+-	}
+-	verdicts := classify(runs)
+-	for i := range verdicts {
+-		verdicts[i].keep = keeps[verdicts[i].name]
+-	}
+-	return verdicts, nil
+-}
+-
+-var testResultLine = regexp.MustCompile(`(?m)^--- (PASS|FAIL|SKIP): (\S+) \(([0-9.]+)s\)$`)
+-
+-// runAloneArgs returns the coverage binary's arguments for running one top-level test alone.
+-// Every flag is one `-flag=value` argument, the form `go test` passes:
+-// a test that runs a cobra command without `SetArgs` reads the process's arguments,
+-// and a separate flag value would show up there as a positional argument.
+-func runAloneArgs(name, profile string) []string {
+-	return []string{
+-		"-test.run=^" + regexp.QuoteMeta(name) + "$",
+-		"-test.coverprofile=" + profile,
+-		"-test.v=true",
+-	}
+-}
+-
+-// runAlone runs one top-level test under the coverage binary and reads its elapsed time, outcome and covered blocks.
+-// A failing run is returned as such, never as an error.
+-func runAlone(bin, dir, tmp, name string, env []string) (testRun, error) {
+-	prof := filepath.Join(tmp, "cover.out")
+-	os.Remove(prof)
+-	cmd := exec.Command(bin, runAloneArgs(name, prof)...)
+-	cmd.Dir = dir
+-	cmd.Env = env
+-	var out bytes.Buffer
+-	cmd.Stdout, cmd.Stderr = &out, &out
+-	var exitErr *exec.ExitError
+-	if err := cmd.Run(); err != nil && !errors.As(err, &exitErr) {
+-		return testRun{}, fmt.Errorf("run %s: %w", name, err)
+-	}
+-
+-	run := testRun{name: name, action: "fail"}
+-	for _, m := range testResultLine.FindAllStringSubmatch(out.String(), -1) {
+-		if m[2] == name {
+-			run.action = strings.ToLower(m[1])
+-			run.elapsed, _ = strconv.ParseFloat(m[3], 64)
+-		}
+-	}
+-	if run.action == "fail" {
+-		// A failing test has no coverage to judge and is listed as failed.
+-		return run, nil
+-	}
+-	f, err := os.Open(prof)
+-	if err != nil {
+-		if run.action == "skip" {
+-			return run, nil
+-		}
+-		return testRun{}, fmt.Errorf("test %s wrote no coverage profile: %w", name, err)
+-	}
+-	defer f.Close()
+-	if run.blocks, err = parseProfile(f); err != nil {
+-		return testRun{}, fmt.Errorf("test %s: %w", name, err)
+-	}
+-	return run, nil
+-}
+-
+-var testNameLine = regexp.MustCompile(`^(Test|Example|Fuzz)\w*$`)
+-
+-// listTests returns the package's top-level test names under the tags.
+-func listTests(tags, importPath string) ([]string, error) {
+-	args := []string{"test", "-list", ".*"}
+-	if tags != "" {
+-		args = append(args, "-tags", tags)
+-	}
+-	out, err := goOutput(nil, args, importPath)
+-	if err != nil {
+-		return nil, fmt.Errorf("list tests: %w", err)
+-	}
+-	var names []string
+-	for _, line := range strings.Split(out, "\n") {
+-		if testNameLine.MatchString(strings.TrimSpace(line)) {
+-			names = append(names, strings.TrimSpace(line))
++		spawn, ok := spawns[name]
++		if !ok {
++			spawn = testcover.SpawnVerdict{Unresolved: true}
+ 		}
++		runs = append(runs, measuredRun{result: result, spawn: spawn})
+ 	}
+-	return names, nil
++	return judgePackage(importPath, runs, keeps), nil
+ }
+ 
+ // coversModule reports whether targets are every package of the module.
+diff --git a/cmd/testtiming/redundancy_test.go b/cmd/testtiming/redundancy_test.go
+index 178be4bf1..3abe8ac96 100644
+--- a/cmd/testtiming/redundancy_test.go
++++ b/cmd/testtiming/redundancy_test.go
+@@ -5,141 +5,55 @@ import (
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/testcover"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-func blockSet(names ...string) map[string]struct{} {
+-	set := map[string]struct{}{}
+-	for _, n := range names {
+-		set[n] = struct{}{}
+-	}
+-	return set
+-}
+-
+-func passRun(name string, elapsed float64, blocks ...string) testRun {
+-	return testRun{name: name, elapsed: elapsed, action: "pass", blocks: blockSet(blocks...)}
+-}
+-
+-func TestClassify(t *testing.T) {
++func TestJudgePackage(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+-	skipped := passRun("Skipped", 0, "b1")
+-	skipped.action = "skip"
+-	spawning := passRun("OutOfProcess", 1, "b1")
+-	spawning.spawn = spawnVerdict{outOfProcess: true}
+-	unresolved := passRun("Unresolved", 1, "b1")
+-	unresolved.spawn = spawnVerdict{unresolved: true}
+-
+-	rows := []struct {
+-		name string
+-		runs []testRun
+-		want []verdict
+-	}{
+-		{
+-			name: "subset of another test is removable, the superset is not a candidate",
+-			runs: []testRun{passRun("A", 1, "b1", "b2"), passRun("B", 1, "b1", "b2", "b3")},
+-			want: []verdict{
+-				{name: "A", candidate: true, removable: true, covering: []string{"B"}},
+-				{name: "B"},
+-			},
+-		},
+-		{
+-			name: "mutual pair: the slowest is removed and the other kept",
+-			runs: []testRun{passRun("C", 2, "b1"), passRun("D", 1, "b1"), passRun("E", 1, "b9")},
+-			want: []verdict{
+-				{name: "C", candidate: true, removable: true, covering: []string{"D"}},
+-				{name: "D", candidate: true, covering: []string{"C"}},
+-				{name: "E"},
+-			},
+-		},
+-		{
+-			name: "the removable set keeps the superset, whose covering tests come by overlap and skip one that adds nothing",
+-			runs: []testRun{
+-				passRun("P", 1, "b1", "b2", "b3"), passRun("Q", 1, "b4"),
+-				passRun("R", 1, "b1"), passRun("T", 1, "b1", "b2", "b3", "b4"),
+-			},
+-			want: []verdict{
+-				{name: "P", candidate: true, removable: true, covering: []string{"T"}},
+-				{name: "Q", candidate: true, removable: true, covering: []string{"T"}},
+-				{name: "R", candidate: true, removable: true, covering: []string{"T"}},
+-				{name: "T", candidate: true, covering: []string{"P", "Q"}},
+-			},
+-		},
+-		{
+-			name: "no blocks, skipped, out-of-process and unresolved tests are never candidates",
+-			runs: []testRun{
+-				passRun("Empty", 1), skipped, spawning, unresolved, passRun("Base", 1, "b1", "b2"),
+-			},
+-			want: []verdict{
+-				{name: "Empty", reason: reasonNoBlocks},
+-				{name: "Skipped", reason: reasonSkipped},
+-				{name: "OutOfProcess", reason: reasonOutOfProcess},
+-				{name: "Unresolved", reason: reasonUnresolved},
+-				{name: "Base"},
+-			},
+-		},
++	covered := func(file string, line int) testcover.ProfileBlock {
++		return testcover.ProfileBlock{File: file, StartLine: line, StartCol: 1, EndLine: line, EndCol: 2, Statements: 1, Count: 1}
+ 	}
+-	for _, row := range rows {
+-		t.Run(row.name, func(t *testing.T) {
+-			t.Parallel()
+-			got := classify(row.runs)
+-			if !reflect.DeepEqual(got, row.want) {
+-				t.Fatalf("classify = %+v\nwant     %+v", got, row.want)
+-			}
+-		})
++	run := func(name string, elapsed float64, blocks ...testcover.ProfileBlock) measuredRun {
++		return measuredRun{result: testcover.RunResult{Name: name, Elapsed: elapsed, Action: testcover.ActionPass, Profile: blocks}}
+ 	}
+-}
+-
+-func TestRunAloneArgs(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-
+-	rows := []struct {
+-		name string
+-		test string
+-		want []string
+-	}{
+-		{
+-			name: "plain name",
+-			test: "TestPlain",
+-			want: []string{"-test.run=^TestPlain$", "-test.coverprofile=/tmp/cover.out", "-test.v=true"},
+-		},
+-		{
+-			name: "regexp metacharacters are quoted",
+-			test: "Test.Dot(a+b)",
+-			want: []string{`-test.run=^Test\.Dot\(a\+b\)$`, "-test.coverprofile=/tmp/cover.out", "-test.v=true"},
+-		},
++	// TestNarrow's package blocks are a subset of TestWide's, and its one block in m/q is its own.
++	// TestFixtureOnly covers blocks of m/q alone, so it covers nothing of its package.
++	runs := []measuredRun{
++		run("TestNarrow", 2, covered("m/p/x.go", 1), covered("m/q/y.go", 1)),
++		run("TestWide", 1, covered("m/p/x.go", 1), covered("m/p/x.go", 2), covered("m/q/y.go", 2)),
++		run("TestFixtureOnly", 1, covered("m/q/y.go", 3)),
+ 	}
+-	for _, row := range rows {
+-		t.Run(row.name, func(t *testing.T) {
+-			t.Parallel()
+-			if got := runAloneArgs(row.test, "/tmp/cover.out"); !reflect.DeepEqual(got, row.want) {
+-				t.Fatalf("runAloneArgs = %q, want %q", got, row.want)
+-			}
+-		})
++	got := judgePackage("m/p", runs, map[string]string{"TestWide": "pins the order"})
++	want := []verdict{
++		{name: "TestNarrow", candidate: true, removable: true, covering: []string{"TestWide"}},
++		{name: "TestWide", keep: "pins the order"},
++		{name: "TestFixtureOnly", reason: testcover.ReasonNoBlocks},
++	}
++	if !reflect.DeepEqual(got, want) {
++		t.Fatalf("judgePackage =\n%+v\nwant\n%+v", got, want)
+ 	}
+-}
+ 
+-func TestParseProfile(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
++	section := renderPackage(pkgReport{pkg: "p", tests: 3, verdicts: got})
++	if wantRow := "| `TestNarrow` | `TestWide` | yes | no |\n"; !strings.Contains(section, wantRow) {
++		t.Errorf("section =\n%s\nwant the row %q marking the candidate not contained module-wide", section, wantRow)
++	}
+ 
+-	profile := "mode: set\n" +
+-		"a/x.go:1.1,2.2 1 1\n" +
+-		"a/x.go:3.1,4.2 2 0\n" +
+-		"b/y.go:5.1,6.2 1 3\n"
+-	got, err := parseProfile(strings.NewReader(profile))
+-	if err != nil {
+-		t.Fatal(err)
++	// TestSmall's only block is also TestBig's, so it is contained in the package and in the module.
++	// Its keep reason leaves the classification as it is.
++	containedRuns := []measuredRun{
++		run("TestSmall", 2, covered("m/p/x.go", 1)),
++		run("TestBig", 1, covered("m/p/x.go", 1), covered("m/p/x.go", 2), covered("m/q/y.go", 1)),
+ 	}
+-	want := blockSet("a/x.go:1.1,2.2 1", "b/y.go:5.1,6.2 1")
+-	if !reflect.DeepEqual(got, want) {
+-		t.Errorf("blocks = %v, want %v", got, want)
++	gotContained := judgePackage("m/p", containedRuns, map[string]string{"TestSmall": "pins the error text"})
++	wantContained := []verdict{
++		{name: "TestSmall", candidate: true, removable: true, covering: []string{"TestBig"}, moduleContained: true, keep: "pins the error text"},
++		{name: "TestBig"},
+ 	}
+-
+-	if _, err := parseProfile(strings.NewReader("mode: set\nno-count-here\n")); err == nil {
+-		t.Error("a profile line without a count must be an error")
++	if !reflect.DeepEqual(gotContained, wantContained) {
++		t.Fatalf("judgePackage =\n%+v\nwant\n%+v", gotContained, wantContained)
+ 	}
+ }
+ 
+@@ -157,15 +71,15 @@ func TestRenderPackage(t *testing.T) {
+ 			in: pkgReport{
+ 				pkg: "internal/x", tests: 3, wall: 0.5, serial: 0.75,
+ 				verdicts: []verdict{
+-					{name: "TestA", candidate: true, removable: true, covering: []string{"TestB", "TestD"}},
++					{name: "TestA", candidate: true, removable: true, covering: []string{"TestB", "TestD"}, moduleContained: true},
+ 					{name: "TestB"},
+-					{name: "TestC", reason: reasonSkipped},
++					{name: "TestC", reason: testcover.ReasonSkipped},
+ 				},
+ 			},
+ 			want: "## internal/x\n\n" +
+ 				"3 tests, wall 0.50s, serial 0.75s.\n\n" +
+-				"| Test | Covering tests | Removable |\n|---|---|---|\n" +
+-				"| `TestA` | `TestB`, `TestD` | yes |\n\n" +
++				"| Test | Covering tests | Removable | Contained module-wide |\n|---|---|---|---|\n" +
++				"| `TestA` | `TestB`, `TestD` | yes | yes |\n\n" +
+ 				"No coverage:\n\n" +
+ 				"- `TestC`: skipped\n",
+ 		},
+@@ -182,8 +96,8 @@ func TestRenderPackage(t *testing.T) {
+ 			},
+ 			want: "## internal/k\n\n" +
+ 				"4 tests, wall 0.50s, serial 0.75s.\n\n" +
+-				"| Test | Covering tests | Removable |\n|---|---|---|\n" +
+-				"| `TestOther` | `TestKeptCandidate` | yes |\n\n" +
++				"| Test | Covering tests | Removable | Contained module-wide |\n|---|---|---|---|\n" +
++				"| `TestOther` | `TestKeptCandidate` | yes | no |\n\n" +
+ 				"Kept:\n\n" +
+ 				"- `TestKeptCandidate`: pins the error text\n" +
+ 				"- `TestKeptPlain`: pins the ordering\n\n" +
+diff --git a/cmd/testtiming/spawnscan.go b/cmd/testtiming/spawnscan.go
+deleted file mode 100644
+index 0175fe356..000000000
+--- a/cmd/testtiming/spawnscan.go
++++ /dev/null
+@@ -1,411 +0,0 @@
+-package main
+-
+-import (
+-	"go/ast"
+-	"go/parser"
+-	"go/token"
+-	"os"
+-	"path"
+-	"path/filepath"
+-	"strconv"
+-	"strings"
+-
+-	"github.com/Knatte18/loomyard/internal/impactset"
+-)
+-
+-// tmuxTierNumber is the tier whose tests start tmux servers, and so run lym in reed panes.
+-const tmuxTierNumber = 2
+-
+-// spawnVerdict is the static classification of one test for the redundancy mode.
+-// A test whose verdict has either field set is never a redundancy candidate:
+-// its in-process coverage does not see the module code another process ran.
+-type spawnVerdict struct {
+-	outOfProcess bool // may run this module's code in another process, directly or through a followed call, or sits in a tmux-tier file
+-	unresolved   bool // calls something the scan cannot resolve to source
+-}
+-
+-func (v *spawnVerdict) merge(o spawnVerdict) {
+-	v.outOfProcess = v.outOfProcess || o.outOfProcess
+-	v.unresolved = v.unresolved || o.unresolved
+-}
+-
+-// funcInfo is one declared function or method with the imports and build tier of its file.
+-type funcInfo struct {
+-	decl     *ast.FuncDecl
+-	imports  map[string]string // file-level import name -> import path
+-	isTest   bool              // declared in a _test.go file
+-	tmuxTier bool              // the file's tier, as impactset.FileTier reads it, is tier2
+-	tagged   bool              // the file's tier is above tier0
+-}
+-
+-// pkgSource indexes the declarations of one directory's Go sources.
+-type pkgSource struct {
+-	funcs        map[string][]*funcInfo // package-level functions by name
+-	methods      map[string][]*funcInfo // methods by name, whatever the receiver
+-	varNames     map[string]bool        // package-level vars
+-	typeNames    map[string]bool        // package-level types
+-	ifaceMethods map[string]bool        // method names of package-declared interfaces
+-	funcFields   map[string]bool        // struct fields of function type
+-}
+-
+-var builtinNames = map[string]bool{
+-	"append": true, "cap": true, "clear": true, "close": true, "complex": true, "copy": true,
+-	"delete": true, "imag": true, "len": true, "make": true, "max": true, "min": true,
+-	"new": true, "panic": true, "print": true, "println": true, "real": true, "recover": true,
+-	"bool": true, "byte": true, "complex64": true, "complex128": true, "error": true,
+-	"float32": true, "float64": true, "int": true, "int8": true, "int16": true, "int32": true,
+-	"int64": true, "rune": true, "string": true, "uint": true, "uint8": true, "uint16": true,
+-	"uint32": true, "uint64": true, "uintptr": true, "any": true, "comparable": true,
+-}
+-
+-// loadPkgSource parses every .go file in dir regardless of build constraints,
+-// so a helper declared in a platform-specific file is still found.
+-// Test files are skipped unless withTests is set.
+-func loadPkgSource(dir string, withTests bool) (*pkgSource, error) {
+-	entries, err := os.ReadDir(dir)
+-	if err != nil {
+-		return nil, err
+-	}
+-	src := &pkgSource{
+-		funcs: map[string][]*funcInfo{}, methods: map[string][]*funcInfo{},
+-		varNames: map[string]bool{}, typeNames: map[string]bool{},
+-		ifaceMethods: map[string]bool{}, funcFields: map[string]bool{},
+-	}
+-	fset := token.NewFileSet()
+-	for _, e := range entries {
+-		name := e.Name()
+-		isTest := strings.HasSuffix(name, "_test.go")
+-		if e.IsDir() || !strings.HasSuffix(name, ".go") || (isTest && !withTests) {
+-			continue
+-		}
+-		file, err := parser.ParseFile(fset, filepath.Join(dir, name), nil, parser.SkipObjectResolution|parser.ParseComments)
+-		if err != nil {
+-			return nil, err
+-		}
+-		tier := impactset.FileTier(file)
+-		tagged, tmuxTier := tier > 0, tier == tmuxTierNumber
+-		imports := map[string]string{}
+-		for _, imp := range file.Imports {
+-			p := strings.Trim(imp.Path.Value, `"`)
+-			local := path.Base(p)
+-			if imp.Name != nil {
+-				local = imp.Name.Name
+-			}
+-			if local != "_" && local != "." {
+-				imports[local] = p
+-			}
+-		}
+-		for _, decl := range file.Decls {
+-			switch d := decl.(type) {
+-			case *ast.FuncDecl:
+-				fi := &funcInfo{decl: d, imports: imports, isTest: isTest, tmuxTier: tmuxTier, tagged: tagged}
+-				if d.Recv != nil {
+-					src.methods[d.Name.Name] = append(src.methods[d.Name.Name], fi)
+-				} else {
+-					src.funcs[d.Name.Name] = append(src.funcs[d.Name.Name], fi)
+-				}
+-			case *ast.GenDecl:
+-				src.indexGenDecl(d)
+-			}
+-		}
+-	}
+-	return src, nil
+-}
+-
+-func (src *pkgSource) indexGenDecl(d *ast.GenDecl) {
+-	for _, spec := range d.Specs {
+-		switch s := spec.(type) {
+-		case *ast.ValueSpec:
+-			if d.Tok == token.VAR {
+-				for _, n := range s.Names {
+-					src.varNames[n.Name] = true
+-				}
+-			}
+-		case *ast.TypeSpec:
+-			src.typeNames[s.Name.Name] = true
+-			switch t := s.Type.(type) {
+-			case *ast.StructType:
+-				for _, f := range t.Fields.List {
+-					if _, ok := f.Type.(*ast.FuncType); ok {
+-						for _, n := range f.Names {
+-							src.funcFields[n.Name] = true
+-						}
+-					}
+-				}
+-			case *ast.InterfaceType:
+-				for _, m := range t.Methods.List {
+-					for _, n := range m.Names {
+-						src.ifaceMethods[n.Name] = true
+-					}
+-				}
+-			}
+-		}
+-	}
+-}
+-
+-// spawnScanner classifies functions against the module's spawn primitives.
+-type spawnScanner struct {
+-	module  string // module import path
+-	kitRoot string // directory holding the testkits, internal/testkit
+-	kits    map[string]map[string]bool
+-}
+-
+-// scanSpawns returns the verdict of every Test, Example and Fuzz function declared in pkgDir's _test.go files.
+-// A test in a tier0 file always gets an empty verdict, because a tier0 test spawns nothing;
+-// a test in a tmux-tier file is always out of process, because reed panes run lym.
+-func scanSpawns(module, kitRoot, pkgDir string) (map[string]spawnVerdict, error) {
+-	src, err := loadPkgSource(pkgDir, true)
+-	if err != nil {
+-		return nil, err
+-	}
+-	s := &spawnScanner{module: module, kitRoot: kitRoot, kits: map[string]map[string]bool{}}
+-	memo := map[*funcInfo]*spawnVerdict{}
+-	out := map[string]spawnVerdict{}
+-	for name, fns := range src.funcs {
+-		for _, fn := range fns {
+-			if fn.isTest && isTestEntry(name) {
+-				found := s.analyze(src, fn, memo)
+-				switch {
+-				case !fn.tagged:
+-					found = spawnVerdict{}
+-				case fn.tmuxTier:
+-					found.outOfProcess = true
+-				}
+-				v := out[name]
+-				v.merge(found)
+-				out[name] = v
+-			}
+-		}
+-	}
+-	return out, nil
+-}
+-
+-func isTestEntry(name string) bool {
+-	return strings.HasPrefix(name, "Test") || strings.HasPrefix(name, "Example") || strings.HasPrefix(name, "Fuzz")
+-}
+-
+-// analyze follows fn's body, merging the verdicts of the same-package functions it calls.
+-// A call cycle contributes its partial verdict once, then stops.
+-func (s *spawnScanner) analyze(src *pkgSource, fn *funcInfo, memo map[*funcInfo]*spawnVerdict) spawnVerdict {
+-	if v, ok := memo[fn]; ok {
+-		return *v
+-	}
+-	v := &spawnVerdict{}
+-	memo[fn] = v
+-	if fn.decl.Body == nil {
+-		return *v
+-	}
+-	locals, localTypes := collectLocals(fn.decl)
+-	ast.Inspect(fn.decl.Body, func(n ast.Node) bool {
+-		switch x := n.(type) {
+-		case *ast.SelectorExpr:
+-			if id, ok := x.X.(*ast.Ident); ok {
+-				if p, isImport := fn.imports[id.Name]; isImport && !locals[id.Name] && s.spawnRef(p, x.Sel.Name) {
+-					v.outOfProcess = true
+-				}
+-			}
+-		case *ast.IndexExpr:
+-			if readsOSArgsProgram(fn, x, locals) {
+-				v.outOfProcess = true
+-			}
+-		case *ast.CallExpr:
+-			if runsGoCommand(fn, x, locals) {
+-				v.outOfProcess = true
+-			}
+-			v.merge(s.analyzeCall(src, fn, x, locals, localTypes, memo))
+-		}
+-		return true
+-	})
+-	return *v
+-}
+-
+-func (s *spawnScanner) analyzeCall(src *pkgSource, fn *funcInfo, call *ast.CallExpr, locals, localTypes map[string]bool, memo map[*funcInfo]*spawnVerdict) spawnVerdict {
+-	var out spawnVerdict
+-	switch f := unwrapCallee(call.Fun).(type) {
+-	case *ast.Ident:
+-		switch {
+-		case builtinNames[f.Name] || localTypes[f.Name]:
+-		case locals[f.Name], src.varNames[f.Name]:
+-			out.unresolved = true
+-		case len(src.funcs[f.Name]) > 0:
+-			for _, callee := range src.funcs[f.Name] {
+-				out.merge(s.analyze(src, callee, memo))
+-			}
+-		case src.typeNames[f.Name]:
+-		default:
+-			out.unresolved = true
+-		}
+-	case *ast.SelectorExpr:
+-		if id, ok := f.X.(*ast.Ident); ok {
+-			if _, isImport := fn.imports[id.Name]; isImport && !locals[id.Name] {
+-				return out
+-			}
+-		}
+-		for _, callee := range src.methods[f.Sel.Name] {
+-			out.merge(s.analyze(src, callee, memo))
+-		}
+-		if src.ifaceMethods[f.Sel.Name] || src.funcFields[f.Sel.Name] {
+-			out.unresolved = true
+-		}
+-	case *ast.CallExpr:
+-		out.unresolved = true
+-	}
+-	return out
+-}
+-
+-// unwrapCallee strips parentheses and generic instantiation from a callee.
+-func unwrapCallee(e ast.Expr) ast.Expr {
+-	for {
+-		switch x := e.(type) {
+-		case *ast.ParenExpr:
+-			e = x.X
+-		case *ast.IndexExpr:
+-			e = x.X
+-		case *ast.IndexListExpr:
+-			e = x.X
+-		default:
+-			return e
+-		}
+-	}
+-}
+-
+-// collectLocals returns the names a function declares for itself and the types it declares locally.
+-// The names are its receiver, parameters, results, := and var declarations, and range variables.
+-// A call to a local name is a call of a function value.
+-func collectLocals(decl *ast.FuncDecl) (locals, types map[string]bool) {
+-	locals, types = map[string]bool{}, map[string]bool{}
+-	addFields := func(fl *ast.FieldList) {
+-		if fl == nil {
+-			return
+-		}
+-		for _, f := range fl.List {
+-			for _, n := range f.Names {
+-				locals[n.Name] = true
+-			}
+-		}
+-	}
+-	addFields(decl.Recv)
+-	addFields(decl.Type.Params)
+-	addFields(decl.Type.Results)
+-	if decl.Body == nil {
+-		return locals, types
+-	}
+-	ast.Inspect(decl.Body, func(n ast.Node) bool {
+-		switch x := n.(type) {
+-		case *ast.FuncType:
+-			addFields(x.Params)
+-			addFields(x.Results)
+-		case *ast.AssignStmt:
+-			if x.Tok == token.DEFINE {
+-				for _, l := range x.Lhs {
+-					if id, ok := l.(*ast.Ident); ok {
+-						locals[id.Name] = true
+-					}
+-				}
+-			}
+-		case *ast.RangeStmt:
+-			if x.Tok == token.DEFINE {
+-				for _, e := range []ast.Expr{x.Key, x.Value} {
+-					if id, ok := e.(*ast.Ident); ok {
+-						locals[id.Name] = true
+-					}
+-				}
+-			}
+-		case *ast.ValueSpec:
+-			for _, id := range x.Names {
+-				locals[id.Name] = true
+-			}
+-		case *ast.TypeSpec:
+-			types[x.Name.Name] = true
+-		}
+-		return true
+-	})
+-	return locals, types
+-}
+-
+-// spawnRef reports whether importPath.name may run this module's code in another process:
+-// the lymbin kit, os.Executable, or a testkit function that may do so, or has a call the scan cannot resolve to source.
+-func (s *spawnScanner) spawnRef(importPath, name string) bool {
+-	if importPath == "os" {
+-		return name == "Executable"
+-	}
+-	rel, ok := strings.CutPrefix(importPath, s.module+"/")
+-	if !ok {
+-		return false
+-	}
+-	if rel == "internal/testkit/lymbin" {
+-		return true
+-	}
+-	if kit, ok := strings.CutPrefix(rel, "internal/testkit/"); ok && !strings.Contains(kit, "/") {
+-		return s.kitSpawns(importPath, kit)[name]
+-	}
+-	return false
+-}
+-
+-// readsOSArgsProgram reports whether x is os.Args[0], the running binary's own path.
+-// A read of any other index or a slice of os.Args does not count.
+-func readsOSArgsProgram(fn *funcInfo, x *ast.IndexExpr, locals map[string]bool) bool {
+-	sel, ok := x.X.(*ast.SelectorExpr)
+-	if !ok || sel.Sel.Name != "Args" {
+-		return false
+-	}
+-	id, ok := sel.X.(*ast.Ident)
+-	if !ok || fn.imports[id.Name] != "os" || locals[id.Name] {
+-		return false
+-	}
+-	index, ok := x.Index.(*ast.BasicLit)
+-	return ok && index.Kind == token.INT && index.Value == "0"
+-}
+-
+-// runsGoCommand reports whether call is exec.Command or exec.CommandContext with the program "go".
+-// Such a call builds and runs module code.
+-func runsGoCommand(fn *funcInfo, call *ast.CallExpr, locals map[string]bool) bool {
+-	sel, ok := call.Fun.(*ast.SelectorExpr)
+-	if !ok {
+-		return false
+-	}
+-	id, ok := sel.X.(*ast.Ident)
+-	if !ok || fn.imports[id.Name] != "os/exec" || locals[id.Name] {
+-		return false
+-	}
+-	programIndex := 0
+-	switch sel.Sel.Name {
+-	case "Command":
+-	case "CommandContext":
+-		programIndex = 1
+-	default:
+-		return false
+-	}
+-	if len(call.Args) <= programIndex {
+-		return false
+-	}
+-	program, ok := call.Args[programIndex].(*ast.BasicLit)
+-	if !ok || program.Kind != token.STRING {
+-		return false
+-	}
+-	value, err := strconv.Unquote(program.Value)
+-	return err == nil && value == "go"
+-}
+-
+-// kitSpawns returns, keyed by function name, whether each function of the testkit at importPath is marked:
+-// it may run this module's code in another process, or it calls something the scan cannot resolve to source.
+-func (s *spawnScanner) kitSpawns(importPath, kit string) map[string]bool {
+-	if funcs, ok := s.kits[importPath]; ok {
+-		return funcs
+-	}
+-	funcs := map[string]bool{}
+-	s.kits[importPath] = funcs // a kit calling itself or a cycle sees the partial map
+-	src, err := loadPkgSource(filepath.Join(s.kitRoot, kit), false)
+-	if err != nil {
+-		return funcs
+-	}
+-	memo := map[*funcInfo]*spawnVerdict{}
+-	for name, fns := range src.funcs {
+-		for _, fn := range fns {
+-			if v := s.analyze(src, fn, memo); v.outOfProcess || v.unresolved {
+-				funcs[name] = true
+-			}
+-		}
+-	}
+-	return funcs
+-}
+diff --git a/cmd/testtiming/spawnscan_test.go b/cmd/testtiming/spawnscan_test.go
+deleted file mode 100644
+index ff48f84eb..000000000
+--- a/cmd/testtiming/spawnscan_test.go
++++ /dev/null
+@@ -1,188 +0,0 @@
+-package main
+-
+-import (
+-	"os"
+-	"path/filepath"
+-	"reflect"
+-	"testing"
+-
+-	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+-)
+-
+-const (
+-	fixtureModule = "example.com/m"
+-
+-	fixtureProd = `package p
+-
+-import "os"
+-
+-func prodExecutable() { _, _ = os.Executable() }
+-`
+-
+-	// An untagged file: its tests are judged whatever they reference.
+-	fixtureUntaggedTests = `package p
+-
+-import (
+-	"testing"
+-
+-	"example.com/m/internal/testkit/lymbin"
+-)
+-
+-func TestUntaggedLymbin(t *testing.T) { lymbin.Build(t) }
+-
+-func TestUntaggedUnresolved(t *testing.T) {
+-	f := func() {}
+-	f()
+-}
+-`
+-
+-	// A tier1 file: the rules decide.
+-	fixtureIntegrationTests = `//go:build tier1
+-
+-package p
+-
+-import (
+-	"context"
+-	"os"
+-	"os/exec"
+-	"testing"
+-
+-	"example.com/m/internal/gitkit"
+-	"example.com/m/internal/hubforge"
+-	"example.com/m/internal/prod"
+-	"example.com/m/internal/testkit/gitonlykit"
+-	"example.com/m/internal/testkit/gokit"
+-	"example.com/m/internal/testkit/quietkit"
+-	"example.com/m/internal/testkit/lymbin"
+-)
+-
+-type row struct{ fn func() }
+-
+-func TestLymbin(t *testing.T) { lymbin.Build(t) }
+-
+-func TestExecutable(t *testing.T) { _, _ = os.Executable() }
+-
+-func TestArgsProgram(t *testing.T) { _ = os.Args[0] }
+-
+-func TestArgsRest(t *testing.T) { _ = os.Args[1:] }
+-
+-func TestGoCommand(t *testing.T) { _ = exec.Command("go", "build") }
+-
+-func TestGoCommandContext(t *testing.T) { _ = exec.CommandContext(context.Background(), "go", "build") }
+-
+-func TestGitCommand(t *testing.T) { _ = exec.Command("git", "status") }
+-
+-func TestHelperChain(t *testing.T) { helperA() }
+-func helperA()                     { helperB() }
+-func helperB()                     { _, _ = os.Executable() }
+-
+-func TestHermetic(t *testing.T) { gitkit.HermeticGitEnv() }
+-
+-func TestGitkitSpawn(t *testing.T) { gitkit.Run() }
+-
+-func TestHubforge(t *testing.T) { hubforge.NewHub(t) }
+-
+-func TestFuncValue(t *testing.T) {
+-	f := func() {}
+-	f()
+-}
+-
+-func TestFuncField(t *testing.T) {
+-	r := row{}
+-	r.fn()
+-}
+-
+-func TestProdCall(t *testing.T) { prod.Run() }
+-
+-func TestSamePackageProd(t *testing.T) { prodExecutable() }
+-
+-func TestKitGitOnly(t *testing.T) { gitonlykit.Do() }
+-
+-func TestKitRunsGo(t *testing.T) { gokit.Do() }
+-
+-func TestKitQuiet(t *testing.T) { quietkit.Do() }
+-
+-func TestPlain(t *testing.T) { t.Helper() }
+-`
+-
+-	fixtureTier2LinuxTests = "//go:build tier2 && linux\n\npackage p\n\nimport \"testing\"\n\nfunc TestTier2LinuxTier(t *testing.T) { t.Helper() }\n"
+-
+-	fixtureTier2Tests = "//go:build tier2\n\npackage p\n\nimport \"testing\"\n\nfunc TestTier2Tier(t *testing.T) { t.Helper() }\n"
+-
+-	// A file whose test opens with a tier2 Require, the form every real test file uses.
+-	fixtureRequireTier2Tests = "package p\n\nimport (\n\t\"testing\"\n\n\t\"github.com/Knatte18/loomyard/internal/testkit/tiergate\"\n)\n\nfunc TestRequireTier2(t *testing.T) {\n\ttiergate.Require(t, 2)\n}\n"
+-
+-	// A tier0 file counts as untagged: its tests are judged whatever they reference.
+-	fixtureTier0Tests = "//go:build tier0\n\npackage p\n\nimport \"os\"\nimport \"testing\"\n\nfunc TestTier0Tier(t *testing.T) { _, _ = os.Executable() }\n"
+-
+-	fixtureGitOnlyKit = "package gitonlykit\n\nimport \"os/exec\"\n\nfunc Do() { _ = exec.Command(\"git\", \"init\") }\n"
+-	fixtureGoKit      = "package gokit\n\nimport \"os/exec\"\n\nfunc Do() { _ = exec.Command(\"go\", \"build\") }\n"
+-	fixtureQuietKit   = "package quietkit\n\nfunc Do() {}\n"
+-)
+-
+-func writeFixture(t *testing.T, dir, name, body string) {
+-	t.Helper()
+-	if err := os.MkdirAll(dir, 0o755); err != nil {
+-		t.Fatal(err)
+-	}
+-	if err := os.WriteFile(filepath.Join(dir, name), []byte(body), 0o644); err != nil {
+-		t.Fatal(err)
+-	}
+-}
+-
+-func TestScanSpawns(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-
+-	root := t.TempDir()
+-	pkgDir := filepath.Join(root, "p")
+-	kitRoot := filepath.Join(root, "kits")
+-	writeFixture(t, pkgDir, "p.go", fixtureProd)
+-	writeFixture(t, pkgDir, "untagged_test.go", fixtureUntaggedTests)
+-	writeFixture(t, pkgDir, "integration_test.go", fixtureIntegrationTests)
+-	writeFixture(t, pkgDir, "tier2linux_test.go", fixtureTier2LinuxTests)
+-	writeFixture(t, pkgDir, "tier2_test.go", fixtureTier2Tests)
+-	writeFixture(t, pkgDir, "tier0_test.go", fixtureTier0Tests)
+-	writeFixture(t, pkgDir, "requiretier2_test.go", fixtureRequireTier2Tests)
+-	writeFixture(t, filepath.Join(kitRoot, "gitonlykit"), "gitonlykit.go", fixtureGitOnlyKit)
+-	writeFixture(t, filepath.Join(kitRoot, "gokit"), "gokit.go", fixtureGoKit)
+-	writeFixture(t, filepath.Join(kitRoot, "quietkit"), "quietkit.go", fixtureQuietKit)
+-
+-	got, err := scanSpawns(fixtureModule, kitRoot, pkgDir)
+-	if err != nil {
+-		t.Fatal(err)
+-	}
+-
+-	outOfProcess := spawnVerdict{outOfProcess: true}
+-	unresolved := spawnVerdict{unresolved: true}
+-	want := map[string]spawnVerdict{
+-		"TestUntaggedLymbin":     {},
+-		"TestUntaggedUnresolved": {},
+-		"TestLymbin":             outOfProcess,
+-		"TestExecutable":         outOfProcess,
+-		"TestArgsProgram":        outOfProcess,
+-		"TestArgsRest":           {},
+-		"TestGoCommand":          outOfProcess,
+-		"TestGoCommandContext":   outOfProcess,
+-		"TestGitCommand":         {},
+-		"TestHelperChain":        outOfProcess,
+-		"TestHermetic":           {},
+-		"TestGitkitSpawn":        {},
+-		"TestHubforge":           {},
+-		"TestFuncValue":          unresolved,
+-		"TestFuncField":          unresolved,
+-		"TestProdCall":           {},
+-		"TestSamePackageProd":    outOfProcess,
+-		"TestKitGitOnly":         {},
+-		"TestKitRunsGo":          outOfProcess,
+-		"TestKitQuiet":           {},
+-		"TestPlain":              {},
+-		"TestTier2LinuxTier":     outOfProcess,
+-		"TestTier2Tier":          outOfProcess,
+-		"TestTier0Tier":          {},
+-		"TestRequireTier2":       outOfProcess,
+-	}
+-	if !reflect.DeepEqual(got, want) {
+-		t.Errorf("scanSpawns =\n%+v\nwant\n%+v", got, want)
+-	}
+-}
+diff --git a/cmd/testtiming/splice.go b/cmd/testtiming/splice.go
+index 450d9e5be..f0a7330aa 100644
+--- a/cmd/testtiming/splice.go
++++ b/cmd/testtiming/splice.go
+@@ -52,14 +52,16 @@ type reportSection struct {
+ // A measured package's section is replaced, or inserted in import-path order when it has none yet.
+ // A package that lists no tests has its section removed.
+ // A failed package keeps its old section and gets its error section only when it had none.
+-// The header and every section of an unmeasured package come back byte-identical.
++// The header is rewritten to the current one, so the header and the sections describe one judging method.
++// Every section of an unmeasured package comes back byte-identical.
+ // It refuses, writing nothing, when the existing report was made under a different tag set.
+ func spliceReport(existing, tags string, measured []measuredPackage) (string, error) {
+ 	if err := requireSameTags(existing, tags); err != nil {
+ 		return "", err
+ 	}
+ 
+-	header, sections := splitReport(existing)
++	_, sections := splitReport(existing)
++	header := renderReport(tags, nil)
+ 	for _, m := range measured {
+ 		at := -1
+ 		for i, s := range sections {
+diff --git a/cmd/testtiming/splice_test.go b/cmd/testtiming/splice_test.go
+index eb071ea87..5a35f47dc 100644
+--- a/cmd/testtiming/splice_test.go
++++ b/cmd/testtiming/splice_test.go
+@@ -96,6 +96,23 @@ func TestSpliceReport(t *testing.T) {
+ 	}
+ }
+ 
++func TestSpliceReportRefreshesStaleHeader(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const tags = "integration,tmux"
++	a, b := spliceFixtureSection("internal/a", 1), spliceFixtureSection("internal/b", 2)
++	stale := strings.Replace(renderReport(tags, []pkgReport{a}), "# Test redundancy\n", "# Test redundancy\n\nJudged over the whole module.\n", 1)
++
++	got, err := spliceReport(stale, tags, []measuredPackage{spliceMeasured(b)})
++	if err != nil {
++		t.Fatalf("spliceReport: %v", err)
++	}
++	if want := renderReport(tags, []pkgReport{a, b}); got != want {
++		t.Errorf("spliced report differs:\n--- got ---\n%s\n--- want ---\n%s", got, want)
++	}
++}
++
+ func TestSpliceReportRejectsReportWithoutTagsHeader(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/docs/overview.md b/docs/overview.md
+index acc693828..5d65611ac 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -400,6 +400,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/commentlint/        the comment line lint: fixed-column wraps and over-long lines in the `//` comment blocks a diff creates, over a told worktree and base
+ ├── internal/patternlint/        the PATTERN headroom lint: growth of the overview past its headroom line, over a told worktree and base
+ ├── internal/impactset/          the impacted-set command a gate key's `diff` scope runs: the packages a diff reaches over the import graph, plus the `//lym:guard` tests, or a fallback reason to run the full verify
++├── internal/testcover/          the per-test coverage engine: runs each test of a package alone under a coverage binary, keys blocks by content, judges contained and removable tests, and reads and writes the per-package coverage map
+ ├── internal/dotnetimpact/       the `dotnet` scoper's derivation: the test projects and test classes a C# diff or a card's targets reach, by type-name closure over the source, or a fallback reason to run the tier whole
+ ├── internal/verifytree/         the one plan-verify function: clean-tree check, verified-tree record and running marker, used by landing, both webster gates and `lym webster verify`
+ └── internal/verifyrun/          in-process shell-command runner behind `internal/verifytree` and webster's card-verify rerun
+diff --git a/internal/lymdirs/dirs.go b/internal/lymdirs/dirs.go
+index 558d730a9..d06652094 100644
+--- a/internal/lymdirs/dirs.go
++++ b/internal/lymdirs/dirs.go
+@@ -49,6 +49,10 @@ const FrontTaskDirName = "fronttask"
+ // Each task's snapshot of its checkouts is taken before the drift judge runs.
+ const DriftJudgeDirName = "drift-judge"
+ 
++// TestCoverDirName is the directory under the hub's board-level `.lym` that holds the per-package coverage maps.
++// Every worktree of the hub on the machine shares them.
++const TestCoverDirName = "testcover"
++
+ // BeamDirName is the directory under a worktree's `.lym` that holds dobby's lock, state record and markers.
+ const BeamDirName = "beam"
+ 
+diff --git a/internal/testcover/blockkey.go b/internal/testcover/blockkey.go
+new file mode 100644
+index 000000000..0307b87bb
+--- /dev/null
++++ b/internal/testcover/blockkey.go
+@@ -0,0 +1,174 @@
++// blockkey.go keys coverage blocks by their content, so a block keeps its key when lines above it move.
++
++package testcover
++
++import (
++	"crypto/sha256"
++	"encoding/hex"
++	"fmt"
++	"go/ast"
++	"go/parser"
++	"go/token"
++	"go/types"
++	"os"
++	"path"
++	"path/filepath"
++	"sort"
++)
++
++// PackageLevelFunc is the function a block key names for a block outside every function declaration.
++const PackageLevelFunc = "(package)"
++
++// BlockKey identifies a coverage block by its content rather than by its line and column.
++type BlockKey struct {
++	// File is the block's file name within its package directory.
++	File string `json:"file"`
++	// Func is the enclosing function, `Type.Method` for a method, or PackageLevelFunc.
++	Func string `json:"func"`
++	// Hash is the ContentHash of the block's source text.
++	Hash string `json:"hash"`
++	// Ordinal counts the blocks before this one, in source order, whose file, function and hash equal its own.
++	Ordinal int `json:"ordinal"`
++}
++
++// ContentHash returns the hex SHA-256 of data.
++// It is the hash a block key, and a coverage map's file and test entries, carry.
++func ContentHash(data []byte) string {
++	sum := sha256.Sum256(data)
++	return hex.EncodeToString(sum[:])
++}
++
++// KeyBlocks returns the content key of each block, in the order given.
++// Every block must lie in a Go file of the package directory dir, which it reads and parses.
++// Ordinals count among the blocks given, so a stable key needs every block of the package's profile, covered or not.
++// A file that does not parse, or a position outside its file, is an error.
++func KeyBlocks(dir string, blocks []ProfileBlock) ([]BlockKey, error) {
++	type located struct {
++		index int
++		start int
++	}
++	files := map[string]*sourceFile{}
++	keys := make([]BlockKey, len(blocks))
++	byFile := map[string][]located{}
++	for i, b := range blocks {
++		name := path.Base(b.File)
++		src, ok := files[name]
++		if !ok {
++			var err error
++			if src, err = parseSourceFile(filepath.Join(dir, name)); err != nil {
++				return nil, err
++			}
++			files[name] = src
++		}
++		start, err := src.offset(b.StartLine, b.StartCol)
++		if err != nil {
++			return nil, fmt.Errorf("block %s: %w", b.Position(), err)
++		}
++		end, err := src.offset(b.EndLine, b.EndCol)
++		if err != nil {
++			return nil, fmt.Errorf("block %s: %w", b.Position(), err)
++		}
++		if end < start {
++			return nil, fmt.Errorf("block %s ends before it starts", b.Position())
++		}
++		keys[i] = BlockKey{File: name, Func: src.enclosingFunc(start), Hash: ContentHash(src.text[start:end])}
++		byFile[name] = append(byFile[name], located{index: i, start: start})
++	}
++
++	for _, blocksOfFile := range byFile {
++		sort.SliceStable(blocksOfFile, func(a, b int) bool { return blocksOfFile[a].start < blocksOfFile[b].start })
++		seen := map[BlockKey]int{}
++		for _, l := range blocksOfFile {
++			base := keys[l.index]
++			keys[l.index].Ordinal = seen[base]
++			seen[base]++
++		}
++	}
++	return keys, nil
++}
++
++// sourceFile is one parsed Go file with the offsets of its function declarations.
++type sourceFile struct {
++	text  []byte
++	file  *token.File
++	funcs []funcSpan
++}
++
++// funcSpan is the byte range of one function declaration and the name a block key gives it.
++type funcSpan struct {
++	start, end int
++	name       string
++}
++
++func parseSourceFile(filename string) (*sourceFile, error) {
++	text, err := os.ReadFile(filename)
++	if err != nil {
++		return nil, err
++	}
++	fset := token.NewFileSet()
++	parsed, err := parser.ParseFile(fset, filename, text, parser.SkipObjectResolution)
++	if err != nil {
++		return nil, err
++	}
++	src := &sourceFile{text: text, file: fset.File(parsed.Pos())}
++	for _, decl := range parsed.Decls {
++		if fn, ok := decl.(*ast.FuncDecl); ok {
++			src.funcs = append(src.funcs, funcSpan{
++				start: src.file.Offset(fn.Pos()),
++				end:   src.file.Offset(fn.End()),
++				name:  funcKeyName(fn),
++			})
++		}
++	}
++	return src, nil
++}
++
++// offset returns the byte offset of a profile position: a line and a byte column, both counted from 1.
++func (src *sourceFile) offset(line, col int) (int, error) {
++	if line < 1 || line > src.file.LineCount() {
++		return 0, fmt.Errorf("line %d is outside the file's %d lines", line, src.file.LineCount())
++	}
++	offset := src.file.Offset(src.file.LineStart(line)) + col - 1
++	if col < 1 || offset > len(src.text) {
++		return 0, fmt.Errorf("column %d of line %d is outside the file", col, line)
++	}
++	return offset, nil
++}
++
++// enclosingFunc names the function declaration holding the byte at offset, or PackageLevelFunc.
++func (src *sourceFile) enclosingFunc(offset int) string {
++	for _, fn := range src.funcs {
++		if fn.start <= offset && offset < fn.end {
++			return fn.name
++		}
++	}
++	return PackageLevelFunc
++}
++
++// funcKeyName spells a function's name for a block key: `Type.Method` for a method, the bare name otherwise.
++func funcKeyName(fn *ast.FuncDecl) string {
++	if fn.Recv == nil || len(fn.Recv.List) == 0 {
++		return fn.Name.Name
++	}
++	return receiverTypeName(fn.Recv.List[0].Type) + "." + fn.Name.Name
++}
++
++// receiverTypeName strips the pointer, parentheses and type arguments from a receiver type.
++func receiverTypeName(expr ast.Expr) string {
++	for {
++		switch x := expr.(type) {
++		case *ast.StarExpr:
++			expr = x.X
++		case *ast.ParenExpr:
++			expr = x.X
++		case *ast.IndexExpr:
++			expr = x.X
++		case *ast.IndexListExpr:
++			expr = x.X
++		case *ast.Ident:
++			return x.Name
++		default:
++			return types.ExprString(expr)
++		}
++	}
++}
+diff --git a/internal/testcover/blockkey_test.go b/internal/testcover/blockkey_test.go
+new file mode 100644
+index 000000000..cdf0f4868
+--- /dev/null
++++ b/internal/testcover/blockkey_test.go
+@@ -0,0 +1,119 @@
++package testcover_test
++
++import (
++	"os"
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testcover"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// keyedSource holds two same-named methods on different receivers.
++// It also holds a function with two identical blocks and package-level code.
++// The bodies open at column 21 of their func line and close at column 2 of the line of their brace.
++const keyedSource = `package p
++
++func (a A) Do() int {
++	return 1
++}
++
++func (b *B) Do() int {
++	return 1
++}
++
++func twice(x bool) int {
++	if x {
++		return 1
++	}
++	if x {
++		return 1
++	}
++	return 0
++}
++
++var v = 1
++`
++
++func TestKeyBlocks(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	block := func(startLine, startCol, endLine, endCol int) testcover.ProfileBlock {
++		return testcover.ProfileBlock{File: "m/p/p.go", StartLine: startLine, StartCol: startCol, EndLine: endLine, EndCol: endCol, Statements: 1}
++	}
++	keysOf := func(t *testing.T, source string, blocks ...testcover.ProfileBlock) []testcover.BlockKey {
++		t.Helper()
++		dir := t.TempDir()
++		if err := os.WriteFile(filepath.Join(dir, "p.go"), []byte(source), 0o644); err != nil {
++			t.Fatal(err)
++		}
++		keys, err := testcover.KeyBlocks(dir, blocks)
++		if err != nil {
++			t.Fatal(err)
++		}
++		return keys
++	}
++
++	base := keysOf(t, keyedSource,
++		block(3, 21, 5, 2), block(7, 22, 9, 2), block(12, 7, 14, 3), block(15, 7, 17, 3), block(21, 9, 21, 10))
++	if base[0].Func != "A.Do" || base[1].Func != "B.Do" || base[0] == base[1] {
++		t.Errorf("same-named methods keyed %+v and %+v; want A.Do and B.Do with different keys", base[0], base[1])
++	}
++	if base[0].Hash != base[1].Hash {
++		t.Errorf("the two method bodies hash %s and %s; want one hash for one text", base[0].Hash, base[1].Hash)
++	}
++	if base[2].Func != "twice" || base[3].Func != "twice" || base[2].Hash != base[3].Hash || base[2].Ordinal != 0 || base[3].Ordinal != 1 {
++		t.Errorf("identical blocks in one function keyed %+v and %+v; want ordinals 0 and 1", base[2], base[3])
++	}
++	if base[4].Func != testcover.PackageLevelFunc {
++		t.Errorf("package-level block keyed under %q; want %q", base[4].Func, testcover.PackageLevelFunc)
++	}
++
++	shifted := keysOf(t, "// added above\n\n"+keyedSource,
++		block(5, 21, 7, 2), block(9, 22, 11, 2), block(14, 7, 16, 3), block(17, 7, 19, 3), block(23, 9, 23, 10))
++	for i := range base {
++		if shifted[i] != base[i] {
++			t.Errorf("block %d moved two lines down keyed %+v; want its unshifted key %+v", i, shifted[i], base[i])
++		}
++	}
++
++	edited := keysOf(t, "package p\n\nfunc (a A) Do() int {\n\treturn 2\n}\n", block(3, 21, 5, 2))
++	if edited[0] == base[0] {
++		t.Errorf("edited block keyed %+v, as before the edit; want a new key", edited[0])
++	}
++
++	// q.go repeats p.go's A.Do body, so the two keys differ only in File.
++	// Its generic receiver T[K] keys as T.Do.
++	twoFiles := t.TempDir()
++	const secondSource = "package p\n\nfunc (a A) Do() int {\n\treturn 1\n}\n\nfunc (t T[K]) Do() int {\n\treturn 1\n}\n"
++	for name, source := range map[string]string{"p.go": keyedSource, "q.go": secondSource} {
++		if err := os.WriteFile(filepath.Join(twoFiles, name), []byte(source), 0o644); err != nil {
++			t.Fatal(err)
++		}
++	}
++	inSecondFile := func(startLine, startCol, endLine, endCol int) testcover.ProfileBlock {
++		b := block(startLine, startCol, endLine, endCol)
++		b.File = "m/p/q.go"
++		return b
++	}
++	crossFile, err := testcover.KeyBlocks(twoFiles, []testcover.ProfileBlock{block(3, 21, 5, 2), inSecondFile(3, 21, 5, 2), inSecondFile(7, 24, 9, 2)})
++	if err != nil {
++		t.Fatal(err)
++	}
++	if crossFile[0].File != "p.go" || crossFile[1].File != "q.go" || crossFile[0].Ordinal != 0 || crossFile[1].Ordinal != 0 ||
++		crossFile[0].Func != crossFile[1].Func || crossFile[0].Hash != crossFile[1].Hash {
++		t.Errorf("the same body in two files keyed %+v and %+v; want one function and hash, each file's own File, both ordinal 0", crossFile[0], crossFile[1])
++	}
++	if crossFile[2].Func != "T.Do" {
++		t.Errorf("generic receiver T[K] keyed %q; want T.Do", crossFile[2].Func)
++	}
++
++	dir := t.TempDir()
++	if err := os.WriteFile(filepath.Join(dir, "p.go"), []byte(keyedSource), 0o644); err != nil {
++		t.Fatal(err)
++	}
++	if _, err := testcover.KeyBlocks(dir, []testcover.ProfileBlock{block(99, 1, 99, 2)}); err == nil {
++		t.Error("KeyBlocks of a line past the file's end = nil error; want an error")
++	}
++}
+diff --git a/internal/testcover/coveragemap.go b/internal/testcover/coveragemap.go
+new file mode 100644
+index 000000000..83eab60b8
+--- /dev/null
++++ b/internal/testcover/coveragemap.go
+@@ -0,0 +1,65 @@
++// coveragemap.go declares the per-package coverage map record and reads and writes it through internal/state.
++
++package testcover
++
++import (
++	"path/filepath"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/state"
++)
++
++// mapFileName is the file name of a package's coverage map within its directory.
++const mapFileName = "map.json"
++
++// Map is one package's coverage map.
++// It records which blocks of the package's own files each judged test covers, and the tree it was built from.
++type Map struct {
++	// Commit is the commit the map was built from.
++	Commit string `json:"commit"`
++	// BuiltAt is when the map was built.
++	BuiltAt time.Time `json:"built_at"`
++	// Files maps each Go file the package directory tracks, by name, to its ContentHash.
++	Files map[string]string `json:"files"`
++	// Blocks is the block key table that MapTest.Blocks indexes.
++	Blocks []BlockKey `json:"blocks"`
++	// Tests holds one entry per judged top-level test.
++	Tests []MapTest `json:"tests"`
++	// BuildFailure is the error of a coverage build that failed, empty when the build succeeded.
++	BuildFailure string `json:"build_failure,omitempty"`
++}
++
++// MapTest is one judged top-level test of a coverage map.
++type MapTest struct {
++	Name string `json:"name"`
++	// Tier is the tier the test's tiergate.Require names.
++	Tier int `json:"tier"`
++	// FuncHash is the ContentHash of the test function's source text.
++	FuncHash string `json:"func_hash"`
++	// Seconds is the test's standalone duration.
++	Seconds float64 `json:"seconds"`
++	// Blocks are indexes into Map.Blocks of the blocks the test covers.
++	Blocks []int `json:"blocks"`
++}
++
++// MapPath returns the path of the coverage map of the package pkg under the maps directory dir.
++// pkg is a module-relative slash path.
++func MapPath(dir, pkg string) string {
++	return filepath.Join(dir, filepath.FromSlash(pkg), mapFileName)
++}
++
++// ReadMap reads the coverage map of the package pkg under the maps directory dir, and reports whether one exists.
++// A key the record does not declare is ignored, never refused.
++func ReadMap(dir, pkg string) (Map, bool, error) {
++	path := MapPath(dir, pkg)
++	return state.ReadJSON[Map](path, lock.TrackedFileLockPath(path, ".lock"))
++}
++
++// WriteMap replaces the coverage map of the package pkg under the maps directory dir with m, atomically,
++// so a reader sees either the old map or the new one.
++// It keeps each key of the replaced record that Map does not declare.
++func WriteMap(dir, pkg string, m Map) error {
++	path := MapPath(dir, pkg)
++	return state.WriteJSON(path, lock.TrackedFileLockPath(path, ".lock"), m)
++}
+diff --git a/internal/testcover/coveragemap_test.go b/internal/testcover/coveragemap_test.go
+new file mode 100644
+index 000000000..8a3747a6c
+--- /dev/null
++++ b/internal/testcover/coveragemap_test.go
+@@ -0,0 +1,96 @@
++package testcover_test
++
++import (
++	"encoding/json"
++	"os"
++	"reflect"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/testcover"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestWriteMapReadMap(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	dir := t.TempDir()
++	const pkg = "internal/x"
++	written := testcover.Map{
++		Commit:  "0123abcd",
++		BuiltAt: time.Date(2026, 11, 9, 12, 0, 0, 0, time.UTC),
++		Files:   map[string]string{"x.go": "f1", "x_test.go": "f2"},
++		Blocks: []testcover.BlockKey{
++			{File: "x.go", Func: "A.Do", Hash: "h1"},
++			{File: "x.go", Func: "B.Do", Hash: "h1"},
++		},
++		Tests: []testcover.MapTest{
++			{Name: "TestA", Tier: 0, FuncHash: "t1", Seconds: 0.25, Blocks: []int{0}},
++			{Name: "TestB", Tier: 1, FuncHash: "t2", Seconds: 1.5, Blocks: []int{0, 1}},
++		},
++	}
++
++	if _, found, err := testcover.ReadMap(dir, pkg); err != nil || found {
++		t.Fatalf("ReadMap before any write = found %v, err %v; want not found and no error", found, err)
++	}
++	if err := testcover.WriteMap(dir, pkg, written); err != nil {
++		t.Fatal(err)
++	}
++	read, found, err := testcover.ReadMap(dir, pkg)
++	if err != nil || !found {
++		t.Fatalf("ReadMap = found %v, err %v; want the written map", found, err)
++	}
++	if !reflect.DeepEqual(read, written) {
++		t.Fatalf("ReadMap = %+v\nwant      %+v", read, written)
++	}
++
++	path := testcover.MapPath(dir, pkg)
++	raw, err := os.ReadFile(path)
++	if err != nil {
++		t.Fatal(err)
++	}
++	var record map[string]any
++	if err := json.Unmarshal(raw, &record); err != nil {
++		t.Fatal(err)
++	}
++	record["newer_key"] = "kept"
++	planted, err := json.Marshal(record)
++	if err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(path, planted, 0o644); err != nil {
++		t.Fatal(err)
++	}
++	if read, _, err = testcover.ReadMap(dir, pkg); err != nil || !reflect.DeepEqual(read, written) {
++		t.Fatalf("ReadMap of a record with an unknown key = %+v, %v; want the map, unrefused", read, err)
++	}
++	if err := testcover.WriteMap(dir, pkg, written); err != nil {
++		t.Fatal(err)
++	}
++	if raw, err = os.ReadFile(path); err != nil {
++		t.Fatal(err)
++	}
++	record = nil
++	if err := json.Unmarshal(raw, &record); err != nil {
++		t.Fatal(err)
++	}
++	if record["newer_key"] != "kept" {
++		t.Errorf("rewritten record's newer_key = %v; want the unknown key kept", record["newer_key"])
++	}
++
++	replacement := testcover.Map{
++		Commit:       "4567ef89",
++		BuiltAt:      time.Date(2026, 11, 10, 8, 30, 0, 0, time.UTC),
++		Files:        map[string]string{"x.go": "f3"},
++		Blocks:       []testcover.BlockKey{{File: "x.go", Func: "C.Do", Hash: "h2", Ordinal: 1}},
++		Tests:        []testcover.MapTest{{Name: "TestC", Tier: 0, FuncHash: "t3", Seconds: 0.5, Blocks: []int{0}}},
++		BuildFailure: "coverage binary: build failed",
++	}
++	if err := testcover.WriteMap(dir, pkg, replacement); err != nil {
++		t.Fatal(err)
++	}
++	if read, _, err = testcover.ReadMap(dir, pkg); err != nil || !reflect.DeepEqual(read, replacement) {
++		t.Fatalf("ReadMap after a second write = %+v, %v; want the second map whole, with none of the first map's tests", read, err)
++	}
++}
+diff --git a/internal/testcover/doc.go b/internal/testcover/doc.go
+new file mode 100644
+index 000000000..28a3dbdaa
+--- /dev/null
++++ b/internal/testcover/doc.go
+@@ -0,0 +1,26 @@
++// doc.go carries the package-level doc comment for internal/testcover.
++
++// Package testcover measures which blocks each top-level test of a Go package covers when it runs alone.
++// It judges from those block sets which tests are redundant.
++//
++// The runner builds a package's coverage test binary and runs each top-level test alone, serially, with its own profile.
++// Per-test coverage needs a process per test.
++// Coverage counters are process-wide, so tests that run in parallel in one process mix their counts.
++// The runner takes no gate slot; its caller holds one.
++//
++// Judge marks a test contained when another judged test of the same run covers each of its covered blocks.
++// It picks the removable set greedily among the contained tests, slowest first.
++// A test that is skipped, failed or covers nothing is not judged.
++// Nor is a test judged that the static spawn scan marks as possibly running module code in another process.
++// Its in-process coverage cannot see that code.
++// The keep scan reads each `//testtiming:keep <reason>` directive, which a caller reports and never judges by.
++//
++// A block's key is its content: its file, its enclosing function, a hash of its source text and its ordinal.
++// The ordinal counts blocks equal in the first three parts.
++// An unchanged block keeps its key when lines above it move; an edited block gets a new one.
++// Bound: two blocks with the same text in one function differ by ordinal alone.
++// So inserting a block that repeats the text of one in the same function shifts every later identical ordinal.
++//
++// The coverage map is one JSON record per package, read and written through internal/state.
++// It keeps the block key table and, for each judged test, the indexes of the blocks it covers.
++package testcover
+diff --git a/internal/testcover/keep.go b/internal/testcover/keep.go
+new file mode 100644
+index 000000000..95f879c4a
+--- /dev/null
++++ b/internal/testcover/keep.go
+@@ -0,0 +1,71 @@
++// keep.go reads the `//testtiming:keep <reason>` directives of a package's test files.
++
++package testcover
++
++import (
++	"fmt"
++	"os"
++	"path/filepath"
++	"regexp"
++	"strings"
++)
++
++const (
++	keepDirective = "//testtiming:keep"
++
++	// lymDirectivePrefix opens a `//lym:` directive line, which may stack between a keep and its func line.
++	lymDirectivePrefix = "//lym:"
++)
++
++var topLevelTestDecl = regexp.MustCompile(`^func (Test\w*)\(`)
++
++// ScanKeeps maps each test of the package directory marked with a `//testtiming:keep <reason>` line to its reason.
++// The directive sits above the test's `func Test…` line, with only `//lym:` directive lines allowed between them.
++// A directive with an empty reason, or one not placed above a top-level test declaration, is an error.
++// The error names the file and line.
++func ScanKeeps(dir string) (map[string]string, error) {
++	files, err := filepath.Glob(filepath.Join(dir, "*_test.go"))
++	if err != nil {
++		return nil, err
++	}
++	keeps := map[string]string{}
++	for _, file := range files {
++		content, err := os.ReadFile(file)
++		if err != nil {
++			return nil, err
++		}
++		lines := strings.Split(string(content), "\n")
++		for i, line := range lines {
++			reason, ok := keepReason(line)
++			if !ok {
++				continue
++			}
++			where := fmt.Sprintf("%s:%d", file, i+1)
++			next := i + 1
++			for next < len(lines) && strings.HasPrefix(lines[next], lymDirectivePrefix) {
++				next++
++			}
++			var test []string
++			if next < len(lines) {
++				test = topLevelTestDecl.FindStringSubmatch(lines[next])
++			}
++			if test == nil {
++				return nil, fmt.Errorf("%s: %s is not directly above a top-level test function", where, keepDirective)
++			}
++			if reason == "" {
++				return nil, fmt.Errorf("%s: %s on %s has no reason", where, keepDirective, test[1])
++			}
++			keeps[test[1]] = reason
++		}
++	}
++	return keeps, nil
++}
++
++// keepReason returns the trimmed reason of a keep directive line, and reports whether the line is one.
++func keepReason(line string) (string, bool) {
++	rest, ok := strings.CutPrefix(line, keepDirective)
++	if !ok || (rest != "" && rest[0] != ' ' && rest[0] != '\t') {
++		return "", false
++	}
++	return strings.TrimSpace(rest), true
++}
+diff --git a/internal/testcover/keep_test.go b/internal/testcover/keep_test.go
+new file mode 100644
+index 000000000..e78fb8c9a
+--- /dev/null
++++ b/internal/testcover/keep_test.go
+@@ -0,0 +1,102 @@
++package testcover_test
++
++import (
++	"os"
++	"path/filepath"
++	"reflect"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testcover"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestScanKeeps(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	rows := []struct {
++		name    string
++		content string
++		want    map[string]string
++		wantErr string
++	}{
++		{
++			name:    "directive directly above a test",
++			content: "package p\n\n//testtiming:keep pins the error text\nfunc TestA(t *testing.T) {}\n",
++			want:    map[string]string{"TestA": "pins the error text"},
++		},
++		{
++			name:    "directive below a doc comment",
++			content: "package p\n\n// TestB checks b.\n//testtiming:keep pins the ordering\nfunc TestB(t *testing.T) {}\n",
++			want:    map[string]string{"TestB": "pins the ordering"},
++		},
++		{
++			name:    "directive above a guard marker",
++			content: "package p\n\n//testtiming:keep pins the ordering\n//lym:guard\nfunc TestB2(t *testing.T) {}\n",
++			want:    map[string]string{"TestB2": "pins the ordering"},
++		},
++		{
++			name:    "guard marker above a directive",
++			content: "package p\n\n//lym:guard\n//testtiming:keep pins the ordering\nfunc TestB3(t *testing.T) {}\n",
++			want:    map[string]string{"TestB3": "pins the ordering"},
++		},
++		{
++			name:    "no directive",
++			content: "package p\n\nfunc TestC(t *testing.T) {}\n",
++			want:    map[string]string{},
++		},
++		{
++			name:    "empty reason",
++			content: "package p\n\n//testtiming:keep\nfunc TestD(t *testing.T) {}\n",
++			wantErr: "x_test.go:3: //testtiming:keep on TestD has no reason",
++		},
++		{
++			name:    "whitespace-only reason",
++			content: "package p\n\n//testtiming:keep   \t\nfunc TestE(t *testing.T) {}\n",
++			wantErr: "x_test.go:3: //testtiming:keep on TestE has no reason",
++		},
++		{
++			name:    "directive separated from its test",
++			content: "package p\n\n//testtiming:keep reason\n\nfunc TestF(t *testing.T) {}\n",
++			wantErr: "x_test.go:3: //testtiming:keep is not directly above a top-level test function",
++		},
++		{
++			name:    "doubled directive",
++			content: "package p\n\n//testtiming:keep first\n//testtiming:keep second\nfunc TestG(t *testing.T) {}\n",
++			wantErr: "x_test.go:3: //testtiming:keep is not directly above a top-level test function",
++		},
++		{
++			name:    "directive above a non-test function",
++			content: "package p\n\n//testtiming:keep reason\nfunc helper() {}\n",
++			wantErr: "x_test.go:3: //testtiming:keep is not directly above a top-level test function",
++		},
++		{
++			name:    "directive at end of file",
++			content: "package p\n\nfunc TestH(t *testing.T) {}\n//testtiming:keep reason",
++			wantErr: "x_test.go:4: //testtiming:keep is not directly above a top-level test function",
++		},
++	}
++	for _, row := range rows {
++		t.Run(row.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			if err := os.WriteFile(filepath.Join(dir, "x_test.go"), []byte(row.content), 0o644); err != nil {
++				t.Fatal(err)
++			}
++			got, err := testcover.ScanKeeps(dir)
++			if row.wantErr != "" {
++				if err == nil || !strings.HasSuffix(strings.ReplaceAll(err.Error(), dir+string(filepath.Separator), ""), row.wantErr) {
++					t.Fatalf("ScanKeeps error = %v, want one ending %q", err, row.wantErr)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatal(err)
++			}
++			if !reflect.DeepEqual(got, row.want) {
++				t.Fatalf("ScanKeeps = %v, want %v", got, row.want)
++			}
++		})
++	}
++}
+diff --git a/internal/testcover/profile.go b/internal/testcover/profile.go
+new file mode 100644
+index 000000000..7c0085db8
+--- /dev/null
++++ b/internal/testcover/profile.go
+@@ -0,0 +1,97 @@
++// profile.go parses a Go coverage profile into its blocks and derives the block sets a verdict compares.
++
++package testcover
++
++import (
++	"bufio"
++	"fmt"
++	"io"
++	"path"
++	"strconv"
++	"strings"
++)
++
++// ProfileBlock is one block line of a Go coverage profile.
++type ProfileBlock struct {
++	// File is the block's file as the profile names it: the package import path joined with the file name.
++	File string
++	// StartLine and StartCol open the block, and EndLine and EndCol close it; columns count bytes from 1.
++	StartLine, StartCol, EndLine, EndCol int
++	Statements                           int
++	Count                                int
++}
++
++// Position returns the block's file with its start and end, the form a profile line names the block by.
++func (b ProfileBlock) Position() string {
++	return fmt.Sprintf("%s:%d.%d,%d.%d", b.File, b.StartLine, b.StartCol, b.EndLine, b.EndCol)
++}
++
++// BlockSet is a set of block identities compared by equality, such as positions or rendered keys.
++type BlockSet map[string]struct{}
++
++// ParseProfile returns every block of a coverage profile, covered or not, in the profile's order.
++// A line that is not a mode line and does not parse as a block is an error naming the line.
++func ParseProfile(r io.Reader) ([]ProfileBlock, error) {
++	var blocks []ProfileBlock
++	sc := bufio.NewScanner(r)
++	sc.Buffer(make([]byte, 0, 64*1024), 1024*1024)
++	for sc.Scan() {
++		line := sc.Text()
++		if line == "" || strings.HasPrefix(line, "mode:") {
++			continue
++		}
++		block, err := parseProfileLine(line)
++		if err != nil {
++			return nil, fmt.Errorf("malformed profile line %q: %w", line, err)
++		}
++		blocks = append(blocks, block)
++	}
++	return blocks, sc.Err()
++}
++
++// parseProfileLine parses one `file:startLine.startCol,endLine.endCol statements count` line.
++func parseProfileLine(line string) (ProfileBlock, error) {
++	fields := strings.Fields(line)
++	if len(fields) != 3 {
++		return ProfileBlock{}, fmt.Errorf("want a position, a statement count and a count, got %d fields", len(fields))
++	}
++	cut := strings.LastIndexByte(fields[0], ':')
++	if cut < 0 {
++		return ProfileBlock{}, fmt.Errorf("position %q names no file", fields[0])
++	}
++	block := ProfileBlock{File: fields[0][:cut]}
++	if _, err := fmt.Sscanf(fields[0][cut+1:], "%d.%d,%d.%d", &block.StartLine, &block.StartCol, &block.EndLine, &block.EndCol); err != nil {
++		return ProfileBlock{}, fmt.Errorf("position %q: %w", fields[0], err)
++	}
++	var err error
++	if block.Statements, err = strconv.Atoi(fields[1]); err != nil {
++		return ProfileBlock{}, err
++	}
++	if block.Count, err = strconv.Atoi(fields[2]); err != nil {
++		return ProfileBlock{}, err
++	}
++	return block, nil
++}
++
++// PackageBlocks returns the blocks that lie in the files of the package at importPath itself.
++// It leaves out blocks in a package nested below it.
++func PackageBlocks(blocks []ProfileBlock, importPath string) []ProfileBlock {
++	var own []ProfileBlock
++	for _, b := range blocks {
++		if path.Dir(b.File) == importPath {
++			own = append(own, b)
++		}
++	}
++	return own
++}
++
++// CoveredPositions returns the positions of the blocks with a non-zero count.
++func CoveredPositions(blocks []ProfileBlock) BlockSet {
++	covered := BlockSet{}
++	for _, b := range blocks {
++		if b.Count != 0 {
++			covered[b.Position()] = struct{}{}
++		}
++	}
++	return covered
++}
+diff --git a/internal/testcover/profile_test.go b/internal/testcover/profile_test.go
+new file mode 100644
+index 000000000..5d97d9f66
+--- /dev/null
++++ b/internal/testcover/profile_test.go
+@@ -0,0 +1,45 @@
++package testcover_test
++
++import (
++	"reflect"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testcover"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestParseProfile(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	profile := "mode: set\n" +
++		"m/a/x.go:1.1,2.2 1 1\n" +
++		"m/a/x.go:3.1,4.2 2 0\n" +
++		"m/a/b/y.go:5.1,6.2 1 3\n"
++	blocks, err := testcover.ParseProfile(strings.NewReader(profile))
++	if err != nil {
++		t.Fatal(err)
++	}
++	want := []testcover.ProfileBlock{
++		{File: "m/a/x.go", StartLine: 1, StartCol: 1, EndLine: 2, EndCol: 2, Statements: 1, Count: 1},
++		{File: "m/a/x.go", StartLine: 3, StartCol: 1, EndLine: 4, EndCol: 2, Statements: 2, Count: 0},
++		{File: "m/a/b/y.go", StartLine: 5, StartCol: 1, EndLine: 6, EndCol: 2, Statements: 1, Count: 3},
++	}
++	if !reflect.DeepEqual(blocks, want) {
++		t.Fatalf("ParseProfile = %+v\nwant           %+v", blocks, want)
++	}
++
++	if got, want := testcover.CoveredPositions(blocks), blockSet("m/a/x.go:1.1,2.2", "m/a/b/y.go:5.1,6.2"); !reflect.DeepEqual(got, want) {
++		t.Errorf("CoveredPositions = %v; want %v", got, want)
++	}
++	if got := testcover.PackageBlocks(blocks, "m/a"); !reflect.DeepEqual(got, want[:2]) {
++		t.Errorf("PackageBlocks(m/a) = %+v; want the two blocks of m/a/x.go, not the nested package's", got)
++	}
++
++	for _, malformed := range []string{"no-count-here", "m/a/x.go:1.1,2.2 1 x", "m/a/x.go:1.1 1 1", "x.go 1 1"} {
++		if _, err := testcover.ParseProfile(strings.NewReader("mode: set\n" + malformed + "\n")); err == nil {
++			t.Errorf("ParseProfile(%q) = nil error; want a malformed line error", malformed)
++		}
++	}
++}
+diff --git a/internal/testcover/runner.go b/internal/testcover/runner.go
+new file mode 100644
+index 000000000..32a8620d1
+--- /dev/null
++++ b/internal/testcover/runner.go
+@@ -0,0 +1,156 @@
++// runner.go builds a package's coverage test binary and lists its top-level tests.
++// It runs each test alone with its own profile.
++
++package testcover
++
++import (
++	"bytes"
++	"errors"
++	"fmt"
++	"os"
++	"os/exec"
++	"regexp"
++	"slices"
++	"strconv"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// Outcomes a test run reads from the coverage binary's verbose output.
++const (
++	ActionPass = "pass"
++	ActionFail = "fail"
++	ActionSkip = "skip"
++)
++
++// Toolchain runs the go command and the coverage binaries it builds.
++type Toolchain struct {
++	// Go names the go command.
++	Go string
++	// Env is the whole environment every command runs under.
++	Env []string
++}
++
++// RunResult is one top-level test run alone under a coverage binary.
++type RunResult struct {
++	Name string
++	// Elapsed is the seconds the binary reported for the test.
++	Elapsed float64
++	// Action is ActionPass, ActionFail or ActionSkip.
++	Action string
++	// Profile holds every block of the run's profile, covered or not; it is nil for a failed run.
++	Profile []ProfileBlock
++}
++
++// BuildBinary builds the coverage test binary of the package at importPath into out.
++// The binary counts blocks in set mode over the packages coverpkg names, comma-separated, under the build tags tags.
++// The error carries the go command's stderr.
++func (tc Toolchain) BuildBinary(importPath, coverpkg, tags, out string) error {
++	args := appendTags([]string{"test", "-c", "-o", out, "-cover", "-covermode=set", "-coverpkg=" + coverpkg}, tags)
++	if _, err := tc.goOutput(append(args, importPath), "CGO_ENABLED=1"); err != nil {
++		return fmt.Errorf("coverage binary: %w", err)
++	}
++	return nil
++}
++
++var testNameLine = regexp.MustCompile(`^(Test|Example|Fuzz)\w*$`)
++
++// ListTests returns the top-level test names of the package at importPath under the build tags tags.
++func (tc Toolchain) ListTests(importPath, tags string) ([]string, error) {
++	out, err := tc.goOutput(append(appendTags([]string{"test", "-list", ".*"}, tags), importPath))
++	if err != nil {
++		return nil, fmt.Errorf("list tests: %w", err)
++	}
++	var names []string
++	for _, line := range strings.Split(out, "\n") {
++		if name := strings.TrimSpace(line); testNameLine.MatchString(name) {
++			names = append(names, name)
++		}
++	}
++	return names, nil
++}
++
++var testResultLine = regexp.MustCompile(`(?m)^--- (PASS|FAIL|SKIP): (\S+) \(([0-9.]+)s\)$`)
++
++// RunAlone runs the top-level test name alone under the coverage binary bin in dir, writing its profile to profile.
++// It reads the test's outcome and elapsed time from the binary's verbose output,
++// and the profile's blocks for a test that passed, or skipped after writing one.
++// A failing test is returned as such, never as an error.
++// The error reports a binary that did not start, or a passing test whose profile is missing or malformed.
++func (tc Toolchain) RunAlone(bin, dir, profile, name string) (RunResult, error) {
++	if err := os.Remove(profile); err != nil && !errors.Is(err, os.ErrNotExist) {
++		return RunResult{}, fmt.Errorf("remove the previous profile: %w", err)
++	}
++	cmd := exec.Command(bin, runAloneArgs(name, profile)...)
++	cmd.Dir = dir
++	cmd.Env = tc.Env
++	var out bytes.Buffer
++	cmd.Stdout, cmd.Stderr = &out, &out
++	logger.Info("testcover: spawning a coverage binary for one test", "binary", bin, "test", name)
++	err := cmd.Run()
++	logger.Info("testcover: coverage binary ended", "test", name, "error", err)
++	var exitErr *exec.ExitError
++	if err != nil && !errors.As(err, &exitErr) {
++		return RunResult{}, fmt.Errorf("run %s: %w", name, err)
++	}
++
++	run := RunResult{Name: name, Action: ActionFail}
++	for _, m := range testResultLine.FindAllStringSubmatch(out.String(), -1) {
++		if m[2] == name {
++			run.Action = strings.ToLower(m[1])
++			run.Elapsed, _ = strconv.ParseFloat(m[3], 64)
++		}
++	}
++	if run.Action == ActionFail {
++		return run, nil
++	}
++	f, err := os.Open(profile)
++	if err != nil {
++		if run.Action == ActionSkip {
++			return run, nil
++		}
++		return RunResult{}, fmt.Errorf("test %s wrote no coverage profile: %w", name, err)
++	}
++	defer f.Close()
++	if run.Profile, err = ParseProfile(f); err != nil {
++		return RunResult{}, fmt.Errorf("test %s: %w", name, err)
++	}
++	return run, nil
++}
++
++// runAloneArgs returns the coverage binary's arguments for running one top-level test alone.
++// Every flag is one `-flag=value` argument, the form `go test` passes:
++// a test that runs a cobra command without `SetArgs` reads the process's arguments,
++// and a separate flag value would show up there as a positional argument.
++func runAloneArgs(name, profile string) []string {
++	return []string{
++		"-test.run=^" + regexp.QuoteMeta(name) + "$",
++		"-test.coverprofile=" + profile,
++		"-test.v=true",
++	}
++}
++
++// appendTags appends the `-tags` flag for tags to args, or nothing when tags is empty.
++func appendTags(args []string, tags string) []string {
++	if tags == "" {
++		return args
++	}
++	return append(args, "-tags", tags)
++}
++
++// goOutput runs the go command with args under the toolchain's environment plus extraEnv, and returns its stdout.
++// The error carries stderr.
++func (tc Toolchain) goOutput(args []string, extraEnv ...string) (string, error) {
++	cmd := exec.Command(tc.Go, args...)
++	cmd.Env = append(slices.Clone(tc.Env), extraEnv...)
++	var stdout, stderr bytes.Buffer
++	cmd.Stdout, cmd.Stderr = &stdout, &stderr
++	logger.Info("testcover: spawning go", "binary", tc.Go, "args", args)
++	err := cmd.Run()
++	logger.Info("testcover: go ended", "args", args, "error", err)
++	if err != nil {
++		return "", fmt.Errorf("%s %s: %w: %s", tc.Go, strings.Join(args, " "), err, strings.TrimSpace(stderr.String()))
++	}
++	return stdout.String(), nil
++}
+diff --git a/internal/testcover/runner_test.go b/internal/testcover/runner_test.go
+new file mode 100644
+index 000000000..688683840
+--- /dev/null
++++ b/internal/testcover/runner_test.go
+@@ -0,0 +1,119 @@
++// runner_test.go drives the runner against the test binary re-exec'd as a stand-in `go` and a stand-in coverage binary,
++// so no test builds a real test binary or runs `go test`.
++
++package testcover_test
++
++import (
++	"os"
++	"path/filepath"
++	"reflect"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testcover"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// standIn returns a toolchain whose go command is the test binary acting as a stand-in.
++// It also returns the file the stand-in records its arguments into.
++func standIn(t *testing.T) (testcover.Toolchain, string) {
++	t.Helper()
++	testBinary, err := os.Executable()
++	if err != nil {
++		t.Fatal(err)
++	}
++	record := filepath.Join(t.TempDir(), "args")
++	return testcover.Toolchain{Go: testBinary, Env: append(os.Environ(), standInRecordEnv+"="+record)}, record
++}
++
++func recordedArgs(t *testing.T, record string) []string {
++	t.Helper()
++	recorded, err := os.ReadFile(record)
++	if err != nil {
++		t.Fatal(err)
++	}
++	return strings.Split(string(recorded), "\n")
++}
++
++func TestBuildBinaryAndListTests(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	tc, record := standIn(t)
++	out := filepath.Join(t.TempDir(), "pkg.test")
++	if err := tc.BuildBinary("m/p", "m/p,m/q", "tier0,tier1", out); err != nil {
++		t.Fatal(err)
++	}
++	wantBuild := []string{"test", "-c", "-o", out, "-cover", "-covermode=set", "-coverpkg=m/p,m/q", "-tags", "tier0,tier1", "m/p"}
++	if got := recordedArgs(t, record); !reflect.DeepEqual(got, wantBuild) {
++		t.Errorf("BuildBinary ran go %q; want %q", got, wantBuild)
++	}
++	if _, err := os.Stat(out); err != nil {
++		t.Errorf("BuildBinary left no binary at %s: %v", out, err)
++	}
++
++	names, err := tc.ListTests("m/p", "")
++	if err != nil {
++		t.Fatal(err)
++	}
++	if want := []string{"TestAlpha", "ExampleBeta"}; !reflect.DeepEqual(names, want) {
++		t.Errorf("ListTests = %q; want %q, without the package's ok line", names, want)
++	}
++	if got, want := recordedArgs(t, record), []string{"test", "-list", ".*", "m/p"}; !reflect.DeepEqual(got, want) {
++		t.Errorf("ListTests ran go %q; want %q, with no -tags for empty tags", got, want)
++	}
++}
++
++func TestRunAlone(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	tests := []struct {
++		name    string
++		test    string
++		want    testcover.RunResult
++		wantErr string
++	}{
++		{
++			name: "Pass",
++			test: standInPass,
++			want: testcover.RunResult{Name: standInPass, Elapsed: 0.25, Action: testcover.ActionPass, Profile: []testcover.ProfileBlock{
++				{File: "m/p/x.go", StartLine: 3, StartCol: 21, EndLine: 5, EndCol: 2, Statements: 1, Count: 1},
++			}},
++		},
++		{name: "Fail", test: standInFail, want: testcover.RunResult{Name: standInFail, Elapsed: 0.1, Action: testcover.ActionFail}},
++		{name: "SkipWithoutProfile", test: standInSkip, want: testcover.RunResult{Name: standInSkip, Action: testcover.ActionSkip}},
++		{
++			name: "SkipWithProfile",
++			test: standInSkipProfile,
++			want: testcover.RunResult{Name: standInSkipProfile, Action: testcover.ActionSkip, Profile: []testcover.ProfileBlock{
++				{File: "m/p/x.go", StartLine: 3, StartCol: 21, EndLine: 5, EndCol: 2, Statements: 1, Count: 1},
++			}},
++		},
++		{name: "PassWithoutProfile", test: standInNoProfile, wantErr: "wrote no coverage profile"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			tc, record := standIn(t)
++			profile := filepath.Join(t.TempDir(), "cover.out")
++			got, err := tc.RunAlone(tc.Go, t.TempDir(), profile, tt.test)
++			if tt.wantErr != "" {
++				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
++					t.Fatalf("RunAlone(%s) error = %v; want one holding %q", tt.test, err, tt.wantErr)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatal(err)
++			}
++			if !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("RunAlone(%s) = %+v; want %+v", tt.test, got, tt.want)
++			}
++			wantArgs := []string{"-test.run=^" + tt.test + "$", "-test.coverprofile=" + profile, "-test.v=true"}
++			if args := recordedArgs(t, record); !reflect.DeepEqual(args, wantArgs) {
++				t.Errorf("RunAlone ran the binary with %q; want %q, each flag one -flag=value argument", args, wantArgs)
++			}
++		})
++	}
++}
+diff --git a/internal/testcover/spawnscan.go b/internal/testcover/spawnscan.go
+new file mode 100644
+index 000000000..f1fcbe189
+--- /dev/null
++++ b/internal/testcover/spawnscan.go
+@@ -0,0 +1,431 @@
++// spawnscan.go statically marks the tests whose in-process coverage cannot be judged.
++// Such a test may run this module's code in another process or call something the scan cannot resolve.
++
++package testcover
++
++import (
++	"go/ast"
++	"go/parser"
++	"go/token"
++	"os"
++	"path"
++	"path/filepath"
++	"strconv"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/impactset"
++)
++
++// tmuxTierNumber is the tier whose tests start tmux servers, and so run lym in reed panes.
++const tmuxTierNumber = 2
++
++// SpawnVerdict is the static classification of one test.
++// A test whose verdict has either field set is never judged:
++// its in-process coverage does not see the module code another process ran.
++type SpawnVerdict struct {
++	// OutOfProcess is set when the test may run this module's code in another process.
++	// That covers a followed call, and a test in a tmux-tier file.
++	OutOfProcess bool
++	// Unresolved is set when the test calls something the scan cannot resolve to source.
++	Unresolved bool
++}
++
++func (v *SpawnVerdict) merge(o SpawnVerdict) {
++	v.OutOfProcess = v.OutOfProcess || o.OutOfProcess
++	v.Unresolved = v.Unresolved || o.Unresolved
++}
++
++// funcInfo is one declared function or method with the imports and build tier of its file.
++type funcInfo struct {
++	decl *ast.FuncDecl
++	// imports maps each file-level import name to its import path.
++	imports map[string]string
++	// isTest is set for a function declared in a _test.go file.
++	isTest bool
++	// tmuxTier is set when the file's tier, as impactset.FileTier reads it, is the tmux tier.
++	tmuxTier bool
++	// tagged is set when the file's tier is above tier0.
++	tagged bool
++}
++
++// pkgSource indexes the declarations of one directory's Go sources.
++type pkgSource struct {
++	// funcs holds the package-level functions by name.
++	funcs map[string][]*funcInfo
++	// methods holds the methods by name, whatever the receiver.
++	methods      map[string][]*funcInfo
++	varNames     map[string]bool
++	typeNames    map[string]bool
++	ifaceMethods map[string]bool
++	// funcFields holds the struct fields of function type.
++	funcFields map[string]bool
++}
++
++var builtinNames = map[string]bool{
++	"append": true, "cap": true, "clear": true, "close": true, "complex": true, "copy": true,
++	"delete": true, "imag": true, "len": true, "make": true, "max": true, "min": true,
++	"new": true, "panic": true, "print": true, "println": true, "real": true, "recover": true,
++	"bool": true, "byte": true, "complex64": true, "complex128": true, "error": true,
++	"float32": true, "float64": true, "int": true, "int8": true, "int16": true, "int32": true,
++	"int64": true, "rune": true, "string": true, "uint": true, "uint8": true, "uint16": true,
++	"uint32": true, "uint64": true, "uintptr": true, "any": true, "comparable": true,
++}
++
++// loadPkgSource parses every .go file in dir regardless of build constraints,
++// so a helper declared in a platform-specific file is still found.
++// Test files are skipped unless withTests is set.
++func loadPkgSource(dir string, withTests bool) (*pkgSource, error) {
++	entries, err := os.ReadDir(dir)
++	if err != nil {
++		return nil, err
++	}
++	src := &pkgSource{
++		funcs: map[string][]*funcInfo{}, methods: map[string][]*funcInfo{},
++		varNames: map[string]bool{}, typeNames: map[string]bool{},
++		ifaceMethods: map[string]bool{}, funcFields: map[string]bool{},
++	}
++	fset := token.NewFileSet()
++	for _, e := range entries {
++		name := e.Name()
++		isTest := strings.HasSuffix(name, "_test.go")
++		if e.IsDir() || !strings.HasSuffix(name, ".go") || (isTest && !withTests) {
++			continue
++		}
++		file, err := parser.ParseFile(fset, filepath.Join(dir, name), nil, parser.SkipObjectResolution|parser.ParseComments)
++		if err != nil {
++			return nil, err
++		}
++		tier := impactset.FileTier(file)
++		tagged, tmuxTier := tier > 0, tier == tmuxTierNumber
++		imports := map[string]string{}
++		for _, imp := range file.Imports {
++			p := strings.Trim(imp.Path.Value, `"`)
++			local := path.Base(p)
++			if imp.Name != nil {
++				local = imp.Name.Name
++			}
++			if local != "_" && local != "." {
++				imports[local] = p
++			}
++		}
++		for _, decl := range file.Decls {
++			switch d := decl.(type) {
++			case *ast.FuncDecl:
++				fi := &funcInfo{decl: d, imports: imports, isTest: isTest, tmuxTier: tmuxTier, tagged: tagged}
++				if d.Recv != nil {
++					src.methods[d.Name.Name] = append(src.methods[d.Name.Name], fi)
++				} else {
++					src.funcs[d.Name.Name] = append(src.funcs[d.Name.Name], fi)
++				}
++			case *ast.GenDecl:
++				src.indexGenDecl(d)
++			}
++		}
++	}
++	return src, nil
++}
++
++func (src *pkgSource) indexGenDecl(d *ast.GenDecl) {
++	for _, spec := range d.Specs {
++		switch s := spec.(type) {
++		case *ast.ValueSpec:
++			if d.Tok == token.VAR {
++				for _, n := range s.Names {
++					src.varNames[n.Name] = true
++				}
++			}
++		case *ast.TypeSpec:
++			src.typeNames[s.Name.Name] = true
++			switch t := s.Type.(type) {
++			case *ast.StructType:
++				for _, f := range t.Fields.List {
++					if _, ok := f.Type.(*ast.FuncType); ok {
++						for _, n := range f.Names {
++							src.funcFields[n.Name] = true
++						}
++					}
++				}
++			case *ast.InterfaceType:
++				for _, m := range t.Methods.List {
++					for _, n := range m.Names {
++						src.ifaceMethods[n.Name] = true
++					}
++				}
++			}
++		}
++	}
++}
++
++// spawnScanner classifies functions against the module's spawn primitives.
++type spawnScanner struct {
++	// module is the module import path.
++	module string
++	// kitRoot is the directory holding the testkits.
++	kitRoot string
++	kits    map[string]map[string]bool
++}
++
++// ScanSpawns returns the verdict of every Test, Example and Fuzz function declared in pkgDir's _test.go files.
++// module is the module's import path, and kitRoot the directory holding its testkits, whose functions the scan follows.
++// The out-of-process references are the lymbin kit, os.Executable, os.Args[0] and exec.Command("go", ...).
++// A test is out of process when it references one, directly or through a followed same-package or testkit call.
++// A test in a tier0 file always gets an empty verdict, because a tier0 test spawns nothing;
++// a test in a tmux-tier file is always out of process, because reed panes run lym.
++// Bound: the scan does not see a hook, alias or helper that a test installs so that git runs module code.
++func ScanSpawns(module, kitRoot, pkgDir string) (map[string]SpawnVerdict, error) {
++	src, err := loadPkgSource(pkgDir, true)
++	if err != nil {
++		return nil, err
++	}
++	s := &spawnScanner{module: module, kitRoot: kitRoot, kits: map[string]map[string]bool{}}
++	memo := map[*funcInfo]*SpawnVerdict{}
++	out := map[string]SpawnVerdict{}
++	for name, fns := range src.funcs {
++		for _, fn := range fns {
++			if fn.isTest && isTestEntry(name) {
++				found := s.analyze(src, fn, memo)
++				switch {
++				case !fn.tagged:
++					found = SpawnVerdict{}
++				case fn.tmuxTier:
++					found.OutOfProcess = true
++				}
++				v := out[name]
++				v.merge(found)
++				out[name] = v
++			}
++		}
++	}
++	return out, nil
++}
++
++func isTestEntry(name string) bool {
++	return strings.HasPrefix(name, "Test") || strings.HasPrefix(name, "Example") || strings.HasPrefix(name, "Fuzz")
++}
++
++// analyze follows fn's body, merging the verdicts of the same-package functions it calls.
++// A call cycle contributes its partial verdict once, then stops.
++func (s *spawnScanner) analyze(src *pkgSource, fn *funcInfo, memo map[*funcInfo]*SpawnVerdict) SpawnVerdict {
++	if v, ok := memo[fn]; ok {
++		return *v
++	}
++	v := &SpawnVerdict{}
++	memo[fn] = v
++	if fn.decl.Body == nil {
++		return *v
++	}
++	locals, localTypes := collectLocals(fn.decl)
++	ast.Inspect(fn.decl.Body, func(n ast.Node) bool {
++		switch x := n.(type) {
++		case *ast.SelectorExpr:
++			if id, ok := x.X.(*ast.Ident); ok {
++				if p, isImport := fn.imports[id.Name]; isImport && !locals[id.Name] && s.spawnRef(p, x.Sel.Name) {
++					v.OutOfProcess = true
++				}
++			}
++		case *ast.IndexExpr:
++			if readsOSArgsProgram(fn, x, locals) {
++				v.OutOfProcess = true
++			}
++		case *ast.CallExpr:
++			if runsGoCommand(fn, x, locals) {
++				v.OutOfProcess = true
++			}
++			v.merge(s.analyzeCall(src, fn, x, locals, localTypes, memo))
++		}
++		return true
++	})
++	return *v
++}
++
++func (s *spawnScanner) analyzeCall(src *pkgSource, fn *funcInfo, call *ast.CallExpr, locals, localTypes map[string]bool, memo map[*funcInfo]*SpawnVerdict) SpawnVerdict {
++	var out SpawnVerdict
++	switch f := unwrapCallee(call.Fun).(type) {
++	case *ast.Ident:
++		switch {
++		case builtinNames[f.Name] || localTypes[f.Name]:
++		case locals[f.Name], src.varNames[f.Name]:
++			out.Unresolved = true
++		case len(src.funcs[f.Name]) > 0:
++			for _, callee := range src.funcs[f.Name] {
++				out.merge(s.analyze(src, callee, memo))
++			}
++		case src.typeNames[f.Name]:
++		default:
++			out.Unresolved = true
++		}
++	case *ast.SelectorExpr:
++		if id, ok := f.X.(*ast.Ident); ok {
++			if _, isImport := fn.imports[id.Name]; isImport && !locals[id.Name] {
++				return out
++			}
++		}
++		for _, callee := range src.methods[f.Sel.Name] {
++			out.merge(s.analyze(src, callee, memo))
++		}
++		if src.ifaceMethods[f.Sel.Name] || src.funcFields[f.Sel.Name] {
++			out.Unresolved = true
++		}
++	case *ast.CallExpr:
++		out.Unresolved = true
++	}
++	return out
++}
++
++// unwrapCallee strips parentheses and generic instantiation from a callee.
++func unwrapCallee(e ast.Expr) ast.Expr {
++	for {
++		switch x := e.(type) {
++		case *ast.ParenExpr:
++			e = x.X
++		case *ast.IndexExpr:
++			e = x.X
++		case *ast.IndexListExpr:
++			e = x.X
++		default:
++			return e
++		}
++	}
++}
++
++// collectLocals returns the names a function declares for itself and the types it declares locally.
++// The names are its receiver, parameters, results, := and var declarations, and range variables.
++// A call to a local name is a call of a function value.
++func collectLocals(decl *ast.FuncDecl) (locals, types map[string]bool) {
++	locals, types = map[string]bool{}, map[string]bool{}
++	addFields := func(fl *ast.FieldList) {
++		if fl == nil {
++			return
++		}
++		for _, f := range fl.List {
++			for _, n := range f.Names {
++				locals[n.Name] = true
++			}
++		}
++	}
++	addFields(decl.Recv)
++	addFields(decl.Type.Params)
++	addFields(decl.Type.Results)
++	if decl.Body == nil {
++		return locals, types
++	}
++	ast.Inspect(decl.Body, func(n ast.Node) bool {
++		switch x := n.(type) {
++		case *ast.FuncType:
++			addFields(x.Params)
++			addFields(x.Results)
++		case *ast.AssignStmt:
++			if x.Tok == token.DEFINE {
++				for _, l := range x.Lhs {
++					if id, ok := l.(*ast.Ident); ok {
++						locals[id.Name] = true
++					}
++				}
++			}
++		case *ast.RangeStmt:
++			if x.Tok == token.DEFINE {
++				for _, e := range []ast.Expr{x.Key, x.Value} {
++					if id, ok := e.(*ast.Ident); ok {
++						locals[id.Name] = true
++					}
++				}
++			}
++		case *ast.ValueSpec:
++			for _, id := range x.Names {
++				locals[id.Name] = true
++			}
++		case *ast.TypeSpec:
++			types[x.Name.Name] = true
++		}
++		return true
++	})
++	return locals, types
++}
++
++// spawnRef reports whether importPath.name may run this module's code in another process:
++// the lymbin kit, os.Executable, or a testkit function that may do so, or has a call the scan cannot resolve to source.
++func (s *spawnScanner) spawnRef(importPath, name string) bool {
++	if importPath == "os" {
++		return name == "Executable"
++	}
++	rel, ok := strings.CutPrefix(importPath, s.module+"/")
++	if !ok {
++		return false
++	}
++	if rel == "internal/testkit/lymbin" {
++		return true
++	}
++	if kit, ok := strings.CutPrefix(rel, "internal/testkit/"); ok && !strings.Contains(kit, "/") {
++		return s.kitSpawns(importPath, kit)[name]
++	}
++	return false
++}
++
++// readsOSArgsProgram reports whether x is os.Args[0], the running binary's own path.
++// A read of any other index or a slice of os.Args does not count.
++func readsOSArgsProgram(fn *funcInfo, x *ast.IndexExpr, locals map[string]bool) bool {
++	sel, ok := x.X.(*ast.SelectorExpr)
++	if !ok || sel.Sel.Name != "Args" {
++		return false
++	}
++	id, ok := sel.X.(*ast.Ident)
++	if !ok || fn.imports[id.Name] != "os" || locals[id.Name] {
++		return false
++	}
++	index, ok := x.Index.(*ast.BasicLit)
++	return ok && index.Kind == token.INT && index.Value == "0"
++}
++
++// runsGoCommand reports whether call is exec.Command or exec.CommandContext with the program "go".
++// Such a call builds and runs module code.
++func runsGoCommand(fn *funcInfo, call *ast.CallExpr, locals map[string]bool) bool {
++	sel, ok := call.Fun.(*ast.SelectorExpr)
++	if !ok {
++		return false
++	}
++	id, ok := sel.X.(*ast.Ident)
++	if !ok || fn.imports[id.Name] != "os/exec" || locals[id.Name] {
++		return false
++	}
++	programIndex := 0
++	switch sel.Sel.Name {
++	case "Command":
++	case "CommandContext":
++		programIndex = 1
++	default:
++		return false
++	}
++	if len(call.Args) <= programIndex {
++		return false
++	}
++	program, ok := call.Args[programIndex].(*ast.BasicLit)
++	if !ok || program.Kind != token.STRING {
++		return false
++	}
++	value, err := strconv.Unquote(program.Value)
++	return err == nil && value == "go"
++}
++
++// kitSpawns returns, keyed by function name, whether each function of the testkit at importPath is marked:
++// it may run this module's code in another process, or it calls something the scan cannot resolve to source.
++func (s *spawnScanner) kitSpawns(importPath, kit string) map[string]bool {
++	if funcs, ok := s.kits[importPath]; ok {
++		return funcs
++	}
++	funcs := map[string]bool{}
++	// A kit calling itself, or a cycle through kits, sees this partial map.
++	s.kits[importPath] = funcs
++	src, err := loadPkgSource(filepath.Join(s.kitRoot, kit), false)
++	if err != nil {
++		return funcs
++	}
++	memo := map[*funcInfo]*SpawnVerdict{}
++	for name, fns := range src.funcs {
++		for _, fn := range fns {
++			if v := s.analyze(src, fn, memo); v.OutOfProcess || v.Unresolved {
++				funcs[name] = true
++			}
++		}
++	}
++	return funcs
++}
+diff --git a/internal/testcover/spawnscan_test.go b/internal/testcover/spawnscan_test.go
+new file mode 100644
+index 000000000..121733645
+--- /dev/null
++++ b/internal/testcover/spawnscan_test.go
+@@ -0,0 +1,189 @@
++package testcover_test
++
++import (
++	"os"
++	"path/filepath"
++	"reflect"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testcover"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++const (
++	fixtureModule = "example.com/m"
++
++	fixtureProd = `package p
++
++import "os"
++
++func prodExecutable() { _, _ = os.Executable() }
++`
++
++	// An untagged file: its tests are judged whatever they reference.
++	fixtureUntaggedTests = `package p
++
++import (
++	"testing"
++
++	"example.com/m/internal/testkit/lymbin"
++)
++
++func TestUntaggedLymbin(t *testing.T) { lymbin.Build(t) }
++
++func TestUntaggedUnresolved(t *testing.T) {
++	f := func() {}
++	f()
++}
++`
++
++	// A tier1 file: the rules decide.
++	fixtureIntegrationTests = `//go:build tier1
++
++package p
++
++import (
++	"context"
++	"os"
++	"os/exec"
++	"testing"
++
++	"example.com/m/internal/gitkit"
++	"example.com/m/internal/hubforge"
++	"example.com/m/internal/prod"
++	"example.com/m/internal/testkit/gitonlykit"
++	"example.com/m/internal/testkit/gokit"
++	"example.com/m/internal/testkit/quietkit"
++	"example.com/m/internal/testkit/lymbin"
++)
++
++type row struct{ fn func() }
++
++func TestLymbin(t *testing.T) { lymbin.Build(t) }
++
++func TestExecutable(t *testing.T) { _, _ = os.Executable() }
++
++func TestArgsProgram(t *testing.T) { _ = os.Args[0] }
++
++func TestArgsRest(t *testing.T) { _ = os.Args[1:] }
++
++func TestGoCommand(t *testing.T) { _ = exec.Command("go", "build") }
++
++func TestGoCommandContext(t *testing.T) { _ = exec.CommandContext(context.Background(), "go", "build") }
++
++func TestGitCommand(t *testing.T) { _ = exec.Command("git", "status") }
++
++func TestHelperChain(t *testing.T) { helperA() }
++func helperA()                     { helperB() }
++func helperB()                     { _, _ = os.Executable() }
++
++func TestHermetic(t *testing.T) { gitkit.HermeticGitEnv() }
++
++func TestGitkitSpawn(t *testing.T) { gitkit.Run() }
++
++func TestHubforge(t *testing.T) { hubforge.NewHub(t) }
++
++func TestFuncValue(t *testing.T) {
++	f := func() {}
++	f()
++}
++
++func TestFuncField(t *testing.T) {
++	r := row{}
++	r.fn()
++}
++
++func TestProdCall(t *testing.T) { prod.Run() }
++
++func TestSamePackageProd(t *testing.T) { prodExecutable() }
++
++func TestKitGitOnly(t *testing.T) { gitonlykit.Do() }
++
++func TestKitRunsGo(t *testing.T) { gokit.Do() }
++
++func TestKitQuiet(t *testing.T) { quietkit.Do() }
++
++func TestPlain(t *testing.T) { t.Helper() }
++`
++
++	fixtureTier2LinuxTests = "//go:build tier2 && linux\n\npackage p\n\nimport \"testing\"\n\nfunc TestTier2LinuxTier(t *testing.T) { t.Helper() }\n"
++
++	fixtureTier2Tests = "//go:build tier2\n\npackage p\n\nimport \"testing\"\n\nfunc TestTier2Tier(t *testing.T) { t.Helper() }\n"
++
++	// A file whose test opens with a tier2 Require, the form every real test file uses.
++	fixtureRequireTier2Tests = "package p\n\nimport (\n\t\"testing\"\n\n\t\"github.com/Knatte18/loomyard/internal/testkit/tiergate\"\n)\n\nfunc TestRequireTier2(t *testing.T) {\n\ttiergate.Require(t, 2)\n}\n"
++
++	// A tier0 file counts as untagged: its tests are judged whatever they reference.
++	fixtureTier0Tests = "//go:build tier0\n\npackage p\n\nimport \"os\"\nimport \"testing\"\n\nfunc TestTier0Tier(t *testing.T) { _, _ = os.Executable() }\n"
++
++	fixtureGitOnlyKit = "package gitonlykit\n\nimport \"os/exec\"\n\nfunc Do() { _ = exec.Command(\"git\", \"init\") }\n"
++	fixtureGoKit      = "package gokit\n\nimport \"os/exec\"\n\nfunc Do() { _ = exec.Command(\"go\", \"build\") }\n"
++	fixtureQuietKit   = "package quietkit\n\nfunc Do() {}\n"
++)
++
++func writeFixture(t *testing.T, dir, name, body string) {
++	t.Helper()
++	if err := os.MkdirAll(dir, 0o755); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(filepath.Join(dir, name), []byte(body), 0o644); err != nil {
++		t.Fatal(err)
++	}
++}
++
++func TestScanSpawns(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	root := t.TempDir()
++	pkgDir := filepath.Join(root, "p")
++	kitRoot := filepath.Join(root, "kits")
++	writeFixture(t, pkgDir, "p.go", fixtureProd)
++	writeFixture(t, pkgDir, "untagged_test.go", fixtureUntaggedTests)
++	writeFixture(t, pkgDir, "integration_test.go", fixtureIntegrationTests)
++	writeFixture(t, pkgDir, "tier2linux_test.go", fixtureTier2LinuxTests)
++	writeFixture(t, pkgDir, "tier2_test.go", fixtureTier2Tests)
++	writeFixture(t, pkgDir, "tier0_test.go", fixtureTier0Tests)
++	writeFixture(t, pkgDir, "requiretier2_test.go", fixtureRequireTier2Tests)
++	writeFixture(t, filepath.Join(kitRoot, "gitonlykit"), "gitonlykit.go", fixtureGitOnlyKit)
++	writeFixture(t, filepath.Join(kitRoot, "gokit"), "gokit.go", fixtureGoKit)
++	writeFixture(t, filepath.Join(kitRoot, "quietkit"), "quietkit.go", fixtureQuietKit)
++
++	got, err := testcover.ScanSpawns(fixtureModule, kitRoot, pkgDir)
++	if err != nil {
++		t.Fatal(err)
++	}
++
++	outOfProcess := testcover.SpawnVerdict{OutOfProcess: true}
++	unresolved := testcover.SpawnVerdict{Unresolved: true}
++	want := map[string]testcover.SpawnVerdict{
++		"TestUntaggedLymbin":     {},
++		"TestUntaggedUnresolved": {},
++		"TestLymbin":             outOfProcess,
++		"TestExecutable":         outOfProcess,
++		"TestArgsProgram":        outOfProcess,
++		"TestArgsRest":           {},
++		"TestGoCommand":          outOfProcess,
++		"TestGoCommandContext":   outOfProcess,
++		"TestGitCommand":         {},
++		"TestHelperChain":        outOfProcess,
++		"TestHermetic":           {},
++		"TestGitkitSpawn":        {},
++		"TestHubforge":           {},
++		"TestFuncValue":          unresolved,
++		"TestFuncField":          unresolved,
++		"TestProdCall":           {},
++		"TestSamePackageProd":    outOfProcess,
++		"TestKitGitOnly":         {},
++		"TestKitRunsGo":          outOfProcess,
++		"TestKitQuiet":           {},
++		"TestPlain":              {},
++		"TestTier2LinuxTier":     outOfProcess,
++		"TestTier2Tier":          outOfProcess,
++		"TestTier0Tier":          {},
++		"TestRequireTier2":       outOfProcess,
++	}
++	if !reflect.DeepEqual(got, want) {
++		t.Errorf("ScanSpawns =\n%+v\nwant\n%+v", got, want)
++	}
++}
+diff --git a/internal/testcover/testmain_test.go b/internal/testcover/testmain_test.go
+new file mode 100644
+index 000000000..d48164f0d
+--- /dev/null
++++ b/internal/testcover/testmain_test.go
+@@ -0,0 +1,87 @@
++// testmain_test.go runs the package's tests under tmux isolation.
++// It also runs a re-exec'd test binary as a stand-in `go` or a stand-in coverage binary when a runner test asks for one.
++
++package testcover_test
++
++import (
++	"fmt"
++	"os"
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
++)
++
++// standInRecordEnv names the file a re-exec'd test binary, acting as a stand-in, records its arguments into.
++const standInRecordEnv = "TESTCOVER_STAND_IN_RECORD"
++
++// The tests the stand-in coverage binary knows, named for the outcome each reports.
++// standInProfileLine is the profile line it writes for a pass.
++const (
++	standInPass        = "TestStandInPass"
++	standInFail        = "TestStandInFail"
++	standInSkip        = "TestStandInSkip"
++	standInSkipProfile = "TestStandInSkipWithProfile"
++	standInNoProfile   = "TestStandInNoProfile"
++	standInProfileLine = "m/p/x.go:3.21,5.2 1 1"
++)
++
++// TestMain runs a stand-in when standInRecordEnv is set, and the tests under tmuxkit.Main otherwise.
++func TestMain(m *testing.M) {
++	if record := os.Getenv(standInRecordEnv); record != "" {
++		os.Exit(runStandIn(record, os.Args[1:]))
++	}
++	os.Exit(tmuxkit.Main(m))
++}
++
++// runStandIn writes args, one per line, to record and acts on them, returning the process exit code.
++// As `go test -list`, it prints two test names; as `go test -c`, it creates the empty file `-o` names.
++// As a coverage binary, it reports the outcome of the one test its `-test.run` names.
++// It writes a profile for a passing test, and for a skipped one that standInSkipProfile names.
++func runStandIn(record string, args []string) int {
++	if err := os.WriteFile(record, []byte(strings.Join(args, "\n")), 0o644); err != nil {
++		return 1
++	}
++	switch {
++	case slices.Contains(args, "-list"):
++		fmt.Println("TestAlpha\nExampleBeta\nok  \tm/p\t0.01s")
++		return 0
++	case slices.Contains(args, "-c"):
++		if i := slices.Index(args, "-o"); i >= 0 && i+1 < len(args) {
++			if err := os.WriteFile(args[i+1], nil, 0o755); err != nil {
++				return 1
++			}
++		}
++		return 0
++	}
++	var name, profile string
++	for _, arg := range args {
++		if pattern, ok := strings.CutPrefix(arg, "-test.run="); ok {
++			name = strings.TrimSuffix(strings.TrimPrefix(pattern, "^"), "$")
++		}
++		if path, ok := strings.CutPrefix(arg, "-test.coverprofile="); ok {
++			profile = path
++		}
++	}
++	switch name {
++	case standInPass:
++		if err := os.WriteFile(profile, []byte("mode: set\n"+standInProfileLine+"\n"), 0o644); err != nil {
++			return 1
++		}
++		fmt.Printf("--- PASS: %s (0.25s)\n", name)
++	case standInSkipProfile:
++		if err := os.WriteFile(profile, []byte("mode: set\n"+standInProfileLine+"\n"), 0o644); err != nil {
++			return 1
++		}
++		fmt.Printf("--- SKIP: %s (0.00s)\n", name)
++	case standInNoProfile:
++		fmt.Printf("--- PASS: %s (0.25s)\n", name)
++	case standInSkip:
++		fmt.Printf("--- SKIP: %s (0.00s)\n", name)
++	default:
++		fmt.Printf("--- FAIL: %s (0.10s)\n", name)
++		return 1
++	}
++	return 0
++}
+diff --git a/internal/testcover/verdict.go b/internal/testcover/verdict.go
+new file mode 100644
+index 000000000..738cf7ddb
+--- /dev/null
++++ b/internal/testcover/verdict.go
+@@ -0,0 +1,173 @@
++// verdict.go judges the per-test block sets of one run.
++// It decides which tests are contained in the others and which may go together.
++
++package testcover
++
++import "sort"
++
++// Reasons a test is not judged.
++const (
++	ReasonSkipped      = "skipped"
++	ReasonOutOfProcess = "out of process"
++	ReasonUnresolved   = "unclassifiable call"
++	ReasonNoBlocks     = "no blocks"
++	ReasonFailed       = "failed"
++)
++
++// Run is one top-level test as Judge sees it.
++type Run struct {
++	Name string
++	// Elapsed is the test's standalone seconds; the greedy pass removes slower tests first.
++	Elapsed float64
++	// Action is ActionPass, ActionFail or ActionSkip.
++	Action string
++	// Blocks are the blocks the test covered.
++	Blocks BlockSet
++	// Spawn is the static spawn scan's verdict on the test.
++	Spawn SpawnVerdict
++}
++
++// Verdict is the judgement of one run.
++type Verdict struct {
++	Name string
++	// Reason is non-empty for a test that is not judged, and names why.
++	Reason string
++	// Contained is set when other judged tests cover every block the test covers.
++	Contained bool
++	// Removable is set when the greedy pass drops the test, so it may be deleted together with every other removable test.
++	Removable bool
++	// Covering names, for a contained test, the tests that together cover its blocks, largest overlap first.
++	// For a removable test they come from the tests the pass keeps.
++	Covering []string
++}
++
++// Judge returns the verdict of every run, in the order given.
++// A test is judged when it passed and covered a block.
++// It must also be one the spawn scan neither saw run module code in another process nor failed to resolve a call.
++// Only a judged test's blocks count as covered.
++// The removable set is a greedy pass over the contained tests, slowest first, then by name.
++// It re-checks each contained test against the tests still kept.
++func Judge(runs []Run) []Verdict {
++	counts := map[string]int{}
++	for _, r := range runs {
++		if notJudgedReason(r) == "" {
++			for b := range r.Blocks {
++				counts[b]++
++			}
++		}
++	}
++	covered := func(r Run) bool {
++		for b := range r.Blocks {
++			if counts[b] < 2 {
++				return false
++			}
++		}
++		return true
++	}
++
++	out := make([]Verdict, len(runs))
++	var contained []int
++	for i, r := range runs {
++		out[i].Name = r.Name
++		out[i].Reason = notJudgedReason(r)
++		if out[i].Reason == "" && covered(r) {
++			out[i].Contained = true
++			contained = append(contained, i)
++		}
++	}
++
++	sort.SliceStable(contained, func(a, b int) bool {
++		ra, rb := runs[contained[a]], runs[contained[b]]
++		if ra.Elapsed != rb.Elapsed {
++			return ra.Elapsed > rb.Elapsed
++		}
++		return ra.Name < rb.Name
++	})
++	for _, i := range contained {
++		if !covered(runs[i]) {
++			continue
++		}
++		out[i].Removable = true
++		for b := range runs[i].Blocks {
++			counts[b]--
++		}
++	}
++
++	for _, i := range contained {
++		inPool := func(j int) bool { return out[j].Reason == "" && !out[j].Removable }
++		if !out[i].Removable {
++			inPool = func(j int) bool { return out[j].Reason == "" }
++		}
++		out[i].Covering = coveringTests(i, runs, inPool)
++	}
++	return out
++}
++
++// notJudgedReason returns why a run is not judged, or "" for a run that is.
++func notJudgedReason(r Run) string {
++	switch {
++	case r.Action == ActionSkip:
++		return ReasonSkipped
++	case r.Action != ActionPass:
++		return ReasonFailed
++	case r.Spawn.OutOfProcess:
++		return ReasonOutOfProcess
++	case r.Spawn.Unresolved:
++		return ReasonUnresolved
++	case len(r.Blocks) == 0:
++		return ReasonNoBlocks
++	}
++	return ""
++}
++
++// coveringTests names the tests of the pool that together cover runs[self]'s blocks.
++// It takes the largest overlap first and skips a test that adds no block still uncovered.
++func coveringTests(self int, runs []Run, inPool func(int) bool) []string {
++	type overlap struct {
++		idx int
++		n   int
++	}
++	var overlaps []overlap
++	for j, r := range runs {
++		if j == self || !inPool(j) {
++			continue
++		}
++		n := 0
++		for b := range runs[self].Blocks {
++			if _, ok := r.Blocks[b]; ok {
++				n++
++			}
++		}
++		if n > 0 {
++			overlaps = append(overlaps, overlap{j, n})
++		}
++	}
++	sort.Slice(overlaps, func(a, b int) bool {
++		if overlaps[a].n != overlaps[b].n {
++			return overlaps[a].n > overlaps[b].n
++		}
++		return runs[overlaps[a].idx].Name < runs[overlaps[b].idx].Name
++	})
++
++	remaining := map[string]struct{}{}
++	for b := range runs[self].Blocks {
++		remaining[b] = struct{}{}
++	}
++	var names []string
++	for _, o := range overlaps {
++		if len(remaining) == 0 {
++			break
++		}
++		hit := false
++		for b := range remaining {
++			if _, ok := runs[o.idx].Blocks[b]; ok {
++				delete(remaining, b)
++				hit = true
++			}
++		}
++		if hit {
++			names = append(names, runs[o.idx].Name)
++		}
++	}
++	return names
++}
+diff --git a/internal/testcover/verdict_test.go b/internal/testcover/verdict_test.go
+new file mode 100644
+index 000000000..8f9a303c2
+--- /dev/null
++++ b/internal/testcover/verdict_test.go
+@@ -0,0 +1,94 @@
++package testcover_test
++
++import (
++	"reflect"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testcover"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func blockSet(names ...string) testcover.BlockSet {
++	set := testcover.BlockSet{}
++	for _, n := range names {
++		set[n] = struct{}{}
++	}
++	return set
++}
++
++func passRun(name string, elapsed float64, blocks ...string) testcover.Run {
++	return testcover.Run{Name: name, Elapsed: elapsed, Action: testcover.ActionPass, Blocks: blockSet(blocks...)}
++}
++
++func TestJudge(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	skipped := passRun("Skipped", 0, "b1")
++	skipped.Action = testcover.ActionSkip
++	failed := passRun("Failed", 1, "b1")
++	failed.Action = testcover.ActionFail
++	spawning := passRun("OutOfProcess", 1, "b1")
++	spawning.Spawn = testcover.SpawnVerdict{OutOfProcess: true}
++	unresolved := passRun("Unresolved", 1, "b1")
++	unresolved.Spawn = testcover.SpawnVerdict{Unresolved: true}
++
++	tests := []struct {
++		name string
++		runs []testcover.Run
++		want []testcover.Verdict
++	}{
++		{
++			name: "subset of another test is removable, the superset is not contained",
++			runs: []testcover.Run{passRun("A", 1, "b1", "b2"), passRun("B", 1, "b1", "b2", "b3")},
++			want: []testcover.Verdict{
++				{Name: "A", Contained: true, Removable: true, Covering: []string{"B"}},
++				{Name: "B"},
++			},
++		},
++		{
++			name: "mutual pair: the slowest is removed and the other kept",
++			runs: []testcover.Run{passRun("C", 2, "b1"), passRun("D", 1, "b1"), passRun("E", 1, "b9")},
++			want: []testcover.Verdict{
++				{Name: "C", Contained: true, Removable: true, Covering: []string{"D"}},
++				{Name: "D", Contained: true, Covering: []string{"C"}},
++				{Name: "E"},
++			},
++		},
++		{
++			name: "the removable set keeps the superset, whose covering tests come by overlap and skip one that adds nothing",
++			runs: []testcover.Run{
++				passRun("P", 1, "b1", "b2", "b3"), passRun("Q", 1, "b4"),
++				passRun("R", 1, "b1"), passRun("T", 1, "b1", "b2", "b3", "b4"),
++			},
++			want: []testcover.Verdict{
++				{Name: "P", Contained: true, Removable: true, Covering: []string{"T"}},
++				{Name: "Q", Contained: true, Removable: true, Covering: []string{"T"}},
++				{Name: "R", Contained: true, Removable: true, Covering: []string{"T"}},
++				{Name: "T", Contained: true, Covering: []string{"P", "Q"}},
++			},
++		},
++		{
++			name: "no blocks, skipped, failed, out-of-process and unresolved tests are never judged and cover nothing",
++			runs: []testcover.Run{
++				passRun("Empty", 1), skipped, failed, spawning, unresolved, passRun("Base", 1, "b1", "b2"),
++			},
++			want: []testcover.Verdict{
++				{Name: "Empty", Reason: testcover.ReasonNoBlocks},
++				{Name: "Skipped", Reason: testcover.ReasonSkipped},
++				{Name: "Failed", Reason: testcover.ReasonFailed},
++				{Name: "OutOfProcess", Reason: testcover.ReasonOutOfProcess},
++				{Name: "Unresolved", Reason: testcover.ReasonUnresolved},
++				{Name: "Base"},
++			},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := testcover.Judge(tt.runs); !reflect.DeepEqual(got, tt.want) {
++				t.Fatalf("Judge = %+v\nwant    %+v", got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/pattern/PATTERN-test-speed.md b/pattern/PATTERN-test-speed.md
+index 54bae0ce8..21ad85c2a 100644
+--- a/pattern/PATTERN-test-speed.md
++++ b/pattern/PATTERN-test-speed.md
+@@ -245,8 +245,10 @@ this section keeps only what is project-specific or stricter here.
+   The finding names the existing test that already covers the behavior,
+   so it stays grounded and fixable by folding or deleting.
+ - `go run ./cmd/testtiming -redundancy` writes the per-test coverage report, `docs/benchmarks/test-redundancy.md`.
+-  A run narrowed with `-pkg` rewrites only its own packages' sections of the existing report,
++  A run narrowed with `-pkg` rewrites the header and only its own packages' sections of the existing report,
+   so parallel tasks pruning different packages merge cleanly.
++  The run judges a candidate over the blocks of its own package's files,
++  and adds a "Contained module-wide" column saying whether the candidate is also contained over every block of the module.
+   A candidate in it is evidence, not a verdict:
+   coverage blocks do not see assertions,
+   so a candidate whose assertions differ from its covering tests is kept or folded.
+@@ -258,7 +260,7 @@ this section keeps only what is project-specific or stricter here.
+   the report lists it under "Kept".
+   A test in the "no coverage" list is outside the report's judgment, not exempt from the rules above.
+ - The "no coverage" list holds:
+-  - a test that is skipped, failed or covers nothing;
++  - a test that is skipped, failed or covers nothing of its own package;
+   - a test above tier0 with a call the static scan cannot resolve;
+   - a test that may run this module's code in another process:
+     one that sits in a `tier2` file;
