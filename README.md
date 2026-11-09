@@ -183,7 +183,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Adopt as one resumable algorithm that never starts work on its own**<br>• Detached, step-recorded adopt that pauses every adopted run, writes the owner early, can skip the orch, and is entered through lym s | [`adopt-robust`](design-adopt-robust.md)<br>[Sketch](decision-adopt-robust.md) | raddle | Seed-Child | neve | 1h<br>0m | batten, tender, dobby, orch, fabric, shortcut |
+| T3 | **Adopt as one resumable algorithm that never starts work on its own**<br>• Detached, step-recorded adopt that pauses every adopted run, writes the owner early, can skip the orch, and is entered through lym s | [`adopt-robust`](design-adopt-robust.md)<br>[Sketch](decision-adopt-robust.md) | raddle | Open-Window | neve | 1h<br>0m | batten, tender, dobby, orch, fabric, shortcut |
 
 #### Ready (0)
 
@@ -212,7 +212,7 @@ Not released; nothing starts it until its status is cleared.
 | T18 | `draft` **Tests that compare a measured time to a limit fail on a loaded machine**<br>• TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver took 6.18 s against a 5 s stub delay under load and cost a full gate pass. | [`load-sensitive-timing-tests`](design-load-sensitive-timing-tests.md) | darn · solid | T6<br>T10 | 4h<br>15m | gate, testkit |
 | T19 | `draft` **One new loom config key fails dozens of tests that pin the whole struct**<br>• TestLoadConfig_Loads compares the whole struct in every case, so each added key breaks them all. | [`config-struct-test-per-key`](design-config-struct-test-per-key.md) | darn · light | T6 | 4h<br>15m | loom, config, testkit |
 | T20 | `draft` **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | darn · light | T6 | 1d<br>15m | shed, friction |
-| T21 | `draft` **lym config profiles --set cannot reach a profile's leaf key, and its refusal names the wrong value shape** | [`profiles-set-leaf-key`](design-profiles-set-leaf-key.md) | darn · light |  | 4h<br>15m | config, profiles |
+| T21 | `draft` **lym config profiles --set cannot reach a profile's leaf key, and its refusal names the wrong value shape** | [`profiles-set-leaf-key`](design-profiles-set-leaf-key.md) | darn · light |  | 4h<br>16m | config, profiles |
 
 ### Notes (18)
 
