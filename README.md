@@ -162,7 +162,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T12 | **Fix the adopt check of root on osl-1046** | [`adopt-fix-root-t1`](design-adopt-fix-root-t1.md) | darn · light | Open-Window | osl-1046 | 0m<br>0m | gate |
+| T12 | **Fix the adopt check of root on osl-1046** | [`adopt-fix-root-t1`](design-adopt-fix-root-t1.md) | darn · light | Open-IDE | osl-1046 | 0m<br>0m | gate |
 
 #### Ready (0)
 
