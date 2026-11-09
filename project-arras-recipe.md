@@ -20,8 +20,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Releasing a project with lym board set-status releases its draft member tasks** | [`project-release-members`](design-project-release-members.md)<br>[Sketch](decision-project-release-members.md) | darn · light | Seed-IDE | osl-1046 | 19h<br>19h | shed, loom, burler, arbiter, board |
-| T5 | **Raddle's perch mode: recorded from the recipe's rows, with its outcome checks and refusals** | [`raddle-perch-mode`](design-raddle-perch-mode.md)<br>[Sketch](decision-raddle-perch-mode.md) | darn · solid | Record-Write | osl-1046 | 19h<br>19h | shed, loom, burler, arbiter, board |
+| T4 | **Releasing a project with lym board set-status releases its draft member tasks** | [`project-release-members`](design-project-release-members.md)<br>[Sketch](decision-project-release-members.md) | darn · light | Open-IDE | osl-1046 | 19h<br>19h | shed, loom, burler, arbiter, board |
+| T5 | **Raddle's perch mode: recorded from the recipe's rows, with its outcome checks and refusals** | [`raddle-perch-mode`](design-raddle-perch-mode.md)<br>[Sketch](decision-raddle-perch-mode.md) | darn · solid | Drift-Baseline | osl-1046 | 19h<br>19h | shed, loom, burler, arbiter, board |
 
 ### Ready (0)
 
