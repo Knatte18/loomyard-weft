@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -41,6 +41,39 @@
       "output": "",
       "at": "2026-11-09T11:22:58Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/gate-shard-slow-package/_lym/landing/summary.md",
+      "at": "2026-11-09T11:49:28Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-09T11:48:15.974078456Z",
+          "end": "2026-11-09T11:48:16.070506372Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-09T11:48:17.750536666Z",
+          "end": "2026-11-09T11:48:18.254342386Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-09T11:48:20.859923204Z",
+          "end": "2026-11-09T11:48:21.271798647Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-09T11:48:22.453596428Z",
+          "end": "2026-11-09T11:48:22.453775428Z"
+        }
+      ]
     }
   ],
   "product": {
