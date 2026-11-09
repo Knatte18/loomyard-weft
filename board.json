@@ -1159,6 +1159,25 @@
       "body": "## Seen\n\nOn 2026-11-09, after `lym adopt root`, the orch set `lym batten pause` and `lym tender pause` on the three adopted runs before the adopt check ended.\nWhen the check went green, its holds lifted and dobby started all three runs anyway; the orch paused them again within a minute.\nThe same start happened on 2026-11-02 with no operator go-ahead.\n\n## Idea\n\nLifting the adopt hold must never override a pause set by anyone else.\nAdopted runs should stay paused after a green check until the operator resumes them.",
       "created": "2026-11-09T18:13:04Z",
       "revised": "2026-11-09T18:13:04Z"
+    },
+    {
+      "id": 1275,
+      "handle": "E7",
+      "slug": "start-adopts-unowned-beam",
+      "title": "lym s in a worktree this machine does not own adopts it",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shortcut",
+        "batten"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nOn 2026-11-09 the operator moved to Neve after working on osl-1046 and had to run `lym adopt` by hand; run from the orch session, it killed itself.\n\n## Idea\n\n`lym s` (beam start, then reed attach) on a machine that does not own the worktree adopts it first: the beam in a beam, root in the prime.\nIt then starts the beam and attaches.\nAdopt thus starts from a plain shell, never from the orch.\nWhen a pair holds local commits origin lacks, `lym s` stops with the keep-local and drop-local choices adopt gives today.",
+      "created": "2026-11-09T18:15:49Z",
+      "revised": "2026-11-09T18:15:49Z"
     }
   ],
   "prime_owner": "neve",
