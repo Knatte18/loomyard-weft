@@ -6,7 +6,8 @@ Prime owner: `neve`.
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## [P2 Codexengine: every task, trial and note about the Codex engine](project-codex-engine-trial.md) (4)
+<details open>
+<summary><strong><a href="project-codex-engine-trial.md">P2 Codexengine: every task, trial and note about the Codex engine</a> (4)</strong></summary>
 
 [`codex-engine-trial`](design-codex-engine-trial.md) · Age 6d · Owner `neve`
 
@@ -45,7 +46,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 6d<br>1d | shuttle, codex, loom |
 
-## [P3 Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes](project-fabric-test-speed-work.md) (1)
+</details>
+
+<details open>
+<summary><strong><a href="project-fabric-test-speed-work.md">P3 Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes</a> (1)</strong></summary>
 
 [`fabric-test-speed-work`](design-fabric-test-speed-work.md) · Age 2d · Owner `neve`
 
@@ -71,7 +75,10 @@ _None._
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-## [P4 Arras: one recipe that runs Motif and raddle in a row, with a perch on the split](project-arras-recipe.md) (2)
+</details>
+
+<details open>
+<summary><strong><a href="project-arras-recipe.md">P4 Arras: one recipe that runs Motif and raddle in a row, with a perch on the split</a> (2)</strong></summary>
 
 [`arras-recipe`](design-arras-recipe.md) · Age 1d · Owner `neve`
 
@@ -79,13 +86,19 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Concrete and claimable; only a task can run.
 
-#### Ready (1)
+#### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T7 | **An arras family filing turns the run's entry into its project and re-points its dependents** | [`arras-family-filing`](design-arras-family-filing.md)<br>[Sketch](decision-arras-family-filing.md) | darn · solid | Worktree-Create | neve | 1d<br>1d | shed, loom, burler, arbiter, board |
+
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T7 | **An arras family filing turns the run's entry into its project and re-points its dependents** | [`arras-family-filing`](design-arras-family-filing.md)<br>[Sketch](decision-arras-family-filing.md) | darn · solid |  | 1d<br>1d | shed, loom, burler, arbiter, board |
+_None._
 
 #### Layer A (1)
 
@@ -107,7 +120,10 @@ Finished, awaiting `lym board prune --apply`.
 | --- | --- | --- | --- | --- |
 | T6 | **The arras recipe and its split perch** | [`arras-recipe-perch`](design-arras-recipe-perch.md)<br>[Sketch](decision-arras-recipe-perch.md) | 1d<br>1d | shed, loom, burler, arbiter, board |
 
-## [P5 Redundant tests found mechanically: a coverage engine, a map per package, a gate report and its review](project-redundancy-check.md) (3)
+</details>
+
+<details open>
+<summary><strong><a href="project-redundancy-check.md">P5 Redundant tests found mechanically: a coverage engine, a map per package, a gate report and its review</a> (3)</strong></summary>
 
 [`redundancy-check`](design-redundancy-check.md) · Age 1d · Owner `neve`
 
@@ -142,7 +158,10 @@ Waits only on Running, Ready or Draft entries.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-## [P0 Root: entries under no project](project-root.md) (28)
+</details>
+
+<details open>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (28)</strong></summary>
 
 Owner `neve`
 
@@ -223,3 +242,5 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>4d | burler, shed, orch, quarry, report |
 | F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 4d<br>2d | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 4d<br>4d | batten, board, fabric, workspaces |
+
+</details>
