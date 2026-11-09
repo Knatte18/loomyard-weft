@@ -1,6 +1,6 @@
 # Code review reads the gate's redundancy report, and PATTERN-test-speed names the map, verb and step
 
-`review-reads-redundancy` · Task · feature, testkit, gate · running · Code-Burler-Fix
+`review-reads-redundancy` · Task · feature, testkit, gate · running · Code-Bouncer
 
 Decision record: [Sketch](decision-review-reads-redundancy.md)
 
