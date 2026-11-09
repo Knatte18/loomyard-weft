@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Adopt runs as a detached, step-recorded worker that pauses every adopted run and writes the owner before the deploy** | [`adopt-worker-record`](design-adopt-worker-record.md)<br>[Sketch](decision-adopt-worker-record.md) | tapestry · solid | Plan-Burler-Fix | neve | 1h<br>1h | batten, tender, dobby, orch, fabric, shortcut |
+| T2 | **Adopt runs as a detached, step-recorded worker that pauses every adopted run and writes the owner before the deploy** | [`adopt-worker-record`](design-adopt-worker-record.md)<br>[Sketch](decision-adopt-worker-record.md) | tapestry · solid | Plan-Bouncer | neve | 1h<br>1h | batten, tender, dobby, orch, fabric, shortcut |
 
 #### Ready (0)
 
@@ -108,7 +108,28 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Measure fabricengine tier 1 wall and git spawns before and after e19a2e86** | [`fabric-spawn-measure`](design-fabric-spawn-measure.md) | darn · docs | Drift-Recheck | neve | 7m<br>7m | fabric, git, gate |
+| T1 | **Measure fabricengine tier 1 wall and git spawns before and after e19a2e86** | [`fabric-spawn-measure`](design-fabric-spawn-measure.md) | darn · docs | Finalize | neve | 7m<br>7m | fabric, git, gate |
+
+#### Ready (0)
+
+Waits on nothing open; can start now.
+
+_None._
+
+### Notes (0)
+
+Not tasks: ideas and observations, merged into a task when one is promoted.
+
+</details>
+
+<details open>
+<summary><strong><a href="project-test-suite-trim.md">P6 Coverage maps: build them, keep them fresh, and cut the test suite with them</a> (0)</strong></summary>
+
+[`test-suite-trim`](design-test-suite-trim.md) · Age 0m · Owner `neve`
+
+### Tasks (0)
+
+Concrete and claimable; only a task can run.
 
 #### Ready (0)
 

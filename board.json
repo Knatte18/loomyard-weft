@@ -797,7 +797,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `adopt-robust`.\n\nTakes: today's adoptcli steps, holds.json hold and green end; testmap-dobby-refresh's landed changes to dobbyengine, beamcli, orchcli and runproc\nDelivers: lym adopt as a hidden detached worker the caller follows; the adopt record adopt.json and adopt.lock under fabricengine.AdoptScratchDir with resume and --discard; the D3 step order with the owner write before the deploy; the adopt pause entry replacing the hold and holds.json; --no-orch and its orch-session default; a green check that only reports; the adopt section of lym beam status\nExports: internal/adoptrecord (the record type, its path and a lock-free read, which neither engine import of adoptcli needs), pauserecord.AdoptCaller, the orch-skip field of orchcli.BeamUpOptions, a runproc adopt role\n\nThe part changes these packages:\n\n- internal/adoptcli (about 1500 changed lines)\n- internal/adoptrecord (about 250 changed lines)\n- internal/pauserecord (about 60 changed lines)\n- internal/tenderengine (about 20 changed lines)\n- internal/orchcli (about 40 changed lines)\n- internal/dobbyengine (about 60 changed lines)\n- internal/beamcli (about 200 changed lines)\n- internal/runproc (about 10 changed lines)\n- pattern (about 30 changed lines)\n",
-      "status": "running · Plan-Burler-Fix",
+      "status": "running · Plan-Bouncer",
       "created": "2026-11-09T19:45:19Z",
       "revised": "2026-11-09T19:45:19Z",
       "profile": "solid",
@@ -880,11 +880,31 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (orch, 2026-11-09)\n\n`fabric-serial-git-spawns` landed as `e19a2e86` (\"fabricengine: read committed files and HEAD without a git process\").\nIts landing note says the tier 1 wall and the git process count before and after were not recorded,\nso what it saved is unknown.\nIt names other frequent read-only git calls still spawned in the package, such as `diff --name-only` in `diffNames`.\nThe earlier shard measurement is `docs/research/speed/fabricengine-shards-2026-11-09/report.md`,\nwith its runner `docs/research/speed/fabricengine-shards-2026-11-09/shard-runner.sh`, which sets `GIT_TRACE2_EVENT`.\n\n## This task\n\nMeasure, on this machine, `internal/fabricengine` tier 1 at two commits: `e19a2e86^` (before) and `e19a2e86` (after).\nRun `lym gate test --tier 1 ./internal/fabricengine` with the shard runner's one-process form at each commit:\nexactly one run per commit, two runs in all.\nFor each run, record the tier 1 wall, the total git process count,\nand the count per git subcommand and per production call site in `internal/fabricengine`.\n\nWrite a short report beside the earlier one, under `docs/research/speed/`, holding:\n\n- the wall and the git process count before and after, and the difference;\n- the ten git subcommands and call sites started most often after the change, each marked read-only or writing,\n  as the input for a next task that serves more read-only calls from Go.\n\n## Limits\n\n- No code change: the task lands the report only.\n- Exactly two measured runs; a run that fails is reported as failed, not repeated.\n",
-      "status": "running · Drift-Recheck",
+      "status": "running · Finalize",
       "created": "2026-11-09T20:39:21Z",
       "revised": "2026-11-09T20:39:21Z",
       "profile": "docs",
       "project": "fabric-test-speed-work"
+    },
+    {
+      "id": 1279,
+      "handle": "P6",
+      "slug": "test-suite-trim",
+      "title": "Coverage maps: build them, keep them fresh, and cut the test suite with them",
+      "kind": "project",
+      "labels": [
+        "enhancement",
+        "testkit",
+        "gate",
+        "dobby"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Builds the first full set of coverage maps, settles how they are kept fresh, and uses them to cut the test suite:\ncut existing redundant tests, and scope the verify gate to the tests that cover a diff.\n",
+      "created": "2026-11-09T20:46:47Z",
+      "revised": "2026-11-09T20:46:47Z"
     }
   ],
   "prime_owner": "neve",
