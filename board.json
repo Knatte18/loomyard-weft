@@ -764,13 +764,15 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [],
+      "depends_on": [
+        "arras-family-filing"
+      ],
       "isolated": false,
       "brief": "TestLoadConfig_Loads compares the whole struct in every case, so each added key breaks them all.",
       "body": "## Seen (orch, 2026-11-09)\n\nAdding loom config keys in `arras-recipe-perch` failed 56 tests in the first tier 0 run, 47 of them cases of `TestLoadConfig_Loads` in `internal/loomengine`.\nEach case compares the whole loaded config struct, so one new key breaks every case; the rest were `TestLookup` and `TestModules_EveryTemplateKeyClassified` in `internal/configreg`, `TestWire_ReviewKeysReachTheEnv` in `internal/loomcli` and `TestRecipes_KeySet` in `internal/shedcli`, which pin the key set.\nThe fix of those tests, and the gate attempt it needs, cost the run most of an hour.\n\n## Idea\n\nMake each case of `TestLoadConfig_Loads` assert only the fields it is about, so a new key leaves the table alone.\nKeep one test that pins the whole key set, since the classification test is meant to fail for a key nobody classified, and make its failure message say which key to add where.\nCheck the other tests that compare a whole struct or a whole key list, and list those that fail for any added key.\n",
       "status": "draft",
       "created": "2026-11-09T15:17:11Z",
-      "revised": "2026-11-09T19:06:08Z",
+      "revised": "2026-11-09T19:53:10Z",
       "profile": "light"
     },
     {
