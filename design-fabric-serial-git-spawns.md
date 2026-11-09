@@ -1,6 +1,6 @@
 # Fewer git processes in the serial phase of internal/fabricengine tier 1
 
-`fabric-serial-git-spawns` · Task · enhancement, fabric, git, gate · running · Drift-Recheck
+`fabric-serial-git-spawns` · Task · enhancement, fabric, git, gate · running · Describe
 
 ## Seen (orch, 2026-11-09)
 
