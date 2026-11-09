@@ -1,36 +1,30 @@
-# Bolt README: every project section can be collapsed
+# Bolt README: collapsible project sections
 
-The board's `README.md` now renders each open top-level project, and the root's own section, as a `<details open>` block, so the operator can collapse a project while reading the board.
-Sections are open by default.
+Each project section in Bolt's `README.md` is now a `<details open>` block the reader can collapse.
+This covers every top-level project and the root's own section, which stays last.
+Sections are open by default, so the README reads as before until the operator folds one.
+Project files and design files render as before.
 
-```markdown
-<details open>
-<summary><strong><a href="project-ship.md">P1 Ship it</a> (6)</strong></summary>
-
-…facts line, brief, sub-projects and Tasks, Notes and Done, as before…
-
-</details>
-```
-
-## What changed
-
-- `internal/boardengine/render.go`: `renderReadme` renders each section through the new `collapsibleProjectSection`.
-  Its summary carries what the `##` heading carried: the handle and title linked to the project's file, and the open-member count.
-  The link is an HTML `<a>`, since markdown does not render inside `<summary>`, and the title is HTML-escaped.
-  A blank line follows `<summary>` and precedes `</details>`, so the markdown inside renders.
-- `projectSection` is split into `openMembers` and `projectSectionContent`, which the collapsible section shares, and `projectFile` names a project's board file for both the markdown and the HTML link.
-- `doc.go` and `docs/overview.md` describe the collapsible sections.
+The `<summary>` carries what the `##` heading carried: the project's handle and title linked to its file, and the open-member count.
+Markdown does not render inside `<summary>`, so the link is an HTML `<a>`, and the title is HTML-escaped.
+A blank line follows `<summary>` and precedes `</details>`, so the markdown inside renders.
+The section's contents keep their heading levels below `##`.
 
 ## Design decisions
 
-- The summary replaces the `##` heading rather than wrapping an `<h2>`.
-  A block heading inside `<summary>` drops below the disclosure arrow in VS Code's Markdown Preview, so the summary is bold inline text.
-  The headings inside a section keep their levels (`###` for Tasks, Notes and Done, and for nested sub-projects), so the tables render as before.
-- Only README's top-level sections collapse.
-  Nested sub-project sections inside them, the project files and the design files render unchanged.
+- `renderReadme` in `internal/boardengine/render.go` calls a new `collapsibleProjectSection`.
+  `projectSection` is split into a heading and `projectSectionContent`, which both it and the new function use, so project files render unchanged.
+  The open-member count and the project file name are factored into `openMembers` and `projectFile`.
+- The summary text is wrapped in `<strong>` so it looks like the heading it replaces.
+- The summary does not escape a pipe in a title, since it is not inside a table cell.
+  The golden test pins this with a title holding `&`, `<`, `>` and `|`.
+- `doc.go` and `docs/overview.md` describe the new README structure.
 
-## Tests
+## To check by hand
 
-`TestRenderReadmeGolden` pins the new README form in every row.
-The golden helpers `projectSummary`, `rootProjectSummary` and `readmeSectionEnd` hold the details markup.
-The row for a board with no prime owner now gives a project the title `Loose & <odd>`, which pins that the summary escapes it to `Loose &amp; &lt;odd&gt;`.
+Golden tests pin the generated markup, but nothing renders it.
+Open a generated `README.md` in VS Code's built-in Markdown Preview and on GitHub, and confirm that:
+
+- each section collapses and expands;
+- the summary link opens the project file;
+- the tables and headings inside a section render.
