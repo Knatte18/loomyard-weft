@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-09 14:35 UTC; every age below is as of then.
+Rendered 2026-11-09 14:36 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -184,8 +184,8 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Machine name from a machine-wide config, not only the hostname**<br>• internal/machinename has a fixed hostname rule and no override; a machine-wide config value would let the operator name a machine osl46. | [`machine-name-config`](design-machine-name-config.md)<br>[Sketch](decision-machine-name-config.md) | motif |  | 1h<br>44m | config, slack |
-| T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T4 | 42m<br>39m | slack, reed, creel |
+| T4 | `draft` **Machine name from a machine-wide config, not only the hostname**<br>• internal/machinename has a fixed hostname rule and no override; a machine-wide config value would let the operator name a machine osl46. | [`machine-name-config`](design-machine-name-config.md)<br>[Sketch](decision-machine-name-config.md) | motif |  | 1h<br>45m | config, slack |
+| T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T4 | 43m<br>40m | slack, reed, creel |
 
 ### Notes (19)
 
@@ -202,7 +202,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Tests that compare a measured time to a limit fail on a loaded machine**<br>• TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver took 6.18 s against a 5 s stub delay under load and cost a full gate pass. | [`load-sensitive-timing-tests`](design-load-sensitive-timing-tests.md) | 10m<br>10m | gate, testkit |
+| B1 |  | **Tests that compare a measured time to a limit fail on a loaded machine**<br>• TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver took 6.18 s against a 5 s stub delay under load and cost a full gate pass. | [`load-sensitive-timing-tests`](design-load-sensitive-timing-tests.md) | 11m<br>11m | gate, testkit |
 | B2 |  | **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | 23h<br>23h | shed, friction |
 
 #### Enhancements (3)
