@@ -1,6 +1,6 @@
 # Fewer git processes in the serial phase of internal/fabricengine tier 1
 
-`fabric-serial-git-spawns` · Task · enhancement, fabric, git, gate · running · Code-Burler-Review
+`fabric-serial-git-spawns` · Task · enhancement, fabric, git, gate · running · Code-Burler-Fix
 
 ## Seen (orch, 2026-11-09)
 
