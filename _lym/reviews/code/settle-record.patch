@@ -1,0 +1,1654 @@
+diff --git a/internal/fabricengine/addanchor.go b/internal/fabricengine/addanchor.go
+index b6a1a5a0..399d8127 100644
+--- a/internal/fabricengine/addanchor.go
++++ b/internal/fabricengine/addanchor.go
+@@ -89,7 +89,7 @@ func moveForkedWeftToAnchor(rec *Mutations, fork *lymcwd.Location, slug, to stri
+ 			return err
+ 		}
+ 	}
+-	_, err = moveWeftContent(rec, weftPath, fork.AnchorRel, to, names)
++	_, err = moveWeftContent(rec, weftPath, fork.AnchorRel, to, names, anchorSeams{})
+ 	return err
+ }
+ 
+diff --git a/internal/fabricengine/anchorchange.go b/internal/fabricengine/anchorchange.go
+index 565d7897..260b14af 100644
+--- a/internal/fabricengine/anchorchange.go
++++ b/internal/fabricengine/anchorchange.go
+@@ -45,6 +45,8 @@ type AnchorChange struct {
+ 	// recovered holds what the recovery of a killed change did while the change was begun;
+ 	// the recorder Apply is given receives it.
+ 	recovered *Mutations
++	// seams stands in for the failures of the weft move; its zero value is production.
++	seams anchorSeams
+ }
+ 
+ // NoOp reports whether the worktree already sits at the requested anchor, so applying or finishing it does nothing.
+@@ -130,7 +132,7 @@ func (t *Topology) BeginAnchorChange(pair *lymcwd.Location, target string) (*Anc
+ 		return nil, heldMoveRefusal(slug, weftPath, to)
+ 	}
+ 
+-	c := &AnchorChange{pair: basis, weftPath: weftPath, names: names, from: basis.AnchorRel, to: to, moveLock: moveLock, recovered: NewMutations(pair.HubPath)}
++	c := &AnchorChange{pair: basis, weftPath: weftPath, names: names, from: basis.AnchorRel, to: to, moveLock: moveLock, recovered: NewMutations(pair.HubPath), seams: t.anchor}
+ 	if standing {
+ 		err = c.resume(record)
+ 	} else {
+@@ -447,7 +449,7 @@ func (c *AnchorChange) moveWeft(rec *Mutations) (committed bool, err error) {
+ 	if c.kind == MoveKindIntegrate {
+ 		return c.integrate(rec)
+ 	}
+-	committed, err = moveWeftContent(rec, c.weftPath, c.from, c.to, c.names)
++	committed, err = moveWeftContent(rec, c.weftPath, c.from, c.to, c.names, c.seams)
+ 	if !committed {
+ 		return false, c.rollback(rec, err)
+ 	}
+@@ -472,13 +474,13 @@ func (c *AnchorChange) integrate(rec *Mutations) (committed bool, err error) {
+ 	if err := writeMoveRecordFile(c.weftPath, record); err != nil {
+ 		return false, c.rollback(rec, err)
+ 	}
+-	if err := runAnchorFailHook(false); err != nil {
++	if err := c.seams.runFail(false); err != nil {
+ 		return false, c.rollback(rec, err)
+ 	}
+ 	if _, err := integrateWeft(rec, c.weftPath, c.upstream, c.to, c.names, c.from); err != nil {
+ 		return false, c.rollback(rec, err)
+ 	}
+-	if err := runAnchorFailHook(true); err != nil {
++	if err := c.seams.runFail(true); err != nil {
+ 		return true, err
+ 	}
+ 	return true, c.settleLymDirAfterLanding(rec)
+diff --git a/internal/fabricengine/anchorchange_integration_test.go b/internal/fabricengine/anchorchange_integration_test.go
+index 7ea32f91..81ad10ea 100644
+--- a/internal/fabricengine/anchorchange_integration_test.go
++++ b/internal/fabricengine/anchorchange_integration_test.go
+@@ -72,12 +72,10 @@ func completeAnchorChange(t *testing.T, c *fabricengine.AnchorChange) {
+ 	}
+ }
+ 
+-// killAt installs a hook that panics with anchorKill at the commit or the branch move.
++// killAt sets a hook on h's topology that panics with anchorKill at the commit or the branch move.
+ // It panics before the step when afterCommit is false, and after it otherwise.
+-func killAt(t *testing.T, afterCommit bool) {
+-	t.Helper()
+-
+-	fabricengine.SetAnchorFailHookForTest(t, func(after bool) error {
++func killAt(h *hubforge.Hub, afterCommit bool) {
++	fabricengine.SetAnchorFailHookForTest(h.Topology, func(after bool) error {
+ 		if after == afterCommit {
+ 			panic(anchorKill{afterCommit})
+ 		}
+@@ -206,8 +204,7 @@ func requireAnchorRefusal(t *testing.T, h *hubforge.Hub, slug, target string, wa
+ 
+ func TestAnchorChange(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	// Not parallel: the failure hook is process-global, so every subtest that sets it runs in turn;
+-	// the other subtests are parallel and resume once this function has returned and its hooks are gone.
++	t.Parallel()
+ 	const mover = "mover"
+ 
+ 	t.Run("A pair moves to sub with its content, wiring, launcher and workspace entry", func(t *testing.T) {
+@@ -493,12 +490,13 @@ func TestAnchorChange(t *testing.T) {
+ 	})
+ 
+ 	t.Run("A failure before the move commit leaves the pair wired where it was", func(t *testing.T) {
++		t.Parallel()
+ 		h := newAnchorHub(t)
+ 		hubforge.AddPair(t, h, mover)
+ 		weft := h.PairRecordsSibling(mover)
+ 		head := gitkit.RevParse(t, weft, "HEAD")
+ 		hookErr := errors.New("injected failure before the commit")
+-		fabricengine.SetAnchorFailHookForTest(t, func(afterCommit bool) error {
++		fabricengine.SetAnchorFailHookForTest(h.Topology, func(afterCommit bool) error {
+ 			if afterCommit {
+ 				return nil
+ 			}
+@@ -526,12 +524,13 @@ func TestAnchorChange(t *testing.T) {
+ 	})
+ 
+ 	t.Run("A failure after the move commit leaves the record, and a re-run of the same target finishes at sub", func(t *testing.T) {
++		t.Parallel()
+ 		h := newAnchorHub(t)
+ 		hubforge.AddPair(t, h, mover)
+ 		weft := h.PairRecordsSibling(mover)
+ 		hookErr := errors.New("injected failure after the commit")
+ 		failing := true
+-		fabricengine.SetAnchorFailHookForTest(t, func(afterCommit bool) error {
++		fabricengine.SetAnchorFailHookForTest(h.Topology, func(afterCommit bool) error {
+ 			if afterCommit && failing {
+ 				return hookErr
+ 			}
+@@ -562,11 +561,12 @@ func TestAnchorChange(t *testing.T) {
+ 	})
+ 
+ 	t.Run("A failing read of the commit after the move commit keeps the record and does not roll back", func(t *testing.T) {
++		t.Parallel()
+ 		h := newAnchorHub(t)
+ 		hubforge.AddPair(t, h, mover)
+ 		weft := h.PairRecordsSibling(mover)
+ 		readErr := errors.New("injected failure reading the commit")
+-		fabricengine.SetWeftHeadSHAForTest(t, func(string) (string, error) { return "", readErr })
++		fabricengine.SetWeftHeadSHAForTest(h.Topology, func(string) (string, error) { return "", readErr })
+ 
+ 		c, err := beginAnchorChange(t, h, mover, "sub")
+ 		if err != nil {
+@@ -587,10 +587,11 @@ func TestAnchorChange(t *testing.T) {
+ 	})
+ 
+ 	t.Run("A restore that fails keeps the record, and the re-run refuses over both .lym directories", func(t *testing.T) {
++		t.Parallel()
+ 		h := newAnchorHub(t)
+ 		hubforge.AddPair(t, h, mover)
+ 		weft := h.PairRecordsSibling(mover)
+-		fabricengine.SetAnchorFailHookForTest(t, func(afterCommit bool) error {
++		fabricengine.SetAnchorFailHookForTest(h.Topology, func(afterCommit bool) error {
+ 			if afterCommit {
+ 				return nil
+ 			}
+@@ -629,18 +630,19 @@ func TestAnchorChange(t *testing.T) {
+ 	})
+ 
+ 	t.Run("A re-run after a kill before the commit finishes at sub keeping the file in .lym", func(t *testing.T) {
++		t.Parallel()
+ 		h := newAnchorHub(t)
+ 		hubforge.AddPair(t, h, mover)
+ 		weft := h.PairRecordsSibling(mover)
+ 		writeFile(t, filepath.Join(weft, lymdirs.DotLymDirName, "kept.txt"), "kept\n")
+-		killAt(t, false)
++		killAt(h, false)
+ 
+ 		c, err := beginAnchorChange(t, h, mover, "sub")
+ 		if err != nil {
+ 			t.Fatalf("BeginAnchorChange() error = %v; want nil", err)
+ 		}
+ 		applyUntilKilled(t, c)
+-		fabricengine.SetAnchorFailHookForTest(t, nil)
++		fabricengine.SetAnchorFailHookForTest(h.Topology, nil)
+ 
+ 		rerun, err := beginAnchorChange(t, h, mover, "sub")
+ 		if err != nil {
+@@ -654,11 +656,12 @@ func TestAnchorChange(t *testing.T) {
+ 	})
+ 
+ 	t.Run("A re-run after a kill between the commit and the wiring finishes at sub keeping the file in .lym", func(t *testing.T) {
++		t.Parallel()
+ 		h := newAnchorHub(t)
+ 		hubforge.AddPair(t, h, mover)
+ 		weft := h.PairRecordsSibling(mover)
+ 		writeFile(t, filepath.Join(weft, lymdirs.DotLymDirName, "kept.txt"), "kept\n")
+-		killAt(t, true)
++		killAt(h, true)
+ 
+ 		c, err := beginAnchorChange(t, h, mover, "sub")
+ 		if err != nil {
+@@ -668,7 +671,7 @@ func TestAnchorChange(t *testing.T) {
+ 		if marker := gitkit.Git(t, weft, "show", "HEAD:"+lymcwd.AnchorFileName); marker != "sub" {
+ 			t.Fatalf("committed marker after the kill = %q; want the commit to have landed", marker)
+ 		}
+-		fabricengine.SetAnchorFailHookForTest(t, nil)
++		fabricengine.SetAnchorFailHookForTest(h.Topology, nil)
+ 
+ 		rerun, err := beginAnchorChange(t, h, mover, "sub")
+ 		if err != nil {
+@@ -682,6 +685,7 @@ func TestAnchorChange(t *testing.T) {
+ 	})
+ 
+ 	t.Run("The integration of a change a second clone made carries the local commits", func(t *testing.T) {
++		t.Parallel()
+ 		h, prime := newIntegrateHub(t)
+ 		primeWeft := h.PrimeRecords()
+ 		upstream := gitkit.RevParse(t, primeWeft, "@{upstream}")
+@@ -710,11 +714,12 @@ func TestAnchorChange(t *testing.T) {
+ 	})
+ 
+ 	t.Run("A failure before an integration moves the branch leaves the pair wired where it was", func(t *testing.T) {
++		t.Parallel()
+ 		h, prime := newIntegrateHub(t)
+ 		primeWeft := h.PrimeRecords()
+ 		head := gitkit.RevParse(t, primeWeft, "HEAD")
+ 		hookErr := errors.New("injected failure before the branch moves")
+-		fabricengine.SetAnchorFailHookForTest(t, func(afterCommit bool) error {
++		fabricengine.SetAnchorFailHookForTest(h.Topology, func(afterCommit bool) error {
+ 			if afterCommit {
+ 				return nil
+ 			}
+@@ -742,10 +747,11 @@ func TestAnchorChange(t *testing.T) {
+ 	})
+ 
+ 	t.Run("A re-run after a killed integration on a checkout already at sub finishes", func(t *testing.T) {
++		t.Parallel()
+ 		h, prime := newIntegrateHub(t)
+ 		primeWeft := h.PrimeRecords()
+ 		writeFile(t, filepath.Join(primeWeft, lymdirs.DotLymDirName, "kept.txt"), "kept\n")
+-		killAt(t, true)
++		killAt(h, true)
+ 
+ 		c, err := h.Topology.BeginAnchorChange(prime, "sub")
+ 		if err != nil {
+@@ -755,7 +761,7 @@ func TestAnchorChange(t *testing.T) {
+ 		if marker := gitkit.Git(t, primeWeft, "show", "HEAD:"+lymcwd.AnchorFileName); marker != "sub" {
+ 			t.Fatalf("committed marker after the kill = %q; want the integration to have landed", marker)
+ 		}
+-		fabricengine.SetAnchorFailHookForTest(t, nil)
++		fabricengine.SetAnchorFailHookForTest(h.Topology, nil)
+ 
+ 		rerun, err := beginAnchorChange(t, h, prime.WorktreeName, "sub")
+ 		if err != nil {
+diff --git a/internal/fabricengine/anchormove.go b/internal/fabricengine/anchormove.go
+index 83917213..1cf74665 100644
+--- a/internal/fabricengine/anchormove.go
++++ b/internal/fabricengine/anchormove.go
+@@ -16,24 +16,30 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
+ )
+ 
+-// anchorFailHook, nil in production, stands in for a failure of the move's commit or of the integration's branch move.
+-// It is called with afterCommit false before the commit or the branch move, and with afterCommit true after it.
+-// An error it returns is that failure.
+-// A test that sets it must not be parallel.
+-var anchorFailHook func(afterCommit bool) error
+-
+-// weftHeadSHA reads the commit the weft worktree at weftPath is on.
+-// It is a variable so a test can fail the read that follows the move commit.
+-var weftHeadSHA = func(weftPath string) (string, error) {
+-	return gitrepo.New(weftPath).CurrentSHA()
++// anchorSeams stands in for the failures of a weft move that a test cannot provoke; its zero value is production.
++type anchorSeams struct {
++	// fail stands in for a failure of the move's commit or of the integration's branch move.
++	// It is called with afterCommit false before the commit or the branch move, and with afterCommit true after it.
++	// An error it returns is that failure.
++	fail func(afterCommit bool) error
++	// weftHead reads the commit the weft worktree at weftPath is on; nil reads it from git.
++	weftHead func(weftPath string) (string, error)
+ }
+ 
+-// runAnchorFailHook calls anchorFailHook when one is set.
+-func runAnchorFailHook(afterCommit bool) error {
+-	if anchorFailHook == nil {
++// runFail calls fail when one is set.
++func (s anchorSeams) runFail(afterCommit bool) error {
++	if s.fail == nil {
+ 		return nil
+ 	}
+-	return anchorFailHook(afterCommit)
++	return s.fail(afterCommit)
++}
++
++// headSHA returns the commit the weft worktree at weftPath is on.
++func (s anchorSeams) headSHA(weftPath string) (string, error) {
++	if s.weftHead != nil {
++		return s.weftHead(weftPath)
++	}
++	return gitrepo.New(weftPath).CurrentSHA()
+ }
+ 
+ // moveWeftContent moves the tracked content of each wired name in names from anchor `from` to anchor `to`.
+@@ -45,8 +51,8 @@ func runAnchorFailHook(afterCommit bool) error {
+ // A name that is not tracked under from is left alone,
+ // and a path already standing where a name or `.lym` would land is refused before anything moves.
+ // A failure before the commit returns committed false and leaves the staged and moved paths for the caller to restore;
+-// a failure after it, from reading the commit or from the hook, returns committed true beside the error.
+-func moveWeftContent(rec *Mutations, weftPath, from, to string, names []string) (bool, error) {
++// a failure after it, from reading the commit or from seams, returns committed true beside the error.
++func moveWeftContent(rec *Mutations, weftPath, from, to string, names []string, seams anchorSeams) (bool, error) {
+ 	root, err := os.OpenRoot(weftPath)
+ 	if err != nil {
+ 		return false, fmt.Errorf("fabricengine: open the weft root %s: %w", weftPath, err)
+@@ -109,19 +115,19 @@ func moveWeftContent(rec *Mutations, weftPath, from, to string, names []string)
+ 	}
+ 	rec.Append(KindFileWritten, filepath.Join(weftPath, lymcwd.AnchorFileName), "")
+ 
+-	if err := runAnchorFailHook(false); err != nil {
++	if err := seams.runFail(false); err != nil {
+ 		return false, err
+ 	}
+ 	commitArgs := append([]string{"commit", "-q", "-m", fmt.Sprintf("fabric anchor: move the weft from %s to %s", from, to), "--"}, specs...)
+ 	if _, err := gitexec.RunWithEnv(commitArgs, weftPath, []string{"GIT_LITERAL_PATHSPECS=1"}); err != nil {
+ 		return false, fmt.Errorf("fabricengine: commit the move of the weft from %s to %s: %w", from, to, err)
+ 	}
+-	sha, err := weftHeadSHA(weftPath)
++	sha, err := seams.headSHA(weftPath)
+ 	if err != nil {
+ 		return true, fmt.Errorf("fabricengine: read the weft's commit after the move of the weft from %s to %s: %w", from, to, err)
+ 	}
+ 	rec.Append(KindCommitCreated, weftPath, sha)
+-	return true, runAnchorFailHook(true)
++	return true, seams.runFail(true)
+ }
+ 
+ // requireAbsent returns an error unless nothing stands at rel in the weft root, naming the path.
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index efdf8ec2..f20556c6 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -1421,6 +1421,8 @@
+ // It records the failure only once the backoff runs out.
+ // A held write lock or an uncommitted change on a path the replay touches is a deferral.
+ // The push returns nil and writes a `deferred` record that mails nothing.
++// Every other record mails the hub's orch once per episode.
++// The mail goes through `SyncOptions.Notifier`, or through the process's installed push notifier when that field is nil.
+ // It leaves the commits to the next push of the branch, whose landing removes the record.
+ // A replay that stops on a conflict is a `not_fast_forward` failure.
+ // The failure carries the conflicting paths and the local commits.
+diff --git a/internal/fabricengine/export_test.go b/internal/fabricengine/export_test.go
+index 6b3c04b8..f197b4f4 100644
+--- a/internal/fabricengine/export_test.go
++++ b/internal/fabricengine/export_test.go
+@@ -20,14 +20,15 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ )
+ 
+-// SetGCAutoThresholdForTest sets gcAutoThreshold until the test ends.
+-// It changes process-global state, so the calling test must not be parallel.
+-func SetGCAutoThresholdForTest(t *testing.T, threshold int) {
+-	t.Helper()
++// SetGCAutoThresholdForTest sets the loose-object estimate above which t's removal gc packs a store.
++// It sets the threshold on the one Topology, so parallel tests inject per instance.
++func SetGCAutoThresholdForTest(t *Topology, threshold int) {
++	t.gcAutoThreshold = threshold
++}
+ 
+-	previous := gcAutoThreshold
+-	gcAutoThreshold = threshold
+-	t.Cleanup(func() { gcAutoThreshold = previous })
++// GCAutoThresholdForTest returns the loose-object estimate above which t's removal gc packs a store.
++func GCAutoThresholdForTest(t *Topology) int {
++	return t.gcAutoThreshold
+ }
+ 
+ // SetScratchBeforeLinkHookForTest sets scratchBeforeLinkHook until the test ends.
+@@ -39,23 +40,19 @@ func SetScratchBeforeLinkHookForTest(t *testing.T, hook func()) {
+ 	t.Cleanup(func() { scratchBeforeLinkHook = nil })
+ }
+ 
+-// SetAnchorFailHookForTest installs hook as the anchor-failure hook until the test ends.
+-// It changes process-global state, so the calling test must not be parallel.
+-func SetAnchorFailHookForTest(t *testing.T, hook func(afterCommit bool) error) {
+-	t.Helper()
+-
+-	anchorFailHook = hook
+-	t.Cleanup(func() { anchorFailHook = nil })
++// SetAnchorFailHookForTest makes every anchor change t begins afterwards call hook around its weft commit or branch move.
++// hook is called with afterCommit false before the step and true after it.
++// An error it returns fails the change there.
++// A nil hook restores production.
++// It sets the hook on the one Topology, so parallel tests inject per instance.
++func SetAnchorFailHookForTest(t *Topology, hook func(afterCommit bool) error) {
++	t.anchor.fail = hook
+ }
+ 
+-// SetWeftHeadSHAForTest replaces the weft head-SHA lookup with fn until the test ends.
+-// It changes process-global state, so the calling test must not be parallel.
+-func SetWeftHeadSHAForTest(t *testing.T, fn func(weftPath string) (string, error)) {
+-	t.Helper()
+-
+-	original := weftHeadSHA
+-	weftHeadSHA = fn
+-	t.Cleanup(func() { weftHeadSHA = original })
++// SetWeftHeadSHAForTest makes every anchor change t begins afterwards read the weft's commit after its move through fn.
++// It sets the lookup on the one Topology, so parallel tests inject per instance.
++func SetWeftHeadSHAForTest(t *Topology, fn func(weftPath string) (string, error)) {
++	t.anchor.weftHead = fn
+ }
+ 
+ // SetScratchPathTrackedForTest replaces the scratch-path tracking check with fn until the test ends.
+@@ -833,23 +830,9 @@ type EntryFactsForTest = entryFacts
+ // A test drives its precedence as table rows.
+ var ClassifyEntryForTest = classifyEntry
+ 
+-// SetOriginCallHookForTest installs hook as the observer of every remote call an origin reconcile makes.
+-// It returns the function that removes the hook.
+-// It changes process-global state, so the calling test must not be parallel.
+-func SetOriginCallHookForTest(hook func(args []string)) (restore func()) {
+-	previous := originCallHook
+-	originCallHook = hook
+-	return func() { originCallHook = previous }
+-}
+-
+-// SetOriginVerdictHookForTest installs hook to run just before each branch verdict an origin reconcile reaches.
+-// It returns the function that removes the hook.
+-// It changes process-global state, so the calling test must not be parallel.
+-func SetOriginVerdictHookForTest(hook func()) (restore func()) {
+-	previous := originVerdictHook
+-	originVerdictHook = hook
+-	return func() { originVerdictHook = previous }
+-}
++// RecordPushFailureNotifyingForTest exposes recordPushFailure.
++// It writes a failed-push record and mails it through the notifier the test passes, never the installed one.
++var RecordPushFailureNotifyingForTest = recordPushFailure
+ 
+ // HoldHubPauseForTest installs a Defer gate for slug over a temp pause record that holds one live hub entry.
+ // The gate stays installed until the test ends.
+diff --git a/internal/fabricengine/fabric.go b/internal/fabricengine/fabric.go
+index 64d5fb67..1115be0f 100644
+--- a/internal/fabricengine/fabric.go
++++ b/internal/fabricengine/fabric.go
+@@ -82,6 +82,8 @@ type SyncOptions struct {
+ 	SkipPush bool // Skip push operations if true; affects push only.
+ 	// BackoffSleep sleeps one push backoff delay before a missing branch or unreachable origin is recorded; nil means sleep.
+ 	BackoffSleep func(time.Duration)
++	// Notifier mails a failed push's record to the hub's orch; nil mails through the process's installed notifier.
++	Notifier PushNotifier
+ }
+ 
+ // EnvSyncOptions reads FABRIC_SKIP_GIT and FABRIC_SKIP_PUSH and returns the SyncOptions they describe.
+diff --git a/internal/fabricengine/failedpush.go b/internal/fabricengine/failedpush.go
+index f63e6f04..2ada75e5 100644
+--- a/internal/fabricengine/failedpush.go
++++ b/internal/fabricengine/failedpush.go
+@@ -1,5 +1,5 @@
+ // failedpush.go holds the failed-push record, one machine-local file per repository side and branch.
+-// It also holds the once-per-episode notice to the orch, sent through the installed notifier.
++// It also holds the once-per-episode notice to the orch, sent through the push's notifier or the installed one.
+ // The way-forward line for each side and class is built there too.
+ 
+ package fabricengine
+@@ -90,6 +90,23 @@ func InstallPushNotifier(n PushNotifier) (restore func()) {
+ 	return func() { installedPushNotifier.Store(previous) }
+ }
+ 
++// installedNotifier returns the process's push notifier, nil when none is installed.
++func installedNotifier() PushNotifier {
++	if n := installedPushNotifier.Load(); n != nil {
++		return *n
++	}
++	return nil
++}
++
++// notifier returns the notifier a failed push of these options mails through:
++// Notifier, or the process's installed one when Notifier is nil.
++func (o SyncOptions) notifier() PushNotifier {
++	if o.Notifier != nil {
++		return o.Notifier
++	}
++	return installedNotifier()
++}
++
+ func failedPushDir(hubPath string) string {
+ 	return filepath.Join(HubScratchDir(hubPath), lymdirs.FailedPushDirName)
+ }
+@@ -112,6 +129,12 @@ func failedPushLockPath(path string) string {
+ // The record is marked notified only when the notifier reports the mail posted.
+ // A notifier error is logged and leaves the record unnotified, so the next failure mails again.
+ func RecordPushFailure(hubPath string, f FailedPush, now time.Time) error {
++	return recordPushFailure(hubPath, f, now, installedNotifier())
++}
++
++// recordPushFailure writes f as the failed-push record of its repository side and branch under the record's lock.
++// It mails a record that is neither notified nor deferred through notify, once per episode; a nil notify mails nothing.
++func recordPushFailure(hubPath string, f FailedPush, now time.Time, notify PushNotifier) error {
+ 	path := failedPushPath(hubPath, f.Repo, f.Branch)
+ 	return state.UpdateJSON(path, failedPushLockPath(path), func(cur FailedPush, found bool) (FailedPush, error) {
+ 		f.FirstSeen = now
+@@ -125,12 +148,11 @@ func RecordPushFailure(hubPath string, f FailedPush, now time.Time) error {
+ 		if f.Notified || f.Class == PushFailureDeferred {
+ 			return f, nil
+ 		}
+-		notifier := installedPushNotifier.Load()
+-		if notifier == nil {
++		if notify == nil {
+ 			return f, nil
+ 		}
+ 		line := fmt.Sprintf("a push of %s branch %s failed (%s): %s; way forward: %s", f.Repo, f.Branch, f.Class, f.Error, FailedPushWayForward(f))
+-		posted, err := (*notifier)(hubPath, line)
++		posted, err := notify(hubPath, line)
+ 		if err != nil {
+ 			logger.Warn("fabricengine: failed-push notice not posted", "repo", f.Repo, "branch", f.Branch, "error", err)
+ 			return f, nil
+diff --git a/internal/fabricengine/failedpush_test.go b/internal/fabricengine/failedpush_test.go
+index 5e9511fc..527d5b70 100644
+--- a/internal/fabricengine/failedpush_test.go
++++ b/internal/fabricengine/failedpush_test.go
+@@ -1,5 +1,4 @@
+ // failedpush_test.go covers the failed-push record store: its once-per-episode notice and its way-forward lines.
+-// The notifier is process-global, so the tests that install one run without t.Parallel.
+ 
+ package fabricengine_test
+ 
+@@ -33,22 +32,20 @@ func codePushFailure() fabricengine.FailedPush {
+ 
+ // TestFailedPushRecord covers the record's lifecycle and its single notice per episode.
+ // It also checks the way-forward line that each side and class of push writes.
+-//
+-// It runs without t.Parallel: the notifier it installs is process-global.
+ func TestFailedPushRecord(t *testing.T) {
+ 	tiergate.Require(t, 0)
++	t.Parallel()
+ 	base := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
+ 
+ 	t.Run("FirstFailureMailsOnceAndLaterOnesOnlyUpdate", func(t *testing.T) {
+ 		hub := t.TempDir()
+ 		fake := &fakePushNotifier{hub: hub, posted: true}
+-		installFakePushNotifier(t, fake)
+ 		failure := codePushFailure()
+ 
+-		if err := fabricengine.RecordPushFailure(hub, failure, base); err != nil {
++		if err := fabricengine.RecordPushFailureNotifyingForTest(hub, failure, base, fake.notify); err != nil {
+ 			t.Fatalf("RecordPushFailure: %v", err)
+ 		}
+-		if err := fabricengine.RecordPushFailure(hub, failure, base.Add(time.Minute)); err != nil {
++		if err := fabricengine.RecordPushFailureNotifyingForTest(hub, failure, base.Add(time.Minute), fake.notify); err != nil {
+ 			t.Fatalf("RecordPushFailure second: %v", err)
+ 		}
+ 
+@@ -68,10 +65,9 @@ func TestFailedPushRecord(t *testing.T) {
+ 	t.Run("NotPostedLeavesNotifiedUnsetSoTheNextFailureMails", func(t *testing.T) {
+ 		hub := t.TempDir()
+ 		fake := &fakePushNotifier{hub: hub, posted: false}
+-		installFakePushNotifier(t, fake)
+ 
+ 		for i := range 2 {
+-			if err := fabricengine.RecordPushFailure(hub, codePushFailure(), base.Add(time.Duration(i)*time.Minute)); err != nil {
++			if err := fabricengine.RecordPushFailureNotifyingForTest(hub, codePushFailure(), base.Add(time.Duration(i)*time.Minute), fake.notify); err != nil {
+ 				t.Fatalf("RecordPushFailure: %v", err)
+ 			}
+ 		}
+@@ -88,10 +84,9 @@ func TestFailedPushRecord(t *testing.T) {
+ 	t.Run("NotifierErrorLeavesTheRecordWrittenAndUnnotified", func(t *testing.T) {
+ 		hub := t.TempDir()
+ 		fake := &fakePushNotifier{hub: hub, posted: true, err: errors.New("creel down")}
+-		installFakePushNotifier(t, fake)
+ 
+ 		for i := range 2 {
+-			if err := fabricengine.RecordPushFailure(hub, codePushFailure(), base.Add(time.Duration(i)*time.Minute)); err != nil {
++			if err := fabricengine.RecordPushFailureNotifyingForTest(hub, codePushFailure(), base.Add(time.Duration(i)*time.Minute), fake.notify); err != nil {
+ 				t.Fatalf("RecordPushFailure: %v", err)
+ 			}
+ 		}
+@@ -108,11 +103,10 @@ func TestFailedPushRecord(t *testing.T) {
+ 	t.Run("DeferredWritesTheRecordAndNeverMails", func(t *testing.T) {
+ 		hub := t.TempDir()
+ 		fake := &fakePushNotifier{hub: hub, posted: true}
+-		installFakePushNotifier(t, fake)
+ 		failure := codePushFailure()
+ 		failure.Class = fabricengine.PushFailureDeferred
+ 
+-		if err := fabricengine.RecordPushFailure(hub, failure, base); err != nil {
++		if err := fabricengine.RecordPushFailureNotifyingForTest(hub, failure, base, fake.notify); err != nil {
+ 			t.Fatalf("RecordPushFailure: %v", err)
+ 		}
+ 
+diff --git a/internal/fabricengine/housekeeping.go b/internal/fabricengine/housekeeping.go
+index 9fa9d751..3cda0195 100644
+--- a/internal/fabricengine/housekeeping.go
++++ b/internal/fabricengine/housekeeping.go
+@@ -16,9 +16,8 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ )
+ 
+-// gcAutoThreshold is git's default gc.auto, the loose-object estimate above which `gc --auto` packs.
+-// It is a variable only so a test can lower it.
+-var gcAutoThreshold = 6700
++// defaultGCAutoThreshold is git's default gc.auto, the loose-object estimate above which `gc --auto` packs.
++const defaultGCAutoThreshold = 6700
+ 
+ // namedStore is one of the hub's two object stores with the name its log lines use.
+ type namedStore struct {
+@@ -68,12 +67,12 @@ type InFlightProbe func(slug string) ([]string, error)
+ // The gc is skipped, with the keys still written, when probe reports another pair's live session or fails.
+ // A live step may hold objects no ref reaches yet, which is why the gc is skipped.
+ // A nil probe reports none.
+-// The gc runs only when a store is above gcAutoThreshold.
++// The gc runs only when a store's loose-object estimate is above gcAutoThreshold.
+ // It prunes unreachable loose objects older than gcPruneExpire,
+ // and it never prunes a worktree's admin entry, which stays under the destruction gate.
+ // It is best-effort and returns nothing: a failure is logged as a warning and never fails the caller.
+ // A store another gc already holds is skipped silently, since git exits 0 without packing then.
+-func housekeepStores(l *lymcwd.Location, slug string, probe InFlightProbe) {
++func housekeepStores(l *lymcwd.Location, slug string, probe InFlightProbe, gcAutoThreshold int) {
+ 	if err := disableStoreAutoGC(l); err != nil {
+ 		logger.Warn("fabricengine: disabling store auto gc failed (non-fatal)", "error", err)
+ 	}
+diff --git a/internal/fabricengine/housekeeping_integration_test.go b/internal/fabricengine/housekeeping_integration_test.go
+index 8bea26df..3b171cc2 100644
+--- a/internal/fabricengine/housekeeping_integration_test.go
++++ b/internal/fabricengine/housekeeping_integration_test.go
+@@ -103,16 +103,22 @@ func writeUnreachableObject(t *testing.T, dir, content string) string {
+ }
+ 
+ // TestStoreHousekeeping drives Add's key writes and Remove's foreground gc over hubs from hubforge.
+-// It is not parallel: it lowers fabricengine's gc threshold and captures the logger's output at Info.
+-// Both settings are process-global.
+ // hubforge's clones may or may not carry the keys,
+ // so each subtest unsets them in both stores right before the step whose write it checks.
++// One subtest builds no hub and pins the gc threshold that NewTopology starts with.
+ func TestStoreHousekeeping(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	logs := logcapture.CaptureVerbose(t)
++	t.Parallel()
+ 
+ 	const slug = "gc-pair"
+ 
++	t.Run("NewTopology starts at git's default gc.auto", func(t *testing.T) {
++		const gitDefaultGCAuto = 6700
++		if got := fabricengine.GCAutoThresholdForTest(fabricengine.NewTopology(fabricengine.Config{})); got != gitDefaultGCAuto {
++			t.Errorf("NewTopology gc threshold = %d; want %d", got, gitDefaultGCAuto)
++		}
++	})
++
+ 	t.Run("Add writes both keys into both stores", func(t *testing.T) {
+ 		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 		code, records := hubStorePaths(t, h)
+@@ -142,59 +148,32 @@ func TestStoreHousekeeping(t *testing.T) {
+ 		requireHousekeepingKeys(t, records, true)
+ 	})
+ 
+-	// The probe answers for the pair being removed.
+-	// Sessions of other pairs or an error skip the gc and keep the keys;
++	// The probe answers for the pair being removed;
+ 	// an empty answer packs the stores, like the nil probe the default-probe subtest below runs on.
+-	for _, tc := range []struct {
+-		name     string
+-		probe    fabricengine.InFlightProbe
+-		wantPack bool
+-		wantLog  string
+-	}{
+-		{
+-			name:    "live sessions of other pairs skip the gc",
+-			probe:   func(string) ([]string, error) { return []string{"other-pair-session"}, nil },
+-			wantLog: "other-pair-session",
+-		},
+-		{
+-			name:     "an empty answer packs the stores",
+-			probe:    func(string) ([]string, error) { return nil, nil },
+-			wantPack: true,
+-		},
+-		{
+-			name:    "a failing probe skips the gc",
+-			probe:   func(string) ([]string, error) { return nil, fmt.Errorf("probe-boom") },
+-			wantLog: "probe-boom",
+-		},
+-	} {
+-		t.Run("the in-flight probe: "+tc.name, func(t *testing.T) {
+-			fabricengine.SetGCAutoThresholdForTest(t, 1)
+-			h := hubforge.NewHub(t, ".")
+-			hubforge.AddPair(t, h, slug)
+-			h.Topology.SetInFlightProbe(tc.probe)
+-			code, records := hubStorePaths(t, h)
+-			unsetHousekeepingKeys(t, code)
+-			unsetHousekeepingKeys(t, records)
+-			fillSampledLooseObjects(t, code)
++	t.Run("the in-flight probe: an empty answer packs the stores", func(t *testing.T) {
++		h := hubforge.NewHub(t, ".")
++		fabricengine.SetGCAutoThresholdForTest(h.Topology, 1)
++		hubforge.AddPair(t, h, slug)
++		h.Topology.SetInFlightProbe(func(string) ([]string, error) { return nil, nil })
++		code, records := hubStorePaths(t, h)
++		unsetHousekeepingKeys(t, code)
++		unsetHousekeepingKeys(t, records)
++		fillSampledLooseObjects(t, code)
+ 
+-			if _, err := h.Topology.Remove(h.Location, slug, false, false); err != nil {
+-				t.Fatalf("Remove: %v", err)
+-			}
++		if _, err := h.Topology.Remove(h.Location, slug, false, false); err != nil {
++			t.Fatalf("Remove: %v", err)
++		}
+ 
+-			requireHousekeepingKeys(t, code, true)
+-			requireHousekeepingKeys(t, records, true)
+-			if packed := sampledLooseObjects(t, code) == 0; packed != tc.wantPack {
+-				t.Errorf("objects/17 packed = %v; want %v", packed, tc.wantPack)
+-			}
+-			if tc.wantLog != "" && !strings.Contains(logs.String(), tc.wantLog) {
+-				t.Errorf("log lacks %q:\n%s", tc.wantLog, logs.String())
+-			}
+-		})
+-	}
++		requireHousekeepingKeys(t, code, true)
++		requireHousekeepingKeys(t, records, true)
++		if n := sampledLooseObjects(t, code); n != 0 {
++			t.Errorf("objects/17 still holds %d loose objects after Remove; want them packed", n)
++		}
++	})
+ 
+ 	t.Run("Remove on the default nil probe packs the stores, pruning unreachable loose objects older than a day and keeping younger ones", func(t *testing.T) {
+-		fabricengine.SetGCAutoThresholdForTest(t, 1)
+ 		h := hubforge.NewHub(t, ".")
++		fabricengine.SetGCAutoThresholdForTest(h.Topology, 1)
+ 		hubforge.AddPair(t, h, slug)
+ 		code, records := hubStorePaths(t, h)
+ 		unsetHousekeepingKeys(t, code)
+@@ -223,6 +202,58 @@ func TestStoreHousekeeping(t *testing.T) {
+ 			t.Errorf("the fresh unreachable object is gone: %v; want it kept", err)
+ 		}
+ 	})
++}
++
++// TestStoreHousekeeping_Warnings covers what a removal's housekeeping logs when it skips its gc or the gc fails.
++// It is not parallel: it captures the logger's output at Info, which is process-global.
++func TestStoreHousekeeping_Warnings(t *testing.T) {
++	tiergate.Require(t, 1)
++	logs := logcapture.CaptureVerbose(t)
++
++	const slug = "gc-pair"
++
++	// The probe answers for the pair being removed.
++	// Sessions of other pairs or an error skip the gc, keep the keys and leave the stores unpacked.
++	for _, tc := range []struct {
++		name    string
++		probe   fabricengine.InFlightProbe
++		wantLog string
++	}{
++		{
++			name:    "live sessions of other pairs skip the gc",
++			probe:   func(string) ([]string, error) { return []string{"other-pair-session"}, nil },
++			wantLog: "other-pair-session",
++		},
++		{
++			name:    "a failing probe skips the gc",
++			probe:   func(string) ([]string, error) { return nil, fmt.Errorf("probe-boom") },
++			wantLog: "probe-boom",
++		},
++	} {
++		t.Run("the in-flight probe: "+tc.name, func(t *testing.T) {
++			h := hubforge.NewHub(t, ".")
++			fabricengine.SetGCAutoThresholdForTest(h.Topology, 1)
++			hubforge.AddPair(t, h, slug)
++			h.Topology.SetInFlightProbe(tc.probe)
++			code, records := hubStorePaths(t, h)
++			unsetHousekeepingKeys(t, code)
++			unsetHousekeepingKeys(t, records)
++			fillSampledLooseObjects(t, code)
++
++			if _, err := h.Topology.Remove(h.Location, slug, false, false); err != nil {
++				t.Fatalf("Remove: %v", err)
++			}
++
++			requireHousekeepingKeys(t, code, true)
++			requireHousekeepingKeys(t, records, true)
++			if n := sampledLooseObjects(t, code); n == 0 {
++				t.Errorf("objects/17 holds no loose object after Remove; want the skipped gc to leave them unpacked")
++			}
++			if !strings.Contains(logs.String(), tc.wantLog) {
++				t.Errorf("log lacks %q:\n%s", tc.wantLog, logs.String())
++			}
++		})
++	}
+ 
+ 	t.Run("a failing gc is a warning and never fails Remove", func(t *testing.T) {
+ 		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+diff --git a/internal/fabricengine/originreconcile.go b/internal/fabricengine/originreconcile.go
+index 40d700ee..a58478eb 100644
+--- a/internal/fabricengine/originreconcile.go
++++ b/internal/fabricengine/originreconcile.go
+@@ -49,11 +49,30 @@ type ReconcileScope struct {
+ // RetryBound and RetryInterval together bound how often the ls-remote pair is retried after a transport failure.
+ // There is one retry per whole interval in the bound.
+ // AttemptDeadline bounds each remote call, and Sleep waits out one interval; nil sleeps for real.
++// CallHook sees the arguments of every remote call just before it runs.
++// VerdictHook runs just before each branch verdict.
++// Both are nil in production.
+ type ReconcileOptions struct {
+ 	RetryBound      time.Duration
+ 	RetryInterval   time.Duration
+ 	AttemptDeadline time.Duration
+ 	Sleep           func(time.Duration)
++	CallHook        func(args []string)
++	VerdictHook     func()
++}
++
++// callHook hands the arguments of one remote call to CallHook, if set.
++func (o ReconcileOptions) callHook(args []string) {
++	if o.CallHook != nil {
++		o.CallHook(args)
++	}
++}
++
++// verdictHook runs VerdictHook, if set.
++func (o ReconcileOptions) verdictHook() {
++	if o.VerdictHook != nil {
++		o.VerdictHook()
++	}
+ }
+ 
+ // attempts returns how many times the ls-remote pair runs at most.
+@@ -449,28 +468,6 @@ func classifyEntry(f entryFacts) EntryState {
+ 	return EntryActive
+ }
+ 
+-// originCallHook sees the arguments of every remote call a reconcile makes, just before it runs.
+-// It is nil in production; a test sets it through `SetOriginCallHookForTest`.
+-var originCallHook func(args []string)
+-
+-// callOriginHook hands the arguments of one remote call to the hook, if any.
+-func callOriginHook(args []string) {
+-	if originCallHook != nil {
+-		originCallHook(args)
+-	}
+-}
+-
+-// originVerdictHook runs just before each branch verdict a reconcile reaches.
+-// It is nil in production; a test sets it through `SetOriginVerdictHookForTest`.
+-var originVerdictHook func()
+-
+-// callOriginVerdictHook runs the verdict hook, if any.
+-func callOriginVerdictHook() {
+-	if originVerdictHook != nil {
+-		originVerdictHook()
+-	}
+-}
+-
+ // lsRemotePair returns each repository's branch heads by branch name.
+ // It runs `git ls-remote origin` for both repositories in parallel, each under the attempt deadline.
+ // A transport failure in either call retries the pair together after one interval, while attempts remain.
+@@ -478,7 +475,7 @@ func callOriginVerdictHook() {
+ // It is returned as soon as it is seen, naming the repository and git's error line.
+ func lsRemotePair(warpDir, recordsDir string, opts ReconcileOptions) (warp, records map[string]string, err error) {
+ 	for attempt := 1; ; attempt++ {
+-		warp, records, err = lsRemoteOnce(warpDir, recordsDir, opts.deadline())
++		warp, records, err = lsRemoteOnce(warpDir, recordsDir, opts)
+ 		if err == nil || !gitexec.IsTransportFailure(err) || attempt >= opts.attempts() {
+ 			return warp, records, err
+ 		}
+@@ -488,17 +485,17 @@ func lsRemotePair(warpDir, recordsDir string, opts ReconcileOptions) (warp, reco
+ 
+ // lsRemoteOnce runs the two ls-remote calls once, in parallel.
+ // A non-transport failure wins over a transport one, so a retrying caller never retries a refusal.
+-func lsRemoteOnce(warpDir, recordsDir string, deadline time.Duration) (warp, records map[string]string, err error) {
++func lsRemoteOnce(warpDir, recordsDir string, opts ReconcileOptions) (warp, records map[string]string, err error) {
+ 	var warpErr, recordsErr error
+ 	var wait sync.WaitGroup
+ 	wait.Add(2)
+ 	go func() {
+ 		defer wait.Done()
+-		warp, warpErr = lsRemoteHeads(failedPushSideCode, warpDir, deadline)
++		warp, warpErr = lsRemoteHeads(failedPushSideCode, warpDir, opts)
+ 	}()
+ 	go func() {
+ 		defer wait.Done()
+-		records, recordsErr = lsRemoteHeads(failedPushSideRecords, recordsDir, deadline)
++		records, recordsErr = lsRemoteHeads(failedPushSideRecords, recordsDir, opts)
+ 	}()
+ 	wait.Wait()
+ 
+@@ -515,11 +512,11 @@ func lsRemoteOnce(warpDir, recordsDir string, deadline time.Duration) (warp, rec
+ 	return warp, records, nil
+ }
+ 
+-// lsRemoteHeads returns origin's branch heads of the repository at dir by branch name.
+-func lsRemoteHeads(side, dir string, deadline time.Duration) (map[string]string, error) {
++// lsRemoteHeads returns origin's branch heads of the repository at dir by branch name, under opts' attempt deadline.
++func lsRemoteHeads(side, dir string, opts ReconcileOptions) (map[string]string, error) {
+ 	args := []string{"ls-remote", "--heads", originRemote}
+-	callOriginHook(args)
+-	out, err := gitexec.RunWithin(args, dir, deadline)
++	opts.callHook(args)
++	out, err := gitexec.RunWithin(args, dir, opts.deadline())
+ 	if err != nil {
+ 		return nil, fmt.Errorf("read origin's branches of the %s repository at %s: %w", side, dir, err)
+ 	}
+@@ -541,7 +538,8 @@ func lsRemoteHeads(side, dir string, deadline time.Duration) (map[string]string,
+ // The caller holds the repository's remote-refs lock, which this fetch does not take.
+ // With `judgeOnly` it fetches the objects by SHA into no ref and writes no FETCH_HEAD, so a dry run moves nothing.
+ // No head makes no call.
+-func fetchMovedHeads(dir string, heads map[string]string, judgeOnly bool) error {
++// opts' call hook sees the fetch's arguments.
++func fetchMovedHeads(dir string, heads map[string]string, judgeOnly bool, opts ReconcileOptions) error {
+ 	if len(heads) == 0 {
+ 		return nil
+ 	}
+@@ -563,7 +561,7 @@ func fetchMovedHeads(dir string, heads map[string]string, judgeOnly bool) error
+ 			args = append(args, fmt.Sprintf("+refs/heads/%s:%s", branch, trackingRefOf(branch)))
+ 		}
+ 	}
+-	callOriginHook(args)
++	opts.callHook(args)
+ 	if _, err := gitexec.Run(args, dir); err != nil {
+ 		return fmt.Errorf("fetch the moved branches %s from origin into %s: %w", strings.Join(branches, " "), dir, err)
+ 	}
+@@ -870,7 +868,7 @@ func judgeAgainstOrigin(targets []originTarget, warpDir, recordsDir string, judg
+ 		}
+ 	}
+ 	for _, dir := range []string{warpDir, recordsDir} {
+-		if err := fetchMovedHeads(dir, moved[dir], judgeOnly); err != nil {
++		if err := fetchMovedHeads(dir, moved[dir], judgeOnly, opts); err != nil {
+ 			return nil, false, err
+ 		}
+ 	}
+@@ -880,7 +878,7 @@ func judgeAgainstOrigin(targets []originTarget, warpDir, recordsDir string, judg
+ 		if target.side == failedPushSideCode {
+ 			heads = warpHeads
+ 		}
+-		callOriginVerdictHook()
++		opts.verdictHook()
+ 		outcome, err := judgeBranch(target.repoDir, target.branch, heads[target.branch], target.side != failedPushSideCode)
+ 		if err != nil {
+ 			return nil, false, err
+diff --git a/internal/fabricengine/originreconcile_integration_test.go b/internal/fabricengine/originreconcile_integration_test.go
+index b24a6552..a5d45f96 100644
+--- a/internal/fabricengine/originreconcile_integration_test.go
++++ b/internal/fabricengine/originreconcile_integration_test.go
+@@ -213,9 +213,9 @@ func writeStatus(tb testing.TB, hub *originHub, slug, producer string) {
+ }
+ 
+ // TestReconcileOrigin_Judge covers the origin reconcile's judgment, its network calls and its entry classification.
+-// It runs without t.Parallel because it sets the process-global origin call hook.
+ func TestReconcileOrigin_Judge(t *testing.T) {
+ 	tiergate.Require(t, 1)
++	t.Parallel()
+ 	boardkit.InstallReplay(t)
+ 
+ 	t.Run("A judge-only reconcile of an origin that moved a records branch, Bolt and the prime's code branch reads fast_forward for each, fetching only moved heads", func(t *testing.T) {
+@@ -231,8 +231,7 @@ func TestReconcileOrigin_Judge(t *testing.T) {
+ 		gitkit.Git(t, boltOther, "push", "origin", "main")
+ 
+ 		var calls callLog
+-		t.Cleanup(fabricengine.SetOriginCallHookForTest(calls.record))
+-		report := reconcile(t, hub, fabricengine.ReconcileScope{JudgeOnly: true}, fabricengine.ReconcileOptions{})
++		report := reconcile(t, hub, fabricengine.ReconcileScope{JudgeOnly: true}, fabricengine.ReconcileOptions{CallHook: calls.record})
+ 
+ 		code := requireState(t, report, "code", hub.primeBranch, fabricengine.BranchFastForward)
+ 		records := requireState(t, report, "records", hub.primeRecords, fabricengine.BranchFastForward)
+@@ -275,8 +274,7 @@ func TestReconcileOrigin_Judge(t *testing.T) {
+ 		hub, _, _ := newOriginTaskHub(t)
+ 
+ 		var calls callLog
+-		t.Cleanup(fabricengine.SetOriginCallHookForTest(calls.record))
+-		report := reconcile(t, hub, fabricengine.ReconcileScope{}, fabricengine.ReconcileOptions{})
++		report := reconcile(t, hub, fabricengine.ReconcileScope{}, fabricengine.ReconcileOptions{CallHook: calls.record})
+ 
+ 		for _, outcome := range report.Branches {
+ 			if outcome.State != fabricengine.BranchLevel {
+@@ -303,21 +301,23 @@ func TestReconcileOrigin_Judge(t *testing.T) {
+ 
+ 		var calls callLog
+ 		var freeDuringCalls callLog
+-		t.Cleanup(fabricengine.SetOriginCallHookForTest(func(args []string) {
+-			calls.record(args)
+-			if free := freeRemoteRefsLocks(t, lockPaths); len(free) > 0 {
+-				freeDuringCalls.record(append([]string{args[0]}, free...))
+-			}
+-		}))
+ 		verdicts := 0
+ 		var freeDuringVerdicts [][]string
+-		t.Cleanup(fabricengine.SetOriginVerdictHookForTest(func() {
+-			verdicts++
+-			if free := freeRemoteRefsLocks(t, lockPaths); len(free) > 0 {
+-				freeDuringVerdicts = append(freeDuringVerdicts, free)
+-			}
+-		}))
+-		report := reconcile(t, hub, fabricengine.ReconcileScope{}, fabricengine.ReconcileOptions{})
++		opts := fabricengine.ReconcileOptions{
++			CallHook: func(args []string) {
++				calls.record(args)
++				if free := freeRemoteRefsLocks(t, lockPaths); len(free) > 0 {
++					freeDuringCalls.record(append([]string{args[0]}, free...))
++				}
++			},
++			VerdictHook: func() {
++				verdicts++
++				if free := freeRemoteRefsLocks(t, lockPaths); len(free) > 0 {
++					freeDuringVerdicts = append(freeDuringVerdicts, free)
++				}
++			},
++		}
++		report := reconcile(t, hub, fabricengine.ReconcileScope{}, opts)
+ 
+ 		if len(calls.withVerb("ls-remote")) != 2 || len(calls.withVerb("fetch")) != 1 {
+ 			t.Fatalf("remote calls = %v; want two ls-remote calls and one fetch", calls.calls)
+@@ -557,10 +557,10 @@ func TestReconcileOrigin_Judge(t *testing.T) {
+ 			refuse()
+ 			var calls callLog
+ 			sleeps := 0
+-			t.Cleanup(fabricengine.SetOriginCallHookForTest(calls.record))
+ 			opts := fabricengine.ReconcileOptions{
+ 				RetryBound:    3 * time.Second,
+ 				RetryInterval: time.Second,
++				CallHook:      calls.record,
+ 				Sleep: func(time.Duration) {
+ 					sleeps++
+ 					if row.restoreOnSleep {
+@@ -594,13 +594,13 @@ func TestReconcileOrigin_Judge(t *testing.T) {
+ 		hub := newOriginHub(t)
+ 		gitkit.Git(t, hub.PrimeRecords(), "remote", "set-url", "origin", filepath.Join(t.TempDir(), "no-repository"))
+ 		var calls callLog
+-		t.Cleanup(fabricengine.SetOriginCallHookForTest(calls.record))
+ 		sleeps := 0
+ 
+ 		_, err := fabricengine.ReconcileOrigin(hub.Location, fabricengine.ReconcileScope{}, fabricengine.OriginSeams{}, fabricengine.ReconcileOptions{
+ 			RetryBound:    3 * time.Second,
+ 			RetryInterval: time.Second,
+ 			Sleep:         func(time.Duration) { sleeps++ },
++			CallHook:      calls.record,
+ 		})
+ 
+ 		if err == nil || !strings.Contains(err.Error(), "records repository") {
+@@ -619,13 +619,13 @@ func TestReconcileOrigin_Judge(t *testing.T) {
+ 		refsBefore := refsOf(t, hub.PrimeRecords())
+ 		localBefore := gitkit.RevParse(t, hub.PrimeRecords(), "HEAD")
+ 		lockPaths := remoteRefsLockPaths(t, hub)
+-		t.Cleanup(fabricengine.SetOriginCallHookForTest(func(args []string) {
++		opts := fabricengine.ReconcileOptions{CallHook: func(args []string) {
+ 			if args[0] == "fetch" && slices.ContainsFunc(args, func(arg string) bool { return strings.Contains(arg, hub.primeRecords) }) {
+ 				gitkit.Git(t, hub.RecordsBare, "update-ref", "-d", "refs/heads/"+hub.primeRecords)
+ 			}
+-		}))
++		}}
+ 
+-		_, err := fabricengine.ReconcileOrigin(hub.Location, fabricengine.ReconcileScope{}, fabricengine.OriginSeams{}, fabricengine.ReconcileOptions{})
++		_, err := fabricengine.ReconcileOrigin(hub.Location, fabricengine.ReconcileScope{}, fabricengine.OriginSeams{}, opts)
+ 
+ 		if err == nil || !strings.Contains(err.Error(), hub.primeRecords) {
+ 			t.Fatalf("ReconcileOrigin() error = %v; want a fetch error naming %s", err, hub.primeRecords)
+diff --git a/internal/fabricengine/originreconcileended_integration_test.go b/internal/fabricengine/originreconcileended_integration_test.go
+index cf1de5cc..63b84568 100644
+--- a/internal/fabricengine/originreconcileended_integration_test.go
++++ b/internal/fabricengine/originreconcileended_integration_test.go
+@@ -117,9 +117,9 @@ func endedHub(t *testing.T) *originHub {
+ 
+ // TestReconcileOrigin_Ended covers the origin reconcile's handling of runs origin has ended.
+ // It checks which entries it ends, what it hands the teardown seam, and how it reports each outcome.
+-// It runs without t.Parallel because it sets the process-global origin call hook.
+ func TestReconcileOrigin_Ended(t *testing.T) {
+ 	tiergate.Require(t, 1)
++	t.Parallel()
+ 	boardkit.InstallReplay(t)
+ 
+ 	t.Run("An entry done on origin with a local pair is handed to the teardown seam once and reported ended as landed", func(t *testing.T) {
+@@ -163,9 +163,8 @@ func TestReconcileOrigin_Ended(t *testing.T) {
+ 		originBoard(t, hub, branch, boardEntry("ghost", withBoardStatus("done")))
+ 		recorder := &teardownRecorder{}
+ 		var calls callLog
+-		t.Cleanup(fabricengine.SetOriginCallHookForTest(calls.record))
+ 
+-		report := moveReconcile(t, hub, fabricengine.ReconcileScope{}, recorder.seams())
++		report := moveReconcileWith(t, hub, fabricengine.ReconcileScope{}, recorder.seams(), fabricengine.ReconcileOptions{CallHook: calls.record})
+ 
+ 		if len(recorder.calls) != 0 {
+ 			t.Errorf("teardown calls = %v; want none for a run with no local pair", recorder.slugsCalled())
+diff --git a/internal/fabricengine/originreconcilemoves_integration_test.go b/internal/fabricengine/originreconcilemoves_integration_test.go
+index c981e97c..dc3b5341 100644
+--- a/internal/fabricengine/originreconcilemoves_integration_test.go
++++ b/internal/fabricengine/originreconcilemoves_integration_test.go
+@@ -37,7 +37,13 @@ const (
+ // moveReconcile runs the origin reconcile over hub with scope and seams, failing the test on error.
+ func moveReconcile(t *testing.T, hub *originHub, scope fabricengine.ReconcileScope, seams fabricengine.OriginSeams) fabricengine.OriginReport {
+ 	t.Helper()
+-	report, err := fabricengine.ReconcileOrigin(hub.Location, scope, seams, fabricengine.ReconcileOptions{})
++	return moveReconcileWith(t, hub, scope, seams, fabricengine.ReconcileOptions{})
++}
++
++// moveReconcileWith runs the origin reconcile over hub with scope, seams and opts, failing the test on error.
++func moveReconcileWith(t *testing.T, hub *originHub, scope fabricengine.ReconcileScope, seams fabricengine.OriginSeams, opts fabricengine.ReconcileOptions) fabricengine.OriginReport {
++	t.Helper()
++	report, err := fabricengine.ReconcileOrigin(hub.Location, scope, seams, opts)
+ 	if err != nil {
+ 		t.Fatalf("ReconcileOrigin(%+v) error = %v; want nil", scope, err)
+ 	}
+@@ -145,9 +151,9 @@ func newMovesPair(t *testing.T) *movesPair {
+ 
+ // TestReconcileOrigin_Moves covers the origin reconcile's moves: what it fast-forwards or replays.
+ // It also covers what a dirty path, a live pair, a held lock or a conflict leaves where it was.
+-// It runs without t.Parallel because it sets the process-global origin call hook.
+ func TestReconcileOrigin_Moves(t *testing.T) {
+ 	tiergate.Require(t, 1)
++	t.Parallel()
+ 	boardkit.InstallReplay(t)
+ 
+ 	t.Run("A hub reconcile fast-forwards a weft, Bolt and the prime's code branch and a judge-only one moves nothing", func(t *testing.T) {
+@@ -166,8 +172,7 @@ func TestReconcileOrigin_Moves(t *testing.T) {
+ 		}
+ 
+ 		var calls callLog
+-		t.Cleanup(fabricengine.SetOriginCallHookForTest(calls.record))
+-		report := moveReconcile(t, hub, fabricengine.ReconcileScope{}, fabricengine.OriginSeams{})
++		report := moveReconcileWith(t, hub, fabricengine.ReconcileScope{}, fabricengine.OriginSeams{}, fabricengine.ReconcileOptions{CallHook: calls.record})
+ 
+ 		for _, row := range []struct {
+ 			name, repo, branch, want, dir string
+@@ -459,9 +464,8 @@ func TestReconcileOrigin_Moves(t *testing.T) {
+ 		local := gitkit.CommitFile(t, board, "board.json", boardFileOf(t, running), "neve runs")
+ 		originHead := originCommitFile(t, hub.RecordsBare, branch, "board.json", boardFileOf(t, boardEntry("neve", withBoardStatus("done"))))
+ 		var calls callLog
+-		t.Cleanup(fabricengine.SetOriginCallHookForTest(calls.record))
+ 
+-		report := moveReconcile(t, hub, fabricengine.ReconcileScope{}, fabricengine.OriginSeams{})
++		report := moveReconcileWith(t, hub, fabricengine.ReconcileScope{}, fabricengine.OriginSeams{}, fabricengine.ReconcileOptions{CallHook: calls.record})
+ 
+ 		outcome := requireState(t, report, "bolt", branch, fabricengine.BranchLevel)
+ 		if !outcome.Moved || gitkit.RevParse(t, board, "HEAD") != originHead {
+diff --git a/internal/fabricengine/pushclasses_integration_test.go b/internal/fabricengine/pushclasses_integration_test.go
+index 8569c29b..047eefcb 100644
+--- a/internal/fabricengine/pushclasses_integration_test.go
++++ b/internal/fabricengine/pushclasses_integration_test.go
+@@ -34,13 +34,12 @@ const refusedOriginURL = "http://127.0.0.1:1/x"
+ const authRefusingHook = "#!/bin/sh\necho 'Permission to hub denied to tester.' >&2\nexit 1\n"
+ 
+ // newFailureFixture builds a hub with the board replay installed and a notifier counting the mails of its own hub.
++// A push reaches the notifier only through the options the notifier builds.
+ func newFailureFixture(t *testing.T) (*recordsFixture, *fakePushNotifier) {
+ 	t.Helper()
+ 	boardkit.InstallReplay(t)
+ 	f := &recordsFixture{t: t, hub: hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})}
+-	fake := &fakePushNotifier{hub: f.hub.Location.HubPath, posted: true}
+-	installFakePushNotifier(t, fake)
+-	return f, fake
++	return f, &fakePushNotifier{hub: f.hub.Location.HubPath, posted: true}
+ }
+ 
+ // failedPushesOf returns the hub's failed-push records.
+@@ -129,7 +128,7 @@ func newPairFixture(t *testing.T, slug string) *pairFixture {
+ 		warpBranch:     added.Branch,
+ 		weftBranch:     fabricengine.RecordsBranchName(added.Branch),
+ 	}
+-	if _, err := fabricengine.PushPairAnchored(location, fabricengine.SyncOptions{}, fabricengine.LockWaitUnbounded); err != nil {
++	if _, err := fabricengine.PushPairAnchored(location, fake.options(nil), fabricengine.LockWaitUnbounded); err != nil {
+ 		t.Fatalf("PushPairAnchored() priming push error = %v; want nil", err)
+ 	}
+ 	return p
+@@ -175,11 +174,9 @@ func requireRewoundHoldBack(t *testing.T, p *pairFixture, err error, originHead,
+ // TestPushFailureClasses is the enforcing test of the push classification:
+ // each row drives one push path against a refusing or moved origin;
+ // it reads the failed-push record, the mail and the origin it leaves.
+-//
+-// It runs without t.Parallel: the notifier it installs is process-global.
+ func TestPushFailureClasses(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	opts := fabricengine.SyncOptions{}
++	t.Parallel()
+ 
+ 	t.Run("ADetachedWeftPushRejectedAsNotFastForwardIsReplayedAndPushed", func(t *testing.T) {
+ 		f, fake := newFailureFixture(t)
+@@ -187,7 +184,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 		f.originCommit(branch, "other.txt", "other\n", "other machine")
+ 		gitkit.CommitFile(t, weft, "local.txt", "local\n", "local")
+ 
+-		if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, opts); err != nil {
++		if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, fake.options(nil)); err != nil {
+ 			t.Fatalf("CoalescePushRequest() error = %v; want nil", err)
+ 		}
+ 
+@@ -211,7 +208,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 		before := bareBranchTip(t, f.hub.RecordsBare, branch)
+ 		held := holdWeftWriteLock(t, weft)
+ 
+-		if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, opts); err != nil {
++		if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, fake.options(nil)); err != nil {
+ 			t.Fatalf("CoalescePushRequest() with the write lock held error = %v; want nil", err)
+ 		}
+ 
+@@ -230,7 +227,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 			t.Fatalf("release the weft write lock: %v", err)
+ 		}
+ 		gitkit.CommitFile(t, weft, "second.txt", "second\n", "second local")
+-		if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, opts); err != nil {
++		if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, fake.options(nil)); err != nil {
+ 			t.Fatalf("CoalescePushRequest() after the release error = %v; want nil", err)
+ 		}
+ 		if got, want := bareBranchTip(t, f.hub.RecordsBare, branch), gitkit.RevParse(t, weft, "HEAD"); got != want {
+@@ -247,7 +244,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 		before := bareBranchTip(t, f.hub.RecordsBare, branch)
+ 		sleeps := 0
+ 
+-		if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, fabricengine.SyncOptions{BackoffSleep: countingBackoff(&sleeps, nil)}); err != nil {
++		if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, fake.options(countingBackoff(&sleeps, nil))); err != nil {
+ 			t.Fatalf("CoalescePushRequest() error = %v; want nil, a detached push never fails", err)
+ 		}
+ 		if sleeps != 0 {
+@@ -317,7 +314,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 				f, fake := newFailureFixture(t)
+ 				sleeps := 0
+ 
+-				side, err := tt.push(t, f, fabricengine.SyncOptions{BackoffSleep: countingBackoff(&sleeps, nil)})
++				side, err := tt.push(t, f, fake.options(countingBackoff(&sleeps, nil)))
+ 
+ 				if err != nil && !fabricengine.IsPushRejected(err) {
+ 					t.Errorf("push error = %v; want nil or IsPushRejected", err)
+@@ -353,7 +350,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 		gitkit.Git(t, other, "push", "origin", branch)
+ 		gitkit.CommitFile(t, weft, "local.txt", "local\n", "local")
+ 
+-		if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, fabricengine.SyncOptions{BackoffSleep: countingBackoff(new(int), nil)}); err != nil {
++		if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, fake.options(countingBackoff(new(int), nil))); err != nil {
+ 			t.Fatalf("CoalescePushRequest() error = %v; want nil", err)
+ 		}
+ 
+@@ -373,7 +370,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 		marker := bare + "/declines"
+ 		installPreReceive(t, f.hub.CodeBare, fmt.Sprintf("#!/bin/sh\nn=$(cat '%s' 2>/dev/null || echo 0)\nn=$((n + 1))\necho $n > '%s'\nif [ \"$n\" -ge %d ]; then\n  rm '%s/HEAD'\nfi\necho 'declined' >&2\nexit 1\n", marker, marker, finalPush, bare))
+ 
+-		_, err := hubforge.OpenFabric(t, f.hub).PushBranch(fabricengine.SyncOptions{BackoffSleep: countingBackoff(new(int), nil)})
++		_, err := hubforge.OpenFabric(t, f.hub).PushBranch(fake.options(countingBackoff(new(int), nil)))
+ 
+ 		var failed *fabricengine.PushFailedError
+ 		if !errors.As(err, &failed) {
+@@ -391,7 +388,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 	})
+ 
+ 	t.Run("ACodeRejectionWhoseRetryIsRefusedForAuthIsNotRetriedAgain", func(t *testing.T) {
+-		f, _ := newFailureFixture(t)
++		f, fake := newFailureFixture(t)
+ 		prime := f.hub.PrimeWorktree()
+ 		gitkit.CommitFile(t, prime, "local.txt", "local\n", "local")
+ 		// The first push is a bare rejection; every later one is refused for permission.
+@@ -399,7 +396,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 		installPreReceive(t, f.hub.CodeBare, "#!/bin/sh\nn=$(cat '"+marker+"' 2>/dev/null || echo 0)\necho $((n + 1)) > '"+marker+"'\nif [ \"$n\" -lt 1 ]; then\n  echo 'declined' >&2\nelse\n  echo 'Permission to hub denied to tester.' >&2\nfi\nexit 1\n")
+ 		sleeps := 0
+ 
+-		_, err := hubforge.OpenFabric(t, f.hub).PushBranch(fabricengine.SyncOptions{BackoffSleep: countingBackoff(&sleeps, nil)})
++		_, err := hubforge.OpenFabric(t, f.hub).PushBranch(fake.options(countingBackoff(&sleeps, nil)))
+ 
+ 		if err == nil {
+ 			t.Fatal("PushBranch() error = nil; want a failed push")
+@@ -446,7 +443,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 				f, fake := newFailureFixture(t)
+ 				sleeps := 0
+ 
+-				local, bare, branch := tt.push(t, f, fabricengine.SyncOptions{BackoffSleep: countingBackoff(&sleeps, nil)})
++				local, bare, branch := tt.push(t, f, fake.options(countingBackoff(&sleeps, nil)))
+ 
+ 				if got := bareBranchTip(t, bare, branch); got != local {
+ 					t.Errorf("origin tip = %s; want the local commit %s", got, local)
+@@ -505,7 +502,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 				originTipWas := bareBranchTip(t, p.hub.RecordsBare, p.weftBranch)
+ 				sleeps := 0
+ 
+-				_, err := fabricengine.PushPairAnchored(p.location, fabricengine.SyncOptions{BackoffSleep: countingBackoff(&sleeps, nil)}, fabricengine.LockWaitUnbounded)
++				_, err := fabricengine.PushPairAnchored(p.location, p.fake.options(countingBackoff(&sleeps, nil)), fabricengine.LockWaitUnbounded)
+ 
+ 				var failed *fabricengine.PushFailedError
+ 				if !errors.As(err, &failed) || !errors.Is(err, fabricengine.ErrAnchorChange) {
+@@ -539,7 +536,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 		installPreReceive(t, f.hub.RecordsBare, authRefusingHook)
+ 
+ 		for range 2 {
+-			if _, err := fabricengine.CoalescePushBothAt("", weft, opts); err != nil {
++			if _, err := fabricengine.CoalescePushBothAt("", weft, fake.options(nil)); err != nil {
+ 				t.Fatalf("CoalescePushBothAt() error = %v; want nil, a detached push never fails", err)
+ 			}
+ 		}
+@@ -555,7 +552,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 		if err := os.Remove(preReceiveHookPath(f.hub.RecordsBare)); err != nil {
+ 			t.Fatalf("remove the hook: %v", err)
+ 		}
+-		if _, err := fabricengine.CoalescePushBothAt("", weft, opts); err != nil {
++		if _, err := fabricengine.CoalescePushBothAt("", weft, fake.options(nil)); err != nil {
+ 			t.Fatalf("CoalescePushBothAt() after the hook is gone error = %v; want nil", err)
+ 		}
+ 		if got, want := bareBranchTip(t, f.hub.RecordsBare, branch), gitkit.RevParse(t, weft, "HEAD"); got != want {
+@@ -571,7 +568,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 			gitkit.CommitFile(t, weft, "local.txt", "local\n", "local")
+ 			gitkit.Git(t, weft, "remote", "set-url", "origin", refusedOriginURL)
+ 
+-			if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, opts); err != nil {
++			if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, fake.options(nil)); err != nil {
+ 				t.Fatalf("CoalescePushRequest() error = %v; want nil", err)
+ 			}
+ 
+@@ -584,30 +581,31 @@ func TestPushFailureClasses(t *testing.T) {
+ 		t.Run("OfABranchWithAnUpstreamAfterTheBackoff", func(t *testing.T) {
+ 			tests := []struct {
+ 				name string
+-				// push commits on a weft that has an upstream, points its origin at refusedOriginURL and pushes it;
+-				// it returns the hub's path, the notifier and the push's error.
+-				push func(t *testing.T, opts fabricengine.SyncOptions) (string, *fakePushNotifier, error)
++				// push commits on a weft that has an upstream, points its origin at refusedOriginURL and pushes it.
++				// It sleeps each backoff delay through backoff.
++				// It returns the hub's path, the notifier and the push's error.
++				push func(t *testing.T, backoff func(time.Duration)) (string, *fakePushNotifier, error)
+ 				// wantFailed reports that the entry point returns the transport *PushFailedError; otherwise it returns nil.
+ 				wantFailed bool
+ 			}{
+ 				{
+ 					name: "ADetachedPrimeWeftPush",
+-					push: func(t *testing.T, opts fabricengine.SyncOptions) (string, *fakePushNotifier, error) {
++					push: func(t *testing.T, backoff func(time.Duration)) (string, *fakePushNotifier, error) {
+ 						f, fake := newFailureFixture(t)
+ 						weft, _ := f.primeWeft()
+ 						gitkit.CommitFile(t, weft, "local.txt", "local\n", "local")
+ 						gitkit.Git(t, weft, "remote", "set-url", "origin", refusedOriginURL)
+-						_, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, opts)
++						_, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, fake.options(backoff))
+ 						return f.hub.Location.HubPath, fake, err
+ 					},
+ 				},
+ 				{
+ 					name: "AParkedPairPush",
+-					push: func(t *testing.T, opts fabricengine.SyncOptions) (string, *fakePushNotifier, error) {
++					push: func(t *testing.T, backoff func(time.Duration)) (string, *fakePushNotifier, error) {
+ 						p := newPairFixture(t, "stuckpair")
+ 						gitkit.CommitFile(t, p.weftPath, "local.txt", "local\n", "local")
+ 						gitkit.Git(t, p.weftPath, "remote", "set-url", "origin", refusedOriginURL)
+-						_, err := fabricengine.PushAnchored(p.location, opts, fabricengine.LockWaitUnbounded)
++						_, err := fabricengine.PushAnchored(p.location, p.fake.options(backoff), fabricengine.LockWaitUnbounded)
+ 						return p.hub.Location.HubPath, p.fake, err
+ 					},
+ 					wantFailed: true,
+@@ -617,7 +615,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 				t.Run(tt.name, func(t *testing.T) {
+ 					var sleeps int
+ 
+-					hubPath, fake, err := tt.push(t, fabricengine.SyncOptions{BackoffSleep: countingBackoff(&sleeps, nil)})
++					hubPath, fake, err := tt.push(t, countingBackoff(&sleeps, nil))
+ 
+ 					if tt.wantFailed {
+ 						var failed *fabricengine.PushFailedError
+@@ -645,7 +643,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 		gitkit.CommitFile(t, weft, "local.txt", "local\n", "local")
+ 		gitkit.Git(t, weft, "remote", "set-url", "origin", filepath.Join(t.TempDir(), "no-such-repository"))
+ 
+-		if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, opts); err != nil {
++		if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, fake.options(nil)); err != nil {
+ 			t.Fatalf("CoalescePushRequest() error = %v; want nil", err)
+ 		}
+ 
+@@ -662,7 +660,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 			gitkit.CommitFile(t, p.weftPath, "local.txt", "local\n", "local")
+ 			var sleeps int
+ 
+-			_, err := fabricengine.PushAnchored(p.location, fabricengine.SyncOptions{BackoffSleep: countingBackoff(&sleeps, nil)}, fabricengine.LockWaitUnbounded)
++			_, err := fabricengine.PushAnchored(p.location, p.fake.options(countingBackoff(&sleeps, nil)), fabricengine.LockWaitUnbounded)
+ 
+ 			var failed *fabricengine.PushFailedError
+ 			if !errors.As(err, &failed) || failed.Record.Class != fabricengine.PushFailureGone || !errors.Is(err, fabricengine.ErrBranchGone) {
+@@ -690,7 +688,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 			gitkit.CommitFile(t, p.weftPath, "local.txt", "local\n", "local")
+ 			var sleeps int
+ 
+-			if _, err := fabricengine.PushAnchored(p.location, fabricengine.SyncOptions{BackoffSleep: countingBackoff(&sleeps, nil)}, fabricengine.LockWaitUnbounded); err != nil {
++			if _, err := fabricengine.PushAnchored(p.location, p.fake.options(countingBackoff(&sleeps, nil)), fabricengine.LockWaitUnbounded); err != nil {
+ 				t.Fatalf("PushAnchored() error = %v; want nil, the ended entry's branch is left to its teardown", err)
+ 			}
+ 
+@@ -713,7 +711,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 			var sleeps int
+ 			backoff := countingBackoff(&sleeps, func(int) { p.endEntryOnOrigin("latepair") })
+ 
+-			if _, err := fabricengine.PushAnchored(p.location, fabricengine.SyncOptions{BackoffSleep: backoff}, fabricengine.LockWaitUnbounded); err != nil {
++			if _, err := fabricengine.PushAnchored(p.location, p.fake.options(backoff), fabricengine.LockWaitUnbounded); err != nil {
+ 				t.Fatalf("PushAnchored() error = %v; want nil", err)
+ 			}
+ 
+@@ -734,7 +732,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 			var sleeps int
+ 			backoff := countingBackoff(&sleeps, func(int) { gitkit.Git(t, p.weftPath, "remote", "set-url", "origin", realURL) })
+ 
+-			if _, err := fabricengine.PushAnchored(p.location, fabricengine.SyncOptions{BackoffSleep: backoff}, fabricengine.LockWaitUnbounded); err != nil {
++			if _, err := fabricengine.PushAnchored(p.location, p.fake.options(backoff), fabricengine.LockWaitUnbounded); err != nil {
+ 				t.Fatalf("PushAnchored() error = %v; want nil", err)
+ 			}
+ 
+@@ -749,7 +747,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 	})
+ 
+ 	t.Run("APrimeWeftPushRejectedAfterThisMachinesFinalizeKeepsTheLandingsCommits", func(t *testing.T) {
+-		f, _ := newFailureFixture(t)
++		f, fake := newFailureFixture(t)
+ 		weft, branch := f.primeWeft()
+ 		hubforge.AddPair(t, f.hub, "neve")
+ 		pairStatus := filepath.Join(f.hub.PairCodeWorktree("neve"), "_lym", "shed", "neve", "status.json")
+@@ -764,7 +762,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 		f.originCommit(branch, "notes/up.md", "up\n", "upstream work")
+ 		f.endEntryOnOrigin("neve")
+ 
+-		if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, opts); err != nil {
++		if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, fake.options(nil)); err != nil {
+ 			t.Fatalf("CoalescePushRequest() error = %v; want nil", err)
+ 		}
+ 
+@@ -778,7 +776,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 	})
+ 
+ 	t.Run("ABoltPushRejectedOverAnUnrelatedOriginEntryIsReplayedAndLands", func(t *testing.T) {
+-		f, _ := newFailureFixture(t)
++		f, fake := newFailureFixture(t)
+ 		board := f.hub.BoardDir()
+ 		branch := f.boardBranch()
+ 		gitkit.CommitFile(t, board, "board.json", boardFileOf(t, boardEntry("a", withBoardTitle("A")), boardEntry("b", withBoardTitle("B"))), "base board")
+@@ -786,7 +784,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 		gitkit.CommitFile(t, board, "board.json", boardFileOf(t, boardEntry("a", withBoardTitle("A")), boardEntry("b", withBoardTitle("B2"))), "retitle b")
+ 		f.originCommit(branch, "board.json", boardFileOf(t, boardEntry("a", withBoardTitle("A2")), boardEntry("b", withBoardTitle("B"))), "retitle a")
+ 
+-		if err := fabricengine.NewBolt(board).Push(opts); err != nil {
++		if err := fabricengine.NewBolt(board).Push(fake.options(nil)); err != nil {
+ 			t.Fatalf("Bolt.Push() error = %v; want nil", err)
+ 		}
+ 
+@@ -815,7 +813,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 		}
+ 		before := bareBranchTip(t, f.hub.RecordsBare, branch)
+ 
+-		if err := fabricengine.NewBolt(board).Push(opts); err != nil {
++		if err := fabricengine.NewBolt(board).Push(fake.options(nil)); err != nil {
+ 			t.Fatalf("Bolt.Push() with the board lock held error = %v; want nil", err)
+ 		}
+ 
+@@ -829,7 +827,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 		if err := boardLock.Release(); err != nil {
+ 			t.Fatalf("release the board lock: %v", err)
+ 		}
+-		if err := fabricengine.NewBolt(board).Push(opts); err != nil {
++		if err := fabricengine.NewBolt(board).Push(fake.options(nil)); err != nil {
+ 			t.Fatalf("Bolt.Push() after the release error = %v; want nil", err)
+ 		}
+ 		if got, want := bareBranchTip(t, f.hub.RecordsBare, branch), gitkit.RevParse(t, board, "HEAD"); got != want {
+@@ -858,17 +856,17 @@ func TestPushFailureClasses(t *testing.T) {
+ 
+ 		t.Run("SettledByResettingToOriginsHead", func(t *testing.T) {
+ 			p, f, originHead, dropped := rewound(t, "resetpair")
+-			_, err := f.PushBranch(opts)
++			_, err := f.PushBranch(p.fake.options(nil))
+ 			requireRewoundHoldBack(t, p, err, originHead, dropped)
+ 
+ 			gitkit.Git(t, p.warpPath, "reset", "--keep", originHead)
+-			if _, err := f.PushBranch(opts); err != nil {
++			if _, err := f.PushBranch(p.fake.options(nil)); err != nil {
+ 				t.Fatalf("PushBranch() after the reset error = %v; want nil", err)
+ 			}
+ 			requireNoFailedPush(t, p.hub.Location.HubPath)
+ 
+ 			next := gitkit.CommitFile(t, p.warpPath, "c3.txt", "c3\n", "c3")
+-			if _, err := f.PushBranch(opts); err != nil {
++			if _, err := f.PushBranch(p.fake.options(nil)); err != nil {
+ 				t.Fatalf("PushBranch() of a new commit error = %v; want nil, the branch no longer reading rewound", err)
+ 			}
+ 			if got := bareBranchTip(t, p.hub.CodeBare, p.warpBranch); got != next {
+@@ -878,17 +876,17 @@ func TestPushFailureClasses(t *testing.T) {
+ 
+ 		t.Run("SettledByAPlainPushThatRestoresTheDroppedCommits", func(t *testing.T) {
+ 			p, f, originHead, dropped := rewound(t, "restorepair2")
+-			_, err := f.PushBranch(opts)
++			_, err := f.PushBranch(p.fake.options(nil))
+ 			requireRewoundHoldBack(t, p, err, originHead, dropped)
+ 
+ 			gitkit.Git(t, p.warpPath, "push", "origin", p.warpBranch)
+-			if _, err := f.PushBranch(opts); err != nil {
++			if _, err := f.PushBranch(p.fake.options(nil)); err != nil {
+ 				t.Fatalf("PushBranch() after the plain push error = %v; want nil", err)
+ 			}
+ 			requireNoFailedPush(t, p.hub.Location.HubPath)
+ 
+ 			next := gitkit.CommitFile(t, p.warpPath, "c3.txt", "c3\n", "c3")
+-			if _, err := f.PushBranch(opts); err != nil {
++			if _, err := f.PushBranch(p.fake.options(nil)); err != nil {
+ 				t.Fatalf("PushBranch() of a new commit error = %v; want nil, the branch no longer reading rewound", err)
+ 			}
+ 			if got := bareBranchTip(t, p.hub.CodeBare, p.warpBranch); got != next {
+@@ -907,7 +905,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 		gitkit.Git(t, f.hub.CodeBare, "update-ref", "refs/heads/"+branch, originHead)
+ 		next := gitkit.CommitFile(t, prime, "c2.txt", "c2\n", "c2")
+ 
+-		if _, err := fabricengine.PushWarpRebaseFreeAt(prime, opts); err != nil {
++		if _, err := fabricengine.PushWarpRebaseFreeAt(prime, fake.options(nil)); err != nil {
+ 			t.Fatalf("PushWarpRebaseFreeAt() error = %v; want nil", err)
+ 		}
+ 
+@@ -922,7 +920,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 
+ 	t.Run("APrimeCodePushIsRecordedWithThePrimeFormOfItsWayForward", func(t *testing.T) {
+ 		t.Run("RejectedBecauseTheOtherMachinePushedFirst", func(t *testing.T) {
+-			f, _ := newFailureFixture(t)
++			f, fake := newFailureFixture(t)
+ 			prime := f.hub.PrimeWorktree()
+ 			branch := gitkit.CurrentBranch(t, prime)
+ 			other := filepath.Join(t.TempDir(), "other")
+@@ -933,7 +931,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 			opened := hubforge.OpenFabric(t, f.hub)
+ 			sleeps := 0
+ 
+-			_, err := opened.PushBranch(fabricengine.SyncOptions{BackoffSleep: countingBackoff(&sleeps, nil)})
++			_, err := opened.PushBranch(fake.options(countingBackoff(&sleeps, nil)))
+ 
+ 			var failed *fabricengine.PushFailedError
+ 			if !errors.As(err, &failed) || failed.Record.Class != fabricengine.PushFailureNotFastForward || !failed.Record.Prime {
+@@ -952,13 +950,13 @@ func TestPushFailureClasses(t *testing.T) {
+ 		})
+ 
+ 		t.Run("RefusedForWantOfPermission", func(t *testing.T) {
+-			f, _ := newFailureFixture(t)
++			f, fake := newFailureFixture(t)
+ 			prime := f.hub.PrimeWorktree()
+ 			gitkit.CommitFile(t, prime, "local.txt", "local\n", "local")
+ 			installPreReceive(t, f.hub.CodeBare, authRefusingHook)
+ 			opened := hubforge.OpenFabric(t, f.hub)
+ 
+-			_, err := opened.PushBranch(opts)
++			_, err := opened.PushBranch(fake.options(nil))
+ 
+ 			var failed *fabricengine.PushFailedError
+ 			if !errors.As(err, &failed) || failed.Record.Class != fabricengine.PushFailureAuth || !failed.Record.Prime || !errors.Is(err, gitrepo.ErrPushAuthRefused) {
+diff --git a/internal/fabricengine/pushclassified.go b/internal/fabricengine/pushclassified.go
+index e167379f..da969261 100644
+--- a/internal/fabricengine/pushclassified.go
++++ b/internal/fabricengine/pushclassified.go
+@@ -280,7 +280,7 @@ func (j *pushJob) record(class PushFailureClass, cause error, paths, commits []s
+ 	if errors.As(cause, &anchorStop) {
+ 		f.WayForward = anchorStop.WayForward
+ 	}
+-	if err := RecordPushFailure(j.hubPath, f, time.Now()); err != nil {
++	if err := recordPushFailure(j.hubPath, f, time.Now(), j.opts.notifier()); err != nil {
+ 		logger.Warn("fabricengine: failed-push record not written", "side", j.side, "branch", j.branch, "error", err)
+ 	}
+ 	return f
+diff --git a/internal/fabricengine/pushnotifier_helper_test.go b/internal/fabricengine/pushnotifier_helper_test.go
+index 69dd2167..568f5952 100644
+--- a/internal/fabricengine/pushnotifier_helper_test.go
++++ b/internal/fabricengine/pushnotifier_helper_test.go
+@@ -1,17 +1,15 @@
+-// pushnotifier_helper_test.go holds the failed-push notifier fake that the tier0 and tier1 push tests share:
+-// fakePushNotifier and installFakePushNotifier.
++// pushnotifier_helper_test.go holds the failed-push notifier fake that the tier0 and tier1 push tests share.
+ // It carries no build tag, so it compiles into every tag set.
+ 
+ package fabricengine_test
+ 
+ import (
+-	"testing"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ )
+ 
+-// fakePushNotifier counts the calls carrying its own hub path.
+-// A parallel test recording a failure in another hub never reaches those counts.
++// fakePushNotifier counts the calls carrying its own hub path and answers any other hub as posted.
+ type fakePushNotifier struct {
+ 	hub    string
+ 	posted bool
+@@ -27,7 +25,8 @@ func (n *fakePushNotifier) notify(hubPath, line string) (bool, error) {
+ 	return n.posted, n.err
+ }
+ 
+-func installFakePushNotifier(t *testing.T, n *fakePushNotifier) {
+-	t.Helper()
+-	t.Cleanup(fabricengine.InstallPushNotifier(n.notify))
++// options returns push options that mail a failed push through n and sleep each backoff delay through backoff.
++// A nil backoff sleeps for real.
++func (n *fakePushNotifier) options(backoff func(time.Duration)) fabricengine.SyncOptions {
++	return fabricengine.SyncOptions{Notifier: n.notify, BackoffSleep: backoff}
+ }
+diff --git a/internal/fabricengine/remoteteardown_test.go b/internal/fabricengine/remoteteardown_test.go
+index 60d23f89..a3b0f8bb 100644
+--- a/internal/fabricengine/remoteteardown_test.go
++++ b/internal/fabricengine/remoteteardown_test.go
+@@ -119,6 +119,50 @@ func TestNoticeRemoteTeardown(t *testing.T) {
+ 	})
+ }
+ 
++// TestSyncOptionsNotifier covers which notifier a push's options mail through:
++// its own Notifier when set, otherwise the process's installed one.
++// The rows install the process's push notifier, so neither the test nor its rows are parallel.
++func TestSyncOptionsNotifier(t *testing.T) {
++	tiergate.Require(t, 0)
++	tests := []struct {
++		name          string
++		setOwn        bool
++		wantInstalled int
++		wantOwn       int
++	}{
++		{"NilNotifierFallsBackToTheInstalledOne", false, 1, 0},
++		{"OwnNotifierShadowsTheInstalledOne", true, 0, 1},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			installed := recordNotices(t)
++			var own []string
++			options := SyncOptions{}
++			if tt.setOwn {
++				options.Notifier = func(hubPath, line string) (bool, error) {
++					own = append(own, line)
++					return true, nil
++				}
++			}
++
++			notify := options.notifier()
++			if notify == nil {
++				t.Fatalf("SyncOptions.notifier() = nil; want a notifier")
++			}
++			if _, err := notify("hub", "line"); err != nil {
++				t.Fatalf("notifier error = %v; want nil", err)
++			}
++
++			if got := len(installed()); got != tt.wantInstalled {
++				t.Errorf("installed notifier mails = %d; want %d", got, tt.wantInstalled)
++			}
++			if len(own) != tt.wantOwn {
++				t.Errorf("own notifier mails = %d; want %d", len(own), tt.wantOwn)
++			}
++		})
++	}
++}
++
+ // TestNoticeRemoteTeardownEnded covers the notice of a teardown that ended before its last step:
+ // it carries the slug, the reason and a way forward naming the command of every job kind.
+ // The rows install the process's push notifier, so neither the test nor its rows are parallel.
+diff --git a/internal/fabricengine/remove.go b/internal/fabricengine/remove.go
+index 7f6eb29e..6a5cf91d 100644
+--- a/internal/fabricengine/remove.go
++++ b/internal/fabricengine/remove.go
+@@ -417,7 +417,7 @@ func (t *Topology) removePair(l *lymcwd.Location, slug string, force, remote, lo
+ 		if housekeepHook != nil {
+ 			housekeepHook(slug)
+ 		}
+-		housekeepStores(l, slug, t.inFlight)
++		housekeepStores(l, slug, t.inFlight, t.gcAutoThreshold)
+ 	}
+ 
+ 	strayPath := ""
+diff --git a/internal/fabricengine/topology.go b/internal/fabricengine/topology.go
+index 1d8590ed..2e1fd83f 100644
+--- a/internal/fabricengine/topology.go
++++ b/internal/fabricengine/topology.go
+@@ -13,6 +13,10 @@ type Topology struct {
+ 	leftover leftoverSeam
+ 	// inFlight answers which other pairs' sessions are live when a pair is removed; nil answers none.
+ 	inFlight InFlightProbe
++	// gcAutoThreshold is the loose-object estimate above which a removal's foreground gc packs a store.
++	gcAutoThreshold int
++	// anchor stands in for the failures of an anchor change's weft move; its zero value is production.
++	anchor anchorSeams
+ 	// teardownWait bounds how long a mutation of a pair waits for the pair's teardown lock.
+ 	teardownWait time.Duration
+ 	// archiveSleep sleeps between the attempts of an archive-tag push; nil sleeps for real.
+@@ -31,7 +35,8 @@ func (t *Topology) SetInFlightProbe(probe InFlightProbe) {
+ // NewTopology returns a Topology operating with the given config.
+ func NewTopology(cfg Config) *Topology {
+ 	return &Topology{
+-		cfg:          cfg,
+-		teardownWait: StatusPushLockWait,
++		cfg:             cfg,
++		teardownWait:    StatusPushLockWait,
++		gcAutoThreshold: defaultGCAutoThreshold,
+ 	}
+ }
