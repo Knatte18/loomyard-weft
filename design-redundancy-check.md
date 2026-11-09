@@ -1,6 +1,6 @@
 # Redundant tests found mechanically: a coverage engine, a map per package, a gate report and its review
 
-`redundancy-check` · Project · feature, testkit, gate
+`redundancy-check` · Project · feature, testkit, gate · done
 
 Decision record: [Sketch](decision-redundancy-check.md)
 

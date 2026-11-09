@@ -460,6 +460,7 @@
       "isolated": false,
       "brief": "",
       "body": "Groups the entries filed from the Sketch `redundant-test-finder`: testcover-engine, testmap-verb, testmap-dobby-refresh, gate-redundancy-report, review-reads-redundancy.\n",
+      "status": "done",
       "created": "2026-11-08T18:46:50Z",
       "revised": "2026-11-08T18:46:50Z",
       "discussed": true
