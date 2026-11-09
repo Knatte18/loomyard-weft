@@ -1,6 +1,6 @@
 # P4 Arras: one recipe that runs Motif and raddle in a row, with a perch on the split
 
-Rendered 2026-11-09 12:42 UTC; every age below is as of then.
+Rendered 2026-11-09 12:45 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`arras-recipe`](design-arras-recipe.md) · Age 20h · Owner `osl-1046`
@@ -10,17 +10,16 @@ Groups the entries filed from the Sketch `motif-raddle-recipe`: project-release-
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (5)
+## Tasks (4)
 
 Concrete and claimable; only a task can run.
 
-### Running (2)
+### Running (1)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Releasing a project with lym board set-status releases its draft member tasks** | [`project-release-members`](design-project-release-members.md)<br>[Sketch](decision-project-release-members.md) | darn · light | Finalize | osl-1046 | 20h<br>20h | shed, loom, burler, arbiter, board |
 | T5 | **Raddle's perch mode: recorded from the recipe's rows, with its outcome checks and refusals** | [`raddle-perch-mode`](design-raddle-perch-mode.md)<br>[Sketch](decision-raddle-perch-mode.md) | darn · solid | Code-Burler-Fix | osl-1046 | 20h<br>20h | shed, loom, burler, arbiter, board |
 
 ### Ready (0)
@@ -43,7 +42,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **An arras family filing turns the run's entry into its project and re-points its dependents** | [`arras-family-filing`](design-arras-family-filing.md)<br>[Sketch](decision-arras-family-filing.md) | darn · solid | T4<br>T5<br>T6 | 20h<br>20h | shed, loom, burler, arbiter, board |
+| T7 | **An arras family filing turns the run's entry into its project and re-points its dependents** | [`arras-family-filing`](design-arras-family-filing.md)<br>[Sketch](decision-arras-family-filing.md) | darn · solid | T5<br>T6 | 20h<br>20h | shed, loom, burler, arbiter, board |
 
 ### Layer C (1)
 
@@ -51,8 +50,16 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **The shipped rule and docs name arras as the recipe for a tapestry-sized note** | [`arras-shipped-text`](design-arras-shipped-text.md)<br>[Sketch](decision-arras-shipped-text.md) | darn · docs | T4<br>T5<br>T6<br>T7 | 20h<br>20h | shed, loom, burler, arbiter, board |
+| T8 | **The shipped rule and docs name arras as the recipe for a tapestry-sized note** | [`arras-shipped-text`](design-arras-shipped-text.md)<br>[Sketch](decision-arras-shipped-text.md) | darn · docs | T5<br>T6<br>T7 | 20h<br>20h | shed, loom, burler, arbiter, board |
 
 ## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T4 | **Releasing a project with lym board set-status releases its draft member tasks** | [`project-release-members`](design-project-release-members.md)<br>[Sketch](decision-project-release-members.md) | 20h<br>20h | shed, loom, burler, arbiter, board |
