@@ -459,7 +459,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `motif-raddle-recipe`.\n\nTakes: the board as it is today: Board.SetStatus and Store.SetStatus, validateWrite and the draft rule\nDelivers: a null status from `lym board set-status` on a project with no status releases its direct draft member tasks in one write, validated as each member's own release, refusing as a whole on a failure and refusing a project with a run status or done with each member's release as the way forward; Board.SetStatus, Store.SetStatus, upsert and merge release no member\nExports: a Board method the set-status verb alone calls to release a project with its draft members\n\nThe part changes these packages:\n\n- internal/boardengine (about 150 changed lines)\n- internal/boardcli (about 80 changed lines)\n",
-      "status": "running · Darn-Write",
+      "status": "running · Drift-Verify",
       "created": "2026-11-08T16:15:45Z",
       "revised": "2026-11-08T16:15:45Z",
       "profile": "light",
