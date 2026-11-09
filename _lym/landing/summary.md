@@ -1,65 +1,48 @@
-# internal/testcover engine, with testtiming's package-scoped verdict
+# testcover: shared coverage engine, content block keys, map record
 
-`go run ./cmd/testtiming -redundancy` judged each test over every block of the module.
-Blocks in fixture packages left almost every test unique,
-so the report listed no candidate for a package like `internal/fabricengine`.
-The runner and verdict also sat in a `main` package, which the coming map verb and gate step cannot import.
+`internal/testcover` is new.
+It holds the per-test coverage machinery that `cmd/testtiming` owned, so the tool and later callers share one runner and one verdict.
+A `main` package cannot be imported, which is why the code moves rather than being called in place.
 
 ## What changes
 
-**New package `internal/testcover`.**
-It holds what `cmd/testtiming` had, now exported:
-
-- `Toolchain.BuildBinary`, `ListTests` and `RunAlone` build a package's coverage binary, list its top-level tests and run each test alone with its own profile.
-  The go command and environment are fields, so tests can swap in a stand-in.
-  Every spawn is logged through `internal/logger`, since the package is reachable from future `lym` verbs.
-- `ParseProfile` returns structured `ProfileBlock`s, covered or not.
-  `PackageBlocks` keeps the blocks in the package's own files, and `CoveredPositions` builds the block set a verdict compares.
-- `Judge` is the old `classify`: the contained set, the greedy removable set (slowest first) and the covering tests.
-  The eligibility rules have not changed: a skipped, failed, coverage-free, out-of-process or unresolved test is not judged.
-- `ScanSpawns` and `ScanKeeps` are the spawn scan and the keep scan, moved from `spawnscan.go` and `keep.go` without changes.
-- `KeyBlocks` keys a block by content (D3): its package-relative file, its enclosing function (`Type.Method` for a method, `PackageLevelFunc` outside any function), the SHA-256 of its source text, and its ordinal among blocks equal in those three.
-- `Map`, `MapTest`, `MapPath`, `ReadMap` and `WriteMap` define the per-package coverage map record (D4).
-  `WriteMap` writes it atomically through `internal/state`, which keeps unknown keys, with its lock path from `lock.TrackedFileLockPath`.
-
-**`internal/lymdirs`** adds `TestCoverDirName`, the maps directory under the hub's board-level `.lym`.
-The map verb composes the full path from it.
-
-**`cmd/testtiming -redundancy`** calls the engine (D2).
-It keeps one coverage binary per package, still instrumented over the whole module, and judges each test twice from the same profiles:
-
-- once over the package's own blocks, which decides the candidates and the removable set;
-- once over every block, which fills a new `Contained module-wide` column.
-
-Flags, `-pkg` splicing, keep handling and report writing work as before.
-
-**`cmd/lym/tierpurity_test.go`**'s allowlist entry for the spawn scan's fixture file now points to `internal/testcover/spawnscan_test.go`.
-`spawnobservability_test.go`'s entries for `cmd/testtiming` stay, because `redundancy.go` still runs `go list` and `go test -json`.
+- `internal/testcover` owns:
+  - the coverage-binary build and the run-alone runner (`Toolchain.BuildBinary`, `ListTests`, `RunAlone`);
+  - profile parsing and the package-block filter;
+  - `Judge`, the contained and greedy removable verdict;
+  - the static spawn scan and the `//testtiming:keep` scan, moved with `git mv` from `cmd/testtiming`;
+  - content block keys;
+  - the per-package coverage map record, `Map`, with `ReadMap` and `WriteMap`.
+- `cmd/testtiming -redundancy` keeps one coverage binary per package, instrumented over the whole module, but judges each test by the blocks of the package's own files.
+  Fixture-package blocks no longer make nearly every test unique, so packages such as `internal/fabricengine` can now list candidates.
+  Each candidate row gains a "Contained module-wide" column; a cut contained under both views is the safer one.
+- `-pkg` and the other flags are unchanged.
+  A `-pkg` splice now also rewrites the report header to the current one; unmeasured sections stay byte-identical.
+- Eligibility is unchanged: a skipped, failed, coverage-free or possibly out-of-process test is not judged.
+  "Covers nothing" now means nothing of its own package.
+  A kept candidate is still listed under Kept.
+- `internal/lymdirs` gains `TestCoverDirName`, the directory under the hub's `.lym` for the maps.
+- `cmd/lym`'s tier-purity guard is re-pointed at the moved `spawnscan_test.go`.
+- `docs/overview.md` and `PATTERN-test-speed.md` describe the new package and the extra column.
 
 ## Design decisions
 
-- The tool compares blocks by profile position, not by content key.
-  Within one run, position and content identify the same block, and positions need no source parse.
-  Content keys are for the map, which compares blocks across commits.
-- `KeyBlocks` computes ordinals among the blocks it is given, so a caller passes every block of the package's profile, covered or not.
-  It keys from a profile, which supplies the block boundaries, and then reads only the source files.
-- Under the package view, a test that covers only other packages' blocks is listed as `no blocks`, because it covers nothing of its own package.
-- The map stores tests as a slice sorted by the producer.
-  `internal/state` merges a slice element's unknown keys only when the element is unchanged.
+- Block key: package-relative file, enclosing function (receiver type for a method, a fixed name outside any function), a hash of the block's source text, and an ordinal among blocks equal in those three.
+  Line shifts keep a key; an edit gives a new key that no map test covers, so an edit errs towards no finding.
+  Bound: inserting a block that repeats the text of another in the same function shifts the ordinals of later identical blocks, which can give a wrong cover and a false contained verdict.
+  A reviewer reading each finding against its covering tests bounds that.
+- Map record: one JSON file per package under `<hub>/.lym/testcover/<package>/map.json`, shared by every worktree of the hub on the machine.
+  It holds the commit, build time, per-file content hashes, the block key table, and per judged test its tier, function hash, duration and covered block indexes, plus any build failure.
+  It is read and written through `internal/state`, keeps unknown keys, and replaces the old record whole.
+- The runner takes no gate slot; its caller holds one.
+- Nothing in this change writes or reads a map yet: the record type and its I/O are exported for later callers.
 
 ## Tests
 
-- `internal/testcover`:
-  - `TestJudge` (moved from `TestClassify`, now with a failed-test row);
-  - `TestParseProfile`;
-  - `TestKeyBlocks`: a shifted block keeps its key, an edited block gets a new one, and same-named methods on two receivers get different keys;
-  - `TestWriteMapReadMap`: the map round-trips, and an unknown key is read without refusal and kept on rewrite;
-  - the moved `TestScanSpawns` and `TestScanKeeps`;
-  - `TestBuildBinaryAndListTests` and `TestRunAlone` (tier1), which drive the runner against the test binary re-executed as a stand-in `go` and a stand-in coverage binary, so no test runs `go test`.
-- `cmd/testtiming`: `TestJudgePackage` gives a candidate whose only unique block lies in another package, and checks it is listed as a candidate and marked not contained module-wide.
-  `TestRenderPackage` covers the new column.
+No new test launches a test binary or `go test`.
+The runner's tests use a stand-in `go` and fake profiles.
 
-## Not changed
+## To check by hand
 
-`docs/benchmarks/test-redundancy.md` is not regenerated.
-A `-pkg` run splices the new four-column table into the measured sections and leaves the old three-column sections of other packages as they are until those packages are measured again.
+Nothing was left unrun.
+A real `go run ./cmd/testtiming -redundancy -pkg ./internal/fabricengine` run would show the new module-wide column on live data.
