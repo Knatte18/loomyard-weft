@@ -1,6 +1,6 @@
 # Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes
 
-`fabric-test-speed-work` · Project · enhancement, fabric, testkit, git
+`fabric-test-speed-work` · Project · enhancement, fabric, testkit, git · done
 
 Decision record: [Sketch](decision-fabric-test-speed-work.md)
 
