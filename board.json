@@ -741,28 +741,6 @@
       "project": "fabric-test-speed-work"
     },
     {
-      "id": 1254,
-      "handle": "T1",
-      "slug": "terminal-titles-hub-project",
-      "title": "Terminal titles read hub: project: task: slug",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "ide",
-        "reed"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Every console window title reads \u003chub\u003e: \u003cP#\u003e: \u003cT#\u003e: \u003cslug\u003e, with prime, beam and orch forms.",
-      "body": "## Seen (orch, 2026-11-09)\n\nThe operator runs several hubs at once on one machine and cannot tell at a glance which terminal belongs to which hub and project.\nToday the VS Code `window.title` of a worktree is the upper-cased hub shortname, a colon and the slug (`docs/overview.md`, the `lym ide` paragraph); the project and the task handle are not in it.\nThe tmux windows reed opens for orch and beam sessions carry names with no hub shortname.\n\n## This task\n\nEvery console window the operator sees gets the title `\u003chub shortname\u003e: \u003cP#\u003e: \u003cT#\u003e: \u003cslug\u003e`, where a part that does not exist is left out.\n`\u003chub shortname\u003e` is lower case, as `lym creel hubs` prints it, also in the VS Code title.\n`\u003cP#\u003e` is the handle of the entry's project and `\u003cT#\u003e` the task's own handle, both read from the board when the window is opened.\nA task under a beam takes the beam's handle as its `\u003cP#\u003e`.\n\n| What | Title |\n|---|---|\n| Task in project P3 | `ly: P3: T7: gate-shard-slow-package` |\n| Task with no project | `ly: T12: adopt-fix-root-t1` |\n| Task under a beam that is project P2 | `mo: P2: T4: wellbore-build-cost` |\n| Beam P2 itself | `mo: P2: beam` |\n| Prime | `ly: prime` |\n| Orch | `ly: orch` |\n| Orch in a beam | `mo: P2: orch` |\n\nA workspace file's title keeps its `workspace` suffix after the hub shortname.\nThe `runs` strand and the operator shell are not consoles of their own, so they get no title of their own.\nThe title is written when the window is opened and is not rewritten when a handle changes later; a running task is frozen, so its handles do not change under it.\n\n## Limits\n\n- One shared function forms the title for the VS Code window and the tmux windows; the places that form a title today call it.\n- Only where a title string is formed, and the tests that pin it, change.\n- No other part of lym reads a title back; a part that does is found first and named in the landing note.\n",
-      "status": "done",
-      "created": "2026-11-09T13:27:47Z",
-      "revised": "2026-11-09T13:27:47Z",
-      "profile": "light"
-    },
-    {
       "id": 1256,
       "handle": "T12",
       "slug": "slack-per-orch-activation",
