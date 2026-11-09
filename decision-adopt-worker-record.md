@@ -172,6 +172,12 @@ Rationale: the green end is the path that started every adopted run.
 The way forward is following the worker for `running`, the re-run of the same `lym adopt` for `interrupted`, and the stop's own way forward for `stopped`, with `lym adopt --discard` for both of the latter.
 A `done` record shows nothing.
 
+### Added after Discussion (parent, 2026-11-09): A failed step keeps its gathered part in the end envelope
+
+Decision: Take the review's preferred fix (F2): when a step fails, runSteps stores the part the step gathered before failing in the record (a field such as StoppedPart, cleared when that step later succeeds), and envelopeOf merges it after the done steps without listing the step as done. Card 7's refused-reconcile outcome asserts the envelope keeps the reconcile report and the mutations with partial true; card 6's failed-deploy row keeps asserting that the deploy outcome is named.
+
+Rationale: Today's refusals carry the reconcile report, the mutation record and the deploy outcome; a stopped adopt is exactly when the operator needs them, so the rewrite must not lose them.
+
 ## Constraints
 
 - Each step is safe to run again: a re-run adds only missing pairs, pauses only slugs the record does not list as paused, writes the same owners, judges the deploy again, starts beam steps that leave a live pair alone, and starts no second live check.
