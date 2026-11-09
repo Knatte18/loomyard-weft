@@ -2,6 +2,8 @@
 
 `machine-name-config` · Task · enhancement, config, slack · running · Discussion-Bouncer
 
+Decision record: [Sketch](decision-machine-name-config.md)
+
 ## Seen (operator, 2026-11-09)
 
 The machine's name comes from one hard-coded rule: `internal/machinename` takes the hostname up to its first dot, lower-cased (`osl-1046.ad.norceresearch.no` reads `osl-1046`).
