@@ -22,3 +22,7 @@ Tune raddle's split for darn families:
 - Concurrency: cut parts so the `depends_on` chain is short and parts with no dependency between them touch different packages, so more darns run at the same time.
 
 Open: what part size a darn handles well, and how raddle is told (its stencil, its perch on the split under `arras`, or both); the first `arras` families give the figures.
+
+Built since (2026-11-09, `raddle-perch-mode`): raddle's perch mode exists.
+A raddle run whose recipe rows hold a split perch (a Bouncer row over the raddle proposal) files in place of the operator's approval, and the perch accepts only one task or one project, never a beam or several parts as tasks.
+The perch's review is therefore one place to tell raddle about size and concurrency, beside the stencil.
