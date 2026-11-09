@@ -2,7 +2,7 @@
 
 `slack-per-orch-activation` · Task · enhancement, slack, reed, creel · draft
 
-Depends on: [`machine-name-config`](design-machine-name-config.md)
+Depends on: [`machine-name-verb`](design-machine-name-verb.md)
 
 ## Seen (operator, 2026-11-09)
 
