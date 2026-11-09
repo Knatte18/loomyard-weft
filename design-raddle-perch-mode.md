@@ -1,6 +1,6 @@
 # Raddle's perch mode: recorded from the recipe's rows, with its outcome checks and refusals
 
-`raddle-perch-mode` · Task · feature, shed, loom, burler, arbiter, board · running · Worktree-Create
+`raddle-perch-mode` · Task · feature, shed, loom, burler, arbiter, board · running · Seed-Child
 
 Decision record: [Sketch](decision-raddle-perch-mode.md)
 
