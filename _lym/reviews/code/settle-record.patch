@@ -1,0 +1,1957 @@
+diff --git a/contracts/recipes/arras-recipe.yaml b/contracts/recipes/arras-recipe.yaml
+new file mode 100644
+index 00000000..60d20ee1
+--- /dev/null
++++ b/contracts/recipes/arras-recipe.yaml
+@@ -0,0 +1,137 @@
++# arras-recipe.yaml is the recipe that discusses a task too large for one tapestry and splits it into board entries.
++# It runs the Motif block, motif-recipe.yaml's Discussion-Write and Discussion-Review ring,
++# then raddle's Raddle-Write and Raddle-File rows with the split perch between them, so the run lands no code.
++#
++# contract: loom takes the loom contract's record-only form:
++# the Motif block's Discussion-Write is its one record row, and it holds neither a build row nor a Finalize row,
++# so it needs no verify_source.
++# It holds no Record-Write row: Raddle-Write reads the decision record at the path Discussion-Write writes it.
++# The Motif block's block_gate undiscussed enters the block unless the run's board entry is flagged discussed.
++# For a discussed entry the gate writes the stored decision record into _lym/discussion
++# and passes over the block to Raddle-Write, so a run restarted after its Discussion approval resumes at Raddle-Write.
++#
++# The split perch is the Raddle-Review segment over the raddle proposal:
++# Raddle-Bouncer, Raddle-Burler-Review and Raddle-Burler-Fix.
++# Its rows follow the shared-segment ring tapestry-recipe.yaml's header states, with role_prefix split,
++# and their budget is loom.yaml's split_max_bounces, or review_max_bounces when it is absent.
++# Raddle-Bouncer's artifact_paths name the proposal, which records the raddle run's perch mode:
++# the perch's approval files the proposal in place of the operator's.
++# The Bouncer sets no carry_over, so no round writes into the decision record,
++# and no approve_seam, so Discussion-Bouncer's stays the recipe's one approval.
++# It sets no commit_seam either: Raddle-File's commit of the raddle directory commits the approved proposal.
++# It sets no subject, so it keeps no settle record:
++# its next entry over a settled verdict clears its run directory and reviews the new proposal from round 1.
++# A Raddle-File return or a goto into Raddle-Write is such an entry, so a new proposal gets the segment's full budget.
++# Raddle-Burler-Fix is a cold fixer gated by the raddle check, so a fixed proposal passes every proposal check
++# before the next round sees it.
++#
++# Raddle-Write carries no on_stuck: the third failing gate attempt halts the run for its parent.
++# Raddle-Write and Raddle-File share segment Raddle, which holds no Bouncer row,
++# so Raddle-File's Stuck returns to Raddle-Write.
++# Raddle-File's max_bounces stays above its own two-return halt, so the producer, not the budget, halts the third failure.
++# on_done is empty on Raddle-File, which ends the run.
++
++version: 1
++entry: Motif
++contract: loom
++terminals:
++  - Raddle-File
++
++producers:
++  # Motif runs the motif recipe inline: Discussion-Write and the Discussion-Review ring, defined once in motif-recipe.yaml.
++  - name: Motif
++    block: motif
++    block_gate: undiscussed
++    on_done: Raddle-Write
++
++  - name: Raddle-Write
++    engine: RaddleWrite
++    segment: Raddle
++    on_done: Raddle-Bouncer
++    config:
++      # gates holds this row's handoff until the proposal is mechanically valid: the raddle gate re-prompts the live session up to attempts times.
++      gates:
++        - name: raddle
++          attempts: 3
++
++  - name: Raddle-Bouncer
++    engine: Bouncer
++    segment: Raddle-Review
++    on_stuck: Raddle-Burler-Review
++    on_done: Raddle-File
++    config:
++      run_subdir: split
++      role_prefix: split
++      reviewer_fan_setting: loom.split_reviewer_fan
++      auto_accept_setting: loom.split_auto_accept
++      artifact_paths:
++        - _lym/raddle/proposal.yaml
++      rubric_stencil: loom-rubric-raddle-review
++      # escalate_decisions makes this Bouncer send a round's decision-class findings to the run's parent;
++      # Raddle-Burler-Fix sets decisions_escalated so its fixer is given none and posts no notice of its own.
++      escalate_decisions: true
++      # No model/effort/version key: loom.yaml's judge, seed and split_judge keys are the only source of this row's passes' models.
++
++  - name: Raddle-Burler-Review
++    engine: BurlerReview
++    segment: Raddle-Review
++    on_stuck: Raddle-Burler-Fix
++    # BurlerReviewProducer never returns Done, so this edge is unreachable, but an empty on_done ends the run silently.
++    on_done: Raddle-Burler-Fix
++    config:
++      # The same run_subdir value as Raddle-Bouncer makes the three rows write into one shared run directory.
++      run_subdir: split
++      role_prefix: split
++      reviewer_fan_setting: loom.split_reviewer_fan
++      fixer_fan_setting: loom.split_fixer_fan
++      profile:
++        target:
++          paths:
++            - _lym/raddle/proposal.yaml
++        fasit:
++          paths:
++            - _lym/discussion/decision-record.md
++          instructions: >
++            The decision record named above is the authority the split is judged against, every
++            Added after Discussion entry included, and it is read-only: no finding asks to change it.
++            The format authority is the raddle proposal spec, and its mechanical checks are already
++            enforced by the raddle gate over every proposal and every fix, so re-deriving them here
++            is duplicated work.
++        rubric_stencil: loom-rubric-raddle-review
++        # fix-scope: overlay: the proposal is records content reached through the junction,
++        # which only the loop owner commits, and Raddle-File commits the raddle directory.
++        fix-scope: overlay
++        # tool-use is required: the round reads the decision record and the board the split is filed on.
++        tool-use: true
++
++  - name: Raddle-Burler-Fix
++    engine: BurlerFix
++    segment: Raddle-Review
++    on_stuck: Raddle-Bouncer
++    # BurlerFixProducer never returns Done, so this edge is unreachable, but an empty on_done ends the run silently.
++    on_done: Raddle-Bouncer
++    config:
++      run_subdir: split
++      role_prefix: split
++      fixer_fan_setting: loom.split_fixer_fan
++      # decisions_escalated says Raddle-Bouncer's escalate_decisions sends the round's decision-class findings to the parent.
++      decisions_escalated: true
++      # review_row names this segment's review row, which a refusal's way forward sends the operator back to.
++      review_row: Raddle-Burler-Review
++      # The raddle gate holds the fixer's handoff until the fixed proposal passes every proposal check.
++      gates:
++        - name: raddle
++          attempts: 3
++      profile:
++        target:
++          paths:
++            - _lym/raddle/proposal.yaml
++        # fix-scope: overlay, for the reason the review row gives.
++        fix-scope: overlay
++
++  - name: Raddle-File
++    engine: RaddleFile
++    segment: Raddle
++    on_stuck: Raddle-Write
++    max_bounces: 3
++    on_done: ""
+diff --git a/contracts/recipes/recipes.go b/contracts/recipes/recipes.go
+index 3ef8bdda..f4110d55 100644
+--- a/contracts/recipes/recipes.go
++++ b/contracts/recipes/recipes.go
+@@ -46,3 +46,9 @@ var BattenRecipe []byte
+ //
+ //go:embed raddle-recipe.yaml
+ var RaddleRecipe []byte
++
++// ArrasRecipe is the arras recipe's producer graph, in internal/shedbuild's recipe format.
++// Its rows discuss a task, split its decision record into board entries under the split perch's review, and file them.
++//
++//go:embed arras-recipe.yaml
++var ArrasRecipe []byte
+diff --git a/contracts/stencils/loom/loom-rubric-raddle-review.md b/contracts/stencils/loom/loom-rubric-raddle-review.md
+new file mode 100644
+index 00000000..17a04446
+--- /dev/null
++++ b/contracts/stencils/loom/loom-rubric-raddle-review.md
+@@ -0,0 +1,63 @@
++<!-- This is the Raddle-Review rubric, the split perch's rubric.
++     The Bouncer row and the review row of the Raddle-Review perch read it.
++     The Raddle-Bouncer row interpolates it as the rubric marker value of bouncer-template-seed.md and bouncer-template-judge.md,
++     and the Raddle-Burler-Review row interpolates it the same way into internal/burlerengine's review prompt.
++     It is a marker VALUE, never a template: its only markers are the ones ReadRubric fills,
++     and internal/stencil's StripLeadingComment removes this comment before either consumer sees it. -->
++
++# Raddle-Review rubric
++
++The subject under review is the raddle proposal, `_lym/raddle/proposal.yaml`: the split of the run's decision record into board entries.
++The authority the split is judged against is the decision record, `_lym/discussion/decision-record.md`.
++Read the whole record, every `### Added after Discussion` entry included, before judging the split.
++The record is read-only context: no finding asks to change it.
++The proposal's format is `{{.specs_dir}}/raddle/raddle-proposal-spec.md`.
++The raddle agent's own stencil is `{{.stencils_dir}}/raddle/raddle-template-agent.md`: read it to learn what the agent was told.
++
++## Already enforced
++
++Every mechanical check of the proposal spec, the perch-mode outcome checks included, runs in the `raddle` gate.
++The gate passes every proposal before this round sees it and every fix before the next round sees it.
++Do not re-derive those checks.
++A malformed field, an unknown recipe or profile, a decision id no part names, a dependency cycle or a shape perch mode refuses is never a finding here.
++
++## Judge the split
++
++Judge the split's judgement, not its format:
++
++- **Every decision lands where it can be built.**
++  Every decision of the record, and every `Added after Discussion` entry, lands in a part whose scope and contract can build it.
++  An `Added after Discussion` entry carries no decision id, so the gate cannot tell whether a part builds it; this round can.
++- **The seams hold.**
++  Each part's contract, what it takes, delivers and exports, matches what the parts on its `depends_on` path deliver.
++  A part that takes what no part before it delivers is a finding.
++- **The order follows the record.**
++  The parts follow the record's stated order, or each departure is listed in `order_departures` with its cost.
++- **Each part's recipe and profile fit it.**
++  A part's recipe and profile fit its size and risk, and each cost line rests on the cells it cites.
++- **The outcome fits the record's scope.**
++  One task or a family of parts fits the scope the record states.
++
++## Do not flag
++
++- **Wording and style of a part's title, brief or body.**
++  A finding about how a part reads, when what it says is right, is not a finding.
++- **A split you would cut differently.**
++  A different split that is no better against the judgements above is not a finding.
++
++## Amendment
++
++{{.amendment}}
++
++When the note above is not `none`, this round reviews an amendment: review only the change it names, and report nothing about the settled remainder.
++
++## Finding class
++
++Every finding carries one class: `design`, `scope`, `decision` or `consistency`.
++Their generic meanings are in burler's review step; this section does not restate them.
++In this segment, `design` means the split is wrong: a decision no part can build, a seam that does not hold, or a recipe or profile that does not fit its part.
++In this segment, `decision` means a question only the run's parent can settle:
++two record entries that contradict each other on what the split must build,
++or a landed change or another run that overtakes what the record asks the parts to build.
++A choice the raddle agent can make is never `decision`.
++Every class is fixed by the fixer in the proposal alone, except `decision`, which goes to the run's parent and never to the fixer.
+diff --git a/contracts/stencils/rubric_test.go b/contracts/stencils/rubric_test.go
+index 2e3a55d0..749524fe 100644
+--- a/contracts/stencils/rubric_test.go
++++ b/contracts/stencils/rubric_test.go
+@@ -50,6 +50,7 @@ func TestLoomRubrics(t *testing.T) {
+ 		{"loom-rubric-discussion-review", LoomRubricDiscussionReview, "loom-template-discussion", true},
+ 		{"loom-rubric-plan-review", LoomRubricPlanReview, "loom-template-plan", true},
+ 		{"loom-rubric-code-review", LoomRubricCodeReview, "", true},
++		{"loom-rubric-raddle-review", LoomRubricRaddleReview, "raddle-template-agent", true},
+ 	}
+ 
+ 	for _, tt := range tests {
+diff --git a/contracts/stencils/stencils.go b/contracts/stencils/stencils.go
+index af0e9f9a..f74b264d 100644
+--- a/contracts/stencils/stencils.go
++++ b/contracts/stencils/stencils.go
+@@ -194,6 +194,11 @@ var LoomRubricDiscussionReview []byte
+ //go:embed loom/loom-rubric-plan-review.md
+ var LoomRubricPlanReview []byte
+ 
++// LoomRubricRaddleReview is the Raddle-Review rubric, read by every row of the split perch over a raddle proposal.
++//
++//go:embed loom/loom-rubric-raddle-review.md
++var LoomRubricRaddleReview []byte
++
+ // LoomRubricCodeReview is the Code-Review rubric.
+ // Every row of the Code-Review perch reads it, in whichever recipes hold one.
+ //
+@@ -754,6 +759,7 @@ var entries = []registryEntry{
+ 	{"loom-template-arbiter", &LoomTemplateArbiter},
+ 	{"loom-rubric-discussion-review", &LoomRubricDiscussionReview},
+ 	{"loom-rubric-plan-review", &LoomRubricPlanReview},
++	{"loom-rubric-raddle-review", &LoomRubricRaddleReview},
+ 	{"loom-rubric-code-review", &LoomRubricCodeReview},
+ 	{"loom-template-prior-plan", &LoomTemplatePriorPlan},
+ 	{"burler-step-1-explore", &BurlerStep1Explore},
+diff --git a/docs/overview.md b/docs/overview.md
+index 0bc48b09..37474788 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -327,12 +327,12 @@ github.com/Knatte18/loomyard/
+ ├── internal/shedcheck/           authoring-time structural checker over an assembled OnDone/OnStuck producer graph
+ ├── internal/loomcli/             loom's cobra module: the session bootstrap, arming `internal/shedverbs`' generic status and pause verb bodies, and mounting `internal/sheddriver` for `lym loom drive`
+ ├── internal/loomshed/            loom's own row-name constants and producer constructors over `shedengine`
+-├── internal/loomrecipe/          assembles the `*shedengine.Shed` of the tapestry, darn, pawl, sampler, motif and raddle recipes from their embedded files, and expands tapestry's `Motif` block from motif, the recipe that makes a sketch, the decision record
++├── internal/loomrecipe/          assembles the `*shedengine.Shed` of the tapestry, darn, pawl, sampler, motif, raddle and arras recipes from their embedded files, and expands tapestry's and arras's `Motif` block from motif, the recipe that makes a sketch, the decision record
+ ├── internal/shedrecipe/          the engine registry — the name to `ShedProducer`-constructor mapping a recipe loader resolves each row's `Engine` against
+ ├── internal/shedbuild/           the recipe file format's loader and builder — decodes a recipe document and assembles the producer-definition list the shed engine already consumes
+ ├── internal/shedverbs/           the generic run/step/status/pause/goto cobra verb bodies shared by every module that arms a `*shedengine.Shed` onto a CLI subtree
+ ├── internal/sheddriver/          the shed layer's Go driver: its settle loop, rule table and hand-back, the tackler agent call, and the `shed` config module, told its paths and seams by the arming module
+-├── internal/shedcli/             the `lym shed` subtree: a named-recipe arming table for the tapestry, motif, raddle, darn, pawl, sampler and batten recipes plus the three CLI seams that register it under the lym root
++├── internal/shedcli/             the `lym shed` subtree: a named-recipe arming table for the tapestry, motif, raddle, arras, darn, pawl, sampler and batten recipes plus the three CLI seams that register it under the lym root
+ ├── internal/statuscommit/        the shared per-transition status commit core (skip while mid-merge, commit hard-errors, push spawn warns) that `loomcli` and `battencli` wrap
+ ├── internal/statuspane/          the pane mechanics the runs overview and the gate checklist share: a redraw-in-place pane loop and a lock-free status-file reader
+ ├── internal/landingshed/         landing's general ShedProducers, Parent-Align, the PR-Review row and Finalize, shared by reference across producer lists
+@@ -1031,7 +1031,7 @@ User-facing modules each get one `lym <module>` namespace:
+   A run with no seed gets `tapestry`.
+   `lym loom start` never rewrites a recorded recipe.
+   The `lym loom` verbs serve loom runs only:
+-  a recipe declaring `contract: loom` is served, among them tapestry, motif, raddle, darn, pawl and sampler.
++  a recipe declaring `contract: loom` is served, among them tapestry, motif, raddle, arras, darn, pawl and sampler.
+   A run of any other recipe is refused, naming the `lym shed` verbs;
+   a seed naming no recipe this lym knows is refused, naming the re-seed.
+   A verb that applies to some loom recipes refuses on the others by the recipe's rows, never its name:
+@@ -1319,10 +1319,14 @@ User-facing modules each get one `lym <module>` namespace:
+   `discussion_judge`/`code_judge` and `discussion_seed`/`code_seed` override the judge and seed per review segment.
+   An empty one takes its fallback.
+   `<segment>_reviewer_model`/`<segment>_fixer_model` for Discussion and Code override them per review segment.
++  `split_reviewer_model`/`split_fixer_model` do the same for the arras recipe's split perch, Raddle-Review.
++  An empty `split_fixer_model` takes the `raddle` key's model while that key is set.
++  `split_judge` overrides the judge for the split perch, which has no seed key of its own.
+   `discussion_reviewer_fan`/`code_reviewer_fan` cluster-review Discussion-Review or Code-Review.
+   Each names a `lenses.yaml` fan, or lists one per round.
+   `discussion_fixer_fan`/`code_fixer_fan` do the same for the fixer, an empty entry running the single fixer.
+   `code_reviewer_fan` is open to the local layer, and the other three are closed to it.
++  `split_reviewer_fan`/`split_fixer_fan` do the same for the split perch, and both are closed to the local layer.
+   The assistant reviewer sits beside the Discussion-Review or Code-Review chair.
+   `discussion_assist_reviewer_model`/`code_assist_reviewer_model` name its model, as one model-spec or a per-round list.
+   An empty entry runs no assistant that round.
+@@ -1346,6 +1350,8 @@ User-facing modules each get one `lym <module>` namespace:
+   A per-perch 0 takes `review_hard_max_bounces`, and a hard cap below its perch's budget is refused at load.
+   `discussion_auto_accept`/`code_auto_accept` make a perch accept a harvested round at a spent budget.
+   The perch then skips the soft-cap rule.
++  `split_max_bounces`, `split_hard_max_bounces` and `split_auto_accept` are the split perch's budget, hard cap and auto-accept.
++  `split_auto_accept` defaults to false, and a null `split_max_bounces` and a 0 `split_hard_max_bounces` take the shared values.
+   `tapestry.yaml` is the tapestry recipe's module, per-worktree, and holds the plan perch's own keys.
+   Those are the `plan` model-spec, `plan_timeout_min`, `implementer` and `plan_lenses`.
+   They also include `plan_reviewer_model`/`plan_fixer_model` and `plan_reviewer_fan`/`plan_fixer_fan`.
+@@ -1495,6 +1501,7 @@ User-facing modules each get one `lym <module>` namespace:
+   The keys are `discussion_reviewer_fan` and `code_reviewer_fan` in `loom.yaml`.
+   The third is `plan_reviewer_fan` in `tapestry.yaml`.
+   Each has a `*_fixer_fan` partner, and the last pair serves a darn run's Code-Review too.
++  The arras recipe's split perch has its own pair, `split_reviewer_fan` and `split_fixer_fan` in `loom.yaml`.
+   Each perch's `*_assist_reviewer_fan` key names the fan its assistant reviewer runs.
+   The forks of a code perch reach the diff through read-only git.
+   `lenses.yaml`'s `review-code` and `fix-code` fans carry lenses for a committed diff.
+@@ -1519,10 +1526,11 @@ User-facing modules each get one `lym <module>` namespace:
+ - **batten** — drives one task worktree's whole lifecycle as a single Shed run from the hub's prime worktree.
+   The lifecycle is to create the worktree, seed the child's own inner run from the Board task's own `recipe`,
+   run it to a terminal state, land it into the prime, and tear down.
+-  The `recipe` is one of `tapestry`, `motif`, `raddle`, `darn` and `sampler`.
++  The `recipe` is one of `tapestry`, `motif`, `raddle`, `arras`, `darn` and `sampler`.
+   An empty `recipe` means `board.yaml`'s `default_recipe`.
+   `motif` is for a Discussion-only child that lands no code.
+   `raddle` is for a child that files a Sketch's split on the board.
++  `arras` is for a child that discusses a task and splits its decision record into board entries.
+   `darn` is for a darn child, and `sampler` for a sampler child.
+   The code is `internal/battenshed`, `internal/battenrecipe` and `internal/battencli`.
+   Its verbs are `lym batten run|step|status|pause|goto|cancel <run-id>` and `lym batten cleanup [--apply]`.
+@@ -1788,7 +1796,7 @@ and the baseline capture is a detached registered process, not a gate tier.
+ See [internal/driftengine](../internal/driftengine/doc.go).
+ 
+ The batten Shed nests loom's, as its own recipe.
+-Its `Run-Shed` row seeds a task's run, tapestry, motif, raddle, darn or sampler and drives it as a child process,
++Its `Run-Shed` row seeds a task's run, tapestry, motif, raddle, arras, darn or sampler and drives it as a child process,
+ and it polls that run's own persisted status for the verdict.
+ There are two status files by design:
+ the task's, committed on the task branch, and batten's own, durable under prime's own `_lym/shed/<slug>/`.
+diff --git a/docs/reference/weaving-glossary.md b/docs/reference/weaving-glossary.md
+index 5cfcaec3..d387fa1c 100644
+--- a/docs/reference/weaving-glossary.md
++++ b/docs/reference/weaving-glossary.md
+@@ -133,7 +133,7 @@ Agent nouns name the one who does the work.
+ | pile | flor †, polvarp (pile warp) | sv lugg; fr velours; de Flor | raised loops or cut ends on the surface | state | – |
+ | terry | frotté | fr éponge; de Frottee | pile of uncut loops | state | – |
+ | tapestry | billedvev, gobelenger (pl.) | sv gobelängvävnad; fr tapisserie; de Gobelin | weft-faced pictorial weave | recipe, artifact | Taken: `tapestry`, the full task recipe: Discussion, Plan, Webster, Code review, Describe and Finalize, each review step followed by its own fix step. |
+-| arras | – | fr arras | a tapestry hung as a wall covering | artifact | Free: no recipe or module uses the name. |
++| arras | – | fr arras | a tapestry hung as a wall covering | recipe | Taken: `arras`, the recipe that discusses a task and splits its decision record into board entries under the split perch's review. |
+ | overshot | – † | sv opphämta †; de Überschuss | pattern from long weft floats on a plain ground | state | – |
+ | rep, ribbed weave | rips † | fr reps; de Rips | weave with fine crosswise ribs | state | – |
+ | double cloth | dobbeltvev | fr double étoffe; de Doppelgewebe | two layers woven at once | state, recipe | – |
+diff --git a/internal/battencli/childrecipe_test.go b/internal/battencli/childrecipe_test.go
+index d2eef17e..0bef887d 100644
+--- a/internal/battencli/childrecipe_test.go
++++ b/internal/battencli/childrecipe_test.go
+@@ -27,6 +27,7 @@ func TestChildRecipeSupported(t *testing.T) {
+ 		{shedrun.RecipePawl, true},
+ 		{shedrun.RecipeSampler, true},
+ 		{shedrun.RecipeRaddle, true},
++		{shedrun.RecipeArras, true},
+ 		{shedrun.RecipeBatten, false},
+ 		{"no-such-recipe", false},
+ 	}
+@@ -43,7 +44,7 @@ func TestChildRecipeSupported(t *testing.T) {
+ 	if !errors.Is(err, battenshed.ErrUnsupportedChildRecipe) {
+ 		t.Fatalf("unsupportedChildRecipeRefusal() error = %v; want it to wrap ErrUnsupportedChildRecipe", err)
+ 	}
+-	for _, want := range []string{shedrun.RecipeRaddle, "no-such-recipe"} {
++	for _, want := range []string{shedrun.RecipeRaddle, shedrun.RecipeArras, "no-such-recipe"} {
+ 		if !strings.Contains(err.Error(), want) {
+ 			t.Errorf("unsupportedChildRecipeRefusal() error = %q; want it to contain %q", err, want)
+ 		}
+diff --git a/internal/battencli/wire.go b/internal/battencli/wire.go
+index f46fb429..6ed17b0e 100644
+--- a/internal/battencli/wire.go
++++ b/internal/battencli/wire.go
+@@ -604,13 +604,13 @@ func boardRecipe(board *boardengine.Board, task boardengine.Task) string {
+ // childRecipeSupported reports whether a task worktree's bootstrap verb can run recipe as the child's own run.
+ // The admitted recipes are the ones `lym loom start` serves.
+ func childRecipeSupported(recipe string) bool {
+-	return recipe == shedrun.RecipeTapestry || recipe == shedrun.RecipeMotif || recipe == shedrun.RecipeDarn || recipe == shedrun.RecipePawl || recipe == shedrun.RecipeSampler || recipe == shedrun.RecipeRaddle
++	return recipe == shedrun.RecipeTapestry || recipe == shedrun.RecipeMotif || recipe == shedrun.RecipeDarn || recipe == shedrun.RecipePawl || recipe == shedrun.RecipeSampler || recipe == shedrun.RecipeRaddle || recipe == shedrun.RecipeArras
+ }
+ 
+ // unsupportedChildRecipeRefusal returns the refusal for a recipe that a task worktree's bootstrap verb cannot run.
+ // It wraps battenshed.ErrUnsupportedChildRecipe and names the admitted recipes.
+ func unsupportedChildRecipeRefusal(recipe string) error {
+-	return fmt.Errorf("%w: only %q, %q, %q, %q, %q and %q have a bootstrap verb Run-Shed can start in the task worktree, so a Board task's type must be %q, %q, %q, %q, %q or empty, and a project entry seeds %q; got %q", battenshed.ErrUnsupportedChildRecipe, shedrun.RecipeTapestry, shedrun.RecipeMotif, shedrun.RecipeDarn, shedrun.RecipePawl, shedrun.RecipeSampler, shedrun.RecipeRaddle, shedrun.RecipeTapestry, shedrun.RecipeMotif, shedrun.RecipeDarn, shedrun.RecipeSampler, shedrun.RecipeRaddle, shedrun.RecipePawl, recipe)
++	return fmt.Errorf("%w: only %q, %q, %q, %q, %q, %q and %q have a bootstrap verb Run-Shed can start in the task worktree, so a Board task's type must be %q, %q, %q, %q, %q, %q or empty, and a project entry seeds %q; got %q", battenshed.ErrUnsupportedChildRecipe, shedrun.RecipeTapestry, shedrun.RecipeMotif, shedrun.RecipeDarn, shedrun.RecipePawl, shedrun.RecipeSampler, shedrun.RecipeRaddle, shedrun.RecipeArras, shedrun.RecipeTapestry, shedrun.RecipeMotif, shedrun.RecipeDarn, shedrun.RecipeSampler, shedrun.RecipeRaddle, shedrun.RecipeArras, shedrun.RecipePawl, recipe)
+ }
+ 
+ // childSeedParams returns the params of a child's seed.
+diff --git a/internal/battencli/wire_test.go b/internal/battencli/wire_test.go
+index a8a693e4..c8d47353 100644
+--- a/internal/battencli/wire_test.go
++++ b/internal/battencli/wire_test.go
+@@ -467,7 +467,7 @@ func TestWire_WriteSeedRefusesANonLoomChildBeforeTouchingTheWorktree(t *testing.
+ 	if !errors.Is(err, battenshed.ErrUnsupportedChildRecipe) {
+ 		t.Fatalf("WriteSeed(batten) error = %v; want it to wrap ErrUnsupportedChildRecipe", err)
+ 	}
+-	for _, admitted := range []string{shedrun.RecipeTapestry, shedrun.RecipeMotif, shedrun.RecipeDarn, shedrun.RecipePawl, shedrun.RecipeSampler} {
++	for _, admitted := range []string{shedrun.RecipeTapestry, shedrun.RecipeMotif, shedrun.RecipeDarn, shedrun.RecipePawl, shedrun.RecipeSampler, shedrun.RecipeArras} {
+ 		if !strings.Contains(err.Error(), admitted) {
+ 			t.Errorf("WriteSeed(batten) error = %q; want it to name the admitted recipe %q", err, admitted)
+ 		}
+@@ -478,7 +478,7 @@ func TestWire_WriteSeedRefusesANonLoomChildBeforeTouchingTheWorktree(t *testing.
+ 		t.Errorf("WriteSeed(unknown) error = %v; want it to wrap ErrUnknownRecipe", err)
+ 	}
+ 
+-	for _, admitted := range []string{shedrun.RecipeTapestry, shedrun.RecipeMotif, shedrun.RecipeDarn, shedrun.RecipePawl, shedrun.RecipeSampler} {
++	for _, admitted := range []string{shedrun.RecipeTapestry, shedrun.RecipeMotif, shedrun.RecipeDarn, shedrun.RecipePawl, shedrun.RecipeSampler, shedrun.RecipeArras} {
+ 		err = c.env.SeedChild.WriteSeed(context.Background(), admitted, shedrun.DriverGo)
+ 		if errors.Is(err, battenshed.ErrUnsupportedChildRecipe) || errors.Is(err, battenshed.ErrUnknownRecipe) {
+ 			t.Fatalf("WriteSeed(%s) error = %v; want the child admitted past the recipe checks", admitted, err)
+diff --git a/internal/boardcli/verbs_test.go b/internal/boardcli/verbs_test.go
+index 61ac6ef9..4507162e 100644
+--- a/internal/boardcli/verbs_test.go
++++ b/internal/boardcli/verbs_test.go
+@@ -909,7 +909,7 @@ func stepProfiles(t *testing.T, f *cliFixture) {
+ 	if want := []string{"docs", "light", "solid", "speed", "wide"}; !slices.Equal(names, want) {
+ 		t.Errorf("profile names = %v, want %v", names, want)
+ 	}
+-	if want := map[string]any{"tapestry": "solid", "motif": "solid", "darn": "light", "pawl": "light", "raddle": "light"}; !reflect.DeepEqual(result["defaults"], want) {
++	if want := map[string]any{"tapestry": "solid", "arras": "solid", "motif": "solid", "darn": "light", "pawl": "light", "raddle": "light"}; !reflect.DeepEqual(result["defaults"], want) {
+ 		t.Errorf("defaults = %v, want %v", result["defaults"], want)
+ 	}
+ 
+diff --git a/internal/configreg/configreg_test.go b/internal/configreg/configreg_test.go
+index 44f2d37b..07ea7058 100644
+--- a/internal/configreg/configreg_test.go
++++ b/internal/configreg/configreg_test.go
+@@ -143,7 +143,7 @@ func TestModules_EveryTemplateKeyClassified(t *testing.T) {
+ 		"codex":    {"binary", "sandbox_mode", "writable_roots"},
+ 		"reed":     {"buttons", "debug_log", "mouse", "shell", "tmux", "tmux_conf"},
+ 		"shuttle":  {"deny_python", "run_dir"},
+-		"loom":     {"code_auto_accept", "code_fixer_fan", "discussion_advisors", "discussion_auto_accept", "discussion_fixer_fan", "discussion_lenses", "discussion_reviewer_fan"},
++		"loom":     {"code_auto_accept", "code_fixer_fan", "discussion_advisors", "discussion_auto_accept", "discussion_fixer_fan", "discussion_lenses", "discussion_reviewer_fan", "split_auto_accept", "split_fixer_fan", "split_reviewer_fan"},
+ 		"tapestry": {"plan_auto_accept", "plan_fixer_fan", "plan_lenses", "plan_reviewer_fan"},
+ 		"lenses":   {"fans", "lens_set", "lenses", "remove"},
+ 	}
+@@ -312,8 +312,9 @@ func TestLookup(t *testing.T) {
+ 			"reviewer_model", "fixer_model",
+ 			"discussion_reviewer_model", "discussion_fixer_model",
+ 			"code_reviewer_model", "code_fixer_model",
+-			"discussion_reviewer_fan", "code_reviewer_fan",
+-			"discussion_fixer_fan", "code_fixer_fan",
++			"split_reviewer_model", "split_fixer_model",
++			"discussion_reviewer_fan", "code_reviewer_fan", "split_reviewer_fan",
++			"discussion_fixer_fan", "code_fixer_fan", "split_fixer_fan",
+ 			"discussion_assist_reviewer_model", "code_assist_reviewer_model",
+ 			"discussion_assist_reviewer_fan", "code_assist_reviewer_fan",
+ 			"discussion_advisors",
+diff --git a/internal/configsync/configsync_test.go b/internal/configsync/configsync_test.go
+index 91d558f0..dc604261 100644
+--- a/internal/configsync/configsync_test.go
++++ b/internal/configsync/configsync_test.go
+@@ -761,7 +761,7 @@ func TestReconcileHubWideAt_SeedsFromHubPrimeLegacyOrTemplate(t *testing.T) {
+ 			module:        "profiles",
+ 			hubFile:       "# operator note\ndefaults: {loom: solid}\nsolid:\n  loom:\n    loom: {plan_max_bounces: 7}\n",
+ 			wantSeed:      SeedHub,
+-			wantContains:  []string{"# operator note", "defaults: {tapestry: solid, motif: solid, darn: light, pawl: light, raddle: light}", "  tapestry:\n    loom: {plan_max_bounces: 7, discussion_max_bounces: 2,"},
++			wantContains:  []string{"# operator note", "defaults: {tapestry: solid, motif: solid, darn: light, pawl: light, raddle: light, arras: solid}", "  tapestry:\n    loom: {plan_max_bounces: 7, discussion_max_bounces: 2,"},
+ 			wantAbsent:    []string{"loom: solid", "  loom:\n    loom:"},
+ 			wantMigrated:  []string{"defaults.loom: renamed to defaults.tapestry", "solid.loom: renamed to solid.tapestry"},
+ 			wantUnsettled: []string{},
+diff --git a/internal/loomcli/arbiterprompt.go b/internal/loomcli/arbiterprompt.go
+index e655df76..b3a7f0ef 100644
+--- a/internal/loomcli/arbiterprompt.go
++++ b/internal/loomcli/arbiterprompt.go
+@@ -25,9 +25,11 @@ const arbiterRepairVerbs = "Its repair verbs, run with `<slug>` the task named a
+ // The pawl recipe is described as a beam's life driven through the loom engine.
+ // A recipe with a `SamplerSession` row is described as a task's result made with the operator.
+ // The result is made in one interactive session.
+-// A recipe with a `RaddleFile` row is described as a run that splits a Sketch's stored decision record.
++// A recipe with a `RaddleFile` row and a `DiscussionWrite` row is described as a task's Discussion and its split.
++// Its split perch approves the parts it files as board entries, and the run lands no code.
++// A recipe with a `RaddleFile` row alone is described as a run that splits a Sketch's stored decision record.
+ // The record's parts become board entries the operator approves, and the run lands no code.
+-// The `RaddleFile` case is checked before the no-Finalize case, which it would otherwise match.
++// The `RaddleFile` cases are checked before the no-Finalize case, which they would otherwise match.
+ // A recipe with a `PlanWrite` row is described as a task driven from discussion to landing, labelled with its name.
+ // A recipe with no `Finalize` row is described as a task's Discussion that lands no code.
+ // Any other recipe is described as a task's code change driven from its decision record through one build session.
+@@ -42,6 +44,10 @@ func arbiterRecipeDescription(recipe string) string {
+ 		label := recipeLabel(recipe)
+ 		return "This is " + indefiniteArticle(label) + " " + label + " run, a task driven from discussion to landing. " + arbiterRepairVerbs
+ 	}
++	if recipeHasEngine(recipe, raddleFileEngine) && recipeHasEngine(recipe, discussionWriteEngine) {
++		label := recipeLabel(recipe)
++		return "This is " + indefiniteArticle(label) + " " + label + " run, a task's Discussion followed by its split into board entries its split perch reviews and approves; the run lands no code. " + arbiterRepairVerbs
++	}
+ 	if recipeHasEngine(recipe, raddleFileEngine) {
+ 		return "This is a " + recipeLabel(recipe) + " run that splits a Sketch's stored decision record into board entries the operator approves; the run lands no code. " + arbiterRepairVerbs
+ 	}
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 45d25cab..ace5a9b0 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -34,6 +34,7 @@
+ // The tree-scope verify seams follow `verify_source: tree_scope`.
+ // The Darn-Write seams are filled for a recipe with a Darn-Write row.
+ // The perch-off reading follows the Code-Review rows' entry gate as well as the budget.
++// The arras recipe's split perch, the Raddle-Review segment, reads loom.yaml's `split_*` keys as perch `split`.
+ // The merge fixer's plan directory and failure tracer follow a Plan-Write row.
+ // A recipe with a SamplerSession row loads the hub's `sampler.yaml` strictly in `wire`.
+ // `wire` refuses a malformed file before any row builds, and it fills the row's seams from `samplerDeps`.
+@@ -61,7 +62,7 @@
+ // Each status transition writes `<state> · <producer>` on the run's board entry, the run's start write included.
+ // The entry thus names the first row while it runs.
+ // A finished run of a recipe with a Finalize row writes nothing, its landing having marked the entry done.
+-// A finished run of a recipe with a RaddleFile row, a raddle run, writes nothing either.
++// A finished run of a recipe with a RaddleFile row, a raddle or arras run, writes nothing either.
+ // Its Raddle-File row ended the entry done instead of as a Sketch.
+ // A finished run of a recipe with neither a Finalize row nor a RaddleFile row, a motif run, makes its entry a Sketch.
+ // A Sketch is a note of the built-in type `sketch`.
+diff --git a/internal/loomcli/recipekeyed_test.go b/internal/loomcli/recipekeyed_test.go
+index b9699289..04109fcd 100644
+--- a/internal/loomcli/recipekeyed_test.go
++++ b/internal/loomcli/recipekeyed_test.go
+@@ -21,7 +21,7 @@ import (
+ )
+ 
+ // TestRecipeKeyedWiring asserts that each recipe-keyed branch picks the answer the recipe's rows and keys give.
+-// It runs for tapestry, motif, darn, pawl, sampler and raddle.
++// It runs for tapestry, motif, darn, pawl, sampler, raddle and arras.
+ func TestRecipeKeyedWiring(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -48,6 +48,7 @@ func TestRecipeKeyedWiring(t *testing.T) {
+ 		{"Pawl", shedrun.RecipePawl, false, false, "a beam's life", false},
+ 		{"Sampler", shedrun.RecipeSampler, true, false, "made with the operator in one interactive session", false},
+ 		{"Raddle", shedrun.RecipeRaddle, false, false, "splits a Sketch's stored decision record into board entries the operator approves", false},
++		{"Arras", shedrun.RecipeArras, false, false, "an arras run, a task's Discussion followed by its split into board entries its split perch reviews", false},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index f7cfe44a..c88202a3 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -1200,6 +1200,7 @@ var loomPerches = map[string]loomengine.Perch{
+ 	loomshed.NameDiscussionBouncer: loomengine.PerchDiscussion,
+ 	loomshed.NamePlanBouncer:       loomengine.PerchPlan,
+ 	loomshed.NameCodeBouncer:       loomengine.PerchCode,
++	loomshed.NameRaddleBouncer:     loomengine.PerchSplit,
+ }
+ 
+ // loomSegmentPerches maps each loom review segment's name to its review perch.
+@@ -1209,6 +1210,7 @@ var loomSegmentPerches = map[string]loomengine.Perch{
+ 	"Discussion-Review": loomengine.PerchDiscussion,
+ 	planReviewSegment:   loomengine.PerchPlan,
+ 	"Code-Review":       loomengine.PerchCode,
++	"Raddle-Review":     loomengine.PerchSplit,
+ }
+ 
+ // loomSegmentBudgets maps each loom review segment to its perch's resolved soft bounce cap.
+@@ -1252,6 +1254,7 @@ func segmentAssistBounds(location *lymcwd.Location, geom burlerengine.Geometry,
+ // Models and their keys come from review, and the Bouncer pair comes from judge.
+ // The budget and hard cap, with their keys, come from cfg.Caps, which resolves them through reviewbudget.
+ // The assistant's lists come from review too, and each segment's assistant takes its perch's entry of assistBounds.
++// The split perch has no assistant, so its segment's assistant lists are empty.
+ func loomSegmentSettings(cfg loomengine.Config, review loomengine.ReviewSettings, judge loomengine.JudgeSettings, assistBounds map[loomengine.Perch]assistBound) map[string]shedrecipe.SegmentSettings {
+ 	assists := map[loomengine.Perch]loomengine.AssistModels{
+ 		loomengine.PerchDiscussion: review.DiscussionAssist,
+@@ -1262,16 +1265,19 @@ func loomSegmentSettings(cfg loomengine.Config, review loomengine.ReviewSettings
+ 		loomengine.PerchDiscussion: review.Discussion,
+ 		loomengine.PerchPlan:       review.Plan,
+ 		loomengine.PerchCode:       review.Code,
++		loomengine.PerchSplit:      review.Split,
+ 	}
+ 	keys := map[loomengine.Perch]loomengine.SegmentKeys{
+ 		loomengine.PerchDiscussion: review.DiscussionKeys,
+ 		loomengine.PerchPlan:       review.PlanKeys,
+ 		loomengine.PerchCode:       review.CodeKeys,
++		loomengine.PerchSplit:      review.SplitKeys,
+ 	}
+ 	bouncers := map[loomengine.Perch]loomengine.BouncerModels{
+ 		loomengine.PerchDiscussion: judge.Discussion,
+ 		loomengine.PerchPlan:       judge.Plan,
+ 		loomengine.PerchCode:       judge.Code,
++		loomengine.PerchSplit:      judge.Split,
+ 	}
+ 	settings := make(map[string]shedrecipe.SegmentSettings, len(loomSegmentPerches))
+ 	for segment, perch := range loomSegmentPerches {
+diff --git a/internal/loomcli/wiring_test.go b/internal/loomcli/wiring_test.go
+index 32e8cc4a..a14f8012 100644
+--- a/internal/loomcli/wiring_test.go
++++ b/internal/loomcli/wiring_test.go
+@@ -355,6 +355,7 @@ func TestWire_DefaultConfig(t *testing.T) {
+ 			"Discussion-Review": want.Discussion,
+ 			"Plan-Review":       want.Plan,
+ 			"Code-Review":       want.Code,
++			"Raddle-Review":     want.Split,
+ 		} {
+ 			if got := c.env.Segments[segment].Models; !reflect.DeepEqual(got, wantModels) {
+ 				t.Errorf("c.env.Segments[%q].Models = %+v; want %+v", segment, got, wantModels)
+@@ -978,6 +979,15 @@ func TestWire_ReviewKeysReachTheEnv(t *testing.T) {
+ 			MaxBounces: 1, MaxBouncesKey: "code_max_bounces",
+ 			HardMaxBounces: 4, HardMaxBouncesKey: "review_hard_max_bounces", AmendMaxBounces: 1, ConfigFile: "loom.yaml",
+ 		},
++		// The split perch has no assistant: its lists and keys are empty, its bound the default one.
++		// Its empty reviewer key takes reviewer_model, and its empty fixer key takes the raddle key's model.
++		"Raddle-Review": {
++			Models: c.env.Segments["Raddle-Review"].Models, ReviewKey: loomKey("reviewer_model"), FixKey: loomKey("raddle"),
++			Bouncer:    shedadapters.BouncerModels{Seed: wantBouncerModels["Discussion-Review"].Seed, Judge: wantBouncerModels["Discussion-Review"].Judge},
++			Assist:     shedadapters.AssistSettings{Timeout: 60 * time.Minute},
++			MaxBounces: 2, MaxBouncesKey: "split_max_bounces",
++			HardMaxBounces: 4, HardMaxBouncesKey: "review_hard_max_bounces", AmendMaxBounces: 1, ConfigFile: "loom.yaml",
++		},
+ 	}
+ 	if !reflect.DeepEqual(c.env.Segments, wantSegments) {
+ 		t.Errorf("Segments = %+v; want %+v", c.env.Segments, wantSegments)
+diff --git a/internal/loomengine/caps.go b/internal/loomengine/caps.go
+index 1671bbb6..b4794c74 100644
+--- a/internal/loomengine/caps.go
++++ b/internal/loomengine/caps.go
+@@ -16,12 +16,14 @@ const (
+ 	PerchPlan Perch = "plan"
+ 	// PerchCode is the Code-Review perch.
+ 	PerchCode Perch = "code"
++	// PerchSplit is the split perch, the Raddle-Review perch over a raddle proposal.
++	PerchSplit Perch = "split"
+ )
+ 
+ // reviewPerches lists the review perches whose keys loom.yaml holds.
+ // Config loading, its spec and local-value validation take the perches from here.
+ // The plan perch's keys live in tapestry.yaml, so it is not listed here.
+-var reviewPerches = []Perch{PerchDiscussion, PerchCode}
++var reviewPerches = []Perch{PerchDiscussion, PerchCode, PerchSplit}
+ 
+ // reviewPerchNames returns reviewPerches' names as reviewbudget takes them.
+ func reviewPerchNames() []string {
+@@ -45,6 +47,8 @@ func (cfg Config) Caps(p Perch) reviewbudget.Caps {
+ 		ownSoft, ownHard = cfg.PlanMaxBounces, cfg.PlanHardMaxBounces
+ 	case PerchCode:
+ 		ownSoft, ownHard = cfg.CodeMaxBounces, cfg.CodeHardMaxBounces
++	case PerchSplit:
++		ownSoft, ownHard = cfg.SplitMaxBounces, cfg.SplitHardMaxBounces
+ 	}
+ 	return reviewbudget.Resolve(string(p), cfg.ReviewMaxBounces, cfg.ReviewHardMaxBounces, ownSoft, ownHard)
+ }
+diff --git a/internal/loomengine/config.go b/internal/loomengine/config.go
+index cf211ba6..2580efc9 100644
+--- a/internal/loomengine/config.go
++++ b/internal/loomengine/config.go
+@@ -450,14 +450,20 @@ type Config struct {
+ 	PlanFixerModel          burlerengine.ModelSpecList `yaml:"-"`
+ 	CodeReviewerModel       burlerengine.ModelSpecList `yaml:"code_reviewer_model"`
+ 	CodeFixerModel          burlerengine.ModelSpecList `yaml:"code_fixer_model"`
++	// SplitReviewerModel and SplitFixerModel are the split perch's own lists.
++	// An empty SplitFixerModel takes the raddle key's model, so the split is fixed by a model of the raddle agent's strength.
++	SplitReviewerModel burlerengine.ModelSpecList `yaml:"split_reviewer_model"`
++	SplitFixerModel    burlerengine.ModelSpecList `yaml:"split_fixer_model"`
+ 
+ 	// Each review segment's per-round reviewer and fixer fan lists.
+ 	DiscussionReviewerFan lenses.FanList `yaml:"discussion_reviewer_fan"`
+ 	PlanReviewerFan       lenses.FanList `yaml:"-"`
+ 	CodeReviewerFan       lenses.FanList `yaml:"code_reviewer_fan"`
++	SplitReviewerFan      lenses.FanList `yaml:"split_reviewer_fan"`
+ 	DiscussionFixerFan    lenses.FanList `yaml:"discussion_fixer_fan"`
+ 	PlanFixerFan          lenses.FanList `yaml:"-"`
+ 	CodeFixerFan          lenses.FanList `yaml:"code_fixer_fan"`
++	SplitFixerFan         lenses.FanList `yaml:"split_fixer_fan"`
+ 
+ 	// Each review segment's assistant reviewer model list and fan list, one entry per round;
+ 	// an empty model entry runs no assistant that round.
+@@ -477,6 +483,7 @@ type Config struct {
+ 	DiscussionJudge    string `yaml:"discussion_judge"`
+ 	PlanJudge          string `yaml:"-"`
+ 	CodeJudge          string `yaml:"code_judge"`
++	SplitJudge         string `yaml:"split_judge"`
+ 	DiscussionSeed     string `yaml:"discussion_seed"`
+ 	PlanSeed           string `yaml:"-"`
+ 	CodeSeed           string `yaml:"code_seed"`
+@@ -534,6 +541,9 @@ type Config struct {
+ 	DiscussionAutoAccept     bool `yaml:"discussion_auto_accept"`
+ 	PlanAutoAccept           bool `yaml:"-"`
+ 	CodeAutoAccept           bool `yaml:"code_auto_accept"`
++	SplitMaxBounces          *int `yaml:"split_max_bounces"`
++	SplitHardMaxBounces      int  `yaml:"split_hard_max_bounces"`
++	SplitAutoAccept          bool `yaml:"split_auto_accept"`
+ 
+ 	// PRReviewAskParent makes the PR-Review row ask the parent orch for a review of the run's open pull request.
+ 	// It is open to the local layer, so a task's run_settings turns it on or off for one run.
+@@ -589,8 +599,9 @@ func ConfigOpenMaps() []string {
+ 		"reviewer_model", "fixer_model",
+ 		"discussion_reviewer_model", "discussion_fixer_model",
+ 		"code_reviewer_model", "code_fixer_model",
+-		"discussion_reviewer_fan", "code_reviewer_fan",
+-		"discussion_fixer_fan", "code_fixer_fan",
++		"split_reviewer_model", "split_fixer_model",
++		"discussion_reviewer_fan", "code_reviewer_fan", "split_reviewer_fan",
++		"discussion_fixer_fan", "code_fixer_fan", "split_fixer_fan",
+ 		"discussion_assist_reviewer_model", "code_assist_reviewer_model",
+ 		"discussion_assist_reviewer_fan", "code_assist_reviewer_fan",
+ 		"discussion_advisors",
+@@ -637,6 +648,11 @@ func ConfigSpec() configengine.Spec {
+ 			"code_reviewer_fan":         none,
+ 			"discussion_fixer_fan":      guard,
+ 			"code_fixer_fan":            guard,
++			"split_reviewer_model":      none,
++			"split_fixer_model":         none,
++			"split_reviewer_fan":        guard,
++			"split_fixer_fan":           guard,
++			"split_judge":               none,
+ 
+ 			"discussion_assist_reviewer_model": none,
+ 			"code_assist_reviewer_model":       none,
+@@ -697,6 +713,8 @@ func segmentModelKeys(cfg Config) []segmentModelList {
+ 		{"discussion_fixer_model", cfg.DiscussionFixerModel},
+ 		{"code_reviewer_model", cfg.CodeReviewerModel},
+ 		{"code_fixer_model", cfg.CodeFixerModel},
++		{"split_reviewer_model", cfg.SplitReviewerModel},
++		{"split_fixer_model", cfg.SplitFixerModel},
+ 	}
+ }
+ 
+@@ -753,6 +771,8 @@ func fanKeys(cfg Config) []lenses.FanKey {
+ 		{Key: "code_reviewer_fan", Fans: cfg.CodeReviewerFan},
+ 		{Key: "discussion_fixer_fan", Fans: cfg.DiscussionFixerFan},
+ 		{Key: "code_fixer_fan", Fans: cfg.CodeFixerFan},
++		{Key: "split_reviewer_fan", Fans: cfg.SplitReviewerFan},
++		{Key: "split_fixer_fan", Fans: cfg.SplitFixerFan},
+ 		{Key: "discussion_assist_reviewer_fan", Fans: cfg.DiscussionAssistReviewerFan},
+ 		{Key: "code_assist_reviewer_fan", Fans: cfg.CodeAssistReviewerFan},
+ 	}
+@@ -1303,6 +1323,7 @@ func LoadConfig(dirs configengine.Dirs, module string) (Config, error) {
+ 		{"seed", cfg.Seed},
+ 		{"discussion_judge", cfg.DiscussionJudge},
+ 		{"code_judge", cfg.CodeJudge},
++		{"split_judge", cfg.SplitJudge},
+ 		{"discussion_seed", cfg.DiscussionSeed},
+ 		{"code_seed", cfg.CodeSeed},
+ 	} {
+@@ -1379,10 +1400,12 @@ func LoadConfig(dirs configengine.Dirs, module string) (Config, error) {
+ 		PerchSoft: map[string]*int{
+ 			string(PerchDiscussion): cfg.DiscussionMaxBounces,
+ 			string(PerchCode):       cfg.CodeMaxBounces,
++			string(PerchSplit):      cfg.SplitMaxBounces,
+ 		},
+ 		PerchHard: map[string]int{
+ 			string(PerchDiscussion): cfg.DiscussionHardMaxBounces,
+ 			string(PerchCode):       cfg.CodeHardMaxBounces,
++			string(PerchSplit):      cfg.SplitHardMaxBounces,
+ 		},
+ 	}); err != nil {
+ 		return Config{}, err
+diff --git a/internal/loomengine/config_test.go b/internal/loomengine/config_test.go
+index 6b768883..08902fa3 100644
+--- a/internal/loomengine/config_test.go
++++ b/internal/loomengine/config_test.go
+@@ -107,6 +107,10 @@ func templateConfig() Config {
+ 		DiscussionFixerModel:          burlerengine.ModelSpecList{""},
+ 		CodeReviewerModel:             burlerengine.ModelSpecList{"sonnet[medium]"},
+ 		CodeFixerModel:                burlerengine.ModelSpecList{"sonnet[medium]"},
++		SplitReviewerModel:            burlerengine.ModelSpecList{""},
++		SplitFixerModel:               burlerengine.ModelSpecList{""},
++		SplitReviewerFan:              lenses.FanList{""},
++		SplitFixerFan:                 lenses.FanList{""},
+ 		DiscussionReviewerFan:         lenses.FanList{"review-discussion", ""},
+ 		CodeReviewerFan:               lenses.FanList{"review-code", ""},
+ 		DiscussionFixerFan:            lenses.FanList{"fix-discussion"},
+@@ -128,6 +132,7 @@ func templateConfig() Config {
+ 		ReviewAmendMaxBounces:         1,
+ 		DiscussionMaxBounces:          intPtr(2),
+ 		CodeMaxBounces:                intPtr(1),
++		SplitMaxBounces:               intPtr(2),
+ 		DiscussionAutoAccept:          false,
+ 		CodeAutoAccept:                true,
+ 	}
+@@ -669,6 +674,8 @@ func TestLoadConfig_Refuses(t *testing.T) {
+ 		{"zero review_hard_max_bounces", "review_hard_max_bounces", "0", []string{"must be at least 1", "lym config loom --set review_hard_max_bounces=<n>", `lym loom resume`}, ""},
+ 		{"negative discussion_hard_max_bounces", "discussion_hard_max_bounces", "-1", []string{"set it to 0 to take review_hard_max_bounces", "lym config loom --set discussion_hard_max_bounces=<n>", `lym loom resume`}, ""},
+ 		{"negative code_hard_max_bounces", "code_hard_max_bounces", "-1", []string{"set it to 0 to take review_hard_max_bounces", "lym config loom --set code_hard_max_bounces=<n>", `lym loom resume`}, ""},
++		{"negative split_max_bounces", "split_max_bounces", "-1", []string{"must not be negative", "or to null to take review_max_bounces"}, ""},
++		{"negative split_hard_max_bounces", "split_hard_max_bounces", "-1", []string{"set it to 0 to take review_hard_max_bounces", "lym config loom --set split_hard_max_bounces=<n>", `lym loom resume`}, ""},
+ 		{"review_max_bounces above the default hard cap", "review_max_bounces", "5", []string{"review_hard_max_bounces", "lym config loom --set review_hard_max_bounces=<n>", "in the task worktree", `lym loom resume`}, ""},
+ 		{"code_max_bounces above the default hard cap", "code_max_bounces", "5", []string{"review_hard_max_bounces", "code_max_bounces"}, ""},
+ 		{"negative discussion timeout", "discussion_timeout_min", "-1", []string{"must not be negative"}, ""},
+diff --git a/internal/loomengine/review.go b/internal/loomengine/review.go
+index 33f2edfe..11a486f7 100644
+--- a/internal/loomengine/review.go
++++ b/internal/loomengine/review.go
+@@ -23,15 +23,18 @@ type ReviewSettings struct {
+ 	// Models holds the resolved shared reviewer and fixer model lists.
+ 	// They are the fallback of every segment whose own key is empty.
+ 	Models burlerengine.RoundModels
+-	// Discussion, Plan and Code hold each loom review segment's resolved models.
++	// Discussion, Plan, Code and Split hold each loom review segment's resolved models.
+ 	// A segment uses its own list where loom.yaml sets one, else the shared list in Models.
++	// The split perch's fixer falls back to the raddle key's model instead.
+ 	Discussion burlerengine.RoundModels
+ 	Plan       burlerengine.RoundModels
+ 	Code       burlerengine.RoundModels
+-	// DiscussionKeys, PlanKeys and CodeKeys name the config keys each of those segments' models came from.
++	Split      burlerengine.RoundModels
++	// DiscussionKeys, PlanKeys, CodeKeys and SplitKeys name the config keys each of those segments' models came from.
+ 	DiscussionKeys SegmentKeys
+ 	PlanKeys       SegmentKeys
+ 	CodeKeys       SegmentKeys
++	SplitKeys      SegmentKeys
+ 	// Timeout is one review round's shuttle-run deadline, derived from cfg.ReviewTimeoutMin.
+ 	Timeout time.Duration
+ 	// DiscussionAssist, PlanAssist and CodeAssist hold each loom review segment's resolved assistant reviewer lists.
+@@ -129,12 +132,14 @@ type JudgeSettings struct {
+ 	Discussion BouncerModels
+ 	Plan       BouncerModels
+ 	Code       BouncerModels
++	Split      BouncerModels
+ }
+ 
+ // ResolveJudge resolves each review segment's judge and seed models from cfg.
+ // The caller threads the returned JudgeSettings onto shedrecipe.Env.
+ // A segment's judge is its own judge key when non-empty, else judge.
+ // A segment's seed is its own seed key when non-empty, else seed when non-empty, else the segment's resolved judge.
++// The split perch has no seed key of its own.
+ // An error names the key the failing value came from.
+ func ResolveJudge(cfg Config, reg modelspec.Registry) (JudgeSettings, error) {
+ 	discussion, err := resolveSegmentBouncerModels("discussion", cfg.DiscussionJudge, cfg.DiscussionSeed, cfg, reg)
+@@ -149,7 +154,11 @@ func ResolveJudge(cfg Config, reg modelspec.Registry) (JudgeSettings, error) {
+ 	if err != nil {
+ 		return JudgeSettings{}, err
+ 	}
+-	return JudgeSettings{Discussion: discussion, Plan: plan, Code: code}, nil
++	split, err := resolveSegmentBouncerModels(string(PerchSplit), cfg.SplitJudge, "", cfg, reg)
++	if err != nil {
++		return JudgeSettings{}, err
++	}
++	return JudgeSettings{Discussion: discussion, Plan: plan, Code: code, Split: split}, nil
+ }
+ 
+ // resolveSegmentBouncerModels resolves one segment's judge and seed models.
+@@ -193,8 +202,12 @@ func resolveKeyedModelChoice(key, raw string, reg modelspec.Registry) (shuttleen
+ 	return shuttleengine.NewModelChoice(resolved), nil
+ }
+ 
++// splitFixerFallbackKey is the loom.yaml key whose model an empty split_fixer_model takes: the raddle agent's.
++const splitFixerFallbackKey = "raddle"
++
+ // ResolveReview resolves every entry of the shared reviewer and fixer model-spec lists through reg.
+ // It also resolves the list each loom segment sets, and pairs the result with the review round timeout.
++// The split perch's fixer list, when unset, is the raddle key's model while that key is set.
+ // It returns the ReviewSettings the caller threads onto shedrecipe.Env.
+ // Every entry is resolved at run start, so a bad later-round entry fails before round 1.
+ func ResolveReview(cfg Config, reg modelspec.Registry) (ReviewSettings, error) {
+@@ -211,6 +224,11 @@ func ResolveReview(cfg Config, reg modelspec.Registry) (ReviewSettings, error) {
+ 		Models:  burlerengine.RoundModels{Review: review, Fix: fix},
+ 		Timeout: time.Duration(cfg.ReviewTimeoutMin) * time.Minute,
+ 	}
++	split := loomSegmentModelSource(string(PerchSplit), cfg.SplitReviewerModel, cfg.SplitFixerModel)
++	if split.fix.Unset() && cfg.Raddle != "" {
++		split.fixKey = shuttleengine.ModelKey{Module: loomModule, Key: splitFixerFallbackKey}
++		split.fix = burlerengine.ModelSpecList{cfg.Raddle}
++	}
+ 	for _, segment := range []struct {
+ 		source segmentModelSource
+ 		models *burlerengine.RoundModels
+@@ -219,6 +237,7 @@ func ResolveReview(cfg Config, reg modelspec.Registry) (ReviewSettings, error) {
+ 		{loomSegmentModelSource("discussion", cfg.DiscussionReviewerModel, cfg.DiscussionFixerModel), &settings.Discussion, &settings.DiscussionKeys},
+ 		{loomSegmentModelSource("plan", cfg.PlanReviewerModel, cfg.PlanFixerModel), &settings.Plan, &settings.PlanKeys},
+ 		{loomSegmentModelSource("code", cfg.CodeReviewerModel, cfg.CodeFixerModel), &settings.Code, &settings.CodeKeys},
++		{split, &settings.Split, &settings.SplitKeys},
+ 	} {
+ 		*segment.models, *segment.keys, err = resolveSegmentModels(segment.source, settings.Models, reg)
+ 		if err != nil {
+diff --git a/internal/loomengine/review_test.go b/internal/loomengine/review_test.go
+index a8a62105..f226ea97 100644
+--- a/internal/loomengine/review_test.go
++++ b/internal/loomengine/review_test.go
+@@ -71,6 +71,10 @@ func TestResolveReview(t *testing.T) {
+ 	if !reflect.DeepEqual(settings.Code, settings.Models) {
+ 		t.Errorf("ResolveReview(...).Code = %+v; want the run-wide %+v", settings.Code, settings.Models)
+ 	}
++	// With no split lists and no raddle key, the split perch keeps the run-wide fixer.
++	if !reflect.DeepEqual(settings.Split, settings.Models) {
++		t.Errorf("ResolveReview(...).Split = %+v; want the run-wide %+v, since raddle is empty", settings.Split, settings.Models)
++	}
+ 	wantTimeout := 240 * time.Minute
+ 	if settings.Timeout != wantTimeout {
+ 		t.Errorf("ResolveReview(...).Timeout = %s; want %s", settings.Timeout, wantTimeout)
+@@ -88,6 +92,7 @@ func TestResolveReview(t *testing.T) {
+ 		{"Discussion", settings.DiscussionKeys, SegmentKeys{Review: loomKey("reviewer_model"), Fix: loomKey("discussion_fixer_model")}},
+ 		{"Plan", settings.PlanKeys, SegmentKeys{Review: tapestryKey("plan_reviewer_model"), Fix: loomKey("fixer_model")}},
+ 		{"Code", settings.CodeKeys, SegmentKeys{Review: loomKey("reviewer_model"), Fix: loomKey("fixer_model")}},
++		{"Split", settings.SplitKeys, SegmentKeys{Review: loomKey("reviewer_model"), Fix: loomKey("fixer_model")}},
+ 	} {
+ 		if tt.got != tt.want {
+ 			t.Errorf("ResolveReview(...).%sKeys = %+v; want %+v", tt.segment, tt.got, tt.want)
+@@ -125,6 +130,18 @@ func TestResolveReview(t *testing.T) {
+ 	if got := engineSettings.Models.Fix; len(got) != 1 || got[0].Engine != "other" {
+ 		t.Errorf("ResolveReview(engine registry).Models.Fix = %+v; want one entry on engine other", got)
+ 	}
++
++	// An unset split fixer list takes the raddle key's model while that key is set.
++	raddleSettings, err := ResolveReview(Config{ReviewerModel: burlerengine.ModelSpecList{"alpha"}, FixerModel: burlerengine.ModelSpecList{"alpha"}, Raddle: "beta"}, engineReg)
++	if err != nil {
++		t.Fatalf("ResolveReview(raddle set) = _, %v; want nil error", err)
++	}
++	if got := raddleSettings.Split.Fix; len(got) != 1 || got[0].Engine != "other" {
++		t.Errorf("ResolveReview(raddle set).Split.Fix = %+v; want one entry on engine other, the raddle key's model", got)
++	}
++	if want := (SegmentKeys{Review: loomKey("reviewer_model"), Fix: loomKey("raddle")}); raddleSettings.SplitKeys != want {
++		t.Errorf("ResolveReview(raddle set).SplitKeys = %+v; want %+v", raddleSettings.SplitKeys, want)
++	}
+ }
+ 
+ // TestResolveReview_Assist verifies the assistant lists resolve per round.
+@@ -266,55 +283,77 @@ func TestCapAssistTimeout(t *testing.T) {
+ 
+ // TestResolveJudge verifies ResolveJudge resolves each segment's judge and seed through the fallback order:
+ // a segment's judge key, else judge; a segment's seed key, else seed, else the segment's resolved judge.
++// The split perch has no seed key, so its seed is seed, else its resolved judge.
+ func TestResolveJudge(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 	// segmentModels is the seed and judge model of one segment, in discussion, plan, code order.
+ 	type segmentModels struct{ seed, judge string }
+ 	tests := []struct {
+-		name string
+-		cfg  Config
+-		want [3]segmentModels
++		name  string
++		cfg   Config
++		want  [3]segmentModels
++		split segmentModels
+ 	}{
+ 		{
+-			name: "all keys empty resolves every pass to judge",
+-			cfg:  Config{Judge: "sonnet[medium]"},
+-			want: [3]segmentModels{{"sonnet", "sonnet"}, {"sonnet", "sonnet"}, {"sonnet", "sonnet"}},
++			name:  "all keys empty resolves every pass to judge",
++			cfg:   Config{Judge: "sonnet[medium]"},
++			want:  [3]segmentModels{{"sonnet", "sonnet"}, {"sonnet", "sonnet"}, {"sonnet", "sonnet"}},
++			split: segmentModels{"sonnet", "sonnet"},
+ 		},
+ 		{
+-			name: "seed moves every seed",
+-			cfg:  Config{Judge: "sonnet[medium]", Seed: "haiku"},
+-			want: [3]segmentModels{{"haiku", "sonnet"}, {"haiku", "sonnet"}, {"haiku", "sonnet"}},
++			name:  "seed moves every seed",
++			cfg:   Config{Judge: "sonnet[medium]", Seed: "haiku"},
++			want:  [3]segmentModels{{"haiku", "sonnet"}, {"haiku", "sonnet"}, {"haiku", "sonnet"}},
++			split: segmentModels{"haiku", "sonnet"},
+ 		},
+ 		{
+-			name: "plan_judge alone moves plan's judge and seed together",
+-			cfg:  Config{Judge: "sonnet[medium]", PlanJudge: "opus"},
+-			want: [3]segmentModels{{"sonnet", "sonnet"}, {"opus", "opus"}, {"sonnet", "sonnet"}},
++			name:  "plan_judge alone moves plan's judge and seed together",
++			cfg:   Config{Judge: "sonnet[medium]", PlanJudge: "opus"},
++			want:  [3]segmentModels{{"sonnet", "sonnet"}, {"opus", "opus"}, {"sonnet", "sonnet"}},
++			split: segmentModels{"sonnet", "sonnet"},
+ 		},
+ 		{
+-			name: "plan_judge with seed keeps plan's seed off the judge",
+-			cfg:  Config{Judge: "sonnet[medium]", PlanJudge: "opus", Seed: "haiku"},
+-			want: [3]segmentModels{{"haiku", "sonnet"}, {"haiku", "opus"}, {"haiku", "sonnet"}},
++			name:  "plan_judge with seed keeps plan's seed off the judge",
++			cfg:   Config{Judge: "sonnet[medium]", PlanJudge: "opus", Seed: "haiku"},
++			want:  [3]segmentModels{{"haiku", "sonnet"}, {"haiku", "opus"}, {"haiku", "sonnet"}},
++			split: segmentModels{"haiku", "sonnet"},
+ 		},
+ 		{
+-			name: "plan_judge with plan_seed keeps plan's seed off the judge",
+-			cfg:  Config{Judge: "sonnet[medium]", PlanJudge: "opus", PlanSeed: "haiku"},
+-			want: [3]segmentModels{{"sonnet", "sonnet"}, {"haiku", "opus"}, {"sonnet", "sonnet"}},
++			name:  "plan_judge with plan_seed keeps plan's seed off the judge",
++			cfg:   Config{Judge: "sonnet[medium]", PlanJudge: "opus", PlanSeed: "haiku"},
++			want:  [3]segmentModels{{"sonnet", "sonnet"}, {"haiku", "opus"}, {"sonnet", "sonnet"}},
++			split: segmentModels{"sonnet", "sonnet"},
+ 		},
+ 		{
+-			name: "code_seed alone moves only code's seed",
+-			cfg:  Config{Judge: "sonnet[medium]", CodeSeed: "haiku"},
+-			want: [3]segmentModels{{"sonnet", "sonnet"}, {"sonnet", "sonnet"}, {"haiku", "sonnet"}},
++			name:  "code_seed alone moves only code's seed",
++			cfg:   Config{Judge: "sonnet[medium]", CodeSeed: "haiku"},
++			want:  [3]segmentModels{{"sonnet", "sonnet"}, {"sonnet", "sonnet"}, {"haiku", "sonnet"}},
++			split: segmentModels{"sonnet", "sonnet"},
+ 		},
+ 		{
+-			name: "plan_seed beats seed for plan alone",
+-			cfg:  Config{Judge: "sonnet[medium]", Seed: "haiku", PlanSeed: "opus"},
+-			want: [3]segmentModels{{"haiku", "sonnet"}, {"opus", "sonnet"}, {"haiku", "sonnet"}},
++			name:  "plan_seed beats seed for plan alone",
++			cfg:   Config{Judge: "sonnet[medium]", Seed: "haiku", PlanSeed: "opus"},
++			want:  [3]segmentModels{{"haiku", "sonnet"}, {"opus", "sonnet"}, {"haiku", "sonnet"}},
++			split: segmentModels{"haiku", "sonnet"},
+ 		},
+ 		{
+-			name: "discussion_judge and code_judge move their own segments",
+-			cfg:  Config{Judge: "sonnet[medium]", DiscussionJudge: "opus", CodeJudge: "haiku"},
+-			want: [3]segmentModels{{"opus", "opus"}, {"sonnet", "sonnet"}, {"haiku", "haiku"}},
++			name:  "discussion_judge and code_judge move their own segments",
++			cfg:   Config{Judge: "sonnet[medium]", DiscussionJudge: "opus", CodeJudge: "haiku"},
++			want:  [3]segmentModels{{"opus", "opus"}, {"sonnet", "sonnet"}, {"haiku", "haiku"}},
++			split: segmentModels{"sonnet", "sonnet"},
++		},
++		{
++			name:  "split_judge alone moves split's judge and seed together",
++			cfg:   Config{Judge: "sonnet[medium]", SplitJudge: "opus"},
++			want:  [3]segmentModels{{"sonnet", "sonnet"}, {"sonnet", "sonnet"}, {"sonnet", "sonnet"}},
++			split: segmentModels{"opus", "opus"},
++		},
++		{
++			name:  "split_judge with seed keeps split's seed off the judge",
++			cfg:   Config{Judge: "sonnet[medium]", SplitJudge: "opus", Seed: "haiku"},
++			want:  [3]segmentModels{{"haiku", "sonnet"}, {"haiku", "sonnet"}, {"haiku", "sonnet"}},
++			split: segmentModels{"haiku", "opus"},
+ 		},
+ 	}
+ 	for _, tt := range tests {
+@@ -329,6 +368,12 @@ func TestResolveJudge(t *testing.T) {
+ 			if err != nil {
+ 				t.Fatalf("ResolveJudge(...) = _, %v; want nil error", err)
+ 			}
++			if !strings.Contains(settings.Split.Seed.Model, tt.split.seed) {
++				t.Errorf("ResolveJudge(...).Split seed model = %q; want a %s model", settings.Split.Seed.Model, tt.split.seed)
++			}
++			if !strings.Contains(settings.Split.Judge.Model, tt.split.judge) {
++				t.Errorf("ResolveJudge(...).Split judge model = %q; want a %s model", settings.Split.Judge.Model, tt.split.judge)
++			}
+ 			got := [3]BouncerModels{settings.Discussion, settings.Plan, settings.Code}
+ 			for i, segment := range []string{"discussion", "plan", "code"} {
+ 				if !strings.Contains(got[i].Seed.Model, tt.want[i].seed) {
+diff --git a/internal/loomengine/template.yaml b/internal/loomengine/template.yaml
+index 2b558f2b..36e3f7c9 100644
+--- a/internal/loomengine/template.yaml
++++ b/internal/loomengine/template.yaml
+@@ -13,10 +13,14 @@ discussion_reviewer_model: ["opus[medium]", "opus[medium]", "sonnet[high]"]  # m
+ discussion_fixer_model: ""  # model-spec for the Discussion-Review fixer; empty, the default, takes fixer_model, a set value (one model-spec, or a per-round list whose last entry serves every later round) replaces it for this segment
+ code_reviewer_model: sonnet[medium]  # model-spec for the Code-Review reviewer, sonnet[medium] by default; empty takes reviewer_model, a set value (one model-spec, or a per-round list whose last entry serves every later round) replaces it for this segment
+ code_fixer_model: sonnet[medium]  # model-spec for the Code-Review fixer, sonnet[medium] by default; empty takes fixer_model, a set value (one model-spec, or a per-round list whose last entry serves every later round) replaces it for this segment
++split_reviewer_model: ""  # model-spec for the reviewer of the split perch, the arras recipe's Raddle-Review perch over the raddle proposal; empty, the default, takes reviewer_model, a set value (one model-spec, or a per-round list whose last entry serves every later round) replaces it for this segment
++split_fixer_model: ""  # model-spec for the split perch's cold fixer; empty, the default, takes the raddle key's model, so the split is fixed by a model of the raddle agent's strength; a set value (one model-spec, or a per-round list whose last entry serves every later round) replaces it
+ discussion_reviewer_fan: ["review-discussion", ""]  # fan name from lenses.yaml that turns the lens fan on for Discussion-Review; one fan name, or a YAML list with one fan name per round, the last entry serving every later round; the default fans round one out over review-discussion and runs later rounds solo; an empty entry runs that round solo
+ code_reviewer_fan: ["review-code", ""]  # fan name from lenses.yaml, such as review-code, that turns the lens fan on for Code-Review; one fan name, or a YAML list with one fan name per round, the last entry serving every later round; the default fans round one out over review-code and runs later rounds solo; an empty entry runs that round solo
+ discussion_fixer_fan: fix-discussion  # fan name from lenses.yaml that has the Discussion-Review fixer fork itself once per lens of the fan to check its fixes; one fan name, or a YAML list with one fan name per round, the last entry serving every later round; fix-discussion is the default, and an empty entry runs the single fixer for that round
+ code_fixer_fan: fix-code  # fan name from lenses.yaml, such as fix-code, that has the Code-Review fixer fork itself once per lens of the fan to check its fixes; one fan name, or a YAML list with one fan name per round, the last entry serving every later round; fix-code is the default, and an empty entry runs the single fixer for that round
++split_reviewer_fan: ""  # fan name from lenses.yaml that turns the lens fan on for the split perch's reviewer; one fan name, or a YAML list with one fan name per round, the last entry serving every later round; an empty entry, the default, runs that round solo
++split_fixer_fan: ""  # fan name from lenses.yaml that has the split perch's fixer fork itself once per lens of the fan to check its fixes; one fan name, or a YAML list with one fan name per round, the last entry serving every later round; an empty entry, the default, runs the single fixer for that round
+ discussion_assist_reviewer_model: ""  # model-spec for the Discussion-Review assistant, an extra reviewer beside the segment's reviewer whose report the reviewer consolidates, and which never gates the round; one model-spec, or a YAML list with one model-spec per round, the last entry serving every later round; empty, the default, runs no assistant, and an empty entry runs none that round
+ code_assist_reviewer_model: ""  # model-spec for the Code-Review assistant, an extra reviewer beside the segment's reviewer whose report the reviewer consolidates, and which never gates the round; one model-spec, or a YAML list with one model-spec per round, the last entry serving every later round; empty, the default, runs no assistant, and an empty entry runs none that round
+ discussion_assist_reviewer_fan: ""  # fan name from lenses.yaml that turns the lens fan on for the Discussion-Review assistant; one fan name, or a YAML list with one fan name per round, the last entry serving every later round; an empty entry, the default, runs the assistant solo
+@@ -25,6 +29,7 @@ judge: sonnet[medium]  # model-spec for every Bouncer row's judge pass, and for
+ seed: ""  # model-spec for every Bouncer row's seed pass; empty takes that segment's resolved judge; discussion_seed and code_seed override it per segment, and tapestry.yaml's plan_seed for the plan segment
+ discussion_judge: ""  # model-spec for the Discussion-Review judge pass; empty takes judge
+ code_judge: ""  # model-spec for the Code-Review judge pass; empty takes judge
++split_judge: ""  # model-spec for the split perch's judge pass; empty takes judge, and its seed pass takes seed, or this judge while seed is empty
+ discussion_seed: ""  # model-spec for the Discussion-Review seed pass; empty takes seed, and seed empty takes the segment's resolved judge
+ code_seed: ""  # model-spec for the Code-Review seed pass; empty takes seed, and seed empty takes the segment's resolved judge
+ review_timeout_min: 240  # minutes one review round's shuttle run is allowed to run
+@@ -34,13 +39,16 @@ friction_timeout_min: 30  # minutes the friction-reflection agent's shuttle run
+ driver: haiku[medium]  # model-spec for the model that runs an llm-driven run's loom driver session (see contracts/specs/llm-model-spec.md); the llm driver runs only when a hub, a module's driver override, a task's run settings or --driver selects llm, and a hub pins the model back with lym config loom --layer default --set driver=sonnet[medium]; empty defers to the provider default
+ step_idle_timeout_min: 60  # minutes a --until-stop step may show no activity (no trace write and no agent activity) before the loop kills it; a step at a row waiting on the operator (Beam-Await, PR-Review, Sampler-Session) reads as active and is never killed; a value below 1 is raised to 1
+ review_circling_checkpoint: 3  # first judged round from which a review segment's judge may rule CIRCLING; with review_max_bounces also 3 a run reaches the soft-cap rule at round 3 before a CIRCLING verdict could change the outcome, so lower this for an earlier circling escalation; a value above review_max_bounces means a run never rules CIRCLING and reaches the soft-cap rule instead
+-review_max_bounces: 3  # bounce budget of every Bouncer review segment's rows (Discussion-Review, Plan-Review, Code-Review); 0 gives every perch without its own budget zero rounds; a spent budget runs the soft-cap rule (the judge's fix tags settle the round, escalating only a stuck run); with review_circling_checkpoint also 3 the soft-cap rule at round 3 comes before a CIRCLING verdict could change the outcome, and lowering the checkpoint gives an earlier circling escalation
++review_max_bounces: 3  # bounce budget of every Bouncer review segment's rows (Discussion-Review, Plan-Review, Code-Review, Raddle-Review); 0 gives every perch without its own budget zero rounds; a spent budget runs the soft-cap rule (the judge's fix tags settle the round, escalating only a stuck run); with review_circling_checkpoint also 3 the soft-cap rule at round 3 comes before a CIRCLING verdict could change the outcome, and lowering the checkpoint gives an earlier circling escalation
+ review_hard_max_bounces: 4  # hard cap of every Bouncer review segment's rows: a round numbered at or past it is never continued, it is accepted or escalated hard-cap; at least 1 and not below the perch's budget
+ review_amend_max_bounces: 1  # review rounds an amendment generation gets after a settled review segment's subject changed, clamped to the perch's own budget; 0 settles every amendment approved with no review round; settable per run through run_settings
+ discussion_max_bounces: 2  # bounce budget of the Discussion-Review perch: N gives N judged Burler rounds, 2 by default; null takes review_max_bounces; 0 runs no review round: the perch's Bouncer settles approved at once; a checkpoint above this budget means the perch never rules CIRCLING and reaches the soft-cap rule, or the accept, instead
+ code_max_bounces: 1  # bounce budget of the Code-Review perch: N gives N judged Burler rounds, 1 by default; null takes review_max_bounces; 0 runs no review round: the perch's Bouncer settles approved at once; a checkpoint above this budget means the perch never rules CIRCLING and reaches the soft-cap rule, or the accept, instead
+ discussion_hard_max_bounces: 0  # hard cap of the Discussion-Review perch: a round numbered at or past it is never continued, it is accepted or escalated hard-cap; 0 takes review_hard_max_bounces
+ code_hard_max_bounces: 0  # hard cap of the Code-Review perch: a round numbered at or past it is never continued, it is accepted or escalated hard-cap; 0 takes review_hard_max_bounces
++split_max_bounces: 2  # bounce budget of the split perch: N gives N judged Burler rounds over each new raddle proposal, 2 by default; null takes review_max_bounces; 0 runs no review round: the perch's Bouncer settles approved at once and the proposal is filed unreviewed
++split_hard_max_bounces: 0  # hard cap of the split perch: a round numbered at or past it is never continued, it is accepted or escalated hard-cap; 0 takes review_hard_max_bounces
+ discussion_auto_accept: false  # true makes the Discussion-Review perch accept a harvested round at a spent budget instead of running the soft-cap rule
+ code_auto_accept: true  # true, the default, makes the Code-Review perch accept a harvested round at a spent budget with its open findings, BLOCKING ones included, instead of running the soft-cap rule; false restores the soft-cap rule
++split_auto_accept: false  # true makes the split perch accept a harvested round at a spent budget with its open findings instead of running the soft-cap rule, and its approval files the proposal; false, the default, runs the soft-cap rule
+ pr_review_ask_parent: false  # true has the PR-Review row ask the parent orch for a review once the run's pull request is open, naming the slug, the pull request and its branches; the orch answers the PR-Review session, whose agent fixes any findings; false, the default, leaves asking to the operator; settable per run through run_settings
+diff --git a/internal/loomrecipe/approveseam_test.go b/internal/loomrecipe/approveseam_test.go
+index 4d6f82df..4f12572a 100644
+--- a/internal/loomrecipe/approveseam_test.go
++++ b/internal/loomrecipe/approveseam_test.go
+@@ -153,7 +153,7 @@ func TestDiscussionApprovalRowsCarryApproveSeam(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+-	for _, recipe := range []string{shedrun.RecipeTapestry, shedrun.RecipeDarn, shedrun.RecipePawl, shedrun.RecipeSampler} {
++	for _, recipe := range []string{shedrun.RecipeTapestry, shedrun.RecipeDarn, shedrun.RecipePawl, shedrun.RecipeSampler, shedrun.RecipeArras} {
+ 		isLoom, err := IsLoom(recipe)
+ 		if err != nil || !isLoom {
+ 			continue
+diff --git a/internal/loomrecipe/arrasrecipe_test.go b/internal/loomrecipe/arrasrecipe_test.go
+new file mode 100644
+index 00000000..5544c739
+--- /dev/null
++++ b/internal/loomrecipe/arrasrecipe_test.go
+@@ -0,0 +1,336 @@
++// arrasrecipe_test.go pins the arras recipe's rows, routing and split perch keys.
++// It also drives an arras run through Discussion, the split perch and Raddle-File over the sequence fixture.
++// It drives gotos into Raddle-Write too.
++
++package loomrecipe
++
++import (
++	"context"
++	"os"
++	"path/filepath"
++	"reflect"
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/contracts/recipes"
++	"github.com/Knatte18/loomyard/internal/loomengine"
++	"github.com/Knatte18/loomyard/internal/loomshed"
++	"github.com/Knatte18/loomyard/internal/shedbuild"
++	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/state"
++	"github.com/Knatte18/loomyard/internal/testkit/shedfake"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// splitPerchSegment is the arras recipe's split perch segment.
++const splitPerchSegment = "Raddle-Review"
++
++// TestArrasRecipe pins the arras recipe's Motif skip, routing, split perch segment, absent seams and fixer gate.
++func TestArrasRecipe(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	env, paths := testEnv(t)
++	if _, err := New(shedrun.RecipeArras, env, paths); err != nil {
++		t.Fatalf("New(arras) error = %v; want nil, which holds the loader's record-only form for the recipe", err)
++	}
++
++	rows, err := Rows(shedrun.RecipeArras)
++	if err != nil {
++		t.Fatalf("Rows(arras) error = %v; want nil", err)
++	}
++	byName := map[string]RecipeRow{}
++	for _, row := range rows {
++		byName[row.Name] = row
++	}
++
++	if got := byName[loomshed.NameMotif].SkipTo; got != loomshed.NameRaddleWrite {
++		t.Errorf("Motif SkipTo = %q; want %q, so a discussed entry resumes at Raddle-Write", got, loomshed.NameRaddleWrite)
++	}
++	routes := []struct {
++		row, onDone, onStuck string
++	}{
++		{loomshed.NameDiscussionBouncer, loomshed.NameRaddleWrite, loomshed.NameDiscussionBurlerReview},
++		{loomshed.NameRaddleWrite, loomshed.NameRaddleBouncer, ""},
++		{loomshed.NameRaddleBouncer, loomshed.NameRaddleFile, loomshed.NameRaddleBurlerReview},
++		{loomshed.NameRaddleBurlerReview, loomshed.NameRaddleBurlerFix, loomshed.NameRaddleBurlerFix},
++		{loomshed.NameRaddleBurlerFix, loomshed.NameRaddleBouncer, loomshed.NameRaddleBouncer},
++		{loomshed.NameRaddleFile, "", loomshed.NameRaddleWrite},
++	}
++	for _, route := range routes {
++		if got := byName[route.row]; got.OnDone != route.onDone || got.OnStuck != route.onStuck {
++			t.Errorf("%s on_done = %q, on_stuck = %q; want %q and %q", route.row, got.OnDone, got.OnStuck, route.onDone, route.onStuck)
++		}
++	}
++	for _, row := range []string{loomshed.NameRaddleBouncer, loomshed.NameRaddleBurlerReview, loomshed.NameRaddleBurlerFix} {
++		if got := byName[row].Segment; got != splitPerchSegment {
++			t.Errorf("%s segment = %q; want %q", row, got, splitPerchSegment)
++		}
++	}
++
++	parsed, err := shedbuild.Parse(recipes.ArrasRecipe)
++	if err != nil {
++		t.Fatalf("shedbuild.Parse(arras recipe) = %v", err)
++	}
++	configs := map[string]map[string]any{}
++	for _, row := range parsed.Producers {
++		configs[row.Name] = row.Config
++	}
++	for _, key := range []string{"carry_over", "approve_seam", "commit_seam", "subject"} {
++		if value, present := configs[loomshed.NameRaddleBouncer][key]; present {
++			t.Errorf("Raddle-Bouncer config[%q] = %v; want it absent", key, value)
++		}
++	}
++	wantGate := []any{map[string]any{"name": "raddle", "attempts": 3}}
++	if got := configs[loomshed.NameRaddleBurlerFix]["gates"]; !reflect.DeepEqual(got, wantGate) {
++		t.Errorf("Raddle-Burler-Fix gates = %v; want %v, so a fixed proposal passes every proposal check", got, wantGate)
++	}
++}
++
++// arrasScriptedRow is a fake row that runs before on each call and returns its outcomes in turn, repeating the last.
++type arrasScriptedRow struct {
++	outcomes []shedengine.Outcome
++	before   func()
++	calls    int
++}
++
++func (r *arrasScriptedRow) Call(context.Context) (shedengine.Outcome, shedengine.OutputPointer, error) {
++	if r.before != nil {
++		r.before()
++	}
++	outcome := r.outcomes[min(r.calls, len(r.outcomes)-1)]
++	r.calls++
++	return outcome, shedengine.OutputPointer{Reason: "scripted " + string(outcome)}, nil
++}
++
++// arrasEscalationHardCap is the split perch's hard cap in a run whose perch escalates, well above its budget of 1.
++const arrasEscalationHardCap = 4
++
++// arrasRunOptions shapes the split perch and Raddle-File of a run newArrasRun builds.
++type arrasRunOptions struct {
++	// fileHaltsOnStuck clears Raddle-File's on_stuck, so a Stuck outcome halts the run there.
++	fileHaltsOnStuck bool
++	// splitEscalates makes the split perch's judge rule CONTINUE over one open design-wrong entry every round,
++	// so the perch escalates with cause circling, below its hard cap, and awaits its parent.
++	splitEscalates bool
++}
++
++// newArrasRun builds an arras run over the sequence fixture with the split perch's budget at 1.
++// Raddle-Write is a fake that writes a proposal and reports Done.
++// Raddle-File is a fake that reports fileOutcomes in turn.
++// The Discussion rows and the split perch's rows are the real ones.
++func newArrasRun(t *testing.T, options arrasRunOptions, fileOutcomes ...shedengine.Outcome) (*shedengine.Shed, string, *arrasScriptedRow) {
++	t.Helper()
++	anchor, env, paths := buildSequenceFixture(t)
++	split := env.Segments[splitPerchSegment]
++	split.MaxBounces = 1
++	if options.splitEscalates {
++		split.HardMaxBounces = arrasEscalationHardCap
++		shuttle := env.Shuttle.(*shedfake.Shuttle)
++		dispatch := shuttle.RunFn
++		designWrongBouncerJudge(env)
++		designWrong := shuttle.RunFn
++		splitRunDir := string(filepath.Separator) + "split" + string(filepath.Separator)
++		shuttle.RunFn = func(spec shuttleengine.Spec) (shuttleengine.Result, error) {
++			if strings.HasSuffix(spec.Role, "bouncer-judge") && len(spec.OutputFiles) > 0 && strings.Contains(spec.OutputFiles[0], splitRunDir) {
++				return designWrong(spec)
++			}
++			return dispatch(spec)
++		}
++		env.SegmentBounces = func(row string) (int, int, bool, error) {
++			st, found, err := state.ReadJSON[shedengine.Status](env.StatusPath, env.StatusLockPath)
++			if err != nil || !found {
++				return 0, 0, false, err
++			}
++			routing, err := Routing(shedrun.RecipeArras, budgetsOf(env))
++			if err != nil {
++				return 0, 0, false, err
++			}
++			count, budget, inSegment := routing.Bounces(row, st.History)
++			return count, budget, inSegment, nil
++		}
++	}
++	env.Segments[splitPerchSegment] = split
++
++	shed, err := New(shedrun.RecipeArras, env, paths)
++	if err != nil {
++		t.Fatalf("New(arras) error = %v; want nil", err)
++	}
++	proposal := filepath.Join(anchor, loomengine.RaddleProposalRel())
++	write := &arrasScriptedRow{outcomes: []shedengine.Outcome{shedengine.Done}, before: func() {
++		if err := os.MkdirAll(filepath.Dir(proposal), 0o755); err != nil {
++			t.Errorf("mkdir the proposal's directory: %v", err)
++		}
++		if err := os.WriteFile(proposal, []byte("shape: tapestry\n"), 0o644); err != nil {
++			t.Errorf("write the proposal: %v", err)
++		}
++	}}
++	file := &arrasScriptedRow{outcomes: fileOutcomes}
++	for i := range shed.Producers {
++		switch shed.Producers[i].Name {
++		case loomshed.NameRaddleWrite:
++			shed.Producers[i].Producer = write
++		case loomshed.NameRaddleFile:
++			shed.Producers[i].Producer = file
++			if options.fileHaltsOnStuck {
++				shed.Producers[i].OnStuck = ""
++			}
++		}
++	}
++	return shed, filepath.Join(env.RunRoot, "split"), file
++}
++
++// historyOf returns the producers of history whose name is among names, in order.
++func historyOf(history []shedengine.HistoryEntry, names ...string) []string {
++	var got []string
++	for _, entry := range history {
++		if slices.Contains(names, entry.Producer) {
++			got = append(got, entry.Producer)
++		}
++	}
++	return got
++}
++
++// gotoRaddleWrite moves a halted arras run onto Raddle-Write, as `lym loom goto --to Raddle-Write` does.
++func gotoRaddleWrite(t *testing.T, shed *shedengine.Shed) {
++	t.Helper()
++	if _, err := shedengine.Goto(shedengine.GotoRequest{
++		StatusPath:     shed.StatusPath,
++		LockPath:       shed.LockPath,
++		StatusLockPath: shed.StatusLockPath,
++		Producers:      shed.Producers,
++		Target:         loomshed.NameRaddleWrite,
++	}); err != nil {
++		t.Fatalf("Goto(%s) error = %v; want nil", loomshed.NameRaddleWrite, err)
++	}
++}
++
++// TestArrasRun_GotoIntoRaddleWrite drives the two gotos into Raddle-Write that the split perch meets on re-entry.
++// A goto from Raddle-File over a settled perch clears the perch, so the new proposal gets a second review round.
++// A goto while the perch awaits its parent on an escalation below the hard cap clears nothing:
++// the Bouncer settles its recorded round again and raises the escalation again, with no further review round.
++func TestArrasRun_GotoIntoRaddleWrite(t *testing.T) {
++	tiergate.Require(t, 0)
++
++	t.Run("from Raddle-File over a settled perch re-arms the perch", func(t *testing.T) {
++		shed, splitRunDir, _ := newArrasRun(t, arrasRunOptions{fileHaltsOnStuck: true}, shedengine.Stuck, shedengine.Done)
++
++		first, err := shed.Run(context.Background())
++		if err != nil {
++			t.Fatalf("Run() error = %v; want nil", err)
++		}
++		if first.Outcome != shedengine.RunBlocked || first.HaltedProducer != loomshed.NameRaddleFile {
++			t.Fatalf("Run() = %q at %q (reason %q); want %q at %q", first.Outcome, first.HaltedProducer, first.Reason, shedengine.RunBlocked, loomshed.NameRaddleFile)
++		}
++
++		gotoRaddleWrite(t, shed)
++		second, err := shed.Run(context.Background())
++		if err != nil {
++			t.Fatalf("Run() after the goto error = %v; want nil", err)
++		}
++		if second.Outcome != shedengine.RunDone {
++			t.Fatalf("Run() after the goto = %q at %q (reason %q); want %q", second.Outcome, second.HaltedProducer, second.Reason, shedengine.RunDone)
++		}
++		// The goto records its own Raddle-Write entry between the two cycles.
++		want := []string{
++			loomshed.NameRaddleWrite, loomshed.NameRaddleBurlerReview, loomshed.NameRaddleFile,
++			loomshed.NameRaddleWrite,
++			loomshed.NameRaddleWrite, loomshed.NameRaddleBurlerReview, loomshed.NameRaddleFile,
++		}
++		got := historyOf(second.History, loomshed.NameRaddleWrite, loomshed.NameRaddleBurlerReview, loomshed.NameRaddleFile)
++		if !slices.Equal(got, want) {
++			t.Errorf("history of the Raddle rows = %v; want %v", got, want)
++		}
++		if _, err := os.Stat(filepath.Join(splitRunDir, "round-1-review.md")); err != nil {
++			t.Errorf("stat the split perch's round 1 review: %v; want the fresh cycle's review in the perch's run directory", err)
++		}
++	})
++
++	t.Run("while the perch awaits its parent below the hard cap raises the escalation again", func(t *testing.T) {
++		shed, splitRunDir, file := newArrasRun(t, arrasRunOptions{splitEscalates: true}, shedengine.Done)
++
++		first, err := shed.Run(context.Background())
++		if err != nil {
++			t.Fatalf("Run() error = %v; want nil", err)
++		}
++		if first.Outcome != shedengine.RunAwaiting || first.HaltedProducer != loomshed.NameRaddleBouncer || !strings.Contains(first.Reason, "(cause: circling)") {
++			t.Fatalf("Run() = %q at %q (reason %q); want %q at %q with cause circling", first.Outcome, first.HaltedProducer, first.Reason, shedengine.RunAwaiting, loomshed.NameRaddleBouncer)
++		}
++		reviews := len(historyOf(first.History, loomshed.NameRaddleBurlerReview))
++
++		gotoRaddleWrite(t, shed)
++		second, err := shed.Run(context.Background())
++		if err != nil {
++			t.Fatalf("Run() after the goto error = %v; want nil", err)
++		}
++		if second.Outcome != shedengine.RunAwaiting || second.HaltedProducer != loomshed.NameRaddleBouncer || !strings.Contains(second.Reason, "(cause: circling)") {
++			t.Fatalf("Run() after the goto = %q at %q (reason %q); want %q at %q with cause circling again", second.Outcome, second.HaltedProducer, second.Reason, shedengine.RunAwaiting, loomshed.NameRaddleBouncer)
++		}
++		if got := len(historyOf(second.History, loomshed.NameRaddleBurlerReview)); got != reviews {
++			t.Errorf("Raddle-Burler-Review entries after the goto = %d; want %d, no fresh cycle", got, reviews)
++		}
++		if got := len(historyOf(second.History, loomshed.NameRaddleWrite)); got != 3 {
++			t.Errorf("Raddle-Write entries = %d; want 3, the first run, the goto's own entry and its re-run", got)
++		}
++		if file.calls != 0 {
++			t.Errorf("Raddle-File calls = %d; want 0, the unsettled perch filing nothing", file.calls)
++		}
++		if _, err := os.Stat(filepath.Join(splitRunDir, "round-1-review.md")); err != nil {
++			t.Errorf("stat the split perch's round 1 review: %v; want it kept, since nothing was cleared", err)
++		}
++	})
++}
++
++// TestArrasRun_SplitPerchReviewsEveryProposalBeforeFiling drives an arras run to its end.
++// The run passes Discussion, then Raddle-Write, then the split perch's review of the proposal, then Raddle-File.
++// After a Raddle-File return, the new proposal is reviewed again by the perch with its full budget of 1,
++// so the second review round runs, and the run ends, only when the settled perch re-arms on the fresh entry.
++func TestArrasRun_SplitPerchReviewsEveryProposalBeforeFiling(t *testing.T) {
++	tiergate.Require(t, 0)
++	tests := []struct {
++		name         string
++		fileOutcomes []shedengine.Outcome
++		want         []string
++	}{
++		{
++			name:         "a filing on the first proposal",
++			fileOutcomes: []shedengine.Outcome{shedengine.Done},
++			want:         []string{loomshed.NameDiscussionWrite, loomshed.NameRaddleWrite, loomshed.NameRaddleBurlerReview, loomshed.NameRaddleFile},
++		},
++		{
++			name:         "a Raddle-File return re-arms the perch",
++			fileOutcomes: []shedengine.Outcome{shedengine.Stuck, shedengine.Done},
++			want: []string{
++				loomshed.NameDiscussionWrite,
++				loomshed.NameRaddleWrite, loomshed.NameRaddleBurlerReview, loomshed.NameRaddleFile,
++				loomshed.NameRaddleWrite, loomshed.NameRaddleBurlerReview, loomshed.NameRaddleFile,
++			},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			shed, splitRunDir, file := newArrasRun(t, arrasRunOptions{}, tt.fileOutcomes...)
++
++			result, err := shed.Run(context.Background())
++			if err != nil {
++				t.Fatalf("Run() error = %v; want nil", err)
++			}
++			if result.Outcome != shedengine.RunDone {
++				t.Fatalf("Run() = %q at %q (reason %q); want %q", result.Outcome, result.HaltedProducer, result.Reason, shedengine.RunDone)
++			}
++			got := historyOf(result.History, loomshed.NameDiscussionWrite, loomshed.NameRaddleWrite, loomshed.NameRaddleBurlerReview, loomshed.NameRaddleFile)
++			if !slices.Equal(got, tt.want) {
++				t.Errorf("history of the arras rows = %v; want %v", got, tt.want)
++			}
++			if file.calls != len(tt.fileOutcomes) {
++				t.Errorf("Raddle-File calls = %d; want %d", file.calls, len(tt.fileOutcomes))
++			}
++			if _, err := os.Stat(filepath.Join(splitRunDir, "round-1-review.md")); err != nil {
++				t.Errorf("stat the split perch's round 1 review: %v; want the round's review in the perch's run directory", err)
++			}
++		})
++	}
++}
+diff --git a/internal/loomrecipe/bouncerrows.go b/internal/loomrecipe/bouncerrows.go
+index 97310068..f986e794 100644
+--- a/internal/loomrecipe/bouncerrows.go
++++ b/internal/loomrecipe/bouncerrows.go
+@@ -1,4 +1,5 @@
+-// bouncerrows.go answers whether a row of the embedded tapestry or darn recipe is a Bouncer, and its run directory.
++// bouncerrows.go answers whether a row of the embedded tapestry, darn or arras recipe is a Bouncer.
++// It also answers the run directory of such a row.
+ // It reads each recipe through parseEmbeddedRecipe, so the rows are the expanded ones.
+ 
+ package loomrecipe
+@@ -10,11 +11,11 @@ import (
+ // bouncerEngine is the recipe engine name a Bouncer row carries.
+ const bouncerEngine = "Bouncer"
+ 
+-// BouncerRunSubdir returns the `run_subdir` of the named row of the tapestry or darn recipe.
++// BouncerRunSubdir returns the `run_subdir` of the named row of the tapestry, darn or arras recipe.
+ // The bool is true only when that row's engine is Bouncer and it has a non-empty `run_subdir`.
+ // A recipe parse failure is a `loomrecipe:`-prefixed error.
+ func BouncerRunSubdir(row string) (string, bool, error) {
+-	for _, name := range []string{shedrun.RecipeTapestry, shedrun.RecipeDarn} {
++	for _, name := range []string{shedrun.RecipeTapestry, shedrun.RecipeDarn, shedrun.RecipeArras} {
+ 		recipe, err := parseEmbeddedRecipe(name)
+ 		if err != nil {
+ 			return "", false, err
+diff --git a/internal/loomrecipe/bouncerrows_test.go b/internal/loomrecipe/bouncerrows_test.go
+index e6c4d1ea..2bf38558 100644
+--- a/internal/loomrecipe/bouncerrows_test.go
++++ b/internal/loomrecipe/bouncerrows_test.go
+@@ -203,6 +203,7 @@ func TestBouncerRunSubdir(t *testing.T) {
+ 		loomshed.NameDiscussionBouncer: "discussion",
+ 		loomshed.NamePlanBouncer:       "plan",
+ 		loomshed.NameCodeBouncer:       "code",
++		loomshed.NameRaddleBouncer:     "split",
+ 	}
+ 	for row, want := range bouncers {
+ 		got, ok, err := BouncerRunSubdir(row)
+diff --git a/internal/loomrecipe/decisionswitches_test.go b/internal/loomrecipe/decisionswitches_test.go
+index f003ab6d..683b3a1c 100644
+--- a/internal/loomrecipe/decisionswitches_test.go
++++ b/internal/loomrecipe/decisionswitches_test.go
+@@ -17,13 +17,14 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestDecisionSwitches_SetTogetherOnLoomsDiscussionRowsOnly asserts both switches are true on exactly two rows.
+-// Those rows are Discussion-Bouncer and Discussion-Burler-Fix in the tapestry recipe; no darn row carries them.
++// TestDecisionSwitches_SetTogetherOnLoomsDiscussionRowsOnly asserts which rows carry both switches.
++// In the tapestry recipe they are Discussion-Bouncer and Discussion-Burler-Fix; no darn row carries them.
++// The arras recipe carries them on those two rows and on its split perch's Raddle-Bouncer and Raddle-Burler-Fix.
+ // The Plan-Review and Code-Review rows therefore keep the fix row's own parent notice.
+ func TestDecisionSwitches_SetTogetherOnLoomsDiscussionRowsOnly(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+-	for _, name := range []string{shedrun.RecipeTapestry, shedrun.RecipeDarn} {
++	for _, name := range []string{shedrun.RecipeTapestry, shedrun.RecipeDarn, shedrun.RecipeArras} {
+ 		t.Run(name, func(t *testing.T) {
+ 			t.Parallel()
+ 			recipe, err := parseEmbeddedRecipe(name)
+@@ -42,9 +43,13 @@ func TestDecisionSwitches_SetTogetherOnLoomsDiscussionRowsOnly(t *testing.T) {
+ 			sort.Strings(gotEscalate)
+ 			sort.Strings(gotEscalated)
+ 			var wantEscalate, wantEscalated []string
+-			if name == shedrun.RecipeTapestry {
++			switch name {
++			case shedrun.RecipeTapestry:
+ 				wantEscalate = []string{"Discussion-Bouncer"}
+ 				wantEscalated = []string{"Discussion-Burler-Fix"}
++			case shedrun.RecipeArras:
++				wantEscalate = []string{"Discussion-Bouncer", "Raddle-Bouncer"}
++				wantEscalated = []string{"Discussion-Burler-Fix", "Raddle-Burler-Fix"}
+ 			}
+ 			if !reflect.DeepEqual(gotEscalate, wantEscalate) {
+ 				t.Errorf("rows with escalate_decisions = %v; want %v", gotEscalate, wantEscalate)
+diff --git a/internal/loomrecipe/doc.go b/internal/loomrecipe/doc.go
+index f40a8d15..ceb64a24 100644
+--- a/internal/loomrecipe/doc.go
++++ b/internal/loomrecipe/doc.go
+@@ -56,6 +56,14 @@
+ // Raddle-File's Stuck returns to Raddle-Write,
+ // and a third failing gate attempt of Raddle-Write halts the run for its parent.
+ //
++// The arras recipe discusses a task and splits its decision record into board entries, landing no code.
++// It reads `Motif → Raddle-Write → Raddle-Review → Raddle-File`, in the loom contract's record-only form.
++// Its Motif block is tapestry's, so a discussed entry's stored record seeds the run and it goes on at Raddle-Write.
++// Raddle-Review is the split perch: a Bouncer ring over the raddle proposal.
++// Its cold fixer is gated by the `raddle` check.
++// Its Bouncer holds no subject seam, so a fresh entry over its settled verdict reviews the new proposal from round 1.
++// The perch's rows read loom.yaml's `split_*` keys, and its approval files the proposal in place of the operator's.
++//
+ // One table, embeddedRecipes, maps each recipe name to its embedded bytes.
+ // It is the resolver every expansion is told.
+ // Every accessor reads the expanded recipe:
+@@ -131,7 +139,7 @@
+ // AmendmentTarget answers the optional `amendment_target` key of a recipe.
+ // That key is the row a plan amendment routes to, empty when the recipe sets none.
+ //
+-// Every review segment of the tapestry and darn recipes sets one `role_prefix`.
++// Every review segment of the tapestry, darn and arras recipes sets one `role_prefix`.
+ // It sits on the segment's Bouncer, BurlerReview and BurlerFix rows, and no two segments share a value.
+ // A test pins that value.
+ // Another test, the carry-over check, pins that each Bouncer row's `carry_over` names the row's own segment.
+diff --git a/internal/loomrecipe/fansettings_test.go b/internal/loomrecipe/fansettings_test.go
+index fe35ecfc..4694477f 100644
+--- a/internal/loomrecipe/fansettings_test.go
++++ b/internal/loomrecipe/fansettings_test.go
+@@ -108,9 +108,13 @@ func TestShippedRecipes_FanSettingsAgreeWithinSegment(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("shedbuild.Parse(recipes.PawlRecipe) error = %v; want nil", err)
+ 	}
++	arras, err := parseEmbeddedRecipe(shedrun.RecipeArras)
++	if err != nil {
++		t.Fatalf("parseEmbeddedRecipe(arras) error = %v; want nil", err)
++	}
+ 
+ 	t.Run("ShippedRecipesAgree", func(t *testing.T) {
+-		for name, recipe := range map[string]shedbuild.Recipe{"tapestry": loom, "darn": darn, "pawl": pawl} {
++		for name, recipe := range map[string]shedbuild.Recipe{"tapestry": loom, "darn": darn, "pawl": pawl, "arras": arras} {
+ 			if mismatches := fanSettingMismatches(recipe); len(mismatches) != 0 {
+ 				t.Errorf("fanSettingMismatches(%s) = %q; want none", name, mismatches)
+ 			}
+@@ -129,6 +133,8 @@ func TestShippedRecipes_FanSettingsAgreeWithinSegment(t *testing.T) {
+ 			{loom, "Plan-Review", "tapestry.plan_reviewer_fan", "tapestry.plan_fixer_fan", "tapestry.plan_auto_accept"},
+ 			{loom, "Code-Review", "loom.code_reviewer_fan", "loom.code_fixer_fan", "loom.code_auto_accept"},
+ 			{darn, "Code-Review", "loom.code_reviewer_fan", "loom.code_fixer_fan", "loom.code_auto_accept"},
++			{arras, "Discussion-Review", "loom.discussion_reviewer_fan", "loom.discussion_fixer_fan", "loom.discussion_auto_accept"},
++			{arras, "Raddle-Review", "loom.split_reviewer_fan", "loom.split_fixer_fan", "loom.split_auto_accept"},
+ 		}
+ 		for _, p := range perches {
+ 			want := map[string]map[string]string{
+diff --git a/internal/loomrecipe/interruptpolicy_meta_test.go b/internal/loomrecipe/interruptpolicy_meta_test.go
+index 2c1b9426..2099f3a0 100644
+--- a/internal/loomrecipe/interruptpolicy_meta_test.go
++++ b/internal/loomrecipe/interruptpolicy_meta_test.go
+@@ -16,7 +16,8 @@ import (
+ )
+ 
+ // TestInterruptPolicies_MatchAssembledRows checks loomshed.InterruptPolicies in both directions.
+-// The table must cover exactly the rows New assembles for the tapestry, darn, sampler, motif, raddle and pawl recipes.
++// The table must cover exactly the rows New assembles for every loom recipe:
++// tapestry, darn, sampler, motif, raddle, arras and pawl.
+ // Every row that one of those recipes' current output has must carry an entry in the table.
+ // That catches a row added to a recipe with no policy assigned.
+ // Every key in the table must name a row one of them actually has.
+@@ -25,7 +26,7 @@ func TestInterruptPolicies_MatchAssembledRows(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	env, paths := testEnv(t)
+ 	rowNames := map[string]bool{}
+-	for _, name := range []string{shedrun.RecipeTapestry, shedrun.RecipeDarn, shedrun.RecipeSampler, shedrun.RecipeMotif, shedrun.RecipeRaddle, shedrun.RecipePawl} {
++	for _, name := range []string{shedrun.RecipeTapestry, shedrun.RecipeDarn, shedrun.RecipeSampler, shedrun.RecipeMotif, shedrun.RecipeRaddle, shedrun.RecipeArras, shedrun.RecipePawl} {
+ 		// Pawl is last, since its build has no review segment to budget and the others need theirs.
+ 		if name == shedrun.RecipePawl {
+ 			delete(env.Segments, codeReviewSegment)
+@@ -44,7 +45,7 @@ func TestInterruptPolicies_MatchAssembledRows(t *testing.T) {
+ 
+ 	for rowName := range loomshed.InterruptPolicies {
+ 		if !rowNames[rowName] {
+-			t.Errorf("loomshed.InterruptPolicies names row %q, which none of tapestry, darn, sampler, motif, raddle and pawl has", rowName)
++			t.Errorf("loomshed.InterruptPolicies names row %q, which none of tapestry, darn, sampler, motif, raddle, arras and pawl has", rowName)
+ 		}
+ 	}
+ }
+diff --git a/internal/loomrecipe/names.go b/internal/loomrecipe/names.go
+index b25180ed..9ff1565c 100644
+--- a/internal/loomrecipe/names.go
++++ b/internal/loomrecipe/names.go
+@@ -14,7 +14,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ )
+ 
+-// RecipeEngines returns the sorted engine set of the tapestry, darn, pawl, sampler, motif and raddle recipes.
++// RecipeEngines returns the sorted engine set of the tapestry, darn, pawl, sampler, motif, raddle and arras recipes.
+ // It parses each recipe, expands its blocks, and collects each row's engine name, without duplicates.
+ // The recipes are the loom module's, so the set is their union.
+ // It holds the Block engine of the tapestry recipe's Motif block row.
+@@ -27,7 +27,7 @@ import (
+ func RecipeEngines() []string {
+ 	seen := map[string]bool{}
+ 	var engines []string
+-	for _, name := range []string{shedrun.RecipeTapestry, shedrun.RecipeDarn, shedrun.RecipePawl, shedrun.RecipeSampler, shedrun.RecipeMotif, shedrun.RecipeRaddle} {
++	for _, name := range []string{shedrun.RecipeTapestry, shedrun.RecipeDarn, shedrun.RecipePawl, shedrun.RecipeSampler, shedrun.RecipeMotif, shedrun.RecipeRaddle, shedrun.RecipeArras} {
+ 		recipe, err := parseEmbeddedRecipe(name)
+ 		if err != nil {
+ 			panic(fmt.Sprintf("loomrecipe: RecipeEngines: %v", err))
+@@ -140,6 +140,7 @@ var embeddedRecipes = map[string][]byte{
+ 	shedrun.RecipeSampler:  recipes.SamplerRecipe,
+ 	shedrun.RecipeMotif:    recipes.MotifRecipe,
+ 	shedrun.RecipeRaddle:   recipes.RaddleRecipe,
++	shedrun.RecipeArras:    recipes.ArrasRecipe,
+ }
+ 
+ // embeddedRecipeSource returns the source of the embedded recipe the name selects, refusing a name that selects none.
+diff --git a/internal/loomrecipe/recipe_test.go b/internal/loomrecipe/recipe_test.go
+index f97ed4a7..7ac222c4 100644
+--- a/internal/loomrecipe/recipe_test.go
++++ b/internal/loomrecipe/recipe_test.go
+@@ -102,7 +102,7 @@ func TestNew_ShapeMatchesRecipe(t *testing.T) {
+ // The tapestry recipe holds a block row, so its parsed recipe is expanded before it is built.
+ func TestRecipe_StructuralCheckHasNoFindings(t *testing.T) {
+ 	tiergate.Require(t, 0)
+-	for name, source := range map[string][]byte{"tapestry": recipes.TapestryRecipe, "darn": recipes.DarnRecipe, "pawl": recipes.PawlRecipe, "motif": recipes.MotifRecipe} {
++	for name, source := range map[string][]byte{"tapestry": recipes.TapestryRecipe, "darn": recipes.DarnRecipe, "pawl": recipes.PawlRecipe, "motif": recipes.MotifRecipe, "arras": recipes.ArrasRecipe} {
+ 		t.Run(name, func(t *testing.T) {
+ 			env, _ := testEnv(t)
+ 
+@@ -237,6 +237,7 @@ func TestRowNames_FollowEachRecipesRowOrder(t *testing.T) {
+ 		{shedrun.RecipeSampler, recipes.SamplerRecipe},
+ 		{shedrun.RecipeMotif, recipes.MotifRecipe},
+ 		{shedrun.RecipeRaddle, recipes.RaddleRecipe},
++		{shedrun.RecipeArras, recipes.ArrasRecipe},
+ 	} {
+ 		t.Run(tt.recipe, func(t *testing.T) {
+ 			parsed, err := shedbuild.Parse(tt.source)
+@@ -352,6 +353,13 @@ func TestEntryNumbers(t *testing.T) {
+ 		{"motif", shedrun.RecipeMotif, map[string]int{
+ 			"Discussion-Write": 1, "Discussion-Bouncer": 2, "Discussion-Burler-Review": 2, "Discussion-Burler-Fix": 2,
+ 		}},
++		{"arras", shedrun.RecipeArras, map[string]int{
++			"Motif": 1, "Discussion-Write": 2,
++			"Discussion-Bouncer": 3, "Discussion-Burler-Review": 3, "Discussion-Burler-Fix": 3,
++			"Raddle-Write":   4,
++			"Raddle-Bouncer": 5, "Raddle-Burler-Review": 5, "Raddle-Burler-Fix": 5,
++			"Raddle-File": 6,
++		}},
+ 		{"batten", shedrun.RecipeBatten, map[string]int{"Run-Shed": 6, "Land": 7}},
+ 		{"darn", shedrun.RecipeDarn, map[string]int{"Record-Write": 2, "Drift-Baseline": 3, "Drift-Await": 4, "Drift-Expect": 5, "Darn-Write": 6, "Drift-Verify": 7, "Code-Bouncer": 8, "Code-Burler-Review": 8, "Code-Burler-Fix": 8, "Drift-Recheck": 9, "Describe": 10, "PR-Review": 11, "Finalize": 12, "Friction-Reflect": 13}},
+ 	} {
+diff --git a/internal/loomrecipe/recipekeys_test.go b/internal/loomrecipe/recipekeys_test.go
+index 7b8d62bf..c5535dce 100644
+--- a/internal/loomrecipe/recipekeys_test.go
++++ b/internal/loomrecipe/recipekeys_test.go
+@@ -19,7 +19,7 @@ import (
+ const splitPerchFixtureFile = "split-perch-recipe.yaml"
+ 
+ // TestHoldsSplitPerch covers the rows test that decides a raddle run's perch mode.
+-// A fixture recipe's Bouncer over the raddle proposal holds a split perch;
++// A fixture recipe's Bouncer over the raddle proposal holds a split perch, and so does the arras recipe's;
+ // the raddle recipe holds no Bouncer, and the motif and tapestry recipes hold Bouncers over other artifacts.
+ func TestHoldsSplitPerch(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -47,6 +47,9 @@ func TestHoldsSplitPerch(t *testing.T) {
+ 			t.Errorf("HoldsSplitPerch(%q) = %v, %v; want false, nil", recipe, got, err)
+ 		}
+ 	}
++	if got, err := HoldsSplitPerch(shedrun.RecipeArras); err != nil || !got {
++		t.Errorf("HoldsSplitPerch(%q) = %v, %v; want true, nil", shedrun.RecipeArras, got, err)
++	}
+ 	if _, err := HoldsSplitPerch("nope"); err == nil || !strings.Contains(err.Error(), "nope") {
+ 		t.Errorf("HoldsSplitPerch(%q) error = %v; want a refusal naming the recipe", "nope", err)
+ 	}
+@@ -169,6 +172,14 @@ func TestRecipeKeys(t *testing.T) {
+ 			wantVerify:  "tree_scope",
+ 			wantEngines: map[string]bool{"SamplerSession": true, "RecordWrite": true, "DarnWrite": false},
+ 		},
++		{
++			name:          "Arras",
++			recipe:        shedrun.RecipeArras,
++			wantLoom:      true,
++			wantRecord:    "DiscussionWrite",
++			wantEngines:   map[string]bool{"Block": true, "RaddleWrite": true, "RaddleFile": true, "RecordWrite": false, "Finalize": false},
++			wantEngineRow: map[string]string{"Block": "Motif", "RaddleWrite": "Raddle-Write"},
++		},
+ 		{
+ 			name:        "BattenIsNeither",
+ 			recipe:      shedrun.RecipeBatten,
+diff --git a/internal/loomshed/interruptpolicy.go b/internal/loomshed/interruptpolicy.go
+index d3e15765..aaf79f18 100644
+--- a/internal/loomshed/interruptpolicy.go
++++ b/internal/loomshed/interruptpolicy.go
+@@ -76,6 +76,11 @@ var InterruptPolicies = map[string]string{
+ 	// Every step of Raddle-File is idempotent, so a re-invocation finishes whatever a crash left.
+ 	NameRaddleFile: shedverbs.InterruptPolicyReinvoke,
+ 
++	// The split perch's rows probe for a live session and resume it, as every review segment's rows do.
++	NameRaddleBouncer:      shedverbs.InterruptPolicyReinvoke,
++	NameRaddleBurlerReview: shedverbs.InterruptPolicyReinvoke,
++	NameRaddleBurlerFix:    shedverbs.InterruptPolicyReinvoke,
++
+ 	// Each pawl row spawns no agent and is idempotent, so re-invoking an interrupted one repeats nothing.
+ 	pawlengine.NameBeamUp:    shedverbs.InterruptPolicyReinvoke,
+ 	pawlengine.NameBeamAwait: shedverbs.InterruptPolicyReinvoke,
+diff --git a/internal/loomshed/loomshed.go b/internal/loomshed/loomshed.go
+index d616131a..7093f0f3 100644
+--- a/internal/loomshed/loomshed.go
++++ b/internal/loomshed/loomshed.go
+@@ -51,6 +51,12 @@ const (
+ 	// NameRaddleFile is the raddle recipe's Go row that files the approved proposal on the board.
+ 	NameRaddleFile = "Raddle-File"
+ 
++	// NameRaddleBouncer, NameRaddleBurlerReview and NameRaddleBurlerFix are the arras recipe's split perch.
++	// They are the Raddle-Review ring over the raddle proposal.
++	NameRaddleBouncer      = "Raddle-Bouncer"
++	NameRaddleBurlerReview = "Raddle-Burler-Review"
++	NameRaddleBurlerFix    = "Raddle-Burler-Fix"
++
+ 	NameDriftBaseline = "Drift-Baseline"
+ 	NameDriftAwait    = "Drift-Await"
+ 	NameDriftExpect   = "Drift-Expect"
+diff --git a/internal/runprofile/doc.go b/internal/runprofile/doc.go
+index ca7696b7..34571d69 100644
+--- a/internal/runprofile/doc.go
++++ b/internal/runprofile/doc.go
+@@ -18,9 +18,10 @@
+ // The template's starting profiles are a ladder of review rounds per perch, `speed`, `light`, `solid` and `wide`.
+ // Each perch's hard cap is its rounds plus one.
+ // `docs` is a darn-only profile for prose and config value edits.
+-// The template's defaults are `solid` for tapestry and motif and `light` for darn, pawl and raddle.
++// The template's defaults are `solid` for tapestry, motif and arras and `light` for darn, pawl and raddle.
+ // Sampler has no default.
+ // Each ladder profile's motif block carries its tapestry block's Discussion perch values, a motif run's only perch.
++// Each ladder profile's arras block carries the same Discussion perch values, and the same rounds for the split perch.
+ // Each ladder profile's pawl block carries the same perch values as its darn block.
+ // Its sampler block carries them too, and also turns the review on with `sampler.code_review` from `light` up.
+ // A `speed` sampler run and a sampler run naming no profile skip the Code-Review perch.
+diff --git a/internal/runprofile/runprofile_test.go b/internal/runprofile/runprofile_test.go
+index ddfd0c8b..36e61a0b 100644
+--- a/internal/runprofile/runprofile_test.go
++++ b/internal/runprofile/runprofile_test.go
+@@ -45,7 +45,7 @@ func TestLoad(t *testing.T) {
+ 		{
+ 			name:         "no file reads the template's ladder, docs and defaults",
+ 			wantNames:    []string{"docs", "light", "solid", "speed", "wide"},
+-			wantDefaults: map[string]string{"tapestry": "solid", "motif": "solid", "darn": "light", "pawl": "light", "raddle": "light"},
++			wantDefaults: map[string]string{"tapestry": "solid", "motif": "solid", "darn": "light", "pawl": "light", "raddle": "light", "arras": "solid"},
+ 		},
+ 		{
+ 			name:         "a removed starting profile stays removed",
+@@ -99,6 +99,7 @@ func TestLoad(t *testing.T) {
+ // It also pins that each profile's sampler block carries its darn block's loom values;
+ // sampler.code_review is on from light up, and sampler has no default profile.
+ // Each profile's motif block holds its tapestry block's Discussion perch and nothing else.
++// Each profile's arras block holds that Discussion perch's rounds and the split perch's alike, with a hard cap one above.
+ func TestTemplateLadder(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -166,6 +167,17 @@ func TestTemplateLadder(t *testing.T) {
+ 			if !reflect.DeepEqual(motif, wantMotif) {
+ 				t.Errorf("Settings(%s, motif) = %v; want %v", tt.profile, motif, wantMotif)
+ 			}
++			arras, err := profiles.Settings(tt.profile, "arras")
++			if err != nil {
++				t.Fatal(err)
++			}
++			wantArras := map[string]any{"loom": map[string]any{
++				"discussion_max_bounces": tt.discussion, "discussion_hard_max_bounces": tt.discussion + 1,
++				"split_max_bounces": tt.discussion, "split_hard_max_bounces": tt.discussion + 1,
++			}}
++			if !reflect.DeepEqual(arras, wantArras) {
++				t.Errorf("Settings(%s, arras) = %v; want %v", tt.profile, arras, wantArras)
++			}
+ 			sampler, err := profiles.Settings(tt.profile, "sampler")
+ 			if err != nil {
+ 				t.Fatal(err)
+diff --git a/internal/runprofile/template.yaml b/internal/runprofile/template.yaml
+index cf85a81c..ffe402dd 100644
+--- a/internal/runprofile/template.yaml
++++ b/internal/runprofile/template.yaml
+@@ -1,6 +1,7 @@
+ # profiles.yaml — the hub's named run profiles, and the profile each recipe takes by default.
+-# Each top-level key but defaults is a profile name, and its value holds one block per recipe, tapestry, motif, darn, pawl, sampler or raddle;
++# Each top-level key but defaults is a profile name, and its value holds one block per recipe, tapestry, motif, darn, pawl, sampler, raddle or arras;
+ # a raddle block sets loom.raddle_auto_approve, which tells a raddle run to file its proposal without waiting for the operator's approval, and which a run whose recipe rows hold a split perch never reads;
++# an arras block sets the rounds of the Discussion perch and of the split perch, whose approval files the arras run's proposal;
+ # a block has the shape of a board task's run_settings: module name to that module's config keys.
+ # A task names a profile in its board entry's profile field, or takes its recipe's entry under defaults when it names none;
+ # batten's Seed-Child writes the block of the recipe the task runs into the pair's local config, with the task's own run_settings layered on top.
+@@ -19,6 +20,7 @@ defaults:
+   darn: light
+   pawl: light
+   raddle: light
++  arras: solid
+ speed:
+   tapestry:
+     loom: {discussion_max_bounces: 0, discussion_hard_max_bounces: 1, plan_max_bounces: 0, plan_hard_max_bounces: 1, code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: ""}
+@@ -32,6 +34,8 @@ speed:
+     loom: {code_max_bounces: 0, code_hard_max_bounces: 1}
+   raddle:
+     loom: {raddle_auto_approve: false}
++  arras:
++    loom: {discussion_max_bounces: 0, discussion_hard_max_bounces: 1, split_max_bounces: 0, split_hard_max_bounces: 1}
+ light:
+   tapestry:
+     loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2, plan_max_bounces: 1, plan_hard_max_bounces: 2, code_max_bounces: 1, code_hard_max_bounces: 2}
+@@ -46,6 +50,8 @@ light:
+     sampler: {code_review: true}
+   raddle:
+     loom: {raddle_auto_approve: false}
++  arras:
++    loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2, split_max_bounces: 1, split_hard_max_bounces: 2}
+ solid:
+   tapestry:
+     loom: {discussion_max_bounces: 2, discussion_hard_max_bounces: 3, plan_max_bounces: 2, plan_hard_max_bounces: 3, code_max_bounces: 1, code_hard_max_bounces: 2}
+@@ -60,6 +66,8 @@ solid:
+     sampler: {code_review: true}
+   raddle:
+     loom: {raddle_auto_approve: false}
++  arras:
++    loom: {discussion_max_bounces: 2, discussion_hard_max_bounces: 3, split_max_bounces: 2, split_hard_max_bounces: 3}
+ wide:
+   tapestry:
+     loom: {discussion_max_bounces: 3, discussion_hard_max_bounces: 4, plan_max_bounces: 2, plan_hard_max_bounces: 3, code_max_bounces: 1, code_hard_max_bounces: 2}
+@@ -74,6 +82,8 @@ wide:
+     sampler: {code_review: true}
+   raddle:
+     loom: {raddle_auto_approve: false}
++  arras:
++    loom: {discussion_max_bounces: 3, discussion_hard_max_bounces: 4, split_max_bounces: 3, split_hard_max_bounces: 4}
+ docs:
+   darn:
+     darn: {writer: "sonnet[medium]"}
+diff --git a/internal/shedcli/table.go b/internal/shedcli/table.go
+index f4d73324..b2109848 100644
+--- a/internal/shedcli/table.go
++++ b/internal/shedcli/table.go
+@@ -83,6 +83,11 @@ var recipes = map[string]entry{
+ 		Verbs:         []string{"run", "step", "status", "pause", "goto"},
+ 		BootstrapVerb: loomcli.BootstrapVerb,
+ 	},
++	shedrun.RecipeArras: {
++		Arm:           loomcli.ArmAt,
++		Verbs:         []string{"run", "step", "status", "pause", "goto"},
++		BootstrapVerb: loomcli.BootstrapVerb,
++	},
+ }
+ 
+ // lookup returns the entry for the recipe name, or an error for an unknown name.
+diff --git a/internal/shedcli/table_test.go b/internal/shedcli/table_test.go
+index c8094144..db09dd76 100644
+--- a/internal/shedcli/table_test.go
++++ b/internal/shedcli/table_test.go
+@@ -27,7 +27,9 @@ const tableScanMinFiles = 3
+ // four-name contract is the simpler, equally authoritative source.
+ var allGenericVerbs = []string{"run", "step", "status", "pause", "goto"}
+ 
+-// TestRecipes_KeySet asserts recipes' key set is exactly {"batten", "darn", "motif", "pawl", "raddle", "sampler", "tapestry"} and equals shedrun.RecipeNames(), so the vocabulary internal/shedrun declares and the arming table internal/shedcli declares cannot silently drift apart.
++// TestRecipes_KeySet asserts recipes' key set is exactly the eight recipe names it lists.
++// It also asserts the set equals shedrun.RecipeNames(),
++// so the vocabulary internal/shedrun declares and the arming table internal/shedcli declares cannot drift apart.
+ //
+ //testtiming:keep pins the table's key set against both literal and the shedrun vocabulary, which its covering test does not
+ func TestRecipes_KeySet(t *testing.T) {
+@@ -37,7 +39,7 @@ func TestRecipes_KeySet(t *testing.T) {
+ 		name string
+ 		want []string
+ 	}{
+-		{"exactly batten, darn, motif, pawl, raddle, sampler and tapestry", []string{"batten", "darn", "motif", "pawl", "raddle", "sampler", "tapestry"}},
++		{"exactly arras, batten, darn, motif, pawl, raddle, sampler and tapestry", []string{"arras", "batten", "darn", "motif", "pawl", "raddle", "sampler", "tapestry"}},
+ 		{"matches the shedrun vocabulary", shedrun.RecipeNames()},
+ 	}
+ 	for _, tt := range tests {
+@@ -73,6 +75,7 @@ func TestRecipes_Entries(t *testing.T) {
+ 		{"pawl", loomcli.BootstrapVerb, false},
+ 		{"sampler", loomcli.BootstrapVerb, false},
+ 		{shedrun.RecipeRaddle, loomcli.BootstrapVerb, false},
++		{shedrun.RecipeArras, loomcli.BootstrapVerb, false},
+ 		{"batten", battencli.BootstrapVerb, true},
+ 	}
+ 	for _, tt := range tests {
+diff --git a/internal/shedrun/doc.go b/internal/shedrun/doc.go
+index bcd98907..22099afc 100644
+--- a/internal/shedrun/doc.go
++++ b/internal/shedrun/doc.go
+@@ -5,6 +5,7 @@
+ //
+ // The recipe names a seed may hold are the closed vocabulary RecipeNames returns.
+ // Motif, the recipe that makes a sketch, the decision record, runs alone and is also the tapestry recipe's Motif block.
++// Arras runs it as its Motif block too, then splits the record into board entries.
+ //
+ // "Seed" here names one thing only: the run-identity artefact this package reads and writes via ReadSeed and WriteSeed.
+ // It is not the status file; this package does not touch a status file.
+diff --git a/internal/shedrun/seed.go b/internal/shedrun/seed.go
+index 85d4cbae..8b29cce7 100644
+--- a/internal/shedrun/seed.go
++++ b/internal/shedrun/seed.go
+@@ -82,13 +82,16 @@ const (
+ 	// RecipeRaddle names the raddle recipe, the run that splits a Sketch into the entries the operator approves and files them on the board.
+ 	// It is the one recipe whose task may carry a Sketch's decision record and its sketch type label.
+ 	RecipeRaddle = "raddle"
++	// RecipeArras names the arras recipe, the run that discusses a task and splits its decision record into board entries.
++	// Its split perch approves the split in place of the operator, and it lands no code.
++	RecipeArras = "arras"
+ )
+ 
+ // RecipeNames returns the closed recipe-name vocabulary as a freshly allocated, sorted slice.
+ // Callers must not rely on a fixed order beyond "sorted" and must not mutate the vocabulary through
+ // the returned slice affecting any other caller, since each call allocates its own.
+ func RecipeNames() []string {
+-	return []string{RecipeBatten, RecipeDarn, RecipeMotif, RecipePawl, RecipeRaddle, RecipeSampler, RecipeTapestry}
++	return []string{RecipeArras, RecipeBatten, RecipeDarn, RecipeMotif, RecipePawl, RecipeRaddle, RecipeSampler, RecipeTapestry}
+ }
+ 
+ // ValidateRecipe reports whether name is a legal Seed.Recipe value.
+diff --git a/internal/shedrun/seed_test.go b/internal/shedrun/seed_test.go
+index b48fbcf5..93a1addb 100644
+--- a/internal/shedrun/seed_test.go
++++ b/internal/shedrun/seed_test.go
+@@ -171,7 +171,7 @@ func TestValidateRecipe(t *testing.T) {
+ 	}{
+ 		{"tapestry", RecipeTapestry, false},
+ 		{"motif", RecipeMotif, false},
+-		{"former arras name", "arras", true},
++		{"arras", RecipeArras, false},
+ 		{"batten", RecipeBatten, false},
+ 		{"darn", RecipeDarn, false},
+ 		{"pawl", RecipePawl, false},
+@@ -203,7 +203,7 @@ func TestValidateRecipe(t *testing.T) {
+ func TestRecipeNames(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	got := RecipeNames()
+-	want := []string{RecipeBatten, RecipeDarn, RecipeMotif, RecipePawl, RecipeRaddle, RecipeSampler, RecipeTapestry}
++	want := []string{RecipeArras, RecipeBatten, RecipeDarn, RecipeMotif, RecipePawl, RecipeRaddle, RecipeSampler, RecipeTapestry}
+ 	if len(got) != len(want) {
+ 		t.Fatalf("RecipeNames() = %v; want %v", got, want)
+ 	}
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index 0fde7138..6947cf4c 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -411,6 +411,7 @@ func FullEnv(t testing.TB) shedrecipe.Env {
+ 			"Discussion-Review": fullEnvSegment(3, "loom.yaml"),
+ 			"Plan-Review":       fullEnvSegment(3, "loom.yaml"),
+ 			"Code-Review":       fullEnvSegment(3, "loom.yaml"),
++			"Raddle-Review":     fullEnvSegment(3, "loom.yaml"),
+ 		},
+ 		WebsterRun: func(websterengine.RunDeps, websterengine.RunOptions) (websterengine.RunResult, error) {
+ 			return websterengine.RunResult{}, nil
