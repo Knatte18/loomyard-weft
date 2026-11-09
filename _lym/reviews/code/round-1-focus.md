@@ -1,0 +1,15 @@
+---
+round: 1
+focus:
+  - "contracts/recipes/arras-recipe.yaml: do the rows, on_done order, Motif `undiscussed` gate, `on_stuck` return from Raddle-File and the absence of a Record-Write row match D1, and do the split perch rows match D2 (artifact, rubric, `fix-scope: overlay`, `raddle` gate, no `carry_over`, no `approve_seam`, no `commit_seam`, `escalate_decisions`, `decisions_escalated`)?"
+  - "Re-arm of the split perch (internal/loomengine/review.go, internal/loomshed): does a fresh entry into Raddle-Write over a settled verdict clear the Bouncer's run directory for a return from Raddle-File and for a goto, and does an unsettled perch awaiting its parent stay uncleared, as D2 states?"
+  - "Split loom keys (internal/loomengine/config.go, template.yaml, internal/runprofile/template.yaml, internal/configsync, internal/reviewbudget): are all eight `split_*` keys present with the Discussion segment's shape, does an empty `split_fixer_model` take the raddle key's model, and is `split_auto_accept` default false and registered as a guard-category key?"
+  - "Registration of `arras` wherever `motif` and `raddle` are (shedrun, loomrecipe, shedcli arming table, battencli admitted child recipes, run profiles, board task recipe acceptance): is any registration site missed, and is the former-name test reversed correctly rather than deleted or weakened?"
+  - "contracts/stencils/loom/loom-rubric-raddle-review.md: does it name the decision record and its Added after Discussion entries as the authority, name each D3 judgement (decisions land in buildable parts, seams, order and `order_departures`, recipe and profile fit with cost lines, one task or a family), and leave the mechanical proposal checks to the gate? Is it embedded and registered through stencilstore like the other loom rubrics?"
+  - "Constraints: do the refusals the diff touches (perch-mode `lym loom raddle-approve` refusal, shape `beam` refusal) name a way forward and have a test that reaches them, and does any verb branch on the recipe name instead of the recipe's rows (PATTERN-shed-recipe-registry)? Are docs the repository's rules name for this kind of change in the diff (docs/overview.md, weaving-glossary, package doc.go files)?"
+  - "Scope against the decision record: does the diff make changes outside D1-D3 (the Scope packages), and are acceptance criteria D4, D5 and D7 (perch-mode outcome, one-task filing, `decision add` during Raddle-Write reaching every part) covered by the run-level tests in internal/loomrecipe/arrasrecipe_test.go or only claimed in the commit message?"
+  - "Test economy in internal/loomrecipe/arrasrecipe_test.go and the edited table tests: do new tests duplicate existing coverage, or assert static prose, and is any behavior added in internal/loomengine or internal/loomcli left without a test?"
+  - "Commit messages against the diff: does each claim in the two commit bodies, for example the arbiter describing an arras run in internal/loomcli/arbiterprompt.go, hold in the diff?"
+---
+
+Focus set from the decision record's D1-D3 and the range's two commits; the base is the merge base named in the rubric.
