@@ -1,6 +1,6 @@
 # Make the eight longest serial internal/fabricengine tests parallel
 
-`fabric-serial-phase-tests` · Task · enhancement, fabric, testkit · running · Describe
+`fabric-serial-phase-tests` · Task · enhancement, fabric, testkit · running · PR-Review
 
 ## Seen (orch, 2026-11-09)
 
