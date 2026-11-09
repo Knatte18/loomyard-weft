@@ -1,6 +1,6 @@
 # Terminal titles read hub: project: task: slug
 
-`terminal-titles-hub-project` · Task · enhancement, ide, reed · running · Seed-Child
+`terminal-titles-hub-project` · Task · enhancement, ide, reed · running · Open-Window
 
 ## Seen (orch, 2026-11-09)
 
