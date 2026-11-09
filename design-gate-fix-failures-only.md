@@ -1,6 +1,6 @@
 # Darn-Write gate fix: rerun only the failed tests between attempts
 
-`gate-fix-failures-only` · Note · enhancement, gate, loom
+`gate-fix-failures-only` · Task · enhancement, gate, loom · draft
 
 ## Seen (orch, 2026-11-09)
 
