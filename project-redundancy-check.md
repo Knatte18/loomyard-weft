@@ -1,6 +1,6 @@
 # P5 Redundant tests found mechanically: a coverage engine, a map per package, a gate report and its review
 
-Rendered 2026-11-09 19:41 UTC; every age below is as of then.
+Rendered 2026-11-09 19:42 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`redundancy-check`](design-redundancy-check.md) · Age 1d · Owner `neve`
@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T10 | **An advisory redundancy report step in lym gate test, judging a diff's new tests against the map** | [`gate-redundancy-report`](design-gate-redundancy-report.md)<br>[Sketch](decision-gate-redundancy-report.md) | darn · solid | Code-Burler-Review | neve | 1d<br>1d | testkit, gate |
+| T10 | **An advisory redundancy report step in lym gate test, judging a diff's new tests against the map** | [`gate-redundancy-report`](design-gate-redundancy-report.md)<br>[Sketch](decision-gate-redundancy-report.md) | darn · solid | Code-Burler-Fix | neve | 1d<br>1d | testkit, gate |
 
 ### Ready (0)
 
