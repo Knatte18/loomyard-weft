@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Run-Shed",
+    "history_length": 5,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "",
+    "branch": "",
+    "dirty": null
+  },
+  "spawned_at": "2026-11-09T12:59:41.78097652+01:00",
+  "deadline": "2026-11-09T13:09:41.78097652+01:00",
+  "envelope_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/loomyard/_lym/shed/testcover-engine/drive-reports/drive-envelope-20261109-125941-8b04.json",
+  "report_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/loomyard/_lym/shed/testcover-engine/drive-reports/drive-report-20261109-125941-b108.md",
+  "strand_guid": "fed83a4545b638996e1b36bde9a56197"
+}
