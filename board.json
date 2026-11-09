@@ -469,7 +469,6 @@
       "created": "2026-11-08T16:15:45Z",
       "revised": "2026-11-08T16:15:45Z",
       "profile": "solid",
-      "notify_on_land": true,
       "project": "arras-recipe",
       "discussed": true
     },
