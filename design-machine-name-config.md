@@ -1,6 +1,6 @@
 # Machine name from a machine-wide config, not only the hostname
 
-`machine-name-config` · Task · enhancement, config, slack · draft
+`machine-name-config` · Note · sketch, config, slack
 
 Decision record: [Sketch](decision-machine-name-config.md)
 

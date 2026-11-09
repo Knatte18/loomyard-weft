@@ -160,7 +160,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Owner `osl-1046`
 
-### Tasks (3)
+### Tasks (2)
 
 Concrete and claimable; only a task can run.
 
@@ -178,18 +178,23 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (2)
+#### Draft (1)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Machine name from a machine-wide config, not only the hostname**<br>• internal/machinename has a fixed hostname rule and no override; a machine-wide config value would let the operator name a machine osl46. | [`machine-name-config`](design-machine-name-config.md)<br>[Sketch](decision-machine-name-config.md) | motif |  | 1h<br>46m | config, slack |
 | T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid |  | 45m<br>0m | slack, reed, creel |
 
-### Notes (19)
+### Notes (20)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+#### Sketches (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| S1 |  | **Machine name from a machine-wide config, not only the hostname**<br>• internal/machinename has a fixed hostname rule and no override; a machine-wide config value would let the operator name a machine osl46. | [`machine-name-config`](design-machine-name-config.md)<br>[Sketch](decision-machine-name-config.md) | 1h<br>0m | config, slack |
 
 #### Research (2)
 
