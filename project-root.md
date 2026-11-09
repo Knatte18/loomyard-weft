@@ -12,21 +12,20 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (1)
+### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Terminal titles read hub: project: task: slug**<br>• Every console window title reads <hub>: <P#>: <T#>: <slug>, with prime, beam and orch forms. | [`terminal-titles-hub-project`](design-terminal-titles-hub-project.md) | darn · light | Code-Burler-Fix | osl-1046 | 1h<br>1h | ide, reed |
+| T4 | **Machine name from a machine-wide config, not only the hostname**<br>• internal/machinename has a fixed hostname rule and no override; a machine-wide config value would let the operator name a machine osl46. | [`machine-name-config`](design-machine-name-config.md)<br>[Sketch](decision-machine-name-config.md) | raddle | Worktree-Create | osl-1046 | 1h<br>0m | config, slack |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Machine name from a machine-wide config, not only the hostname**<br>• internal/machinename has a fixed hostname rule and no override; a machine-wide config value would let the operator name a machine osl46. | [`machine-name-config`](design-machine-name-config.md)<br>[Sketch](decision-machine-name-config.md) | raddle |  | 1h<br>0m | config, slack |
+_None._
 
 ### Draft (1)
 
@@ -34,7 +33,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid |  | 46m<br>0m | slack, reed, creel |
+| T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid |  | 46m<br>1m | slack, reed, creel |
 
 ## Notes (19)
 
