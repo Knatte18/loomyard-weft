@@ -37,7 +37,7 @@ Not released; nothing starts it until its status is cleared.
 | T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 1h<br>27m | slack, reed, creel |
 | T13 | `draft` **lym machine name shows and sets the machine name and sweeps owners across a rename** | [`machine-name-verb`](design-machine-name-verb.md)<br>[Sketch](decision-machine-name-verb.md) | tapestry · solid | T5 | 27m<br>27m | config, slack |
 
-## Notes (24)
+## Notes (25)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -48,7 +48,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 3h<br>3h | gate, fabric |
 | R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>3h | loom, stencil |
 
-### Bugs (7)
+### Bugs (8)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -59,6 +59,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B5 | H | **One new loom config key fails dozens of tests that pin the whole struct**<br>• TestLoadConfig_Loads compares the whole struct in every case, so each added key breaks them all. | [`config-struct-test-per-key`](design-config-struct-test-per-key.md) | 3m<br>3m | loom, config, testkit |
 | B6 | H | **The Darn-Write verify gate has no time budget and no notice when it runs long**<br>• verify_attempts bounds attempts, not minutes; a gate stood 35 minutes unannounced. | [`verify-gate-wall-budget`](design-verify-gate-wall-budget.md) | 3m<br>3m | gate, darn |
 | B7 |  | **Gate escalation reports "did not pass after 0 attempts" and blocks the step as escalation-to-human** | [`gate-zero-attempts-halt`](design-gate-zero-attempts-halt.md) | 0m<br>0m | gate, loom, darn |
+| B8 |  | **lym config profiles --set cannot reach a profile's leaf key, and its refusal names the wrong value shape** | [`profiles-set-leaf-key`](design-profiles-set-leaf-key.md) | 0m<br>0m | config, profiles |
 
 ### Enhancements (3)
 

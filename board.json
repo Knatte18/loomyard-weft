@@ -1005,6 +1005,27 @@
       "body": "Imported from [issue #93](https://github.com/Knatte18/loomyard/issues/93).\n\n## Seen\n\nIn hub `dop`, beam `loomyard-setup` with PR 30 recorded, member task `dotnet10-upgrade` carried `notify_on_land: true`.\nIts landing sent the beam orch two separate mails from the beam's dobby:\n\n1. `#130`: \"loomyard-setup: landed into the beam while its pull request is recorded: 74fc86c ... (#31); add them to the change description, then run `lym beam describe loomyard-setup`\" (the beam-PR landing notice, sent for every landing while a beam PR is recorded).\n2. `#131`: \"[dobby notice] dotnet10-upgrade: landed as 74fc86c8f712\" (the `notify_on_land` line).\n\nTwo mechanisms report the same event. The operator found this redundant and confusing: it was not clear which one did what, or that the beam-PR notice exists at all.\n\n## Expected (operator's design)\n\nOne mechanism, `notify_on_land`, for every land notice.\nWhile a beam has a recorded pull request, its members land with `notify_on_land` in effect without anyone setting it, and the one line they send carries the beam's follow-up (add the landing to the change description, run `lym beam describe \u003cslug\u003e`).\nA task that also has `notify_on_land` set by hand gets that same single line, not a second one.\n\n\n## Issue comment, 2026-11-09\n\nOperator's refinement: opening the beam's pull request (lym beam pr open) sets notify_on_land: true on the beam's member tasks, and on every member added while the PR is recorded, so dobby has one trigger only: the flag. The beam-PR landing notice as a separate trigger goes away; its follow-up (update the change description, run lym beam describe) rides on the notify_on_land line for members of a beam with a recorded PR.",
       "created": "2026-11-09T15:20:31Z",
       "revised": "2026-11-09T15:20:31Z"
+    },
+    {
+      "id": 1267,
+      "handle": "B8",
+      "slug": "profiles-set-leaf-key",
+      "title": "lym config profiles --set cannot reach a profile's leaf key, and its refusal names the wrong value shape",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "config",
+        "profiles"
+      ],
+      "issues": [
+        94
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #94](https://github.com/Knatte18/loomyard/issues/94).\n\n## Seen\n\nIn the DrillOpPlan hub's prime, changing two values of the `docs` profile's darn loom block with `lym config profiles --layer default --set` took three tries.\n\n1. `--set docs.darn.loom.code_max_bounces=0 --set docs.darn.loom.code_hard_max_bounces=1` was refused:\n   `value for docs.darn.loom.code_max_bounces must be a JSON object such as {\"module\": {\"key\": 1}}, got \"0\"`.\n   The message names a value shape that fits a recipe block, not a leaf key.\n2. `--set 'docs.darn={\"darn\":{\"writer\":\"sonnet[medium]\"},\"drift\":{\"scope\":\"off\"},\"loom\":{...}}'`, which is the `{\"module\": {\"key\": 1}}` shape the first message asked for, was refused:\n   `profile \"docs.darn\": recipe \"darn\": module \"writer\" must be a mapping of keys`.\n   The value was read one level deeper than its key.\n3. `--set 'docs={\"darn\":{\"darn\":{\"writer\":\"sonnet[medium]\"},\"drift\":{\"scope\":\"off\"},\"loom\":{\"code_max_bounces\":0,\"code_hard_max_bounces\":1,\"code_reviewer_fan\":\"\"}}}'` worked.\n\n## Workaround\n\nSet the whole profile, keyed by the profile name alone, with every block it holds restated.\n\n## Expected\n\n`--set` reaches a leaf key of a profile, as it does in other modules (`lym config gate --set tiers.tier0.env.X=...`), so `docs.darn.loom.code_max_bounces=0` sets that one value.\nFailing that, the refusal names the key depth `--set` takes and a value shape that is accepted at that key.\n",
+      "created": "2026-11-09T15:20:33Z",
+      "revised": "2026-11-09T15:20:33Z"
     }
   ],
   "prime_owner": "osl-1046",
