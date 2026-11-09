@@ -1,0 +1,2643 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index ecc10b51..4b3b5749 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -892,6 +892,7 @@ User-facing modules each get one `lym <module>` namespace:
+   so a tag-set compile break fails at the card;
+   a failing tier stops no later tier, vet or guard run;
+   the gate key's lint steps run after the tiers;
++  a gate key's advisory `redundancy` report step runs last, judging the diff's new and changed Go tests against the coverage maps without changing the result;
+   a failure report lists every failure with its package, test and first lines, the files the change touches and each failed run's log;
+   a closing line names every failed run,
+   and the call exits with the first failing run's code.
+diff --git a/internal/gatecli/cli.go b/internal/gatecli/cli.go
+index 214e8cd0..b5a89123 100644
+--- a/internal/gatecli/cli.go
++++ b/internal/gatecli/cli.go
+@@ -100,7 +100,7 @@ Examples:
+ 				return nil
+ 			}
+ 			request := testRequest{
+-				goBinary: goBinary, samplePeriod: samplePeriod, preTierCeiling: preTierCeiling, timeoutUnit: timeoutUnit, rerunDelay: rerunDelay, pipeWaitDelay: pipeWaitDelay,
++				goBinary: goBinary, samplePeriod: samplePeriod, preTierCeiling: preTierCeiling, timeoutUnit: timeoutUnit, secondUnit: time.Second, rerunDelay: rerunDelay, pipeWaitDelay: pipeWaitDelay,
+ 				stderr: cmd.ErrOrStderr(), dir: dir, tags: tags, gate: gate, tiers: tiers, cards: cards, mainPackages: mainPackages, base: base, all: all, guards: guards, targets: args,
+ 				upto: upto, uptoGiven: cmd.Flags().Changed("upto"),
+ 				phase: phaseFrom(cmd.Context()),
+@@ -163,8 +163,10 @@ type testRequest struct {
+ 	samplePeriod time.Duration
+ 	// preTierCeiling bounds the work before the first tier.
+ 	preTierCeiling time.Duration
+-	// timeoutUnit is the length of one `timeout_min` minute.
++	// timeoutUnit is the length of one `timeout_min` minute, and of one minute of the redundancy step's minute keys.
+ 	timeoutUnit time.Duration
++	// secondUnit is the length of one second of `redundancy_test_timeout_sec`.
++	secondUnit time.Duration
+ 	// rerunDelay is how long a tier waits before its one rerun after a resource shortage or a crashed test runner.
+ 	rerunDelay time.Duration
+ 	// pipeWaitDelay is how long a tier's or the build's output is still read after its shell exits.
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 311ae335..e0108db2 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -63,7 +63,8 @@
+ // `--card` ids beside a key of another scope are ignored.
+ // Explicit `<targets>` beside `--gate` replace the key's scope.
+ // Each run record carries the key as `gate_key`, empty for a call with manual flags.
+-// `--gate` opens no flag combination the manual flags lack, bar the key's lint steps the Lint steps section describes.
++// `--gate` opens no flag combination the manual flags lack.
++// The exception is the key's lint and report steps, described in the Lint steps and Redundancy report sections.
+ // `--tier` names a tier and may repeat.
+ // The default is tier0 when neither `--tier` nor `--upto` is given.
+ // A tier another listed tier covers is dropped and named as covered on stderr.
+@@ -515,6 +516,62 @@
+ // Bound: a step reads only the working tree against HEAD, so on a clean tree it finds nothing;
+ // the round and darn gates lint their own range through `loomshed`.
+ //
++// # Redundancy report
++//
++// A `--gate` key whose `reports` lists `gateslot.ReportRedundancy` runs the redundancy report step last.
++// It runs after the key's lints in an uncancelled call, whatever the key's scope.
++// The step is advisory: every failure it meets is a line of its report, and it never changes the exit code.
++// It writes `RedundancyReport` through `internal/state` as `redundancy.json` in the worktree's gate directory.
++// It prints one stderr line with its counts and path.
++// A report it cannot write is logged at Warn.
++// A call one of whose runs failed gets a report marked `red_gate` that judges nothing.
++// So does a call outside every hub, a hub whose `scoper` is not `go`, or a worktree with no parent branch.
++// Each such report carries a note.
++//
++// The step judges the module of the lowest declared of tier0 and tier1, as `lym gate testmap` maps it.
++// It diffs the working tree from the merge base with the parent branch through `impactset.ChangedPaths`.
++// It reads the test files of each package holding a changed `_test.go` file at the merge base.
++// The reads go through `Fabric.CodeDirAt` and `Fabric.CodeFileAt`.
++// It takes each top-level test of a changed file whose name the merge base lacks or whose text differs there.
++// So a test file moved within its package adds none of its unchanged tests, and a deleted one adds none.
++// It drops, each listed with its reason, a tier2 or higher test and a test of a tier the hub does not declare.
++// It also drops a test marked `//testtiming:keep`, with the marker's reason,
++// and a test the spawn scan marks as possibly running module code in another process.
++// A test that opens with no `tiergate.Require` counts as tier0.
++// It keeps the first `redundancy_max_tests` of the rest in file then name order, and lists the others.
++// A package with no coverage map, an unreadable one or one recording a build failure is not judged.
++// Nor are its tests.
++// Before any build the step takes one gate slot, after the call's tiers released theirs.
++// It takes none inside an enclosing gate run's slot.
++// It holds the slot to its end, and its wait has no bound but the call's context.
++// `redundancy_budget_min` counts from the hold.
++// Once it is spent the step starts no further build or test.
++// It lists each test it did not run as not judged for the spent budget.
++// Per package it builds the coverage binary under the slot's `gateslot.HolderEnv`.
++// It runs each test alone under its tier's env, as `lym gate testmap` does.
++// It builds `lym` once for a tier with `prebuilt_lym`.
++// Each build is bounded by `redundancy_build_timeout_min` and each test by `redundancy_test_timeout_sec`.
++// A skipped, failed, timed-out or block-free test is not judged.
++// The tests of the map that still exist with the same function hash cover each judged test, the judged tests left out;
++// so do the other judged tests.
++// `testcover.JudgeAgainst` runs the greedy pass, slowest first, keeping every map test.
++// A test the pass drops is contained, with its covering tests largest overlap first; any other judged test is unique.
++// The report records the function hash of every test the step took and the hashes of each judged package's Go files.
++// A judged package's line names its map's commit and age,
++// and the files whose text at the merge base hashes otherwise than the map, its drift from the run's base.
++// A later call on a tree that matches the report runs no build and no test and keeps the report.
++// A report never matches when it judged nothing, holds an error line or a package with no usable map.
++// It never matches either when it lists a test the spent budget or a cancelled call left unrun.
++// `ReadRedundancyReport` reads a worktree's report.
++// `RedundancyReportMatches` matches one against a commit:
++// the step's selection over the commit's tree, and the judged packages' file hashes there.
++// Bound: the step can let a redundant test through.
++// An edited block is uncovered, and a test changed since the map covers nothing.
++// It can flag a test falsely: a map test counts as a cover whenever its own text is unchanged.
++// A change outside that text can stop it reaching a block it reached when the map was built.
++// Such a change is one to a helper or a callee.
++// Review reading each finding against its covering tests bounds that.
++//
+ // # Failure report
+ //
+ // A call with a failed run, a halted call included, prints the failure report to stderr before its closing line.
+diff --git a/internal/gatecli/redundancy.go b/internal/gatecli/redundancy.go
+new file mode 100644
+index 00000000..d10acc0e
+--- /dev/null
++++ b/internal/gatecli/redundancy.go
+@@ -0,0 +1,609 @@
++// redundancy.go runs the redundancy report step a `--gate` key's reports list names, after the call's lints.
++// It judges the diff's new and changed tests against the coverage maps inside one gate slot and a time budget.
++// It writes its report; nothing it meets changes the call's result.
++
++package gatecli
++
++import (
++	"cmp"
++	"context"
++	"errors"
++	"fmt"
++	"io"
++	"os"
++	"path/filepath"
++	"runtime"
++	"slices"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/impactset"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/lymtemp"
++	"github.com/Knatte18/loomyard/internal/testcover"
++)
++
++// redundancySite labels the slot holder and wait records of the redundancy report step.
++const redundancySite = siteLabelPrefix + " redundancy"
++
++// testKitDir is the module-relative directory of the testkits whose functions the spawn scan follows.
++const testKitDir = "internal/testkit"
++
++// Notes a report carries when the step judged nothing.
++const (
++	noteRedGate  = "a tier of the call was red, so the step judged nothing"
++	noteNoHub    = "the worktree is in no hub, and the coverage maps live in a hub, so the step judged nothing"
++	noteNoParent = "the worktree has no parent branch to diff from, so the step judged nothing"
++	noteScoper   = "the hub's scoper is %s, not go, so the step judged nothing"
++)
++
++// Reasons a test the step took is not judged, beside the eligibility reasons of testcover.
++const (
++	reasonAboveMapped   = "a tier%d test, which no coverage map holds"
++	reasonUndeclared    = "tier%d, which the hub does not declare"
++	reasonKeep          = "kept: %s"
++	reasonScanFailed    = "its package's keep or spawn scan failed"
++	reasonPastCap       = "past redundancy_max_tests (%d)"
++	reasonNoMap         = "its package has no coverage map"
++	reasonMapFailure    = "its package's coverage map records a build failure"
++	reasonMapUnreadable = "its package's coverage map is unreadable"
++	reasonNoSlot        = "the step took no gate slot"
++	reasonBudgetSpent   = "redundancy_budget_min was spent before it ran"
++	reasonCancelled     = "the call was cancelled"
++	reasonBuildFailed   = "its package's coverage build failed"
++	reasonLymFailed     = "the lym build failed"
++	reasonTimedOut      = "timed out after %s"
++	reasonNotRun        = "it could not run"
++	reasonUnkeyed       = "its covered blocks could not be keyed"
++)
++
++// redundancyStep is one call's redundancy report step, with what it reads from the call.
++type redundancyStep struct {
++	ctx      context.Context
++	stderr   io.Writer
++	cfg      gateslot.Config
++	location *lymcwd.Location
++	// root is the worktree root, and gateKey the key whose call runs the step.
++	root, gateKey string
++	// pool is the hub's slot pool; inherited is set when an enclosing gate run's slot is held, so the step takes none.
++	pool      *gateslot.Pool
++	inherited bool
++	// env is the environment the step's children start from, before the slot's Go flags.
++	env []string
++	// goBinary is the go command the builds run.
++	goBinary string
++	// minuteUnit is the length of one minute of redundancy_budget_min and redundancy_build_timeout_min.
++	// secondUnit is the length of one second of redundancy_test_timeout_sec.
++	minuteUnit, secondUnit time.Duration
++	// grace bounds the wait for a killed build's or test's exit and output.
++	grace time.Duration
++}
++
++// redundancyStep returns the redundancy report step of the call e runs.
++func (e *execution) redundancyStep() redundancyStep {
++	return redundancyStep{
++		ctx: e.ctx, stderr: e.request.stderr, cfg: e.cfg, location: e.location, root: e.request.root, gateKey: e.request.gate,
++		pool: e.pool, inherited: e.inherited, env: e.env, goBinary: e.request.goBinary,
++		minuteUnit: e.request.timeoutUnit, secondUnit: e.request.secondUnit, grace: e.request.pipeWaitDelay,
++	}
++}
++
++// run writes the step's report into the worktree's gate directory and prints its summary line.
++// red tells a call one of whose runs failed, and inHub a call inside a hub; either way the report then judges nothing.
++// A report the step cannot write is logged at Warn, and the call's result stands.
++func (s redundancyStep) run(red, inHub bool) {
++	path := redundancyReportPath(s.location)
++	var report RedundancyReport
++	switch {
++	case red:
++		report = RedundancyReport{RedGate: true, Note: noteRedGate}
++	case !inHub:
++		report = RedundancyReport{Note: noteNoHub}
++	case s.cfg.Scoper != "go":
++		report = RedundancyReport{Note: fmt.Sprintf(noteScoper, s.cfg.Scoper)}
++	default:
++		judged, kept := s.judge(path)
++		if kept {
++			printLine(s.stderr, "gate test: redundancy report: the tree matches the report already written, so the step ran no build and no test; "+path)
++			return
++		}
++		report = judged
++	}
++	report.GateKey = s.gateKey
++	report.Written = time.Now()
++	if err := writeRedundancyReport(path, report); err != nil {
++		logger.Warn("gate test: could not write the redundancy report; the gate's result stands", "path", path, "cause", err)
++		return
++	}
++	printLine(s.stderr, report.summaryLine(path))
++}
++
++// judge returns the report for the worktree's diff, or the report at reportPath and true when that one still holds.
++// The report at reportPath holds when it asks for no retry and the current tree matches it.
++func (s redundancyStep) judge(reportPath string) (RedundancyReport, bool) {
++	var report RedundancyReport
++	module, err := redundancyModule(s.cfg, s.root)
++	if err != nil {
++		report.Errors = append(report.Errors, err.Error())
++		return report, false
++	}
++	report.ModuleDir = module.rel
++	base, found, err := parentMergeBase(s.location)
++	switch {
++	case err != nil:
++		report.Errors = append(report.Errors, fmt.Sprintf("read the merge base with the parent branch: %v", err))
++		return report, false
++	case !found:
++		report.Note = noteNoParent
++		return report, false
++	}
++	report.Base = base
++	fabric, err := fabricengine.Open(s.location)
++	if err != nil {
++		report.Errors = append(report.Errors, err.Error())
++		return report, false
++	}
++	changed, err := impactset.ChangedPaths(s.ctx, s.root, base)
++	if err != nil {
++		report.Errors = append(report.Errors, err.Error())
++		return report, false
++	}
++	tree := workingTree{root: s.root}
++	tests, err := changedTests(tree, fabric, base, module.rel, changed)
++	if err != nil {
++		report.Errors = append(report.Errors, fmt.Sprintf("pick the changed tests: %v", err))
++		return report, false
++	}
++	if previous, found, err := readRedundancyReport(reportPath); err == nil && found && !previous.retries() && previous.ModuleDir == module.rel {
++		if matched, err := previous.matches(tree, tests); err == nil && matched {
++			return previous, true
++		}
++	}
++	report.TestHashes = testHashesOf(tests)
++	s.judgeTests(&report, module, base, fabric, tests)
++	slices.SortFunc(report.Tests, func(a, b RedundancyTest) int {
++		return cmp.Or(strings.Compare(a.File, b.File), strings.Compare(a.Name, b.Name))
++	})
++	return report, false
++}
++
++// judgeTests adds to report a line for each of tests, the tests the step took from the module.
++// It drops the tests no map can judge and caps the rest.
++// It judges each package's tests against its map inside one gate slot.
++func (s redundancyStep) judgeTests(report *RedundancyReport, module goModule, base string, fabric *fabricengine.Fabric, tests []redundancyCandidate) {
++	scans := map[string]packageScans{}
++	var kept []redundancyCandidate
++	for _, test := range tests {
++		if reason := s.dropReason(report, module, test, scans); reason != "" {
++			report.notJudged(test, reason)
++			continue
++		}
++		kept = append(kept, test)
++	}
++	if limit := s.cfg.RedundancyMaxTests; len(kept) > limit {
++		for _, test := range kept[limit:] {
++			report.notJudged(test, fmt.Sprintf(reasonPastCap, limit))
++		}
++		kept = kept[:limit]
++	}
++	packages := s.mappedPackages(report, module, base, fabric, kept)
++	if len(packages) == 0 {
++		return
++	}
++	run := &redundancyRun{step: s, module: module, report: report}
++	defer run.close()
++	if err := run.holdSlot(); err != nil {
++		report.Errors = append(report.Errors, err.Error())
++		for _, p := range packages {
++			report.notJudgedAll(p.tests, reasonNoSlot)
++		}
++		return
++	}
++	for _, p := range packages {
++		run.judgePackage(p)
++	}
++}
++
++// packageScans are a package's keep and spawn scans; failed marks a package whose scan failed.
++type packageScans struct {
++	keeps  map[string]string
++	spawns map[string]testcover.SpawnVerdict
++	failed bool
++}
++
++// dropReason returns why the step drops test before any build, or "" for a test it goes on with.
++// It drops a test of a tier no map holds and a test of a tier the hub does not declare.
++// It also drops a test marked `//testtiming:keep`,
++// and a test the spawn scan marks as possibly running module code in another process.
++// A test that opens with no tiergate.Require counts as tier0.
++func (s redundancyStep) dropReason(report *RedundancyReport, module goModule, test redundancyCandidate, scans map[string]packageScans) string {
++	tier := test.fn.Tier
++	if !slices.Contains(mappedTiers, tier) {
++		return fmt.Sprintf(reasonAboveMapped, tier)
++	}
++	if _, err := s.cfg.Tier(tier); err != nil {
++		return fmt.Sprintf(reasonUndeclared, tier)
++	}
++	scan, scanned := scans[test.pkg]
++	if !scanned {
++		scan = scanPackage(report, module, test.pkg)
++		scans[test.pkg] = scan
++	}
++	if scan.failed {
++		return reasonScanFailed
++	}
++	if reason, marked := scan.keeps[test.fn.Name]; marked {
++		return fmt.Sprintf(reasonKeep, reason)
++	}
++	switch verdict := scan.spawns[test.fn.Name]; {
++	case verdict.OutOfProcess:
++		return testcover.ReasonOutOfProcess
++	case verdict.Unresolved:
++		return testcover.ReasonUnresolved
++	}
++	return ""
++}
++
++// scanPackage runs the keep and spawn scans over the package pkg of module.
++// A failed scan adds an error line to report.
++func scanPackage(report *RedundancyReport, module goModule, pkg string) packageScans {
++	dir := filepath.Join(module.dir, filepath.FromSlash(pkg))
++	keeps, err := testcover.ScanKeeps(dir)
++	if err != nil {
++		report.Errors = append(report.Errors, fmt.Sprintf("keep scan of %s: %v", pkg, err))
++		return packageScans{failed: true}
++	}
++	spawns, err := testcover.ScanSpawns(module.path, filepath.Join(module.dir, filepath.FromSlash(testKitDir)), dir)
++	if err != nil {
++		report.Errors = append(report.Errors, fmt.Sprintf("spawn scan of %s: %v", pkg, err))
++		return packageScans{failed: true}
++	}
++	return packageScans{keeps: keeps, spawns: spawns}
++}
++
++// judgedPackage is one package holding kept tests, with the coverage map they are judged against.
++type judgedPackage struct {
++	pkg   string
++	tests []redundancyCandidate
++	m     testcover.Map
++}
++
++// mappedPackages groups kept by package, in order, and returns the packages whose coverage map can judge them.
++// It adds a line to report per package.
++// A package with no map, an unreadable map or a map recording a build failure is not judged, and nor are its tests.
++// A judged package's line names its map's commit and age,
++// and the files whose text at the merge base base differs from the map's.
++// Its Go files' current hashes go into the report.
++func (s redundancyStep) mappedPackages(report *RedundancyReport, module goModule, base string, fabric *fabricengine.Fabric, kept []redundancyCandidate) []judgedPackage {
++	mapsDir := testcover.Dir(fabricengine.BoltDir(s.location.HubPath))
++	var order []string
++	byPackage := map[string][]redundancyCandidate{}
++	for _, test := range kept {
++		if _, seen := byPackage[test.pkg]; !seen {
++			order = append(order, test.pkg)
++		}
++		byPackage[test.pkg] = append(byPackage[test.pkg], test)
++	}
++	var packages []judgedPackage
++	for _, pkg := range order {
++		tests := byPackage[pkg]
++		line := RedundancyPackage{Package: pkg}
++		m, found, err := testcover.ReadMap(mapsDir, pkg)
++		if err == nil && found {
++			err = checkMapBlocks(m)
++		}
++		reason := ""
++		switch {
++		case err != nil:
++			report.Errors = append(report.Errors, fmt.Sprintf("coverage map of %s: %v", pkg, err))
++			line.Reason, reason = "its coverage map is unreadable", reasonMapUnreadable
++		case !found:
++			line.Reason, reason = "it has no coverage map", reasonNoMap
++		case m.BuildFailure != "":
++			line.Reason, reason = "its coverage map records a build failure: "+m.BuildFailure, reasonMapFailure
++		}
++		if reason != "" {
++			report.Packages = append(report.Packages, line)
++			report.notJudgedAll(tests, reason)
++			continue
++		}
++		dir := packageDirOf(module.rel, pkg)
++		line.Judged, line.MapCommit, line.MapBuiltAt = true, m.Commit, m.BuiltAt
++		line.MapAge = time.Since(m.BuiltAt).Round(time.Minute).String()
++		if line.Drift, err = mapDrift(fabric, base, dir, m.Files); err != nil {
++			report.Errors = append(report.Errors, fmt.Sprintf("read %s at the merge base: %v", pkg, err))
++		}
++		hashes, err := goFileHashes(workingTree{root: s.root}, dir)
++		if err != nil {
++			report.Errors = append(report.Errors, fmt.Sprintf("hash the Go files of %s: %v", pkg, err))
++		} else {
++			if report.FileHashes == nil {
++				report.FileHashes = map[string]map[string]string{}
++			}
++			report.FileHashes[pkg] = hashes
++		}
++		report.Packages = append(report.Packages, line)
++		packages = append(packages, judgedPackage{pkg: pkg, tests: tests, m: m})
++	}
++	return packages
++}
++
++// checkMapBlocks returns an error for a map whose test names a block index outside its block table.
++func checkMapBlocks(m testcover.Map) error {
++	for _, test := range m.Tests {
++		for _, index := range test.Blocks {
++			if index < 0 || index >= len(m.Blocks) {
++				return fmt.Errorf("test %s names block %d of a table of %d", test.Name, index, len(m.Blocks))
++			}
++		}
++	}
++	return nil
++}
++
++// mapDrift returns the sorted names of the Go files in the worktree-relative slash directory dir that drifted.
++// A file drifted when its text at the commit base hashes otherwise than mapped records;
++// a file on one side alone counts.
++func mapDrift(fabric *fabricengine.Fabric, base, dir string, mapped map[string]string) ([]string, error) {
++	atBase, err := goFileHashes(commitTree{fabric: fabric, rev: base}, dir)
++	if err != nil {
++		return nil, err
++	}
++	var drift []string
++	for name, hash := range atBase {
++		if mapped[name] != hash {
++			drift = append(drift, name)
++		}
++	}
++	for name := range mapped {
++		if _, found := atBase[name]; !found {
++			drift = append(drift, name)
++		}
++	}
++	slices.Sort(drift)
++	return drift, nil
++}
++
++// notJudged adds test to the report as not judged for reason.
++func (r *RedundancyReport) notJudged(test redundancyCandidate, reason string) {
++	r.Tests = append(r.Tests, RedundancyTest{Package: test.pkg, Name: test.fn.Name, File: test.file, Verdict: RedundancyNotJudged, Reason: reason})
++}
++
++// notJudgedAll adds each of tests to the report as not judged for reason.
++func (r *RedundancyReport) notJudgedAll(tests []redundancyCandidate, reason string) {
++	for _, test := range tests {
++		r.notJudged(test, reason)
++	}
++}
++
++// redundancyRun is the part of the step that holds its gate slot: the builds, the test runs and the verdicts.
++type redundancyRun struct {
++	step   redundancyStep
++	module goModule
++	report *RedundancyReport
++
++	// lease is the held slot; it stays nil inside an enclosing gate run's slot.
++	lease *gateslot.Lease
++	// holderEnv is the step's env with the slot's Go flags, and parallel the `-p` of the `lym` build.
++	holderEnv []string
++	parallel  int
++	// tmp holds the coverage binaries and profiles.
++	tmp string
++	// deadline is when redundancy_budget_min, counted from the slot's hold, is spent.
++	deadline time.Time
++	// lymBuilt is set once the run built `lym`; lymBin is the binary, and lymErr the build's failure.
++	lymBuilt bool
++	lymBin   string
++	lymErr   error
++}
++
++// holdSlot takes one slot of the hub's pool for the rest of the step, unless an enclosing gate run's slot is held.
++// Its wait has no bound but the call's context, and the budget counts from its end.
++// It fills the slot holder's Go flags into the step's environment and creates the run's temporary directory.
++func (r *redundancyRun) holdSlot() error {
++	s := r.step
++	limits, err := s.pool.Limits()
++	if err != nil {
++		return fmt.Errorf("read the hub's gate limits: %w", err)
++	}
++	if !s.inherited {
++		waitPath, err := gateslot.WriteWait(gateslot.WaitDir(s.location.AnchorPath()), gateslot.Wait{Site: redundancySite, PID: os.Getpid(), Started: time.Now()})
++		if err != nil {
++			logger.Warn("gate test: could not write the gate wait record", "cause", err)
++		} else {
++			defer os.Remove(waitPath)
++		}
++		if r.lease, err = s.pool.Acquire(s.ctx, gateslot.Holder{Worktree: s.location.WorktreePath(), Site: redundancySite}); err != nil {
++			return fmt.Errorf("acquire a gate slot: %w", err)
++		}
++	}
++	r.deadline = time.Now().Add(time.Duration(s.cfg.RedundancyBudgetMin) * s.minuteUnit)
++	if r.tmp, err = lymtemp.MkdirTemp("redundancy-"); err != nil {
++		return fmt.Errorf("create the coverage binary directory: %w", err)
++	}
++	r.parallel = limits.Tier0Parallel
++	if r.parallel < 1 {
++		r.parallel = runtime.NumCPU()
++	}
++	r.holderEnv = gateslot.HolderEnv(s.env, r.lease, limits.Tier0Parallel)
++	return nil
++}
++
++// close releases the run's slot and removes its temporary directory.
++func (r *redundancyRun) close() {
++	if r.lease != nil {
++		releaseSlot(r.lease, r.step.root)
++	}
++	if r.tmp != "" {
++		os.RemoveAll(r.tmp)
++	}
++}
++
++// stopReason returns why the run starts no further build or test, or "" while it may.
++func (r *redundancyRun) stopReason() string {
++	switch {
++	case r.step.ctx.Err() != nil:
++		return reasonCancelled
++	case !time.Now().Before(r.deadline):
++		return reasonBudgetSpent
++	}
++	return ""
++}
++
++// buildTimeout is the bound of each coverage build and of the `lym` build.
++func (r *redundancyRun) buildTimeout() time.Duration {
++	return time.Duration(r.step.cfg.RedundancyBuildTimeoutMin) * r.step.minuteUnit
++}
++
++// judgePackage builds p's coverage binary, runs each of its tests alone and judges them against p's map.
++// A test the run does not reach before the budget is spent is listed as not judged for it.
++func (r *redundancyRun) judgePackage(p judgedPackage) {
++	s := r.step
++	if reason := r.stopReason(); reason != "" {
++		r.report.notJudgedAll(p.tests, reason)
++		return
++	}
++	pkgDir := filepath.Join(r.module.dir, filepath.FromSlash(p.pkg))
++	importPath := r.module.importPath(p.pkg)
++	bin := filepath.Join(r.tmp, "pkg.test")
++	defer os.Remove(bin)
++	builder := testcover.Toolchain{Go: s.goBinary, Env: r.holderEnv, Dir: r.module.dir, Ctx: s.ctx, BuildTimeout: r.buildTimeout(), Grace: s.grace}
++	if err := builder.BuildBinary(importPath, importPath, "", bin); err != nil {
++		r.report.Errors = append(r.report.Errors, fmt.Sprintf("coverage build of %s: %v", p.pkg, err))
++		r.report.notJudgedAll(p.tests, reasonBuildFailed)
++		return
++	}
++	var ran []redundancyCandidate
++	var runs []testcover.Run
++	for _, test := range p.tests {
++		if reason := r.stopReason(); reason != "" {
++			r.report.notJudged(test, reason)
++			continue
++		}
++		tier, _ := s.cfg.Tier(test.fn.Tier)
++		if tier.PrebuiltLym && r.buildLym() != nil {
++			r.report.notJudged(test, reasonLymFailed)
++			continue
++		}
++		run, reason := r.runTest(p.pkg, pkgDir, importPath, bin, test, tier)
++		if reason != "" {
++			r.report.notJudged(test, reason)
++			continue
++		}
++		ran = append(ran, test)
++		runs = append(runs, run)
++	}
++	r.judgeRuns(p, ran, runs)
++}
++
++// buildLym builds `lym` from the worktree into the pool's prebuilt store, once per step, bounded by the build timeout.
++// A failed build is kept and listed once as an error,
++// so every later test that needs it is not judged, with no second build.
++func (r *redundancyRun) buildLym() error {
++	if r.lymBuilt {
++		return r.lymErr
++	}
++	r.lymBuilt = true
++	s := r.step
++	ctx, cancel := context.WithTimeout(s.ctx, r.buildTimeout())
++	defer cancel()
++	// The store keeps the binary, so the cleanup prebuildLym returns for it removes nothing.
++	bin, _, err := prebuildLym(ctx, s.goBinary, s.root, r.parallel, s.pool.PrebuiltDir(), s.grace, r.holderEnv)
++	switch {
++	case err != nil && errors.Is(ctx.Err(), context.DeadlineExceeded):
++		r.lymErr = fmt.Errorf("lym build: timed out after %s", r.buildTimeout())
++	case err != nil:
++		r.lymErr = fmt.Errorf("lym build: %w", err)
++	}
++	if r.lymErr != nil {
++		r.report.Errors = append(r.report.Errors, r.lymErr.Error())
++	}
++	r.lymBin = bin
++	return r.lymErr
++}
++
++// runTest runs test alone under the coverage binary bin in the package directory pkgDir with its tier's env.
++// It returns the test's run with the keys of the package blocks it covered.
++// It returns the reason the test is not judged instead when the call was cancelled.
++// It does so too when the test timed out, could not run or had blocks that could not be keyed.
++func (r *redundancyRun) runTest(pkg, pkgDir, importPath, bin string, test redundancyCandidate, tier gateslot.Tier) (testcover.Run, string) {
++	s := r.step
++	env := slices.Concat(r.holderEnv, renderTierEnv(tier))
++	if tier.PrebuiltLym && r.lymBin != "" {
++		env = append(env, gateslot.PrebuiltLymEnv+"="+r.lymBin)
++	}
++	timeout := time.Duration(s.cfg.RedundancyTestTimeoutSec) * s.secondUnit
++	runner := testcover.Toolchain{Env: env, Ctx: s.ctx, TestTimeout: timeout, Grace: s.grace}
++	result, err := runner.RunAlone(bin, pkgDir, filepath.Join(r.tmp, "cover.out"), test.fn.Name)
++	// A cancelled call kills the test in flight, which then reads as a failed test; it is listed as cancelled instead,
++	// so the report asks for a retry.
++	if s.ctx.Err() != nil {
++		return testcover.Run{}, reasonCancelled
++	}
++	switch {
++	case err != nil:
++		r.report.Errors = append(r.report.Errors, fmt.Sprintf("run %s.%s: %v", pkg, test.fn.Name, err))
++		return testcover.Run{}, reasonNotRun
++	case result.TimedOut:
++		return testcover.Run{}, fmt.Sprintf(reasonTimedOut, timeout)
++	}
++	run := testcover.Run{Name: test.fn.Name, Elapsed: result.Elapsed, Action: result.Action}
++	if result.Action == testcover.ActionPass {
++		blocks, err := testcover.CoveredKeys(pkgDir, importPath, result.Profile)
++		if err != nil {
++			r.report.Errors = append(r.report.Errors, fmt.Sprintf("key the blocks %s.%s covered: %v", pkg, test.fn.Name, err))
++			return testcover.Run{}, reasonUnkeyed
++		}
++		run.Blocks = blocks
++	}
++	return run, ""
++}
++
++// judgeRuns gives each of runs, the runs of the tests ran of p, its verdict against the tests of p's map that still hold.
++// A map test holds when the package still declares a test of its name with the same function hash,
++// and no run bears its name.
++// The greedy pass keeps every map test that holds, and a run it drops is contained.
++func (r *redundancyRun) judgeRuns(p judgedPackage, ran []redundancyCandidate, runs []testcover.Run) {
++	if len(runs) == 0 {
++		return
++	}
++	current, err := testcover.ScanTestFuncs(filepath.Join(r.module.dir, filepath.FromSlash(p.pkg)))
++	if err != nil {
++		r.report.Errors = append(r.report.Errors, fmt.Sprintf("read the tests of %s: %v", p.pkg, err))
++		r.report.notJudgedAll(ran, reasonScanFailed)
++		return
++	}
++	hashes := map[string]string{}
++	for _, fn := range current {
++		hashes[fn.Name] = fn.Hash
++	}
++	judged := map[string]bool{}
++	for _, test := range ran {
++		judged[test.fn.Name] = true
++	}
++	var kept []testcover.Run
++	for _, mapped := range p.m.Tests {
++		if judged[mapped.Name] || hashes[mapped.Name] != mapped.FuncHash {
++			continue
++		}
++		blocks := testcover.BlockSet{}
++		for _, index := range mapped.Blocks {
++			blocks[p.m.Blocks[index].String()] = struct{}{}
++		}
++		kept = append(kept, testcover.Run{Name: mapped.Name, Elapsed: mapped.Seconds, Action: testcover.ActionPass, Blocks: blocks})
++	}
++	for i, verdict := range testcover.JudgeAgainst(runs, kept) {
++		line := RedundancyTest{Package: p.pkg, Name: ran[i].fn.Name, File: ran[i].file}
++		switch {
++		case verdict.Reason != "":
++			line.Verdict, line.Reason = RedundancyNotJudged, verdict.Reason
++		case verdict.Removable:
++			line.Verdict, line.Covering = RedundancyContained, verdict.Covering
++		default:
++			line.Verdict = RedundancyUnique
++		}
++		r.report.Tests = append(r.report.Tests, line)
++	}
++}
+diff --git a/internal/gatecli/redundancy_integration_test.go b/internal/gatecli/redundancy_integration_test.go
+new file mode 100644
+index 00000000..b516f4f5
+--- /dev/null
++++ b/internal/gatecli/redundancy_integration_test.go
+@@ -0,0 +1,568 @@
++// redundancy_integration_test.go drives the redundancy report step over a hubforge hub.
++// Its task pair holds a small Go module and diffs from the prime's branch.
++// The step judges the tests the pair adds against coverage maps the test writes.
++// The testmap stand-in acts as `go` and as the coverage binaries it builds, so no test builds a real binary.
++// It is Tier 1: it builds a real hub and spawns git and the stand-ins.
++
++package gatecli
++
++import (
++	"bytes"
++	"context"
++	"fmt"
++	"maps"
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/google/go-cmp/cmp"
++	"github.com/google/go-cmp/cmp/cmpopts"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/hubgeom"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testcover"
++	"github.com/Knatte18/loomyard/internal/testkit/plankit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// judgedTestFile returns a test file of pkg holding funcs, each a whole Test function's source.
++func judgedTestFile(pkg string, funcs ...string) string {
++	return "package " + pkg + "\n\nimport (\n\t\"testing\"\n\n\t\"github.com/Knatte18/loomyard/internal/testkit/tiergate\"\n)\n\n" + strings.Join(funcs, "\n\n") + "\n"
++}
++
++// tieredTest returns the source of a Test function name.
++// Its body opens with tiergate.Require for tier, then holds extra.
++func tieredTest(name string, tier int, extra string) string {
++	return fmt.Sprintf("func %s(t *testing.T) {\n\ttiergate.Require(t, %d)\n%s}", name, tier, extra)
++}
++
++// TestRedundancyStep runs the redundancy report step in order over one hub.
++// Each subtest works on the tree and report the last one left.
++// Its subtests share that state and run in sequence, so none is parallel.
++func TestRedundancyStep(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: ".", Pairs: []string{hubforge.TemplatePairSlug}})
++	prime, pair := h.PrimeWorktree(), h.PairCodeWorktree(hubforge.TemplatePairSlug)
++	const module = "example.com/judged"
++	// A test past 20 seconds of 150 milliseconds each times out: 3 seconds.
++	// The hub declares tier0 and tier2 but not tier1.
++	// tier1 is the line of a tier1 the hub declares beside tier0 and tier2, or empty for a hub with no tier1.
++	writeGate := func(t *testing.T, budgetMin int, tier1 string) {
++		t.Helper()
++		content := "slots: 1\nscoper: go\nredundancy_build_timeout_min: 1\nredundancy_test_timeout_sec: 20\nredundancy_max_tests: 9\n" +
++			fmt.Sprintf("redundancy_budget_min: %d\ntiers:\n", budgetMin) +
++			"  tier0: {command: x, timeout_min: 1, counter: go-json, env: {LYM_TEST_TIER: \"0\"}}\n" +
++			"  tier2: {command: x, timeout_min: 1, counter: go-json, env: {LYM_TEST_TIER: \"2\"}}\n" + tier1
++		if err := os.WriteFile(configengine.ConfigFile(h.BoardDir(), "gate"), []byte(content), 0o644); err != nil {
++			t.Fatal(err)
++		}
++	}
++	writeGate(t, 9, "")
++
++	packages := []string{"alpha", "beta", "broken", "drops", "gone", "moved", "nomap", "stale", "zcapped"}
++	seeded := map[string]string{"go.mod": "module " + module + "\n\ngo 1.21\n"}
++	for _, pkg := range packages {
++		seeded[pkg+"/"+pkg+".go"] = testMapSource(pkg)
++	}
++	seeded["alpha/alpha_test.go"] = judgedTestFile("alpha", tieredTest("TestAlphaBase", 0, ""))
++	seeded["beta/beta_test.go"] = judgedTestFile("beta", tieredTest("TestBetaOne", 0, ""))
++	seeded["broken/broken_test.go"] = judgedTestFile("broken", tieredTest("TestBrokenOne", 0, ""))
++	seeded["drops/drops_test.go"] = judgedTestFile("drops", tieredTest("TestDropsOne", 0, ""))
++	seeded["gone/gone_test.go"] = judgedTestFile("gone", tieredTest("TestGoneOne", 0, ""))
++	seeded["moved/a_test.go"] = judgedTestFile("moved", tieredTest("TestMovedOne", 0, ""))
++	seeded["nomap/nomap_test.go"] = judgedTestFile("nomap", tieredTest("TestNomapOne", 0, ""))
++	seeded["stale/stale_test.go"] = judgedTestFile("stale", tieredTest("TestStaleOld", 0, ""))
++	seeded["zcapped/zcapped_test.go"] = judgedTestFile("zcapped", tieredTest("TestZcappedOne", 0, ""))
++	plankit.WriteTree(t, prime, seeded)
++	gitkit.Git(t, prime, append([]string{"add", "go.mod"}, packages...)...)
++	gitkit.Git(t, prime, "commit", "-q", "-m", "seed the judged module")
++	gitkit.Git(t, pair, "merge", "--ff-only", "-q", "main")
++
++	// The pair adds tests to most packages, edits TestBetaOne, moves moved's test file and deletes gone's.
++	staleTestFile := judgedTestFile("stale", tieredTest("TestStaleOld", 0, ""), tieredTest("TestStaleNew", 0, ""))
++	plankit.WriteTree(t, pair, map[string]string{
++		"alpha/alpha_test.go":   judgedTestFile("alpha", tieredTest("TestAlphaBase", 0, ""), tieredTest("TestAlphaNewOne", 0, ""), tieredTest("TestAlphaNewTwo", 0, "")),
++		"beta/beta_test.go":     judgedTestFile("beta", tieredTest("TestBetaNewOne", 0, ""), tieredTest("TestBetaOne", 0, "\tt.Log(\"edited\")\n")),
++		"broken/broken_test.go": judgedTestFile("broken", tieredTest("TestBrokenOne", 0, ""), tieredTest("TestBrokenNew", 0, "")),
++		"drops/drops_test.go": judgedTestFile("drops",
++			tieredTest("TestDropsOne", 0, ""), tieredTest("TestDropsHangs", 0, ""),
++			"//testtiming:keep pins the slow path on purpose\n"+tieredTest("TestDropsKept", 0, ""),
++			tieredTest("TestDropsLate", 0, ""), tieredTest("TestDropsTier1", 1, ""), tieredTest("TestDropsTier1Again", 1, ""),
++			tieredTest("TestDropsTier2", 2, "")),
++		// A test in a file built under a tier tag that runs the go command is marked out of process.
++		"drops/spawn_tier1_test.go": "//go:build tier1\n\npackage drops\n\nimport (\n\t\"os\"\n\t\"testing\"\n)\n\nfunc TestDropsSpawns(t *testing.T) {\n\t_, _ = os.Executable()\n}\n",
++		"moved/b_test.go":           seeded["moved/a_test.go"],
++		"nomap/nomap_test.go":       judgedTestFile("nomap", tieredTest("TestNomapOne", 0, ""), tieredTest("TestNomapNew", 0, "")),
++		"stale/stale_test.go":       staleTestFile,
++		"zcapped/zcapped_test.go":   judgedTestFile("zcapped", tieredTest("TestZcappedOne", 0, ""), tieredTest("TestZcappedNew", 0, "")),
++	})
++	for _, rel := range []string{"moved/a_test.go", "gone/gone_test.go"} {
++		if err := os.Remove(filepath.Join(pair, filepath.FromSlash(rel))); err != nil {
++			t.Fatal(err)
++		}
++	}
++
++	// The maps record the seeded files; each keys the two one-line functions every fixture package holds.
++	mapsDir := testcover.Dir(fabricengine.BoltDir(h.Location.HubPath))
++	seededFiles := func(t *testing.T, pkg string) map[string]string {
++		t.Helper()
++		files := map[string]string{}
++		for rel, content := range seeded {
++			if dir, name := filepath.Split(rel); dir == pkg+"/" {
++				files[name] = testcover.ContentHash([]byte(content))
++			}
++		}
++		return files
++	}
++	blockKeys := func(t *testing.T, pkg string) []testcover.BlockKey {
++		t.Helper()
++		file := module + "/" + pkg + "/" + pkg + ".go"
++		keys, err := testcover.KeyBlocks(filepath.Join(prime, pkg), []testcover.ProfileBlock{
++			{File: file, StartLine: 3, StartCol: 16, EndLine: 3, EndCol: 28, Statements: 1},
++			{File: file, StartLine: 5, StartCol: 16, EndLine: 5, EndCol: 28, Statements: 1},
++		})
++		if err != nil {
++			t.Fatal(err)
++		}
++		return keys
++	}
++	// mapTest returns the map entry of the seeded test name of pkg, covering the first function alone.
++	mapTest := func(t *testing.T, pkg, name string) testcover.MapTest {
++		t.Helper()
++		rel := pkg + "/" + pkg + "_test.go"
++		funcs, err := testcover.ParseTestFuncs(rel, []byte(seeded[rel]))
++		if err != nil || len(funcs) != 1 || funcs[0].Name != name {
++			t.Fatalf("ParseTestFuncs(%s) = %+v, %v; want %s alone", rel, funcs, err, name)
++		}
++		return testcover.MapTest{Name: name, FuncHash: funcs[0].Hash, Seconds: 0.01, Blocks: []int{0}}
++	}
++	writeMap := func(t *testing.T, pkg string, m testcover.Map) {
++		t.Helper()
++		if err := testcover.WriteMap(mapsDir, pkg, m); err != nil {
++			t.Fatal(err)
++		}
++	}
++	builtAt := time.Now().Add(-2 * time.Hour)
++	mapOf := func(t *testing.T, pkg string, tests ...testcover.MapTest) testcover.Map {
++		t.Helper()
++		return testcover.Map{Commit: "c0ffee", BuiltAt: builtAt, Files: seededFiles(t, pkg), Blocks: blockKeys(t, pkg), Tests: tests}
++	}
++	alphaMap := mapOf(t, "alpha", mapTest(t, "alpha", "TestAlphaBase"))
++	alphaMap.Files["alpha_test.go"] = "stale"
++	writeMap(t, "alpha", alphaMap)
++	writeMap(t, "beta", mapOf(t, "beta", mapTest(t, "beta", "TestBetaOne")))
++	writeMap(t, "drops", mapOf(t, "drops"))
++	broken := mapOf(t, "broken")
++	broken.Blocks, broken.BuildFailure = nil, "the coverage build failed"
++	writeMap(t, "broken", broken)
++	// The map's entry for TestStaleOld records a function text the package no longer holds, so the map test is not counted.
++	staleOld := mapTest(t, "stale", "TestStaleOld")
++	staleOld.FuncHash = "the text of an earlier TestStaleOld"
++	// The map also holds TestStaleNew, a judged test, with the text it has now.
++	// Only the exclusion of a judged test keeps it from covering itself.
++	staleFuncs, err := testcover.ParseTestFuncs("stale/stale_test.go", []byte(staleTestFile))
++	if err != nil {
++		t.Fatal(err)
++	}
++	staleNew := testcover.MapTest{Name: "TestStaleNew", Seconds: 0.01, Blocks: []int{0}}
++	for _, fn := range staleFuncs {
++		if fn.Name == staleNew.Name {
++			staleNew.FuncHash = fn.Hash
++		}
++	}
++	if staleNew.FuncHash == "" {
++		t.Fatalf("ParseTestFuncs(stale) = %+v; want TestStaleNew", staleFuncs)
++	}
++	writeMap(t, "stale", mapOf(t, "stale", staleOld, staleNew))
++
++	pairLocation, err := lymcwd.ResolveWorktree(pair)
++	if err != nil {
++		t.Fatal(err)
++	}
++	primeLocation, err := lymcwd.ResolveWorktree(prime)
++	if err != nil {
++		t.Fatal(err)
++	}
++	standIn, err := os.Executable()
++	if err != nil {
++		t.Fatal(err)
++	}
++	environ := append(os.Environ(), helperEnv+"="+helperRoleTestMapGo, testMapModuleEnv+"="+module)
++	// stepAt returns the step of a darn-write call in the worktree at location, with one budget minute lasting minuteUnit.
++	stepAt := func(t *testing.T, location *lymcwd.Location, env []string, minuteUnit time.Duration) (redundancyStep, *bytes.Buffer) {
++		t.Helper()
++		cfg, err := gateslot.LoadConfig(fabricengine.ConfigDirs(location))
++		if err != nil {
++			t.Fatal(err)
++		}
++		var stderr bytes.Buffer
++		return redundancyStep{
++			ctx: context.Background(), stderr: &stderr, cfg: cfg.WithDefaultDir(location.AnchorRel), location: location,
++			root: location.WorktreePath(), gateKey: "darn-write", pool: hubgeom.GateSlots(location), env: env, goBinary: standIn,
++			minuteUnit: minuteUnit, secondUnit: 150 * time.Millisecond, grace: time.Second,
++		}, &stderr
++	}
++	readReport := func(t *testing.T, location *lymcwd.Location) RedundancyReport {
++		t.Helper()
++		report, found, err := ReadRedundancyReport(location)
++		if err != nil || !found {
++			t.Fatalf("ReadRedundancyReport() = found %v, err %v; want a report", found, err)
++		}
++		return report
++	}
++	runStep := func(t *testing.T) RedundancyReport {
++		t.Helper()
++		step, _ := stepAt(t, pairLocation, environ, time.Minute)
++		step.run(false, true)
++		return readReport(t, pairLocation)
++	}
++	notJudged := func(pkg, name, reason string) RedundancyTest {
++		return RedundancyTest{Package: pkg, Name: name, File: pkg + "/" + pkg + "_test.go", Verdict: RedundancyNotJudged, Reason: reason}
++	}
++
++	var first RedundancyReport
++	t.Run("JudgesTheDiffsNewAndChangedTestsAgainstTheMaps", func(t *testing.T) {
++		first = runStep(t)
++		wantTests := []RedundancyTest{
++			{Package: "alpha", Name: "TestAlphaNewOne", File: "alpha/alpha_test.go", Verdict: RedundancyContained, Covering: []string{"TestAlphaBase"}},
++			{Package: "alpha", Name: "TestAlphaNewTwo", File: "alpha/alpha_test.go", Verdict: RedundancyUnique},
++			{Package: "beta", Name: "TestBetaNewOne", File: "beta/beta_test.go", Verdict: RedundancyContained, Covering: []string{"TestBetaOne"}},
++			{Package: "beta", Name: "TestBetaOne", File: "beta/beta_test.go", Verdict: RedundancyUnique},
++			notJudged("broken", "TestBrokenNew", reasonMapFailure),
++			notJudged("drops", "TestDropsHangs", "timed out after 3s"),
++			notJudged("drops", "TestDropsKept", "kept: pins the slow path on purpose"),
++			{Package: "drops", Name: "TestDropsLate", File: "drops/drops_test.go", Verdict: RedundancyUnique},
++			notJudged("drops", "TestDropsTier1", "tier1, which the hub does not declare"),
++			notJudged("drops", "TestDropsTier1Again", "tier1, which the hub does not declare"),
++			notJudged("drops", "TestDropsTier2", "a tier2 test, which no coverage map holds"),
++			{Package: "drops", Name: "TestDropsSpawns", File: "drops/spawn_tier1_test.go", Verdict: RedundancyNotJudged, Reason: testcover.ReasonOutOfProcess},
++			notJudged("nomap", "TestNomapNew", reasonNoMap),
++			{Package: "stale", Name: "TestStaleNew", File: "stale/stale_test.go", Verdict: RedundancyUnique},
++			notJudged("zcapped", "TestZcappedNew", "past redundancy_max_tests (9)"),
++		}
++		if diff := cmp.Diff(wantTests, first.Tests, cmpopts.EquateEmpty()); diff != "" {
++			t.Errorf("report tests mismatch (-want +got):\n%s", diff)
++		}
++		wantPackages := []RedundancyPackage{
++			{Package: "alpha", Judged: true, MapCommit: "c0ffee", Drift: []string{"alpha_test.go"}},
++			{Package: "beta", Judged: true, MapCommit: "c0ffee"},
++			{Package: "broken", Reason: "its coverage map records a build failure: the coverage build failed"},
++			{Package: "drops", Judged: true, MapCommit: "c0ffee"},
++			{Package: "nomap", Reason: "it has no coverage map"},
++			{Package: "stale", Judged: true, MapCommit: "c0ffee"},
++		}
++		if diff := cmp.Diff(wantPackages, first.Packages, cmpopts.EquateEmpty(), cmpopts.IgnoreFields(RedundancyPackage{}, "MapBuiltAt", "MapAge")); diff != "" {
++			t.Errorf("report packages mismatch (-want +got):\n%s", diff)
++		}
++		if age := first.Packages[0].MapAge; age != "2h0m0s" {
++			t.Errorf("alpha map age = %q; want 2h0m0s", age)
++		}
++		wantTaken := map[string][]string{
++			"alpha": {"TestAlphaNewOne", "TestAlphaNewTwo"}, "beta": {"TestBetaNewOne", "TestBetaOne"}, "broken": {"TestBrokenNew"},
++			"drops": {"TestDropsHangs", "TestDropsKept", "TestDropsLate", "TestDropsSpawns", "TestDropsTier1", "TestDropsTier1Again", "TestDropsTier2"},
++			"nomap": {"TestNomapNew"}, "stale": {"TestStaleNew"}, "zcapped": {"TestZcappedNew"},
++		}
++		gotTaken := map[string][]string{}
++		for pkg, hashes := range first.TestHashes {
++			gotTaken[pkg] = slices.Sorted(maps.Keys(hashes))
++		}
++		if diff := cmp.Diff(wantTaken, gotTaken); diff != "" {
++			t.Errorf("report test hashes mismatch (-want +got):\n%s; want no test of the moved file or the deleted one", diff)
++		}
++		if got := slices.Sorted(maps.Keys(first.FileHashes)); !slices.Equal(got, []string{"alpha", "beta", "drops", "stale"}) {
++			t.Errorf("report file hashes name %v; want the judged packages alpha, beta, drops and stale", got)
++		}
++		if len(first.Errors) != 0 || first.Note != "" || first.GateKey != "darn-write" {
++			t.Errorf("report = errors %q, note %q, gate key %q; want no error, no note and darn-write", first.Errors, first.Note, first.GateKey)
++		}
++	})
++
++	t.Run("ARepeatRunsAgainWhileAPackageHasNoUsableMap", func(t *testing.T) {
++		if again := runStep(t); !again.Written.After(first.Written) {
++			t.Errorf("report written %v; want a report written after %v, since nomap has no map and broken's records a failure", again.Written, first.Written)
++		}
++	})
++
++	var kept RedundancyReport
++	t.Run("ARepeatOnAMatchingTreeRunsNoBuildAndKeepsTheReport", func(t *testing.T) {
++		writeMap(t, "nomap", mapOf(t, "nomap"))
++		writeMap(t, "broken", mapOf(t, "broken"))
++		kept = runStep(t)
++		if kept.retries() {
++			t.Fatalf("report = %+v; want one that asks for no retry", kept)
++		}
++		builds := filepath.Join(t.TempDir(), "builds")
++		step, stderr := stepAt(t, pairLocation, append(slices.Clone(environ), testMapCoverBuildsEnv+"="+builds), time.Minute)
++		step.run(false, true)
++		if again := readReport(t, pairLocation); !again.Written.Equal(kept.Written) {
++			t.Errorf("report written %v; want the report of %v kept", again.Written, kept.Written)
++		}
++		if _, err := os.Stat(builds); err == nil {
++			t.Error("the repeat started a coverage build; want none on a matching tree")
++		}
++		if !strings.Contains(stderr.String(), "matches the report already written") {
++			t.Errorf("stderr = %q; want the line saying the report was kept", stderr.String())
++		}
++	})
++
++	t.Run("TheReportMatchesACommitOfItsTreeUntilATakenTestChanges", func(t *testing.T) {
++		gitkit.Git(t, pair, append([]string{"add", "-A", "--"}, packages...)...)
++		gitkit.Git(t, pair, "commit", "-q", "-m", "commit the judged tree")
++		wantMatch := func(t *testing.T, want bool) {
++			t.Helper()
++			head := gitkit.RevParse(t, pair, "HEAD")
++			if got, err := RedundancyReportMatches(pairLocation, kept, head); err != nil || got != want {
++				t.Errorf("RedundancyReportMatches(%s) = %v, %v; want %v", head, got, err, want)
++			}
++		}
++		wantMatch(t, true)
++		plankit.WriteTree(t, pair, map[string]string{"notes.md": "note\n"})
++		gitkit.Git(t, pair, "add", "notes.md")
++		gitkit.Git(t, pair, "commit", "-q", "-m", "touch no Go file")
++		wantMatch(t, true)
++		plankit.WriteTree(t, pair, map[string]string{"alpha/alpha.go": testMapSource("alpha") + "// edited\n"})
++		gitkit.Git(t, pair, "commit", "-q", "-am", "edit a Go file of a judged package")
++		wantMatch(t, false)
++		plankit.WriteTree(t, pair, map[string]string{"alpha/alpha.go": testMapSource("alpha")})
++		gitkit.Git(t, pair, "commit", "-q", "-am", "restore the Go file of the judged package")
++		wantMatch(t, true)
++		plankit.WriteTree(t, pair, map[string]string{
++			"alpha/alpha_test.go": judgedTestFile("alpha", tieredTest("TestAlphaBase", 0, ""), tieredTest("TestAlphaNewOne", 0, ""), tieredTest("TestAlphaNewTwo", 0, "\tt.Log(\"edited\")\n")),
++		})
++		gitkit.Git(t, pair, "commit", "-q", "-am", "edit an alpha test")
++		wantMatch(t, false)
++	})
++
++	t.Run("ASpentBudgetStartsNoBuild", func(t *testing.T) {
++		writeGate(t, 1, "")
++		builds := filepath.Join(t.TempDir(), "builds")
++		step, _ := stepAt(t, pairLocation, append(slices.Clone(environ), testMapCoverBuildsEnv+"="+builds), time.Nanosecond)
++		step.run(false, true)
++		report := readReport(t, pairLocation)
++		for _, test := range report.Tests {
++			if test.Package == "alpha" || test.Package == "beta" || test.Package == "broken" {
++				if test.Verdict != RedundancyNotJudged || test.Reason != reasonBudgetSpent {
++					t.Errorf("test %s.%s = %s, %q; want not judged for the spent budget", test.Package, test.Name, test.Verdict, test.Reason)
++				}
++			}
++		}
++		if _, err := os.Stat(builds); err == nil {
++			t.Error("the step started a coverage build; want none once the budget is spent")
++		}
++		if !report.retries() {
++			t.Error("report retries() = false; want a report with a test the budget left unrun to be retried")
++		}
++	})
++
++	t.Run("ABudgetSpentMidPackageListsTheRestOfThePackageAsNotJudged", func(t *testing.T) {
++		// TestDropsHangs runs to its 5 second timeout, past the 3 second budget that counts from the step's slot hold.
++		writeGate(t, 1, "")
++		step, _ := stepAt(t, pairLocation, environ, 3*time.Second)
++		step.secondUnit = 250 * time.Millisecond
++		step.run(false, true)
++		report := readReport(t, pairLocation)
++		i := slices.IndexFunc(report.Tests, func(test RedundancyTest) bool { return test.Name == "TestDropsLate" })
++		if i < 0 {
++			t.Fatalf("report tests = %+v; want a line for TestDropsLate", report.Tests)
++		}
++		if late := report.Tests[i]; late.Verdict != RedundancyNotJudged || late.Reason != reasonBudgetSpent {
++			t.Errorf("TestDropsLate = %s, %q; want not judged for the spent budget", late.Verdict, late.Reason)
++		}
++	})
++
++	t.Run("ACallCancelledMidRunHoldsASlotUntilThenAndListsTheTestInFlightAndTheRestAsCancelled", func(t *testing.T) {
++		writeGate(t, 9, "")
++		hanging := filepath.Join(t.TempDir(), "hanging")
++		step, _ := stepAt(t, pairLocation, append(slices.Clone(environ), testMapHangingEnv+"="+hanging), time.Minute)
++		// TestDropsHangs would time out after 20 seconds; the cancel comes first.
++		step.secondUnit = time.Second
++		ctx, cancel := context.WithCancel(context.Background())
++		t.Cleanup(cancel)
++		step.ctx = ctx
++		done := make(chan struct{})
++		go func() {
++			defer close(done)
++			step.run(false, true)
++		}()
++		waitDone := func() {
++			t.Helper()
++			select {
++			case <-done:
++			case <-time.After(30 * time.Second):
++				t.Fatal("the step did not end after its call was cancelled")
++			}
++		}
++		slotHeld := func() bool {
++			t.Helper()
++			holders, err := step.pool.Holders()
++			if err != nil {
++				t.Fatal(err)
++			}
++			return slices.ContainsFunc(holders, func(h gateslot.Holder) bool {
++				return h.Site == redundancySite && h.Worktree == pairLocation.WorktreePath()
++			})
++		}
++		for deadline := time.Now().Add(30 * time.Second); ; time.Sleep(10 * time.Millisecond) {
++			if _, err := os.Stat(hanging); err == nil {
++				break
++			}
++			if time.Now().After(deadline) {
++				cancel()
++				waitDone()
++				t.Fatal("TestDropsHangs did not start")
++			}
++		}
++		if !slotHeld() {
++			t.Error("no gate slot held by the redundancy step while its test runs; want one")
++		}
++		cancel()
++		waitDone()
++		if slotHeld() {
++			t.Error("the redundancy step still holds a gate slot after it ended; want it released")
++		}
++		report := readReport(t, pairLocation)
++		reasons := map[string]string{}
++		for _, test := range report.Tests {
++			if test.Verdict == RedundancyNotJudged {
++				reasons[test.Name] = test.Reason
++			}
++		}
++		for _, name := range []string{"TestDropsHangs", "TestDropsLate"} {
++			if reasons[name] != reasonCancelled {
++				t.Errorf("%s = not judged for %q; want %q", name, reasons[name], reasonCancelled)
++			}
++		}
++		if !report.retries() {
++			t.Error("report retries() = false; want a report with cancelled tests to be retried")
++		}
++	})
++
++	t.Run("ABrokenLymBuildAndACorruptMapAreErrorLinesThatLeaveTheOtherTestsJudged", func(t *testing.T) {
++		writeGate(t, 9, "  tier1: {command: x, timeout_min: 1, counter: go-json, prebuilt_lym: true, env: {LYM_TEST_TIER: \"1\"}}\n")
++		t.Cleanup(func() { writeGate(t, 9, "") })
++		// The map names block 9 of a table of 2.
++		writeMap(t, "alpha", mapOf(t, "alpha", testcover.MapTest{Name: "TestAlphaBase", FuncHash: "x", Seconds: 0.01, Blocks: []int{9}}))
++		t.Cleanup(func() { writeMap(t, "alpha", alphaMap) })
++		// The prebuild builds `lym` only for a worktree holding cmd/lym.
++		plankit.WriteTree(t, pair, map[string]string{"cmd/lym/main.go": "package main\n"})
++		t.Cleanup(func() {
++			_ = os.RemoveAll(filepath.Join(pair, "cmd", "lym"))
++			_ = os.Remove(filepath.Join(pair, "cmd"))
++		})
++
++		builds := filepath.Join(t.TempDir(), "lym-builds")
++		step, _ := stepAt(t, pairLocation, append(slices.Clone(environ), testMapLymBuildsEnv+"="+builds, testMapFailLymBuildEnv+"=1"), time.Minute)
++		step.secondUnit = 50 * time.Millisecond
++		step.run(false, true)
++		report := readReport(t, pairLocation)
++
++		var lymErrors, mapErrors int
++		for _, line := range report.Errors {
++			switch {
++			case strings.HasPrefix(line, "lym build: "):
++				lymErrors++
++			case strings.HasPrefix(line, "coverage map of alpha: "):
++				mapErrors++
++			}
++		}
++		if lymErrors != 1 || mapErrors != 1 || len(report.Errors) != 2 {
++			t.Errorf("report errors = %q; want one lym build line and one alpha map line", report.Errors)
++		}
++		if data, err := os.ReadFile(builds); err != nil || bytes.Count(data, []byte("\n")) != 1 {
++			t.Errorf("lym builds file = %q, %v; want one build for both tier1 tests", data, err)
++		}
++		wantReasons := map[string]string{
++			"TestDropsTier1": reasonLymFailed, "TestDropsTier1Again": reasonLymFailed,
++			"TestAlphaNewOne": reasonMapUnreadable, "TestAlphaNewTwo": reasonMapUnreadable,
++		}
++		for _, test := range report.Tests {
++			if want, listed := wantReasons[test.Name]; listed && (test.Verdict != RedundancyNotJudged || test.Reason != want) {
++				t.Errorf("test %s = %s, %q; want not judged for %q", test.Name, test.Verdict, test.Reason, want)
++			}
++			if test.Name == "TestBetaNewOne" && test.Verdict != RedundancyContained {
++				t.Errorf("TestBetaNewOne = %s, %q; want contained, since the failures left beta's package judged", test.Verdict, test.Reason)
++			}
++		}
++		if alpha := report.Packages[0]; alpha.Package != "alpha" || alpha.Judged || alpha.Reason != "its coverage map is unreadable" {
++			t.Errorf("first package line = %+v; want alpha with an unreadable map", alpha)
++		}
++	})
++
++	t.Run("AnInheritedSlotIsHeldByTheCallerSoTheStepTakesNone", func(t *testing.T) {
++		step, _ := stepAt(t, pairLocation, environ, time.Minute)
++		// The one slot is held, so a step that took its own would wait out the context and list an error.
++		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
++		t.Cleanup(cancel)
++		step.ctx, step.inherited = ctx, true
++		step.cfg.RedundancyMaxTests = 1
++		lease, err := step.pool.Acquire(context.Background(), gateslot.Holder{Worktree: pairLocation.WorktreePath(), Site: "an enclosing gate run"})
++		if err != nil {
++			t.Fatal(err)
++		}
++		t.Cleanup(func() { _ = lease.Release() })
++		step.run(false, true)
++		report := readReport(t, pairLocation)
++		i := slices.IndexFunc(report.Tests, func(test RedundancyTest) bool { return test.Name == "TestAlphaNewOne" })
++		if len(report.Errors) != 0 || i < 0 || report.Tests[i].Verdict != RedundancyContained {
++			t.Errorf("report = errors %q, tests %+v; want TestAlphaNewOne contained and no error", report.Errors, report.Tests)
++		}
++	})
++
++	t.Run("ReportsThatJudgeNothing", func(t *testing.T) {
++		tests := []struct {
++			name     string
++			location *lymcwd.Location
++			red      bool
++			scoper   string
++			want     string
++		}{
++			{name: "ARedGate", location: pairLocation, red: true, want: noteRedGate},
++			{name: "NoParentBranch", location: primeLocation, want: noteNoParent},
++			{name: "AScoperOtherThanGo", location: pairLocation, scoper: "none", want: "the hub's scoper is none, not go, so the step judged nothing"},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				step, _ := stepAt(t, tt.location, environ, time.Minute)
++				if tt.scoper != "" {
++					step.cfg.Scoper = tt.scoper
++				}
++				step.run(tt.red, true)
++				report := readReport(t, tt.location)
++				if report.Note != tt.want || report.RedGate != tt.red || len(report.Tests) != 0 || len(report.Packages) != 0 {
++					t.Errorf("report = note %q, red gate %v, %d tests, %d packages; want note %q, red gate %v, nothing judged",
++						report.Note, report.RedGate, len(report.Tests), len(report.Packages), tt.want, tt.red)
++				}
++			})
++		}
++	})
++
++	t.Run("AReportThatCannotBeWrittenLeavesNoReportAndPrintsNoSummary", func(t *testing.T) {
++		// A directory at the report's path fails the write.
++		path := redundancyReportPath(pairLocation)
++		if err := os.Remove(path); err != nil {
++			t.Fatal(err)
++		}
++		if err := os.Mkdir(path, 0o755); err != nil {
++			t.Fatal(err)
++		}
++		t.Cleanup(func() { _ = os.Remove(path) })
++		step, stderr := stepAt(t, pairLocation, environ, time.Minute)
++		step.run(true, true)
++		if info, err := os.Stat(path); err != nil || !info.IsDir() {
++			t.Errorf("report path = %v, %v; want the directory the test made, since the write failed", info, err)
++		}
++		if stderr.Len() != 0 {
++			t.Errorf("stderr = %q; want no summary line for a report that was not written", stderr.String())
++		}
++	})
++}
+diff --git a/internal/gatecli/redundancyreport.go b/internal/gatecli/redundancyreport.go
+new file mode 100644
+index 00000000..1ee2bc3c
+--- /dev/null
++++ b/internal/gatecli/redundancyreport.go
+@@ -0,0 +1,184 @@
++// redundancyreport.go declares the report the redundancy report step writes into the worktree's gate directory.
++// It reads and writes the report through internal/state and matches a report against a tree.
++
++package gatecli
++
++import (
++	"fmt"
++	"maps"
++	"path/filepath"
++	"slices"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/state"
++)
++
++// redundancyReportFileName is the redundancy report's file name in the worktree's gate directory.
++const redundancyReportFileName = "redundancy.json"
++
++// Verdicts the redundancy report gives a test.
++const (
++	// RedundancyContained marks a test the tests left after the greedy pass cover block for block.
++	RedundancyContained = "contained"
++	// RedundancyUnique marks a judged test that covers a block no test left after the greedy pass covers.
++	RedundancyUnique = "unique"
++	// RedundancyNotJudged marks a test the step did not judge, with the reason.
++	RedundancyNotJudged = "not judged"
++)
++
++// RedundancyReport is what one redundancy report step of `lym gate test` found for the worktree's diff.
++// The step writes it, and a reader matches it against a later tree before trusting its verdicts.
++type RedundancyReport struct {
++	// Written is when the step wrote the report.
++	Written time.Time `json:"written"`
++	// GateKey is the gate.yaml key whose call wrote the report.
++	GateKey string `json:"gate_key"`
++	// Note says why the step judged nothing, such as a red gate or no parent branch; empty when it judged.
++	Note string `json:"note,omitempty"`
++	// RedGate is set when a tier of the call was red, so the step judged nothing.
++	RedGate bool `json:"red_gate,omitempty"`
++	// Base is the merge base with the parent branch the step diffed from.
++	Base string `json:"base,omitempty"`
++	// ModuleDir is the worktree-relative slash path of the Go module whose packages the report names.
++	ModuleDir string `json:"module_dir,omitempty"`
++	// Errors are the failures the step met, one line each; none changes the gate's result.
++	Errors []string `json:"errors,omitempty"`
++	// TestHashes maps each package, by module-relative path, to the function hashes of its tests.
++	// It holds each test the step took, judged or not, by name.
++	TestHashes map[string]map[string]string `json:"test_hashes,omitempty"`
++	// FileHashes maps each judged package to the ContentHash of each of its Go files, by name.
++	FileHashes map[string]map[string]string `json:"file_hashes,omitempty"`
++	// Packages holds one line per package with a test the step went on to judge.
++	Packages []RedundancyPackage `json:"packages,omitempty"`
++	// Tests holds one line per test the step took, sorted by file and then name.
++	Tests []RedundancyTest `json:"tests,omitempty"`
++}
++
++// RedundancyPackage is one package's line of a redundancy report: whether its coverage map let its tests be judged.
++type RedundancyPackage struct {
++	// Package is the module-relative slash path of the package.
++	Package string `json:"package"`
++	// Judged is set when the package's map let its tests be judged; Reason says why not otherwise.
++	Judged bool   `json:"judged"`
++	Reason string `json:"reason,omitempty"`
++	// MapCommit and MapBuiltAt are the commit and build time of the map a judged package was judged against.
++	// MapAge is the map's age when the report was written.
++	MapCommit  string    `json:"map_commit,omitempty"`
++	MapBuiltAt time.Time `json:"map_built_at"`
++	MapAge     string    `json:"map_age,omitempty"`
++	// Drift names the Go files whose text at the merge base hashes otherwise than the map records.
++	// A file on one side alone counts.
++	// It shows how far the map lags the run's base, never the run's own edits.
++	Drift []string `json:"drift,omitempty"`
++}
++
++// RedundancyTest is one test's line of a redundancy report.
++type RedundancyTest struct {
++	// Package is the module-relative slash path of the test's package, and File the worktree-relative path of its file.
++	Package string `json:"package"`
++	Name    string `json:"name"`
++	File    string `json:"file"`
++	// Verdict is RedundancyContained, RedundancyUnique or RedundancyNotJudged.
++	Verdict string `json:"verdict"`
++	// Covering names, for a contained test, the tests that together cover its blocks, largest overlap first.
++	Covering []string `json:"covering,omitempty"`
++	// Reason says why a test is not judged.
++	Reason string `json:"reason,omitempty"`
++}
++
++// redundancyReportPath returns the path of the redundancy report in the gate directory of the worktree at location.
++func redundancyReportPath(location *lymcwd.Location) string {
++	return filepath.Join(gateslot.WaitDir(location.AnchorPath()), redundancyReportFileName)
++}
++
++// ReadRedundancyReport reads the redundancy report of the worktree at location, and reports whether one exists.
++// A key the record does not declare is ignored, never refused.
++func ReadRedundancyReport(location *lymcwd.Location) (RedundancyReport, bool, error) {
++	return readRedundancyReport(redundancyReportPath(location))
++}
++
++func readRedundancyReport(path string) (RedundancyReport, bool, error) {
++	return state.ReadJSON[RedundancyReport](path, lock.TrackedFileLockPath(path, ".lock"))
++}
++
++// writeRedundancyReport replaces the report at path with report, atomically.
++// It keeps each key of the replaced record that report does not declare.
++func writeRedundancyReport(path string, report RedundancyReport) error {
++	return state.WriteJSON(path, lock.TrackedFileLockPath(path, ".lock"), report)
++}
++
++// RedundancyReportMatches reports whether report still holds for the tree of the commit rev of the worktree at location.
++// It holds when the step's selection over rev returns the tests report records with the same function hashes.
++// The selection is taken against the current merge base with the parent branch.
++// It also holds only when the Go files of each package report judged hash at rev as report records.
++// A report that judged nothing, and a worktree with no parent branch, never match.
++func RedundancyReportMatches(location *lymcwd.Location, report RedundancyReport, rev string) (bool, error) {
++	if report.Note != "" || report.RedGate {
++		return false, nil
++	}
++	base, found, err := parentMergeBase(location)
++	if err != nil || !found {
++		return false, err
++	}
++	fabric, err := fabricengine.Open(location)
++	if err != nil {
++		return false, err
++	}
++	changed, err := fabric.ChangedPathsBothSides(base, rev)
++	if err != nil {
++		return false, err
++	}
++	tree := commitTree{fabric: fabric, rev: rev}
++	tests, err := changedTests(tree, fabric, base, report.ModuleDir, changed)
++	if err != nil {
++		return false, err
++	}
++	return report.matches(tree, tests)
++}
++
++// matches reports whether tests, the step's selection over tree, are the tests the report records with the same hashes,
++// and the Go files of each package the report judged hash in tree as the report records.
++func (r RedundancyReport) matches(tree redundancyTree, tests []redundancyCandidate) (bool, error) {
++	equal := func(a, b map[string]string) bool { return maps.Equal(a, b) }
++	if !maps.EqualFunc(testHashesOf(tests), r.TestHashes, equal) {
++		return false, nil
++	}
++	for pkg, recorded := range r.FileHashes {
++		current, err := goFileHashes(tree, packageDirOf(r.ModuleDir, pkg))
++		if err != nil {
++			return false, err
++		}
++		if !maps.Equal(current, recorded) {
++			return false, nil
++		}
++	}
++	return true, nil
++}
++
++// retries reports whether a later call on the same tree runs the step again rather than keep the report.
++// It does for a report that judged nothing, holds an error line or holds a package with no usable map.
++// It does also for a report that holds a test the spent budget or a cancelled call left unrun.
++func (r RedundancyReport) retries() bool {
++	return r.Note != "" || r.RedGate || len(r.Errors) > 0 ||
++		slices.ContainsFunc(r.Packages, func(p RedundancyPackage) bool { return !p.Judged }) ||
++		slices.ContainsFunc(r.Tests, func(t RedundancyTest) bool {
++			return t.Reason == reasonBudgetSpent || t.Reason == reasonCancelled
++		})
++}
++
++// summaryLine returns the stderr line that names the report's counts, or its note, and its path.
++func (r RedundancyReport) summaryLine(path string) string {
++	if r.Note != "" {
++		return fmt.Sprintf("gate test: redundancy report: %s; written to %s", r.Note, path)
++	}
++	counts := map[string]int{}
++	for _, test := range r.Tests {
++		counts[test.Verdict]++
++	}
++	return fmt.Sprintf("gate test: redundancy report: %d contained, %d unique, %d not judged, %d errors; written to %s",
++		counts[RedundancyContained], counts[RedundancyUnique], counts[RedundancyNotJudged], len(r.Errors), path)
++}
+diff --git a/internal/gatecli/redundancyreport_test.go b/internal/gatecli/redundancyreport_test.go
+new file mode 100644
+index 00000000..2b00ee5f
+--- /dev/null
++++ b/internal/gatecli/redundancyreport_test.go
+@@ -0,0 +1,59 @@
++// redundancyreport_test.go covers when a redundancy report asks for a retry and when it never matches a tree.
++
++package gatecli
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestRedundancyReportRetries(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	judged := []RedundancyPackage{{Package: "a", Judged: true}}
++	tests := []struct {
++		name   string
++		report RedundancyReport
++		want   bool
++	}{
++		{"AJudgedReportWithNoShortfall", RedundancyReport{Packages: judged, Tests: []RedundancyTest{{Name: "TestA", Verdict: RedundancyUnique}}}, false},
++		{"ATestNotJudgedForAnotherReason", RedundancyReport{Packages: judged, Tests: []RedundancyTest{{Name: "TestA", Verdict: RedundancyNotJudged, Reason: "kept: slow"}}}, false},
++		{"ANote", RedundancyReport{Note: noteNoParent}, true},
++		{"ARedGate", RedundancyReport{RedGate: true}, true},
++		{"AnErrorLineAlone", RedundancyReport{Errors: []string{"coverage build of a: failed"}}, true},
++		{"APackageWithoutAUsableMap", RedundancyReport{Packages: []RedundancyPackage{{Package: "a", Reason: "it has no coverage map"}}}, true},
++		{"ATestTheBudgetLeftUnrun", RedundancyReport{Packages: judged, Tests: []RedundancyTest{{Name: "TestA", Verdict: RedundancyNotJudged, Reason: reasonBudgetSpent}}}, true},
++		{"ATestACancelledCallLeftUnrun", RedundancyReport{Packages: judged, Tests: []RedundancyTest{{Name: "TestA", Verdict: RedundancyNotJudged, Reason: reasonCancelled}}}, true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := tt.report.retries(); got != tt.want {
++				t.Errorf("retries() of %+v = %v; want %v", tt.report, got, tt.want)
++			}
++		})
++	}
++}
++
++func TestRedundancyReportMatchesNothingWhenItJudgedNothing(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name   string
++		report RedundancyReport
++	}{
++		{"ANote", RedundancyReport{Note: noteNoParent}},
++		{"ARedGate", RedundancyReport{RedGate: true}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got, err := RedundancyReportMatches(nil, tt.report, "HEAD"); err != nil || got {
++				t.Errorf("RedundancyReportMatches(%+v) = %v, %v; want false, nil", tt.report, got, err)
++			}
++		})
++	}
++}
+diff --git a/internal/gatecli/redundancytests.go b/internal/gatecli/redundancytests.go
+new file mode 100644
+index 00000000..53a156b7
+--- /dev/null
++++ b/internal/gatecli/redundancytests.go
+@@ -0,0 +1,276 @@
++// redundancytests.go picks the tests the redundancy report step judges, from the working tree or a commit's tree.
++// It takes each top-level test of a changed test file whose text the merge base lacks.
++// It also hashes the Go files of a package as a tree holds them.
++
++package gatecli
++
++import (
++	"cmp"
++	"errors"
++	"fmt"
++	"io/fs"
++	"maps"
++	"os"
++	"path"
++	"path/filepath"
++	"slices"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/testcover"
++)
++
++// redundancyTree reads the files of one tree: the working tree, or the tree a commit stores.
++type redundancyTree interface {
++	// file returns the worktree-relative slash path rel as the tree holds it, and whether the tree holds it.
++	file(rel string) ([]byte, bool, error)
++	// goFiles returns the names of the Go files directly in the worktree-relative slash directory dir, sorted.
++	// A directory the tree lacks holds none.
++	goFiles(dir string) ([]string, error)
++}
++
++// workingTree is the working tree of the worktree at root, untracked files included.
++type workingTree struct {
++	root string
++}
++
++func (w workingTree) file(rel string) ([]byte, bool, error) {
++	data, err := os.ReadFile(filepath.Join(w.root, filepath.FromSlash(rel)))
++	if errors.Is(err, fs.ErrNotExist) {
++		return nil, false, nil
++	}
++	if err != nil {
++		return nil, false, err
++	}
++	return data, true, nil
++}
++
++func (w workingTree) goFiles(dir string) ([]string, error) {
++	entries, err := os.ReadDir(filepath.Join(w.root, filepath.FromSlash(dir)))
++	if errors.Is(err, fs.ErrNotExist) {
++		return nil, nil
++	}
++	if err != nil {
++		return nil, err
++	}
++	var names []string
++	for _, entry := range entries {
++		if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".go") {
++			names = append(names, entry.Name())
++		}
++	}
++	return names, nil
++}
++
++// commitTree is the tree the commit rev stores in the worktree's code checkout.
++type commitTree struct {
++	fabric *fabricengine.Fabric
++	rev    string
++}
++
++func (c commitTree) file(rel string) ([]byte, bool, error) {
++	return c.fabric.CodeFileAt(c.rev, rel)
++}
++
++func (c commitTree) goFiles(dir string) ([]string, error) {
++	names, err := c.fabric.CodeDirAt(c.rev, dir)
++	if err != nil {
++		return nil, err
++	}
++	return slices.DeleteFunc(names, func(name string) bool { return !strings.HasSuffix(name, ".go") }), nil
++}
++
++// redundancyCandidate is one test the step's selection takes: a current top-level test of a changed test file.
++type redundancyCandidate struct {
++	// pkg is the module-relative slash path of the test's package, "." for the module root.
++	pkg string
++	// file is the worktree-relative slash path of the test's file.
++	file string
++	fn   testcover.TestFunc
++}
++
++// changedTests returns the tests the step takes from tree, sorted by file and then name.
++// changed are the worktree-relative slash paths that differ between the merge base base and tree.
++// moduleRel is the worktree-relative slash path of the Go module; a path outside a package of it is passed over.
++// For each package holding a changed `_test.go` file, it reads the package's test files at base through fabric.
++// It takes each top-level test of a changed file that tree holds unless a test of that name at base has the same text.
++// So a test file moved within its package adds none of its unchanged tests, and a deleted test file adds none.
++func changedTests(tree redundancyTree, fabric *fabricengine.Fabric, base, moduleRel string, changed []string) ([]redundancyCandidate, error) {
++	filesByDir := map[string][]string{}
++	for _, rel := range changed {
++		if !strings.HasSuffix(rel, "_test.go") {
++			continue
++		}
++		if dir := path.Dir(rel); isModulePackage(moduleRel, dir) {
++			filesByDir[dir] = append(filesByDir[dir], rel)
++		}
++	}
++	var taken []redundancyCandidate
++	for _, dir := range slices.Sorted(maps.Keys(filesByDir)) {
++		pkg := modulePackageOf(moduleRel, dir)
++		var current []redundancyCandidate
++		files := slices.Sorted(slices.Values(filesByDir[dir]))
++		for _, file := range slices.Compact(files) {
++			data, found, err := tree.file(file)
++			if err != nil {
++				return nil, fmt.Errorf("read %s: %w", file, err)
++			}
++			if !found {
++				continue
++			}
++			funcs, err := testcover.ParseTestFuncs(file, data)
++			if err != nil {
++				return nil, err
++			}
++			for _, fn := range funcs {
++				current = append(current, redundancyCandidate{pkg: pkg, file: file, fn: fn})
++			}
++		}
++		if len(current) == 0 {
++			continue
++		}
++		atBase, err := testHashesAt(fabric, base, dir)
++		if err != nil {
++			return nil, err
++		}
++		for _, candidate := range current {
++			if hash, found := atBase[candidate.fn.Name]; !found || hash != candidate.fn.Hash {
++				taken = append(taken, candidate)
++			}
++		}
++	}
++	slices.SortFunc(taken, func(a, b redundancyCandidate) int {
++		return cmp.Or(strings.Compare(a.file, b.file), strings.Compare(a.fn.Name, b.fn.Name))
++	})
++	return taken, nil
++}
++
++// testHashesAt returns the function hash of each top-level test, by name.
++// It reads the `_test.go` files directly in dir at the commit rev.
++// dir is worktree-relative and slash-separated; a directory absent at rev holds none.
++func testHashesAt(fabric *fabricengine.Fabric, rev, dir string) (map[string]string, error) {
++	names, err := fabric.CodeDirAt(rev, dir)
++	if err != nil {
++		return nil, err
++	}
++	hashes := map[string]string{}
++	for _, name := range names {
++		if !strings.HasSuffix(name, "_test.go") {
++			continue
++		}
++		rel := path.Join(dir, name)
++		data, found, err := fabric.CodeFileAt(rev, rel)
++		if err != nil {
++			return nil, err
++		}
++		if !found {
++			continue
++		}
++		funcs, err := testcover.ParseTestFuncs(rel, data)
++		if err != nil {
++			return nil, fmt.Errorf("at %s: %w", rev, err)
++		}
++		for _, fn := range funcs {
++			hashes[fn.Name] = fn.Hash
++		}
++	}
++	return hashes, nil
++}
++
++// isModulePackage reports whether the worktree-relative slash directory dir is a package of the module at moduleRel.
++// It is one a package walk enters: no testdata, and no directory whose name opens with a dot or an underscore.
++func isModulePackage(moduleRel, dir string) bool {
++	if moduleRel != "." && dir != moduleRel && !strings.HasPrefix(dir, moduleRel+"/") {
++		return false
++	}
++	pkg := modulePackageOf(moduleRel, dir)
++	if pkg == "." {
++		return true
++	}
++	return !slices.ContainsFunc(strings.Split(pkg, "/"), func(segment string) bool {
++		return segment == "testdata" || strings.HasPrefix(segment, ".") || strings.HasPrefix(segment, "_")
++	})
++}
++
++// modulePackageOf returns the module-relative slash path of the package whose worktree-relative directory is dir.
++// dir lies in the module at moduleRel.
++func modulePackageOf(moduleRel, dir string) string {
++	switch {
++	case moduleRel == ".":
++		return dir
++	case dir == moduleRel:
++		return "."
++	}
++	return strings.TrimPrefix(dir, moduleRel+"/")
++}
++
++// packageDirOf returns the worktree-relative slash directory of the package pkg of the module at moduleRel.
++func packageDirOf(moduleRel, pkg string) string {
++	return path.Join(moduleRel, pkg)
++}
++
++// goFileHashes returns the ContentHash of each Go file, by name.
++// It reads the files directly in the worktree-relative slash directory dir of tree.
++func goFileHashes(tree redundancyTree, dir string) (map[string]string, error) {
++	names, err := tree.goFiles(dir)
++	if err != nil {
++		return nil, err
++	}
++	hashes := map[string]string{}
++	for _, name := range names {
++		data, found, err := tree.file(path.Join(dir, name))
++		if err != nil {
++			return nil, err
++		}
++		if found {
++			hashes[name] = testcover.ContentHash(data)
++		}
++	}
++	return hashes, nil
++}
++
++// testHashesOf returns the function hash of each of tests by package and then name, the form a report records them in.
++func testHashesOf(tests []redundancyCandidate) map[string]map[string]string {
++	hashes := map[string]map[string]string{}
++	for _, test := range tests {
++		if hashes[test.pkg] == nil {
++			hashes[test.pkg] = map[string]string{}
++		}
++		hashes[test.pkg][test.fn.Name] = test.fn.Hash
++	}
++	return hashes
++}
++
++// goModule is the Go module the step judges, the one whose packages the coverage maps hold.
++type goModule struct {
++	// dir is the module root, rel its worktree-relative slash path and path its import path.
++	dir, rel, path string
++}
++
++// importPath returns the import path of the module-relative package pkg.
++func (m goModule) importPath(pkg string) string {
++	if pkg == "." {
++		return m.path
++	}
++	return m.path + "/" + pkg
++}
++
++// redundancyModule returns the module of the worktree at root that the coverage maps hold:
++// the dir of the lowest of tier0 and tier1 that cfg declares, whose go.mod names the import path.
++func redundancyModule(cfg gateslot.Config, root string) (goModule, error) {
++	for _, number := range mappedTiers {
++		tier, err := cfg.Tier(number)
++		if err != nil {
++			continue
++		}
++		dir := resolveRunDir(root, tier.Dir)
++		rel, err := filepath.Rel(root, dir)
++		modulePath := modulePathOf(dir)
++		if modulePath == "" || err != nil || !filepath.IsLocal(rel) {
++			return goModule{}, fmt.Errorf("%s holds no go.mod naming a module inside the worktree", dir)
++		}
++		return goModule{dir: dir, rel: filepath.ToSlash(rel), path: modulePath}, nil
++	}
++	return goModule{}, errors.New("the hub declares neither tier0 nor tier1, so no coverage map holds a test")
++}
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index 21397a8b..7ba4294f 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -189,6 +189,7 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 	}
+ 	// The lint steps run after the tiers, so a call that fails both reports the two in one go.
+ 	if request.gate != "" && runCtx.Err() == nil {
++		red := code != 0
+ 		for _, lint := range runLints(request.root, cfg.Gates[request.gate].Lints) {
+ 			judged = true
+ 			exe.failed = append(exe.failed, lint)
+@@ -197,6 +198,10 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 				code, firstFailed = 1, lint.label
+ 			}
+ 		}
++		// The report steps run last and never change the code.
++		if slices.Contains(cfg.Gates[request.gate].Reports, gateslot.ReportRedundancy) {
++			exe.redundancyStep().run(red, inHub)
++		}
+ 	}
+ 	exe.printReport(inHub)
+ 	printFailedRuns(request.stderr, failures, firstFailed, false)
+diff --git a/internal/gatecli/rungate.go b/internal/gatecli/rungate.go
+index 958f9b4f..9052c6e1 100644
+--- a/internal/gatecli/rungate.go
++++ b/internal/gatecli/rungate.go
+@@ -26,7 +26,7 @@ type TierObserver struct {
+ // The envelope goes to out and the summary lines to stderr.
+ func RunGate(ctx context.Context, dir, gate string, out, stderr io.Writer, observer TierObserver) int {
+ 	request := testRequest{
+-		goBinary: defaultGoBinary, samplePeriod: defaultSamplePeriod, preTierCeiling: defaultPreTierCeiling, timeoutUnit: time.Minute, rerunDelay: defaultRerunDelay, pipeWaitDelay: defaultPipeWaitDelay,
++		goBinary: defaultGoBinary, samplePeriod: defaultSamplePeriod, preTierCeiling: defaultPreTierCeiling, timeoutUnit: time.Minute, secondUnit: time.Second, rerunDelay: defaultRerunDelay, pipeWaitDelay: defaultPipeWaitDelay,
+ 		stderr: stderr, gate: gate, observer: observer,
+ 	}
+ 	return runTest(lymcwd.WithCwd(ctx, dir), out, request)
+diff --git a/internal/gatecli/test_integration_test.go b/internal/gatecli/test_integration_test.go
+index 2f40b1a2..c292f7b5 100644
+--- a/internal/gatecli/test_integration_test.go
++++ b/internal/gatecli/test_integration_test.go
+@@ -1493,6 +1493,43 @@ func TestGateTest_Scenario(t *testing.T) {
+ 		requireFree(t)
+ 	})
+ 
++	t.Run("a gate key's redundancy report step runs after its tiers and leaves the call's exit code to them", func(t *testing.T) {
++		writeConfig(t, scenarioConfig(t, func(cfg map[string]any) {
++			cfg["gates"] = map[string]any{"reported": map[string]any{"tiers": []int{6}, "scope": "all", "reports": []string{gateslot.ReportRedundancy}}}
++		}))
++		defer writeConfig(t, gateConfig)
++		reportPath := filepath.Join(waitDir, redundancyReportFileName)
++
++		tests := []struct {
++			name     string
++			env      []string
++			wantCode int
++			wantRed  bool
++		}{
++			{"AGreenTier", nil, 0, false},
++			{"ARedTier", []string{helperExitEnv + "=7"}, 7, true},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				if err := os.Remove(reportPath); err != nil && !os.IsNotExist(err) {
++					t.Fatal(err)
++				}
++				g := startGate(t, gateRun{cwd: prime, args: []string{"test", "--gate", "reported"}, env: tt.env})
++				if code := g.wait(t); code != tt.wantCode {
++					t.Errorf("exit code = %d, stdout %q; want the tier's %d", code, g.stdout.String(), tt.wantCode)
++				}
++				report, found, err := readRedundancyReport(reportPath)
++				if err != nil || !found || report.GateKey != "reported" || report.RedGate != tt.wantRed {
++					t.Errorf("report = %+v, found %v, err %v; want one for gate key reported with red gate %v", report, found, err, tt.wantRed)
++				}
++				if !strings.Contains(g.stdout.String(), "gate test: redundancy report: ") {
++					t.Errorf("stdout = %q; want the report's summary line", g.stdout.String())
++				}
++				requireFree(t)
++			})
++		}
++	})
++
+ 	// A stand-in exiting 134 with no test event is a tier whose test runner crashed on SIGABRT, as a shell reports one.
+ 	crashEnv := []string{helperExitEnv + "=134"}
+ 	// closingOf returns the last closing line of failed runs in output.
+diff --git a/internal/gatecli/testmap_integration_test.go b/internal/gatecli/testmap_integration_test.go
+index 469c6e0d..12bd4d31 100644
+--- a/internal/gatecli/testmap_integration_test.go
++++ b/internal/gatecli/testmap_integration_test.go
+@@ -42,12 +42,19 @@ const helperRoleTestMapGo = "testmap-go"
+ // They also name the import path whose coverage build fails, and the one whose coverage build never ends.
+ // testMapLymBuildsEnv names the file the stand-in appends a line to for each `lym` build it acts as.
+ // testMapLymSeenEnv names the file a coverage run appends the prebuilt `lym` path it was given to, empty when none.
++// testMapCoverBuildsEnv names the file the stand-in appends the import path of each coverage build it acts as to.
++// testMapFailLymBuildEnv, when set, makes every `lym` build the stand-in acts as fail.
+ const (
+-	testMapModuleEnv    = "GATECLI_TESTMAP_MODULE"
+-	testMapFailBuildEnv = "GATECLI_TESTMAP_FAIL_BUILD"
+-	testMapHangBuildEnv = "GATECLI_TESTMAP_HANG_BUILD"
+-	testMapLymBuildsEnv = "GATECLI_TESTMAP_LYM_BUILDS"
+-	testMapLymSeenEnv   = "GATECLI_TESTMAP_LYM_SEEN"
++	testMapModuleEnv      = "GATECLI_TESTMAP_MODULE"
++	testMapFailBuildEnv   = "GATECLI_TESTMAP_FAIL_BUILD"
++	testMapHangBuildEnv   = "GATECLI_TESTMAP_HANG_BUILD"
++	testMapLymBuildsEnv   = "GATECLI_TESTMAP_LYM_BUILDS"
++	testMapLymSeenEnv     = "GATECLI_TESTMAP_LYM_SEEN"
++	testMapCoverBuildsEnv = "GATECLI_TESTMAP_COVER_BUILDS"
++
++	testMapFailLymBuildEnv = "GATECLI_TESTMAP_FAIL_LYM_BUILD"
++	// testMapHangingEnv names the file a coverage run appends the test name to once it is about to hang.
++	testMapHangingEnv = "GATECLI_TESTMAP_HANGING"
+ )
+ 
+ func init() {
+@@ -80,7 +87,7 @@ func testMapTestFile(pkg string, tiers map[string]int) string {
+ // As a coverage binary run in a package directory, it reports the test `-test.run` names as passing.
+ // Its profile covers the first function of the package's `<package>.go`.
+ // A test ending in Two covers the second function too.
+-// A test ending in Hangs never ends.
++// A test ending in Hangs never ends, after it records its name in the file testMapHangingEnv names.
+ // One ending in Moves first commits a change to the package's file.
+ // One ending in Lands first commits a change to a file outside the package.
+ // A test run without LYM_TEST_TIER fails, so a map entry proves its tier's env reached it.
+@@ -117,6 +124,11 @@ func runTestMapStandIn() int {
+ 		fmt.Printf("--- FAIL: %s (0.00s)\n", name)
+ 		return 1
+ 	case strings.HasSuffix(name, "Hangs"):
++		if hanging := os.Getenv(testMapHangingEnv); hanging != "" {
++			if appendLine(hanging, name) != nil {
++				return 1
++			}
++		}
+ 		time.Sleep(time.Hour)
+ 	case strings.HasSuffix(name, "Moves"):
+ 		if appendAndCommit(dir, pkg+".go") != nil {
+@@ -142,6 +154,7 @@ func runTestMapStandIn() int {
+ 
+ // runTestMapStandInBuild acts as `go test -c ... <import path>`.
+ // It fails when its working directory holds no go.mod, as the go command does outside a module.
++// It records the import path in the file testMapCoverBuildsEnv names, when one is named.
+ // It fails for the import path testMapFailBuildEnv names, and never ends for the one testMapHangBuildEnv names.
+ // Otherwise it copies the test binary to the `-o` path, so the copy runs as the package's coverage binary.
+ func runTestMapStandInBuild(args []string) int {
+@@ -150,6 +163,11 @@ func runTestMapStandInBuild(args []string) int {
+ 		return 1
+ 	}
+ 	importPath := args[len(args)-1]
++	if builds := os.Getenv(testMapCoverBuildsEnv); builds != "" {
++		if appendLine(builds, importPath) != nil {
++			return 1
++		}
++	}
+ 	if importPath == os.Getenv(testMapFailBuildEnv) {
+ 		fmt.Fprintln(os.Stderr, "stand-in: the coverage build failed")
+ 		return 1
+@@ -161,13 +179,18 @@ func runTestMapStandInBuild(args []string) int {
+ }
+ 
+ // runTestMapStandInLymBuild acts as `go build ... -o <path> ./cmd/lym`.
+-// It records the build in the file testMapLymBuildsEnv names, then copies the test binary to the `-o` path.
++// It records the build in the file testMapLymBuildsEnv names, then fails when testMapFailLymBuildEnv is set.
++// Otherwise it copies the test binary to the `-o` path.
+ func runTestMapStandInLymBuild(args []string) int {
+ 	if builds := os.Getenv(testMapLymBuildsEnv); builds != "" {
+ 		if appendLine(builds, "built") != nil {
+ 			return 1
+ 		}
+ 	}
++	if os.Getenv(testMapFailLymBuildEnv) != "" {
++		fmt.Fprintln(os.Stderr, "stand-in: the lym build failed")
++		return 1
++	}
+ 	return copyTestBinary(args[slices.Index(args, "-o")+1])
+ }
+ 
+diff --git a/internal/gateslot/config.go b/internal/gateslot/config.go
+index 24133cf3..3c1fed6d 100644
+--- a/internal/gateslot/config.go
++++ b/internal/gateslot/config.go
+@@ -36,10 +36,14 @@ type Config struct {
+ 	FixerTimeoutMin int `yaml:"fixer_timeout_min"`
+ 	// TestMapMaxAgeDays is the days after which a coverage map is rebuilt whatever changed.
+ 	TestMapMaxAgeDays int `yaml:"test_map_max_age_days"`
+-	// RedundancyBuildTimeoutMin is the minutes each build of a coverage map run may take.
++	// RedundancyBuildTimeoutMin is the minutes each build of a coverage map run or the redundancy report step may take.
+ 	RedundancyBuildTimeoutMin int `yaml:"redundancy_build_timeout_min"`
+-	// RedundancyTestTimeoutSec is the seconds each test a coverage map run runs alone may take.
++	// RedundancyTestTimeoutSec is the seconds each test a coverage map run or the redundancy report step runs alone may take.
+ 	RedundancyTestTimeoutSec int `yaml:"redundancy_test_timeout_sec"`
++	// RedundancyMaxTests caps the tests the redundancy report step judges in one call.
++	RedundancyMaxTests int `yaml:"redundancy_max_tests"`
++	// RedundancyBudgetMin is the minutes the redundancy report step may spend on builds and tests once it holds its slot.
++	RedundancyBudgetMin int `yaml:"redundancy_budget_min"`
+ 	// Tiers are the declared test tiers keyed tier0, tier1, and so on.
+ 	Tiers map[string]Tier `yaml:"tiers"`
+ 	// Gates maps a gate key to the tiers and scope that site runs.
+@@ -89,6 +93,8 @@ type configFile struct {
+ 	TestMapMaxAgeDays         int                  `yaml:"test_map_max_age_days"`
+ 	RedundancyBuildTimeoutMin int                  `yaml:"redundancy_build_timeout_min"`
+ 	RedundancyTestTimeoutSec  int                  `yaml:"redundancy_test_timeout_sec"`
++	RedundancyMaxTests        int                  `yaml:"redundancy_max_tests"`
++	RedundancyBudgetMin       int                  `yaml:"redundancy_budget_min"`
+ 	Tiers                     map[string]tierFile  `yaml:"tiers"`
+ 	Gates                     map[string]yaml.Node `yaml:"gates"`
+ 	Scoper                    string               `yaml:"scoper"`
+@@ -118,7 +124,8 @@ func ConfigPerNameMaps() []string {
+ // ConfigSpec returns gate's layered-load spec.
+ // `slots` and `tier_parallel` take a machine override, and every key stays closed to the local layer.
+ // `fixer_timeout_min` is cross-pair like `busy_quit_sec`; a gate key's `fixer` sits inside `gates`, a guard key.
+-// The coverage map keys are cross-pair too, since every worktree of the hub reads the maps they bound.
++// The coverage map and redundancy report keys are cross-pair too:
++// every worktree of the hub reads the maps they bound.
+ // `tiers` and `build` run any shell command in a task worktree, so they are executable.
+ // The gate lists, the scoper, the refused commands and the inert paths switch off or hollow a guard.
+ // `cli_wait_sec`, `go_parallel` and `guard_tier` are retired;
+@@ -145,6 +152,8 @@ func ConfigSpec() configengine.Spec {
+ 			"test_map_max_age_days":        configengine.CategoryCrossPair,
+ 			"redundancy_build_timeout_min": configengine.CategoryCrossPair,
+ 			"redundancy_test_timeout_sec":  configengine.CategoryCrossPair,
++			"redundancy_max_tests":         configengine.CategoryCrossPair,
++			"redundancy_budget_min":        configengine.CategoryCrossPair,
+ 			"tiers":                        configengine.CategoryExecutable,
+ 			"gates":                        configengine.CategoryGuard,
+ 			"scoper":                       configengine.CategoryGuard,
+@@ -279,6 +288,8 @@ func decodeConfig(data []byte, machineLayerApplies bool) (Config, error) {
+ 		{"test_map_max_age_days", file.TestMapMaxAgeDays},
+ 		{"redundancy_build_timeout_min", file.RedundancyBuildTimeoutMin},
+ 		{"redundancy_test_timeout_sec", file.RedundancyTestTimeoutSec},
++		{"redundancy_max_tests", file.RedundancyMaxTests},
++		{"redundancy_budget_min", file.RedundancyBudgetMin},
+ 	} {
+ 		if bound.value < 1 {
+ 			return Config{}, fmt.Errorf("gate config key %q: %d; want at least 1", bound.key, bound.value)
+@@ -318,6 +329,8 @@ func decodeConfig(data []byte, machineLayerApplies bool) (Config, error) {
+ 		TestMapMaxAgeDays:         file.TestMapMaxAgeDays,
+ 		RedundancyBuildTimeoutMin: file.RedundancyBuildTimeoutMin,
+ 		RedundancyTestTimeoutSec:  file.RedundancyTestTimeoutSec,
++		RedundancyMaxTests:        file.RedundancyMaxTests,
++		RedundancyBudgetMin:       file.RedundancyBudgetMin,
+ 		Tiers:                     tiers,
+ 		Gates:                     gates,
+ 		Scoper:                    file.Scoper,
+@@ -459,7 +472,7 @@ func (c Config) FixerTimeout() time.Duration {
+ 	return time.Duration(c.FixerTimeoutMin) * time.Minute
+ }
+ 
+-// decodeGates decodes the gates entries into keys and validates each key's scope, lints and fixer.
++// decodeGates decodes the gates entries into keys and validates each key's scope, lints, reports and fixer.
+ func decodeGates(entries map[string]yaml.Node) (map[string]GateKey, error) {
+ 	gates := make(map[string]GateKey, len(entries))
+ 	for _, name := range sortedKeys(entries) {
+@@ -483,6 +496,11 @@ func decodeGates(entries map[string]yaml.Node) (map[string]GateKey, error) {
+ 				return nil, guidedError{fmt.Errorf("gate config key %q: lint %q; want %s or %s; fix it with \"lym config gate\" from the prime%s", path, lint, LintComments, LintPattern, roleClause)}
+ 			}
+ 		}
++		for _, report := range key.Reports {
++			if report != ReportRedundancy {
++				return nil, guidedError{fmt.Errorf("gate config key %q: report %q; want %s; fix it with \"lym config gate\" from the prime%s", path, report, ReportRedundancy, roleClause)}
++			}
++		}
+ 		if key.Fixer != "" {
+ 			if name != cardGateKey {
+ 				return nil, guidedError{fmt.Errorf("gate config key %q: a fixer is only for the card key, since only its agent call hands a red verdict to a fixer; remove fixer from that key with \"lym config gate\" from the prime%s", path+".fixer", roleClause)}
+diff --git a/internal/gateslot/config_test.go b/internal/gateslot/config_test.go
+index 8679d5d9..80ae657a 100644
+--- a/internal/gateslot/config_test.go
++++ b/internal/gateslot/config_test.go
+@@ -69,17 +69,17 @@ func TestConfigSpec_SetNestedKeys(t *testing.T) {
+ 
+ var templateDefaults = Config{
+ 	Slots: 2, BusyQuitSec: 120, FixerTimeoutMin: 30,
+-	TestMapMaxAgeDays: 7, RedundancyBuildTimeoutMin: 10, RedundancyTestTimeoutSec: 120,
++	TestMapMaxAgeDays: 7, RedundancyBuildTimeoutMin: 10, RedundancyTestTimeoutSec: 120, RedundancyMaxTests: 40, RedundancyBudgetMin: 10,
+ 	Gates: map[string]GateKey{
+ 		"card":            {Tiers: []int{0}, Scope: "card", Lints: []string{"comments", "pattern"}, Fixer: "sonnet[medium]"},
+ 		"batch":           {Tiers: []int{0}, Scope: "card"},
+-		"webster":         {Tiers: []int{0}, Scope: "all"},
+-		"parent-align":    {Tiers: []int{0}, Scope: "all"},
++		"webster":         {Tiers: []int{0}, Scope: "all", Reports: []string{"redundancy"}},
++		"parent-align":    {Tiers: []int{0}, Scope: "all", Reports: []string{"redundancy"}},
+ 		"finalize":        {Tiers: []int{0}, Scope: "all"},
+ 		"adopt":           {Tiers: []int{0}, Scope: "all"},
+ 		"webster-fix":     {Tiers: []int{0}, Scope: "diff"},
+-		"darn-write":      {Tiers: []int{0}, Scope: "diff"},
+-		"code-burler-fix": {Tiers: []int{0}, Scope: "diff"},
++		"darn-write":      {Tiers: []int{0}, Scope: "diff", Reports: []string{"redundancy"}},
++		"code-burler-fix": {Tiers: []int{0}, Scope: "diff", Reports: []string{"redundancy"}},
+ 		"pr-review":       {Tiers: []int{0}, Scope: "diff"},
+ 	},
+ 	Scoper: "none",
+@@ -288,6 +288,18 @@ func TestLoadConfig(t *testing.T) {
+ 		{"test_map_max_age_days zero", baseKeys + "test_map_max_age_days: 0\n", Config{}, `gate config key "test_map_max_age_days": 0; want at least 1` + fixIt},
+ 		{"redundancy_build_timeout_min zero", baseKeys + "redundancy_build_timeout_min: 0\n", Config{}, `gate config key "redundancy_build_timeout_min": 0; want at least 1` + fixIt},
+ 		{"redundancy_test_timeout_sec zero", baseKeys + "redundancy_test_timeout_sec: 0\n", Config{}, `gate config key "redundancy_test_timeout_sec": 0; want at least 1` + fixIt},
++		{"redundancy_max_tests zero", baseKeys + "redundancy_max_tests: 0\n", Config{}, `gate config key "redundancy_max_tests": 0; want at least 1` + fixIt},
++		{"redundancy_budget_min zero", baseKeys + "redundancy_budget_min: 0\n", Config{}, `gate config key "redundancy_budget_min": 0; want at least 1` + fixIt},
++		{"an unknown report", baseKeys + "gates:\n  webster: {tiers: [0], scope: all, reports: [speed]}\n", Config{}, `gate config key "gates.webster": report "speed"; want redundancy` + fixIt},
++		{
++			"a tuned webster without reports takes the template's, and reports [] on another key turns them off",
++			baseKeys + "gates:\n  webster: {tiers: [0, 1], scope: all}\n  darn-write: {tiers: [0], scope: diff, reports: []}\n",
++			hubWith(func(c *Config) {
++				c.Gates = maps.Clone(templateDefaults.Gates)
++				c.Gates["webster"] = GateKey{Tiers: []int{0, 1}, Scope: "all", Reports: []string{"redundancy"}}
++				c.Gates["darn-write"] = GateKey{Tiers: []int{0}, Scope: "diff"}
++			}), "",
++		},
+ 		{"scope card on a key but card and batch", baseKeys + "gates:\n  parent-align: {tiers: [0], scope: card}\n", Config{}, `gate config key "gates.parent-align": scope card is only for the card and batch keys` + fixIt},
+ 		{"an unknown scope", baseKeys + "gates:\n  parent-align: {tiers: [0], scope: some}\n", Config{}, `gate config key "gates.parent-align": scope "some"; want card, diff or all` + fixIt},
+ 		{"an unknown lint", baseKeys + "gates:\n  parent-align: {tiers: [0], scope: all, lints: [spelling]}\n", Config{}, `gate config key "gates.parent-align": lint "spelling"; want comments or pattern` + fixIt},
+@@ -295,7 +307,7 @@ func TestLoadConfig(t *testing.T) {
+ 			"a key's lints load in order", baseKeys + "gates:\n  parent-align: {tiers: [0], scope: all, lints: [pattern, comments]}\n",
+ 			hubWith(func(c *Config) {
+ 				c.Gates = maps.Clone(templateDefaults.Gates)
+-				c.Gates["parent-align"] = GateKey{Tiers: []int{0}, Scope: "all", Lints: []string{"pattern", "comments"}}
++				c.Gates["parent-align"] = GateKey{Tiers: []int{0}, Scope: "all", Lints: []string{"pattern", "comments"}, Reports: []string{"redundancy"}}
+ 			}), "",
+ 		},
+ 		{"a key in the retired list shape", baseKeys + "gates:\n  card: [0]\n", Config{}, `gate config key "gates.card": the retired list shape; fix it with "lym fabric reconcile" (or "lym config reconcile --layer default --apply") from the prime, which migrates it` + roleClause},
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index 4c8b5281..f89ef857 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -63,6 +63,7 @@
+ // Each passes the `-p` value it reads from the pool's Limits at its acquire,
+ // so a hub that declares `tier0` bounds them by its parallel and a hub that declares none adds no `-p`.
+ // `lym gate testmap` is one: it holds one slot from its first build to its end.
++// The redundancy report step of `lym gate test` is another: it takes one slot after the call's tiers released theirs.
+ //
+ // # Prebuilt store
+ //
+@@ -101,6 +102,10 @@
+ // `tier_parallel` is an open map from a tier name to this machine's parallel for it.
+ // A GateKey may also hold `lints`, the lint steps its call runs after its tiers, each LintComments or LintPattern.
+ // The template's `card` key lists both.
++// A GateKey may also hold `reports`, the advisory steps its call runs after its lints, each ReportRedundancy.
++// The template lists it on `webster`, `parent-align`, `darn-write` and `code-burler-fix`.
++// Config load fills a template key a tuned `gates` entry lacks into that entry,
++// so a hub base file that tunes one of those keys without `reports` still runs the step, and `reports: []` turns it off.
+ // `tiers` and `build` are executable keys, since a tier or build command runs any shell command in a task worktree.
+ // `gates`, `scoper`, `refuse_raw` and `inert_paths` are guard keys.
+ // All of them are hub-file only.
+@@ -152,7 +157,8 @@
+ // a `refuse_raw` entry that is not words of letters, digits, `.`, `_` and `-` separated by single spaces;
+ // a `tier_parallel` entry that is no integer of at least 1;
+ // a gate key whose scope is not `card`, `diff` or `all`;
+-// a `card` scope on any key but `card` and `batch`; a lint other than `comments` or `pattern`.
++// a `card` scope on any key but `card` and `batch`; a lint other than `comments` or `pattern`;
++// a report other than ReportRedundancy, `redundancy`.
+ // A GateKey may also hold `fixer`, a model-spec naming the cold fixer an agent's red call hands its failures to.
+ // Only the `card` key may hold one; the template sets `sonnet[medium]` there, and an empty value turns the fixer off.
+ // `fixer_timeout_min` bounds how long the callers of a cold gate fixer wait for it.
+@@ -161,6 +167,9 @@
+ // `test_map_max_age_days` is the age past which a map is rebuilt whatever changed.
+ // `redundancy_build_timeout_min` bounds each build in minutes.
+ // `redundancy_test_timeout_sec` bounds each test in seconds.
++// The redundancy report step of `lym gate test` takes the two redundancy bounds too, and two of its own.
++// `redundancy_max_tests` caps the tests it judges in one call.
++// `redundancy_budget_min` bounds, in minutes, its builds and tests once it holds its slot.
+ // They are cross-pair keys, since every worktree of the hub reads the maps, and LoadConfig refuses a value below 1.
+ // LoadConfig refuses a `fixer` on any key but `card`, and a `fixer` that `modelspec.Parse` rejects.
+ // Each refusal names the key and its way forward.
+diff --git a/internal/gateslot/template.yaml b/internal/gateslot/template.yaml
+index 99fff5bc..a813ef18 100644
+--- a/internal/gateslot/template.yaml
++++ b/internal/gateslot/template.yaml
+@@ -2,8 +2,10 @@ slots: 2  # how many gate builds and test runs the hub executes at once; a lower
+ busy_quit_sec: 120  # seconds a Go test binary under lym gate test may keep a CPU core at least 90 percent busy before it gets one SIGQUIT and dumps its goroutine stacks; 0 turns the watchdog off; raise it for a package that is CPU-bound but healthy
+ fixer_timeout_min: 30  # minutes a cold gate fixer may run before the call that spawned it stops waiting; it bounds the card gate's fixer and the row gate fixers, and webster's fix-verify keeps its own recovery_timeout_min
+ test_map_max_age_days: 7  # days after which lym gate testmap rebuilds a package's coverage map even when no Go file of the package changed, so a change to a dependency or a non-Go file of the package lasts at most this long unmapped
+-redundancy_build_timeout_min: 10  # minutes each coverage build and lym build of a coverage map run may take before its process group is killed and the build counts as failed
+-redundancy_test_timeout_sec: 120  # seconds each test a coverage map run runs alone may take before its process group is killed and the test is left out of the map
++redundancy_build_timeout_min: 10  # minutes each coverage build and lym build of a coverage map run or the redundancy report step may take before its process group is killed and the build counts as failed
++redundancy_test_timeout_sec: 120  # seconds each test a coverage map run or the redundancy report step runs alone may take before its process group is killed and the test is left out
++redundancy_max_tests: 40  # the most new and changed tests the redundancy report step judges in one call, taken in file then name order; the rest are listed as not judged
++redundancy_budget_min: 10  # minutes the redundancy report step may spend on its builds and tests once it holds its gate slot; past it the step starts no further build or test
+ 
+ # The hub's test tiers, keyed tier0, tier1, and so on; the template declares none.
+ # A tier is written whole with one flow mapping: lym config gate --set 'tiers.tier0={command: "go test -json {targets} {args}", all_targets: ./..., timeout_min: 60, counter: go-json}'
+@@ -18,18 +20,19 @@ tiers: {}
+ # The keys lym reads: card and batch (scope card, the card's own packages), webster, parent-align, finalize and adopt (scope all, the whole tree), and webster-fix, darn-write, code-burler-fix and pr-review (scope diff, the diff from the merge base).
+ # The scope card is only for the card and batch keys.
+ # A key may also hold lints, the lint steps its call runs after the tiers against HEAD: comments (fixed-column-wrapped breaks and over-long lines in // comments) and pattern (PATTERN.md grown past its headroom line).
++# A key may also hold reports, the advisory steps its call runs after the lints, which never change its result: redundancy (judges the diff's new and changed Go tests against the coverage maps and writes the verdicts into the worktree's gate directory); reports: [] turns them off.
+ # The card key alone may also hold fixer, a model-spec such as sonnet[medium]: the cold fixer an agent's red lym gate test --gate card call hands its failures to; "" turns it off.
+ # No tier list may be empty, and a tier a key names must be declared above when the gate runs.
+ gates:
+   card: {tiers: [0], scope: card, lints: [comments, pattern], fixer: "sonnet[medium]"}
+   batch: {tiers: [0], scope: card}
+-  webster: {tiers: [0], scope: all}
+-  parent-align: {tiers: [0], scope: all}
++  webster: {tiers: [0], scope: all, reports: [redundancy]}
++  parent-align: {tiers: [0], scope: all, reports: [redundancy]}
+   finalize: {tiers: [0], scope: all}
+   adopt: {tiers: [0], scope: all}
+   webster-fix: {tiers: [0], scope: diff}
+-  darn-write: {tiers: [0], scope: diff}
+-  code-burler-fix: {tiers: [0], scope: diff}
++  darn-write: {tiers: [0], scope: diff, reports: [redundancy]}
++  code-burler-fix: {tiers: [0], scope: diff, reports: [redundancy]}
+   pr-review: {tiers: [0], scope: diff}
+ 
+ # How a computed, base or card scope maps to {targets}: go derives the impacted Go packages per module, dotnet derives the impacted C# test projects and classes from the type-name closure over test classes, none runs every tier whole.
+diff --git a/internal/gateslot/tiers.go b/internal/gateslot/tiers.go
+index 1dac4d1d..2a4f7a21 100644
+--- a/internal/gateslot/tiers.go
++++ b/internal/gateslot/tiers.go
+@@ -98,6 +98,9 @@ type GateKey struct {
+ 	Scope string `yaml:"scope"`
+ 	// Lints are the lint steps the key's call runs after its tiers, in order, each LintComments or LintPattern; empty runs none.
+ 	Lints []string `yaml:"lints"`
++	// Reports are the advisory report steps the key's call runs after its lints, each ReportRedundancy; empty runs none.
++	// A report step never changes the call's result.
++	Reports []string `yaml:"reports"`
+ 	// Fixer is the model-spec of the cold fixer that a red agent call of this key hands its verdict to; empty turns it off.
+ 	// Only the card key may hold one.
+ 	Fixer string `yaml:"fixer"`
+@@ -122,6 +125,11 @@ const (
+ 	LintPattern = "pattern"
+ )
+ 
++// ReportRedundancy names the redundancy report step a gate key's reports may hold.
++// It judges the diff's new and changed tests against the per-package coverage maps.
++// It writes the verdicts to the worktree.
++const ReportRedundancy = "redundancy"
++
+ // goReadGates are the gate keys the Go verify sites read, in the order TiersValue lists them.
+ var goReadGates = []string{"card", "batch", "webster", "parent-align", "finalize", "adopt", "webster-fix", "darn-write", "code-burler-fix", "pr-review"}
+ 
+@@ -346,7 +354,7 @@ func (c Config) Gate(key string) (GateKey, error) {
+ 			return GateKey{}, useRefusal("gates.%s lists %s, which the hub does not declare", key, tierKey(number))
+ 		}
+ 	}
+-	return GateKey{Tiers: slices.Clone(gate.Tiers), Scope: gate.Scope, Lints: slices.Clone(gate.Lints)}, nil
++	return GateKey{Tiers: slices.Clone(gate.Tiers), Scope: gate.Scope, Lints: slices.Clone(gate.Lints), Reports: slices.Clone(gate.Reports)}, nil
+ }
+ 
+ // TierList returns the tier numbers the named gate key runs, in order, with the refusals Gate gives.
+diff --git a/internal/loomcli/landingdeps_verify_test.go b/internal/loomcli/landingdeps_verify_test.go
+index c9d4dc87..0353e8b1 100644
+--- a/internal/loomcli/landingdeps_verify_test.go
++++ b/internal/loomcli/landingdeps_verify_test.go
+@@ -33,7 +33,7 @@ func gateConfigWithTwoTiers() string {
+ 	return strings.NewReplacer(
+ 		"tiers: {}", tiers,
+ 		"  finalize: {tiers: [0], scope: all}", "  finalize: {tiers: [0, 1], scope: all}",
+-		"  code-burler-fix: {tiers: [0], scope: diff}", "  code-burler-fix: {tiers: [0, 1], scope: diff}",
++		"  code-burler-fix: {tiers: [0], scope: diff, reports: [redundancy]}", "  code-burler-fix: {tiers: [0, 1], scope: diff, reports: [redundancy]}",
+ 	).Replace(gateslot.ConfigTemplate())
+ }
+ 
+diff --git a/internal/testcover/blockkey.go b/internal/testcover/blockkey.go
+index 0307b87b..6863690d 100644
+--- a/internal/testcover/blockkey.go
++++ b/internal/testcover/blockkey.go
+@@ -31,6 +31,42 @@ type BlockKey struct {
+ 	Ordinal int `json:"ordinal"`
+ }
+ 
++// String renders the key as one comparable text, the form a BlockSet holds a keyed block in.
++func (k BlockKey) String() string {
++	return fmt.Sprintf("%s|%s|%s|%d", k.File, k.Func, k.Hash, k.Ordinal)
++}
++
++// CoveredKeys returns the rendered keys of the blocks of the package at importPath that profile counts as covered.
++// It keys every block of the package's own files in profile, covered or not,
++// so each ordinal equals the one a coverage map built from a whole profile of the same files holds.
++// The blocks' files are read from the package directory dir.
++// A block the profile lists twice counts as covered when either line counts it.
++func CoveredKeys(dir, importPath string, profile []ProfileBlock) (BlockSet, error) {
++	var blocks []ProfileBlock
++	index := map[string]int{}
++	for _, block := range PackageBlocks(profile, importPath) {
++		if i, seen := index[block.Position()]; seen {
++			if block.Count != 0 {
++				blocks[i].Count = block.Count
++			}
++			continue
++		}
++		index[block.Position()] = len(blocks)
++		blocks = append(blocks, block)
++	}
++	keys, err := KeyBlocks(dir, blocks)
++	if err != nil {
++		return nil, err
++	}
++	covered := BlockSet{}
++	for i, block := range blocks {
++		if block.Count != 0 {
++			covered[keys[i].String()] = struct{}{}
++		}
++	}
++	return covered, nil
++}
++
+ // ContentHash returns the hex SHA-256 of data.
+ // It is the hash a block key, and a coverage map's file and test entries, carry.
+ func ContentHash(data []byte) string {
+diff --git a/internal/testcover/blockkey_test.go b/internal/testcover/blockkey_test.go
+index cdf0f486..33e4a2dc 100644
+--- a/internal/testcover/blockkey_test.go
++++ b/internal/testcover/blockkey_test.go
+@@ -3,6 +3,7 @@ package testcover_test
+ import (
+ 	"os"
+ 	"path/filepath"
++	"reflect"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/testcover"
+@@ -117,3 +118,36 @@ func TestKeyBlocks(t *testing.T) {
+ 		t.Error("KeyBlocks of a line past the file's end = nil error; want an error")
+ 	}
+ }
++
++// TestCoveredKeys pins that a profile's covered blocks of the package come back as the keys KeyBlocks gives them.
++// A block the profile lists twice counts once and as covered when either line counts it,
++// and a block of a package nested below is left out.
++func TestCoveredKeys(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	dir := t.TempDir()
++	if err := os.WriteFile(filepath.Join(dir, "p.go"), []byte(keyedSource), 0o644); err != nil {
++		t.Fatal(err)
++	}
++	block := func(file string, startLine, startCol, endLine, endCol, count int) testcover.ProfileBlock {
++		return testcover.ProfileBlock{File: file, StartLine: startLine, StartCol: startCol, EndLine: endLine, EndCol: endCol, Statements: 1, Count: count}
++	}
++	profile := []testcover.ProfileBlock{
++		block("m/p/p.go", 3, 21, 5, 2, 0),
++		block("m/p/p.go", 7, 22, 9, 2, 0),
++		block("m/p/p.go", 3, 21, 5, 2, 1),
++		block("m/p/sub/s.go", 1, 1, 1, 2, 1),
++	}
++	keys, err := testcover.KeyBlocks(dir, []testcover.ProfileBlock{block("m/p/p.go", 3, 21, 5, 2, 0)})
++	if err != nil {
++		t.Fatal(err)
++	}
++	got, err := testcover.CoveredKeys(dir, "m/p", profile)
++	if err != nil {
++		t.Fatal(err)
++	}
++	if want := blockSet(keys[0].String()); !reflect.DeepEqual(got, want) {
++		t.Errorf("CoveredKeys() = %v; want %v, A.Do's key alone", got, want)
++	}
++}
+diff --git a/internal/testcover/doc.go b/internal/testcover/doc.go
+index bd5a3545..b707ea1f 100644
+--- a/internal/testcover/doc.go
++++ b/internal/testcover/doc.go
+@@ -13,10 +13,13 @@
+ // The wait for its exit and output then lasts at most Grace, so a descendant holding the output pipe cannot stall it.
+ // A test past its bound comes back marked TimedOut, never as an error.
+ // ScanTestFuncs reads a package's top-level Test functions.
+-// Each comes with the tier its `tiergate.Require` names and the hash of its source text.
++// Each comes with its file, the tier its `tiergate.Require` names and the hash of its source text.
++// ParseTestFuncs reads them from one test file's source, such as the file as a commit stores it.
+ //
+ // Judge marks a test contained when another judged test of the same run covers each of its covered blocks.
+ // It picks the removable set greedily among the contained tests, slowest first.
++// JudgeAgainst does the same with a set of kept tests that cover blocks but are never judged or removed,
++// so a caller judges new tests against tests a coverage map already holds.
+ // A test that is skipped, failed or covers nothing is not judged.
+ // Nor is a test judged that the static spawn scan marks as possibly running module code in another process.
+ // Its in-process coverage cannot see that code.
+@@ -27,6 +30,8 @@
+ // An unchanged block keeps its key when lines above it move; an edited block gets a new one.
+ // Bound: two blocks with the same text in one function differ by ordinal alone.
+ // So inserting a block that repeats the text of one in the same function shifts every later identical ordinal.
++// BlockKey.String renders a key as the text a BlockSet holds.
++// CoveredKeys turns one run's profile into the rendered keys of the package blocks it covered.
+ //
+ // The coverage map is one JSON record per package, read and written through internal/state.
+ // It keeps the block key table and, for each judged test, the indexes of the blocks it covers.
+diff --git a/internal/testcover/testfuncs.go b/internal/testcover/testfuncs.go
+index 0a355a05..e6b2e593 100644
+--- a/internal/testcover/testfuncs.go
++++ b/internal/testcover/testfuncs.go
+@@ -9,6 +9,7 @@ import (
+ 	"go/parser"
+ 	"go/token"
+ 	"os"
++	"path"
+ 	"path/filepath"
+ 	"sort"
+ 	"strings"
+@@ -21,6 +22,8 @@ import (
+ // TestFunc is one top-level Test function of a package's test files.
+ type TestFunc struct {
+ 	Name string
++	// File is the base name of the test file that declares the function.
++	File string
+ 	// Tier is the tier the function's opening tiergate.Require names; Tiered is false, and Tier 0, when it opens with none.
+ 	Tier   int
+ 	Tiered bool
+@@ -42,30 +45,44 @@ func ScanTestFuncs(dir string) ([]TestFunc, error) {
+ 		if entry.IsDir() || !strings.HasSuffix(entry.Name(), "_test.go") {
+ 			continue
+ 		}
+-		path := filepath.Join(dir, entry.Name())
+-		src, err := os.ReadFile(path)
++		filename := filepath.Join(dir, entry.Name())
++		src, err := os.ReadFile(filename)
+ 		if err != nil {
+ 			return nil, err
+ 		}
+-		fset := token.NewFileSet()
+-		file, err := parser.ParseFile(fset, path, src, parser.SkipObjectResolution)
++		found, err := ParseTestFuncs(filename, src)
+ 		if err != nil {
+-			return nil, fmt.Errorf("parse %s: %w", path, err)
+-		}
+-		for _, decl := range file.Decls {
+-			fn, ok := decl.(*ast.FuncDecl)
+-			if !ok || fn.Recv != nil || !isTestFuncName(fn.Name.Name) {
+-				continue
+-			}
+-			tier, tiered := impactset.RequiredTier(file, fn)
+-			start, end := fset.Position(fn.Pos()).Offset, fset.Position(fn.End()).Offset
+-			funcs = append(funcs, TestFunc{Name: fn.Name.Name, Tier: tier, Tiered: tiered, Hash: ContentHash(src[start:end])})
++			return nil, err
+ 		}
++		funcs = append(funcs, found...)
+ 	}
+ 	sort.Slice(funcs, func(i, j int) bool { return funcs[i].Name < funcs[j].Name })
+ 	return funcs, nil
+ }
+ 
++// ParseTestFuncs returns the top-level Test functions of the test file source src, in source order.
++// It reads source from any tree, such as a file as a commit stores it.
++// filename names the file in a parse error, and its base name fills each function's File.
++func ParseTestFuncs(filename string, src []byte) ([]TestFunc, error) {
++	fset := token.NewFileSet()
++	file, err := parser.ParseFile(fset, filename, src, parser.SkipObjectResolution)
++	if err != nil {
++		return nil, fmt.Errorf("parse %s: %w", filename, err)
++	}
++	base := path.Base(filepath.ToSlash(filename))
++	var funcs []TestFunc
++	for _, decl := range file.Decls {
++		fn, ok := decl.(*ast.FuncDecl)
++		if !ok || fn.Recv != nil || !isTestFuncName(fn.Name.Name) {
++			continue
++		}
++		tier, tiered := impactset.RequiredTier(file, fn)
++		start, end := fset.Position(fn.Pos()).Offset, fset.Position(fn.End()).Offset
++		funcs = append(funcs, TestFunc{Name: fn.Name.Name, File: base, Tier: tier, Tiered: tiered, Hash: ContentHash(src[start:end])})
++	}
++	return funcs, nil
++}
++
+ // isTestFuncName reports whether name is that of a function `go test` runs as a test:
+ // Test followed by nothing or by no lowercase letter, TestMain apart.
+ func isTestFuncName(name string) bool {
+diff --git a/internal/testcover/testfuncs_test.go b/internal/testcover/testfuncs_test.go
+index 558cf803..9d79749d 100644
+--- a/internal/testcover/testfuncs_test.go
++++ b/internal/testcover/testfuncs_test.go
+@@ -32,8 +32,8 @@ func TestScanTestFuncs(t *testing.T) {
+ 				"c.go":      "package p\n\nfunc TestInAFileThatIsNoTestFile() {}\n",
+ 			},
+ 			want: []testcover.TestFunc{
+-				{Name: "TestTiered", Tier: 1, Tiered: true, Hash: testcover.ContentHash([]byte(tiered))},
+-				{Name: "TestUntiered", Hash: testcover.ContentHash([]byte(untiered))},
++				{Name: "TestTiered", File: "a_test.go", Tier: 1, Tiered: true, Hash: testcover.ContentHash([]byte(tiered))},
++				{Name: "TestUntiered", File: "b_test.go", Hash: testcover.ContentHash([]byte(untiered))},
+ 			},
+ 		},
+ 		{name: "UnparsableTestFile", files: map[string]string{"x_test.go": "package p\n\nfunc {"}, wantErr: "x_test.go"},
+diff --git a/internal/testcover/verdict.go b/internal/testcover/verdict.go
+index 738cf7dd..66dcfe52 100644
+--- a/internal/testcover/verdict.go
++++ b/internal/testcover/verdict.go
+@@ -3,7 +3,10 @@
+ 
+ package testcover
+ 
+-import "sort"
++import (
++	"slices"
++	"sort"
++)
+ 
+ // Reasons a test is not judged.
+ const (
+@@ -48,8 +51,18 @@ type Verdict struct {
+ // The removable set is a greedy pass over the contained tests, slowest first, then by name.
+ // It re-checks each contained test against the tests still kept.
+ func Judge(runs []Run) []Verdict {
++	return JudgeAgainst(runs, nil)
++}
++
++// JudgeAgainst returns the verdict of every run, in the order given.
++// It counts the runs of kept as covering tests that are never judged or removed themselves.
++// A kept run covers its blocks for every run,
++// and the greedy pass drops a contained run only while the runs left keep its blocks covered.
++// A caller judging new tests against tests it already holds passes those as kept.
++func JudgeAgainst(runs, kept []Run) []Verdict {
++	all := slices.Concat(runs, kept)
+ 	counts := map[string]int{}
+-	for _, r := range runs {
++	for _, r := range all {
+ 		if notJudgedReason(r) == "" {
+ 			for b := range r.Blocks {
+ 				counts[b]++
+@@ -65,30 +78,30 @@ func Judge(runs []Run) []Verdict {
+ 		return true
+ 	}
+ 
+-	out := make([]Verdict, len(runs))
++	out := make([]Verdict, len(all))
+ 	var contained []int
+-	for i, r := range runs {
++	for i, r := range all {
+ 		out[i].Name = r.Name
+ 		out[i].Reason = notJudgedReason(r)
+-		if out[i].Reason == "" && covered(r) {
++		if i < len(runs) && out[i].Reason == "" && covered(r) {
+ 			out[i].Contained = true
+ 			contained = append(contained, i)
+ 		}
+ 	}
+ 
+ 	sort.SliceStable(contained, func(a, b int) bool {
+-		ra, rb := runs[contained[a]], runs[contained[b]]
++		ra, rb := all[contained[a]], all[contained[b]]
+ 		if ra.Elapsed != rb.Elapsed {
+ 			return ra.Elapsed > rb.Elapsed
+ 		}
+ 		return ra.Name < rb.Name
+ 	})
+ 	for _, i := range contained {
+-		if !covered(runs[i]) {
++		if !covered(all[i]) {
+ 			continue
+ 		}
+ 		out[i].Removable = true
+-		for b := range runs[i].Blocks {
++		for b := range all[i].Blocks {
+ 			counts[b]--
+ 		}
+ 	}
+@@ -98,9 +111,9 @@ func Judge(runs []Run) []Verdict {
+ 		if !out[i].Removable {
+ 			inPool = func(j int) bool { return out[j].Reason == "" }
+ 		}
+-		out[i].Covering = coveringTests(i, runs, inPool)
++		out[i].Covering = coveringTests(i, all, inPool)
+ 	}
+-	return out
++	return out[:len(runs)]
+ }
+ 
+ // notJudgedReason returns why a run is not judged, or "" for a run that is.
+diff --git a/internal/testcover/verdict_test.go b/internal/testcover/verdict_test.go
+index 8f9a303c..14be7168 100644
+--- a/internal/testcover/verdict_test.go
++++ b/internal/testcover/verdict_test.go
+@@ -92,3 +92,45 @@ func TestJudge(t *testing.T) {
+ 		})
+ 	}
+ }
++
++func TestJudgeAgainst_KeptRunsCoverButAreNeverJudged(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		runs []testcover.Run
++		kept []testcover.Run
++		want []testcover.Verdict
++	}{
++		{
++			name: "a run whose blocks kept runs cover is removable, naming them largest overlap first",
++			runs: []testcover.Run{passRun("A", 1, "b1", "b2")},
++			kept: []testcover.Run{passRun("K1", 1, "b1"), passRun("K2", 1, "b1", "b2")},
++			want: []testcover.Verdict{{Name: "A", Contained: true, Removable: true, Covering: []string{"K2"}}},
++		},
++		{
++			name: "a block no kept run covers keeps the run unique",
++			runs: []testcover.Run{passRun("A", 1, "b1", "b9")},
++			kept: []testcover.Run{passRun("K", 1, "b1")},
++			want: []testcover.Verdict{{Name: "A"}},
++		},
++		{
++			name: "two runs covering only each other's blocks are never both removable",
++			runs: []testcover.Run{passRun("C", 2, "b1"), passRun("D", 1, "b1")},
++			kept: []testcover.Run{passRun("K", 1, "b2")},
++			want: []testcover.Verdict{
++				{Name: "C", Contained: true, Removable: true, Covering: []string{"D"}},
++				{Name: "D", Contained: true, Covering: []string{"C"}},
++			},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := testcover.JudgeAgainst(tt.runs, tt.kept); !reflect.DeepEqual(got, tt.want) {
++				t.Fatalf("JudgeAgainst = %+v\nwant           %+v", got, tt.want)
++			}
++		})
++	}
++}
