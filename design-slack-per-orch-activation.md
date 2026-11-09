@@ -2,8 +2,6 @@
 
 `slack-per-orch-activation` · Task · enhancement, slack, reed, creel · draft
 
-Depends on: [`machine-name-config`](design-machine-name-config.md)
-
 ## Seen (operator, 2026-11-09)
 
 The Slack relay was started on OSL-1046 and made one channel for every orch of every hub on the machine, seven in all.
