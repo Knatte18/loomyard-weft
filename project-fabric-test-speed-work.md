@@ -1,6 +1,6 @@
 # P3 Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes
 
-Rendered 2026-11-09 09:34 UTC; every age below is as of then.
+Rendered 2026-11-09 09:35 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`fabric-test-speed-work`](design-fabric-test-speed-work.md) · Age 1d · Owner `osl-1046`
