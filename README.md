@@ -1,13 +1,12 @@
 # Board
 
-Rendered 2026-11-09 19:22 UTC; every age below is as of then.
+Rendered 2026-11-09 19:23 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-<details open>
-<summary><strong><a href="project-codex-engine-trial.md">P2 Codexengine: every task, trial and note about the Codex engine</a> (4)</strong></summary>
+## [P2 Codexengine: every task, trial and note about the Codex engine](project-codex-engine-trial.md) (4)
 
 [`codex-engine-trial`](design-codex-engine-trial.md) · Age 6d · Owner `neve`
 
@@ -38,7 +37,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B9 |  | **Codex keeps forcing its bubblewrap sandbox, so astra fails on OSL-1046** | [`codex-bubblewrap-sandbox`](design-codex-bubblewrap-sandbox.md) | 46m<br>46m | codex, shuttle |
+| B9 |  | **Codex keeps forcing its bubblewrap sandbox, so astra fails on OSL-1046** | [`codex-bubblewrap-sandbox`](design-codex-bubblewrap-sandbox.md) | 47m<br>47m | codex, shuttle |
 
 #### Features (1)
 
@@ -46,47 +45,35 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 6d<br>1d | shuttle, codex, loom |
 
-</details>
-
-<details open>
-<summary><strong><a href="project-fabric-test-speed-work.md">P3 Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes</a> (2)</strong></summary>
+## [P3 Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes](project-fabric-test-speed-work.md) (1)
 
 [`fabric-test-speed-work`](design-fabric-test-speed-work.md) · Age 2d · Owner `neve`
 
-### Tasks (2)
+### Tasks (1)
 
 Concrete and claimable; only a task can run.
 
-#### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Make the eight longest serial internal/fabricengine tests parallel**<br>• Move their package-level test state into parameters so the serial phase of tier 1 shrinks | [`fabric-serial-phase-tests`](design-fabric-serial-phase-tests.md) | darn · solid | Finalize | neve | 7h<br>6h | fabric, testkit |
-
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-#### Layer A (1)
-
-Waits only on Running, Ready or Draft entries.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Fewer git processes in the serial phase of internal/fabricengine tier 1**<br>• About 65 thousand git processes, each slower as more run at once | [`fabric-serial-git-spawns`](design-fabric-serial-git-spawns.md) | darn · solid | T2 | 7h<br>42m | fabric, git, gate |
+| T1 | **Fewer git processes in the serial phase of internal/fabricengine tier 1**<br>• About 65 thousand git processes, each slower as more run at once | [`fabric-serial-git-spawns`](design-fabric-serial-git-spawns.md) | darn · solid |  | 7h<br>43m | fabric, git, gate |
 
 ### Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-</details>
+### Done (1)
 
-<details open>
-<summary><strong><a href="project-arras-recipe.md">P4 Arras: one recipe that runs Motif and raddle in a row, with a perch on the split</a> (3)</strong></summary>
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T2 | **Make the eight longest serial internal/fabricengine tests parallel**<br>• Move their package-level test state into parameters so the serial phase of tier 1 shrinks | [`fabric-serial-phase-tests`](design-fabric-serial-phase-tests.md) | 7h<br>6h | fabric, testkit |
+
+## [P4 Arras: one recipe that runs Motif and raddle in a row, with a perch on the split](project-arras-recipe.md) (3)
 
 [`arras-recipe`](design-arras-recipe.md) · Age 1d · Owner `neve`
 
@@ -128,10 +115,7 @@ Starts when every entry it names under After is done.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-</details>
-
-<details open>
-<summary><strong><a href="project-redundancy-check.md">P5 Redundant tests found mechanically: a coverage engine, a map per package, a gate report and its review</a> (3)</strong></summary>
+## [P5 Redundant tests found mechanically: a coverage engine, a map per package, a gate report and its review](project-redundancy-check.md) (3)
 
 [`redundancy-check`](design-redundancy-check.md) · Age 1d · Owner `neve`
 
@@ -166,10 +150,7 @@ Waits only on Running, Ready or Draft entries.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-</details>
-
-<details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (28)</strong></summary>
+## [P0 Root: entries under no project](project-root.md) (28)
 
 Owner `neve`
 
@@ -183,7 +164,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Adopt as one resumable algorithm that never starts work on its own**<br>• Detached, step-recorded adopt that pauses every adopted run, writes the owner early, can skip the orch, and is entered through lym s | [`adopt-robust`](design-adopt-robust.md)<br>[Sketch](decision-adopt-robust.md) | raddle | Raddle-Write | neve | 1h<br>0m | batten, tender, dobby, orch, fabric, shortcut |
+| T3 | **Adopt as one resumable algorithm that never starts work on its own**<br>• Detached, step-recorded adopt that pauses every adopted run, writes the owner early, can skip the orch, and is entered through lym s | [`adopt-robust`](design-adopt-robust.md)<br>[Sketch](decision-adopt-robust.md) | raddle | Raddle-Write | neve | 1h<br>1m | batten, tender, dobby, orch, fabric, shortcut |
 
 #### Ready (0)
 
@@ -197,7 +178,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T16 | **Darn verify gate: stop at the first failing tier, rerun only failed tests, a time budget, and a truthful zero-attempt halt** | [`verify-gate-faults`](design-verify-gate-faults.md) | darn · solid | T10 | 4h<br>5m | gate, darn, loom |
+| T16 | **Darn verify gate: stop at the first failing tier, rerun only failed tests, a time budget, and a truthful zero-attempt halt** | [`verify-gate-faults`](design-verify-gate-faults.md) | darn · solid | T10 | 4h<br>6m | gate, darn, loom |
 
 #### Draft (8)
 
@@ -208,11 +189,11 @@ Not released; nothing starts it until its status is cleared.
 | T5 | `draft` **machinename reads the machine name from machine.json before the hostname rule** | [`machine-name-file`](design-machine-name-file.md)<br>[Sketch](decision-machine-name-file.md) | darn · light |  | 4h<br>4h | config, slack |
 | T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 5h<br>4h | slack, reed, creel |
 | T13 | `draft` **lym machine name shows and sets the machine name and sweeps owners across a rename** | [`machine-name-verb`](design-machine-name-verb.md)<br>[Sketch](decision-machine-name-verb.md) | tapestry · solid | T5 | 4h<br>4h | config, slack |
-| T17 | `draft` **A verify gate scopes to nearly the whole suite; scope it by the coverage map**<br>• A diff in a widely imported package reruns tiers 0 to 2 across the suite, 30 to 40 minutes on OSL-1046. | [`gate-scope-by-coverage-map`](design-gate-scope-by-coverage-map.md) | motif | T9 | 4h<br>16m | gate, testkit, darn |
-| T18 | `draft` **Tests that compare a measured time to a limit fail on a loaded machine**<br>• TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver took 6.18 s against a 5 s stub delay under load and cost a full gate pass. | [`load-sensitive-timing-tests`](design-load-sensitive-timing-tests.md) | darn · solid | T6<br>T10 | 4h<br>16m | gate, testkit |
-| T19 | `draft` **One new loom config key fails dozens of tests that pin the whole struct**<br>• TestLoadConfig_Loads compares the whole struct in every case, so each added key breaks them all. | [`config-struct-test-per-key`](design-config-struct-test-per-key.md) | darn · light | T6 | 4h<br>16m | loom, config, testkit |
-| T20 | `draft` **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | darn · light | T6 | 1d<br>16m | shed, friction |
-| T21 | `draft` **lym config profiles --set cannot reach a profile's leaf key, and its refusal names the wrong value shape** | [`profiles-set-leaf-key`](design-profiles-set-leaf-key.md) | darn · light |  | 4h<br>16m | config, profiles |
+| T17 | `draft` **A verify gate scopes to nearly the whole suite; scope it by the coverage map**<br>• A diff in a widely imported package reruns tiers 0 to 2 across the suite, 30 to 40 minutes on OSL-1046. | [`gate-scope-by-coverage-map`](design-gate-scope-by-coverage-map.md) | motif | T9 | 4h<br>17m | gate, testkit, darn |
+| T18 | `draft` **Tests that compare a measured time to a limit fail on a loaded machine**<br>• TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver took 6.18 s against a 5 s stub delay under load and cost a full gate pass. | [`load-sensitive-timing-tests`](design-load-sensitive-timing-tests.md) | darn · solid | T6<br>T10 | 4h<br>17m | gate, testkit |
+| T19 | `draft` **One new loom config key fails dozens of tests that pin the whole struct**<br>• TestLoadConfig_Loads compares the whole struct in every case, so each added key breaks them all. | [`config-struct-test-per-key`](design-config-struct-test-per-key.md) | darn · light | T6 | 4h<br>17m | loom, config, testkit |
+| T20 | `draft` **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | darn · light | T6 | 1d<br>17m | shed, friction |
+| T21 | `draft` **lym config profiles --set cannot reach a profile's leaf key, and its refusal names the wrong value shape** | [`profiles-set-leaf-key`](design-profiles-set-leaf-key.md) | darn · light |  | 4h<br>17m | config, profiles |
 
 ### Notes (18)
 
@@ -232,7 +213,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 2d<br>2d | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 1d<br>4h | shed, loom, darn |
 | E3 |  | **One land notice: fold the beam-PR landing notice into notify_on_land** | [`one-land-notice`](design-one-land-notice.md) | 4h<br>4h | dobby, batten, workspaces |
-| E4 |  | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 34m<br>32m | testkit, gate |
+| E4 |  | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 35m<br>34m | testkit, gate |
 
 #### Features (12)
 
@@ -250,5 +231,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>4d | burler, shed, orch, quarry, report |
 | F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 4d<br>2d | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 4d<br>4d | batten, board, fabric, workspaces |
-
-</details>
