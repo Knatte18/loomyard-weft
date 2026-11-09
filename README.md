@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-09 19:06 UTC; every age below is as of then.
+Rendered 2026-11-09 19:07 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -93,7 +93,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **The arras recipe and its split perch** | [`arras-recipe-perch`](design-arras-recipe-perch.md)<br>[Sketch](decision-arras-recipe-perch.md) | darn · solid | Code-Burler-Fix | neve | 1d<br>1d | shed, loom, burler, arbiter, board |
+| T6 | **The arras recipe and its split perch** | [`arras-recipe-perch`](design-arras-recipe-perch.md)<br>[Sketch](decision-arras-recipe-perch.md) | darn · solid | Code-Bouncer | neve | 1d<br>1d | shed, loom, burler, arbiter, board |
 
 #### Ready (0)
 
@@ -171,7 +171,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T15 | **Bolt README: every project section can be collapsed** | [`readme-collapsible-projects`](design-readme-collapsible-projects.md) | darn · light | Code-Burler-Review | neve | 13m<br>13m | board |
+| T15 | **Bolt README: every project section can be collapsed** | [`readme-collapsible-projects`](design-readme-collapsible-projects.md) | darn · light | Code-Burler-Review | neve | 14m<br>14m | board |
 
 #### Ready (0)
 

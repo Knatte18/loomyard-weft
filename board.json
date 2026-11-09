@@ -465,7 +465,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `motif-raddle-recipe`.\n\nTakes: raddle-perch-mode's `perch` mode and outcome checks; the motif and raddle recipes and the generic Bouncer, BurlerReview and BurlerFix engines\nDelivers: `contracts/recipes/arras-recipe.yaml` registered wherever motif and raddle are, with its profile blocks and the test pinning `arras` as a former name reversed; the split perch segment with its loom keys, guard-category auto-accept key and the new rubric stencil `loom-rubric-raddle-review.md`; the perch re-arm on a fresh entry into Raddle-Write over a settled verdict; the run-level tests of an arras run through Discussion, the split perch and Raddle-File\nExports: the `arras` recipe name in shedrun, the split perch's loom keys\n\nThe part changes these packages:\n\n- contracts/recipes (about 140 changed lines)\n- contracts/stencils (about 120 changed lines)\n- internal/shedrun (about 15 changed lines)\n- internal/loomrecipe (about 90 changed lines)\n- internal/loomengine (about 150 changed lines)\n- internal/loomcli (about 150 changed lines)\n- internal/loomshed (about 40 changed lines)\n- internal/shedrecipe (about 30 changed lines)\n- internal/shedcli (about 20 changed lines)\n- internal/battencli (about 40 changed lines)\n- internal/runprofile (about 30 changed lines)\n- internal/configsync (about 20 changed lines)\n- internal/reviewbudget (about 20 changed lines)\n",
-      "status": "running · Code-Burler-Fix",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-08T16:15:45Z",
       "revised": "2026-11-08T16:15:45Z",
       "profile": "solid",
