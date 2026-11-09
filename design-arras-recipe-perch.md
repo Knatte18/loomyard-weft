@@ -1,6 +1,6 @@
 # The arras recipe and its split perch
 
-`arras-recipe-perch` · Task · feature, shed, loom, burler, arbiter, board · running · Drift-Recheck
+`arras-recipe-perch` · Task · feature, shed, loom, burler, arbiter, board · running · Describe
 
 Decision record: [Sketch](decision-arras-recipe-perch.md)
 
